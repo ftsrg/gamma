@@ -127,5 +127,15 @@ procedure exampleProc () : void {
 		var b : integer;
 	}
 	
+	
+	/**
+	 * We expect the expression of assert statement must be boolean
+	 * 
+	 * @Check - checkAssertionStatement
+	 */
+	assert(int1);
+	assert(dir);
+	assert(1.1);
+	
 	return;
 }

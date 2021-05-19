@@ -21,6 +21,7 @@ import org.eclipse.emf.ecore.EReference;
 import hu.bme.mit.gamma.action.derivedfeatures.ActionModelDerivedFeatures;
 import hu.bme.mit.gamma.action.model.Action;
 import hu.bme.mit.gamma.action.model.ActionModelPackage;
+import hu.bme.mit.gamma.action.model.AssertionStatement;
 import hu.bme.mit.gamma.action.model.AssignmentStatement;
 import hu.bme.mit.gamma.action.model.Block;
 import hu.bme.mit.gamma.action.model.Branch;
@@ -198,7 +199,7 @@ public class ActionModelValidator extends ExpressionModelValidator {
 		else {
 			if (!typeDeterminator.isBoolean(guard)) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-						"Brach conditions must be of type boolean!",
+						"Branch conditions must be of type boolean!",
 						new ReferenceInfo(ActionModelPackage.Literals.BRANCH__GUARD)));
 			}
 		}
@@ -251,6 +252,18 @@ public class ActionModelValidator extends ExpressionModelValidator {
 						new ReferenceInfo(ActionModelPackage.Literals.SWITCH_STATEMENT__CONTROL_EXPRESSION)));
 			}
 		}
+		return validationResultMessages;
+	}
+	
+	public Collection<ValidationResultMessage> checkAssertionStatement(AssertionStatement assertStatement) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		
+		if (!typeDeterminator.isBoolean(assertStatement.getAssertion())) {
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+					"The expression of assertion statement must be boolean!",
+					new ReferenceInfo(ActionModelPackage.Literals.ASSERTION_STATEMENT__ASSERTION)));
+		}
+		
 		return validationResultMessages;
 	}
 }
