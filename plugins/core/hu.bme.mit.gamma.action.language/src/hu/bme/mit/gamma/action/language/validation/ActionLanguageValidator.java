@@ -16,6 +16,7 @@ import hu.bme.mit.gamma.action.model.Action;
 import hu.bme.mit.gamma.action.model.AssignmentStatement;
 import hu.bme.mit.gamma.action.model.Block;
 import hu.bme.mit.gamma.action.model.Branch;
+import hu.bme.mit.gamma.action.model.ForStatement;
 import hu.bme.mit.gamma.action.model.ProcedureDeclaration;
 import hu.bme.mit.gamma.action.model.ReturnStatement;
 import hu.bme.mit.gamma.action.model.VariableDeclarationStatement;
@@ -69,4 +70,8 @@ public class ActionLanguageValidator extends AbstractActionLanguageValidator {
 		handleValidationResultMessage(actionModelValidator.checkBranch(branch));
 	}
 	
+	@Check
+	public void checkForStatement(ForStatement forStatement) {
+		handleValidationResultMessage(actionModelValidator.checkForStatement(forStatement));
+	}
 }

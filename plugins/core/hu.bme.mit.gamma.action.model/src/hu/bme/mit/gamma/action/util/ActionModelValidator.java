@@ -36,6 +36,8 @@ import hu.bme.mit.gamma.action.model.VariableDeclarationStatement;
 import hu.bme.mit.gamma.expression.model.ConstantDeclaration;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.Expression;
+import hu.bme.mit.gamma.expression.model.IntegerRangeTypeDefinition;
+import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
@@ -176,6 +178,7 @@ public class ActionModelValidator extends ExpressionModelValidator {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		Expression guard = branch.getGuard();
 		EObject container = branch.eContainer();
+		// check if container is a SwitchStatement
 		if (container instanceof SwitchStatement) {
 			SwitchStatement switchStatement = (SwitchStatement) container;
 			if (!typeDeterminator.equalsType(switchStatement.getControlExpression(), guard)) {
@@ -194,5 +197,18 @@ public class ActionModelValidator extends ExpressionModelValidator {
 		return validationResultMessages;
 	}
 	
-	
+	public Collection<ValidationResultMessage> checkForStatement(ForStatement forStatement) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		if (!typeDeterminator.isInteger(forStatement.getParameter().getType())) {
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+					"The type of parameter must be integer!",
+					new ReferenceInfo(ActionModelPackage.Literals.FOR_STATEMENT__PARAMETER)));
+		}
+		if (!(typeDeterminator.getType(forStatement.getRange()) instanceof IntegerRangeTypeDefinition)) {
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+					"The type of range must be integer range!",
+					new ReferenceInfo(ActionModelPackage.Literals.FOR_STATEMENT__RANGE)));
+		}
+		return validationResultMessages;
+	}
 }

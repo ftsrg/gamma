@@ -6,6 +6,8 @@ const int1 : int
 const dec1 : dec
 const rec1 : rec
 
+const intRange : integer range := <- 0 .. 12 ->
+
 type MyEnum : enum {
 	A, B, C
 }
@@ -102,6 +104,25 @@ procedure exampleProc () : void {
 	{
 		branch [int1] a = 1;
 		branch [dir] a = 2;
+	}
+	
+	
+	/**
+	 * We expect type of parameter must be integer
+	 * 
+	 * @Check - checkForStatement
+	 */
+	for ( i : dec in <- 0 .. 12->) {
+		var b : integer;
+	}
+	
+	/**
+	 * We expect type of range must be integer range
+	 * 
+	 * @Check - checkForStatement
+	 */
+	for ( i : int in dec1) {
+		var b : integer;
 	}
 	
 	
