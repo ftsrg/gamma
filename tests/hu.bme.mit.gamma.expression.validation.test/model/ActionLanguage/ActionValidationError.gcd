@@ -24,7 +24,7 @@ const bool : boolean
 
 
 /**
- * We expect the type of procedure and the type of return statement to be the same.
+ * We expect the type of procedure and the type of return statement to be the same
  * 
  * @Check - checkReturnStatementType
  */
@@ -37,7 +37,7 @@ procedure proc5 () : Direction { return ::NORTH; }
 
 
 /**
- * We expect return statements to be final operations on all possible paths.
+ * We expect return statements to be final operations on all possible paths
  * 
  * @Check - checkReturnStatementPositions
  */
@@ -55,7 +55,7 @@ procedure exampleProc () : void {
 	b := bb;
 	
 	/**
-	 * We expect the names of the variables to be unique.
+	 * We expect the names of the variables to be unique
 	 * 
 	 * @Check - checkDuplicateVariableDeclarationStatements
 	 */ 
@@ -64,16 +64,11 @@ procedure exampleProc () : void {
 	
 	
 	/**
-	 * We expect that no new values can be assigned to the constants.
+	 * We expect that no new values can be assigned to the constants
 	 * 
 	 * @Check - checkAssignmentActions
 	 */
 	int1 := 12;
-	
-	return;
-}
-
-procedure vmi () : void {
 	
 	return;
 }

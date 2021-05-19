@@ -727,6 +727,18 @@ public class ExpressionModelValidator {
 						typeDeterminator.print(expression.getRightOperand()),
 					new ReferenceInfo(ExpressionModelPackage.Literals.INTEGER_RANGE_LITERAL_EXPRESSION__RIGHT_INCLUSIVE)));
 		}
+		// check right operand is less than left operand
+		if (typeDeterminator.isInteger(expression.getRightOperand()) && typeDeterminator.isInteger(expression.getLeftOperand())) {
+			try {
+				if (expressionEvaluator.evaluateInteger(expression.getLeftOperand()) > expressionEvaluator.evaluateInteger(expression.getRightOperand())) {
+					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+							"The left operand must be less equal than the right operand!",
+							new ReferenceInfo(ExpressionModelPackage.Literals.INTEGER_RANGE_LITERAL_EXPRESSION__LEFT_INCLUSIVE)));
+				}
+			} catch (Exception exception) {
+				// There is a type error on a lower level, no need to display the error message on this level too
+			}
+		}
 		return validationResultMessages;
 	}
 	

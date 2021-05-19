@@ -4,8 +4,6 @@ package actionlanguage
 
 
 /**
- * 
- * 
  * @Check - checkBlockIsEmpty
  */
 procedure example () : void {
