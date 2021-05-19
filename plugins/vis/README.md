@@ -3,7 +3,7 @@
 To use the statechart visualization function, you need to install the following tools:
 
 * Graphviz 2.26.3 - 2.38,
-* PlantUML Eclipse plugin.
+* PlantUML Eclipse plugin - Version 1.1.25
 
 ## Graphviz
 
