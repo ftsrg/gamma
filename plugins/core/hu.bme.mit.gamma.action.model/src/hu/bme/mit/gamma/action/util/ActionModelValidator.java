@@ -15,21 +15,14 @@ import java.util.Collection;
 import java.util.List;
 
 import org.eclipse.emf.ecore.EObject;
-import org.eclipse.emf.ecore.EReference;
 
 import hu.bme.mit.gamma.action.derivedfeatures.ActionModelDerivedFeatures;
-import hu.bme.mit.gamma.action.model.Action;
 import hu.bme.mit.gamma.action.model.ActionModelPackage;
 import hu.bme.mit.gamma.action.model.AssertionStatement;
 import hu.bme.mit.gamma.action.model.AssignmentStatement;
 import hu.bme.mit.gamma.action.model.Block;
 import hu.bme.mit.gamma.action.model.Branch;
-import hu.bme.mit.gamma.action.model.BreakStatement;
-import hu.bme.mit.gamma.action.model.ChoiceStatement;
-import hu.bme.mit.gamma.action.model.ConstantDeclarationStatement;
-import hu.bme.mit.gamma.action.model.ExpressionStatement;
 import hu.bme.mit.gamma.action.model.ForStatement;
-import hu.bme.mit.gamma.action.model.IfStatement;
 import hu.bme.mit.gamma.action.model.ProcedureDeclaration;
 import hu.bme.mit.gamma.action.model.ReturnStatement;
 import hu.bme.mit.gamma.action.model.SwitchStatement;
@@ -51,36 +44,6 @@ public class ActionModelValidator extends ExpressionModelValidator {
 	// Singleton
 	public static final ActionModelValidator INSTANCE = new ActionModelValidator();
 	protected ActionModelValidator() {}
-	
-	public Collection<ValidationResultMessage> checkUnsupportedActions(Action action) {
-		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		if (action instanceof Block ||
-				action instanceof BreakStatement ||
-				action instanceof ChoiceStatement ||
-				action instanceof ConstantDeclarationStatement ||
-				action instanceof ExpressionStatement ||
-				action instanceof ForStatement ||
-				action instanceof IfStatement ||
-				action instanceof ReturnStatement ||
-				action instanceof SwitchStatement ||
-				action instanceof VariableDeclarationStatement) {
-			EObject container = action.eContainer();
-			EReference eContainmentFeature = action.eContainmentFeature();
-			Object object = container.eGet(eContainmentFeature, true);
-			if (object instanceof List) {
-				@SuppressWarnings("unchecked")
-				List<Action> actions = (List<Action>) object;
-				int index = actions.indexOf(action);
-				//validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "Not supported action.",
-				// new ReferenceInfo(eContainmentFeature, index, container)));
-			}
-			else {
-				//validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "Not supported action.",
-				//new ReferenceInfo(eContainmentFeature, null, container)));
-			}
-		}
-		return validationResultMessages;
-	}
 	
 	public 	Collection<ValidationResultMessage> checkAssignmentActions(AssignmentStatement assignment) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
@@ -183,7 +146,7 @@ public class ActionModelValidator extends ExpressionModelValidator {
 			SwitchStatement switchStatement = (SwitchStatement) container;
 			if (!typeDeterminator.equalsType(switchStatement.getControlExpression(), guard) && !(branch.getGuard() instanceof DefaultExpression)) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-						"Type of control expression must be same type of guard in a SwitchStatement",
+						"The guard must have the same type as the control expression",
 						new ReferenceInfo(ActionModelPackage.Literals.BRANCH__GUARD)));
 			}
 		}
@@ -219,27 +182,31 @@ public class ActionModelValidator extends ExpressionModelValidator {
 		// if controlExpression is an enum, no need the DefaultBranch
 		Type typeDef = typeDeterminator.getTypeDefinition(switchStatement.getControlExpression());
 		if (typeDef instanceof EnumerationTypeDefinition) {
-			List<EnumerationLiteralDefinition> literals = ((EnumerationTypeDefinition) typeDef).getLiterals();
-			List<EnumerationLiteralDefinition> cloneLiterals = ecoreUtil.clone(literals);
+			EnumerationTypeDefinition enumerationTypeDefinition = (EnumerationTypeDefinition) typeDef;
+			List<EnumerationLiteralDefinition> literals = new ArrayList<EnumerationLiteralDefinition>(
+					enumerationTypeDefinition.getLiterals());
 			List<Branch> cases = switchStatement.getCases();
 			boolean hasDefaultBranch = false;
 			for (Branch currentCase : cases) {
-				if (typeDeterminator.equalsType(switchStatement.getControlExpression(), currentCase.getGuard())) {
-					for (EnumerationLiteralDefinition literal : literals) {
-						if (ecoreUtil.helperEquals(literal, ((EnumerationLiteralExpression) currentCase.getGuard()).getReference())) {
-							int idx = literals.indexOf(literal);
-							cloneLiterals.remove(idx);
-						}
-					}
+				Expression guard = currentCase.getGuard();
+				if (guard instanceof EnumerationLiteralExpression) {
+					EnumerationLiteralExpression literalExpression = (EnumerationLiteralExpression) guard;
+					literals.remove(literalExpression.getReference());
 				}
 				// check DefaultBranch
 				if (currentCase.getGuard() instanceof DefaultExpression) {
 					hasDefaultBranch = true;
 				}
 			}
-			if (cloneLiterals.size() == 0 && hasDefaultBranch) {
+			if (literals.size() > 0 && !hasDefaultBranch) {
+				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+						"The following enumeration literals are not covered in any of the branches: " +
+								literals.stream().map(it -> it.getName()).reduce((a, b) -> a + ", " + b).get(),
+						new ReferenceInfo(ActionModelPackage.Literals.SWITCH_STATEMENT__CONTROL_EXPRESSION)));
+			}
+			else if (literals.size() == 0 && hasDefaultBranch) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING,
-						"If a switch statement checks all literals of an enumeration, the default branch is not needed",
+					"If a switch statement covers all literals of an enumeration, the default branch is not needed",
 						new ReferenceInfo(ActionModelPackage.Literals.SWITCH_STATEMENT__CONTROL_EXPRESSION)));
 			}
 		}
@@ -248,13 +215,12 @@ public class ActionModelValidator extends ExpressionModelValidator {
 	
 	public Collection<ValidationResultMessage> checkAssertionStatement(AssertionStatement assertStatement) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		
 		if (!typeDeterminator.isBoolean(assertStatement.getAssertion())) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 					"The expression of assertion statement must be boolean",
 					new ReferenceInfo(ActionModelPackage.Literals.ASSERTION_STATEMENT__ASSERTION)));
 		}
-		
 		return validationResultMessages;
 	}
+	
 }

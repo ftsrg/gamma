@@ -37,7 +37,6 @@ procedure proc3 () : rational { return; }
 procedure proc4 () : Direction { return cPoint; }
 procedure proc5 () : Direction { return CardianalPoints::NORTH; }
 
-
 /**
  * We expect return statements to be final operations on all possible paths
  * 
@@ -49,8 +48,7 @@ procedure proc6 () : integer {
 }
 
 
-
-procedure exampleProc () : void {
+procedure exampleProc() : void {
 	
 	/**
 	 * We expect the type of left hand expression be the same as the type of right hand expression
@@ -91,14 +89,24 @@ procedure exampleProc () : void {
 	}
 	
 	/**
+	 * We expect every literal to be covered
+	 * 
+	 * @Check - checkSwitchStatement
+	 */
+	switch (b) {
+		case MyEnum::A:
+			a = 12;
+	}
+	
+	/**
 	 * We expect type of conditions must be of type boolean
 	 * 
 	 * @Check - checkBranch
 	 */
-	if(int1) {
+	if (int1) {
 		a = 1;
 	}
-	elseif(12) {
+	elseif (12) {
 		a = 2;
 	}
 	
@@ -114,7 +122,7 @@ procedure exampleProc () : void {
 	 * 
 	 * @Check - checkForStatement
 	 */
-	for ( i : dec in <- 0 .. 12->) {
+	for (i : dec in <- 0 .. 12->) {
 		var b : integer;
 	}
 	
@@ -123,7 +131,7 @@ procedure exampleProc () : void {
 	 * 
 	 * @Check - checkForStatement
 	 */
-	for ( i : int in dec1) {
+	for (i : int in dec1) {
 		var b : integer;
 	}
 	

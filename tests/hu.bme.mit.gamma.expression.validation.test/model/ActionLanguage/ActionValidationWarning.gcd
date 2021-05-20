@@ -19,12 +19,12 @@ procedure exampleProc () : void {
 	
 	
 	/**
-	 * &Check - checkSwitchStatement
+	 * @Check - checkSwitchStatement
 	 */
 	switch (dir) {
-		case ::RIGHT:
+		case Direction::RIGHT:
 			a = 12;
-		case ::LEFT:
+		case Direction::LEFT:
 			a = 12;
 		default:
 			break;

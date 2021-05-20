@@ -12,7 +12,6 @@ package hu.bme.mit.gamma.action.language.validation;
 
 import org.eclipse.xtext.validation.Check;
 
-import hu.bme.mit.gamma.action.model.Action;
 import hu.bme.mit.gamma.action.model.AssertionStatement;
 import hu.bme.mit.gamma.action.model.AssignmentStatement;
 import hu.bme.mit.gamma.action.model.Block;
@@ -35,11 +34,6 @@ public class ActionLanguageValidator extends AbstractActionLanguageValidator {
 
 	public ActionLanguageValidator() {
 		super.expressionModelValidator = actionModelValidator;
-	}
-	
-	@Check
-	public void checkUnsupportedActions(Action action) {
-		handleValidationResultMessage(actionModelValidator.checkUnsupportedActions(action));
 	}
 	
 	@Check
