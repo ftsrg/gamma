@@ -382,7 +382,8 @@ public class ExpressionTypeDeterminator2 {
 	}
 	
 	public boolean isInteger(Type type) {
-		return getAliaslessTypeTree(type) instanceof IntegerTypeDefinition;
+		return ExpressionModelDerivedFeatures.getTypeDefinition(type) instanceof IntegerTypeDefinition;
+		//return getAliaslessTypeTree(type) instanceof IntegerTypeDefinition;
 	}
 	
 	// Type pretty printer
