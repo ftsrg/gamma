@@ -20,6 +20,7 @@ import org.eclipse.emf.ecore.EReference;
 import hu.bme.mit.gamma.action.derivedfeatures.ActionModelDerivedFeatures;
 import hu.bme.mit.gamma.action.model.Action;
 import hu.bme.mit.gamma.action.model.ActionModelPackage;
+import hu.bme.mit.gamma.action.model.AssertionStatement;
 import hu.bme.mit.gamma.action.model.AssignmentStatement;
 import hu.bme.mit.gamma.action.model.Block;
 import hu.bme.mit.gamma.action.model.Branch;
@@ -35,7 +36,12 @@ import hu.bme.mit.gamma.action.model.SwitchStatement;
 import hu.bme.mit.gamma.action.model.VariableDeclarationStatement;
 import hu.bme.mit.gamma.expression.model.ConstantDeclaration;
 import hu.bme.mit.gamma.expression.model.Declaration;
+import hu.bme.mit.gamma.expression.model.DefaultExpression;
+import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition;
+import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression;
+import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Expression;
+import hu.bme.mit.gamma.expression.model.IntegerRangeTypeDefinition;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
@@ -170,14 +176,85 @@ public class ActionModelValidator extends ExpressionModelValidator {
 	
 	public Collection<ValidationResultMessage> checkBranch(Branch branch) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		// Block is empty
 		Expression guard = branch.getGuard();
-		if (!typeDeterminator.isBoolean(guard)) {
-			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-					"Brach conditions must be of type boolean",
-					new ReferenceInfo(ActionModelPackage.Literals.BRANCH__GUARD)));
+		EObject container = branch.eContainer();
+		// check if container is a SwitchStatement
+		if (container instanceof SwitchStatement) {
+			SwitchStatement switchStatement = (SwitchStatement) container;
+			if (!typeDeterminator.equalsType(switchStatement.getControlExpression(), guard) && !(branch.getGuard() instanceof DefaultExpression)) {
+				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+						"Type of control expression must be same type of guard in a SwitchStatement",
+						new ReferenceInfo(ActionModelPackage.Literals.BRANCH__GUARD)));
+			}
+		}
+		else {
+			if (!typeDeterminator.isBoolean(guard)) {
+				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+						"Branch conditions must be of type boolean",
+						new ReferenceInfo(ActionModelPackage.Literals.BRANCH__GUARD)));
+			}
 		}
 		return validationResultMessages;
 	}
 	
+	public Collection<ValidationResultMessage> checkForStatement(ForStatement forStatement) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		// parameter check
+		if (!typeDeterminator.isInteger(forStatement.getParameter().getType())) {
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+					"The type of parameter must be integer",
+					new ReferenceInfo(ActionModelPackage.Literals.FOR_STATEMENT__PARAMETER)));
+		}
+		// range check 
+		if (!(typeDeterminator.getType(forStatement.getRange()) instanceof IntegerRangeTypeDefinition)) {
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+					"The type of range must be integer range",
+					new ReferenceInfo(ActionModelPackage.Literals.FOR_STATEMENT__RANGE)));
+		}
+		return validationResultMessages;
+	}
+	
+	public Collection<ValidationResultMessage> checkSwitchStatement(SwitchStatement switchStatement) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		// if controlExpression is an enum, no need the DefaultBranch
+		Type typeDef = typeDeterminator.getTypeDefinition(switchStatement.getControlExpression());
+		if (typeDef instanceof EnumerationTypeDefinition) {
+			List<EnumerationLiteralDefinition> literals = ((EnumerationTypeDefinition) typeDef).getLiterals();
+			List<EnumerationLiteralDefinition> cloneLiterals = ecoreUtil.clone(literals);
+			List<Branch> cases = switchStatement.getCases();
+			boolean hasDefaultBranch = false;
+			for (Branch currentCase : cases) {
+				if (typeDeterminator.equalsType(switchStatement.getControlExpression(), currentCase.getGuard())) {
+					for (EnumerationLiteralDefinition literal : literals) {
+						if (ecoreUtil.helperEquals(literal, ((EnumerationLiteralExpression) currentCase.getGuard()).getReference())) {
+							int idx = literals.indexOf(literal);
+							cloneLiterals.remove(idx);
+						}
+					}
+				}
+				// check DefaultBranch
+				if (currentCase.getGuard() instanceof DefaultExpression) {
+					hasDefaultBranch = true;
+				}
+			}
+			if (cloneLiterals.size() == 0 && hasDefaultBranch) {
+				validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING,
+						"If a switch statement checks all literals of an enumeration, the default branch is not needed",
+						new ReferenceInfo(ActionModelPackage.Literals.SWITCH_STATEMENT__CONTROL_EXPRESSION)));
+			}
+		}
+		return validationResultMessages;
+	}
+	
+	public Collection<ValidationResultMessage> checkAssertionStatement(AssertionStatement assertStatement) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		
+		if (!typeDeterminator.isBoolean(assertStatement.getAssertion())) {
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+					"The expression of assertion statement must be boolean",
+					new ReferenceInfo(ActionModelPackage.Literals.ASSERTION_STATEMENT__ASSERTION)));
+		}
+		
+		return validationResultMessages;
+	}
 }

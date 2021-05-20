@@ -13,11 +13,14 @@ package hu.bme.mit.gamma.action.language.validation;
 import org.eclipse.xtext.validation.Check;
 
 import hu.bme.mit.gamma.action.model.Action;
+import hu.bme.mit.gamma.action.model.AssertionStatement;
 import hu.bme.mit.gamma.action.model.AssignmentStatement;
 import hu.bme.mit.gamma.action.model.Block;
 import hu.bme.mit.gamma.action.model.Branch;
+import hu.bme.mit.gamma.action.model.ForStatement;
 import hu.bme.mit.gamma.action.model.ProcedureDeclaration;
 import hu.bme.mit.gamma.action.model.ReturnStatement;
+import hu.bme.mit.gamma.action.model.SwitchStatement;
 import hu.bme.mit.gamma.action.model.VariableDeclarationStatement;
 import hu.bme.mit.gamma.action.util.ActionModelValidator;
 
@@ -69,4 +72,18 @@ public class ActionLanguageValidator extends AbstractActionLanguageValidator {
 		handleValidationResultMessage(actionModelValidator.checkBranch(branch));
 	}
 	
+	@Check
+	public void checkForStatement(ForStatement forStatement) {
+		handleValidationResultMessage(actionModelValidator.checkForStatement(forStatement));
+	}
+	
+	@Check
+	public void checkSwitchStatement(SwitchStatement switchStatement) {
+		handleValidationResultMessage(actionModelValidator.checkSwitchStatement(switchStatement));
+	}
+	
+	@Check
+	public void checkAssertionStatement(AssertionStatement assertStatement) {
+		handleValidationResultMessage(actionModelValidator.checkAssertionStatement(assertStatement));
+	}
 }

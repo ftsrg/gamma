@@ -6,6 +6,16 @@ const int1 : int
 const dec1 : dec
 const rec1 : rec
 
+const intRange : integer range := <- 0 .. 12 ->
+
+type MyEnum : enum {
+	A, B, C
+}
+
+type MyEnum2 : enum {
+	A, B, C
+}
+
 const dir : Direction
 const cPoint : CardianalPoints
 
@@ -16,7 +26,7 @@ const bool : boolean
 
 
 /**
- * We expect the type of procedure and the type of return statement to be the same.
+ * We expect the type of procedure and the type of return statement to be the same
  * 
  * @Check - checkReturnStatementType
  */
@@ -29,7 +39,7 @@ procedure proc5 () : Direction { return CardianalPoints::NORTH; }
 
 
 /**
- * We expect return statements to be final operations on all possible paths.
+ * We expect return statements to be final operations on all possible paths
  * 
  * @Check - checkReturnStatementPositions
  */
@@ -41,8 +51,18 @@ procedure proc6 () : integer {
 
 
 procedure exampleProc () : void {
+	
 	/**
-	 * We expect the names of the variables to be unique.
+	 * We expect the type of left hand expression be the same as the type of right hand expression
+	 * 
+ 	 * @Check - checkAssignmentActions
+ 	 */
+ 	var b : MyEnum;
+	var bb : MyEnum2;
+	b := bb;
+	
+	/**
+	 * We expect the names of the variables to be unique
 	 * 
 	 * @Check - checkDuplicateVariableDeclarationStatements
 	 */ 
@@ -51,12 +71,71 @@ procedure exampleProc () : void {
 	
 	
 	/**
-	 * We expect that no new values can be assigned to the constants.
+	 * We expect that no new values can be assigned to the constants
 	 * 
 	 * @Check - checkAssignmentActions
 	 */
 	int1 := 12;
 	
+	
+	/**
+	 * We expect type of control expression must be same type of guard
+	 * 
+	 * @Check - checkBranch
+	 */
+	switch (dir) {
+		case 12:
+			a = 12;
+		case int1:
+			a = 12;
+	}
+	
+	/**
+	 * We expect type of conditions must be of type boolean
+	 * 
+	 * @Check - checkBranch
+	 */
+	if(int1) {
+		a = 1;
+	}
+	elseif(12) {
+		a = 2;
+	}
+	
+	choice
+	{
+		branch [int1] a = 1;
+		branch [dir] a = 2;
+	}
+	
+	
+	/**
+	 * We expect type of parameter must be integer
+	 * 
+	 * @Check - checkForStatement
+	 */
+	for ( i : dec in <- 0 .. 12->) {
+		var b : integer;
+	}
+	
+	/**
+	 * We expect type of range must be integer range
+	 * 
+	 * @Check - checkForStatement
+	 */
+	for ( i : int in dec1) {
+		var b : integer;
+	}
+	
+	
+	/**
+	 * We expect the expression of assert statement must be boolean
+	 * 
+	 * @Check - checkAssertionStatement
+	 */
+	assert(int1);
+	assert(dir);
+	assert(1.1);
+	
 	return;
 }
-

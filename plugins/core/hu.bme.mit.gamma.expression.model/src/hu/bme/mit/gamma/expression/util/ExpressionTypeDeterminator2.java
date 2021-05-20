@@ -379,6 +379,11 @@ public class ExpressionTypeDeterminator2 {
 		return getTypeDefinition(expression) instanceof IntegerTypeDefinition;
 	}
 	
+	public boolean isInteger(Type type) {
+		return ExpressionModelDerivedFeatures.getTypeDefinition(type) instanceof IntegerTypeDefinition;
+		//return getAliaslessTypeTree(type) instanceof IntegerTypeDefinition;
+	}
+	
 	// Type pretty printer
 	
 	public String print(Expression expression) {
