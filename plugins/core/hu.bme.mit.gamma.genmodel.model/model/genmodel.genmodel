@@ -154,5 +154,9 @@
     <genClasses ecoreClass="genmodel.ecore#//InteractionDataflowCoverage">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//InteractionDataflowCoverage/interactionDataflowCoverageCriterion"/>
     </genClasses>
+    <genClasses ecoreClass="genmodel.ecore#//StatechartContractTestGeneration">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference genmodel.ecore#//StatechartContractTestGeneration/componentReference"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference genmodel.ecore#//StatechartContractTestGeneration/constraint"/>
+    </genClasses>
   </genPackages>
 </genmodel:GenModel>

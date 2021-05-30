@@ -8,12 +8,11 @@ Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.xtext,
  org.eclipse.xtext.xbase,
  org.eclipse.equinox.common,
- org.eclipse.xtext.xbase.lib,
+ org.eclipse.xtext.xbase.lib;bundle-version="2.14.0",
  org.antlr.runtime;bundle-version="[3.2.0,3.2.1)",
  org.eclipse.xtext.util,
- org.eclipse.xtend.lib,
+ org.eclipse.xtend.lib;bundle-version="2.14.0",
  hu.bme.mit.gamma.scenario.model,
- hu.bme.mit.gamma.scenario.util,
  hu.bme.mit.gamma.expression.language,
  hu.bme.mit.gamma.scenario.statechart.generator,
  hu.bme.mit.gamma.scenario.reduction,
@@ -29,7 +28,7 @@ Export-Package: hu.bme.mit.gamma.scenario.language,
  hu.bme.mit.gamma.scenario.language.scoping,
  hu.bme.mit.gamma.scenario.language.serializer,
  hu.bme.mit.gamma.scenario.language.services,
- hu.bme.mit.gamma.scenario.language.util,
  hu.bme.mit.gamma.scenario.language.validation
-Import-Package: org.apache.log4j
+Import-Package: org.apache.log4j,
+ hu.bme.mit.gamma.language.util.linking
 Automatic-Module-Name: hu.bme.mit.gamma.scenario.language

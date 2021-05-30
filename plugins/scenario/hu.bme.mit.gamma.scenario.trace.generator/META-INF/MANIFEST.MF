@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Generator
+Bundle-Name: Gamma Contract Statechart To Abstract Test Generator
 Bundle-SymbolicName: hu.bme.mit.gamma.scenario.trace.generator
 Bundle-Version: 2.5.0.qualifier
 Bundle-Vendor: BME-FTSRG

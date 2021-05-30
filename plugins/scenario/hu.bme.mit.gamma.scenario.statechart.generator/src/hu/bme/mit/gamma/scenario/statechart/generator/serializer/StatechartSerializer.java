@@ -18,6 +18,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.emf.ecore.EObject;
 
 import hu.bme.mit.gamma.statechart.contract.ScenarioContractAnnotation;
+import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.Interface;
 import hu.bme.mit.gamma.statechart.interface_.InterfaceModelFactory;
 import hu.bme.mit.gamma.statechart.interface_.Package;
@@ -42,9 +43,10 @@ public class StatechartSerializer {
 		p.getComponents().add(st);
 		p.setName(st.getName().toLowerCase());
 		p.getImports().add(interfaces);
+
 		if (st.getAnnotation() instanceof ScenarioContractAnnotation) {
-			p.getImports().add(
-					(Package) ((ScenarioContractAnnotation) st.getAnnotation()).getMonitoredComponent().eContainer());
+			Component monitoredComponent = ((ScenarioContractAnnotation) st.getAnnotation()).getMonitoredComponent();
+			p.getImports().add((Package) monitoredComponent.eContainer());
 		}
 		try {
 			saveModel(p, path, st.getName() + "Statechart.gcd");

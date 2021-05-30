@@ -28,6 +28,7 @@ import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.transformation.GammaToXstsTransformer
 import java.io.File
 import java.util.List
+import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures
 
 class ScenarioStatechartTraceGenerator { 
 
@@ -82,8 +83,8 @@ class ScenarioStatechartTraceGenerator {
 		val statechartName = statechart.name.toFirstUpper
 		
 		val packageFileName = fileNamer.getUnfoldedPackageFileName(fileName);
-		val parameters = "--refinement \"MULTI_SEQ\" --domain \"EXPL\" --initprec \"ALLVARS\"";
-		val query = "E<> (("+regionName+"_"+statechartName+" == " + scenarioStatechartUtil.getAccepting() + "))";
+		val parameters = '''--refinement "MULTI_SEQ" --domain "EXPL" --initprec "ALLVARS"''';
+		val query ='''E<> ((«regionName+"_"+statechartName» == «scenarioStatechartUtil.getAccepting()»))''' ;
 		val gammaPackage = ecoreUtil.normalLoad(modelFile.getParent(), packageFileName);
 
 		val r = verifier.verifyQuery(gammaPackage, parameters, modelFile, query, true, true);
@@ -94,7 +95,7 @@ class ScenarioStatechartTraceGenerator {
 		val ets = <ExecutionTrace>newArrayList
 		for (List<Step> list : derivedTraces) {
 			var et = createExecutionTrace
-			setupExecutionTrace(et, list, baseTrace.getName() + i++, c, c.eContainer() as Package);
+			setupExecutionTrace(et, list, baseTrace.getName() + i++, c, StatechartModelDerivedFeatures.getContainingPackage(c));
 			ets += et
 		}
 

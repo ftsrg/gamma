@@ -10,11 +10,11 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.scenario.language.scoping
 
-import hu.bme.mit.gamma.scenario.language.util.ScenarioLanguageUtil
-import hu.bme.mit.gamma.scenario.language.util.StatechartLanguageUtil
 import hu.bme.mit.gamma.scenario.model.ScenarioDeclaration
 import hu.bme.mit.gamma.scenario.model.ScenarioModelPackage
 import hu.bme.mit.gamma.scenario.model.Signal
+import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures
+import hu.bme.mit.gamma.util.GammaEcoreUtil
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
 import org.eclipse.xtext.scoping.IScope
@@ -27,6 +27,8 @@ import org.eclipse.xtext.scoping.Scopes
  * on how and when to use it.
  */
 class ScenarioLanguageScopeProvider extends AbstractScenarioLanguageScopeProvider {
+	
+	val GammaEcoreUtil util = GammaEcoreUtil.INSTANCE
 
 	override getScope(EObject context, EReference reference) {
 		var IScope scope = null
@@ -54,12 +56,12 @@ class ScenarioLanguageScopeProvider extends AbstractScenarioLanguageScopeProvide
 	
 	private def IScope getScope(Signal signal, EReference reference) {
 		if(reference == ScenarioModelPackage.Literals.SIGNAL__PORT) {
-			val ports = ScenarioLanguageUtil::getScenarioDeclaration(signal).component.ports
-			return createScopeFor(ports)
+			val ports = util.getContainerOfType(signal,ScenarioDeclaration).component.ports
+			return createScopeFor(ports) 
 
 		} else if(reference == ScenarioModelPackage.Literals.SIGNAL__EVENT) {
 			val interface = signal.port.interfaceRealization.interface
-			val events = StatechartLanguageUtil::collectInterfaceEvents(interface)
+			val events = StatechartModelDerivedFeatures.getAllEventDeclarations(interface).map[it.event]
 			return createScopeFor(events)
 		}
 	}

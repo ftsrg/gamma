@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Commandhandler
+Bundle-Name: Gamma Scenario to Statechart Model Command Handler
 Bundle-Vendor: BME-FTSRG
 Bundle-SymbolicName: hu.bme.mit.gamma.scenario.statechart.commandhandler;singleton:=true
 Bundle-Version: 2.5.0.qualifier

@@ -269,7 +269,6 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 
 		val evaluator = ExpressionEvaluator.INSTANCE;
 		t1.guard = getMinCheck(2, evaluator.evaluateInteger(loop.minimum))
-//		t2.guard = getMaxCheck(2,evaluator.evaluateInteger(loop.maximum))
 		var maxCheck = createLessExpression
 		var ref1 = createDirectReferenceExpression
 		ref1.declaration = statechart.variableDeclarations.get(2)
@@ -312,10 +311,15 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 	}
 
 	protected def processModalInteractionSet(ModalInteractionSet set, boolean isNegated) {
-		val singleNegetedSignalWithArguments = set.modalInteractions.size == 1 &&
-			set.modalInteractions.get(0) instanceof NegatedModalInteraction &&
-			(set.modalInteractions.get(0) as NegatedModalInteraction).modalinteraction instanceof Signal &&
-			!((set.modalInteractions.get(0) as NegatedModalInteraction).modalinteraction as Signal).arguments.empty
+		var singleNegetedSignalWithArguments = false
+		if (set.modalInteractions.size == 1 && set.modalInteractions.get(0) instanceof NegatedModalInteraction) {
+			val negatedModalInteraction = set.modalInteractions.get(0) as NegatedModalInteraction
+			if (negatedModalInteraction.modalinteraction instanceof Signal) {
+				val negatedSignal = negatedModalInteraction.modalinteraction as Signal
+				singleNegetedSignalWithArguments = !(negatedSignal.arguments.empty)
+			}
+		}
+
 		var state = createNewState("state" + String.valueOf(stateCount++))
 		var forwardTransition = createTransition
 		var violationTransition = createTransition
@@ -366,7 +370,7 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 			var mode = -1
 			if (isAllNeg(set) || isNegated) {
 				mode = nonDeclaredNegMessageMode
-				// nem kell hozza adni, mert le csak akkor lehet igaz a trigger, ha igaz tovabb lepo trigger is, ezert sosem tuzel
+				// does not need to be added, as it is overshadowed by the forward going transition
 				if (mode != 1)
 					statechart.transitions.add(t3)
 			} else {
@@ -480,12 +484,13 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 			if (set.size == 1 && set.get(0) instanceof NegatedModalInteraction &&
 				(set.get(0) as NegatedModalInteraction).modalinteraction instanceof Signal &&
 				!((set.get(0) as NegatedModalInteraction).modalinteraction as Signal).arguments.empty) {
-				signals = set.filter[set.size == 1].filter[it instanceof NegatedModalInteraction].filter [
+				signals = set.filter[set.size == 1].filter(NegatedModalInteraction).filter [
 					(it as NegatedModalInteraction).modalinteraction instanceof Signal
 				].map[(it as NegatedModalInteraction).modalinteraction].filter[!(it as Signal).arguments.empty]
 
-			} else
+			} else {
 				return
+			}
 		}
 		var guard1 = createAndExpression
 		for (signal : signals) {

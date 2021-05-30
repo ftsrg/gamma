@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Simplify
+Bundle-Name: Gamma Scenario Model Reducer
 Bundle-Vendor: BME-FTSRG
 Bundle-SymbolicName: hu.bme.mit.gamma.scenario.reduction
 Bundle-Version: 2.5.0.qualifier

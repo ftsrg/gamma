@@ -37,7 +37,7 @@ GenModel returns GenModel:
 Task returns Task:
 	YakinduCompilation | CodeGeneration | AnalysisModelTransformation | TestGeneration |
 		EventPriorityTransformation | AdaptiveContractTestGeneration | PhaseStatechartGeneration |
-		Verification | TestReplayModelGeneration | Slicing
+		Verification | TestReplayModelGeneration | Slicing | StatechartContractTestGeneration
 ;
 
 YakinduCompilation returns YakinduCompilation:
@@ -332,6 +332,16 @@ AdaptiveContractTestGeneration returns AdaptiveContractTestGeneration:
 		)*
 	'}'
 ;
+
+StatechartContractTestGeneration returns StatechartContractTestGeneration:
+	{StatechartContractTestGeneration}
+	'contract-test' '{'
+	componentReference= ComponentReference 
+	('folder' ':' targetFolder+=STRING)?
+	('constraint' ':' '{'constraint= OrchestratingConstraint'}')?
+	'}' 
+;
+
 
 PhaseStatechartGeneration returns PhaseStatechartGeneration:
 	{PhaseStatechartGeneration} 'phase-statechart' '{'
