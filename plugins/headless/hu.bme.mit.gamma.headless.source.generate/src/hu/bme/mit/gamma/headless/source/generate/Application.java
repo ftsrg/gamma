@@ -1,5 +1,7 @@
 package hu.bme.mit.gamma.headless.source.generate;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -23,14 +25,18 @@ public class Application implements IApplication{
 
 	@Override
 	public Object start(IApplicationContext context) throws Exception {
-		IWorkspace workspace = ResourcesPlugin.getWorkspace();
+		IWorkspace workspace = ResourcesPlugin.getWorkspace(); // workspace will be created where the -data argument specifies it
+		//all "-etc" arguments will be handled like regular arguments
+		
+		//String workspacePath = workspace.get
 
 		String[] args = (String[]) context.getArguments().get(IApplicationContext.APPLICATION_ARGS);
 		if (args.length != 1) {
 			System.out.println("Arguments must be given!");
 			return null;
 		}
-		String projectName = args[0];
+		
+		String projectName = args[1];
 
 		IProjectDescription newProjectDescription = workspace.newProjectDescription(projectName);
 		IProject newProject = workspace.getRoot().getProject(projectName);

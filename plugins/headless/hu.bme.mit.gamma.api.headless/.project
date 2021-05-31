@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>hu.bme.mit.gamma.api.headless</name>
+	<name>hu.bme.mit.gamma.headless.api</name>
 	<comment></comment>
 	<projects>
 	</projects>

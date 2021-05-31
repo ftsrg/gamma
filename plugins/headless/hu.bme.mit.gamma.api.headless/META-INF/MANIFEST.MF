@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Headless
-Bundle-SymbolicName: hu.bme.mit.gamma.api.headless;singleton:=true
+Bundle-SymbolicName: hu.bme.mit.gamma.headless.api;singleton:=true
 Bundle-Version: 2.5.0.qualifier
 Automatic-Module-Name: hui.bme.mit.gamma.api.headless
 Bundle-RequiredExecutionEnvironment: JavaSE-11
@@ -50,3 +50,4 @@ Require-Bundle: org.eclipse.equinox.app;bundle-version="1.5.0",
  com.google.gson;bundle-version="2.8.2",
  org.apache.commons.io;bundle-version="2.6.0"
 Bundle-ActivationPolicy: lazy
+Import-Package: org.eclipse.ui.wizards.datatransfer

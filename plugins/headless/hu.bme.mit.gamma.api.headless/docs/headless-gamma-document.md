@@ -29,7 +29,7 @@ Additionally, cURL can be installed to test requests to the webserver, using the
 ## Step 2 - Importing projects
 
 
-Import the `hu.bme.mit.gamma.headless.api` and `hu.bme.mit.gamma.headless.source.generate` projects to your workspace, which already contains the necessary Gamma plugins that you want to export.
+Import the `hu.bme.mit.gamma.headless.api` project to your workspace, which already contains the necessary Gamma plugins that you want to export.
 
 
 
@@ -37,13 +37,11 @@ The `hu.bme.mit.gamma.headless.api` creates the headless version of Gamma. This 
 
 
 
-The `hu.bme.mit.gamma.headless.source.generate` is used to generate Eclipse workspaces and import projects for the headless version of Gamma. This application can be exported using the product file found in the META-INF folder of the plugin, named `product.gamma.source.generate.product`. 
-
 
 ## Step 3 - Modifying Target Platform
 Open the target platform via Window -> Preferences -> Plug-in Development -> Target Platform.
 
-We have created a target platform (see `hu.bme.mit.gamma.headless.api`) that can be used to properly export and run the headless version of Gamma. Nevertheless, if you wish to create your own target platform, the necessary modifications are elaborated in the following paragraphs.
+We have created a target platform (see the "target" folder in `hu.bme.mit.gamma.headless.api`) that can be used to properly export and run the headless version of Gamma. Nevertheless, if you wish to create your own target platform, the necessary modifications are elaborated in the following paragraphs.
 
 Edit the target platform by modifying its content. For the following plugins, select **only** the described version(s), and deselect other versions (remove the tick from the box next to them).
 
@@ -66,9 +64,9 @@ Make sure to remove the Gamma plugins from the required plugin list of your targ
 
 ## Step 4 - Exporting the products
 
-Select either product file to begin the exporting process. Both can be found in their corresponding META-INF folder (`gamma.api.headless.product` and `product.gamma.source.generate.product`).
+Select the product file named `gamma.api.headless.product` to begin the exporting process. It can be found in the "product" folder inside the `hu.bme.mit.gamma.headless.api`  project.
 
-In the Overview tab, under `Product Definition`, check if the appropriate `Application` is selected for the `Product`. The applications are `gamma.api.headless.application`  and `product.gamma.source.generate.application`, for  `gamma.api.headless.product` and `product.gamma.source.generate.product` respectively.
+In the Overview tab, under `Product Definition`, check if the appropriate `Application` is selected for the `Product`. The application is `gamma.api.headless.application`  for  `gamma.api.headless.product`.
 
 Still in the Overview tab, under `Exporting`, select the `Eclipse Product export wizard` option.
 
@@ -112,26 +110,33 @@ This error occurs when the "Generate p2 repository" option remains checked when 
 
 This problem can occur mainly in the Docker version of Gamma. The two parts that make up the headless version of Gamma, the generator and the API can run into errors with SWT in a new Linux environment. These errors prevent normal functioning.
 
-The first notable thing about SWT is that it is platform dependent. This means that in both product files (gamma.api.headless.product for the Headless Gamma API, and product.gamma.source.generate.product for the Headless Generator), the platform specific SWT plugins have to be imported (and possibly removed) according to the platform. For example, when moving from Windows to Linux, on the Content tab of the products, the Windows specific plugins will be missing, which is indicated with an error icon. These have to be replaced with the Linux specific plugins, which have the same name, with the operating system being a difference (instead of "win32",  "linux" is in the name).
+The first notable thing about SWT is that it is platform dependent. This means that in the product file, the platform specific SWT plugins have to be imported (and possibly removed) according to the platform. For example, when moving from Windows to Linux, on the Content tab of the products, the Windows specific plugins will be missing, which is indicated with an error icon. These have to be replaced with the Linux specific plugins, which have the same name, with the operating system being a difference (instead of "win32",  "linux" is in the name).
 
 The following solutions resolved these issues:
 
  - API
 		 - Adding `org.eclipse.swt.browser.chromium.gtk.linux.x86_64.source` and `org.eclipse.swt.gtk.linux.x86_64.source` (or equivalent, in the case of a 32 bit system) fixed SWT related issues. These plugins have to be imported manually, after importing the required plugins with the "Add Required Plug-Ins" button.
- 
- - Generator
 		 - Some SWT errors can still persist even after removing the `hu.bme.mit.gamma.dialog` project. The following steps provided solution for this problem.
 		 - Adding `org.eclipse.swt.browser.chromium.gtk.linux.x86_64.source` and `org.eclipse.swt.gtk.linux.x86_64.source` (or equivalent, in the case of a 32 bit system) fixed SWT related issues. These plugins have to be imported manually, after importing the reuqired plugins with the "Add Required Plug-Ins" button.
-		 - In the Docker container, `libswt-gtk*` has to be installed, even with Java 11 installed in the container. This can be done with the `apt-get install libswt-gtk` command. This fixed the Docker specific SWT errors related to the Headless Generator.
+		 - In the Docker container, `libswt-gtk*` has to be installed, even with Java 11 installed in the container. This can be done with the `apt-get install libswt-gtk` command. This fixed the Docker specific SWT errors.
+
+**Java compiler compliance level**
+
+This error can occur after exporting the Headless Gamma. Along with the exported products, a "logs.zip" is created as well. Inside, one or more (depending on the exported product) folders can be found named after exported plugins. The logs found inside these folders contain text similar to this:
+
+" 5/10/21, 2:32:41 PM CEST  
+Eclipse Compiler for Java(TM) v20210223-0522, 3.25.0, Copyright IBM Corp 2000, 2020. All rights reserved.  
+Compliance level '11' is incompatible with target level '15'. A compliance level '15' or better is required" 
+
+This means that the compiler compliance level is set too high. Open the Eclipse IDE, select Window -> Preferences -> Java -> Compiler, and under "JDK Compliance", set the "Compiler compliance level" to 11. After this, export the products again, and the problem should resolve.
 
 ## Setting up the Docker container
 
  Make sure that Docker is installed on the computer in use. The following tutorial was used to install Docker on Ubuntu: https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-18-04
 
  1. Create a working folder, and copy the Dockerfile inside.
- 2. Inside the working folder, create the following folders: "eclipse", "generator", "server", "uppaal", "theta".
+ 2. Inside the working folder, create the following folders: "eclipse",  "server", "uppaal", "theta".
  3. Export the Headless Gamma API inside the "eclipse" folder.
- 4. Export the Headless Generator inside the "generator" folder.
  5. Copy the "OpenApiGammaWrapper" folder, which contains the webserver, inside the "server" folder.
  6. Copy the contents of the UPPAAL folder installed on your computer inside the "uppaal" folder.
  7. Copy the `get-theta.sh` file inside the "theta" folder. This file can be found inside the `gamma/plugins/xsts/theta-bin` folder. 
@@ -139,3 +144,6 @@ The following solutions resolved these issues:
  9. In a terminal, run a docker container from the gamma image using the `docker run -it -p 8080:8080 --network host --name gamma_container gamma:latest` command. This command will bind the localhost:8080 address of the host machine to the Docker container, forwarding commands to the webserver running inside. The container is named "gamma_container", and starts in interactive mode, allowing for CLI access. The last parameter is the image, which is `gamma:latest`, which indicates that the latest Gamma image build is used.
  
 It is possible to change the port binding if the user wishes, but the webserver listens to port 8080. In the port binding parameter, the part before the ":" stands for the host port, and the one after is the container port. So changing the parameter to "5555:8080" is valid, but "8080:5555" would result in communication failure.  Names of the image and container can also be changed.
+
+
+
