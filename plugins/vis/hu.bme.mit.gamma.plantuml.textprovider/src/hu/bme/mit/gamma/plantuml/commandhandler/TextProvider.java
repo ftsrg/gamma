@@ -26,6 +26,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import hu.bme.mit.gamma.plantuml.transformation.CompositeToPlantUmlTransformer;
 import hu.bme.mit.gamma.plantuml.transformation.StatechartToPlantUmlTransformer;
 import hu.bme.mit.gamma.plantuml.transformation.TraceToPlantUmlTransformer;
+import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter;
 import hu.bme.mit.gamma.statechart.composite.CompositeComponent;
 import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.Package;
@@ -81,13 +82,13 @@ public class TextProvider extends AbstractDiagramIntentProvider {
 					if (fileExtension.equals("gcd")) {
 						IPath path = file.getFullPath();
 						String plantUmlModel = getComponentPlantUmlCode(getResource(path));
-						GammaPlantUMLDiagramIntent gammaIntent = new GammaPlantUMLDiagramIntent(plantUmlModel);
+						GammaPlantUmlDiagramIntent gammaIntent = new GammaPlantUmlDiagramIntent(plantUmlModel);
 						return List.of(gammaIntent);
 					}
 					if (fileExtension.equals("get")) {
 						IPath path = file.getFullPath();
 						String plantUmlModel = getTracePlantUmlCode(getResource(path));
-						GammaPlantUMLDiagramIntent gammaIntent = new GammaPlantUMLDiagramIntent(plantUmlModel);
+						GammaPlantUmlDiagramIntent gammaIntent = new GammaPlantUmlDiagramIntent(plantUmlModel);
 						return List.of(gammaIntent);
 					}
 				}
@@ -118,6 +119,9 @@ public class TextProvider extends AbstractDiagramIntentProvider {
 					CompositeComponent composite = (CompositeComponent) component;
 					CompositeToPlantUmlTransformer transformer = new CompositeToPlantUmlTransformer(composite);
 					return transformer.execute();
+				}
+				else if (component instanceof AsynchronousAdapter) {
+					return ""; // To counter nullptr exceptions
 				}
 			}
 		}

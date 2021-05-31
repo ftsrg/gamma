@@ -12,18 +12,18 @@ package hu.bme.mit.gamma.plantuml.commandhandler;
 
 import net.sourceforge.plantuml.util.AbstractDiagramIntent;
 
-public class GammaPlantUMLDiagramIntent extends AbstractDiagramIntent<String> {
+public class GammaPlantUmlDiagramIntent extends AbstractDiagramIntent<String> {
 
-	protected String plantUMLDiagramText;
+	protected String plantUmlDiagramText;
 	
-	public GammaPlantUMLDiagramIntent(String source) {
+	public GammaPlantUmlDiagramIntent(String source) {
 		super(source);
-		plantUMLDiagramText = source;
+		plantUmlDiagramText = source;
 	}
 	
 	@Override
 	public String getDiagramText() {
-		return plantUMLDiagramText;
+		return plantUmlDiagramText;
 	}
 	
 }
