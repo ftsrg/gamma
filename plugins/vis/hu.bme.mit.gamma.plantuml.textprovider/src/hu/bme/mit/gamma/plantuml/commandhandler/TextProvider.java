@@ -120,12 +120,9 @@ public class TextProvider extends AbstractDiagramIntentProvider {
 					CompositeToPlantUmlTransformer transformer = new CompositeToPlantUmlTransformer(composite);
 					return transformer.execute();
 				}
-				else if (component instanceof AsynchronousAdapter) {
-					return ""; // To counter nullptr exceptions
-				}
 			}
 		}
-		return null;
+		return ""; // To counter nullptr exceptions
 	}
 	
 	private String getTracePlantUmlCode(Resource resource) {
