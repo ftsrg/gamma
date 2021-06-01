@@ -335,7 +335,7 @@ AdaptiveContractTestGeneration returns AdaptiveContractTestGeneration:
 
 StatechartContractTestGeneration returns StatechartContractTestGeneration:
 	{StatechartContractTestGeneration}
-	'contract-test' '{'
+	'statechart-contract-test' '{'
 	componentReference= ComponentReference 
 	('folder' ':' targetFolder+=STRING)?
 	('constraint' ':' '{'constraint= OrchestratingConstraint'}')?

@@ -1,11 +1,11 @@
 /********************************************************************************
  * Copyright (c) 2020-2021 Contributors to the Gamma project
- *
+ * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
+ * 
  * SPDX-License-Identifier: EPL-1.0
  ********************************************************************************/
 package hu.bme.mit.gamma.scenario.trace.generator
@@ -75,8 +75,41 @@ class ExecutionTraceBackAnnotator {
 			if (createOriginalActsAndAssertsBasedOnActs) {
 				t.createOriginalActsAndAsserts
 			}
+			t.removeScheduelingWhenSendAfterReceive
 		}
 		return result
+	}
+
+	def removeScheduelingWhenSendAfterReceive(ExecutionTrace trace) {
+		for (var i = 0; i < trace.steps.size; i++) {
+			val startingStep = trace.steps.get(i)
+			if (startingStep.isReceive) {
+				var j = i + 1
+				while (j < trace.steps.size && trace.steps.get(j).isWait) {
+					j++
+				}
+				if (j == trace.steps.size) {
+					return
+				}
+				val nextNonWait = trace.steps.get(j)
+				if (nextNonWait.isSend) {
+					nextNonWait.actions.remove(nextNonWait.actions.filter(Schedule).head)
+				}
+				return
+			}
+		}
+	}
+
+	def protected boolean isSend(Step step) {
+		return step.actions.filter(RaiseEventAct).empty && !(step.asserts.filter(RaiseEventAct).empty)
+	}
+
+	def protected boolean isReceive(Step step) {
+		return !(step.actions.filter(RaiseEventAct).empty) && step.asserts.filter(RaiseEventAct).empty
+	}
+
+	def protected boolean isWait(Step step) {
+		return step.actions.filter(RaiseEventAct).empty && step.asserts.filter(RaiseEventAct).empty
 	}
 
 	def createOriginalActsAndAsserts(ExecutionTrace et) {
