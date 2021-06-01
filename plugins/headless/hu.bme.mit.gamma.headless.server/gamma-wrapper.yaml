@@ -61,7 +61,7 @@ paths:
         400:
           description: Project already exists under this workspace, delete it and resend this request
 
-  /gamma/api/{workspace}/{projectName}/{filePath}:
+  /gamma/api/{workspace}/{projectName}:
     put:
       operationId: runOperation
       description: Start a gamma operation based on the ggen file
@@ -74,13 +74,6 @@ paths:
             type: string
             example: gamma.test.project
         - in: path
-          name: filePath
-          required: true
-          description: The path of the file within the project on which the operation will run (use _ instead of \)
-          schema:
-            type: string
-            example: _model_Crossroad.gcd
-        - in: path
           name: workspace
           required: true
           description: The workspace which contains the project
@@ -88,6 +81,14 @@ paths:
             type: string
             format: uuid
             example: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+      requestBody:
+        content:
+          form-data:
+            schema:
+              type: object
+              properties:
+                ggenPath:
+                  type: string
       responses:
         200:
           description: The operation has started
@@ -278,6 +279,19 @@ paths:
             type: string
             format: uuid
             example: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                contactEmail:
+                  type: string
+                file:
+                  type: string
+                  format: binary
+                ggenPath:
+                   type: string
       responses:
         '200':
           description: Successfully uploaded the project and executed the task

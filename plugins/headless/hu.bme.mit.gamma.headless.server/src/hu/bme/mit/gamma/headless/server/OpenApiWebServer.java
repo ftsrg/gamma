@@ -65,13 +65,13 @@ public class OpenApiWebServer extends AbstractVerticle {
                     RequestParameters params = routingContext.get(PARSED_PARAMETERS);
                     String projectName = params.pathParameter(PROJECT_NAME).getString();
                     String workspace = params.pathParameter(WORKSPACE).getString();
-                    String filePath = params.pathParameter("filePath").getString();
+                    String filePath = routingContext.request().formAttributes().get("ggenPath");
                     boolean success = false;
                     try {
                         errorHandlerPOJO = getErrorObject(workspace,projectName);
                        if (errorHandlerPOJO.getErrorObject() == null){
                            success = true;
-                           ProcessBuilderCLI.runGammaOperations(projectName, workspace, filePath.replace("_", "\\")); //on Windows
+                           ProcessBuilderCLI.runGammaOperations(projectName, workspace, filePath); //on Windows
                            //ProcessBuilderCLI.runGammaOperations(projectName, workspace, filePath.replace("_", "/")); //on Linux
                            System.out.println(ANSI_YELLOW + "Operation \"runOperation\": parameters passed to CLI." + ANSI_RESET);
                        }
