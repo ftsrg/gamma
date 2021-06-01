@@ -11,22 +11,21 @@ analysis {
 	language : XSTS-UPPAAL
 	language : Theta
 	interaction-coverage
-	property-file : "Synchronous/ANTIVAL_CHK_COID_System.gpd"
+//	property-file : "Synchronous/ANTIVAL_CHK_COID_System.gpd"
 }
 
-verification {
-	language : UPPAAL
-	file : "ANTIVAL_CHK_COID_System.xml"
-	property-file : ".ANTIVAL_CHK_COID_System.gpd"
-//	query-file : "ANTIVAL_CHK_COID_System.q"
-	optimize : true
-	test-language : java
-}
-
-verification {
-	language : Theta
-	file : "ANTIVAL_CHK_COID_System.xsts"
-	property-file : ".ANTIVAL_CHK_COID_System.gpd"
-	optimize : true
-	test-language : java
-}
+//verification {
+//	language : UPPAAL
+//	file : "ANTIVAL_CHK_COID_System.xml"
+//	property-file : ".ANTIVAL_CHK_COID_System.gpd"
+//	optimize : true
+//	test-language : java
+//}
+//
+//verification {
+//	language : Theta
+//	file : "ANTIVAL_CHK_COID_System.xsts"
+//	property-file : ".ANTIVAL_CHK_COID_System.gpd"
+//	optimize : true
+//	test-language : java
+//}

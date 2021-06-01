@@ -4,6 +4,7 @@ analysis {
 	component : AntivalenceChecker_System
 	language : UPPAAL
 	interaction-coverage
+	optimize : false
 }
 
 verification {

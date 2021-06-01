@@ -1,16 +1,16 @@
-import "Cascade/ANTIVAL_CHK_COID_System.gcd"
+import "Asynchronous/ANTIVAL_CHK_COID_System.gcd"
 
 analysis {
 	component : AntivalenceChecker_System
-	language : Theta
+	language : UPPAAL
 	interaction-coverage
 	optimize : false
 }
 
 verification {
-	language : Theta
-	file : "ANTIVAL_CHK_COID_System.xsts"
+	language : UPPAAL
+	file : "ANTIVAL_CHK_COID_System.xml"
 	property-file : ".ANTIVAL_CHK_COID_System.gpd"
-	optimize : false
+	optimize : true
 	test-language : java
 }

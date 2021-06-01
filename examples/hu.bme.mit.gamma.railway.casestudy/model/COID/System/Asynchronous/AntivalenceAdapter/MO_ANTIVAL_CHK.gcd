@@ -8,6 +8,7 @@ statechart AntivalenceChecker(P_TAROLAS : boolean) [
 	port T : requires I_Timeout
 	port Signals : requires P_N_Interface
 	port OutSignals : provides E_T_F_Interface
+	port Execute : provides I_Execute
 ] {
 	transition from _0_rol_1_re_6 to Hibaallapot_8 when T.^timeout
 	transition from _1_rol_0_ra_4 to Hibaallapot_8 when T.^timeout
@@ -101,54 +102,63 @@ statechart AntivalenceChecker(P_TAROLAS : boolean) [
 			raise OutSignals.e(MyBool::_1);
 			raise OutSignals.t(MyBool::_1);
 			raise OutSignals.f(MyBool::_1);
+			raise Execute.^execute;
 		}
 		state Hibatarolassal_0_1 {
 			entry /
 			raise OutSignals.e(MyBool::ERVENYTELEN);
 			raise OutSignals.t(MyBool::ERVENYTELEN);
 			raise OutSignals.f(MyBool::ERVENYTELEN);
+			raise Execute.^execute;
 		}
 		state Hibatarolassal_1_2 {
 			entry /
 			raise OutSignals.e(MyBool::ERVENYTELEN);
 			raise OutSignals.t(MyBool::ERVENYTELEN);
 			raise OutSignals.f(MyBool::ERVENYTELEN);
+			raise Execute.^execute;
 		}
 		state Hibatarolassal_0_rol_1_re_3 {
 			entry /
 			raise OutSignals.e(MyBool::ERVENYTELEN);
 			raise OutSignals.t(MyBool::ERVENYTELEN);
 			raise OutSignals.f(MyBool::ERVENYTELEN);
+			raise Execute.^execute;
 		}
 		state _1_rol_0_ra_4 {
 			entry /
 			raise OutSignals.e(MyBool::_1);
 			raise OutSignals.t(MyBool::_1);
 			raise OutSignals.f(MyBool::_0);
+			raise Execute.^execute;
 		}
 		state _0_5 {
 			entry /
 			raise OutSignals.e(MyBool::_0);
 			raise OutSignals.t(MyBool::_0);
 			raise OutSignals.f(MyBool::_0);
+			raise Execute.^execute;
 		}
 		state _0_rol_1_re_6 {
 			entry /
 			raise OutSignals.e(MyBool::_0);
 			raise OutSignals.t(MyBool::_1);
 			raise OutSignals.f(MyBool::_0);
+			raise Execute.^execute;
 		}
 		state Hibatarolassal_1_rol_0_ra_7 {
 			entry /
 			raise OutSignals.e(MyBool::ERVENYTELEN);
 			raise OutSignals.t(MyBool::ERVENYTELEN);
 			raise OutSignals.f(MyBool::ERVENYTELEN);
+			raise Execute.^execute;
 		}
 		state Hibaallapot_8 {
 			entry /
 			raise OutSignals.e(MyBool::ERVENYTELEN);
 			raise OutSignals.t(MyBool::ERVENYTELEN);
 			raise OutSignals.f(MyBool::ERVENYTELEN);
+			raise Execute.^execute;
 		}
 		choice choice_10_in_main_region_of_mo_antivalchk
 		choice choice_11_in_main_region_of_mo_antivalchk
