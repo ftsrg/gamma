@@ -7,10 +7,10 @@ analysis {
 	optimize : false
 }
 
-//verification {
-//	language : UPPAAL
-//	file : "ANTIVAL_CHK_COID_System.xml"
-//	property-file : ".ANTIVAL_CHK_COID_System.gpd"
-//	optimize : false
-//	test-language : java
-//}
+verification {
+	language : UPPAAL
+	file : "ANTIVAL_CHK_COID_System.xml"
+	property-file : ".ANTIVAL_CHK_COID_System.gpd"
+	optimize : false
+	test-language : java
+}
