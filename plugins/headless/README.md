@@ -1,4 +1,4 @@
-# Headless Gamma  usage
+# Headless Gamma service
 
 This document details the usage of the Headless Gamma service, which allows the execution of `.ggen` files using a _webserver_ based on OpenAPI and an _exported headless Eclipse_. The service can be used via Docker. Alternatively, it is possible to manually export the headless Eclipse and start the webserver.
 
