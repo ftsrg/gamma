@@ -32,7 +32,7 @@ The `hu.bme.mit.gamma.headless.api` creates the headless version of Gamma. This 
 ## Step 3 - Modifying Target Platform
 Open the target platform via Window -> Preferences -> Plug-in Development -> Target Platform.
 
-We have created a target platform (see the "target" folder in `hu.bme.mit.gamma.headless.api`) that can be used to properly export and run the headless version of Gamma. Nevertheless, if you wish to create your own target platform, the necessary modifications are elaborated in the following paragraphs.
+We have created a target platform (see the `target` folder in `hu.bme.mit.gamma.headless.api`) that can be used to properly export and run the headless version of Gamma. Nevertheless, if you wish to create your own target platform, the necessary modifications are elaborated in the following paragraphs.
 
 Edit the target platform by modifying its content. For the following plugins, select **only** the described version(s), and deselect other versions (remove the tick from the box next to them).
 
