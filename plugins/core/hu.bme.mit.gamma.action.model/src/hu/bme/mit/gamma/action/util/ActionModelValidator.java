@@ -109,11 +109,12 @@ public class ActionModelValidator extends ExpressionModelValidator {
 	
 	public Collection<ValidationResultMessage> checkReturnStatementPosition(ReturnStatement statement) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		if (!ActionModelDerivedFeatures.isRecursivelyFinalAction(statement)) {
+		if (!ecoreUtil.isLast(statement)) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-					"Currently return statements must be final actions in every possible path",
-					new ReferenceInfo(ActionModelPackage.Literals.PROCEDURE_DECLARATION__BODY)));
+				"A return statement must be the final statement in a block",
+					new ReferenceInfo(ActionModelPackage.Literals.RETURN_STATEMENT__EXPRESSION, statement)));
 		}
+		// TODO Check every possible path to see if a procedure can be exited without a return statement
 		return validationResultMessages;
 	}
 	

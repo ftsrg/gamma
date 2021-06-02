@@ -351,4 +351,14 @@ class GammaEcoreUtil {
 		return list.indexOf(object)
 	}
 	
+	def isLast(EObject object) {
+		val containingFeature = object.eContainingFeature
+		val container = object.eContainer
+		val get = container.eGet(containingFeature)
+		if (get instanceof List) {
+			return get.last == object
+		}
+		return true
+	}
+	
 }

@@ -790,11 +790,15 @@ public class ExpressionModelValidator {
 		private Integer index;
 		
 		public ReferenceInfo(EStructuralFeature reference){
-			this(reference, null);
+			this(reference, null, null);
 		}
 		
 		public ReferenceInfo(EStructuralFeature reference, Integer index){
 			this(reference, index, null);
+		}
+		
+		public ReferenceInfo(EStructuralFeature reference, EObject source){
+			this(reference, null, source);
 		}
 		
 		public ReferenceInfo(EStructuralFeature reference, Integer index, EObject source) {

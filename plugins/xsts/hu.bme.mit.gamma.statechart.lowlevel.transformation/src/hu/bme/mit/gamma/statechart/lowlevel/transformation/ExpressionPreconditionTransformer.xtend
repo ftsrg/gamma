@@ -4,6 +4,7 @@ import hu.bme.mit.gamma.action.model.Action
 import hu.bme.mit.gamma.action.model.ActionModelFactory
 import hu.bme.mit.gamma.action.model.Block
 import hu.bme.mit.gamma.action.model.ConstantDeclarationStatement
+import hu.bme.mit.gamma.action.model.ForStatement
 import hu.bme.mit.gamma.action.model.ProcedureDeclaration
 import hu.bme.mit.gamma.action.model.ReturnStatement
 import hu.bme.mit.gamma.action.model.VariableDeclarationStatement
@@ -17,17 +18,17 @@ import hu.bme.mit.gamma.expression.model.LambdaDeclaration
 import hu.bme.mit.gamma.expression.model.MultiaryExpression
 import hu.bme.mit.gamma.expression.model.SelectExpression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
-import hu.bme.mit.gamma.expression.model.VoidTypeDefinition
 import hu.bme.mit.gamma.expression.util.FieldHierarchy
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.util.List
+import java.util.Set
+import org.eclipse.emf.ecore.EObject
 
 import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension java.lang.Math.abs
-import hu.bme.mit.gamma.action.util.ActionModelValidator
 
 class ExpressionPreconditionTransformer {
 	// 
@@ -131,7 +132,6 @@ class ExpressionPreconditionTransformer {
 	
 	protected def dispatch List<Action> transformFunction(ProcedureDeclaration procedure,
 			FunctionAccessExpression expression) {
-		procedure.checkProcedure
 		val arguments = expression.arguments
 		val parameterDeclarations = procedure.parameterDeclarations
 		val size = arguments.size
@@ -163,18 +163,36 @@ class ExpressionPreconditionTransformer {
 			localParameterDeclaration.change(parameterDeclaration, clonedBlock)
 		}
 		
-		// Create local return declarations
-		val type = procedure.typeDefinition
-		var VariableDeclaration localReturnDeclaration
-		val isVoid = type instanceof VoidTypeDefinition
-		if (!isVoid) {
+		// Handling return statements
+		var VariableDeclaration localReturnDeclaration = null
+		val returnStatements = clonedBlock.getSelfAndAllContentsOfType(ReturnStatement)
+		if (!returnStatements.empty) {
+			val type = procedure.typeDefinition
 			val procedureType = type.clone
+			val localDeclarationPostfix = '''_«procedure.name»_«expression.hashCode.abs»_'''
+			// This declaration will store the return value
 			val localStatement = procedureType.createDeclarationStatement(
-				'''_returnValueOf_«procedure.name»_«expression.hashCode.abs»_''')
+				'''_returnValueOf«localDeclarationPostfix»''')
 			localReturnDeclaration = localStatement.variableDeclaration
 			inlinedActions += localStatement
+			// This declaration will store during execution, whether we have to return
+			// Later optimizations will remove these declarations if they are unnecessary
+			val localIsReturnedStatement = createBooleanTypeDefinition.createDeclarationStatement(
+				'''_isReturned«localDeclarationPostfix»''')
+			val localIsReturnedDeclaration = localIsReturnedStatement.variableDeclaration
+			inlinedActions += localIsReturnedStatement
 			
-			for (returnStatement : clonedBlock.getSelfAndAllContentsOfType(ReturnStatement)) {
+			val extension returnGuardHandler = new ProcedureReturnGuardHandler(localIsReturnedDeclaration)
+			
+			for (returnStatement : returnStatements) {
+				// Setting the boolean flag: a return is executed
+				val isReturnedReference = localIsReturnedDeclaration.createReferenceExpression
+				val setIsReturned = isReturnedReference.createAssignment(createTrueExpression)
+				returnStatement.append(setIsReturned)
+				
+				setIsReturned.addReturnGuard
+				
+				// Storing the return value
 				val returnExpression = returnStatement.expression
 				if (returnExpression !== null) {
 					val clonedReturnExpression = returnExpression.clone
@@ -186,10 +204,11 @@ class ExpressionPreconditionTransformer {
 					returnStatement.remove
 				}
 			}
+		
 		}
 		inlinedActions += clonedBlock
 		
-		// Transforming local paramaters, local return declarations and the block
+		// Transforming local parameters, local return declarations and the block
 		val lowlevelAction = inlinedActions.transformActions
 		if (localReturnDeclaration !== null) {
 			// Tracing the function access expression to the return declarations 
@@ -203,16 +222,78 @@ class ExpressionPreconditionTransformer {
 		return #[lowlevelAction]
 	}
 	
-	protected def checkProcedure(ProcedureDeclaration procedure) {
-		val extension validator = ActionModelValidator.INSTANCE
-		val messages = procedure.checkReturnStatementPositions
-		checkState(messages.empty, messages.map[it.resultText].join(" "))
-	}
-	
 	protected def dispatch List<Action> transformFunction(LambdaDeclaration procedure,
 			FunctionAccessExpression arguments) {
 		// Lambdas must be side effect-free, so no pre-transformation is necessary 
 		return #[]
+	}
+	
+	// Auxiliary class for procedure return handling
+	
+	private static class ProcedureReturnGuardHandler {
+		
+		final VariableDeclaration isReturnedDeclaration
+		final Set<Action> guardedActions = newHashSet // A block or for statement is guarded only once
+		// Auxiliary objects
+		protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
+		protected final extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
+		protected final extension ExpressionModelFactory expressionModelFactory = ExpressionModelFactory.eINSTANCE
+		protected final extension ActionModelFactory actionFactory = ActionModelFactory.eINSTANCE
+		
+		new(VariableDeclaration isReturnedDeclaration) {
+			this.isReturnedDeclaration = isReturnedDeclaration
+		}
+		
+		// EObject is expected to handle branches too
+		def void addReturnGuard(EObject action) {
+			val container = action.eContainer
+			
+			if (container === null) {
+				return
+			}
+			if (container instanceof Block) {
+				if (!guardedActions.contains(container)) {
+					val actions = container.actions
+					val size = actions.size
+					val firstGuardableActionIndex = action.index + 1
+					
+					if (firstGuardableActionIndex < size) {
+						val guard = createNotExpression => [
+							it.operand = isReturnedDeclaration.createReferenceExpression
+						]
+						val guardedBlock = createBlock => [
+							it.actions += actions.subList(firstGuardableActionIndex, size)
+						]
+						val branch = guard.createBranch(guardedBlock)
+						val ifStatement = createIfStatement => [
+							it.conditionals += branch
+						]
+						// Putting the guarded block to the end (guardable actions are inside)
+						actions += ifStatement
+					}
+					
+					guardedActions += container
+				}
+			}
+			if (container instanceof ForStatement) {
+				if (!guardedActions.contains(container)) {
+					val guard = createNotExpression => [
+						it.operand = isReturnedDeclaration.createReferenceExpression
+					]
+					val branch = guard.createBranch(container.body)
+					val ifStatement = createIfStatement => [
+						it.conditionals += branch
+					]
+					container.body = ifStatement
+					
+					guardedActions += container
+				}
+			}
+			
+			// Recursion to the top
+			container.addReturnGuard
+		} 
+		
 	}
 	
 }
