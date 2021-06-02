@@ -25,19 +25,20 @@ public class ProjectImporter extends HeadlessApplicationCommandHandler {
 	public ProjectImporter(IApplicationContext context, String[] appArgs) {
 		super(context, appArgs);
 	}
-	
+
 	@Override
 	public void execute() throws Exception {
-		IWorkspace workspace = ResourcesPlugin.getWorkspace(); // workspace will be created where the -data argument specifies it
-		//all "-etc" arguments will be handled like regular arguments
-		
+		IWorkspace workspace = ResourcesPlugin.getWorkspace(); // workspace will be created where the -data argument
+																// specifies it
+		// all "-etc" arguments will be handled like regular arguments
+
 		String projectName = appArgs[1];
 
 		IProjectDescription newProjectDescription = workspace.newProjectDescription(projectName);
 		IProject newProject = workspace.getRoot().getProject(projectName);
 		newProject.create(newProjectDescription, null);
 		newProject.open(null);
-		ZipFile srcZipFile = new ZipFile(workspace.getRoot().getLocation() + "/" + projectName + ".zip");
+		ZipFile srcZipFile = new ZipFile(workspace.getRoot().getLocation() + File.separator + projectName + ".zip");
 		IOverwriteQuery overwriteQuery = new IOverwriteQuery() {
 			public String queryOverwrite(String file) {
 				return ALL;
@@ -51,7 +52,7 @@ public class ProjectImporter extends HeadlessApplicationCommandHandler {
 				list);
 		op.run(new NullProgressMonitor());
 	}
-	
+
 	private static List prepareFileList(ZipFileStructureProvider structure, ZipEntry entry, List list) {
 		if (structure == null || entry == null)
 			return null;

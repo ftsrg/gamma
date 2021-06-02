@@ -1,30 +1,28 @@
 package hu.bme.mit.gamma.headless.server.entity;
 
 public class WorkspaceProjectWrapper {
-    String workspace;
-    String projectName;
+	String workspace;
+	String projectName;
 
-    public WorkspaceProjectWrapper(String workspace, String projectName) {
-        this.workspace = workspace;
-        this.projectName = projectName;
-    }
+	public WorkspaceProjectWrapper(String workspace, String projectName) {
+		this.workspace = workspace;
+		this.projectName = projectName;
+	}
 
-    public String getWorkspace() {
-        return workspace;
-    }
+	public String getWorkspace() {
+		return workspace;
+	}
 
-    public void setWorkspace(String workspace) {
-        this.workspace = workspace;
-    }
+	public void setWorkspace(String workspace) {
+		this.workspace = workspace;
+	}
 
-    public String getProjectName() {
-        return projectName;
-    }
+	public String getProjectName() {
+		return projectName;
+	}
 
-    public void setProjectName(String projectName) {
-        this.projectName = projectName;
-    }
-
-
+	public void setProjectName(String projectName) {
+		this.projectName = projectName;
+	}
 
 }

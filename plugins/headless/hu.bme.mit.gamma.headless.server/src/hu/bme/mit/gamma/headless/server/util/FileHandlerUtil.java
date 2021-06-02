@@ -18,49 +18,52 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class FileHandlerUtil {
-    private static final String DIRECTORY_OF_WORKSPACES_PROPERTY_NAME = "root.of.workspaces.path";
-    private static final String ROOT_WRAPPER_JSON = "wrapperList.json";
-    public static final String PROJECT_DESCRIPTOR_JSON = "projectDescriptor.json";
+	private static final String DIRECTORY_OF_WORKSPACES_PROPERTY_NAME = "root.of.workspaces.path";
+	private static final String ROOT_WRAPPER_JSON = "wrapperList.json";
+	public static final String PROJECT_DESCRIPTOR_JSON = "projectDescriptor.json";
+	protected static Logger logger = Logger.getLogger("GammaLogger");
 
-    public static List<WorkspaceProjectWrapper> getWrapperListFromJson() throws IOException {
-        File jsonFile = new File(getProperty(DIRECTORY_OF_WORKSPACES_PROPERTY_NAME) + ROOT_WRAPPER_JSON);
-        if (!jsonFile.exists()) {
-            Files.createFile(Paths.get(jsonFile.getPath()));
-        }
-        String jsonString = FileUtils.readFileToString(jsonFile);
-        JsonElement jElement = new JsonParser().parse(jsonString);
-        Type listType = new TypeToken<List<WorkspaceProjectWrapper>>() {
-        }.getType();
+	public static List<WorkspaceProjectWrapper> getWrapperListFromJson() throws IOException {
+		File jsonFile = new File(getProperty(DIRECTORY_OF_WORKSPACES_PROPERTY_NAME) + ROOT_WRAPPER_JSON);
+		if (!jsonFile.exists()) {
+			Files.createFile(Paths.get(jsonFile.getPath()));
+		}
+		String jsonString = FileUtils.readFileToString(jsonFile);
+		JsonElement jElement = new JsonParser().parse(jsonString);
+		Type listType = new TypeToken<List<WorkspaceProjectWrapper>>() {
+		}.getType();
 
-        return new Gson().fromJson(jElement, listType);
-    }
+		return new Gson().fromJson(jElement, listType);
+	}
 
-    public static int getPid(String workspace, String projectName) throws IOException {
-        File jsonFile = new File(getProperty(DIRECTORY_OF_WORKSPACES_PROPERTY_NAME) + workspace + "\\" + projectName + "\\" + PROJECT_DESCRIPTOR_JSON); //on Windows
-        //File jsonFile = new File(getProperty(DIRECTORY_OF_WORKSPACES_PROPERTY_NAME) + workspace + "/" + projectName + "/" + PROJECT_DESCRIPTOR_JSON); //on Linux
-        String jsonString = FileUtils.readFileToString(jsonFile);
-        JsonElement jElement = new JsonParser().parse(jsonString);
-        JsonObject jObject = jElement.getAsJsonObject();
-        return jObject.get("pid").getAsInt();
-    }
+	public static int getPid(String workspace, String projectName) throws IOException {
+		File jsonFile = new File(getProperty(DIRECTORY_OF_WORKSPACES_PROPERTY_NAME) + workspace + File.separator
+				+ projectName + File.separator + PROJECT_DESCRIPTOR_JSON);
+		String jsonString = FileUtils.readFileToString(jsonFile);
+		JsonElement jElement = new JsonParser().parse(jsonString);
+		JsonObject jObject = jElement.getAsJsonObject();
+		return jObject.get("pid").getAsInt();
+	}
 
-    public static String getProperty(String propertyName) {
-        try (InputStream input = FileHandlerUtil.class.getClassLoader().getResourceAsStream("config.properties")) {
+	public static String getProperty(String propertyName) {
+		try (InputStream input = FileHandlerUtil.class.getClassLoader().getResourceAsStream("config.properties")) {
 
-            Properties prop = new Properties();
+			Properties prop = new Properties();
 
-            if (input == null) {
-                System.out.println("Sorry, unable to find config.properties");
-                return "";
-            }
-            prop.load(input);
-            return prop.getProperty(propertyName);
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-        return "";
+			if (input == null) {
+				logger.log(Level.INFO, "Sorry, unable to find config.properties");
+				return "";
+			}
+			prop.load(input);
+			return prop.getProperty(propertyName);
+		} catch (IOException ex) {
+			ex.printStackTrace();
+		}
+		return "";
 
-    }
+	}
 }

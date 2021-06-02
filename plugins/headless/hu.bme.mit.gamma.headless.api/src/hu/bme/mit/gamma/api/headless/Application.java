@@ -6,6 +6,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -47,6 +50,7 @@ public class Application implements IApplication {
 	private GammaEntryPoint gammaEntryPoint;
 	private ProjectImporter projectImporter;
 	private WorkspaceGenerator workspaceGenerator;
+	protected Logger logger = Logger.getLogger("GammaLogger");
 
 	@Override
 	public Object start(final IApplicationContext context) throws Exception {
@@ -55,7 +59,7 @@ public class Application implements IApplication {
 		final String[] appArgs = (String[]) args.get(IApplicationContext.APPLICATION_ARGS);
 
 		if (appArgs.length == 0) {
-			System.out.println("Arguments must be given!");
+			logger.log(Level.WARNING, "Arguments must be given!");
 			return null;
 		} else {
 			switch (appArgs[0]) {

@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.logging.Level;
 
 import org.apache.commons.io.FileUtils;
 import org.eclipse.core.resources.IContainer;
@@ -41,9 +42,9 @@ import hu.bme.mit.gamma.ui.GammaApi;
 import hu.bme.mit.gamma.ui.GammaApi.ResourceSetCreator;
 
 public class GammaEntryPoint extends HeadlessApplicationCommandHandler {
-	
+
 	private static final String UNDER_OPERATION_PROPERTY = "underOperation";
-	
+
 	public GammaEntryPoint(IApplicationContext context, String[] appArgs) {
 		super(context, appArgs);
 	}
@@ -56,8 +57,7 @@ public class GammaEntryPoint extends HeadlessApplicationCommandHandler {
 		TraceLanguageStandaloneSetup.doSetup();
 		PropertyLanguageStandaloneSetup.doSetup();
 		GenModelStandaloneSetup.doSetup();
-		
-		
+
 		if (appArgs.length >= 1) {
 			String ggenFilePath = URI.decode(appArgs[1]);
 			File ggenFile = new File(ggenFilePath);
@@ -104,24 +104,27 @@ public class GammaEntryPoint extends HeadlessApplicationCommandHandler {
 
 				private Injector getInjector() {
 					if (injector == null) {
-						injector = new StatechartLanguageStandaloneSetupGenerated().createInjectorAndDoEMFRegistration();
+						injector = new StatechartLanguageStandaloneSetupGenerated()
+								.createInjectorAndDoEMFRegistration();
 					}
 					return injector;
 				}
+
 				public ResourceSet createResourceSet() {
 					Injector injector = getInjector();
 					XtextResourceSet resourceSet = injector.getInstance(XtextResourceSet.class);
 					return resourceSet;
 				}
 			});
-			// Commented due to repeatedly throwing exceptions. The application works without it.
-			//workspace.save(true, progressMonitor);
+			// Commented due to repeatedly throwing exceptions. The application works
+			// without it.
+			// workspace.save(true, progressMonitor);
 
 			beforeExitOperation(projectDescriptorPath);
 		}
-		
+
 	}
-	
+
 	private boolean contains(File folder, File file) {
 		File parentFolder = file.getParentFile();
 		if (parentFolder == null) {
@@ -132,7 +135,7 @@ public class GammaEntryPoint extends HeadlessApplicationCommandHandler {
 		}
 		return contains(folder, parentFolder);
 	}
-    
+
 	private void copyDirectory(File sourceFolder, IContainer destinationFolder) throws Exception {
 		for (File file : sourceFolder.listFiles()) {
 			if (file.isDirectory()) {
@@ -163,19 +166,19 @@ public class GammaEntryPoint extends HeadlessApplicationCommandHandler {
 		}
 		return getContainingProject(parentFolder);
 	}
-	
+
 	private void beforeExitOperation(String projectDescriptorPath) {
 		File descriptor = new File(projectDescriptorPath);
 		if (descriptor != null) {
 			try {
-				System.out.println("ENDING");
+				logger.log(Level.INFO, "ENDING");
 				updateUnderOperationStatus(descriptor.getPath());
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
 	}
-    
+
 	private void updateUnderOperationStatus(String projectDescriptorPath) throws IOException {
 		File jsonFile = new File(projectDescriptorPath);
 		String jsonString = FileUtils.readFileToString(jsonFile);
@@ -189,5 +192,5 @@ public class GammaEntryPoint extends HeadlessApplicationCommandHandler {
 		FileUtils.writeStringToFile(jsonFile, resultingJson);
 
 	}
-	
+
 }
