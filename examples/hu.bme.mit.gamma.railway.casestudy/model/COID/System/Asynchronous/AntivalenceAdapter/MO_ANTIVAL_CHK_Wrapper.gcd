@@ -1,0 +1,18 @@
+package mo_antivalchk
+
+import "Interface/Interfaces.gcd"
+import "MO_ANTIVAL_CHK.gcd"
+
+cascade AntivalenceWrapper(P_TAROLAS : boolean) [
+	port T : requires I_Timeout
+	port Signals : requires P_N_Interface
+	port OutSignals : provides E_T_F_Interface
+	port Execute : provides I_Execute
+] {
+	component antivalence : AntivalenceChecker(P_TAROLAS)
+	
+	bind T -> antivalence.T
+	bind Signals -> antivalence.Signals
+	bind OutSignals -> antivalence.OutSignals
+	bind Execute -> antivalence.Execute
+}

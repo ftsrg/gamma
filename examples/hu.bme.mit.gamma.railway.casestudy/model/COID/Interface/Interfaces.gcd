@@ -24,3 +24,6 @@ interface I_Toggle {
 interface I_Timeout {
 	out event ^timeout
 }
+interface I_Execute {
+	out event ^execute
+}

@@ -1,0 +1,16 @@
+import "Synchronous/ANTIVAL_CHK_COID_System.gcd"
+
+analysis {
+	component : AntivalenceChecker_System
+	language : XSTS-UPPAAL
+	interaction-coverage
+	optimize : false
+}
+
+verification {
+	language : XSTS-UPPAAL
+	file : "ANTIVAL_CHK_COID_System.xml"
+	property-file : ".ANTIVAL_CHK_COID_System.gpd"
+	optimize : true
+	test-language : java
+}

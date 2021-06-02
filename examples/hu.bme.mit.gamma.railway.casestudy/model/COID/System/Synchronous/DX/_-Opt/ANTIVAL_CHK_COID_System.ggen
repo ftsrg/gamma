@@ -1,0 +1,16 @@
+import "Synchronous/ANTIVAL_CHK_COID_System.gcd"
+
+analysis {
+	component : AntivalenceChecker_System
+	language : Theta
+	interaction-coverage
+	optimize : false
+}
+
+verification {
+	language : Theta
+	file : "ANTIVAL_CHK_COID_System.xsts"
+	property-file : ".ANTIVAL_CHK_COID_System.gpd"
+	optimize : true
+	test-language : java
+}

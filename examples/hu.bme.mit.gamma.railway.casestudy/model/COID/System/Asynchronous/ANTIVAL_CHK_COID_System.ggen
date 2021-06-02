@@ -1,0 +1,31 @@
+import "ANTIVAL_CHK_COID_System.gcd"
+
+//code {
+//	component : AntivalenceChecker_System
+//	language : java
+//}
+
+analysis {
+	component : AntivalenceChecker_System
+	language : UPPAAL
+	constraint : {
+		antival_chk_I_FT : {
+			minimum-orchestrating-period : 497 ms
+			maximum-orchestrating-period : 497 ms
+		}
+		antival_chk_I_CR : {
+			minimum-orchestrating-period : 499 ms
+			maximum-orchestrating-period : 499 ms
+		}
+		coid : {
+			minimum-orchestrating-period : 501 ms
+			maximum-orchestrating-period : 501 ms
+		}
+	}
+	interaction-coverage {
+		port-include : [ antival_chk_I_CR.Execute, coid.Execute]
+	}
+	state-coverage
+	optimize : true
+	property-file : "ANTIVAL_CHK_COID_System.gpd"
+}

@@ -518,6 +518,16 @@ class GammaStatechartAnnotator {
 			interactions += new Interaction(raiseEventAction, receivingTransition,
 				variablePair, raiseEventAction.sendingId, receivingTransition.receivingId)
 		}
+		
+		// Due to well-formedness constraints, unattended raise event actions
+		// have to have the correct number of arguments - they get the 0 (reset) id
+		val unattendedRaiseEventActions = matches.map[it.raiseEventAction.containingStatechart].toSet
+				.map[it.getAllContentsOfType(RaiseEventAction)].flatten
+				.filter[raisedEvents.contains(it.event)].toSet
+		unattendedRaiseEventActions -= relevantMatches.map[it.raiseEventAction].toSet
+		for (unattendedRaiseEventAction : unattendedRaiseEventActions) {
+			unattendedRaiseEventAction.arguments += 0.toIntegerLiteral
+		}
 	}
 	
 	// Data-flow coverage
