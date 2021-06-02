@@ -20,7 +20,7 @@ public class Application implements IApplication {
 		final Map<?, ?> args = context.getArguments();
 		final String[] appArgs = (String[]) args.get(IApplicationContext.APPLICATION_ARGS);
 
-		if (appArgs.length == 0) {
+		if (appArgs.length == 0) { //Either a "workspace", "import" or "gamma" argument is expected
 			logger.log(Level.WARNING, "Arguments must be given!");
 			return null;
 		} else {

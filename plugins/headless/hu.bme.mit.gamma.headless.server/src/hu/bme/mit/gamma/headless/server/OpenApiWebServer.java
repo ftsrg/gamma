@@ -36,18 +36,18 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class OpenApiWebServer extends AbstractVerticle {
-	public static final String APPLICATION_JSON = "application/json";
-	public static final String MESSAGE = "message";
-	public static final String WORKSPACE = "workspace";
-	public static final String PARSED_PARAMETERS = "parsedParameters";
-	public static final String PROJECT_NAME = "projectName";
+	private static final String APPLICATION_JSON = "application/json";
+	private static final String MESSAGE = "message";
+	private static final String WORKSPACE = "workspace";
+	private static final String PARSED_PARAMETERS = "parsedParameters";
+	private static final String PROJECT_NAME = "projectName";
 	HttpServer server;
 	private static final String DIRECTORY_OF_WORKSPACES_PROPERTY_NAME = "root.of.workspaces.path";
 
-	public static final String ANSI_RESET = "\u001B[0m";
-	public static final String ANSI_GREEN = "\u001B[32m";
-	public static final String ANSI_RED = "\u001B[31m";
-	public static final String ANSI_YELLOW = "\u001B[33m";
+	private static final String ANSI_RESET = "\u001B[0m";
+	private static final String ANSI_GREEN = "\u001B[32m";
+	private static final String ANSI_RED = "\u001B[31m";
+	private static final String ANSI_YELLOW = "\u001B[33m";
 
 	protected static Logger logger = Logger.getLogger("GammaLogger");
 
@@ -74,9 +74,7 @@ public class OpenApiWebServer extends AbstractVerticle {
 						errorHandlerPOJO = getErrorObject(workspace, projectName);
 						if (errorHandlerPOJO.getErrorObject() == null) {
 							success = true;
-							ProcessBuilderCLI.runGammaOperations(projectName, workspace, filePath); // on Windows
-							// ProcessBuilderCLI.runGammaOperations(projectName, workspace,
-							// filePath.replace("_", "/")); //on Linux
+							ProcessBuilderCLI.runGammaOperations(projectName, workspace, filePath);
 							logger.log(Level.INFO,
 									ANSI_YELLOW + "Operation \"runOperation\": parameters passed to CLI." + ANSI_RESET);
 						}
@@ -141,10 +139,7 @@ public class OpenApiWebServer extends AbstractVerticle {
 							} else {
 								Files.move(Paths.get(f.uploadedFileName()),
 										Paths.get(FileHandlerUtil.getProperty(DIRECTORY_OF_WORKSPACES_PROPERTY_NAME)
-												+ workspace + File.separator + f.fileName())); // on Windows
-								// Files.move(Paths.get(f.uploadedFileName()), Paths.get(
-								// FileHandlerUtil.getProperty(DIRECTORY_OF_WORKSPACES_PROPERTY_NAME)
-								// + workspace + "/" + f.fileName())); //on Linux
+												+ workspace + File.separator + f.fileName()));
 								String projectName = f.fileName().substring(0, f.fileName().lastIndexOf("."));
 								ProcessBuilderCLI.createEclipseProject(projectName, workspace, ownerContact);
 								logger.log(Level.INFO, ANSI_YELLOW
@@ -296,10 +291,7 @@ public class OpenApiWebServer extends AbstractVerticle {
 							} else {
 								Files.move(Paths.get(f.uploadedFileName()),
 										Paths.get(FileHandlerUtil.getProperty(DIRECTORY_OF_WORKSPACES_PROPERTY_NAME)
-												+ workspace + File.separator + f.fileName())); // on Windows
-								// Files.move(Paths.get(f.uploadedFileName()), Paths.get(
-								// FileHandlerUtil.getProperty(DIRECTORY_OF_WORKSPACES_PROPERTY_NAME)
-								// + workspace + "/" + f.fileName())); //on Linux
+												+ workspace + File.separator + f.fileName()));
 								String projectName = f.fileName().substring(0, f.fileName().lastIndexOf("."));
 								ProcessBuilderCLI.createEclipseProject(projectName, workspace, ownerContact);
 
@@ -316,11 +308,8 @@ public class OpenApiWebServer extends AbstractVerticle {
 						errorHandlerPOJO = getErrorObject(workspace, fileName);
 						if (errorHandlerPOJO.getErrorObject() == null) {
 							successGgen = true;
-							ProcessBuilderCLI.runGammaOperations(fileName, workspace, ggenPath.replace("/", File.separator)); // on
-																													// Windows
-							// ProcessBuilderCLI.runGammaOperations(projectName, workspace, ggenPath); //on
-							// Linux
-
+							ProcessBuilderCLI.runGammaOperations(fileName, workspace,
+									ggenPath.replace("/", File.separator));
 							logger.log(Level.INFO, ANSI_YELLOW
 									+ "Operation \"addAndRund\": parameters passed to CLI, running ggen." + ANSI_RESET);
 						}
@@ -423,10 +412,7 @@ public class OpenApiWebServer extends AbstractVerticle {
 	private static void listWorkspacesAndProjects() throws IOException {
 		if (FileHandlerUtil.getWrapperListFromJson() != null) {
 			List<WorkspaceProjectWrapper> yourList = FileHandlerUtil.getWrapperListFromJson();
-			// System.out.println();
-			// System.out.println(ANSI_GREEN + "Headless Gamma OpenAPI server is currently
-			// running." + ANSI_RESET);
-			logger.log(Level.INFO, "\n Currently ongoing operations: ");
+			logger.log(Level.INFO, System.lineSeparator() + "Currently ongoing operations: ");
 			boolean noOp = true;
 			for (int i = 0; i < yourList.size(); i++) {
 				if (yourList.get(i).getProjectName() != null) {
@@ -455,8 +441,6 @@ public class OpenApiWebServer extends AbstractVerticle {
 
 	public static void main(String[] args) {
 		Vertx vertx = Vertx.vertx();
-		// vertx.setPeriodic(10000, aLong -> System.out.println("Timer 1 fired: " +
-		// aLong));
 		vertx.setPeriodic(10000, aLong -> {
 			try {
 				listWorkspacesAndProjects();
