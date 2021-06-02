@@ -151,9 +151,7 @@ public class Provider {
 			deleteDirectory(metadataDirectory);
 		}
 		String snapPath = File.separator + ".metadata" + File.separator + ".plugins" + File.separator
-				+ "org.eclipse.core.resources" + File.separator + "0.snap"; // on Windows
-		// String snapPath = "/.metadata/.plugins/org.eclipse.core.resources/0.snap";
-		// //on Linux
+				+ "org.eclipse.core.resources" + File.separator + "0.snap";
 		File snapFile = new File(
 				FileHandlerUtil.getProperty(DIRECTORY_OF_WORKSPACES_PROPERTY_NAME) + workspace + snapPath);
 		if (snapFile.exists()) {
