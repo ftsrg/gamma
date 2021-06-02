@@ -13,8 +13,8 @@ cascade CoidWrapper [
 ] {
 	component coid : bJbCOID_allapotgep
 	
-	bind I -> coid.I
-	bind T -> coid.T
+//	bind I -> coid.I
+//	bind T -> coid.T
 	bind I_FT -> coid.I_FT
 	bind I_CR -> coid.I_CR
 	bind StateMachine_OutPort -> coid.StateMachine_OutPort
