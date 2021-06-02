@@ -1,7 +1,5 @@
 # Exporting Gamma as headless Eclipse
 
-
-
 This document describes how to export Gamma as a headless Eclipse application.
 
 ## Step 1 - Setting up the environment
@@ -13,7 +11,6 @@ The processes and steps described in this document were executed on Ubuntu, vers
  - Eclipse - this document uses the required plugins and Eclipse version detailed in the Gamma setup tutorial, which can be found here: https://github.com/ftsrg/gamma. Please note that installing Gamma is also required. The installation is detailed in the aformentioned link.
  - Docker - a tutorial can be found here: https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-18-04
 
- 
 Additionally, Postman can be installed to test requests to the webserver.
 
 **Required packages**
@@ -28,15 +25,9 @@ Additionally, cURL can be installed to test requests to the webserver, using the
 
 ## Step 2 - Importing projects
 
-
 Import the `hu.bme.mit.gamma.headless.api` project to your workspace, which already contains the necessary Gamma plugins that you want to export.
 
-
-
 The `hu.bme.mit.gamma.headless.api` creates the headless version of Gamma. This application can be exported using the product file found in the META-INF folder of the plugin, named `gamma.api.headless.product`.
-
-
-
 
 ## Step 3 - Modifying Target Platform
 Open the target platform via Window -> Preferences -> Plug-in Development -> Target Platform.
@@ -55,16 +46,13 @@ Edit the target platform by modifying its content. For the following plugins, se
  
  - org.apache.xerces 2.12.1
  
- 
-
 **If you have Gamma installed into your host Eclipse:**
-
 
 Make sure to remove the Gamma plugins from the required plugin list of your target platform. You can do this by removing them from the Content list, or deleting the corresponding lines in the source file.
 
 ## Step 4 - Exporting the products
 
-Select the product file named `gamma.api.headless.product` to begin the exporting process. It can be found in the "product" folder inside the `hu.bme.mit.gamma.headless.api`  project.
+Select the product file named `gamma.api.headless.product` to begin the exporting process. It can be found in the `product` folder inside the `hu.bme.mit.gamma.headless.api`  project.
 
 In the Overview tab, under `Product Definition`, check if the appropriate `Application` is selected for the `Product`. The application is `gamma.api.headless.application`  for  `gamma.api.headless.product`.
 
@@ -144,6 +132,3 @@ This means that the compiler compliance level is set too high. Open the Eclipse 
  9. In a terminal, run a docker container from the gamma image using the `docker run -it -p 8080:8080 --network host --name gamma_container gamma:latest` command. This command will bind the localhost:8080 address of the host machine to the Docker container, forwarding commands to the webserver running inside. The container is named "gamma_container", and starts in interactive mode, allowing for CLI access. The last parameter is the image, which is `gamma:latest`, which indicates that the latest Gamma image build is used.
  
 It is possible to change the port binding if the user wishes, but the webserver listens to port 8080. In the port binding parameter, the part before the ":" stands for the host port, and the one after is the container port. So changing the parameter to "5555:8080" is valid, but "8080:5555" would result in communication failure.  Names of the image and container can also be changed.
-
-
-
