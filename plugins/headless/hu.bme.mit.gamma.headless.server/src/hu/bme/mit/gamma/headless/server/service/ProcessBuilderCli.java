@@ -18,10 +18,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
-import static hu.bme.mit.gamma.headless.server.OpenApiWebServer.ANSI_RESET;
-import static hu.bme.mit.gamma.headless.server.OpenApiWebServer.ANSI_YELLOW;
-
-public class ProcessBuilderCLI {
+public class ProcessBuilderCli {
 
 	private static final String DIRECTORY_OF_WORKSPACES_PROPERTY_NAME = "root.of.workspaces.path";
 
