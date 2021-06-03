@@ -20,7 +20,7 @@ import joptsimple.internal.Strings;
 import hu.bme.mit.gamma.headless.server.service.Provider;
 import hu.bme.mit.gamma.headless.server.service.Validator;
 import hu.bme.mit.gamma.headless.server.entity.WorkspaceProjectWrapper;
-import hu.bme.mit.gamma.headless.server.service.ProcessBuilderCLI;
+import hu.bme.mit.gamma.headless.server.service.ProcessBuilderCli;
 import hu.bme.mit.gamma.headless.server.util.FileHandlerUtil;
 
 import java.io.File;
@@ -74,7 +74,7 @@ public class OpenApiWebServer extends AbstractVerticle {
 						errorHandlerPOJO = getErrorObject(workspace, projectName);
 						if (errorHandlerPOJO.getErrorObject() == null) {
 							success = true;
-							ProcessBuilderCLI.runGammaOperations(projectName, workspace, filePath);
+							ProcessBuilderCli.runGammaOperations(projectName, workspace, filePath);
 							logger.log(Level.INFO,
 									ANSI_YELLOW + "Operation \"runOperation\": parameters passed to CLI." + ANSI_RESET);
 						}
@@ -141,7 +141,7 @@ public class OpenApiWebServer extends AbstractVerticle {
 										Paths.get(FileHandlerUtil.getProperty(DIRECTORY_OF_WORKSPACES_PROPERTY_NAME)
 												+ workspace + File.separator + f.fileName()));
 								String projectName = f.fileName().substring(0, f.fileName().lastIndexOf("."));
-								ProcessBuilderCLI.createEclipseProject(projectName, workspace, ownerContact);
+								ProcessBuilderCli.createEclipseProject(projectName, workspace, ownerContact);
 								logger.log(Level.INFO, ANSI_YELLOW
 										+ "Operation \"addProject\": parameters passed to CLI." + ANSI_RESET);
 							}
@@ -165,7 +165,7 @@ public class OpenApiWebServer extends AbstractVerticle {
 
 					String workspaceUUID = "";
 					try {
-						workspaceUUID = ProcessBuilderCLI.createWorkspaceForUser();
+						workspaceUUID = ProcessBuilderCli.createWorkspaceForUser();
 						logger.log(Level.INFO,
 								ANSI_YELLOW + "Operation \"addWorkspace\": parameters passed to CLI." + ANSI_RESET);
 					} catch (IOException | InterruptedException e) {
@@ -191,7 +191,7 @@ public class OpenApiWebServer extends AbstractVerticle {
 					try {
 						errorHandlerPOJO = getErrorObject(workspace, projectName);
 						if (errorHandlerPOJO.getStatusCode() == 503) {
-							ProcessBuilderCLI.stopOperation(projectName, workspace);
+							ProcessBuilderCli.stopOperation(projectName, workspace);
 							logger.log(Level.INFO, ANSI_YELLOW
 									+ "Operation \"stopOperation\": parameters passed to CLI." + ANSI_RESET);
 							success = true;
@@ -293,7 +293,7 @@ public class OpenApiWebServer extends AbstractVerticle {
 										Paths.get(FileHandlerUtil.getProperty(DIRECTORY_OF_WORKSPACES_PROPERTY_NAME)
 												+ workspace + File.separator + f.fileName()));
 								String projectName = f.fileName().substring(0, f.fileName().lastIndexOf("."));
-								ProcessBuilderCLI.createEclipseProject(projectName, workspace, ownerContact);
+								ProcessBuilderCli.createEclipseProject(projectName, workspace, ownerContact);
 
 								logger.log(Level.INFO, ANSI_YELLOW
 										+ "Operation \"addAndRun\": parameters passed to CLI, importing project. "
@@ -308,7 +308,7 @@ public class OpenApiWebServer extends AbstractVerticle {
 						errorHandlerPOJO = getErrorObject(workspace, fileName);
 						if (errorHandlerPOJO.getErrorObject() == null) {
 							successGgen = true;
-							ProcessBuilderCLI.runGammaOperations(fileName, workspace,
+							ProcessBuilderCli.runGammaOperations(fileName, workspace,
 									ggenPath.replace("/", File.separator));
 							logger.log(Level.INFO, ANSI_YELLOW
 									+ "Operation \"addAndRund\": parameters passed to CLI, running ggen." + ANSI_RESET);
