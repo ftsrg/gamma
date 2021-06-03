@@ -129,7 +129,8 @@ class FileUtil {
     	folder.mkdirs();
     	// Searching the trace folder for highest id
     	for (File file: folder.listFiles()) {
-    		if (file.getName().matches(fileName + "[0-9]+\\..*")) {
+    		if (file.getName().matches(fileName + "[0-9]+\\." + fileExtension)) {
+    			// File extension needed to distinguish .get and .json
     			val id = file.getName().substring(fileName.length(), file.getName().length() - ("." + fileExtension).length());
     			usedIds.add(Integer.parseInt(id));
     		}

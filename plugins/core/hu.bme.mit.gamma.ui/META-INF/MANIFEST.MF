@@ -6,7 +6,8 @@ Bundle-Version: 2.5.0.qualifier
 Bundle-Vendor: BME-FTSRG
 Automatic-Module-Name: hu.bme.mit.gamma.ui
 Bundle-RequiredExecutionEnvironment: JavaSE-11
-Require-Bundle: org.eclipse.equinox.registry,
+Require-Bundle: com.google.gson,
+ org.eclipse.equinox.registry,
  org.eclipse.core.resources,
  org.yakindu.sct.model.sgraph,
  de.uni_paderborn.uppaal,

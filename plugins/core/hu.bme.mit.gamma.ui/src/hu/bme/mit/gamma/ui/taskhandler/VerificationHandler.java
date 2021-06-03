@@ -27,6 +27,9 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
 import hu.bme.mit.gamma.genmodel.model.Verification;
 import hu.bme.mit.gamma.plantuml.serialization.SvgSerializer;
@@ -44,9 +47,11 @@ import hu.bme.mit.gamma.trace.testgeneration.java.TestGenerator;
 import hu.bme.mit.gamma.trace.util.TraceUtil;
 import hu.bme.mit.gamma.transformation.util.GammaFileNamer;
 import hu.bme.mit.gamma.transformation.util.reducer.CoveredPropertyReducer;
+import hu.bme.mit.gamma.ui.taskhandler.VerificationHandler.ExecutionTraceSerializer.VerificationResult;
 import hu.bme.mit.gamma.uppaal.verification.UppaalVerification;
 import hu.bme.mit.gamma.uppaal.verification.XstsUppaalVerification;
 import hu.bme.mit.gamma.util.FileUtil;
+import hu.bme.mit.gamma.verification.result.ThreeStateBoolean;
 import hu.bme.mit.gamma.verification.util.AbstractVerification;
 import hu.bme.mit.gamma.verification.util.AbstractVerifier.Result;
 
@@ -101,6 +106,7 @@ public class VerificationHandler extends TaskHandler {
 		// String locations
 		queryFileLocations.addAll(verification.getQueryFiles());
 		// Retrieved traces
+		List<VerificationResult> retrievedVerificationResults = new ArrayList<VerificationResult>();
 		List<ExecutionTrace> retrievedTraces = new ArrayList<ExecutionTrace>();
 		
 		// Execution based on property models
@@ -120,7 +126,10 @@ public class VerificationHandler extends TaskHandler {
 			fileUtil.saveString(queryFile, serializedFormula);
 			queryFile.deleteOnExit();
 			
-			ExecutionTrace trace = execute(verificationTask, modelFile, queryFile, retrievedTraces, isOptimize);
+			Result result = execute(verificationTask, modelFile, queryFile, retrievedTraces, isOptimize);
+			ExecutionTrace trace = result.getTrace();
+			ThreeStateBoolean verificationResult = result.getResult();
+			retrievedVerificationResults.add(new VerificationResult(serializedFormula, verificationResult));
 			
 			// Checking if some of the unchecked properties are already covered
 			if (trace != null && isOptimize) {
@@ -141,11 +150,14 @@ public class VerificationHandler extends TaskHandler {
 			logger.log(Level.INFO, "Checking " + queryFileLocation + "...");
 			File queryFile = new File(queryFileLocation);
 			execute(verificationTask, modelFile, queryFile,	retrievedTraces, isOptimize);
+			// No result here (yet) as UPPAAL returns multiple traces in one ExecutionTrace
+			// It could be implemented using fileUtil.loadString
 		}
 		// Optimization again on the retrieved tests
 		if (isOptimize) {
 			traceUtil.removeCoveredExecutionTraces(retrievedTraces);
 		}
+		
 		// Serializing
 		String testFolderUri = serializeTest ? this.testFolderUri : null;
 		String testFileName = serializeTest ? this.testFileName : null;
@@ -153,9 +165,13 @@ public class VerificationHandler extends TaskHandler {
 			serializer.serialize(targetFolderUri, traceFileName, svgFileName,
 					testFolderUri, testFileName, packageName, trace);
 		}
+		// Note that .get and .json postfix ids will not match if optimization is applied
+		for (VerificationResult verificationResult : retrievedVerificationResults) {
+			serializer.serialize(targetFolderUri, traceFileName, verificationResult);
+		}
 	}
 
-	protected ExecutionTrace execute(AbstractVerification verificationTask, File modelFile,
+	protected Result execute(AbstractVerification verificationTask, File modelFile,
 			File queryFile, List<ExecutionTrace> retrievedTraces, boolean isOptimize) {
 		Result result = verificationTask.execute(modelFile, queryFile);
 		ExecutionTrace trace = result.getTrace();
@@ -175,7 +191,7 @@ public class VerificationHandler extends TaskHandler {
 				retrievedTraces.add(trace);
 			}
 		}
-		return trace;
+		return result;
 	}
 	
 	private void setVerification(Verification verification) {
@@ -211,6 +227,7 @@ public class VerificationHandler extends TaskHandler {
 		public static ExecutionTraceSerializer INSTANCE = new ExecutionTraceSerializer();
 		protected ExecutionTraceSerializer() {}
 		//
+		protected final Gson gson = new GsonBuilder().disableHtmlEscaping().create();
 		protected final FileUtil fileUtil = FileUtil.INSTANCE;
 		protected final ModelSerializer serializer = ModelSerializer.INSTANCE;
 		
@@ -254,6 +271,29 @@ public class VerificationHandler extends TaskHandler {
 				fileUtil.saveString(testFolderUri + File.separator + packageUri +
 					File.separator + className + ".java", testCode);
 			}
+		}
+		
+		public void serialize(String resultFolderUri, String resultFileName,
+				VerificationResult result) throws IOException {
+			File folder = new File(resultFolderUri);
+			Entry<String, Integer> fileNamePair = fileUtil.getFileName(folder,
+					resultFileName, GammaFileNamer.VERIFICATION_RESULT_EXTENSION);
+			String fileName = fileNamePair.getKey();
+			String jsonResult = gson.toJson(result);
+			fileUtil.saveString(resultFolderUri + File.separator + fileName, jsonResult);
+		}
+		
+		@SuppressWarnings("unused")
+		public static class VerificationResult {
+			
+			private String query;
+			private ThreeStateBoolean result;
+			
+			public VerificationResult(String query, ThreeStateBoolean result) {
+				this.query = query;
+				this.result = result;
+			}
+			
 		}
 		
 	}
