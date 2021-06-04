@@ -39,10 +39,9 @@ RUN mkdir eclipse
 ADD eclipse /home/eclipse
 RUN mkdir server
 ADD OpenAPIGammaWrapper /home/server
-RUN mkdir generator
-ADD generator /home/generator
 RUN mkdir workspaces
 WORKDIR "/home/server/gamma-openapi-vertx"
 RUN mvn package
+EXPOSE 8080
 ENTRYPOINT mvn exec:java
 #WORKDIR "/home"

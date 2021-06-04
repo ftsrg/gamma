@@ -39,3 +39,4 @@ buildNumber.properties
 *.idea
 
 file-uploads/
+/wrapperList.json
