@@ -51,8 +51,7 @@ class ThetaVerification extends AbstractVerification {
 			callables += new InterruptableCallable<Result> {
 				override Result call() {
 					logger.log(Level.INFO, '''Starting Theta on thread «Thread.currentThread.name» with "«parameter»"''')
-					val result = verifier.verifyQuery(
-						gammaPackage, parameter, modelFile, queries, true, true)
+					val result = verifier.verifyQuery(gammaPackage, parameter, modelFile, queries)
 					logger.log(Level.INFO, '''Thread «Thread.currentThread.name» with "«parameter»" has won''')
 					return result
 				}

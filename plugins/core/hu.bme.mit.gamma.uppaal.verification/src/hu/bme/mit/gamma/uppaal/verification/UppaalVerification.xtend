@@ -15,7 +15,7 @@ class UppaalVerification extends AbstractVerification {
 		val packageFileName = fileName.gammaUppaalTraceabilityFileName
 		val gammaTrace = ecoreUtil.normalLoad(modelFile.parent, packageFileName)
 		val verifier = new UppaalVerifier
-		return verifier.verifyQuery(gammaTrace, "-C -T -t0", modelFile, queryFile, true, true)
+		return verifier.verifyQuery(gammaTrace, "-C -T -t0", modelFile, queryFile)
 	}
 
 }

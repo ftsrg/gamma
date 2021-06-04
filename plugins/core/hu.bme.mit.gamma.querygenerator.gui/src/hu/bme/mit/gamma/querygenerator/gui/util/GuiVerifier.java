@@ -73,7 +73,7 @@ public class GuiVerifier extends SwingWorker<ThreeStateBoolean, Boolean> {
 			// Verification starts
 			verifier = getController().createVerifier();
 			Result result = verifier.verifyQuery(traceability, getController().getParameters(),
-					new File(getController().getModelFile()), originalQueries, true, false);
+					new File(getController().getModelFile()), originalQueries);
 			traceModel = result.getTrace();
 			if (traceModel != null) {
 				// No trace
