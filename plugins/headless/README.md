@@ -34,6 +34,8 @@ To use this feature, Gamma has to be exported using the product file found in `h
 
 After exporting, the webserver has to be started. The server can be found in `hu.bme.mit.gamma.headless.server`.  In Eclipse, this can be done by right-clicking on the project, and selecting _Run As > Java Application_. Select `OpenApiWebServer` from the list of applications, and run.
 
+Alternatively, the server can be started from terminal using Maven commands. Navigate to the folder containing the `pom.xml` file and enter the `mvn package` command. After the process finishes, enter `mvn exec:java`, and the server should start.
+
 Before running the server, make sure to configure the paths found in `config.properties`.
 - Set `headless.gamma.path` variable to the location of the exported `eclipse.exe` (or equivalent binary on Linux systems), and
 - set the `root.of.workspaces.path` variable to the desired location of workspaces.
