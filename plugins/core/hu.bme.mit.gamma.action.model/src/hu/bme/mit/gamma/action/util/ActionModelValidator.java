@@ -114,7 +114,6 @@ public class ActionModelValidator extends ExpressionModelValidator {
 				"A return statement must be the final statement in a block",
 					new ReferenceInfo(ActionModelPackage.Literals.RETURN_STATEMENT__EXPRESSION, statement)));
 		}
-		// TODO Check every possible path to see if a procedure can be exited without a return statement
 		return validationResultMessages;
 	}
 	
@@ -124,6 +123,7 @@ public class ActionModelValidator extends ExpressionModelValidator {
 		for (ReturnStatement statement : ecoreUtil.getAllContentsOfType(block, ReturnStatement.class)) {
 			validationResultMessages.addAll(checkReturnStatementPosition(statement));
 		}
+		// TODO Check every possible path to see if a procedure can be exited without a return statement
 		return validationResultMessages;
 	}
 	
@@ -142,10 +142,11 @@ public class ActionModelValidator extends ExpressionModelValidator {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		Expression guard = branch.getGuard();
 		EObject container = branch.eContainer();
-		// check if container is a SwitchStatement
+		// Check if container is a SwitchStatement
 		if (container instanceof SwitchStatement) {
 			SwitchStatement switchStatement = (SwitchStatement) container;
-			if (!typeDeterminator.equalsType(switchStatement.getControlExpression(), guard) && !(branch.getGuard() instanceof DefaultExpression)) {
+			if (!typeDeterminator.equalsType(switchStatement.getControlExpression(), guard) &&
+					!(guard instanceof DefaultExpression)) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 						"The guard must have the same type as the control expression",
 						new ReferenceInfo(ActionModelPackage.Literals.BRANCH__GUARD)));
@@ -163,13 +164,13 @@ public class ActionModelValidator extends ExpressionModelValidator {
 	
 	public Collection<ValidationResultMessage> checkForStatement(ForStatement forStatement) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		// parameter check
+		// Parameter check
 		if (!typeDeterminator.isInteger(forStatement.getParameter().getType())) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 					"The type of parameter must be integer",
 					new ReferenceInfo(ActionModelPackage.Literals.FOR_STATEMENT__PARAMETER)));
 		}
-		// range check 
+		// Range check 
 		if (!(typeDeterminator.getType(forStatement.getRange()) instanceof IntegerRangeTypeDefinition)) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 					"The type of range must be integer range",
