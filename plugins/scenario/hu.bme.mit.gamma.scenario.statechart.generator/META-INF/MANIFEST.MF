@@ -15,7 +15,6 @@ Require-Bundle: com.google.guava,
  hu.bme.mit.gamma.statechart.model,
  hu.bme.mit.gamma.scenario.model,
  hu.bme.mit.gamma.action.language,
- hu.bme.mit.gamma.ui,
  org.eclipse.core.resources,
  org.eclipse.core.runtime,
  hu.bme.mit.gamma.scenario.statechart.util

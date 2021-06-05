@@ -10,7 +10,8 @@ Bundle-RequiredExecutionEnvironment: JavaSE-11
 Export-Package: hu.bme.mit.gamma.scenario.model,
  hu.bme.mit.gamma.scenario.model.impl,
  hu.bme.mit.gamma.scenario.model.util,
- hu.bme.mit.gamma.scenario.util
+ hu.bme.mit.gamma.scenario.util,
+ hu.bme.mit.gamma.scenario.model.derivedfeatures
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.emf.ecore;visibility:=reexport,
  hu.bme.mit.gamma.expression.model;visibility:=reexport,

@@ -19,10 +19,11 @@ import "http://www.mit.bme.hu/gamma/trace/Model" as trace
 import "http://www.mit.bme.hu/gamma/property/Model" as property
 import "http://www.mit.bme.hu/gamma/expression/Model" as expression
 import "http://www.mit.bme.hu/gamma/xSTS/Model" as xsts
+import "http://www.mit.bme.hu/gamma/scenario/Model" as scenario
 
 import "http://www.yakindu.org/sct/sgraph/2.0.0" as sgraph
 import "http://www.yakindu.org/sct/statechart/SText" as stext
-import "http://www.yakindu.org/base/types/2.0.0" as types
+import "http://www.yakindu.org/base/types/2.0.0" as types 
 
 GenModel returns GenModel:
 	(('import' 
@@ -37,7 +38,7 @@ GenModel returns GenModel:
 Task returns Task:
 	YakinduCompilation | CodeGeneration | AnalysisModelTransformation | TestGeneration |
 		EventPriorityTransformation | AdaptiveContractTestGeneration | PhaseStatechartGeneration |
-		Verification | TestReplayModelGeneration | Slicing | StatechartContractTestGeneration
+		Verification | TestReplayModelGeneration | Slicing | StatechartContractTestGeneration | StatechartContractGeneration
 ;
 
 YakinduCompilation returns YakinduCompilation:
@@ -341,6 +342,16 @@ StatechartContractTestGeneration returns StatechartContractTestGeneration:
 	('constraint' ':' '{'constraint= OrchestratingConstraint'}')?
 	'}' 
 ;
+
+StatechartContractGeneration returns StatechartContractGeneration:
+	{StatechartContractGeneration} 
+	'statechart-contract' '{'
+	 'scenario' ':' scenario= [scenario::ScenarioDefinition]
+	 ('folder' ':' targetFolder+=STRING)?
+	 ('name' ':' fileName+=STRING)?
+	'}'
+;
+
 
 
 PhaseStatechartGeneration returns PhaseStatechartGeneration:

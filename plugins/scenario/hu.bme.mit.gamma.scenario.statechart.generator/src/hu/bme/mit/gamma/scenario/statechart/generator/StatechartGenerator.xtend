@@ -39,6 +39,7 @@ import hu.bme.mit.gamma.scenario.statechart.util.ScenarioStatechartUtil
 import hu.bme.mit.gamma.statechart.contract.ContractModelFactory
 import hu.bme.mit.gamma.statechart.contract.NotDefinedEventMode
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures
+import hu.bme.mit.gamma.scenario.model.derivedfeatures.ScenarioModelDerivedFeatures
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.EventTrigger
@@ -172,13 +173,11 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 		var a = createSetTimeoutAction
 		a.timeoutDeclaration = td
 		a.time = ts
-
-		a.time = ts
 		if (previousState instanceof State)
 			previousState.entryActions += a
 		var e = createEventTrigger
 		var er = createTimeoutEventReference
-		er.setTimeout(td)
+		er.timeout = td
 		t.trigger = e
 		e.eventReference = er
 		var t2 = createTransition
@@ -348,12 +347,13 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 		var first = set.modalInteractions.get(0)
 		var dir = InteractionDirection.RECEIVE
 		var mod = ModalityType.COLD
-		dir = getDirection(first)
-		mod = getModality(first)
+		dir = ScenarioModelDerivedFeatures.getDirection(set)
+		mod = ScenarioModelDerivedFeatures.getModality(set)
 		if (dir.equals(InteractionDirection.RECEIVE)) {
 			handleDelays(set)
 			setupForwardTransition(set, first, false, isNegated, forwardTransition)
 		} else {
+			handleDelays(set)
 			var t3 = createTransition
 			setupForwardTransition(set, first, true, isNegated, forwardTransition)
 
@@ -460,7 +460,7 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 	}
 
 	def handleDelays(ModalInteractionSet set) {
-		var delays = set.modalInteractions.filter[it instanceof Delay]
+		var delays = set.modalInteractions.filter(Delay)
 		if (!delays.empty) {
 			var delay = delays.get(0) as Delay
 			var td = createTimeoutDeclaration
@@ -472,8 +472,9 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 			var a = createSetTimeoutAction
 			a.timeoutDeclaration = td
 			a.time = ts
-			if (previousState instanceof State)
+			if (previousState instanceof State) {
 				previousState.entryActions += a
+			}
 		}
 	}
 
@@ -485,8 +486,8 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 				(set.get(0) as NegatedModalInteraction).modalinteraction instanceof Signal &&
 				!((set.get(0) as NegatedModalInteraction).modalinteraction as Signal).arguments.empty) {
 				signals = set.filter[set.size == 1].filter(NegatedModalInteraction).filter [
-					(it as NegatedModalInteraction).modalinteraction instanceof Signal
-				].map[(it as NegatedModalInteraction).modalinteraction].filter[!(it as Signal).arguments.empty]
+					it.modalinteraction instanceof Signal
+				].map[it.modalinteraction].filter[!(it as Signal).arguments.empty]
 
 			} else {
 				return
@@ -539,17 +540,15 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 		var allPorts = statechart.ports.filter[!it.inputEvents.empty]
 		for (s : set.modalInteractions) {
 			if (s instanceof Signal) {
-				val portName = s.direction == InteractionDirection.SEND
-						? scenarioStatechartUtil.getTurnedOutPortName(s.port)
-						: s.port.name
+				val portName = s.direction == InteractionDirection.SEND ? scenarioStatechartUtil.
+						getTurnedOutPortName(s.port) : s.port.name
 				ports.add(getPort(portName))
 				events.add(getEvent(s.event.name, getPort(portName)))
 			} else if (s instanceof NegatedModalInteraction) {
 				val m = s.modalinteraction
 				if (m instanceof Signal) {
-					val portName = m.direction == InteractionDirection.SEND
-							? scenarioStatechartUtil.getTurnedOutPortName(m.port)
-							: m.port.name
+					val portName = m.direction == InteractionDirection.SEND ? scenarioStatechartUtil.
+							getTurnedOutPortName(m.port) : m.port.name
 					ports.add(getPort(portName))
 					events.add(getEvent(m.event.name, getPort(portName)))
 				}

@@ -38,7 +38,10 @@ Require-Bundle: org.eclipse.equinox.registry,
  hu.bme.mit.gamma.xsts.transformation.util,
  hu.bme.mit.gamma.property.language.ui,
  hu.bme.mit.gamma.composition.xsts.uppaal.transformation,
- hu.bme.mit.gamma.statechart.plantuml.transformation
+ hu.bme.mit.gamma.statechart.plantuml.transformation,
+ hu.bme.mit.gamma.scenario.statechart.generator,
+ hu.bme.mit.gamma.scenario.reduction
 Export-Package: hu.bme.mit.gamma.ui,
  hu.bme.mit.gamma.ui.taskhandler
-Import-Package: hu.bme.mit.gamma.scenario.trace.generator
+Import-Package: hu.bme.mit.gamma.scenario.statechart.generator.serializer,
+ hu.bme.mit.gamma.scenario.trace.generator
