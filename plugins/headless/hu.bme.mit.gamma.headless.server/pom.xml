@@ -5,7 +5,7 @@
 
 <modelVersion>4.0.0</modelVersion>
 
-<groupId>org.gamma.headless.api</groupId>
+<groupId>org.gamma.headless.server</groupId>
 <artifactId>openapi-gamma-webserver</artifactId>
 <version>1.0-SNAPSHOT</version>
 
@@ -60,15 +60,15 @@
             <version>1.5.0</version>
             <configuration>
                <!-- <mainClass>io.vertx.howtos.openapi.APIVerticle</mainClass> -->
-                <mainClass>server.OpenApiWebServer</mainClass>
+                <mainClass>hu.bme.mit.gamma.server.OpenApiWebServer</mainClass>
             </configuration>
         </plugin>
         <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-compiler-plugin</artifactId>
             <configuration>
-                <source>9</source>
-                <target>9</target>
+                <source>11</source>
+                <target>11</target>
             </configuration>
         </plugin>
     </plugins>

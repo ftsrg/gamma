@@ -39,7 +39,6 @@
       <plugin id="hu.bme.mit.gamma.action.language.ide"/>
       <plugin id="hu.bme.mit.gamma.action.language.ui"/>
       <plugin id="hu.bme.mit.gamma.action.model"/>
-      <plugin id="hu.bme.mit.gamma.api.headless"/>
       <plugin id="hu.bme.mit.gamma.codegenerator.java"/>
       <plugin id="hu.bme.mit.gamma.codegenerator.java.util"/>
       <plugin id="hu.bme.mit.gamma.composition.xsts.uppaal.transformation"/>
@@ -51,6 +50,7 @@
       <plugin id="hu.bme.mit.gamma.expression.model"/>
       <plugin id="hu.bme.mit.gamma.genmodel.language"/>
       <plugin id="hu.bme.mit.gamma.genmodel.model"/>
+      <plugin id="hu.bme.mit.gamma.headless.api"/>
       <plugin id="hu.bme.mit.gamma.language.util"/>
       <plugin id="hu.bme.mit.gamma.lowlevel.xsts.transformation"/>
       <plugin id="hu.bme.mit.gamma.lowlevel.xsts.transformation.traceability"/>

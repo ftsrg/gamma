@@ -379,7 +379,7 @@ public class OpenApiWebServer extends AbstractVerticle {
 				});
 
 				server = vertx.createHttpServer(new HttpServerOptions().setPort(8080).setHost("localhost")); // <5>
-				server.requestHandler(router).listen();
+				server.requestHandler(router).listen(8080);
 				future.complete();
 			} else {
 				future.fail(ar.cause());
