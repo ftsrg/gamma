@@ -1169,7 +1169,7 @@ class CompositeToUppaalTransformer {
 					originalExitEdge.target = newSyncEdge.source
 					// Resetting the exit events so these events are executed after the exit events of child states
 					if (!compositeState.exitActions.empty) {
-						val newExitEventEdge = originalTarget.createEdgeCommittedTarget("NewExitEventUpdateOf" + compositeState.name) => [
+						val newExitEventEdge = originalTarget.createEdgeCommittedTarget("NewExitEventUpdateOf" + compositeState.name + id++) => [
 							it.update += originalExitEdge.update
 						]
 						newSyncEdge.target = newExitEventEdge.source
