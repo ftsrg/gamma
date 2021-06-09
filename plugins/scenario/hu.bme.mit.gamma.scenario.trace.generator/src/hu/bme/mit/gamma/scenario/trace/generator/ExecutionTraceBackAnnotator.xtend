@@ -75,7 +75,7 @@ class ExecutionTraceBackAnnotator {
 			if (createOriginalActsAndAssertsBasedOnActs) {
 				t.createOriginalActsAndAsserts
 			}
-			t.removeScheduelingWhenSendAfterReceive
+//			t.removeScheduelingWhenSendAfterReceive
 		}
 		return result
 	}

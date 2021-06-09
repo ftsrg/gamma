@@ -68,6 +68,14 @@ import org.eclipse.emf.ecore.EObject
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import hu.bme.mit.gamma.scenario.model.LoopCombinedFragment
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
+import hu.bme.mit.gamma.statechart.statechart.MergeState
+
+enum StatechartGenerationMode {
+	GENERATE_MERGE_STATE,
+	GENERATE_ORIGINAL_STRUCTURE,
+	GENERATE_ONLY_FORWARD,
+	GENERATE_DUPLICATED_CHOICES
+}
 
 class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 	val extension StatechartModelFactory statechartfactory = StatechartModelFactory.eINSTANCE
@@ -94,6 +102,7 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 	var nonDeclaredMessageMode = 0
 	var nonDeclaredNegMessageMode = 1
 	var coldViolationExisits = true
+	val StatechartGenerationMode generationMode = StatechartGenerationMode.GENERATE_DUPLICATED_CHOICES
 
 	new(boolean coldViolationExisits, ScenarioDefinition scenario, Component component) {
 		this.component = component
@@ -147,6 +156,15 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 			}
 		}
 
+//		for (t : statechart.transitions) {
+//			if (t.sourceState instanceof ChoiceState && t.targetState instanceof MergeState &&
+//				(t.targetState as MergeState).outgoingTransitions.get(0).targetState instanceof ChoiceState) {
+//					val merge = t.targetState as MergeState
+//					for(t2: merge.incomingTransitions){
+//						
+//					}
+//			}
+//		}
 		var a = createScenarioContractAnnotation
 		a.monitoredComponent = component
 		a.scenarioType = nonDeclaredMessageMode == 1 ? NotDefinedEventMode.STRICT : NotDefinedEventMode.PERMISSIVE
@@ -349,6 +367,14 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 		var mod = ModalityType.COLD
 		dir = ScenarioModelDerivedFeatures.getDirection(set)
 		mod = ScenarioModelDerivedFeatures.getModality(set)
+
+		violationTransition.sourceState = tmpChoice
+		if (mod == ModalityType.COLD) {
+			violationTransition.targetState = coldViolation
+		} else {
+			violationTransition.targetState = hotViolation
+		}
+
 		if (dir.equals(InteractionDirection.RECEIVE)) {
 			handleDelays(set)
 			setupForwardTransition(set, first, false, isNegated, forwardTransition)
@@ -376,7 +402,6 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 			} else {
 				statechart.transitions.add(t3)
 				mode = nonDeclaredMessageMode
-
 			}
 
 			if (mode == 1) {
@@ -386,8 +411,7 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 			}
 
 			violationTransition.priority = BigInteger.valueOf(1)
-			var elsee = createElseExpression
-			violationTransition.guard = elsee
+			violationTransition.guard = createElseExpression
 
 			if (isAllNeg(set) || isNegated) {
 				forwardTransition.guard = null
@@ -401,6 +425,44 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 				t3.guard = maxCheck
 			}
 
+			if (generationMode == StatechartGenerationMode.GENERATE_MERGE_STATE) {
+				val mergeState = createMergeState
+				mergeState.name = "merge" + stateCount++
+				for (t : statechart.transitions) {
+					if (t.targetState == previousState && t !== t3) {
+						t.targetState = mergeState
+					}
+				}
+				val newTransition = createTransition
+				newTransition.sourceState = mergeState
+				newTransition.targetState = tmpChoice
+				cycleTransition.targetState = mergeState
+				statechart.transitions += newTransition
+				statechart.regions.get(0).stateNodes += mergeState
+
+			} else if (generationMode == StatechartGenerationMode.GENERATE_ONLY_FORWARD) {
+				statechart.transitions.remove(t3)
+			} else if (generationMode == StatechartGenerationMode.GENERATE_ORIGINAL_STRUCTURE) {
+				// does not need to be changed
+			} else if (generationMode == StatechartGenerationMode.GENERATE_DUPLICATED_CHOICES) {
+				for (t : previousState.incomingTransitions) {
+					println(previousState.incomingTransitions.size)
+					if (t.sourceState !== tmpChoice) {
+						val tmpChoice2 = addChoiceState
+						val forwardCopy = forwardTransition.clone
+						val violationCopy = violationTransition.clone
+						val t3Copy = t3.clone
+						t3Copy.sourceState = tmpChoice2
+						forwardCopy.sourceState = tmpChoice2
+						violationCopy.sourceState = tmpChoice2
+						t.targetState = tmpChoice2
+						statechart.regions.get(0).stateNodes += tmpChoice2
+						statechart.transitions += t3Copy
+						statechart.transitions += forwardCopy
+						statechart.transitions += violationCopy
+					}
+				}
+			}
 		}
 
 		statechart.transitions.add(forwardTransition)
@@ -413,13 +475,6 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 			binary.rightOperand = getBinaryTriggerFromTriggers(createOtherNegatedTriggers(set), BinaryType.AND)
 			binary.type = BinaryType.AND
 			forwardTransition.trigger = binary
-		}
-
-		violationTransition.sourceState = tmpChoice
-		if (mod.equals(ModalityType.COLD)) {
-			violationTransition.targetState = coldViolation
-		} else {
-			violationTransition.targetState = hotViolation
 		}
 
 		handleArguments(set.modalInteractions, forwardTransition);
@@ -540,15 +595,17 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 		var allPorts = statechart.ports.filter[!it.inputEvents.empty]
 		for (s : set.modalInteractions) {
 			if (s instanceof Signal) {
-				val portName = s.direction == InteractionDirection.SEND ? scenarioStatechartUtil.
-						getTurnedOutPortName(s.port) : s.port.name
+				val portName = s.direction == InteractionDirection.SEND
+						? scenarioStatechartUtil.getTurnedOutPortName(s.port)
+						: s.port.name
 				ports.add(getPort(portName))
 				events.add(getEvent(s.event.name, getPort(portName)))
 			} else if (s instanceof NegatedModalInteraction) {
 				val m = s.modalinteraction
 				if (m instanceof Signal) {
-					val portName = m.direction == InteractionDirection.SEND ? scenarioStatechartUtil.
-							getTurnedOutPortName(m.port) : m.port.name
+					val portName = m.direction == InteractionDirection.SEND
+							? scenarioStatechartUtil.getTurnedOutPortName(m.port)
+							: m.port.name
 					ports.add(getPort(portName))
 					events.add(getEvent(m.event.name, getPort(portName)))
 				}
