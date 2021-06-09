@@ -27,7 +27,6 @@ import org.eclipse.emf.ecore.EObject
 
 import static com.google.common.base.Preconditions.checkState
 
-import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension java.lang.Math.abs
 
 class ExpressionPreconditionTransformer {
@@ -167,8 +166,7 @@ class ExpressionPreconditionTransformer {
 		var VariableDeclaration localReturnDeclaration = null
 		val returnStatements = clonedBlock.getSelfAndAllContentsOfType(ReturnStatement)
 		if (!returnStatements.empty) {
-			val type = procedure.typeDefinition
-			val procedureType = type.clone
+			val procedureType = procedure.type.clone // typeDefinition is not correct due to record literals
 			val localDeclarationPostfix = '''_«procedure.name»_«expression.hashCode.abs»_'''
 			// This declaration will store the return value
 			val localStatement = procedureType.createDeclarationStatement(
