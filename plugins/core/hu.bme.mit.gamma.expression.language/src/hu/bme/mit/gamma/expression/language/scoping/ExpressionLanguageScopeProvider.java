@@ -17,6 +17,7 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.xtext.scoping.IScope;
 import org.eclipse.xtext.scoping.Scopes;
+import org.eclipse.xtext.scoping.impl.SimpleScope;
 
 import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
 import hu.bme.mit.gamma.expression.model.Declaration;
@@ -95,6 +96,17 @@ public class ExpressionLanguageScopeProvider extends AbstractExpressionLanguageS
 			return IScope.NULLSCOPE;
 		}
 		return getScope(container, reference);
+	}
+	
+	protected IScope embedScopes(Collection<IScope> scopes) {
+		if (scopes.isEmpty()) {
+			return IScope.NULLSCOPE; 
+		}
+		IScope parentScope = IScope.NULLSCOPE;
+		for (IScope scope : scopes) {
+			parentScope = new SimpleScope(parentScope, scope.getAllElements());
+		}
+		return parentScope;
 	}
 	
 }
