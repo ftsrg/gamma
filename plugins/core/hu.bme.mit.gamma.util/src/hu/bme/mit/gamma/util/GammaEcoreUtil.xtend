@@ -260,7 +260,7 @@ class GammaEcoreUtil {
 		}
 		return true
 	}
-
+	
 	def boolean helperEquals(EObject lhs, EObject rhs) {
 		val helper = new EqualityHelper
 		return helper.equals(lhs, rhs)
@@ -276,9 +276,15 @@ class GammaEcoreUtil {
 		}
 		return list
 	}
-
+	
 	def <T extends EObject> T clone(T object) {
 		return object.clone(true, true /* This parameter sets reference copying */)
+	}
+	
+	def <T extends EObject> cloneAndChange(T oldObject, EObject container) {
+		val newObject = oldObject.clone
+		newObject.change(oldObject, container)
+		return newObject
 	}
 
 	@SuppressWarnings("unchecked")

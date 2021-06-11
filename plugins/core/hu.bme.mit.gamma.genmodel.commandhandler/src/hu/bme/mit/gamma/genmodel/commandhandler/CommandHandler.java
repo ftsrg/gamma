@@ -17,15 +17,15 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.emf.ecore.resource.ResourceSet;
-import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 import hu.bme.mit.gamma.dialog.DialogUtil;
 import hu.bme.mit.gamma.ui.GammaApi;
-import hu.bme.mit.gamma.ui.GammaApi.ResourceSetCreator;
+import hu.bme.mit.gamma.ui.util.MedianCalculator;
+import hu.bme.mit.gamma.ui.util.TaskExecutionTimeMeasurer;
+import hu.bme.mit.gamma.ui.util.TaskHook;
 
 public class CommandHandler extends AbstractHandler {
 	
@@ -41,14 +41,7 @@ public class CommandHandler extends AbstractHandler {
 					if (selection.getFirstElement() instanceof IFile) {
 						IFile file = (IFile) selection.getFirstElement();
 						GammaApi gammaApi = new GammaApi();
-						gammaApi.run(file.getFullPath().toString(),
-							// Simple ResourceSet creation
-							new ResourceSetCreator() {
-								public ResourceSet createResourceSet() {
-									return new ResourceSetImpl();
-								}
-							}
-						);
+						gammaApi.run(file.getFullPath().toString());
 					}
 				}
 			}
@@ -58,6 +51,14 @@ public class CommandHandler extends AbstractHandler {
 			DialogUtil.showErrorWithStackTrace(exception.getMessage(), exception);
 		}
 		return null;
+	}
+	
+	protected TaskHook getMedianCalculatorTaskHook() {
+		String fileName = "transformation-time.txt";
+		MedianCalculator medianCalculator = MedianCalculator.INSTANCE;
+		TaskExecutionTimeMeasurer measurer = new TaskExecutionTimeMeasurer(10,
+				medianCalculator, fileName);
+		return measurer;
 	}
 	
 }

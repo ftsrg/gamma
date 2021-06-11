@@ -342,8 +342,12 @@ class ModelUnfolder {
 	
 	protected def addDeclarations(Package gammaPackage, Package clonedPackage) {
 		// As constants and functions can be imported - is the fact that imported packages are not cloned a problem? 
-		gammaPackage.constantDeclarations += clonedPackage.selfAndImports.map[it.constantDeclarations].flatten.toSet
-		gammaPackage.functionDeclarations += clonedPackage.selfAndImports.map[it.functionDeclarations].flatten.toSet
+		gammaPackage.constantDeclarations += clonedPackage.selfAndImports
+			.map[it.constantDeclarations].flatten.toSet
+			.map[it.cloneAndChange(gammaPackage)] // Crucial as we must not "steal" declarations from e.g., Interfaces.gcd
+		gammaPackage.functionDeclarations += clonedPackage.selfAndImports
+			.map[it.functionDeclarations].flatten.toSet
+			.map[it.cloneAndChange(gammaPackage)] // Crucial as we must not "steal" declarations from e.g., Interfaces.gcd
 		// No interface and type declarations as their cloning cause a lot of trouble
 	}
 	
