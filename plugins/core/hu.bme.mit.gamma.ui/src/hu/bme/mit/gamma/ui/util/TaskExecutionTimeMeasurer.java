@@ -58,7 +58,7 @@ public class TaskExecutionTimeMeasurer implements TaskHook {
 		
 		isFirst = true;
 		elapsedTimes.clear();
-		logger.log(Level.INFO, "Starting measuerement");
+		logger.log(Level.INFO, "Starting measurement");
 	}
 	
 	public int getIterationCount() {
@@ -66,20 +66,20 @@ public class TaskExecutionTimeMeasurer implements TaskHook {
 	}
 	
 	public void startIteration() {
-		logger.log(Level.INFO, "Starting iteration " + elapsedTimes.size() + 1);
+		logger.log(Level.INFO, "Starting iteration " + (elapsedTimes.size() + 1));
 		startTime = System.nanoTime();
 	}
 	
 	public void endIteration() {
 		long endTime = System.nanoTime();
-		double elapsedTime = (endTime - startTime) / 1000000.0; // In ms
+		double time = (endTime - startTime) / 1000000.0; // In ms
 		if (isFirst) {
 			isFirst = false;
 			logger.log(Level.INFO, "First (not counted) iteration has been finished");
 		}
 		else {
-			elapsedTimes.add(elapsedTime);
-			logger.log(Level.INFO, "Finished iteration " + elapsedTimes.size());
+			elapsedTimes.add(time);
+			logger.log(Level.INFO, "Finished iteration " + elapsedTimes.size() + ", result is " + time);
 		}
 	}
 	
@@ -93,7 +93,7 @@ public class TaskExecutionTimeMeasurer implements TaskHook {
 		
 		fileUtil.saveString(targetFile, builder.toString());
 		
-		logger.log(Level.INFO, "Finished measuerement");
+		logger.log(Level.INFO, "Finished measurement");
 	}
 
 }

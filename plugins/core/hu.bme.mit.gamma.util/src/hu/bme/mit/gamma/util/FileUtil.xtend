@@ -90,6 +90,14 @@ class FileUtil {
 	}
 	
 	def File exploreRelativeFile(File anchor, String relativePath) {
+		//
+		val relativePathTestFile = new File(relativePath);
+		if (relativePathTestFile.exists && relativePathTestFile.isAbsolute) {
+			// This is actually an incorrect call, as the String is not
+			// a relative path to the anchor, but we handle it anyway
+			return relativePathTestFile
+		}
+		// The string is actually a relative path
 		val path = anchor.toString + File.separator + relativePath
 		val file = new File(path)
 		if (file.exists) {
