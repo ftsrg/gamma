@@ -136,25 +136,23 @@ public class VerificationHandler extends TaskHandler {
 				CoveredPropertyReducer reducer = new CoveredPropertyReducer(stateFormulas, trace);
 				List<StateFormula> coveredProperties = reducer.execute();
 				if (coveredProperties.size() > 0) {
-					StringBuilder covered = new StringBuilder();
 					for (StateFormula coveredProperty : coveredProperties) {
-						covered.append(propertySerializer.serialize(coveredProperty) + System.lineSeparator());
+						String serializedProperty = propertySerializer.serialize(coveredProperty);
+						logger.log(Level.INFO, "Property already covered: " + serializedProperty);
 					}
-					logger.log(Level.INFO, "Some properties are already covered: " + covered);
 					stateFormulas.removeAll(coveredProperties);
 				}
 			}
 		}
 		// Execution based on string queries
 		for (String queryFileLocation : queryFileLocations) {
-			logger.log(Level.INFO, "Checking " + queryFileLocation + "...");
 			File queryFile = new File(queryFileLocation);
 			execute(verificationTask, modelFile, queryFile,	retrievedTraces, isOptimize);
 			// No result here (yet) as UPPAAL returns multiple traces in one ExecutionTrace
 			// It could be implemented using fileUtil.loadString
 		}
-		// Optimization again on the retrieved tests
 		if (isOptimize) {
+			// Optimization again on the retrieved tests (front to back and vice versa)
 			traceUtil.removeCoveredExecutionTraces(retrievedTraces);
 		}
 		
@@ -178,11 +176,11 @@ public class VerificationHandler extends TaskHandler {
 		// Maybe there is no trace
 		if (trace != null) {
 			if (isOptimize) {
-				logger.log(Level.INFO, "Optimizing trace...");
-				if (!retrievedTraces.isEmpty()) {
-					if (traceUtil.isCovered(trace, retrievedTraces)) {
-						return null; // We do not return a trace, as it is already covered
-					}
+				logger.log(Level.INFO, "Checking if trace is already covered by previous traces...");
+				if (traceUtil.isCovered(trace, retrievedTraces)) {
+					logger.log(Level.INFO, "Trace is already covered");
+					return new Result(result.getResult(), null);
+					// We do not return a trace as it is already covered
 				}
 				// Checking individual trace
 				traceUtil.removeCoveredSteps(trace);
