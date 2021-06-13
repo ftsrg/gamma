@@ -23,9 +23,6 @@ import org.eclipse.ui.handlers.HandlerUtil;
 
 import hu.bme.mit.gamma.dialog.DialogUtil;
 import hu.bme.mit.gamma.ui.GammaApi;
-import hu.bme.mit.gamma.ui.util.MedianCalculator;
-import hu.bme.mit.gamma.ui.util.TaskExecutionTimeMeasurer;
-import hu.bme.mit.gamma.ui.util.TaskHook;
 
 public class CommandHandler extends AbstractHandler {
 	
@@ -51,14 +48,6 @@ public class CommandHandler extends AbstractHandler {
 			DialogUtil.showErrorWithStackTrace(exception.getMessage(), exception);
 		}
 		return null;
-	}
-	
-	protected TaskHook getMedianCalculatorTaskHook() {
-		String fileName = "transformation-time.txt";
-		MedianCalculator medianCalculator = MedianCalculator.INSTANCE;
-		TaskExecutionTimeMeasurer measurer = new TaskExecutionTimeMeasurer(10,
-				medianCalculator, fileName);
-		return measurer;
 	}
 	
 }
