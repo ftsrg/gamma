@@ -18,6 +18,7 @@ import hu.bme.mit.gamma.expression.model.LambdaDeclaration
 import hu.bme.mit.gamma.expression.model.MultiaryExpression
 import hu.bme.mit.gamma.expression.model.SelectExpression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
+import hu.bme.mit.gamma.expression.model.VoidTypeDefinition
 import hu.bme.mit.gamma.expression.util.FieldHierarchy
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
@@ -27,6 +28,7 @@ import org.eclipse.emf.ecore.EObject
 
 import static com.google.common.base.Preconditions.checkState
 
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension java.lang.Math.abs
 
 class ExpressionPreconditionTransformer {
@@ -169,10 +171,13 @@ class ExpressionPreconditionTransformer {
 			val procedureType = procedure.type.clone // typeDefinition is not correct due to record literals
 			val localDeclarationPostfix = '''_«procedure.name»_«expression.hashCode.abs»_'''
 			// This declaration will store the return value
-			val localStatement = procedureType.createDeclarationStatement(
-				'''_returnValueOf«localDeclarationPostfix»''')
-			localReturnDeclaration = localStatement.variableDeclaration
-			inlinedActions += localStatement
+			val isVoid = procedureType.typeDefinition instanceof VoidTypeDefinition 
+			if (!isVoid) {
+				val localStatement = procedureType.createDeclarationStatement(
+					'''_returnValueOf«localDeclarationPostfix»''')
+				localReturnDeclaration = localStatement.variableDeclaration
+				inlinedActions += localStatement
+			}
 			// This declaration will store during execution, whether we have to return
 			// Later optimizations will remove these declarations if they are unnecessary
 			val localIsReturnedStatement = createBooleanTypeDefinition.createDeclarationStatement(

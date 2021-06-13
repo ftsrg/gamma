@@ -120,10 +120,10 @@ public class ActionUtil extends ExpressionUtil {
 	//
 	
 	public Branch createBranch(Expression expression, Action action) {
-		Branch elseBranch = actionFactory.createBranch();
-		elseBranch.setGuard(expression);
-		elseBranch.setAction(action);
-		return elseBranch;
+		Branch branch = actionFactory.createBranch();
+		branch.setGuard(expression);
+		branch.setAction(action);
+		return branch;
 	}
 	
 	public Branch getOrCreateElseBranch(IfStatement statement) {
