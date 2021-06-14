@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: %pluginName
+Bundle-Name: Gamma Property Language Metamodel
 Bundle-SymbolicName: hu.bme.mit.gamma.property.model;singleton:=true
 Automatic-Module-Name: hu.bme.mit.gamma.property.model
 Bundle-Version: 2.5.1.qualifier

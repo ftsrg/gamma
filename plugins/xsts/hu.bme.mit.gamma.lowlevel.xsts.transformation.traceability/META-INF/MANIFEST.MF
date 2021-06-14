@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: %pluginName
+Bundle-Name: Gamma Low-level Statechart To XSTS Transformation Traceability Metamodel
 Bundle-SymbolicName: hu.bme.mit.gamma.lowlevel.xsts.transformation.traceability;singleton:=true
 Bundle-Version: 2.5.1.qualifier
 Bundle-ClassPath: .

@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: %pluginName
+Bundle-Name: Gamma UPPAAL Transformation Traceability Metamodel
 Bundle-SymbolicName: hu.bme.mit.gamma.uppaal.transformation.traceability;singleton:=true
 Bundle-Version: 2.5.1.qualifier
 Bundle-ClassPath: .
