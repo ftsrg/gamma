@@ -13,6 +13,7 @@ package hu.bme.mit.gamma.ui.util;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -32,6 +33,7 @@ public class TaskExecutionTimeMeasurer implements TaskHook {
 	
 	private final Calculator<Double> calculator;
 	private final String fileName;
+	private final TimeUnit unit;
 	private File targetFile;
 	
 	private final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
@@ -40,10 +42,11 @@ public class TaskExecutionTimeMeasurer implements TaskHook {
 	protected Logger logger = Logger.getLogger("GammaLogger");
 	
 	public TaskExecutionTimeMeasurer(int iterationCount,
-			Calculator<Double> calculator, String fileName) {
+			Calculator<Double> calculator, String fileName, TimeUnit unit) {
 		this.iterationCount = iterationCount + 1; // Due to Java JIT, we do not count the first one
 		this.calculator = calculator;
 		this.fileName = fileName;
+		this.unit = unit;
 	}
 	
 	public void startTaskProcess(Object object) {
@@ -72,28 +75,40 @@ public class TaskExecutionTimeMeasurer implements TaskHook {
 	
 	public void endIteration() {
 		long endTime = System.nanoTime();
-		double time = (endTime - startTime) / 1000000.0; // In ms
+		double time = (endTime - startTime) / getDivisor();
 		if (isFirst) {
 			isFirst = false;
 			logger.log(Level.INFO, "First (not counted) iteration has been finished");
 		}
 		else {
 			elapsedTimes.add(time);
-			logger.log(Level.INFO, "Finished iteration " + elapsedTimes.size() + ", result is " + time);
+			logger.log(Level.INFO, "Finished iteration " + elapsedTimes.size() + ", result is " + time + " " + unit);
 		}
 	}
 	
 	public void endTaskProcess() {
 		StringBuilder builder = new StringBuilder();
 		for (Double value : elapsedTimes) {
-			builder.append(value + System.lineSeparator());
+			builder.append(value + " " + unit + System.lineSeparator());
 		}
 		double median = calculator.calculate(elapsedTimes);
-		builder.append("Median: " + median);
+		builder.append("Median: " + median + " " + unit);
 		
 		fileUtil.saveString(targetFile, builder.toString());
+		logger.log(Level.INFO, "Saved results in " + targetFile.getAbsolutePath());
 		
 		logger.log(Level.INFO, "Finished measurement");
+	}
+	
+	private double getDivisor() {
+		switch (this.unit) {
+			case MILLISECONDS:
+				return 1000000.0;
+			case SECONDS:
+				return 1000000000.0;
+			default:
+				throw new IllegalArgumentException("Not known time unit: " + this.unit);
+		}
 	}
 
 }
