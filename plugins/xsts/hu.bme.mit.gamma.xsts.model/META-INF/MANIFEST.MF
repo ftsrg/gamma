@@ -1,14 +1,14 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Gamma eXtended Transition System Language Metamodel
+Bundle-Name: %pluginName
 Bundle-SymbolicName: hu.bme.mit.gamma.xsts.model;singleton:=true
-Bundle-Version: 2.5.0.qualifier
+Bundle-Version: 2.5.1.qualifier
 Bundle-ClassPath: .
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.emf.ecore;visibility:=reexport,
  hu.bme.mit.gamma.expression.model;visibility:=reexport
 Bundle-ActivationPolicy: lazy
-Bundle-Vendor: BME-FTSRG
+Bundle-Vendor: %providerName
 Bundle-Localization: plugin
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Export-Package: hu.bme.mit.gamma.xsts.derivedfeatures,
