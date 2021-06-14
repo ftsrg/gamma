@@ -4,7 +4,7 @@ Bundle-Name: Gamma UPPAAL Transformation Traceability Metamodel
 Bundle-SymbolicName: hu.bme.mit.gamma.uppaal.transformation.traceability;singleton:=true
 Bundle-Version: 2.5.1.qualifier
 Bundle-ClassPath: .
-Bundle-Vendor: %providerName
+Bundle-Vendor: BME-FTSRG
 Bundle-Localization: plugin
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Export-Package: hu.bme.mit.gamma.uppaal.transformation.traceability,
