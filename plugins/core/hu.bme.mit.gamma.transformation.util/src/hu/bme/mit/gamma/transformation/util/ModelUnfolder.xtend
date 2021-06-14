@@ -31,6 +31,7 @@ import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.util.Collection
 import java.util.HashMap
 import java.util.Map
+import org.eclipse.emf.ecore.EObject
 
 import static com.google.common.base.Preconditions.checkNotNull
 import static com.google.common.base.Preconditions.checkState
@@ -85,12 +86,13 @@ class ModelUnfolder {
 		for (instance : component.components) {
 			val type = instance.type
 			val clonedPackage = type.containingPackage.clone
-			gammaPackage.addDeclarations(clonedPackage)
-			// Declarations have been moved
 			val clonedComponent = clonedPackage.components.findFirst[it.helperEquals(type)] as SynchronousComponent // Sync Composite or Statechart
 			clonedComponent.removeAnnotations // To prevent importing unnecessary resources into the resource set
 			gammaPackage.components += clonedComponent // Adding it to the "Instance container"
 			instance.type = clonedComponent // Setting the type to the new declaration
+			// Declarations must be copied AFTER moving component instances to enable reference changes
+			gammaPackage.addDeclarations(clonedPackage)
+			
 			// Changing the port binding
 			fixPortBindings(component, instance)
 			// Changing the providedPort references of Channels
@@ -111,22 +113,25 @@ class ModelUnfolder {
 			val type = instance.type
 			if (type instanceof AsynchronousCompositeComponent) {
 				val clonedPackage = type.containingPackage.clone
-				gammaPackage.addDeclarations(clonedPackage)
-				// Declarations have been moved		
 				val clonedComposite = clonedPackage.components.findFirst[it.helperEquals(type)] as AsynchronousCompositeComponent // Cloning the declaration
 				gammaPackage.components += clonedComposite // Adding it to the "Instance container"
 				instance.type = clonedComposite // Setting the type to the new declaration
+				// Declarations must be copied AFTER moving component instances to enable reference changes
+				gammaPackage.addDeclarations(clonedPackage)
+				
 				clonedComposite.copyComponents(gammaPackage, trace) // Cloning the contained CompositeSystems recursively
 				// Tracing
 				type.traceComponentInstances(clonedComposite, trace)
 			}
 			else if (type instanceof AsynchronousAdapter) {
 				val clonedPackage = type.containingPackage.clone
-				gammaPackage.addDeclarations(clonedPackage)
 				// Declarations have been moved
 				val clonedWrapper = clonedPackage.components.findFirst[it.helperEquals(type)] as AsynchronousAdapter // Cloning the declaration
 				gammaPackage.components += clonedWrapper // Adding it to the "Instance container"
 				instance.type = clonedWrapper // Setting the type to the new declaration
+				// Declarations must be copied AFTER moving component instances to enable reference changes
+				gammaPackage.addDeclarations(clonedPackage)
+				
 				clonedWrapper.copyComponents(gammaPackage, trace) // Cloning the contained CompositeSystems recursively
 				// Tracing
 				type.traceComponentInstances(clonedWrapper, trace)
@@ -144,11 +149,12 @@ class ModelUnfolder {
 			Trace trace) {
 		val type = component.wrappedComponent.type
 		val clonedPackage = type.containingPackage.clone
-		gammaPackage.addDeclarations(clonedPackage)
-		// Declarations have been moved
 		val clonedComponent = clonedPackage.components.findFirst[it.helperEquals(type)] as SynchronousComponent  // Sync Composite or Statechart
 		gammaPackage.components += clonedComponent // Adding it to the "Instance container"
 		component.wrappedComponent.type = clonedComponent // Setting the type to the new declaration
+		// Declarations must be copied AFTER moving component instances to enable reference changes
+		gammaPackage.addDeclarations(clonedPackage)
+		
 		component.fixControlEvents // Fixing control events
 		component.fixMessageQueueEvents // Fixing the message queue event references 
 		if (clonedComponent instanceof AbstractSynchronousCompositeComponent) {				
@@ -341,14 +347,21 @@ class ModelUnfolder {
 	}
 	
 	protected def addDeclarations(Package gammaPackage, Package clonedPackage) {
+		val selfAndImports = clonedPackage.selfAndImports
 		// As constants and functions can be imported - is the fact that imported packages are not cloned a problem? 
-		gammaPackage.constantDeclarations += clonedPackage.selfAndImports
+		val clones = <EObject, EObject>newHashMap 
+		gammaPackage.constantDeclarations += selfAndImports
 			.map[it.constantDeclarations].flatten.toSet
-			.map[it.cloneAndChange(gammaPackage)] // Crucial as we must not "steal" declarations from e.g., Interfaces.gcd
-		gammaPackage.functionDeclarations += clonedPackage.selfAndImports
+			.map[val clone = it.clone; clones += it -> clone; clone] // Crucial as we must not "steal" declarations from e.g., Interfaces.gcd
+		gammaPackage.functionDeclarations += selfAndImports
 			.map[it.functionDeclarations].flatten.toSet
-			.map[it.cloneAndChange(gammaPackage)] // Crucial as we must not "steal" declarations from e.g., Interfaces.gcd
-		// No interface and type declarations as their cloning cause a lot of trouble
+			.map[val clone = it.clone; clones += it -> clone; clone] // Crucial as we must not "steal" declarations from e.g., Interfaces.gcd
+		// Crucial as e.g, function declarations can refer to constant declarations
+		for (original : clones.keySet) {
+			val clone = clones.get(original)
+			clone.change(original, gammaPackage)
+		}
+		// No interface and type declarations as their cloning causes a lot of trouble
 	}
 	
 	private def dispatch traceComponentInstances(StatechartDefinition oldComponent,
