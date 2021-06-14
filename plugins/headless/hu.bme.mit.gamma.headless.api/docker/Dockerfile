@@ -38,7 +38,7 @@ ADD project /home/project
 RUN mkdir eclipse
 ADD eclipse /home/eclipse
 RUN mkdir server
-ADD OpenAPIGammaWrapper /home/server
+ADD server /home/server
 RUN mkdir workspaces
 WORKDIR "/home/server/gamma-openapi-vertx"
 RUN mvn package

@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.logging.Level;
 
 public class ProcessBuilderCli {
 
@@ -31,12 +32,14 @@ public class ProcessBuilderCli {
 	private static final String GAMMA_OPERATION = "gamma";
 	private static final String IMPORT_OPERATION = "import";
 	private static final String WORKSPACE_OPERATION = "workspace";
+	
+	private static String logLevel = "info";
 
 	public static void runGammaOperations(String projectName, String workspace, String filePath) throws IOException {
 
 		ProcessBuilder pb = new ProcessBuilder(
 				FileHandlerUtil.getProperty(DIRECTORY_OF_GAMMA_HEADLESS_ECLIPSE_PROPERTY), "-consoleLog", "-data",
-				FileHandlerUtil.getProperty(DIRECTORY_OF_WORKSPACES_PROPERTY_NAME) + workspace, GAMMA_OPERATION,
+				FileHandlerUtil.getProperty(DIRECTORY_OF_WORKSPACES_PROPERTY_NAME) + workspace, GAMMA_OPERATION, logLevel, 
 				getFullFilePath(filePath, workspace, projectName),
 				FileHandlerUtil.getProperty(DIRECTORY_OF_WORKSPACES_PROPERTY_NAME) + workspace + File.separator
 						+ projectName + File.separator + PROJECT_DESCRIPTOR_JSON);
@@ -107,7 +110,7 @@ public class ProcessBuilderCli {
 			throws IOException, InterruptedException {
 		String commandToExecute = FileHandlerUtil.getProperty(DIRECTORY_OF_GAMMA_HEADLESS_ECLIPSE_PROPERTY)
 				+ CONSTANT_ARGUMENTS + FileHandlerUtil.getProperty(DIRECTORY_OF_WORKSPACES_PROPERTY_NAME) + workspace
-				+ " " + IMPORT_OPERATION + " " + projectName;
+				+ " " + IMPORT_OPERATION + " " + logLevel + " " + projectName;
 		Runtime rt = Runtime.getRuntime();
 		Process pr = rt.exec(commandToExecute);
 		pr.waitFor();
@@ -120,7 +123,7 @@ public class ProcessBuilderCli {
 		String workspace = String.valueOf(UUID.randomUUID());
 		String commandToExecute = FileHandlerUtil.getProperty(DIRECTORY_OF_GAMMA_HEADLESS_ECLIPSE_PROPERTY)
 				+ CONSTANT_ARGUMENTS + FileHandlerUtil.getProperty(DIRECTORY_OF_WORKSPACES_PROPERTY_NAME) + workspace
-				+ " " + WORKSPACE_OPERATION;
+				+ " " + WORKSPACE_OPERATION + " " + logLevel;
 		Runtime rt = Runtime.getRuntime();
 		Process pr = rt.exec(commandToExecute);
 		pr.waitFor();
@@ -153,6 +156,18 @@ public class ProcessBuilderCli {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+		}
+	}
+	
+	public static void setProcessCliLogLevel(Level level) {
+		if(level == Level.INFO) {
+			logLevel = "info";
+		} else if (level == Level.WARNING) {
+			logLevel = "warning";
+		} else if (level == Level.SEVERE) {
+			logLevel = "severe";
+		} else if (level == Level.OFF) {
+			logLevel = "off";
 		}
 	}
 }

@@ -2,21 +2,24 @@ package hu.bme.mit.gamma.headless.server;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpHeaders;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.FileUpload;
+import io.vertx.ext.web.Route;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
-import io.vertx.ext.web.api.RequestParameters;
-import io.vertx.ext.web.api.contract.openapi3.OpenAPI3RouterFactory;
 import io.vertx.ext.web.handler.SessionHandler;
+import io.vertx.ext.web.openapi.RouterBuilder;
+import io.vertx.ext.web.openapi.RouterBuilderOptions;
 import io.vertx.ext.web.sstore.LocalSessionStore;
-import joptsimple.internal.Strings;
+import io.vertx.ext.web.validation.RequestParameters;
 import hu.bme.mit.gamma.headless.server.service.Provider;
 import hu.bme.mit.gamma.headless.server.service.Validator;
 import hu.bme.mit.gamma.headless.server.entity.WorkspaceProjectWrapper;
@@ -25,22 +28,26 @@ import hu.bme.mit.gamma.headless.server.util.FileHandlerUtil;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import org.apache.commons.lang3.StringUtils;
 
 public class OpenApiWebServer extends AbstractVerticle {
 	private static final String APPLICATION_JSON = "application/json";
 	private static final String MESSAGE = "message";
 	private static final String WORKSPACE = "workspace";
 	private static final String PARSED_PARAMETERS = "parsedParameters";
-	private static final String PROJECT_NAME = "projectName";
+	private static final String PROJECT_NAME = "project";
 	HttpServer server;
 	private static final String DIRECTORY_OF_WORKSPACES_PROPERTY_NAME = "root.of.workspaces.path";
 
@@ -52,15 +59,15 @@ public class OpenApiWebServer extends AbstractVerticle {
 	protected static Logger logger = Logger.getLogger("GammaLogger");
 
 	@Override
-	public void start(Future<Void> future) {
-		OpenAPI3RouterFactory.create(this.vertx, "gamma-wrapper.yaml", ar -> {
+	public void start(Promise<Void> future) {
+		RouterBuilder.create(this.vertx, "gamma-wrapper.yaml", ar -> {
 			SessionHandler sessionHandler = SessionHandler.create(LocalSessionStore.create(vertx));
 
-			OpenAPI3RouterFactory routerFactory;
+			RouterBuilder routerFactory;
 			if (ar.succeeded()) {
 				routerFactory = ar.result();
-				routerFactory.getRouter().route().handler(sessionHandler);
-				routerFactory.addHandlerByOperationId("runOperation", routingContext -> {
+				routerFactory.createRouter().route().handler(sessionHandler);
+				routerFactory.operation("runOperation").handler(routingContext -> {
 
 					logger.log(Level.INFO, ANSI_YELLOW + "Operation \"runOperation\" has started." + ANSI_RESET);
 
@@ -89,7 +96,7 @@ public class OpenApiWebServer extends AbstractVerticle {
 					}
 				});
 
-				routerFactory.addHandlerByOperationId("getResult", routingContext -> {
+				routerFactory.operation("getResult").handler(routingContext -> {
 
 					logger.log(Level.INFO, ANSI_YELLOW + "Operation \"getResult\" has started." + ANSI_RESET);
 
@@ -122,12 +129,12 @@ public class OpenApiWebServer extends AbstractVerticle {
 					}
 				});
 
-				routerFactory.addHandlerByOperationId("addProject", routingContext -> {
+				routerFactory.operation("addProject").handler(routingContext -> {
 
 					logger.log(Level.INFO, ANSI_YELLOW + "Operation \"addProject\" has started." + ANSI_RESET);
 
 					RequestParameters params = routingContext.get(PARSED_PARAMETERS);
-					String ownerContact = routingContext.request().formAttributes().get("contactEmail");
+					//String ownerContact = routingContext.request().formAttributes().get("contactEmail");
 					String workspace = params.pathParameter(WORKSPACE).getString();
 					boolean success = true;
 					for (FileUpload f : routingContext.fileUploads()) {
@@ -141,7 +148,7 @@ public class OpenApiWebServer extends AbstractVerticle {
 										Paths.get(FileHandlerUtil.getProperty(DIRECTORY_OF_WORKSPACES_PROPERTY_NAME)
 												+ workspace + File.separator + f.fileName()));
 								String projectName = f.fileName().substring(0, f.fileName().lastIndexOf("."));
-								ProcessBuilderCli.createEclipseProject(projectName, workspace, ownerContact);
+								ProcessBuilderCli.createEclipseProject(projectName, workspace, "example@email.com");
 								logger.log(Level.INFO, ANSI_YELLOW
 										+ "Operation \"addProject\": parameters passed to CLI." + ANSI_RESET);
 							}
@@ -159,7 +166,7 @@ public class OpenApiWebServer extends AbstractVerticle {
 					}
 				});
 
-				routerFactory.addHandlerByOperationId("addWorkspace", routingContext -> {
+				routerFactory.operation("addWorkspace").handler(routingContext -> {
 
 					logger.log(Level.INFO, ANSI_YELLOW + "Operation \"addWorkspace\" has started." + ANSI_RESET);
 
@@ -171,7 +178,7 @@ public class OpenApiWebServer extends AbstractVerticle {
 					} catch (IOException | InterruptedException e) {
 						e.printStackTrace();
 					}
-					if (Strings.isNullOrEmpty(workspaceUUID)) {
+					if (StringUtils.isEmpty(workspaceUUID)) {
 						routingContext.response().setStatusCode(500).end();
 					} else {
 						routingContext.response().setStatusCode(200)
@@ -179,7 +186,7 @@ public class OpenApiWebServer extends AbstractVerticle {
 					}
 				});
 
-				routerFactory.addHandlerByOperationId("stopOperation", routingContext -> {
+				routerFactory.operation("stopOperation").handler(routingContext -> {
 
 					logger.log(Level.INFO, ANSI_YELLOW + "Operation \"stopOperation\" has started." + ANSI_RESET);
 
@@ -207,7 +214,7 @@ public class OpenApiWebServer extends AbstractVerticle {
 					}
 				});
 
-				routerFactory.addHandlerByOperationId("deleteProject", routingContext -> {
+				routerFactory.operation("deleteProject").handler(routingContext -> {
 
 					logger.log(Level.INFO, ANSI_YELLOW + "Operation \"deleteProject\" has started." + ANSI_RESET);
 
@@ -234,7 +241,7 @@ public class OpenApiWebServer extends AbstractVerticle {
 					}
 				});
 
-				routerFactory.addHandlerByOperationId("getStatus", routingContext -> {
+				routerFactory.operation("getStatus").handler(routingContext -> {
 
 					logger.log(Level.INFO, ANSI_YELLOW + "Operation \"getStatus\" has started." + ANSI_RESET);
 
@@ -269,7 +276,7 @@ public class OpenApiWebServer extends AbstractVerticle {
 					}
 				});
 
-				routerFactory.addHandlerByOperationId("addAndRun", routingContext -> {
+				routerFactory.operation("addAndRun").handler(routingContext -> {
 
 					logger.log(Level.INFO, ANSI_YELLOW + "Operation \"addAndRun\" has started." + ANSI_RESET);
 
@@ -328,7 +335,7 @@ public class OpenApiWebServer extends AbstractVerticle {
 					}
 				});
 
-				routerFactory.addHandlerByOperationId("list", routingContext -> {
+				routerFactory.operation("list").handler(routingContext -> {
 
 					logger.log(Level.INFO, ANSI_YELLOW + "Operation \"list\" has started." + ANSI_RESET);
 
@@ -368,8 +375,50 @@ public class OpenApiWebServer extends AbstractVerticle {
 						sendErrorResponse(routingContext, errorHandlerPOJO);
 					}
 				});
+				
+				routerFactory.operation("setLogLevel").handler(routingContext -> {
 
-				Router router = routerFactory.getRouter();
+					logger.log(Level.INFO, ANSI_YELLOW + "Operation \"setLogLevel\" has started." + ANSI_RESET);
+
+					RequestParameters params = routingContext.get(PARSED_PARAMETERS);
+					String logLevel = params.pathParameter("logLevel").getString().toLowerCase();
+					boolean success = false;
+					
+					switch(logLevel) {
+					case "info":
+						logger.setLevel(Level.INFO);
+						ProcessBuilderCli.setProcessCliLogLevel(Level.INFO);
+						success = true;
+						break;
+					case "warning":
+						logger.setLevel(Level.WARNING);
+						ProcessBuilderCli.setProcessCliLogLevel(Level.WARNING);
+						success = true;
+						break;
+					case "severe":
+						logger.setLevel(Level.SEVERE);
+						ProcessBuilderCli.setProcessCliLogLevel(Level.SEVERE);
+						success = true;
+						break;
+					case "off":
+						logger.setLevel(Level.OFF);
+						ProcessBuilderCli.setProcessCliLogLevel(Level.OFF);
+						success = true;
+						break;
+					}
+
+					if (success) {
+						routingContext.response().setStatusCode(200)
+								.putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON).end("Logger level successfully set to: " + logLevel);
+					} else {
+						JsonObject errorObject = new JsonObject().put("code", 400).put(MESSAGE,
+								"The provided log level was incorrect. The following levels are accepted: \"info\", \"warning\", \"severe\" and \"off\". ");
+						routingContext.response().setStatusCode(400)
+								.putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON).end(errorObject.encode());
+					}
+				});
+
+				Router router = routerFactory.createRouter();
 
 				router.errorHandler(404, routingContext -> {
 					JsonObject errorObject = new JsonObject().put("code", 404).put(MESSAGE,
@@ -377,6 +426,8 @@ public class OpenApiWebServer extends AbstractVerticle {
 					routingContext.response().setStatusCode(404).putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
 							.end(errorObject.encode());
 				});
+				
+
 
 				server = vertx.createHttpServer(new HttpServerOptions().setPort(8080).setHost("localhost")); // <5>
 				server.requestHandler(router).listen(8080);
@@ -429,8 +480,12 @@ public class OpenApiWebServer extends AbstractVerticle {
 			if (noOp) {
 				logger.log(Level.INFO, '\t' + "none");
 			}
+			logger.log(Level.WARNING, "This is a WARNING level log");
+			logger.log(Level.SEVERE, "This is a SEVERE level log");
 		} else {
 			logger.log(Level.INFO, "No workspaces are present.");
+			logger.log(Level.WARNING, "This is a WARNING level log");
+			logger.log(Level.SEVERE, "This is a SEVERE level log");
 		}
 	}
 
@@ -450,9 +505,14 @@ public class OpenApiWebServer extends AbstractVerticle {
 		});
 		vertx.deployVerticle(new OpenApiWebServer(), ar -> {
 			if (ar.succeeded()) {
+				//Logger rootLogger = Logger.getLogger("");
+				//rootLogger.setLevel(Level.SEVERE);
+//				logger.setLevel(Level.SEVERE);
 				logger.log(Level.INFO, ANSI_GREEN + "Headless Gamma OpenAPI server is running." + ANSI_RESET);
+
 			} else {
 				logger.log(Level.INFO, ANSI_RED + "Headless Gamma OpenAPI server failed to start." + ANSI_RESET);
+				logger.log(Level.INFO, System.getProperties().getProperty("user.dir"));
 				Future.failedFuture(ar.cause());
 			}
 		});

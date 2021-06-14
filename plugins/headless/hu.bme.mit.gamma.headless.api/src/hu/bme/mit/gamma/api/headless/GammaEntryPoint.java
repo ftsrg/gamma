@@ -45,8 +45,9 @@ public class GammaEntryPoint extends HeadlessApplicationCommandHandler {
 
 	private static final String UNDER_OPERATION_PROPERTY = "underOperation";
 
-	public GammaEntryPoint(IApplicationContext context, String[] appArgs) {
-		super(context, appArgs);
+	public GammaEntryPoint(IApplicationContext context, String[] appArgs, Level level) {
+		super(context, appArgs, level);
+		logger.setLevel(level);
 	}
 
 	@Override
@@ -59,9 +60,9 @@ public class GammaEntryPoint extends HeadlessApplicationCommandHandler {
 		GenModelStandaloneSetup.doSetup();
 
 		if (appArgs.length >= 1) {
-			String ggenFilePath = URI.decode(appArgs[1]);
+			String ggenFilePath = URI.decode(appArgs[2]);
 			File ggenFile = new File(ggenFilePath);
-			String projectDescriptorPath = URI.decode(appArgs[2]);
+			String projectDescriptorPath = URI.decode(appArgs[3]);
 			File projectFolder = getContainingProject(ggenFile);
 			String projectName = projectFolder.getName();
 			String fileWorkspaceRelativePath = ggenFilePath.substring(projectFolder.getParent().length());
