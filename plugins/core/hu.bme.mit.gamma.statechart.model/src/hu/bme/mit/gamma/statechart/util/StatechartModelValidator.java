@@ -1778,7 +1778,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 			if (priorityValues.contains(priorityValue)) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING, 
 						"Another queue with the same priority is already defined", 
-						new ReferenceInfo(CompositeModelPackage.Literals.CHANNEL__PROVIDED_PORT, queue)));
+						new ReferenceInfo(CompositeModelPackage.Literals.PRIORITIZED_ELEMENT__PRIORITY, queue)));
 			}
 			else {
 				priorityValues.add(priorityValue);
