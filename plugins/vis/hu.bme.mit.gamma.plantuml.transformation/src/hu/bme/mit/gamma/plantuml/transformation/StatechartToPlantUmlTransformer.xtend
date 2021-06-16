@@ -39,8 +39,13 @@ import hu.bme.mit.gamma.statechart.statechart.UnaryTrigger
 import hu.bme.mit.gamma.statechart.statechart.UnaryType
 import hu.bme.mit.gamma.statechart.util.ActionSerializer
 import hu.bme.mit.gamma.statechart.util.ExpressionSerializer
+import hu.bme.mit.gamma.expression.util.TypeSerializer
+
+
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
+import hu.bme.mit.gamma.statechart.statechart.Region
+import org.eclipse.emf.common.util.EList
 
 class StatechartToPlantUmlTransformer {
 	
@@ -48,6 +53,7 @@ class StatechartToPlantUmlTransformer {
 	
 	protected extension ActionSerializer actionSerializer = ActionSerializer.INSTANCE
 	protected extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
+	protected extension TypeSerializer typeSerializer = TypeSerializer.INSTANCE
 
 	new(StatechartDefinition statechart) {
 		this.statechart = statechart
@@ -55,6 +61,7 @@ class StatechartToPlantUmlTransformer {
 
 	def String execute() '''
 		@startuml
+			«statechart.listVariablesInNote»
 			«statechart.mainRegionSearch»
 		@enduml
 	'''
@@ -222,13 +229,18 @@ class StatechartToPlantUmlTransformer {
 										«stateActionsSearch(inner)»
 									«ENDIF»
 								«ENDIF»
+								«FOR itransition: statechart.transitions»
+									«IF itransition.sourceState == inner»
+										«stateSearch(itransition)»
+									«ENDIF»
+								«ENDFOR»
 						«ENDFOR»
 						«FOR inner: region.stateNodes»
-							«FOR itransition: statechart.transitions»
-								«IF itransition.sourceState == inner»
-									«stateSearch(itransition)»
-								«ENDIF»
-							«ENDFOR»
+«««							«FOR itransition: statechart.transitions»
+«««								«IF itransition.sourceState == inner»
+«««									«stateSearch(itransition)»
+«««								«ENDIF»
+«««							«ENDFOR»
 						«ENDFOR»
 						«IF regionsDispatch(state).length > 1 && region !== regionsDispatch(state).last»
 							--
@@ -300,16 +312,18 @@ class StatechartToPlantUmlTransformer {
 	 * main region. The result of this method is the mainString variable, which contains the whole visualization.
 	 * 
 	 */
+	 
+	 
+	 
 	protected def mainRegionSearch(StatechartDefinition statechart){
 		val mainString = '''
+		«IF statechart.regions.size > 1»state «statechart.name» {«ENDIF»
 			«FOR main : statechart.regions»
 				«FOR pseudo: main.stateNodes»
 					«IF pseudo instanceof PseudoState»
 						«pseudo.transformPseudoState»
 					«ENDIF»
 				«ENDFOR»
-			«ENDFOR»
-			«FOR main : statechart.regions»
 				«FOR mainstate: main.stateNodes.filter(State)»
 					«regionSearch(mainstate, statechart)»
 					«IF !(mainstate instanceof PseudoState)»
@@ -318,18 +332,44 @@ class StatechartToPlantUmlTransformer {
 						«ENDIF»
 					«ENDIF»
 				«ENDFOR»
-			«ENDFOR»
-			«FOR transition : statechart.transitions»
-				«FOR main: statechart.regions»
+				«FOR transition : statechart.transitions»
 					«FOR mainstate: main.stateNodes»
 						«IF transition.sourceState == mainstate»
 							«stateSearch(transition)»
 						«ENDIF»
 					«ENDFOR»
 				«ENDFOR»
+				
+				«IF !(isLastRegion(statechart.regions, main))»
+					--
+				«ENDIF»
+				
 			«ENDFOR»
+«««			«FOR main : statechart.regions»
+«««				
+«««			«ENDFOR»
+«««			«FOR main: statechart.regions»
+«««
+«««			«ENDFOR»
+		«IF statechart.regions.size > 1»
+		}
+		[*] -> «statechart.name»
+		«ENDIF»
 		'''
 		return mainString
+	}
+	
+	protected def isLastRegion(EList<Region> regions, Region region) {
+		val size = regions.size
+		if(regions.contains(region)) {
+			if(regions.indexOf(region) == size -1) {
+				return true
+			} else {
+				return false
+			}
+		} else {
+			return false
+		}
 	}
 	
 	/**
@@ -348,8 +388,14 @@ class StatechartToPlantUmlTransformer {
 		val guard = transition.guard
 		val effects = transition.effects
 		val target = transition.targetState
+		var arrow = ""
+		if(transition.sourceState instanceof EntryState) {
+			arrow = "->"
+		} else {
+			arrow = "-->"
+		}
 		return '''
-			«transition.sourceText» --> «target.name»«IF !transition.empty» : «ENDIF»«IF trigger !== null»«trigger.transformTrigger»«ENDIF» «IF guard !== null»[«guard.serialize»]«ENDIF»«FOR effect : effects BEFORE ' /\\n' SEPARATOR '\\n'»«effect.transformAction»«ENDFOR»
+			«transition.sourceText» «arrow» «target.name»«IF !transition.empty» : «ENDIF»«IF trigger !== null»«trigger.transformTrigger»«ENDIF» «IF guard !== null»[«guard.serialize»]«ENDIF»«FOR effect : effects BEFORE ' /\\n' SEPARATOR '\\n'»«effect.transformAction»«ENDFOR»
 		'''
 	}
 	
@@ -369,6 +415,23 @@ class StatechartToPlantUmlTransformer {
 				return source.name
 			}
 		}
+	}
+	
+	
+	protected def listVariablesInNote (StatechartDefinition statechart) {
+		'''note as VariableNotes
+		«FOR variables: statechart.variableDeclarations»
+			var «variables.name»: «variables.typeDefinition.serialize»
+		«ENDFOR»
+		endnote
+		
+		note as TimeoutVarialbeNotes
+		«FOR timeouts: statechart.timeoutDeclarations»
+			timeout «timeouts.name»
+		«ENDFOR»
+		endnote
+		'''
+		
 	}
 	
 }

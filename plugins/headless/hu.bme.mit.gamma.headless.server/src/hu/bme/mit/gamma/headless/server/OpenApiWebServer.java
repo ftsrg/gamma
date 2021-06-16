@@ -2,6 +2,7 @@ package hu.bme.mit.gamma.headless.server;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
+import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpHeaders;
@@ -430,7 +431,10 @@ public class OpenApiWebServer extends AbstractVerticle {
 
 
 				server = vertx.createHttpServer(new HttpServerOptions().setPort(8080).setHost("localhost")); // <5>
-				server.requestHandler(router).listen(8080);
+				server.requestHandler(x -> {
+					router.handle(x);
+				}).listen(8080);
+				
 				future.complete();
 			} else {
 				future.fail(ar.cause());
