@@ -28,6 +28,9 @@ import hu.bme.mit.gamma.headless.server.service.ProcessBuilderCli;
 import hu.bme.mit.gamma.headless.server.util.FileHandlerUtil;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.nio.file.Files;
@@ -40,6 +43,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -130,12 +135,41 @@ public class OpenApiWebServer extends AbstractVerticle {
 					}
 				});
 
+				routerFactory.operation("getLogs").handler(routingContext -> {
+					RequestParameters params = routingContext.get(PARSED_PARAMETERS);
+					String workspace = params.pathParameter(WORKSPACE).getString();
+					String logPath = FileHandlerUtil.getProperty(DIRECTORY_OF_WORKSPACES_PROPERTY_NAME) + File.separator
+							+ workspace + File.separator + ".metadata" + File.separator + ".log";
+					boolean success = false;
+					try {
+						FileInputStream inputLog = new FileInputStream(logPath);
+						inputLog.close();
+						success = true;
+					} catch (FileNotFoundException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+
+					if (success) {
+						routingContext.response().setStatusCode(200).putHeader(HttpHeaders.CONTENT_TYPE, "text/plain")
+								.sendFile(logPath);
+					} else {
+						JsonObject errorObject = new JsonObject().put("code", 404).put(MESSAGE,
+								"The log file requested does not exist.");
+						routingContext.response().setStatusCode(404)
+								.putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON).end(errorObject.encode());
+					}
+
+				});
+
 				routerFactory.operation("addProject").handler(routingContext -> {
 
 					logger.log(Level.INFO, ANSI_YELLOW + "Operation \"addProject\" has started." + ANSI_RESET);
 
 					RequestParameters params = routingContext.get(PARSED_PARAMETERS);
-					//String ownerContact = routingContext.request().formAttributes().get("contactEmail");
 					String workspace = params.pathParameter(WORKSPACE).getString();
 					boolean success = true;
 					for (FileUpload f : routingContext.fileUploads()) {
@@ -149,7 +183,7 @@ public class OpenApiWebServer extends AbstractVerticle {
 										Paths.get(FileHandlerUtil.getProperty(DIRECTORY_OF_WORKSPACES_PROPERTY_NAME)
 												+ workspace + File.separator + f.fileName()));
 								String projectName = f.fileName().substring(0, f.fileName().lastIndexOf("."));
-								ProcessBuilderCli.createEclipseProject(projectName, workspace, "example@email.com");
+								ProcessBuilderCli.createEclipseProject(projectName, workspace);
 								logger.log(Level.INFO, ANSI_YELLOW
 										+ "Operation \"addProject\": parameters passed to CLI." + ANSI_RESET);
 							}
@@ -283,7 +317,6 @@ public class OpenApiWebServer extends AbstractVerticle {
 
 					ErrorHandlerPOJO errorHandlerPOJO = null;
 					RequestParameters params = routingContext.get(PARSED_PARAMETERS);
-					String ownerContact = routingContext.request().formAttributes().get("contactEmail");
 					String ggenPath = routingContext.request().formAttributes().get("ggenPath");
 					String workspace = params.pathParameter(WORKSPACE).getString();
 					String fileName = "";
@@ -301,7 +334,7 @@ public class OpenApiWebServer extends AbstractVerticle {
 										Paths.get(FileHandlerUtil.getProperty(DIRECTORY_OF_WORKSPACES_PROPERTY_NAME)
 												+ workspace + File.separator + f.fileName()));
 								String projectName = f.fileName().substring(0, f.fileName().lastIndexOf("."));
-								ProcessBuilderCli.createEclipseProject(projectName, workspace, ownerContact);
+								ProcessBuilderCli.createEclipseProject(projectName, workspace);
 
 								logger.log(Level.INFO, ANSI_YELLOW
 										+ "Operation \"addAndRun\": parameters passed to CLI, importing project. "
@@ -376,7 +409,7 @@ public class OpenApiWebServer extends AbstractVerticle {
 						sendErrorResponse(routingContext, errorHandlerPOJO);
 					}
 				});
-				
+
 				routerFactory.operation("setLogLevel").handler(routingContext -> {
 
 					logger.log(Level.INFO, ANSI_YELLOW + "Operation \"setLogLevel\" has started." + ANSI_RESET);
@@ -384,8 +417,8 @@ public class OpenApiWebServer extends AbstractVerticle {
 					RequestParameters params = routingContext.get(PARSED_PARAMETERS);
 					String logLevel = params.pathParameter("logLevel").getString().toLowerCase();
 					boolean success = false;
-					
-					switch(logLevel) {
+
+					switch (logLevel) {
 					case "info":
 						logger.setLevel(Level.INFO);
 						ProcessBuilderCli.setProcessCliLogLevel(Level.INFO);
@@ -410,7 +443,8 @@ public class OpenApiWebServer extends AbstractVerticle {
 
 					if (success) {
 						routingContext.response().setStatusCode(200)
-								.putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON).end("Logger level successfully set to: " + logLevel);
+								.putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
+								.end("Logger level successfully set to: " + logLevel);
 					} else {
 						JsonObject errorObject = new JsonObject().put("code", 400).put(MESSAGE,
 								"The provided log level was incorrect. The following levels are accepted: \"info\", \"warning\", \"severe\" and \"off\". ");
@@ -427,14 +461,12 @@ public class OpenApiWebServer extends AbstractVerticle {
 					routingContext.response().setStatusCode(404).putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
 							.end(errorObject.encode());
 				});
-				
-
 
 				server = vertx.createHttpServer(new HttpServerOptions().setPort(8080).setHost("localhost")); // <5>
 				server.requestHandler(x -> {
 					router.handle(x);
 				}).listen(8080);
-				
+
 				future.complete();
 			} else {
 				future.fail(ar.cause());
@@ -509,8 +541,8 @@ public class OpenApiWebServer extends AbstractVerticle {
 		});
 		vertx.deployVerticle(new OpenApiWebServer(), ar -> {
 			if (ar.succeeded()) {
-				//Logger rootLogger = Logger.getLogger("");
-				//rootLogger.setLevel(Level.SEVERE);
+				// Logger rootLogger = Logger.getLogger("");
+				// rootLogger.setLevel(Level.SEVERE);
 //				logger.setLevel(Level.SEVERE);
 				logger.log(Level.INFO, ANSI_GREEN + "Headless Gamma OpenAPI server is running." + ANSI_RESET);
 

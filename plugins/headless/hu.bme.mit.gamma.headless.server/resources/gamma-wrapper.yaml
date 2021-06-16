@@ -185,6 +185,23 @@ paths:
         '400':
           description: Wrong logging level provided
           
+  /gamma/getLogs/{workspace}:
+    put:
+      summary: Retrieves the logs from a workspace.
+      description: ''
+      operationId: getLogs
+      parameters:
+      - $ref: '#/components/parameters/WorkspaceIdentifierParam'
+      responses:
+        '200':
+          description: Log file successfully sent.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectFile'
+        '404':
+           description: Log file does not exist.
+          
           
 components:
   parameters:
