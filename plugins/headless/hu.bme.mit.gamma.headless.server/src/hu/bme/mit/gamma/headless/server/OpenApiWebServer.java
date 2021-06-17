@@ -275,6 +275,27 @@ public class OpenApiWebServer extends AbstractVerticle {
 						sendErrorResponse(routingContext, errorHandlerPOJO);
 					}
 				});
+				
+				routerFactory.operation("deleteWorkspace").handler(routingContext -> {
+					
+					logger.log(Level.INFO, ANSI_YELLOW + "Operation \"deleteWorkspace\" has started." + ANSI_RESET);
+					
+					ErrorHandlerPOJO errorHandlerPOJO = null;
+					RequestParameters params = routingContext.get(PARSED_PARAMETERS);
+					String workspace = params.pathParameter(WORKSPACE).getString();
+					
+					boolean success = Provider.deleteWorkspace(workspace);
+					
+					if (success) {
+						routingContext.response().setStatusCode(200)
+						.putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON).end();
+					} else {
+						JsonObject errorObject = new JsonObject().put("code", 400).put(MESSAGE,
+								"Workspace can't be deleted. Make sure that the workspace exists, and that it is empty.");
+						routingContext.response().setStatusCode(400)
+								.putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON).end(errorObject.encode());
+					}
+				});
 
 				routerFactory.operation("getStatus").handler(routingContext -> {
 

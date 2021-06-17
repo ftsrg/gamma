@@ -121,6 +121,8 @@ paths:
           description: The project is currently under operation
         404:
           description: Did not provide a valid workspace or project name
+          
+  
   /gamma/{workspace}/{project}/status:
     get:
       summary: Get the status of the project.
@@ -137,7 +139,7 @@ paths:
                 $ref: '#/components/schemas/ProjectFilesList'
         404:
           description: Did not provide a valid workspace or project name
-  /gamma/{workspace}/addAndRun:
+  /gamma/{workspace}/addandrun:
     put:
       summary: Uploads a project to the workspace and executes a .ggen file
       operationId: addAndRun
@@ -185,7 +187,7 @@ paths:
         '400':
           description: Wrong logging level provided
           
-  /gamma/getLogs/{workspace}:
+  /gamma/{workspace}/getlogs:
     put:
       summary: Retrieves the logs from a workspace.
       description: ''
@@ -202,7 +204,18 @@ paths:
         '404':
            description: Log file does not exist.
           
-          
+  /gamma/deleteworkspace/{workspace}:
+    put:
+       summary: Deletes a given workspace if it exists and is empty.
+       operationId: deleteWorkspace
+       parameters:
+          - $ref: '#/components/parameters/WorkspaceIdentifierParam'
+       responses:
+          200:
+             description: Success
+          400:
+             description: Workspace doesn't exist, or isn't empty.
+                
 components:
   parameters:
     WorkspaceIdentifierParam:
