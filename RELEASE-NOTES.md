@@ -189,3 +189,16 @@
 
 * The transformations from Gamma to XSTS have been optimized to enable faster verification.
 * System optimization bugs in the transformations have been fixed.
+
+## 2021.06.14. - Version 2.5.1
+
+### What is New
+
+* Records, arrays and functions are now supported in the XSTS transformation chain.
+
+### Improvements
+
+* Enum literals are now referenced via their types.
+* New validation rules in the GEL and GAL have been introduced.
+* Some optimizations in the XSTS transformation chain have been fixed.
+* Some bugs while transforming models with special characteristics (e.g., models without input and output events) have been fixed.
