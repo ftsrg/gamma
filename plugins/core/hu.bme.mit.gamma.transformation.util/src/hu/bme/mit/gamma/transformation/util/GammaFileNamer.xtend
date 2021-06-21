@@ -20,6 +20,7 @@ class GammaFileNamer {
 	public static final String PROPERTY_SERIALIZED_EXTENSION = "pd"; // Both UPPAAL and Theta
 	
 	public static final String EXECUTION_XTEXT_EXTENSION = "get";
+	public static final String VERIFICATION_RESULT_EXTENSION = "json";
 	
 	public static final String XSTS_EMF_EXTENSION = "gsts";
 	public static final String XSTS_XTEXT_EXTENSION = "xsts";

@@ -95,7 +95,7 @@ public class ExpressionModelValidator {
 			if (names.contains(name)) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 						"Identifiers in a scope must be unique",
-						new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME, null, element)));
+						new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME, element)));
 			}
 			else {
 				names.add(name);
@@ -280,7 +280,7 @@ public class ExpressionModelValidator {
 	
 	public Collection<ValidationResultMessage> checkSelectExpression(SelectExpression expression){
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		// check if the referred object
+		// Check if the referred object
 		Expression operand = expression.getOperand();
 		TypeDefinition type = typeDeterminator.getTypeDefinition(operand);
 		if (type instanceof EnumerableTypeDefinition) {
@@ -298,7 +298,7 @@ public class ExpressionModelValidator {
 		if (container instanceof Expression) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 					"Else expressions must not be contained by composite expressions", 
-					new ReferenceInfo(expression.eContainingFeature(), null, expression.eContainer())));
+					new ReferenceInfo(expression.eContainingFeature(), expression.eContainer())));
 		}
 		return validationResultMessages;
 	}
@@ -545,7 +545,7 @@ public class ExpressionModelValidator {
 						"The size of the array must be given as an integer",
 						new ReferenceInfo(ExpressionModelPackage.Literals.ARRAY_TYPE_DEFINITION__SIZE)));
 			}
-			// Array init size must be greater than 0
+			// Array initial size must be greater than 0
 			if (expressionEvaluator.evaluateInteger(arrayType.getSize()) <= 0) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 						"The size of the array must be greater than 0",
@@ -562,7 +562,7 @@ public class ExpressionModelValidator {
 		// BinaryExpression
 		if (expression instanceof BinaryExpression) {
 			BinaryExpression binaryExpression = (BinaryExpression) expression;
-			// the left and the right hand sides same
+			// The left and the right hand sides same
 			if (ecoreUtil.helperEquals(binaryExpression.getLeftOperand(), binaryExpression.getRightOperand())) {
 				// EquivalenceExpression
 				if (expression instanceof EquivalenceExpression) {
@@ -573,7 +573,7 @@ public class ExpressionModelValidator {
 								"This expression is always true, because the left and right hand sides are same",
 								new ReferenceInfo(ExpressionModelPackage.Literals.BINARY_EXPRESSION__RIGHT_OPERAND)));
 					}
-					//InequalityExpressin
+					// InequalityExpression
 					if (equivalenceExpression instanceof InequalityExpression) {
 						validationResultMessages.add(new ValidationResultMessage(ValidationResult.INFO,
 								"This expression is always false, because the left and right hand sides are same",
@@ -606,8 +606,9 @@ public class ExpressionModelValidator {
 			if (expression instanceof BinaryExpression) {
 				BinaryExpression binaryExpression = (BinaryExpression) expression;
 				// DivideExpression, DivExpression, ModExpression
-				if (expression instanceof DivideExpression || expression instanceof DivExpression || expression instanceof ModExpression) {
-					// right hand side is zero
+				if (expression instanceof DivideExpression || expression instanceof DivExpression ||
+						expression instanceof ModExpression) {
+					// Right hand side is zero
 					if (expressionEvaluator.evaluateInteger(binaryExpression.getRightOperand()) == 0) {
 						validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 								"Division by zero is not allowed",
@@ -623,10 +624,10 @@ public class ExpressionModelValidator {
 
 	public Collection<ValidationResultMessage> checkRecordSelfReference(TypeDeclaration typeDeclaration) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		// visited TypeDeclaration
+		// Visited TypeDeclaration
 		List<TypeDeclaration> visitedNodes = new ArrayList<TypeDeclaration>();
 		visitedNodes.add(typeDeclaration);
-		// search for self-reference
+		// Search for self-reference
 		validationResultMessages.addAll(checkRecordSelfReferenceHelp(typeDeclaration, visitedNodes));
 
 		return validationResultMessages;
@@ -637,7 +638,7 @@ public class ExpressionModelValidator {
 		// RecordTypeDefinition
 		Type type = visitedNodes.get(0).getType();
 		if (type instanceof RecordTypeDefinition) {
-			// check all FieldDeclarations
+			// Check all FieldDeclarations
 			RecordTypeDefinition recordTypeDefinition = (RecordTypeDefinition) type;
 			for (FieldDeclaration fieldDeclaration : recordTypeDefinition.getFieldDeclarations()) {
 				// TypeReference
@@ -645,7 +646,7 @@ public class ExpressionModelValidator {
 				if (fieldType instanceof TypeReference) {
 					TypeReference fieldTypeReference = (TypeReference) fieldType;
 					TypeDeclaration fieldReferencedTypeDeclaration = fieldTypeReference.getReference();
-					// equal with checked record
+					// Equal to checked record
 					if (fieldReferencedTypeDeclaration == typeDeclaration) {
 						validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 								"Record cannot store itself either directly or indirectly, " +
@@ -653,7 +654,7 @@ public class ExpressionModelValidator {
 								typeDeclaration.getName().toUpperCase(),
 								new ReferenceInfo(ExpressionModelPackage.Literals.DECLARATION__TYPE)));
 					}
-					// check - if it doesn't equal with checked record and if it isn't visited record
+					// Check - if it is not equal to the checked record and if it is not a visited record
 					else if (!visitedNodes.contains(fieldReferencedTypeDeclaration)) {
 						visitedNodes.add(0, fieldReferencedTypeDeclaration);
 						validationResultMessages.addAll(checkRecordSelfReferenceHelp(typeDeclaration, visitedNodes));
@@ -667,7 +668,7 @@ public class ExpressionModelValidator {
 	public Collection<ValidationResultMessage> checkRationalLiteralExpression(RationalLiteralExpression expression) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		try {
-			// check denominator
+			// Check denominator
 			if (expression.getDenominator().intValue() == 0) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 						"The denominator cannot be zero",
@@ -681,28 +682,28 @@ public class ExpressionModelValidator {
 
 	public Collection<ValidationResultMessage> checkRecordLiteralExpression(RecordLiteralExpression expression) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		// find RecordTypeDefinition
+		// Find RecordTypeDefinition
 		TypeDeclaration typeDeclaration = expression.getTypeDeclaration();
 		Type type = typeDeclaration.getType();
 		RecordTypeDefinition recordTypeDefinition = (RecordTypeDefinition) type;
-		// check all FieldDeclaration and all FieldAssignment
+		// Check all FieldDeclaration and all FieldAssignment
 		for (FieldDeclaration rTypeField : recordTypeDefinition.getFieldDeclarations()) {
 			int counter = 0;
 			for (FieldAssignment rLiFieldAssignment : expression.getFieldAssignments()) {
 				FieldReferenceExpression fieldReferenceExpression = rLiFieldAssignment.getReference();
 				FieldDeclaration fieldDeclaration = fieldReferenceExpression.getFieldDeclaration();
-				// same fields
+				// Same fields
 				if (fieldDeclaration == rTypeField) {
 					counter++;
 				}
 			}
-			// this field has no value
+			// This field has no value
 			if (counter == 0) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 						"All fields in the definition must have a value",
 						new ReferenceInfo(ExpressionModelPackage.Literals.RECORD_LITERAL_EXPRESSION__FIELD_ASSIGNMENTS)));
 			}
-			// this field has more than once value
+			// This field has more than once value
 			if (counter >= 2) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 						"You cannot add value to a field more than once",
@@ -714,23 +715,23 @@ public class ExpressionModelValidator {
 	
 	public Collection<ValidationResultMessage> checkIntegerRangeLiteralExpression(IntegerRangeLiteralExpression expression) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		// check left operand
+		// Check left operand
 		Expression leftExp = expression.getLeftOperand();
 		Expression rightExp = expression.getRightOperand();
 		if (!typeDeterminator.isInteger(leftExp)) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-					"The operands of the integer range must be integers, but now the left operand is not an integer, the type of the left operand is: " + 
-						typeDeterminator.print(leftExp),
+				"The operands of the integer range must be integers, but now the left operand is not an integer, " +
+					"the type of the left operand is: " + typeDeterminator.print(leftExp),
 					new ReferenceInfo(ExpressionModelPackage.Literals.INTEGER_RANGE_LITERAL_EXPRESSION__LEFT_INCLUSIVE)));
 		}
-		// check right operand		
+		// Check right operand		
 		if (!typeDeterminator.isInteger(rightExp)) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-					"The operands of the integer range must be integers, but now the right operand is not an integer, the type of the right operand is: " + 
-						typeDeterminator.print(rightExp),
+				"The operands of the integer range must be integers, but now the right operand is not an integer, " +
+					"the type of the right operand is: " + typeDeterminator.print(rightExp),
 					new ReferenceInfo(ExpressionModelPackage.Literals.INTEGER_RANGE_LITERAL_EXPRESSION__RIGHT_INCLUSIVE)));
 		}
-		// check right operand is less than left operand
+		// Check right operand is less than left operand
 		if (typeDeterminator.isInteger(rightExp) && typeDeterminator.isInteger(leftExp)) {
 			try {
 				if (expressionEvaluator.evaluateInteger(leftExp) > expressionEvaluator.evaluateInteger(rightExp)) {
@@ -790,11 +791,15 @@ public class ExpressionModelValidator {
 		private Integer index;
 		
 		public ReferenceInfo(EStructuralFeature reference){
-			this(reference, null);
+			this(reference, null, null);
 		}
 		
 		public ReferenceInfo(EStructuralFeature reference, Integer index){
 			this(reference, index, null);
+		}
+		
+		public ReferenceInfo(EStructuralFeature reference, EObject source){
+			this(reference, null, source);
 		}
 		
 		public ReferenceInfo(EStructuralFeature reference, Integer index, EObject source) {

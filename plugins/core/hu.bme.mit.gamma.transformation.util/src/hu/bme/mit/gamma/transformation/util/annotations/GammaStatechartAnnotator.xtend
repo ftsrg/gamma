@@ -618,7 +618,7 @@ class GammaStatechartAnnotator {
 	
 	protected def annotateModelForDataflowCoverage(Set<? extends EObject> defReferences,
 			Set<? extends ReferenceExpression> useReferences, DataflowDeclarationHandler handler) {
-		// Every def variable must be created before this next loop
+		// Every def variable must be created by now
 		for (defReference : defReferences) {
 			val defVariablePairList = handler.getDefDataflowReferences(defReference)
 			val originalAssignment = defReference.getSelfOrContainerOfType(Action)
@@ -626,10 +626,14 @@ class GammaStatechartAnnotator {
 				val reference = defVariablePair.getOriginalVariableReference
 				val defVariable = defVariablePair.getDefUseVariable
 				val expression = defReference === reference ? createTrueExpression : createFalseExpression
-				originalAssignment.append(defVariable.createAssignment(expression))
+				val assignment = defVariable.createAssignment(expression)
+				originalAssignment.append(assignment)
+				// This way use-defs are covered too, not only def-uses
+				// TODO Reset uses too, this way var := var + 1; like statements could not be handled
+				// TODO Check the order of the two loops
 			}
 		}
-		// Every use variable must be created before this next loop
+		// Every use variable must be created by now
 		for (useReference : useReferences) {
 			val useVariable = handler.getUseVariable(useReference)
 			val assignment = useVariable.createAssignment(createTrueExpression)

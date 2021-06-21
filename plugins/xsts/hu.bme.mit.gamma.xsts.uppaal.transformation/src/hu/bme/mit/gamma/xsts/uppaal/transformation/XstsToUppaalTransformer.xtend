@@ -70,8 +70,9 @@ class XstsToUppaalTransformer {
 	
 	def execute() {
 		resetCommittedLocationName
-		val initialLocation = createTemplateWithInitLoc(templateName, initialLocationName)
+		val initialLocation = templateName.createTemplateWithInitLoc(initialLocationName)
 		initialLocation.locationTimeKind = LocationKind.COMMITED
+		val template = initialLocation.parentTemplate
 		
 		val initializingAction = xSts.initializingAction
 		val environmentalAction = xSts.environmentalAction
@@ -83,12 +84,14 @@ class XstsToUppaalTransformer {
 		stableLocation.name = stableLocationName
 		stableLocation.locationTimeKind = LocationKind.NORMAL
 		
-		val environmentFinishLocation = environmentalAction.transformAction(stableLocation)
-		// If there is no environmental action, the stable location should not be overwritten 
-		if (environmentFinishLocation !== stableLocation) {
-			environmentFinishLocation.name = environmentFinishLocationName
-			environmentFinishLocation.locationTimeKind = LocationKind.NORMAL // So optimization does not delete it
+		var environmentFinishLocation = environmentalAction.transformAction(stableLocation)
+		// If there is no environmental action, we create an environmentFinishLocation (needed for back-annotation)
+		if (environmentFinishLocation === stableLocation) {
+			environmentFinishLocation = template.createLocation
+			stableLocation.createEdge(environmentFinishLocation)
 		}
+		environmentFinishLocation.name = environmentFinishLocationName
+		environmentFinishLocation.locationTimeKind = LocationKind.NORMAL // So optimization does not delete it
 		
 		val systemFinishLocation = mergedAction.transformAction(environmentFinishLocation)
 		

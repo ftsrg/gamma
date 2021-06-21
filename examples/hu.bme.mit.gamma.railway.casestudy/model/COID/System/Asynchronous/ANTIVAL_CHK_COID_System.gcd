@@ -20,9 +20,9 @@ async AntivalenceChecker_System [
 	bind Antivalence_Input -> antival_chk_I_CR.Signals
 	bind Antivalence_Input -> antival_chk_I_FT.Signals
 
-	bind I_CR_Timeout -> antival_chk_I_CR.T
-	bind I_FT_Timeout -> antival_chk_I_FT.T
-	bind I_Coid_Timeout -> coid.T
+//	bind I_CR_Timeout -> antival_chk_I_CR.T
+//	bind I_FT_Timeout -> antival_chk_I_FT.T
+//	bind I_Coid_Timeout -> coid.T
 
 	bind Coid_Output -> coid.StateMachine_OutPort
 	

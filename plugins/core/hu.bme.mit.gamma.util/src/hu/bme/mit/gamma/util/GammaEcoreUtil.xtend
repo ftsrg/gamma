@@ -260,7 +260,7 @@ class GammaEcoreUtil {
 		}
 		return true
 	}
-
+	
 	def boolean helperEquals(EObject lhs, EObject rhs) {
 		val helper = new EqualityHelper
 		return helper.equals(lhs, rhs)
@@ -276,9 +276,15 @@ class GammaEcoreUtil {
 		}
 		return list
 	}
-
+	
 	def <T extends EObject> T clone(T object) {
 		return object.clone(true, true /* This parameter sets reference copying */)
+	}
+	
+	def <T extends EObject> cloneAndChange(T oldObject, EObject container) {
+		val newObject = oldObject.clone
+		newObject.change(oldObject, container)
+		return newObject
 	}
 
 	@SuppressWarnings("unchecked")
@@ -349,6 +355,16 @@ class GammaEcoreUtil {
 		val container = object.eContainer
 		val list = container.eGet(containingFeature) as List<EObject>
 		return list.indexOf(object)
+	}
+	
+	def isLast(EObject object) {
+		val containingFeature = object.eContainingFeature
+		val container = object.eContainer
+		val get = container.eGet(containingFeature)
+		if (get instanceof List) {
+			return get.last == object
+		}
+		return true
 	}
 	
 }

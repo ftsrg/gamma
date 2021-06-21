@@ -91,9 +91,10 @@ class CommonizedVariableActionSerializer extends ActionSerializer {
 	
 	def dispatch CharSequence serialize(VariableDeclarationAction action) {
 		val variable = action.variableDeclaration
-		val intialValue = variable.expression
+		val intialValue = (variable.expression !== null) ?
+			variable.expression : variable.type.initialValueOfType
 		return '''
-			«variable.type.serialize» «variable.name»«IF intialValue !== null» = «intialValue.serialize»«ENDIF»;
+			«variable.type.serialize» «variable.name» = «intialValue.serialize»;
 		'''
 	}
 	

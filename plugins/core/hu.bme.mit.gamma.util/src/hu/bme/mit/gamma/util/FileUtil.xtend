@@ -90,6 +90,14 @@ class FileUtil {
 	}
 	
 	def File exploreRelativeFile(File anchor, String relativePath) {
+		//
+		val relativePathTestFile = new File(relativePath);
+		if (relativePathTestFile.exists && relativePathTestFile.isAbsolute) {
+			// This is actually an incorrect call, as the String is not
+			// a relative path to the anchor, but we handle it anyway
+			return relativePathTestFile
+		}
+		// The string is actually a relative path
 		val path = anchor.toString + File.separator + relativePath
 		val file = new File(path)
 		if (file.exists) {
@@ -129,7 +137,8 @@ class FileUtil {
     	folder.mkdirs();
     	// Searching the trace folder for highest id
     	for (File file: folder.listFiles()) {
-    		if (file.getName().matches(fileName + "[0-9]+\\..*")) {
+    		if (file.getName().matches(fileName + "[0-9]+\\." + fileExtension)) {
+    			// File extension needed to distinguish .get and .json
     			val id = file.getName().substring(fileName.length(), file.getName().length() - ("." + fileExtension).length());
     			usedIds.add(Integer.parseInt(id));
     		}
