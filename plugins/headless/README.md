@@ -73,6 +73,7 @@ This section details the API used to communicatie with the webserver.
 	 - **stopProcess** `/gamma/{workspace}/{project}/stop` - Stops the currently ongoing process in the project found in the given workspace.
 	 - **setLogLevel** `/gamma/setloglevel/{loglevel}` - Sets the verbosity of the logger for both the webserver and the Headless Gamma. The accepted levels are `info`, `warning`, `severe` and `off`.
 	 - **getLogs** `/gamma/{workspace}/getlogs` - Retrieves the logs of a workspace. This can be saved as a text file.
+	 - **deleteWorkspace** `gamma/deleteworkspace/{workspace}` - Deletes the given workspace if it exists and is empty.
  - **GET**
 	- **list** `/gamma/{workspace}/{project}` - Lists all files found in the project in the given workspace.
 	
