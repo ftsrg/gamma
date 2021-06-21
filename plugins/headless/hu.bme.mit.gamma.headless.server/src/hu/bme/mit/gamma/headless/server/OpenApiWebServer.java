@@ -275,20 +275,19 @@ public class OpenApiWebServer extends AbstractVerticle {
 						sendErrorResponse(routingContext, errorHandlerPOJO);
 					}
 				});
-				
+
 				routerFactory.operation("deleteWorkspace").handler(routingContext -> {
-					
+
 					logger.log(Level.INFO, ANSI_YELLOW + "Operation \"deleteWorkspace\" has started." + ANSI_RESET);
-					
-					ErrorHandlerPOJO errorHandlerPOJO = null;
+
 					RequestParameters params = routingContext.get(PARSED_PARAMETERS);
 					String workspace = params.pathParameter(WORKSPACE).getString();
-					
+
 					boolean success = Provider.deleteWorkspace(workspace);
-					
+
 					if (success) {
 						routingContext.response().setStatusCode(200)
-						.putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON).end();
+								.putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON).end();
 					} else {
 						JsonObject errorObject = new JsonObject().put("code", 400).put(MESSAGE,
 								"Workspace can't be deleted. Make sure that the workspace exists, and that it is empty.");
@@ -537,12 +536,8 @@ public class OpenApiWebServer extends AbstractVerticle {
 			if (noOp) {
 				logger.log(Level.INFO, '\t' + "none");
 			}
-			logger.log(Level.WARNING, "This is a WARNING level log");
-			logger.log(Level.SEVERE, "This is a SEVERE level log");
 		} else {
 			logger.log(Level.INFO, "No workspaces are present.");
-			logger.log(Level.WARNING, "This is a WARNING level log");
-			logger.log(Level.SEVERE, "This is a SEVERE level log");
 		}
 	}
 
@@ -562,14 +557,10 @@ public class OpenApiWebServer extends AbstractVerticle {
 		});
 		vertx.deployVerticle(new OpenApiWebServer(), ar -> {
 			if (ar.succeeded()) {
-				// Logger rootLogger = Logger.getLogger("");
-				// rootLogger.setLevel(Level.SEVERE);
-//				logger.setLevel(Level.SEVERE);
 				logger.log(Level.INFO, ANSI_GREEN + "Headless Gamma OpenAPI server is running." + ANSI_RESET);
 
 			} else {
 				logger.log(Level.INFO, ANSI_RED + "Headless Gamma OpenAPI server failed to start." + ANSI_RESET);
-				logger.log(Level.INFO, System.getProperties().getProperty("user.dir"));
 				Future.failedFuture(ar.cause());
 			}
 		});

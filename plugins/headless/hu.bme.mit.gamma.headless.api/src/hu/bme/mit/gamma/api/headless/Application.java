@@ -19,18 +19,15 @@ public class Application implements IApplication {
 
 		final Map<?, ?> args = context.getArguments();
 		final String[] appArgs = (String[]) args.get(IApplicationContext.APPLICATION_ARGS);
-		
+
 		Level level = Level.INFO;
 
 		if (appArgs.length == 0) {
-			logger.log(Level.WARNING, "Arguments must be given! Either a \"workspace\", \"import\" or \"gamma\" argument is expected.");
+			logger.log(Level.WARNING,
+					"Arguments must be given! Either a \"workspace\", \"import\" or \"gamma\" argument is expected.");
 			return null;
 		} else {
-//			logger.setLevel(Level.SEVERE);
-//			logger.log(Level.INFO, "This is an INFO level log - APP");
-//			logger.log(Level.WARNING, "This is a WARNING level log - APP");
-//			logger.log(Level.SEVERE, "This is a SEVERE level log - APP");
-			
+
 			switch (appArgs[1]) {
 			case "info":
 				level = Level.INFO;
@@ -48,11 +45,7 @@ public class Application implements IApplication {
 				level = Level.INFO;
 				break;
 			}
-			
-			logger.log(Level.INFO, "This is an INFO level log - APP");
-			logger.log(Level.WARNING, "This is a WARNING level log - APP");
-			logger.log(Level.SEVERE, "This is a SEVERE level log - APP");
-			
+
 			switch (appArgs[0]) {
 			case "workspace":
 				workspaceGenerator = new WorkspaceGenerator(context, appArgs, level);

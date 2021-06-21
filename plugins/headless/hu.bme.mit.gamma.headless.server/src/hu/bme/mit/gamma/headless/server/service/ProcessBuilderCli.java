@@ -32,15 +32,15 @@ public class ProcessBuilderCli {
 	private static final String GAMMA_OPERATION = "gamma";
 	private static final String IMPORT_OPERATION = "import";
 	private static final String WORKSPACE_OPERATION = "workspace";
-	
+
 	private static String logLevel = "info";
 
 	public static void runGammaOperations(String projectName, String workspace, String filePath) throws IOException {
 
 		ProcessBuilder pb = new ProcessBuilder(
 				FileHandlerUtil.getProperty(DIRECTORY_OF_GAMMA_HEADLESS_ECLIPSE_PROPERTY), "-consoleLog", "-data",
-				FileHandlerUtil.getProperty(DIRECTORY_OF_WORKSPACES_PROPERTY_NAME) + workspace, GAMMA_OPERATION, logLevel, 
-				getFullFilePath(filePath, workspace, projectName),
+				FileHandlerUtil.getProperty(DIRECTORY_OF_WORKSPACES_PROPERTY_NAME) + workspace, GAMMA_OPERATION,
+				logLevel, getFullFilePath(filePath, workspace, projectName),
 				FileHandlerUtil.getProperty(DIRECTORY_OF_WORKSPACES_PROPERTY_NAME) + workspace + File.separator
 						+ projectName + File.separator + PROJECT_DESCRIPTOR_JSON);
 		pb.redirectErrorStream(true);
@@ -157,9 +157,9 @@ public class ProcessBuilderCli {
 			}
 		}
 	}
-	
+
 	public static void setProcessCliLogLevel(Level level) {
-		if(level == Level.INFO) {
+		if (level == Level.INFO) {
 			logLevel = "info";
 		} else if (level == Level.WARNING) {
 			logLevel = "warning";

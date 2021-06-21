@@ -1,14 +1,7 @@
 package hu.bme.mit.gamma.expression.util;
 
-import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition;
-import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition;
-import hu.bme.mit.gamma.expression.model.DecimalTypeDefinition;
-import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition;
-import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition;
-import hu.bme.mit.gamma.expression.model.RationalTypeDefinition;
-import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
+import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
 import hu.bme.mit.gamma.expression.model.Type;
-import hu.bme.mit.gamma.expression.model.TypeReference;
 import hu.bme.mit.gamma.expression.model.impl.ArrayTypeDefinitionImpl;
 import hu.bme.mit.gamma.expression.model.impl.BooleanTypeDefinitionImpl;
 import hu.bme.mit.gamma.expression.model.impl.DecimalTypeDefinitionImpl;
@@ -17,7 +10,6 @@ import hu.bme.mit.gamma.expression.model.impl.IntegerTypeDefinitionImpl;
 import hu.bme.mit.gamma.expression.model.impl.RationalTypeDefinitionImpl;
 import hu.bme.mit.gamma.expression.model.impl.RecordTypeDefinitionImpl;
 import hu.bme.mit.gamma.expression.model.impl.TypeReferenceImpl;
-import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
 
 public class TypeSerializer {
 	public static final TypeSerializer INSTANCE = new TypeSerializer();

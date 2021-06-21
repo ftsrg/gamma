@@ -236,11 +236,6 @@ class StatechartToPlantUmlTransformer {
 								«ENDFOR»
 						«ENDFOR»
 						«FOR inner: region.stateNodes»
-«««							«FOR itransition: statechart.transitions»
-«««								«IF itransition.sourceState == inner»
-«««									«stateSearch(itransition)»
-«««								«ENDIF»
-«««							«ENDFOR»
 						«ENDFOR»
 						«IF regionsDispatch(state).length > 1 && region !== regionsDispatch(state).last»
 							--
@@ -257,7 +252,7 @@ class StatechartToPlantUmlTransformer {
 	}
 
 	/**
-	 * stateActionsSearch(StateNode)
+	 * stateActionsSearch(StateNode)s
 	 * 
 	 * This method searches for the actions of non-pseudostates.
 	 * If the state received as parameter has entry or exit actions, it gathers and
@@ -345,12 +340,6 @@ class StatechartToPlantUmlTransformer {
 				«ENDIF»
 				
 			«ENDFOR»
-«««			«FOR main : statechart.regions»
-«««				
-«««			«ENDFOR»
-«««			«FOR main: statechart.regions»
-«««
-«««			«ENDFOR»
 		«IF statechart.regions.size > 1»
 		}
 		[*] -> «statechart.name»

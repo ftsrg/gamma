@@ -39,7 +39,7 @@ import hu.bme.mit.gamma.statechart.language.StatechartLanguageStandaloneSetup;
 import hu.bme.mit.gamma.statechart.language.StatechartLanguageStandaloneSetupGenerated;
 import hu.bme.mit.gamma.trace.language.TraceLanguageStandaloneSetup;
 import hu.bme.mit.gamma.ui.GammaApi;
-import hu.bme.mit.gamma.ui.GammaApi.ResourceSetCreator;
+import hu.bme.mit.gamma.ui.util.ResourceSetCreator;
 
 public class GammaEntryPoint extends HeadlessApplicationCommandHandler {
 
