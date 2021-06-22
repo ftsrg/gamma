@@ -1,5 +1,5 @@
 package groundstation
-import "interfaces"
+import "Interface/Interfaces.gcd"
 statechart GroundStation [
 	port connection : requires DataSource
 	port control : requires StationControl

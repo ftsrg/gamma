@@ -1,0 +1,11 @@
+import "Vaganyut.gcd"
+
+analysis {
+	component : Vaganyut
+	language : UPPAAL
+	transition-coverage {
+		include : [ atmenetjelzo ]
+	}
+	optimize : true
+	property-file : "Vaganyut.gpd"
+}

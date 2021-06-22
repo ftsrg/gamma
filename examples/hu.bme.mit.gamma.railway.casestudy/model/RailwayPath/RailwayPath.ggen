@@ -1,0 +1,151 @@
+// Transition
+
+// Transformation
+
+include "System/Synchronous/Transition/DU/_-_/VaganyutTransformation.ggen"
+include "System/Synchronous/Transition/DU/_-Opt/VaganyutTransformation.ggen"
+include "System/Synchronous/Transition/DU/_RS-_/VaganyutTransformation.ggen"
+include "System/Synchronous/Transition/DU/_RS-Opt/VaganyutTransformation.ggen"
+
+include "System/Synchronous/Transition/DX/_-_/VaganyutTransformation.ggen"
+include "System/Synchronous/Transition/DX/_-Opt/VaganyutTransformation.ggen"
+include "System/Synchronous/Transition/DX/_RS-_/VaganyutTransformation.ggen"
+include "System/Synchronous/Transition/DX/_RS-Opt/VaganyutTransformation.ggen"
+
+include "System/Synchronous/Transition/XU/_-_/VaganyutTransformation.ggen"
+include "System/Synchronous/Transition/XU/_-Opt/VaganyutTransformation.ggen"
+include "System/Synchronous/Transition/XU/_RS-_/VaganyutTransformation.ggen"
+include "System/Synchronous/Transition/XU/_RS-Opt/VaganyutTransformation.ggen"
+
+include "System/Cascade/Transition/DU/_-_/VaganyutTransformation.ggen"
+include "System/Cascade/Transition/DU/_-Opt/VaganyutTransformation.ggen"
+include "System/Cascade/Transition/DU/_RS-_/VaganyutTransformation.ggen"
+include "System/Cascade/Transition/DU/_RS-Opt/VaganyutTransformation.ggen"
+
+include "System/Cascade/Transition/DX/_-_/VaganyutTransformation.ggen"
+include "System/Cascade/Transition/DX/_-Opt/VaganyutTransformation.ggen"
+include "System/Cascade/Transition/DX/_RS-_/VaganyutTransformation.ggen"
+include "System/Cascade/Transition/DX/_RS-Opt/VaganyutTransformation.ggen"
+
+include "System/Cascade/Transition/XU/_-_/VaganyutTransformation.ggen"
+include "System/Cascade/Transition/XU/_-Opt/VaganyutTransformation.ggen"
+include "System/Cascade/Transition/XU/_RS-_/VaganyutTransformation.ggen"
+include "System/Cascade/Transition/XU/_RS-Opt/VaganyutTransformation.ggen"
+
+include "System/Asynchronous/Transition/DU/_-_/VaganyutTransformation.ggen"
+include "System/Asynchronous/Transition/DU/_-Opt/VaganyutTransformation.ggen"
+include "System/Asynchronous/Transition/DU/_RS-_/VaganyutTransformation.ggen"
+include "System/Asynchronous/Transition/DU/_RS-Opt/VaganyutTransformation.ggen"
+
+// Verification
+
+include "System/Synchronous/Transition/DU/_-_/VaganyutVerification.ggen"
+include "System/Synchronous/Transition/DU/_-Opt/VaganyutVerification.ggen"
+include "System/Synchronous/Transition/DU/_RS-_/VaganyutVerification.ggen"
+include "System/Synchronous/Transition/DU/_RS-Opt/VaganyutVerification.ggen"
+
+include "System/Synchronous/Transition/DX/_-_/VaganyutVerification.ggen"
+include "System/Synchronous/Transition/DX/_-Opt/VaganyutVerification.ggen"
+include "System/Synchronous/Transition/DX/_RS-_/VaganyutVerification.ggen"
+include "System/Synchronous/Transition/DX/_RS-Opt/VaganyutVerification.ggen"
+
+include "System/Synchronous/Transition/XU/_-_/VaganyutVerification.ggen"
+include "System/Synchronous/Transition/XU/_-Opt/VaganyutVerification.ggen"
+include "System/Synchronous/Transition/XU/_RS-_/VaganyutVerification.ggen"
+include "System/Synchronous/Transition/XU/_RS-Opt/VaganyutVerification.ggen"
+
+include "System/Cascade/Transition/DU/_-_/VaganyutVerification.ggen"
+include "System/Cascade/Transition/DU/_-Opt/VaganyutVerification.ggen"
+include "System/Cascade/Transition/DU/_RS-_/VaganyutVerification.ggen"
+include "System/Cascade/Transition/DU/_RS-Opt/VaganyutVerification.ggen"
+
+include "System/Cascade/Transition/DX/_-_/VaganyutVerification.ggen"
+include "System/Cascade/Transition/DX/_-Opt/VaganyutVerification.ggen"
+include "System/Cascade/Transition/DX/_RS-_/VaganyutVerification.ggen"
+include "System/Cascade/Transition/DX/_RS-Opt/VaganyutVerification.ggen"
+
+include "System/Cascade/Transition/XU/_-_/VaganyutVerification.ggen"
+include "System/Cascade/Transition/XU/_-Opt/VaganyutVerification.ggen"
+include "System/Cascade/Transition/XU/_RS-_/VaganyutVerification.ggen"
+include "System/Cascade/Transition/XU/_RS-Opt/VaganyutVerification.ggen"
+
+include "System/Asynchronous/Transition/DU/_-_/VaganyutVerification.ggen"
+include "System/Asynchronous/Transition/DU/_-Opt/VaganyutVerification.ggen"
+include "System/Asynchronous/Transition/DU/_RS-_/VaganyutVerification.ggen"
+include "System/Asynchronous/Transition/DU/_RS-Opt/VaganyutVerification.ggen"
+
+// Transition-pair
+
+// Transformation
+
+include "System/Synchronous/Transition-Pair/DU/_-_/VaganyutTransformation.ggen"
+include "System/Synchronous/Transition-Pair/DU/_-Opt/VaganyutTransformation.ggen"
+include "System/Synchronous/Transition-Pair/DU/_RS-_/VaganyutTransformation.ggen"
+include "System/Synchronous/Transition-Pair/DU/_RS-Opt/VaganyutTransformation.ggen"
+
+include "System/Synchronous/Transition-Pair/DX/_-_/VaganyutTransformation.ggen"
+include "System/Synchronous/Transition-Pair/DX/_-Opt/VaganyutTransformation.ggen"
+include "System/Synchronous/Transition-Pair/DX/_RS-_/VaganyutTransformation.ggen"
+include "System/Synchronous/Transition-Pair/DX/_RS-Opt/VaganyutTransformation.ggen"
+
+include "System/Synchronous/Transition-Pair/XU/_-_/VaganyutTransformation.ggen"
+include "System/Synchronous/Transition-Pair/XU/_-Opt/VaganyutTransformation.ggen"
+include "System/Synchronous/Transition-Pair/XU/_RS-_/VaganyutTransformation.ggen"
+include "System/Synchronous/Transition-Pair/XU/_RS-Opt/VaganyutTransformation.ggen"
+
+include "System/Cascade/Transition-Pair/DU/_-_/VaganyutTransformation.ggen"
+include "System/Cascade/Transition-Pair/DU/_-Opt/VaganyutTransformation.ggen"
+include "System/Cascade/Transition-Pair/DU/_RS-_/VaganyutTransformation.ggen"
+include "System/Cascade/Transition-Pair/DU/_RS-Opt/VaganyutTransformation.ggen"
+
+include "System/Cascade/Transition-Pair/DX/_-_/VaganyutTransformation.ggen"
+include "System/Cascade/Transition-Pair/DX/_-Opt/VaganyutTransformation.ggen"
+include "System/Cascade/Transition-Pair/DX/_RS-_/VaganyutTransformation.ggen"
+include "System/Cascade/Transition-Pair/DX/_RS-Opt/VaganyutTransformation.ggen"
+
+include "System/Cascade/Transition-Pair/XU/_-_/VaganyutTransformation.ggen"
+include "System/Cascade/Transition-Pair/XU/_-Opt/VaganyutTransformation.ggen"
+include "System/Cascade/Transition-Pair/XU/_RS-_/VaganyutTransformation.ggen"
+include "System/Cascade/Transition-Pair/XU/_RS-Opt/VaganyutTransformation.ggen"
+
+include "System/Asynchronous/Transition-Pair/DU/_-_/VaganyutTransformation.ggen"
+include "System/Asynchronous/Transition-Pair/DU/_-Opt/VaganyutTransformation.ggen"
+include "System/Asynchronous/Transition-Pair/DU/_RS-_/VaganyutTransformation.ggen"
+include "System/Asynchronous/Transition-Pair/DU/_RS-Opt/VaganyutTransformation.ggen"
+
+// Verification
+
+include "System/Synchronous/Transition-Pair/DU/_-_/VaganyutVerification.ggen"
+include "System/Synchronous/Transition-Pair/DU/_-Opt/VaganyutVerification.ggen"
+include "System/Synchronous/Transition-Pair/DU/_RS-_/VaganyutVerification.ggen"
+include "System/Synchronous/Transition-Pair/DU/_RS-Opt/VaganyutVerification.ggen"
+
+include "System/Synchronous/Transition-Pair/DX/_-_/VaganyutVerification.ggen"
+include "System/Synchronous/Transition-Pair/DX/_-Opt/VaganyutVerification.ggen"
+include "System/Synchronous/Transition-Pair/DX/_RS-_/VaganyutVerification.ggen"
+include "System/Synchronous/Transition-Pair/DX/_RS-Opt/VaganyutVerification.ggen"
+
+include "System/Synchronous/Transition-Pair/XU/_-_/VaganyutVerification.ggen"
+include "System/Synchronous/Transition-Pair/XU/_-Opt/VaganyutVerification.ggen"
+include "System/Synchronous/Transition-Pair/XU/_RS-_/VaganyutVerification.ggen"
+include "System/Synchronous/Transition-Pair/XU/_RS-Opt/VaganyutVerification.ggen"
+
+include "System/Cascade/Transition-Pair/DU/_-_/VaganyutVerification.ggen"
+include "System/Cascade/Transition-Pair/DU/_-Opt/VaganyutVerification.ggen"
+include "System/Cascade/Transition-Pair/DU/_RS-_/VaganyutVerification.ggen"
+include "System/Cascade/Transition-Pair/DU/_RS-Opt/VaganyutVerification.ggen"
+
+include "System/Cascade/Transition-Pair/DX/_-_/VaganyutVerification.ggen"
+include "System/Cascade/Transition-Pair/DX/_-Opt/VaganyutVerification.ggen"
+include "System/Cascade/Transition-Pair/DX/_RS-_/VaganyutVerification.ggen"
+include "System/Cascade/Transition-Pair/DX/_RS-Opt/VaganyutVerification.ggen"
+
+include "System/Cascade/Transition-Pair/XU/_-_/VaganyutVerification.ggen"
+include "System/Cascade/Transition-Pair/XU/_-Opt/VaganyutVerification.ggen"
+include "System/Cascade/Transition-Pair/XU/_RS-_/VaganyutVerification.ggen"
+include "System/Cascade/Transition-Pair/XU/_RS-Opt/VaganyutVerification.ggen"
+
+include "System/Asynchronous/Transition-Pair/DU/_-_/VaganyutVerification.ggen"
+include "System/Asynchronous/Transition-Pair/DU/_-Opt/VaganyutVerification.ggen"
+include "System/Asynchronous/Transition-Pair/DU/_RS-_/VaganyutVerification.ggen"
+include "System/Asynchronous/Transition-Pair/DU/_RS-Opt/VaganyutVerification.ggen"

@@ -1,0 +1,29 @@
+package valto
+
+import "ValtoWrapper.gcd"
+import "Types/Types.gcd"
+
+adapter ValtoAdapter(P_vezer : V_vezer_t, P_OV_tav : tavolsag_t, P_V_bal_hossz : tavolsag_t,
+	P_V_jobb_hossz : tavolsag_t, P_V_belso_hossz : tavolsag_t, P_V_eleje_hossz : tavolsag_t, P_id :
+	obj_t) of component valtoAdapter : ValtoWrapper(P_vezer, P_OV_tav, P_V_bal_hossz, P_V_jobb_hossz,
+	P_V_belso_hossz, P_V_eleje_hossz, P_id) [
+] {
+	when E_VU_lez_Out.any / run
+	when E_VU_lez_In.any / run
+	when J_VU_lez_Out.any / run
+	when J_VU_lez_In.any / run
+	when B_VU_lez_Out.any / run
+	when B_VU_lez_In.any / run
+	when A.any / run
+	when J_OV_keres_Out.any / run
+	when J_OV_keres_In.any / run
+	when B_OV_keres_Out.any / run
+	when B_OV_keres_In.any / run
+	when E_OV_keres_Out.any / run
+	when E_OV_keres_In.any / run
+	queue messages (priority = 1, capacity = 2) {
+		E_VU_lez_Out.any, E_VU_lez_In.any, J_VU_lez_Out.any, J_VU_lez_In.any, B_VU_lez_Out.any,
+			B_VU_lez_In.any, A.any, J_OV_keres_Out.any, J_OV_keres_In.any, B_OV_keres_Out.any,
+			B_OV_keres_In.any, E_OV_keres_Out.any, E_OV_keres_In.any
+	}
+}

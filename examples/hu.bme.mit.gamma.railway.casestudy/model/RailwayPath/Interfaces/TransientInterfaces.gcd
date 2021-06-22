@@ -1,0 +1,22 @@
+package interfaces
+
+import "Types/Types.gcd"
+
+interface F_VU_lez {
+	out event ker(ker_VU_tip : VU_tip_t)
+	in event val(val_VU_tip : valasz_t, obj_id : obj_t)
+}
+
+interface OV_keres {
+	out event ker(ker_OV_tav : tavolsag_t)
+	out event felold
+	in event val(val_OV_tip : valasz_t)
+}
+
+interface Jelzo_Also {
+	out event AI_jelzes(AI_jelzesValue : J_jelzes_t)
+}
+interface Valto_Also {
+	out event AI_ell(AI_ellValue : V_ell_t)
+	out event AI_fogl(AI_foglValue : fogl_t)
+}

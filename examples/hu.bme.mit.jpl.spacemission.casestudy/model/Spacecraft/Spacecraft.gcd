@@ -1,6 +1,6 @@
 package spacecraft
-import "interfaces"
-@Schedule = bottom-up
+import "Interface/Interfaces.gcd"
+@RegionSchedule = bottom-up
 statechart Spacecraft [
 	port connection : provides DataSource
 ] {

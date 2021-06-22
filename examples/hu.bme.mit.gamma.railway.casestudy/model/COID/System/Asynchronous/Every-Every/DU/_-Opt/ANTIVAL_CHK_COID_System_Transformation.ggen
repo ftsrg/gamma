@@ -1,0 +1,8 @@
+import "Asynchronous/ANTIVAL_CHK_COID_System.gcd"
+
+analysis {
+	component : AntivalenceChecker_System
+	language : UPPAAL
+	interaction-coverage
+	optimize : false
+}

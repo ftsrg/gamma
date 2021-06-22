@@ -32,6 +32,7 @@ class ThetaVerification extends AbstractVerification {
 		)
 		// --domain PRED_CART --refinement SEQ_ITP // default
 		// --domain EXPL --refinement SEQ_ITP --maxenum 250
+		// --domain EXPL_PRED_COMBINED --maxatomcount ALLASSUMES --initprec CTRL
 	}
 	
 	def Result execute(File modelFile, File queryFile,

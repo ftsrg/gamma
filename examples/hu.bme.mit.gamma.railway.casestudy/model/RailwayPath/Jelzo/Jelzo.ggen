@@ -1,0 +1,6 @@
+import "Jelzo.gcd"
+
+code {
+	component : Jelzo
+	language : java
+}

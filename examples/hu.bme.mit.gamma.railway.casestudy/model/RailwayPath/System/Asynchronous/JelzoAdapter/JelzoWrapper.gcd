@@ -1,0 +1,32 @@
+package jelzo
+
+import "Jelzo/Jelzo.gcd"
+import "Types/Types.gcd"
+import "Interfaces/Interfaces.gcd"
+
+cascade JelzoWrapper(P_J_tipus : J_tipus_t, P_megcs : tavolsag_t, P_id : obj_t) [
+	port F_VU_lez : requires F_VU_lez
+	port C_VU_lez_Out : provides F_VU_lez
+	port C_VU_lez_In : requires F_VU_lez
+	port S_VU_lez_Out : provides F_VU_lez
+	port S_VU_lez_In : requires F_VU_lez
+	port A : requires Jelzo_Also
+	port C_OV_keres_Out : provides OV_keres
+	port C_OV_keres_In : requires OV_keres
+	port S_OV_keres_Out : provides OV_keres
+	port S_OV_keres_In : requires OV_keres
+] {
+	component jelzo : Jelzo(P_J_tipus, P_megcs, P_id)
+		
+	bind F_VU_lez -> jelzo.F_VU_lez
+	bind C_VU_lez_Out -> jelzo.C_VU_lez_Out
+	bind C_VU_lez_In -> jelzo.C_VU_lez_In
+	bind S_VU_lez_Out -> jelzo.S_VU_lez_Out
+	bind S_VU_lez_In -> jelzo.S_VU_lez_In
+	bind A -> jelzo.A
+	bind C_OV_keres_Out -> jelzo.C_OV_keres_Out
+	bind C_OV_keres_In -> jelzo.C_OV_keres_In
+	bind S_OV_keres_Out -> jelzo.S_OV_keres_Out
+	bind S_OV_keres_In -> jelzo.S_OV_keres_In
+		
+}

@@ -1,0 +1,16 @@
+package spacecraft
+
+import "SpacecraftWrapper.gcd"
+
+adapter SpacecraftAdapter of
+	component spacecraftAdapter : SpacecraftWrapper [
+] {
+	clock timer(rate = 1499 ms)
+	when timer / run
+	queue messages(priority = 1, capacity = 1) {
+		connection.any
+	}
+	queue timerMessages(priority = 2, capacity = 1) {
+		timer
+	}
+}

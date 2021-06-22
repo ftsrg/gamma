@@ -46,7 +46,7 @@ class SystemReducer implements Reducer {
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
 	protected final extension Logger logger = Logger.getLogger("GammaLogger")
-
+	
 	new(ResourceSet resourceSet) {
 		this.engine = ViatraQueryEngine.on(new EMFScope(resourceSet))
 	}

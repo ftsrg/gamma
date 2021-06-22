@@ -1,0 +1,50 @@
+package asyncvaganyut_system
+
+import "Interfaces/Interfaces.gcd"
+import "Types/Types.gcd"
+import "JelzoAdapter/JelzoAdapter.gcd"
+import "ValtoAdapter/ValtoAdapter.gcd"
+
+async Vaganyut [
+	port Felso_Fojelzo : requires F_VU_lez
+	port Also_Fojelzo : requires Jelzo_Also
+	port Also_Celjelzo : requires Jelzo_Also
+	port Also_Valto0 : requires Valto_Also
+	port Also_Valto1 : requires Valto_Also
+	port Also_Valto2 : requires Valto_Also
+] {
+	component fojelzo : JelzoAdapter(J_tipus_t::FOJELZO, 0, 0)
+	component valto0 : ValtoAdapter(V_vezer_t::BAL, 0, 0, 0, 0, 0, 10)
+	component tolatasjelzo : JelzoAdapter(J_tipus_t::TOLATASJELZO, 0, 1)
+	component valto1 : ValtoAdapter(V_vezer_t::BAL, 0, 0, 0, 0, 0, 11)
+	component valto2 : ValtoAdapter(V_vezer_t::BAL, 0, 0, 0, 0, 0, 12)
+	component atmenetjelzo : JelzoAdapter(J_tipus_t::EGYESITETT, 0, 2)
+	component celjelzo : JelzoAdapter(J_tipus_t::EGYESITETT, 0, 3)
+
+	bind Felso_Fojelzo -> fojelzo.F_VU_lez
+	bind Also_Fojelzo -> fojelzo.A
+	bind Also_Celjelzo -> celjelzo.A
+
+	bind Also_Valto0 -> valto0.A
+	bind Also_Valto1 -> valto1.A
+	bind Also_Valto2 -> valto2.A
+
+	channel [ fojelzo.S_VU_lez_Out ] -o)- [ valto0.E_VU_lez_In ]
+	channel [ valto0.E_VU_lez_Out ] -o)- [ fojelzo.S_VU_lez_In ]
+
+	channel [ valto0.B_VU_lez_Out ] -o)- [ tolatasjelzo.C_VU_lez_In ]
+	channel [ tolatasjelzo.C_VU_lez_Out ] -o)- [ valto0.B_VU_lez_In ]
+
+	channel [ tolatasjelzo.S_VU_lez_Out ] -o)- [ valto1.E_VU_lez_In ]
+	channel [ valto1.E_VU_lez_Out ] -o)- [ tolatasjelzo.S_VU_lez_In ]
+
+	channel [ valto1.B_VU_lez_Out ] -o)- [ valto2.B_VU_lez_In ]
+	channel [ valto2.B_VU_lez_Out ] -o)- [ valto1.B_VU_lez_In ]
+
+	channel [ valto2.E_VU_lez_Out ] -o)- [ atmenetjelzo.S_VU_lez_In ]
+	channel [ atmenetjelzo.S_VU_lez_Out ] -o)- [ valto2.E_VU_lez_In ]
+
+	channel [ atmenetjelzo.C_VU_lez_Out ] -o)- [ celjelzo.C_VU_lez_In ]
+	channel [ celjelzo.C_VU_lez_Out ] -o)- [ atmenetjelzo.C_VU_lez_In ]
+
+}
