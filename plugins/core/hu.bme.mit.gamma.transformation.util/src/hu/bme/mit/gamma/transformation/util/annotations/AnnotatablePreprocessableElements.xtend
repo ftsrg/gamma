@@ -1,0 +1,30 @@
+package hu.bme.mit.gamma.transformation.util.annotations
+
+import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentInstancePortReferences
+import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentInstancePortStateTransitionReferences
+import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentInstanceReferences
+import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentInstanceVariableReferences
+import org.eclipse.xtend.lib.annotations.Data
+
+@Data
+class AnnotatablePreprocessableElements {
+	
+		ComponentInstanceReferences testedComponentsForStates
+		
+		ComponentInstanceReferences testedComponentsForTransitions
+		
+		ComponentInstanceReferences testedComponentsForTransitionPairs
+		
+		ComponentInstancePortReferences testedComponentsForOutEvents
+		
+		ComponentInstancePortStateTransitionReferences testedInteractions
+		InteractionCoverageCriterion senderCoverageCriterion
+		InteractionCoverageCriterion receiverCoverageCriterion
+		
+		ComponentInstanceVariableReferences dataflowTestedVariables
+		DataflowCoverageCriterion dataflowCoverageCriterion
+		
+		ComponentInstancePortReferences testedComponentsForInteractionDataflow
+		DataflowCoverageCriterion interactionDataflowCoverageCriterion
+	
+}

@@ -8,7 +8,7 @@
  *
  * SPDX-License-Identifier: EPL-1.0
  ********************************************************************************/
-package hu.bme.mit.gamma.transformation.util
+package hu.bme.mit.gamma.transformation.util.preprocessor
 
 import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent

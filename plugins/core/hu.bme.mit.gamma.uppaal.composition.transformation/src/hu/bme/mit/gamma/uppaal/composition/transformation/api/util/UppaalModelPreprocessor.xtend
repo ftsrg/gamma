@@ -13,7 +13,7 @@ package hu.bme.mit.gamma.uppaal.composition.transformation.api.util
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
-import hu.bme.mit.gamma.transformation.util.AnalysisModelPreprocessor
+import hu.bme.mit.gamma.transformation.util.preprocessor.AnalysisModelPreprocessor
 import java.util.Collections
 import java.util.List
 

@@ -14,15 +14,12 @@ import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.property.model.PropertyPackage
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures
 import hu.bme.mit.gamma.statechart.interface_.Component
-import hu.bme.mit.gamma.transformation.util.AnalysisModelPreprocessor
 import hu.bme.mit.gamma.transformation.util.GammaFileNamer
 import hu.bme.mit.gamma.transformation.util.ModelSlicerModelAnnotatorPropertyGenerator
+import hu.bme.mit.gamma.transformation.util.annotations.AnnotatablePreprocessableElements
 import hu.bme.mit.gamma.transformation.util.annotations.DataflowCoverageCriterion
 import hu.bme.mit.gamma.transformation.util.annotations.InteractionCoverageCriterion
-import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentInstancePortReferences
-import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentInstancePortStateTransitionReferences
-import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentInstanceReferences
-import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentInstanceVariableReferences
+import hu.bme.mit.gamma.transformation.util.preprocessor.AnalysisModelPreprocessor
 import hu.bme.mit.gamma.util.FileUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.transformation.GammaToXstsTransformer
@@ -41,17 +38,7 @@ class Gamma2XstsTransformerSerializer {
 	protected final boolean optimize
 	protected final PropertyPackage propertyPackage
 	// Annotation
-	protected final ComponentInstanceReferences testedComponentsForStates
-	protected final ComponentInstanceReferences testedComponentsForTransitions
-	protected final ComponentInstanceReferences testedComponentsForTransitionPairs
-	protected final ComponentInstancePortReferences testedComponentsForOutEvents
-	protected final ComponentInstancePortStateTransitionReferences testedInteractions
-	protected final InteractionCoverageCriterion senderCoverageCriterion
-	protected final InteractionCoverageCriterion receiverCoverageCriterion
-	protected final ComponentInstanceVariableReferences dataflowTestedVariables
-	protected final DataflowCoverageCriterion dataflowCoverageCriterion
-	protected final ComponentInstancePortReferences testedComponentsForInteractionDataflow
-	protected final DataflowCoverageCriterion interactionDataflowCoverageCriterion
+	protected final AnnotatablePreprocessableElements annotatableElements
 	
 	protected final AnalysisModelPreprocessor preprocessor = AnalysisModelPreprocessor.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
@@ -73,27 +60,18 @@ class Gamma2XstsTransformerSerializer {
 			Integer schedulingConstraint) {
 		this(component, arguments, targetFolderUri, fileName, schedulingConstraint,
 			true, null,
-			null, null, null, null, null,
-			InteractionCoverageCriterion.EVERY_INTERACTION, InteractionCoverageCriterion.EVERY_INTERACTION,
-			null, DataflowCoverageCriterion.ALL_USE,
-			null, DataflowCoverageCriterion.ALL_USE)
+			new AnnotatablePreprocessableElements(null, null, null, null, null,
+				InteractionCoverageCriterion.EVERY_INTERACTION, InteractionCoverageCriterion.EVERY_INTERACTION,
+				null, DataflowCoverageCriterion.ALL_USE,
+				null, DataflowCoverageCriterion.ALL_USE)
+			)
 	}
 	
 	new(Component component, List<Expression> arguments,
 			String targetFolderUri, String fileName,
 			Integer schedulingConstraint,
 			boolean optimize, PropertyPackage propertyPackage,
-			ComponentInstanceReferences testedComponentsForStates,
-			ComponentInstanceReferences testedComponentsForTransitions,
-			ComponentInstanceReferences testedComponentsForTransitionPairs,
-			ComponentInstancePortReferences testedComponentsForOutEvents,
-			ComponentInstancePortStateTransitionReferences testedInteractions,
-			InteractionCoverageCriterion senderCoverageCriterion,
-			InteractionCoverageCriterion receiverCoverageCriterion,
-			ComponentInstanceVariableReferences dataflowTestedVariables,
-			DataflowCoverageCriterion dataflowCoverageCriterion,
-			ComponentInstancePortReferences testedComponentsForInteractionDataflow,
-			DataflowCoverageCriterion interactionDataflowCoverageCriterion) {
+			AnnotatablePreprocessableElements annotatableElements) {
 		this.component = component
 		this.arguments = arguments
 		this.targetFolderUri = targetFolderUri
@@ -103,17 +81,7 @@ class Gamma2XstsTransformerSerializer {
 		this.optimize = optimize
 		this.propertyPackage = propertyPackage
 		//
-		this.testedComponentsForStates = testedComponentsForStates
-		this.testedComponentsForTransitions = testedComponentsForTransitions
-		this.testedComponentsForTransitionPairs = testedComponentsForTransitionPairs
-		this.testedComponentsForOutEvents = testedComponentsForOutEvents
-		this.testedInteractions = testedInteractions
-		this.senderCoverageCriterion = senderCoverageCriterion
-		this.receiverCoverageCriterion = receiverCoverageCriterion
-		this.dataflowTestedVariables = dataflowTestedVariables
-		this.dataflowCoverageCriterion = dataflowCoverageCriterion
-		this.testedComponentsForInteractionDataflow = testedComponentsForInteractionDataflow
-		this.interactionDataflowCoverageCriterion = interactionDataflowCoverageCriterion
+		this.annotatableElements = annotatableElements
 	}
 	
 	def void execute() {
@@ -125,11 +93,7 @@ class Gamma2XstsTransformerSerializer {
 		val slicerAnnotatorAndPropertyGenerator = new ModelSlicerModelAnnotatorPropertyGenerator(
 				newTopComponent,
 				propertyPackage,
-				testedComponentsForStates, testedComponentsForTransitions,
-				testedComponentsForTransitionPairs, testedComponentsForOutEvents,
-				testedInteractions, senderCoverageCriterion, receiverCoverageCriterion,
-				dataflowTestedVariables, dataflowCoverageCriterion,
-				testedComponentsForInteractionDataflow, interactionDataflowCoverageCriterion,
+				annotatableElements,
 				targetFolderUri, fileName)
 		slicerAnnotatorAndPropertyGenerator.execute
 		val gammaToXSTSTransformer = new GammaToXstsTransformer(schedulingConstraint, true, true)

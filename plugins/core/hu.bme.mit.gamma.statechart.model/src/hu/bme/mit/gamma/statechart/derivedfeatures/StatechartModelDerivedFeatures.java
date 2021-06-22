@@ -936,6 +936,10 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return (EventDeclaration) event.eContainer();
 	}
 	
+	public static boolean hasSamePortEvent(RaiseEventAction lhs, RaiseEventAction rhs) {
+		return lhs.getPort() == rhs.getPort() && lhs.getEvent() == rhs.getEvent();
+	}
+	
 	public static String getId(Transition transition) {
 		for (TransitionAnnotation annotation : transition.getAnnotations()) {
 			if (annotation instanceof TransitionIdAnnotation) {

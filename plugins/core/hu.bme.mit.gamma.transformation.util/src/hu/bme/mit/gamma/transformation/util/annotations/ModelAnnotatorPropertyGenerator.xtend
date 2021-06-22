@@ -24,45 +24,15 @@ import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartMo
 class ModelAnnotatorPropertyGenerator {
 	
 	protected final Component newTopComponent
-	protected final ComponentInstanceReferences testedComponentsForStates
-	protected final ComponentInstanceReferences testedComponentsForTransitions
-	protected final ComponentInstanceReferences testedComponentsForTransitionPairs
-	protected final ComponentInstancePortReferences testedComponentsForOutEvents
-	protected final ComponentInstancePortStateTransitionReferences testedInteractions
-	protected final InteractionCoverageCriterion senderCoverageCriterion
-	protected final InteractionCoverageCriterion receiverCoverageCriterion
-	protected final ComponentInstanceVariableReferences dataflowTestedVariables
-	protected final DataflowCoverageCriterion dataflowCoverageCriterion
-	protected final ComponentInstancePortReferences testedComponentsForInteractionDataflow
-	protected final DataflowCoverageCriterion interactionDataflowCoverageCriterion
+	
+	protected final AnnotatablePreprocessableElements annotableElements
 	
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension SimpleInstanceHandler simpleInstanceHandler = SimpleInstanceHandler.INSTANCE
 	
-	new(Component newTopComponent,
-			ComponentInstanceReferences testedComponentsForStates,
-			ComponentInstanceReferences testedComponentsForTransitions,
-			ComponentInstanceReferences testedComponentsForTransitionPairs,
-			ComponentInstancePortReferences testedComponentsForOutEvents,
-			ComponentInstancePortStateTransitionReferences testedInteractions,
-			InteractionCoverageCriterion senderCoverageCriterion,
-			InteractionCoverageCriterion receiverCoverageCriterion,
-			ComponentInstanceVariableReferences dataflowTestedVariables,
-			DataflowCoverageCriterion dataflowCoverageCriterion,
-			ComponentInstancePortReferences testedComponentsForInteractionDataflow,
-			DataflowCoverageCriterion interactionDataflowCoverageCriterion) {
+	new(Component newTopComponent, AnnotatablePreprocessableElements annotableElements) {
 		this.newTopComponent = newTopComponent
-		this.testedComponentsForStates = testedComponentsForStates
-		this.testedComponentsForTransitions = testedComponentsForTransitions
-		this.testedComponentsForTransitionPairs = testedComponentsForTransitionPairs
-		this.testedComponentsForOutEvents = testedComponentsForOutEvents
-		this.testedInteractions = testedInteractions
-		this.senderCoverageCriterion = senderCoverageCriterion
-		this.receiverCoverageCriterion = receiverCoverageCriterion
-		this.dataflowTestedVariables = dataflowTestedVariables
-		this.dataflowCoverageCriterion = dataflowCoverageCriterion
-		this.testedComponentsForInteractionDataflow = testedComponentsForInteractionDataflow
-		this.interactionDataflowCoverageCriterion = interactionDataflowCoverageCriterion
+		this.annotableElements = annotableElements
 	}
 	
 	def execute() {
@@ -72,33 +42,33 @@ class ModelAnnotatorPropertyGenerator {
 		
 		// State coverage
 		val testedComponentsForStates = getIncludedSynchronousInstances(
-				testedComponentsForStates, newTopComponent)
+				annotableElements.testedComponentsForStates, newTopComponent)
 		// Transition coverage
 		val testedComponentsForTransitions = getIncludedSynchronousInstances(
-				testedComponentsForTransitions, newTopComponent)
+				annotableElements.testedComponentsForTransitions, newTopComponent)
 		// Transition-pair coverage
 		val testedComponentsForTransitionPairs = getIncludedSynchronousInstances(
-				testedComponentsForTransitionPairs, newTopComponent)
+				annotableElements.testedComponentsForTransitionPairs, newTopComponent)
 		// Out event coverage
 		val testedPortsForOutEvents = getIncludedSynchronousInstancePorts(
-				testedComponentsForOutEvents, newTopComponent)
+				annotableElements.testedComponentsForOutEvents, newTopComponent)
 		if (!testedPortsForOutEvents.nullOrEmpty) {
 			// Only system out events are covered as other internal events might be removed
 			testedPortsForOutEvents.retainAll(newTopComponent.allConnectedSimplePorts)
 		}
 		// Interaction coverage
 		val testedPortsForInteractions = getIncludedSynchronousInstancePorts(
-				testedInteractions, newTopComponent)
+				annotableElements.testedInteractions, newTopComponent)
 		val testedStatesForInteractions = getIncludedSynchronousInstanceStates(
-				testedInteractions, newTopComponent)
+				annotableElements.testedInteractions, newTopComponent)
 		val testedTransitionsForInteractions = getIncludedSynchronousInstanceTransitions(
-				testedInteractions, newTopComponent)
+				annotableElements.testedInteractions, newTopComponent)
 		// Dataflow coverage
 		val dataflowTestedVariables = getIncludedSynchronousInstanceVariables(
-				dataflowTestedVariables, newTopComponent)
+				annotableElements.dataflowTestedVariables, newTopComponent)
 		// Interaction dataflow coverage
 		val testedPortsForInteractionDataflow = getIncludedSynchronousInstancePorts(
-				testedComponentsForInteractionDataflow, newTopComponent)
+				annotableElements.testedComponentsForInteractionDataflow, newTopComponent)
 		
 		if (!testedComponentsForStates.nullOrEmpty || !testedComponentsForTransitions.nullOrEmpty ||
 				!testedComponentsForTransitionPairs.nullOrEmpty || !testedPortsForOutEvents.nullOrEmpty ||
@@ -107,12 +77,15 @@ class ModelAnnotatorPropertyGenerator {
 				!dataflowTestedVariables.nullOrEmpty ||
 				!testedPortsForInteractionDataflow.nullOrEmpty) {
 			val annotator = new GammaStatechartAnnotator(newPackage,
+				new AnnotatableElements(
 					testedComponentsForTransitions, testedComponentsForTransitionPairs,
 					testedPortsForInteractions, testedStatesForInteractions,
 					testedTransitionsForInteractions,
-					senderCoverageCriterion, receiverCoverageCriterion,
-					dataflowTestedVariables, dataflowCoverageCriterion,
-					testedPortsForInteractionDataflow, interactionDataflowCoverageCriterion)
+					annotableElements.senderCoverageCriterion, annotableElements.receiverCoverageCriterion,
+					dataflowTestedVariables, annotableElements.dataflowCoverageCriterion,
+					testedPortsForInteractionDataflow, annotableElements.interactionDataflowCoverageCriterion
+				)
+			)
 			annotator.annotateModel
 			newPackage.save // It must be saved so the property package can be serialized
 			

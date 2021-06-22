@@ -52,9 +52,9 @@ import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference;
 import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
 import hu.bme.mit.gamma.statechart.util.StatechartUtil;
-import hu.bme.mit.gamma.transformation.util.AnalysisModelPreprocessor;
 import hu.bme.mit.gamma.transformation.util.GammaFileNamer;
 import hu.bme.mit.gamma.transformation.util.SimpleInstanceHandler;
+import hu.bme.mit.gamma.transformation.util.annotations.AnnotatablePreprocessableElements;
 import hu.bme.mit.gamma.transformation.util.annotations.DataflowCoverageCriterion;
 import hu.bme.mit.gamma.transformation.util.annotations.InteractionCoverageCriterion;
 import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentInstancePortReferences;
@@ -65,6 +65,7 @@ import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGe
 import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentStateReferences;
 import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentTransitionReferences;
 import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentVariableReferences;
+import hu.bme.mit.gamma.transformation.util.preprocessor.AnalysisModelPreprocessor;
 import hu.bme.mit.gamma.uppaal.composition.transformation.AsynchronousInstanceConstraint;
 import hu.bme.mit.gamma.uppaal.composition.transformation.AsynchronousSchedulerTemplateCreator.Scheduler;
 import hu.bme.mit.gamma.uppaal.composition.transformation.Constraint;
@@ -359,11 +360,14 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					component, reference.getArguments(),
 					targetFolderUri, fileName, constraint, scheduler,
 					transformation.isOptimize(), transformation.getPropertyPackage(),
-					testedComponentsForStates, testedComponentsForTransitions,
-					testedComponentsForTransitionPairs, testedComponentsForOutEvents,
-					testedInteractions, senderCoverageCriterion, receiverCoverageCriterion,
-					dataflowTestedVariables, dataflowCoverageCriterion,
-					testedComponentsForInteractionDataflow, interactionDataflowCoverageCriterion);
+					new AnnotatablePreprocessableElements(
+						testedComponentsForStates, testedComponentsForTransitions,
+						testedComponentsForTransitionPairs, testedComponentsForOutEvents,
+						testedInteractions, senderCoverageCriterion, receiverCoverageCriterion,
+						dataflowTestedVariables, dataflowCoverageCriterion,
+						testedComponentsForInteractionDataflow, interactionDataflowCoverageCriterion
+					)
+			);
 			transformer.execute();
 			// Property serialization
 			serializeProperties(fileName);
@@ -461,11 +465,14 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					component, reference.getArguments(),
 					targetFolderUri, fileName, schedulingConstraint,
 					transformation.isOptimize(), transformation.getPropertyPackage(),
-					testedComponentsForStates, testedComponentsForTransitions,
-					testedComponentsForTransitionPairs, testedComponentsForOutEvents,
-					testedInteractions, senderCoverageCriterion, receiverCoverageCriterion,
-					dataflowTestedVariables, dataflowCoverageCriterion,
-					testedComponentsForInteractionDataflow, interactionDataflowCoverageCriterion);
+					new AnnotatablePreprocessableElements(
+						testedComponentsForStates, testedComponentsForTransitions,
+						testedComponentsForTransitionPairs, testedComponentsForOutEvents,
+						testedInteractions, senderCoverageCriterion, receiverCoverageCriterion,
+						dataflowTestedVariables, dataflowCoverageCriterion,
+						testedComponentsForInteractionDataflow, interactionDataflowCoverageCriterion
+					)
+			);
 			transformer.execute();
 			// Property serialization
 			serializeProperties(fileName);
@@ -548,11 +555,14 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					component, reference.getArguments(),
 					targetFolderUri, fileName, schedulingConstraint,
 					transformation.isOptimize(), transformation.getPropertyPackage(),
-					testedComponentsForStates, testedComponentsForTransitions,
-					testedComponentsForTransitionPairs, testedComponentsForOutEvents,
-					testedInteractions, senderCoverageCriterion, receiverCoverageCriterion,
-					dataflowTestedVariables, dataflowCoverageCriterion,
-					testedComponentsForInteractionDataflow, interactionDataflowCoverageCriterion);
+					new AnnotatablePreprocessableElements(
+						testedComponentsForStates, testedComponentsForTransitions,
+						testedComponentsForTransitionPairs, testedComponentsForOutEvents,
+						testedInteractions, senderCoverageCriterion, receiverCoverageCriterion,
+						dataflowTestedVariables, dataflowCoverageCriterion,
+						testedComponentsForInteractionDataflow, interactionDataflowCoverageCriterion
+					)
+			);
 			transformer.execute();
 			// Property serialization
 			serializeProperties(fileName);
