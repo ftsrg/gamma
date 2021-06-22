@@ -82,6 +82,10 @@ class StatechartToLowlevelTransformer {
 	}
 	
 	def hu.bme.mit.gamma.statechart.lowlevel.model.StatechartDefinition execute(StatechartDefinition statechart) {
+		// Eliminating merge states
+		val mergeStateEliminator = new MergeStateEliminator(statechart)
+		mergeStateEliminator.execute
+		//
 		return statechart.transformComponent as hu.bme.mit.gamma.statechart.lowlevel.model.StatechartDefinition
 	}
 

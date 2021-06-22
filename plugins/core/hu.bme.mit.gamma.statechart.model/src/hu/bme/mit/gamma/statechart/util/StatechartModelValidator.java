@@ -956,52 +956,52 @@ public class StatechartModelValidator extends ActionModelValidator {
 		if (source instanceof ForkState) {
 			if (transition.getTrigger() != null) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-						"Transitions from fork nodes must not have triggers", 
+					"Transitions from fork nodes must not have triggers", 
 						new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__TRIGGER)));
 				
 			}
 			if (transition.getGuard() != null) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-						"Transitions from fork nodes must not have guards", 
+					"Transitions from fork nodes must not have guards", 
 						new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__GUARD)));
 			}
 		}
 		if (source instanceof MergeState) {
 			if (transition.getTrigger() != null) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-						"Transitions from merge nodes must not have triggers", 
+					"Transitions from merge nodes must not have triggers", 
 						new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__TRIGGER)));
 				
 			}
 			if (transition.getGuard() != null) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-						"Transitions from merge nodes must not have guards", 
+					"Transitions from merge nodes must not have guards", 
 						new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__GUARD)));
 			}
 		}
 		if (source instanceof JoinState) {
 			if (transition.getTrigger() != null) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-						"Transitions from join nodes must not have triggers", 
+					"Transitions from join nodes must not have triggers", 
 						new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__TRIGGER)));
 			}
 			if (transition.getGuard() != null) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-						"Transitions from join nodes must not have guards", 
+					"Transitions from join nodes must not have guards", 
 						new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__GUARD)));
 			}
 		}
 		if (target instanceof JoinState) {
 			if (!(source instanceof PseudoState) &&	!transition.getEffects().isEmpty()) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-						"Transitions targeted to join nodes must not have actions", 
+					"Transitions targeted to join nodes must not have actions", 
 						new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__EFFECTS)));
 			}
 		}
-		if ((source instanceof EntryState || source instanceof ChoiceState || source instanceof ForkState) &&
-				(target instanceof MergeState || source instanceof JoinState)) {
+		if ((source instanceof EntryState || source instanceof ChoiceState ||
+				source instanceof ForkState) && target instanceof JoinState) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-					"Transitions cannot connect entry, choice or fork states to merge or join states", 
+				"Transitions cannot connect entry, choice or fork states to join states", 
 					new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__TARGET_STATE)));
 		}
 		return validationResultMessages;
