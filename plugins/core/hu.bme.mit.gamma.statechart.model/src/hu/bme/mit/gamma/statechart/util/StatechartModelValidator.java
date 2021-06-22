@@ -790,20 +790,24 @@ public class StatechartModelValidator extends ActionModelValidator {
 		return validationResultMessages;
 	}
 	
-	public Collection<ValidationResultMessage> checkPseudoNodeAcyclicity(PseudoState node, Collection<PseudoState> visitedNodes) {
+	private Collection<ValidationResultMessage> checkPseudoNodeAcyclicity(PseudoState node, Set<PseudoState> visitedNodes) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		visitedNodes.add(node);
 		for (Transition outgoingTransition : StatechartModelDerivedFeatures.getOutgoingTransitions(node)) {
 			StateNode target = outgoingTransition.getTargetState();
 			if (target instanceof PseudoState) {
-				if (visitedNodes.contains(target)) {
+				PseudoState pseudoState = (PseudoState) target;
+				if (visitedNodes.contains(pseudoState)) {
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 							"This transition creates a circle of pseudo nodes, which is forbidden", 
 							new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__TARGET_STATE, outgoingTransition)));
 					return validationResultMessages;
 				}
-				checkPseudoNodeAcyclicity((PseudoState) target, visitedNodes);
+				visitedNodes.add(pseudoState);
+				validationResultMessages.addAll(checkPseudoNodeAcyclicity(pseudoState, visitedNodes));
 			}
+			// Node is removed as only directed cycles are erroneous, indirected ones are permitted
+			visitedNodes.remove(target);
 		}
 		// Node is removed as only directed cycles are erroneous, indirected ones are permitted
 		visitedNodes.remove(node);

@@ -28,6 +28,7 @@ import hu.bme.mit.gamma.statechart.composite.PortBinding;
 import hu.bme.mit.gamma.statechart.composite.SimpleChannel;
 import hu.bme.mit.gamma.statechart.contract.AdaptiveContractAnnotation;
 import hu.bme.mit.gamma.statechart.contract.StateContractAnnotation;
+import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Clock;
 import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.Event;
@@ -241,7 +242,11 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	
 	@Check
 	public void checkPseudoNodeAcyclicity(PseudoState node) {
-		handleValidationResultMessage(statechartModelValidator.checkPseudoNodeAcyclicity(node));
+		if (StatechartModelDerivedFeatures.getIncomingTransitions(node).stream()
+				.anyMatch(it -> it.getSourceState() instanceof hu.bme.mit.gamma.statechart.statechart.State)) {
+			// Optimization: starting the traversal from states
+			handleValidationResultMessage(statechartModelValidator.checkPseudoNodeAcyclicity(node));
+		}
 	}
 	
 	@Check
