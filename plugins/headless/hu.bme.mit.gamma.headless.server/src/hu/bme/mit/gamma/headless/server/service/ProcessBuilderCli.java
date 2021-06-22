@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.logging.Level;
 
 public class ProcessBuilderCli {
 
@@ -32,12 +33,14 @@ public class ProcessBuilderCli {
 	private static final String IMPORT_OPERATION = "import";
 	private static final String WORKSPACE_OPERATION = "workspace";
 
+	private static String logLevel = "info";
+
 	public static void runGammaOperations(String projectName, String workspace, String filePath) throws IOException {
 
 		ProcessBuilder pb = new ProcessBuilder(
 				FileHandlerUtil.getProperty(DIRECTORY_OF_GAMMA_HEADLESS_ECLIPSE_PROPERTY), "-consoleLog", "-data",
 				FileHandlerUtil.getProperty(DIRECTORY_OF_WORKSPACES_PROPERTY_NAME) + workspace, GAMMA_OPERATION,
-				getFullFilePath(filePath, workspace, projectName),
+				logLevel, getFullFilePath(filePath, workspace, projectName),
 				FileHandlerUtil.getProperty(DIRECTORY_OF_WORKSPACES_PROPERTY_NAME) + workspace + File.separator
 						+ projectName + File.separator + PROJECT_DESCRIPTOR_JSON);
 		pb.redirectErrorStream(true);
@@ -80,14 +83,13 @@ public class ProcessBuilderCli {
 		FileUtils.writeStringToFile(jsonFile, resultingJson);
 	}
 
-	private static void createProjectJSONFile(String workspace, String projectName, String ownerContact) {
+	private static void createProjectJSONFile(String workspace, String projectName) {
 		JSONObject jsonObject = new JSONObject();
 		Date today = new Date();
 		DateTime dtOrg = new DateTime(today);
 		DateTime expirationDate = dtOrg.plusDays(30);
 
 		jsonObject.put("projectName", projectName);
-		jsonObject.put("owner", ownerContact);
 		jsonObject.put("creationDate", today.getTime());
 		jsonObject.put("expirationDate", expirationDate.toDate().getTime());
 		jsonObject.put(PID_OPERATION_PROPERTY, 0);
@@ -103,16 +105,16 @@ public class ProcessBuilderCli {
 		}
 	}
 
-	public static void createEclipseProject(String projectName, String workspace, String ownerContact)
+	public static void createEclipseProject(String projectName, String workspace)
 			throws IOException, InterruptedException {
 		String commandToExecute = FileHandlerUtil.getProperty(DIRECTORY_OF_GAMMA_HEADLESS_ECLIPSE_PROPERTY)
 				+ CONSTANT_ARGUMENTS + FileHandlerUtil.getProperty(DIRECTORY_OF_WORKSPACES_PROPERTY_NAME) + workspace
-				+ " " + IMPORT_OPERATION + " " + projectName;
+				+ " " + IMPORT_OPERATION + " " + logLevel + " " + projectName;
 		Runtime rt = Runtime.getRuntime();
 		Process pr = rt.exec(commandToExecute);
 		pr.waitFor();
 		addWorkspaceProjectWrapperToRootJson(projectName, workspace);
-		createProjectJSONFile(workspace, projectName, ownerContact);
+		createProjectJSONFile(workspace, projectName);
 		deleteSourceZip(workspace, projectName);
 	}
 
@@ -120,7 +122,7 @@ public class ProcessBuilderCli {
 		String workspace = String.valueOf(UUID.randomUUID());
 		String commandToExecute = FileHandlerUtil.getProperty(DIRECTORY_OF_GAMMA_HEADLESS_ECLIPSE_PROPERTY)
 				+ CONSTANT_ARGUMENTS + FileHandlerUtil.getProperty(DIRECTORY_OF_WORKSPACES_PROPERTY_NAME) + workspace
-				+ " " + WORKSPACE_OPERATION;
+				+ " " + WORKSPACE_OPERATION + " " + logLevel;
 		Runtime rt = Runtime.getRuntime();
 		Process pr = rt.exec(commandToExecute);
 		pr.waitFor();
@@ -154,5 +156,9 @@ public class ProcessBuilderCli {
 				e.printStackTrace();
 			}
 		}
+	}
+
+	public static void setProcessCliLogLevel(String level) {
+		logLevel = level;
 	}
 }

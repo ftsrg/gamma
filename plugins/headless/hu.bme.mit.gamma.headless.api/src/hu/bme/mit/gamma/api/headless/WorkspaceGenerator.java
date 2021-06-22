@@ -8,8 +8,9 @@ import org.eclipse.equinox.app.IApplicationContext;
 
 public class WorkspaceGenerator extends HeadlessApplicationCommandHandler {
 
-	public WorkspaceGenerator(IApplicationContext context, String[] appArgs) {
-		super(context, appArgs);
+	public WorkspaceGenerator(IApplicationContext context, String[] appArgs, Level level) {
+		super(context, appArgs, level);
+		logger.setLevel(level);
 	}
 
 	public void execute() throws Exception {

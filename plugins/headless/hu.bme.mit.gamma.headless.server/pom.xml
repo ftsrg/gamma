@@ -10,9 +10,9 @@
 <version>1.0-SNAPSHOT</version>
 
 <properties>
-    <vertx.version>3.7.0</vertx.version>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
+    <vertx.version>4.1.0</vertx.version>
+    <maven.compiler.source>11</maven.compiler.source>
+    <maven.compiler.target>11</maven.compiler.target>
 </properties>
 
 <dependencyManagement>
@@ -41,6 +41,10 @@
         <artifactId>vertx-web-api-contract</artifactId>
     </dependency>
     <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-web-openapi</artifactId>
+    </dependency>
+    <dependency>
         <groupId>com.googlecode.json-simple</groupId>
         <artifactId>json-simple</artifactId>
         <version>1.1.1</version>
@@ -50,6 +54,13 @@
         <artifactId>gson</artifactId>
         <version>2.8.2</version>
     </dependency>
+   
+	<dependency>
+    	<groupId>joda-time</groupId>
+    	<artifactId>joda-time</artifactId>
+    	<version>2.10.10</version>
+	</dependency>
+
 </dependencies>
 
 <build>
@@ -60,12 +71,13 @@
             <version>1.5.0</version>
             <configuration>
                <!-- <mainClass>io.vertx.howtos.openapi.APIVerticle</mainClass> -->
-                <mainClass>hu.bme.mit.gamma.server.OpenApiWebServer</mainClass>
+                <mainClass>hu.bme.mit.gamma.headless.server.OpenApiWebServer</mainClass>
             </configuration>
         </plugin>
         <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-compiler-plugin</artifactId>
+            <version>3.8.0</version>
             <configuration>
                 <source>11</source>
                 <target>11</target>
