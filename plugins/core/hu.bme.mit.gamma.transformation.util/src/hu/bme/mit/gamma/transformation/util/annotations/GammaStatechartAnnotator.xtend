@@ -998,20 +998,22 @@ class GammaStatechartAnnotator {
 		}
 		
 		def getUniqueInteractions() {
+			// If the interactions are not "every", duplications can occur
 			if (interactionSet === null) {
 				interactionSet = newHashSet
-				// If the interaction has no second variable, duplication can occur
-				for (i : interactions) {
-					val sender = i.sender
-					var Transition receiver = null
-					val variablePair = i.variablePair
-					val senderId = i.senderId
-					var Long receiverId = null
-					if (variablePair.hasSecond) {
-						receiver = i.receiver
-						receiverId = i.receiverId
+				interactionSet += interactions
+				
+				// After this unique filter, some sender-receiver comments might not contain every element
+				val interactionList = interactionSet.toList
+				for (var i = 0; i < interactionList.size - 1; i++) {
+					for (var j = i + 1; j < interactionList.size; j++) {
+						val lhs = interactionList.get(i)
+						val rhs = interactionList.get(j)
+						if (lhs.variablePair == rhs.variablePair &&
+								lhs.senderId == rhs.senderId && lhs.receiverId == rhs.receiverId) {
+							interactionSet -= rhs
+						}
 					}
-					interactionSet += new Interaction(sender, receiver, variablePair, senderId, receiverId)
 				}
 			}
 			return interactionSet
