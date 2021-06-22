@@ -158,15 +158,7 @@ public class ProcessBuilderCli {
 		}
 	}
 
-	public static void setProcessCliLogLevel(Level level) {
-		if (level == Level.INFO) {
-			logLevel = "info";
-		} else if (level == Level.WARNING) {
-			logLevel = "warning";
-		} else if (level == Level.SEVERE) {
-			logLevel = "severe";
-		} else if (level == Level.OFF) {
-			logLevel = "off";
-		}
+	public static void setProcessCliLogLevel(String level) {
+		logLevel = level;
 	}
 }

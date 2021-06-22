@@ -42,8 +42,7 @@ public class Application implements IApplication {
 				level = Level.OFF;
 				break;
 			default:
-				level = Level.INFO;
-				break;
+				throw new IllegalArgumentException("Invalid argument for setting log level: " + appArgs[1]);
 			}
 
 			switch (appArgs[0]) {

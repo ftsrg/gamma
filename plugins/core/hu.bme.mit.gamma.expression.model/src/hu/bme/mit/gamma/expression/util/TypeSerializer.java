@@ -63,7 +63,7 @@ public class TypeSerializer {
 	}
 	
 	protected String _serialize(RationalTypeDefinitionImpl type) {
-		return "double";
+		return "rational";
 	}
 	
 	protected String _serialize(ArrayTypeDefinitionImpl type) {

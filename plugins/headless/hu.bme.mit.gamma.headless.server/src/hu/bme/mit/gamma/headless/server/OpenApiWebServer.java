@@ -146,10 +146,8 @@ public class OpenApiWebServer extends AbstractVerticle {
 						inputLog.close();
 						success = true;
 					} catch (FileNotFoundException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					} catch (IOException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 
@@ -436,41 +434,34 @@ public class OpenApiWebServer extends AbstractVerticle {
 
 					RequestParameters params = routingContext.get(PARSED_PARAMETERS);
 					String logLevel = params.pathParameter("logLevel").getString().toLowerCase();
-					boolean success = false;
 
 					switch (logLevel) {
 					case "info":
 						logger.setLevel(Level.INFO);
-						ProcessBuilderCli.setProcessCliLogLevel(Level.INFO);
-						success = true;
+						ProcessBuilderCli.setProcessCliLogLevel(logLevel);
 						break;
 					case "warning":
 						logger.setLevel(Level.WARNING);
-						ProcessBuilderCli.setProcessCliLogLevel(Level.WARNING);
-						success = true;
+						ProcessBuilderCli.setProcessCliLogLevel(logLevel);
 						break;
 					case "severe":
 						logger.setLevel(Level.SEVERE);
-						ProcessBuilderCli.setProcessCliLogLevel(Level.SEVERE);
-						success = true;
+						ProcessBuilderCli.setProcessCliLogLevel(logLevel);
 						break;
 					case "off":
 						logger.setLevel(Level.OFF);
-						ProcessBuilderCli.setProcessCliLogLevel(Level.OFF);
-						success = true;
+						ProcessBuilderCli.setProcessCliLogLevel(logLevel);
 						break;
-					}
-
-					if (success) {
-						routingContext.response().setStatusCode(200)
-								.putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
-								.end("Logger level successfully set to: " + logLevel);
-					} else {
+					default:
 						JsonObject errorObject = new JsonObject().put("code", 400).put(MESSAGE,
 								"The provided log level was incorrect. The following levels are accepted: \"info\", \"warning\", \"severe\" and \"off\". ");
 						routingContext.response().setStatusCode(400)
 								.putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON).end(errorObject.encode());
+						return;
 					}
+					routingContext.response().setStatusCode(200).putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
+							.end("Logger level successfully set to: " + logLevel);
+
 				});
 
 				Router router = routerFactory.createRouter();
