@@ -5,6 +5,7 @@ import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -22,8 +23,9 @@ import org.eclipse.ui.wizards.datatransfer.ZipFileStructureProvider;
 
 public class ProjectImporter extends HeadlessApplicationCommandHandler {
 
-	public ProjectImporter(IApplicationContext context, String[] appArgs) {
-		super(context, appArgs);
+	public ProjectImporter(IApplicationContext context, String[] appArgs, Level level) {
+		super(context, appArgs, level);
+		logger.setLevel(level);
 	}
 
 	@Override
@@ -32,7 +34,7 @@ public class ProjectImporter extends HeadlessApplicationCommandHandler {
 																// specifies it
 		// all "-etc" arguments will be handled like regular arguments
 
-		String projectName = appArgs[1];
+		String projectName = appArgs[2];
 
 		IProjectDescription newProjectDescription = workspace.newProjectDescription(projectName);
 		IProject newProject = workspace.getRoot().getProject(projectName);

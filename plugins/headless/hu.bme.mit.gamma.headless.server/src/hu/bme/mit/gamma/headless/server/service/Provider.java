@@ -142,6 +142,43 @@ public class Provider {
 		}
 	}
 
+	public static boolean deleteWorkspace(String workspace) {
+		File result = new File(FileHandlerUtil.getProperty(DIRECTORY_OF_WORKSPACES_PROPERTY_NAME) + workspace);
+		List<WorkspaceProjectWrapper> workspaceProjectWrappers = new ArrayList<>();
+		boolean isEmptyWorkspace = true;
+		if (result.exists()) {
+			try {
+				workspaceProjectWrappers = FileHandlerUtil.getWrapperListFromJson();
+				if (workspaceProjectWrappers != null && !workspaceProjectWrappers.isEmpty()) {
+					List<WorkspaceProjectWrapper> workspaceList = workspaceProjectWrappers.stream()
+							.filter(wrapper -> workspace.equals(wrapper.getWorkspace())).collect(Collectors.toList());
+					for (WorkspaceProjectWrapper entry : workspaceList) {
+						if (entry.getProjectName() != null) {
+							isEmptyWorkspace = false;
+							return false;
+						}
+					}
+					if (isEmptyWorkspace) {
+						List<WorkspaceProjectWrapper> workspaceRemovedList = workspaceProjectWrappers.stream()
+								.filter(wrapper -> !workspace.equals(wrapper.getWorkspace()))
+								.collect(Collectors.toList());
+						deleteDirectory(result);
+						FileWriter writer = new FileWriter(
+								FileHandlerUtil.getProperty(DIRECTORY_OF_WORKSPACES_PROPERTY_NAME) + ROOT_WRAPPER_JSON);
+						new Gson().toJson(workspaceRemovedList, writer);
+						writer.close();
+						return true;
+					}
+				}
+
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+
+		return false;
+	}
+
 	private static void deleteProvisionalFilesFromWorkspace(String workspace, String projectName) throws IOException {
 		String projectMetadata = File.separator + ".metadata" + File.separator + ".plugins" + File.separator
 				+ "org.eclipse.core.resources" + File.separator + ".projects" + File.separator;
