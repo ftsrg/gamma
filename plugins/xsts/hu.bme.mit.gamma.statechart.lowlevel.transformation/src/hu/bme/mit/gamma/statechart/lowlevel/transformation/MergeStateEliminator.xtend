@@ -57,18 +57,23 @@ class MergeStateEliminator {
 		var duplicatableTerminalStates = getDuplicatableTerminalStates
 		while (!duplicatableTerminalStates.empty) {
 			for (terminalState : duplicatableTerminalStates) {
+				val region = terminalState.parentRegion
 				val incomingTransitions = terminalState.incomingTransitions
 				val size = incomingTransitions.size
 				val outgoingTransitions = terminalState.outgoingTransitions
 				
 				for (var i = 1; i < size; i++) { // A transition remains targeted to the original choice or fork
 					val incomingTransition = incomingTransitions.get(i)
-					val newChoice = terminalState.clone
-					newChoice.name = newChoice.name + i // To avoid name duplication
-					incomingTransition.targetState = newChoice
+					
+					val newTerminalState = terminalState.clone
+					newTerminalState.name = newTerminalState.name + i // To avoid name duplication
+					region.stateNodes += newTerminalState
+					
+					incomingTransition.targetState = newTerminalState
 					
 					for (newOutGoingTransition : outgoingTransitions.clone) {
-						newOutGoingTransition.sourceState = newChoice
+						statechart.transitions += newOutGoingTransition
+						newOutGoingTransition.sourceState = newTerminalState
 					}
 				}
 			}
