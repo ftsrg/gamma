@@ -127,8 +127,8 @@ This means that the compiler compliance level is set too high. Open the Eclipse 
  3. Export the Headless Gamma API inside the working folder, with the `Root directory` set to "eclipse". This way, the exported Headless Gamma will be inside the eclipse folder.
  5. Copy the `pom.xml` found in `hu.bme.mit.gamma.headless.server` inside the "server" folder. After that, create a folder named "src" inside the "server" folder.
  6. Inside the "src" folder, create a "main" folder. Inside the "main" folder, create a "java" and "resources" folder.
- 7. Copy the contents of the "src" folder found in `hu.bme.mit.gamma.headless.server` to the "java" folder.
- 8. Copy the contents of the "resources" folder found in `hu.bme.mit.gamma.headless.server` to the "resources" folder.
+ 7. Copy the contents of the "src" folder found in `hu.bme.mit.gamma.headless.server` inside the "java" folder.
+ 8. Copy the contents of the "resources" folder found in `hu.bme.mit.gamma.headless.server` inside the "resources" folder.
  9. Make sure to set the properties correctly inside `config.properties`, which can be found in the "resources" folder. Set the path to the Headless Gamma to `/home/eclipse/eclipse` and the path of the workspace folder to `/home/workspaces/`.
  10. Copy the contents of the UPPAAL folder installed on your computer inside the "uppaal" folder.
  11. Copy the `get-theta.sh` file inside the "theta" folder. This file can be found inside the `gamma/plugins/xsts/theta-bin` folder. 
