@@ -15,11 +15,15 @@ import "http://www.mit.bme.hu/gamma/statechart/Model/Interface" as interface
 import "http://www.mit.bme.hu/gamma/expression/Model" as expression
 import "http://www.mit.bme.hu/gamma/statechart/Model/Composite" as composite
 import "http://www.mit.bme.hu/gamma/statechart/Model/Statechart" as statechart
+import "http://www.mit.bme.hu/gamma/activity/Model" as activity
 import "http://www.eclipse.org/emf/2002/Ecore" as ecore
 
 PropertyPackage returns PropertyPackage:
 	'import' ^import+=[interface::Package| STRING]
-	'component' component=[interface::Component]
+	(
+		'component' component=[interface::Component] |
+		'activity' activity=[activity::ActivityDeclaration]
+	)
 	(formulas+=CommentableStateFormula)*
 ;
 
@@ -104,7 +108,16 @@ ParenthesesPathFormula returns PathFormula:
 PrimaryExpression returns expression::Expression:
 	LiteralExpression |
 	ComponentInstanceStateExpression |
+	ActivityNodeInstanceExpression |
 	'(' Expression ')'
+;
+
+ActivityNodeInstanceExpression returns ActivityDeclarationInstanceExpression:
+	ActivityDeclarationInstanceNodeReference
+;
+
+ActivityDeclarationInstanceNodeReference returns ActivityDeclarationInstanceNodeReference:
+	'activity' instance=ActivityDeclarationReference '.' activityNode=[activity::ActivityNode]
 ;
 
 ComponentInstanceStateExpression returns ComponentInstanceStateExpression:

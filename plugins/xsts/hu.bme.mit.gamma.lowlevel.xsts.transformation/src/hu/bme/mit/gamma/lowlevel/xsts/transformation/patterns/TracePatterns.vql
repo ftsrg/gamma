@@ -51,6 +51,16 @@ pattern flowTrace(flow : Flow, xStsVariable : VariableDeclaration) {
 	FlowTrace.xStsVariable(trace, xStsVariable);
 }
 
+pattern flowDataTokenTrace(flow : Flow, xStsVariable : VariableDeclaration) {
+	FlowDataTokenTrace.flow(trace, flow);
+	FlowDataTokenTrace.xStsVariable(trace, xStsVariable);
+} 
+
+pattern pinTrace(pin : Pin, xStsVariable : VariableDeclaration) {
+	PinTrace.pin(trace, pin);
+	PinTrace.xStsVariable(trace, xStsVariable);
+}
+
 pattern simpleTransitionTrace(lowlevelSimpleTransition : Transition, xStsTransition : XTransition, 
 		xStsPrecondition : Expression) {
 	SimpleTransitionTrace.lowlevelTransition(trace, lowlevelSimpleTransition);

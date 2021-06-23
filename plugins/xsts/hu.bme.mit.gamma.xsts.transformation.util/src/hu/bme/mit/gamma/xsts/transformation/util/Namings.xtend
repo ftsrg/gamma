@@ -26,6 +26,8 @@ import java.util.List
 import static extension hu.bme.mit.gamma.transformation.util.Namings.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.LowlevelNamings.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.XstsNamings.*
+import hu.bme.mit.gamma.activity.model.ActivityDeclarationReference
+import hu.bme.mit.gamma.activity.model.ActivityNode
 
 class Namings {
 	
@@ -88,5 +90,9 @@ class Namings {
 	static def String getOrthogonalName(VariableDeclaration variable) '''_«variable.name»_''' // Caller must make sure there is no name collision
 	// XSTS instantiation
 	static def String getCustomizedName(VariableDeclaration variable, ComponentInstance instance) '''«variable.name»_«instance.name»''' // Caller must make sure there is no name collision
+
+	// Activity customization
+	
+	static def String customizeName(ActivityNode node, ActivityDeclarationReference instance) '''«node.name.activityNodeVariableName»'''
 
 }

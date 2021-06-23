@@ -18,6 +18,93 @@ pattern nodes(activityNode : ActivityNode) {
 	ActivityNode(activityNode);
 }
 
+pattern initialNodes(activityNode : ActivityNode) {
+	InitialNode(activityNode);
+}
+
 pattern flows(flow : Flow) {
 	Flow(flow);
+}
+
+pattern inputControlFlows(flow: ControlFlow, node: ActivityNode) {
+	ControlFlow.targetNode(flow, node);
+}
+
+pattern outputControlFlows(flow: ControlFlow, node: ActivityNode) {
+	ControlFlow.sourceNode(flow, node);
+}
+
+pattern inputDataFlows(flow: DataFlow, node: ActivityNode) {
+	DataFlow.dataTargetReference(flow, targetReference);
+	DataNodeReference.dataNode(targetReference, node);
+}
+
+pattern outputDataFlows(flow: DataFlow, node: ActivityNode) {
+	DataFlow.dataSourceReference(flow, sourceReference);
+	DataNodeReference.dataNode(sourceReference, node);
+}
+
+pattern normalActivityNodes(node: ActivityNode) {
+	neg find decisionNodes(node);
+}
+
+pattern decisionNodes(node: ActivityNode) {
+	DecisionNode(node);
+}
+
+pattern dataFlowDirectSourceType(flow: DataFlow, type: Type) {
+	DataFlow.dataSourceReference(flow, sourceReference);
+	InputPinReference(sourceReference);
+	InputPinReference.inputPin(sourceReference, inputPin);
+	Pin.type(inputPin, type);
+}
+
+
+pattern priorDataFlow(flow: DataFlow, previousFlow: DataFlow) {
+	find sourceNode(flow, node);
+	find targetNode(previousFlow, node);
+} or {
+	find sourcePin(flow, pin);
+	find targetPin(previousFlow, pin);
+}
+
+pattern sourceNode(flow: Flow, node: ActivityNode) {
+	DataFlow.dataSourceReference(flow, sourceReference);
+	DataNodeReference.dataNode(sourceReference, node);
+} or {
+	ControlFlow.sourceNode(flow, node);
+}
+
+pattern targetNode(flow: Flow, node: ActivityNode) {
+	DataFlow.dataTargetReference(flow, targetReference);
+	DataNodeReference.dataNode(targetReference, node);
+} or {
+	ControlFlow.targetNode(flow, node);
+}
+
+pattern sourcePin(flow: DataFlow, pin: Pin) {
+	DataFlow.dataSourceReference(flow, sourceReference);
+	InputPinReference(sourceReference);
+	InputPinReference.inputPin(sourceReference, pin);
+} or {
+	DataFlow.dataSourceReference(flow, sourceReference);
+	OutputPinReference(sourceReference);
+	OutputPinReference.outputPin(sourceReference, pin);
+}
+
+pattern targetPin(flow: DataFlow, pin: Pin) {
+	DataFlow.dataTargetReference(flow, targetReference);
+	InputPinReference(targetReference);
+	InputPinReference.inputPin(targetReference, pin);
+} or {
+	DataFlow.dataTargetReference(flow, targetReference);
+	OutputPinReference(targetReference);
+	OutputPinReference.outputPin(targetReference, pin);
+}
+
+pattern dataFlowType(flow: DataFlow, type: Type) {
+	find priorDataFlow*(flow, previous);
+	find sourcePin(previous, pin);
+	
+	Pin.type(pin, type);
 }

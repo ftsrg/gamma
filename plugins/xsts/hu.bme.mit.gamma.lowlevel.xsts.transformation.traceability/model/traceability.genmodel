@@ -63,12 +63,20 @@
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//TypeDeclarationTrace/xStsTypeDeclaration"/>
     </genClasses>
     <genClasses ecoreClass="traceability.ecore#//ActivityNodeTrace">
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//ActivityNodeTrace/activitynode"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//ActivityNodeTrace/activityNode"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//ActivityNodeTrace/xStsVariable"/>
     </genClasses>
     <genClasses ecoreClass="traceability.ecore#//FlowTrace">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//FlowTrace/xStsVariable"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//FlowTrace/flow"/>
+    </genClasses>
+    <genClasses ecoreClass="traceability.ecore#//FlowDataTokenTrace">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//FlowDataTokenTrace/xStsVariable"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//FlowDataTokenTrace/flow"/>
+    </genClasses>
+    <genClasses ecoreClass="traceability.ecore#//PinTrace">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//PinTrace/pin"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//PinTrace/xStsVariable"/>
     </genClasses>
   </genPackages>
 </genmodel:GenModel>

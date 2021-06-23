@@ -4,10 +4,10 @@
   <eClassifiers xsi:type="ecore:EClass" name="PropertyPackage">
     <eStructuralFeatures xsi:type="ecore:EReference" name="import" upperBound="-1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/interface.ecore#//Package"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="component" lowerBound="1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/interface.ecore#//Component"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="component" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/interface.ecore#//Component"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="formulas" upperBound="-1"
         eType="#//CommentableStateFormula" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="activity" eType="ecore:EClass ../../hu.bme.mit.gamma.activity.model/model/activity.ecore#//ActivityDeclaration"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="CommentableStateFormula" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//CommentableElement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="formula" lowerBound="1"
@@ -111,5 +111,15 @@
         eType="#//PathFormula" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="rightOperand" lowerBound="1"
         eType="#//PathFormula" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ActivityDeclarationInstanceExpression"
+      abstract="true" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="instance" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.activity.model/model/activity.ecore#//ActivityDeclarationReference"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ActivityDeclarationInstanceNodeReference"
+      eSuperTypes="#//ActivityDeclarationInstanceExpression">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="activityNode" eType="ecore:EClass ../../hu.bme.mit.gamma.activity.model/model/activity.ecore#//ActivityNode"/>
   </eClassifiers>
 </ecore:EPackage>

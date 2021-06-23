@@ -55,6 +55,9 @@ import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.FlowTrace
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.action.model.ForStatement
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.traceability.ParameterTrace
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.FlowDataTokenTrace
+import hu.bme.mit.gamma.activity.model.Pin
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.PinTrace
 
 package class Trace {
 	// Trace model
@@ -557,6 +560,14 @@ package class Trace {
 			it.XStsVariable = xStsVariable
 		]
 	}
+	def putDataTokenVariable(Flow flow, VariableDeclaration xStsVariable) {
+		checkArgument(flow !== null)
+		checkArgument(xStsVariable !== null)
+		trace.traces += createFlowDataTokenTrace => [
+			it.flow = flow
+			it.XStsVariable = xStsVariable
+		]
+	}
 	
 	def isTraced(Flow flow) {
 		checkArgument(flow !== null)
@@ -570,9 +581,45 @@ package class Trace {
 		return matches.head
 	}
 	
+	def getXStsVariableFlowDataToken(Flow flow) {
+		checkArgument(flow !== null)
+		val matches = FlowDataTokenTrace.Matcher.on(tracingEngine).getAllValuesOfxStsVariable(flow)
+		checkState(matches.size == 1, matches.size)
+		return matches.head
+	}
+	
 	def getFlow(VariableDeclaration xStsVariable) {
 		checkArgument(xStsVariable !== null)
 		val matches = FlowTrace.Matcher.on(tracingEngine).getAllValuesOfflow(xStsVariable)
+		checkState(matches.size == 1, matches.size)
+		return matches.head
+	}
+	
+	// Pin - variable
+	def put(Pin pin, VariableDeclaration xStsVariable) {
+		checkArgument(pin !== null)
+		checkArgument(xStsVariable !== null)
+		trace.traces += createPinTrace => [
+			it.pin = pin
+			it.XStsVariable = xStsVariable
+		]
+	}
+	
+	def isTraced(Pin pin) {
+		checkArgument(pin !== null)
+		return PinTrace.Matcher.on(tracingEngine).hasMatch(pin, null)
+	}
+	
+	def getXStsVariable(Pin pin) {
+		checkArgument(pin !== null)
+		val matches = PinTrace.Matcher.on(tracingEngine).getAllValuesOfxStsVariable(pin)
+		checkState(matches.size == 1, matches.size)
+		return matches.head
+	}
+	
+	def getPin(VariableDeclaration xStsVariable) {
+		checkArgument(xStsVariable !== null)
+		val matches = PinTrace.Matcher.on(tracingEngine).getAllValuesOfpin(xStsVariable)
 		checkState(matches.size == 1, matches.size)
 		return matches.head
 	}

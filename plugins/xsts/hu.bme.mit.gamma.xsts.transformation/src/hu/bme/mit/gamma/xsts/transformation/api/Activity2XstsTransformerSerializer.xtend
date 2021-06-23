@@ -41,16 +41,17 @@ class Activity2XstsTransformerSerializer {
 	
 	def void execute() {
 		val gammaPackage = StatechartModelDerivedFeatures.getContainingPackage(activity) // shares Package with Statechart
-
+		
 		val activityToXSTSTransformer = new ActivityToXstsTransformer(true)
 		// Normal transformation
 		val xSts = activityToXSTSTransformer.execute(gammaPackage)
 		// EMF
 		xSts.normalSave(targetFolderUri, fileName.emfXStsFileName)
-		// String
 		val xStsFile = new File(targetFolderUri + File.separator + fileName.xtextXStsFileName)
 		val xStsString = xSts.serializeXSTS
 		xStsFile.saveString(xStsString)
+		
+		gammaPackage.normalSave(targetFolderUri, fileName.unfoldedPackageFileName) // saving traceability package
 	}
 	
 }

@@ -20,6 +20,8 @@ import hu.bme.mit.gamma.statechart.statechart.State
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.uppaal.util.Namings.*
+import hu.bme.mit.gamma.activity.model.ActivityNode
+import hu.bme.mit.gamma.activity.model.ActivityDeclarationReference
 
 class UppaalReferenceSerializer implements AbstractReferenceSerializer {
 	// Singleton
@@ -53,6 +55,10 @@ class UppaalReferenceSerializer implements AbstractReferenceSerializer {
 			return #[getToRaiseValueOfName(event, port, parameter, instance)]
 		}
 		return #[getOutValueOfName(event, port, parameter, instance)]
+	}
+	
+	override getId(ActivityNode activityNode, ActivityDeclarationReference instance) {
+		return #[getVariableName(activityNode, instance)]
 	}
 	
 }

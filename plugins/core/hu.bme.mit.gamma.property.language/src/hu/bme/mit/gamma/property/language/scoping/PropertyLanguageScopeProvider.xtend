@@ -10,6 +10,8 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.property.language.scoping
 
+import hu.bme.mit.gamma.activity.model.ActivityModelPackage
+import hu.bme.mit.gamma.property.model.ActivityDeclarationInstanceNodeReference
 import hu.bme.mit.gamma.property.model.ComponentInstanceEventParameterReference
 import hu.bme.mit.gamma.property.model.ComponentInstanceEventReference
 import hu.bme.mit.gamma.property.model.ComponentInstanceStateConfigurationReference
@@ -24,6 +26,11 @@ import org.eclipse.xtext.EcoreUtil2
 import org.eclipse.xtext.scoping.Scopes
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.activity.derivedfeatures.ActivityModelDerivedFeatures.*
+import hu.bme.mit.gamma.activity.model.ActivityDefinition
+import hu.bme.mit.gamma.activity.model.ActionNode
+import hu.bme.mit.gamma.activity.model.NamedActivityDeclaration
+import hu.bme.mit.gamma.activity.model.NamedActivityDeclarationReference
 
 class PropertyLanguageScopeProvider extends AbstractPropertyLanguageScopeProvider {
 	
@@ -35,11 +42,37 @@ class PropertyLanguageScopeProvider extends AbstractPropertyLanguageScopeProvide
 					return Scopes.scopeFor(imports.map[it.components].flatten)
 				}
 			}
+			if (reference == PropertyModelPackage.Literals.PROPERTY_PACKAGE__ACTIVITY) {
+				val imports = context.import
+				if (!imports.empty) {
+					return Scopes.scopeFor(imports.map[it.activities].flatten)
+				}
+			}
 		}
 		val root = EcoreUtil2.getRootContainer(context) as PropertyPackage
 		val component = root.component
+		val activity = root.activity
 		if (reference == CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE__COMPONENT_INSTANCE_HIERARCHY) {
 			return Scopes.scopeFor(component.allInstances)
+		}		
+			
+		if (context instanceof NamedActivityDeclarationReference &&			reference == ActivityModelPackage.Literals.NAMED_ACTIVITY_DECLARATION_REFERENCE__NAMED_ACTIVITY_DECLARATION) {
+			val imports = root.import
+			return Scopes.scopeFor(imports.map[it.activities].flatten)
+		}
+		if (context instanceof ActivityDeclarationInstanceNodeReference) {
+			if (reference == ActivityModelPackage.Literals.NAMED_ACTIVITY_DECLARATION_REFERENCE__NAMED_ACTIVITY_DECLARATION) {
+				val imports = root.import
+				return Scopes.scopeFor(imports.map[it.activities].flatten)
+			}
+			if (reference == PropertyModelPackage.Literals.ACTIVITY_DECLARATION_INSTANCE_NODE_REFERENCE__ACTIVITY_NODE) {
+				val declarationReference = context.instance
+				val definition = declarationReference.definition
+				
+				if (definition instanceof ActivityDefinition) {
+					return Scopes.scopeFor(definition.activityNodes)
+				}
+			}
 		}
 		if (context instanceof ComponentInstanceStateExpression) {
 			// Base

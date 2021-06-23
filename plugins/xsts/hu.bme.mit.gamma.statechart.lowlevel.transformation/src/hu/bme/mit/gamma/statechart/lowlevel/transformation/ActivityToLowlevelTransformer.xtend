@@ -33,6 +33,7 @@ import hu.bme.mit.gamma.activity.model.OutsideOutputPinReference
 import hu.bme.mit.gamma.activity.model.PseudoActivityNode
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.util.GammaEcoreUtil
+import hu.bme.mit.gamma.activity.model.Pin
 
 class ActivityToLowlevelTransformer {
 	// Auxiliary objects
@@ -127,28 +128,13 @@ class ActivityToLowlevelTransformer {
 		return newDefinition
 	}
 	
-	def dispatch transformPin(OutputPin pin) {
+	def transformPin(Pin pin) {
 		if (trace.isMapped(pin)) {
 			return trace.get(pin)
 		}
 		
-		val newPin = createOutputPin => [
-			type = pin.type.transformType
-		]
-		
-		trace.put(pin, newPin)
-		
-		return newPin
-	}
-	
-	def dispatch transformPin(InputPin pin) {
-		if (trace.isMapped(pin)) {
-			return trace.get(pin)
-		}
-		
-		val newPin = createInputPin => [
-			type = pin.type.transformType
-		]
+		val newPin = pin.clone
+		newPin.type = pin.type.transformType
 		
 		trace.put(pin, newPin)
 		
@@ -163,6 +149,7 @@ class ActivityToLowlevelTransformer {
 		val newFlow = createDataFlow => [
 			dataSourceReference = flow.dataSourceReference.transformDataSourceReference
 			dataTargetReference = flow.dataTargetReference.transformDataTargetReference
+			guard = flow.guard?.transformExpression?.wrapIntoMultiaryExpression(createAndExpression)
 		]
 		
 		trace.put(flow, newFlow)
@@ -214,6 +201,7 @@ class ActivityToLowlevelTransformer {
 		val newFlow = createControlFlow => [
 			sourceNode = flow.sourceNode.transformNode
 			targetNode = flow.targetNode.transformNode
+			guard = flow.guard.transformExpression.wrapIntoMultiaryExpression(createAndExpression)
 		]
 		
 		trace.put(flow, newFlow)

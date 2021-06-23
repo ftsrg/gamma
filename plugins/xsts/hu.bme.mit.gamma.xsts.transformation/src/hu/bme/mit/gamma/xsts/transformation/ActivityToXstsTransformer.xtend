@@ -39,10 +39,10 @@ class ActivityToXstsTransformer {
 	def execute(hu.bme.mit.gamma.statechart.interface_.Package _package) {
 		logger.log(Level.INFO, "Starting main execution of Activity-XSTS transformation")
 		val activity = _package.activities.head as NamedActivityDeclaration
-		val lowlevelPackage = gammaToLowlevelTransformer.transform(_package) 
+		val lowlevelPackage = gammaToLowlevelTransformer.transform(_package) 		
 		val xSts = activity.transform(lowlevelPackage) 
 		xSts.removeDuplicatedTypes
-		xSts.optimize
+		//xSts.optimize transformed assume actions are (unnecessary)
 		return xSts
 	}
 		

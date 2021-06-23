@@ -17,6 +17,8 @@ import hu.bme.mit.gamma.property.model.ComponentInstanceStateConfigurationRefere
 import hu.bme.mit.gamma.property.model.ComponentInstanceStateExpression
 import hu.bme.mit.gamma.property.model.ComponentInstanceVariableReference
 import hu.bme.mit.gamma.statechart.util.ExpressionSerializer
+import hu.bme.mit.gamma.property.model.ActivityDeclarationInstanceNodeReference
+import hu.bme.mit.gamma.property.model.ActivityDeclarationInstanceExpression
 
 class PropertyExpressionSerializer extends ExpressionSerializer {
 	
@@ -30,7 +32,20 @@ class PropertyExpressionSerializer extends ExpressionSerializer {
 		if (expression instanceof ComponentInstanceStateExpression) {
 			return expression.serializeStateExpression
 		}
+		if (expression instanceof ActivityDeclarationInstanceExpression) {
+			return expression.serializeActivityExpression
+		}
 		return super.serialize(expression)
+	}
+	
+	protected def dispatch serializeActivityExpression(ActivityDeclarationInstanceNodeReference expression) {
+		val instance = expression.instance
+		val activityNode = expression.activityNode
+		return '''«activityNode.getId(instance)»'''
+	}
+	
+	protected def dispatch serializeActivityExpression(ActivityDeclarationInstanceExpression expression) {
+		throw new IllegalArgumentException("Unknown expression")
 	}
 	
 	protected def dispatch serializeStateExpression(ComponentInstanceStateConfigurationReference expression) {

@@ -20,6 +20,8 @@ import hu.bme.mit.gamma.statechart.statechart.State
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
+import hu.bme.mit.gamma.activity.model.ActivityNode
+import hu.bme.mit.gamma.activity.model.ActivityDeclarationReference
 
 class ThetaReferenceSerializer implements AbstractReferenceSerializer {
 	// Singleton
@@ -51,6 +53,10 @@ class ThetaReferenceSerializer implements AbstractReferenceSerializer {
 			parameter.customizeInNames(port, instance)
 		}
 		return parameter.customizeOutNames(port, instance)
+	}
+	
+	override getId(ActivityNode activityNode, ActivityDeclarationReference instance) {
+		return #['''«activityNode.customizeName(instance)» == __Running__''']
 	}
 	
 }
