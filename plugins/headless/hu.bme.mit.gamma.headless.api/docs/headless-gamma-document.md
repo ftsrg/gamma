@@ -32,7 +32,7 @@ The `hu.bme.mit.gamma.headless.api` creates the headless version of Gamma. This 
 ## Step 3 - Modifying Target Platform
 Open the target platform via Window -> Preferences -> Plug-in Development -> Target Platform.
 
-We have created a target platform (see the `target` folder in `hu.bme.mit.gamma.headless.api`) that can be used to properly export and run the headless version of Gamma. Nevertheless, if you wish to create your own target platform, the necessary modifications are elaborated in the following paragraphs.
+We have created target platforms for Windows and Linux operating systems (see the `target-platform` folder in `hu.bme.mit.gamma.headless.api`) that can be used to properly export and run the headless version of Gamma. We recommend using these as target platforms. Nevertheless, if you wish to create your own target platform, the necessary modifications are elaborated in the following paragraphs.
 
 Edit the target platform by modifying its content. For the following plugins, select **only** the described version(s), and deselect other versions (remove the tick from the box next to them).
 
@@ -120,7 +120,7 @@ This means that the compiler compliance level is set too high. Open the Eclipse 
 
 ## Setting up the Docker container
 
- Make sure that Docker is installed on the computer in use. The following tutorial was used to install Docker on Ubuntu: https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-18-04. Note that the tutorial below focuses on the creation of the docker image, and then running a container from that image. For this reason, it ignores the official Headless Gamma image that can be found here: https://hub.docker.com/repository/docker/ftsrggamma/headless-gamma. It is highly recommended to use the official image.
+ Make sure that Docker is installed on the computer in use. The following tutorial was used to install Docker on Ubuntu: https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-18-04. Note that the tutorial below focuses on the creation of the docker image, and then running a container from that image. For this reason, it ignores the official Headless Gamma image that can be found here: https://hub.docker.com/repository/docker/ftsrggamma/headless-gamma. It is highly recommended to use the official image. Further information on how to use this image can be found in the Headless Gamma README.
 
  1. Create a working folder, and copy the Dockerfile inside.
  2. Inside the working folder, create the following folders: "eclipse",  "server", "uppaal", "theta", "project".
