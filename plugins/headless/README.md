@@ -69,7 +69,7 @@ This section details the API used to communicatie with the webserver.
 		- `file`,
 		- `ggenPath`. 
 		
-		The `contactEmail` and `file` fields work the same as in the `/gamma/addproject/{workspace}` request. The `ggenPath` field specifies the path of the `.ggen` file inside the project. Like in the previous request, `/` should be used when specifying the path.
+		The `file` field works the same as in the `/gamma/addproject/{workspace}` request. The `ggenPath` field specifies the path of the `.ggen` file inside the project. Like in the previous request, `/` should be used when specifying the path.
 	 - **stopProcess** `/gamma/{workspace}/{project}/stop` - Stops the currently ongoing process in the project found in the given workspace.
 	 - **setLogLevel** `/gamma/setloglevel/{loglevel}` - Sets the verbosity of the logger for both the webserver and the Headless Gamma. The accepted levels are `info`, `warning`, `severe` and `off`.
 	 - **getLogs** `/gamma/{workspace}/getlogs` - Retrieves the logs of a workspace. This can be saved as a text file.
