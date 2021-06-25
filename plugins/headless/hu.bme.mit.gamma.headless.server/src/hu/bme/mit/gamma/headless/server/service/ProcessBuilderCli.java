@@ -19,10 +19,10 @@ import java.util.List;
 import java.util.UUID;
 import java.util.logging.Level;
 
-//The ProcesssBuilderCli builds command line interface commands to be passed to the Headless Gamma.
+// The ProcesssBuilderCli builds command line interface commands to be passed to the Headless Gamma
 public class ProcessBuilderCli {
 
-	// Static arguments and variables that appear in most commands.
+	// Static arguments and variables that appear in most commands
 	private static final String DIRECTORY_OF_WORKSPACES_PROPERTY_NAME = "root.of.workspaces.path";
 
 	private static final String DIRECTORY_OF_GAMMA_HEADLESS_ECLIPSE_PROPERTY = "headless.gamma.path";
@@ -37,7 +37,7 @@ public class ProcessBuilderCli {
 
 	private static String logLevel = "info";
 
-	// Creates a command which runs a Gamma opeartion, e.g. executes a .ggen file.
+	// Creates a command which runs a Gamma opeartion, e.g. executes a .ggen file
 	public static void runGammaOperations(String projectName, String workspace, String filePath) throws IOException {
 
 		ProcessBuilder pb = new ProcessBuilder(
@@ -52,7 +52,7 @@ public class ProcessBuilderCli {
 		updateUnderOperationStatus(projectName, workspace, true, (int) pb.start().pid());
 	}
 
-	// Stops the operation by killing the process using the PID assigned.
+	// Stops the operation by killing the process using the PID assigned
 	public static void stopOperation(String projectName, String workspace) throws IOException {
 		int pid = FileHandlerUtil.getPid(workspace, projectName);
 		if (Validator.isValidPid(pid)) {
@@ -93,7 +93,7 @@ public class ProcessBuilderCli {
 	}
 
 	// Creates a projectDescriptor.json file which contains information about a
-	// project.
+	// project
 	private static void createProjectJSONFile(String workspace, String projectName) {
 		JSONObject jsonObject = new JSONObject();
 		Date today = new Date();

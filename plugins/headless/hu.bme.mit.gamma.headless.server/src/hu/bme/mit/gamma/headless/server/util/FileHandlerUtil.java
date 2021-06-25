@@ -21,14 +21,14 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-//contains functions that are used for file and process handling
+// Contains functions that are used for file and process handling
 public class FileHandlerUtil {
 	private static final String DIRECTORY_OF_WORKSPACES_PROPERTY_NAME = "root.of.workspaces.path";
 	private static final String ROOT_WRAPPER_JSON = "wrapperList.json";
 	public static final String PROJECT_DESCRIPTOR_JSON = "projectDescriptor.json";
 	protected static Logger logger = Logger.getLogger("GammaLogger");
 	
-	//gets the wrapperList.json file
+	// Gets the wrapperList.json file
 	public static List<WorkspaceProjectWrapper> getWrapperListFromJson() throws IOException {
 		File jsonFile = new File(getProperty(DIRECTORY_OF_WORKSPACES_PROPERTY_NAME) + ROOT_WRAPPER_JSON);
 		if (!jsonFile.exists()) {
@@ -42,7 +42,7 @@ public class FileHandlerUtil {
 		return new Gson().fromJson(jElement, listType);
 	}
 
-	//gets the PID of an undergoing operation
+	// Gets the PID of an undergoing operation
 	public static int getPid(String workspace, String projectName) throws IOException {
 		File jsonFile = new File(getProperty(DIRECTORY_OF_WORKSPACES_PROPERTY_NAME) + workspace + File.separator
 				+ projectName + File.separator + PROJECT_DESCRIPTOR_JSON);

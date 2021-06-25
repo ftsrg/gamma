@@ -5,7 +5,7 @@ import java.util.logging.Logger;
 
 import org.eclipse.equinox.app.IApplicationContext;
 
-//Abstract class for all Headless Gamma application options.
+// Abstract class for all Headless Gamma application options
 public abstract class HeadlessApplicationCommandHandler {
 	final IApplicationContext context;
 	final String[] appArgs;

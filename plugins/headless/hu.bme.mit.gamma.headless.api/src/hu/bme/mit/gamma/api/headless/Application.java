@@ -7,7 +7,7 @@ import java.util.logging.Logger;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
 
-//The application that gets executed and exported as Headless Gamma
+// The application that gets executed and exported as Headless Gamma
 public class Application implements IApplication {
 
 	private GammaEntryPoint gammaEntryPoint;
@@ -19,16 +19,14 @@ public class Application implements IApplication {
 	public Object start(final IApplicationContext context) throws Exception {
 
 		final Map<?, ?> args = context.getArguments();
-		final String[] appArgs = (String[]) args.get(IApplicationContext.APPLICATION_ARGS); // collecting the
-																							// application arguments to
-																							// a string buffer
+		final String[] appArgs = (String[]) args.get(IApplicationContext.APPLICATION_ARGS);
 
 		Level level = Level.INFO;
 		/*
 		 * Checks the number of arguments, which decide the operation the Headless Gamma
-		 * executes. Note that these arguments are passed through the web server, not by
+		 * executes Note that these arguments are passed through the web server, not by
 		 * the user, so this error should not appear, as the server always passes these
-		 * arguments.
+		 * arguments
 		 */
 		if (appArgs.length == 0) {
 			logger.log(Level.WARNING,
@@ -55,7 +53,7 @@ public class Application implements IApplication {
 				throw new IllegalArgumentException("Invalid argument for setting log level: " + appArgs[1]);
 			}
 			// The first argument is the operation type: creating workspace, importing
-			// project or executing Gamma .ggen file.
+			// project or executing Gamma .ggen file
 			switch (appArgs[0]) {
 			case "workspace":
 				workspaceGenerator = new WorkspaceGenerator(context, appArgs, level);

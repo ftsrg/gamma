@@ -1,6 +1,6 @@
 package hu.bme.mit.gamma.headless.server.entity;
 
-//Object that gets written to the wrapperList.json file, to keep track of workspaces and projects under them.
+// Object that gets written to the wrapperList.json file, to keep track of workspaces and projects under them
 public class WorkspaceProjectWrapper {
 	String workspace;
 	String projectName;

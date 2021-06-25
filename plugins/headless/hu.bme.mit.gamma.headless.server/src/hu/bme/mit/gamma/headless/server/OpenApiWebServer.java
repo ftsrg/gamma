@@ -41,7 +41,7 @@ import io.vertx.ext.web.validation.RequestParameters;
 
 public class OpenApiWebServer extends AbstractVerticle {
 
-	// These strings serve as static arguments.
+	// These strings serve as static arguments
 	private static final String APPLICATION_JSON = "application/json";
 	private static final String MESSAGE = "message";
 	private static final String WORKSPACE = "workspace";
@@ -60,9 +60,9 @@ public class OpenApiWebServer extends AbstractVerticle {
 	@Override
 	public void start(Promise<Void> future) {
 		// The web server creates the API using the gamma-wrapper.yaml found in the
-		// "resources" folder.
+		// "resources" folder
 		// To create a new request, it has to be written here, and added to the
-		// gamma-wrapper.yaml.
+		// gamma-wrapper.yaml
 		RouterBuilder.create(this.vertx, "gamma-wrapper.yaml", ar -> {
 			SessionHandler sessionHandler = SessionHandler.create(LocalSessionStore.create(vertx));
 
@@ -71,13 +71,13 @@ public class OpenApiWebServer extends AbstractVerticle {
 				routerFactory = ar.result();
 				routerFactory.createRouter().route().handler(sessionHandler);
 
-				// Runs a .ggen file.
+				// Runs a .ggen file
 				routerFactory.operation("runOperation").handler(routingContext -> {
 
 					logger.log(Level.INFO, ANSI_YELLOW + "Operation \"runOperation\" has started." + ANSI_RESET);
 
 					ErrorHandlerPOJO errorHandlerPOJO = null;
-					// Getting parameters from path and request body.
+					// Getting parameters from path and request body
 					RequestParameters params = routingContext.get(PARSED_PARAMETERS);
 					String projectName = params.pathParameter(PROJECT_NAME).getString();
 					String workspace = params.pathParameter(WORKSPACE).getString();
@@ -87,7 +87,7 @@ public class OpenApiWebServer extends AbstractVerticle {
 						errorHandlerPOJO = getErrorObject(workspace, projectName);
 						if (errorHandlerPOJO.getErrorObject() == null) {
 							success = true;
-							// Passing the parameters to the CLI, so the operation can be started.
+							// Passing the parameters to the CLI, so the operation can be started
 							ProcessBuilderCli.runGammaOperations(projectName, workspace, filePath);
 							logger.log(Level.INFO,
 									ANSI_YELLOW + "Operation \"runOperation\": parameters passed to CLI." + ANSI_RESET);
@@ -96,7 +96,7 @@ public class OpenApiWebServer extends AbstractVerticle {
 						e.printStackTrace();
 					}
 					if (success) {
-						// If it succeeds, the response is 200.
+						// If it succeeds, the response is 200
 						routingContext.response().setStatusCode(200)
 								.putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON).end();
 					} else {
@@ -104,7 +104,7 @@ public class OpenApiWebServer extends AbstractVerticle {
 					}
 				});
 
-				// Gets files from a project.
+				// Gets files from a project
 				routerFactory.operation("getResult").handler(routingContext -> {
 					logger.log(Level.INFO, ANSI_YELLOW + "Operation \"getResult\" has started." + ANSI_RESET);
 
@@ -122,7 +122,7 @@ public class OpenApiWebServer extends AbstractVerticle {
 						errorHandlerPOJO = getErrorObject(workspace, projectName);
 						if (errorHandlerPOJO.getErrorObject() == null) {
 							success = true;
-							// Passing it to the provider, which creates a zip file.
+							// Passing it to the provider, which creates a zip file
 							zipPath = Provider.getResultZipFilePath(jsonArray, FileHandlerUtil
 									.getProperty(DIRECTORY_OF_WORKSPACES_PROPERTY_NAME).concat(workspace), projectName);
 							logger.log(Level.INFO,
@@ -150,7 +150,7 @@ public class OpenApiWebServer extends AbstractVerticle {
 							+ workspace + File.separator + ".metadata" + File.separator + ".log";
 					boolean success = false;
 					try {
-						// Getting the log file.
+						// Getting the log file
 						FileInputStream inputLog = new FileInputStream(logPath);
 						inputLog.close();
 						success = true;
@@ -173,7 +173,7 @@ public class OpenApiWebServer extends AbstractVerticle {
 
 				});
 
-				// Adds a project to a workspace, which is uploaded as a zip in the form body.
+				// Adds a project to a workspace, which is uploaded as a zip in the form body
 				routerFactory.operation("addProject").handler(routingContext -> {
 
 					logger.log(Level.INFO, ANSI_YELLOW + "Operation \"addProject\" has started." + ANSI_RESET);
@@ -183,18 +183,18 @@ public class OpenApiWebServer extends AbstractVerticle {
 					boolean success = true;
 					for (FileUpload f : routingContext.fileUploads()) {
 						try {
-							// Checks whether the project already exists in the workspace or not.
+							// Checks whether the project already exists in the workspace or not
 							if (!Validator.checkIfWorkspaceExists(workspace) || f.size() == 0
 									|| Validator.checkIfProjectAlreadyExistsUnderWorkspace(workspace,
 											f.fileName().substring(0, f.fileName().lastIndexOf(".")))) {
 								success = false;
 							} else {
-								// Moves the uploaded zip to the workspace, and unzips it.
+								// Moves the uploaded zip to the workspace, and unzips it
 								Files.move(Paths.get(f.uploadedFileName()),
 										Paths.get(FileHandlerUtil.getProperty(DIRECTORY_OF_WORKSPACES_PROPERTY_NAME)
 												+ workspace + File.separator + f.fileName()));
 								String projectName = f.fileName().substring(0, f.fileName().lastIndexOf("."));
-								// Creates an Eclipse project based on the uploaded file.
+								// Creates an Eclipse project based on the uploaded file
 								ProcessBuilderCli.createEclipseProject(projectName, workspace);
 								logger.log(Level.INFO, ANSI_YELLOW
 										+ "Operation \"addProject\": parameters passed to CLI." + ANSI_RESET);
@@ -236,7 +236,7 @@ public class OpenApiWebServer extends AbstractVerticle {
 					}
 				});
 
-				// Stops an active operation in a workspace + project pair.
+				// Stops an active operation in a workspace + project pair
 				routerFactory.operation("stopOperation").handler(routingContext -> {
 
 					logger.log(Level.INFO, ANSI_YELLOW + "Operation \"stopOperation\" has started." + ANSI_RESET);
@@ -349,7 +349,7 @@ public class OpenApiWebServer extends AbstractVerticle {
 							.end(Json.encode(returnedResult));
 				});
 
-				// Adds a project to a workspace and executes a command.
+				// Adds a project to a workspace and executes a command
 				// TODO: this request currently doesn't work
 				routerFactory.operation("addAndRun").handler(routingContext -> {
 
@@ -415,7 +415,7 @@ public class OpenApiWebServer extends AbstractVerticle {
 					}
 				});
 
-				// Lists all files found in a workspace + project pair.
+				// Lists all files found in a workspace + project pair
 				routerFactory.operation("list").handler(routingContext -> {
 
 					logger.log(Level.INFO, ANSI_YELLOW + "Operation \"list\" has started." + ANSI_RESET);
@@ -503,7 +503,7 @@ public class OpenApiWebServer extends AbstractVerticle {
 							.end(errorObject.encode());
 				});
 
-				server = vertx.createHttpServer(new HttpServerOptions().setPort(8080).setHost("localhost")); // <5>
+				server = vertx.createHttpServer(new HttpServerOptions().setPort(8080).setHost("localhost"));
 				server.requestHandler(x -> {
 					router.handle(x);
 				}).listen(8080);
@@ -545,7 +545,7 @@ public class OpenApiWebServer extends AbstractVerticle {
 	}
 
 	// Used to periodically list workspaces and projects that are undergoing an
-	// opeartion
+	// operation
 	private static void listWorkspacesAndProjects() throws IOException {
 		if (FileHandlerUtil.getWrapperListFromJson() != null) {
 			List<WorkspaceProjectWrapper> yourList = FileHandlerUtil.getWrapperListFromJson();

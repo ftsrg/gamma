@@ -21,7 +21,7 @@ import org.eclipse.ui.dialogs.IOverwriteQuery;
 import org.eclipse.ui.wizards.datatransfer.ImportOperation;
 import org.eclipse.ui.wizards.datatransfer.ZipFileStructureProvider;
 
-//Imports projects to a given workspace
+// Imports projects to a given workspace
 public class ProjectImporter extends HeadlessApplicationCommandHandler {
 
 	public ProjectImporter(IApplicationContext context, String[] appArgs, Level level) {
@@ -31,9 +31,9 @@ public class ProjectImporter extends HeadlessApplicationCommandHandler {
 
 	@Override
 	public void execute() throws Exception {
-		IWorkspace workspace = ResourcesPlugin.getWorkspace(); // workspace will be created where the -data argument
+		IWorkspace workspace = ResourcesPlugin.getWorkspace(); // Workspace will be created where the -data argument
 																// specifies it
-		// all "-etc" arguments will be handled like regular arguments
+		// All "-etc" arguments will be handled like regular arguments
 
 		String projectName = appArgs[2];
 

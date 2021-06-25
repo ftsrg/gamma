@@ -41,7 +41,7 @@ import hu.bme.mit.gamma.trace.language.TraceLanguageStandaloneSetup;
 import hu.bme.mit.gamma.ui.GammaApi;
 import hu.bme.mit.gamma.ui.util.ResourceSetCreator;
 
-//This is the entry point for the Headless Gamma
+// This is the entry point for the Headless Gamma
 public class GammaEntryPoint extends HeadlessApplicationCommandHandler {
 
 	private static final String UNDER_OPERATION_PROPERTY = "underOperation";
@@ -62,10 +62,10 @@ public class GammaEntryPoint extends HeadlessApplicationCommandHandler {
 		PropertyLanguageStandaloneSetup.doSetup();
 		GenModelStandaloneSetup.doSetup();
 
-		if (appArgs.length >= 1) { //Checking the length of arguments. These are passed by the web server.
-			String ggenFilePath = URI.decode(appArgs[2]); //Path of the .ggen file to be executed.
+		if (appArgs.length >= 1) { // Checking the length of arguments. These are passed by the web server.
+			String ggenFilePath = URI.decode(appArgs[2]); // Path of the .ggen file to be executed
 			File ggenFile = new File(ggenFilePath);
-			String projectDescriptorPath = URI.decode(appArgs[3]); //Path of the projectDescriptor.json
+			String projectDescriptorPath = URI.decode(appArgs[3]); // Path of the projectDescriptor.json
 			File projectFolder = getContainingProject(ggenFile);
 			String projectName = projectFolder.getName();
 			String fileWorkspaceRelativePath = ggenFilePath.substring(projectFolder.getParent().length());
@@ -92,7 +92,6 @@ public class GammaEntryPoint extends HeadlessApplicationCommandHandler {
 					}
 				}
 				project.open(progressMonitor);
-				//
 				IProjectDescription description = project.getDescription();
 				//description.setNatureIds(new String[] { XtextProjectHelper.NATURE_ID });
 				project.setDescription(description, progressMonitor);
@@ -182,7 +181,7 @@ public class GammaEntryPoint extends HeadlessApplicationCommandHandler {
 			}
 		}
 	}
-	//Sets the status of the workspace + project pair to "not under operation"
+	// Sets the status of the workspace + project pair to "not under operation"
 	private void updateUnderOperationStatus(String projectDescriptorPath) throws IOException {
 		File jsonFile = new File(projectDescriptorPath);
 		String jsonString = FileUtils.readFileToString(jsonFile);

@@ -10,7 +10,7 @@ import java.util.Objects;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-//contains functions that are used to zip files
+// Contains functions that are used to zip files
 public class ZipUtils {
 
 	private final List<String> fileList;
