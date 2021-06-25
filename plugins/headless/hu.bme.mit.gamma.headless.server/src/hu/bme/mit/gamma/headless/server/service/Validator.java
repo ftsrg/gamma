@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
+//the Validator class checks if an operation can be executed on a project or workspace
 public class Validator {
 
 	private static final String DIRECTORY_OF_WORKSPACES_PROPERTY_NAME = "root.of.workspaces.path";
@@ -22,6 +23,7 @@ public class Validator {
 	public static final String PROJECT_DESCRIPTOR_JSON = "projectDescriptor.json";
 	public static final String UNDER_OPERATION_PROPERTY = "underOperation";
 
+	// checks whether a workspace already exists or not
 	public static boolean checkIfWorkspaceExists(String workspace) throws IOException {
 		List<WorkspaceProjectWrapper> wrapperList = FileHandlerUtil.getWrapperListFromJson();
 		if (wrapperList == null) {
@@ -30,6 +32,7 @@ public class Validator {
 		return wrapperList.stream().anyMatch(w -> w.getWorkspace().equals(workspace));
 	}
 
+	// checks whether a project already exists under a workspace or not
 	public static boolean checkIfProjectAlreadyExistsUnderWorkspace(String workspace, String projectName)
 			throws IOException {
 		List<WorkspaceProjectWrapper> wrapperList = FileHandlerUtil.getWrapperListFromJson();
@@ -40,6 +43,25 @@ public class Validator {
 				.anyMatch(w -> w.getWorkspace().equals(workspace) && projectName.equals(w.getProjectName()));
 	}
 
+	public static boolean checkIfProjectHasRunIntoError(String workspace, String projectName) throws IOException {
+		boolean isUnderLoad = false;
+		int pid = FileHandlerUtil.getPid(workspace, projectName);
+		boolean validPid = false;
+
+		validPid = isValidPid(pid);
+		isUnderLoad = checkIfProjectIsUnderLoad(workspace, projectName);
+
+		if (isUnderLoad && !validPid) {
+			return true;
+		} else if (!isUnderLoad && validPid) {
+			return true;
+		} else {
+			return false;
+		}
+
+	}
+
+	// checks if there's an undergoing operation on a project
 	public static boolean checkIfProjectIsUnderLoad(String workspace, String projectName) throws IOException {
 		File jsonFile = new File(FileHandlerUtil.getProperty(DIRECTORY_OF_WORKSPACES_PROPERTY_NAME) + workspace
 				+ File.separator + projectName + File.separator + PROJECT_DESCRIPTOR_JSON);

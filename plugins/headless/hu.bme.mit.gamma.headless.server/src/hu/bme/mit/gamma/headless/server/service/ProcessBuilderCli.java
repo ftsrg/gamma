@@ -19,8 +19,10 @@ import java.util.List;
 import java.util.UUID;
 import java.util.logging.Level;
 
+//The ProcesssBuilderCli builds command line interface commands to be passed to the Headless Gamma.
 public class ProcessBuilderCli {
 
+	// Static arguments and variables that appear in most commands.
 	private static final String DIRECTORY_OF_WORKSPACES_PROPERTY_NAME = "root.of.workspaces.path";
 
 	private static final String DIRECTORY_OF_GAMMA_HEADLESS_ECLIPSE_PROPERTY = "headless.gamma.path";
@@ -35,6 +37,7 @@ public class ProcessBuilderCli {
 
 	private static String logLevel = "info";
 
+	// Creates a command which runs a Gamma opeartion, e.g. executes a .ggen file.
 	public static void runGammaOperations(String projectName, String workspace, String filePath) throws IOException {
 
 		ProcessBuilder pb = new ProcessBuilder(
@@ -45,9 +48,11 @@ public class ProcessBuilderCli {
 						+ projectName + File.separator + PROJECT_DESCRIPTOR_JSON);
 		pb.redirectErrorStream(true);
 		pb.inheritIO();
+		// Updates the status of the workspace + project pair to be "under operation"
 		updateUnderOperationStatus(projectName, workspace, true, (int) pb.start().pid());
 	}
 
+	// Stops the operation by killing the process using the PID assigned.
 	public static void stopOperation(String projectName, String workspace) throws IOException {
 		int pid = FileHandlerUtil.getPid(workspace, projectName);
 		if (Validator.isValidPid(pid)) {
@@ -59,14 +64,18 @@ public class ProcessBuilderCli {
 			}
 			Runtime.getRuntime().exec(cmd);
 		}
+		// Updates the operation status of a workspace + project pair to be "not under
+		// operation"
 		updateUnderOperationStatus(projectName, workspace, false, 0);
 	}
 
+	// Gets the full file path of a given file under a workspace + project pair
 	private static String getFullFilePath(String filePath, String workspace, String projectName) {
 		return FileHandlerUtil.getProperty(DIRECTORY_OF_WORKSPACES_PROPERTY_NAME) + workspace + File.separator
 				+ projectName + File.separator + filePath;
 	}
 
+	// Updates the operation status of a project found in a workspace
 	private static void updateUnderOperationStatus(String projectName, String workspace, Boolean status, int pid)
 			throws IOException {
 		File jsonFile = new File(FileHandlerUtil.getProperty(DIRECTORY_OF_WORKSPACES_PROPERTY_NAME) + workspace
@@ -83,6 +92,8 @@ public class ProcessBuilderCli {
 		FileUtils.writeStringToFile(jsonFile, resultingJson);
 	}
 
+	// Creates a projectDescriptor.json file which contains information about a
+	// project.
 	private static void createProjectJSONFile(String workspace, String projectName) {
 		JSONObject jsonObject = new JSONObject();
 		Date today = new Date();
@@ -105,6 +116,7 @@ public class ProcessBuilderCli {
 		}
 	}
 
+	// Creates an Eclipse project in a workspace
 	public static void createEclipseProject(String projectName, String workspace)
 			throws IOException, InterruptedException {
 		String commandToExecute = FileHandlerUtil.getProperty(DIRECTORY_OF_GAMMA_HEADLESS_ECLIPSE_PROPERTY)
@@ -118,6 +130,7 @@ public class ProcessBuilderCli {
 		deleteSourceZip(workspace, projectName);
 	}
 
+	// Creates a workspace
 	public static String createWorkspaceForUser() throws IOException, InterruptedException {
 		String workspace = String.valueOf(UUID.randomUUID());
 		String commandToExecute = FileHandlerUtil.getProperty(DIRECTORY_OF_GAMMA_HEADLESS_ECLIPSE_PROPERTY)
@@ -130,6 +143,8 @@ public class ProcessBuilderCli {
 		return workspace;
 	}
 
+	// Adds the workspace to the wrapper list, which keeps track of workspaces and
+	// projects under them
 	private static void addWorkspaceProjectWrapperToRootJson(String projectName, String workspace) throws IOException {
 		List<WorkspaceProjectWrapper> yourList = FileHandlerUtil.getWrapperListFromJson();
 		if (yourList == null) {
@@ -146,6 +161,7 @@ public class ProcessBuilderCli {
 		}
 	}
 
+	// Deletes the uploaded zip after copying the contents to the workspace
 	private static void deleteSourceZip(String workspace, String projectName) {
 		File sourceZip = new File(FileHandlerUtil.getProperty(DIRECTORY_OF_WORKSPACES_PROPERTY_NAME) + workspace
 				+ File.separator + projectName + ".zip");
@@ -158,6 +174,7 @@ public class ProcessBuilderCli {
 		}
 	}
 
+	// Sets the logging level of the Headless Gamma
 	public static void setProcessCliLogLevel(String level) {
 		logLevel = level;
 	}

@@ -21,6 +21,7 @@ import org.eclipse.ui.dialogs.IOverwriteQuery;
 import org.eclipse.ui.wizards.datatransfer.ImportOperation;
 import org.eclipse.ui.wizards.datatransfer.ZipFileStructureProvider;
 
+//Imports projects to a given workspace
 public class ProjectImporter extends HeadlessApplicationCommandHandler {
 
 	public ProjectImporter(IApplicationContext context, String[] appArgs, Level level) {
