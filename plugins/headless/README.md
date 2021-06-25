@@ -58,7 +58,7 @@ This section details the API used to communicatie with the webserver.
   - **POST**
 	- **addProject** `/gamma/{workspace}/project` - Adds a project to the specified workspace. The request body is a multipart/form-data type body, which has a `file` field, where the zip file containing the project must be provided (examples of this can be found in the _Example: Workflow with Docker_ section). (Alternatively, in Postman, the file can be selected from the file system). The zip file must have the same name as the project. As an example, the `hu.bme.mit.gamma.test` project should be placed in `hu.bme.mit.gamma.test.zip`.
 	
-	- **getResult** `/gamma/{workspace}/{project}` - Gets specified files and folders from the project found in the given workspace and zips them. The files and/or folders should be specified as raw data in the request body, specifying the relative paths from the project root, as `resultDirs`. Example: `"resultDirs":["src-gen","test-gen","trace/ExecutionTrace0.get"]`. If the given file or folder does not exists, it will not appear in the zip file (the request doesn't throw an exception).
+	- **getResult** `/gamma/{workspace}/{project}` - Gets specified files and folders from the project found in the given workspace and zips them. The files and/or folders should be specified as raw data in the request body, specifying the relative paths from the project root, as `files`. Example: `"files":["src-gen","test-gen","trace/ExecutionTrace0.get"]`. If the given file or folder does not exists, it will not appear in the zip file (the request doesn't throw an exception).
   - **PUT**
   	- **addWorkspace** `/gamma/workspace` - Creates a workspace in the location specified in `config.properties`. Returns with the name (ID) of the workspace, which is used in further requests.
 	- **runCommand** `/gamma/{workspace}/{project}/run` - Starts an operation in the specified workspace and project, based on a `.ggen` file. The parameters are the following: 
@@ -77,7 +77,7 @@ This section details the API used to communicatie with the webserver.
  - **GET**
 	- **list** `/gamma/{workspace}/{project}` - Lists all files found in the project in the given workspace.
 	
-	- **status** `/gamma/{workspace}/{project}/status` -  Gets the status of the project in the given workspace. It returns with a HTTP code and a message, indicating whether the project has an ongoing operation or is free to use.
+	- **status** `/gamma/{workspace}/{project}/status` -  Gets the status of the project in the given workspace. It returns with a simple text, indicating the status of the project: `READY`, `RUNNING` or `ERROR`.
  - **DELETE**
 	- **delete** `/gamma/{workspace}/{project}` Deletes the project from the project in the given workspace.
 		
