@@ -265,6 +265,8 @@ class ExpressionTransformer {
 				return ""
 			case CONST:
 				return "const "
+			case META:
+				return "meta "
 			default:
 				throw new IllegalArgumentException("This prefix is not supported: " + prefix)			
 		}

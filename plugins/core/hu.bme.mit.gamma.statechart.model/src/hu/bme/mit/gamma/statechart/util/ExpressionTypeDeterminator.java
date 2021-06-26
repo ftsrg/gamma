@@ -11,30 +11,32 @@
 package hu.bme.mit.gamma.statechart.util;
 
 import hu.bme.mit.gamma.expression.model.Expression;
-import hu.bme.mit.gamma.expression.util.ExpressionType;
+import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
+import hu.bme.mit.gamma.expression.model.Type;
+import hu.bme.mit.gamma.expression.util.ExpressionTypeDeterminator2;
+import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression;
 import hu.bme.mit.gamma.statechart.statechart.StateReferenceExpression;
 
-public class ExpressionTypeDeterminator extends hu.bme.mit.gamma.expression.util.ExpressionTypeDeterminator {
+public class ExpressionTypeDeterminator extends ExpressionTypeDeterminator2 {
 	// Singleton
 	public static final ExpressionTypeDeterminator INSTANCE = new ExpressionTypeDeterminator();
-	protected ExpressionTypeDeterminator() {}
+	protected ExpressionTypeDeterminator() {
+		expressionUtil = StatechartUtil.INSTANCE;
+	}
 	//
 	
-	/**
-	 * Collector of extension methods.
-	 */
-	public ExpressionType getType(Expression expression) {
+	@Override
+	public Type getType(Expression expression) {
 		if (expression instanceof StateReferenceExpression) {
-			return ExpressionType.BOOLEAN;
+			return factory.createBooleanTypeDefinition();
+		}
+		if (expression instanceof EventParameterReferenceExpression) {
+			EventParameterReferenceExpression referenceExpression = (EventParameterReferenceExpression) expression;
+			ParameterDeclaration parameter = referenceExpression.getParameter();
+			Type type = parameter.getType();
+			return ecoreUtil.clone(type);
 		}
 		return super.getType(expression);
-	}
-	
-	public boolean isBoolean(Expression	expression) {
-		if (expression instanceof StateReferenceExpression) {
-			return true;
-		}
-		return super.isBoolean(expression);
 	}
 	
 }
