@@ -8,8 +8,8 @@ The processes and steps described in this document were executed on Ubuntu, vers
 
 **Required applications**
 
- - Eclipse - this document uses the required plugins and Eclipse version detailed in the Gamma setup tutorial, which can be found here: https://github.com/ftsrg/gamma. Please note that installing Gamma is also required. The installation is detailed in the aformentioned link.
- - Docker - a tutorial can be found here: https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-18-04
+ - Eclipse - this document uses the required plugins and Eclipse version detailed in the Gamma setup tutorial, which can be found [here](https://github.com/ftsrg/gamma). Please note that installing Gamma is also required. The installation is detailed in the aformentioned link.
+ - Docker - a tutorial can be found [here](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-18-04)
 
 Additionally, Postman can be installed to test requests to the webserver.
 
@@ -120,7 +120,7 @@ This means that the compiler compliance level is set too high. Open the Eclipse 
 
 ## Setting up the Docker container
 
- Make sure that Docker is installed on the computer in use. The following tutorial was used to install Docker on Ubuntu: https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-18-04. Note that the tutorial below focuses on the creation of the docker image, and then running a container from that image. For this reason, it ignores the official Headless Gamma image that can be found here: https://hub.docker.com/repository/docker/ftsrggamma/headless-gamma. It is highly recommended to use the official image. Further information on how to use this image can be found in the Headless Gamma README: https://github.com/csuvi98/gamma/tree/dev/plugins/headless.
+ Make sure that Docker is installed on the computer in use. The following [tutorial](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-18-04) was used to install Docker on Ubuntu. Note that the tutorial below focuses on the creation of the docker image, and then running a container from that image. For this reason, it ignores the official Headless Gamma image that can be found tps://hub.docker.com/repository/docker/ftsrggamma/headless-gamma) It is highly recommended to use the official image. Further information on how to use this image can be found in the Headless Gamma README: https://github.com/csuvi98/gamma/tree/dev/plugins/headless.
 
  1. Create a working folder, and copy the Dockerfile inside.
  2. Inside the working folder, create the following folders: `eclipse`,  `server`, `uppaal`, `theta`, `project`.
