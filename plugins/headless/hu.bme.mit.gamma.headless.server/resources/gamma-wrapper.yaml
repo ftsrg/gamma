@@ -136,7 +136,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProjectFilesList'
+                $ref: '#/components/schemas/ProjectStatus'
         404:
           description: Did not provide a valid workspace or project name
   /gamma/{workspace}/addandrun:
@@ -290,6 +290,15 @@ components:
           description: 'The files under the specified project'
           items:
             type: 'string'
+    ProjectStatus:
+      properties:
+        status:
+          type: 'string'
+          description: 'The status of the verification job.'
+          enum:
+            - READY
+            - RUNNING
+            - ERROR
     Error:
       properties:
         message:
