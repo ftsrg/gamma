@@ -13,10 +13,9 @@ Note that this document serves as a high level description of the workflow.  A m
 
 As mentioned before, the Headless Gamma service can be used either via Docker or by the manual exporting of the Gamma features.
 
-- To use this feature via Docker, you have to have Docker installed on your computer, and download the image available here:
-https://hub.docker.com/repository/docker/ftsrggamma/headless-gamma
+- To use this feature via Docker, you have to have Docker installed on your computer, and download the image available [here](https://hub.docker.com/repository/docker/ftsrggamma/headless-gamma).
 
-- To manually export Gamma, first create a functioning Eclipse with Gamma by following the process detailed here: https://github.com/ftsrg/gamma/tree/master/plugins. Note that currently this feature uses the `dev` branch of Gamma.
+- To manually export Gamma, first create a functioning Eclipse with Gamma by following the process detailed [here](https://github.com/ftsrg/gamma/tree/master/plugins). Note that currently this feature uses the `dev` branch of Gamma.
 
 ## Workflow using Docker image
 
