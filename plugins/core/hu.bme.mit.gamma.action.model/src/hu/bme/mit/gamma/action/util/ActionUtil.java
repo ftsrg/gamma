@@ -25,12 +25,14 @@ import hu.bme.mit.gamma.action.model.Branch;
 import hu.bme.mit.gamma.action.model.IfStatement;
 import hu.bme.mit.gamma.action.model.SwitchStatement;
 import hu.bme.mit.gamma.action.model.VariableDeclarationStatement;
+import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
 import hu.bme.mit.gamma.expression.model.AccessExpression;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.DefaultExpression;
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.ElseExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
+import hu.bme.mit.gamma.expression.model.InitializableElement;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
@@ -43,6 +45,19 @@ public class ActionUtil extends ExpressionUtil {
 	//
 	
 	protected ActionModelFactory actionFactory = ActionModelFactory.eINSTANCE;
+	
+	// Lhs of initializable elements and assignment statements
+	
+	public Declaration getLhsDeclaration(EObject context) {
+		AssignmentStatement assignment = ecoreUtil.getSelfOrContainerOfType(context, AssignmentStatement.class);
+		if (assignment != null) {
+			ReferenceExpression lhs = assignment.getLhs();
+			return getDeclaration(lhs);
+		}
+		return (Declaration) ecoreUtil.getSelfOrContainerOfType(context, InitializableElement.class);
+	}
+	
+	//
 	
 	public Block wrap(Collection<? extends Action> actions) {
 		Block block = actionFactory.createBlock();
@@ -105,10 +120,10 @@ public class ActionUtil extends ExpressionUtil {
 	//
 	
 	public Branch createBranch(Expression expression, Action action) {
-		Branch elseBranch = actionFactory.createBranch();
-		elseBranch.setGuard(expression);
-		elseBranch.setAction(action);
-		return elseBranch;
+		Branch branch = actionFactory.createBranch();
+		branch.setGuard(expression);
+		branch.setAction(action);
+		return branch;
 	}
 	
 	public Branch getOrCreateElseBranch(IfStatement statement) {
@@ -161,7 +176,8 @@ public class ActionUtil extends ExpressionUtil {
 	//
 	
 	public VariableDeclarationStatement createDeclarationStatement(Type type, String name) {
-		return createDeclarationStatement(type, name, null);
+		return createDeclarationStatement(type, name, // Otherwise, the variable is "havoced"
+				ExpressionModelDerivedFeatures.getDefaultExpression(type));
 	}
 	
 	public VariableDeclarationStatement createDeclarationStatement(Type type,

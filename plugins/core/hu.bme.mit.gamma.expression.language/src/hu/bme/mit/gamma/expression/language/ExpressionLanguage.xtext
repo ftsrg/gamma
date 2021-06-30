@@ -237,17 +237,7 @@ SignumExpression returns Expression:
 	{UnaryMinusExpression} => '-' operand=SignumExpression |
 	{UnaryPlusExpression} => '+' operand=SignumExpression |
 	AccessExpression
-	
-	//non-associative
-	//{UnaryMinusExpression} => '-' expression=ValueAccessExpression | ValueAccessExpression
 ;
-
-////postfix unary, non-associative
-//PrimedExpression returns Expression:
-//	PrimaryExpression ({PrimedExpression.operand=current} '^')?
-//	//left-associative
-//	//ValueAccessExpression ({PrimedExpression.expression=current} '^')*
-//;
 
 AccessExpression returns Expression:
 	PrimaryExpression(
@@ -317,7 +307,7 @@ FieldAssignment:
 ;
 
 EnumerationLiteralExpression:
-	'::' reference=[EnumerationLiteralDefinition]
+	typeReference=TypeReference '::' reference=[EnumerationLiteralDefinition]
 ;
 
 OpaqueExpression:
@@ -358,4 +348,8 @@ terminal INTEGER returns Ecore::EBigInteger:
 
 terminal DECIMAL returns Ecore::EBigDecimal:
 	'-'? ('0'..'9')+ '.' ('0'..'9')+
+;
+
+BOOLEAN returns Ecore::EBoolean: // Terminal would not work due to the enshadowing of ID
+	'true' | 'false'
 ;

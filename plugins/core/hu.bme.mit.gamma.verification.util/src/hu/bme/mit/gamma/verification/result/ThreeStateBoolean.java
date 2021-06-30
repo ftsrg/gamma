@@ -11,7 +11,7 @@
 package hu.bme.mit.gamma.verification.result;
 
 public enum ThreeStateBoolean {
-	FALSE, TRUE, UNDEF;
+	UNDEF, FALSE, TRUE;
 	
 	public ThreeStateBoolean opposite() {
 		switch (this) {

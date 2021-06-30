@@ -1,0 +1,41 @@
+package valto
+
+import "Valto/Valto.gcd"
+import "Types/Types.gcd"
+import "Interfaces/Interfaces.gcd"
+
+cascade ValtoWrapper(P_vezer : V_vezer_t, P_OV_tav : tavolsag_t, P_V_bal_hossz : tavolsag_t,
+	P_V_jobb_hossz : tavolsag_t, P_V_belso_hossz : tavolsag_t, P_V_eleje_hossz : tavolsag_t, P_id :
+	obj_t) [
+	port E_VU_lez_Out : provides F_VU_lez
+	port E_VU_lez_In : requires F_VU_lez
+	port J_VU_lez_Out : provides F_VU_lez
+	port J_VU_lez_In : requires F_VU_lez
+	port B_VU_lez_Out : provides F_VU_lez
+	port B_VU_lez_In : requires F_VU_lez
+	port A : requires Valto_Also
+	port J_OV_keres_Out : provides OV_keres
+	port J_OV_keres_In : requires OV_keres
+	port B_OV_keres_Out : provides OV_keres
+	port B_OV_keres_In : requires OV_keres
+	port E_OV_keres_Out : provides OV_keres
+	port E_OV_keres_In : requires OV_keres
+] {
+	component valto : Valto(P_vezer, P_OV_tav, P_V_bal_hossz, P_V_jobb_hossz, P_V_belso_hossz,
+		P_V_eleje_hossz, P_id)
+		
+	bind E_VU_lez_Out -> valto.E_VU_lez_Out
+	bind E_VU_lez_In -> valto.E_VU_lez_In
+	bind J_VU_lez_Out -> valto.J_VU_lez_Out
+	bind J_VU_lez_In -> valto.J_VU_lez_In
+	bind B_VU_lez_Out -> valto.B_VU_lez_Out
+	bind B_VU_lez_In -> valto.B_VU_lez_In
+	bind A -> valto.A
+	bind J_OV_keres_Out -> valto.J_OV_keres_Out
+	bind J_OV_keres_In -> valto.J_OV_keres_In
+	bind B_OV_keres_Out -> valto.B_OV_keres_Out
+	bind B_OV_keres_In -> valto.B_OV_keres_In
+	bind E_OV_keres_Out -> valto.E_OV_keres_Out
+	bind E_OV_keres_In -> valto.E_OV_keres_In
+		
+}

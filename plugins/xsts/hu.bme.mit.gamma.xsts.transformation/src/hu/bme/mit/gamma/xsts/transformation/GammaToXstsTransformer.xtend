@@ -33,7 +33,7 @@ import hu.bme.mit.gamma.statechart.lowlevel.model.Package
 import hu.bme.mit.gamma.statechart.lowlevel.transformation.GammaToLowlevelTransformer
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
-import hu.bme.mit.gamma.transformation.util.AnalysisModelPreprocessor
+import hu.bme.mit.gamma.transformation.util.preprocessor.AnalysisModelPreprocessor
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
@@ -108,7 +108,7 @@ class GammaToXstsTransformer {
 
 	def preprocessAndExecute(hu.bme.mit.gamma.statechart.interface_.Package _package,
 			String targetFolderUri, String fileName) {
-		val component = modelPreprocessor.preprocess(_package, #[], targetFolderUri, fileName)
+		val component = modelPreprocessor.preprocess(_package, #[], targetFolderUri, fileName, optimize)
 		val newPackage = component.containingPackage
 		return newPackage.execute
 	}
@@ -116,7 +116,7 @@ class GammaToXstsTransformer {
 	def preprocessAndExecute(hu.bme.mit.gamma.statechart.interface_.Package _package,
 			List<Expression> topComponentArguments, String targetFolderUri, String fileName) {
 		val component = modelPreprocessor.preprocess(_package, topComponentArguments,
-			targetFolderUri, fileName)
+			targetFolderUri, fileName, optimize)
 		val newPackage = component.containingPackage
 		return newPackage.execute
 	}

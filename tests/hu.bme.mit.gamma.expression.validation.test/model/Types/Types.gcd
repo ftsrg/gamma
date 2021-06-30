@@ -16,7 +16,7 @@ type CardianalPoints : enum {
 // ERROR
 
 /**
- * We expect the names of the variables to be unique.
+ * We expect the names of the variables to be unique
  * 
  * @Check : checkNameUniquness
  */
@@ -25,7 +25,7 @@ type CardianalPoints : enum {
 
 
 /**
- * We expect that a type declaration should not refer to itself as a type definition.
+ * We expect that a type declaration should not refer to itself as a type definition
  * 
  * @Check : checkTypeDeclaration
  */
@@ -33,7 +33,7 @@ type CardianalPoints : enum {
  
  
  /**
- * We expect that a record should not store itself directly or indirectly!
+ * We expect that a record should not store itself directly or indirectly
  * 
  * @Check - checkRecordSelfReference
  */

@@ -181,8 +181,6 @@ class CompositeToUppaalTransformer {
 	protected final extension ExpressionsFactory expFact = ExpressionsFactory.eINSTANCE
 	// isStable variable
 	protected DataVariableDeclaration isStableVar
-	// Minimal element set: no functions
-	protected boolean isMinimalElementSet = false
 	// For the generation of pseudo locations
 	protected int id = 0
 	// Trace
@@ -211,12 +209,10 @@ class CompositeToUppaalTransformer {
 	protected AsynchronousConnectorTemplateCreator asynchronousConnectorTemplateCreator
 	
 	new(Component component) {
-		this(component, Scheduler.RANDOM, null, false)
+		this(component, Scheduler.RANDOM, null)
 	}
 	
-	new(Component component, Scheduler asyncScheduler,
-			Constraint constraint, boolean isMinimalElementSet) {
-		this.isMinimalElementSet = isMinimalElementSet
+	new(Component component, Scheduler asyncScheduler, Constraint constraint) {
 		// The above parameters have to be set before calling initialize
 		this.initialize(component, asyncScheduler, constraint)
 	}
@@ -227,7 +223,7 @@ class CompositeToUppaalTransformer {
 		val resourceSet = sourceRoot.eResource.resourceSet
 		checkState(resourceSet !== null, "The given component is not contained by a resource set")
 		this.component = component
-		this.ntaBuilder = new NtaBuilder(component.name, this.isMinimalElementSet)
+		this.ntaBuilder = new NtaBuilder(component.name, false /* Inline functions */)
 		this.target = ntaBuilder.nta
 		// Connecting the two models in trace
 		this.traceRoot = TraceabilityFactory.eINSTANCE.createG2UTrace => [
@@ -351,7 +347,7 @@ class CompositeToUppaalTransformer {
 		asynchronousConnectorTemplateCreator.getInstanceWrapperConnectorRule.fireAllCurrent}
 		// Creating a same level process list
 		instantiateUninstantiatedTemplates
-		if (!isMinimalElementSet && false) {
+		if (false) {
 			// Delete "&& false" if needed for debugging
 			createNoInnerEventsFunction
 		}
@@ -1173,7 +1169,7 @@ class CompositeToUppaalTransformer {
 					originalExitEdge.target = newSyncEdge.source
 					// Resetting the exit events so these events are executed after the exit events of child states
 					if (!compositeState.exitActions.empty) {
-						val newExitEventEdge = originalTarget.createEdgeCommittedTarget("NewExitEventUpdateOf" + compositeState.name) => [
+						val newExitEventEdge = originalTarget.createEdgeCommittedTarget("NewExitEventUpdateOf" + compositeState.name + id++) => [
 							it.update += originalExitEdge.update
 						]
 						newSyncEdge.target = newExitEventEdge.source

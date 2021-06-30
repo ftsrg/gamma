@@ -360,19 +360,19 @@ public class ExpressionSerializer {
 		String serialize = this.serialize(functionAccessExpression.getOperand());
 		String _plus = (serialize + "(");
 		String _plus_1 = (_plus + string);
-		return (_plus_1 + ")");
+		return _plus_1 + ")";
 	}
 
 	protected String _serialize(final RecordAccessExpression recordAccessExpression) {
 		String _serialize = this.serialize(recordAccessExpression.getOperand());
 		String _plus = (_serialize + ".");
 		String _field = recordAccessExpression.getFieldReference().getFieldDeclaration().getName();
-		return (_plus + _field);
+		return _plus + _field;
 	}
 
 	protected String _serialize(final SelectExpression selectExpression) {
 		String _serialize = this.serialize(selectExpression.getOperand());
-		return (_serialize + "->select");
+		return _serialize + "->select";
 	}
 
 	protected String _serialize(final ForallExpression forallExpression) {
@@ -387,7 +387,7 @@ public class ExpressionSerializer {
 			}
 		}
 		String _serialize = this.serialize(forallExpression.getOperand());
-		return (((("forall" + "(") + string) + "): ") + _serialize);
+		return "forall" + "(" + string + "): " + _serialize;
 	}
 
 	protected String _serialize(final ExistsExpression existsExpression) {
@@ -402,14 +402,14 @@ public class ExpressionSerializer {
 			}
 		}
 		String _serialize = this.serialize(existsExpression.getOperand());
-		return (((("exists" + "(") + string) + "): ") + _serialize);
+		return "exists" + "(" + string + "): " + _serialize;
 	}
 
 	protected String _serialize(final ImplyExpression implyExpression) {
 		String _serialize = this.serialize(implyExpression.getLeftOperand());
 		String _plus = (_serialize + " imply ");
 		String _serialize_1 = this.serialize(implyExpression.getRightOperand());
-		return (_plus + _serialize_1);
+		return _plus + _serialize_1;
 	}
 
 	protected String _serialize(final IfThenElseExpression ifThenElseExpresison) {
@@ -419,7 +419,7 @@ public class ExpressionSerializer {
 		String _plus_1 = (_plus + _serialize_1);
 		String _plus_2 = (_plus_1 + " : ");
 		String _serialize_2 = this.serialize(ifThenElseExpresison.getElse());
-		return (_plus_2 + _serialize_2);
+		return _plus_2 + _serialize_2;
 	}
 
 	protected String _serialize(final ArrayLiteralExpression arrayLiteralExpression) {
@@ -437,8 +437,9 @@ public class ExpressionSerializer {
 	}
 
 	protected String _serialize(final EnumerationLiteralExpression enumerationLiteralExpression) {
+		String _typeName = enumerationLiteralExpression.getTypeReference().getReference().getName();
 		String _name = enumerationLiteralExpression.getReference().getName();
-		return ("::" + _name);
+		return _typeName + "::" + _name;
 	}
 
 	protected String _serialize(final RecordLiteralExpression recordLiteralExpression) {
@@ -456,7 +457,7 @@ public class ExpressionSerializer {
 				string = string.concat(", ");
 			}
 		}
-		return (("(#" + string) + "#) ");
+		return "# { " + string + " }";
 	}
 
 	protected String _serialize(final IntegerRangeLiteralExpression integerRangeLiteralExpression) {
@@ -479,7 +480,7 @@ public class ExpressionSerializer {
 		String _plus_1 = (_plus + "..");
 		String _serialize_1 = this.serialize(integerRangeLiteralExpression.getRightOperand());
 		String _plus_2 = (_plus_1 + _serialize_1);
-		return (_plus_2 + rightinc);
+		return _plus_2 + rightinc;
 	}
 
 	public String serialize(final Expression expression) {

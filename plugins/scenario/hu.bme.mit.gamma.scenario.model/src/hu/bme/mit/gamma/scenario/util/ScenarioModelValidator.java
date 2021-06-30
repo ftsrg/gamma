@@ -73,16 +73,16 @@ public class ScenarioModelValidator {
 			} else if (a instanceof NegPermissiveAnnotation) {
 				negpermissivePresent = true;
 			}
-		}
+		} 
 		if (permissivePresent && strictPresent) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 					"A scenario should be annotated with either a permissive or strict annotation.",
-					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME, null)));
+					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME)));
 		}
 		if (negpermissivePresent && negstrictPresent) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 					"A scenario should be annotated with either a permissive or strict annotation with respect to negated sends blocks.",
-					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME, null)));
+					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME)));
 		}
 		return validationResultMessages;
 	}
@@ -99,7 +99,7 @@ public class ScenarioModelValidator {
 			if (i > 1) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 						"Scenario names should be unique.",
-						new ReferenceInfo(ScenarioModelPackage.Literals.SCENARIO_DECLARATION__SCENARIOS, null)));
+						new ReferenceInfo(ScenarioModelPackage.Literals.SCENARIO_DECLARATION__SCENARIOS)));
 				return validationResultMessages;
 			}
 		}
@@ -112,7 +112,7 @@ public class ScenarioModelValidator {
 		if (allCold) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING,
 					"There should be at least one hot signal in chart.",
-					new ReferenceInfo(ScenarioModelPackage.Literals.SCENARIO_DEFINITION__CHART, null)));
+					new ReferenceInfo(ScenarioModelPackage.Literals.SCENARIO_DEFINITION__CHART)));
 		}
 		return validationResultMessages;
 	}
@@ -189,7 +189,7 @@ public class ScenarioModelValidator {
 				if (!tmpModality.equals(firstModality)) {
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 							"First interaction's modality should be the same in each fragment belonging to the same combined fragment.",
-							new ReferenceInfo(ScenarioModelPackage.Literals.COMBINED_FRAGMENT__FRAGMENTS, null)));
+							new ReferenceInfo(ScenarioModelPackage.Literals.COMBINED_FRAGMENT__FRAGMENTS)));
 					return validationResultMessages;
 				}
 			}
@@ -226,8 +226,7 @@ public class ScenarioModelValidator {
 			if (((Signal) mi).getDirection().equals(InteractionDirection.RECEIVE)) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.INFO,
 						"Currently negated interactions received by the component are not processed.",
-						new ReferenceInfo(ScenarioModelPackage.Literals.NEGATED_MODAL_INTERACTION__MODALINTERACTION,
-								null)));
+						new ReferenceInfo(ScenarioModelPackage.Literals.NEGATED_MODAL_INTERACTION__MODALINTERACTION)));
 			}
 		}
 		return validationResultMessages;
@@ -259,19 +258,19 @@ public class ScenarioModelValidator {
 			int min = expressionEvaluator.evaluateInteger(minimum);
 			if (min < 0) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-						"The minimum value must be greater than or equals to 0.", new ReferenceInfo(feature, null)));
+						"The minimum value must be greater than or equals to 0.", new ReferenceInfo(feature)));
 			}
 			if (maximum != null) {
 				int max = expressionEvaluator.evaluateInteger(maximum);
 				if (min > max) {
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 							"The minimum value must not be greater than the maximum value.",
-							new ReferenceInfo(feature, null)));
+							new ReferenceInfo(feature)));
 				}
 			}
 		} catch (IllegalArgumentException e) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-					"Both the minimum and maximum values must be of type integer.", new ReferenceInfo(feature, null)));
+					"Both the minimum and maximum values must be of type integer.", new ReferenceInfo(feature)));
 		}
 		return validationResultMessages;
 	}
@@ -301,7 +300,7 @@ public class ScenarioModelValidator {
 					+ directionByMode.get(RealizationMode.PROVIDED)
 					+ ". Should the port be Required, set the event to be "
 					+ directionByMode.get(RealizationMode.REQUIRED) + ".",
-					new ReferenceInfo(ScenarioModelPackage.Literals.SIGNAL__EVENT, null)));
+					new ReferenceInfo(ScenarioModelPackage.Literals.SIGNAL__EVENT)));
 		}
 		return validationResultMessages;
 	}

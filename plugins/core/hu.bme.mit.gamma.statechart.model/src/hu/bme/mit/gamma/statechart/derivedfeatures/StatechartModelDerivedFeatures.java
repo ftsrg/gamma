@@ -458,9 +458,25 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	public static List<Port> getAllPorts(Component component) {
 		if (component instanceof AsynchronousAdapter) {
-			return getAllPorts((AsynchronousAdapter)component);
+			return getAllPorts((AsynchronousAdapter) component);
 		}		
 		return component.getPorts();
+	}
+	
+	public static List<Event> getInputEvents(Component component) {
+		List<Event> inputEvents = new ArrayList<Event>();
+		for (Port port : getAllPorts(component)) {
+			inputEvents.addAll(getInputEvents(port));
+		}
+		return inputEvents;
+	}
+	
+	public static List<Event> getOutputEvents(Component component) {
+		List<Event> outputEvents = new ArrayList<Event>();
+		for (Port port : getAllPorts(component)) {
+			outputEvents.addAll(getOutputEvents(port));
+		}
+		return outputEvents;
 	}
 	
 	public static Collection<PortBinding> getPortBindings(Port port) {
@@ -548,6 +564,10 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 			return Collections.unmodifiableList(broadcastChannel.getRequiredPorts());
 		}
 		throw new IllegalArgumentException("Not known channel type: " + channel);
+	}
+	
+	public static boolean equals(InstancePortReference p1, InstancePortReference p2) {
+		return p1.getInstance() == p2.getInstance() && p1.getPort() == p2.getPort();
 	}
 	
 	public static Set<Port> getUnusedPorts(ComponentInstance instance) {
@@ -914,6 +934,10 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	public static EventDeclaration getContainingEventDeclaration(Event event) {
 		return (EventDeclaration) event.eContainer();
+	}
+	
+	public static boolean hasSamePortEvent(RaiseEventAction lhs, RaiseEventAction rhs) {
+		return lhs.getPort() == rhs.getPort() && lhs.getEvent() == rhs.getEvent();
 	}
 	
 	public static String getId(Transition transition) {

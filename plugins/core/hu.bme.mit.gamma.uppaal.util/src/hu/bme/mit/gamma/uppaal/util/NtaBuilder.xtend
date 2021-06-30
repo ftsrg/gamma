@@ -364,7 +364,7 @@ class NtaBuilder {
 	
 	def Edge createEdgeCommittedSource(Location source, String name) {
 		val template = source.parentTemplate
-		val target= template.createLocation => [
+		val target = template.createLocation => [
 			it.name = name
 			it.locationTimeKind = LocationKind.COMMITED
 		]

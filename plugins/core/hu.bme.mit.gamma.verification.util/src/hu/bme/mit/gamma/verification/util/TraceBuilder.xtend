@@ -324,6 +324,9 @@ class TraceBuilder {
 			}
 			EnumerationTypeDefinition:
 				return createEnumerationLiteralExpression => [
+					it.typeReference = createTypeReference => [
+						it.reference = paramType.typeDeclaration
+					]
 					it.reference = paramType.literals.get(value)
 				]
 			default: 

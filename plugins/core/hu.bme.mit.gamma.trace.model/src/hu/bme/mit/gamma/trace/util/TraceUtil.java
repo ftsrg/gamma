@@ -51,6 +51,8 @@ public class TraceUtil extends ExpressionUtil {
 	
 	public static final AssertSorter assertSorter = new AssertSorter();
 	
+	// Extending super methods
+	
 	@Override
 	public Collection<TypeDeclaration> getTypeDeclarations(EObject context) {
 		Collection<TypeDeclaration> types = new HashSet<TypeDeclaration>();

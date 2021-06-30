@@ -91,7 +91,8 @@ public class ExpressionUtil {
 	protected final ExpressionEvaluator evaluator = ExpressionEvaluator.INSTANCE;
 	protected final ExpressionModelFactory factory = ExpressionModelFactory.eINSTANCE;
 	
-	// Worth extending in subclasses
+	// The following methods are worth extending in subclasses
+	
 	public Declaration getDeclaration(Expression expression) {
 		if (expression instanceof DirectReferenceExpression) {
 			DirectReferenceExpression reference = (DirectReferenceExpression) expression;
@@ -118,7 +119,6 @@ public class ExpressionUtil {
 		throw new IllegalArgumentException("Not known declaration: " + expression);
 	}
 	
-	// Worth extending in subclasses
 	public ReferenceExpression getAccessReference(Expression expression) {
 		if (expression instanceof DirectReferenceExpression) {
 			return (DirectReferenceExpression) expression;
@@ -131,17 +131,17 @@ public class ExpressionUtil {
 		throw new IllegalArgumentException("Not supported reference: " + expression);
 	}
 	
-	// Worth extending in subclasses
 	public Declaration getAccessedDeclaration(Expression expression) {
 		DirectReferenceExpression reference = (DirectReferenceExpression) getAccessReference(expression);
 		return reference.getDeclaration();
 	}
 	
-	// Worth extending in subclasses
 	public Collection<TypeDeclaration> getTypeDeclarations(EObject context) {
 		ExpressionPackage _package = ecoreUtil.getSelfOrContainerOfType(context, ExpressionPackage.class);
 		return _package.getTypeDeclarations();
 	}
+	
+	//
 	
 	public IntegerRangeLiteralExpression getIntegerRangeLiteralExpression(Expression expression) {
 		if (expression instanceof IntegerRangeLiteralExpression) {

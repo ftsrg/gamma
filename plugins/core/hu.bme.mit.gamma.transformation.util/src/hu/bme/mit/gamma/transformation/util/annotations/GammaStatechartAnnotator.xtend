@@ -110,64 +110,42 @@ class GammaStatechartAnnotator {
 	// Namings
 	protected final AnnotationNamings namings = new AnnotationNamings // Instance due to the id
 	
-	new(Package gammaPackage,
-			Collection<SynchronousComponentInstance> transitionCoverableComponents,
-			Collection<SynchronousComponentInstance> transitionPairCoverableComponents,
-			Collection<Port> interactionCoverablePorts, Collection<State> interactionCoverableStates,
-			Collection<Transition> interactionCoverableTransitions,
-			Collection<VariableDeclaration> dataflowCoverableVariables,
-			Collection<Port> interactionDataflowCoverablePorts) {
-		this(gammaPackage, transitionCoverableComponents, transitionPairCoverableComponents,
-			interactionCoverablePorts, interactionCoverableStates,
-			interactionCoverableTransitions, InteractionCoverageCriterion.EVERY_INTERACTION,
-				InteractionCoverageCriterion.EVERY_INTERACTION,
-			dataflowCoverableVariables, DataflowCoverageCriterion.ALL_USE,
-			interactionDataflowCoverablePorts, DataflowCoverageCriterion.ALL_USE)
-	}
-	
-	new(Package gammaPackage,
-			Collection<SynchronousComponentInstance> transitionCoverableComponents,
-			Collection<SynchronousComponentInstance> transitionPairCoverableComponents,
-			Collection<Port> interactionCoverablePorts, Collection<State> interactionCoverableStates,
-			Collection<Transition> interactionCoverableTransitions,
-			InteractionCoverageCriterion senderInteractionTuple, InteractionCoverageCriterion receiverInteractionTuple,
-			Collection<VariableDeclaration> dataflowCoverableVariables, DataflowCoverageCriterion dataflowCoverageCriterion,
-			Collection<Port> interactionDataflowCoverablePorts, DataflowCoverageCriterion interactionDataflowCoverageCriterion) {
+	new(Package gammaPackage, AnnotatableElements annotableElements) {
 		this.gammaPackage = gammaPackage
 		this.engine = ViatraQueryEngine.on(new EMFScope(gammaPackage.eResource.resourceSet))
-		if (!transitionCoverableComponents.empty) {
+		if (!annotableElements.transitionCoverableComponents.empty) {
 			this.TRANSITION_COVERAGE = true
-			this.transitionCoverableComponents += transitionCoverableComponents
+			this.transitionCoverableComponents += annotableElements.transitionCoverableComponents
 			this.coverableTransitions += transitionCoverableComponents
 				.map[it.type].filter(StatechartDefinition)
 				.map[it.transitions].flatten
 		}
-		if (!transitionPairCoverableComponents.empty) {
+		if (!annotableElements.transitionPairCoverableComponents.empty) {
 			this.TRANSITION_PAIR_COVERAGE = true
-			this.transitionPairCoverableComponents += transitionPairCoverableComponents
+			this.transitionPairCoverableComponents += annotableElements.transitionPairCoverableComponents
 			this.coverableTransitionPairs += transitionPairCoverableComponents
 				.map[it.type].filter(StatechartDefinition)
 				.map[it.transitions].flatten
 		}
-		if (!interactionCoverablePorts.isEmpty) {
+		if (!annotableElements.interactionCoverablePorts.isEmpty) {
 			this.INTERACTION_COVERAGE = true
-			this.SENDER_INTERACTION_TUPLE = senderInteractionTuple
-			this.RECEIVER_INTERACTION_TUPLE = receiverInteractionTuple
-			this.interactionCoverablePorts += interactionCoverablePorts
-			this.interactionCoverableStates += interactionCoverableStates
-			this.interactionCoverableTransitions += interactionCoverableTransitions
+			this.SENDER_INTERACTION_TUPLE = annotableElements.senderInteractionTuple
+			this.RECEIVER_INTERACTION_TUPLE = annotableElements.receiverInteractionTuple
+			this.interactionCoverablePorts += annotableElements.interactionCoverablePorts
+			this.interactionCoverableStates += annotableElements.interactionCoverableStates
+			this.interactionCoverableTransitions += annotableElements.interactionCoverableTransitions
 		}
 		this.RECEIVER_CONSIDERATION =
 			RECEIVER_INTERACTION_TUPLE != InteractionCoverageCriterion.EVENTS
-		if (!dataflowCoverableVariables.isEmpty) {
+		if (!annotableElements.dataflowCoverableVariables.isEmpty) {
 			this.DATAFLOW_COVERAGE = true
-			this.dataflowCoverableVariables += dataflowCoverableVariables
-			this.DATAFLOW_COVERAGE_CRITERION = dataflowCoverageCriterion
+			this.dataflowCoverableVariables += annotableElements.dataflowCoverableVariables
+			this.DATAFLOW_COVERAGE_CRITERION = annotableElements.dataflowCoverageCriterion
 		}
-		if (!interactionDataflowCoverablePorts.isEmpty) {
+		if (!annotableElements.interactionDataflowCoverablePorts.isEmpty) {
 			this.INTERACTION_DATAFLOW_COVERAGE = true
-			this.interactionDataflowCoverablePorts += interactionDataflowCoverablePorts
-			this.INTERACTION_DATAFLOW_COVERAGE_CRITERION = interactionDataflowCoverageCriterion
+			this.interactionDataflowCoverablePorts += annotableElements.interactionDataflowCoverablePorts
+			this.INTERACTION_DATAFLOW_COVERAGE_CRITERION = annotableElements.interactionDataflowCoverageCriterion
 		}
 	}
 	
@@ -320,21 +298,19 @@ class GammaStatechartAnnotator {
 	}
 	
 	protected def needSameId(RaiseEventAction lhs, RaiseEventAction rhs) {
-		val lhsContainer = lhs.containingTransitionOrState
-		val rhsContainer = rhs.containingTransitionOrState
 		if (SENDER_INTERACTION_TUPLE == InteractionCoverageCriterion.EVERY_INTERACTION ||
-				lhs.containingStatechart !== rhs.containingStatechart ||
-				/*The algorithm would be correct without this too
-				  This way, the raise event actions in different statecharts get different ids*/ 
-				lhsContainer instanceof State || rhsContainer instanceof State) {
+				lhs.containingStatechart !== rhs.containingStatechart
+				// The algorithm would be correct without this too
+				//  This way, the raise event actions in different statecharts get different ids
+				) {
 			return false 
 		}
 		val lhsState = lhs.correspondingStateNode
 		val rhsState = rhs.correspondingStateNode
-		// This way, arguments have to be equal
+		val isSamePortEvent = lhs.hasSamePortEvent(rhs) // Arguments are not checked
 		return SENDER_INTERACTION_TUPLE == InteractionCoverageCriterion.STATES_AND_EVENTS &&
-				lhsState === rhsState && lhs.helperEquals(rhs) ||
-			SENDER_INTERACTION_TUPLE == InteractionCoverageCriterion.EVENTS && lhs.helperEquals(rhs)
+				lhsState === rhsState && isSamePortEvent ||
+			SENDER_INTERACTION_TUPLE == InteractionCoverageCriterion.EVENTS && isSamePortEvent
 	}
 	
 	protected def getCorrespondingStateNode(RaiseEventAction action) {
@@ -376,10 +352,11 @@ class GammaStatechartAnnotator {
 		val lhsTrigger = lhs.trigger
 		val rhsSource = rhs.sourceState
 		val rhsTrigger = rhs.trigger
+		val equals = lhsTrigger.helperEquals(rhsTrigger)
 		// Composite triggers and their possible relations are NOT considered now
 		return RECEIVER_INTERACTION_TUPLE == InteractionCoverageCriterion.STATES_AND_EVENTS &&
-				lhsSource === rhsSource && lhsTrigger.helperEquals(rhsTrigger) ||
-			RECEIVER_INTERACTION_TUPLE == InteractionCoverageCriterion.EVENTS && lhsTrigger.helperEquals(rhsTrigger)
+				lhsSource === rhsSource && equals ||
+			RECEIVER_INTERACTION_TUPLE == InteractionCoverageCriterion.EVENTS && equals
 	}
 	
 	protected def getInteractionVariables(Region region) {
@@ -518,6 +495,16 @@ class GammaStatechartAnnotator {
 			interactions += new Interaction(raiseEventAction, receivingTransition,
 				variablePair, raiseEventAction.sendingId, receivingTransition.receivingId)
 		}
+		
+		// Due to well-formedness constraints, unattended raise event actions
+		// have to have the correct number of arguments - they get the 0 (reset) id
+		val unattendedRaiseEventActions = matches.map[it.raiseEventAction.containingStatechart].toSet
+				.map[it.getAllContentsOfType(RaiseEventAction)].flatten
+				.filter[raisedEvents.contains(it.event)].toSet
+		unattendedRaiseEventActions -= relevantMatches.map[it.raiseEventAction].toSet
+		for (unattendedRaiseEventAction : unattendedRaiseEventActions) {
+			unattendedRaiseEventAction.arguments += 0.toIntegerLiteral
+		}
 	}
 	
 	// Data-flow coverage
@@ -608,7 +595,7 @@ class GammaStatechartAnnotator {
 	
 	protected def annotateModelForDataflowCoverage(Set<? extends EObject> defReferences,
 			Set<? extends ReferenceExpression> useReferences, DataflowDeclarationHandler handler) {
-		// Every def variable must be created before this next loop
+		// Every def variable must be created by now
 		for (defReference : defReferences) {
 			val defVariablePairList = handler.getDefDataflowReferences(defReference)
 			val originalAssignment = defReference.getSelfOrContainerOfType(Action)
@@ -616,10 +603,14 @@ class GammaStatechartAnnotator {
 				val reference = defVariablePair.getOriginalVariableReference
 				val defVariable = defVariablePair.getDefUseVariable
 				val expression = defReference === reference ? createTrueExpression : createFalseExpression
-				originalAssignment.append(defVariable.createAssignment(expression))
+				val assignment = defVariable.createAssignment(expression)
+				originalAssignment.append(assignment)
+				// This way use-defs are covered too, not only def-uses
+				// TODO Reset uses too, this way var := var + 1; like statements could not be handled
+				// TODO Check the order of the two loops
 			}
 		}
-		// Every use variable must be created before this next loop
+		// Every use variable must be created by now
 		for (useReference : useReferences) {
 			val useVariable = handler.getUseVariable(useReference)
 			val assignment = useVariable.createAssignment(createTrueExpression)
@@ -1007,20 +998,22 @@ class GammaStatechartAnnotator {
 		}
 		
 		def getUniqueInteractions() {
+			// If the interactions are not "every", duplications can occur
 			if (interactionSet === null) {
 				interactionSet = newHashSet
-				// If the interaction has no second variable, duplication can occur
-				for (i : interactions) {
-					val sender = i.sender
-					var Transition receiver = null
-					val variablePair = i.variablePair
-					val senderId = i.senderId
-					var Long receiverId = null
-					if (variablePair.hasSecond) {
-						receiver = i.receiver
-						receiverId = i.receiverId
+				interactionSet += interactions
+				
+				// After this unique filter, some sender-receiver comments might not contain every element
+				val interactionList = interactionSet.toList
+				for (var i = 0; i < interactionList.size - 1; i++) {
+					for (var j = i + 1; j < interactionList.size; j++) {
+						val lhs = interactionList.get(i)
+						val rhs = interactionList.get(j)
+						if (lhs.variablePair == rhs.variablePair &&
+								lhs.senderId == rhs.senderId && lhs.receiverId == rhs.receiverId) {
+							interactionSet -= rhs
+						}
 					}
-					interactionSet += new Interaction(sender, receiver, variablePair, senderId, receiverId)
 				}
 			}
 			return interactionSet

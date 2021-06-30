@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.genmodel.language.scoping
 
+import hu.bme.mit.gamma.expression.model.ExpressionModelPackage
 import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation
 import hu.bme.mit.gamma.genmodel.model.ComponentReference
 import hu.bme.mit.gamma.genmodel.model.EventMapping
@@ -151,6 +152,19 @@ class GenModelScopeProvider extends AbstractGenModelScopeProvider {
 			val events = gammaInterface.allEventDeclarations.map[it.event]
 			return Scopes.scopeFor(events)
 		}
+		// Expression scoping
+		if (reference == ExpressionModelPackage.Literals.DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
+			val genmodel = ecoreUtil.getSelfOrContainerOfType(context, GenModel)
+			val imports = genmodel.packageImports
+			if (!imports.empty) {
+				val scopes = newArrayList
+				for (^import : imports) {
+					scopes += super.getScope(^import, reference)
+				}
+				return scopes.embedScopes
+			}
+		}
+		
 		val scope = super.getScope(context, reference)
 		return scope
 	}

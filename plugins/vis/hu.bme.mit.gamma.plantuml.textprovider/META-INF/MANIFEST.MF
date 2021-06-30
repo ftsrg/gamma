@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Gamma Model PlantUML Visualizer Commandhandler
 Bundle-SymbolicName: hu.bme.mit.gamma.statechart.plantuml.textprovider;singleton:=true
-Bundle-Version: 2.5.0.qualifier
+Bundle-Version: 2.5.1.qualifier
 Bundle-Vendor: BME-FTSRG
 Automatic-Module-Name: hu.bme.mit.gamma.statechart.plantuml.commandhandler
 Bundle-RequiredExecutionEnvironment: JavaSE-11

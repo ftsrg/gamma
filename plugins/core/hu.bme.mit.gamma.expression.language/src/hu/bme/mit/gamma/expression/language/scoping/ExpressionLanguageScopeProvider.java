@@ -17,23 +17,22 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.xtext.scoping.IScope;
 import org.eclipse.xtext.scoping.Scopes;
+import org.eclipse.xtext.scoping.impl.SimpleScope;
 
+import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
 import hu.bme.mit.gamma.expression.model.Declaration;
+import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression;
+import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition;
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
 import hu.bme.mit.gamma.expression.model.ExpressionPackage;
 import hu.bme.mit.gamma.expression.model.ParametricElement;
 import hu.bme.mit.gamma.expression.model.RecordLiteralExpression;
 import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
+import hu.bme.mit.gamma.expression.model.TypeReference;
 import hu.bme.mit.gamma.expression.util.ExpressionUtil;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
 
-/**
- * This class contains custom scoping description.
- * 
- * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#scoping
- * on how and when to use it.
- */
 public class ExpressionLanguageScopeProvider extends AbstractExpressionLanguageScopeProvider {
 
 	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
@@ -70,6 +69,21 @@ public class ExpressionLanguageScopeProvider extends AbstractExpressionLanguageS
 			// Right now, this might not be necessary as parametric elements are contained directly by packages
 			return getParentScope(context, reference);
 		}
+		if (reference == ExpressionModelPackage.Literals.TYPE_REFERENCE__REFERENCE) {
+			// Util override is crucial because of this
+			Collection<TypeDeclaration> typeDeclarations = util.getTypeDeclarations(context);
+			return Scopes.scopeFor(typeDeclarations);
+		}
+		if (reference == ExpressionModelPackage.Literals.ENUMERATION_LITERAL_EXPRESSION__REFERENCE) {
+			// The above branch must work well for this
+			EnumerationLiteralExpression literal = ecoreUtil.getSelfOrContainerOfType(context, EnumerationLiteralExpression.class);
+			if (literal != null) {
+				TypeReference typeReference = literal.getTypeReference();
+				EnumerationTypeDefinition enumeration = (EnumerationTypeDefinition)
+						ExpressionModelDerivedFeatures.getTypeDefinition(typeReference);
+				return Scopes.scopeFor(enumeration.getLiterals());
+			}
+		}
 		return super.getScope(context, reference);
 	}
 	
@@ -82,6 +96,17 @@ public class ExpressionLanguageScopeProvider extends AbstractExpressionLanguageS
 			return IScope.NULLSCOPE;
 		}
 		return getScope(container, reference);
+	}
+	
+	protected IScope embedScopes(Collection<IScope> scopes) {
+		if (scopes.isEmpty()) {
+			return IScope.NULLSCOPE; 
+		}
+		IScope parentScope = IScope.NULLSCOPE;
+		for (IScope scope : scopes) {
+			parentScope = new SimpleScope(parentScope, scope.getAllElements());
+		}
+		return parentScope;
 	}
 	
 }

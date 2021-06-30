@@ -28,15 +28,11 @@ import org.eclipse.xtext.scoping.impl.SimpleScope;
 import com.google.common.collect.Lists;
 
 import hu.bme.mit.gamma.action.model.Action;
-import hu.bme.mit.gamma.action.model.ActionModelPackage;
 import hu.bme.mit.gamma.expression.model.Declaration;
-import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition;
-import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
 import hu.bme.mit.gamma.expression.model.FieldDeclaration;
 import hu.bme.mit.gamma.expression.model.ParametricElement;
-import hu.bme.mit.gamma.expression.model.TypeDeclaration;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponent;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance;
@@ -76,13 +72,6 @@ import hu.bme.mit.gamma.statechart.statechart.StatechartModelPackage;
 import hu.bme.mit.gamma.statechart.statechart.Transition;
 import hu.bme.mit.gamma.statechart.util.StatechartUtil;
 
-/**
- * This class contains custom scoping description.
- *
- * See
- * https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#scoping
- * on how and when to use it.
- */
 public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageScopeProvider {
 
 	public StatechartLanguageScopeProvider() {
@@ -154,15 +143,6 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 				Interface _interface = port.getInterfaceRealization().getInterface();
 				// Not only in events are returned as less-aware users tend to write in events on actions
 				return Scopes.scopeFor(StatechartModelDerivedFeatures.getAllEvents(_interface));
-			}
-			if (context instanceof EnumerationLiteralExpression && 
-					reference == ExpressionModelPackage.Literals.ENUMERATION_LITERAL_EXPRESSION__REFERENCE) {
-				Package root = (Package) EcoreUtil2.getRootContainer(context, true);
-				Collection<EnumerationLiteralDefinition> enumLiterals = EcoreUtil2.getAllContentsOfType(root, EnumerationLiteralDefinition.class);
-				for (Package imported : root.getImports()) {
-					enumLiterals.addAll(EcoreUtil2.getAllContentsOfType(imported, EnumerationLiteralDefinition.class));
-				}
-				return Scopes.scopeFor(enumLiterals);
 			}
 			/* Without such scoping rules, the following exception is thrown:
 			 * Caused By: org.eclipse.xtext.conversion.ValueConverterException: ID 'Test.testIn.testInValue'
@@ -277,13 +257,6 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 					.forEach(it -> events.addAll(StatechartModelDerivedFeatures.getInputEvents(it)));
 				return Scopes.scopeFor(events);
 			}
-			if (reference == ExpressionModelPackage.Literals.TYPE_REFERENCE__REFERENCE) {
-				Package gammaPackage = ecoreUtil.getSelfOrContainerOfType(context, Package.class);
-				if (gammaPackage != null) {
-					Collection<TypeDeclaration> typeDeclarations = util.getTypeDeclarations(gammaPackage);
-					return Scopes.scopeFor(typeDeclarations);
-				}
-			}
 			if (reference == ExpressionModelPackage.Literals.DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
 				// 1. Local declarations
 				Action actionContainer = ecoreUtil.getSelfOrContainerOfType(context, Action.class);
@@ -315,11 +288,6 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 					scope = new SimpleScope(parent, scope.getAllElements());
 				}
 				return scope;
-			}
-			if (reference == ActionModelPackage.Literals.TYPE_REFERENCE_EXPRESSION__DECLARATION) {
-				Package gammaPackage = (Package) EcoreUtil2.getRootContainer(context, true);
-				Collection<TypeDeclaration> typeDeclarations = util.getTypeDeclarations(gammaPackage);
-				return Scopes.scopeFor(typeDeclarations);
 			}
 		} catch (NullPointerException e) {
 			// Nullptr exception is thrown if the scope turns out to be empty

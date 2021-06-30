@@ -16,60 +16,60 @@ statechart bJbCOID_allapotgep() [
 	var toggleCount : integer
 	var timerSet : boolean
 	transition from Celoldas_idozites_fut_8 to Oldas_4 when T.^timeout && I_CR.f && I_FT.f [I_CR.f
-		::fValue = ::_1 and I_FT.f ::fValue = ::_1]
+		::fValue = MyBool::_1 and I_FT.f ::fValue = MyBool::_1]
 	transition from Tranziens_2 to choice_6_in_region_1_in_Celoldas_idozites_nem_fut_5 when
 		T.^timeout
-	transition from Idozites_nem_fut_1 to Ervenytelen_0 when I_FT.e [I_FT.e ::eValue /= ::_0]
-	transition from Ervenytelen_0 to Idozites_nem_fut_1 when I_FT.e [I_FT.e ::eValue = ::_0]
+	transition from Idozites_nem_fut_1 to Ervenytelen_0 when I_FT.e [I_FT.e ::eValue /= MyBool::_0]
+	transition from Ervenytelen_0 to Idozites_nem_fut_1 when I_FT.e [I_FT.e ::eValue = MyBool::_0]
 	transition from init_7_in_region_1_in_Celoldas_idozites_nem_fut_5 to Tranziens_2
 	transition from Oldas_4 to Celoldas_idozites_nem_fut_5 when I_CR.f || I_FT.f [I_CR.f ::fValue /=
-		::_1 or I_FT.f ::fValue /= ::_1] / Release := true;
+		MyBool::_1 or I_FT.f ::fValue /= MyBool::_1] / Release := true;
 	transition from init_5_in_main_region_of_bJbCOID_allapotgep to Celoldas_idozites_nem_fut_5
 	transition from Celoldas_idozites_nem_fut_5 to Celoldas_idozites_fut_8 when I_CR.f &&
-		I_FT.f [I_CR.f ::fValue = ::_1 and I_FT.f ::fValue = ::_1]
+		I_FT.f [I_CR.f ::fValue = MyBool::_1 and I_FT.f ::fValue = MyBool::_1]
 	transition from choice_6_in_region_1_in_Celoldas_idozites_nem_fut_5 to Idozites_nem_fut_1 when
-		I_FT.e [I_FT.e ::eValue = ::_0]
+		I_FT.e [I_FT.e ::eValue = MyBool::_0]
 	transition from choice_6_in_region_1_in_Celoldas_idozites_nem_fut_5 to Ervenytelen_0 when
-		I_FT.e [I_FT.e ::eValue /= ::_0]
+		I_FT.e [I_FT.e ::eValue /= MyBool::_0]
 	transition from Celoldas_idozites_nem_fut_5 to Funkcio_kikapcsolva_6 when I.toggle
 	transition from Funkcio_kikapcsolva_6 to Celoldas_idozites_nem_fut_5 when T.^timeout
-		@(Fut_NemFut)
+	@(Fut_NemFut)
 	transition from Celoldas_idozites_fut_8 to Celoldas_idozites_nem_fut_5 when I_CR.f ||
-		I_FT.f [I_CR.f ::fValue /= ::_1 or I_FT.f ::fValue /= ::_1]
+		I_FT.f [I_CR.f ::fValue /= MyBool::_1 or I_FT.f ::fValue /= MyBool::_1]
 	transition from Entry to OffCounter
 	transition from OffCounter to OffCounter when I.toggle / toggleCount := toggleCount + 1;
 	// Normal region
 	region main_region_of_bJbCOID_allapotgep {
 		initial init_5_in_main_region_of_bJbCOID_allapotgep
 		state Oldas_4 {
-			entry / raise StateMachine_OutPort.O_COID(::ACTIVE); RS_COID := ::CELOLDAS_IDOZITES;
+			entry / raise StateMachine_OutPort.O_COID(Activeness::ACTIVE); RS_COID := CeloldasIdozites::CELOLDAS_IDOZITES;
 		}
 		state Celoldas_idozites_nem_fut_5 {
-			entry / raise StateMachine_OutPort.O_COID(::PASSIVE);
+			entry / raise StateMachine_OutPort.O_COID(Activeness::PASSIVE);
 			region region_1_in_Celoldas_idozites_nem_fut_5 {
 				state Ervenytelen_0 {
-					entry / RS_COID := ::NERV1;
+					entry / RS_COID := CeloldasIdozites::NERV1;
 				}
 				state Tranziens_2 {
-					entry / RS_COID := ::NINCS_CELOLDAS_IDOZITES;
+					entry / RS_COID := CeloldasIdozites::NINCS_CELOLDAS_IDOZITES;
 				}
 				state Idozites_nem_fut_1 {
-					entry / RS_COID := ::NINCS_CELOLDAS_IDOZITES;
+					entry / RS_COID := CeloldasIdozites::NINCS_CELOLDAS_IDOZITES;
 				}
 				choice choice_6_in_region_1_in_Celoldas_idozites_nem_fut_5
 				initial init_7_in_region_1_in_Celoldas_idozites_nem_fut_5
 			}
 		}
 		state Funkcio_kikapcsolva_6 {
-			entry / RS_COID := ::NINCS_CELOLDAS_IDOZITES; offCount := offCount + 1;
+			entry / RS_COID := CeloldasIdozites::NINCS_CELOLDAS_IDOZITES; offCount := offCount + 1;
 			region Funkcio_kikapcsolva_6_region {
 				initial Entry
 				state OffCounter
 			}
 		}
 		state Celoldas_idozites_fut_8 {
-			entry / raise StateMachine_OutPort.O_COID(::PASSIVE); RS_COID := ::CELOLDAS_IDOZITES; timerSet
-				:= true;
+			entry / raise StateMachine_OutPort.O_COID(Activeness::PASSIVE); RS_COID := CeloldasIdozites::CELOLDAS_IDOZITES;
+				timerSet := true;
 		}
 	}
 }
