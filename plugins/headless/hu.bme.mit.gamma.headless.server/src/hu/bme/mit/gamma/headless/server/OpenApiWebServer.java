@@ -1,54 +1,47 @@
 package hu.bme.mit.gamma.headless.server;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.apache.commons.lang3.StringUtils;
+
+import hu.bme.mit.gamma.headless.server.entity.WorkspaceProjectWrapper;
+import hu.bme.mit.gamma.headless.server.service.ProcessBuilderCli;
+import hu.bme.mit.gamma.headless.server.service.Provider;
+import hu.bme.mit.gamma.headless.server.service.Validator;
+import hu.bme.mit.gamma.headless.server.util.FileHandlerUtil;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpHeaders;
-import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.FileUpload;
-import io.vertx.ext.web.Route;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.SessionHandler;
 import io.vertx.ext.web.openapi.RouterBuilder;
-import io.vertx.ext.web.openapi.RouterBuilderOptions;
 import io.vertx.ext.web.sstore.LocalSessionStore;
 import io.vertx.ext.web.validation.RequestParameters;
-import hu.bme.mit.gamma.headless.server.service.Provider;
-import hu.bme.mit.gamma.headless.server.service.Validator;
-import hu.bme.mit.gamma.headless.server.entity.WorkspaceProjectWrapper;
-import hu.bme.mit.gamma.headless.server.service.ProcessBuilderCli;
-import hu.bme.mit.gamma.headless.server.util.FileHandlerUtil;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.lang.reflect.Field;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
-
-import org.apache.commons.lang3.StringUtils;
 
 public class OpenApiWebServer extends AbstractVerticle {
+
+	// These strings serve as static arguments
 	private static final String APPLICATION_JSON = "application/json";
 	private static final String MESSAGE = "message";
 	private static final String WORKSPACE = "workspace";
@@ -56,7 +49,7 @@ public class OpenApiWebServer extends AbstractVerticle {
 	private static final String PROJECT_NAME = "project";
 	HttpServer server;
 	private static final String DIRECTORY_OF_WORKSPACES_PROPERTY_NAME = "root.of.workspaces.path";
-
+	// Coloring for the messages on consoles. Doesn't work in the Eclipse console.
 	private static final String ANSI_RESET = "\u001B[0m";
 	private static final String ANSI_GREEN = "\u001B[32m";
 	private static final String ANSI_RED = "\u001B[31m";
@@ -66,6 +59,10 @@ public class OpenApiWebServer extends AbstractVerticle {
 
 	@Override
 	public void start(Promise<Void> future) {
+		// The web server creates the API using the gamma-wrapper.yaml found in the
+		// "resources" folder
+		// To create a new request, it has to be written here, and added to the
+		// gamma-wrapper.yaml
 		RouterBuilder.create(this.vertx, "gamma-wrapper.yaml", ar -> {
 			SessionHandler sessionHandler = SessionHandler.create(LocalSessionStore.create(vertx));
 
@@ -73,11 +70,14 @@ public class OpenApiWebServer extends AbstractVerticle {
 			if (ar.succeeded()) {
 				routerFactory = ar.result();
 				routerFactory.createRouter().route().handler(sessionHandler);
+
+				// Runs a .ggen file
 				routerFactory.operation("runOperation").handler(routingContext -> {
 
 					logger.log(Level.INFO, ANSI_YELLOW + "Operation \"runOperation\" has started." + ANSI_RESET);
 
 					ErrorHandlerPOJO errorHandlerPOJO = null;
+					// Getting parameters from path and request body
 					RequestParameters params = routingContext.get(PARSED_PARAMETERS);
 					String projectName = params.pathParameter(PROJECT_NAME).getString();
 					String workspace = params.pathParameter(WORKSPACE).getString();
@@ -87,6 +87,7 @@ public class OpenApiWebServer extends AbstractVerticle {
 						errorHandlerPOJO = getErrorObject(workspace, projectName);
 						if (errorHandlerPOJO.getErrorObject() == null) {
 							success = true;
+							// Passing the parameters to the CLI, so the operation can be started
 							ProcessBuilderCli.runGammaOperations(projectName, workspace, filePath);
 							logger.log(Level.INFO,
 									ANSI_YELLOW + "Operation \"runOperation\": parameters passed to CLI." + ANSI_RESET);
@@ -95,6 +96,7 @@ public class OpenApiWebServer extends AbstractVerticle {
 						e.printStackTrace();
 					}
 					if (success) {
+						// If it succeeds, the response is 200
 						routingContext.response().setStatusCode(200)
 								.putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON).end();
 					} else {
@@ -102,23 +104,25 @@ public class OpenApiWebServer extends AbstractVerticle {
 					}
 				});
 
+				// Gets files from a project
 				routerFactory.operation("getResult").handler(routingContext -> {
-
 					logger.log(Level.INFO, ANSI_YELLOW + "Operation \"getResult\" has started." + ANSI_RESET);
 
 					ErrorHandlerPOJO errorHandlerPOJO = null;
 					String zipPath = null;
+					// Getting parameters from path and request body
 					RequestParameters params = routingContext.get(PARSED_PARAMETERS);
 					String projectName = params.pathParameter(PROJECT_NAME).getString();
 					String workspace = params.pathParameter(WORKSPACE).getString();
 					JsonObject json = routingContext.getBodyAsJson();
-					JsonArray jsonArray = json.getJsonArray("resultDirs");
+					JsonArray jsonArray = json.getJsonArray("files");
 
 					boolean success = false;
 					try {
 						errorHandlerPOJO = getErrorObject(workspace, projectName);
 						if (errorHandlerPOJO.getErrorObject() == null) {
 							success = true;
+							// Passing it to the provider, which creates a zip file
 							zipPath = Provider.getResultZipFilePath(jsonArray, FileHandlerUtil
 									.getProperty(DIRECTORY_OF_WORKSPACES_PROPERTY_NAME).concat(workspace), projectName);
 							logger.log(Level.INFO,
@@ -128,6 +132,7 @@ public class OpenApiWebServer extends AbstractVerticle {
 						e.printStackTrace();
 					}
 					if (success && zipPath != null) {
+						// Sending that zip file back as response
 						routingContext.response().setStatusCode(200)
 								.putHeader(HttpHeaders.CONTENT_TYPE, "application/zip").sendFile(zipPath);
 					} else {
@@ -135,13 +140,17 @@ public class OpenApiWebServer extends AbstractVerticle {
 					}
 				});
 
+				// Gets the log file from a workspace
 				routerFactory.operation("getLogs").handler(routingContext -> {
+					// Getting parameters from path
 					RequestParameters params = routingContext.get(PARSED_PARAMETERS);
 					String workspace = params.pathParameter(WORKSPACE).getString();
+					// Path of the log file
 					String logPath = FileHandlerUtil.getProperty(DIRECTORY_OF_WORKSPACES_PROPERTY_NAME) + File.separator
 							+ workspace + File.separator + ".metadata" + File.separator + ".log";
 					boolean success = false;
 					try {
+						// Getting the log file
 						FileInputStream inputLog = new FileInputStream(logPath);
 						inputLog.close();
 						success = true;
@@ -152,6 +161,7 @@ public class OpenApiWebServer extends AbstractVerticle {
 					}
 
 					if (success) {
+						// Sending the log file back as response
 						routingContext.response().setStatusCode(200).putHeader(HttpHeaders.CONTENT_TYPE, "text/plain")
 								.sendFile(logPath);
 					} else {
@@ -163,24 +173,28 @@ public class OpenApiWebServer extends AbstractVerticle {
 
 				});
 
+				// Adds a project to a workspace, which is uploaded as a zip in the form body
 				routerFactory.operation("addProject").handler(routingContext -> {
 
 					logger.log(Level.INFO, ANSI_YELLOW + "Operation \"addProject\" has started." + ANSI_RESET);
-
+					// Getting parameters from path
 					RequestParameters params = routingContext.get(PARSED_PARAMETERS);
 					String workspace = params.pathParameter(WORKSPACE).getString();
 					boolean success = true;
 					for (FileUpload f : routingContext.fileUploads()) {
 						try {
+							// Checks whether the project already exists in the workspace or not
 							if (!Validator.checkIfWorkspaceExists(workspace) || f.size() == 0
 									|| Validator.checkIfProjectAlreadyExistsUnderWorkspace(workspace,
 											f.fileName().substring(0, f.fileName().lastIndexOf(".")))) {
 								success = false;
 							} else {
+								// Moves the uploaded zip to the workspace, and unzips it
 								Files.move(Paths.get(f.uploadedFileName()),
 										Paths.get(FileHandlerUtil.getProperty(DIRECTORY_OF_WORKSPACES_PROPERTY_NAME)
 												+ workspace + File.separator + f.fileName()));
 								String projectName = f.fileName().substring(0, f.fileName().lastIndexOf("."));
+								// Creates an Eclipse project based on the uploaded file
 								ProcessBuilderCli.createEclipseProject(projectName, workspace);
 								logger.log(Level.INFO, ANSI_YELLOW
 										+ "Operation \"addProject\": parameters passed to CLI." + ANSI_RESET);
@@ -199,12 +213,14 @@ public class OpenApiWebServer extends AbstractVerticle {
 					}
 				});
 
+				// Creates a workspace, returns its unique ID
 				routerFactory.operation("addWorkspace").handler(routingContext -> {
 
 					logger.log(Level.INFO, ANSI_YELLOW + "Operation \"addWorkspace\" has started." + ANSI_RESET);
 
 					String workspaceUUID = "";
 					try {
+						// Creates the workspace
 						workspaceUUID = ProcessBuilderCli.createWorkspaceForUser();
 						logger.log(Level.INFO,
 								ANSI_YELLOW + "Operation \"addWorkspace\": parameters passed to CLI." + ANSI_RESET);
@@ -214,16 +230,19 @@ public class OpenApiWebServer extends AbstractVerticle {
 					if (StringUtils.isEmpty(workspaceUUID)) {
 						routingContext.response().setStatusCode(500).end();
 					} else {
+						// Returns the workspace ID as response
 						routingContext.response().setStatusCode(200)
 								.putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON).end(Json.encode(workspaceUUID));
 					}
 				});
 
+				// Stops an active operation in a workspace + project pair
 				routerFactory.operation("stopOperation").handler(routingContext -> {
 
 					logger.log(Level.INFO, ANSI_YELLOW + "Operation \"stopOperation\" has started." + ANSI_RESET);
 
 					ErrorHandlerPOJO errorHandlerPOJO = null;
+					// Getting parameters from path
 					RequestParameters params = routingContext.get(PARSED_PARAMETERS);
 					String workspace = params.pathParameter(WORKSPACE).getString();
 					String projectName = params.pathParameter(PROJECT_NAME).getString();
@@ -231,6 +250,7 @@ public class OpenApiWebServer extends AbstractVerticle {
 					try {
 						errorHandlerPOJO = getErrorObject(workspace, projectName);
 						if (errorHandlerPOJO.getStatusCode() == 503) {
+							// Passes the workspace + project pair to the CLI, which stops the process
 							ProcessBuilderCli.stopOperation(projectName, workspace);
 							logger.log(Level.INFO, ANSI_YELLOW
 									+ "Operation \"stopOperation\": parameters passed to CLI." + ANSI_RESET);
@@ -247,11 +267,13 @@ public class OpenApiWebServer extends AbstractVerticle {
 					}
 				});
 
+				// Deletes a project from a given workspace
 				routerFactory.operation("deleteProject").handler(routingContext -> {
 
 					logger.log(Level.INFO, ANSI_YELLOW + "Operation \"deleteProject\" has started." + ANSI_RESET);
 
 					ErrorHandlerPOJO errorHandlerPOJO = null;
+					// Getting parameters from path
 					RequestParameters params = routingContext.get(PARSED_PARAMETERS);
 					String projectName = params.pathParameter(PROJECT_NAME).getString();
 					String workspace = params.pathParameter(WORKSPACE).getString();
@@ -261,6 +283,7 @@ public class OpenApiWebServer extends AbstractVerticle {
 						errorHandlerPOJO = getErrorObject(workspace, projectName);
 						if (errorHandlerPOJO.getErrorObject() == null) {
 							success = true;
+							// Passes the parameters to the provider, which deletes the project
 							Provider.deleteProject(workspace, projectName);
 						}
 					} catch (IOException e) {
@@ -274,13 +297,15 @@ public class OpenApiWebServer extends AbstractVerticle {
 					}
 				});
 
+				// Deletes a workspace, if its empty
 				routerFactory.operation("deleteWorkspace").handler(routingContext -> {
 
 					logger.log(Level.INFO, ANSI_YELLOW + "Operation \"deleteWorkspace\" has started." + ANSI_RESET);
-
+					// Getting parameters from path
 					RequestParameters params = routingContext.get(PARSED_PARAMETERS);
 					String workspace = params.pathParameter(WORKSPACE).getString();
-
+					// If the workspace can be deleted, it is deleted, and the result is stored in
+					// the "success" variable
 					boolean success = Provider.deleteWorkspace(workspace);
 
 					if (success) {
@@ -294,46 +319,44 @@ public class OpenApiWebServer extends AbstractVerticle {
 					}
 				});
 
+				// Gets the status of a workspace + project pair
 				routerFactory.operation("getStatus").handler(routingContext -> {
 
 					logger.log(Level.INFO, ANSI_YELLOW + "Operation \"getStatus\" has started." + ANSI_RESET);
 
-					ErrorHandlerPOJO errorHandlerPOJO = null;
+					// Getting parameters from path
 					RequestParameters params = routingContext.get(PARSED_PARAMETERS);
 					String projectName = params.pathParameter(PROJECT_NAME).getString();
 					String workspace = params.pathParameter(WORKSPACE).getString();
-					JsonObject returnedResult = null;
-					boolean success = false;
+					String returnedResult = null;
 					try {
-						errorHandlerPOJO = getErrorObject(workspace, projectName);
-						if (errorHandlerPOJO.getErrorObject() == null) {
-							success = true;
+						// Checks if the project is under load in the given workspace
+
+						if (Validator.checkIfProjectHasRunIntoError(workspace, projectName)) {
+							returnedResult = "ERROR";
+						} else {
 							if (Validator.checkIfProjectIsUnderLoad(workspace, projectName)) {
-								returnedResult = new JsonObject().put("code", 503).put(MESSAGE, "Project " + projectName
-										+ " in workspace " + workspace
-										+ " is currently under operation. Wait for the operation to finish to start a new one.");
+								returnedResult = "RUNNING";
 							} else {
-								returnedResult = new JsonObject().put("code", 200).put(MESSAGE, "Project " + projectName
-										+ " in workspace " + workspace + " is currently idle.");
+								returnedResult = "READY";
 							}
 						}
+
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
-
-					if (success) {
-						routingContext.response().setStatusCode(200)
-								.putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON).end(Json.encode(returnedResult));
-					} else {
-						sendErrorResponse(routingContext, errorHandlerPOJO);
-					}
+					routingContext.response().setStatusCode(200).putHeader(HttpHeaders.CONTENT_TYPE, "text/plain")
+							.end(Json.encode(returnedResult));
 				});
 
+				// Adds a project to a workspace and executes a command
+				// TODO: this request currently doesn't work
 				routerFactory.operation("addAndRun").handler(routingContext -> {
 
 					logger.log(Level.INFO, ANSI_YELLOW + "Operation \"addAndRun\" has started." + ANSI_RESET);
 
 					ErrorHandlerPOJO errorHandlerPOJO = null;
+					// Getting parameters from path and request body
 					RequestParameters params = routingContext.get(PARSED_PARAMETERS);
 					String ggenPath = routingContext.request().formAttributes().get("ggenPath");
 					String workspace = params.pathParameter(WORKSPACE).getString();
@@ -343,15 +366,19 @@ public class OpenApiWebServer extends AbstractVerticle {
 					for (FileUpload f : routingContext.fileUploads()) {
 						fileName = f.fileName().replace(".zip", "");
 						try {
+							// Checking if the project exists in the workspace, and whether the workspace
+							// exists or not
 							if (!Validator.checkIfWorkspaceExists(workspace) || f.size() == 0
 									|| Validator.checkIfProjectAlreadyExistsUnderWorkspace(workspace,
 											f.fileName().substring(0, f.fileName().lastIndexOf(".")))) {
 								successUpload = false;
 							} else {
+								// Moves the uploaded file to the workspace and unzips it
 								Files.move(Paths.get(f.uploadedFileName()),
 										Paths.get(FileHandlerUtil.getProperty(DIRECTORY_OF_WORKSPACES_PROPERTY_NAME)
 												+ workspace + File.separator + f.fileName()));
 								String projectName = f.fileName().substring(0, f.fileName().lastIndexOf("."));
+								// Creates an Eclipse project based on the uploaded file
 								ProcessBuilderCli.createEclipseProject(projectName, workspace);
 
 								logger.log(Level.INFO, ANSI_YELLOW
@@ -367,6 +394,7 @@ public class OpenApiWebServer extends AbstractVerticle {
 						errorHandlerPOJO = getErrorObject(workspace, fileName);
 						if (errorHandlerPOJO.getErrorObject() == null) {
 							successGgen = true;
+							// Passes the .ggen file path to the CLI, which starts the operation
 							ProcessBuilderCli.runGammaOperations(fileName, workspace,
 									ggenPath.replace("/", File.separator));
 							logger.log(Level.INFO, ANSI_YELLOW
@@ -387,6 +415,7 @@ public class OpenApiWebServer extends AbstractVerticle {
 					}
 				});
 
+				// Lists all files found in a workspace + project pair
 				routerFactory.operation("list").handler(routingContext -> {
 
 					logger.log(Level.INFO, ANSI_YELLOW + "Operation \"list\" has started." + ANSI_RESET);
@@ -428,6 +457,7 @@ public class OpenApiWebServer extends AbstractVerticle {
 					}
 				});
 
+				// Sets the log level for both the web server and the Headless Gamma
 				routerFactory.operation("setLogLevel").handler(routingContext -> {
 
 					logger.log(Level.INFO, ANSI_YELLOW + "Operation \"setLogLevel\" has started." + ANSI_RESET);
@@ -473,7 +503,7 @@ public class OpenApiWebServer extends AbstractVerticle {
 							.end(errorObject.encode());
 				});
 
-				server = vertx.createHttpServer(new HttpServerOptions().setPort(8080).setHost("localhost")); // <5>
+				server = vertx.createHttpServer(new HttpServerOptions().setPort(8080).setHost("localhost"));
 				server.requestHandler(x -> {
 					router.handle(x);
 				}).listen(8080);
@@ -485,15 +515,21 @@ public class OpenApiWebServer extends AbstractVerticle {
 		});
 	}
 
+	// Creates and error response for more common errors related to workspaces and
+	// projects
 	private ErrorHandlerPOJO getErrorObject(String workspace, String projectName) throws IOException {
 		ErrorHandlerPOJO errorHandlerPOJO = new ErrorHandlerPOJO(null, 0);
 		JsonObject errorObject;
-		if (!Validator.checkIfProjectAlreadyExistsUnderWorkspace(workspace, projectName)) {
+
+		if (!Validator.checkIfProjectAlreadyExistsUnderWorkspace(workspace, projectName)) { // Sent if the project
+																							// already exists under the
+																							// workspace
 			errorObject = new JsonObject().put("code", 404).put(MESSAGE,
 					"Project " + projectName + " does not exists under this workspace!");
 			errorHandlerPOJO.setStatusCode(404);
 			errorHandlerPOJO.setErrorObject(errorObject);
-		} else if (Validator.checkIfProjectIsUnderLoad(workspace, projectName)) {
+		} else if (Validator.checkIfProjectIsUnderLoad(workspace, projectName)) { // Sent if the project is undergoing
+																					// an operation
 			errorObject = new JsonObject().put("code", 503).put(MESSAGE,
 					"There is an in progress operation on this project, try again later!");
 			errorHandlerPOJO.setStatusCode(503);
@@ -502,11 +538,14 @@ public class OpenApiWebServer extends AbstractVerticle {
 		return errorHandlerPOJO;
 	}
 
+	// Sends a given error response
 	private void sendErrorResponse(RoutingContext routingContext, ErrorHandlerPOJO errorHandlerPOJO) {
 		routingContext.response().setStatusCode(errorHandlerPOJO.getStatusCode())
 				.putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON).end(errorHandlerPOJO.getErrorObject().encode());
 	}
 
+	// Used to periodically list workspaces and projects that are undergoing an
+	// operation
 	private static void listWorkspacesAndProjects() throws IOException {
 		if (FileHandlerUtil.getWrapperListFromJson() != null) {
 			List<WorkspaceProjectWrapper> yourList = FileHandlerUtil.getWrapperListFromJson();
@@ -537,6 +576,8 @@ public class OpenApiWebServer extends AbstractVerticle {
 		this.server.close();
 	}
 
+	// Starts the server and the periodic listing of projects and workspaces
+	// undergoing operation
 	public static void main(String[] args) {
 		Vertx vertx = Vertx.vertx();
 		vertx.setPeriodic(10000, aLong -> {
@@ -557,6 +598,7 @@ public class OpenApiWebServer extends AbstractVerticle {
 		});
 	}
 
+	// Error handler object that gets sent as response
 	public class ErrorHandlerPOJO {
 		int statusCode;
 		JsonObject errorObject;
