@@ -328,92 +328,93 @@ public class OpenApiWebServer extends AbstractVerticle {
 					RequestParameters params = routingContext.get(PARSED_PARAMETERS);
 					String projectName = params.pathParameter(PROJECT_NAME).getString();
 					String workspace = params.pathParameter(WORKSPACE).getString();
-					String returnedResult = null;
+					StatusResponsePOJO returnedResult = null;
 					try {
 						// Checks if the project is under load in the given workspace
 
 						if (Validator.checkIfProjectHasRunIntoError(workspace, projectName)) {
-							returnedResult = "ERROR";
+							returnedResult = new StatusResponsePOJO(Status.Failure);
 						} else {
 							if (Validator.checkIfProjectIsUnderLoad(workspace, projectName)) {
-								returnedResult = "RUNNING";
+								returnedResult = new StatusResponsePOJO(Status.Running);
 							} else {
-								returnedResult = "READY";
+								returnedResult = new StatusResponsePOJO(Status.Done);
 							}
 						}
 
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
-					routingContext.response().setStatusCode(200).putHeader(HttpHeaders.CONTENT_TYPE, "text/plain")
-							.end(Json.encode(returnedResult));
+					JsonObject returnedJson = JsonObject.mapFrom(returnedResult);
+					routingContext.response().setStatusCode(200).putHeader(HttpHeaders.CONTENT_TYPE, "application/json")
+							.end(Json.encode(returnedJson));
 				});
 
 				// Adds a project to a workspace and executes a command
 				// TODO: this request currently doesn't work
-				routerFactory.operation("addAndRun").handler(routingContext -> {
-
-					logger.log(Level.INFO, ANSI_YELLOW + "Operation \"addAndRun\" has started." + ANSI_RESET);
-
-					ErrorHandlerPOJO errorHandlerPOJO = null;
-					// Getting parameters from path and request body
-					RequestParameters params = routingContext.get(PARSED_PARAMETERS);
-					String ggenPath = routingContext.request().formAttributes().get("ggenPath");
-					String workspace = params.pathParameter(WORKSPACE).getString();
-					String fileName = "";
-					boolean successUpload = true;
-					boolean successGgen = false;
-					for (FileUpload f : routingContext.fileUploads()) {
-						fileName = f.fileName().replace(".zip", "");
-						try {
-							// Checking if the project exists in the workspace, and whether the workspace
-							// exists or not
-							if (!Validator.checkIfWorkspaceExists(workspace) || f.size() == 0
-									|| Validator.checkIfProjectAlreadyExistsUnderWorkspace(workspace,
-											f.fileName().substring(0, f.fileName().lastIndexOf(".")))) {
-								successUpload = false;
-							} else {
-								// Moves the uploaded file to the workspace and unzips it
-								Files.move(Paths.get(f.uploadedFileName()),
-										Paths.get(FileHandlerUtil.getProperty(DIRECTORY_OF_WORKSPACES_PROPERTY_NAME)
-												+ workspace + File.separator + f.fileName()));
-								String projectName = f.fileName().substring(0, f.fileName().lastIndexOf("."));
-								// Creates an Eclipse project based on the uploaded file
-								ProcessBuilderCli.createEclipseProject(projectName, workspace);
-
-								logger.log(Level.INFO, ANSI_YELLOW
-										+ "Operation \"addAndRun\": parameters passed to CLI, importing project. "
-										+ ANSI_RESET);
-							}
-						} catch (IOException | InterruptedException e) {
-							e.printStackTrace();
-						}
-					}
-
-					try {
-						errorHandlerPOJO = getErrorObject(workspace, fileName);
-						if (errorHandlerPOJO.getErrorObject() == null) {
-							successGgen = true;
-							// Passes the .ggen file path to the CLI, which starts the operation
-							ProcessBuilderCli.runGammaOperations(fileName, workspace,
-									ggenPath.replace("/", File.separator));
-							logger.log(Level.INFO, ANSI_YELLOW
-									+ "Operation \"addAndRund\": parameters passed to CLI, running ggen." + ANSI_RESET);
-						}
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-
-					if (successGgen && successUpload) {
-						routingContext.response().setStatusCode(200)
-								.putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON).end();
-					} else {
-						JsonObject errorObject = new JsonObject().put("code", 400).put(MESSAGE,
-								"Project already exists under this workspace, delete it and resend this request or did not provide a valid workspace");
-						routingContext.response().setStatusCode(400)
-								.putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON).end(errorObject.encode());
-					}
-				});
+//				routerFactory.operation("addAndRun").handler(routingContext -> {
+//
+//					logger.log(Level.INFO, ANSI_YELLOW + "Operation \"addAndRun\" has started." + ANSI_RESET);
+//
+//					ErrorHandlerPOJO errorHandlerPOJO = null;
+//					// Getting parameters from path and request body
+//					RequestParameters params = routingContext.get(PARSED_PARAMETERS);
+//					String ggenPath = routingContext.request().formAttributes().get("ggenPath");
+//					String workspace = params.pathParameter(WORKSPACE).getString();
+//					String fileName = "";
+//					boolean successUpload = true;
+//					boolean successGgen = false;
+//					for (FileUpload f : routingContext.fileUploads()) {
+//						fileName = f.fileName().replace(".zip", "");
+//						try {
+//							// Checking if the project exists in the workspace, and whether the workspace
+//							// exists or not
+//							if (!Validator.checkIfWorkspaceExists(workspace) || f.size() == 0
+//									|| Validator.checkIfProjectAlreadyExistsUnderWorkspace(workspace,
+//											f.fileName().substring(0, f.fileName().lastIndexOf(".")))) {
+//								successUpload = false;
+//							} else {
+//								// Moves the uploaded file to the workspace and unzips it
+//								Files.move(Paths.get(f.uploadedFileName()),
+//										Paths.get(FileHandlerUtil.getProperty(DIRECTORY_OF_WORKSPACES_PROPERTY_NAME)
+//												+ workspace + File.separator + f.fileName()));
+//								String projectName = f.fileName().substring(0, f.fileName().lastIndexOf("."));
+//								// Creates an Eclipse project based on the uploaded file
+//								ProcessBuilderCli.createEclipseProject(projectName, workspace);
+//
+//								logger.log(Level.INFO, ANSI_YELLOW
+//										+ "Operation \"addAndRun\": parameters passed to CLI, importing project. "
+//										+ ANSI_RESET);
+//							}
+//						} catch (IOException | InterruptedException e) {
+//							e.printStackTrace();
+//						}
+//					}
+//
+//					try {
+//						errorHandlerPOJO = getErrorObject(workspace, fileName);
+//						if (errorHandlerPOJO.getErrorObject() == null) {
+//							successGgen = true;
+//							// Passes the .ggen file path to the CLI, which starts the operation
+//							ProcessBuilderCli.runGammaOperations(fileName, workspace,
+//									ggenPath.replace("/", File.separator));
+//							logger.log(Level.INFO, ANSI_YELLOW
+//									+ "Operation \"addAndRund\": parameters passed to CLI, running ggen." + ANSI_RESET);
+//						}
+//					} catch (IOException e) {
+//						e.printStackTrace();
+//					}
+//
+//					if (successGgen && successUpload) {
+//						routingContext.response().setStatusCode(200)
+//								.putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON).end();
+//					} else {
+//						JsonObject errorObject = new JsonObject().put("code", 400).put(MESSAGE,
+//								"Project already exists under this workspace, delete it and resend this request or did not provide a valid workspace");
+//						routingContext.response().setStatusCode(400)
+//								.putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON).end(errorObject.encode());
+//					}
+//				});
 
 				// Lists all files found in a workspace + project pair
 				routerFactory.operation("list").handler(routingContext -> {
@@ -463,9 +464,9 @@ public class OpenApiWebServer extends AbstractVerticle {
 					logger.log(Level.INFO, ANSI_YELLOW + "Operation \"setLogLevel\" has started." + ANSI_RESET);
 
 					RequestParameters params = routingContext.get(PARSED_PARAMETERS);
-					String logLevel = params.pathParameter("logLevel").getString().toLowerCase();
-
-					switch (logLevel) {
+					String logLevel = routingContext.request().formAttributes().get("level");
+					
+					switch (logLevel.toLowerCase()) {
 					case "info":
 						logger.setLevel(Level.INFO);
 						ProcessBuilderCli.setProcessCliLogLevel(logLevel);
@@ -624,6 +625,28 @@ public class OpenApiWebServer extends AbstractVerticle {
 			this.statusCode = statusCode;
 		}
 
+	}
+	
+	enum Status {
+		Done,
+		Running,
+		Failure
+	}
+	
+	public class StatusResponsePOJO {
+		Status operationStatus;
+		
+		public StatusResponsePOJO(Status operationStatus) {
+			this.operationStatus = operationStatus;
+		}
+		
+		public Status getStatus() {
+			return operationStatus;
+		}
+		
+		public void setStatus(Status operationStatus) {
+			this.operationStatus = operationStatus;
+		}
 	}
 
 }

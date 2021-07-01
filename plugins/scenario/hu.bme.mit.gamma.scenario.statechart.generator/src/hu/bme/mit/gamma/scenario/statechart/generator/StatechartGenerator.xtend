@@ -111,7 +111,7 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 	}
 
 	new(boolean coldViolationExisits, ScenarioDefinition scenario, Component component) {
-		this(coldViolationExisits, scenario, component, StatechartGenerationMode.GENERATE_DUPLICATED_CHOICES)
+		this(coldViolationExisits, scenario, component, StatechartGenerationMode.GENERATE_MERGE_STATE)
 	}
 
 	def StatechartDefinition execute() {

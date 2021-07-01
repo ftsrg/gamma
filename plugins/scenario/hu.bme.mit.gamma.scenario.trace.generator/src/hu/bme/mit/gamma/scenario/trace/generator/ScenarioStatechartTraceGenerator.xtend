@@ -87,7 +87,7 @@ class ScenarioStatechartTraceGenerator {
 		val query ='''E<> ((«regionName+"_"+statechartName» == «scenarioStatechartUtil.getAccepting()»))''' ;
 		val gammaPackage = ecoreUtil.normalLoad(modelFile.getParent(), packageFileName);
 
-		val r = verifier.verifyQuery(gammaPackage, parameters, modelFile, query, true, true);
+		val r = verifier.verifyQuery(gammaPackage, parameters, modelFile, query);
 		val baseTrace = r.getTrace();
 
 		var derivedTraces = identifySeparateTracesByReset(baseTrace);
