@@ -100,7 +100,7 @@ public class AdaptiveContractTestGenerationHandler extends TaskHandler {
 				handler.getTargetFolderUri(), propertyFileName);
 		
 		// Temporary trace model folder
-		String temporaryTraceFolderName = ".temporary-trace-folder"; // Checking whether it already exists
+		final String temporaryTraceFolderName = ".temporary-trace-folder"; // Checking if it already exists
 		
 		Verification verification = factory.createVerification();
 		verification.getAnalysisLanguages().add(analysisLanguage);
@@ -115,7 +115,7 @@ public class AdaptiveContractTestGenerationHandler extends TaskHandler {
 		// Reading the resulting traces and then deleting them
 		List<ExecutionTrace> testsTraces = new ArrayList<ExecutionTrace>();
 		File temporaryTraceFolder = new File(verificationHandler.getTargetFolderUri());
-		for (File traceFile : temporaryTraceFolder.listFiles()) {
+		for (File traceFile : getTraceFiles(temporaryTraceFolder)) {
 			ExecutionTrace trace = (ExecutionTrace) ecoreUtil.normalLoad(traceFile);
 			StatechartDefinition adaptiveContract =
 					(StatechartDefinition) GenmodelDerivedFeatures.getModel(modelTransformation);
@@ -172,6 +172,20 @@ public class AdaptiveContractTestGenerationHandler extends TaskHandler {
 		}
 	}
 	
+	// Load traces
+	
+	protected List<File> getTraceFiles(File temporaryTraceFolder) {
+		List<File> traceFiles = new ArrayList<File>();
+		for (File temporaryFile : temporaryTraceFolder.listFiles()) {
+			String extension = fileUtil.getExtension(temporaryFile);
+			if (extension.equals(GammaFileNamer.EXECUTION_XTEXT_EXTENSION) ||
+					extension.equals(GammaFileNamer.EXECUTION_EMF_EXTENSION)) {
+				traceFiles.add(temporaryFile);
+			}
+		}
+		return traceFiles;
+	}
+	
 	// Port from unfolded statechart -> adaptive statechart -> original component
 	
 	protected Port backAnnotatePort(Component originalComponent, Port newPort) {
@@ -210,9 +224,11 @@ public class AdaptiveContractTestGenerationHandler extends TaskHandler {
 	protected boolean areEqual(State originalState, State newState) {
 		List<State> originalAncestors = StatechartModelDerivedFeatures.getAncestorsAndSelf(originalState);
 		// Note the - in the string to be a 100% sure, that cannot be contained by state names
-		String originalName = originalAncestors.stream().map(it -> it.getName()).reduce("", (a, b) -> a + "-" + b);
+		String originalName = originalAncestors.stream().map(it -> it.getName())
+				.reduce("", (a, b) -> a + "-" + b);
 		List<State> newAncestors = StatechartModelDerivedFeatures.getAncestorsAndSelf(newState);
-		String newName = newAncestors.stream().map(it -> it.getName()).reduce("", (a, b) -> a + "-" + b);
+		String newName = newAncestors.stream().map(it -> it.getName())
+				.reduce("", (a, b) -> a + "-" + b);
 		return originalName.equals(newName);
 	}
 	
@@ -234,7 +250,8 @@ public class AdaptiveContractTestGenerationHandler extends TaskHandler {
 		this.packageName = testGeneration.getPackageName().get(0);
 		this.traceFileName = testGeneration.getFileName().get(0);
 		// Setting the attribute, the test folder is a RELATIVE path now from the project
-		this.testFolderUri = URI.decode(projectLocation + File.separator + testGeneration.getTestFolder().get(0));
+		String testFolder = testGeneration.getTestFolder().get(0);
+		this.testFolderUri = URI.decode(projectLocation + File.separator + testFolder);
 		this.testFileName = traceFileName + "Simulation";
 		// TargetFolder set in setTargetFolder
 	}

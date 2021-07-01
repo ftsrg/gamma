@@ -58,7 +58,7 @@ class FileUtil {
 	}
 	
 	def getExtensionlessName(File file) {
-		return file.getName.extensionlessName
+		return file.name.extensionlessName
 	}
 	
 	def getExtensionlessName(String fileName) {
@@ -69,12 +69,20 @@ class FileUtil {
 		return fileName.substring(0, lastIndex)
 	}
 	
+	def getExtension(File file) {
+		return file.name.extension
+	}
+	
 	def getExtension(String fileName) {
 		val lastIndex = fileName.lastIndexOf(".")
 		if (lastIndex <= 0) { // <= 0 so hidden files are handled
 			return ""
 		}
 		return fileName.substring(lastIndex + 1)
+	}
+	
+	def isHiddenFile(File file) {
+		return file.name.hiddenFile
 	}
 	
 	def isHiddenFile(String fileName) {
