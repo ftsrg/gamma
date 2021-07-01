@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+// The Provider class handles files. This includes deleting projects and workspaces, and zipping files to send them as results
 public class Provider {
 
 	private static final String RESULT_DIR_NAME = "result";
@@ -115,23 +116,28 @@ public class Provider {
 		}
 	}
 
+	// Deletes a project with all of its contents
 	public static void deleteProject(String workspace, String projectName) {
 		File result = new File(FileHandlerUtil.getProperty(DIRECTORY_OF_WORKSPACES_PROPERTY_NAME) + workspace
 				+ File.separator + projectName);
 		List<WorkspaceProjectWrapper> workspaceProjectWrappers = new ArrayList<>();
 		if (result.exists()) {
 			try {
+				// Deletes the directory and provisional files of the project
 				deleteDirectory(result);
 				deleteProvisionalFilesFromWorkspace(workspace, projectName);
+				// Getting the list of workspaces and projects inside them
 				workspaceProjectWrappers = FileHandlerUtil.getWrapperListFromJson();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
 		if (workspaceProjectWrappers != null && !workspaceProjectWrappers.isEmpty()) {
+			// Gets every workspace and project pair, excluding the one to be deleted
 			List<WorkspaceProjectWrapper> yourList = workspaceProjectWrappers.stream()
 					.filter(wrapper -> !projectName.equals(wrapper.getProjectName())).collect(Collectors.toList());
 			try {
+				// Rewrites the wrapperList.json so it doesn't include the deleted project
 				FileWriter writer = new FileWriter(
 						FileHandlerUtil.getProperty(DIRECTORY_OF_WORKSPACES_PROPERTY_NAME) + ROOT_WRAPPER_JSON);
 				new Gson().toJson(yourList, writer);
@@ -141,20 +147,22 @@ public class Provider {
 			}
 		}
 	}
-
+	
+	// Deletes a workspace, if its empty
 	public static boolean deleteWorkspace(String workspace) {
 		File result = new File(FileHandlerUtil.getProperty(DIRECTORY_OF_WORKSPACES_PROPERTY_NAME) + workspace);
 		List<WorkspaceProjectWrapper> workspaceProjectWrappers = new ArrayList<>();
 		boolean isEmptyWorkspace = true;
 		if (result.exists()) {
 			try {
+				// Getting the list of workspaces and projects inside them
 				workspaceProjectWrappers = FileHandlerUtil.getWrapperListFromJson();
 				if (workspaceProjectWrappers != null && !workspaceProjectWrappers.isEmpty()) {
 					List<WorkspaceProjectWrapper> workspaceList = workspaceProjectWrappers.stream()
 							.filter(wrapper -> workspace.equals(wrapper.getWorkspace())).collect(Collectors.toList());
-					for (WorkspaceProjectWrapper entry : workspaceList) {
+					for (WorkspaceProjectWrapper entry : workspaceList) { // Checking if the workspace is empty
 						if (entry.getProjectName() != null) {
-							isEmptyWorkspace = false;
+							isEmptyWorkspace = false; // If not, it can't be deleted
 							return false;
 						}
 					}
@@ -163,6 +171,7 @@ public class Provider {
 								.filter(wrapper -> !workspace.equals(wrapper.getWorkspace()))
 								.collect(Collectors.toList());
 						deleteDirectory(result);
+						// Rewrites the wrapperList.json so it doesn't include the deleted workspace
 						FileWriter writer = new FileWriter(
 								FileHandlerUtil.getProperty(DIRECTORY_OF_WORKSPACES_PROPERTY_NAME) + ROOT_WRAPPER_JSON);
 						new Gson().toJson(workspaceRemovedList, writer);
