@@ -464,9 +464,9 @@ public class OpenApiWebServer extends AbstractVerticle {
 					logger.log(Level.INFO, ANSI_YELLOW + "Operation \"setLogLevel\" has started." + ANSI_RESET);
 
 					RequestParameters params = routingContext.get(PARSED_PARAMETERS);
-					String logLevel = params.pathParameter("logLevel").getString().toLowerCase();
-
-					switch (logLevel) {
+					String logLevel = routingContext.request().formAttributes().get("level");
+					
+					switch (logLevel.toLowerCase()) {
 					case "info":
 						logger.setLevel(Level.INFO);
 						ProcessBuilderCli.setProcessCliLogLevel(logLevel);
