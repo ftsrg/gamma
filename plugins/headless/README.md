@@ -5,7 +5,7 @@ This document serves as a short introduction to _Headless Gamma_, a service that
 2. The commands are forwarded to the headless Eclipse via a _web server_.
 3. Both artifacts are packed in a _Docker container_.​
 
-There are two documents that detail the functions and parts of the Headless Gamma:​
+There other documents found in the `docs` folder that detail the functions and parts of the Headless Gamma:​
 
  -  [This  document](https://github.com/csuvi98/gamma/blob/dev/plugins/headless/hu.bme.mit.gamma.headless.api/docs/headless-gamma-document.md)  details  how  to  export  the  headless  Eclipse containing  Gamma. It also mentions some notable errors which can occur.
  - [This document](https://github.com/csuvi98/gamma/blob/dev/plugins/headless/docs/headless-gamma-docker.md)   details  how  to  set  up  the  Docker  container  on  your  own.  Note  that  there  is  an  [official  Gamma  Docker  image](https://hub.docker.com/repository/docker/ftsrggamma/headless-gamma),  which is  recommended  to be used.
