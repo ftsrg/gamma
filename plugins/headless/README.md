@@ -40,45 +40,6 @@ Before running the server, make sure to configure the paths found in `config.pro
 - set the `root.of.workspaces.path` variable to the desired location of workspaces.
 
 Upon receiving a request, the server forwards it to the exported Gamma, which then performs the command. The processes are logged to the console of the server. Requests can be sent to `localhost:8080`.
-
- ## Webserver functioning
- This section details how the webserver functions.
-
-Upon successfully starting the server, a green colored _"Headless Gamma OpenAPI server is running."_  message should appear.
-
-The server periodically checks if there are operations running, and logs the process of requests received.
-
-It is important to note that a workspace can have _only one_ instance of a project with the same name. To import a second version of the same project, it has to be renamed. There can be _only one_ operation running on a particular project at a given time.
-
-## Webserver API
-
-This section details the API used to communicatie with the webserver.
-
-  - **POST**
-	- **addProject** `/gamma/{workspace}/project` - Adds a project to the specified workspace. The request body is a multipart/form-data type body, which has a `file` field, where the zip file containing the project must be provided (examples of this can be found in the _Example: Workflow with Docker_ section). (Alternatively, in Postman, the file can be selected from the file system). The zip file must have the same name as the project. As an example, the `hu.bme.mit.gamma.test` project should be placed in `hu.bme.mit.gamma.test.zip`.
-	
-	- **getResult** `/gamma/{workspace}/{project}` - Gets specified files and folders from the project found in the given workspace and zips them. The files and/or folders should be specified as raw data in the request body, specifying the relative paths from the project root, as `files`. Example: `"files":["src-gen","test-gen","trace/ExecutionTrace0.get"]`. If the given file or folder does not exists, it will not appear in the zip file (the request doesn't throw an exception).
-  - **PUT**
-  	- **addWorkspace** `/gamma/workspace` - Creates a workspace in the location specified in `config.properties`. Returns with the name (ID) of the workspace, which is used in further requests.
-	- **runCommand** `/gamma/{workspace}/{project}/run` - Starts an operation in the specified workspace and project, based on a `.ggen` file. The parameters are the following: 
-		- `workspace` specifies the workspace,
-		- `project` specifies the project, and
-		- `filePath` specifies the path of the `.ggen` file found in the project. Note that `filePath` isn't a path parameter, and it should be specified in the request body, which is a multipart/form-data type body. The path in `filePath` should use  `/`  characters. Example: `model/test/Test.ggen`.
-	- **addAndRun** `/gamma/{workspace}/addandrun` - **Currently, due to unknown reasons, the addAndRun request doesn't function properly. Please refrain from using it.** Adds a project to the workspace, and runs a specified `.ggen` file. This requests serves as an easier way to import projects and run Gamma operations immediately. The request body has three fields:
-		- `file`,
-		- `ggenPath`. 
-		
-		The `file` field works the same as in the `/gamma/addproject/{workspace}` request. The `ggenPath` field specifies the path of the `.ggen` file inside the project. Like in the previous request, `/` should be used when specifying the path.
-	 - **stopProcess** `/gamma/{workspace}/{project}/stop` - Stops the currently ongoing process in the project found in the given workspace.
-	 - **setLogLevel** `/gamma/setloglevel/{loglevel}` - Sets the verbosity of the logger for both the webserver and the Headless Gamma. The accepted levels are `info`, `warning`, `severe` and `off`.
-	 - **getLogs** `/gamma/{workspace}/getlogs` - Retrieves the logs of a workspace. This can be saved as a text file.
-	 - **deleteWorkspace** `gamma/deleteworkspace/{workspace}` - Deletes the given workspace if it exists and is empty.
- - **GET**
-	- **list** `/gamma/{workspace}/{project}` - Lists all files found in the project in the given workspace.
-	
-	- **status** `/gamma/{workspace}/{project}/status` -  Gets the status of the project in the given workspace. It returns with a simple text, indicating the status of the project: `READY`, `RUNNING` or `ERROR`.
- - **DELETE**
-	- **delete** `/gamma/{workspace}/{project}` Deletes the project from the project in the given workspace.
 		
  ## Example: Workflow with Docker
  This section presents the workflow using the Docker image. In this example, `hu.bme.mit.gamma.tests` is used as testing project. 
