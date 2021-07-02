@@ -162,7 +162,7 @@ paths:
                 $ref: '#/components/schemas/ProjectFile'
         '404':
           description: Log file does not exist.
-  /gamma/loglevel:
+  /gamma/log/level:
     put:
       summary: Sets the log level of both the server and the Headless Gamma.
       operationId: setLogLevel
@@ -176,6 +176,28 @@ paths:
           description: Log level successfully set.
         '400':
           description: Wrong logging level provided
+  /gamma/log/file:
+    put:
+      summary: Enables logging to a file, specified in the config.properties file.
+      operationId: logToFile
+      responses:
+        '200':
+          description: Log level successfully set.
+        '400':
+          description: Wrong logging level provided
+    get:
+      summary: Retrieves the headless console log file.
+      operationId: getHeadlessLogs
+      responses:
+        '200':
+          description: Log file successfully sent.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectFile'
+        '404':
+          description: Log file does not exist.
+ 
 components:
   parameters:
     WorkspaceIdentifierParam:

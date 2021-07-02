@@ -9,8 +9,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.FileHandler;
+import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -49,11 +52,14 @@ public class OpenApiWebServer extends AbstractVerticle {
 	private static final String PROJECT_NAME = "project";
 	HttpServer server;
 	private static final String DIRECTORY_OF_WORKSPACES_PROPERTY_NAME = "root.of.workspaces.path";
+	private static final String DIRECTORY_OF_LOGGER_OUTPUT_FILE = "logger.output.directory";
 	// Coloring for the messages on consoles. Doesn't work in the Eclipse console.
 	private static final String ANSI_RESET = "\u001B[0m";
 	private static final String ANSI_GREEN = "\u001B[32m";
 	private static final String ANSI_RED = "\u001B[31m";
 	private static final String ANSI_YELLOW = "\u001B[33m";
+
+	private static boolean loggingToFile = false;
 
 	protected static Logger logger = Logger.getLogger("GammaLogger");
 
@@ -142,6 +148,9 @@ public class OpenApiWebServer extends AbstractVerticle {
 
 				// Gets the log file from a workspace
 				routerFactory.operation("getLogs").handler(routingContext -> {
+					
+					logger.log(Level.INFO, ANSI_YELLOW + "Operation \"getLogs\" has started." + ANSI_RESET);
+					
 					// Getting parameters from path
 					RequestParameters params = routingContext.get(PARSED_PARAMETERS);
 					String workspace = params.pathParameter(WORKSPACE).getString();
@@ -465,7 +474,7 @@ public class OpenApiWebServer extends AbstractVerticle {
 
 					RequestParameters params = routingContext.get(PARSED_PARAMETERS);
 					String logLevel = routingContext.request().formAttributes().get("level");
-					
+
 					switch (logLevel.toLowerCase()) {
 					case "info":
 						logger.setLevel(Level.INFO);
@@ -495,6 +504,74 @@ public class OpenApiWebServer extends AbstractVerticle {
 
 				});
 
+				routerFactory.operation("logToFile").handler(routingContext -> {
+
+					logger.log(Level.INFO, ANSI_YELLOW + "Operation \"logToFile\" has started." + ANSI_RESET);
+
+					if (!loggingToFile) {
+						loggingToFile = true;
+
+						FileHandler fileHandler = null;
+						try {
+							fileHandler = new FileHandler(FileHandlerUtil.getProperty(DIRECTORY_OF_LOGGER_OUTPUT_FILE));
+						} catch (SecurityException e1) {
+							e1.printStackTrace();
+						} catch (IOException e1) {
+							e1.printStackTrace();
+						}
+
+						logger.addHandler(fileHandler);
+						SimpleFormatter simpleFormatter = new SimpleFormatter();
+						fileHandler.setFormatter(simpleFormatter);
+
+						routingContext.response().setStatusCode(200)
+								.putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON).end("Logging to file enabled.");
+						return;
+					}
+					if (loggingToFile) {
+						loggingToFile = false;
+						for (Handler handler : logger.getHandlers()) {
+							handler.close();
+							logger.removeHandler(handler);
+						}
+						routingContext.response().setStatusCode(200)
+								.putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON).end("Logging to file disabled.");
+						return;
+					}
+
+				});
+
+				routerFactory.operation("getHeadlessLogs").handler(routingContext -> {
+
+					logger.log(Level.INFO, ANSI_YELLOW + "Operation \"getHeadlessLogs\" has started." + ANSI_RESET);
+
+					// Path of the headless console output log file
+					String logPath = FileHandlerUtil.getProperty(DIRECTORY_OF_LOGGER_OUTPUT_FILE);
+					boolean success = false;
+					try {
+						// Getting the log file
+						FileInputStream inputLog = new FileInputStream(logPath);
+						inputLog.close();
+						success = true;
+					} catch (FileNotFoundException e) {
+						e.printStackTrace();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+
+					if (success) {
+						// Sending the log file back as response
+						routingContext.response().setStatusCode(200).putHeader(HttpHeaders.CONTENT_TYPE, "text/plain")
+								.sendFile(logPath);
+					} else {
+						JsonObject errorObject = new JsonObject().put("code", 404).put(MESSAGE,
+								"The log file requested does not exist.");
+						routingContext.response().setStatusCode(404)
+								.putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON).end(errorObject.encode());
+					}
+
+				});
+
 				Router router = routerFactory.createRouter();
 
 				router.errorHandler(404, routingContext -> {
@@ -505,6 +582,13 @@ public class OpenApiWebServer extends AbstractVerticle {
 				});
 
 				server = vertx.createHttpServer(new HttpServerOptions().setPort(8080).setHost("localhost"));
+				server.exceptionHandler(exp -> {
+					logger.log(Level.SEVERE, "Unexpected error in Headless Gamma Webserver");
+					router.errorHandler(500, x -> {
+						x.response().setStatusCode(500).putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
+								.end("Unexpected error in Headless Gamma Webserver");
+					});
+				});
 				server.requestHandler(x -> {
 					router.handle(x);
 				}).listen(8080);
@@ -626,24 +710,22 @@ public class OpenApiWebServer extends AbstractVerticle {
 		}
 
 	}
-	
+
 	enum Status {
-		Done,
-		Running,
-		Failure
+		Done, Running, Failure
 	}
-	
+
 	public class StatusResponsePOJO {
 		Status operationStatus;
-		
+
 		public StatusResponsePOJO(Status operationStatus) {
 			this.operationStatus = operationStatus;
 		}
-		
+
 		public Status getStatus() {
 			return operationStatus;
 		}
-		
+
 		public void setStatus(Status operationStatus) {
 			this.operationStatus = operationStatus;
 		}
