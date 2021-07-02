@@ -29,10 +29,12 @@ This section details the API used to communicatie with the webserver.
 	- **stopProcess** `/gamma/workspace/{workspace}/project/{project}/stop` - Stops the currently ongoing process in the project found in the given workspace.
   - **PUT**
 	 - **setLogLevel** `/gamma/loglevel` - Sets the verbosity of the logger for both the webserver and the Headless Gamma. The level should be set in the `level` field of the request body, as multipart/form-data request. The accepted levels are `Info`, `Warning`, `Severe` and `Off`. 
+	 - **logToFile** `/gamma/log/file` - Toggles between enabling and disabling logging to file. By default, logging to file is disabled. Note that re-enabling logging to file (after a disabling it) will overwrite the previous contents of the log file. An example of usage would be: creating workspace, adding project, enabling logging to file, running command, disabling logging to file and getting results (and optionally, deleting the project and workspace).
  - **GET**
 	- **list** `/gamma/workspace/{workspace}/project/{project}` - Lists all files found in the project in the given workspace.
 	- **status** `/gamma/workspace/{workspace}/project/{project}/status` -  Gets the status of the project in the given workspace. It returns with a simple text, indicating the status of the project: `Done`, `Ready` or `Failure`.
 	- **getLogs** `/gamma/workspace/{workspace}/logs` - Retrieves the logs of a workspace. This can be saved as a text file.
+	- **getHeadlessLogs** `/gamma/log/file` - Retrieves the logs of the Headless Gamma, if logging to file was enabled. This can be saved as a text file.
  - **DELETE**
 	- **deleteProject** `/gamma/workspace/{workspace}/project/{project}` Deletes the project from the project in the given workspace.
 	- **deleteWorkspace** `/gamma/workspace/{workspace}` - Deletes the given workspace if it exists and is empty.
