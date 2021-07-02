@@ -34,7 +34,7 @@ This section details the API used to communicatie with the webserver.
 	- **list** `/gamma/workspace/{workspace}/project/{project}` - Lists all files found in the project in the given workspace.
 	- **status** `/gamma/workspace/{workspace}/project/{project}/status` -  Gets the status of the project in the given workspace. It returns with a simple text, indicating the status of the project: `Done`, `Ready` or `Failure`.
 	- **getLogs** `/gamma/workspace/{workspace}/logs` - Retrieves the logs of a workspace. This can be saved as a text file.
-	- **getHeadlessLogs** `/gamma/log/file` - Retrieves the logs of the Headless Gamma, if logging to file was enabled. This can be saved as a text file.
+	- **getHeadlessLogs** `/gamma/log/file` - Retrieves the logs of the Headless Gamma, if logging to file was enabled. This can be saved as a text file. Note that this request works only if logging to file is disabled when requesting, to avoid consistency issues.
  - **DELETE**
 	- **deleteProject** `/gamma/workspace/{workspace}/project/{project}` Deletes the project from the project in the given workspace.
 	- **deleteWorkspace** `/gamma/workspace/{workspace}` - Deletes the given workspace if it exists and is empty.
