@@ -158,16 +158,24 @@ public class OpenApiWebServer extends AbstractVerticle {
 					String logPath = FileHandlerUtil.getProperty(DIRECTORY_OF_WORKSPACES_PROPERTY_NAME) + File.separator
 							+ workspace + File.separator + ".metadata" + File.separator + ".log";
 					boolean success = false;
-					try {
-						// Getting the log file
-						FileInputStream inputLog = new FileInputStream(logPath);
-						inputLog.close();
-						success = true;
-					} catch (FileNotFoundException e) {
-						e.printStackTrace();
-					} catch (IOException e) {
-						e.printStackTrace();
+					if(!loggingToFile) {
+						try {
+							// Getting the log file
+							FileInputStream inputLog = new FileInputStream(logPath);
+							inputLog.close();
+							success = true;
+						} catch (FileNotFoundException e) {
+							e.printStackTrace();
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					} else {
+						JsonObject errorObject = new JsonObject().put("code", 403).put(MESSAGE,
+								"Please disable logging to file before requesting the log.");
+						routingContext.response().setStatusCode(403)
+								.putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON).end(errorObject.encode());
 					}
+					
 
 					if (success) {
 						// Sending the log file back as response

@@ -197,6 +197,8 @@ paths:
                 $ref: '#/components/schemas/ProjectFile'
         '404':
           description: Log file does not exist.
+        '403':
+          description: Logging is still enabled, plesase disable it.
  
 components:
   parameters:
