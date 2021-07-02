@@ -148,9 +148,9 @@ public class OpenApiWebServer extends AbstractVerticle {
 
 				// Gets the log file from a workspace
 				routerFactory.operation("getLogs").handler(routingContext -> {
-					
+
 					logger.log(Level.INFO, ANSI_YELLOW + "Operation \"getLogs\" has started." + ANSI_RESET);
-					
+
 					// Getting parameters from path
 					RequestParameters params = routingContext.get(PARSED_PARAMETERS);
 					String workspace = params.pathParameter(WORKSPACE).getString();
@@ -158,14 +158,12 @@ public class OpenApiWebServer extends AbstractVerticle {
 					String logPath = FileHandlerUtil.getProperty(DIRECTORY_OF_WORKSPACES_PROPERTY_NAME) + File.separator
 							+ workspace + File.separator + ".metadata" + File.separator + ".log";
 					boolean success = false;
-					if(!loggingToFile) {
+					if (!loggingToFile) {
 						try {
 							// Getting the log file
 							FileInputStream inputLog = new FileInputStream(logPath);
 							inputLog.close();
 							success = true;
-						} catch (FileNotFoundException e) {
-							e.printStackTrace();
 						} catch (IOException e) {
 							e.printStackTrace();
 						}
@@ -175,7 +173,6 @@ public class OpenApiWebServer extends AbstractVerticle {
 						routingContext.response().setStatusCode(403)
 								.putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON).end(errorObject.encode());
 					}
-					
 
 					if (success) {
 						// Sending the log file back as response
@@ -522,9 +519,7 @@ public class OpenApiWebServer extends AbstractVerticle {
 						FileHandler fileHandler = null;
 						try {
 							fileHandler = new FileHandler(FileHandlerUtil.getProperty(DIRECTORY_OF_LOGGER_OUTPUT_FILE));
-						} catch (SecurityException e1) {
-							e1.printStackTrace();
-						} catch (IOException e1) {
+						} catch (SecurityException | IOException e1) {
 							e1.printStackTrace();
 						}
 
@@ -561,8 +556,6 @@ public class OpenApiWebServer extends AbstractVerticle {
 						FileInputStream inputLog = new FileInputStream(logPath);
 						inputLog.close();
 						success = true;
-					} catch (FileNotFoundException e) {
-						e.printStackTrace();
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
