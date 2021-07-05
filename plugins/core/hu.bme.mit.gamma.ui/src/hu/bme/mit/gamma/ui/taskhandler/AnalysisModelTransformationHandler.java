@@ -464,8 +464,8 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			Gamma2XstsTransformerSerializer transformer = new Gamma2XstsTransformerSerializer(
 					component, reference.getArguments(),
 					targetFolderUri, fileName, schedulingConstraint,
-					transformation.isOptimize(), transformation.getPropertyPackage(),
-					new AnnotatablePreprocessableElements(
+					transformation.isOptimize(), true,
+					transformation.getPropertyPackage(), new AnnotatablePreprocessableElements(
 						testedComponentsForStates, testedComponentsForTransitions,
 						testedComponentsForTransitionPairs, testedComponentsForOutEvents,
 						testedInteractions, senderCoverageCriterion, receiverCoverageCriterion,

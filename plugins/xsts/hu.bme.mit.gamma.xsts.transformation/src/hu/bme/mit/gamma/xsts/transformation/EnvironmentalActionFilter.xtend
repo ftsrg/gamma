@@ -16,6 +16,7 @@ import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Persistency
 import hu.bme.mit.gamma.util.GammaEcoreUtil
+import hu.bme.mit.gamma.xsts.model.AbstractAssignmentAction
 import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.AssumeAction
@@ -102,12 +103,8 @@ class EnvironmentalActionFilter {
 					val firstXStsInEventVariable = xStsInEventVariables.head
 					for (otherXStsInEventVariable : xStsInEventVariables.reject[it === firstXStsInEventVariable]) {
 						xStsAssignments += createAssignmentAction => [
-							it.lhs = createDirectReferenceExpression => [
-								it.declaration = otherXStsInEventVariable
-							]
-							it.rhs = createDirectReferenceExpression => [
-								it.declaration = firstXStsInEventVariable
-							]
+							it.lhs = otherXStsInEventVariable.createReferenceExpression
+							it.rhs = firstXStsInEventVariable.createReferenceExpression
 						]
 					}
 				}
@@ -129,12 +126,8 @@ class EnvironmentalActionFilter {
 						for (otherXStsParameterVariable : xStsParameterVariables
 								.reject[it === firstXStsParameterVariable]) {
 							xStsAssignments += createAssignmentAction => [
-								it.lhs = createDirectReferenceExpression => [
-									it.declaration = otherXStsParameterVariable
-								]
-								it.rhs = createDirectReferenceExpression => [
-									it.declaration = firstXStsParameterVariable
-								]
+								it.lhs = otherXStsParameterVariable.createReferenceExpression
+								it.rhs = firstXStsParameterVariable.createReferenceExpression
 							]
 						}
 					}
@@ -163,74 +156,15 @@ class EnvironmentalActionFilter {
 		}
 	}
 	
-//	def bindEventsBoundToTheSameSystemPort(Action action, Component component) {
-//		val xSts = action.containingXSTS
-//		val xStsAssignmentActions = action.getAllContentsOfType(AssignmentAction)
-//		for (systemPort : component.allPorts) {
-//			val connectedSimplePorts = systemPort.allConnectedSimplePorts
-//			val size = connectedSimplePorts.size
-//			if (size > 1) {
-//				// More than one bound simple port
-//				val orderedPorts = newHashMap
-//				for (port : connectedSimplePorts) {
-//					// TODO does this actually work if there are more than hierarchies?
-//					val statechart = port.containingStatechart
-//					val instance = statechart.referencingComponentInstance
-//					val index = instance.index
-//					orderedPorts.put(index /* There can be rewrites here */, port)
-//				}
-//				// Ports are ordered now, and the algorithm is based on the fact that the in-event actions of components are in ORDER 
-//				val firstPort = orderedPorts.get(0)
-//				val firstSatechart = firstPort.containingStatechart
-//				val firstInstance = firstSatechart.referencingComponentInstance
-//				val firstEvents = firstPort.allEvents
-//				for (boundPort : orderedPorts.entrySet.reject[it.key == 0].map[it.value]) {
-//					val boundSatechart = boundPort.containingStatechart
-//					val boundInstance = boundSatechart.referencingComponentInstance
-//					val boundEvents = boundPort.inputEvents
-//					for (boundEvent : boundEvents) {
-//						val i = boundEvent.containingEventDeclaration.index
-//						val event = firstEvents.get(i)
-//						val xStsEventName = customizeInputName(event, firstPort, firstInstance)
-//						val xStsEventVariable = xSts.checkVariable(xStsEventName)
-//						val parameters = event.parameterDeclarations
-//						val xStsBoundEventName = customizeInputName(boundEvent, boundPort, boundInstance)
-//						val xStsBoundEventVariable = xSts.checkVariable(xStsBoundEventName)
-//						for (xStsAssignment : xStsAssignmentActions
-//								.filter[it.lhs.declaration === xStsBoundEventVariable]) {
-//							// "Binding" the variable 
-//							xStsAssignment.rhs = createReferenceExpression => [it.declaration = xStsEventVariable]
-//						}
-//						val boundParameters = boundEvent.parameterDeclarations
-//						for (var j = 0; j < boundParameters.size; j++) {
-//							val parameter = parameters.get(j)
-//							val xStsParameterName = customizeInName(parameter, firstPort, firstInstance)
-//							val xStsParameterVariable = xSts.checkVariable(xStsParameterName)
-//							val boundParameter = boundParameters.get(j)
-//							val xStsBoundParameterName = customizeInName(boundParameter, boundPort, boundInstance)
-//							val xStsBoundParameterVariable = xSts.checkVariable(xStsBoundParameterName)
-//							for (xStsAssignment : xStsAssignmentActions
-//									.filter[it.lhs.declaration === xStsBoundParameterVariable]) {
-//								// "Binding" the variable 
-//								xStsAssignment.rhs = createReferenceExpression => [it.declaration = xStsParameterVariable]
-//							}
-//						}
-//					}
-//				}
-//			}
-//		}
-//	}
-	
 	private def Action reset(CompositeAction action, Set<String> necessaryNames) {
 		val xStsAssignments = newHashSet
-		for (xStsAssignment : action.getAllContentsOfType(AssignmentAction)) {
-			val declaration = (xStsAssignment.lhs as DirectReferenceExpression).declaration
+		for (xStsAssignment : action.getAllContentsOfType(AbstractAssignmentAction)) {
+			val declaration = (xStsAssignment.lhs as DirectReferenceExpression).declaration as VariableDeclaration
 			val name = declaration.name
 			if (!necessaryNames.contains(name)) {
-				// Resetting the variable if it is not led out to the system port
-				val defaultExpression = declaration.type.defaultExpression
-				xStsAssignment.rhs = defaultExpression
-				xStsAssignments += xStsAssignment
+				// Resetting the variable
+				val defaultExpression = declaration.defaultExpression
+				xStsAssignments += declaration.createAssignmentAction(defaultExpression)
 			}
 		}
 		return createSequentialAction => [
@@ -248,7 +182,7 @@ class EnvironmentalActionFilter {
 			copyXStsSubactions += xStsMultiaryAction.actions
 		}
 		for (xStsSubaction : copyXStsSubactions) {
-			if (xStsSubaction instanceof AssignmentAction) {
+			if (xStsSubaction instanceof AbstractAssignmentAction) {
 				val name = (xStsSubaction.lhs as DirectReferenceExpression).declaration.name
 				if (!necessaryNames.contains(name)) {
 					// Deleting

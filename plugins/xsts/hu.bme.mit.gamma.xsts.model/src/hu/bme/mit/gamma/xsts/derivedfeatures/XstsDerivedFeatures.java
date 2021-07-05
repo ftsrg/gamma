@@ -23,13 +23,14 @@ import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.EqualityExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
-import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
+import hu.bme.mit.gamma.xsts.model.AbstractAssignmentAction;
 import hu.bme.mit.gamma.xsts.model.Action;
 import hu.bme.mit.gamma.xsts.model.AssignmentAction;
 import hu.bme.mit.gamma.xsts.model.AssumeAction;
 import hu.bme.mit.gamma.xsts.model.AtomicAction;
 import hu.bme.mit.gamma.xsts.model.EmptyAction;
+import hu.bme.mit.gamma.xsts.model.HavocAction;
 import hu.bme.mit.gamma.xsts.model.LoopAction;
 import hu.bme.mit.gamma.xsts.model.MultiaryAction;
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction;
@@ -155,18 +156,19 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 	private static boolean isTrivialAssignment(EqualityExpression expression, AssignmentAction action) {
 		Expression xStsLeftOperand = expression.getLeftOperand();
 		Expression xStsRightOperand = expression.getRightOperand();
-		Declaration xStsDeclaration = ((DirectReferenceExpression)action.getLhs()).getDeclaration();
+		DirectReferenceExpression directReferenceExpression = (DirectReferenceExpression) action.getLhs();
+		Declaration xStsDeclaration = directReferenceExpression.getDeclaration();
 		Expression xStsAssignmentRhs = action.getRhs();
 		// region_name == state_name
-		if (xStsLeftOperand instanceof ReferenceExpression) {
-			if (((DirectReferenceExpression) xStsLeftOperand).getDeclaration() == xStsDeclaration
+		if (xStsLeftOperand instanceof DirectReferenceExpression) {
+			if (expressionUtil.getDeclaration(xStsLeftOperand) == xStsDeclaration
 					&& ecoreUtil.helperEquals(xStsRightOperand, xStsAssignmentRhs)) {
 				return true;
 			}
 		}
 		// state_name == region_name
-		if (xStsRightOperand instanceof ReferenceExpression) {
-			if (((DirectReferenceExpression) xStsRightOperand).getDeclaration() == xStsDeclaration
+		if (xStsRightOperand instanceof DirectReferenceExpression) {
+			if (expressionUtil.getDeclaration(xStsRightOperand) == xStsDeclaration
 					&& ecoreUtil.helperEquals(xStsLeftOperand, xStsAssignmentRhs)) {
 				return true;
 			}
@@ -188,6 +190,10 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 
 	private static Set<VariableDeclaration> _getReadVariables(AssumeAction action) {
 		return expressionUtil.getReferredVariables(action.getAssumption());
+	}
+	
+	private static Set<VariableDeclaration> _getReadVariables(HavocAction action) {
+		return Collections.emptySet();
 	}
 
 	private static Set<VariableDeclaration> _getReadVariables(AssignmentAction action) {
@@ -246,7 +252,7 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 		return Collections.emptySet();
 	}
 
-	private static Set<VariableDeclaration> _getWrittenVariables(AssignmentAction action) {
+	private static Set<VariableDeclaration> _getWrittenVariables(AbstractAssignmentAction action) {
 		return expressionUtil.getReferredVariables(action.getLhs());
 	}
 	
@@ -297,6 +303,8 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 	public static Set<VariableDeclaration> getReadVariables(Action action) {
 		if (action instanceof AssignmentAction) {
 			return _getReadVariables((AssignmentAction) action);
+		} else if (action instanceof HavocAction) {
+			return _getReadVariables((HavocAction) action);
 		} else if (action instanceof VariableDeclarationAction) {
 			return _getReadVariables((VariableDeclarationAction) action);
 		} else if (action instanceof AssumeAction) {
@@ -317,8 +325,8 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 	}
 
 	public static Set<VariableDeclaration> getWrittenVariables(Action action) {
-		if (action instanceof AssignmentAction) {
-			return _getWrittenVariables((AssignmentAction) action);
+		if (action instanceof AbstractAssignmentAction) {
+			return _getWrittenVariables((AbstractAssignmentAction) action);
 		} else if (action instanceof VariableDeclarationAction) {
 			return _getWrittenVariables((VariableDeclarationAction) action);
 		} else if (action instanceof AssumeAction) {
@@ -339,7 +347,7 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 	}
 	
 	public static Set<VariableDeclaration> getReferredVariables(Action action) {
-		Set<VariableDeclaration> referredVariables = new HashSet<>(getReadVariables(action));
+		Set<VariableDeclaration> referredVariables = new HashSet<VariableDeclaration>(getReadVariables(action));
 		referredVariables.addAll(getWrittenVariables(action));
 		return referredVariables;
 	}

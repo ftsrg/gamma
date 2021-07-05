@@ -159,6 +159,11 @@ public class ExpressionModelDerivedFeatures {
 	
 	//
 	
+	public static Expression getDefaultExpression(Declaration declaration) {
+		Type type = declaration.getType();
+		return getDefaultExpression(type);
+	}
+	
 	public static Expression getDefaultExpression(Type type) {
 		return expressionUtil.getInitialValueOfType(type);
 	}

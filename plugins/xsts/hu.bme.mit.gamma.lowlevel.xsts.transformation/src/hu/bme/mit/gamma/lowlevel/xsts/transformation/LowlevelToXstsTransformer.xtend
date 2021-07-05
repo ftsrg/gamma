@@ -134,7 +134,8 @@ class LowlevelToXstsTransformer {
 	protected BatchTransformationRule<InEvents.Match, InEvents.Matcher> inEventEnvironmentalActionRule
 	protected BatchTransformationRule<OutEvents.Match, OutEvents.Matcher> outEventEnvironmentalActionRule
 	// Optimization
-	protected boolean optimize
+	protected final boolean optimize
+	protected final boolean useHavocActions
 	protected Set<EventDeclaration> referredEvents
 	protected Set<VariableDeclaration> referredVariables
 	
@@ -143,6 +144,10 @@ class LowlevelToXstsTransformer {
 	}
 	
 	new(Package _package, boolean optimize) {
+		this (_package, optimize, false)
+	}
+	
+	new(Package _package, boolean optimize, boolean useHavocActions) {
 		this._package = _package
 		// Note: we do not expect cross references to other resources
 		this.engine = ViatraQueryEngine.on(new EMFScope(_package))
@@ -169,6 +174,7 @@ class LowlevelToXstsTransformer {
 		this.transformation = BatchTransformation.forEngine(engine).build
 		this.statements = transformation.transformationStatements
 		this.optimize = optimize
+		this.useHavocActions = useHavocActions
 		if (optimize) {
 			this.referredEvents = ReferredEvents.Matcher.on(engine).allValuesOfevent
 			this.referredVariables = ReferredVariables.Matcher.on(engine).allValuesOfvariable
@@ -537,7 +543,7 @@ class LowlevelToXstsTransformer {
 			// variableInitializingAction as it must be set before setting the configuration
 			variableInitializingAction as SequentialAction => [
 				it.actions += createAssignmentAction => [
-					it.lhs = createDirectReferenceExpression => [it.declaration = xStsVariable]
+					it.lhs = xStsVariable.createReferenceExpression
 					it.rhs = xStsVariable.initialValue
 				]
 			]
@@ -626,71 +632,79 @@ class LowlevelToXstsTransformer {
 				if (lowlevelEvent.notOptimizable) {
 					val lowlevelEnvironmentalAction = inEventAction as SequentialAction
 					val xStsEventVariable = trace.getXStsVariable(lowlevelEvent)
-					lowlevelEnvironmentalAction.actions += createNonDeterministicAction => [
-						// Event is raised
-						it.actions += createAssignmentAction => [
-							it.lhs = createDirectReferenceExpression => [
-								it.declaration = xStsEventVariable
-							]
-							it.rhs = createTrueExpression
+					// In event variable
+					val xStsInEventAssignment = 
+					if (useHavocActions) {
+						createHavocAction => [
+							it.lhs = xStsEventVariable.createReferenceExpression
 						]
-						// Event is not raised
-						it.actions += createAssignmentAction => [
-							it.lhs = createDirectReferenceExpression => [
-								it.declaration = xStsEventVariable
+					}
+					else {
+						createNonDeterministicAction => [
+							// Event is raised
+							it.actions += createAssignmentAction => [
+								it.lhs = xStsEventVariable.createReferenceExpression
+								it.rhs = createTrueExpression
 							]
-							it.rhs = createFalseExpression
+							// Event is not raised
+							it.actions += createAssignmentAction => [
+								it.lhs = xStsEventVariable.createReferenceExpression
+								it.rhs = createFalseExpression
+							]
 						]
-					]
+					}
+					lowlevelEnvironmentalAction.actions += xStsInEventAssignment
+					// Parameter variables
 					for (lowlevelParameterDeclaration : it.event.parameters) {
-						val xStsAllPossibleParameterValues = newHashSet
-						// Initial value
-						val lowlevelType = lowlevelParameterDeclaration.type
-						xStsAllPossibleParameterValues += lowlevelType.initialValueOfType.transformExpression
-						for (lowlevelValue : EventParameterComparisons.Matcher.on(engine)
-								.getAllValuesOfvalue(lowlevelParameterDeclaration)) {
-							xStsAllPossibleParameterValues += lowlevelValue.transformExpression
-						}
-						val xStsPossibleParameterValues = xStsAllPossibleParameterValues.removeDuplicatedExpressions
-						if (lowlevelType instanceof TypeReference) {
-							// Mapping back to enum literals if necessary
-							val lowlevelTypeDeclaration = lowlevelType.reference
-							val xStsTypeDeclaration = trace.getXStsTypeDeclaration(lowlevelTypeDeclaration)
-							val xStsTypeDefinition = xStsTypeDeclaration.type
-							if (xStsTypeDefinition instanceof EnumerationTypeDefinition) {
-								val enumLiterals = xStsTypeDefinition.mapToEnumerationLiterals(xStsPossibleParameterValues)
-								xStsPossibleParameterValues.clear
-								xStsPossibleParameterValues += enumLiterals
-							}
-						}
 						val xStsParameterVariable = trace.getXStsVariable(lowlevelParameterDeclaration)
 						if (lowlevelEvent.persistency == Persistency.TRANSIENT) {
 							// Synchronous composite components do not reset transient parameters!
 							lowlevelEnvironmentalAction.actions += createAssignmentAction => [
-								it.lhs = createDirectReferenceExpression => [
-									it.declaration = xStsParameterVariable
-								]
+								it.lhs = xStsParameterVariable.createReferenceExpression
 								it.rhs = xStsParameterVariable.initialValue
 							]
 						}
-						lowlevelEnvironmentalAction.actions += createIfAction(
-							// Only if the event is raised
-							createEqualityExpression => [
-								it.leftOperand = createDirectReferenceExpression => [
-									it.declaration = xStsEventVariable
-								]
-								it.rightOperand = createTrueExpression
-							],
+						val xStsInParameterAssignment = 
+						if (useHavocActions) {
+							createHavocAction => [
+								it.lhs = xStsParameterVariable.createReferenceExpression
+							]
+						}
+						else {
+							val xStsAllPossibleParameterValues = newHashSet
+							// Initial value
+							val lowlevelType = lowlevelParameterDeclaration.type
+							xStsAllPossibleParameterValues += lowlevelType.initialValueOfType.transformExpression
+							for (lowlevelValue : EventParameterComparisons.Matcher.on(engine)
+									.getAllValuesOfvalue(lowlevelParameterDeclaration)) {
+								xStsAllPossibleParameterValues += lowlevelValue.transformExpression
+							}
+							val xStsPossibleParameterValues = xStsAllPossibleParameterValues.removeDuplicatedExpressions
+							if (lowlevelType instanceof TypeReference) {
+								// Mapping back to enum literals if necessary
+								val lowlevelTypeDeclaration = lowlevelType.reference
+								val xStsTypeDeclaration = trace.getXStsTypeDeclaration(lowlevelTypeDeclaration)
+								val xStsTypeDefinition = xStsTypeDeclaration.type
+								if (xStsTypeDefinition instanceof EnumerationTypeDefinition) {
+									val enumLiterals = xStsTypeDefinition.mapToEnumerationLiterals(xStsPossibleParameterValues)
+									xStsPossibleParameterValues.clear
+									xStsPossibleParameterValues += enumLiterals
+								}
+							}
 							createNonDeterministicAction => [
 								for (xStsPossibleParameterValue : xStsPossibleParameterValues) {
 									it.actions += createAssignmentAction => [
-										it.lhs = createDirectReferenceExpression => [
-											it.declaration = xStsParameterVariable
-										]
+										it.lhs = xStsParameterVariable.createReferenceExpression
 										it.rhs = xStsPossibleParameterValue
 									]
 								}
 							]
+						}
+						// Setting the parameter value
+						lowlevelEnvironmentalAction.actions += createIfAction(
+							// Only if the event is raised
+							xStsEventVariable.createReferenceExpression,
+							xStsInParameterAssignment
 						)
 					}
 				}
@@ -707,9 +721,7 @@ class LowlevelToXstsTransformer {
 					val lowlevelEnvironmentalAction = outEventAction as SequentialAction
 					val xStsEventVariable = trace.getXStsVariable(lowlevelEvent)
 					lowlevelEnvironmentalAction.actions += createAssignmentAction => [
-						it.lhs = createDirectReferenceExpression => [
-							it.declaration = xStsEventVariable
-						]
+						it.lhs = xStsEventVariable.createReferenceExpression
 						it.rhs = createFalseExpression
 					]
 					if (event.persistency == Persistency.TRANSIENT) {
@@ -717,9 +729,7 @@ class LowlevelToXstsTransformer {
 						for (lowlevelParameterDeclaration : it.event.parameters) {
 							val xStsParameterVariable = trace.getXStsVariable(lowlevelParameterDeclaration)
 							lowlevelEnvironmentalAction.actions += createAssignmentAction => [
-								it.lhs = createDirectReferenceExpression => [
-									it.declaration = xStsParameterVariable
-								]
+								it.lhs = xStsParameterVariable.createReferenceExpression
 								it.rhs = xStsParameterVariable.initialValue
 							]
 						}
@@ -748,8 +758,8 @@ class LowlevelToXstsTransformer {
 		if (lowlevelRegions.size > 1) {
 			val xStsSequentialAction = createSequentialAction
 			xStsAction.actions += xStsSequentialAction
-			val xStsAssumeAction = createAssumeAction
 			val orExpression = createOrExpression // This parallel action can fire only if one of its regions can fire
+			val xStsAssumeAction = createAssumeAction // Cannot be deleted, see: if (a || b) { if (a) if (!a) if (b) if (!b) } if (!(a || b))
 			xStsAssumeAction.assumption = orExpression
 			xStsSequentialAction.actions += xStsAssumeAction
 			val xStsParallelAction = createParallelAction
@@ -909,9 +919,7 @@ class LowlevelToXstsTransformer {
 						it.expression = assumption.clone
 					]
 					localVariableDeclarationAction.variableDeclaration = localVariableDeclaration
-					val reference = createDirectReferenceExpression => [
-						it.declaration = localVariableDeclaration
-					]
+					val reference = localVariableDeclaration.createReferenceExpression
 					reference.replace(assumption)
 				}
 				localVariableDeclarationActions.prependToAction(consideredXstsAction)

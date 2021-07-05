@@ -31,6 +31,7 @@ import hu.bme.mit.gamma.expression.model.OrExpression;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.expression.util.ExpressionUtil;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
+import hu.bme.mit.gamma.xsts.model.AbstractAssignmentAction;
 import hu.bme.mit.gamma.xsts.model.Action;
 import hu.bme.mit.gamma.xsts.model.AssignmentAction;
 import hu.bme.mit.gamma.xsts.model.AssumeAction;
@@ -143,14 +144,14 @@ public class XstsActionUtil extends ExpressionUtil {
 		return variables;
 	}
 	
-	public List<AssignmentAction> getAssignments(VariableDeclaration variable,
-			Collection<AssignmentAction> assignments) {
+	public List<AbstractAssignmentAction> getAssignments(VariableDeclaration variable,
+			Collection<AbstractAssignmentAction> assignments) {
 		return assignments.stream().filter(it -> getDeclaration(it.getLhs()) == variable)
 				.collect(Collectors.toList());
 	}
 	
-	public List<AssignmentAction> getAssignments(Collection<VariableDeclaration> variables,
-			Collection<AssignmentAction> assignments) {
+	public List<AbstractAssignmentAction> getAssignments(Collection<VariableDeclaration> variables,
+			Collection<AbstractAssignmentAction> assignments) {
 		return assignments.stream().filter(it -> variables.contains(getDeclaration(it.getLhs())))
 				.collect(Collectors.toList());
 	}

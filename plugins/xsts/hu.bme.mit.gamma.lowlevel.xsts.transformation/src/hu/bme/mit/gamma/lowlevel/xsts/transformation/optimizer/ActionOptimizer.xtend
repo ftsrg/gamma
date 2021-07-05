@@ -13,6 +13,7 @@ package hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.util.GammaEcoreUtil
+import hu.bme.mit.gamma.xsts.model.AbstractAssignmentAction
 import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.AssumeAction
@@ -503,15 +504,15 @@ class ActionOptimizer {
 	
 	protected def dispatch void optimizeAssignmentActions(SequentialAction action) {
 		val xStsActions = action.actions
-		val removeableXStsActions = <AssignmentAction>newLinkedList
+		val removeableXStsActions = <AbstractAssignmentAction>newLinkedList
 		for (var i = 0; i < xStsActions.size; i++) {
 			val xStsFirstAction = xStsActions.get(i)
-			if (xStsFirstAction instanceof AssignmentAction) {
+			if (xStsFirstAction instanceof AbstractAssignmentAction) {
 				val lhs = xStsFirstAction.lhs
 				var foundAssignmentToTheSameVariable = false
 				for (var j = i + 1; j < xStsActions.size && !foundAssignmentToTheSameVariable; j++) {
 					val xStsSecondAction = xStsActions.get(j)
-					if (xStsSecondAction instanceof AssignmentAction) {
+					if (xStsSecondAction instanceof AbstractAssignmentAction) {
 						if (xStsSecondAction.lhs.helperEquals(lhs)) {
 							foundAssignmentToTheSameVariable = true
 							var isVariableRead = false

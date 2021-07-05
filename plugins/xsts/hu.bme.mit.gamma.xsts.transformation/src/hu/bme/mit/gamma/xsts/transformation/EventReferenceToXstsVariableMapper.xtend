@@ -156,7 +156,7 @@ class EventReferenceToXstsVariableMapper {
 		checkState(port.outputEvents.map[it.parameterDeclarations].flatten.contains(parameter))
 		val xStsVariables = newArrayList
 		for (simplePort : port.allConnectedSimplePorts) {
-			// One system port can be connected to multiple in-ports (if it is broadcast)
+			// One system port may be connected to multiple in-ports (if it is broadcast)
 			val statechart = simplePort.containingComponent
 			val instance = statechart.referencingComponentInstance
 			val xStsVariableNames = parameter.customizeOutNames(simplePort, instance)

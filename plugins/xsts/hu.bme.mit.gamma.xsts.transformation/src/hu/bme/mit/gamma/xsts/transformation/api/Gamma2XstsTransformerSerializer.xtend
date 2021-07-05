@@ -36,6 +36,7 @@ class Gamma2XstsTransformerSerializer {
 	protected final Integer schedulingConstraint
 	// Slicing
 	protected final boolean optimize
+	protected final boolean useHavocActions
 	protected final PropertyPackage propertyPackage
 	// Annotation
 	protected final AnnotatablePreprocessableElements annotatableElements
@@ -59,7 +60,7 @@ class Gamma2XstsTransformerSerializer {
 			String targetFolderUri, String fileName,
 			Integer schedulingConstraint) {
 		this(component, arguments, targetFolderUri, fileName, schedulingConstraint,
-			true, null,
+			true, false, null,
 			new AnnotatablePreprocessableElements(null, null, null, null, null,
 				InteractionCoverageCriterion.EVERY_INTERACTION, InteractionCoverageCriterion.EVERY_INTERACTION,
 				null, DataflowCoverageCriterion.ALL_USE,
@@ -70,8 +71,8 @@ class Gamma2XstsTransformerSerializer {
 	new(Component component, List<Expression> arguments,
 			String targetFolderUri, String fileName,
 			Integer schedulingConstraint,
-			boolean optimize, PropertyPackage propertyPackage,
-			AnnotatablePreprocessableElements annotatableElements) {
+			boolean optimize, boolean useHavocActions,
+			PropertyPackage propertyPackage, AnnotatablePreprocessableElements annotatableElements) {
 		this.component = component
 		this.arguments = arguments
 		this.targetFolderUri = targetFolderUri
@@ -79,6 +80,7 @@ class Gamma2XstsTransformerSerializer {
 		this.schedulingConstraint = schedulingConstraint
 		//
 		this.optimize = optimize
+		this.useHavocActions = useHavocActions
 		this.propertyPackage = propertyPackage
 		//
 		this.annotatableElements = annotatableElements
@@ -96,7 +98,7 @@ class Gamma2XstsTransformerSerializer {
 				annotatableElements,
 				targetFolderUri, fileName)
 		slicerAnnotatorAndPropertyGenerator.execute
-		val gammaToXSTSTransformer = new GammaToXstsTransformer(schedulingConstraint, true, true)
+		val gammaToXSTSTransformer = new GammaToXstsTransformer(schedulingConstraint, true, true, useHavocActions)
 		// Normal transformation
 		val xSts = gammaToXSTSTransformer.execute(newGammaPackage)
 		// EMF

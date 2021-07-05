@@ -73,7 +73,8 @@ class Gamma2XstsUppaalTransformerSerializer {
 		val xStsTransformer = new Gamma2XstsTransformerSerializer(component,
 			arguments, targetFolderUri,
 			fileName, schedulingConstraint,
-			optimize, propertyPackage,
+			optimize, false /* UPPAAL cannot handle havoc actions */,
+			propertyPackage,
 			annotatableElements)
 		xStsTransformer.execute
 		val xSts = targetFolderUri.normalLoad(fileName.emfXStsFileName) as XSTS

@@ -35,6 +35,7 @@ class EventConnector {
 	protected final extension XSTSModelFactory xStsModelFactory = XSTSModelFactory.eINSTANCE
 	
 	def void connectEventsThroughChannels(XSTS xSts, CompositeComponent component) {
+		// AssignmentAction not AbstractAssignmentAction as we do not use havoc in the system behavior
 		val xStsAssignmentActions = xSts.getAllContentsOfType(AssignmentAction) // Caching
 		val xStsDeletableVariables = newHashSet
 		val optimizableSimplePorts = newHashSet

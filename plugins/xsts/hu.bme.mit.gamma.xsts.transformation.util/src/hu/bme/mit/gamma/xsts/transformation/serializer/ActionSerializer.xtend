@@ -13,6 +13,7 @@ package hu.bme.mit.gamma.xsts.transformation.serializer
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.AssumeAction
 import hu.bme.mit.gamma.xsts.model.EmptyAction
+import hu.bme.mit.gamma.xsts.model.HavocAction
 import hu.bme.mit.gamma.xsts.model.LoopAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.OrthogonalAction
@@ -21,6 +22,7 @@ import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
 import hu.bme.mit.gamma.xsts.model.XSTS
 
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
 
 class ActionSerializer {
@@ -51,6 +53,10 @@ class ActionSerializer {
 	
 	def dispatch String serialize(AssignmentAction action) '''
 		«action.lhs.serialize» := «action.rhs.serialize»;
+	'''
+	
+	def dispatch String serialize(HavocAction action) '''
+		havoc «action.lhs.serialize»;
 	'''
 	
 	def dispatch String serialize(VariableDeclarationAction action) '''

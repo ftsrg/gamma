@@ -14,7 +14,7 @@ import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.statechart.composite.CompositeComponent
 import hu.bme.mit.gamma.util.GammaEcoreUtil
-import hu.bme.mit.gamma.xsts.model.AssignmentAction
+import hu.bme.mit.gamma.xsts.model.AbstractAssignmentAction
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 
@@ -31,7 +31,8 @@ class SystemReducer {
 	protected final extension ExpressionModelFactory factory = ExpressionModelFactory.eINSTANCE
 	
 	def void deleteUnusedPorts(XSTS xSts, CompositeComponent component) {
-		val xStsAssignmentActions = xSts.getAllContentsOfType(AssignmentAction) // Caching
+		// In theory, only AssignmentAction would be enough, still we use AbstractAssignmentAction to be sure
+		val xStsAssignmentActions = xSts.getAllContentsOfType(AbstractAssignmentAction) // Caching
 		val xStsFalseVariables = newHashSet
 		val xStsDeletableVariables = newHashSet
 		val xStsDeletableAssignmentActions = newHashSet

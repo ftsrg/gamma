@@ -54,7 +54,6 @@
     </genClasses>
     <genClasses ecoreClass="model.ecore#//EmptyAction"/>
     <genClasses ecoreClass="model.ecore#//AssignmentAction">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//AssignmentAction/lhs"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//AssignmentAction/rhs"/>
     </genClasses>
     <genClasses ecoreClass="model.ecore#//MultiaryAction">
@@ -81,6 +80,10 @@
     <genClasses ecoreClass="model.ecore#//CompositeAction"/>
     <genClasses ecoreClass="model.ecore#//AssertAction">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//AssertAction/assertion"/>
+    </genClasses>
+    <genClasses ecoreClass="model.ecore#//HavocAction"/>
+    <genClasses ecoreClass="model.ecore#//AbstractAssignmentAction">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//AbstractAssignmentAction/lhs"/>
     </genClasses>
   </genPackages>
 </genmodel:GenModel>
