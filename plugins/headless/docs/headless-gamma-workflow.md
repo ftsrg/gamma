@@ -35,10 +35,6 @@ After exporting, the webserver has to be started. The server can be found in `hu
 
 Alternatively, the server can be started from terminal using Maven commands. Navigate to the folder containing the `pom.xml` file and enter the `mvn package` command. After the process finishes, enter `mvn exec:java`, and the server should start.
 
-Before running the server, make sure to configure the paths found in `config.properties`.
-- Set `headless.gamma.path` variable to the location of the exported `eclipse.exe` (or equivalent binary on Linux systems), and
-- set the `root.of.workspaces.path` variable to the desired location of workspaces.
-
 Upon receiving a request, the server forwards it to the exported Gamma, which then performs the command. The processes are logged to the console of the server. Requests can be sent to `localhost:8080`.
 		
  ## Example: Workflow with Docker
