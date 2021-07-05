@@ -53,6 +53,13 @@ public class FileHandlerUtil {
 	}
 
 	public static String getProperty(String propertyName) {
+		String path = null;
+		try {
+			path = new File(".").getCanonicalPath();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		try (InputStream input = FileHandlerUtil.class.getClassLoader().getResourceAsStream("config.properties")) {
 
 			Properties prop = new Properties();
@@ -62,7 +69,7 @@ public class FileHandlerUtil {
 				return "";
 			}
 			prop.load(input);
-			return prop.getProperty(propertyName);
+			return path + prop.getProperty(propertyName);
 		} catch (IOException ex) {
 			ex.printStackTrace();
 		}
