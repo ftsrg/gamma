@@ -28,6 +28,7 @@ import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory;
 import hu.bme.mit.gamma.expression.model.NotExpression;
 import hu.bme.mit.gamma.expression.model.OrExpression;
+import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.expression.util.ExpressionUtil;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
@@ -156,6 +157,41 @@ public class XstsActionUtil extends ExpressionUtil {
 				.collect(Collectors.toList());
 	}
 	
+	public VariableDeclarationAction extractExpressions(String name, List<? extends Expression> expressions) {
+		Expression firstExpression = expressions.get(0);
+		Type type = typeDeterminator.getTypeDefinition(firstExpression); // Assume: they have the same type
+		VariableDeclarationAction variableDeclarationAction = extractExpression(type, name, firstExpression);
+		VariableDeclaration variableDeclaration = variableDeclarationAction.getVariableDeclaration();
+		for (int i = 1; i < expressions.size(); i++) {
+			Expression expression = expressions.get(i);
+			DirectReferenceExpression referenceExpression = createReferenceExpression(variableDeclaration);
+			ecoreUtil.replace(referenceExpression, expression);
+		}
+		return variableDeclarationAction;
+	}
+	
+	public VariableDeclarationAction extractExpression(Type type, String name, Expression expression) {
+		VariableDeclarationAction variableDeclarationAction = createVariableDeclarationAction(type, name);
+		VariableDeclaration variableDeclaration = variableDeclarationAction.getVariableDeclaration();
+		DirectReferenceExpression referenceExpression = createReferenceExpression(variableDeclaration);
+		
+		ecoreUtil.replace(referenceExpression, expression);
+		variableDeclaration.setExpression(expression);
+		
+		return variableDeclarationAction;
+	}
+	
+	public VariableDeclarationAction createVariableDeclarationAction(Type type, String name) {
+		return createVariableDeclarationAction(type, name, null);
+	}
+	
+	public VariableDeclarationAction createVariableDeclarationAction(Type type, String name, Expression expression) {
+		VariableDeclaration variableDeclaration = createVariableDeclaration(type, name, expression);
+		VariableDeclarationAction action = xStsFactory.createVariableDeclarationAction();
+		action.setVariableDeclaration(variableDeclaration);
+		return action;
+	}
+	
 	public AssignmentAction createAssignmentAction(VariableDeclaration variable, VariableDeclaration rhs) {
 		DirectReferenceExpression rhsReference = expressionFactory.createDirectReferenceExpression();
 		rhsReference.setDeclaration(rhs);
@@ -251,6 +287,26 @@ public class XstsActionUtil extends ExpressionUtil {
 		// Else branch
 		extendChoiceWithDefaultBranch(switchAction, xStsFactory.createEmptyAction());
 		return switchAction;
+	}
+	
+	public List<Action> createChoiceActionWithExtractedPreconditionsAndEmptyDefaultBranch(Action action, String name) {
+		List<Action> actions = new ArrayList<Action>();
+		if (action instanceof SequentialAction) {
+			SequentialAction sequentialAction = (SequentialAction) action;
+			AssumeAction assumeAction = (AssumeAction) sequentialAction.getActions().get(0);
+			Expression expression = assumeAction.getAssumption();
+			VariableDeclarationAction variableDeclarationAction = extractExpression(
+					expressionFactory.createBooleanTypeDefinition(), name, expression);
+			actions.add(variableDeclarationAction);
+			NonDeterministicAction switchAction = createChoiceActionFromActions(List.of(action));
+			// Else branch
+			extendChoiceWithDefaultBranch(switchAction, xStsFactory.createEmptyAction());
+			actions.add(switchAction);
+		}
+		else {
+			throw new IllegalArgumentException("Not known action: " + action);
+		}
+		return actions;
 	}
 	
 	public NonDeterministicAction createIfElseAction(List<Expression> conditions, List<Action> actions) {

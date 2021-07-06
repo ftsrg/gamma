@@ -89,6 +89,7 @@ public class ExpressionUtil {
 	
 	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
 	protected final ExpressionEvaluator evaluator = ExpressionEvaluator.INSTANCE;
+	protected final ExpressionTypeDeterminator2 typeDeterminator = ExpressionTypeDeterminator2.INSTANCE;
 	protected final ExpressionModelFactory factory = ExpressionModelFactory.eINSTANCE;
 	
 	// The following methods are worth extending in subclasses
@@ -860,6 +861,18 @@ public class ExpressionUtil {
 		return integerLiteral;
 	}
 	
+	public VariableDeclaration createVariableDeclaration(Type type, String name) {
+		return createVariableDeclaration(type, name, null);
+	}
+	
+	public VariableDeclaration createVariableDeclaration(Type type, String name, Expression expression) {
+		VariableDeclaration variableDeclaration = factory.createVariableDeclaration();
+		variableDeclaration.setType(type);
+		variableDeclaration.setName(name);
+		variableDeclaration.setExpression(expression);
+		return variableDeclaration;
+	}
+	
 	public DirectReferenceExpression createReferenceExpression(ValueDeclaration variable) {
 		DirectReferenceExpression reference = factory.createDirectReferenceExpression();
 		reference.setDeclaration(variable);
@@ -940,6 +953,14 @@ public class ExpressionUtil {
 		access.setOperand(index(declaration, indexes.subList(0, index)));
 		access.setIndex(lastIndex);
 		return access;
+	}
+	
+	public MultiaryExpression cloneIntoMultiaryExpression(Expression expression,
+			MultiaryExpression container) {
+		ecoreUtil.replace(container, expression);
+		container.getOperands().add(expression);
+		container.getOperands().add(ecoreUtil.clone(expression));
+		return container;
 	}
 	
 	// Unwrapper

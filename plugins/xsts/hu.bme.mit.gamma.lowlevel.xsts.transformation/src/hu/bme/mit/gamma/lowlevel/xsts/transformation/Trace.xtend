@@ -46,6 +46,8 @@ import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.ParallelAction
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.model.XTransition
+import java.util.List
+import java.util.Map
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 import org.eclipse.viatra.query.runtime.emf.EMFScope
 
@@ -61,6 +63,10 @@ package class Trace {
 	protected final extension TraceabilityFactory traceabilityFactory = TraceabilityFactory.eINSTANCE
 	// Auxiliary
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
+	// Maps for caching transitions
+	protected final List<Expression> primaryIsActiveExpressions = newArrayList
+	protected final Map<Transition, List<Expression>> isActiveExpressions = newHashMap
+	protected final Map<Transition, List<Expression>> guards = newHashMap
 	
 	new(Package _package, XSTS xSts) {
 		this.trace = createL2STrace => [
@@ -68,6 +74,20 @@ package class Trace {
 			it.XSts = xSts
 		]
 		this.tracingEngine = ViatraQueryEngine.on(new EMFScope(trace))
+	}
+	
+	// Transition caching
+	
+	def getPrimaryIsActiveExpressions() {
+		return primaryIsActiveExpressions
+	}
+	
+	def getIsActiveExpressions() {
+		return isActiveExpressions
+	}
+	
+	def getGuards() {
+		return guards
 	}
 	
 	// Statechart - xSTS	
