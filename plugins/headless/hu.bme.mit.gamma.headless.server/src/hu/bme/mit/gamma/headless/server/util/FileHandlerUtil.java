@@ -27,7 +27,7 @@ public class FileHandlerUtil {
 	private static final String ROOT_WRAPPER_JSON = "wrapperList.json";
 	public static final String PROJECT_DESCRIPTOR_JSON = "projectDescriptor.json";
 	protected static Logger logger = Logger.getLogger("GammaLogger");
-	
+
 	// Gets the wrapperList.json file
 	public static List<WorkspaceProjectWrapper> getWrapperListFromJson() throws IOException {
 		File jsonFile = new File(getProperty(DIRECTORY_OF_WORKSPACES_PROPERTY_NAME) + ROOT_WRAPPER_JSON);
@@ -54,14 +54,9 @@ public class FileHandlerUtil {
 
 	public static String getProperty(String propertyName) {
 		String path = null;
-		try {
-			path = new File(".").getCanonicalPath();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		try (InputStream input = FileHandlerUtil.class.getClassLoader().getResourceAsStream("config.properties")) {
 
+		try (InputStream input = FileHandlerUtil.class.getClassLoader().getResourceAsStream("config.properties")) {
+			path = new File(".").getCanonicalPath();
 			Properties prop = new Properties();
 
 			if (input == null) {
