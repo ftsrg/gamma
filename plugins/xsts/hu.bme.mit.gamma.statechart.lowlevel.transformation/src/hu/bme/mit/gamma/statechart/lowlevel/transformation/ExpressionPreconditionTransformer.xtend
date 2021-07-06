@@ -107,7 +107,10 @@ class ExpressionPreconditionTransformer {
 				trace.put(expression, lowlevelReturnDeclarations)
 				
 				actions += lowlevelStatement
-				// TODO Add assert false statement
+				// Adding assert false statement
+				actions += createAssertionStatement => [
+					it.assertion = createFalseExpression
+				]
 			}
 			else {
 				currentRecursionDepth--
