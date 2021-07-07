@@ -33,19 +33,8 @@ This section details the API used to communicatie with the webserver.
  - **GET**
 	- **list** `/gamma/workspace/{workspace}/project/{project}` - Lists all files found in the project in the given workspace.
 	- **status** `/gamma/workspace/{workspace}/project/{project}/status` -  Gets the status of the project in the given workspace. It returns with a simple text, indicating the status of the project: `Done`, `Ready` or `Failure`.
-	- **getLogs** `/gamma/workspace/{workspace}/logs` - Retrieves the logs of a workspace. This can be saved as a text file. Example of logs: `!SESSION 2021-06-29 14:55:23.794 -----------------------------------------------
-eclipse.buildId=unknown
-java.version=11.0.11
-java.vendor=Oracle Corporation
-BootLoader constants: OS=win32, ARCH=x86_64, WS=win32, NL=hu_HU
-Framework arguments:  workspace info
-Command-line arguments:  -os win32 -ws win32 -arch x86_64 -consoleLog -data D:/2-Programming/Work/BME2021/MUNKA/theta_workspaces/f4048f0b-3e81-41fb-b8f8-fa79e7b3606b workspace info
-!ENTRY org.eclipse.m2e.core 4 0 2021-06-29 14:55:24.734`
-	- **getHeadlessLogs** `/gamma/log/file` - Retrieves the logs of the Headless Gamma, if logging to file was enabled. This can be saved as a text file. Note that this request works only if logging to file is disabled when requesting, to avoid consistency issues. Example of logs: `júl. 02, 2021 11:28:10 DE. hu.bme.mit.gamma.headless.server.OpenApiWebServer listWorkspacesAndProjects
-INFO: 
-Currently ongoing operations: 
-júl. 02, 2021 11:28:10 DE. hu.bme.mit.gamma.headless.server.OpenApiWebServer listWorkspacesAndProjects
-INFO: 	none`
+	- **getLogs** `/gamma/workspace/{workspace}/logs` - Retrieves the logs of a workspace. This can be saved as a text file. These logs contain error messages regarding crashes of the headless Eclipse (usually the last error message is the direct cause of the crash).
+	- **getHeadlessLogs** `/gamma/log/file` - Retrieves the logs of the Headless Gamma, if logging to file was enabled. This can be saved as a text file. Note that this request works only if logging to file is disabled when requesting, to avoid consistency issues. These logs are can be seen on the terminal as well, and display the operation status of the server and the current steps of ongoing operations.
  - **DELETE**
 	- **deleteProject** `/gamma/workspace/{workspace}/project/{project}` Deletes the project from the project in the given workspace.
 	- **deleteWorkspace** `/gamma/workspace/{workspace}` - Deletes the given workspace if it exists and is empty.
