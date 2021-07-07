@@ -9,5 +9,5 @@
 * [Balázs Várady](https://github.com/Varadbal) [1]: action language
 * [Csanád Csuvarszki](https://github.com/csuvi98) [1]: PlantUML statechart visualization, headless Eclipse, webserver API
 
-1. [Fault Tolerant Systems Research Group](https://inf.mit.bme.hu/en) [Department of Measurement and Information Systems](http://www.mit.bme.hu/eng/) [Budapest University of Technology and Economics](http://www.bme.hu/?language=en)
+1. [Critical Systems Research Group (ftsrg)](https://inf.mit.bme.hu/en) [Department of Measurement and Information Systems](http://www.mit.bme.hu/eng/) [Budapest University of Technology and Economics](http://www.bme.hu/?language=en)
 2. [MTA-BME Lendület Cyber-Physical Systems Research Group](http://lendulet.inf.mit.bme.hu/) [Office for Research Groups Attached to Universities and Other Institutions of the Hungarian Academy of Sciences](http://mta.hu/english)
