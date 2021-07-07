@@ -1019,6 +1019,9 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 			case VALUE_BASED : {
 				return transition.getPriority();
 			}
+			case OFF : { // Default value is 0
+				return transition.getPriority();
+			}
 			default: {
 				throw new IllegalArgumentException("Not supported literal: " + transitionPriority);
 			}

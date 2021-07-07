@@ -14,6 +14,7 @@ import hu.bme.mit.gamma.action.model.ActionModelFactory
 import hu.bme.mit.gamma.action.util.ActionUtil
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
+import hu.bme.mit.gamma.expression.model.TrueExpression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.EventDirection
@@ -353,74 +354,14 @@ class StatechartToLowlevelTransformer {
 		}
 		var guard = transition.guard
 		if (guard !== null) {
-			// Transforming else expressions
-			if (guard.elseOrDefault) {
-				// We remove the else guard: priority is already set during the creation of the transition
-				guard.remove 
-//				trace.designateElseGuardedTransition(transition)
-//				var Expression transformedGuard
-//				val source = transition.sourceState
-//				val gammaOutgoingTransitions = source.outgoingTransitions.reject[it === transition]
-//				if (gammaOutgoingTransitions.empty) {
-//					transformedGuard = createTrueExpression
-//				}
-//				else {
-//					// Check if there are empty transitions...
-//					val gammaEmptyOutgoingTransitions = gammaOutgoingTransitions
-//							.filter[!it.hasTrigger && !it.hasGuard]
-//					checkState(gammaEmptyOutgoingTransitions.empty)
-//					transformedGuard = createAndExpression => [
-//						for (gammaOutgoingTransition : gammaOutgoingTransitions) {
-//							it.operands += createNotExpression => [
-//								val otherTrigger = gammaOutgoingTransition.trigger
-//								val otherGuard = gammaOutgoingTransition.guard
-//								it.operand = createAndExpression => [
-//									// By default, the transformTrigger returns false expression for null
-//									if (otherTrigger !== null) {
-//										it.operands += otherTrigger.transformTrigger
-//									}
-//									if (otherGuard !== null) {
-//										it.operands += otherGuard.transformExpression
-//									}
-//								]
-//							]
-//						}
-//					]
-//				}
-//				lowlevelGuardList += transformedGuard
-			}
-			else {
+			if (!guard.elseOrDefault) {
 				lowlevelGuardList += guard.transformExpression
 			}
+			// We do not transform the else guard: priority is already set during the creation of the transition
 		}
 		// The expressions are in an AND relation
+		lowlevelGuardList.removeIf[it instanceof TrueExpression]
 		return lowlevelGuardList.wrapIntoMultiaryExpression(createAndExpression)
 	}
-	
-//	protected def prioritizeTransitions(StatechartDefinition statechart) {
-//		for (node : statechart.allStateNodes
-//					.filter[it instanceof State || it instanceof ChoiceState]) {
-//			val gammaOutgoingTransitions = node.outgoingTransitions
-//					// Else expressions should not be cloned again
-//					.reject[trace.elseGuardedTransition.contains(it)]
-//			// Sorting, so the resulting guard expressions do not get too big
-//			val sortedGammaOutgoingTransitions = gammaOutgoingTransitions.sortBy[it.calculatePriority]
-//			for (gammaTransition : sortedGammaOutgoingTransitions) {
-//				val lowlevelTransition = trace.get(gammaTransition)
-//				val newGuardExpression = createAndExpression
-//				for (prioritizedTransition : gammaTransition.prioritizedTransitions) {
-//					newGuardExpression.operands += createNotExpression => [
-//						it.operand = prioritizedTransition.transformTriggerAndGuard // New expression
-//					]
-//				}
-//				// New guard
-//				if (!newGuardExpression.operands.empty) {
-//					lowlevelTransition.guard = newGuardExpression => [
-//						it.operands += lowlevelTransition.guard // No clone here
-//					]
-//				}
-//			}
-//		}
-//	}
 	
 }

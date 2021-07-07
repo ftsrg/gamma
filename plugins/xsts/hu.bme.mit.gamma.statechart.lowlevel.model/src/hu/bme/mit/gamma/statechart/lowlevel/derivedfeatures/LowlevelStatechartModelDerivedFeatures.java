@@ -150,8 +150,10 @@ public class LowlevelStatechartModelDerivedFeatures extends ActionModelDerivedFe
 		int priority = lowlevelTransition.getPriority();
 		StateNode source = lowlevelTransition.getSource();
 		List<Transition> outgoingTransitions = source.getOutgoingTransitions();
-		return outgoingTransitions.stream().filter(it -> it.getPriority() > priority)
+		List<Transition> higherPriorityTransitions =  outgoingTransitions.stream()
+			.filter(it -> it.getPriority() > priority)
 			.collect(Collectors.toList());
+		return higherPriorityTransitions;
 	}
 	
 }

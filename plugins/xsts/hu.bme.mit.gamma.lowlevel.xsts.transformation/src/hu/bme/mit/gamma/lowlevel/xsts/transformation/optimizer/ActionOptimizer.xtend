@@ -10,7 +10,12 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer
 
+import hu.bme.mit.gamma.expression.model.AndExpression
+import hu.bme.mit.gamma.expression.model.BooleanExpression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
+import hu.bme.mit.gamma.expression.model.FalseExpression
+import hu.bme.mit.gamma.expression.model.OrExpression
+import hu.bme.mit.gamma.expression.model.TrueExpression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.AbstractAssignmentAction
@@ -84,6 +89,7 @@ class ActionOptimizer {
 			newXStsAction = newXStsAction.optimizeParallelActions // Might be resource intensive
 			newXStsAction.deleteUnnecessaryAssumeActions // Not correct in other transformation implementations
 			newXStsAction.deleteDefinitelyFalseBranches
+			newXStsAction.optimizeExpressions // Could be extracted to the expression metamodel?
 		}
 		return newXStsAction
 	}
@@ -652,6 +658,28 @@ class ActionOptimizer {
 				}
 				else {
 					branch.deleteDefinitelyFalseBranches
+				}
+			}
+		}
+	}
+	
+	//
+	
+	protected def void optimizeExpressions(Action action) {
+		val booleanExpressions = action.getAllContentsOfType(BooleanExpression)
+		for (booleanExpression : booleanExpressions) {
+			if (booleanExpression.definitelyFalseExpression) {
+				expressionFactory.createFalseExpression.replace(booleanExpression)
+			}
+			else if (booleanExpression.definitelyTrueExpression) {
+				expressionFactory.createTrueExpression.replace(booleanExpression)
+			}
+			else {
+				if (booleanExpression instanceof OrExpression) {
+					booleanExpression.operands.removeIf[it instanceof FalseExpression]
+				}
+				else if (booleanExpression instanceof AndExpression) {
+					booleanExpression.operands.removeIf[it instanceof TrueExpression]
 				}
 			}
 		}

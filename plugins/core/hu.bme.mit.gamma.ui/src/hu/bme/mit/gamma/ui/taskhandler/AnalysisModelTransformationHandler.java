@@ -15,7 +15,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -92,8 +92,8 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 		//
 		ModelReference modelReference = transformation.getModel();
 		setAnalysisModelTransformation(transformation);
-		Set<AnalysisLanguage> languagesSet = new HashSet<AnalysisLanguage>(
-				transformation.getLanguages());
+		Set<AnalysisLanguage> languagesSet = new LinkedHashSet<AnalysisLanguage>(
+				transformation.getLanguages()); // To retain order
 		for (AnalysisLanguage analysisLanguage : languagesSet) {
 			AnalysisModelTransformer transformer;
 			switch (analysisLanguage) {
