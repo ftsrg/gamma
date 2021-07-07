@@ -11,7 +11,6 @@
 package hu.bme.mit.gamma.lowlevel.xsts.transformation
 
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
-import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
@@ -54,7 +53,6 @@ import hu.bme.mit.gamma.statechart.lowlevel.model.Persistency
 import hu.bme.mit.gamma.statechart.lowlevel.model.Region
 import hu.bme.mit.gamma.statechart.lowlevel.model.State
 import hu.bme.mit.gamma.statechart.lowlevel.model.StatechartDefinition
-import hu.bme.mit.gamma.statechart.lowlevel.model.Transition
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.AssumeAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
@@ -67,7 +65,6 @@ import hu.bme.mit.gamma.xsts.transformation.util.OrthogonalActionTransformer
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import java.util.AbstractMap.SimpleEntry
 import java.util.List
-import java.util.Map
 import java.util.Set
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 import org.eclipse.viatra.query.runtime.emf.EMFScope
@@ -754,15 +751,16 @@ class LowlevelToXstsTransformer {
 		
 		val primaryIsActiveExpressions = trace.getPrimaryIsActiveExpressions
 		for (primaryIsActiveExpression : primaryIsActiveExpressions) {
-			// Cloning: transitions can fire if the source state configuration is not left!
+			// Cloning: transitions can fire only if the source state configuration is not left!
 			primaryIsActiveExpression.cloneIntoMultiaryExpression(createAndExpression)
+			// The following lines extract the isActive expressions, so one must stay here
 		}
 		val isActiveExpressions = trace.getIsActiveExpressions
-		extractedExpressions += isActiveExpressions.extractExpressions
+		extractedExpressions += trace.extractExpressions(isActiveExpressions)
 		// If we want to follow UML semantics, this is needed too (choice guards are not stored here)
 		if (statechart.guardEvaluation == GuardEvaluation.BEGINNING_OF_STEP) {
 			val xStsGuards = trace.getGuards
-			extractedExpressions += xStsGuards.extractExpressions
+			extractedExpressions += trace.extractExpressions(xStsGuards)
 		}
 		
 		// Handle here if we want BEGINNING_OF_STEP semantics in the case of choice guards too
@@ -770,8 +768,8 @@ class LowlevelToXstsTransformer {
 		val xTransitionActions = newArrayList
 		for (xTransition : xTransitions) {
 			val xStsAction = xTransition.action
-			val name = '''_guard«xTransition.hashCode.abs»'''
-			// Can later be changed to a single "if"
+			val name = '''_guard_«xTransition.hashCode.abs»'''
+			// Can later be changed to a single "if" for Theta (UPPAAL will not support it though)
 			xTransitionActions += xStsAction
 				.createChoiceActionWithExtractedPreconditionsAndEmptyDefaultBranch(name)
 		}
@@ -815,17 +813,6 @@ class LowlevelToXstsTransformer {
 			}
 		}
 		return xStsTransitions // No cloning due to the cached isActive and guard expressions
-	}
-	
-	protected def extractExpressions(Map<Transition, List<Expression>> expressions) {
-		val xStsVariableDeclarationActions = newArrayList
-		for (lowlevelTransition : expressions.keySet) {
-			val xStsIsActiveExpressions = expressions.get(lowlevelTransition)
-			val name = '''_«xStsIsActiveExpressions.hashCode.abs»'''
-//			'''«lowlevelTransition.source.name»_«lowlevelTransition.target.name»«xStsIsActiveExpressions.hashCode.abs»'''
-			xStsVariableDeclarationActions += name.extractExpressions(xStsIsActiveExpressions)
-		}
-		return xStsVariableDeclarationActions
 	}
 	
 	/////
@@ -943,8 +930,9 @@ class LowlevelToXstsTransformer {
 		xSts.changeTransitions(xSts.transitions.optimize)
 		xSts.inEventTransition = xSts.inEventTransition.optimize
 		xSts.outEventTransition = xSts.outEventTransition.optimize
-		/* Note: no optimization on the list of transitions as the
-		 deletion of actions would mean the breaking of the trace. */
+		
+		// Note the original transition actions are already "broken"
+		
 		// Variable inlining
 		val inliner = VariableInliner.INSTANCE
 		var List<XTransition> oldActions = null
@@ -967,9 +955,9 @@ class LowlevelToXstsTransformer {
 				.filter[it.transient || it.local]
 		val assignmentMatcher = AssignmentActions.Matcher.on(targetEngine)
 		for (notReadTransientXStsVariable : notReadTransientXStsVariables) {
-			val assignments = assignmentMatcher.getAllValuesOfaction(null, notReadTransientXStsVariable)
-			for (assignment : assignments) {
-				assignment.remove
+			val lowlevelAssignments = assignmentMatcher.getAllValuesOfaction(null, notReadTransientXStsVariable)
+			for (lowlevelAssignment : lowlevelAssignments) {
+				lowlevelAssignment.remove
 			}
 			// To delete the potential containing VariableDeclarationAction too
 			notReadTransientXStsVariable.deleteDeclaration 
@@ -1001,13 +989,16 @@ class LowlevelToXstsTransformer {
 	protected def handleVariableAnnotations() {
 		val resetableVariables = xSts.variableDeclarations.filter[it.resetable]
 		val transientVariables = xSts.variableDeclarations.filter[it.transient]
+		
 		val newMergedAction = createSequentialAction
+		
 		for (resetableVariable : resetableVariables) {
 			// Type initial value, as the variable initial expression might change (e.g., a + b + 1)
 			val initialValue = resetableVariable.type.initialValueOfType
 			newMergedAction.actions += resetableVariable.createAssignmentAction(initialValue)
 		}
 		newMergedAction.actions += xSts.mergedAction
+		
 		for (transientVariable : transientVariables) {
 			// Type initial value, as the variable initial expression might change (e.g., a + b + 1)
 			val initialValue = transientVariable.type.initialValueOfType

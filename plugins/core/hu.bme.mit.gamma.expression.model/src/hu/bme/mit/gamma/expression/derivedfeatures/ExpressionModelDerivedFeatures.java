@@ -17,6 +17,8 @@ import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition;
 import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition;
 import hu.bme.mit.gamma.expression.model.DecimalTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Declaration;
+import hu.bme.mit.gamma.expression.model.DefaultExpression;
+import hu.bme.mit.gamma.expression.model.ElseExpression;
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition;
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Expression;
@@ -105,6 +107,10 @@ public class ExpressionModelDerivedFeatures {
 	public static boolean isComplex(Type type) {
 		TypeDefinition typeDefinition = getTypeDefinition(type);
 		return isRecord(typeDefinition) || isArray(typeDefinition);
+	}
+	
+	public static boolean isElseOrDefault(Expression expression) {
+		return expression instanceof ElseExpression || expression instanceof DefaultExpression;
 	}
 	
 	public static TypeDefinition getTypeDefinition(Declaration declaration) {

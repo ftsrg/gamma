@@ -46,6 +46,7 @@ import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.ParallelAction
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.model.XTransition
+import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import java.util.List
 import java.util.Map
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
@@ -54,12 +55,15 @@ import org.eclipse.viatra.query.runtime.emf.EMFScope
 import static com.google.common.base.Preconditions.checkArgument
 import static com.google.common.base.Preconditions.checkState
 
+import static extension java.lang.Math.abs
+
 package class Trace {
 	// Trace model
 	protected final L2STrace trace
 	// Tracing engine
 	protected final ViatraQueryEngine tracingEngine
 	// Trace model factory
+	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
 	protected final extension TraceabilityFactory traceabilityFactory = TraceabilityFactory.eINSTANCE
 	// Auxiliary
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
@@ -67,6 +71,7 @@ package class Trace {
 	protected final List<Expression> primaryIsActiveExpressions = newArrayList
 	protected final Map<Transition, List<Expression>> isActiveExpressions = newHashMap
 	protected final Map<Transition, List<Expression>> guards = newHashMap
+	protected final Map<Transition, List<Expression>> choiceGuards = newHashMap
 	
 	new(Package _package, XSTS xSts) {
 		this.trace = createL2STrace => [
@@ -88,6 +93,21 @@ package class Trace {
 	
 	def getGuards() {
 		return guards
+	}
+	
+	def getChoiceGuards() {
+		return choiceGuards
+	}
+	
+	def extractExpressions(Map<Transition, List<Expression>> expressions) {
+		val xStsVariableDeclarationActions = newArrayList
+		for (lowlevelTransition : expressions.keySet) {
+			val xStsIsActiveExpressions = expressions.get(lowlevelTransition)
+			val name = '''_«xStsIsActiveExpressions.hashCode.abs»'''
+//			'''«lowlevelTransition.source.name»_«lowlevelTransition.target.name»«xStsIsActiveExpressions.hashCode.abs»'''
+			xStsVariableDeclarationActions += name.extractExpressions(xStsIsActiveExpressions)
+		}
+		return xStsVariableDeclarationActions
 	}
 	
 	// Statechart - xSTS	

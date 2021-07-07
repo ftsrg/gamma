@@ -996,10 +996,21 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	public static BigInteger calculatePriority(Transition transition) {
 		StatechartDefinition statechart = getContainingStatechart(transition);
 		TransitionPriority transitionPriority = statechart.getTransitionPriority();
+		StateNode source = transition.getSourceState();
+		List<Transition> outgoingTransitions = getOutgoingTransitions(source);
+		// If it is an else transition, its priority is always the lowest
+		Expression guard = transition.getGuard();
+		if (isElseOrDefault(guard)) {
+			BigInteger min = outgoingTransitions.stream()
+				.filter(it -> !isElseOrDefault(it.getGuard()))
+				.map(it -> calculatePriority(it)) // There must not be multiple else guards
+				.min((lhs, rhs) -> lhs.compareTo(rhs))
+				.orElse(BigInteger.ONE);
+			return min.subtract(BigInteger.ONE); // Min - 1
+		}
+		// Normal transition
 		switch (transitionPriority) {
 			case ORDER_BASED : {
-				StateNode source = transition.getSourceState();
-				List<Transition> outgoingTransitions = getOutgoingTransitions(source);
 				int size = outgoingTransitions.size();
 				int index = outgoingTransitions.indexOf(transition);
 				int priority = size - index;

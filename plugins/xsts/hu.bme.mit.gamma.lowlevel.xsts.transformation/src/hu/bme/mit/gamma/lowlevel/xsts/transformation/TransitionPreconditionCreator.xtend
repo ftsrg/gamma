@@ -19,6 +19,7 @@ import hu.bme.mit.gamma.statechart.lowlevel.model.PseudoState
 import hu.bme.mit.gamma.statechart.lowlevel.model.SchedulingOrder
 import hu.bme.mit.gamma.statechart.lowlevel.model.State
 import hu.bme.mit.gamma.statechart.lowlevel.model.Transition
+import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import java.util.Collection
 import java.util.List
 import java.util.Map
@@ -30,6 +31,7 @@ import static extension hu.bme.mit.gamma.statechart.lowlevel.derivedfeatures.Low
 
 class TransitionPreconditionCreator {
 	// Model factories
+	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
 	protected final extension ExpressionModelFactory constraintFactory = ExpressionModelFactory.eINSTANCE
 	// Auxiliary object
 	protected final extension StateAssumptionCreator stateAssumptionCreator
@@ -50,8 +52,9 @@ class TransitionPreconditionCreator {
 		val lowlevelSource = lowlevelTransition.source
 		val order = lowlevelTransition.statechart.schedulingOrder
 		checkArgument(order == SchedulingOrder.TOP_DOWN || order == SchedulingOrder.BOTTOM_UP)
-		val xStsConflictExpression =
-		if (lowlevelSource instanceof State) {
+		checkArgument(lowlevelSource instanceof State)
+		
+//		if (lowlevelSource instanceof State) {
 			// Conflict makes sense only in case of state sources
 			val lowlevelPotentialConflictingTransitions =
 			// Bottom-up or top down scheduling
@@ -62,23 +65,27 @@ class TransitionPreconditionCreator {
 				// Top-down scheduling
 				lowlevelTransition.lowlevelParentTransitions
 			}
-			lowlevelPotentialConflictingTransitions.createXStsTransitionConflictExclusion
-		}
-		else {
-			createTrueExpression
-		}
-		// TODO check if only states are used here (as in theory, should be)
-		val xStsActivenessExpression = lowlevelTransition.isActiveExpression
-		// Caching
-		trace.primaryIsActiveExpressions += xStsActivenessExpression
+			val xStsConflictExpression = lowlevelPotentialConflictingTransitions.createXStsTransitionConflictExclusion
+//		}
+//		else {
+//			createTrueExpression
+//		}
+		val lowlevelHigherPriorityTransitions = lowlevelTransition.higherPriorityTransitions
+		val xStsPriorityExpression = lowlevelHigherPriorityTransitions.createXStsTransitionConflictExclusion
+		val xStsEnablednessExpression = lowlevelTransition.isEnabledExpression
+		// Caching: only the activeness must be cached if we want the guard evaluation to be flexible
+		trace.getPrimaryIsActiveExpressions += xStsEnablednessExpression.operands.head // isActive is the first operand
 		//
+		
 		val xStsPreconditionExpression = createAndExpression => [
+			it.operands += xStsEnablednessExpression // Source state enabledness
+			it.operands += xStsPriorityExpression // Priority resolution
 			it.operands += xStsConflictExpression // Potential conflict resolution
-			// TODO same source priority handling
-			it.operands += xStsActivenessExpression // Source state activeness and Guard
 		]
+		
 		val xStsOperands = xStsPreconditionExpression.operands
 		xStsOperands.removeIf[it instanceof TrueExpression]
+		
 		if (!xStsOperands.empty) {
 			return xStsPreconditionExpression
 		}
@@ -88,46 +95,46 @@ class TransitionPreconditionCreator {
 	/**
 	 * Creates an expression which is true iff NONE of the given lowlevel transition is enabled. 
 	 */
-	private def createXStsTransitionConflictExclusion(Collection<Transition> lowlevelTransitions) {
-		if (lowlevelTransitions.empty) {
-			return createTrueExpression
-		}
-		return createAndExpression => [
-			for (lowlevelTransition : lowlevelTransitions) {
-				it.operands += createNotExpression => [
-					it.operand = lowlevelTransition.isActiveExpression
-				]
-			}
-		]
+	def createXStsTransitionConflictExclusion(Collection<Transition> lowlevelTransitions) {
+		return lowlevelTransitions.map[it.isEnabledExpression]
+			.connectViaNegations
 	}
 	
 	// Dispatch isActive (source elements are active and guard is true) expression
 	
-	private def getIsActiveExpression(Transition lowlevelTransition) {
+	private def getIsEnabledExpression(Transition lowlevelTransition) {
 		val andExpression = createAndExpression
 		val xStsOperands = andExpression.operands
 		// IsActive
 		val lowlevelSourceNode = lowlevelTransition.source
-		if (lowlevelSourceNode instanceof State) {
+		if (lowlevelSourceNode instanceof State) { // Theoretically constant true
 			val recursiveXStsStateAssumption = lowlevelSourceNode.createRecursiveXStsStateAssumption
 			// Caching
-			trace.isActiveExpressions.add(lowlevelTransition, recursiveXStsStateAssumption)
+			trace.getIsActiveExpressions.add(lowlevelTransition, recursiveXStsStateAssumption)
 			//
 			xStsOperands += recursiveXStsStateAssumption
 		}
 		// Guard
+		val xStsGuardExpression = lowlevelTransition.getGuardExpression(trace.getGuards)
+		if (xStsGuardExpression !== null) {
+			xStsOperands += xStsGuardExpression
+		}
+		//
+		checkArgument(!xStsOperands.empty)
+		return andExpression
+	}
+	
+	protected def getGuardExpression(Transition lowlevelTransition,
+			Map<Transition, List<Expression>> cache /* So state and choice guards can be distinguished */) {
 		val guard = lowlevelTransition.guard
 		if (guard !== null) {
 			val xStsGuard = guard.transformExpression
 			// Caching
-			trace.guards.add(lowlevelTransition, xStsGuard)
+			cache.add(lowlevelTransition, xStsGuard)
 			//
-			xStsOperands += xStsGuard
+			return xStsGuard
 		}
-		if (!xStsOperands.empty) {
-			return andExpression
-		}
-		return createTrueExpression
+		return null
 	}
 	
 	// Precursory pseudo state preconditions

@@ -12,7 +12,6 @@ package hu.bme.mit.gamma.statechart.lowlevel.transformation
 
 import hu.bme.mit.gamma.action.model.ActionModelFactory
 import hu.bme.mit.gamma.action.util.ActionUtil
-import hu.bme.mit.gamma.expression.model.ElseExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
@@ -25,7 +24,6 @@ import hu.bme.mit.gamma.statechart.lowlevel.model.Component
 import hu.bme.mit.gamma.statechart.lowlevel.model.EventDeclaration
 import hu.bme.mit.gamma.statechart.lowlevel.model.StateNode
 import hu.bme.mit.gamma.statechart.lowlevel.model.StatechartModelFactory
-import hu.bme.mit.gamma.statechart.statechart.ChoiceState
 import hu.bme.mit.gamma.statechart.statechart.GuardEvaluation
 import hu.bme.mit.gamma.statechart.statechart.PseudoState
 import hu.bme.mit.gamma.statechart.statechart.Region
@@ -36,12 +34,12 @@ import hu.bme.mit.gamma.statechart.statechart.TimeoutAction
 import hu.bme.mit.gamma.statechart.statechart.TimeoutDeclaration
 import hu.bme.mit.gamma.statechart.statechart.TimeoutEventReference
 import hu.bme.mit.gamma.statechart.statechart.Transition
-import hu.bme.mit.gamma.statechart.statechart.TransitionPriority
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.util.List
 
 import static com.google.common.base.Preconditions.checkState
 
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.LowlevelNamings.*
 
@@ -251,12 +249,9 @@ class StatechartToLowlevelTransformer {
 			lowlevelStatechart.regions += region.transform
 		}
 		for (transition : statechart.transitions) {
+			// Prioritizing transitions is done here
 			val lowlevelTransition = transition.transform
 			lowlevelStatechart.transitions += lowlevelTransition
-		}
-		// Prioritizing transitions
-		if (statechart.transitionPriority != TransitionPriority.OFF) {
-			statechart.prioritizeTransitions
 		}
 		return lowlevelStatechart
 	}
@@ -337,15 +332,13 @@ class StatechartToLowlevelTransformer {
 		val lowlevelTransition = createTransition => [
 			it.source = lowlevelSource
 			it.target = lowlevelTarget
+			it.priority = gammaTransition.calculatePriority.intValue // Priority is handled later
 		]
 		trace.put(gammaTransition, lowlevelTransition) // Saving in trace
 		// Important to trace the Gamma transition as the trigger transformer depends on it
-		val lowlevelGuard = gammaTransition.transformTriggerAndGuard
-		val lowlevelAction = gammaTransition.effects.transformActions
-		lowlevelTransition => [
-			it.guard = lowlevelGuard
-			it.action = lowlevelAction
-		]
+		lowlevelTransition.guard = gammaTransition.transformTriggerAndGuard
+		lowlevelTransition.action = gammaTransition.effects.transformActions
+		
 		return lowlevelTransition
 	}
 	
@@ -353,7 +346,7 @@ class StatechartToLowlevelTransformer {
 	 * Can return null.
 	 */
 	protected def Expression transformTriggerAndGuard(Transition transition) {
-		val lowlevelGuardList = newLinkedList
+		val lowlevelGuardList = newArrayList
 		val gammaTrigger = transition.trigger
 		if (gammaTrigger !== null) {
 			lowlevelGuardList += gammaTrigger.transformTrigger // Trigger guard
@@ -361,38 +354,40 @@ class StatechartToLowlevelTransformer {
 		var guard = transition.guard
 		if (guard !== null) {
 			// Transforming else expressions
-			if (guard instanceof ElseExpression) {
-				trace.designateElseGuardedTransition(transition)
-				var Expression transformedGuard
-				val source = transition.sourceState
-				val gammaOutgoingTransitions = source.outgoingTransitions.reject[it === transition]
-				if (gammaOutgoingTransitions.empty) {
-					transformedGuard = createTrueExpression
-				}
-				else {
-					// Check if there are empty transitions...
-					val gammaEmptyOutgoingTransitions = gammaOutgoingTransitions
-							.filter[!it.hasTrigger && !it.hasGuard]
-					checkState(gammaEmptyOutgoingTransitions.empty)
-					transformedGuard = createAndExpression => [
-						for (gammaOutgoingTransition : gammaOutgoingTransitions) {
-							it.operands += createNotExpression => [
-								val otherTrigger = gammaOutgoingTransition.trigger
-								val otherGuard = gammaOutgoingTransition.guard
-								it.operand = createAndExpression => [
-									// By default, the transformTrigger returns false expression for null
-									if (otherTrigger !== null) {
-										it.operands += otherTrigger.transformTrigger
-									}
-									if (otherGuard !== null) {
-										it.operands += otherGuard.transformExpression
-									}
-								]
-							]
-						}
-					]
-				}
-				lowlevelGuardList += transformedGuard
+			if (guard.elseOrDefault) {
+				// We remove the else guard: priority is already set during the creation of the transition
+				guard.remove 
+//				trace.designateElseGuardedTransition(transition)
+//				var Expression transformedGuard
+//				val source = transition.sourceState
+//				val gammaOutgoingTransitions = source.outgoingTransitions.reject[it === transition]
+//				if (gammaOutgoingTransitions.empty) {
+//					transformedGuard = createTrueExpression
+//				}
+//				else {
+//					// Check if there are empty transitions...
+//					val gammaEmptyOutgoingTransitions = gammaOutgoingTransitions
+//							.filter[!it.hasTrigger && !it.hasGuard]
+//					checkState(gammaEmptyOutgoingTransitions.empty)
+//					transformedGuard = createAndExpression => [
+//						for (gammaOutgoingTransition : gammaOutgoingTransitions) {
+//							it.operands += createNotExpression => [
+//								val otherTrigger = gammaOutgoingTransition.trigger
+//								val otherGuard = gammaOutgoingTransition.guard
+//								it.operand = createAndExpression => [
+//									// By default, the transformTrigger returns false expression for null
+//									if (otherTrigger !== null) {
+//										it.operands += otherTrigger.transformTrigger
+//									}
+//									if (otherGuard !== null) {
+//										it.operands += otherGuard.transformExpression
+//									}
+//								]
+//							]
+//						}
+//					]
+//				}
+//				lowlevelGuardList += transformedGuard
 			}
 			else {
 				lowlevelGuardList += guard.transformExpression
@@ -402,30 +397,30 @@ class StatechartToLowlevelTransformer {
 		return lowlevelGuardList.wrapIntoMultiaryExpression(createAndExpression)
 	}
 	
-	protected def prioritizeTransitions(StatechartDefinition statechart) {
-		for (node : statechart.allStateNodes
-					.filter[it instanceof State || it instanceof ChoiceState]) {
-			val gammaOutgoingTransitions = node.outgoingTransitions
-					// Else expressions should not be cloned again
-					.reject[trace.elseGuardedTransition.contains(it)]
-			// Sorting, so the resulting guard expressions do not get too big
-			val sortedGammaOutgoingTransitions = gammaOutgoingTransitions.sortBy[it.calculatePriority]
-			for (gammaTransition : sortedGammaOutgoingTransitions) {
-				val lowlevelTransition = trace.get(gammaTransition)
-				val newGuardExpression = createAndExpression
-				for (prioritizedTransition : gammaTransition.prioritizedTransitions) {
-					newGuardExpression.operands += createNotExpression => [
-						it.operand = prioritizedTransition.transformTriggerAndGuard // New expression
-					]
-				}
-				// New guard
-				if (!newGuardExpression.operands.empty) {
-					lowlevelTransition.guard = newGuardExpression => [
-						it.operands += lowlevelTransition.guard // No clone here
-					]
-				}
-			}
-		}
-	}
+//	protected def prioritizeTransitions(StatechartDefinition statechart) {
+//		for (node : statechart.allStateNodes
+//					.filter[it instanceof State || it instanceof ChoiceState]) {
+//			val gammaOutgoingTransitions = node.outgoingTransitions
+//					// Else expressions should not be cloned again
+//					.reject[trace.elseGuardedTransition.contains(it)]
+//			// Sorting, so the resulting guard expressions do not get too big
+//			val sortedGammaOutgoingTransitions = gammaOutgoingTransitions.sortBy[it.calculatePriority]
+//			for (gammaTransition : sortedGammaOutgoingTransitions) {
+//				val lowlevelTransition = trace.get(gammaTransition)
+//				val newGuardExpression = createAndExpression
+//				for (prioritizedTransition : gammaTransition.prioritizedTransitions) {
+//					newGuardExpression.operands += createNotExpression => [
+//						it.operand = prioritizedTransition.transformTriggerAndGuard // New expression
+//					]
+//				}
+//				// New guard
+//				if (!newGuardExpression.operands.empty) {
+//					lowlevelTransition.guard = newGuardExpression => [
+//						it.operands += lowlevelTransition.guard // No clone here
+//					]
+//				}
+//			}
+//		}
+//	}
 	
 }
