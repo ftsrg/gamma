@@ -99,12 +99,20 @@ package class Trace {
 		return choiceGuards
 	}
 	
+	def void add(Map<Transition, List<Expression>> map,
+			Transition lowlevelTransition, Expression expression) {
+		if (!map.containsKey(lowlevelTransition)) {
+			map += lowlevelTransition -> newArrayList
+		}
+		val list = map.get(lowlevelTransition)
+		list += expression
+	}
+	
 	def extractExpressions(Map<Transition, List<Expression>> expressions) {
 		val xStsVariableDeclarationActions = newArrayList
 		for (lowlevelTransition : expressions.keySet) {
 			val xStsIsActiveExpressions = expressions.get(lowlevelTransition)
 			val name = '''_«xStsIsActiveExpressions.hashCode.abs»'''
-//			'''«lowlevelTransition.source.name»_«lowlevelTransition.target.name»«xStsIsActiveExpressions.hashCode.abs»'''
 			xStsVariableDeclarationActions += name.extractExpressions(xStsIsActiveExpressions)
 		}
 		return xStsVariableDeclarationActions

@@ -54,24 +54,20 @@ class TransitionPreconditionCreator {
 		checkArgument(order == SchedulingOrder.TOP_DOWN || order == SchedulingOrder.BOTTOM_UP)
 		checkArgument(lowlevelSource instanceof State)
 		
-//		if (lowlevelSource instanceof State) {
-			// Conflict makes sense only in case of state sources
-			val lowlevelPotentialConflictingTransitions =
-			// Bottom-up or top down scheduling
-			if (order == SchedulingOrder.BOTTOM_UP) {
-				lowlevelTransition.lowlevelChildTransitions
-			}
-			else {
-				// Top-down scheduling
-				lowlevelTransition.lowlevelParentTransitions
-			}
-			val xStsConflictExpression = lowlevelPotentialConflictingTransitions.createXStsTransitionConflictExclusion
-//		}
-//		else {
-//			createTrueExpression
-//		}
+		// Conflict makes sense only in case of state sources
+		val lowlevelPotentialConflictingTransitions =
+		// Bottom-up or top down scheduling
+		if (order == SchedulingOrder.BOTTOM_UP) {
+			lowlevelTransition.lowlevelChildTransitions
+		}
+		else {
+			lowlevelTransition.lowlevelParentTransitions
+		}
+		val xStsConflictExpression = lowlevelPotentialConflictingTransitions.createXStsTransitionConflictExclusion
+		
 		val lowlevelHigherPriorityTransitions = lowlevelTransition.higherPriorityTransitions
 		val xStsPriorityExpression = lowlevelHigherPriorityTransitions.createXStsTransitionConflictExclusion
+		
 		val xStsEnablednessExpression = lowlevelTransition.isEnabledExpression
 		// Caching: only the activeness must be cached if we want the guard evaluation to be flexible
 		trace.getPrimaryIsActiveExpressions += xStsEnablednessExpression.operands.head // isActive is the first operand
@@ -110,7 +106,8 @@ class TransitionPreconditionCreator {
 		if (lowlevelSourceNode instanceof State) { // Theoretically constant true
 			val recursiveXStsStateAssumption = lowlevelSourceNode.createRecursiveXStsStateAssumption
 			// Caching
-			trace.getIsActiveExpressions.add(lowlevelTransition, recursiveXStsStateAssumption)
+			trace.add(trace.getIsActiveExpressions,
+				lowlevelTransition, recursiveXStsStateAssumption)
 			//
 			xStsOperands += recursiveXStsStateAssumption
 		}
@@ -130,7 +127,7 @@ class TransitionPreconditionCreator {
 		if (guard !== null) {
 			val xStsGuard = guard.transformExpression
 			// Caching
-			cache.add(lowlevelTransition, xStsGuard)
+			trace.add(cache, lowlevelTransition, xStsGuard)
 			//
 			return xStsGuard
 		}
@@ -161,7 +158,7 @@ class TransitionPreconditionCreator {
 		return orExpression
 	}
 	
-	//
+	// TODO extract into lowlevel metamodel
 	
 	/**
 	 * Returns the parent transitions of the given lowlevel transition, that is, the outgoing transitions of the
@@ -221,17 +218,6 @@ class TransitionPreconditionCreator {
 				}
 			}
 		}
-	}
-	
-	//
-	
-	private def void add(Map<Transition, List<Expression>> map,
-			Transition lowlevelTransition, Expression expression) {
-		if (!map.containsKey(lowlevelTransition)) {
-			map += lowlevelTransition -> newArrayList
-		}
-		val list = map.get(lowlevelTransition)
-		list += expression
 	}
 	
 }

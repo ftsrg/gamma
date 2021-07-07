@@ -37,7 +37,8 @@ class PrecursoryTransitionToXTransitionTransformer extends LowlevelTransitionToX
 	
 	new(ViatraQueryEngine engine, Trace trace) {
 		super(engine, trace)
-		this.terminalTransitionToActionTransformer = new TerminalTransitionToXTransitionTransformer(this.engine, this.trace)
+		this.terminalTransitionToActionTransformer = new TerminalTransitionToXTransitionTransformer(
+			this.engine, this.trace)
 	}
 	
 	def transform(JoinState lowlevelLastJoinState) {
@@ -52,6 +53,8 @@ class PrecursoryTransitionToXTransitionTransformer extends LowlevelTransitionToX
 		trace.put(lowlevelLastJoinState, xStsComplexTransition, xStsRecursivePrecondition, xStsParallelAction)
 		return xStsComplexTransition
 	}
+	
+	// TODO delete merge states
 	
 	def transform(MergeState lowlevelLastMergeState) {
 		val xStsAction = lowlevelLastMergeState.transformBackward
