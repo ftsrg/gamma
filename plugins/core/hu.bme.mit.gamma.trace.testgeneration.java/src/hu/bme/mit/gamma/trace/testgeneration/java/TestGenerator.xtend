@@ -250,7 +250,7 @@ class TestGenerator {
 	
 	protected def dispatch serialize(ComponentSchedule schedule) '''
 «««		In theory only asynchronous adapters and synchronous adapters are used
-		«TEST_INSTANCE_NAME».schedule(null);
+		«TEST_INSTANCE_NAME».schedule();
 	'''
 	
 	// Assert serialization

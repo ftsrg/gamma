@@ -46,8 +46,9 @@ class WrittenOnlyVariableReducer implements Reducer {
 		deletableVariables += root.unusedVariables
 		deletableVariables -= relevantVariables // An unused variable can still be relevant
 		for (assignment : assignments) {
-			if(assignment.lhs instanceof DirectReferenceExpression) {
-				val declaration = (assignment.lhs as DirectReferenceExpression).declaration
+			val lhs = assignment.lhs
+			if (lhs instanceof DirectReferenceExpression) {
+				val declaration = lhs.declaration
 				if (writtenOnlyVariables.contains(declaration) &&
 					!relevantVariables.contains(declaration)) {
 					deletableVariables += declaration
