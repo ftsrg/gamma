@@ -157,7 +157,8 @@ public class LowlevelStatechartModelDerivedFeatures extends ActionModelDerivedFe
 	}
 	
 	public static List<Transition> getAncestorTransitions(Transition lowlevelTransition) {
-		List<State> parentStates = ecoreUtil.getAllContainersOfType(lowlevelTransition, State.class);
+		StateNode source = lowlevelTransition.getSource();
+		List<State> parentStates = ecoreUtil.getAllContainersOfType(source, State.class);
 		List<Transition> outgoingTransition = new ArrayList<Transition>();
 		for (State parentState : parentStates) {
 			outgoingTransition.addAll(parentState.getOutgoingTransitions());
@@ -166,7 +167,8 @@ public class LowlevelStatechartModelDerivedFeatures extends ActionModelDerivedFe
 	}
 	
 	public static List<Transition> getDescendantTransitions(Transition lowlevelTransition) {
-		List<State> childStates = ecoreUtil.getAllContentsOfType(lowlevelTransition, State.class);
+		StateNode source = lowlevelTransition.getSource();
+		List<State> childStates = ecoreUtil.getAllContentsOfType(source, State.class);
 		List<Transition> outgoingTransition = new ArrayList<Transition>();
 		for (State childState : childStates) {
 			outgoingTransition.addAll(childState.getOutgoingTransitions());
