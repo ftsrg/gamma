@@ -69,6 +69,9 @@ class XstsToUppaalTransformer {
 	}
 	
 	def execute() {
+		// TODO The XSTS transformation now extracts guards into local variables
+		// If the guard contains clock variables (referencing native clocks), they should be reinlined
+		
 		resetCommittedLocationName
 		val initialLocation = templateName.createTemplateWithInitLoc(initialLocationName)
 		initialLocation.locationTimeKind = LocationKind.COMMITED
