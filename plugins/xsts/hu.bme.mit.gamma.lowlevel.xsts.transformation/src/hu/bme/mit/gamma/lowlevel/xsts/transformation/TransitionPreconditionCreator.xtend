@@ -104,6 +104,9 @@ class TransitionPreconditionCreator {
 		// IsActive
 		val lowlevelSourceNode = lowlevelTransition.source
 		if (lowlevelSourceNode instanceof State) { // Theoretically constant true
+			// TODO Having it another layer of caching of States would enable even finer extraction
+			// e.g., local var a := region == Region.A
+			// e.g., local var b := region == Region.A (extractable) && region2 == Region.B
 			val recursiveXStsStateAssumption = lowlevelSourceNode.createRecursiveXStsStateAssumption
 			// Caching
 			trace.add(trace.getIsActiveExpressions,
