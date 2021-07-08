@@ -105,10 +105,10 @@ class OrthogonalActionTransformer {
 		orthogonalActions.sort(
 			new Comparator<OrthogonalAction> {
 				override compare(OrthogonalAction lhs, OrthogonalAction rhs) {
-					if (lhs.contains(rhs)) {
+					if (lhs.containsTransitively(rhs)) {
 						return -1
 					}
-					if (rhs.contains(lhs)) {
+					if (rhs.containsTransitively(lhs)) {
 						return 1
 					}
 					return 0 // Neither contains the other one

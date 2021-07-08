@@ -862,14 +862,12 @@ public class StatechartModelValidator extends ActionModelValidator {
 		// Targets of fork nodes must always be in distinct regions
 		Set<Region> targetedRegions = new HashSet<Region>();
 		for (Transition transition : outgoingTransitions) {
-			Region region = (Region) transition.getTargetState().eContainer();
-			if (targetedRegions.contains(region)) {
+			Region region = StatechartModelDerivedFeatures.getParentRegion(transition.getTargetState());
+			if (targetedRegions.contains(region) || targetedRegions.stream().anyMatch(it -> 
+					ecoreUtil.containsOneOtherTransitively(region, it))) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 						"Targets of outgoing transitions of fork nodes must be in distinct regions", 
-						new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME)));
-				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-						"Targets of outgoing transitions of fork nodes must be in distinct regions", 
-						new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__TARGET_STATE)));
+						new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__TARGET_STATE, transition)));
 			}
 			else {
 				targetedRegions.add(region);
@@ -923,14 +921,12 @@ public class StatechartModelValidator extends ActionModelValidator {
 					"Join nodes must have a single outgoing transition", 
 					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME)));
 		}
-		// Targets of fork nodes must always be in distinct regions
+		// Sources of join nodes must always be in distinct regions
 		Set<Region> sourceRegions = new HashSet<Region>();
 		for (Transition transition : incomingTransitions) {
-			Region region = (Region) transition.getSourceState().eContainer();
-			if (sourceRegions.contains(region)) {
-				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-						"Sources of incoming transitions of join nodes must be in distinct regions", 
-						new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME)));
+			Region region = StatechartModelDerivedFeatures.getParentRegion(transition.getSourceState());
+			if (sourceRegions.contains(region) || sourceRegions.stream().anyMatch(it -> 
+					ecoreUtil.containsOneOtherTransitively(region, it))) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 						"Sources of incoming transitions of join nodes must be in distinct regions", 
 						new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__TARGET_STATE, transition)));
@@ -1007,7 +1003,8 @@ public class StatechartModelValidator extends ActionModelValidator {
 		return validationResultMessages;
 	}
 	
-	public Collection<ValidationResultMessage> checkTimeoutTransitions(hu.bme.mit.gamma.statechart.statechart.State state) {
+	public Collection<ValidationResultMessage> checkTimeoutTransitions(
+			hu.bme.mit.gamma.statechart.statechart.State state) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		boolean multipleTimedTransitions = StatechartModelDerivedFeatures.getOutgoingTransitions(state).stream()
 			.filter(it -> it.getTrigger() instanceof EventTrigger && 
@@ -1029,7 +1026,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 		Transition nonDeterministicTransition = checkTransitionDeterminism(transition, siblingTransitions);
 		if (nonDeterministicTransition != null) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING, 
-					"This transitions is in a non-deterministic relation with other transitions from the same source", 
+				"This transitions is in a non-deterministic relation with other transitions from the same source", 
 					new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__TRIGGER)));
 		}
 		return validationResultMessages;
@@ -1047,7 +1044,8 @@ public class StatechartModelValidator extends ActionModelValidator {
 		if (eventReference instanceof PortEventReference) {
 			PortEventReference portEventReference = (PortEventReference) eventReference;
 			for (Transition siblingTransition : transitions) {
-				if (isTransitionTriggeredByPortEvent(siblingTransition, portEventReference.getPort(), portEventReference.getEvent())) {
+				if (isTransitionTriggeredByPortEvent(
+						siblingTransition, portEventReference.getPort(), portEventReference.getEvent())) {
 					return siblingTransition;
 				}
 			}
@@ -1064,8 +1062,9 @@ public class StatechartModelValidator extends ActionModelValidator {
 	}
 	
 	public boolean isTransitionTriggeredByPortEvent(Transition transition, Port port, Event event) {
-		if (transition.getTrigger() instanceof EventTrigger) {
-			EventTrigger eventTrigger = (EventTrigger) transition.getTrigger();
+		Trigger trigger = transition.getTrigger();
+		if (trigger instanceof EventTrigger) {
+			EventTrigger eventTrigger = (EventTrigger) trigger;
 			if (eventTrigger.getEventReference() instanceof PortEventReference) {
 				PortEventReference candidateEventReference = (PortEventReference) eventTrigger.getEventReference();
 				if (candidateEventReference.getPort() == port && candidateEventReference.getEvent() == event) {

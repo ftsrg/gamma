@@ -627,7 +627,7 @@ class GammaStatechartAnnotator {
 				if (containingBranch !== null) {
 					// p-use in a branch guard
 					val guard = containingBranch.guard
-					if (guard.contains(useReference)) {
+					if (guard.containsTransitively(useReference)) {
 						if (containingBranch.containedByChoiceStatement) {
 							val choiceStatement = containingBranch.getContainerOfType(ChoiceStatement)
 							// Nondeterministic: the declaration is used if the execution gets to the choice
