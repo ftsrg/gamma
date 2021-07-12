@@ -28,17 +28,18 @@ import hu.bme.mit.gamma.expression.model.ConstantDeclaration;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.expression.util.ExpressionSerializer;
+import hu.bme.mit.gamma.expression.util.TypeSerializer;
 
 public class ActionSerializer {
 	// Singleton
 	public static final ActionSerializer INSTANCE = new ActionSerializer();
-
-	protected ActionSerializer() {
-		this.expressionSerializer = ExpressionSerializer.INSTANCE;
-	}
+	protected ActionSerializer() {}
 	//
 
-	protected ExpressionSerializer expressionSerializer;
+	protected ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE; // Redefinable
+	protected final TypeSerializer typeSerializer = TypeSerializer.INSTANCE;
+
+	//
 
 	protected String _serialize(final Block block) {
 		StringBuilder builder = new StringBuilder("{" + System.lineSeparator());
@@ -73,13 +74,16 @@ public class ActionSerializer {
 	}
 
 	protected String _serialize(final ConstantDeclarationStatement statement) {
-		ConstantDeclaration constant = statement.getConstantDeclaration(); // TODO type
-		return "const " + constant.getName() + " := " + expressionSerializer.serialize(constant.getExpression());
+		ConstantDeclaration constant = statement.getConstantDeclaration();
+		String typeName = typeSerializer.serialize(constant.getType());
+		String expression = expressionSerializer.serialize(constant.getExpression());
+		return "const " + constant.getName() + " : " + typeName + " := " + expression;
 	}
 
 	protected String _serialize(final VariableDeclarationStatement statement) {
 		VariableDeclaration variable = statement.getVariableDeclaration();
-		StringBuilder builder = new StringBuilder("var " + variable.getName()); // TODO type
+		String typeName = typeSerializer.serialize(variable.getType());
+		StringBuilder builder = new StringBuilder("var " + variable.getName() + " : " + typeName);
 		final Expression expression = variable.getExpression();
 		if (expression != null) {
 			builder.append(" := " + expressionSerializer.serialize(expression));

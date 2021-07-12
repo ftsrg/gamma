@@ -46,11 +46,16 @@ import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.ParallelAction
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.model.XTransition
+import hu.bme.mit.gamma.xsts.util.XstsActionUtil
+import java.util.List
+import java.util.Map
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 import org.eclipse.viatra.query.runtime.emf.EMFScope
 
 import static com.google.common.base.Preconditions.checkArgument
 import static com.google.common.base.Preconditions.checkState
+
+import static extension java.lang.Math.abs
 
 package class Trace {
 	// Trace model
@@ -58,9 +63,15 @@ package class Trace {
 	// Tracing engine
 	protected final ViatraQueryEngine tracingEngine
 	// Trace model factory
+	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
 	protected final extension TraceabilityFactory traceabilityFactory = TraceabilityFactory.eINSTANCE
 	// Auxiliary
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
+	// Maps for caching transitions
+	protected final List<Expression> primaryIsActiveExpressions = newArrayList
+	protected final Map<Transition, List<Expression>> isActiveExpressions = newHashMap
+	protected final Map<Transition, List<Expression>> guards = newHashMap
+	protected final Map<Transition, List<Expression>> choiceGuards = newHashMap
 	
 	new(Package _package, XSTS xSts) {
 		this.trace = createL2STrace => [
@@ -68,6 +79,43 @@ package class Trace {
 			it.XSts = xSts
 		]
 		this.tracingEngine = ViatraQueryEngine.on(new EMFScope(trace))
+	}
+	
+	// Transition caching
+	
+	def getPrimaryIsActiveExpressions() {
+		return primaryIsActiveExpressions
+	}
+	
+	def getIsActiveExpressions() {
+		return isActiveExpressions
+	}
+	
+	def getGuards() {
+		return guards
+	}
+	
+	def getChoiceGuards() {
+		return choiceGuards
+	}
+	
+	def void add(Map<Transition, List<Expression>> map,
+			Transition lowlevelTransition, Expression expression) {
+		if (!map.containsKey(lowlevelTransition)) {
+			map += lowlevelTransition -> newArrayList
+		}
+		val list = map.get(lowlevelTransition)
+		list += expression
+	}
+	
+	def extractExpressions(Map<Transition, List<Expression>> expressions) {
+		val xStsVariableDeclarationActions = newArrayList
+		for (lowlevelTransition : expressions.keySet) {
+			val xStsIsActiveExpressions = expressions.get(lowlevelTransition)
+			val name = '''_«xStsIsActiveExpressions.hashCode.abs»'''
+			xStsVariableDeclarationActions += name.extractExpressions(xStsIsActiveExpressions)
+		}
+		return xStsVariableDeclarationActions
 	}
 	
 	// Statechart - xSTS	

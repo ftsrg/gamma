@@ -26,12 +26,10 @@ verification {
 	test-language : java
 }
 
-// Timings are not yet supported in Theta
-
-//verification {
-//	language : Theta
-//	file : "ANTIVAL_CHK_COID_System.xsts"
-//	query-file : "CustomQuery_ANTIVAL_CHK_COID_System.prop"
-//	optimize : true
-//	test-language : java
-//}
+verification {
+	language : Theta
+	file : "ANTIVAL_CHK_COID_System.xsts"
+	query-file : "CustomQuery_ANTIVAL_CHK_COID_System.prop"
+	optimize : true
+	test-language : java
+}

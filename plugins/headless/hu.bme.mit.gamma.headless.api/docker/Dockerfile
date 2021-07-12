@@ -35,12 +35,9 @@ RUN ./get-theta.sh
 WORKDIR "/home"
 RUN mkdir project
 ADD project /home/project
-RUN mkdir eclipse
-ADD eclipse /home/eclipse
 RUN mkdir server
-ADD server /home/server
-RUN mkdir workspaces
-WORKDIR "/home/server/gamma-openapi-vertx"
+ADD server /home/headless
+WORKDIR "/home/headless/"
 RUN mvn package
 EXPOSE 8080
 ENTRYPOINT mvn exec:java

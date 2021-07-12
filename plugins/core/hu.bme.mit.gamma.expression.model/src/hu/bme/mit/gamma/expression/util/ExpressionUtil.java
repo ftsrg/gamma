@@ -89,6 +89,7 @@ public class ExpressionUtil {
 	
 	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
 	protected final ExpressionEvaluator evaluator = ExpressionEvaluator.INSTANCE;
+	protected final ExpressionTypeDeterminator2 typeDeterminator = ExpressionTypeDeterminator2.INSTANCE;
 	protected final ExpressionModelFactory factory = ExpressionModelFactory.eINSTANCE;
 	
 	// The following methods are worth extending in subclasses
@@ -282,10 +283,10 @@ public class ExpressionUtil {
 			if (expression instanceof EqualityExpression) {
 				if (leftOperand instanceof EnumerationLiteralExpression
 						&& rightOperand instanceof EnumerationLiteralExpression) {
-					EnumerationLiteralDefinition leftReference =
-							((EnumerationLiteralExpression) leftOperand).getReference();
-					EnumerationLiteralDefinition rightReference =
-							((EnumerationLiteralExpression) rightOperand).getReference();
+					EnumerationLiteralExpression lhs = (EnumerationLiteralExpression) leftOperand;
+					EnumerationLiteralDefinition leftReference = lhs.getReference();
+					EnumerationLiteralExpression rhs = (EnumerationLiteralExpression) rightOperand;
+					EnumerationLiteralDefinition rightReference = rhs.getReference();
 					if (!ecoreUtil.helperEquals(leftReference, rightReference)) {
 						return true;
 					}
@@ -357,13 +358,15 @@ public class ExpressionUtil {
 	 */
 	public boolean isCertainEvent(Expression lhs, Expression rhs) {
 		if (lhs instanceof NotExpression) {
-			final Expression operand = ((NotExpression) lhs).getOperand();
+			NotExpression notExpression = (NotExpression) lhs;
+			final Expression operand = notExpression.getOperand();
 			if (ecoreUtil.helperEquals(operand, rhs)) {
 				return true;
 			}
 		}
 		if (rhs instanceof NotExpression) {
-			final Expression operand = ((NotExpression) rhs).getOperand();
+			NotExpression notExpression = (NotExpression) rhs;
+			final Expression operand = notExpression.getOperand();
 			if (ecoreUtil.helperEquals(operand, lhs)) {
 				return true;
 			}
@@ -495,11 +498,14 @@ public class ExpressionUtil {
 
 	protected Set<VariableDeclaration> _getReferredVariables(final ReferenceExpression expression) {
 		if (expression instanceof DirectReferenceExpression) {
-			if (((DirectReferenceExpression)expression).getDeclaration() instanceof VariableDeclaration) {
-				return Collections.singleton((VariableDeclaration) ((DirectReferenceExpression)expression).getDeclaration());
+			DirectReferenceExpression directReferenceExpression = (DirectReferenceExpression) expression;
+			Declaration declaration = directReferenceExpression.getDeclaration();
+			if (declaration instanceof VariableDeclaration) {
+				return Collections.singleton((VariableDeclaration) declaration);
 			}
 		} else if (expression instanceof AccessExpression) {
-			return getReferredVariables(((AccessExpression)expression).getOperand());
+			AccessExpression accessExpression = (AccessExpression) expression;
+			return getReferredVariables(accessExpression.getOperand());
 		}
 		return Collections.emptySet();
 	}
@@ -577,7 +583,8 @@ public class ExpressionUtil {
 			}
 		}
 		else if (expression instanceof AccessExpression) {
-			return getReferredParameters(((AccessExpression)expression).getOperand());
+			AccessExpression accessExpression = (AccessExpression) expression;
+			return getReferredParameters(accessExpression.getOperand());
 		}
 		return Collections.emptySet();
 	}
@@ -655,7 +662,8 @@ public class ExpressionUtil {
 			}
 		}
 		else if (expression instanceof AccessExpression) {
-			return getReferredConstants(((AccessExpression)expression).getOperand());
+			AccessExpression accessExpression = (AccessExpression) expression;
+			return getReferredConstants(accessExpression.getOperand());
 		}
 		return Collections.emptySet();
 	}
@@ -824,7 +832,7 @@ public class ExpressionUtil {
 	}
 	
 	public AndExpression connectThroughNegations(VariableDeclaration ponate,
-			Collection<VariableDeclaration> toBeNegated) {
+			Iterable<? extends ValueDeclaration> toBeNegated) {
 		AndExpression and = connectThroughNegations(toBeNegated);
 		DirectReferenceExpression ponateReference = factory.createDirectReferenceExpression();
 		ponateReference.setDeclaration(ponate);
@@ -832,18 +840,27 @@ public class ExpressionUtil {
 		return and;
 	}
 	
-	public AndExpression connectThroughNegations(Collection<VariableDeclaration> toBeNegated) {
-		AndExpression and = factory.createAndExpression();
-		for (VariableDeclaration toBeNegatedVariable : toBeNegated) {
+	public AndExpression connectThroughNegations(Iterable<? extends ValueDeclaration> toBeNegated) {
+		Collection<DirectReferenceExpression> toBeNegatedReferences = new ArrayList<DirectReferenceExpression>();
+		for (ValueDeclaration toBeNegatedVariable : toBeNegated) {
 			DirectReferenceExpression reference = factory.createDirectReferenceExpression();
 			reference.setDeclaration(toBeNegatedVariable);
-			NotExpression not = factory.createNotExpression();
-			not.setOperand(reference);
-			and.getOperands().add(not);
+			toBeNegatedReferences.add(reference);
 		}
-		if (and.getOperands().isEmpty()) {
+		return connectViaNegations(toBeNegatedReferences);
+	}
+	
+	public AndExpression connectViaNegations(Iterable<? extends Expression> toBeNegated) {
+		AndExpression and = factory.createAndExpression();
+		List<Expression> operands = and.getOperands();
+		for (Expression expression : toBeNegated) {
+			NotExpression not = factory.createNotExpression();
+			not.setOperand(expression);
+			operands.add(not);
+		}
+		if (operands.isEmpty()) {
 			// If collection is empty, the expression is always true
-			and.getOperands().add(factory.createTrueExpression());
+			operands.add(factory.createTrueExpression());
 		}
 		return and;
 	}
@@ -858,6 +875,18 @@ public class ExpressionUtil {
 		IntegerLiteralExpression integerLiteral = factory.createIntegerLiteralExpression();
 		integerLiteral.setValue(toBigInt(value));
 		return integerLiteral;
+	}
+	
+	public VariableDeclaration createVariableDeclaration(Type type, String name) {
+		return createVariableDeclaration(type, name, null);
+	}
+	
+	public VariableDeclaration createVariableDeclaration(Type type, String name, Expression expression) {
+		VariableDeclaration variableDeclaration = factory.createVariableDeclaration();
+		variableDeclaration.setType(type);
+		variableDeclaration.setName(name);
+		variableDeclaration.setExpression(expression);
+		return variableDeclaration;
 	}
 	
 	public DirectReferenceExpression createReferenceExpression(ValueDeclaration variable) {
@@ -940,6 +969,14 @@ public class ExpressionUtil {
 		access.setOperand(index(declaration, indexes.subList(0, index)));
 		access.setIndex(lastIndex);
 		return access;
+	}
+	
+	public MultiaryExpression cloneIntoMultiaryExpression(Expression expression,
+			MultiaryExpression container) {
+		ecoreUtil.replace(container, expression);
+		container.getOperands().add(expression);
+		container.getOperands().add(ecoreUtil.clone(expression));
+		return container;
 	}
 	
 	// Unwrapper

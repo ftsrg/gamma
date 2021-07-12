@@ -35,8 +35,8 @@ import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.transformation.util.preprocessor.AnalysisModelPreprocessor
 import hu.bme.mit.gamma.util.GammaEcoreUtil
+import hu.bme.mit.gamma.xsts.model.AbstractAssignmentAction
 import hu.bme.mit.gamma.xsts.model.Action
-import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.CompositeAction
 import hu.bme.mit.gamma.xsts.model.InEventGroup
 import hu.bme.mit.gamma.xsts.model.RegionGroup
@@ -80,20 +80,22 @@ class GammaToXstsTransformer {
 	protected final extension ExpressionEvaluator expressionEvaluator = ExpressionEvaluator.INSTANCE
 	// Transformation settings
 	protected final Integer schedulingConstraint
-	protected boolean transformOrthogonalActions
-	protected boolean optimize
+	protected final boolean transformOrthogonalActions
+	protected final boolean optimize
+	protected final boolean useHavocActions
 	// Logger
 	protected final Logger logger = Logger.getLogger("GammaLogger")
 	
 	new() {
-		this(null, true, true)
+		this(null, true, true, false)
 	}
 	
-	new(Integer schedulingConstraint,
-			boolean transformOrthogonalActions, boolean optimize) {
+	new(Integer schedulingConstraint, boolean transformOrthogonalActions,
+			boolean optimize, boolean useHavocActions) {
 		this.schedulingConstraint = schedulingConstraint
 		this.transformOrthogonalActions = transformOrthogonalActions
 		this.optimize = optimize
+		this.useHavocActions = useHavocActions
 	}
 	
 	def preprocessAndExecuteAndSerialize(hu.bme.mit.gamma.statechart.interface_.Package _package,
@@ -188,7 +190,7 @@ class GammaToXstsTransformer {
 		val xStsSynchronousInEventVariables = xSts.variableGroups
 			.filter[it.annotation instanceof InEventGroup].map[it.variables]
 			.flatten // There are more than one
-		for (xStsAssignment : inEventAction.getAllContentsOfType(AssignmentAction)) {
+		for (xStsAssignment : inEventAction.getAllContentsOfType(AbstractAssignmentAction)) {
 			val xStsDeclaration = (xStsAssignment.lhs as DirectReferenceExpression).declaration
 			if (xStsSynchronousInEventVariables.contains(xStsDeclaration)) {
 				xStsAssignment.remove // Deleting in-event bool flags
@@ -369,7 +371,7 @@ class GammaToXstsTransformer {
 		// Note that the package is already transformed and traced because of the "val lowlevelPackage = gammaToLowlevelTransformer.transform(_package)" call
 		val lowlevelStatechart = gammaToLowlevelTransformer.transform(statechart)
 		lowlevelPackage.components += lowlevelStatechart
-		val lowlevelToXSTSTransformer = new LowlevelToXstsTransformer(lowlevelPackage, optimize)
+		val lowlevelToXSTSTransformer = new LowlevelToXstsTransformer(lowlevelPackage, optimize, useHavocActions)
 		val xStsEntry = lowlevelToXSTSTransformer.execute
 		lowlevelPackage.components -= lowlevelStatechart // So that next time the matches do not return elements from this statechart
 		val xSts = xStsEntry.key

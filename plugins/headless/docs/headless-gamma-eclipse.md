@@ -50,13 +50,15 @@ Edit the target platform by modifying its content. For the following plugins, se
 
 Make sure to remove the Gamma plugins from the required plugin list of your target platform. You can do this by removing them from the Content list, or deleting the corresponding lines in the source file.
 
-## Step 4 - Exporting the products
+## Step 4 - Exporting the product
 
 Select the product file named `gamma.api.headless.product` to begin the exporting process. It can be found in the `product` folder inside the `hu.bme.mit.gamma.headless.api`  project.
 
 In the Overview tab, under `Product Definition`, check if the appropriate `Application` is selected for the `Product`. The application is `gamma.api.headless.application`  for  `gamma.api.headless.product`.
 
-Still in the Overview tab, under `Exporting`, select the `Eclipse Product export wizard` option.
+Still in the Overview tab, under `Exporting`, select the `Eclipse Product export wizard` option. Make sure that the `Root directory` option is `eclipse`.
+
+The `Directory` under `Destination` should be the `headless_eclipse` folder in `hu.bme.mit.gamma.headless.server`.
 
 In the Export pop-up window, deselect the `Synchronise before exporting` and `Generate p2 repository` options.
 

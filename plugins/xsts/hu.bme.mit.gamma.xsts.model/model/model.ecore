@@ -76,9 +76,7 @@
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="EmptyAction" eSuperTypes="#//AtomicAction"/>
-  <eClassifiers xsi:type="ecore:EClass" name="AssignmentAction" eSuperTypes="#//AtomicAction">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="lhs" lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ReferenceExpression"
-        containment="true"/>
+  <eClassifiers xsi:type="ecore:EClass" name="AssignmentAction" eSuperTypes="#//AbstractAssignmentAction">
     <eStructuralFeatures xsi:type="ecore:EReference" name="rhs" lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
         containment="true"/>
   </eClassifiers>
@@ -115,6 +113,12 @@
   <eClassifiers xsi:type="ecore:EClass" name="AssertAction" eSuperTypes="#//AtomicAction">
     <eStructuralFeatures xsi:type="ecore:EReference" name="assertion" lowerBound="1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="HavocAction" eSuperTypes="#//AbstractAssignmentAction"/>
+  <eClassifiers xsi:type="ecore:EClass" name="AbstractAssignmentAction" abstract="true"
+      eSuperTypes="#//AtomicAction">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="lhs" lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ReferenceExpression"
         containment="true"/>
   </eClassifiers>
 </ecore:EPackage>

@@ -143,6 +143,10 @@ class GammaEcoreUtil {
 		return allContainers
 	}
 	
+	def <T extends EObject> List<T> getAllContainersOfType(EObject object, Class<T> type) {
+		return object.allContainers.filter(type).toList
+	}
+	
 	def <T extends EObject> T getSelfOrContainerOfType(EObject object, Class<T> type) {
 		if (type.isInstance(object)) {
 			return object as T
@@ -189,9 +193,13 @@ class GammaEcoreUtil {
 		return contents
 	}
 	
-	def contains(EObject potentialContainer, EObject object) {
+	def containsTransitively(EObject potentialContainer, EObject object) {
 		val containers = object.allContainers
 		return containers.contains(potentialContainer)
+	}
+	
+	def containsOneOtherTransitively(EObject lhs, EObject rhs) {
+		return lhs.containsTransitively(rhs) || rhs.containsTransitively(lhs)
 	}
 
 	def EObject normalLoad(URI uri) {

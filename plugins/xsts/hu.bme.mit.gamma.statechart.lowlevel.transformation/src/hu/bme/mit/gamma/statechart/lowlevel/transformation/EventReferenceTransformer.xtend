@@ -52,10 +52,7 @@ class EventReferenceTransformer {
 	}
 	
 	protected def transformToLowlevelGuard(EventDeclaration lowlevelEvent) {
-		return createEqualityExpression => [
-			it.leftOperand = lowlevelEvent.isRaised.createReferenceExpression
-			it.rightOperand = createTrueExpression
-		]
+		return lowlevelEvent.isRaised.createReferenceExpression
 	}
 	
 	protected def dispatch Expression transformEventReference(AnyPortEventReference reference) {
