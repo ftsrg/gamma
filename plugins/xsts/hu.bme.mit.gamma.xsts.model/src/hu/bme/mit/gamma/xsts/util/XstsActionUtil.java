@@ -159,7 +159,7 @@ public class XstsActionUtil extends ExpressionUtil {
 	
 	public VariableDeclarationAction extractExpressions(String name, List<? extends Expression> expressions) {
 		Expression firstExpression = expressions.get(0);
-		Type type = typeDeterminator.getTypeDefinition(firstExpression); // Assume: they have the same type
+		Type type = typeDeterminator.getType(firstExpression); // Assume: they have the same type
 		VariableDeclarationAction variableDeclarationAction = extractExpression(type, name, firstExpression);
 		VariableDeclaration variableDeclaration = variableDeclarationAction.getVariableDeclaration();
 		for (int i = 1; i < expressions.size(); i++) {

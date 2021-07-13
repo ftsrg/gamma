@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.lowlevel.xsts.transformation
 
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.TypeReference
@@ -743,8 +744,6 @@ class LowlevelToXstsTransformer {
 		
 		val xTransitions = statechart.XTransitions
 		
-		val extractedExpressions = newArrayList
-		
 		val primaryIsActiveExpressions = trace.getPrimaryIsActiveExpressions
 		for (primaryIsActiveExpression : primaryIsActiveExpressions) {
 			// Cloning: transitions can fire only if the source state configuration is not left!
@@ -752,8 +751,19 @@ class LowlevelToXstsTransformer {
 			// The following lines extract the isActive expressions, so one must stay here
 		}
 		val isActiveExpressions = trace.getIsActiveExpressions
-		extractedExpressions += trace.extractExpressions(isActiveExpressions)
-		// If we want to follow UML semantics, this is needed too (choice guards are not stored here)
+		val extractedIsActiveVariableActions = trace.extractExpressions(isActiveExpressions)
+		// Extracting state references from the is active expressions (if have not been extracted already)
+		val stateReferenceExpressions = trace.getStateReferenceExpressions
+		trace.keepExpressionsTransitivelyContainedBy(stateReferenceExpressions,
+			extractedIsActiveVariableActions.map[it.variableDeclaration.expression])
+		val stateReferenceVariableActions = trace.extractExpressions(stateReferenceExpressions, true) // Might be empty
+		
+		// Order is important
+		val extractedExpressions = newArrayList
+		extractedExpressions += stateReferenceVariableActions
+		extractedExpressions += extractedIsActiveVariableActions
+		
+		// If we want to follow UML semantics, transition guard extraction is needed too (choice guards are not stored here)
 		if (statechart.guardEvaluation == GuardEvaluation.BEGINNING_OF_STEP) {
 			val xStsGuards = trace.getGuards
 			extractedExpressions += trace.extractExpressions(xStsGuards)
@@ -774,6 +784,22 @@ class LowlevelToXstsTransformer {
 			it.actions += extractedExpressions
 			it.actions += xTransitionActions
 		]
+		
+		// Deleting single cross-reference local variables
+		// Must be used after inserting the actions into a container due to the "change" call
+		// This local variable cannot be used in general, as it would not be correct due to potential variable changes
+		// TODO extract
+		for (extractedIsActiveVariableAction : extractedIsActiveVariableActions) {
+			val extractedIsActiveVariable = extractedIsActiveVariableAction.variableDeclaration
+			val expression = extractedIsActiveVariable.expression
+			if (expression instanceof DirectReferenceExpression) {
+				val stateReferenceVariable = expression.declaration
+				val container = extractedIsActiveVariableAction.eContainer
+				stateReferenceVariable.change(extractedIsActiveVariable, container)
+				extractedIsActiveVariable.deleteDeclaration
+			}
+		}
+		//
 		
 		xSts.changeTransitions(xStsMergedAction.wrap)
 	}
@@ -838,8 +864,8 @@ class LowlevelToXstsTransformer {
 	}
 	
 	protected def deleteNotReadTransientVariables() {
-		val variableMacher = NotReadVariables.Matcher.on(targetEngine)
-		val notReadTransientXStsVariables = variableMacher.allValuesOfvariable
+		val unreadVariableMacher = NotReadVariables.Matcher.on(targetEngine)
+		val notReadTransientXStsVariables = unreadVariableMacher.allValuesOfvariable
 				.filter[it.transient || it.local]
 		val assignmentMatcher = AssignmentActions.Matcher.on(targetEngine)
 		for (notReadTransientXStsVariable : notReadTransientXStsVariables) {
