@@ -17,7 +17,7 @@ private pattern referencedVariables(reference : DirectReferenceExpression, varia
 	DirectReferenceExpression.declaration(reference, variable);
 }
 
-pattern assignmentActions(action : AssignmentAction,
+pattern assignmentActions(action : AbstractAssignmentAction,
 		reference : DirectReferenceExpression, variable : VariableDeclaration) {
 	AbstractAssignmentAction.lhs(action, reference);
 	find referencedVariables(reference, variable);

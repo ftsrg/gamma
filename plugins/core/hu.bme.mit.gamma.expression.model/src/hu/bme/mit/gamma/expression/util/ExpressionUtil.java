@@ -54,6 +54,7 @@ import hu.bme.mit.gamma.expression.model.GreaterEqualExpression;
 import hu.bme.mit.gamma.expression.model.GreaterExpression;
 import hu.bme.mit.gamma.expression.model.IfThenElseExpression;
 import hu.bme.mit.gamma.expression.model.InequalityExpression;
+import hu.bme.mit.gamma.expression.model.InitializableElement;
 import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression;
 import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression;
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition;
@@ -863,6 +864,18 @@ public class ExpressionUtil {
 			operands.add(factory.createTrueExpression());
 		}
 		return and;
+	}
+	
+	public void reduceCrossReferenceChain(
+			Iterable<? extends InitializableElement> initializableElements, EObject context) {
+		for (InitializableElement element : initializableElements) {
+			Expression initialExpression = element.getExpression();
+			if (initialExpression instanceof DirectReferenceExpression) {
+				DirectReferenceExpression reference = (DirectReferenceExpression) initialExpression;
+				Declaration referencedDeclaration = reference.getDeclaration();
+				ecoreUtil.change(referencedDeclaration, element, context);
+			}
+		}
 	}
 	
 	// Creators
