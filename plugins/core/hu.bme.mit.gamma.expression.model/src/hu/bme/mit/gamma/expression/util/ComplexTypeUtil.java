@@ -256,7 +256,7 @@ public class ComplexTypeUtil {
 	
 	public FieldHierarchy getFieldAccess(Expression expression) {
 		List<FieldReferenceExpression> fieldAccesses =
-				javaUtil.filter(getAccesses(expression), FieldReferenceExpression.class);
+				javaUtil.filterIntoList(getAccesses(expression), FieldReferenceExpression.class);
 		List<FieldDeclaration> fieldDeclarations = fieldAccesses.stream()
 				.map(it -> it.getFieldDeclaration()).collect(Collectors.toList());
 		return new FieldHierarchy(fieldDeclarations);
@@ -269,7 +269,7 @@ public class ComplexTypeUtil {
 	public List<Expression> getMultiDIndexAccess(Expression expression) {
 		List<Expression> accesses = getAccesses(expression);
 		List<FieldReferenceExpression> recordAccesses =
-				javaUtil.filter(accesses, FieldReferenceExpression.class);
+				javaUtil.filterIntoList(accesses, FieldReferenceExpression.class);
 		accesses.removeAll(recordAccesses);
 		return accesses;
 	}

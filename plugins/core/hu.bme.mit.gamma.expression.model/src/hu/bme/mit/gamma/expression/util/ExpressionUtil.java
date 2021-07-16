@@ -80,6 +80,7 @@ import hu.bme.mit.gamma.expression.model.TypeReference;
 import hu.bme.mit.gamma.expression.model.UnaryExpression;
 import hu.bme.mit.gamma.expression.model.ValueDeclaration;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
+import hu.bme.mit.gamma.expression.model.VariableDeclarationAnnotation;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
 
 public class ExpressionUtil {
@@ -876,6 +877,20 @@ public class ExpressionUtil {
 				ecoreUtil.change(referencedDeclaration, element, context);
 			}
 		}
+	}
+	
+	// Variable annotation handling
+	
+	public void addTransientAnnotation(VariableDeclaration variable) {
+		addAnnotation(variable, factory.createTransientVariableDeclarationAnnotation());
+	}
+	
+	public void addResetableAnnotation(VariableDeclaration variable) {
+		addAnnotation(variable, factory.createResetableVariableDeclarationAnnotation());
+	}
+	
+	public void addAnnotation(VariableDeclaration variable, VariableDeclarationAnnotation annotation) {
+		variable.getAnnotations().add(annotation);
 	}
 	
 	// Creators

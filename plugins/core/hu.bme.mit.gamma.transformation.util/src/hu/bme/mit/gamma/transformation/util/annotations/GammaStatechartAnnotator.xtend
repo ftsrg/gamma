@@ -6,7 +6,6 @@ import hu.bme.mit.gamma.action.model.Branch
 import hu.bme.mit.gamma.action.model.ChoiceStatement
 import hu.bme.mit.gamma.action.model.IfStatement
 import hu.bme.mit.gamma.action.model.SwitchStatement
-import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
@@ -34,8 +33,8 @@ import hu.bme.mit.gamma.transformation.util.queries.VariableDefs
 import hu.bme.mit.gamma.transformation.util.queries.VariablePUses
 import hu.bme.mit.gamma.transformation.util.queries.VariableUses
 import hu.bme.mit.gamma.util.GammaEcoreUtil
+import hu.bme.mit.gamma.util.JavaUtil
 import java.util.AbstractMap.SimpleEntry
-import java.util.Collection
 import java.util.List
 import java.util.Map
 import java.util.Map.Entry
@@ -43,7 +42,6 @@ import java.util.Set
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 import org.eclipse.viatra.query.runtime.emf.EMFScope
-import org.eclipse.xtend.lib.annotations.Data
 
 import static com.google.common.base.Preconditions.checkState
 
@@ -107,6 +105,7 @@ class GammaStatechartAnnotator {
 	protected final extension InterfaceModelFactory interfaceModelFactory = InterfaceModelFactory.eINSTANCE
 	protected final extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
+	protected final extension JavaUtil javaUtil = JavaUtil.INSTANCE
 	// Namings
 	protected final AnnotationNamings namings = new AnnotationNamings // Instance due to the id
 	
@@ -165,7 +164,7 @@ class GammaStatechartAnnotator {
 		statechart.variableDeclarations += variable
 		variables.put(transition, variable)
 		if (isResetable) {
-			variable.designateVariableResetable
+			variable.addResetableAnnotation
 		}
 		return variable
 	}
@@ -299,10 +298,8 @@ class GammaStatechartAnnotator {
 	
 	protected def needSameId(RaiseEventAction lhs, RaiseEventAction rhs) {
 		if (SENDER_INTERACTION_TUPLE == InteractionCoverageCriterion.EVERY_INTERACTION ||
-				lhs.containingStatechart !== rhs.containingStatechart
-				// The algorithm would be correct without this too
-				//  This way, the raise event actions in different statecharts get different ids
-				) {
+				lhs.containingStatechart !== rhs.containingStatechart) {
+				// This way, the raise event actions in different statecharts get different ids: crucial during property generation
 			return false 
 		}
 		val lhsState = lhs.correspondingStateNode
@@ -344,8 +341,7 @@ class GammaStatechartAnnotator {
 	protected def needSameId(Transition lhs, Transition rhs) {
 		if (RECEIVER_INTERACTION_TUPLE == InteractionCoverageCriterion.EVERY_INTERACTION ||
 				lhs.containingStatechart !== rhs.containingStatechart) {
-			// The algorithm would be correct without this too
-			// This way, the transitions in different statecharts get different ids 
+			// This way, the transitions in different statecharts get different ids: crucial during property generation
 			return false 
 		}
 		val lhsSource = lhs.sourceState
@@ -360,24 +356,15 @@ class GammaStatechartAnnotator {
 	}
 	
 	protected def getInteractionVariables(Region region) {
-		if (!regionInteractionVariables.containsKey(region)) {
-			regionInteractionVariables.put(region, newArrayList)
-		}
-		return regionInteractionVariables.get(region)
+		return regionInteractionVariables.getOrCreateList(region)
 	}
 	
 	protected def getInteractionVariables(StatechartDefinition statechart) {
-		if (!statechartInteractionVariables.containsKey(statechart)) {
-			statechartInteractionVariables.put(statechart, newArrayList)
-		}
-		return statechartInteractionVariables.get(statechart)
+		return statechartInteractionVariables.getOrCreateList(statechart)
 	}
 	
 	protected def getReceivingInteractions(Transition transition) {
-		if (!receivingInteractions.containsKey(transition)) {
-			receivingInteractions.put(transition, newArrayList)
-		}
-		return receivingInteractions.get(transition)
+		return receivingInteractions.getOrCreateList(transition)
 	}
 	
 	protected def putReceivingInteraction(Transition transition, Port port, Event event) {
@@ -429,18 +416,18 @@ class GammaStatechartAnnotator {
 		val interactionMatcher = RaiseInstanceEvents.Matcher.on(engine)
 		val matches = interactionMatcher.allMatches
 		val relevantMatches = matches
-				.filter[ // If BOTH sender and receiver elements are included, the interaction is covered
-					interactionCoverablePorts.contains(it.outPort) &&
-						interactionCoverablePorts.contains(it.inPort) &&
-					interactionCoverableStates.contains(it.raiseEventAction.correspondingStateNode) &&
-					interactionCoverableStates.contains(it.receivingTransition.sourceState) &&
-					(it.raiseEventAction.containingTransitionOrState instanceof State ||
-						interactionCoverableTransitions.contains(
-							it.raiseEventAction.containingTransitionOrState)) && 
-					interactionCoverableTransitions.contains(it.receivingTransition)]
-				// Filtering definitely bad arguments
-				.reject[it.receivingTransition.guard.areDefinitelyFalseArguments(
-					it.inPort, it.raisedEvent, it.raiseEventAction.arguments)]
+			.filter[ // If BOTH sender and receiver elements are included, the interaction is covered
+				interactionCoverablePorts.contains(it.outPort) &&
+					interactionCoverablePorts.contains(it.inPort) &&
+				interactionCoverableStates.contains(it.raiseEventAction.correspondingStateNode) &&
+				interactionCoverableStates.contains(it.receivingTransition.sourceState) &&
+				(it.raiseEventAction.containingTransitionOrState instanceof State ||
+					interactionCoverableTransitions.contains(
+						it.raiseEventAction.containingTransitionOrState)) && 
+				interactionCoverableTransitions.contains(it.receivingTransition)]
+			// Filtering definitely impossible interaction points (event parameter arguments)
+			.reject[it.receivingTransition.guard.areDefinitelyFalseArguments(
+				it.inPort, it.raisedEvent, it.raiseEventAction.arguments)]
 		
 		val raisedEvents = relevantMatches.map[it.raisedEvent].toSet // Set, so one event is set only once
 		// Creating event parameters
@@ -453,8 +440,11 @@ class GammaStatechartAnnotator {
 			newEventParameters += newParameter
 		}
 		
-		// Annotating raise event actions and transitions
-		for (match : relevantMatches) {
+		// Maybe sorting according to raise event actions helps to create id assignments to a
+		// minimal number of variables when RECEIVER_CONSIDERATION is false and there are complex triggers
+		val sortedRelevantMatches = relevantMatches.sortBy[
+			'''«raiseEventAction.containingStatechart.name»_«raiseEventAction.port.name»_«raiseEventAction.event.name»''']
+		for (match : sortedRelevantMatches) {
 			// Sending
 			val raiseEventAction = match.raiseEventAction
 			if (!raiseEventAction.hasSendingId) {
@@ -525,7 +515,7 @@ class GammaStatechartAnnotator {
 		val variableDefList = defUseMap.get(referredVariable)
 		variableDefList += new DataflowReferenceVariable(reference, defUseVariable)
 		if (isResetable) {
-			defUseVariable.designateVariableResetable
+			defUseVariable.addResetableAnnotation
 		}
 		return defUseVariable
 	}
@@ -654,11 +644,6 @@ class GammaStatechartAnnotator {
 		}
 	}
 	
-	static interface DataflowDeclarationHandler {
-		def Collection<DataflowReferenceVariable> getDefDataflowReferences(EObject defReference)
-		def VariableDeclaration getUseVariable(ReferenceExpression useReference)
-	}
-	
 	// Interaction dataflow coverage
 	
 	protected def createInteractionDefUseVariable(EObject reference,
@@ -693,7 +678,7 @@ class GammaStatechartAnnotator {
 			variableDefList += new DataflowReferenceVariable(reference, defUseVariable)
 		}
 		if (isResetable) {
-			defUseVariable.designateVariableResetable
+			defUseVariable.addResetableAnnotation
 		}
 		return defUseVariable
 	}
@@ -865,18 +850,10 @@ class GammaStatechartAnnotator {
 			globalPool += variablePair
 		}
 		if (resettable) {
-			senderVariable.designateVariableResetable
-			receiverVariable.designateVariableResetable
+			senderVariable.addResetableAnnotation
+			receiverVariable.addResetableAnnotation
 		}
 		return variablePair
-	}
-	
-	// Adder
-	
-	def designateVariableResetable(VariableDeclaration variable) {
-		if (variable !== null) {
-			variable.annotations += createResetableVariableDeclarationAnnotation
-		}
 	}
 	
 	// Getters
@@ -919,178 +896,4 @@ class GammaStatechartAnnotator {
 		annotateModelForInteractionDataFlowCoverage
 	}
 	
-	// Auxiliary classes for the transition and interaction
-	
-	static class TransitionAnnotations {
-		
-		final Map<Transition, VariableDeclaration> transitionPairVariables
-		
-		new(Map<Transition, VariableDeclaration> transitionPairVariables) {
-			this.transitionPairVariables = transitionPairVariables
-		}
-		
-		def getTransitions() {
-			return transitionPairVariables.keySet
-		}
-		
-		def isAnnotated(Transition transition) {
-			return transitionPairVariables.containsKey(transition)
-		}
-		
-		def getVariable(Transition transition) {
-			return transitionPairVariables.get(transition)
-		}
-		
-		def isEmpty() {
-			return transitionPairVariables.empty
-		}
-		
-	}
-	
-	@Data
-	static class VariablePair {
-		VariableDeclaration first
-		VariableDeclaration second
-		
-		def hasFirst() {
-			return first !== null
-		}
-		
-		def hasSecond() {
-			return second !== null
-		}
-		
-	}
-	
-	@Data
-	static class TransitionAnnotation {
-		Transition transition
-		VariableDeclaration transitionVariable
-		Long transitionId
-	}
-	
-	@Data
-	static class TransitionPairAnnotation {
-		TransitionAnnotation incomingAnnotation
-		TransitionAnnotation outgoingAnnotation
-	}
-	
-	@Data
-	static class Interaction {
-		RaiseEventAction sender
-		Transition receiver
-		VariablePair variablePair
-		Long senderId
-		Long receiverId
-	}
-	
-	static class InteractionAnnotations {
-		
-		final Collection<Interaction> interactions
-		Set<Interaction> interactionSet
-		
-		new(Collection<Interaction> interactions) {
-			this.interactions = interactions
-		}
-		
-		def getInteractions() {
-			return this.interactions
-		}
-		
-		def getUniqueInteractions() {
-			// If the interactions are not "every-interaction", duplications can occur
-			if (interactionSet === null) {
-				interactionSet = newHashSet
-				interactionSet += interactions
-				
-				// After this unique filter, some sender-receiver comments might not contain every element
-				// Can be fixed by storing a list for the receivers, not a single element
-				val interactionList = interactionSet.toList
-				for (var i = 0; i < interactionList.size - 1; i++) {
-					val lhs = interactionList.get(i)
-					for (var j = i + 1; j < interactionList.size; j++) {
-						val rhs = interactionList.get(j)
-						if (lhs.variablePair.equals(rhs.variablePair)) { // == operator does not work for some reason
-							val first = lhs.variablePair.first // == rhs.variablePair.first 
-							val second = lhs.variablePair.second // == rhs.variablePair.second 
-							if ((first === null || lhs.senderId.equals(rhs.senderId)) && 
-									(second === null || lhs.receiverId.equals(rhs.receiverId))) {
-								interactionSet -= rhs
-							}
-						}
-					}
-				}
-			}
-			return interactionSet
-		}
-		
-		def isEmpty() {
-			return this.interactions.empty
-		}
-		
-	}
-	
-	@Data
-	static class DataflowReferenceVariable {
-		EObject originalVariableReference // EventParameterReferenceExpression, DirectReferenceExpression or RaiseEventAction
-		VariableDeclaration defUseVariable // Boolean variable denoting def or use
-	}
-	
-	static class DefUseReferences {
-		final Map<? extends Declaration, /* Original declaration (parameter or variable) whose def or use is marked */
-			List<DataflowReferenceVariable> /* Reference-variable pairs denoting if the original declaration is set or read */>
-				declarationDefs
-		
-		new(Map<? extends Declaration, List<DataflowReferenceVariable>> declarationDefs) {
-			this.declarationDefs = declarationDefs
-		}
-		
-		def getVariables() {
-			return declarationDefs.keySet
-		}
-		
-		def getAuxiliaryReferences(Declaration declaration) {
-			if (declarationDefs.containsKey(declaration)) {
-				return declarationDefs.get(declaration)
-			}
-			else {
-				return #[]
-			}
-		}
-		
-		def getAuxiliaryVariables(Declaration declaration) {
-			return declaration.getAuxiliaryReferences.map[it.getDefUseVariable].toList
-		}
-		
-	}
-	
-}
-
-class AnnotationNamings {
-	
-	public static val PREFIX = "__id_"
-	public static val POSTFIX = "_"
-	
-	int id = 0
-	int defId = 0
-	int useId = 0
-	int interactionDefId = 0
-	int interactionUseId = 0
-	
-	def String getVariableName(Transition transition) '''«IF transition.id !== null»«transition.id»«ELSE»«PREFIX»«transition.sourceState.name»_«id++»_«transition.targetState.name»«POSTFIX»«ENDIF»'''
-	def String getFirstVariableName(StatechartDefinition statechart) '''«PREFIX»first_«statechart.name»«id++»«POSTFIX»'''
-	def String getSecondVariableName(StatechartDefinition statechart) '''«PREFIX»second_«statechart.name»«id++»«POSTFIX»'''
-	def String getParameterName(Event event) '''«PREFIX»«event.name»«POSTFIX»'''
-	def String getDefVariableName(VariableDeclaration variable) '''«PREFIX»def_«variable.name»_«defId++»«POSTFIX»'''
-	def String getUseVariableName(VariableDeclaration variable) '''«PREFIX»use_«variable.name»_«useId++»«POSTFIX»'''
-	def String getInteractionDefVariableName(RaiseEventAction raise) '''«PREFIX»def_«raise.port.name»_«raise.event.name»_«interactionDefId++»«POSTFIX»'''
-	def String getInteractionUseVariableName(EventParameterReferenceExpression reference) '''«PREFIX»use_«reference.port.name»_«reference.event.name»_«reference.parameter.name»_«interactionUseId++»«POSTFIX»'''
-}
-
-enum InteractionCoverageCriterion {
-	EVERY_INTERACTION, STATES_AND_EVENTS, EVENTS
-}
-
-enum DataflowCoverageCriterion {
-	ALL_DEF, ALL_P_USE, ALL_C_USE, ALL_USE
 }

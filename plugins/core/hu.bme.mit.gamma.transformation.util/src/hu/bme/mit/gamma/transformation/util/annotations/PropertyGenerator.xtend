@@ -36,10 +36,6 @@ import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.statechart.util.ExpressionSerializer
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
-import hu.bme.mit.gamma.transformation.util.annotations.GammaStatechartAnnotator.DefUseReferences
-import hu.bme.mit.gamma.transformation.util.annotations.GammaStatechartAnnotator.InteractionAnnotations
-import hu.bme.mit.gamma.transformation.util.annotations.GammaStatechartAnnotator.TransitionAnnotations
-import hu.bme.mit.gamma.transformation.util.annotations.GammaStatechartAnnotator.TransitionPairAnnotation
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.util.Collection
 import java.util.Collections
@@ -261,6 +257,9 @@ class PropertyGenerator {
 					it.operands += receiverEqualityExpression
 				]
 				receiverComment = receiver.id
+			}
+			else {
+				// TODO Saving the expression to the id: in this case same identifiers have to be handled together
 			}
 			//
 			val stateFormula = propertyUtil.createEF(propertyUtil.createAtomicFormula(finalExpression))

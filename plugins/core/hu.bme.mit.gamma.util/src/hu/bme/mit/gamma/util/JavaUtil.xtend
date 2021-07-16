@@ -11,7 +11,7 @@
 package hu.bme.mit.gamma.util
 
 import java.util.List
-import java.util.Collection
+import java.util.Map
 
 class JavaUtil {
 	// Singleton
@@ -19,7 +19,7 @@ class JavaUtil {
 	protected new() {}
 	//
 
-	def <T> List<T> filter(Iterable<? super T> collection, Class<T> clazz) {
+	def <T> List<T> filterIntoList(Iterable<? super T> collection, Class<T> clazz) {
 		val list = <T>newArrayList
 		for (element : collection) {
 			if (clazz.isInstance(element)) {
@@ -29,15 +29,22 @@ class JavaUtil {
 		return list
 	}
 	
-	def <T> Iterable<T> flatten(Iterable<? extends Iterable<? extends T>> inputs) {
-		return IterableExtensions.flatten(inputs)
+	def <T> Iterable<T> flattenIntoList(Iterable<? extends Iterable<? extends T>> inputs) {
+		return IterableExtensions.flatten(inputs).toList
 	}
 	
-	def <T> T getOnlyElement(Collection<T> collection) {
+	def <T> T getOnlyElement(Iterable<T> collection) {
 		if (collection.size !== 1) {
 			throw new IllegalArgumentException("Not one elment: " + collection)
 		}
 		return collection.last
+	}
+	
+	def <K, V> List<V> getOrCreateList(Map<K, List<V>> map, K key) {
+		if (!map.containsKey(key)) {
+			map += key -> newArrayList
+		}
+		return map.get(key)
 	}
 	
 }
