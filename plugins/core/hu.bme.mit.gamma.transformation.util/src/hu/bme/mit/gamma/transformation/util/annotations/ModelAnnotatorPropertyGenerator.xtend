@@ -70,7 +70,7 @@ class ModelAnnotatorPropertyGenerator {
 				!testedTransitionsForInteractions.nullOrEmpty ||
 				!dataflowTestedVariables.nullOrEmpty ||
 				!testedPortsForInteractionDataflow.nullOrEmpty) {
-			val annotator = new GammaStatechartAnnotator(newPackage,
+			val annotator = new StatechartAnnotator(newPackage,
 				new AnnotatableElements(
 					testedComponentsForTransitions, testedComponentsForTransitionPairs,
 					testedPortsForInteractions, testedStatesForInteractions,

@@ -432,8 +432,10 @@ public class ExpressionUtil {
 	}
 
 	public List<EqualityExpression> filterReferenceEqualityExpressions(Collection<EqualityExpression> expressions) {
-		return expressions.stream().filter(it -> it.getLeftOperand() instanceof ReferenceExpression
-				&& !(it.getRightOperand() instanceof ReferenceExpression)).collect(Collectors.toList());
+		return expressions.stream().filter(
+				it -> it.getLeftOperand() instanceof ReferenceExpression
+				&& !(it.getRightOperand() instanceof ReferenceExpression))
+			.collect(Collectors.toList());
 	}
 
 	// Arithmetic: for now, integers only
@@ -890,7 +892,9 @@ public class ExpressionUtil {
 	}
 	
 	public void addAnnotation(VariableDeclaration variable, VariableDeclarationAnnotation annotation) {
-		variable.getAnnotations().add(annotation);
+		if (variable != null) {
+			variable.getAnnotations().add(annotation);
+		}
 	}
 	
 	// Creators
@@ -941,6 +945,15 @@ public class ExpressionUtil {
 		EnumerationLiteralExpression literalExpression = factory.createEnumerationLiteralExpression();
 		literalExpression.setReference(literal);
 		return literalExpression;
+	}
+	
+	public Expression replaceAndWrapIntoMultiaryExpression(Expression original,
+			Expression addition, MultiaryExpression potentialContainer) {
+		if (original == null && addition == null) {
+			throw new IllegalArgumentException("Null original or addition parameter: " + original + " " + addition);
+		}
+		ecoreUtil.replace(potentialContainer, original);
+		return wrapIntoMultiaryExpression(original, addition, potentialContainer);
 	}
 	
 	public Expression wrapIntoMultiaryExpression(Expression original,

@@ -48,7 +48,7 @@ import static com.google.common.base.Preconditions.checkState
 import static extension hu.bme.mit.gamma.action.derivedfeatures.ActionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
-class GammaStatechartAnnotator {
+class StatechartAnnotator {
 	protected final Package gammaPackage
 	protected final ViatraQueryEngine engine
 	// Transition coverage
@@ -443,7 +443,7 @@ class GammaStatechartAnnotator {
 		// Maybe sorting according to raise event actions helps to create id assignments to a
 		// minimal number of variables when RECEIVER_CONSIDERATION is false and there are complex triggers
 		val sortedRelevantMatches = relevantMatches.sortBy[
-			'''«raiseEventAction.containingStatechart.name»_«raiseEventAction.port.name»_«raiseEventAction.event.name»''']
+			'''«raiseEventAction.containingStatechart.name»_«inPort.name»_«raisedEvent.name»''']
 		for (match : sortedRelevantMatches) {
 			// Sending
 			val raiseEventAction = match.raiseEventAction
@@ -495,6 +495,7 @@ class GammaStatechartAnnotator {
 		for (unattendedRaiseEventAction : unattendedRaiseEventActions) {
 			unattendedRaiseEventAction.arguments += 0.toIntegerLiteral
 		}
+		
 	}
 	
 	// Data-flow coverage
