@@ -440,8 +440,8 @@ class StatechartAnnotator {
 			newEventParameters += newParameter
 		}
 		
-		// Maybe sorting according to raise event actions helps to create id assignments to a
-		// minimal number of variables when RECEIVER_CONSIDERATION is false and there are complex triggers
+		// Sorting according to in events helps to create id assignments to a minimal number
+		// of variables when RECEIVER_CONSIDERATION is false and there are complex triggers
 		val sortedRelevantMatches = relevantMatches.sortBy[
 			'''«raiseEventAction.containingStatechart.name»_«inPort.name»_«raisedEvent.name»''']
 		for (match : sortedRelevantMatches) {
