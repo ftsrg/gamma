@@ -47,8 +47,10 @@ import hu.bme.mit.gamma.xsts.model.ParallelAction
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.model.XTransition
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
+import java.util.Collection
 import java.util.List
 import java.util.Map
+import org.eclipse.emf.ecore.EObject
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 import org.eclipse.viatra.query.runtime.emf.EMFScope
 
@@ -72,6 +74,7 @@ package class Trace {
 	protected final Map<Transition, List<Expression>> isActiveExpressions = newHashMap
 	protected final Map<Transition, List<Expression>> guards = newHashMap
 	protected final Map<Transition, List<Expression>> choiceGuards = newHashMap
+	protected final Map<State, List<Expression>> stateReferenceExpressions = newHashMap
 	
 	new(Package _package, XSTS xSts) {
 		this.trace = createL2STrace => [
@@ -99,21 +102,42 @@ package class Trace {
 		return choiceGuards
 	}
 	
-	def void add(Map<Transition, List<Expression>> map,
-			Transition lowlevelTransition, Expression expression) {
-		if (!map.containsKey(lowlevelTransition)) {
-			map += lowlevelTransition -> newArrayList
+	def getStateReferenceExpressions() {
+		return stateReferenceExpressions
+	}
+	
+	def <T> void add(Map<T, List<Expression>> map,
+			T object, Expression expression) {
+		if (!map.containsKey(object)) {
+			map += object -> newArrayList
 		}
-		val list = map.get(lowlevelTransition)
+		val list = map.get(object)
 		list += expression
 	}
 	
-	def extractExpressions(Map<Transition, List<Expression>> expressions) {
+	def void keepExpressionsTransitivelyContainedBy(Map<?, List<Expression>> map,
+			Collection<Expression> expressions) {
+		for (list : map.values) {
+			list.removeIf[
+				val elem = it
+				!expressions.exists[it.selfOrContainsTransitively(elem)]
+			]
+		}
+	}
+	
+	def extractExpressions(Map<? extends EObject, List<Expression>> expressions) {
+		return expressions.extractExpressions(false)
+	}
+	
+	def extractExpressions(Map<? extends EObject, List<Expression>> expressions,
+			boolean onlyIfSizeIsGreaterThanOne) {
 		val xStsVariableDeclarationActions = newArrayList
-		for (lowlevelTransition : expressions.keySet) {
-			val xStsIsActiveExpressions = expressions.get(lowlevelTransition)
-			val name = '''_«xStsIsActiveExpressions.hashCode.abs»'''
-			xStsVariableDeclarationActions += name.extractExpressions(xStsIsActiveExpressions)
+		for (key : expressions.keySet) {
+			val xStsExpressions = expressions.get(key)
+			if (!onlyIfSizeIsGreaterThanOne || xStsExpressions.size > 1) {
+				val name = '''_«xStsExpressions.hashCode.abs»'''
+				xStsVariableDeclarationActions += name.extractExpressions(xStsExpressions)
+			}
 		}
 		return xStsVariableDeclarationActions
 	}

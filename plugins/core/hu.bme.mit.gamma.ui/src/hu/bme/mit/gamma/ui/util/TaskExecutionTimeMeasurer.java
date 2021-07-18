@@ -39,7 +39,11 @@ public class TaskExecutionTimeMeasurer implements TaskHook {
 	private final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
 	private final FileUtil fileUtil = FileUtil.INSTANCE;
 	
-	protected Logger logger = Logger.getLogger("GammaLogger");
+	protected final Logger logger = Logger.getLogger("GammaLogger");
+	
+	public TaskExecutionTimeMeasurer(Calculator<Double> calculator, String fileName) {
+		this(1, calculator, fileName, TimeUnit.SECONDS);
+	}
 	
 	public TaskExecutionTimeMeasurer(int iterationCount,
 			Calculator<Double> calculator, String fileName, TimeUnit unit) {

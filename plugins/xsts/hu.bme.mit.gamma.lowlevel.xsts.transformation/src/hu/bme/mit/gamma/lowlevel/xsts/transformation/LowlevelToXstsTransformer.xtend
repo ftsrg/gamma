@@ -123,8 +123,10 @@ class LowlevelToXstsTransformer {
 	protected BatchTransformationRule<Timeouts.Match, Timeouts.Matcher> timeoutsRule
 	protected BatchTransformationRule<GlobalVariables.Match, GlobalVariables.Matcher> variableInitializationsRule
 	protected BatchTransformationRule<Statecharts.Match, Statecharts.Matcher> topRegionInitializationRule
-	protected BatchTransformationRule<SimpleTransitionsBetweenStates.Match, SimpleTransitionsBetweenStates.Matcher> simpleTransitionBetweenStatesRule
-	protected BatchTransformationRule<SimpleTransitionsToEntryStates.Match, SimpleTransitionsToEntryStates.Matcher> simpleTransitionsToHistoryStatesRule
+	protected BatchTransformationRule<SimpleTransitionsBetweenStates.Match,
+				SimpleTransitionsBetweenStates.Matcher> simpleTransitionBetweenStatesRule
+	protected BatchTransformationRule<SimpleTransitionsToEntryStates.Match,
+				SimpleTransitionsToEntryStates.Matcher> simpleTransitionsToHistoryStatesRule
 	protected BatchTransformationRule<LastJoinStates.Match, LastJoinStates.Matcher> lastJoinTransitionsRule
 	protected BatchTransformationRule<LastMergeStates.Match, LastMergeStates.Matcher> lastMergeTransitionsRule
 	protected BatchTransformationRule<FirstForkStates.Match, FirstForkStates.Matcher> firstForkTransitionsRule
@@ -171,7 +173,7 @@ class LowlevelToXstsTransformer {
 		this.transformation = BatchTransformation.forEngine(engine).build
 		this.statements = transformation.transformationStatements
 		this.optimize = optimize
-		this.useHavocActions = false
+		this.useHavocActions = useHavocActions
 		if (optimize) {
 			this.referredEvents = ReferredEvents.Matcher.on(engine).allValuesOfevent
 			this.referredVariables = ReferredVariables.Matcher.on(engine).allValuesOfvariable
@@ -743,8 +745,6 @@ class LowlevelToXstsTransformer {
 		
 		val xTransitions = statechart.XTransitions
 		
-		val extractedExpressions = newArrayList
-		
 		val primaryIsActiveExpressions = trace.getPrimaryIsActiveExpressions
 		for (primaryIsActiveExpression : primaryIsActiveExpressions) {
 			// Cloning: transitions can fire only if the source state configuration is not left!
@@ -752,8 +752,19 @@ class LowlevelToXstsTransformer {
 			// The following lines extract the isActive expressions, so one must stay here
 		}
 		val isActiveExpressions = trace.getIsActiveExpressions
-		extractedExpressions += trace.extractExpressions(isActiveExpressions)
-		// If we want to follow UML semantics, this is needed too (choice guards are not stored here)
+		val extractedIsActiveVariableActions = trace.extractExpressions(isActiveExpressions)
+		// Extracting state references from the is active expressions (if have not been extracted already)
+		val stateReferenceExpressions = trace.getStateReferenceExpressions
+		trace.keepExpressionsTransitivelyContainedBy(stateReferenceExpressions,
+			extractedIsActiveVariableActions.map[it.variableDeclaration.expression])
+		val extractedStateReferenceVariableActions = trace.extractExpressions(stateReferenceExpressions, true) // Might be empty
+		
+		// Order is important
+		val extractedExpressions = newArrayList
+		extractedExpressions += extractedStateReferenceVariableActions
+		extractedExpressions += extractedIsActiveVariableActions
+		
+		// If we want to follow UML semantics, transition guard extraction is needed too (choice guards are not stored here)
 		if (statechart.guardEvaluation == GuardEvaluation.BEGINNING_OF_STEP) {
 			val xStsGuards = trace.getGuards
 			extractedExpressions += trace.extractExpressions(xStsGuards)
@@ -774,6 +785,13 @@ class LowlevelToXstsTransformer {
 			it.actions += extractedExpressions
 			it.actions += xTransitionActions
 		]
+		
+		// Deleting single cross-reference local variables
+		// Must be used after inserting the actions into a container due to the "change" call
+		// This reduction cannot be used in general, as it would incorrect due to potential variable value changes
+		extractedIsActiveVariableActions.map[it.variableDeclaration]
+				.reduceCrossReferenceChain(xStsMergedAction)
+		// No deletion here as later reduction will delete unreferenced variable actions
 		
 		xSts.changeTransitions(xStsMergedAction.wrap)
 	}
@@ -831,25 +849,22 @@ class LowlevelToXstsTransformer {
 			oldEntryEventAction = xSts.entryEventTransition.clone
 			inliner.inline(xSts.transitions)
 			inliner.inline(xSts.entryEventTransition)
-			deleteNotReadTransientVariables
+			deleteUnreadTransientXStsVariables
 			xSts.changeTransitions(xSts.transitions.optimize)
 			xSts.entryEventTransition = xSts.entryEventTransition.optimize
 		}
 	}
 	
-	protected def deleteNotReadTransientVariables() {
-		val variableMacher = NotReadVariables.Matcher.on(targetEngine)
-		val notReadTransientXStsVariables = variableMacher.allValuesOfvariable
+	protected def deleteUnreadTransientXStsVariables() {
+		val unreadXStsVariableMacher = NotReadVariables.Matcher.on(targetEngine)
+		val unreadTransientXStsVariables = unreadXStsVariableMacher.allValuesOfvariable
 				.filter[it.transient || it.local]
-		val assignmentMatcher = AssignmentActions.Matcher.on(targetEngine)
-		for (notReadTransientXStsVariable : notReadTransientXStsVariables) {
-			val lowlevelAssignments = assignmentMatcher.getAllValuesOfaction(null, notReadTransientXStsVariable)
-			for (lowlevelAssignment : lowlevelAssignments) {
-				lowlevelAssignment.remove
-			}
-			// To delete the potential containing VariableDeclarationAction too
-			notReadTransientXStsVariable.deleteDeclaration 
-			trace.delete(notReadTransientXStsVariable)
+		val xStsAssignmentMatcher = AssignmentActions.Matcher.on(targetEngine)
+		for (unreadTransientXStsVariable : unreadTransientXStsVariables) {
+			val xStsAssignments = xStsAssignmentMatcher.getAllValuesOfaction(null, unreadTransientXStsVariable)
+			xStsAssignments.forEach[it.remove]
+			unreadTransientXStsVariable.deleteDeclaration // Deleting the potential containing VariableDeclarationAction too
+			trace.delete(unreadTransientXStsVariable) // Trace deletion
 		}
 	}
 	

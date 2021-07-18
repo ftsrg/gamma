@@ -193,9 +193,19 @@ class GammaEcoreUtil {
 		return contents
 	}
 	
-	def containsTransitively(EObject potentialContainer, EObject object) {
-		val containers = object.allContainers
-		return containers.contains(potentialContainer)
+	def boolean containsTransitively(EObject potentialContainer, EObject object) {
+		if (potentialContainer === null || object === null) {
+			return false
+		}
+		val container = object.eContainer
+		if (potentialContainer === container) {
+			return true
+		}
+		return potentialContainer.containsTransitively(container)
+	}
+	
+	def selfOrContainsTransitively(EObject potentialContainer, EObject object) {
+		return potentialContainer === object || potentialContainer.containsTransitively(object)
 	}
 	
 	def containsOneOtherTransitively(EObject lhs, EObject rhs) {

@@ -407,16 +407,16 @@ public class GenmodelValidator extends ExpressionModelValidator {
 	public Collection<ValidationResultMessage> checkGammaImports(GenModel genmodel) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		Set<Package> packageImports = genmodel.getPackageImports().stream().collect(Collectors.toSet());
-		for (CodeGeneration codeGenerationTask : javaUtil.filter(genmodel.getTasks(),CodeGeneration.class)) {
+		for (CodeGeneration codeGenerationTask : javaUtil.filterIntoList(genmodel.getTasks(),CodeGeneration.class)) {
 			Package parentPackage = StatechartModelDerivedFeatures.getContainingPackage(codeGenerationTask.getComponent());
 			packageImports.remove(parentPackage);
 		}
 		for (AnalysisModelTransformation analysisModelTransformationTask :
-				javaUtil.filter(genmodel.getTasks(), AnalysisModelTransformation.class)) {
+				javaUtil.filterIntoList(genmodel.getTasks(), AnalysisModelTransformation.class)) {
 			packageImports.removeAll(getUsedPackages(analysisModelTransformationTask));
 		}
 		for (StatechartCompilation statechartCompilationTask :
-				javaUtil.filter(genmodel.getTasks(), StatechartCompilation.class)) {
+				javaUtil.filterIntoList(genmodel.getTasks(), StatechartCompilation.class)) {
 			for (InterfaceMapping interfaceMapping : statechartCompilationTask.getInterfaceMappings()) {
 				Package parentPackage = StatechartModelDerivedFeatures.getContainingPackage(
 						interfaceMapping.getGammaInterface());
@@ -424,13 +424,13 @@ public class GenmodelValidator extends ExpressionModelValidator {
 			}
 		}
 		for (EventPriorityTransformation eventPriorityTransformationTask :
-				javaUtil.filter(genmodel.getTasks(), EventPriorityTransformation.class)) {
+					javaUtil.filterIntoList(genmodel.getTasks(), EventPriorityTransformation.class)) {
 			Package parentPackage = StatechartModelDerivedFeatures.getContainingPackage(
 					eventPriorityTransformationTask.getStatechart());
 			packageImports.remove(parentPackage);
 		}
 		for (AdaptiveContractTestGeneration adaptiveContractTestGenerationTask :
-				javaUtil.filter(genmodel.getTasks(), AdaptiveContractTestGeneration.class)) {
+					javaUtil.filterIntoList(genmodel.getTasks(), AdaptiveContractTestGeneration.class)) {
 			packageImports.removeAll(getUsedPackages(adaptiveContractTestGenerationTask.getModelTransformation()));
 		}
 		for (StatechartContractTestGeneration statechartContractTestGenerationTask :
@@ -438,7 +438,7 @@ public class GenmodelValidator extends ExpressionModelValidator {
 			packageImports.remove(StatechartModelDerivedFeatures.getContainingPackage(statechartContractTestGenerationTask.getComponentReference()));
 		}
 		for (PhaseStatechartGeneration phaseStatechartGenerationTask :
-				javaUtil.filter(genmodel.getTasks(), PhaseStatechartGeneration.class)) {
+					javaUtil.filterIntoList(genmodel.getTasks(), PhaseStatechartGeneration.class)) {
 			Package parentPackage = StatechartModelDerivedFeatures.getContainingPackage(
 					phaseStatechartGenerationTask.getStatechart());
 			packageImports.remove(parentPackage);
@@ -481,8 +481,8 @@ public class GenmodelValidator extends ExpressionModelValidator {
 	public Collection<ValidationResultMessage> checkYakinduImports(GenModel genmodel) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		Set<Statechart> statechartImports = genmodel.getStatechartImports().stream().collect(Collectors.toSet());
-		for (YakinduCompilation statechartCompilationTask : javaUtil.filter(
-				genmodel.getTasks(), YakinduCompilation.class)) {
+		for (YakinduCompilation statechartCompilationTask : javaUtil.filterIntoList(
+					genmodel.getTasks(), YakinduCompilation.class)) {
 			statechartImports.remove(statechartCompilationTask.getStatechart());
 		}
 		for (Statechart statechartImport : statechartImports) {
@@ -497,11 +497,11 @@ public class GenmodelValidator extends ExpressionModelValidator {
 	public Collection<ValidationResultMessage> checkTraceImports(GenModel genmodel) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		Set<ExecutionTrace> traceImports = genmodel.getTraceImports().stream().collect(Collectors.toSet());
-		for (TestGeneration testGenerationTask : javaUtil.filter(genmodel.getTasks(), TestGeneration.class)) {
+		for (TestGeneration testGenerationTask : javaUtil.filterIntoList(genmodel.getTasks(), TestGeneration.class)) {
 			traceImports.remove(testGenerationTask.getExecutionTrace());
 		}
-		for (TestReplayModelGeneration testReplayModelGeneration : javaUtil.filter(
-				genmodel.getTasks(), TestReplayModelGeneration.class)) {
+		for (TestReplayModelGeneration testReplayModelGeneration : javaUtil.filterIntoList(
+					genmodel.getTasks(), TestReplayModelGeneration.class)) {
 			traceImports.remove(testReplayModelGeneration.getExecutionTrace());
 		}
 		for (ExecutionTrace traceImport : traceImports) {
@@ -554,7 +554,7 @@ public class GenmodelValidator extends ExpressionModelValidator {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		Set<InterfaceScope> interfaces = new HashSet<InterfaceScope>();
 		EList<Scope> scopes = statechartCompilation.getStatechart().getScopes();
-		interfaces = javaUtil.filter(scopes, InterfaceScope.class).stream().collect(Collectors.toSet());
+		interfaces = javaUtil.filterIntoList(scopes, InterfaceScope.class).stream().collect(Collectors.toSet());
 
 		Set<InterfaceScope> mappedInterfaces = new HashSet<InterfaceScope>();
 		for (InterfaceMapping interfaceMapping: statechartCompilation.getInterfaceMappings()) {
@@ -781,11 +781,11 @@ public class GenmodelValidator extends ExpressionModelValidator {
 		Set<String> usedInterfaces = testGeneration.getExecutionTrace().getComponent().getPorts().stream()
 				.map(it -> it.getInterfaceRealization().getInterface().getName())
 				.collect(Collectors.toSet()); 
-		List<List<Scope>> interfaceCompilation = javaUtil.filter(genmodel.getTasks(), InterfaceCompilation.class).stream()
+		List<List<Scope>> interfaceCompilation = javaUtil.filterIntoList(genmodel.getTasks(), InterfaceCompilation.class).stream()
 				.map(it -> it.getStatechart().getScopes())
 				.collect(Collectors.toList());
-		Iterable<Scope> flattenList = javaUtil.flatten(interfaceCompilation);
-		Set<String> transformedInterfaces = javaUtil.filter(flattenList, InterfaceScope.class).stream()
+		Iterable<Scope> flattenList = javaUtil.flattenIntoList(interfaceCompilation);
+		Set<String> transformedInterfaces = javaUtil.filterIntoList(flattenList, InterfaceScope.class).stream()
 				.map(it -> it.getName())
 				.collect(Collectors.toSet());
 
@@ -883,7 +883,7 @@ public class GenmodelValidator extends ExpressionModelValidator {
 			if (modelReference instanceof ComponentReference) {
 				ComponentReference componentReference = (ComponentReference)modelReference;
 				Component component = componentReference.getComponent();
-				List<ComponentInstance> containedComponents = javaUtil.filter(component.eContents(), ComponentInstance.class);
+				List<ComponentInstance> containedComponents = javaUtil.filterIntoList(component.eContents(), ComponentInstance.class);
 				ComponentInstance firstInstance = instances.get(0);
 				if (!containedComponents.contains(firstInstance)) {
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 

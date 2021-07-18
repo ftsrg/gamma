@@ -54,6 +54,7 @@ import hu.bme.mit.gamma.expression.model.GreaterEqualExpression;
 import hu.bme.mit.gamma.expression.model.GreaterExpression;
 import hu.bme.mit.gamma.expression.model.IfThenElseExpression;
 import hu.bme.mit.gamma.expression.model.InequalityExpression;
+import hu.bme.mit.gamma.expression.model.InitializableElement;
 import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression;
 import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression;
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition;
@@ -79,6 +80,7 @@ import hu.bme.mit.gamma.expression.model.TypeReference;
 import hu.bme.mit.gamma.expression.model.UnaryExpression;
 import hu.bme.mit.gamma.expression.model.ValueDeclaration;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
+import hu.bme.mit.gamma.expression.model.VariableDeclarationAnnotation;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
 
 public class ExpressionUtil {
@@ -430,8 +432,10 @@ public class ExpressionUtil {
 	}
 
 	public List<EqualityExpression> filterReferenceEqualityExpressions(Collection<EqualityExpression> expressions) {
-		return expressions.stream().filter(it -> it.getLeftOperand() instanceof ReferenceExpression
-				&& !(it.getRightOperand() instanceof ReferenceExpression)).collect(Collectors.toList());
+		return expressions.stream().filter(
+				it -> it.getLeftOperand() instanceof ReferenceExpression
+				&& !(it.getRightOperand() instanceof ReferenceExpression))
+			.collect(Collectors.toList());
 	}
 
 	// Arithmetic: for now, integers only
@@ -865,6 +869,34 @@ public class ExpressionUtil {
 		return and;
 	}
 	
+	public void reduceCrossReferenceChain(
+			Iterable<? extends InitializableElement> initializableElements, EObject context) {
+		for (InitializableElement element : initializableElements) {
+			Expression initialExpression = element.getExpression();
+			if (initialExpression instanceof DirectReferenceExpression) {
+				DirectReferenceExpression reference = (DirectReferenceExpression) initialExpression;
+				Declaration referencedDeclaration = reference.getDeclaration();
+				ecoreUtil.change(referencedDeclaration, element, context);
+			}
+		}
+	}
+	
+	// Variable annotation handling
+	
+	public void addTransientAnnotation(VariableDeclaration variable) {
+		addAnnotation(variable, factory.createTransientVariableDeclarationAnnotation());
+	}
+	
+	public void addResetableAnnotation(VariableDeclaration variable) {
+		addAnnotation(variable, factory.createResetableVariableDeclarationAnnotation());
+	}
+	
+	public void addAnnotation(VariableDeclaration variable, VariableDeclarationAnnotation annotation) {
+		if (variable != null) {
+			variable.getAnnotations().add(annotation);
+		}
+	}
+	
 	// Creators
 	
 	public BigInteger toBigInt(long value) {
@@ -913,6 +945,15 @@ public class ExpressionUtil {
 		EnumerationLiteralExpression literalExpression = factory.createEnumerationLiteralExpression();
 		literalExpression.setReference(literal);
 		return literalExpression;
+	}
+	
+	public Expression replaceAndWrapIntoMultiaryExpression(Expression original,
+			Expression addition, MultiaryExpression potentialContainer) {
+		if (original == null && addition == null) {
+			throw new IllegalArgumentException("Null original or addition parameter: " + original + " " + addition);
+		}
+		ecoreUtil.replace(potentialContainer, original);
+		return wrapIntoMultiaryExpression(original, addition, potentialContainer);
 	}
 	
 	public Expression wrapIntoMultiaryExpression(Expression original,

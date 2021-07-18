@@ -1,11 +1,6 @@
 package hu.bme.mit.gamma.transformation.util.annotations
 
-import hu.bme.mit.gamma.property.model.ComponentInstancePortReference
-import hu.bme.mit.gamma.property.model.ComponentInstanceStateConfigurationReference
-import hu.bme.mit.gamma.property.model.ComponentInstanceTransitionReference
-import hu.bme.mit.gamma.property.model.ComponentInstanceVariableReference
 import hu.bme.mit.gamma.property.model.PropertyPackage
-import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures
 import hu.bme.mit.gamma.statechart.interface_.Component
@@ -15,7 +10,6 @@ import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.transformation.util.SimpleInstanceHandler
 import hu.bme.mit.gamma.util.GammaEcoreUtil
-import java.util.Collection
 import java.util.List
 import org.eclipse.xtend.lib.annotations.Data
 
@@ -76,7 +70,7 @@ class ModelAnnotatorPropertyGenerator {
 				!testedTransitionsForInteractions.nullOrEmpty ||
 				!dataflowTestedVariables.nullOrEmpty ||
 				!testedPortsForInteractionDataflow.nullOrEmpty) {
-			val annotator = new GammaStatechartAnnotator(newPackage,
+			val annotator = new StatechartAnnotator(newPackage,
 				new AnnotatableElements(
 					testedComponentsForTransitions, testedComponentsForTransitionPairs,
 					testedPortsForInteractions, testedStatesForInteractions,
@@ -234,56 +228,6 @@ class ModelAnnotatorPropertyGenerator {
 			}
 		}
 		return variables
-	}
-	
-	// Auxiliary data objects
-	
-	@Data
-	static class ComponentInstanceReferences {
-		Collection<ComponentInstanceReference> include
-		Collection<ComponentInstanceReference> exclude
-	}
-	
-	@Data
-	static class ComponentPortReferences {
-		Collection<ComponentInstancePortReference> include
-		Collection<ComponentInstancePortReference> exclude
-	}
-	
-	@Data
-	static class ComponentStateReferences {
-		Collection<ComponentInstanceStateConfigurationReference> include
-		Collection<ComponentInstanceStateConfigurationReference> exclude
-	}
-	
-	@Data
-	static class ComponentVariableReferences {
-		Collection<ComponentInstanceVariableReference> include
-		Collection<ComponentInstanceVariableReference> exclude
-	}
-	
-	@Data
-	static class ComponentTransitionReferences {
-		Collection<ComponentInstanceTransitionReference> include
-		Collection<ComponentInstanceTransitionReference> exclude
-	}
-	
-	@Data
-	static class ComponentInstancePortReferences {
-		ComponentInstanceReferences instances
-		ComponentPortReferences ports
-	}
-	
-	@Data
-	static class ComponentInstancePortStateTransitionReferences extends ComponentInstancePortReferences {
-		ComponentStateReferences states
-		ComponentTransitionReferences transitions
-	}
-	
-	@Data
-	static class ComponentInstanceVariableReferences {
-		ComponentInstanceReferences instances
-		ComponentVariableReferences variables
 	}
 	
 	// Data

@@ -36,11 +36,8 @@ import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.statechart.util.ExpressionSerializer
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
-import hu.bme.mit.gamma.transformation.util.annotations.GammaStatechartAnnotator.DefUseReferences
-import hu.bme.mit.gamma.transformation.util.annotations.GammaStatechartAnnotator.InteractionAnnotations
-import hu.bme.mit.gamma.transformation.util.annotations.GammaStatechartAnnotator.TransitionAnnotations
-import hu.bme.mit.gamma.transformation.util.annotations.GammaStatechartAnnotator.TransitionPairAnnotation
 import hu.bme.mit.gamma.util.GammaEcoreUtil
+import hu.bme.mit.gamma.util.JavaUtil
 import java.util.Collection
 import java.util.Collections
 import java.util.List
@@ -60,7 +57,9 @@ class PropertyGenerator {
 	protected final ExpressionModelFactory expressionFactory = ExpressionModelFactory.eINSTANCE
 	protected final CompositeModelFactory compositeFactory = CompositeModelFactory.eINSTANCE
 	protected final PropertyModelFactory factory = PropertyModelFactory.eINSTANCE
+	
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
+	protected final extension JavaUtil javaUtil = JavaUtil.INSTANCE
 
 	new(boolean isSimpleComponentReference) {
 		this.isSimpleComponentReference = isSimpleComponentReference
@@ -133,9 +132,7 @@ class PropertyGenerator {
 									val parameterReference = propertyUtil.
 										createParameterReference(createInstanceReference(instance), port, outEvent,
 											parameter)
-									val equalityExpression = expressionFactory.createEqualityExpression
-									equalityExpression.setLeftOperand(parameterReference)
-									equalityExpression.setRightOperand(value)
+									val equalityExpression = parameterReference.createEqualityExpression(value)
 									val and = expressionFactory.createAndExpression
 									and.operands += eventReference
 									and.operands += equalityExpression
@@ -214,11 +211,9 @@ class PropertyGenerator {
 			val secondId = outgoingAnnotation.transitionId
 			
 			// In-out transition pair
-			val firstVariableReference = firstVariable.createVariableReference
-			val secondVariableReference = secondVariable.createVariableReference
 			val and = expressionFactory.createAndExpression => [
-				it.operands += firstVariableReference.createEqualityExpression(firstId.toIntegerLiteral)
-				it.operands += secondVariableReference.createEqualityExpression(secondId.toIntegerLiteral)
+				it.operands += firstVariable.createEqualityExpression(firstId)
+				it.operands += secondVariable.createEqualityExpression(secondId)
 			]
 			val stateFormula = propertyUtil.createEF(propertyUtil.createAtomicFormula(and))
 			// Comment
@@ -231,6 +226,7 @@ class PropertyGenerator {
 
 	def List<CommentableStateFormula> createInteractionReachability(InteractionAnnotations interactionAnnotations) {
 		val List<CommentableStateFormula> formulas = newArrayList
+		val sameIdExpressions = newHashMap
 		if (interactionAnnotations.empty) {
 			return formulas
 		}
@@ -247,20 +243,22 @@ class PropertyGenerator {
 			var receiverComment = "<any>"
 			var Expression finalExpression = null
 			// Sender
-			val senderReference = senderVariable.createVariableReference
-			val senderLiteral = senderId.toIntegerLiteral
-			val senderEqualityExpression = senderReference.createEqualityExpression(senderLiteral)
+			val senderEqualityExpression = senderVariable.createEqualityExpression(senderId)
 			finalExpression = senderEqualityExpression
 			// Receiver
 			if (variablePair.hasSecond) {
-				val receiverReference = receiverVariable.createVariableReference
-				val receiverLiteral = receiverId.toIntegerLiteral
-				val receiverEqualityExpression = receiverReference.createEqualityExpression(receiverLiteral)
+				val receiverEqualityExpression = receiverVariable.createEqualityExpression(receiverId)
 				finalExpression = expressionFactory.createAndExpression => [
 					it.operands += senderEqualityExpression
 					it.operands += receiverEqualityExpression
 				]
 				receiverComment = receiver.id
+			}
+			else {
+				// Saving the expression to the id: in this case same identifiers have to be handled together
+				// Needed when: RECEIVER_CONSIDERATION is false and there are complex triggers 
+				val sameIdList = sameIdExpressions.getOrCreateList(senderId)
+				sameIdList += finalExpression
 			}
 			//
 			val stateFormula = propertyUtil.createEF(propertyUtil.createAtomicFormula(finalExpression))
@@ -269,6 +267,21 @@ class PropertyGenerator {
 				createCommentableStateFormula('''«senderComment» -i- «receiverComment»''', stateFormula)
 			formulas += commentableStateFormula
 		}
+		
+		// Post-processing same id expressions if necessary
+		for (id : sameIdExpressions.keySet) {
+			val expressions = sameIdExpressions.get(id)
+			val expression = expressions.get(0)
+			for (var i = 1; i < expressions.size; i++) {
+				val duplicatedExpression = expressions.get(i)
+				
+				val containerFormula = duplicatedExpression.getContainerOfType(CommentableStateFormula)
+				formulas -= containerFormula // Removing the formula form the list
+				
+				expression.replaceAndWrapIntoMultiaryExpression(duplicatedExpression, expressionFactory.createAndExpression)
+			}
+		}
+		
 		return formulas
 	}
 	
@@ -350,6 +363,13 @@ class PropertyGenerator {
 		}
 		return stateFormulas
 	}
+	
+	def protected createEqualityExpression(VariableDeclaration variable, Long id) {
+		val reference = variable.createVariableReference
+		val literal = id.toIntegerLiteral
+		return reference.createEqualityExpression(literal)
+	}
+	
 	
 	def protected ComponentInstanceReference createInstanceReference(ComponentInstance instance) {
 		if (isSimpleComponentReference) {
