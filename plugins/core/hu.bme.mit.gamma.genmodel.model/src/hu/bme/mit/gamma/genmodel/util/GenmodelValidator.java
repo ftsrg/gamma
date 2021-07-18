@@ -434,7 +434,7 @@ public class GenmodelValidator extends ExpressionModelValidator {
 			packageImports.removeAll(getUsedPackages(adaptiveContractTestGenerationTask.getModelTransformation()));
 		}
 		for (StatechartContractTestGeneration statechartContractTestGenerationTask :
-			javaUtil.filter(genmodel.getTasks(), StatechartContractTestGeneration.class)) {
+			javaUtil.filterIntoList(genmodel.getTasks(), StatechartContractTestGeneration.class)) {
 			packageImports.remove(StatechartModelDerivedFeatures.getContainingPackage(statechartContractTestGenerationTask.getComponentReference()));
 		}
 		for (PhaseStatechartGeneration phaseStatechartGenerationTask :

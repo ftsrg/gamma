@@ -65,7 +65,7 @@ class ScenarioStatechartTraceGenerator {
 
 	var GammaToXstsTransformer gammaToXSTSTransformer =null
 	if(schedulingConstraint >0){
-		 gammaToXSTSTransformer = new GammaToXstsTransformer(schedulingConstraint,true,true);
+		 gammaToXSTSTransformer = new GammaToXstsTransformer(schedulingConstraint,true,true,true);
 	} else {
 		 gammaToXSTSTransformer = new GammaToXstsTransformer();
 	}
