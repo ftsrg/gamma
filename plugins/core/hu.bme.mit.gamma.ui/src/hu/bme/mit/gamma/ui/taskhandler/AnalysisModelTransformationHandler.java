@@ -43,6 +43,7 @@ import hu.bme.mit.gamma.genmodel.model.StateCoverage;
 import hu.bme.mit.gamma.genmodel.model.TransitionCoverage;
 import hu.bme.mit.gamma.genmodel.model.TransitionPairCoverage;
 import hu.bme.mit.gamma.genmodel.model.XSTSReference;
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.TransitionMerging;
 import hu.bme.mit.gamma.property.model.PropertyPackage;
 import hu.bme.mit.gamma.querygenerator.serializer.PropertySerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.ThetaPropertySerializer;
@@ -465,6 +466,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					component, reference.getArguments(),
 					targetFolderUri, fileName, schedulingConstraint,
 					transformation.isOptimize(), true,
+					false, TransitionMerging.HIERARCHICAL, // Lead-out to UI
 					transformation.getPropertyPackage(), new AnnotatablePreprocessableElements(
 						testedComponentsForStates, testedComponentsForTransitions,
 						testedComponentsForTransitionPairs, testedComponentsForOutEvents,
@@ -554,7 +556,9 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			Gamma2XstsUppaalTransformerSerializer transformer = new Gamma2XstsUppaalTransformerSerializer(
 					component, reference.getArguments(),
 					targetFolderUri, fileName, schedulingConstraint,
-					transformation.isOptimize(), transformation.getPropertyPackage(),
+					transformation.isOptimize(),
+					false, TransitionMerging.HIERARCHICAL, // Lead-out to UI
+					transformation.getPropertyPackage(),
 					new AnnotatablePreprocessableElements(
 						testedComponentsForStates, testedComponentsForTransitions,
 						testedComponentsForTransitionPairs, testedComponentsForOutEvents,

@@ -30,12 +30,16 @@ import static extension hu.bme.mit.gamma.statechart.lowlevel.derivedfeatures.Low
 
 class TerminalTransitionToXTransitionTransformer extends LowlevelTransitionToXTransitionTransformer {
 	
-	new(ViatraQueryEngine engine, Trace trace) {
+	protected final boolean extractGuards
+	
+	new(ViatraQueryEngine engine, Trace trace, boolean extractGuards) {
 		super(engine, trace)
+		this.extractGuards = extractGuards
 	}
 	
 	new(ViatraQueryEngine engine, Trace trace, RegionActivator regionActivator) {
 		super(engine, trace, regionActivator)
+		this.extractGuards = false // Used by RegionInitialStateLocator, not crucial?
 	}
 	
 	def transform(ForkState lowlevelFirstForkState) {
@@ -160,7 +164,9 @@ class TerminalTransitionToXTransitionTransformer extends LowlevelTransitionToXTr
 		val xStsActions = xStsChoiceAction.actions
 		//
 		val guardExpressions = trace.getChoiceGuards
-		guardExpressions.clear // Needed to not mess up local variable extraction at every choice
+		if (extractGuards) {
+			guardExpressions.clear // Needed to not mess up local variable extraction at every choice
+		}
 		//
 		// Postcondition
 		for (lowlevelOutgoingTransition : lowlevelOutgoingTransitions) {
@@ -184,10 +190,12 @@ class TerminalTransitionToXTransitionTransformer extends LowlevelTransitionToXTr
 		}
 		
 		// Extracting priority expressions
-		val extractedExpressions = trace.extractExpressions(guardExpressions)
-		val index = xStsActions.indexOf(xStsChoicePostcondition)
-		xStsActions.addAll(index, extractedExpressions)
-		guardExpressions.clear
+		if (extractGuards) {
+			val extractedExpressions = trace.extractExpressions(guardExpressions)
+			val index = xStsActions.indexOf(xStsChoicePostcondition)
+			xStsActions.addAll(index, extractedExpressions)
+			guardExpressions.clear
+		}
 		//
 			
 		return xStsChoiceAction
