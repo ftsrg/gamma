@@ -10,9 +10,11 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.scenario.trace.generator
 
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.TransitionMerging
 import hu.bme.mit.gamma.scenario.statechart.util.ScenarioStatechartUtil
 import hu.bme.mit.gamma.statechart.contract.NotDefinedEventMode
 import hu.bme.mit.gamma.statechart.contract.ScenarioContractAnnotation
+import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
@@ -28,7 +30,6 @@ import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.transformation.GammaToXstsTransformer
 import java.io.File
 import java.util.List
-import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures
 
 class ScenarioStatechartTraceGenerator { 
 
@@ -65,7 +66,7 @@ class ScenarioStatechartTraceGenerator {
 
 	var GammaToXstsTransformer gammaToXSTSTransformer =null
 	if(schedulingConstraint >0){
-		 gammaToXSTSTransformer = new GammaToXstsTransformer(schedulingConstraint,true,true,true);
+		 gammaToXSTSTransformer = new GammaToXstsTransformer(schedulingConstraint,true,true,true,false,TransitionMerging.HIERARCHICAL);
 	} else {
 		 gammaToXSTSTransformer = new GammaToXstsTransformer();
 	}
