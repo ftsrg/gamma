@@ -1,3 +1,13 @@
+/********************************************************************************
+ * Copyright (c) 2018-2021 Contributors to the Gamma project
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * SPDX-License-Identifier: EPL-1.0
+ ********************************************************************************/
 package hu.bme.mit.gamma.transformation.util.annotations
 
 import hu.bme.mit.gamma.action.model.Action
@@ -6,7 +16,7 @@ import hu.bme.mit.gamma.action.model.Branch
 import hu.bme.mit.gamma.action.model.ChoiceStatement
 import hu.bme.mit.gamma.action.model.IfStatement
 import hu.bme.mit.gamma.action.model.SwitchStatement
-import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
+import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.ReferenceExpression
@@ -42,8 +52,6 @@ import java.util.Set
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 import org.eclipse.viatra.query.runtime.emf.EMFScope
-
-import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.action.derivedfeatures.ActionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
@@ -90,6 +98,15 @@ class StatechartAnnotator {
 		List<DataflowReferenceVariable> /* Reference-variable pairs denoting if the original variable is set */> variableDefs = newHashMap
 	protected final Map<VariableDeclaration, /* Original variable whose use is marked */
 		List<DataflowReferenceVariable> /* Reference-variable pairs denoting if the original variable is used */> variableUses = newHashMap
+	
+	protected final Map<Declaration, /* Original declaration whose def is marked */
+		VariableDeclaration /* Variable storing the id of the last def */> defVariables = newHashMap
+	protected final Map<EObject, /* Def */ DefVariableId> defIds = newHashMap
+	protected final Map<ReferenceExpression, /* Use */
+		VariableDeclaration /* Storing the id of the read def */> useVariables = newHashMap
+	protected final Map<ReferenceExpression, /* Def */ DefUseVariablePair> defUseVariablePairs = newHashMap
+	protected long defId = 1 // As 0 is the reset value
+	
 	// Interaction data-flow coverage
 	protected boolean INTERACTION_DATAFLOW_COVERAGE
 	protected DataflowCoverageCriterion INTERACTION_DATAFLOW_COVERAGE_CRITERION
@@ -146,6 +163,16 @@ class StatechartAnnotator {
 			this.interactionDataflowCoverablePorts += annotableElements.interactionDataflowCoverablePorts
 			this.INTERACTION_DATAFLOW_COVERAGE_CRITERION = annotableElements.interactionDataflowCoverageCriterion
 		}
+	}
+	
+	// Entry point
+	
+	def annotateModel() {
+		annotateModelForTransitionCoverage
+		annotateModelForTransitionPairCoverage
+		annotateModelForInteractionCoverage
+		annotateModelForDataFlowCoverage
+		annotateModelForInteractionDataFlowCoverage
 	}
 	
 	// Transition coverage
@@ -500,25 +527,42 @@ class StatechartAnnotator {
 	
 	// Data-flow coverage
 	
-	protected def createDefUseVariable(DirectReferenceExpression reference,
-			Map<VariableDeclaration, List<DataflowReferenceVariable>> defUseMap,
-			String name, boolean isResetable) {
-		val statechart = reference.containingStatechart
-		val referredVariable = reference.declaration as VariableDeclaration
-		val defUseVariable = createVariableDeclaration => [
-			it.type = createBooleanTypeDefinition
-			it.name = name
-		]
-		statechart.variableDeclarations += defUseVariable
-		if (!defUseMap.containsKey(referredVariable)) {
-			defUseMap.put(referredVariable, newArrayList)
+	protected def createDefVariable(Declaration originalDeclaration,
+			Map<Declaration, VariableDeclaration> defMap, String name) {
+		if (!defMap.containsKey(originalDeclaration)) {
+			val statechart = originalDeclaration.containingStatechart
+			val defVariable = createIntegerTypeDefinition.createVariableDeclaration(name)
+			statechart.variableDeclarations += defVariable
+			defMap += originalDeclaration -> defVariable
 		}
-		val variableDefList = defUseMap.get(referredVariable)
-		variableDefList += new DataflowReferenceVariable(reference, defUseVariable)
-		if (isResetable) {
-			defUseVariable.addResetableAnnotation
+		return defMap.get(originalDeclaration)
+	}
+	
+	protected def saveDefId(EObject definition, VariableDeclaration defVariable) {
+		if (!defIds.containsKey(definition)) {
+			defIds.put(definition, new DefVariableId(defVariable, defId++))
 		}
-		return defUseVariable
+		return defIds.get(definition)
+	}
+	
+	protected def createUseVariable(ReferenceExpression reference,
+			Map<ReferenceExpression, VariableDeclaration> useMap, String name) {
+		if (!useMap.containsKey(reference)) {
+			val statechart = reference.containingStatechart
+			val useVariable = createIntegerTypeDefinition.createVariableDeclaration(name)
+			useVariable.addResetableAnnotation
+			statechart.variableDeclarations += useVariable
+			useMap += reference -> useVariable
+		}
+		return useMap.get(reference)
+	}
+	
+	protected def saveDefUseVariablePair(ReferenceExpression reference,
+			VariableDeclaration defVariable, VariableDeclaration useVariable) {
+		if (!defUseVariablePairs.containsKey(reference)) {
+			defUseVariablePairs.put(reference, new DefUseVariablePair(defVariable, useVariable))
+		}
+		return defUseVariablePairs.get(reference)
 	}
 	
 	def annotateModelForDataFlowCoverage() {
@@ -553,59 +597,50 @@ class StatechartAnnotator {
 		
 		defReferences.removeIf[!consideredVariables.contains(it.declaration)]
 		useReferences.removeIf[!consideredVariables.contains(it.declaration)]
-		// Creating the variables
+		
+		// Creating and caching the variables
 		// Def
 		for (defReference : defReferences) {
 			val referredVariable = defReference.declaration as VariableDeclaration
-			defReference.createDefUseVariable(variableDefs,
-				namings.getDefVariableName(referredVariable), false)
+			val defVariable = referredVariable.createDefVariable(defVariables,
+				namings.getDefVariableName(referredVariable))
+			defReference.saveDefId(defVariable)
 		}
 		// Use
 		for (useReference : useReferences) {
 			val referredVariable = useReference.declaration as VariableDeclaration
-			useReference.createDefUseVariable(variableUses,
-				namings.getUseVariableName(referredVariable), true)
+			val useVariable = useReference.createUseVariable(useVariables,
+				namings.getUseVariableName(referredVariable))
+			val defVariable = defVariables.get(referredVariable)
+			useReference.saveDefUseVariablePair(defVariable, useVariable)
 		}
 		
-		defReferences.annotateModelForDataflowCoverage(useReferences, 
-			new DataflowDeclarationHandler {
-				override getDefDataflowReferences(EObject defReference) {
-					val directReference = defReference as DirectReferenceExpression
-					val originalVariable = directReference.declaration as VariableDeclaration
-					return variableDefs.get(originalVariable)
-				}
-				override getUseVariable(ReferenceExpression useReference) {
-					val useDataflowReference = variableUses.values.flatten
-							.filter[it.getOriginalVariableReference === useReference]
-					checkState(useDataflowReference.size == 1)
-					return useDataflowReference.head.getDefUseVariable
-				}
-			}
-		)
+		defIds.annotateModelForDataflowCoverage(defUseVariablePairs)
+		// "Connections" are made when calling the getter method
 	}
 	
-	protected def annotateModelForDataflowCoverage(Set<? extends EObject> defReferences,
-			Set<? extends ReferenceExpression> useReferences, DataflowDeclarationHandler handler) {
-		// Every def variable must be created by now
-		for (defReference : defReferences) {
-			val defVariablePairList = handler.getDefDataflowReferences(defReference)
+	protected def annotateModelForDataflowCoverage(Map<EObject, DefVariableId> defIds,
+			Map<ReferenceExpression, DefUseVariablePair> defUseVariablePairs) {
+		// Defs first, e.g., for a := a + 3 (see append) 
+		for (defReference : defIds.keySet) {
+			val defVariableId = defIds.get(defReference)
+			val defVariable = defVariableId.defVariable // TODO
+			val id = defVariableId.defId
+			
 			val originalAssignment = defReference.getSelfOrContainerOfType(Action)
-			for (defVariablePair : defVariablePairList) {
-				val reference = defVariablePair.getOriginalVariableReference
-				val defVariable = defVariablePair.getDefUseVariable
-				val expression = defReference === reference ? createTrueExpression : createFalseExpression
-				val assignment = defVariable.createAssignment(expression)
-				originalAssignment.append(assignment)
-				// This way use-defs are covered too, not only def-uses
-				// TODO Reset uses too, this way var := var + 1; like statements could not be handled
-				// TODO Check the order of the two loops
-			}
+			val assignment = defVariable.createAssignment(id.toIntegerLiteral) // TODO
+			
+			// TODO Maybe this part should be extracted for Interaction Dataflow 			
+			originalAssignment.append(assignment)
 		}
-		// Every use variable must be created by now
-		for (useReference : useReferences) {
-			val useVariable = handler.getUseVariable(useReference)
-			val assignment = useVariable.createAssignment(createTrueExpression)
+		// Uses second
+		for (useReference : defUseVariablePairs.keySet) {
+			val defUseVariablePair = defUseVariablePairs.get(useReference)
+			val defVariable = defUseVariablePair.defVariable // TODO
+			val useVariable = defUseVariablePair.useVariable
+			val assignment = useVariable.createAssignment(defVariable) // TODO
 			val containingAction = useReference.getContainerOfType(Action)
+			// TODO Maybe this part should be extracted for Interaction Dataflow 
 			if (containingAction === null) {
 				// p-use in transition guards
 				val actionList = useReference.containingActionList
@@ -672,10 +707,7 @@ class StatechartAnnotator {
 		// A raise event action raises many parameters, however, one defUseVariable is enough 
 		for (referredParameter : referredParameters) {
 			val portParameterKey = referredPort -> referredParameter
-			if (!defUseMap.containsKey(portParameterKey)) {
-				defUseMap.put(portParameterKey, newArrayList)
-			}
-			val variableDefList = defUseMap.get(portParameterKey)
+			val variableDefList = defUseMap.getOrCreateList(portParameterKey)
 			variableDefList += new DataflowReferenceVariable(reference, defUseVariable)
 		}
 		if (isResetable) {
@@ -746,34 +778,39 @@ class StatechartAnnotator {
 			useReference.createInteractionDefUseVariable(parameterUses,
 				namings.getInteractionUseVariableName(useReference), true)
 		}
-		defReferences.annotateModelForDataflowCoverage(useReferences, 
-			new DataflowDeclarationHandler {
-				override getDefDataflowReferences(EObject defReference) {
-					val raise = defReference as RaiseEventAction
-					val port = raise.port
-					val parameters = raise.event.parameterDeclarations
-					val dataflowReferenceVariables = newHashSet
-					for (parameter : parameters) {
-						dataflowReferenceVariables += parameterDefs.get(port -> parameter)
-					}
-					return dataflowReferenceVariables
-				}
-				override getUseVariable(ReferenceExpression useReference) {
-					val useDataflowReference = parameterUses.values.flatten
-							.filter[it.getOriginalVariableReference === useReference]
-					checkState(useDataflowReference.size == 1)
-					return useDataflowReference.head.getDefUseVariable
-				}
-			}
-		)
+		// TODO
+//		defReferences.annotateModelForDataflowCoverage(useReferences, 
+//			new DataflowDeclarationHandler {
+//				override getDefDataflowReferences(EObject defReference) {
+//					val raise = defReference as RaiseEventAction
+//					val port = raise.port
+//					val parameters = raise.event.parameterDeclarations
+//					val dataflowReferenceVariables = newHashSet
+//					for (parameter : parameters) {
+//						dataflowReferenceVariables += parameterDefs.get(port -> parameter)
+//					}
+//					return dataflowReferenceVariables
+//				}
+//				override getUseVariable(ReferenceExpression useReference) {
+//					val useDataflowReference = parameterUses.values.flatten
+//							.filter[it.getOriginalVariableReference === useReference]
+//					checkState(useDataflowReference.size == 1)
+//					return useDataflowReference.head.getDefUseVariable
+//				}
+//			}
+//		)
 		
 		// Collecting parameter transfer between ports among which there is a channel
+		// TODO Maybe this could be moved into the getter method
 		for (connectedPort : connectedPorts) {
 			val outPort = connectedPort.key
 			val inPort = connectedPort.value
 			interactionDefUses += outPort.createDataflowReferenceMap(parameterDefs) ->
 				inPort.createDataflowReferenceMap(parameterUses)
 		}
+		
+		// TODO Due to well-formedness constraints, unattended raise event actions
+		// have to have the correct number of arguments - they get the 0 (reset) id
 	}
 	
 	protected def areBothPortsConsidered(Port inPort, Port outPort) {
@@ -867,12 +904,29 @@ class StatechartAnnotator {
 		return new InteractionAnnotations(this.interactions)
 	}
 	
-	def getVariableDefs() {
-		return new DefUseReferences(this.variableDefs)
-	}
+//	def getVariableDefs() {
+//		return new DefUseReferences(this.variableDefs)
+//	}
+//	
+//	def getVariableUses() {
+//		return new DefUseReferences(this.variableUses)
+//	}
 	
-	def getVariableUses() {
-		return new DefUseReferences(this.variableUses)
+	def getVariableDefUses() {
+		val variableIds = newHashMap
+		
+		for (defReference : defIds.keySet) {
+			val id = defIds.get(defReference)
+			
+			val defId = id.defId
+			val defVariable = id.defVariable
+			val useVariables = defUseVariablePairs.entrySet
+				.filter[it.value.defVariable === defVariable]
+				.map[new UseVariable(it.key, it.value.useVariable)].toSet
+			variableIds += new DefReferenceId(defReference, defId) -> useVariables
+		}
+		
+		return variableIds
 	}
 	
 	def getDataflowCoverageCriterion() {
@@ -885,16 +939,6 @@ class StatechartAnnotator {
 	
 	def getInteractionDataflowCoverageCriterion() {
 		return this.INTERACTION_DATAFLOW_COVERAGE_CRITERION
-	}
-	
-	// Entry point
-	
-	def annotateModel() {
-		annotateModelForTransitionCoverage
-		annotateModelForTransitionPairCoverage
-		annotateModelForInteractionCoverage
-		annotateModelForDataFlowCoverage
-		annotateModelForInteractionDataFlowCoverage
 	}
 	
 }

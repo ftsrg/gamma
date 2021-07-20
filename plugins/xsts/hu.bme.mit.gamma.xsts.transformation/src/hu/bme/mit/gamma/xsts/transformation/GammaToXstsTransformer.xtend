@@ -19,6 +19,7 @@ import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.LowlevelToXstsTransformer
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.TransitionMerging
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer.ActionOptimizer
 import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
@@ -83,19 +84,24 @@ class GammaToXstsTransformer {
 	protected final boolean transformOrthogonalActions
 	protected final boolean optimize
 	protected final boolean useHavocActions
+	protected final boolean extractGuards
+	protected final TransitionMerging transitionMerging
 	// Logger
 	protected final Logger logger = Logger.getLogger("GammaLogger")
 	
 	new() {
-		this(null, true, true, false)
+		this(null, true, true, false, false, TransitionMerging.HIERARCHICAL)
 	}
 	
 	new(Integer schedulingConstraint, boolean transformOrthogonalActions,
-			boolean optimize, boolean useHavocActions) {
+			boolean optimize, boolean useHavocActions, boolean extractGuards,
+			TransitionMerging transitionMerging) {
 		this.schedulingConstraint = schedulingConstraint
 		this.transformOrthogonalActions = transformOrthogonalActions
 		this.optimize = optimize
 		this.useHavocActions = useHavocActions
+		this.extractGuards = extractGuards
+		this.transitionMerging = transitionMerging
 	}
 	
 	def preprocessAndExecuteAndSerialize(hu.bme.mit.gamma.statechart.interface_.Package _package,
@@ -371,7 +377,8 @@ class GammaToXstsTransformer {
 		// Note that the package is already transformed and traced because of the "val lowlevelPackage = gammaToLowlevelTransformer.transform(_package)" call
 		val lowlevelStatechart = gammaToLowlevelTransformer.transform(statechart)
 		lowlevelPackage.components += lowlevelStatechart
-		val lowlevelToXSTSTransformer = new LowlevelToXstsTransformer(lowlevelPackage, optimize, useHavocActions)
+		val lowlevelToXSTSTransformer = new LowlevelToXstsTransformer(
+			lowlevelPackage, optimize, useHavocActions, extractGuards, transitionMerging)
 		val xStsEntry = lowlevelToXSTSTransformer.execute
 		lowlevelPackage.components -= lowlevelStatechart // So that next time the matches do not return elements from this statechart
 		val xSts = xStsEntry.key

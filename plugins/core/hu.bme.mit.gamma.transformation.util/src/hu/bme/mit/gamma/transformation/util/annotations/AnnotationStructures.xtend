@@ -1,3 +1,13 @@
+/********************************************************************************
+ * Copyright (c) 2018-2021 Contributors to the Gamma project
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * SPDX-License-Identifier: EPL-1.0
+ ********************************************************************************/
 package hu.bme.mit.gamma.transformation.util.annotations
 
 import hu.bme.mit.gamma.expression.model.Declaration
@@ -147,6 +157,32 @@ class DataflowReferenceVariable {
 	EObject originalVariableReference // EventParameterReferenceExpression, DirectReferenceExpression or RaiseEventAction
 	VariableDeclaration defUseVariable // Boolean variable denoting def or use
 }
+
+//
+@Data
+class DefVariableId {
+	VariableDeclaration defVariable // Integer variable to store ids for the definitions
+	Long defId // The id of the definition to store in defVariable
+}
+
+@Data
+class DefUseVariablePair {
+	VariableDeclaration defVariable // Integer variable to store ids for the definitions
+	VariableDeclaration useVariable // Integer variable to store ids of last definition when uses happen
+}
+
+@Data
+class DefReferenceId {
+	EObject defReference
+	Long defId // The id of the definition to store in defVariable
+}
+
+@Data
+class UseVariable {
+	ReferenceExpression useReference
+	VariableDeclaration useVariable
+}
+//
 
 class DefUseReferences {
 	final Map<? extends Declaration, /* Original declaration (parameter or variable) whose def or use is marked */

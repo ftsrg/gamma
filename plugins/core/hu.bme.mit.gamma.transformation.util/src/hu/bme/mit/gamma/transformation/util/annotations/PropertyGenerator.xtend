@@ -1,11 +1,13 @@
-/** 
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+/********************************************************************************
+ * Copyright (c) 2018-2021 Contributors to the Gamma project
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
+ *
  * SPDX-License-Identifier: EPL-1.0
- */
+ ********************************************************************************/
 package hu.bme.mit.gamma.transformation.util.annotations
 
 import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition
@@ -41,6 +43,7 @@ import hu.bme.mit.gamma.util.JavaUtil
 import java.util.Collection
 import java.util.Collections
 import java.util.List
+import java.util.Map
 import java.util.Set
 import org.eclipse.emf.ecore.EObject
 
@@ -285,68 +288,107 @@ class PropertyGenerator {
 		return formulas
 	}
 	
-	def List<CommentableStateFormula> createDataflowReachability(DefUseReferences defs,
-			DefUseReferences uses, DataflowCoverageCriterion criterion) {
+//	def List<CommentableStateFormula> createDataflowReachability(DefUseReferences defs,
+//			DefUseReferences uses, DataflowCoverageCriterion criterion) {
+//		val List<CommentableStateFormula> formulas = newArrayList
+//		if (defs.variables.nullOrEmpty || uses.variables.nullOrEmpty) {
+//			return formulas
+//		}
+//		for (variable : defs.variables) {
+//			// Def
+//			val defExpressions = newArrayList
+//			val auxiliaryDefReferences = defs.getAuxiliaryReferences(variable)
+//			val size = auxiliaryDefReferences.size
+//			for (var i = 0; i < size; i++) {
+//				val ponatedReference = auxiliaryDefReferences.get(i)
+//				val auxiliaryVariable = ponatedReference.defUseVariable
+//				val defExpression = expressionFactory.createAndExpression => [
+//					it.operands += auxiliaryVariable.createVariableReference
+//				]
+//				// Not necessary to negate the other defs as the annotated assignments ensure that only one is true
+//				// Def-comment
+//				val originalReference = ponatedReference.originalVariableReference
+//				val defComment = originalReference.id
+//				defExpressions += new Pair(defExpression, defComment)
+//				//
+//			}
+//			// Use
+//			for (defExpression : defExpressions) {
+//				val and = defExpression.key
+//				val defComment = defExpression.value
+//				val auxiliaryUseReferences = uses.getAuxiliaryReferences(variable)
+//				if (criterion == DataflowCoverageCriterion.ALL_DEF) {
+//					if (auxiliaryUseReferences.size > 1) {
+//						val or = expressionFactory.createOrExpression
+//						for (auxiliaryUseReference : auxiliaryUseReferences) {
+//							val auxiliaryUseVariable = auxiliaryUseReference.defUseVariable
+//							or.operands += auxiliaryUseVariable.createVariableReference
+//						}
+//						and.operands += or
+//					}
+//					else {
+//						val auxiliaryUseReference = auxiliaryUseReferences.head
+//						val auxiliaryUseVariable = auxiliaryUseReference.defUseVariable
+//						and.operands += auxiliaryUseVariable.createVariableReference
+//					}
+//					
+//					val originalUseReferences = auxiliaryUseReferences.map[it.originalVariableReference]
+//							.filter(Expression).toSet // Uses are almost DirectReferenceExpressions
+//					val useComment = originalUseReferences.ids
+//					val stateFormula = propertyUtil.createEF(propertyUtil.createAtomicFormula(and))
+//					formulas += propertyUtil.createCommentableStateFormula(
+//							'''«defComment» -d-u- «useComment»''', stateFormula)
+//				}
+//				else {
+//					for (auxiliaryUseReference : auxiliaryUseReferences) {
+//						val auxiliaryUseVariable = auxiliaryUseReference.defUseVariable
+//						val clonedAnd = and.clone
+//						clonedAnd.operands += auxiliaryUseVariable.createVariableReference
+//						
+//						val useComment = auxiliaryUseReference.originalVariableReference.id
+//						val stateFormula = propertyUtil.createEF(propertyUtil.createAtomicFormula(clonedAnd))
+//						formulas += propertyUtil.createCommentableStateFormula(
+//								'''«defComment» -d-u- «useComment»''', stateFormula)
+//					}
+//				}
+//			}
+//		}
+//		return formulas
+//	}
+	
+	def List<CommentableStateFormula> createDataflowReachability(
+			Map<DefReferenceId, Set<UseVariable>> defUses, DataflowCoverageCriterion criterion) {
 		val List<CommentableStateFormula> formulas = newArrayList
-		if (defs.variables.nullOrEmpty || uses.variables.nullOrEmpty) {
+		if (defUses.empty) {
 			return formulas
 		}
-		for (variable : defs.variables) {
-			// Def
-			val defExpressions = newArrayList
-			val auxiliaryDefReferences = defs.getAuxiliaryReferences(variable)
-			val size = auxiliaryDefReferences.size
-			for (var i = 0; i < size; i++) {
-				val ponatedReference = auxiliaryDefReferences.get(i)
-				val auxiliaryVariable = ponatedReference.defUseVariable
-				val defExpression = expressionFactory.createAndExpression => [
-					it.operands += auxiliaryVariable.createVariableReference
-				]
-				// Not necessary to negate the other defs as the annotated assignments ensure that only one is true
-				// Def-comment
-				val originalReference = ponatedReference.originalVariableReference
-				val defComment = originalReference.id
-				defExpressions += new Pair(defExpression, defComment)
-				//
-			}
-			// Use
-			for (defExpression : defExpressions) {
-				val and = defExpression.key
-				val defComment = defExpression.value
-				val auxiliaryUseReferences = uses.getAuxiliaryReferences(variable)
-				if (criterion == DataflowCoverageCriterion.ALL_DEF) {
-					if (auxiliaryUseReferences.size > 1) {
-						val or = expressionFactory.createOrExpression
-						for (auxiliaryUseReference : auxiliaryUseReferences) {
-							val auxiliaryUseVariable = auxiliaryUseReference.defUseVariable
-							or.operands += auxiliaryUseVariable.createVariableReference
-						}
-						and.operands += or
-					}
-					else {
-						val auxiliaryUseReference = auxiliaryUseReferences.head
-						val auxiliaryUseVariable = auxiliaryUseReference.defUseVariable
-						and.operands += auxiliaryUseVariable.createVariableReference
-					}
-					
-					val originalUseReferences = auxiliaryUseReferences.map[it.originalVariableReference]
-							.filter(Expression).toSet // Uses are almost DirectReferenceExpressions
-					val useComment = originalUseReferences.ids
-					val stateFormula = propertyUtil.createEF(propertyUtil.createAtomicFormula(and))
-					formulas += propertyUtil.createCommentableStateFormula(
-							'''«defComment» -d-u- «useComment»''', stateFormula)
+		for (id : defUses.keySet) {
+			val defId = id.defId
+			val defReference = id.defReference
+			val defComment = defReference.id
+			val uses = defUses.get(id)
+			if (criterion == DataflowCoverageCriterion.ALL_DEF) {
+				val expressions = <Expression>newArrayList
+				val useReferences = newArrayList
+				for (use : uses) {
+					val useVariable = use.useVariable
+					expressions += useVariable.createEqualityExpression(defId)
+					useReferences += use.useReference
 				}
-				else {
-					for (auxiliaryUseReference : auxiliaryUseReferences) {
-						val auxiliaryUseVariable = auxiliaryUseReference.defUseVariable
-						val clonedAnd = and.clone
-						clonedAnd.operands += auxiliaryUseVariable.createVariableReference
-						
-						val useComment = auxiliaryUseReference.originalVariableReference.id
-						val stateFormula = propertyUtil.createEF(propertyUtil.createAtomicFormula(clonedAnd))
-						formulas += propertyUtil.createCommentableStateFormula(
+				val orExpression = expressions.wrapIntoMultiaryExpression(expressionFactory.createOrExpression)
+				val useComment = useReferences.ids
+				val stateFormula = propertyUtil.createEF(propertyUtil.createAtomicFormula(orExpression))
+				formulas += propertyUtil.createCommentableStateFormula(
 								'''«defComment» -d-u- «useComment»''', stateFormula)
-					}
+			}
+			else {
+				for (use : uses) {
+					val useVariable = use.useVariable
+					val useComment = use.useReference.id
+					val idEquality = useVariable.createEqualityExpression(defId)
+					val stateFormula = propertyUtil.createEF(propertyUtil.createAtomicFormula(idEquality))
+					formulas += propertyUtil.createCommentableStateFormula(
+									'''«defComment» -d-u- «useComment»''', stateFormula)
 				}
 			}
 		}
@@ -359,7 +401,8 @@ class PropertyGenerator {
 		for (interactionDefUse : interactionDefUses) {
 			val defs = interactionDefUse.key
 			val uses = interactionDefUse.value
-			stateFormulas += defs.createDataflowReachability(uses, criterion)
+			// TODO
+//			stateFormulas += defs.createDataflowReachability(uses, criterion)
 		}
 		return stateFormulas
 	}

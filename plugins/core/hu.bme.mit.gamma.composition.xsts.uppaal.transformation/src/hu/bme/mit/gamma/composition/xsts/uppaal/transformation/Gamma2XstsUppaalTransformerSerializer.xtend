@@ -1,6 +1,7 @@
 package hu.bme.mit.gamma.composition.xsts.uppaal.transformation
 
 import hu.bme.mit.gamma.expression.model.Expression
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.TransitionMerging
 import hu.bme.mit.gamma.property.model.PropertyPackage
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.transformation.util.GammaFileNamer
@@ -20,8 +21,11 @@ class Gamma2XstsUppaalTransformerSerializer {
 	protected final String targetFolderUri
 	protected final String fileName
 	protected final Integer schedulingConstraint
-	// Slicing
+	// Configuration
 	protected final boolean optimize
+	protected final boolean extractGuards
+	protected final TransitionMerging transitionMerging
+	// Slicing
 	protected final PropertyPackage propertyPackage
 	// Annotation
 	protected final AnnotatablePreprocessableElements annotatableElements
@@ -42,8 +46,8 @@ class Gamma2XstsUppaalTransformerSerializer {
 			String targetFolderUri, String fileName,
 			Integer schedulingConstraint) {
 		this(component, arguments, targetFolderUri, fileName, schedulingConstraint,
-			true, null,
-			new AnnotatablePreprocessableElements(
+			true, false, TransitionMerging.HIERARCHICAL,
+			null, new AnnotatablePreprocessableElements(
 				null, null, null, null, null,
 				InteractionCoverageCriterion.EVERY_INTERACTION,	InteractionCoverageCriterion.EVERY_INTERACTION,
 				null, DataflowCoverageCriterion.ALL_USE,
@@ -55,7 +59,9 @@ class Gamma2XstsUppaalTransformerSerializer {
 	new(Component component, List<Expression> arguments,
 			String targetFolderUri, String fileName,
 			Integer schedulingConstraint,
-			boolean optimize, PropertyPackage propertyPackage,
+			boolean optimize, boolean extractGuards,
+			TransitionMerging transitionMerging,
+			PropertyPackage propertyPackage,
 			AnnotatablePreprocessableElements annotatableElements) {
 		this.component = component
 		this.arguments = arguments
@@ -64,6 +70,9 @@ class Gamma2XstsUppaalTransformerSerializer {
 		this.schedulingConstraint = schedulingConstraint
 		//
 		this.optimize = optimize
+		this.extractGuards = extractGuards
+		this.transitionMerging = transitionMerging
+		//
 		this.propertyPackage = propertyPackage
 		//
 		this.annotatableElements = annotatableElements
@@ -73,9 +82,9 @@ class Gamma2XstsUppaalTransformerSerializer {
 		val xStsTransformer = new Gamma2XstsTransformerSerializer(component,
 			arguments, targetFolderUri,
 			fileName, schedulingConstraint,
-			optimize, false /* UPPAAL cannot handle havoc actions */,
-			propertyPackage,
-			annotatableElements)
+			optimize, false /* UPPAAL cannot handle havoc actions */, extractGuards, 
+			transitionMerging,
+			propertyPackage, annotatableElements)
 		xStsTransformer.execute
 		val xSts = targetFolderUri.normalLoad(fileName.emfXStsFileName) as XSTS
 		val uppaalTransformer = new Xsts2UppaalTransformerSerializer(xSts,

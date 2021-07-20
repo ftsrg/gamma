@@ -298,9 +298,7 @@ public class XstsActionUtil extends ExpressionUtil {
 			VariableDeclarationAction variableDeclarationAction = extractExpression(
 					expressionFactory.createBooleanTypeDefinition(), name, expression);
 			actions.add(variableDeclarationAction);
-			NonDeterministicAction switchAction = createChoiceActionFromActions(List.of(action));
-			// Else branch
-			extendChoiceWithDefaultBranch(switchAction, xStsFactory.createEmptyAction());
+			NonDeterministicAction switchAction = createChoiceActionWithEmptyDefaultBranch(List.of(action));
 			actions.add(switchAction);
 		}
 		else {

@@ -35,10 +35,10 @@ class PrecursoryTransitionToXTransitionTransformer extends LowlevelTransitionToX
 	
 	protected final extension TerminalTransitionToXTransitionTransformer terminalTransitionToActionTransformer
 	
-	new(ViatraQueryEngine engine, Trace trace) {
+	new(ViatraQueryEngine engine, Trace trace, boolean extractGuards) {
 		super(engine, trace)
-		this.terminalTransitionToActionTransformer = new TerminalTransitionToXTransitionTransformer(
-			this.engine, this.trace)
+		this.terminalTransitionToActionTransformer =
+			new TerminalTransitionToXTransitionTransformer(this.engine, this.trace, extractGuards)
 	}
 	
 	def transform(JoinState lowlevelLastJoinState) {

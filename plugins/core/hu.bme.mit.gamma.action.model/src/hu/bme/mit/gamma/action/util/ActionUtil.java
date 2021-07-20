@@ -35,6 +35,7 @@ import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.InitializableElement;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Type;
+import hu.bme.mit.gamma.expression.model.ValueDeclaration;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.expression.util.ExpressionUtil;
 
@@ -222,9 +223,12 @@ public class ActionUtil extends ExpressionUtil {
 	
 	public AssignmentStatement createAssignment(VariableDeclaration variable,
 			Expression expression) {
-		DirectReferenceExpression reference = factory.createDirectReferenceExpression();
-		reference.setDeclaration(variable);
-		return createAssignment(reference, expression);
+		return createAssignment(createReferenceExpression(variable), expression);
+	}
+	
+	public AssignmentStatement createAssignment(VariableDeclaration variable,
+			ValueDeclaration declaration) {
+		return createAssignment(variable, createReferenceExpression(declaration));
 	}
 	
 	public List<AssignmentStatement> createAssignments(List<? extends ReferenceExpression> left,

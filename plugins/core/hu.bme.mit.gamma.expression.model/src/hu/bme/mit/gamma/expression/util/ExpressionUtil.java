@@ -987,7 +987,7 @@ public class ExpressionUtil {
 		return potentialContainer;
 	}
 	
-	public Expression wrapIntoMultiaryExpression(Collection<Expression> expressions,
+	public Expression wrapIntoMultiaryExpression(Collection<? extends Expression> expressions,
 			MultiaryExpression potentialContainer) {
 		if (expressions.isEmpty()) {
 			return null;

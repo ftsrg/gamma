@@ -1,3 +1,13 @@
+/********************************************************************************
+ * Copyright (c) 2018-2021 Contributors to the Gamma project
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * SPDX-License-Identifier: EPL-1.0
+ ********************************************************************************/
 package hu.bme.mit.gamma.transformation.util.annotations
 
 import hu.bme.mit.gamma.property.model.PropertyPackage
@@ -97,8 +107,8 @@ class ModelAnnotatorPropertyGenerator {
 			formulas += propertyGenerator.createOutEventReachability(
 							testedPortsForOutEvents)
 			
-			formulas += propertyGenerator.createDataflowReachability(annotator.getVariableDefs,
-							annotator.getVariableUses, annotator.dataflowCoverageCriterion)
+			formulas += propertyGenerator.createDataflowReachability(annotator.variableDefUses,
+				annotator.dataflowCoverageCriterion)
 			formulas += propertyGenerator.createInteractionDataflowReachability(
 							annotator.getInteractionDefUses, annotator.interactionDataflowCoverageCriterion)
 			// Saving the property package and serializing the properties has to be done by the caller!
