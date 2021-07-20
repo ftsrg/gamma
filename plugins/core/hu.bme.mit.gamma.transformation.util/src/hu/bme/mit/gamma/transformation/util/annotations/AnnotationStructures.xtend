@@ -158,6 +158,32 @@ class DataflowReferenceVariable {
 	VariableDeclaration defUseVariable // Boolean variable denoting def or use
 }
 
+//
+@Data
+class DefVariableId {
+	VariableDeclaration defVariable // Integer variable to store ids for the definitions
+	Long defId // The id of the definition to store in defVariable
+}
+
+@Data
+class DefUseVariablePair {
+	VariableDeclaration defVariable // Integer variable to store ids for the definitions
+	VariableDeclaration useVariable // Integer variable to store ids of last definition when uses happen
+}
+
+@Data
+class DefReferenceId {
+	EObject defReference
+	Long defId // The id of the definition to store in defVariable
+}
+
+@Data
+class UseVariable {
+	ReferenceExpression useReference
+	VariableDeclaration useVariable
+}
+//
+
 class DefUseReferences {
 	final Map<? extends Declaration, /* Original declaration (parameter or variable) whose def or use is marked */
 		List<DataflowReferenceVariable> /* Reference-variable pairs denoting if the original declaration is set or read */>
