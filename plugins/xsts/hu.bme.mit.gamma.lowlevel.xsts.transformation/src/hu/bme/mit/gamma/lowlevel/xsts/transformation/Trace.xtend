@@ -10,9 +10,12 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.lowlevel.xsts.transformation
 
+import hu.bme.mit.gamma.action.model.ForStatement
+import hu.bme.mit.gamma.action.model.VariableDeclarationStatement
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.Expression
+import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
@@ -27,6 +30,7 @@ import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.StateTrace
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.TypeDeclarationTrace
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.VariableTrace
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.traceability.L2STrace
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.traceability.ParameterTrace
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.traceability.TraceabilityFactory
 import hu.bme.mit.gamma.statechart.lowlevel.model.ChoiceState
 import hu.bme.mit.gamma.statechart.lowlevel.model.EventDeclaration
@@ -42,12 +46,18 @@ import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.ParallelAction
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.model.XTransition
+import hu.bme.mit.gamma.xsts.util.XstsActionUtil
+import java.util.Collection
+import java.util.List
+import java.util.Map
+import org.eclipse.emf.ecore.EObject
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 import org.eclipse.viatra.query.runtime.emf.EMFScope
 
 import static com.google.common.base.Preconditions.checkArgument
 import static com.google.common.base.Preconditions.checkState
-import hu.bme.mit.gamma.action.model.VariableDeclarationStatement
+
+import static extension java.lang.Math.abs
 
 package class Trace {
 	// Trace model
@@ -55,9 +65,16 @@ package class Trace {
 	// Tracing engine
 	protected final ViatraQueryEngine tracingEngine
 	// Trace model factory
+	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
 	protected final extension TraceabilityFactory traceabilityFactory = TraceabilityFactory.eINSTANCE
 	// Auxiliary
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
+	// Maps for caching transitions
+	protected final List<Expression> primaryIsActiveExpressions = newArrayList
+	protected final Map<Transition, List<Expression>> isActiveExpressions = newHashMap
+	protected final Map<Transition, List<Expression>> guards = newHashMap
+	protected final Map<Transition, List<Expression>> choiceGuards = newHashMap
+	protected final Map<State, List<Expression>> stateReferenceExpressions = newHashMap
 	
 	new(Package _package, XSTS xSts) {
 		this.trace = createL2STrace => [
@@ -65,6 +82,64 @@ package class Trace {
 			it.XSts = xSts
 		]
 		this.tracingEngine = ViatraQueryEngine.on(new EMFScope(trace))
+	}
+	
+	// Transition caching
+	
+	def getPrimaryIsActiveExpressions() {
+		return primaryIsActiveExpressions
+	}
+	
+	def getIsActiveExpressions() {
+		return isActiveExpressions
+	}
+	
+	def getGuards() {
+		return guards
+	}
+	
+	def getChoiceGuards() {
+		return choiceGuards
+	}
+	
+	def getStateReferenceExpressions() {
+		return stateReferenceExpressions
+	}
+	
+	def <T> void add(Map<T, List<Expression>> map,
+			T object, Expression expression) {
+		if (!map.containsKey(object)) {
+			map += object -> newArrayList
+		}
+		val list = map.get(object)
+		list += expression
+	}
+	
+	def void keepExpressionsTransitivelyContainedBy(Map<?, List<Expression>> map,
+			Collection<Expression> expressions) {
+		for (list : map.values) {
+			list.removeIf[
+				val elem = it
+				!expressions.exists[it.selfOrContainsTransitively(elem)]
+			]
+		}
+	}
+	
+	def extractExpressions(Map<? extends EObject, List<Expression>> expressions) {
+		return expressions.extractExpressions(false)
+	}
+	
+	def extractExpressions(Map<? extends EObject, List<Expression>> expressions,
+			boolean onlyIfSizeIsGreaterThanOne) {
+		val xStsVariableDeclarationActions = newArrayList
+		for (key : expressions.keySet) {
+			val xStsExpressions = expressions.get(key)
+			if (!onlyIfSizeIsGreaterThanOne || xStsExpressions.size > 1) {
+				val name = '''_«xStsExpressions.hashCode.abs»'''
+				xStsVariableDeclarationActions += name.extractExpressions(xStsExpressions)
+			}
+		}
+		return xStsVariableDeclarationActions
 	}
 	
 	// Statechart - xSTS	
@@ -127,6 +202,44 @@ package class Trace {
 		val matches = EventTrace.Matcher.on(tracingEngine).getAllValuesOflowlevelEvent(xStsVariable)
 		checkState(matches.size == 1, matches.size)
 		return matches.head
+	}
+	
+	// Parameter - parameter (for loops)
+	def put(ParameterDeclaration lowlevelParameter, ParameterDeclaration xStsParameter) {
+		checkArgument(lowlevelParameter !== null)
+		checkArgument(xStsParameter !== null)
+		if (lowlevelParameter.hasXStsParameter) {
+			// This can happen if we transform the same action multiple times
+			// Solution: we "forget" the previously created xSts parameter
+			val container = lowlevelParameter.eContainer
+			checkState(container instanceof ForStatement)
+			val trace = lowlevelParameter.XStsParameterTrace
+			trace.XStsParameter = xStsParameter
+			return
+		}
+		trace.traces += createParameterTrace => [
+			it.lowlevelParameter = lowlevelParameter
+			it.XStsParameter = xStsParameter
+		]
+	}
+	
+	def hasXStsParameter(ParameterDeclaration lowlevelParameter) {
+		checkArgument(lowlevelParameter !== null)
+		val traces = trace.traces.filter(ParameterTrace).filter[it.lowlevelParameter === lowlevelParameter]
+		return !traces.isEmpty
+	}
+	
+	def getXStsParameterTrace(ParameterDeclaration lowlevelParameter) {
+		checkArgument(lowlevelParameter !== null)
+		val traces = trace.traces.filter(ParameterTrace).filter[it.lowlevelParameter === lowlevelParameter]
+		checkState(traces.size == 1)
+		return traces.head
+	}
+	
+	def getXStsParameter(ParameterDeclaration lowlevelParameter) {
+		val xStsParameter = lowlevelParameter.XStsParameterTrace.XStsParameter
+		checkState(xStsParameter !== null)
+		return xStsParameter
 	}
 	
 	// Variable - variable

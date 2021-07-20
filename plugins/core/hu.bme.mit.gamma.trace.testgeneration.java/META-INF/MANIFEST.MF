@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Java JUnit Test Generator
 Bundle-SymbolicName: hu.bme.mit.gamma.trace.testgeneration.java
-Bundle-Version: 2.5.0.qualifier
+Bundle-Version: 2.5.1.qualifier
 Bundle-Vendor: BME-FTSRG
 Automatic-Module-Name: hu.bme.mit.gamma.trace.testgeneration.java
 Bundle-RequiredExecutionEnvironment: JavaSE-11

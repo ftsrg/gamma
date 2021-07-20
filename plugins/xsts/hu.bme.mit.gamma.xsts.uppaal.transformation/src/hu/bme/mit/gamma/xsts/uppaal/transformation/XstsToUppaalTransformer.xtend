@@ -10,6 +10,8 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.xsts.uppaal.transformation
 
+import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
+import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.uppaal.util.AssignmentExpressionCreator
 import hu.bme.mit.gamma.uppaal.util.NtaBuilder
@@ -23,14 +25,19 @@ import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
+import java.util.List
 import java.util.Set
 import uppaal.NTA
+import uppaal.declarations.DataVariablePrefix
+import uppaal.declarations.ValueIndex
 import uppaal.declarations.VariableContainer
 import uppaal.expressions.Expression
 import uppaal.templates.Edge
 import uppaal.templates.Location
 import uppaal.templates.LocationKind
 
+import static extension de.uni_paderborn.uppaal.derivedfeatures.UppaalModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.uppaal.util.XstsNamings.*
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
 
@@ -62,9 +69,13 @@ class XstsToUppaalTransformer {
 	}
 	
 	def execute() {
+		// TODO The XSTS transformation now extracts guards into local variables
+		// If the guard contains clock variables (referencing native clocks), they should be reinlined
+		
 		resetCommittedLocationName
-		val initialLocation = createTemplateWithInitLoc(templateName, initialLocationName)
+		val initialLocation = templateName.createTemplateWithInitLoc(initialLocationName)
 		initialLocation.locationTimeKind = LocationKind.COMMITED
+		val template = initialLocation.parentTemplate
 		
 		val initializingAction = xSts.initializingAction
 		val environmentalAction = xSts.environmentalAction
@@ -76,12 +87,14 @@ class XstsToUppaalTransformer {
 		stableLocation.name = stableLocationName
 		stableLocation.locationTimeKind = LocationKind.NORMAL
 		
-		val environmentFinishLocation = environmentalAction.transformAction(stableLocation)
-		// If there is no environmental action, the stable location should not be overwritten 
-		if (environmentFinishLocation !== stableLocation) {
-			environmentFinishLocation.name = environmentFinishLocationName
-			environmentFinishLocation.locationTimeKind = LocationKind.NORMAL // So optimization does not delete it
+		var environmentFinishLocation = environmentalAction.transformAction(stableLocation)
+		// If there is no environmental action, we create an environmentFinishLocation (needed for back-annotation)
+		if (environmentFinishLocation === stableLocation) {
+			environmentFinishLocation = template.createLocation
+			stableLocation.createEdge(environmentFinishLocation)
 		}
+		environmentFinishLocation.name = environmentFinishLocationName
+		environmentFinishLocation.locationTimeKind = LocationKind.NORMAL // So optimization does not delete it
 		
 		val systemFinishLocation = mergedAction.transformAction(environmentFinishLocation)
 		
@@ -122,15 +135,31 @@ class XstsToUppaalTransformer {
 	}
 	
 	protected def transformVariable(VariableDeclaration variable) {
+		val type = variable.type
 		val uppaalType =
 		if (xSts.clockVariables.contains(variable)) {
 			nta.clock.createTypeReference
 		}
 		else {
-			variable.type.transformType
+			type.transformType
 		}
 		val uppaalVariable = uppaalType.createVariable(variable.uppaalId)
+		// In UPPAAL, array sizes are stuck to variables
+		uppaalVariable.onlyVariable.index += type.transformArrayIndexes
+		
 		return uppaalVariable
+	}
+	
+	protected def List<ValueIndex> transformArrayIndexes(Type type) {
+		val indexes = newArrayList
+		val typeDefinition = type.typeDefinition
+		if (typeDefinition instanceof ArrayTypeDefinition) {
+			val size = typeDefinition.size
+			val elementType = typeDefinition.elementType
+			indexes += size.transform.createIndex
+			indexes += elementType.transformArrayIndexes
+		}
+		return indexes
 	}
 	
 	// Action dispatch
@@ -150,6 +179,7 @@ class XstsToUppaalTransformer {
 	protected def dispatch Location transformAction(VariableDeclarationAction action, Location source) {
 		val xStsVariable = action.variableDeclaration
 		val uppaalVariable = xStsVariable.transformAndTraceVariable
+		uppaalVariable.prefix = DataVariablePrefix.META // Works if local variable assignments are deterministic
 		uppaalVariable.extendNameWithHash // Needed for local declarations
 		transientVariables += uppaalVariable
 		val xStsInitialValue = xStsVariable.initialValue

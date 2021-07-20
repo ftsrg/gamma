@@ -13,6 +13,8 @@ package hu.bme.mit.gamma.xsts.transformation.serializer
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.AssumeAction
 import hu.bme.mit.gamma.xsts.model.EmptyAction
+import hu.bme.mit.gamma.xsts.model.HavocAction
+import hu.bme.mit.gamma.xsts.model.LoopAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.OrthogonalAction
 import hu.bme.mit.gamma.xsts.model.ParallelAction
@@ -20,6 +22,7 @@ import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
 import hu.bme.mit.gamma.xsts.model.XSTS
 
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
 
 class ActionSerializer {
@@ -33,9 +36,9 @@ class ActionSerializer {
 	def String serializeXSTS(XSTS xSts) '''
 		«xSts.serializeDeclarations(false)»
 		
-		trans {
-			«xSts.mergedAction.serialize»
-		}
+		trans «FOR transition : xSts.transitions SEPARATOR " or "»{
+			«transition.action.serialize»
+		}«ENDFOR»
 		init {
 			«xSts.initializingAction.serialize»
 		}
@@ -52,12 +55,27 @@ class ActionSerializer {
 		«action.lhs.serialize» := «action.rhs.serialize»;
 	'''
 	
+	def dispatch String serialize(HavocAction action) '''
+		havoc «action.lhs.serialize»;
+	'''
+	
 	def dispatch String serialize(VariableDeclarationAction action) '''
 		«action.variableDeclaration.serializeLocalVariableDeclaration»;
 	'''
 	
 	// nop cannot be parsed by Theta
 	def dispatch String serialize(EmptyAction action) ''''''
+	
+	def dispatch String serialize(LoopAction action) {
+		val name = action.iterationParameterDeclaration.name
+		val left = action.range.getLeft(true)
+		val right = action.range.getRight(false)
+		return '''
+			for «name» from «left.serialize» to «right.serialize» do {
+				«action.action.serialize»
+			}
+		'''
+	}
 	
 	def dispatch String serialize(NonDeterministicAction action) '''
 		choice «FOR subaction : action.actions SEPARATOR " or "»{

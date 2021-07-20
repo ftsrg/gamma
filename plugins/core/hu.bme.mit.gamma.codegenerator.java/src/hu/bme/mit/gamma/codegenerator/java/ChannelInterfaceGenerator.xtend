@@ -32,7 +32,7 @@ class ChannelInterfaceGenerator {
 	protected def createChannelInterfaceCode(Interface _interface) '''
 		package «PACKAGE_NAME».«Namings.CHANNEL_PACKAGE_POSTFIX»;
 		
-		import «PACKAGE_NAME».«Namings.INTERFACE_PACKAGE_POSTFIX».«_interface.implementationName»;
+		import «_interface.getPackageString(PACKAGE_NAME)».«_interface.implementationName»;
 		
 		public interface «_interface.generateChannelInterfaceName» {			
 			

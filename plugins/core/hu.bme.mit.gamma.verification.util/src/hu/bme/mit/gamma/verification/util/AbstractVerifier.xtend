@@ -24,26 +24,24 @@ abstract class AbstractVerifier {
 	protected volatile boolean isCancelled
 	protected Process process
 	protected ThreeStateBoolean result
-	protected String output
-	protected Logger logger = Logger.getLogger("GammaLogger")
+	
+	protected final Logger logger = Logger.getLogger("GammaLogger")
 	
 	protected extension FileUtil codeGeneratorUtil = FileUtil.INSTANCE
 	protected extension PathEscaper pathEscaper = PathEscaper.INSTANCE
 	protected extension TraceUtil traceUtil = TraceUtil.INSTANCE
 	
-	def Result verifyQuery(Object traceability, String parameters, File modelFile,
-			String query, boolean log, boolean storeOutput) {
+	def Result verifyQuery(Object traceability, String parameters, File modelFile, String query) {
 		// Writing the query to a temporary file
 		val parentFolder = modelFile.parent
 		val tempQueryFile = new File(parentFolder + File.separator + modelFile.temporaryQueryFilename)
 		tempQueryFile.saveString(query)
 		// Deleting the file on the exit of the JVM
 		tempQueryFile.deleteOnExit
-		return verifyQuery(traceability, parameters, modelFile, tempQueryFile, log, storeOutput)
+		return verifyQuery(traceability, parameters, modelFile, tempQueryFile)
 	}
 	
-	def abstract Result verifyQuery(Object traceability, String parameters, File modelFile,
-			File queryFile, boolean log, boolean storeOutput)
+	def abstract Result verifyQuery(Object traceability, String parameters, File modelFile,	File queryFile)
 	
 	def cancel() {
 		isCancelled = true
@@ -62,10 +60,6 @@ abstract class AbstractVerifier {
 	
 	def getResult() {
 		return result
-	}
-	
-	def getOutput() {
-		return output
 	}
 	
 	protected def getTemporaryQueryFilename(File modelFile) {

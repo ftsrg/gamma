@@ -29,13 +29,16 @@ public class EventPriorityTransformationHandler extends TaskHandler {
 	}
 	
 	public void execute(EventPriorityTransformation eventPriorityTransformation) throws IOException {
+		// Setting target folder
+		setTargetFolder(eventPriorityTransformation);
+		///
 		setFileName(eventPriorityTransformation);
 		StatechartDefinition statechart = eventPriorityTransformation.getStatechart();
 		EventPriorityTransformer eventPriorityTransformer = new EventPriorityTransformer(statechart);
 		StatechartDefinition prioritizedTransitionsStatechart = eventPriorityTransformer.execute();
 		Package prioritizedTransitionsStatechartPackage =
 				StatechartModelDerivedFeatures.getContainingPackage(prioritizedTransitionsStatechart);
-		saveModel(prioritizedTransitionsStatechartPackage,
+		serializer.saveModel(prioritizedTransitionsStatechartPackage,
 				targetFolderUri, eventPriorityTransformation.getFileName().get(0) + ".gcd");
 	}
 	

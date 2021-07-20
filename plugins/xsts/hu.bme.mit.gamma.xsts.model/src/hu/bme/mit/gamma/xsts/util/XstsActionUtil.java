@@ -12,6 +12,7 @@ package hu.bme.mit.gamma.xsts.util;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -27,19 +28,23 @@ import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory;
 import hu.bme.mit.gamma.expression.model.NotExpression;
 import hu.bme.mit.gamma.expression.model.OrExpression;
+import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.expression.util.ExpressionUtil;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
+import hu.bme.mit.gamma.xsts.model.AbstractAssignmentAction;
 import hu.bme.mit.gamma.xsts.model.Action;
 import hu.bme.mit.gamma.xsts.model.AssignmentAction;
 import hu.bme.mit.gamma.xsts.model.AssumeAction;
 import hu.bme.mit.gamma.xsts.model.CompositeAction;
+import hu.bme.mit.gamma.xsts.model.MultiaryAction;
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction;
 import hu.bme.mit.gamma.xsts.model.ParallelAction;
 import hu.bme.mit.gamma.xsts.model.SequentialAction;
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction;
 import hu.bme.mit.gamma.xsts.model.XSTS;
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory;
+import hu.bme.mit.gamma.xsts.model.XTransition;
 
 public class XstsActionUtil extends ExpressionUtil {
 	// Singleton
@@ -50,6 +55,23 @@ public class XstsActionUtil extends ExpressionUtil {
 	protected GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
 	protected ExpressionModelFactory expressionFactory = ExpressionModelFactory.eINSTANCE;
 	protected XSTSModelFactory xStsFactory = XSTSModelFactory.eINSTANCE;
+	
+	public void changeTransitions(XSTS xSts, XTransition newAction) {
+		changeTransitions(xSts, Collections.singletonList(newAction));
+	}
+	
+	public void changeTransitions(XSTS xSts, Collection<XTransition> newActions) {
+		Collection<XTransition> savedActions = new ArrayList<XTransition>();
+		savedActions.addAll(newActions); // If newActions == xSts.getActions()
+		xSts.getTransitions().clear();
+		xSts.getTransitions().addAll(savedActions);
+	}
+	
+	public XTransition wrap(Action action) {
+		XTransition transition = xStsFactory.createXTransition();
+		transition.setAction(action);
+		return transition;
+	}
 	
 	public void prependToAction(Collection<? extends Action> actions, Action pivot) {
 		for (Action action : actions) {
@@ -123,16 +145,51 @@ public class XstsActionUtil extends ExpressionUtil {
 		return variables;
 	}
 	
-	public List<AssignmentAction> getAssignments(VariableDeclaration variable,
-			Collection<AssignmentAction> assignments) {
+	public List<AbstractAssignmentAction> getAssignments(VariableDeclaration variable,
+			Collection<AbstractAssignmentAction> assignments) {
 		return assignments.stream().filter(it -> getDeclaration(it.getLhs()) == variable)
 				.collect(Collectors.toList());
 	}
 	
-	public List<AssignmentAction> getAssignments(Collection<VariableDeclaration> variables,
-			Collection<AssignmentAction> assignments) {
+	public List<AbstractAssignmentAction> getAssignments(Collection<VariableDeclaration> variables,
+			Collection<AbstractAssignmentAction> assignments) {
 		return assignments.stream().filter(it -> variables.contains(getDeclaration(it.getLhs())))
 				.collect(Collectors.toList());
+	}
+	
+	public VariableDeclarationAction extractExpressions(String name, List<? extends Expression> expressions) {
+		Expression firstExpression = expressions.get(0);
+		Type type = typeDeterminator.getType(firstExpression); // Assume: they have the same type
+		VariableDeclarationAction variableDeclarationAction = extractExpression(type, name, firstExpression);
+		VariableDeclaration variableDeclaration = variableDeclarationAction.getVariableDeclaration();
+		for (int i = 1; i < expressions.size(); i++) {
+			Expression expression = expressions.get(i);
+			DirectReferenceExpression referenceExpression = createReferenceExpression(variableDeclaration);
+			ecoreUtil.replace(referenceExpression, expression);
+		}
+		return variableDeclarationAction;
+	}
+	
+	public VariableDeclarationAction extractExpression(Type type, String name, Expression expression) {
+		VariableDeclarationAction variableDeclarationAction = createVariableDeclarationAction(type, name);
+		VariableDeclaration variableDeclaration = variableDeclarationAction.getVariableDeclaration();
+		DirectReferenceExpression referenceExpression = createReferenceExpression(variableDeclaration);
+		
+		ecoreUtil.replace(referenceExpression, expression);
+		variableDeclaration.setExpression(expression);
+		
+		return variableDeclarationAction;
+	}
+	
+	public VariableDeclarationAction createVariableDeclarationAction(Type type, String name) {
+		return createVariableDeclarationAction(type, name, null);
+	}
+	
+	public VariableDeclarationAction createVariableDeclarationAction(Type type, String name, Expression expression) {
+		VariableDeclaration variableDeclaration = createVariableDeclaration(type, name, expression);
+		VariableDeclarationAction action = xStsFactory.createVariableDeclarationAction();
+		action.setVariableDeclaration(variableDeclaration);
+		return action;
 	}
 	
 	public AssignmentAction createAssignmentAction(VariableDeclaration variable, VariableDeclaration rhs) {
@@ -232,13 +289,33 @@ public class XstsActionUtil extends ExpressionUtil {
 		return switchAction;
 	}
 	
-	public NonDeterministicAction createSwitchAction(List<Expression> conditions, List<Action> actions) {
-		if (conditions.size() != actions.size() && conditions.size() + 1 != actions.size()) {
+	public List<Action> createChoiceActionWithExtractedPreconditionsAndEmptyDefaultBranch(Action action, String name) {
+		List<Action> actions = new ArrayList<Action>();
+		if (action instanceof SequentialAction) {
+			SequentialAction sequentialAction = (SequentialAction) action;
+			AssumeAction assumeAction = (AssumeAction) sequentialAction.getActions().get(0);
+			Expression expression = assumeAction.getAssumption();
+			VariableDeclarationAction variableDeclarationAction = extractExpression(
+					expressionFactory.createBooleanTypeDefinition(), name, expression);
+			actions.add(variableDeclarationAction);
+			NonDeterministicAction switchAction = createChoiceActionWithEmptyDefaultBranch(List.of(action));
+			actions.add(switchAction);
+		}
+		else {
+			throw new IllegalArgumentException("Not known action: " + action);
+		}
+		return actions;
+	}
+	
+	public NonDeterministicAction createIfElseAction(List<Expression> conditions, List<Action> actions) {
+		int conditionsSize = conditions.size();
+		if (conditionsSize != actions.size() && conditionsSize + 1 != actions.size()) {
 			throw new IllegalArgumentException("The two lists must be of same size or the size of"
 				+ "the action list must be the size of the condition list + 1: " + conditions + " " + actions);
 		}
+//		boolean foundElseBranch = false;
 		NonDeterministicAction switchAction = xStsFactory.createNonDeterministicAction();
-		for (int i = 0; i < conditions.size(); ++i) {
+		for (int i = 0; i < conditionsSize; ++i) {
 			SequentialAction sequentialAction = xStsFactory.createSequentialAction();
 			AndExpression andExpression = expressionFactory.createAndExpression();
 			for (int j = 0; j < i; ++j) {
@@ -248,25 +325,35 @@ public class XstsActionUtil extends ExpressionUtil {
 				andExpression.getOperands().add(notExpression);
 			}
 			Expression actualCondition = conditions.get(i);
-			if (!(actualCondition instanceof ElseExpression ||
-					actualCondition instanceof DefaultExpression)) {
-				// This condition is true
-				andExpression.getOperands().add(actualCondition);
+			if (actualCondition instanceof ElseExpression ||
+					actualCondition instanceof DefaultExpression) {
+				throw new IllegalArgumentException("Cannot process else expressions here");
 			}
-			AssumeAction assumeAction = createAssumeAction(andExpression);
+			andExpression.getOperands().add(actualCondition);
+//			else {
+//				if (i != conditionsSize - 1) {
+//					throw new IllegalArgumentException("The else branch is not in the last index!");
+//				}
+//				foundElseBranch = true;
+//			}
+			AssumeAction assumeAction = createAssumeAction(unwrapIfPossible(andExpression));
 			sequentialAction.getActions().add(assumeAction);
 			sequentialAction.getActions().add(actions.get(i));
 			// Merging into the main action
 			switchAction.getActions().add(sequentialAction);
 		}
 		// Else branch if needed
-		if (conditions.size() + 1 == actions.size()) {
+		if (conditionsSize + 1 == actions.size()) {
 			extendChoiceWithDefaultBranch(switchAction, actions.get(actions.size() - 1));
 		}
+//		else if (!foundElseBranch) {
+//			// Otherwise a deadlock could happen if no branch is true
+//			extendChoiceWithDefaultBranch(switchAction, xStsFactory.createEmptyAction());
+//		}
 		return switchAction;
 	}
 	
-	public NonDeterministicAction createSwitchActionWithControlExpression(
+	public NonDeterministicAction createSwitchAction(
 			Expression controlExpresion, List<Expression> conditions, List<Action> actions) {
 		if (conditions.size() != actions.size() && conditions.size() + 1 != actions.size()) {
 			throw new IllegalArgumentException("The two lists must be of same size or the size of"
@@ -279,7 +366,7 @@ public class XstsActionUtil extends ExpressionUtil {
 			equalityExpression.setRightOperand(condition);
 			newConditions.add(equalityExpression);
 		}
-		return createSwitchAction(newConditions, actions);
+		return createIfElseAction(newConditions, actions);
 	}
 
 	public void extendChoiceWithDefaultBranch(NonDeterministicAction switchAction, Action action) {
@@ -288,7 +375,6 @@ public class XstsActionUtil extends ExpressionUtil {
 		}
 		NotExpression negatedCondition = expressionFactory.createNotExpression();
 		OrExpression orExpression = expressionFactory.createOrExpression();
-		negatedCondition.setOperand(orExpression);
 		List<SequentialAction> sequentialActions = switchAction.getActions().stream()
 				.filter(it -> it instanceof SequentialAction)
 				.map(it -> (SequentialAction) it)
@@ -300,14 +386,15 @@ public class XstsActionUtil extends ExpressionUtil {
 		// Collecting atomic assumptions too
 		switchAction.getActions().stream()
 			.filter(it -> it instanceof AssumeAction)
-			.map(it -> ((AssumeAction) it).getAssumption()).
-			forEach(it -> conditions.add(it));
+			.map(it -> ((AssumeAction) it).getAssumption())
+			.forEach(it -> conditions.add(it));
 		if (conditions.isEmpty()) {
 			return;
 		}
 		for (Expression condition : conditions) {
 			orExpression.getOperands().add(clone(condition));
 		}
+		negatedCondition.setOperand(unwrapIfPossible(orExpression));
 		SequentialAction sequentialAction = xStsFactory.createSequentialAction();
 		AssumeAction assumeAction = createAssumeAction(negatedCondition);
 		sequentialAction.getActions().add(assumeAction);
@@ -324,9 +411,14 @@ public class XstsActionUtil extends ExpressionUtil {
 		// Checking for all composite actions: if it is empty,
 		// we return null, and the caller decides what needs to be done
 		if (action instanceof CompositeAction) {
-			CompositeAction compositeAction = (CompositeAction) action;
-			if (compositeAction.getActions().isEmpty()) {
-				return null;
+			if (action instanceof MultiaryAction) {
+				MultiaryAction multiaryAction = (MultiaryAction) action;
+				if (multiaryAction.getActions().isEmpty()) {
+					throw new IllegalArgumentException("Empty multiary action");
+				}
+			}
+			else {
+				throw new IllegalArgumentException("Not supported action: " + action);
 			}
 		}
 		//
@@ -350,7 +442,7 @@ public class XstsActionUtil extends ExpressionUtil {
 			}
 			return orExpression;
 		}
-		throw new IllegalArgumentException("Not supported aciton: " + action);
+		throw new IllegalArgumentException("Not supported action: " + action);
 	}
 	
 	public void deleteDeclaration(Declaration declaration) {

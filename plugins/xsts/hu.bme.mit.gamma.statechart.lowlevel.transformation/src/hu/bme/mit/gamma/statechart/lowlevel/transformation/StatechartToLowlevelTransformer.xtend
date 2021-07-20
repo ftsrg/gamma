@@ -12,11 +12,9 @@ package hu.bme.mit.gamma.statechart.lowlevel.transformation
 
 import hu.bme.mit.gamma.action.model.ActionModelFactory
 import hu.bme.mit.gamma.action.util.ActionUtil
-import hu.bme.mit.gamma.expression.model.ConstantDeclaration
-import hu.bme.mit.gamma.expression.model.ElseExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
-import hu.bme.mit.gamma.expression.model.ParameterDeclaration
+import hu.bme.mit.gamma.expression.model.TrueExpression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.EventDirection
@@ -27,7 +25,6 @@ import hu.bme.mit.gamma.statechart.lowlevel.model.Component
 import hu.bme.mit.gamma.statechart.lowlevel.model.EventDeclaration
 import hu.bme.mit.gamma.statechart.lowlevel.model.StateNode
 import hu.bme.mit.gamma.statechart.lowlevel.model.StatechartModelFactory
-import hu.bme.mit.gamma.statechart.statechart.ChoiceState
 import hu.bme.mit.gamma.statechart.statechart.GuardEvaluation
 import hu.bme.mit.gamma.statechart.statechart.PseudoState
 import hu.bme.mit.gamma.statechart.statechart.Region
@@ -38,45 +35,44 @@ import hu.bme.mit.gamma.statechart.statechart.TimeoutAction
 import hu.bme.mit.gamma.statechart.statechart.TimeoutDeclaration
 import hu.bme.mit.gamma.statechart.statechart.TimeoutEventReference
 import hu.bme.mit.gamma.statechart.statechart.Transition
-import hu.bme.mit.gamma.statechart.statechart.TransitionPriority
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.util.List
 
 import static com.google.common.base.Preconditions.checkState
 
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.LowlevelNamings.*
 
 class StatechartToLowlevelTransformer {
 	// Auxiliary objects
-	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
-	protected final extension ActionUtil actionUtil = ActionUtil.INSTANCE
-	protected final extension EventAttributeTransformer eventAttributeTransformer = EventAttributeTransformer.INSTANCE
 	protected final extension TypeTransformer typeTransformer
 	protected final extension ExpressionTransformer expressionTransformer
 	protected final extension ValueDeclarationTransformer valueDeclarationTransformer
 	protected final extension ActionTransformer actionTransformer
 	protected final extension TriggerTransformer triggerTransformer
 	protected final extension PseudoStateTransformer pseudoStateTransformer
+	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
+	protected final extension ActionUtil actionUtil = ActionUtil.INSTANCE
+	protected final extension EventAttributeTransformer eventAttributeTransformer = EventAttributeTransformer.INSTANCE
 	// Low-level statechart model factory
 	protected final extension StatechartModelFactory factory = StatechartModelFactory.eINSTANCE
 	protected final extension ExpressionModelFactory constraintFactory = ExpressionModelFactory.eINSTANCE
 	protected final extension ActionModelFactory actionFactory = ActionModelFactory.eINSTANCE
 	// Trace object for storing the mappings
 	protected final Trace trace
-	// Transformation parameters
-	protected final boolean functionInlining = true
-	protected final int maxRecursionDepth = 10
-	protected final String assertionVariableName = "__assertionFailed"
 
 	new() {
+		this(true, 10)
+	}
+
+	new(boolean functionInlining, int maxRecursionDepth) {
 		this.trace = new Trace
 		this.typeTransformer = new TypeTransformer(this.trace)
-		this.expressionTransformer = new ExpressionTransformer(this.trace, this.functionInlining)
+		this.expressionTransformer = new ExpressionTransformer(this.trace, functionInlining, maxRecursionDepth)
 		this.valueDeclarationTransformer = new ValueDeclarationTransformer(this.trace)
-		this.actionTransformer = new ActionTransformer(this.trace, this.functionInlining,
-			this.maxRecursionDepth, this.assertionVariableName)
-		this.triggerTransformer = new TriggerTransformer(this.trace, this.functionInlining)
+		this.actionTransformer = new ActionTransformer(this.trace, functionInlining, maxRecursionDepth)
+		this.triggerTransformer = new TriggerTransformer(this.trace, functionInlining, maxRecursionDepth)
 		this.pseudoStateTransformer = new PseudoStateTransformer(this.trace)
 	}
 	
@@ -85,6 +81,10 @@ class StatechartToLowlevelTransformer {
 	}
 	
 	def hu.bme.mit.gamma.statechart.lowlevel.model.StatechartDefinition execute(StatechartDefinition statechart) {
+		// Eliminating merge states
+		val mergeStateEliminator = new MergeStateEliminator(statechart)
+		mergeStateEliminator.execute
+		//
 		return statechart.transformComponent as hu.bme.mit.gamma.statechart.lowlevel.model.StatechartDefinition
 	}
 
@@ -102,39 +102,6 @@ class StatechartToLowlevelTransformer {
 		return lowlevelPackage
 	}
 	
-	protected def List<VariableDeclaration> transformComponentParameter(ParameterDeclaration gammaParameter) {
-		val lowlevelVariables = gammaParameter.transformValue
-		// Traced in transformValue
-		val lowlevelVariableNames = gammaParameter.componentParameterNames
-		lowlevelVariables.nameLowlevelVariables(lowlevelVariableNames)
-		return lowlevelVariables
-	}
-
-	protected def List<VariableDeclaration> transform(ConstantDeclaration gammaConstant) {
-		val lowlevelVariables = gammaConstant.transformValue
-		// Constant variable names do not really matter in terms of traceability
-		return lowlevelVariables
-	}
-	
-	protected def List<VariableDeclaration> transform(VariableDeclaration gammaVariable) {
-		val lowlevelVariables = gammaVariable.transformValue
-		// Traced in transformValue
-		val lowlevelVariableNames = gammaVariable.names
-		lowlevelVariables.nameLowlevelVariables(lowlevelVariableNames)
-		return lowlevelVariables
-	}
-	
-	protected def nameLowlevelVariables(List<VariableDeclaration> lowlevelVariables,
-			List<String> lowlevelVariableNames) {
-		checkState(lowlevelVariables.size == lowlevelVariableNames.size)
-		val size = lowlevelVariables.size
-		for (var i = 0; i < size; i++) {
-			val lowlevelVariable = lowlevelVariables.get(i)
-			val lowlevelVariableName = lowlevelVariableNames.get(i)
-			lowlevelVariable.name = lowlevelVariableName
-		}
-	}
-
 	/**
 	 * Returns a list, as an INOUT declaration is mapped to an IN and an OUT declaration.
 	 */
@@ -188,19 +155,10 @@ class StatechartToLowlevelTransformer {
 		trace.put(gammaPort, gammaEvent, lowlevelEvent)
 		// Transforming the parameters
 		for (gammaParameter : gammaEvent.parameterDeclarations) {
-			val lowlevelParameters = gammaParameter.transformValue
-			val lowlevelVariableNames = (direction == EventDirection.IN) ?
-				gammaParameter.getInNames(gammaPort) : 
-				gammaParameter.getOutNames(gammaPort)
-			lowlevelParameters.nameLowlevelVariables(lowlevelVariableNames)
+			val lowlevelParameters = (direction == EventDirection.IN) ?
+				gammaParameter.transformInParameter(gammaPort) : 
+				gammaParameter.transformOutParameter(gammaPort)
 			lowlevelEvent.parameters += lowlevelParameters
-			if (lowlevelParameters.size == 1) {
-				// TODO Is this tracing good?
-				val lowlevelParameter = lowlevelParameters.head
-				trace.put(gammaPort, gammaEvent, gammaParameter,
-					lowlevelEvent.direction, lowlevelParameter)
-			
-			}
 		}
 		return lowlevelEvent
 	}
@@ -261,19 +219,10 @@ class StatechartToLowlevelTransformer {
 		]
 		trace.put(statechart, lowlevelStatechart) // Saving in trace
 		
-		// Create assertion variable if not yet created
-		if (!trace.isAssertionVariableMapped(assertionVariableName)) {
-			var assertionVariable = createVariableDeclaration => [
-				it.name = assertionVariableName
-				it.type = createBooleanTypeDefinition
-				it.expression = createFalseExpression
-			]
-			lowlevelStatechart.variableDeclarations += assertionVariable
-			trace.put(assertionVariableName, assertionVariable)
-		}
 		// Constants
 		val gammaPackage = statechart.containingPackage
-		for (constantDeclaration : gammaPackage.constantDeclarations) {
+		for (constantDeclaration : gammaPackage.selfAndImports // During code generation, imported constants can be referenced
+				.map[it.constantDeclarations].flatten) {
 			lowlevelStatechart.variableDeclarations += constantDeclaration.transform
 		}
 		// No parameter declarations mapping
@@ -301,12 +250,9 @@ class StatechartToLowlevelTransformer {
 			lowlevelStatechart.regions += region.transform
 		}
 		for (transition : statechart.transitions) {
+			// Prioritizing transitions is done here
 			val lowlevelTransition = transition.transform
 			lowlevelStatechart.transitions += lowlevelTransition
-		}
-		// Prioritizing transitions
-		if (statechart.transitionPriority != TransitionPriority.OFF) {
-			statechart.prioritizeTransitions
 		}
 		return lowlevelStatechart
 	}
@@ -387,15 +333,13 @@ class StatechartToLowlevelTransformer {
 		val lowlevelTransition = createTransition => [
 			it.source = lowlevelSource
 			it.target = lowlevelTarget
+			it.priority = gammaTransition.calculatePriority.intValue // Priority is handled later
 		]
 		trace.put(gammaTransition, lowlevelTransition) // Saving in trace
 		// Important to trace the Gamma transition as the trigger transformer depends on it
-		val lowlevelGuard = gammaTransition.transformTriggerAndGuard
-		val lowlevelAction = gammaTransition.effects.transformActions
-		lowlevelTransition => [
-			it.guard = lowlevelGuard
-			it.action = lowlevelAction
-		]
+		lowlevelTransition.guard = gammaTransition.transformTriggerAndGuard
+		lowlevelTransition.action = gammaTransition.effects.transformActions
+		
 		return lowlevelTransition
 	}
 	
@@ -403,80 +347,21 @@ class StatechartToLowlevelTransformer {
 	 * Can return null.
 	 */
 	protected def Expression transformTriggerAndGuard(Transition transition) {
-		val lowlevelGuardList = newLinkedList
+		val lowlevelGuardList = newArrayList
 		val gammaTrigger = transition.trigger
 		if (gammaTrigger !== null) {
 			lowlevelGuardList += gammaTrigger.transformTrigger // Trigger guard
 		}
 		var guard = transition.guard
 		if (guard !== null) {
-			// Transforming else expressions
-			if (guard instanceof ElseExpression) {
-				trace.designateElseGuardedTransition(transition)
-				var Expression transformedGuard
-				val source = transition.sourceState
-				val gammaOutgoingTransitions = source.outgoingTransitions
-					.reject[it === transition]
-				if (gammaOutgoingTransitions.empty) {
-					transformedGuard = createTrueExpression
-				}
-				else {
-					// Check if there are empty transitions...
-					val gammaEmptyOutgoingTransitions = gammaOutgoingTransitions
-							.filter[!it.hasTrigger && !it.hasGuard]
-					checkState(gammaEmptyOutgoingTransitions.empty)
-					transformedGuard = createAndExpression => [
-						for (gammaOutgoingTransition : gammaOutgoingTransitions) {
-							it.operands += createNotExpression => [
-								val otherTrigger = gammaOutgoingTransition.trigger
-								val otherGuard = gammaOutgoingTransition.guard
-								it.operand = createAndExpression => [
-									// By default, the transformTrigger returns false expression for null
-									if (otherTrigger !== null) {
-										it.operands += otherTrigger.transformTrigger
-									}
-									if (otherGuard !== null) {
-										it.operands += otherGuard.transformExpression
-									}
-								]
-							]
-						}
-					]
-				}
-				lowlevelGuardList += transformedGuard
-			}
-			else {
+			if (!guard.elseOrDefault) {
 				lowlevelGuardList += guard.transformExpression
 			}
+			// We do not transform the else guard: priority is already set during the creation of the transition
 		}
 		// The expressions are in an AND relation
+		lowlevelGuardList.removeIf[it instanceof TrueExpression]
 		return lowlevelGuardList.wrapIntoMultiaryExpression(createAndExpression)
-	}
-	
-	protected def prioritizeTransitions(StatechartDefinition statechart) {
-		for (node : statechart.allStateNodes
-					.filter[it instanceof State || it instanceof ChoiceState]) {
-			val gammaOutgoingTransitions = node.outgoingTransitions
-					// Else expressions should not be cloned again
-					.reject[trace.elseGuardedTransition.contains(it)]
-			// Sorting, so the resulting guard expressions do not get too big
-			val sortedGammaOutgoingTransitions = gammaOutgoingTransitions.sortBy[it.calculatePriority]
-			for (gammaTransition : sortedGammaOutgoingTransitions) {
-				val lowlevelTransition = trace.get(gammaTransition)
-				val newGuardExpression = createAndExpression
-				for (prioritizedTransition : gammaTransition.prioritizedTransitions) {
-					newGuardExpression.operands += createNotExpression => [
-						it.operand = prioritizedTransition.transformTriggerAndGuard // New expression
-					]
-				}
-				// New guard
-				if (!newGuardExpression.operands.empty) {
-					lowlevelTransition.guard = newGuardExpression => [
-						it.operands += lowlevelTransition.guard // No clone here
-					]
-				}
-			}
-		}
 	}
 	
 }

@@ -22,8 +22,8 @@ class UppaalVerifier extends AbstractVerifier {
 	
 	VerificationResultReader verificationResultReader = null // Created one for each execution
 	
-	override Result verifyQuery(Object traceability, String parameters, File uppaalFile,
-			File uppaalQueryFile, boolean log, boolean storeOutput) {
+	override Result verifyQuery(Object traceability, String parameters,
+			File uppaalFile, File uppaalQueryFile) {
 		var Scanner resultReader = null
 		var Scanner traceReader = null
 		val actualUppaalQuery = uppaalQueryFile.loadString
@@ -37,7 +37,7 @@ class UppaalVerifier extends AbstractVerifier {
 			val errorStream = process.errorStream
 			// Reading the result of the command
 			resultReader = new Scanner(outputStream)
-			verificationResultReader = new VerificationResultReader(resultReader, log, storeOutput)
+			verificationResultReader = new VerificationResultReader(resultReader)
 			new Thread(verificationResultReader).start
 			traceReader = new Scanner(errorStream)
 			if (isCancelled) {
@@ -58,9 +58,6 @@ class UppaalVerifier extends AbstractVerifier {
 				throw new IllegalStateException("Not known traceability element: " + traceability)
 			}
 			val traceModel = backAnnotator.execute
-			if (storeOutput) {
-				output = verificationResultReader.output
-			}
 			result = actualUppaalQuery.handleEmptyLines.opposite
 			return new Result(result, traceModel)
 		} catch (EmptyTraceException e) {

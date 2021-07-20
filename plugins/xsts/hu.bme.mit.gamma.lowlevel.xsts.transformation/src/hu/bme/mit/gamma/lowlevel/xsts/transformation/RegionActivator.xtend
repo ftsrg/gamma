@@ -20,7 +20,6 @@ import hu.bme.mit.gamma.statechart.lowlevel.model.ShallowHistoryState
 import hu.bme.mit.gamma.statechart.lowlevel.model.State
 import hu.bme.mit.gamma.statechart.lowlevel.model.StateNode
 import hu.bme.mit.gamma.xsts.model.Action
-import hu.bme.mit.gamma.xsts.model.CompositeAction
 import hu.bme.mit.gamma.xsts.model.ParallelAction
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
@@ -244,7 +243,7 @@ class RegionActivator {
 	 * that activates a single region.
 	 */
 	protected def createRecursiveXStsRegionAndSubregionActivatingAction(Region lowlevelRegion) {
-		var CompositeAction xStsRegionSettingAction = createSequentialAction
+		val xStsRegionSettingAction = createSequentialAction
 		// Shallow history < deep history < initial state
 		if (lowlevelRegion.hasInitialState) {
 			// Even if it has a history, an initial state has higher priority when entering a region

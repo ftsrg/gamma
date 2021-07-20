@@ -16,17 +16,17 @@ import hu.bme.mit.gamma.codegenerator.java.queries.PortEventTriggersOfWrappers
 import hu.bme.mit.gamma.codegenerator.java.queries.QueuesOfClocks
 import hu.bme.mit.gamma.codegenerator.java.queries.QueuesOfEvents
 import hu.bme.mit.gamma.codegenerator.java.util.TimingDeterminer
+import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
+import hu.bme.mit.gamma.statechart.composite.ControlFunction
+import hu.bme.mit.gamma.statechart.composite.DiscardStrategy
+import hu.bme.mit.gamma.statechart.composite.MessageQueue
 import hu.bme.mit.gamma.statechart.interface_.AnyTrigger
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.interface_.TimeSpecification
 import hu.bme.mit.gamma.statechart.interface_.TimeUnit
-import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
-import hu.bme.mit.gamma.statechart.composite.ControlFunction
 
 import static extension hu.bme.mit.gamma.codegenerator.java.util.Namings.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
-import hu.bme.mit.gamma.statechart.composite.DiscardStrategy
-import hu.bme.mit.gamma.statechart.composite.MessageQueue
 
 class AsynchronousAdapterCodeGenerator {
 	
@@ -320,7 +320,9 @@ class AsynchronousAdapterCodeGenerator {
 		import lbmq.*; 
 		import «PACKAGE_NAME».*;
 
-		import «PACKAGE_NAME».interfaces.*;
+		«FOR _package : component.containingPackage.allImports /* For type declarations */»
+			import «_package.getPackageString(PACKAGE_NAME)».*;
+		«ENDFOR»
 		
 		import «component.wrappedComponent.type.generateComponentPackageName».*;
 	'''

@@ -29,12 +29,15 @@ public class PhaseGenerationHandler extends TaskHandler {
 	}
 	
 	public void execute(PhaseStatechartGeneration phaseStatechartGeneration) throws IOException {
+		// Setting target folder
+		setTargetFolder(phaseStatechartGeneration);
+		//
 		setFileName(phaseStatechartGeneration);
 		StatechartDefinition statechart = phaseStatechartGeneration.getStatechart();
 		PhaseStatechartTransformer transformer = new PhaseStatechartTransformer(statechart);
 		StatechartDefinition phaseStatechart = transformer.execute();
 		Package _package = StatechartModelDerivedFeatures.getContainingPackage(phaseStatechart);
-		saveModel(_package, targetFolderUri, phaseStatechartGeneration.getFileName().get(0) + ".gcd");
+		serializer.saveModel(_package, targetFolderUri, phaseStatechartGeneration.getFileName().get(0) + ".gcd");
 	}
 	
 	private void setFileName(PhaseStatechartGeneration phaseStatechartGeneration) {

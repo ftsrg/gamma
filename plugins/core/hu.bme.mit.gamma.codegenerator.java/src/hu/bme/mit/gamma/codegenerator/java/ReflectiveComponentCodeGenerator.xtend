@@ -22,7 +22,7 @@ class ReflectiveComponentCodeGenerator extends hu.bme.mit.gamma.codegenerator.ja
 		this.typeTransformer = new TypeTransformer(trace)
 	}
 	
-	protected def generateReflectiveClass(Component component) {
+	def generateReflectiveClass(Component component) {
 		super.component = component
 		return super.createReflectiveClass
 	}

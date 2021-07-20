@@ -13,117 +13,142 @@ statechart AntivalenceChecker(P_TAROLAS : boolean) [
 	transition from _1_rol_0_ra_4 to Hibaallapot_8 when T.^timeout
 	transition from Hibatarolassal_1_rol_0_ra_7 to Hibaallapot_8 when T.^timeout
 	transition from Hibatarolassal_0_rol_1_re_3 to Hibaallapot_8 when T.^timeout
-	transition from choice_16_in_main_region_of_mo_antivalchk to _0_5 [Signals.p ::pValue = ::_0 and
-		Signals.n ::nValue = ::_1]
-	transition from choice_14_in_main_region_of_mo_antivalchk to Hibatarolassal_1_2 [Signals.p
-		::pValue = ::_1 and Signals.n ::nValue = ::_0]
-	transition from choice_19_in_main_region_of_mo_antivalchk to Hibaallapot_8 [Signals.p ::pValue =
-		::_0 and Signals.n ::nValue = ::_0 or Signals.p ::pValue = ::_1 and Signals.n ::nValue = ::_1 or
-		Signals.p ::pValue = ::ERVENYTELEN or Signals.n ::nValue = ::ERVENYTELEN]
-	transition from choice_19_in_main_region_of_mo_antivalchk to _1_0 [Signals.p ::pValue = ::_1 and
-		Signals.n ::nValue = ::_0]
+	transition from choice_16_in_main_region_of_mo_antivalchk to _0_5 [Signals.p::pValue = MyBool::_0
+		and Signals.n::nValue = MyBool::_1]
+	transition from choice_14_in_main_region_of_mo_antivalchk to Hibatarolassal_1_2
+		[Signals.p::pValue = MyBool::_1 and Signals.n::nValue = MyBool::_0]
+	transition from choice_19_in_main_region_of_mo_antivalchk to Hibaallapot_8 [Signals.p::pValue =
+		MyBool::_0 and Signals.n::nValue = MyBool::_0 or Signals.p::pValue = MyBool::_1 and
+		Signals.n::nValue = MyBool::_1 or Signals.p::pValue = MyBool::ERVENYTELEN or Signals.n::nValue =
+		MyBool::ERVENYTELEN]
+	transition from choice_19_in_main_region_of_mo_antivalchk to _1_0 [Signals.p::pValue = MyBool::_1
+		and Signals.n::nValue = MyBool::_0]
 	transition from Hibatarolassal_0_rol_1_re_3 to choice_18_in_main_region_of_mo_antivalchk when
-		cycle [Signals.p ::pValue = ::_1 and Signals.n ::nValue = ::_0 or Signals.p ::pValue = ::_0 and
-		Signals.n ::nValue = ::_1]
-	transition from Hibaallapot_8 to choice_17_in_main_region_of_mo_antivalchk when cycle [Signals.p
-		::pValue = ::_1 and Signals.n ::nValue = ::_0 or Signals.p ::pValue = ::_0 and Signals.n
-		::nValue = ::_1]
-	transition from choice_17_in_main_region_of_mo_antivalchk to Hibatarolassal_0_1 [Signals.p
-		::pValue = ::_0 and Signals.n ::nValue = ::_1 and P_TAROLAS = true]
-	transition from choice_10_in_main_region_of_mo_antivalchk to _1_rol_0_ra_4 [Signals.p ::pValue =
-		::_0 and Signals.n ::nValue = ::_0 or Signals.p ::pValue = ::_1 and Signals.n ::nValue = ::_1 or
-		Signals.p ::pValue = ::ERVENYTELEN or Signals.n ::nValue = ::ERVENYTELEN]
-	transition from choice_12_in_main_region_of_mo_antivalchk to _0_rol_1_re_6 [Signals.p ::pValue =
-		::_0 and Signals.n ::nValue = ::_0 or Signals.p ::pValue = ::_1 and Signals.n ::nValue = ::_1 or
-		Signals.p ::pValue = ::ERVENYTELEN or Signals.n ::nValue = ::ERVENYTELEN]
-	transition from choice_19_in_main_region_of_mo_antivalchk to _0_5 [Signals.p ::pValue = ::_0 and
-		Signals.n ::nValue = ::_1]
-	transition from choice_14_in_main_region_of_mo_antivalchk to _0_5 [Signals.p ::pValue = ::_0 and
-		Signals.n ::nValue = ::_1]
-	transition from choice_17_in_main_region_of_mo_antivalchk to _0_5 [Signals.p ::pValue = ::_0 and
-		Signals.n ::nValue = ::_1 and P_TAROLAS = false]
-	transition from choice_11_in_main_region_of_mo_antivalchk to _1_0 [Signals.p ::pValue = ::_1 and
-		Signals.n ::nValue = ::_0]
-	transition from choice_17_in_main_region_of_mo_antivalchk to _1_0 [Signals.p ::pValue = ::_1 and
-		Signals.n ::nValue = ::_0 and P_TAROLAS = false]
-	transition from choice_15_in_main_region_of_mo_antivalchk to _1_0 [Signals.p ::pValue = ::_1 and
-		Signals.n ::nValue = ::_0]
+		cycle [Signals.p::pValue = MyBool::_1 and Signals.n::nValue = MyBool::_0 or Signals.p::pValue =
+		MyBool::_0 and Signals.n::nValue = MyBool::_1]
+	transition from Hibaallapot_8 to choice_17_in_main_region_of_mo_antivalchk when cycle
+		[Signals.p::pValue = MyBool::_1 and Signals.n::nValue = MyBool::_0 or Signals.p::pValue =
+		MyBool::_0 and Signals.n::nValue = MyBool::_1]
+	transition from choice_17_in_main_region_of_mo_antivalchk to Hibatarolassal_0_1
+		[Signals.p::pValue = MyBool::_0 and Signals.n::nValue = MyBool::_1 and P_TAROLAS = true]
+	transition from choice_10_in_main_region_of_mo_antivalchk to _1_rol_0_ra_4 [Signals.p::pValue =
+		MyBool::_0 and Signals.n::nValue = MyBool::_0 or Signals.p::pValue = MyBool::_1 and
+		Signals.n::nValue = MyBool::_1 or Signals.p::pValue = MyBool::ERVENYTELEN or Signals.n::nValue =
+		MyBool::ERVENYTELEN]
+	transition from choice_12_in_main_region_of_mo_antivalchk to _0_rol_1_re_6 [Signals.p::pValue =
+		MyBool::_0 and Signals.n::nValue = MyBool::_0 or Signals.p::pValue = MyBool::_1 and
+		Signals.n::nValue = MyBool::_1 or Signals.p::pValue = MyBool::ERVENYTELEN or Signals.n::nValue =
+		MyBool::ERVENYTELEN]
+	transition from choice_19_in_main_region_of_mo_antivalchk to _0_5 [Signals.p::pValue = MyBool::_0
+		and Signals.n::nValue = MyBool::_1]
+	transition from choice_14_in_main_region_of_mo_antivalchk to _0_5 [Signals.p::pValue = MyBool::_0
+		and Signals.n::nValue = MyBool::_1]
+	transition from choice_17_in_main_region_of_mo_antivalchk to _0_5 [Signals.p::pValue = MyBool::_0
+		and Signals.n::nValue = MyBool::_1 and P_TAROLAS = false]
+	transition from choice_11_in_main_region_of_mo_antivalchk to _1_0 [Signals.p::pValue = MyBool::_1
+		and Signals.n::nValue = MyBool::_0]
+	transition from choice_17_in_main_region_of_mo_antivalchk to _1_0 [Signals.p::pValue = MyBool::_1
+		and Signals.n::nValue = MyBool::_0 and P_TAROLAS = false]
+	transition from choice_15_in_main_region_of_mo_antivalchk to _1_0 [Signals.p::pValue = MyBool::_1
+		and Signals.n::nValue = MyBool::_0]
 	transition from Hibatarolassal_0_1 to choice_11_in_main_region_of_mo_antivalchk when cycle
-	transition from choice_11_in_main_region_of_mo_antivalchk to
-		Hibatarolassal_0_rol_1_re_3 [Signals.p ::pValue = ::_0 and Signals.n ::nValue = ::_0 or
-		Signals.p ::pValue = ::_1 and Signals.n ::nValue = ::_1 or Signals.p ::pValue = ::ERVENYTELEN or
-		Signals.n ::nValue = ::ERVENYTELEN]
+	transition from choice_11_in_main_region_of_mo_antivalchk to Hibatarolassal_0_rol_1_re_3
+		[Signals.p::pValue = MyBool::_0 and Signals.n::nValue = MyBool::_0 or Signals.p::pValue =
+		MyBool::_1 and Signals.n::nValue = MyBool::_1 or Signals.p::pValue = MyBool::ERVENYTELEN or
+		Signals.n::nValue = MyBool::ERVENYTELEN]
 	transition from choice_11_in_main_region_of_mo_antivalchk to Hibatarolassal_0_1 [else] // Added else branch
-	transition from Hibatarolassal_1_rol_0_ra_7 to choice_14_in_main_region_of_mo_antivalchk when
-		cycle [Signals.p ::pValue = ::_1 and Signals.n ::nValue = ::_0 or Signals.p ::pValue = ::_0 and
-		Signals.n ::nValue = ::_1]
+	transition from Hibatarolassal_1_rol_0_ra_7 to choice_14_in_main_region_of_mo_antivalchk when cycle
+		[Signals.p::pValue = MyBool::_1 and Signals.n::nValue = MyBool::_0 or Signals.p::pValue =
+		MyBool::_0 and Signals.n::nValue = MyBool::_1]
 	transition from init_13_in_main_region_of_mo_antivalchk to
 		choice_19_in_main_region_of_mo_antivalchk
-	transition from choice_16_in_main_region_of_mo_antivalchk to
-		Hibatarolassal_1_rol_0_ra_7 [Signals.p ::pValue = ::_0 and Signals.n ::nValue = ::_0 or
-		Signals.p ::pValue = ::_1 and Signals.n ::nValue = ::_1 or Signals.p ::pValue = ::ERVENYTELEN or
-		Signals.n ::nValue = ::ERVENYTELEN]
-	transition from _1_rol_0_ra_4 to choice_20_in_main_region_of_mo_antivalchk when cycle [Signals.p
-		::pValue = ::_1 and Signals.n ::nValue = ::_0 or Signals.p ::pValue = ::_0 and Signals.n
-		::nValue = ::_1]
-	transition from choice_15_in_main_region_of_mo_antivalchk to _0_5 [Signals.p ::pValue = ::_0 and
-		Signals.n ::nValue = ::_1]
-	transition from choice_20_in_main_region_of_mo_antivalchk to _0_5 [Signals.p ::pValue = ::_0 and
-		Signals.n ::nValue = ::_1]
-	transition from choice_20_in_main_region_of_mo_antivalchk to _1_0 [Signals.p ::pValue = ::_1 and
-		Signals.n ::nValue = ::_0]
-	transition from choice_18_in_main_region_of_mo_antivalchk to _1_0 [Signals.p ::pValue = ::_1 and
-		Signals.n ::nValue = ::_0]
+	transition from choice_16_in_main_region_of_mo_antivalchk to Hibatarolassal_1_rol_0_ra_7
+		[Signals.p::pValue = MyBool::_0 and Signals.n::nValue = MyBool::_0 or Signals.p::pValue =
+		MyBool::_1 and Signals.n::nValue = MyBool::_1 or Signals.p::pValue = MyBool::ERVENYTELEN or
+		Signals.n::nValue = MyBool::ERVENYTELEN]
+	transition from _1_rol_0_ra_4 to choice_20_in_main_region_of_mo_antivalchk when cycle
+		[Signals.p::pValue = MyBool::_1 and Signals.n::nValue = MyBool::_0 or Signals.p::pValue =
+		MyBool::_0 and Signals.n::nValue = MyBool::_1]
+	transition from choice_15_in_main_region_of_mo_antivalchk to _0_5 [Signals.p::pValue = MyBool::_0
+		and Signals.n::nValue = MyBool::_1]
+	transition from choice_20_in_main_region_of_mo_antivalchk to _0_5 [Signals.p::pValue = MyBool::_0
+		and Signals.n::nValue = MyBool::_1]
+	transition from choice_20_in_main_region_of_mo_antivalchk to _1_0 [Signals.p::pValue = MyBool::_1
+		and Signals.n::nValue = MyBool::_0]
+	transition from choice_18_in_main_region_of_mo_antivalchk to _1_0 [Signals.p::pValue = MyBool::_1
+		and Signals.n::nValue = MyBool::_0]
 	transition from _1_0 to choice_10_in_main_region_of_mo_antivalchk when cycle
-	transition from choice_10_in_main_region_of_mo_antivalchk to _0_5 [Signals.p ::pValue = ::_0 and
-		Signals.n ::nValue = ::_1]
+	transition from choice_10_in_main_region_of_mo_antivalchk to _0_5 [Signals.p::pValue = MyBool::_0
+		and Signals.n::nValue = MyBool::_1]
 	transition from choice_10_in_main_region_of_mo_antivalchk to _1_0 [else] // Added else branch
 	transition from Hibatarolassal_1_2 to choice_16_in_main_region_of_mo_antivalchk when cycle
 	transition from choice_16_in_main_region_of_mo_antivalchk to Hibatarolassal_1_2 [else] // Added else branch
-	transition from choice_17_in_main_region_of_mo_antivalchk to Hibatarolassal_1_2 [Signals.p ::pValue
-		= ::_1 and Signals.n ::nValue = ::_0 and P_TAROLAS = true]
+	transition from choice_17_in_main_region_of_mo_antivalchk to Hibatarolassal_1_2 [Signals.p::pValue
+		= MyBool::_1 and Signals.n::nValue = MyBool::_0 and P_TAROLAS = true]
 	transition from _0_5 to choice_12_in_main_region_of_mo_antivalchk when cycle
-	transition from choice_12_in_main_region_of_mo_antivalchk to _1_0 [Signals.p ::pValue = ::_1 and
-		Signals.n ::nValue = ::_0]
+	transition from choice_12_in_main_region_of_mo_antivalchk to _1_0 [Signals.p::pValue = MyBool::_1
+		and Signals.n::nValue = MyBool::_0]
 	transition from choice_12_in_main_region_of_mo_antivalchk to _0_5 [else] // Added else branch
-	transition from _0_rol_1_re_6 to choice_15_in_main_region_of_mo_antivalchk when cycle [Signals.p
-		::pValue = ::_1 and Signals.n ::nValue = ::_0 or Signals.p ::pValue = ::_0 and Signals.n
-		::nValue = ::_1]
-	transition from choice_18_in_main_region_of_mo_antivalchk to Hibatarolassal_0_1 [Signals.p
-		::pValue = ::_0 and Signals.n ::nValue = ::_1]
+	transition from _0_rol_1_re_6 to choice_15_in_main_region_of_mo_antivalchk when cycle
+		[Signals.p::pValue = MyBool::_1 and Signals.n::nValue = MyBool::_0 or Signals.p::pValue =
+		MyBool::_0 and Signals.n::nValue = MyBool::_1]
+	transition from choice_18_in_main_region_of_mo_antivalchk to Hibatarolassal_0_1
+		[Signals.p::pValue = MyBool::_0 and Signals.n::nValue = MyBool::_1]
 		// Original	
 	region main_region_of_mo_antivalchk {
 		state _1_0 {
-			entry / raise OutSignals.e(::_1); raise OutSignals.t(::_1); raise OutSignals.f(::_1);
+			entry /
+			raise OutSignals.e(MyBool::_1);
+			raise OutSignals.t(MyBool::_1);
+			raise OutSignals.f(MyBool::_1);
 		}
 		state Hibatarolassal_0_1 {
-			entry / raise OutSignals.e(::ERVENYTELEN); raise OutSignals.t(::ERVENYTELEN); raise
-				OutSignals.f(::ERVENYTELEN);
+			entry /
+			raise OutSignals.e(MyBool::ERVENYTELEN);
+			raise OutSignals.t(MyBool::ERVENYTELEN);
+			raise OutSignals.f(MyBool::ERVENYTELEN);
 		}
 		state Hibatarolassal_1_2 {
-			entry / raise OutSignals.e(::ERVENYTELEN); raise OutSignals.t(::ERVENYTELEN); raise
-				OutSignals.f(::ERVENYTELEN);
+			entry /
+			raise OutSignals.e(MyBool::ERVENYTELEN);
+			raise OutSignals.t(MyBool::ERVENYTELEN);
+			raise OutSignals.f(MyBool::ERVENYTELEN);
 		}
 		state Hibatarolassal_0_rol_1_re_3 {
-			entry / raise OutSignals.e(::ERVENYTELEN); raise OutSignals.t(::ERVENYTELEN); raise
-				OutSignals.f(::ERVENYTELEN);
+			entry /
+			raise OutSignals.e(MyBool::ERVENYTELEN);
+			raise OutSignals.t(MyBool::ERVENYTELEN);
+			raise OutSignals.f(MyBool::ERVENYTELEN);
 		}
 		state _1_rol_0_ra_4 {
-			entry / raise OutSignals.e(::_1); raise OutSignals.t(::_1); raise OutSignals.f(::_0);
+			entry /
+			raise OutSignals.e(MyBool::_1);
+			raise OutSignals.t(MyBool::_1);
+			raise OutSignals.f(MyBool::_0);
 		}
 		state _0_5 {
-			entry / raise OutSignals.e(::_0); raise OutSignals.t(::_0); raise OutSignals.f(::_0);
+			entry /
+			raise OutSignals.e(MyBool::_0);
+			raise OutSignals.t(MyBool::_0);
+			raise OutSignals.f(MyBool::_0);
 		}
 		state _0_rol_1_re_6 {
-			entry / raise OutSignals.e(::_0); raise OutSignals.t(::_1); raise OutSignals.f(::_0);
+			entry /
+			raise OutSignals.e(MyBool::_0);
+			raise OutSignals.t(MyBool::_1);
+			raise OutSignals.f(MyBool::_0);
 		}
 		state Hibatarolassal_1_rol_0_ra_7 {
-			entry / raise OutSignals.e(::ERVENYTELEN); raise OutSignals.t(::ERVENYTELEN); raise
-				OutSignals.f(::ERVENYTELEN);
+			entry /
+			raise OutSignals.e(MyBool::ERVENYTELEN);
+			raise OutSignals.t(MyBool::ERVENYTELEN);
+			raise OutSignals.f(MyBool::ERVENYTELEN);
 		}
 		state Hibaallapot_8 {
-			entry / raise OutSignals.e(::ERVENYTELEN); raise OutSignals.t(::ERVENYTELEN); raise
-				OutSignals.f(::ERVENYTELEN);
+			entry /
+			raise OutSignals.e(MyBool::ERVENYTELEN);
+			raise OutSignals.t(MyBool::ERVENYTELEN);
+			raise OutSignals.f(MyBool::ERVENYTELEN);
 		}
 		choice choice_10_in_main_region_of_mo_antivalchk
 		choice choice_11_in_main_region_of_mo_antivalchk

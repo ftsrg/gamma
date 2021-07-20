@@ -14,15 +14,27 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EReference;
+
 import hu.bme.mit.gamma.action.model.Action;
 import hu.bme.mit.gamma.action.model.ActionModelFactory;
 import hu.bme.mit.gamma.action.model.AssignmentStatement;
 import hu.bme.mit.gamma.action.model.Block;
+import hu.bme.mit.gamma.action.model.Branch;
+import hu.bme.mit.gamma.action.model.IfStatement;
+import hu.bme.mit.gamma.action.model.SwitchStatement;
+import hu.bme.mit.gamma.action.model.VariableDeclarationStatement;
+import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
 import hu.bme.mit.gamma.expression.model.AccessExpression;
 import hu.bme.mit.gamma.expression.model.Declaration;
+import hu.bme.mit.gamma.expression.model.DefaultExpression;
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
+import hu.bme.mit.gamma.expression.model.ElseExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
+import hu.bme.mit.gamma.expression.model.InitializableElement;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
+import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.expression.util.ExpressionUtil;
 
@@ -33,6 +45,25 @@ public class ActionUtil extends ExpressionUtil {
 	//
 	
 	protected ActionModelFactory actionFactory = ActionModelFactory.eINSTANCE;
+	
+	// Lhs of initializable elements and assignment statements
+	
+	public Declaration getLhsDeclaration(EObject context) {
+		AssignmentStatement assignment = ecoreUtil.getSelfOrContainerOfType(context, AssignmentStatement.class);
+		if (assignment != null) {
+			ReferenceExpression lhs = assignment.getLhs();
+			return getDeclaration(lhs);
+		}
+		return (Declaration) ecoreUtil.getSelfOrContainerOfType(context, InitializableElement.class);
+	}
+	
+	//
+	
+	public Block wrap(Collection<? extends Action> actions) {
+		Block block = actionFactory.createBlock();
+		block.getActions().addAll(actions);
+		return block;
+	}
 	
 	public Action prepend(Action action, Action pivot) {
 		if (action == null) {
@@ -86,6 +117,82 @@ public class ActionUtil extends ExpressionUtil {
 		return extensibleAction;
 	}
 	
+	//
+	
+	public Branch createBranch(Expression expression, Action action) {
+		Branch branch = actionFactory.createBranch();
+		branch.setGuard(expression);
+		branch.setAction(action);
+		return branch;
+	}
+	
+	public Branch getOrCreateElseBranch(IfStatement statement) {
+		List<Branch> conditionals = statement.getConditionals();
+		for (Branch conditional : conditionals) {
+			Expression guard = conditional.getGuard();
+			if (guard instanceof ElseExpression) {
+				return conditional;
+			}
+		}
+		Branch elseBranch = createBranch(factory.createElseExpression(),
+				actionFactory.createBlock());
+		statement.getConditionals().add(elseBranch);
+		return elseBranch;
+	}
+	
+	public Branch getOrCreateDefaultBranch(SwitchStatement statement) {
+		List<Branch> conditionals = statement.getCases();
+		for (Branch conditional : conditionals) {
+			Expression guard = conditional.getGuard();
+			if (guard instanceof DefaultExpression) {
+				return conditional;
+			}
+		}
+		Branch defaultBranch = createBranch(factory.createDefaultExpression(),
+				actionFactory.createBlock());
+		statement.getCases().add(defaultBranch);
+		return defaultBranch;
+	}
+	
+	public void extendThisAndNextBranches(Branch branch, Action action) {
+		int index = ecoreUtil.getIndex(branch);
+		EObject container = branch.eContainer();
+		EReference containingReference = branch.eContainmentFeature();
+		@SuppressWarnings("unchecked")
+		List<Branch> branches = (List<Branch>) container.eGet(containingReference);
+		for (int i = index; i < branches.size(); ++i) {
+			Branch actualBranch = branches.get(i);
+			Action branchAction = actualBranch.getAction();
+			Action clonedAction = ecoreUtil.clone(action);
+			if (branchAction == null) {
+				actualBranch.setAction(clonedAction);
+			}
+			else {
+				prepend(clonedAction, branchAction); // Does not matter if prepend or extend
+			}
+		}
+	}
+	
+	//
+	
+	public VariableDeclarationStatement createDeclarationStatement(Type type, String name) {
+		return createDeclarationStatement(type, name, // Otherwise, the variable is "havoced"
+				ExpressionModelDerivedFeatures.getDefaultExpression(type));
+	}
+	
+	public VariableDeclarationStatement createDeclarationStatement(Type type,
+			String name, Expression initialExpression) {
+		VariableDeclarationStatement statement = actionFactory.createVariableDeclarationStatement();
+		VariableDeclaration variable = factory.createVariableDeclaration();
+		statement.setVariableDeclaration(variable);
+		variable.setType(type);
+		variable.setName(name);
+		variable.setExpression(initialExpression);
+		return statement;
+	}
+	
+	//
+	
 	public List<AssignmentStatement> getAssignments(VariableDeclaration variable,
 			Collection<AssignmentStatement> assignments) {
 		List<AssignmentStatement> assignmentsOfVariable = new ArrayList<>();
@@ -105,14 +212,34 @@ public class ActionUtil extends ExpressionUtil {
 		return assignmentsOfVariable;
 	}
 	
-	public AssignmentStatement createAssignment(VariableDeclaration variable,
+	public AssignmentStatement createAssignment(ReferenceExpression reference,
 			Expression expression) {
 		AssignmentStatement assignmentStatement = actionFactory.createAssignmentStatement();
-		DirectReferenceExpression reference = factory.createDirectReferenceExpression();
-		reference.setDeclaration(variable);
 		assignmentStatement.setLhs(reference);
 		assignmentStatement.setRhs(expression);
 		return assignmentStatement;
+	}
+	
+	public AssignmentStatement createAssignment(VariableDeclaration variable,
+			Expression expression) {
+		DirectReferenceExpression reference = factory.createDirectReferenceExpression();
+		reference.setDeclaration(variable);
+		return createAssignment(reference, expression);
+	}
+	
+	public List<AssignmentStatement> createAssignments(List<? extends ReferenceExpression> left,
+			List<Expression> right) {
+		List<AssignmentStatement> assignments = new ArrayList<AssignmentStatement>();
+		int size = left.size();
+		if (size != right.size()) {
+			throw new IllegalArgumentException("Different number of arguments: " + size + " " + right.size());
+		}
+		for (int i = 0; i < size; i++) {
+			ReferenceExpression lhs = left.get(i);
+			Expression rhs = right.get(i);
+			assignments.add(createAssignment(lhs, rhs));
+		}
+		return assignments;
 	}
 	
 }

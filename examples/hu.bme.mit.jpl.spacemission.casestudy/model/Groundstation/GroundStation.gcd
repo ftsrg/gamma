@@ -1,0 +1,29 @@
+package groundstation
+import "Interface/Interfaces.gcd"
+statechart GroundStation [
+	port connection : requires DataSource
+	port control : requires StationControl
+] {
+	timeout pingTimeout
+	timeout autoStart
+	region Main {
+		initial Entry1
+		state Idle {
+			entry / set autoStart := 30 s;
+		}
+		state Operation {
+			entry / raise connection.ping; set pingTimeout := 10 s;
+			region ReceiveData {
+				initial Entry2
+				state Waiting
+			}
+		}
+	}
+	transition from Entry1 to Idle
+	transition from Idle to Operation when control.start
+	transition from Idle to Operation when timeout autoStart
+	transition from Operation to Operation when timeout pingTimeout
+	transition from Operation to Idle when control.shutdown
+	transition from Entry2 to Waiting
+	transition from Waiting to Waiting when connection.data
+}

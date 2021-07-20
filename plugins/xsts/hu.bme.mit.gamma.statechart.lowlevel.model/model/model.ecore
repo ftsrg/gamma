@@ -102,6 +102,8 @@
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="action" eType="ecore:EClass ../../hu.bme.mit.gamma.action.model/model/action.ecore#//Action"
         containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="priority" lowerBound="1"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt" defaultValueLiteral="0"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="PseudoState" abstract="true" eSuperTypes="#//StateNode"/>
   <eClassifiers xsi:type="ecore:EClass" name="PrecursoryState" abstract="true" eSuperTypes="#//PseudoState"/>

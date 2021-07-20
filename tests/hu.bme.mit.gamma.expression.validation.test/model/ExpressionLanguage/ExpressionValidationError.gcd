@@ -1,0 +1,235 @@
+package expressionlanguage
+
+import "Types/Types.gcd"
+
+const int1 : int
+const dec1 : dec
+const rec1 : rec
+
+procedure proc (param : integer) : integer {
+ 	return 1;
+}
+
+const dir : Direction
+
+// ERROR
+
+/**
+ * We expect the condition of if-then-else expression to be boolean
+ * 
+ * @Check - checkIfThenElseExpression
+ */
+ const bool0 : boolean := 1 ? true : false
+ const bool1 : boolean := int1 ? true : false
+
+ 
+/**
+ * We expect the else-branch and the then-branch to be of the same type
+ * 
+ * @Check - checkIfThenElseExpression
+ */
+const bool3 : boolean := true ? 1 : 1.1
+
+
+/**
+ * We expect type of the array and the elements on the right hand side to be same
+ * 
+ * @Check - checkArrayLiteralExpression
+ */
+const array : [1] integer := #[1.1]
+const array1 : [2] integer := #[dec1, dec1]
+
+/**
+ * We expect the record has with a field with the given name
+ * 
+ * @Check - checkRecordAccessExpression
+ */
+const field3 : integer := rec1.field3
+
+
+/**
+ * We expect the types of arguments and the types of declared function parameters are same
+ * 
+ * @Check - checkFunctionAccessExpression
+ */
+const procResult0 : integer := proc(dec1)
+
+/**
+ * We expect the number of arguments to be equal with the number of declared parameters for a function
+ * 
+ * @Check - checkFunctionAccessExpression
+ */
+const procResult1 : integer := proc(int1, int1)
+
+
+/**
+ * We expect the index of the accessed element to be of integer type
+ * 
+ * @Check - checkArrayAccessExpression
+ */
+const arrayAccessInt : integer := array[dec1]
+
+/**
+ * We expect the array index to be less than the array size and greater than or equal to 0
+ * 
+ * @Check - checkArrayAccessExpression
+ */
+const arrayInt : integer := array[5]
+const arrayInt1 : integer := array[-1]
+
+/**
+ * We expect the operand of this unary boolean operation to be evaluated as only a boolean value
+ * 
+ * @Check - checkBooleanExpression
+ */
+const bool4 : boolean := not int1
+
+/**
+ * We expect the operands of the binary boolean operations to be evaluated as only a boolean value
+ * 
+ * @Check - checkBooleanExpression
+ */
+const bool5 : boolean := int1 imply true
+
+/**
+ * We expect the operands of the multiary boolean operations to be evaluated as only a boolean value
+ * 
+ * @Check - checkBooleanExpression
+ */
+const bool6 : boolean := true or dec1
+const bool7 : boolean := false and 1.1
+
+/**
+ * We expect the left and the right hand sides of the equivalence expressions 
+ * and the comparison expressions to be compatible
+ * 
+ * @Check - checkPredicateExpression
+ */
+const bool8 : boolean := 1 != 1.1
+const bool9 : boolean := 1 /= dec1
+const bool10 : boolean := int1 = 1.1
+const bool11 : boolean := dir == dec1
+const bool12 : boolean := 1.1 < dir
+const bool13 : boolean := 1 <= dir
+const bool14 : boolean := dir > 1
+const bool15 : boolean := dir >= 1.1
+
+
+/**
+ * We expect the operand of these unary number operation to be evaluated as only a number type
+ * 
+ * @Check - checkArithmeticExpression
+ */
+const int2 : integer := -false
+const int3 : integer := +false
+
+/**
+ * We expect the right and the left operands are evaluated as an integer value,  
+ * it is a modulo or divide expression
+ * 
+ * @Check - checkArithmeticExpression
+ */
+const int4 : integer := 1.1 div 1
+const int5 : integer := 1 mod 1.1
+
+/**
+ * We expect the operand of these multiary number operation to be evaluated as only a number type
+ * 
+ * @Check - checkArithmeticExpression
+ */
+const int6 : integer := 1.1 * false
+const int7 : integer := 1.1 + false
+
+
+/**
+ * We expect the correct initial value
+ * 
+ * @Check - checkInitializableElement
+ */
+const int8 : integer := 1.1
+const array2 : [2] integer := #[1.1, 1]
+const array3 : [1] dec := #[int1]
+const array4 : [1] int := #[1.1]
+const dir1 : Direction := CardianalPoints::NORTH
+
+
+/**
+ * We expect the correct number of initial value
+ * 
+ * @Check - checkInitializableElement
+ */
+const array5 : [1] integer := #[1, 1]
+
+/**
+ * We expect the size of array to be greater then 0
+ * 
+ * @Check - checkArrayTypeDefinition
+ */
+const array6 : [0] integer
+
+/**
+ * We expect the size of the array to be an integer
+ * 
+ * @Check - checkArrayTypeDefinition
+ */
+const array7 : [dec1] integer
+
+
+/**
+ * We expect the divisor to be non-zero
+ * 
+ * @Check - checkDivZero
+ */
+const int9 : integer := 12 / 0
+const int10 : integer := 12 mod 0
+const int11 : integer := 12 div 0
+
+/**
+ * We expect the denominator to be non-zero
+ * 
+ * @Check - checkRationalLiteralExpression
+ */
+const rat : rational := 12 % 0
+
+/**
+ * We expect all fields in the definition to have a value
+ * 
+ * @Check - checkRecordLiteralExpression
+ */
+const rec0 : rec := # rec { field0 := 0 }
+
+/**
+ * We expect all fields in the definition to have only one value
+ * 
+ * @Check - checkRecordLiteralExpression
+ */
+const rec2 : rec := # rec { field0 := 0, field1 := 1, field0 := 1 }
+
+
+/**
+ * We expect the operands of the integer range be integers
+ * 
+ * @Check - checkIntegerRangeLiteralExpression
+ */
+const intRange : integer range := <- rec1 .. dir ->
+const intRange1 : integer range := <- dec1 .. 12 ->
+const intRange2 : integer range := <- int1 .. 12.1 ->
+
+/**
+ * We expect the left operand be less equal than the right operand
+ * 
+ * @Check - checkIntegerRangeLiteralExpression
+ */
+const intRange3 : integer range := <- 13 .. 12 ->
+
+
+/**
+ * We expect the operand of the select expression to be integer range *
+ *  
+ * @Check - checkSelectExpression
+ */
+const selectable : integer := 12 -> select
+const selectable1 : integer := int1 -> select
+const selectable2 : decimal := dec1 -> select
+const selectable3 : decimal := dir -> select
+

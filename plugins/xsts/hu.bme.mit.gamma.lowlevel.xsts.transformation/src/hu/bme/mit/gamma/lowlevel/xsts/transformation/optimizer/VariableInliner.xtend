@@ -18,14 +18,17 @@ import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.AssumeAction
 import hu.bme.mit.gamma.xsts.model.EmptyAction
+import hu.bme.mit.gamma.xsts.model.LoopAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
+import hu.bme.mit.gamma.xsts.model.XTransition
 import java.util.List
 import java.util.Map
 import org.eclipse.xtend.lib.annotations.Data
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
 
 class VariableInliner {
 	// Singleton
@@ -34,6 +37,16 @@ class VariableInliner {
 	//
 	
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
+
+	def inline(Iterable<XTransition> transitions) {
+		for (transition : transitions) {
+			transition.inline
+		}
+	}
+
+	def inline(XTransition transition) {
+		transition.action.inline
+	}
 
 	def inline(Action action) {
 		action.inline(newHashMap, newHashMap)
@@ -51,6 +64,24 @@ class VariableInliner {
 			Map<VariableDeclaration, InlineEntry> concreteValues,
 			Map<VariableDeclaration, InlineEntry> symbolicValues) {
 		// Nop
+	}
+	
+	protected def dispatch void inline(LoopAction action,
+			Map<VariableDeclaration, InlineEntry> concreteValues,
+			Map<VariableDeclaration, InlineEntry> symbolicValues) {
+		val subaction = action.action
+		val writtenVariables = subaction.writtenVariables // 
+		concreteValues.keySet -= writtenVariables
+		symbolicValues.keySet -= writtenVariables
+		// Due to the iterations, we do not know the values for variables written inside the loop
+		
+		val newConcreteValues = newHashMap
+		val newSymbolicValues = newHashMap
+		newConcreteValues += concreteValues
+		newSymbolicValues += symbolicValues
+		
+		subaction.inline(newConcreteValues, newSymbolicValues)
+		// Returning the original maps from which the written variables were removed
 	}
 	
 	protected def dispatch void inline(SequentialAction action,

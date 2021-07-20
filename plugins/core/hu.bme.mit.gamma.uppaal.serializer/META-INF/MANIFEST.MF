@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: UPPAAL EMF Serializer to XML
 Bundle-SymbolicName: hu.bme.mit.gamma.uppaal.serializer
-Bundle-Version: 2.5.0.qualifier
+Bundle-Version: 2.5.1.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Require-Bundle: com.google.guava,
  org.eclipse.xtext.xbase.lib,

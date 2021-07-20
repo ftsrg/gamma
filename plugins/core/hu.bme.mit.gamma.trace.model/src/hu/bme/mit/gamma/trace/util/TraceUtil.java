@@ -11,7 +11,9 @@
 package hu.bme.mit.gamma.trace.util;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 
 import org.eclipse.emf.common.util.EList;
@@ -19,8 +21,18 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.ecore.util.EcoreUtil.EqualityHelper;
 
+import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
+import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
+import hu.bme.mit.gamma.expression.model.Type;
+import hu.bme.mit.gamma.expression.model.TypeDeclaration;
+import hu.bme.mit.gamma.expression.model.TypeReference;
+import hu.bme.mit.gamma.expression.util.ExpressionUtil;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
+import hu.bme.mit.gamma.statechart.interface_.Component;
+import hu.bme.mit.gamma.statechart.interface_.Interface;
+import hu.bme.mit.gamma.statechart.interface_.InterfaceRealization;
+import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.trace.derivedfeatures.TraceModelDerivedFeatures;
 import hu.bme.mit.gamma.trace.model.Act;
 import hu.bme.mit.gamma.trace.model.Assert;
@@ -31,13 +43,48 @@ import hu.bme.mit.gamma.trace.model.RaiseEventAct;
 import hu.bme.mit.gamma.trace.model.Reset;
 import hu.bme.mit.gamma.trace.model.Step;
 
-public class TraceUtil {
+public class TraceUtil extends ExpressionUtil {
 	// Singleton
 	public static final TraceUtil INSTANCE = new TraceUtil();
 	protected TraceUtil() {}
 	//
 	
 	public static final AssertSorter assertSorter = new AssertSorter();
+	
+	// Extending super methods
+	
+	@Override
+	public Collection<TypeDeclaration> getTypeDeclarations(EObject context) {
+		Collection<TypeDeclaration> types = new HashSet<TypeDeclaration>();
+		ExecutionTrace trace = ecoreUtil.getSelfOrContainerOfType(context, ExecutionTrace.class);
+		Package _package = trace.getImport();
+		// Explicit imports
+		for (Package importedPackage : StatechartModelDerivedFeatures.getAllImports(_package)) {
+			types.addAll(importedPackage.getTypeDeclarations());
+		}
+		// Native references in the case the unfolded packages
+		Collection<TypeReference> references = new ArrayList<TypeReference>();
+		references.addAll(ecoreUtil.getAllContentsOfType(_package, TypeReference.class));
+		// Events and parameters
+		for (InterfaceRealization realization :
+				ecoreUtil.getAllContentsOfType(_package, InterfaceRealization.class)) {
+			Interface _interface = realization.getInterface();
+			references.addAll(ecoreUtil.getAllContentsOfType(_interface, TypeReference.class));
+		}
+		// Collecting the type declarations
+		for (TypeReference reference : references) {
+			TypeDeclaration typeDeclaration = reference.getReference();
+			types.add(typeDeclaration);
+			Type type = ExpressionModelDerivedFeatures.getTypeDefinition(typeDeclaration.getType());
+			if (type instanceof RecordTypeDefinition) {
+				RecordTypeDefinition recordType = (RecordTypeDefinition) type;
+				Collection<TypeDeclaration> containedTypeDeclarations =
+						TraceModelDerivedFeatures.getAllTypeDeclarations(recordType);
+				types.addAll(containedTypeDeclarations);
+			}
+		}
+		return types;
+	}
 	
 	// Step sorter
 	
@@ -160,6 +207,10 @@ public class TraceUtil {
 			}
 			actualSteps.add(step);
 		}
+		// Add the last list of steps after the last reset
+		if (!stepsList.contains(actualSteps)) {
+			stepsList.add(actualSteps);
+		}
 		return stepsList;
 	}
 	
@@ -231,6 +282,74 @@ public class TraceUtil {
 			return true;
 		}
 		return false;
+	}
+	
+	public void setupExecutionTrace(ExecutionTrace trace, List<Step> steps,
+			String name, Component component, Package imports) {
+		if (name != null) {
+			trace.setName(name);
+		}
+		if (steps != null) {
+			trace.getSteps().clear();
+			trace.getSteps().addAll(steps);
+		}
+		if (component != null) {
+			trace.setComponent(component);
+		}
+		if (imports != null) {
+			trace.setImport(imports);
+		}
+	}
+
+	public boolean isCoveredByStates(ExecutionTrace covered, ExecutionTrace covering) {
+		List<Step> coveredTrace = covered.getSteps();
+		List<Step> coveringTrace = covering.getSteps();
+		if (isCoveredByStates(coveredTrace, coveringTrace)) {
+			return true;
+		}
+		return false;
+	}
+
+	public boolean isCoveredByStates(List<Step> covered, List<Step> covering) {
+		if (covering.size() < covered.size()) {
+			return false;
+		}
+		for (int i = 0; i < covered.size(); i++) {
+			if (!isCoveredByState(covered.get(i), covering.get(i))) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	public boolean isCoveredByState(Step covered, Step covering) {
+		EList<Assert> coveredAsserts = covered.getAsserts();
+		EList<Assert> coveringAsserts = covering.getAsserts();
+		InstanceStateConfiguration stateCovered = null;
+		InstanceStateConfiguration stateCovering = null;
+		for (Assert asser : coveringAsserts) {
+			if (asser instanceof InstanceStateConfiguration) {
+				stateCovering = (InstanceStateConfiguration) asser;
+			}
+		}
+		for (Assert asser : coveredAsserts) {
+			if (asser instanceof InstanceStateConfiguration) {
+				stateCovered = (InstanceStateConfiguration) asser;
+			}
+		}
+		if (stateCovered == null || stateCovering == null) {
+			return false;
+		}
+		if (ecoreUtil.helperEquals(stateCovered.getState(), stateCovering.getState())) {
+			return true;
+		}
+		return false;
+	}
+	
+	public void clearAsserts(ExecutionTrace trace, Class<?> clazz) {
+		for (Step step : trace.getSteps()) {
+			step.getAsserts().removeIf(it -> clazz.isInstance(it));
+		}
 	}
 	
 	public boolean equalsTo(EObject lhs, EObject rhs) {

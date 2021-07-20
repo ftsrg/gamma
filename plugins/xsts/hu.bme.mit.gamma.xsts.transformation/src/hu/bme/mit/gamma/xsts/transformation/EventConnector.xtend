@@ -35,6 +35,7 @@ class EventConnector {
 	protected final extension XSTSModelFactory xStsModelFactory = XSTSModelFactory.eINSTANCE
 	
 	def void connectEventsThroughChannels(XSTS xSts, CompositeComponent component) {
+		// AssignmentAction not AbstractAssignmentAction as we do not use havoc in the system behavior
 		val xStsAssignmentActions = xSts.getAllContentsOfType(AssignmentAction) // Caching
 		val xStsDeletableVariables = newHashSet
 		val optimizableSimplePorts = newHashSet
@@ -128,7 +129,8 @@ class EventConnector {
 		
 		// Deletion
 		for (xStsDeletableVariable : xStsDeletableVariables) {
-			for (xStsDeletableAssignmentAction : xStsAssignmentActions.filter[(it.lhs as DirectReferenceExpression).declaration === xStsDeletableVariable]) {
+			for (xStsDeletableAssignmentAction : xStsAssignmentActions
+					.filter[it.lhs.accessedDeclaration === xStsDeletableVariable]) {
 				xStsDeletableAssignmentAction.remove // To speed up the process
 			}
 			// Assignment removal before variable deletion!
@@ -139,7 +141,7 @@ class EventConnector {
 	protected def void connectEvents(VariableDeclaration xStsOutVariable,
 			VariableDeclaration xStsInVariable, List<AssignmentAction> xStsAssignmentActions) {
 		for (xStsAssignmentAction : xStsAssignmentActions) {
-			val xStsDeclaration = (xStsAssignmentAction.lhs as DirectReferenceExpression).declaration
+			val xStsDeclaration = xStsAssignmentAction.lhs.declaration // TODO Works for arrays?
 			if (xStsDeclaration === xStsOutVariable) {
 				val xStsNewAssignmentAction = xStsAssignmentAction.clone => [
 					(it.lhs as DirectReferenceExpression).declaration = xStsInVariable

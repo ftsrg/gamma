@@ -51,6 +51,7 @@ class Namings {
 //	static def String customizeInName(ParameterDeclaration parameterDeclaration, Port port, ComponentInstanceReference instance) '''«customizeInName(parameterDeclaration, port, instance.FQN)»'''
 //	static def String customizeInName(ParameterDeclaration parameterDeclaration, Port port, String instance) '''«parameterDeclaration.getInName(port).variableName»_«instance»'''
 	
+	static def List<String> customizeInNames(ParameterDeclaration parameterDeclaration, Port port) { getInNames(parameterDeclaration, port).map[it.variableName].toList }
 	static def List<String> customizeInNames(ParameterDeclaration parameterDeclaration, Port port, ComponentInstance instance) { customizeInNames(parameterDeclaration, port, instance.name) }
 	static def List<String> customizeInNames(ParameterDeclaration parameterDeclaration, Port port, ComponentInstanceReference instance) { customizeInNames(parameterDeclaration, port, instance.FQN) }
 	static def List<String> customizeInNames(ParameterDeclaration parameterDeclaration, Port port, String instance) { parameterDeclaration.getInNames(port).map[it.variableName + "_" + instance] }
@@ -59,6 +60,7 @@ class Namings {
 //	static def String customizeOutName(ParameterDeclaration parameterDeclaration, Port port, ComponentInstanceReference instance) '''«customizeOutName(parameterDeclaration, port, instance.FQN)»'''
 //	static def String customizeOutName(ParameterDeclaration parameterDeclaration, Port port, String instance) '''«parameterDeclaration.getOutName(port).variableName»_«instance»'''
 	
+	static def List<String> customizeOutNames(ParameterDeclaration parameterDeclaration, Port port) { getOutNames(parameterDeclaration, port).map[it.variableName].toList }
 	static def List<String> customizeOutNames(ParameterDeclaration parameterDeclaration, Port port, ComponentInstance instance) { customizeOutNames(parameterDeclaration, port, instance.name) }
 	static def List<String> customizeOutNames(ParameterDeclaration parameterDeclaration, Port port, ComponentInstanceReference instance) { customizeOutNames(parameterDeclaration, port, instance.FQN) }
 	static def List<String> customizeOutNames(ParameterDeclaration parameterDeclaration, Port port, String instance) { parameterDeclaration.getOutNames(port).map[it.variableName + "_" + instance] }
@@ -67,6 +69,7 @@ class Namings {
 //	static def String customizeName(VariableDeclaration variable, ComponentInstanceReference instance) '''«customizeName(variable, instance.FQN)»'''
 //	static def String customizeName(VariableDeclaration variable, String instance) '''«getName(variable).variableName»_«instance»'''
 	
+	static def List<String> customizeNames(VariableDeclaration variable) { variable.names.map[it.variableName].toList }
 	static def List<String> customizeNames(VariableDeclaration variable, ComponentInstance instance) { customizeNames(variable, instance.name) }
 	static def List<String> customizeNames(VariableDeclaration variable, ComponentInstanceReference instance) { customizeNames(variable, instance.FQN) }
 	static def List<String> customizeNames(VariableDeclaration variable, String instance) { getNames(variable).map[it.variableName + "_" + instance] }

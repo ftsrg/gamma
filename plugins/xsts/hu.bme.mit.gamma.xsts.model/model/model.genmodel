@@ -11,20 +11,19 @@
       fileExtensions="xsts" ecorePackage="model.ecore#/">
     <genClasses ecoreClass="model.ecore#//XSTS">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//XSTS/typeDeclarations"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//XSTS/publicTypeDeclarations"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//XSTS/variableDeclarations"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//XSTS/transitions"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//XSTS/mergedAction"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//XSTS/constraints"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//XSTS/controlVariables"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//XSTS/clockVariables"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//XSTS/transientVariables"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//XSTS/variableGroups"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//XSTS/variableInitializingAction"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//XSTS/configurationInitializingAction"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//XSTS/entryEventAction"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//XSTS/inEventAction"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//XSTS/outEventAction"/>
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//XSTS/publicTypeDeclarations"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//XSTS/variableInitializingTransition"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//XSTS/configurationInitializingTransition"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//XSTS/entryEventTransition"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//XSTS/transitions"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//XSTS/inEventTransition"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//XSTS/outEventTransition"/>
     </genClasses>
     <genClasses ecoreClass="model.ecore#//XTransition">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//XTransition/reads"/>
@@ -55,11 +54,10 @@
     </genClasses>
     <genClasses ecoreClass="model.ecore#//EmptyAction"/>
     <genClasses ecoreClass="model.ecore#//AssignmentAction">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//AssignmentAction/lhs"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//AssignmentAction/rhs"/>
     </genClasses>
-    <genClasses ecoreClass="model.ecore#//CompositeAction">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//CompositeAction/actions"/>
+    <genClasses ecoreClass="model.ecore#//MultiaryAction">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//MultiaryAction/actions"/>
     </genClasses>
     <genClasses ecoreClass="model.ecore#//TimeoutGroup"/>
     <genClasses ecoreClass="model.ecore#//ComponentParameterGroup"/>
@@ -73,6 +71,19 @@
     <genClasses ecoreClass="model.ecore#//SystemOutEventGroup"/>
     <genClasses ecoreClass="model.ecore#//VariableDeclarationAction">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//VariableDeclarationAction/variableDeclaration"/>
+    </genClasses>
+    <genClasses ecoreClass="model.ecore#//LoopAction">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//LoopAction/action"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//LoopAction/iterationParameterDeclaration"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//LoopAction/range"/>
+    </genClasses>
+    <genClasses ecoreClass="model.ecore#//CompositeAction"/>
+    <genClasses ecoreClass="model.ecore#//AssertAction">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//AssertAction/assertion"/>
+    </genClasses>
+    <genClasses ecoreClass="model.ecore#//HavocAction"/>
+    <genClasses ecoreClass="model.ecore#//AbstractAssignmentAction">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//AbstractAssignmentAction/lhs"/>
     </genClasses>
   </genPackages>
 </genmodel:GenModel>

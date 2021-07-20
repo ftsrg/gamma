@@ -16,11 +16,14 @@ import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.AssumeAction
 import hu.bme.mit.gamma.xsts.model.CompositeAction
+import hu.bme.mit.gamma.xsts.model.EmptyAction
+import hu.bme.mit.gamma.xsts.model.LoopAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
 import hu.bme.mit.gamma.xsts.model.XSTS
 
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
 
 /**
@@ -33,6 +36,7 @@ class CommonizedVariableActionSerializer extends ActionSerializer {
 		«xSts.initializingAction.serialize»
 	'''
 	
+	// Note that only the first transition is serialized
 	override CharSequence serializeChangeState(XSTS xSts) '''
 		private void changeState() {
 			«xSts.mergedAction.serialize»
@@ -43,6 +47,17 @@ class CommonizedVariableActionSerializer extends ActionSerializer {
 	
 	def dispatch CharSequence serialize(Action action) {
 		throw new IllegalArgumentException("Not supported action: " + action)
+	}
+	
+	def dispatch CharSequence serialize(LoopAction action) {
+		val name = action.iterationParameterDeclaration.name
+		val left = action.range.getLeft(true)
+		val right = action.range.getRight(false)
+		return '''
+			for (int «name» = «left.serialize»; «name» < «right.serialize»; ++i) {
+				«action.action.serialize»
+			}
+		'''
 	}
 	
 	def dispatch CharSequence serialize(NonDeterministicAction action) '''
@@ -56,7 +71,9 @@ class CommonizedVariableActionSerializer extends ActionSerializer {
 	def dispatch CharSequence serialize(SequentialAction action) '''
 		«FOR xStsSubaction : action.actions»«xStsSubaction.serialize»«ENDFOR»
 	'''
-
+	
+	def dispatch CharSequence serialize(EmptyAction action) ''''''
+	
 	def dispatch CharSequence serialize(AssumeAction action) ''''''
 	
 //	def dispatch CharSequence serialize(AssumeAction action) '''
@@ -74,9 +91,10 @@ class CommonizedVariableActionSerializer extends ActionSerializer {
 	
 	def dispatch CharSequence serialize(VariableDeclarationAction action) {
 		val variable = action.variableDeclaration
-		val intialValue = variable.expression
+		val intialValue = (variable.expression !== null) ?
+			variable.expression : variable.type.initialValueOfType
 		return '''
-			«variable.type.serialize» «variable.name»«IF intialValue !== null» = «intialValue.serialize»«ENDIF»;
+			«variable.type.serialize» «variable.name» = «intialValue.serialize»;
 		'''
 	}
 	

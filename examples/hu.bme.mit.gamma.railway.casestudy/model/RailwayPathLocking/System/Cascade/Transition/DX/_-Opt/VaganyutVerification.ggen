@@ -1,0 +1,7 @@
+verification {
+	language : Theta
+	file : "Vaganyut.xsts"
+	property-file : ".Vaganyut.gpd"
+	test-language : java
+	optimize : true
+}

@@ -12,8 +12,6 @@ package hu.bme.mit.gamma.language.util.serialization;
 
 import java.io.IOException;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
 
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
@@ -33,19 +31,19 @@ public class GammaLanguageSerializer {
 		this.resourceSet.addLoadOption(XtextResource.OPTION_RESOLVE_ALL, Boolean.TRUE);
 	}
 	
-	private void resolveResources(EObject object, Set<Resource> resolvedResources) {
-		for (EObject crossObject : object.eCrossReferences()) {
-			Resource resource = crossObject.eResource();
-			if (resource != null && !resolvedResources.contains(resource)) {
-				resourceSet.getResource(resource.getURI(), true);
-				resolvedResources.add(resource);
-			}
-			resolveResources(crossObject, resolvedResources);
-		}
-		for (EObject containedObject : object.eContents()) {
-			resolveResources(containedObject, resolvedResources);
-		}
-	}
+//	private void resolveResources(EObject object, Set<Resource> resolvedResources) {
+//		for (EObject crossObject : object.eCrossReferences()) {
+//			Resource resource = crossObject.eResource();
+//			if (resource != null && !resolvedResources.contains(resource)) {
+//				resourceSet.getResource(resource.getURI(), true);
+//				resolvedResources.add(resource);
+//			}
+//			resolveResources(crossObject, resolvedResources);
+//		}
+//		for (EObject containedObject : object.eContents()) {
+//			resolveResources(containedObject, resolvedResources);
+//		}
+//	}
 
 	public void save(EObject object, String fileUri) throws IOException {
 		save(object, URI.createFileURI(fileUri));
@@ -53,7 +51,7 @@ public class GammaLanguageSerializer {
 	
 	public void save(EObject object, URI uri) throws IOException {
 		// Theoretically, all referenced resources must be in the resource set
-		resolveResources(object, new HashSet<Resource>());
+//		resolveResources(object, new HashSet<Resource>());
 		// Tried using getResource instead of createResource. Unfortunately, it did not solve the import problem
 		// (automatic update of import reference to the new serialized model and thus, the new contained object elements).
 		Resource resource = resourceSet.createResource(uri);

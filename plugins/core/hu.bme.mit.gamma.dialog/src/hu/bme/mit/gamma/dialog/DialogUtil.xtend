@@ -71,9 +71,9 @@ class DialogUtil {
 		}
 		Display.^default.asyncExec(dialog)
 	}
-
+	
 	private static def Shell getActiveShell() {
 		PlatformUI.workbench.display.activeShell
 	}
-
+	
 }

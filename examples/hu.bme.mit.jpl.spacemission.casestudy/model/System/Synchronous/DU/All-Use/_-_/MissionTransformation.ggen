@@ -1,0 +1,15 @@
+import "Interface/Interfaces.gcd"
+import "System/Synchronous/Mission.gcd"
+
+analysis {
+	component : Mission
+	language : UPPAAL
+	dataflow-coverage {
+		coverage-criterion : all-use
+	}
+	constraint : {
+		minimum-orchestrating-period : SCHEDULE_CONSTRAINT ms
+		maximum-orchestrating-period : SCHEDULE_CONSTRAINT ms
+	}
+	optimize : false
+}

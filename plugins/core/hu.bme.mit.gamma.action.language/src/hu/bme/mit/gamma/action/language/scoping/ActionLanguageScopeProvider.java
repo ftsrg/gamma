@@ -22,8 +22,11 @@ import org.eclipse.xtext.scoping.Scopes;
 import hu.bme.mit.gamma.action.derivedfeatures.ActionModelDerivedFeatures;
 import hu.bme.mit.gamma.action.model.Action;
 import hu.bme.mit.gamma.action.model.Block;
+import hu.bme.mit.gamma.action.model.ForStatement;
 import hu.bme.mit.gamma.action.util.ActionUtil;
 import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
+import hu.bme.mit.gamma.expression.model.ArrayAccessExpression;
+import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
@@ -31,36 +34,21 @@ import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
 import hu.bme.mit.gamma.expression.model.FieldDeclaration;
 import hu.bme.mit.gamma.expression.model.FieldReferenceExpression;
 import hu.bme.mit.gamma.expression.model.RecordAccessExpression;
+import hu.bme.mit.gamma.expression.model.RecordLiteralExpression;
 import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeDefinition;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 
-/**
- * This class contains custom scoping description.
- * 
- * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#scoping
- * on how and when to use it.
- */
 public class ActionLanguageScopeProvider extends AbstractActionLanguageScopeProvider {
 
-	protected final ActionUtil actionUtil = ActionUtil.INSTANCE;
+	public ActionLanguageScopeProvider() {
+		super.util = ActionUtil.INSTANCE;
+	}
 	
 	@Override
 	public IScope getScope(final EObject context, final EReference reference) {
 		// Records
-//		RecordAccessExpression recordAccess = ecoreUtil.getSelfOrContainerOfType(context, RecordAccessExpression.class);
-//		if (recordAccess != null) {
-//			Expression operand = recordAccess.getOperand();
-//			if (operand == null) {
-//				EObject container = context.eContainer();
-//				// NOT '.super'
-//				return getScope(container, reference); // Still looking for a record variable
-//			}
-//			// Looking for the fields in the operand
-//			Collection<FieldDeclaration> fieldDeclarations = getFieldDeclarations(operand);
-//			return Scopes.scopeFor(fieldDeclarations);
-//		}
 		if (reference == ExpressionModelPackage.Literals.FIELD_REFERENCE_EXPRESSION__FIELD_DECLARATION) {
 			RecordAccessExpression recordAccess = ecoreUtil.getSelfOrContainerOfType(context, RecordAccessExpression.class);
 			if (recordAccess != null) {
@@ -72,8 +60,8 @@ public class ActionLanguageScopeProvider extends AbstractActionLanguageScopeProv
 		// Local declarations
 		if (context instanceof Action &&
 				reference == ExpressionModelPackage.Literals.DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
+			IScope parentScope = getParentScope(context, reference);
 			EObject container = context.eContainer();
-			IScope parentScope = getScope(container, reference);
 			if (container instanceof Block) {
 				Block block = (Block) container;
 				Action action = (Action) context;
@@ -81,35 +69,17 @@ public class ActionLanguageScopeProvider extends AbstractActionLanguageScopeProv
 						ActionModelDerivedFeatures.getPrecedingVariableDeclarations(block, action);
 				return Scopes.scopeFor(precedingLocalDeclaratations, parentScope);
 			}
-//			else if (context instanceof Block) {
-//				// In Xtext, when editing, the assignment statement is NOT the context, but the block
-//				Block block = (Block) context;
-//				List<VariableDeclaration> localDeclaratations =
-//						actionUtil.getVariableDeclarations(block);
-//				return Scopes.scopeFor(localDeclaratations, parentScope);
-//			}
+			// For statement
+			if (container instanceof ForStatement) {
+				ForStatement forStatement = (ForStatement) container;
+				return Scopes.scopeFor(List.of(forStatement.getParameter()), parentScope);
+			}
 			return parentScope;
 		}
-//		else if (reference == 
-//				ExpressionModelPackage.Literals.DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
-//			// The context is NOT an Action
-//			Action actionContainer = ecoreUtil.getSelfOrContainerOfType(context, Action.class);
-//			if (actionContainer instanceof Block) {
-//				// First action container is a block, not an assignment
-//				// This means that the Xtext code is being edited
-//				// Let us return every local variable in the block and the parent scopes too
-//				Block block = (Block) actionContainer;
-//				IScope parentScope = getScope(block, reference);
-//				List<VariableDeclaration> localDeclaratations =
-//						actionUtil.getVariableDeclarations(block);
-//				return Scopes.scopeFor(localDeclaratations, parentScope);
-//			}
-//		}
 		return super.getScope(context, reference);
 	}
 	
 	protected List<FieldDeclaration> getFieldDeclarations(Expression operand) {
-		// TODO extend with recordLiterals too, e.g., ExpressionTypeDeterminator.getType(operand) method is needed
 		if (operand instanceof DirectReferenceExpression) {
 			DirectReferenceExpression reference = (DirectReferenceExpression) operand;
 			Declaration declaration = reference.getDeclaration();
@@ -128,16 +98,33 @@ public class ActionLanguageScopeProvider extends AbstractActionLanguageScopeProv
 				return getFieldDeclarations(declaration);
 			}
 		}
+		if (operand instanceof RecordLiteralExpression) {
+			RecordLiteralExpression recordLiteralExpression = (RecordLiteralExpression) operand;
+			return getFieldDeclarations(recordLiteralExpression.getTypeDeclaration());
+		}
+		if (operand instanceof ArrayAccessExpression) {
+			ArrayAccessExpression reference = (ArrayAccessExpression) operand;
+			Expression accessedExpression = reference.getOperand();
+			return getFieldDeclarations(accessedExpression);
+		}
 		return Collections.emptyList();
 	}
 	
 	protected List<FieldDeclaration> getFieldDeclarations(Declaration declaration) {
 		Type type = declaration.getType();
+		return getFieldDeclarations(type);
+	}
+	
+	protected List<FieldDeclaration> getFieldDeclarations(Type type) {
 		if (type != null) {
 			TypeDefinition typeDefinition = ExpressionModelDerivedFeatures.getTypeDefinition(type);
 			if (typeDefinition instanceof RecordTypeDefinition) {
 				RecordTypeDefinition record = (RecordTypeDefinition) typeDefinition;
 				return record.getFieldDeclarations();
+			}
+			if (typeDefinition instanceof ArrayTypeDefinition) {
+				ArrayTypeDefinition array = (ArrayTypeDefinition) typeDefinition;
+				return getFieldDeclarations(array.getElementType());
 			}
 		}
 		return Collections.emptyList();

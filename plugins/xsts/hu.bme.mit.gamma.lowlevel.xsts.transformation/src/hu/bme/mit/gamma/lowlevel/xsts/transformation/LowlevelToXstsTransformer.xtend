@@ -40,31 +40,23 @@ import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.Timeouts
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.TopRegions
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.TypeDeclarations
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.traceability.L2STrace
-import hu.bme.mit.gamma.statechart.lowlevel.model.ChoiceState
-import hu.bme.mit.gamma.statechart.lowlevel.model.CompositeElement
 import hu.bme.mit.gamma.statechart.lowlevel.model.EventDeclaration
 import hu.bme.mit.gamma.statechart.lowlevel.model.EventDirection
-import hu.bme.mit.gamma.statechart.lowlevel.model.ForkState
-import hu.bme.mit.gamma.statechart.lowlevel.model.GuardEvaluation
-import hu.bme.mit.gamma.statechart.lowlevel.model.JoinState
-import hu.bme.mit.gamma.statechart.lowlevel.model.MergeState
 import hu.bme.mit.gamma.statechart.lowlevel.model.Package
 import hu.bme.mit.gamma.statechart.lowlevel.model.Persistency
 import hu.bme.mit.gamma.statechart.lowlevel.model.Region
 import hu.bme.mit.gamma.statechart.lowlevel.model.State
 import hu.bme.mit.gamma.statechart.lowlevel.model.StatechartDefinition
 import hu.bme.mit.gamma.util.GammaEcoreUtil
-import hu.bme.mit.gamma.xsts.model.Action
-import hu.bme.mit.gamma.xsts.model.AssumeAction
-import hu.bme.mit.gamma.xsts.model.CompositeAction
-import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.VariableGroup
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
+import hu.bme.mit.gamma.xsts.model.XTransition
 import hu.bme.mit.gamma.xsts.transformation.util.OrthogonalActionTransformer
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import java.util.AbstractMap.SimpleEntry
+import java.util.List
 import java.util.Set
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 import org.eclipse.viatra.query.runtime.emf.EMFScope
@@ -78,6 +70,7 @@ import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.lowlevel.derivedfeatures.LowlevelStatechartModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.XstsNamings.*
 
 class LowlevelToXstsTransformer {
@@ -93,7 +86,6 @@ class LowlevelToXstsTransformer {
 	protected final extension ActionOptimizer actionSimplifier = ActionOptimizer.INSTANCE
 	protected final extension OrthogonalActionTransformer orthogonalActionTransformer = OrthogonalActionTransformer.INSTANCE
 	protected final extension VariableGroupRetriever variableGroupRetriever = VariableGroupRetriever.INSTANCE
-	protected final extension PseudoStateHandler pseudoStateHandler
 	protected final extension RegionActivator regionActivator
 	protected final extension EntryActionRetriever entryActionRetriever
 	protected final extension ExpressionTransformer expressionTransformer
@@ -102,7 +94,7 @@ class LowlevelToXstsTransformer {
 	protected final extension SimpleTransitionToXTransitionTransformer simpleTransitionToActionTransformer
 	protected final extension PrecursoryTransitionToXTransitionTransformer precursoryTransitionToXTransitionTransformer
 	protected final extension TerminalTransitionToXTransitionTransformer terminalTransitionToXTransitionTransformer
-	protected final extension TransitionPreconditionCreator transitionPreconditionCreator
+	protected final extension AbstractTransitionMerger transitionMerger
 	// Model factories
 	protected final extension XSTSModelFactory factory = XSTSModelFactory.eINSTANCE
 	protected final extension ExpressionModelFactory constraintFactory = ExpressionModelFactory.eINSTANCE
@@ -124,8 +116,10 @@ class LowlevelToXstsTransformer {
 	protected BatchTransformationRule<Timeouts.Match, Timeouts.Matcher> timeoutsRule
 	protected BatchTransformationRule<GlobalVariables.Match, GlobalVariables.Matcher> variableInitializationsRule
 	protected BatchTransformationRule<Statecharts.Match, Statecharts.Matcher> topRegionInitializationRule
-	protected BatchTransformationRule<SimpleTransitionsBetweenStates.Match, SimpleTransitionsBetweenStates.Matcher> simpleTransitionBetweenStatesRule
-	protected BatchTransformationRule<SimpleTransitionsToEntryStates.Match, SimpleTransitionsToEntryStates.Matcher> simpleTransitionsToHistoryStatesRule
+	protected BatchTransformationRule<SimpleTransitionsBetweenStates.Match,
+				SimpleTransitionsBetweenStates.Matcher> simpleTransitionBetweenStatesRule
+	protected BatchTransformationRule<SimpleTransitionsToEntryStates.Match,
+				SimpleTransitionsToEntryStates.Matcher> simpleTransitionsToHistoryStatesRule
 	protected BatchTransformationRule<LastJoinStates.Match, LastJoinStates.Matcher> lastJoinTransitionsRule
 	protected BatchTransformationRule<LastMergeStates.Match, LastMergeStates.Matcher> lastMergeTransitionsRule
 	protected BatchTransformationRule<FirstForkStates.Match, FirstForkStates.Matcher> firstForkTransitionsRule
@@ -133,7 +127,8 @@ class LowlevelToXstsTransformer {
 	protected BatchTransformationRule<InEvents.Match, InEvents.Matcher> inEventEnvironmentalActionRule
 	protected BatchTransformationRule<OutEvents.Match, OutEvents.Matcher> outEventEnvironmentalActionRule
 	// Optimization
-	protected boolean optimize
+	protected final boolean optimize
+	protected final boolean useHavocActions
 	protected Set<EventDeclaration> referredEvents
 	protected Set<VariableDeclaration> referredVariables
 	
@@ -142,6 +137,11 @@ class LowlevelToXstsTransformer {
 	}
 	
 	new(Package _package, boolean optimize) {
+		this (_package, optimize, false, false, TransitionMerging.HIERARCHICAL)
+	}
+	
+	new(Package _package, boolean optimize, boolean useHavocActions,
+			boolean extractGuards, TransitionMerging transitionMerging) {
 		this._package = _package
 		// Note: we do not expect cross references to other resources
 		this.engine = ViatraQueryEngine.on(new EMFScope(_package))
@@ -155,19 +155,23 @@ class LowlevelToXstsTransformer {
 		this.entryActionRetriever = new EntryActionRetriever(this.trace)
 		this.expressionTransformer = new ExpressionTransformer(this.trace)
 		this.variableDeclarationTransformer = new VariableDeclarationTransformer(this.trace)
-		this.pseudoStateHandler = new PseudoStateHandler(this.engine)
-		this.lowlevelTransitionToActionTransformer = new LowlevelTransitionToActionTransformer(
-			this.engine, this.trace)
-		this.simpleTransitionToActionTransformer = new SimpleTransitionToXTransitionTransformer(
-			this.engine, this.trace)
-		this.precursoryTransitionToXTransitionTransformer = new PrecursoryTransitionToXTransitionTransformer(
-			this.engine, this.trace)
-		this.terminalTransitionToXTransitionTransformer = new TerminalTransitionToXTransitionTransformer(
-			this.engine, this.trace)
-		this.transitionPreconditionCreator = new TransitionPreconditionCreator(this.trace)
+		this.lowlevelTransitionToActionTransformer =
+			new LowlevelTransitionToActionTransformer(this.engine, this.trace)
+		this.simpleTransitionToActionTransformer =
+			new SimpleTransitionToXTransitionTransformer(this.engine, this.trace)
+		this.precursoryTransitionToXTransitionTransformer =
+			new PrecursoryTransitionToXTransitionTransformer(this.engine, this.trace, extractGuards)
+		this.terminalTransitionToXTransitionTransformer =
+			new TerminalTransitionToXTransitionTransformer(this.engine, this.trace, extractGuards)
+		this.transitionMerger = switch (transitionMerging) {
+			case HIERARCHICAL: new HierarchicalTransitionMerger(this.engine, this.trace, extractGuards)
+			case FLAT: new FlatTransitionMerger(this.engine, this.trace, extractGuards)
+			default: throw new IllegalArgumentException("Not known merging enum: " + transitionMerging)
+		}
 		this.transformation = BatchTransformation.forEngine(engine).build
 		this.statements = transformation.transformationStatements
 		this.optimize = optimize
+		this.useHavocActions = useHavocActions
 		if (optimize) {
 			this.referredEvents = ReferredEvents.Matcher.on(engine).allValuesOfevent
 			this.referredVariables = ReferredVariables.Matcher.on(engine).allValuesOfvariable
@@ -205,7 +209,6 @@ class LowlevelToXstsTransformer {
 		optimizeActions
 		eliminateNullActions
 		handleVariableAnnotations
-		handleGuardEvaluations
 		// The created EMF models are returned
 		return new SimpleEntry<XSTS, L2STrace>(xSts, trace.getTrace)
 	}
@@ -219,38 +222,38 @@ class LowlevelToXstsTransformer {
 	}
 		
 	protected def getVariableInitializingAction() {
-		if (xSts.variableInitializingAction === null) {
-			xSts.variableInitializingAction = createSequentialAction
+		if (xSts.variableInitializingTransition === null) {
+			xSts.variableInitializingTransition = createSequentialAction.wrap
 		}
-		return xSts.variableInitializingAction
+		return xSts.variableInitializingTransition.action
 	}
 	
 	protected def getConfigurationInitializingAction() {
-		if (xSts.configurationInitializingAction === null) {
-			xSts.configurationInitializingAction = createSequentialAction
+		if (xSts.configurationInitializingTransition === null) {
+			xSts.configurationInitializingTransition = createSequentialAction.wrap
 		}
-		return xSts.configurationInitializingAction
+		return xSts.configurationInitializingTransition.action
 	}
 	
 	protected def getEntryEventAction() {
-		if (xSts.entryEventAction === null) {
-			xSts.entryEventAction = createSequentialAction
+		if (xSts.entryEventTransition === null) {
+			xSts.entryEventTransition = createSequentialAction.wrap
 		}
-		return xSts.entryEventAction
+		return xSts.entryEventTransition.action
 	}
 	
 	protected def getInEventAction() {
-		if (xSts.inEventAction === null) {
-			xSts.inEventAction = createSequentialAction
+		if (xSts.inEventTransition === null) {
+			xSts.inEventTransition = createSequentialAction.wrap
 		}
-		return xSts.inEventAction
+		return xSts.inEventTransition.action
 	}
 	
 	protected def getOutEventAction() {
-		if (xSts.outEventAction === null) {
-			xSts.outEventAction = createSequentialAction
+		if (xSts.outEventTransition === null) {
+			xSts.outEventTransition = createSequentialAction.wrap
 		}
-		return xSts.outEventAction
+		return xSts.outEventTransition.action
 	}
 
 	protected def getTypeDeclarationsRule() {
@@ -331,7 +334,7 @@ class LowlevelToXstsTransformer {
 			topRegionInitializationRule = createRule(Statecharts.instance).action [
 				val lowlevelStatechart = it.statechart
 				val regionInitializingAction = createParallelAction // Each region at the same time
-				configurationInitializingAction as CompositeAction => [
+				configurationInitializingAction as SequentialAction => [
 					it.actions += regionInitializingAction
 				]
 				for (lowlevelTopRegion : lowlevelStatechart.regions) {
@@ -339,7 +342,7 @@ class LowlevelToXstsTransformer {
 						lowlevelTopRegion.createRecursiveXStsRegionAndSubregionActivatingAction
 				}
 				val entryEventInitializingAction = createParallelAction // Each region at the same time
-				entryEventAction as CompositeAction => [
+				entryEventAction as SequentialAction => [
 					it.actions += entryEventInitializingAction
 				]
 				for (lowlevelTopRegion : lowlevelStatechart.regions) {
@@ -536,7 +539,7 @@ class LowlevelToXstsTransformer {
 			// variableInitializingAction as it must be set before setting the configuration
 			variableInitializingAction as SequentialAction => [
 				it.actions += createAssignmentAction => [
-					it.lhs = createDirectReferenceExpression => [it.declaration = xStsVariable]
+					it.lhs = xStsVariable.createReferenceExpression
 					it.rhs = xStsVariable.initialValue
 				]
 			]
@@ -625,71 +628,79 @@ class LowlevelToXstsTransformer {
 				if (lowlevelEvent.notOptimizable) {
 					val lowlevelEnvironmentalAction = inEventAction as SequentialAction
 					val xStsEventVariable = trace.getXStsVariable(lowlevelEvent)
-					lowlevelEnvironmentalAction.actions += createNonDeterministicAction => [
-						// Event is raised
-						it.actions += createAssignmentAction => [
-							it.lhs = createDirectReferenceExpression => [
-								it.declaration = xStsEventVariable
-							]
-							it.rhs = createTrueExpression
+					// In event variable
+					val xStsInEventAssignment = 
+					if (useHavocActions) {
+						createHavocAction => [
+							it.lhs = xStsEventVariable.createReferenceExpression
 						]
-						// Event is not raised
-						it.actions += createAssignmentAction => [
-							it.lhs = createDirectReferenceExpression => [
-								it.declaration = xStsEventVariable
+					}
+					else {
+						createNonDeterministicAction => [
+							// Event is raised
+							it.actions += createAssignmentAction => [
+								it.lhs = xStsEventVariable.createReferenceExpression
+								it.rhs = createTrueExpression
 							]
-							it.rhs = createFalseExpression
+							// Event is not raised
+							it.actions += createAssignmentAction => [
+								it.lhs = xStsEventVariable.createReferenceExpression
+								it.rhs = createFalseExpression
+							]
 						]
-					]
+					}
+					lowlevelEnvironmentalAction.actions += xStsInEventAssignment
+					// Parameter variables
 					for (lowlevelParameterDeclaration : it.event.parameters) {
-						val xStsAllPossibleParameterValues = newHashSet
-						// Initial value
-						val lowlevelType = lowlevelParameterDeclaration.type
-						xStsAllPossibleParameterValues += lowlevelType.initialValueOfType.transformExpression
-						for (lowlevelValue : EventParameterComparisons.Matcher.on(engine)
-								.getAllValuesOfvalue(lowlevelParameterDeclaration)) {
-							xStsAllPossibleParameterValues += lowlevelValue.transformExpression
-						}
-						val xStsPossibleParameterValues = xStsAllPossibleParameterValues.removeDuplicatedExpressions
-						if (lowlevelType instanceof TypeReference) {
-							// Mapping back to enum literals if necessary
-							val lowlevelTypeDeclaration = lowlevelType.reference
-							val xStsTypeDeclaration = trace.getXStsTypeDeclaration(lowlevelTypeDeclaration)
-							val xStsTypeDefinition = xStsTypeDeclaration.type
-							if (xStsTypeDefinition instanceof EnumerationTypeDefinition) {
-								val enumLiterals = xStsTypeDefinition.mapToEnumerationLiterals(xStsPossibleParameterValues)
-								xStsPossibleParameterValues.clear
-								xStsPossibleParameterValues += enumLiterals
-							}
-						}
 						val xStsParameterVariable = trace.getXStsVariable(lowlevelParameterDeclaration)
 						if (lowlevelEvent.persistency == Persistency.TRANSIENT) {
 							// Synchronous composite components do not reset transient parameters!
 							lowlevelEnvironmentalAction.actions += createAssignmentAction => [
-								it.lhs = createDirectReferenceExpression => [
-									it.declaration = xStsParameterVariable
-								]
+								it.lhs = xStsParameterVariable.createReferenceExpression
 								it.rhs = xStsParameterVariable.initialValue
 							]
 						}
-						lowlevelEnvironmentalAction.actions += createIfAction(
-							// Only if the event is raised
-							createEqualityExpression => [
-								it.leftOperand = createDirectReferenceExpression => [
-									it.declaration = xStsEventVariable
-								]
-								it.rightOperand = createTrueExpression
-							],
+						val xStsInParameterAssignment = 
+						if (useHavocActions) {
+							createHavocAction => [
+								it.lhs = xStsParameterVariable.createReferenceExpression
+							]
+						}
+						else {
+							val xStsAllPossibleParameterValues = newHashSet
+							// Initial value
+							val lowlevelType = lowlevelParameterDeclaration.type
+							xStsAllPossibleParameterValues += lowlevelType.initialValueOfType.transformExpression
+							for (lowlevelValue : EventParameterComparisons.Matcher.on(engine)
+									.getAllValuesOfvalue(lowlevelParameterDeclaration)) {
+								xStsAllPossibleParameterValues += lowlevelValue.transformExpression
+							}
+							val xStsPossibleParameterValues = xStsAllPossibleParameterValues.removeDuplicatedExpressions
+							if (lowlevelType instanceof TypeReference) {
+								// Mapping back to enum literals if necessary
+								val lowlevelTypeDeclaration = lowlevelType.reference
+								val xStsTypeDeclaration = trace.getXStsTypeDeclaration(lowlevelTypeDeclaration)
+								val xStsTypeDefinition = xStsTypeDeclaration.type
+								if (xStsTypeDefinition instanceof EnumerationTypeDefinition) {
+									val enumLiterals = xStsTypeDefinition.mapToEnumerationLiterals(xStsPossibleParameterValues)
+									xStsPossibleParameterValues.clear
+									xStsPossibleParameterValues += enumLiterals
+								}
+							}
 							createNonDeterministicAction => [
 								for (xStsPossibleParameterValue : xStsPossibleParameterValues) {
 									it.actions += createAssignmentAction => [
-										it.lhs = createDirectReferenceExpression => [
-											it.declaration = xStsParameterVariable
-										]
+										it.lhs = xStsParameterVariable.createReferenceExpression
 										it.rhs = xStsPossibleParameterValue
 									]
 								}
 							]
+						}
+						// Setting the parameter value
+						lowlevelEnvironmentalAction.actions += createIfAction(
+							// Only if the event is raised
+							xStsEventVariable.createReferenceExpression,
+							xStsInParameterAssignment
 						)
 					}
 				}
@@ -706,9 +717,7 @@ class LowlevelToXstsTransformer {
 					val lowlevelEnvironmentalAction = outEventAction as SequentialAction
 					val xStsEventVariable = trace.getXStsVariable(lowlevelEvent)
 					lowlevelEnvironmentalAction.actions += createAssignmentAction => [
-						it.lhs = createDirectReferenceExpression => [
-							it.declaration = xStsEventVariable
-						]
+						it.lhs = xStsEventVariable.createReferenceExpression
 						it.rhs = createFalseExpression
 					]
 					if (event.persistency == Persistency.TRANSIENT) {
@@ -716,9 +725,7 @@ class LowlevelToXstsTransformer {
 						for (lowlevelParameterDeclaration : it.event.parameters) {
 							val xStsParameterVariable = trace.getXStsVariable(lowlevelParameterDeclaration)
 							lowlevelEnvironmentalAction.actions += createAssignmentAction => [
-								it.lhs = createDirectReferenceExpression => [
-									it.declaration = xStsParameterVariable
-								]
+								it.lhs = xStsParameterVariable.createReferenceExpression
 								it.rhs = xStsParameterVariable.initialValue
 							]
 						}
@@ -728,204 +735,89 @@ class LowlevelToXstsTransformer {
 		}
 		return outEventEnvironmentalActionRule
 	}
-
-	protected def mergeTransitions() {
-		val statecharts = Statecharts.Matcher.on(engine).allValuesOfstatechart
-		checkState(statecharts.size == 1)
-		val statechart = statecharts.head
-		val xStsMergedAction = createNonDeterministicAction
-		statechart.mergeTransitions(xStsMergedAction)
-		// Putting it in the XSTS model
-		xSts.mergedAction = xStsMergedAction
-		// Adding default else branch: if "region" cannot fire
-		xStsMergedAction.extendChoiceWithDefaultBranch(createEmptyAction)
-		// For this to work, each assume action has to be at index 0 of the containing composite action
-	}
-
-	protected def void mergeTransitions(CompositeElement lowlevelComposite, NonDeterministicAction xStsAction) {
-		val lowlevelRegions = lowlevelComposite.regions
-		if (lowlevelRegions.size > 1) {
-			val xStsSequentialAction = createSequentialAction
-			xStsAction.actions += xStsSequentialAction
-			val xStsAssumeAction = createAssumeAction
-			val orExpression = createOrExpression // This parallel action can fire only if one of its regions can fire
-			xStsAssumeAction.assumption = orExpression
-			xStsSequentialAction.actions += xStsAssumeAction
-			val xStsParallelAction = createParallelAction
-			xStsSequentialAction.actions += xStsParallelAction
-			for (lowlevelRegion : lowlevelRegions) {
-				val xStsSubchoiceAction = createNonDeterministicAction
-				xStsParallelAction.actions += xStsSubchoiceAction
-				lowlevelRegion.mergeTransitionsOfRegion(xStsSubchoiceAction)
-				// Adding default else branch: if "region" cannot fire
-				val xStsPrecondition = xStsSubchoiceAction.precondition
-				if (xStsPrecondition !== null) { // Can be null if the region has no transitions
-					orExpression.operands += xStsPrecondition
-					xStsSubchoiceAction.extendChoiceWithDefaultBranch(createEmptyAction)
-				}
-				// For this to work, each assume action has to be at index 0 of the containing composite action
-			}
-		} else if (lowlevelRegions.size == 1) {
-			lowlevelRegions.head.mergeTransitionsOfRegion(xStsAction)
-		}
-	}
-
-	protected def void mergeTransitionsOfRegion(Region lowlevelRegion, NonDeterministicAction xStsAction) {
-		val xStsTransitions = newHashSet
-		val lowlevelStates = lowlevelRegion.stateNodes.filter(State)
-		// Simple outgoing transitions
-		for (lowlevelState : lowlevelStates) {
-			for (lowlevelOutgoingTransition : lowlevelState.outgoingTransitions
-					.filter[trace.isTraced(it)] /* Simple transitions */ ) {
-				xStsTransitions += trace.getXStsTransition(lowlevelOutgoingTransition)
-			}
-			if (lowlevelState.isComposite) {
-				// Recursion
-				lowlevelState.mergeTransitions(xStsAction)
-			}
-		}
-		// Complex transitions
-		for (lastJoinState : lowlevelRegion.stateNodes.filter(JoinState).filter[it.isLastJoinState]) {
-			xStsTransitions += trace.getXStsTransition(lastJoinState)
-		}
-		for (lastMergeState : lowlevelRegion.stateNodes.filter(MergeState).filter[it.isLastMergeState]) {
-			xStsTransitions += trace.getXStsTransition(lastMergeState)
-		}
-		for (lastForkState : lowlevelRegion.stateNodes.filter(ForkState).filter[it.isFirstForkState]) {
-			xStsTransitions += trace.getXStsTransition(lastForkState)
-		}
-		for (lastChoiceState : lowlevelRegion.stateNodes.filter(ChoiceState).filter[it.isFirstChoiceState]) {
-			xStsTransitions += trace.getXStsTransition(lastChoiceState)
-		}
-		for (xStsTransition : xStsTransitions) {
-			xStsAction.actions += xStsTransition.action.clone // Will not break local variable references?
-		}
-	}
-
+	
 	protected def optimizeActions() {
-		xSts.variableInitializingAction = xSts.variableInitializingAction.optimize
-		xSts.configurationInitializingAction = xSts.configurationInitializingAction.optimize
-		xSts.entryEventAction = xSts.entryEventAction.optimize
-		xSts.mergedAction = xSts.mergedAction.optimize
-		xSts.inEventAction = xSts.inEventAction.optimize
-		xSts.outEventAction = xSts.outEventAction.optimize
-		/* Note: no optimization on the list of transitions as the
-		 deletion of actions would mean the breaking of the trace. */
+		xSts.variableInitializingTransition = xSts.variableInitializingTransition.optimize
+		xSts.configurationInitializingTransition = xSts.configurationInitializingTransition.optimize
+		xSts.entryEventTransition = xSts.entryEventTransition.optimize
+		xSts.changeTransitions(xSts.transitions.optimize)
+		xSts.inEventTransition = xSts.inEventTransition.optimize
+		xSts.outEventTransition = xSts.outEventTransition.optimize
+		
+		// Note the original transition actions are already "broken"
+		
 		// Variable inlining
 		val inliner = VariableInliner.INSTANCE
-		var Action oldMergedAction = null
-		var Action oldEntryEventAction = null
-		while (!oldMergedAction.helperEquals(xSts.mergedAction) ||
-				!oldEntryEventAction.helperEquals(xSts.entryEventAction)) {
-			oldMergedAction = xSts.mergedAction.clone
-			oldEntryEventAction = xSts.entryEventAction.clone
-			inliner.inline(xSts.mergedAction)
-			inliner.inline(xSts.entryEventAction)
-			deleteNotReadTransientVariables
-			xSts.mergedAction = xSts.mergedAction.optimize
-			xSts.entryEventAction = xSts.entryEventAction.optimize
+		var List<XTransition> oldActions = null
+		var XTransition oldEntryEventAction = null
+		while (!oldActions.helperEquals(xSts.transitions) ||
+				!oldEntryEventAction.helperEquals(xSts.entryEventTransition)) {
+			oldActions = xSts.transitions.clone
+			oldEntryEventAction = xSts.entryEventTransition.clone
+			inliner.inline(xSts.transitions)
+			inliner.inline(xSts.entryEventTransition)
+			deleteUnreadTransientXStsVariables
+			xSts.changeTransitions(xSts.transitions.optimize)
+			xSts.entryEventTransition = xSts.entryEventTransition.optimize
 		}
 	}
 	
-	protected def deleteNotReadTransientVariables() {
-//		val transitionSave = newArrayList
-//		transitionSave += this.xSts.transitions
-		// Needed to retrieve NotReadVariables as some 
-		// unoptimized XTransitions may reference some variables
-		this.xSts.transitions.clear
-		
-		val variableMacher = NotReadVariables.Matcher.on(targetEngine)
-		val notReadTransientXStsVariables = variableMacher.allValuesOfvariable
-				.filter[it.transient]
-		val assignmentMatcher = AssignmentActions.Matcher.on(targetEngine)
-		for (notReadTransientXStsVariable : notReadTransientXStsVariables) {
-			val assignments = assignmentMatcher.getAllValuesOfaction(null, notReadTransientXStsVariable)
-			for (assignment : assignments) {
-				assignment.remove
-			}
-			// To delete the potential containing VariableDeclarationAction too
-			notReadTransientXStsVariable.deleteDeclaration 
-			trace.delete(notReadTransientXStsVariable)
+	protected def deleteUnreadTransientXStsVariables() {
+		val unreadXStsVariableMacher = NotReadVariables.Matcher.on(targetEngine)
+		val unreadTransientXStsVariables = unreadXStsVariableMacher.allValuesOfvariable
+				.filter[it.transient || it.local]
+		val xStsAssignmentMatcher = AssignmentActions.Matcher.on(targetEngine)
+		for (unreadTransientXStsVariable : unreadTransientXStsVariables) {
+			val xStsAssignments = xStsAssignmentMatcher.getAllValuesOfaction(null, unreadTransientXStsVariable)
+			xStsAssignments.forEach[it.remove]
+			unreadTransientXStsVariable.deleteDeclaration // Deleting the potential containing VariableDeclarationAction too
+			trace.delete(unreadTransientXStsVariable) // Trace deletion
 		}
-		
-		// Some "local" variables might have been deleted, thus,
-		// the original transitions cannot be serialized
-//		this.xSts.transitions += transitionSave
 	}
 	
 	protected def eliminateNullActions() {
-		if (xSts.variableInitializingAction === null) {
-			xSts.variableInitializingAction = createEmptyAction
+		if (xSts.variableInitializingTransition === null) {
+			xSts.variableInitializingTransition = createEmptyAction.wrap
 		}
-		if (xSts.configurationInitializingAction === null) {
-			xSts.configurationInitializingAction = createEmptyAction
+		if (xSts.configurationInitializingTransition === null) {
+			xSts.configurationInitializingTransition = createEmptyAction.wrap
 		}
-		if (xSts.entryEventAction === null) {
-			xSts.entryEventAction = createEmptyAction
+		if (xSts.entryEventTransition === null) {
+			xSts.entryEventTransition = createEmptyAction.wrap
 		}
-		if (xSts.mergedAction === null) {
-			xSts.mergedAction = createEmptyAction
+		if (xSts.transitions.empty) {
+			xSts.changeTransitions(createEmptyAction.wrap)
 		}
-		if (xSts.inEventAction === null) {
-			xSts.inEventAction = createEmptyAction
+		if (xSts.inEventTransition === null) {
+			xSts.inEventTransition = createEmptyAction.wrap
 		}
-		if (xSts.outEventAction === null) {
-			xSts.outEventAction = createEmptyAction
+		if (xSts.outEventTransition === null) {
+			xSts.outEventTransition = createEmptyAction.wrap
 		}
 	}
 	
 	protected def handleVariableAnnotations() {
 		val resetableVariables = xSts.variableDeclarations.filter[it.resetable]
 		val transientVariables = xSts.variableDeclarations.filter[it.transient]
+		
 		val newMergedAction = createSequentialAction
+		
 		for (resetableVariable : resetableVariables) {
 			// Type initial value, as the variable initial expression might change (e.g., a + b + 1)
 			val initialValue = resetableVariable.type.initialValueOfType
 			newMergedAction.actions += resetableVariable.createAssignmentAction(initialValue)
 		}
 		newMergedAction.actions += xSts.mergedAction
+		
 		for (transientVariable : transientVariables) {
 			// Type initial value, as the variable initial expression might change (e.g., a + b + 1)
 			val initialValue = transientVariable.type.initialValueOfType
 			val assignment = transientVariable.createAssignmentAction(initialValue)
 			newMergedAction.actions += assignment
 			// To reduce state space in the entry action too in the case of transient variables
-			xSts.entryEventAction.appendToAction(assignment.clone) // Cloning is important
+			xSts.entryEventTransition.action.appendToAction(assignment.clone) // Cloning is important
 		}
-		xSts.mergedAction = newMergedAction
-	}
-	
-	protected def handleGuardEvaluations() {
-		val statecharts = Statecharts.Matcher.on(engine).allValuesOfstatechart
-		checkState(statecharts.size == 1)
-		val statechart = statecharts.head
-		val guardEvaluation = statechart.guardEvaluation
-		if (guardEvaluation == GuardEvaluation.BEGINNING_OF_STEP) {
-			val consideredXstsActions = #[
-				// Not considering the init action, as the initial region values are __Inactive__
-				xSts.mergedAction
-			]
-			for (consideredXstsAction : consideredXstsActions) {
-				val localVariableDeclarationActions = newArrayList
-				val assumeActions = consideredXstsAction.getSelfAndAllContentsOfType(AssumeAction)
-				for (assumeAction : assumeActions) {
-					val assumption = assumeAction.assumption
-					val localVariableDeclarationAction = createVariableDeclarationAction
-					localVariableDeclarationActions += localVariableDeclarationAction
-					val localVariableDeclaration = createVariableDeclaration => [
-						it.name = '''_«assumeAction.hashCode»_'''
-						it.type = createBooleanTypeDefinition
-						it.expression = assumption.clone
-					]
-					localVariableDeclarationAction.variableDeclaration = localVariableDeclaration
-					val reference = createDirectReferenceExpression => [
-						it.declaration = localVariableDeclaration
-					]
-					reference.replace(assumption)
-				}
-				localVariableDeclarationActions.prependToAction(consideredXstsAction)
-			}
-		}
+		xSts.changeTransitions(newMergedAction.wrap)
 	}
 	
 	def dispose() {

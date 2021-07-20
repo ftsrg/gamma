@@ -1,0 +1,24 @@
+package jelzo
+
+import "JelzoWrapper.gcd"
+import "Types/Types.gcd"
+
+adapter JelzoAdapter(P_J_tipus : J_tipus_t, P_megcs : tavolsag_t, P_id : obj_t) of component
+	jelzoAdapter : JelzoWrapper(P_J_tipus, P_megcs, P_id) [
+] {
+	when F_VU_lez.any / run
+	when C_VU_lez_Out.any / run
+	when C_VU_lez_In.any / run
+	when S_VU_lez_Out.any / run
+	when S_VU_lez_In.any / run
+	when A.any / run
+	when C_OV_keres_Out.any / run
+	when C_OV_keres_In.any / run
+	when S_OV_keres_Out.any / run
+	when S_OV_keres_In.any / run
+	queue messages (priority = 1, capacity = 2) {
+		F_VU_lez.any, C_VU_lez_Out.any, C_VU_lez_In.any, S_VU_lez_Out.any, S_VU_lez_In.any, A.any,
+			C_OV_keres_Out.any, C_OV_keres_In.any, S_OV_keres_Out.any, S_OV_keres_In.any
+	}
+
+}

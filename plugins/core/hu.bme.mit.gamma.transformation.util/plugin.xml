@@ -56,6 +56,9 @@
       <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.variableCUses"/>
       <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.variablePUses"/>
       <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.variableUses"/>
+      <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.interactionCUses"/>
+      <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.interactionPUses"/>
+      <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.interactionUses"/>
     </group>
   </extension>
 </plugin>

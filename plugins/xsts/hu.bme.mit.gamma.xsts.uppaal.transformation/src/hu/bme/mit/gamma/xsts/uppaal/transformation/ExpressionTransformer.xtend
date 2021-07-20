@@ -12,7 +12,10 @@ package hu.bme.mit.gamma.xsts.uppaal.transformation
 
 import hu.bme.mit.gamma.expression.model.AddExpression
 import hu.bme.mit.gamma.expression.model.AndExpression
+import hu.bme.mit.gamma.expression.model.ArrayAccessExpression
+import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression
 import hu.bme.mit.gamma.expression.model.ConstantDeclaration
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.DivExpression
 import hu.bme.mit.gamma.expression.model.DivideExpression
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
@@ -36,17 +39,17 @@ import hu.bme.mit.gamma.expression.model.UnaryMinusExpression
 import hu.bme.mit.gamma.expression.model.UnaryPlusExpression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.model.XorExpression
+import hu.bme.mit.gamma.expression.util.ExpressionNegator
 import hu.bme.mit.gamma.uppaal.util.MultiaryExpressionCreator
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import uppaal.expressions.ArithmeticOperator
 import uppaal.expressions.CompareOperator
 import uppaal.expressions.Expression
 import uppaal.expressions.ExpressionsFactory
+import uppaal.expressions.IdentifierExpression
 import uppaal.expressions.LogicalOperator
-import hu.bme.mit.gamma.expression.util.ExpressionNegator
 
 import static com.google.common.base.Preconditions.checkState
-import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 
 class ExpressionTransformer {
 	
@@ -71,6 +74,21 @@ class ExpressionTransformer {
 	
 	def dispatch Expression transform(FalseExpression expression) {
 		return createLiteralExpression => [it.text = false.toString]
+	}
+	
+	def dispatch Expression transform(ArrayAccessExpression expression) {
+		val operand = expression.operand.transform
+		if (operand instanceof IdentifierExpression) {
+			operand.index += expression.index.transform
+			return operand
+		}
+		throw new IllegalArgumentException("Uppaal supports the indexing of array variables only: " + operand)
+	}
+	
+	def dispatch Expression transform(ArrayLiteralExpression expression) {
+		return createArrayLiteralExpression => [
+			it.elements += expression.operands.map[it.transform]
+		]
 	}
 	
 	def dispatch Expression transform(EnumerationLiteralExpression expression) {

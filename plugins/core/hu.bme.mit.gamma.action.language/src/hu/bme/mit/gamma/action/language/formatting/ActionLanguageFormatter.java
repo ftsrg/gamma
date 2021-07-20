@@ -24,6 +24,7 @@ public class ActionLanguageFormatter extends AbstractDeclarativeFormatter {
 	protected void configureFormatting(FormattingConfig c) {
 		hu.bme.mit.gamma.action.language.services.ActionLanguageGrammarAccess f = (hu.bme.mit.gamma.action.language.services.ActionLanguageGrammarAccess) getGrammarAccess();
 		expressionLanguageFormatterUtil.format(c, f);
+		expressionLanguageFormatterUtil.formatExpressions(c, f.getExpressionLanguageGrammarAccess());
 		for (Keyword comma: f.findKeywords(",")) {
 			c.setNoLinewrap().before(comma);
 			c.setNoSpace().before(comma);

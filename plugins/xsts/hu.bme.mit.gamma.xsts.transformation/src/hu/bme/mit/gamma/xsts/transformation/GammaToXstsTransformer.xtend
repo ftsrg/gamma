@@ -10,11 +10,16 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.xsts.transformation
 
+import hu.bme.mit.gamma.expression.model.BinaryExpression
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
+import hu.bme.mit.gamma.expression.model.PredicateExpression
 import hu.bme.mit.gamma.expression.model.TypeReference
+import hu.bme.mit.gamma.expression.model.VariableDeclaration
+import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.LowlevelToXstsTransformer
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.TransitionMerging
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer.ActionOptimizer
 import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
@@ -29,9 +34,10 @@ import hu.bme.mit.gamma.statechart.lowlevel.model.Package
 import hu.bme.mit.gamma.statechart.lowlevel.transformation.GammaToLowlevelTransformer
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
-import hu.bme.mit.gamma.transformation.util.AnalysisModelPreprocessor
+import hu.bme.mit.gamma.transformation.util.preprocessor.AnalysisModelPreprocessor
 import hu.bme.mit.gamma.util.GammaEcoreUtil
-import hu.bme.mit.gamma.xsts.model.AssignmentAction
+import hu.bme.mit.gamma.xsts.model.AbstractAssignmentAction
+import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.CompositeAction
 import hu.bme.mit.gamma.xsts.model.InEventGroup
 import hu.bme.mit.gamma.xsts.model.RegionGroup
@@ -42,7 +48,6 @@ import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
 import hu.bme.mit.gamma.xsts.transformation.serializer.ActionSerializer
 import hu.bme.mit.gamma.xsts.transformation.util.OrthogonalActionTransformer
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
-import java.math.BigInteger
 import java.util.Collections
 import java.util.List
 import java.util.logging.Level
@@ -53,6 +58,7 @@ import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 
 class GammaToXstsTransformer {
@@ -72,22 +78,30 @@ class GammaToXstsTransformer {
 	protected final extension XSTSModelFactory xStsModelFactory = XSTSModelFactory.eINSTANCE
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
 	protected final extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
+	protected final extension ExpressionEvaluator expressionEvaluator = ExpressionEvaluator.INSTANCE
 	// Transformation settings
 	protected final Integer schedulingConstraint
-	protected boolean transformOrthogonalActions
-	protected boolean optimize
+	protected final boolean transformOrthogonalActions
+	protected final boolean optimize
+	protected final boolean useHavocActions
+	protected final boolean extractGuards
+	protected final TransitionMerging transitionMerging
 	// Logger
 	protected final Logger logger = Logger.getLogger("GammaLogger")
 	
 	new() {
-		this(null, false, true)
+		this(null, true, true, false, false, TransitionMerging.HIERARCHICAL)
 	}
 	
-	new(Integer schedulingConstraint,
-			boolean transformOrthogonalActions, boolean optimize) {
+	new(Integer schedulingConstraint, boolean transformOrthogonalActions,
+			boolean optimize, boolean useHavocActions, boolean extractGuards,
+			TransitionMerging transitionMerging) {
 		this.schedulingConstraint = schedulingConstraint
 		this.transformOrthogonalActions = transformOrthogonalActions
 		this.optimize = optimize
+		this.useHavocActions = useHavocActions
+		this.extractGuards = extractGuards
+		this.transitionMerging = transitionMerging
 	}
 	
 	def preprocessAndExecuteAndSerialize(hu.bme.mit.gamma.statechart.interface_.Package _package,
@@ -102,7 +116,7 @@ class GammaToXstsTransformer {
 
 	def preprocessAndExecute(hu.bme.mit.gamma.statechart.interface_.Package _package,
 			String targetFolderUri, String fileName) {
-		val component = modelPreprocessor.preprocess(_package, #[], targetFolderUri, fileName)
+		val component = modelPreprocessor.preprocess(_package, #[], targetFolderUri, fileName, optimize)
 		val newPackage = component.containingPackage
 		return newPackage.execute
 	}
@@ -110,7 +124,7 @@ class GammaToXstsTransformer {
 	def preprocessAndExecute(hu.bme.mit.gamma.statechart.interface_.Package _package,
 			List<Expression> topComponentArguments, String targetFolderUri, String fileName) {
 		val component = modelPreprocessor.preprocess(_package, topComponentArguments,
-			targetFolderUri, fileName)
+			targetFolderUri, fileName, optimize)
 		val newPackage = component.containingPackage
 		return newPackage.execute
 	}
@@ -177,12 +191,12 @@ class GammaToXstsTransformer {
 		wrappedType.transformParameters(wrappedInstance.arguments) 
 		val xSts = wrappedType.transform(lowlevelPackage)
 		
-		val inEventAction = xSts.inEventAction
+		val inEventAction = xSts.inEventTransition
 		// Deleting synchronous event assignments
 		val xStsSynchronousInEventVariables = xSts.variableGroups
 			.filter[it.annotation instanceof InEventGroup].map[it.variables]
 			.flatten // There are more than one
-		for (xStsAssignment : inEventAction.getAllContentsOfType(AssignmentAction)) {
+		for (xStsAssignment : inEventAction.getAllContentsOfType(AbstractAssignmentAction)) {
 			val xStsDeclaration = (xStsAssignment.lhs as DirectReferenceExpression).declaration
 			if (xStsSynchronousInEventVariables.contains(xStsDeclaration)) {
 				xStsAssignment.remove // Deleting in-event bool flags
@@ -200,9 +214,7 @@ class GammaToXstsTransformer {
 		// Setting the referenced event variables to false
 		for (xStsEventVariable : xStsReferencedEventVariables) {
 			newInEventAction.actions += createAssignmentAction => [
-				it.lhs = createDirectReferenceExpression => [
-					it.declaration = xStsEventVariable
-				]
+				it.lhs = statechartUtil.createReferenceExpression(xStsEventVariable)
 				it.rhs = createFalseExpression
 			]
 		}
@@ -214,9 +226,7 @@ class GammaToXstsTransformer {
 			val branch = createIfActionBranch(
 				xStsActionUtil.connectThroughNegations(negatedVariables),
 				createAssignmentAction => [
-					it.lhs = createDirectReferenceExpression => [
-						it.declaration = xStsEventVariable
-					]
+					it.lhs = statechartUtil.createReferenceExpression(xStsEventVariable)
 					it.rhs = createTrueExpression
 				]
 			)
@@ -226,10 +236,10 @@ class GammaToXstsTransformer {
 		// Binding event variables that come from the same ports
 		newInEventAction.actions += xSts.createEventAssignmentsBoundToTheSameSystemPort(wrappedType)
 		 // Original parameter settings
-		newInEventAction.actions += inEventAction
+		newInEventAction.actions += inEventAction.action
 		// Binding parameter variables that come from the same ports
 		newInEventAction.actions += xSts.createParameterAssignmentsBoundToTheSameSystemPort(wrappedType)
-		xSts.inEventAction = newInEventAction
+		xSts.inEventTransition = newInEventAction.wrap
 		
 		return xSts
 	}
@@ -253,7 +263,7 @@ class GammaToXstsTransformer {
 		var XSTS xSts = null
 		val scheduledInstances = component.scheduledInstances
 		val mergedAction = if (component instanceof CascadeCompositeComponent) createSequentialAction else createOrthogonalAction
-		val componentMergedActions = newHashMap // To handle multiple schedulings in CascadeCompositeComponents
+		val componentMergedActions = <Component, Action>newHashMap // To handle multiple schedulings in CascadeCompositeComponents
 		for (var i = 0; i < scheduledInstances.size; i++) {
 			val subcomponent = scheduledInstances.get(i)
 			val type = subcomponent.type
@@ -279,21 +289,20 @@ class GammaToXstsTransformer {
 					xSts.transientVariables += newXSts.transientVariables
 					xSts.controlVariables += newXSts.controlVariables
 					xSts.clockVariables += newXSts.clockVariables
-					xSts.transitions += newXSts.transitions
 					xSts.constraints += newXSts.constraints
 					// Initializing action
 					val variableInitAction = createSequentialAction
-					variableInitAction.actions += xSts.variableInitializingAction
-					variableInitAction.actions += newXSts.variableInitializingAction
-					xSts.variableInitializingAction = variableInitAction
+					variableInitAction.actions += xSts.variableInitializingTransition.action
+					variableInitAction.actions += newXSts.variableInitializingTransition.action
+					xSts.variableInitializingTransition = variableInitAction.wrap
 					val configInitAction = createSequentialAction
-					configInitAction.actions += xSts.configurationInitializingAction
-					configInitAction.actions += newXSts.configurationInitializingAction
-					xSts.configurationInitializingAction = configInitAction
+					configInitAction.actions += xSts.configurationInitializingTransition.action
+					configInitAction.actions += newXSts.configurationInitializingTransition.action
+					xSts.configurationInitializingTransition = configInitAction.wrap
 					val entryAction = createSequentialAction
-					entryAction.actions += xSts.entryEventAction
-					entryAction.actions += newXSts.entryEventAction
-					xSts.entryEventAction = entryAction
+					entryAction.actions += xSts.entryEventTransition.action
+					entryAction.actions += newXSts.entryEventTransition.action
+					xSts.entryEventTransition = entryAction.wrap
 				}
 				// Merged action
 				val actualComponentMergedAction = createSequentialAction => [
@@ -302,10 +311,10 @@ class GammaToXstsTransformer {
 				mergedAction.actions += actualComponentMergedAction
 				// In and Out actions - using sequential actions to make sure they are composite actions
 				// Methods reset... and delete... require this
-				val newInEventAction = createSequentialAction => [ it.actions += newXSts.inEventAction ]
-				newXSts.inEventAction = newInEventAction
-				val newOutEventAction = createSequentialAction => [ it.actions += newXSts.outEventAction ]
-				newXSts.outEventAction = newOutEventAction
+				val newInEventAction = createSequentialAction => [ it.actions += newXSts.inEventTransition.action ]
+				newXSts.inEventTransition = newInEventAction.wrap
+				val newOutEventAction = createSequentialAction => [ it.actions += newXSts.outEventTransition.action ]
+				newXSts.outEventTransition = newOutEventAction.wrap
 				// Resetting channel events
 				// 1) the Sync ort semantics: Resetting channel IN events AFTER schedule would result in a deadlock
 				// 2) the Casc semantics: Resetting channel OUT events BEFORE schedule would delete in events of subsequent components
@@ -326,39 +335,40 @@ class GammaToXstsTransformer {
 				newInEventAction.deleteEverythingExceptSystemEventsAndParameters(component)
 				if (xSts !== newXSts) { // Only if this is not the first component
 					val inEventAction = createSequentialAction
-					inEventAction.actions += xSts.inEventAction
+					inEventAction.actions += xSts.inEventTransition.action
 					inEventAction.actions += newInEventAction
-					xSts.inEventAction = inEventAction
+					xSts.inEventTransition = inEventAction.wrap
 				}
 				// Out event
 				newOutEventAction.deleteEverythingExceptSystemEventsAndParameters(component)
 				if (xSts !== newXSts) { // Only if this is not the first component
 					val outEventAction = createSequentialAction
-					outEventAction.actions += xSts.outEventAction
+					outEventAction.actions += xSts.outEventTransition.action
 					outEventAction.actions += newOutEventAction
-					xSts.outEventAction = outEventAction
+					xSts.outEventTransition = outEventAction.wrap
 				}
 				// Tracing merged action
 				componentMergedActions.put(type, actualComponentMergedAction.clone)
 			}
 		}
 		xSts.name = component.name
-		xSts.mergedAction = mergedAction
+		xSts.changeTransitions(mergedAction.wrap)
 		logger.log(Level.INFO, "Deleting unused instance ports in " + component.name)
 		xSts.deleteUnusedPorts(component) // Deleting variable assignments for unused ports
 		// Connect only after xSts.mergedTransition.action = mergedAction
 		logger.log(Level.INFO, "Connecting events through channels in " + component.name)
 		xSts.connectEventsThroughChannels(component) // Event (variable setting) connecting across channels
 		logger.log(Level.INFO, "Binding event to system port events in " + component.name)
-		val oldInEventAction = xSts.inEventAction
+		val oldInEventAction = xSts.inEventTransition
 		val bindingAssignments = xSts.createEventAndParameterAssignmentsBoundToTheSameSystemPort(component)
 		// Optimization: removing old NonDeterministicActions 
-		bindingAssignments.removeNonDeterministicActionsReferencingAssignedVariables(oldInEventAction)
-		xSts.inEventAction = createSequentialAction => [
-			it.actions += oldInEventAction
+		bindingAssignments.removeNonDeterministicActionsReferencingAssignedVariables(oldInEventAction.action)
+		val newInEventAction = createSequentialAction => [
+			it.actions += oldInEventAction.action
 			// Bind together ports connected to the same system port
 			it.actions += bindingAssignments
 		]
+		xSts.inEventTransition = newInEventAction.wrap
 		return xSts
 	}
 	
@@ -367,7 +377,8 @@ class GammaToXstsTransformer {
 		// Note that the package is already transformed and traced because of the "val lowlevelPackage = gammaToLowlevelTransformer.transform(_package)" call
 		val lowlevelStatechart = gammaToLowlevelTransformer.transform(statechart)
 		lowlevelPackage.components += lowlevelStatechart
-		val lowlevelToXSTSTransformer = new LowlevelToXstsTransformer(lowlevelPackage, optimize)
+		val lowlevelToXSTSTransformer = new LowlevelToXstsTransformer(
+			lowlevelPackage, optimize, useHavocActions, extractGuards, transitionMerging)
 		val xStsEntry = lowlevelToXSTSTransformer.execute
 		lowlevelPackage.components -= lowlevelStatechart // So that next time the matches do not return elements from this statechart
 		val xSts = xStsEntry.key
@@ -386,25 +397,56 @@ class GammaToXstsTransformer {
 		val xStsClockSettingAction = createSequentialAction => [
 			// Increasing the clock variables
 			for (xStsClockVariable : xSts.clockVariables) {
+				val maxValue = xStsClockVariable.greatestComparison
+				val incrementExpression = createAddExpression => [
+					it.operands += statechartUtil.createReferenceExpression(xStsClockVariable)
+					it.operands += statechartUtil.toIntegerLiteral(schedulingConstraint)
+				]
+				val rhs = (maxValue === null) ? incrementExpression :
+					createIfThenElseExpression => [
+						it.condition = createLessExpression => [
+							it.leftOperand = statechartUtil.createReferenceExpression(xStsClockVariable)
+							it.rightOperand = statechartUtil.toIntegerLiteral(maxValue)
+						]
+						it.then = incrementExpression
+						it.^else = statechartUtil.createReferenceExpression(xStsClockVariable)
+					]
 				it.actions += createAssignmentAction => [
-					it.lhs = createDirectReferenceExpression => [
-						it.declaration = xStsClockVariable
-					]
-					it.rhs = createAddExpression => [
-						it.operands += createDirectReferenceExpression => [
-							it.declaration = xStsClockVariable
-						]
-						it.operands += createIntegerLiteralExpression => [
-							it.value = BigInteger.valueOf(schedulingConstraint)
-						]
-					]
+					it.lhs = statechartUtil.createReferenceExpression(xStsClockVariable)
+					it.rhs = rhs
 				]
 			}
 			// Putting it in merged transition as it does not work in environment action
 			it.actions += xSts.mergedAction
 		]
-		xSts.mergedAction = xStsClockSettingAction
+		xSts.changeTransitions(xStsClockSettingAction.wrap)
 		xSts.clockVariables.clear // Clearing the clock variables, as they are handled like normal ones from now on
+	}
+	
+	protected def Integer getGreatestComparison(VariableDeclaration variable) {
+		val root = variable.root
+		val values = newHashSet
+		val comparisons = root.getAllContentsOfType(PredicateExpression).filter(BinaryExpression)
+		try {
+			for (comparison : comparisons) {
+				val left = comparison.leftOperand
+				val right = comparison.rightOperand
+				if (left instanceof DirectReferenceExpression) {
+					if (left.declaration === variable) {
+						values += right.evaluateInteger
+					}
+				}
+				else if (right instanceof DirectReferenceExpression) {
+					if (right.declaration === variable) {
+						values += left.evaluateInteger
+					}
+				}
+			}
+			return (values.empty) ? null : values.max
+		} catch (IllegalArgumentException e) {
+			// A variable is referenced
+			return null
+		}
 	}
 	
 	protected def void setSchedulingAnnotation(
@@ -496,27 +538,28 @@ class GammaToXstsTransformer {
 	}
 	
 	protected def void resetInEventsAfterMergedAction(XSTS xSts, Component type) {
-		val inEventAction = xSts.inEventAction
+		val inEventAction = xSts.inEventTransition.action
 		// Maybe still not perfect?
 		if (inEventAction instanceof CompositeAction) {
 			val clonedInEventAction = inEventAction.clone
 			// Not PERSISTENT parameters
 			val resetAction = clonedInEventAction.resetEverythingExceptPersistentParameters(type)
-			xSts.mergedAction = createSequentialAction => [
+			val newMergedAction = createSequentialAction => [
 				it.actions += xSts.mergedAction
 				it.actions += resetAction
 			]
+			xSts.changeTransitions(newMergedAction.wrap)
 		}
 	}
 	
 	protected def optimize(XSTS xSts) {
 		logger.log(Level.INFO, "Optimizing reset, environment and merged actions in " + xSts.name)
-		xSts.variableInitializingAction = xSts.variableInitializingAction.optimize
-		xSts.configurationInitializingAction = xSts.configurationInitializingAction.optimize
-		xSts.entryEventAction = xSts.entryEventAction.optimize
-		xSts.inEventAction = xSts.inEventAction.optimize
-		xSts.outEventAction = xSts.outEventAction.optimize
-		xSts.mergedAction = xSts.mergedAction.optimize
+		xSts.variableInitializingTransition = xSts.variableInitializingTransition.optimize
+		xSts.configurationInitializingTransition = xSts.configurationInitializingTransition.optimize
+		xSts.entryEventTransition = xSts.entryEventTransition.optimize
+		xSts.inEventTransition = xSts.inEventTransition.optimize
+		xSts.outEventTransition = xSts.outEventTransition.optimize
+		xSts.changeTransitions(xSts.transitions.optimize)
 	}
 	
 }

@@ -1,0 +1,11 @@
+*.gsm
+*.uppaal
+*.g2u
+*.y2g
+*.xml
+*.lgsm
+*.gsts
+*.l2s
+*.xsts
+*.cex
+*.gpd

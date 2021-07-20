@@ -5,17 +5,11 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="typeDeclarations" upperBound="-1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//TypeDeclaration"
         containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="publicTypeDeclarations"
+        upperBound="-1" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//TypeDeclaration"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="variableDeclarations" upperBound="-1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclaration"
         containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="transitions" upperBound="-1"
-        eType="#//XTransition" containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="mergedAction" lowerBound="1"
-        eType="#//Action" containment="true">
-      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
-        <details key="documentation" value="This reference denotes a single transition merged from all contained XTransitions."/>
-      </eAnnotations>
-    </eStructuralFeatures>
     <eStructuralFeatures xsi:type="ecore:EReference" name="constraints" upperBound="-1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
         containment="true"/>
@@ -27,18 +21,18 @@
         eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclaration"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="variableGroups" upperBound="-1"
         eType="#//VariableGroup" containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="variableInitializingAction"
-        lowerBound="1" eType="#//Action" containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="configurationInitializingAction"
-        lowerBound="1" eType="#//Action" containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="entryEventAction" lowerBound="1"
-        eType="#//Action" containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="inEventAction" lowerBound="1"
-        eType="#//Action" containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="outEventAction" lowerBound="1"
-        eType="#//Action" containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="publicTypeDeclarations"
-        upperBound="-1" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//TypeDeclaration"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="variableInitializingTransition"
+        lowerBound="1" eType="#//XTransition" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="configurationInitializingTransition"
+        lowerBound="1" eType="#//XTransition" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="entryEventTransition" lowerBound="1"
+        eType="#//XTransition" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="transitions" upperBound="-1"
+        eType="#//XTransition" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="inEventTransition" lowerBound="1"
+        eType="#//XTransition" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="outEventTransition" lowerBound="1"
+        eType="#//XTransition" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="XTransition">
     <eStructuralFeatures xsi:type="ecore:EReference" name="reads" upperBound="-1"
@@ -67,28 +61,26 @@
   <eClassifiers xsi:type="ecore:EClass" name="EventGroup" abstract="true" eSuperTypes="#//GroupAnnotation"/>
   <eClassifiers xsi:type="ecore:EClass" name="ComponentGroup" eSuperTypes="#//GroupAnnotation"/>
   <eClassifiers xsi:type="ecore:EClass" name="PlainVariableGroup" eSuperTypes="#//GroupAnnotation"/>
-  <eClassifiers xsi:type="ecore:EClass" name="Action" abstract="true" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//CommentableElement"/>
+  <eClassifiers xsi:type="ecore:EClass" name="Action" abstract="true"/>
   <eClassifiers xsi:type="ecore:EClass" name="AtomicAction" abstract="true" eSuperTypes="#//Action"/>
-  <eClassifiers xsi:type="ecore:EClass" name="NonDeterministicAction" eSuperTypes="#//CompositeAction">
+  <eClassifiers xsi:type="ecore:EClass" name="NonDeterministicAction" eSuperTypes="#//MultiaryAction">
     <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
       <details key="documentation" value="A single child action is executed. Suitable for the description of choices witch AssumeActions."/>
     </eAnnotations>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="SequentialAction" eSuperTypes="#//CompositeAction"/>
-  <eClassifiers xsi:type="ecore:EClass" name="ParallelAction" eSuperTypes="#//CompositeAction"/>
+  <eClassifiers xsi:type="ecore:EClass" name="SequentialAction" eSuperTypes="#//MultiaryAction"/>
+  <eClassifiers xsi:type="ecore:EClass" name="ParallelAction" eSuperTypes="#//MultiaryAction"/>
   <eClassifiers xsi:type="ecore:EClass" name="AssumeAction" eSuperTypes="#//AtomicAction">
     <eStructuralFeatures xsi:type="ecore:EReference" name="assumption" lowerBound="1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="EmptyAction" eSuperTypes="#//AtomicAction"/>
-  <eClassifiers xsi:type="ecore:EClass" name="AssignmentAction" eSuperTypes="#//AtomicAction">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="lhs" lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ReferenceExpression"
-        containment="true"/>
+  <eClassifiers xsi:type="ecore:EClass" name="AssignmentAction" eSuperTypes="#//AbstractAssignmentAction">
     <eStructuralFeatures xsi:type="ecore:EReference" name="rhs" lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
         containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="CompositeAction" abstract="true" eSuperTypes="#//Action">
+  <eClassifiers xsi:type="ecore:EClass" name="MultiaryAction" abstract="true" eSuperTypes="#//CompositeAction">
     <eStructuralFeatures xsi:type="ecore:EReference" name="actions" lowerBound="1"
         upperBound="-1" eType="#//Action" containment="true"/>
   </eClassifiers>
@@ -100,12 +92,33 @@
       eSuperTypes="#//GroupAnnotation"/>
   <eClassifiers xsi:type="ecore:EClass" name="OutEventParameterGroup" eSuperTypes="#//EventParameterGroup"/>
   <eClassifiers xsi:type="ecore:EClass" name="InEventParameterGroup" eSuperTypes="#//EventParameterGroup"/>
-  <eClassifiers xsi:type="ecore:EClass" name="OrthogonalAction" eSuperTypes="#//CompositeAction"/>
+  <eClassifiers xsi:type="ecore:EClass" name="OrthogonalAction" eSuperTypes="#//MultiaryAction"/>
   <eClassifiers xsi:type="ecore:EClass" name="SystemInEventGroup" eSuperTypes="#//EventGroup"/>
   <eClassifiers xsi:type="ecore:EClass" name="SystemOutEventGroup" eSuperTypes="#//EventGroup"/>
   <eClassifiers xsi:type="ecore:EClass" name="VariableDeclarationAction" eSuperTypes="#//AtomicAction">
     <eStructuralFeatures xsi:type="ecore:EReference" name="variableDeclaration" lowerBound="1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclaration"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="LoopAction" eSuperTypes="#//CompositeAction">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="action" lowerBound="1"
+        eType="#//Action" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="iterationParameterDeclaration"
+        lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ParameterDeclaration"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="range" lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//IntegerRangeLiteralExpression"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="CompositeAction" abstract="true" eSuperTypes="#//Action"/>
+  <eClassifiers xsi:type="ecore:EClass" name="AssertAction" eSuperTypes="#//AtomicAction">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="assertion" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="HavocAction" eSuperTypes="#//AbstractAssignmentAction"/>
+  <eClassifiers xsi:type="ecore:EClass" name="AbstractAssignmentAction" abstract="true"
+      eSuperTypes="#//AtomicAction">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="lhs" lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ReferenceExpression"
         containment="true"/>
   </eClassifiers>
 </ecore:EPackage>

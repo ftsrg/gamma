@@ -1,0 +1,12 @@
+package mo_antivalchk
+
+import "COID_Wrapper.gcd"
+
+adapter CoidAdapter of
+		component coidWrapper : CoidWrapper [
+] {
+	when Execute.any / run
+	queue messages(priority = 1, capacity = 8) {
+		I_FT.any, I_CR.any, I.any, T.any, Execute.any
+	}
+}

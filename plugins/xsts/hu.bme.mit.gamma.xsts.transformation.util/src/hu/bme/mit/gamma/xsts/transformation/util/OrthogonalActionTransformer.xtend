@@ -43,12 +43,12 @@ class OrthogonalActionTransformer {
 			.filter[it.annotation instanceof EventGroup || it.annotation instanceof EventParameterGroup]
 			.map[it.variables].flatten.toSet
 		if (!eventVariables.empty) {
-			xSts.variableInitializingAction.transform(eventVariables)
-			xSts.configurationInitializingAction.transform(eventVariables)
-			xSts.entryEventAction.transform(eventVariables)
+			xSts.variableInitializingTransition.action.transform(eventVariables)
+			xSts.configurationInitializingTransition.action.transform(eventVariables)
+			xSts.entryEventTransition.action.transform(eventVariables)
 			xSts.mergedAction.transform(eventVariables)
-			xSts.inEventAction.transform(eventVariables)
-			xSts.outEventAction.transform(eventVariables)
+			xSts.inEventTransition.action.transform(eventVariables)
+			xSts.outEventTransition.action.transform(eventVariables)
 		}
 	}
 	
@@ -105,10 +105,10 @@ class OrthogonalActionTransformer {
 		orthogonalActions.sort(
 			new Comparator<OrthogonalAction> {
 				override compare(OrthogonalAction lhs, OrthogonalAction rhs) {
-					if (lhs.contains(rhs)) {
+					if (lhs.containsTransitively(rhs)) {
 						return -1
 					}
-					if (rhs.contains(lhs)) {
+					if (rhs.containsTransitively(lhs)) {
 						return 1
 					}
 					return 0 // Neither contains the other one

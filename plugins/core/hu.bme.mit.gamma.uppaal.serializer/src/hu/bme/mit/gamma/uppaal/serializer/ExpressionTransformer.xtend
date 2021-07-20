@@ -20,12 +20,14 @@ import uppaal.declarations.ExpressionInitializer
 import uppaal.declarations.TypeIndex
 import uppaal.declarations.ValueIndex
 import uppaal.expressions.ArithmeticExpression
+import uppaal.expressions.ArrayLiteralExpression
 import uppaal.expressions.AssignmentExpression
 import uppaal.expressions.AssignmentOperator
 import uppaal.expressions.BitShiftExpression
 import uppaal.expressions.BitwiseExpression
 import uppaal.expressions.CompareExpression
 import uppaal.expressions.CompareOperator
+import uppaal.expressions.ConditionExpression
 import uppaal.expressions.Expression
 import uppaal.expressions.FunctionCallExpression
 import uppaal.expressions.IdentifierExpression
@@ -44,14 +46,13 @@ import uppaal.statements.ForLoop
 import uppaal.statements.IfStatement
 import uppaal.statements.ReturnStatement
 import uppaal.statements.Statement
+import uppaal.templates.Selection
 import uppaal.types.DeclaredType
 import uppaal.types.PredefinedType
 import uppaal.types.RangeTypeSpecification
 import uppaal.types.StructTypeSpecification
 import uppaal.types.Type
 import uppaal.types.TypeReference
-import uppaal.templates.Selection
-import uppaal.expressions.ConditionExpression
 
 class ExpressionTransformer {
 	
@@ -59,6 +60,10 @@ class ExpressionTransformer {
 	
 	def static dispatch String transform(Expression expression) {
 		throw new IllegalArgumentException("Not know expression: " + expression)
+	}
+	
+	def static dispatch String transform(ArrayLiteralExpression expression) {
+		return '''{ «FOR element : expression.elements SEPARATOR ', '»«element.transform»«ENDFOR» }'''
 	}
 	
 	def static dispatch String transform(LiteralExpression expression) {
@@ -260,6 +265,8 @@ class ExpressionTransformer {
 				return ""
 			case CONST:
 				return "const "
+			case META:
+				return "meta "
 			default:
 				throw new IllegalArgumentException("This prefix is not supported: " + prefix)			
 		}

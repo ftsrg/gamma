@@ -14,7 +14,6 @@ import org.eclipse.xtext.validation.Check;
 
 import hu.bme.mit.gamma.expression.model.ArgumentedElement;
 import hu.bme.mit.gamma.expression.model.ElseExpression;
-import hu.bme.mit.gamma.expression.model.NamedElement;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter;
 import hu.bme.mit.gamma.statechart.composite.BroadcastChannel;
@@ -29,6 +28,7 @@ import hu.bme.mit.gamma.statechart.composite.PortBinding;
 import hu.bme.mit.gamma.statechart.composite.SimpleChannel;
 import hu.bme.mit.gamma.statechart.contract.AdaptiveContractAnnotation;
 import hu.bme.mit.gamma.statechart.contract.StateContractAnnotation;
+import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Clock;
 import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.Event;
@@ -71,9 +71,13 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	}
 	
 	@Check
-	@Override
-	public void checkNameUniqueness(NamedElement element) {
-		handleValidationResultMessage(statechartModelValidator.checkNameUniqueness(element));
+	public void checkStateNameUniqueness(StatechartDefinition statechart) {
+		handleValidationResultMessage(statechartModelValidator.checkStateNameUniqueness(statechart));
+	}
+	
+	@Check
+	public void checkTransitionNameUniqueness(StatechartDefinition statechart) {
+		handleValidationResultMessage(statechartModelValidator.checkTransitionNameUniqueness(statechart));
 	}
 	
 	@Check
@@ -91,6 +95,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		handleValidationResultMessage(statechartModelValidator.checkUnsupportedVariableTypes(variable));
 	}
 	
+	// We could check if the expression is of type void (warning)
 //	@Check
 //	public void checkUnsupportedExpressionStatements(ExpressionStatement expressionStatement) {
 //	}
@@ -160,9 +165,10 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		handleValidationResultMessage(statechartModelValidator.checkRegionEntries(region));
 	}
 	
-//	@Check
-//	public void checkUnusedDeclarations(Declaration declaration) {
-//	}
+	@Check
+	public void checkUnusedDeclarations(Component component) {
+		handleValidationResultMessage(statechartModelValidator.checkUnusedDeclarations(component));
+	}
 	
 	@Check
 	public void checkUnusedTimeoutDeclarations(TimeoutDeclaration declaration) {
@@ -201,7 +207,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	
 	@Check
 	public void checkTransitionEventTriggers(PortEventReference portEventReference) {
-		handleValidationResultMessage(statechartModelValidator.checkTransitionEventRaisings(null));
+		handleValidationResultMessage(statechartModelValidator.checkTransitionEventTriggers(portEventReference));
 	}
 	
 	@Check
@@ -236,7 +242,11 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	
 	@Check
 	public void checkPseudoNodeAcyclicity(PseudoState node) {
-		handleValidationResultMessage(statechartModelValidator.checkPseudoNodeAcyclicity(node));
+		if (StatechartModelDerivedFeatures.getIncomingTransitions(node).stream()
+				.anyMatch(it -> it.getSourceState() instanceof hu.bme.mit.gamma.statechart.statechart.State)) {
+			// Optimization: starting the traversal from states
+			handleValidationResultMessage(statechartModelValidator.checkPseudoNodeAcyclicity(node));
+		}
 	}
 	
 	@Check
@@ -415,7 +425,8 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	
 	@Check
 	public void checkSynchronousComponentWrapperMultipleEventContainment(AsynchronousAdapter wrapper) {
-		handleValidationResultMessage(statechartModelValidator.checkSynchronousComponentWrapperMultipleEventContainment(wrapper));
+		handleValidationResultMessage(statechartModelValidator
+				.checkSynchronousComponentWrapperMultipleEventContainment(wrapper));
 	}
 	
 	@Check
@@ -450,7 +461,8 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	
 	@Check
 	public void checkMessageQueueAnyEventReferences(AnyPortEventReference anyPortEventReference) {
-		handleValidationResultMessage(statechartModelValidator.checkMessageQueueAnyEventReferences(anyPortEventReference));
+		handleValidationResultMessage(statechartModelValidator
+				.checkMessageQueueAnyEventReferences(anyPortEventReference));
 	}
 	
 	@Check

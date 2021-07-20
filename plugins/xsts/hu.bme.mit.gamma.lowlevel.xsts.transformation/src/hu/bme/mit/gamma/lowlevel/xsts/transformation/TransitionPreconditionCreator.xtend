@@ -10,17 +10,18 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.lowlevel.xsts.transformation
 
-import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.Expression
+import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.TrueExpression
 import hu.bme.mit.gamma.statechart.lowlevel.model.JoinState
 import hu.bme.mit.gamma.statechart.lowlevel.model.MergeState
-import hu.bme.mit.gamma.statechart.lowlevel.model.PseudoState
 import hu.bme.mit.gamma.statechart.lowlevel.model.SchedulingOrder
 import hu.bme.mit.gamma.statechart.lowlevel.model.State
 import hu.bme.mit.gamma.statechart.lowlevel.model.Transition
+import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import java.util.Collection
 import java.util.List
+import java.util.Map
 
 import static com.google.common.base.Preconditions.checkArgument
 
@@ -28,6 +29,7 @@ import static extension hu.bme.mit.gamma.statechart.lowlevel.derivedfeatures.Low
 
 class TransitionPreconditionCreator {
 	// Model factories
+	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
 	protected final extension ExpressionModelFactory constraintFactory = ExpressionModelFactory.eINSTANCE
 	// Auxiliary object
 	protected final extension StateAssumptionCreator stateAssumptionCreator
@@ -46,73 +48,92 @@ class TransitionPreconditionCreator {
 	 */
 	def createXStsTransitionPrecondition(Transition lowlevelTransition) {
 		val lowlevelSource = lowlevelTransition.source
+		checkArgument(lowlevelSource instanceof State)
 		val order = lowlevelTransition.statechart.schedulingOrder
 		checkArgument(order == SchedulingOrder.TOP_DOWN || order == SchedulingOrder.BOTTOM_UP)
-		var Expression xStsTransitionConflictExpression = createTrueExpression
-		if (lowlevelSource instanceof State) {
-			// Conflict makes sense only in case of state sources
-			val Collection<Transition> lowlevelPotentialConflictingTransitions =
-			// Bottom-up or top down scheduling
-			if (order == SchedulingOrder.BOTTOM_UP) {
-				lowlevelTransition.lowlevelChildTransitions
-			}
-			else {
-				// Top-down scheduling
-				lowlevelTransition.lowlevelParentTransitions
-			}
-			xStsTransitionConflictExpression = lowlevelPotentialConflictingTransitions.createXStsTransitionConflictExclusion
-		}
-		val xStsTransitionActivenessExpression = lowlevelTransition.isActiveExpression
-		val xStsTransitionPreconditionExpression = createAndExpression
-		if (!(xStsTransitionConflictExpression instanceof TrueExpression)) {
-			// True expression (if there are no parent transitions) is unnecessary in case of AndExpressions
-			xStsTransitionPreconditionExpression.operands += xStsTransitionConflictExpression // Potential conflict resolution
-		}
-		if (!(xStsTransitionActivenessExpression instanceof TrueExpression)) {
-			xStsTransitionPreconditionExpression.operands += xStsTransitionActivenessExpression // Source state activeness and Guard
-		}
-		if (xStsTransitionPreconditionExpression.operands.empty) {
-			return createTrueExpression
+		
+		val lowlevelPotentialConflictingTransitions =
+		// Bottom-up or top down scheduling
+		if (order == SchedulingOrder.BOTTOM_UP) {
+			// Not that join transitions CANNOT leave states that are ancestors of each other
+			// Such a model could cause trouble here, think of the join semantics
+			lowlevelTransition.descendantTransitions
 		}
 		else {
-			return xStsTransitionPreconditionExpression
+			lowlevelTransition.ancestorTransitions 
+			
 		}
+		val xStsConflictExpression = lowlevelPotentialConflictingTransitions.createXStsTransitionConflictExclusion
+		
+		val lowlevelHigherPriorityTransitions = lowlevelTransition.higherPriorityTransitions
+		val xStsPriorityExpression = lowlevelHigherPriorityTransitions.createXStsTransitionConflictExclusion
+		
+		val xStsEnablednessExpression = lowlevelTransition.isEnabledExpression
+		// Caching: only the activeness must be cached if we want the guard evaluation to be flexible
+		trace.getPrimaryIsActiveExpressions += xStsEnablednessExpression.operands.head // isActive is the first operand
+		//
+		
+		val xStsPreconditionExpression = createAndExpression => [
+			it.operands += xStsEnablednessExpression // Source state enabledness
+			it.operands += xStsPriorityExpression // Priority resolution
+			it.operands += xStsConflictExpression // Potential conflict resolution
+		]
+		
+		val xStsOperands = xStsPreconditionExpression.operands
+		xStsOperands.removeIf[it instanceof TrueExpression]
+		
+		if (!xStsOperands.empty) {
+			return xStsPreconditionExpression
+		}
+		return createTrueExpression
 	}
 	
 	/**
 	 * Creates an expression which is true iff NONE of the given lowlevel transition is enabled. 
 	 */
-	private def createXStsTransitionConflictExclusion(Collection<Transition> lowlevelTransitions) {
-		if (lowlevelTransitions.empty) {
-			return createTrueExpression
-		}
-		return createAndExpression => [
-			for (lowlevelTransition : lowlevelTransitions) {
-				it.operands += createNotExpression => [
-					it.operand = lowlevelTransition.isActiveExpression
-				]
-			}
-		]
+	def createXStsTransitionConflictExclusion(Collection<Transition> lowlevelTransitions) {
+		return lowlevelTransitions.map[it.isEnabledExpression]
+			.connectViaNegations
 	}
 	
 	// Dispatch isActive (source elements are active and guard is true) expression
 	
-	private def getIsActiveExpression(Transition lowlevelTransition) {
+	private def getIsEnabledExpression(Transition lowlevelTransition) {
 		val andExpression = createAndExpression
+		val xStsOperands = andExpression.operands
+		// IsActive
 		val lowlevelSourceNode = lowlevelTransition.source
-		if (lowlevelSourceNode instanceof State) {
-			andExpression.operands += lowlevelSourceNode.createRecursiveXStsStateAssumption
+		if (lowlevelSourceNode instanceof State) { // Theoretically constant true
+			// e.g., local var a := region == Region.A
+			// e.g., local var b := region == Region.A (extractable) && region2 == Region.B
+			val recursiveXStsStateAssumption = lowlevelSourceNode.createRecursiveXStsStateAssumption
+			// Caching
+			trace.add(trace.getIsActiveExpressions,
+				lowlevelTransition, recursiveXStsStateAssumption)
+			//
+			xStsOperands += recursiveXStsStateAssumption
 		}
+		// Guard
+		val xStsGuardExpression = lowlevelTransition.getGuardExpression(trace.getGuards)
+		if (xStsGuardExpression !== null) {
+			xStsOperands += xStsGuardExpression
+		}
+		//
+		checkArgument(!xStsOperands.empty)
+		return andExpression
+	}
+	
+	protected def getGuardExpression(Transition lowlevelTransition,
+			Map<Transition, List<Expression>> cache /* So state and choice guards can be distinguished */) {
 		val guard = lowlevelTransition.guard
 		if (guard !== null) {
-			andExpression.operands += guard.transformExpression
+			val xStsGuard = guard.transformExpression
+			// Caching
+			trace.add(cache, lowlevelTransition, xStsGuard)
+			//
+			return xStsGuard
 		}
-		if (andExpression.operands.empty) {
-			return createTrueExpression
-		}
-		else {
-			return andExpression
-		}
+		return null
 	}
 	
 	// Precursory pseudo state preconditions
@@ -137,68 +158,6 @@ class TransitionPreconditionCreator {
 			orExpression.operands += lowlevelIncomingTransition.createXStsTransitionPrecondition
 		}
 		return orExpression
-	}
-	
-	//
-	
-	/**
-	 * Returns the parent transitions of the given lowlevel transition, that is, the outgoing transitions of the
-	 * ancestors of the source state of the given transition. 
-	 */
-	private def Collection<Transition> getLowlevelParentTransitions(Transition lowlevelTransition) {
-		val lowlevelParentTransitions = newLinkedList
-		lowlevelTransition.getLowlevelParentTransitions(lowlevelParentTransitions)
-		return lowlevelParentTransitions
-	}
-	
-	private def void getLowlevelParentTransitions(Transition lowlevelTransition,
-			List<Transition> lowlevelParentTransitions) {
-		val lowlevelSource = lowlevelTransition.source
-		if (lowlevelSource.parentRegion.topRegion ||
-				lowlevelSource instanceof PseudoState) {
-			return
-		}
-		val lowlevelParentState = (lowlevelSource as State).parentState
-		val untraversedOutgoingTransitions = newLinkedList
-		untraversedOutgoingTransitions += lowlevelParentState.outgoingTransitions
-		// Due to Merge/Join transitions where a source is the parent of another 
-		untraversedOutgoingTransitions -= lowlevelParentTransitions
-		for (lowlevelParentTransition : untraversedOutgoingTransitions) {
-			lowlevelParentTransitions += lowlevelParentTransition
-			lowlevelParentTransition.getLowlevelParentTransitions(lowlevelParentTransitions)
-		}
-	}
-	
-	/**
-	 * Returns the child transitions of the given lowlevel transition, that is, the outgoing transitions of the
-	 * descendants of the source state of the given transition. 
-	 */
-	private def Collection<Transition> getLowlevelChildTransitions(Transition lowlevelTransition) {
-		val lowlevelChildTransitions = newLinkedList
-		lowlevelTransition.getLowlevelChildTransitions(lowlevelChildTransitions)
-		return lowlevelChildTransitions
-	}
-	
-	private def void getLowlevelChildTransitions(Transition lowlevelTransition,
-			List<Transition> lowlevelChildTransitions) {
-		val lowlevelSource = lowlevelTransition.source
-		if (lowlevelSource instanceof State) {
-			if (!lowlevelSource.composite) {
-				return
-			}
-			for (lowlevelChildRegion : lowlevelSource.regions) {
-				for (lowlevelState : lowlevelChildRegion.stateNodes.filter(State)) {
-					val untraversedOutgoingTransitions = newLinkedList
-					untraversedOutgoingTransitions += lowlevelState.outgoingTransitions
-					// Due to Merge/Join transitions where a source is the parent of another 
-					untraversedOutgoingTransitions -= lowlevelChildTransitions
-					for (lowlevelChildTransition : untraversedOutgoingTransitions) {
-						lowlevelChildTransitions += lowlevelChildTransition
-						lowlevelChildTransition.getLowlevelChildTransitions(lowlevelChildTransitions)
-					}
-				}
-			}
-		}
 	}
 	
 }

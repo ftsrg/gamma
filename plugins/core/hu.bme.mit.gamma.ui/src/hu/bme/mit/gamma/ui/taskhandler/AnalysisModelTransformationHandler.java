@@ -15,7 +15,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -36,12 +36,14 @@ import hu.bme.mit.gamma.genmodel.model.Coverage;
 import hu.bme.mit.gamma.genmodel.model.DataflowCoverage;
 import hu.bme.mit.gamma.genmodel.model.EventCoverage;
 import hu.bme.mit.gamma.genmodel.model.InteractionCoverage;
+import hu.bme.mit.gamma.genmodel.model.InteractionDataflowCoverage;
 import hu.bme.mit.gamma.genmodel.model.ModelReference;
 import hu.bme.mit.gamma.genmodel.model.OutEventCoverage;
 import hu.bme.mit.gamma.genmodel.model.StateCoverage;
 import hu.bme.mit.gamma.genmodel.model.TransitionCoverage;
 import hu.bme.mit.gamma.genmodel.model.TransitionPairCoverage;
 import hu.bme.mit.gamma.genmodel.model.XSTSReference;
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.TransitionMerging;
 import hu.bme.mit.gamma.property.model.PropertyPackage;
 import hu.bme.mit.gamma.querygenerator.serializer.PropertySerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.ThetaPropertySerializer;
@@ -51,19 +53,20 @@ import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference;
 import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
 import hu.bme.mit.gamma.statechart.util.StatechartUtil;
-import hu.bme.mit.gamma.transformation.util.AnalysisModelPreprocessor;
 import hu.bme.mit.gamma.transformation.util.GammaFileNamer;
 import hu.bme.mit.gamma.transformation.util.SimpleInstanceHandler;
+import hu.bme.mit.gamma.transformation.util.annotations.AnnotatablePreprocessableElements;
+import hu.bme.mit.gamma.transformation.util.annotations.ComponentInstancePortReferences;
+import hu.bme.mit.gamma.transformation.util.annotations.ComponentInstancePortStateTransitionReferences;
+import hu.bme.mit.gamma.transformation.util.annotations.ComponentInstanceReferences;
+import hu.bme.mit.gamma.transformation.util.annotations.ComponentInstanceVariableReferences;
+import hu.bme.mit.gamma.transformation.util.annotations.ComponentPortReferences;
+import hu.bme.mit.gamma.transformation.util.annotations.ComponentStateReferences;
+import hu.bme.mit.gamma.transformation.util.annotations.ComponentTransitionReferences;
+import hu.bme.mit.gamma.transformation.util.annotations.ComponentVariableReferences;
 import hu.bme.mit.gamma.transformation.util.annotations.DataflowCoverageCriterion;
 import hu.bme.mit.gamma.transformation.util.annotations.InteractionCoverageCriterion;
-import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentInstancePortReferences;
-import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentInstancePortStateTransitionReferences;
-import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentInstanceReferences;
-import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentInstanceVariableReferences;
-import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentPortReferences;
-import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentStateReferences;
-import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentTransitionReferences;
-import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentVariableReferences;
+import hu.bme.mit.gamma.transformation.util.preprocessor.AnalysisModelPreprocessor;
 import hu.bme.mit.gamma.uppaal.composition.transformation.AsynchronousInstanceConstraint;
 import hu.bme.mit.gamma.uppaal.composition.transformation.AsynchronousSchedulerTemplateCreator.Scheduler;
 import hu.bme.mit.gamma.uppaal.composition.transformation.Constraint;
@@ -85,10 +88,13 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 	}
 	
 	public void execute(AnalysisModelTransformation transformation) throws IOException {
+		// Setting target folder
+		setTargetFolder(transformation);
+		//
 		ModelReference modelReference = transformation.getModel();
 		setAnalysisModelTransformation(transformation);
-		Set<AnalysisLanguage> languagesSet = new HashSet<AnalysisLanguage>(
-				transformation.getLanguages());
+		Set<AnalysisLanguage> languagesSet = new LinkedHashSet<AnalysisLanguage>(
+				transformation.getLanguages()); // To retain order
 		for (AnalysisLanguage analysisLanguage : languagesSet) {
 			AnalysisModelTransformer transformer;
 			switch (analysisLanguage) {
@@ -155,7 +161,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 		protected void serializeProperties(PropertyPackage propertyPackage, String fileName)
 				throws IOException {
 			if (propertyPackage != null) {
-				saveModel(propertyPackage, targetFolderUri, fileNamer.getHiddenPropertyFileName(fileName));
+				serializer.saveModel(propertyPackage, targetFolderUri, fileNamer.getHiddenPropertyFileName(fileName));
 				serializeStringProperties(propertyPackage, fileName);
 			}
 		}
@@ -255,6 +261,16 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			return transformCoverageCriterion(notNullCoverage.getDataflowCoverageCriterion());
 		}
 		
+		protected DataflowCoverageCriterion getInteractionDataflowCoverageCriterion(
+				Collection<? extends Coverage> coverages) {
+			Optional<?> coverage = coverages.stream().filter(it -> it instanceof InteractionDataflowCoverage).findFirst();
+			if (coverage.isEmpty()) {
+				return null;
+			}
+			InteractionDataflowCoverage notNullCoverage = (InteractionDataflowCoverage) coverage.get();
+			return transformCoverageCriterion(notNullCoverage.getInteractionDataflowCoverageCriterion());
+		}
+				
 		protected Integer transformConstraint(hu.bme.mit.gamma.genmodel.model.Constraint constraint) {
 			if (constraint == null) {
 				return null;
@@ -334,19 +350,25 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			ComponentInstanceVariableReferences dataflowTestedVariables = getDataflowCoverageVariables(
 					coverages, DataflowCoverage.class);
 			DataflowCoverageCriterion dataflowCoverageCriterion = getDataflowCoverageCriterion(coverages);
+			ComponentInstancePortReferences testedComponentsForInteractionDataflow = getCoveragePorts(
+					coverages, InteractionDataflowCoverage.class);
+			DataflowCoverageCriterion interactionDataflowCoverageCriterion =
+				getInteractionDataflowCoverageCriterion(coverages);
 			
 			Constraint constraint = transformSchedulingConstraint(transformation.getConstraint());
 			Scheduler scheduler = getGammaScheduler(transformation.getScheduler().get(0));
-			boolean isMinimalSet = transformation.isMinimalElementSet();
 			Gamma2UppaalTransformerSerializer transformer = new Gamma2UppaalTransformerSerializer(
-					component,
-					reference.getArguments(), targetFolderUri, fileName,
-					constraint, scheduler, isMinimalSet,
-					transformation.getPropertyPackage(),
-					testedComponentsForStates, testedComponentsForTransitions,
-					testedComponentsForTransitionPairs, testedComponentsForOutEvents,
-					testedInteractions, senderCoverageCriterion, receiverCoverageCriterion,
-					dataflowTestedVariables, dataflowCoverageCriterion);
+					component, reference.getArguments(),
+					targetFolderUri, fileName, constraint, scheduler,
+					transformation.isOptimize(), transformation.getPropertyPackage(),
+					new AnnotatablePreprocessableElements(
+						testedComponentsForStates, testedComponentsForTransitions,
+						testedComponentsForTransitionPairs, testedComponentsForOutEvents,
+						testedInteractions, senderCoverageCriterion, receiverCoverageCriterion,
+						dataflowTestedVariables, dataflowCoverageCriterion,
+						testedComponentsForInteractionDataflow, interactionDataflowCoverageCriterion
+					)
+			);
 			transformer.execute();
 			// Property serialization
 			serializeProperties(fileName);
@@ -358,14 +380,19 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 				return null;
 			}
 			if (constraint instanceof hu.bme.mit.gamma.genmodel.model.OrchestratingConstraint) {
-				hu.bme.mit.gamma.genmodel.model.OrchestratingConstraint orchestratingConstraint = (hu.bme.mit.gamma.genmodel.model.OrchestratingConstraint) constraint;
-				return new OrchestratingConstraint(orchestratingConstraint.getMinimumPeriod(), orchestratingConstraint.getMaximumPeriod());
+				hu.bme.mit.gamma.genmodel.model.OrchestratingConstraint orchestratingConstraint =
+					(hu.bme.mit.gamma.genmodel.model.OrchestratingConstraint) constraint;
+				return new OrchestratingConstraint(ecoreUtil.clone(orchestratingConstraint.getMinimumPeriod()),
+					ecoreUtil.clone(orchestratingConstraint.getMaximumPeriod())); // Cloning to prevent cross-references
 			}
 			if (constraint instanceof hu.bme.mit.gamma.genmodel.model.SchedulingConstraint) {
-				hu.bme.mit.gamma.genmodel.model.SchedulingConstraint schedulingConstraint = (hu.bme.mit.gamma.genmodel.model.SchedulingConstraint) constraint;
+				hu.bme.mit.gamma.genmodel.model.SchedulingConstraint schedulingConstraint =
+						(hu.bme.mit.gamma.genmodel.model.SchedulingConstraint) constraint;
 				SchedulingConstraint gammaSchedulingConstraint = new SchedulingConstraint();
-				for (hu.bme.mit.gamma.genmodel.model.AsynchronousInstanceConstraint instanceConstraint : schedulingConstraint.getInstanceConstraint()) {
-					gammaSchedulingConstraint.getInstanceConstraints().add(transformAsynchronousInstanceConstraint(instanceConstraint));
+				for (hu.bme.mit.gamma.genmodel.model.AsynchronousInstanceConstraint instanceConstraint :
+						schedulingConstraint.getInstanceConstraint()) {
+					gammaSchedulingConstraint.getInstanceConstraints().add(
+							transformAsynchronousInstanceConstraint(instanceConstraint));
 				}
 				return gammaSchedulingConstraint;
 			}
@@ -430,15 +457,24 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			ComponentInstanceVariableReferences dataflowTestedVariables = getDataflowCoverageVariables(
 					coverages, DataflowCoverage.class);
 			DataflowCoverageCriterion dataflowCoverageCriterion = getDataflowCoverageCriterion(coverages);
+			ComponentInstancePortReferences testedComponentsForInteractionDataflow = getCoveragePorts(
+					coverages, InteractionDataflowCoverage.class);
+			DataflowCoverageCriterion interactionDataflowCoverageCriterion =
+				getInteractionDataflowCoverageCriterion(coverages);
 			
 			Gamma2XstsTransformerSerializer transformer = new Gamma2XstsTransformerSerializer(
-					component,
-					reference.getArguments(), targetFolderUri, fileName,
-					schedulingConstraint, transformation.getPropertyPackage(),
-					testedComponentsForStates, testedComponentsForTransitions,
-					testedComponentsForTransitionPairs, testedComponentsForOutEvents,
-					testedInteractions, senderCoverageCriterion, receiverCoverageCriterion,
-					dataflowTestedVariables, dataflowCoverageCriterion);
+					component, reference.getArguments(),
+					targetFolderUri, fileName, schedulingConstraint,
+					transformation.isOptimize(), true,
+					false, TransitionMerging.HIERARCHICAL, // Lead-out to UI
+					transformation.getPropertyPackage(), new AnnotatablePreprocessableElements(
+						testedComponentsForStates, testedComponentsForTransitions,
+						testedComponentsForTransitionPairs, testedComponentsForOutEvents,
+						testedInteractions, senderCoverageCriterion, receiverCoverageCriterion,
+						dataflowTestedVariables, dataflowCoverageCriterion,
+						testedComponentsForInteractionDataflow, interactionDataflowCoverageCriterion
+					)
+			);
 			transformer.execute();
 			// Property serialization
 			serializeProperties(fileName);
@@ -512,15 +548,25 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			ComponentInstanceVariableReferences dataflowTestedVariables = getDataflowCoverageVariables(
 					coverages, DataflowCoverage.class);
 			DataflowCoverageCriterion dataflowCoverageCriterion = getDataflowCoverageCriterion(coverages);
+			ComponentInstancePortReferences testedComponentsForInteractionDataflow = getCoveragePorts(
+					coverages, InteractionDataflowCoverage.class);
+			DataflowCoverageCriterion interactionDataflowCoverageCriterion =
+				getInteractionDataflowCoverageCriterion(coverages);
 			
 			Gamma2XstsUppaalTransformerSerializer transformer = new Gamma2XstsUppaalTransformerSerializer(
-					component,
-					reference.getArguments(), targetFolderUri, fileName,
-					schedulingConstraint, transformation.getPropertyPackage(),
-					testedComponentsForStates, testedComponentsForTransitions,
-					testedComponentsForTransitionPairs, testedComponentsForOutEvents,
-					testedInteractions, senderCoverageCriterion, receiverCoverageCriterion,
-					dataflowTestedVariables, dataflowCoverageCriterion);
+					component, reference.getArguments(),
+					targetFolderUri, fileName, schedulingConstraint,
+					transformation.isOptimize(),
+					false, TransitionMerging.HIERARCHICAL, // Lead-out to UI
+					transformation.getPropertyPackage(),
+					new AnnotatablePreprocessableElements(
+						testedComponentsForStates, testedComponentsForTransitions,
+						testedComponentsForTransitionPairs, testedComponentsForOutEvents,
+						testedInteractions, senderCoverageCriterion, receiverCoverageCriterion,
+						dataflowTestedVariables, dataflowCoverageCriterion,
+						testedComponentsForInteractionDataflow, interactionDataflowCoverageCriterion
+					)
+			);
 			transformer.execute();
 			// Property serialization
 			serializeProperties(fileName);

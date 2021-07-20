@@ -21,18 +21,18 @@ sync Oldalvedelem_a [
 	port Also_Valto60 : requires Valto_Also
 	port Also_Valto8 : requires Valto_Also
 ] {
-	component fojelzo0 : Jelzo(::EGYESITETT, 0, 0)
-	component fojelzo1 : Jelzo(::EGYESITETT, 0, 1)
+	component fojelzo0 : Jelzo(J_tipus_t::EGYESITETT, 0, 0)
+	component fojelzo1 : Jelzo(J_tipus_t::EGYESITETT, 0, 1)
 
-	component valto2 : Valto(::BAL, 0, 0, 0, 0, 0, 12)
-	component valto4 : Valto(::BAL, 0, 0, 0, 0, 0, 14)
-	component valto61 : Valto(::BAL, 0, 0, 0, 0, 0, 161)
-	component valto60 : Valto(::BAL, 0, 0, 0, 0, 0, 160)
-	component valto8 : Valto(::BAL, 0, 0, 0, 0, 0, 18)
+	component valto2 : Valto(V_vezer_t::BAL, 0, 0, 0, 0, 0, 12)
+	component valto4 : Valto(V_vezer_t::BAL, 0, 0, 0, 0, 0, 14)
+	component valto61 : Valto(V_vezer_t::BAL, 0, 0, 0, 0, 0, 161)
+	component valto60 : Valto(V_vezer_t::BAL, 0, 0, 0, 0, 0, 160)
+	component valto8 : Valto(V_vezer_t::BAL, 0, 0, 0, 0, 0, 18)
 
-	component celjelzo0 : Jelzo(::EGYESITETT, 0, 2)
-	component celjelzo1 : Jelzo(::EGYESITETT, 0, 3)
-	component celjelzo2 : Jelzo(::EGYESITETT, 0, 4)
+	component celjelzo0 : Jelzo(J_tipus_t::EGYESITETT, 0, 2)
+	component celjelzo1 : Jelzo(J_tipus_t::EGYESITETT, 0, 3)
+	component celjelzo2 : Jelzo(J_tipus_t::EGYESITETT, 0, 4)
 
 	bind Felso_Fojelzo1 -> fojelzo1.F_VU_lez
 

@@ -77,7 +77,7 @@
   <eClassifiers xsi:type="ecore:EClass" name="ArrayTypeDefinition" eSuperTypes="#//EnumerableTypeDefinition">
     <eStructuralFeatures xsi:type="ecore:EReference" name="elementType" lowerBound="1"
         eType="#//Type" containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="size" eType="#//IntegerLiteralExpression"
+    <eStructuralFeatures xsi:type="ecore:EReference" name="size" eType="#//Expression"
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="IntegerRangeTypeDefinition" eSuperTypes="#//EnumerableTypeDefinition"/>
@@ -154,10 +154,13 @@
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="rightInclusive" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="RecordLiteralExpression" eSuperTypes="#//LiteralExpression">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="typeDeclaration" eType="#//TypeDeclaration"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="fieldAssignments" upperBound="-1"
         eType="#//FieldAssignment" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="EnumerationLiteralExpression" eSuperTypes="#//NullaryExpression #//LiteralExpression">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="typeReference" lowerBound="1"
+        eType="#//TypeReference" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="reference" lowerBound="1"
         eType="#//EnumerationLiteralDefinition"/>
   </eClassifiers>
@@ -177,7 +180,10 @@
         eType="#//Expression" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="AssignableAccessExpression" eSuperTypes="#//AccessExpression"/>
-  <eClassifiers xsi:type="ecore:EClass" name="ArrayAccessExpression" eSuperTypes="#//ArgumentedElement #//AssignableAccessExpression"/>
+  <eClassifiers xsi:type="ecore:EClass" name="ArrayAccessExpression" eSuperTypes="#//AssignableAccessExpression">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="index" lowerBound="1" eType="#//Expression"
+        containment="true"/>
+  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="RecordAccessExpression" eSuperTypes="#//AssignableAccessExpression">
     <eStructuralFeatures xsi:type="ecore:EReference" name="fieldReference" lowerBound="1"
         eType="#//FieldReferenceExpression" containment="true"/>
@@ -187,6 +193,7 @@
         eType="#//FieldDeclaration"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="NonAssignableAccessExpression" eSuperTypes="#//AccessExpression"/>
+  <eClassifiers xsi:type="ecore:EClass" name="FunctionAccessExpression" eSuperTypes="#//NonAssignableAccessExpression #//ArgumentedElement"/>
   <eClassifiers xsi:type="ecore:EClass" name="SelectExpression" eSuperTypes="#//NonAssignableAccessExpression"/>
   <eClassifiers xsi:type="ecore:EClass" name="IfThenElseExpression" eSuperTypes="#//Expression">
     <eStructuralFeatures xsi:type="ecore:EReference" name="condition" lowerBound="1"
@@ -221,7 +228,6 @@
   <eClassifiers xsi:type="ecore:EClass" name="ModExpression" eSuperTypes="#//ArithmeticExpression #//BinaryExpression"/>
   <eClassifiers xsi:type="ecore:EClass" name="UnaryMinusExpression" eSuperTypes="#//ArithmeticExpression #//UnaryExpression"/>
   <eClassifiers xsi:type="ecore:EClass" name="UnaryPlusExpression" eSuperTypes="#//ArithmeticExpression #//UnaryExpression"/>
-  <eClassifiers xsi:type="ecore:EClass" name="FunctionAccessExpression" eSuperTypes="#//NonAssignableAccessExpression #//ArgumentedElement"/>
   <eClassifiers xsi:type="ecore:EClass" name="VariableDeclarationAnnotation" abstract="true"/>
   <eClassifiers xsi:type="ecore:EClass" name="TransientVariableDeclarationAnnotation"
       eSuperTypes="#//VariableDeclarationAnnotation"/>

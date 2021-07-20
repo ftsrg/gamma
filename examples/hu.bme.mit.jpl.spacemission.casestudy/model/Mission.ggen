@@ -1,0 +1,123 @@
+// Transformation
+
+include "System/Cascade/DU/All-Def/_-_/MissionTransformation.ggen"
+include "System/Cascade/DU/All-Def/_-Opt/MissionTransformation.ggen"
+include "System/Cascade/DU/All-Def/_RS-_/MissionTransformation.ggen"
+include "System/Cascade/DU/All-Def/_RS-Opt/MissionTransformation.ggen"
+
+include "System/Cascade/DU/All-Use/_-_/MissionTransformation.ggen"
+include "System/Cascade/DU/All-Use/_-Opt/MissionTransformation.ggen"
+include "System/Cascade/DU/All-Use/_RS-_/MissionTransformation.ggen"
+include "System/Cascade/DU/All-Use/_RS-Opt/MissionTransformation.ggen"
+
+include "System/Cascade/DX/All-Def/_-_/MissionTransformation.ggen"
+include "System/Cascade/DX/All-Def/_-Opt/MissionTransformation.ggen"
+include "System/Cascade/DX/All-Def/_RS-_/MissionTransformation.ggen"
+include "System/Cascade/DX/All-Def/_RS-Opt/MissionTransformation.ggen"
+
+include "System/Cascade/DX/All-Use/_-_/MissionTransformation.ggen"
+include "System/Cascade/DX/All-Use/_-Opt/MissionTransformation.ggen"
+include "System/Cascade/DX/All-Use/_RS-_/MissionTransformation.ggen"
+include "System/Cascade/DX/All-Use/_RS-Opt/MissionTransformation.ggen"
+
+include "System/Cascade/XU/All-Def/_-_/MissionTransformation.ggen"
+include "System/Cascade/XU/All-Def/_-Opt/MissionTransformation.ggen"
+include "System/Cascade/XU/All-Def/_RS-_/MissionTransformation.ggen"
+include "System/Cascade/XU/All-Def/_RS-Opt/MissionTransformation.ggen"
+
+include "System/Cascade/XU/All-Use/_-_/MissionTransformation.ggen"
+include "System/Cascade/XU/All-Use/_-Opt/MissionTransformation.ggen"
+include "System/Cascade/XU/All-Use/_RS-_/MissionTransformation.ggen"
+include "System/Cascade/XU/All-Use/_RS-Opt/MissionTransformation.ggen"
+
+include "System/Synchronous/DU/All-Def/_-_/MissionTransformation.ggen"
+include "System/Synchronous/DU/All-Def/_-Opt/MissionTransformation.ggen"
+include "System/Synchronous/DU/All-Def/_RS-_/MissionTransformation.ggen"
+include "System/Synchronous/DU/All-Def/_RS-Opt/MissionTransformation.ggen"
+
+include "System/Synchronous/DU/All-Use/_-_/MissionTransformation.ggen"
+include "System/Synchronous/DU/All-Use/_-Opt/MissionTransformation.ggen"
+include "System/Synchronous/DU/All-Use/_RS-_/MissionTransformation.ggen"
+include "System/Synchronous/DU/All-Use/_RS-Opt/MissionTransformation.ggen"
+
+include "System/Synchronous/DX/All-Def/_-_/MissionTransformation.ggen"
+include "System/Synchronous/DX/All-Def/_-Opt/MissionTransformation.ggen"
+include "System/Synchronous/DX/All-Def/_RS-_/MissionTransformation.ggen"
+include "System/Synchronous/DX/All-Def/_RS-Opt/MissionTransformation.ggen"
+
+include "System/Synchronous/DX/All-Use/_-_/MissionTransformation.ggen"
+include "System/Synchronous/DX/All-Use/_-Opt/MissionTransformation.ggen"
+include "System/Synchronous/DX/All-Use/_RS-_/MissionTransformation.ggen"
+include "System/Synchronous/DX/All-Use/_RS-Opt/MissionTransformation.ggen"
+
+include "System/Synchronous/XU/All-Def/_-_/MissionTransformation.ggen"
+include "System/Synchronous/XU/All-Def/_-Opt/MissionTransformation.ggen"
+include "System/Synchronous/XU/All-Def/_RS-_/MissionTransformation.ggen"
+include "System/Synchronous/XU/All-Def/_RS-Opt/MissionTransformation.ggen"
+
+include "System/Synchronous/XU/All-Use/_-_/MissionTransformation.ggen"
+include "System/Synchronous/XU/All-Use/_-Opt/MissionTransformation.ggen"
+include "System/Synchronous/XU/All-Use/_RS-_/MissionTransformation.ggen"
+include "System/Synchronous/XU/All-Use/_RS-Opt/MissionTransformation.ggen"
+
+// Verification
+
+include "System/Cascade/DU/All-Def/_-_/MissionVerification.ggen"
+include "System/Cascade/DU/All-Def/_-Opt/MissionVerification.ggen"
+include "System/Cascade/DU/All-Def/_RS-_/MissionVerification.ggen"
+include "System/Cascade/DU/All-Def/_RS-Opt/MissionVerification.ggen"
+
+include "System/Cascade/DU/All-Use/_-_/MissionVerification.ggen"
+include "System/Cascade/DU/All-Use/_-Opt/MissionVerification.ggen"
+include "System/Cascade/DU/All-Use/_RS-_/MissionVerification.ggen"
+include "System/Cascade/DU/All-Use/_RS-Opt/MissionVerification.ggen"
+
+include "System/Cascade/DX/All-Def/_-_/MissionVerification.ggen"
+include "System/Cascade/DX/All-Def/_-Opt/MissionVerification.ggen"
+include "System/Cascade/DX/All-Def/_RS-_/MissionVerification.ggen"
+include "System/Cascade/DX/All-Def/_RS-Opt/MissionVerification.ggen"
+
+include "System/Cascade/DX/All-Use/_-_/MissionVerification.ggen"
+include "System/Cascade/DX/All-Use/_-Opt/MissionVerification.ggen"
+include "System/Cascade/DX/All-Use/_RS-_/MissionVerification.ggen"
+include "System/Cascade/DX/All-Use/_RS-Opt/MissionVerification.ggen"
+
+include "System/Cascade/XU/All-Def/_-_/MissionVerification.ggen"
+include "System/Cascade/XU/All-Def/_-Opt/MissionVerification.ggen"
+include "System/Cascade/XU/All-Def/_RS-_/MissionVerification.ggen"
+include "System/Cascade/XU/All-Def/_RS-Opt/MissionVerification.ggen"
+
+include "System/Cascade/XU/All-Use/_-_/MissionVerification.ggen"
+include "System/Cascade/XU/All-Use/_-Opt/MissionVerification.ggen"
+include "System/Cascade/XU/All-Use/_RS-_/MissionVerification.ggen"
+include "System/Cascade/XU/All-Use/_RS-Opt/MissionVerification.ggen"
+
+include "System/Synchronous/DU/All-Def/_-_/MissionVerification.ggen"
+include "System/Synchronous/DU/All-Def/_-Opt/MissionVerification.ggen"
+include "System/Synchronous/DU/All-Def/_RS-_/MissionVerification.ggen"
+include "System/Synchronous/DU/All-Def/_RS-Opt/MissionVerification.ggen"
+
+include "System/Synchronous/DU/All-Use/_-_/MissionVerification.ggen"
+include "System/Synchronous/DU/All-Use/_-Opt/MissionVerification.ggen"
+include "System/Synchronous/DU/All-Use/_RS-_/MissionVerification.ggen"
+include "System/Synchronous/DU/All-Use/_RS-Opt/MissionVerification.ggen"
+
+include "System/Synchronous/DX/All-Def/_-_/MissionVerification.ggen"
+include "System/Synchronous/DX/All-Def/_-Opt/MissionVerification.ggen"
+include "System/Synchronous/DX/All-Def/_RS-_/MissionVerification.ggen"
+include "System/Synchronous/DX/All-Def/_RS-Opt/MissionVerification.ggen"
+
+include "System/Synchronous/DX/All-Use/_-_/MissionVerification.ggen"
+include "System/Synchronous/DX/All-Use/_-Opt/MissionVerification.ggen"
+include "System/Synchronous/DX/All-Use/_RS-_/MissionVerification.ggen"
+include "System/Synchronous/DX/All-Use/_RS-Opt/MissionVerification.ggen"
+
+include "System/Synchronous/XU/All-Def/_-_/MissionVerification.ggen"
+include "System/Synchronous/XU/All-Def/_-Opt/MissionVerification.ggen"
+include "System/Synchronous/XU/All-Def/_RS-_/MissionVerification.ggen"
+include "System/Synchronous/XU/All-Def/_RS-Opt/MissionVerification.ggen"
+
+include "System/Synchronous/XU/All-Use/_-_/MissionVerification.ggen"
+include "System/Synchronous/XU/All-Use/_-Opt/MissionVerification.ggen"
+include "System/Synchronous/XU/All-Use/_RS-_/MissionVerification.ggen"
+include "System/Synchronous/XU/All-Use/_RS-Opt/MissionVerification.ggen"

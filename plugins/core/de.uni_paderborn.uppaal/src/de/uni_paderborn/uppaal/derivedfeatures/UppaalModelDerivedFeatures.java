@@ -1,8 +1,22 @@
+/********************************************************************************
+ * Copyright (c) 2018-2021 Contributors to the Gamma project
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * SPDX-License-Identifier: EPL-1.0
+ ********************************************************************************/
 package de.uni_paderborn.uppaal.derivedfeatures;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.emf.common.util.EList;
+
+import uppaal.declarations.Variable;
+import uppaal.declarations.VariableContainer;
 import uppaal.templates.Edge;
 import uppaal.templates.Location;
 import uppaal.templates.Template;
@@ -44,6 +58,14 @@ public class UppaalModelDerivedFeatures {
 	public static boolean hasOnlyUpdate(Edge edge) {
 		return edge.getSelection().isEmpty() && edge.getGuard() == null &&
 			edge.getSynchronization() == null && !edge.getUpdate().isEmpty();
+	}
+	
+	public static Variable getOnlyVariable(VariableContainer container) {
+		EList<Variable> variable = container.getVariable();
+		if (variable.size() != 1) {
+			throw new IllegalArgumentException("Not one variable: " + variable);
+		}
+		return variable.get(0);
 	}
 	
 }

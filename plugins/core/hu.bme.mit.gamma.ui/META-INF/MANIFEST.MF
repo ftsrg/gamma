@@ -2,11 +2,12 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Gamma UI
 Bundle-SymbolicName: hu.bme.mit.gamma.ui
-Bundle-Version: 2.5.0.qualifier
+Bundle-Version: 2.5.1.qualifier
 Bundle-Vendor: BME-FTSRG
 Automatic-Module-Name: hu.bme.mit.gamma.ui
 Bundle-RequiredExecutionEnvironment: JavaSE-11
-Require-Bundle: org.eclipse.equinox.registry,
+Require-Bundle: com.google.gson,
+ org.eclipse.equinox.registry,
  org.eclipse.core.resources,
  org.yakindu.sct.model.sgraph,
  de.uni_paderborn.uppaal,
@@ -32,6 +33,7 @@ Require-Bundle: org.eclipse.equinox.registry,
  hu.bme.mit.gamma.transformation.util,
  hu.bme.mit.gamma.theta.verification,
  hu.bme.mit.gamma.statechart.lowlevel.transformation.commandhandler,
+ hu.bme.mit.gamma.lowlevel.xsts.transformation,
  hu.bme.mit.gamma.trace.environment.transformation,
  hu.bme.mit.gamma.querygenerator,
  hu.bme.mit.gamma.xsts.uppaal.transformation,
@@ -40,4 +42,5 @@ Require-Bundle: org.eclipse.equinox.registry,
  hu.bme.mit.gamma.composition.xsts.uppaal.transformation,
  hu.bme.mit.gamma.statechart.plantuml.transformation
 Export-Package: hu.bme.mit.gamma.ui,
- hu.bme.mit.gamma.ui.taskhandler
+ hu.bme.mit.gamma.ui.taskhandler,
+ hu.bme.mit.gamma.ui.util

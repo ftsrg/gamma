@@ -35,14 +35,18 @@ class StateAssumptionCreator {
 		val lowlevelRegion = lowlevelState.parentRegion
 		val xStsParentRegionVariable = trace.getXStsVariable(lowlevelRegion)
 		val xStsEnumLiteral = trace.getXStsEnumLiteral(lowlevelState)
-		return createEqualityExpression => [
+		val xStsStateReference = createEqualityExpression => [
 			it.leftOperand = createDirectReferenceExpression => [
 				it.declaration = xStsParentRegionVariable
 			]
 			it.rightOperand = createEnumerationLiteralExpression => [
 				it.reference = xStsEnumLiteral
 			]
-		]		
+		]
+		// Caching
+		trace.add(trace.getStateReferenceExpressions, lowlevelState, xStsStateReference)
+		//
+		return xStsStateReference
 	}
 	
 	/**

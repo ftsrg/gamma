@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Gamma XSTS Transformation
 Bundle-SymbolicName: hu.bme.mit.gamma.xsts.transformation
-Bundle-Version: 2.5.0.qualifier
+Bundle-Version: 2.5.1.qualifier
 Bundle-Vendor: BME-FTSRG
 Automatic-Module-Name: hu.bme.mit.gamma.xsts.transformation
 Bundle-RequiredExecutionEnvironment: JavaSE-11

@@ -1,0 +1,36 @@
+package antivalchk_coid_casc
+import "Interface/Interfaces.gcd"
+import "AntivalenceAdapter/MO_ANTIVAL_CHK_Adapter.gcd"
+import "JelzoAdapter/COID_Adapter.gcd"
+
+async AntivalenceChecker_System [
+	port Antivalence_Input : requires P_N_Interface
+	port I_CR_Timeout : requires I_Timeout
+	port I_FT_Timeout : requires I_Timeout
+	port I_Coid_Timeout : requires I_Timeout
+	port Coid_Output : provides COIDOutSignalInterface
+	
+	port Trigger_I_CR : requires I_Execute
+	port Trigger_I_FT : requires I_Execute
+] {
+	component antival_chk_I_CR : AntivalenceCheckerAdapter(true)
+	component antival_chk_I_FT : AntivalenceCheckerAdapter(true)
+	component coid : CoidAdapter
+
+	bind Antivalence_Input -> antival_chk_I_CR.Signals
+	bind Antivalence_Input -> antival_chk_I_FT.Signals
+
+//	bind I_CR_Timeout -> antival_chk_I_CR.T
+//	bind I_FT_Timeout -> antival_chk_I_FT.T
+//	bind I_Coid_Timeout -> coid.T
+
+	bind Coid_Output -> coid.StateMachine_OutPort
+	
+	bind Trigger_I_CR -> antival_chk_I_CR.Trigger
+	bind Trigger_I_FT -> antival_chk_I_FT.Trigger
+
+	channel [ antival_chk_I_CR.OutSignals ] -o)- [ coid.I_CR ]
+	channel [ antival_chk_I_FT.OutSignals ] -o)- [ coid.I_FT ]
+	channel [ antival_chk_I_CR.Execute ] -o)- [ coid.Execute ]
+	// Is the other Execute port needed?
+}

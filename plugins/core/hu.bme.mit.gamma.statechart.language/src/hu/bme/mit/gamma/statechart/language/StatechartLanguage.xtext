@@ -114,7 +114,7 @@ UnaryTrigger returns InterfaceModel::Trigger:
 ;
 
 NotTrigger returns UnaryTrigger:
-	((type=Not) (operand=ParenthesesTrigger))
+	type=Not operand=ParenthesesTrigger
 ;
 
 ParenthesesTrigger returns InterfaceModel::Trigger:
@@ -182,8 +182,7 @@ StatechartDefinition returns StatechartDefinition:
 	)
 	'statechart' name=ID 
 	('(' ((parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*)? ')')?
-		('[' ((ports+=Port)((',')? ports+=Port)*)? ']')?
-		'{'
+		('[' ((ports+=Port)((',')? ports+=Port)*)? ']')? '{'
 			(
 				variableDeclarations+=VariableDeclaration |
 				timeoutDeclarations+=TimeoutDeclaration |
@@ -196,7 +195,8 @@ StatechartDefinition returns StatechartDefinition:
 				transitions+=Transition |
 				regions+=Region
 			)*
-		'}'
+		(functionDeclarations+=FunctionDeclaration)*
+	'}'
 ;
 
 enum SchedulingOrder returns SchedulingOrder:
@@ -220,8 +220,13 @@ StatechartContractAnnotation returns StatechartAnnotation:
 ;
 
 ScenarioContractAnnotation returns ContractModel::ScenarioContractAnnotation:
-	'@ScenarioContractStatechart' '=' monitoredComponent=[InterfaceModel::Component]
+	'@ScenarioContractStatechart' '=' monitoredComponent=[InterfaceModel::Component] '(' scenarioType = NotDefinedEventMode ')'
 ;
+
+enum NotDefinedEventMode returns ContractModel::NotDefinedEventMode: 
+	PERMISSIVE = 'permissive' | STRICT ='strict'
+;
+
 
 AdaptiveContractAnnotation returns ContractModel::AdaptiveContractAnnotation:
 	'@AdaptiveContractStatechart' '=' monitoredComponent=[InterfaceModel::Component]
@@ -463,7 +468,7 @@ MessageQueue returns CompositeModel::MessageQueue:
 ;
 
 enum DiscardStrategy returns CompositeModel::DiscardStrategy:
-	INCOMING = 'incoming' |  OLDEST = 'oldest'
+	INCOMING = 'incoming' | OLDEST = 'oldest'
 ;
 
 PortBinding returns CompositeModel::PortBinding:
@@ -509,7 +514,7 @@ BroadcastChannel returns CompositeModel::BroadcastChannel:
 
 Interface returns InterfaceModel::Interface:
 	{InterfaceModel::Interface}
-	'interface' name=ID ('extends' (parents+=[InterfaceModel::Interface]) (',' (parents+=[InterfaceModel::Interface]))*  )? '{'
+	'interface' name=ID ('extends' (parents+=[InterfaceModel::Interface]) (',' (parents+=[InterfaceModel::Interface]))* )? '{'
 		((events+=EventDeclaration))*
 	'}'
 ;
@@ -552,27 +557,26 @@ EventParameterReferenceExpression returns InterfaceModel::EventParameterReferenc
 
 @Override 
 InlineStatement returns ActionModel::Statement:
-	(VariableDeclarationStatement |
-	ConstantDeclarationStatement |
-	
-	ReturnStatement |
-	BreakStatement |
-	
-	=>AssignmentStatement |
-	
-	//Extensions:
-	RaiseEventAction |
-	SetTimeoutAction |
-	
-	AssertionStatement |
-	ExpressionStatement
-	)
-	
-	';'
+	(
+		VariableDeclarationStatement |
+		ConstantDeclarationStatement |
+		
+		ReturnStatement |
+		BreakStatement |
+		
+		=> AssignmentStatement |
+		
+		//Extensions:
+		RaiseEventAction |
+		SetTimeoutAction |
+		
+		AssertionStatement |
+		ExpressionStatement
+	)';'
 ;
 
 RaiseEventAction returns RaiseEventAction:
-	'raise'  port=[InterfaceModel::Port] '.' event=[InterfaceModel::Event] ('(' (arguments+=Expression)(',' arguments+=Expression)* ')')?
+	'raise' port=[InterfaceModel::Port] '.' event=[InterfaceModel::Event] ('(' (arguments+=Expression)(',' arguments+=Expression)* ')')?
 ;
 
 SetTimeoutAction returns SetTimeoutAction:
@@ -582,5 +586,3 @@ SetTimeoutAction returns SetTimeoutAction:
 DeactivateTimeoutAction returns DeactivateTimeoutAction:
 	'deactivate' timeoutDeclaration=[TimeoutDeclaration]
 ;
-
-	

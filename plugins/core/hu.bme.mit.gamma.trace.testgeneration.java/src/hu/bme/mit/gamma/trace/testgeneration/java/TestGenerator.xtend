@@ -34,6 +34,7 @@ import hu.bme.mit.gamma.trace.model.Reset
 import hu.bme.mit.gamma.trace.model.Step
 import hu.bme.mit.gamma.trace.model.TimeElapse
 import hu.bme.mit.gamma.trace.model.XorAssert
+import hu.bme.mit.gamma.trace.util.TraceUtil
 import hu.bme.mit.gamma.transformation.util.annotations.AnnotationNamings
 import hu.bme.mit.gamma.uppaal.verification.patterns.InstanceContainer
 import hu.bme.mit.gamma.uppaal.verification.patterns.WrapperInstanceContainer
@@ -77,16 +78,19 @@ class TestGenerator {
 	protected final Package gammaPackage
 	protected final Component component
 	protected final List<ExecutionTrace> traces // Traces in OR logical relation
+	protected final ExecutionTrace firstTrace
 	
 	// Auxiliary objects
 	protected final extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
+	protected final extension TraceUtil traceUtil = TraceUtil.INSTANCE
 	
 	/**
 	 * Note that the lists of traces represents a set of behaviors the component must conform to.
 	 * Each trace must reference the same component with the same parameter values (arguments).
 	 */
 	new(List<ExecutionTrace> traces, String basePackage, String className) {
-		this.component = traces.head.component // Theoretically, the same thing what loadModels do
+		this.firstTrace = traces.head
+		this.component = firstTrace.component // Theoretically, the same thing what loadModels do
 		this.resourceSet = component.eResource.resourceSet
 		checkArgument(this.resourceSet !== null)
 		this.gammaPackage = component.eContainer as Package
@@ -142,10 +146,10 @@ class TestGenerator {
 				«IF component.needTimer»
 «««					Only if there are timing specis in the model
 					«TIMER_OBJECT_NAME» = new «TIMER_CLASS_NAME»();
-					«TEST_INSTANCE_NAME» = new «TEST_CLASS_NAME»(«FOR parameter : traces.head.arguments SEPARATOR ', ' AFTER ', '»«parameter.serialize»«ENDFOR»«TIMER_OBJECT_NAME»);  // Virtual timer is automatically set
+					«TEST_INSTANCE_NAME» = new «TEST_CLASS_NAME»(«FOR parameter : firstTrace.arguments SEPARATOR ', ' AFTER ', '»«parameter.serialize»«ENDFOR»«TIMER_OBJECT_NAME»);  // Virtual timer is automatically set
 				«ELSE»
 «««				Each trace must reference the same component with the same parameter values (arguments)!
-				«TEST_INSTANCE_NAME» = new «TEST_CLASS_NAME»(«FOR parameter : traces.head.arguments SEPARATOR ', '»«parameter.serialize»«ENDFOR»);
+				«TEST_INSTANCE_NAME» = new «TEST_CLASS_NAME»(«FOR parameter : firstTrace.arguments SEPARATOR ', '»«parameter.serialize»«ENDFOR»);
 			«ENDIF»
 			}
 			
@@ -168,6 +172,9 @@ class TestGenerator {
 	
 	protected def generateImports(Component component) '''
 		import «BASE_PACKAGE».*;
+		«FOR _package : firstTrace.typeDeclarations.map[it.containingPackage].toSet»
+			import «_package.getPackageString(BASE_PACKAGE)».*;
+		«ENDFOR»
 		
 		import static org.junit.Assert.«ASSERT_TRUE»;
 		
@@ -243,7 +250,7 @@ class TestGenerator {
 	
 	protected def dispatch serialize(ComponentSchedule schedule) '''
 «««		In theory only asynchronous adapters and synchronous adapters are used
-		«TEST_INSTANCE_NAME».schedule(null);
+		«TEST_INSTANCE_NAME».schedule();
 	'''
 	
 	// Assert serialization
@@ -345,7 +352,7 @@ class TestGenerator {
 			val localName = instanceName.substring(startIndex)
 			return localName
 		} catch (StringIndexOutOfBoundsException e) {
-			throw new IllegalStateException("Instance " + parentName + " has a child with the same name. This makes test generation impossible.")
+			throw new IllegalArgumentException("Instance " + parentName + " has a child with the same name. This makes test generation impossible.")
 		}
 	}
 	

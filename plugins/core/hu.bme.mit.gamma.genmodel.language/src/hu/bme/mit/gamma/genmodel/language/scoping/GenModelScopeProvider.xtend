@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.genmodel.language.scoping
 
+import hu.bme.mit.gamma.expression.model.ExpressionModelPackage
 import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation
 import hu.bme.mit.gamma.genmodel.model.ComponentReference
 import hu.bme.mit.gamma.genmodel.model.EventMapping
@@ -27,7 +28,6 @@ import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.TransitionIdAnnotation
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
-import org.eclipse.xtext.EcoreUtil2
 import org.eclipse.xtext.scoping.Scopes
 import org.yakindu.sct.model.stext.stext.InterfaceScope
 
@@ -126,10 +126,6 @@ class GenModelScopeProvider extends AbstractGenModelScopeProvider {
 			val genmodel = context.eContainer as GenModel
 			return Scopes.scopeFor(genmodel.traceImports)
 		}
-		if (reference == GenmodelModelPackage.Literals.ADAPTIVE_CONTRACT_TEST_GENERATION__STATECHART_CONTRACT) {
-			val genModel = EcoreUtil2.getRootContainer(context) as GenModel
-			return Scopes.scopeFor(genModel.packageImports.map[it.components.filter(StatechartDefinition)].flatten)
-		}
 		if (context instanceof InterfaceMapping &&
 			reference == GenmodelModelPackage.Literals.INTERFACE_MAPPING__YAKINDU_INTERFACE) {
 			val statechart = ((context as InterfaceMapping).eContainer as YakinduCompilation).statechart
@@ -156,6 +152,19 @@ class GenModelScopeProvider extends AbstractGenModelScopeProvider {
 			val events = gammaInterface.allEventDeclarations.map[it.event]
 			return Scopes.scopeFor(events)
 		}
+		// Expression scoping
+		if (reference == ExpressionModelPackage.Literals.DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
+			val genmodel = ecoreUtil.getSelfOrContainerOfType(context, GenModel)
+			val imports = genmodel.packageImports
+			if (!imports.empty) {
+				val scopes = newArrayList
+				for (^import : imports) {
+					scopes += super.getScope(^import, reference)
+				}
+				return scopes.embedScopes
+			}
+		}
+		
 		val scope = super.getScope(context, reference)
 		return scope
 	}

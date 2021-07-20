@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.lowlevel.xsts.transformation
 
+import hu.bme.mit.gamma.expression.model.ArrayAccessExpression
 import hu.bme.mit.gamma.expression.model.BinaryExpression
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
@@ -17,8 +18,10 @@ import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.IfThenElseExpression
+import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression
 import hu.bme.mit.gamma.expression.model.MultiaryExpression
 import hu.bme.mit.gamma.expression.model.NullaryExpression
+import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.expression.model.TypeReference
@@ -41,17 +44,7 @@ class ExpressionTransformer {
 	new(Trace trace) {
 		this.trace = trace
 	}
-	
-	def dispatch Expression transformExpression(NullaryExpression expression) {
-		return expression.clone
-	}
-	
-	def dispatch Expression transformExpression(UnaryExpression expression) {
-		return expression.clone => [
-			it.operand = expression.operand.transformExpression
-		]
-	}
-	
+
 	def dispatch Expression transformExpression(IfThenElseExpression expression) {
 		return createIfThenElseExpression => [
 			it.condition = expression.condition.transformExpression
@@ -59,18 +52,36 @@ class ExpressionTransformer {
 			it.^else = expression.^else.transformExpression
 		]
 	}
+	
+	def dispatch Expression transformExpression(IntegerRangeLiteralExpression expression) {
+		return createIntegerRangeLiteralExpression => [
+			it.leftInclusive = expression.leftInclusive
+			it.leftOperand = expression.leftOperand.transformExpression
+			it.rightInclusive = expression.rightInclusive
+			it.rightOperand = expression.rightOperand.transformExpression
+		]
+	}
 
-	// Key method
 	def dispatch Expression transformExpression(DirectReferenceExpression expression) {
 		val declaration = expression.declaration
+		if (declaration instanceof ParameterDeclaration) {
+			// Loop iteration parameters
+			return trace.getXStsParameter(declaration).createReferenceExpression
+		}
 		checkState(declaration instanceof VariableDeclaration, declaration)
-		val variableDeclaration = expression.declaration as VariableDeclaration
-		return expression.clone => [
-			it.declaration = trace.getXStsVariable(variableDeclaration)
+		val variableDeclaration = declaration as VariableDeclaration
+		return trace.getXStsVariable(variableDeclaration).createReferenceExpression
+	}
+	
+	def dispatch Expression transformExpression(ArrayAccessExpression expression) {
+		val operand = expression.operand
+		val index = expression.index
+		return createArrayAccessExpression => [
+			it.operand = operand.transformExpression
+			it.index = index.transformExpression
 		]
 	}
 	
-	// Key method
 	def dispatch Expression transformExpression(StateReferenceExpression expression) {
 		val lowlevelRegion = expression.region
 		val lowlevelState = expression.state
@@ -79,7 +90,6 @@ class ExpressionTransformer {
 		return xStsVariable.createEqualityExpression(xStsLiteral.wrap)
 	}
 	
-	// Key method
 	def dispatch Expression transformExpression(EnumerationLiteralExpression expression) {
 		val lowlevelEnumLiteral = expression.reference
 		val index = lowlevelEnumLiteral.index
@@ -88,6 +98,18 @@ class ExpressionTransformer {
 		val xStsEnumTypeDefinition = xStsEnumTypeDeclaration.type as EnumerationTypeDefinition
 		return createEnumerationLiteralExpression => [
 			it.reference = xStsEnumTypeDefinition.literals.get(index)
+		]
+	}
+	
+	// Clonable expressions
+	
+	def dispatch Expression transformExpression(NullaryExpression expression) {
+		return expression.clone
+	}
+	
+	def dispatch Expression transformExpression(UnaryExpression expression) {
+		return expression.clone => [
+			it.operand = expression.operand.transformExpression
 		]
 	}
 	
@@ -106,6 +128,8 @@ class ExpressionTransformer {
 		}
 		return newExpression
 	}
+	
+	// Types
 	
 	def dispatch Type transformType(Type type) {
 		return type.clone

@@ -105,7 +105,7 @@ RationalTypeDefinition returns RationalTypeDefinition:
 ;
 
 ArrayTypeDefinition returns ArrayTypeDefinition:
-	'array' elementType=Type '[' size=IntegerLiteralExpression ']'
+	'[' size=Expression ']' elementType=Type
 ;
 
 IntegerRangeTypeDefinition returns IntegerRangeTypeDefinition:
@@ -125,7 +125,7 @@ RecordTypeDefinition returns RecordTypeDefinition:
 ;
 
 SubrangeTypeDefinition returns SubrangeTypeDefinition:
-	{SubrangeTypeDefinition} '[' ('-' 'inf' | lowerBound=Expression) 'to' ('inf' | upperBound=Expression) ']'
+	{SubrangeTypeDefinition} '#[' ('-' 'inf' | lowerBound=Expression) 'to' ('inf' | upperBound=Expression) ']'
 ;
 
 FunctionTypeDefinition returns FunctionTypeDefinition:
@@ -237,21 +237,11 @@ SignumExpression returns Expression:
 	{UnaryMinusExpression} => '-' operand=SignumExpression |
 	{UnaryPlusExpression} => '+' operand=SignumExpression |
 	AccessExpression
-	
-	//non-associative
-	//{UnaryMinusExpression} => '-' expression=ValueAccessExpression | ValueAccessExpression
 ;
-
-////postfix unary, non-associative
-//PrimedExpression returns Expression:
-//	PrimaryExpression ({PrimedExpression.operand=current} '^')?
-//	//left-associative
-//	//ValueAccessExpression ({PrimedExpression.expression=current} '^')*
-//;
 
 AccessExpression returns Expression:
 	PrimaryExpression(
-		{ArrayAccessExpression.operand=current} '[' arguments+=Expression ']' |
+		{ArrayAccessExpression.operand=current} '[' index=Expression ']' |
 		{FunctionAccessExpression.operand=current} '(' ((arguments+=Expression)(',' arguments+=Expression)*)? ')' |
 		{RecordAccessExpression.operand=current} '.' fieldReference=FieldReferenceExpression |
 		{SelectExpression.operand=current} '->' 'select'
@@ -309,7 +299,7 @@ FalseExpression returns FalseExpression:
 ;
 
 RecordLiteralExpression:
-	'#(' (fieldAssignments+=FieldAssignment)(',' fieldAssignments+=FieldAssignment)* ')'
+	'#' typeDeclaration=[TypeDeclaration] '{' (fieldAssignments+=FieldAssignment)(',' fieldAssignments+=FieldAssignment)* '}'
 ;
 
 FieldAssignment:
@@ -317,7 +307,7 @@ FieldAssignment:
 ;
 
 EnumerationLiteralExpression:
-	'::' reference=[EnumerationLiteralDefinition]
+	typeReference=TypeReference '::' reference=[EnumerationLiteralDefinition]
 ;
 
 OpaqueExpression:
@@ -325,7 +315,7 @@ OpaqueExpression:
 ;
 
 ArrayLiteralExpression:
-	'[' ']' '{' operands+=Expression (',' operands+=Expression)* '}'
+	'#[' operands+=Expression (',' operands+=Expression)* ']'
 ;
 
 IntegerRangeLiteralExpression:
@@ -358,4 +348,8 @@ terminal INTEGER returns Ecore::EBigInteger:
 
 terminal DECIMAL returns Ecore::EBigDecimal:
 	'-'? ('0'..'9')+ '.' ('0'..'9')+
+;
+
+BOOLEAN returns Ecore::EBoolean: // Terminal would not work due to the enshadowing of ID
+	'true' | 'false'
 ;

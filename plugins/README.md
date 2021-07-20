@@ -11,21 +11,30 @@ framework, you will need an Eclipse with the following plugins installed:
 of Xtend.)
 * VIATRA SDK 2.5.0.
 * Yakindu Statechart Tools 3.5.13.
+* PlantUML 1.1.25.
 
 We recommend to start-up from an Eclipse IDE for Java and DSL Developers as it
 contains EMF and Xtext so only VIATRA and Yakindu need to be downloaded.
 
-- Download a new Eclipse IDE for [Java and DSL Developers package](https://www.eclipse.org/downloads/packages/release/2020-09/r/eclipse-ide-java-and-dsl-developers).
+- Download a new Eclipse IDE for [Java and DSL Developers package](https://www.eclipse.org/downloads/packages/release/2021-03/r/eclipse-ide-java-and-dsl-developers).
 - Install the following two packages. The _Install_ window can be opened via the _Help > Install New Software..._ menu item. In the _Install_ window click _Add..._, and paste the necessary URL in the _Location_ text field. 
  - Install VIATRA 2.5.0 from update site: http://download.eclipse.org/viatra/updates/release/2.5.0.
     - Choose the whole _VIATRA Query and Transformation SDK_ package.
- - Intall the Yakindu Statechart Tools 3.5.13. from update site: http://updates.yakindu.com/statecharts/releases/. From the  _YAKINDU Statechart Tools Standard Edition_ package choose
+ - Install the Yakindu Statechart Tools 3.5.13. from update site: http://updates.yakindu.com/statecharts/releases/3.5.13. From the  _YAKINDU Statechart Tools Standard Edition_ package choose
 	- _YAKINDU Statechart Tools_,
 	- _YAKINDU Statechart Tools Base_,
 	- _YAKINDU Statechart Tools Java Code Generator_ and
 	- _YAKINDU License Integration For Standard Edition_ subpackages.
+	
+Furthermore, it is necessary to setup the environment for the *PlantUML* visualization plugins located in the [`vis`](vis) folder. The instructions are described in the [`README`](vis/README.md) file of the folder.
+
+If you want to use the *XSTS* formalism for formal verification (via *Theta*) and code generation for standalone statecharts, you will have to setup the plugins located in the [`xsts`](xsts) folder. The instructions are described in the [`README`](vis/README.md) file of the folder.
+
+If you want to use *UPPAAL* for formal verification, download and extract *UPPAAL 4.1.24*. In order to let Gamma find the UPPAAL executables, add the `bin-Win32` or `bin-Linux` folder to the path environment variable (depending on the operating system being used).
 
 _Tip: It is advised to turn on automatic refreshing for the _runtime workspace_. The other option is to refresh it manually with F5 after every Gamma command._
+
+Make sure to set the text file encoding of your Eclipse workspace to **UTF-8**: _Window > Preferences..._ Start typing `workspace` in the left upper textfield (in the place of `type filter text`). Select _General > Workspace_ from the filtered item list and check the `Text file encoding` setting at the bottom of the window.
 
 ## Plugin setup
 
@@ -56,8 +65,8 @@ The manual plugin setup procedure should be done as follows:
 8. Run `hu.bme.mit.gamma.statechart.language/src/hu/bme/mit/gamma/statechart/language/GenerateStatechartLanguage.mwe2` as a MWE2 Workflow.
 9. Run `hu.bme.mit.gamma.genmodel.language/src/hu/bme/mit/gamma/genmodel/language/GenerateGenModel.mwe2` as a MWE2 Workflow.
 10. Run `hu.bme.mit.gamma.trace.language/src/hu/bme/mit/gamma/trace/language/GenerateTraceLanguage.mwe2` as a MWE2 Workflow.
-11. If needed, create the missing `bin`, `src-gen` and `xtend-gen` folders in the projects indicated in the error log.
-12. Clean projects if needed.
+11. If necessary, create the missing `bin`, `src-gen` and `xtend-gen` folders in the projects indicated in the error log.
+12. Clean projects if necessary.
 
 #### Summary
 
@@ -84,9 +93,8 @@ The manual plugin setup procedure should be done as follows:
 | `hu.bme.mit.gamma.trace.language` | `/src/hu/bme/mit/gamma/trace/language/GenerateTraceLanguage.mwe2` |
 | `hu.bme.mit.gamma.genmodel.language` | `/src/hu/bme/mit/gamma/genmodel/language/GenerateGenModel.mwe2` |
 
-## Using Gamma
+## Using Gamma functionalities
 
 Hopefully, now you have an Eclipse with the necessary plugins installed and ready to use the Gamma framework.
 
-Now you can use the framework in one of the following ways: you either run a runtime Eclipse and work in that or install the plugins into your host Eclipse.
-
+Now you can use the functionalities of the framework in one of the following ways: you either run a runtime Eclipse and work in that or install the plugins into your host Eclipse.
