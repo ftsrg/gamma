@@ -352,8 +352,6 @@ StatechartContractGeneration returns StatechartContractGeneration:
 	'}'
 ;
 
-
-
 PhaseStatechartGeneration returns PhaseStatechartGeneration:
 	{PhaseStatechartGeneration} 'phase-statechart' '{'
 		'statechart' ':' statechart=[statechart::StatechartDefinition] ('(' arguments+=Expression (',' arguments+=Expression)* ')')? 

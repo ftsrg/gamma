@@ -17,4 +17,5 @@ Workflow {
     component = @generators.languages.GenerateTraceLanguage {}
     component = @generators.languages.GeneratePropertyLanguage {}
     component = @generators.languages.GenerateGenmodelLanguage {}
+    component = @generators.languages.GenerateScenarioLanguage {}
 }

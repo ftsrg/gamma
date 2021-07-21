@@ -23,4 +23,5 @@ Workflow {
     component = @cleaners.models.CleanLowlevelModel {}
     component = @cleaners.models.CleanXstsModel {}
     component = @cleaners.models.CleanLowlevelXstsTraceabilityModel {}
+    component = @cleaners.models.CleanScenarioModel {}
 }

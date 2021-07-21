@@ -12,18 +12,18 @@ package hu.bme.mit.gamma.scenario.statechart.generator.serializer;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.emf.ecore.EObject;
 
 import hu.bme.mit.gamma.statechart.contract.ScenarioContractAnnotation;
+import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Component;
-import hu.bme.mit.gamma.statechart.interface_.Interface;
 import hu.bme.mit.gamma.statechart.interface_.InterfaceModelFactory;
 import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.statechart.language.ui.serializer.StatechartLanguageSerializer;
+import hu.bme.mit.gamma.statechart.statechart.StatechartAnnotation;
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
 import hu.bme.mit.gamma.statechart.statechart.StatechartModelFactory;
 
@@ -39,18 +39,21 @@ public class StatechartSerializer {
 		this.projectLocation = file.getProject().getLocation().toString();
 	}
 
-	public void saveStatechart(StatechartDefinition st, List<Package> interfaces, String path) {
-		Package p = interfacefactory.createPackage();
-		p.getComponents().add(st);
-		p.setName(st.getName().toLowerCase());
-		p.getImports().addAll(interfaces);
+	public void saveStatechart(StatechartDefinition statechart, List<Package> interfaces, String path) {
+		Package _package = interfacefactory.createPackage();
+		_package.getComponents().add(statechart);
+		_package.setName(statechart.getName().toLowerCase());
+		_package.getImports().addAll(interfaces);
 
-		if (st.getAnnotation() instanceof ScenarioContractAnnotation) {
-			Component monitoredComponent = ((ScenarioContractAnnotation) st.getAnnotation()).getMonitoredComponent();
-			p.getImports().add((Package) monitoredComponent.eContainer());
+		StatechartAnnotation annotation = statechart.getAnnotation();
+		if (annotation instanceof ScenarioContractAnnotation) {
+			ScenarioContractAnnotation scenarioContractAnnotation = (ScenarioContractAnnotation) annotation;
+			Component monitoredComponent = scenarioContractAnnotation.getMonitoredComponent();
+			Package containingPackage = StatechartModelDerivedFeatures.getContainingPackage(monitoredComponent);
+			_package.getImports().add(containingPackage);
 		}
 		try {
-			saveModel(p, path, st.getName() + "Statechart.gcd");
+			saveModel(_package, path, statechart.getName() + "Statechart.gcd");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

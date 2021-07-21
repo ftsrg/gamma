@@ -65,6 +65,9 @@ The manual plugin setup procedure should be done as follows:
 8. Run `hu.bme.mit.gamma.statechart.language/src/hu/bme/mit/gamma/statechart/language/GenerateStatechartLanguage.mwe2` as a MWE2 Workflow.
 9. Run `hu.bme.mit.gamma.genmodel.language/src/hu/bme/mit/gamma/genmodel/language/GenerateGenModel.mwe2` as a MWE2 Workflow.
 10. Run `hu.bme.mit.gamma.trace.language/src/hu/bme/mit/gamma/trace/language/GenerateTraceLanguage.mwe2` as a MWE2 Workflow.
+10. Import all Eclipse projects from the `plugins/scenario` folder.
+10. Generate the Model plugin of the Gamma Scenario Language: `hu.bme.mit.gamma.scenario.model`. The Model plugin can be generated from the ecore file using a genmodel.
+10. Run `hu.bme.mit.gamma.scenario.language/src/hu/bme/mit/gamma/scenario/language/GenerateScenarioLanguage.mwe2` as a MWE2 Workflow.
 11. If necessary, create the missing `bin`, `src-gen` and `xtend-gen` folders in the projects indicated in the error log.
 12. Clean projects if necessary.
 
@@ -82,6 +85,7 @@ The manual plugin setup procedure should be done as follows:
 |`hu.bme.mit.gamma.uppaal.transformation.traceability`| x | | |
 |`hu.bme.mit.gamma.genmodel.model`| x | | |
 |`hu.bme.mit.gamma.yakindu.transformation.traceability`| x | | |
+|`hu.bme.mit.gamma.scenario.model`| x | | |
 
 ##### Code generation with MWE2 workflows:
 | Project | Path |
@@ -92,6 +96,7 @@ The manual plugin setup procedure should be done as follows:
 | `hu.bme.mit.gamma.property.language` | `/src/hu/bme/mit/gamma/property/language/GeneratePropertyLanguage.mwe2` |
 | `hu.bme.mit.gamma.trace.language` | `/src/hu/bme/mit/gamma/trace/language/GenerateTraceLanguage.mwe2` |
 | `hu.bme.mit.gamma.genmodel.language` | `/src/hu/bme/mit/gamma/genmodel/language/GenerateGenModel.mwe2` |
+| `hu.bme.mit.gamma.scenario.language` | `/src/hu/bme/mit/gamma/scenario/language/GenerateScenarioLanguage.mwe2` |
 
 ## Using Gamma functionalities
 

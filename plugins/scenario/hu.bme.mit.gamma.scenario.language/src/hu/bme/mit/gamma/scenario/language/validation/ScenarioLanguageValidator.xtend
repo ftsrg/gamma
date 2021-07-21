@@ -24,22 +24,13 @@ import hu.bme.mit.gamma.scenario.model.Signal
 import hu.bme.mit.gamma.scenario.util.ScenarioModelValidator
 import org.eclipse.xtext.validation.Check
 
-/**
- * This class contains custom validation rules. 
- * 
- * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#validation
- */
 class ScenarioLanguageValidator extends AbstractScenarioLanguageValidator {
 
 	protected ScenarioModelValidator validator = ScenarioModelValidator.INSTANCE
 
-	new() {
-		super()
-	}
-
 	@Check(NORMAL)
-	def void checkIncompatibleAnnotations(ScenarioDefinition s) {
-		handleValidationResultMessage(validator.checkIncompatibleAnnotations(s))
+	def void checkIncompatibleAnnotations(ScenarioDefinition scenario) {
+		handleValidationResultMessage(validator.checkIncompatibleAnnotations(scenario))
 	}
 
 	@Check

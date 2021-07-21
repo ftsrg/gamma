@@ -7,14 +7,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
 
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
-import hu.bme.mit.gamma.expression.util.ExpressionEvaluator;
-import hu.bme.mit.gamma.expression.util.ExpressionModelValidator.ReferenceInfo;
-import hu.bme.mit.gamma.expression.util.ExpressionModelValidator.ValidationResult;
-import hu.bme.mit.gamma.expression.util.ExpressionModelValidator.ValidationResultMessage;
+import hu.bme.mit.gamma.expression.util.ExpressionModelValidator;
 import hu.bme.mit.gamma.scenario.model.Annotation;
 import hu.bme.mit.gamma.scenario.model.CombinedFragment;
 import hu.bme.mit.gamma.scenario.model.Delay;
@@ -45,60 +43,58 @@ import hu.bme.mit.gamma.statechart.interface_.EventDeclaration;
 import hu.bme.mit.gamma.statechart.interface_.EventDirection;
 import hu.bme.mit.gamma.statechart.interface_.Interface;
 import hu.bme.mit.gamma.statechart.interface_.RealizationMode;
-import hu.bme.mit.gamma.util.GammaEcoreUtil;
 
-public class ScenarioModelValidator {
-
-	private GammaEcoreUtil util = GammaEcoreUtil.INSTANCE;
-	private ExpressionEvaluator expressionEvaluator = ExpressionEvaluator.INSTANCE;
-
+public class ScenarioModelValidator extends ExpressionModelValidator {
+	// Singleton
 	public static final ScenarioModelValidator INSTANCE = new ScenarioModelValidator();
+	protected ScenarioModelValidator() {}
+	//
 
-	protected ScenarioModelValidator() {
-	}
-
-	public Collection<ValidationResultMessage> checkIncompatibleAnnotations(ScenarioDefinition s) {
+	public Collection<ValidationResultMessage> checkIncompatibleAnnotations(ScenarioDefinition scenario) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		boolean strictPresent = false;
 		boolean permissivePresent = false;
 		boolean negstrictPresent = false;
 		boolean negpermissivePresent = false;
-		for (Annotation a : s.getAnnotation()) {
-			if (a instanceof StrictAnnotation) {
+		for (Annotation annotation : scenario.getAnnotation()) {
+			if (annotation instanceof StrictAnnotation) {
 				strictPresent = true;
-			} else if (a instanceof PermissiveAnnotation) {
+			}
+			else if (annotation instanceof PermissiveAnnotation) {
 				permissivePresent = true;
-			} else if (a instanceof NegStrictAnnotation) {
+			}
+			else if (annotation instanceof NegStrictAnnotation) {
 				negstrictPresent = true;
-			} else if (a instanceof NegPermissiveAnnotation) {
+			}
+			else if (annotation instanceof NegPermissiveAnnotation) {
 				negpermissivePresent = true;
 			}
 		} 
 		if (permissivePresent && strictPresent) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-					"A scenario should be annotated with either a permissive or strict annotation.",
+					"A scenario should be annotated with either a permissive or strict annotation",
 					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME)));
 		}
 		if (negpermissivePresent && negstrictPresent) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-					"A scenario should be annotated with either a permissive or strict annotation with respect to negated sends blocks.",
+				"A scenario should be annotated with either a permissive or strict annotation with respect to negated sends blocks",
 					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME)));
 		}
 		return validationResultMessages;
 	}
 
-	public Collection<ValidationResultMessage> checkScenarioNamesAreUnique(ScenarioDeclaration s) {
+	public Collection<ValidationResultMessage> checkScenarioNamesAreUnique(ScenarioDeclaration scenarioDeclaration) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		for (ScenarioDefinition scen : s.getScenarios()) {
+		for (ScenarioDefinition scen : scenarioDeclaration.getScenarios()) {
 			int i = 0;
-			for (ScenarioDefinition sd : s.getScenarios()) {
+			for (ScenarioDefinition sd : scenarioDeclaration.getScenarios()) {
 				if (scen.getName().equals(sd.getName())) {
 					i++;
 				}
 			}
 			if (i > 1) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-						"Scenario names should be unique.",
+						"Scenario names should be unique",
 						new ReferenceInfo(ScenarioModelPackage.Literals.SCENARIO_DECLARATION__SCENARIOS)));
 				return validationResultMessages;
 			}
@@ -106,12 +102,13 @@ public class ScenarioModelValidator {
 		return validationResultMessages;
 	}
 
-	public Collection<ValidationResultMessage> checkAtLeastOneHotSignalInChart(ScenarioDefinition s) {
+	public Collection<ValidationResultMessage> checkAtLeastOneHotSignalInChart(ScenarioDefinition scenario) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		boolean allCold = s.getChart().getFragment().getInteractions().stream().allMatch((i) ->  interactionIsCold(i));
+		boolean allCold = scenario.getChart().getFragment().getInteractions().stream()
+				.allMatch((i) ->  interactionIsCold(i));
 		if (allCold) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING,
-					"There should be at least one hot signal in chart.",
+					"There should be at least one hot signal in chart",
 					new ReferenceInfo(ScenarioModelPackage.Literals.SCENARIO_DEFINITION__CHART)));
 		}
 		return validationResultMessages;
@@ -119,21 +116,23 @@ public class ScenarioModelValidator {
 
 	public Collection<ValidationResultMessage> checkModalInteractionSets(ModalInteractionSet modalInteractionSet) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		ScenarioDeclaration s = util.getContainerOfType(modalInteractionSet, ScenarioDeclaration.class);
-		Component c = s.getComponent();
-		int idx = util.getIndex(modalInteractionSet);
-		if (c instanceof SynchronousComponent) {
-			List<ModalInteractionSet> sets = util.getAllContentsOfType(modalInteractionSet, ModalInteractionSet.class);
+		ScenarioDeclaration scenario = ecoreUtil.getContainerOfType(modalInteractionSet, ScenarioDeclaration.class);
+		Component component = scenario.getComponent();
+		int idx = ecoreUtil.getIndex(modalInteractionSet);
+		EObject eContainer = modalInteractionSet.eContainer();
+		if (component instanceof SynchronousComponent) {
+			List<ModalInteractionSet> sets = ecoreUtil.getAllContentsOfType(modalInteractionSet, ModalInteractionSet.class);
 			if (!sets.isEmpty()) {
 				// Just to make sure, in the current grammar this is impossible
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-						"Modal interaction sets cannot contain modal interaction sets.",
-						new ReferenceInfo(modalInteractionSet.eContainingFeature(), idx,modalInteractionSet.eContainer())));
+						"Modal interaction sets cannot contain modal interaction sets",
+						new ReferenceInfo(modalInteractionSet.eContainingFeature(), idx, eContainer)));
 			}
-		} else {
+		}
+		else {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-					"Scenarios with respect to asynchronous components cannot contain modal interaction sets.",
-					new ReferenceInfo(modalInteractionSet.eContainingFeature(), idx,modalInteractionSet.eContainer())));
+					"Scenarios with respect to asynchronous components cannot contain modal interaction sets",
+					new ReferenceInfo(modalInteractionSet.eContainingFeature(), idx, eContainer)));
 		}
 		return validationResultMessages;
 	}
@@ -141,25 +140,28 @@ public class ScenarioModelValidator {
 	public Collection<ValidationResultMessage> checkModalInteractionsInSynchronousComponents(
 			ModalInteraction interaction) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		ScenarioDeclaration s = util.getContainerOfType(interaction, ScenarioDeclaration.class);
-		Component c = s.getComponent();
-		if (c instanceof SynchronousComponent) {
+		ScenarioDeclaration scenario = ecoreUtil.getContainerOfType(interaction, ScenarioDeclaration.class);
+		Component component = scenario.getComponent();
+		if (component instanceof SynchronousComponent) {
 			if (interaction instanceof ModalInteractionSet || interaction instanceof Reset
 					|| interaction instanceof Delay) {
 				// Delays and resets may not be contained by modal interaction sets
 				return validationResultMessages;
-			} else if (!(interaction.eContainer() instanceof ModalInteractionSet)
-					&& !(interaction.eContainer() instanceof NegatedModalInteraction
-							&& interaction.eContainer().eContainer() instanceof ModalInteractionSet)) {
-				int idx = 0;
-				if (interaction.eContainer() instanceof InteractionFragment) {
-					InteractionFragment set = (InteractionFragment) interaction.eContainer();
-					idx = set.getInteractions().indexOf(interaction);
-				}
+			} else {
+				EObject eContainer = interaction.eContainer();
+				if (!(eContainer instanceof ModalInteractionSet)
+						&& !(eContainer instanceof NegatedModalInteraction
+								&& eContainer.eContainer() instanceof ModalInteractionSet)) {
+					int idx = 0;
+					if (eContainer instanceof InteractionFragment) {
+						InteractionFragment set = (InteractionFragment) eContainer;
+						idx = set.getInteractions().indexOf(interaction);
+					}
 
-				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-						"Modal interactions in scenarios with respect to synchronous components must be contained by modal interaction sets.",
-						new ReferenceInfo(interaction.eContainingFeature(), idx, interaction.eContainer())));
+					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+							"Modal interactions in scenarios with respect to synchronous components must be contained by modal interaction sets",
+							new ReferenceInfo(interaction.eContainingFeature(), idx, eContainer)));
+				}
 			}
 		}
 		return validationResultMessages;
@@ -167,12 +169,13 @@ public class ScenarioModelValidator {
 
 	public Collection<ValidationResultMessage> checkModalInteractionsInSynchronousComponents(Reset reset) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		int idx = util.getIndex(reset.eContainer());
-		if (reset.eContainer() instanceof ModalInteractionSet) {
+		EObject eContainer = reset.eContainer();
+		int idx = ecoreUtil.getIndex(eContainer);
+		if (eContainer instanceof ModalInteractionSet) {
 			if (idx != 0) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-						"Resets must be specified as the first element in a containing set.", new ReferenceInfo(
-								reset.eContainer().eContainingFeature(), idx, reset.eContainer().eContainer())));
+						"Resets must be specified as the first element in a containing set", new ReferenceInfo(
+								eContainer.eContainingFeature(), idx, eContainer.eContainer())));
 			}
 		}
 		return validationResultMessages;
@@ -188,7 +191,7 @@ public class ScenarioModelValidator {
 				ModalityType tmpModality = getFirstInteractionsModality(fragment.getInteractions());
 				if (!tmpModality.equals(firstModality)) {
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-							"First interaction's modality should be the same in each fragment belonging to the same combined fragment.",
+							"First interaction's modality should be the same in each fragment belonging to the same combined fragment",
 							new ReferenceInfo(ScenarioModelPackage.Literals.COMBINED_FRAGMENT__FRAGMENTS)));
 					return validationResultMessages;
 				}
@@ -223,9 +226,10 @@ public class ScenarioModelValidator {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		InteractionDefinition mi = nmi.getModalinteraction();
 		if (mi instanceof Signal) {
-			if (((Signal) mi).getDirection().equals(InteractionDirection.RECEIVE)) {
+			Signal signal = (Signal) mi;
+			if (signal.getDirection().equals(InteractionDirection.RECEIVE)) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.INFO,
-						"Currently negated interactions received by the component are not processed.",
+						"Currently negated interactions received by the component are not processed",
 						new ReferenceInfo(ScenarioModelPackage.Literals.NEGATED_MODAL_INTERACTION__MODALINTERACTION)));
 			}
 		}
@@ -234,9 +238,10 @@ public class ScenarioModelValidator {
 
 	public Collection<ValidationResultMessage> checkParallelCombinedFragmentExists(ParallelCombinedFragment fragment) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		int idx = util.getIndex(fragment);
+		int idx = ecoreUtil.getIndex(fragment);
 		validationResultMessages.add(new ValidationResultMessage(ValidationResult.INFO,
-				"Beware that a parallel combined fragment will introduce every possible partial orderings of its fragments. It may have a significant impact on the performance.",
+				"Beware that a parallel combined fragment will introduce every possible partial orderings of its fragments;"
+				+ " it may have a significant impact on the performance",
 				new ReferenceInfo(fragment.eContainingFeature(), idx,fragment.eContainer()))); 
 		return validationResultMessages;
 	}
@@ -258,19 +263,19 @@ public class ScenarioModelValidator {
 			int min = expressionEvaluator.evaluateInteger(minimum);
 			if (min < 0) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-						"The minimum value must be greater than or equals to 0.", new ReferenceInfo(feature)));
+						"The minimum value must be greater than or equals to 0", new ReferenceInfo(feature)));
 			}
 			if (maximum != null) {
 				int max = expressionEvaluator.evaluateInteger(maximum);
 				if (min > max) {
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-							"The minimum value must not be greater than the maximum value.",
+							"The minimum value must not be greater than the maximum value",
 							new ReferenceInfo(feature)));
 				}
 			}
 		} catch (IllegalArgumentException e) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-					"Both the minimum and maximum values must be of type integer.", new ReferenceInfo(feature)));
+					"Both the minimum and maximum values must be of type integer", new ReferenceInfo(feature)));
 		}
 		return validationResultMessages;
 	}
@@ -296,10 +301,9 @@ public class ScenarioModelValidator {
 				.anyMatch((it) -> expectedDirections.contains(it.getDirection()));
 		if (!eventDirIsWrong) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, prefix
-					+ " this event, because of incompatible port mode. Should the port be Provided, set the event to be "
-					+ directionByMode.get(RealizationMode.PROVIDED)
-					+ ". Should the port be Required, set the event to be "
-					+ directionByMode.get(RealizationMode.REQUIRED) + ".",
+					+ " this event, because of incompatible port mode; should the port be Provided, set the event to be "
+					+ directionByMode.get(RealizationMode.PROVIDED) + "; should the port be Required, set the event to be "
+					+ directionByMode.get(RealizationMode.REQUIRED),
 					new ReferenceInfo(ScenarioModelPackage.Literals.SIGNAL__EVENT)));
 		}
 		return validationResultMessages;
@@ -308,37 +312,55 @@ public class ScenarioModelValidator {
 	private ModalityType getFirstInteractionsModality(List<Interaction> interactions) {
 		Interaction first = interactions.get(0);
 		if (first instanceof ModalInteraction) {
-			return ((ModalInteraction) first).getModality();
-		} else if (first instanceof CombinedFragment) {
-			return getFirstInteractionsModality(((CombinedFragment) first).getFragments().get(0).getInteractions());
-		} else if (first instanceof ModalInteractionSet
-				&& ((ModalInteractionSet) first).getModalInteractions().size() > 0) {
-			InteractionDefinition def = ((ModalInteractionSet) first).getModalInteractions().get(0);
-			if (def instanceof ModalInteraction) {
-				return ((ModalInteraction) def).getModality();
-			} else if (def instanceof NegatedModalInteraction
-					&& ((NegatedModalInteraction) def).getModalinteraction() instanceof ModalInteraction) {
-				return ((ModalInteraction) ((NegatedModalInteraction) def).getModalinteraction()).getModality();
+			ModalInteraction modalInteraction = (ModalInteraction) first;
+			return modalInteraction.getModality();
+		}
+		else if (first instanceof CombinedFragment) {
+			CombinedFragment combinedFragment = (CombinedFragment) first;
+			List<Interaction> interactionsOfFirstFragment = combinedFragment.getFragments()
+					.get(0).getInteractions();
+			return getFirstInteractionsModality(interactionsOfFirstFragment);
+		}
+		else if (first instanceof ModalInteractionSet) {
+			ModalInteractionSet modalInteractionSet = (ModalInteractionSet) first;
+			if (modalInteractionSet.getModalInteractions().size() > 0) {
+				InteractionDefinition def = modalInteractionSet.getModalInteractions().get(0);
+				if (def instanceof ModalInteraction) {
+					ModalInteraction modalInteraction = (ModalInteraction) def;
+					return modalInteraction.getModality();
+				}
+				else if (def instanceof NegatedModalInteraction) {
+					NegatedModalInteraction negatedModalInteraction = (NegatedModalInteraction) def;
+					InteractionDefinition interactionDefinition = negatedModalInteraction.getModalinteraction();
+					if (interactionDefinition instanceof ModalInteraction) {
+						ModalInteraction modalInteraction = (ModalInteraction) interactionDefinition;
+						return modalInteraction.getModality();
+					}
+				}
 			}
 		}
 		return ModalityType.COLD;
 	}
 
 	private boolean interactionIsCold(Interaction interaction) {
-		if (interaction instanceof ModalInteractionSet) {
-			return ((ModalInteractionSet) interaction).getModalInteractions().stream().allMatch((i) -> interactionIsCold(i));
-		} else if (interaction instanceof Delay) {
+		if (interaction instanceof Delay || interaction instanceof Reset) {
 			return true;
-		} else if (interaction instanceof Reset) {
-			return true;
-		} else if (interaction instanceof ModalInteraction) {
-			return ((ModalInteraction) interaction).getModality().equals(ModalityType.COLD);
-		} else if (interaction instanceof CombinedFragment) {
-			return ((CombinedFragment) interaction).getFragments().stream()
-					.allMatch((fragment) -> fragment.getInteractions().stream().allMatch((i) -> interactionIsCold(i)));
+		}
+		else if (interaction instanceof ModalInteractionSet) {
+			ModalInteractionSet modalInteractionSet = (ModalInteractionSet) interaction;
+			return modalInteractionSet.getModalInteractions().stream().allMatch((i) -> interactionIsCold(i));
+		}
+		else if (interaction instanceof ModalInteraction) {
+			ModalInteraction modalInteraction = (ModalInteraction) interaction;
+			return modalInteraction.getModality().equals(ModalityType.COLD);
+		}
+		else if (interaction instanceof CombinedFragment) {
+			CombinedFragment combinedFragment = (CombinedFragment) interaction;
+			return combinedFragment.getFragments().stream()
+					.allMatch((fragment) -> fragment.getInteractions().stream()
+							.allMatch((i) -> interactionIsCold(i)));
 		}
 		return false;
-
 	}
 
 }

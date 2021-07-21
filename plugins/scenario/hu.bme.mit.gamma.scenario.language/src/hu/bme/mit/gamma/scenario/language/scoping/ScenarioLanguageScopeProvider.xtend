@@ -14,22 +14,13 @@ import hu.bme.mit.gamma.scenario.model.ScenarioDeclaration
 import hu.bme.mit.gamma.scenario.model.ScenarioModelPackage
 import hu.bme.mit.gamma.scenario.model.Signal
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures
-import hu.bme.mit.gamma.util.GammaEcoreUtil
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
 import org.eclipse.xtext.scoping.IScope
 import org.eclipse.xtext.scoping.Scopes
 
-/**
- * This class contains custom scoping description.
- * 
- * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#scoping
- * on how and when to use it.
- */
 class ScenarioLanguageScopeProvider extends AbstractScenarioLanguageScopeProvider {
 	
-	val GammaEcoreUtil util = GammaEcoreUtil.INSTANCE
-
 	override getScope(EObject context, EReference reference) {
 		var IScope scope = null
 
@@ -41,25 +32,24 @@ class ScenarioLanguageScopeProvider extends AbstractScenarioLanguageScopeProvide
 		} catch (Exception ex) {
 			// left empty on purpose
 		} finally {
-			scope = if(scope === null) getParentScopeP(context, reference) else scope
+			scope = if (scope === null) getParentScopeP(context, reference) else scope
 		}
 
 		return scope
 	}
 
 	private def IScope getScope(ScenarioDeclaration declaration, EReference reference) {
-		if(reference == ScenarioModelPackage.Literals.SCENARIO_DECLARATION__COMPONENT) {
+		if (reference == ScenarioModelPackage.Literals.SCENARIO_DECLARATION__COMPONENT) {
 			val importedPackage = declaration.package
 			return createScopeFor(importedPackage.components)
 		}
 	}
 	
 	private def IScope getScope(Signal signal, EReference reference) {
-		if(reference == ScenarioModelPackage.Literals.SIGNAL__PORT) {
-			val ports = util.getContainerOfType(signal,ScenarioDeclaration).component.ports
+		if (reference == ScenarioModelPackage.Literals.SIGNAL__PORT) {
+			val ports = ecoreUtil.getContainerOfType(signal,ScenarioDeclaration).component.ports
 			return createScopeFor(ports) 
-
-		} else if(reference == ScenarioModelPackage.Literals.SIGNAL__EVENT) {
+		} else if (reference == ScenarioModelPackage.Literals.SIGNAL__EVENT) {
 			val interface = signal.port.interfaceRealization.interface
 			val events = StatechartModelDerivedFeatures.getAllEventDeclarations(interface).map[it.event]
 			return createScopeFor(events)

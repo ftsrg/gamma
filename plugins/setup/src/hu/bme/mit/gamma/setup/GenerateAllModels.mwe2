@@ -23,4 +23,5 @@ Workflow {
     component = @generators.models.GenerateLowlevelModel {}
     component = @generators.models.GenerateXstsModel {}
     component = @generators.models.GenerateLowlevelXstsTraceabilityModel {}
+    component = @generators.models.GenerateScenarioModel {}
 }

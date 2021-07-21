@@ -53,7 +53,7 @@ class ExecutionTraceBackAnnotator {
 	}
 
 	new(List<ExecutionTrace> _traces, Component original, boolean removeNotneededInteractions,
-		boolean createOriginalActsAndAssertsBasedOnActs) {
+			boolean createOriginalActsAndAssertsBasedOnActs) {
 		this.result = newArrayList
 		this.traces = _traces
 		this.ports = original.ports
@@ -63,19 +63,19 @@ class ExecutionTraceBackAnnotator {
 
 	def execute() {
 		for (var i = 0; i < traces.size; i++) {
-			val t = traces.get(i)
-			if (!result.exists[traceUtil.isCoveredByStates(t, it)].booleanValue) {
-				result += t
+			val trace = traces.get(i)
+			if (!result.exists[traceUtil.isCoveredByStates(trace, it)].booleanValue) {
+				result += trace
 			}
 		}
-		for (t : result) {
+		for (resultTrace : result) {
 			if (removeNotneededInteractions) {
-				t.removeNotNeededInteractions
+				resultTrace.removeNotNeededInteractions
 			}
 			if (createOriginalActsAndAssertsBasedOnActs) {
-				t.createOriginalActsAndAsserts
+				resultTrace.createOriginalActsAndAsserts
 			}
-//			t.removeScheduelingWhenSendAfterReceive
+//			resultTrace.removeScheduelingWhenSendAfterReceive
 		}
 		return result
 	}
@@ -101,67 +101,71 @@ class ExecutionTraceBackAnnotator {
 	}
 
 	def protected boolean isSend(Step step) {
-		return step.actions.filter(RaiseEventAct).empty && !(step.asserts.filter(RaiseEventAct).empty)
+		return step.actions.filter(RaiseEventAct).empty && !step.asserts.filter(RaiseEventAct).empty
 	}
 
 	def protected boolean isReceive(Step step) {
-		return !(step.actions.filter(RaiseEventAct).empty) && step.asserts.filter(RaiseEventAct).empty
+		return !step.actions.filter(RaiseEventAct).empty && step.asserts.filter(RaiseEventAct).empty
 	}
 
 	def protected boolean isWait(Step step) {
 		return step.actions.filter(RaiseEventAct).empty && step.asserts.filter(RaiseEventAct).empty
 	}
 
-	def createOriginalActsAndAsserts(ExecutionTrace et) {
-		for (s : et.steps) {
+	def createOriginalActsAndAsserts(ExecutionTrace trace) {
+		for (step : trace.steps) {
 			val actions = <Act>newArrayList
 			val asserts = <Assert>newArrayList
-			for (a : s.actions) {
-				if (a instanceof RaiseEventAct) {
-					val portName = a.port.getName
-					if (scenarioStatechartUtil.isTurnedOut(a.port)) {
+			for (action : step.actions) {
+				if (action instanceof RaiseEventAct) {
+					val portName = action.port.getName
+					if (scenarioStatechartUtil.isTurnedOut(action.port)) {
 						var asser = createRaiseEventAct
+						// TODO what is this 8?
 						asser.port = getPort(portName.substring(0, portName.length - 8))
-						asser.event = getEvent(asser.port, a.event.name)
-						for (argument : a.arguments) {
+						asser.event = getEvent(asser.port, action.event.name)
+						for (argument : action.arguments) {
 							asser.arguments += argument.clone
 						}
 						asserts += asser
-					} else {
+					}
+					else {
 						var reAct = createRaiseEventAct
 						reAct.port = getPort(portName)
-						reAct.event = getEvent(reAct.port, a.event.name)
-						for (argument : a.arguments) {
+						reAct.event = getEvent(reAct.port, action.event.name)
+						for (argument : action.arguments) {
 							reAct.arguments += argument.clone
 						}
 						actions += reAct
 					}
-				} else if (a instanceof Reset) {
-					actions += a
-				} else if (a instanceof TimeElapse) {
-					actions += a
-				} else if (a instanceof Schedule) {
-					actions += a
+				}
+				else if (action instanceof Reset ||
+						action instanceof TimeElapse || action instanceof Schedule) {
+					actions += action
 				}
 			}
-			s.actions.clear
-			s.actions += actions
-			s.asserts.clear
-			s.asserts += asserts
+			step.actions.clear
+			step.actions += actions
+			step.asserts.clear
+			step.asserts += asserts
 		}
 	}
 
 	def getPort(String name) {
-		for (p : ports)
-			if (p.name == name)
-				return p
+		for (port : ports) {
+			if (port.name == name) {
+				return port
+			}
+		}
 		return null
 	}
 
 	def getEvent(Port port, String name) {
-		for (e : port.interfaceRealization.interface.events)
-			if (e.event.name == name)
-				return e.event
+		for (eventDeclaration : port.interfaceRealization.interface.events) {
+			if (eventDeclaration.event.name == name) {
+				return eventDeclaration.event
+			}
+		}
 		return null
 	}
 
@@ -173,14 +177,14 @@ class ExecutionTraceBackAnnotator {
 					notNeeded += act
 				}
 			}
-			step.actions.removeAll(notNeeded)
+			step.actions -= notNeeded
 		}
 	}
 
-	def boolean isInteractionPairPresent(Step step, Act a) {
-		if (a instanceof RaiseEventAct) {
-			val port = a.port
-			val eventName = a.event.name
+	def boolean isInteractionPairPresent(Step step, Act act) {
+		if (act instanceof RaiseEventAct) {
+			val port = act.port
+			val eventName = act.event.name
 			for (asser : step.asserts) {
 				if (asser instanceof RaiseEventAction) {
 					val tmpPort = asser.port
@@ -192,11 +196,9 @@ class ExecutionTraceBackAnnotator {
 					}
 				}
 			}
-		} else if (a instanceof Reset) {
-			return true
-		} else if (a instanceof TimeElapse) {
-			return true
-		} else if (a instanceof Schedule) {
+		}
+		else if (act instanceof Reset || act instanceof TimeElapse ||
+				act instanceof Schedule) {
 			return true
 		}
 		return false

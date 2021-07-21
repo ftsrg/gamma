@@ -8,14 +8,22 @@
  *
  * SPDX-License-Identifier: EPL-1.0
  ********************************************************************************/
-module hu.bme.mit.gamma.setup.CleanAllLanguages
+module hu.bme.mit.gamma.setup.cleaners.models.CleanScenarioModel
+
+import org.eclipse.emf.mwe.utils.*
+import org.eclipse.emf.ecore.resource.impl.*
+
+var rootPath = ".."
+var projectName = "hu.bme.mit.gamma.scenario.model"
 
 Workflow {	
-    component = @cleaners.languages.CleanExpressionLanguage {}
-    component = @cleaners.languages.CleanActionLanguage {}
-    component = @cleaners.languages.CleanStatechartLanguage {}
-    component = @cleaners.languages.CleanTraceLanguage {}
-    component = @cleaners.languages.CleanPropertyLanguage {}
-    component = @cleaners.languages.CleanGenmodelLanguage {}
-    component = @cleaners.languages.CleanScenarioLanguage {}
+    bean = ResourceSetImpl : resourceSet {}
+    bean = StandaloneSetup { resourceSet = resourceSet
+    	platformUri = "${rootPath}"
+    	scanClassPath = true
+    }
+    
+    component = org.eclipse.emf.mwe.utils.DirectoryCleaner {
+        directory = "../scenario/${projectName}/src-gen"
+    }
 }

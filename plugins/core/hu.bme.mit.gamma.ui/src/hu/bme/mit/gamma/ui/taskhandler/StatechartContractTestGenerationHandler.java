@@ -18,31 +18,26 @@ public class StatechartContractTestGenerationHandler extends TaskHandler {
 	}
 
 	public void execute(StatechartContractTestGeneration testGeneration) {
-
 		setTargetFolder(testGeneration);
 		int constraintValue = 0;
 		if (testGeneration.getConstraint() != null) {
-			AnalysisModelTransformationHandler analysisModelTransformationHandler = new AnalysisModelTransformationHandler(
-					file);
+			AnalysisModelTransformationHandler analysisModelTransformationHandler =
+					new AnalysisModelTransformationHandler(file);
 			Gamma2XSTSTransformer transformer = analysisModelTransformationHandler.new Gamma2XSTSTransformer();
 			constraintValue = transformer.transformConstraint(testGeneration.getConstraint());
 		}
 
 		StatechartDefinition stateChart = (StatechartDefinition) testGeneration.getComponentReference().getComponent();
-		ScenarioStatechartTraceGenerator traceGenerator = new ScenarioStatechartTraceGenerator(stateChart,
-				constraintValue);
+		ScenarioStatechartTraceGenerator traceGenerator = new ScenarioStatechartTraceGenerator(
+				stateChart,	constraintValue);
 		List<ExecutionTrace> testTraces = traceGenerator.execute();
 		for (ExecutionTrace testTrace : testTraces) {
 			try {
-				serializer.saveModel(testTrace, targetFolderUri, testTrace.getName()+".get");
+				serializer.saveModel(testTrace, targetFolderUri, testTrace.getName() + ".get");
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
 	}
 
-
 }
-
-
-

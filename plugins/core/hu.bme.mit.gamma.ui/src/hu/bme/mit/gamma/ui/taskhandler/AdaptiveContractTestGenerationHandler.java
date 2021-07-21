@@ -24,7 +24,6 @@ import java.util.Set;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.emf.common.util.URI;
 
-import hu.bme.mit.gamma.expression.util.ExpressionEvaluator;
 import hu.bme.mit.gamma.genmodel.derivedfeatures.GenmodelDerivedFeatures;
 import hu.bme.mit.gamma.genmodel.model.AdaptiveContractTestGeneration;
 import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
@@ -40,10 +39,11 @@ import hu.bme.mit.gamma.statechart.contract.StateContractAnnotation;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.Port;
-import hu.bme.mit.gamma.statechart.interface_.TimeUnit;
+import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
 import hu.bme.mit.gamma.statechart.statechart.State;
 import hu.bme.mit.gamma.statechart.statechart.StateAnnotation;
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
+import hu.bme.mit.gamma.statechart.util.StatechartUtil;
 import hu.bme.mit.gamma.trace.derivedfeatures.TraceModelDerivedFeatures;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
 import hu.bme.mit.gamma.trace.model.InstanceStateConfiguration;
@@ -60,6 +60,8 @@ public class AdaptiveContractTestGenerationHandler extends TaskHandler {
 	protected String testFolderUri;
 	protected String traceFileName;
 	protected String testFileName;
+	//
+	protected final StatechartUtil statechartUtil = StatechartUtil.INSTANCE;
 	protected final ExecutionTraceSerializer serializer = ExecutionTraceSerializer.INSTANCE;
 	protected final TraceUtil traceUtil = TraceUtil.INSTANCE;
 
@@ -102,8 +104,8 @@ public class AdaptiveContractTestGenerationHandler extends TaskHandler {
 		String modelFileUri = handler.getTargetFolderUri() + File.separator + modelFileName;
 
 		String propertyFileName = fileNamer.getHiddenPropertyFileName(plainFileName);
-		PropertyPackage propertyPackage = (PropertyPackage) ecoreUtil.normalLoad(handler.getTargetFolderUri(),
-				propertyFileName);
+		PropertyPackage propertyPackage = (PropertyPackage) ecoreUtil.normalLoad(
+				handler.getTargetFolderUri(), propertyFileName);
 
 		// Temporary trace model folder
 		final String temporaryTraceFolderName = ".temporary-trace-folder"; // Checking if it already exists
@@ -138,8 +140,8 @@ public class AdaptiveContractTestGenerationHandler extends TaskHandler {
 			// Back-annotating the final states: unfolded statechart -> adaptive statechart
 			Set<State> adaptiveStates = new HashSet<State>();
 			Step lastStep = TraceModelDerivedFeatures.getLastStep(trace);
-			Map<SynchronousComponentInstance, Set<State>> instanceStateConfigurations = TraceModelDerivedFeatures
-					.groupInstanceStateConfigurations(lastStep);
+			Map<SynchronousComponentInstance, Set<State>> instanceStateConfigurations =
+					TraceModelDerivedFeatures.groupInstanceStateConfigurations(lastStep);
 			for (SynchronousComponentInstance instance : instanceStateConfigurations.keySet()) {
 				Set<State> newStates = instanceStateConfigurations.get(instance);
 				adaptiveStates.addAll(backAnnotateStates(adaptiveContract, newStates));
@@ -163,18 +165,18 @@ public class AdaptiveContractTestGenerationHandler extends TaskHandler {
 						ExecutionTrace clonedTrace = ecoreUtil.clone(trace);
 						Constraint constraint = testGeneration.getModelTransformation().getConstraint();
 						int schedulingConstraint = 0;
-						ExpressionEvaluator evaluator = ExpressionEvaluator.INSTANCE;
-						if(constraint instanceof OrchestratingConstraint) {
-							schedulingConstraint =  evaluator.evaluate(((OrchestratingConstraint) constraint).getMinimumPeriod().getValue());
-							if(((OrchestratingConstraint) constraint).getMinimumPeriod().getUnit().equals(TimeUnit.SECOND) ) {
-								schedulingConstraint*=1000;
-							}
+						if (constraint instanceof OrchestratingConstraint) {
+							OrchestratingConstraint orchestratingConstraint = (OrchestratingConstraint) constraint;
+							TimeSpecification minimumPeriod = orchestratingConstraint.getMinimumPeriod();
+							schedulingConstraint = statechartUtil.evaluateMilliseconds(minimumPeriod);
 						}
-						ScenarioStatechartTraceGenerator traceGenerator = new ScenarioStatechartTraceGenerator(contract,schedulingConstraint);
+						ScenarioStatechartTraceGenerator traceGenerator = new ScenarioStatechartTraceGenerator(
+								contract, schedulingConstraint);
 						List<ExecutionTrace> traces = traceGenerator.execute();
-						for (ExecutionTrace e : traces) {						
+						for (ExecutionTrace executionTrace : traces) {						
 						    ExecutionTrace tmp = ecoreUtil.clone(clonedTrace);
-							tmp.getSteps().addAll(e.getSteps().subList(1, e.getSteps().size()));
+							tmp.getSteps().addAll(executionTrace.getSteps()
+									.subList(1, executionTrace.getSteps().size()));
 							testsTraces.add(tmp);
 						}
 					}
@@ -189,7 +191,8 @@ public class AdaptiveContractTestGenerationHandler extends TaskHandler {
 
 		// Serializing traces
 		for (ExecutionTrace testTrace : testsTraces) {
-			serializer.serialize(targetFolderUri, traceFileName, testFolderUri, testFileName, packageName, testTrace);
+			serializer.serialize(targetFolderUri, traceFileName,
+					testFolderUri, testFileName, packageName, testTrace);
 		}
 	}
 
@@ -224,7 +227,8 @@ public class AdaptiveContractTestGenerationHandler extends TaskHandler {
 
 	// State from unfolded statechart -> adaptive statechart
 
-	protected Set<State> backAnnotateStates(StatechartDefinition originalStatechart, Collection<State> newStates) {
+	protected Set<State> backAnnotateStates(StatechartDefinition originalStatechart,
+			Collection<State> newStates) {
 		Set<State> originalStates = new HashSet<State>();
 		for (State newState : newStates) {
 			originalStates.add(backAnnotateState(originalStatechart, newState));

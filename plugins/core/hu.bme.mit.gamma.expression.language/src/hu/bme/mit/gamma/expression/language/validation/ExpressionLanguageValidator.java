@@ -38,11 +38,6 @@ import hu.bme.mit.gamma.expression.util.ExpressionModelValidator.ValidationResul
 import hu.bme.mit.gamma.expression.util.ExpressionModelValidator.ValidationResultMessage;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
 
-/**
- * This class contains custom validation rules. 
- *
- * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#validation
- */
 public class ExpressionLanguageValidator extends AbstractExpressionLanguageValidator {
 
 	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
