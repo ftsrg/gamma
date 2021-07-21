@@ -33,7 +33,7 @@ To use this feature, Gamma has to be exported using the product file found in `h
 
 After exporting, the webserver has to be started. The server can be found in `hu.bme.mit.gamma.headless.server`.  In Eclipse, this can be done by right-clicking on the project, and selecting _Run As > Java Application_. Select `OpenApiWebServer` from the list of applications, and run.
 
-Before running the server, make sure to configure the paths found in `config.properties`. (Note that the you don't have to set these variables if you have followed the instructions written in [Exporting the product](https://github.com/csuvi98/gamma/blob/dev/plugins/headless/docs/headless-gamma-eclipse.md#step-4---exporting-the-product)).
+Before running the server, make sure to configure the paths found in `config.properties`. (Note that the you don't have to set these variables if you have followed the instructions written in [Exporting the product](../headless-gamma-eclipse.md#step-4---exporting-the-product)).
 - Set `headless.gamma.path` variable to the location of the exported `eclipse.exe` (or equivalent binary on Linux systems), and
 - set the `root.of.workspaces.path` variable to the desired location of workspaces.
 
