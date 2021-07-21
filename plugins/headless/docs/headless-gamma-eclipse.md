@@ -9,7 +9,7 @@ The processes and steps described in this document were executed on Ubuntu, vers
 **Required applications**
 
  - Eclipse - this document uses the required plugins and Eclipse version detailed in the Gamma setup tutorial, which can be found [here](https://github.com/ftsrg/gamma). Please note that installing Gamma is also required. The installation is detailed in the aformentioned link.
- - Docker - a tutorial can be found [here](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-18-04)
+ - Docker - a tutorial can be found [here](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-18-04).
 
 Additionally, Postman can be installed to test requests to the webserver.
 

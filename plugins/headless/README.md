@@ -7,7 +7,7 @@ This document serves as a short introduction to _Headless Gamma_, a service that
 
 There other documents found in the `docs` folder that detail the functions and parts of the Headless Gamma:​
 
- -  [This  document](https://github.com/csuvi98/gamma/blob/dev/plugins/headless/docs/headless-gamma-eclipse.md)  details  how  to  export  the  headless  Eclipse containing  Gamma. It also mentions some notable errors which can occur.
- - [This document](https://github.com/csuvi98/gamma/blob/dev/plugins/headless/docs/headless-gamma-docker.md)   details  how  to  set  up  the  Docker  container  on  your  own.  Note  that  there  is  an  [official  Gamma  Docker  image](https://hub.docker.com/repository/docker/ftsrggamma/headless-gamma),  which is  recommended  to be used.
- - [This document](https://github.com/csuvi98/gamma/blob/dev/plugins/headless/docs/headless-gamma-webserver.md) presents the API of the Headless Gamma (notedly, the API of the web server via which the service is accessible).
- -  [This  document](https://github.com/csuvi98/gamma/blob/dev/plugins/headless/docs/headless-gamma-workflow.md)  presents  a  workflow  using  the  Docker  container,  containing the  assembled Headless  Gamma service.
+ -  [This  document](docs/headless-gamma-eclipse.md)  details  how  to  export  the  headless  Eclipse containing  Gamma. It also mentions some notable errors which can occur.
+ - [This document](docs/headless-gamma-docker.md)   details  how  to  set  up  the  Docker  container  on  your  own.  Note  that  there  is  an  [official  Gamma  Docker  image](https://hub.docker.com/repository/docker/ftsrggamma/headless-gamma),  which is  recommended  to be used.
+ - [This document](docs/headless-gamma-webserver.md) presents the API of the Headless Gamma (notedly, the API of the web server via which the service is accessible).
+ -  [This  document](docs/headless-gamma-workflow.md)  presents  a  workflow  using  the  Docker  container,  containing the  assembled Headless  Gamma service.

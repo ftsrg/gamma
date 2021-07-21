@@ -7,7 +7,7 @@ This feature uses two projects:
  - `hu.bme.mit.gamma.headless.api` - this application serves as the headless version of Gamma. It can create Eclipse workspaces, import projects from zip files, and execute .ggen files.
  - `hu.bme.mit.gamma.headless.server` - this webserver forwards requests to the Headless Gamma feature exported from `hu.bme.mit.gamma.headless.api`.
 
-Note that this document serves as a high level description of the workflow.  A more detailed, technical documentation regarding the manual exporting of the features and the creation of Docker images can be found in the`docs` folder of the `hu.bme.mit.gamma.headless.api` project.
+Note that this document serves as a high level description of the workflow.  A more detailed, technical documentation regarding the manual exporting of the features and the creation of Docker images can be found in the `docs` folder of the `hu.bme.mit.gamma.headless.api` project.
 
 ## Requirements
 
