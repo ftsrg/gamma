@@ -396,15 +396,8 @@ class PropertyGenerator {
 	}
 	
 	def List<CommentableStateFormula> createInteractionDataflowReachability(
-			List<Pair<DefUseReferences, DefUseReferences>> interactionDefUses, DataflowCoverageCriterion criterion) {
-		val stateFormulas = newArrayList
-		for (interactionDefUse : interactionDefUses) {
-			val defs = interactionDefUse.key
-			val uses = interactionDefUse.value
-			// TODO
-//			stateFormulas += defs.createDataflowReachability(uses, criterion)
-		}
-		return stateFormulas
+			Map<DefReferenceId, Set<UseVariable>> defUses, DataflowCoverageCriterion criterion) {
+		return defUses.createInteractionDataflowReachability(criterion)
 	}
 	
 	def protected createEqualityExpression(VariableDeclaration variable, Long id) {

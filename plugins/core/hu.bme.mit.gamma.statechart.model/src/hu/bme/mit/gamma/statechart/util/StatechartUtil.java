@@ -27,6 +27,7 @@ import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
+import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.expression.util.ExpressionUtil;
@@ -207,6 +208,14 @@ public class StatechartUtil extends ActionUtil {
 		Set<VariableDeclaration> variables = getReadVariables(object);
 		variables.removeAll(getWrittenVariables(object));
 		return variables;
+	}
+	
+	public ParameterDeclaration extendEventWithParameter(Event event, Type parameterType, String name) {
+		ParameterDeclaration parameter = factory.createParameterDeclaration();
+		parameter.setType(parameterType);
+		parameter.setName(name);
+		event.getParameterDeclarations().add(parameter);
+		return parameter;
 	}
 	
 	public void extendTrigger(Transition transition, Trigger trigger, BinaryType type) {

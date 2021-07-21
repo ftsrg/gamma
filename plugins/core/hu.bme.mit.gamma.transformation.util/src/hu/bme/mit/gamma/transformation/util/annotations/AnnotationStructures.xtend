@@ -10,8 +10,8 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.transformation.util.annotations
 
-import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.expression.model.ReferenceExpression
+import hu.bme.mit.gamma.expression.model.ValueDeclaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.property.model.ComponentInstancePortReference
 import hu.bme.mit.gamma.property.model.ComponentInstanceStateConfigurationReference
@@ -24,7 +24,6 @@ import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.Transition
 import java.util.Collection
-import java.util.List
 import java.util.Map
 import java.util.Set
 import org.eclipse.emf.ecore.EObject
@@ -127,7 +126,7 @@ class InteractionAnnotations {
 				val lhs = interactionList.get(i)
 				for (var j = i + 1; j < interactionList.size; j++) {
 					val rhs = interactionList.get(j)
-					if (lhs.variablePair.equals(rhs.variablePair)) { // == operator does not work for some reason
+					if (lhs.variablePair.equals(rhs.variablePair)) {
 						val first = lhs.variablePair.first // == rhs.variablePair.first 
 						val second = lhs.variablePair.second // == rhs.variablePair.second 
 						if ((first === null || lhs.senderId.equals(rhs.senderId)) && 
@@ -147,69 +146,28 @@ class InteractionAnnotations {
 	
 }
 
-interface DataflowDeclarationHandler {
-	def Collection<DataflowReferenceVariable> getDefDataflowReferences(EObject defReference)
-	def VariableDeclaration getUseVariable(ReferenceExpression useReference)
-}
-
-@Data
-class DataflowReferenceVariable {
-	EObject originalVariableReference // EventParameterReferenceExpression, DirectReferenceExpression or RaiseEventAction
-	VariableDeclaration defUseVariable // Boolean variable denoting def or use
-}
-
-//
 @Data
 class DefVariableId {
-	VariableDeclaration defVariable // Integer variable to store ids for the definitions
+	ValueDeclaration defVariable // Integer variable or parameter to store ids for the definitions
 	Long defId // The id of the definition to store in defVariable
 }
 
 @Data
 class DefUseVariablePair {
-	VariableDeclaration defVariable // Integer variable to store ids for the definitions
+	ValueDeclaration defVariable // Integer variable or parameter to store ids for the definitions
 	VariableDeclaration useVariable // Integer variable to store ids of last definition when uses happen
 }
 
 @Data
 class DefReferenceId {
-	EObject defReference
+	EObject defReference // DirectReferenceExpression or RaiseEventAction
 	Long defId // The id of the definition to store in defVariable
 }
 
 @Data
 class UseVariable {
-	ReferenceExpression useReference
-	VariableDeclaration useVariable
-}
-//
-
-class DefUseReferences {
-	final Map<? extends Declaration, /* Original declaration (parameter or variable) whose def or use is marked */
-		List<DataflowReferenceVariable> /* Reference-variable pairs denoting if the original declaration is set or read */>
-			declarationDefs
-	
-	new(Map<? extends Declaration, List<DataflowReferenceVariable>> declarationDefs) {
-		this.declarationDefs = declarationDefs
-	}
-	
-	def getVariables() {
-		return declarationDefs.keySet
-	}
-	
-	def getAuxiliaryReferences(Declaration declaration) {
-		if (declarationDefs.containsKey(declaration)) {
-			return declarationDefs.get(declaration)
-		}
-		else {
-			return #[]
-		}
-	}
-	
-	def getAuxiliaryVariables(Declaration declaration) {
-		return declaration.getAuxiliaryReferences.map[it.getDefUseVariable].toList
-	}
-	
+	ReferenceExpression useReference // DirectReferenceExpression or EventParameterReferenceExpression
+	VariableDeclaration useVariable // Integer variable to store ids of last definition when uses happen
 }
 
 class AnnotationNamings {
@@ -235,8 +193,8 @@ class AnnotationNamings {
 		'''«PREFIX»def_«variable.name»_«defId++»«POSTFIX»'''
 	def String getUseVariableName(VariableDeclaration variable)
 		'''«PREFIX»use_«variable.name»_«useId++»«POSTFIX»'''
-	def String getInteractionDefVariableName(RaiseEventAction raise)
-		'''«PREFIX»def_«raise.port.name»_«raise.event.name»_«interactionDefId++»«POSTFIX»'''
+	def String getInteractionDefVariableName(Event event)
+		'''«PREFIX»def_«event.name»_«interactionDefId++»«POSTFIX»'''
 	def String getInteractionUseVariableName(EventParameterReferenceExpression reference)
 		'''«PREFIX»use_«reference.port.name»_«reference.event.name»_«reference.parameter.name»_«interactionUseId++»«POSTFIX»'''
 }

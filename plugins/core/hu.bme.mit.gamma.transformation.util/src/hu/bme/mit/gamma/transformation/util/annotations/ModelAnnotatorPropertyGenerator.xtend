@@ -101,16 +101,14 @@ class ModelAnnotatorPropertyGenerator {
 							annotator.getTransitionVariables)
 			formulas += propertyGenerator.createTransitionPairReachability(
 							annotator.getTransitionPairAnnotations)
-			formulas += propertyGenerator.createInteractionReachability(
-							annotator.getInteractions)
+			formulas += propertyGenerator.createInteractionReachability(annotator.getInteractions)
 			formulas += propertyGenerator.createStateReachability(testedComponentsForStates)
-			formulas += propertyGenerator.createOutEventReachability(
-							testedPortsForOutEvents)
+			formulas += propertyGenerator.createOutEventReachability(testedPortsForOutEvents)
 			
 			formulas += propertyGenerator.createDataflowReachability(annotator.variableDefUses,
-				annotator.dataflowCoverageCriterion)
+					annotator.dataflowCoverageCriterion)
 			formulas += propertyGenerator.createInteractionDataflowReachability(
-							annotator.getInteractionDefUses, annotator.interactionDataflowCoverageCriterion)
+					annotator.getInteractionDefUses, annotator.interactionDataflowCoverageCriterion)
 			// Saving the property package and serializing the properties has to be done by the caller!
 		}
 		return new Result(generatedPropertyPackage)
