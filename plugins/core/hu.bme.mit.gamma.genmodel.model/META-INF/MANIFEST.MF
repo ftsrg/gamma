@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Gamma Genmodel Language Metamodel
+Bundle-Name: Gamma Genmodel Langauge Metamodel
 Bundle-SymbolicName: hu.bme.mit.gamma.genmodel.model;singleton:=true
 Bundle-Version: 2.5.1.qualifier
 Bundle-ClassPath: .
@@ -17,6 +17,7 @@ Require-Bundle: org.eclipse.core.runtime,
  hu.bme.mit.gamma.expression.model;visibility:=reexport,
  hu.bme.mit.gamma.statechart.model;visibility:=reexport,
  hu.bme.mit.gamma.property.model;visibility:=reexport,
+ hu.bme.mit.gamma.scenario.model;visibility:=reexport,
  hu.bme.mit.gamma.trace.model;visibility:=reexport,
  hu.bme.mit.gamma.xsts.model;visibility:=reexport,
  org.yakindu.sct.model.sgraph;visibility:=reexport,

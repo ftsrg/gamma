@@ -35,6 +35,8 @@ import hu.bme.mit.gamma.genmodel.model.InterfaceCompilation;
 import hu.bme.mit.gamma.genmodel.model.PhaseStatechartGeneration;
 import hu.bme.mit.gamma.genmodel.model.Slicing;
 import hu.bme.mit.gamma.genmodel.model.StatechartCompilation;
+import hu.bme.mit.gamma.genmodel.model.StatechartContractGeneration;
+import hu.bme.mit.gamma.genmodel.model.StatechartContractTestGeneration;
 import hu.bme.mit.gamma.genmodel.model.Task;
 import hu.bme.mit.gamma.genmodel.model.TestGeneration;
 import hu.bme.mit.gamma.genmodel.model.TestReplayModelGeneration;
@@ -48,6 +50,8 @@ import hu.bme.mit.gamma.ui.taskhandler.InterfaceCompilationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.PhaseGenerationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.SlicingHandler;
 import hu.bme.mit.gamma.ui.taskhandler.StatechartCompilationHandler;
+import hu.bme.mit.gamma.ui.taskhandler.StatechartContractGenerationHandler;
+import hu.bme.mit.gamma.ui.taskhandler.StatechartContractTestGenerationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.TestGenerationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.TestReplayModelGenerationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.VerificationHandler;
@@ -174,6 +178,18 @@ public class GammaApi {
 								handler.execute(testGeneration);
 								logger.log(Level.INFO, "The adaptive contract test generation has been finished");
 							}
+							else if (task instanceof StatechartContractTestGeneration) {
+								StatechartContractTestGeneration testGeneration = (StatechartContractTestGeneration) task; 
+								StatechartContractTestGenerationHandler handler = new StatechartContractTestGenerationHandler(file);
+								handler.execute(testGeneration);
+								logger.log(Level.INFO, "The contract based test generation has been finished.");
+							}
+							else if (task instanceof StatechartContractGeneration) {
+								StatechartContractGeneration statechartGeneration = (StatechartContractGeneration) task; 
+								StatechartContractGenerationHandler handler = new StatechartContractGenerationHandler(file);
+								handler.execute(statechartGeneration);
+								logger.log(Level.INFO, "The contract statechart generation has been finished.");
+							}
 							else if (task instanceof EventPriorityTransformation) {
 								logger.log(Level.INFO, "The event priority transformation has been started");
 								EventPriorityTransformation eventPriorityTransformation = (EventPriorityTransformation) task;
@@ -238,7 +254,7 @@ public class GammaApi {
 				return allTasks.stream()
 						.filter(it -> it instanceof TestGeneration || it instanceof Verification ||
 								it instanceof AdaptiveContractTestGeneration ||
-								it instanceof TestReplayModelGeneration)
+								it instanceof TestReplayModelGeneration || it instanceof StatechartContractTestGeneration || it instanceof StatechartContractGeneration)
 						.collect(Collectors.toList());
 			default: 
 				throw new IllegalArgumentException("Not known iteration variable: " + iteration);

@@ -216,4 +216,13 @@
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="interactionDataflowCoverageCriterion"
         eType="#//DataflowCoverageCriterion" defaultValueLiteral="ALL_USE"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="StatechartContractTestGeneration" eSuperTypes="#//Task">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="componentReference" eType="#//ComponentReference"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="constraint" eType="#//OrchestratingConstraint"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="StatechartContractGeneration" eSuperTypes="#//Task">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="scenario" eType="ecore:EClass ../../hu.bme.mit.gamma.scenario.model/model/scenario.ecore#//ScenarioDefinition"/>
+  </eClassifiers>
 </ecore:EPackage>

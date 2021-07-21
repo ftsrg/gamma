@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+
+<!--
+-->
+
+<plugin>
+
+   <extension point="org.eclipse.emf.ecore.generated_package">
+      <!-- @generated scenario -->
+      <package
+            uri="http://www.mit.bme.hu/gamma/scenario/Model"
+            class="hu.bme.mit.gamma.scenario.model.ScenarioModelPackage"
+            genModel="model/scenario.genmodel"/>
+   </extension>
+
+</plugin>
