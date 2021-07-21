@@ -26,11 +26,11 @@ class GammaToLowlevelTransformer {
 		checkState(!_package.name.nullOrEmpty)
 		val lowlevelPackage = _package.transform // This does not transform components anymore
 		// Interfaces are not transformed, the events are transformed (thus, "instantiated") when referred
-		for (statechart : _package.components.filter(StatechartDefinition)) {
-			lowlevelPackage.components += statechart.transform
-		}
 		for (activity : _package.activities) {
 			lowlevelPackage.activities += activity.transform
+		}
+		for (statechart : _package.components.filter(StatechartDefinition)) {
+			lowlevelPackage.components += statechart.transform
 		}
 		return lowlevelPackage
 	}

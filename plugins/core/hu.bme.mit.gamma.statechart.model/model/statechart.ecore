@@ -63,6 +63,9 @@
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="annotation" eType="#//StateAnnotation"
         containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="doActions" upperBound="-1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.action.model/model/action.ecore#//Action"
+        containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="StateReferenceExpression" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NullaryExpression">
     <eStructuralFeatures xsi:type="ecore:EReference" name="region" lowerBound="1"

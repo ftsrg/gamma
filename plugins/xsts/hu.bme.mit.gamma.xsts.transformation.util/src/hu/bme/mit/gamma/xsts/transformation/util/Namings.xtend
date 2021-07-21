@@ -94,5 +94,6 @@ class Namings {
 	// Activity customization
 	
 	static def String customizeName(ActivityNode node, ActivityDeclarationReference instance) '''«node.name.activityNodeVariableName»'''
+	static def List<String> customizeNames(VariableDeclaration variable, ActivityDeclarationReference instance) { customizeNames(variable, "") }
 
 }

@@ -77,7 +77,7 @@ class AnalysisModelPreprocessor {
 		val resourceSet = resource.resourceSet
 		// Optimizing - removing unfireable transitions
 		val transitionOptimizer = new SystemReducer(resourceSet)
-		transitionOptimizer.execute
+		//transitionOptimizer.execute
 		// Saving the Package of the unfolded model
 		resource.save(Collections.EMPTY_MAP)
 		return _package.components.head

@@ -29,6 +29,7 @@ import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import java.util.Collection
+import hu.bme.mit.gamma.activity.model.CallActivityAction
 
 class ActionTransformer {
 	// Model factories
@@ -119,6 +120,11 @@ class ActionTransformer {
 		val actions = branches.value
 		
 		return createChoiceAction(guards, actions)
+	}
+	
+	
+	def dispatch Action transformAction(CallActivityAction action) {
+		return createEmptyAction
 	}
 	
 	protected def transformBranches(Collection<Branch> branches) {

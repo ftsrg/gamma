@@ -92,4 +92,8 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="dataNode" lowerBound="1"
         eType="#//DataNode"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="CallActivityAction" eSuperTypes="../../hu.bme.mit.gamma.action.model/model/action.ecore#//Statement">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="activity" lowerBound="1"
+        eType="#//ActivityDeclaration"/>
+  </eClassifiers>
 </ecore:EPackage>

@@ -59,4 +59,8 @@ class ThetaReferenceSerializer implements AbstractReferenceSerializer {
 		return #['''«activityNode.customizeName(instance)» == __Running__''']
 	}
 	
+	override getId(VariableDeclaration variable, ActivityDeclarationReference instance) {
+		return #['''«variable.customizeNames(instance)»''']
+	}
+	
 }

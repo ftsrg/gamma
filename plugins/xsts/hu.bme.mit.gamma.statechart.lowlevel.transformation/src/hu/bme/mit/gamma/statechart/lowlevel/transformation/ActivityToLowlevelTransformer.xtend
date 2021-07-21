@@ -201,7 +201,7 @@ class ActivityToLowlevelTransformer {
 		val newFlow = createControlFlow => [
 			sourceNode = flow.sourceNode.transformNode
 			targetNode = flow.targetNode.transformNode
-			guard = flow.guard.transformExpression.wrapIntoMultiaryExpression(createAndExpression)
+			guard = flow.guard?.transformExpression?.wrapIntoMultiaryExpression(createAndExpression)
 		]
 		
 		trace.put(flow, newFlow)

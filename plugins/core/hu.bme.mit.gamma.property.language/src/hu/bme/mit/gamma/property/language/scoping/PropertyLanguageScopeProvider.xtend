@@ -31,6 +31,8 @@ import hu.bme.mit.gamma.activity.model.ActivityDefinition
 import hu.bme.mit.gamma.activity.model.ActionNode
 import hu.bme.mit.gamma.activity.model.NamedActivityDeclaration
 import hu.bme.mit.gamma.activity.model.NamedActivityDeclarationReference
+import hu.bme.mit.gamma.property.model.ActivityDeclarationInstanceVariableReference
+import hu.bme.mit.gamma.activity.model.ActionDefinition
 
 class PropertyLanguageScopeProvider extends AbstractPropertyLanguageScopeProvider {
 	
@@ -71,6 +73,22 @@ class PropertyLanguageScopeProvider extends AbstractPropertyLanguageScopeProvide
 				
 				if (definition instanceof ActivityDefinition) {
 					return Scopes.scopeFor(definition.activityNodes)
+				}
+			}
+		}
+		if (context instanceof ActivityDeclarationInstanceVariableReference) {
+			if (reference == ActivityModelPackage.Literals.NAMED_ACTIVITY_DECLARATION_REFERENCE__NAMED_ACTIVITY_DECLARATION) {
+				val imports = root.import
+				return Scopes.scopeFor(imports.map[it.activities].flatten)
+			}
+			if (reference == PropertyModelPackage.Literals.ACTIVITY_DECLARATION_INSTANCE_VARIABLE_REFERENCE__VARIABLE) {
+				val declarationReference = context.instance
+				val definition = declarationReference.definition
+				
+				if (definition instanceof ActivityDefinition) {
+					return Scopes.scopeFor(definition.variableDeclarations)
+				} else if (definition instanceof ActionDefinition) {
+					return Scopes.scopeFor(definition.action.variableDeclarations)
 				}
 			}
 		}

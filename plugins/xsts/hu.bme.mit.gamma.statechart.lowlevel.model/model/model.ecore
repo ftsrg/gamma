@@ -81,6 +81,7 @@
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="exitAction" eType="ecore:EClass ../../hu.bme.mit.gamma.action.model/model/action.ecore#//Action"
         containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="doAction" eType="ecore:EClass ../../hu.bme.mit.gamma.action.model/model/action.ecore#//Action"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="EventDeclaration" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NamedElement">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="direction" lowerBound="1"

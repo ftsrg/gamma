@@ -39,6 +39,8 @@ import java.util.Collection
 import java.util.List
 
 import static extension com.google.common.collect.Iterables.getOnlyElement
+import hu.bme.mit.gamma.activity.model.CallActivityAction
+import hu.bme.mit.gamma.activity.model.ActivityModelFactory
 
 class ActionTransformer {
 	// Auxiliary objects
@@ -50,6 +52,7 @@ class ActionTransformer {
 	// Factory objects
 	protected final extension ExpressionModelFactory constraintFactory = ExpressionModelFactory.eINSTANCE
 	protected final extension ActionModelFactory actionFactory = ActionModelFactory.eINSTANCE
+	protected final extension ActivityModelFactory activityFactory = ActivityModelFactory.eINSTANCE
 	// Trace
 	protected final Trace trace
 	
@@ -253,6 +256,17 @@ class ActionTransformer {
 			.createAssignment(createTrueExpression)
 		
 		return result
+	}
+	
+	protected def dispatch List<Action> transformAction(CallActivityAction action) {		
+		val activity = action.activity
+		val lowlevelActivity = trace.get(activity)
+		
+		return #[
+			createCallActivityAction => [
+				it.activity = lowlevelActivity
+			]
+		]
 	}
 
 	protected def dispatch List<Action> transformAction(SetTimeoutAction action) {

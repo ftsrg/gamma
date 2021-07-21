@@ -61,4 +61,8 @@ class UppaalReferenceSerializer implements AbstractReferenceSerializer {
 		return #[getVariableName(activityNode, instance)]
 	}
 	
+	override getId(VariableDeclaration variable, ActivityDeclarationReference instance) {
+		throw new UnsupportedOperationException("TODO: auto-generated method stub")
+	}
+	
 }

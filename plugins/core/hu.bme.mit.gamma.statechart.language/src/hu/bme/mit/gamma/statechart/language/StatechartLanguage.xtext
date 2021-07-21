@@ -276,6 +276,7 @@ State returns State:
 		(
 			(
 				('invariant' invariants+=Expression)*
+				('do' '/' (=> doActions+=Action)* )?
 				('entry' '/' (=> entryActions+=Action)* )?
 				('exit' '/' (=> exitActions+=Action)* )?
 			)
@@ -552,6 +553,12 @@ EventParameterReferenceExpression returns InterfaceModel::EventParameterReferenc
 
 // Action Language Extensions
 
+CallActivityAction returns ActivityModel::CallActivityAction:
+	'call' activity=[ActivityModel::ActivityDeclaration]
+;
+
+
+
 @Override 
 InlineStatement returns ActionModel::Statement:
 	(
@@ -568,7 +575,8 @@ InlineStatement returns ActionModel::Statement:
 		SetTimeoutAction |
 		
 		AssertionStatement |
-		ExpressionStatement
+		ExpressionStatement |
+		CallActivityAction
 	)';'
 ;
 

@@ -122,4 +122,9 @@
       eSuperTypes="#//ActivityDeclarationInstanceExpression">
     <eStructuralFeatures xsi:type="ecore:EReference" name="activityNode" eType="ecore:EClass ../../hu.bme.mit.gamma.activity.model/model/activity.ecore#//ActivityNode"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ActivityDeclarationInstanceVariableReference"
+      eSuperTypes="#//ActivityDeclarationInstanceExpression">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="variable" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclaration"/>
+  </eClassifiers>
 </ecore:EPackage>

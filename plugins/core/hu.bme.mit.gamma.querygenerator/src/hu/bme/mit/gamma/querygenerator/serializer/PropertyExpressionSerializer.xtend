@@ -19,6 +19,7 @@ import hu.bme.mit.gamma.property.model.ComponentInstanceVariableReference
 import hu.bme.mit.gamma.statechart.util.ExpressionSerializer
 import hu.bme.mit.gamma.property.model.ActivityDeclarationInstanceNodeReference
 import hu.bme.mit.gamma.property.model.ActivityDeclarationInstanceExpression
+import hu.bme.mit.gamma.property.model.ActivityDeclarationInstanceVariableReference
 
 class PropertyExpressionSerializer extends ExpressionSerializer {
 	
@@ -41,7 +42,13 @@ class PropertyExpressionSerializer extends ExpressionSerializer {
 	protected def dispatch serializeActivityExpression(ActivityDeclarationInstanceNodeReference expression) {
 		val instance = expression.instance
 		val activityNode = expression.activityNode
-		return '''«activityNode.getId(instance)»'''
+		return '''«activityNode.getId(instance).head»'''
+	}
+	
+	protected def dispatch serializeActivityExpression(ActivityDeclarationInstanceVariableReference expression) {
+		val instance = expression.instance
+		val variable = expression.variable
+		return '''«variable.getId(instance).head»'''
 	}
 	
 	protected def dispatch serializeActivityExpression(ActivityDeclarationInstanceExpression expression) {

@@ -37,6 +37,7 @@
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference property.ecore#//PropertyPackage/import"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference property.ecore#//PropertyPackage/component"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference property.ecore#//PropertyPackage/formulas"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference property.ecore#//PropertyPackage/activity"/>
     </genClasses>
     <genClasses ecoreClass="property.ecore#//CommentableStateFormula">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference property.ecore#//CommentableStateFormula/formula"/>
@@ -98,6 +99,9 @@
     </genClasses>
     <genClasses ecoreClass="property.ecore#//ActivityDeclarationInstanceNodeReference">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference property.ecore#//ActivityDeclarationInstanceNodeReference/activityNode"/>
+    </genClasses>
+    <genClasses ecoreClass="property.ecore#//ActivityDeclarationInstanceVariableReference">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference property.ecore#//ActivityDeclarationInstanceVariableReference/variable"/>
     </genClasses>
   </genPackages>
 </genmodel:GenModel>

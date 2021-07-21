@@ -56,7 +56,6 @@ import hu.bme.mit.gamma.statechart.lowlevel.model.StatechartDefinition
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.AssumeAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
-import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.VariableGroup
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
@@ -138,6 +137,9 @@ class LowlevelToXstsTransformer {
 	protected Set<EventDeclaration> referredEvents
 	protected Set<VariableDeclaration> referredVariables
 	
+	protected final extension ActivityLiterals activityLiterals = ActivityLiterals.INSTANCE
+	protected final extension XstsUtils xstsUtils = XstsUtils.INSTANCE
+	
 	new(Package _package) {
 		this(_package, false)
 	}
@@ -148,6 +150,8 @@ class LowlevelToXstsTransformer {
 		this.engine = ViatraQueryEngine.on(new EMFScope(_package))
 		this.xSts = createXSTS => [
 			it.name = _package.name
+			it.typeDeclarations += nodeStateEnumTypeDeclaration
+			it.typeDeclarations += flowStateEnumTypeDeclaration
 		]
 		this.targetEngine = ViatraQueryEngine.on(new EMFScope(this.xSts))
 		this.trace = new Trace(_package, xSts)
@@ -204,7 +208,9 @@ class LowlevelToXstsTransformer {
 		getOutEventEnvironmentalActionRule.fireAllCurrent
 		mergeTransitions
 		optimizeActions
-		eliminateNullActions
+		
+		xSts.eliminateNullActions
+		
 		handleVariableAnnotations
 		handleGuardEvaluations
 		// The created EMF models are returned
@@ -219,41 +225,6 @@ class LowlevelToXstsTransformer {
 		return !optimize || referredVariables.contains(lowlevelVariable)
 	}
 		
-	protected def getVariableInitializingAction() {
-		if (xSts.variableInitializingTransition === null) {
-			xSts.variableInitializingTransition = createSequentialAction.wrap
-		}
-		return xSts.variableInitializingTransition.action
-	}
-	
-	protected def getConfigurationInitializingAction() {
-		if (xSts.configurationInitializingTransition === null) {
-			xSts.configurationInitializingTransition = createSequentialAction.wrap
-		}
-		return xSts.configurationInitializingTransition.action
-	}
-	
-	protected def getEntryEventAction() {
-		if (xSts.entryEventTransition === null) {
-			xSts.entryEventTransition = createSequentialAction.wrap
-		}
-		return xSts.entryEventTransition.action
-	}
-	
-	protected def getInEventAction() {
-		if (xSts.inEventTransition === null) {
-			xSts.inEventTransition = createSequentialAction.wrap
-		}
-		return xSts.inEventTransition.action
-	}
-	
-	protected def getOutEventAction() {
-		if (xSts.outEventTransition === null) {
-			xSts.outEventTransition = createSequentialAction.wrap
-		}
-		return xSts.outEventTransition.action
-	}
-
 	protected def getTypeDeclarationsRule() {
 		if (typeDeclarationsRule === null) {
 			typeDeclarationsRule = createRule(TypeDeclarations.instance).action [
@@ -332,7 +303,7 @@ class LowlevelToXstsTransformer {
 			topRegionInitializationRule = createRule(Statecharts.instance).action [
 				val lowlevelStatechart = it.statechart
 				val regionInitializingAction = createParallelAction // Each region at the same time
-				configurationInitializingAction as SequentialAction => [
+				xSts.configurationInitializingAction => [
 					it.actions += regionInitializingAction
 				]
 				for (lowlevelTopRegion : lowlevelStatechart.regions) {
@@ -340,7 +311,7 @@ class LowlevelToXstsTransformer {
 						lowlevelTopRegion.createRecursiveXStsRegionAndSubregionActivatingAction
 				}
 				val entryEventInitializingAction = createParallelAction // Each region at the same time
-				entryEventAction as SequentialAction => [
+				xSts.entryEventAction => [
 					it.actions += entryEventInitializingAction
 				]
 				for (lowlevelTopRegion : lowlevelStatechart.regions) {
@@ -535,7 +506,7 @@ class LowlevelToXstsTransformer {
 		// Note that optimization is NOT needed here, as these are already XSTS variables
 		for (xStsVariable : xStsVariables) {
 			// variableInitializingAction as it must be set before setting the configuration
-			variableInitializingAction as SequentialAction => [
+			xSts.variableInitializingAction => [
 				it.actions += createAssignmentAction => [
 					it.lhs = createDirectReferenceExpression => [it.declaration = xStsVariable]
 					it.rhs = xStsVariable.initialValue
@@ -624,7 +595,7 @@ class LowlevelToXstsTransformer {
 			inEventEnvironmentalActionRule = createRule(InEvents.instance).action [
 				val lowlevelEvent = it.event
 				if (lowlevelEvent.notOptimizable) {
-					val lowlevelEnvironmentalAction = inEventAction as SequentialAction
+					val lowlevelEnvironmentalAction = xSts.inEventAction
 					val xStsEventVariable = trace.getXStsVariable(lowlevelEvent)
 					lowlevelEnvironmentalAction.actions += createNonDeterministicAction => [
 						// Event is raised
@@ -704,7 +675,7 @@ class LowlevelToXstsTransformer {
 			outEventEnvironmentalActionRule = createRule(OutEvents.instance).action [
 				val lowlevelEvent = it.event
 				if (lowlevelEvent.notOptimizable) {
-					val lowlevelEnvironmentalAction = outEventAction as SequentialAction
+					val lowlevelEnvironmentalAction = xSts.outEventAction
 					val xStsEventVariable = trace.getXStsVariable(lowlevelEvent)
 					lowlevelEnvironmentalAction.actions += createAssignmentAction => [
 						it.lhs = createDirectReferenceExpression => [
@@ -841,27 +812,6 @@ class LowlevelToXstsTransformer {
 			// To delete the potential containing VariableDeclarationAction too
 			notReadTransientXStsVariable.deleteDeclaration 
 			trace.delete(notReadTransientXStsVariable)
-		}
-	}
-	
-	protected def eliminateNullActions() {
-		if (xSts.variableInitializingTransition === null) {
-			xSts.variableInitializingTransition = createEmptyAction.wrap
-		}
-		if (xSts.configurationInitializingTransition === null) {
-			xSts.configurationInitializingTransition = createEmptyAction.wrap
-		}
-		if (xSts.entryEventTransition === null) {
-			xSts.entryEventTransition = createEmptyAction.wrap
-		}
-		if (xSts.transitions.empty) {
-			xSts.changeTransitions(createEmptyAction.wrap)
-		}
-		if (xSts.inEventTransition === null) {
-			xSts.inEventTransition = createEmptyAction.wrap
-		}
-		if (xSts.outEventTransition === null) {
-			xSts.outEventTransition = createEmptyAction.wrap
 		}
 	}
 	

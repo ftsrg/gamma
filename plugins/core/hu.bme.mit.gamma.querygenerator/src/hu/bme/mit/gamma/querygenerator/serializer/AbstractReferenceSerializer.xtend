@@ -28,5 +28,6 @@ abstract interface AbstractReferenceSerializer {
 	def List<String> getId(VariableDeclaration variable, ComponentInstanceReference instance)	
 	def List<String> getId(Event event, Port port, ParameterDeclaration parameter, ComponentInstanceReference instance)
 	def List<String> getId(ActivityNode activityNode, ActivityDeclarationReference instance)	
+	def List<String> getId(VariableDeclaration variable, ActivityDeclarationReference instance)	
 	
 }

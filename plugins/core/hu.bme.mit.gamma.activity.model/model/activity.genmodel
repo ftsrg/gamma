@@ -78,5 +78,8 @@
     <genClasses ecoreClass="activity.ecore#//DataNodeReference">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference activity.ecore#//DataNodeReference/dataNode"/>
     </genClasses>
+    <genClasses ecoreClass="activity.ecore#//CallActivityAction">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference activity.ecore#//CallActivityAction/activity"/>
+    </genClasses>
   </genPackages>
 </genmodel:GenModel>

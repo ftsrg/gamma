@@ -120,6 +120,11 @@ ActivityDeclarationInstanceNodeReference returns ActivityDeclarationInstanceNode
 	'activity' instance=ActivityDeclarationReference '.' activityNode=[activity::ActivityNode]
 ;
 
+ActivityDeclarationInstanceVariableReference returns ActivityDeclarationInstanceVariableReference:
+	'activity' instance=ActivityDeclarationReference '.' variable=[expression::VariableDeclaration]
+;
+
+
 ComponentInstanceStateExpression returns ComponentInstanceStateExpression:
 	ComponentInstanceStateConfigurationReference |
 	ComponentInstanceVariableReference |

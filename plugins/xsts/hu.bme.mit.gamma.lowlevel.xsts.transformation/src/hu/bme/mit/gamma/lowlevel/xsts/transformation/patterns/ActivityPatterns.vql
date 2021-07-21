@@ -26,6 +26,10 @@ pattern flows(flow : Flow) {
 	Flow(flow);
 }
 
+pattern pins(pin : Pin) {
+	Pin(pin);
+}
+
 pattern inputControlFlows(flow: ControlFlow, node: ActivityNode) {
 	ControlFlow.targetNode(flow, node);
 }
