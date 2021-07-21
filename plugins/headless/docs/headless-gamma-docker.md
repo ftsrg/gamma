@@ -3,7 +3,7 @@ This document focuses on the creation and usage of the Headless Gamma Docker ima
 
 ## Setting up the Docker container
 
- Make sure that Docker is installed on the computer in use. The following [tutorial](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-18-04) was used to install Docker on Ubuntu. Note that the tutorial below focuses on the creation of the docker image, and then running a container from that image. For this reason, it ignores the official Headless Gamma image that can be found [here](https://hub.docker.com/repository/docker/ftsrggamma/headless-gamma). It is highly recommended to use the official image. Further information on how to use this image can be found in the Headless Gamma [README](../..).
+ Make sure that Docker is installed on the computer in use. The following [tutorial](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-18-04) was used to install Docker on Ubuntu. Note that the tutorial below focuses on the creation of the docker image, and then running a container from that image. For this reason, it ignores the official Headless Gamma image that can be found [here](https://hub.docker.com/repository/docker/ftsrggamma/headless-gamma). It is highly recommended to use the official image. Further information on how to use this image can be found in the Headless Gamma [README](..).
 
  1. Create a working folder, and copy the Dockerfile inside.
  2. Inside the working folder, create the following folders: `server`, `uppaal`, `theta`, `project`.
