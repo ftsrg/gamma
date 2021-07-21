@@ -422,10 +422,12 @@ public class ExpressionUtil {
 		List<EqualityExpression> equalityExpressions = new ArrayList<EqualityExpression>();
 		for (Expression subexpression : expression.getOperands()) {
 			if (subexpression instanceof EqualityExpression) {
-				equalityExpressions.add((EqualityExpression) subexpression);
+				EqualityExpression equalityExpression = (EqualityExpression) subexpression;
+				equalityExpressions.add(equalityExpression);
 			}
 			else if (subexpression instanceof AndExpression) {
-				equalityExpressions.addAll(collectAllEqualityExpressions((AndExpression) subexpression));
+				AndExpression andExpression = (AndExpression) subexpression;
+				equalityExpressions.addAll(collectAllEqualityExpressions(andExpression));
 			}
 		}
 		return equalityExpressions;

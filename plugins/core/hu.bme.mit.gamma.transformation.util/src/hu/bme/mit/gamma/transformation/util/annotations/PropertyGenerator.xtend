@@ -397,7 +397,7 @@ class PropertyGenerator {
 	
 	def List<CommentableStateFormula> createInteractionDataflowReachability(
 			Map<DefReferenceId, Set<UseVariable>> defUses, DataflowCoverageCriterion criterion) {
-		return defUses.createInteractionDataflowReachability(criterion)
+		return defUses.createDataflowReachability(criterion)
 	}
 	
 	def protected createEqualityExpression(VariableDeclaration variable, Long id) {

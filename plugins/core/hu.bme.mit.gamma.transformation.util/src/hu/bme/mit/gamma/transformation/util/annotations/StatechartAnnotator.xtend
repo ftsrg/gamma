@@ -17,6 +17,7 @@ import hu.bme.mit.gamma.action.model.ChoiceStatement
 import hu.bme.mit.gamma.action.model.IfStatement
 import hu.bme.mit.gamma.action.model.SwitchStatement
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
+import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.ReferenceExpression
@@ -938,11 +939,18 @@ class StatechartAnnotator {
 		for (def : keySet.toList) {
 			val raiseEventAction = def.defReference as RaiseEventAction
 			val outPort = raiseEventAction.port
+			val arguments = raiseEventAction.arguments
 			val uses = defUses.get(def)
 			for (use : uses.toList) {
 				val useReference = use.useReference as EventParameterReferenceExpression
 				val inPort = useReference.port
-				if (!connectedPorts.contains(outPort -> inPort)) {
+				 // For optimization
+				val event = useReference.event
+				val guard = useReference.getSelfOrLastContainerOfType(Expression)
+				val isContainedByTransition = guard.eContainer instanceof Transition
+				if (!connectedPorts.contains(outPort -> inPort) ||
+						isContainedByTransition && // If the guard is false, the transition cannot fire
+						guard.areDefinitelyFalseArguments(inPort, event, arguments)) {
 					uses -= use
 				}
 			}
