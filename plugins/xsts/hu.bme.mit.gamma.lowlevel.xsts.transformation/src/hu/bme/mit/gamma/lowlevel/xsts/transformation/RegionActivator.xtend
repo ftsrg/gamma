@@ -43,10 +43,10 @@ class RegionActivator {
 	protected final ViatraQueryEngine engine
 	protected final Trace trace
 		
-	new(ViatraQueryEngine engine, Trace trace) {
+	new(ViatraQueryEngine engine, Trace trace, boolean extractGuards) {
 		this.engine = engine
 		this.trace = trace
-		this.regionInitialStateLocator = new RegionInitialStateLocator(this.engine, this.trace, this)
+		this.regionInitialStateLocator = new RegionInitialStateLocator(this.engine, this.trace, this, extractGuards)
 		this.stateAssumptionCreator = new StateAssumptionCreator(this.trace)
 	}
 	

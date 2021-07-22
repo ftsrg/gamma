@@ -33,13 +33,12 @@ class TerminalTransitionToXTransitionTransformer extends LowlevelTransitionToXTr
 	protected final boolean extractGuards
 	
 	new(ViatraQueryEngine engine, Trace trace, boolean extractGuards) {
-		super(engine, trace)
-		this.extractGuards = extractGuards
+		this(engine, trace, null, extractGuards)
 	}
 	
-	new(ViatraQueryEngine engine, Trace trace, RegionActivator regionActivator) {
-		super(engine, trace, regionActivator)
-		this.extractGuards = false // Used by RegionInitialStateLocator, not crucial?
+	new(ViatraQueryEngine engine, Trace trace, RegionActivator regionActivator, boolean extractGuards) {
+		super(engine, trace, regionActivator, extractGuards)
+		this.extractGuards = extractGuards
 	}
 	
 	def transform(ForkState lowlevelFirstForkState) {

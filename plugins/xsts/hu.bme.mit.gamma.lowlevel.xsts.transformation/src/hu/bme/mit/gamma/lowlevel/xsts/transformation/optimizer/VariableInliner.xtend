@@ -23,6 +23,7 @@ import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
 import hu.bme.mit.gamma.xsts.model.XTransition
+import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import java.util.List
 import java.util.Map
 import org.eclipse.xtend.lib.annotations.Data
@@ -36,6 +37,7 @@ class VariableInliner {
 	protected new() {}
 	//
 	
+	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 
 	def inline(Iterable<XTransition> transitions) {
@@ -239,6 +241,16 @@ class VariableInliner {
 		}
 		// Removing variables whose value is unknown
 		newBranchValues.keySet -= contradictingVariables
+		// Removing variables referring to variables whose value is unknown
+		val newEntries = newBranchValues.entrySet
+		newEntries.removeIf[
+			val referredVariables = newHashSet
+			val expression = it.value.value
+			referredVariables += expression.referredVariables
+			referredVariables.retainAll(contradictingVariables)
+			!referredVariables.isEmpty
+		]
+		
 		return newBranchValues
 	}
 	
