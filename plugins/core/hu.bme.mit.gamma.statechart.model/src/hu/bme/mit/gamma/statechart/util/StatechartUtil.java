@@ -39,6 +39,7 @@ import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference;
 import hu.bme.mit.gamma.statechart.composite.CompositeModelFactory;
 import hu.bme.mit.gamma.statechart.composite.InstancePortReference;
 import hu.bme.mit.gamma.statechart.composite.PortBinding;
+import hu.bme.mit.gamma.statechart.composite.SimpleChannel;
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponent;
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
@@ -339,6 +340,30 @@ public class StatechartUtil extends ActionUtil {
 		String name = component.getName();
 		// The same as in Namings.getComponentClassName
 		return Character.toUpperCase(name.charAt(0)) + name.substring(1);
+	}
+	
+	public SimpleChannel connectPortsViaChannels(SynchronousComponentInstance lhsInstance, Port lhsPort,
+			SynchronousComponentInstance rhsInstance, Port rhsPort) {
+		SimpleChannel channel = compositeFactory.createSimpleChannel();
+		
+		InstancePortReference providedReference = compositeFactory.createInstancePortReference();
+		InstancePortReference requiredReference = compositeFactory.createInstancePortReference();
+		
+		channel.setProvidedPort(providedReference);
+		channel.setRequiredPort(requiredReference);
+		if (StatechartModelDerivedFeatures.isProvided(lhsPort)) {
+			providedReference.setInstance(lhsInstance);
+			providedReference.setPort(lhsPort);
+			requiredReference.setInstance(rhsInstance);
+			requiredReference.setPort(rhsPort);
+		}
+		else {
+			providedReference.setInstance(rhsInstance);
+			providedReference.setPort(rhsPort);
+			requiredReference.setInstance(lhsInstance);
+			requiredReference.setPort(lhsPort);
+		}
+		return channel;
 	}
 	
 }

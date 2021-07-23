@@ -17,6 +17,7 @@ import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.trace.model.ComponentSchedule
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.trace.model.RaiseEventAct
+import hu.bme.mit.gamma.trace.model.Reset
 import hu.bme.mit.gamma.trace.model.TimeElapse
 import hu.bme.mit.gamma.trace.model.TraceModelFactory
 import hu.bme.mit.gamma.util.GammaEcoreUtil
@@ -25,6 +26,8 @@ import java.util.Collection
 import java.util.Map.Entry
 import java.util.function.Function
 import org.eclipse.xtend.lib.annotations.Data
+
+import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
@@ -56,6 +59,8 @@ class TraceToEnvironmentModelTransformer {
 	}
 	
 	def execute() {
+		validate
+		
 		val statechart = createStatechartDefinition => [
 			it.name = environmentModelName
 		]
@@ -94,6 +99,12 @@ class TraceToEnvironmentModelTransformer {
 		lastState.createEnvironmentBehavior
 		
 		return new Result(statechart, lastState)
+	}
+	
+	protected def validate() {
+		val firstStep = executionTrace.steps.head
+		val act = firstStep.actions.head
+		checkState(act instanceof Reset, "The first act in the execution trace must be a reset")
 	}
 	
 	protected def transformPorts(StatechartDefinition environmentModel, Trace trace) {
@@ -211,10 +222,25 @@ class TraceToEnvironmentModelTransformer {
 		val envrionmentModel = lastState.containingStatechart
 		val region = lastState.parentRegion
 		
-		var StateNode lastTargetState = lastState
-		
 		val proxyPortPairs = trace.proxyEnvironmentPortPairs
 		val transitions = proxyPortPairs.createEventPassingTransitions[it.inputEvents]
+		
+		if (transitions.empty) {
+			return
+		}
+		
+		var StateNode lastTargetState = createChoiceState => [
+			it.name = choiceName
+		]
+		region.stateNodes += lastTargetState
+		
+		val firstTransition = createTransition => [
+			it.trigger = createOnCycleTrigger
+		]
+		firstTransition.sourceState = lastState
+		firstTransition.targetState = lastTargetState
+		envrionmentModel.transitions += firstTransition
+		
 		for (transition : transitions) {
 			val elseTransition = createTransition => [
 				it.guard = createElseExpression
@@ -237,12 +263,13 @@ class TraceToEnvironmentModelTransformer {
 				it.name = choiceName
 			]
 			region.stateNodes += lastTargetState
-			val mergeChoiceTransition = createTransition => [
-				it.sourceState = mergeState
-				it.targetState = targetState
-			]
+			val mergeChoiceTransition = createTransition
+			mergeChoiceTransition.sourceState = mergeState
+			mergeChoiceTransition.targetState = lastTargetState
+			
 			envrionmentModel.transitions += mergeChoiceTransition
 		}
+		// Cleanup
 		val lastMergeChoiceTransition = lastTargetState.incomingTransitions.onlyElement
 		val lastMerge = lastMergeChoiceTransition.sourceState
 		val lastTransitions = lastMerge.incomingTransitions

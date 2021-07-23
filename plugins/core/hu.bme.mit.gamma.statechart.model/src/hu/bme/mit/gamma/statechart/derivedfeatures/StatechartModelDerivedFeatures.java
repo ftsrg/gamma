@@ -108,11 +108,6 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		}
 		throw new IllegalArgumentException("Not supported element: " + element);
 	}
-	
-	public static Set<Package> getImportableInterfacePackages(Component component) {
-		return getAllPorts(component).stream().map(it -> getContainingPackage(
-				getInterface(it))).collect(Collectors.toSet());
-	}
 
 	public static boolean isBroadcast(InterfaceRealization interfaceRealization) {
 		return isProvided(interfaceRealization) &&
@@ -173,6 +168,11 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	public static boolean isUnfolded(Package gammaPackage) {
 		return gammaPackage.getAnnotations().stream().anyMatch(
 				it -> it instanceof UnfoldedPackageAnnotation);
+	}
+	
+	public static Set<Package> getImportableInterfacePackages(Component component) {
+		return getAllPorts(component).stream().map(it -> getContainingPackage(
+				getInterface(it))).collect(Collectors.toSet());
 	}
 	
 	public static Set<Package> getSelfAndImports(Package gammaPackage) {

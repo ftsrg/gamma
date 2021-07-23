@@ -2,7 +2,6 @@ package hu.bme.mit.gamma.trace.environment.transformation
 
 import hu.bme.mit.gamma.statechart.composite.CascadeCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.CompositeModelFactory
-import hu.bme.mit.gamma.statechart.composite.InstancePortReference
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponent
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.interface_.Component
@@ -80,26 +79,8 @@ class TraceReplayModelGenerator {
 			val componentPort = portPair.key
 			val environmentPort = portPair.value
 			
-			var InstancePortReference providedReference = createInstancePortReference
-			var InstancePortReference requiredReference = createInstancePortReference
-			
-			val channel = createSimpleChannel
-			channel.providedPort = providedReference
-			channel.requiredPort = requiredReference
-			systemModel.channels += channel
-			
-			if (componentPort.isProvided) {
-				providedReference.instance = componentInstance
-				providedReference.port = componentPort
-				requiredReference.instance = environmentInstance
-				requiredReference.port = environmentPort
-			}
-			else {
-				providedReference.instance = environmentInstance
-				providedReference.port = environmentPort
-				requiredReference.instance = componentInstance
-				requiredReference.port = componentPort
-			}
+			systemModel.channels += connectPortsViaChannels(
+				componentInstance, componentPort, environmentInstance, environmentPort)
 		}
 		
 		// Wrapping the resulting packages
@@ -107,9 +88,10 @@ class TraceReplayModelGenerator {
 		val systemPackage = systemModel.wrapIntoPackage
 		systemPackage.name = testModelPackage.name // So test generation remains simple
 		
-		environmentPackage.imports += testModel.importableInterfacePackages // E.g., interfaces
+		environmentPackage.imports += testModelPackage.allImports // E.g., interfaces and types
 		systemPackage.imports += environmentPackage
 		systemPackage.imports += testModelPackage
+		systemPackage.imports += systemModel.importableInterfacePackages // If ports were not cleared
 				
 		return new Result(environmentInstance, systemModel, lastState)
 	}
@@ -118,7 +100,7 @@ class TraceReplayModelGenerator {
 	
 	static class Namings {
 	
-		def static String getInstanceName(Component system) '''_«system.name.toFirstLower»'''
+		def static String getInstanceName(Component system) '''«system.name.replace('_', '').toFirstLower»'''
 		
 	}
 	
