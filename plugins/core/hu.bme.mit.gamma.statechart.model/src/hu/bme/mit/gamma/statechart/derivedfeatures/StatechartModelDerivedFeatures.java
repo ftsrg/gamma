@@ -108,6 +108,11 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		}
 		throw new IllegalArgumentException("Not supported element: " + element);
 	}
+	
+	public static Set<Package> getImportableInterfacePackages(Component component) {
+		return getAllPorts(component).stream().map(it -> getContainingPackage(
+				getInterface(it))).collect(Collectors.toSet());
+	}
 
 	public static boolean isBroadcast(InterfaceRealization interfaceRealization) {
 		return isProvided(interfaceRealization) &&

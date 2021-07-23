@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.genmodel.language.validation
 
+import hu.bme.mit.gamma.genmodel.model.AbstractComplementaryTestGeneration
 import hu.bme.mit.gamma.genmodel.model.AdaptiveContractTestGeneration
 import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation
 import hu.bme.mit.gamma.genmodel.model.AsynchronousInstanceConstraint
@@ -22,14 +23,13 @@ import hu.bme.mit.gamma.genmodel.model.OrchestratingConstraint
 import hu.bme.mit.gamma.genmodel.model.StatechartCompilation
 import hu.bme.mit.gamma.genmodel.model.Task
 import hu.bme.mit.gamma.genmodel.model.TestGeneration
-import hu.bme.mit.gamma.genmodel.model.TestReplayModelGeneration
+import hu.bme.mit.gamma.genmodel.model.TraceReplayModelGeneration
 import hu.bme.mit.gamma.genmodel.model.Verification
 import hu.bme.mit.gamma.genmodel.model.YakinduCompilation
 import hu.bme.mit.gamma.genmodel.util.GenmodelValidator
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference
 import hu.bme.mit.gamma.statechart.interface_.TimeSpecification
 import org.eclipse.xtext.validation.Check
-import hu.bme.mit.gamma.genmodel.model.AbstractComplementaryTestGeneration
 
 class GenModelValidator extends AbstractGenModelValidator {
 	
@@ -70,7 +70,7 @@ class GenModelValidator extends AbstractGenModelValidator {
 	}
 	
 	@Check
-	def checkTasks(TestReplayModelGeneration modelGeneration) {
+	def checkTasks(TraceReplayModelGeneration modelGeneration) {
 		handleValidationResultMessage(genmodelValidator.checkTasks(modelGeneration))
 	}
 	
@@ -173,7 +173,7 @@ class GenModelValidator extends AbstractGenModelValidator {
 	
 	@Check
 	def checkComponentInstanceReferences(ComponentInstanceReference reference) {
-		genmodelValidator.checkComponentInstanceReferences(reference)
+		handleValidationResultMessage(genmodelValidator.checkComponentInstanceReferences(reference))
 	}
 	
 }

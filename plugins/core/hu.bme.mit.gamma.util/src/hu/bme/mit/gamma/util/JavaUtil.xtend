@@ -10,8 +10,12 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.util
 
+import java.util.AbstractMap.SimpleEntry
+import java.util.Collection
 import java.util.List
 import java.util.Map
+import java.util.Map.Entry
+import java.util.Set
 
 class JavaUtil {
 	// Singleton
@@ -45,6 +49,18 @@ class JavaUtil {
 			map += key -> newArrayList
 		}
 		return map.get(key)
+	}
+	
+	def <K, V> Set<Entry<V, K>> invert(Map<K, V> map) {
+		return map.entrySet.invert.toSet
+	}
+	
+	def <K, V> Collection<Entry<V, K>> invert(Collection<? extends Entry<K, V>> entrySet) {
+		val entries = <Entry<V, K>>newArrayList
+		for (entry : entrySet) {
+			entries += new SimpleEntry(entry.value, entry.key)
+		}
+		return entries
 	}
 	
 }

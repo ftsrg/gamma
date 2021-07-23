@@ -42,7 +42,7 @@ import hu.bme.mit.gamma.genmodel.model.OutEventCoverage;
 import hu.bme.mit.gamma.genmodel.model.StateCoverage;
 import hu.bme.mit.gamma.genmodel.model.TransitionCoverage;
 import hu.bme.mit.gamma.genmodel.model.TransitionPairCoverage;
-import hu.bme.mit.gamma.genmodel.model.XSTSReference;
+import hu.bme.mit.gamma.genmodel.model.XstsReference;
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.TransitionMerging;
 import hu.bme.mit.gamma.property.model.PropertyPackage;
 import hu.bme.mit.gamma.querygenerator.serializer.PropertySerializer;
@@ -102,18 +102,18 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					if (modelReference instanceof ComponentReference) {
 						transformer = new Gamma2UppaalTransformer();
 					}
-					else if (modelReference instanceof XSTSReference) {
-						transformer = new XSTS2UppaalTransformer();
+					else if (modelReference instanceof XstsReference) {
+						transformer = new Xsts2UppaalTransformer();
 					}
 					else {
 						throw new IllegalArgumentException("Not known model reference: " + modelReference);
 					}
 					break;
 				case THETA:
-					transformer = new Gamma2XSTSTransformer();
+					transformer = new Gamma2XstsTransformer();
 					break;
 				case XSTS_UPPAAL:
-					transformer = new Gamma2XSTSUppaalTransformer();
+					transformer = new Gamma2XstsUppaalTransformer();
 					break;
 				default:
 					throw new IllegalArgumentException("Only UPPAAL and Theta are supported.");
@@ -427,7 +427,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 		
 	}
 	
-	class Gamma2XSTSTransformer extends AnalysisModelTransformer {
+	class Gamma2XstsTransformer extends AnalysisModelTransformer {
 		
 		protected final AnalysisModelPreprocessor modelPreprocessor = AnalysisModelPreprocessor.INSTANCE;
 		protected final ActionSerializer actionSerializer = ActionSerializer.INSTANCE;
@@ -493,7 +493,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 	
 	}
 	
-	class XSTS2UppaalTransformer extends AnalysisModelTransformer {
+	class Xsts2UppaalTransformer extends AnalysisModelTransformer {
 		
 		public void execute(AnalysisModelTransformation transformation) {
 			logger.log(Level.INFO, "Starting XSTS-UPPAAL transformation.");
@@ -521,7 +521,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 		
 	}
 	
-	class Gamma2XSTSUppaalTransformer extends AnalysisModelTransformer {
+	class Gamma2XstsUppaalTransformer extends AnalysisModelTransformer {
 		
 		public void execute(AnalysisModelTransformation transformation) throws IOException {
 			logger.log(Level.INFO, "Starting Gamma -> XSTS-UPPAAL transformation.");

@@ -27,6 +27,11 @@
       <genEnumLiterals ecoreEnumLiteral="genmodel.ecore#//InteractionCoverageCriterion/STATES_AND_EVENTS"/>
       <genEnumLiterals ecoreEnumLiteral="genmodel.ecore#//InteractionCoverageCriterion/EVENTS"/>
     </genEnums>
+    <genEnums typeSafeEnumCompatible="false" ecoreEnum="genmodel.ecore#//EnvironmentModel">
+      <genEnumLiterals ecoreEnumLiteral="genmodel.ecore#//EnvironmentModel/OFF"/>
+      <genEnumLiterals ecoreEnumLiteral="genmodel.ecore#//EnvironmentModel/SYNCHRONOUS"/>
+      <genEnumLiterals ecoreEnumLiteral="genmodel.ecore#//EnvironmentModel/ASYNCHRONOUS"/>
+    </genEnums>
     <genEnums typeSafeEnumCompatible="false" ecoreEnum="genmodel.ecore#//DataflowCoverageCriterion">
       <genEnumLiterals ecoreEnumLiteral="genmodel.ecore#//DataflowCoverageCriterion/ALL_DEF"/>
       <genEnumLiterals ecoreEnumLiteral="genmodel.ecore#//DataflowCoverageCriterion/ALL_P_USE"/>
@@ -128,15 +133,17 @@
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference genmodel.ecore#//Verification/propertyPackages"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//Verification/optimize"/>
     </genClasses>
-    <genClasses ecoreClass="genmodel.ecore#//TestReplayModelGeneration">
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference genmodel.ecore#//TestReplayModelGeneration/executionTrace"/>
+    <genClasses ecoreClass="genmodel.ecore#//TraceReplayModelGeneration">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference genmodel.ecore#//TraceReplayModelGeneration/executionTrace"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//TraceReplayModelGeneration/environmentModelFileName"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//TraceReplayModelGeneration/environmentModel"/>
     </genClasses>
     <genClasses ecoreClass="genmodel.ecore#//ModelReference"/>
     <genClasses ecoreClass="genmodel.ecore#//ComponentReference">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference genmodel.ecore#//ComponentReference/component"/>
     </genClasses>
-    <genClasses ecoreClass="genmodel.ecore#//XSTSReference">
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference genmodel.ecore#//XSTSReference/xSts"/>
+    <genClasses ecoreClass="genmodel.ecore#//XstsReference">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference genmodel.ecore#//XstsReference/xSts"/>
     </genClasses>
     <genClasses ecoreClass="genmodel.ecore#//Slicing">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference genmodel.ecore#//Slicing/propertyPackage"/>

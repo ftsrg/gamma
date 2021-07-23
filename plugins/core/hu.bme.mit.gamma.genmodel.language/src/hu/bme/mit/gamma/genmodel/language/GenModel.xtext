@@ -38,7 +38,7 @@ GenModel returns GenModel:
 Task returns Task:
 	YakinduCompilation | CodeGeneration | AnalysisModelTransformation | TestGeneration |
 		EventPriorityTransformation | AdaptiveContractTestGeneration | PhaseStatechartGeneration |
-		Verification | TestReplayModelGeneration | Slicing | StatechartContractTestGeneration | StatechartContractGeneration
+		Verification | TraceReplayModelGeneration | Slicing | StatechartContractTestGeneration | StatechartContractGeneration
 ;
 
 YakinduCompilation returns YakinduCompilation:
@@ -132,7 +132,7 @@ ComponentReference returns ComponentReference:
 	'component' ':' component=[interface::Component] ('(' arguments+=Expression (',' arguments+=Expression)* ')')? 
 ;
 
-XSTSReference returns XSTSReference:
+XSTSReference returns XstsReference:
 	'xsts' ':' xSts=[xsts::XSTS | STRING]
 ;
 
@@ -286,14 +286,20 @@ Verification returns Verification:
 	'}'
 ;
 
-TestReplayModelGeneration returns TestReplayModelGeneration:
-	{TestReplayModelGeneration} 'test-replay' '{'
+TraceReplayModelGeneration returns TraceReplayModelGeneration:
+	{TraceReplayModelGeneration} 'trace-replay' '{'
 		'trace' ':' executionTrace=[trace::ExecutionTrace]
 		(
 			'system-file' ':' fileName+=STRING | // The name of the file containing the system
-			'folder' ':' targetFolder+=STRING
+			'folder' ':' targetFolder+=STRING | 
+			'environment-model-name' ':' environmentModelFileName+=STRING |
+			'environment-model' ':' environmentModel=EnvironmentModel
 		)*
 	'}'
+;
+
+enum EnvironmentModel:
+	OFF = 'off' | SYNCHRONOUS = 'synchronous' | ASYNCHRONOUS = 'asynchronous'
 ;
 
 Slicing returns Slicing:

@@ -171,16 +171,25 @@
         eType="ecore:EClass ../../hu.bme.mit.gamma.property.model/model/property.ecore#//PropertyPackage"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="optimize" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="TestReplayModelGeneration" eSuperTypes="#//Task">
+  <eClassifiers xsi:type="ecore:EClass" name="TraceReplayModelGeneration" eSuperTypes="#//Task">
     <eStructuralFeatures xsi:type="ecore:EReference" name="executionTrace" lowerBound="1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.trace.model/model/trace.ecore#//ExecutionTrace"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="environmentModelFileName"
+        upperBound="-1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="environmentModel" lowerBound="1"
+        eType="#//EnvironmentModel"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EEnum" name="EnvironmentModel">
+    <eLiterals name="OFF" literal="OFF"/>
+    <eLiterals name="SYNCHRONOUS" value="1" literal="SYNCHRONOUS"/>
+    <eLiterals name="ASYNCHRONOUS" value="2" literal="ASYNCHRONOUS"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ModelReference" abstract="true" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ArgumentedElement"/>
   <eClassifiers xsi:type="ecore:EClass" name="ComponentReference" eSuperTypes="#//ModelReference">
     <eStructuralFeatures xsi:type="ecore:EReference" name="component" lowerBound="1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/interface.ecore#//Component"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="XSTSReference" eSuperTypes="#//ModelReference">
+  <eClassifiers xsi:type="ecore:EClass" name="XstsReference" eSuperTypes="#//ModelReference">
     <eStructuralFeatures xsi:type="ecore:EReference" name="xSts" lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.xsts.model/model/model.ecore#//XSTS"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Slicing" eSuperTypes="#//Task">

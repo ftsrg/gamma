@@ -64,10 +64,10 @@ import hu.bme.mit.gamma.genmodel.model.StatechartCompilation;
 import hu.bme.mit.gamma.genmodel.model.StatechartContractTestGeneration;
 import hu.bme.mit.gamma.genmodel.model.Task;
 import hu.bme.mit.gamma.genmodel.model.TestGeneration;
-import hu.bme.mit.gamma.genmodel.model.TestReplayModelGeneration;
+import hu.bme.mit.gamma.genmodel.model.TraceReplayModelGeneration;
 import hu.bme.mit.gamma.genmodel.model.TransitionCoverage;
 import hu.bme.mit.gamma.genmodel.model.Verification;
-import hu.bme.mit.gamma.genmodel.model.XSTSReference;
+import hu.bme.mit.gamma.genmodel.model.XstsReference;
 import hu.bme.mit.gamma.genmodel.model.YakinduCompilation;
 import hu.bme.mit.gamma.property.model.PropertyPackage;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter;
@@ -151,7 +151,7 @@ public class GenmodelValidator extends ExpressionModelValidator {
 					new ReferenceInfo(GenmodelModelPackage.Literals.ANALYSIS_MODEL_TRANSFORMATION__LANGUAGES)));
 		}
 		ModelReference modelReference = analysisModelTransformation.getModel();
-		if (modelReference instanceof XSTSReference) {
+		if (modelReference instanceof XstsReference) {
 			if (languages.stream().anyMatch(it -> it != AnalysisLanguage.UPPAAL)) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 						"XSTS models can be transformed only to UPPAAL",
@@ -236,7 +236,7 @@ public class GenmodelValidator extends ExpressionModelValidator {
 		return validationResultMessages;
 	}
 	
-	public Collection<ValidationResultMessage> checkTasks(TestReplayModelGeneration modelGeneration) {
+	public Collection<ValidationResultMessage> checkTasks(TraceReplayModelGeneration modelGeneration) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		List<String> systemFileNames = modelGeneration.getFileName();
 		if (systemFileNames.size() != 1) {
@@ -500,8 +500,8 @@ public class GenmodelValidator extends ExpressionModelValidator {
 		for (TestGeneration testGenerationTask : javaUtil.filterIntoList(genmodel.getTasks(), TestGeneration.class)) {
 			traceImports.remove(testGenerationTask.getExecutionTrace());
 		}
-		for (TestReplayModelGeneration testReplayModelGeneration : javaUtil.filterIntoList(
-					genmodel.getTasks(), TestReplayModelGeneration.class)) {
+		for (TraceReplayModelGeneration testReplayModelGeneration : javaUtil.filterIntoList(
+					genmodel.getTasks(), TraceReplayModelGeneration.class)) {
 			traceImports.remove(testReplayModelGeneration.getExecutionTrace());
 		}
 		for (ExecutionTrace traceImport : traceImports) {
