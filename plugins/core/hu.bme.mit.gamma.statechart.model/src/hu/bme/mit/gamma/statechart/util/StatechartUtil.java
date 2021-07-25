@@ -54,8 +54,15 @@ import hu.bme.mit.gamma.statechart.interface_.TimeUnit;
 import hu.bme.mit.gamma.statechart.interface_.Trigger;
 import hu.bme.mit.gamma.statechart.statechart.BinaryTrigger;
 import hu.bme.mit.gamma.statechart.statechart.BinaryType;
+import hu.bme.mit.gamma.statechart.statechart.CompositeElement;
+import hu.bme.mit.gamma.statechart.statechart.EntryState;
+import hu.bme.mit.gamma.statechart.statechart.InitialState;
+import hu.bme.mit.gamma.statechart.statechart.StateNode;
+import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
 import hu.bme.mit.gamma.statechart.statechart.StatechartModelFactory;
 import hu.bme.mit.gamma.statechart.statechart.Transition;
+import hu.bme.mit.gamma.statechart.statechart.Region;
+import hu.bme.mit.gamma.statechart.statechart.State;
 
 public class StatechartUtil extends ActionUtil {
 	// Singleton
@@ -364,6 +371,45 @@ public class StatechartUtil extends ActionUtil {
 			requiredReference.setPort(lhsPort);
 		}
 		return channel;
+	}
+	
+	// Statechart element creators
+	
+	public Transition createTransition(StateNode source, StateNode target) {
+		Transition transition = statechartFactory.createTransition();
+		transition.setSourceState(source);
+		transition.setTargetState(target);
+		
+		StatechartDefinition statechart = StatechartModelDerivedFeatures.getContainingStatechart(source);
+		if (statechart != null) {
+			statechart.getTransitions().add(transition);
+		}
+		return transition;
+	}
+	
+	public State createRegionWithState(CompositeElement compositeElement,
+			EntryState entry, String regionName, String stateName) {
+		Region region = statechartFactory.createRegion();
+		region.setName(regionName);
+		compositeElement.getRegions().add(region);
+		
+		region.getStateNodes().add(entry);
+		
+		State state = statechartFactory.createState();
+		state.setName(stateName);
+		region.getStateNodes().add(state);
+		
+		createTransition(entry, state);
+		
+		return state;
+	}
+	
+	public State createRegionWithState(CompositeElement compositeElement,
+			String regionName, String initialStateName, String stateName) {
+		InitialState initialState = statechartFactory.createInitialState();
+		initialState.setName(initialStateName);
+		return createRegionWithState(compositeElement,
+				initialState, regionName, stateName);
 	}
 	
 }

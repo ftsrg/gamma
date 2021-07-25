@@ -906,8 +906,12 @@ public class ExpressionUtil {
 	}
 	
 	public IntegerLiteralExpression toIntegerLiteral(long value) {
+		return toIntegerLiteral(toBigInt(value));
+	}
+	
+	public IntegerLiteralExpression toIntegerLiteral(BigInteger value) {
 		IntegerLiteralExpression integerLiteral = factory.createIntegerLiteralExpression();
-		integerLiteral.setValue(toBigInt(value));
+		integerLiteral.setValue(value);
 		return integerLiteral;
 	}
 	

@@ -11,11 +11,9 @@
 package hu.bme.mit.gamma.trace.environment.transformation
 
 import hu.bme.mit.gamma.statechart.composite.CascadeCompositeComponent
-import hu.bme.mit.gamma.statechart.composite.CompositeModelFactory
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponent
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.interface_.Component
-import hu.bme.mit.gamma.statechart.interface_.InterfaceModelFactory
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
@@ -32,8 +30,6 @@ class TraceReplayModelGenerator {
 	protected final EnvironmentModel environmentModel
 	
 	protected final extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
-	protected final extension InterfaceModelFactory interfaceModelFactory = InterfaceModelFactory.eINSTANCE
-	protected final extension CompositeModelFactory statechartModelFactory = CompositeModelFactory.eINSTANCE
 	
 	new(ExecutionTrace executionTrace, String systemName,
 			String envrionmentModelName, EnvironmentModel environmentModel) {
