@@ -4,8 +4,10 @@ import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.InterfaceModelFactory
 import hu.bme.mit.gamma.statechart.interface_.Port
+import hu.bme.mit.gamma.statechart.statechart.CompositeElement
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.StateNode
+import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.StatechartModelFactory
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.trace.environment.transformation.TraceToEnvironmentModelTransformer.Namings
@@ -20,8 +22,9 @@ import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartMo
 
 class OriginalEnvironmentBehaviorCreator {
 	
-	protected final EnvironmentModel environmentModel
 	protected final Trace trace
+	protected final EnvironmentModel environmentModel
+	protected final boolean considerOutEvents
 	
 	protected final extension Namings namings
 	
@@ -33,9 +36,10 @@ class OriginalEnvironmentBehaviorCreator {
 	protected extension StatechartModelFactory statechartModelFactory = StatechartModelFactory.eINSTANCE
 	protected extension InterfaceModelFactory interfaceModelFactory = InterfaceModelFactory.eINSTANCE
 	
-	new(Trace trace, EnvironmentModel environmentModel, Namings namings) {
+	new(Trace trace, EnvironmentModel environmentModel, Namings namings, boolean considerOutEvents) {
 		this.trace = trace
 		this.environmentModel = environmentModel
+		this.considerOutEvents = considerOutEvents
 		this.namings = namings
 	}
 	
@@ -47,32 +51,62 @@ class OriginalEnvironmentBehaviorCreator {
 			lastState.createAsynchronousEnvironmentBehavior
 		}
 		// No behavior in the case of OFF
+		if (considerOutEvents) {
+			val envrionmentModel = lastState.containingStatechart
+			val inOutCycleVariable = createBooleanTypeDefinition.createVariableDeclaration(
+				inOutCycleVariableName, createTrueExpression)
+			envrionmentModel.variableDeclarations += inOutCycleVariable
+			
+			val stateTransitions = envrionmentModel.transitions.filter[it.sourceState instanceof State]
+			for (stateTransition : stateTransitions) {
+				val source = stateTransition.sourceState
+				val variableReference = inOutCycleVariable.createReferenceExpression
+				if (source === trace.lastOutState) {
+					stateTransition.guard = variableReference.createNotExpression
+				}
+				else {
+					stateTransition.guard = variableReference
+				}
+			}
+			
+			// New region for setting the inOutCycleVariable
+			val inOutCycleState = envrionmentModel.createRegionWithState(inOutCycleRegionName,
+					inOutCycleInitialStateName, inOutCycleStateName)
+			val inOutCycleTransition = inOutCycleState.createTransition(inOutCycleState)
+			inOutCycleTransition.trigger = createOnCycleTrigger
+			inOutCycleTransition.effects += inOutCycleVariable.createAssignment(
+					inOutCycleVariable.createReferenceExpression.createNotExpression)
+		}
 	}
 	
 	private def createSynchronousEnvironmentBehavior(State lastState) {
 		val proxyEnvironmentPortPairs = trace.proxyEnvironmentPortPairs
-		lastState.createSynchronousEnvironmentBehavior(proxyEnvironmentPortPairs,
+		val lastInState = lastState.createSynchronousEnvironmentBehavior(proxyEnvironmentPortPairs,
 			[it.inputEvents], inputRegionName, inputInitialStateName, inputStateName)
-			
-		val environmentProxyPortPairs = proxyEnvironmentPortPairs.invert.toSet
-		lastState.createSynchronousEnvironmentBehavior(environmentProxyPortPairs,
-			[it.inputEvents /*See inversion*/], outputRegionName, outputInitialStateName, outputStateName)
+		trace.lastInState = lastInState
+		
+		if (considerOutEvents) {
+			val envrionmentModel = lastState.containingStatechart
+			val environmentProxyPortPairs = proxyEnvironmentPortPairs.invert.toSet
+			val lastOutState = envrionmentModel.createSynchronousEnvironmentBehavior(environmentProxyPortPairs,
+				[it.inputEvents /*See inversion*/], outputRegionName, outputInitialStateName, outputStateName)
+			trace.lastOutState = lastOutState
+		}
 	}
 	
-	private def createSynchronousEnvironmentBehavior(State lastState,
+	private def createSynchronousEnvironmentBehavior(CompositeElement compositeElement,
 			Set<Entry<Port, Port>> proxyPortPairs, Function<Port, Collection<Event>> eventRetriever,
 			String regionName, String initialStateName, String stateName) {
-		val envrionmentModel = lastState.containingStatechart
+		val envrionmentModel = compositeElement.getSelfOrContainerOfType(StatechartDefinition)
 		
-		val internalLastState = lastState.createRegionWithState(
+		val internalLastState = compositeElement.createRegionWithState(
 			regionName, initialStateName, stateName)
 		
 		val region = internalLastState.parentRegion
 		
 		val transitions = proxyPortPairs.createEventPassingTransitions(eventRetriever)
-		
 		if (transitions.empty) {
-			return
+			return internalLastState
 		}
 		
 		var StateNode lastTargetState = createChoiceState => [
@@ -127,26 +161,32 @@ class OriginalEnvironmentBehaviorCreator {
 		lastMergeChoiceTransition.remove
 		lastMerge.remove
 		
+		return internalLastState
 	}
 	
 	private def createAsynchronousEnvironmentBehavior(State lastState) {
 		val proxyEnvironmentPortPairs = trace.proxyEnvironmentPortPairs
-		lastState.createAsynchronousEnvironmentBehavior(proxyEnvironmentPortPairs,
+		val lastInState = lastState.createAsynchronousEnvironmentBehavior(proxyEnvironmentPortPairs,
 			[it.inputEvents], inputRegionName, inputInitialStateName, inputStateName)
-			
-		val environmentProxyPortPairs = proxyEnvironmentPortPairs.invert.toSet
-		lastState.createAsynchronousEnvironmentBehavior(environmentProxyPortPairs,
-			[it.inputEvents /*See inversion*/], outputRegionName, outputInitialStateName, outputStateName)
+		trace.lastInState = lastInState
+		
+		if (considerOutEvents) {
+			val envrionmentModel = lastState.containingStatechart
+			val environmentProxyPortPairs = proxyEnvironmentPortPairs.invert.toSet
+			val lastOutState = envrionmentModel.createAsynchronousEnvironmentBehavior(environmentProxyPortPairs,
+				[it.inputEvents /*See inversion*/], outputRegionName, outputInitialStateName, outputStateName)
+			trace.lastOutState = lastOutState
+		}
 	}
 	
-	private def createAsynchronousEnvironmentBehavior(State lastState,
+	private def createAsynchronousEnvironmentBehavior(CompositeElement compositeElement,
 			Set<Entry<Port, Port>> proxyPortPairs, Function<Port, Collection<Event>> eventRetriever,
 			String regionName, String initialStateName, String stateName) {
-		val envrionmentModel = lastState.containingStatechart
+		val envrionmentModel = compositeElement.getSelfOrContainerOfType(StatechartDefinition)
 		
-		val internalLastState = lastState.createRegionWithState(
+		val internalLastState = compositeElement.createRegionWithState(
 			regionName, initialStateName, stateName)
-		
+			
 		val transitions = proxyPortPairs.createEventPassingTransitions(eventRetriever)
 		for (transition : transitions) {
 			envrionmentModel.transitions += transition
@@ -154,6 +194,8 @@ class OriginalEnvironmentBehaviorCreator {
 			transition.sourceState = internalLastState
 			transition.targetState = internalLastState
 		}
+		
+		return internalLastState
 	}
 	
 	private def createEventPassingTransitions(Collection<? extends Entry<Port, Port>> portPairs,

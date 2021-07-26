@@ -927,6 +927,12 @@ public class ExpressionUtil {
 		return variableDeclaration;
 	}
 	
+	public NotExpression createNotExpression(Expression expression) {
+		NotExpression notExpression = factory.createNotExpression();
+		notExpression.setOperand(expression);
+		return notExpression;
+	}
+	
 	public DirectReferenceExpression createReferenceExpression(ValueDeclaration variable) {
 		DirectReferenceExpression reference = factory.createDirectReferenceExpression();
 		reference.setDeclaration(variable);

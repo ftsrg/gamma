@@ -38,6 +38,7 @@ class TraceToEnvironmentModelTransformer {
 	protected final extension Namings namings
 	
 	protected final String environmentModelName
+	protected final boolean considerOutEvents
 	protected final ExecutionTrace executionTrace
 	protected final EnvironmentModel environmentModel
 	protected final Trace trace
@@ -51,14 +52,16 @@ class TraceToEnvironmentModelTransformer {
 	protected extension InterfaceModelFactory interfaceModelFactory = InterfaceModelFactory.eINSTANCE
 	protected extension TraceModelFactory traceFactory = TraceModelFactory.eINSTANCE
 	
-	new(String environmentModelName, ExecutionTrace executionTrace, EnvironmentModel environmentModel) {
+	new(String environmentModelName, boolean considerOutEvents,
+			ExecutionTrace executionTrace, EnvironmentModel environmentModel) {
 		this.environmentModelName = environmentModelName
+		this.considerOutEvents = considerOutEvents
 		this.executionTrace = executionTrace
 		this.environmentModel = environmentModel
 		this.namings = new Namings
 		this.trace = new Trace
 		this.originalEnvironmentBehaviorCreator = new OriginalEnvironmentBehaviorCreator(
-			this.trace, this.environmentModel, this.namings)
+			this.trace, this.environmentModel, this.namings, this.considerOutEvents)
 	}
 	
 	def execute() {
@@ -70,23 +73,8 @@ class TraceToEnvironmentModelTransformer {
 		
 		statechart.transformPorts(trace)
 		
-		val mainRegion = createRegion => [
-			it.name = mainRegionName
-		]
-		statechart.regions += mainRegion
-		val initialState = createInitialState => [
-			it.name = initialStateName
-		]
-		mainRegion.stateNodes += initialState
-		val firstState = createState => [
-			it.name = stateName
-		]
-		mainRegion.stateNodes += firstState
-		var actualTransition = createTransition => [
-			it.sourceState = initialState
-			it.targetState = firstState
-		]
-		statechart.transitions += actualTransition
+		statechart.createRegionWithState(mainRegionName, initialStateName, stateName)
+		var actualTransition = statechart.transitions.head
 		
 		val actions = executionTrace.steps.map[it.actions].flatten.toList
 		// Resets are not handled; schedules are handled by introducing a new transition 
@@ -96,8 +84,8 @@ class TraceToEnvironmentModelTransformer {
 		}
 		// There is an unnecessary empty transition at the end
 		val lastState = actualTransition.sourceState as State
-		actualTransition.targetState.delete
-		actualTransition.delete
+		actualTransition.targetState.remove
+		actualTransition.remove
 		
 		lastState.createOriginalEnvironmentBehavior
 		
@@ -136,7 +124,7 @@ class TraceToEnvironmentModelTransformer {
 		}
 	}
 	
-	// Transform ports
+	// Transform triggers
 	
 	protected def dispatch transformTrigger(TimeElapse act, Transition transition) {
 		val elapsedTime = act.elapsedTime
@@ -201,16 +189,9 @@ class TraceToEnvironmentModelTransformer {
 			it.name = stateName
 		]
 		region.stateNodes += newTarget
-		val newTransition = createTransition => [
-			it.sourceState = target
-			it.targetState = newTarget
-		]
-		region.containingStatechart.transitions += newTransition
+		val newTransition = target.createTransition(newTarget)
 		return newTransition
 	}
-	
-	///
-
 	
 	///
 	
@@ -243,6 +224,12 @@ class TraceToEnvironmentModelTransformer {
 		def String getOutputInitialStateName() '''OutputInitialState'''
 		def String getInputStateName() '''InputState'''
 		def String getOutputStateName() '''OutputState'''
+		
+		def String getInOutCycleVariableName() '''inOutCycleVariable'''
+		
+		def String getInOutCycleRegionName() '''InOutCycleRegion'''
+		def String getInOutCycleInitialStateName() '''InOutCycleInitialState'''
+		def String getInOutCycleStateName() '''InOutCycleState'''
 		
 	}
 	

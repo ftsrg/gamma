@@ -11,6 +11,7 @@
 package hu.bme.mit.gamma.trace.environment.transformation
 
 import hu.bme.mit.gamma.statechart.interface_.Port
+import hu.bme.mit.gamma.statechart.statechart.State
 import java.util.Map
 
 class Trace {
@@ -22,6 +23,11 @@ class Trace {
 	final Map<Port, Port> componentEnvironmentPorts = newHashMap
 	final Map<Port, Port> componentProxyPorts = newHashMap
 	final Map<Port, Port> proxyEnvironmentPorts = newHashMap // Proxy port -> environment port -> component port
+	
+	// Last states
+		
+	State lastInState
+	State lastOutState
 	
 	// Component-environment ports
 	
@@ -59,6 +65,24 @@ class Trace {
 	
 	def getProxyEnvironmentPortPairs() {
 		return proxyEnvironmentPorts.entrySet
+	}
+	
+	// Last states
+	
+	def setLastInState(State lastInState) {
+		this.lastInState = lastInState
+	}
+	
+	def getLastInState() {
+		return lastInState
+	}
+	
+	def setLastOutState(State lastOutState) {
+		this.lastOutState = lastOutState
+	}
+	
+	def getLastOutState() {
+		return lastOutState
 	}
 	
 }

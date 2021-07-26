@@ -28,15 +28,17 @@ class TraceReplayModelGenerator {
 	protected final String systemName
 	protected final String envrionmentModelName
 	protected final EnvironmentModel environmentModel
+	protected final boolean considerOutEvents
 	
 	protected final extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
 	
 	new(ExecutionTrace executionTrace, String systemName,
-			String envrionmentModelName, EnvironmentModel environmentModel) {
+			String envrionmentModelName, EnvironmentModel environmentModel, boolean considerOutEvents) {
 		this.executionTrace = executionTrace
 		this.systemName = systemName
 		this.envrionmentModelName = envrionmentModelName
 		this.environmentModel = environmentModel
+		this.considerOutEvents = considerOutEvents
 	}
 	
 	/**
@@ -44,8 +46,8 @@ class TraceReplayModelGenerator {
 	 * Both have to be serialized.
 	 */
 	def execute() {
-		val transformer = new TraceToEnvironmentModelTransformer(
-				envrionmentModelName, executionTrace, environmentModel)
+		val transformer = new TraceToEnvironmentModelTransformer(envrionmentModelName,
+				considerOutEvents, executionTrace, environmentModel)
 		val result = transformer.execute
 		val environmentModel = result.statechart
 		val lastState = result.lastState
@@ -62,6 +64,11 @@ class TraceReplayModelGenerator {
 		
 		val environmentInstance = environmentModel.instantiateSynchronousComponent
 		systemModel.components.add(0, environmentInstance)
+		if (considerOutEvents) {
+			systemModel.executionList += environmentInstance // In
+			systemModel.executionList += componentInstance
+			systemModel.executionList += environmentInstance // Out - uniqueness bug
+		}
 		
 		// Tending to the system and proxy ports
 		if (this.environmentModel === EnvironmentModel.OFF) {
