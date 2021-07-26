@@ -663,12 +663,14 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	public static List<Transition> getOutgoingTransitions(StateNode node) {
 		StatechartDefinition statechart = getContainingStatechart(node);
-		return statechart.getTransitions().stream().filter(it -> it.getSourceState() == node).collect(Collectors.toList());
+		return statechart.getTransitions().stream().filter(it -> it.getSourceState() == node)
+				.collect(Collectors.toList());
 	}
 	
 	public static List<Transition> getIncomingTransitions(StateNode node) {
 		StatechartDefinition statechart = getContainingStatechart(node);
-		return statechart.getTransitions().stream().filter(it -> it.getTargetState() == node).collect(Collectors.toList());
+		return statechart.getTransitions().stream().filter(it -> it.getTargetState() == node)
+				.collect(Collectors.toList());
 	}
 	
 	public static Collection<StateNode> getAllStateNodes(CompositeElement compositeElement) {

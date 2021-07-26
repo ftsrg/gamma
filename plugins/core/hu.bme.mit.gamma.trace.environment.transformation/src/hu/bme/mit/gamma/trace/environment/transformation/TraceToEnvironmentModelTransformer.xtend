@@ -224,6 +224,7 @@ class TraceToEnvironmentModelTransformer {
 		def String getOutputInitialStateName() '''OutputInitialState'''
 		def String getInputStateName() '''InputState'''
 		def String getOutputStateName() '''OutputState'''
+		def String getFirstOutputStateName() '''FirstOutputState'''
 		
 		def String getInOutCycleVariableName() '''inOutCycleVariable'''
 		

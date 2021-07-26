@@ -12,6 +12,8 @@ package hu.bme.mit.gamma.trace.environment.transformation
 
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.State
+import hu.bme.mit.gamma.statechart.statechart.Transition
+import java.util.Collection
 import java.util.Map
 
 class Trace {
@@ -25,7 +27,9 @@ class Trace {
 	final Map<Port, Port> proxyEnvironmentPorts = newHashMap // Proxy port -> environment port -> component port
 	
 	// Last states
-		
+	
+	final Collection<Transition> firstStepTransitions = newHashSet
+	
 	State lastInState
 	State lastOutState
 	
@@ -68,6 +72,18 @@ class Trace {
 	}
 	
 	// Last states
+	
+	def addFirstStepTransitions(Iterable<? extends Transition> transitions) {
+		firstStepTransitions += transitions
+	}
+	
+	def addFirstStepTransition(Transition transition) {
+		firstStepTransitions += transition
+	}
+	
+	def isFirstStepTransition(Transition transition) {
+		return firstStepTransitions.contains(transition)
+	}
 	
 	def setLastInState(State lastInState) {
 		this.lastInState = lastInState
