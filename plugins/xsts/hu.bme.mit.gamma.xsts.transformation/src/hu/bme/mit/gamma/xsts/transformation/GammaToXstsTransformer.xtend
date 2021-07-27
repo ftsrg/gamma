@@ -261,110 +261,115 @@ class GammaToXstsTransformer {
 	protected def dispatch XSTS transform(AbstractSynchronousCompositeComponent component, Package lowlevelPackage) {
 		logger.log(Level.INFO, "Transforming abstract synchronous composite " + component.name)
 		var XSTS xSts = null
-		val scheduledInstances = component.scheduledInstances
-		val mergedAction = if (component instanceof CascadeCompositeComponent) createSequentialAction else createOrthogonalAction
 		val componentMergedActions = <Component, Action>newHashMap // To handle multiple schedulings in CascadeCompositeComponents
-		for (var i = 0; i < scheduledInstances.size; i++) {
-			val subcomponent = scheduledInstances.get(i)
-			val type = subcomponent.type
-			if (componentMergedActions.containsKey(type)) {
-				// This type has already been transformed, this is just a new scheduling
-				checkState(component instanceof CascadeCompositeComponent)
-				mergedAction.actions += componentMergedActions.get(type).clone
+		
+		// Input, output and tracing merged actions
+		val components = component.components
+		for (var i = 0; i < components.size; i++) {
+			val subcomponent = components.get(i)
+			val componentType = subcomponent.type
+			// Normal transformation
+			componentType.transformParameters(subcomponent.arguments) // Change the reference from parameters to constants
+			val newXSts = componentType.transform(lowlevelPackage)
+			newXSts.customizeDeclarationNames(subcomponent)
+			if (xSts === null) {
+				xSts = newXSts
 			}
 			else {
-				// Normal transformation
-				type.transformParameters(subcomponent.arguments) // Change the reference from parameters to constants
-				val newXSts = type.transform(lowlevelPackage)
-				newXSts.customizeDeclarationNames(subcomponent)
-				if (xSts === null) {
-					xSts = newXSts
-				}
-				else {
-					// Adding new elements
-					xSts.typeDeclarations += newXSts.typeDeclarations
-					xSts.publicTypeDeclarations += newXSts.publicTypeDeclarations
-					xSts.variableGroups += newXSts.variableGroups
-					xSts.variableDeclarations += newXSts.variableDeclarations
-					xSts.transientVariables += newXSts.transientVariables
-					xSts.controlVariables += newXSts.controlVariables
-					xSts.clockVariables += newXSts.clockVariables
-					xSts.constraints += newXSts.constraints
-					// Initializing action
-					val variableInitAction = createSequentialAction
-					variableInitAction.actions += xSts.variableInitializingTransition.action
-					variableInitAction.actions += newXSts.variableInitializingTransition.action
-					xSts.variableInitializingTransition = variableInitAction.wrap
-					val configInitAction = createSequentialAction
-					configInitAction.actions += xSts.configurationInitializingTransition.action
-					configInitAction.actions += newXSts.configurationInitializingTransition.action
-					xSts.configurationInitializingTransition = configInitAction.wrap
-					val entryAction = createSequentialAction
-					entryAction.actions += xSts.entryEventTransition.action
-					entryAction.actions += newXSts.entryEventTransition.action
-					xSts.entryEventTransition = entryAction.wrap
-				}
-				// Merged action
-				val actualComponentMergedAction = createSequentialAction => [
-					it.actions += newXSts.mergedAction
-				]
-				mergedAction.actions += actualComponentMergedAction
-				// In and Out actions - using sequential actions to make sure they are composite actions
-				// Methods reset... and delete... require this
-				val newInEventAction = createSequentialAction => [ it.actions += newXSts.inEventTransition.action ]
-				newXSts.inEventTransition = newInEventAction.wrap
-				val newOutEventAction = createSequentialAction => [ it.actions += newXSts.outEventTransition.action ]
-				newXSts.outEventTransition = newOutEventAction.wrap
-				// Resetting channel events
-				// 1) the Sync ort semantics: Resetting channel IN events AFTER schedule would result in a deadlock
-				// 2) the Casc semantics: Resetting channel OUT events BEFORE schedule would delete in events of subsequent components
-				// Note, System in and out events are reset in the env action
-				if (component instanceof CascadeCompositeComponent) {
-					// Resetting IN events AFTER schedule
-					val clonedNewInEventAction = newInEventAction.clone
-						.resetEverythingExceptPersistentParameters(type) // Clone is important
-					actualComponentMergedAction.actions += clonedNewInEventAction // Putting the new action AFTER
-				}
-				else {
-					// Resetting OUT events BEFORE schedule
-					val clonedNewOutEventAction = newOutEventAction.clone // Clone is important
-						.resetEverythingExceptPersistentParameters(type)
-					actualComponentMergedAction.actions.add(0, clonedNewOutEventAction) // Putting the new action BEFORE
-				}
-				// In event
-				newInEventAction.deleteEverythingExceptSystemEventsAndParameters(component)
-				if (xSts !== newXSts) { // Only if this is not the first component
-					val inEventAction = createSequentialAction
-					inEventAction.actions += xSts.inEventTransition.action
-					inEventAction.actions += newInEventAction
-					xSts.inEventTransition = inEventAction.wrap
-				}
-				// Out event
-				newOutEventAction.deleteEverythingExceptSystemEventsAndParameters(component)
-				if (xSts !== newXSts) { // Only if this is not the first component
-					val outEventAction = createSequentialAction
-					outEventAction.actions += xSts.outEventTransition.action
-					outEventAction.actions += newOutEventAction
-					xSts.outEventTransition = outEventAction.wrap
-				}
-				// Tracing merged action
-				componentMergedActions.put(type, actualComponentMergedAction.clone)
+				// Adding new elements
+				xSts.typeDeclarations += newXSts.typeDeclarations
+				xSts.publicTypeDeclarations += newXSts.publicTypeDeclarations
+				xSts.variableGroups += newXSts.variableGroups
+				xSts.variableDeclarations += newXSts.variableDeclarations
+				xSts.transientVariables += newXSts.transientVariables
+				xSts.controlVariables += newXSts.controlVariables
+				xSts.clockVariables += newXSts.clockVariables
+				xSts.constraints += newXSts.constraints
+				// Initializing action
+				val variableInitAction = createSequentialAction
+				variableInitAction.actions += xSts.variableInitializingTransition.action
+				variableInitAction.actions += newXSts.variableInitializingTransition.action
+				xSts.variableInitializingTransition = variableInitAction.wrap
+				val configInitAction = createSequentialAction
+				configInitAction.actions += xSts.configurationInitializingTransition.action
+				configInitAction.actions += newXSts.configurationInitializingTransition.action
+				xSts.configurationInitializingTransition = configInitAction.wrap
+				val entryAction = createSequentialAction
+				entryAction.actions += xSts.entryEventTransition.action
+				entryAction.actions += newXSts.entryEventTransition.action
+				xSts.entryEventTransition = entryAction.wrap
+			}
+			// Merged action
+			val actualComponentMergedAction = createSequentialAction => [
+				it.actions += newXSts.mergedAction
+			]
+			// In and Out actions - using sequential actions to make sure they are composite actions
+			// Methods reset... and delete... require this
+			val newInEventAction = createSequentialAction => [ it.actions += newXSts.inEventTransition.action ]
+			newXSts.inEventTransition = newInEventAction.wrap
+			val newOutEventAction = createSequentialAction => [ it.actions += newXSts.outEventTransition.action ]
+			newXSts.outEventTransition = newOutEventAction.wrap
+			// Resetting channel events
+			// 1) the Sync ort semantics: Resetting channel IN events AFTER schedule would result in a deadlock
+			// 2) the Casc semantics: Resetting channel OUT events BEFORE schedule would delete in events of subsequent components
+			// Note, System in and out events are reset in the env action
+			if (component instanceof CascadeCompositeComponent) {
+				// Resetting IN events AFTER schedule
+				val clonedNewInEventAction = newInEventAction.clone
+						.resetEverythingExceptPersistentParameters(componentType) // Clone is important
+				actualComponentMergedAction.actions += clonedNewInEventAction // Putting the new action AFTER
+			}
+			else {
+				// Resetting OUT events BEFORE schedule
+				val clonedNewOutEventAction = newOutEventAction.clone // Clone is important
+						.resetEverythingExceptPersistentParameters(componentType)
+				actualComponentMergedAction.actions.add(0, clonedNewOutEventAction) // Putting the new action BEFORE
+			}
+			// In event
+			newInEventAction.deleteEverythingExceptSystemEventsAndParameters(component)
+			if (xSts !== newXSts) { // Only if this is not the first component
+				val inEventAction = createSequentialAction
+				inEventAction.actions += xSts.inEventTransition.action
+				inEventAction.actions += newInEventAction
+				xSts.inEventTransition = inEventAction.wrap
+			}
+			// Out event
+			newOutEventAction.deleteEverythingExceptSystemEventsAndParameters(component)
+			if (xSts !== newXSts) { // Only if this is not the first component
+				val outEventAction = createSequentialAction
+				outEventAction.actions += xSts.outEventTransition.action
+				outEventAction.actions += newOutEventAction
+				xSts.outEventTransition = outEventAction.wrap
+			}
+			// Tracing merged action
+			componentMergedActions.put(componentType, actualComponentMergedAction.clone)
+		}
+		
+		// Merged action based on scheduling instances
+		val scheduledInstances = component.scheduledInstances
+		val mergedAction = (component instanceof CascadeCompositeComponent) ? createSequentialAction : createOrthogonalAction
+		for (var i = 0; i < scheduledInstances.size; i++) {
+			val subcomponent = scheduledInstances.get(i)
+			val componentType = subcomponent.type
+			if (componentMergedActions.containsKey(componentType)) {
+				mergedAction.actions += componentMergedActions.get(componentType).clone
 			}
 		}
-		xSts.name = component.name
 		xSts.changeTransitions(mergedAction.wrap)
+		
+		xSts.name = component.name
 		logger.log(Level.INFO, "Deleting unused instance ports in " + component.name)
 		xSts.deleteUnusedPorts(component) // Deleting variable assignments for unused ports
 		// Connect only after xSts.mergedTransition.action = mergedAction
 		logger.log(Level.INFO, "Connecting events through channels in " + component.name)
 		xSts.connectEventsThroughChannels(component) // Event (variable setting) connecting across channels
 		logger.log(Level.INFO, "Binding event to system port events in " + component.name)
-		val oldInEventAction = xSts.inEventTransition
+		val oldInEventAction = xSts.inEventTransition.action
 		val bindingAssignments = xSts.createEventAndParameterAssignmentsBoundToTheSameSystemPort(component)
 		// Optimization: removing old NonDeterministicActions 
-		bindingAssignments.removeNonDeterministicActionsReferencingAssignedVariables(oldInEventAction.action)
+		bindingAssignments.removeNonDeterministicActionsReferencingAssignedVariables(oldInEventAction)
 		val newInEventAction = createSequentialAction => [
-			it.actions += oldInEventAction.action
+			it.actions += oldInEventAction
 			// Bind together ports connected to the same system port
 			it.actions += bindingAssignments
 		]
