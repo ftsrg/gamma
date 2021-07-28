@@ -51,8 +51,9 @@ public class TraceReplayModelGenerationHandler extends TaskHandler {
 		String environmentModelName = environmentModelFileName.get(0); // Set in setTraceReplayModelGeneration
 		EnvironmentModel environmentModelSetting = transformEnvironmentModel(modelGeneration.getEnvironmentModel());
 		
+		boolean considerOutEvents = modelGeneration.isConsiderOutEvents();
 		TraceReplayModelGenerator modelGenerator = new TraceReplayModelGenerator(executionTrace,
-				systemName, environmentModelName, environmentModelSetting, true);
+				systemName, environmentModelName, environmentModelSetting, considerOutEvents);
 		Result result = modelGenerator.execute();
 		SynchronousComponentInstance environmentInstance = result.getEnvironmentModelIntance();
 		Component environmentModel = environmentInstance.getType();

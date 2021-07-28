@@ -137,6 +137,7 @@
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference genmodel.ecore#//TraceReplayModelGeneration/executionTrace"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//TraceReplayModelGeneration/environmentModelFileName"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//TraceReplayModelGeneration/environmentModel"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//TraceReplayModelGeneration/considerOutEvents"/>
     </genClasses>
     <genClasses ecoreClass="genmodel.ecore#//ModelReference"/>
     <genClasses ecoreClass="genmodel.ecore#//ComponentReference">

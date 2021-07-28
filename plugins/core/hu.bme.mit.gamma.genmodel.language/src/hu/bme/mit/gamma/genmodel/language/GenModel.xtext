@@ -293,7 +293,8 @@ TraceReplayModelGeneration returns TraceReplayModelGeneration:
 			'system-file' ':' fileName+=STRING | // The name of the file containing the system
 			'folder' ':' targetFolder+=STRING | 
 			'environment-model-file' ':' environmentModelFileName+=STRING |
-			'environment-model' ':' environmentModel=EnvironmentModel
+			'environment-model' ':' environmentModel=EnvironmentModel |
+			'consider-out-events' ':' considerOutEvents=BOOLEAN
 		)*
 	'}'
 ;

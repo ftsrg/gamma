@@ -178,6 +178,8 @@
         upperBound="-1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="environmentModel" lowerBound="1"
         eType="#//EnvironmentModel"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="considerOutEvents" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"
+        defaultValueLiteral="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EEnum" name="EnvironmentModel">
     <eLiterals name="OFF" literal="OFF"/>
