@@ -18,7 +18,11 @@ import java.util.stream.Collectors;
 
 import org.eclipse.emf.ecore.EObject;
 
+import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
 import hu.bme.mit.gamma.expression.model.AndExpression;
+import hu.bme.mit.gamma.expression.model.ArrayAccessExpression;
+import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression;
+import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.DefaultExpression;
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
@@ -29,6 +33,7 @@ import hu.bme.mit.gamma.expression.model.ExpressionModelFactory;
 import hu.bme.mit.gamma.expression.model.NotExpression;
 import hu.bme.mit.gamma.expression.model.OrExpression;
 import hu.bme.mit.gamma.expression.model.Type;
+import hu.bme.mit.gamma.expression.model.TypeDefinition;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.expression.util.ExpressionUtil;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
@@ -55,6 +60,17 @@ public class XstsActionUtil extends ExpressionUtil {
 	protected GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
 	protected ExpressionModelFactory expressionFactory = ExpressionModelFactory.eINSTANCE;
 	protected XSTSModelFactory xStsFactory = XSTSModelFactory.eINSTANCE;
+	
+	public void merge(XSTS pivot, XSTS mergable) {
+		pivot.getTypeDeclarations().addAll(mergable.getTypeDeclarations());
+		pivot.getPublicTypeDeclarations().addAll(mergable.getPublicTypeDeclarations());
+		pivot.getVariableGroups().addAll(mergable.getVariableGroups());
+		pivot.getVariableDeclarations().addAll(mergable.getVariableDeclarations());
+		pivot.getTransientVariables().addAll(mergable.getTransientVariables());
+		pivot.getControlVariables().addAll(mergable.getControlVariables());
+		pivot.getClockVariables().addAll(mergable.getClockVariables());
+		pivot.getConstraints().addAll(mergable.getConstraints());
+	}
 	
 	public void changeTransitions(XSTS xSts, XTransition newAction) {
 		changeTransitions(xSts, Collections.singletonList(newAction));
@@ -205,6 +221,14 @@ public class XstsActionUtil extends ExpressionUtil {
 		assignmentAction.setLhs(lhsReference);
 		assignmentAction.setRhs(rhs);
 		return assignmentAction;
+	}
+	
+	public AssignmentAction increment(VariableDeclaration variable) {
+		return createAssignmentAction(variable, createIncrementExpression(variable));
+	}
+	
+	public AssignmentAction decrement(VariableDeclaration variable) {
+		return createAssignmentAction(variable, createDecrementExpression(variable));
 	}
 	
 	public AssumeAction createAssumeAction(Expression condition) {
@@ -456,6 +480,47 @@ public class XstsActionUtil extends ExpressionUtil {
 	
 	private <T extends EObject> T clone(T element) {
 		return ecoreUtil.clone(element);
+	}
+	
+	// Message queue - array handling
+	 
+	public Action pop(VariableDeclaration queue) {
+		TypeDefinition typeDefinition = ExpressionModelDerivedFeatures.getTypeDefinition(queue);
+		if (typeDefinition instanceof ArrayTypeDefinition) {
+			ArrayTypeDefinition arrayTypeDefinition = (ArrayTypeDefinition) typeDefinition;
+			Type elementType = arrayTypeDefinition.getElementType();
+			int size = evaluator.evaluateInteger(arrayTypeDefinition.getSize());
+			
+			ArrayLiteralExpression arrayLiteral = factory.createArrayLiteralExpression();
+			for (int i = 1; i < size; i++) {
+				ArrayAccessExpression accessExpression = factory.createArrayAccessExpression();
+				accessExpression.setOperand(createReferenceExpression(queue));
+				accessExpression.setIndex(toIntegerLiteral(i));
+				arrayLiteral.getOperands().add(accessExpression);
+			}
+			// Shifting a default value at the end
+			Expression defaultExpression = ExpressionModelDerivedFeatures.getDefaultExpression(elementType);
+			arrayLiteral.getOperands().add(defaultExpression);
+			
+			Action popAction = createAssignmentAction(queue, arrayLiteral);
+			return popAction;
+		}
+		throw new IllegalArgumentException("Not an array: " + queue);
+	}
+	
+	public Action pop(VariableDeclaration queue, VariableDeclaration sizeVariable) {
+		TypeDefinition typeDefinition = ExpressionModelDerivedFeatures.getTypeDefinition(queue);
+		if (typeDefinition instanceof ArrayTypeDefinition) {
+			Action popAction = pop(queue);
+			Action sizeDecrementAction = decrement(sizeVariable);
+			
+			SequentialAction block = xStsFactory.createSequentialAction();
+			block.getActions().add(popAction);
+			block.getActions().add(sizeDecrementAction);
+			
+			return block;
+		}
+		throw new IllegalArgumentException("Not an array: " + queue);
 	}
 	
 }

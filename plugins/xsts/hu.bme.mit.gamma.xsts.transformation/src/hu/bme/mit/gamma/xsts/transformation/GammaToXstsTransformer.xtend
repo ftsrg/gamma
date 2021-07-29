@@ -143,20 +143,20 @@ class GammaToXstsTransformer {
 			for (xStsClockVariable : xSts.clockVariables) {
 				val maxValue = xStsClockVariable.greatestComparison
 				val incrementExpression = createAddExpression => [
-					it.operands += statechartUtil.createReferenceExpression(xStsClockVariable)
-					it.operands += statechartUtil.toIntegerLiteral(schedulingConstraint)
+					it.operands += createReferenceExpression(xStsClockVariable)
+					it.operands += toIntegerLiteral(schedulingConstraint)
 				]
 				val rhs = (maxValue === null) ? incrementExpression :
 					createIfThenElseExpression => [
 						it.condition = createLessExpression => [
-							it.leftOperand = statechartUtil.createReferenceExpression(xStsClockVariable)
-							it.rightOperand = statechartUtil.toIntegerLiteral(maxValue)
+							it.leftOperand = createReferenceExpression(xStsClockVariable)
+							it.rightOperand = toIntegerLiteral(maxValue)
 						]
 						it.then = incrementExpression
-						it.^else = statechartUtil.createReferenceExpression(xStsClockVariable)
+						it.^else = createReferenceExpression(xStsClockVariable)
 					]
 				it.actions += createAssignmentAction => [
-					it.lhs = statechartUtil.createReferenceExpression(xStsClockVariable)
+					it.lhs = createReferenceExpression(xStsClockVariable)
 					it.rhs = rhs
 				]
 			}
@@ -197,7 +197,7 @@ class GammaToXstsTransformer {
 		if (schedulingConstraint !== null) {
 			if (!_package.annotations.exists[it instanceof SchedulingConstraintAnnotation]) {
 				_package.annotations += createSchedulingConstraintAnnotation => [
-					it.schedulingConstraint = statechartUtil.toIntegerLiteral(schedulingConstraint)
+					it.schedulingConstraint = toIntegerLiteral(schedulingConstraint)
 				]
 				_package.save
 			}

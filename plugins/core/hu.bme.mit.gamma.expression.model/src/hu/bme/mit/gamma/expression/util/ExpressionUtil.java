@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
 
+import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
 import hu.bme.mit.gamma.expression.model.AccessExpression;
 import hu.bme.mit.gamma.expression.model.AddExpression;
 import hu.bme.mit.gamma.expression.model.AndExpression;
@@ -76,6 +77,7 @@ import hu.bme.mit.gamma.expression.model.SubtractExpression;
 import hu.bme.mit.gamma.expression.model.TrueExpression;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
+import hu.bme.mit.gamma.expression.model.TypeDefinition;
 import hu.bme.mit.gamma.expression.model.TypeReference;
 import hu.bme.mit.gamma.expression.model.UnaryExpression;
 import hu.bme.mit.gamma.expression.model.ValueDeclaration;
@@ -433,7 +435,8 @@ public class ExpressionUtil {
 		return equalityExpressions;
 	}
 
-	public List<EqualityExpression> filterReferenceEqualityExpressions(Collection<EqualityExpression> expressions) {
+	public List<EqualityExpression> filterReferenceEqualityExpressions(
+			Collection<EqualityExpression> expressions) {
 		return expressions.stream().filter(
 				it -> it.getLeftOperand() instanceof ReferenceExpression
 				&& !(it.getRightOperand() instanceof ReferenceExpression))
@@ -448,6 +451,14 @@ public class ExpressionUtil {
 
 	public Expression subtract(Expression expression, int value) {
 		return toIntegerLiteral(evaluator.evaluate(expression) - value);
+	}
+	
+	public Expression createIncrementExpression(VariableDeclaration variable) {
+		return wrapIntoAdd(createReferenceExpression(variable), 1);
+	}
+
+	public Expression createDecrementExpression(VariableDeclaration variable) {
+		return wrapIntoSubtract(createReferenceExpression(variable), 1);
 	}
 	
 	public Expression wrapIntoAdd(Expression expression, int value) {
@@ -1050,6 +1061,19 @@ public class ExpressionUtil {
 			}
 		}
 		return expression;
+	}
+	
+	// Message queue - array handling
+	 
+	public Expression peek(VariableDeclaration queue) {
+		TypeDefinition typeDefinition = ExpressionModelDerivedFeatures.getTypeDefinition(queue);
+		if (typeDefinition instanceof ArrayTypeDefinition) {
+			ArrayAccessExpression accessExpression = factory.createArrayAccessExpression();
+			accessExpression.setOperand(createReferenceExpression(queue));
+			accessExpression.setIndex(toIntegerLiteral(0));
+			return accessExpression;
+		}
+		throw new IllegalArgumentException("Not an array: " + queue);
 	}
 	
 }

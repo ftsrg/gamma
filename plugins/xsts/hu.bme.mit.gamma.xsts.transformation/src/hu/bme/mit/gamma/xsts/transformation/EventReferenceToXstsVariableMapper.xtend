@@ -99,7 +99,7 @@ class EventReferenceToXstsVariableMapper {
 			val instance = statechart.referencingComponentInstance
 			val xStsVariableName = parameter.customizeInNames(simplePort, instance)
 			val xStsVariable = xSts.getVariables(xStsVariableName)
-			if (xStsVariable !== null) {
+			if (!xStsVariable.empty) {
 				xStsVariables += xStsVariable
 			}
 			else {

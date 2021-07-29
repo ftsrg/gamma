@@ -1,23 +1,31 @@
 package hu.bme.mit.gamma.xsts.transformation
 
+import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
+import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.TypeReference
+import hu.bme.mit.gamma.expression.model.VariableDeclaration
+import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.LowlevelToXstsTransformer
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.TransitionMerging
 import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
+import hu.bme.mit.gamma.statechart.composite.AsynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.CascadeCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance
 import hu.bme.mit.gamma.statechart.composite.ControlFunction
+import hu.bme.mit.gamma.statechart.composite.MessageQueue
 import hu.bme.mit.gamma.statechart.interface_.AnyTrigger
 import hu.bme.mit.gamma.statechart.interface_.Component
+import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.lowlevel.model.Package
 import hu.bme.mit.gamma.statechart.lowlevel.transformation.GammaToLowlevelTransformer
+import hu.bme.mit.gamma.statechart.lowlevel.transformation.ValueDeclarationTransformer
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
-import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
+import hu.bme.mit.gamma.util.JavaUtil
 import hu.bme.mit.gamma.xsts.model.AbstractAssignmentAction
 import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.InEventGroup
@@ -35,11 +43,13 @@ import static com.google.common.base.Preconditions.checkState
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
+import static extension hu.bme.mit.gamma.xsts.transformation.ComponentTransformer.Namings.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 
 class ComponentTransformer {
 	// This gammaToLowlevelTransformer must be the same during this transformation cycle due to tracing
 	protected final GammaToLowlevelTransformer gammaToLowlevelTransformer
+	protected final MessageQueueTraceability queueTraceability
 	// Transformation settings
 	protected final boolean optimize
 	protected final boolean useHavocActions
@@ -47,13 +57,15 @@ class ComponentTransformer {
 	protected final TransitionMerging transitionMerging
 	// Auxiliary objects
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
-	protected final extension EnvironmentalActionFilter environmentalActionFilter = EnvironmentalActionFilter.INSTANCE
+	protected final extension JavaUtil javaUtil = JavaUtil.INSTANCE
+	protected final extension ExpressionEvaluator expressionEvaluator = ExpressionEvaluator.INSTANCE
+	protected final extension EnvironmentalActionFilter environmentalActionFilter =
+			EnvironmentalActionFilter.INSTANCE
 	protected final extension EventConnector eventConnector = EventConnector.INSTANCE
 	protected final extension SystemReducer systemReducer = SystemReducer.INSTANCE
 	protected final extension ExpressionModelFactory expressionModelFactory = ExpressionModelFactory.eINSTANCE
 	protected final extension XSTSModelFactory xStsModelFactory = XSTSModelFactory.eINSTANCE
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
-	protected final extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
 	// Logger
 	protected final Logger logger = Logger.getLogger("GammaLogger")
 	
@@ -64,73 +76,276 @@ class ComponentTransformer {
 		this.useHavocActions = useHavocActions
 		this.extractGuards = extractGuards
 		this.transitionMerging = transitionMerging
+		this.queueTraceability = new MessageQueueTraceability
 	}
 	
 	def dispatch XSTS transform(Component component, Package lowlevelPackage) {
 		throw new IllegalArgumentException("Not supported component type: " + component)
 	}
 	
+	def dispatch XSTS transform(AsynchronousCompositeComponent component, Package lowlevelPackage) {
+		// Retrieving the adapter instances - hierarchy does not matter here apart from the order
+		val adapterInstances = component.allAsynchronousSimpleInstances
+		
+		val xSts = createXSTS => [
+			it.name = component.name
+		]
+		
+		val eventReferenceMapper = new EventReferenceToXstsVariableMapper(xSts)
+		
+		val variableInitAction = createSequentialAction
+		val configInitAction = createSequentialAction
+		val entryAction = createSequentialAction
+		
+		val inEventAction = createSequentialAction
+		val outEventAction = createSequentialAction
+		
+		val mergedAction = createSequentialAction
+		
+		for (adapterInstance : adapterInstances) {
+			val adapterComponentType = adapterInstance.type as AsynchronousAdapter
+			
+			adapterComponentType.extractParameters(adapterInstance.arguments) // Parameters
+			// TODO for potential middle hierarchy levels
+			val adapterXsts = adapterComponentType.transform(lowlevelPackage)
+			xSts.merge(adapterXsts) // Adding variables, types, etc.
+			
+			variableInitAction.actions += adapterXsts.variableInitializingTransition.action
+			configInitAction.actions += adapterXsts.configurationInitializingTransition.action
+			entryAction.actions += adapterXsts.entryEventTransition.action
+			
+			val originalMergedAction = adapterXsts.mergedAction
+			
+			// inEventActions later
+			outEventAction.actions += adapterXsts.outEventTransition.action
+			
+			// Creating the message queue constructions
+			for (queue : adapterComponentType.messageQueues) {
+				val events = queue.storedEvents
+				for (event : events) {
+					queueTraceability.put(event) // An id is assigned automatically
+				}
+				
+				val capacity = queue.capacity
+				val masterQueueType = createArrayTypeDefinition => [
+					it.elementType = createIntegerTypeDefinition
+					it.size = capacity.clone
+				]
+				val masterQueueName = queue.getMasterQueueName(adapterInstance)
+				val masterQueue = masterQueueType.createVariableDeclaration(masterQueueName)
+				
+				val sizeVariableName = queue.getSizeVariableName(adapterInstance)
+				val sizeVariable = createIntegerTypeDefinition.createVariableDeclaration(sizeVariableName)
+				
+				val slaveQueuesMap = newHashMap
+				for (portEvent : events) {
+					val port = portEvent.key
+					val event = portEvent.value
+					val List<VariableDeclaration> slaveQueues = newArrayList
+					for (parameter : event.parameterDeclarations) {
+						val parameterType = parameter.type
+						val slaveQueueType = createArrayTypeDefinition => [
+							it.elementType = parameterType.clone
+							it.size = capacity.evaluateInteger.toIntegerLiteral
+						]
+						val slaveQueueName = parameter.getSlaveQueueName(port, adapterInstance)
+						val slaveQueue = slaveQueueType.createVariableDeclaration(slaveQueueName)
+						slaveQueues += slaveQueue
+					}
+					slaveQueuesMap += queueTraceability.get(portEvent) -> slaveQueues
+				}
+				val queueMapping = new MessageQueueMapping(masterQueue, sizeVariable, slaveQueuesMap)
+				queueTraceability.put(queue, queueMapping)
+			}
+			
+			// Transforming the message queue constructions into native XSTS variables
+			val valueDeclarationTransformer = new ValueDeclarationTransformer
+			val variableTrace = valueDeclarationTransformer.getTrace
+			
+			for (messageQueue : queueTraceability.getMessageQueues) { // In priority order
+				val messageQueueMapping = queueTraceability.get(messageQueue)
+				
+				val masterQueue = messageQueueMapping.masterQueue
+				val sizeVariable = messageQueueMapping.sizeVariable
+				val slaveQueues = messageQueueMapping.slaveQueues
+				
+				// We do not care about the names here
+				xSts.variableDeclarations += valueDeclarationTransformer.transform(masterQueue)
+				xSts.variableDeclarations += valueDeclarationTransformer.transform(sizeVariable)
+				for (slaveQueueList : slaveQueues.values) {
+					for (slaveQueue : slaveQueueList) {
+						xSts.variableDeclarations += valueDeclarationTransformer.transform(slaveQueue)
+						// The type might not be correct here and later has to be reassigned to handle enums
+					}
+				}
+				// Actually, the following values are "low-level values", but we handle them as XSTS values
+				
+				val xStsMasterQueue = variableTrace.getAll(masterQueue).onlyElement
+				val xStsSizeVariable = variableTrace.getAll(sizeVariable).onlyElement
+				
+				val block = createSequentialAction
+				val loopIterationVariable = createParameterDeclaration => [
+					it.type = createIntegerTypeDefinition
+					it.name = loopIterationVariableName
+				]
+				val queueLoop = createLoopAction => [
+					it.iterationParameterDeclaration = loopIterationVariable
+					it.range = createIntegerRangeLiteralExpression => [
+						it.leftOperand = 0.toIntegerLiteral // leftInclusive is true by default
+						it.rightOperand = xStsSizeVariable.createReferenceExpression
+						// rightInclusive is false by default
+					]
+					it.action = block
+				]
+				mergedAction.actions += queueLoop
+				
+				val eventIdVariableAction = createIntegerTypeDefinition.createVariableDeclarationAction(
+					eventIdentifierVariableName, xStsMasterQueue.peek)
+				val eventIdVariable = eventIdVariableAction.variableDeclaration
+				block.actions += eventIdVariableAction
+				block.actions += xStsMasterQueue.pop(xStsSizeVariable)
+				
+				val events = messageQueue.storedEvents
+				for (portEvent : events) {
+					val port = portEvent.key
+					val event = portEvent.value
+					val eventId = queueTraceability.get(portEvent)
+					
+					val xStsInEventVariables = eventReferenceMapper.getInputEventVariables(event, port)
+					if (!xStsInEventVariables.empty) { // Can be empty due to optimization
+						val ifExpression = eventIdVariable.createReferenceExpression
+								.createEqualityExpression(eventId.toIntegerLiteral)
+						val thenAction = createSequentialAction
+						// Setting the event variables to true (multiple binding is possible)
+						for (xStsInEventVariable : xStsInEventVariables) {
+							thenAction.actions += xStsInEventVariable.createAssignmentAction(
+								createTrueExpression)
+						}
+						// Setting the parameter variables with values stored in slave queues
+						val slaveQueueList = slaveQueues.get(eventId)
+						
+						val parameters = event.parameterDeclarations
+						val parameterSize = parameters.size
+						checkState(parameterSize == slaveQueueList.size)
+						for (var i = 0; i < parameterSize; i++) {
+							val slaveQueue = slaveQueueList.get(i)
+							val inParameter = parameters.get(i)
+							
+							val xStsSlaveQueues = variableTrace.getAll(slaveQueue)
+							val xStsInParameterVariables = eventReferenceMapper
+									.getInputParameterVariables(inParameter, port)
+							val xStsInParameterVariablesSize = xStsInParameterVariables.size
+							val xStsSlaveQueuesSize = xStsSlaveQueues.size
+							checkState(xStsInParameterVariablesSize % xStsSlaveQueuesSize == 0)
+							for (var j = 0; j < xStsInParameterVariablesSize; j++) {
+								val xStsInParameterVariable = xStsInParameterVariables.get(j)
+								val k = j % xStsSlaveQueuesSize
+								val xStsSlaveQueue = xStsSlaveQueues.get(k)
+								// Setting type to prevent enum problems (multiple times, though)
+								val slaveQueueType = xStsSlaveQueue.typeDefinition as ArrayTypeDefinition
+								slaveQueueType.elementType = xStsInParameterVariable.type.clone
+								//
+								thenAction.actions += xStsInParameterVariable.createAssignmentAction(
+									xStsSlaveQueue.peek)
+							}
+							for (xStsSlaveQueue : xStsSlaveQueues) {
+								thenAction.actions += xStsSlaveQueue.pop
+							}
+							// Execuion if necessary
+							if (adapterComponentType.isControlSpecification(portEvent)) {
+								thenAction.actions += originalMergedAction.clone
+							}
+						}
+						// if (eventId == ..) { "transfer slave queue values" if (isControlSpec) { "run" }
+						block.actions += ifExpression.createIfAction(thenAction)
+					}
+				}
+			}
+			
+			// Dispatching events to connected message queues - use derived features
+			
+		}
+		
+		xSts.variableInitializingTransition = variableInitAction.wrap
+		xSts.configurationInitializingTransition = configInitAction.wrap
+		xSts.entryEventTransition = entryAction.wrap
+		
+		// In events: havoc non-control specification events, then a single control specification event
+		// TODO - extract in-event creation from the LowlevelToXstsTransformer
+		
+		xSts.outEventTransition = outEventAction.wrap
+		
+		xSts.changeTransitions(mergedAction.wrap)
+		
+		return xSts
+	}
+	
 	def dispatch XSTS transform(AsynchronousAdapter component, Package lowlevelPackage) {
-		// TODO maybe isTop boolean variables should be introduced as now in event actions are created discarded
-		component.checkAdapter
+		val isTopInPackage = component.topInPackage
+		if (isTopInPackage) {
+			component.checkAdapter
+		}
+		
 		val wrappedInstance = component.wrappedComponent
 		val wrappedType = wrappedInstance.type
 		
 		val messageQueue = component.messageQueues.head
 		
-		wrappedType.transformParameters(wrappedInstance.arguments) 
+		wrappedType.extractParameters(wrappedInstance.arguments) 
 		val xSts = wrappedType.transform(lowlevelPackage)
 		
-		val inEventAction = xSts.inEventTransition
-		// Deleting synchronous event assignments
-		val xStsSynchronousInEventVariables = xSts.variableGroups
-			.filter[it.annotation instanceof InEventGroup].map[it.variables]
-			.flatten // There are more than one
-		for (xStsAssignment : inEventAction.getAllContentsOfType(AbstractAssignmentAction)) {
-			val xStsDeclaration = (xStsAssignment.lhs as DirectReferenceExpression).declaration
-			if (xStsSynchronousInEventVariables.contains(xStsDeclaration)) {
-				xStsAssignment.remove // Deleting in-event bool flags
+		if (isTopInPackage) {
+			val inEventAction = xSts.inEventTransition
+			// Deleting synchronous event assignments
+			val xStsSynchronousInEventVariables = xSts.variableGroups
+				.filter[it.annotation instanceof InEventGroup].map[it.variables]
+				.flatten // There are more than one
+			for (xStsAssignment : inEventAction.getAllContentsOfType(AbstractAssignmentAction)) {
+				val xStsReference = xStsAssignment.lhs as DirectReferenceExpression
+				val xStsDeclaration = xStsReference.declaration
+				if (xStsSynchronousInEventVariables.contains(xStsDeclaration)) {
+					xStsAssignment.remove // Deleting in-event bool flags
+				}
 			}
-		}
-		
-		val extension eventRef = new EventReferenceToXstsVariableMapper(xSts)
-		// Collecting the referenced event variables
-		val xStsReferencedEventVariables = newHashSet
-		for (eventReference : messageQueue.eventReference) {
-			xStsReferencedEventVariables += eventReference.variables
-		}
-		
-		val newInEventAction = createSequentialAction
-		// Setting the referenced event variables to false
-		for (xStsEventVariable : xStsReferencedEventVariables) {
-			newInEventAction.actions += createAssignmentAction => [
-				it.lhs = statechartUtil.createReferenceExpression(xStsEventVariable)
-				it.rhs = createFalseExpression
-			]
-		}
-		// Enabling the setting of the referenced event variables to true if no other is set
-		for (xStsEventVariable : xStsReferencedEventVariables) {
-			val negatedVariables = newArrayList
-			negatedVariables += xStsReferencedEventVariables
-			negatedVariables -= xStsEventVariable
-			val branch = createIfActionBranch(
-				xStsActionUtil.connectThroughNegations(negatedVariables),
-				createAssignmentAction => [
-					it.lhs = statechartUtil.createReferenceExpression(xStsEventVariable)
-					it.rhs = createTrueExpression
+			
+			val extension eventRef = new EventReferenceToXstsVariableMapper(xSts)
+			// Collecting the referenced event variables
+			val xStsReferencedEventVariables = newHashSet
+			for (eventReference : messageQueue.eventReference) {
+				xStsReferencedEventVariables += eventReference.variables
+			}
+			
+			val newInEventAction = createSequentialAction
+			// Setting the referenced event variables to false
+			for (xStsEventVariable : xStsReferencedEventVariables) {
+				newInEventAction.actions += createAssignmentAction => [
+					it.lhs = xStsActionUtil.createReferenceExpression(xStsEventVariable)
+					it.rhs = createFalseExpression
 				]
-			)
-			branch.extendChoiceWithBranch(createTrueExpression, createEmptyAction)
-			newInEventAction.actions += branch
+			}
+			// Enabling the setting of the referenced event variables to true if no other is set
+			for (xStsEventVariable : xStsReferencedEventVariables) {
+				val negatedVariables = newArrayList
+				negatedVariables += xStsReferencedEventVariables
+				negatedVariables -= xStsEventVariable
+				val branch = createIfActionBranch(
+					xStsActionUtil.connectThroughNegations(negatedVariables),
+					createAssignmentAction => [
+						it.lhs = xStsActionUtil.createReferenceExpression(xStsEventVariable)
+						it.rhs = createTrueExpression
+					]
+				)
+				branch.extendChoiceWithBranch(createTrueExpression, createEmptyAction)
+				newInEventAction.actions += branch
+			}
+			// Binding event variables that come from the same ports
+			newInEventAction.actions += xSts.createEventAssignmentsBoundToTheSameSystemPort(wrappedType)
+			 // Original parameter settings
+			newInEventAction.actions += inEventAction.action
+			// Binding parameter variables that come from the same ports
+			newInEventAction.actions += xSts.createParameterAssignmentsBoundToTheSameSystemPort(wrappedType)
+			xSts.inEventTransition = newInEventAction.wrap
 		}
-		// Binding event variables that come from the same ports
-		newInEventAction.actions += xSts.createEventAssignmentsBoundToTheSameSystemPort(wrappedType)
-		 // Original parameter settings
-		newInEventAction.actions += inEventAction.action
-		// Binding parameter variables that come from the same ports
-		newInEventAction.actions += xSts.createParameterAssignmentsBoundToTheSameSystemPort(wrappedType)
-		xSts.inEventTransition = newInEventAction.wrap
-		
 		return xSts
 	}
 	
@@ -145,7 +360,7 @@ class ComponentTransformer {
 			val subcomponent = components.get(i)
 			val componentType = subcomponent.type
 			// Normal transformation
-			componentType.transformParameters(subcomponent.arguments) // Change the reference from parameters to constants
+			componentType.extractParameters(subcomponent.arguments) // Change the reference from parameters to constants
 			val newXSts = componentType.transform(lowlevelPackage)
 			newXSts.customizeDeclarationNames(subcomponent)
 			if (xSts === null) {
@@ -153,14 +368,7 @@ class ComponentTransformer {
 			}
 			else {
 				// Adding new elements
-				xSts.typeDeclarations += newXSts.typeDeclarations
-				xSts.publicTypeDeclarations += newXSts.publicTypeDeclarations
-				xSts.variableGroups += newXSts.variableGroups
-				xSts.variableDeclarations += newXSts.variableDeclarations
-				xSts.transientVariables += newXSts.transientVariables
-				xSts.controlVariables += newXSts.controlVariables
-				xSts.clockVariables += newXSts.clockVariables
-				xSts.constraints += newXSts.constraints
+				xSts.merge(newXSts)
 				// Initializing action
 				val variableInitAction = createSequentialAction
 				variableInitAction.actions += xSts.variableInitializingTransition.action
@@ -287,7 +495,7 @@ class ComponentTransformer {
 		checkState(controlFunction == ControlFunction.RUN_ONCE)
 	}
 		
-	private def transformParameters(Component component, List<Expression> arguments) {
+	private def extractParameters(Component component, List<Expression> arguments) {
 		val _package = component.containingPackage
 		val parameterDeclarations = newArrayList
 		parameterDeclarations += component.parameterDeclarations // So delete does not mess the list up
@@ -319,6 +527,23 @@ class ComponentTransformer {
 				regionType.name = regionType.customizeRegionTypeName(type)
 			}
 		}
+	}
+	
+	// Namings
+	
+	static class Namings {
+		
+		def static String getMasterQueueName(
+			MessageQueue queue, ComponentInstance instance) '''«queue.name»Of«instance.name»'''
+		def static String getSizeVariableName(
+			MessageQueue queue, ComponentInstance instance) '''size«queue.name.toFirstUpper»Of«instance.name»'''
+		def static String getSlaveQueueName(
+			ParameterDeclaration parameterDeclaration, Port port,
+				ComponentInstance instance) '''«port.name»_«parameterDeclaration.name»Of«instance.name»'''
+				
+		def static String getLoopIterationVariableName() '''i'''
+		def static String getEventIdentifierVariableName() '''eventId'''
+		
 	}
 	
 }

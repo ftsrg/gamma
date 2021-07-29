@@ -37,7 +37,7 @@ import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
-package class Trace {
+class Trace {
 
 	final Map<Package, hu.bme.mit.gamma.statechart.lowlevel.model.Package> packageMappings = newHashMap
 	final Map<TypeDeclaration, TypeDeclaration> typeDeclarationMappings = newHashMap
@@ -391,6 +391,11 @@ package class Trace {
 			lowlevelVariables += get(value -> ^extension)
 		}
 		return lowlevelVariables
+	}
+	
+	def getAll(ValueDeclaration valueDeclaration) {
+		// Returns potentially multiple values, that can be retrieved by extending the given field hierarchy
+		return getAll(valueDeclaration -> new FieldHierarchy)
 	}
 	
 	// Timeout declaration

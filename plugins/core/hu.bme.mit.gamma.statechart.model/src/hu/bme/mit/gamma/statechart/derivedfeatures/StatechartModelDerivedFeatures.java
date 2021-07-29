@@ -11,11 +11,13 @@
 package hu.bme.mit.gamma.statechart.derivedfeatures;
 
 import java.math.BigInteger;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -43,24 +45,29 @@ import hu.bme.mit.gamma.statechart.composite.CascadeCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.Channel;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.composite.CompositeComponent;
+import hu.bme.mit.gamma.statechart.composite.ControlSpecification;
 import hu.bme.mit.gamma.statechart.composite.InstancePortReference;
+import hu.bme.mit.gamma.statechart.composite.MessageQueue;
 import hu.bme.mit.gamma.statechart.composite.PortBinding;
 import hu.bme.mit.gamma.statechart.composite.SimpleChannel;
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponent;
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance;
 import hu.bme.mit.gamma.statechart.contract.AdaptiveContractAnnotation;
+import hu.bme.mit.gamma.statechart.interface_.AnyTrigger;
 import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.Event;
 import hu.bme.mit.gamma.statechart.interface_.EventDeclaration;
 import hu.bme.mit.gamma.statechart.interface_.EventDirection;
 import hu.bme.mit.gamma.statechart.interface_.EventReference;
 import hu.bme.mit.gamma.statechart.interface_.EventSource;
+import hu.bme.mit.gamma.statechart.interface_.EventTrigger;
 import hu.bme.mit.gamma.statechart.interface_.Interface;
 import hu.bme.mit.gamma.statechart.interface_.InterfaceRealization;
 import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.statechart.interface_.PackageAnnotation;
 import hu.bme.mit.gamma.statechart.interface_.Port;
 import hu.bme.mit.gamma.statechart.interface_.RealizationMode;
+import hu.bme.mit.gamma.statechart.interface_.SimpleTrigger;
 import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
 import hu.bme.mit.gamma.statechart.interface_.TopComponentArgumentsAnnotation;
 import hu.bme.mit.gamma.statechart.interface_.UnfoldedPackageAnnotation;
@@ -450,6 +457,19 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return getOutputEvents(port).contains(event);
 	}
 	
+	public static boolean isTopInPackage(Component component) {
+		Package _package = getContainingPackage(component);
+		for (Component containedComponent : _package.getComponents()) {
+			for (ComponentInstance componentInstance : getInstances(containedComponent)) {
+				Component type = getDerivedType(componentInstance);
+				if (type == component) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+	
 	public static Set<Interface> getInterfaces(Component component) {
 		return getAllPorts(component).stream()
 				.map(it -> getInterface(it)).collect(Collectors.toSet());
@@ -466,6 +486,55 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 			return getAllPorts((AsynchronousAdapter) component);
 		}		
 		return component.getPorts();
+	}
+	
+	public static boolean isControlSpecification(AsynchronousAdapter adapter, Entry<Port, Event> portEvent) {
+		for (ControlSpecification controlSpecification : adapter.getControlSpecifications()) {
+			SimpleTrigger trigger = controlSpecification.getTrigger();
+			if (trigger instanceof AnyTrigger) {
+				return true;
+			}
+			if (trigger instanceof EventTrigger) {
+				EventTrigger eventTrigger = (EventTrigger) trigger;
+				EventReference eventReference = eventTrigger.getEventReference();
+				List<Entry<Port,Event>> inputEvents = getInputEvents(eventReference);
+				if (inputEvents.contains(portEvent)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
+	public static List<Entry<Port, Event>> getStoredEvents(MessageQueue queue) {
+		List<Entry<Port, Event>> events = new ArrayList<Entry<Port, Event>>();
+		for (EventReference eventReference : queue.getEventReference()) {
+			events.addAll(getInputEvents(eventReference));
+		}
+		return events;
+	}
+	
+	public static List<Entry<Port, Event>> getInputEvents(EventReference eventReference) {
+		List<Entry<Port, Event>> events = new ArrayList<Entry<Port, Event>>();
+		if (eventReference instanceof PortEventReference) {
+			PortEventReference portEventReference = (PortEventReference) eventReference;
+			Port port = portEventReference.getPort();
+			Event event = portEventReference.getEvent();
+			if (getInputEvents(port).contains(event)) {
+				events.add(new SimpleEntry<Port, Event>(port, event));
+			}
+		}
+		else if (eventReference instanceof AnyPortEventReference) {
+			AnyPortEventReference anyPortEventReference = (AnyPortEventReference) eventReference;
+			Port port = anyPortEventReference.getPort();
+			for (Event inputEvent : getInputEvents(port)) {
+				events.add(new SimpleEntry<Port, Event>(port, inputEvent));
+			}
+		}
+		else {
+			throw new IllegalArgumentException("Not supported event reference: " + eventReference);
+		}
+		return events;
 	}
 	
 	public static List<Event> getInputEvents(Component component) {
@@ -518,7 +587,8 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 			for (PortBinding portBinding : composite.getPortBindings()) {
 				if (portBinding.getCompositeSystemPort() == port) {
 					// Makes sense only if the containment hierarchy is a tree structure
-					simplePorts.addAll(getAllConnectedSimplePorts(portBinding.getInstancePortReference().getPort()));
+					simplePorts.addAll(getAllConnectedSimplePorts(
+							portBinding.getInstancePortReference().getPort()));
 				}
 			}
 		}
@@ -820,7 +890,8 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return subregions;
 	}
 	
-	public static List<hu.bme.mit.gamma.statechart.statechart.State> getCommonAncestors(StateNode lhs, StateNode rhs) {
+	public static List<hu.bme.mit.gamma.statechart.statechart.State> getCommonAncestors(
+			StateNode lhs, StateNode rhs) {
 		List<hu.bme.mit.gamma.statechart.statechart.State> ancestors = getAncestors(lhs);
 		ancestors.retainAll(getAncestors(rhs));
 		return ancestors;

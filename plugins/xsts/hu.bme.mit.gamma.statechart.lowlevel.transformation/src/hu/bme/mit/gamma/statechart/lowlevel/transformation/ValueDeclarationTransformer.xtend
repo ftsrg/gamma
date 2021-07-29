@@ -31,7 +31,11 @@ class ValueDeclarationTransformer {
 	// Trace needed for variable mappings
 	protected final Trace trace
 	
-	new(Trace trace) {
+	new() { // For external libraries that want to use this class
+		this(new Trace)
+	}
+	
+	new(Trace trace) { // For lowlevel statechart transformer
 		this.trace = trace
 		this.expressionTransformer = new ExpressionTransformer(trace)
 		this.typeTransformer = new TypeTransformer(trace)
@@ -197,6 +201,14 @@ class ValueDeclarationTransformer {
 	private def transformAnnotation(VariableDeclarationAnnotation annotation) {
 		return annotation.clone
 	}
+	
+	//
+	
+	def getTrace() {
+		return trace
+	}
+	
+	//
 	
 	interface Tracer {
 		// Maybe it could contain the namings too
