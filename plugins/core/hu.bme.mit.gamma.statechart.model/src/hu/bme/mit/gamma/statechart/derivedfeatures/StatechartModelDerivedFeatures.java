@@ -409,6 +409,14 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return getAllEvents(port.getInterfaceRealization().getInterface());
 	}
 	
+	public static List<Event> getInputEvents(Iterable<? extends Port> ports) {
+		List<Event> events = new ArrayList<Event>();
+		for (Port port : ports) {
+			events.addAll(getInputEvents(port));
+		}
+		return events;
+	}
+	
 	public static List<Event> getInputEvents(Port port) {
 		List<Event> events = new ArrayList<Event>();
 		InterfaceRealization interfaceRealization = port.getInterfaceRealization();
@@ -425,6 +433,14 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 					.filter(it -> it.getDirection() != EventDirection.IN)
 					.map(it -> it.getEvent())
 					.collect(Collectors.toList()));
+		}
+		return events;
+	}
+	
+	public static List<Event> getOutputEvents(Iterable<? extends Port> ports) {
+		List<Event> events = new ArrayList<Event>();
+		for (Port port : ports) {
+			events.addAll(getOutputEvents(port));
 		}
 		return events;
 	}
@@ -538,19 +554,11 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	}
 	
 	public static List<Event> getInputEvents(Component component) {
-		List<Event> inputEvents = new ArrayList<Event>();
-		for (Port port : getAllPorts(component)) {
-			inputEvents.addAll(getInputEvents(port));
-		}
-		return inputEvents;
+		return getInputEvents(getAllPorts(component));
 	}
 	
 	public static List<Event> getOutputEvents(Component component) {
-		List<Event> outputEvents = new ArrayList<Event>();
-		for (Port port : getAllPorts(component)) {
-			outputEvents.addAll(getOutputEvents(port));
-		}
-		return outputEvents;
+		return getOutputEvents(getAllPorts(component));
 	}
 	
 	public static Collection<PortBinding> getPortBindings(Port port) {

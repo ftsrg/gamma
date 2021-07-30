@@ -251,7 +251,7 @@ class ComponentTransformer {
 							for (xStsSlaveQueue : xStsSlaveQueues) {
 								thenAction.actions += xStsSlaveQueue.pop
 							}
-							// Execuion if necessary
+							// Execution if necessary
 							if (adapterComponentType.isControlSpecification(portEvent)) {
 								thenAction.actions += originalMergedAction.clone
 							}
@@ -263,7 +263,21 @@ class ComponentTransformer {
 			}
 			
 			// Dispatching events to connected message queues - use derived features
-			
+			for (port : adapterComponentType.allPorts) {
+				// Semantical questions - out events are dispatched according to this order
+				for (outEvent : port.outputEvents) {
+					val xStsOutEventVariables = eventReferenceMapper.getOutputEventVariables(outEvent, port)
+					val xStsOutEventVariable = xStsOutEventVariables.onlyElement // Output is unidirected
+					
+					val ifExpression = xStsOutEventVariable.createReferenceExpression
+					val thenAction = createSequentialAction
+					// TODO Dispatching to message queues
+					
+					
+					// if (eventId == ..) { "transfer slave queue values" if (isControlSpec) { "run" }
+					mergedAction.actions += ifExpression.createIfAction(thenAction)
+				}
+			}
 		}
 		
 		xSts.variableInitializingTransition = variableInitAction.wrap
