@@ -25,6 +25,10 @@ class MessageQueueTraceability {
 		return eventIds.get(event)
 	}
 	
+	def contains(Entry<Port, Event> event) {
+		return eventIds.containsKey(event)
+	}
+	
 	//
 	
 	def put(MessageQueue messageQueue, MessageQueueMapping mapping) {
@@ -37,6 +41,17 @@ class MessageQueueTraceability {
 	
 	def getMessageQueues() {
 		return messageQueues.keySet
+	}
+	
+	def getMessageQueues(Integer eventId) {
+		for (entry : messageQueues.entrySet) {
+			val mappings = entry.value
+			val eventIds = mappings.eventIds
+			if (eventIds.contains(eventId)) {
+				return entry
+			}
+		}
+		throw new IllegalArgumentException("Not found queue for id: " + eventId)
 	}
 	
 }

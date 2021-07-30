@@ -32,6 +32,7 @@ import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory;
 import hu.bme.mit.gamma.expression.model.NotExpression;
 import hu.bme.mit.gamma.expression.model.OrExpression;
+import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeDefinition;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
@@ -215,10 +216,14 @@ public class XstsActionUtil extends ExpressionUtil {
 	}
 	
 	public AssignmentAction createAssignmentAction(VariableDeclaration variable, Expression rhs) {
-		AssignmentAction assignmentAction = xStsFactory.createAssignmentAction();
 		DirectReferenceExpression lhsReference = expressionFactory.createDirectReferenceExpression();
-		lhsReference.setDeclaration(variable);
-		assignmentAction.setLhs(lhsReference);
+		AssignmentAction assignmentAction = createAssignmentAction(lhsReference, rhs);
+		return assignmentAction;
+	}
+	
+	public AssignmentAction createAssignmentAction(ReferenceExpression lhs, Expression rhs) {
+		AssignmentAction assignmentAction = xStsFactory.createAssignmentAction();
+		assignmentAction.setLhs(lhs);
 		assignmentAction.setRhs(rhs);
 		return assignmentAction;
 	}
@@ -517,6 +522,26 @@ public class XstsActionUtil extends ExpressionUtil {
 			SequentialAction block = xStsFactory.createSequentialAction();
 			block.getActions().add(popAction);
 			block.getActions().add(sizeDecrementAction);
+			
+			return block;
+		}
+		throw new IllegalArgumentException("Not an array: " + queue);
+	}
+	
+	public Action add(VariableDeclaration queue,
+			VariableDeclaration sizeVariable, Expression element) {
+		TypeDefinition typeDefinition = ExpressionModelDerivedFeatures.getTypeDefinition(queue);
+		if (typeDefinition instanceof ArrayTypeDefinition) {
+			ArrayAccessExpression accessExpression = factory.createArrayAccessExpression();
+			accessExpression.setOperand(createReferenceExpression(queue));
+			accessExpression.setIndex(createReferenceExpression(sizeVariable));
+			
+			Action assignment = createAssignmentAction(accessExpression, element);
+			Action sizeIncrementAction = increment(sizeVariable);
+			
+			SequentialAction block = xStsFactory.createSequentialAction();
+			block.getActions().add(assignment);
+			block.getActions().add(sizeIncrementAction);
 			
 			return block;
 		}

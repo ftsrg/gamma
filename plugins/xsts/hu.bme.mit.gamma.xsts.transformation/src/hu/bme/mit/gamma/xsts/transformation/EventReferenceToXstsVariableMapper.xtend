@@ -1,6 +1,7 @@
 package hu.bme.mit.gamma.xsts.transformation
 
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
+import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.EventReference
 import hu.bme.mit.gamma.statechart.interface_.Port
@@ -8,6 +9,7 @@ import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference
 import hu.bme.mit.gamma.statechart.statechart.PortEventReference
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
+import java.util.List
 import java.util.logging.Level
 import java.util.logging.Logger
 
@@ -91,8 +93,12 @@ class EventReferenceToXstsVariableMapper {
 	}
 	
 	def getInputParameterVariables(ParameterDeclaration parameter, Port port) {
+		return parameter.getSeparatedInputParameterVariables(port).flatten.toList
+	}
+	
+	def getSeparatedInputParameterVariables(ParameterDeclaration parameter, Port port) {
 		checkState(port.inputEvents.map[it.parameterDeclarations].flatten.contains(parameter))
-		val xStsVariables = newArrayList
+		val xStsVariables = <List<VariableDeclaration>>newArrayList
 		for (simplePort : port.allBoundSimplePorts) {
 			// One system port can be connected to multiple in-ports (if it is broadcast)
 			val statechart = simplePort.containingComponent
@@ -125,7 +131,7 @@ class EventReferenceToXstsVariableMapper {
 		checkState(port.outputEvents.contains(event))
 		val xStsVariables = newArrayList
 		for (simplePort : port.allBoundSimplePorts) {
-			// One system port can be connected to multiple in-ports (if it is broadcast)
+			// Theoretically, only one port
 			val statechart = simplePort.containingComponent
 			val instance = statechart.referencingComponentInstance
 			val xStsVariableName = event.customizeOutputName(simplePort, instance)
@@ -156,13 +162,13 @@ class EventReferenceToXstsVariableMapper {
 		checkState(port.outputEvents.map[it.parameterDeclarations].flatten.contains(parameter))
 		val xStsVariables = newArrayList
 		for (simplePort : port.allBoundSimplePorts) {
-			// One system port may be connected to multiple in-ports (if it is broadcast)
+			// Theoretically, only one port
 			val statechart = simplePort.containingComponent
 			val instance = statechart.referencingComponentInstance
 			val xStsVariableNames = parameter.customizeOutNames(simplePort, instance)
 			val xStsVariable = xSts.getVariables(xStsVariableNames)
 			if (!xStsVariable.nullOrEmpty) {
-				xStsVariables += xStsVariables
+				xStsVariables += xStsVariable
 			}
 			else {
 				logger.log(Level.INFO, "Not found XSTS variable for " + port.name + "::" + parameter.name)

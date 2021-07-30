@@ -561,6 +561,18 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return getOutputEvents(getAllPorts(component));
 	}
 	
+	public static Port getBoundSystemPort(Port port) {
+		Package _package = getContainingPackage(port);
+		List<PortBinding> portBindings = ecoreUtil.getAllContentsOfType(_package, PortBinding.class);
+		for (PortBinding portBinding : portBindings) {
+			InstancePortReference instancePortReference = portBinding.getInstancePortReference();
+			if (instancePortReference.getPort() == port) {
+				return portBinding.getCompositeSystemPort();
+			}
+		}
+		return null;
+	}
+	
 	public static Collection<PortBinding> getPortBindings(Port port) {
 		EObject component = port.eContainer();
 		List<PortBinding> portBindings = new ArrayList<PortBinding>();
@@ -595,8 +607,33 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 			for (PortBinding portBinding : composite.getPortBindings()) {
 				if (portBinding.getCompositeSystemPort() == port) {
 					// Makes sense only if the containment hierarchy is a tree structure
+					InstancePortReference instancePortReference = portBinding.getInstancePortReference();
 					simplePorts.addAll(getAllBoundSimplePorts(
-							portBinding.getInstancePortReference().getPort()));
+							instancePortReference.getPort()));
+				}
+			}
+		}
+		// Note that one port can be in the list multiple times iff the component is NOT unfolded
+		return simplePorts;
+	}
+	
+	public static List<Port> getAllBoundAsynchronousSimplePorts(Port port) {
+		List<Port> simplePorts = new ArrayList<Port>();
+		Component component = getContainingComponent(port);
+		ComponentInstance instance = getReferencingComponentInstance(component);
+		Component containingComponent = getContainingComponent(instance);
+		if (component instanceof AsynchronousAdapter ||
+				containingComponent instanceof AsynchronousAdapter) {
+			simplePorts.add(port);
+		}
+		else if (component instanceof CompositeComponent) {
+			CompositeComponent composite = (CompositeComponent) component;
+			for (PortBinding portBinding : composite.getPortBindings()) {
+				if (portBinding.getCompositeSystemPort() == port) {
+					// Makes sense only if the containment hierarchy is a tree structure
+					InstancePortReference instancePortReference = portBinding.getInstancePortReference();
+					simplePorts.addAll(getAllBoundAsynchronousSimplePorts(
+							instancePortReference.getPort()));
 				}
 			}
 		}
@@ -610,10 +647,43 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		for (PortBinding portBinding : portBindings) {
 			if (portBinding.getInstancePortReference().getPort() == port) {
 				Port systemPort = portBinding.getCompositeSystemPort();
+				// Works as even broadcast ports cannot be bound to multiple system ports (would be unnecessary)
 				return getBoundTopComponentPort(systemPort);
 			}
 		}
 		return port;
+	}
+	
+	public static List<Port> getPortsConnectedViaChannel(Port port) {
+		Package _package = getContainingPackage(port);
+		List<Channel> channels = ecoreUtil.getAllContentsOfType(_package, Channel.class);
+		for (Channel channel : channels) {
+			Port providedPort = channel.getProvidedPort().getPort();
+			List<Port> requiredPorts = getRequiredPorts(channel).stream()
+					.map(it -> it.getPort()).collect(Collectors.toList());
+			if (port == providedPort) {
+				return requiredPorts;
+			}
+			if (requiredPorts.contains(port)) {
+				return List.of(providedPort);
+			}
+		}
+		return Collections.emptyList();
+	}
+	
+	public static List<Port> getAllConnectedAsynchronousSimplePorts(Port port) {
+		List<Port> portsConnectedViaChannel = new ArrayList<Port>();
+		Port actualPort = port;
+		while (portsConnectedViaChannel.isEmpty() && actualPort != null) {
+			portsConnectedViaChannel.addAll(getPortsConnectedViaChannel(actualPort));
+			actualPort = getBoundSystemPort(actualPort);
+		}
+		List<Port> asynchronousSimplePorts = new ArrayList<Port>();
+		for (Port portConnectedViaChannel : portsConnectedViaChannel) {
+			asynchronousSimplePorts.addAll(
+					getAllBoundAsynchronousSimplePorts(portConnectedViaChannel));
+		}
+		return asynchronousSimplePorts;
 	}
 	
 	public static boolean isInChannel(Port port) {

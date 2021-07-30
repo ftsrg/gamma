@@ -112,6 +112,7 @@ class GammaToXstsTransformer {
 		val lowlevelPackage = gammaToLowlevelTransformer.transform(_package) // Not execute, as we want to distinguish between statecharts
 		// Serializing the xSTS
 		val xSts = gammaComponent.transform(lowlevelPackage) // Transforming the Gamma component
+		// TODO move this to abstract synchronous composite component part in "isTop" branch
 		// Creating system event groups for traceability purposes
 		logger.log(Level.INFO, "Creating system event groups for " + gammaComponent.name)
 		xSts.createSystemEventGroups(gammaComponent)
