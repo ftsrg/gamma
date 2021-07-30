@@ -62,7 +62,7 @@ class EventReferenceToXstsVariableMapper {
 	def getInputEventVariables(Event event, Port port) {
 		checkState(port.inputEvents.contains(event))
 		val xStsVariables = newArrayList
-		for (simplePort : port.allConnectedSimplePorts) {
+		for (simplePort : port.allBoundSimplePorts) {
 			// One system port can be connected to multiple in-ports (if it is broadcast)
 			val statechart = simplePort.containingComponent
 			val instance = statechart.referencingComponentInstance
@@ -93,7 +93,7 @@ class EventReferenceToXstsVariableMapper {
 	def getInputParameterVariables(ParameterDeclaration parameter, Port port) {
 		checkState(port.inputEvents.map[it.parameterDeclarations].flatten.contains(parameter))
 		val xStsVariables = newArrayList
-		for (simplePort : port.allConnectedSimplePorts) {
+		for (simplePort : port.allBoundSimplePorts) {
 			// One system port can be connected to multiple in-ports (if it is broadcast)
 			val statechart = simplePort.containingComponent
 			val instance = statechart.referencingComponentInstance
@@ -124,7 +124,7 @@ class EventReferenceToXstsVariableMapper {
 	def getOutputEventVariables(Event event, Port port) {
 		checkState(port.outputEvents.contains(event))
 		val xStsVariables = newArrayList
-		for (simplePort : port.allConnectedSimplePorts) {
+		for (simplePort : port.allBoundSimplePorts) {
 			// One system port can be connected to multiple in-ports (if it is broadcast)
 			val statechart = simplePort.containingComponent
 			val instance = statechart.referencingComponentInstance
@@ -155,7 +155,7 @@ class EventReferenceToXstsVariableMapper {
 	def getOutputParameterVariables(ParameterDeclaration parameter, Port port) {
 		checkState(port.outputEvents.map[it.parameterDeclarations].flatten.contains(parameter))
 		val xStsVariables = newArrayList
-		for (simplePort : port.allConnectedSimplePorts) {
+		for (simplePort : port.allBoundSimplePorts) {
 			// One system port may be connected to multiple in-ports (if it is broadcast)
 			val statechart = simplePort.containingComponent
 			val instance = statechart.referencingComponentInstance

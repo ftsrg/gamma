@@ -48,7 +48,7 @@ class EnvironmentalActionFilter {
 	def void deleteEverythingExceptSystemEventsAndParameters(CompositeAction action, Component component) {
 		val necessaryNames = newHashSet
 		// Input and output events and parameters
-		for (port : component.allConnectedSimplePorts) {
+		for (port : component.allBoundSimplePorts) {
 			val statechart = port.containingStatechart
 			val instance = statechart.referencingComponentInstance
 			for (eventDeclaration : port.allEventDeclarations) {
@@ -70,7 +70,7 @@ class EnvironmentalActionFilter {
 	
 	def Action resetEverythingExceptPersistentParameters(CompositeAction action, Component component) {
 		val necessaryNames = newHashSet
-		for (port : component.allConnectedSimplePorts) {
+		for (port : component.allBoundSimplePorts) {
 			val statechart = port.containingStatechart
 			val instance = statechart.referencingComponentInstance
 			for (eventDeclaration : port.allEventDeclarations) {

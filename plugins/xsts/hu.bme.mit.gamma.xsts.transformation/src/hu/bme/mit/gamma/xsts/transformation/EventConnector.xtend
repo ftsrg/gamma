@@ -43,13 +43,13 @@ class EventConnector {
 			val providedPort = channel.providedPort.port
 			val requiredPorts = channel.requiredPorts.map[it.port]
 			// Connection: keeping in-variables, deleting out-variables
-			val providedSimplePorts = providedPort.allConnectedSimplePorts
+			val providedSimplePorts = providedPort.allBoundSimplePorts
 			checkState(providedSimplePorts.size == 1)
 			val providedSimplePort = providedSimplePorts.head
 			val providedStatechart = providedSimplePort.containingStatechart
 			val providedInstance = providedStatechart.referencingComponentInstance
 			for (requiredPort : requiredPorts) {
-				for (requiredSimplePort : requiredPort.allConnectedSimplePorts) {
+				for (requiredSimplePort : requiredPort.allBoundSimplePorts) {
 					val requiredStatechart = requiredSimplePort.containingStatechart
 					val requiredInstance = requiredStatechart.referencingComponentInstance
 					// In events on required port
@@ -104,7 +104,7 @@ class EventConnector {
 				}
 				optimizableSimplePorts += providedSimplePort
 				optimizableSimplePorts += component.derivedComponents
-					.map[it.unusedPorts].flatten.map[it.allConnectedSimplePorts].flatten
+					.map[it.unusedPorts].flatten.map[it.allBoundSimplePorts].flatten
 			}
 		}
 		// Out-event optimization - maybe this should be moved to the SystemReducer?

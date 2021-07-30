@@ -157,7 +157,7 @@ class XstsUppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 												if (value.equals("1")) {
 													val event = systemOutEvent.get(0) as Event
 													val port = systemOutEvent.get(1) as Port
-													val systemPort = port.connectedTopComponentPort // Back-tracking to the system port
+													val systemPort = port.boundTopComponentPort // Back-tracking to the system port
 													step.addOutEvent(systemPort, event)
 													// Denoting that this event has been actually raised
 													raisedOutEvents += new Pair(systemPort, event)
@@ -167,7 +167,7 @@ class XstsUppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 												val systemOutEvent = xStsUppaalQueryGenerator.getSourceOutEventParamater(variable)
 												val event = systemOutEvent.get(0) as Event
 												val port = systemOutEvent.get(1) as Port
-												val systemPort = port.connectedTopComponentPort // Back-tracking to the system port
+												val systemPort = port.boundTopComponentPort // Back-tracking to the system port
 												val parameter = systemOutEvent.get(2) as ParameterDeclaration
 												step.addOutEventWithStringParameter(systemPort, event, parameter, value)
 												// Will check in localState == StableEnvironmentState.ENVIRONMENT, if it is valid
@@ -179,7 +179,7 @@ class XstsUppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 												if (value.equals("1")) {
 													val event = systemInEvent.get(0) as Event
 													val port = systemInEvent.get(1) as Port
-													val systemPort = port.connectedTopComponentPort // Back-tracking to the system port
+													val systemPort = port.boundTopComponentPort // Back-tracking to the system port
 													step.addInEvent(systemPort, event)
 													// Denoting that this event has been actually raised
 													raisedInEvents += new Pair(systemPort, event)
@@ -189,7 +189,7 @@ class XstsUppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 												val systemInEvent = xStsUppaalQueryGenerator.getSourceInEventParamater(variable)
 												val event = systemInEvent.get(0) as Event
 												val port = systemInEvent.get(1) as Port
-												val systemPort = port.connectedTopComponentPort // Back-tracking to the system port
+												val systemPort = port.boundTopComponentPort // Back-tracking to the system port
 												val parameter = systemInEvent.get(2) as ParameterDeclaration
 												step.addInEventWithParameter(systemPort, event, parameter, value)
 												// Will check in localState == StableEnvironmentState.ENVIRONMENT, if it is valid

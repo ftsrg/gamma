@@ -199,7 +199,7 @@ class TraceBackAnnotator {
 							if (value.equals("true")) {
 								val event = systemOutEvent.get(0) as Event
 								val port = systemOutEvent.get(1) as Port
-								val systemPort = port.connectedTopComponentPort // Back-tracking to the system port
+								val systemPort = port.boundTopComponentPort // Back-tracking to the system port
 								step.addOutEvent(systemPort, event)
 								// Denoting that this event has been actually
 								raisedOutEvents += new Pair(systemPort, event)
@@ -209,7 +209,7 @@ class TraceBackAnnotator {
 							val systemOutEvent = thetaQueryGenerator.getSourceOutEventParamater(id)
 							val event = systemOutEvent.get(0) as Event
 							val port = systemOutEvent.get(1) as Port
-							val systemPort = port.connectedTopComponentPort // Back-tracking to the system port
+							val systemPort = port.boundTopComponentPort // Back-tracking to the system port
 							val parameter = systemOutEvent.get(2) as ParameterDeclaration
 							// Getting fields and indexes regardless of primitive or complex types
 							val field = thetaQueryGenerator.getSourceOutEventParamaterFieldHierarchy(id)
@@ -228,7 +228,7 @@ class TraceBackAnnotator {
 							if (value.equals("true")) {
 								val event = systemInEvent.get(0) as Event
 								val port = systemInEvent.get(1) as Port
-								val systemPort = port.connectedTopComponentPort // Back-tracking to the system port
+								val systemPort = port.boundTopComponentPort // Back-tracking to the system port
 								step.addInEvent(systemPort, event)
 								// Denoting that this event has been actually
 								raisedInEvents += new Pair(systemPort, event)
@@ -238,7 +238,7 @@ class TraceBackAnnotator {
 							val systemInEvent = thetaQueryGenerator.getSourceInEventParamater(id)
 							val event = systemInEvent.get(0) as Event
 							val port = systemInEvent.get(1) as Port
-							val systemPort = port.connectedTopComponentPort // Back-tracking to the system port
+							val systemPort = port.boundTopComponentPort // Back-tracking to the system port
 							val parameter = systemInEvent.get(2) as ParameterDeclaration
 							// Getting fields and indexes regardless of primitive or complex types
 							val field = thetaQueryGenerator.getSourceInEventParamaterFieldHierarchy(id)

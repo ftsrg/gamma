@@ -246,7 +246,7 @@ class GammaToXstsTransformer {
 		xSts.variableGroups += systemInEventGroup
 		xSts.variableGroups += systemOutEventGroup
 		
-		for (port : component.allConnectedSimplePorts) {
+		for (port : component.allBoundSimplePorts) {
 			val instance = port.containingComponentInstance
 			for (inEvent : port.inputEvents) {
 				val inEventVariableName = customizeInputName(inEvent, port, instance)

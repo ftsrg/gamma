@@ -234,7 +234,7 @@ class EnvironmentCreator {
 			checkState(parameters.size == 1)
 			for (parameter : parameters) {
 				val expressions = newArrayList
-				for (statechartPort : port.allConnectedSimplePorts) {
+				for (statechartPort : port.allBoundSimplePorts) {
 					expressions += ValuesOfEventParameters.Matcher.on(engine)
 						.getAllValuesOfexpression(statechartPort /*Not port*/, event, parameter)
 				}

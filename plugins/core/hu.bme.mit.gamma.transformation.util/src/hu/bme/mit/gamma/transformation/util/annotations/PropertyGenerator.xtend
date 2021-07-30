@@ -101,7 +101,7 @@ class PropertyGenerator {
 	def List<CommentableStateFormula> createOutEventReachability(Collection<Port> ports) {
 		val List<CommentableStateFormula> formulas = newArrayList
 		for (notNecessarilySimplePort : ports) {
-			for (port : notNecessarilySimplePort.allConnectedSimplePorts) {
+			for (port : notNecessarilySimplePort.allBoundSimplePorts) {
 				val instance = port.containingComponentInstance
 				for (outEvent : StatechartModelDerivedFeatures.getOutputEvents(port)) {
 					val parameters = outEvent.parameterDeclarations

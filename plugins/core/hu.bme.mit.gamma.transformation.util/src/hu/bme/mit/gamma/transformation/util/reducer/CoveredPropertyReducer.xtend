@@ -85,7 +85,7 @@ class CoveredPropertyReducer {
 	
 	
 	protected def dispatch evaluate(ComponentInstanceEventParameterReference expression, Step step) {
-		val topComponentPort = expression.port.connectedTopComponentPort
+		val topComponentPort = expression.port.boundTopComponentPort
 		val event = expression.event
 		val parameter = expression.parameter
 		val parameterIndex = parameter.index
@@ -102,7 +102,7 @@ class CoveredPropertyReducer {
 	}
 	
 	protected def dispatch evaluate(ComponentInstanceEventReference expression, Step step) {
-		val topComponentPort = expression.port.connectedTopComponentPort
+		val topComponentPort = expression.port.boundTopComponentPort
 		val event = expression.event
 		
 		for (raiseEventAct : step.outEvents) {

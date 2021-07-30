@@ -575,16 +575,16 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return portBindings;
 	}
 	
-	public static List<Port> getAllConnectedSimplePorts(Component component) {
+	public static List<Port> getAllBoundSimplePorts(Component component) {
 		List<Port> simplePorts = new ArrayList<Port>();
 		for (Port port : getAllPorts(component)) {
-			simplePorts.addAll(getAllConnectedSimplePorts(port));
+			simplePorts.addAll(getAllBoundSimplePorts(port));
 		}
 		// Note that one port can be in the list multiple times iff the component is NOT unfolded
 		return simplePorts;
 	}
 	
-	public static List<Port> getAllConnectedSimplePorts(Port port) {
+	public static List<Port> getAllBoundSimplePorts(Port port) {
 		List<Port> simplePorts = new ArrayList<Port>();
 		Component component = getContainingComponent(port);
 		if (component instanceof StatechartDefinition) {
@@ -595,7 +595,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 			for (PortBinding portBinding : composite.getPortBindings()) {
 				if (portBinding.getCompositeSystemPort() == port) {
 					// Makes sense only if the containment hierarchy is a tree structure
-					simplePorts.addAll(getAllConnectedSimplePorts(
+					simplePorts.addAll(getAllBoundSimplePorts(
 							portBinding.getInstancePortReference().getPort()));
 				}
 			}
@@ -604,13 +604,13 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return simplePorts;
 	}
 	
-	public static Port getConnectedTopComponentPort(Port port) {
+	public static Port getBoundTopComponentPort(Port port) {
 		Package _package = getContainingPackage(port);
 		List<PortBinding> portBindings = ecoreUtil.getAllContentsOfType(_package, PortBinding.class);
 		for (PortBinding portBinding : portBindings) {
 			if (portBinding.getInstancePortReference().getPort() == port) {
 				Port systemPort = portBinding.getCompositeSystemPort();
-				return getConnectedTopComponentPort(systemPort);
+				return getBoundTopComponentPort(systemPort);
 			}
 		}
 		return port;
