@@ -51,6 +51,7 @@ class ComponentTransformer {
 	// This gammaToLowlevelTransformer must be the same during this transformation cycle due to tracing
 	protected final GammaToLowlevelTransformer gammaToLowlevelTransformer
 	protected final MessageQueueTraceability queueTraceability
+//	protected final EnvironmentalInputEventSetterActionCreator environmentalInputEventSetterActionCreator
 	// Transformation settings
 	protected final boolean optimize
 	protected final boolean useHavocActions
@@ -78,6 +79,8 @@ class ComponentTransformer {
 		this.extractGuards = extractGuards
 		this.transitionMerging = transitionMerging
 		this.queueTraceability = new MessageQueueTraceability
+//		this.environmentalInputEventSetterActionCreator =
+//			new EnvironmentalInputEventSetterActionCreator(useHavocActions)
 	}
 	
 	def dispatch XSTS transform(Component component, Package lowlevelPackage) {
@@ -254,7 +257,7 @@ class ComponentTransformer {
 									.getSeparatedInputParameterVariables(inParameter, port)
 							// Separated by ports
 							for (xStsInParameterVariables : xStsInParameterVariableLists) {
-								val size = xStsInParameterVariables.size  // TODO parameter optimization problem: seems like parameters are not deleted independently
+								val size = xStsInParameterVariables.size // TODO parameter optimization problem: seems like parameters are not deleted independently
 								for (var j = 0; j < size; j++) {
 									val xStsInParameterVariable = xStsInParameterVariables.get(j)
 									val xStsSlaveQueue = xStsSlaveQueues.get(j)
@@ -342,14 +345,13 @@ class ComponentTransformer {
 									}
 									block.actions += xStsSlaveSizeVariable.increment
 								}
-								
+								// if (size < capacity) { "add elements into master and slave queues" }
 								thenAction.actions += hasFreeCapacityExpression.createIfAction(block)
 							}
 							// TODO other strategy
 							
 						}
 					}
-					
 					// if (inEvent) { "add elements into master and slave queues" }
 					mergedAction.actions += ifExpression.createIfAction(thenAction)
 				}
@@ -362,12 +364,29 @@ class ComponentTransformer {
 		
 		// In events: havoc non-control specification events, then a single control specification event
 		// TODO - extract in-event creation from the LowlevelToXstsTransformer
-		
+//		checkState(useHavocActions, "Currently only havoc expressions are supported")
+//		val simplePorts = component.allBoundSimplePorts
+//		for (simplePort : simplePorts) {
+//			for (inputEvent : simplePort.inputEvents) {
+//				val xStsInEventVariable = eventReferenceMapper
+//					.getInputEventVariables(inputEvent, simplePort).onlyElement
+//				val xStsInParameterVariables = newArrayList
+//				for (inputParameter : inputEvent.parameterDeclarations) {
+//					xStsInParameterVariables += eventReferenceMapper
+//						.getInputParameterVariables(inputParameter, simplePort)
+//				}
+//				inEventAction.actions +=
+//					environmentalInputEventSetterActionCreator.createInputEventSetterAction(
+//						xStsInEventVariable, xStsInParameterVariables,
+//						inputEvent.persistency == Persistency.TRANSIENT)
+//			}
+//		}
+		xSts.inEventTransition = inEventAction.wrap
 		xSts.outEventTransition = outEventAction.wrap
 		
 		xSts.changeTransitions(mergedAction.wrap)
 		
-		// TODO optimizing unused message queues?
+		// TODO optimizing unused / environmental message queues?
 		
 		return xSts
 	}
