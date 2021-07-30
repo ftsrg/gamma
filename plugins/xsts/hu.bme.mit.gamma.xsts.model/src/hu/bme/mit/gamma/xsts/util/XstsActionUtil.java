@@ -217,8 +217,8 @@ public class XstsActionUtil extends ExpressionUtil {
 	
 	public AssignmentAction createAssignmentAction(VariableDeclaration variable, Expression rhs) {
 		DirectReferenceExpression lhsReference = expressionFactory.createDirectReferenceExpression();
-		AssignmentAction assignmentAction = createAssignmentAction(lhsReference, rhs);
-		return assignmentAction;
+		lhsReference.setDeclaration(variable);
+		return createAssignmentAction(lhsReference, rhs);
 	}
 	
 	public AssignmentAction createAssignmentAction(ReferenceExpression lhs, Expression rhs) {

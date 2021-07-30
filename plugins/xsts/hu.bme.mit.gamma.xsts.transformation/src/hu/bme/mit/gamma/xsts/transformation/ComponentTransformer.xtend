@@ -214,7 +214,7 @@ class ComponentTransformer {
 						// rightInclusive is false by default
 					]
 					it.action = block
-				]
+				] // TODO semantical variation: instead of loop, a single checked could be used
 				mergedAction.actions += queueLoop
 				
 				val eventIdVariableAction = createIntegerTypeDefinition.createVariableDeclarationAction(
