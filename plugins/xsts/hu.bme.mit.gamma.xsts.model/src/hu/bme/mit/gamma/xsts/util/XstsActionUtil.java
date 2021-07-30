@@ -513,7 +513,7 @@ public class XstsActionUtil extends ExpressionUtil {
 		throw new IllegalArgumentException("Not an array: " + queue);
 	}
 	
-	public Action pop(VariableDeclaration queue, VariableDeclaration sizeVariable) {
+	public Action popAndDecrement(VariableDeclaration queue, VariableDeclaration sizeVariable) {
 		TypeDefinition typeDefinition = ExpressionModelDerivedFeatures.getTypeDefinition(queue);
 		if (typeDefinition instanceof ArrayTypeDefinition) {
 			Action popAction = pop(queue);
@@ -528,15 +528,24 @@ public class XstsActionUtil extends ExpressionUtil {
 		throw new IllegalArgumentException("Not an array: " + queue);
 	}
 	
-	public Action add(VariableDeclaration queue,
-			VariableDeclaration sizeVariable, Expression element) {
+	public Action add(VariableDeclaration queue, Expression size, Expression element) {
 		TypeDefinition typeDefinition = ExpressionModelDerivedFeatures.getTypeDefinition(queue);
 		if (typeDefinition instanceof ArrayTypeDefinition) {
 			ArrayAccessExpression accessExpression = factory.createArrayAccessExpression();
 			accessExpression.setOperand(createReferenceExpression(queue));
-			accessExpression.setIndex(createReferenceExpression(sizeVariable));
+			accessExpression.setIndex(size);
 			
 			Action assignment = createAssignmentAction(accessExpression, element);
+			return assignment;
+		}
+		throw new IllegalArgumentException("Not an array: " + queue);
+	}
+	
+	public Action addAndIncrement(VariableDeclaration queue,
+			VariableDeclaration sizeVariable, Expression element) {
+		TypeDefinition typeDefinition = ExpressionModelDerivedFeatures.getTypeDefinition(queue);
+		if (typeDefinition instanceof ArrayTypeDefinition) {
+			Action assignment = add(queue, createReferenceExpression(sizeVariable), element);
 			Action sizeIncrementAction = increment(sizeVariable);
 			
 			SequentialAction block = xStsFactory.createSequentialAction();
