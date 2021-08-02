@@ -657,6 +657,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	public static List<Port> getPortsConnectedViaChannel(Port port) {
 		Package _package = getContainingPackage(port);
 		List<Channel> channels = ecoreUtil.getAllContentsOfType(_package, Channel.class);
+		channels.addAll(ecoreUtil.getAllContentsOfType(_package, BroadcastChannel.class));
 		for (Channel channel : channels) {
 			Port providedPort = channel.getProvidedPort().getPort();
 			List<Port> requiredPorts = getRequiredPorts(channel).stream()
@@ -674,7 +675,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	public static List<Port> getAllConnectedAsynchronousSimplePorts(Port port) {
 		List<Port> portsConnectedViaChannel = new ArrayList<Port>();
 		Port actualPort = port;
-		while (portsConnectedViaChannel.isEmpty() && actualPort != null) {
+		while (actualPort != null /* Broadcast ports can go through multiple levels */) {
 			portsConnectedViaChannel.addAll(getPortsConnectedViaChannel(actualPort));
 			actualPort = getBoundSystemPort(actualPort);
 		}
@@ -689,6 +690,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	public static boolean isInChannel(Port port) {
 		Package _package = getContainingPackage(port);
 		List<Channel> channels = ecoreUtil.getAllContentsOfType(_package, Channel.class);
+		channels.addAll(ecoreUtil.getAllContentsOfType(_package, BroadcastChannel.class));
 		for (Channel channel : channels) {
 			if (channel.getProvidedPort().getPort() == port ||
 					getRequiredPorts(channel).stream().anyMatch(it -> it.getPort() == port)) {
