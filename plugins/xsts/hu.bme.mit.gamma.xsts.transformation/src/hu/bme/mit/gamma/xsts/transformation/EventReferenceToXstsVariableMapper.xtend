@@ -98,21 +98,21 @@ class EventReferenceToXstsVariableMapper {
 	
 	def getSeparatedInputParameterVariables(ParameterDeclaration parameter, Port port) {
 		checkState(port.inputEvents.map[it.parameterDeclarations].flatten.contains(parameter))
-		val xStsVariables = <List<VariableDeclaration>>newArrayList
+		val xStsVariableLists = <List<VariableDeclaration>>newArrayList
 		for (simplePort : port.allBoundSimplePorts) {
 			// One system port can be connected to multiple in-ports (if it is broadcast)
 			val statechart = simplePort.containingComponent
 			val instance = statechart.referencingComponentInstance
-			val xStsVariableName = parameter.customizeInNames(simplePort, instance)
-			val xStsVariable = xSts.getVariables(xStsVariableName)
-			if (!xStsVariable.empty) {
-				xStsVariables += xStsVariable
+			val xStsVariableNames = parameter.customizeInNames(simplePort, instance)
+			val xStsVariables = xSts.getVariables(xStsVariableNames).filterNull.toList
+			if (!xStsVariables.empty) {
+				xStsVariableLists += xStsVariables
 			}
 			else {
 				logger.log(Level.INFO, "Not found XSTS variable for " + port.name + "::" + parameter.name)
 			}
 		}
-		return xStsVariables
+		return xStsVariableLists
 	}
 	
 	def checkOutputEventVariable(Event event, Port port) {
