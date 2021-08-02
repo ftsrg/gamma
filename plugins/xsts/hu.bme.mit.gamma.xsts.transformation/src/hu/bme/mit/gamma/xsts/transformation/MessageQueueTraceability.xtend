@@ -48,7 +48,7 @@ class MessageQueueTraceability {
 			val mappings = entry.value
 			val eventIds = mappings.eventIds
 			if (eventIds.contains(eventId)) {
-				return entry
+				return entry // Sorted according to priority, greatest priority is returned
 			}
 		}
 		throw new IllegalArgumentException("Not found queue for id: " + eventId)

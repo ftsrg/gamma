@@ -37,7 +37,6 @@ import java.util.AbstractMap.SimpleEntry
 import java.util.List
 import java.util.logging.Level
 import java.util.logging.Logger
-import org.eclipse.emf.ecore.util.EcoreUtil
 
 import static com.google.common.base.Preconditions.checkState
 
@@ -121,6 +120,7 @@ class ComponentTransformer {
 			val originalMergedAction = adapterXsts.mergedAction
 			
 			// inEventActions later
+			// TODO filtering events led out to the environment
 			outEventAction.actions += adapterXsts.outEventTransition.action
 			
 			// Creating the message queue constructions
@@ -133,16 +133,17 @@ class ComponentTransformer {
 				}
 				
 				val capacity = queue.capacity
+				val evaluatedMasterCapacity = capacity.evaluateInteger
 				val masterQueueType = createArrayTypeDefinition => [
 					it.elementType = createIntegerTypeDefinition
-					it.size = capacity.evaluateInteger.toIntegerLiteral
+					it.size = evaluatedMasterCapacity.toIntegerLiteral
 				]
 				val masterQueueName = queue.getMasterQueueName(adapterInstance)
 				val masterQueue = masterQueueType.createVariableDeclaration(masterQueueName)
 				
 				val masterSizeVariableName = queue.getMasterSizeVariableName(adapterInstance)
 				val masterSizeVariable = createIntegerTypeDefinition
-					.createVariableDeclaration(masterSizeVariableName)
+						.createVariableDeclaration(masterSizeVariableName)
 				
 				val slaveQueuesMap = newHashMap
 				for (portEvent : events) {
@@ -151,16 +152,17 @@ class ComponentTransformer {
 					val List<MessageQueueStruct> slaveQueues = newArrayList
 					for (parameter : event.parameterDeclarations) {
 						val parameterType = parameter.type
+						val evaluatedSlaveCapacity = capacity.evaluateInteger
 						val slaveQueueType = createArrayTypeDefinition => [
 							it.elementType = parameterType.clone
-							it.size = capacity.evaluateInteger.toIntegerLiteral
+							it.size = evaluatedSlaveCapacity.toIntegerLiteral
 						]
 						val slaveQueueName = parameter.getSlaveQueueName(port, adapterInstance)
 						val slaveQueue = slaveQueueType.createVariableDeclaration(slaveQueueName)
 						
 						val slaveSizeVariableName = parameter.getSlaveSizeVariableName(port, adapterInstance)
 						val slaveSizeVariable = createIntegerTypeDefinition
-							.createVariableDeclaration(slaveSizeVariableName)
+								.createVariableDeclaration(slaveSizeVariableName)
 						
 						slaveQueues += new MessageQueueStruct(slaveQueue, slaveSizeVariable)
 					}
@@ -184,7 +186,7 @@ class ComponentTransformer {
 				val masterSizeVariable = masterQueueStruct.sizeVariable
 				val slaveQueues = messageQueueMapping.slaveQueues
 				
-				// We do not care about the names here
+				// We do not care about the names (renaming) here
 				xSts.variableDeclarations += valueDeclarationTransformer.transform(masterQueue)
 				xSts.variableDeclarations += valueDeclarationTransformer.transform(masterSizeVariable)
 				for (slaveQueueList : slaveQueues.values) {
@@ -202,19 +204,11 @@ class ComponentTransformer {
 				val xStsMasterSizeVariable = variableTrace.getAll(masterSizeVariable).onlyElement
 				
 				val block = createSequentialAction
-				val loopIterationVariable = createParameterDeclaration => [
-					it.type = createIntegerTypeDefinition
-					it.name = loopIterationVariableName
-				] // TODO extract createLoopAction
-				val queueLoop = createLoopAction => [
-					it.iterationParameterDeclaration = loopIterationVariable
-					it.range = createIntegerRangeLiteralExpression => [
-						it.leftOperand = 0.toIntegerLiteral // leftInclusive is true by default
-						it.rightOperand = xStsMasterSizeVariable.createReferenceExpression
-						// rightInclusive is false by default
-					]
+				val queueLoop = loopIterationVariableName.createLoopAction(
+						0.toIntegerLiteral, xStsMasterSizeVariable.createReferenceExpression) => [
 					it.action = block
-				] // TODO semantical variation: instead of loop, a single checked could be used
+				]
+				// TODO semantical variation: instead of loop, a single checked could be used
 				mergedAction.actions += queueLoop
 				
 				val eventIdVariableAction = createIntegerTypeDefinition.createVariableDeclarationAction(
@@ -237,7 +231,7 @@ class ComponentTransformer {
 						// Setting the event variables to true (multiple binding is possible)
 						for (xStsInEventVariable : xStsInEventVariables) {
 							thenAction.actions += xStsInEventVariable.createAssignmentAction(
-								createTrueExpression)
+									createTrueExpression)
 						}
 						// Setting the parameter variables with values stored in slave queues
 						val slaveQueueList = slaveQueues.get(eventId)
@@ -257,11 +251,12 @@ class ComponentTransformer {
 									.getSeparatedInputParameterVariables(inParameter, port)
 							// Separated by ports
 							for (xStsInParameterVariables : xStsInParameterVariableLists) {
-								val size = xStsInParameterVariables.size // TODO parameter optimization problem: seems like parameters are not deleted independently
+								// Parameter optimization problem: parameters are not deleted independently
+								val size = xStsInParameterVariables.size 
 								for (var j = 0; j < size; j++) {
 									val xStsInParameterVariable = xStsInParameterVariables.get(j)
 									val xStsSlaveQueue = xStsSlaveQueues.get(j)
-									// Setting type to prevent enum problems (multiple times, though)
+									// Setting type to prevent enum problems (multiple times, though, not a problem)
 									val slaveQueueType = xStsSlaveQueue.typeDefinition as ArrayTypeDefinition
 									slaveQueueType.elementType = xStsInParameterVariable.type.clone
 									//
@@ -269,10 +264,7 @@ class ComponentTransformer {
 										.createAssignmentAction(xStsSlaveQueue.peek)
 								}
 							}
-							for (xStsSlaveQueue : xStsSlaveQueues) {
-								thenAction.actions += xStsSlaveQueue.pop
-							}
-							thenAction.actions += xStsSlaveSizeVariable.decrement
+							thenAction.actions += xStsSlaveQueues.popAllAndDecrement(xStsSlaveSizeVariable)
 							// Execution if necessary
 							if (adapterComponentType.isControlSpecification(portEvent)) {
 								thenAction.actions += originalMergedAction.clone
@@ -286,7 +278,7 @@ class ComponentTransformer {
 			
 			// Dispatching events to connected message queues - use derived features
 			for (port : adapterComponentType.allPorts) {
-				// Semantical questions - out events are dispatched according to this order
+				// Semantical question: now out events are dispatched according to this order
 				for (event : port.outputEvents) {
 					// Output is unidirectional
 					val xStsOutEventVariable = eventReferenceMapper.getOutputEventVariable(event, port)
@@ -300,6 +292,7 @@ class ComponentTransformer {
 						if (queueTraceability.contains(connectedPortEvent)) {
 							// The event is stored and not been removed due to optimization
 							val eventId = queueTraceability.get(connectedPortEvent)
+							// Highest priority in the case of multiple queues allowing storage 
 							val queueTrace = queueTraceability.getMessageQueues(eventId)
 							val originalQueue = queueTrace.key
 							val capacity = originalQueue.capacity
@@ -314,42 +307,56 @@ class ComponentTransformer {
 							val xStsMasterQueue = variableTrace.getAll(masterQueue).onlyElement
 							val xStsMasterSizeVariable = variableTrace.getAll(masterSizeVariable).onlyElement
 							
+							// Expressions and actions that are used in every queue behavior
+							val evaluatedCapacity = capacity.evaluateInteger
+							val hasFreeCapacityExpression = createLessExpression => [
+								it.leftOperand = xStsMasterSizeVariable.createReferenceExpression
+								it.rightOperand = evaluatedCapacity.toIntegerLiteral
+							]
+							val block = createSequentialAction
+							// Master
+							block.actions += xStsMasterQueue.addAndIncrement(
+									xStsMasterSizeVariable, eventId.toIntegerLiteral)
+							// Slaves
+							val parameters = event.parameterDeclarations
+							for (var i = 0; i < parameters.size; i++) {
+								val parameter = parameters.get(i)
+								val slaveQueueStruct = slaveQueues.get(i)
+								val slaveQueue = slaveQueueStruct.arrayVariable
+								val slaveSizeVariable = slaveQueueStruct.sizeVariable
+								val xStsSlaveQueues = variableTrace.getAll(slaveQueue)
+								val xStsSlaveSizeVariable = variableTrace.getAll(slaveSizeVariable).onlyElement
+								// Output is unidirectional
+								val xStsOutParameterVariables = eventReferenceMapper
+										.getOutputParameterVariables(parameter, port)
+								// Parameter optimization problem: parameters are not deleted independently
+								block.actions += xStsSlaveQueues.addAllAndIncrement(xStsSlaveSizeVariable,
+										xStsOutParameterVariables.map[it.createReferenceExpression])
+							}
+							
 							if (eventDiscardStrategy == DiscardStrategy.OLDEST) {
-								val hasFreeCapacityExpression = createLessExpression => [
-									it.leftOperand = xStsMasterSizeVariable.createReferenceExpression
-									it.rightOperand = capacity.evaluateInteger.toIntegerLiteral
-								]
-								val block = createSequentialAction
-								// Master
-								block.actions += xStsMasterQueue.addAndIncrement(
-										xStsMasterSizeVariable, eventId.toIntegerLiteral)
-								// Slaves
-								val parameters = event.parameterDeclarations
-								for (var i = 0; i < parameters.size; i++) {
-									val parameter = parameters.get(i)
-									val slaveQueueStruct = slaveQueues.get(i)
+								// if (size < capacity) { "add elements into master and slave queues" }
+								thenAction.actions += hasFreeCapacityExpression.createIfAction(block)
+							}
+							else if (eventDiscardStrategy == DiscardStrategy.INCOMING) {
+								val popActions = createSequentialAction
+								popActions.actions += xStsMasterQueue.popAndDecrement(xStsMasterSizeVariable)
+								for (slaveQueueStruct : slaveQueues) {
 									val slaveQueue = slaveQueueStruct.arrayVariable
 									val slaveSizeVariable = slaveQueueStruct.sizeVariable
 									val xStsSlaveQueues = variableTrace.getAll(slaveQueue)
 									val xStsSlaveSizeVariable = variableTrace.getAll(slaveSizeVariable).onlyElement
-									// Output is unidirectional
-									val xStsOutParameterVariables = eventReferenceMapper
-											.getOutputParameterVariables(parameter, port)
-									val size = xStsOutParameterVariables.size
-									for (var j = 0; j < size; j++) { // TODO parameter optimization problem: seems like parameters are not deleted independently
-										val xStsOutParameterVariable = xStsOutParameterVariables.get(j)
-										val xStsSlaveQueue = xStsSlaveQueues.get(j)
-										block.actions += xStsSlaveQueue.add(
-											xStsSlaveSizeVariable.createReferenceExpression,
-											xStsOutParameterVariable.createReferenceExpression)
-									}
-									block.actions += xStsSlaveSizeVariable.increment
+									popActions.actions += xStsSlaveQueues.popAllAndDecrement(xStsSlaveSizeVariable)
 								}
-								// if (size < capacity) { "add elements into master and slave queues" }
-								thenAction.actions += hasFreeCapacityExpression.createIfAction(block)
+								// if ((!(size < capacity)) { "pop" }
+								// "add elements into master and slave queues"
+								thenAction.actions += hasFreeCapacityExpression.createNotExpression
+										.createIfAction(popActions)
+								thenAction.actions += block
 							}
-							// TODO other strategy
-							
+							else {
+								throw new IllegalStateException("Not known behavior: " + eventDiscardStrategy)
+							}
 						}
 					}
 					// if (inEvent) { "add elements into master and slave queues" }
@@ -386,7 +393,7 @@ class ComponentTransformer {
 		
 		xSts.changeTransitions(mergedAction.wrap)
 		
-		// TODO optimizing unused / environmental message queues?
+		// TODO optimizing unused / environmental message queues and event parameters?
 		
 		return xSts
 	}
@@ -608,21 +615,15 @@ class ComponentTransformer {
 		
 	private def extractParameters(Component component, List<Expression> arguments) {
 		val _package = component.containingPackage
-		val parameterDeclarations = newArrayList
-		parameterDeclarations += component.parameterDeclarations // So delete does not mess the list up
+		val parameters = newArrayList
+		parameters += component.parameterDeclarations // So delete does not mess the list up
 		// Theta back-annotation retrieves the argument values from the constant list
-		for (parameter : parameterDeclarations) {
-			val argumentConstant = createConstantDeclaration => [
-				it.name = "__" + parameter.name + "Argument__"
-				it.type = parameter.type.clone
-				it.expression = arguments.get(parameter.index).clone
-			]
-			_package.constantDeclarations += argumentConstant
-			// Changing the references to the constant
-			argumentConstant.change(parameter, component)
-		}
+		
+		_package.constantDeclarations += parameters.extractParamaters(
+				parameters.map['''__«it.name»Argument__'''], arguments)
+		
 		// Deleting after the index settings have been completed (otherwise the index always returns 0)
-		EcoreUtil.deleteAll(parameterDeclarations, true)
+		parameters.deleteAll
 	}
 	
 	private def void customizeDeclarationNames(XSTS xSts, ComponentInstance instance) {

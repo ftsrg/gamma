@@ -30,8 +30,10 @@ import hu.bme.mit.gamma.expression.model.ElseExpression;
 import hu.bme.mit.gamma.expression.model.EqualityExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory;
+import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression;
 import hu.bme.mit.gamma.expression.model.NotExpression;
 import hu.bme.mit.gamma.expression.model.OrExpression;
+import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeDefinition;
@@ -43,6 +45,7 @@ import hu.bme.mit.gamma.xsts.model.Action;
 import hu.bme.mit.gamma.xsts.model.AssignmentAction;
 import hu.bme.mit.gamma.xsts.model.AssumeAction;
 import hu.bme.mit.gamma.xsts.model.CompositeAction;
+import hu.bme.mit.gamma.xsts.model.LoopAction;
 import hu.bme.mit.gamma.xsts.model.MultiaryAction;
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction;
 import hu.bme.mit.gamma.xsts.model.ParallelAction;
@@ -234,6 +237,24 @@ public class XstsActionUtil extends ExpressionUtil {
 	
 	public AssignmentAction decrement(VariableDeclaration variable) {
 		return createAssignmentAction(variable, createDecrementExpression(variable));
+	}
+	
+	public LoopAction createLoopAction(String iterationVariableName,
+			Expression start, Expression end) {
+		return createLoopAction(iterationVariableName, start, true, end, false);
+	}
+	
+	public LoopAction createLoopAction(String iterationVariableName,
+			Expression start, boolean leftInclusive,
+			Expression end, boolean rightIclusive) {
+		LoopAction loopAction = xStsFactory.createLoopAction();
+		ParameterDeclaration parameterDeclaration = createParameterDeclaration(
+				factory.createIntegerTypeDefinition(), iterationVariableName);
+		IntegerRangeLiteralExpression range = createIntegerRangeLiteralExpression(
+				start, leftInclusive, end, rightIclusive);
+		loopAction.setIterationParameterDeclaration(parameterDeclaration);
+		loopAction.setRange(range);
+		return loopAction;
 	}
 	
 	public AssumeAction createAssumeAction(Expression condition) {
@@ -528,6 +549,16 @@ public class XstsActionUtil extends ExpressionUtil {
 		throw new IllegalArgumentException("Not an array: " + queue);
 	}
 	
+	public Action popAllAndDecrement(Iterable<? extends VariableDeclaration> queues,
+			VariableDeclaration sizeVariable) {
+		SequentialAction block = xStsFactory.createSequentialAction();
+		for (VariableDeclaration queue : queues) {
+			block.getActions().add(pop(queue));
+		}
+		block.getActions().add(decrement(sizeVariable));
+		return block;
+	}
+	
 	public Action add(VariableDeclaration queue, Expression size, Expression element) {
 		TypeDefinition typeDefinition = ExpressionModelDerivedFeatures.getTypeDefinition(queue);
 		if (typeDefinition instanceof ArrayTypeDefinition) {
@@ -539,6 +570,18 @@ public class XstsActionUtil extends ExpressionUtil {
 			return assignment;
 		}
 		throw new IllegalArgumentException("Not an array: " + queue);
+	}
+	
+	public Action addAll(List<? extends VariableDeclaration> queues,
+			Expression size, List<? extends Expression> elements) {
+		SequentialAction block = xStsFactory.createSequentialAction();
+		int queueSize = queues.size();
+		for (int i = 0; i < queueSize; i++) {
+			VariableDeclaration queue = queues.get(i);
+			Expression element = elements.get(i);
+			block.getActions().add(add(queue, size, element));
+		}
+		return block;
 	}
 	
 	public Action addAndIncrement(VariableDeclaration queue,
@@ -555,6 +598,14 @@ public class XstsActionUtil extends ExpressionUtil {
 			return block;
 		}
 		throw new IllegalArgumentException("Not an array: " + queue);
+	}
+	
+	public Action addAllAndIncrement(List<? extends VariableDeclaration> queues,
+			VariableDeclaration sizeVariable, List<? extends Expression> elements) {
+		SequentialAction block = xStsFactory.createSequentialAction();
+		block.getActions().add(addAll(queues, createReferenceExpression(sizeVariable), elements));
+		block.getActions().add(increment(sizeVariable));
+		return block;
 	}
 	
 }

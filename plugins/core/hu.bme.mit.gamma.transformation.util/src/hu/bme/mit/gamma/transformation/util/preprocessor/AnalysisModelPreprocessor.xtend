@@ -11,7 +11,6 @@
 package hu.bme.mit.gamma.transformation.util.preprocessor
 
 import hu.bme.mit.gamma.expression.model.Expression
-import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.statechart.contract.AdaptiveContractAnnotation
 import hu.bme.mit.gamma.statechart.contract.StateContractAnnotation
 import hu.bme.mit.gamma.statechart.interface_.Component
@@ -29,7 +28,6 @@ import java.util.List
 import java.util.logging.Level
 import java.util.logging.Logger
 import org.eclipse.emf.common.util.URI
-import org.eclipse.emf.ecore.util.EcoreUtil
 
 import static com.google.common.base.Preconditions.checkState
 
@@ -40,14 +38,13 @@ class AnalysisModelPreprocessor {
 	public static final AnalysisModelPreprocessor INSTANCE =  new AnalysisModelPreprocessor
 	protected new() {}
 	//
-	protected final Logger logger = Logger.getLogger("GammaLogger")
 	protected final extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension FileUtil fileUtil = FileUtil.INSTANCE
 	protected final extension GammaFileNamer fileNamer = GammaFileNamer.INSTANCE
-	protected final extension ExpressionModelFactory expressionModelFactory = ExpressionModelFactory.eINSTANCE
 	protected final extension InterfaceModelFactory interfaceModelFactory = InterfaceModelFactory.eINSTANCE
-	
+	//
+	protected final Logger logger = Logger.getLogger("GammaLogger")
 	
 	def preprocess(Package gammaPackage, String targetFolderUri, String fileName, boolean optimize) {
 		return gammaPackage.preprocess(#[], targetFolderUri, fileName, optimize)
@@ -86,41 +83,28 @@ class AnalysisModelPreprocessor {
 		return _package.components.head
 	}
 	
-	protected def transformTopComponentParameters(Component component,
-			List<Expression> topComponentArguments) {
-		if (topComponentArguments.nullOrEmpty) {
+	protected def transformTopComponentParameters(Component component, List<Expression> arguments) {
+		if (arguments.nullOrEmpty) {
 			return
 		}
 		val _package = component.containingPackage
 		val parameters = component.parameterDeclarations
-		logger.log(Level.INFO, "Argument size: " + topComponentArguments.size + " - parameter size: " + parameters.size)
-		checkState(topComponentArguments.size <= parameters.size)
-		val annotation = createTopComponentArgumentsAnnotation
-		_package.annotations += annotation
+		logger.log(Level.INFO, "Argument size: " + arguments.size + " - parameter size: " + parameters.size)
+		checkState(arguments.size <= parameters.size)
 		// For code generation, not all (actually zero) parameters have to be bound
-		for (var i = 0; i < topComponentArguments.size; i++) {
-			val parameter = parameters.get(i)
-			val argument = topComponentArguments.get(i).clone
-			logger.log(Level.INFO, "Saving top component argument " + argument + " for " + parameter.name)
-			annotation.arguments += argument // Saving top component expression
-			val parameterConstant =  createConstantDeclaration => [
-				it.type = parameter.type.clone
-				it.name = "__" + parameter.name + "__"
-				it.expression = argument.clone
-			]
-			_package.constantDeclarations += parameterConstant
-			// Changing the parameter references to constant references
-			parameterConstant.change(parameter, component)
-		}
+		_package.annotations += createTopComponentArgumentsAnnotation => [
+			it.arguments += arguments.map[it.clone]
+		]
+		
+		_package.constantDeclarations += parameters.extractParamaters(
+			parameters.map['''__«it.name»__'''], arguments)
 	}
 	
 	def removeAnnotations(Component component) {
 		// Removing annotations only from the models; they are saved on disk
 		val newPackage = component.containingPackage
-		EcoreUtil.getAllContents(newPackage, true)
-			.filter(AdaptiveContractAnnotation).forEach[EcoreUtil.remove(it)]
-		EcoreUtil.getAllContents(newPackage, true)
-			.filter(StateContractAnnotation).forEach[EcoreUtil.remove(it)]
+		newPackage.getAllContentsOfType(AdaptiveContractAnnotation).forEach[it.remove]
+		newPackage.getAllContentsOfType(StateContractAnnotation).forEach[it.remove]
 	}
 	
 	def getLogger() {
