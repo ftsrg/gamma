@@ -87,6 +87,8 @@ class ComponentTransformer {
 	}
 	
 	def dispatch XSTS transform(AsynchronousCompositeComponent component, Package lowlevelPackage) {
+		// Parameters of all asynchronous composite components
+		component.extractAllParameters
 		// Retrieving the adapter instances - hierarchy does not matter here apart from the order
 		val adapterInstances = component.allAsynchronousSimpleInstances
 		
@@ -109,7 +111,6 @@ class ComponentTransformer {
 			val adapterComponentType = adapterInstance.type as AsynchronousAdapter
 			
 			adapterComponentType.extractParameters(adapterInstance.arguments) // Parameters
-			// TODO for potential middle hierarchy levels
 			val adapterXsts = adapterComponentType.transform(lowlevelPackage)
 			xSts.merge(adapterXsts) // Adding variables, types, etc.
 			
@@ -120,7 +121,7 @@ class ComponentTransformer {
 			val originalMergedAction = adapterXsts.mergedAction
 			
 			// inEventActions later
-			// TODO filtering events led out to the environment
+			// Filtering events can be used (internal ones and ones led out to the environment)
 			outEventAction.actions += adapterXsts.outEventTransition.action
 			
 			// Creating the message queue constructions
@@ -317,6 +318,8 @@ class ComponentTransformer {
 							// Master
 							block.actions += xStsMasterQueue.addAndIncrement(
 									xStsMasterSizeVariable, eventId.toIntegerLiteral)
+							// Resetting out event variable
+							block.actions += xStsOutEventVariable.createVariableResetAction
 							// Slaves
 							val parameters = event.parameterDeclarations
 							for (var i = 0; i < parameters.size; i++) {
@@ -332,6 +335,8 @@ class ComponentTransformer {
 								// Parameter optimization problem: parameters are not deleted independently
 								block.actions += xStsSlaveQueues.addAllAndIncrement(xStsSlaveSizeVariable,
 										xStsOutParameterVariables.map[it.createReferenceExpression])
+								// Resetting out parameter variables
+								block.actions += xStsOutParameterVariables.map[it.createVariableResetAction]
 							}
 							
 							if (eventDiscardStrategy == DiscardStrategy.OLDEST) {
@@ -597,7 +602,31 @@ class ComponentTransformer {
 		return xSts
 	}
 	
-	//
+	// Utils
+	
+	private def void extractAllParameters(AsynchronousCompositeComponent component) {
+		for (instance : component.components) {
+			val arguments = instance.arguments
+			val type = instance.type
+			type.extractParameters(arguments)
+			if (type instanceof AsynchronousCompositeComponent) {
+				type.extractAllParameters
+			}
+		}
+	}
+	
+	private def extractParameters(Component component, List<Expression> arguments) {
+		val _package = component.containingPackage
+		val parameters = newArrayList
+		parameters += component.parameterDeclarations // So delete does not mess the list up
+		// Theta back-annotation retrieves the argument values from the constant list
+		
+		_package.constantDeclarations += parameters.extractParamaters(
+				parameters.map['''__«it.name»Argument__'''], arguments)
+		
+		// Deleting after the index settings have been completed (otherwise the index always returns 0)
+		parameters.deleteAll
+	}
 	
 	private def checkAdapter(AsynchronousAdapter component) {
 		val messageQueues = component.messageQueues
@@ -611,19 +640,6 @@ class ComponentTransformer {
 		checkState(trigger instanceof AnyTrigger)
 		val controlFunction = controlSpecification.controlFunction
 		checkState(controlFunction == ControlFunction.RUN_ONCE)
-	}
-		
-	private def extractParameters(Component component, List<Expression> arguments) {
-		val _package = component.containingPackage
-		val parameters = newArrayList
-		parameters += component.parameterDeclarations // So delete does not mess the list up
-		// Theta back-annotation retrieves the argument values from the constant list
-		
-		_package.constantDeclarations += parameters.extractParamaters(
-				parameters.map['''__«it.name»Argument__'''], arguments)
-		
-		// Deleting after the index settings have been completed (otherwise the index always returns 0)
-		parameters.deleteAll
 	}
 	
 	private def void customizeDeclarationNames(XSTS xSts, ComponentInstance instance) {

@@ -794,22 +794,17 @@ class LowlevelToXstsTransformer {
 	}
 	
 	protected def handleVariableAnnotations() {
-		val resetableVariables = xSts.variableDeclarations.filter[it.resetable]
-		val transientVariables = xSts.variableDeclarations.filter[it.transient]
-		
 		val newMergedAction = createSequentialAction
 		
+		val resetableVariables = xSts.variableDeclarations.filter[it.resetable]
 		for (resetableVariable : resetableVariables) {
-			// Type initial value, as the variable initial expression might change (e.g., a + b + 1)
-			val initialValue = resetableVariable.type.initialValueOfType
-			newMergedAction.actions += resetableVariable.createAssignmentAction(initialValue)
+			newMergedAction.actions += resetableVariable.createVariableResetAction
 		}
 		newMergedAction.actions += xSts.mergedAction
 		
+		val transientVariables = xSts.variableDeclarations.filter[it.transient]
 		for (transientVariable : transientVariables) {
-			// Type initial value, as the variable initial expression might change (e.g., a + b + 1)
-			val initialValue = transientVariable.type.initialValueOfType
-			val assignment = transientVariable.createAssignmentAction(initialValue)
+			val assignment = transientVariable.createVariableResetAction
 			newMergedAction.actions += assignment
 			// To reduce state space in the entry action too in the case of transient variables
 			xSts.entryEventTransition.action.appendToAction(assignment.clone) // Cloning is important

@@ -231,6 +231,11 @@ public class XstsActionUtil extends ExpressionUtil {
 		return assignmentAction;
 	}
 	
+	public AssignmentAction createVariableResetAction(VariableDeclaration variable) {
+		Expression defaultExpression = ExpressionModelDerivedFeatures.getDefaultExpression(variable);
+		return createAssignmentAction(variable, defaultExpression);
+	}
+	
 	public AssignmentAction increment(VariableDeclaration variable) {
 		return createAssignmentAction(variable, createIncrementExpression(variable));
 	}

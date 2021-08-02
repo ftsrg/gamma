@@ -13,7 +13,7 @@ class MessageQueueTraceability {
 	
 	protected final Map<Entry<Port, Event>, Integer> eventIds = newHashMap
 	protected final SortedMap<MessageQueue, MessageQueueMapping> messageQueues = newTreeMap(
-		lhs, rhs | lhs.priority.compareTo(rhs.priority))
+		lhs, rhs | rhs.priority.compareTo(lhs.priority) /* Highest value - greater priority */)
 	
 	//
 	
