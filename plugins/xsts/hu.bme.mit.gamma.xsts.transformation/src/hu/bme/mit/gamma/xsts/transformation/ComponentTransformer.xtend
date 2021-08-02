@@ -97,6 +97,8 @@ class ComponentTransformer {
 		]
 		
 		val eventReferenceMapper = new EventReferenceToXstsVariableMapper(xSts)
+		val valueDeclarationTransformer = new ValueDeclarationTransformer
+		val variableTrace = valueDeclarationTransformer.getTrace
 		
 		val variableInitAction = createSequentialAction
 		val configInitAction = createSequentialAction
@@ -129,8 +131,9 @@ class ComponentTransformer {
 				val storedEventIds = newHashSet
 				val events = queue.storedEvents
 				for (event : events) {
-					queueTraceability.put(event) // An id is assigned automatically
-					storedEventIds += queueTraceability.get(event)
+					val id = queueTraceability.put(event) // An id is assigned automatically
+					storedEventIds += id
+					logger.log(Level.INFO, '''Assigning «id» to «event.key.name».«event.value.name»''')
 				}
 				
 				val capacity = queue.capacity
@@ -176,11 +179,9 @@ class ComponentTransformer {
 			}
 			
 			// Transforming the message queue constructions into native XSTS variables
-			val valueDeclarationTransformer = new ValueDeclarationTransformer
-			val variableTrace = valueDeclarationTransformer.getTrace
 			
-			for (messageQueue : queueTraceability.getMessageQueues) { // In priority order
-				val messageQueueMapping = queueTraceability.get(messageQueue)
+			for (queue : queueTraceability.getMessageQueues) { // In priority order
+				val messageQueueMapping = queueTraceability.get(queue)
 				
 				val masterQueueStruct = messageQueueMapping.masterQueue
 				val masterQueue = masterQueueStruct.arrayVariable
@@ -218,7 +219,7 @@ class ComponentTransformer {
 				block.actions += eventIdVariableAction
 				block.actions += xStsMasterQueue.popAndDecrement(xStsMasterSizeVariable)
 				
-				val events = messageQueue.storedEvents
+				val events = queue.storedEvents
 				for (portEvent : events) {
 					val port = portEvent.key
 					val event = portEvent.value
@@ -262,7 +263,7 @@ class ComponentTransformer {
 									slaveQueueType.elementType = xStsInParameterVariable.type.clone
 									//
 									thenAction.actions += xStsInParameterVariable
-										.createAssignmentAction(xStsSlaveQueue.peek)
+											.createAssignmentAction(xStsSlaveQueue.peek)
 								}
 							}
 							thenAction.actions += xStsSlaveQueues.popAllAndDecrement(xStsSlaveSizeVariable)
@@ -276,8 +277,11 @@ class ComponentTransformer {
 					}
 				}
 			}
-			
-			// Dispatching events to connected message queues - use derived features
+//		}
+//		
+//		// Dispatching events to connected message queues - use derived features
+//		for (adapterInstance : adapterInstances) {	
+//			val adapterComponentType = adapterInstance.type as AsynchronousAdapter
 			for (port : adapterComponentType.allPorts) {
 				// Semantical question: now out events are dispatched according to this order
 				for (event : port.outputEvents) {
@@ -662,15 +666,15 @@ class ComponentTransformer {
 	static class Namings {
 		
 		def static String getMasterQueueName(
-			MessageQueue queue, ComponentInstance instance) '''«queue.name»Of«instance.name»'''
+			MessageQueue queue, ComponentInstance instance) '''master_«queue.name»Of«instance.name»'''
 		def static String getMasterSizeVariableName(
-			MessageQueue queue, ComponentInstance instance) '''size«queue.name.toFirstUpper»Of«instance.name»'''
-		def static String getSlaveQueueName(
-			ParameterDeclaration parameterDeclaration, Port port,
-				ComponentInstance instance) '''«port.name»_«parameterDeclaration.name»Of«instance.name»'''
+			MessageQueue queue, ComponentInstance instance) '''sizeMaster«queue.name.toFirstUpper»Of«instance.name»'''
+		def static String getSlaveQueueName(ParameterDeclaration parameterDeclaration,
+				Port port, ComponentInstance instance)
+			'''slave_«port.name»_«parameterDeclaration.name»Of«instance.name»'''
 		def static String getSlaveSizeVariableName(
 				ParameterDeclaration parameterDeclaration, Port port, ComponentInstance instance)
-			'''size«parameterDeclaration.name.toFirstUpper»«port.name.toFirstUpper»Of«instance.name»'''
+			'''sizeSlave«parameterDeclaration.name.toFirstUpper»«port.name.toFirstUpper»Of«instance.name»'''
 				
 		def static String getLoopIterationVariableName() '''i'''
 		def static String getEventIdentifierVariableName() '''eventId'''

@@ -13,12 +13,21 @@ class MessageQueueTraceability {
 	
 	protected final Map<Entry<Port, Event>, Integer> eventIds = newHashMap
 	protected final SortedMap<MessageQueue, MessageQueueMapping> messageQueues = newTreeMap(
-		lhs, rhs | rhs.priority.compareTo(lhs.priority) /* Highest value - greater priority */)
+		lhs, rhs | {
+			val result = rhs.priority.compareTo(lhs.priority) /* Highest value - greater priority */
+			if (result == 0) {
+				return lhs.hashCode.compareTo(rhs.hashCode) // Random
+			}
+			return result
+		}
+	)
 	
-	//
+	
 	
 	def put(Entry<Port, Event> event) {
-		eventIds += event -> eventId++
+		val id = eventId++
+		eventIds += event -> id
+		return id
 	}
 	
 	def get(Entry<Port, Event> event) {

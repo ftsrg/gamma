@@ -808,6 +808,8 @@ public class ExpressionUtil {
 
 	protected Expression _getInitialValueOfType(EnumerationTypeDefinition type) {
 		EnumerationLiteralExpression enumerationLiteralExpression = factory.createEnumerationLiteralExpression();
+		TypeDeclaration typeDeclaration = ecoreUtil.getContainerOfType(type, TypeDeclaration.class);
+		enumerationLiteralExpression.setTypeReference(createTypeReference(typeDeclaration));
 		enumerationLiteralExpression.setReference(type.getLiterals().get(0));
 		return enumerationLiteralExpression;
 	}
@@ -860,6 +862,14 @@ public class ExpressionUtil {
 		} else {
 			throw new IllegalArgumentException("Unhandled parameter types: " + type);
 		}
+	}
+	
+	//
+	
+	public TypeReference createTypeReference(TypeDeclaration type) {
+		TypeReference typeReference = factory.createTypeReference();
+		typeReference.setReference(type);
+		return typeReference;
 	}
 	
 	// Variable handling
