@@ -278,6 +278,7 @@ class ComponentTransformer {
 						val xStsSlaveSizeVariable = variableTrace.getAll(slaveSizeVariable).onlyElement
 						val xStsInParameterVariableLists = eventReferenceMapper
 								.getSeparatedInputParameterVariables(inParameter, port)
+						// TODO Delete slave queues to which there are no related xSts variables 
 						// Separated by ports
 						for (xStsInParameterVariables : xStsInParameterVariableLists) {
 							// Parameter optimization problem: parameters are not deleted independently
@@ -294,10 +295,10 @@ class ComponentTransformer {
 							}
 						}
 						thenAction.actions += xStsSlaveQueues.popAllAndDecrement(xStsSlaveSizeVariable)
-						// Execution if necessary
-						if (adapterComponentType.isControlSpecification(portEvent)) {
-							thenAction.actions += originalMergedAction.clone
-						}
+					}
+					// Execution if necessary
+					if (adapterComponentType.isControlSpecification(portEvent)) {
+						thenAction.actions += originalMergedAction.clone
 					}
 					// if (eventId == ..) { "transfer slave queue values" if (isControlSpec) { "run" }
 					block.actions += ifExpression.createIfAction(thenAction)
@@ -701,7 +702,8 @@ class ComponentTransformer {
 		if (queue.isEnvironmental(systemPorts)) {
 			return true // All events are system events
 		}
-		checkState(systemPorts.containsNone(topPorts), "All or none of the ports must be system ports")
+		checkState(systemPorts.containsNone(topPorts) || queue.capacity.evaluateInteger == 1,
+				"All or none of the ports must be system ports or the capacity must be one")
 		return false
 	}
 	
