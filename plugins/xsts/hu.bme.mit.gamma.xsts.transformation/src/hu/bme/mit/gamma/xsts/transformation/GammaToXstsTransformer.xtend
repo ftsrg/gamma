@@ -26,13 +26,11 @@ import hu.bme.mit.gamma.statechart.interface_.SchedulingConstraintAnnotation
 import hu.bme.mit.gamma.statechart.lowlevel.transformation.GammaToLowlevelTransformer
 import hu.bme.mit.gamma.transformation.util.preprocessor.AnalysisModelPreprocessor
 import hu.bme.mit.gamma.util.GammaEcoreUtil
-import hu.bme.mit.gamma.xsts.model.CompositeAction
 import hu.bme.mit.gamma.xsts.model.SystemInEventGroup
 import hu.bme.mit.gamma.xsts.model.SystemOutEventGroup
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
 import hu.bme.mit.gamma.xsts.transformation.serializer.ActionSerializer
-import hu.bme.mit.gamma.xsts.transformation.util.OrthogonalActionTransformer
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import java.util.Collections
 import java.util.List
@@ -51,12 +49,11 @@ class GammaToXstsTransformer {
 	protected final extension ComponentTransformer componentTransformer
 	// Transformation settings
 	protected final Integer schedulingConstraint
-	protected final boolean transformOrthogonalActions
 	// Auxiliary objects
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension ActionSerializer actionSerializer = ActionSerializer.INSTANCE
-	protected final extension OrthogonalActionTransformer orthogonalActionTransformer = OrthogonalActionTransformer.INSTANCE
-	protected final extension EnvironmentalActionFilter environmentalActionFilter = EnvironmentalActionFilter.INSTANCE
+	protected final extension EnvironmentalActionFilter environmentalActionFilter =
+			EnvironmentalActionFilter.INSTANCE
 	protected final extension ActionOptimizer actionSimplifier = ActionOptimizer.INSTANCE
 	protected final extension AnalysisModelPreprocessor modelPreprocessor = AnalysisModelPreprocessor.INSTANCE
 	protected final extension ExpressionModelFactory expressionModelFactory = ExpressionModelFactory.eINSTANCE
@@ -76,9 +73,8 @@ class GammaToXstsTransformer {
 			TransitionMerging transitionMerging) {
 		this.gammaToLowlevelTransformer = new GammaToLowlevelTransformer
 		this.componentTransformer = new ComponentTransformer(this.gammaToLowlevelTransformer,
-			optimize, useHavocActions, extractGuards, transitionMerging)
+			transformOrthogonalActions, optimize, useHavocActions, extractGuards, transitionMerging)
 		this.schedulingConstraint = schedulingConstraint
-		this.transformOrthogonalActions = transformOrthogonalActions
 	}
 	
 	def preprocessAndExecuteAndSerialize(Package _package,
@@ -109,27 +105,18 @@ class GammaToXstsTransformer {
 	def execute(Package _package) {
 		logger.log(Level.INFO, "Starting main execution of Gamma-XSTS transformation")
 		val gammaComponent = _package.components.head // Getting the first component
-		val lowlevelPackage = gammaToLowlevelTransformer.transform(_package) // Not execute, as we want to distinguish between statecharts
+		// "transform", not "execute", as we want to distinguish between statecharts
+		val lowlevelPackage = gammaToLowlevelTransformer.transform(_package)
 		// Serializing the xSTS
 		val xSts = gammaComponent.transform(lowlevelPackage) // Transforming the Gamma component
-		// TODO move this to abstract synchronous composite component part in "isTop" branch
 		// Creating system event groups for traceability purposes
 		logger.log(Level.INFO, "Creating system event groups for " + gammaComponent.name)
-		xSts.createSystemEventGroups(gammaComponent)
+		xSts.createSystemEventGroups(gammaComponent) // Now synchronous event variables are put in there
 		// Removing duplicated types
 		xSts.removeDuplicatedTypes
 		// Setting clock variable increase
 		xSts.setClockVariables
 		_package.setSchedulingAnnotation(schedulingConstraint) // Needed for back-annotation
-		if (transformOrthogonalActions) {
-			logger.log(Level.INFO, "Optimizing orthogonal actions in " + xSts.name)
-			xSts.transform
-			// Before optimize actions
-		}
-		if (optimize) {
-			// Optimizing: system in events (but not PERSISTENT parameters) can be reset after the merged transition
-			xSts.resetInEventsAfterMergedAction(gammaComponent)
-		}
 		// Optimizing
 		xSts.optimize
 		return xSts
@@ -156,16 +143,13 @@ class GammaToXstsTransformer {
 						it.then = incrementExpression
 						it.^else = createReferenceExpression(xStsClockVariable)
 					]
-				it.actions += createAssignmentAction => [
-					it.lhs = createReferenceExpression(xStsClockVariable)
-					it.rhs = rhs
-				]
+				it.actions += xStsClockVariable.createAssignmentAction(rhs)
 			}
 			// Putting it in merged transition as it does not work in environment action
 			it.actions += xSts.mergedAction
 		]
 		xSts.changeTransitions(xStsClockSettingAction.wrap)
-		xSts.clockVariables.clear // Clearing the clock variables, as they are handled like normal ones from now on
+		xSts.clockVariables.clear // Clearing the clock variables - they are handled like normal ones from now on
 	}
 	
 	protected def Integer getGreatestComparison(VariableDeclaration variable) {
@@ -221,8 +205,9 @@ class GammaToXstsTransformer {
 		// These types would be different in XSTS, when they are the same in Gamma
 		// Note: for this reason, every type declaration must have a different name
 		val typeDeclarationNames = types.map[it.name]
-		val duplications = typeDeclarationNames.filter[Collections.frequency(typeDeclarationNames, it) > 1].toList
-		logger.log(Level.INFO, "The XSTS contains multiple type declarations with the same name:" + duplications)
+		val duplications = typeDeclarationNames
+				.filter[Collections.frequency(typeDeclarationNames, it) > 1].toList
+		logger.log(Level.INFO, "The XSTS contains multiple type declarations with the same name: " + duplications)
 		// It is possible that in some instances of the same region, some states are removed due to optimization
 		var id = 0
 		for (type : types) {
@@ -263,21 +248,6 @@ class GammaToXstsTransformer {
 					systemOutEventGroup.variables += outEventVariable
 				}
 			}
-		}
-	}
-	
-	protected def void resetInEventsAfterMergedAction(XSTS xSts, Component type) {
-		val inEventAction = xSts.inEventTransition.action
-		// Maybe still not perfect?
-		if (inEventAction instanceof CompositeAction) {
-			val clonedInEventAction = inEventAction.clone
-			// Not PERSISTENT parameters
-			val resetAction = clonedInEventAction.resetEverythingExceptPersistentParameters(type)
-			val newMergedAction = createSequentialAction => [
-				it.actions += xSts.mergedAction
-				it.actions += resetAction
-			]
-			xSts.changeTransitions(newMergedAction.wrap)
 		}
 	}
 	

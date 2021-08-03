@@ -28,10 +28,12 @@ import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.util.JavaUtil
 import hu.bme.mit.gamma.xsts.model.AbstractAssignmentAction
 import hu.bme.mit.gamma.xsts.model.Action
+import hu.bme.mit.gamma.xsts.model.CompositeAction
 import hu.bme.mit.gamma.xsts.model.InEventGroup
 import hu.bme.mit.gamma.xsts.model.RegionGroup
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
+import hu.bme.mit.gamma.xsts.transformation.util.OrthogonalActionTransformer
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import java.util.AbstractMap.SimpleEntry
 import java.util.List
@@ -53,6 +55,7 @@ class ComponentTransformer {
 	protected final MessageQueueTraceability queueTraceability
 //	protected final EnvironmentalInputEventSetterActionCreator environmentalInputEventSetterActionCreator
 	// Transformation settings
+	protected final boolean transformOrthogonalActions
 	protected final boolean optimize
 	protected final boolean useHavocActions
 	protected final boolean extractGuards
@@ -63,6 +66,8 @@ class ComponentTransformer {
 	protected final extension ExpressionEvaluator expressionEvaluator = ExpressionEvaluator.INSTANCE
 	protected final extension EnvironmentalActionFilter environmentalActionFilter =
 			EnvironmentalActionFilter.INSTANCE
+	protected final extension OrthogonalActionTransformer orthogonalActionTransformer =
+			OrthogonalActionTransformer.INSTANCE
 	protected final extension EventConnector eventConnector = EventConnector.INSTANCE
 	protected final extension SystemReducer systemReducer = SystemReducer.INSTANCE
 	protected final extension ExpressionModelFactory expressionModelFactory = ExpressionModelFactory.eINSTANCE
@@ -71,9 +76,11 @@ class ComponentTransformer {
 	// Logger
 	protected final Logger logger = Logger.getLogger("GammaLogger")
 	
-	new(GammaToLowlevelTransformer gammaToLowlevelTransformer, boolean optimize,
-			boolean useHavocActions, boolean extractGuards,	TransitionMerging transitionMerging) {
+	new(GammaToLowlevelTransformer gammaToLowlevelTransformer, boolean transformOrthogonalActions,
+			boolean optimize, boolean useHavocActions, boolean extractGuards,
+			TransitionMerging transitionMerging) {
 		this.gammaToLowlevelTransformer = gammaToLowlevelTransformer
+		this.transformOrthogonalActions = transformOrthogonalActions
 		this.optimize = optimize
 		this.useHavocActions = useHavocActions
 		this.extractGuards = extractGuards
@@ -87,6 +94,7 @@ class ComponentTransformer {
 		throw new IllegalArgumentException("Not supported component type: " + component)
 	}
 	
+	// TODO move most parts into the AA transformer
 	def dispatch XSTS transform(AsynchronousCompositeComponent component, Package lowlevelPackage) {
 		// Parameters of all asynchronous composite components
 		component.extractAllParameters
@@ -585,6 +593,19 @@ class ComponentTransformer {
 			it.actions += bindingAssignments
 		]
 		xSts.inEventTransition = newInEventAction.wrap
+		
+		if (component.topInPackage) {
+			if (transformOrthogonalActions) {
+				logger.log(Level.INFO, "Optimizing orthogonal actions in " + xSts.name)
+				xSts.transform
+				// Before optimize actions
+			}
+			if (optimize) {
+				// Optimizing: system in events (but not PERSISTENT parameters) can be reset after the merged transition
+				xSts.resetInEventsAfterMergedAction(component)
+			}
+		}
+		
 		return xSts
 	}
 	
@@ -644,6 +665,18 @@ class ComponentTransformer {
 		checkState(trigger instanceof AnyTrigger)
 		val controlFunction = controlSpecification.controlFunction
 		checkState(controlFunction == ControlFunction.RUN_ONCE)
+	}
+	
+	private def void resetInEventsAfterMergedAction(XSTS xSts, Component type) {
+		val inEventAction = xSts.inEventTransition.action
+		// Maybe still not perfect?
+		if (inEventAction instanceof CompositeAction) {
+			val clonedInEventAction = inEventAction.clone
+			// Not PERSISTENT parameters
+			val resetAction = clonedInEventAction.resetEverythingExceptPersistentParameters(type)
+			val mergedAction = xSts.mergedAction
+			mergedAction.appendToAction(resetAction)
+		}
 	}
 	
 	private def void customizeDeclarationNames(XSTS xSts, ComponentInstance instance) {
