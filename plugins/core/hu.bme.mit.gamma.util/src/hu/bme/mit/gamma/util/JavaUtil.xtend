@@ -37,6 +37,19 @@ class JavaUtil {
 		return IterableExtensions.flatten(inputs).toList
 	}
 	
+	def boolean containsOne(Collection<?> lhs, Iterable<?> rhs) {
+		for (element : rhs) {
+			if (lhs.contains(element)) {
+				return true
+			}
+		}
+		return false
+	}
+	
+	def boolean containsNone(Collection<?> lhs, Iterable<?> rhs) {
+		return !lhs.containsOne(rhs)
+	}
+	
 	def <T> T getOnlyElement(Iterable<T> collection) {
 		if (collection.size !== 1) {
 			throw new IllegalArgumentException("Not one elment: " + collection)

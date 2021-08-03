@@ -535,10 +535,7 @@ class LowlevelToXstsTransformer {
 		for (xStsVariable : xStsVariables) {
 			// variableInitializingAction as it must be set before setting the configuration
 			variableInitializingAction as SequentialAction => [
-				it.actions += createAssignmentAction => [
-					it.lhs = xStsVariable.createReferenceExpression
-					it.rhs = xStsVariable.initialValue
-				]
+				it.actions += xStsVariable.createAssignmentAction(xStsVariable.initialValue)
 			]
 		}
 	}
@@ -635,15 +632,9 @@ class LowlevelToXstsTransformer {
 					else {
 						createNonDeterministicAction => [
 							// Event is raised
-							it.actions += createAssignmentAction => [
-								it.lhs = xStsEventVariable.createReferenceExpression
-								it.rhs = createTrueExpression
-							]
+							it.actions += xStsEventVariable.createAssignmentAction(createTrueExpression)
 							// Event is not raised
-							it.actions += createAssignmentAction => [
-								it.lhs = xStsEventVariable.createReferenceExpression
-								it.rhs = createFalseExpression
-							]
+							it.actions += xStsEventVariable.createAssignmentAction(createFalseExpression)
 						]
 					}
 					lowlevelEnvironmentalAction.actions += xStsInEventAssignment
@@ -651,11 +642,10 @@ class LowlevelToXstsTransformer {
 					for (lowlevelParameterDeclaration : it.event.parameters) {
 						val xStsParameterVariable = trace.getXStsVariable(lowlevelParameterDeclaration)
 						if (lowlevelEvent.persistency == Persistency.TRANSIENT) {
-							// Synchronous composite components do not reset transient parameters!
-							lowlevelEnvironmentalAction.actions += createAssignmentAction => [
-								it.lhs = xStsParameterVariable.createReferenceExpression
-								it.rhs = xStsParameterVariable.initialValue
-							]
+							// Synchronous composite components do not reset transient parameters
+							// There is the same optimization in ComponentTransformer too, though
+							lowlevelEnvironmentalAction.actions += xStsParameterVariable
+									.createAssignmentAction(xStsParameterVariable.initialValue)
 						}
 						val xStsInParameterAssignment = 
 						if (useHavocActions) {
@@ -686,10 +676,8 @@ class LowlevelToXstsTransformer {
 							}
 							createNonDeterministicAction => [
 								for (xStsPossibleParameterValue : xStsPossibleParameterValues) {
-									it.actions += createAssignmentAction => [
-										it.lhs = xStsParameterVariable.createReferenceExpression
-										it.rhs = xStsPossibleParameterValue
-									]
+									it.actions += xStsParameterVariable
+											.createAssignmentAction(xStsPossibleParameterValue)
 								}
 							]
 						}
@@ -713,18 +701,14 @@ class LowlevelToXstsTransformer {
 				if (lowlevelEvent.notOptimizable) {
 					val lowlevelEnvironmentalAction = outEventAction as SequentialAction
 					val xStsEventVariable = trace.getXStsVariable(lowlevelEvent)
-					lowlevelEnvironmentalAction.actions += createAssignmentAction => [
-						it.lhs = xStsEventVariable.createReferenceExpression
-						it.rhs = createFalseExpression
-					]
+					lowlevelEnvironmentalAction.actions += xStsEventVariable
+							.createAssignmentAction(createFalseExpression)
 					if (event.persistency == Persistency.TRANSIENT) {
 						// Resetting parameter for out event
 						for (lowlevelParameterDeclaration : it.event.parameters) {
 							val xStsParameterVariable = trace.getXStsVariable(lowlevelParameterDeclaration)
-							lowlevelEnvironmentalAction.actions += createAssignmentAction => [
-								it.lhs = xStsParameterVariable.createReferenceExpression
-								it.rhs = xStsParameterVariable.initialValue
-							]
+							lowlevelEnvironmentalAction.actions += xStsParameterVariable
+									.createAssignmentAction(xStsParameterVariable.initialValue)
 						}
 					}
 				}

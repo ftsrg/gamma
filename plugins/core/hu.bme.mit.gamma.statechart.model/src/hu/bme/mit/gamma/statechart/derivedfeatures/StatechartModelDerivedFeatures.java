@@ -530,6 +530,13 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return events;
 	}
 	
+	public static boolean isEnvironmental(MessageQueue queue,
+			Collection<? extends Port> systemPorts) {
+		List<Port> topBoundPorts = getStoredEvents(queue).stream()
+				.map(it -> getBoundTopComponentPort(it.getKey())).collect(Collectors.toList());
+		return systemPorts.containsAll(topBoundPorts);
+	}
+	
 	public static List<Entry<Port, Event>> getInputEvents(EventReference eventReference) {
 		List<Entry<Port, Event>> events = new ArrayList<Entry<Port, Event>>();
 		if (eventReference instanceof PortEventReference) {
@@ -561,7 +568,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return getOutputEvents(getAllPorts(component));
 	}
 	
-	public static Port getBoundSystemPort(Port port) {
+	public static Port getBoundCompositePort(Port port) {
 		Package _package = getContainingPackage(port);
 		List<PortBinding> portBindings = ecoreUtil.getAllContentsOfType(_package, PortBinding.class);
 		for (PortBinding portBinding : portBindings) {
@@ -647,7 +654,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		for (PortBinding portBinding : portBindings) {
 			if (portBinding.getInstancePortReference().getPort() == port) {
 				Port systemPort = portBinding.getCompositeSystemPort();
-				// Works as even broadcast ports cannot be bound to multiple system ports (would be unnecessary)
+				// Correct as even broadcast ports cannot be bound to multiple system ports (would be unnecessary)
 				return getBoundTopComponentPort(systemPort);
 			}
 		}
@@ -677,7 +684,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		Port actualPort = port;
 		while (actualPort != null /* Broadcast ports can go through multiple levels */) {
 			portsConnectedViaChannel.addAll(getPortsConnectedViaChannel(actualPort));
-			actualPort = getBoundSystemPort(actualPort);
+			actualPort = getBoundCompositePort(actualPort);
 		}
 		List<Port> asynchronousSimplePorts = new ArrayList<Port>();
 		for (Port portConnectedViaChannel : portsConnectedViaChannel) {

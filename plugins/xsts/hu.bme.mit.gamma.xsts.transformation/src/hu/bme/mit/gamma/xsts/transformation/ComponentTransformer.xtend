@@ -36,6 +36,7 @@ import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
 import hu.bme.mit.gamma.xsts.transformation.util.OrthogonalActionTransformer
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import java.util.AbstractMap.SimpleEntry
+import java.util.Collection
 import java.util.List
 import java.util.logging.Level
 import java.util.logging.Logger
@@ -96,10 +97,12 @@ class ComponentTransformer {
 	
 	// TODO move most parts into the AA transformer
 	def dispatch XSTS transform(AsynchronousCompositeComponent component, Package lowlevelPackage) {
+		val systemPorts = component.allPorts
 		// Parameters of all asynchronous composite components
 		component.extractAllParameters
 		// Retrieving the adapter instances - hierarchy does not matter here apart from the order
 		val adapterInstances = component.allAsynchronousSimpleInstances
+		val environmentalQueues = newHashSet
 		
 		val xSts = createXSTS => [
 			it.name = component.name
@@ -123,6 +126,10 @@ class ComponentTransformer {
 
 			// Creating the message queue constructions
 			for (queue : adapterComponentType.messageQueues) {
+				if (queue.isEnvironmental(systemPorts)) {
+					environmentalQueues += queue // Tracing
+				}
+				
 				val storedEventIds = newHashSet
 				val events = queue.storedEvents
 				for (event : events) {
@@ -131,11 +138,11 @@ class ComponentTransformer {
 					logger.log(Level.INFO, '''Assigning «id» to «event.key.name».«event.value.name»''')
 				}
 				
-				val capacity = queue.capacity
-				val evaluatedMasterCapacity = capacity.evaluateInteger
+				val messageRetrievalCount = MessageRetrievalCount.ONE
+				val evaluatedCapacity = queue.getCapacity(systemPorts, messageRetrievalCount)
 				val masterQueueType = createArrayTypeDefinition => [
 					it.elementType = createIntegerTypeDefinition
-					it.size = evaluatedMasterCapacity.toIntegerLiteral
+					it.size = evaluatedCapacity.toIntegerLiteral
 				]
 				val masterQueueName = queue.getMasterQueueName(adapterInstance)
 				val masterQueue = masterQueueType.createVariableDeclaration(masterQueueName)
@@ -151,10 +158,9 @@ class ComponentTransformer {
 					val List<MessageQueueStruct> slaveQueues = newArrayList
 					for (parameter : event.parameterDeclarations) {
 						val parameterType = parameter.type
-						val evaluatedSlaveCapacity = capacity.evaluateInteger
 						val slaveQueueType = createArrayTypeDefinition => [
 							it.elementType = parameterType.clone
-							it.size = evaluatedSlaveCapacity.toIntegerLiteral
+							it.size = evaluatedCapacity.toIntegerLiteral
 						]
 						val slaveQueueName = parameter.getSlaveQueueName(port, adapterInstance)
 						val slaveQueue = slaveQueueType.createVariableDeclaration(slaveQueueName)
@@ -217,12 +223,21 @@ class ComponentTransformer {
 				val xStsMasterSizeVariable = variableTrace.getAll(masterSizeVariable).onlyElement
 				
 				val block = createSequentialAction
-				val queueLoop = loopIterationVariableName.createLoopAction(
-						0.toIntegerLiteral, xStsMasterSizeVariable.createReferenceExpression) => [
-					it.action = block
-				]
-				// TODO semantical variation: instead of loop, a single checked could be used
-				mergedAction.actions += queueLoop
+				
+				val messageRetrievalCount = MessageRetrievalCount.ONE
+				switch (messageRetrievalCount) {
+					case ONE:
+						mergedAction.actions += block
+					case ALL: {
+						val queueLoop = loopIterationVariableName.createLoopAction(
+								0.toIntegerLiteral, xStsMasterSizeVariable.createReferenceExpression) => [
+							it.action = block
+						]
+						mergedAction.actions += queueLoop
+					}
+					default:
+						throw new IllegalArgumentException("Not known literal: " + messageRetrievalCount)
+				}
 				
 				val eventIdVariableAction = createIntegerTypeDefinition.createVariableDeclarationAction(
 					eventIdentifierVariableName, xStsMasterQueue.peek)
@@ -388,6 +403,14 @@ class ComponentTransformer {
 		
 		// In events: havoc non-control specification events, then a single control specification event
 		// TODO - extract in-event creation from the LowlevelToXstsTransformer
+		for (queue : environmentalQueues) {
+			if (useHavocActions) {
+				
+			}
+			else {
+				throw new IllegalAccessException("Currently, only havoc actions are supported")
+			}
+		}
 //		checkState(useHavocActions, "Currently only havoc expressions are supported")
 //		val simplePorts = component.allBoundSimplePorts
 //		for (simplePort : simplePorts) {
@@ -453,10 +476,8 @@ class ComponentTransformer {
 			val newInEventAction = createSequentialAction
 			// Setting the referenced event variables to false
 			for (xStsEventVariable : xStsReferencedEventVariables) {
-				newInEventAction.actions += createAssignmentAction => [
-					it.lhs = xStsActionUtil.createReferenceExpression(xStsEventVariable)
-					it.rhs = createFalseExpression
-				]
+				newInEventAction.actions += xStsEventVariable
+						.createAssignmentAction(createFalseExpression)
 			}
 			// Enabling the setting of the referenced event variables to true if no other is set
 			for (xStsEventVariable : xStsReferencedEventVariables) {
@@ -465,10 +486,7 @@ class ComponentTransformer {
 				negatedVariables -= xStsEventVariable
 				val branch = createIfActionBranch(
 					xStsActionUtil.connectThroughNegations(negatedVariables),
-					createAssignmentAction => [
-						it.lhs = xStsActionUtil.createReferenceExpression(xStsEventVariable)
-						it.rhs = createTrueExpression
-					]
+					xStsEventVariable.createAssignmentAction(createTrueExpression)
 				)
 				branch.extendChoiceWithBranch(createTrueExpression, createEmptyAction)
 				newInEventAction.actions += branch
@@ -594,16 +612,14 @@ class ComponentTransformer {
 		]
 		xSts.inEventTransition = newInEventAction.wrap
 		
-		if (component.topInPackage) {
-			if (transformOrthogonalActions) {
-				logger.log(Level.INFO, "Optimizing orthogonal actions in " + xSts.name)
-				xSts.transform
-				// Before optimize actions
-			}
-			if (optimize) {
-				// Optimizing: system in events (but not PERSISTENT parameters) can be reset after the merged transition
-				xSts.resetInEventsAfterMergedAction(component)
-			}
+		if (transformOrthogonalActions) {
+			logger.log(Level.INFO, "Optimizing orthogonal actions in " + xSts.name)
+			xSts.transform
+			// Before optimize actions
+		}
+		if (optimize) {
+			// Optimization: system in events (but not PERSISTENT parameters) can be reset after the merged transition
+			xSts.resetInEventsAfterMergedAction(component)
 		}
 		
 		return xSts
@@ -665,6 +681,28 @@ class ComponentTransformer {
 		checkState(trigger instanceof AnyTrigger)
 		val controlFunction = controlSpecification.controlFunction
 		checkState(controlFunction == ControlFunction.RUN_ONCE)
+	}
+	
+	private def getCapacity(MessageQueue queue, Collection<? extends Port> systemPorts,
+			MessageRetrievalCount messageRetrievalCount) {
+		if (queue.isEnvironmentalAndCheck(systemPorts)) {
+			if (messageRetrievalCount == MessageRetrievalCount.ONE) {
+				return 1
+			}
+		}
+		val capacity = queue.capacity
+		return capacity.evaluateInteger
+	}
+	
+	private def isEnvironmentalAndCheck(MessageQueue queue, Collection<? extends Port> systemPorts) {
+		val portEvents = queue.storedEvents
+		val ports = portEvents.map[it.key]
+		val topPorts = ports.map[it.boundTopComponentPort]
+		if (queue.isEnvironmental(systemPorts)) {
+			return true // All events are system events
+		}
+		checkState(systemPorts.containsNone(topPorts), "All or none of the ports must be system ports")
+		return false
 	}
 	
 	private def void resetInEventsAfterMergedAction(XSTS xSts, Component type) {

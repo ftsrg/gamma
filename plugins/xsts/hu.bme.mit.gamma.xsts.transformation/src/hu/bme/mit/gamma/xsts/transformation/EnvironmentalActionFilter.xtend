@@ -102,10 +102,8 @@ class EnvironmentalActionFilter {
 				if (xStsInEventVariables.size > 1) {
 					val firstXStsInEventVariable = xStsInEventVariables.head
 					for (otherXStsInEventVariable : xStsInEventVariables.reject[it === firstXStsInEventVariable]) {
-						xStsAssignments += createAssignmentAction => [
-							it.lhs = otherXStsInEventVariable.createReferenceExpression
-							it.rhs = firstXStsInEventVariable.createReferenceExpression
-						]
+						xStsAssignments += otherXStsInEventVariable
+								.createAssignmentAction(firstXStsInEventVariable)
 					}
 				}
 			}
@@ -125,10 +123,8 @@ class EnvironmentalActionFilter {
 						val firstXStsParameterVariable = xStsParameterVariables.head
 						for (otherXStsParameterVariable : xStsParameterVariables
 								.reject[it === firstXStsParameterVariable]) {
-							xStsAssignments += createAssignmentAction => [
-								it.lhs = otherXStsParameterVariable.createReferenceExpression
-								it.rhs = firstXStsParameterVariable.createReferenceExpression
-							]
+							xStsAssignments += otherXStsParameterVariable
+									.createAssignmentAction(firstXStsParameterVariable)
 						}
 					}
 				}
@@ -159,7 +155,8 @@ class EnvironmentalActionFilter {
 	private def Action reset(CompositeAction action, Set<String> necessaryNames) {
 		val xStsAssignments = newHashSet
 		for (xStsAssignment : action.getAllContentsOfType(AbstractAssignmentAction)) {
-			val declaration = (xStsAssignment.lhs as DirectReferenceExpression).declaration as VariableDeclaration
+			val lhs = xStsAssignment.lhs as DirectReferenceExpression
+			val declaration = lhs.declaration as VariableDeclaration
 			val name = declaration.name
 			if (!necessaryNames.contains(name)) {
 				// Resetting the variable
