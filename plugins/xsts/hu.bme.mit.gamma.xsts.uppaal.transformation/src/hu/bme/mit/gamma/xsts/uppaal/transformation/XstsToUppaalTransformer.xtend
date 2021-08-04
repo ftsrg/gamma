@@ -69,8 +69,8 @@ class XstsToUppaalTransformer {
 	}
 	
 	def execute() {
-		// TODO The XSTS transformation now extracts guards into local variables
-		// If the guard contains clock variables (referencing native clocks), they should be reinlined
+		// If the XSTS transformation extracts guards into local variables:
+		// if the guard contains clock variables (referencing native clocks), they should be reinlined
 		
 		resetCommittedLocationName
 		val initialLocation = templateName.createTemplateWithInitLoc(initialLocationName)
@@ -173,6 +173,7 @@ class XstsToUppaalTransformer {
 		val xStsVariable = xStsDeclaration as VariableDeclaration
 		val uppaalVariable = traceability.get(xStsVariable)
 		val uppaalRhs = action.rhs.transform
+		// TODO handle array literal rhs
 		return source.createUpdateEdge(uppaalVariable, uppaalRhs)
 	}
 	
@@ -231,6 +232,9 @@ class XstsToUppaalTransformer {
 		}
 		return target
 	}
+	
+	// TODO handle IfActions when they are introduced in XSTS
+	// TODO handle havoc for boolean and enums
 	
 	// Reseting
 	

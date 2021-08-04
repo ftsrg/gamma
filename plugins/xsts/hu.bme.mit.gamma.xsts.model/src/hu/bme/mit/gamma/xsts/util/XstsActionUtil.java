@@ -45,6 +45,7 @@ import hu.bme.mit.gamma.xsts.model.Action;
 import hu.bme.mit.gamma.xsts.model.AssignmentAction;
 import hu.bme.mit.gamma.xsts.model.AssumeAction;
 import hu.bme.mit.gamma.xsts.model.CompositeAction;
+import hu.bme.mit.gamma.xsts.model.HavocAction;
 import hu.bme.mit.gamma.xsts.model.LoopAction;
 import hu.bme.mit.gamma.xsts.model.MultiaryAction;
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction;
@@ -234,6 +235,12 @@ public class XstsActionUtil extends ExpressionUtil {
 	public AssignmentAction createVariableResetAction(VariableDeclaration variable) {
 		Expression defaultExpression = ExpressionModelDerivedFeatures.getDefaultExpression(variable);
 		return createAssignmentAction(variable, defaultExpression);
+	}
+	
+	public HavocAction createHavocAction(VariableDeclaration variable) {
+		HavocAction havocAction = xStsFactory.createHavocAction();
+		havocAction.setLhs(createReferenceExpression(variable));
+		return havocAction;
 	}
 	
 	public AssignmentAction increment(VariableDeclaration variable) {
@@ -514,6 +521,17 @@ public class XstsActionUtil extends ExpressionUtil {
 	}
 	
 	// Message queue - array handling
+	
+	public VariableDeclarationAction createVariableDeclarationActionForArray(
+			VariableDeclaration queue, String name) {
+		TypeDefinition typeDefinition = ExpressionModelDerivedFeatures.getTypeDefinition(queue);
+		if (typeDefinition instanceof ArrayTypeDefinition) {
+			ArrayTypeDefinition arrayTypeDefinition = (ArrayTypeDefinition) typeDefinition;
+			Type elementType = arrayTypeDefinition.getElementType();
+			return createVariableDeclarationAction(clone(elementType), name);
+		}
+		throw new IllegalArgumentException("Not an array: " + queue);
+	}
 	 
 	public Action pop(VariableDeclaration queue) {
 		TypeDefinition typeDefinition = ExpressionModelDerivedFeatures.getTypeDefinition(queue);
@@ -564,12 +582,12 @@ public class XstsActionUtil extends ExpressionUtil {
 		return block;
 	}
 	
-	public Action add(VariableDeclaration queue, Expression size, Expression element) {
+	public Action add(VariableDeclaration queue, Expression index, Expression element) {
 		TypeDefinition typeDefinition = ExpressionModelDerivedFeatures.getTypeDefinition(queue);
 		if (typeDefinition instanceof ArrayTypeDefinition) {
 			ArrayAccessExpression accessExpression = factory.createArrayAccessExpression();
 			accessExpression.setOperand(createReferenceExpression(queue));
-			accessExpression.setIndex(size);
+			accessExpression.setIndex(index);
 			
 			Action assignment = createAssignmentAction(accessExpression, element);
 			return assignment;
@@ -578,13 +596,13 @@ public class XstsActionUtil extends ExpressionUtil {
 	}
 	
 	public Action addAll(List<? extends VariableDeclaration> queues,
-			Expression size, List<? extends Expression> elements) {
+			Expression index, List<? extends Expression> elements) {
 		SequentialAction block = xStsFactory.createSequentialAction();
 		int queueSize = queues.size();
 		for (int i = 0; i < queueSize; i++) {
 			VariableDeclaration queue = queues.get(i);
 			Expression element = elements.get(i);
-			block.getActions().add(add(queue, size, element));
+			block.getActions().add(add(queue, index, element));
 		}
 		return block;
 	}

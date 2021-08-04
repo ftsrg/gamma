@@ -624,16 +624,18 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return simplePorts;
 	}
 	
+	public static List<Port> getAllBoundAsynchronousSimplePorts(AsynchronousComponent component) {
+		List<Port> simplePorts = new ArrayList<Port>();
+		for (Port port : getAllPorts(component)) {
+			simplePorts.addAll(getAllBoundAsynchronousSimplePorts(port));
+		}
+		return simplePorts;
+	}
+	
 	public static List<Port> getAllBoundAsynchronousSimplePorts(Port port) {
 		List<Port> simplePorts = new ArrayList<Port>();
 		Component component = getContainingComponent(port);
-		ComponentInstance instance = getReferencingComponentInstance(component);
-		Component containingComponent = getContainingComponent(instance);
-		if (component instanceof AsynchronousAdapter ||
-				containingComponent instanceof AsynchronousAdapter) {
-			simplePorts.add(port);
-		}
-		else if (component instanceof CompositeComponent) {
+		if (component instanceof AsynchronousCompositeComponent) {
 			CompositeComponent composite = (CompositeComponent) component;
 			for (PortBinding portBinding : composite.getPortBindings()) {
 				if (portBinding.getCompositeSystemPort() == port) {
@@ -642,6 +644,17 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 					simplePorts.addAll(getAllBoundAsynchronousSimplePorts(
 							instancePortReference.getPort()));
 				}
+			}
+		}
+		else if (component instanceof AsynchronousAdapter) {
+			simplePorts.add(port);
+		}
+		else {
+			// Makes sense only if the containment hierarchy is a tree structure
+			ComponentInstance instance = getReferencingComponentInstance(component);
+			Component containingComponent = getContainingComponent(instance);
+			if (containingComponent instanceof AsynchronousAdapter) {
+				simplePorts.add(port);
 			}
 		}
 		// Note that one port can be in the list multiple times iff the component is NOT unfolded

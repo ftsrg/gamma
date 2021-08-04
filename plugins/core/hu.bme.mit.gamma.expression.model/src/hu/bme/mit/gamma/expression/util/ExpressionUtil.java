@@ -1014,6 +1014,20 @@ public class ExpressionUtil {
 		return equalityExpression;
 	}
 	
+	public InequalityExpression createInequalityExpression(VariableDeclaration variable, Expression expression) {
+		InequalityExpression inequalityExpression = factory.createInequalityExpression();
+		inequalityExpression.setLeftOperand(createReferenceExpression(variable));
+		inequalityExpression.setRightOperand(expression);
+		return inequalityExpression;
+	}
+	
+	public InequalityExpression createInequalityExpression(Expression lhs, Expression rhs) {
+		InequalityExpression inequalityExpression = factory.createInequalityExpression();
+		inequalityExpression.setLeftOperand(lhs);
+		inequalityExpression.setRightOperand(rhs);
+		return inequalityExpression;
+	}
+	
 	public EnumerationLiteralExpression wrap(EnumerationLiteralDefinition literal) {
 		EnumerationLiteralExpression literalExpression = factory.createEnumerationLiteralExpression();
 		literalExpression.setReference(literal);

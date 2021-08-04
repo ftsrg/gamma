@@ -6,6 +6,7 @@ import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.TypeReference
+import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.LowlevelToXstsTransformer
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.TransitionMerging
@@ -126,7 +127,7 @@ class ComponentTransformer {
 
 			// Creating the message queue constructions
 			for (queue : adapterComponentType.messageQueues) {
-				if (queue.isEnvironmental(systemPorts)) {
+				if (queue.isEnvironmentalAndCheck(systemPorts)) {
 					environmentalQueues += queue // Tracing
 				}
 				
@@ -240,7 +241,7 @@ class ComponentTransformer {
 				}
 				
 				val eventIdVariableAction = createIntegerTypeDefinition.createVariableDeclarationAction(
-					eventIdentifierVariableName, xStsMasterQueue.peek)
+					xStsMasterQueue.eventIdentifierVariableName, xStsMasterQueue.peek)
 				val eventIdVariable = eventIdVariableAction.variableDeclaration
 				block.actions += eventIdVariableAction
 				block.actions += xStsMasterQueue.popAndDecrement(xStsMasterSizeVariable)
@@ -402,11 +403,76 @@ class ComponentTransformer {
 		xSts.configurationInitializingTransition = configInitAction.wrap
 		xSts.entryEventTransition = entryAction.wrap
 		
-		// In events: havoc non-control specification events, then a single control specification event
-		// TODO - extract in-event creation from the LowlevelToXstsTransformer
-		for (queue : environmentalQueues) {
+		//
+		
+		val systemEventIds = newHashSet
+		for (systemAsynchronousSimplePort : component.allBoundAsynchronousSimplePorts) {
+			for (inEvent : systemAsynchronousSimplePort.inputEvents) {
+				val portEvent = new SimpleEntry(systemAsynchronousSimplePort, inEvent)
+				if (queueTraceability.contains(portEvent)) {
+					logger.log(Level.INFO,
+						'''Found «systemAsynchronousSimplePort.name».«inEvent.name» as system input event''')
+					systemEventIds += queueTraceability.get(portEvent)
+				}
+			}
+		}
+		for (queue : environmentalQueues) { // All with capacity 1 and size 0
 			if (useHavocActions) {
+				val queueMapping = queueTraceability.get(queue)
+				val masterQueue = queueMapping.masterQueue.arrayVariable
+				val masterSizeVariable = queueMapping.masterQueue.sizeVariable
+				val slaveQueues = queueMapping.slaveQueues
 				
+				val xStsMasterQueue = variableTrace.getAll(masterQueue).onlyElement
+				val xStsMasterSizeVariable = variableTrace.getAll(masterSizeVariable).onlyElement
+				
+				val xStsEventIdVariableAction = xStsMasterQueue
+					.createVariableDeclarationActionForArray(
+						xStsMasterQueue.eventIdLocalVariableName)
+				val xStsEventIdVariable = xStsEventIdVariableAction.variableDeclaration
+				inEventAction.actions += xStsEventIdVariableAction
+				inEventAction.actions += xStsEventIdVariable.createHavocAction
+				
+				// If the id is not an "empty" event
+				val emptyValue = xStsEventIdVariable.defaultExpression
+				val isNotEmptyExpression = xStsEventIdVariable.createInequalityExpression(emptyValue)
+				val setQueuesAction = createSequentialAction
+				setQueuesAction.actions += xStsMasterQueue.addAndIncrement( // Or could be used 0 literals for index
+						xStsMasterSizeVariable, xStsEventIdVariable.createReferenceExpression)
+				
+				inEventAction.actions += isNotEmptyExpression.createIfAction(setQueuesAction)
+				
+				val branchExpressions = <Expression>newArrayList
+				val branchActions = <Action>newArrayList
+				for (eventId : slaveQueues.keySet
+						.filter[systemEventIds.contains(it) /*Only system events*/]) {
+					val slaveQueueStructs = slaveQueues.get(eventId)
+					branchExpressions += xStsEventIdVariable
+							.createEqualityExpression(eventId.toIntegerLiteral)
+					val slaveQueueSetting = createSequentialAction
+					branchActions += slaveQueueSetting
+					
+					for (slaveQueueStruct : slaveQueueStructs) {
+						val slaveQueue = slaveQueueStruct.arrayVariable
+						val slaveSizeVariable = slaveQueueStruct.arrayVariable
+						
+						val xStsSlaveQueues = variableTrace.getAll(slaveQueue)
+						val xStsSlaveSizeVariable = variableTrace.getAll(slaveSizeVariable).onlyElement
+						
+						for (xStsSlaveQueue : xStsSlaveQueues) {
+							val xStsRandomVariableAction = xStsSlaveQueue
+								.createVariableDeclarationActionForArray(
+									xStsSlaveQueue.randomValueLocalVariableName)
+							val xStsRandomVariable = xStsRandomVariableAction.variableDeclaration
+							slaveQueueSetting.actions += xStsRandomVariableAction
+							slaveQueueSetting.actions += xStsRandomVariable.createHavocAction
+							slaveQueueSetting.actions += xStsSlaveQueue.add(
+								0.toIntegerLiteral,	xStsRandomVariable.createReferenceExpression)
+						}
+						slaveQueueSetting.actions += xStsSlaveSizeVariable.increment
+					}
+				}
+				setQueuesAction.actions += branchExpressions.createChoiceAction(branchActions)
 			}
 			else {
 				throw new IllegalAccessException("Currently, only havoc actions are supported")
@@ -614,10 +680,12 @@ class ComponentTransformer {
 		xSts.inEventTransition = newInEventAction.wrap
 		
 		if (transformOrthogonalActions) {
-			logger.log(Level.INFO, "Optimizing orthogonal actions in " + xSts.name)
-			xSts.transform
+			// After connectEventsThroughChannels
+			logger.log(Level.INFO, "Transforming orthogonal actions in " + xSts.name)
+			xSts.mergedAction.transform(xSts)
 			// Before optimize actions
 		}
+		
 		if (optimize) {
 			// Optimization: system in events (but not PERSISTENT parameters) can be reset after the merged transition
 			xSts.resetInEventsAfterMergedAction(component)
@@ -638,8 +706,7 @@ class ComponentTransformer {
 		val xSts = xStsEntry.key
 		// 0-ing all variable declaration initial expression, the normal ones are in the init action
 		for (variable : xSts.variableDeclarations) {
-			val type = variable.type
-			variable.expression = type.defaultExpression
+			variable.expression = variable.defaultExpression
 		}
 		return xSts
 	}
@@ -702,6 +769,9 @@ class ComponentTransformer {
 		if (queue.isEnvironmental(systemPorts)) {
 			return true // All events are system events
 		}
+		if (systemPorts.containsOne(topPorts) && queue.capacity.evaluateInteger == 1) {
+			return true // Contains other events too, but the queue will always be empty when using it in the in-event action 
+		}
 		checkState(systemPorts.containsNone(topPorts) || queue.capacity.evaluateInteger == 1,
 				"All or none of the ports must be system ports or the capacity must be one")
 		return false
@@ -748,9 +818,15 @@ class ComponentTransformer {
 		def static String getSlaveSizeVariableName(
 				ParameterDeclaration parameterDeclaration, Port port, ComponentInstance instance)
 			'''sizeSlave«parameterDeclaration.name.toFirstUpper»«port.name.toFirstUpper»Of«instance.name»'''
-				
+		
+		def static String getEventIdentifierVariableName(VariableDeclaration queue)
+			'''eventId_«queue.name»_«queue.hashCode.abs»'''
+		def static String getEventIdLocalVariableName(VariableDeclaration queue)
+			'''eventId_«queue.name»_«queue.hashCode.abs»'''
+		def static String getRandomValueLocalVariableName(VariableDeclaration queue)
+			'''random_«queue.name»_«queue.hashCode.abs»'''
+		
 		def static String getLoopIterationVariableName() '''i'''
-		def static String getEventIdentifierVariableName() '''eventId'''
 		
 	}
 	
