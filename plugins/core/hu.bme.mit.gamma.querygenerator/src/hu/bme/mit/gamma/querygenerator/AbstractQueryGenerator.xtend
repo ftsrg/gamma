@@ -93,17 +93,17 @@ abstract class AbstractQueryGenerator implements AutoCloseable {
 		return (instance.name + "." + variable.name).wrap
 	}
 	
-	def getSystemInEvents() {
+	def getSynchronousSystemInEvents() {
 		return TopSyncSystemInEvents.Matcher.on(engine).allMatches
 	}
 	
-	def getSystemOutEvents() {
+	def getSynchronousSystemOutEvents() {
 		return TopSyncSystemOutEvents.Matcher.on(engine).allMatches
 	}
 	
-	def List<String> getSystemOutEventNames() {
+	def List<String> getSynchronousSystemOutEventNames() {
 		val eventNames = newArrayList
-		for (eventsMatch : getSystemOutEvents) {
+		for (eventsMatch : getSynchronousSystemOutEvents) {
 			val entry = getSystemOutEventName(eventsMatch.systemPort, eventsMatch.event)
 			eventNames.add(entry)
 		}
@@ -114,9 +114,9 @@ abstract class AbstractQueryGenerator implements AutoCloseable {
 		return (systemPort.name + "." + event.name).wrap
 	}
 	
-	def List<String> getSystemOutEventParameterNames() {
+	def List<String> getSynchronousSystemOutEventParameterNames() {
 		val parameterNames = newArrayList
-		for (eventsMatch : getSystemOutEvents) {
+		for (eventsMatch : getSynchronousSystemOutEvents) {
 			val event = eventsMatch.event
 			for (ParameterDeclaration parameter : event.parameterDeclarations) {
 				val systemPort = eventsMatch.systemPort
@@ -140,8 +140,8 @@ abstract class AbstractQueryGenerator implements AutoCloseable {
 		}
 		val stateNames = this.getStateNames
 		val variableNames = this.getVariableNames
-		val systemOutEventNames = this.getSystemOutEventNames
-		val systemOutEventParameterNames = this.getSystemOutEventParameterNames
+		val systemOutEventNames = this.getSynchronousSystemOutEventNames
+		val systemOutEventParameterNames = this.getSynchronousSystemOutEventParameterNames
 		for (String stateName : stateNames) {
 			if (result.contains(stateName)) {
 				val targetStateName = getTargetStateName(stateName)
@@ -199,7 +199,7 @@ abstract class AbstractQueryGenerator implements AutoCloseable {
 	}
 	
 	protected def String getTargetOutEventName(String portEventName) {
-		for (eventsMatch : getSystemOutEvents) {
+		for (eventsMatch : getSynchronousSystemOutEvents) { // Asynchronous systems use the same
 			val name = getSystemOutEventName(eventsMatch.systemPort, eventsMatch.event)
 			if (name.equals(portEventName)) {
 				return getTargetOutEventName(eventsMatch.event, eventsMatch.port, eventsMatch.instance)
@@ -209,7 +209,7 @@ abstract class AbstractQueryGenerator implements AutoCloseable {
 	}
 	
 	protected def String getTargetOutEventParameterName(String portEventParameterName) {
-		for (eventsMatch : getSystemOutEvents) {
+		for (eventsMatch : getSynchronousSystemOutEvents) { // Asynchronous systems use the same
 			val systemPort = eventsMatch.systemPort
 			val event = eventsMatch.event
 			for (ParameterDeclaration parameter : event.parameterDeclarations) {

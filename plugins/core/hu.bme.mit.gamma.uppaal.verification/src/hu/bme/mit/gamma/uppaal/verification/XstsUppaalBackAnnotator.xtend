@@ -173,8 +173,8 @@ class XstsUppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 											}
 										}
 										case ENVIRONMENT: {
-											if (xStsUppaalQueryGenerator.isSourceInEvent(variable)) {
-												val systemInEvent = xStsUppaalQueryGenerator.getSourceInEvent(variable)
+											if (xStsUppaalQueryGenerator.isSynchronousSourceInEvent(variable)) {
+												val systemInEvent = xStsUppaalQueryGenerator.getSynchronousSourceInEvent(variable)
 												if (value.equals("1")) {
 													val event = systemInEvent.get(0) as Event
 													val port = systemInEvent.get(1) as Port
@@ -184,8 +184,8 @@ class XstsUppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 													raisedInEvents += systemPort -> event
 												}
 											}
-											else if (xStsUppaalQueryGenerator.isSourceInEventParamater(variable)) {
-												val systemInEvent = xStsUppaalQueryGenerator.getSourceInEventParamater(variable)
+											else if (xStsUppaalQueryGenerator.isSynchronousSourceInEventParamater(variable)) {
+												val systemInEvent = xStsUppaalQueryGenerator.getSynchronousSourceInEventParamater(variable)
 												val event = systemInEvent.get(0) as Event
 												val port = systemInEvent.get(1) as Port
 												val systemPort = port.boundTopComponentPort // Back-tracking to the system port
@@ -275,6 +275,8 @@ class XstsUppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 		}
 		raisedInEvents.clear
 	}
+	
+	// TODO complex types
 	
 }
 

@@ -165,27 +165,27 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 		}
 	}
 	
-	def isSourceInEvent(String targetInEventName) {
+	def isSynchronousSourceInEvent(String targetInEventName) {
 		try {
-			targetInEventName.getSourceInEvent
+			targetInEventName.getSynchronousSourceInEvent
 			return true
 		} catch (IllegalArgumentException e) {
 			return false
 		}
 	}
 	
-	def isSourceInEventParamater(String targetInEventParameterName) {
+	def isSynchronousSourceInEventParamater(String targetInEventParameterName) {
 		try {
-			targetInEventParameterName.getSourceInEventParamater
+			targetInEventParameterName.getSynchronousSourceInEventParamater
 			return true
 		} catch (IllegalArgumentException e) {
 			return false
 		}
 	}
 	
-	def isSourceRecordInEventParamater(String targetInEventParameterName) {
+	def isSynchronousSourceRecordInEventParamater(String targetInEventParameterName) {
 		try {
-			val array = targetInEventParameterName.getSourceInEventParamater
+			val array = targetInEventParameterName.getSynchronousSourceInEventParamater
 			val parameter = array.get(2) as ValueDeclaration
 			val type = parameter.typeDefinition
 			return type instanceof RecordTypeDefinition
@@ -230,7 +230,7 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 	}
 	
 	def getSourceOutEvent(String targetOutEventName) {
-		for (match : systemOutEvents) {
+		for (match : synchronousSystemOutEvents) {
 			val name = getTargetOutEventName(match.event, match.port, match.instance)
 			if (name.equals(targetOutEventName)) {
 				return #[match.event, match.port, match.instance]
@@ -240,7 +240,7 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 	}
 	
 	def getSourceOutEventParamater(String targetOutEventParameterName) {
-		for (match : systemOutEvents) {
+		for (match : synchronousSystemOutEvents) {
 			val event = match.event
 			for (parameter : event.parameterDeclarations) {
 				val names = getTargetOutEventParameterNames(event, match.port, parameter, match.instance)
@@ -254,7 +254,7 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 	
 	// Record
 	def getSourceOutEventParamaterFieldHierarchy(String targetOutEventParameterName) {
-		for (match : systemOutEvents) {
+		for (match : synchronousSystemOutEvents) {
 			val event = match.event
 			for (parameter : event.parameterDeclarations) {
 				val type = parameter.typeDefinition
@@ -267,8 +267,8 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 		throw new IllegalArgumentException("Not known id")
 	}
 	
-	def getSourceInEvent(String targetInEventName) {
-		for (match : systemInEvents) {
+	def getSynchronousSourceInEvent(String targetInEventName) {
+		for (match : synchronousSystemInEvents) {
 			val name = getTargetInEventName(match.event, match.port, match.instance)
 			if (name.equals(targetInEventName)) {
 				return #[match.event, match.port, match.instance]
@@ -277,8 +277,8 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 		throw new IllegalArgumentException("Not known id")
 	}
 	
-	def getSourceInEventParamater(String targetInEventParameterName) {
-		for (match : systemInEvents) {
+	def getSynchronousSourceInEventParamater(String targetInEventParameterName) {
+		for (match : synchronousSystemInEvents) {
 			val event = match.event
 			for (parameter : event.parameterDeclarations) {
 				val names = getTargetInEventParameterName(event, match.port, parameter, match.instance)
@@ -291,8 +291,8 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 	}
 	
 	// Record
-	def getSourceInEventParamaterFieldHierarchy(String targetInEventParameterName) {
-		for (match : systemInEvents) {
+	def getSynchronousSourceInEventParamaterFieldHierarchy(String targetInEventParameterName) {
+		for (match : synchronousSystemInEvents) {
 			val event = match.event
 			for (parameter : event.parameterDeclarations) {
 				val type = parameter.typeDefinition

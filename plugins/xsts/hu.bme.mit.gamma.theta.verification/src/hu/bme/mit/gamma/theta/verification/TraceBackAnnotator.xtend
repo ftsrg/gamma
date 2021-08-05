@@ -222,8 +222,8 @@ class TraceBackAnnotator {
 						}
 					}
 					case ENVIRONMENT_CHECK: {
-						if (thetaQueryGenerator.isSourceInEvent(id)) {
-							val systemInEvent = thetaQueryGenerator.getSourceInEvent(id)
+						if (thetaQueryGenerator.isSynchronousSourceInEvent(id)) {
+							val systemInEvent = thetaQueryGenerator.getSynchronousSourceInEvent(id)
 							if (value.equals("true")) {
 								val event = systemInEvent.get(0) as Event
 								val port = systemInEvent.get(1) as Port
@@ -233,14 +233,14 @@ class TraceBackAnnotator {
 								raisedInEvents += systemPort -> event
 							}
 						}
-						else if (thetaQueryGenerator.isSourceInEventParamater(id)) {
-							val systemInEvent = thetaQueryGenerator.getSourceInEventParamater(id)
+						else if (thetaQueryGenerator.isSynchronousSourceInEventParamater(id)) {
+							val systemInEvent = thetaQueryGenerator.getSynchronousSourceInEventParamater(id)
 							val event = systemInEvent.get(0) as Event
 							val port = systemInEvent.get(1) as Port
 							val systemPort = port.boundTopComponentPort // Back-tracking to the system port
 							val parameter = systemInEvent.get(2) as ParameterDeclaration
 							// Getting fields and indexes regardless of primitive or complex types
-							val field = thetaQueryGenerator.getSourceInEventParamaterFieldHierarchy(id)
+							val field = thetaQueryGenerator.getSynchronousSourceInEventParamaterFieldHierarchy(id)
 							val indexPairs = value.parseArray
 							//
 							for (indexPair : indexPairs) {
