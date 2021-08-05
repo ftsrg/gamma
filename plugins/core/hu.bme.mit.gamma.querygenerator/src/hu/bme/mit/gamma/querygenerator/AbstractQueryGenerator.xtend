@@ -15,7 +15,9 @@ import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.querygenerator.operators.TemporalOperator
 import hu.bme.mit.gamma.querygenerator.patterns.InstanceStates
 import hu.bme.mit.gamma.querygenerator.patterns.InstanceVariables
+import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
+import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.Region
@@ -24,20 +26,23 @@ import hu.bme.mit.gamma.transformation.util.queries.TopSyncSystemInEvents
 import hu.bme.mit.gamma.transformation.util.queries.TopSyncSystemOutEvents
 import java.util.List
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
+import org.eclipse.viatra.query.runtime.emf.EMFScope
 
 import static com.google.common.base.Preconditions.checkArgument
-import static hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
-abstract class AbstractQueryGenerator implements AutoCloseable {
-		
-	protected ViatraQueryEngine engine
+import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
+
+abstract class AbstractQueryGenerator {
 	
-	def setEngine(ViatraQueryEngine engine) {
-		this.engine = engine
+	protected final Component component
+	protected final ViatraQueryEngine engine
+	
+	new(Component component) {
+		this.component = component
+		val scope = new EMFScope(component.eResource.resourceSet)
+		this.engine = ViatraQueryEngine.on(scope)
 	}
 	
-	override close() {} // So that derived classes do not have to define it
-
 	def wrap(String id) {
 		return "(" + id + ")"
 	}
@@ -129,6 +134,19 @@ abstract class AbstractQueryGenerator implements AutoCloseable {
 	
 	def String getSystemOutEventParameterName(Port systemPort, Event event, ParameterDeclaration parameter) {
 		return (getSystemOutEventName(systemPort, event).unwrap + "::" + parameter.name).wrap
+	}
+	
+	//
+	
+	def getAynchronousMessageQueues() {
+		val queues = newHashSet
+		for (asynchronousSimpleInstance : component.allAsynchronousSimpleInstances) {
+			val adapter = asynchronousSimpleInstance.type as AsynchronousAdapter
+			for (messageQueue : adapter.messageQueues) {
+				queues += asynchronousSimpleInstance -> messageQueue
+			}
+		}
+		return queues
 	}
 	
 	// Parsing identifiers

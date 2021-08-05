@@ -67,12 +67,12 @@ class TraceBackAnnotator {
 	
 	new(Package gammaPackage, Scanner traceScanner, boolean sortTrace) {
 		this.gammaPackage = gammaPackage
-		this.component = gammaPackage.components.head
-		this.thetaQueryGenerator = new ThetaQueryGenerator(gammaPackage)
+		this.component = gammaPackage.firstComponent
+		this.thetaQueryGenerator = new ThetaQueryGenerator(component)
 		this.traceScanner = traceScanner
 		this.sortTrace = sortTrace
 		val schedulingConstraintAnnotation = gammaPackage.annotations
-			.filter(SchedulingConstraintAnnotation).head
+				.filter(SchedulingConstraintAnnotation).head
 		if (schedulingConstraintAnnotation !== null) {
 			this.schedulingConstraint = schedulingConstraintAnnotation.schedulingConstraint
 		}
@@ -222,6 +222,7 @@ class TraceBackAnnotator {
 						}
 					}
 					case ENVIRONMENT_CHECK: {
+						// Synchronous in-event
 						if (thetaQueryGenerator.isSynchronousSourceInEvent(id)) {
 							val systemInEvent = thetaQueryGenerator.getSynchronousSourceInEvent(id)
 							if (value.equals("true")) {
@@ -233,6 +234,7 @@ class TraceBackAnnotator {
 								raisedInEvents += systemPort -> event
 							}
 						}
+						// Synchronous in-event parameter
 						else if (thetaQueryGenerator.isSynchronousSourceInEventParamater(id)) {
 							val systemInEvent = thetaQueryGenerator.getSynchronousSourceInEventParamater(id)
 							val event = systemInEvent.get(0) as Event
@@ -249,6 +251,27 @@ class TraceBackAnnotator {
 								step.addInEventWithParameter(systemPort, event, parameter, field, index, parsedValue)
 							}
 						}
+						// Asynchronous in-event
+						else if (thetaQueryGenerator.isAsynchronousSourceMessageQueue(id)) {
+							val messageQueue = thetaQueryGenerator.getAsynchronousSourceMessageQueue(id)
+							val values = value.parseArray
+							val stringEventId = values.findFirst[it.key == new IndexHierarchy(0)]?.value
+							// If null - it is a default 0 value, nothing is raised
+							if (stringEventId !== null) {
+								val eventId = Integer.parseInt(stringEventId)
+								if (eventId != 0) { // 0 is the "empty" cell
+									val portEvent = messageQueue.getEvent(eventId)
+									val port = portEvent.key
+									val event = portEvent.value
+									val systemPort = port.boundTopComponentPort // Back-tracking to the system port
+									step.addInEvent(systemPort, event)
+									// Denoting that this event has been actually
+									raisedInEvents += systemPort -> event
+								}
+							}
+						}
+						// TODO Asynchronous in-event parameter
+						
 					}
 					default:
 						throw new IllegalArgumentException("Not known state: " + state)

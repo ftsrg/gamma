@@ -67,17 +67,10 @@ class UppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 	}
 	
 	new(G2UTrace trace, Scanner traceScanner, boolean sortTrace) {
-//		val fileWriter = new FileWriter("C:\\Users\\B\\eclipse_ws\\gamma_2.2_os_ws\\runtime-EclipseXtext\\hu.bme.mit.gamma.prolan.orion\\trace1.txt")
-//		while (traceScanner.hasNext) {
-//			fileWriter.write(traceScanner.nextLine + System.lineSeparator)
-//			fileWriter.flush
-//		}
-//		fileWriter.close
-		super(traceScanner, sortTrace)
+		super(trace.gammaPackage, traceScanner, sortTrace)
 		this.resourceSet = trace.eResource.resourceSet
-		checkState(this.resourceSet !== null)
-		this.resourceSet.loadModels
-		this.engine = ViatraQueryEngine.on(new EMFScope(this.resourceSet))
+		checkState(resourceSet !== null)
+		this.engine = ViatraQueryEngine.on(new EMFScope(resourceSet))
 	}
 
 	/**
@@ -196,24 +189,6 @@ class UppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 			trace.sortInstanceStates
 		}
 		return trace
-	}
-	
-	/**
-	 * Loads the individual resources from the resource set. 
-	 */
-	protected def loadModels(ResourceSet resourceSet) {
-		// Getting the G2UTrace from the resource set
-		val g2uTraceResourceList = resourceSet.resources.filter[it.contents.head instanceof G2UTrace].toList
-		if (g2uTraceResourceList.size != 1) {
-			throw new IllegalArgumentException("The resource set contains more than one g2uTrace: " + resourceSet)
-		}
-		val traceRoot = g2uTraceResourceList.head.contents.head as G2UTrace
-		val nta = traceRoot.nta
-		gammaPackage = traceRoot.gammaPackage
-		component = gammaPackage.components.head
-		if (traceRoot === null || nta === null) {
-			throw new IllegalArgumentException("One required resource could not be resolved.")
-		}
 	}
 	
 	/** ( P_ControlTemplate.InitLoc P_main_regionOfStatechartOftest.S P_innerOfSOftest.EntryLocation0 P_SchedulerTemplate.InitLoc ) */

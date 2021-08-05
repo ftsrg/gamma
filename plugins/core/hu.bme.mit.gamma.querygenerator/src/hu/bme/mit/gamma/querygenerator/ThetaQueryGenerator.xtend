@@ -18,15 +18,12 @@ import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.ComplexTypeUtil
 import hu.bme.mit.gamma.querygenerator.operators.TemporalOperator
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
+import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Event
-import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.State
 import java.util.List
-import org.eclipse.viatra.query.runtime.api.AdvancedViatraQueryEngine
-import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
-import org.eclipse.viatra.query.runtime.emf.EMFScope
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
@@ -36,25 +33,8 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 	//
 	protected final extension ComplexTypeUtil complexTypeUtil = ComplexTypeUtil.INSTANCE
 	//
-	new(Package gammaPackage) {
-		this(gammaPackage, false)
-	}
-	
-	new(Package gammaPackage, boolean createAdvancedEngine) {
-		val resourceSet = gammaPackage.eResource.resourceSet
-		val scope = new EMFScope(resourceSet)
-		if (createAdvancedEngine) {
-			super.engine = AdvancedViatraQueryEngine.createUnmanagedEngine(scope)
-		}
-		else {
-			super.engine = ViatraQueryEngine.on(scope)
-		}
-	}
-	
-	override close() {
-		if (engine instanceof AdvancedViatraQueryEngine) {
-			engine.dispose
-		}
+	new(Component component) {
+		super(component)
 	}
 	
 	override parseRegularQuery(String text, TemporalOperator operator) {
@@ -194,6 +174,15 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 		}
 	}
 	
+	def isAsynchronousSourceMessageQueue(String targetMasterQueueName) {
+		try {
+			targetMasterQueueName.getAsynchronousSourceMessageQueue
+			return true
+		} catch (IllegalArgumentException e) {
+			return false
+		}
+	}
+	
 	// Getters
 	
 	def getSourceState(String targetStateName) {
@@ -300,6 +289,18 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 				if (names.contains(targetInEventParameterName)) {
 					return type.getSourceFieldHierarchy(names, targetInEventParameterName)
 				}
+			}
+		}
+		throw new IllegalArgumentException("Not known id")
+	}
+	
+	def getAsynchronousSourceMessageQueue(String targetMasterQueueName) {
+		for (pair : getAynchronousMessageQueues) {
+			val instance = pair.key
+			val queue = pair.value
+			val name = queue.customizeMasterQueueName(instance)
+			if (name.equals(targetMasterQueueName)) {
+				return queue
 			}
 		}
 		throw new IllegalArgumentException("Not known id")

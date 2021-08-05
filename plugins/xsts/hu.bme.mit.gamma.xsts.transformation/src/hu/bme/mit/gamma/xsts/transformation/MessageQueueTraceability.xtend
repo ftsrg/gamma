@@ -9,8 +9,6 @@ import java.util.SortedMap
 
 class MessageQueueTraceability {
 	
-	protected int eventId = 1 // 0 is the "empty cell"
-	
 	protected final Map<Entry<Port, Event>, Integer> eventIds = newHashMap
 	protected final SortedMap<MessageQueue, MessageQueueMapping> messageQueues = newTreeMap(
 		lhs, rhs | {
@@ -22,12 +20,10 @@ class MessageQueueTraceability {
 		}
 	)
 	
+	//
 	
-	
-	def put(Entry<Port, Event> event) {
-		val id = eventId++
+	def put(Entry<Port, Event> event, Integer id) { // Starts from 1, 0 is the "empty cell"
 		eventIds += event -> id
-		return id
 	}
 	
 	def get(Entry<Port, Event> event) {

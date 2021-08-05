@@ -14,14 +14,12 @@ import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.querygenerator.operators.TemporalOperator
 import hu.bme.mit.gamma.querygenerator.patterns.StatesToLocations
+import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
+import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.State
-import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
-import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.uppaal.transformation.traceability.G2UTrace
-import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
-import org.eclipse.viatra.query.runtime.emf.EMFScope
 
 import static com.google.common.base.Preconditions.checkArgument
 
@@ -31,9 +29,11 @@ import static extension hu.bme.mit.gamma.uppaal.util.Namings.*
 class UppaalQueryGenerator extends AbstractQueryGenerator {
 	
 	new(G2UTrace trace) {
+		super(trace.gammaPackage.firstComponent)
 		val traceabilitySet = trace.eResource.resourceSet
 		checkArgument(traceabilitySet !== null)
-		this.engine = ViatraQueryEngine.on(new EMFScope(traceabilitySet))
+		val componentSet = component.eResource.resourceSet
+		checkArgument(traceabilitySet === componentSet)
 	}
 	
 	override String parseRegularQuery(String text, TemporalOperator operator) {

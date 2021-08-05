@@ -1,3 +1,13 @@
+/********************************************************************************
+ * Copyright (c) 2018-2021 Contributors to the Gamma project
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * SPDX-License-Identifier: EPL-1.0
+ ********************************************************************************/
 package hu.bme.mit.gamma.xsts.transformation
 
 import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
@@ -82,7 +92,7 @@ class ComponentTransformer {
 		this.gammaToLowlevelTransformer = gammaToLowlevelTransformer
 		this.transformOrthogonalActions = transformOrthogonalActions
 		this.optimize = optimize
-		this.useHavocActions = useHavocActions
+		this.useHavocActions = useHavocActions // TODO eliminate havoc
 		this.extractGuards = extractGuards
 		this.transitionMerging = transitionMerging
 		this.queueTraceability = new MessageQueueTraceability
@@ -94,7 +104,7 @@ class ComponentTransformer {
 		throw new IllegalArgumentException("Not supported component type: " + component)
 	}
 	
-	// TODO move most parts into the AA transformer
+	// TODO move most parts into the AA transformer and make sure in preprocess AAs are not top components
 	def dispatch XSTS transform(AsynchronousCompositeComponent component, Package lowlevelPackage) {
 		val systemPorts = component.allPorts
 		// Parameters of all asynchronous composite components
@@ -132,7 +142,8 @@ class ComponentTransformer {
 				val storedEventIds = newHashSet
 				val events = queue.storedEvents
 				for (event : events) {
-					val id = queueTraceability.put(event) // An id is assigned automatically
+					val id = queue.getEventId(event) // Id is needed during back-annotation
+					queueTraceability.put(event, id)
 					storedEventIds += id
 					logger.log(Level.INFO, '''Assigning «id» to «event.key.name».«event.value.name»''')
 				}

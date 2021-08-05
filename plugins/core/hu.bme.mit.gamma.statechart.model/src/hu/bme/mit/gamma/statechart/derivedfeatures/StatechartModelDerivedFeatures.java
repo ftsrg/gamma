@@ -203,6 +203,10 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return imports;
 	}
 	
+	public static Component getFirstComponent(Package _package) {
+		return _package.getComponents().get(0);
+	}
+	
 	public static Set<Component> getAllComponents(Package parentPackage) {
 		Set<Component> types = new HashSet<Component>();
 		for (Package importedPackage : parentPackage.getImports()) {
@@ -528,6 +532,17 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 			events.addAll(getInputEvents(eventReference));
 		}
 		return events;
+	}
+	
+	public static int getEventId(MessageQueue queue,
+			Entry<Port, Event> portEvent) {
+		List<Entry<Port,Event>> storedEvents = getStoredEvents(queue);
+		return storedEvents.indexOf(portEvent) + 1; // Starts from 1, 0 is the "empty cell"
+	}
+	
+	public static Entry<Port, Event> getEvent(MessageQueue queue, int eventId) {
+		List<Entry<Port,Event>> storedEvents = getStoredEvents(queue);
+		return storedEvents.get(eventId - 1); // Starts from 1, 0 is the "empty cell"
 	}
 	
 	public static boolean isEnvironmental(MessageQueue queue,

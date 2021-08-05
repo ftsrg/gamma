@@ -1958,4 +1958,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 		return validationResultMessages;
 	}
 	
+	// TODO a single event must be specified to be added into a single queue
+	// TODO An instance ports must be bound to at most a single system port (not necessary vice versa)
+	
 }
