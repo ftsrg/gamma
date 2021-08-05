@@ -33,7 +33,6 @@ import java.util.Scanner
 import java.util.Set
 import java.util.logging.Level
 import java.util.logging.Logger
-import org.eclipse.emf.ecore.util.EcoreUtil
 
 import static com.google.common.base.Preconditions.checkState
 
@@ -202,7 +201,7 @@ class TraceBackAnnotator {
 								val systemPort = port.boundTopComponentPort // Back-tracking to the system port
 								step.addOutEvent(systemPort, event)
 								// Denoting that this event has been actually
-								raisedOutEvents += new Pair(systemPort, event)
+								raisedOutEvents += systemPort -> event
 							}
 						}
 						else if (thetaQueryGenerator.isSourceOutEventParamater(id)) {
@@ -231,7 +230,7 @@ class TraceBackAnnotator {
 								val systemPort = port.boundTopComponentPort // Back-tracking to the system port
 								step.addInEvent(systemPort, event)
 								// Denoting that this event has been actually
-								raisedInEvents += new Pair(systemPort, event)
+								raisedInEvents += systemPort -> event
 							}
 						}
 						else if (thetaQueryGenerator.isSourceInEventParamater(id)) {
@@ -272,8 +271,8 @@ class TraceBackAnnotator {
 			Set<State> activatedStates) {
 		val raiseEventActs = step.outEvents
 		for (raiseEventAct : raiseEventActs) {
-			if (!raisedOutEvents.contains(new Pair(raiseEventAct.port, raiseEventAct.event))) {
-				EcoreUtil.delete(raiseEventAct)
+			if (!raisedOutEvents.contains(raiseEventAct.port -> raiseEventAct.event)) {
+				raiseEventAct.delete
 			}
 		}
 		val instanceStates = step.instanceStateConfigurations
@@ -281,7 +280,7 @@ class TraceBackAnnotator {
 			// A state is active if all of its ancestor states are active
 			val ancestorStates = instanceState.state.ancestors
 			if (!activatedStates.containsAll(ancestorStates)) {
-				EcoreUtil.delete(instanceState)
+				instanceState.delete
 			}
 		}
 		raisedOutEvents.clear
@@ -291,8 +290,8 @@ class TraceBackAnnotator {
 	protected def void checkInEvents(Step step, Set<Pair<Port, Event>> raisedInEvents) {
 		val raiseEventActs = step.actions.filter(RaiseEventAct).toList
 		for (raiseEventAct : raiseEventActs) {
-			if (!raisedInEvents.contains(new Pair(raiseEventAct.port, raiseEventAct.event))) {
-				EcoreUtil.delete(raiseEventAct)
+			if (!raisedInEvents.contains(raiseEventAct.port -> raiseEventAct.event)) {
+				raiseEventAct.delete
 			}
 		}
 		raisedInEvents.clear
