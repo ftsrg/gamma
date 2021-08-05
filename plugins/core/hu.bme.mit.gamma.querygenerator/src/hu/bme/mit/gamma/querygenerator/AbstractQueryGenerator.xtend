@@ -43,7 +43,6 @@ abstract class AbstractQueryGenerator implements AutoCloseable {
 	}
 	
 	def unwrap(String id) {
-//		return id.replaceAll("\\(", "").replaceAll("\\)", "")
 		return id.substring(1, id.length - 1)
 	}
 	

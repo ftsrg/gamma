@@ -10,28 +10,58 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.xsts.transformation.util
 
+import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
+import hu.bme.mit.gamma.expression.util.ExpressionUtil
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference
+import hu.bme.mit.gamma.statechart.composite.MessageQueue
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.TimeoutDeclaration
+import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.util.List
+
+import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.transformation.util.Namings.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.LowlevelNamings.*
+import static extension hu.bme.mit.gamma.xsts.transformation.util.QueueNamings.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.XstsNamings.*
 
 class Namings {
 	
+	protected final static extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
+	protected final static extension ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE
+	protected final static extension ExpressionModelFactory factory = ExpressionModelFactory.eINSTANCE
+	//
+	
 	// To Low-level: in LowlevelNamings
 	
 	// To XSTS: in XstsNamings
+	
+	// Asynchronous message queue - XSTS customization
+	
+	static def String customizeMasterQueueName(MessageQueue queue, ComponentInstance instance) {
+		val type = createIntegerTypeDefinition
+		val names = type.createVariableDeclaration(
+				'''«queue.getMasterQueueName(instance)»''').names
+		checkState(names.size == 1)
+		return names.head
+	}
+	
+	static def List<String> customizeSlaveQueueName(ParameterDeclaration parameterDeclaration,
+			Port port, ComponentInstance instance) {
+		val type = parameterDeclaration.type.clone 
+		val names = type.createVariableDeclaration(
+				'''«parameterDeclaration.getSlaveQueueName(port, instance)»''').names
+		return names
+	}
 	
 	// XSTS customization
 	
@@ -47,27 +77,15 @@ class Namings {
 	static def String customizeOutputName(Event event, Port port, ComponentInstanceReference instance) '''«customizeOutputName(event, port, instance.FQN)»'''
 	static def String customizeOutputName(Event event, Port port, String instance) '''«event.getOutputName(port).eventName»_«instance»'''
 	
-//	static def String customizeInName(ParameterDeclaration parameterDeclaration, Port port, ComponentInstance instance) '''«customizeInName(parameterDeclaration, port, instance.name)»'''
-//	static def String customizeInName(ParameterDeclaration parameterDeclaration, Port port, ComponentInstanceReference instance) '''«customizeInName(parameterDeclaration, port, instance.FQN)»'''
-//	static def String customizeInName(ParameterDeclaration parameterDeclaration, Port port, String instance) '''«parameterDeclaration.getInName(port).variableName»_«instance»'''
-	
 	static def List<String> customizeInNames(ParameterDeclaration parameterDeclaration, Port port) { getInNames(parameterDeclaration, port).map[it.variableName].toList }
 	static def List<String> customizeInNames(ParameterDeclaration parameterDeclaration, Port port, ComponentInstance instance) { customizeInNames(parameterDeclaration, port, instance.name) }
 	static def List<String> customizeInNames(ParameterDeclaration parameterDeclaration, Port port, ComponentInstanceReference instance) { customizeInNames(parameterDeclaration, port, instance.FQN) }
 	static def List<String> customizeInNames(ParameterDeclaration parameterDeclaration, Port port, String instance) { parameterDeclaration.getInNames(port).map[it.variableName + "_" + instance] }
 	
-//	static def String customizeOutName(ParameterDeclaration parameterDeclaration, Port port, ComponentInstance instance) '''«customizeOutName(parameterDeclaration, port, instance.name)»'''
-//	static def String customizeOutName(ParameterDeclaration parameterDeclaration, Port port, ComponentInstanceReference instance) '''«customizeOutName(parameterDeclaration, port, instance.FQN)»'''
-//	static def String customizeOutName(ParameterDeclaration parameterDeclaration, Port port, String instance) '''«parameterDeclaration.getOutName(port).variableName»_«instance»'''
-	
 	static def List<String> customizeOutNames(ParameterDeclaration parameterDeclaration, Port port) { getOutNames(parameterDeclaration, port).map[it.variableName].toList }
 	static def List<String> customizeOutNames(ParameterDeclaration parameterDeclaration, Port port, ComponentInstance instance) { customizeOutNames(parameterDeclaration, port, instance.name) }
 	static def List<String> customizeOutNames(ParameterDeclaration parameterDeclaration, Port port, ComponentInstanceReference instance) { customizeOutNames(parameterDeclaration, port, instance.FQN) }
 	static def List<String> customizeOutNames(ParameterDeclaration parameterDeclaration, Port port, String instance) { parameterDeclaration.getOutNames(port).map[it.variableName + "_" + instance] }
-	
-//	static def String customizeName(VariableDeclaration variable, ComponentInstance instance) '''«customizeName(variable, instance.name)»'''
-//	static def String customizeName(VariableDeclaration variable, ComponentInstanceReference instance) '''«customizeName(variable, instance.FQN)»'''
-//	static def String customizeName(VariableDeclaration variable, String instance) '''«getName(variable).variableName»_«instance»'''
 	
 	static def List<String> customizeNames(VariableDeclaration variable) { variable.names.map[it.variableName].toList }
 	static def List<String> customizeNames(VariableDeclaration variable, ComponentInstance instance) { customizeNames(variable, instance.name) }

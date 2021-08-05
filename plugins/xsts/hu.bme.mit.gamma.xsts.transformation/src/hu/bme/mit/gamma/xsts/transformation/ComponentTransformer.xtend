@@ -4,9 +4,7 @@ import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
-import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.TypeReference
-import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.LowlevelToXstsTransformer
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.TransitionMerging
@@ -47,8 +45,8 @@ import static com.google.common.base.Preconditions.checkState
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
-import static extension hu.bme.mit.gamma.xsts.transformation.ComponentTransformer.Namings.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
+import static extension hu.bme.mit.gamma.xsts.transformation.util.QueueNamings.*
 import static extension java.lang.Math.*
 
 class ComponentTransformer {
@@ -182,6 +180,8 @@ class ComponentTransformer {
 			
 				// Transforming the message queue constructions into native XSTS variables
 				// We do not care about the names (renaming) here
+				// Namings.customize* covers the same naming behavior as QueueNamings + valueDeclarationTransformer
+				
 				xSts.variableDeclarations += valueDeclarationTransformer.transform(masterQueue)
 				xSts.variableDeclarations += valueDeclarationTransformer.transform(masterSizeVariable)
 				for (slaveQueueList : slaveQueues.values) {
@@ -241,7 +241,7 @@ class ComponentTransformer {
 				}
 				
 				val eventIdVariableAction = createIntegerTypeDefinition.createVariableDeclarationAction(
-					xStsMasterQueue.eventIdentifierVariableName, xStsMasterQueue.peek)
+						xStsMasterQueue.eventIdLocalVariableName, xStsMasterQueue.peek)
 				val eventIdVariable = eventIdVariableAction.variableDeclaration
 				block.actions += eventIdVariableAction
 				block.actions += xStsMasterQueue.popAndDecrement(xStsMasterSizeVariable)
@@ -454,7 +454,7 @@ class ComponentTransformer {
 					
 					for (slaveQueueStruct : slaveQueueStructs) {
 						val slaveQueue = slaveQueueStruct.arrayVariable
-						val slaveSizeVariable = slaveQueueStruct.arrayVariable
+						val slaveSizeVariable = slaveQueueStruct.sizeVariable
 						
 						val xStsSlaveQueues = variableTrace.getAll(slaveQueue)
 						val xStsSlaveSizeVariable = variableTrace.getAll(slaveSizeVariable).onlyElement
@@ -802,32 +802,6 @@ class ComponentTransformer {
 				regionType.name = regionType.customizeRegionTypeName(type)
 			}
 		}
-	}
-	
-	// Namings
-	
-	static class Namings {
-		
-		def static String getMasterQueueName(
-			MessageQueue queue, ComponentInstance instance) '''master_«queue.name»Of«instance.name»'''
-		def static String getMasterSizeVariableName(
-			MessageQueue queue, ComponentInstance instance) '''sizeMaster«queue.name.toFirstUpper»Of«instance.name»'''
-		def static String getSlaveQueueName(ParameterDeclaration parameterDeclaration,
-				Port port, ComponentInstance instance)
-			'''slave_«port.name»_«parameterDeclaration.name»Of«instance.name»'''
-		def static String getSlaveSizeVariableName(
-				ParameterDeclaration parameterDeclaration, Port port, ComponentInstance instance)
-			'''sizeSlave«parameterDeclaration.name.toFirstUpper»«port.name.toFirstUpper»Of«instance.name»'''
-		
-		def static String getEventIdentifierVariableName(VariableDeclaration queue)
-			'''eventId_«queue.name»_«queue.hashCode.abs»'''
-		def static String getEventIdLocalVariableName(VariableDeclaration queue)
-			'''eventId_«queue.name»_«queue.hashCode.abs»'''
-		def static String getRandomValueLocalVariableName(VariableDeclaration queue)
-			'''random_«queue.name»_«queue.hashCode.abs»'''
-		
-		def static String getLoopIterationVariableName() '''i'''
-		
 	}
 	
 }
