@@ -33,7 +33,7 @@ class SystemReducer {
 	def void deleteUnusedPorts(XSTS xSts, CompositeComponent component) {
 		// In theory, only AssignmentAction would be enough, still we use AbstractAssignmentAction to be sure
 		val xStsAssignmentActions = xSts.getAllContentsOfType(AbstractAssignmentAction) // Caching
-		val xStsFalseVariables = newHashSet
+		val xStsFalseVariables = newHashSet // TODO rename it to defaultable variable and include in-event parameters
 		val xStsDeletableVariables = newHashSet
 		val xStsDeletableAssignmentActions = newHashSet
 		for (instance : component.derivedComponents) {
@@ -47,6 +47,7 @@ class SystemReducer {
 						xStsDeletableVariables += xStsInEventVariable
 						xStsDeletableAssignmentActions += xStsInEventVariable.getAssignments(xStsAssignmentActions)
 						// In-parameters - they can be placed on transitions without trigger, so we do not delete them
+						// TODO what if we replace every reference with the default value?
 //						for (parameter : inputEvent.parameterDeclarations) {
 //							val inParamaterName = parameter.customizeInName(instancePort, instance)
 //							val xStsInParameterVariable = xSts.getVariable(inParamaterName)
@@ -86,7 +87,7 @@ class SystemReducer {
 		// before variable removal as references must be present here
 		for (xStsFalseVariable : xStsFalseVariables) {
 			val references = xSts.getAllContentsOfType(DirectReferenceExpression)
-				.filter[it.declaration === xStsFalseVariable]
+					.filter[it.declaration === xStsFalseVariable]
 			for (reference : references) {
 				val falseExpression = createFalseExpression
 				falseExpression.replace(reference)

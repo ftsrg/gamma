@@ -127,8 +127,8 @@ class ComponentTransformer {
 		
 		val mergedAction = createSequentialAction
 		
-		
 		// Transforming and saving the adapter instances
+		
 		val mergedActions = newHashMap
 		for (adapterInstance : adapterInstances) {
 			val adapterComponentType = adapterInstance.type as AsynchronousAdapter
@@ -149,6 +149,7 @@ class ComponentTransformer {
 		}
 		
 		// Creating the message queue constructions
+		
 		for (adapterInstance : adapterInstances) {
 			val adapterComponentType = adapterInstance.type as AsynchronousAdapter
 			for (queue : adapterComponentType.messageQueues) {
@@ -227,6 +228,7 @@ class ComponentTransformer {
 		}
 		
 		// Creating queue process behavior
+		
 		val executionList = adapterInstances // In the future, one intstance could be executed multiple times
 		for (adapterInstance : executionList) {
 			val adapterComponentType = adapterInstance.type as AsynchronousAdapter
@@ -435,7 +437,20 @@ class ComponentTransformer {
 			}
 		}
 		
-		// TODO initializing message queue related variables
+		// Initializing message queue related variables, TODO couldn't this be done as an initial expression?
+		
+		val xStsQueueVariables = newArrayList
+		for (queueStruct : queueTraceability.allQueues) {
+			val queue = queueStruct.arrayVariable
+			val sizeVariable = queueStruct.sizeVariable
+			xStsQueueVariables += variableTrace.getAll(queue)
+			xStsQueueVariables += variableTrace.getAll(sizeVariable)
+		}
+		for (xStsQueueVariable : xStsQueueVariables) {
+			variableInitAction.actions += xStsQueueVariable.createVariableResetAction
+		}
+		
+		//
 		
 		xSts.variableInitializingTransition = variableInitAction.wrap
 		xSts.configurationInitializingTransition = configInitAction.wrap

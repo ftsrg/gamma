@@ -59,4 +59,29 @@ class MessageQueueTraceability {
 		throw new IllegalArgumentException("Not found queue for id: " + portEvent)
 	}
 	
+	//
+	
+	def getMasterQueues() {
+		val masterQueues = newHashSet
+		for (messageQueue : messageQueues.values) {
+			masterQueues += messageQueue.masterQueue
+		}
+		return masterQueues
+	}
+	
+	def getAllSlaveQueues() {
+		val slaveQueues = newHashSet
+		for (messageQueue : messageQueues.values) {
+			slaveQueues += messageQueue.slaveQueues.values.flatten
+		}
+		return slaveQueues
+	}
+	
+	def getAllQueues() {
+		val queues = newHashSet
+		queues += masterQueues
+		queues += allSlaveQueues
+		return queues
+	}
+	
 }
