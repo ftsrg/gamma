@@ -204,14 +204,14 @@ class TraceBackAnnotator {
 								raisedOutEvents += systemPort -> event
 							}
 						}
-						else if (thetaQueryGenerator.isSourceOutEventParamater(id)) {
-							val systemOutEvent = thetaQueryGenerator.getSourceOutEventParamater(id)
+						else if (thetaQueryGenerator.isSourceOutEventParameter(id)) {
+							val systemOutEvent = thetaQueryGenerator.getSourceOutEventParameter(id)
 							val event = systemOutEvent.get(0) as Event
 							val port = systemOutEvent.get(1) as Port
 							val systemPort = port.boundTopComponentPort // Back-tracking to the system port
 							val parameter = systemOutEvent.get(2) as ParameterDeclaration
 							// Getting fields and indexes regardless of primitive or complex types
-							val field = thetaQueryGenerator.getSourceOutEventParamaterFieldHierarchy(id)
+							val field = thetaQueryGenerator.getSourceOutEventParameterFieldHierarchy(id)
 							val indexPairs = value.parseArray
 							//
 							for (indexPair : indexPairs) {
@@ -235,14 +235,14 @@ class TraceBackAnnotator {
 							}
 						}
 						// Synchronous in-event parameter
-						else if (thetaQueryGenerator.isSynchronousSourceInEventParamater(id)) {
-							val systemInEvent = thetaQueryGenerator.getSynchronousSourceInEventParamater(id)
+						else if (thetaQueryGenerator.isSynchronousSourceInEventParameter(id)) {
+							val systemInEvent = thetaQueryGenerator.getSynchronousSourceInEventParameter(id)
 							val event = systemInEvent.get(0) as Event
 							val port = systemInEvent.get(1) as Port
 							val systemPort = port.boundTopComponentPort // Back-tracking to the system port
 							val parameter = systemInEvent.get(2) as ParameterDeclaration
 							// Getting fields and indexes regardless of primitive or complex types
-							val field = thetaQueryGenerator.getSynchronousSourceInEventParamaterFieldHierarchy(id)
+							val field = thetaQueryGenerator.getSynchronousSourceInEventParameterFieldHierarchy(id)
 							val indexPairs = value.parseArray
 							//
 							for (indexPair : indexPairs) {
@@ -270,8 +270,25 @@ class TraceBackAnnotator {
 								}
 							}
 						}
-						// TODO Asynchronous in-event parameter
-						
+						// Asynchronous in-event parameter
+						else if (thetaQueryGenerator.isAsynchronousSourceInEventParameter(id)) {
+							val systemInEvent = thetaQueryGenerator.getAsynchronousSourceInEventParameter(id)
+							val event = systemInEvent.get(0) as Event
+							val port = systemInEvent.get(1) as Port
+							val systemPort = port.boundTopComponentPort // Back-tracking to the system port
+							val parameter = systemInEvent.get(2) as ParameterDeclaration
+							// Getting fields and indexes regardless of primitive or complex types
+							val field = thetaQueryGenerator.getAsynchronousSourceInEventParameterFieldHierarchy(id)
+							val indexPairs = value.parseArray
+							// The slave queue is single-size array - removing the first 0 index
+							indexPairs.forEach[it.key.removeFirst]
+							//
+							for (indexPair : indexPairs) {
+								val index = indexPair.key
+								val parsedValue = indexPair.value
+								step.addInEventWithParameter(systemPort, event, parameter, field, index, parsedValue)
+							}
+						}
 					}
 					default:
 						throw new IllegalArgumentException("Not known state: " + state)
@@ -320,6 +337,7 @@ class TraceBackAnnotator {
 		raisedInEvents.clear
 	}
 	
+	// Not every index is retrieved - if an index is missing, its value is the default value
 	protected def List<Pair<IndexHierarchy, String>> parseArray(String value) {
 		// (array (0 10) (1 11) (default 0))
 		val values = newArrayList

@@ -24,6 +24,7 @@ import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.transformation.util.queries.TopSyncSystemInEvents
 import hu.bme.mit.gamma.transformation.util.queries.TopSyncSystemOutEvents
+import hu.bme.mit.gamma.util.Triple
 import java.util.List
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 import org.eclipse.viatra.query.runtime.emf.EMFScope
@@ -147,6 +148,19 @@ abstract class AbstractQueryGenerator {
 			}
 		}
 		return queues
+	}
+	
+	def getAsynchronousSystemInEvents() {
+		val portEvents = newHashSet
+		for (asynchronousSimpleInstance : component.allAsynchronousSimpleInstances) {
+			val adapter = asynchronousSimpleInstance.type as AsynchronousAdapter
+			for (port : adapter.allPorts) {
+				for (inEvent : port.inputEvents) {
+					portEvents += new Triple(port, inEvent, asynchronousSimpleInstance)
+				}
+			}
+		}
+		return portEvents
 	}
 	
 	// Parsing identifiers

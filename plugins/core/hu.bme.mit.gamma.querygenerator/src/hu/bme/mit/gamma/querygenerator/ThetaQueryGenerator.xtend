@@ -17,6 +17,8 @@ import hu.bme.mit.gamma.expression.model.ValueDeclaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.ComplexTypeUtil
 import hu.bme.mit.gamma.querygenerator.operators.TemporalOperator
+import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance
+import hu.bme.mit.gamma.statechart.composite.MessageQueue
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Event
@@ -83,6 +85,14 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 		return parameter.customizeInNames(port, instance)
 	}
 	
+	def protected getTargetMasterQueueName(MessageQueue queue, AsynchronousComponentInstance instance) {
+		return queue.customizeMasterQueueName(instance)
+	}
+	
+	def protected getTargetSlaveQueueName(Event event, Port port, ParameterDeclaration parameter, AsynchronousComponentInstance instance) {
+		return parameter.customizeSlaveQueueName(port, instance)
+	}
+	
 	// Auxiliary methods for back-annotation
 	
 	// Checkers
@@ -125,18 +135,18 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 		}
 	}
 	
-	def isSourceOutEventParamater(String targetOutEventParameterName) {
+	def isSourceOutEventParameter(String targetOutEventParameterName) {
 		try {
-			targetOutEventParameterName.getSourceOutEventParamater
+			targetOutEventParameterName.getSourceOutEventParameter
 			return true
 		} catch (IllegalArgumentException e) {
 			return false
 		}
 	}
 	
-	def isSourceRecordOutEventParamater(String targetOutEventParameterName) {
+	def isSourceRecordOutEventParameter(String targetOutEventParameterName) {
 		try {
-			val array = targetOutEventParameterName.getSourceOutEventParamater
+			val array = targetOutEventParameterName.getSourceOutEventParameter
 			val parameter = array.get(2) as ValueDeclaration
 			val type = parameter.typeDefinition
 			return type instanceof RecordTypeDefinition
@@ -154,18 +164,18 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 		}
 	}
 	
-	def isSynchronousSourceInEventParamater(String targetInEventParameterName) {
+	def isSynchronousSourceInEventParameter(String targetInEventParameterName) {
 		try {
-			targetInEventParameterName.getSynchronousSourceInEventParamater
+			targetInEventParameterName.getSynchronousSourceInEventParameter
 			return true
 		} catch (IllegalArgumentException e) {
 			return false
 		}
 	}
 	
-	def isSynchronousSourceRecordInEventParamater(String targetInEventParameterName) {
+	def isSynchronousSourceRecordInEventParameter(String targetInEventParameterName) {
 		try {
-			val array = targetInEventParameterName.getSynchronousSourceInEventParamater
+			val array = targetInEventParameterName.getSynchronousSourceInEventParameter
 			val parameter = array.get(2) as ValueDeclaration
 			val type = parameter.typeDefinition
 			return type instanceof RecordTypeDefinition
@@ -177,6 +187,15 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 	def isAsynchronousSourceMessageQueue(String targetMasterQueueName) {
 		try {
 			targetMasterQueueName.getAsynchronousSourceMessageQueue
+			return true
+		} catch (IllegalArgumentException e) {
+			return false
+		}
+	}
+	
+	def isAsynchronousSourceInEventParameter(String targetSlaveQueueName) {
+		try {
+			targetSlaveQueueName.getAsynchronousSourceInEventParameter
 			return true
 		} catch (IllegalArgumentException e) {
 			return false
@@ -228,7 +247,7 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 		throw new IllegalArgumentException("Not known id")
 	}
 	
-	def getSourceOutEventParamater(String targetOutEventParameterName) {
+	def getSourceOutEventParameter(String targetOutEventParameterName) {
 		for (match : synchronousSystemOutEvents) {
 			val event = match.event
 			for (parameter : event.parameterDeclarations) {
@@ -242,7 +261,7 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 	}
 	
 	// Record
-	def getSourceOutEventParamaterFieldHierarchy(String targetOutEventParameterName) {
+	def getSourceOutEventParameterFieldHierarchy(String targetOutEventParameterName) {
 		for (match : synchronousSystemOutEvents) {
 			val event = match.event
 			for (parameter : event.parameterDeclarations) {
@@ -266,7 +285,7 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 		throw new IllegalArgumentException("Not known id")
 	}
 	
-	def getSynchronousSourceInEventParamater(String targetInEventParameterName) {
+	def getSynchronousSourceInEventParameter(String targetInEventParameterName) {
 		for (match : synchronousSystemInEvents) {
 			val event = match.event
 			for (parameter : event.parameterDeclarations) {
@@ -280,7 +299,7 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 	}
 	
 	// Record
-	def getSynchronousSourceInEventParamaterFieldHierarchy(String targetInEventParameterName) {
+	def getSynchronousSourceInEventParameterFieldHierarchy(String targetInEventParameterName) {
 		for (match : synchronousSystemInEvents) {
 			val event = match.event
 			for (parameter : event.parameterDeclarations) {
@@ -298,9 +317,41 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 		for (pair : getAynchronousMessageQueues) {
 			val instance = pair.key
 			val queue = pair.value
-			val name = queue.customizeMasterQueueName(instance)
+			val name = getTargetMasterQueueName(queue, instance)
 			if (name.equals(targetMasterQueueName)) {
 				return queue
+			}
+		}
+		throw new IllegalArgumentException("Not known id")
+	}
+	
+	def getAsynchronousSourceInEventParameter(String targetSlaveQueueName) {
+		for (portEvent : asynchronousSystemInEvents) {
+			val port = portEvent.first
+			val event = portEvent.second
+			val instance = portEvent.third
+			for (parameter : event.parameterDeclarations) {
+				val names = getTargetSlaveQueueName(event, port, parameter, instance)
+				if (names.contains(targetSlaveQueueName)) {
+					return #[event, port, parameter, instance]
+				}
+			}
+		}
+		throw new IllegalArgumentException("Not known id")
+	}
+	
+	// Record
+	def getAsynchronousSourceInEventParameterFieldHierarchy(String targetSlaveQueueName) {
+		for (portEvent : asynchronousSystemInEvents) {
+			val port = portEvent.first
+			val event = portEvent.second
+			val instance = portEvent.third
+			for (parameter : event.parameterDeclarations) {
+				val type = parameter.typeDefinition
+				val names = getTargetSlaveQueueName(event, port, parameter, instance)
+				if (names.contains(targetSlaveQueueName)) {
+					return type.getSourceFieldHierarchy(names, targetSlaveQueueName)
+				}
 			}
 		}
 		throw new IllegalArgumentException("Not known id")

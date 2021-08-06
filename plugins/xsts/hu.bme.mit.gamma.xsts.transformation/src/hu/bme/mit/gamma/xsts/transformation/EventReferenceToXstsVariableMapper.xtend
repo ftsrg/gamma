@@ -93,10 +93,10 @@ class EventReferenceToXstsVariableMapper {
 	}
 	
 	def getInputParameterVariables(ParameterDeclaration parameter, Port port) {
-		return parameter.getSeparatedInputParameterVariables(port).flatten.toList
+		return parameter.getInputParameterVariablesByPorts(port).flatten.toList
 	}
 	
-	def getSeparatedInputParameterVariables(ParameterDeclaration parameter, Port port) {
+	def getInputParameterVariablesByPorts(ParameterDeclaration parameter, Port port) {
 		checkState(port.inputEvents.map[it.parameterDeclarations].flatten.contains(parameter))
 		val xStsVariableLists = <List<VariableDeclaration>>newArrayList
 		for (simplePort : port.allBoundSimplePorts) {
@@ -130,8 +130,10 @@ class EventReferenceToXstsVariableMapper {
 	def getOutputEventVariables(Event event, Port port) {
 		checkState(port.outputEvents.contains(event))
 		val xStsVariables = newArrayList
-		for (simplePort : port.allBoundSimplePorts) {
-			// Theoretically, only one port
+		val allBoundSimplePorts = port.allBoundSimplePorts
+		checkState(allBoundSimplePorts.size <= 1)
+		val simplePort = allBoundSimplePorts.head
+		if (simplePort !== null) {
 			val statechart = simplePort.containingComponent
 			val instance = statechart.referencingComponentInstance
 			val xStsVariableName = event.customizeOutputName(simplePort, instance)
@@ -161,7 +163,10 @@ class EventReferenceToXstsVariableMapper {
 	def getOutputParameterVariables(ParameterDeclaration parameter, Port port) {
 		checkState(port.outputEvents.map[it.parameterDeclarations].flatten.contains(parameter))
 		val xStsVariables = newArrayList
-		for (simplePort : port.allBoundSimplePorts) {
+		val allBoundSimplePorts = port.allBoundSimplePorts
+		checkState(allBoundSimplePorts.size <= 1)
+		val simplePort = allBoundSimplePorts.head
+		if (simplePort !== null) {
 			// Theoretically, only one port
 			val statechart = simplePort.containingComponent
 			val instance = statechart.referencingComponentInstance

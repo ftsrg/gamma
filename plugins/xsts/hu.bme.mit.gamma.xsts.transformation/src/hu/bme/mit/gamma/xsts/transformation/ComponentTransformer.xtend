@@ -204,6 +204,7 @@ class ComponentTransformer {
 			}
 		}
 		
+		val unnecessarySlaveQueues = newHashSet
 		for (adapterInstance : adapterInstances) {
 			val adapterComponentType = adapterInstance.type as AsynchronousAdapter
 			
@@ -248,10 +249,10 @@ class ComponentTransformer {
 						throw new IllegalArgumentException("Not known literal: " + messageRetrievalCount)
 				}
 				
-				val eventIdVariableAction = createIntegerTypeDefinition.createVariableDeclarationAction(
+				val xStsEventIdVariableAction = createIntegerTypeDefinition.createVariableDeclarationAction(
 						xStsMasterQueue.eventIdLocalVariableName, xStsMasterQueue.peek)
-				val eventIdVariable = eventIdVariableAction.variableDeclaration
-				block.actions += eventIdVariableAction
+				val xStsEventIdVariable = xStsEventIdVariableAction.variableDeclaration
+				block.actions += xStsEventIdVariableAction
 				block.actions += xStsMasterQueue.popAndDecrement(xStsMasterSizeVariable)
 				
 				// Processing the possible different event identifiers
@@ -261,7 +262,7 @@ class ComponentTransformer {
 				
 				val emptyValue = xStsMasterQueue.arrayElementType.defaultExpression
 				// if (eventId == 0) { empty }
-				branchExpressions += eventIdVariable.createEqualityExpression(emptyValue)
+				branchExpressions += xStsEventIdVariable.createEqualityExpression(emptyValue)
 				branchActions += createEmptyAction
 				
 				val events = queue.storedEvents
@@ -273,7 +274,7 @@ class ComponentTransformer {
 					// Can be empty due to optimization or adapter event
 					val xStsInEventVariables = eventReferenceMapper.getInputEventVariables(event, port)
 					
-					val ifExpression = eventIdVariable.createReferenceExpression
+					val ifExpression = xStsEventIdVariable.createReferenceExpression
 							.createEqualityExpression(eventId.toIntegerLiteral)
 					val thenAction = createSequentialAction
 					// Setting the event variables to true (multiple binding is possible)
@@ -283,6 +284,10 @@ class ComponentTransformer {
 					}
 					// Setting the parameter variables with values stored in slave queues
 					val slaveQueueList = slaveQueues.get(portEvent)
+					// Unnecessary if xStsInEventVariable is null
+					if (xStsInEventVariables.empty) {
+						unnecessarySlaveQueues += slaveQueueList
+					}
 					
 					val parameters = event.parameterDeclarations
 					val parameterSize = parameters.size
@@ -296,9 +301,8 @@ class ComponentTransformer {
 						val xStsSlaveQueues = variableTrace.getAll(slaveQueue)
 						val xStsSlaveSizeVariable = variableTrace.getAll(slaveSizeVariable).onlyElement
 						val xStsInParameterVariableLists = eventReferenceMapper
-								.getSeparatedInputParameterVariables(inParameter, port)
-						// TODO Delete slave queues to which there are no related xSts variables 
-						// Separated by ports
+								.getInputParameterVariablesByPorts(inParameter, port)
+						// Separated in the lists according to ports
 						for (xStsInParameterVariables : xStsInParameterVariableLists) {
 							// Parameter optimization problem: parameters are not deleted independently
 							val size = xStsInParameterVariables.size 
@@ -306,8 +310,8 @@ class ComponentTransformer {
 								val xStsInParameterVariable = xStsInParameterVariables.get(j)
 								val xStsSlaveQueue = xStsSlaveQueues.get(j)
 								// Setting type to prevent enum problems (multiple times, though, not a problem)
-								val slaveQueueType = xStsSlaveQueue.typeDefinition as ArrayTypeDefinition
-								slaveQueueType.elementType = xStsInParameterVariable.type.clone
+								val xStsSlaveQueueType = xStsSlaveQueue.typeDefinition as ArrayTypeDefinition
+								xStsSlaveQueueType.elementType = xStsInParameterVariable.type.clone
 								//
 								thenAction.actions += xStsInParameterVariable
 										.createAssignmentAction(xStsSlaveQueue.peek)

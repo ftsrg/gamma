@@ -160,8 +160,8 @@ class XstsUppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 													raisedOutEvents += systemPort -> event
 												}
 											}
-											else if (xStsUppaalQueryGenerator.isSourceOutEventParamater(variable)) {
-												val systemOutEvent = xStsUppaalQueryGenerator.getSourceOutEventParamater(variable)
+											else if (xStsUppaalQueryGenerator.isSourceOutEventParameter(variable)) {
+												val systemOutEvent = xStsUppaalQueryGenerator.getSourceOutEventParameter(variable)
 												val event = systemOutEvent.get(0) as Event
 												val port = systemOutEvent.get(1) as Port
 												val systemPort = port.boundTopComponentPort // Back-tracking to the system port
@@ -182,8 +182,8 @@ class XstsUppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 													raisedInEvents += systemPort -> event
 												}
 											}
-											else if (xStsUppaalQueryGenerator.isSynchronousSourceInEventParamater(variable)) {
-												val systemInEvent = xStsUppaalQueryGenerator.getSynchronousSourceInEventParamater(variable)
+											else if (xStsUppaalQueryGenerator.isSynchronousSourceInEventParameter(variable)) {
+												val systemInEvent = xStsUppaalQueryGenerator.getSynchronousSourceInEventParameter(variable)
 												val event = systemInEvent.get(0) as Event
 												val port = systemInEvent.get(1) as Port
 												val systemPort = port.boundTopComponentPort // Back-tracking to the system port
