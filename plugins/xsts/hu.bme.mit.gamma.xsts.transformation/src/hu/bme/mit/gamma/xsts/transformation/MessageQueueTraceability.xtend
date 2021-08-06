@@ -48,15 +48,15 @@ class MessageQueueTraceability {
 		return messageQueues.keySet
 	}
 	
-	def getMessageQueues(Integer eventId) {
+	def getMessageQueues(Entry<Port, Event> portEvent) {
 		for (entry : messageQueues.entrySet) {
 			val mappings = entry.value
-			val eventIds = mappings.eventIds
-			if (eventIds.contains(eventId)) {
+			val portEvents = mappings.portEvents
+			if (portEvents.contains(portEvent)) {
 				return entry // Sorted according to priority, greatest priority is returned
 			}
 		}
-		throw new IllegalArgumentException("Not found queue for id: " + eventId)
+		throw new IllegalArgumentException("Not found queue for id: " + portEvent)
 	}
 	
 }

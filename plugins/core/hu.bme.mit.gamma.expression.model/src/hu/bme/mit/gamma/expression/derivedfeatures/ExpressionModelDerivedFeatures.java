@@ -147,6 +147,20 @@ public class ExpressionModelDerivedFeatures {
 		return declaration;
 	}
 	
+	public static Type getArrayElementType(Declaration declaration) {
+		Type type = declaration.getType();
+		return getArrayElementType(type);
+	}
+	
+	public static Type getArrayElementType(Type type) {
+		TypeDefinition typeDefinition = getTypeDefinition(type);
+		if (typeDefinition instanceof ArrayTypeDefinition) {
+			ArrayTypeDefinition arrayTypeDefinition = (ArrayTypeDefinition) typeDefinition;
+			return arrayTypeDefinition.getElementType();
+		}
+		throw new IllegalArgumentException("Not array type: " + type);
+	}
+	
 	// Type references
 	
 	public static boolean refersToAnAlias(TypeReference typeReference) {

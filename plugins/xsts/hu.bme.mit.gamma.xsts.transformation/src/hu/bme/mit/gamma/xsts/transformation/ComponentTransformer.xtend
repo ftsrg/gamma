@@ -63,7 +63,6 @@ class ComponentTransformer {
 	// This gammaToLowlevelTransformer must be the same during this transformation cycle due to tracing
 	protected final GammaToLowlevelTransformer gammaToLowlevelTransformer
 	protected final MessageQueueTraceability queueTraceability
-//	protected final EnvironmentalInputEventSetterActionCreator environmentalInputEventSetterActionCreator
 	// Transformation settings
 	protected final boolean transformOrthogonalActions
 	protected final boolean optimize
@@ -96,8 +95,6 @@ class ComponentTransformer {
 		this.extractGuards = extractGuards
 		this.transitionMerging = transitionMerging
 		this.queueTraceability = new MessageQueueTraceability
-//		this.environmentalInputEventSetterActionCreator =
-//			new EnvironmentalInputEventSetterActionCreator(useHavocActions)
 	}
 	
 	def dispatch XSTS transform(Component component, Package lowlevelPackage) {
@@ -139,12 +136,12 @@ class ComponentTransformer {
 					environmentalQueues += queue // Tracing
 				}
 				
-				val storedEventIds = newHashSet
+				val storedPortEvents = newHashSet
 				val events = queue.storedEvents
 				for (event : events) {
 					val id = queue.getEventId(event) // Id is needed during back-annotation
 					queueTraceability.put(event, id)
-					storedEventIds += id
+					storedPortEvents += event
 					logger.log(Level.INFO, '''Assigning «id» to «event.key.name».«event.value.name»''')
 				}
 				
@@ -181,10 +178,10 @@ class ComponentTransformer {
 						
 						slaveQueues += new MessageQueueStruct(slaveQueue, slaveSizeVariable)
 					}
-					slaveQueuesMap += queueTraceability.get(portEvent) -> slaveQueues
+					slaveQueuesMap += portEvent -> slaveQueues
 				}
 				
-				val messageQueueMapping = new MessageQueueMapping(storedEventIds,
+				val messageQueueMapping = new MessageQueueMapping(storedPortEvents,
 						new MessageQueueStruct(masterQueue, masterSizeVariable), slaveQueuesMap)
 				queueTraceability.put(queue, messageQueueMapping)
 				val slaveQueues = messageQueueMapping.slaveQueues
@@ -257,6 +254,16 @@ class ComponentTransformer {
 				block.actions += eventIdVariableAction
 				block.actions += xStsMasterQueue.popAndDecrement(xStsMasterSizeVariable)
 				
+				// Processing the possible different event identifiers
+				
+				val branchExpressions = <Expression>newArrayList
+				val branchActions = <Action>newArrayList
+				
+				val emptyValue = xStsMasterQueue.arrayElementType.defaultExpression
+				// if (eventId == 0) { empty }
+				branchExpressions += eventIdVariable.createEqualityExpression(emptyValue)
+				branchActions += createEmptyAction
+				
 				val events = queue.storedEvents
 				for (portEvent : events) {
 					val port = portEvent.key
@@ -275,7 +282,7 @@ class ComponentTransformer {
 								createTrueExpression)
 					}
 					// Setting the parameter variables with values stored in slave queues
-					val slaveQueueList = slaveQueues.get(eventId)
+					val slaveQueueList = slaveQueues.get(portEvent)
 					
 					val parameters = event.parameterDeclarations
 					val parameterSize = parameters.size
@@ -313,11 +320,14 @@ class ComponentTransformer {
 						thenAction.actions += originalMergedAction.clone
 					}
 					// if (eventId == ..) { "transfer slave queue values" if (isControlSpec) { "run" }
-					block.actions += ifExpression.createIfAction(thenAction)
+					branchExpressions += ifExpression
+					branchActions += thenAction
 				}
+				// Excluding branches for the different event identifiers
+				block.actions += branchExpressions.createChoiceAction(branchActions)
 			}
 			
-			// Dispatching events to connected message queues - use derived features
+			// Dispatching events to connected message queues
 			for (port : adapterComponentType.allPorts) {
 				// Semantical question: now out events are dispatched according to this order
 				for (event : port.outputEvents) {
@@ -334,7 +344,7 @@ class ComponentTransformer {
 							// The event is stored and not been removed due to optimization
 							val eventId = queueTraceability.get(connectedPortEvent)
 							// Highest priority in the case of multiple queues allowing storage 
-							val queueTrace = queueTraceability.getMessageQueues(eventId)
+							val queueTrace = queueTraceability.getMessageQueues(connectedPortEvent)
 							val originalQueue = queueTrace.key
 							val capacity = originalQueue.capacity
 							val eventDiscardStrategy = originalQueue.eventDiscardStrategy
@@ -343,7 +353,7 @@ class ComponentTransformer {
 							val masterQueueStruct = queueMapping.masterQueue
 							val masterQueue = masterQueueStruct.arrayVariable
 							val masterSizeVariable = masterQueueStruct.sizeVariable
-							val slaveQueues = queueMapping.slaveQueues.get(eventId)
+							val slaveQueues = queueMapping.slaveQueues.get(connectedPortEvent)
 							
 							val xStsMasterQueue = variableTrace.getAll(masterQueue).onlyElement
 							val xStsMasterSizeVariable = variableTrace.getAll(masterSizeVariable).onlyElement
@@ -416,14 +426,14 @@ class ComponentTransformer {
 		
 		//
 		
-		val systemEventIds = newHashSet
+		val systemEvents = newHashSet
 		for (systemAsynchronousSimplePort : component.allBoundAsynchronousSimplePorts) {
 			for (inEvent : systemAsynchronousSimplePort.inputEvents) {
 				val portEvent = new SimpleEntry(systemAsynchronousSimplePort, inEvent)
 				if (queueTraceability.contains(portEvent)) {
 					logger.log(Level.INFO,
 						'''Found «systemAsynchronousSimplePort.name».«inEvent.name» as system input event''')
-					systemEventIds += queueTraceability.get(portEvent)
+					systemEvents += portEvent
 				}
 			}
 		}
@@ -455,9 +465,10 @@ class ComponentTransformer {
 				
 				val branchExpressions = <Expression>newArrayList
 				val branchActions = <Action>newArrayList
-				for (eventId : slaveQueues.keySet
-						.filter[systemEventIds.contains(it) /*Only system events*/]) {
-					val slaveQueueStructs = slaveQueues.get(eventId)
+				for (portEvent : slaveQueues.keySet
+						.filter[systemEvents.contains(it) /*Only system events*/]) {
+					val slaveQueueStructs = slaveQueues.get(portEvent)
+					val eventId = queueTraceability.get(portEvent)
 					branchExpressions += xStsEventIdVariable
 							.createEqualityExpression(eventId.toIntegerLiteral)
 					val slaveQueueSetting = createSequentialAction
@@ -489,23 +500,6 @@ class ComponentTransformer {
 				throw new IllegalAccessException("Currently, only havoc actions are supported")
 			}
 		}
-//		checkState(useHavocActions, "Currently only havoc expressions are supported")
-//		val simplePorts = component.allBoundSimplePorts
-//		for (simplePort : simplePorts) {
-//			for (inputEvent : simplePort.inputEvents) {
-//				val xStsInEventVariable = eventReferenceMapper
-//					.getInputEventVariables(inputEvent, simplePort).onlyElement
-//				val xStsInParameterVariables = newArrayList
-//				for (inputParameter : inputEvent.parameterDeclarations) {
-//					xStsInParameterVariables += eventReferenceMapper
-//						.getInputParameterVariables(inputParameter, simplePort)
-//				}
-//				inEventAction.actions +=
-//					environmentalInputEventSetterActionCreator.createInputEventSetterAction(
-//						xStsInEventVariable, xStsInParameterVariables,
-//						inputEvent.persistency == Persistency.TRANSIENT)
-//			}
-//		}
 		xSts.inEventTransition = inEventAction.wrap
 		xSts.outEventTransition = outEventAction.wrap
 		
