@@ -520,6 +520,12 @@ public class ExpressionUtil {
 			if (declaration instanceof VariableDeclaration) {
 				return Collections.singleton((VariableDeclaration) declaration);
 			}
+		} else if (expression instanceof ArrayAccessExpression) {
+			ArrayAccessExpression arrayAccessExpression = (ArrayAccessExpression) expression;
+			Set<VariableDeclaration> variables = new HashSet<VariableDeclaration>();
+			variables.addAll(getReferredVariables(arrayAccessExpression.getOperand()));
+			variables.addAll(getReferredVariables(arrayAccessExpression.getIndex()));
+			return variables;
 		} else if (expression instanceof AccessExpression) {
 			AccessExpression accessExpression = (AccessExpression) expression;
 			return getReferredVariables(accessExpression.getOperand());

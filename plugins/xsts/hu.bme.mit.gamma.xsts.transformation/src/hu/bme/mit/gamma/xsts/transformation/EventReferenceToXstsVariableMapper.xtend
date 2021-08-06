@@ -49,6 +49,10 @@ class EventReferenceToXstsVariableMapper {
 		return xStsVariables
 	}
 	
+	def hasInputEventVariable(Event event, Port port) {
+		return !event.getInputEventVariables(port).isEmpty
+	}
+	
 	def checkInputEventVariable(Event event, Port port) {
 		val inputEventVariable = event.getInputEventVariable(port)
 		checkState(inputEventVariable !== null)

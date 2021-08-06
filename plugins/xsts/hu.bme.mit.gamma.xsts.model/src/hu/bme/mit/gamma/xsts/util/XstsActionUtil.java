@@ -548,6 +548,7 @@ public class XstsActionUtil extends ExpressionUtil {
 				arrayLiteral.getOperands().add(accessExpression);
 			}
 			// Shifting a default value at the end
+			// Would not be necessary in Theta (but it is in UPPAAL) due to the default branch
 			Expression defaultExpression = ExpressionModelDerivedFeatures.getDefaultExpression(elementType);
 			arrayLiteral.getOperands().add(defaultExpression);
 			

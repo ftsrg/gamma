@@ -729,6 +729,7 @@ class LowlevelToXstsTransformer {
 		
 		// Variable inlining
 		val inliner = VariableInliner.INSTANCE
+		
 		var List<XTransition> oldActions = null
 		var XTransition oldEntryEventAction = null
 		while (!oldActions.helperEquals(xSts.transitions) ||
