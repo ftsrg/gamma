@@ -437,7 +437,8 @@ class ComponentTransformer {
 			}
 		}
 		
-		// Initializing message queue related variables, TODO couldn't this be done as an initial expression?
+		// Initializing message queue related variables - done here and not initial expression
+		// as the potential enumeration type declarations of slave queues there are not traced
 		
 		val xStsQueueVariables = newArrayList
 		for (queueStruct : queueTraceability.allQueues) {

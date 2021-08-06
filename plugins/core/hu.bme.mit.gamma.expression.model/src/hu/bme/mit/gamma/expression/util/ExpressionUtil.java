@@ -969,6 +969,12 @@ public class ExpressionUtil {
 		return createVariableDeclaration(type, name, null);
 	}
 	
+	public VariableDeclaration createVariableDeclarationWithDefaultInitialValue(
+			Type type, String name) {
+		return createVariableDeclaration(type, name,
+				ExpressionModelDerivedFeatures.getDefaultExpression(type));
+	}
+	
 	public VariableDeclaration createVariableDeclaration(Type type, String name, Expression expression) {
 		VariableDeclaration variableDeclaration = factory.createVariableDeclaration();
 		variableDeclaration.setType(type);
