@@ -54,6 +54,7 @@ import hu.bme.mit.gamma.statechart.composite.SynchronousComponent;
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance;
 import hu.bme.mit.gamma.statechart.contract.AdaptiveContractAnnotation;
 import hu.bme.mit.gamma.statechart.interface_.AnyTrigger;
+import hu.bme.mit.gamma.statechart.interface_.Clock;
 import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.Event;
 import hu.bme.mit.gamma.statechart.interface_.EventDeclaration;
@@ -72,11 +73,15 @@ import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
 import hu.bme.mit.gamma.statechart.interface_.TopComponentArgumentsAnnotation;
 import hu.bme.mit.gamma.statechart.interface_.UnfoldedPackageAnnotation;
 import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference;
+import hu.bme.mit.gamma.statechart.statechart.ChoiceState;
 import hu.bme.mit.gamma.statechart.statechart.ClockTickReference;
 import hu.bme.mit.gamma.statechart.statechart.CompositeElement;
 import hu.bme.mit.gamma.statechart.statechart.DeepHistoryState;
 import hu.bme.mit.gamma.statechart.statechart.EntryState;
+import hu.bme.mit.gamma.statechart.statechart.ForkState;
 import hu.bme.mit.gamma.statechart.statechart.InitialState;
+import hu.bme.mit.gamma.statechart.statechart.JoinState;
+import hu.bme.mit.gamma.statechart.statechart.MergeState;
 import hu.bme.mit.gamma.statechart.statechart.PortEventReference;
 import hu.bme.mit.gamma.statechart.statechart.PseudoState;
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction;
@@ -543,6 +548,46 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	public static Entry<Port, Event> getEvent(MessageQueue queue, int eventId) {
 		List<Entry<Port,Event>> storedEvents = getStoredEvents(queue);
 		return storedEvents.get(eventId - 1); // Starts from 1, 0 is the "empty cell"
+	}
+	
+	public static boolean isStoredInMessageQueue(
+			Entry<Port, Event> portEvent, MessageQueue queue) {
+		List<Entry<Port,Event>> storedEvents = getStoredEvents(queue);
+		return storedEvents.contains(portEvent);
+	}
+	
+	public static int countAssignedMessageQueues(
+			Entry<Port, Event> portEvent, AsynchronousAdapter adapter) {
+		int count = 0;
+		for (MessageQueue queue : adapter.getMessageQueues()) {
+			if (isStoredInMessageQueue(portEvent, queue)) {
+				++count;
+			}
+		}
+		return count;
+	}
+	
+	public static boolean isStoredInMessageQueue(
+			Entry<Port, Event> portEvent, AsynchronousAdapter adapter) {
+		return adapter.getMessageQueues().stream()
+				.anyMatch(it -> isStoredInMessageQueue(portEvent, it));
+	}
+	
+	public static boolean isStoredInMessageQueue(Clock clock, MessageQueue queue) {
+		for (EventReference eventReference : queue.getEventReference()) {
+			if (eventReference instanceof ClockTickReference) {
+				ClockTickReference clockTickReference = (ClockTickReference) eventReference;
+				if (clockTickReference.getClock() == clock) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
+	public static boolean isStoredInMessageQueue(Clock clock, AsynchronousAdapter adapter) {
+		return adapter.getMessageQueues().stream()
+				.anyMatch(it -> isStoredInMessageQueue(clock, it));
 	}
 	
 	public static boolean isEnvironmental(MessageQueue queue,
@@ -1285,6 +1330,13 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	public static boolean hasTrigger(Transition transition) {
 		return transition.getTrigger() != null;
+	}
+	
+	public static boolean needsTrigger(Transition transition) {
+		StateNode source = transition.getSourceState();
+		return !(source instanceof EntryState || source instanceof ChoiceState ||
+				source instanceof MergeState || source instanceof ForkState ||
+				source instanceof JoinState);
 	}
 	
 	public static boolean hasGuard(Transition transition) {

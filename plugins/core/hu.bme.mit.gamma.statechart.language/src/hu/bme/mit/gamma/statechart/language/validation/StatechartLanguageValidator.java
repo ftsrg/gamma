@@ -342,8 +342,8 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	}
 	
 	@Check
-	public void checkUnusedInstancePort(ComponentInstance instance) {
-		handleValidationResultMessage(statechartModelValidator.checkUnusedInstancePort(instance));
+	public void checkComponentInstances(ComponentInstance instance) {
+		handleValidationResultMessage(statechartModelValidator.checkComponentInstances(instance));
 	}
 	
 	@Check
