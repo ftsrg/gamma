@@ -20,7 +20,6 @@ import hu.bme.mit.gamma.statechart.composite.CompositeModelPackage
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
-import org.eclipse.xtext.EcoreUtil2
 import org.eclipse.xtext.scoping.Scopes
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
@@ -36,8 +35,9 @@ class PropertyLanguageScopeProvider extends AbstractPropertyLanguageScopeProvide
 				}
 			}
 		}
-		val root = EcoreUtil2.getRootContainer(context) as PropertyPackage
+		val root = ecoreUtil.getSelfOrContainerOfType(context, PropertyPackage)
 		val component = root.component
+		// TODO refactor ComponentInstanceReference to make scoping possible
 		if (reference == CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE__COMPONENT_INSTANCE_HIERARCHY) {
 			return Scopes.scopeFor(component.allInstances)
 		}
