@@ -13,9 +13,7 @@ package hu.bme.mit.gamma.xsts.util;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Queue;
 import java.util.stream.Collectors;
 
 import org.eclipse.emf.ecore.EObject;
@@ -141,20 +139,30 @@ public class XstsActionUtil extends ExpressionUtil {
 	}
 	
 	public void extractArrayLiteralAssignments(Action action) {
-		Queue<AssignmentAction> arrayLiteralAssignments = new LinkedList<AssignmentAction>();
 		List<AssignmentAction> assignmentActions = ecoreUtil
 				.getSelfAndAllContentsOfType(action, AssignmentAction.class);
 		assignmentActions.removeIf(it -> !(it.getRhs() instanceof ArrayLiteralExpression));
-		arrayLiteralAssignments.addAll(assignmentActions); // Rhs is an array literal
-		// Note that 'a := b' like assignments (a and b are array vars) are supported in UPPAAL 
-		while (!arrayLiteralAssignments.isEmpty()) {
-			AssignmentAction originalArrayLiteralAssignment = arrayLiteralAssignments.poll();
-			ReferenceExpression lhs = originalArrayLiteralAssignment.getLhs();
-			ArrayLiteralExpression rhs = (ArrayLiteralExpression)
-					originalArrayLiteralAssignment.getRhs();
-			List<Expression> operands = rhs.getOperands();
-			int size = operands.size();
+		
+		if (!assignmentActions.isEmpty()) {
 			SequentialAction block = xStsFactory.createSequentialAction();
+			List<Action> actions = block.getActions();
+			for (AssignmentAction assignmentAction : assignmentActions) {
+				actions.addAll(extractArrayLiteralAssignments(assignmentAction));
+			}
+			ecoreUtil.replace(block, action);
+		}
+	}
+	
+	public List<AssignmentAction> extractArrayLiteralAssignments(AssignmentAction action) {
+		List<AssignmentAction> arrayLiteralAssignments = new ArrayList<AssignmentAction>();
+		
+		ReferenceExpression lhs = action.getLhs();
+		Expression rhs = action.getRhs();
+		// Note that 'a := b' like assignments (a and b are array variables) are supported in UPPAAL 
+		if (rhs instanceof ArrayLiteralExpression) {
+			ArrayLiteralExpression literal = (ArrayLiteralExpression) rhs;
+			List<Expression> operands = literal.getOperands();
+			int size = operands.size();
 			for (int i = 0; i < size; i++) {
 				ArrayAccessExpression newLhs = expressionFactory.createArrayAccessExpression();
 				newLhs.setOperand(clone(lhs)); // Cloning is important
@@ -163,15 +171,15 @@ public class XstsActionUtil extends ExpressionUtil {
 				Expression newRhs = operands.get(i); // Cloning is not necessary
 				
 				AssignmentAction newAssignmentAction = createAssignmentAction(newLhs, newRhs);
-				block.getActions().add(newAssignmentAction);
-				
-				if (newRhs instanceof ArrayLiteralExpression) {
-					// "Recursion"
-					arrayLiteralAssignments.add(newAssignmentAction);
-				}
+				arrayLiteralAssignments.addAll(
+						extractArrayLiteralAssignments(newAssignmentAction));
 			}
-			ecoreUtil.replace(block, originalArrayLiteralAssignment);
 		}
+		else {
+			arrayLiteralAssignments.add(action);
+		}
+		// It does not contain assignments where the rhs is an array literal
+		return arrayLiteralAssignments;
 	}
 	
 	public VariableDeclaration checkVariable(XSTS xSts, String name) {

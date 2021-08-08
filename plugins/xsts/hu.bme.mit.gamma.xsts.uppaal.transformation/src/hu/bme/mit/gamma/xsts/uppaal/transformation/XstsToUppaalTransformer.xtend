@@ -28,7 +28,6 @@ import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import java.util.List
 import java.util.Set
 import uppaal.NTA
-import uppaal.declarations.DataVariablePrefix
 import uppaal.declarations.ValueIndex
 import uppaal.declarations.VariableContainer
 import uppaal.expressions.Expression
@@ -40,6 +39,7 @@ import static extension de.uni_paderborn.uppaal.derivedfeatures.UppaalModelDeriv
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.uppaal.util.XstsNamings.*
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
+import static extension java.lang.Math.*
 
 class XstsToUppaalTransformer {
 	
@@ -170,24 +170,27 @@ class XstsToUppaalTransformer {
 	
 	protected def dispatch Location transformAction(AssignmentAction action, Location source) {
 		// UPPAAL does not support 'a = {1, 2, 5}' like assignments
-		action.extractArrayLiteralAssignments
-		//
-		val xStsDeclaration = action.lhs.declaration
-		val xStsVariable = xStsDeclaration as VariableDeclaration
-		val uppaalVariable = traceability.get(xStsVariable)
-		val uppaalRhs = action.rhs.transform
-		return source.createUpdateEdge(uppaalVariable, uppaalRhs)
+		val assignmentActions = action.extractArrayLiteralAssignments
+		var Location newSource = source
+		for (assignmentAction : assignmentActions) {
+			val xStsDeclaration = assignmentAction.lhs.declaration
+			val xStsVariable = xStsDeclaration as VariableDeclaration
+			val uppaalVariable = traceability.get(xStsVariable)
+			val uppaalRhs = assignmentAction.rhs.transform
+			newSource = newSource.createUpdateEdge(uppaalVariable, uppaalRhs)
+		}
+		return newSource
 	}
 	
 	protected def dispatch Location transformAction(VariableDeclarationAction action, Location source) {
 		val xStsVariable = action.variableDeclaration
 		val uppaalVariable = xStsVariable.transformAndTraceVariable
-		uppaalVariable.prefix = DataVariablePrefix.META // Works if local variable assignments are deterministic
+//		uppaalVariable.prefix = DataVariablePrefix.META // Does not work, see XSTS Crossroads
 		uppaalVariable.extendNameWithHash // Needed for local declarations
 		transientVariables += uppaalVariable
 		val xStsInitialValue = xStsVariable.initialValue
 		val uppaalRhs = xStsInitialValue?.transform
-		return source.createUpdateEdge(uppaalVariable, uppaalRhs) 
+		return source.createUpdateEdge(uppaalVariable, uppaalRhs)
 	}
 	
 	protected def createUpdateEdge(Location source,
@@ -201,7 +204,7 @@ class XstsToUppaalTransformer {
 	
 	protected def void extendNameWithHash(VariableContainer uppaalContainer) {
 		for (uppaalVariable : uppaalContainer.variable) {
-			uppaalVariable.name = '''«uppaalVariable.name»_«uppaalVariable.hashCode»'''
+			uppaalVariable.name = '''«uppaalVariable.name»_«uppaalVariable.hashCode.abs»'''
 		}
 	}
 	
