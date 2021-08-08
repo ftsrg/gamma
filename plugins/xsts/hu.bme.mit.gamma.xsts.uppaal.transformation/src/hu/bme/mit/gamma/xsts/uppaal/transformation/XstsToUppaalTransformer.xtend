@@ -169,11 +169,13 @@ class XstsToUppaalTransformer {
 	}
 	
 	protected def dispatch Location transformAction(AssignmentAction action, Location source) {
+		// UPPAAL does not support 'a = {1, 2, 5}' like assignments
+		action.extractArrayLiteralAssignments
+		//
 		val xStsDeclaration = action.lhs.declaration
 		val xStsVariable = xStsDeclaration as VariableDeclaration
 		val uppaalVariable = traceability.get(xStsVariable)
 		val uppaalRhs = action.rhs.transform
-		// TODO handle array literal rhs
 		return source.createUpdateEdge(uppaalVariable, uppaalRhs)
 	}
 	
@@ -234,7 +236,7 @@ class XstsToUppaalTransformer {
 	}
 	
 	// TODO handle IfActions when they are introduced in XSTS
-	// TODO handle havoc for boolean and enums
+	// TODO handle havoc for boolean and enums and do an exploration for integers
 	
 	// Reseting
 	

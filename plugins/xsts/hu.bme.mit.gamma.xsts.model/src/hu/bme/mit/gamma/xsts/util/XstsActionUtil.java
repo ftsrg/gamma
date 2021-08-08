@@ -214,10 +214,12 @@ public class XstsActionUtil extends ExpressionUtil {
 				.collect(Collectors.toList());
 	}
 	
-	public VariableDeclarationAction extractExpressions(String name, List<? extends Expression> expressions) {
+	public VariableDeclarationAction extractExpressions(
+			String name, List<? extends Expression> expressions) {
 		Expression firstExpression = expressions.get(0);
 		Type type = typeDeterminator.getType(firstExpression); // Assume: they have the same type
-		VariableDeclarationAction variableDeclarationAction = extractExpression(type, name, firstExpression);
+		VariableDeclarationAction variableDeclarationAction = extractExpression(
+				type, name, firstExpression);
 		VariableDeclaration variableDeclaration = variableDeclarationAction.getVariableDeclaration();
 		for (int i = 1; i < expressions.size(); i++) {
 			Expression expression = expressions.get(i);
@@ -227,7 +229,8 @@ public class XstsActionUtil extends ExpressionUtil {
 		return variableDeclarationAction;
 	}
 	
-	public VariableDeclarationAction extractExpression(Type type, String name, Expression expression) {
+	public VariableDeclarationAction extractExpression(
+			Type type, String name, Expression expression) {
 		VariableDeclarationAction variableDeclarationAction = createVariableDeclarationAction(type, name);
 		VariableDeclaration variableDeclaration = variableDeclarationAction.getVariableDeclaration();
 		DirectReferenceExpression referenceExpression = createReferenceExpression(variableDeclaration);
@@ -242,7 +245,8 @@ public class XstsActionUtil extends ExpressionUtil {
 		return createVariableDeclarationAction(type, name, null);
 	}
 	
-	public VariableDeclarationAction createVariableDeclarationAction(Type type, String name, Expression expression) {
+	public VariableDeclarationAction createVariableDeclarationAction(
+			Type type, String name, Expression expression) {
 		VariableDeclaration variableDeclaration = createVariableDeclaration(type, name, expression);
 		VariableDeclarationAction action = xStsFactory.createVariableDeclarationAction();
 		action.setVariableDeclaration(variableDeclaration);
@@ -327,7 +331,8 @@ public class XstsActionUtil extends ExpressionUtil {
 		return extendChoiceWithBranch(choiceAction, negatedCondition, xStsFactory.createEmptyAction());
 	}
 	
-	public NonDeterministicAction createIfElseAction(Expression condition, Action thenAction, Action elseAction) {
+	public NonDeterministicAction createIfElseAction(
+			Expression condition, Action thenAction, Action elseAction) {
 		// If
 		NonDeterministicAction choiceAction = createIfActionBranch(condition, thenAction);
 		// Else
@@ -350,7 +355,8 @@ public class XstsActionUtil extends ExpressionUtil {
 	public NonDeterministicAction createChoiceAction(List<Expression> conditions, List<Action> actions) {
 		if (conditions.size() != actions.size() && conditions.size() + 1 != actions.size()) {
 			throw new IllegalArgumentException("The two lists must be of same size or the size of"
-				+ "the action list must be the size of the condition list + 1: " + conditions + " " + actions);
+				+ "the action list must be the size of the condition list + 1: "
+					+ conditions + " " + actions);
 		}
 		NonDeterministicAction choiceAction = xStsFactory.createNonDeterministicAction();
 		for (int i = 0; i < conditions.size(); ++i) {
@@ -383,7 +389,8 @@ public class XstsActionUtil extends ExpressionUtil {
 		return switchAction;
 	}
 	
-	public List<Action> createChoiceActionWithExtractedPreconditionsAndEmptyDefaultBranch(Action action, String name) {
+	public List<Action> createChoiceActionWithExtractedPreconditionsAndEmptyDefaultBranch(
+			Action action, String name) {
 		List<Action> actions = new ArrayList<Action>();
 		if (action instanceof SequentialAction) {
 			SequentialAction sequentialAction = (SequentialAction) action;
@@ -405,7 +412,8 @@ public class XstsActionUtil extends ExpressionUtil {
 		int conditionsSize = conditions.size();
 		if (conditionsSize != actions.size() && conditionsSize + 1 != actions.size()) {
 			throw new IllegalArgumentException("The two lists must be of same size or the size of"
-				+ "the action list must be the size of the condition list + 1: " + conditions + " " + actions);
+				+ "the action list must be the size of the condition list + 1: "
+					+ conditions + " " + actions);
 		}
 //		boolean foundElseBranch = false;
 		NonDeterministicAction switchAction = xStsFactory.createNonDeterministicAction();
@@ -451,7 +459,8 @@ public class XstsActionUtil extends ExpressionUtil {
 			Expression controlExpresion, List<Expression> conditions, List<Action> actions) {
 		if (conditions.size() != actions.size() && conditions.size() + 1 != actions.size()) {
 			throw new IllegalArgumentException("The two lists must be of same size or the size of"
-				+ "the action list must be the size of the condition list + 1: " + conditions + " " + actions);
+				+ "the action list must be the size of the condition list + 1: "
+					+ conditions + " " + actions);
 		}
 		List<Expression> newConditions = new ArrayList<Expression>();
 		for (Expression condition : conditions) {
