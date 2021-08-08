@@ -13,7 +13,9 @@ package hu.bme.mit.gamma.xsts.util;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 import java.util.stream.Collectors;
 
 import org.eclipse.emf.ecore.EObject;
@@ -62,9 +64,9 @@ public class XstsActionUtil extends ExpressionUtil {
 	protected XstsActionUtil() {}
 	//
 	
-	protected GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
-	protected ExpressionModelFactory expressionFactory = ExpressionModelFactory.eINSTANCE;
-	protected XSTSModelFactory xStsFactory = XSTSModelFactory.eINSTANCE;
+	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
+	protected final ExpressionModelFactory expressionFactory = ExpressionModelFactory.eINSTANCE;
+	protected final XSTSModelFactory xStsFactory = XSTSModelFactory.eINSTANCE;
 	
 	public void merge(XSTS pivot, XSTS mergable) {
 		pivot.getTypeDeclarations().addAll(mergable.getTypeDeclarations());
@@ -136,6 +138,40 @@ public class XstsActionUtil extends ExpressionUtil {
 			sequentialAction.getActions().add(pivot);
 		}
 		ecoreUtil.appendTo(pivot, action);
+	}
+	
+	public void extractArrayLiteralAssignments(Action action) {
+		Queue<AssignmentAction> arrayLiteralAssignments = new LinkedList<AssignmentAction>();
+		List<AssignmentAction> assignmentActions = ecoreUtil
+				.getSelfAndAllContentsOfType(action, AssignmentAction.class);
+		assignmentActions.removeIf(it -> !(it.getRhs() instanceof ArrayLiteralExpression));
+		arrayLiteralAssignments.addAll(assignmentActions); // Rhs is an array literal
+		// Note that 'a := b' like assignments (a and b are array vars) are supported in UPPAAL 
+		while (!arrayLiteralAssignments.isEmpty()) {
+			AssignmentAction originalArrayLiteralAssignment = arrayLiteralAssignments.poll();
+			ReferenceExpression lhs = originalArrayLiteralAssignment.getLhs();
+			ArrayLiteralExpression rhs = (ArrayLiteralExpression)
+					originalArrayLiteralAssignment.getRhs();
+			List<Expression> operands = rhs.getOperands();
+			int size = operands.size();
+			SequentialAction block = xStsFactory.createSequentialAction();
+			for (int i = 0; i < size; i++) {
+				ArrayAccessExpression newLhs = expressionFactory.createArrayAccessExpression();
+				newLhs.setOperand(clone(lhs)); // Cloning is important
+				newLhs.setIndex(toIntegerLiteral(i));
+				
+				Expression newRhs = operands.get(i); // Cloning is not necessary
+				
+				AssignmentAction newAssignmentAction = createAssignmentAction(newLhs, newRhs);
+				block.getActions().add(newAssignmentAction);
+				
+				if (newRhs instanceof ArrayLiteralExpression) {
+					// "Recursion"
+					arrayLiteralAssignments.add(newAssignmentAction);
+				}
+			}
+			ecoreUtil.replace(block, originalArrayLiteralAssignment);
+		}
 	}
 	
 	public VariableDeclaration checkVariable(XSTS xSts, String name) {
@@ -214,15 +250,11 @@ public class XstsActionUtil extends ExpressionUtil {
 	}
 	
 	public AssignmentAction createAssignmentAction(VariableDeclaration variable, VariableDeclaration rhs) {
-		DirectReferenceExpression rhsReference = expressionFactory.createDirectReferenceExpression();
-		rhsReference.setDeclaration(rhs);
-		return createAssignmentAction(variable, rhsReference);
+		return createAssignmentAction(variable, createReferenceExpression(rhs));
 	}
 	
 	public AssignmentAction createAssignmentAction(VariableDeclaration variable, Expression rhs) {
-		DirectReferenceExpression lhsReference = expressionFactory.createDirectReferenceExpression();
-		lhsReference.setDeclaration(variable);
-		return createAssignmentAction(lhsReference, rhs);
+		return createAssignmentAction(createReferenceExpression(variable), rhs);
 	}
 	
 	public AssignmentAction createAssignmentAction(ReferenceExpression lhs, Expression rhs) {
