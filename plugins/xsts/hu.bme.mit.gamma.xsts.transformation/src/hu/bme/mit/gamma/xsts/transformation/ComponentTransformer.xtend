@@ -339,6 +339,7 @@ class ComponentTransformer {
 			}
 			
 			// Dispatching events to connected message queues
+			// TODO do the same for initial action
 			for (port : adapterComponentType.allPorts) {
 				// Semantical question: now out events are dispatched according to this order
 				for (event : port.outputEvents) {
@@ -808,6 +809,7 @@ class ComponentTransformer {
 		}
 		if (systemPorts.containsOne(topPorts) && queue.capacity.evaluateInteger == 1) {
 			return true // Contains other events too, but the queue will always be empty when using it in the in-event action 
+			// TODO except if the initial action raises some internal events 
 		}
 		checkState(systemPorts.containsNone(topPorts) || queue.capacity.evaluateInteger == 1,
 				"All or none of the ports must be system ports or the capacity must be one")
@@ -815,7 +817,7 @@ class ComponentTransformer {
 	}
 	
 	private def getMessageRetrievalCount(MessageQueue queue) {
-		return MessageRetrievalCount.ONE
+		return MessageRetrievalCount.ONE // TODO makes sense only if the trigger is 'any'
 	}
 	
 	private def void resetInEventsAfterMergedAction(XSTS xSts, Component type) {

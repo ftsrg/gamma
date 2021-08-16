@@ -238,6 +238,7 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 	}
 	
 	def getSourceOutEvent(String targetOutEventName) {
+		// TODO filter asynchronous ports if component is asynchronous
 		for (match : synchronousSystemOutEvents) {
 			val name = getTargetOutEventName(match.event, match.port, match.instance)
 			if (name.equals(targetOutEventName)) {
@@ -248,6 +249,7 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 	}
 	
 	def getSourceOutEventParameter(String targetOutEventParameterName) {
+		// TODO filter asynchronous ports if component is asynchronous
 		for (match : synchronousSystemOutEvents) {
 			val event = match.event
 			for (parameter : event.parameterDeclarations) {

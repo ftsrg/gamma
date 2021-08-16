@@ -13,7 +13,6 @@ package hu.bme.mit.gamma.trace.language.scoping
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.composite.AsynchronousCompositeComponent
-import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.StatechartModelPackage
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
@@ -27,6 +26,7 @@ import java.util.HashSet
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
 import org.eclipse.xtext.EcoreUtil2
+import org.eclipse.xtext.scoping.IScope
 import org.eclipse.xtext.scoping.Scopes
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
@@ -45,10 +45,9 @@ class TraceLanguageScopeProvider extends AbstractTraceLanguageScopeProvider {
 			}
 		}
 		if (context instanceof RaiseEventAct && reference == StatechartModelPackage.Literals.RAISE_EVENT_ACTION__PORT) {
-			val executionTrace = EcoreUtil2.getRootContainer(context, true) as ExecutionTrace
+			val executionTrace = ecoreUtil.getContainerOfType(context, ExecutionTrace)
 			val component = executionTrace.component
-			val ports = new HashSet<Port>(component.allPorts)
-			return Scopes.scopeFor(ports)
+			return Scopes.scopeFor(component.allPorts)
 		}
 		if (context instanceof RaiseEventAct && reference == StatechartModelPackage.Literals.RAISE_EVENT_ACTION__EVENT) {
 			val raiseEventAct = context as RaiseEventAct
@@ -65,7 +64,7 @@ class TraceLanguageScopeProvider extends AbstractTraceLanguageScopeProvider {
 		}	
 		if (context instanceof InstanceSchedule &&
 				reference == TraceModelPackage.Literals.INSTANCE_SCHEDULE__SCHEDULED_INSTANCE) {
-			val executionTrace = EcoreUtil2.getRootContainer(context, true) as ExecutionTrace
+			val executionTrace = ecoreUtil.getContainerOfType(context, ExecutionTrace)
 			val component = executionTrace.component
 			if (component instanceof AsynchronousCompositeComponent) {
 				val instances = component.allAsynchronousSimpleInstances
@@ -73,7 +72,7 @@ class TraceLanguageScopeProvider extends AbstractTraceLanguageScopeProvider {
 			}
 		}
 		if (reference == TraceModelPackage.Literals.INSTANCE_STATE__INSTANCE) {
-			val executionTrace = EcoreUtil2.getRootContainer(context, true) as ExecutionTrace
+			val executionTrace = ecoreUtil.getContainerOfType(context, ExecutionTrace)
 			val component = executionTrace.component
 			val simpleSyncInstances = component.allSimpleInstances
 			return Scopes.scopeFor(simpleSyncInstances)	
@@ -83,7 +82,7 @@ class TraceLanguageScopeProvider extends AbstractTraceLanguageScopeProvider {
 			val instanceState = context as InstanceStateConfiguration
 			val instance = instanceState.instance
 			val instanceType = instance.type
-			val executionTrace = EcoreUtil2.getRootContainer(context, true) as ExecutionTrace
+			val executionTrace = ecoreUtil.getContainerOfType(context, ExecutionTrace)
 			val states = new HashSet<State>
 			if (instanceType === null) {
 				val component = executionTrace.component
@@ -103,7 +102,7 @@ class TraceLanguageScopeProvider extends AbstractTraceLanguageScopeProvider {
 			val instance = instanceVariableState.instance
 			val instanceType = instance.type
 			if (instanceType === null) {
-				return Scopes.scopeFor(#[])
+				return IScope.NULLSCOPE
 			}
 			val variables = EcoreUtil2.getAllContentsOfType(instanceType, VariableDeclaration)
 			return Scopes.scopeFor(variables)
