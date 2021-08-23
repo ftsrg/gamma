@@ -116,9 +116,14 @@ class ValueDeclarationTransformer {
 				}
 			}
 		)
+		// Adding annotation to denote that these are final variables
+		for (lowlevelVariable : lowlevelVariables) {
+			lowlevelVariable.annotations += createFinalVariableDeclarationAnnotation
+		}
 		// Constant variable names do not really matter in terms of traceability
 		val lowlevelVariableNames = gammaConstant.names
 		lowlevelVariables.nameLowlevelVariables(lowlevelVariableNames)
+		//
 		return lowlevelVariables
 	}
 	

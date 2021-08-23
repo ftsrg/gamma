@@ -24,6 +24,7 @@ import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory;
 import hu.bme.mit.gamma.expression.model.FieldDeclaration;
+import hu.bme.mit.gamma.expression.model.FinalVariableDeclarationAnnotation;
 import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression;
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
@@ -81,6 +82,11 @@ public class ExpressionModelDerivedFeatures {
 	public static boolean isResetable(VariableDeclaration variable) {
 		return variable.getAnnotations().stream()
 				.anyMatch(it -> it instanceof ResetableVariableDeclarationAnnotation);
+	}
+	
+	public static boolean isFinal(VariableDeclaration variable) {
+		return variable.getAnnotations().stream()
+				.anyMatch(it -> it instanceof FinalVariableDeclarationAnnotation);
 	}
 	
 	// Types

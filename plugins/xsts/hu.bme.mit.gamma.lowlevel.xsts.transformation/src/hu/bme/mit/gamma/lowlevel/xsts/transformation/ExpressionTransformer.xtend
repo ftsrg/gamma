@@ -33,6 +33,8 @@ import hu.bme.mit.gamma.util.GammaEcoreUtil
 
 import static com.google.common.base.Preconditions.checkState
 
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
+
 class ExpressionTransformer {
 	// Trace needed for variable references
 	protected final Trace trace
@@ -70,6 +72,10 @@ class ExpressionTransformer {
 		}
 		checkState(declaration instanceof VariableDeclaration, declaration)
 		val variableDeclaration = declaration as VariableDeclaration
+		if (variableDeclaration.final) {
+			val initialValue = variableDeclaration.initialValue
+			return initialValue.transformExpression
+		}
 		return trace.getXStsVariable(variableDeclaration).createReferenceExpression
 	}
 	

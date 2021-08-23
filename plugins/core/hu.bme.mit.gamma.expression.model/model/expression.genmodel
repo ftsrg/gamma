@@ -189,5 +189,6 @@
     <genClasses image="false" ecoreClass="expression.ecore#//VariableDeclarationAnnotation"/>
     <genClasses ecoreClass="expression.ecore#//TransientVariableDeclarationAnnotation"/>
     <genClasses ecoreClass="expression.ecore#//ResetableVariableDeclarationAnnotation"/>
+    <genClasses ecoreClass="expression.ecore#//FinalVariableDeclarationAnnotation"/>
   </genPackages>
 </genmodel:GenModel>

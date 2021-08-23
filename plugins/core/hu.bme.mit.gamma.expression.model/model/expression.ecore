@@ -235,4 +235,6 @@
       eSuperTypes="#//VariableDeclarationAnnotation"/>
   <eClassifiers xsi:type="ecore:EClass" name="ResetableVariableDeclarationAnnotation"
       eSuperTypes="#//VariableDeclarationAnnotation"/>
+  <eClassifiers xsi:type="ecore:EClass" name="FinalVariableDeclarationAnnotation"
+      eSuperTypes="#//VariableDeclarationAnnotation"/>
 </ecore:EPackage>

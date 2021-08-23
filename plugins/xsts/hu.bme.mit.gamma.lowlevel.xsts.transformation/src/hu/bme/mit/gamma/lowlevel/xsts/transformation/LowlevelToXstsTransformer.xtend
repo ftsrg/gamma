@@ -153,13 +153,13 @@ class LowlevelToXstsTransformer {
 		this.expressionTransformer = new ExpressionTransformer(this.trace)
 		this.variableDeclarationTransformer = new VariableDeclarationTransformer(this.trace)
 		this.lowlevelTransitionToActionTransformer =
-			new LowlevelTransitionToActionTransformer(this.engine, this.trace, extractGuards)
+				new LowlevelTransitionToActionTransformer(this.engine, this.trace, extractGuards)
 		this.simpleTransitionToActionTransformer =
-			new SimpleTransitionToXTransitionTransformer(this.engine, this.trace, extractGuards)
+				new SimpleTransitionToXTransitionTransformer(this.engine, this.trace, extractGuards)
 		this.precursoryTransitionToXTransitionTransformer =
-			new PrecursoryTransitionToXTransitionTransformer(this.engine, this.trace, extractGuards)
+				new PrecursoryTransitionToXTransitionTransformer(this.engine, this.trace, extractGuards)
 		this.terminalTransitionToXTransitionTransformer =
-			new TerminalTransitionToXTransitionTransformer(this.engine, this.trace, extractGuards)
+				new TerminalTransitionToXTransitionTransformer(this.engine, this.trace, extractGuards)
 		this.transitionMerger = switch (transitionMerging) {
 			case HIERARCHICAL: new HierarchicalTransitionMerger(this.engine, this.trace, extractGuards)
 			case FLAT: new FlatTransitionMerger(this.engine, this.trace, extractGuards)
@@ -215,7 +215,8 @@ class LowlevelToXstsTransformer {
 	}
 	
 	protected def isNotOptimizable(VariableDeclaration lowlevelVariable) {
-		return !optimize || referredVariables.contains(lowlevelVariable)
+		return (!optimize || referredVariables.contains(lowlevelVariable)) &&
+			!lowlevelVariable.final // Constants are never transformed
 	}
 		
 	protected def getVariableInitializingAction() {
