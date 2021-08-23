@@ -24,7 +24,7 @@ public class StatechartContractTestGenerationHandler extends TaskHandler {
 			AnalysisModelTransformationHandler analysisModelTransformationHandler =
 					new AnalysisModelTransformationHandler(file);
 			Gamma2XstsTransformer transformer = analysisModelTransformationHandler.new Gamma2XstsTransformer();
-			constraintValue = transformer.transformConstraint(testGeneration.getConstraint());
+			constraintValue = transformer.evaluateConstraint(testGeneration.getConstraint());
 		}
 
 		StatechartDefinition stateChart = (StatechartDefinition) testGeneration.getComponentReference().getComponent();

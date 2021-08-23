@@ -11,7 +11,6 @@
 package hu.bme.mit.gamma.transformation.util.preprocessor
 
 import hu.bme.mit.gamma.expression.model.Expression
-import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.contract.AdaptiveContractAnnotation
 import hu.bme.mit.gamma.statechart.contract.StateContractAnnotation
 import hu.bme.mit.gamma.statechart.interface_.Component

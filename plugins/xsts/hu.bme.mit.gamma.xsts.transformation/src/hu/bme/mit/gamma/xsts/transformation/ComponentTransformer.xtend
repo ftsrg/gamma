@@ -621,9 +621,9 @@ class ComponentTransformer {
 	
 	def dispatch XSTS transform(AbstractSynchronousCompositeComponent component, Package lowlevelPackage) {
 		logger.log(Level.INFO, "Transforming abstract synchronous composite " + component.name)
-		var XSTS xSts = null
+		var XSTS xSts = null 
 		val componentMergedActions = <Component, Action>newHashMap // To handle multiple schedulings in CascadeCompositeComponents
-		
+		// TODO validation
 		// Input, output and tracing merged actions
 		val components = component.components
 		for (var i = 0; i < components.size; i++) {

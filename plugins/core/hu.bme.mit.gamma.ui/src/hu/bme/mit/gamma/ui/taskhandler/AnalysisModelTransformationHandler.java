@@ -271,13 +271,28 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			return transformCoverageCriterion(notNullCoverage.getInteractionDataflowCoverageCriterion());
 		}
 				
-		protected Integer transformConstraint(hu.bme.mit.gamma.genmodel.model.Constraint constraint) {
+		protected Integer evaluateConstraint(hu.bme.mit.gamma.genmodel.model.Constraint constraint) {
 			if (constraint == null) {
 				return null;
 			}
-			if (constraint instanceof hu.bme.mit.gamma.genmodel.model.OrchestratingConstraint) {
-				hu.bme.mit.gamma.genmodel.model.OrchestratingConstraint orchestratingConstraint =
-						(hu.bme.mit.gamma.genmodel.model.OrchestratingConstraint) constraint;
+			
+			hu.bme.mit.gamma.genmodel.model.OrchestratingConstraint orchestratingConstraint = null;
+			if (constraint instanceof hu.bme.mit.gamma.genmodel.model.SchedulingConstraint) {
+				hu.bme.mit.gamma.genmodel.model.SchedulingConstraint schedulingConstraint =
+						(hu.bme.mit.gamma.genmodel.model.SchedulingConstraint) constraint;
+				List<hu.bme.mit.gamma.genmodel.model.AsynchronousInstanceConstraint> instanceConstraints =
+						schedulingConstraint.getInstanceConstraint();
+				if (instanceConstraints.size() == 1) {
+					hu.bme.mit.gamma.genmodel.model.AsynchronousInstanceConstraint topConstraint =
+							instanceConstraints.get(0);
+					orchestratingConstraint = topConstraint.getOrchestratingConstraint();
+				}
+			}
+			else if (constraint instanceof hu.bme.mit.gamma.genmodel.model.OrchestratingConstraint) {
+				orchestratingConstraint = (hu.bme.mit.gamma.genmodel.model.OrchestratingConstraint) constraint;
+			}
+			
+			if (orchestratingConstraint != null) {
 				TimeSpecification minimumPeriod = orchestratingConstraint.getMinimumPeriod();
 				TimeSpecification maximumPeriod = orchestratingConstraint.getMaximumPeriod();
 				int min = statechartUtil.evaluateMilliseconds(minimumPeriod);
@@ -436,7 +451,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			logger.log(Level.INFO, "Starting XSTS transformation.");
 			ComponentReference reference = (ComponentReference) transformation.getModel();
 			Component component = reference.getComponent();
-			Integer schedulingConstraint = transformConstraint(transformation.getConstraint());
+			Integer schedulingConstraint = evaluateConstraint(transformation.getConstraint());
 			String fileName = transformation.getFileName().get(0);
 			// Coverages
 			List<Coverage> coverages = transformation.getCoverages();
@@ -527,7 +542,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			logger.log(Level.INFO, "Starting Gamma -> XSTS-UPPAAL transformation.");
 			ComponentReference reference = (ComponentReference) transformation.getModel();
 			Component component = reference.getComponent();
-			Integer schedulingConstraint = transformConstraint(transformation.getConstraint());
+			Integer schedulingConstraint = evaluateConstraint(transformation.getConstraint());
 			String fileName = transformation.getFileName().get(0);
 			// Coverages
 			List<Coverage> coverages = transformation.getCoverages();
