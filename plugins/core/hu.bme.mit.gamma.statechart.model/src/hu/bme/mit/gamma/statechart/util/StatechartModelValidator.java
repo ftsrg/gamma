@@ -1658,7 +1658,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 		return validationResultMessages;
 	}
 	
-	public Collection<ValidationResultMessage> checkSynchronousComponentWrapperMultipleEventContainment(AsynchronousAdapter wrapper) {
+	public Collection<ValidationResultMessage> checkAsynchronousAdapterMultipleEventContainment(AsynchronousAdapter wrapper) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		Map<Port, Collection<Event>> containedEvents = new HashMap<Port, Collection<Event>>();
 		for (MessageQueue queue : wrapper.getMessageQueues()) {
@@ -1809,8 +1809,8 @@ public class StatechartModelValidator extends ActionModelValidator {
 			int index =	adapter.getControlSpecifications().indexOf(controlSpecification);
 			if (trigger instanceof AnyTrigger) {
 				if (adapter.getControlSpecifications().size() > 1) {
-					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-							"This control specification with any trigger enshadows all other control specifications", 
+					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+							"This control specification with any trigger enshadows all other control specifications",
 							new ReferenceInfo(CompositeModelPackage.Literals.ASYNCHRONOUS_ADAPTER__CONTROL_SPECIFICATIONS, index, adapter)));
 					return validationResultMessages;
 				}
@@ -1823,8 +1823,8 @@ public class StatechartModelValidator extends ActionModelValidator {
 					Port port = anyPortEventReference.getPort();
 					Collection<Event> portEvents = StatechartModelDerivedFeatures.getInputEvents(port);
 					if (usedEvents.containsKey(port)) {
-						validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-							"This control specification with any port trigger enshadows all control specifications with reference to the same port",  
+						validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+							"This control specification with any port trigger enshadows all control specifications with reference to the same port",
 								new ReferenceInfo(CompositeModelPackage.Literals.ASYNCHRONOUS_ADAPTER__CONTROL_SPECIFICATIONS, index, adapter)));
 						Collection<Event> containedEvents = usedEvents.get(port);
 						containedEvents.addAll(portEvents);
@@ -1840,8 +1840,8 @@ public class StatechartModelValidator extends ActionModelValidator {
 					if (usedEvents.containsKey(port)) {
 						Collection<Event> containedEvents = usedEvents.get(port);
 						if (containedEvents.contains(event)) {
-							validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-								"This control specification with port event trigger has the same effect as some previous control specification",  
+							validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+								"This control specification with port event trigger has the same effect as some previous control specification",
 									new ReferenceInfo(CompositeModelPackage.Literals.ASYNCHRONOUS_ADAPTER__CONTROL_SPECIFICATIONS, index, adapter)));
 						}
 						else {
@@ -1856,6 +1856,26 @@ public class StatechartModelValidator extends ActionModelValidator {
 				}
 			}
 		}
+		return validationResultMessages;
+	}
+	
+	public Collection<ValidationResultMessage> checkMessageRetrievalCount(AsynchronousAdapter adapter) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		
+		List<ControlSpecification> controlSpecifications = adapter.getControlSpecifications();
+		List<MessageQueue> messageQueues = adapter.getMessageQueues();
+		if (messageQueues.size() == 1) {
+			MessageQueue messageQueue = messageQueues.get(0);
+//			TODO if (messageQueue.getMessageRetrievalCount() == 1) {
+				if (controlSpecifications.stream().noneMatch(it -> it instanceof AnyTrigger)) {
+					validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING,
+						"Some messages might not be processed during execution as the message retrieval count is 1, "
+								+ "but there is no any trigger among the control specifications",
+							new ReferenceInfo(CompositeModelPackage.Literals.ASYNCHRONOUS_ADAPTER__MESSAGE_QUEUES)));
+				}
+//			}
+		}
+		
 		return validationResultMessages;
 	}
 	

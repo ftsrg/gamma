@@ -426,7 +426,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	@Check
 	public void checkSynchronousComponentWrapperMultipleEventContainment(AsynchronousAdapter wrapper) {
 		handleValidationResultMessage(statechartModelValidator
-				.checkSynchronousComponentWrapperMultipleEventContainment(wrapper));
+				.checkAsynchronousAdapterMultipleEventContainment(wrapper));
 	}
 	
 	@Check
@@ -457,6 +457,12 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	@Check
 	public void checkAnyPortControls(AsynchronousAdapter adapter) {
 		handleValidationResultMessage(statechartModelValidator.checkAnyPortControls(adapter));
+	}
+	
+	
+	@Check
+	public void checkMessageRetrievalCount(AsynchronousAdapter adapter) {
+//	TODO handleValidationResultMessage(statechartModelValidator.checkMessageRetrievalCount(adapter));
 	}
 	
 	@Check
