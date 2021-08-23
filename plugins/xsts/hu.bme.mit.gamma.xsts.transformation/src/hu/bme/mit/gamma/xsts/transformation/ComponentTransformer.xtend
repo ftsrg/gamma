@@ -111,9 +111,8 @@ class ComponentTransformer {
 		val adapterInstances = component.allAsynchronousSimpleInstances
 		val environmentalQueues = newHashSet
 		
-		val xSts = createXSTS => [
-			it.name = component.name
-		]
+		val name = component.name
+		val xSts = name.createXsts
 		
 		val eventReferenceMapper = new EventReferenceToXstsVariableMapper(xSts)
 		val valueDeclarationTransformer = new ValueDeclarationTransformer
@@ -620,39 +619,44 @@ class ComponentTransformer {
 	}
 	
 	def dispatch XSTS transform(AbstractSynchronousCompositeComponent component, Package lowlevelPackage) {
-		logger.log(Level.INFO, "Transforming abstract synchronous composite " + component.name)
-		var XSTS xSts = null 
+		val name = component.name
+		logger.log(Level.INFO, "Transforming abstract synchronous composite " + name)
+		val xSts = name.createXsts
 		val componentMergedActions = <Component, Action>newHashMap // To handle multiple schedulings in CascadeCompositeComponents
-		// TODO validation
-		// Input, output and tracing merged actions
 		val components = component.components
+		
+		if (components.empty) {
+			logger.log(Level.WARNING, "No components in abstract synchronous composite " + name)
+			return xSts
+		}
+		
+		// Input, output and tracing merged actions
 		for (var i = 0; i < components.size; i++) {
 			val subcomponent = components.get(i)
 			val componentType = subcomponent.type
+			
 			// Normal transformation
 			componentType.extractParameters(subcomponent.arguments) // Change the reference from parameters to constants
 			val newXSts = componentType.transform(lowlevelPackage)
 			newXSts.customizeDeclarationNames(subcomponent)
-			if (xSts === null) {
-				xSts = newXSts
-			}
-			else {
-				// Adding new elements
-				xSts.merge(newXSts)
-				// Initializing action
-				val variableInitAction = createSequentialAction
-				variableInitAction.actions += xSts.variableInitializingTransition.action
-				variableInitAction.actions += newXSts.variableInitializingTransition.action
-				xSts.variableInitializingTransition = variableInitAction.wrap
-				val configInitAction = createSequentialAction
-				configInitAction.actions += xSts.configurationInitializingTransition.action
-				configInitAction.actions += newXSts.configurationInitializingTransition.action
-				xSts.configurationInitializingTransition = configInitAction.wrap
-				val entryAction = createSequentialAction
-				entryAction.actions += xSts.entryEventTransition.action
-				entryAction.actions += newXSts.entryEventTransition.action
-				xSts.entryEventTransition = entryAction.wrap
-			}
+			
+			// Adding new elements
+			xSts.merge(newXSts)
+			
+			// Initializing action
+			val variableInitAction = createSequentialAction
+			variableInitAction.actions += xSts.variableInitializingTransition.action
+			variableInitAction.actions += newXSts.variableInitializingTransition.action
+			xSts.variableInitializingTransition = variableInitAction.wrap
+			val configInitAction = createSequentialAction
+			configInitAction.actions += xSts.configurationInitializingTransition.action
+			configInitAction.actions += newXSts.configurationInitializingTransition.action
+			xSts.configurationInitializingTransition = configInitAction.wrap
+			val entryAction = createSequentialAction
+			entryAction.actions += xSts.entryEventTransition.action
+			entryAction.actions += newXSts.entryEventTransition.action
+			xSts.entryEventTransition = entryAction.wrap
+			
 			// Merged action
 			val actualComponentMergedAction = createSequentialAction => [
 				it.actions += newXSts.mergedAction
@@ -701,23 +705,22 @@ class ComponentTransformer {
 		
 		// Merged action based on scheduling instances
 		val scheduledInstances = component.scheduledInstances
-		val mergedAction = (component instanceof CascadeCompositeComponent) ? createSequentialAction : createOrthogonalAction
+		val mergedAction = (component instanceof CascadeCompositeComponent) ?
+				createSequentialAction : createOrthogonalAction
 		for (var i = 0; i < scheduledInstances.size; i++) {
 			val subcomponent = scheduledInstances.get(i)
 			val componentType = subcomponent.type
-			if (componentMergedActions.containsKey(componentType)) {
-				mergedAction.actions += componentMergedActions.get(componentType).clone
-			}
+			checkState(componentMergedActions.containsKey(componentType))
+			mergedAction.actions += componentMergedActions.get(componentType).clone
 		}
 		xSts.changeTransitions(mergedAction.wrap)
 		
-		xSts.name = component.name
-		logger.log(Level.INFO, "Deleting unused instance ports in " + component.name)
+		logger.log(Level.INFO, "Deleting unused instance ports in " + name)
 		xSts.deleteUnusedPorts(component) // Deleting variable assignments for unused ports
 		// Connect only after xSts.mergedTransition.action = mergedAction
-		logger.log(Level.INFO, "Connecting events through channels in " + component.name)
+		logger.log(Level.INFO, "Connecting events through channels in " + name)
 		xSts.connectEventsThroughChannels(component) // Event (variable setting) connecting across channels
-		logger.log(Level.INFO, "Binding event to system port events in " + component.name)
+		logger.log(Level.INFO, "Binding event to system port events in " + name)
 		val oldInEventAction = xSts.inEventTransition.action
 		val bindingAssignments = xSts.createEventAndParameterAssignmentsBoundToTheSameSystemPort(component)
 		// Optimization: removing old NonDeterministicActions 
@@ -731,7 +734,7 @@ class ComponentTransformer {
 		
 		if (transformOrthogonalActions) {
 			// After connectEventsThroughChannels
-			logger.log(Level.INFO, "Transforming orthogonal actions in " + xSts.name)
+			logger.log(Level.INFO, "Transforming orthogonal actions in XSTS " + name)
 			xSts.mergedAction.transform(xSts)
 			// Before optimize actions
 		}

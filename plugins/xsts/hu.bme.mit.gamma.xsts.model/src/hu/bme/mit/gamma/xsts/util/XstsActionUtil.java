@@ -45,6 +45,7 @@ import hu.bme.mit.gamma.xsts.model.Action;
 import hu.bme.mit.gamma.xsts.model.AssignmentAction;
 import hu.bme.mit.gamma.xsts.model.AssumeAction;
 import hu.bme.mit.gamma.xsts.model.CompositeAction;
+import hu.bme.mit.gamma.xsts.model.EmptyAction;
 import hu.bme.mit.gamma.xsts.model.HavocAction;
 import hu.bme.mit.gamma.xsts.model.LoopAction;
 import hu.bme.mit.gamma.xsts.model.MultiaryAction;
@@ -65,6 +66,34 @@ public class XstsActionUtil extends ExpressionUtil {
 	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
 	protected final ExpressionModelFactory expressionFactory = ExpressionModelFactory.eINSTANCE;
 	protected final XSTSModelFactory xStsFactory = XSTSModelFactory.eINSTANCE;
+	
+	public XSTS createXsts(String name) {
+		XSTS xSts = xStsFactory.createXSTS();
+		xSts.setName(name);
+		fillNullTransitions(xSts);
+		return xSts;
+	}
+	
+	public void fillNullTransitions(XSTS xSts) {
+		if (xSts.getVariableInitializingTransition() == null) {
+			xSts.setVariableInitializingTransition(createEmptyTransition());
+		}
+		if (xSts.getConfigurationInitializingTransition() == null) {
+			xSts.setConfigurationInitializingTransition(createEmptyTransition());
+		}
+		if (xSts.getEntryEventTransition() == null) {
+			xSts.setEntryEventTransition(createEmptyTransition());
+		}
+		if (xSts.getTransitions().isEmpty()) {
+			changeTransitions(xSts, createEmptyTransition());
+		}
+		if (xSts.getInEventTransition() == null) {
+			xSts.setInEventTransition(createEmptyTransition());
+		}
+		if (xSts.getOutEventTransition() == null) {
+			xSts.setOutEventTransition(createEmptyTransition());
+		}
+	}
 	
 	public void merge(XSTS pivot, XSTS mergable) {
 		pivot.getTypeDeclarations().addAll(mergable.getTypeDeclarations());
@@ -92,6 +121,11 @@ public class XstsActionUtil extends ExpressionUtil {
 		XTransition transition = xStsFactory.createXTransition();
 		transition.setAction(action);
 		return transition;
+	}
+	
+	public XTransition createEmptyTransition() {
+		EmptyAction emptyAction = xStsFactory.createEmptyAction();
+		return wrap(emptyAction);
 	}
 	
 	public void prependToAction(Collection<? extends Action> actions, Action pivot) {

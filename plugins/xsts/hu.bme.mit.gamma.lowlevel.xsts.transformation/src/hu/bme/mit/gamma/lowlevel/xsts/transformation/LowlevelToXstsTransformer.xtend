@@ -204,7 +204,7 @@ class LowlevelToXstsTransformer {
 		getOutEventEnvironmentalActionRule.fireAllCurrent
 		mergeTransitions
 		optimizeActions
-		eliminateNullActions
+		xSts.fillNullTransitions
 		handleVariableAnnotations
 		// The created EMF models are returned
 		return new SimpleEntry<XSTS, L2STrace>(xSts, trace.getTrace)
@@ -755,27 +755,6 @@ class LowlevelToXstsTransformer {
 			xStsAssignments.forEach[it.remove]
 			unreadTransientXStsVariable.deleteDeclaration // Deleting the potential containing VariableDeclarationAction too
 			trace.delete(unreadTransientXStsVariable) // Trace deletion
-		}
-	}
-	
-	protected def eliminateNullActions() {
-		if (xSts.variableInitializingTransition === null) {
-			xSts.variableInitializingTransition = createEmptyAction.wrap
-		}
-		if (xSts.configurationInitializingTransition === null) {
-			xSts.configurationInitializingTransition = createEmptyAction.wrap
-		}
-		if (xSts.entryEventTransition === null) {
-			xSts.entryEventTransition = createEmptyAction.wrap
-		}
-		if (xSts.transitions.empty) {
-			xSts.changeTransitions(createEmptyAction.wrap)
-		}
-		if (xSts.inEventTransition === null) {
-			xSts.inEventTransition = createEmptyAction.wrap
-		}
-		if (xSts.outEventTransition === null) {
-			xSts.outEventTransition = createEmptyAction.wrap
 		}
 	}
 	
