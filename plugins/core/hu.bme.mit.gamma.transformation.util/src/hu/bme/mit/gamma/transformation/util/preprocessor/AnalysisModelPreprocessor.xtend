@@ -11,6 +11,7 @@
 package hu.bme.mit.gamma.transformation.util.preprocessor
 
 import hu.bme.mit.gamma.expression.model.Expression
+import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.contract.AdaptiveContractAnnotation
 import hu.bme.mit.gamma.statechart.contract.StateContractAnnotation
 import hu.bme.mit.gamma.statechart.interface_.Component
@@ -23,7 +24,6 @@ import hu.bme.mit.gamma.transformation.util.reducer.SystemReducer
 import hu.bme.mit.gamma.util.FileUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.io.File
-import java.util.Collections
 import java.util.List
 import java.util.logging.Level
 import java.util.logging.Logger
@@ -53,22 +53,32 @@ class AnalysisModelPreprocessor {
 	def preprocess(Package gammaPackage, List<Expression> topComponentArguments,
 			String targetFolderUri, String fileName, boolean optimize) {
 		val fileNameExtensionless = fileName.extensionlessName
+		
 		// Unfolding the given system
 		val modelUnfolder = new ModelUnfolder(gammaPackage)
 		val trace = modelUnfolder.unfold
 		var _package = trace.package
 		val component = trace.topComponent
+		
 		// Transforming parameters if there are any
 		component.transformTopComponentParameters(topComponentArguments)
-		// If it is a single statechart, we wrap it
+		
+		// If it is an atomic component, we wrap it
 		if (component instanceof StatechartDefinition) {
 			logger.log(Level.INFO, "Wrapping statechart " + component)
 			_package.components.add(0, component.wrapSynchronousComponent)
 		}
+		// TODO check model annotation
+//		else if (component instanceof AsynchronousAdapter) {
+//			logger.log(Level.INFO, "Wrapping adapter " + component)
+//			_package.components.add(0, component.wrapAsynchronousComponent)
+//		}
+		
 		// Saving the package, because VIATRA will NOT return matches if the models are not in the same ResourceSet
 		val flattenedModelUri = URI.createFileURI(targetFolderUri +
 				File.separator + fileNameExtensionless.unfoldedPackageFileName)
 		_package.normalSave(flattenedModelUri)
+		
 		// Reading the model from disk as this is the easy way of reloading the necessary ResourceSet
 		_package = flattenedModelUri.normalLoad as Package
 		val resource = _package.eResource
@@ -78,8 +88,10 @@ class AnalysisModelPreprocessor {
 			val transitionOptimizer = new SystemReducer(resourceSet)
 			transitionOptimizer.execute
 		}
+		
 		// Saving the Package of the unfolded model
-		resource.save(Collections.EMPTY_MAP)
+		resource.save
+		
 		return _package.components.head
 	}
 	

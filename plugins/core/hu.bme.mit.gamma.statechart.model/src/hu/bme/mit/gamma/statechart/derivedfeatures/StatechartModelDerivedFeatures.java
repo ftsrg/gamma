@@ -22,7 +22,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.util.EcoreUtil;
@@ -256,8 +255,8 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	}
 	
 	public static boolean areInterfacesEqual(Component lhs, Component rhs) {
-		EList<Port> lhsPorts = lhs.getPorts();
-		EList<Port> rhsPorts = rhs.getPorts();
+		List<Port> lhsPorts = lhs.getPorts();
+		List<Port> rhsPorts = rhs.getPorts();
 		if (lhsPorts.size() != rhsPorts.size()) {
 			return false;
 		}
@@ -816,36 +815,46 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	public static EventSource getEventSource(EventReference eventReference) {
 		if (eventReference instanceof PortEventReference) {
-			return ((PortEventReference) eventReference).getPort();
+			PortEventReference portEventReference = (PortEventReference) eventReference;
+			return portEventReference.getPort();
 		}
 		if (eventReference instanceof AnyPortEventReference) {
-			return ((AnyPortEventReference) eventReference).getPort();
+			AnyPortEventReference anyPortEventReference = (AnyPortEventReference) eventReference;
+			return anyPortEventReference.getPort();
 		}
 		if (eventReference instanceof ClockTickReference) {
-			return ((ClockTickReference) eventReference).getClock();
+			ClockTickReference clockTickReference = (ClockTickReference) eventReference;
+			return clockTickReference.getClock();
 		}
 		if (eventReference instanceof TimeoutEventReference) {
-			return ((TimeoutEventReference) eventReference).getTimeout();
+			TimeoutEventReference timeoutEventReference = (TimeoutEventReference) eventReference;
+			return timeoutEventReference.getTimeout();
 		}
 		throw new IllegalArgumentException("Not known type: " + eventReference);
 	}
 	
 	public static Component getDerivedType(ComponentInstance instance) {
 		if (instance instanceof SynchronousComponentInstance) {
-			return ((SynchronousComponentInstance) instance).getType();
+			SynchronousComponentInstance synchronousInstance = (SynchronousComponentInstance) instance;
+			return synchronousInstance.getType();
 		}
 		if (instance instanceof AsynchronousComponentInstance) {
-			return ((AsynchronousComponentInstance) instance).getType();
+			AsynchronousComponentInstance asynchronousInstance = (AsynchronousComponentInstance) instance;
+			return asynchronousInstance.getType();
 		}
 		throw new IllegalArgumentException("Not known type: " + instance);
 	}
 	
-	public static EList<? extends ComponentInstance> getDerivedComponents(CompositeComponent composite) {
+	public static List<? extends ComponentInstance> getDerivedComponents(CompositeComponent composite) {
 		if (composite instanceof AbstractSynchronousCompositeComponent) {
-			return ((AbstractSynchronousCompositeComponent) composite).getComponents();
+			AbstractSynchronousCompositeComponent synchronousCompositeComponent =
+					(AbstractSynchronousCompositeComponent) composite;
+			return synchronousCompositeComponent.getComponents();
 		}
 		if (composite instanceof AsynchronousCompositeComponent) {
-			return ((AsynchronousCompositeComponent) composite).getComponents();
+			AsynchronousCompositeComponent asynchronousCompositeComponent =
+					(AsynchronousCompositeComponent) composite; // TODO
+			return asynchronousCompositeComponent.getComponents();
 		}
 		throw new IllegalArgumentException("Not known type: " + composite);
 	}
@@ -859,11 +868,12 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
     }
 	
     public static boolean isCascade(ComponentInstance instance) {
-    	if (getDerivedType(instance) instanceof StatechartDefinition) {
+    	Component type = getDerivedType(instance);
+		if (type instanceof StatechartDefinition) {
     		// Statecharts are cascade if contained by cascade composite components
     		return instance.eContainer() instanceof CascadeCompositeComponent;
    		}
-   		return getDerivedType(instance) instanceof CascadeCompositeComponent;
+   		return type instanceof CascadeCompositeComponent;
     }
     
     public static boolean isSynchronous(ComponentInstance instance) {

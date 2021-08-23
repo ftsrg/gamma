@@ -16,7 +16,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
 
 import hu.bme.mit.gamma.action.model.AssignmentStatement;
@@ -33,9 +32,11 @@ import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.expression.util.ExpressionUtil;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponent;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance;
+import hu.bme.mit.gamma.statechart.composite.AsynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.CascadeCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference;
+import hu.bme.mit.gamma.statechart.composite.CompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.CompositeModelFactory;
 import hu.bme.mit.gamma.statechart.composite.InstancePortReference;
 import hu.bme.mit.gamma.statechart.composite.PortBinding;
@@ -57,12 +58,12 @@ import hu.bme.mit.gamma.statechart.statechart.BinaryType;
 import hu.bme.mit.gamma.statechart.statechart.CompositeElement;
 import hu.bme.mit.gamma.statechart.statechart.EntryState;
 import hu.bme.mit.gamma.statechart.statechart.InitialState;
+import hu.bme.mit.gamma.statechart.statechart.Region;
+import hu.bme.mit.gamma.statechart.statechart.State;
 import hu.bme.mit.gamma.statechart.statechart.StateNode;
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
 import hu.bme.mit.gamma.statechart.statechart.StatechartModelFactory;
 import hu.bme.mit.gamma.statechart.statechart.Transition;
-import hu.bme.mit.gamma.statechart.statechart.Region;
-import hu.bme.mit.gamma.statechart.statechart.State;
 
 public class StatechartUtil extends ActionUtil {
 	// Singleton
@@ -315,32 +316,52 @@ public class StatechartUtil extends ActionUtil {
 	
 	public CascadeCompositeComponent wrapSynchronousComponent(SynchronousComponent component) {
 		CascadeCompositeComponent cascade = compositeFactory.createCascadeCompositeComponent();
-		cascade.setName(component.getName()); // Trick: same name, so reflective api will work
-		SynchronousComponentInstance instance = compositeFactory.createSynchronousComponentInstance();
-		instance.setName(getWrapperInstanceName(component));
-		instance.setType(component);
+		cascade.setName(component.getName()); // Trick: same name, so reflective API will work
+		SynchronousComponentInstance instance = instantiateSynchronousComponent(component);
+		cascade.getComponents().add(instance);
+		
+		wrapComponent(cascade, instance);
+		
+		return cascade;
+	}
+	
+	public AsynchronousCompositeComponent wrapAsynchronousComponent(AsynchronousComponent component) {
+		AsynchronousCompositeComponent asynchron = compositeFactory.createAsynchronousCompositeComponent(); // TODO
+		asynchron.setName(component.getName()); // Trick: same name, so reflective API will work
+		AsynchronousComponentInstance instance = instantiateAsynchronousComponent(component);
+		asynchron.getComponents().add(instance);
+		
+		wrapComponent(asynchron, instance);
+		
+		return asynchron;
+	}
+
+	private void wrapComponent(CompositeComponent wrapper, ComponentInstance instance) {
+		Component component = StatechartModelDerivedFeatures.getDerivedType(instance);
+		
+		// Parameter declarations
 		for (ParameterDeclaration parameterDeclaration : component.getParameterDeclarations()) {
 			ParameterDeclaration newParameter = ecoreUtil.clone(parameterDeclaration);
-			cascade.getParameterDeclarations().add(newParameter);
-			DirectReferenceExpression reference = factory.createDirectReferenceExpression();
-			reference.setDeclaration(newParameter);
+			wrapper.getParameterDeclarations().add(newParameter);
+			DirectReferenceExpression reference = expressionUtil
+					.createReferenceExpression(newParameter);
 			instance.getArguments().add(reference);
 		}
-		cascade.getComponents().add(instance);
-		EList<Port> ports = component.getPorts();
+		
+		// Ports
+		List<Port> ports = component.getPorts();
 		for (int i = 0; i < ports.size(); ++i) {
 			Port port = ports.get(i);
 			Port clonedPort = ecoreUtil.clone(port);
-			cascade.getPorts().add(clonedPort);
+			wrapper.getPorts().add(clonedPort);
 			PortBinding portBinding = compositeFactory.createPortBinding();
 			portBinding.setCompositeSystemPort(clonedPort);
 			InstancePortReference instancePortReference = compositeFactory.createInstancePortReference();
 			instancePortReference.setInstance(instance);
 			instancePortReference.setPort(port);
 			portBinding.setInstancePortReference(instancePortReference);
-			cascade.getPortBindings().add(portBinding);
+			wrapper.getPortBindings().add(portBinding);
 		}
-		return cascade;
 	}
 	
 	public String getWrapperInstanceName(Component component) {

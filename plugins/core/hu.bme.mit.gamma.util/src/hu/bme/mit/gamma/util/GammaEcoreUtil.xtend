@@ -262,6 +262,10 @@ class GammaEcoreUtil {
 
 	def void save(EObject rootElem) {
 		val resource = rootElem.eResource
+		resource.save
+	}
+	
+	def void save(Resource resource) {
 		checkState(resource !== null)
 		resource.save(Collections.EMPTY_MAP)
 	}
