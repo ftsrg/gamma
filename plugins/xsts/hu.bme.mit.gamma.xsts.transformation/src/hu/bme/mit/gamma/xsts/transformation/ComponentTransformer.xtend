@@ -246,7 +246,7 @@ class ComponentTransformer {
 				
 				val block = createSequentialAction
 				
-				val messageRetrievalCount = queue.messageRetrievalCount
+				val messageRetrievalCount = queue.checkAndGetMessageRetrievalCount // TODO check
 				switch (messageRetrievalCount) {
 					case ONE:
 						mergedAction.actions += block
@@ -831,8 +831,8 @@ class ComponentTransformer {
 		return false
 	}
 	
-	private def getMessageRetrievalCount(MessageQueue queue) {
-		return MessageRetrievalCount.ONE // TODO makes sense only if the trigger is 'any'
+	private def checkAndGetMessageRetrievalCount(MessageQueue queue) {
+		return MessageRetrievalCount.ONE // Makes sense only if the trigger is 'any'
 	}
 	
 	private def void resetInEventsAfterMergedAction(XSTS xSts, Component type) {

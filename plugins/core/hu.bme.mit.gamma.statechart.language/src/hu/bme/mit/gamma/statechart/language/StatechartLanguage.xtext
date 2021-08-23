@@ -410,6 +410,7 @@ SynchronousCompositeComponent returns CompositeModel::SynchronousCompositeCompon
 AsynchronousComponent returns CompositeModel::AsynchronousComponent:
 	AsynchronousCompositeComponent |
 	AsynchronousAdapter
+	// TODO scheduled asynchronous composite component
 ;
 
 AsynchronousCompositeComponent returns CompositeModel::AsynchronousCompositeComponent:
@@ -463,6 +464,7 @@ enum ControlFunction returns CompositeModel::ControlFunction:
 MessageQueue returns CompositeModel::MessageQueue:
 	'queue' name=ID '('('priority' '=' priority=INTEGER) (',' 'capacity' '=' capacity=Expression)
 			(',' 'discard' '=' eventDiscardStrategy=DiscardStrategy)? ')' '{'
+			// TODO message retrieval count
 	 	(eventReference+=EventReference)(',' eventReference+=EventReference)*
 	'}'
 ;

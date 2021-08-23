@@ -53,6 +53,9 @@
   <eClassifiers xsi:type="ecore:EClass" name="MessageQueue" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NamedElement #//PrioritizedElement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="capacity" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
         containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="messageRetrievalCount"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
+        containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="eventReference" lowerBound="1"
         upperBound="-1" eType="ecore:EClass interface.ecore#//EventReference" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="eventDiscardStrategy" eType="#//DiscardStrategy"
@@ -73,9 +76,16 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="components" upperBound="-1"
         eType="#//SynchronousComponentInstance" containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="AsynchronousCompositeComponent" eSuperTypes="#//CompositeComponent #//AsynchronousComponent">
+  <eClassifiers xsi:type="ecore:EClass" name="AbstractAsynchronousCompositeComponent"
+      eSuperTypes="#//CompositeComponent #//AsynchronousComponent">
     <eStructuralFeatures xsi:type="ecore:EReference" name="components" upperBound="-1"
         eType="#//AsynchronousComponentInstance" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="AsynchronousCompositeComponent" eSuperTypes="#//AbstractAsynchronousCompositeComponent"/>
+  <eClassifiers xsi:type="ecore:EClass" name="ScheduledAsynchronousCompositeComponent"
+      eSuperTypes="#//AbstractAsynchronousCompositeComponent">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="executionList" upperBound="-1"
+        eType="#//AsynchronousComponentInstance"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="AsynchronousAdapter" eSuperTypes="#//AsynchronousComponent">
     <eStructuralFeatures xsi:type="ecore:EReference" name="controlSpecifications"

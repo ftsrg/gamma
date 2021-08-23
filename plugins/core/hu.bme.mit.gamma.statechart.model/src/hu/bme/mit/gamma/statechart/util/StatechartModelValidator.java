@@ -24,6 +24,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 
 import hu.bme.mit.gamma.action.model.Action;
@@ -53,10 +54,11 @@ import hu.bme.mit.gamma.expression.model.TypeDeclaration;
 import hu.bme.mit.gamma.expression.model.TypeDefinition;
 import hu.bme.mit.gamma.expression.model.TypeReference;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
+import hu.bme.mit.gamma.statechart.composite.AbstractAsynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponent;
-import hu.bme.mit.gamma.statechart.composite.AsynchronousCompositeComponent;
+import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance;
 import hu.bme.mit.gamma.statechart.composite.BroadcastChannel;
 import hu.bme.mit.gamma.statechart.composite.CascadeCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.Channel;
@@ -68,6 +70,7 @@ import hu.bme.mit.gamma.statechart.composite.ControlSpecification;
 import hu.bme.mit.gamma.statechart.composite.InstancePortReference;
 import hu.bme.mit.gamma.statechart.composite.MessageQueue;
 import hu.bme.mit.gamma.statechart.composite.PortBinding;
+import hu.bme.mit.gamma.statechart.composite.ScheduledAsynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.SimpleChannel;
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponent;
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance;
@@ -1476,7 +1479,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		Component parentComponent = (Component) channel.eContainer();
 		// Ports inside asynchronous components can be connected to multiple ports
-		if (parentComponent instanceof AsynchronousCompositeComponent) {
+		if (parentComponent instanceof AbstractAsynchronousCompositeComponent) {
 			return validationResultMessages;
 		}
 		// Checking provided instance ports in different channels
@@ -1500,7 +1503,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		Component parentComponent = (Component) channel.eContainer();
 		// Ports inside asynchronous components can be connected to multiple ports
-		if (parentComponent instanceof AsynchronousCompositeComponent) {
+		if (parentComponent instanceof AbstractAsynchronousCompositeComponent) {
 			return validationResultMessages;
 		}
 		EObject root = EcoreUtil.getRootContainer(channel);
@@ -1523,7 +1526,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		Component parentComponent = (Component) channel.eContainer();
 		// Ports inside asynchronous components can be connected to multiple ports
-		if (parentComponent instanceof AsynchronousCompositeComponent) {
+		if (parentComponent instanceof AbstractAsynchronousCompositeComponent) {
 			return validationResultMessages;
 		}
 		EObject root = EcoreUtil.getRootContainer(channel);
@@ -1798,6 +1801,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 				}
 			}			
 		}
+		// TODO check message retrieval count > 0
 		return validationResultMessages;
 	}
 	
@@ -1866,14 +1870,16 @@ public class StatechartModelValidator extends ActionModelValidator {
 		List<MessageQueue> messageQueues = adapter.getMessageQueues();
 		if (messageQueues.size() == 1) {
 			MessageQueue messageQueue = messageQueues.get(0);
-//			TODO if (messageQueue.getMessageRetrievalCount() == 1) {
+			Expression messageRetrievalCount = messageQueue.getMessageRetrievalCount();
+			int count = expressionEvaluator.evaluateInteger(messageRetrievalCount);
+			if (count == 1) {
 				if (controlSpecifications.stream().noneMatch(it -> it instanceof AnyTrigger)) {
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING,
 						"Some messages might not be processed during execution as the message retrieval count is 1, "
 								+ "but there is no any trigger among the control specifications",
 							new ReferenceInfo(CompositeModelPackage.Literals.ASYNCHRONOUS_ADAPTER__MESSAGE_QUEUES)));
 				}
-//			}
+			}
 		}
 		
 		return validationResultMessages;
@@ -1892,19 +1898,59 @@ public class StatechartModelValidator extends ActionModelValidator {
 	}
 	
 	public Collection<ValidationResultMessage> checkExecutionLists(CascadeCompositeComponent cascade) {
+		List<SynchronousComponentInstance> components = cascade.getComponents();
+		List<SynchronousComponentInstance> executionList = cascade.getExecutionList();
+		
+		return checkExecutionList(components, executionList,
+				CompositeModelPackage.Literals.CASCADE_COMPOSITE_COMPONENT__EXECUTION_LIST);
+	}
+	
+	public Collection<ValidationResultMessage> checkExecutionLists(
+			ScheduledAsynchronousCompositeComponent scheduledComponent) {
+		List<AsynchronousComponentInstance> components = scheduledComponent.getComponents();
+		List<AsynchronousComponentInstance> executionList = scheduledComponent.getExecutionList();
+		
+		return checkExecutionList(components, executionList,
+				CompositeModelPackage.Literals.SCHEDULED_ASYNCHRONOUS_COMPOSITE_COMPONENT__EXECUTION_LIST);
+	}
+	
+	private Collection<ValidationResultMessage> checkExecutionList(
+			List<? extends ComponentInstance> components,
+			List<? extends ComponentInstance> executionList, EStructuralFeature reference) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		if (cascade.getExecutionList().isEmpty()) {
+
+		if (executionList.isEmpty()) {
 			// Nothing to validate
 			return validationResultMessages;
 		}
-		Collection<SynchronousComponentInstance> containedInstances = new HashSet<SynchronousComponentInstance>(cascade.getComponents());
-		containedInstances.removeAll(cascade.getExecutionList());
+		Collection<ComponentInstance> containedInstances = new HashSet<ComponentInstance>(components);
+		containedInstances.removeAll(executionList);
 		if (!containedInstances.isEmpty()) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 				"The following instances are never executed: " + containedInstances.stream().map(it -> it.getName())
-					.collect(Collectors.toSet()), 
-					new ReferenceInfo(CompositeModelPackage.Literals.CASCADE_COMPOSITE_COMPONENT__EXECUTION_LIST)));
+					.collect(Collectors.toSet()), new ReferenceInfo(reference)));
 		}
+		
+		return validationResultMessages;
+	}
+	
+	public Collection<ValidationResultMessage> checkComponents(
+			ScheduledAsynchronousCompositeComponent scheduledComponent) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		
+		List<AsynchronousComponentInstance> components = scheduledComponent.getComponents();
+		for (AsynchronousComponentInstance component : components) {
+			AsynchronousComponent type = component.getType();
+			if (!(type instanceof ScheduledAsynchronousCompositeComponent ||
+					type instanceof AsynchronousAdapter)) {
+				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+					"Scheduled asynchronous composite components cannot contain asynchronous components",
+						new ReferenceInfo(
+							CompositeModelPackage.Literals.ABSTRACT_ASYNCHRONOUS_COMPOSITE_COMPONENT__COMPONENTS,
+								ecoreUtil.getIndex(component))));
+			}
+		}
+		
 		return validationResultMessages;
 	}
 	

@@ -32,7 +32,6 @@ import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.expression.util.ExpressionUtil;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponent;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance;
-import hu.bme.mit.gamma.statechart.composite.AsynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.CascadeCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference;
@@ -40,6 +39,7 @@ import hu.bme.mit.gamma.statechart.composite.CompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.CompositeModelFactory;
 import hu.bme.mit.gamma.statechart.composite.InstancePortReference;
 import hu.bme.mit.gamma.statechart.composite.PortBinding;
+import hu.bme.mit.gamma.statechart.composite.ScheduledAsynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.SimpleChannel;
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponent;
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance;
@@ -325,8 +325,9 @@ public class StatechartUtil extends ActionUtil {
 		return cascade;
 	}
 	
-	public AsynchronousCompositeComponent wrapAsynchronousComponent(AsynchronousComponent component) {
-		AsynchronousCompositeComponent asynchron = compositeFactory.createAsynchronousCompositeComponent(); // TODO
+	public ScheduledAsynchronousCompositeComponent wrapAsynchronousComponent(AsynchronousComponent component) {
+		ScheduledAsynchronousCompositeComponent asynchron =
+				compositeFactory.createScheduledAsynchronousCompositeComponent();
 		asynchron.setName(component.getName()); // Trick: same name, so reflective API will work
 		AsynchronousComponentInstance instance = instantiateAsynchronousComponent(component);
 		asynchron.getComponents().add(instance);

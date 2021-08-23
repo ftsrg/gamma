@@ -34,11 +34,11 @@ import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression;
 import hu.bme.mit.gamma.expression.model.FunctionDeclaration;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
+import hu.bme.mit.gamma.statechart.composite.AbstractAsynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponent;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance;
-import hu.bme.mit.gamma.statechart.composite.AsynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.BroadcastChannel;
 import hu.bme.mit.gamma.statechart.composite.CascadeCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.Channel;
@@ -48,6 +48,7 @@ import hu.bme.mit.gamma.statechart.composite.ControlSpecification;
 import hu.bme.mit.gamma.statechart.composite.InstancePortReference;
 import hu.bme.mit.gamma.statechart.composite.MessageQueue;
 import hu.bme.mit.gamma.statechart.composite.PortBinding;
+import hu.bme.mit.gamma.statechart.composite.ScheduledAsynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.SimpleChannel;
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponent;
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance;
@@ -297,8 +298,9 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	public static List<SynchronousComponentInstance> getAllSimpleInstances(Component component) {
 		List<SynchronousComponentInstance> simpleInstances = new ArrayList<SynchronousComponentInstance>();
-		if (component instanceof AsynchronousCompositeComponent) {
-			AsynchronousCompositeComponent asynchronousCompositeComponent = (AsynchronousCompositeComponent) component;
+		if (component instanceof AbstractAsynchronousCompositeComponent) {
+			AbstractAsynchronousCompositeComponent asynchronousCompositeComponent =
+					(AbstractAsynchronousCompositeComponent) component;
 			for (AsynchronousComponentInstance instance : asynchronousCompositeComponent.getComponents()) {
 				simpleInstances.addAll(getAllSimpleInstances(instance));
 			}
@@ -329,8 +331,9 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	public static List<ComponentInstance> getInstances(Component component) {
 		List<ComponentInstance> instances = new ArrayList<ComponentInstance>();
-		if (component instanceof AsynchronousCompositeComponent) {
-			AsynchronousCompositeComponent asynchronousCompositeComponent = (AsynchronousCompositeComponent) component;
+		if (component instanceof AbstractAsynchronousCompositeComponent) {
+			AbstractAsynchronousCompositeComponent asynchronousCompositeComponent =
+					(AbstractAsynchronousCompositeComponent) component;
 			for (AsynchronousComponentInstance instance : asynchronousCompositeComponent.getComponents()) {
 				instances.add(instance);
 			}
@@ -351,8 +354,9 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	public static List<ComponentInstance> getAllInstances(Component component) {
 		List<ComponentInstance> instances = new ArrayList<ComponentInstance>();
-		if (component instanceof AsynchronousCompositeComponent) {
-			AsynchronousCompositeComponent asynchronousCompositeComponent = (AsynchronousCompositeComponent) component;
+		if (component instanceof AbstractAsynchronousCompositeComponent) {
+			AbstractAsynchronousCompositeComponent asynchronousCompositeComponent =
+					(AbstractAsynchronousCompositeComponent) component;
 			for (AsynchronousComponentInstance instance : asynchronousCompositeComponent.getComponents()) {
 				instances.add(instance);
 				AsynchronousComponent type = instance.getType();
@@ -694,7 +698,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	public static List<Port> getAllBoundAsynchronousSimplePorts(Port port) {
 		List<Port> simplePorts = new ArrayList<Port>();
 		Component component = getContainingComponent(port);
-		if (component instanceof AsynchronousCompositeComponent) {
+		if (component instanceof AbstractAsynchronousCompositeComponent) {
 			CompositeComponent composite = (CompositeComponent) component;
 			for (PortBinding portBinding : composite.getPortBindings()) {
 				if (portBinding.getCompositeSystemPort() == port) {
@@ -851,9 +855,9 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 					(AbstractSynchronousCompositeComponent) composite;
 			return synchronousCompositeComponent.getComponents();
 		}
-		if (composite instanceof AsynchronousCompositeComponent) {
-			AsynchronousCompositeComponent asynchronousCompositeComponent =
-					(AsynchronousCompositeComponent) composite; // TODO
+		if (composite instanceof AbstractAsynchronousCompositeComponent) {
+			AbstractAsynchronousCompositeComponent asynchronousCompositeComponent =
+					(AbstractAsynchronousCompositeComponent) composite;
 			return asynchronousCompositeComponent.getComponents();
 		}
 		throw new IllegalArgumentException("Not known type: " + composite);
@@ -1595,11 +1599,24 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return parentComponentInstances;
 	}
 	
-	public static List<SynchronousComponentInstance> getScheduledInstances(AbstractSynchronousCompositeComponent component) {
+	public static List<SynchronousComponentInstance> getScheduledInstances(
+			AbstractSynchronousCompositeComponent component) {
 		if (component instanceof CascadeCompositeComponent) {
 			CascadeCompositeComponent cascade = (CascadeCompositeComponent) component;
 			if (!cascade.getExecutionList().isEmpty()) {
 				return cascade.getExecutionList();
+			}
+		}
+		return component.getComponents();
+	}
+	
+	public static List<AsynchronousComponentInstance> getScheduledInstances(
+			AbstractAsynchronousCompositeComponent component) {
+		if (component instanceof ScheduledAsynchronousCompositeComponent) {
+			ScheduledAsynchronousCompositeComponent scheduledComponent =
+					(ScheduledAsynchronousCompositeComponent) component;
+			if (!scheduledComponent.getExecutionList().isEmpty()) {
+				return scheduledComponent.getExecutionList();
 			}
 		}
 		return component.getComponents();

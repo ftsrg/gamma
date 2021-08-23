@@ -25,6 +25,7 @@ import hu.bme.mit.gamma.statechart.composite.ControlSpecification;
 import hu.bme.mit.gamma.statechart.composite.InstancePortReference;
 import hu.bme.mit.gamma.statechart.composite.MessageQueue;
 import hu.bme.mit.gamma.statechart.composite.PortBinding;
+import hu.bme.mit.gamma.statechart.composite.ScheduledAsynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.SimpleChannel;
 import hu.bme.mit.gamma.statechart.contract.AdaptiveContractAnnotation;
 import hu.bme.mit.gamma.statechart.contract.StateContractAnnotation;
@@ -462,7 +463,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	
 	@Check
 	public void checkMessageRetrievalCount(AsynchronousAdapter adapter) {
-//	TODO handleValidationResultMessage(statechartModelValidator.checkMessageRetrievalCount(adapter));
+		handleValidationResultMessage(statechartModelValidator.checkMessageRetrievalCount(adapter));
 	}
 	
 	@Check
@@ -474,6 +475,16 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	@Check
 	public void checkExecutionLists(CascadeCompositeComponent cascade) {
 		handleValidationResultMessage(statechartModelValidator.checkExecutionLists(cascade));
+	}
+	
+	@Check
+	public void checkExecutionLists(ScheduledAsynchronousCompositeComponent scheduledComponent) {
+		handleValidationResultMessage(statechartModelValidator.checkExecutionLists(scheduledComponent));
+	}
+	
+	@Check
+	public void checkComponents(ScheduledAsynchronousCompositeComponent scheduledComponent) {
+		handleValidationResultMessage(statechartModelValidator.checkComponents(scheduledComponent));
 	}
 	
 	@Check
