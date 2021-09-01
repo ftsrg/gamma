@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="ASCII"?>
+<hu.bme.mit.gamma.statechart.interface:Package xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:hu.bme.mit.gamma.expression="http://www.mit.bme.hu/gamma/expression/Model" xmlns:hu.bme.mit.gamma.statechart="http://www.mit.bme.hu/gamma/statechart/Model/Statechart" xmlns:hu.bme.mit.gamma.statechart.composite="http://www.mit.bme.hu/gamma/statechart/Model/Composite" xmlns:hu.bme.mit.gamma.statechart.contract="http://www.mit.bme.hu/gamma/statechart/Model/Contract" xmlns:hu.bme.mit.gamma.statechart.interface="http://www.mit.bme.hu/gamma/statechart/Model/Interface" name="adaptivecontractView">
+  <components xsi:type="hu.bme.mit.gamma.statechart.composite:CascadeCompositeComponent" name="AdaptiveContractStatechart">
+    <ports name="police">
+      <interfaceRealization realizationMode="REQUIRED">
+        <interface href="platform:/resource/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.3"/>
+      </interfaceRealization>
+    </ports>
+    <ports name="priorityOutput">
+      <interfaceRealization>
+        <interface href="platform:/resource/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.0"/>
+      </interfaceRealization>
+    </ports>
+    <ports name="secondaryOutput">
+      <interfaceRealization>
+        <interface href="platform:/resource/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.0"/>
+      </interfaceRealization>
+    </ports>
+    <portBindings compositeSystemPort="//@components.0/@ports.0">
+      <instancePortReference instance="//@components.0/@components.0" port="//@components.1/@ports.0"/>
+    </portBindings>
+    <portBindings compositeSystemPort="//@components.0/@ports.1">
+      <instancePortReference instance="//@components.0/@components.0" port="//@components.1/@ports.1"/>
+    </portBindings>
+    <portBindings compositeSystemPort="//@components.0/@ports.2">
+      <instancePortReference instance="//@components.0/@components.0" port="//@components.1/@ports.2"/>
+    </portBindings>
+    <components name="AdaptiveContractStatechart" type="//@components.1"/>
+  </components>
+  <components xsi:type="hu.bme.mit.gamma.statechart:StatechartDefinition" name="AdaptiveContractStatechart">
+    <ports name="police">
+      <interfaceRealization realizationMode="REQUIRED">
+        <interface href="platform:/resource/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.3"/>
+      </interfaceRealization>
+    </ports>
+    <ports name="priorityOutput">
+      <interfaceRealization>
+        <interface href="platform:/resource/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.0"/>
+      </interfaceRealization>
+    </ports>
+    <ports name="secondaryOutput">
+      <interfaceRealization>
+        <interface href="platform:/resource/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.0"/>
+      </interfaceRealization>
+    </ports>
+    <regions name="main">
+      <stateNodes xsi:type="hu.bme.mit.gamma.statechart:InitialState" name="Entry0"/>
+      <stateNodes xsi:type="hu.bme.mit.gamma.statechart:State" name="Init">
+        <entryActions xsi:type="hu.bme.mit.gamma.statechart:SetTimeoutAction" timeoutDeclaration="//@components.1/@timeoutDeclarations.0">
+          <time unit="SECOND">
+            <value xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="2"/>
+          </time>
+        </entryActions>
+        <annotation xsi:type="hu.bme.mit.gamma.statechart.contract:StateContractAnnotation">
+          <contractStatecharts href="platform:/resource/hu.bme.mit.gamma.tutorial.contract.finish/model/adaptive/InitStatechart.gcd#//@components.0"/>
+        </annotation>
+      </stateNodes>
+      <stateNodes xsi:type="hu.bme.mit.gamma.statechart:State" name="Normal">
+        <annotation xsi:type="hu.bme.mit.gamma.statechart.contract:StateContractAnnotation">
+          <contractStatecharts href="platform:/resource/hu.bme.mit.gamma.tutorial.contract.finish/model/adaptive/NormalStatechart.gcd#//@components.0"/>
+        </annotation>
+      </stateNodes>
+      <stateNodes xsi:type="hu.bme.mit.gamma.statechart:State" name="Blinking">
+        <entryActions xsi:type="hu.bme.mit.gamma.statechart:SetTimeoutAction" timeoutDeclaration="//@components.1/@timeoutDeclarations.1">
+          <time unit="SECOND">
+            <value xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1"/>
+          </time>
+        </entryActions>
+        <annotation xsi:type="hu.bme.mit.gamma.statechart.contract:StateContractAnnotation">
+          <contractStatecharts href="platform:/resource/hu.bme.mit.gamma.tutorial.contract.finish/model/adaptive/BlinkingStatechart.gcd#//@components.0"/>
+        </annotation>
+      </stateNodes>
+    </regions>
+    <timeoutDeclarations name="InitTimeout"/>
+    <timeoutDeclarations name="BlinkingTimeout"/>
+    <transitions sourceState="//@components.1/@regions.0/@stateNodes.0" targetState="//@components.1/@regions.0/@stateNodes.1"/>
+    <transitions sourceState="//@components.1/@regions.0/@stateNodes.1" targetState="//@components.1/@regions.0/@stateNodes.2">
+      <trigger xsi:type="hu.bme.mit.gamma.statechart.interface:EventTrigger">
+        <eventReference xsi:type="hu.bme.mit.gamma.statechart:TimeoutEventReference" timeout="//@components.1/@timeoutDeclarations.0"/>
+      </trigger>
+    </transitions>
+    <transitions sourceState="//@components.1/@regions.0/@stateNodes.2" targetState="//@components.1/@regions.0/@stateNodes.3">
+      <trigger xsi:type="hu.bme.mit.gamma.statechart.interface:EventTrigger">
+        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.1/@ports.0">
+          <event href="platform:/resource/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.3/@events.0/@event"/>
+        </eventReference>
+      </trigger>
+    </transitions>
+    <transitions sourceState="//@components.1/@regions.0/@stateNodes.3" targetState="//@components.1/@regions.0/@stateNodes.2">
+      <trigger xsi:type="hu.bme.mit.gamma.statechart:BinaryTrigger">
+        <leftOperand xsi:type="hu.bme.mit.gamma.statechart.interface:EventTrigger">
+          <eventReference xsi:type="hu.bme.mit.gamma.statechart:TimeoutEventReference" timeout="//@components.1/@timeoutDeclarations.1"/>
+        </leftOperand>
+        <rightOperand xsi:type="hu.bme.mit.gamma.statechart.interface:EventTrigger">
+          <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.1/@ports.0">
+            <event href="platform:/resource/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.3/@events.0/@event"/>
+          </eventReference>
+        </rightOperand>
+      </trigger>
+    </transitions>
+  </components>
+  <annotations xsi:type="hu.bme.mit.gamma.statechart.interface:UnfoldedPackageAnnotation"/>
+  <annotations xsi:type="hu.bme.mit.gamma.statechart.interface:SchedulingConstraintAnnotation">
+    <schedulingConstraint xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="2000"/>
+  </annotations>
+</hu.bme.mit.gamma.statechart.interface:Package>

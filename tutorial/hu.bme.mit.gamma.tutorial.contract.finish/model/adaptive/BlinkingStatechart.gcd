@@ -1,0 +1,66 @@
+package blinking
+import "/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd"
+import "/hu.bme.mit.gamma.tutorial.contract.finish/model/Controller/Controller.gcd"
+import "/hu.bme.mit.gamma.tutorial.contract.finish/model/TrafficLight/TrafficLightCtrl.gcd"
+import "/hu.bme.mit.gamma.tutorial.contract.finish/model/Crossroad.gcd"
+@TransitionPriority = value-based
+@ScenarioContractStatechart = Crossroad (permissive)
+statechart Blinking [
+	port police : requires PoliceInterrupt
+	port policeREVERSED : provides PoliceInterrupt
+	port priorityOutput : provides LightCommands
+	port priorityOutputREVERSED : requires LightCommands
+	port secondaryOutput : provides LightCommands
+	port secondaryOutputREVERSED : requires LightCommands
+] {
+	var result : integer := 0
+	var IteratingVariable : integer := 0
+	var LoopIteratingVariable : integer := 0
+	timeout delay0
+	timeout delay1
+	transition from Initial to merge1 /
+	result := 1;
+	LoopIteratingVariable := 1;
+	transition (2) from Choice1 to firstState [IteratingVariable <= 1] /
+	IteratingVariable := IteratingVariable + 1;
+	transition from merge1 to Choice1
+	transition (3) from Choice1 to merge3 when priorityOutputREVERSED.displayYellow &&
+		secondaryOutputREVERSED.displayYellow && timeout delay0
+	[IteratingVariable >= 0 and IteratingVariable <= 1] /
+	raise priorityOutput.displayYellow;
+	raise secondaryOutput.displayYellow;
+	IteratingVariable := 0;
+	transition (1) from Choice1 to hotViolation [else] /
+	result := 0;
+	transition from firstState to merge1 when cycle
+	transition (2) from Choice3 to state0 [IteratingVariable <= 1] /
+	IteratingVariable := IteratingVariable + 1;
+	transition from merge3 to Choice3
+	transition (3) from Choice3 to AcceptingState when priorityOutputREVERSED.displayNone &&
+		secondaryOutputREVERSED.displayNone && timeout delay1
+	[IteratingVariable >= 0 and IteratingVariable <= 1] /
+	raise priorityOutput.displayNone;
+	raise secondaryOutput.displayNone;
+	IteratingVariable := 0;
+	result := 2;
+	transition (1) from Choice3 to hotViolation [else] /
+	result := 0;
+	transition from state0 to merge3 when cycle
+	region ^region {
+		initial Initial
+		state firstState {
+			entry /
+			set delay0 := 500 ms;
+		}
+		state hotViolation
+		choice Choice1
+		merge merge1
+		state state0 {
+			entry /
+			set delay1 := 500 ms;
+		}
+		choice Choice3
+		merge merge3
+		state AcceptingState
+	}
+}

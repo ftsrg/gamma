@@ -1,6 +1,5 @@
 import "/hu.bme.mit.gamma.tutorial.contract.finish/model/Crossroad.gcd"
-trace AdaptiveContractStatechartTrace
-of Crossroad
+trace NormalTrace9 of Crossroad
 step {
 	act {
 		reset
@@ -14,6 +13,10 @@ step {
 		schedule component
 	}
 	assert {
+		raise priorityOutput.displayYellow
+		raise priorityOutput.displayRed
+		raise secondaryOutput.displayGreen
+		raise secondaryOutput.displayYellow
 	}
 }
 step {
@@ -22,11 +25,7 @@ step {
 		schedule component
 	}
 	assert {
-		raise secondaryOutput.displayYellow
 		raise secondaryOutput.displayRed
 		raise priorityOutput.displayGreen
-		raise priorityOutput.displayRed
-		raise secondaryOutput.displayGreen
-		raise priorityOutput.displayYellow
 	}
 }

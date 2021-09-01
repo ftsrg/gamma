@@ -19,14 +19,29 @@ step {
 step {
 	act {
 		elapse 2000
+		raise police.police
 		schedule component
 	}
 	assert {
-		raise secondaryOutput.displayYellow
-		raise secondaryOutput.displayRed
-		raise priorityOutput.displayGreen
-		raise priorityOutput.displayRed
-		raise secondaryOutput.displayGreen
+	}
+}
+step {
+	act {
+		elapse 2000
+		schedule component
+	}
+	assert {
 		raise priorityOutput.displayYellow
+		raise secondaryOutput.displayYellow
+	}
+}
+step {
+	act {
+		elapse 2000
+		schedule component
+	}
+	assert {
+		raise priorityOutput.displayNone
+		raise secondaryOutput.displayNone
 	}
 }

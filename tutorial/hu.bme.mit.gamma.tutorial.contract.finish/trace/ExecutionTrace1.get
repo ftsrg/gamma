@@ -22,11 +22,19 @@ step {
 		schedule component
 	}
 	assert {
-		raise secondaryOutput.displayYellow
-		raise secondaryOutput.displayRed
-		raise priorityOutput.displayGreen
 		raise priorityOutput.displayRed
 		raise secondaryOutput.displayGreen
 		raise priorityOutput.displayYellow
+	}
+}
+step {
+	act {
+		elapse 2000
+		schedule component
+	}
+	assert {
+		raise secondaryOutput.displayYellow
+		raise secondaryOutput.displayRed
+		raise priorityOutput.displayGreen
 	}
 }

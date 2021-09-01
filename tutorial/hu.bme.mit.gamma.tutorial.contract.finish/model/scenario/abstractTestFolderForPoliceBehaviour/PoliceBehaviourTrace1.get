@@ -1,0 +1,37 @@
+import "/hu.bme.mit.gamma.tutorial.contract.finish/model/Controller/Controller.gcd"
+trace
+PoliceBehaviourTrace1 of Controller
+step {
+	act {
+		reset
+	}
+	assert {
+	}
+}
+step {
+	act {
+		elapse 2000
+		schedule component
+	}
+	assert {
+	}
+}
+step {
+	act {
+		elapse 2000
+		raise PoliceInterrupt.police
+		schedule component
+	}
+	assert {
+	}
+}
+step {
+	act {
+		elapse 2000
+		schedule component
+	}
+	assert {
+		raise PriorityPolice.police
+		raise SecondaryPolice.police
+	}
+}

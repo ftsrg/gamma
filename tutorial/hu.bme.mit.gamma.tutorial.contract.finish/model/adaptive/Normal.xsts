@@ -1,0 +1,309 @@
+type Region_Normal : { __Inactive__, firstState, hotViolation, state0, state2, state4, AcceptingState }
+var priorityOutputREVERSED_displayYellow_In_Normal : boolean = false
+var priorityOutputREVERSED_displayRed_In_Normal : boolean = false
+var secondaryOutputREVERSED_displayGreen_In_Normal : boolean = false
+var secondaryOutput_displayGreen_Out_Normal : boolean = false
+var secondaryOutput_displayYellow_Out_Normal : boolean = false
+var secondaryOutput_displayRed_Out_Normal : boolean = false
+var priorityOutput_displayYellow_Out_Normal : boolean = false
+var priorityOutput_displayGreen_Out_Normal : boolean = false
+var secondaryOutputREVERSED_displayRed_In_Normal : boolean = false
+var secondaryOutputREVERSED_displayYellow_In_Normal : boolean = false
+var priorityOutput_displayRed_Out_Normal : boolean = false
+var priorityOutputREVERSED_displayGreen_In_Normal : boolean = false
+ctrl var region_Normal : Region_Normal = __Inactive__
+var IteratingVariable_Normal : integer = 0
+var result_Normal : integer = 0
+var LoopIteratingVariable_Normal : integer = 0
+var delay1_Normal : integer = 0
+var delay2_Normal : integer = 0
+var delay0_Normal : integer = 0
+
+trans {
+	delay1_Normal := (if (delay1_Normal < 2000) then (delay1_Normal + 2000) else delay1_Normal);
+	delay2_Normal := (if (delay2_Normal < 1000) then (delay2_Normal + 2000) else delay2_Normal);
+	delay0_Normal := (if (delay0_Normal < 1000) then (delay0_Normal + 2000) else delay0_Normal);
+	choice {
+		assume (((region_Normal == state2)));
+		region_Normal := __Inactive__;
+		choice {
+			assume ((IteratingVariable_Normal <= 1) && ((!((((2000 <= delay1_Normal) && secondaryOutputREVERSED_displayYellow_In_Normal) && ((IteratingVariable_Normal >= 0) && (IteratingVariable_Normal <= 1)))))));
+			IteratingVariable_Normal := (IteratingVariable_Normal + 1);
+			region_Normal := state2;
+			delay1_Normal := 0;
+		} or {
+			assume ((((2000 <= delay1_Normal) && secondaryOutputREVERSED_displayYellow_In_Normal) && ((IteratingVariable_Normal >= 0) && (IteratingVariable_Normal <= 1))));
+			secondaryOutput_displayYellow_Out_Normal := true;
+			IteratingVariable_Normal := 0;
+			choice {
+				assume ((0 <= 1) && ((!(((secondaryOutputREVERSED_displayRed_In_Normal && (priorityOutputREVERSED_displayGreen_In_Normal && (1000 <= delay2_Normal))))))));
+				IteratingVariable_Normal := (0 + 1);
+				region_Normal := state4;
+				delay2_Normal := 0;
+			} or {
+				assume (((secondaryOutputREVERSED_displayRed_In_Normal && (priorityOutputREVERSED_displayGreen_In_Normal && (1000 <= delay2_Normal)))));
+				secondaryOutput_displayRed_Out_Normal := true;
+				priorityOutput_displayGreen_Out_Normal := true;
+				IteratingVariable_Normal := 0;
+				result_Normal := 2;
+				region_Normal := AcceptingState;
+			}
+		} or {
+			assume ((!((IteratingVariable_Normal <= 1))) && (!((((2000 <= delay1_Normal) && secondaryOutputREVERSED_displayYellow_In_Normal) && ((IteratingVariable_Normal >= 0) && (IteratingVariable_Normal <= 1))))));
+			result_Normal := 0;
+			region_Normal := hotViolation;
+		}
+	} or {
+		assume (((region_Normal == state0)));
+		region_Normal := __Inactive__;
+		choice {
+			assume ((IteratingVariable_Normal <= 1) && ((!(((priorityOutputREVERSED_displayRed_In_Normal && (secondaryOutputREVERSED_displayGreen_In_Normal && (1000 <= delay0_Normal))) && ((IteratingVariable_Normal >= 0) && (IteratingVariable_Normal <= 1)))))));
+			IteratingVariable_Normal := (IteratingVariable_Normal + 1);
+			region_Normal := state0;
+			delay0_Normal := 0;
+		} or {
+			assume (((priorityOutputREVERSED_displayRed_In_Normal && (secondaryOutputREVERSED_displayGreen_In_Normal && (1000 <= delay0_Normal))) && ((IteratingVariable_Normal >= 0) && (IteratingVariable_Normal <= 1))));
+			priorityOutput_displayRed_Out_Normal := true;
+			secondaryOutput_displayGreen_Out_Normal := true;
+			IteratingVariable_Normal := 0;
+			choice {
+				assume ((0 <= 1) && ((!((((2000 <= delay1_Normal) && secondaryOutputREVERSED_displayYellow_In_Normal))))));
+				IteratingVariable_Normal := (0 + 1);
+				region_Normal := state2;
+				delay1_Normal := 0;
+			} or {
+				assume ((((2000 <= delay1_Normal) && secondaryOutputREVERSED_displayYellow_In_Normal)));
+				secondaryOutput_displayYellow_Out_Normal := true;
+				IteratingVariable_Normal := 0;
+				choice {
+					assume ((0 <= 1) && ((!(((secondaryOutputREVERSED_displayRed_In_Normal && (priorityOutputREVERSED_displayGreen_In_Normal && (1000 <= delay2_Normal))))))));
+					IteratingVariable_Normal := (0 + 1);
+					region_Normal := state4;
+					delay2_Normal := 0;
+				} or {
+					assume (((secondaryOutputREVERSED_displayRed_In_Normal && (priorityOutputREVERSED_displayGreen_In_Normal && (1000 <= delay2_Normal)))));
+					secondaryOutput_displayRed_Out_Normal := true;
+					priorityOutput_displayGreen_Out_Normal := true;
+					IteratingVariable_Normal := 0;
+					result_Normal := 2;
+					region_Normal := AcceptingState;
+				}
+			}
+		} or {
+			assume ((!((IteratingVariable_Normal <= 1))) && (!(((priorityOutputREVERSED_displayRed_In_Normal && (secondaryOutputREVERSED_displayGreen_In_Normal && (1000 <= delay0_Normal))) && ((IteratingVariable_Normal >= 0) && (IteratingVariable_Normal <= 1))))));
+			result_Normal := 0;
+			region_Normal := hotViolation;
+		}
+	} or {
+		assume (((region_Normal == firstState)));
+		region_Normal := __Inactive__;
+		choice {
+			assume ((IteratingVariable_Normal <= 1) && ((!((priorityOutputREVERSED_displayYellow_In_Normal && ((IteratingVariable_Normal >= 0) && (IteratingVariable_Normal <= 1)))))));
+			IteratingVariable_Normal := (IteratingVariable_Normal + 1);
+			region_Normal := firstState;
+		} or {
+			assume ((priorityOutputREVERSED_displayYellow_In_Normal && ((IteratingVariable_Normal >= 0) && (IteratingVariable_Normal <= 1))));
+			priorityOutput_displayYellow_Out_Normal := true;
+			IteratingVariable_Normal := 0;
+			choice {
+				assume ((0 <= 1) && ((!(((priorityOutputREVERSED_displayRed_In_Normal && (secondaryOutputREVERSED_displayGreen_In_Normal && (1000 <= delay0_Normal))))))));
+				IteratingVariable_Normal := (0 + 1);
+				region_Normal := state0;
+				delay0_Normal := 0;
+			} or {
+				assume (((priorityOutputREVERSED_displayRed_In_Normal && (secondaryOutputREVERSED_displayGreen_In_Normal && (1000 <= delay0_Normal)))));
+				priorityOutput_displayRed_Out_Normal := true;
+				secondaryOutput_displayGreen_Out_Normal := true;
+				IteratingVariable_Normal := 0;
+				choice {
+					assume ((0 <= 1) && ((!((((2000 <= delay1_Normal) && secondaryOutputREVERSED_displayYellow_In_Normal))))));
+					IteratingVariable_Normal := (0 + 1);
+					region_Normal := state2;
+					delay1_Normal := 0;
+				} or {
+					assume ((((2000 <= delay1_Normal) && secondaryOutputREVERSED_displayYellow_In_Normal)));
+					secondaryOutput_displayYellow_Out_Normal := true;
+					IteratingVariable_Normal := 0;
+					choice {
+						assume ((0 <= 1) && ((!(((secondaryOutputREVERSED_displayRed_In_Normal && (priorityOutputREVERSED_displayGreen_In_Normal && (1000 <= delay2_Normal))))))));
+						IteratingVariable_Normal := (0 + 1);
+						region_Normal := state4;
+						delay2_Normal := 0;
+					} or {
+						assume (((secondaryOutputREVERSED_displayRed_In_Normal && (priorityOutputREVERSED_displayGreen_In_Normal && (1000 <= delay2_Normal)))));
+						secondaryOutput_displayRed_Out_Normal := true;
+						priorityOutput_displayGreen_Out_Normal := true;
+						IteratingVariable_Normal := 0;
+						result_Normal := 2;
+						region_Normal := AcceptingState;
+					}
+				}
+			}
+		} or {
+			assume ((!((IteratingVariable_Normal <= 1))) && (!((priorityOutputREVERSED_displayYellow_In_Normal && ((IteratingVariable_Normal >= 0) && (IteratingVariable_Normal <= 1))))));
+			result_Normal := 0;
+			region_Normal := hotViolation;
+		}
+	} or {
+		assume (((region_Normal == state4)));
+		region_Normal := __Inactive__;
+		choice {
+			assume ((IteratingVariable_Normal <= 1) && ((!(((secondaryOutputREVERSED_displayRed_In_Normal && (priorityOutputREVERSED_displayGreen_In_Normal && (1000 <= delay2_Normal))) && ((IteratingVariable_Normal >= 0) && (IteratingVariable_Normal <= 1)))))));
+			IteratingVariable_Normal := (IteratingVariable_Normal + 1);
+			region_Normal := state4;
+			delay2_Normal := 0;
+		} or {
+			assume (((secondaryOutputREVERSED_displayRed_In_Normal && (priorityOutputREVERSED_displayGreen_In_Normal && (1000 <= delay2_Normal))) && ((IteratingVariable_Normal >= 0) && (IteratingVariable_Normal <= 1))));
+			secondaryOutput_displayRed_Out_Normal := true;
+			priorityOutput_displayGreen_Out_Normal := true;
+			IteratingVariable_Normal := 0;
+			result_Normal := 2;
+			region_Normal := AcceptingState;
+		} or {
+			assume ((!((IteratingVariable_Normal <= 1))) && (!(((secondaryOutputREVERSED_displayRed_In_Normal && (priorityOutputREVERSED_displayGreen_In_Normal && (1000 <= delay2_Normal))) && ((IteratingVariable_Normal >= 0) && (IteratingVariable_Normal <= 1))))));
+			result_Normal := 0;
+			region_Normal := hotViolation;
+		}
+	} or {
+		assume (!(((((region_Normal == state2))) || (((region_Normal == state0))) || (((region_Normal == firstState))) || (((region_Normal == state4))))));
+	}
+	priorityOutputREVERSED_displayYellow_In_Normal := false;
+	priorityOutputREVERSED_displayGreen_In_Normal := false;
+	secondaryOutputREVERSED_displayRed_In_Normal := false;
+	priorityOutputREVERSED_displayRed_In_Normal := false;
+	secondaryOutputREVERSED_displayGreen_In_Normal := false;
+	secondaryOutputREVERSED_displayYellow_In_Normal := false;
+}
+init {
+	result_Normal := 0;
+	IteratingVariable_Normal := 0;
+	LoopIteratingVariable_Normal := 0;
+	delay0_Normal := 1000;
+	delay1_Normal := 2000;
+	delay2_Normal := 1000;
+	region_Normal := __Inactive__;
+	priorityOutputREVERSED_displayYellow_In_Normal := false;
+	priorityOutputREVERSED_displayRed_In_Normal := false;
+	secondaryOutputREVERSED_displayGreen_In_Normal := false;
+	secondaryOutputREVERSED_displayRed_In_Normal := false;
+	secondaryOutputREVERSED_displayYellow_In_Normal := false;
+	priorityOutputREVERSED_displayGreen_In_Normal := false;
+	secondaryOutput_displayGreen_Out_Normal := false;
+	secondaryOutput_displayYellow_Out_Normal := false;
+	secondaryOutput_displayRed_Out_Normal := false;
+	priorityOutput_displayYellow_Out_Normal := false;
+	priorityOutput_displayGreen_Out_Normal := false;
+	priorityOutput_displayRed_Out_Normal := false;
+	result_Normal := 1;
+	LoopIteratingVariable_Normal := 1;
+	choice {
+		assume ((IteratingVariable_Normal <= 1) && ((!((priorityOutputREVERSED_displayYellow_In_Normal && ((IteratingVariable_Normal >= 0) && (IteratingVariable_Normal <= 1)))))));
+		IteratingVariable_Normal := (IteratingVariable_Normal + 1);
+		region_Normal := firstState;
+	} or {
+		assume ((priorityOutputREVERSED_displayYellow_In_Normal && ((IteratingVariable_Normal >= 0) && (IteratingVariable_Normal <= 1))));
+		priorityOutput_displayYellow_Out_Normal := true;
+		IteratingVariable_Normal := 0;
+		choice {
+			assume ((IteratingVariable_Normal <= 1) && ((!(((priorityOutputREVERSED_displayRed_In_Normal && (secondaryOutputREVERSED_displayGreen_In_Normal && (1000 <= delay0_Normal))) && ((IteratingVariable_Normal >= 0) && (IteratingVariable_Normal <= 1)))))));
+			IteratingVariable_Normal := (IteratingVariable_Normal + 1);
+			region_Normal := state0;
+		} or {
+			assume (((priorityOutputREVERSED_displayRed_In_Normal && (secondaryOutputREVERSED_displayGreen_In_Normal && (1000 <= delay0_Normal))) && ((IteratingVariable_Normal >= 0) && (IteratingVariable_Normal <= 1))));
+			priorityOutput_displayRed_Out_Normal := true;
+			secondaryOutput_displayGreen_Out_Normal := true;
+			IteratingVariable_Normal := 0;
+			choice {
+				assume ((IteratingVariable_Normal <= 1) && ((!((((2000 <= delay1_Normal) && secondaryOutputREVERSED_displayYellow_In_Normal) && ((IteratingVariable_Normal >= 0) && (IteratingVariable_Normal <= 1)))))));
+				IteratingVariable_Normal := (IteratingVariable_Normal + 1);
+				region_Normal := state2;
+			} or {
+				assume ((((2000 <= delay1_Normal) && secondaryOutputREVERSED_displayYellow_In_Normal) && ((IteratingVariable_Normal >= 0) && (IteratingVariable_Normal <= 1))));
+				secondaryOutput_displayYellow_Out_Normal := true;
+				IteratingVariable_Normal := 0;
+				choice {
+					assume ((IteratingVariable_Normal <= 1) && ((!(((secondaryOutputREVERSED_displayRed_In_Normal && (priorityOutputREVERSED_displayGreen_In_Normal && (1000 <= delay2_Normal))) && ((IteratingVariable_Normal >= 0) && (IteratingVariable_Normal <= 1)))))));
+					IteratingVariable_Normal := (IteratingVariable_Normal + 1);
+					region_Normal := state4;
+				} or {
+					assume (((secondaryOutputREVERSED_displayRed_In_Normal && (priorityOutputREVERSED_displayGreen_In_Normal && (1000 <= delay2_Normal))) && ((IteratingVariable_Normal >= 0) && (IteratingVariable_Normal <= 1))));
+					secondaryOutput_displayRed_Out_Normal := true;
+					priorityOutput_displayGreen_Out_Normal := true;
+					IteratingVariable_Normal := 0;
+					result_Normal := 2;
+					region_Normal := AcceptingState;
+				} or {
+					assume ((!((IteratingVariable_Normal <= 1))) && (!(((secondaryOutputREVERSED_displayRed_In_Normal && (priorityOutputREVERSED_displayGreen_In_Normal && (1000 <= delay2_Normal))) && ((IteratingVariable_Normal >= 0) && (IteratingVariable_Normal <= 1))))));
+					result_Normal := 0;
+					region_Normal := hotViolation;
+				}
+			} or {
+				assume ((!((IteratingVariable_Normal <= 1))) && (!((((2000 <= delay1_Normal) && secondaryOutputREVERSED_displayYellow_In_Normal) && ((IteratingVariable_Normal >= 0) && (IteratingVariable_Normal <= 1))))));
+				result_Normal := 0;
+				region_Normal := hotViolation;
+			}
+		} or {
+			assume ((!((IteratingVariable_Normal <= 1))) && (!(((priorityOutputREVERSED_displayRed_In_Normal && (secondaryOutputREVERSED_displayGreen_In_Normal && (1000 <= delay0_Normal))) && ((IteratingVariable_Normal >= 0) && (IteratingVariable_Normal <= 1))))));
+			result_Normal := 0;
+			region_Normal := hotViolation;
+		}
+	} or {
+		assume ((!((IteratingVariable_Normal <= 1))) && (!((priorityOutputREVERSED_displayYellow_In_Normal && ((IteratingVariable_Normal >= 0) && (IteratingVariable_Normal <= 1))))));
+		result_Normal := 0;
+		region_Normal := hotViolation;
+	}
+	choice {
+		assume (region_Normal == firstState);
+	} or {
+		assume (region_Normal == hotViolation);
+	} or {
+		assume (region_Normal == state0);
+		delay0_Normal := 0;
+	} or {
+		assume (region_Normal == state2);
+		delay1_Normal := 0;
+	} or {
+		assume (region_Normal == state4);
+		delay2_Normal := 0;
+	} or {
+		assume (region_Normal == AcceptingState);
+	}
+}
+env {
+	choice {
+		priorityOutputREVERSED_displayRed_In_Normal := true;
+	} or {
+		priorityOutputREVERSED_displayRed_In_Normal := false;
+	}
+	choice {
+		secondaryOutputREVERSED_displayYellow_In_Normal := true;
+	} or {
+		secondaryOutputREVERSED_displayYellow_In_Normal := false;
+	}
+	choice {
+		priorityOutputREVERSED_displayGreen_In_Normal := true;
+	} or {
+		priorityOutputREVERSED_displayGreen_In_Normal := false;
+	}
+	choice {
+		secondaryOutputREVERSED_displayRed_In_Normal := true;
+	} or {
+		secondaryOutputREVERSED_displayRed_In_Normal := false;
+	}
+	choice {
+		secondaryOutputREVERSED_displayGreen_In_Normal := true;
+	} or {
+		secondaryOutputREVERSED_displayGreen_In_Normal := false;
+	}
+	choice {
+		priorityOutputREVERSED_displayYellow_In_Normal := true;
+	} or {
+		priorityOutputREVERSED_displayYellow_In_Normal := false;
+	}
+	priorityOutput_displayYellow_Out_Normal := false;
+	priorityOutput_displayGreen_Out_Normal := false;
+	secondaryOutput_displayYellow_Out_Normal := false;
+	secondaryOutput_displayRed_Out_Normal := false;
+	secondaryOutput_displayGreen_Out_Normal := false;
+	priorityOutput_displayRed_Out_Normal := false;
+}

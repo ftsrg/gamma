@@ -1,0 +1,138 @@
+type Region_Init : { __Inactive__, firstState, hotViolation, state0, AcceptingState }
+var priorityOutputREVERSED_displayGreen_In_Init : boolean = false
+var priorityOutput_displayRed_Out_Init : boolean = false
+var priorityOutput_displayGreen_Out_Init : boolean = false
+var secondaryOutput_displayRed_Out_Init : boolean = false
+var secondaryOutputREVERSED_displayRed_In_Init : boolean = false
+var priorityOutputREVERSED_displayRed_In_Init : boolean = false
+ctrl var region_Init : Region_Init = __Inactive__
+var IteratingVariable_Init : integer = 0
+var LoopIteratingVariable_Init : integer = 0
+var result_Init : integer = 0
+
+trans {
+	choice {
+		assume (((region_Init == firstState)));
+		region_Init := __Inactive__;
+		choice {
+			assume ((IteratingVariable_Init <= 1) && ((!(((priorityOutputREVERSED_displayRed_In_Init && secondaryOutputREVERSED_displayRed_In_Init) && ((IteratingVariable_Init >= 0) && (IteratingVariable_Init <= 1)))))));
+			IteratingVariable_Init := (IteratingVariable_Init + 1);
+			region_Init := firstState;
+		} or {
+			assume (((priorityOutputREVERSED_displayRed_In_Init && secondaryOutputREVERSED_displayRed_In_Init) && ((IteratingVariable_Init >= 0) && (IteratingVariable_Init <= 1))));
+			priorityOutput_displayRed_Out_Init := true;
+			secondaryOutput_displayRed_Out_Init := true;
+			IteratingVariable_Init := 0;
+			choice {
+				assume ((0 <= 1) && ((!((priorityOutputREVERSED_displayGreen_In_Init)))));
+				IteratingVariable_Init := (0 + 1);
+				region_Init := state0;
+			} or {
+				assume ((priorityOutputREVERSED_displayGreen_In_Init));
+				priorityOutput_displayGreen_Out_Init := true;
+				IteratingVariable_Init := 0;
+				result_Init := 2;
+				region_Init := AcceptingState;
+			}
+		} or {
+			assume ((!((IteratingVariable_Init <= 1))) && (!(((priorityOutputREVERSED_displayRed_In_Init && secondaryOutputREVERSED_displayRed_In_Init) && ((IteratingVariable_Init >= 0) && (IteratingVariable_Init <= 1))))));
+			result_Init := 0;
+			region_Init := hotViolation;
+		}
+	} or {
+		assume (((region_Init == state0)));
+		region_Init := __Inactive__;
+		choice {
+			assume ((IteratingVariable_Init <= 1) && ((!((priorityOutputREVERSED_displayGreen_In_Init && ((IteratingVariable_Init >= 0) && (IteratingVariable_Init <= 1)))))));
+			IteratingVariable_Init := (IteratingVariable_Init + 1);
+			region_Init := state0;
+		} or {
+			assume ((priorityOutputREVERSED_displayGreen_In_Init && ((IteratingVariable_Init >= 0) && (IteratingVariable_Init <= 1))));
+			priorityOutput_displayGreen_Out_Init := true;
+			IteratingVariable_Init := 0;
+			result_Init := 2;
+			region_Init := AcceptingState;
+		} or {
+			assume ((!((IteratingVariable_Init <= 1))) && (!((priorityOutputREVERSED_displayGreen_In_Init && ((IteratingVariable_Init >= 0) && (IteratingVariable_Init <= 1))))));
+			result_Init := 0;
+			region_Init := hotViolation;
+		}
+	} or {
+		assume (!(((((region_Init == firstState))) || (((region_Init == state0))))));
+	}
+	priorityOutputREVERSED_displayRed_In_Init := false;
+	secondaryOutputREVERSED_displayRed_In_Init := false;
+	priorityOutputREVERSED_displayGreen_In_Init := false;
+}
+init {
+	result_Init := 0;
+	IteratingVariable_Init := 0;
+	LoopIteratingVariable_Init := 0;
+	region_Init := __Inactive__;
+	priorityOutputREVERSED_displayGreen_In_Init := false;
+	secondaryOutputREVERSED_displayRed_In_Init := false;
+	priorityOutputREVERSED_displayRed_In_Init := false;
+	priorityOutput_displayRed_Out_Init := false;
+	priorityOutput_displayGreen_Out_Init := false;
+	secondaryOutput_displayRed_Out_Init := false;
+	result_Init := 1;
+	LoopIteratingVariable_Init := 1;
+	choice {
+		assume ((IteratingVariable_Init <= 1) && ((!(((priorityOutputREVERSED_displayRed_In_Init && secondaryOutputREVERSED_displayRed_In_Init) && ((IteratingVariable_Init >= 0) && (IteratingVariable_Init <= 1)))))));
+		IteratingVariable_Init := (IteratingVariable_Init + 1);
+		region_Init := firstState;
+	} or {
+		assume (((priorityOutputREVERSED_displayRed_In_Init && secondaryOutputREVERSED_displayRed_In_Init) && ((IteratingVariable_Init >= 0) && (IteratingVariable_Init <= 1))));
+		priorityOutput_displayRed_Out_Init := true;
+		secondaryOutput_displayRed_Out_Init := true;
+		IteratingVariable_Init := 0;
+		choice {
+			assume ((IteratingVariable_Init <= 1) && ((!((priorityOutputREVERSED_displayGreen_In_Init && ((IteratingVariable_Init >= 0) && (IteratingVariable_Init <= 1)))))));
+			IteratingVariable_Init := (IteratingVariable_Init + 1);
+			region_Init := state0;
+		} or {
+			assume ((priorityOutputREVERSED_displayGreen_In_Init && ((IteratingVariable_Init >= 0) && (IteratingVariable_Init <= 1))));
+			priorityOutput_displayGreen_Out_Init := true;
+			IteratingVariable_Init := 0;
+			result_Init := 2;
+			region_Init := AcceptingState;
+		} or {
+			assume ((!((IteratingVariable_Init <= 1))) && (!((priorityOutputREVERSED_displayGreen_In_Init && ((IteratingVariable_Init >= 0) && (IteratingVariable_Init <= 1))))));
+			result_Init := 0;
+			region_Init := hotViolation;
+		}
+	} or {
+		assume ((!((IteratingVariable_Init <= 1))) && (!(((priorityOutputREVERSED_displayRed_In_Init && secondaryOutputREVERSED_displayRed_In_Init) && ((IteratingVariable_Init >= 0) && (IteratingVariable_Init <= 1))))));
+		result_Init := 0;
+		region_Init := hotViolation;
+	}
+	choice {
+		assume (region_Init == firstState);
+	} or {
+		assume (region_Init == hotViolation);
+	} or {
+		assume (region_Init == state0);
+	} or {
+		assume (region_Init == AcceptingState);
+	}
+}
+env {
+	choice {
+		priorityOutputREVERSED_displayRed_In_Init := true;
+	} or {
+		priorityOutputREVERSED_displayRed_In_Init := false;
+	}
+	choice {
+		priorityOutputREVERSED_displayGreen_In_Init := true;
+	} or {
+		priorityOutputREVERSED_displayGreen_In_Init := false;
+	}
+	choice {
+		secondaryOutputREVERSED_displayRed_In_Init := true;
+	} or {
+		secondaryOutputREVERSED_displayRed_In_Init := false;
+	}
+	priorityOutput_displayGreen_Out_Init := false;
+	priorityOutput_displayRed_Out_Init := false;
+	secondaryOutput_displayRed_Out_Init := false;
+}

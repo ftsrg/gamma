@@ -1,0 +1,944 @@
+<?xml version="1.0" encoding="ASCII"?>
+<hu.bme.mit.gamma.statechart.interface:Package xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:hu.bme.mit.gamma.action="http://www.mit.bme.hu/gamma/action/Model" xmlns:hu.bme.mit.gamma.expression="http://www.mit.bme.hu/gamma/expression/Model" xmlns:hu.bme.mit.gamma.statechart="http://www.mit.bme.hu/gamma/statechart/Model/Statechart" xmlns:hu.bme.mit.gamma.statechart.composite="http://www.mit.bme.hu/gamma/statechart/Model/Composite" xmlns:hu.bme.mit.gamma.statechart.interface="http://www.mit.bme.hu/gamma/statechart/Model/Interface" name="normalView">
+  <components xsi:type="hu.bme.mit.gamma.statechart.composite:CascadeCompositeComponent" name="Normal">
+    <ports name="police">
+      <interfaceRealization realizationMode="REQUIRED">
+        <interface href="platform:/resource/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.3"/>
+      </interfaceRealization>
+    </ports>
+    <ports name="policeREVERSED">
+      <interfaceRealization>
+        <interface href="platform:/resource/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.3"/>
+      </interfaceRealization>
+    </ports>
+    <ports name="priorityOutput">
+      <interfaceRealization>
+        <interface href="platform:/resource/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.0"/>
+      </interfaceRealization>
+    </ports>
+    <ports name="priorityOutputREVERSED">
+      <interfaceRealization realizationMode="REQUIRED">
+        <interface href="platform:/resource/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.0"/>
+      </interfaceRealization>
+    </ports>
+    <ports name="secondaryOutput">
+      <interfaceRealization>
+        <interface href="platform:/resource/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.0"/>
+      </interfaceRealization>
+    </ports>
+    <ports name="secondaryOutputREVERSED">
+      <interfaceRealization realizationMode="REQUIRED">
+        <interface href="platform:/resource/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.0"/>
+      </interfaceRealization>
+    </ports>
+    <portBindings compositeSystemPort="//@components.0/@ports.0">
+      <instancePortReference instance="//@components.0/@components.0" port="//@components.1/@ports.0"/>
+    </portBindings>
+    <portBindings compositeSystemPort="//@components.0/@ports.1">
+      <instancePortReference instance="//@components.0/@components.0" port="//@components.1/@ports.1"/>
+    </portBindings>
+    <portBindings compositeSystemPort="//@components.0/@ports.2">
+      <instancePortReference instance="//@components.0/@components.0" port="//@components.1/@ports.2"/>
+    </portBindings>
+    <portBindings compositeSystemPort="//@components.0/@ports.3">
+      <instancePortReference instance="//@components.0/@components.0" port="//@components.1/@ports.3"/>
+    </portBindings>
+    <portBindings compositeSystemPort="//@components.0/@ports.4">
+      <instancePortReference instance="//@components.0/@components.0" port="//@components.1/@ports.4"/>
+    </portBindings>
+    <portBindings compositeSystemPort="//@components.0/@ports.5">
+      <instancePortReference instance="//@components.0/@components.0" port="//@components.1/@ports.5"/>
+    </portBindings>
+    <components name="Normal" type="//@components.1"/>
+  </components>
+  <components xsi:type="hu.bme.mit.gamma.statechart:StatechartDefinition" name="Normal" transitionPriority="VALUE_BASED">
+    <ports name="police">
+      <interfaceRealization realizationMode="REQUIRED">
+        <interface href="platform:/resource/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.3"/>
+      </interfaceRealization>
+    </ports>
+    <ports name="policeREVERSED">
+      <interfaceRealization>
+        <interface href="platform:/resource/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.3"/>
+      </interfaceRealization>
+    </ports>
+    <ports name="priorityOutput">
+      <interfaceRealization>
+        <interface href="platform:/resource/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.0"/>
+      </interfaceRealization>
+    </ports>
+    <ports name="priorityOutputREVERSED">
+      <interfaceRealization realizationMode="REQUIRED">
+        <interface href="platform:/resource/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.0"/>
+      </interfaceRealization>
+    </ports>
+    <ports name="secondaryOutput">
+      <interfaceRealization>
+        <interface href="platform:/resource/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.0"/>
+      </interfaceRealization>
+    </ports>
+    <ports name="secondaryOutputREVERSED">
+      <interfaceRealization realizationMode="REQUIRED">
+        <interface href="platform:/resource/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.0"/>
+      </interfaceRealization>
+    </ports>
+    <regions name="region">
+      <stateNodes xsi:type="hu.bme.mit.gamma.statechart:InitialState" name="Initial"/>
+      <stateNodes xsi:type="hu.bme.mit.gamma.statechart:State" name="firstState"/>
+      <stateNodes xsi:type="hu.bme.mit.gamma.statechart:State" name="hotViolation"/>
+      <stateNodes xsi:type="hu.bme.mit.gamma.statechart:ChoiceState" name="Choice1"/>
+      <stateNodes xsi:type="hu.bme.mit.gamma.statechart:State" name="state0">
+        <entryActions xsi:type="hu.bme.mit.gamma.statechart:SetTimeoutAction" timeoutDeclaration="//@components.1/@timeoutDeclarations.0">
+          <time>
+            <value xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1000"/>
+          </time>
+        </entryActions>
+      </stateNodes>
+      <stateNodes xsi:type="hu.bme.mit.gamma.statechart:ChoiceState" name="Choice3"/>
+      <stateNodes xsi:type="hu.bme.mit.gamma.statechart:State" name="state2">
+        <entryActions xsi:type="hu.bme.mit.gamma.statechart:SetTimeoutAction" timeoutDeclaration="//@components.1/@timeoutDeclarations.1">
+          <time>
+            <value xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="2000"/>
+          </time>
+        </entryActions>
+      </stateNodes>
+      <stateNodes xsi:type="hu.bme.mit.gamma.statechart:ChoiceState" name="Choice5"/>
+      <stateNodes xsi:type="hu.bme.mit.gamma.statechart:State" name="state4">
+        <entryActions xsi:type="hu.bme.mit.gamma.statechart:SetTimeoutAction" timeoutDeclaration="//@components.1/@timeoutDeclarations.2">
+          <time>
+            <value xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1000"/>
+          </time>
+        </entryActions>
+      </stateNodes>
+      <stateNodes xsi:type="hu.bme.mit.gamma.statechart:ChoiceState" name="Choice7"/>
+      <stateNodes xsi:type="hu.bme.mit.gamma.statechart:State" name="AcceptingState"/>
+      <stateNodes xsi:type="hu.bme.mit.gamma.statechart:ChoiceState" name="Choice11"/>
+      <stateNodes xsi:type="hu.bme.mit.gamma.statechart:ChoiceState" name="Choice31"/>
+      <stateNodes xsi:type="hu.bme.mit.gamma.statechart:ChoiceState" name="Choice32"/>
+      <stateNodes xsi:type="hu.bme.mit.gamma.statechart:ChoiceState" name="Choice51"/>
+      <stateNodes xsi:type="hu.bme.mit.gamma.statechart:ChoiceState" name="Choice52"/>
+      <stateNodes xsi:type="hu.bme.mit.gamma.statechart:ChoiceState" name="Choice53"/>
+      <stateNodes xsi:type="hu.bme.mit.gamma.statechart:ChoiceState" name="Choice71"/>
+      <stateNodes xsi:type="hu.bme.mit.gamma.statechart:ChoiceState" name="Choice72"/>
+      <stateNodes xsi:type="hu.bme.mit.gamma.statechart:ChoiceState" name="Choice73"/>
+      <stateNodes xsi:type="hu.bme.mit.gamma.statechart:ChoiceState" name="Choice74"/>
+    </regions>
+    <variableDeclarations name="result">
+      <type xsi:type="hu.bme.mit.gamma.expression:IntegerTypeDefinition"/>
+      <expression xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="0"/>
+    </variableDeclarations>
+    <variableDeclarations name="IteratingVariable">
+      <type xsi:type="hu.bme.mit.gamma.expression:IntegerTypeDefinition"/>
+      <expression xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="0"/>
+    </variableDeclarations>
+    <variableDeclarations name="LoopIteratingVariable">
+      <type xsi:type="hu.bme.mit.gamma.expression:IntegerTypeDefinition"/>
+      <expression xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="0"/>
+    </variableDeclarations>
+    <timeoutDeclarations name="delay0"/>
+    <timeoutDeclarations name="delay1"/>
+    <timeoutDeclarations name="delay2"/>
+    <transitions sourceState="//@components.1/@regions.0/@stateNodes.0" targetState="//@components.1/@regions.0/@stateNodes.3">
+      <effects xsi:type="hu.bme.mit.gamma.action:AssignmentStatement">
+        <lhs xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.0"/>
+        <rhs xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1"/>
+      </effects>
+      <effects xsi:type="hu.bme.mit.gamma.action:AssignmentStatement">
+        <lhs xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.2"/>
+        <rhs xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1"/>
+      </effects>
+    </transitions>
+    <transitions priority="2" sourceState="//@components.1/@regions.0/@stateNodes.3" targetState="//@components.1/@regions.0/@stateNodes.1">
+      <guard xsi:type="hu.bme.mit.gamma.expression:LessEqualExpression">
+        <leftOperand xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+        <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1"/>
+      </guard>
+      <effects xsi:type="hu.bme.mit.gamma.action:AssignmentStatement">
+        <lhs xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+        <rhs xsi:type="hu.bme.mit.gamma.expression:AddExpression">
+          <operands xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+          <operands xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1"/>
+        </rhs>
+      </effects>
+    </transitions>
+    <transitions priority="3" sourceState="//@components.1/@regions.0/@stateNodes.3" targetState="//@components.1/@regions.0/@stateNodes.5">
+      <trigger xsi:type="hu.bme.mit.gamma.statechart.interface:EventTrigger">
+        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.1/@ports.3">
+          <event href="platform:/resource/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.1/@event"/>
+        </eventReference>
+      </trigger>
+      <guard xsi:type="hu.bme.mit.gamma.expression:AndExpression">
+        <operands xsi:type="hu.bme.mit.gamma.expression:GreaterEqualExpression">
+          <leftOperand xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+          <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="0"/>
+        </operands>
+        <operands xsi:type="hu.bme.mit.gamma.expression:LessEqualExpression">
+          <leftOperand xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+          <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1"/>
+        </operands>
+      </guard>
+      <effects xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.1/@ports.2">
+        <event href="platform:/resource/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.1/@event"/>
+      </effects>
+      <effects xsi:type="hu.bme.mit.gamma.action:AssignmentStatement">
+        <lhs xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+        <rhs xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="0"/>
+      </effects>
+    </transitions>
+    <transitions priority="1" sourceState="//@components.1/@regions.0/@stateNodes.3" targetState="//@components.1/@regions.0/@stateNodes.2">
+      <guard xsi:type="hu.bme.mit.gamma.expression:ElseExpression"/>
+      <effects xsi:type="hu.bme.mit.gamma.action:AssignmentStatement">
+        <lhs xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.0"/>
+        <rhs xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="0"/>
+      </effects>
+    </transitions>
+    <transitions sourceState="//@components.1/@regions.0/@stateNodes.1" targetState="//@components.1/@regions.0/@stateNodes.11">
+      <trigger xsi:type="hu.bme.mit.gamma.statechart:OnCycleTrigger"/>
+    </transitions>
+    <transitions priority="2" sourceState="//@components.1/@regions.0/@stateNodes.5" targetState="//@components.1/@regions.0/@stateNodes.4">
+      <guard xsi:type="hu.bme.mit.gamma.expression:LessEqualExpression">
+        <leftOperand xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+        <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1"/>
+      </guard>
+      <effects xsi:type="hu.bme.mit.gamma.action:AssignmentStatement">
+        <lhs xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+        <rhs xsi:type="hu.bme.mit.gamma.expression:AddExpression">
+          <operands xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+          <operands xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1"/>
+        </rhs>
+      </effects>
+    </transitions>
+    <transitions priority="3" sourceState="//@components.1/@regions.0/@stateNodes.5" targetState="//@components.1/@regions.0/@stateNodes.7">
+      <trigger xsi:type="hu.bme.mit.gamma.statechart:BinaryTrigger">
+        <leftOperand xsi:type="hu.bme.mit.gamma.statechart.interface:EventTrigger">
+          <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.1/@ports.3">
+            <event href="platform:/resource/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.0/@event"/>
+          </eventReference>
+        </leftOperand>
+        <rightOperand xsi:type="hu.bme.mit.gamma.statechart:BinaryTrigger">
+          <leftOperand xsi:type="hu.bme.mit.gamma.statechart.interface:EventTrigger">
+            <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.1/@ports.5">
+              <event href="platform:/resource/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.2/@event"/>
+            </eventReference>
+          </leftOperand>
+          <rightOperand xsi:type="hu.bme.mit.gamma.statechart.interface:EventTrigger">
+            <eventReference xsi:type="hu.bme.mit.gamma.statechart:TimeoutEventReference" timeout="//@components.1/@timeoutDeclarations.0"/>
+          </rightOperand>
+        </rightOperand>
+      </trigger>
+      <guard xsi:type="hu.bme.mit.gamma.expression:AndExpression">
+        <operands xsi:type="hu.bme.mit.gamma.expression:GreaterEqualExpression">
+          <leftOperand xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+          <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="0"/>
+        </operands>
+        <operands xsi:type="hu.bme.mit.gamma.expression:LessEqualExpression">
+          <leftOperand xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+          <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1"/>
+        </operands>
+      </guard>
+      <effects xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.1/@ports.2">
+        <event href="platform:/resource/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.0/@event"/>
+      </effects>
+      <effects xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.1/@ports.4">
+        <event href="platform:/resource/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.2/@event"/>
+      </effects>
+      <effects xsi:type="hu.bme.mit.gamma.action:AssignmentStatement">
+        <lhs xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+        <rhs xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="0"/>
+      </effects>
+    </transitions>
+    <transitions priority="1" sourceState="//@components.1/@regions.0/@stateNodes.5" targetState="//@components.1/@regions.0/@stateNodes.2">
+      <guard xsi:type="hu.bme.mit.gamma.expression:ElseExpression"/>
+      <effects xsi:type="hu.bme.mit.gamma.action:AssignmentStatement">
+        <lhs xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.0"/>
+        <rhs xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="0"/>
+      </effects>
+    </transitions>
+    <transitions sourceState="//@components.1/@regions.0/@stateNodes.4" targetState="//@components.1/@regions.0/@stateNodes.12">
+      <trigger xsi:type="hu.bme.mit.gamma.statechart:OnCycleTrigger"/>
+    </transitions>
+    <transitions priority="2" sourceState="//@components.1/@regions.0/@stateNodes.7" targetState="//@components.1/@regions.0/@stateNodes.6">
+      <guard xsi:type="hu.bme.mit.gamma.expression:LessEqualExpression">
+        <leftOperand xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+        <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1"/>
+      </guard>
+      <effects xsi:type="hu.bme.mit.gamma.action:AssignmentStatement">
+        <lhs xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+        <rhs xsi:type="hu.bme.mit.gamma.expression:AddExpression">
+          <operands xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+          <operands xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1"/>
+        </rhs>
+      </effects>
+    </transitions>
+    <transitions priority="3" sourceState="//@components.1/@regions.0/@stateNodes.7" targetState="//@components.1/@regions.0/@stateNodes.9">
+      <trigger xsi:type="hu.bme.mit.gamma.statechart:BinaryTrigger">
+        <leftOperand xsi:type="hu.bme.mit.gamma.statechart.interface:EventTrigger">
+          <eventReference xsi:type="hu.bme.mit.gamma.statechart:TimeoutEventReference" timeout="//@components.1/@timeoutDeclarations.1"/>
+        </leftOperand>
+        <rightOperand xsi:type="hu.bme.mit.gamma.statechart.interface:EventTrigger">
+          <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.1/@ports.5">
+            <event href="platform:/resource/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.1/@event"/>
+          </eventReference>
+        </rightOperand>
+      </trigger>
+      <guard xsi:type="hu.bme.mit.gamma.expression:AndExpression">
+        <operands xsi:type="hu.bme.mit.gamma.expression:GreaterEqualExpression">
+          <leftOperand xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+          <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="0"/>
+        </operands>
+        <operands xsi:type="hu.bme.mit.gamma.expression:LessEqualExpression">
+          <leftOperand xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+          <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1"/>
+        </operands>
+      </guard>
+      <effects xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.1/@ports.4">
+        <event href="platform:/resource/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.1/@event"/>
+      </effects>
+      <effects xsi:type="hu.bme.mit.gamma.action:AssignmentStatement">
+        <lhs xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+        <rhs xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="0"/>
+      </effects>
+    </transitions>
+    <transitions priority="1" sourceState="//@components.1/@regions.0/@stateNodes.7" targetState="//@components.1/@regions.0/@stateNodes.2">
+      <guard xsi:type="hu.bme.mit.gamma.expression:ElseExpression"/>
+      <effects xsi:type="hu.bme.mit.gamma.action:AssignmentStatement">
+        <lhs xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.0"/>
+        <rhs xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="0"/>
+      </effects>
+    </transitions>
+    <transitions sourceState="//@components.1/@regions.0/@stateNodes.6" targetState="//@components.1/@regions.0/@stateNodes.14">
+      <trigger xsi:type="hu.bme.mit.gamma.statechart:OnCycleTrigger"/>
+    </transitions>
+    <transitions priority="2" sourceState="//@components.1/@regions.0/@stateNodes.9" targetState="//@components.1/@regions.0/@stateNodes.8">
+      <guard xsi:type="hu.bme.mit.gamma.expression:LessEqualExpression">
+        <leftOperand xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+        <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1"/>
+      </guard>
+      <effects xsi:type="hu.bme.mit.gamma.action:AssignmentStatement">
+        <lhs xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+        <rhs xsi:type="hu.bme.mit.gamma.expression:AddExpression">
+          <operands xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+          <operands xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1"/>
+        </rhs>
+      </effects>
+    </transitions>
+    <transitions priority="3" sourceState="//@components.1/@regions.0/@stateNodes.9" targetState="//@components.1/@regions.0/@stateNodes.10">
+      <trigger xsi:type="hu.bme.mit.gamma.statechart:BinaryTrigger">
+        <leftOperand xsi:type="hu.bme.mit.gamma.statechart.interface:EventTrigger">
+          <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.1/@ports.5">
+            <event href="platform:/resource/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.0/@event"/>
+          </eventReference>
+        </leftOperand>
+        <rightOperand xsi:type="hu.bme.mit.gamma.statechart:BinaryTrigger">
+          <leftOperand xsi:type="hu.bme.mit.gamma.statechart.interface:EventTrigger">
+            <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.1/@ports.3">
+              <event href="platform:/resource/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.2/@event"/>
+            </eventReference>
+          </leftOperand>
+          <rightOperand xsi:type="hu.bme.mit.gamma.statechart.interface:EventTrigger">
+            <eventReference xsi:type="hu.bme.mit.gamma.statechart:TimeoutEventReference" timeout="//@components.1/@timeoutDeclarations.2"/>
+          </rightOperand>
+        </rightOperand>
+      </trigger>
+      <guard xsi:type="hu.bme.mit.gamma.expression:AndExpression">
+        <operands xsi:type="hu.bme.mit.gamma.expression:GreaterEqualExpression">
+          <leftOperand xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+          <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="0"/>
+        </operands>
+        <operands xsi:type="hu.bme.mit.gamma.expression:LessEqualExpression">
+          <leftOperand xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+          <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1"/>
+        </operands>
+      </guard>
+      <effects xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.1/@ports.4">
+        <event href="platform:/resource/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.0/@event"/>
+      </effects>
+      <effects xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.1/@ports.2">
+        <event href="platform:/resource/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.2/@event"/>
+      </effects>
+      <effects xsi:type="hu.bme.mit.gamma.action:AssignmentStatement">
+        <lhs xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+        <rhs xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="0"/>
+      </effects>
+      <effects xsi:type="hu.bme.mit.gamma.action:AssignmentStatement">
+        <lhs xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.0"/>
+        <rhs xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="2"/>
+      </effects>
+    </transitions>
+    <transitions priority="1" sourceState="//@components.1/@regions.0/@stateNodes.9" targetState="//@components.1/@regions.0/@stateNodes.2">
+      <guard xsi:type="hu.bme.mit.gamma.expression:ElseExpression"/>
+      <effects xsi:type="hu.bme.mit.gamma.action:AssignmentStatement">
+        <lhs xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.0"/>
+        <rhs xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="0"/>
+      </effects>
+    </transitions>
+    <transitions sourceState="//@components.1/@regions.0/@stateNodes.8" targetState="//@components.1/@regions.0/@stateNodes.17">
+      <trigger xsi:type="hu.bme.mit.gamma.statechart:OnCycleTrigger"/>
+    </transitions>
+    <transitions priority="2" sourceState="//@components.1/@regions.0/@stateNodes.11" targetState="//@components.1/@regions.0/@stateNodes.1">
+      <guard xsi:type="hu.bme.mit.gamma.expression:LessEqualExpression">
+        <leftOperand xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+        <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1"/>
+      </guard>
+      <effects xsi:type="hu.bme.mit.gamma.action:AssignmentStatement">
+        <lhs xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+        <rhs xsi:type="hu.bme.mit.gamma.expression:AddExpression">
+          <operands xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+          <operands xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1"/>
+        </rhs>
+      </effects>
+    </transitions>
+    <transitions priority="3" sourceState="//@components.1/@regions.0/@stateNodes.11" targetState="//@components.1/@regions.0/@stateNodes.13">
+      <trigger xsi:type="hu.bme.mit.gamma.statechart.interface:EventTrigger">
+        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.1/@ports.3">
+          <event href="platform:/resource/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.1/@event"/>
+        </eventReference>
+      </trigger>
+      <guard xsi:type="hu.bme.mit.gamma.expression:AndExpression">
+        <operands xsi:type="hu.bme.mit.gamma.expression:GreaterEqualExpression">
+          <leftOperand xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+          <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="0"/>
+        </operands>
+        <operands xsi:type="hu.bme.mit.gamma.expression:LessEqualExpression">
+          <leftOperand xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+          <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1"/>
+        </operands>
+      </guard>
+      <effects xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.1/@ports.2">
+        <event href="platform:/resource/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.1/@event"/>
+      </effects>
+      <effects xsi:type="hu.bme.mit.gamma.action:AssignmentStatement">
+        <lhs xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+        <rhs xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="0"/>
+      </effects>
+    </transitions>
+    <transitions priority="1" sourceState="//@components.1/@regions.0/@stateNodes.11" targetState="//@components.1/@regions.0/@stateNodes.2">
+      <guard xsi:type="hu.bme.mit.gamma.expression:ElseExpression"/>
+      <effects xsi:type="hu.bme.mit.gamma.action:AssignmentStatement">
+        <lhs xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.0"/>
+        <rhs xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="0"/>
+      </effects>
+    </transitions>
+    <transitions priority="2" sourceState="//@components.1/@regions.0/@stateNodes.12" targetState="//@components.1/@regions.0/@stateNodes.4">
+      <guard xsi:type="hu.bme.mit.gamma.expression:LessEqualExpression">
+        <leftOperand xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+        <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1"/>
+      </guard>
+      <effects xsi:type="hu.bme.mit.gamma.action:AssignmentStatement">
+        <lhs xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+        <rhs xsi:type="hu.bme.mit.gamma.expression:AddExpression">
+          <operands xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+          <operands xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1"/>
+        </rhs>
+      </effects>
+    </transitions>
+    <transitions priority="3" sourceState="//@components.1/@regions.0/@stateNodes.12" targetState="//@components.1/@regions.0/@stateNodes.15">
+      <trigger xsi:type="hu.bme.mit.gamma.statechart:BinaryTrigger">
+        <leftOperand xsi:type="hu.bme.mit.gamma.statechart.interface:EventTrigger">
+          <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.1/@ports.3">
+            <event href="platform:/resource/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.0/@event"/>
+          </eventReference>
+        </leftOperand>
+        <rightOperand xsi:type="hu.bme.mit.gamma.statechart:BinaryTrigger">
+          <leftOperand xsi:type="hu.bme.mit.gamma.statechart.interface:EventTrigger">
+            <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.1/@ports.5">
+              <event href="platform:/resource/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.2/@event"/>
+            </eventReference>
+          </leftOperand>
+          <rightOperand xsi:type="hu.bme.mit.gamma.statechart.interface:EventTrigger">
+            <eventReference xsi:type="hu.bme.mit.gamma.statechart:TimeoutEventReference" timeout="//@components.1/@timeoutDeclarations.0"/>
+          </rightOperand>
+        </rightOperand>
+      </trigger>
+      <guard xsi:type="hu.bme.mit.gamma.expression:AndExpression">
+        <operands xsi:type="hu.bme.mit.gamma.expression:GreaterEqualExpression">
+          <leftOperand xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+          <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="0"/>
+        </operands>
+        <operands xsi:type="hu.bme.mit.gamma.expression:LessEqualExpression">
+          <leftOperand xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+          <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1"/>
+        </operands>
+      </guard>
+      <effects xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.1/@ports.2">
+        <event href="platform:/resource/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.0/@event"/>
+      </effects>
+      <effects xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.1/@ports.4">
+        <event href="platform:/resource/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.2/@event"/>
+      </effects>
+      <effects xsi:type="hu.bme.mit.gamma.action:AssignmentStatement">
+        <lhs xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+        <rhs xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="0"/>
+      </effects>
+    </transitions>
+    <transitions priority="1" sourceState="//@components.1/@regions.0/@stateNodes.12" targetState="//@components.1/@regions.0/@stateNodes.2">
+      <guard xsi:type="hu.bme.mit.gamma.expression:ElseExpression"/>
+      <effects xsi:type="hu.bme.mit.gamma.action:AssignmentStatement">
+        <lhs xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.0"/>
+        <rhs xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="0"/>
+      </effects>
+    </transitions>
+    <transitions priority="2" sourceState="//@components.1/@regions.0/@stateNodes.13" targetState="//@components.1/@regions.0/@stateNodes.4">
+      <guard xsi:type="hu.bme.mit.gamma.expression:LessEqualExpression">
+        <leftOperand xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+        <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1"/>
+      </guard>
+      <effects xsi:type="hu.bme.mit.gamma.action:AssignmentStatement">
+        <lhs xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+        <rhs xsi:type="hu.bme.mit.gamma.expression:AddExpression">
+          <operands xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+          <operands xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1"/>
+        </rhs>
+      </effects>
+    </transitions>
+    <transitions priority="3" sourceState="//@components.1/@regions.0/@stateNodes.13" targetState="//@components.1/@regions.0/@stateNodes.16">
+      <trigger xsi:type="hu.bme.mit.gamma.statechart:BinaryTrigger">
+        <leftOperand xsi:type="hu.bme.mit.gamma.statechart.interface:EventTrigger">
+          <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.1/@ports.3">
+            <event href="platform:/resource/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.0/@event"/>
+          </eventReference>
+        </leftOperand>
+        <rightOperand xsi:type="hu.bme.mit.gamma.statechart:BinaryTrigger">
+          <leftOperand xsi:type="hu.bme.mit.gamma.statechart.interface:EventTrigger">
+            <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.1/@ports.5">
+              <event href="platform:/resource/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.2/@event"/>
+            </eventReference>
+          </leftOperand>
+          <rightOperand xsi:type="hu.bme.mit.gamma.statechart.interface:EventTrigger">
+            <eventReference xsi:type="hu.bme.mit.gamma.statechart:TimeoutEventReference" timeout="//@components.1/@timeoutDeclarations.0"/>
+          </rightOperand>
+        </rightOperand>
+      </trigger>
+      <guard xsi:type="hu.bme.mit.gamma.expression:AndExpression">
+        <operands xsi:type="hu.bme.mit.gamma.expression:GreaterEqualExpression">
+          <leftOperand xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+          <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="0"/>
+        </operands>
+        <operands xsi:type="hu.bme.mit.gamma.expression:LessEqualExpression">
+          <leftOperand xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+          <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1"/>
+        </operands>
+      </guard>
+      <effects xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.1/@ports.2">
+        <event href="platform:/resource/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.0/@event"/>
+      </effects>
+      <effects xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.1/@ports.4">
+        <event href="platform:/resource/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.2/@event"/>
+      </effects>
+      <effects xsi:type="hu.bme.mit.gamma.action:AssignmentStatement">
+        <lhs xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+        <rhs xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="0"/>
+      </effects>
+    </transitions>
+    <transitions priority="1" sourceState="//@components.1/@regions.0/@stateNodes.13" targetState="//@components.1/@regions.0/@stateNodes.2">
+      <guard xsi:type="hu.bme.mit.gamma.expression:ElseExpression"/>
+      <effects xsi:type="hu.bme.mit.gamma.action:AssignmentStatement">
+        <lhs xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.0"/>
+        <rhs xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="0"/>
+      </effects>
+    </transitions>
+    <transitions priority="2" sourceState="//@components.1/@regions.0/@stateNodes.14" targetState="//@components.1/@regions.0/@stateNodes.6">
+      <guard xsi:type="hu.bme.mit.gamma.expression:LessEqualExpression">
+        <leftOperand xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+        <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1"/>
+      </guard>
+      <effects xsi:type="hu.bme.mit.gamma.action:AssignmentStatement">
+        <lhs xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+        <rhs xsi:type="hu.bme.mit.gamma.expression:AddExpression">
+          <operands xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+          <operands xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1"/>
+        </rhs>
+      </effects>
+    </transitions>
+    <transitions priority="3" sourceState="//@components.1/@regions.0/@stateNodes.14" targetState="//@components.1/@regions.0/@stateNodes.18">
+      <trigger xsi:type="hu.bme.mit.gamma.statechart:BinaryTrigger">
+        <leftOperand xsi:type="hu.bme.mit.gamma.statechart.interface:EventTrigger">
+          <eventReference xsi:type="hu.bme.mit.gamma.statechart:TimeoutEventReference" timeout="//@components.1/@timeoutDeclarations.1"/>
+        </leftOperand>
+        <rightOperand xsi:type="hu.bme.mit.gamma.statechart.interface:EventTrigger">
+          <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.1/@ports.5">
+            <event href="platform:/resource/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.1/@event"/>
+          </eventReference>
+        </rightOperand>
+      </trigger>
+      <guard xsi:type="hu.bme.mit.gamma.expression:AndExpression">
+        <operands xsi:type="hu.bme.mit.gamma.expression:GreaterEqualExpression">
+          <leftOperand xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+          <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="0"/>
+        </operands>
+        <operands xsi:type="hu.bme.mit.gamma.expression:LessEqualExpression">
+          <leftOperand xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+          <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1"/>
+        </operands>
+      </guard>
+      <effects xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.1/@ports.4">
+        <event href="platform:/resource/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.1/@event"/>
+      </effects>
+      <effects xsi:type="hu.bme.mit.gamma.action:AssignmentStatement">
+        <lhs xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+        <rhs xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="0"/>
+      </effects>
+    </transitions>
+    <transitions priority="1" sourceState="//@components.1/@regions.0/@stateNodes.14" targetState="//@components.1/@regions.0/@stateNodes.2">
+      <guard xsi:type="hu.bme.mit.gamma.expression:ElseExpression"/>
+      <effects xsi:type="hu.bme.mit.gamma.action:AssignmentStatement">
+        <lhs xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.0"/>
+        <rhs xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="0"/>
+      </effects>
+    </transitions>
+    <transitions priority="2" sourceState="//@components.1/@regions.0/@stateNodes.15" targetState="//@components.1/@regions.0/@stateNodes.6">
+      <guard xsi:type="hu.bme.mit.gamma.expression:LessEqualExpression">
+        <leftOperand xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+        <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1"/>
+      </guard>
+      <effects xsi:type="hu.bme.mit.gamma.action:AssignmentStatement">
+        <lhs xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+        <rhs xsi:type="hu.bme.mit.gamma.expression:AddExpression">
+          <operands xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+          <operands xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1"/>
+        </rhs>
+      </effects>
+    </transitions>
+    <transitions priority="3" sourceState="//@components.1/@regions.0/@stateNodes.15" targetState="//@components.1/@regions.0/@stateNodes.19">
+      <trigger xsi:type="hu.bme.mit.gamma.statechart:BinaryTrigger">
+        <leftOperand xsi:type="hu.bme.mit.gamma.statechart.interface:EventTrigger">
+          <eventReference xsi:type="hu.bme.mit.gamma.statechart:TimeoutEventReference" timeout="//@components.1/@timeoutDeclarations.1"/>
+        </leftOperand>
+        <rightOperand xsi:type="hu.bme.mit.gamma.statechart.interface:EventTrigger">
+          <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.1/@ports.5">
+            <event href="platform:/resource/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.1/@event"/>
+          </eventReference>
+        </rightOperand>
+      </trigger>
+      <guard xsi:type="hu.bme.mit.gamma.expression:AndExpression">
+        <operands xsi:type="hu.bme.mit.gamma.expression:GreaterEqualExpression">
+          <leftOperand xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+          <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="0"/>
+        </operands>
+        <operands xsi:type="hu.bme.mit.gamma.expression:LessEqualExpression">
+          <leftOperand xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+          <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1"/>
+        </operands>
+      </guard>
+      <effects xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.1/@ports.4">
+        <event href="platform:/resource/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.1/@event"/>
+      </effects>
+      <effects xsi:type="hu.bme.mit.gamma.action:AssignmentStatement">
+        <lhs xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+        <rhs xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="0"/>
+      </effects>
+    </transitions>
+    <transitions priority="1" sourceState="//@components.1/@regions.0/@stateNodes.15" targetState="//@components.1/@regions.0/@stateNodes.2">
+      <guard xsi:type="hu.bme.mit.gamma.expression:ElseExpression"/>
+      <effects xsi:type="hu.bme.mit.gamma.action:AssignmentStatement">
+        <lhs xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.0"/>
+        <rhs xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="0"/>
+      </effects>
+    </transitions>
+    <transitions priority="2" sourceState="//@components.1/@regions.0/@stateNodes.16" targetState="//@components.1/@regions.0/@stateNodes.6">
+      <guard xsi:type="hu.bme.mit.gamma.expression:LessEqualExpression">
+        <leftOperand xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+        <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1"/>
+      </guard>
+      <effects xsi:type="hu.bme.mit.gamma.action:AssignmentStatement">
+        <lhs xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+        <rhs xsi:type="hu.bme.mit.gamma.expression:AddExpression">
+          <operands xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+          <operands xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1"/>
+        </rhs>
+      </effects>
+    </transitions>
+    <transitions priority="3" sourceState="//@components.1/@regions.0/@stateNodes.16" targetState="//@components.1/@regions.0/@stateNodes.20">
+      <trigger xsi:type="hu.bme.mit.gamma.statechart:BinaryTrigger">
+        <leftOperand xsi:type="hu.bme.mit.gamma.statechart.interface:EventTrigger">
+          <eventReference xsi:type="hu.bme.mit.gamma.statechart:TimeoutEventReference" timeout="//@components.1/@timeoutDeclarations.1"/>
+        </leftOperand>
+        <rightOperand xsi:type="hu.bme.mit.gamma.statechart.interface:EventTrigger">
+          <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.1/@ports.5">
+            <event href="platform:/resource/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.1/@event"/>
+          </eventReference>
+        </rightOperand>
+      </trigger>
+      <guard xsi:type="hu.bme.mit.gamma.expression:AndExpression">
+        <operands xsi:type="hu.bme.mit.gamma.expression:GreaterEqualExpression">
+          <leftOperand xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+          <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="0"/>
+        </operands>
+        <operands xsi:type="hu.bme.mit.gamma.expression:LessEqualExpression">
+          <leftOperand xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+          <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1"/>
+        </operands>
+      </guard>
+      <effects xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.1/@ports.4">
+        <event href="platform:/resource/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.1/@event"/>
+      </effects>
+      <effects xsi:type="hu.bme.mit.gamma.action:AssignmentStatement">
+        <lhs xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+        <rhs xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="0"/>
+      </effects>
+    </transitions>
+    <transitions priority="1" sourceState="//@components.1/@regions.0/@stateNodes.16" targetState="//@components.1/@regions.0/@stateNodes.2">
+      <guard xsi:type="hu.bme.mit.gamma.expression:ElseExpression"/>
+      <effects xsi:type="hu.bme.mit.gamma.action:AssignmentStatement">
+        <lhs xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.0"/>
+        <rhs xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="0"/>
+      </effects>
+    </transitions>
+    <transitions priority="2" sourceState="//@components.1/@regions.0/@stateNodes.17" targetState="//@components.1/@regions.0/@stateNodes.8">
+      <guard xsi:type="hu.bme.mit.gamma.expression:LessEqualExpression">
+        <leftOperand xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+        <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1"/>
+      </guard>
+      <effects xsi:type="hu.bme.mit.gamma.action:AssignmentStatement">
+        <lhs xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+        <rhs xsi:type="hu.bme.mit.gamma.expression:AddExpression">
+          <operands xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+          <operands xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1"/>
+        </rhs>
+      </effects>
+    </transitions>
+    <transitions priority="3" sourceState="//@components.1/@regions.0/@stateNodes.17" targetState="//@components.1/@regions.0/@stateNodes.10">
+      <trigger xsi:type="hu.bme.mit.gamma.statechart:BinaryTrigger">
+        <leftOperand xsi:type="hu.bme.mit.gamma.statechart.interface:EventTrigger">
+          <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.1/@ports.5">
+            <event href="platform:/resource/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.0/@event"/>
+          </eventReference>
+        </leftOperand>
+        <rightOperand xsi:type="hu.bme.mit.gamma.statechart:BinaryTrigger">
+          <leftOperand xsi:type="hu.bme.mit.gamma.statechart.interface:EventTrigger">
+            <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.1/@ports.3">
+              <event href="platform:/resource/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.2/@event"/>
+            </eventReference>
+          </leftOperand>
+          <rightOperand xsi:type="hu.bme.mit.gamma.statechart.interface:EventTrigger">
+            <eventReference xsi:type="hu.bme.mit.gamma.statechart:TimeoutEventReference" timeout="//@components.1/@timeoutDeclarations.2"/>
+          </rightOperand>
+        </rightOperand>
+      </trigger>
+      <guard xsi:type="hu.bme.mit.gamma.expression:AndExpression">
+        <operands xsi:type="hu.bme.mit.gamma.expression:GreaterEqualExpression">
+          <leftOperand xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+          <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="0"/>
+        </operands>
+        <operands xsi:type="hu.bme.mit.gamma.expression:LessEqualExpression">
+          <leftOperand xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+          <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1"/>
+        </operands>
+      </guard>
+      <effects xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.1/@ports.4">
+        <event href="platform:/resource/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.0/@event"/>
+      </effects>
+      <effects xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.1/@ports.2">
+        <event href="platform:/resource/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.2/@event"/>
+      </effects>
+      <effects xsi:type="hu.bme.mit.gamma.action:AssignmentStatement">
+        <lhs xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+        <rhs xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="0"/>
+      </effects>
+      <effects xsi:type="hu.bme.mit.gamma.action:AssignmentStatement">
+        <lhs xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.0"/>
+        <rhs xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="2"/>
+      </effects>
+    </transitions>
+    <transitions priority="1" sourceState="//@components.1/@regions.0/@stateNodes.17" targetState="//@components.1/@regions.0/@stateNodes.2">
+      <guard xsi:type="hu.bme.mit.gamma.expression:ElseExpression"/>
+      <effects xsi:type="hu.bme.mit.gamma.action:AssignmentStatement">
+        <lhs xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.0"/>
+        <rhs xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="0"/>
+      </effects>
+    </transitions>
+    <transitions priority="2" sourceState="//@components.1/@regions.0/@stateNodes.18" targetState="//@components.1/@regions.0/@stateNodes.8">
+      <guard xsi:type="hu.bme.mit.gamma.expression:LessEqualExpression">
+        <leftOperand xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+        <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1"/>
+      </guard>
+      <effects xsi:type="hu.bme.mit.gamma.action:AssignmentStatement">
+        <lhs xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+        <rhs xsi:type="hu.bme.mit.gamma.expression:AddExpression">
+          <operands xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+          <operands xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1"/>
+        </rhs>
+      </effects>
+    </transitions>
+    <transitions priority="3" sourceState="//@components.1/@regions.0/@stateNodes.18" targetState="//@components.1/@regions.0/@stateNodes.10">
+      <trigger xsi:type="hu.bme.mit.gamma.statechart:BinaryTrigger">
+        <leftOperand xsi:type="hu.bme.mit.gamma.statechart.interface:EventTrigger">
+          <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.1/@ports.5">
+            <event href="platform:/resource/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.0/@event"/>
+          </eventReference>
+        </leftOperand>
+        <rightOperand xsi:type="hu.bme.mit.gamma.statechart:BinaryTrigger">
+          <leftOperand xsi:type="hu.bme.mit.gamma.statechart.interface:EventTrigger">
+            <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.1/@ports.3">
+              <event href="platform:/resource/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.2/@event"/>
+            </eventReference>
+          </leftOperand>
+          <rightOperand xsi:type="hu.bme.mit.gamma.statechart.interface:EventTrigger">
+            <eventReference xsi:type="hu.bme.mit.gamma.statechart:TimeoutEventReference" timeout="//@components.1/@timeoutDeclarations.2"/>
+          </rightOperand>
+        </rightOperand>
+      </trigger>
+      <guard xsi:type="hu.bme.mit.gamma.expression:AndExpression">
+        <operands xsi:type="hu.bme.mit.gamma.expression:GreaterEqualExpression">
+          <leftOperand xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+          <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="0"/>
+        </operands>
+        <operands xsi:type="hu.bme.mit.gamma.expression:LessEqualExpression">
+          <leftOperand xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+          <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1"/>
+        </operands>
+      </guard>
+      <effects xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.1/@ports.4">
+        <event href="platform:/resource/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.0/@event"/>
+      </effects>
+      <effects xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.1/@ports.2">
+        <event href="platform:/resource/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.2/@event"/>
+      </effects>
+      <effects xsi:type="hu.bme.mit.gamma.action:AssignmentStatement">
+        <lhs xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+        <rhs xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="0"/>
+      </effects>
+      <effects xsi:type="hu.bme.mit.gamma.action:AssignmentStatement">
+        <lhs xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.0"/>
+        <rhs xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="2"/>
+      </effects>
+    </transitions>
+    <transitions priority="1" sourceState="//@components.1/@regions.0/@stateNodes.18" targetState="//@components.1/@regions.0/@stateNodes.2">
+      <guard xsi:type="hu.bme.mit.gamma.expression:ElseExpression"/>
+      <effects xsi:type="hu.bme.mit.gamma.action:AssignmentStatement">
+        <lhs xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.0"/>
+        <rhs xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="0"/>
+      </effects>
+    </transitions>
+    <transitions priority="2" sourceState="//@components.1/@regions.0/@stateNodes.19" targetState="//@components.1/@regions.0/@stateNodes.8">
+      <guard xsi:type="hu.bme.mit.gamma.expression:LessEqualExpression">
+        <leftOperand xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+        <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1"/>
+      </guard>
+      <effects xsi:type="hu.bme.mit.gamma.action:AssignmentStatement">
+        <lhs xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+        <rhs xsi:type="hu.bme.mit.gamma.expression:AddExpression">
+          <operands xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+          <operands xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1"/>
+        </rhs>
+      </effects>
+    </transitions>
+    <transitions priority="3" sourceState="//@components.1/@regions.0/@stateNodes.19" targetState="//@components.1/@regions.0/@stateNodes.10">
+      <trigger xsi:type="hu.bme.mit.gamma.statechart:BinaryTrigger">
+        <leftOperand xsi:type="hu.bme.mit.gamma.statechart.interface:EventTrigger">
+          <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.1/@ports.5">
+            <event href="platform:/resource/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.0/@event"/>
+          </eventReference>
+        </leftOperand>
+        <rightOperand xsi:type="hu.bme.mit.gamma.statechart:BinaryTrigger">
+          <leftOperand xsi:type="hu.bme.mit.gamma.statechart.interface:EventTrigger">
+            <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.1/@ports.3">
+              <event href="platform:/resource/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.2/@event"/>
+            </eventReference>
+          </leftOperand>
+          <rightOperand xsi:type="hu.bme.mit.gamma.statechart.interface:EventTrigger">
+            <eventReference xsi:type="hu.bme.mit.gamma.statechart:TimeoutEventReference" timeout="//@components.1/@timeoutDeclarations.2"/>
+          </rightOperand>
+        </rightOperand>
+      </trigger>
+      <guard xsi:type="hu.bme.mit.gamma.expression:AndExpression">
+        <operands xsi:type="hu.bme.mit.gamma.expression:GreaterEqualExpression">
+          <leftOperand xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+          <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="0"/>
+        </operands>
+        <operands xsi:type="hu.bme.mit.gamma.expression:LessEqualExpression">
+          <leftOperand xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+          <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1"/>
+        </operands>
+      </guard>
+      <effects xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.1/@ports.4">
+        <event href="platform:/resource/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.0/@event"/>
+      </effects>
+      <effects xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.1/@ports.2">
+        <event href="platform:/resource/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.2/@event"/>
+      </effects>
+      <effects xsi:type="hu.bme.mit.gamma.action:AssignmentStatement">
+        <lhs xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+        <rhs xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="0"/>
+      </effects>
+      <effects xsi:type="hu.bme.mit.gamma.action:AssignmentStatement">
+        <lhs xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.0"/>
+        <rhs xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="2"/>
+      </effects>
+    </transitions>
+    <transitions priority="1" sourceState="//@components.1/@regions.0/@stateNodes.19" targetState="//@components.1/@regions.0/@stateNodes.2">
+      <guard xsi:type="hu.bme.mit.gamma.expression:ElseExpression"/>
+      <effects xsi:type="hu.bme.mit.gamma.action:AssignmentStatement">
+        <lhs xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.0"/>
+        <rhs xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="0"/>
+      </effects>
+    </transitions>
+    <transitions priority="2" sourceState="//@components.1/@regions.0/@stateNodes.20" targetState="//@components.1/@regions.0/@stateNodes.8">
+      <guard xsi:type="hu.bme.mit.gamma.expression:LessEqualExpression">
+        <leftOperand xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+        <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1"/>
+      </guard>
+      <effects xsi:type="hu.bme.mit.gamma.action:AssignmentStatement">
+        <lhs xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+        <rhs xsi:type="hu.bme.mit.gamma.expression:AddExpression">
+          <operands xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+          <operands xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1"/>
+        </rhs>
+      </effects>
+    </transitions>
+    <transitions priority="3" sourceState="//@components.1/@regions.0/@stateNodes.20" targetState="//@components.1/@regions.0/@stateNodes.10">
+      <trigger xsi:type="hu.bme.mit.gamma.statechart:BinaryTrigger">
+        <leftOperand xsi:type="hu.bme.mit.gamma.statechart.interface:EventTrigger">
+          <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.1/@ports.5">
+            <event href="platform:/resource/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.0/@event"/>
+          </eventReference>
+        </leftOperand>
+        <rightOperand xsi:type="hu.bme.mit.gamma.statechart:BinaryTrigger">
+          <leftOperand xsi:type="hu.bme.mit.gamma.statechart.interface:EventTrigger">
+            <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.1/@ports.3">
+              <event href="platform:/resource/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.2/@event"/>
+            </eventReference>
+          </leftOperand>
+          <rightOperand xsi:type="hu.bme.mit.gamma.statechart.interface:EventTrigger">
+            <eventReference xsi:type="hu.bme.mit.gamma.statechart:TimeoutEventReference" timeout="//@components.1/@timeoutDeclarations.2"/>
+          </rightOperand>
+        </rightOperand>
+      </trigger>
+      <guard xsi:type="hu.bme.mit.gamma.expression:AndExpression">
+        <operands xsi:type="hu.bme.mit.gamma.expression:GreaterEqualExpression">
+          <leftOperand xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+          <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="0"/>
+        </operands>
+        <operands xsi:type="hu.bme.mit.gamma.expression:LessEqualExpression">
+          <leftOperand xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+          <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1"/>
+        </operands>
+      </guard>
+      <effects xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.1/@ports.4">
+        <event href="platform:/resource/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.0/@event"/>
+      </effects>
+      <effects xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.1/@ports.2">
+        <event href="platform:/resource/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.2/@event"/>
+      </effects>
+      <effects xsi:type="hu.bme.mit.gamma.action:AssignmentStatement">
+        <lhs xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+        <rhs xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="0"/>
+      </effects>
+      <effects xsi:type="hu.bme.mit.gamma.action:AssignmentStatement">
+        <lhs xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.0"/>
+        <rhs xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="2"/>
+      </effects>
+    </transitions>
+    <transitions priority="1" sourceState="//@components.1/@regions.0/@stateNodes.20" targetState="//@components.1/@regions.0/@stateNodes.2">
+      <guard xsi:type="hu.bme.mit.gamma.expression:ElseExpression"/>
+      <effects xsi:type="hu.bme.mit.gamma.action:AssignmentStatement">
+        <lhs xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.0"/>
+        <rhs xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="0"/>
+      </effects>
+    </transitions>
+  </components>
+  <annotations xsi:type="hu.bme.mit.gamma.statechart.interface:UnfoldedPackageAnnotation"/>
+  <annotations xsi:type="hu.bme.mit.gamma.statechart.interface:SchedulingConstraintAnnotation">
+    <schedulingConstraint xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="2000"/>
+  </annotations>
+</hu.bme.mit.gamma.statechart.interface:Package>

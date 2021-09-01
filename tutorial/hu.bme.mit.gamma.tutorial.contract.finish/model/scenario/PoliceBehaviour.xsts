@@ -1,0 +1,147 @@
+type Region_PoliceBehaviour : { __Inactive__, firstState, hotViolation, coldViolation, state0, state1, AcceptingState }
+var PoliceInterruptREVERSED_police_Out_PoliceBehaviour : boolean = false
+var PoliceInterrupt_police_In_PoliceBehaviour : boolean = false
+var PriorityPoliceREVERSED_police_In_PoliceBehaviour : boolean = false
+var SecondaryPoliceREVERSED_police_In_PoliceBehaviour : boolean = false
+var PriorityPolice_police_Out_PoliceBehaviour : boolean = false
+var SecondaryPolice_police_Out_PoliceBehaviour : boolean = false
+ctrl var region_PoliceBehaviour : Region_PoliceBehaviour = __Inactive__
+var result_PoliceBehaviour : integer = 0
+var IteratingVariable_PoliceBehaviour : integer = 0
+var LoopIteratingVariable_PoliceBehaviour : integer = 0
+var delay0_PoliceBehaviour : integer = 0
+
+trans {
+	delay0_PoliceBehaviour := (if (delay0_PoliceBehaviour < 2000) then (delay0_PoliceBehaviour + 2000) else delay0_PoliceBehaviour);
+	local var _134390933 : boolean = (region_PoliceBehaviour == firstState);
+	local var _283548879 : boolean = (region_PoliceBehaviour == state0);
+	local var _1468633090 : boolean = (region_PoliceBehaviour == state1);
+	local var _guard_488537357 : boolean = (((_134390933 && (region_PoliceBehaviour == firstState))));
+	choice {
+		assume _guard_488537357;
+		region_PoliceBehaviour := __Inactive__;
+		local var _1797309766 : boolean = (2000 <= delay0_PoliceBehaviour);
+		choice {
+			assume (_1797309766);
+			region_PoliceBehaviour := state0;
+		} or {
+			assume (!(_1797309766));
+			result_PoliceBehaviour := 1;
+			region_PoliceBehaviour := coldViolation;
+		}
+	} or {
+		assume (!(_guard_488537357));
+	}
+	local var _guard_1112083893 : boolean = (((_283548879 && (region_PoliceBehaviour == state0))));
+	choice {
+		assume _guard_1112083893;
+		region_PoliceBehaviour := __Inactive__;
+		local var _750625249 : boolean = PoliceInterrupt_police_In_PoliceBehaviour;
+		choice {
+			assume (PoliceInterrupt_police_In_PoliceBehaviour);
+			PoliceInterruptREVERSED_police_Out_PoliceBehaviour := true;
+			local var _1958279151 : boolean = (IteratingVariable_PoliceBehaviour <= 1);
+			local var _1626214594 : boolean = ((PriorityPoliceREVERSED_police_In_PoliceBehaviour && SecondaryPoliceREVERSED_police_In_PoliceBehaviour) && ((IteratingVariable_PoliceBehaviour >= 0) && (IteratingVariable_PoliceBehaviour <= 1)));
+			choice {
+				assume (_1958279151 && ((!(_1626214594))));
+				IteratingVariable_PoliceBehaviour := (IteratingVariable_PoliceBehaviour + 1);
+				region_PoliceBehaviour := state1;
+			} or {
+				assume (_1626214594);
+				PriorityPolice_police_Out_PoliceBehaviour := true;
+				SecondaryPolice_police_Out_PoliceBehaviour := true;
+				IteratingVariable_PoliceBehaviour := 0;
+				result_PoliceBehaviour := 2;
+				region_PoliceBehaviour := AcceptingState;
+			} or {
+				assume ((!(_1958279151)) && (!(_1626214594)));
+				result_PoliceBehaviour := 0;
+				region_PoliceBehaviour := hotViolation;
+			}
+		} or {
+			assume (!(_750625249));
+			result_PoliceBehaviour := 1;
+			region_PoliceBehaviour := coldViolation;
+		}
+	} or {
+		assume (!(_guard_1112083893));
+	}
+	local var _guard_1236447310 : boolean = (((_1468633090 && (region_PoliceBehaviour == state1))));
+	choice {
+		assume _guard_1236447310;
+		region_PoliceBehaviour := __Inactive__;
+		local var _1639288203 : boolean = (IteratingVariable_PoliceBehaviour <= 1);
+		local var _1815408713 : boolean = ((PriorityPoliceREVERSED_police_In_PoliceBehaviour && SecondaryPoliceREVERSED_police_In_PoliceBehaviour) && ((IteratingVariable_PoliceBehaviour >= 0) && (IteratingVariable_PoliceBehaviour <= 1)));
+		choice {
+			assume (_1639288203 && ((!(_1815408713))));
+			IteratingVariable_PoliceBehaviour := (IteratingVariable_PoliceBehaviour + 1);
+			region_PoliceBehaviour := state1;
+		} or {
+			assume (_1815408713);
+			PriorityPolice_police_Out_PoliceBehaviour := true;
+			SecondaryPolice_police_Out_PoliceBehaviour := true;
+			IteratingVariable_PoliceBehaviour := 0;
+			result_PoliceBehaviour := 2;
+			region_PoliceBehaviour := AcceptingState;
+		} or {
+			assume ((!(_1639288203)) && (!(_1815408713)));
+			result_PoliceBehaviour := 0;
+			region_PoliceBehaviour := hotViolation;
+		}
+	} or {
+		assume (!(_guard_1236447310));
+	}
+	SecondaryPoliceREVERSED_police_In_PoliceBehaviour := false;
+	PriorityPoliceREVERSED_police_In_PoliceBehaviour := false;
+	PoliceInterrupt_police_In_PoliceBehaviour := false;
+}
+init {
+	result_PoliceBehaviour := 0;
+	IteratingVariable_PoliceBehaviour := 0;
+	LoopIteratingVariable_PoliceBehaviour := 0;
+	delay0_PoliceBehaviour := 2000;
+	region_PoliceBehaviour := __Inactive__;
+	PoliceInterrupt_police_In_PoliceBehaviour := false;
+	PriorityPoliceREVERSED_police_In_PoliceBehaviour := false;
+	SecondaryPoliceREVERSED_police_In_PoliceBehaviour := false;
+	PoliceInterruptREVERSED_police_Out_PoliceBehaviour := false;
+	PriorityPolice_police_Out_PoliceBehaviour := false;
+	SecondaryPolice_police_Out_PoliceBehaviour := false;
+	result_PoliceBehaviour := 1;
+	LoopIteratingVariable_PoliceBehaviour := 1;
+	region_PoliceBehaviour := firstState;
+	choice {
+		assume (region_PoliceBehaviour == firstState);
+		delay0_PoliceBehaviour := 0;
+	} or {
+		assume (region_PoliceBehaviour == hotViolation);
+	} or {
+		assume (region_PoliceBehaviour == coldViolation);
+	} or {
+		assume (region_PoliceBehaviour == state0);
+	} or {
+		assume (region_PoliceBehaviour == state1);
+	} or {
+		assume (region_PoliceBehaviour == AcceptingState);
+	}
+}
+env {
+	choice {
+		PoliceInterrupt_police_In_PoliceBehaviour := true;
+	} or {
+		PoliceInterrupt_police_In_PoliceBehaviour := false;
+	}
+	choice {
+		SecondaryPoliceREVERSED_police_In_PoliceBehaviour := true;
+	} or {
+		SecondaryPoliceREVERSED_police_In_PoliceBehaviour := false;
+	}
+	choice {
+		PriorityPoliceREVERSED_police_In_PoliceBehaviour := true;
+	} or {
+		PriorityPoliceREVERSED_police_In_PoliceBehaviour := false;
+	}
+	PoliceInterruptREVERSED_police_Out_PoliceBehaviour := false;
+	SecondaryPolice_police_Out_PoliceBehaviour := false;
+	PriorityPolice_police_Out_PoliceBehaviour := false;
+}
