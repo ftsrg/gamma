@@ -43,6 +43,7 @@ import hu.bme.mit.gamma.statechart.composite.BroadcastChannel;
 import hu.bme.mit.gamma.statechart.composite.CascadeCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.Channel;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference;
 import hu.bme.mit.gamma.statechart.composite.CompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.ControlSpecification;
 import hu.bme.mit.gamma.statechart.composite.InstancePortReference;
@@ -275,6 +276,11 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 			simpleInstances.addAll(getAllSimpleInstances(instance));
 		}
 		return simpleInstances;
+	}
+	
+	public static List<ComponentInstance> getInstances(ComponentInstance instance) {
+		Component type = getDerivedType(instance);
+		return getInstances(type);
 	}
 	
 	public static List<SynchronousComponentInstance> getAllSimpleInstances(ComponentInstance instance) {
@@ -1073,7 +1079,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	public static List<hu.bme.mit.gamma.statechart.statechart.State> getAncestors(StateNode node) {
 		if (node.eContainer().eContainer() instanceof hu.bme.mit.gamma.statechart.statechart.State) {
-			hu.bme.mit.gamma.statechart.statechart.State parentState = (hu.bme.mit.gamma.statechart.statechart.State) node.eContainer().eContainer();
+			hu.bme.mit.gamma.statechart.statechart.State parentState = getParentState(node);
 			List<hu.bme.mit.gamma.statechart.statechart.State> ancestors = getAncestors(parentState);
 			ancestors.add(parentState);
 			return ancestors;
@@ -1089,9 +1095,9 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	public static List<Region> getRegionAncestors(StateNode node) {
 		if (node.eContainer().eContainer() instanceof hu.bme.mit.gamma.statechart.statechart.State) {
-			hu.bme.mit.gamma.statechart.statechart.State parentState = (hu.bme.mit.gamma.statechart.statechart.State) node.eContainer().eContainer();
+			hu.bme.mit.gamma.statechart.statechart.State parentState = getParentState(node);
 			List<Region> ancestors = getRegionAncestors(parentState);
-			ancestors.add((Region) node.eContainer());
+			ancestors.add(getParentRegion(node));
 			return ancestors;
 		}
 		Region parentRegion = (Region) node.eContainer();
@@ -1597,6 +1603,51 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		List<ComponentInstance> parentComponentInstances = getParentComponentInstances(instance);
 		parentComponentInstances.add(instance);
 		return parentComponentInstances;
+	}
+	
+	public static List<ComponentInstance> getComponentInstanceChain(
+			ComponentInstanceReference reference) {
+		ComponentInstance instance = reference.getComponentInstance();
+		ComponentInstanceReference child = reference.getChild();
+		if (child == null) {
+			List<ComponentInstance> instanceList = new ArrayList<ComponentInstance>();
+			instanceList.add(instance);
+			return instanceList;
+		}
+		else {
+			List<ComponentInstance> children = getComponentInstanceChain(child);
+			children.add(0, instance); // See above: mutable list is returned
+			return children;
+		}
+	}
+	
+	public static ComponentInstanceReference getParent(ComponentInstanceReference reference) {
+		return ecoreUtil.getContainerOfType(reference, ComponentInstanceReference.class);
+	}
+	
+	public static ComponentInstanceReference getFirstInstance(ComponentInstanceReference reference) {
+		ComponentInstanceReference parent = getParent(reference);
+		if (parent == null) {
+			return reference;
+		}
+		return getFirstInstance(parent);
+	}
+	
+	public static ComponentInstance getLastInstance(ComponentInstanceReference reference) {
+		ComponentInstanceReference child = reference.getChild();
+		if (child == null) {
+			return reference.getComponentInstance();
+		}
+		return getLastInstance(child);
+	}
+	
+	public static boolean isFirstInstance(ComponentInstanceReference reference) {
+		return getParent(reference) == null;
+	}
+	
+	public static boolean contains(ComponentInstance potentialContainer, ComponentInstance instance) {
+		List<ComponentInstance> instances = getInstances(potentialContainer);
+		return instances.contains(instance);
 	}
 	
 	public static List<SynchronousComponentInstance> getScheduledInstances(

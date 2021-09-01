@@ -16,6 +16,7 @@ import hu.bme.mit.gamma.property.model.ComponentInstanceStateConfigurationRefere
 import hu.bme.mit.gamma.property.model.ComponentInstanceStateExpression
 import hu.bme.mit.gamma.property.model.PropertyModelPackage
 import hu.bme.mit.gamma.property.model.PropertyPackage
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference
 import hu.bme.mit.gamma.statechart.composite.CompositeModelPackage
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import org.eclipse.emf.ecore.EObject
@@ -37,13 +38,17 @@ class PropertyLanguageScopeProvider extends AbstractPropertyLanguageScopeProvide
 		}
 		val root = ecoreUtil.getSelfOrContainerOfType(context, PropertyPackage)
 		val component = root.component
-		// TODO refactor ComponentInstanceReference to make scoping possible
-		if (reference == CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE__COMPONENT_INSTANCE_HIERARCHY) {
-			return Scopes.scopeFor(component.allInstances)
+		if (reference == CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE__COMPONENT_INSTANCE) {
+			val instanceContainer = ecoreUtil.getSelfOrContainerOfType(
+					context, ComponentInstanceReference)
+			val parent = instanceContainer?.parent
+			val instances = (parent === null) ?	component.allInstances :
+				parent.componentInstance.instances
+			return Scopes.scopeFor(instances)
 		}
 		if (context instanceof ComponentInstanceStateExpression) {
 			// Base
-			var instance = context.instance.componentInstanceHierarchy.last
+			var instance = context.instance.lastInstance
 			val statechart = instance.derivedType
 			if (statechart !== null) {
 				if (statechart instanceof StatechartDefinition) {

@@ -1796,12 +1796,20 @@ public class StatechartModelValidator extends ActionModelValidator {
 						StatechartModelDerivedFeatures.getContainingEventDeclaration(it).getDirection() != EventDirection.INOUT
 					).anyMatch(it -> it == containedEvent)) {
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-							"Event " + containedEvent.getName() + " is an out event and can not be forwarded to a message queue", 
+						"Event " + containedEvent.getName() + " is an out event and can not be forwarded to a message queue", 
 							new ReferenceInfo(CompositeModelPackage.Literals.MESSAGE_QUEUE__EVENT_REFERENCE, index)));
 				}
 			}			
 		}
-		// TODO check message retrieval count > 0
+		
+		Expression messageRetrievalCount = queue.getMessageRetrievalCount();
+		int count = expressionEvaluator.evaluateInteger(messageRetrievalCount);
+		if (count < 1) {
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+					"Message retrieval count must not be less than 1", 
+						new ReferenceInfo(CompositeModelPackage.Literals.MESSAGE_QUEUE__MESSAGE_RETRIEVAL_COUNT)));
+		}
+		
 		return validationResultMessages;
 	}
 	
@@ -1956,27 +1964,24 @@ public class StatechartModelValidator extends ActionModelValidator {
 	
 	public Collection<ValidationResultMessage> checkComponentInstanceReferences(ComponentInstanceReference reference) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		List<ComponentInstance> instances = reference.getComponentInstanceHierarchy();
-		if (instances.isEmpty()) {
-			return validationResultMessages;
-		}
-		for (int i = 0; i < instances.size() - 1; i++) {
-			ComponentInstance instance = instances.get(i);
-			ComponentInstance nextInstance = instances.get(i + 1);
-			Component type = StatechartModelDerivedFeatures.getDerivedType(instance);
-			List<EObject> containedInstances = type.eContents();
-			if (!containedInstances.contains(nextInstance)) {
+		
+		ComponentInstance instance = reference.getComponentInstance();
+		ComponentInstanceReference child = reference.getChild();
+		if (child != null) {
+			ComponentInstance childInstance = child.getComponentInstance();
+			if (!StatechartModelDerivedFeatures.contains(instance, childInstance)) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-					instance.getName() + " does not contain component instance " + nextInstance.getName(),
-						new ReferenceInfo(CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE__COMPONENT_INSTANCE_HIERARCHY, i)));
+					instance.getName() + " does not contain component instance " + childInstance.getName(),
+						new ReferenceInfo(CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE__COMPONENT_INSTANCE)));
 			}
 		}
-		ComponentInstance lastInstance = instances.get(instances.size() - 1);
-		Component lastType = StatechartModelDerivedFeatures.getDerivedType(lastInstance);
-		if (!(lastType instanceof StatechartDefinition)) {
+		
+		ComponentInstance lastInstance = StatechartModelDerivedFeatures.getLastInstance(reference);
+		if (lastInstance != null && // Xtext parsing
+				!StatechartModelDerivedFeatures.isStatechart(lastInstance)) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-					"The last component instance must have a statechart type", 
-					new ReferenceInfo(CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE__COMPONENT_INSTANCE_HIERARCHY)));
+				"The last component instance must have a statechart type", 
+					new ReferenceInfo(CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE__COMPONENT_INSTANCE)));
 		}
 		return validationResultMessages;
 	}

@@ -144,8 +144,9 @@ SchedulingConstraint returns SchedulingConstraint:
 	(instanceConstraint+=AsynchronousInstanceConstraint)+
 ;
 
+// Duplicated in StatechartLanguage
 ComponentInstanceReference returns composite::ComponentInstanceReference:
-	componentInstanceHierarchy+=[composite::ComponentInstance] ('->' componentInstanceHierarchy+=[composite::ComponentInstance] )*
+	componentInstance=[composite::ComponentInstance] ('->' child=ComponentInstanceReference )?
 ;
 
 ComponentInstancePortReference returns property::ComponentInstancePortReference:

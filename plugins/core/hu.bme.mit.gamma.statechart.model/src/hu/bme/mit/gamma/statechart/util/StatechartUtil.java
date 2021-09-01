@@ -119,12 +119,34 @@ public class StatechartUtil extends ActionUtil {
 	
 	//
 	
-	public ComponentInstanceReference createInstanceReference(ComponentInstance instance) {
-		ComponentInstanceReference instanceReference = compositeFactory.createComponentInstanceReference();
-		instanceReference.getComponentInstanceHierarchy().addAll(
-				StatechartModelDerivedFeatures.getComponentInstanceChain(instance));
-		return instanceReference;
+	public ComponentInstanceReference createInstanceReferenceChain(ComponentInstance instance) {
+		List<ComponentInstance> componentInstanceChain =
+				StatechartModelDerivedFeatures.getComponentInstanceChain(instance);
+		return createInstanceReference(componentInstanceChain);
 	}
+	
+	public ComponentInstanceReference createInstanceReference(ComponentInstance instance) {
+		return createInstanceReference(List.of(instance));
+	}
+	
+	public ComponentInstanceReference createInstanceReference(List<ComponentInstance> instances) {
+		if (instances.isEmpty()) {
+			throw new IllegalArgumentException("Empty instance list: " + instances);
+		}
+		ComponentInstanceReference reference = compositeFactory.createComponentInstanceReference();
+		for (ComponentInstance instance : instances) {
+			reference.setComponentInstance(instance);
+			ComponentInstanceReference child = compositeFactory.createComponentInstanceReference();
+			reference.setChild(child);
+			reference = child;
+		}
+		ComponentInstanceReference finalReference =
+				StatechartModelDerivedFeatures.getParent(reference);
+		ecoreUtil.remove(reference); // No instance
+		return finalReference;
+	}
+	
+	//
 	
 	public Set<VariableDeclaration> getVariables(EObject object) {
 		return new HashSet<VariableDeclaration>(

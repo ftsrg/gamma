@@ -341,11 +341,10 @@ class PropertyGenerator {
 	
 	def protected ComponentInstanceReference createInstanceReference(ComponentInstance instance) {
 		if (isSimpleComponentReference) {
-			val reference = compositeFactory.createComponentInstanceReference
-			reference.componentInstanceHierarchy += instance
-			return reference
-		} else {
 			return statechartUtil.createInstanceReference(instance)
+		}
+		else {
+			return statechartUtil.createInstanceReferenceChain(instance)
 		}
 	}
 

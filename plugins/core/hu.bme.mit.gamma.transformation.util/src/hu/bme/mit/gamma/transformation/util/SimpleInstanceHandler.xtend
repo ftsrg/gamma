@@ -215,7 +215,7 @@ class SimpleInstanceHandler {
 		val newInstances = newType.allSimpleInstances
 		val accpedtedNewInstances = newArrayList
 		// This intances can be a composite instance, thus more than one new instance can be here
-		val lastInstance = originalInstance.componentInstanceHierarchy.last
+		val lastInstance = originalInstance.lastInstance
 		val lastInstanceType = lastInstance.derivedType
 		val oldPackage = lastInstance.containingPackage
 		val isUnfolded = oldPackage.isUnfolded
@@ -252,7 +252,7 @@ class SimpleInstanceHandler {
 	}
 	
 	def contains(ComponentInstanceReference original, ComponentInstance copy) {
-		val originalInstances = original.componentInstanceHierarchy
+		val originalInstances = original.componentInstanceChain
 		val copyInstances = copy.parentComponentInstances
 		copyInstances += copy
 		// The naming conventions are clear

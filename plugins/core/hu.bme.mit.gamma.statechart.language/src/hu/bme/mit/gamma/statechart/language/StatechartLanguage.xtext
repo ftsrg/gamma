@@ -389,7 +389,8 @@ CascadeCompositeComponent returns CompositeModel::CascadeCompositeComponent:
 				components+=SynchronousComponentInstance |
 				portBindings+=PortBinding |
 				channels+=Channel |
-				'execute' executionList+=[CompositeModel::SynchronousComponentInstance] (',' executionList+=[CompositeModel::SynchronousComponentInstance])*
+				'execute' executionList+=[CompositeModel::SynchronousComponentInstance]
+						(',' executionList+=[CompositeModel::SynchronousComponentInstance])*
 			)*
 		'}'
 ;
@@ -408,10 +409,15 @@ SynchronousCompositeComponent returns CompositeModel::SynchronousCompositeCompon
 ;
 
 AsynchronousComponent returns CompositeModel::AsynchronousComponent:
-	AsynchronousCompositeComponent |
+	AbstractAsynchronousCompositeComponent |
 	AsynchronousAdapter
-	// TODO scheduled asynchronous composite component
 ;
+
+AbstractAsynchronousCompositeComponent returns CompositeModel::AbstractAsynchronousCompositeComponent:
+	AsynchronousCompositeComponent |
+	ScheduledAsynchronousCompositeComponent
+;
+
 
 AsynchronousCompositeComponent returns CompositeModel::AsynchronousCompositeComponent:
 	'async' name=ID 
@@ -419,16 +425,31 @@ AsynchronousCompositeComponent returns CompositeModel::AsynchronousCompositeComp
 		('[' ((ports+=Port)((',')? ports+=Port)*)? ']')?
 		'{'
 			(
-				components+=AsynchronousComponentInstance |			
+				components+=AsynchronousComponentInstance |
 				portBindings+=PortBinding |
 				channels+=Channel
-			)*			
+			)*
+		'}'
+;
+
+ScheduledAsynchronousCompositeComponent returns CompositeModel::ScheduledAsynchronousCompositeComponent:
+	'scheduled-async' name=ID 
+	('(' ((parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*)? ')')?
+		('[' ((ports+=Port)((',')? ports+=Port)*)? ']')?
+		'{'
+			(
+				components+=AsynchronousComponentInstance |
+				portBindings+=PortBinding |
+				channels+=Channel | 
+				'execute' executionList+=[CompositeModel::AsynchronousComponentInstance]
+						(',' executionList+=[CompositeModel::AsynchronousComponentInstance])*
+			)*
 		'}'
 ;
 
 AsynchronousAdapter returns CompositeModel::AsynchronousAdapter:
 	'adapter' name=ID ('(' ((parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*)? ')')?
-		'of' wrappedComponent=SynchronousComponentInstance		
+		'of' wrappedComponent=SynchronousComponentInstance
 		('[' ((ports+=Port)((',')? ports+=Port)*)? ']')?
 		'{'
 			(
@@ -463,8 +484,10 @@ enum ControlFunction returns CompositeModel::ControlFunction:
 
 MessageQueue returns CompositeModel::MessageQueue:
 	'queue' name=ID '('('priority' '=' priority=INTEGER) (',' 'capacity' '=' capacity=Expression)
-			(',' 'discard' '=' eventDiscardStrategy=DiscardStrategy)? ')' '{'
-			// TODO message retrieval count
+			(
+				(',' 'discard' '=' eventDiscardStrategy=DiscardStrategy)? &
+				(',' 'retrieve-count' '=' messageRetrievalCount=Expression)?
+			) ')' '{'
 	 	(eventReference+=EventReference)(',' eventReference+=EventReference)*
 	'}'
 ;
@@ -487,7 +510,7 @@ ComponentInstance returns CompositeModel::ComponentInstance:
 
 // Subgrammars can use this
 ComponentInstanceReference returns CompositeModel::ComponentInstanceReference:
-	componentInstanceHierarchy+=[CompositeModel::ComponentInstance] ('->' componentInstanceHierarchy+=[CompositeModel::ComponentInstance] )*
+	componentInstance=[CompositeModel::ComponentInstance] ('->' child=ComponentInstanceReference )?
 ;
 
 SynchronousComponentInstance returns CompositeModel::SynchronousComponentInstance:
