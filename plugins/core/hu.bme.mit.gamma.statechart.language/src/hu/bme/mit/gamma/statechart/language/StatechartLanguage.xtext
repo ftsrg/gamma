@@ -389,8 +389,8 @@ CascadeCompositeComponent returns CompositeModel::CascadeCompositeComponent:
 				components+=SynchronousComponentInstance |
 				portBindings+=PortBinding |
 				channels+=Channel |
-				'execute' executionList+=[CompositeModel::SynchronousComponentInstance]
-						(',' executionList+=[CompositeModel::SynchronousComponentInstance])*
+				'execute' executionList+=AtomicComponentInstanceReference
+						(',' executionList+=AtomicComponentInstanceReference)*
 			)*
 		'}'
 ;
@@ -441,8 +441,8 @@ ScheduledAsynchronousCompositeComponent returns CompositeModel::ScheduledAsynchr
 				components+=AsynchronousComponentInstance |
 				portBindings+=PortBinding |
 				channels+=Channel | 
-				'execute' executionList+=[CompositeModel::AsynchronousComponentInstance]
-						(',' executionList+=[CompositeModel::AsynchronousComponentInstance])*
+				'execute' executionList+=AtomicComponentInstanceReference
+						(',' executionList+=AtomicComponentInstanceReference)*
 			)*
 		'}'
 ;
@@ -508,6 +508,9 @@ ComponentInstance returns CompositeModel::ComponentInstance:
 	SynchronousComponentInstance | AsynchronousComponentInstance
 ;
 
+AtomicComponentInstanceReference returns CompositeModel::ComponentInstanceReference:
+	componentInstance=[CompositeModel::ComponentInstance]
+;
 // Subgrammars can use this
 ComponentInstanceReference returns CompositeModel::ComponentInstanceReference:
 	componentInstance=[CompositeModel::ComponentInstance] ('->' child=ComponentInstanceReference )?

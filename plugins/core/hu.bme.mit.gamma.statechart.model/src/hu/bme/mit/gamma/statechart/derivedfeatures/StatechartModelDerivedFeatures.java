@@ -1641,8 +1641,16 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return getLastInstance(child);
 	}
 	
-	public static boolean isFirstInstance(ComponentInstanceReference reference) {
+	public static boolean isFirst(ComponentInstanceReference reference) {
 		return getParent(reference) == null;
+	}
+	
+	public static boolean isLast(ComponentInstanceReference reference) {
+		return reference.getChild() == null;
+	}
+	
+	public static boolean isAtomic(ComponentInstanceReference reference) {
+		return isFirst(reference) && isLast(reference);
 	}
 	
 	public static boolean contains(ComponentInstance potentialContainer, ComponentInstance instance) {
@@ -1654,8 +1662,16 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 			AbstractSynchronousCompositeComponent component) {
 		if (component instanceof CascadeCompositeComponent) {
 			CascadeCompositeComponent cascade = (CascadeCompositeComponent) component;
-			if (!cascade.getExecutionList().isEmpty()) {
-				return cascade.getExecutionList();
+			List<ComponentInstanceReference> executionList = cascade.getExecutionList();
+			if (!executionList.isEmpty()) {
+				List<SynchronousComponentInstance> instances =
+						new ArrayList<SynchronousComponentInstance>();
+				for (ComponentInstanceReference instanceReference : executionList) {
+					SynchronousComponentInstance componentInstance =
+						(SynchronousComponentInstance) instanceReference.getComponentInstance();
+					instances.add(componentInstance);
+				}
+				return instances;
 			}
 		}
 		return component.getComponents();
@@ -1666,11 +1682,19 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		if (component instanceof ScheduledAsynchronousCompositeComponent) {
 			ScheduledAsynchronousCompositeComponent scheduledComponent =
 					(ScheduledAsynchronousCompositeComponent) component;
-			if (!scheduledComponent.getExecutionList().isEmpty()) {
-				return scheduledComponent.getExecutionList();
+			List<ComponentInstanceReference> executionList = scheduledComponent.getExecutionList();
+			if (!executionList.isEmpty()) {
+				List<AsynchronousComponentInstance> instances =
+						new ArrayList<AsynchronousComponentInstance>();
+				for (ComponentInstanceReference instanceReference : executionList) {
+					AsynchronousComponentInstance componentInstance =
+						(AsynchronousComponentInstance) instanceReference.getComponentInstance();
+					instances.add(componentInstance);
+				}
+				return instances;
 			}
 		}
 		return component.getComponents();
 	}
-	
+
 }

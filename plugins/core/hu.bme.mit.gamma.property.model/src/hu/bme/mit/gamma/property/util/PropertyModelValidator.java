@@ -40,7 +40,7 @@ public class PropertyModelValidator extends StatechartModelValidator {
 		validationResultMessages.addAll(
 				super.checkComponentInstanceReferences(reference));
 		
-		if (StatechartModelDerivedFeatures.isFirstInstance(reference)) {
+		if (StatechartModelDerivedFeatures.isFirst(reference)) {
 			ComponentInstance firstInstance = reference.getComponentInstance();
 			if (!isUnfolded(firstInstance)) {
 				PropertyPackage propertyPackage = ecoreUtil.getContainerOfType(reference, PropertyPackage.class);
@@ -56,6 +56,15 @@ public class PropertyModelValidator extends StatechartModelValidator {
 				}
 			}
 		}
+		
+		ComponentInstance lastInstance = StatechartModelDerivedFeatures.getLastInstance(reference);
+		if (lastInstance != null && // Xtext parsing
+				!StatechartModelDerivedFeatures.isStatechart(lastInstance)) {
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+				"The last component instance must have a statechart type", 
+					new ReferenceInfo(CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE__COMPONENT_INSTANCE)));
+		}
+		
 		return validationResultMessages;
 	}
 			

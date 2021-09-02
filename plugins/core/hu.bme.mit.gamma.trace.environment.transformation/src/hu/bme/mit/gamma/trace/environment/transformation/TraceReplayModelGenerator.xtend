@@ -65,9 +65,9 @@ class TraceReplayModelGenerator {
 		val environmentInstance = environmentModel.instantiateSynchronousComponent
 		systemModel.components.add(0, environmentInstance)
 		if (considerOutEvents) {
-			systemModel.executionList += environmentInstance // In
-			systemModel.executionList += componentInstance
-			systemModel.executionList += environmentInstance // Out - uniqueness bug
+			systemModel.executionList += environmentInstance.createInstanceReference // In
+			systemModel.executionList += componentInstance.createInstanceReference 
+			systemModel.executionList += environmentInstance.createInstanceReference  // Out
 		}
 		
 		// Tending to the system and proxy ports

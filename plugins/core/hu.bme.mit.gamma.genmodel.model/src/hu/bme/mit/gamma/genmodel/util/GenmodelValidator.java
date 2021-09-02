@@ -878,7 +878,7 @@ public class GenmodelValidator extends ExpressionModelValidator {
 			}
 		}
 		
-		if (StatechartModelDerivedFeatures.isFirstInstance(reference)) {
+		if (StatechartModelDerivedFeatures.isFirst(reference)) {
 			AnalysisModelTransformation model = ecoreUtil.getContainerOfType(reference, AnalysisModelTransformation.class);
 			if (model != null) {
 				ModelReference modelReference = model.getModel();

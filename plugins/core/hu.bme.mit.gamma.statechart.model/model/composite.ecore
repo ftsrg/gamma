@@ -85,7 +85,7 @@
   <eClassifiers xsi:type="ecore:EClass" name="ScheduledAsynchronousCompositeComponent"
       eSuperTypes="#//AbstractAsynchronousCompositeComponent">
     <eStructuralFeatures xsi:type="ecore:EReference" name="executionList" upperBound="-1"
-        eType="#//AsynchronousComponentInstance"/>
+        eType="#//ComponentInstanceReference" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="AsynchronousAdapter" eSuperTypes="#//AsynchronousComponent">
     <eStructuralFeatures xsi:type="ecore:EReference" name="controlSpecifications"
@@ -98,8 +98,8 @@
         eType="#//SynchronousComponentInstance" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="CascadeCompositeComponent" eSuperTypes="#//AbstractSynchronousCompositeComponent">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="executionList" unique="false"
-        upperBound="-1" eType="#//SynchronousComponentInstance"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="executionList" upperBound="-1"
+        eType="#//ComponentInstanceReference" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="SynchronousCompositeComponent" eSuperTypes="#//AbstractSynchronousCompositeComponent"/>
   <eClassifiers xsi:type="ecore:EClass" name="ComponentInstanceReference">

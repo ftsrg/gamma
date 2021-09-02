@@ -1803,11 +1803,13 @@ public class StatechartModelValidator extends ActionModelValidator {
 		}
 		
 		Expression messageRetrievalCount = queue.getMessageRetrievalCount();
-		int count = expressionEvaluator.evaluateInteger(messageRetrievalCount);
-		if (count < 1) {
-			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-					"Message retrieval count must not be less than 1", 
-						new ReferenceInfo(CompositeModelPackage.Literals.MESSAGE_QUEUE__MESSAGE_RETRIEVAL_COUNT)));
+		if (messageRetrievalCount != null) {
+			int count = expressionEvaluator.evaluateInteger(messageRetrievalCount);
+			if (count < 1) {
+				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+						"Message retrieval count must not be less than 1", 
+							new ReferenceInfo(CompositeModelPackage.Literals.MESSAGE_QUEUE__MESSAGE_RETRIEVAL_COUNT)));
+			}
 		}
 		
 		return validationResultMessages;
@@ -1879,13 +1881,15 @@ public class StatechartModelValidator extends ActionModelValidator {
 		if (messageQueues.size() == 1) {
 			MessageQueue messageQueue = messageQueues.get(0);
 			Expression messageRetrievalCount = messageQueue.getMessageRetrievalCount();
-			int count = expressionEvaluator.evaluateInteger(messageRetrievalCount);
-			if (count == 1) {
-				if (controlSpecifications.stream().noneMatch(it -> it instanceof AnyTrigger)) {
-					validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING,
-						"Some messages might not be processed during execution as the message retrieval count is 1, "
-								+ "but there is no any trigger among the control specifications",
-							new ReferenceInfo(CompositeModelPackage.Literals.ASYNCHRONOUS_ADAPTER__MESSAGE_QUEUES)));
+			if (messageRetrievalCount != null) {
+				int count = expressionEvaluator.evaluateInteger(messageRetrievalCount);
+				if (count == 1) {
+					if (controlSpecifications.stream().noneMatch(it -> it instanceof AnyTrigger)) {
+						validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING,
+							"Some messages might not be processed during execution as the message retrieval count is 1, "
+									+ "but there is no any trigger among the control specifications",
+								new ReferenceInfo(CompositeModelPackage.Literals.ASYNCHRONOUS_ADAPTER__MESSAGE_QUEUES)));
+					}
 				}
 			}
 		}
@@ -1907,7 +1911,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 	
 	public Collection<ValidationResultMessage> checkExecutionLists(CascadeCompositeComponent cascade) {
 		List<SynchronousComponentInstance> components = cascade.getComponents();
-		List<SynchronousComponentInstance> executionList = cascade.getExecutionList();
+		List<ComponentInstanceReference> executionList = cascade.getExecutionList();
 		
 		return checkExecutionList(components, executionList,
 				CompositeModelPackage.Literals.CASCADE_COMPOSITE_COMPONENT__EXECUTION_LIST);
@@ -1916,7 +1920,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 	public Collection<ValidationResultMessage> checkExecutionLists(
 			ScheduledAsynchronousCompositeComponent scheduledComponent) {
 		List<AsynchronousComponentInstance> components = scheduledComponent.getComponents();
-		List<AsynchronousComponentInstance> executionList = scheduledComponent.getExecutionList();
+		List<ComponentInstanceReference> executionList = scheduledComponent.getExecutionList();
 		
 		return checkExecutionList(components, executionList,
 				CompositeModelPackage.Literals.SCHEDULED_ASYNCHRONOUS_COMPOSITE_COMPONENT__EXECUTION_LIST);
@@ -1924,7 +1928,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 	
 	private Collection<ValidationResultMessage> checkExecutionList(
 			List<? extends ComponentInstance> components,
-			List<? extends ComponentInstance> executionList, EStructuralFeature reference) {
+			List<? extends ComponentInstanceReference> executionList, EStructuralFeature reference) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 
 		if (executionList.isEmpty()) {
@@ -1932,11 +1936,23 @@ public class StatechartModelValidator extends ActionModelValidator {
 			return validationResultMessages;
 		}
 		Collection<ComponentInstance> containedInstances = new HashSet<ComponentInstance>(components);
-		containedInstances.removeAll(executionList);
+		for (ComponentInstanceReference instanceReference : executionList) {
+			ComponentInstance instance = instanceReference.getComponentInstance();
+			if (!components.contains(instance)) {
+				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+					instance.getName() + " is not a contained component", new ReferenceInfo(reference)));
+			}
+			if (!StatechartModelDerivedFeatures.isAtomic(instanceReference)) {
+				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+					instance.getName() + " is not an atomic component", new ReferenceInfo(reference)));
+			}
+			
+			containedInstances.remove(instance);
+		}
 		if (!containedInstances.isEmpty()) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-				"The following instances are never executed: " + containedInstances.stream().map(it -> it.getName())
-					.collect(Collectors.toSet()), new ReferenceInfo(reference)));
+				"The following instances are never executed: " + containedInstances.stream()
+					.map(it -> it.getName()).collect(Collectors.toList()), new ReferenceInfo(reference)));
 		}
 		
 		return validationResultMessages;
@@ -1976,13 +1992,6 @@ public class StatechartModelValidator extends ActionModelValidator {
 			}
 		}
 		
-		ComponentInstance lastInstance = StatechartModelDerivedFeatures.getLastInstance(reference);
-		if (lastInstance != null && // Xtext parsing
-				!StatechartModelDerivedFeatures.isStatechart(lastInstance)) {
-			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-				"The last component instance must have a statechart type", 
-					new ReferenceInfo(CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE__COMPONENT_INSTANCE)));
-		}
 		return validationResultMessages;
 	}
 	
