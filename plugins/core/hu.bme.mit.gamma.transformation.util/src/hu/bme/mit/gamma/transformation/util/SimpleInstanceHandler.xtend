@@ -163,14 +163,21 @@ class SimpleInstanceHandler {
 	
 	def getNewSimpleInstanceVariables(
 			Collection<ComponentInstanceVariableReference> originalReferences, Component newType) {
-		val newPorts = newArrayList
+		val newVariables = newArrayList
 		for (originalReference : originalReferences) {
 			val originalInstance = originalReference.instance
 			val originalVariable = originalReference.variable 
-			val newInstance = originalInstance.checkAndGetNewSimpleInstance(newType)
-			newPorts += newInstance.getNewVariable(originalVariable) 
+			val newVariable = originalInstance.getNewVariable(originalVariable, newType)
+			newVariables += newVariable
 		}
-		return newPorts
+		return newVariables
+	}
+	
+	def getNewVariable(ComponentInstanceReference originalInstance,
+			VariableDeclaration originalVariable, Component newType) {
+		val newInstance = originalInstance.checkAndGetNewSimpleInstance(newType)
+		val newVariable = newInstance.getNewVariable(originalVariable)
+		return newVariable
 	}
 	
 	private def getNewVariable(SynchronousComponentInstance newInstance,

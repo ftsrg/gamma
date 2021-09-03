@@ -43,6 +43,10 @@ class ExpressionTransformer {
 	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE
 	
+	new() {
+		this(new Trace(null, null)) // For ad-hoc expression transformations
+	}
+	
 	new(Trace trace) {
 		this.trace = trace
 	}
@@ -93,7 +97,8 @@ class ExpressionTransformer {
 		val lowlevelState = expression.state
 		val xStsVariable = trace.getXStsVariable(lowlevelRegion)
 		val xStsLiteral = trace.getXStsEnumLiteral(lowlevelState)
-		return xStsVariable.createEqualityExpression(xStsLiteral.wrap)
+		return xStsVariable.createEqualityExpression(
+				xStsLiteral.createEnumerationLiteralExpression)
 	}
 	
 	def dispatch Expression transformExpression(EnumerationLiteralExpression expression) {

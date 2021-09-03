@@ -1040,9 +1040,13 @@ public class ExpressionUtil {
 		return inequalityExpression;
 	}
 	
-	public EnumerationLiteralExpression wrap(EnumerationLiteralDefinition literal) {
+	public EnumerationLiteralExpression createEnumerationLiteralExpression(
+			EnumerationLiteralDefinition literal) {
 		EnumerationLiteralExpression literalExpression = factory.createEnumerationLiteralExpression();
 		literalExpression.setReference(literal);
+		TypeDeclaration typeDeclaration = ExpressionModelDerivedFeatures.getTypeDeclaration(literal);
+		TypeReference typeReference = createTypeReference(typeDeclaration);
+		literalExpression.setTypeReference(typeReference);
 		return literalExpression;
 	}
 	

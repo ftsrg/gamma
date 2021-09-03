@@ -114,7 +114,7 @@ class ComponentTransformer {
 		val name = component.name
 		val xSts = name.createXsts
 		
-		val eventReferenceMapper = new EventReferenceToXstsVariableMapper(xSts)
+		val eventReferenceMapper = new ReferenceToXstsVariableMapper(xSts)
 		val valueDeclarationTransformer = new ValueDeclarationTransformer
 		val variableTrace = valueDeclarationTransformer.getTrace
 		
@@ -455,7 +455,7 @@ class ComponentTransformer {
 	}
 	
 	protected def createEventDispatchAction(Port port,
-			EventReferenceToXstsVariableMapper eventReferenceMapper,
+			ReferenceToXstsVariableMapper eventReferenceMapper,
 			Collection<? extends Port> systemPorts, Trace variableTrace) {
 		val eventDispatchAction = createSequentialAction
 		for (event : port.outputEvents) {
@@ -582,7 +582,7 @@ class ComponentTransformer {
 				}
 			}
 			
-			val extension eventRef = new EventReferenceToXstsVariableMapper(xSts)
+			val extension eventRef = new ReferenceToXstsVariableMapper(xSts)
 			// Collecting the referenced event variables
 			val xStsReferencedEventVariables = newHashSet
 			for (eventReference : messageQueue.eventReference) {

@@ -10,13 +10,17 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.xsts.transformation
 
+import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
+import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.EventReference
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference
 import hu.bme.mit.gamma.statechart.statechart.PortEventReference
+import hu.bme.mit.gamma.statechart.statechart.Region
+import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import java.util.List
@@ -25,10 +29,11 @@ import java.util.logging.Logger
 
 import static com.google.common.base.Preconditions.checkState
 
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 
-class EventReferenceToXstsVariableMapper {
+class ReferenceToXstsVariableMapper {
 	
 	protected final XSTS xSts
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
@@ -194,6 +199,49 @@ class EventReferenceToXstsVariableMapper {
 			}
 		}
 		return xStsVariables
+	}
+	
+	def checkVariableVariable(VariableDeclaration variable) {
+		val potentialVariable = variable.variableVariable
+		checkState(potentialVariable !== null)
+		return potentialVariable
+	}
+	
+	def getVariableVariable(VariableDeclaration variable) {
+		val variables = variable.variableVariables
+		checkState(variables.size <= 1)
+		return variables.head
+	}
+	
+	def getVariableVariables(VariableDeclaration variable) {
+		val instance = variable.containingComponentInstance
+		val xStsVariableNames = variable.customizeNames(instance)
+		val xStsVariables = xSts.getVariables(xStsVariableNames)
+		return xStsVariables
+	}
+	
+	def getRegionVariable(Region region) {
+		val instance = region.containingComponentInstance
+		val xStsVariableName = region.customizeName(instance)
+		val xStsVariable = xSts.getVariable(xStsVariableName)
+		return xStsVariable
+	}
+	
+	def getStateLiteral(State state) {
+		val parentRegion = state.parentRegion
+		val xStsRegionVariable = parentRegion.regionVariable
+		val type = xStsRegionVariable.type
+		
+		if (type instanceof TypeReference) {
+			val typeDeclaration = type.typeDeclaration
+			val typeDefinition = typeDeclaration.type
+			if (typeDefinition instanceof EnumerationTypeDefinition) {
+				val literalName = state.customizeName
+				val literal = typeDefinition.literals.findFirst[it.name == literalName]
+				return literal
+			}
+		}
+		throw new IllegalArgumentException("Not known state literal: " + state)
 	}
 	
 }

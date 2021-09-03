@@ -150,9 +150,9 @@ public class XstsActionUtil extends ExpressionUtil {
 		ecoreUtil.prependTo(action, pivot);
 	}
 	
-	public void appendToAction(Collection<? extends Action> actions, Action pivot) {
+	public void appendToAction(Action pivot, Collection<? extends Action> actions) {
 		for (Action action : actions) {
-			appendToAction(action, pivot);
+			appendToAction(pivot, action);
 		}
 	}
 	
@@ -301,6 +301,23 @@ public class XstsActionUtil extends ExpressionUtil {
 	
 	public AssignmentAction createAssignmentAction(VariableDeclaration variable, Expression rhs) {
 		return createAssignmentAction(createReferenceExpression(variable), rhs);
+	}
+	
+	public List<AssignmentAction> createAssignmentActions(
+			List<? extends ReferenceExpression> lhss, List<Expression> rhss) {
+		if (lhss.size() != rhss.size()) {
+			throw new IllegalArgumentException("Lhs and rhs size are not the same: "
+					+ lhss.size() + " " + rhss.size());
+		}
+		
+		List<AssignmentAction> assignmentActions = new ArrayList<AssignmentAction>();
+		for (int i = 0; i < lhss.size(); i++) { // Same size for both sides
+			ReferenceExpression lhs = lhss.get(i);
+			Expression rhs = rhss.get(i);
+			assignmentActions.add(
+					createAssignmentAction(lhs, rhs));
+		}
+		return assignmentActions;
 	}
 	
 	public AssignmentAction createAssignmentAction(ReferenceExpression lhs, Expression rhs) {

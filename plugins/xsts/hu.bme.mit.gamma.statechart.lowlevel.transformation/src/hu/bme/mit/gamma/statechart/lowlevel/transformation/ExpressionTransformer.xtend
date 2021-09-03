@@ -61,6 +61,10 @@ class ExpressionTransformer {
 	
 	protected int currentRecursionDepth // For lambdas
 	
+	new() {
+		this(new Trace) // For ad-hoc expression transformations
+	}
+	
 	new(Trace trace) {
 		this(trace, true, 10)
 	}
