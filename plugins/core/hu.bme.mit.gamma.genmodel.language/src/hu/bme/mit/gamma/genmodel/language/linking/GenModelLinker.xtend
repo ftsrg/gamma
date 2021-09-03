@@ -23,11 +23,19 @@ class GenModelLinker extends GammaLanguageLinker {
     public static GenmodelModelPackage pack = GenmodelModelPackage.eINSTANCE
 				
 	override getContext() {
-		return newLinkedHashMap(GenModel -> #[pack.genModel_StatechartImports,
-				pack.genModel_PackageImports, pack.genModel_TraceImports, pack.genModel_GenmodelImports],
+		return newLinkedHashMap(
+			GenModel -> #[
+				pack.genModel_StatechartImports,
+				pack.genModel_PackageImports,
+				pack.genModel_TraceImports,
+				pack.genModel_GenmodelImports
+			],
 			Verification -> #[pack.verification_PropertyPackages],
 			XstsReference -> #[pack.xstsReference_XSts],
-			AnalysisModelTransformation -> #[pack.analysisModelTransformation_PropertyPackage],
+			AnalysisModelTransformation -> #[
+				pack.analysisModelTransformation_PropertyPackage,
+				pack.analysisModelTransformation_InitialState
+			],
 			Slicing -> #[pack.slicing_PropertyPackage])
 	}
 	

@@ -58,10 +58,11 @@ public class GenModelFormatter extends AbstractDeclarativeFormatter {
         c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getFileNameAssignment_3_1_2());
         c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getLanguagesAssignment_3_2_2());
         c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getPropertyPackageAssignment_3_3_2());
-        c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getOptimizeAssignment_3_4_2());
-        c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getConstraintAssignment_3_6_2());
-        c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getCoveragesAssignment_3_7());
-        c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getSchedulerAssignment_3_5_2());
+        c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getInitialStateAssignment_3_4_2());
+        c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getOptimizeAssignment_3_5_2());
+        c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getConstraintAssignment_3_7_2());
+        c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getCoveragesAssignment_3_8());
+        c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getSchedulerAssignment_3_6_2());
         // Constraints
         c.setLinewrap(1).after(f.getOrchestratingConstraintAccess().getMinimumPeriodAssignment_2());
         c.setLinewrap(1).after(f.getOrchestratingConstraintAccess().getMaximumPeriodAssignment_5());

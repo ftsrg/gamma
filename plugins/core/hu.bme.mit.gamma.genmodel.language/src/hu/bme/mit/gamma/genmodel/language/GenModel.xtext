@@ -115,7 +115,8 @@ AnalysisModelTransformation returns AnalysisModelTransformation:
 			'folder' ':' targetFolder+=STRING |			
 			'file' ':' fileName+=STRING |
 			'language' ':' languages+=AnalysisLanguage |
-			'property-file' ':' propertyPackage=[property::PropertyPackage | STRING] | // Property models
+			'property-file' ':' propertyPackage=[property::PropertyPackage | STRING] | // Slicing
+			'initial-state' ':' initialState=[property::PropertyPackage | STRING] |
 			'optimize' ':' optimize=BOOLEAN |
 			'scheduler' ':' scheduler+=Scheduler |
 			'constraint' ':' constraint=Constraint |
