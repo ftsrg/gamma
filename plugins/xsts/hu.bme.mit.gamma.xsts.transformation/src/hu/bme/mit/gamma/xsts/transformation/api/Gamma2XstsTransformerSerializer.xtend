@@ -114,7 +114,7 @@ class Gamma2XstsTransformerSerializer {
 		xSts.normalSave(targetFolderUri, fileName.emfXStsFileName)
 		// String
 		val xStsFile = new File(targetFolderUri + File.separator + fileName.xtextXStsFileName)
-		val xStsString = xSts.serializeXSTS
+		val xStsString = xSts.serializeXsts
 		xStsFile.saveString(xStsString)
 	}
 	

@@ -79,12 +79,12 @@ class GammaToXstsTransformer {
 	
 	def preprocessAndExecuteAndSerialize(Package _package,
 			String targetFolderUri, String fileName) {
-		return _package.preprocessAndExecute(#[], targetFolderUri, fileName).serializeXSTS
+		return _package.preprocessAndExecute(#[], targetFolderUri, fileName).serializeXsts
 	}
 	
 	def preprocessAndExecuteAndSerialize(Package _package,
 			List<Expression> topComponentArguments, String targetFolderUri, String fileName) {
-		return _package.preprocessAndExecute(topComponentArguments, targetFolderUri, fileName).serializeXSTS
+		return _package.preprocessAndExecute(topComponentArguments, targetFolderUri, fileName).serializeXsts
 	}
 
 	def preprocessAndExecute(Package _package,
