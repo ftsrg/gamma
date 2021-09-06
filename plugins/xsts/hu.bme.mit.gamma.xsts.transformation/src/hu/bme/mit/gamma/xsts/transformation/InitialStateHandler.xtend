@@ -26,9 +26,7 @@ class InitialStateHandler {
 	protected final InitialStateSetting initialStateSetting
 	protected final ReferenceToXstsVariableMapper mapper
 	
-	protected final ExpressionTransformer lowlevelTransformer = new ExpressionTransformer
-	protected final hu.bme.mit.gamma.lowlevel.xsts.transformation.ExpressionTransformer
-		xStsTransformer = new hu.bme.mit.gamma.lowlevel.xsts.transformation.ExpressionTransformer
+	protected final extension PropertyExpressionTransformer expressionTransformer
 	
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
@@ -47,6 +45,7 @@ class InitialStateHandler {
 		this.initialStateSetting = initialStateSetting // Unfolded
 		
 		this.mapper = new ReferenceToXstsVariableMapper(xSts)
+		this.expressionTransformer = new PropertyExpressionTransformer(mapper)
 	}
 	
 	def execute() {
@@ -116,31 +115,32 @@ class InitialStateHandler {
 		]
 	}
 	
-	//
+	// Sufficient - the XSTS expression transformer would change only the variable references
+	static class PropertyExpressionTransformer extends ExpressionTransformer {
+		
+		protected final ReferenceToXstsVariableMapper mapper
 	
-	protected def List<Expression> transformExpression(Expression expression) {
-		val xStsExpressions = <Expression>newArrayList
-		// TODO replace these
-		if (expression instanceof ComponentInstanceVariableReference) {
+		new(ReferenceToXstsVariableMapper mapper) {
+			this.mapper = mapper
+		}
+	
+		def dispatch List<Expression> transformExpression(
+				ComponentInstanceVariableReference expression) {
 			val variable = expression.variable
 			val xStsVariables = mapper.getVariableVariables(variable)
-			xStsExpressions += xStsVariables.map[it.createReferenceExpression]
+			return xStsVariables.map[it.createReferenceExpression]
 		}
-		else if (expression instanceof DirectReferenceExpression) {
+		
+		override dispatch List<Expression> transformExpression(
+				DirectReferenceExpression expression) {
 			val declaration = expression.declaration
 			if (declaration instanceof ConstantDeclaration) {
 				val value = declaration.expression
-				xStsExpressions += value.transformExpression
-				// Does not work if constants are referred again from composite expressions
+				return value.transformExpression
 			}
-		}
-		else {
-			// Normal transformation chain
-			xStsExpressions += lowlevelTransformer.transformExpression(expression)
-					.map[xStsTransformer.transformExpression(it)]
+			return super.transformExpression(expression)
 		}
 		
-		return xStsExpressions
 	}
 	
 }
