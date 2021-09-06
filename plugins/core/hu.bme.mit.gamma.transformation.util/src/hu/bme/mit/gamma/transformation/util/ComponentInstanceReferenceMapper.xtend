@@ -36,6 +36,7 @@ class ComponentInstanceReferenceMapper {
 		for (content : contents) {
 			val name = content.name
 			// Structural properties during reduction change, names do not change
+			// TODO FQN?
 			if (originalName == name) {
 				return content as T
 			}

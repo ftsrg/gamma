@@ -18,6 +18,8 @@ import java.util.List
 
 import static com.google.common.base.Preconditions.checkState
 
+import static extension hu.bme.mit.gamma.property.derivedfeatures.PropertyModelDerivedFeatures.*
+
 class InitialStateHandler {
 	
 	protected final XSTS xSts
@@ -40,9 +42,14 @@ class InitialStateHandler {
 		this.xSts = xSts
 		this.component = component // Unfolded
 		
-		val propertyUnfolder = new PropertyUnfolder(initialState, component)
-		this.initialState = propertyUnfolder.execute // Unfolded
-		this.initialStateSetting = initialStateSetting // Unfolded
+		if (initialState.unfolded) {
+			this.initialState = initialState
+		}
+		else {
+			val propertyUnfolder = new PropertyUnfolder(initialState, component)
+			this.initialState = propertyUnfolder.execute // Unfolded
+		}
+		this.initialStateSetting = initialStateSetting
 		
 		this.mapper = new ReferenceToXstsVariableMapper(xSts)
 		this.expressionTransformer = new PropertyExpressionTransformer(mapper)

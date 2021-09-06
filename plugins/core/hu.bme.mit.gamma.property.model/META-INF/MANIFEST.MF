@@ -8,7 +8,8 @@ Bundle-ClassPath: .
 Bundle-Vendor: BME-FTSRG
 Bundle-Localization: plugin
 Bundle-RequiredExecutionEnvironment: JavaSE-11
-Export-Package: hu.bme.mit.gamma.property.model,
+Export-Package: hu.bme.mit.gamma.property.derivedfeatures,
+ hu.bme.mit.gamma.property.model,
  hu.bme.mit.gamma.property.model.impl,
  hu.bme.mit.gamma.property.model.util,
  hu.bme.mit.gamma.property.util
