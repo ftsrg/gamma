@@ -26,9 +26,11 @@ class Gamma2XstsUppaalTransformerSerializer {
 	protected final boolean extractGuards
 	protected final TransitionMerging transitionMerging
 	// Slicing
-	protected final PropertyPackage propertyPackage
+	protected final PropertyPackage slicingProperties
 	// Annotation
 	protected final AnnotatablePreprocessableElements annotatableElements
+	// Initial state
+	protected final PropertyPackage initialState
 	
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension GammaFileNamer fileNamer = GammaFileNamer.INSTANCE
@@ -52,7 +54,8 @@ class Gamma2XstsUppaalTransformerSerializer {
 				InteractionCoverageCriterion.EVERY_INTERACTION,	InteractionCoverageCriterion.EVERY_INTERACTION,
 				null, DataflowCoverageCriterion.ALL_USE,
 				null, DataflowCoverageCriterion.ALL_USE
-			)
+			),
+			null
 		)
 	}
 	
@@ -61,8 +64,9 @@ class Gamma2XstsUppaalTransformerSerializer {
 			Integer schedulingConstraint,
 			boolean optimize, boolean extractGuards,
 			TransitionMerging transitionMerging,
-			PropertyPackage propertyPackage,
-			AnnotatablePreprocessableElements annotatableElements) {
+			PropertyPackage slicingProperties,
+			AnnotatablePreprocessableElements annotatableElements,
+			PropertyPackage initialState) {
 		this.component = component
 		this.arguments = arguments
 		this.targetFolderUri = targetFolderUri
@@ -73,9 +77,11 @@ class Gamma2XstsUppaalTransformerSerializer {
 		this.extractGuards = extractGuards
 		this.transitionMerging = transitionMerging
 		//
-		this.propertyPackage = propertyPackage
+		this.slicingProperties = slicingProperties
 		//
 		this.annotatableElements = annotatableElements
+		//
+		this.initialState = initialState
 	}
 	
 	def execute() {
@@ -84,7 +90,7 @@ class Gamma2XstsUppaalTransformerSerializer {
 			fileName, schedulingConstraint,
 			optimize, false /* UPPAAL cannot handle havoc actions */, extractGuards, 
 			transitionMerging,
-			propertyPackage, annotatableElements)
+			slicingProperties, annotatableElements, initialState)
 		xStsTransformer.execute
 		val xSts = targetFolderUri.normalLoad(fileName.emfXStsFileName) as XSTS
 		val uppaalTransformer = new Xsts2UppaalTransformerSerializer(xSts,

@@ -488,7 +488,8 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 						testedInteractions, senderCoverageCriterion, receiverCoverageCriterion,
 						dataflowTestedVariables, dataflowCoverageCriterion,
 						testedComponentsForInteractionDataflow, interactionDataflowCoverageCriterion
-					)
+					),
+					transformation.getInitialState()
 			);
 			transformer.execute();
 			// Property serialization
@@ -580,7 +581,8 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 						testedInteractions, senderCoverageCriterion, receiverCoverageCriterion,
 						dataflowTestedVariables, dataflowCoverageCriterion,
 						testedComponentsForInteractionDataflow, interactionDataflowCoverageCriterion
-					)
+					),
+					transformation.getInitialState()
 			);
 			transformer.execute();
 			// Property serialization

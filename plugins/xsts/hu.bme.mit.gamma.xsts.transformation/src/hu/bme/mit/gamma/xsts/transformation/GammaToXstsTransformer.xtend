@@ -19,6 +19,7 @@ import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.TransitionMerging
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer.ActionOptimizer
+import hu.bme.mit.gamma.property.model.PropertyPackage
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.InterfaceModelFactory
 import hu.bme.mit.gamma.statechart.interface_.Package
@@ -49,6 +50,7 @@ class GammaToXstsTransformer {
 	protected final extension ComponentTransformer componentTransformer
 	// Transformation settings
 	protected final Integer schedulingConstraint
+	protected final PropertyPackage initialState
 	// Auxiliary objects
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension ActionSerializer actionSerializer = ActionSerializer.INSTANCE
@@ -71,10 +73,18 @@ class GammaToXstsTransformer {
 	new(Integer schedulingConstraint, boolean transformOrthogonalActions,
 			boolean optimize, boolean useHavocActions, boolean extractGuards,
 			TransitionMerging transitionMerging) {
+		this(schedulingConstraint, transformOrthogonalActions,
+				optimize, useHavocActions, extractGuards, transitionMerging, null)
+	}
+	
+	new(Integer schedulingConstraint, boolean transformOrthogonalActions,
+			boolean optimize, boolean useHavocActions, boolean extractGuards,
+			TransitionMerging transitionMerging, PropertyPackage initialState) {
 		this.gammaToLowlevelTransformer = new GammaToLowlevelTransformer
 		this.componentTransformer = new ComponentTransformer(this.gammaToLowlevelTransformer,
 			transformOrthogonalActions, optimize, useHavocActions, extractGuards, transitionMerging)
 		this.schedulingConstraint = schedulingConstraint
+		this.initialState = initialState
 	}
 	
 	def preprocessAndExecuteAndSerialize(Package _package,
@@ -84,12 +94,14 @@ class GammaToXstsTransformer {
 	
 	def preprocessAndExecuteAndSerialize(Package _package,
 			List<Expression> topComponentArguments, String targetFolderUri, String fileName) {
-		return _package.preprocessAndExecute(topComponentArguments, targetFolderUri, fileName).serializeXsts
+		return _package.preprocessAndExecute(
+				topComponentArguments, targetFolderUri, fileName).serializeXsts
 	}
 
 	def preprocessAndExecute(Package _package,
 			String targetFolderUri, String fileName) {
-		val component = modelPreprocessor.preprocess(_package, #[], targetFolderUri, fileName, optimize)
+		val component = modelPreprocessor.preprocess(
+				_package, #[], targetFolderUri, fileName, optimize)
 		val newPackage = component.containingPackage
 		return newPackage.execute
 	}
@@ -104,7 +116,7 @@ class GammaToXstsTransformer {
 	
 	def execute(Package _package) {
 		logger.log(Level.INFO, "Starting main execution of Gamma-XSTS transformation")
-		val gammaComponent = _package.components.head // Getting the first component
+		val gammaComponent = _package.firstComponent // Getting the first component
 		// "transform", not "execute", as we want to distinguish between statecharts
 		val lowlevelPackage = gammaToLowlevelTransformer.transform(_package)
 		// Serializing the xSTS
@@ -119,6 +131,13 @@ class GammaToXstsTransformer {
 		_package.setSchedulingAnnotation(schedulingConstraint) // Needed for back-annotation
 		// Optimizing
 		xSts.optimize
+		
+		if (initialState !== null) {
+			logger.log(Level.INFO, "Setting initial state " + gammaComponent.name)
+			val initialStateHandler = new InitialStateHandler(xSts, gammaComponent, initialState)
+			initialStateHandler.execute
+		}
+		
 		return xSts
 	}
 	

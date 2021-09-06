@@ -32,7 +32,7 @@ class InitialStateHandler {
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	
-	new (XSTS xSts, Component component, PropertyPackage initialState) {
+	new(XSTS xSts, Component component, PropertyPackage initialState) {
 		this.xSts = xSts
 		this.component = component // Unfolded
 		
@@ -54,7 +54,7 @@ class InitialStateHandler {
 			xStsVariableAssignments += expression.transform
 		}
 		
-		// Handling xStsVariableAssignments according to the setting
+		// TODO Handling xStsVariableAssignments according to the setting
 		val configurationAction = xSts.configurationInitializingTransition.action
 		configurationAction.appendToAction(xStsVariableAssignments)
 		
@@ -70,6 +70,15 @@ class InitialStateHandler {
 		val xStsLhs = lhs.transformExpression
 				.filter(DirectReferenceExpression).toList // Casting
 		val xStsRhs = rhs.transformExpression
+		
+		// Filtering null declarations (references to optimized variables)
+		for (var i = 0; i < xStsLhs.size; i++) {
+			val reference = xStsLhs.get(i)
+			if (reference.declaration === null) {
+				xStsLhs.remove(i)
+				xStsRhs.remove(i)
+			}
+		}
 		
 		return xStsLhs.createAssignmentActions(xStsRhs)
 	}

@@ -41,9 +41,11 @@ class Gamma2XstsTransformerSerializer {
 	protected final boolean extractGuards
 	protected final TransitionMerging transitionMerging
 	// Slicing
-	protected final PropertyPackage propertyPackage
+	protected final PropertyPackage slicingProperties
 	// Annotation
 	protected final AnnotatablePreprocessableElements annotatableElements
+	// Initial state
+	protected final PropertyPackage initialState
 	
 	protected final AnalysisModelPreprocessor preprocessor = AnalysisModelPreprocessor.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
@@ -68,7 +70,8 @@ class Gamma2XstsTransformerSerializer {
 			null, new AnnotatablePreprocessableElements(null, null, null, null, null,
 				InteractionCoverageCriterion.EVERY_INTERACTION, InteractionCoverageCriterion.EVERY_INTERACTION,
 				null, DataflowCoverageCriterion.ALL_USE,
-				null, DataflowCoverageCriterion.ALL_USE)
+				null, DataflowCoverageCriterion.ALL_USE),
+			null
 			)
 	}
 	
@@ -77,7 +80,9 @@ class Gamma2XstsTransformerSerializer {
 			Integer schedulingConstraint,
 			boolean optimize, boolean useHavocActions, boolean extractGuards,
 			TransitionMerging transitionMerging,
-			PropertyPackage propertyPackage, AnnotatablePreprocessableElements annotatableElements) {
+			PropertyPackage slicingProperties,
+			AnnotatablePreprocessableElements annotatableElements,
+			PropertyPackage initialState) {
 		this.component = component
 		this.arguments = arguments
 		this.targetFolderUri = targetFolderUri
@@ -89,9 +94,11 @@ class Gamma2XstsTransformerSerializer {
 		this.extractGuards = extractGuards
 		this.transitionMerging = transitionMerging
 		//
-		this.propertyPackage = propertyPackage
+		this.slicingProperties = slicingProperties
 		//
 		this.annotatableElements = annotatableElements
+		//
+		this.initialState = initialState
 	}
 	
 	def void execute() {
@@ -102,12 +109,13 @@ class Gamma2XstsTransformerSerializer {
 		// Slicing and Property generation
 		val slicerAnnotatorAndPropertyGenerator = new ModelSlicerModelAnnotatorPropertyGenerator(
 				newTopComponent,
-				propertyPackage,
+				slicingProperties,
 				annotatableElements,
 				targetFolderUri, fileName)
 		slicerAnnotatorAndPropertyGenerator.execute
 		val gammaToXSTSTransformer = new GammaToXstsTransformer(
-			schedulingConstraint, true, true, useHavocActions, extractGuards, transitionMerging)
+			schedulingConstraint, true, true, useHavocActions, extractGuards,
+			transitionMerging, initialState)
 		// Normal transformation
 		val xSts = gammaToXSTSTransformer.execute(newGammaPackage)
 		// EMF

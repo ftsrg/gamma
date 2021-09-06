@@ -233,7 +233,7 @@ class ReferenceToXstsVariableMapper {
 		val type = xStsRegionVariable.type
 		
 		if (type instanceof TypeReference) {
-			val typeDeclaration = type.typeDeclaration
+			val typeDeclaration = type.reference
 			val typeDefinition = typeDeclaration.type
 			if (typeDefinition instanceof EnumerationTypeDefinition) {
 				val literalName = state.customizeName
