@@ -10,6 +10,10 @@
   <foreignModel>genmodel.ecore</foreignModel>
   <genPackages prefix="GenmodelModel" basePackage="hu.bme.mit.gamma.genmodel" disposableProviderFactory="true"
       fileExtensions="ggm" ecorePackage="genmodel.ecore#/">
+    <genEnums typeSafeEnumCompatible="false" ecoreEnum="genmodel.ecore#//InitialStateSetting">
+      <genEnumLiterals ecoreEnumLiteral="genmodel.ecore#//InitialStateSetting/EXECUTE_ENTRY_ACTIONS"/>
+      <genEnumLiterals ecoreEnumLiteral="genmodel.ecore#//InitialStateSetting/SKIP_ENTRY_ACTIONS"/>
+    </genEnums>
     <genEnums typeSafeEnumCompatible="false" ecoreEnum="genmodel.ecore#//ProgrammingLanguage">
       <genEnumLiterals ecoreEnumLiteral="genmodel.ecore#//ProgrammingLanguage/JAVA"/>
     </genEnums>
@@ -66,6 +70,7 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference genmodel.ecore#//AnalysisModelTransformation/model"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference genmodel.ecore#//AnalysisModelTransformation/propertyPackage"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference genmodel.ecore#//AnalysisModelTransformation/initialState"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//AnalysisModelTransformation/initialStateSetting"/>
     </genClasses>
     <genClasses ecoreClass="genmodel.ecore#//InterfaceMapping">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//InterfaceMapping/realizationMode"/>

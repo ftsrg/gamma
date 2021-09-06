@@ -45,6 +45,12 @@
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="propertyPackage" eType="ecore:EClass ../../hu.bme.mit.gamma.property.model/model/property.ecore#//PropertyPackage"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="initialState" eType="ecore:EClass ../../hu.bme.mit.gamma.property.model/model/property.ecore#//PropertyPackage"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="initialStateSetting" eType="#//InitialStateSetting"
+        defaultValueLiteral="EXECUTE_ENTRY_ACTIONS"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EEnum" name="InitialStateSetting">
+    <eLiterals name="EXECUTE_ENTRY_ACTIONS" literal="EXECUTE_ENTRY_ACTIONS"/>
+    <eLiterals name="SKIP_ENTRY_ACTIONS" value="1"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="InterfaceMapping">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="realizationMode" lowerBound="1"

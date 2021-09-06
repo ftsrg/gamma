@@ -24,6 +24,7 @@ import hu.bme.mit.gamma.transformation.util.preprocessor.AnalysisModelPreprocess
 import hu.bme.mit.gamma.util.FileUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.transformation.GammaToXstsTransformer
+import hu.bme.mit.gamma.xsts.transformation.InitialStateSetting
 import hu.bme.mit.gamma.xsts.transformation.serializer.ActionSerializer
 import java.io.File
 import java.util.List
@@ -46,6 +47,7 @@ class Gamma2XstsTransformerSerializer {
 	protected final AnnotatablePreprocessableElements annotatableElements
 	// Initial state
 	protected final PropertyPackage initialState
+	protected final InitialStateSetting initialStateSetting
 	
 	protected final AnalysisModelPreprocessor preprocessor = AnalysisModelPreprocessor.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
@@ -71,8 +73,7 @@ class Gamma2XstsTransformerSerializer {
 				InteractionCoverageCriterion.EVERY_INTERACTION, InteractionCoverageCriterion.EVERY_INTERACTION,
 				null, DataflowCoverageCriterion.ALL_USE,
 				null, DataflowCoverageCriterion.ALL_USE),
-			null
-			)
+			null, null)
 	}
 	
 	new(Component component, List<Expression> arguments,
@@ -82,7 +83,7 @@ class Gamma2XstsTransformerSerializer {
 			TransitionMerging transitionMerging,
 			PropertyPackage slicingProperties,
 			AnnotatablePreprocessableElements annotatableElements,
-			PropertyPackage initialState) {
+			PropertyPackage initialState, InitialStateSetting initialStateSetting) {
 		this.component = component
 		this.arguments = arguments
 		this.targetFolderUri = targetFolderUri
@@ -99,6 +100,7 @@ class Gamma2XstsTransformerSerializer {
 		this.annotatableElements = annotatableElements
 		//
 		this.initialState = initialState
+		this.initialStateSetting = initialStateSetting
 	}
 	
 	def void execute() {
@@ -115,7 +117,7 @@ class Gamma2XstsTransformerSerializer {
 		slicerAnnotatorAndPropertyGenerator.execute
 		val gammaToXSTSTransformer = new GammaToXstsTransformer(
 			schedulingConstraint, true, true, useHavocActions, extractGuards,
-			transitionMerging, initialState)
+			transitionMerging, initialState, initialStateSetting)
 		// Normal transformation
 		val xSts = gammaToXSTSTransformer.execute(newGammaPackage)
 		// EMF

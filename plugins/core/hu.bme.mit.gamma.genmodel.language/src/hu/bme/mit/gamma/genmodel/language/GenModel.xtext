@@ -117,12 +117,17 @@ AnalysisModelTransformation returns AnalysisModelTransformation:
 			'language' ':' languages+=AnalysisLanguage |
 			'property-file' ':' propertyPackage=[property::PropertyPackage | STRING] | // Slicing
 			'initial-state' ':' initialState=[property::PropertyPackage | STRING] |
+			'initial-state-setting' ':' initialStateSetting=InitialStateSetting |
 			'optimize' ':' optimize=BOOLEAN |
 			'scheduler' ':' scheduler+=Scheduler |
 			'constraint' ':' constraint=Constraint |
 			coverages+=Coverage
 		)*
 	'}'
+;
+
+enum InitialStateSetting returns InitialStateSetting:
+	EXECUTE_ENTRY_ACTIONS = "execute-entry-actions" | SKIP_ENTRY_ACTIONS = "skip-entry-actions"
 ;
 
 ModelReference returns ModelReference:

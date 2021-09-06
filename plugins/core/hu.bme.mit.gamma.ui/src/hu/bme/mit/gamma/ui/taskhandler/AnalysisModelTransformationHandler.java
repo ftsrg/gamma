@@ -77,6 +77,7 @@ import hu.bme.mit.gamma.uppaal.composition.transformation.api.util.UppaalModelPr
 import hu.bme.mit.gamma.util.FileUtil;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
 import hu.bme.mit.gamma.xsts.model.XSTS;
+import hu.bme.mit.gamma.xsts.transformation.InitialStateSetting;
 import hu.bme.mit.gamma.xsts.transformation.api.Gamma2XstsTransformerSerializer;
 import hu.bme.mit.gamma.xsts.transformation.serializer.ActionSerializer;
 import hu.bme.mit.gamma.xsts.uppaal.transformation.api.Xsts2UppaalTransformerSerializer;
@@ -334,6 +335,18 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			}
 		}
 		
+		protected InitialStateSetting transformInitialStateSetting(
+				hu.bme.mit.gamma.genmodel.model.InitialStateSetting initialStateSetting) {
+			switch (initialStateSetting) {
+				case EXECUTE_ENTRY_ACTIONS:
+					return InitialStateSetting.EXECUTE_ENTRY_ACTIONS;
+				case SKIP_ENTRY_ACTIONS:
+					return InitialStateSetting.SKIP_ENTRY_ACTIONS;
+				default:
+					throw new IllegalArgumentException("Not known criterion: " + initialStateSetting);
+			}
+		}
+		
 	}
 	
 	class Gamma2UppaalTransformer extends AnalysisModelTransformer {
@@ -477,6 +490,9 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			DataflowCoverageCriterion interactionDataflowCoverageCriterion =
 				getInteractionDataflowCoverageCriterion(coverages);
 			
+			InitialStateSetting initialStateSetting = transformInitialStateSetting(
+					transformation.getInitialStateSetting());
+			
 			Gamma2XstsTransformerSerializer transformer = new Gamma2XstsTransformerSerializer(
 					component, reference.getArguments(),
 					targetFolderUri, fileName, schedulingConstraint,
@@ -489,7 +505,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 						dataflowTestedVariables, dataflowCoverageCriterion,
 						testedComponentsForInteractionDataflow, interactionDataflowCoverageCriterion
 					),
-					transformation.getInitialState()
+					transformation.getInitialState(), initialStateSetting
 			);
 			transformer.execute();
 			// Property serialization
@@ -569,6 +585,9 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			DataflowCoverageCriterion interactionDataflowCoverageCriterion =
 				getInteractionDataflowCoverageCriterion(coverages);
 			
+			InitialStateSetting initialStateSetting = transformInitialStateSetting(
+					transformation.getInitialStateSetting());
+			
 			Gamma2XstsUppaalTransformerSerializer transformer = new Gamma2XstsUppaalTransformerSerializer(
 					component, reference.getArguments(),
 					targetFolderUri, fileName, schedulingConstraint,
@@ -582,7 +601,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 						dataflowTestedVariables, dataflowCoverageCriterion,
 						testedComponentsForInteractionDataflow, interactionDataflowCoverageCriterion
 					),
-					transformation.getInitialState()
+					transformation.getInitialState(), initialStateSetting
 			);
 			transformer.execute();
 			// Property serialization

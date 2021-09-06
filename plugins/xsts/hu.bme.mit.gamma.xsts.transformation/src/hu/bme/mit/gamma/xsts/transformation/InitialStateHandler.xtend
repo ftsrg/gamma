@@ -23,6 +23,7 @@ class InitialStateHandler {
 	protected final XSTS xSts
 	protected final Component component
 	protected final PropertyPackage initialState
+	protected final InitialStateSetting initialStateSetting
 	protected final ReferenceToXstsVariableMapper mapper
 	
 	protected final ExpressionTransformer lowlevelTransformer = new ExpressionTransformer
@@ -33,11 +34,17 @@ class InitialStateHandler {
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	
 	new(XSTS xSts, Component component, PropertyPackage initialState) {
+		this(xSts, component, initialState, InitialStateSetting.EXECUTE_ENTRY_ACTIONS)
+	}
+	
+	new(XSTS xSts, Component component,
+			PropertyPackage initialState, InitialStateSetting initialStateSetting) {
 		this.xSts = xSts
 		this.component = component // Unfolded
 		
 		val propertyUnfolder = new PropertyUnfolder(initialState, component)
 		this.initialState = propertyUnfolder.execute // Unfolded
+		this.initialStateSetting = initialStateSetting // Unfolded
 		
 		this.mapper = new ReferenceToXstsVariableMapper(xSts)
 	}
@@ -54,9 +61,22 @@ class InitialStateHandler {
 			xStsVariableAssignments += expression.transform
 		}
 		
-		// TODO Handling xStsVariableAssignments according to the setting
-		val configurationAction = xSts.configurationInitializingTransition.action
-		configurationAction.appendToAction(xStsVariableAssignments)
+		// Setting the initial state according to the input
+		switch (initialStateSetting) {
+			case EXECUTE_ENTRY_ACTIONS: {
+				val configurationAction = xSts.configurationInitializingTransition.action
+				configurationAction.appendToAction(xStsVariableAssignments)
+				// entryEventTransition remains untouched
+			}
+			case SKIP_ENTRY_ACTIONS: {
+				// Replacing the entryEventTransition
+				xSts.entryEventTransition.action = xStsVariableAssignments.createSequentialAction
+			}
+			default: {
+				throw new IllegalArgumentException(
+					"Not known initial state setting: " + initialStateSetting)
+			}
+		}
 		
 	}
 	
@@ -100,7 +120,7 @@ class InitialStateHandler {
 	
 	protected def List<Expression> transformExpression(Expression expression) {
 		val xStsExpressions = <Expression>newArrayList
-		
+		// TODO replace these
 		if (expression instanceof ComponentInstanceVariableReference) {
 			val variable = expression.variable
 			val xStsVariables = mapper.getVariableVariables(variable)

@@ -51,6 +51,7 @@ class GammaToXstsTransformer {
 	// Transformation settings
 	protected final Integer schedulingConstraint
 	protected final PropertyPackage initialState
+	protected final InitialStateSetting initialStateSetting
 	// Auxiliary objects
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension ActionSerializer actionSerializer = ActionSerializer.INSTANCE
@@ -74,17 +75,20 @@ class GammaToXstsTransformer {
 			boolean optimize, boolean useHavocActions, boolean extractGuards,
 			TransitionMerging transitionMerging) {
 		this(schedulingConstraint, transformOrthogonalActions,
-				optimize, useHavocActions, extractGuards, transitionMerging, null)
+				optimize, useHavocActions, extractGuards, transitionMerging,
+				null, null)
 	}
 	
 	new(Integer schedulingConstraint, boolean transformOrthogonalActions,
 			boolean optimize, boolean useHavocActions, boolean extractGuards,
-			TransitionMerging transitionMerging, PropertyPackage initialState) {
+			TransitionMerging transitionMerging,
+			PropertyPackage initialState, InitialStateSetting initialStateSetting) {
 		this.gammaToLowlevelTransformer = new GammaToLowlevelTransformer
 		this.componentTransformer = new ComponentTransformer(this.gammaToLowlevelTransformer,
 			transformOrthogonalActions, optimize, useHavocActions, extractGuards, transitionMerging)
 		this.schedulingConstraint = schedulingConstraint
 		this.initialState = initialState
+		this.initialStateSetting = initialStateSetting
 	}
 	
 	def preprocessAndExecuteAndSerialize(Package _package,
@@ -134,7 +138,8 @@ class GammaToXstsTransformer {
 		
 		if (initialState !== null) {
 			logger.log(Level.INFO, "Setting initial state " + gammaComponent.name)
-			val initialStateHandler = new InitialStateHandler(xSts, gammaComponent, initialState)
+			val initialStateHandler = new InitialStateHandler(xSts, gammaComponent,
+				initialState, initialStateSetting)
 			initialStateHandler.execute
 		}
 		

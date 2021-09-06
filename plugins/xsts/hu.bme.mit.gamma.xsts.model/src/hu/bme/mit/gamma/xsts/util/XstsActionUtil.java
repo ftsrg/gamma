@@ -346,6 +346,12 @@ public class XstsActionUtil extends ExpressionUtil {
 		return createAssignmentAction(variable, createDecrementExpression(variable));
 	}
 	
+	public SequentialAction createSequentialAction(Collection<? extends Action> actions) {
+		SequentialAction block = xStsFactory.createSequentialAction();
+		block.getActions().addAll(actions);
+		return block;
+	}
+	
 	public LoopAction createLoopAction(String iterationVariableName,
 			Expression start, Expression end) {
 		return createLoopAction(iterationVariableName, start, true, end, false);
