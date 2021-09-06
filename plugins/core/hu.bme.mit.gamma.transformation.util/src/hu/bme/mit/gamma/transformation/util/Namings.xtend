@@ -10,12 +10,15 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.transformation.util
 
+import hu.bme.mit.gamma.expression.model.NamedElement
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference
+import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.StateNode
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import java.util.List
+import org.eclipse.emf.ecore.EObject
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
@@ -36,6 +39,18 @@ class Namings {
 			return '''«container.name»_«name»'''
 		}
 		throw new IllegalArgumentException("Not known container: " + container)
+	}
+	
+	def static String getFQNUpToComponent(EObject element) {
+		if (element instanceof Component) {
+			return element.name
+		}
+		val parent = element.eContainer
+		val parentFqn = parent.FQNUpToComponent
+		if (element instanceof NamedElement) {
+			return '''«parentFqn»_«element.name»'''
+		}
+		return parentFqn
 	}
 	
 }

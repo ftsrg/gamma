@@ -15,6 +15,8 @@ import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 
+import static extension hu.bme.mit.gamma.transformation.util.Namings.*
+
 class ComponentInstanceReferenceMapper {
 	// Singleton
 	public static final ComponentInstanceReferenceMapper INSTANCE = new ComponentInstanceReferenceMapper
@@ -29,15 +31,15 @@ class ComponentInstanceReferenceMapper {
 	
 	def <T extends NamedElement> getNewObject(ComponentInstanceReference originalInstance,
 			T originalObject, Component newTopComponent) {
-		val originalName = originalObject.name
+		val originalFqn = originalObject.FQNUpToComponent
 		val newInstance = originalInstance.checkAndGetNewSimpleInstance(newTopComponent)
 		val newComponent = newInstance.type
 		val contents = newComponent.getAllContentsOfType(originalObject.class)
 		for (content : contents) {
-			val name = content.name
+			val fqn = content.FQNUpToComponent
 			// Structural properties during reduction change, names do not change
 			// TODO FQN?
-			if (originalName == name) {
+			if (originalFqn == fqn) {
 				return content as T
 			}
 		}
