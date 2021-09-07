@@ -140,10 +140,10 @@ public class StatechartUtil extends ActionUtil {
 			reference.setChild(child);
 			reference = child;
 		}
-		ComponentInstanceReference finalReference =
-				StatechartModelDerivedFeatures.getParent(reference);
+		ComponentInstanceReference head =
+				StatechartModelDerivedFeatures.getFirstInstance(reference);
 		ecoreUtil.remove(reference); // No instance
-		return finalReference;
+		return head;
 	}
 	
 	//
