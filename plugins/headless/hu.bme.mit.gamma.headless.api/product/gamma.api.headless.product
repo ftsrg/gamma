@@ -59,6 +59,14 @@
       <plugin id="hu.bme.mit.gamma.property.language.ui"/>
       <plugin id="hu.bme.mit.gamma.property.model"/>
       <plugin id="hu.bme.mit.gamma.querygenerator"/>
+      <plugin id="hu.bme.mit.gamma.scenario.language"/>
+      <plugin id="hu.bme.mit.gamma.scenario.language.ide"/>
+      <plugin id="hu.bme.mit.gamma.scenario.language.ui"/>
+      <plugin id="hu.bme.mit.gamma.scenario.model"/>
+      <plugin id="hu.bme.mit.gamma.scenario.reduction"/>
+      <plugin id="hu.bme.mit.gamma.scenario.statechart.generator"/>
+      <plugin id="hu.bme.mit.gamma.scenario.statechart.util"/>
+      <plugin id="hu.bme.mit.gamma.scenario.trace.generator"/>
       <plugin id="hu.bme.mit.gamma.statechart.contract.testgeneration.java"/>
       <plugin id="hu.bme.mit.gamma.statechart.contract.tracegeneration"/>
       <plugin id="hu.bme.mit.gamma.statechart.language"/>
