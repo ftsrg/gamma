@@ -238,24 +238,70 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 	}
 	
 	def getSourceOutEvent(String targetOutEventName) {
-		// TODO filter asynchronous ports if component is asynchronous
+		if (component.asynchronous) {
+			return targetOutEventName.asynchronousSourceOutEvent
+		}
+		else if (component.synchronous) {
+			return targetOutEventName.synchronousSourceOutEvent
+		}
+		throw new IllegalArgumentException("Not known type: " + component)
+	}
+	
+	def getAsynchronousSourceOutEvent(String targetOutEventName) {
+		for (match : asynchronousSystemOutEvents) {
+			val name = getTargetOutEventName(match.first, match.second, match.third)
+			if (name == targetOutEventName) {
+				return #[match.first, match.second, match.third]
+			}
+		}
+		throw new IllegalArgumentException("Not known id: " + targetOutEventName)
+	}
+	
+	def getSynchronousSourceOutEvent(String targetOutEventName) {
 		for (match : synchronousSystemOutEvents) {
 			val name = getTargetOutEventName(match.event, match.port, match.instance)
-			if (name.equals(targetOutEventName)) {
+			if (name == targetOutEventName) {
 				return #[match.event, match.port, match.instance]
+			}
+		}
+		
+		throw new IllegalArgumentException("Not known id: " + targetOutEventName)
+	}
+	
+	def getSourceOutEventParameter(String targetOutEventParameterName) {
+		if (component.asynchronous) {
+			return targetOutEventParameterName.asynchronousSourceOutEventParameter
+		}
+		else if (component.synchronous) {
+			return targetOutEventParameterName.synchronousSourceOutEventParameter
+		}
+		throw new IllegalArgumentException("Not known type: " + component)
+	}
+	
+	def getSynchronousSourceOutEventParameter(String targetOutEventParameterName) {
+		for (match : synchronousSystemOutEvents) {
+			val event = match.event
+			val port = match.port
+			val instance = match.instance
+			for (parameter : event.parameterDeclarations) {
+				val names = getTargetOutEventParameterNames(event, port, parameter, instance)
+				if (names.contains(targetOutEventParameterName)) {
+					return #[event, port, parameter, instance]
+				}
 			}
 		}
 		throw new IllegalArgumentException("Not known id")
 	}
 	
-	def getSourceOutEventParameter(String targetOutEventParameterName) {
-		// TODO filter asynchronous ports if component is asynchronous
-		for (match : synchronousSystemOutEvents) {
-			val event = match.event
+	def getAsynchronousSourceOutEventParameter(String targetOutEventParameterName) {
+		for (match : asynchronousSystemOutEvents) {
+			val event = match.first
+			val port = match.second
+			val instance = match.third
 			for (parameter : event.parameterDeclarations) {
-				val names = getTargetOutEventParameterNames(event, match.port, parameter, match.instance)
+				val names = getTargetOutEventParameterNames(event, port, parameter, instance)
 				if (names.contains(targetOutEventParameterName)) {
-					return #[event, match.port, parameter, match.instance]
+					return #[event, port, parameter, instance]
 				}
 			}
 		}

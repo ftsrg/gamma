@@ -107,6 +107,19 @@ abstract class AbstractQueryGenerator {
 		return TopSyncSystemOutEvents.Matcher.on(engine).allMatches
 	}
 	
+	def getAsynchronousSystemOutEvents() {
+		val inEvents = newArrayList
+		for (systemPort : component.allPorts) {
+			for (port : systemPort.allBoundSimplePorts) {
+				val instance = port.containingComponentInstance as SynchronousComponentInstance
+				for (inEvent : port.inputEvents) {
+					inEvents += new Triple(inEvent, port, instance)
+				}
+			}
+		}
+		return inEvents
+	}
+	
 	def List<String> getSynchronousSystemOutEventNames() {
 		val eventNames = newArrayList
 		for (eventsMatch : getSynchronousSystemOutEvents) {
