@@ -246,19 +246,21 @@ class ComponentTransformer {
 				
 				val block = createSequentialAction
 				
-				val messageRetrievalCount = queue.checkAndGetMessageRetrievalCount // TODO check
-				switch (messageRetrievalCount) {
-					case ONE:
+				val messageRetrievalCount = queue.checkAndGetMessageRetrievalCount
+				if (messageRetrievalCount == 1) {
+						// Good option for verification
 						mergedAction.actions += block
-					case ALL: {
-						val queueLoop = loopIterationVariableName.createLoopAction(
-								0.toIntegerLiteral, xStsMasterSizeVariable.createReferenceExpression) => [
-							it.action = block
-						]
-						mergedAction.actions += queueLoop
-					}
-					default:
-						throw new IllegalArgumentException("Not known literal: " + messageRetrievalCount)
+				}
+				else {
+					val maxValue = (messageRetrievalCount === null) ? 
+						xStsMasterSizeVariable.createReferenceExpression : // Null means ALL messages
+						messageRetrievalCount.toIntegerLiteral // Retrieved count
+					
+					val queueLoop = loopIterationVariableName.createLoopAction(
+							0.toIntegerLiteral, maxValue) => [
+						it.action = block
+					]
+					mergedAction.actions += queueLoop
 				}
 				
 				val xStsEventIdVariableAction = createIntegerTypeDefinition.createVariableDeclarationAction(
@@ -823,7 +825,8 @@ class ComponentTransformer {
 		}
 		val capacity = queue.capacity.evaluateInteger
 		if (systemPorts.containsOne(topPorts) && capacity == 1) {
-			return true // Contains other events too, but the queue will always be empty when using it in the in-event action 
+			return true /* Contains other events too, but the queue will always be empty,
+				when handling it in the in-event action */
 			// TODO except if the initial action raises some internal events 
 		}
 		checkState(systemPorts.containsNone(topPorts) || capacity == 1,
@@ -832,7 +835,13 @@ class ComponentTransformer {
 	}
 	
 	private def checkAndGetMessageRetrievalCount(MessageQueue queue) {
-		return MessageRetrievalCount.ONE // Makes sense only if the trigger is 'any'
+		val countExpression = queue.messageRetrievalCount
+		if (countExpression === null) {
+			return null
+		}
+		val count = countExpression.evaluateInteger
+		checkState(count > 0) // Maybe 0 should be accepted too
+		return count
 	}
 	
 	private def void resetInEventsAfterMergedAction(XSTS xSts, Component type) {
