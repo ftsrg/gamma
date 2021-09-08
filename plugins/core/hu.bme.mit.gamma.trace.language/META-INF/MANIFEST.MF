@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Gamma Execution Trace Language
+Bundle-Name: Gamma Trace Language
 Bundle-Vendor: BME-FTSRG
 Bundle-Version: 2.5.1.qualifier
 Bundle-SymbolicName: hu.bme.mit.gamma.trace.language; singleton:=true

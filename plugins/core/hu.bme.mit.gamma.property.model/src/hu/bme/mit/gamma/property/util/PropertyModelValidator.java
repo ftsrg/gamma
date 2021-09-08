@@ -33,24 +33,38 @@ public class PropertyModelValidator extends StatechartModelValidator {
 	}
 	//
 	
-	public Collection<ValidationResultMessage> checkComponentInstanceReferences(ComponentInstanceReference reference) {
+	public Collection<ValidationResultMessage> checkComponentInstanceReferences(
+			ComponentInstanceReference reference) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		super.checkComponentInstanceReferences(reference);
-		List<ComponentInstance> instances = reference.getComponentInstanceHierarchy();
-		if (!instances.isEmpty()) {
-			PropertyPackage model = ecoreUtil.getContainerOfType(reference, PropertyPackage.class);
-			if (model != null) {
-				Component component = model.getComponent();
-				List<ComponentInstance> containedComponents = ecoreUtil.getContentsOfType(component, ComponentInstance.class);
-				ComponentInstance firstInstance = instances.get(0);
-				if (!containedComponents.contains(firstInstance) && !isUnfolded(firstInstance)) {
-					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-						"The first component instance must be the component of " + component.getName(),
-						new ReferenceInfo(
-							CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE__COMPONENT_INSTANCE_HIERARCHY, 0)));
+		
+		validationResultMessages.addAll(
+				super.checkComponentInstanceReferences(reference));
+		
+		if (StatechartModelDerivedFeatures.isFirst(reference)) {
+			ComponentInstance firstInstance = reference.getComponentInstance();
+			if (!isUnfolded(firstInstance)) {
+				PropertyPackage propertyPackage = ecoreUtil.getContainerOfType(reference, PropertyPackage.class);
+				if (propertyPackage != null) {
+					Component component = propertyPackage.getComponent();
+					List<ComponentInstance> containedComponents = StatechartModelDerivedFeatures.getInstances(component);
+					if (!containedComponents.contains(firstInstance)) {
+						validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+							"The first component instance must be the component of " + component.getName(),
+							new ReferenceInfo(
+								CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE__COMPONENT_INSTANCE)));
+					}
 				}
 			}
 		}
+		
+		ComponentInstance lastInstance = StatechartModelDerivedFeatures.getLastInstance(reference);
+		if (lastInstance != null && // Xtext parsing
+				!StatechartModelDerivedFeatures.isStatechart(lastInstance)) {
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+				"The last component instance must have a statechart type", 
+					new ReferenceInfo(CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE__COMPONENT_INSTANCE)));
+		}
+		
 		return validationResultMessages;
 	}
 			

@@ -33,6 +33,8 @@ import hu.bme.mit.gamma.util.GammaEcoreUtil
 
 import static com.google.common.base.Preconditions.checkState
 
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
+
 class ExpressionTransformer {
 	// Trace needed for variable references
 	protected final Trace trace
@@ -40,6 +42,10 @@ class ExpressionTransformer {
 	protected final extension ExpressionModelFactory constraintFactory = ExpressionModelFactory.eINSTANCE
 	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE
+	
+	new() {
+		this(new Trace(null, null)) // For ad-hoc expression transformations
+	}
 	
 	new(Trace trace) {
 		this.trace = trace
@@ -70,6 +76,10 @@ class ExpressionTransformer {
 		}
 		checkState(declaration instanceof VariableDeclaration, declaration)
 		val variableDeclaration = declaration as VariableDeclaration
+		if (variableDeclaration.final) {
+			val initialValue = variableDeclaration.initialValue
+			return initialValue.transformExpression
+		}
 		return trace.getXStsVariable(variableDeclaration).createReferenceExpression
 	}
 	
@@ -87,7 +97,8 @@ class ExpressionTransformer {
 		val lowlevelState = expression.state
 		val xStsVariable = trace.getXStsVariable(lowlevelRegion)
 		val xStsLiteral = trace.getXStsEnumLiteral(lowlevelState)
-		return xStsVariable.createEqualityExpression(xStsLiteral.wrap)
+		return xStsVariable.createEqualityExpression(
+				xStsLiteral.createEnumerationLiteralExpression)
 	}
 	
 	def dispatch Expression transformExpression(EnumerationLiteralExpression expression) {

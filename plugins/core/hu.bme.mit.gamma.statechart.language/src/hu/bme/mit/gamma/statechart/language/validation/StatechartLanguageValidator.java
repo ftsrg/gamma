@@ -25,6 +25,7 @@ import hu.bme.mit.gamma.statechart.composite.ControlSpecification;
 import hu.bme.mit.gamma.statechart.composite.InstancePortReference;
 import hu.bme.mit.gamma.statechart.composite.MessageQueue;
 import hu.bme.mit.gamma.statechart.composite.PortBinding;
+import hu.bme.mit.gamma.statechart.composite.ScheduledAsynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.SimpleChannel;
 import hu.bme.mit.gamma.statechart.contract.AdaptiveContractAnnotation;
 import hu.bme.mit.gamma.statechart.contract.StateContractAnnotation;
@@ -342,8 +343,8 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	}
 	
 	@Check
-	public void checkUnusedInstancePort(ComponentInstance instance) {
-		handleValidationResultMessage(statechartModelValidator.checkUnusedInstancePort(instance));
+	public void checkComponentInstances(ComponentInstance instance) {
+		handleValidationResultMessage(statechartModelValidator.checkComponentInstances(instance));
 	}
 	
 	@Check
@@ -426,7 +427,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	@Check
 	public void checkSynchronousComponentWrapperMultipleEventContainment(AsynchronousAdapter wrapper) {
 		handleValidationResultMessage(statechartModelValidator
-				.checkSynchronousComponentWrapperMultipleEventContainment(wrapper));
+				.checkAsynchronousAdapterMultipleEventContainment(wrapper));
 	}
 	
 	@Check
@@ -459,6 +460,12 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		handleValidationResultMessage(statechartModelValidator.checkAnyPortControls(adapter));
 	}
 	
+	
+	@Check
+	public void checkMessageRetrievalCount(AsynchronousAdapter adapter) {
+		handleValidationResultMessage(statechartModelValidator.checkMessageRetrievalCount(adapter));
+	}
+	
 	@Check
 	public void checkMessageQueueAnyEventReferences(AnyPortEventReference anyPortEventReference) {
 		handleValidationResultMessage(statechartModelValidator
@@ -468,6 +475,16 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	@Check
 	public void checkExecutionLists(CascadeCompositeComponent cascade) {
 		handleValidationResultMessage(statechartModelValidator.checkExecutionLists(cascade));
+	}
+	
+	@Check
+	public void checkExecutionLists(ScheduledAsynchronousCompositeComponent scheduledComponent) {
+		handleValidationResultMessage(statechartModelValidator.checkExecutionLists(scheduledComponent));
+	}
+	
+	@Check
+	public void checkComponents(ScheduledAsynchronousCompositeComponent scheduledComponent) {
+		handleValidationResultMessage(statechartModelValidator.checkComponents(scheduledComponent));
 	}
 	
 	@Check

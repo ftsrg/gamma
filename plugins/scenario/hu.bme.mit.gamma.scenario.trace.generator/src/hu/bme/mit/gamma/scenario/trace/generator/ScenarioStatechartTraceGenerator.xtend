@@ -1,11 +1,11 @@
 /********************************************************************************
  * Copyright (c) 2020-2021 Contributors to the Gamma project
- *
+ * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
+ * 
  * SPDX-License-Identifier: EPL-1.0
  ********************************************************************************/
 package hu.bme.mit.gamma.scenario.trace.generator
@@ -20,7 +20,6 @@ import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.theta.verification.ThetaVerifier
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
-import hu.bme.mit.gamma.trace.model.Step
 import hu.bme.mit.gamma.trace.model.TraceModelFactory
 import hu.bme.mit.gamma.trace.util.TraceUtil
 import hu.bme.mit.gamma.trace.util.UnsentEventAssertExtender
@@ -31,7 +30,9 @@ import hu.bme.mit.gamma.xsts.transformation.GammaToXstsTransformer
 import java.io.File
 import java.util.List
 
-class ScenarioStatechartTraceGenerator { 
+import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
+
+class ScenarioStatechartTraceGenerator {
 
 	val extension TraceModelFactory traceFactory = TraceModelFactory.eINSTANCE
 	val extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
@@ -43,72 +44,80 @@ class ScenarioStatechartTraceGenerator {
 	StatechartDefinition statechart = null
 
 	val boolean testOriginal = true
-	
-	var int schedulingConstraint=0
+
+	var int schedulingConstraint = 0
 
 	String absoluteParentFolder
 
 	Package _package
 
 	new(StatechartDefinition sd, int schedulingConstraint) {
-		this.schedulingConstraint=schedulingConstraint
+		this.schedulingConstraint = schedulingConstraint
 		this.statechart = sd
-		this._package = ecoreUtil.getContainerOfType(statechart, Package)
+		this._package = statechart.containingPackage
 	}
 
 	def List<ExecutionTrace> execute() {
-		var Component c = statechart;
+		var Component c = statechart
 		absoluteParentFolder = (statechart.eResource.file).parentFile.absolutePath
 		var result = <ExecutionTrace>newArrayList
-		if (statechart.getAnnotation() instanceof ScenarioContractAnnotation && testOriginal) {
-			c = ( statechart.getAnnotation() as ScenarioContractAnnotation).getMonitoredComponent();
+		val annotation = statechart.annotation
+		if (annotation instanceof ScenarioContractAnnotation) { 
+			if (testOriginal) {
+				c = annotation.monitoredComponent
+			}
 		}
 
-	var GammaToXstsTransformer gammaToXSTSTransformer =null
-	if(schedulingConstraint >0){
-		 gammaToXSTSTransformer = new GammaToXstsTransformer(schedulingConstraint,true,true,true,false,TransitionMerging.HIERARCHICAL);
-	} else {
-		 gammaToXSTSTransformer = new GammaToXstsTransformer();
-	}
+		var GammaToXstsTransformer gammaToXSTSTransformer = null
+		if (schedulingConstraint > 0) {
+			gammaToXSTSTransformer = new GammaToXstsTransformer(
+				schedulingConstraint, true, true, true, false, TransitionMerging.HIERARCHICAL)
+		}
+		else {
+			gammaToXSTSTransformer = new GammaToXstsTransformer
+		}
 		
+		val name = statechart.name
 		val xStsFile = new File(absoluteParentFolder + File.separator +
-			fileNamer.getXtextXStsFileName(statechart.getName()));
-		val xStsString = gammaToXSTSTransformer.preprocessAndExecuteAndSerialize(_package, absoluteParentFolder,
-			statechart.getName());
-		fileUtil.saveString(xStsFile, xStsString);
+			fileNamer.getXtextXStsFileName(name))
+		val xStsString = gammaToXSTSTransformer.preprocessAndExecuteAndSerialize(
+			_package, absoluteParentFolder,	name)
+		fileUtil.saveString(xStsFile, xStsString)
 
-		val verifier = new ThetaVerifier();
-		val modelFile = new File(xStsFile.getAbsolutePath());
-		val fileName = modelFile.getName();
+		val verifier = new ThetaVerifier
+		val modelFile = new File(xStsFile.absolutePath)
+		val fileName = modelFile.name
 		val regionName = statechart.regions.get(0).name
 		val statechartName = statechart.name.toFirstUpper
-		
-		val packageFileName = fileNamer.getUnfoldedPackageFileName(fileName);
-		val parameters = '''--refinement "MULTI_SEQ" --domain "EXPL" --initprec "ALLVARS"''';
-		val query ='''E<> ((«regionName+"_"+statechartName» == «scenarioStatechartUtil.getAccepting()»))''' ;
-		val gammaPackage = ecoreUtil.normalLoad(modelFile.getParent(), packageFileName);
 
-		val r = verifier.verifyQuery(gammaPackage, parameters, modelFile, query);
-		val baseTrace = r.getTrace();
+		val packageFileName = fileNamer.getUnfoldedPackageFileName(fileName)
+		val parameters = '''--refinement "MULTI_SEQ" --domain "EXPL" --initprec "ALLVARS"'''
+		val query = '''E<> ((«regionName + "_" + statechartName» == «scenarioStatechartUtil.accepting»))'''
+		val gammaPackage = ecoreUtil.normalLoad(modelFile.parent, packageFileName)
 
-		var derivedTraces = identifySeparateTracesByReset(baseTrace);
-		var i = 0;
+		val r = verifier.verifyQuery(gammaPackage, parameters, modelFile, query)
+		val baseTrace = r.trace
+
+		var derivedTraces = identifySeparateTracesByReset(baseTrace)
+		var i = 0
 		val ets = <ExecutionTrace>newArrayList
-		for (List<Step> list : derivedTraces) {
-			var et = createExecutionTrace
-			setupExecutionTrace(et, list, baseTrace.getName() + i++, c, StatechartModelDerivedFeatures.getContainingPackage(c));
+		for (list : derivedTraces) {
+			val containingPackage = StatechartModelDerivedFeatures.getContainingPackage(c)
+			val et = createExecutionTrace
+			et.setupExecutionTrace(list, baseTrace.name + i++, c, containingPackage)
 			ets += et
 		}
 
-		val backAnnotator = new ExecutionTraceBackAnnotator(ets, c, true, true);
-		val filteredTraces = backAnnotator.execute();
+		val backAnnotator = new ExecutionTraceBackAnnotator(ets, c, true, true)
+		val filteredTraces = backAnnotator.execute
 
 		for (et : filteredTraces) {
-			val eventAdder = new UnsentEventAssertExtender(et.getSteps(), true);
-			if (statechart.getAnnotation() instanceof ScenarioContractAnnotation) {
-				if ((statechart.getAnnotation() as ScenarioContractAnnotation).getScenarioType().equals(
-					NotDefinedEventMode.STRICT)) {
-					eventAdder.execute();
+			val eventAdder = new UnsentEventAssertExtender(et.steps, true)
+			val scenarioContractAnnotation = statechart.annotation
+			if (scenarioContractAnnotation instanceof ScenarioContractAnnotation) {
+				if (scenarioContractAnnotation.scenarioType.equals(
+						NotDefinedEventMode.STRICT)) {
+					eventAdder.execute
 				}
 			}
 			result += et

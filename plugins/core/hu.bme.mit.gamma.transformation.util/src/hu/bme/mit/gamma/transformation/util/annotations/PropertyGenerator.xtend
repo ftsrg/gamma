@@ -101,7 +101,7 @@ class PropertyGenerator {
 	def List<CommentableStateFormula> createOutEventReachability(Collection<Port> ports) {
 		val List<CommentableStateFormula> formulas = newArrayList
 		for (notNecessarilySimplePort : ports) {
-			for (port : notNecessarilySimplePort.allConnectedSimplePorts) {
+			for (port : notNecessarilySimplePort.allBoundSimplePorts) {
 				val instance = port.containingComponentInstance
 				for (outEvent : StatechartModelDerivedFeatures.getOutputEvents(port)) {
 					val parameters = outEvent.parameterDeclarations
@@ -341,11 +341,10 @@ class PropertyGenerator {
 	
 	def protected ComponentInstanceReference createInstanceReference(ComponentInstance instance) {
 		if (isSimpleComponentReference) {
-			val reference = compositeFactory.createComponentInstanceReference
-			reference.componentInstanceHierarchy += instance
-			return reference
-		} else {
 			return statechartUtil.createInstanceReference(instance)
+		}
+		else {
+			return statechartUtil.createInstanceReferenceChain(instance)
 		}
 	}
 

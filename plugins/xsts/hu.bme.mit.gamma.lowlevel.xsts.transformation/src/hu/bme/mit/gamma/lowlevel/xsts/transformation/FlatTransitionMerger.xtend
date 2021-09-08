@@ -39,7 +39,7 @@ class FlatTransitionMerger extends AbstractTransitionMerger {
 		}
 		val isActiveExpressions = trace.getIsActiveExpressions
 		val extractedIsActiveVariableActions = trace.extractExpressions(isActiveExpressions)
-		// Extracting state references from the is active expressions (if have not been extracted already)
+		// Extracting state references from the isActive expressions (if have not been extracted already)
 		val stateReferenceExpressions = trace.getStateReferenceExpressions
 		trace.keepExpressionsTransitivelyContainedBy(stateReferenceExpressions,
 			extractedIsActiveVariableActions.map[it.variableDeclaration.expression])

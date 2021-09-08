@@ -38,7 +38,7 @@ GenModel returns GenModel:
 Task returns Task:
 	YakinduCompilation | CodeGeneration | AnalysisModelTransformation | TestGeneration |
 		EventPriorityTransformation | AdaptiveContractTestGeneration | PhaseStatechartGeneration |
-		Verification | TestReplayModelGeneration | Slicing | StatechartContractTestGeneration | StatechartContractGeneration
+		Verification | TraceReplayModelGeneration | Slicing | StatechartContractTestGeneration | StatechartContractGeneration
 ;
 
 YakinduCompilation returns YakinduCompilation:
@@ -115,13 +115,19 @@ AnalysisModelTransformation returns AnalysisModelTransformation:
 			'folder' ':' targetFolder+=STRING |			
 			'file' ':' fileName+=STRING |
 			'language' ':' languages+=AnalysisLanguage |
-			'property-file' ':' propertyPackage=[property::PropertyPackage | STRING] | // Property models
+			'property-file' ':' propertyPackage=[property::PropertyPackage | STRING] | // Slicing
+			'initial-state' ':' initialState=[property::PropertyPackage | STRING] |
+			'initial-state-setting' ':' initialStateSetting=InitialStateSetting |
 			'optimize' ':' optimize=BOOLEAN |
 			'scheduler' ':' scheduler+=Scheduler |
 			'constraint' ':' constraint=Constraint |
 			coverages+=Coverage
 		)*
 	'}'
+;
+
+enum InitialStateSetting returns InitialStateSetting:
+	EXECUTE_ENTRY_ACTIONS = "execute-entry-actions" | SKIP_ENTRY_ACTIONS = "skip-entry-actions"
 ;
 
 ModelReference returns ModelReference:
@@ -132,7 +138,7 @@ ComponentReference returns ComponentReference:
 	'component' ':' component=[interface::Component] ('(' arguments+=Expression (',' arguments+=Expression)* ')')? 
 ;
 
-XSTSReference returns XSTSReference:
+XSTSReference returns XstsReference:
 	'xsts' ':' xSts=[xsts::XSTS | STRING]
 ;
 
@@ -144,8 +150,9 @@ SchedulingConstraint returns SchedulingConstraint:
 	(instanceConstraint+=AsynchronousInstanceConstraint)+
 ;
 
+// Duplicated in StatechartLanguage
 ComponentInstanceReference returns composite::ComponentInstanceReference:
-	componentInstanceHierarchy+=[composite::ComponentInstance] ('->' componentInstanceHierarchy+=[composite::ComponentInstance] )*
+	componentInstance=[composite::ComponentInstance] ('->' child=ComponentInstanceReference )?
 ;
 
 ComponentInstancePortReference returns property::ComponentInstancePortReference:
@@ -286,14 +293,21 @@ Verification returns Verification:
 	'}'
 ;
 
-TestReplayModelGeneration returns TestReplayModelGeneration:
-	{TestReplayModelGeneration} 'test-replay' '{'
+TraceReplayModelGeneration returns TraceReplayModelGeneration:
+	{TraceReplayModelGeneration} 'trace-replay' '{'
 		'trace' ':' executionTrace=[trace::ExecutionTrace]
 		(
 			'system-file' ':' fileName+=STRING | // The name of the file containing the system
-			'folder' ':' targetFolder+=STRING
+			'folder' ':' targetFolder+=STRING | 
+			'environment-model-file' ':' environmentModelFileName+=STRING |
+			'environment-model' ':' environmentModel=EnvironmentModel |
+			'consider-out-events' ':' considerOutEvents=BOOLEAN
 		)*
 	'}'
+;
+
+enum EnvironmentModel:
+	OFF = 'off' | SYNCHRONOUS = 'synchronous' | ASYNCHRONOUS = 'asynchronous'
 ;
 
 Slicing returns Slicing:

@@ -10,8 +10,12 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.util
 
+import java.util.AbstractMap.SimpleEntry
+import java.util.Collection
 import java.util.List
 import java.util.Map
+import java.util.Map.Entry
+import java.util.Set
 
 class JavaUtil {
 	// Singleton
@@ -33,6 +37,19 @@ class JavaUtil {
 		return IterableExtensions.flatten(inputs).toList
 	}
 	
+	def boolean containsOne(Collection<?> lhs, Iterable<?> rhs) {
+		for (element : rhs) {
+			if (lhs.contains(element)) {
+				return true
+			}
+		}
+		return false
+	}
+	
+	def boolean containsNone(Collection<?> lhs, Iterable<?> rhs) {
+		return !lhs.containsOne(rhs)
+	}
+	
 	def <T> T getOnlyElement(Iterable<T> collection) {
 		if (collection.size !== 1) {
 			throw new IllegalArgumentException("Not one elment: " + collection)
@@ -45,6 +62,18 @@ class JavaUtil {
 			map += key -> newArrayList
 		}
 		return map.get(key)
+	}
+	
+	def <K, V> Set<Entry<V, K>> invert(Map<K, V> map) {
+		return map.entrySet.invert.toSet
+	}
+	
+	def <K, V> Collection<Entry<V, K>> invert(Collection<? extends Entry<K, V>> entrySet) {
+		val entries = <Entry<V, K>>newArrayList
+		for (entry : entrySet) {
+			entries += new SimpleEntry(entry.value, entry.key)
+		}
+		return entries
 	}
 	
 }

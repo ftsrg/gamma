@@ -21,7 +21,7 @@ import hu.bme.mit.gamma.genmodel.model.ComponentReference;
 import hu.bme.mit.gamma.genmodel.model.GenModel;
 import hu.bme.mit.gamma.genmodel.model.ModelReference;
 import hu.bme.mit.gamma.genmodel.model.Task;
-import hu.bme.mit.gamma.genmodel.model.XSTSReference;
+import hu.bme.mit.gamma.genmodel.model.XstsReference;
 
 public class GenmodelDerivedFeatures extends ExpressionModelDerivedFeatures {
 
@@ -45,8 +45,8 @@ public class GenmodelDerivedFeatures extends ExpressionModelDerivedFeatures {
 			ComponentReference componentReference = (ComponentReference) modelReference;
 			return componentReference.getComponent();
 		}
-		if (modelReference instanceof XSTSReference) {
-			XSTSReference xStsReference = (XSTSReference) modelReference;
+		if (modelReference instanceof XstsReference) {
+			XstsReference xStsReference = (XstsReference) modelReference;
 			return xStsReference.getXSts();
 		}
 		throw new IllegalArgumentException("Not supported model reference: " + modelReference);

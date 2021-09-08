@@ -39,7 +39,7 @@ import hu.bme.mit.gamma.genmodel.model.StatechartContractGeneration;
 import hu.bme.mit.gamma.genmodel.model.StatechartContractTestGeneration;
 import hu.bme.mit.gamma.genmodel.model.Task;
 import hu.bme.mit.gamma.genmodel.model.TestGeneration;
-import hu.bme.mit.gamma.genmodel.model.TestReplayModelGeneration;
+import hu.bme.mit.gamma.genmodel.model.TraceReplayModelGeneration;
 import hu.bme.mit.gamma.genmodel.model.Verification;
 import hu.bme.mit.gamma.genmodel.model.YakinduCompilation;
 import hu.bme.mit.gamma.ui.taskhandler.AdaptiveContractTestGenerationHandler;
@@ -53,7 +53,7 @@ import hu.bme.mit.gamma.ui.taskhandler.StatechartCompilationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.StatechartContractGenerationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.StatechartContractTestGenerationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.TestGenerationHandler;
-import hu.bme.mit.gamma.ui.taskhandler.TestReplayModelGenerationHandler;
+import hu.bme.mit.gamma.ui.taskhandler.TraceReplayModelGenerationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.VerificationHandler;
 import hu.bme.mit.gamma.ui.util.DefaultResourceSetCreator;
 import hu.bme.mit.gamma.ui.util.DefaultTaskHook;
@@ -164,11 +164,11 @@ public class GammaApi {
 								handler.execute(slicing);
 								logger.log(Level.INFO, "The slicing has been finished");
 							}
-							else if (task instanceof TestReplayModelGeneration) {
+							else if (task instanceof TraceReplayModelGeneration) {
 								logger.log(Level.INFO, "The test replay model generation has been started");
-								TestReplayModelGeneration testReplayModelGeneration = (TestReplayModelGeneration) task;
-								TestReplayModelGenerationHandler handler = new TestReplayModelGenerationHandler(file);
-								handler.execute(testReplayModelGeneration);
+								TraceReplayModelGeneration traceReplayModelGeneration = (TraceReplayModelGeneration) task;
+								TraceReplayModelGenerationHandler handler = new TraceReplayModelGenerationHandler(file);
+								handler.execute(traceReplayModelGeneration);
 								logger.log(Level.INFO, "The test replay model generation has been finished");
 							}
 							else if (task instanceof AdaptiveContractTestGeneration) {
@@ -254,7 +254,8 @@ public class GammaApi {
 				return allTasks.stream()
 						.filter(it -> it instanceof TestGeneration || it instanceof Verification ||
 								it instanceof AdaptiveContractTestGeneration ||
-								it instanceof TestReplayModelGeneration || it instanceof StatechartContractTestGeneration || it instanceof StatechartContractGeneration)
+								it instanceof TraceReplayModelGeneration ||
+								it instanceof StatechartContractTestGeneration || it instanceof StatechartContractGeneration)
 						.collect(Collectors.toList());
 			default: 
 				throw new IllegalArgumentException("Not known iteration variable: " + iteration);

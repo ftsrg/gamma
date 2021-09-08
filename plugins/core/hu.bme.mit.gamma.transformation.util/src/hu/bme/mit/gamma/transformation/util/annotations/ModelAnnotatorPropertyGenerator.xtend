@@ -58,7 +58,7 @@ class ModelAnnotatorPropertyGenerator {
 				annotableElements.testedComponentsForOutEvents, newTopComponent)
 		if (!testedPortsForOutEvents.nullOrEmpty) {
 			// Only system out events are covered as other internal events might be removed
-			testedPortsForOutEvents.retainAll(newTopComponent.allConnectedSimplePorts)
+			testedPortsForOutEvents.retainAll(newTopComponent.allBoundSimplePorts)
 		}
 		// Interaction coverage
 		val testedPortsForInteractions = getIncludedSynchronousInstancePorts(

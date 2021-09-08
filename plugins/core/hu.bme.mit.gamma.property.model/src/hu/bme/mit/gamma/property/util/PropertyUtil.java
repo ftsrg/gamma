@@ -168,7 +168,7 @@ public class PropertyUtil extends StatechartUtil {
 		StateFormula formula = createEF(
 			createAtomicFormula(
 				createStateReference(
-					createInstanceReference(instance), lastState)
+					createInstanceReferenceChain(instance), lastState)
 			)
 		);
 		return wrapFormula(topContainer, formula);

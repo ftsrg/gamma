@@ -9,7 +9,7 @@ import hu.bme.mit.gamma.genmodel.model.StatechartContractTestGeneration;
 import hu.bme.mit.gamma.scenario.trace.generator.ScenarioStatechartTraceGenerator;
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
-import hu.bme.mit.gamma.ui.taskhandler.AnalysisModelTransformationHandler.Gamma2XSTSTransformer;
+import hu.bme.mit.gamma.ui.taskhandler.AnalysisModelTransformationHandler.Gamma2XstsTransformer;
 
 public class StatechartContractTestGenerationHandler extends TaskHandler {
 
@@ -23,8 +23,8 @@ public class StatechartContractTestGenerationHandler extends TaskHandler {
 		if (testGeneration.getConstraint() != null) {
 			AnalysisModelTransformationHandler analysisModelTransformationHandler =
 					new AnalysisModelTransformationHandler(file);
-			Gamma2XSTSTransformer transformer = analysisModelTransformationHandler.new Gamma2XSTSTransformer();
-			constraintValue = transformer.transformConstraint(testGeneration.getConstraint());
+			Gamma2XstsTransformer transformer = analysisModelTransformationHandler.new Gamma2XstsTransformer();
+			constraintValue = transformer.evaluateConstraint(testGeneration.getConstraint());
 		}
 
 		StatechartDefinition stateChart = (StatechartDefinition) testGeneration.getComponentReference().getComponent();

@@ -17,20 +17,23 @@ import org.eclipse.emf.common.util.URI;
 
 import hu.bme.mit.gamma.querygenerator.ThetaQueryGenerator;
 import hu.bme.mit.gamma.querygenerator.application.View;
+import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
+import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.theta.verification.ThetaVerifier;
 import hu.bme.mit.gamma.verification.util.AbstractVerifier;
 
 public class ThetaController extends AbstractController {
 	
-	final Package gammaPackage;
+	protected final Package gammaPackage;
 
 	public ThetaController(View view, IFile file) {
 		this.file = file;
 		this.view = view;
 		URI uri = URI.createFileURI(getUnwrappedFile());
 		this.gammaPackage = (Package) ecoreUtil.normalLoad(uri);
-		this.queryGenerator = new ThetaQueryGenerator(gammaPackage); // For state-location
+		Component component = StatechartModelDerivedFeatures.getFirstComponent(gammaPackage);
+		this.queryGenerator = new ThetaQueryGenerator(component); // For state-location
 	}
 
 	@Override

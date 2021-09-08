@@ -11,16 +11,17 @@
 package hu.bme.mit.gamma.statechart.derivedfeatures;
 
 import java.math.BigInteger;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.util.EcoreUtil;
@@ -33,43 +34,55 @@ import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression;
 import hu.bme.mit.gamma.expression.model.FunctionDeclaration;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
+import hu.bme.mit.gamma.statechart.composite.AbstractAsynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponent;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance;
-import hu.bme.mit.gamma.statechart.composite.AsynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.BroadcastChannel;
 import hu.bme.mit.gamma.statechart.composite.CascadeCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.Channel;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference;
 import hu.bme.mit.gamma.statechart.composite.CompositeComponent;
+import hu.bme.mit.gamma.statechart.composite.ControlSpecification;
 import hu.bme.mit.gamma.statechart.composite.InstancePortReference;
+import hu.bme.mit.gamma.statechart.composite.MessageQueue;
 import hu.bme.mit.gamma.statechart.composite.PortBinding;
+import hu.bme.mit.gamma.statechart.composite.ScheduledAsynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.SimpleChannel;
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponent;
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance;
 import hu.bme.mit.gamma.statechart.contract.AdaptiveContractAnnotation;
+import hu.bme.mit.gamma.statechart.interface_.AnyTrigger;
+import hu.bme.mit.gamma.statechart.interface_.Clock;
 import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.Event;
 import hu.bme.mit.gamma.statechart.interface_.EventDeclaration;
 import hu.bme.mit.gamma.statechart.interface_.EventDirection;
 import hu.bme.mit.gamma.statechart.interface_.EventReference;
 import hu.bme.mit.gamma.statechart.interface_.EventSource;
+import hu.bme.mit.gamma.statechart.interface_.EventTrigger;
 import hu.bme.mit.gamma.statechart.interface_.Interface;
 import hu.bme.mit.gamma.statechart.interface_.InterfaceRealization;
 import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.statechart.interface_.PackageAnnotation;
 import hu.bme.mit.gamma.statechart.interface_.Port;
 import hu.bme.mit.gamma.statechart.interface_.RealizationMode;
+import hu.bme.mit.gamma.statechart.interface_.SimpleTrigger;
 import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
 import hu.bme.mit.gamma.statechart.interface_.TopComponentArgumentsAnnotation;
 import hu.bme.mit.gamma.statechart.interface_.UnfoldedPackageAnnotation;
 import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference;
+import hu.bme.mit.gamma.statechart.statechart.ChoiceState;
 import hu.bme.mit.gamma.statechart.statechart.ClockTickReference;
 import hu.bme.mit.gamma.statechart.statechart.CompositeElement;
 import hu.bme.mit.gamma.statechart.statechart.DeepHistoryState;
 import hu.bme.mit.gamma.statechart.statechart.EntryState;
+import hu.bme.mit.gamma.statechart.statechart.ForkState;
 import hu.bme.mit.gamma.statechart.statechart.InitialState;
+import hu.bme.mit.gamma.statechart.statechart.JoinState;
+import hu.bme.mit.gamma.statechart.statechart.MergeState;
 import hu.bme.mit.gamma.statechart.statechart.PortEventReference;
 import hu.bme.mit.gamma.statechart.statechart.PseudoState;
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction;
@@ -170,6 +183,11 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 				it -> it instanceof UnfoldedPackageAnnotation);
 	}
 	
+	public static Set<Package> getImportableInterfacePackages(Component component) {
+		return getAllPorts(component).stream().map(it -> getContainingPackage(
+				getInterface(it))).collect(Collectors.toSet());
+	}
+	
 	public static Set<Package> getSelfAndImports(Package gammaPackage) {
 		Set<Package> imports = new HashSet<Package>();
 		imports.add(gammaPackage);
@@ -189,6 +207,10 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 			}
 		}
 		return imports;
+	}
+	
+	public static Component getFirstComponent(Package _package) {
+		return _package.getComponents().get(0);
 	}
 	
 	public static Set<Component> getAllComponents(Package parentPackage) {
@@ -235,8 +257,8 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	}
 	
 	public static boolean areInterfacesEqual(Component lhs, Component rhs) {
-		EList<Port> lhsPorts = lhs.getPorts();
-		EList<Port> rhsPorts = rhs.getPorts();
+		List<Port> lhsPorts = lhs.getPorts();
+		List<Port> rhsPorts = rhs.getPorts();
 		if (lhsPorts.size() != rhsPorts.size()) {
 			return false;
 		}
@@ -254,6 +276,11 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 			simpleInstances.addAll(getAllSimpleInstances(instance));
 		}
 		return simpleInstances;
+	}
+	
+	public static List<ComponentInstance> getInstances(ComponentInstance instance) {
+		Component type = getDerivedType(instance);
+		return getInstances(type);
 	}
 	
 	public static List<SynchronousComponentInstance> getAllSimpleInstances(ComponentInstance instance) {
@@ -277,8 +304,9 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	public static List<SynchronousComponentInstance> getAllSimpleInstances(Component component) {
 		List<SynchronousComponentInstance> simpleInstances = new ArrayList<SynchronousComponentInstance>();
-		if (component instanceof AsynchronousCompositeComponent) {
-			AsynchronousCompositeComponent asynchronousCompositeComponent = (AsynchronousCompositeComponent) component;
+		if (component instanceof AbstractAsynchronousCompositeComponent) {
+			AbstractAsynchronousCompositeComponent asynchronousCompositeComponent =
+					(AbstractAsynchronousCompositeComponent) component;
 			for (AsynchronousComponentInstance instance : asynchronousCompositeComponent.getComponents()) {
 				simpleInstances.addAll(getAllSimpleInstances(instance));
 			}
@@ -309,8 +337,9 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	public static List<ComponentInstance> getInstances(Component component) {
 		List<ComponentInstance> instances = new ArrayList<ComponentInstance>();
-		if (component instanceof AsynchronousCompositeComponent) {
-			AsynchronousCompositeComponent asynchronousCompositeComponent = (AsynchronousCompositeComponent) component;
+		if (component instanceof AbstractAsynchronousCompositeComponent) {
+			AbstractAsynchronousCompositeComponent asynchronousCompositeComponent =
+					(AbstractAsynchronousCompositeComponent) component;
 			for (AsynchronousComponentInstance instance : asynchronousCompositeComponent.getComponents()) {
 				instances.add(instance);
 			}
@@ -331,8 +360,9 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	public static List<ComponentInstance> getAllInstances(Component component) {
 		List<ComponentInstance> instances = new ArrayList<ComponentInstance>();
-		if (component instanceof AsynchronousCompositeComponent) {
-			AsynchronousCompositeComponent asynchronousCompositeComponent = (AsynchronousCompositeComponent) component;
+		if (component instanceof AbstractAsynchronousCompositeComponent) {
+			AbstractAsynchronousCompositeComponent asynchronousCompositeComponent =
+					(AbstractAsynchronousCompositeComponent) component;
 			for (AsynchronousComponentInstance instance : asynchronousCompositeComponent.getComponents()) {
 				instances.add(instance);
 				AsynchronousComponent type = instance.getType();
@@ -397,6 +427,14 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return getAllEvents(port.getInterfaceRealization().getInterface());
 	}
 	
+	public static List<Event> getInputEvents(Iterable<? extends Port> ports) {
+		List<Event> events = new ArrayList<Event>();
+		for (Port port : ports) {
+			events.addAll(getInputEvents(port));
+		}
+		return events;
+	}
+	
 	public static List<Event> getInputEvents(Port port) {
 		List<Event> events = new ArrayList<Event>();
 		InterfaceRealization interfaceRealization = port.getInterfaceRealization();
@@ -413,6 +451,14 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 					.filter(it -> it.getDirection() != EventDirection.IN)
 					.map(it -> it.getEvent())
 					.collect(Collectors.toList()));
+		}
+		return events;
+	}
+	
+	public static List<Event> getOutputEvents(Iterable<? extends Port> ports) {
+		List<Event> events = new ArrayList<Event>();
+		for (Port port : ports) {
+			events.addAll(getOutputEvents(port));
 		}
 		return events;
 	}
@@ -445,6 +491,19 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return getOutputEvents(port).contains(event);
 	}
 	
+	public static boolean isTopInPackage(Component component) {
+		Package _package = getContainingPackage(component);
+		for (Component containedComponent : _package.getComponents()) {
+			for (ComponentInstance componentInstance : getInstances(containedComponent)) {
+				Component type = getDerivedType(componentInstance);
+				if (type == component) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+	
 	public static Set<Interface> getInterfaces(Component component) {
 		return getAllPorts(component).stream()
 				.map(it -> getInterface(it)).collect(Collectors.toSet());
@@ -463,20 +522,131 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return component.getPorts();
 	}
 	
-	public static List<Event> getInputEvents(Component component) {
-		List<Event> inputEvents = new ArrayList<Event>();
-		for (Port port : getAllPorts(component)) {
-			inputEvents.addAll(getInputEvents(port));
+	public static boolean isControlSpecification(AsynchronousAdapter adapter, Entry<Port, Event> portEvent) {
+		for (ControlSpecification controlSpecification : adapter.getControlSpecifications()) {
+			SimpleTrigger trigger = controlSpecification.getTrigger();
+			if (trigger instanceof AnyTrigger) {
+				return true;
+			}
+			if (trigger instanceof EventTrigger) {
+				EventTrigger eventTrigger = (EventTrigger) trigger;
+				EventReference eventReference = eventTrigger.getEventReference();
+				List<Entry<Port,Event>> inputEvents = getInputEvents(eventReference);
+				if (inputEvents.contains(portEvent)) {
+					return true;
+				}
+			}
 		}
-		return inputEvents;
+		return false;
+	}
+	
+	public static List<Entry<Port, Event>> getStoredEvents(MessageQueue queue) {
+		List<Entry<Port, Event>> events = new ArrayList<Entry<Port, Event>>();
+		for (EventReference eventReference : queue.getEventReference()) {
+			events.addAll(getInputEvents(eventReference));
+		}
+		return events;
+	}
+	
+	public static int getEventId(MessageQueue queue,
+			Entry<Port, Event> portEvent) {
+		List<Entry<Port,Event>> storedEvents = getStoredEvents(queue);
+		return storedEvents.indexOf(portEvent) + 1; // Starts from 1, 0 is the "empty cell"
+	}
+	
+	public static Entry<Port, Event> getEvent(MessageQueue queue, int eventId) {
+		List<Entry<Port,Event>> storedEvents = getStoredEvents(queue);
+		return storedEvents.get(eventId - 1); // Starts from 1, 0 is the "empty cell"
+	}
+	
+	public static boolean isStoredInMessageQueue(
+			Entry<Port, Event> portEvent, MessageQueue queue) {
+		List<Entry<Port,Event>> storedEvents = getStoredEvents(queue);
+		return storedEvents.contains(portEvent);
+	}
+	
+	public static int countAssignedMessageQueues(
+			Entry<Port, Event> portEvent, AsynchronousAdapter adapter) {
+		int count = 0;
+		for (MessageQueue queue : adapter.getMessageQueues()) {
+			if (isStoredInMessageQueue(portEvent, queue)) {
+				++count;
+			}
+		}
+		return count;
+	}
+	
+	public static boolean isStoredInMessageQueue(
+			Entry<Port, Event> portEvent, AsynchronousAdapter adapter) {
+		return adapter.getMessageQueues().stream()
+				.anyMatch(it -> isStoredInMessageQueue(portEvent, it));
+	}
+	
+	public static boolean isStoredInMessageQueue(Clock clock, MessageQueue queue) {
+		for (EventReference eventReference : queue.getEventReference()) {
+			if (eventReference instanceof ClockTickReference) {
+				ClockTickReference clockTickReference = (ClockTickReference) eventReference;
+				if (clockTickReference.getClock() == clock) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
+	public static boolean isStoredInMessageQueue(Clock clock, AsynchronousAdapter adapter) {
+		return adapter.getMessageQueues().stream()
+				.anyMatch(it -> isStoredInMessageQueue(clock, it));
+	}
+	
+	public static boolean isEnvironmental(MessageQueue queue,
+			Collection<? extends Port> systemPorts) {
+		List<Port> topBoundPorts = getStoredEvents(queue).stream()
+				.map(it -> getBoundTopComponentPort(it.getKey())).collect(Collectors.toList());
+		return systemPorts.containsAll(topBoundPorts);
+	}
+	
+	public static List<Entry<Port, Event>> getInputEvents(EventReference eventReference) {
+		List<Entry<Port, Event>> events = new ArrayList<Entry<Port, Event>>();
+		if (eventReference instanceof PortEventReference) {
+			PortEventReference portEventReference = (PortEventReference) eventReference;
+			Port port = portEventReference.getPort();
+			Event event = portEventReference.getEvent();
+			if (getInputEvents(port).contains(event)) {
+				events.add(new SimpleEntry<Port, Event>(port, event));
+			}
+		}
+		else if (eventReference instanceof AnyPortEventReference) {
+			AnyPortEventReference anyPortEventReference = (AnyPortEventReference) eventReference;
+			Port port = anyPortEventReference.getPort();
+			for (Event inputEvent : getInputEvents(port)) {
+				events.add(new SimpleEntry<Port, Event>(port, inputEvent));
+			}
+		}
+		else {
+			throw new IllegalArgumentException("Not supported event reference: " + eventReference);
+		}
+		return events;
+	}
+	
+	public static List<Event> getInputEvents(Component component) {
+		return getInputEvents(getAllPorts(component));
 	}
 	
 	public static List<Event> getOutputEvents(Component component) {
-		List<Event> outputEvents = new ArrayList<Event>();
-		for (Port port : getAllPorts(component)) {
-			outputEvents.addAll(getOutputEvents(port));
+		return getOutputEvents(getAllPorts(component));
+	}
+	
+	public static Port getBoundCompositePort(Port port) {
+		Package _package = getContainingPackage(port);
+		List<PortBinding> portBindings = ecoreUtil.getAllContentsOfType(_package, PortBinding.class);
+		for (PortBinding portBinding : portBindings) {
+			InstancePortReference instancePortReference = portBinding.getInstancePortReference();
+			if (instancePortReference.getPort() == port) {
+				return portBinding.getCompositeSystemPort();
+			}
 		}
-		return outputEvents;
+		return null;
 	}
 	
 	public static Collection<PortBinding> getPortBindings(Port port) {
@@ -493,16 +663,16 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return portBindings;
 	}
 	
-	public static List<Port> getAllConnectedSimplePorts(Component component) {
+	public static List<Port> getAllBoundSimplePorts(Component component) {
 		List<Port> simplePorts = new ArrayList<Port>();
 		for (Port port : getAllPorts(component)) {
-			simplePorts.addAll(getAllConnectedSimplePorts(port));
+			simplePorts.addAll(getAllBoundSimplePorts(port));
 		}
 		// Note that one port can be in the list multiple times iff the component is NOT unfolded
 		return simplePorts;
 	}
 	
-	public static List<Port> getAllConnectedSimplePorts(Port port) {
+	public static List<Port> getAllBoundSimplePorts(Port port) {
 		List<Port> simplePorts = new ArrayList<Port>();
 		Component component = getContainingComponent(port);
 		if (component instanceof StatechartDefinition) {
@@ -513,7 +683,9 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 			for (PortBinding portBinding : composite.getPortBindings()) {
 				if (portBinding.getCompositeSystemPort() == port) {
 					// Makes sense only if the containment hierarchy is a tree structure
-					simplePorts.addAll(getAllConnectedSimplePorts(portBinding.getInstancePortReference().getPort()));
+					InstancePortReference instancePortReference = portBinding.getInstancePortReference();
+					simplePorts.addAll(getAllBoundSimplePorts(
+							instancePortReference.getPort()));
 				}
 			}
 		}
@@ -521,21 +693,93 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return simplePorts;
 	}
 	
-	public static Port getConnectedTopComponentPort(Port port) {
+	public static List<Port> getAllBoundAsynchronousSimplePorts(AsynchronousComponent component) {
+		List<Port> simplePorts = new ArrayList<Port>();
+		for (Port port : getAllPorts(component)) {
+			simplePorts.addAll(getAllBoundAsynchronousSimplePorts(port));
+		}
+		return simplePorts;
+	}
+	
+	public static List<Port> getAllBoundAsynchronousSimplePorts(Port port) {
+		List<Port> simplePorts = new ArrayList<Port>();
+		Component component = getContainingComponent(port);
+		if (component instanceof AbstractAsynchronousCompositeComponent) {
+			CompositeComponent composite = (CompositeComponent) component;
+			for (PortBinding portBinding : composite.getPortBindings()) {
+				if (portBinding.getCompositeSystemPort() == port) {
+					// Makes sense only if the containment hierarchy is a tree structure
+					InstancePortReference instancePortReference = portBinding.getInstancePortReference();
+					simplePorts.addAll(getAllBoundAsynchronousSimplePorts(
+							instancePortReference.getPort()));
+				}
+			}
+		}
+		else if (component instanceof AsynchronousAdapter) {
+			simplePorts.add(port);
+		}
+		else {
+			// Makes sense only if the containment hierarchy is a tree structure
+			ComponentInstance instance = getReferencingComponentInstance(component);
+			Component containingComponent = getContainingComponent(instance);
+			if (containingComponent instanceof AsynchronousAdapter) {
+				simplePorts.add(port);
+			}
+		}
+		// Note that one port can be in the list multiple times iff the component is NOT unfolded
+		return simplePorts;
+	}
+	
+	public static Port getBoundTopComponentPort(Port port) {
 		Package _package = getContainingPackage(port);
 		List<PortBinding> portBindings = ecoreUtil.getAllContentsOfType(_package, PortBinding.class);
 		for (PortBinding portBinding : portBindings) {
 			if (portBinding.getInstancePortReference().getPort() == port) {
 				Port systemPort = portBinding.getCompositeSystemPort();
-				return getConnectedTopComponentPort(systemPort);
+				// Correct as even broadcast ports cannot be bound to multiple system ports (would be unnecessary)
+				return getBoundTopComponentPort(systemPort);
 			}
 		}
 		return port;
 	}
 	
+	public static List<Port> getPortsConnectedViaChannel(Port port) {
+		Package _package = getContainingPackage(port);
+		List<Channel> channels = ecoreUtil.getAllContentsOfType(_package, Channel.class);
+		channels.addAll(ecoreUtil.getAllContentsOfType(_package, BroadcastChannel.class));
+		for (Channel channel : channels) {
+			Port providedPort = channel.getProvidedPort().getPort();
+			List<Port> requiredPorts = getRequiredPorts(channel).stream()
+					.map(it -> it.getPort()).collect(Collectors.toList());
+			if (port == providedPort) {
+				return requiredPorts;
+			}
+			if (requiredPorts.contains(port)) {
+				return List.of(providedPort);
+			}
+		}
+		return Collections.emptyList();
+	}
+	
+	public static List<Port> getAllConnectedAsynchronousSimplePorts(Port port) {
+		List<Port> portsConnectedViaChannel = new ArrayList<Port>();
+		Port actualPort = port;
+		while (actualPort != null /* Broadcast ports can go through multiple levels */) {
+			portsConnectedViaChannel.addAll(getPortsConnectedViaChannel(actualPort));
+			actualPort = getBoundCompositePort(actualPort);
+		}
+		List<Port> asynchronousSimplePorts = new ArrayList<Port>();
+		for (Port portConnectedViaChannel : portsConnectedViaChannel) {
+			asynchronousSimplePorts.addAll(
+					getAllBoundAsynchronousSimplePorts(portConnectedViaChannel));
+		}
+		return asynchronousSimplePorts;
+	}
+	
 	public static boolean isInChannel(Port port) {
 		Package _package = getContainingPackage(port);
 		List<Channel> channels = ecoreUtil.getAllContentsOfType(_package, Channel.class);
+		channels.addAll(ecoreUtil.getAllContentsOfType(_package, BroadcastChannel.class));
 		for (Channel channel : channels) {
 			if (channel.getProvidedPort().getPort() == port ||
 					getRequiredPorts(channel).stream().anyMatch(it -> it.getPort() == port)) {
@@ -581,36 +825,46 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	public static EventSource getEventSource(EventReference eventReference) {
 		if (eventReference instanceof PortEventReference) {
-			return ((PortEventReference) eventReference).getPort();
+			PortEventReference portEventReference = (PortEventReference) eventReference;
+			return portEventReference.getPort();
 		}
 		if (eventReference instanceof AnyPortEventReference) {
-			return ((AnyPortEventReference) eventReference).getPort();
+			AnyPortEventReference anyPortEventReference = (AnyPortEventReference) eventReference;
+			return anyPortEventReference.getPort();
 		}
 		if (eventReference instanceof ClockTickReference) {
-			return ((ClockTickReference) eventReference).getClock();
+			ClockTickReference clockTickReference = (ClockTickReference) eventReference;
+			return clockTickReference.getClock();
 		}
 		if (eventReference instanceof TimeoutEventReference) {
-			return ((TimeoutEventReference) eventReference).getTimeout();
+			TimeoutEventReference timeoutEventReference = (TimeoutEventReference) eventReference;
+			return timeoutEventReference.getTimeout();
 		}
 		throw new IllegalArgumentException("Not known type: " + eventReference);
 	}
 	
 	public static Component getDerivedType(ComponentInstance instance) {
 		if (instance instanceof SynchronousComponentInstance) {
-			return ((SynchronousComponentInstance) instance).getType();
+			SynchronousComponentInstance synchronousInstance = (SynchronousComponentInstance) instance;
+			return synchronousInstance.getType();
 		}
 		if (instance instanceof AsynchronousComponentInstance) {
-			return ((AsynchronousComponentInstance) instance).getType();
+			AsynchronousComponentInstance asynchronousInstance = (AsynchronousComponentInstance) instance;
+			return asynchronousInstance.getType();
 		}
 		throw new IllegalArgumentException("Not known type: " + instance);
 	}
 	
-	public static EList<? extends ComponentInstance> getDerivedComponents(CompositeComponent composite) {
+	public static List<? extends ComponentInstance> getDerivedComponents(CompositeComponent composite) {
 		if (composite instanceof AbstractSynchronousCompositeComponent) {
-			return ((AbstractSynchronousCompositeComponent) composite).getComponents();
+			AbstractSynchronousCompositeComponent synchronousCompositeComponent =
+					(AbstractSynchronousCompositeComponent) composite;
+			return synchronousCompositeComponent.getComponents();
 		}
-		if (composite instanceof AsynchronousCompositeComponent) {
-			return ((AsynchronousCompositeComponent) composite).getComponents();
+		if (composite instanceof AbstractAsynchronousCompositeComponent) {
+			AbstractAsynchronousCompositeComponent asynchronousCompositeComponent =
+					(AbstractAsynchronousCompositeComponent) composite;
+			return asynchronousCompositeComponent.getComponents();
 		}
 		throw new IllegalArgumentException("Not known type: " + composite);
 	}
@@ -624,11 +878,12 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
     }
 	
     public static boolean isCascade(ComponentInstance instance) {
-    	if (getDerivedType(instance) instanceof StatechartDefinition) {
+    	Component type = getDerivedType(instance);
+		if (type instanceof StatechartDefinition) {
     		// Statecharts are cascade if contained by cascade composite components
     		return instance.eContainer() instanceof CascadeCompositeComponent;
    		}
-   		return getDerivedType(instance) instanceof CascadeCompositeComponent;
+   		return type instanceof CascadeCompositeComponent;
     }
     
     public static boolean isSynchronous(ComponentInstance instance) {
@@ -658,12 +913,14 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	public static List<Transition> getOutgoingTransitions(StateNode node) {
 		StatechartDefinition statechart = getContainingStatechart(node);
-		return statechart.getTransitions().stream().filter(it -> it.getSourceState() == node).collect(Collectors.toList());
+		return statechart.getTransitions().stream().filter(it -> it.getSourceState() == node)
+				.collect(Collectors.toList());
 	}
 	
 	public static List<Transition> getIncomingTransitions(StateNode node) {
 		StatechartDefinition statechart = getContainingStatechart(node);
-		return statechart.getTransitions().stream().filter(it -> it.getTargetState() == node).collect(Collectors.toList());
+		return statechart.getTransitions().stream().filter(it -> it.getTargetState() == node)
+				.collect(Collectors.toList());
 	}
 	
 	public static Collection<StateNode> getAllStateNodes(CompositeElement compositeElement) {
@@ -813,7 +1070,8 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return subregions;
 	}
 	
-	public static List<hu.bme.mit.gamma.statechart.statechart.State> getCommonAncestors(StateNode lhs, StateNode rhs) {
+	public static List<hu.bme.mit.gamma.statechart.statechart.State> getCommonAncestors(
+			StateNode lhs, StateNode rhs) {
 		List<hu.bme.mit.gamma.statechart.statechart.State> ancestors = getAncestors(lhs);
 		ancestors.retainAll(getAncestors(rhs));
 		return ancestors;
@@ -821,7 +1079,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	public static List<hu.bme.mit.gamma.statechart.statechart.State> getAncestors(StateNode node) {
 		if (node.eContainer().eContainer() instanceof hu.bme.mit.gamma.statechart.statechart.State) {
-			hu.bme.mit.gamma.statechart.statechart.State parentState = (hu.bme.mit.gamma.statechart.statechart.State) node.eContainer().eContainer();
+			hu.bme.mit.gamma.statechart.statechart.State parentState = getParentState(node);
 			List<hu.bme.mit.gamma.statechart.statechart.State> ancestors = getAncestors(parentState);
 			ancestors.add(parentState);
 			return ancestors;
@@ -837,9 +1095,9 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	public static List<Region> getRegionAncestors(StateNode node) {
 		if (node.eContainer().eContainer() instanceof hu.bme.mit.gamma.statechart.statechart.State) {
-			hu.bme.mit.gamma.statechart.statechart.State parentState = (hu.bme.mit.gamma.statechart.statechart.State) node.eContainer().eContainer();
+			hu.bme.mit.gamma.statechart.statechart.State parentState = getParentState(node);
 			List<Region> ancestors = getRegionAncestors(parentState);
-			ancestors.add((Region) node.eContainer());
+			ancestors.add(getParentRegion(node));
 			return ancestors;
 		}
 		Region parentRegion = (Region) node.eContainer();
@@ -1094,6 +1352,13 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return transition.getTrigger() != null;
 	}
 	
+	public static boolean needsTrigger(Transition transition) {
+		StateNode source = transition.getSourceState();
+		return !(source instanceof EntryState || source instanceof ChoiceState ||
+				source instanceof MergeState || source instanceof ForkState ||
+				source instanceof JoinState);
+	}
+	
 	public static boolean hasGuard(Transition transition) {
 		return transition.getGuard() != null;
 	}
@@ -1340,14 +1605,96 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return parentComponentInstances;
 	}
 	
-	public static List<SynchronousComponentInstance> getScheduledInstances(AbstractSynchronousCompositeComponent component) {
+	public static List<ComponentInstance> getComponentInstanceChain(
+			ComponentInstanceReference reference) {
+		ComponentInstance instance = reference.getComponentInstance();
+		ComponentInstanceReference child = reference.getChild();
+		if (child == null) {
+			List<ComponentInstance> instanceList = new ArrayList<ComponentInstance>();
+			instanceList.add(instance);
+			return instanceList;
+		}
+		else {
+			List<ComponentInstance> children = getComponentInstanceChain(child);
+			children.add(0, instance); // See above: mutable list is returned
+			return children;
+		}
+	}
+	
+	public static ComponentInstanceReference getParent(ComponentInstanceReference reference) {
+		return ecoreUtil.getContainerOfType(reference, ComponentInstanceReference.class);
+	}
+	
+	public static ComponentInstanceReference getFirstInstance(ComponentInstanceReference reference) {
+		ComponentInstanceReference parent = getParent(reference);
+		if (parent == null) {
+			return reference;
+		}
+		return getFirstInstance(parent);
+	}
+	
+	public static ComponentInstance getLastInstance(ComponentInstanceReference reference) {
+		ComponentInstanceReference child = reference.getChild();
+		if (child == null) {
+			return reference.getComponentInstance();
+		}
+		return getLastInstance(child);
+	}
+	
+	public static boolean isFirst(ComponentInstanceReference reference) {
+		return getParent(reference) == null;
+	}
+	
+	public static boolean isLast(ComponentInstanceReference reference) {
+		return reference.getChild() == null;
+	}
+	
+	public static boolean isAtomic(ComponentInstanceReference reference) {
+		return isFirst(reference) && isLast(reference);
+	}
+	
+	public static boolean contains(ComponentInstance potentialContainer, ComponentInstance instance) {
+		List<ComponentInstance> instances = getInstances(potentialContainer);
+		return instances.contains(instance);
+	}
+	
+	public static List<SynchronousComponentInstance> getScheduledInstances(
+			AbstractSynchronousCompositeComponent component) {
 		if (component instanceof CascadeCompositeComponent) {
 			CascadeCompositeComponent cascade = (CascadeCompositeComponent) component;
-			if (!cascade.getExecutionList().isEmpty()) {
-				return cascade.getExecutionList();
+			List<ComponentInstanceReference> executionList = cascade.getExecutionList();
+			if (!executionList.isEmpty()) {
+				List<SynchronousComponentInstance> instances =
+						new ArrayList<SynchronousComponentInstance>();
+				for (ComponentInstanceReference instanceReference : executionList) {
+					SynchronousComponentInstance componentInstance =
+						(SynchronousComponentInstance) instanceReference.getComponentInstance();
+					instances.add(componentInstance);
+				}
+				return instances;
 			}
 		}
 		return component.getComponents();
 	}
 	
+	public static List<AsynchronousComponentInstance> getScheduledInstances(
+			AbstractAsynchronousCompositeComponent component) {
+		if (component instanceof ScheduledAsynchronousCompositeComponent) {
+			ScheduledAsynchronousCompositeComponent scheduledComponent =
+					(ScheduledAsynchronousCompositeComponent) component;
+			List<ComponentInstanceReference> executionList = scheduledComponent.getExecutionList();
+			if (!executionList.isEmpty()) {
+				List<AsynchronousComponentInstance> instances =
+						new ArrayList<AsynchronousComponentInstance>();
+				for (ComponentInstanceReference instanceReference : executionList) {
+					AsynchronousComponentInstance componentInstance =
+						(AsynchronousComponentInstance) instanceReference.getComponentInstance();
+					instances.add(componentInstance);
+				}
+				return instances;
+			}
+		}
+		return component.getComponents();
+	}
+
 }

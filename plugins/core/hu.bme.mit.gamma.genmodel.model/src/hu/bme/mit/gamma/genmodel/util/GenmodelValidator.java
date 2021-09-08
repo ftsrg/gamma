@@ -21,8 +21,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.eclipse.emf.common.util.EList;
-import org.eclipse.emf.ecore.EObject;
-import org.eclipse.xtext.xbase.lib.CollectionLiterals;
 import org.yakindu.base.types.Direction;
 import org.yakindu.base.types.Event;
 import org.yakindu.sct.model.sgraph.Scope;
@@ -64,10 +62,10 @@ import hu.bme.mit.gamma.genmodel.model.StatechartCompilation;
 import hu.bme.mit.gamma.genmodel.model.StatechartContractTestGeneration;
 import hu.bme.mit.gamma.genmodel.model.Task;
 import hu.bme.mit.gamma.genmodel.model.TestGeneration;
-import hu.bme.mit.gamma.genmodel.model.TestReplayModelGeneration;
+import hu.bme.mit.gamma.genmodel.model.TraceReplayModelGeneration;
 import hu.bme.mit.gamma.genmodel.model.TransitionCoverage;
 import hu.bme.mit.gamma.genmodel.model.Verification;
-import hu.bme.mit.gamma.genmodel.model.XSTSReference;
+import hu.bme.mit.gamma.genmodel.model.XstsReference;
 import hu.bme.mit.gamma.genmodel.model.YakinduCompilation;
 import hu.bme.mit.gamma.property.model.PropertyPackage;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter;
@@ -151,7 +149,7 @@ public class GenmodelValidator extends ExpressionModelValidator {
 					new ReferenceInfo(GenmodelModelPackage.Literals.ANALYSIS_MODEL_TRANSFORMATION__LANGUAGES)));
 		}
 		ModelReference modelReference = analysisModelTransformation.getModel();
-		if (modelReference instanceof XSTSReference) {
+		if (modelReference instanceof XstsReference) {
 			if (languages.stream().anyMatch(it -> it != AnalysisLanguage.UPPAAL)) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 						"XSTS models can be transformed only to UPPAAL",
@@ -236,7 +234,7 @@ public class GenmodelValidator extends ExpressionModelValidator {
 		return validationResultMessages;
 	}
 	
-	public Collection<ValidationResultMessage> checkTasks(TestReplayModelGeneration modelGeneration) {
+	public Collection<ValidationResultMessage> checkTasks(TraceReplayModelGeneration modelGeneration) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		List<String> systemFileNames = modelGeneration.getFileName();
 		if (systemFileNames.size() != 1) {
@@ -265,7 +263,8 @@ public class GenmodelValidator extends ExpressionModelValidator {
 	
 	public Collection<ValidationResultMessage> checkConstraint(AsynchronousInstanceConstraint constraint) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		AnalysisModelTransformation analysisModelTransformation = ecoreUtil.getContainerOfType(constraint, AnalysisModelTransformation.class);
+		AnalysisModelTransformation analysisModelTransformation = ecoreUtil.getContainerOfType(
+				constraint, AnalysisModelTransformation.class);
 		ModelReference modelReference = analysisModelTransformation.getModel();
 		if (modelReference instanceof ComponentReference) {
 			ComponentReference componentReference = (ComponentReference)modelReference;
@@ -279,8 +278,7 @@ public class GenmodelValidator extends ExpressionModelValidator {
 			SchedulingConstraint scheduling = ecoreUtil.getContainerOfType(constraint, SchedulingConstraint.class);
 			ComponentInstanceReference instance = constraint.getInstance();
 			if (instance != null) {
-				ComponentInstance lastInstance = instance.getComponentInstanceHierarchy()
-						.get(instance.getComponentInstanceHierarchy().size() - 1);
+				ComponentInstance lastInstance = StatechartModelDerivedFeatures.getLastInstance(instance);
 				if (!hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.isAsynchronous(lastInstance)) {
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 						"Asynchronous component constraints must contain a reference to a contained asynchronous instance",
@@ -435,7 +433,8 @@ public class GenmodelValidator extends ExpressionModelValidator {
 		}
 		for (StatechartContractTestGeneration statechartContractTestGenerationTask :
 			javaUtil.filterIntoList(genmodel.getTasks(), StatechartContractTestGeneration.class)) {
-			packageImports.remove(StatechartModelDerivedFeatures.getContainingPackage(statechartContractTestGenerationTask.getComponentReference()));
+			packageImports.remove(StatechartModelDerivedFeatures.getContainingPackage(
+					statechartContractTestGenerationTask.getComponentReference()));
 		}
 		for (PhaseStatechartGeneration phaseStatechartGenerationTask :
 					javaUtil.filterIntoList(genmodel.getTasks(), PhaseStatechartGeneration.class)) {
@@ -500,8 +499,8 @@ public class GenmodelValidator extends ExpressionModelValidator {
 		for (TestGeneration testGenerationTask : javaUtil.filterIntoList(genmodel.getTasks(), TestGeneration.class)) {
 			traceImports.remove(testGenerationTask.getExecutionTrace());
 		}
-		for (TestReplayModelGeneration testReplayModelGeneration : javaUtil.filterIntoList(
-					genmodel.getTasks(), TestReplayModelGeneration.class)) {
+		for (TraceReplayModelGeneration testReplayModelGeneration : javaUtil.filterIntoList(
+					genmodel.getTasks(), TraceReplayModelGeneration.class)) {
 			traceImports.remove(testReplayModelGeneration.getExecutionTrace());
 		}
 		for (ExecutionTrace traceImport : traceImports) {
@@ -524,7 +523,8 @@ public class GenmodelValidator extends ExpressionModelValidator {
 		return validationResultMessages;
 	}
 	
-	public Collection<ValidationResultMessage> checkComponentInstanceArguments(AnalysisModelTransformation analysisModelTransformation) {
+	public Collection<ValidationResultMessage> checkComponentInstanceArguments(
+			AnalysisModelTransformation analysisModelTransformation) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		try {
 			ModelReference modelReference = analysisModelTransformation.getModel();
@@ -629,7 +629,8 @@ public class GenmodelValidator extends ExpressionModelValidator {
 		RealizationMode realizationMode = mapping.getRealizationMode();
 		if (mapping.getEventMappings().size() == 0) {
 			// If the interface has in-out events, 0 event mapping is surely not acceptable
-			if (!(mapping.getGammaInterface().getEvents().stream().filter(it -> it.getDirection() == EventDirection.INOUT).count() == 0)) {
+			if (!(mapping.getGammaInterface().getEvents().stream()
+					.filter(it -> it.getDirection() == EventDirection.INOUT).count() == 0)) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 						"The Gamma interface has in-out events, thus an automatic mapping is not possible",
 						new ReferenceInfo(GenmodelModelPackage.Literals.INTERFACE_MAPPING__YAKINDU_INTERFACE)));
@@ -745,7 +746,9 @@ public class GenmodelValidator extends ExpressionModelValidator {
 			}
 			else {
 				// First entry
-				mappedGammaEvents.put(gammaEvent, CollectionLiterals.newHashSet(yakinduEvent));			
+				Set<Event> set = new HashSet<Event>();
+				set.add(yakinduEvent);
+				mappedGammaEvents.put(gammaEvent, set);
 			}
 		}
 		return validationResultMessages;
@@ -860,38 +863,40 @@ public class GenmodelValidator extends ExpressionModelValidator {
 		return false;
 	}
 	
+	// Duplicated in StatechartModelValidator
 	public Collection<ValidationResultMessage> checkComponentInstanceReferences(ComponentInstanceReference reference) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		List<ComponentInstance> instances = reference.getComponentInstanceHierarchy();
-		if (instances.isEmpty()) {
-			return validationResultMessages;
-		}
-		for (var i = 0; i < instances.size() - 1; i++) {
-			ComponentInstance instance = instances.get(i);
-			ComponentInstance nextInstance = instances.get(i + 1);
-			Component type = StatechartModelDerivedFeatures.getDerivedType(instance);
-			List<EObject> containedInstances = type.eContents();
-			if (!containedInstances.contains(nextInstance)) {
+		
+		ComponentInstance instance = reference.getComponentInstance();
+		ComponentInstanceReference child = reference.getChild();
+		if (child != null) {
+			ComponentInstance childInstance = child.getComponentInstance();
+			if (!StatechartModelDerivedFeatures.contains(instance, childInstance)) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-						instance.getName() + " does not contain component instance " + nextInstance.getName(),
-						new ReferenceInfo(CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE__COMPONENT_INSTANCE_HIERARCHY, i)));
+					instance.getName() + " does not contain component instance " + childInstance.getName(),
+						new ReferenceInfo(CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE__COMPONENT_INSTANCE)));
 			}
 		}
-		AnalysisModelTransformation model = ecoreUtil.getContainerOfType(reference, AnalysisModelTransformation.class);
-		if (model != null) {
-			ModelReference modelReference = model.getModel();
-			if (modelReference instanceof ComponentReference) {
-				ComponentReference componentReference = (ComponentReference)modelReference;
-				Component component = componentReference.getComponent();
-				List<ComponentInstance> containedComponents = javaUtil.filterIntoList(component.eContents(), ComponentInstance.class);
-				ComponentInstance firstInstance = instances.get(0);
-				if (!containedComponents.contains(firstInstance)) {
-					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+		
+		if (StatechartModelDerivedFeatures.isFirst(reference)) {
+			AnalysisModelTransformation model = ecoreUtil.getContainerOfType(reference, AnalysisModelTransformation.class);
+			if (model != null) {
+				ModelReference modelReference = model.getModel();
+				if (modelReference instanceof ComponentReference) {
+					ComponentReference componentReference = (ComponentReference) modelReference;
+					Component component = componentReference.getComponent();
+					List<ComponentInstance> containedComponents = StatechartModelDerivedFeatures.getInstances(component);
+					if (!containedComponents.contains(instance)) {
+						validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 							"The first component instance must be the component of " + component.getName(),
-							new ReferenceInfo(CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE__COMPONENT_INSTANCE_HIERARCHY, 0)));
+								new ReferenceInfo(CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE__COMPONENT_INSTANCE)));
+					}
 				}
 			}
 		}
+		
+		// The last instance is not necessarily a statechart instance here
+		
 		return validationResultMessages;
 	}
 	

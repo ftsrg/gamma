@@ -97,8 +97,8 @@ public abstract class AbstractController {
 	}
 	
 	public void initSelectorWithEvents(JComboBox<String> selector) {
-		List<String> systemOutEventNames = queryGenerator.getSystemOutEventNames();
-		systemOutEventNames.addAll(queryGenerator.getSystemOutEventParameterNames());
+		List<String> systemOutEventNames = queryGenerator.getSynchronousSystemOutEventNames();
+		systemOutEventNames.addAll(queryGenerator.getSynchronousSystemOutEventParameterNames());
 		fillComboBox(selector, systemOutEventNames);
 	}
 	

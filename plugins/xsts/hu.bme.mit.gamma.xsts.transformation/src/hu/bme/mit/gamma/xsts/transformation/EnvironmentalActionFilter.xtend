@@ -48,7 +48,7 @@ class EnvironmentalActionFilter {
 	def void deleteEverythingExceptSystemEventsAndParameters(CompositeAction action, Component component) {
 		val necessaryNames = newHashSet
 		// Input and output events and parameters
-		for (port : component.allConnectedSimplePorts) {
+		for (port : component.allBoundSimplePorts) {
 			val statechart = port.containingStatechart
 			val instance = statechart.referencingComponentInstance
 			for (eventDeclaration : port.allEventDeclarations) {
@@ -70,7 +70,7 @@ class EnvironmentalActionFilter {
 	
 	def Action resetEverythingExceptPersistentParameters(CompositeAction action, Component component) {
 		val necessaryNames = newHashSet
-		for (port : component.allConnectedSimplePorts) {
+		for (port : component.allBoundSimplePorts) {
 			val statechart = port.containingStatechart
 			val instance = statechart.referencingComponentInstance
 			for (eventDeclaration : port.allEventDeclarations) {
@@ -94,7 +94,7 @@ class EnvironmentalActionFilter {
 	}
 	
 	def createEventAssignmentsBoundToTheSameSystemPort(XSTS xSts, Component component) {
-		val extension EventReferenceToXstsVariableMapper mapper = new EventReferenceToXstsVariableMapper(xSts)
+		val extension ReferenceToXstsVariableMapper mapper = new ReferenceToXstsVariableMapper(xSts)
 		val xStsAssignments = newArrayList
 		for (systemPort : component.allPorts) {
 			for (inEvent : systemPort.inputEvents) {
@@ -102,10 +102,8 @@ class EnvironmentalActionFilter {
 				if (xStsInEventVariables.size > 1) {
 					val firstXStsInEventVariable = xStsInEventVariables.head
 					for (otherXStsInEventVariable : xStsInEventVariables.reject[it === firstXStsInEventVariable]) {
-						xStsAssignments += createAssignmentAction => [
-							it.lhs = otherXStsInEventVariable.createReferenceExpression
-							it.rhs = firstXStsInEventVariable.createReferenceExpression
-						]
+						xStsAssignments += otherXStsInEventVariable
+								.createAssignmentAction(firstXStsInEventVariable)
 					}
 				}
 			}
@@ -114,7 +112,7 @@ class EnvironmentalActionFilter {
 	}
 	
 	def createParameterAssignmentsBoundToTheSameSystemPort(XSTS xSts, Component component) {
-		val extension EventReferenceToXstsVariableMapper mapper = new EventReferenceToXstsVariableMapper(xSts)
+		val extension ReferenceToXstsVariableMapper mapper = new ReferenceToXstsVariableMapper(xSts)
 		val xStsAssignments = newArrayList
 		for (systemPort : component.allPorts) {
 			for (inEvent : systemPort.inputEvents) {
@@ -125,10 +123,8 @@ class EnvironmentalActionFilter {
 						val firstXStsParameterVariable = xStsParameterVariables.head
 						for (otherXStsParameterVariable : xStsParameterVariables
 								.reject[it === firstXStsParameterVariable]) {
-							xStsAssignments += createAssignmentAction => [
-								it.lhs = otherXStsParameterVariable.createReferenceExpression
-								it.rhs = firstXStsParameterVariable.createReferenceExpression
-							]
+							xStsAssignments += otherXStsParameterVariable
+									.createAssignmentAction(firstXStsParameterVariable)
 						}
 					}
 				}
@@ -159,7 +155,8 @@ class EnvironmentalActionFilter {
 	private def Action reset(CompositeAction action, Set<String> necessaryNames) {
 		val xStsAssignments = newHashSet
 		for (xStsAssignment : action.getAllContentsOfType(AbstractAssignmentAction)) {
-			val declaration = (xStsAssignment.lhs as DirectReferenceExpression).declaration as VariableDeclaration
+			val lhs = xStsAssignment.lhs as DirectReferenceExpression
+			val declaration = lhs.declaration as VariableDeclaration
 			val name = declaration.name
 			if (!necessaryNames.contains(name)) {
 				// Resetting the variable

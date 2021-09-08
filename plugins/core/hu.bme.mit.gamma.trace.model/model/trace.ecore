@@ -9,6 +9,8 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="import" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/interface.ecore#//Package"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="cycle" eType="#//Cycle"
         containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="annotations" upperBound="-1"
+        eType="#//ExecutionTraceAnnotation" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Step">
     <eStructuralFeatures xsi:type="ecore:EReference" name="actions" upperBound="-1"
@@ -55,4 +57,5 @@
   <eClassifiers xsi:type="ecore:EClass" name="AndAssert" eSuperTypes="#//MultiaryAssert"/>
   <eClassifiers xsi:type="ecore:EClass" name="XorAssert" eSuperTypes="#//MultiaryAssert"/>
   <eClassifiers xsi:type="ecore:EClass" name="OrAssert" eSuperTypes="#//MultiaryAssert"/>
+  <eClassifiers xsi:type="ecore:EClass" name="ExecutionTraceAnnotation" abstract="true"/>
 </ecore:EPackage>

@@ -18,10 +18,10 @@ import hu.bme.mit.gamma.property.model.ComponentInstanceStateExpression
 import hu.bme.mit.gamma.property.model.ComponentInstanceTransitionReference
 import hu.bme.mit.gamma.property.model.ComponentInstanceVariableReference
 import hu.bme.mit.gamma.property.model.PropertyPackage
-import hu.bme.mit.gamma.statechart.composite.ComponentInstance
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference
 import hu.bme.mit.gamma.statechart.composite.CompositeModelFactory
 import hu.bme.mit.gamma.statechart.interface_.Component
+import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import org.eclipse.emf.ecore.EObject
 
@@ -36,6 +36,7 @@ class PropertyUnfolder {
 			ComponentInstanceReferenceMapper.INSTANCE
 	protected final extension CompositeModelFactory compositeFactory =
 			CompositeModelFactory.eINSTANCE
+	protected final extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	
 	new(PropertyPackage propertyPackage, Component newTopComponent) {
@@ -134,13 +135,8 @@ class PropertyUnfolder {
 	}
 	
 	protected def getNewSimpleInstance(ComponentInstanceReference instance) {
-		return instance.checkAndGetNewSimpleInstance(newTopComponent).createInstanceReference
-	}
-	
-	protected def ComponentInstanceReference createInstanceReference(ComponentInstance instance) {
-		return createComponentInstanceReference => [
-			it.componentInstanceHierarchy += instance
-		]
+		return instance.checkAndGetNewSimpleInstance(newTopComponent)
+			.createInstanceReference
 	}
 	
 }

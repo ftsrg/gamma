@@ -11,6 +11,7 @@
 package hu.bme.mit.gamma.util
 
 import java.io.File
+import java.util.Collection
 import java.util.Collections
 import java.util.List
 import org.eclipse.core.resources.ResourcesPlugin
@@ -65,6 +66,10 @@ class GammaEcoreUtil {
 	
 	def void delete(EObject object) {
 		EcoreUtil.delete(object)
+	}
+	
+	def void deleteAll(Collection<? extends EObject> objects) {
+		EcoreUtil.deleteAll(objects, true)
 	}
 	
 	def void remove(EObject object) {
@@ -257,6 +262,10 @@ class GammaEcoreUtil {
 
 	def void save(EObject rootElem) {
 		val resource = rootElem.eResource
+		resource.save
+	}
+	
+	def void save(Resource resource) {
 		checkState(resource !== null)
 		resource.save(Collections.EMPTY_MAP)
 	}

@@ -2,11 +2,12 @@
 
 This document presents how to 
 
- 1. start the web server of the Headless Gamma
- 2. use the requests and the API
+ 1. start the web server of the Headless Gamma, and
+ 2. use the requests and the API.
 
- ## Webserver functioning
- This section details how the webserver functions.
+## Webserver functioning
+
+This section details how the webserver functions.
 
 Upon successfully starting the server, a green colored _"Headless Gamma OpenAPI server is running."_  message should appear.
 

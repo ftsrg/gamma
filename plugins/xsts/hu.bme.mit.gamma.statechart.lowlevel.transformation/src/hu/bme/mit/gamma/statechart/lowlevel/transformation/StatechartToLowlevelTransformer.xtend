@@ -166,7 +166,7 @@ class StatechartToLowlevelTransformer {
 	protected def VariableDeclaration transform(TimeoutDeclaration timeout) {
 		val statechart = timeout.containingStatechart
 		val transitions = statechart.transitions.filter[it.getAllContentsOfType(
-			TimeoutEventReference).exists[it.timeout === timeout]]
+				TimeoutEventReference).exists[it.timeout === timeout]]
 		// We can optimize, if this timeout is used for triggering the transitions of only one state
 		if (transitions.size == 1) {
 			val transition = transitions.head

@@ -33,7 +33,6 @@ import java.util.Scanner
 import java.util.Set
 import java.util.logging.Level
 import java.util.logging.Logger
-import org.eclipse.emf.ecore.util.EcoreUtil
 
 import static com.google.common.base.Preconditions.checkState
 
@@ -68,12 +67,12 @@ class TraceBackAnnotator {
 	
 	new(Package gammaPackage, Scanner traceScanner, boolean sortTrace) {
 		this.gammaPackage = gammaPackage
-		this.component = gammaPackage.components.head
-		this.thetaQueryGenerator = new ThetaQueryGenerator(gammaPackage)
+		this.component = gammaPackage.firstComponent
+		this.thetaQueryGenerator = new ThetaQueryGenerator(component)
 		this.traceScanner = traceScanner
 		this.sortTrace = sortTrace
 		val schedulingConstraintAnnotation = gammaPackage.annotations
-			.filter(SchedulingConstraintAnnotation).head
+				.filter(SchedulingConstraintAnnotation).head
 		if (schedulingConstraintAnnotation !== null) {
 			this.schedulingConstraint = schedulingConstraintAnnotation.schedulingConstraint
 		}
@@ -199,20 +198,20 @@ class TraceBackAnnotator {
 							if (value.equals("true")) {
 								val event = systemOutEvent.get(0) as Event
 								val port = systemOutEvent.get(1) as Port
-								val systemPort = port.connectedTopComponentPort // Back-tracking to the system port
+								val systemPort = port.boundTopComponentPort // Back-tracking to the system port
 								step.addOutEvent(systemPort, event)
 								// Denoting that this event has been actually
-								raisedOutEvents += new Pair(systemPort, event)
+								raisedOutEvents += systemPort -> event
 							}
 						}
-						else if (thetaQueryGenerator.isSourceOutEventParamater(id)) {
-							val systemOutEvent = thetaQueryGenerator.getSourceOutEventParamater(id)
+						else if (thetaQueryGenerator.isSourceOutEventParameter(id)) {
+							val systemOutEvent = thetaQueryGenerator.getSourceOutEventParameter(id)
 							val event = systemOutEvent.get(0) as Event
 							val port = systemOutEvent.get(1) as Port
-							val systemPort = port.connectedTopComponentPort // Back-tracking to the system port
+							val systemPort = port.boundTopComponentPort // Back-tracking to the system port
 							val parameter = systemOutEvent.get(2) as ParameterDeclaration
 							// Getting fields and indexes regardless of primitive or complex types
-							val field = thetaQueryGenerator.getSourceOutEventParamaterFieldHierarchy(id)
+							val field = thetaQueryGenerator.getSourceOutEventParameterFieldHierarchy(id)
 							val indexPairs = value.parseArray
 							//
 							for (indexPair : indexPairs) {
@@ -223,26 +222,66 @@ class TraceBackAnnotator {
 						}
 					}
 					case ENVIRONMENT_CHECK: {
-						if (thetaQueryGenerator.isSourceInEvent(id)) {
-							val systemInEvent = thetaQueryGenerator.getSourceInEvent(id)
+						// Synchronous in-event
+						if (thetaQueryGenerator.isSynchronousSourceInEvent(id)) {
+							val systemInEvent = thetaQueryGenerator.getSynchronousSourceInEvent(id)
 							if (value.equals("true")) {
 								val event = systemInEvent.get(0) as Event
 								val port = systemInEvent.get(1) as Port
-								val systemPort = port.connectedTopComponentPort // Back-tracking to the system port
+								val systemPort = port.boundTopComponentPort // Back-tracking to the system port
 								step.addInEvent(systemPort, event)
 								// Denoting that this event has been actually
-								raisedInEvents += new Pair(systemPort, event)
+								raisedInEvents += systemPort -> event
 							}
 						}
-						else if (thetaQueryGenerator.isSourceInEventParamater(id)) {
-							val systemInEvent = thetaQueryGenerator.getSourceInEventParamater(id)
+						// Synchronous in-event parameter
+						else if (thetaQueryGenerator.isSynchronousSourceInEventParameter(id)) {
+							val systemInEvent = thetaQueryGenerator.getSynchronousSourceInEventParameter(id)
 							val event = systemInEvent.get(0) as Event
 							val port = systemInEvent.get(1) as Port
-							val systemPort = port.connectedTopComponentPort // Back-tracking to the system port
+							val systemPort = port.boundTopComponentPort // Back-tracking to the system port
 							val parameter = systemInEvent.get(2) as ParameterDeclaration
 							// Getting fields and indexes regardless of primitive or complex types
-							val field = thetaQueryGenerator.getSourceInEventParamaterFieldHierarchy(id)
+							val field = thetaQueryGenerator.getSynchronousSourceInEventParameterFieldHierarchy(id)
 							val indexPairs = value.parseArray
+							//
+							for (indexPair : indexPairs) {
+								val index = indexPair.key
+								val parsedValue = indexPair.value
+								step.addInEventWithParameter(systemPort, event, parameter, field, index, parsedValue)
+							}
+						}
+						// Asynchronous in-event
+						else if (thetaQueryGenerator.isAsynchronousSourceMessageQueue(id)) {
+							val messageQueue = thetaQueryGenerator.getAsynchronousSourceMessageQueue(id)
+							val values = value.parseArray
+							val stringEventId = values.findFirst[it.key == new IndexHierarchy(0)]?.value
+							// If null - it is a default 0 value, nothing is raised
+							if (stringEventId !== null) {
+								val eventId = Integer.parseInt(stringEventId)
+								if (eventId != 0) { // 0 is the "empty" cell
+									val portEvent = messageQueue.getEvent(eventId)
+									val port = portEvent.key
+									val event = portEvent.value
+									val systemPort = port.boundTopComponentPort // Back-tracking to the system port
+									step.addInEvent(systemPort, event)
+									// Denoting that this event has been actually
+									raisedInEvents += systemPort -> event
+								}
+							}
+						}
+						// Asynchronous in-event parameter
+						else if (thetaQueryGenerator.isAsynchronousSourceInEventParameter(id)) {
+							val systemInEvent = thetaQueryGenerator.getAsynchronousSourceInEventParameter(id)
+							val event = systemInEvent.get(0) as Event
+							val port = systemInEvent.get(1) as Port
+							val systemPort = port.boundTopComponentPort // Back-tracking to the system port
+							val parameter = systemInEvent.get(2) as ParameterDeclaration
+							// Getting fields and indexes regardless of primitive or complex types
+							val field = thetaQueryGenerator.getAsynchronousSourceInEventParameterFieldHierarchy(id)
+							val indexPairs = value.parseArray
+							// The slave queue is single-size array - removing the first 0 index
+							indexPairs.forEach[it.key.removeFirst]
 							//
 							for (indexPair : indexPairs) {
 								val index = indexPair.key
@@ -272,8 +311,8 @@ class TraceBackAnnotator {
 			Set<State> activatedStates) {
 		val raiseEventActs = step.outEvents
 		for (raiseEventAct : raiseEventActs) {
-			if (!raisedOutEvents.contains(new Pair(raiseEventAct.port, raiseEventAct.event))) {
-				EcoreUtil.delete(raiseEventAct)
+			if (!raisedOutEvents.contains(raiseEventAct.port -> raiseEventAct.event)) {
+				raiseEventAct.delete
 			}
 		}
 		val instanceStates = step.instanceStateConfigurations
@@ -281,7 +320,7 @@ class TraceBackAnnotator {
 			// A state is active if all of its ancestor states are active
 			val ancestorStates = instanceState.state.ancestors
 			if (!activatedStates.containsAll(ancestorStates)) {
-				EcoreUtil.delete(instanceState)
+				instanceState.delete
 			}
 		}
 		raisedOutEvents.clear
@@ -291,13 +330,14 @@ class TraceBackAnnotator {
 	protected def void checkInEvents(Step step, Set<Pair<Port, Event>> raisedInEvents) {
 		val raiseEventActs = step.actions.filter(RaiseEventAct).toList
 		for (raiseEventAct : raiseEventActs) {
-			if (!raisedInEvents.contains(new Pair(raiseEventAct.port, raiseEventAct.event))) {
-				EcoreUtil.delete(raiseEventAct)
+			if (!raisedInEvents.contains(raiseEventAct.port -> raiseEventAct.event)) {
+				raiseEventAct.delete
 			}
 		}
 		raisedInEvents.clear
 	}
 	
+	// Not every index is retrieved - if an index is missing, its value is the default value
 	protected def List<Pair<IndexHierarchy, String>> parseArray(String value) {
 		// (array (0 10) (1 11) (default 0))
 		val values = newArrayList

@@ -37,8 +37,8 @@ abstract class AbstractUppaalBackAnnotator {
 	
 	protected final Scanner traceScanner
 	
-	protected Package gammaPackage
-	protected Component component
+	protected final Package gammaPackage
+	protected final Component component
 	
 	protected final boolean sortTrace
 	
@@ -50,7 +50,9 @@ abstract class AbstractUppaalBackAnnotator {
 	
 	protected final Logger logger = Logger.getLogger("GammaLogger")
 	
-	new(Scanner traceScanner, boolean sortTrace) {
+	new(Package gammaPackage, Scanner traceScanner, boolean sortTrace) {
+		this.gammaPackage = gammaPackage
+		this.component = gammaPackage.firstComponent
 		this.traceScanner = traceScanner
 		this.sortTrace = sortTrace
 	}

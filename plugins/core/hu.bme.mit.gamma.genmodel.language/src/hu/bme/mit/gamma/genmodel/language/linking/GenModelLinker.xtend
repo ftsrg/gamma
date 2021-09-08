@@ -15,7 +15,7 @@ import hu.bme.mit.gamma.genmodel.model.GenModel
 import hu.bme.mit.gamma.genmodel.model.GenmodelModelPackage
 import hu.bme.mit.gamma.genmodel.model.Slicing
 import hu.bme.mit.gamma.genmodel.model.Verification
-import hu.bme.mit.gamma.genmodel.model.XSTSReference
+import hu.bme.mit.gamma.genmodel.model.XstsReference
 import hu.bme.mit.gamma.language.util.linking.GammaLanguageLinker
 
 class GenModelLinker extends GammaLanguageLinker {
@@ -23,11 +23,19 @@ class GenModelLinker extends GammaLanguageLinker {
     public static GenmodelModelPackage pack = GenmodelModelPackage.eINSTANCE
 				
 	override getContext() {
-		return newLinkedHashMap(GenModel -> #[pack.genModel_StatechartImports,
-				pack.genModel_PackageImports, pack.genModel_TraceImports, pack.genModel_GenmodelImports],
+		return newLinkedHashMap(
+			GenModel -> #[
+				pack.genModel_StatechartImports,
+				pack.genModel_PackageImports,
+				pack.genModel_TraceImports,
+				pack.genModel_GenmodelImports
+			],
 			Verification -> #[pack.verification_PropertyPackages],
-			XSTSReference -> #[pack.XSTSReference_XSts],
-			AnalysisModelTransformation -> #[pack.analysisModelTransformation_PropertyPackage],
+			XstsReference -> #[pack.xstsReference_XSts],
+			AnalysisModelTransformation -> #[
+				pack.analysisModelTransformation_PropertyPackage,
+				pack.analysisModelTransformation_InitialState
+			],
 			Slicing -> #[pack.slicing_PropertyPackage])
 	}
 	

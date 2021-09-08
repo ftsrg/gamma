@@ -17,6 +17,7 @@ import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.statechart.lowlevel.derivedfeatures.LowlevelStatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
+import static extension java.lang.Math.abs
 
 class HierarchicalTransitionMerger extends AbstractTransitionMerger {
 	
@@ -100,7 +101,7 @@ class HierarchicalTransitionMerger extends AbstractTransitionMerger {
 			xStsTransitions += trace.getXStsTransition(lastChoiceState)
 		}
 		for (xStsTransition : xStsTransitions) {
-			xStsAction.actions += xStsTransition.action.clone // Will not break local variable references?
+			xStsAction.actions += xStsTransition.action
 		}
 	}
 	
@@ -110,28 +111,20 @@ class HierarchicalTransitionMerger extends AbstractTransitionMerger {
 		val statechart = statecharts.head
 		val guardEvaluation = statechart.guardEvaluation
 		if (guardEvaluation == GuardEvaluation.BEGINNING_OF_STEP) {
-			val consideredXstsActions = #[
-				// Not considering the init action, as the initial region values are __Inactive__
-				xSts.mergedAction
-			]
-			for (consideredXstsAction : consideredXstsActions) {
-				val localVariableDeclarationActions = newArrayList
-				val assumeActions = consideredXstsAction.getSelfAndAllContentsOfType(AssumeAction)
-				for (assumeAction : assumeActions) {
-					val assumption = assumeAction.assumption
-					val localVariableDeclarationAction = createVariableDeclarationAction
-					localVariableDeclarationActions += localVariableDeclarationAction
-					val localVariableDeclaration = createVariableDeclaration => [
-						it.name = '''_«assumeAction.hashCode»_'''
-						it.type = createBooleanTypeDefinition
-						it.expression = assumption.clone
-					]
-					localVariableDeclarationAction.variableDeclaration = localVariableDeclaration
-					val reference = localVariableDeclaration.createReferenceExpression
-					reference.replace(assumption)
-				}
-				localVariableDeclarationActions.prependToAction(consideredXstsAction)
+			val xStsNewMergedAction = createSequentialAction
+			// The trace.getGuards method is not correct as guard expressions for parallel actions and else guard expressions are not traced
+			val extractableExpressions = newArrayList
+			extractableExpressions += xSts.mergedAction.getAllContentsOfType(AssumeAction).map[it.assumption]
+			extractableExpressions -= trace.getChoiceGuards.values.flatten.toList
+			
+			for (extractableExpression : extractableExpressions) {
+				val name = "_" + extractableExpression.hashCode.abs
+				xStsNewMergedAction.actions += createBooleanTypeDefinition.extractExpression(name, extractableExpression)
 			}
+			
+			xStsNewMergedAction.actions += xSts.mergedAction
+			
+			xSts.changeTransitions(xStsNewMergedAction.wrap)
 		}
 	}
 	

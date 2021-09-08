@@ -44,6 +44,13 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="model" lowerBound="1" eType="#//ModelReference"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="propertyPackage" eType="ecore:EClass ../../hu.bme.mit.gamma.property.model/model/property.ecore#//PropertyPackage"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="initialState" eType="ecore:EClass ../../hu.bme.mit.gamma.property.model/model/property.ecore#//PropertyPackage"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="initialStateSetting" eType="#//InitialStateSetting"
+        defaultValueLiteral="EXECUTE_ENTRY_ACTIONS"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EEnum" name="InitialStateSetting">
+    <eLiterals name="EXECUTE_ENTRY_ACTIONS" literal="EXECUTE_ENTRY_ACTIONS"/>
+    <eLiterals name="SKIP_ENTRY_ACTIONS" value="1"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="InterfaceMapping">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="realizationMode" lowerBound="1"
@@ -171,16 +178,27 @@
         eType="ecore:EClass ../../hu.bme.mit.gamma.property.model/model/property.ecore#//PropertyPackage"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="optimize" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="TestReplayModelGeneration" eSuperTypes="#//Task">
+  <eClassifiers xsi:type="ecore:EClass" name="TraceReplayModelGeneration" eSuperTypes="#//Task">
     <eStructuralFeatures xsi:type="ecore:EReference" name="executionTrace" lowerBound="1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.trace.model/model/trace.ecore#//ExecutionTrace"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="environmentModelFileName"
+        upperBound="-1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="environmentModel" lowerBound="1"
+        eType="#//EnvironmentModel"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="considerOutEvents" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"
+        defaultValueLiteral="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EEnum" name="EnvironmentModel">
+    <eLiterals name="OFF" literal="OFF"/>
+    <eLiterals name="SYNCHRONOUS" value="1" literal="SYNCHRONOUS"/>
+    <eLiterals name="ASYNCHRONOUS" value="2" literal="ASYNCHRONOUS"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ModelReference" abstract="true" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ArgumentedElement"/>
   <eClassifiers xsi:type="ecore:EClass" name="ComponentReference" eSuperTypes="#//ModelReference">
     <eStructuralFeatures xsi:type="ecore:EReference" name="component" lowerBound="1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/interface.ecore#//Component"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="XSTSReference" eSuperTypes="#//ModelReference">
+  <eClassifiers xsi:type="ecore:EClass" name="XstsReference" eSuperTypes="#//ModelReference">
     <eStructuralFeatures xsi:type="ecore:EReference" name="xSts" lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.xsts.model/model/model.ecore#//XSTS"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Slicing" eSuperTypes="#//Task">

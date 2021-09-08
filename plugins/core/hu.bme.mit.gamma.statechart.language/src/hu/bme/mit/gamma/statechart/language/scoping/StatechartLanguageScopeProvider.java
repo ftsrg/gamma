@@ -36,12 +36,14 @@ import hu.bme.mit.gamma.expression.model.ParametricElement;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponent;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance;
+import hu.bme.mit.gamma.statechart.composite.CascadeCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.composite.CompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.CompositeModelPackage;
 import hu.bme.mit.gamma.statechart.composite.ControlSpecification;
 import hu.bme.mit.gamma.statechart.composite.InstancePortReference;
 import hu.bme.mit.gamma.statechart.composite.MessageQueue;
+import hu.bme.mit.gamma.statechart.composite.ScheduledAsynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponent;
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance;
 import hu.bme.mit.gamma.statechart.contract.AdaptiveContractAnnotation;
@@ -230,7 +232,18 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 				Set<AsynchronousComponent> components = StatechartModelDerivedFeatures.getAllAsynchronousComponents(_package);
 				components.remove(context.eContainer());
 				return Scopes.scopeFor(components);
-			}		
+			}
+			if (reference == CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE__COMPONENT_INSTANCE) {
+				// Execution list
+				if (context instanceof CascadeCompositeComponent) {
+					CascadeCompositeComponent cascade = (CascadeCompositeComponent) context;
+					return Scopes.scopeFor(cascade.getComponents());
+				}
+				if (context instanceof ScheduledAsynchronousCompositeComponent) {
+					ScheduledAsynchronousCompositeComponent scheduled = (ScheduledAsynchronousCompositeComponent) context;
+					return Scopes.scopeFor(scheduled.getComponents());
+				}
+			}
 			// Asynchronous adapter-specific rules
 			if (context instanceof PortEventReference && reference == StatechartModelPackage.Literals.PORT_EVENT_REFERENCE__PORT ||
 				context instanceof AnyPortEventReference && reference == StatechartModelPackage.Literals.ANY_PORT_EVENT_REFERENCE__PORT) {

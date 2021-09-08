@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Gamma Test Language Metamodel
+Bundle-Name: Gamma Trace Language Metamodel
 Bundle-SymbolicName: hu.bme.mit.gamma.trace.model;singleton:=true
 Bundle-Version: 2.5.1.qualifier
 Bundle-ClassPath: .

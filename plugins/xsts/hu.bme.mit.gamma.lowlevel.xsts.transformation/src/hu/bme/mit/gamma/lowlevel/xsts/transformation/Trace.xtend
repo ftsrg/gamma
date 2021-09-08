@@ -70,10 +70,10 @@ package class Trace {
 	// Auxiliary
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	// Maps for caching transitions
-	protected final List<Expression> primaryIsActiveExpressions = newArrayList
-	protected final Map<Transition, List<Expression>> isActiveExpressions = newHashMap
-	protected final Map<Transition, List<Expression>> guards = newHashMap
-	protected final Map<Transition, List<Expression>> choiceGuards = newHashMap
+	protected final List<Expression> primaryIsActiveExpressions = newArrayList // Source state and its parent states - only ponated
+	protected final Map<Transition, List<Expression>> isActiveExpressions = newHashMap  // Source state and its parent states - also negated due to priority
+	protected final Map<Transition, List<Expression>> guards = newHashMap // Guars of transitions leaving states - also negated due to priority
+	protected final Map<Transition, List<Expression>> choiceGuards = newHashMap // Guards of transitions leaving choices - also negated due to priority
 	protected final Map<State, List<Expression>> stateReferenceExpressions = newHashMap
 	
 	new(Package _package, XSTS xSts) {

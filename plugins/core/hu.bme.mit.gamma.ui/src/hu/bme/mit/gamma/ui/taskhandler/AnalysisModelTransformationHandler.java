@@ -42,7 +42,7 @@ import hu.bme.mit.gamma.genmodel.model.OutEventCoverage;
 import hu.bme.mit.gamma.genmodel.model.StateCoverage;
 import hu.bme.mit.gamma.genmodel.model.TransitionCoverage;
 import hu.bme.mit.gamma.genmodel.model.TransitionPairCoverage;
-import hu.bme.mit.gamma.genmodel.model.XSTSReference;
+import hu.bme.mit.gamma.genmodel.model.XstsReference;
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.TransitionMerging;
 import hu.bme.mit.gamma.property.model.PropertyPackage;
 import hu.bme.mit.gamma.querygenerator.serializer.PropertySerializer;
@@ -77,6 +77,7 @@ import hu.bme.mit.gamma.uppaal.composition.transformation.api.util.UppaalModelPr
 import hu.bme.mit.gamma.util.FileUtil;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
 import hu.bme.mit.gamma.xsts.model.XSTS;
+import hu.bme.mit.gamma.xsts.transformation.InitialStateSetting;
 import hu.bme.mit.gamma.xsts.transformation.api.Gamma2XstsTransformerSerializer;
 import hu.bme.mit.gamma.xsts.transformation.serializer.ActionSerializer;
 import hu.bme.mit.gamma.xsts.uppaal.transformation.api.Xsts2UppaalTransformerSerializer;
@@ -102,18 +103,18 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					if (modelReference instanceof ComponentReference) {
 						transformer = new Gamma2UppaalTransformer();
 					}
-					else if (modelReference instanceof XSTSReference) {
-						transformer = new XSTS2UppaalTransformer();
+					else if (modelReference instanceof XstsReference) {
+						transformer = new Xsts2UppaalTransformer();
 					}
 					else {
 						throw new IllegalArgumentException("Not known model reference: " + modelReference);
 					}
 					break;
 				case THETA:
-					transformer = new Gamma2XSTSTransformer();
+					transformer = new Gamma2XstsTransformer();
 					break;
 				case XSTS_UPPAAL:
-					transformer = new Gamma2XSTSUppaalTransformer();
+					transformer = new Gamma2XstsUppaalTransformer();
 					break;
 				default:
 					throw new IllegalArgumentException("Only UPPAAL and Theta are supported.");
@@ -271,13 +272,28 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			return transformCoverageCriterion(notNullCoverage.getInteractionDataflowCoverageCriterion());
 		}
 				
-		protected Integer transformConstraint(hu.bme.mit.gamma.genmodel.model.Constraint constraint) {
+		protected Integer evaluateConstraint(hu.bme.mit.gamma.genmodel.model.Constraint constraint) {
 			if (constraint == null) {
 				return null;
 			}
-			if (constraint instanceof hu.bme.mit.gamma.genmodel.model.OrchestratingConstraint) {
-				hu.bme.mit.gamma.genmodel.model.OrchestratingConstraint orchestratingConstraint =
-						(hu.bme.mit.gamma.genmodel.model.OrchestratingConstraint) constraint;
+			
+			hu.bme.mit.gamma.genmodel.model.OrchestratingConstraint orchestratingConstraint = null;
+			if (constraint instanceof hu.bme.mit.gamma.genmodel.model.SchedulingConstraint) {
+				hu.bme.mit.gamma.genmodel.model.SchedulingConstraint schedulingConstraint =
+						(hu.bme.mit.gamma.genmodel.model.SchedulingConstraint) constraint;
+				List<hu.bme.mit.gamma.genmodel.model.AsynchronousInstanceConstraint> instanceConstraints =
+						schedulingConstraint.getInstanceConstraint();
+				if (instanceConstraints.size() == 1) {
+					hu.bme.mit.gamma.genmodel.model.AsynchronousInstanceConstraint topConstraint =
+							instanceConstraints.get(0);
+					orchestratingConstraint = topConstraint.getOrchestratingConstraint();
+				}
+			}
+			else if (constraint instanceof hu.bme.mit.gamma.genmodel.model.OrchestratingConstraint) {
+				orchestratingConstraint = (hu.bme.mit.gamma.genmodel.model.OrchestratingConstraint) constraint;
+			}
+			
+			if (orchestratingConstraint != null) {
 				TimeSpecification minimumPeriod = orchestratingConstraint.getMinimumPeriod();
 				TimeSpecification maximumPeriod = orchestratingConstraint.getMaximumPeriod();
 				int min = statechartUtil.evaluateMilliseconds(minimumPeriod);
@@ -316,6 +332,18 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					return DataflowCoverageCriterion.ALL_USE;
 				default:
 					throw new IllegalArgumentException("Not known criterion: " + criterion);
+			}
+		}
+		
+		protected InitialStateSetting transformInitialStateSetting(
+				hu.bme.mit.gamma.genmodel.model.InitialStateSetting initialStateSetting) {
+			switch (initialStateSetting) {
+				case EXECUTE_ENTRY_ACTIONS:
+					return InitialStateSetting.EXECUTE_ENTRY_ACTIONS;
+				case SKIP_ENTRY_ACTIONS:
+					return InitialStateSetting.SKIP_ENTRY_ACTIONS;
+				default:
+					throw new IllegalArgumentException("Not known criterion: " + initialStateSetting);
 			}
 		}
 		
@@ -427,7 +455,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 		
 	}
 	
-	class Gamma2XSTSTransformer extends AnalysisModelTransformer {
+	class Gamma2XstsTransformer extends AnalysisModelTransformer {
 		
 		protected final AnalysisModelPreprocessor modelPreprocessor = AnalysisModelPreprocessor.INSTANCE;
 		protected final ActionSerializer actionSerializer = ActionSerializer.INSTANCE;
@@ -436,7 +464,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			logger.log(Level.INFO, "Starting XSTS transformation.");
 			ComponentReference reference = (ComponentReference) transformation.getModel();
 			Component component = reference.getComponent();
-			Integer schedulingConstraint = transformConstraint(transformation.getConstraint());
+			Integer schedulingConstraint = evaluateConstraint(transformation.getConstraint());
 			String fileName = transformation.getFileName().get(0);
 			// Coverages
 			List<Coverage> coverages = transformation.getCoverages();
@@ -462,6 +490,9 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			DataflowCoverageCriterion interactionDataflowCoverageCriterion =
 				getInteractionDataflowCoverageCriterion(coverages);
 			
+			InitialStateSetting initialStateSetting = transformInitialStateSetting(
+					transformation.getInitialStateSetting());
+			
 			Gamma2XstsTransformerSerializer transformer = new Gamma2XstsTransformerSerializer(
 					component, reference.getArguments(),
 					targetFolderUri, fileName, schedulingConstraint,
@@ -473,7 +504,8 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 						testedInteractions, senderCoverageCriterion, receiverCoverageCriterion,
 						dataflowTestedVariables, dataflowCoverageCriterion,
 						testedComponentsForInteractionDataflow, interactionDataflowCoverageCriterion
-					)
+					),
+					transformation.getInitialState(), initialStateSetting
 			);
 			transformer.execute();
 			// Property serialization
@@ -493,7 +525,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 	
 	}
 	
-	class XSTS2UppaalTransformer extends AnalysisModelTransformer {
+	class Xsts2UppaalTransformer extends AnalysisModelTransformer {
 		
 		public void execute(AnalysisModelTransformation transformation) {
 			logger.log(Level.INFO, "Starting XSTS-UPPAAL transformation.");
@@ -521,13 +553,13 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 		
 	}
 	
-	class Gamma2XSTSUppaalTransformer extends AnalysisModelTransformer {
+	class Gamma2XstsUppaalTransformer extends AnalysisModelTransformer {
 		
 		public void execute(AnalysisModelTransformation transformation) throws IOException {
 			logger.log(Level.INFO, "Starting Gamma -> XSTS-UPPAAL transformation.");
 			ComponentReference reference = (ComponentReference) transformation.getModel();
 			Component component = reference.getComponent();
-			Integer schedulingConstraint = transformConstraint(transformation.getConstraint());
+			Integer schedulingConstraint = evaluateConstraint(transformation.getConstraint());
 			String fileName = transformation.getFileName().get(0);
 			// Coverages
 			List<Coverage> coverages = transformation.getCoverages();
@@ -553,6 +585,9 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			DataflowCoverageCriterion interactionDataflowCoverageCriterion =
 				getInteractionDataflowCoverageCriterion(coverages);
 			
+			InitialStateSetting initialStateSetting = transformInitialStateSetting(
+					transformation.getInitialStateSetting());
+			
 			Gamma2XstsUppaalTransformerSerializer transformer = new Gamma2XstsUppaalTransformerSerializer(
 					component, reference.getArguments(),
 					targetFolderUri, fileName, schedulingConstraint,
@@ -565,7 +600,8 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 						testedInteractions, senderCoverageCriterion, receiverCoverageCriterion,
 						dataflowTestedVariables, dataflowCoverageCriterion,
 						testedComponentsForInteractionDataflow, interactionDataflowCoverageCriterion
-					)
+					),
+					transformation.getInitialState(), initialStateSetting
 			);
 			transformer.execute();
 			// Property serialization

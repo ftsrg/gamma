@@ -31,7 +31,11 @@ class ValueDeclarationTransformer {
 	// Trace needed for variable mappings
 	protected final Trace trace
 	
-	new(Trace trace) {
+	new() { // For external libraries that want to use this class
+		this(new Trace)
+	}
+	
+	new(Trace trace) { // For lowlevel statechart transformer
 		this.trace = trace
 		this.expressionTransformer = new ExpressionTransformer(trace)
 		this.typeTransformer = new TypeTransformer(trace)
@@ -112,9 +116,14 @@ class ValueDeclarationTransformer {
 				}
 			}
 		)
+		// Adding annotation to denote that these are final variables
+		for (lowlevelVariable : lowlevelVariables) {
+			lowlevelVariable.annotations += createFinalVariableDeclarationAnnotation
+		}
 		// Constant variable names do not really matter in terms of traceability
 		val lowlevelVariableNames = gammaConstant.names
 		lowlevelVariables.nameLowlevelVariables(lowlevelVariableNames)
+		//
 		return lowlevelVariables
 	}
 	
@@ -197,6 +206,14 @@ class ValueDeclarationTransformer {
 	private def transformAnnotation(VariableDeclarationAnnotation annotation) {
 		return annotation.clone
 	}
+	
+	//
+	
+	def getTrace() {
+		return trace
+	}
+	
+	//
 	
 	interface Tracer {
 		// Maybe it could contain the namings too

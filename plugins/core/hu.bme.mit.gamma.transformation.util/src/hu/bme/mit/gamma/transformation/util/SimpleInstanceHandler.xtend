@@ -163,14 +163,21 @@ class SimpleInstanceHandler {
 	
 	def getNewSimpleInstanceVariables(
 			Collection<ComponentInstanceVariableReference> originalReferences, Component newType) {
-		val newPorts = newArrayList
+		val newVariables = newArrayList
 		for (originalReference : originalReferences) {
 			val originalInstance = originalReference.instance
 			val originalVariable = originalReference.variable 
-			val newInstance = originalInstance.checkAndGetNewSimpleInstance(newType)
-			newPorts += newInstance.getNewVariable(originalVariable) 
+			val newVariable = originalInstance.getNewVariable(originalVariable, newType)
+			newVariables += newVariable
 		}
-		return newPorts
+		return newVariables
+	}
+	
+	def getNewVariable(ComponentInstanceReference originalInstance,
+			VariableDeclaration originalVariable, Component newType) {
+		val newInstance = originalInstance.checkAndGetNewSimpleInstance(newType)
+		val newVariable = newInstance.getNewVariable(originalVariable)
+		return newVariable
 	}
 	
 	private def getNewVariable(SynchronousComponentInstance newInstance,
@@ -215,7 +222,7 @@ class SimpleInstanceHandler {
 		val newInstances = newType.allSimpleInstances
 		val accpedtedNewInstances = newArrayList
 		// This intances can be a composite instance, thus more than one new instance can be here
-		val lastInstance = originalInstance.componentInstanceHierarchy.last
+		val lastInstance = originalInstance.lastInstance
 		val lastInstanceType = lastInstance.derivedType
 		val oldPackage = lastInstance.containingPackage
 		val isUnfolded = oldPackage.isUnfolded
@@ -252,7 +259,7 @@ class SimpleInstanceHandler {
 	}
 	
 	def contains(ComponentInstanceReference original, ComponentInstance copy) {
-		val originalInstances = original.componentInstanceHierarchy
+		val originalInstances = original.componentInstanceChain
 		val copyInstances = copy.parentComponentInstances
 		copyInstances += copy
 		// The naming conventions are clear

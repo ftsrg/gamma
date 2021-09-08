@@ -7,7 +7,7 @@ This feature uses two projects:
  - `hu.bme.mit.gamma.headless.api` - this application serves as the headless version of Gamma. It can create Eclipse workspaces, import projects from zip files, and execute .ggen files.
  - `hu.bme.mit.gamma.headless.server` - this webserver forwards requests to the Headless Gamma feature exported from `hu.bme.mit.gamma.headless.api`.
 
-Note that this document serves as a high level description of the workflow.  A more detailed, technical documentation regarding the manual exporting of the features and the creation of Docker images can be found in the`docs` folder of the `hu.bme.mit.gamma.headless.api` project.
+Note that this document serves as a high level description of the workflow.  A more detailed, technical documentation regarding the manual exporting of the features and the creation of Docker images can be found in the `docs` folder of the `hu.bme.mit.gamma.headless.api` project.
 
 ## Requirements
 
@@ -33,7 +33,7 @@ To use this feature, Gamma has to be exported using the product file found in `h
 
 After exporting, the webserver has to be started. The server can be found in `hu.bme.mit.gamma.headless.server`.  In Eclipse, this can be done by right-clicking on the project, and selecting _Run As > Java Application_. Select `OpenApiWebServer` from the list of applications, and run.
 
-Before running the server, make sure to configure the paths found in `config.properties`. (Note that the you don't have to set these variables if you have followed the instructions written in [Exporting the product](https://github.com/csuvi98/gamma/blob/dev/plugins/headless/docs/headless-gamma-eclipse.md#step-4---exporting-the-product)).
+Before running the server, make sure to configure the paths found in `config.properties`. (Note that the you don't have to set these variables if you have followed the instructions written in [Exporting the product](./headless-gamma-eclipse.md#step-4---exporting-the-product)).
 - Set `headless.gamma.path` variable to the location of the exported `eclipse.exe` (or equivalent binary on Linux systems), and
 - set the `root.of.workspaces.path` variable to the desired location of workspaces.
 
