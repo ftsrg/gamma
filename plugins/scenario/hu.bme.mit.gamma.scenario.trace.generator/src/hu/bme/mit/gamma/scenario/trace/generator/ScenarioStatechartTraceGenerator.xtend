@@ -60,13 +60,18 @@ class ScenarioStatechartTraceGenerator {
 	def List<ExecutionTrace> execute() {
 		var Component c = statechart
 		absoluteParentFolder = (statechart.eResource.file).parentFile.absolutePath
+		var NotDefinedEventMode scenarioContractType = null
 		var result = <ExecutionTrace>newArrayList
-		val annotation = statechart.annotation
-		if (annotation instanceof ScenarioContractAnnotation) { 
-			if (testOriginal) {
-				c = annotation.monitoredComponent
+		val annotations = statechart.annotations
+		for (annotation : annotations) {
+			if (annotation instanceof ScenarioContractAnnotation) {
+				if (testOriginal) {
+					c = annotation.monitoredComponent
+					scenarioContractType= annotation.scenarioType
+				}
 			}
 		}
+
 
 		var GammaToXstsTransformer gammaToXSTSTransformer = null
 		if (schedulingConstraint > 0) {
@@ -113,12 +118,8 @@ class ScenarioStatechartTraceGenerator {
 
 		for (et : filteredTraces) {
 			val eventAdder = new UnsentEventAssertExtender(et.steps, true)
-			val scenarioContractAnnotation = statechart.annotation
-			if (scenarioContractAnnotation instanceof ScenarioContractAnnotation) {
-				if (scenarioContractAnnotation.scenarioType.equals(
-						NotDefinedEventMode.STRICT)) {
-					eventAdder.execute
-				}
+			if (scenarioContractType.equals(NotDefinedEventMode.STRICT)) {
+				eventAdder.execute
 			}
 			result += et
 		}

@@ -45,12 +45,14 @@ public class StatechartSerializer {
 		_package.setName(statechart.getName().toLowerCase());
 		_package.getImports().addAll(interfaces);
 
-		StatechartAnnotation annotation = statechart.getAnnotation();
-		if (annotation instanceof ScenarioContractAnnotation) {
-			ScenarioContractAnnotation scenarioContractAnnotation = (ScenarioContractAnnotation) annotation;
-			Component monitoredComponent = scenarioContractAnnotation.getMonitoredComponent();
-			Package containingPackage = StatechartModelDerivedFeatures.getContainingPackage(monitoredComponent);
-			_package.getImports().add(containingPackage);
+		List<StatechartAnnotation> annotations = statechart.getAnnotations();
+		for (StatechartAnnotation annotation : annotations) {
+			if (annotation instanceof ScenarioContractAnnotation) {
+				ScenarioContractAnnotation scenarioContractAnnotation = (ScenarioContractAnnotation) annotation;
+				Component monitoredComponent = scenarioContractAnnotation.getMonitoredComponent();
+				Package containingPackage = StatechartModelDerivedFeatures.getContainingPackage(monitoredComponent);
+				_package.getImports().add(containingPackage);
+			}
 		}
 		try {
 			saveModel(_package, path, statechart.getName() + "Statechart.gcd");

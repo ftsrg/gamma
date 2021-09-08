@@ -21,8 +21,8 @@
         eType="#//TransitionPriority" defaultValueLiteral="OFF"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="guardEvaluation" lowerBound="1"
         eType="#//GuardEvaluation" defaultValueLiteral="ON_THE_FLY"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="annotation" eType="#//StatechartAnnotation"
-        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="annotations" upperBound="-1"
+        eType="#//StatechartAnnotation" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EEnum" name="SchedulingOrder">
     <eLiterals name="TOP_DOWN"/>

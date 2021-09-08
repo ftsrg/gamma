@@ -1542,10 +1542,12 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	}
 	
 	public static Component getMonitoredComponent(StatechartDefinition adaptiveContract) {
-		StatechartAnnotation annotation = adaptiveContract.getAnnotation();
-		if (annotation instanceof AdaptiveContractAnnotation) {
-			AdaptiveContractAnnotation adaptiveContractAnnotation = (AdaptiveContractAnnotation) annotation;
-			return adaptiveContractAnnotation.getMonitoredComponent();
+		List<StatechartAnnotation> annotations = adaptiveContract.getAnnotations();
+		for(StatechartAnnotation annotation: annotations) { 
+			if (annotation instanceof AdaptiveContractAnnotation) {
+				AdaptiveContractAnnotation adaptiveContractAnnotation = (AdaptiveContractAnnotation) annotation;
+				return adaptiveContractAnnotation.getMonitoredComponent();
+			}
 		}
 		throw new IllegalArgumentException("Not an adaptive contract statechart: " + adaptiveContract);
 	}

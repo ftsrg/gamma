@@ -162,7 +162,16 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 		val a = createScenarioContractAnnotation
 		a.monitoredComponent = component
 		a.scenarioType = nonDeclaredMessageMode == 1 ? NotDefinedEventMode.STRICT : NotDefinedEventMode.PERMISSIVE
-		statechart.annotation = a
+		statechart.annotations += a
+		
+		val waitingAnnotation= createScenarioAllowedWaitAnnotation
+		val lower = createIntegerLiteralExpression
+		lower.value = BigInteger.valueOf(allowedGlobalWaitMin)
+		val upper = createIntegerLiteralExpression
+		upper.value = BigInteger.valueOf(allowedGlobalWaitMax)
+		waitingAnnotation.lowerLimit = lower
+		waitingAnnotation.upperLimit = upper
+		statechart.annotations +=waitingAnnotation
 		return statechart
 	}
 
@@ -382,10 +391,9 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 			}
 		} else {
 			handleDelays(set)
-
 			setupForwardTransition(set, first, true, isNegated, forwardTransition)
-
 			forwardTransition.priority = BigInteger.valueOf(3)
+			
 			if(generationMode != StatechartGenerationMode.GENERATE_ONLY_FORWARD){
 				forwardTransition.guard = getGuard(1, allowedGlobalWaitMin, allowedGlobalWaitMax)
 				forwardTransition.effects.add(setIntVariable(1, 0))				
