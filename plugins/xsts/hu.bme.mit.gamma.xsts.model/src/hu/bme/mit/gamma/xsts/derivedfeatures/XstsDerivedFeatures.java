@@ -47,7 +47,7 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 
 	protected static XSTSModelFactory xStsFactory = XSTSModelFactory.eINSTANCE;
 	
-	public static XSTS getContainingXSTS(EObject object) {
+	public static XSTS getContainingXsts(EObject object) {
 		return ecoreUtil.getSelfOrContainerOfType(object, XSTS.class);
 	}
 	

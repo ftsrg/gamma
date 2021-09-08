@@ -216,13 +216,17 @@ class ComponentTransformer {
 				// Namings.customize* covers the same naming behavior as QueueNamings + valueDeclarationTransformer
 				
 				xSts.variableDeclarations += valueDeclarationTransformer.transform(masterQueue)
-				xSts.variableDeclarations += valueDeclarationTransformer.transform(masterSizeVariable)
+				val xStsMasterSizeVariable = valueDeclarationTransformer.transform(masterSizeVariable).onlyElement
+				xSts.variableDeclarations += xStsMasterSizeVariable
+				xStsMasterSizeVariable.setControlFlag // Needed for loops
 				for (slaveQueueStructs : slaveQueues.values) {
 					for (slaveQueueStruct : slaveQueueStructs) {
 						val slaveQueue = slaveQueueStruct.arrayVariable
 						val slaveSizeVariable = slaveQueueStruct.sizeVariable
 						xSts.variableDeclarations += valueDeclarationTransformer.transform(slaveQueue)
-						xSts.variableDeclarations += valueDeclarationTransformer.transform(slaveSizeVariable)
+						val xStsSlaveSizeVariable = valueDeclarationTransformer.transform(slaveSizeVariable).onlyElement
+						xSts.variableDeclarations += xStsSlaveSizeVariable
+						xStsSlaveSizeVariable.setControlFlag // Needed for loops
 						// The type might not be correct here and later has to be reassigned to handle enums
 					}
 				}

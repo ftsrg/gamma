@@ -40,6 +40,7 @@ import hu.bme.mit.gamma.expression.model.TypeDefinition;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.expression.util.ExpressionUtil;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
+import hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures;
 import hu.bme.mit.gamma.xsts.model.AbstractAssignmentAction;
 import hu.bme.mit.gamma.xsts.model.Action;
 import hu.bme.mit.gamma.xsts.model.AssignmentAction;
@@ -611,6 +612,11 @@ public class XstsActionUtil extends ExpressionUtil {
 			return orExpression;
 		}
 		throw new IllegalArgumentException("Not supported action: " + action);
+	}
+	
+	public void setControlFlag(VariableDeclaration variable) {
+		XSTS xSts = XstsDerivedFeatures.getContainingXsts(variable);
+		xSts.getControlVariables().add(variable);
 	}
 	
 	public void deleteDeclaration(Declaration declaration) {

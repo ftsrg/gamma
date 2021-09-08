@@ -30,7 +30,7 @@ class ThetaVerification extends AbstractVerification {
 				"--domain EXPL --refinement SEQ_ITP --maxenum 250"
 			]
 		)
-		// --domain PRED_CART --refinement SEQ_ITP // default
+		// --domain PRED_CART --refinement SEQ_ITP // default - cannot be used with loops
 		// --domain EXPL --refinement SEQ_ITP --maxenum 250
 		// --domain EXPL_PRED_COMBINED --maxatomcount ALLASSUMES --initprec CTRL
 	}
