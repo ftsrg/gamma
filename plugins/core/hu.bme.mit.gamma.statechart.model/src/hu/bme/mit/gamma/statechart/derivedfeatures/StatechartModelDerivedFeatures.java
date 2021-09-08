@@ -154,6 +154,10 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return port.getInterfaceRealization().getInterface();
 	}
 	
+	public static boolean contains(Component component, Port port) {
+		return getAllPorts(component).contains(port);
+	}
+	
 	public static EventDirection getOpposite(EventDirection eventDirection) {
 		switch (eventDirection) {
 			case IN:
@@ -622,6 +626,9 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 			for (Event inputEvent : getInputEvents(port)) {
 				events.add(new SimpleEntry<Port, Event>(port, inputEvent));
 			}
+		}
+		else if (eventReference instanceof ClockTickReference) {
+			// No op
 		}
 		else {
 			throw new IllegalArgumentException("Not supported event reference: " + eventReference);

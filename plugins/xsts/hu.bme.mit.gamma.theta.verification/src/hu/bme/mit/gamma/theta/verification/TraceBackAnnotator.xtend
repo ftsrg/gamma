@@ -217,7 +217,8 @@ class TraceBackAnnotator {
 							for (indexPair : indexPairs) {
 								val index = indexPair.key
 								val parsedValue = indexPair.value
-								step.addOutEventWithStringParameter(systemPort, event, parameter, field, index, parsedValue)
+								step.addOutEventWithStringParameter(systemPort, event, parameter,
+										field, index, parsedValue)
 							}
 						}
 					}
@@ -230,7 +231,7 @@ class TraceBackAnnotator {
 								val port = systemInEvent.get(1) as Port
 								val systemPort = port.boundTopComponentPort // Back-tracking to the system port
 								step.addInEvent(systemPort, event)
-								// Denoting that this event has been actually
+								// Denoting that this event has been actually raised
 								raisedInEvents += systemPort -> event
 							}
 						}
@@ -263,10 +264,13 @@ class TraceBackAnnotator {
 									val portEvent = messageQueue.getEvent(eventId)
 									val port = portEvent.key
 									val event = portEvent.value
-									val systemPort = port.boundTopComponentPort // Back-tracking to the system port
-									step.addInEvent(systemPort, event)
-									// Denoting that this event has been actually
-									raisedInEvents += systemPort -> event
+									val systemPort = port.boundTopComponentPort // Back-tracking to the top port
+									// Sometimes message queue can contain internal events
+									if (component.contains(systemPort)) {
+										step.addInEvent(systemPort, event)
+										// Denoting that this event has been actually
+										raisedInEvents += systemPort -> event
+									}
 								}
 							}
 						}
@@ -276,17 +280,22 @@ class TraceBackAnnotator {
 							val event = systemInEvent.get(0) as Event
 							val port = systemInEvent.get(1) as Port
 							val systemPort = port.boundTopComponentPort // Back-tracking to the system port
-							val parameter = systemInEvent.get(2) as ParameterDeclaration
-							// Getting fields and indexes regardless of primitive or complex types
-							val field = thetaQueryGenerator.getAsynchronousSourceInEventParameterFieldHierarchy(id)
-							val indexPairs = value.parseArray
-							// The slave queue is single-size array - removing the first 0 index
-							indexPairs.forEach[it.key.removeFirst]
-							//
-							for (indexPair : indexPairs) {
-								val index = indexPair.key
-								val parsedValue = indexPair.value
-								step.addInEventWithParameter(systemPort, event, parameter, field, index, parsedValue)
+							// Sometimes message queues can contain internal events too
+							if (component.contains(systemPort)) {
+								val parameter = systemInEvent.get(2) as ParameterDeclaration
+								// Getting fields and indexes regardless of primitive or complex types
+								val field = thetaQueryGenerator.getAsynchronousSourceInEventParameterFieldHierarchy(id)
+								val indexPairs = value.parseArray
+								val firstElement = indexPairs.findFirst[it.key == new IndexHierarchy(0)]
+								if (firstElement !== null) { // Default value, not necessary to add explicitly
+									// The slave queue should be a single-size array - sometimes there are more elements?
+									val index = firstElement.key
+									index.removeFirst // As the slave queue is an array, we remove the first index
+									//
+									val parsedValue = firstElement.value
+									step.addInEventWithParameter(systemPort, event,
+										parameter, field, index, "0" /* parsedValue */) // TODO Theta bug
+								}
 							}
 						}
 					}

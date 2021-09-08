@@ -157,6 +157,9 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 	
 	def isSynchronousSourceInEvent(String targetInEventName) {
 		try {
+			if (!component.synchronous) {
+				return false
+			}
 			targetInEventName.getSynchronousSourceInEvent
 			return true
 		} catch (IllegalArgumentException e) {
@@ -166,6 +169,9 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 	
 	def isSynchronousSourceInEventParameter(String targetInEventParameterName) {
 		try {
+			if (!component.synchronous) {
+				return false
+			}
 			targetInEventParameterName.getSynchronousSourceInEventParameter
 			return true
 		} catch (IllegalArgumentException e) {
@@ -173,19 +179,11 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 		}
 	}
 	
-	def isSynchronousSourceRecordInEventParameter(String targetInEventParameterName) {
-		try {
-			val array = targetInEventParameterName.getSynchronousSourceInEventParameter
-			val parameter = array.get(2) as ValueDeclaration
-			val type = parameter.typeDefinition
-			return type instanceof RecordTypeDefinition
-		} catch (IllegalArgumentException e) {
-			return false
-		}
-	}
-	
 	def isAsynchronousSourceMessageQueue(String targetMasterQueueName) {
 		try {
+			if (!component.asynchronous) {
+				return false
+			}
 			targetMasterQueueName.getAsynchronousSourceMessageQueue
 			return true
 		} catch (IllegalArgumentException e) {
@@ -195,6 +193,9 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 	
 	def isAsynchronousSourceInEventParameter(String targetSlaveQueueName) {
 		try {
+			if (!component.asynchronous) {
+				return false
+			}
 			targetSlaveQueueName.getAsynchronousSourceInEventParameter
 			return true
 		} catch (IllegalArgumentException e) {

@@ -11,6 +11,7 @@
 package hu.bme.mit.gamma.transformation.util.preprocessor
 
 import hu.bme.mit.gamma.expression.model.Declaration
+import hu.bme.mit.gamma.statechart.composite.AbstractAsynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.composite.AsynchronousCompositeComponent
@@ -107,8 +108,8 @@ class ModelUnfolder {
 		}
 	}
 	
-	private dispatch def void copyComponents(AsynchronousCompositeComponent component, Package gammaPackage,
-			Trace trace) {
+	private dispatch def void copyComponents(AbstractAsynchronousCompositeComponent component,
+			Package gammaPackage, Trace trace) {
 		for (instance : component.components) {
 			val type = instance.type
 			if (type instanceof AsynchronousCompositeComponent) {
@@ -376,8 +377,8 @@ class ModelUnfolder {
 		}
 	}
 	
-	private def dispatch traceComponentInstances(AsynchronousCompositeComponent oldComponent,
-			AsynchronousCompositeComponent newComponent, Trace trace) {
+	private def dispatch traceComponentInstances(AbstractAsynchronousCompositeComponent oldComponent,
+			AbstractAsynchronousCompositeComponent newComponent, Trace trace) {
 		for (var i = 0; i < oldComponent.components.size; i++) {
 			trace.put(oldComponent.components.get(i), newComponent.components.get(i))
 		}

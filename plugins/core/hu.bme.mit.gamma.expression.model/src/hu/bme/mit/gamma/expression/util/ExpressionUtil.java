@@ -1006,6 +1006,15 @@ public class ExpressionUtil {
 		return notExpression;
 	}
 	
+	public IfThenElseExpression createIfThenElseExpression(Expression _if,
+			Expression then, Expression _else) {
+		IfThenElseExpression ifThenElseExpression = factory.createIfThenElseExpression();
+		ifThenElseExpression.setCondition(_if);
+		ifThenElseExpression.setThen(then);
+		ifThenElseExpression.setElse(_else);
+		return ifThenElseExpression;
+	}
+	
 	public DirectReferenceExpression createReferenceExpression(ValueDeclaration variable) {
 		DirectReferenceExpression reference = factory.createDirectReferenceExpression();
 		reference.setDeclaration(variable);
@@ -1038,6 +1047,23 @@ public class ExpressionUtil {
 		inequalityExpression.setLeftOperand(lhs);
 		inequalityExpression.setRightOperand(rhs);
 		return inequalityExpression;
+	}
+	
+	public LessExpression createLessExpression(Expression lhs, Expression rhs) {
+		LessExpression lessExpression = factory.createLessExpression();
+		lessExpression.setLeftOperand(lhs);
+		lessExpression.setRightOperand(rhs);
+		return lessExpression;
+	}
+	
+	public IfThenElseExpression createMinExpression(Expression lhs, Expression rhs) {
+		return createIfThenElseExpression(createLessExpression(lhs, rhs),
+				ecoreUtil.clone(lhs), ecoreUtil.clone(rhs));
+	}
+	
+	public IfThenElseExpression createMaxExpression(Expression lhs, Expression rhs) {
+		return createIfThenElseExpression(createLessExpression(lhs, rhs),
+				ecoreUtil.clone(rhs), ecoreUtil.clone(lhs));
 	}
 	
 	public EnumerationLiteralExpression createEnumerationLiteralExpression(

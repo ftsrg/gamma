@@ -18,14 +18,15 @@ import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.LowlevelToXstsTransformer
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.TransitionMerging
+import hu.bme.mit.gamma.statechart.composite.AbstractAsynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
-import hu.bme.mit.gamma.statechart.composite.AsynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.CascadeCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance
 import hu.bme.mit.gamma.statechart.composite.ControlFunction
 import hu.bme.mit.gamma.statechart.composite.DiscardStrategy
 import hu.bme.mit.gamma.statechart.composite.MessageQueue
+import hu.bme.mit.gamma.statechart.composite.ScheduledAsynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.interface_.AnyTrigger
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Port
@@ -103,7 +104,8 @@ class ComponentTransformer {
 	}
 	
 	// TODO move most parts into the AA transformer and make sure in preprocess AAs are not top components
-	def dispatch XSTS transform(AsynchronousCompositeComponent component, Package lowlevelPackage) {
+	def dispatch XSTS transform(ScheduledAsynchronousCompositeComponent component,
+			Package lowlevelPackage) {
 		val systemPorts = component.allPorts
 		// Parameters of all asynchronous composite components
 		component.extractAllParameters
@@ -247,14 +249,16 @@ class ComponentTransformer {
 				val block = createSequentialAction
 				
 				val messageRetrievalCount = queue.checkAndGetMessageRetrievalCount
-				if (messageRetrievalCount == 1) {
-						// Good option for verification
-						mergedAction.actions += block
+				if (messageRetrievalCount == Integer.valueOf(1)) {
+					// Good option for verification
+					mergedAction.actions += block
+					// TODO unnecessary if loop unrolling works
 				}
 				else {
 					val maxValue = (messageRetrievalCount === null) ? 
 						xStsMasterSizeVariable.createReferenceExpression : // Null means ALL messages
-						messageRetrievalCount.toIntegerLiteral // Retrieved count
+						xStsMasterSizeVariable.createReferenceExpression
+							.createMinExpression(messageRetrievalCount.toIntegerLiteral) // min(size, count)
 					
 					val queueLoop = loopIterationVariableName.createLoopAction(
 							0.toIntegerLiteral, maxValue) => [
@@ -768,12 +772,12 @@ class ComponentTransformer {
 	
 	// Utils
 	
-	private def void extractAllParameters(AsynchronousCompositeComponent component) {
+	private def void extractAllParameters(AbstractAsynchronousCompositeComponent component) {
 		for (instance : component.components) {
 			val arguments = instance.arguments
 			val type = instance.type
 			type.extractParameters(arguments)
-			if (type instanceof AsynchronousCompositeComponent) {
+			if (type instanceof AbstractAsynchronousCompositeComponent) {
 				type.extractAllParameters
 			}
 		}
@@ -808,7 +812,7 @@ class ComponentTransformer {
 	
 	private def getCapacity(MessageQueue queue, Collection<? extends Port> systemPorts) {
 		if (queue.isEnvironmentalAndCheck(systemPorts)) {
-			if (queue.messageRetrievalCount == MessageRetrievalCount.ONE) {
+			if (queue.checkAndGetMessageRetrievalCount == Integer.valueOf(1)) {
 				return 1
 			}
 		}
@@ -817,12 +821,12 @@ class ComponentTransformer {
 	}
 	
 	private def isEnvironmentalAndCheck(MessageQueue queue, Collection<? extends Port> systemPorts) {
-		val portEvents = queue.storedEvents
-		val ports = portEvents.map[it.key]
-		val topPorts = ports.map[it.boundTopComponentPort]
 		if (queue.isEnvironmental(systemPorts)) {
 			return true // All events are system events
 		}
+		val portEvents = queue.storedEvents
+		val ports = portEvents.map[it.key]
+		val topPorts = ports.map[it.boundTopComponentPort]
 		val capacity = queue.capacity.evaluateInteger
 		if (systemPorts.containsOne(topPorts) && capacity == 1) {
 			return true /* Contains other events too, but the queue will always be empty,
@@ -835,13 +839,14 @@ class ComponentTransformer {
 	}
 	
 	private def checkAndGetMessageRetrievalCount(MessageQueue queue) {
-		val countExpression = queue.messageRetrievalCount
-		if (countExpression === null) {
-			return null
+		val messageRetrievalCount = queue.messageRetrievalCount
+		if (messageRetrievalCount === null) {
+			return null // Means ALL messages
 		}
-		val count = countExpression.evaluateInteger
-		checkState(count > 0) // Maybe 0 should be accepted too
-		return count
+		val count = messageRetrievalCount.evaluateInteger
+		checkState(count > 0) // Maybe 0 should be accepted, too?
+		val capacity = queue.capacity.evaluateInteger
+		return Math.min(count, capacity) // Count cannot be greater than the capacity
 	}
 	
 	private def void resetInEventsAfterMergedAction(XSTS xSts, Component type) {
