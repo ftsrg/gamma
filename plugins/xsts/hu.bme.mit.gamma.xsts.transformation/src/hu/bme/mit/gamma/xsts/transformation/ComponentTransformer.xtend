@@ -235,7 +235,7 @@ class ComponentTransformer {
 		
 		// Creating queue process behavior
 		
-		val executionList = adapterInstances // In the future, one instance could be executed multiple times
+		val executionList = component.allScheduledAsynchronousSimpleInstances // One instance could be executed multiple times
 		for (adapterInstance : executionList) {
 			val adapterComponentType = adapterInstance.type as AsynchronousAdapter
 			val originalMergedAction = mergedActions.get(adapterInstance)
@@ -358,7 +358,7 @@ class ComponentTransformer {
 			}
 		}
 		
-		// Initializing message queue related variables - done here and not initial expression
+		// Initializing message queue related variables - done here and not in initial expression
 		// as the potential enumeration type declarations of slave queues there are not traced
 		
 		val xStsQueueVariables = newArrayList

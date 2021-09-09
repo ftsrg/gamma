@@ -1703,5 +1703,23 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		}
 		return component.getComponents();
 	}
+	
+	public static List<AsynchronousComponentInstance> getAllScheduledAsynchronousSimpleInstances(
+			AbstractAsynchronousCompositeComponent component) {
+		List<AsynchronousComponentInstance> simpleInstances =
+				new ArrayList<AsynchronousComponentInstance>();
+		for (AsynchronousComponentInstance instance : getScheduledInstances(component)) {
+			if (isAdapter(instance)) {
+				simpleInstances.add(instance);
+			}
+			else {
+				AbstractAsynchronousCompositeComponent type =
+						(AbstractAsynchronousCompositeComponent) instance.getType();
+				simpleInstances.addAll(
+						getAllScheduledAsynchronousSimpleInstances(type));
+			}
+		}
+		return simpleInstances;
+	}
 
 }
