@@ -205,7 +205,7 @@ class LowlevelToXstsTransformer {
 		mergeTransitions
 		optimizeActions
 		xSts.fillNullTransitions
-		handleVariableAnnotations
+		handleTransientAndResettableVariableAnnotations
 		// The created EMF models are returned
 		return new SimpleEntry<XSTS, L2STrace>(xSts, trace.getTrace)
 	}
@@ -305,8 +305,8 @@ class LowlevelToXstsTransformer {
 						}
 						xSts.variableDeclarations += xStsParam // Target model modification
 						if (lowlevelEvent.persistency == Persistency.TRANSIENT) {
-							// If event is transient, than its parameters are marked transient variables
-							xStsParam.addTransientAnnotation
+							// Event is transient, its parameters are marked environment-resettable variables
+							xStsParam.addEnvironmentResettableAnnotation
 						}
 						eventParameterVariableGroup.variables += xStsParam
 						trace.put(lowlevelEventParameter, xStsParam) // Tracing
@@ -645,6 +645,8 @@ class LowlevelToXstsTransformer {
 						if (lowlevelEvent.persistency == Persistency.TRANSIENT) {
 							// Synchronous composite components do not reset transient parameters
 							// There is the same optimization in ComponentTransformer too, though
+							// Why not default expression? (check StatechartCodeGenerator)
+							checkState(xStsParameterVariable.environmentResettable)
 							lowlevelEnvironmentalAction.actions += xStsParameterVariable
 									.createAssignmentAction(xStsParameterVariable.initialValue)
 						}
@@ -758,10 +760,10 @@ class LowlevelToXstsTransformer {
 		}
 	}
 	
-	protected def handleVariableAnnotations() {
+	protected def handleTransientAndResettableVariableAnnotations() {
 		val newMergedAction = createSequentialAction
 		
-		val resetableVariables = xSts.variableDeclarations.filter[it.resetable]
+		val resetableVariables = xSts.variableDeclarations.filter[it.resettable]
 		for (resetableVariable : resetableVariables) {
 			newMergedAction.actions += resetableVariable.createVariableResetAction
 		}

@@ -79,7 +79,7 @@ class DeclarationSerializer {
 
 	// Variable
 
-	def String serializeVariableDeclaration(VariableDeclaration variable) '''«FOR annotation : variable.annotations SEPARATOR ' ' AFTER ' '»«annotation.serializeAnnotation»«ENDFOR»var «variable.name» : «variable.type.serializeType»«IF variable.expression !== null» = «variable.expression.serialize»«ENDIF»'''
+	def String serializeVariableDeclaration(VariableDeclaration variable) '''«FOR annotation : variable.annotations»«annotation.serializeAnnotation» «ENDFOR»var «variable.name» : «variable.type.serializeType»«IF variable.expression !== null» = «variable.expression.serialize»«ENDIF»'''
 	
 	def String serializeLocalVariableDeclaration(VariableDeclaration variable) '''local «variable.serializeVariableDeclaration»'''
 	

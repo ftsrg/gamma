@@ -939,8 +939,12 @@ public class ExpressionUtil {
 		addAnnotation(variable, factory.createTransientVariableDeclarationAnnotation());
 	}
 	
-	public void addResetableAnnotation(VariableDeclaration variable) {
-		addAnnotation(variable, factory.createResetableVariableDeclarationAnnotation());
+	public void addResettableAnnotation(VariableDeclaration variable) {
+		addAnnotation(variable, factory.createResettableVariableDeclarationAnnotation());
+	}
+	
+	public void addEnvironmentResettableAnnotation(VariableDeclaration variable) {
+		addAnnotation(variable, factory.createEnvironmentResettableVariableDeclarationAnnotation());
 	}
 	
 	public void addAnnotation(VariableDeclaration variable, VariableDeclarationAnnotation annotation) {
