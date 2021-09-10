@@ -387,7 +387,7 @@ class LowlevelToXstsTransformer {
 		]
 		xSts.typeDeclarations += enumTypeDeclaration
 		xSts.variableDeclarations += xStsRegionVariable // Target model modification
-		xSts.controlVariables += xStsRegionVariable // Putting it in the control location variable list
+		xStsRegionVariable.addOnDemandControlAnnotation // It is worth following this variable
 		trace.put(lowlevelRegion, xStsRegionVariable) // Tracing
 		// Creating top region variable group
 		xStsRegionVariable.getCorrespondingVariableGroup => [

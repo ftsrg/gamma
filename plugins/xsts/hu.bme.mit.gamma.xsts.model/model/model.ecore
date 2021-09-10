@@ -13,8 +13,6 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="constraints" upperBound="-1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
         containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="controlVariables" upperBound="-1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclaration"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="clockVariables" upperBound="-1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclaration"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="transientVariables" upperBound="-1"
@@ -121,4 +119,8 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="lhs" lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ReferenceExpression"
         containment="true"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="OnDemandControlVariableDeclarationAnnotation"
+      eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclarationAnnotation"/>
+  <eClassifiers xsi:type="ecore:EClass" name="StrictControlVariableDeclarationAnnotation"
+      eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclarationAnnotation"/>
 </ecore:EPackage>

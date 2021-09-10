@@ -40,7 +40,6 @@ import hu.bme.mit.gamma.expression.model.TypeDefinition;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.expression.util.ExpressionUtil;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
-import hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures;
 import hu.bme.mit.gamma.xsts.model.AbstractAssignmentAction;
 import hu.bme.mit.gamma.xsts.model.Action;
 import hu.bme.mit.gamma.xsts.model.AssignmentAction;
@@ -51,8 +50,10 @@ import hu.bme.mit.gamma.xsts.model.HavocAction;
 import hu.bme.mit.gamma.xsts.model.LoopAction;
 import hu.bme.mit.gamma.xsts.model.MultiaryAction;
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction;
+import hu.bme.mit.gamma.xsts.model.OnDemandControlVariableDeclarationAnnotation;
 import hu.bme.mit.gamma.xsts.model.ParallelAction;
 import hu.bme.mit.gamma.xsts.model.SequentialAction;
+import hu.bme.mit.gamma.xsts.model.StrictControlVariableDeclarationAnnotation;
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction;
 import hu.bme.mit.gamma.xsts.model.XSTS;
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory;
@@ -102,7 +103,6 @@ public class XstsActionUtil extends ExpressionUtil {
 		pivot.getVariableGroups().addAll(mergable.getVariableGroups());
 		pivot.getVariableDeclarations().addAll(mergable.getVariableDeclarations());
 		pivot.getTransientVariables().addAll(mergable.getTransientVariables());
-		pivot.getControlVariables().addAll(mergable.getControlVariables());
 		pivot.getClockVariables().addAll(mergable.getClockVariables());
 		pivot.getConstraints().addAll(mergable.getConstraints());
 	}
@@ -614,9 +614,16 @@ public class XstsActionUtil extends ExpressionUtil {
 		throw new IllegalArgumentException("Not supported action: " + action);
 	}
 	
-	public void setControlFlag(VariableDeclaration variable) {
-		XSTS xSts = XstsDerivedFeatures.getContainingXsts(variable);
-		xSts.getControlVariables().add(variable);
+	public void addOnDemandControlAnnotation(VariableDeclaration variable) {
+		OnDemandControlVariableDeclarationAnnotation annotation =
+				xStsFactory.createOnDemandControlVariableDeclarationAnnotation();
+		variable.getAnnotations().add(annotation);
+	}
+	
+	public void addStrictControlAnnotation(VariableDeclaration variable) {
+		StrictControlVariableDeclarationAnnotation annotation =
+				xStsFactory.createStrictControlVariableDeclarationAnnotation();
+		variable.getAnnotations().add(annotation);
 	}
 	
 	public void deleteDeclaration(Declaration declaration) {

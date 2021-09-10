@@ -238,7 +238,7 @@ class ComponentTransformer {
 				xSts.variableDeclarations += valueDeclarationTransformer.transform(masterQueue)
 				val xStsMasterSizeVariable = valueDeclarationTransformer.transform(masterSizeVariable).onlyElement
 				xSts.variableDeclarations += xStsMasterSizeVariable
-				xStsMasterSizeVariable.setControlFlag // Needed for loops
+				xStsMasterSizeVariable.addStrictControlAnnotation // Needed for loops
 				
 				val slaveQueuesCollection = slaveQueueMappings.values
 				val slaveQueueStructs = slaveQueuesCollection.flatten
@@ -249,7 +249,7 @@ class ComponentTransformer {
 					xSts.variableDeclarations += valueDeclarationTransformer.transform(slaveQueue)
 					val xStsSlaveSizeVariable = valueDeclarationTransformer.transform(slaveSizeVariable).onlyElement
 					xSts.variableDeclarations += xStsSlaveSizeVariable
-					xStsSlaveSizeVariable.setControlFlag // Needed for loops
+					xStsSlaveSizeVariable.addStrictControlAnnotation // Needed for loops
 					// The type might not be correct here and later has to be reassigned to handle enums
 				}
 			}

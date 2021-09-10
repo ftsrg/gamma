@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.xsts.transformation.serializer
 
+import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
 import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition
 import hu.bme.mit.gamma.expression.model.DecimalTypeDefinition
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
@@ -21,9 +22,10 @@ import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.model.VoidTypeDefinition
+import hu.bme.mit.gamma.xsts.model.OnDemandControlVariableDeclarationAnnotation
 import hu.bme.mit.gamma.xsts.model.PrimedVariable
+import hu.bme.mit.gamma.xsts.model.StrictControlVariableDeclarationAnnotation
 import hu.bme.mit.gamma.xsts.model.XSTS
-import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
 
 class DeclarationSerializer {
 	// Singleton
@@ -76,22 +78,15 @@ class DeclarationSerializer {
 
 	// Variable
 
-	def String serializeVariableDeclaration(VariableDeclaration variable) '''«variable.serializeModifier»var «variable.name» : «variable.type.serializeType»«IF variable.expression !== null» = «variable.expression.serialize»«ENDIF»'''
+	def String serializeVariableDeclaration(VariableDeclaration variable) '''«FOR annotation : variable.annotations SEPARATOR ' ' AFTER ' '»«annotation.serializeAnnotation»«ENDFOR»var «variable.name» : «variable.type.serializeType»«IF variable.expression !== null» = «variable.expression.serialize»«ENDIF»'''
 	
 	def String serializeLocalVariableDeclaration(VariableDeclaration variable) '''local «variable.serializeVariableDeclaration»'''
 	
-	private def serializeModifier(VariableDeclaration variable) {
-		val container = variable.eContainer
-		if (container instanceof XSTS) {
-			val xSts = container as XSTS
-			if (xSts.controlVariables.contains(variable)) {
-				return "ctrl "
-			}
-	//		if (xSts.clockVariables.contains(variable)) {
-	//			return "clk "
-	//		}
-		}
-		return ""
-	}
+	// Annotation
+	
+	protected def dispatch serializeAnnotation(StrictControlVariableDeclarationAnnotation annotation) '''ctrl'''
+	
+	protected def dispatch serializeAnnotation(OnDemandControlVariableDeclarationAnnotation annotation) '''ctrl'''
+	
 	
 }
