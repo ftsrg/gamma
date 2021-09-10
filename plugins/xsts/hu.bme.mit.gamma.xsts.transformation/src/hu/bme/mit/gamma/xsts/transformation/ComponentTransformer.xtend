@@ -276,9 +276,8 @@ class ComponentTransformer {
 				
 				val messageRetrievalCount = queue.checkAndGetMessageRetrievalCount
 				if (messageRetrievalCount == Integer.valueOf(1)) {
-					// Good option for verification
 					mergedAction.actions += block
-					// TODO unnecessary if loop unrolling works
+					// TODO Incorrect, delete if loop unrolling works
 				}
 				else {
 					val maxValue = (messageRetrievalCount === null) ? 
