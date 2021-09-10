@@ -137,7 +137,7 @@ class XstsToUppaalTransformer {
 	protected def transformVariable(VariableDeclaration variable) {
 		val type = variable.type
 		val uppaalType =
-		if (xSts.clockVariables.contains(variable)) {
+		if (variable.clock) {
 			nta.clock.createTypeReference
 		}
 		else {

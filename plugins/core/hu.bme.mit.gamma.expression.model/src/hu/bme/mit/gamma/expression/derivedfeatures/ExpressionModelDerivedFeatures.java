@@ -11,10 +11,13 @@
 package hu.bme.mit.gamma.expression.derivedfeatures;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition;
 import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition;
+import hu.bme.mit.gamma.expression.model.ClockVariableDeclarationAnnotation;
 import hu.bme.mit.gamma.expression.model.DecimalTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.DefaultExpression;
@@ -95,9 +98,20 @@ public class ExpressionModelDerivedFeatures {
 		return hasAnnotation(variable, FinalVariableDeclarationAnnotation.class);
 	}
 	
+	public static boolean isClock(VariableDeclaration variable) {
+		return hasAnnotation(variable, ClockVariableDeclarationAnnotation.class);
+	}
+	
 	public static boolean hasAnnotation(VariableDeclaration variable,
 			Class<? extends VariableDeclarationAnnotation> annotation) {
 		return variable.getAnnotations().stream().anyMatch(it -> annotation.isInstance(it));
+	}
+	
+	public static List<VariableDeclaration> filterVariablesByAnnotation(
+			Collection<? extends VariableDeclaration> variables,
+			Class<? extends VariableDeclarationAnnotation> annotation) {
+		return variables.stream().filter(it -> hasAnnotation(it, annotation))
+				.collect(Collectors.toList());
 	}
 	
 	// Types

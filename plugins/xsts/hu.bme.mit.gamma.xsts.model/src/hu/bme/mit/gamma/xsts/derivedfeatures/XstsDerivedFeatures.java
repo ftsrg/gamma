@@ -20,6 +20,7 @@ import java.util.Set;
 import org.eclipse.emf.ecore.EObject;
 
 import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
+import hu.bme.mit.gamma.expression.model.ClockVariableDeclarationAnnotation;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.EqualityExpression;
@@ -49,6 +50,15 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 	
 	public static XSTS getContainingXsts(EObject object) {
 		return ecoreUtil.getSelfOrContainerOfType(object, XSTS.class);
+	}
+	
+	public static boolean hasClockVariable(XSTS xSts) {
+		return xSts.getVariableDeclarations().stream().anyMatch(it -> isClock(it));
+	}
+	
+	public static List<VariableDeclaration> getClockVariables(XSTS xSts) {
+		return filterVariablesByAnnotation(xSts.getVariableDeclarations(),
+				ClockVariableDeclarationAnnotation.class);
 	}
 	
 	public static boolean isLocal(Declaration variable) {

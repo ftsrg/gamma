@@ -947,9 +947,27 @@ public class ExpressionUtil {
 		addAnnotation(variable, factory.createEnvironmentResettableVariableDeclarationAnnotation());
 	}
 	
+	public void addClockAnnotation(VariableDeclaration variable) {
+		addAnnotation(variable, factory.createClockVariableDeclarationAnnotation());
+	}
+	
 	public void addAnnotation(VariableDeclaration variable, VariableDeclarationAnnotation annotation) {
 		if (variable != null) {
 			variable.getAnnotations().add(annotation);
+		}
+	}
+	
+	public void removeVariableDeclarationAnnotations(
+			Collection<? extends VariableDeclaration> variables,
+			Class<? extends VariableDeclarationAnnotation> annotationClass) {
+		for (VariableDeclaration variable : variables) {
+			List<VariableDeclarationAnnotation> annotations =
+					new ArrayList<VariableDeclarationAnnotation>(variable.getAnnotations());
+			for (VariableDeclarationAnnotation annotation : annotations) {
+				if (annotationClass.isInstance(annotation)) {
+					ecoreUtil.remove(annotation);
+				}
+			}
 		}
 	}
 	

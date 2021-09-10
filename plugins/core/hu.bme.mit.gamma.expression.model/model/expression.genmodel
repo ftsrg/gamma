@@ -191,5 +191,6 @@
     <genClasses ecoreClass="expression.ecore#//ResettableVariableDeclarationAnnotation"/>
     <genClasses ecoreClass="expression.ecore#//FinalVariableDeclarationAnnotation"/>
     <genClasses ecoreClass="expression.ecore#//EnvironmentResettableVariableDeclarationAnnotation"/>
+    <genClasses ecoreClass="expression.ecore#//ClockVariableDeclarationAnnotation"/>
   </genPackages>
 </genmodel:GenModel>

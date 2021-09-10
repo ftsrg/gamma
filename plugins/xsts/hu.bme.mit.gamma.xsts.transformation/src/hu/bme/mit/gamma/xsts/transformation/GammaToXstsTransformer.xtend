@@ -11,6 +11,7 @@
 package hu.bme.mit.gamma.xsts.transformation
 
 import hu.bme.mit.gamma.expression.model.BinaryExpression
+import hu.bme.mit.gamma.expression.model.ClockVariableDeclarationAnnotation
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
@@ -173,7 +174,8 @@ class GammaToXstsTransformer {
 			it.actions += xSts.mergedAction
 		]
 		xSts.changeTransitions(xStsClockSettingAction.wrap)
-		xSts.clockVariables.clear // Clearing the clock variables - they are handled like normal ones from now on
+		// Clearing the clock variables - they are handled like normal ones from now on
+		xSts.removeVariableDeclarationAnnotations(ClockVariableDeclarationAnnotation)
 	}
 	
 	protected def Integer getGreatestComparison(VariableDeclaration variable) {

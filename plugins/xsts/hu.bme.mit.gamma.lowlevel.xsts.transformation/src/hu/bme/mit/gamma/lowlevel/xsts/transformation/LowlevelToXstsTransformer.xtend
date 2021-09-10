@@ -494,7 +494,7 @@ class LowlevelToXstsTransformer {
 					]
 					xSts.variableDeclarations += xStsVariable // Target model modification
 					trace.put(lowlevelTimeoutVariable, xStsVariable) // Tracing
-					xSts.clockVariables += xStsVariable // Putting it in the clock variable list
+					xStsVariable.addClockAnnotation 
 					xSts.getTimeoutGroup.variables += trace.getXStsVariable(lowlevelTimeoutVariable)
 				}
 			].build
