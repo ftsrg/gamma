@@ -15,8 +15,6 @@
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="clockVariables" upperBound="-1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclaration"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="transientVariables" upperBound="-1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclaration"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="variableGroups" upperBound="-1"
         eType="#//VariableGroup" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="variableInitializingTransition"

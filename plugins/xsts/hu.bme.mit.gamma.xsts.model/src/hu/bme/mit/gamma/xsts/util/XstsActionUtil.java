@@ -50,10 +50,8 @@ import hu.bme.mit.gamma.xsts.model.HavocAction;
 import hu.bme.mit.gamma.xsts.model.LoopAction;
 import hu.bme.mit.gamma.xsts.model.MultiaryAction;
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction;
-import hu.bme.mit.gamma.xsts.model.OnDemandControlVariableDeclarationAnnotation;
 import hu.bme.mit.gamma.xsts.model.ParallelAction;
 import hu.bme.mit.gamma.xsts.model.SequentialAction;
-import hu.bme.mit.gamma.xsts.model.StrictControlVariableDeclarationAnnotation;
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction;
 import hu.bme.mit.gamma.xsts.model.XSTS;
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory;
@@ -102,7 +100,6 @@ public class XstsActionUtil extends ExpressionUtil {
 		pivot.getPublicTypeDeclarations().addAll(mergable.getPublicTypeDeclarations());
 		pivot.getVariableGroups().addAll(mergable.getVariableGroups());
 		pivot.getVariableDeclarations().addAll(mergable.getVariableDeclarations());
-		pivot.getTransientVariables().addAll(mergable.getTransientVariables());
 		pivot.getClockVariables().addAll(mergable.getClockVariables());
 		pivot.getConstraints().addAll(mergable.getConstraints());
 	}
@@ -615,15 +612,11 @@ public class XstsActionUtil extends ExpressionUtil {
 	}
 	
 	public void addOnDemandControlAnnotation(VariableDeclaration variable) {
-		OnDemandControlVariableDeclarationAnnotation annotation =
-				xStsFactory.createOnDemandControlVariableDeclarationAnnotation();
-		variable.getAnnotations().add(annotation);
+		addAnnotation(variable, xStsFactory.createOnDemandControlVariableDeclarationAnnotation());
 	}
 	
 	public void addStrictControlAnnotation(VariableDeclaration variable) {
-		StrictControlVariableDeclarationAnnotation annotation =
-				xStsFactory.createStrictControlVariableDeclarationAnnotation();
-		variable.getAnnotations().add(annotation);
+		addAnnotation(variable, xStsFactory.createStrictControlVariableDeclarationAnnotation());
 	}
 	
 	public void deleteDeclaration(Declaration declaration) {

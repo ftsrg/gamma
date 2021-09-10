@@ -119,7 +119,7 @@ class StatechartCodeGenerator {
 					«event.name» = false;
 				«ENDFOR»
 «««				Clearing transient event parameters
-				«FOR transientOutParameter : xSts.retrieveOutEventParameters.filter[xSts.transientVariables.contains(it)]»
+				«FOR transientOutParameter : xSts.retrieveOutEventParameters.filter[it.transient]»
 					«transientOutParameter.name» = «transientOutParameter.initialValue.serialize»;
 				«ENDFOR»
 			}
@@ -129,7 +129,7 @@ class StatechartCodeGenerator {
 					«event.name» = false;
 				«ENDFOR»
 «««				Clearing transient event parameters
-				«FOR transientInParameter : xSts.retrieveInEventParameters.filter[xSts.transientVariables.contains(it)]»
+				«FOR transientInParameter : xSts.retrieveInEventParameters.filter[it.transient]»
 					«transientInParameter.name» = «transientInParameter.initialValue.serialize»;
 				«ENDFOR»
 			}

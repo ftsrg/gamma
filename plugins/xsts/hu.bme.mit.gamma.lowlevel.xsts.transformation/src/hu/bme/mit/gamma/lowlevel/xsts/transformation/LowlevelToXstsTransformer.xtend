@@ -306,7 +306,7 @@ class LowlevelToXstsTransformer {
 						xSts.variableDeclarations += xStsParam // Target model modification
 						if (lowlevelEvent.persistency == Persistency.TRANSIENT) {
 							// If event is transient, than its parameters are marked transient variables
-							xSts.transientVariables += xStsParam
+							xStsParam.addTransientAnnotation
 						}
 						eventParameterVariableGroup.variables += xStsParam
 						trace.put(lowlevelEventParameter, xStsParam) // Tracing
