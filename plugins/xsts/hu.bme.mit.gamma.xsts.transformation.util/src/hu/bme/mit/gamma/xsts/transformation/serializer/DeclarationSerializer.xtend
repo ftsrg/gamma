@@ -21,6 +21,7 @@ import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
+import hu.bme.mit.gamma.expression.model.VariableDeclarationAnnotation
 import hu.bme.mit.gamma.expression.model.VoidTypeDefinition
 import hu.bme.mit.gamma.xsts.model.OnDemandControlVariableDeclarationAnnotation
 import hu.bme.mit.gamma.xsts.model.PrimedVariable
@@ -83,6 +84,9 @@ class DeclarationSerializer {
 	def String serializeLocalVariableDeclaration(VariableDeclaration variable) '''local «variable.serializeVariableDeclaration»'''
 	
 	// Annotation
+	
+	// Default - not handled annotations
+	protected def dispatch serializeAnnotation(VariableDeclarationAnnotation annotation) ''''''
 	
 	protected def dispatch serializeAnnotation(StrictControlVariableDeclarationAnnotation annotation) '''ctrl'''
 	
