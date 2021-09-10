@@ -112,18 +112,12 @@ class EventConnector {
 		}
 		// Out-event optimization - maybe this should be moved to the SystemReducer?
 		for (optimizableSimplePort : optimizableSimplePorts) {
-			val statechart = optimizableSimplePort.containingStatechart
-			val instance = statechart.referencingComponentInstance
 			for (outEvent : optimizableSimplePort.outputEvents) {
-				val outEventName = outEvent.customizeOutputName(optimizableSimplePort, instance)
-				val xStsOutEventVariable = xSts.getVariable(outEventName)
-//				val xStsOutEventVariable = mapper.getOutputEventVariable(outEvent, optimizableSimplePort)
+				val xStsOutEventVariable = mapper.getOutputEventVariable(outEvent, optimizableSimplePort)
 				if (xStsOutEventVariable !== null) {
 					xStsDeletableVariables += xStsOutEventVariable
 					for (outParameter : outEvent.parameterDeclarations) {
-						val outParamaterNames = outParameter.customizeOutNames(optimizableSimplePort, instance)
-						val xStsOutParameterVariables = xSts.getVariables(outParamaterNames)
-//						val xStsOutParameterVariables = mapper.getOutputParameterVariables(outParameter, optimizableSimplePort)
+						val xStsOutParameterVariables = mapper.getOutputParameterVariables(outParameter, optimizableSimplePort)
 						if (!xStsOutParameterVariables.nullOrEmpty) {
 							xStsDeletableVariables += xStsOutParameterVariables
 						}
