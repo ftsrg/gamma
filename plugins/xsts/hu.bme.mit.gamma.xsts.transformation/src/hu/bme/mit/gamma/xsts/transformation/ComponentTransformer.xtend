@@ -195,9 +195,10 @@ class ComponentTransformer {
 							val typeSlaveQueues = typeSlaveQueuesMap.getOrCreateList(parameterTypeDefinition)
 							
 							val index = parameter.indexOfParametersWithSameTypeDefinition
+							// Indexing works if parameters of an event are not deleted separately
 							if (queue.isEnvironmental(systemPorts) || // Traceability reasons: no optimization for system parameters
-									typeSlaveQueues.size < index) {
-								// index is at most 1 less - creating a new slave queue for type
+									typeSlaveQueues.size <= index) {
+								// index is at less at most by 1 - creating a new slave queue for type
 								val slaveQueueType = createArrayTypeDefinition => [
 									it.elementType = parameterType.clone // Not type definition due to enums
 									it.size = evaluatedCapacity.toIntegerLiteral
@@ -212,11 +213,13 @@ class ComponentTransformer {
 								val messageQueueStruct = new MessageQueueStruct(slaveQueue, slaveSizeVariable)
 								slaveQueues += messageQueueStruct
 								typeSlaveQueues += messageQueueStruct
+								logger.log(Level.INFO, '''Created a slave queue for «port.name».«event.name»::«parameter.name»''')
 							}
 							else {
 								// Internal queue, we do not care about traceability here
 								val messageQueueStruct = typeSlaveQueues.get(index)
 								slaveQueues += messageQueueStruct // Optimization - reusing an existing slave queue
+								logger.log(Level.INFO, '''Found a slave queue for «port.name».«event.name»::«parameter.name»''')
 							}
 						}
 					} // If no input event variable - slaveQueues is empty
