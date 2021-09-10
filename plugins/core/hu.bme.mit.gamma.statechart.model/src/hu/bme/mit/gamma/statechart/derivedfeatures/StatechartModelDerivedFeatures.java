@@ -34,6 +34,7 @@ import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression;
 import hu.bme.mit.gamma.expression.model.FunctionDeclaration;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
+import hu.bme.mit.gamma.expression.model.TypeDefinition;
 import hu.bme.mit.gamma.statechart.composite.AbstractAsynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter;
@@ -421,6 +422,29 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 			return BigInteger.ZERO;
 		}
 		return priority;
+	}
+	
+	public static List<ParameterDeclaration> getParametersOfTypeDefinition(
+			Event event, TypeDefinition type) {
+		return event.getParameterDeclarations().stream()
+			.filter(it -> getTypeDefinition(it) == type)
+			.collect(Collectors.toList());
+	}
+	
+	public static int getIndexOfParametersWithSameTypeDefinition(ParameterDeclaration parameter) {
+		Event event = getContainingEvent(parameter);
+		TypeDefinition typeDefinition = getTypeDefinition(parameter);
+		List<ParameterDeclaration> parametersOfTypeDefinition =
+				getParametersOfTypeDefinition(event, typeDefinition);
+		return parametersOfTypeDefinition.indexOf(parameter);
+	}
+	
+	public static Event getContainingEvent(ParameterDeclaration parameter) {
+		return (Event) parameter.eContainer();
+	}
+	
+	public static EventDeclaration getContainingEventDeclaration(Event event) {
+		return (EventDeclaration) event.eContainer();
 	}
 	
 	public static List<EventDeclaration> getAllEventDeclarations(Port port) {
@@ -1191,14 +1215,6 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 //			throw new IllegalArgumentException("Not contained by a package: " + object);
 //		}
 		return getContainingPackage(object.eContainer());
-	}
-	
-	public static Event getContainingEvent(ParameterDeclaration parameter) {
-		return (Event) parameter.eContainer();
-	}
-	
-	public static EventDeclaration getContainingEventDeclaration(Event event) {
-		return (EventDeclaration) event.eContainer();
 	}
 	
 	public static boolean hasSamePortEvent(RaiseEventAction lhs, RaiseEventAction rhs) {

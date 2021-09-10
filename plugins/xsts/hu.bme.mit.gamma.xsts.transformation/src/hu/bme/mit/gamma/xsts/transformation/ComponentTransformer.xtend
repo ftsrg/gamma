@@ -181,6 +181,7 @@ class ComponentTransformer {
 						.createVariableDeclaration(masterSizeVariableName)
 				
 				val slaveQueuesMap = newHashMap
+				val typeSlaveQueuesMap = newHashMap // Reusing slave queues for same types if possible
 				for (portEvent : events) {
 					val port = portEvent.key
 					val event = portEvent.value
@@ -189,27 +190,43 @@ class ComponentTransformer {
 					if (eventReferenceMapper.hasInputEventVariable(event, port)) {
 						for (parameter : event.parameterDeclarations) {
 							val parameterType = parameter.type
-							val slaveQueueType = createArrayTypeDefinition => [
-								it.elementType = parameterType.clone
-								it.size = evaluatedCapacity.toIntegerLiteral
-							]
-							val slaveQueueName = parameter.getSlaveQueueName(port, adapterInstance)
-							val slaveQueue = slaveQueueType.createVariableDeclaration(slaveQueueName)
+							val parameterTypeDefinition = parameterType.typeDefinition
+							// Optimization - we compare the type definitions of parameters
+							val typeSlaveQueues = typeSlaveQueuesMap.getOrCreateList(parameterTypeDefinition)
 							
-							val slaveSizeVariableName = parameter.getSlaveSizeVariableName(port, adapterInstance)
-							val slaveSizeVariable = createIntegerTypeDefinition
-									.createVariableDeclaration(slaveSizeVariableName)
-							
-							slaveQueues += new MessageQueueStruct(slaveQueue, slaveSizeVariable)
+							val index = parameter.indexOfParametersWithSameTypeDefinition
+							if (queue.isEnvironmental(systemPorts) || // Traceability reasons: no optimization for system parameters
+									typeSlaveQueues.size < index) {
+								// index is at most 1 less - creating a new slave queue for type
+								val slaveQueueType = createArrayTypeDefinition => [
+									it.elementType = parameterType.clone // Not type definition due to enums
+									it.size = evaluatedCapacity.toIntegerLiteral
+								]
+								val slaveQueueName = parameter.getSlaveQueueName(port, adapterInstance)
+								val slaveQueue = slaveQueueType.createVariableDeclaration(slaveQueueName)
+								
+								val slaveSizeVariableName = parameter.getSlaveSizeVariableName(port, adapterInstance)
+								val slaveSizeVariable = createIntegerTypeDefinition
+										.createVariableDeclaration(slaveSizeVariableName)
+								
+								val messageQueueStruct = new MessageQueueStruct(slaveQueue, slaveSizeVariable)
+								slaveQueues += messageQueueStruct
+								typeSlaveQueues += messageQueueStruct
+							}
+							else {
+								// Internal queue, we do not care about traceability here
+								val messageQueueStruct = typeSlaveQueues.get(index)
+								slaveQueues += messageQueueStruct // Optimization - reusing an existing slave queue
+							}
 						}
 					} // If no input event variable - slaveQueues is empty
 					slaveQueuesMap += portEvent -> slaveQueues
 				}
 				
 				val messageQueueMapping = new MessageQueueMapping(storedPortEvents,
-						new MessageQueueStruct(masterQueue, masterSizeVariable), slaveQueuesMap)
+						new MessageQueueStruct(masterQueue, masterSizeVariable), slaveQueuesMap, typeSlaveQueuesMap)
 				queueTraceability.put(queue, messageQueueMapping)
-				val slaveQueues = messageQueueMapping.slaveQueues
+				val slaveQueueMappings = messageQueueMapping.typeSlaveQueues
 			
 				// Transforming the message queue constructions into native XSTS variables
 				// We do not care about the names (renaming) here
@@ -219,16 +236,18 @@ class ComponentTransformer {
 				val xStsMasterSizeVariable = valueDeclarationTransformer.transform(masterSizeVariable).onlyElement
 				xSts.variableDeclarations += xStsMasterSizeVariable
 				xStsMasterSizeVariable.setControlFlag // Needed for loops
-				for (slaveQueueStructs : slaveQueues.values) {
-					for (slaveQueueStruct : slaveQueueStructs) {
-						val slaveQueue = slaveQueueStruct.arrayVariable
-						val slaveSizeVariable = slaveQueueStruct.sizeVariable
-						xSts.variableDeclarations += valueDeclarationTransformer.transform(slaveQueue)
-						val xStsSlaveSizeVariable = valueDeclarationTransformer.transform(slaveSizeVariable).onlyElement
-						xSts.variableDeclarations += xStsSlaveSizeVariable
-						xStsSlaveSizeVariable.setControlFlag // Needed for loops
-						// The type might not be correct here and later has to be reassigned to handle enums
-					}
+				
+				val slaveQueuesCollection = slaveQueueMappings.values
+				val slaveQueueStructs = slaveQueuesCollection.flatten
+				checkState(slaveQueueStructs.unique)
+				for (slaveQueueStruct : slaveQueueStructs) {
+					val slaveQueue = slaveQueueStruct.arrayVariable
+					val slaveSizeVariable = slaveQueueStruct.sizeVariable
+					xSts.variableDeclarations += valueDeclarationTransformer.transform(slaveQueue)
+					val xStsSlaveSizeVariable = valueDeclarationTransformer.transform(slaveSizeVariable).onlyElement
+					xSts.variableDeclarations += xStsSlaveSizeVariable
+					xStsSlaveSizeVariable.setControlFlag // Needed for loops
+					// The type might not be correct here and later has to be reassigned to handle enums
 				}
 			}
 		}
@@ -759,7 +778,8 @@ class ComponentTransformer {
 	
 	def dispatch XSTS transform(StatechartDefinition statechart, Package lowlevelPackage) {
 		logger.log(Level.INFO, "Transforming statechart " + statechart.name)
-		// Note that the package is already transformed and traced because of the "val lowlevelPackage = gammaToLowlevelTransformer.transform(_package)" call
+		/* Note that the package is already transformed and traced because of
+		   the "val lowlevelPackage = gammaToLowlevelTransformer.transform(_package)" call */
 		val lowlevelStatechart = gammaToLowlevelTransformer.transform(statechart)
 		lowlevelPackage.components += lowlevelStatechart
 		val lowlevelToXSTSTransformer = new LowlevelToXstsTransformer(

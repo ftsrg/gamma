@@ -37,6 +37,17 @@ class JavaUtil {
 		return IterableExtensions.flatten(inputs).toList
 	}
 	
+	def boolean isUnique(Iterable<?> collection) {
+		val set = newHashSet
+		for (element : collection) {
+			if (set.contains(element)) {
+				return false
+			}
+			set += element
+		}
+		return true
+	}
+	
 	def boolean containsOne(Collection<?> lhs, Iterable<?> rhs) {
 		for (element : rhs) {
 			if (lhs.contains(element)) {
