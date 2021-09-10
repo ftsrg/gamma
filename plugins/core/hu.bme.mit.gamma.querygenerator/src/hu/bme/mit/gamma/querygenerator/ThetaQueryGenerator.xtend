@@ -20,6 +20,7 @@ import hu.bme.mit.gamma.querygenerator.operators.TemporalOperator
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.composite.MessageQueue
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
+import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.Port
@@ -419,5 +420,16 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 		}
 		throw new IllegalArgumentException("Not known id")
 	}
+	
+	// Temporary utility methods as long as single AAs are supported
+	
+    private def isSynchronous(Component component) {
+    	return component.adapter || // Single adapters are handled synchronous components during back-annotation
+    		StatechartModelDerivedFeatures.isSynchronous(component)
+    }
+    
+    private def isAsynchronous(Component component) {
+    	return !component.synchronous
+    }
 	
 }

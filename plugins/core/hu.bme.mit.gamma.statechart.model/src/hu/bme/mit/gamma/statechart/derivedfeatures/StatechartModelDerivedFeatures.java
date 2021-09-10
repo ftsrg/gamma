@@ -907,6 +907,14 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
     public static boolean isAsynchronous(Component component) {
     	return component instanceof AsynchronousComponent;
     }
+    
+    public static boolean isAdapter(Component component) {
+    	return component instanceof AsynchronousAdapter;
+    }
+    
+    public static boolean isStatechart(Component component) {
+    	return component instanceof StatechartDefinition;
+    }
 	
     public static boolean isCascade(ComponentInstance instance) {
     	Component type = getDerivedType(instance);
@@ -925,12 +933,12 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
     	return isAsynchronous(getDerivedType(instance));
     }
     
-    public static boolean isStatechart(ComponentInstance instance) {
-    	return getDerivedType(instance) instanceof StatechartDefinition;
+    public static boolean isAdapter(ComponentInstance instance) {
+    	return isAdapter(getDerivedType(instance));
     }
     
-    public static boolean isAdapter(ComponentInstance instance) {
-    	return getDerivedType(instance) instanceof AsynchronousAdapter;
+    public static boolean isStatechart(ComponentInstance instance) {
+    	return isStatechart(getDerivedType(instance));
     }
 	
 	public static int getLevel(StateNode stateNode) {
