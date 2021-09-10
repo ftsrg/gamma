@@ -294,7 +294,7 @@ class TraceBackAnnotator {
 									//
 									val parsedValue = firstElement.value
 									step.addInEventWithParameter(systemPort, event,
-										parameter, field, index, "0" /* parsedValue */) // TODO Theta bug
+											parameter, field, index, parsedValue)
 								}
 							}
 						}
