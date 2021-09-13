@@ -162,8 +162,10 @@ class NtaBuilder {
 		]
 	}
 	
-	def void addBooleanSelection(Edge edge, String name) {
-		edge.selection += name.createBooleanSelection
+	def addBooleanSelection(Edge edge, String name) {
+		val selection = name.createBooleanSelection
+		edge.selection += selection
+		return selection
 	}
 	
 	def void addIntegerSelection(Edge edge, String name,
