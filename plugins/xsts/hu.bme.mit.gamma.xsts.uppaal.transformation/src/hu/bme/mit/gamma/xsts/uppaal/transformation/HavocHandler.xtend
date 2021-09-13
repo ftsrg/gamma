@@ -6,6 +6,7 @@ import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition
 import hu.bme.mit.gamma.expression.model.PredicateExpression
+import hu.bme.mit.gamma.expression.model.ReferenceExpression
 import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
@@ -71,15 +72,23 @@ class HavocHandler {
 		val predicates = root.getAllContentsOfType(PredicateExpression).filter(BinaryExpression)
 		val expressions = newArrayList
 		
-		expressions += predicates.filter[it.leftOperand.declaration === variable]
+		expressions += predicates.filter[it.leftOperand instanceof ReferenceExpression]
+			.filter[it.leftOperand.declaration === variable]
 			.map[it.rightOperand]
-		expressions += predicates.filter[it.rightOperand.declaration === variable]
+		expressions += predicates.filter[it.rightOperand instanceof ReferenceExpression]
+			.filter[it.rightOperand.declaration === variable]
 			.map[it.leftOperand]
 			
 		val integerValues = newHashSet
 		integerValues += expressions.map[it.evaluateInteger]
 		
-		integerValues += integerValues.min  - 1 // Adding another value for an "else" branch
+		if (integerValues.empty) {
+			// Sometimes input parameters are not referenced
+			return new SelectionStruct(null, null)
+		}
+		
+		integerValues += integerValues.min - 1 // Adding another value for an "else" branch
+		
 		
 		val name = Namings.name
 		val min = integerValues.min

@@ -68,7 +68,6 @@ class ComponentTransformer {
 	// Transformation settings
 	protected final boolean transformOrthogonalActions
 	protected final boolean optimize
-	protected final boolean useHavocActions
 	protected final boolean extractGuards
 	protected final TransitionMerging transitionMerging
 	// Auxiliary objects
@@ -88,12 +87,10 @@ class ComponentTransformer {
 	protected final Logger logger = Logger.getLogger("GammaLogger")
 	
 	new(GammaToLowlevelTransformer gammaToLowlevelTransformer, boolean transformOrthogonalActions,
-			boolean optimize, boolean useHavocActions, boolean extractGuards,
-			TransitionMerging transitionMerging) {
+			boolean optimize, boolean extractGuards, TransitionMerging transitionMerging) {
 		this.gammaToLowlevelTransformer = gammaToLowlevelTransformer
 		this.transformOrthogonalActions = transformOrthogonalActions
 		this.optimize = optimize
-		this.useHavocActions = useHavocActions // TODO eliminate havoc
 		this.extractGuards = extractGuards
 		this.transitionMerging = transitionMerging
 		this.queueTraceability = new MessageQueueTraceability
@@ -413,67 +410,62 @@ class ComponentTransformer {
 			}
 		}
 		for (queue : environmentalQueues) { // All with capacity 1 and size 0
-			if (useHavocActions) {
-				val queueMapping = queueTraceability.get(queue)
-				val masterQueue = queueMapping.masterQueue.arrayVariable
-				val masterSizeVariable = queueMapping.masterQueue.sizeVariable
-				val slaveQueues = queueMapping.slaveQueues
+			val queueMapping = queueTraceability.get(queue)
+			val masterQueue = queueMapping.masterQueue.arrayVariable
+			val masterSizeVariable = queueMapping.masterQueue.sizeVariable
+			val slaveQueues = queueMapping.slaveQueues
+			
+			val xStsMasterQueue = variableTrace.getAll(masterQueue).onlyElement
+			val xStsMasterSizeVariable = variableTrace.getAll(masterSizeVariable).onlyElement
+			
+			val xStsEventIdVariableAction = xStsMasterQueue
+				.createVariableDeclarationActionForArray(
+					xStsMasterQueue.eventIdLocalVariableName)
+			val xStsEventIdVariable = xStsEventIdVariableAction.variableDeclaration
+			inEventAction.actions += xStsEventIdVariableAction
+			inEventAction.actions += xStsEventIdVariable.createHavocAction
+			
+			// If the id is not an "empty" event
+			val emptyValue = xStsEventIdVariable.defaultExpression
+			val isNotEmptyExpression = xStsEventIdVariable.createInequalityExpression(emptyValue)
+			val setQueuesAction = createSequentialAction
+			setQueuesAction.actions += xStsMasterQueue.addAndIncrement( // Or could be used 0 literals for index
+					xStsMasterSizeVariable, xStsEventIdVariable.createReferenceExpression)
+			
+			inEventAction.actions += isNotEmptyExpression.createIfAction(setQueuesAction)
+			
+			val branchExpressions = <Expression>newArrayList
+			val branchActions = <Action>newArrayList
+			for (portEvent : slaveQueues.keySet
+						.filter[systemEvents.contains(it) /*Only system events*/]) {
+				val slaveQueueStructs = slaveQueues.get(portEvent)
+				val eventId = queueTraceability.get(portEvent)
+				branchExpressions += xStsEventIdVariable
+						.createEqualityExpression(eventId.toIntegerLiteral)
+				val slaveQueueSetting = createSequentialAction
+				branchActions += slaveQueueSetting
 				
-				val xStsMasterQueue = variableTrace.getAll(masterQueue).onlyElement
-				val xStsMasterSizeVariable = variableTrace.getAll(masterSizeVariable).onlyElement
-				
-				val xStsEventIdVariableAction = xStsMasterQueue
-					.createVariableDeclarationActionForArray(
-						xStsMasterQueue.eventIdLocalVariableName)
-				val xStsEventIdVariable = xStsEventIdVariableAction.variableDeclaration
-				inEventAction.actions += xStsEventIdVariableAction
-				inEventAction.actions += xStsEventIdVariable.createHavocAction
-				
-				// If the id is not an "empty" event
-				val emptyValue = xStsEventIdVariable.defaultExpression
-				val isNotEmptyExpression = xStsEventIdVariable.createInequalityExpression(emptyValue)
-				val setQueuesAction = createSequentialAction
-				setQueuesAction.actions += xStsMasterQueue.addAndIncrement( // Or could be used 0 literals for index
-						xStsMasterSizeVariable, xStsEventIdVariable.createReferenceExpression)
-				
-				inEventAction.actions += isNotEmptyExpression.createIfAction(setQueuesAction)
-				
-				val branchExpressions = <Expression>newArrayList
-				val branchActions = <Action>newArrayList
-				for (portEvent : slaveQueues.keySet
-							.filter[systemEvents.contains(it) /*Only system events*/]) {
-					val slaveQueueStructs = slaveQueues.get(portEvent)
-					val eventId = queueTraceability.get(portEvent)
-					branchExpressions += xStsEventIdVariable
-							.createEqualityExpression(eventId.toIntegerLiteral)
-					val slaveQueueSetting = createSequentialAction
-					branchActions += slaveQueueSetting
+				for (slaveQueueStruct : slaveQueueStructs) {
+					val slaveQueue = slaveQueueStruct.arrayVariable
+					val slaveSizeVariable = slaveQueueStruct.sizeVariable
 					
-					for (slaveQueueStruct : slaveQueueStructs) {
-						val slaveQueue = slaveQueueStruct.arrayVariable
-						val slaveSizeVariable = slaveQueueStruct.sizeVariable
-						
-						val xStsSlaveQueues = variableTrace.getAll(slaveQueue)
-						val xStsSlaveSizeVariable = variableTrace.getAll(slaveSizeVariable).onlyElement
-						
-						for (xStsSlaveQueue : xStsSlaveQueues) {
-							val xStsRandomVariableAction = xStsSlaveQueue
-								.createVariableDeclarationActionForArray(
-									xStsSlaveQueue.randomValueLocalVariableName)
-							val xStsRandomVariable = xStsRandomVariableAction.variableDeclaration
-							slaveQueueSetting.actions += xStsRandomVariableAction
-							slaveQueueSetting.actions += xStsRandomVariable.createHavocAction
-							slaveQueueSetting.actions += xStsSlaveQueue.add(
-								0.toIntegerLiteral,	xStsRandomVariable.createReferenceExpression)
-						}
-						slaveQueueSetting.actions += xStsSlaveSizeVariable.increment
+					val xStsSlaveQueues = variableTrace.getAll(slaveQueue)
+					val xStsSlaveSizeVariable = variableTrace.getAll(slaveSizeVariable).onlyElement
+					
+					for (xStsSlaveQueue : xStsSlaveQueues) {
+						val xStsRandomVariableAction = xStsSlaveQueue
+							.createVariableDeclarationActionForArray(
+								xStsSlaveQueue.randomValueLocalVariableName)
+						val xStsRandomVariable = xStsRandomVariableAction.variableDeclaration
+						slaveQueueSetting.actions += xStsRandomVariableAction
+						slaveQueueSetting.actions += xStsRandomVariable.createHavocAction
+						slaveQueueSetting.actions += xStsSlaveQueue.add(
+							0.toIntegerLiteral,	xStsRandomVariable.createReferenceExpression)
 					}
+					slaveQueueSetting.actions += xStsSlaveSizeVariable.increment
 				}
-				setQueuesAction.actions += branchExpressions.createChoiceAction(branchActions)
 			}
-			else {
-				throw new IllegalAccessException("Currently, only havoc actions are supported")
-			}
+			setQueuesAction.actions += branchExpressions.createChoiceAction(branchActions)
 		}
 		xSts.inEventTransition = inEventAction.wrap
 		xSts.outEventTransition = outEventAction.wrap
@@ -785,7 +777,7 @@ class ComponentTransformer {
 		val lowlevelStatechart = gammaToLowlevelTransformer.transform(statechart)
 		lowlevelPackage.components += lowlevelStatechart
 		val lowlevelToXSTSTransformer = new LowlevelToXstsTransformer(
-			lowlevelPackage, optimize, useHavocActions, extractGuards, transitionMerging)
+			lowlevelPackage, optimize, extractGuards, transitionMerging)
 		val xStsEntry = lowlevelToXSTSTransformer.execute
 		lowlevelPackage.components -= lowlevelStatechart // So that next time the matches do not return elements from this statechart
 		val xSts = xStsEntry.key

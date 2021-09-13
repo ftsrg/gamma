@@ -69,24 +69,23 @@ class GammaToXstsTransformer {
 	protected final Logger logger = Logger.getLogger("GammaLogger")
 	
 	new() {
-		this(null, true, true, false, false, TransitionMerging.HIERARCHICAL)
+		this(null, true, true, false, TransitionMerging.HIERARCHICAL)
 	}
 	
 	new(Integer schedulingConstraint, boolean transformOrthogonalActions,
-			boolean optimize, boolean useHavocActions, boolean extractGuards,
+			boolean optimize, boolean extractGuards,
 			TransitionMerging transitionMerging) {
 		this(schedulingConstraint, transformOrthogonalActions,
-				optimize, useHavocActions, extractGuards, transitionMerging,
+				optimize, extractGuards, transitionMerging,
 				null, null)
 	}
 	
 	new(Integer schedulingConstraint, boolean transformOrthogonalActions,
-			boolean optimize, boolean useHavocActions, boolean extractGuards,
-			TransitionMerging transitionMerging,
+			boolean optimize, boolean extractGuards, TransitionMerging transitionMerging,
 			PropertyPackage initialState, InitialStateSetting initialStateSetting) {
 		this.gammaToLowlevelTransformer = new GammaToLowlevelTransformer
 		this.componentTransformer = new ComponentTransformer(this.gammaToLowlevelTransformer,
-			transformOrthogonalActions, optimize, useHavocActions, extractGuards, transitionMerging)
+			transformOrthogonalActions, optimize, extractGuards, transitionMerging)
 		this.schedulingConstraint = schedulingConstraint
 		this.initialState = initialState
 		this.initialStateSetting = initialStateSetting

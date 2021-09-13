@@ -196,6 +196,10 @@ class XstsToUppaalTransformer {
 		val selection = selectionStruct.selection
 		val guard = selectionStruct.guard
 		
+		if (selection === null) {
+			return source // We do not do anything
+		}
+		
 		// Optimization - the type of the variable can be set to this selection type
 		val type = selection.typeDefinition.clone
 		uppaalVariable.typeDefinition = type
@@ -203,6 +207,7 @@ class XstsToUppaalTransformer {
 		
 		val target = source.createUpdateEdge(uppaalVariable, selection.createIdentifierExpression)
 		val edge = target.incomingEdges.head
+		edge.selection += selection
 		if (guard !== null) {
 			edge.addGuard(guard)
 		}
