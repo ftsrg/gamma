@@ -17,9 +17,11 @@ import hu.bme.mit.gamma.uppaal.util.AssignmentExpressionCreator
 import hu.bme.mit.gamma.uppaal.util.NtaBuilder
 import hu.bme.mit.gamma.uppaal.util.NtaOptimizer
 import hu.bme.mit.gamma.uppaal.util.TypeTransformer
+import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.AssumeAction
 import hu.bme.mit.gamma.xsts.model.EmptyAction
+import hu.bme.mit.gamma.xsts.model.HavocAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
@@ -54,8 +56,10 @@ class XstsToUppaalTransformer {
 	protected final extension ExpressionTransformer expressionTransformer
 	protected final extension TypeTransformer typeTransformer
 	protected final extension NtaOptimizer ntaOptimizer
+	protected final extension HavocHandler havocHandler
 	
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
+	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	
 	new(XSTS xSts) {
 		this.xSts = xSts
@@ -66,6 +70,7 @@ class XstsToUppaalTransformer {
 		this.expressionTransformer = new ExpressionTransformer(traceability)
 		this.typeTransformer = new TypeTransformer(nta)
 		this.ntaOptimizer = new NtaOptimizer(ntaBuilder)
+		this.havocHandler = new HavocHandler(traceability)
 	}
 	
 	def execute() {
@@ -182,6 +187,29 @@ class XstsToUppaalTransformer {
 		return newSource
 	}
 	
+	protected def dispatch Location transformAction(HavocAction action, Location source) {
+		val xStsDeclaration = action.lhs.declaration
+		val xStsVariable = xStsDeclaration as VariableDeclaration
+		val uppaalVariable = traceability.get(xStsVariable)
+		
+		val selectionStruct = xStsVariable.createSelection
+		val selection = selectionStruct.selection
+		val guard = selectionStruct.guard
+		
+		// Optimization - the type of the variable can be set to this selection type
+		val type = selection.typeDefinition.clone
+		uppaalVariable.typeDefinition = type
+		//
+		
+		val target = source.createUpdateEdge(uppaalVariable, selection.createIdentifierExpression)
+		val edge = target.incomingEdges.head
+		if (guard !== null) {
+			edge.addGuard(guard)
+		}
+		
+		return target
+	}
+	
 	protected def dispatch Location transformAction(VariableDeclarationAction action, Location source) {
 		val xStsVariable = action.variableDeclaration
 		val uppaalVariable = xStsVariable.transformAndTraceVariable
@@ -193,7 +221,7 @@ class XstsToUppaalTransformer {
 		return source.createUpdateEdge(uppaalVariable, uppaalRhs)
 	}
 	
-	protected def createUpdateEdge(Location source,
+	protected def createUpdateEdge(Location source, // TODO move into NtaBuilder
 			VariableContainer uppaalVariable, Expression uppaalRhs) {
 		val edge = source.createEdgeCommittedSource(nextCommittedLocationName)
 		if (uppaalRhs !== null) {

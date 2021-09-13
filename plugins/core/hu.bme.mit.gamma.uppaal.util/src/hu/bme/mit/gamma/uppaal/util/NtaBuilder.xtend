@@ -11,6 +11,7 @@
 package hu.bme.mit.gamma.uppaal.util
 
 import hu.bme.mit.gamma.util.GammaEcoreUtil
+import java.util.List
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
 import uppaal.NTA
@@ -33,7 +34,6 @@ import uppaal.statements.ExpressionStatement
 import uppaal.templates.Edge
 import uppaal.templates.Location
 import uppaal.templates.LocationKind
-import uppaal.templates.Selection
 import uppaal.templates.SynchronizationKind
 import uppaal.templates.Template
 import uppaal.templates.TemplatesFactory
@@ -57,6 +57,10 @@ class NtaBuilder {
 	protected final extension SystemFactory sysFact= SystemFactory.eINSTANCE
 	// Auxiliary objects
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
+	
+	new(String ntaName) {
+		this(ntaName, false)
+	}
 	
 	new(String ntaName, boolean isMinimalElementSet) {
 		this.nta = createNTA => [
@@ -158,19 +162,30 @@ class NtaBuilder {
 		]
 	}
 	
-	def Selection addBooleanSelection(Edge edge, String name) {
+	def void addBooleanSelection(Edge edge, String name) {
+		edge.selection += name.createBooleanSelection
+	}
+	
+	def void addIntegerSelection(Edge edge, String name,
+			Expression lowerBound, Expression upperBound) {
+		edge.selection += name.createIntegerSelection(lowerBound, upperBound)
+	}
+	
+	def createBooleanSelection(String name) {
 		val select = createSelection
-		select.createIntTypeWithRangeAndVariable(
-			createLiteralExpression => [it.text = "0"],
-			createLiteralExpression => [it.text = "1"],
-			name
-		)
-		edge.selection += select
+		select.createRangedIntegerVariable(name, createLiteralExpression => [it.text = "0"],
+			createLiteralExpression => [it.text = "1"])
 		return select
 	}
 	
-	def createIntTypeWithRangeAndVariable(VariableContainer container, Expression lowerBound,
-			Expression upperBound, String name) {		
+	def createIntegerSelection(String name, Expression lowerBound, Expression upperBound) {
+		val select = createSelection
+		select.createRangedIntegerVariable(name, lowerBound, upperBound)
+		return select
+	}
+	
+	def createRangedIntegerVariable(VariableContainer container, String name,
+			Expression lowerBound, Expression upperBound) {
 		container.typeDefinition = createRangeTypeSpecification => [
 			it.bounds = createIntegerBounds => [
 				it.lowerBound = lowerBound
@@ -234,6 +249,53 @@ class NtaBuilder {
 				it.text = value
 			]
 		]
+	}
+	
+	def createLiteralExpression(String literal) {
+		return createLiteralExpression => [
+			it.text = literal
+		]
+	}
+	
+	def createEqualityExpression(VariableContainer variable, Expression rhs) {
+		return variable.createIdentifierExpression.createEqualityExpression(rhs)
+	}
+	
+	def createEqualityExpression(Expression lhs, Expression rhs) {
+		return createCompareExpression => [
+			it.firstExpr = lhs
+			it.operator = CompareOperator.EQUAL
+			it.secondExpr = rhs
+		]
+	}
+	
+	def Expression wrapIntoMultiaryExpression(List<? extends Expression> expressions,
+			LogicalOperator operator) {
+		if (expressions.empty) {
+			return null
+		}
+		val size = expressions.size
+		if (size == 1) {
+			return expressions.iterator.next
+		}
+		val logicalExpression = createLogicalExpression => [
+			it.firstExpr = expressions.get(0)
+			it.operator = operator
+		]
+		if (size == 2) {
+			return logicalExpression => [
+				it.secondExpr = expressions.get(1)
+			]
+		}
+		val remaining = expressions.subList(1, expressions.size)
+				.wrapIntoMultiaryExpression(operator)
+		return logicalExpression => [
+			it.secondExpr = remaining
+		]
+	}
+	
+	def wrapIntoOrExpression(List<? extends Expression> expressions) {
+		return wrapIntoMultiaryExpression(expressions, LogicalOperator.OR);
 	}
 	
 	/**
@@ -349,6 +411,10 @@ class NtaBuilder {
 			edge.guard = guard
 		}
 		return edge.guard
+	}
+	
+	def addGuard(Edge edge, Expression guard) {
+		return edge.addGuard(guard, LogicalOperator.AND)
 	}
 	
 	def Edge createEdgeCommittedTarget(Location target, String name) {

@@ -68,11 +68,9 @@ class VariableTransformer {
 		val uppaalVar = nta.globalDeclarations.createChild(declarations_Declaration, dataVariableDeclaration) as DataVariableDeclaration  => [
 			it.prefix = prefix
 		]
-		uppaalVar.createIntTypeWithRangeAndVariable(
-			createLiteralExpression => [it.text = "0"],
-			createLiteralExpression => [it.text = (type.literals.size - 1).toString],
-			name
-		)
+		val max = (type.literals.size - 1).toString
+		uppaalVar.createRangedIntegerVariable(name, createLiteralExpression => [it.text = "0"],
+			createLiteralExpression => [it.text = max])
 		// Creating the trace
 		addToTrace(variable, #{uppaalVar}, trace)
 		return uppaalVar	

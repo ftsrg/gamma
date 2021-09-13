@@ -1151,6 +1151,10 @@ public class ExpressionUtil {
 		return potentialContainer;
 	}
 	
+	public Expression wrapIntoOrExpression(Collection<? extends Expression> expressions) {
+		return wrapIntoMultiaryExpression(expressions, factory.createOrExpression());
+	}
+	
 	public ReferenceExpression index(ValueDeclaration declaration, List<Expression> indexes) {
 		if (indexes.isEmpty()) {
 			return createReferenceExpression(declaration);
