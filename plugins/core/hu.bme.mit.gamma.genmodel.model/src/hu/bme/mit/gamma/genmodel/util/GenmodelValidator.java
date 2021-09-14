@@ -390,7 +390,7 @@ public class GenmodelValidator extends ExpressionModelValidator {
 			if (component instanceof StatechartDefinition) {
 				StatechartDefinition statechartDefinition = (StatechartDefinition) component;
 				List<StatechartAnnotation> annotations = statechartDefinition.getAnnotations();
-				for(StatechartAnnotation statechartAnnotation: annotations) {
+				for (StatechartAnnotation statechartAnnotation: annotations) {
 					if (statechartAnnotation instanceof AdaptiveContractAnnotation) {
 						return validationResultMessages; // Everything is correct, returning with empty list
 					}
@@ -852,7 +852,7 @@ public class GenmodelValidator extends ExpressionModelValidator {
 				return yakinduEvent.getType().getName().equals("boolean");
 			}
 			else if (eventType instanceof DecimalTypeDefinition) {
-				if(yakinduEvent.getType() == null) {
+				if (yakinduEvent.getType() == null) {
 					return false;
 				}
 				return yakinduEvent.getType().getName().equals("real");

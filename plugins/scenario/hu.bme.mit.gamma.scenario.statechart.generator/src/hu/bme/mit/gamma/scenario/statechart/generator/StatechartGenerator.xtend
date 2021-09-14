@@ -394,7 +394,7 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 			setupForwardTransition(set, first, true, isNegated, forwardTransition)
 			forwardTransition.priority = BigInteger.valueOf(3)
 			
-			if(generationMode != StatechartGenerationMode.GENERATE_ONLY_FORWARD){
+			if (generationMode != StatechartGenerationMode.GENERATE_ONLY_FORWARD){
 				forwardTransition.guard = getGuard(1, allowedGlobalWaitMin, allowedGlobalWaitMax)
 				forwardTransition.effects.add(setIntVariable(1, 0))				
 			}

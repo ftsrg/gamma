@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.scenario.trace.generator
 
+import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.TransitionMerging
 import hu.bme.mit.gamma.scenario.statechart.util.ScenarioStatechartUtil
 import hu.bme.mit.gamma.statechart.contract.NotDefinedEventMode
@@ -28,11 +29,10 @@ import hu.bme.mit.gamma.util.FileUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.transformation.GammaToXstsTransformer
 import java.io.File
+import java.math.BigInteger
 import java.util.List
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
-import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
-import java.math.BigInteger
 
 class ScenarioStatechartTraceGenerator {
 

@@ -1543,7 +1543,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	public static Component getMonitoredComponent(StatechartDefinition adaptiveContract) {
 		List<StatechartAnnotation> annotations = adaptiveContract.getAnnotations();
-		for(StatechartAnnotation annotation: annotations) { 
+		for (StatechartAnnotation annotation: annotations) { 
 			if (annotation instanceof AdaptiveContractAnnotation) {
 				AdaptiveContractAnnotation adaptiveContractAnnotation = (AdaptiveContractAnnotation) annotation;
 				return adaptiveContractAnnotation.getMonitoredComponent();
