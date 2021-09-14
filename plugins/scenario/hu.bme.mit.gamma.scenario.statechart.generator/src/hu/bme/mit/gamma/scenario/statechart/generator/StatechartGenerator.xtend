@@ -162,7 +162,16 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 		val a = createScenarioContractAnnotation
 		a.monitoredComponent = component
 		a.scenarioType = nonDeclaredMessageMode == 1 ? NotDefinedEventMode.STRICT : NotDefinedEventMode.PERMISSIVE
-		statechart.annotation = a
+		statechart.annotations += a
+		
+		val waitingAnnotation= createScenarioAllowedWaitAnnotation
+		val lower = createIntegerLiteralExpression
+		lower.value = BigInteger.valueOf(allowedGlobalWaitMin)
+		val upper = createIntegerLiteralExpression
+		upper.value = BigInteger.valueOf(allowedGlobalWaitMax)
+		waitingAnnotation.lowerLimit = lower
+		waitingAnnotation.upperLimit = upper
+		statechart.annotations +=waitingAnnotation
 		return statechart
 	}
 
@@ -214,7 +223,7 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 	def dispatch Interaction process(NegatedModalInteraction n) {
 		if (n.modalinteraction instanceof ModalInteractionSet) {
 			processModalInteractionSet(n.modalinteraction as ModalInteractionSet, true)
-			return null;
+			return null
 		}
 	}
 
@@ -382,12 +391,14 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 			}
 		} else {
 			handleDelays(set)
-
 			setupForwardTransition(set, first, true, isNegated, forwardTransition)
-
 			forwardTransition.priority = BigInteger.valueOf(3)
-			forwardTransition.guard = getGuard(1, allowedGlobalWaitMin, allowedGlobalWaitMax)
-			forwardTransition.effects.add(setIntVariable(1, 0))
+			
+			if (generationMode != StatechartGenerationMode.GENERATE_ONLY_FORWARD){
+				forwardTransition.guard = getGuard(1, allowedGlobalWaitMin, allowedGlobalWaitMax)
+				forwardTransition.effects.add(setIntVariable(1, 0))				
+			}
+
 
 			t3.sourceState = tmpChoice
 			t3.targetState = previousState
@@ -488,7 +499,7 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 		handleArguments(set.modalInteractions, forwardTransition);
 		if (singleNegetedSignalWithArguments) {
 			var signal = (set.modalInteractions.get(0) as NegatedModalInteraction).modalinteraction as Signal
-			if (!signal.arguments.empty) {
+			if (!signal.arguments.empty) { 
 				var tmp = violationTransition.targetState
 				violationTransition.targetState = forwardTransition.targetState
 				forwardTransition.targetState = tmp

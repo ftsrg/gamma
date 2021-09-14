@@ -178,7 +178,7 @@ StatechartDefinition returns StatechartDefinition:
 		('@OrthogonalRegionSchedule' '=' orthogonalRegionSchedulingOrder=OrthogonalRegionSchedulingOrder)? &
 		('@TransitionPriority' '=' transitionPriority=TransitionPriority)? &
 		('@GuardEvaluation' '=' guardEvaluation=GuardEvaluation)? &
-		(annotation=StatechartContractAnnotation)?
+		(annotations+=StatechartContractAnnotation)*
 	)
 	'statechart' name=ID 
 	('(' ((parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*)? ')')?
@@ -216,7 +216,12 @@ enum GuardEvaluation returns GuardEvaluation:
 ;
 
 StatechartContractAnnotation returns StatechartAnnotation:
-	ScenarioContractAnnotation | AdaptiveContractAnnotation | MissionPhaseAnnotation
+	ScenarioAllowedWaitingAnnotation | ScenarioContractAnnotation | AdaptiveContractAnnotation | MissionPhaseAnnotation
+;
+
+ScenarioAllowedWaitingAnnotation returns ContractModel::ScenarioAllowedWaitAnnotation:
+	{ContractModel::ScenarioAllowedWaitAnnotation}
+	'@ScenarioAllowedWaitAnnotation' '=' lowerLimit=Expression '..' upperLimit=Expression 
 ;
 
 ScenarioContractAnnotation returns ContractModel::ScenarioContractAnnotation:

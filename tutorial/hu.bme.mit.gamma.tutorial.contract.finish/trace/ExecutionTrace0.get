@@ -1,9 +1,32 @@
 import "/hu.bme.mit.gamma.tutorial.contract.finish/model/Crossroad.gcd"
-trace CrossroadsTrace of Crossroad
+trace AdaptiveContractStatechartTrace
+of Crossroad
 step {
 	act {
 		reset
 	}
 	assert {
+	}
+}
+step {
+	act {
+		elapse 2000
+		schedule component
+	}
+	assert {
+	}
+}
+step {
+	act {
+		elapse 2000
+		schedule component
+	}
+	assert {
+		raise secondaryOutput.displayYellow
+		raise secondaryOutput.displayRed
+		raise priorityOutput.displayGreen
+		raise priorityOutput.displayRed
+		raise secondaryOutput.displayGreen
+		raise priorityOutput.displayYellow
 	}
 }

@@ -1,0 +1,14 @@
+import "adaptivecontract"
+
+adaptive-test { 
+	analysis {
+		component : AdaptiveContractStatechart 
+		language : Theta
+		state-coverage 
+		constraint : {
+			minimum-orchestrating-period : 2000 ms
+			maximum-orchestrating-period : 2000 ms
+		} 
+	} 
+	language : java  
+}  

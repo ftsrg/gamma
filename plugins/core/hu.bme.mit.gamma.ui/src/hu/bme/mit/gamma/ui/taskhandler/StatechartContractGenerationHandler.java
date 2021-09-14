@@ -6,6 +6,7 @@ import hu.bme.mit.gamma.genmodel.model.StatechartContractGeneration;
 import hu.bme.mit.gamma.scenario.model.ScenarioDeclaration;
 import hu.bme.mit.gamma.scenario.model.ScenarioDefinition;
 import hu.bme.mit.gamma.scenario.reduction.SimpleScenarioGenerator;
+import hu.bme.mit.gamma.scenario.statechart.generator.StatechartGenerationMode;
 import hu.bme.mit.gamma.scenario.statechart.generator.StatechartGenerator;
 import hu.bme.mit.gamma.scenario.statechart.generator.serializer.StatechartSerializer;
 import hu.bme.mit.gamma.statechart.interface_.Component;
@@ -30,7 +31,7 @@ public class StatechartContractGenerationHandler extends TaskHandler {
 		Component component = ecoreUtil.getContainerOfType(baseScenario, ScenarioDeclaration.class)
 				.getComponent();
 		StatechartGenerator statechartGenerator = new StatechartGenerator(
-				true, simplifiedScenario, component);
+				true, simplifiedScenario, component, StatechartGenerationMode.GENERATE_ONLY_FORWARD);
 		StatechartDefinition statechart = statechartGenerator.execute();
 		Package packageOfComponent = ecoreUtil.getContainerOfType(component, Package.class);
 		StatechartSerializer statechartSerializer = new StatechartSerializer(file);

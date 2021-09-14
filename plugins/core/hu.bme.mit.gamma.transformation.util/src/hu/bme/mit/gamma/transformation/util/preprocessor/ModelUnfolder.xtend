@@ -168,7 +168,7 @@ class ModelUnfolder {
 		
 	protected def void removeAnnotations(Component component) {
 		if (component instanceof StatechartDefinition) {
-			component.annotation = null
+			component.annotations.clear
 		}
 	}
 	

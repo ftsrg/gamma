@@ -1,0 +1,43 @@
+package adaptivecontract
+import "tutorial"
+import "Interfaces"
+import "init"
+import "blinking"
+import "normal"
+ 
+@AdaptiveContractStatechart = Crossroad
+statechart AdaptiveContractStatechart[
+	port police : requires PoliceInterrupt,
+	port priorityOutput : provides LightCommands,
+	port secondaryOutput : provides LightCommands
+] 
+{
+	timeout InitTimeout 
+	timeout BlinkingTimeout 
+	
+	transition from Entry0 to Init
+	
+	transition from Init to Normal when timeout InitTimeout
+	
+	transition from Normal to Blinking when police.police
+	
+	transition from Blinking to Normal when timeout BlinkingTimeout && police.police
+	
+	region main {
+		initial Entry0
+		
+		@StatechartContract = Init
+		state Init{
+			entry /  set InitTimeout := 2 s;
+		}
+		
+		@StatechartContract =  Normal
+		state Normal
+		
+		
+		@StatechartContract = Blinking
+		state Blinking{ 
+			entry / set BlinkingTimeout := 1s;
+		}
+	}
+}

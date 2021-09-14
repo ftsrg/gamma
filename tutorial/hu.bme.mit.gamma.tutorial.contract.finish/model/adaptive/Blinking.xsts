@@ -1,0 +1,163 @@
+type Region_Blinking : { __Inactive__, firstState, hotViolation, state0, AcceptingState }
+var priorityOutput_displayNone_Out_Blinking : boolean = false
+var secondaryOutputREVERSED_displayNone_In_Blinking : boolean = false
+var secondaryOutput_displayYellow_Out_Blinking : boolean = false
+var secondaryOutput_displayNone_Out_Blinking : boolean = false
+var priorityOutput_displayYellow_Out_Blinking : boolean = false
+var priorityOutputREVERSED_displayNone_In_Blinking : boolean = false
+var secondaryOutputREVERSED_displayYellow_In_Blinking : boolean = false
+var priorityOutputREVERSED_displayYellow_In_Blinking : boolean = false
+ctrl var region_Blinking : Region_Blinking = __Inactive__
+var IteratingVariable_Blinking : integer = 0
+var LoopIteratingVariable_Blinking : integer = 0
+var result_Blinking : integer = 0
+var delay1_Blinking : integer = 0
+var delay0_Blinking : integer = 0
+
+trans {
+	delay1_Blinking := (if (delay1_Blinking < 500) then (delay1_Blinking + 2000) else delay1_Blinking);
+	delay0_Blinking := (if (delay0_Blinking < 500) then (delay0_Blinking + 2000) else delay0_Blinking);
+	choice {
+		assume (((region_Blinking == state0)));
+		region_Blinking := __Inactive__;
+		choice {
+			assume ((IteratingVariable_Blinking <= 1) && ((!(((priorityOutputREVERSED_displayNone_In_Blinking && (secondaryOutputREVERSED_displayNone_In_Blinking && (500 <= delay1_Blinking))) && ((IteratingVariable_Blinking >= 0) && (IteratingVariable_Blinking <= 1)))))));
+			IteratingVariable_Blinking := (IteratingVariable_Blinking + 1);
+			region_Blinking := state0;
+			delay1_Blinking := 0;
+		} or {
+			assume (((priorityOutputREVERSED_displayNone_In_Blinking && (secondaryOutputREVERSED_displayNone_In_Blinking && (500 <= delay1_Blinking))) && ((IteratingVariable_Blinking >= 0) && (IteratingVariable_Blinking <= 1))));
+			priorityOutput_displayNone_Out_Blinking := true;
+			secondaryOutput_displayNone_Out_Blinking := true;
+			IteratingVariable_Blinking := 0;
+			result_Blinking := 2;
+			region_Blinking := AcceptingState;
+		} or {
+			assume ((!((IteratingVariable_Blinking <= 1))) && (!(((priorityOutputREVERSED_displayNone_In_Blinking && (secondaryOutputREVERSED_displayNone_In_Blinking && (500 <= delay1_Blinking))) && ((IteratingVariable_Blinking >= 0) && (IteratingVariable_Blinking <= 1))))));
+			result_Blinking := 0;
+			region_Blinking := hotViolation;
+		}
+	} or {
+		assume (((region_Blinking == firstState)));
+		region_Blinking := __Inactive__;
+		choice {
+			assume ((IteratingVariable_Blinking <= 1) && ((!(((priorityOutputREVERSED_displayYellow_In_Blinking && (secondaryOutputREVERSED_displayYellow_In_Blinking && (500 <= delay0_Blinking))) && ((IteratingVariable_Blinking >= 0) && (IteratingVariable_Blinking <= 1)))))));
+			IteratingVariable_Blinking := (IteratingVariable_Blinking + 1);
+			region_Blinking := firstState;
+			delay0_Blinking := 0;
+		} or {
+			assume (((priorityOutputREVERSED_displayYellow_In_Blinking && (secondaryOutputREVERSED_displayYellow_In_Blinking && (500 <= delay0_Blinking))) && ((IteratingVariable_Blinking >= 0) && (IteratingVariable_Blinking <= 1))));
+			priorityOutput_displayYellow_Out_Blinking := true;
+			secondaryOutput_displayYellow_Out_Blinking := true;
+			IteratingVariable_Blinking := 0;
+			choice {
+				assume ((0 <= 1) && ((!(((priorityOutputREVERSED_displayNone_In_Blinking && (secondaryOutputREVERSED_displayNone_In_Blinking && (500 <= delay1_Blinking))))))));
+				IteratingVariable_Blinking := (0 + 1);
+				region_Blinking := state0;
+				delay1_Blinking := 0;
+			} or {
+				assume (((priorityOutputREVERSED_displayNone_In_Blinking && (secondaryOutputREVERSED_displayNone_In_Blinking && (500 <= delay1_Blinking)))));
+				priorityOutput_displayNone_Out_Blinking := true;
+				secondaryOutput_displayNone_Out_Blinking := true;
+				IteratingVariable_Blinking := 0;
+				result_Blinking := 2;
+				region_Blinking := AcceptingState;
+			}
+		} or {
+			assume ((!((IteratingVariable_Blinking <= 1))) && (!(((priorityOutputREVERSED_displayYellow_In_Blinking && (secondaryOutputREVERSED_displayYellow_In_Blinking && (500 <= delay0_Blinking))) && ((IteratingVariable_Blinking >= 0) && (IteratingVariable_Blinking <= 1))))));
+			result_Blinking := 0;
+			region_Blinking := hotViolation;
+		}
+	} or {
+		assume (!(((((region_Blinking == state0))) || (((region_Blinking == firstState))))));
+	}
+	priorityOutputREVERSED_displayYellow_In_Blinking := false;
+	secondaryOutputREVERSED_displayYellow_In_Blinking := false;
+	priorityOutputREVERSED_displayNone_In_Blinking := false;
+	secondaryOutputREVERSED_displayNone_In_Blinking := false;
+}
+init {
+	result_Blinking := 0;
+	IteratingVariable_Blinking := 0;
+	LoopIteratingVariable_Blinking := 0;
+	delay0_Blinking := 500;
+	delay1_Blinking := 500;
+	region_Blinking := __Inactive__;
+	secondaryOutputREVERSED_displayNone_In_Blinking := false;
+	priorityOutputREVERSED_displayNone_In_Blinking := false;
+	secondaryOutputREVERSED_displayYellow_In_Blinking := false;
+	priorityOutputREVERSED_displayYellow_In_Blinking := false;
+	priorityOutput_displayNone_Out_Blinking := false;
+	secondaryOutput_displayYellow_Out_Blinking := false;
+	secondaryOutput_displayNone_Out_Blinking := false;
+	priorityOutput_displayYellow_Out_Blinking := false;
+	result_Blinking := 1;
+	LoopIteratingVariable_Blinking := 1;
+	choice {
+		assume ((IteratingVariable_Blinking <= 1) && ((!(((priorityOutputREVERSED_displayYellow_In_Blinking && (secondaryOutputREVERSED_displayYellow_In_Blinking && (500 <= delay0_Blinking))) && ((IteratingVariable_Blinking >= 0) && (IteratingVariable_Blinking <= 1)))))));
+		IteratingVariable_Blinking := (IteratingVariable_Blinking + 1);
+		region_Blinking := firstState;
+	} or {
+		assume (((priorityOutputREVERSED_displayYellow_In_Blinking && (secondaryOutputREVERSED_displayYellow_In_Blinking && (500 <= delay0_Blinking))) && ((IteratingVariable_Blinking >= 0) && (IteratingVariable_Blinking <= 1))));
+		priorityOutput_displayYellow_Out_Blinking := true;
+		secondaryOutput_displayYellow_Out_Blinking := true;
+		IteratingVariable_Blinking := 0;
+		choice {
+			assume ((IteratingVariable_Blinking <= 1) && ((!(((priorityOutputREVERSED_displayNone_In_Blinking && (secondaryOutputREVERSED_displayNone_In_Blinking && (500 <= delay1_Blinking))) && ((IteratingVariable_Blinking >= 0) && (IteratingVariable_Blinking <= 1)))))));
+			IteratingVariable_Blinking := (IteratingVariable_Blinking + 1);
+			region_Blinking := state0;
+		} or {
+			assume (((priorityOutputREVERSED_displayNone_In_Blinking && (secondaryOutputREVERSED_displayNone_In_Blinking && (500 <= delay1_Blinking))) && ((IteratingVariable_Blinking >= 0) && (IteratingVariable_Blinking <= 1))));
+			priorityOutput_displayNone_Out_Blinking := true;
+			secondaryOutput_displayNone_Out_Blinking := true;
+			IteratingVariable_Blinking := 0;
+			result_Blinking := 2;
+			region_Blinking := AcceptingState;
+		} or {
+			assume ((!((IteratingVariable_Blinking <= 1))) && (!(((priorityOutputREVERSED_displayNone_In_Blinking && (secondaryOutputREVERSED_displayNone_In_Blinking && (500 <= delay1_Blinking))) && ((IteratingVariable_Blinking >= 0) && (IteratingVariable_Blinking <= 1))))));
+			result_Blinking := 0;
+			region_Blinking := hotViolation;
+		}
+	} or {
+		assume ((!((IteratingVariable_Blinking <= 1))) && (!(((priorityOutputREVERSED_displayYellow_In_Blinking && (secondaryOutputREVERSED_displayYellow_In_Blinking && (500 <= delay0_Blinking))) && ((IteratingVariable_Blinking >= 0) && (IteratingVariable_Blinking <= 1))))));
+		result_Blinking := 0;
+		region_Blinking := hotViolation;
+	}
+	choice {
+		assume (region_Blinking == firstState);
+		delay0_Blinking := 0;
+	} or {
+		assume (region_Blinking == hotViolation);
+	} or {
+		assume (region_Blinking == state0);
+		delay1_Blinking := 0;
+	} or {
+		assume (region_Blinking == AcceptingState);
+	}
+}
+env {
+	choice {
+		priorityOutputREVERSED_displayNone_In_Blinking := true;
+	} or {
+		priorityOutputREVERSED_displayNone_In_Blinking := false;
+	}
+	choice {
+		secondaryOutputREVERSED_displayYellow_In_Blinking := true;
+	} or {
+		secondaryOutputREVERSED_displayYellow_In_Blinking := false;
+	}
+	choice {
+		secondaryOutputREVERSED_displayNone_In_Blinking := true;
+	} or {
+		secondaryOutputREVERSED_displayNone_In_Blinking := false;
+	}
+	choice {
+		priorityOutputREVERSED_displayYellow_In_Blinking := true;
+	} or {
+		priorityOutputREVERSED_displayYellow_In_Blinking := false;
+	}
+	priorityOutput_displayNone_Out_Blinking := false;
+	priorityOutput_displayYellow_Out_Blinking := false;
+	secondaryOutput_displayYellow_Out_Blinking := false;
+	secondaryOutput_displayNone_Out_Blinking := false;
+}

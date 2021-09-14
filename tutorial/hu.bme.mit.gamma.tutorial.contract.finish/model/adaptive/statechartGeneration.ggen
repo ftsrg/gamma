@@ -1,0 +1,44 @@
+import "init"
+import "blinking"
+import "normal"
+statechart-contract {
+	scenario : Blinking
+	folder  : "model/adaptive"
+	name : "Blinking"
+}
+
+statechart-contract {
+	scenario : Init
+	folder  : "model/adaptive"
+	name : "Init"
+}
+//
+statechart-contract {
+	scenario : Normal
+	folder  : "model/adaptive"
+	name : "Normal" 
+}
+
+ 
+statechart-contract-test { 
+	component : Normal
+	folder : "model/adaptive/n"
+	constraint : {
+		minimum-orchestrating-period : 2000 ms
+		maximum-orchestrating-period : 2000 ms
+	}
+}
+
+statechart-contract-test {  
+	component : Init
+	folder : "model/adaptive/i" 
+}  
+
+statechart-contract-test { 
+	component : Blinking
+	folder : "model/adaptive/b"
+	constraint : {
+		minimum-orchestrating-period : 2000 ms
+		maximum-orchestrating-period : 2000 ms 
+	} 
+}

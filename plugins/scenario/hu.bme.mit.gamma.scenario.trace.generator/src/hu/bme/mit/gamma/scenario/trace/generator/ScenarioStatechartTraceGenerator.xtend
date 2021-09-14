@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.scenario.trace.generator
 
+import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.TransitionMerging
 import hu.bme.mit.gamma.scenario.statechart.util.ScenarioStatechartUtil
 import hu.bme.mit.gamma.statechart.contract.NotDefinedEventMode
@@ -28,6 +29,7 @@ import hu.bme.mit.gamma.util.FileUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.transformation.GammaToXstsTransformer
 import java.io.File
+import java.math.BigInteger
 import java.util.List
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
@@ -40,6 +42,7 @@ class ScenarioStatechartTraceGenerator {
 	val extension GammaFileNamer fileNamer = GammaFileNamer.INSTANCE
 	val extension ScenarioStatechartUtil scenarioStatechartUtil = ScenarioStatechartUtil.INSTANCE
 	val extension TraceUtil traceUtil = TraceUtil.INSTANCE
+	val extension ExpressionModelFactory expressionFactory = ExpressionModelFactory.eINSTANCE
 
 	StatechartDefinition statechart = null
 
@@ -60,13 +63,18 @@ class ScenarioStatechartTraceGenerator {
 	def List<ExecutionTrace> execute() {
 		var Component c = statechart
 		absoluteParentFolder = (statechart.eResource.file).parentFile.absolutePath
+		var NotDefinedEventMode scenarioContractType = null
 		var result = <ExecutionTrace>newArrayList
-		val annotation = statechart.annotation
-		if (annotation instanceof ScenarioContractAnnotation) { 
-			if (testOriginal) {
-				c = annotation.monitoredComponent
+		val annotations = statechart.annotations
+		for (annotation : annotations) {
+			if (annotation instanceof ScenarioContractAnnotation) {
+				if (testOriginal) {
+					c = annotation.monitoredComponent
+					scenarioContractType= annotation.scenarioType
+				}
 			}
 		}
+
 
 		var GammaToXstsTransformer gammaToXSTSTransformer = null
 		if (schedulingConstraint > 0) {
@@ -112,13 +120,17 @@ class ScenarioStatechartTraceGenerator {
 		val filteredTraces = backAnnotator.execute
 
 		for (et : filteredTraces) {
+			val waitingAnnotation = createExecutionTraceAllowedWaitingAnnotation
+			val upperLimit = createIntegerLiteralExpression
+			upperLimit.value = BigInteger.valueOf(1)
+			val lowerLimit = createIntegerLiteralExpression
+			lowerLimit.value = BigInteger.valueOf(0)
+			waitingAnnotation.lowerLimit = lowerLimit
+			waitingAnnotation.upperLimit = upperLimit
+			et.annotations += waitingAnnotation
 			val eventAdder = new UnsentEventAssertExtender(et.steps, true)
-			val scenarioContractAnnotation = statechart.annotation
-			if (scenarioContractAnnotation instanceof ScenarioContractAnnotation) {
-				if (scenarioContractAnnotation.scenarioType.equals(
-						NotDefinedEventMode.STRICT)) {
-					eventAdder.execute
-				}
+			if (scenarioContractType.equals(NotDefinedEventMode.STRICT)) {
+				eventAdder.execute
 			}
 			result += et
 		}

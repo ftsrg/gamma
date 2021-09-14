@@ -1,0 +1,40 @@
+type Main_AdaptiveContractStatechart : { __Inactive__, Init, Normal, Blinking }
+var police_police_In_AdaptiveContractStatechart : boolean = false
+ctrl var main_AdaptiveContractStatechart : Main_AdaptiveContractStatechart = __Inactive__
+var InitTimeout_AdaptiveContractStatechart : integer = 0
+
+trans {
+	InitTimeout_AdaptiveContractStatechart := (if (InitTimeout_AdaptiveContractStatechart < 2000) then (InitTimeout_AdaptiveContractStatechart + 2000) else InitTimeout_AdaptiveContractStatechart);
+	choice {
+		assume (((main_AdaptiveContractStatechart == Normal) && police_police_In_AdaptiveContractStatechart));
+		main_AdaptiveContractStatechart := Blinking;
+		InitTimeout_AdaptiveContractStatechart := 0;
+	} or {
+		assume (((main_AdaptiveContractStatechart == Init) && ((2 * 1000) <= InitTimeout_AdaptiveContractStatechart)));
+		main_AdaptiveContractStatechart := Normal;
+	} or {
+		assume (((main_AdaptiveContractStatechart == Blinking) && (((1 * 1000) <= InitTimeout_AdaptiveContractStatechart) && police_police_In_AdaptiveContractStatechart)));
+		main_AdaptiveContractStatechart := Normal;
+	} or {
+		assume (!(((((main_AdaptiveContractStatechart == Normal) && police_police_In_AdaptiveContractStatechart)) || (((main_AdaptiveContractStatechart == Init) && ((2 * 1000) <= InitTimeout_AdaptiveContractStatechart))) || (((main_AdaptiveContractStatechart == Blinking) && (((1 * 1000) <= InitTimeout_AdaptiveContractStatechart) && police_police_In_AdaptiveContractStatechart))))));
+	}
+	police_police_In_AdaptiveContractStatechart := false;
+}
+init {
+	InitTimeout_AdaptiveContractStatechart := (2 * 1000);
+	main_AdaptiveContractStatechart := __Inactive__;
+	police_police_In_AdaptiveContractStatechart := false;
+	main_AdaptiveContractStatechart := Init;
+	choice {
+		assume (main_AdaptiveContractStatechart == Init);
+		InitTimeout_AdaptiveContractStatechart := 0;
+	} or {
+		assume (main_AdaptiveContractStatechart == Normal);
+	} or {
+		assume (main_AdaptiveContractStatechart == Blinking);
+		InitTimeout_AdaptiveContractStatechart := 0;
+	}
+}
+env {
+	havoc police_police_In_AdaptiveContractStatechart;
+}
