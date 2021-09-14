@@ -17,21 +17,22 @@ import org.eclipse.xtend.lib.annotations.Data
 import uppaal.expressions.Expression
 import uppaal.templates.Selection
 
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
+
 class HavocHandler {
+	// Singleton
+	public static final HavocHandler INSTANCE = new HavocHandler
+	protected new() {
+		val ntaName = Namings.name
+		this.ntaBuilder = new NtaBuilder(ntaName) // Random NTA is created
+	}
+	//
 	
-	protected final Traceability traceability
 	protected final NtaBuilder ntaBuilder
 	
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
 	protected final extension ExpressionEvaluator expressionEvaluator = ExpressionEvaluator.INSTANCE
-	
-	new(Traceability traceability) {
-		val ntaName = Namings.name
-		
-		this.ntaBuilder = new NtaBuilder(ntaName) // Random NTA is created
-		this.traceability = traceability
-	}
 	
 	// Entry point
 	
@@ -87,8 +88,9 @@ class HavocHandler {
 			return new SelectionStruct(null, null)
 		}
 		
-		integerValues += integerValues.min - 1 // Adding another value for an "else" branch
-		
+		val defaultValue = type.defaultExpression.evaluateInteger // 0
+		val elseValue = integerValues.contains(defaultValue) ? integerValues.max + 1 : defaultValue
+		integerValues += elseValue // Adding another value for an "else" branch
 		
 		val name = Namings.name
 		val min = integerValues.min
@@ -98,13 +100,15 @@ class HavocHandler {
 			ntaBuilder.createLiteralExpression(max.toString)
 		)
 		
-		val uppaalVariable = traceability.get(variable)
+		if (integerValues.size == max - min + 1) {
+			// A  continuous range, no need for additional guards
+			return new SelectionStruct(selection, null)
+		}
 		
 		val equalities = newArrayList // Filters the "interesting" values from the range
 		for (integerValue : integerValues) {
 			equalities += ntaBuilder.createEqualityExpression(
-				uppaalVariable, ntaBuilder.createLiteralExpression(integerValue.toString)
-			)
+				selection, ntaBuilder.createLiteralExpression(integerValue.toString))
 		}
 		
 		val guard = ntaBuilder.wrapIntoOrExpression(equalities)

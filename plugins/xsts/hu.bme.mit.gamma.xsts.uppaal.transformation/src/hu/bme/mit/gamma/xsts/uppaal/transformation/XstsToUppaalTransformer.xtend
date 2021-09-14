@@ -32,7 +32,6 @@ import java.util.Set
 import uppaal.NTA
 import uppaal.declarations.ValueIndex
 import uppaal.declarations.VariableContainer
-import uppaal.expressions.Expression
 import uppaal.templates.Edge
 import uppaal.templates.Location
 import uppaal.templates.LocationKind
@@ -56,8 +55,8 @@ class XstsToUppaalTransformer {
 	protected final extension ExpressionTransformer expressionTransformer
 	protected final extension TypeTransformer typeTransformer
 	protected final extension NtaOptimizer ntaOptimizer
-	protected final extension HavocHandler havocHandler
 	
+	protected final extension HavocHandler havocHandler = HavocHandler.INSTANCE
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	
@@ -70,7 +69,6 @@ class XstsToUppaalTransformer {
 		this.expressionTransformer = new ExpressionTransformer(traceability)
 		this.typeTransformer = new TypeTransformer(nta)
 		this.ntaOptimizer = new NtaOptimizer(ntaBuilder)
-		this.havocHandler = new HavocHandler(traceability)
 	}
 	
 	def execute() {
@@ -182,7 +180,8 @@ class XstsToUppaalTransformer {
 			val xStsVariable = xStsDeclaration as VariableDeclaration
 			val uppaalVariable = traceability.get(xStsVariable)
 			val uppaalRhs = assignmentAction.rhs.transform
-			newSource = newSource.createUpdateEdge(uppaalVariable, uppaalRhs)
+			newSource = newSource.createUpdateEdge(nextCommittedLocationName,
+					uppaalVariable, uppaalRhs)
 		}
 		return newSource
 	}
@@ -205,7 +204,8 @@ class XstsToUppaalTransformer {
 		uppaalVariable.typeDefinition = type
 		//
 		
-		val target = source.createUpdateEdge(uppaalVariable, selection.createIdentifierExpression)
+		val target = source.createUpdateEdge(nextCommittedLocationName,
+				uppaalVariable, selection.createIdentifierExpression)
 		val edge = target.incomingEdges.head
 		edge.selection += selection
 		if (guard !== null) {
@@ -223,16 +223,7 @@ class XstsToUppaalTransformer {
 		transientVariables += uppaalVariable
 		val xStsInitialValue = xStsVariable.initialValue
 		val uppaalRhs = xStsInitialValue?.transform
-		return source.createUpdateEdge(uppaalVariable, uppaalRhs)
-	}
-	
-	protected def createUpdateEdge(Location source, // TODO move into NtaBuilder
-			VariableContainer uppaalVariable, Expression uppaalRhs) {
-		val edge = source.createEdgeCommittedSource(nextCommittedLocationName)
-		if (uppaalRhs !== null) {
-			edge.update += uppaalVariable.createAssignmentExpression(uppaalRhs)
-		}
-		return edge.target
+		return source.createUpdateEdge(nextCommittedLocationName, uppaalVariable, uppaalRhs)
 	}
 	
 	protected def void extendNameWithHash(VariableContainer uppaalContainer) {

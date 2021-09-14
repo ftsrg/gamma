@@ -48,6 +48,8 @@ class NtaBuilder {
 	final NTA nta
 	// Is minimal element set (function inlining)
 	final boolean isMinimalElementSet
+	
+	protected final extension AssignmentExpressionCreator assignmentExpressionCreator
 	// UPPAAL factories
 	protected final extension ExpressionsFactory expFact = ExpressionsFactory.eINSTANCE
 	protected final extension TemplatesFactory tempFact = TemplatesFactory.eINSTANCE
@@ -67,6 +69,7 @@ class NtaBuilder {
 			it.name = ntaName
 		]
 		this.isMinimalElementSet = isMinimalElementSet
+		this.assignmentExpressionCreator = new AssignmentExpressionCreator(this)
 		this.initNta
 	}
 	
@@ -450,6 +453,15 @@ class NtaBuilder {
 			it.setSynchronization(syncVar, SynchronizationKind.SEND)
 		]
 		return syncEdge		
+	}
+	
+	def createUpdateEdge(Location source, String nextCommittedLocationName,
+			VariableContainer uppaalVariable, Expression uppaalRhs) {
+		val edge = source.createEdgeCommittedSource(nextCommittedLocationName)
+		if (uppaalRhs !== null) {
+			edge.update += uppaalVariable.createAssignmentExpression(uppaalRhs)
+		}
+		return edge.target
 	}
 	
 	/**
