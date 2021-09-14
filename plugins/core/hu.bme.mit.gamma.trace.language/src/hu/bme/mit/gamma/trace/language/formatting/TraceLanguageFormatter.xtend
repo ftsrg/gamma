@@ -28,9 +28,9 @@ class TraceLanguageFormatter extends AbstractDeclarativeFormatter {
         c.setAutoLinewrap(110)
         // Line break between import and component keywords
         c.setLinewrap(0, 1, 2).between(f.executionTraceAccess.importAssignment_1,
-        	f.executionTraceAccess.traceKeyword_2)
+        	f.executionTraceAccess.traceKeyword_3)
         // Line breaks after these rules
-  		c.setLinewrap(1).after(f.executionTraceAccess.group_5)
+  		c.setLinewrap(1).after(f.executionTraceAccess.group_6)
         c.setLinewrap(1).after(f.actRule)
         c.setLinewrap(1).after(f.raiseEventActRule)
         c.setLinewrap(1).after(f.instanceStateRule)

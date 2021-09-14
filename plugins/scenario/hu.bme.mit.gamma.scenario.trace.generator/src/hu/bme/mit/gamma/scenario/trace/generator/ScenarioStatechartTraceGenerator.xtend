@@ -31,6 +31,8 @@ import java.io.File
 import java.util.List
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
+import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
+import java.math.BigInteger
 
 class ScenarioStatechartTraceGenerator {
 
@@ -40,6 +42,7 @@ class ScenarioStatechartTraceGenerator {
 	val extension GammaFileNamer fileNamer = GammaFileNamer.INSTANCE
 	val extension ScenarioStatechartUtil scenarioStatechartUtil = ScenarioStatechartUtil.INSTANCE
 	val extension TraceUtil traceUtil = TraceUtil.INSTANCE
+	val extension ExpressionModelFactory expressionFactory = ExpressionModelFactory.eINSTANCE
 
 	StatechartDefinition statechart = null
 
@@ -117,6 +120,14 @@ class ScenarioStatechartTraceGenerator {
 		val filteredTraces = backAnnotator.execute
 
 		for (et : filteredTraces) {
+			val waitingAnnotation = createExecutionTraceAllowedWaitingAnnotation
+			val upperLimit = createIntegerLiteralExpression
+			upperLimit.value = BigInteger.valueOf(1)
+			val lowerLimit = createIntegerLiteralExpression
+			lowerLimit.value = BigInteger.valueOf(0)
+			waitingAnnotation.lowerLimit = lowerLimit
+			waitingAnnotation.upperLimit = upperLimit
+			et.annotations += waitingAnnotation
 			val eventAdder = new UnsentEventAssertExtender(et.steps, true)
 			if (scenarioContractType.equals(NotDefinedEventMode.STRICT)) {
 				eventAdder.execute

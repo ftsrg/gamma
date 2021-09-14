@@ -499,7 +499,7 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 		handleArguments(set.modalInteractions, forwardTransition);
 		if (singleNegetedSignalWithArguments) {
 			var signal = (set.modalInteractions.get(0) as NegatedModalInteraction).modalinteraction as Signal
-			if (!signal.arguments.empty) {
+			if (!signal.arguments.empty) { 
 				var tmp = violationTransition.targetState
 				violationTransition.targetState = forwardTransition.targetState
 				forwardTransition.targetState = tmp
