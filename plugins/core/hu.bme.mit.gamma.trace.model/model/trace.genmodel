@@ -55,5 +55,9 @@
     <genClasses ecoreClass="trace.ecore#//XorAssert"/>
     <genClasses ecoreClass="trace.ecore#//OrAssert"/>
     <genClasses image="false" ecoreClass="trace.ecore#//ExecutionTraceAnnotation"/>
+    <genClasses ecoreClass="trace.ecore#//ExecutionTraceAllowedWaitingAnnotation">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference trace.ecore#//ExecutionTraceAllowedWaitingAnnotation/lowerLimit"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference trace.ecore#//ExecutionTraceAllowedWaitingAnnotation/upperLimit"/>
+    </genClasses>
   </genPackages>
 </genmodel:GenModel>

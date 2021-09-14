@@ -106,6 +106,10 @@
     <genClasses ecoreClass="contract.ecore#//StateContractAnnotation">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference contract.ecore#//StateContractAnnotation/contractStatecharts"/>
     </genClasses>
+    <genClasses ecoreClass="contract.ecore#//ScenarioAllowedWaitAnnotation">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference contract.ecore#//ScenarioAllowedWaitAnnotation/lowerLimit"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference contract.ecore#//ScenarioAllowedWaitAnnotation/upperLimit"/>
+    </genClasses>
   </genPackages>
   <genPackages prefix="InterfaceModel" basePackage="hu.bme.mit.gamma.statechart" ecorePackage="interface.ecore#/">
     <genEnums typeSafeEnumCompatible="false" ecoreEnum="interface.ecore#//EventDirection">
@@ -244,7 +248,7 @@
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute statechart.ecore#//StatechartDefinition/orthogonalRegionSchedulingOrder"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute statechart.ecore#//StatechartDefinition/transitionPriority"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute statechart.ecore#//StatechartDefinition/guardEvaluation"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//StatechartDefinition/annotation"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//StatechartDefinition/annotations"/>
     </genClasses>
     <genClasses ecoreClass="statechart.ecore#//TimeoutDeclaration"/>
     <genClasses ecoreClass="statechart.ecore#//StatechartReference">
