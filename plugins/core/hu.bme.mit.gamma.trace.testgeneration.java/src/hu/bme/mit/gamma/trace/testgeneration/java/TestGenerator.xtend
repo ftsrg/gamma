@@ -49,6 +49,7 @@ import static com.google.common.base.Preconditions.checkArgument
 import static extension hu.bme.mit.gamma.codegenerator.java.util.Namings.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.trace.derivedfeatures.TraceModelDerivedFeatures.*
+import hu.bme.mit.gamma.trace.model.Schedule
 
 class TestGenerator {
 	// Constant strings
@@ -83,6 +84,7 @@ class TestGenerator {
 	// Auxiliary objects
 	protected final extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
 	protected final extension TraceUtil traceUtil = TraceUtil.INSTANCE
+	protected var AbstractAllowedWaitingHandler waitingHandle = null
 	
 	/**
 	 * Note that the lists of traces represents a set of behaviors the component must conform to.
@@ -209,6 +211,10 @@ class TestGenerator {
 				steps += trace.cycle.steps
 			}
 			for (step : steps) {
+				waitingHandle = new WaitingAllowedHandler(trace, 
+					traces.flatMap[it.steps].flatMap[it.actions].findFirst[it instanceof Schedule].serialize.toString,
+					step.asserts.map['''«ASSERT_TRUE»(«it.serializeAssert»);'''].join
+				)  
 				val testMethod = '''
 					public void «IF steps.indexOf(step) == steps.size - 1»«FINAL_TEST_PREFIX»«TEST_NAME.toFirstUpper»«traceId++»()«ELSE»«TEST_NAME + stepId++»()«ENDIF» {
 						«IF step !== steps.head»«TEST_NAME»«IF step === steps.last»«stepId - 1»«ELSE»«stepId - 2»«ENDIF»();«ENDIF»
@@ -217,9 +223,9 @@ class TestGenerator {
 							«act.serialize»
 						«ENDFOR»
 						// Assert
-						«FOR assertion : step.filterAsserts»
-							«ASSERT_TRUE»(«assertion.serializeAssert»);
-						«ENDFOR»
+						«IF !step.filterAsserts.nullOrEmpty»
+							«waitingHandle.generateAssertBlock»
+						«ENDIF»
 					}
 					
 				'''
