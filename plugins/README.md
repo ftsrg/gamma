@@ -17,6 +17,11 @@ We recommend to start-up from an Eclipse IDE for Java and DSL Developers as it
 contains EMF and Xtext so only VIATRA and Yakindu need to be downloaded.
 
 - Download a new Eclipse IDE for [Java and DSL Developers package](https://www.eclipse.org/downloads/packages/release/2021-03/r/eclipse-ide-java-and-dsl-developers).
+- Run Eclipse. If an error message is thrown about the unavailability of Java (this happens if Java is not added to your path), you have to specifiy the path to your Java installation (`javaw.exe` in the `bin` folder) for Eclipse. Open the `eclipse.ini` file in the root folder of your Eclipse with a text editor and add the following two lines right above the `-vmargs` line:
+```
+-vm
+path_to_your_java_insallation/Java/jdk-version/bin/javaw.exe
+```
 - Install the following two packages. The _Install_ window can be opened via the _Help > Install New Software..._ menu item. In the _Install_ window click _Add..._, and paste the necessary URL in the _Location_ text field. 
  - Install VIATRA 2.5.0 from update site: http://download.eclipse.org/viatra/updates/release/2.5.0.
     - Choose the whole _VIATRA Query and Transformation SDK_ package.
@@ -35,6 +40,8 @@ If you want to use *UPPAAL* for formal verification, download and extract *UPPAA
 _Tip: It is advised to turn on automatic refreshing for the _runtime workspace_. The other option is to refresh it manually with F5 after every Gamma command._
 
 Make sure to set the text file encoding of your Eclipse workspace to **UTF-8**: _Window > Preferences..._ Start typing `workspace` in the left upper textfield (in the place of `type filter text`). Select _General > Workspace_ from the filtered item list and check the `Text file encoding` setting at the bottom of the window.
+
+Make sure to set the Java compiler compliance level to **11**: _Window > Preferences..._ Start typing `compiler` in the left upper textfield (in the place of `type filter text`). Select _Java > Compiler_ from the filtered item list and set the `Compiler compliance level` to **11** at the top of the window.
 
 ## Plugin setup
 
