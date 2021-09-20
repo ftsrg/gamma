@@ -1,18 +1,21 @@
 package hu.bme.mit.gamma.trace.testgeneration.java
 
-import hu.bme.mit.gamma.trace.testgeneration.java.AbstractAllowedWaitingHandler
+import hu.bme.mit.gamma.trace.model.Assert
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
+import java.util.List
 
 class NoWaitingAllowedHandler extends AbstractAllowedWaitingHandler {
-	
-	new(ExecutionTrace trace, String schedule, String asserts) {
-		super(trace, schedule,asserts)
+
+	new(ExecutionTrace trace, ActAndAssertSerializer serializer) {
+		super(trace, serializer)
 	}
-	
-	override generateAssertBlock() {
+
+	override generateAssertBlock(List<Assert> asserts) {
 		'''
-		«asserts»
+			«FOR _assert : asserts»
+				«serializer.serializeAssert(_assert)»;
+			«ENDFOR»
 		'''
 	}
-	
+
 }
