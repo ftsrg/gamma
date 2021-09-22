@@ -34,6 +34,7 @@ import hu.bme.mit.gamma.statechart.lowlevel.model.EventDirection
 import hu.bme.mit.gamma.statechart.statechart.DeactivateTimeoutAction
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction
 import hu.bme.mit.gamma.statechart.statechart.SetTimeoutAction
+import hu.bme.mit.gamma.statechart.lowlevel.model.Package
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.util.Collection
 import java.util.List
@@ -41,6 +42,7 @@ import java.util.List
 import static extension com.google.common.collect.Iterables.getOnlyElement
 import hu.bme.mit.gamma.activity.model.CallActivityAction
 import hu.bme.mit.gamma.activity.model.ActivityModelFactory
+import hu.bme.mit.gamma.statechart.statechart.State
 
 class ActionTransformer {
 	// Auxiliary objects
@@ -78,6 +80,29 @@ class ActionTransformer {
 			result += action.transformAction
 		}
 		return result.wrap
+	}
+	
+	protected def transformDoActions(Collection<? extends Action> actions, Package _package) {
+		if (actions.nullOrEmpty) {
+			return createEmptyStatement
+		}
+		val result = newArrayList
+		for (action : actions) {
+			result += action.transformDoAction(_package)
+		}
+		return result.wrap
+	}
+	
+	protected dispatch def transformDoAction(Action action, Package _package) {
+		return action.transformAction as Action
+	}
+	
+	protected dispatch def transformDoAction(CallActivityAction action, Package _package) {
+		val newAction = action.transformAction.onlyElement as CallActivityAction
+		
+		_package.activities += newAction.activity
+		
+		return newAction as Action
 	}
 	
 	protected def transformSimpleAction(Action action) {
@@ -258,9 +283,11 @@ class ActionTransformer {
 		return result
 	}
 	
-	protected def dispatch List<Action> transformAction(CallActivityAction action) {		
+	protected def dispatch List<Action> transformAction(CallActivityAction action) {	
+		val state = action.eContainer as State	
 		val activity = action.activity
-		val lowlevelActivity = trace.get(activity)
+		val activityTransformer = new ActivityToLowlevelTransformer(trace, state)
+		val lowlevelActivity = activityTransformer.transform(activity)
 		
 		return #[
 			createCallActivityAction => [

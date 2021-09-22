@@ -57,6 +57,7 @@
       <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.transitionsToHigherAndLowerNodes"/>
       <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.simpleTransitionsBetweenStates"/>
       <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.simpleTransitionsToEntryStates"/>
+      <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.statesWithDoAction"/>
     </group>
   </extension>
   <extension id="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.TargetPatterns" point="org.eclipse.viatra.query.runtime.queryspecification">

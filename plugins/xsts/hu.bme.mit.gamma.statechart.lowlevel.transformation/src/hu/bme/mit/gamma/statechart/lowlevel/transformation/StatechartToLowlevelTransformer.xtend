@@ -311,9 +311,13 @@ class StatechartToLowlevelTransformer {
 		for (region : state.regions) {
 			lowlevelState.regions += region.transform
 		}
-		// Entry and exit actions
+		
+		val _package = state.containingPackage
+		val lowlevelPackage = trace.get(_package)
+
 		lowlevelState.entryAction = state.entryActions.transformActions
 		lowlevelState.exitAction = state.exitActions.transformActions
+		lowlevelState.doAction = state.doActions.transformDoActions(lowlevelPackage)
 		return lowlevelState
 	}
 

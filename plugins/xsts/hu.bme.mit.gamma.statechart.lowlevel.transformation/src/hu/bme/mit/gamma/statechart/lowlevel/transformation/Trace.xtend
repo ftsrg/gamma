@@ -41,6 +41,7 @@ import hu.bme.mit.gamma.activity.model.Flow
 import hu.bme.mit.gamma.activity.model.ActivityNode
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
+import hu.bme.mit.gamma.activity.model.ActivityDefinition
 
 package class Trace {
 
@@ -72,11 +73,11 @@ package class Trace {
 	// Function return variables
 	final Map<FunctionAccessExpression, List<VariableDeclaration>> returnVariableMappings = newHashMap
 	// Activity variables
-	final Map<ActivityDeclaration, ActivityDeclaration> activityDeclarationMappings = newHashMap
-	final Map<Pin, Pin> pinMappings = newHashMap
-	final Map<Definition, Definition> definitionMappings = newHashMap
-	final Map<Flow, Flow> flowMappings = newHashMap
-	final Map<ActivityNode, ActivityNode> activityNodeMappings = newHashMap
+	final Map<Pair<State, ActivityDeclaration>, ActivityDeclaration> activityDeclarationMappings = newHashMap
+	final Map<Pair<State, Pin>, Pin> pinMappings = newHashMap
+	final Map<Pair<State, Definition>, Definition> definitionMappings = newHashMap
+	final Map<Pair<State, Flow>, Flow> flowMappings = newHashMap
+	final Map<Pair<State, ActivityNode>, ActivityNode> activityNodeMappings = newHashMap
 	
 	// Package
 	def put(Package gammaPackage, hu.bme.mit.gamma.statechart.lowlevel.model.Package lowlevelPackage) {
@@ -536,84 +537,168 @@ package class Trace {
 	}
 	
 	// Activity 
-	def put(ActivityDeclaration activityDeclaration, ActivityDeclaration newActivityDeclaration) {
+	def put(State state, ActivityDeclaration activityDeclaration, ActivityDeclaration newActivityDeclaration) {
 		checkNotNull(activityDeclaration)
 		checkNotNull(newActivityDeclaration)
-		activityDeclarationMappings.put(activityDeclaration, newActivityDeclaration)
+		activityDeclarationMappings.put(new Pair(state, activityDeclaration), newActivityDeclaration)
 	}
 
-	def isMapped(ActivityDeclaration activityDeclaration) {
-		checkNotNull(activityDeclaration)
-		activityDeclarationMappings.containsKey(activityDeclaration)
+	def isActivityDeclarationMapped(Pair<State, ActivityDeclaration> recordField) {
+		val key = recordField.key
+		val value = recordField.value
+		checkNotNull(key)
+		checkNotNull(value)
+		for (record : activityDeclarationMappings.keySet) {
+			if (record.key.equals(key) && record.value.equals(value)) {
+				return true
+			}
+		}
+		return false
 	}
 
-	def get(ActivityDeclaration activityDeclaration) {
-		checkNotNull(activityDeclaration)
-		activityDeclarationMappings.get(activityDeclaration)
+	def getActivityDeclaration(Pair<State, ActivityDeclaration> recordField) {
+		// Returns only a single value, the field hierarchy must match concretely
+		val key = recordField.key
+		val value = recordField.value
+		checkNotNull(key)
+		checkNotNull(value)
+		for (record : activityDeclarationMappings.keySet) {
+			if (record.key.equals(key) && record.value.equals(value)) {
+				return activityDeclarationMappings.get(record)
+			}
+		}
+		throw new IllegalArgumentException("Not found: " + recordField)
 	}
 	
-	def put(Pin pin, Pin newPin) {
+	def put(State state, Pin pin, Pin newPin) {
 		checkNotNull(pin)
 		checkNotNull(newPin)
-		pinMappings.put(pin, newPin)
-	}
-
-	def isMapped(Pin pin) {
-		checkNotNull(pin)
-		pinMappings.containsKey(pin)
-	}
-
-	def get(Pin pin) {
-		checkNotNull(pin)
-		pinMappings.get(pin)
+		pinMappings.put(new Pair(state, pin), newPin)
 	}
 	
-	def put(Definition definition, Definition newDefinition) {
+	def isPinMapped(Pair<State, Pin> recordField) {
+		val key = recordField.key
+		val value = recordField.value
+		checkNotNull(key)
+		checkNotNull(value)
+		for (record : pinMappings.keySet) {
+			if (record.key.equals(key) && record.value.equals(value)) {
+				return true
+			}
+		}
+		return false
+	}
+
+	def getPin(Pair<State, Pin> recordField) {
+		// Returns only a single value, the field hierarchy must match concretely
+		val key = recordField.key
+		val value = recordField.value
+		checkNotNull(key)
+		checkNotNull(value)
+		for (record : pinMappings.keySet) {
+			if (record.key.equals(key) && record.value.equals(value)) {
+				return pinMappings.get(record)
+			}
+		}
+		throw new IllegalArgumentException("Not found: " + recordField)
+	}
+	
+	def put(State state, Definition definition, Definition newDefinition) {
 		checkNotNull(definition)
 		checkNotNull(newDefinition)
-		definitionMappings.put(definition, newDefinition)
-	}
-
-	def isMapped(Definition definition) {
-		checkNotNull(definition)
-		definitionMappings.containsKey(definition)
-	}
-
-	def get(Definition definition) {
-		checkNotNull(definition)
-		definitionMappings.get(definition)
+		definitionMappings.put(new Pair(state, definition), newDefinition)
 	}
 	
-	def put(Flow flow, Flow newFlow) {
+	def isDefinitionMapped(Pair<State, Definition> recordField) {
+		val key = recordField.key
+		val value = recordField.value
+		checkNotNull(key)
+		checkNotNull(value)
+		for (record : definitionMappings.keySet) {
+			if (record.key.equals(key) && record.value.equals(value)) {
+				return true
+			}
+		}
+		return false
+	}
+
+	def getDefinition(Pair<State, Definition> recordField) {
+		// Returns only a single value, the field hierarchy must match concretely
+		val key = recordField.key
+		val value = recordField.value
+		checkNotNull(key)
+		checkNotNull(value)
+		for (record : definitionMappings.keySet) {
+			if (record.key.equals(key) && record.value.equals(value)) {
+				return definitionMappings.get(record)
+			}
+		}
+		throw new IllegalArgumentException("Not found: " + recordField)
+	}
+
+	def put(State state, Flow flow, Flow newFlow) {
 		checkNotNull(flow)
 		checkNotNull(newFlow)
-		flowMappings.put(flow, newFlow)
-	}
-
-	def isMapped(Flow flow) {
-		checkNotNull(flow)
-		flowMappings.containsKey(flow)
-	}
-
-	def get(Flow flow) {
-		checkNotNull(flow)
-		flowMappings.get(flow)
+		flowMappings.put(new Pair(state, flow), newFlow)
 	}
 	
-	def put(ActivityNode node, ActivityNode newNode) {
+	def isFlowMapped(Pair<State, Flow> recordField) {
+		val key = recordField.key
+		val value = recordField.value
+		checkNotNull(key)
+		checkNotNull(value)
+		for (record : flowMappings.keySet) {
+			if (record.key.equals(key) && record.value.equals(value)) {
+				return true
+			}
+		}
+		return false
+	}
+
+	def getFlow(Pair<State, Flow> recordField) {
+		// Returns only a single value, the field hierarchy must match concretely
+		val key = recordField.key
+		val value = recordField.value
+		checkNotNull(key)
+		checkNotNull(value)
+		for (record : flowMappings.keySet) {
+			if (record.key.equals(key) && record.value.equals(value)) {
+				return flowMappings.get(record)
+			}
+		}
+		throw new IllegalArgumentException("Not found: " + recordField)
+	}
+	
+	def put(State state, ActivityNode node, ActivityNode newNode) {
 		checkNotNull(node)
 		checkNotNull(newNode)
-		activityNodeMappings.put(node, newNode)
+		activityNodeMappings.put(new Pair(state, node), newNode)
+	}
+	def isActivityNodeMapped(Pair<State, ActivityNode> recordField) {
+		val key = recordField.key
+		val value = recordField.value
+		checkNotNull(key)
+		checkNotNull(value)
+		for (record : activityNodeMappings.keySet) {
+			if (record.key.equals(key) && record.value.equals(value)) {
+				return true
+			}
+		}
+		return false
 	}
 
-	def isMapped(ActivityNode node) {
-		checkNotNull(node)
-		activityNodeMappings.containsKey(node)
-	}
-
-	def get(ActivityNode node) {
-		checkNotNull(node)
-		activityNodeMappings.get(node)
+	def getActivityNode(Pair<State, ActivityNode> recordField) {
+		// Returns only a single value, the field hierarchy must match concretely
+		val key = recordField.key
+		val value = recordField.value
+		checkNotNull(key)
+		checkNotNull(value)
+		for (record : activityNodeMappings.keySet) {
+			if (record.key.equals(key) && record.value.equals(value)) {
+				return activityNodeMappings.get(record)
+			}
+		}
+		throw new IllegalArgumentException("Not found: " + recordField)
 	}
 	
 }

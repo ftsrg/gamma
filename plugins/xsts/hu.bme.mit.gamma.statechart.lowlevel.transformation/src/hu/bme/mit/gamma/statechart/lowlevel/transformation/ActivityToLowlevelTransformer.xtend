@@ -34,6 +34,9 @@ import hu.bme.mit.gamma.activity.model.PseudoActivityNode
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.activity.model.Pin
+import hu.bme.mit.gamma.statechart.statechart.State
+import hu.bme.mit.gamma.activity.model.Definition
+import hu.bme.mit.gamma.activity.model.Flow
 
 class ActivityToLowlevelTransformer {
 	// Auxiliary objects
@@ -48,13 +51,17 @@ class ActivityToLowlevelTransformer {
 	protected final extension ActivityModelFactory activityFactory = ActivityModelFactory.eINSTANCE
 	// Trace
 	protected final Trace trace
+	protected final State state
+	protected final String prefix
 	
-	new(Trace trace) {
-		this(trace, true, 10)
+	new(Trace trace, State state) {
+		this(trace, state, true, 10)
 	}
 	
-	new(Trace trace, boolean functionInlining, int maxRecursionDepth) {
+	new(Trace trace, State state, boolean functionInlining, int maxRecursionDepth) {
 		this.trace = trace
+		this.state = state
+		this.prefix = state?.name ?: ""
 		this.typeTransformer = new TypeTransformer(this.trace)
 		this.expressionTransformer = new ExpressionTransformer(this.trace,
 				functionInlining, maxRecursionDepth)
@@ -67,19 +74,21 @@ class ActivityToLowlevelTransformer {
 	}
 	
 	def ActivityDeclaration transform(ActivityDeclaration activity) {
-		if (trace.isMapped(activity)) {
-			return trace.get(activity)
+		val recordField = new Pair(state, activity)
+		
+		if (trace.isActivityDeclarationMapped(recordField)) {
+			return trace.getActivityDeclaration(recordField)
 		}
 		
 		val newActivity = if (activity instanceof NamedActivityDeclaration) {
 			createNamedActivityDeclaration => [
-				name = activity.name
+				name = prefix + activity.name
 			]
 		} else {
 			createInlineActivityDeclaration
 		}
 		
-		trace.put(activity, newActivity)
+		trace.put(state, activity, newActivity)
 		
 		for (pin : activity.pins) {
 			newActivity.pins += pin.transformPin
@@ -91,13 +100,15 @@ class ActivityToLowlevelTransformer {
 	}
 	
 	def dispatch transformDefinition(ActivityDefinition definition) {
-		if (trace.isMapped(definition)) {
-			return trace.get(definition)
+		val recordField = new Pair(state, definition as Definition)
+		
+		if (trace.isDefinitionMapped(recordField)) {
+			return trace.getDefinition(recordField)
 		}
 		
 		val newDefinition = createActivityDefinition
 		
-		trace.put(definition, newDefinition)
+		trace.put(state, definition, newDefinition)
 		
 		for (variableDeclaration : definition.variableDeclarations) {
 			newDefinition.variableDeclarations += variableDeclaration.transform
@@ -115,13 +126,15 @@ class ActivityToLowlevelTransformer {
 	}
 	
 	def dispatch transformDefinition(ActionDefinition definition) {
-		if (trace.isMapped(definition)) {
-			return trace.get(definition)
+		val recordField = new Pair(state, definition as Definition)
+		
+		if (trace.isDefinitionMapped(recordField)) {
+			return trace.getDefinition(recordField)
 		}
 		
 		val newDefinition = createActionDefinition
 		
-		trace.put(definition, newDefinition)
+		trace.put(state, definition, newDefinition)
 		
 		newDefinition.action = definition.action.transformAction.wrap
 		
@@ -129,30 +142,37 @@ class ActivityToLowlevelTransformer {
 	}
 	
 	def transformPin(Pin pin) {
-		if (trace.isMapped(pin)) {
-			return trace.get(pin)
+		val recordField = new Pair(state, pin)
+		
+		if (trace.isPinMapped(recordField)) {
+			return trace.getPin(recordField)
 		}
 		
-		val newPin = pin.clone
-		newPin.type = pin.type.transformType
+		val newPin = pin.clone => [
+			it.name = prefix + it.name
+		]
 		
-		trace.put(pin, newPin)
+		trace.put(state, pin, newPin)
+		
+		newPin.type = pin.type.transformType
 		
 		return newPin
 	}
 	
 	def dispatch transformFlow(DataFlow flow) {
-		if (trace.isMapped(flow)) {
-			return trace.get(flow)
+		val recordField = new Pair(state, flow as Flow)
+		
+		if (trace.isFlowMapped(recordField)) {
+			return trace.getFlow(recordField)
 		}
 		
-		val newFlow = createDataFlow => [
-			dataSourceReference = flow.dataSourceReference.transformDataSourceReference
-			dataTargetReference = flow.dataTargetReference.transformDataTargetReference
-			guard = flow.guard?.transformExpression?.wrapIntoMultiaryExpression(createAndExpression)
-		]
+		val newFlow = createDataFlow
 		
-		trace.put(flow, newFlow)
+		trace.put(state, flow, newFlow)
+		
+		createDataFlow.dataSourceReference = flow.dataSourceReference.transformDataSourceReference
+		createDataFlow.dataTargetReference = flow.dataTargetReference.transformDataTargetReference
+		createDataFlow.guard = flow.guard?.transformExpression?.wrapIntoMultiaryExpression(createAndExpression)
 		
 		return newFlow
 	}
@@ -194,32 +214,37 @@ class ActivityToLowlevelTransformer {
 	}
 	
 	def dispatch transformFlow(ControlFlow flow) {
-		if (trace.isMapped(flow)) {
-			return trace.get(flow)
+		val recordField = new Pair(state, flow as Flow)
+		
+		if (trace.isFlowMapped(recordField)) {
+			return trace.getFlow(recordField)
 		}
 		
-		val newFlow = createControlFlow => [
-			sourceNode = flow.sourceNode.transformNode
-			targetNode = flow.targetNode.transformNode
-			guard = flow.guard?.transformExpression?.wrapIntoMultiaryExpression(createAndExpression)
-		]
+		val newFlow = createControlFlow
 		
-		trace.put(flow, newFlow)
+		trace.put(state, flow, newFlow)
+		
+		newFlow.sourceNode = flow.sourceNode.transformNode
+		newFlow.targetNode = flow.targetNode.transformNode
+		newFlow.guard = flow.guard?.transformExpression?.wrapIntoMultiaryExpression(createAndExpression)
 		
 		return newFlow
 	}
 	
 	def dispatch transformNode(ActionNode node) {
-		if (trace.isMapped(node)) {
-			return trace.get(node)
+		val recordField = new Pair(state, node as ActivityNode)
+		
+		if (trace.isActivityNodeMapped(recordField)) {
+			return trace.getActivityNode(recordField)
 		}
 		
 		val newNode = createActionNode => [
-			name = node.name
-			activityDeclarationReference = node.activityDeclarationReference?.transformActivityDeclarationReference
+			name = prefix + node.name
 		]
 		
-		trace.put(node, newNode)
+		trace.put(state, node, newNode)
+		
+		newNode.activityDeclarationReference = node.activityDeclarationReference?.transformActivityDeclarationReference
 		
 		return newNode
 	}
@@ -235,13 +260,17 @@ class ActivityToLowlevelTransformer {
 	}
 	
 	def dispatch ActivityNode transformNode(PseudoActivityNode node) {
-		if (trace.isMapped(node)) {
-			return trace.get(node)
+		val recordField = new Pair(state, node as ActivityNode)
+		
+		if (trace.isActivityNodeMapped(recordField)) {
+			return trace.getActivityNode(recordField)
 		}
 		
-		val newNode = node.clone
+		val newNode = node.clone => [
+			it.name = prefix + it.name
+		]
 		
-		trace.put(node, newNode)
+		trace.put(state, node, newNode)
 		
 		return newNode
 	}

@@ -181,3 +181,9 @@ pattern simpleTransitionsToEntryStates(source : State,
 } or {
 	find transitionsToHigherAndLowerNodes(source, _sourceAncestor, transition, targetAncestor, target);
 }
+
+
+// Do-action on states
+pattern statesWithDoAction(state : State, action : Action) {
+	State.doAction(state, action);
+}

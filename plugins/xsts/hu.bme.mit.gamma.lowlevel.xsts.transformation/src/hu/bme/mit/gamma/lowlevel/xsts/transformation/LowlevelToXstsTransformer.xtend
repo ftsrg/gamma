@@ -79,6 +79,7 @@ import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionMo
 import static extension hu.bme.mit.gamma.statechart.lowlevel.derivedfeatures.LowlevelStatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.XstsNamings.*
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.StatesWithDoAction
 
 class LowlevelToXstsTransformer {
 	// Transformation-related extensions
@@ -103,6 +104,7 @@ class LowlevelToXstsTransformer {
 	protected final extension PrecursoryTransitionToXTransitionTransformer precursoryTransitionToXTransitionTransformer
 	protected final extension TerminalTransitionToXTransitionTransformer terminalTransitionToXTransitionTransformer
 	protected final extension TransitionPreconditionCreator transitionPreconditionCreator
+	protected final LowlevelActivityToXstsTransformer lowlevelActivityToXstsTransformer
 	// Model factories
 	protected final extension XSTSModelFactory factory = XSTSModelFactory.eINSTANCE
 	protected final extension ExpressionModelFactory constraintFactory = ExpressionModelFactory.eINSTANCE
@@ -123,6 +125,7 @@ class LowlevelToXstsTransformer {
 	protected BatchTransformationRule<PlainVariables.Match, PlainVariables.Matcher> plainVariablesRule
 	protected BatchTransformationRule<Timeouts.Match, Timeouts.Matcher> timeoutsRule
 	protected BatchTransformationRule<GlobalVariables.Match, GlobalVariables.Matcher> variableInitializationsRule
+	protected BatchTransformationRule<StatesWithDoAction.Match, StatesWithDoAction.Matcher> statesWithDoActionRule	
 	protected BatchTransformationRule<Statecharts.Match, Statecharts.Matcher> topRegionInitializationRule
 	protected BatchTransformationRule<SimpleTransitionsBetweenStates.Match, SimpleTransitionsBetweenStates.Matcher> simpleTransitionBetweenStatesRule
 	protected BatchTransformationRule<SimpleTransitionsToEntryStates.Match, SimpleTransitionsToEntryStates.Matcher> simpleTransitionsToHistoryStatesRule
@@ -155,6 +158,7 @@ class LowlevelToXstsTransformer {
 		]
 		this.targetEngine = ViatraQueryEngine.on(new EMFScope(this.xSts))
 		this.trace = new Trace(_package, xSts)
+		
 		// The transformers need the trace model for the variable mapping
 		this.regionActivator = new RegionActivator(this.engine, this.trace)
 		this.entryActionRetriever = new EntryActionRetriever(this.trace)
@@ -172,6 +176,8 @@ class LowlevelToXstsTransformer {
 		this.transitionPreconditionCreator = new TransitionPreconditionCreator(this.trace)
 		this.transformation = BatchTransformation.forEngine(engine).build
 		this.statements = transformation.transformationStatements
+		
+		this.lowlevelActivityToXstsTransformer = new LowlevelActivityToXstsTransformer(_package, targetEngine, transformation, statements, xSts, trace)
 		this.optimize = optimize
 		if (optimize) {
 			this.referredEvents = ReferredEvents.Matcher.on(engine).allValuesOfevent
@@ -180,6 +186,7 @@ class LowlevelToXstsTransformer {
 	}
 
 	def execute() {
+		
 		getTypeDeclarationsRule.fireAllCurrent
 		getEventsRule.fireAllCurrent
 		getTopRegionsRule.fireAllCurrent
@@ -196,7 +203,8 @@ class LowlevelToXstsTransformer {
 		/* By now all variables must be transformed so the expressions and actions can be transformed
 		 * correctly with the trace model */
 		getVariableInitializationsRule.fireAllCurrent
-		initializeVariableInitializingAction // After getVariableInitializationsRule, but before getTopRegionsInitializationRule
+		initializeVariableInitializingAction // After getVariableInitializationsRule, but before getTopRegionsInitializationRule		
+		lowlevelActivityToXstsTransformer.execute
 		getTopRegionsInitializationRule.fireAllCurrent // Setting the top region (variables) into their initial states
 		getSimpleTransitionsBetweenStatesRule.fireAllCurrent
 		getSimpleTransitionsToHistoryStatesRule.fireAllCurrent
@@ -206,6 +214,7 @@ class LowlevelToXstsTransformer {
 		getFirstChoiceTransitionsRule.fireAllCurrent
 		getInEventEnvironmentalActionRule.fireAllCurrent
 		getOutEventEnvironmentalActionRule.fireAllCurrent
+	
 		mergeTransitions
 		optimizeActions
 		

@@ -20,15 +20,12 @@ class GammaToLowlevelTransformer {
 	
 	protected final Trace trace = new Trace
 	protected final extension StatechartToLowlevelTransformer statechartTransformer = new StatechartToLowlevelTransformer(trace)
-	protected final extension ActivityToLowlevelTransformer activityTransformer = new ActivityToLowlevelTransformer(trace)
+	protected final extension ActivityToLowlevelTransformer activityTransformer = new ActivityToLowlevelTransformer(trace, null)
 	
 	def hu.bme.mit.gamma.statechart.lowlevel.model.Package execute(Package _package) {
 		checkState(!_package.name.nullOrEmpty)
 		val lowlevelPackage = _package.transform // This does not transform components anymore
 		// Interfaces are not transformed, the events are transformed (thus, "instantiated") when referred
-		for (activity : _package.activities) {
-			lowlevelPackage.activities += activity.transform
-		}
 		for (statechart : _package.components.filter(StatechartDefinition)) {
 			lowlevelPackage.components += statechart.transform
 		}

@@ -58,7 +58,7 @@ class UppaalReferenceSerializer implements AbstractReferenceSerializer {
 	}
 	
 	override getId(ActivityNode activityNode, ActivityDeclarationReference instance) {
-		return #[getVariableName(activityNode, instance)]
+		return #[]
 	}
 	
 	override getId(VariableDeclaration variable, ActivityDeclarationReference instance) {

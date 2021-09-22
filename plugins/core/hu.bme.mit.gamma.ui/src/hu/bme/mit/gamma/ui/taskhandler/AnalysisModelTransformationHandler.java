@@ -76,7 +76,6 @@ import hu.bme.mit.gamma.uppaal.composition.transformation.api.util.UppaalModelPr
 import hu.bme.mit.gamma.util.FileUtil;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
 import hu.bme.mit.gamma.xsts.model.XSTS;
-import hu.bme.mit.gamma.xsts.transformation.api.Activity2XstsTransformerSerializer;
 import hu.bme.mit.gamma.xsts.transformation.api.Gamma2XstsTransformerSerializer;
 import hu.bme.mit.gamma.xsts.transformation.serializer.ActionSerializer;
 import hu.bme.mit.gamma.xsts.uppaal.transformation.api.Xsts2UppaalTransformerSerializer;
@@ -109,8 +108,8 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 				case THETA:
 					if (modelReference instanceof ComponentReference) {
 						transformer = new Gamma2XSTSTransformer();
-					} else /*if (modelReference instanceof ActivityReference)*/ {
-						transformer = new Activity2XSTSTransformer();
+					} else {
+						throw new IllegalArgumentException("Not known model reference: " + modelReference);
 					}
 					
 					break;
@@ -450,32 +449,6 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			transformer.execute();
 			// Property serialization
 			serializeProperties(fileName);
-			logger.log(Level.INFO, "The XSTS transformation has been finished.");
-		}
-		
-		@Override
-		protected PropertySerializer getPropertySerializer() {
-			return ThetaPropertySerializer.INSTANCE;
-		}
-
-		@Override
-		protected String getQueryFileExtension() {
-			return GammaFileNamer.THETA_QUERY_EXTENSION;
-		}
-	
-	}
-	
-	class Activity2XSTSTransformer extends AnalysisModelTransformer {
-		
-		public void execute(AnalysisModelTransformation transformation) throws IOException {
-			logger.log(Level.INFO, "Starting XSTS transformation.");
-			ActivityReference reference = (ActivityReference) transformation.getModel();
-			NamedActivityDeclaration activity = reference.getActivity();
-			String fileName = transformation.getFileName().get(0);			
-			
-			Activity2XstsTransformerSerializer transformer = new Activity2XstsTransformerSerializer(activity, targetFolderUri, fileName);
-			transformer.execute();
-
 			logger.log(Level.INFO, "The XSTS transformation has been finished.");
 		}
 		

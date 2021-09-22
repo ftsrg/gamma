@@ -18,7 +18,6 @@ import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.DecisionNodes
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.Flows
-import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.GlobalVariables
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.InitialNodes
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.InputControlFlows
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.InputDataFlows
@@ -27,24 +26,18 @@ import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.NormalActivityNode
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.OutputControlFlows
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.OutputDataFlows
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.Pins
-import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.PlainVariables
-import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.TypeDeclarations
-import hu.bme.mit.gamma.lowlevel.xsts.transformation.traceability.L2STrace
 import hu.bme.mit.gamma.statechart.lowlevel.model.Package
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
-import java.util.AbstractMap.SimpleEntry
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
-import org.eclipse.viatra.query.runtime.emf.EMFScope
 import org.eclipse.viatra.transformation.runtime.emf.rules.batch.BatchTransformationRule
 import org.eclipse.viatra.transformation.runtime.emf.rules.batch.BatchTransformationRuleFactory
 import org.eclipse.viatra.transformation.runtime.emf.transformation.batch.BatchTransformation
 import org.eclipse.viatra.transformation.runtime.emf.transformation.batch.BatchTransformationStatements
 
-import static extension hu.bme.mit.gamma.activity.derivedfeatures.ActivityModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.XstsNamings.*
 
@@ -57,7 +50,6 @@ class LowlevelActivityToXstsTransformer {
 	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension XstsActionUtil actionFactory = XstsActionUtil.INSTANCE
 	protected final extension ExpressionTransformer expressionTransformer
-	protected final extension VariableDeclarationTransformer variableDeclarationTransformer
 	protected final extension ActivityNodeTransformer activityNodeTransformer
 	protected final extension ActivityFlowTransformer activityFlowTransformer
 
@@ -69,9 +61,6 @@ class LowlevelActivityToXstsTransformer {
 	protected final XSTS xSts
 	protected Trace trace
 	
-	protected BatchTransformationRule<TypeDeclarations.Match, TypeDeclarations.Matcher> typeDeclarationsRule
-	protected BatchTransformationRule<PlainVariables.Match, PlainVariables.Matcher> plainVariablesRule
-	protected BatchTransformationRule<GlobalVariables.Match, GlobalVariables.Matcher> variableInitializationsRule
 	protected BatchTransformationRule<Nodes.Match, Nodes.Matcher> nodesRule 
 	protected BatchTransformationRule<InitialNodes.Match, InitialNodes.Matcher> initialNodesRule 
 	protected BatchTransformationRule<Flows.Match, Flows.Matcher> flowsRule 
@@ -82,98 +71,25 @@ class LowlevelActivityToXstsTransformer {
 	protected final extension ActivityLiterals activityLiterals = ActivityLiterals.INSTANCE
 	protected final extension XstsUtils xstsUtils = XstsUtils.INSTANCE
 	
-	new(Package _package) {
+	new(Package _package, ViatraQueryEngine engine, BatchTransformation transformation, BatchTransformationStatements statements, XSTS xsts, Trace trace) {
 		this._package = _package
-
-		this.engine = ViatraQueryEngine.on(new EMFScope(_package))
-		this.xSts = createXSTS => [
-			it.name = _package.name
-			it.typeDeclarations += nodeStateEnumTypeDeclaration
-			it.typeDeclarations += flowStateEnumTypeDeclaration
-		]
-		this.trace = new Trace(_package, xSts)
+		this.engine = engine
+		this.trace = trace
+		this.xSts = xsts
+		this.transformation = transformation
+		this.statements = statements
 		this.expressionTransformer = new ExpressionTransformer(this.trace)
-		this.variableDeclarationTransformer = new VariableDeclarationTransformer(this.trace)
 		this.activityNodeTransformer = new ActivityNodeTransformer(this.trace)
 		this.activityFlowTransformer = new ActivityFlowTransformer(this.trace)
-		this.transformation = BatchTransformation.forEngine(engine).build
-		this.statements = transformation.transformationStatements
 	}
 	
-	def execute() {
-		getTypeDeclarationsRule.fireAllCurrent
-		getPlainVariablesRule.fireAllCurrent
-		
-		getVariableInitializationsRule.fireAllCurrent
-		initializeVariableInitializingAction
-		
+	def execute() {		
 		getPinsRule.fireAllCurrent
 		getNodesRule.fireAllCurrent
 		getFlowsRule.fireAllCurrent
 		
 		getNormalActivityNodesRule.fireAllCurrent
 		getDecisionNodesRule.fireAllCurrent
-
-		getInitialNodesRule.fireAllCurrent
-		
-		xSts.eliminateNullActions
-
-		return new SimpleEntry<XSTS, L2STrace>(xSts, trace.getTrace)
-	}
-	
-	private def getVariableInitializationsRule() {
-		if (variableInitializationsRule === null) {
-			variableInitializationsRule = createRule(GlobalVariables.instance).action [
-				val lowlevelVariable = it.variable
-				val xStsVariable = trace.getXStsVariable(lowlevelVariable)
-				xStsVariable.expression = lowlevelVariable.initialValue.transformExpression
-			].build
-		}
-		return variableInitializationsRule
-	}
-
-	private def getTypeDeclarationsRule() {
-		if (typeDeclarationsRule === null) {
-			typeDeclarationsRule = createRule(TypeDeclarations.instance).action [
-				val lowlevelTypeDeclaration = it.typeDeclaration
-				val xStsTypeDeclaration = lowlevelTypeDeclaration.clone
-				xSts.typeDeclarations += xStsTypeDeclaration
-				xSts.publicTypeDeclarations += xStsTypeDeclaration
-				trace.put(lowlevelTypeDeclaration, xStsTypeDeclaration)
-			].build
-		}
-		return typeDeclarationsRule
-	}
-
-	private def getPlainVariablesRule() {
-		if (plainVariablesRule === null) {
-			plainVariablesRule = createRule(PlainVariables.instance).action [
-				val lowlevelVariable = it.variable
-				val xStsVariable = lowlevelVariable.transformVariableDeclaration
-				xSts.variableDeclarations += xStsVariable // Target model modification
-			].build
-		}
-		return plainVariablesRule
-	}
-	
-	private def initializeVariableInitializingAction() {
-		val xStsVariables = newLinkedList
-
-		for (activity : _package.activities) {
-			for (lowlevelVariable : activity.transitiveVariableDeclarations) {
-				xStsVariables += trace.getXStsVariable(lowlevelVariable)
-			}
-		}
-
-		for (xStsVariable : xStsVariables) {
-			// variableInitializingAction as it must be set before setting the configuration
-			xSts.variableInitializingAction => [
-				it.actions += createAssignmentAction => [
-					it.lhs = createDirectReferenceExpression => [it.declaration = xStsVariable]
-					it.rhs = xStsVariable.initialValue
-				]
-			]
-		}
 	}
 
 	private def getNodesRule() {
@@ -200,15 +116,6 @@ class LowlevelActivityToXstsTransformer {
 		trace.put(activityNode, xStsActivityNodeVariable)
 				
 		xSts.transitions.add(activityNode.transform.createXStsTransition)
-	}
-
-	private def getInitialNodesRule() {
-		if (initialNodesRule === null) {
-			initialNodesRule = createRule(InitialNodes.instance).action [				
-				xSts.entryEventAction.actions += it.activityNode.createRunningAssignmentAction
-			].build
-		}
-		return initialNodesRule
 	}
 
 	private def getFlowsRule() {
