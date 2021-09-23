@@ -151,7 +151,7 @@ class ComponentTransformer {
 		
 		for (adapterInstance : adapterInstances) {
 			val adapterComponentType = adapterInstance.type as AsynchronousAdapter
-			for (queue : adapterComponentType.messageQueues) {
+			for (queue : adapterComponentType.functioningMessageQueues) {
 				if (queue.isEnvironmentalAndCheck(systemPorts)) {
 					environmentalQueues += queue // Tracing
 				}
@@ -259,7 +259,7 @@ class ComponentTransformer {
 			val adapterComponentType = adapterInstance.type as AsynchronousAdapter
 			val originalMergedAction = mergedActions.get(adapterInstance)
 			// Input event processing
-			for (queue : adapterComponentType.messageQueues) {
+			for (queue : adapterComponentType.functioningMessageQueues) {
 				val queueMapping = queueTraceability.get(queue)
 				val masterQueue = queueMapping.masterQueue.arrayVariable
 				val masterSizeVariable = queueMapping.masterQueue.sizeVariable
@@ -830,8 +830,10 @@ class ComponentTransformer {
 	
 	private def getCapacity(MessageQueue queue, Collection<? extends Port> systemPorts) {
 		if (queue.isEnvironmentalAndCheck(systemPorts)) {
-			if (queue.checkAndGetMessageRetrievalCount == Integer.valueOf(1)) {
-				return 1
+			val messageRetrievalCount = queue.checkAndGetMessageRetrievalCount
+			if (messageRetrievalCount !== null) {
+				// For environmental queues, message retrieval count can serve as capacity
+				return messageRetrievalCount
 			}
 		}
 		val capacity = queue.capacity

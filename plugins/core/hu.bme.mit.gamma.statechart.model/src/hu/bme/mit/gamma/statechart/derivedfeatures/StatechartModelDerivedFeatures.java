@@ -568,6 +568,11 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return false;
 	}
 	
+	public static List<MessageQueue> getFunctioningMessageQueues(AsynchronousAdapter adapter) {
+		return adapter.getMessageQueues().stream()
+				.filter(it -> isFunctioning(it)).collect(Collectors.toList());
+	}
+	
 	public static List<Entry<Port, Event>> getStoredEvents(MessageQueue queue) {
 		List<Entry<Port, Event>> events = new ArrayList<Entry<Port, Event>>();
 		for (EventReference eventReference : queue.getEventReference()) {
@@ -632,6 +637,14 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		List<Port> topBoundPorts = getStoredEvents(queue).stream()
 				.map(it -> getBoundTopComponentPort(it.getKey())).collect(Collectors.toList());
 		return systemPorts.containsAll(topBoundPorts);
+	}
+	
+	public static boolean isFunctioning(MessageQueue queue) {
+		Expression capacity = queue.getCapacity();
+		Expression messageRetrievalCount = queue.getMessageRetrievalCount();
+		return evaluator.evaluateInteger(capacity) > 0 &&
+				(messageRetrievalCount == null ||
+						evaluator.evaluateInteger(messageRetrievalCount) > 0);
 	}
 	
 	public static List<Entry<Port, Event>> getInputEvents(EventReference eventReference) {
