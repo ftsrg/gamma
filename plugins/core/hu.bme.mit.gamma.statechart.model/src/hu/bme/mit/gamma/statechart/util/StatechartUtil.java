@@ -53,6 +53,7 @@ import hu.bme.mit.gamma.statechart.interface_.Port;
 import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
 import hu.bme.mit.gamma.statechart.interface_.TimeUnit;
 import hu.bme.mit.gamma.statechart.interface_.Trigger;
+import hu.bme.mit.gamma.statechart.interface_.WrappedPackageAnnotation;
 import hu.bme.mit.gamma.statechart.statechart.BinaryTrigger;
 import hu.bme.mit.gamma.statechart.statechart.BinaryType;
 import hu.bme.mit.gamma.statechart.statechart.CompositeElement;
@@ -362,6 +363,11 @@ public class StatechartUtil extends ActionUtil {
 	private void wrapComponent(CompositeComponent wrapper, ComponentInstance instance) {
 		Component component = StatechartModelDerivedFeatures.getDerivedType(instance);
 		
+		// Package annotation to denote the wrapping
+		Package _package = StatechartModelDerivedFeatures.getContainingPackage(component);
+		WrappedPackageAnnotation wrappedAnnotation = interfaceFactory.createWrappedPackageAnnotation();
+		_package.getAnnotations().add(wrappedAnnotation);
+		
 		// Parameter declarations
 		for (ParameterDeclaration parameterDeclaration : component.getParameterDeclarations()) {
 			ParameterDeclaration newParameter = ecoreUtil.clone(parameterDeclaration);
@@ -372,7 +378,7 @@ public class StatechartUtil extends ActionUtil {
 		}
 		
 		// Ports
-		List<Port> ports = component.getPorts();
+		List<Port> ports = StatechartModelDerivedFeatures.getAllPorts(component);
 		for (int i = 0; i < ports.size(); ++i) {
 			Port port = ports.get(i);
 			Port clonedPort = ecoreUtil.clone(port);

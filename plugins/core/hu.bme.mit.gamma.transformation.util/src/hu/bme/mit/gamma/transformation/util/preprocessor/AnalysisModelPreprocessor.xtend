@@ -67,7 +67,7 @@ class AnalysisModelPreprocessor {
 			logger.log(Level.INFO, "Wrapping statechart " + component)
 			_package.components.add(0, component.wrapSynchronousComponent)
 		}
-		// TODO check model annotation
+		// TODO check loop support in Theta configurations
 //		else if (component instanceof AsynchronousAdapter) {
 //			logger.log(Level.INFO, "Wrapping adapter " + component)
 //			_package.components.add(0, component.wrapAsynchronousComponent)

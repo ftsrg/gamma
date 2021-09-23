@@ -74,6 +74,7 @@ import hu.bme.mit.gamma.statechart.interface_.SimpleTrigger;
 import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
 import hu.bme.mit.gamma.statechart.interface_.TopComponentArgumentsAnnotation;
 import hu.bme.mit.gamma.statechart.interface_.UnfoldedPackageAnnotation;
+import hu.bme.mit.gamma.statechart.interface_.WrappedPackageAnnotation;
 import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference;
 import hu.bme.mit.gamma.statechart.statechart.ChoiceState;
 import hu.bme.mit.gamma.statechart.statechart.ClockTickReference;
@@ -184,8 +185,16 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	}
 	
 	public static boolean isUnfolded(Package gammaPackage) {
-		return gammaPackage.getAnnotations().stream().anyMatch(
-				it -> it instanceof UnfoldedPackageAnnotation);
+		return hasAnnotation(gammaPackage, UnfoldedPackageAnnotation.class);
+	}
+	
+	public static boolean isWrapped(Package gammaPackage) {
+		return hasAnnotation(gammaPackage, WrappedPackageAnnotation.class);
+	}
+	
+	public static boolean hasAnnotation(Package gammaPackage,
+			Class<? extends PackageAnnotation> annotation) {
+		return gammaPackage.getAnnotations().stream().anyMatch(it -> annotation.isInstance(it));
 	}
 	
 	public static Set<Package> getImportableInterfacePackages(Component component) {
@@ -1643,6 +1652,15 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 			// Top component
 			return new ArrayList<ComponentInstance>();
 		}
+	}
+	
+	public static List<ComponentInstance> getWraplessComponentInstanceChain(ComponentInstance instance) {
+		List<ComponentInstance> componentInstanceChain = getComponentInstanceChain(instance);
+		Package _package = getContainingPackage(instance);
+		if (isWrapped(_package)) {
+			componentInstanceChain.remove(0); // Removing the wrapper instance
+		}
+		return componentInstanceChain;
 	}
 	
 	public static List<ComponentInstance> getComponentInstanceChain(ComponentInstance instance) {
