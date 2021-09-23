@@ -272,22 +272,16 @@ class ComponentTransformer {
 				val block = createSequentialAction
 				
 				val messageRetrievalCount = queue.checkAndGetMessageRetrievalCount
-				if (messageRetrievalCount == Integer.valueOf(1)) {
-					mergedAction.actions += block
-					// TODO Incorrect, delete if loop unrolling works
-				}
-				else {
-					val maxValue = (messageRetrievalCount === null) ? 
-						xStsMasterSizeVariable.createReferenceExpression : // Null means ALL messages
-						xStsMasterSizeVariable.createReferenceExpression
-							.createMinExpression(messageRetrievalCount.toIntegerLiteral) // min(size, count)
-					
-					val queueLoop = loopIterationVariableName.createLoopAction(
-							0.toIntegerLiteral, maxValue) => [
-						it.action = block
-					]
-					mergedAction.actions += queueLoop
-				}
+				val maxValue = (messageRetrievalCount === null) ? 
+					xStsMasterSizeVariable.createReferenceExpression : // Null means ALL messages
+					xStsMasterSizeVariable.createReferenceExpression
+						.createMinExpression(messageRetrievalCount.toIntegerLiteral) // min(size, count)
+				
+				val queueLoop = loopIterationVariableName.createLoopAction(
+						0.toIntegerLiteral, maxValue) => [
+					it.action = block
+				]
+				mergedAction.actions += queueLoop
 				
 				val xStsEventIdVariableAction = createIntegerTypeDefinition.createVariableDeclarationAction(
 						xStsMasterQueue.eventIdLocalVariableName, xStsMasterQueue.peek)
