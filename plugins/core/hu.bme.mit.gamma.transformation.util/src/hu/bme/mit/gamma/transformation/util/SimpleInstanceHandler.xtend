@@ -72,12 +72,10 @@ class SimpleInstanceHandler {
 	
 	def getNewTransition(SynchronousComponentInstance newInstance,
 			Transition originalTransition) {
-		val newType = newInstance.type
-		if (newType instanceof StatechartDefinition) {
-			for (transition : newType.transitions) {
-				if (transition.helperEquals(originalTransition)) {
-					return transition
-				}
+		val newType = newInstance.getStatechart
+		for (transition : newType.transitions) {
+			if (transition.helperEquals(originalTransition)) {
+				return transition
 			}
 		}
 		return null // Can be null due to reduction
@@ -85,13 +83,10 @@ class SimpleInstanceHandler {
 	
 	def getNewTransitionId(SynchronousComponentInstance newInstance,
 			TransitionIdAnnotation originalIdAnnotation) {
-		val newType = newInstance.type
-		if (newType instanceof StatechartDefinition) {
-			for (annotation : newType.transitions.map[it.annotations].flatten
-					.filter(TransitionIdAnnotation)) {
-				if (annotation.helperEquals(originalIdAnnotation)) {
-					return annotation
-				}
+		val newType = newInstance.getStatechart
+		for (annotation : newType.transitions.map[it.idAnnotation]) {
+			if (annotation.helperEquals(originalIdAnnotation)) {
+				return annotation
 			}
 		}
 		return null // Can be null due to reduction
@@ -126,13 +121,11 @@ class SimpleInstanceHandler {
 	}
 	
 	def getNewState(SynchronousComponentInstance newInstance, State originalState) {
-		val newType = newInstance.type
-		if (newType instanceof StatechartDefinition) {
-			for (state : newType.allStates) {
-				// Not helper equals, as reduction can change the subregions
-				if (state.equal(originalState)) {
-					return state
-				}
+		val newType = newInstance.getStatechart
+		for (state : newType.allStates) {
+			// Not helper equals, as reduction can change the subregions
+			if (state.equal(originalState)) {
+				return state
 			}
 		}
 		return null // Can be null due to reduction
@@ -143,13 +136,11 @@ class SimpleInstanceHandler {
 	}
 	
 	def getNewRegion(SynchronousComponentInstance newInstance, Region originalRegion) {
-		val newType = newInstance.type
-		if (newType instanceof StatechartDefinition) {
-			for (region : newType.allRegions) {
-				// Not helper equals, as reduction can change the subregions
-				if (region.equal(originalRegion)) {
-					return region
-				}
+		val newType = newInstance.getStatechart
+		for (region : newType.allRegions) {
+			// Not helper equals, as reduction can change the subregions
+			if (region.equal(originalRegion)) {
+				return region
 			}
 		}
 		return null // Can be null due to reduction
@@ -215,7 +206,7 @@ class SimpleInstanceHandler {
 	
 	def getNewVariable(SynchronousComponentInstance newInstance,
 			VariableDeclaration originalVariable) {
-		val newType = newInstance.type as StatechartDefinition
+		val newType = newInstance.getStatechart
 		for (variable : newType.variableDeclarations) {
 			if (variable.helperEquals(originalVariable)) {
 				return variable
@@ -288,7 +279,8 @@ class SimpleInstanceHandler {
 	
 	
 	def getNewAsynchronousSimpleInstances(ComponentInstanceReference original, Component newType) {
-		return newType.allAsynchronousSimpleInstances.filter[original.contains(it)].toList
+		return newType.allAsynchronousSimpleInstances
+			.filter[original.contains(it)].toList
 	}
 	
 	def contains(ComponentInstanceReference original, ComponentInstance copy) {
@@ -305,7 +297,7 @@ class SimpleInstanceHandler {
 	
 	// Currently not used- maybe in the future?
 	
-	def <T extends NamedElement> getNewObject1(ComponentInstanceReference originalInstance,
+	def <T extends NamedElement> getNewObject(ComponentInstanceReference originalInstance,
 			T originalObject, Component newTopComponent) {
 		val originalFqn = originalObject.FQNUpToComponent
 		val newInstance = originalInstance.checkAndGetNewSimpleInstance(newTopComponent)

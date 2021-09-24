@@ -962,6 +962,10 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
     public static boolean isStatechart(ComponentInstance instance) {
     	return isStatechart(getDerivedType(instance));
     }
+    
+    public static StatechartDefinition getStatechart(ComponentInstance instance) {
+    	return (StatechartDefinition) getDerivedType(instance);
+    }
 	
 	public static int getLevel(StateNode stateNode) {
 		if (isTopRegion(getParentRegion(stateNode))) {
@@ -1251,14 +1255,21 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return lhs.getPort() == rhs.getPort() && lhs.getEvent() == rhs.getEvent();
 	}
 	
-	public static String getId(Transition transition) {
+	public static TransitionIdAnnotation getIdAnnotation(Transition transition) {
 		for (TransitionAnnotation annotation : transition.getAnnotations()) {
 			if (annotation instanceof TransitionIdAnnotation) {
-				TransitionIdAnnotation transitionIdAnnotation = (TransitionIdAnnotation) annotation;
-				return transitionIdAnnotation.getName();
+				return (TransitionIdAnnotation) annotation;
 			}
 		}
 		return null;
+	}
+	
+	public static String getId(Transition transition) {
+		TransitionIdAnnotation idAnnotation = getIdAnnotation(transition);
+		if (idAnnotation == null) {
+			return null;
+		}
+		return idAnnotation.getName();
 	}
 	
 	public static Collection<PortEventReference> getPortEventReferences(Transition transition) {
