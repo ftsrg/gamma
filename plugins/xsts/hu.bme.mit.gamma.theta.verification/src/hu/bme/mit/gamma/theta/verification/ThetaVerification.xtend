@@ -28,12 +28,12 @@ class ThetaVerification extends AbstractVerification {
 		this.execute(modelFile, queryFile, #[
 				"",
 				"--domain EXPL --refinement SEQ_ITP --maxenum 250 --initprec CTRL"
-//				"--domain EXPL_PRED_COMBINED --initprec CTRL"
+//				"--domain EXPL_PRED_COMBINED --autoexpl NEWOPERANDS --initprec CTRL"
 			]
 		)
 		// --domain PRED_CART --refinement SEQ_ITP // default - cannot be used with loops
 		// --domain EXPL --refinement SEQ_ITP --maxenum 250 // --initprec CTRL should be used to support loops
-		// --domain EXPL_PRED_COMBINED --maxatomcount ALLASSUMES --initprec CTRL
+		// --domain EXPL_PRED_COMBINED --autoexpl NEWOPERANDS --initprec CTRL
 	}
 	
 	def Result execute(File modelFile, File queryFile,
