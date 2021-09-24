@@ -10,6 +10,8 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.transformation.util
 
+import hu.bme.mit.gamma.expression.model.NamedElement
+import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.property.model.ComponentInstancePortReference
 import hu.bme.mit.gamma.property.model.ComponentInstanceStateConfigurationReference
 import hu.bme.mit.gamma.property.model.ComponentInstanceTransitionReference
@@ -19,9 +21,11 @@ import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Port
+import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.Transition
+import hu.bme.mit.gamma.statechart.statechart.TransitionIdAnnotation
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.util.Collection
 
@@ -29,7 +33,6 @@ import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.transformation.util.Namings.*
-import hu.bme.mit.gamma.expression.model.VariableDeclaration
 
 class SimpleInstanceHandler {
 	// Singleton
@@ -67,13 +70,27 @@ class SimpleInstanceHandler {
 		return newTransitions
 	}
 	
-	private def getNewTransition(SynchronousComponentInstance newInstance,
+	def getNewTransition(SynchronousComponentInstance newInstance,
 			Transition originalTransition) {
 		val newType = newInstance.type
 		if (newType instanceof StatechartDefinition) {
 			for (transition : newType.transitions) {
 				if (transition.helperEquals(originalTransition)) {
 					return transition
+				}
+			}
+		}
+		return null // Can be null due to reduction
+	}
+	
+	def getNewTransitionId(SynchronousComponentInstance newInstance,
+			TransitionIdAnnotation originalIdAnnotation) {
+		val newType = newInstance.type
+		if (newType instanceof StatechartDefinition) {
+			for (annotation : newType.transitions.map[it.annotations].flatten
+					.filter(TransitionIdAnnotation)) {
+				if (annotation.helperEquals(originalIdAnnotation)) {
+					return annotation
 				}
 			}
 		}
@@ -108,7 +125,7 @@ class SimpleInstanceHandler {
 		return newStates
 	}
 	
-	private def getNewState(SynchronousComponentInstance newInstance, State originalState) {
+	def getNewState(SynchronousComponentInstance newInstance, State originalState) {
 		val newType = newInstance.type
 		if (newType instanceof StatechartDefinition) {
 			for (state : newType.allStates) {
@@ -122,8 +139,24 @@ class SimpleInstanceHandler {
 	}
 	
 	private def equal(State lhs, State rhs) {
-		return lhs.name == rhs.name &&
-			lhs.parentRegion.name == rhs.parentRegion.name
+		return lhs.FQN == rhs.FQN
+	}
+	
+	def getNewRegion(SynchronousComponentInstance newInstance, Region originalRegion) {
+		val newType = newInstance.type
+		if (newType instanceof StatechartDefinition) {
+			for (region : newType.allRegions) {
+				// Not helper equals, as reduction can change the subregions
+				if (region.equal(originalRegion)) {
+					return region
+				}
+			}
+		}
+		return null // Can be null due to reduction
+	}
+	
+	private def equal(Region lhs, Region rhs) {
+		return lhs.FQN == rhs.FQN
 	}
 	
 	// Component instance port references
@@ -149,7 +182,7 @@ class SimpleInstanceHandler {
 		return newPorts
 	}
 	
-	private def getNewPort(SynchronousComponentInstance newInstance, Port originalPort) {
+	def getNewPort(SynchronousComponentInstance newInstance, Port originalPort) {
 		val newType = newInstance.type
 		for (port : newType.ports) {
 			if (port.helperEquals(originalPort)) {
@@ -180,7 +213,7 @@ class SimpleInstanceHandler {
 		return newVariable
 	}
 	
-	private def getNewVariable(SynchronousComponentInstance newInstance,
+	def getNewVariable(SynchronousComponentInstance newInstance,
 			VariableDeclaration originalVariable) {
 		val newType = newInstance.type as StatechartDefinition
 		for (variable : newType.variableDeclarations) {
@@ -268,6 +301,26 @@ class SimpleInstanceHandler {
 		// E.g., the FQN of the chain "a -> b" is equal to the name of instance "a_b"
 		return originalInstances.head.name == copyInstances.head.name &&
 			copy.name.startsWith(originalInstances.FQN)
+	}
+	
+	// Currently not used- maybe in the future?
+	
+	def <T extends NamedElement> getNewObject1(ComponentInstanceReference originalInstance,
+			T originalObject, Component newTopComponent) {
+		val originalFqn = originalObject.FQNUpToComponent
+		val newInstance = originalInstance.checkAndGetNewSimpleInstance(newTopComponent)
+		val newComponent = newInstance.type
+		val contents = newComponent.getAllContentsOfType(originalObject.class)
+		for (content : contents) {
+			val fqn = content.FQNUpToComponent
+			// Structural properties during reduction change, names do not change
+			// FQN does not work for elements without named element containment chains, e.g., transitions
+			if (originalFqn == fqn) {
+				return content as T
+			}
+		}
+		throw new IllegalStateException("New object not found: " + originalObject + 
+			"Known Xtext bug: for generated gdp, the variables references are not resolved.")
 	}
 	
 }
