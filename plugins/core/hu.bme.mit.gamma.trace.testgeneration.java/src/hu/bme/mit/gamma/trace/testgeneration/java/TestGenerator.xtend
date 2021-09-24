@@ -92,9 +92,10 @@ class TestGenerator {
     	this.testGeneratorUtil = new TestGeneratorUtil(component)
 		this.actAndAssertSerializer = new ActAndAssertSerializer(component, TEST_INSTANCE_NAME, TIMER_OBJECT_NAME)
 		if (traces.flatMap[it.annotations].findFirst[it instanceof ExecutionTraceAllowedWaitingAnnotation] !== null) {
-			this.waitingHandle = new WaitingAllowedHandler(traces.get(0),actAndAssertSerializer)
-		} else {
-			this.waitingHandle = new NoWaitingAllowedHandler(traces.get(0),actAndAssertSerializer)
+			this.waitingHandle = new WaitingAllowedHandler(firstTrace,actAndAssertSerializer)
+		} 
+		else {
+			this.waitingHandle = new DefaultWaitingAllowedHandler(firstTrace,actAndAssertSerializer)
 		}
 	}
 	

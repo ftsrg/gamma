@@ -33,9 +33,11 @@ class ActAndAssertSerializer {
 		this.component = component
 		this.TIMER_OBJECT_NAME = TIMER_OBJECT_NAME
 		this.TEST_INSTANCE_NAME = TEST_INSTANCE_NAME
-		util = new TestGeneratorUtil(component)
+		this.util = new TestGeneratorUtil(component)
 	}
 
+
+	// Asserts
 	protected def dispatch String serializeAssert(
 		OrAssert assert) '''(«FOR operand : assert.asserts SEPARATOR " || "»«operand.serializeAssert»«ENDFOR»)'''
 
@@ -58,7 +60,7 @@ class ActAndAssertSerializer {
 
 
 
-
+	// Acts
 	protected def dispatch String serialize(Reset reset) '''
 		«IF util.needTimer(component)»«TIMER_OBJECT_NAME».reset(); // Timer before the system«ENDIF»
 		«TEST_INSTANCE_NAME».reset();
