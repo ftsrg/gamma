@@ -16,7 +16,7 @@ class QueueNamings {
 		MessageQueue queue, ComponentInstance instance) '''sizeMaster«queue.name.toFirstUpper»Of«instance.name»'''
 	
 	def static String getSlaveQueueName(ParameterDeclaration parameterDeclaration,
-			Port port, ComponentInstance instance)
+			Port port, ComponentInstance instance) // For traceability reasons, parameterDeclaration is needed
 		'''slave_«port.name»_«parameterDeclaration.name»Of«instance.name»'''
 	def static String getSlaveSizeVariableName(
 			ParameterDeclaration parameterDeclaration, Port port, ComponentInstance instance)

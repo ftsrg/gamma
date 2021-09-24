@@ -10,11 +10,11 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.xsts.uppaal.transformation
 
+import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.xsts.model.XSTS
 import java.util.Map
 import uppaal.NTA
 import uppaal.declarations.VariableContainer
-import hu.bme.mit.gamma.expression.model.VariableDeclaration
 
 class Traceability {
 	

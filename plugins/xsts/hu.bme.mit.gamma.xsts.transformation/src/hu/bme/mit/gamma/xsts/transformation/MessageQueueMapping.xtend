@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.xsts.transformation
 
+import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.Port
 import java.util.List
@@ -23,6 +24,11 @@ class MessageQueueMapping {
 	
 	Set<Entry<Port, Event>> portEvents
 	MessageQueueStruct masterQueue
-	Map<Entry<Port, Event>, List<MessageQueueStruct>> slaveQueues // Event id - list is in accordance with the order of event parameters
+	
+	// Event id - list is in accordance with the order of event parameters
+	// Some MessageQueueStructs are duplicated due to optimization
+	Map<Entry<Port, Event>, List<MessageQueueStruct>> slaveQueues
+	// Same MessageQueueStructs as in slaveQueues, just associated to Types
+	Map<? extends Type, List<MessageQueueStruct>> typeSlaveQueues 
 	
 }

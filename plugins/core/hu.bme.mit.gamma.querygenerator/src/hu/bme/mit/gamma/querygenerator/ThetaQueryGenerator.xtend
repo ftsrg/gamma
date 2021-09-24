@@ -20,6 +20,7 @@ import hu.bme.mit.gamma.querygenerator.operators.TemporalOperator
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.composite.MessageQueue
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
+import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.Port
@@ -157,6 +158,9 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 	
 	def isSynchronousSourceInEvent(String targetInEventName) {
 		try {
+			if (!component.synchronous) {
+				return false
+			}
 			targetInEventName.getSynchronousSourceInEvent
 			return true
 		} catch (IllegalArgumentException e) {
@@ -166,6 +170,9 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 	
 	def isSynchronousSourceInEventParameter(String targetInEventParameterName) {
 		try {
+			if (!component.synchronous) {
+				return false
+			}
 			targetInEventParameterName.getSynchronousSourceInEventParameter
 			return true
 		} catch (IllegalArgumentException e) {
@@ -173,19 +180,11 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 		}
 	}
 	
-	def isSynchronousSourceRecordInEventParameter(String targetInEventParameterName) {
-		try {
-			val array = targetInEventParameterName.getSynchronousSourceInEventParameter
-			val parameter = array.get(2) as ValueDeclaration
-			val type = parameter.typeDefinition
-			return type instanceof RecordTypeDefinition
-		} catch (IllegalArgumentException e) {
-			return false
-		}
-	}
-	
 	def isAsynchronousSourceMessageQueue(String targetMasterQueueName) {
 		try {
+			if (!component.asynchronous) {
+				return false
+			}
 			targetMasterQueueName.getAsynchronousSourceMessageQueue
 			return true
 		} catch (IllegalArgumentException e) {
@@ -195,6 +194,9 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 	
 	def isAsynchronousSourceInEventParameter(String targetSlaveQueueName) {
 		try {
+			if (!component.asynchronous) {
+				return false
+			}
 			targetSlaveQueueName.getAsynchronousSourceInEventParameter
 			return true
 		} catch (IllegalArgumentException e) {
@@ -418,5 +420,16 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 		}
 		throw new IllegalArgumentException("Not known id")
 	}
+	
+	// Temporary utility methods as long as single AAs are supported
+	
+    private def isSynchronous(Component component) {
+    	return component.adapter || // Single adapters are handled synchronous components during back-annotation
+    		StatechartModelDerivedFeatures.isSynchronous(component)
+    }
+    
+    private def isAsynchronous(Component component) {
+    	return !component.synchronous
+    }
 	
 }

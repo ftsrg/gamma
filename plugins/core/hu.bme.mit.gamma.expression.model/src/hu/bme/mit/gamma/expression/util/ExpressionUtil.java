@@ -939,13 +939,35 @@ public class ExpressionUtil {
 		addAnnotation(variable, factory.createTransientVariableDeclarationAnnotation());
 	}
 	
-	public void addResetableAnnotation(VariableDeclaration variable) {
-		addAnnotation(variable, factory.createResetableVariableDeclarationAnnotation());
+	public void addResettableAnnotation(VariableDeclaration variable) {
+		addAnnotation(variable, factory.createResettableVariableDeclarationAnnotation());
+	}
+	
+	public void addEnvironmentResettableAnnotation(VariableDeclaration variable) {
+		addAnnotation(variable, factory.createEnvironmentResettableVariableDeclarationAnnotation());
+	}
+	
+	public void addClockAnnotation(VariableDeclaration variable) {
+		addAnnotation(variable, factory.createClockVariableDeclarationAnnotation());
 	}
 	
 	public void addAnnotation(VariableDeclaration variable, VariableDeclarationAnnotation annotation) {
 		if (variable != null) {
 			variable.getAnnotations().add(annotation);
+		}
+	}
+	
+	public void removeVariableDeclarationAnnotations(
+			Collection<? extends VariableDeclaration> variables,
+			Class<? extends VariableDeclarationAnnotation> annotationClass) {
+		for (VariableDeclaration variable : variables) {
+			List<VariableDeclarationAnnotation> annotations =
+					new ArrayList<VariableDeclarationAnnotation>(variable.getAnnotations());
+			for (VariableDeclarationAnnotation annotation : annotations) {
+				if (annotationClass.isInstance(annotation)) {
+					ecoreUtil.remove(annotation);
+				}
+			}
 		}
 	}
 	
@@ -1006,6 +1028,15 @@ public class ExpressionUtil {
 		return notExpression;
 	}
 	
+	public IfThenElseExpression createIfThenElseExpression(Expression _if,
+			Expression then, Expression _else) {
+		IfThenElseExpression ifThenElseExpression = factory.createIfThenElseExpression();
+		ifThenElseExpression.setCondition(_if);
+		ifThenElseExpression.setThen(then);
+		ifThenElseExpression.setElse(_else);
+		return ifThenElseExpression;
+	}
+	
 	public DirectReferenceExpression createReferenceExpression(ValueDeclaration variable) {
 		DirectReferenceExpression reference = factory.createDirectReferenceExpression();
 		reference.setDeclaration(variable);
@@ -1038,6 +1069,23 @@ public class ExpressionUtil {
 		inequalityExpression.setLeftOperand(lhs);
 		inequalityExpression.setRightOperand(rhs);
 		return inequalityExpression;
+	}
+	
+	public LessExpression createLessExpression(Expression lhs, Expression rhs) {
+		LessExpression lessExpression = factory.createLessExpression();
+		lessExpression.setLeftOperand(lhs);
+		lessExpression.setRightOperand(rhs);
+		return lessExpression;
+	}
+	
+	public IfThenElseExpression createMinExpression(Expression lhs, Expression rhs) {
+		return createIfThenElseExpression(createLessExpression(lhs, rhs),
+				ecoreUtil.clone(lhs), ecoreUtil.clone(rhs));
+	}
+	
+	public IfThenElseExpression createMaxExpression(Expression lhs, Expression rhs) {
+		return createIfThenElseExpression(createLessExpression(lhs, rhs),
+				ecoreUtil.clone(rhs), ecoreUtil.clone(lhs));
 	}
 	
 	public EnumerationLiteralExpression createEnumerationLiteralExpression(
@@ -1101,6 +1149,10 @@ public class ExpressionUtil {
 		}
 		potentialContainer.getOperands().addAll(expressions);
 		return potentialContainer;
+	}
+	
+	public Expression wrapIntoOrExpression(Collection<? extends Expression> expressions) {
+		return wrapIntoMultiaryExpression(expressions, factory.createOrExpression());
 	}
 	
 	public ReferenceExpression index(ValueDeclaration declaration, List<Expression> indexes) {

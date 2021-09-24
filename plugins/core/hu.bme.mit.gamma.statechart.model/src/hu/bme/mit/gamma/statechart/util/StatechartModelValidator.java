@@ -1809,7 +1809,14 @@ public class StatechartModelValidator extends ActionModelValidator {
 			int count = expressionEvaluator.evaluateInteger(messageRetrievalCount);
 			if (count < 1) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-						"Message retrieval count must not be less than 1", 
+					"Message retrieval count must not be less than 1", 
+						new ReferenceInfo(CompositeModelPackage.Literals.MESSAGE_QUEUE__MESSAGE_RETRIEVAL_COUNT)));
+			}
+			Expression capacityExpression = queue.getCapacity(); 
+			int capacity = expressionEvaluator.evaluateInteger(capacityExpression);
+			if (capacity < count) {
+				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+						"Message retrieval count must be less than or equals to the capacity", 
 							new ReferenceInfo(CompositeModelPackage.Literals.MESSAGE_QUEUE__MESSAGE_RETRIEVAL_COUNT)));
 			}
 		}
@@ -1886,7 +1893,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 			if (messageRetrievalCount != null) {
 				int count = expressionEvaluator.evaluateInteger(messageRetrievalCount);
 				if (count == 1) {
-					if (controlSpecifications.stream().noneMatch(it -> it instanceof AnyTrigger)) {
+					if (controlSpecifications.stream().noneMatch(it -> it.getTrigger() instanceof AnyTrigger)) {
 						validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING,
 							"Some messages might not be processed during execution as the message retrieval count is 1, "
 									+ "but there is no any trigger among the control specifications",

@@ -17,9 +17,11 @@ import hu.bme.mit.gamma.uppaal.util.AssignmentExpressionCreator
 import hu.bme.mit.gamma.uppaal.util.NtaBuilder
 import hu.bme.mit.gamma.uppaal.util.NtaOptimizer
 import hu.bme.mit.gamma.uppaal.util.TypeTransformer
+import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.AssumeAction
 import hu.bme.mit.gamma.xsts.model.EmptyAction
+import hu.bme.mit.gamma.xsts.model.HavocAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
@@ -30,7 +32,6 @@ import java.util.Set
 import uppaal.NTA
 import uppaal.declarations.ValueIndex
 import uppaal.declarations.VariableContainer
-import uppaal.expressions.Expression
 import uppaal.templates.Edge
 import uppaal.templates.Location
 import uppaal.templates.LocationKind
@@ -55,7 +56,9 @@ class XstsToUppaalTransformer {
 	protected final extension TypeTransformer typeTransformer
 	protected final extension NtaOptimizer ntaOptimizer
 	
+	protected final extension HavocHandler havocHandler = HavocHandler.INSTANCE
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
+	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	
 	new(XSTS xSts) {
 		this.xSts = xSts
@@ -137,7 +140,7 @@ class XstsToUppaalTransformer {
 	protected def transformVariable(VariableDeclaration variable) {
 		val type = variable.type
 		val uppaalType =
-		if (xSts.clockVariables.contains(variable)) {
+		if (variable.clock) {
 			nta.clock.createTypeReference
 		}
 		else {
@@ -177,9 +180,39 @@ class XstsToUppaalTransformer {
 			val xStsVariable = xStsDeclaration as VariableDeclaration
 			val uppaalVariable = traceability.get(xStsVariable)
 			val uppaalRhs = assignmentAction.rhs.transform
-			newSource = newSource.createUpdateEdge(uppaalVariable, uppaalRhs)
+			newSource = newSource.createUpdateEdge(nextCommittedLocationName,
+					uppaalVariable, uppaalRhs)
 		}
 		return newSource
+	}
+	
+	protected def dispatch Location transformAction(HavocAction action, Location source) {
+		val xStsDeclaration = action.lhs.declaration
+		val xStsVariable = xStsDeclaration as VariableDeclaration
+		val uppaalVariable = traceability.get(xStsVariable)
+		
+		val selectionStruct = xStsVariable.createSelection
+		val selection = selectionStruct.selection
+		val guard = selectionStruct.guard
+		
+		if (selection === null) {
+			return source // We do not do anything
+		}
+		
+		// Optimization - the type of the variable can be set to this selection type
+		val type = selection.typeDefinition.clone
+		uppaalVariable.typeDefinition = type
+		//
+		
+		val target = source.createUpdateEdge(nextCommittedLocationName,
+				uppaalVariable, selection.createIdentifierExpression)
+		val edge = target.incomingEdges.head
+		edge.selection += selection
+		if (guard !== null) {
+			edge.addGuard(guard)
+		}
+		
+		return target
 	}
 	
 	protected def dispatch Location transformAction(VariableDeclarationAction action, Location source) {
@@ -190,16 +223,7 @@ class XstsToUppaalTransformer {
 		transientVariables += uppaalVariable
 		val xStsInitialValue = xStsVariable.initialValue
 		val uppaalRhs = xStsInitialValue?.transform
-		return source.createUpdateEdge(uppaalVariable, uppaalRhs)
-	}
-	
-	protected def createUpdateEdge(Location source,
-			VariableContainer uppaalVariable, Expression uppaalRhs) {
-		val edge = source.createEdgeCommittedSource(nextCommittedLocationName)
-		if (uppaalRhs !== null) {
-			edge.update += uppaalVariable.createAssignmentExpression(uppaalRhs)
-		}
-		return edge.target
+		return source.createUpdateEdge(nextCommittedLocationName, uppaalVariable, uppaalRhs)
 	}
 	
 	protected def void extendNameWithHash(VariableContainer uppaalContainer) {

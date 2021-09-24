@@ -11,6 +11,13 @@
 package hu.bme.mit.gamma.trace.testgeneration.java
 
 import hu.bme.mit.gamma.expression.model.Declaration
+import hu.bme.mit.gamma.statechart.composite.AbstractAsynchronousCompositeComponent
+import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent
+import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
+import hu.bme.mit.gamma.statechart.composite.AsynchronousCompositeComponent
+import hu.bme.mit.gamma.statechart.composite.ComponentInstance
+import hu.bme.mit.gamma.statechart.composite.SynchronousComponent
+import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.statechart.statechart.State
@@ -277,6 +284,26 @@ class TestGenerator {
 		return true
 	}
 	
+	/**
+     * Returns whether there are timing specifications in any of the statecharts.
+     */
+    protected def boolean needTimer(Component component) {
+    	if (component instanceof StatechartDefinition) {
+    		return component.timeoutDeclarations.size > 0
+    	}
+    	else if (component instanceof AbstractSynchronousCompositeComponent) {
+    		return component.components.map[it.type.needTimer].contains(true)
+    	}
+    	else if (component instanceof AsynchronousAdapter) {
+    		return component.wrappedComponent.type.needTimer
+    	}
+    	else if (component instanceof AbstractAsynchronousCompositeComponent) {
+    		return component.components.map[it.type.needTimer].contains(true)
+    	}
+    	else {
+    		throw new IllegalArgumentException("Not known component: " + component)
+    	}
+    }
 	
 	
 }

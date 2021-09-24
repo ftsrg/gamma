@@ -181,21 +181,23 @@ public class ExpressionModelValidator {
 		Type type = typeDeterminator.getType(operand);
 		// The typeDeterminator.getTypeDefinition call would clone the record type and the new record type would
 		// have semantically equal, but actually different objects: fieldDeclarations.contains would not work
-		TypeDefinition typeDefinition = ExpressionModelDerivedFeatures.getTypeDefinition(type);
-		if (!(typeDefinition instanceof RecordTypeDefinition)) {
-			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-					"The referred declaration is not accessible as a record", 
-					new ReferenceInfo(ExpressionModelPackage.Literals.ACCESS_EXPRESSION__OPERAND)));
-			return validationResultMessages;
-		}
-		// Check if the referred field exists
-		RecordTypeDefinition recordType = (RecordTypeDefinition) typeDefinition;
-		List<FieldDeclaration> fieldDeclarations = recordType.getFieldDeclarations();
-		Declaration referredField = recordAccess.getFieldReference().getFieldDeclaration();
-		if (!fieldDeclarations.contains(referredField)){
-			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-					"The record type does not contain any fields with the given name", 
-					new ReferenceInfo(ExpressionModelPackage.Literals.RECORD_ACCESS_EXPRESSION__FIELD_REFERENCE)));
+		if (type != null) {
+			TypeDefinition typeDefinition = ExpressionModelDerivedFeatures.getTypeDefinition(type);
+			if (!(typeDefinition instanceof RecordTypeDefinition)) {
+				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+						"The referred declaration is not accessible as a record", 
+						new ReferenceInfo(ExpressionModelPackage.Literals.ACCESS_EXPRESSION__OPERAND)));
+				return validationResultMessages;
+			}
+			// Check if the referred field exists
+			RecordTypeDefinition recordType = (RecordTypeDefinition) typeDefinition;
+			List<FieldDeclaration> fieldDeclarations = recordType.getFieldDeclarations();
+			Declaration referredField = recordAccess.getFieldReference().getFieldDeclaration();
+			if (!fieldDeclarations.contains(referredField)){
+				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+						"The record type does not contain any fields with the given name", 
+						new ReferenceInfo(ExpressionModelPackage.Literals.RECORD_ACCESS_EXPRESSION__FIELD_REFERENCE)));
+			}
 		}
 		return validationResultMessages;
 	}

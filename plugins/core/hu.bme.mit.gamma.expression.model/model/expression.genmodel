@@ -188,7 +188,9 @@
     <genClasses ecoreClass="expression.ecore#//UnaryPlusExpression"/>
     <genClasses image="false" ecoreClass="expression.ecore#//VariableDeclarationAnnotation"/>
     <genClasses ecoreClass="expression.ecore#//TransientVariableDeclarationAnnotation"/>
-    <genClasses ecoreClass="expression.ecore#//ResetableVariableDeclarationAnnotation"/>
+    <genClasses ecoreClass="expression.ecore#//ResettableVariableDeclarationAnnotation"/>
     <genClasses ecoreClass="expression.ecore#//FinalVariableDeclarationAnnotation"/>
+    <genClasses ecoreClass="expression.ecore#//EnvironmentResettableVariableDeclarationAnnotation"/>
+    <genClasses ecoreClass="expression.ecore#//ClockVariableDeclarationAnnotation"/>
   </genPackages>
 </genmodel:GenModel>

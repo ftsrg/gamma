@@ -260,10 +260,12 @@ class SimpleInstanceHandler {
 	
 	def contains(ComponentInstanceReference original, ComponentInstance copy) {
 		val originalInstances = original.componentInstanceChain
-		val copyInstances = copy.parentComponentInstances
-		copyInstances += copy
+		 // If the (AA) component is wrapped, the original will not contain the wrapper instance
+		val copyInstances = copy.wraplessComponentInstanceChain
+		
 		// The naming conventions are clear
 		// Without originalInstances.head.name == copyInstances.head.name ambiguous naming situations could occur
+		// E.g., the FQN of the chain "a -> b" is equal to the name of instance "a_b"
 		return originalInstances.head.name == copyInstances.head.name &&
 			copy.name.startsWith(originalInstances.FQN)
 	}

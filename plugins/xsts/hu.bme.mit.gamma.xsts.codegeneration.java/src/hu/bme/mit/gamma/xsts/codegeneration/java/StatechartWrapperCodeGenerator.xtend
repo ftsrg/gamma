@@ -17,6 +17,7 @@ import hu.bme.mit.gamma.xsts.model.XSTS
 
 import static extension hu.bme.mit.gamma.codegenerator.java.util.Namings.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.LowlevelNamings.*
 
 class StatechartWrapperCodeGenerator {
@@ -183,12 +184,12 @@ class StatechartWrapperCodeGenerator {
 			}
 			
 			private void executeStep() {
-				«IF !xSts.clockVariables.empty»int elapsedTime = (int) timer.getElapsedTime(this, TimeUnit.MILLISECOND);«ENDIF»
+				«IF xSts.hasClockVariable»int elapsedTime = (int) timer.getElapsedTime(this, TimeUnit.MILLISECOND);«ENDIF»
 				«FOR timeout : xSts.clockVariables»
 					«CLASS_NAME.toFirstLower».set«timeout.name.toFirstUpper»(«CLASS_NAME.toFirstLower».get«timeout.name.toFirstUpper»() + elapsedTime);
 				«ENDFOR»
 				«CLASS_NAME.toFirstLower».runCycle();
-				«IF !xSts.clockVariables.empty»timer.saveTime(this);«ENDIF»
+				«IF xSts.hasClockVariable»timer.saveTime(this);«ENDIF»
 				notifyListeners();
 			}
 			

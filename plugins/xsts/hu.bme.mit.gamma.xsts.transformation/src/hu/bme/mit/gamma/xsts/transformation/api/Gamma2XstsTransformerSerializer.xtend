@@ -38,7 +38,6 @@ class Gamma2XstsTransformerSerializer {
 	protected final Integer schedulingConstraint
 	// Configuration
 	protected final boolean optimize
-	protected final boolean useHavocActions
 	protected final boolean extractGuards
 	protected final TransitionMerging transitionMerging
 	// Slicing
@@ -68,7 +67,7 @@ class Gamma2XstsTransformerSerializer {
 			String targetFolderUri, String fileName,
 			Integer schedulingConstraint) {
 		this(component, arguments, targetFolderUri, fileName, schedulingConstraint,
-			true, false, false, TransitionMerging.HIERARCHICAL,
+			true, false, TransitionMerging.HIERARCHICAL,
 			null, new AnnotatablePreprocessableElements(null, null, null, null, null,
 				InteractionCoverageCriterion.EVERY_INTERACTION, InteractionCoverageCriterion.EVERY_INTERACTION,
 				null, DataflowCoverageCriterion.ALL_USE,
@@ -79,7 +78,7 @@ class Gamma2XstsTransformerSerializer {
 	new(Component component, List<Expression> arguments,
 			String targetFolderUri, String fileName,
 			Integer schedulingConstraint,
-			boolean optimize, boolean useHavocActions, boolean extractGuards,
+			boolean optimize, boolean extractGuards,
 			TransitionMerging transitionMerging,
 			PropertyPackage slicingProperties,
 			AnnotatablePreprocessableElements annotatableElements,
@@ -91,7 +90,6 @@ class Gamma2XstsTransformerSerializer {
 		this.schedulingConstraint = schedulingConstraint
 		//
 		this.optimize = optimize
-		this.useHavocActions = useHavocActions
 		this.extractGuards = extractGuards
 		this.transitionMerging = transitionMerging
 		//
@@ -116,7 +114,7 @@ class Gamma2XstsTransformerSerializer {
 				targetFolderUri, fileName)
 		slicerAnnotatorAndPropertyGenerator.execute
 		val gammaToXSTSTransformer = new GammaToXstsTransformer(
-			schedulingConstraint, true, true, useHavocActions, extractGuards,
+			schedulingConstraint, true, true, extractGuards,
 			transitionMerging, initialState, initialStateSetting)
 		// Normal transformation
 		val xSts = gammaToXSTSTransformer.execute(newGammaPackage)

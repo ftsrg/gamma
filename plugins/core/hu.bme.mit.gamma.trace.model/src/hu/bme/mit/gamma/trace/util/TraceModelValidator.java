@@ -22,7 +22,6 @@ import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.expression.util.ExpressionModelValidator;
-import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponent;
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance;
@@ -69,7 +68,7 @@ public class TraceModelValidator extends ExpressionModelValidator {
 			if (realizationMode == RealizationMode.PROVIDED && eventDirection == EventDirection.OUT ||
 				realizationMode == RealizationMode.REQUIRED && eventDirection == EventDirection.IN) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-						"This event is an out-event of the component.",
+						"This event is an out-event of the component",
 						new ReferenceInfo(StatechartModelPackage.Literals.RAISE_EVENT_ACTION__EVENT)));
 			}			
 		}
@@ -78,7 +77,7 @@ public class TraceModelValidator extends ExpressionModelValidator {
 			if (realizationMode == RealizationMode.PROVIDED && eventDirection == EventDirection.IN ||
 				realizationMode == RealizationMode.REQUIRED && eventDirection == EventDirection.OUT) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-						"This event is an in-event of the component.",
+						"This event is an in-event of the component",
 						new ReferenceInfo(StatechartModelPackage.Literals.RAISE_EVENT_ACTION__EVENT)));
 			}			
 		}
@@ -91,7 +90,7 @@ public class TraceModelValidator extends ExpressionModelValidator {
 		SynchronousComponent type = instance.getType();
 		if (!(type instanceof StatechartDefinition)) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-					"This is not a statechart instance.",
+					"This is not a statechart instance",
 					new ReferenceInfo(TraceModelPackage.Literals.INSTANCE_STATE__INSTANCE)));
 		}
 		return validationResultMessages;
@@ -107,7 +106,7 @@ public class TraceModelValidator extends ExpressionModelValidator {
 					hu.bme.mit.gamma.statechart.statechart.State.class);
 			if (!states.contains(state)) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-						"This is not a valid state in the specified statechart.",
+						"This is not a valid state in the specified statechart",
 						new ReferenceInfo(TraceModelPackage.Literals.INSTANCE_STATE_CONFIGURATION__STATE)));
 			}
 		}
@@ -124,7 +123,7 @@ public class TraceModelValidator extends ExpressionModelValidator {
 			List<VariableDeclaration> variables = statechartDefinition.getVariableDeclarations();
 			if (!variables.contains(variable)) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-						"This is not a valid variable in the specified statechart.",
+						"This is not a valid variable in the specified statechart",
 						new ReferenceInfo(ExpressionModelPackage.Literals.DIRECT_REFERENCE_EXPRESSION__DECLARATION)));
 			}
 		}
@@ -138,7 +137,7 @@ public class TraceModelValidator extends ExpressionModelValidator {
 		if (component != null) {
 			if (!(component instanceof AsynchronousCompositeComponent)) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-						"Instance scheduling is valid only if the component is an asynchronous composite component.",
+						"Instance scheduling is valid only if the component is an asynchronous composite component",
 						new ReferenceInfo(TraceModelPackage.Literals.INSTANCE_SCHEDULE__SCHEDULED_INSTANCE)));
 			}
 		}
@@ -147,14 +146,14 @@ public class TraceModelValidator extends ExpressionModelValidator {
 	
 	public Collection<ValidationResultMessage> checkInstanceSchedule(ComponentSchedule schedule) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		Step step = (Step)schedule.eContainer();
-		ExecutionTrace executionTrace = (ExecutionTrace)EcoreUtil.getRootContainer(step, true);
+		Step step = ecoreUtil.getContainerOfType(schedule, Step.class);
+		ExecutionTrace executionTrace = ecoreUtil.getContainerOfType(step, ExecutionTrace.class);
 		Component component = executionTrace.getComponent();
 		if (component != null) {
-			if (!(component instanceof SynchronousComponent || component instanceof AsynchronousAdapter)) {
+			if (component instanceof AsynchronousCompositeComponent) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-						"Component scheduling is valid only if the component is a synchronous component or synchronous component wrapper.",
-						new ReferenceInfo(TraceModelPackage.Literals.STEP__ACTIONS, step.getActions().indexOf(schedule), step)));
+					"Global component scheduling is not valid if the component is an asynchronous composite component",
+						new ReferenceInfo(TraceModelPackage.Literals.STEP__ACTIONS, ecoreUtil.getIndex(schedule), step)));
 			}
 		}
 		return validationResultMessages;

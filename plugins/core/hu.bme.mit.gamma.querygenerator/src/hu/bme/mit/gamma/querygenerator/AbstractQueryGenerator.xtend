@@ -112,7 +112,7 @@ abstract class AbstractQueryGenerator {
 		for (systemPort : component.allPorts) {
 			for (port : systemPort.allBoundSimplePorts) {
 				val instance = port.containingComponentInstance as SynchronousComponentInstance
-				for (inEvent : port.inputEvents) {
+				for (inEvent : port.outputEvents) {
 					inEvents += new Triple(inEvent, port, instance)
 				}
 			}

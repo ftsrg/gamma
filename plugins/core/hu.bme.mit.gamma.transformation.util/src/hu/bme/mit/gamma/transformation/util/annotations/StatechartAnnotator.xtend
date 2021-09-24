@@ -196,7 +196,7 @@ class StatechartAnnotator {
 		statechart.variableDeclarations += variable
 		variables.put(transition, variable)
 		if (isResetable) {
-			variable.addResetableAnnotation
+			variable.addResettableAnnotation
 		}
 		return variable
 	}
@@ -545,7 +545,7 @@ class StatechartAnnotator {
 		if (!useMap.containsKey(reference)) {
 			val statechart = reference.containingStatechart
 			val useVariable = createIntegerTypeDefinition.createVariableDeclaration(name)
-			useVariable.addResetableAnnotation
+			useVariable.addResettableAnnotation
 			statechart.variableDeclarations += useVariable
 			useMap += reference -> useVariable
 		}
@@ -891,8 +891,8 @@ class StatechartAnnotator {
 			globalPool += variablePair
 		}
 		if (resettable) {
-			senderVariable.addResetableAnnotation
-			receiverVariable.addResetableAnnotation
+			senderVariable.addResettableAnnotation
+			receiverVariable.addResettableAnnotation
 		}
 		return variablePair
 	}

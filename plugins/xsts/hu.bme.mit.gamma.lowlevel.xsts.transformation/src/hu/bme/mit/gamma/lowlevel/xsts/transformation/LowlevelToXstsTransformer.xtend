@@ -10,14 +10,11 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.lowlevel.xsts.transformation
 
-import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
-import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer.ActionOptimizer
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer.VariableInliner
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.AssignmentActions
-import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.EventParameterComparisons
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.Events
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.FirstChoiceStates
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.FirstForkStates
@@ -125,7 +122,6 @@ class LowlevelToXstsTransformer {
 	protected BatchTransformationRule<OutEvents.Match, OutEvents.Matcher> outEventEnvironmentalActionRule
 	// Optimization
 	protected final boolean optimize
-	protected final boolean useHavocActions
 	protected Set<EventDeclaration> referredEvents
 	protected Set<VariableDeclaration> referredVariables
 	
@@ -134,11 +130,11 @@ class LowlevelToXstsTransformer {
 	}
 	
 	new(Package _package, boolean optimize) {
-		this (_package, optimize, false, false, TransitionMerging.HIERARCHICAL)
+		this (_package, optimize, false, TransitionMerging.HIERARCHICAL)
 	}
 	
-	new(Package _package, boolean optimize, boolean useHavocActions,
-			boolean extractGuards, TransitionMerging transitionMerging) {
+	new(Package _package, boolean optimize,	boolean extractGuards,
+			TransitionMerging transitionMerging) {
 		this._package = _package
 		// Note: we do not expect cross references to other resources
 		this.engine = ViatraQueryEngine.on(new EMFScope(_package))
@@ -168,7 +164,6 @@ class LowlevelToXstsTransformer {
 		this.transformation = BatchTransformation.forEngine(engine).build
 		this.statements = transformation.transformationStatements
 		this.optimize = optimize
-		this.useHavocActions = useHavocActions
 		if (optimize) {
 			this.referredEvents = ReferredEvents.Matcher.on(engine).allValuesOfevent
 			this.referredVariables = ReferredVariables.Matcher.on(engine).allValuesOfvariable
@@ -205,7 +200,7 @@ class LowlevelToXstsTransformer {
 		mergeTransitions
 		optimizeActions
 		xSts.fillNullTransitions
-		handleVariableAnnotations
+		handleTransientAndResettableVariableAnnotations
 		// The created EMF models are returned
 		return new SimpleEntry<XSTS, L2STrace>(xSts, trace.getTrace)
 	}
@@ -305,8 +300,8 @@ class LowlevelToXstsTransformer {
 						}
 						xSts.variableDeclarations += xStsParam // Target model modification
 						if (lowlevelEvent.persistency == Persistency.TRANSIENT) {
-							// If event is transient, than its parameters are marked transient variables
-							xSts.transientVariables += xStsParam
+							// Event is transient, its parameters are marked environment-resettable variables
+							xStsParam.addEnvironmentResettableAnnotation
 						}
 						eventParameterVariableGroup.variables += xStsParam
 						trace.put(lowlevelEventParameter, xStsParam) // Tracing
@@ -387,7 +382,7 @@ class LowlevelToXstsTransformer {
 		]
 		xSts.typeDeclarations += enumTypeDeclaration
 		xSts.variableDeclarations += xStsRegionVariable // Target model modification
-		xSts.controlVariables += xStsRegionVariable // Putting it in the control location variable list
+		xStsRegionVariable.addOnDemandControlAnnotation // It is worth following this variable
 		trace.put(lowlevelRegion, xStsRegionVariable) // Tracing
 		// Creating top region variable group
 		xStsRegionVariable.getCorrespondingVariableGroup => [
@@ -494,7 +489,7 @@ class LowlevelToXstsTransformer {
 					]
 					xSts.variableDeclarations += xStsVariable // Target model modification
 					trace.put(lowlevelTimeoutVariable, xStsVariable) // Tracing
-					xSts.clockVariables += xStsVariable // Putting it in the clock variable list
+					xStsVariable.addClockAnnotation 
 					xSts.getTimeoutGroup.variables += trace.getXStsVariable(lowlevelTimeoutVariable)
 				}
 			].build
@@ -623,21 +618,12 @@ class LowlevelToXstsTransformer {
 				if (lowlevelEvent.notOptimizable) {
 					val lowlevelEnvironmentalAction = inEventAction as SequentialAction
 					val xStsEventVariable = trace.getXStsVariable(lowlevelEvent)
+					
 					// In event variable
-					val xStsInEventAssignment = 
-					if (useHavocActions) {
-						createHavocAction => [
-							it.lhs = xStsEventVariable.createReferenceExpression
-						]
-					}
-					else {
-						createNonDeterministicAction => [
-							// Event is raised
-							it.actions += xStsEventVariable.createAssignmentAction(createTrueExpression)
-							// Event is not raised
-							it.actions += xStsEventVariable.createAssignmentAction(createFalseExpression)
-						]
-					}
+					val xStsInEventAssignment = createHavocAction => [
+						it.lhs = xStsEventVariable.createReferenceExpression
+					]
+					
 					lowlevelEnvironmentalAction.actions += xStsInEventAssignment
 					// Parameter variables
 					for (lowlevelParameterDeclaration : it.event.parameters) {
@@ -645,43 +631,16 @@ class LowlevelToXstsTransformer {
 						if (lowlevelEvent.persistency == Persistency.TRANSIENT) {
 							// Synchronous composite components do not reset transient parameters
 							// There is the same optimization in ComponentTransformer too, though
+							// Why not default expression? (check StatechartCodeGenerator)
+							checkState(xStsParameterVariable.environmentResettable)
 							lowlevelEnvironmentalAction.actions += xStsParameterVariable
 									.createAssignmentAction(xStsParameterVariable.initialValue)
 						}
-						val xStsInParameterAssignment = 
-						if (useHavocActions) {
-							createHavocAction => [
-								it.lhs = xStsParameterVariable.createReferenceExpression
-							]
-						}
-						else {
-							val xStsAllPossibleParameterValues = newHashSet
-							// Initial value
-							val lowlevelType = lowlevelParameterDeclaration.type
-							xStsAllPossibleParameterValues += lowlevelType.initialValueOfType.transformExpression
-							for (lowlevelValue : EventParameterComparisons.Matcher.on(engine)
-									.getAllValuesOfvalue(lowlevelParameterDeclaration)) {
-								xStsAllPossibleParameterValues += lowlevelValue.transformExpression
-							}
-							val xStsPossibleParameterValues = xStsAllPossibleParameterValues.removeDuplicatedExpressions
-							if (lowlevelType instanceof TypeReference) {
-								// Mapping back to enum literals if necessary
-								val lowlevelTypeDeclaration = lowlevelType.reference
-								val xStsTypeDeclaration = trace.getXStsTypeDeclaration(lowlevelTypeDeclaration)
-								val xStsTypeDefinition = xStsTypeDeclaration.type
-								if (xStsTypeDefinition instanceof EnumerationTypeDefinition) {
-									val enumLiterals = xStsTypeDefinition.mapToEnumerationLiterals(xStsPossibleParameterValues)
-									xStsPossibleParameterValues.clear
-									xStsPossibleParameterValues += enumLiterals
-								}
-							}
-							createNonDeterministicAction => [
-								for (xStsPossibleParameterValue : xStsPossibleParameterValues) {
-									it.actions += xStsParameterVariable
-											.createAssignmentAction(xStsPossibleParameterValue)
-								}
-							]
-						}
+						
+						val xStsInParameterAssignment = createHavocAction => [
+							it.lhs = xStsParameterVariable.createReferenceExpression
+						]
+						
 						// Setting the parameter value
 						lowlevelEnvironmentalAction.actions += createIfAction(
 							// Only if the event is raised
@@ -758,10 +717,10 @@ class LowlevelToXstsTransformer {
 		}
 	}
 	
-	protected def handleVariableAnnotations() {
+	protected def handleTransientAndResettableVariableAnnotations() {
 		val newMergedAction = createSequentialAction
 		
-		val resetableVariables = xSts.variableDeclarations.filter[it.resetable]
+		val resetableVariables = xSts.variableDeclarations.filter[it.resettable]
 		for (resetableVariable : resetableVariables) {
 			newMergedAction.actions += resetableVariable.createVariableResetAction
 		}

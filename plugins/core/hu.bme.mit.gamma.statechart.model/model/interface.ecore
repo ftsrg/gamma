@@ -90,6 +90,7 @@
   <eClassifiers xsi:type="ecore:EClass" name="PackageAnnotation" abstract="true"/>
   <eClassifiers xsi:type="ecore:EClass" name="TopComponentArgumentsAnnotation" eSuperTypes="#//PackageAnnotation ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ArgumentedElement"/>
   <eClassifiers xsi:type="ecore:EClass" name="UnfoldedPackageAnnotation" eSuperTypes="#//PackageAnnotation"/>
+  <eClassifiers xsi:type="ecore:EClass" name="WrappedPackageAnnotation" eSuperTypes="#//PackageAnnotation"/>
   <eClassifiers xsi:type="ecore:EClass" name="SchedulingConstraintAnnotation" eSuperTypes="#//PackageAnnotation">
     <eStructuralFeatures xsi:type="ecore:EReference" name="schedulingConstraint" lowerBound="1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"

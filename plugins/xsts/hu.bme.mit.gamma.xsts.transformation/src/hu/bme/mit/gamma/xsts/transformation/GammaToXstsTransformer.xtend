@@ -11,6 +11,7 @@
 package hu.bme.mit.gamma.xsts.transformation
 
 import hu.bme.mit.gamma.expression.model.BinaryExpression
+import hu.bme.mit.gamma.expression.model.ClockVariableDeclarationAnnotation
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
@@ -68,24 +69,23 @@ class GammaToXstsTransformer {
 	protected final Logger logger = Logger.getLogger("GammaLogger")
 	
 	new() {
-		this(null, true, true, false, false, TransitionMerging.HIERARCHICAL)
+		this(null, true, true, false, TransitionMerging.HIERARCHICAL)
 	}
 	
 	new(Integer schedulingConstraint, boolean transformOrthogonalActions,
-			boolean optimize, boolean useHavocActions, boolean extractGuards,
+			boolean optimize, boolean extractGuards,
 			TransitionMerging transitionMerging) {
 		this(schedulingConstraint, transformOrthogonalActions,
-				optimize, useHavocActions, extractGuards, transitionMerging,
+				optimize, extractGuards, transitionMerging,
 				null, null)
 	}
 	
 	new(Integer schedulingConstraint, boolean transformOrthogonalActions,
-			boolean optimize, boolean useHavocActions, boolean extractGuards,
-			TransitionMerging transitionMerging,
+			boolean optimize, boolean extractGuards, TransitionMerging transitionMerging,
 			PropertyPackage initialState, InitialStateSetting initialStateSetting) {
 		this.gammaToLowlevelTransformer = new GammaToLowlevelTransformer
 		this.componentTransformer = new ComponentTransformer(this.gammaToLowlevelTransformer,
-			transformOrthogonalActions, optimize, useHavocActions, extractGuards, transitionMerging)
+			transformOrthogonalActions, optimize, extractGuards, transitionMerging)
 		this.schedulingConstraint = schedulingConstraint
 		this.initialState = initialState
 		this.initialStateSetting = initialStateSetting
@@ -173,7 +173,8 @@ class GammaToXstsTransformer {
 			it.actions += xSts.mergedAction
 		]
 		xSts.changeTransitions(xStsClockSettingAction.wrap)
-		xSts.clockVariables.clear // Clearing the clock variables - they are handled like normal ones from now on
+		// Clearing the clock variables - they are handled like normal ones from now on
+		xSts.removeVariableDeclarationAnnotations(ClockVariableDeclarationAnnotation)
 	}
 	
 	protected def Integer getGreatestComparison(VariableDeclaration variable) {

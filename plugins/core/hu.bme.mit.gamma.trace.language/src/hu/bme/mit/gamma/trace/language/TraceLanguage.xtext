@@ -98,7 +98,7 @@ PrimaryAssert returns Assert:
 ;
 
 NegatedAssert returns NegatedAssert:
-	'not' negatedAssert=PrimaryAssert
+	('!' | 'not') negatedAssert=PrimaryAssert
 ;
 
 InstanceState returns InstanceState:

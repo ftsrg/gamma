@@ -38,6 +38,7 @@ import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeDefinition;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
+import hu.bme.mit.gamma.expression.model.VariableDeclarationAnnotation;
 import hu.bme.mit.gamma.expression.util.ExpressionUtil;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
 import hu.bme.mit.gamma.xsts.model.AbstractAssignmentAction;
@@ -74,6 +75,11 @@ public class XstsActionUtil extends ExpressionUtil {
 		return xSts;
 	}
 	
+	public void removeVariableDeclarationAnnotations(XSTS xSts,
+			Class<? extends VariableDeclarationAnnotation> annotationClass) {
+		removeVariableDeclarationAnnotations(xSts.getVariableDeclarations(), annotationClass);
+	}
+	
 	public void fillNullTransitions(XSTS xSts) {
 		if (xSts.getVariableInitializingTransition() == null) {
 			xSts.setVariableInitializingTransition(createEmptyTransition());
@@ -100,9 +106,6 @@ public class XstsActionUtil extends ExpressionUtil {
 		pivot.getPublicTypeDeclarations().addAll(mergable.getPublicTypeDeclarations());
 		pivot.getVariableGroups().addAll(mergable.getVariableGroups());
 		pivot.getVariableDeclarations().addAll(mergable.getVariableDeclarations());
-		pivot.getTransientVariables().addAll(mergable.getTransientVariables());
-		pivot.getControlVariables().addAll(mergable.getControlVariables());
-		pivot.getClockVariables().addAll(mergable.getClockVariables());
 		pivot.getConstraints().addAll(mergable.getConstraints());
 	}
 	
@@ -611,6 +614,14 @@ public class XstsActionUtil extends ExpressionUtil {
 			return orExpression;
 		}
 		throw new IllegalArgumentException("Not supported action: " + action);
+	}
+	
+	public void addOnDemandControlAnnotation(VariableDeclaration variable) {
+		addAnnotation(variable, xStsFactory.createOnDemandControlVariableDeclarationAnnotation());
+	}
+	
+	public void addStrictControlAnnotation(VariableDeclaration variable) {
+		addAnnotation(variable, xStsFactory.createStrictControlVariableDeclarationAnnotation());
 	}
 	
 	public void deleteDeclaration(Declaration declaration) {
