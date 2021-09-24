@@ -54,7 +54,6 @@ import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
 import hu.bme.mit.gamma.statechart.util.StatechartUtil;
 import hu.bme.mit.gamma.transformation.util.GammaFileNamer;
-import hu.bme.mit.gamma.transformation.util.SimpleInstanceHandler;
 import hu.bme.mit.gamma.transformation.util.annotations.AnnotatablePreprocessableElements;
 import hu.bme.mit.gamma.transformation.util.annotations.ComponentInstancePortReferences;
 import hu.bme.mit.gamma.transformation.util.annotations.ComponentInstancePortStateTransitionReferences;
@@ -74,8 +73,6 @@ import hu.bme.mit.gamma.uppaal.composition.transformation.OrchestratingConstrain
 import hu.bme.mit.gamma.uppaal.composition.transformation.SchedulingConstraint;
 import hu.bme.mit.gamma.uppaal.composition.transformation.api.Gamma2UppaalTransformerSerializer;
 import hu.bme.mit.gamma.uppaal.composition.transformation.api.util.UppaalModelPreprocessor;
-import hu.bme.mit.gamma.util.FileUtil;
-import hu.bme.mit.gamma.util.GammaEcoreUtil;
 import hu.bme.mit.gamma.xsts.model.XSTS;
 import hu.bme.mit.gamma.xsts.transformation.InitialStateSetting;
 import hu.bme.mit.gamma.xsts.transformation.api.Gamma2XstsTransformerSerializer;
@@ -139,10 +136,6 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 	abstract class AnalysisModelTransformer {
 		
 		protected final StatechartUtil statechartUtil = StatechartUtil.INSTANCE;
-		protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
-		protected final FileUtil fileUtil = FileUtil.INSTANCE;
-		protected final SimpleInstanceHandler simpleInstanceHandler = SimpleInstanceHandler.INSTANCE;
-		protected final GammaFileNamer fileNamer = GammaFileNamer.INSTANCE;
 		
 		public abstract void execute(AnalysisModelTransformation transformation) throws IOException;
 

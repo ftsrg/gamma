@@ -102,8 +102,11 @@ import hu.bme.mit.gamma.statechart.statechart.Transition;
 import hu.bme.mit.gamma.statechart.statechart.TransitionAnnotation;
 import hu.bme.mit.gamma.statechart.statechart.TransitionIdAnnotation;
 import hu.bme.mit.gamma.statechart.statechart.TransitionPriority;
+import hu.bme.mit.gamma.statechart.util.StatechartUtil;
 
 public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
+	
+	protected static final StatechartUtil statechartUtil = StatechartUtil.INSTANCE;
 	
 	public static List<ParameterDeclaration> getParameterDeclarations(ArgumentedElement element) {
 		if (element instanceof RaiseEventAction) {
@@ -284,69 +287,9 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return true;
 	}
 	
-	public static List<SynchronousComponentInstance> getAllSimpleInstances(Collection<? extends ComponentInstance> instances) {
-		List<SynchronousComponentInstance> simpleInstances = new ArrayList<SynchronousComponentInstance>();
-		for (ComponentInstance instance : instances) {
-			simpleInstances.addAll(getAllSimpleInstances(instance));
-		}
-		return simpleInstances;
-	}
-	
 	public static List<ComponentInstance> getInstances(ComponentInstance instance) {
 		Component type = getDerivedType(instance);
 		return getInstances(type);
-	}
-	
-	public static List<SynchronousComponentInstance> getAllSimpleInstances(ComponentInstance instance) {
-		if (instance instanceof SynchronousComponentInstance) {
-			SynchronousComponentInstance synchronousInstance = (SynchronousComponentInstance) instance;
-			if (synchronousInstance.getType() instanceof StatechartDefinition) {
-				// Atomic component
-				return Collections.singletonList(synchronousInstance);
-			}
-			else {
-				// Composite component
-				return getAllSimpleInstances(synchronousInstance.getType());
-			}
-		}
-		if (instance instanceof AsynchronousComponentInstance) {
-			AsynchronousComponentInstance asynchronousInstance = (AsynchronousComponentInstance) instance;
-			return getAllSimpleInstances(asynchronousInstance.getType());
-		}
-		throw new IllegalArgumentException("Not known instance type: " + instance);
-	}
-	
-	public static List<SynchronousComponentInstance> getAllSimpleInstances(Component component) {
-		List<SynchronousComponentInstance> simpleInstances = new ArrayList<SynchronousComponentInstance>();
-		if (component instanceof AbstractAsynchronousCompositeComponent) {
-			AbstractAsynchronousCompositeComponent asynchronousCompositeComponent =
-					(AbstractAsynchronousCompositeComponent) component;
-			for (AsynchronousComponentInstance instance : asynchronousCompositeComponent.getComponents()) {
-				simpleInstances.addAll(getAllSimpleInstances(instance));
-			}
-		}
-		else if (component instanceof AsynchronousAdapter) {
-			AsynchronousAdapter asynchronousAdapter = (AsynchronousAdapter) component;
-			simpleInstances.addAll(getAllSimpleInstances(asynchronousAdapter.getWrappedComponent()));
-		}
-		else if (component instanceof AbstractSynchronousCompositeComponent) {
-			AbstractSynchronousCompositeComponent synchronousCompositeComponent = (AbstractSynchronousCompositeComponent) component;
-			for (SynchronousComponentInstance instance : synchronousCompositeComponent.getComponents()) {
-				simpleInstances.addAll(getAllSimpleInstances(instance));
-			}
-		}
-		return simpleInstances;
-	}
-	
-	public static List<AsynchronousComponentInstance> getAllAsynchronousSimpleInstances(Component component) {
-		List<ComponentInstance> allInstances = getAllInstances(component);
-		List<AsynchronousComponentInstance> asynchronousInstances = new ArrayList<AsynchronousComponentInstance>();
-		for (ComponentInstance allInstance : allInstances) {
-			if (getDerivedType(allInstance) instanceof AsynchronousAdapter) {
-				asynchronousInstances.add((AsynchronousComponentInstance) allInstance);
-			}
-		}
-		return asynchronousInstances;
 	}
 	
 	public static List<ComponentInstance> getInstances(Component component) {
@@ -364,7 +307,8 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 			instances.add(wrappedComponent);
 		}
 		else if (component instanceof AbstractSynchronousCompositeComponent) {
-			AbstractSynchronousCompositeComponent synchronousCompositeComponent = (AbstractSynchronousCompositeComponent) component;
+			AbstractSynchronousCompositeComponent synchronousCompositeComponent =
+					(AbstractSynchronousCompositeComponent) component;
 			for (SynchronousComponentInstance instance : synchronousCompositeComponent.getComponents()) {
 				instances.add(instance);
 			}
@@ -390,7 +334,8 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 			instances.addAll(getAllInstances(wrappedComponent.getType()));
 		}
 		else if (component instanceof AbstractSynchronousCompositeComponent) {
-			AbstractSynchronousCompositeComponent synchronousCompositeComponent = (AbstractSynchronousCompositeComponent) component;
+			AbstractSynchronousCompositeComponent synchronousCompositeComponent =
+					(AbstractSynchronousCompositeComponent) component;
 			for (SynchronousComponentInstance instance : synchronousCompositeComponent.getComponents()) {
 				instances.add(instance);
 				SynchronousComponent type = instance.getType();
@@ -400,10 +345,90 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return instances;
 	}
 	
+	public static List<SynchronousComponentInstance> getAllSimpleInstances(ComponentInstance instance) {
+		Component type = getDerivedType(instance);
+		return getAllSimpleInstances(type);
+	}
+	
+	public static List<SynchronousComponentInstance> getAllSimpleInstances(Component component) {
+		List<SynchronousComponentInstance> simpleInstances = new ArrayList<SynchronousComponentInstance>();
+		if (component instanceof AbstractAsynchronousCompositeComponent) {
+			AbstractAsynchronousCompositeComponent asynchronousCompositeComponent =
+					(AbstractAsynchronousCompositeComponent) component;
+			for (AsynchronousComponentInstance instance : asynchronousCompositeComponent.getComponents()) {
+				simpleInstances.addAll(getAllSimpleInstances(instance));
+			}
+		}
+		else if (component instanceof AsynchronousAdapter) {
+			AsynchronousAdapter asynchronousAdapter = (AsynchronousAdapter) component;
+			simpleInstances.addAll(getAllSimpleInstances(asynchronousAdapter.getWrappedComponent()));
+		}
+		else if (component instanceof AbstractSynchronousCompositeComponent) {
+			AbstractSynchronousCompositeComponent synchronousCompositeComponent =
+					(AbstractSynchronousCompositeComponent) component;
+			for (SynchronousComponentInstance instance : synchronousCompositeComponent.getComponents()) {
+				if (isStatechart(instance)) {
+					simpleInstances.add(instance);
+				}
+				else {
+					simpleInstances.addAll(getAllSimpleInstances(instance));
+				}
+			}
+		}
+		return simpleInstances;
+	}
+	
+	public static List<AsynchronousComponentInstance> getAllAsynchronousSimpleInstances(Component component) {
+		List<ComponentInstance> adapterInstances =
+				getAllInstances(component).stream()
+					.filter(it -> isAdapter(it))
+					.collect(Collectors.toList());
+		return javaUtil.filterIntoList(adapterInstances, AsynchronousComponentInstance.class);
+	}
+	
+	public static List<ComponentInstanceReference> getAllSimpleInstanceReferences(
+			ComponentInstance instance) {
+		Component type = getDerivedType(instance);
+		return getAllSimpleInstanceReferences(type);
+	}
+	
+	public static List<ComponentInstanceReference> getAllSimpleInstanceReferences(Component component) {
+		List<ComponentInstanceReference> instanceReferences = new ArrayList<ComponentInstanceReference>();
+		if (component instanceof AbstractAsynchronousCompositeComponent) {
+			AbstractAsynchronousCompositeComponent asynchronousCompositeComponent =
+					(AbstractAsynchronousCompositeComponent) component;
+			for (AsynchronousComponentInstance instance : asynchronousCompositeComponent.getComponents()) {
+				List<ComponentInstanceReference> childReferences = getAllSimpleInstanceReferences(instance);
+				instanceReferences.addAll(statechartUtil.prepend(childReferences, instance));
+			}
+		}
+		else if (component instanceof AsynchronousAdapter) {
+			AsynchronousAdapter adapter = (AsynchronousAdapter) component;
+			SynchronousComponentInstance instance = adapter.getWrappedComponent();
+			List<ComponentInstanceReference> childReferences = getAllSimpleInstanceReferences(instance);
+			instanceReferences.addAll(statechartUtil.prepend(childReferences, instance));
+		}
+		else if (component instanceof AbstractSynchronousCompositeComponent) {
+			AbstractSynchronousCompositeComponent synchronousCompositeComponent =
+					(AbstractSynchronousCompositeComponent) component;
+			for (SynchronousComponentInstance instance : synchronousCompositeComponent.getComponents()) {
+				if (isStatechart(instance)) {
+					ComponentInstanceReference instanceReference = statechartUtil.createInstanceReference(instance);
+					instanceReferences.add(instanceReference);
+				}
+				else {
+					List<ComponentInstanceReference> childReferences = getAllSimpleInstanceReferences(instance);
+					instanceReferences.addAll(statechartUtil.prepend(childReferences, instance));
+				}
+			}
+		}
+		return instanceReferences;
+	}
+	
 	public static Collection<StatechartDefinition> getAllContainedStatecharts(SynchronousComponent component) {
 		List<StatechartDefinition> statecharts = new ArrayList<StatechartDefinition>();
 		for (SynchronousComponentInstance instance : getAllSimpleInstances(component)) {
-			statecharts.add((StatechartDefinition) instance.getType());
+			statecharts.add(getStatechart(instance));
 		}
 		return statecharts;
 	}

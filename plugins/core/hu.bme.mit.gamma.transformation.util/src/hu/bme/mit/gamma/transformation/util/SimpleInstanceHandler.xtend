@@ -42,6 +42,8 @@ class SimpleInstanceHandler {
 	
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	
+	// Folded -> unfolded mapping
+	
 	// Component instance transition references
 	
 	def getNewIncludedSimpleInstanceTransitions(
@@ -314,5 +316,12 @@ class SimpleInstanceHandler {
 		throw new IllegalStateException("New object not found: " + originalObject + 
 			"Known Xtext bug: for generated gdp, the variables references are not resolved.")
 	}
+	
+	// Unfolded -> folded mapping
+	
+	def getOldSimpleInstances(Component oldType) {
+		return oldType.allSimpleInstances
+	}
+	
 	
 }
