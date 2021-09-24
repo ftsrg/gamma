@@ -34,6 +34,7 @@ import static com.google.common.base.Preconditions.checkState
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.transformation.util.Namings.*
 
+// TODO rename class
 class SimpleInstanceHandler {
 	// Singleton
 	public static final SimpleInstanceHandler INSTANCE =  new SimpleInstanceHandler
@@ -246,30 +247,30 @@ class SimpleInstanceHandler {
 	
 	def getNewSimpleInstances(ComponentInstanceReference originalInstance, Component newType) {
 		val newInstances = newType.allSimpleInstances
-		val accpedtedNewInstances = newArrayList
-		// This intances can be a composite instance, thus more than one new instance can be here
+		val acceptedNewInstances = newArrayList
+		// This instance can be a composite instance, thus more than one new instance can be here
 		val lastInstance = originalInstance.lastInstance
 		val lastInstanceType = lastInstance.derivedType
-		val oldPackage = lastInstance.containingPackage
-		val isUnfolded = oldPackage.isUnfolded
+		val originalPackage = lastInstance.containingPackage
+		val isUnfolded = originalPackage.unfolded
 		if (isUnfolded) {
 			val name = lastInstance.name
-			accpedtedNewInstances += newInstances.filter[it.name == name]
+			acceptedNewInstances += newInstances.filter[it.name == name]
 		}
 		else {
 			for (newInstance : newInstances) {
 				if (originalInstance.contains(newInstance)) {
-					accpedtedNewInstances += newInstance
+					acceptedNewInstances += newInstance
 				}
 			}
 		}
 		if (lastInstanceType instanceof StatechartDefinition) {
-			checkState(accpedtedNewInstances.size == 1)
+			checkState(acceptedNewInstances.size == 1)
 		}
 		else {
-			checkState(accpedtedNewInstances.size >= 1)
+			checkState(acceptedNewInstances.size >= 1)
 		}
-		return accpedtedNewInstances
+		return acceptedNewInstances
 	}
 	
 	def checkAndGetNewSimpleInstance(ComponentInstanceReference originalInstance, Component newType) {
@@ -314,14 +315,31 @@ class SimpleInstanceHandler {
 			}
 		}
 		throw new IllegalStateException("New object not found: " + originalObject + 
-			"Known Xtext bug: for generated gdp, the variables references are not resolved.")
+			"Known Xtext bug: for generated gdp, the variables references are not resolved")
 	}
 	
 	// Unfolded -> folded mapping
 	
-	def getOldSimpleInstances(Component oldType) {
-		return oldType.allSimpleInstances
+	def getOriginalSimpleInstanceReferences(Component originalType) {
+		return originalType.allSimpleInstanceReferences
 	}
 	
+	def getOriginalSimpleInstanceReferences(
+			SynchronousComponentInstance newInstance, Component originalType) {
+		// NewInstance is statechart, only one result is accepted; if we want to handle
+		// composite new instances, "newInstance.contains(originalInstance)" has to be introduced
+		checkState(newInstance.isStatechart)
+		
+		val originalInstances = originalType.originalSimpleInstanceReferences
+		
+		for (originalInstance : originalInstances) {
+			if (originalInstance.contains(newInstance)) {
+				return originalInstance // Only one is expected
+			}
+		}
+		throw new IllegalStateException("Not found original instance for " + newInstance)
+	}
+	
+	// TODO getOriginal...() methods
 	
 }

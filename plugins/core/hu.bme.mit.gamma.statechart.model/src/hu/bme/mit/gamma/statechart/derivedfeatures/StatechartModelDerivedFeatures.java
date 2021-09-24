@@ -361,7 +361,8 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		}
 		else if (component instanceof AsynchronousAdapter) {
 			AsynchronousAdapter asynchronousAdapter = (AsynchronousAdapter) component;
-			simpleInstances.addAll(getAllSimpleInstances(asynchronousAdapter.getWrappedComponent()));
+			SynchronousComponentInstance wrappedInstance = asynchronousAdapter.getWrappedComponent();
+			simpleInstances.addAll(getAllSimpleInstances(wrappedInstance));
 		}
 		else if (component instanceof AbstractSynchronousCompositeComponent) {
 			AbstractSynchronousCompositeComponent synchronousCompositeComponent =
