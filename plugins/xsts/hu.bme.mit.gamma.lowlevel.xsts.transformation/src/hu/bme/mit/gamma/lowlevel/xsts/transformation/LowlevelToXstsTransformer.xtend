@@ -79,7 +79,20 @@ import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionMo
 import static extension hu.bme.mit.gamma.statechart.lowlevel.derivedfeatures.LowlevelStatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.XstsNamings.*
-import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.StatesWithDoAction
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.Nodes
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.Flows
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.NormalActivityNodes
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.DecisionNodes
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.Pins
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.InputControlFlows
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.OutputControlFlows
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.InputDataFlows
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.OutputDataFlows
+import hu.bme.mit.gamma.activity.model.DataFlow
+import hu.bme.mit.gamma.activity.model.ControlFlow
+import hu.bme.mit.gamma.activity.model.Pin
+import hu.bme.mit.gamma.activity.model.ActivityNode
+import hu.bme.mit.gamma.xsts.model.Action
 
 class LowlevelToXstsTransformer {
 	// Transformation-related extensions
@@ -104,7 +117,8 @@ class LowlevelToXstsTransformer {
 	protected final extension PrecursoryTransitionToXTransitionTransformer precursoryTransitionToXTransitionTransformer
 	protected final extension TerminalTransitionToXTransitionTransformer terminalTransitionToXTransitionTransformer
 	protected final extension TransitionPreconditionCreator transitionPreconditionCreator
-	protected final LowlevelActivityToXstsTransformer lowlevelActivityToXstsTransformer
+	protected final extension ActivityNodeTransformer activityNodeTransformer
+	protected final extension ActivityFlowTransformer activityFlowTransformer
 	// Model factories
 	protected final extension XSTSModelFactory factory = XSTSModelFactory.eINSTANCE
 	protected final extension ExpressionModelFactory constraintFactory = ExpressionModelFactory.eINSTANCE
@@ -125,7 +139,6 @@ class LowlevelToXstsTransformer {
 	protected BatchTransformationRule<PlainVariables.Match, PlainVariables.Matcher> plainVariablesRule
 	protected BatchTransformationRule<Timeouts.Match, Timeouts.Matcher> timeoutsRule
 	protected BatchTransformationRule<GlobalVariables.Match, GlobalVariables.Matcher> variableInitializationsRule
-	protected BatchTransformationRule<StatesWithDoAction.Match, StatesWithDoAction.Matcher> statesWithDoActionRule	
 	protected BatchTransformationRule<Statecharts.Match, Statecharts.Matcher> topRegionInitializationRule
 	protected BatchTransformationRule<SimpleTransitionsBetweenStates.Match, SimpleTransitionsBetweenStates.Matcher> simpleTransitionBetweenStatesRule
 	protected BatchTransformationRule<SimpleTransitionsToEntryStates.Match, SimpleTransitionsToEntryStates.Matcher> simpleTransitionsToHistoryStatesRule
@@ -135,10 +148,18 @@ class LowlevelToXstsTransformer {
 	protected BatchTransformationRule<FirstChoiceStates.Match, FirstChoiceStates.Matcher> firstChoiceTransitionsRule
 	protected BatchTransformationRule<InEvents.Match, InEvents.Matcher> inEventEnvironmentalActionRule
 	protected BatchTransformationRule<OutEvents.Match, OutEvents.Matcher> outEventEnvironmentalActionRule
+	
+	protected BatchTransformationRule<Nodes.Match, Nodes.Matcher> nodesRule 
+	protected BatchTransformationRule<Flows.Match, Flows.Matcher> flowsRule 
+	protected BatchTransformationRule<NormalActivityNodes.Match, NormalActivityNodes.Matcher> normalActivityNodesRule 
+	protected BatchTransformationRule<DecisionNodes.Match, DecisionNodes.Matcher> decisionNodesRule
+	protected BatchTransformationRule<Pins.Match, Pins.Matcher> pinsRule
+	
 	// Optimization
 	protected boolean optimize
 	protected Set<EventDeclaration> referredEvents
 	protected Set<VariableDeclaration> referredVariables
+	protected List<Action> activityRootActions
 	
 	protected final extension ActivityLiterals activityLiterals = ActivityLiterals.INSTANCE
 	protected final extension XstsUtils xstsUtils = XstsUtils.INSTANCE
@@ -177,7 +198,11 @@ class LowlevelToXstsTransformer {
 		this.transformation = BatchTransformation.forEngine(engine).build
 		this.statements = transformation.transformationStatements
 		
-		this.lowlevelActivityToXstsTransformer = new LowlevelActivityToXstsTransformer(_package, targetEngine, transformation, statements, xSts, trace)
+		this.activityNodeTransformer = new ActivityNodeTransformer(this.trace)
+		this.activityFlowTransformer = new ActivityFlowTransformer(this.trace)
+		
+		this.activityRootActions = newArrayList 
+		
 		this.optimize = optimize
 		if (optimize) {
 			this.referredEvents = ReferredEvents.Matcher.on(engine).allValuesOfevent
@@ -204,7 +229,14 @@ class LowlevelToXstsTransformer {
 		 * correctly with the trace model */
 		getVariableInitializationsRule.fireAllCurrent
 		initializeVariableInitializingAction // After getVariableInitializationsRule, but before getTopRegionsInitializationRule		
-		lowlevelActivityToXstsTransformer.execute
+
+		getPinsRule.fireAllCurrent
+		getNodesRule.fireAllCurrent
+		getFlowsRule.fireAllCurrent
+		
+		getNormalActivityNodesRule.fireAllCurrent
+		getDecisionNodesRule.fireAllCurrent
+
 		getTopRegionsInitializationRule.fireAllCurrent // Setting the top region (variables) into their initial states
 		getSimpleTransitionsBetweenStatesRule.fireAllCurrent
 		getSimpleTransitionsToHistoryStatesRule.fireAllCurrent
@@ -709,6 +741,153 @@ class LowlevelToXstsTransformer {
 		}
 		return outEventEnvironmentalActionRule
 	}
+	
+	
+	private def createActivityNodeMapping(ActivityNode activityNode) {
+		val xStsActivityNodeVariable = createVariableDeclaration => [
+			name = activityNode.name.activityNodeVariableName
+			type = createTypeReference => [
+				reference = nodeStateEnumTypeDeclaration
+			]
+			expression = createEnumerationLiteralExpression => [
+				reference = idleNodeStateEnumLiteral
+			]
+		]
+		xSts.variableDeclarations += xStsActivityNodeVariable
+		xSts.controlVariables += xStsActivityNodeVariable
+		trace.put(activityNode, xStsActivityNodeVariable)
+				
+		activityRootActions += activityNode.transform
+	}
+
+	private def getFlowsRule() {
+		if (flowsRule === null) {
+			flowsRule = createRule(Flows.instance).action [
+				it.flow.createFlowMapping
+			].build
+		}
+		return flowsRule
+	}
+
+	private def getPinsRule() {
+		if (pinsRule === null) {
+			pinsRule = createRule(Pins.instance).action [
+				it.pin.createPinMapping
+			].build
+		}
+		return pinsRule
+	}
+	
+	private def createPinMapping(Pin pin) {
+		val pinType = pin.type
+		val xStsPinVariable = createVariableDeclaration => [
+			name = pin.pinVariableName
+			type = pinType
+			expression = pinType.initialValueOfType
+		]
+		xSts.variableDeclarations += xStsPinVariable
+		
+		trace.put(pin, xStsPinVariable)
+	}
+
+	private dispatch def createFlowMapping(ControlFlow flow) {
+		val xStsFlowVariable = createVariableDeclaration => [
+			name = flow.flowVariableName
+			type = createTypeReference => [
+				reference = flowStateEnumTypeDeclaration
+			]
+			expression = createEnumerationLiteralExpression => [
+				reference = emptyFlowStateEnumLiteral
+			]
+		]
+		xSts.variableDeclarations += xStsFlowVariable
+		xSts.controlVariables += xStsFlowVariable
+		trace.put(flow, xStsFlowVariable)
+	}
+
+	private dispatch def createFlowMapping(DataFlow flow) {
+		val xStsFlowVariable = createVariableDeclaration => [
+			name = flow.flowVariableName
+			type = createTypeReference => [
+				reference = flowStateEnumTypeDeclaration
+			]
+			expression = createEnumerationLiteralExpression => [
+				reference = emptyFlowStateEnumLiteral
+			]
+		]
+		xSts.variableDeclarations += xStsFlowVariable
+		xSts.controlVariables += xStsFlowVariable
+		trace.put(flow, xStsFlowVariable)
+				
+		val dataType = createIntegerTypeDefinition// DataFlowType.Matcher.on(engine).getOneArbitraryMatch(flow, null).get.type
+		
+		val xStsDataTokenVariable = createVariableDeclaration => [
+			name = flow.flowDataTokenVariableName
+			type = dataType
+			expression = dataType.initialValueOfType
+		]
+		xSts.variableDeclarations += xStsDataTokenVariable
+		trace.putDataTokenVariable(flow, xStsDataTokenVariable)
+	}
+
+	private def getNodesRule() {
+		if (nodesRule === null) {
+			nodesRule = createRule(Nodes.instance).action [
+				it.activityNode.createActivityNodeMapping
+			].build
+		}
+		return nodesRule
+	}
+	
+	private def getNormalActivityNodesRule() {
+		if (normalActivityNodesRule === null) {
+			normalActivityNodesRule = createRule(NormalActivityNodes.instance).action [
+				val inputFlows = InputControlFlows.Matcher.on(engine).getAllValuesOfflow(it.node) + InputDataFlows.Matcher.on(engine).getAllValuesOfflow(it.node)
+				val outputFlows = OutputControlFlows.Matcher.on(engine).getAllValuesOfflow(it.node) + OutputDataFlows.Matcher.on(engine).getAllValuesOfflow(it.node)
+			
+				val transitionAction = createNonDeterministicAction => [
+					it.actions += createParallelAction => [
+						for (flow : inputFlows) {
+							it.actions += flow.transformInwards
+						}
+					]
+					it.actions += createParallelAction => [
+						for (flow : outputFlows) {
+							it.actions += flow.transformOutwards
+						}
+					]
+				]
+				
+				activityRootActions += transitionAction
+			].build
+		}
+		return normalActivityNodesRule
+	}
+	
+	private def getDecisionNodesRule() {
+		if (decisionNodesRule === null) {
+			decisionNodesRule = createRule(DecisionNodes.instance).action [
+				val inputFlows = InputControlFlows.Matcher.on(engine).getAllValuesOfflow(it.node) + InputDataFlows.Matcher.on(engine).getAllValuesOfflow(it.node)
+				val outputFlows = OutputControlFlows.Matcher.on(engine).getAllValuesOfflow(it.node) + OutputDataFlows.Matcher.on(engine).getAllValuesOfflow(it.node)
+			
+				val transitionAction = createNonDeterministicAction => [
+					it.actions += createNonDeterministicAction => [
+						for (flow : inputFlows) {
+							it.actions += flow.transformInwards
+						}
+					]
+					it.actions += createNonDeterministicAction => [
+						for (flow : outputFlows) {
+							it.actions += flow.transformOutwards
+						}
+					]
+				]
+				
+				activityRootActions += transitionAction
+			].build
+		}
+		return decisionNodesRule
+	}
 
 	protected def mergeTransitions() {
 		val statecharts = Statecharts.Matcher.on(engine).allValuesOfstatechart
@@ -716,6 +895,11 @@ class LowlevelToXstsTransformer {
 		val statechart = statecharts.head
 		val xStsMergedAction = createNonDeterministicAction
 		statechart.mergeTransitions(xStsMergedAction)
+		
+		for (action : activityRootActions) {
+			xStsMergedAction.actions += action
+		}
+		
 		// The many transitions are now replaced by a single merged transition
 		xSts.changeTransitions(xStsMergedAction.wrap)
 		// Adding default else branch: if "region" cannot fire
@@ -876,6 +1060,16 @@ class LowlevelToXstsTransformer {
 				localVariableDeclarationActions.prependToAction(consideredXstsAction)
 			}
 		}
+	}	
+	
+	protected def createXStsTransition(Action xStsTransitionAction) {
+		val xStsTransition = createXTransition => [
+			it.action = xStsTransitionAction
+			it.reads += xStsTransitionAction.readVariables
+			it.writes += xStsTransitionAction.writtenVariables
+		]
+		// Cannot be traced here, as each transition needs different tracing
+		return xStsTransition
 	}
 	
 	def dispose() {

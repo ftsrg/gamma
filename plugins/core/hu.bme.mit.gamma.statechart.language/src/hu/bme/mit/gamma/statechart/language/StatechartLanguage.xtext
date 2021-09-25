@@ -198,6 +198,7 @@ StatechartDefinition returns StatechartDefinition:
 				regions+=Region
 			)*
 		(functionDeclarations+=FunctionDeclaration)*
+		(activityDeclarations+=NamedActivityDeclaration)*
 	'}'
 ;
 

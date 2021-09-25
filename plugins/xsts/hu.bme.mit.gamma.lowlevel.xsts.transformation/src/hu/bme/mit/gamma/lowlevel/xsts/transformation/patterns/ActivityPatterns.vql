@@ -13,13 +13,10 @@ package hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns
 import epackage "http://www.mit.bme.hu/gamma/expression/Model"
 import epackage "http://www.mit.bme.hu/gamma/action/Model"
 import epackage "http://www.mit.bme.hu/gamma/activity/Model"
+import epackage "http://www.mit.bme.hu/gamma/statechart/lowlevel/Model"
 
 pattern nodes(activityNode : ActivityNode) {
 	ActivityNode(activityNode);
-}
-
-pattern initialNodes(activityNode : ActivityNode) {
-	InitialNode(activityNode);
 }
 
 pattern flows(flow : Flow) {

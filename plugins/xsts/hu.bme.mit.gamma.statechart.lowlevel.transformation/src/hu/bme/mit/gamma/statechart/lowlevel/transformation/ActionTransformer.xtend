@@ -34,7 +34,7 @@ import hu.bme.mit.gamma.statechart.lowlevel.model.EventDirection
 import hu.bme.mit.gamma.statechart.statechart.DeactivateTimeoutAction
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction
 import hu.bme.mit.gamma.statechart.statechart.SetTimeoutAction
-import hu.bme.mit.gamma.statechart.lowlevel.model.Package
+import hu.bme.mit.gamma.statechart.lowlevel.model.State
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.util.Collection
 import java.util.List
@@ -42,7 +42,7 @@ import java.util.List
 import static extension com.google.common.collect.Iterables.getOnlyElement
 import hu.bme.mit.gamma.activity.model.CallActivityAction
 import hu.bme.mit.gamma.activity.model.ActivityModelFactory
-import hu.bme.mit.gamma.statechart.statechart.State
+import hu.bme.mit.gamma.statechart.lowlevel.model.StatechartModelFactory
 
 class ActionTransformer {
 	// Auxiliary objects
@@ -55,6 +55,7 @@ class ActionTransformer {
 	protected final extension ExpressionModelFactory constraintFactory = ExpressionModelFactory.eINSTANCE
 	protected final extension ActionModelFactory actionFactory = ActionModelFactory.eINSTANCE
 	protected final extension ActivityModelFactory activityFactory = ActivityModelFactory.eINSTANCE
+	protected final extension StatechartModelFactory statechartFactory = StatechartModelFactory.eINSTANCE
 	// Trace
 	protected final Trace trace
 	
@@ -82,27 +83,30 @@ class ActionTransformer {
 		return result.wrap
 	}
 	
-	protected def transformDoActions(Collection<? extends Action> actions, Package _package) {
-		if (actions.nullOrEmpty) {
-			return createEmptyStatement
-		}
-		val result = newArrayList
+	protected def transformDoActions(Collection<? extends Action> actions, State state) {
 		for (action : actions) {
-			result += action.transformDoAction(_package)
+			action.transformDoAction(state)
 		}
-		return result.wrap
 	}
 	
-	protected dispatch def transformDoAction(Action action, Package _package) {
-		return action.transformAction as Action
+	protected dispatch def transformDoAction(Action action, State state) {
+
 	}
 	
-	protected dispatch def transformDoAction(CallActivityAction action, Package _package) {
-		val newAction = action.transformAction.onlyElement as CallActivityAction
+	protected dispatch def transformDoAction(CallActivityAction action, State lowlevelState) {
+		val state = action.eContainer as hu.bme.mit.gamma.statechart.statechart.State;
+		val activity = action.activity
+		val activityTransformer = new ActivityToLowlevelTransformer(trace, state)
+		val lowlevelActivity = activityTransformer.transform(activity)
 		
-		_package.activities += newAction.activity
+		lowlevelState.activityInstance = createActivityInstance => [
+			it.activity = lowlevelActivity
+			it.state = lowlevelState
+		]
+	}
+	
+	protected def dispatch List<Action> transformAction(CallActivityAction action) {	
 		
-		return newAction as Action
 	}
 	
 	protected def transformSimpleAction(Action action) {
@@ -281,19 +285,6 @@ class ActionTransformer {
 			.createAssignment(createTrueExpression)
 		
 		return result
-	}
-	
-	protected def dispatch List<Action> transformAction(CallActivityAction action) {	
-		val state = action.eContainer as State	
-		val activity = action.activity
-		val activityTransformer = new ActivityToLowlevelTransformer(trace, state)
-		val lowlevelActivity = activityTransformer.transform(activity)
-		
-		return #[
-			createCallActivityAction => [
-				it.activity = lowlevelActivity
-			]
-		]
 	}
 
 	protected def dispatch List<Action> transformAction(SetTimeoutAction action) {

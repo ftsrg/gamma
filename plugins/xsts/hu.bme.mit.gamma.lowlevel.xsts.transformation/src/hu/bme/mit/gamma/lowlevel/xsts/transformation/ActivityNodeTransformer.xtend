@@ -10,6 +10,7 @@ import hu.bme.mit.gamma.activity.model.ActivityDefinition
 import hu.bme.mit.gamma.activity.model.ActionDefinition
 
 import static extension hu.bme.mit.gamma.activity.derivedfeatures.ActivityModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.statechart.lowlevel.derivedfeatures.LowlevelStatechartModelDerivedFeatures.*
 
 class ActivityNodeTransformer {
 	
@@ -23,6 +24,7 @@ class ActivityNodeTransformer {
 	protected final extension ActionTransformer actionTransformer
 	protected final extension ExpressionTransformer expressionTransformer
 	protected final extension VariableDeclarationTransformer variableDeclarationTransformer
+	protected final extension StateAssumptionCreator stateAssumptionCreator
 	// Trace
 	protected final Trace trace
 	
@@ -33,17 +35,23 @@ class ActivityNodeTransformer {
 		this.actionTransformer = new ActionTransformer(this.trace)
 		this.expressionTransformer = new ExpressionTransformer(this.trace)
 		this.variableDeclarationTransformer = new VariableDeclarationTransformer(this.trace)
+		this.stateAssumptionCreator = new StateAssumptionCreator(this.trace)
 	}
 	
 	def createRunningAssumeAction(ActivityNode node) {
 		val nodeVariable = trace.getXStsVariable(node)
 
-		return createEqualityExpression(
-			nodeVariable, 
-			createEnumerationLiteralExpression => [
-				reference = runningNodeStateEnumLiteral
-			]
-		).createAssumeAction
+		val expression = createAndExpression => [
+			it.operands += node.activityInstance.state.createSingleXStsStateAssumption
+			it.operands += createEqualityExpression(
+				nodeVariable, 
+				createEnumerationLiteralExpression => [
+					reference = runningNodeStateEnumLiteral
+				]
+			)
+		]
+		
+		return expression.createAssumeAction
 	}
 	
 	def createDoneAssignmentAction(ActivityNode node) {
