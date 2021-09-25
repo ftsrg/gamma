@@ -20,10 +20,11 @@ import "http://www.mit.bme.hu/gamma/property/Model" as property
 import "http://www.mit.bme.hu/gamma/expression/Model" as expression
 import "http://www.mit.bme.hu/gamma/xSTS/Model" as xsts
 import "http://www.mit.bme.hu/gamma/activity/Model" as activity
+import "http://www.mit.bme.hu/gamma/scenario/Model" as scenario
 
 import "http://www.yakindu.org/sct/sgraph/2.0.0" as sgraph
 import "http://www.yakindu.org/sct/statechart/SText" as stext
-import "http://www.yakindu.org/base/types/2.0.0" as types
+import "http://www.yakindu.org/base/types/2.0.0" as types 
 
 GenModel returns GenModel:
 	(('import' 
@@ -38,7 +39,7 @@ GenModel returns GenModel:
 Task returns Task:
 	YakinduCompilation | CodeGeneration | AnalysisModelTransformation | TestGeneration |
 		EventPriorityTransformation | AdaptiveContractTestGeneration | PhaseStatechartGeneration |
-		Verification | TestReplayModelGeneration | Slicing
+		Verification | TraceReplayModelGeneration | Slicing | StatechartContractTestGeneration | StatechartContractGeneration
 ;
 
 YakinduCompilation returns YakinduCompilation:
@@ -77,7 +78,7 @@ CodeGeneration returns CodeGeneration:
 		(
 			'folder' ':' targetFolder+=STRING |
 			'base-package' ':' packageName+=STRING | // Java base package
-			'language' ':' language+=ProgrammingLanguage
+			'language' ':' programmingLanguages+=ProgrammingLanguage
 		)*
 	'}'
 ;
@@ -89,7 +90,7 @@ TestGeneration returns TestGeneration:
 			'folder' ':' targetFolder+=STRING |
 			'file' ':' fileName+=STRING | // The name of the generated file
 			'base-package' ':' packageName+=STRING | // Java base package
-			'language' ':' language+=ProgrammingLanguage
+			'language' ':' programmingLanguages+=ProgrammingLanguage
 		)*
 	'}'
 ;
@@ -115,13 +116,19 @@ AnalysisModelTransformation returns AnalysisModelTransformation:
 			'folder' ':' targetFolder+=STRING |			
 			'file' ':' fileName+=STRING |
 			'language' ':' languages+=AnalysisLanguage |
-			'property-file' ':' propertyPackage=[property::PropertyPackage | STRING] | // Property models
-			'minimal-element-set' ':' ('false' | minimalElementSet?='true') |
+			'property-file' ':' propertyPackage=[property::PropertyPackage | STRING] | // Slicing
+			'initial-state' ':' initialState=[property::PropertyPackage | STRING] |
+			'initial-state-setting' ':' initialStateSetting=InitialStateSetting |
+			'optimize' ':' optimize=BOOLEAN |
 			'scheduler' ':' scheduler+=Scheduler |
 			'constraint' ':' constraint=Constraint |
 			coverages+=Coverage
 		)*
 	'}'
+;
+
+enum InitialStateSetting returns InitialStateSetting:
+	EXECUTE_ENTRY_ACTIONS = "execute-entry-actions" | SKIP_ENTRY_ACTIONS = "skip-entry-actions"
 ;
 
 ModelReference returns ModelReference:
@@ -132,7 +139,7 @@ ComponentReference returns ComponentReference:
 	'component' ':' component=[interface::Component] ('(' arguments+=Expression (',' arguments+=Expression)* ')')? 
 ;
 
-XSTSReference returns XSTSReference:
+XSTSReference returns XstsReference:
 	'xsts' ':' xSts=[xsts::XSTS | STRING]
 ;
 
@@ -148,8 +155,9 @@ SchedulingConstraint returns SchedulingConstraint:
 	(instanceConstraint+=AsynchronousInstanceConstraint)+
 ;
 
+// Duplicated in StatechartLanguage
 ComponentInstanceReference returns composite::ComponentInstanceReference:
-	componentInstanceHierarchy+=[composite::ComponentInstance] ('->' componentInstanceHierarchy+=[composite::ComponentInstance] )*
+	componentInstance=[composite::ComponentInstance] ('->' child=ComponentInstanceReference )?
 ;
 
 ComponentInstancePortReference returns property::ComponentInstancePortReference:
@@ -197,7 +205,7 @@ enum AnalysisLanguage returns AnalysisLanguage:
 
 Coverage returns Coverage:
 	StateCoverage | TransitionCoverage | TransitionPairCoverage |
-		OutEventCoverage | InteractionCoverage | DataflowCoverage
+		OutEventCoverage | InteractionCoverage | DataflowCoverage | InteractionDataflowCoverage
 ;
 
 StateCoverage returns StateCoverage:
@@ -255,6 +263,16 @@ DataflowCoverage returns DataflowCoverage:
 	'}')?
 ;
 
+InteractionDataflowCoverage returns InteractionDataflowCoverage:
+	{InteractionDataflowCoverage} 'interaction-dataflow-coverage' ('{' 
+		('coverage-criterion' ':' interactionDataflowCoverageCriterion=DataflowCoverageCriterion)?
+		('include' ':' '[' include+=ComponentInstanceReference (',' include+=ComponentInstanceReference)* ']')?
+		('exclude' ':' '[' exclude+=ComponentInstanceReference (',' exclude+=ComponentInstanceReference)* ']')?
+		('port-include' ':' '[' portInclude+=ComponentInstancePortReference (',' portInclude+=ComponentInstancePortReference)* ']')?
+		('port-exclude' ':' '[' portExclude+=ComponentInstancePortReference (',' portExclude+=ComponentInstancePortReference)* ']')?
+	'}')?
+;
+
 enum InteractionCoverageCriterion returns InteractionCoverageCriterion:
 	EVERY_INTERACTION = 'every-interaction' | STATES_AND_EVENTS = 'states-and-events' | EVENTS = 'events'
 ;
@@ -269,25 +287,32 @@ Verification returns Verification:
 			'trace-folder' ':' targetFolder+=STRING | // Trace folder
 			'file' ':' fileName+=STRING | // Trace model
 			'svg-file' ':' svgFileName+=STRING | // Trace model
-			'language' ':' languages+=AnalysisLanguage |
+			'language' ':' analysisLanguages+=AnalysisLanguage |
 			'query-file' ':' queryFiles+=STRING | // Queries
 			'property-file' ':' propertyPackages+=[property::PropertyPackage | STRING] | // Property models
 			'base-package' ':' packageName+=STRING  | // Java base package
-			'test-language' ':' language+=ProgrammingLanguage |
+			'test-language' ':' programmingLanguages+=ProgrammingLanguage |
 			'optimize' ':' ('false' | optimize?='true') |
 			'test-folder' ':' testFolder+=STRING
 		)*
 	'}'
 ;
 
-TestReplayModelGeneration returns TestReplayModelGeneration:
-	{TestReplayModelGeneration} 'test-replay' '{'
+TraceReplayModelGeneration returns TraceReplayModelGeneration:
+	{TraceReplayModelGeneration} 'trace-replay' '{'
 		'trace' ':' executionTrace=[trace::ExecutionTrace]
 		(
 			'system-file' ':' fileName+=STRING | // The name of the file containing the system
-			'folder' ':' targetFolder+=STRING
+			'folder' ':' targetFolder+=STRING | 
+			'environment-model-file' ':' environmentModelFileName+=STRING |
+			'environment-model' ':' environmentModel=EnvironmentModel |
+			'consider-out-events' ':' considerOutEvents=BOOLEAN
 		)*
 	'}'
+;
+
+enum EnvironmentModel:
+	OFF = 'off' | SYNCHRONOUS = 'synchronous' | ASYNCHRONOUS = 'asynchronous'
 ;
 
 Slicing returns Slicing:
@@ -317,13 +342,32 @@ enum RealizationMode returns interface::RealizationMode:
 
 AdaptiveContractTestGeneration returns AdaptiveContractTestGeneration:
 	{AdaptiveContractTestGeneration} 'adaptive-test' '{'
-		'statechart' ':' statechartContract=[statechart::StatechartDefinition] ('(' arguments+=Expression (',' arguments+=Expression)* ')')? 
+		modelTransformation=AnalysisModelTransformation
 		(
 		'folder' ':' targetFolder+=STRING |
 		'file' ':' fileName+=STRING | // The name of the generated file
 		'base-package' ':' packageName+=STRING | // Java base package
-		'language' ':' language+=ProgrammingLanguage
+		'language' ':' programmingLanguages+=ProgrammingLanguage |
+		'test-folder' ':' testFolder+=STRING
 		)*
+	'}'
+;
+
+StatechartContractTestGeneration returns StatechartContractTestGeneration:
+	{StatechartContractTestGeneration}
+	'statechart-contract-test' '{'
+	componentReference= ComponentReference 
+	('folder' ':' targetFolder+=STRING)?
+	('constraint' ':' '{'constraint= OrchestratingConstraint'}')?
+	'}' 
+;
+
+StatechartContractGeneration returns StatechartContractGeneration:
+	{StatechartContractGeneration} 
+	'statechart-contract' '{'
+	 'scenario' ':' scenario= [scenario::ScenarioDefinition]
+	 ('folder' ':' targetFolder+=STRING)?
+	 ('name' ':' fileName+=STRING)?
 	'}'
 ;
 
@@ -336,4 +380,3 @@ PhaseStatechartGeneration returns PhaseStatechartGeneration:
 		)*
 	'}'
 ;
-

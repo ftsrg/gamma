@@ -10,6 +10,8 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.genmodel.language.validation
 
+import hu.bme.mit.gamma.genmodel.model.AbstractComplementaryTestGeneration
+import hu.bme.mit.gamma.genmodel.model.AdaptiveContractTestGeneration
 import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation
 import hu.bme.mit.gamma.genmodel.model.AsynchronousInstanceConstraint
 import hu.bme.mit.gamma.genmodel.model.CodeGeneration
@@ -21,7 +23,7 @@ import hu.bme.mit.gamma.genmodel.model.OrchestratingConstraint
 import hu.bme.mit.gamma.genmodel.model.StatechartCompilation
 import hu.bme.mit.gamma.genmodel.model.Task
 import hu.bme.mit.gamma.genmodel.model.TestGeneration
-import hu.bme.mit.gamma.genmodel.model.TestReplayModelGeneration
+import hu.bme.mit.gamma.genmodel.model.TraceReplayModelGeneration
 import hu.bme.mit.gamma.genmodel.model.Verification
 import hu.bme.mit.gamma.genmodel.model.YakinduCompilation
 import hu.bme.mit.gamma.genmodel.util.GenmodelValidator
@@ -29,11 +31,6 @@ import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference
 import hu.bme.mit.gamma.statechart.interface_.TimeSpecification
 import org.eclipse.xtext.validation.Check
 
-/**
- * This class contains custom validation rules. 
- *
- * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#validation
- */
 class GenModelValidator extends AbstractGenModelValidator {
 	
 	protected final GenmodelValidator genmodelValidator = GenmodelValidator.INSTANCE
@@ -68,7 +65,12 @@ class GenModelValidator extends AbstractGenModelValidator {
 	}
 	
 	@Check
-	def checkTasks(TestReplayModelGeneration modelGeneration) {
+	def checkTasks(AbstractComplementaryTestGeneration testGeneration) {
+		handleValidationResultMessage(genmodelValidator.checkTasks(testGeneration))
+	}
+	
+	@Check
+	def checkTasks(TraceReplayModelGeneration modelGeneration) {
 		handleValidationResultMessage(genmodelValidator.checkTasks(modelGeneration))
 	}
 	
@@ -95,6 +97,11 @@ class GenModelValidator extends AbstractGenModelValidator {
 	@Check
 	def checkTasks(TestGeneration testGeneration) {
 		handleValidationResultMessage(genmodelValidator.checkTasks(testGeneration))
+	}
+	
+	@Check
+	def checkReferredComponentTasks(AdaptiveContractTestGeneration testGeneration) {
+		handleValidationResultMessage(genmodelValidator.checkReferredComponentTasks(testGeneration))
 	}
 	
 	// Additional validation rules
@@ -166,7 +173,7 @@ class GenModelValidator extends AbstractGenModelValidator {
 	
 	@Check
 	def checkComponentInstanceReferences(ComponentInstanceReference reference) {
-		genmodelValidator.checkComponentInstanceReferences(reference)
+		handleValidationResultMessage(genmodelValidator.checkComponentInstanceReferences(reference))
 	}
 	
 }

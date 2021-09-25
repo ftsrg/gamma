@@ -1,0 +1,6 @@
+import "TransientJelzo.gcd"
+
+code {
+	component : Jelzo
+	language : java
+}

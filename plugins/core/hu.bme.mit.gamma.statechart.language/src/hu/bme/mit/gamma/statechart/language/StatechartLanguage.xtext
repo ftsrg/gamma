@@ -180,7 +180,7 @@ StatechartDefinition returns StatechartDefinition:
 		('@OrthogonalRegionSchedule' '=' orthogonalRegionSchedulingOrder=OrthogonalRegionSchedulingOrder)? &
 		('@TransitionPriority' '=' transitionPriority=TransitionPriority)? &
 		('@GuardEvaluation' '=' guardEvaluation=GuardEvaluation)? &
-		(annotation=StatechartContractAnnotation)?
+		(annotations+=StatechartContractAnnotation)*
 	)
 	'statechart' name=ID 
 	('(' ((parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*)? ')')?
@@ -219,12 +219,22 @@ enum GuardEvaluation returns GuardEvaluation:
 ;
 
 StatechartContractAnnotation returns StatechartAnnotation:
-	ScenarioContractAnnotation | AdaptiveContractAnnotation | MissionPhaseAnnotation
+	ScenarioAllowedWaitingAnnotation | ScenarioContractAnnotation | AdaptiveContractAnnotation | MissionPhaseAnnotation
+;
+
+ScenarioAllowedWaitingAnnotation returns ContractModel::ScenarioAllowedWaitAnnotation:
+	{ContractModel::ScenarioAllowedWaitAnnotation}
+	'@ScenarioAllowedWaitAnnotation' '=' lowerLimit=Expression '..' upperLimit=Expression 
 ;
 
 ScenarioContractAnnotation returns ContractModel::ScenarioContractAnnotation:
-	'@ScenarioContractStatechart' '=' monitoredComponent=[InterfaceModel::Component]
+	'@ScenarioContractStatechart' '=' monitoredComponent=[InterfaceModel::Component] '(' scenarioType = NotDefinedEventMode ')'
 ;
+
+enum NotDefinedEventMode returns ContractModel::NotDefinedEventMode: 
+	PERMISSIVE = 'permissive' | STRICT ='strict'
+;
+
 
 AdaptiveContractAnnotation returns ContractModel::AdaptiveContractAnnotation:
 	'@AdaptiveContractStatechart' '=' monitoredComponent=[InterfaceModel::Component]
@@ -388,7 +398,8 @@ CascadeCompositeComponent returns CompositeModel::CascadeCompositeComponent:
 				components+=SynchronousComponentInstance |
 				portBindings+=PortBinding |
 				channels+=Channel |
-				'execute' executionList+=[CompositeModel::SynchronousComponentInstance] (',' executionList+=[CompositeModel::SynchronousComponentInstance])*
+				'execute' executionList+=AtomicComponentInstanceReference
+						(',' executionList+=AtomicComponentInstanceReference)*
 			)*
 		'}'
 ;
@@ -407,9 +418,15 @@ SynchronousCompositeComponent returns CompositeModel::SynchronousCompositeCompon
 ;
 
 AsynchronousComponent returns CompositeModel::AsynchronousComponent:
-	AsynchronousCompositeComponent |
+	AbstractAsynchronousCompositeComponent |
 	AsynchronousAdapter
 ;
+
+AbstractAsynchronousCompositeComponent returns CompositeModel::AbstractAsynchronousCompositeComponent:
+	AsynchronousCompositeComponent |
+	ScheduledAsynchronousCompositeComponent
+;
+
 
 AsynchronousCompositeComponent returns CompositeModel::AsynchronousCompositeComponent:
 	'async' name=ID 
@@ -417,16 +434,31 @@ AsynchronousCompositeComponent returns CompositeModel::AsynchronousCompositeComp
 		('[' ((ports+=Port)((',')? ports+=Port)*)? ']')?
 		'{'
 			(
-				components+=AsynchronousComponentInstance |			
+				components+=AsynchronousComponentInstance |
 				portBindings+=PortBinding |
 				channels+=Channel
-			)*			
+			)*
+		'}'
+;
+
+ScheduledAsynchronousCompositeComponent returns CompositeModel::ScheduledAsynchronousCompositeComponent:
+	'scheduled-async' name=ID 
+	('(' ((parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*)? ')')?
+		('[' ((ports+=Port)((',')? ports+=Port)*)? ']')?
+		'{'
+			(
+				components+=AsynchronousComponentInstance |
+				portBindings+=PortBinding |
+				channels+=Channel | 
+				'execute' executionList+=AtomicComponentInstanceReference
+						(',' executionList+=AtomicComponentInstanceReference)*
+			)*
 		'}'
 ;
 
 AsynchronousAdapter returns CompositeModel::AsynchronousAdapter:
 	'adapter' name=ID ('(' ((parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*)? ')')?
-		'of' wrappedComponent=SynchronousComponentInstance		
+		'of' wrappedComponent=SynchronousComponentInstance
 		('[' ((ports+=Port)((',')? ports+=Port)*)? ']')?
 		'{'
 			(
@@ -461,13 +493,16 @@ enum ControlFunction returns CompositeModel::ControlFunction:
 
 MessageQueue returns CompositeModel::MessageQueue:
 	'queue' name=ID '('('priority' '=' priority=INTEGER) (',' 'capacity' '=' capacity=Expression)
-			(',' 'discard' '=' eventDiscardStrategy=DiscardStrategy)? ')' '{'
+			(
+				(',' 'discard' '=' eventDiscardStrategy=DiscardStrategy)? &
+				(',' 'retrieve-count' '=' messageRetrievalCount=Expression)?
+			) ')' '{'
 	 	(eventReference+=EventReference)(',' eventReference+=EventReference)*
 	'}'
 ;
 
 enum DiscardStrategy returns CompositeModel::DiscardStrategy:
-	INCOMING = 'incoming' |  OLDEST = 'oldest'
+	INCOMING = 'incoming' | OLDEST = 'oldest'
 ;
 
 PortBinding returns CompositeModel::PortBinding:
@@ -482,9 +517,12 @@ ComponentInstance returns CompositeModel::ComponentInstance:
 	SynchronousComponentInstance | AsynchronousComponentInstance
 ;
 
+AtomicComponentInstanceReference returns CompositeModel::ComponentInstanceReference:
+	componentInstance=[CompositeModel::ComponentInstance]
+;
 // Subgrammars can use this
 ComponentInstanceReference returns CompositeModel::ComponentInstanceReference:
-	componentInstanceHierarchy+=[CompositeModel::ComponentInstance] ('->' componentInstanceHierarchy+=[CompositeModel::ComponentInstance] )*
+	componentInstance=[CompositeModel::ComponentInstance] ('->' child=ComponentInstanceReference )?
 ;
 
 SynchronousComponentInstance returns CompositeModel::SynchronousComponentInstance:
@@ -513,7 +551,7 @@ BroadcastChannel returns CompositeModel::BroadcastChannel:
 
 Interface returns InterfaceModel::Interface:
 	{InterfaceModel::Interface}
-	'interface' name=ID ('extends' (parents+=[InterfaceModel::Interface]) (',' (parents+=[InterfaceModel::Interface]))*  )? '{'
+	'interface' name=ID ('extends' (parents+=[InterfaceModel::Interface]) (',' (parents+=[InterfaceModel::Interface]))* )? '{'
 		((events+=EventDeclaration))*
 	'}'
 ;
@@ -582,7 +620,7 @@ InlineStatement returns ActionModel::Statement:
 ;
 
 RaiseEventAction returns RaiseEventAction:
-	'raise'  port=[InterfaceModel::Port] '.' event=[InterfaceModel::Event] ('(' (arguments+=Expression)(',' arguments+=Expression)* ')')?
+	'raise' port=[InterfaceModel::Port] '.' event=[InterfaceModel::Event] ('(' (arguments+=Expression)(',' arguments+=Expression)* ')')?
 ;
 
 SetTimeoutAction returns SetTimeoutAction:

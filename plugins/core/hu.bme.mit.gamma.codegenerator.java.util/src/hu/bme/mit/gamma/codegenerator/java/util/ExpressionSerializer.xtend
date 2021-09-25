@@ -43,7 +43,7 @@ import hu.bme.mit.gamma.expression.model.UnaryMinusExpression
 import hu.bme.mit.gamma.expression.model.UnaryPlusExpression
 import hu.bme.mit.gamma.expression.model.XorExpression
 import hu.bme.mit.gamma.expression.util.ComplexTypeUtil
-import hu.bme.mit.gamma.expression.util.ExpressionTypeDeterminator3
+import hu.bme.mit.gamma.expression.util.ExpressionTypeDeterminator2
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 
@@ -54,7 +54,7 @@ class ExpressionSerializer {
 	//
 	protected final extension ComplexTypeUtil complexTypeUtil = ComplexTypeUtil.INSTANCE
 	protected final extension TypeSerializer typeSerializer = TypeSerializer.INSTANCE
-	protected final extension ExpressionTypeDeterminator3 expressionTypeDeterminator3 = ExpressionTypeDeterminator3.INSTANCE
+	protected final extension ExpressionTypeDeterminator2 expressionTypeDeterminator3 = ExpressionTypeDeterminator2.INSTANCE
 	//
 	
 	def dispatch String serialize(Expression expression) {

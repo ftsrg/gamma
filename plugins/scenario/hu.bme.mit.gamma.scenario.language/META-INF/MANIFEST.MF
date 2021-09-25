@@ -1,0 +1,31 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Gamma Scenario Language
+Bundle-Vendor: BME-FTSRG
+Bundle-Version: 2.5.1.qualifier
+Bundle-SymbolicName: hu.bme.mit.gamma.scenario.language; singleton:=true
+Bundle-ActivationPolicy: lazy
+Require-Bundle: org.eclipse.xtext,
+ org.eclipse.xtext.xbase,
+ org.eclipse.equinox.common,
+ org.eclipse.xtext.xbase.lib;bundle-version="2.14.0",
+ org.antlr.runtime;bundle-version="[3.2.0,3.2.1)",
+ org.eclipse.xtext.util,
+ org.eclipse.xtend.lib;bundle-version="2.14.0",
+ hu.bme.mit.gamma.scenario.model,
+ hu.bme.mit.gamma.expression.language,
+ hu.bme.mit.gamma.statechart.language,
+ org.eclipse.core.resources
+Bundle-RequiredExecutionEnvironment: JavaSE-11
+Export-Package: hu.bme.mit.gamma.scenario.language,
+ hu.bme.mit.gamma.scenario.language.formatting,
+ hu.bme.mit.gamma.scenario.language.generator,
+ hu.bme.mit.gamma.scenario.language.parser.antlr,
+ hu.bme.mit.gamma.scenario.language.parser.antlr.internal,
+ hu.bme.mit.gamma.scenario.language.scoping,
+ hu.bme.mit.gamma.scenario.language.serializer,
+ hu.bme.mit.gamma.scenario.language.services,
+ hu.bme.mit.gamma.scenario.language.validation
+Import-Package: org.apache.log4j,
+ hu.bme.mit.gamma.language.util.linking
+Automatic-Module-Name: hu.bme.mit.gamma.scenario.language

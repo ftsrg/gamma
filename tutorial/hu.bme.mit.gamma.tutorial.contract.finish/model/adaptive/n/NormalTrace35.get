@@ -1,0 +1,39 @@
+import "/hu.bme.mit.gamma.tutorial.contract.finish/model/Crossroad.gcd"
+trace NormalTrace35 of Crossroad
+step {
+	act {
+		reset
+	}
+	assert {
+	}
+}
+step {
+	act {
+		elapse 2000
+		schedule component
+	}
+	assert {
+		raise priorityOutput.displayYellow
+	}
+}
+step {
+	act {
+		elapse 2000
+		schedule component
+	}
+	assert {
+		raise priorityOutput.displayRed
+		raise secondaryOutput.displayGreen
+		raise secondaryOutput.displayYellow
+	}
+}
+step {
+	act {
+		elapse 2000
+		schedule component
+	}
+	assert {
+		raise secondaryOutput.displayRed
+		raise priorityOutput.displayGreen
+	}
+}

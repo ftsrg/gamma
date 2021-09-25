@@ -30,6 +30,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 
 import hu.bme.mit.gamma.dialog.DialogUtil;
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.LowlevelToXstsTransformer;
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.TransitionMerging;
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.actionprimer.ActionPrimer;
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.actionprimer.ChoiceInliner;
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.actionprimer.VariableCommonizer;
@@ -92,7 +93,8 @@ public class CommandHandler extends AbstractHandler {
 		logger.log(Level.INFO, "The Gamma - low level statechart transformation has been finished.");
 		logger.log(Level.INFO, "Starting Gamma low level - xSTS transformation.");
 		// Note: the package is not in a resource
-		LowlevelToXstsTransformer lowlevelTransformer = new LowlevelToXstsTransformer(lowlevelPackage);
+		LowlevelToXstsTransformer lowlevelTransformer = new LowlevelToXstsTransformer(
+				lowlevelPackage, false, true, TransitionMerging.FLAT); // Could be led-out to UI
 		Entry<XSTS, L2STrace> resultModels = lowlevelTransformer.execute();
 		XSTS xSts = resultModels.getKey();
 		L2STrace traceability = resultModels.getValue();
@@ -126,7 +128,7 @@ public class CommandHandler extends AbstractHandler {
 		logger.log(Level.INFO, "Starting xSTS serialization.");
 		// Serializing the xSTS
 		ActionSerializer actionSerializer = ActionSerializer.INSTANCE;
-		CharSequence xStsString = actionSerializer.serializeXSTS(xSts);
+		CharSequence xStsString = actionSerializer.serializeXsts(xSts);
 		System.out.println(xStsString);
 		logger.log(Level.INFO, "Starting xSTS Java code generation.");
 		StatechartToJavaCodeGenerator codeGenerator = new StatechartToJavaCodeGenerator(

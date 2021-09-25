@@ -1,16 +1,17 @@
 /********************************************************************************
  * Copyright (c) 2018-2020 Contributors to the Gamma project
- *
+ * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
+ * 
  * SPDX-License-Identifier: EPL-1.0
  ********************************************************************************/
 package hu.bme.mit.gamma.plantuml.transformation
 
 import hu.bme.mit.gamma.action.model.Action
+import hu.bme.mit.gamma.expression.util.TypeSerializer
 import hu.bme.mit.gamma.statechart.interface_.AnyTrigger
 import hu.bme.mit.gamma.statechart.interface_.EventTrigger
 import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference
@@ -29,6 +30,7 @@ import hu.bme.mit.gamma.statechart.statechart.OnCycleTrigger
 import hu.bme.mit.gamma.statechart.statechart.OpaqueTrigger
 import hu.bme.mit.gamma.statechart.statechart.PortEventReference
 import hu.bme.mit.gamma.statechart.statechart.PseudoState
+import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.ShallowHistoryState
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.StateNode
@@ -39,15 +41,18 @@ import hu.bme.mit.gamma.statechart.statechart.UnaryTrigger
 import hu.bme.mit.gamma.statechart.statechart.UnaryType
 import hu.bme.mit.gamma.statechart.util.ActionSerializer
 import hu.bme.mit.gamma.statechart.util.ExpressionSerializer
+import org.eclipse.emf.common.util.EList
 
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class StatechartToPlantUmlTransformer {
-	
+
 	protected final StatechartDefinition statechart
-	
+
 	protected extension ActionSerializer actionSerializer = ActionSerializer.INSTANCE
 	protected extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
+	protected extension TypeSerializer typeSerializer = TypeSerializer.INSTANCE
 
 	new(StatechartDefinition statechart) {
 		this.statechart = statechart
@@ -55,14 +60,13 @@ class StatechartToPlantUmlTransformer {
 
 	def String execute() '''
 		@startuml
+			«statechart.listVariablesInNote»
 			«statechart.mainRegionSearch»
 		@enduml
 	'''
-	
-///////////////////// TRIGGER DISPATCH /////////////////////	
 
+///////////////////// TRIGGER DISPATCH /////////////////////	
 	// Handling the possible instances of triggers
-	
 	protected def dispatch String transformTrigger(EventTrigger eventTrigger) {
 		return eventTrigger.eventReference.transformEventReference
 	}
@@ -85,7 +89,7 @@ class StatechartToPlantUmlTransformer {
 		val type = binaryTrigger.type
 		return '''(«leftOperand.transformTrigger» «type.transformOperator» «rightOperand.transformTrigger»)'''
 	}
-	
+
 	protected def transformOperator(BinaryType type) {
 		switch (type) {
 			case AND: {
@@ -114,7 +118,7 @@ class StatechartToPlantUmlTransformer {
 		val operand = unaryTrigger.operand
 		return '''«type.transformOperator»(«operand.transformTrigger»)'''
 	}
-	
+
 	protected def transformOperator(UnaryType type) {
 		switch (type) {
 			case NOT: {
@@ -125,11 +129,9 @@ class StatechartToPlantUmlTransformer {
 			}
 		}
 	}
-	
+
 ///////////////////// EVENT REFERENCE DISPATCH /////////////////////	
-
 	// Handling the different instances of event references
-
 	protected def dispatch transformEventReference(PortEventReference portEventReference) {
 		return portEventReference.port.name + "." + portEventReference.event.name
 	}
@@ -140,16 +142,14 @@ class StatechartToPlantUmlTransformer {
 
 	protected def dispatch transformEventReference(ClockTickReference clockTickReference) {
 		val clock = clockTickReference.clock
-		return clock.name + " : " + clock.timeSpecification.value + " " +
-			clock.timeSpecification.unit
+		return clock.name + " : " + clock.timeSpecification.value + " " + clock.timeSpecification.unit
 	}
 
 	protected def dispatch transformEventReference(AnyPortEventReference anyPortEventReference) {
 		return '''«anyPortEventReference.port.name».any'''
 	}
-	
-///////////////////// FORK,JOIN,CHOICE,MERGE DISPATCH /////////////////////
 
+///////////////////// FORK,JOIN,CHOICE,MERGE DISPATCH /////////////////////
 	// Handling the fork, join, choice and merge pseudostates
 	// The initial and history states are not handled in this section, but instead in the stateSearch() method,
 	// because it was more convenient that way.
@@ -173,16 +173,12 @@ class StatechartToPlantUmlTransformer {
 	}
 
 ///////////////////// ACTION DISPATCH /////////////////////
-
 	// Handling the different instances of actions
-	
 	protected def transformAction(Action action) {
-		return action.serialize
+		return action.serialize.replaceAll(System.lineSeparator, "\\\\n") // PlantUML needs \\n
 	}
 
-	
 ///////////////////// OTHER FUNCTIONS /////////////////////
-
 	// Other methods that are required in the transformation
 	/**
 	 * regionSearch(StateNode, StatechartDefinition)
@@ -222,13 +218,13 @@ class StatechartToPlantUmlTransformer {
 										«stateActionsSearch(inner)»
 									«ENDIF»
 								«ENDIF»
+								«FOR itransition: statechart.transitions»
+									«IF itransition.sourceState == inner»
+										«stateSearch(itransition)»
+									«ENDIF»
+								«ENDFOR»
 						«ENDFOR»
 						«FOR inner: region.stateNodes»
-							«FOR itransition: statechart.transitions»
-								«IF itransition.sourceState == inner»
-									«stateSearch(itransition)»
-								«ENDIF»
-							«ENDFOR»
 						«ENDFOR»
 						«IF regionsDispatch(state).length > 1 && region !== regionsDispatch(state).last»
 							--
@@ -273,14 +269,14 @@ class StatechartToPlantUmlTransformer {
 			return result
 		}
 	}
-	
+
 	/**
 	 * regionsDispatch(StateNode)
 	 * 
 	 * Contrary to the name, this is not a real dispatch method.
 	 * It returns the regions of non-pseudostates, or null.
 	 * 
-	 */	
+	 */
 	protected def regionsDispatch(StateNode state) {
 		if (!(state instanceof PseudoState)) {
 			val statecomp = state as CompositeElement
@@ -292,7 +288,7 @@ class StatechartToPlantUmlTransformer {
 			}
 		}
 	}
-	
+
 	/**
 	 * mainRegionSearch(StatechartDefitnition)
 	 * 
@@ -300,38 +296,57 @@ class StatechartToPlantUmlTransformer {
 	 * main region. The result of this method is the mainString variable, which contains the whole visualization.
 	 * 
 	 */
-	protected def mainRegionSearch(StatechartDefinition statechart){
+	protected def mainRegionSearch(StatechartDefinition statechart) {
 		val mainString = '''
-			«FOR main : statechart.regions»
-				«FOR pseudo: main.stateNodes»
-					«IF pseudo instanceof PseudoState»
-						«pseudo.transformPseudoState»
-					«ENDIF»
-				«ENDFOR»
-			«ENDFOR»
-			«FOR main : statechart.regions»
-				«FOR mainstate: main.stateNodes.filter(State)»
-					«regionSearch(mainstate, statechart)»
-					«IF !(mainstate instanceof PseudoState)»
-						«IF stateActionsSearch(mainstate) !== null»
-							«stateActionsSearch(mainstate)»
-						«ENDIF»
-					«ENDIF»
-				«ENDFOR»
-			«ENDFOR»
-			«FOR transition : statechart.transitions»
-				«FOR main: statechart.regions»
-					«FOR mainstate: main.stateNodes»
-						«IF transition.sourceState == mainstate»
-							«stateSearch(transition)»
+			«IF statechart.regions.size > 1»state «statechart.name» {«ENDIF»
+				«FOR main : statechart.regions»
+					«FOR pseudo: main.stateNodes»
+						«IF pseudo instanceof PseudoState»
+							«pseudo.transformPseudoState»
 						«ENDIF»
 					«ENDFOR»
+					«FOR mainstate: main.stateNodes.filter(State)»
+						«regionSearch(mainstate, statechart)»
+						«IF !(mainstate instanceof PseudoState)»
+							«IF stateActionsSearch(mainstate) !== null»
+								«stateActionsSearch(mainstate)»
+							«ENDIF»
+						«ENDIF»
+					«ENDFOR»
+					«FOR transition : statechart.transitions»
+						«FOR mainstate: main.stateNodes»
+							«IF transition.sourceState == mainstate»
+								«stateSearch(transition)»
+							«ENDIF»
+						«ENDFOR»
+					«ENDFOR»
+					
+					«IF !(isLastRegion(statechart.regions, main))»
+						--
+					«ENDIF»
+					
 				«ENDFOR»
-			«ENDFOR»
+			«IF statechart.regions.size > 1»
+				}
+				[*] -> «statechart.name»
+			«ENDIF»
 		'''
 		return mainString
 	}
-	
+
+	protected def isLastRegion(EList<Region> regions, Region region) {
+		val size = regions.size
+		if (regions.contains(region)) {
+			if (regions.indexOf(region) == size - 1) {
+				return true
+			} else {
+				return false
+			}
+		} else {
+			return false
+		}
+	}
+
 	/**
 	 * stateSearch(Transition)
 	 * 
@@ -348,11 +363,17 @@ class StatechartToPlantUmlTransformer {
 		val guard = transition.guard
 		val effects = transition.effects
 		val target = transition.targetState
+		var arrow = ""
+		if (transition.sourceState instanceof EntryState) {
+			arrow = "->"
+		} else {
+			arrow = "-->"
+		}
 		return '''
-			«transition.sourceText» --> «target.name»«IF !transition.empty» : «ENDIF»«IF trigger !== null»«trigger.transformTrigger»«ENDIF» «IF guard !== null»[«guard.serialize»]«ENDIF»«FOR effect : effects BEFORE ' /\\n' SEPARATOR '\\n'»«effect.transformAction»«ENDFOR»
+			«transition.sourceText» «arrow» «target.name»«IF !transition.empty» : «ENDIF»«IF trigger !== null»«trigger.transformTrigger»«ENDIF» «IF guard !== null»[«guard.serialize»]«ENDIF»«FOR effect : effects BEFORE ' /\\n' SEPARATOR '\\n'»«effect.transformAction»«ENDFOR»
 		'''
 	}
-	
+
 	protected def getSourceText(Transition transition) {
 		val source = transition.sourceState
 		switch (source) {
@@ -370,5 +391,21 @@ class StatechartToPlantUmlTransformer {
 			}
 		}
 	}
-	
+
+	protected def listVariablesInNote(StatechartDefinition statechart) '''
+		legend top
+		Variables:
+		
+		«FOR variable : statechart.variableDeclarations»
+			var «variable.name»: «variable.typeDefinition.serialize»«IF variable.expression !== null» = «variable.expression.serialize»«ENDIF»
+		«ENDFOR»
+		
+		Timeouts:
+		
+		«FOR timeout : statechart.timeoutDeclarations»
+			timeout «timeout.name»
+		«ENDFOR»
+		endlegend
+	'''
+
 }

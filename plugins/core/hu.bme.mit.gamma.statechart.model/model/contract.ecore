@@ -6,15 +6,36 @@
     <details key="settingDelegates" value="org.eclipse.viatra.query.querybasedfeature"/>
   </eAnnotations>
   <eClassifiers xsi:type="ecore:EClass" name="AdaptiveContractAnnotation" eSuperTypes="statechart.ecore#//StatechartAnnotation">
+    <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+      <details key="documentation" value="Annotation for the adaptive contract statechart."/>
+    </eAnnotations>
     <eStructuralFeatures xsi:type="ecore:EReference" name="monitoredComponent" lowerBound="1"
         eType="ecore:EClass interface.ecore#//Component"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ScenarioContractAnnotation" eSuperTypes="statechart.ecore#//StatechartAnnotation">
+    <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+      <details key="documentation" value="Annotation for the contract statecharts generated from scenarios."/>
+    </eAnnotations>
     <eStructuralFeatures xsi:type="ecore:EReference" name="monitoredComponent" lowerBound="1"
         eType="ecore:EClass interface.ecore#//Component"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="scenarioType" eType="#//NotDefinedEventMode"
+        defaultValueLiteral="PERMISSIVE"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="StateContractAnnotation" eSuperTypes="statechart.ecore#//StateAnnotation">
+    <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+      <details key="documentation" value="Annotation for the states of adaptive contract statecharts, referring to scenario contracts."/>
+    </eAnnotations>
     <eStructuralFeatures xsi:type="ecore:EReference" name="contractStatecharts" upperBound="-1"
         eType="ecore:EClass statechart.ecore#//StatechartDefinition"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EEnum" name="NotDefinedEventMode">
+    <eLiterals name="PERMISSIVE"/>
+    <eLiterals name="STRICT" value="1"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ScenarioAllowedWaitAnnotation" eSuperTypes="statechart.ecore#//StatechartAnnotation">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="lowerLimit" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="upperLimit" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
+        containment="true"/>
   </eClassifiers>
 </ecore:EPackage>

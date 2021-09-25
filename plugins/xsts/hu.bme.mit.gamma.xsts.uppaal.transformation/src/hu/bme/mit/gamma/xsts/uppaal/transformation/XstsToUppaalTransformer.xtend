@@ -17,9 +17,11 @@ import hu.bme.mit.gamma.uppaal.util.AssignmentExpressionCreator
 import hu.bme.mit.gamma.uppaal.util.NtaBuilder
 import hu.bme.mit.gamma.uppaal.util.NtaOptimizer
 import hu.bme.mit.gamma.uppaal.util.TypeTransformer
+import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.AssumeAction
 import hu.bme.mit.gamma.xsts.model.EmptyAction
+import hu.bme.mit.gamma.xsts.model.HavocAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
@@ -30,14 +32,15 @@ import java.util.Set
 import uppaal.NTA
 import uppaal.declarations.ValueIndex
 import uppaal.declarations.VariableContainer
-import uppaal.expressions.Expression
 import uppaal.templates.Edge
 import uppaal.templates.Location
 import uppaal.templates.LocationKind
 
+import static extension de.uni_paderborn.uppaal.derivedfeatures.UppaalModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.uppaal.util.XstsNamings.*
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
-import static extension de.uni_paderborn.uppaal.derivedfeatures.UppaalModelDerivedFeatures.*
+import static extension java.lang.Math.*
 
 class XstsToUppaalTransformer {
 	
@@ -53,7 +56,9 @@ class XstsToUppaalTransformer {
 	protected final extension TypeTransformer typeTransformer
 	protected final extension NtaOptimizer ntaOptimizer
 	
+	protected final extension HavocHandler havocHandler = HavocHandler.INSTANCE
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
+	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	
 	new(XSTS xSts) {
 		this.xSts = xSts
@@ -67,9 +72,13 @@ class XstsToUppaalTransformer {
 	}
 	
 	def execute() {
+		// If the XSTS transformation extracts guards into local variables:
+		// if the guard contains clock variables (referencing native clocks), they should be reinlined
+		
 		resetCommittedLocationName
-		val initialLocation = createTemplateWithInitLoc(templateName, initialLocationName)
+		val initialLocation = templateName.createTemplateWithInitLoc(initialLocationName)
 		initialLocation.locationTimeKind = LocationKind.COMMITED
+		val template = initialLocation.parentTemplate
 		
 		val initializingAction = xSts.initializingAction
 		val environmentalAction = xSts.environmentalAction
@@ -81,12 +90,14 @@ class XstsToUppaalTransformer {
 		stableLocation.name = stableLocationName
 		stableLocation.locationTimeKind = LocationKind.NORMAL
 		
-		val environmentFinishLocation = environmentalAction.transformAction(stableLocation)
-		// If there is no environmental action, the stable location should not be overwritten 
-		if (environmentFinishLocation !== stableLocation) {
-			environmentFinishLocation.name = environmentFinishLocationName
-			environmentFinishLocation.locationTimeKind = LocationKind.NORMAL // So optimization does not delete it
+		var environmentFinishLocation = environmentalAction.transformAction(stableLocation)
+		// If there is no environmental action, we create an environmentFinishLocation (needed for back-annotation)
+		if (environmentFinishLocation === stableLocation) {
+			environmentFinishLocation = template.createLocation
+			stableLocation.createEdge(environmentFinishLocation)
 		}
+		environmentFinishLocation.name = environmentFinishLocationName
+		environmentFinishLocation.locationTimeKind = LocationKind.NORMAL // So optimization does not delete it
 		
 		val systemFinishLocation = mergedAction.transformAction(environmentFinishLocation)
 		
@@ -129,7 +140,7 @@ class XstsToUppaalTransformer {
 	protected def transformVariable(VariableDeclaration variable) {
 		val type = variable.type
 		val uppaalType =
-		if (xSts.clockVariables.contains(variable)) {
+		if (variable.clock) {
 			nta.clock.createTypeReference
 		}
 		else {
@@ -161,35 +172,63 @@ class XstsToUppaalTransformer {
 	}
 	
 	protected def dispatch Location transformAction(AssignmentAction action, Location source) {
+		// UPPAAL does not support 'a = {1, 2, 5}' like assignments
+		val assignmentActions = action.extractArrayLiteralAssignments
+		var Location newSource = source
+		for (assignmentAction : assignmentActions) {
+			val xStsDeclaration = assignmentAction.lhs.declaration
+			val xStsVariable = xStsDeclaration as VariableDeclaration
+			val uppaalVariable = traceability.get(xStsVariable)
+			val uppaalRhs = assignmentAction.rhs.transform
+			newSource = newSource.createUpdateEdge(nextCommittedLocationName,
+					uppaalVariable, uppaalRhs)
+		}
+		return newSource
+	}
+	
+	protected def dispatch Location transformAction(HavocAction action, Location source) {
 		val xStsDeclaration = action.lhs.declaration
 		val xStsVariable = xStsDeclaration as VariableDeclaration
 		val uppaalVariable = traceability.get(xStsVariable)
-		val uppaalRhs = action.rhs.transform
-		return source.createUpdateEdge(uppaalVariable, uppaalRhs)
+		
+		val selectionStruct = xStsVariable.createSelection
+		val selection = selectionStruct.selection
+		val guard = selectionStruct.guard
+		
+		if (selection === null) {
+			return source // We do not do anything
+		}
+		
+		// Optimization - the type of the variable can be set to this selection type
+		val type = selection.typeDefinition.clone
+		uppaalVariable.typeDefinition = type
+		//
+		
+		val target = source.createUpdateEdge(nextCommittedLocationName,
+				uppaalVariable, selection.createIdentifierExpression)
+		val edge = target.incomingEdges.head
+		edge.selection += selection
+		if (guard !== null) {
+			edge.addGuard(guard)
+		}
+		
+		return target
 	}
 	
 	protected def dispatch Location transformAction(VariableDeclarationAction action, Location source) {
 		val xStsVariable = action.variableDeclaration
 		val uppaalVariable = xStsVariable.transformAndTraceVariable
+//		uppaalVariable.prefix = DataVariablePrefix.META // Does not work, see XSTS Crossroads
 		uppaalVariable.extendNameWithHash // Needed for local declarations
 		transientVariables += uppaalVariable
 		val xStsInitialValue = xStsVariable.initialValue
 		val uppaalRhs = xStsInitialValue?.transform
-		return source.createUpdateEdge(uppaalVariable, uppaalRhs) 
-	}
-	
-	protected def createUpdateEdge(Location source,
-			VariableContainer uppaalVariable, Expression uppaalRhs) {
-		val edge = source.createEdgeCommittedSource(nextCommittedLocationName)
-		if (uppaalRhs !== null) {
-			edge.update += uppaalVariable.createAssignmentExpression(uppaalRhs)
-		}
-		return edge.target
+		return source.createUpdateEdge(nextCommittedLocationName, uppaalVariable, uppaalRhs)
 	}
 	
 	protected def void extendNameWithHash(VariableContainer uppaalContainer) {
 		for (uppaalVariable : uppaalContainer.variable) {
-			uppaalVariable.name = '''«uppaalVariable.name»_«uppaalVariable.hashCode»'''
+			uppaalVariable.name = '''«uppaalVariable.name»_«uppaalVariable.hashCode.abs»'''
 		}
 	}
 	
@@ -222,6 +261,9 @@ class XstsToUppaalTransformer {
 		}
 		return target
 	}
+	
+	// TODO handle IfActions when they are introduced in XSTS
+	// TODO handle havoc for boolean and enums and do an exploration for integers
 	
 	// Reseting
 	

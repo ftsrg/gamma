@@ -13,6 +13,7 @@ package hu.bme.mit.gamma.statechart.util;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference;
+import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression;
 import hu.bme.mit.gamma.statechart.statechart.StateReferenceExpression;
 
@@ -49,7 +50,8 @@ public class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.Expre
 		final String DELIMITER = ".";
 		StringBuilder builder = new StringBuilder();
 		boolean isFirst = true;
-		for (ComponentInstance componentInstance : instance.getComponentInstanceHierarchy()) {
+		for (ComponentInstance componentInstance :
+				StatechartModelDerivedFeatures.getComponentInstanceChain(instance)) {
 			if (isFirst) {
 				isFirst = false;
 			}

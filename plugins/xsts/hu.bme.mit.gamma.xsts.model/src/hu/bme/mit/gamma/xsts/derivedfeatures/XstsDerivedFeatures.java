@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.xsts.derivedfeatures;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -19,17 +20,19 @@ import java.util.Set;
 import org.eclipse.emf.ecore.EObject;
 
 import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
+import hu.bme.mit.gamma.expression.model.ClockVariableDeclarationAnnotation;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.EqualityExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
-import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
+import hu.bme.mit.gamma.xsts.model.AbstractAssignmentAction;
 import hu.bme.mit.gamma.xsts.model.Action;
 import hu.bme.mit.gamma.xsts.model.AssignmentAction;
 import hu.bme.mit.gamma.xsts.model.AssumeAction;
 import hu.bme.mit.gamma.xsts.model.AtomicAction;
 import hu.bme.mit.gamma.xsts.model.EmptyAction;
+import hu.bme.mit.gamma.xsts.model.HavocAction;
 import hu.bme.mit.gamma.xsts.model.LoopAction;
 import hu.bme.mit.gamma.xsts.model.MultiaryAction;
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction;
@@ -45,8 +48,17 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 
 	protected static XSTSModelFactory xStsFactory = XSTSModelFactory.eINSTANCE;
 	
-	public static XSTS getContainingXSTS(EObject object) {
+	public static XSTS getContainingXsts(EObject object) {
 		return ecoreUtil.getSelfOrContainerOfType(object, XSTS.class);
+	}
+	
+	public static boolean hasClockVariable(XSTS xSts) {
+		return xSts.getVariableDeclarations().stream().anyMatch(it -> isClock(it));
+	}
+	
+	public static List<VariableDeclaration> getClockVariables(XSTS xSts) {
+		return filterVariablesByAnnotation(xSts.getVariableDeclarations(),
+				ClockVariableDeclarationAnnotation.class);
 	}
 	
 	public static boolean isLocal(Declaration variable) {
@@ -54,17 +66,30 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 		return container instanceof VariableDeclarationAction;
 	}
 	
+	public static List<Action> getAllActions(XSTS xSts) {
+		List<Action> actions = new ArrayList<Action>();
+		// Reference to the original actions
+		actions.add(xSts.getVariableInitializingTransition().getAction());
+		actions.add(xSts.getConfigurationInitializingTransition().getAction());
+		actions.add(xSts.getEntryEventTransition().getAction());
+		actions.add(xSts.getInEventTransition().getAction());
+		actions.add(xSts.getOutEventTransition().getAction());
+		actions.add(getMergedAction(xSts));
+		return actions;
+	}
+	
 	public static SequentialAction getInitializingAction(XSTS xSts) {
 		SequentialAction sequentialAction = xStsFactory.createSequentialAction();
-		final Action variableInitializingAction = xSts.getVariableInitializingTransition().getAction();
+		Action variableInitializingAction = xSts.getVariableInitializingTransition().getAction();
 		if (!(variableInitializingAction instanceof EmptyAction)) {
 			sequentialAction.getActions().add(ecoreUtil.clone(variableInitializingAction));
 		}
-		final Action configurationInitializingAction = xSts.getConfigurationInitializingTransition().getAction();
+		Action configurationInitializingAction =
+				xSts.getConfigurationInitializingTransition().getAction();
 		if (!(configurationInitializingAction instanceof EmptyAction)) {
 			sequentialAction.getActions().add(ecoreUtil.clone(configurationInitializingAction));
 		}
-		final Action entryEventAction = xSts.getEntryEventTransition().getAction();
+		Action entryEventAction = xSts.getEntryEventTransition().getAction();
 		if (!(entryEventAction instanceof EmptyAction)) {
 			sequentialAction.getActions().add(ecoreUtil.clone(entryEventAction));
 		}
@@ -155,18 +180,19 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 	private static boolean isTrivialAssignment(EqualityExpression expression, AssignmentAction action) {
 		Expression xStsLeftOperand = expression.getLeftOperand();
 		Expression xStsRightOperand = expression.getRightOperand();
-		Declaration xStsDeclaration = ((DirectReferenceExpression)action.getLhs()).getDeclaration();
+		DirectReferenceExpression directReferenceExpression = (DirectReferenceExpression) action.getLhs();
+		Declaration xStsDeclaration = directReferenceExpression.getDeclaration();
 		Expression xStsAssignmentRhs = action.getRhs();
 		// region_name == state_name
-		if (xStsLeftOperand instanceof ReferenceExpression) {
-			if (((DirectReferenceExpression) xStsLeftOperand).getDeclaration() == xStsDeclaration
+		if (xStsLeftOperand instanceof DirectReferenceExpression) {
+			if (expressionUtil.getDeclaration(xStsLeftOperand) == xStsDeclaration
 					&& ecoreUtil.helperEquals(xStsRightOperand, xStsAssignmentRhs)) {
 				return true;
 			}
 		}
 		// state_name == region_name
-		if (xStsRightOperand instanceof ReferenceExpression) {
-			if (((DirectReferenceExpression) xStsRightOperand).getDeclaration() == xStsDeclaration
+		if (xStsRightOperand instanceof DirectReferenceExpression) {
+			if (expressionUtil.getDeclaration(xStsRightOperand) == xStsDeclaration
 					&& ecoreUtil.helperEquals(xStsLeftOperand, xStsAssignmentRhs)) {
 				return true;
 			}
@@ -188,6 +214,10 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 
 	private static Set<VariableDeclaration> _getReadVariables(AssumeAction action) {
 		return expressionUtil.getReferredVariables(action.getAssumption());
+	}
+	
+	private static Set<VariableDeclaration> _getReadVariables(HavocAction action) {
+		return Collections.emptySet();
 	}
 
 	private static Set<VariableDeclaration> _getReadVariables(AssignmentAction action) {
@@ -213,9 +243,9 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 	}
 
 	private static Set<VariableDeclaration> _getReadVariables(NonDeterministicAction action) {
-		final Set<VariableDeclaration> variableList = new HashSet<VariableDeclaration>();
+		Set<VariableDeclaration> variableList = new HashSet<VariableDeclaration>();
 		List<Action> _actions = action.getActions();
-		for (final Action containedAction : _actions) {
+		for (Action containedAction : _actions) {
 			Collection<VariableDeclaration> _readVariables = getReadVariables(containedAction);
 			variableList.addAll(_readVariables);
 		}
@@ -223,9 +253,9 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 	}
 
 	private static Set<VariableDeclaration> _getReadVariables(ParallelAction action) {
-		final Set<VariableDeclaration> variableList = new HashSet<VariableDeclaration>();
+		Set<VariableDeclaration> variableList = new HashSet<VariableDeclaration>();
 		List<Action> _actions = action.getActions();
-		for (final Action containedAction : _actions) {
+		for (Action containedAction : _actions) {
 			Collection<VariableDeclaration> _readVariables = getReadVariables(containedAction);
 			variableList.addAll(_readVariables);
 		}
@@ -233,9 +263,9 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 	}
 
 	private static Set<VariableDeclaration> _getReadVariables(SequentialAction action) {
-		final Set<VariableDeclaration> variableList = new HashSet<VariableDeclaration>();
+		Set<VariableDeclaration> variableList = new HashSet<VariableDeclaration>();
 		List<Action> _actions = action.getActions();
-		for (final Action containedAction : _actions) {
+		for (Action containedAction : _actions) {
 			Collection<VariableDeclaration> _readVariables = getReadVariables(containedAction);
 			variableList.addAll(_readVariables);
 		}
@@ -246,7 +276,7 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 		return Collections.emptySet();
 	}
 
-	private static Set<VariableDeclaration> _getWrittenVariables(AssignmentAction action) {
+	private static Set<VariableDeclaration> _getWrittenVariables(AbstractAssignmentAction action) {
 		return expressionUtil.getReferredVariables(action.getLhs());
 	}
 	
@@ -265,9 +295,9 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 	}
 
 	private static Set<VariableDeclaration> _getWrittenVariables(NonDeterministicAction action) {
-		final Set<VariableDeclaration> variableList = new HashSet<VariableDeclaration>();
+		Set<VariableDeclaration> variableList = new HashSet<VariableDeclaration>();
 		List<Action> _actions = action.getActions();
-		for (final Action containedAction : _actions) {
+		for (Action containedAction : _actions) {
 			Collection<VariableDeclaration> _writtenVariables = getWrittenVariables(containedAction);
 			variableList.addAll(_writtenVariables);
 		}
@@ -275,9 +305,9 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 	}
 
 	private static Set<VariableDeclaration> _getWrittenVariables(ParallelAction action) {
-		final Set<VariableDeclaration> variableList = new HashSet<VariableDeclaration>();
+		Set<VariableDeclaration> variableList = new HashSet<VariableDeclaration>();
 		List<Action> _actions = action.getActions();
-		for (final Action containedAction : _actions) {
+		for (Action containedAction : _actions) {
 			Collection<VariableDeclaration> _writtenVariables = getWrittenVariables(containedAction);
 			variableList.addAll(_writtenVariables);
 		}
@@ -285,9 +315,9 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 	}
 
 	private static Set<VariableDeclaration> _getWrittenVariables(SequentialAction action) {
-		final Set<VariableDeclaration> variableList = new HashSet<VariableDeclaration>();
+		Set<VariableDeclaration> variableList = new HashSet<VariableDeclaration>();
 		List<Action> _actions = action.getActions();
-		for (final Action containedAction : _actions) {
+		for (Action containedAction : _actions) {
 			Collection<VariableDeclaration> _writtenVariables = getWrittenVariables(containedAction);
 			variableList.addAll(_writtenVariables);
 		}
@@ -297,6 +327,8 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 	public static Set<VariableDeclaration> getReadVariables(Action action) {
 		if (action instanceof AssignmentAction) {
 			return _getReadVariables((AssignmentAction) action);
+		} else if (action instanceof HavocAction) {
+			return _getReadVariables((HavocAction) action);
 		} else if (action instanceof VariableDeclarationAction) {
 			return _getReadVariables((VariableDeclarationAction) action);
 		} else if (action instanceof AssumeAction) {
@@ -317,8 +349,8 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 	}
 
 	public static Set<VariableDeclaration> getWrittenVariables(Action action) {
-		if (action instanceof AssignmentAction) {
-			return _getWrittenVariables((AssignmentAction) action);
+		if (action instanceof AbstractAssignmentAction) {
+			return _getWrittenVariables((AbstractAssignmentAction) action);
 		} else if (action instanceof VariableDeclarationAction) {
 			return _getWrittenVariables((VariableDeclarationAction) action);
 		} else if (action instanceof AssumeAction) {
@@ -339,7 +371,8 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 	}
 	
 	public static Set<VariableDeclaration> getReferredVariables(Action action) {
-		Set<VariableDeclaration> referredVariables = getReadVariables(action);
+		Set<VariableDeclaration> referredVariables =
+				new HashSet<VariableDeclaration>(getReadVariables(action));
 		referredVariables.addAll(getWrittenVariables(action));
 		return referredVariables;
 	}

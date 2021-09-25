@@ -25,9 +25,11 @@ import hu.bme.mit.gamma.statechart.composite.ControlSpecification;
 import hu.bme.mit.gamma.statechart.composite.InstancePortReference;
 import hu.bme.mit.gamma.statechart.composite.MessageQueue;
 import hu.bme.mit.gamma.statechart.composite.PortBinding;
+import hu.bme.mit.gamma.statechart.composite.ScheduledAsynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.SimpleChannel;
 import hu.bme.mit.gamma.statechart.contract.AdaptiveContractAnnotation;
 import hu.bme.mit.gamma.statechart.contract.StateContractAnnotation;
+import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Clock;
 import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.Event;
@@ -165,9 +167,10 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		handleValidationResultMessage(statechartModelValidator.checkRegionEntries(region));
 	}
 	
-//	@Check
-//	public void checkUnusedDeclarations(Declaration declaration) {
-//	}
+	@Check
+	public void checkUnusedDeclarations(Component component) {
+		handleValidationResultMessage(statechartModelValidator.checkUnusedDeclarations(component));
+	}
 	
 	@Check
 	public void checkUnusedTimeoutDeclarations(TimeoutDeclaration declaration) {
@@ -206,7 +209,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	
 	@Check
 	public void checkTransitionEventTriggers(PortEventReference portEventReference) {
-		handleValidationResultMessage(statechartModelValidator.checkTransitionEventRaisings(null));
+		handleValidationResultMessage(statechartModelValidator.checkTransitionEventTriggers(portEventReference));
 	}
 	
 	@Check
@@ -241,7 +244,11 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	
 	@Check
 	public void checkPseudoNodeAcyclicity(PseudoState node) {
-		handleValidationResultMessage(statechartModelValidator.checkPseudoNodeAcyclicity(node));
+		if (StatechartModelDerivedFeatures.getIncomingTransitions(node).stream()
+				.anyMatch(it -> it.getSourceState() instanceof hu.bme.mit.gamma.statechart.statechart.State)) {
+			// Optimization: starting the traversal from states
+			handleValidationResultMessage(statechartModelValidator.checkPseudoNodeAcyclicity(node));
+		}
 	}
 	
 	@Check
@@ -337,8 +344,8 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	}
 	
 	@Check
-	public void checkUnusedInstancePort(ComponentInstance instance) {
-		handleValidationResultMessage(statechartModelValidator.checkUnusedInstancePort(instance));
+	public void checkComponentInstances(ComponentInstance instance) {
+		handleValidationResultMessage(statechartModelValidator.checkComponentInstances(instance));
 	}
 	
 	@Check
@@ -420,7 +427,8 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	
 	@Check
 	public void checkSynchronousComponentWrapperMultipleEventContainment(AsynchronousAdapter wrapper) {
-		handleValidationResultMessage(statechartModelValidator.checkSynchronousComponentWrapperMultipleEventContainment(wrapper));
+		handleValidationResultMessage(statechartModelValidator
+				.checkAsynchronousAdapterMultipleEventContainment(wrapper));
 	}
 	
 	@Check
@@ -453,14 +461,31 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		handleValidationResultMessage(statechartModelValidator.checkAnyPortControls(adapter));
 	}
 	
+	
+	@Check
+	public void checkMessageRetrievalCount(AsynchronousAdapter adapter) {
+		handleValidationResultMessage(statechartModelValidator.checkMessageRetrievalCount(adapter));
+	}
+	
 	@Check
 	public void checkMessageQueueAnyEventReferences(AnyPortEventReference anyPortEventReference) {
-		handleValidationResultMessage(statechartModelValidator.checkMessageQueueAnyEventReferences(anyPortEventReference));
+		handleValidationResultMessage(statechartModelValidator
+				.checkMessageQueueAnyEventReferences(anyPortEventReference));
 	}
 	
 	@Check
 	public void checkExecutionLists(CascadeCompositeComponent cascade) {
 		handleValidationResultMessage(statechartModelValidator.checkExecutionLists(cascade));
+	}
+	
+	@Check
+	public void checkExecutionLists(ScheduledAsynchronousCompositeComponent scheduledComponent) {
+		handleValidationResultMessage(statechartModelValidator.checkExecutionLists(scheduledComponent));
+	}
+	
+	@Check
+	public void checkComponents(ScheduledAsynchronousCompositeComponent scheduledComponent) {
+		handleValidationResultMessage(statechartModelValidator.checkComponents(scheduledComponent));
 	}
 	
 	@Check

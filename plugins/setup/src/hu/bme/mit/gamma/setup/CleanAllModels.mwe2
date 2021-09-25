@@ -1,3 +1,13 @@
+/********************************************************************************
+ * Copyright (c) 2018-2021 Contributors to the Gamma project
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * SPDX-License-Identifier: EPL-1.0
+ ********************************************************************************/
 module hu.bme.mit.gamma.setup.CleanAllModels
 
 Workflow {	
@@ -9,8 +19,10 @@ Workflow {
     component = @cleaners.models.CleanTraceModel {}
     component = @cleaners.models.CleanUppaalTraceabilityModel {}
     component = @cleaners.models.CleanGenmodelModel {}
+    component = @cleaners.models.CleanPropertyModel {}
     component = @cleaners.models.CleanYakinduTraceabilityModel {}
     component = @cleaners.models.CleanLowlevelModel {}
     component = @cleaners.models.CleanXstsModel {}
     component = @cleaners.models.CleanLowlevelXstsTraceabilityModel {}
+    component = @cleaners.models.CleanScenarioModel {}
 }

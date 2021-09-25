@@ -34,7 +34,11 @@ class EventConnector {
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
 	protected final extension XSTSModelFactory xStsModelFactory = XSTSModelFactory.eINSTANCE
 	
+	// TODO Introduce EventReferenceToXstsVariableMapper
+	
 	def void connectEventsThroughChannels(XSTS xSts, CompositeComponent component) {
+		val mapper = new ReferenceToXstsVariableMapper(xSts)
+		// AssignmentAction not AbstractAssignmentAction as we do not use havoc in the system behavior
 		val xStsAssignmentActions = xSts.getAllContentsOfType(AssignmentAction) // Caching
 		val xStsDeletableVariables = newHashSet
 		val optimizableSimplePorts = newHashSet
@@ -42,13 +46,13 @@ class EventConnector {
 			val providedPort = channel.providedPort.port
 			val requiredPorts = channel.requiredPorts.map[it.port]
 			// Connection: keeping in-variables, deleting out-variables
-			val providedSimplePorts = providedPort.allConnectedSimplePorts
+			val providedSimplePorts = providedPort.allBoundSimplePorts
 			checkState(providedSimplePorts.size == 1)
 			val providedSimplePort = providedSimplePorts.head
 			val providedStatechart = providedSimplePort.containingStatechart
 			val providedInstance = providedStatechart.referencingComponentInstance
 			for (requiredPort : requiredPorts) {
-				for (requiredSimplePort : requiredPort.allConnectedSimplePorts) {
+				for (requiredSimplePort : requiredPort.allBoundSimplePorts) {
 					val requiredStatechart = requiredSimplePort.containingStatechart
 					val requiredInstance = requiredStatechart.referencingComponentInstance
 					// In events on required port
@@ -103,21 +107,17 @@ class EventConnector {
 				}
 				optimizableSimplePorts += providedSimplePort
 				optimizableSimplePorts += component.derivedComponents
-					.map[it.unusedPorts].flatten.map[it.allConnectedSimplePorts].flatten
+					.map[it.unusedPorts].flatten.map[it.allBoundSimplePorts].flatten
 			}
 		}
 		// Out-event optimization - maybe this should be moved to the SystemReducer?
 		for (optimizableSimplePort : optimizableSimplePorts) {
-			val statechart = optimizableSimplePort.containingStatechart
-			val instance = statechart.referencingComponentInstance
 			for (outEvent : optimizableSimplePort.outputEvents) {
-				val outEventName = outEvent.customizeOutputName(optimizableSimplePort, instance)
-				val xStsOutEventVariable = xSts.getVariable(outEventName)
+				val xStsOutEventVariable = mapper.getOutputEventVariable(outEvent, optimizableSimplePort)
 				if (xStsOutEventVariable !== null) {
 					xStsDeletableVariables += xStsOutEventVariable
 					for (outParameter : outEvent.parameterDeclarations) {
-						val outParamaterNames = outParameter.customizeOutNames(optimizableSimplePort, instance)
-						val xStsOutParameterVariables = xSts.getVariables(outParamaterNames)
+						val xStsOutParameterVariables = mapper.getOutputParameterVariables(outParameter, optimizableSimplePort)
 						if (!xStsOutParameterVariables.nullOrEmpty) {
 							xStsDeletableVariables += xStsOutParameterVariables
 						}

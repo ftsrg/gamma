@@ -15,35 +15,40 @@ import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.querygenerator.operators.TemporalOperator
 import hu.bme.mit.gamma.querygenerator.patterns.InstanceStates
 import hu.bme.mit.gamma.querygenerator.patterns.InstanceVariables
+import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
+import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.transformation.util.queries.TopSyncSystemInEvents
 import hu.bme.mit.gamma.transformation.util.queries.TopSyncSystemOutEvents
+import hu.bme.mit.gamma.util.Triple
 import java.util.List
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
+import org.eclipse.viatra.query.runtime.emf.EMFScope
 
 import static com.google.common.base.Preconditions.checkArgument
-import static hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
-abstract class AbstractQueryGenerator implements AutoCloseable {
-		
-	protected ViatraQueryEngine engine
+import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
+
+abstract class AbstractQueryGenerator {
 	
-	def setEngine(ViatraQueryEngine engine) {
-		this.engine = engine
+	protected final Component component
+	protected final ViatraQueryEngine engine
+	
+	new(Component component) {
+		this.component = component
+		val scope = new EMFScope(component.eResource.resourceSet)
+		this.engine = ViatraQueryEngine.on(scope)
 	}
 	
-	override close() {} // So that derived classes do not have to define it
-
 	def wrap(String id) {
 		return "(" + id + ")"
 	}
 	
 	def unwrap(String id) {
-//		return id.replaceAll("\\(", "").replaceAll("\\)", "")
 		return id.substring(1, id.length - 1)
 	}
 	
@@ -94,17 +99,30 @@ abstract class AbstractQueryGenerator implements AutoCloseable {
 		return (instance.name + "." + variable.name).wrap
 	}
 	
-	def getSystemInEvents() {
+	def getSynchronousSystemInEvents() {
 		return TopSyncSystemInEvents.Matcher.on(engine).allMatches
 	}
 	
-	def getSystemOutEvents() {
+	def getSynchronousSystemOutEvents() {
 		return TopSyncSystemOutEvents.Matcher.on(engine).allMatches
 	}
 	
-	def List<String> getSystemOutEventNames() {
+	def getAsynchronousSystemOutEvents() {
+		val inEvents = newArrayList
+		for (systemPort : component.allPorts) {
+			for (port : systemPort.allBoundSimplePorts) {
+				val instance = port.containingComponentInstance as SynchronousComponentInstance
+				for (inEvent : port.outputEvents) {
+					inEvents += new Triple(inEvent, port, instance)
+				}
+			}
+		}
+		return inEvents
+	}
+	
+	def List<String> getSynchronousSystemOutEventNames() {
 		val eventNames = newArrayList
-		for (eventsMatch : getSystemOutEvents) {
+		for (eventsMatch : getSynchronousSystemOutEvents) {
 			val entry = getSystemOutEventName(eventsMatch.systemPort, eventsMatch.event)
 			eventNames.add(entry)
 		}
@@ -115,9 +133,9 @@ abstract class AbstractQueryGenerator implements AutoCloseable {
 		return (systemPort.name + "." + event.name).wrap
 	}
 	
-	def List<String> getSystemOutEventParameterNames() {
+	def List<String> getSynchronousSystemOutEventParameterNames() {
 		val parameterNames = newArrayList
-		for (eventsMatch : getSystemOutEvents) {
+		for (eventsMatch : getSynchronousSystemOutEvents) {
 			val event = eventsMatch.event
 			for (ParameterDeclaration parameter : event.parameterDeclarations) {
 				val systemPort = eventsMatch.systemPort
@@ -132,6 +150,32 @@ abstract class AbstractQueryGenerator implements AutoCloseable {
 		return (getSystemOutEventName(systemPort, event).unwrap + "::" + parameter.name).wrap
 	}
 	
+	//
+	
+	def getAynchronousMessageQueues() {
+		val queues = newHashSet
+		for (asynchronousSimpleInstance : component.allAsynchronousSimpleInstances) {
+			val adapter = asynchronousSimpleInstance.type as AsynchronousAdapter
+			for (messageQueue : adapter.messageQueues) {
+				queues += asynchronousSimpleInstance -> messageQueue
+			}
+		}
+		return queues
+	}
+	
+	def getAsynchronousSystemInEvents() {
+		val portEvents = newHashSet
+		for (asynchronousSimpleInstance : component.allAsynchronousSimpleInstances) {
+			val adapter = asynchronousSimpleInstance.type as AsynchronousAdapter
+			for (port : adapter.allPorts) {
+				for (inEvent : port.inputEvents) {
+					portEvents += new Triple(port, inEvent, asynchronousSimpleInstance)
+				}
+			}
+		}
+		return portEvents
+	}
+	
 	// Parsing identifiers
 	
 	protected def String parseIdentifiers(String text) {
@@ -141,8 +185,8 @@ abstract class AbstractQueryGenerator implements AutoCloseable {
 		}
 		val stateNames = this.getStateNames
 		val variableNames = this.getVariableNames
-		val systemOutEventNames = this.getSystemOutEventNames
-		val systemOutEventParameterNames = this.getSystemOutEventParameterNames
+		val systemOutEventNames = this.getSynchronousSystemOutEventNames
+		val systemOutEventParameterNames = this.getSynchronousSystemOutEventParameterNames
 		for (String stateName : stateNames) {
 			if (result.contains(stateName)) {
 				val targetStateName = getTargetStateName(stateName)
@@ -200,7 +244,7 @@ abstract class AbstractQueryGenerator implements AutoCloseable {
 	}
 	
 	protected def String getTargetOutEventName(String portEventName) {
-		for (eventsMatch : getSystemOutEvents) {
+		for (eventsMatch : getSynchronousSystemOutEvents) { // Asynchronous systems use the same
 			val name = getSystemOutEventName(eventsMatch.systemPort, eventsMatch.event)
 			if (name.equals(portEventName)) {
 				return getTargetOutEventName(eventsMatch.event, eventsMatch.port, eventsMatch.instance)
@@ -210,7 +254,7 @@ abstract class AbstractQueryGenerator implements AutoCloseable {
 	}
 	
 	protected def String getTargetOutEventParameterName(String portEventParameterName) {
-		for (eventsMatch : getSystemOutEvents) {
+		for (eventsMatch : getSynchronousSystemOutEvents) { // Asynchronous systems use the same
 			val systemPort = eventsMatch.systemPort
 			val event = eventsMatch.event
 			for (ParameterDeclaration parameter : event.parameterDeclarations) {

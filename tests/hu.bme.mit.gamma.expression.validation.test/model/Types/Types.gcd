@@ -1,0 +1,46 @@
+package types
+
+type int : integer
+type dec : decimal
+
+type rec : record { field0 : integer, field1 : integer }
+
+type Direction : enum {
+	LEFT, RIGHT
+}
+
+type CardianalPoints : enum {
+	NORTH, SOUTH, WEST, EAST
+}
+
+// ERROR
+
+/**
+ * We expect the names of the variables to be unique
+ * 
+ * @Check : checkNameUniquness
+ */
+ type uniqueName : integer
+ type uniqueName : integer
+
+
+/**
+ * We expect that a type declaration should not refer to itself as a type definition
+ * 
+ * @Check : checkTypeDeclaration
+ */
+ type typeDeclaration : typeDeclaration
+ 
+ 
+ /**
+ * We expect that a record should not store itself directly or indirectly
+ * 
+ * @Check - checkRecordSelfReference
+ */
+type rec0 : record { field0 : rec1 }
+type rec1 : record { field1 : rec0 }
+
+type rec2 : record { field2 : rec3 }
+type rec3 : record { field3 : rec4 }
+type rec4 : record { field4 : rec2 }
+

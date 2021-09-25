@@ -1,3 +1,13 @@
+/********************************************************************************
+ * Copyright (c) 2018-2021 Contributors to the Gamma project
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * SPDX-License-Identifier: EPL-1.0
+ ********************************************************************************/
 package hu.bme.mit.gamma.genmodel.derivedfeatures;
 
 import java.util.ArrayList;
@@ -12,7 +22,7 @@ import hu.bme.mit.gamma.genmodel.model.ComponentReference;
 import hu.bme.mit.gamma.genmodel.model.GenModel;
 import hu.bme.mit.gamma.genmodel.model.ModelReference;
 import hu.bme.mit.gamma.genmodel.model.Task;
-import hu.bme.mit.gamma.genmodel.model.XSTSReference;
+import hu.bme.mit.gamma.genmodel.model.XstsReference;
 
 public class GenmodelDerivedFeatures extends ExpressionModelDerivedFeatures {
 
@@ -36,8 +46,8 @@ public class GenmodelDerivedFeatures extends ExpressionModelDerivedFeatures {
 			ComponentReference componentReference = (ComponentReference) modelReference;
 			return componentReference.getComponent();
 		}
-		if (modelReference instanceof XSTSReference) {
-			XSTSReference xStsReference = (XSTSReference) modelReference;
+		if (modelReference instanceof XstsReference) {
+			XstsReference xStsReference = (XstsReference) modelReference;
 			return xStsReference.getXSts();
 		}
 		if (modelReference instanceof ActivityReference) {

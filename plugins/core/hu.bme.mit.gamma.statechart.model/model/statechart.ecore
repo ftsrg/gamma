@@ -26,6 +26,8 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="activityDeclarations" upperBound="-1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.activity.model/model/activity.ecore#//ActivityDeclaration"
         containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="annotations" upperBound="-1"
+        eType="#//StatechartAnnotation" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EEnum" name="SchedulingOrder">
     <eLiterals name="TOP_DOWN"/>

@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Gamma Setup
 Bundle-SymbolicName: hu.bme.mit.gamma.setup
-Bundle-Version: 2.5.0.qualifier
+Bundle-Version: 2.5.1.qualifier
 Require-Bundle: org.eclipse.core.runtime,
  org.yakindu.base.types;visibility:=reexport,
  org.yakindu.sct.model.sgraph;visibility:=reexport,

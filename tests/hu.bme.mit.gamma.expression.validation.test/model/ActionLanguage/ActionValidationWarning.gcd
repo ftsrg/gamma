@@ -1,0 +1,32 @@
+package actionlanguage
+
+import "Types/Types.gcd"
+
+const dir : Direction
+
+// WARNING
+
+
+/**
+ * @Check - checkBlockIsEmpty
+ */
+procedure example () : void {
+	
+}
+
+procedure exampleProc () : void {
+	var a : integer;
+	
+	
+	/**
+	 * @Check - checkSwitchStatement
+	 */
+	switch (dir) {
+		case Direction::RIGHT:
+			a = 12;
+		case Direction::LEFT:
+			a = 12;
+		default:
+			break;
+	}
+}

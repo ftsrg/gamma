@@ -14,10 +14,11 @@ import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.statechart.composite.CompositeComponent
 import hu.bme.mit.gamma.util.GammaEcoreUtil
-import hu.bme.mit.gamma.xsts.model.AssignmentAction
+import hu.bme.mit.gamma.xsts.model.AbstractAssignmentAction
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 
@@ -30,9 +31,12 @@ class SystemReducer {
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
 	protected final extension ExpressionModelFactory factory = ExpressionModelFactory.eINSTANCE
 	
+	// TODO Introduce EventReferenceToXstsVariableMapper
+	
 	def void deleteUnusedPorts(XSTS xSts, CompositeComponent component) {
-		val xStsAssignmentActions = xSts.getAllContentsOfType(AssignmentAction) // Caching
-		val xStsFalseVariables = newHashSet
+		// In theory, only AssignmentAction would be enough, still we use AbstractAssignmentAction to be sure
+		val xStsAssignmentActions = xSts.getAllContentsOfType(AbstractAssignmentAction) // Caching
+		val xStsDefaultableVariables = newHashSet
 		val xStsDeletableVariables = newHashSet
 		val xStsDeletableAssignmentActions = newHashSet
 		for (instance : component.derivedComponents) {
@@ -42,18 +46,20 @@ class SystemReducer {
 					val inEventName = inputEvent.customizeInputName(instancePort, instance)
 					val xStsInEventVariable = xSts.getVariable(inEventName)
 					if (xStsInEventVariable !== null) {
-						xStsFalseVariables += xStsInEventVariable
+						xStsDefaultableVariables += xStsInEventVariable
 						xStsDeletableVariables += xStsInEventVariable
 						xStsDeletableAssignmentActions += xStsInEventVariable.getAssignments(xStsAssignmentActions)
-						// In-parameters - they can be placed on transitions without trigger, so we do not delete them
-//						for (parameter : inputEvent.parameterDeclarations) {
-//							val inParamaterName = parameter.customizeInName(instancePort, instance)
-//							val xStsInParameterVariable = xSts.getVariable(inParamaterName)
-//							if (xStsInParameterVariable !== null) {
-//								xStsDeletableVariables += xStsInParameterVariable
-//								xStsDeletableAssignmentActions += xStsInParameterVariable.getAssignments(xStsAssignmentActions)
-//							}
-//						}
+						// In-parameters
+						for (parameter : inputEvent.parameterDeclarations) {
+							val inParamaterNames = parameter.customizeInNames(instancePort, instance)
+							val xStsInParameterVariables = xSts.getVariables(inParamaterNames)
+							if (!xStsInParameterVariables.nullOrEmpty) {
+								xStsDefaultableVariables += xStsInParameterVariables
+								xStsDeletableVariables += xStsInParameterVariables
+								xStsDeletableAssignmentActions += xStsInParameterVariables
+										.getAssignments(xStsAssignmentActions)
+							}
+						}
 					}
 				}
 				for (outputEvent : instancePort.outputEvents) {
@@ -64,8 +70,8 @@ class SystemReducer {
 						xStsDeletableAssignmentActions += xStsOutEventVariable.getAssignments(xStsAssignmentActions)
 						// Out-parameters
 						for (parameter : outputEvent.parameterDeclarations) {
-							val inParamaterNames = parameter.customizeOutNames(instancePort, instance)
-							val xStsOutParameterVariables = xSts.getVariables(inParamaterNames)
+							val outParamaterNames = parameter.customizeOutNames(instancePort, instance)
+							val xStsOutParameterVariables = xSts.getVariables(outParamaterNames)
 							if (!xStsOutParameterVariables.nullOrEmpty) {
 								xStsDeletableVariables += xStsOutParameterVariables
 								xStsDeletableAssignmentActions += xStsOutParameterVariables.getAssignments(xStsAssignmentActions)
@@ -83,12 +89,13 @@ class SystemReducer {
 		}
 		// Deleting references to the input event variables in guards
 		// before variable removal as references must be present here
-		for (xStsFalseVariable : xStsFalseVariables) {
-			val references = xSts.getAllContentsOfType(DirectReferenceExpression)
-				.filter[it.declaration === xStsFalseVariable]
+		val xStsDirectReferenceExpressions = xSts.getAllContentsOfType(DirectReferenceExpression)
+		for (xStsDefaultableVariable : xStsDefaultableVariables) {
+			val references = xStsDirectReferenceExpressions
+					.filter[it.declaration === xStsDefaultableVariable]
 			for (reference : references) {
-				val falseExpression = createFalseExpression
-				falseExpression.replace(reference)
+				val defaultExpression = xStsDefaultableVariable.defaultExpression
+				defaultExpression.replace(reference)
 			}
 		}
 		for (xStsDeletableVariable : xStsDeletableVariables) {

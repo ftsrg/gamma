@@ -13,3 +13,5 @@
 *.prop
 *.q
 *.pd
+*.txt
+!/measurement-results/**

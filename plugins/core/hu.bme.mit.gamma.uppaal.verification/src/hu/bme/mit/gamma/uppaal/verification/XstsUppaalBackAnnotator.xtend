@@ -25,7 +25,6 @@ import hu.bme.mit.gamma.trace.model.TimeElapse
 import hu.bme.mit.gamma.uppaal.util.XstsNamings
 import java.util.Scanner
 import java.util.Set
-import org.eclipse.emf.ecore.util.EcoreUtil
 
 import static com.google.common.base.Preconditions.checkState
 
@@ -42,12 +41,10 @@ class XstsUppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 	}
 	
 	new(Package gammaPackage, Scanner traceScanner, boolean sortTrace) {
-		super(traceScanner, sortTrace)
-		this.gammaPackage = gammaPackage
-		this.component = gammaPackage.components.head
-		this.xStsUppaalQueryGenerator = new XstsUppaalQueryGenerator(gammaPackage)
+		super(gammaPackage, traceScanner, sortTrace)
+		this.xStsUppaalQueryGenerator = new XstsUppaalQueryGenerator(component)
 		val schedulingConstraintAnnotation = gammaPackage.annotations
-			.filter(SchedulingConstraintAnnotation).head
+				.filter(SchedulingConstraintAnnotation).head
 		if (schedulingConstraintAnnotation !== null) {
 			this.schedulingConstraint = schedulingConstraintAnnotation.schedulingConstraint
 		}
@@ -157,39 +154,39 @@ class XstsUppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 												if (value.equals("1")) {
 													val event = systemOutEvent.get(0) as Event
 													val port = systemOutEvent.get(1) as Port
-													val systemPort = port.connectedTopComponentPort // Back-tracking to the system port
+													val systemPort = port.boundTopComponentPort // Back-tracking to the system port
 													step.addOutEvent(systemPort, event)
 													// Denoting that this event has been actually raised
-													raisedOutEvents += new Pair(systemPort, event)
+													raisedOutEvents += systemPort -> event
 												}
 											}
-											else if (xStsUppaalQueryGenerator.isSourceOutEventParamater(variable)) {
-												val systemOutEvent = xStsUppaalQueryGenerator.getSourceOutEventParamater(variable)
+											else if (xStsUppaalQueryGenerator.isSourceOutEventParameter(variable)) {
+												val systemOutEvent = xStsUppaalQueryGenerator.getSourceOutEventParameter(variable)
 												val event = systemOutEvent.get(0) as Event
 												val port = systemOutEvent.get(1) as Port
-												val systemPort = port.connectedTopComponentPort // Back-tracking to the system port
+												val systemPort = port.boundTopComponentPort // Back-tracking to the system port
 												val parameter = systemOutEvent.get(2) as ParameterDeclaration
 												step.addOutEventWithStringParameter(systemPort, event, parameter, value)
 												// Will check in localState == StableEnvironmentState.ENVIRONMENT, if it is valid
 											}
 										}
 										case ENVIRONMENT: {
-											if (xStsUppaalQueryGenerator.isSourceInEvent(variable)) {
-												val systemInEvent = xStsUppaalQueryGenerator.getSourceInEvent(variable)
+											if (xStsUppaalQueryGenerator.isSynchronousSourceInEvent(variable)) {
+												val systemInEvent = xStsUppaalQueryGenerator.getSynchronousSourceInEvent(variable)
 												if (value.equals("1")) {
 													val event = systemInEvent.get(0) as Event
 													val port = systemInEvent.get(1) as Port
-													val systemPort = port.connectedTopComponentPort // Back-tracking to the system port
+													val systemPort = port.boundTopComponentPort // Back-tracking to the system port
 													step.addInEvent(systemPort, event)
 													// Denoting that this event has been actually raised
-													raisedInEvents += new Pair(systemPort, event)
+													raisedInEvents += systemPort -> event
 												}
 											}
-											else if (xStsUppaalQueryGenerator.isSourceInEventParamater(variable)) {
-												val systemInEvent = xStsUppaalQueryGenerator.getSourceInEventParamater(variable)
+											else if (xStsUppaalQueryGenerator.isSynchronousSourceInEventParameter(variable)) {
+												val systemInEvent = xStsUppaalQueryGenerator.getSynchronousSourceInEventParameter(variable)
 												val event = systemInEvent.get(0) as Event
 												val port = systemInEvent.get(1) as Port
-												val systemPort = port.connectedTopComponentPort // Back-tracking to the system port
+												val systemPort = port.boundTopComponentPort // Back-tracking to the system port
 												val parameter = systemInEvent.get(2) as ParameterDeclaration
 												step.addInEventWithParameter(systemPort, event, parameter, value)
 												// Will check in localState == StableEnvironmentState.ENVIRONMENT, if it is valid
@@ -251,8 +248,8 @@ class XstsUppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 			Set<State> activatedStates) {
 		val raiseEventActs = step.outEvents
 		for (raiseEventAct : raiseEventActs) {
-			if (!raisedOutEvents.contains(new Pair(raiseEventAct.port, raiseEventAct.event))) {
-				EcoreUtil.delete(raiseEventAct)
+			if (!raisedOutEvents.contains(raiseEventAct.port -> raiseEventAct.event)) {
+				raiseEventAct.delete
 			}
 		}
 		val instanceStates = step.instanceStateConfigurations
@@ -260,7 +257,7 @@ class XstsUppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 			// A state is active if all of its ancestor states are active
 			val ancestorStates = instanceState.state.ancestors
 			if (!activatedStates.containsAll(ancestorStates)) {
-				EcoreUtil.delete(instanceState)
+				instanceState.delete
 			}
 		}
 		raisedOutEvents.clear
@@ -270,12 +267,14 @@ class XstsUppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 	protected def void checkInEvents(Step step, Set<Pair<Port, Event>> raisedInEvents) {
 		val raiseEventActs = step.actions.filter(RaiseEventAct).toList
 		for (raiseEventAct : raiseEventActs) {
-			if (!raisedInEvents.contains(new Pair(raiseEventAct.port, raiseEventAct.event))) {
-				EcoreUtil.delete(raiseEventAct)
+			if (!raisedInEvents.contains(raiseEventAct.port -> raiseEventAct.event)) {
+				raiseEventAct.delete
 			}
 		}
 		raisedInEvents.clear
 	}
+	
+	// TODO complex types
 	
 }
 

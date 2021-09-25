@@ -10,6 +10,8 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.transformation.util
 
+import hu.bme.mit.gamma.expression.model.NamedElement
+import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.property.model.ComponentInstancePortReference
 import hu.bme.mit.gamma.property.model.ComponentInstanceStateConfigurationReference
 import hu.bme.mit.gamma.property.model.ComponentInstanceTransitionReference
@@ -19,9 +21,11 @@ import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Port
+import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.Transition
+import hu.bme.mit.gamma.statechart.statechart.TransitionIdAnnotation
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.util.Collection
 
@@ -29,8 +33,8 @@ import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.transformation.util.Namings.*
-import hu.bme.mit.gamma.expression.model.VariableDeclaration
 
+// TODO rename class
 class SimpleInstanceHandler {
 	// Singleton
 	public static final SimpleInstanceHandler INSTANCE =  new SimpleInstanceHandler
@@ -38,6 +42,8 @@ class SimpleInstanceHandler {
 	//
 	
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
+	
+	// Folded -> unfolded mapping
 	
 	// Component instance transition references
 	
@@ -67,14 +73,23 @@ class SimpleInstanceHandler {
 		return newTransitions
 	}
 	
-	private def getNewTransition(SynchronousComponentInstance newInstance,
+	def getNewTransition(SynchronousComponentInstance newInstance,
 			Transition originalTransition) {
-		val newType = newInstance.type
-		if (newType instanceof StatechartDefinition) {
-			for (transition : newType.transitions) {
-				if (transition.helperEquals(originalTransition)) {
-					return transition
-				}
+		val newType = newInstance.getStatechart
+		for (transition : newType.transitions) {
+			if (transition.helperEquals(originalTransition)) {
+				return transition
+			}
+		}
+		return null // Can be null due to reduction
+	}
+	
+	def getNewTransitionId(SynchronousComponentInstance newInstance,
+			TransitionIdAnnotation originalIdAnnotation) {
+		val newType = newInstance.getStatechart
+		for (annotation : newType.transitions.map[it.idAnnotation]) {
+			if (annotation.helperEquals(originalIdAnnotation)) {
+				return annotation
 			}
 		}
 		return null // Can be null due to reduction
@@ -108,22 +123,34 @@ class SimpleInstanceHandler {
 		return newStates
 	}
 	
-	private def getNewState(SynchronousComponentInstance newInstance, State originalState) {
-		val newType = newInstance.type
-		if (newType instanceof StatechartDefinition) {
-			for (state : newType.allStates) {
-				// Not helper equals, as reduction can change the subregions
-				if (state.equal(originalState)) {
-					return state
-				}
+	def getNewState(SynchronousComponentInstance newInstance, State originalState) {
+		val newType = newInstance.getStatechart
+		for (state : newType.allStates) {
+			// Not helper equals, as reduction can change the subregions
+			if (state.equal(originalState)) {
+				return state
 			}
 		}
 		return null // Can be null due to reduction
 	}
 	
 	private def equal(State lhs, State rhs) {
-		return lhs.name == rhs.name &&
-			lhs.parentRegion.name == rhs.parentRegion.name
+		return lhs.FQN == rhs.FQN
+	}
+	
+	def getNewRegion(SynchronousComponentInstance newInstance, Region originalRegion) {
+		val newType = newInstance.getStatechart
+		for (region : newType.allRegions) {
+			// Not helper equals, as reduction can change the subregions
+			if (region.equal(originalRegion)) {
+				return region
+			}
+		}
+		return null // Can be null due to reduction
+	}
+	
+	private def equal(Region lhs, Region rhs) {
+		return lhs.FQN == rhs.FQN
 	}
 	
 	// Component instance port references
@@ -149,7 +176,7 @@ class SimpleInstanceHandler {
 		return newPorts
 	}
 	
-	private def getNewPort(SynchronousComponentInstance newInstance, Port originalPort) {
+	def getNewPort(SynchronousComponentInstance newInstance, Port originalPort) {
 		val newType = newInstance.type
 		for (port : newType.ports) {
 			if (port.helperEquals(originalPort)) {
@@ -163,19 +190,26 @@ class SimpleInstanceHandler {
 	
 	def getNewSimpleInstanceVariables(
 			Collection<ComponentInstanceVariableReference> originalReferences, Component newType) {
-		val newPorts = newArrayList
+		val newVariables = newArrayList
 		for (originalReference : originalReferences) {
 			val originalInstance = originalReference.instance
 			val originalVariable = originalReference.variable 
-			val newInstance = originalInstance.checkAndGetNewSimpleInstance(newType)
-			newPorts += newInstance.getNewVariable(originalVariable) 
+			val newVariable = originalInstance.getNewVariable(originalVariable, newType)
+			newVariables += newVariable
 		}
-		return newPorts
+		return newVariables
 	}
 	
-	private def getNewVariable(SynchronousComponentInstance newInstance,
+	def getNewVariable(ComponentInstanceReference originalInstance,
+			VariableDeclaration originalVariable, Component newType) {
+		val newInstance = originalInstance.checkAndGetNewSimpleInstance(newType)
+		val newVariable = newInstance.getNewVariable(originalVariable)
+		return newVariable
+	}
+	
+	def getNewVariable(SynchronousComponentInstance newInstance,
 			VariableDeclaration originalVariable) {
-		val newType = newInstance.type as StatechartDefinition
+		val newType = newInstance.getStatechart
 		for (variable : newType.variableDeclarations) {
 			if (variable.helperEquals(originalVariable)) {
 				return variable
@@ -213,30 +247,30 @@ class SimpleInstanceHandler {
 	
 	def getNewSimpleInstances(ComponentInstanceReference originalInstance, Component newType) {
 		val newInstances = newType.allSimpleInstances
-		val accpedtedNewInstances = newArrayList
-		// This intances can be a composite instance, thus more than one new instance can be here
-		val lastInstance = originalInstance.componentInstanceHierarchy.last
+		val acceptedNewInstances = newArrayList
+		// This instance can be a composite instance, thus more than one new instance can be here
+		val lastInstance = originalInstance.lastInstance
 		val lastInstanceType = lastInstance.derivedType
-		val oldPackage = lastInstance.containingPackage
-		val isUnfolded = oldPackage.isUnfolded
+		val originalPackage = lastInstance.containingPackage
+		val isUnfolded = originalPackage.unfolded
 		if (isUnfolded) {
 			val name = lastInstance.name
-			accpedtedNewInstances += newInstances.filter[it.name == name]
+			acceptedNewInstances += newInstances.filter[it.name == name]
 		}
 		else {
 			for (newInstance : newInstances) {
 				if (originalInstance.contains(newInstance)) {
-					accpedtedNewInstances += newInstance
+					acceptedNewInstances += newInstance
 				}
 			}
 		}
 		if (lastInstanceType instanceof StatechartDefinition) {
-			checkState(accpedtedNewInstances.size == 1)
+			checkState(acceptedNewInstances.size == 1)
 		}
 		else {
-			checkState(accpedtedNewInstances.size >= 1)
+			checkState(acceptedNewInstances.size >= 1)
 		}
-		return accpedtedNewInstances
+		return acceptedNewInstances
 	}
 	
 	def checkAndGetNewSimpleInstance(ComponentInstanceReference originalInstance, Component newType) {
@@ -248,17 +282,64 @@ class SimpleInstanceHandler {
 	
 	
 	def getNewAsynchronousSimpleInstances(ComponentInstanceReference original, Component newType) {
-		return newType.allAsynchronousSimpleInstances.filter[original.contains(it)].toList
+		return newType.allAsynchronousSimpleInstances
+			.filter[original.contains(it)].toList
 	}
 	
 	def contains(ComponentInstanceReference original, ComponentInstance copy) {
-		val originalInstances = original.componentInstanceHierarchy
-		val copyInstances = copy.parentComponentInstances
-		copyInstances += copy
+		val originalInstances = original.componentInstanceChain
+		 // If the (AA) component is wrapped, the original will not contain the wrapper instance
+		val copyInstances = copy.wraplessComponentInstanceChain
+		
 		// The naming conventions are clear
 		// Without originalInstances.head.name == copyInstances.head.name ambiguous naming situations could occur
+		// E.g., the FQN of the chain "a -> b" is equal to the name of instance "a_b"
 		return originalInstances.head.name == copyInstances.head.name &&
 			copy.name.startsWith(originalInstances.FQN)
 	}
+	
+	// Currently not used- maybe in the future?
+	
+	def <T extends NamedElement> getNewObject(ComponentInstanceReference originalInstance,
+			T originalObject, Component newTopComponent) {
+		val originalFqn = originalObject.FQNUpToComponent
+		val newInstance = originalInstance.checkAndGetNewSimpleInstance(newTopComponent)
+		val newComponent = newInstance.type
+		val contents = newComponent.getAllContentsOfType(originalObject.class)
+		for (content : contents) {
+			val fqn = content.FQNUpToComponent
+			// Structural properties during reduction change, names do not change
+			// FQN does not work for elements without named element containment chains, e.g., transitions
+			if (originalFqn == fqn) {
+				return content as T
+			}
+		}
+		throw new IllegalStateException("New object not found: " + originalObject + 
+			"Known Xtext bug: for generated gdp, the variables references are not resolved")
+	}
+	
+	// Unfolded -> folded mapping
+	
+	def getOriginalSimpleInstanceReferences(Component originalType) {
+		return originalType.allSimpleInstanceReferences
+	}
+	
+	def getOriginalSimpleInstanceReferences(
+			SynchronousComponentInstance newInstance, Component originalType) {
+		// NewInstance is statechart, only one result is accepted; if we want to handle
+		// composite new instances, "newInstance.contains(originalInstance)" has to be introduced
+		checkState(newInstance.isStatechart)
+		
+		val originalInstances = originalType.originalSimpleInstanceReferences
+		
+		for (originalInstance : originalInstances) {
+			if (originalInstance.contains(newInstance)) {
+				return originalInstance // Only one is expected
+			}
+		}
+		throw new IllegalStateException("Not found original instance for " + newInstance)
+	}
+	
+	// TODO getOriginal...() methods
 	
 }

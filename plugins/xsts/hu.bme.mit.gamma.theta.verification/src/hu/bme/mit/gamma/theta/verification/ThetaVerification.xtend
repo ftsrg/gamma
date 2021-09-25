@@ -27,11 +27,13 @@ class ThetaVerification extends AbstractVerification {
 	override Result execute(File modelFile, File queryFile) {
 		this.execute(modelFile, queryFile, #[
 				"",
-				"--domain EXPL --refinement SEQ_ITP --maxenum 250"
+				"--domain EXPL --refinement SEQ_ITP --maxenum 250 --initprec CTRL"
+//				"--domain EXPL_PRED_COMBINED --autoexpl NEWOPERANDS --initprec CTRL"
 			]
 		)
-		// --domain PRED_CART --refinement SEQ_ITP // default
-		// --domain EXPL --refinement SEQ_ITP --maxenum 250
+		// --domain PRED_CART --refinement SEQ_ITP // default - cannot be used with loops
+		// --domain EXPL --refinement SEQ_ITP --maxenum 250 // --initprec CTRL should be used to support loops
+		// --domain EXPL_PRED_COMBINED --autoexpl NEWOPERANDS --initprec CTRL
 	}
 	
 	def Result execute(File modelFile, File queryFile,
@@ -51,8 +53,7 @@ class ThetaVerification extends AbstractVerification {
 			callables += new InterruptableCallable<Result> {
 				override Result call() {
 					logger.log(Level.INFO, '''Starting Theta on thread «Thread.currentThread.name» with "«parameter»"''')
-					val result = verifier.verifyQuery(
-						gammaPackage, parameter, modelFile, queries, true, true)
+					val result = verifier.verifyQuery(gammaPackage, parameter, modelFile, queries)
 					logger.log(Level.INFO, '''Thread «Thread.currentThread.name» with "«parameter»" has won''')
 					return result
 				}

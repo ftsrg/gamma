@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Contributors to the Gamma project
+ * Copyright (c) 2020-2021 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -14,38 +14,272 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.emf.common.util.URI;
 
+import hu.bme.mit.gamma.genmodel.derivedfeatures.GenmodelDerivedFeatures;
 import hu.bme.mit.gamma.genmodel.model.AdaptiveContractTestGeneration;
+import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
+import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation;
+import hu.bme.mit.gamma.genmodel.model.Constraint;
+import hu.bme.mit.gamma.genmodel.model.OrchestratingConstraint;
 import hu.bme.mit.gamma.genmodel.model.ProgrammingLanguage;
-import hu.bme.mit.gamma.statechart.contract.testgeneration.java.StatechartToTestTransformer;
+import hu.bme.mit.gamma.genmodel.model.Verification;
+import hu.bme.mit.gamma.property.model.PropertyPackage;
+import hu.bme.mit.gamma.scenario.trace.generator.ScenarioStatechartTraceGenerator;
+import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance;
+import hu.bme.mit.gamma.statechart.contract.StateContractAnnotation;
+import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
+import hu.bme.mit.gamma.statechart.interface_.Component;
+import hu.bme.mit.gamma.statechart.interface_.Port;
+import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
+import hu.bme.mit.gamma.statechart.statechart.State;
+import hu.bme.mit.gamma.statechart.statechart.StateAnnotation;
+import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
+import hu.bme.mit.gamma.statechart.util.StatechartUtil;
+import hu.bme.mit.gamma.trace.derivedfeatures.TraceModelDerivedFeatures;
+import hu.bme.mit.gamma.trace.model.ExecutionTrace;
+import hu.bme.mit.gamma.trace.model.InstanceStateConfiguration;
+import hu.bme.mit.gamma.trace.model.InstanceVariableState;
+import hu.bme.mit.gamma.trace.model.RaiseEventAct;
+import hu.bme.mit.gamma.trace.model.Step;
+import hu.bme.mit.gamma.trace.util.TraceUtil;
+import hu.bme.mit.gamma.transformation.util.GammaFileNamer;
+import hu.bme.mit.gamma.ui.taskhandler.VerificationHandler.ExecutionTraceSerializer;
 
 public class AdaptiveContractTestGenerationHandler extends TaskHandler {
-	
+	//
+	protected String packageName;
+	protected String testFolderUri;
+	protected String traceFileName;
+	protected String testFileName;
+	//
+	protected final StatechartUtil statechartUtil = StatechartUtil.INSTANCE;
+	protected final ExecutionTraceSerializer serializer = ExecutionTraceSerializer.INSTANCE;
+	protected final TraceUtil traceUtil = TraceUtil.INSTANCE;
+
+	//
 	public AdaptiveContractTestGenerationHandler(IFile file) {
 		super(file);
 	}
-	
-	public void execute(AdaptiveContractTestGeneration testGeneration, String containingFile, String packageName) throws IOException {
-		checkArgument(testGeneration.getLanguage().size() == 1, 
-				"A single programming language must be specified: " + testGeneration.getLanguage());
-		checkArgument(testGeneration.getLanguage().get(0) == ProgrammingLanguage.JAVA, 
+
+	public void execute(AdaptiveContractTestGeneration testGeneration) throws IOException {
+		// Setting target folder
+		setTargetFolder(testGeneration);
+		//
+		checkArgument(testGeneration.getProgrammingLanguages().size() == 1,
+				"A single programming language must be specified: " + testGeneration.getProgrammingLanguages());
+		checkArgument(testGeneration.getProgrammingLanguages().get(0) == ProgrammingLanguage.JAVA,
 				"Currently only Java is supported.");
-		setAdaptiveContractTestGeneration(testGeneration, packageName);
-		StatechartToTestTransformer transformer = new StatechartToTestTransformer();
-		String fileName = testGeneration.getFileName().isEmpty() ? null : testGeneration.getFileName().get(0);
-		transformer.execute(testGeneration.getStatechartContract(), testGeneration.getArguments(),
-			new File(containingFile), new File(targetFolderUri), testGeneration.getPackageName().get(0), fileName);
+		setAdaptiveContractTestGeneration(testGeneration);
+
+		AnalysisModelTransformation modelTransformation = testGeneration.getModelTransformation();
+		AnalysisLanguage analysisLanguage = modelTransformation.getLanguages().get(0);
+		AnalysisModelTransformationHandler handler = new AnalysisModelTransformationHandler(file);
+		handler.execute(modelTransformation);
+
+		String plainFileName = modelTransformation.getFileName().get(0);
+
+		String modelFileName = null;
+		switch (analysisLanguage) {
+		case THETA:
+			modelFileName = fileNamer.getXtextXStsFileName(plainFileName);
+			break;
+		case UPPAAL:
+			modelFileName = fileNamer.getXmlUppaalFileName(plainFileName);
+			break;
+		case XSTS_UPPAAL:
+			modelFileName = fileNamer.getXmlUppaalFileName(plainFileName);
+			break;
+		default:
+			throw new IllegalArgumentException("Not known language");
+		}
+		String modelFileUri = handler.getTargetFolderUri() + File.separator + modelFileName;
+
+		String propertyFileName = fileNamer.getHiddenPropertyFileName(plainFileName);
+		PropertyPackage propertyPackage = (PropertyPackage) ecoreUtil.normalLoad(
+				handler.getTargetFolderUri(), propertyFileName);
+
+		// Temporary trace model folder
+		final String temporaryTraceFolderName = ".temporary-trace-folder"; // Checking if it already exists
+
+		Verification verification = factory.createVerification();
+		verification.getAnalysisLanguages().add(analysisLanguage);
+		// No programming languages, we do not need temporary test classes
+		verification.getFileName().add(modelFileUri);
+		verification.getPropertyPackages().add(propertyPackage);
+		verification.getTargetFolder().add(temporaryTraceFolderName);
+
+		VerificationHandler verificationHandler = new VerificationHandler(file);
+		verificationHandler.execute(verification);
+
+		// Reading the resulting traces and then deleting them
+		List<ExecutionTrace> testsTraces = new ArrayList<ExecutionTrace>();
+		File temporaryTraceFolder = new File(verificationHandler.getTargetFolderUri());
+		for (File traceFile : getTraceFiles(temporaryTraceFolder)) {
+			ExecutionTrace trace = (ExecutionTrace) ecoreUtil.normalLoad(traceFile);
+			StatechartDefinition adaptiveContract = (StatechartDefinition) GenmodelDerivedFeatures
+					.getModel(modelTransformation);
+			Component monitoredComponent = StatechartModelDerivedFeatures.getMonitoredComponent(adaptiveContract);
+
+			// Back-annotating ports: unfolded statechart -> adaptive statechart -> original
+			// component
+			for (RaiseEventAct act : ecoreUtil.getAllContentsOfType(trace, RaiseEventAct.class)) {
+				Port newPort = act.getPort();
+				Port originalPort = backAnnotatePort(monitoredComponent, newPort);
+				act.setPort(originalPort);
+			}
+
+			// Back-annotating the final states: unfolded statechart -> adaptive statechart
+			Set<State> adaptiveStates = new HashSet<State>();
+			Step lastStep = TraceModelDerivedFeatures.getLastStep(trace);
+			Map<SynchronousComponentInstance, Set<State>> instanceStateConfigurations =
+					TraceModelDerivedFeatures.groupInstanceStateConfigurations(lastStep);
+			for (SynchronousComponentInstance instance : instanceStateConfigurations.keySet()) {
+				Set<State> newStates = instanceStateConfigurations.get(instance);
+				adaptiveStates.addAll(backAnnotateStates(adaptiveContract, newStates));
+			}
+
+			// Clearing unnecessary data
+			traceUtil.clearAsserts(trace, InstanceStateConfiguration.class);
+			traceUtil.clearAsserts(trace, InstanceVariableState.class);
+			// Targeting the reference to the monitored component
+			trace.setImport(StatechartModelDerivedFeatures.getContainingPackage(monitoredComponent));
+			trace.setComponent(monitoredComponent);
+
+			// Extending the trace with the scenario testing
+			for (State contractState : adaptiveStates) {
+				// Extending trace of the adaptive contract with tests derived from the
+				// contracts of these states
+				StateAnnotation annotation = contractState.getAnnotation();
+				if (annotation instanceof StateContractAnnotation) {
+					StateContractAnnotation stateContractAnnotation = (StateContractAnnotation) annotation;
+					for (StatechartDefinition contract : stateContractAnnotation.getContractStatecharts()) {
+						ExecutionTrace clonedTrace = ecoreUtil.clone(trace);
+						Constraint constraint = testGeneration.getModelTransformation().getConstraint();
+						int schedulingConstraint = 0;
+						if (constraint instanceof OrchestratingConstraint) {
+							OrchestratingConstraint orchestratingConstraint = (OrchestratingConstraint) constraint;
+							TimeSpecification minimumPeriod = orchestratingConstraint.getMinimumPeriod();
+							schedulingConstraint = statechartUtil.evaluateMilliseconds(minimumPeriod);
+						}
+						ScenarioStatechartTraceGenerator traceGenerator = new ScenarioStatechartTraceGenerator(
+								contract, schedulingConstraint);
+						List<ExecutionTrace> traces = traceGenerator.execute();
+						for (ExecutionTrace executionTrace : traces) {						
+						    ExecutionTrace tmp = ecoreUtil.clone(clonedTrace);
+							tmp.getSteps().addAll(executionTrace.getSteps()
+									.subList(1, executionTrace.getSteps().size()));
+							testsTraces.add(tmp);
+						}
+					}
+				}
+				// Branch to be removed: just to test now the workflow
+				else {
+					testsTraces.add(ecoreUtil.clone(trace));
+				}
+			}
+		}
+		fileUtil.forceDelete(temporaryTraceFolder);
+
+		// Serializing traces
+		for (ExecutionTrace testTrace : testsTraces) {
+			serializer.serialize(targetFolderUri, traceFileName,
+					testFolderUri, testFileName, packageName, testTrace);
+		}
+	}
+
+	// Load traces
+	
+	protected List<File> getTraceFiles(File temporaryTraceFolder) {
+		List<File> traceFiles = new ArrayList<File>();
+		for (File temporaryFile : temporaryTraceFolder.listFiles()) {
+			String extension = fileUtil.getExtension(temporaryFile);
+			if (extension.equals(GammaFileNamer.EXECUTION_XTEXT_EXTENSION) ||
+					extension.equals(GammaFileNamer.EXECUTION_EMF_EXTENSION)) {
+				traceFiles.add(temporaryFile);
+			}
+		}
+		return traceFiles;
 	}
 	
-	private void setAdaptiveContractTestGeneration(AdaptiveContractTestGeneration testGeneration, String packageName) {
-		checkArgument(testGeneration.getFileName().size() <= 1);
-		checkArgument(testGeneration.getPackageName().size() <= 1);
-		if (testGeneration.getPackageName().isEmpty()) {
-			testGeneration.getPackageName().add(packageName);
+	// Port from unfolded statechart -> adaptive statechart -> original component
+
+	protected Port backAnnotatePort(Component originalComponent, Port newPort) {
+		for (Port originalPort : StatechartModelDerivedFeatures.getAllPorts(originalComponent)) {
+			if (areEqual(originalPort, newPort)) {
+				return originalPort;
+			}
 		}
+		throw new IllegalArgumentException("Not found port: " + newPort);
+	}
+
+	protected boolean areEqual(Port originalPort, Port newPort) {
+		return ecoreUtil.helperEquals(originalPort, newPort);
+	}
+
+	// State from unfolded statechart -> adaptive statechart
+
+	protected Set<State> backAnnotateStates(StatechartDefinition originalStatechart,
+			Collection<State> newStates) {
+		Set<State> originalStates = new HashSet<State>();
+		for (State newState : newStates) {
+			originalStates.add(backAnnotateState(originalStatechart, newState));
+		}
+		return originalStates;
+	}
+
+	protected State backAnnotateState(StatechartDefinition originalStatechart, State newState) {
+		for (State originalState : StatechartModelDerivedFeatures.getAllStates(originalStatechart)) {
+			if (areEqual(originalState, newState)) {
+				return originalState;
+			}
+		}
+		throw new IllegalArgumentException("Not found state: " + newState);
+	}
+
+	protected boolean areEqual(State originalState, State newState) {
+		List<State> originalAncestors = StatechartModelDerivedFeatures.getAncestorsAndSelf(originalState);
+		// Note the - in the string to be a 100% sure, that cannot be contained by state
+		// names
+		String originalName = originalAncestors.stream().map(it -> it.getName())
+				.reduce("", (a, b) -> a + "-" + b);
+		List<State> newAncestors = StatechartModelDerivedFeatures.getAncestorsAndSelf(newState);
+		String newName = newAncestors.stream().map(it -> it.getName())
+				.reduce("", (a, b) -> a + "-" + b);
+		return originalName.equals(newName);
+	}
+
+	// Settings
+
+	private void setAdaptiveContractTestGeneration(AdaptiveContractTestGeneration testGeneration) {
+		checkArgument(testGeneration.getPackageName().size() <= 1);
+		checkArgument(testGeneration.getFileName().size() <= 1);
+		checkArgument(testGeneration.getTestFolder().size() <= 1);
+		if (testGeneration.getPackageName().isEmpty()) {
+			testGeneration.getPackageName().add(file.getProject().getName().toLowerCase());
+		}
+		if (testGeneration.getFileName().isEmpty()) {
+			testGeneration.getFileName().add(GammaFileNamer.EXECUTION_TRACE_FILE_NAME);
+		}
+		if (testGeneration.getTestFolder().isEmpty()) {
+			testGeneration.getTestFolder().add("test-gen");
+		}
+		this.packageName = testGeneration.getPackageName().get(0);
+		this.traceFileName = testGeneration.getFileName().get(0);
+		// Setting the attribute, the test folder is a RELATIVE path now from the
+		// project
+		String testFolder = testGeneration.getTestFolder().get(0);
+		this.testFolderUri = URI.decode(projectLocation + File.separator + testFolder);
+		this.testFileName = traceFileName + "Simulation";
 		// TargetFolder set in setTargetFolder
 	}
-	
+
 }

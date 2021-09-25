@@ -21,7 +21,6 @@ import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeature
 abstract class LowlevelTransitionToXTransitionTransformer {
 	// Auxiliary object
 	protected final extension LowlevelTransitionToActionTransformer lowlevelTransitionToActionTransformer
-	protected final extension XstsActionUtil actionFactory
 	protected final extension StateAssumptionCreator stateAssumptionCreator
 	protected final extension TransitionPreconditionCreator transitionPreconditionCreator
 	protected final extension RegionActivator regionActivator
@@ -33,21 +32,22 @@ abstract class LowlevelTransitionToXTransitionTransformer {
 	// Model factories
 	protected final extension XSTSModelFactory factory = XSTSModelFactory.eINSTANCE
 	protected final extension ExpressionModelFactory constraintModelfactory = ExpressionModelFactory.eINSTANCE
+	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
 	// Engine
 	protected final ViatraQueryEngine engine
 	// Trace
 	protected final Trace trace
 	
-	new(ViatraQueryEngine engine, Trace trace) {
-		this(engine, trace, null)
+	new(ViatraQueryEngine engine, Trace trace, boolean extractGuards) {
+		this(engine, trace, null, extractGuards)
 	}
 	
-	new(ViatraQueryEngine engine, Trace trace, RegionActivator regionActivator) {
+	new(ViatraQueryEngine engine, Trace trace, RegionActivator regionActivator, boolean extractGuards) {
 		this.engine = engine
 		this.trace = trace
-		this.lowlevelTransitionToActionTransformer = new LowlevelTransitionToActionTransformer(engine, trace, regionActivator)
+		this.lowlevelTransitionToActionTransformer = new LowlevelTransitionToActionTransformer(
+			engine, trace, regionActivator, extractGuards)
 		// Delegating the contained objects to the subclasses too
-		this.actionFactory = this.lowlevelTransitionToActionTransformer.actionFactory
 		this.stateAssumptionCreator = this.lowlevelTransitionToActionTransformer.stateAssumptionCreator
 		this.transitionPreconditionCreator = this.lowlevelTransitionToActionTransformer.transitionPreconditionCreator
 		this.regionActivator = this.lowlevelTransitionToActionTransformer.regionActivator

@@ -11,6 +11,7 @@
 package hu.bme.mit.gamma.util
 
 import java.io.File
+import java.util.Collection
 import java.util.Collections
 import java.util.List
 import org.eclipse.core.resources.ResourcesPlugin
@@ -65,6 +66,10 @@ class GammaEcoreUtil {
 	
 	def void delete(EObject object) {
 		EcoreUtil.delete(object)
+	}
+	
+	def void deleteAll(Collection<? extends EObject> objects) {
+		EcoreUtil.deleteAll(objects, true)
 	}
 	
 	def void remove(EObject object) {
@@ -143,6 +148,10 @@ class GammaEcoreUtil {
 		return allContainers
 	}
 	
+	def <T extends EObject> List<T> getAllContainersOfType(EObject object, Class<T> type) {
+		return object.allContainers.filter(type).toList
+	}
+	
 	def <T extends EObject> T getSelfOrContainerOfType(EObject object, Class<T> type) {
 		if (type.isInstance(object)) {
 			return object as T
@@ -163,6 +172,15 @@ class GammaEcoreUtil {
 			return container as T
 		}
 		return container.getContainerOfType(type)
+	}
+	
+	def <T extends EObject> T getSelfOrLastContainerOfType(T object, Class<T> type) {
+		val container = object.eContainer
+		if (!type.isInstance(container)) {
+			return object
+		}
+		val validTypeContainer = container as T
+		return validTypeContainer.getSelfOrLastContainerOfType(type)
 	}
 	
 	def <T extends EObject> List<T> getContentsOfType(EObject object, Class<T> type) {
@@ -189,9 +207,23 @@ class GammaEcoreUtil {
 		return contents
 	}
 	
-	def contains(EObject potentialContainer, EObject object) {
-		val containers = object.allContainers
-		return containers.contains(potentialContainer)
+	def boolean containsTransitively(EObject potentialContainer, EObject object) {
+		if (potentialContainer === null || object === null) {
+			return false
+		}
+		val container = object.eContainer
+		if (potentialContainer === container) {
+			return true
+		}
+		return potentialContainer.containsTransitively(container)
+	}
+	
+	def selfOrContainsTransitively(EObject potentialContainer, EObject object) {
+		return potentialContainer === object || potentialContainer.containsTransitively(object)
+	}
+	
+	def containsOneOtherTransitively(EObject lhs, EObject rhs) {
+		return lhs.containsTransitively(rhs) || rhs.containsTransitively(lhs)
 	}
 
 	def EObject normalLoad(URI uri) {
@@ -230,6 +262,10 @@ class GammaEcoreUtil {
 
 	def void save(EObject rootElem) {
 		val resource = rootElem.eResource
+		resource.save
+	}
+	
+	def void save(Resource resource) {
 		checkState(resource !== null)
 		resource.save(Collections.EMPTY_MAP)
 	}
@@ -260,7 +296,7 @@ class GammaEcoreUtil {
 		}
 		return true
 	}
-
+	
 	def boolean helperEquals(EObject lhs, EObject rhs) {
 		val helper = new EqualityHelper
 		return helper.equals(lhs, rhs)
@@ -276,9 +312,15 @@ class GammaEcoreUtil {
 		}
 		return list
 	}
-
+	
 	def <T extends EObject> T clone(T object) {
 		return object.clone(true, true /* This parameter sets reference copying */)
+	}
+	
+	def <T extends EObject> cloneAndChange(T oldObject, EObject container) {
+		val newObject = oldObject.clone
+		newObject.change(oldObject, container)
+		return newObject
 	}
 
 	@SuppressWarnings("unchecked")
@@ -349,6 +391,16 @@ class GammaEcoreUtil {
 		val container = object.eContainer
 		val list = container.eGet(containingFeature) as List<EObject>
 		return list.indexOf(object)
+	}
+	
+	def isLast(EObject object) {
+		val containingFeature = object.eContainingFeature
+		val container = object.eContainer
+		val get = container.eGet(containingFeature)
+		if (get instanceof List) {
+			return get.last == object
+		}
+		return true
 	}
 	
 }

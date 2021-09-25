@@ -1,0 +1,22 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Gamma Scenario Language Metamodel
+Bundle-SymbolicName: hu.bme.mit.gamma.scenario.model;singleton:=true
+Bundle-Version: 2.5.1.qualifier
+Bundle-ClassPath: .
+Bundle-Vendor: BME-FTSRG
+Bundle-Localization: plugin
+Bundle-RequiredExecutionEnvironment: JavaSE-11
+Export-Package: hu.bme.mit.gamma.scenario.model,
+ hu.bme.mit.gamma.scenario.model.impl,
+ hu.bme.mit.gamma.scenario.model.util,
+ hu.bme.mit.gamma.scenario.util,
+ hu.bme.mit.gamma.scenario.model.derivedfeatures
+Require-Bundle: org.eclipse.core.runtime,
+ org.eclipse.emf.ecore;visibility:=reexport,
+ hu.bme.mit.gamma.expression.model;visibility:=reexport,
+ hu.bme.mit.gamma.action.model;visibility:=reexport,
+ hu.bme.mit.gamma.statechart.model;visibility:=reexport
+Bundle-ActivationPolicy: lazy
+Automatic-Module-Name: hu.bme.mit.gamma.scenario.model
+

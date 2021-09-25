@@ -40,74 +40,28 @@ public class ExecutionTraceSimulation0 {
 		timer.reset(); // Timer before the system
 		reflectiveCrossroad.reset();
 		// Assert
-		assertTrue(reflectiveCrossroad.isRaisedEvent("priorityOutput", "displayRed", new Object[] {}));
-		assertTrue(reflectiveCrossroad.isRaisedEvent("secondaryOutput", "displayRed", new Object[] {}));
-		assertTrue(reflectiveCrossroad.getComponent("controller").isStateActive("main_region", "Init"));
-		assertTrue(reflectiveCrossroad.getComponent("prior").isStateActive("main_region", "Normal"));
-		assertTrue(reflectiveCrossroad.getComponent("prior").isStateActive("normal", "Red"));
-		assertTrue(reflectiveCrossroad.getComponent("secondary").isStateActive("main_region", "Normal"));
-		assertTrue(reflectiveCrossroad.getComponent("secondary").isStateActive("normal", "Red"));
 	}
 	
 	public void step1() {
 		step0();
 		// Act
 		timer.elapse(2000);
-		reflectiveCrossroad.schedule(null);
+		reflectiveCrossroad.schedule();
 		// Assert
-		assertTrue(reflectiveCrossroad.isRaisedEvent("priorityOutput", "displayGreen", new Object[] {}));
-		assertTrue(reflectiveCrossroad.getComponent("controller").isStateActive("main_region", "Operating"));
-		assertTrue(reflectiveCrossroad.getComponent("controller").isStateActive("operating", "PriorityPrepares"));
-		assertTrue(reflectiveCrossroad.getComponent("prior").isStateActive("main_region", "Normal"));
-		assertTrue(reflectiveCrossroad.getComponent("prior").isStateActive("normal", "Green"));
-		assertTrue(reflectiveCrossroad.getComponent("secondary").isStateActive("main_region", "Normal"));
-		assertTrue(reflectiveCrossroad.getComponent("secondary").isStateActive("normal", "Red"));
-	}
-	
-	public void step2() {
-		step1();
-		// Act
-		timer.elapse(1000);
-		reflectiveCrossroad.schedule(null);
-		// Assert
-		assertTrue(reflectiveCrossroad.isRaisedEvent("priorityOutput", "displayYellow", new Object[] {}));
-		assertTrue(reflectiveCrossroad.getComponent("controller").isStateActive("main_region", "Operating"));
-		assertTrue(reflectiveCrossroad.getComponent("controller").isStateActive("operating", "Secondary"));
-		assertTrue(reflectiveCrossroad.getComponent("prior").isStateActive("main_region", "Normal"));
-		assertTrue(reflectiveCrossroad.getComponent("prior").isStateActive("normal", "Yellow"));
-		assertTrue(reflectiveCrossroad.getComponent("secondary").isStateActive("main_region", "Normal"));
-		assertTrue(reflectiveCrossroad.getComponent("secondary").isStateActive("normal", "Red"));
-	}
-	
-	public void step3() {
-		step2();
-		// Act
-		timer.elapse(2000);
-		reflectiveCrossroad.schedule(null);
-		// Assert
-		assertTrue(reflectiveCrossroad.isRaisedEvent("secondaryOutput", "displayGreen", new Object[] {}));
-		assertTrue(reflectiveCrossroad.isRaisedEvent("priorityOutput", "displayRed", new Object[] {}));
-		assertTrue(reflectiveCrossroad.getComponent("controller").isStateActive("main_region", "Operating"));
-		assertTrue(reflectiveCrossroad.getComponent("controller").isStateActive("operating", "SecondaryPrepares"));
-		assertTrue(reflectiveCrossroad.getComponent("prior").isStateActive("main_region", "Normal"));
-		assertTrue(reflectiveCrossroad.getComponent("prior").isStateActive("normal", "Red"));
-		assertTrue(reflectiveCrossroad.getComponent("secondary").isStateActive("main_region", "Normal"));
-		assertTrue(reflectiveCrossroad.getComponent("secondary").isStateActive("normal", "Green"));
 	}
 	
 	public void finalStep0() {
-		step3();
+		step1();
 		// Act
-		timer.elapse(1000);
-		reflectiveCrossroad.schedule(null);
+		timer.elapse(2000);
+		reflectiveCrossroad.schedule();
 		// Assert
 		assertTrue(reflectiveCrossroad.isRaisedEvent("secondaryOutput", "displayYellow", new Object[] {}));
-		assertTrue(reflectiveCrossroad.getComponent("controller").isStateActive("main_region", "Operating"));
-		assertTrue(reflectiveCrossroad.getComponent("controller").isStateActive("operating", "Priority"));
-		assertTrue(reflectiveCrossroad.getComponent("prior").isStateActive("main_region", "Normal"));
-		assertTrue(reflectiveCrossroad.getComponent("prior").isStateActive("normal", "Red"));
-		assertTrue(reflectiveCrossroad.getComponent("secondary").isStateActive("main_region", "Normal"));
-		assertTrue(reflectiveCrossroad.getComponent("secondary").isStateActive("normal", "Yellow"));
+		assertTrue(reflectiveCrossroad.isRaisedEvent("secondaryOutput", "displayRed", new Object[] {}));
+		assertTrue(reflectiveCrossroad.isRaisedEvent("priorityOutput", "displayGreen", new Object[] {}));
+		assertTrue(reflectiveCrossroad.isRaisedEvent("priorityOutput", "displayRed", new Object[] {}));
+		assertTrue(reflectiveCrossroad.isRaisedEvent("secondaryOutput", "displayGreen", new Object[] {}));
+		assertTrue(reflectiveCrossroad.isRaisedEvent("priorityOutput", "displayYellow", new Object[] {}));
 	}
 	
 }

@@ -15,6 +15,7 @@
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference trace.ecore#//ExecutionTrace/component"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference trace.ecore#//ExecutionTrace/import"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference trace.ecore#//ExecutionTrace/cycle"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference trace.ecore#//ExecutionTrace/annotations"/>
     </genClasses>
     <genClasses ecoreClass="trace.ecore#//Step">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference trace.ecore#//Step/actions"/>
@@ -53,5 +54,10 @@
     <genClasses ecoreClass="trace.ecore#//AndAssert"/>
     <genClasses ecoreClass="trace.ecore#//XorAssert"/>
     <genClasses ecoreClass="trace.ecore#//OrAssert"/>
+    <genClasses image="false" ecoreClass="trace.ecore#//ExecutionTraceAnnotation"/>
+    <genClasses ecoreClass="trace.ecore#//ExecutionTraceAllowedWaitingAnnotation">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference trace.ecore#//ExecutionTraceAllowedWaitingAnnotation/lowerLimit"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference trace.ecore#//ExecutionTraceAllowedWaitingAnnotation/upperLimit"/>
+    </genClasses>
   </genPackages>
 </genmodel:GenModel>

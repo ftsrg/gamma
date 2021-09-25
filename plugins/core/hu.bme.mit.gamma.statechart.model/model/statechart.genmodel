@@ -53,6 +53,7 @@
     </genClasses>
     <genClasses ecoreClass="composite.ecore#//MessageQueue">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference composite.ecore#//MessageQueue/capacity"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference composite.ecore#//MessageQueue/messageRetrievalCount"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference composite.ecore#//MessageQueue/eventReference"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute composite.ecore#//MessageQueue/eventDiscardStrategy"/>
     </genClasses>
@@ -67,8 +68,12 @@
     <genClasses image="false" ecoreClass="composite.ecore#//AbstractSynchronousCompositeComponent">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference composite.ecore#//AbstractSynchronousCompositeComponent/components"/>
     </genClasses>
-    <genClasses ecoreClass="composite.ecore#//AsynchronousCompositeComponent">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference composite.ecore#//AsynchronousCompositeComponent/components"/>
+    <genClasses ecoreClass="composite.ecore#//AbstractAsynchronousCompositeComponent">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference composite.ecore#//AbstractAsynchronousCompositeComponent/components"/>
+    </genClasses>
+    <genClasses ecoreClass="composite.ecore#//AsynchronousCompositeComponent"/>
+    <genClasses ecoreClass="composite.ecore#//ScheduledAsynchronousCompositeComponent">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference composite.ecore#//ScheduledAsynchronousCompositeComponent/executionList"/>
     </genClasses>
     <genClasses ecoreClass="composite.ecore#//AsynchronousAdapter">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference composite.ecore#//AsynchronousAdapter/controlSpecifications"/>
@@ -77,23 +82,33 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference composite.ecore#//AsynchronousAdapter/wrappedComponent"/>
     </genClasses>
     <genClasses ecoreClass="composite.ecore#//CascadeCompositeComponent">
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference composite.ecore#//CascadeCompositeComponent/executionList"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference composite.ecore#//CascadeCompositeComponent/executionList"/>
     </genClasses>
     <genClasses ecoreClass="composite.ecore#//SynchronousCompositeComponent"/>
     <genClasses ecoreClass="composite.ecore#//ComponentInstanceReference">
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference composite.ecore#//ComponentInstanceReference/componentInstanceHierarchy"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference composite.ecore#//ComponentInstanceReference/componentInstance"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference composite.ecore#//ComponentInstanceReference/child"/>
     </genClasses>
   </genPackages>
   <genPackages prefix="ContractModel" basePackage="hu.bme.mit.gamma.statechart" disposableProviderFactory="true"
       ecorePackage="contract.ecore#/">
+    <genEnums typeSafeEnumCompatible="false" ecoreEnum="contract.ecore#//NotDefinedEventMode">
+      <genEnumLiterals ecoreEnumLiteral="contract.ecore#//NotDefinedEventMode/PERMISSIVE"/>
+      <genEnumLiterals ecoreEnumLiteral="contract.ecore#//NotDefinedEventMode/STRICT"/>
+    </genEnums>
     <genClasses ecoreClass="contract.ecore#//AdaptiveContractAnnotation">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference contract.ecore#//AdaptiveContractAnnotation/monitoredComponent"/>
     </genClasses>
     <genClasses ecoreClass="contract.ecore#//ScenarioContractAnnotation">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference contract.ecore#//ScenarioContractAnnotation/monitoredComponent"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute contract.ecore#//ScenarioContractAnnotation/scenarioType"/>
     </genClasses>
     <genClasses ecoreClass="contract.ecore#//StateContractAnnotation">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference contract.ecore#//StateContractAnnotation/contractStatecharts"/>
+    </genClasses>
+    <genClasses ecoreClass="contract.ecore#//ScenarioAllowedWaitAnnotation">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference contract.ecore#//ScenarioAllowedWaitAnnotation/lowerLimit"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference contract.ecore#//ScenarioAllowedWaitAnnotation/upperLimit"/>
     </genClasses>
   </genPackages>
   <genPackages prefix="InterfaceModel" basePackage="hu.bme.mit.gamma.statechart" ecorePackage="interface.ecore#/">
@@ -167,6 +182,7 @@
     <genClasses image="false" ecoreClass="interface.ecore#//PackageAnnotation"/>
     <genClasses ecoreClass="interface.ecore#//TopComponentArgumentsAnnotation"/>
     <genClasses ecoreClass="interface.ecore#//UnfoldedPackageAnnotation"/>
+    <genClasses ecoreClass="interface.ecore#//WrappedPackageAnnotation"/>
     <genClasses ecoreClass="interface.ecore#//SchedulingConstraintAnnotation">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference interface.ecore#//SchedulingConstraintAnnotation/schedulingConstraint"/>
     </genClasses>
@@ -234,7 +250,7 @@
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute statechart.ecore#//StatechartDefinition/orthogonalRegionSchedulingOrder"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute statechart.ecore#//StatechartDefinition/transitionPriority"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute statechart.ecore#//StatechartDefinition/guardEvaluation"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//StatechartDefinition/annotation"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//StatechartDefinition/annotations"/>
     </genClasses>
     <genClasses ecoreClass="statechart.ecore#//TimeoutDeclaration"/>
     <genClasses ecoreClass="statechart.ecore#//StatechartReference">

@@ -1,72 +1,73 @@
+/********************************************************************************
+ * Copyright (c) 2018-2021 Contributors to the Gamma project
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * SPDX-License-Identifier: EPL-1.0
+ ********************************************************************************/
 package hu.bme.mit.gamma.trace.environment.transformation
 
-import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
-import hu.bme.mit.gamma.statechart.interface_.InterfaceModelFactory
-import hu.bme.mit.gamma.statechart.interface_.TimeUnit
-import hu.bme.mit.gamma.statechart.statechart.BinaryType
-import hu.bme.mit.gamma.statechart.statechart.SetTimeoutAction
+import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.StatechartModelFactory
-import hu.bme.mit.gamma.statechart.statechart.Transition
-import hu.bme.mit.gamma.statechart.util.ExpressionSerializer
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
-import hu.bme.mit.gamma.trace.model.ComponentSchedule
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
-import hu.bme.mit.gamma.trace.model.RaiseEventAct
-import hu.bme.mit.gamma.trace.model.TimeElapse
+import hu.bme.mit.gamma.trace.model.Reset
 import hu.bme.mit.gamma.trace.model.TraceModelFactory
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import org.eclipse.xtend.lib.annotations.Data
+
+import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class TraceToEnvironmentModelTransformer {
 	
-	int timeoutId
-	int stateId
+	protected final extension Namings namings
 	
+	protected final String environmentModelName
+	protected final boolean considerOutEvents
 	protected final ExecutionTrace executionTrace
+	protected final EnvironmentModel environmentModel
 	protected final Trace trace
 	
-	protected extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
+	protected extension TriggerTransformer triggerTransformer
+	protected extension OriginalEnvironmentBehaviorCreator originalEnvironmentBehaviorCreator
+	
 	protected extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
 	protected extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
 	
-	protected extension ExpressionModelFactory expressionModelFactory = ExpressionModelFactory.eINSTANCE
 	protected extension StatechartModelFactory statechartModelFactory = StatechartModelFactory.eINSTANCE
-	protected extension InterfaceModelFactory interfaceModelFactory = InterfaceModelFactory.eINSTANCE
 	protected extension TraceModelFactory traceFactory = TraceModelFactory.eINSTANCE
 	
-	new(ExecutionTrace executionTrace) {
-		this.timeoutId = 0
-		this.stateId = 0
+	new(String environmentModelName, boolean considerOutEvents,
+			ExecutionTrace executionTrace, EnvironmentModel environmentModel) {
+		this.environmentModelName = environmentModelName
+		this.considerOutEvents = considerOutEvents
 		this.executionTrace = executionTrace
+		this.environmentModel = environmentModel
+		this.namings = new Namings
 		this.trace = new Trace
+		this.triggerTransformer = new TriggerTransformer(this.trace, this.namings)
+		this.originalEnvironmentBehaviorCreator = new OriginalEnvironmentBehaviorCreator(
+			this.trace, this.environmentModel, this.namings, this.considerOutEvents)
 	}
 	
 	def execute() {
+		validate
+		
 		val statechart = createStatechartDefinition => [
-			it.name = executionTrace.name
+			it.name = environmentModelName
 		]
+		
 		statechart.transformPorts(trace)
-		val mainRegion = createRegion => [
-			it.name = '''MainRegion'''
-		]
-		statechart.regions += mainRegion
-		val initialState = createInitialState => [
-			it.name = '''Initial'''
-		]
-		mainRegion.stateNodes += initialState
-		val firstState = createState => [
-			it.name = stateName
-		]
-		mainRegion.stateNodes += firstState
-		var actualTransition = createTransition => [
-			it.sourceState = initialState
-			it.targetState = firstState
-		]
-		statechart.transitions += actualTransition
+		
+		statechart.createRegionWithState(mainRegionName, initialStateName, stateName)
+		var actualTransition = statechart.transitions.head
 		
 		val actions = executionTrace.steps.map[it.actions].flatten.toList
 		// Resets are not handled; schedules are handled by introducing a new transition 
@@ -76,99 +77,86 @@ class TraceToEnvironmentModelTransformer {
 		}
 		// There is an unnecessary empty transition at the end
 		val lastState = actualTransition.sourceState as State
-		actualTransition.targetState.delete
-		actualTransition.delete
+		actualTransition.targetState.remove
+		actualTransition.remove
+		
+		lastState.createOriginalEnvironmentBehavior
 		
 		return new Result(statechart, lastState)
 	}
 	
-	protected def transformPorts(StatechartDefinition statechart, Trace trace) {
-		for (componentPort : executionTrace.component.ports) {
+	protected def validate() {
+		val firstStep = executionTrace.steps.head
+		val act = firstStep.actions.head
+		checkState(act instanceof Reset, "The first act in the execution trace must be a reset")
+	}
+	
+	protected def transformPorts(StatechartDefinition environmentModel, Trace trace) {
+		val component = executionTrace.component
+		for (componentPort : component.ports) {
+			// Environment ports: connected to the original ports
 			val environmentPort = componentPort.clone
-			statechart.ports += environmentPort
 			val interfaceRealization = environmentPort.interfaceRealization
+			
+			environmentPort.name = componentPort.environmentPortName
 			interfaceRealization.realizationMode = interfaceRealization.realizationMode.opposite
-			trace.put(componentPort, environmentPort)
-		}
-	}
-	
-	protected def dispatch transformTrigger(TimeElapse act, Transition transition) {
-		val elapsedTime = act.elapsedTime
-		
-		val timeoutDeclaration = statechartModelFactory.createTimeoutDeclaration => [
-			it.name = timeoutDeclarationName
-		]
-		val statechart = transition.containingStatechart
-		statechart.timeoutDeclarations += timeoutDeclaration
-	
-		val source = transition.sourceState as State
-		
-		val setTimeoutActions = source.entryActions.filter(SetTimeoutAction)
-		if (!setTimeoutActions.empty) {
-			val setTimeoutAction = setTimeoutActions.head
-			val value = setTimeoutAction.time.value
-			setTimeoutAction.time.value = value.add(elapsedTime.intValue)
-		}
-		else {
-			source.entryActions += createSetTimeoutAction => [
-				it.timeoutDeclaration = timeoutDeclaration
-				it.time = createTimeSpecification => [
-					it.value = createIntegerLiteralExpression => [it.value = elapsedTime]
-					it.unit = TimeUnit.MILLISECOND
-				]
-			]
-		}
-		transition.extendTrigger(
-			createEventTrigger => [
-				it.eventReference = createTimeoutEventReference => [
-					it.timeout = timeoutDeclaration
-				]
-			], BinaryType.AND
-		)
-		return transition
-	}
-	
-	protected def dispatch transformTrigger(RaiseEventAct act, Transition transition) {
-		val port = act.port
-		val environmentPort = trace.get(port)
-		val event = act.event
-		val arguments = act.arguments
-		
-		transition.effects += createRaiseEventAction => [
-			it.port = environmentPort
-			it.event = event
-			for (argument : arguments) {
-				it.arguments += argument.clone
+			
+			environmentModel.ports += environmentPort
+			trace.putComponentEnvironmentPort(componentPort, environmentPort)
+			
+			// Proxy ports: led out to the system
+			if (this.environmentModel !== EnvironmentModel.OFF) { 
+				val proxyPort = componentPort.clone
+				
+				proxyPort.name = componentPort.proxyPortName
+				
+				environmentModel.ports += proxyPort
+				trace.putComponentProxyPort(componentPort, proxyPort)
+				trace.putProxyEnvironmentPort(proxyPort, environmentPort)
 			}
-		]
-		return transition
+		}
 	}
 	
-	protected def dispatch transformTrigger(ComponentSchedule act, Transition transition) {
-		if (transition.trigger === null && transition.sourceState instanceof State) {
-			// The old transition has to have a trigger
-			transition.trigger = createOnCycleTrigger
-		}
-		val target = transition.targetState
-		val region = target.parentRegion
-		val newTarget = createState => [
-			it.name = stateName
-		]
-		region.stateNodes += newTarget
-		val newTransition = createTransition => [
-			it.sourceState = target
-			it.targetState = newTarget
-		]
-		region.containingStatechart.transitions += newTransition
-		return newTransition
-	}
+	///
 	
 	def getTrace() {
 		return trace
 	}
 	
-	protected def String getStateName() '''_«stateId++»'''
-	protected def String getTimeoutDeclarationName() '''Timeout«timeoutId++»'''
+	///
+	
+	static class Namings {
+	
+		int timeoutId
+		int stateId
+		int mergeId
+		int choiceId
+		
+		def String getEnvironmentPortName(Port port) '''_«port.name»_'''
+		def String getProxyPortName(Port port) '''«port.name»'''
+		
+		def String getStateName() '''_«stateId++»'''
+		def String getMergeName() '''Merge«mergeId++»'''
+		def String getChoiceName() '''Choice«choiceId++»'''
+		def String getTimeoutDeclarationName() '''Timeout«timeoutId++»'''
+		def String getMainRegionName() '''MainRegion'''
+		def String getInitialStateName() '''Initial'''
+		
+		def String getInputRegionName() '''InputRegion'''
+		def String getOutputRegionName() '''OutputRegion'''
+		def String getInputInitialStateName() '''InputInitialState'''
+		def String getOutputInitialStateName() '''OutputInitialState'''
+		def String getInputStateName() '''InputState'''
+		def String getOutputStateName() '''OutputState'''
+		def String getFirstOutputStateName() '''FirstOutputState'''
+		
+		def String getInOutCycleVariableName() '''inOutCycleVariable'''
+		
+		def String getInOutCycleRegionName() '''InOutCycleRegion'''
+		def String getInOutCycleInitialStateName() '''InOutCycleInitialState'''
+		def String getInOutCycleStateName() '''InOutCycleState'''
+		
+	}
 	
 	// Result class
 	

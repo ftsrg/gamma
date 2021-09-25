@@ -1,0 +1,14 @@
+package mo_antivalchk
+
+import "Interface/Interfaces.gcd"
+import "MO_ANTIVAL_CHK_Wrapper.gcd"
+
+adapter AntivalenceCheckerAdapter(P_TAROLAS : boolean) of
+		component checker : AntivalenceWrapper(P_TAROLAS) [
+	port Trigger : requires I_Execute
+] {
+	when Trigger.any / run
+	queue messages(priority = 1, capacity = 1) {
+		Trigger.any, Signals.any, T.any
+	}
+}

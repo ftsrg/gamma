@@ -1,13 +1,13 @@
-# eclipse-headless-project-import-tool
-Imports an eclipse project from archive file into an existing workspace
+##  Master  Document for Headless Gamma
 
-HOW TO USE:
+This document serves as a short introduction to _Headless Gamma_, a service that allows the usage of the _Gamma Statechart Composition Framework_ without an IDE. It consists of the following artifacts.
+1. An _exported headless Eclipse_, which executes Gamma commands specified as `ggen` configuration files.
+2. The commands are forwarded to the headless Eclipse via a _web server_.
+3. Both artifacts are packed in a _Docker container_.​
 
-Import this project in your eclipse IDE and extract the product using the Product Export Wizard.
-You should get a headless eclipse.
-Pass the workspace as -data and the project name which should be the same as the archive file name, the archive file should already be in the workspace.
-Example:
-eclipse -consoleLog -data C:\workspace1 project.myfirstproject
+There other documents found in the `docs` folder that detail the functions and parts of the Headless Gamma:​
 
-Tip:
-if you want to create a new workspace just pass the -data argument with the name of the workspace you want to create and do not pass any project names.
+ -  [This  document](docs/headless-gamma-eclipse.md)  details  how  to  export  the  headless  Eclipse containing  Gamma. It also mentions some notable errors which can occur.
+ - [This document](docs/headless-gamma-docker.md)   details  how  to  set  up  the  Docker  container  on  your  own.  Note  that  there  is  an  [official  Gamma  Docker  image](https://hub.docker.com/repository/docker/ftsrggamma/headless-gamma),  which is  recommended  to be used.
+ - [This document](docs/headless-gamma-webserver.md) presents the API of the Headless Gamma (notedly, the API of the web server via which the service is accessible).
+ -  [This  document](docs/headless-gamma-workflow.md)  presents  a  workflow  using  the  Docker  container,  containing the  assembled Headless  Gamma service.

@@ -78,18 +78,18 @@ import org.yakindu.sct.model.stext.stext.VariableDefinition
  */
 class ExpressionTransformer {
 	
-    protected ViatraQueryEngine traceEngine
-    protected ViatraQueryEngine genmodelEngine
-    protected StatechartCompilation statechartCompilation
-    protected Y2GTrace traceRoot
+    protected final ViatraQueryEngine traceEngine
+    protected final ViatraQueryEngine genmodelEngine
+    protected final StatechartCompilation statechartCompilation
+    protected final Y2GTrace traceRoot
     
-	protected extension IModelManipulations manipulation	
+	protected final extension IModelManipulations manipulation
     
-    protected extension StatechartModelPackage stmPackage = StatechartModelPackage.eINSTANCE
-    protected extension InterfaceModelPackage ifPackage = InterfaceModelPackage.eINSTANCE
-    protected extension ActionModelPackage acPackage = ActionModelPackage.eINSTANCE
-	protected extension ExpressionModelPackage cmPackage = ExpressionModelPackage.eINSTANCE
-    protected extension TraceabilityPackage trPackage = TraceabilityPackage.eINSTANCE	
+    protected final extension StatechartModelPackage stmPackage = StatechartModelPackage.eINSTANCE
+    protected final extension InterfaceModelPackage ifPackage = InterfaceModelPackage.eINSTANCE
+    protected final extension ActionModelPackage acPackage = ActionModelPackage.eINSTANCE
+	protected final extension ExpressionModelPackage cmPackage = ExpressionModelPackage.eINSTANCE
+    protected final extension TraceabilityPackage trPackage = TraceabilityPackage.eINSTANCE
 	
 	new(IModelManipulations manipulation, StatechartCompilation statechartCompilation, 
 			Y2GTrace traceRoot, ViatraQueryEngine traceEngine, ViatraQueryEngine genmodelEngine) {
@@ -563,4 +563,3 @@ class ExpressionTransformer {
 	}
 	
 }
-																								

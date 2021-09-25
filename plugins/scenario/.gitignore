@@ -1,0 +1,3 @@
+# Ignore generated model and editor folders
+*.edit/
+*.editor/

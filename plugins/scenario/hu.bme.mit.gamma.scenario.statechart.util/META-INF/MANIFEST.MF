@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Gamma Scenario-Statechart Utility
+Bundle-SymbolicName: hu.bme.mit.gamma.scenario.statechart.util
+Bundle-Version: 2.5.1.qualifier
+Bundle-Vendor: BME-FTSRG
+Automatic-Module-Name: hu.bme.mit.gamma.scenario.statechart.util
+Bundle-RequiredExecutionEnvironment: JavaSE-11
+Require-Bundle: hu.bme.mit.gamma.statechart.model
+Export-Package: hu.bme.mit.gamma.scenario.statechart.util

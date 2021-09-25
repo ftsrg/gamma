@@ -1,0 +1,991 @@
+<?xml version="1.0" encoding="ASCII"?>
+<hu.bme.mit.gamma.property:PropertyPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:hu.bme.mit.gamma.expression="http://www.mit.bme.hu/gamma/expression/Model" xmlns:hu.bme.mit.gamma.property="http://www.mit.bme.hu/gamma/property/Model" xmlns:hu.bme.mit.gamma.statechart.composite="http://www.mit.bme.hu/gamma/statechart/Model/Composite">
+  <import href=".Vaganyut.gsm#/"/>
+  <component xsi:type="hu.bme.mit.gamma.statechart.composite:AsynchronousCompositeComponent" href=".Vaganyut.gsm#//@components.0"/>
+  <formulas>
+    <comments comment="atmenetjelzo_jelzoAdapter_jelzo.C_OV_keres_reg.C_OV_keres_Inputra_Var --> atmenetjelzo_jelzoAdapter_jelzo.C_OV_keres_reg.C_OV_keres_Valaszra_Var -p- atmenetjelzo_jelzoAdapter_jelzo.C_OV_keres_reg.C_OV_keres_Valaszra_Var --> atmenetjelzo_jelzoAdapter_jelzo.C_OV_keres_reg.C_OV_keres_Inputra_Var"/>
+    <formula xsi:type="hu.bme.mit.gamma.property:QuantifiedFormula" quantifier="EXISTS">
+      <formula xsi:type="hu.bme.mit.gamma.property:UnaryOperandPathFormula" operator="FUTURE">
+        <operand xsi:type="hu.bme.mit.gamma.property:AtomicFormula">
+          <expression xsi:type="hu.bme.mit.gamma.expression:AndExpression">
+            <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+              <leftOperand xsi:type="hu.bme.mit.gamma.property:ComponentInstanceVariableReference">
+                <instance>
+                  <componentInstanceHierarchy xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".Vaganyut.gsm#//@components.17/@components.0"/>
+                </instance>
+                <variable href=".Vaganyut.gsm#//@components.18/@variableDeclarations.7"/>
+              </leftOperand>
+              <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1"/>
+            </operands>
+            <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+              <leftOperand xsi:type="hu.bme.mit.gamma.property:ComponentInstanceVariableReference">
+                <instance>
+                  <componentInstanceHierarchy xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".Vaganyut.gsm#//@components.17/@components.0"/>
+                </instance>
+                <variable href=".Vaganyut.gsm#//@components.18/@variableDeclarations.6"/>
+              </leftOperand>
+              <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="4"/>
+            </operands>
+          </expression>
+        </operand>
+      </formula>
+    </formula>
+  </formulas>
+  <formulas>
+    <comments comment="atmenetjelzo_jelzoAdapter_jelzo.C_OV_keres_reg.C_OV_keres_Inputra_Var --> atmenetjelzo_jelzoAdapter_jelzo.C_OV_keres_reg.C_OV_keres_Valaszra_Var -p- atmenetjelzo_jelzoAdapter_jelzo.C_OV_keres_reg.C_OV_keres_Valaszra_Var --> atmenetjelzo_jelzoAdapter_jelzo.C_OV_keres_reg.C_OV_keres_Inputra_Var"/>
+    <formula xsi:type="hu.bme.mit.gamma.property:QuantifiedFormula" quantifier="EXISTS">
+      <formula xsi:type="hu.bme.mit.gamma.property:UnaryOperandPathFormula" operator="FUTURE">
+        <operand xsi:type="hu.bme.mit.gamma.property:AtomicFormula">
+          <expression xsi:type="hu.bme.mit.gamma.expression:AndExpression">
+            <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+              <leftOperand xsi:type="hu.bme.mit.gamma.property:ComponentInstanceVariableReference">
+                <instance>
+                  <componentInstanceHierarchy xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".Vaganyut.gsm#//@components.17/@components.0"/>
+                </instance>
+                <variable href=".Vaganyut.gsm#//@components.18/@variableDeclarations.7"/>
+              </leftOperand>
+              <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1"/>
+            </operands>
+            <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+              <leftOperand xsi:type="hu.bme.mit.gamma.property:ComponentInstanceVariableReference">
+                <instance>
+                  <componentInstanceHierarchy xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".Vaganyut.gsm#//@components.17/@components.0"/>
+                </instance>
+                <variable href=".Vaganyut.gsm#//@components.18/@variableDeclarations.6"/>
+              </leftOperand>
+              <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="9"/>
+            </operands>
+          </expression>
+        </operand>
+      </formula>
+    </formula>
+  </formulas>
+  <formulas>
+    <comments comment="atmenetjelzo_jelzoAdapter_jelzo.C_VU_lez_reg.C_VU_lez_Feltetel_Teljesul_Fork --> atmenetjelzo_jelzoAdapter_jelzo.C_VU_lez_reg.C_VU_lez_Inputra_Var -p- atmenetjelzo_jelzoAdapter_jelzo.C_VU_lez_reg.C_VU_lez_Inputra_Var --> atmenetjelzo_jelzoAdapter_jelzo.C_VU_lez_reg.C_VU_lez_Feltetel_Teljesul"/>
+    <formula xsi:type="hu.bme.mit.gamma.property:QuantifiedFormula" quantifier="EXISTS">
+      <formula xsi:type="hu.bme.mit.gamma.property:UnaryOperandPathFormula" operator="FUTURE">
+        <operand xsi:type="hu.bme.mit.gamma.property:AtomicFormula">
+          <expression xsi:type="hu.bme.mit.gamma.expression:AndExpression">
+            <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+              <leftOperand xsi:type="hu.bme.mit.gamma.property:ComponentInstanceVariableReference">
+                <instance>
+                  <componentInstanceHierarchy xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".Vaganyut.gsm#//@components.17/@components.0"/>
+                </instance>
+                <variable href=".Vaganyut.gsm#//@components.18/@variableDeclarations.9"/>
+              </leftOperand>
+              <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="2"/>
+            </operands>
+            <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+              <leftOperand xsi:type="hu.bme.mit.gamma.property:ComponentInstanceVariableReference">
+                <instance>
+                  <componentInstanceHierarchy xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".Vaganyut.gsm#//@components.17/@components.0"/>
+                </instance>
+                <variable href=".Vaganyut.gsm#//@components.18/@variableDeclarations.8"/>
+              </leftOperand>
+              <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="35"/>
+            </operands>
+          </expression>
+        </operand>
+      </formula>
+    </formula>
+  </formulas>
+  <formulas>
+    <comments comment="atmenetjelzo_jelzoAdapter_jelzo.F_VU_lez_reg.F_VU_lez_Init --> atmenetjelzo_jelzoAdapter_jelzo.F_VU_lez_reg.F_VU_lez_Inputra_Var -p- atmenetjelzo_jelzoAdapter_jelzo.F_VU_lez_reg.F_VU_lez_Inputra_Var --> atmenetjelzo_jelzoAdapter_jelzo.F_VU_lez_reg.F_VU_lez_Feltetel_Teljesul"/>
+    <formula xsi:type="hu.bme.mit.gamma.property:QuantifiedFormula" quantifier="EXISTS">
+      <formula xsi:type="hu.bme.mit.gamma.property:UnaryOperandPathFormula" operator="FUTURE">
+        <operand xsi:type="hu.bme.mit.gamma.property:AtomicFormula">
+          <expression xsi:type="hu.bme.mit.gamma.expression:AndExpression">
+            <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+              <leftOperand xsi:type="hu.bme.mit.gamma.property:ComponentInstanceVariableReference">
+                <instance>
+                  <componentInstanceHierarchy xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".Vaganyut.gsm#//@components.17/@components.0"/>
+                </instance>
+                <variable href=".Vaganyut.gsm#//@components.18/@variableDeclarations.11"/>
+              </leftOperand>
+              <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="3"/>
+            </operands>
+            <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+              <leftOperand xsi:type="hu.bme.mit.gamma.property:ComponentInstanceVariableReference">
+                <instance>
+                  <componentInstanceHierarchy xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".Vaganyut.gsm#//@components.17/@components.0"/>
+                </instance>
+                <variable href=".Vaganyut.gsm#//@components.18/@variableDeclarations.10"/>
+              </leftOperand>
+              <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="34"/>
+            </operands>
+          </expression>
+        </operand>
+      </formula>
+    </formula>
+  </formulas>
+  <formulas>
+    <comments comment="atmenetjelzo_jelzoAdapter_jelzo.C_OV_keres_reg.C_OV_keres_Valaszra_Var --> atmenetjelzo_jelzoAdapter_jelzo.C_OV_keres_reg.C_OV_keres_Inputra_Var -p- atmenetjelzo_jelzoAdapter_jelzo.C_OV_keres_reg.C_OV_keres_Inputra_Var --> atmenetjelzo_jelzoAdapter_jelzo.C_OV_keres_reg.C_OV_keres_Valaszra_Var"/>
+    <formula xsi:type="hu.bme.mit.gamma.property:QuantifiedFormula" quantifier="EXISTS">
+      <formula xsi:type="hu.bme.mit.gamma.property:UnaryOperandPathFormula" operator="FUTURE">
+        <operand xsi:type="hu.bme.mit.gamma.property:AtomicFormula">
+          <expression xsi:type="hu.bme.mit.gamma.expression:AndExpression">
+            <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+              <leftOperand xsi:type="hu.bme.mit.gamma.property:ComponentInstanceVariableReference">
+                <instance>
+                  <componentInstanceHierarchy xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".Vaganyut.gsm#//@components.17/@components.0"/>
+                </instance>
+                <variable href=".Vaganyut.gsm#//@components.18/@variableDeclarations.13"/>
+              </leftOperand>
+              <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="4"/>
+            </operands>
+            <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+              <leftOperand xsi:type="hu.bme.mit.gamma.property:ComponentInstanceVariableReference">
+                <instance>
+                  <componentInstanceHierarchy xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".Vaganyut.gsm#//@components.17/@components.0"/>
+                </instance>
+                <variable href=".Vaganyut.gsm#//@components.18/@variableDeclarations.12"/>
+              </leftOperand>
+              <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1"/>
+            </operands>
+          </expression>
+        </operand>
+      </formula>
+    </formula>
+  </formulas>
+  <formulas>
+    <comments comment="atmenetjelzo_jelzoAdapter_jelzo.S_OV_keres_reg.S_OV_keres_Accept2 --> atmenetjelzo_jelzoAdapter_jelzo.S_OV_keres_reg.S_OV_keres_Inputra_Var -p- atmenetjelzo_jelzoAdapter_jelzo.S_OV_keres_reg.S_OV_keres_Inputra_Var --> atmenetjelzo_jelzoAdapter_jelzo.S_OV_keres_reg.S_OV_keres_Feltetel_Teljesul"/>
+    <formula xsi:type="hu.bme.mit.gamma.property:QuantifiedFormula" quantifier="EXISTS">
+      <formula xsi:type="hu.bme.mit.gamma.property:UnaryOperandPathFormula" operator="FUTURE">
+        <operand xsi:type="hu.bme.mit.gamma.property:AtomicFormula">
+          <expression xsi:type="hu.bme.mit.gamma.expression:AndExpression">
+            <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+              <leftOperand xsi:type="hu.bme.mit.gamma.property:ComponentInstanceVariableReference">
+                <instance>
+                  <componentInstanceHierarchy xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".Vaganyut.gsm#//@components.17/@components.0"/>
+                </instance>
+                <variable href=".Vaganyut.gsm#//@components.18/@variableDeclarations.15"/>
+              </leftOperand>
+              <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="5"/>
+            </operands>
+            <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+              <leftOperand xsi:type="hu.bme.mit.gamma.property:ComponentInstanceVariableReference">
+                <instance>
+                  <componentInstanceHierarchy xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".Vaganyut.gsm#//@components.17/@components.0"/>
+                </instance>
+                <variable href=".Vaganyut.gsm#//@components.18/@variableDeclarations.14"/>
+              </leftOperand>
+              <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="37"/>
+            </operands>
+          </expression>
+        </operand>
+      </formula>
+    </formula>
+  </formulas>
+  <formulas>
+    <comments comment="atmenetjelzo_jelzoAdapter_jelzo.C_VU_lez_reg.C_VU_lez_Valasz_Sikeres_Fork --> atmenetjelzo_jelzoAdapter_jelzo.C_VU_lez_reg.C_VU_lez_Inputra_Var -p- atmenetjelzo_jelzoAdapter_jelzo.C_VU_lez_reg.C_VU_lez_Inputra_Var --> atmenetjelzo_jelzoAdapter_jelzo.C_VU_lez_reg.C_VU_lez_Feltetel_Teljesul"/>
+    <formula xsi:type="hu.bme.mit.gamma.property:QuantifiedFormula" quantifier="EXISTS">
+      <formula xsi:type="hu.bme.mit.gamma.property:UnaryOperandPathFormula" operator="FUTURE">
+        <operand xsi:type="hu.bme.mit.gamma.property:AtomicFormula">
+          <expression xsi:type="hu.bme.mit.gamma.expression:AndExpression">
+            <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+              <leftOperand xsi:type="hu.bme.mit.gamma.property:ComponentInstanceVariableReference">
+                <instance>
+                  <componentInstanceHierarchy xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".Vaganyut.gsm#//@components.17/@components.0"/>
+                </instance>
+                <variable href=".Vaganyut.gsm#//@components.18/@variableDeclarations.9"/>
+              </leftOperand>
+              <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="6"/>
+            </operands>
+            <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+              <leftOperand xsi:type="hu.bme.mit.gamma.property:ComponentInstanceVariableReference">
+                <instance>
+                  <componentInstanceHierarchy xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".Vaganyut.gsm#//@components.17/@components.0"/>
+                </instance>
+                <variable href=".Vaganyut.gsm#//@components.18/@variableDeclarations.8"/>
+              </leftOperand>
+              <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="35"/>
+            </operands>
+          </expression>
+        </operand>
+      </formula>
+    </formula>
+  </formulas>
+  <formulas>
+    <comments comment="atmenetjelzo_jelzoAdapter_jelzo.C_VU_lez_reg.C_VU_lez_Feltetel_Teljesul --> atmenetjelzo_jelzoAdapter_jelzo.C_VU_lez_reg.C_VU_lez_Inputra_Var -p- atmenetjelzo_jelzoAdapter_jelzo.C_VU_lez_reg.C_VU_lez_Inputra_Var --> atmenetjelzo_jelzoAdapter_jelzo.C_VU_lez_reg.C_VU_lez_Feltetel_Teljesul"/>
+    <formula xsi:type="hu.bme.mit.gamma.property:QuantifiedFormula" quantifier="EXISTS">
+      <formula xsi:type="hu.bme.mit.gamma.property:UnaryOperandPathFormula" operator="FUTURE">
+        <operand xsi:type="hu.bme.mit.gamma.property:AtomicFormula">
+          <expression xsi:type="hu.bme.mit.gamma.expression:AndExpression">
+            <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+              <leftOperand xsi:type="hu.bme.mit.gamma.property:ComponentInstanceVariableReference">
+                <instance>
+                  <componentInstanceHierarchy xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".Vaganyut.gsm#//@components.17/@components.0"/>
+                </instance>
+                <variable href=".Vaganyut.gsm#//@components.18/@variableDeclarations.9"/>
+              </leftOperand>
+              <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="7"/>
+            </operands>
+            <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+              <leftOperand xsi:type="hu.bme.mit.gamma.property:ComponentInstanceVariableReference">
+                <instance>
+                  <componentInstanceHierarchy xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".Vaganyut.gsm#//@components.17/@components.0"/>
+                </instance>
+                <variable href=".Vaganyut.gsm#//@components.18/@variableDeclarations.8"/>
+              </leftOperand>
+              <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="35"/>
+            </operands>
+          </expression>
+        </operand>
+      </formula>
+    </formula>
+  </formulas>
+  <formulas>
+    <comments comment="atmenetjelzo_jelzoAdapter_jelzo.S_OV_keres_reg.S_OV_keres_Accept2 --> atmenetjelzo_jelzoAdapter_jelzo.S_OV_keres_reg.S_OV_keres_Inputra_Var -p- atmenetjelzo_jelzoAdapter_jelzo.S_OV_keres_reg.S_OV_keres_Inputra_Var --> atmenetjelzo_jelzoAdapter_jelzo.S_OV_keres_reg.S_OV_keres_Feltetel_Teljesul"/>
+    <formula xsi:type="hu.bme.mit.gamma.property:QuantifiedFormula" quantifier="EXISTS">
+      <formula xsi:type="hu.bme.mit.gamma.property:UnaryOperandPathFormula" operator="FUTURE">
+        <operand xsi:type="hu.bme.mit.gamma.property:AtomicFormula">
+          <expression xsi:type="hu.bme.mit.gamma.expression:AndExpression">
+            <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+              <leftOperand xsi:type="hu.bme.mit.gamma.property:ComponentInstanceVariableReference">
+                <instance>
+                  <componentInstanceHierarchy xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".Vaganyut.gsm#//@components.17/@components.0"/>
+                </instance>
+                <variable href=".Vaganyut.gsm#//@components.18/@variableDeclarations.15"/>
+              </leftOperand>
+              <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="8"/>
+            </operands>
+            <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+              <leftOperand xsi:type="hu.bme.mit.gamma.property:ComponentInstanceVariableReference">
+                <instance>
+                  <componentInstanceHierarchy xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".Vaganyut.gsm#//@components.17/@components.0"/>
+                </instance>
+                <variable href=".Vaganyut.gsm#//@components.18/@variableDeclarations.14"/>
+              </leftOperand>
+              <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="37"/>
+            </operands>
+          </expression>
+        </operand>
+      </formula>
+    </formula>
+  </formulas>
+  <formulas>
+    <comments comment="atmenetjelzo_jelzoAdapter_jelzo.C_OV_keres_reg.C_OV_keres_Valaszra_Var --> atmenetjelzo_jelzoAdapter_jelzo.C_OV_keres_reg.C_OV_keres_Inputra_Var -p- atmenetjelzo_jelzoAdapter_jelzo.C_OV_keres_reg.C_OV_keres_Inputra_Var --> atmenetjelzo_jelzoAdapter_jelzo.C_OV_keres_reg.C_OV_keres_Valaszra_Var"/>
+    <formula xsi:type="hu.bme.mit.gamma.property:QuantifiedFormula" quantifier="EXISTS">
+      <formula xsi:type="hu.bme.mit.gamma.property:UnaryOperandPathFormula" operator="FUTURE">
+        <operand xsi:type="hu.bme.mit.gamma.property:AtomicFormula">
+          <expression xsi:type="hu.bme.mit.gamma.expression:AndExpression">
+            <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+              <leftOperand xsi:type="hu.bme.mit.gamma.property:ComponentInstanceVariableReference">
+                <instance>
+                  <componentInstanceHierarchy xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".Vaganyut.gsm#//@components.17/@components.0"/>
+                </instance>
+                <variable href=".Vaganyut.gsm#//@components.18/@variableDeclarations.13"/>
+              </leftOperand>
+              <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="9"/>
+            </operands>
+            <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+              <leftOperand xsi:type="hu.bme.mit.gamma.property:ComponentInstanceVariableReference">
+                <instance>
+                  <componentInstanceHierarchy xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".Vaganyut.gsm#//@components.17/@components.0"/>
+                </instance>
+                <variable href=".Vaganyut.gsm#//@components.18/@variableDeclarations.12"/>
+              </leftOperand>
+              <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1"/>
+            </operands>
+          </expression>
+        </operand>
+      </formula>
+    </formula>
+  </formulas>
+  <formulas>
+    <comments comment="atmenetjelzo_jelzoAdapter_jelzo.F_VU_lez_reg.F_VU_lez_Valasz_Tipus --> atmenetjelzo_jelzoAdapter_jelzo.F_VU_lez_reg.F_VU_lez_Inputra_Var -p- atmenetjelzo_jelzoAdapter_jelzo.F_VU_lez_reg.F_VU_lez_Inputra_Var --> atmenetjelzo_jelzoAdapter_jelzo.F_VU_lez_reg.F_VU_lez_Feltetel_Teljesul"/>
+    <formula xsi:type="hu.bme.mit.gamma.property:QuantifiedFormula" quantifier="EXISTS">
+      <formula xsi:type="hu.bme.mit.gamma.property:UnaryOperandPathFormula" operator="FUTURE">
+        <operand xsi:type="hu.bme.mit.gamma.property:AtomicFormula">
+          <expression xsi:type="hu.bme.mit.gamma.expression:AndExpression">
+            <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+              <leftOperand xsi:type="hu.bme.mit.gamma.property:ComponentInstanceVariableReference">
+                <instance>
+                  <componentInstanceHierarchy xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".Vaganyut.gsm#//@components.17/@components.0"/>
+                </instance>
+                <variable href=".Vaganyut.gsm#//@components.18/@variableDeclarations.11"/>
+              </leftOperand>
+              <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="10"/>
+            </operands>
+            <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+              <leftOperand xsi:type="hu.bme.mit.gamma.property:ComponentInstanceVariableReference">
+                <instance>
+                  <componentInstanceHierarchy xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".Vaganyut.gsm#//@components.17/@components.0"/>
+                </instance>
+                <variable href=".Vaganyut.gsm#//@components.18/@variableDeclarations.10"/>
+              </leftOperand>
+              <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="34"/>
+            </operands>
+          </expression>
+        </operand>
+      </formula>
+    </formula>
+  </formulas>
+  <formulas>
+    <comments comment="atmenetjelzo_jelzoAdapter_jelzo.S_VU_lez_reg.S_VU_lez_Init --> atmenetjelzo_jelzoAdapter_jelzo.S_VU_lez_reg.S_VU_Inputra_Var -p- atmenetjelzo_jelzoAdapter_jelzo.S_VU_lez_reg.S_VU_Inputra_Var --> atmenetjelzo_jelzoAdapter_jelzo.S_VU_lez_reg.S_VU_Feltetel_Teljesul"/>
+    <formula xsi:type="hu.bme.mit.gamma.property:QuantifiedFormula" quantifier="EXISTS">
+      <formula xsi:type="hu.bme.mit.gamma.property:UnaryOperandPathFormula" operator="FUTURE">
+        <operand xsi:type="hu.bme.mit.gamma.property:AtomicFormula">
+          <expression xsi:type="hu.bme.mit.gamma.expression:AndExpression">
+            <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+              <leftOperand xsi:type="hu.bme.mit.gamma.property:ComponentInstanceVariableReference">
+                <instance>
+                  <componentInstanceHierarchy xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".Vaganyut.gsm#//@components.17/@components.0"/>
+                </instance>
+                <variable href=".Vaganyut.gsm#//@components.18/@variableDeclarations.17"/>
+              </leftOperand>
+              <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="11"/>
+            </operands>
+            <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+              <leftOperand xsi:type="hu.bme.mit.gamma.property:ComponentInstanceVariableReference">
+                <instance>
+                  <componentInstanceHierarchy xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".Vaganyut.gsm#//@components.17/@components.0"/>
+                </instance>
+                <variable href=".Vaganyut.gsm#//@components.18/@variableDeclarations.16"/>
+              </leftOperand>
+              <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="36"/>
+            </operands>
+          </expression>
+        </operand>
+      </formula>
+    </formula>
+  </formulas>
+  <formulas>
+    <comments comment="atmenetjelzo_jelzoAdapter_jelzo.C_OV_keres_reg.C_OV_keres_Init --> atmenetjelzo_jelzoAdapter_jelzo.C_OV_keres_reg.C_OV_keres_Inputra_Var -p- atmenetjelzo_jelzoAdapter_jelzo.C_OV_keres_reg.C_OV_keres_Inputra_Var --> atmenetjelzo_jelzoAdapter_jelzo.C_OV_keres_reg.C_OV_keres_Valaszra_Var"/>
+    <formula xsi:type="hu.bme.mit.gamma.property:QuantifiedFormula" quantifier="EXISTS">
+      <formula xsi:type="hu.bme.mit.gamma.property:UnaryOperandPathFormula" operator="FUTURE">
+        <operand xsi:type="hu.bme.mit.gamma.property:AtomicFormula">
+          <expression xsi:type="hu.bme.mit.gamma.expression:AndExpression">
+            <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+              <leftOperand xsi:type="hu.bme.mit.gamma.property:ComponentInstanceVariableReference">
+                <instance>
+                  <componentInstanceHierarchy xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".Vaganyut.gsm#//@components.17/@components.0"/>
+                </instance>
+                <variable href=".Vaganyut.gsm#//@components.18/@variableDeclarations.13"/>
+              </leftOperand>
+              <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="12"/>
+            </operands>
+            <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+              <leftOperand xsi:type="hu.bme.mit.gamma.property:ComponentInstanceVariableReference">
+                <instance>
+                  <componentInstanceHierarchy xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".Vaganyut.gsm#//@components.17/@components.0"/>
+                </instance>
+                <variable href=".Vaganyut.gsm#//@components.18/@variableDeclarations.12"/>
+              </leftOperand>
+              <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1"/>
+            </operands>
+          </expression>
+        </operand>
+      </formula>
+    </formula>
+  </formulas>
+  <formulas>
+    <comments comment="atmenetjelzo_jelzoAdapter_jelzo.F_VU_lez_reg.F_VU_lez_Feltetel_Teljesul --> atmenetjelzo_jelzoAdapter_jelzo.F_VU_lez_reg.F_VU_lez_Valaszra_Var -p- atmenetjelzo_jelzoAdapter_jelzo.F_VU_lez_reg.F_VU_lez_Valaszra_Var --> atmenetjelzo_jelzoAdapter_jelzo.F_VU_lez_reg.F_VU_lez_Valasz_Tipus"/>
+    <formula xsi:type="hu.bme.mit.gamma.property:QuantifiedFormula" quantifier="EXISTS">
+      <formula xsi:type="hu.bme.mit.gamma.property:UnaryOperandPathFormula" operator="FUTURE">
+        <operand xsi:type="hu.bme.mit.gamma.property:AtomicFormula">
+          <expression xsi:type="hu.bme.mit.gamma.expression:AndExpression">
+            <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+              <leftOperand xsi:type="hu.bme.mit.gamma.property:ComponentInstanceVariableReference">
+                <instance>
+                  <componentInstanceHierarchy xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".Vaganyut.gsm#//@components.17/@components.0"/>
+                </instance>
+                <variable href=".Vaganyut.gsm#//@components.18/@variableDeclarations.19"/>
+              </leftOperand>
+              <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="13"/>
+            </operands>
+            <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+              <leftOperand xsi:type="hu.bme.mit.gamma.property:ComponentInstanceVariableReference">
+                <instance>
+                  <componentInstanceHierarchy xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".Vaganyut.gsm#//@components.17/@components.0"/>
+                </instance>
+                <variable href=".Vaganyut.gsm#//@components.18/@variableDeclarations.18"/>
+              </leftOperand>
+              <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="32"/>
+            </operands>
+          </expression>
+        </operand>
+      </formula>
+    </formula>
+  </formulas>
+  <formulas>
+    <comments comment="atmenetjelzo_jelzoAdapter_jelzo.S_OV_keres_reg.S_OV_keres_Init --> atmenetjelzo_jelzoAdapter_jelzo.S_OV_keres_reg.S_OV_keres_Inputra_Var -p- atmenetjelzo_jelzoAdapter_jelzo.S_OV_keres_reg.S_OV_keres_Inputra_Var --> atmenetjelzo_jelzoAdapter_jelzo.S_OV_keres_reg.S_OV_keres_Feltetel_Teljesul"/>
+    <formula xsi:type="hu.bme.mit.gamma.property:QuantifiedFormula" quantifier="EXISTS">
+      <formula xsi:type="hu.bme.mit.gamma.property:UnaryOperandPathFormula" operator="FUTURE">
+        <operand xsi:type="hu.bme.mit.gamma.property:AtomicFormula">
+          <expression xsi:type="hu.bme.mit.gamma.expression:AndExpression">
+            <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+              <leftOperand xsi:type="hu.bme.mit.gamma.property:ComponentInstanceVariableReference">
+                <instance>
+                  <componentInstanceHierarchy xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".Vaganyut.gsm#//@components.17/@components.0"/>
+                </instance>
+                <variable href=".Vaganyut.gsm#//@components.18/@variableDeclarations.15"/>
+              </leftOperand>
+              <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="14"/>
+            </operands>
+            <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+              <leftOperand xsi:type="hu.bme.mit.gamma.property:ComponentInstanceVariableReference">
+                <instance>
+                  <componentInstanceHierarchy xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".Vaganyut.gsm#//@components.17/@components.0"/>
+                </instance>
+                <variable href=".Vaganyut.gsm#//@components.18/@variableDeclarations.14"/>
+              </leftOperand>
+              <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="37"/>
+            </operands>
+          </expression>
+        </operand>
+      </formula>
+    </formula>
+  </formulas>
+  <formulas>
+    <comments comment="atmenetjelzo_jelzoAdapter_jelzo.S_OV_keres_reg.S_OV_keres_Accept1 --> atmenetjelzo_jelzoAdapter_jelzo.S_OV_keres_reg.S_OV_keres_Inputra_Var -p- atmenetjelzo_jelzoAdapter_jelzo.S_OV_keres_reg.S_OV_keres_Inputra_Var --> atmenetjelzo_jelzoAdapter_jelzo.S_OV_keres_reg.S_OV_keres_Feltetel_Teljesul"/>
+    <formula xsi:type="hu.bme.mit.gamma.property:QuantifiedFormula" quantifier="EXISTS">
+      <formula xsi:type="hu.bme.mit.gamma.property:UnaryOperandPathFormula" operator="FUTURE">
+        <operand xsi:type="hu.bme.mit.gamma.property:AtomicFormula">
+          <expression xsi:type="hu.bme.mit.gamma.expression:AndExpression">
+            <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+              <leftOperand xsi:type="hu.bme.mit.gamma.property:ComponentInstanceVariableReference">
+                <instance>
+                  <componentInstanceHierarchy xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".Vaganyut.gsm#//@components.17/@components.0"/>
+                </instance>
+                <variable href=".Vaganyut.gsm#//@components.18/@variableDeclarations.15"/>
+              </leftOperand>
+              <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="15"/>
+            </operands>
+            <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+              <leftOperand xsi:type="hu.bme.mit.gamma.property:ComponentInstanceVariableReference">
+                <instance>
+                  <componentInstanceHierarchy xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".Vaganyut.gsm#//@components.17/@components.0"/>
+                </instance>
+                <variable href=".Vaganyut.gsm#//@components.18/@variableDeclarations.14"/>
+              </leftOperand>
+              <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="37"/>
+            </operands>
+          </expression>
+        </operand>
+      </formula>
+    </formula>
+  </formulas>
+  <formulas>
+    <comments comment="atmenetjelzo_jelzoAdapter_jelzo.S_VU_lez_reg.S_VU_Feltetel_Teljesul --> atmenetjelzo_jelzoAdapter_jelzo.S_VU_lez_reg.S_VU_Valaszra_Var -p- atmenetjelzo_jelzoAdapter_jelzo.S_VU_lez_reg.S_VU_Valaszra_Var --> atmenetjelzo_jelzoAdapter_jelzo.S_VU_lez_reg.S_VU_Valasz_Tipus"/>
+    <formula xsi:type="hu.bme.mit.gamma.property:QuantifiedFormula" quantifier="EXISTS">
+      <formula xsi:type="hu.bme.mit.gamma.property:UnaryOperandPathFormula" operator="FUTURE">
+        <operand xsi:type="hu.bme.mit.gamma.property:AtomicFormula">
+          <expression xsi:type="hu.bme.mit.gamma.expression:AndExpression">
+            <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+              <leftOperand xsi:type="hu.bme.mit.gamma.property:ComponentInstanceVariableReference">
+                <instance>
+                  <componentInstanceHierarchy xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".Vaganyut.gsm#//@components.17/@components.0"/>
+                </instance>
+                <variable href=".Vaganyut.gsm#//@components.18/@variableDeclarations.21"/>
+              </leftOperand>
+              <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="16"/>
+            </operands>
+            <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+              <leftOperand xsi:type="hu.bme.mit.gamma.property:ComponentInstanceVariableReference">
+                <instance>
+                  <componentInstanceHierarchy xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".Vaganyut.gsm#//@components.17/@components.0"/>
+                </instance>
+                <variable href=".Vaganyut.gsm#//@components.18/@variableDeclarations.20"/>
+              </leftOperand>
+              <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="38"/>
+            </operands>
+          </expression>
+        </operand>
+      </formula>
+    </formula>
+  </formulas>
+  <formulas>
+    <comments comment="atmenetjelzo_jelzoAdapter_jelzo.C_VU_lez_reg.C_VU_lez_Feltetel_Teljesul --> atmenetjelzo_jelzoAdapter_jelzo.C_VU_lez_reg.C_VU_lez_Valaszra_Var -p- atmenetjelzo_jelzoAdapter_jelzo.C_VU_lez_reg.C_VU_lez_Valaszra_Var --> atmenetjelzo_jelzoAdapter_jelzo.C_VU_lez_reg.C_VU_lez_Valasz_Tipus"/>
+    <formula xsi:type="hu.bme.mit.gamma.property:QuantifiedFormula" quantifier="EXISTS">
+      <formula xsi:type="hu.bme.mit.gamma.property:UnaryOperandPathFormula" operator="FUTURE">
+        <operand xsi:type="hu.bme.mit.gamma.property:AtomicFormula">
+          <expression xsi:type="hu.bme.mit.gamma.expression:AndExpression">
+            <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+              <leftOperand xsi:type="hu.bme.mit.gamma.property:ComponentInstanceVariableReference">
+                <instance>
+                  <componentInstanceHierarchy xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".Vaganyut.gsm#//@components.17/@components.0"/>
+                </instance>
+                <variable href=".Vaganyut.gsm#//@components.18/@variableDeclarations.23"/>
+              </leftOperand>
+              <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="17"/>
+            </operands>
+            <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+              <leftOperand xsi:type="hu.bme.mit.gamma.property:ComponentInstanceVariableReference">
+                <instance>
+                  <componentInstanceHierarchy xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".Vaganyut.gsm#//@components.17/@components.0"/>
+                </instance>
+                <variable href=".Vaganyut.gsm#//@components.18/@variableDeclarations.22"/>
+              </leftOperand>
+              <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="33"/>
+            </operands>
+          </expression>
+        </operand>
+      </formula>
+    </formula>
+  </formulas>
+  <formulas>
+    <comments comment="atmenetjelzo_jelzoAdapter_jelzo.S_OV_keres_reg.S_OV_keres_Feltetel_Teljesul --> atmenetjelzo_jelzoAdapter_jelzo.S_OV_keres_reg.S_OV_keres_Inputra_Var -p- atmenetjelzo_jelzoAdapter_jelzo.S_OV_keres_reg.S_OV_keres_Inputra_Var --> atmenetjelzo_jelzoAdapter_jelzo.S_OV_keres_reg.S_OV_keres_Feltetel_Teljesul"/>
+    <formula xsi:type="hu.bme.mit.gamma.property:QuantifiedFormula" quantifier="EXISTS">
+      <formula xsi:type="hu.bme.mit.gamma.property:UnaryOperandPathFormula" operator="FUTURE">
+        <operand xsi:type="hu.bme.mit.gamma.property:AtomicFormula">
+          <expression xsi:type="hu.bme.mit.gamma.expression:AndExpression">
+            <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+              <leftOperand xsi:type="hu.bme.mit.gamma.property:ComponentInstanceVariableReference">
+                <instance>
+                  <componentInstanceHierarchy xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".Vaganyut.gsm#//@components.17/@components.0"/>
+                </instance>
+                <variable href=".Vaganyut.gsm#//@components.18/@variableDeclarations.15"/>
+              </leftOperand>
+              <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="18"/>
+            </operands>
+            <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+              <leftOperand xsi:type="hu.bme.mit.gamma.property:ComponentInstanceVariableReference">
+                <instance>
+                  <componentInstanceHierarchy xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".Vaganyut.gsm#//@components.17/@components.0"/>
+                </instance>
+                <variable href=".Vaganyut.gsm#//@components.18/@variableDeclarations.14"/>
+              </leftOperand>
+              <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="37"/>
+            </operands>
+          </expression>
+        </operand>
+      </formula>
+    </formula>
+  </formulas>
+  <formulas>
+    <comments comment="atmenetjelzo_jelzoAdapter_jelzo.S_OV_keres_reg.S_OV_keres_Accept1 --> atmenetjelzo_jelzoAdapter_jelzo.S_OV_keres_reg.S_OV_keres_Inputra_Var -p- atmenetjelzo_jelzoAdapter_jelzo.S_OV_keres_reg.S_OV_keres_Inputra_Var --> atmenetjelzo_jelzoAdapter_jelzo.S_OV_keres_reg.S_OV_keres_Feltetel_Teljesul"/>
+    <formula xsi:type="hu.bme.mit.gamma.property:QuantifiedFormula" quantifier="EXISTS">
+      <formula xsi:type="hu.bme.mit.gamma.property:UnaryOperandPathFormula" operator="FUTURE">
+        <operand xsi:type="hu.bme.mit.gamma.property:AtomicFormula">
+          <expression xsi:type="hu.bme.mit.gamma.expression:AndExpression">
+            <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+              <leftOperand xsi:type="hu.bme.mit.gamma.property:ComponentInstanceVariableReference">
+                <instance>
+                  <componentInstanceHierarchy xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".Vaganyut.gsm#//@components.17/@components.0"/>
+                </instance>
+                <variable href=".Vaganyut.gsm#//@components.18/@variableDeclarations.15"/>
+              </leftOperand>
+              <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="19"/>
+            </operands>
+            <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+              <leftOperand xsi:type="hu.bme.mit.gamma.property:ComponentInstanceVariableReference">
+                <instance>
+                  <componentInstanceHierarchy xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".Vaganyut.gsm#//@components.17/@components.0"/>
+                </instance>
+                <variable href=".Vaganyut.gsm#//@components.18/@variableDeclarations.14"/>
+              </leftOperand>
+              <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="37"/>
+            </operands>
+          </expression>
+        </operand>
+      </formula>
+    </formula>
+  </formulas>
+  <formulas>
+    <comments comment="atmenetjelzo_jelzoAdapter_jelzo.C_VU_lez_reg.C_VU_lez_Valasz_Sikeres_Fork --> atmenetjelzo_jelzoAdapter_jelzo.C_VU_lez_reg.C_VU_lez_Inputra_Var -p- atmenetjelzo_jelzoAdapter_jelzo.C_VU_lez_reg.C_VU_lez_Inputra_Var --> atmenetjelzo_jelzoAdapter_jelzo.C_VU_lez_reg.C_VU_lez_Feltetel_Teljesul"/>
+    <formula xsi:type="hu.bme.mit.gamma.property:QuantifiedFormula" quantifier="EXISTS">
+      <formula xsi:type="hu.bme.mit.gamma.property:UnaryOperandPathFormula" operator="FUTURE">
+        <operand xsi:type="hu.bme.mit.gamma.property:AtomicFormula">
+          <expression xsi:type="hu.bme.mit.gamma.expression:AndExpression">
+            <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+              <leftOperand xsi:type="hu.bme.mit.gamma.property:ComponentInstanceVariableReference">
+                <instance>
+                  <componentInstanceHierarchy xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".Vaganyut.gsm#//@components.17/@components.0"/>
+                </instance>
+                <variable href=".Vaganyut.gsm#//@components.18/@variableDeclarations.9"/>
+              </leftOperand>
+              <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="20"/>
+            </operands>
+            <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+              <leftOperand xsi:type="hu.bme.mit.gamma.property:ComponentInstanceVariableReference">
+                <instance>
+                  <componentInstanceHierarchy xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".Vaganyut.gsm#//@components.17/@components.0"/>
+                </instance>
+                <variable href=".Vaganyut.gsm#//@components.18/@variableDeclarations.8"/>
+              </leftOperand>
+              <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="35"/>
+            </operands>
+          </expression>
+        </operand>
+      </formula>
+    </formula>
+  </formulas>
+  <formulas>
+    <comments comment="atmenetjelzo_jelzoAdapter_jelzo.S_OV_keres_reg.S_OV_keres_Feltetel_Teljesul --> atmenetjelzo_jelzoAdapter_jelzo.S_OV_keres_reg.S_OV_keres_Accept1 -p- atmenetjelzo_jelzoAdapter_jelzo.S_OV_keres_reg.S_OV_keres_Accept1 --> atmenetjelzo_jelzoAdapter_jelzo.S_OV_keres_reg.S_OV_keres_Inputra_Var"/>
+    <formula xsi:type="hu.bme.mit.gamma.property:QuantifiedFormula" quantifier="EXISTS">
+      <formula xsi:type="hu.bme.mit.gamma.property:UnaryOperandPathFormula" operator="FUTURE">
+        <operand xsi:type="hu.bme.mit.gamma.property:AtomicFormula">
+          <expression xsi:type="hu.bme.mit.gamma.expression:AndExpression">
+            <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+              <leftOperand xsi:type="hu.bme.mit.gamma.property:ComponentInstanceVariableReference">
+                <instance>
+                  <componentInstanceHierarchy xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".Vaganyut.gsm#//@components.17/@components.0"/>
+                </instance>
+                <variable href=".Vaganyut.gsm#//@components.18/@variableDeclarations.25"/>
+              </leftOperand>
+              <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="21"/>
+            </operands>
+            <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+              <leftOperand xsi:type="hu.bme.mit.gamma.property:ComponentInstanceVariableReference">
+                <instance>
+                  <componentInstanceHierarchy xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".Vaganyut.gsm#//@components.17/@components.0"/>
+                </instance>
+                <variable href=".Vaganyut.gsm#//@components.18/@variableDeclarations.24"/>
+              </leftOperand>
+              <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="15"/>
+            </operands>
+          </expression>
+        </operand>
+      </formula>
+    </formula>
+  </formulas>
+  <formulas>
+    <comments comment="atmenetjelzo_jelzoAdapter_jelzo.S_OV_keres_reg.S_OV_keres_Feltetel_Teljesul --> atmenetjelzo_jelzoAdapter_jelzo.S_OV_keres_reg.S_OV_keres_Accept1 -p- atmenetjelzo_jelzoAdapter_jelzo.S_OV_keres_reg.S_OV_keres_Accept1 --> atmenetjelzo_jelzoAdapter_jelzo.S_OV_keres_reg.S_OV_keres_Inputra_Var"/>
+    <formula xsi:type="hu.bme.mit.gamma.property:QuantifiedFormula" quantifier="EXISTS">
+      <formula xsi:type="hu.bme.mit.gamma.property:UnaryOperandPathFormula" operator="FUTURE">
+        <operand xsi:type="hu.bme.mit.gamma.property:AtomicFormula">
+          <expression xsi:type="hu.bme.mit.gamma.expression:AndExpression">
+            <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+              <leftOperand xsi:type="hu.bme.mit.gamma.property:ComponentInstanceVariableReference">
+                <instance>
+                  <componentInstanceHierarchy xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".Vaganyut.gsm#//@components.17/@components.0"/>
+                </instance>
+                <variable href=".Vaganyut.gsm#//@components.18/@variableDeclarations.25"/>
+              </leftOperand>
+              <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="21"/>
+            </operands>
+            <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+              <leftOperand xsi:type="hu.bme.mit.gamma.property:ComponentInstanceVariableReference">
+                <instance>
+                  <componentInstanceHierarchy xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".Vaganyut.gsm#//@components.17/@components.0"/>
+                </instance>
+                <variable href=".Vaganyut.gsm#//@components.18/@variableDeclarations.24"/>
+              </leftOperand>
+              <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="19"/>
+            </operands>
+          </expression>
+        </operand>
+      </formula>
+    </formula>
+  </formulas>
+  <formulas>
+    <comments comment="atmenetjelzo_jelzoAdapter_jelzo.F_VU_lez_reg.F_VU_lez_Valasz_Sikeres_Fork --> atmenetjelzo_jelzoAdapter_jelzo.F_VU_lez_reg.F_VU_lez_Inputra_Var -p- atmenetjelzo_jelzoAdapter_jelzo.F_VU_lez_reg.F_VU_lez_Inputra_Var --> atmenetjelzo_jelzoAdapter_jelzo.F_VU_lez_reg.F_VU_lez_Feltetel_Teljesul"/>
+    <formula xsi:type="hu.bme.mit.gamma.property:QuantifiedFormula" quantifier="EXISTS">
+      <formula xsi:type="hu.bme.mit.gamma.property:UnaryOperandPathFormula" operator="FUTURE">
+        <operand xsi:type="hu.bme.mit.gamma.property:AtomicFormula">
+          <expression xsi:type="hu.bme.mit.gamma.expression:AndExpression">
+            <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+              <leftOperand xsi:type="hu.bme.mit.gamma.property:ComponentInstanceVariableReference">
+                <instance>
+                  <componentInstanceHierarchy xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".Vaganyut.gsm#//@components.17/@components.0"/>
+                </instance>
+                <variable href=".Vaganyut.gsm#//@components.18/@variableDeclarations.11"/>
+              </leftOperand>
+              <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="22"/>
+            </operands>
+            <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+              <leftOperand xsi:type="hu.bme.mit.gamma.property:ComponentInstanceVariableReference">
+                <instance>
+                  <componentInstanceHierarchy xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".Vaganyut.gsm#//@components.17/@components.0"/>
+                </instance>
+                <variable href=".Vaganyut.gsm#//@components.18/@variableDeclarations.10"/>
+              </leftOperand>
+              <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="34"/>
+            </operands>
+          </expression>
+        </operand>
+      </formula>
+    </formula>
+  </formulas>
+  <formulas>
+    <comments comment="atmenetjelzo_jelzoAdapter_jelzo.C_VU_lez_reg.C_VU_lez_Feltetel_Teljesul_Fork --> atmenetjelzo_jelzoAdapter_jelzo.C_VU_lez_reg.C_VU_lez_Inputra_Var -p- atmenetjelzo_jelzoAdapter_jelzo.C_VU_lez_reg.C_VU_lez_Inputra_Var --> atmenetjelzo_jelzoAdapter_jelzo.C_VU_lez_reg.C_VU_lez_Feltetel_Teljesul"/>
+    <formula xsi:type="hu.bme.mit.gamma.property:QuantifiedFormula" quantifier="EXISTS">
+      <formula xsi:type="hu.bme.mit.gamma.property:UnaryOperandPathFormula" operator="FUTURE">
+        <operand xsi:type="hu.bme.mit.gamma.property:AtomicFormula">
+          <expression xsi:type="hu.bme.mit.gamma.expression:AndExpression">
+            <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+              <leftOperand xsi:type="hu.bme.mit.gamma.property:ComponentInstanceVariableReference">
+                <instance>
+                  <componentInstanceHierarchy xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".Vaganyut.gsm#//@components.17/@components.0"/>
+                </instance>
+                <variable href=".Vaganyut.gsm#//@components.18/@variableDeclarations.9"/>
+              </leftOperand>
+              <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="23"/>
+            </operands>
+            <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+              <leftOperand xsi:type="hu.bme.mit.gamma.property:ComponentInstanceVariableReference">
+                <instance>
+                  <componentInstanceHierarchy xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".Vaganyut.gsm#//@components.17/@components.0"/>
+                </instance>
+                <variable href=".Vaganyut.gsm#//@components.18/@variableDeclarations.8"/>
+              </leftOperand>
+              <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="35"/>
+            </operands>
+          </expression>
+        </operand>
+      </formula>
+    </formula>
+  </formulas>
+  <formulas>
+    <comments comment="atmenetjelzo_jelzoAdapter_jelzo.S_VU_lez_reg.S_VU_Feltetel_Teljesul --> atmenetjelzo_jelzoAdapter_jelzo.S_VU_lez_reg.S_VU_Inputra_Var -p- atmenetjelzo_jelzoAdapter_jelzo.S_VU_lez_reg.S_VU_Inputra_Var --> atmenetjelzo_jelzoAdapter_jelzo.S_VU_lez_reg.S_VU_Feltetel_Teljesul"/>
+    <formula xsi:type="hu.bme.mit.gamma.property:QuantifiedFormula" quantifier="EXISTS">
+      <formula xsi:type="hu.bme.mit.gamma.property:UnaryOperandPathFormula" operator="FUTURE">
+        <operand xsi:type="hu.bme.mit.gamma.property:AtomicFormula">
+          <expression xsi:type="hu.bme.mit.gamma.expression:AndExpression">
+            <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+              <leftOperand xsi:type="hu.bme.mit.gamma.property:ComponentInstanceVariableReference">
+                <instance>
+                  <componentInstanceHierarchy xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".Vaganyut.gsm#//@components.17/@components.0"/>
+                </instance>
+                <variable href=".Vaganyut.gsm#//@components.18/@variableDeclarations.17"/>
+              </leftOperand>
+              <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="24"/>
+            </operands>
+            <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+              <leftOperand xsi:type="hu.bme.mit.gamma.property:ComponentInstanceVariableReference">
+                <instance>
+                  <componentInstanceHierarchy xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".Vaganyut.gsm#//@components.17/@components.0"/>
+                </instance>
+                <variable href=".Vaganyut.gsm#//@components.18/@variableDeclarations.16"/>
+              </leftOperand>
+              <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="36"/>
+            </operands>
+          </expression>
+        </operand>
+      </formula>
+    </formula>
+  </formulas>
+  <formulas>
+    <comments comment="atmenetjelzo_jelzoAdapter_jelzo.S_VU_lez_reg.S_VU_Valasz_Tipus --> atmenetjelzo_jelzoAdapter_jelzo.S_VU_lez_reg.S_VU_Inputra_Var -p- atmenetjelzo_jelzoAdapter_jelzo.S_VU_lez_reg.S_VU_Inputra_Var --> atmenetjelzo_jelzoAdapter_jelzo.S_VU_lez_reg.S_VU_Feltetel_Teljesul"/>
+    <formula xsi:type="hu.bme.mit.gamma.property:QuantifiedFormula" quantifier="EXISTS">
+      <formula xsi:type="hu.bme.mit.gamma.property:UnaryOperandPathFormula" operator="FUTURE">
+        <operand xsi:type="hu.bme.mit.gamma.property:AtomicFormula">
+          <expression xsi:type="hu.bme.mit.gamma.expression:AndExpression">
+            <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+              <leftOperand xsi:type="hu.bme.mit.gamma.property:ComponentInstanceVariableReference">
+                <instance>
+                  <componentInstanceHierarchy xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".Vaganyut.gsm#//@components.17/@components.0"/>
+                </instance>
+                <variable href=".Vaganyut.gsm#//@components.18/@variableDeclarations.17"/>
+              </leftOperand>
+              <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="25"/>
+            </operands>
+            <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+              <leftOperand xsi:type="hu.bme.mit.gamma.property:ComponentInstanceVariableReference">
+                <instance>
+                  <componentInstanceHierarchy xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".Vaganyut.gsm#//@components.17/@components.0"/>
+                </instance>
+                <variable href=".Vaganyut.gsm#//@components.18/@variableDeclarations.16"/>
+              </leftOperand>
+              <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="36"/>
+            </operands>
+          </expression>
+        </operand>
+      </formula>
+    </formula>
+  </formulas>
+  <formulas>
+    <comments comment="atmenetjelzo_jelzoAdapter_jelzo.F_VU_lez_reg.F_VU_lez_Valasz_Sikeres_Fork --> atmenetjelzo_jelzoAdapter_jelzo.F_VU_lez_reg.F_VU_lez_Inputra_Var -p- atmenetjelzo_jelzoAdapter_jelzo.F_VU_lez_reg.F_VU_lez_Inputra_Var --> atmenetjelzo_jelzoAdapter_jelzo.F_VU_lez_reg.F_VU_lez_Feltetel_Teljesul"/>
+    <formula xsi:type="hu.bme.mit.gamma.property:QuantifiedFormula" quantifier="EXISTS">
+      <formula xsi:type="hu.bme.mit.gamma.property:UnaryOperandPathFormula" operator="FUTURE">
+        <operand xsi:type="hu.bme.mit.gamma.property:AtomicFormula">
+          <expression xsi:type="hu.bme.mit.gamma.expression:AndExpression">
+            <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+              <leftOperand xsi:type="hu.bme.mit.gamma.property:ComponentInstanceVariableReference">
+                <instance>
+                  <componentInstanceHierarchy xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".Vaganyut.gsm#//@components.17/@components.0"/>
+                </instance>
+                <variable href=".Vaganyut.gsm#//@components.18/@variableDeclarations.11"/>
+              </leftOperand>
+              <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="26"/>
+            </operands>
+            <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+              <leftOperand xsi:type="hu.bme.mit.gamma.property:ComponentInstanceVariableReference">
+                <instance>
+                  <componentInstanceHierarchy xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".Vaganyut.gsm#//@components.17/@components.0"/>
+                </instance>
+                <variable href=".Vaganyut.gsm#//@components.18/@variableDeclarations.10"/>
+              </leftOperand>
+              <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="34"/>
+            </operands>
+          </expression>
+        </operand>
+      </formula>
+    </formula>
+  </formulas>
+  <formulas>
+    <comments comment="atmenetjelzo_jelzoAdapter_jelzo.S_VU_lez_reg.S_VU_Valasz_Tipus --> atmenetjelzo_jelzoAdapter_jelzo.S_VU_lez_reg.S_VU_Inputra_Var -p- atmenetjelzo_jelzoAdapter_jelzo.S_VU_lez_reg.S_VU_Inputra_Var --> atmenetjelzo_jelzoAdapter_jelzo.S_VU_lez_reg.S_VU_Feltetel_Teljesul"/>
+    <formula xsi:type="hu.bme.mit.gamma.property:QuantifiedFormula" quantifier="EXISTS">
+      <formula xsi:type="hu.bme.mit.gamma.property:UnaryOperandPathFormula" operator="FUTURE">
+        <operand xsi:type="hu.bme.mit.gamma.property:AtomicFormula">
+          <expression xsi:type="hu.bme.mit.gamma.expression:AndExpression">
+            <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+              <leftOperand xsi:type="hu.bme.mit.gamma.property:ComponentInstanceVariableReference">
+                <instance>
+                  <componentInstanceHierarchy xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".Vaganyut.gsm#//@components.17/@components.0"/>
+                </instance>
+                <variable href=".Vaganyut.gsm#//@components.18/@variableDeclarations.17"/>
+              </leftOperand>
+              <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="27"/>
+            </operands>
+            <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+              <leftOperand xsi:type="hu.bme.mit.gamma.property:ComponentInstanceVariableReference">
+                <instance>
+                  <componentInstanceHierarchy xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".Vaganyut.gsm#//@components.17/@components.0"/>
+                </instance>
+                <variable href=".Vaganyut.gsm#//@components.18/@variableDeclarations.16"/>
+              </leftOperand>
+              <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="36"/>
+            </operands>
+          </expression>
+        </operand>
+      </formula>
+    </formula>
+  </formulas>
+  <formulas>
+    <comments comment="atmenetjelzo_jelzoAdapter_jelzo.C_VU_lez_reg.C_VU_lez_Valasz_Tipus --> atmenetjelzo_jelzoAdapter_jelzo.C_VU_lez_reg.C_VU_lez_Inputra_Var -p- atmenetjelzo_jelzoAdapter_jelzo.C_VU_lez_reg.C_VU_lez_Inputra_Var --> atmenetjelzo_jelzoAdapter_jelzo.C_VU_lez_reg.C_VU_lez_Feltetel_Teljesul"/>
+    <formula xsi:type="hu.bme.mit.gamma.property:QuantifiedFormula" quantifier="EXISTS">
+      <formula xsi:type="hu.bme.mit.gamma.property:UnaryOperandPathFormula" operator="FUTURE">
+        <operand xsi:type="hu.bme.mit.gamma.property:AtomicFormula">
+          <expression xsi:type="hu.bme.mit.gamma.expression:AndExpression">
+            <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+              <leftOperand xsi:type="hu.bme.mit.gamma.property:ComponentInstanceVariableReference">
+                <instance>
+                  <componentInstanceHierarchy xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".Vaganyut.gsm#//@components.17/@components.0"/>
+                </instance>
+                <variable href=".Vaganyut.gsm#//@components.18/@variableDeclarations.9"/>
+              </leftOperand>
+              <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="28"/>
+            </operands>
+            <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+              <leftOperand xsi:type="hu.bme.mit.gamma.property:ComponentInstanceVariableReference">
+                <instance>
+                  <componentInstanceHierarchy xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".Vaganyut.gsm#//@components.17/@components.0"/>
+                </instance>
+                <variable href=".Vaganyut.gsm#//@components.18/@variableDeclarations.8"/>
+              </leftOperand>
+              <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="35"/>
+            </operands>
+          </expression>
+        </operand>
+      </formula>
+    </formula>
+  </formulas>
+  <formulas>
+    <comments comment="atmenetjelzo_jelzoAdapter_jelzo.S_OV_keres_reg.S_OV_keres_Feltetel_Teljesul --> atmenetjelzo_jelzoAdapter_jelzo.S_OV_keres_reg.S_OV_keres_Accept2 -p- atmenetjelzo_jelzoAdapter_jelzo.S_OV_keres_reg.S_OV_keres_Accept2 --> atmenetjelzo_jelzoAdapter_jelzo.S_OV_keres_reg.S_OV_keres_Inputra_Var"/>
+    <formula xsi:type="hu.bme.mit.gamma.property:QuantifiedFormula" quantifier="EXISTS">
+      <formula xsi:type="hu.bme.mit.gamma.property:UnaryOperandPathFormula" operator="FUTURE">
+        <operand xsi:type="hu.bme.mit.gamma.property:AtomicFormula">
+          <expression xsi:type="hu.bme.mit.gamma.expression:AndExpression">
+            <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+              <leftOperand xsi:type="hu.bme.mit.gamma.property:ComponentInstanceVariableReference">
+                <instance>
+                  <componentInstanceHierarchy xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".Vaganyut.gsm#//@components.17/@components.0"/>
+                </instance>
+                <variable href=".Vaganyut.gsm#//@components.18/@variableDeclarations.27"/>
+              </leftOperand>
+              <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="29"/>
+            </operands>
+            <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+              <leftOperand xsi:type="hu.bme.mit.gamma.property:ComponentInstanceVariableReference">
+                <instance>
+                  <componentInstanceHierarchy xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".Vaganyut.gsm#//@components.17/@components.0"/>
+                </instance>
+                <variable href=".Vaganyut.gsm#//@components.18/@variableDeclarations.26"/>
+              </leftOperand>
+              <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="5"/>
+            </operands>
+          </expression>
+        </operand>
+      </formula>
+    </formula>
+  </formulas>
+  <formulas>
+    <comments comment="atmenetjelzo_jelzoAdapter_jelzo.S_OV_keres_reg.S_OV_keres_Feltetel_Teljesul --> atmenetjelzo_jelzoAdapter_jelzo.S_OV_keres_reg.S_OV_keres_Accept2 -p- atmenetjelzo_jelzoAdapter_jelzo.S_OV_keres_reg.S_OV_keres_Accept2 --> atmenetjelzo_jelzoAdapter_jelzo.S_OV_keres_reg.S_OV_keres_Inputra_Var"/>
+    <formula xsi:type="hu.bme.mit.gamma.property:QuantifiedFormula" quantifier="EXISTS">
+      <formula xsi:type="hu.bme.mit.gamma.property:UnaryOperandPathFormula" operator="FUTURE">
+        <operand xsi:type="hu.bme.mit.gamma.property:AtomicFormula">
+          <expression xsi:type="hu.bme.mit.gamma.expression:AndExpression">
+            <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+              <leftOperand xsi:type="hu.bme.mit.gamma.property:ComponentInstanceVariableReference">
+                <instance>
+                  <componentInstanceHierarchy xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".Vaganyut.gsm#//@components.17/@components.0"/>
+                </instance>
+                <variable href=".Vaganyut.gsm#//@components.18/@variableDeclarations.27"/>
+              </leftOperand>
+              <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="29"/>
+            </operands>
+            <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+              <leftOperand xsi:type="hu.bme.mit.gamma.property:ComponentInstanceVariableReference">
+                <instance>
+                  <componentInstanceHierarchy xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".Vaganyut.gsm#//@components.17/@components.0"/>
+                </instance>
+                <variable href=".Vaganyut.gsm#//@components.18/@variableDeclarations.26"/>
+              </leftOperand>
+              <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="8"/>
+            </operands>
+          </expression>
+        </operand>
+      </formula>
+    </formula>
+  </formulas>
+  <formulas>
+    <comments comment="atmenetjelzo_jelzoAdapter_jelzo.F_VU_lez_reg.F_VU_lez_Feltetel_Teljesul --> atmenetjelzo_jelzoAdapter_jelzo.F_VU_lez_reg.F_VU_lez_Inputra_Var -p- atmenetjelzo_jelzoAdapter_jelzo.F_VU_lez_reg.F_VU_lez_Inputra_Var --> atmenetjelzo_jelzoAdapter_jelzo.F_VU_lez_reg.F_VU_lez_Feltetel_Teljesul"/>
+    <formula xsi:type="hu.bme.mit.gamma.property:QuantifiedFormula" quantifier="EXISTS">
+      <formula xsi:type="hu.bme.mit.gamma.property:UnaryOperandPathFormula" operator="FUTURE">
+        <operand xsi:type="hu.bme.mit.gamma.property:AtomicFormula">
+          <expression xsi:type="hu.bme.mit.gamma.expression:AndExpression">
+            <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+              <leftOperand xsi:type="hu.bme.mit.gamma.property:ComponentInstanceVariableReference">
+                <instance>
+                  <componentInstanceHierarchy xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".Vaganyut.gsm#//@components.17/@components.0"/>
+                </instance>
+                <variable href=".Vaganyut.gsm#//@components.18/@variableDeclarations.11"/>
+              </leftOperand>
+              <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="30"/>
+            </operands>
+            <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+              <leftOperand xsi:type="hu.bme.mit.gamma.property:ComponentInstanceVariableReference">
+                <instance>
+                  <componentInstanceHierarchy xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".Vaganyut.gsm#//@components.17/@components.0"/>
+                </instance>
+                <variable href=".Vaganyut.gsm#//@components.18/@variableDeclarations.10"/>
+              </leftOperand>
+              <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="34"/>
+            </operands>
+          </expression>
+        </operand>
+      </formula>
+    </formula>
+  </formulas>
+  <formulas>
+    <comments comment="atmenetjelzo_jelzoAdapter_jelzo.C_VU_lez_reg.C_VU_lez_Init --> atmenetjelzo_jelzoAdapter_jelzo.C_VU_lez_reg.C_VU_lez_Inputra_Var -p- atmenetjelzo_jelzoAdapter_jelzo.C_VU_lez_reg.C_VU_lez_Inputra_Var --> atmenetjelzo_jelzoAdapter_jelzo.C_VU_lez_reg.C_VU_lez_Feltetel_Teljesul"/>
+    <formula xsi:type="hu.bme.mit.gamma.property:QuantifiedFormula" quantifier="EXISTS">
+      <formula xsi:type="hu.bme.mit.gamma.property:UnaryOperandPathFormula" operator="FUTURE">
+        <operand xsi:type="hu.bme.mit.gamma.property:AtomicFormula">
+          <expression xsi:type="hu.bme.mit.gamma.expression:AndExpression">
+            <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+              <leftOperand xsi:type="hu.bme.mit.gamma.property:ComponentInstanceVariableReference">
+                <instance>
+                  <componentInstanceHierarchy xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".Vaganyut.gsm#//@components.17/@components.0"/>
+                </instance>
+                <variable href=".Vaganyut.gsm#//@components.18/@variableDeclarations.9"/>
+              </leftOperand>
+              <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="31"/>
+            </operands>
+            <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+              <leftOperand xsi:type="hu.bme.mit.gamma.property:ComponentInstanceVariableReference">
+                <instance>
+                  <componentInstanceHierarchy xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".Vaganyut.gsm#//@components.17/@components.0"/>
+                </instance>
+                <variable href=".Vaganyut.gsm#//@components.18/@variableDeclarations.8"/>
+              </leftOperand>
+              <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="35"/>
+            </operands>
+          </expression>
+        </operand>
+      </formula>
+    </formula>
+  </formulas>
+</hu.bme.mit.gamma.property:PropertyPackage>

@@ -1,17 +1,11 @@
-import "/hu.bme.mit.gamma.tutorial.contract.finish/model/.Crossroad.gsm"
-trace CrossroadTrace of Crossroad
+import "/hu.bme.mit.gamma.tutorial.contract.finish/model/Crossroad.gcd"
+trace AdaptiveContractStatechartTrace
+of Crossroad
 step {
 	act {
 		reset
 	}
 	assert {
-		raise priorityOutput.displayRed
-		raise secondaryOutput.displayRed
-		controller.Init
-		prior.Normal
-		prior.Red
-		secondary.Normal
-		secondary.Red
 	}
 }
 step {
@@ -20,58 +14,19 @@ step {
 		schedule component
 	}
 	assert {
-		raise priorityOutput.displayGreen
-		controller.Operating
-		controller.PriorityPrepares
-		prior.Normal
-		prior.Green
-		secondary.Normal
-		secondary.Red
-	}
-}
-step {
-	act {
-		elapse 1000
-		schedule component
-	}
-	assert {
-		raise priorityOutput.displayYellow
-		controller.Operating
-		controller.Secondary
-		prior.Normal
-		prior.Yellow
-		secondary.Normal
-		secondary.Red
 	}
 }
 step {
 	act {
 		elapse 2000
-		schedule component
-	}
-	assert {
-		raise secondaryOutput.displayGreen
-		raise priorityOutput.displayRed
-		controller.Operating
-		controller.SecondaryPrepares
-		prior.Normal
-		prior.Red
-		secondary.Normal
-		secondary.Green
-	}
-}
-step {
-	act {
-		elapse 1000
 		schedule component
 	}
 	assert {
 		raise secondaryOutput.displayYellow
-		controller.Operating
-		controller.Priority
-		prior.Normal
-		prior.Red
-		secondary.Normal
-		secondary.Yellow
+		raise secondaryOutput.displayRed
+		raise priorityOutput.displayGreen
+		raise priorityOutput.displayRed
+		raise secondaryOutput.displayGreen
+		raise priorityOutput.displayYellow
 	}
 }

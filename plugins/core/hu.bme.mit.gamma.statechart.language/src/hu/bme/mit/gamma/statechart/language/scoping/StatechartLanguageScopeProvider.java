@@ -26,29 +26,27 @@ import org.eclipse.xtext.scoping.Scopes;
 import org.eclipse.xtext.scoping.impl.SimpleScope;
 
 import com.google.common.collect.Lists;
-
 import hu.bme.mit.gamma.action.model.Action;
 import hu.bme.mit.gamma.action.model.ActionModelPackage;
 import hu.bme.mit.gamma.activity.model.ActivityDeclaration;
 import hu.bme.mit.gamma.activity.model.ActivityDefinition;
 import hu.bme.mit.gamma.activity.derivedfeatures.*;
 import hu.bme.mit.gamma.expression.model.Declaration;
-import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition;
-import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
 import hu.bme.mit.gamma.expression.model.FieldDeclaration;
 import hu.bme.mit.gamma.expression.model.ParametricElement;
-import hu.bme.mit.gamma.expression.model.TypeDeclaration;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponent;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance;
+import hu.bme.mit.gamma.statechart.composite.CascadeCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.composite.CompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.CompositeModelPackage;
 import hu.bme.mit.gamma.statechart.composite.ControlSpecification;
 import hu.bme.mit.gamma.statechart.composite.InstancePortReference;
 import hu.bme.mit.gamma.statechart.composite.MessageQueue;
+import hu.bme.mit.gamma.statechart.composite.ScheduledAsynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponent;
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance;
 import hu.bme.mit.gamma.statechart.contract.AdaptiveContractAnnotation;
@@ -79,13 +77,6 @@ import hu.bme.mit.gamma.statechart.statechart.StatechartModelPackage;
 import hu.bme.mit.gamma.statechart.statechart.Transition;
 import hu.bme.mit.gamma.statechart.util.StatechartUtil;
 
-/**
- * This class contains custom scoping description.
- *
- * See
- * https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#scoping
- * on how and when to use it.
- */
 public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageScopeProvider {
 
 	public StatechartLanguageScopeProvider() {
@@ -157,15 +148,6 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 				Interface _interface = port.getInterfaceRealization().getInterface();
 				// Not only in events are returned as less-aware users tend to write in events on actions
 				return Scopes.scopeFor(StatechartModelDerivedFeatures.getAllEvents(_interface));
-			}
-			if (context instanceof EnumerationLiteralExpression && 
-					reference == ExpressionModelPackage.Literals.ENUMERATION_LITERAL_EXPRESSION__REFERENCE) {
-				Package root = (Package) EcoreUtil2.getRootContainer(context, true);
-				Collection<EnumerationLiteralDefinition> enumLiterals = EcoreUtil2.getAllContentsOfType(root, EnumerationLiteralDefinition.class);
-				for (Package imported : root.getImports()) {
-					enumLiterals.addAll(EcoreUtil2.getAllContentsOfType(imported, EnumerationLiteralDefinition.class));
-				}
-				return Scopes.scopeFor(enumLiterals);
 			}
 			/* Without such scoping rules, the following exception is thrown:
 			 * Caused By: org.eclipse.xtext.conversion.ValueConverterException: ID 'Test.testIn.testInValue'
@@ -253,7 +235,18 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 				Set<AsynchronousComponent> components = StatechartModelDerivedFeatures.getAllAsynchronousComponents(_package);
 				components.remove(context.eContainer());
 				return Scopes.scopeFor(components);
-			}		
+			}
+			if (reference == CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE__COMPONENT_INSTANCE) {
+				// Execution list
+				if (context instanceof CascadeCompositeComponent) {
+					CascadeCompositeComponent cascade = (CascadeCompositeComponent) context;
+					return Scopes.scopeFor(cascade.getComponents());
+				}
+				if (context instanceof ScheduledAsynchronousCompositeComponent) {
+					ScheduledAsynchronousCompositeComponent scheduled = (ScheduledAsynchronousCompositeComponent) context;
+					return Scopes.scopeFor(scheduled.getComponents());
+				}
+			}
 			// Asynchronous adapter-specific rules
 			if (context instanceof PortEventReference && reference == StatechartModelPackage.Literals.PORT_EVENT_REFERENCE__PORT ||
 				context instanceof AnyPortEventReference && reference == StatechartModelPackage.Literals.ANY_PORT_EVENT_REFERENCE__PORT) {
@@ -279,13 +272,6 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 				StatechartModelDerivedFeatures.getAllPorts(wrapper).stream()
 					.forEach(it -> events.addAll(StatechartModelDerivedFeatures.getInputEvents(it)));
 				return Scopes.scopeFor(events);
-			}
-			if (reference == ExpressionModelPackage.Literals.TYPE_REFERENCE__REFERENCE) {
-				Package gammaPackage = ecoreUtil.getSelfOrContainerOfType(context, Package.class);
-				if (gammaPackage != null) {
-					Collection<TypeDeclaration> typeDeclarations = util.getTypeDeclarations(gammaPackage);
-					return Scopes.scopeFor(typeDeclarations);
-				}
 			}
 			if (reference == ExpressionModelPackage.Literals.DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
 				// 1. Local declarations
@@ -322,11 +308,6 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 					scope = new SimpleScope(parent, scope.getAllElements());
 				}
 				return scope;
-			}
-			if (reference == ActionModelPackage.Literals.TYPE_REFERENCE_EXPRESSION__DECLARATION) {
-				Package gammaPackage = (Package) EcoreUtil2.getRootContainer(context, true);
-				Collection<TypeDeclaration> typeDeclarations = util.getTypeDeclarations(gammaPackage);
-				return Scopes.scopeFor(typeDeclarations);
 			}
 		} catch (NullPointerException e) {
 			// Nullptr exception is thrown if the scope turns out to be empty

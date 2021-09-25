@@ -1,0 +1,28 @@
+package types
+
+type VU_tip_t : enum {
+	VONAT, TOLATO
+}
+type valasz_t : enum {
+	SIKERES, ELUTASITVA // Additional values are expected here
+}
+type obj_t : integer
+type fogl_t : enum {
+	SZABAD_F, FOGLALT, HIBAS, RESET
+}
+type tavolsag_t : integer
+type J_jelzes_t : enum {
+	SOTET, MEGALLJ, SZABAD
+}
+type J_tipus_t : enum {
+	FOJELZO, TOLATASJELZO, EGYESITETT
+}
+type V_vezer_t : enum {
+	JOBB, BAL
+}
+type V_ell_t : enum {
+	JOBB_VEGALLAS, BAL_VEGALLAS, NINCS_S, JOBB_ELVESZTETT, BAL_ELVESZTETT, FELVAGAS, ALLITAS
+}
+type V_VU_lez_t : enum {
+	NINCS, ELOLROL, GYOKFELOL
+}

@@ -11,6 +11,7 @@
 package hu.bme.mit.gamma.trace.testgeneration.java
 
 import hu.bme.mit.gamma.expression.model.Declaration
+import hu.bme.mit.gamma.statechart.composite.AbstractAsynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.composite.AsynchronousCompositeComponent
@@ -250,7 +251,7 @@ class TestGenerator {
 	
 	protected def dispatch serialize(ComponentSchedule schedule) '''
 «««		In theory only asynchronous adapters and synchronous adapters are used
-		«TEST_INSTANCE_NAME».schedule(null);
+		«TEST_INSTANCE_NAME».schedule();
 	'''
 	
 	// Assert serialization
@@ -428,7 +429,7 @@ class TestGenerator {
     	else if (component instanceof AsynchronousAdapter) {
     		return component.wrappedComponent.type.needTimer
     	}
-    	else if (component instanceof AsynchronousCompositeComponent) {
+    	else if (component instanceof AbstractAsynchronousCompositeComponent) {
     		return component.components.map[it.type.needTimer].contains(true)
     	}
     	else {

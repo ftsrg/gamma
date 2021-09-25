@@ -28,22 +28,23 @@ import hu.bme.mit.gamma.expression.model.ConstantDeclaration;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.expression.util.ExpressionSerializer;
+import hu.bme.mit.gamma.expression.util.TypeSerializer;
 
 public class ActionSerializer {
 	// Singleton
 	public static final ActionSerializer INSTANCE = new ActionSerializer();
-
-	protected ActionSerializer() {
-		this.expressionSerializer = ExpressionSerializer.INSTANCE;
-	}
+	protected ActionSerializer() {}
 	//
 
-	protected ExpressionSerializer expressionSerializer;
+	protected ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE; // Redefinable
+	protected final TypeSerializer typeSerializer = TypeSerializer.INSTANCE;
+
+	//
 
 	protected String _serialize(final Block block) {
-		StringBuilder builder = new StringBuilder("{ ");
+		StringBuilder builder = new StringBuilder("{" + System.lineSeparator());
 		for (Action action : block.getActions()) {
-			builder.append(serialize(action) + " ");
+			builder.append("\t" + serialize(action) + System.lineSeparator());
 		}
 		builder.append("}");
 		return builder.toString();
@@ -65,7 +66,7 @@ public class ActionSerializer {
 	protected String _serialize(final ChoiceStatement statement) {
 		StringBuilder builder = new StringBuilder("choice {" + System.lineSeparator());
 		for (Branch branch : statement.getBranches()) {
-			builder.append("branch [" + expressionSerializer.serialize(branch.getGuard()) + "] "
+			builder.append("\tbranch [" + expressionSerializer.serialize(branch.getGuard()) + "] "
 					+ serialize(branch.getAction()) + System.lineSeparator());
 		}
 		builder.append("}");
@@ -73,13 +74,16 @@ public class ActionSerializer {
 	}
 
 	protected String _serialize(final ConstantDeclarationStatement statement) {
-		ConstantDeclaration constant = statement.getConstantDeclaration(); // TODO type
-		return "const " + constant.getName() + " := " + expressionSerializer.serialize(constant.getExpression());
+		ConstantDeclaration constant = statement.getConstantDeclaration();
+		String typeName = typeSerializer.serialize(constant.getType());
+		String expression = expressionSerializer.serialize(constant.getExpression());
+		return "const " + constant.getName() + " : " + typeName + " := " + expression;
 	}
 
 	protected String _serialize(final VariableDeclarationStatement statement) {
 		VariableDeclaration variable = statement.getVariableDeclaration();
-		StringBuilder builder = new StringBuilder("var " + variable.getName()); // TODO type
+		String typeName = typeSerializer.serialize(variable.getType());
+		StringBuilder builder = new StringBuilder("var " + variable.getName() + " : " + typeName);
 		final Expression expression = variable.getExpression();
 		if (expression != null) {
 			builder.append(" := " + expressionSerializer.serialize(expression));
@@ -97,17 +101,18 @@ public class ActionSerializer {
 
 	protected String _serialize(final ForStatement statement) {
 		StringBuilder builder = new StringBuilder("for (" + statement.getParameter().getName() + " : "
-				+ expressionSerializer.serialize(statement.getRange()) + ")" + System.lineSeparator());
-		builder.append(serialize(statement.getBody()) + System.lineSeparator());
+				+ expressionSerializer.serialize(statement.getRange()) + ") ");
+		builder.append(serialize(statement.getBody()));
 		return builder.toString();
 	}
 
 	protected String _serialize(final SwitchStatement statement) {
 		StringBuilder builder = new StringBuilder("switch ("
-				+ expressionSerializer.serialize(statement.getControlExpression()) + ") {" + System.lineSeparator());
+				+ expressionSerializer.serialize(statement.getControlExpression()) + ") {"  + System.lineSeparator());
 		for (Branch branch : statement.getCases()) {
 			builder.append(
-					"case " + expressionSerializer.serialize(branch.getGuard()) + ":" + serialize(branch.getAction()));
+					"\tcase " + expressionSerializer.serialize(branch.getGuard()) + ":"
+			+ serialize(branch.getAction()) + System.lineSeparator());
 		}
 		builder.append("}");
 		return builder.toString();
@@ -117,7 +122,8 @@ public class ActionSerializer {
 		StringBuilder builder = new StringBuilder();
 		for (Branch branch : statement.getConditionals()) {
 			builder.append(
-					"if (" + expressionSerializer.serialize(branch.getGuard()) + ") " + serialize(branch.getAction()));
+					"if (" + expressionSerializer.serialize(branch.getGuard()) + ") "
+			+ serialize(branch.getAction()) + " ");
 		}
 		return builder.toString();
 	}

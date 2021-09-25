@@ -11,17 +11,24 @@
 package hu.bme.mit.gamma.expression.derivedfeatures;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition;
 import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition;
+import hu.bme.mit.gamma.expression.model.ClockVariableDeclarationAnnotation;
 import hu.bme.mit.gamma.expression.model.DecimalTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Declaration;
+import hu.bme.mit.gamma.expression.model.DefaultExpression;
+import hu.bme.mit.gamma.expression.model.ElseExpression;
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition;
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition;
+import hu.bme.mit.gamma.expression.model.EnvironmentResettableVariableDeclarationAnnotation;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory;
 import hu.bme.mit.gamma.expression.model.FieldDeclaration;
+import hu.bme.mit.gamma.expression.model.FinalVariableDeclarationAnnotation;
 import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression;
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
@@ -29,20 +36,25 @@ import hu.bme.mit.gamma.expression.model.ParametricElement;
 import hu.bme.mit.gamma.expression.model.RationalTypeDefinition;
 import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
-import hu.bme.mit.gamma.expression.model.ResetableVariableDeclarationAnnotation;
+import hu.bme.mit.gamma.expression.model.ResettableVariableDeclarationAnnotation;
 import hu.bme.mit.gamma.expression.model.TransientVariableDeclarationAnnotation;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
 import hu.bme.mit.gamma.expression.model.TypeDefinition;
 import hu.bme.mit.gamma.expression.model.TypeReference;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
+import hu.bme.mit.gamma.expression.model.VariableDeclarationAnnotation;
+import hu.bme.mit.gamma.expression.util.ExpressionEvaluator;
 import hu.bme.mit.gamma.expression.util.ExpressionUtil;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
+import hu.bme.mit.gamma.util.JavaUtil;
 
 public class ExpressionModelDerivedFeatures {
 	
 	protected static final ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
+	protected static final ExpressionEvaluator evaluator = ExpressionEvaluator.INSTANCE;
 	protected static final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
+	protected static final JavaUtil javaUtil = JavaUtil.INSTANCE;
 	protected static final ExpressionModelFactory factory = ExpressionModelFactory.eINSTANCE;
 	
 	public static Expression getLeft(IntegerRangeLiteralExpression expression, boolean isInclusive) {
@@ -70,14 +82,41 @@ public class ExpressionModelDerivedFeatures {
 	}
 	
 	public static boolean isTransient(VariableDeclaration variable) {
-		return variable.getAnnotations().stream()
-				.anyMatch(it -> it instanceof TransientVariableDeclarationAnnotation);
+		// Can be reset as the last action of the component (before entering a stable state)
+		return hasAnnotation(variable, TransientVariableDeclarationAnnotation.class);
 	}
 	
-	public static boolean isResetable(VariableDeclaration variable) {
-		return variable.getAnnotations().stream()
-				.anyMatch(it -> it instanceof ResetableVariableDeclarationAnnotation);
+	public static boolean isResettable(VariableDeclaration variable) {
+		// Can be reset as the first action of the component (after leaving a stable state)
+		return hasAnnotation(variable, ResettableVariableDeclarationAnnotation.class);
 	}
+	
+	public static boolean isEnvironmentResettable(VariableDeclaration variable) {
+		// Can be reset by the environment
+		return hasAnnotation(variable, EnvironmentResettableVariableDeclarationAnnotation.class);
+	}
+	
+	public static boolean isFinal(VariableDeclaration variable) {
+		return hasAnnotation(variable, FinalVariableDeclarationAnnotation.class);
+	}
+	
+	public static boolean isClock(VariableDeclaration variable) {
+		return hasAnnotation(variable, ClockVariableDeclarationAnnotation.class);
+	}
+	
+	public static boolean hasAnnotation(VariableDeclaration variable,
+			Class<? extends VariableDeclarationAnnotation> annotation) {
+		return variable.getAnnotations().stream().anyMatch(it -> annotation.isInstance(it));
+	}
+	
+	public static List<VariableDeclaration> filterVariablesByAnnotation(
+			Collection<? extends VariableDeclaration> variables,
+			Class<? extends VariableDeclarationAnnotation> annotation) {
+		return variables.stream().filter(it -> hasAnnotation(it, annotation))
+				.collect(Collectors.toList());
+	}
+	
+	// Types
 	
 	public static boolean isPrimitive(Type type) {
 		TypeDefinition typeDefinition = getTypeDefinition(type);
@@ -103,6 +142,10 @@ public class ExpressionModelDerivedFeatures {
 	public static boolean isComplex(Type type) {
 		TypeDefinition typeDefinition = getTypeDefinition(type);
 		return isRecord(typeDefinition) || isArray(typeDefinition);
+	}
+	
+	public static boolean isElseOrDefault(Expression expression) {
+		return expression instanceof ElseExpression || expression instanceof DefaultExpression;
 	}
 	
 	public static TypeDefinition getTypeDefinition(Declaration declaration) {
@@ -135,6 +178,45 @@ public class ExpressionModelDerivedFeatures {
 			throw new IllegalArgumentException("No type declaration: " + literal);
 		}
 		return declaration;
+	}
+	
+	public static Type getArrayElementType(Declaration declaration) {
+		Type type = declaration.getType();
+		return getArrayElementType(type);
+	}
+	
+	public static Type getArrayElementType(Type type) {
+		TypeDefinition typeDefinition = getTypeDefinition(type);
+		if (typeDefinition instanceof ArrayTypeDefinition) {
+			ArrayTypeDefinition arrayTypeDefinition = (ArrayTypeDefinition) typeDefinition;
+			return arrayTypeDefinition.getElementType();
+		}
+		throw new IllegalArgumentException("Not array type: " + type);
+	}
+	
+	// Type references
+	
+	public static boolean refersToAnAlias(TypeReference typeReference) {
+		TypeDeclaration typeDeclaration = typeReference.getReference();
+		Type type = typeDeclaration.getType();
+		return type instanceof TypeReference;
+	}
+	
+	public static TypeReference getFinalTypeReference(TypeReference typeReference) {
+		if (refersToAnAlias(typeReference)) {
+			TypeDeclaration typeDeclaration = typeReference.getReference();
+			Type type = typeDeclaration.getType();
+			TypeReference aliasReference = (TypeReference) type;
+			return getFinalTypeReference(aliasReference);
+		}
+		return typeReference;
+	}
+	
+	//
+	
+	public static Expression getDefaultExpression(Declaration declaration) {
+		Type type = declaration.getType();
+		return getDefaultExpression(type);
 	}
 	
 	public static Expression getDefaultExpression(Type type) {

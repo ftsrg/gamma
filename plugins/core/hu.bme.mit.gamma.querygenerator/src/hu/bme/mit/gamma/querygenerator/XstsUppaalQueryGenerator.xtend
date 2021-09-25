@@ -11,7 +11,7 @@
 package hu.bme.mit.gamma.querygenerator
 
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
-import hu.bme.mit.gamma.statechart.interface_.Package
+import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.statechart.Region
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
@@ -19,8 +19,8 @@ import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 
 class XstsUppaalQueryGenerator extends ThetaQueryGenerator {
 	
-	new(Package gammaPackage) {
-		super(gammaPackage)
+	new(Component component) {
+		super(component)
 	}
 	
 	def protected getSingleTargetStateName(int index, Region parentRegion, SynchronousComponentInstance instance) {

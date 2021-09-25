@@ -51,6 +51,8 @@ public class TraceUtil extends ExpressionUtil {
 	
 	public static final AssertSorter assertSorter = new AssertSorter();
 	
+	// Extending super methods
+	
 	@Override
 	public Collection<TypeDeclaration> getTypeDeclarations(EObject context) {
 		Collection<TypeDeclaration> types = new HashSet<TypeDeclaration>();
@@ -342,6 +344,12 @@ public class TraceUtil extends ExpressionUtil {
 			return true;
 		}
 		return false;
+	}
+	
+	public void clearAsserts(ExecutionTrace trace, Class<?> clazz) {
+		for (Step step : trace.getSteps()) {
+			step.getAsserts().removeIf(it -> clazz.isInstance(it));
+		}
 	}
 	
 	public boolean equalsTo(EObject lhs, EObject rhs) {

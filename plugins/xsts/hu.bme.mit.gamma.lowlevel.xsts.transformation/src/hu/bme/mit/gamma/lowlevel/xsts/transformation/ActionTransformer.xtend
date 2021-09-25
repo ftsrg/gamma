@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.lowlevel.xsts.transformation
 
+import hu.bme.mit.gamma.action.model.AssertionStatement
 import hu.bme.mit.gamma.action.model.AssignmentStatement
 import hu.bme.mit.gamma.action.model.Block
 import hu.bme.mit.gamma.action.model.Branch
@@ -65,6 +66,14 @@ class ActionTransformer {
 	
 	def dispatch Action transformAction(EmptyStatement action) {
 		return createEmptyAction
+	}
+	
+	def dispatch Action transformAction(AssertionStatement action) {
+		return createEmptyAction
+		// Theta does not support assertions yet
+//		return createAssertAction => [
+//			it.assertion = action.assertion.transformExpression
+//		]
 	}
 	
 	def dispatch Action transformAction(VariableDeclarationStatement action) {

@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.genmodel.language.scoping
 
+import hu.bme.mit.gamma.expression.model.ExpressionModelPackage
 import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation
 import hu.bme.mit.gamma.genmodel.model.ComponentReference
 import hu.bme.mit.gamma.genmodel.model.EventMapping
@@ -22,12 +23,12 @@ import hu.bme.mit.gamma.property.model.ComponentInstanceStateConfigurationRefere
 import hu.bme.mit.gamma.property.model.ComponentInstanceTransitionReference
 import hu.bme.mit.gamma.property.model.ComponentInstanceVariableReference
 import hu.bme.mit.gamma.property.model.PropertyModelPackage
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference
 import hu.bme.mit.gamma.statechart.composite.CompositeModelPackage
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.TransitionIdAnnotation
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
-import org.eclipse.xtext.EcoreUtil2
 import org.eclipse.xtext.scoping.Scopes
 import org.yakindu.sct.model.stext.stext.InterfaceScope
 
@@ -63,18 +64,23 @@ class GenModelScopeProvider extends AbstractGenModelScopeProvider {
 			val components = genmodel.packageImports.map[it.components].flatten.filter(StatechartDefinition)
 			return Scopes.scopeFor(components)
 		}
-		if (reference == CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE__COMPONENT_INSTANCE_HIERARCHY) {
+		if (reference == CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE__COMPONENT_INSTANCE) {
 			val analysisModel = ecoreUtil.getSelfOrContainerOfType(context, AnalysisModelTransformation)
 			// Only if Gamma model is referenced
 			val modelReference = analysisModel.model
 			if (modelReference instanceof ComponentReference) {
 				val component = modelReference.component
-				return Scopes.scopeFor(component.allInstances)
+				val instanceContainer = ecoreUtil.getSelfOrContainerOfType(
+					context, ComponentInstanceReference)
+				val parent = instanceContainer?.parent
+				val instances = (parent === null) ?	component.allInstances :
+					parent.componentInstance.instances
+				return Scopes.scopeFor(instances)
 			}
 		}
 		if (reference == PropertyModelPackage.Literals.COMPONENT_INSTANCE_PORT_REFERENCE__PORT) {
 			val componentInstanceReference = context as ComponentInstancePortReference
-			val componentInstance = componentInstanceReference.instance.componentInstanceHierarchy.last
+			val componentInstance = componentInstanceReference.instance.lastInstance
 			if (componentInstance !== null) {
 				val ports = componentInstance.derivedType.allPorts
 				return Scopes.scopeFor(ports)
@@ -82,7 +88,7 @@ class GenModelScopeProvider extends AbstractGenModelScopeProvider {
 		}
 		if (reference == PropertyModelPackage.Literals.COMPONENT_INSTANCE_VARIABLE_REFERENCE__VARIABLE) {
 			val componentInstanceReference = context as ComponentInstanceVariableReference
-			val componentInstance = componentInstanceReference.instance.componentInstanceHierarchy.last
+			val componentInstance = componentInstanceReference.instance.lastInstance
 			if (componentInstance !== null) {
 				val type = componentInstance.derivedType
 				if (type instanceof StatechartDefinition) {
@@ -93,7 +99,7 @@ class GenModelScopeProvider extends AbstractGenModelScopeProvider {
 		}
 		if (reference == PropertyModelPackage.Literals.COMPONENT_INSTANCE_STATE_CONFIGURATION_REFERENCE__REGION) {
 			val componentInstanceReference = context as ComponentInstanceStateConfigurationReference
-			val componentInstance = componentInstanceReference.instance.componentInstanceHierarchy.last
+			val componentInstance = componentInstanceReference.instance.lastInstance
 			if (componentInstance !== null) {
 				val component = componentInstance.derivedType
 				if (component instanceof StatechartDefinition) {
@@ -103,7 +109,7 @@ class GenModelScopeProvider extends AbstractGenModelScopeProvider {
 		}
 		if (reference == PropertyModelPackage.Literals.COMPONENT_INSTANCE_STATE_CONFIGURATION_REFERENCE__STATE) {
 			val componentInstanceReference = context as ComponentInstanceStateConfigurationReference
-			val componentInstance = componentInstanceReference.instance.componentInstanceHierarchy.last
+			val componentInstance = componentInstanceReference.instance.lastInstance
 			if (componentInstance !== null) {
 				val component = componentInstance.derivedType
 				if (component instanceof StatechartDefinition) {
@@ -116,7 +122,7 @@ class GenModelScopeProvider extends AbstractGenModelScopeProvider {
 		}
 		if (reference == PropertyModelPackage.Literals.COMPONENT_INSTANCE_TRANSITION_REFERENCE__TRANSITION) {
 			val componentInstanceReference = context as ComponentInstanceTransitionReference
-			val componentInstance = componentInstanceReference.instance.componentInstanceHierarchy.last
+			val componentInstance = componentInstanceReference.instance.lastInstance
 			if (componentInstance !== null) {
 				val component = componentInstance.derivedType
 				if (component instanceof StatechartDefinition) {
@@ -127,13 +133,9 @@ class GenModelScopeProvider extends AbstractGenModelScopeProvider {
 			}
 		}
 		if (reference == GenmodelModelPackage.Literals.TEST_GENERATION__EXECUTION_TRACE || 
-				reference == GenmodelModelPackage.Literals.TEST_REPLAY_MODEL_GENERATION__EXECUTION_TRACE) {
+				reference == GenmodelModelPackage.Literals.TRACE_REPLAY_MODEL_GENERATION__EXECUTION_TRACE) {
 			val genmodel = context.eContainer as GenModel
 			return Scopes.scopeFor(genmodel.traceImports)
-		}
-		if (reference == GenmodelModelPackage.Literals.ADAPTIVE_CONTRACT_TEST_GENERATION__STATECHART_CONTRACT) {
-			val genModel = EcoreUtil2.getRootContainer(context) as GenModel
-			return Scopes.scopeFor(genModel.packageImports.map[it.components.filter(StatechartDefinition)].flatten)
 		}
 		if (context instanceof InterfaceMapping &&
 			reference == GenmodelModelPackage.Literals.INTERFACE_MAPPING__YAKINDU_INTERFACE) {
@@ -161,6 +163,19 @@ class GenModelScopeProvider extends AbstractGenModelScopeProvider {
 			val events = gammaInterface.allEventDeclarations.map[it.event]
 			return Scopes.scopeFor(events)
 		}
+		// Expression scoping
+		if (reference == ExpressionModelPackage.Literals.DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
+			val genmodel = ecoreUtil.getSelfOrContainerOfType(context, GenModel)
+			val imports = genmodel.packageImports
+			if (!imports.empty) {
+				val scopes = newArrayList
+				for (^import : imports) {
+					scopes += super.getScope(^import, reference)
+				}
+				return scopes.embedScopes
+			}
+		}
+		
 		val scope = super.getScope(context, reference)
 		return scope
 	}

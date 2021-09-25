@@ -15,47 +15,50 @@ import java.util.logging.Logger;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.emf.ecore.resource.ResourceSet;
-import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 import hu.bme.mit.gamma.dialog.DialogUtil;
 import hu.bme.mit.gamma.ui.GammaApi;
-import hu.bme.mit.gamma.ui.GammaApi.ResourceSetCreator;
 
 public class CommandHandler extends AbstractHandler {
 	
-	protected Logger logger = Logger.getLogger("GammaLogger");
+	protected Thread thread = null;
+	protected final Logger logger = Logger.getLogger("GammaLogger");
 
 	@Override
-	public Object execute(ExecutionEvent event) throws ExecutionException {
-		try {
-			ISelection sel = HandlerUtil.getActiveMenuSelection(event);
-			if (sel instanceof IStructuredSelection) {
-				IStructuredSelection selection = (IStructuredSelection) sel;
-				if (selection.getFirstElement() != null) {
-					if (selection.getFirstElement() instanceof IFile) {
-						IFile file = (IFile) selection.getFirstElement();
-						GammaApi gammaApi = new GammaApi();
-						gammaApi.run(file.getFullPath().toString(),
-							// Simple ResourceSet creation
-							new ResourceSetCreator() {
-								public ResourceSet createResourceSet() {
-									return new ResourceSetImpl();
+	public Object execute(ExecutionEvent event) {
+		if (thread == null || !thread.isAlive()) {
+			thread = new Thread(
+				new Runnable() {
+					public void run() {
+						try {
+							ISelection sel = HandlerUtil.getActiveMenuSelection(event);
+							if (sel instanceof IStructuredSelection) {
+								IStructuredSelection selection = (IStructuredSelection) sel;
+								if (selection.getFirstElement() != null) {
+									if (selection.getFirstElement() instanceof IFile) {
+										IFile file = (IFile) selection.getFirstElement();
+										GammaApi gammaApi = new GammaApi();
+										gammaApi.run(file.getFullPath().toString());
+									}
 								}
 							}
-						);
+						} catch (Exception exception) {
+							exception.printStackTrace();
+							logger.log(Level.SEVERE, exception.getMessage());
+							DialogUtil.showErrorWithStackTrace(exception.getMessage(), exception);
+						}
 					}
 				}
-			}
-		} catch (Exception exception) {
-			exception.printStackTrace();
-			logger.log(Level.SEVERE, exception.getMessage());
-			DialogUtil.showErrorWithStackTrace(exception.getMessage(), exception);
+			);
+			thread.start();
+		}
+		else {
+			System.out.println(thread.getName() + " is still running");
+			logger.log(Level.INFO, thread.getName() + " is still running");
 		}
 		return null;
 	}

@@ -1,0 +1,13 @@
+package interfaces
+
+interface DataSource {
+	out event data
+	in event ping
+}
+
+interface StationControl {
+	out event start
+	out event shutdown
+}
+
+const SCHEDULE_CONSTRAINT : integer := 1501

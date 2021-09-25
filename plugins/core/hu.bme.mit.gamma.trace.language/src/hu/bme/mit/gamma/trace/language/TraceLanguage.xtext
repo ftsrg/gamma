@@ -19,10 +19,20 @@ import "http://www.mit.bme.hu/gamma/statechart/Model/Interface" as InterfaceMode
 
 ExecutionTrace returns ExecutionTrace:
 	'import' ^import=[InterfaceModel::Package | STRING]
+	 annotations+=ExecutionTraceAnnotations*
 	'trace' name=ID 'of' (component=[InterfaceModel::Component] ('(' arguments+=Expression (',' arguments+=Expression)* ')')?)
 	steps+=Step
 	(steps+=Step)*
 	(cycle=Cycle)?
+;
+
+ExecutionTraceAnnotations returns ExecutionTraceAnnotation:
+	AllowedWaitingAnnotation // | future annotations
+;
+
+AllowedWaitingAnnotation returns ExecutionTraceAllowedWaitingAnnotation:
+	{ExecutionTraceAllowedWaitingAnnotation} 
+	'@AllowedWaiting' lowerLimit=Expression '..' upperLimit=Expression
 ;
 
 Cycle returns Cycle:
@@ -88,7 +98,7 @@ PrimaryAssert returns Assert:
 ;
 
 NegatedAssert returns NegatedAssert:
-	'not' negatedAssert=PrimaryAssert
+	('!' | 'not') negatedAssert=PrimaryAssert
 ;
 
 InstanceState returns InstanceState:

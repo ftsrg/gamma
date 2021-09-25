@@ -27,6 +27,7 @@ import hu.bme.mit.gamma.statechart.lowlevel.model.ShallowHistoryState;
 import hu.bme.mit.gamma.statechart.lowlevel.model.State;
 import hu.bme.mit.gamma.statechart.lowlevel.model.StateNode;
 import hu.bme.mit.gamma.statechart.lowlevel.model.StatechartDefinition;
+import hu.bme.mit.gamma.statechart.lowlevel.model.Transition;
 
 public class LowlevelStatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
@@ -89,10 +90,11 @@ public class LowlevelStatechartModelDerivedFeatures extends ActionModelDerivedFe
 	
 	public static Region getParentRegion(Region lowlevelRegion) {
 		CompositeElement parentElement = lowlevelRegion.getParentElement();
-		if (!(parentElement instanceof State)) {
-			throw new IllegalArgumentException("Incorrect region: " + lowlevelRegion);
+		if (parentElement instanceof State) {
+			State state = (State) parentElement;
+			return state.getParentRegion();
 		}
-		return ((State) parentElement).getParentRegion();
+		throw new IllegalArgumentException("Incorrect region: " + lowlevelRegion);
 	}
 	
 	public static List<Region> getParentRegionsRecursively(StateNode lowlevelState) {
@@ -140,15 +142,46 @@ public class LowlevelStatechartModelDerivedFeatures extends ActionModelDerivedFe
 	
 	public static State getParentState(StateNode lowlevelState) {
 		CompositeElement parentElement = lowlevelState.getParentRegion().getParentElement();
-		if (!(parentElement instanceof State)) {
-			throw new IllegalArgumentException("Incorrect state node: " + lowlevelState);
+		if (parentElement instanceof State) {
+			return (State) parentElement;
 		}
-		return (State) parentElement;
+		throw new IllegalArgumentException("Incorrect state node: " + lowlevelState);
 	}
 
 	public static boolean isLeaf(Region lowlevelRegion) {
 		return lowlevelRegion.getStateNodes().stream()
-				.filter(it -> it instanceof State).allMatch(it -> ((State) it).getRegions().isEmpty());
+				.filter(it -> it instanceof State)
+				.allMatch(it -> ((State) it).getRegions().isEmpty());
+	}
+	
+	public static List<Transition> getHigherPriorityTransitions(Transition lowlevelTransition) {
+		int priority = lowlevelTransition.getPriority();
+		StateNode source = lowlevelTransition.getSource();
+		List<Transition> outgoingTransitions = source.getOutgoingTransitions();
+		List<Transition> higherPriorityTransitions =  outgoingTransitions.stream()
+			.filter(it -> it.getPriority() > priority)
+			.collect(Collectors.toList());
+		return higherPriorityTransitions;
+	}
+	
+	public static List<Transition> getAncestorTransitions(Transition lowlevelTransition) {
+		StateNode source = lowlevelTransition.getSource();
+		List<State> parentStates = ecoreUtil.getAllContainersOfType(source, State.class);
+		List<Transition> outgoingTransition = new ArrayList<Transition>();
+		for (State parentState : parentStates) {
+			outgoingTransition.addAll(parentState.getOutgoingTransitions());
+		}
+		return outgoingTransition;
+	}
+	
+	public static List<Transition> getDescendantTransitions(Transition lowlevelTransition) {
+		StateNode source = lowlevelTransition.getSource();
+		List<State> childStates = ecoreUtil.getAllContentsOfType(source, State.class);
+		List<Transition> outgoingTransition = new ArrayList<Transition>();
+		for (State childState : childStates) {
+			outgoingTransition.addAll(childState.getOutgoingTransitions());
+		}
+		return outgoingTransition;
 	}
 	
 }

@@ -14,9 +14,6 @@
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//XSTS/publicTypeDeclarations"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//XSTS/variableDeclarations"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//XSTS/constraints"/>
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//XSTS/controlVariables"/>
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//XSTS/clockVariables"/>
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//XSTS/transientVariables"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//XSTS/variableGroups"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//XSTS/variableInitializingTransition"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//XSTS/configurationInitializingTransition"/>
@@ -54,7 +51,6 @@
     </genClasses>
     <genClasses ecoreClass="model.ecore#//EmptyAction"/>
     <genClasses ecoreClass="model.ecore#//AssignmentAction">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//AssignmentAction/lhs"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//AssignmentAction/rhs"/>
     </genClasses>
     <genClasses ecoreClass="model.ecore#//MultiaryAction">
@@ -82,5 +78,11 @@
     <genClasses ecoreClass="model.ecore#//AssertAction">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//AssertAction/assertion"/>
     </genClasses>
+    <genClasses ecoreClass="model.ecore#//HavocAction"/>
+    <genClasses ecoreClass="model.ecore#//AbstractAssignmentAction">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//AbstractAssignmentAction/lhs"/>
+    </genClasses>
+    <genClasses ecoreClass="model.ecore#//OnDemandControlVariableDeclarationAnnotation"/>
+    <genClasses ecoreClass="model.ecore#//StrictControlVariableDeclarationAnnotation"/>
   </genPackages>
 </genmodel:GenModel>

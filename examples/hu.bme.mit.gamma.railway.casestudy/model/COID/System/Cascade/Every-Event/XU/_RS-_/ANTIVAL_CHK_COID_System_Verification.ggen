@@ -1,0 +1,7 @@
+verification {
+	language : XSTS-UPPAAL
+	file : "ANTIVAL_CHK_COID_System.xml"
+	property-file : ".ANTIVAL_CHK_COID_System.gpd"
+	optimize : false
+	test-language : java
+}

@@ -42,7 +42,7 @@ class StatechartToTestTransformer {
 	
 	def execute(StatechartDefinition statechart, List<Expression> arguments, File containingFile,
 			File testFolder, String basePackageName, String fileName) {
-		val adaptiveContractAnnotation = statechart.annotation as AdaptiveContractAnnotation
+		val adaptiveContractAnnotation = statechart.annotations.findFirst[it instanceof AdaptiveContractAnnotation] as AdaptiveContractAnnotation
 		// Transforming the statechart to UPPAAL
 		val uppaalTransformer = new DefaultCompositionToUppaalTransformer
 		val uppaalResult = uppaalTransformer.transformComponent(statechart.containingPackage, arguments,
@@ -64,8 +64,7 @@ class StatechartToTestTransformer {
 			val tranistionId = transitionAnnotations.get(transition)
 			val uppaalQuery = "E<> " + modelModifier.getTransitionIdVariableName + " == " + tranistionId + " && isStable"
 			val verifier = new UppaalVerifier
-			val result = verifier.verifyQuery(uppaalTraceability, queryParameters,
-				uppaalFile, uppaalQuery, true, false)
+			val result = verifier.verifyQuery(uppaalTraceability, queryParameters, uppaalFile, uppaalQuery)
 			val simpleStateExecutionTrace = result.trace
 			
 			simpleStateExecutionTrace => [

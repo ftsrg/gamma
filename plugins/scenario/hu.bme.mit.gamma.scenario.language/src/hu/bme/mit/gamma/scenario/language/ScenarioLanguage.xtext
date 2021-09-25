@@ -1,0 +1,117 @@
+/********************************************************************************
+ * Copyright (c) 2020-2021 Contributors to the Gamma project
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * SPDX-License-Identifier: EPL-1.0
+ ********************************************************************************/
+grammar hu.bme.mit.gamma.scenario.language.ScenarioLanguage with hu.bme.mit.gamma.expression.language.ExpressionLanguage
+
+import "http://www.eclipse.org/emf/2002/Ecore" as ecore
+import "http://www.mit.bme.hu/gamma/scenario/Model" as ScenarioModel
+import "http://www.mit.bme.hu/gamma/statechart/Model/Interface" as InterfaceModel
+
+ScenarioDeclaration returns ScenarioModel::ScenarioDeclaration:
+	'import' package=[InterfaceModel::Package|STRING]
+	'component' component=[InterfaceModel::Component]
+	(scenarios+=ScenarioDefinition)+;
+
+ScenarioDefinition returns ScenarioModel::ScenarioDefinition:
+	annotation+=Annotations*
+	'scenario' name=ID
+	chart=Chart;
+
+Annotations returns ScenarioModel::Annotation:
+	AllowedWaitAnnotation | PermissiveAnnotation | StrictAnnotation | NegatedWaitAnnotation | NegStrictAnnotation |
+	NegPermissiveAnnotation;
+
+NegStrictAnnotation returns ScenarioModel::NegStrictAnnotation:
+	{ScenarioModel::NegStrictAnnotation} '@StrictNeg';
+
+NegPermissiveAnnotation returns ScenarioModel::NegPermissiveAnnotation:
+	{ScenarioModel::NegPermissiveAnnotation} '@PermissiveNeg';
+
+StrictAnnotation returns ScenarioModel::StrictAnnotation:
+	{ScenarioModel::StrictAnnotation} '@Strict';
+	
+
+NegatedWaitAnnotation returns ScenarioModel::NegatedWaitAnnotation:
+	"@AllowedWaitingForNegated" ((minimum=INTEGER ".." maximum=INTEGER) | maximum=INTEGER);
+
+PermissiveAnnotation returns ScenarioModel::PermissiveAnnotation:
+	{ScenarioModel::PermissiveAnnotation} '@Permissive';
+
+AllowedWaitAnnotation returns ScenarioModel::WaitAnnotation:
+	"@AllowedWaiting" ((minimum=INTEGER ".." maximum=INTEGER) | maximum=INTEGER);
+
+Chart returns ScenarioModel::Chart:
+	'['
+	^fragment=FragmentDefinition
+	']';
+
+FragmentDefinition returns ScenarioModel::InteractionFragment:
+	(interactions+=AbstractInteraction)+;
+
+AbstractInteraction returns ScenarioModel::Interaction:
+	CombinedFragment | AbstractInteractionDefinition;
+
+AbstractInteractionDefinition returns ScenarioModel::InteractionDefinition:
+	ModalInteraction | NegatedModalInteraction | ModalInteractionSet;
+
+CombinedFragment returns ScenarioModel::CombinedFragment:
+	AlternativeCombinedFragmentDefinition | OptionalCombinedFragmentDefinition | UnorderedCombinedFragmentDefinition |
+	ParallelCombinedFragmentDefinition | LoopCombinedFragmentDefinition;
+
+NegatedModalInteraction returns ScenarioModel::NegatedModalInteraction:
+	'negate' modalinteraction=Negateable;
+
+Negateable returns ScenarioModel::InteractionDefinition:
+	ModalInteractionSet | SignalDefinition;
+
+ModalInteraction returns ScenarioModel::ModalInteraction:
+	SignalDefinition | Reset | Delay;
+
+ModalInteractionSet returns ScenarioModel::ModalInteractionSet:
+	{ScenarioModel::ModalInteractionSet}
+	'{'
+	(modalInteractions+=AbstractInteractionDefinition)*
+	'}'; 
+
+SignalDefinition returns ScenarioModel::Signal:
+	modality=ModalityDefinition direction=InteractionDirectionDefinition port=[InterfaceModel::Port] '.'
+	event=[InterfaceModel::Event] ('(' arguments+=Expression (',' arguments+=Expression)* ')')?;
+
+Reset returns ScenarioModel::Reset:
+	{ScenarioModel::Reset} modality=ModalityDefinition 'reset';
+
+Delay returns ScenarioModel::Delay:
+	modality=ModalityDefinition 'delay' '(' minimum=Expression ('..' maximum=Expression)? ')';
+
+AlternativeCombinedFragmentDefinition returns ScenarioModel::AlternativeCombinedFragment:
+	'alternative' '{' fragments+=FragmentDefinition '}' ('or' '{' fragments+=FragmentDefinition '}')+;
+
+OptionalCombinedFragmentDefinition returns ScenarioModel::OptionalCombinedFragment:
+	'optional' '{' fragments+=FragmentDefinition '}';
+
+UnorderedCombinedFragmentDefinition returns ScenarioModel::UnorderedCombinedFragment:
+	'unordered' '{' fragments+=FragmentDefinition '}' ('and' '{' fragments+=FragmentDefinition '}')+;
+
+ParallelCombinedFragmentDefinition returns ScenarioModel::ParallelCombinedFragment:
+	'parallel' '{' fragments+=FragmentDefinition '}' ('and' '{' fragments+=FragmentDefinition '}')+;
+
+LoopCombinedFragmentDefinition returns ScenarioModel::LoopCombinedFragment:
+	'loop' '(' minimum=Expression ('..' maximum=Expression)? ')' '{' fragments+=FragmentDefinition '}';
+
+enum InteractionDirectionDefinition returns ScenarioModel::InteractionDirection:
+	SEND='sends' | RECEIVE='receives';
+
+enum ReceiveDirectionDefinition returns ScenarioModel::InteractionDirection:
+	RECEIVE='receives';
+
+enum ModalityDefinition returns ScenarioModel::ModalityType:
+	COLD='cold' | HOT='hot';
+	
+	

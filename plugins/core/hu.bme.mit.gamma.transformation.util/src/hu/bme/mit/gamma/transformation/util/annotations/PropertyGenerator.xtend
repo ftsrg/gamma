@@ -1,11 +1,13 @@
-/** 
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+/********************************************************************************
+ * Copyright (c) 2018-2021 Contributors to the Gamma project
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
+ *
  * SPDX-License-Identifier: EPL-1.0
- */
+ ********************************************************************************/
 package hu.bme.mit.gamma.transformation.util.annotations
 
 import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition
@@ -36,14 +38,12 @@ import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.statechart.util.ExpressionSerializer
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
-import hu.bme.mit.gamma.transformation.util.annotations.GammaStatechartAnnotator.DefUseReferences
-import hu.bme.mit.gamma.transformation.util.annotations.GammaStatechartAnnotator.InteractionAnnotations
-import hu.bme.mit.gamma.transformation.util.annotations.GammaStatechartAnnotator.TransitionAnnotations
-import hu.bme.mit.gamma.transformation.util.annotations.GammaStatechartAnnotator.TransitionPairAnnotation
 import hu.bme.mit.gamma.util.GammaEcoreUtil
+import hu.bme.mit.gamma.util.JavaUtil
 import java.util.Collection
 import java.util.Collections
 import java.util.List
+import java.util.Map
 import java.util.Set
 import org.eclipse.emf.ecore.EObject
 
@@ -60,7 +60,9 @@ class PropertyGenerator {
 	protected final ExpressionModelFactory expressionFactory = ExpressionModelFactory.eINSTANCE
 	protected final CompositeModelFactory compositeFactory = CompositeModelFactory.eINSTANCE
 	protected final PropertyModelFactory factory = PropertyModelFactory.eINSTANCE
+	
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
+	protected final extension JavaUtil javaUtil = JavaUtil.INSTANCE
 
 	new(boolean isSimpleComponentReference) {
 		this.isSimpleComponentReference = isSimpleComponentReference
@@ -99,7 +101,7 @@ class PropertyGenerator {
 	def List<CommentableStateFormula> createOutEventReachability(Collection<Port> ports) {
 		val List<CommentableStateFormula> formulas = newArrayList
 		for (notNecessarilySimplePort : ports) {
-			for (port : notNecessarilySimplePort.allConnectedSimplePorts) {
+			for (port : notNecessarilySimplePort.allBoundSimplePorts) {
 				val instance = port.containingComponentInstance
 				for (outEvent : StatechartModelDerivedFeatures.getOutputEvents(port)) {
 					val parameters = outEvent.parameterDeclarations
@@ -133,9 +135,7 @@ class PropertyGenerator {
 									val parameterReference = propertyUtil.
 										createParameterReference(createInstanceReference(instance), port, outEvent,
 											parameter)
-									val equalityExpression = expressionFactory.createEqualityExpression
-									equalityExpression.setLeftOperand(parameterReference)
-									equalityExpression.setRightOperand(value)
+									val equalityExpression = parameterReference.createEqualityExpression(value)
 									val and = expressionFactory.createAndExpression
 									and.operands += eventReference
 									and.operands += equalityExpression
@@ -214,11 +214,9 @@ class PropertyGenerator {
 			val secondId = outgoingAnnotation.transitionId
 			
 			// In-out transition pair
-			val firstVariableReference = firstVariable.createVariableReference
-			val secondVariableReference = secondVariable.createVariableReference
 			val and = expressionFactory.createAndExpression => [
-				it.operands += firstVariableReference.createEqualityExpression(firstId.toIntegerLiteral)
-				it.operands += secondVariableReference.createEqualityExpression(secondId.toIntegerLiteral)
+				it.operands += firstVariable.createEqualityExpression(firstId)
+				it.operands += secondVariable.createEqualityExpression(secondId)
 			]
 			val stateFormula = propertyUtil.createEF(propertyUtil.createAtomicFormula(and))
 			// Comment
@@ -231,6 +229,7 @@ class PropertyGenerator {
 
 	def List<CommentableStateFormula> createInteractionReachability(InteractionAnnotations interactionAnnotations) {
 		val List<CommentableStateFormula> formulas = newArrayList
+		val sameIdExpressions = newHashMap
 		if (interactionAnnotations.empty) {
 			return formulas
 		}
@@ -247,20 +246,22 @@ class PropertyGenerator {
 			var receiverComment = "<any>"
 			var Expression finalExpression = null
 			// Sender
-			val senderReference = senderVariable.createVariableReference
-			val senderLiteral = senderId.toIntegerLiteral
-			val senderEqualityExpression = senderReference.createEqualityExpression(senderLiteral)
+			val senderEqualityExpression = senderVariable.createEqualityExpression(senderId)
 			finalExpression = senderEqualityExpression
 			// Receiver
 			if (variablePair.hasSecond) {
-				val receiverReference = receiverVariable.createVariableReference
-				val receiverLiteral = receiverId.toIntegerLiteral
-				val receiverEqualityExpression = receiverReference.createEqualityExpression(receiverLiteral)
+				val receiverEqualityExpression = receiverVariable.createEqualityExpression(receiverId)
 				finalExpression = expressionFactory.createAndExpression => [
 					it.operands += senderEqualityExpression
 					it.operands += receiverEqualityExpression
 				]
 				receiverComment = receiver.id
+			}
+			else {
+				// Saving the expression to the id: in this case same identifiers have to be handled together
+				// Needed when: RECEIVER_CONSIDERATION is false and there are complex triggers 
+				val sameIdList = sameIdExpressions.getOrCreateList(senderId)
+				sameIdList += finalExpression
 			}
 			//
 			val stateFormula = propertyUtil.createEF(propertyUtil.createAtomicFormula(finalExpression))
@@ -269,71 +270,57 @@ class PropertyGenerator {
 				createCommentableStateFormula('''«senderComment» -i- «receiverComment»''', stateFormula)
 			formulas += commentableStateFormula
 		}
+		
+		// Post-processing same id expressions if necessary
+		for (id : sameIdExpressions.keySet) {
+			val expressions = sameIdExpressions.get(id)
+			val expression = expressions.get(0)
+			for (var i = 1; i < expressions.size; i++) {
+				val duplicatedExpression = expressions.get(i)
+				
+				val containerFormula = duplicatedExpression.getContainerOfType(CommentableStateFormula)
+				formulas -= containerFormula // Removing the formula form the list
+				
+				expression.replaceAndWrapIntoMultiaryExpression(duplicatedExpression, expressionFactory.createAndExpression)
+			}
+		}
+		
 		return formulas
 	}
 	
-	def List<CommentableStateFormula> createDataflowReachability(DefUseReferences defs,
-			DefUseReferences uses, DataflowCoverageCriterion criterion) {
+	def List<CommentableStateFormula> createDataflowReachability(
+			Map<DefReferenceId, Set<UseVariable>> defUses, DataflowCoverageCriterion criterion) {
 		val List<CommentableStateFormula> formulas = newArrayList
-		if (defs.variables.nullOrEmpty || uses.variables.nullOrEmpty) {
+		if (defUses.empty) {
 			return formulas
 		}
-		for (variable : defs.variables) {
-			// Def
-			val defExpressions = newArrayList
-			val auxiliaryDefReferences = defs.getAuxiliaryReferences(variable)
-			val size = auxiliaryDefReferences.size
-			for (var i = 0; i < size; i++) {
-				val ponatedReference = auxiliaryDefReferences.get(i)
-				val auxiliaryVariable = ponatedReference.defUseVariable
-				val defExpression = expressionFactory.createAndExpression => [
-					it.operands += auxiliaryVariable.createVariableReference
-				]
-				// Not necessary to negate the other defs as the annotated assignments ensure that only one is true
-				// Def-comment
-				val originalReference = ponatedReference.originalVariableReference
-				val defComment = originalReference.id
-				defExpressions += new Pair(defExpression, defComment)
-				//
-			}
-			// Use
-			for (defExpression : defExpressions) {
-				val and = defExpression.key
-				val defComment = defExpression.value
-				val auxiliaryUseReferences = uses.getAuxiliaryReferences(variable)
-				if (criterion == DataflowCoverageCriterion.ALL_DEF) {
-					if (auxiliaryUseReferences.size > 1) {
-						val or = expressionFactory.createOrExpression
-						for (auxiliaryUseReference : auxiliaryUseReferences) {
-							val auxiliaryUseVariable = auxiliaryUseReference.defUseVariable
-							or.operands += auxiliaryUseVariable.createVariableReference
-						}
-						and.operands += or
-					}
-					else {
-						val auxiliaryUseReference = auxiliaryUseReferences.head
-						val auxiliaryUseVariable = auxiliaryUseReference.defUseVariable
-						and.operands += auxiliaryUseVariable.createVariableReference
-					}
-					
-					val originalUseReferences = auxiliaryUseReferences.map[it.originalVariableReference]
-							.filter(Expression).toSet // Uses are almost DirectReferenceExpressions
-					val useComment = originalUseReferences.ids
-					val stateFormula = propertyUtil.createEF(propertyUtil.createAtomicFormula(and))
-					formulas += propertyUtil.createCommentableStateFormula(
-							'''«defComment» -d-u- «useComment»''', stateFormula)
+		for (id : defUses.keySet) {
+			val defId = id.defId
+			val defReference = id.defReference
+			val defComment = defReference.id
+			val uses = defUses.get(id)
+			if (criterion == DataflowCoverageCriterion.ALL_DEF) {
+				val expressions = <Expression>newArrayList
+				val useReferences = newArrayList
+				for (use : uses) {
+					val useVariable = use.useVariable
+					expressions += useVariable.createEqualityExpression(defId)
+					useReferences += use.useReference
 				}
-				else {
-					for (auxiliaryUseReference : auxiliaryUseReferences) {
-						val auxiliaryUseVariable = auxiliaryUseReference.defUseVariable
-						val clonedAnd = and.clone
-						clonedAnd.operands += auxiliaryUseVariable.createVariableReference
-						
-						val useComment = auxiliaryUseReference.originalVariableReference.id
-						val stateFormula = propertyUtil.createEF(propertyUtil.createAtomicFormula(clonedAnd))
-						formulas += propertyUtil.createCommentableStateFormula(
+				val orExpression = expressions.wrapIntoMultiaryExpression(expressionFactory.createOrExpression)
+				val useComment = useReferences.ids
+				val stateFormula = propertyUtil.createEF(propertyUtil.createAtomicFormula(orExpression))
+				formulas += propertyUtil.createCommentableStateFormula(
 								'''«defComment» -d-u- «useComment»''', stateFormula)
-					}
+			}
+			else {
+				for (use : uses) {
+					val useVariable = use.useVariable
+					val useComment = use.useReference.id
+					val idEquality = useVariable.createEqualityExpression(defId)
+					val stateFormula = propertyUtil.createEF(propertyUtil.createAtomicFormula(idEquality))
+					formulas += propertyUtil.createCommentableStateFormula(
+									'''«defComment» -d-u- «useComment»''', stateFormula)
 				}
 			}
 		}
@@ -341,27 +328,28 @@ class PropertyGenerator {
 	}
 	
 	def List<CommentableStateFormula> createInteractionDataflowReachability(
-			List<Pair<DefUseReferences, DefUseReferences>> interactionDefUses, DataflowCoverageCriterion criterion) {
-		val stateFormulas = newArrayList
-		for (interactionDefUse : interactionDefUses) {
-			val defs = interactionDefUse.key
-			val uses = interactionDefUse.value
-			stateFormulas += defs.createDataflowReachability(uses, criterion)
-		}
-		return stateFormulas
+			Map<DefReferenceId, Set<UseVariable>> defUses, DataflowCoverageCriterion criterion) {
+		return defUses.createDataflowReachability(criterion)
 	}
+	
+	def protected createEqualityExpression(VariableDeclaration variable, Long id) {
+		val reference = variable.createVariableReference
+		val literal = id.toIntegerLiteral
+		return reference.createEqualityExpression(literal)
+	}
+	
 	
 	def protected ComponentInstanceReference createInstanceReference(ComponentInstance instance) {
 		if (isSimpleComponentReference) {
-			val reference = compositeFactory.createComponentInstanceReference
-			reference.componentInstanceHierarchy += instance
-			return reference
-		} else {
 			return statechartUtil.createInstanceReference(instance)
+		}
+		else {
+			return statechartUtil.createInstanceReferenceChain(instance)
 		}
 	}
 
 	// Comments
+	
 	def protected String getInstanceId(EObject object) {
 		val statechart = StatechartModelDerivedFeatures.getContainingStatechart(object)
 		try {

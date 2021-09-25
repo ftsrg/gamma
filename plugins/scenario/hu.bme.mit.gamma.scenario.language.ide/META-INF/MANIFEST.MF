@@ -1,0 +1,19 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Gamma Scenario Language IDE
+Bundle-Vendor: BME-FTSRG
+Bundle-Version: 2.5.1.qualifier
+Bundle-SymbolicName: hu.bme.mit.gamma.scenario.language.ide; singleton:=true
+Bundle-ActivationPolicy: lazy
+Require-Bundle: org.eclipse.xtext.ide,
+ org.eclipse.xtext.xbase.ide,
+ org.antlr.runtime;bundle-version="[3.2.0,3.2.1)",
+ hu.bme.mit.gamma.expression.language,
+ hu.bme.mit.gamma.scenario.model,
+ hu.bme.mit.gamma.scenario.language
+Bundle-RequiredExecutionEnvironment: JavaSE-11
+Export-Package: hu.bme.mit.gamma.scenario.language.ide.contentassist.antlr.internal,
+ hu.bme.mit.gamma.scenario.language.ide.contentassist.antlr,
+ hu.bme.mit.gamma.scenario.language.ide.contentassist.antlr.internal,
+ hu.bme.mit.gamma.scenario.language.ide.contentassist.antlr
+Automatic-Module-Name: hu.bme.mit.gamma.scenario.language.ide

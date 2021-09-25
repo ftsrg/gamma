@@ -150,8 +150,10 @@
   <eClassifiers xsi:type="ecore:EClass" name="FalseExpression" eSuperTypes="#//BooleanLiteralExpression"/>
   <eClassifiers xsi:type="ecore:EClass" name="ArrayLiteralExpression" eSuperTypes="#//LiteralExpression #//EnumerableExpression #//MultiaryExpression"/>
   <eClassifiers xsi:type="ecore:EClass" name="IntegerRangeLiteralExpression" eSuperTypes="#//LiteralExpression #//EnumerableExpression #//BinaryExpression">
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="leftInclusive" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="rightInclusive" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="leftInclusive" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"
+        defaultValueLiteral="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="rightInclusive" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"
+        defaultValueLiteral="false"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="RecordLiteralExpression" eSuperTypes="#//LiteralExpression">
     <eStructuralFeatures xsi:type="ecore:EReference" name="typeDeclaration" eType="#//TypeDeclaration"/>
@@ -159,6 +161,8 @@
         eType="#//FieldAssignment" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="EnumerationLiteralExpression" eSuperTypes="#//NullaryExpression #//LiteralExpression">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="typeReference" lowerBound="1"
+        eType="#//TypeReference" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="reference" lowerBound="1"
         eType="#//EnumerationLiteralDefinition"/>
   </eClassifiers>
@@ -229,6 +233,12 @@
   <eClassifiers xsi:type="ecore:EClass" name="VariableDeclarationAnnotation" abstract="true"/>
   <eClassifiers xsi:type="ecore:EClass" name="TransientVariableDeclarationAnnotation"
       eSuperTypes="#//VariableDeclarationAnnotation"/>
-  <eClassifiers xsi:type="ecore:EClass" name="ResetableVariableDeclarationAnnotation"
+  <eClassifiers xsi:type="ecore:EClass" name="ResettableVariableDeclarationAnnotation"
+      eSuperTypes="#//VariableDeclarationAnnotation"/>
+  <eClassifiers xsi:type="ecore:EClass" name="FinalVariableDeclarationAnnotation"
+      eSuperTypes="#//VariableDeclarationAnnotation"/>
+  <eClassifiers xsi:type="ecore:EClass" name="EnvironmentResettableVariableDeclarationAnnotation"
+      eSuperTypes="#//VariableDeclarationAnnotation"/>
+  <eClassifiers xsi:type="ecore:EClass" name="ClockVariableDeclarationAnnotation"
       eSuperTypes="#//VariableDeclarationAnnotation"/>
 </ecore:EPackage>

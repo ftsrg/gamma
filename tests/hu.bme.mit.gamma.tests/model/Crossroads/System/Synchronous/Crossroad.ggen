@@ -15,11 +15,30 @@ analysis {
 	}
 }
 
+analysis {
+	component : Crossroad
+	language : XSTS-UPPAAL
+	file : "Crossroad-XSTS"
+	interaction-coverage
+	constraint : {
+		minimum-orchestrating-period : 499 ms
+		maximum-orchestrating-period : 499 ms
+	}
+}
+
 verification {
 	language : UPPAAL
 	file : "Crossroad.xml"
 	query-file : "Crossroad.q"
 	query-file : "CustomQueries.q"
+	optimize : true
+	test-language : java
+}
+
+verification {
+	language : XSTS-UPPAAL
+	file : "Crossroad-XSTS.xml"
+	property-file : ".Crossroad-XSTS.gpd" // Checking test optimization
 	optimize : true
 	test-language : java
 }

@@ -10,8 +10,6 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.uppaal.composition.transformation
 
-import hu.bme.mit.gamma.expression.model.ResetableVariableDeclarationAnnotation
-import hu.bme.mit.gamma.expression.model.TransientVariableDeclarationAnnotation
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.CascadeCompositeComponent
@@ -76,6 +74,7 @@ import uppaal.types.TypesPackage
 
 import static com.google.common.base.Preconditions.checkState
 
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class OrchestratorCreator {
@@ -323,10 +322,8 @@ class OrchestratorCreator {
 		// Optimization
 		val statecharts = compositeComponent.allSimpleInstances.map[it.type].filter(StatechartDefinition)
 		val variables = statecharts.map[it.variableDeclarations].flatten.toSet
-		val resetableVariables = variables.filter[
-			!it.annotations.filter(ResetableVariableDeclarationAnnotation).empty].toList
-		val transientVariables = variables.filter[
-			!it.annotations.filter(TransientVariableDeclarationAnnotation).empty].toList
+		val resetableVariables = variables.filter[it.resettable].toList
+		val transientVariables = variables.filter[it.transient].toList
 		// Reset transition id variable to reduce state space
 		firstEdge.resetVariables(resetableVariables)
 		lastEdge.resetVariables(transientVariables)
@@ -429,7 +426,7 @@ class OrchestratorCreator {
 		if (component.executionList.empty) {
 			return component.components
 		}
-		return component.executionList
+		return component.executionList.map[it.componentInstance].filter(SynchronousComponentInstance)
 	}
 	
 	/**

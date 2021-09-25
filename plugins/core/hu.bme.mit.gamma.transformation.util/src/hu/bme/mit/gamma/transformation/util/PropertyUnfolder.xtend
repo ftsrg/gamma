@@ -1,3 +1,13 @@
+/********************************************************************************
+ * Copyright (c) 2018-2021 Contributors to the Gamma project
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * SPDX-License-Identifier: EPL-1.0
+ ********************************************************************************/
 package hu.bme.mit.gamma.transformation.util
 
 import hu.bme.mit.gamma.property.model.ComponentInstanceEventParameterReference
@@ -8,10 +18,10 @@ import hu.bme.mit.gamma.property.model.ComponentInstanceStateExpression
 import hu.bme.mit.gamma.property.model.ComponentInstanceTransitionReference
 import hu.bme.mit.gamma.property.model.ComponentInstanceVariableReference
 import hu.bme.mit.gamma.property.model.PropertyPackage
-import hu.bme.mit.gamma.statechart.composite.ComponentInstance
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference
 import hu.bme.mit.gamma.statechart.composite.CompositeModelFactory
 import hu.bme.mit.gamma.statechart.interface_.Component
+import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import org.eclipse.emf.ecore.EObject
 
@@ -22,10 +32,10 @@ class PropertyUnfolder {
 	protected final PropertyPackage propertyPackage
 	protected final Component newTopComponent
 	
-	protected final extension ComponentInstanceReferenceMapper componentInstanceReferenceMapper =
-			ComponentInstanceReferenceMapper.INSTANCE
 	protected final extension CompositeModelFactory compositeFactory =
 			CompositeModelFactory.eINSTANCE
+	protected final extension SimpleInstanceHandler instanceHandler = SimpleInstanceHandler.INSTANCE
+	protected final extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	
 	new(PropertyPackage propertyPackage, Component newTopComponent) {
@@ -53,84 +63,84 @@ class PropertyUnfolder {
 	}
 	
 	def dispatch EObject unfold(ComponentInstanceStateConfigurationReference reference) {
-		val instance = reference.instance
-		val newInstance = instance.newSimpleInstance
+		val oldInstance = reference.instance
+		val newInstance = oldInstance.newSimpleInstance
+		val newInstanceReference = newInstance.createInstanceReference
 		val region = reference.region
-		val newRegion = instance.getNewObject(region, newTopComponent)
+		val newRegion = newInstance.getNewRegion(region)
 		val state = reference.state
-		val newState = instance.getNewObject(state, newTopComponent)
+		val newState = newInstance.getNewState(state)
 		return reference.clone	=> [
-			it.instance = newInstance
+			it.instance = newInstanceReference
 			it.region = newRegion
 			it.state = newState
 		]
 	}
 	
 	def dispatch EObject unfold(ComponentInstanceVariableReference reference) {
-		val instance = reference.instance
-		val newInstance = instance.newSimpleInstance
+		val oldInstance = reference.instance
+		val newInstance = oldInstance.newSimpleInstance
+		val newInstanceReference = newInstance.createInstanceReference
 		val variable = reference.variable
-		val newVariable = instance.getNewObject(variable, newTopComponent)
+		val newVariable = newInstance.getNewVariable(variable)
 		return reference.clone	=> [
-			it.instance = newInstance
+			it.instance = newInstanceReference
 			it.variable = newVariable
 		]
 	}
 	
 	def dispatch EObject unfold(ComponentInstanceEventReference reference) {
-		val instance = reference.instance
-		val newInstance = instance.newSimpleInstance
+		val oldInstance = reference.instance
+		val newInstance = oldInstance.newSimpleInstance
+		val newInstanceReference = newInstance.createInstanceReference
 		val port = reference.port
-		val newPort = instance.getNewObject(port, newTopComponent)
+		val newPort = newInstance.getNewPort(port)
 		return reference.clone	=> [
-			it.instance = newInstance
+			it.instance = newInstanceReference
 			it.port = newPort
 			// Event is the same
 		]
 	}
 	
 	def dispatch EObject unfold(ComponentInstanceEventParameterReference reference) {
-		val instance = reference.instance
-		val newInstance = instance.newSimpleInstance
+		val oldInstance = reference.instance
+		val newInstance = oldInstance.newSimpleInstance
+		val newInstanceReference = newInstance.createInstanceReference
 		val port = reference.port
-		val newPort = instance.getNewObject(port, newTopComponent)
+		val newPort = newInstance.getNewPort(port)
 		return reference.clone	=> [
-			it.instance = newInstance
+			it.instance = newInstanceReference
 			it.port = newPort
 			// Event and parameter are the same
 		]
 	}
 	
 	def dispatch EObject unfold(ComponentInstancePortReference reference) {
-		val instance = reference.instance
-		val newInstance = instance.newSimpleInstance
+		val oldInstance = reference.instance
+		val newInstance = oldInstance.newSimpleInstance
+		val newInstanceReference = newInstance.createInstanceReference
 		val port = reference.port
-		val newPort = instance.getNewObject(port, newTopComponent)
+		val newPort = newInstance.getNewPort(port)
 		return reference.clone	=> [
-			it.instance = newInstance
+			it.instance = newInstanceReference
 			it.port = newPort
 		]
 	}
 	
 	def dispatch EObject unfold(ComponentInstanceTransitionReference reference) {
-		val instance = reference.instance
-		val newInstance = instance.newSimpleInstance
+		val oldInstance = reference.instance
+		val newInstance = oldInstance.newSimpleInstance
+		val newInstanceReference = newInstance.createInstanceReference
 		val transitionId = reference.transition
-		val newTransitionId = instance.getNewObject(transitionId, newTopComponent)
+		val newTransitionId = newInstance.getNewTransitionId(transitionId)
 		return reference.clone	=> [
-			it.instance = newInstance
+			it.instance = newInstanceReference
 			it.transition = newTransitionId
 		]
 	}
 	
 	protected def getNewSimpleInstance(ComponentInstanceReference instance) {
-		return instance.checkAndGetNewSimpleInstance(newTopComponent).createInstanceReference
-	}
-	
-	protected def ComponentInstanceReference createInstanceReference(ComponentInstance instance) {
-		return createComponentInstanceReference => [
-			it.componentInstanceHierarchy += instance
-		]
+		return instance.checkAndGetNewSimpleInstance(newTopComponent)
 	}
 	
 }

@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Gamma Composite System Transformer to UPPAAL
 Bundle-SymbolicName: hu.bme.mit.gamma.uppaal.composition.transformation;singleton:=true
-Bundle-Version: 2.5.0.qualifier
+Bundle-Version: 2.5.1.qualifier
 Bundle-Vendor: BME-FTSRG
 Export-Package: hu.bme.mit.gamma.uppaal.composition.transformation,
  hu.bme.mit.gamma.uppaal.composition.transformation.api,

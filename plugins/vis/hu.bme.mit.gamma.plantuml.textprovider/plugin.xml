@@ -2,13 +2,11 @@
 <?eclipse version="3.4"?>
 <plugin>
    <extension
-         point="net.sourceforge.plantuml.eclipse.diagramTextProvider">
-
-      <diagramTextProvider
-	    id="hu.bme.mit.gamma.statechart.plantuml.commandhandler.StatechartModelTextProvider"
-	    providerClass="hu.bme.mit.gamma.plantuml.commandhandler.TextProvider"
-      	label="Gamma statechart model visualizer"
-	    >
-      </diagramTextProvider>
+         point="net.sourceforge.plantuml.eclipse.diagramIntentProvider">
+      <diagramIntentProvider
+            id="hu.bme.mit.gamma.statechart.plantuml.commandhandler.StatechartModelTextProvider"
+            label="Gamma statechart model visualizer"
+            providerClass="hu.bme.mit.gamma.plantuml.commandhandler.TextProvider">
+      </diagramIntentProvider>
    </extension>
 </plugin>

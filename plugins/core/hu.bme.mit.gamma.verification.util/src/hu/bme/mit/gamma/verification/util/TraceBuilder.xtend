@@ -311,21 +311,14 @@ class TraceBuilder {
 	 */
 	private def Expression createLiteral(Type paramType, Integer value) {
 		val literal = switch (paramType) {
-			IntegerTypeDefinition: createIntegerLiteralExpression => [
-				it.value = BigInteger.valueOf(value)
-			]
-			BooleanTypeDefinition: {
-				if (value == 0) {
-					createFalseExpression
-				}
-				else {
-					createTrueExpression
-				}
+			IntegerTypeDefinition: value.toIntegerLiteral
+			BooleanTypeDefinition: (value == 0) ?
+					createFalseExpression : createTrueExpression
+			EnumerationTypeDefinition: {
+				val literals = paramType.literals
+				val enum = literals.get(value)
+				enum.createEnumerationLiteralExpression
 			}
-			EnumerationTypeDefinition:
-				return createEnumerationLiteralExpression => [
-					it.reference = paramType.literals.get(value)
-				]
 			default: 
 				throw new IllegalArgumentException("Not known type definition: " + paramType)
 		}

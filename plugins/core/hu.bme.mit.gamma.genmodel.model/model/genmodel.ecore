@@ -37,12 +37,20 @@
         upperBound="-1" eType="#//Scheduler"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="coverages" upperBound="-1"
         eType="#//Coverage" containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="minimalElementSet" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="optimize" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"
+        defaultValueLiteral="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="constraint" eType="#//Constraint"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="model" lowerBound="1" eType="#//ModelReference"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="propertyPackage" eType="ecore:EClass ../../hu.bme.mit.gamma.property.model/model/property.ecore#//PropertyPackage"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="initialState" eType="ecore:EClass ../../hu.bme.mit.gamma.property.model/model/property.ecore#//PropertyPackage"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="initialStateSetting" eType="#//InitialStateSetting"
+        defaultValueLiteral="EXECUTE_ENTRY_ACTIONS"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EEnum" name="InitialStateSetting">
+    <eLiterals name="EXECUTE_ENTRY_ACTIONS" literal="EXECUTE_ENTRY_ACTIONS"/>
+    <eLiterals name="SKIP_ENTRY_ACTIONS" value="1"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="InterfaceMapping">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="realizationMode" lowerBound="1"
@@ -143,40 +151,54 @@
       eSuperTypes="#//Task">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="packageName" upperBound="-1"
         eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="language" lowerBound="1"
-        upperBound="-1" eType="#//ProgrammingLanguage"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="programmingLanguages" upperBound="-1"
+        eType="#//ProgrammingLanguage"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="AdaptiveContractTestGeneration" eSuperTypes="#//AbstractCodeGeneration ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ArgumentedElement">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="statechartContract" lowerBound="1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//StatechartDefinition"/>
+  <eClassifiers xsi:type="ecore:EClass" name="AbstractComplementaryTestGeneration"
+      abstract="true" eSuperTypes="#//AbstractCodeGeneration">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="testFolder" upperBound="-1"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="AdaptiveContractTestGeneration" eSuperTypes="#//AbstractComplementaryTestGeneration">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="modelTransformation" lowerBound="1"
+        eType="#//AnalysisModelTransformation" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="PhaseStatechartGeneration" eSuperTypes="#//Task ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ArgumentedElement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="statechart" lowerBound="1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//StatechartDefinition"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="Verification" eSuperTypes="#//AbstractCodeGeneration">
+  <eClassifiers xsi:type="ecore:EClass" name="Verification" eSuperTypes="#//AbstractComplementaryTestGeneration">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="svgFileName" upperBound="-1"
         eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="languages" lowerBound="1"
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="analysisLanguages" lowerBound="1"
         upperBound="-1" eType="#//AnalysisLanguage"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="queryFiles" upperBound="-1"
         eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="propertyPackages" upperBound="-1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.property.model/model/property.ecore#//PropertyPackage"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="testFolder" upperBound="-1"
-        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="optimize" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="TestReplayModelGeneration" eSuperTypes="#//Task">
+  <eClassifiers xsi:type="ecore:EClass" name="TraceReplayModelGeneration" eSuperTypes="#//Task">
     <eStructuralFeatures xsi:type="ecore:EReference" name="executionTrace" lowerBound="1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.trace.model/model/trace.ecore#//ExecutionTrace"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="environmentModelFileName"
+        upperBound="-1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="environmentModel" lowerBound="1"
+        eType="#//EnvironmentModel"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="considerOutEvents" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"
+        defaultValueLiteral="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EEnum" name="EnvironmentModel">
+    <eLiterals name="OFF" literal="OFF"/>
+    <eLiterals name="SYNCHRONOUS" value="1" literal="SYNCHRONOUS"/>
+    <eLiterals name="ASYNCHRONOUS" value="2" literal="ASYNCHRONOUS"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ModelReference" abstract="true" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ArgumentedElement"/>
   <eClassifiers xsi:type="ecore:EClass" name="ComponentReference" eSuperTypes="#//ModelReference">
     <eStructuralFeatures xsi:type="ecore:EReference" name="component" lowerBound="1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/interface.ecore#//Component"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="XSTSReference" eSuperTypes="#//ModelReference">
+  <eClassifiers xsi:type="ecore:EClass" name="XstsReference" eSuperTypes="#//ModelReference">
     <eStructuralFeatures xsi:type="ecore:EReference" name="xSts" lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.xsts.model/model/model.ecore#//XSTS"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Slicing" eSuperTypes="#//Task">
@@ -210,5 +232,18 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ActivityReference" eSuperTypes="#//ModelReference">
     <eStructuralFeatures xsi:type="ecore:EReference" name="activity" eType="ecore:EClass ../../hu.bme.mit.gamma.activity.model/model/activity.ecore#//NamedActivityDeclaration"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="InteractionDataflowCoverage" eSuperTypes="#//EventCoverage">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="interactionDataflowCoverageCriterion"
+        eType="#//DataflowCoverageCriterion" defaultValueLiteral="ALL_USE"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="StatechartContractTestGeneration" eSuperTypes="#//Task">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="componentReference" eType="#//ComponentReference"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="constraint" eType="#//OrchestratingConstraint"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="StatechartContractGeneration" eSuperTypes="#//Task">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="scenario" eType="ecore:EClass ../../hu.bme.mit.gamma.scenario.model/model/scenario.ecore#//ScenarioDefinition"/>
   </eClassifiers>
 </ecore:EPackage>

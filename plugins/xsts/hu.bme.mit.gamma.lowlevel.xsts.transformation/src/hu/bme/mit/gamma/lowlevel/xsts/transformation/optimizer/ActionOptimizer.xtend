@@ -10,9 +10,15 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer
 
+import hu.bme.mit.gamma.expression.model.AndExpression
+import hu.bme.mit.gamma.expression.model.BooleanExpression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
+import hu.bme.mit.gamma.expression.model.FalseExpression
+import hu.bme.mit.gamma.expression.model.OrExpression
+import hu.bme.mit.gamma.expression.model.TrueExpression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.util.GammaEcoreUtil
+import hu.bme.mit.gamma.xsts.model.AbstractAssignmentAction
 import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.AssumeAction
@@ -83,6 +89,7 @@ class ActionOptimizer {
 			newXStsAction = newXStsAction.optimizeParallelActions // Might be resource intensive
 			newXStsAction.deleteUnnecessaryAssumeActions // Not correct in other transformation implementations
 			newXStsAction.deleteDefinitelyFalseBranches
+			newXStsAction.optimizeExpressions // Could be extracted to the expression metamodel?
 		}
 		return newXStsAction
 	}
@@ -503,15 +510,15 @@ class ActionOptimizer {
 	
 	protected def dispatch void optimizeAssignmentActions(SequentialAction action) {
 		val xStsActions = action.actions
-		val removeableXStsActions = <AssignmentAction>newLinkedList
+		val removeableXStsActions = <AbstractAssignmentAction>newLinkedList
 		for (var i = 0; i < xStsActions.size; i++) {
 			val xStsFirstAction = xStsActions.get(i)
-			if (xStsFirstAction instanceof AssignmentAction) {
+			if (xStsFirstAction instanceof AbstractAssignmentAction) {
 				val lhs = xStsFirstAction.lhs
 				var foundAssignmentToTheSameVariable = false
 				for (var j = i + 1; j < xStsActions.size && !foundAssignmentToTheSameVariable; j++) {
 					val xStsSecondAction = xStsActions.get(j)
-					if (xStsSecondAction instanceof AssignmentAction) {
+					if (xStsSecondAction instanceof AbstractAssignmentAction) {
 						if (xStsSecondAction.lhs.helperEquals(lhs)) {
 							foundAssignmentToTheSameVariable = true
 							var isVariableRead = false
@@ -651,6 +658,28 @@ class ActionOptimizer {
 				}
 				else {
 					branch.deleteDefinitelyFalseBranches
+				}
+			}
+		}
+	}
+	
+	//
+	
+	protected def void optimizeExpressions(Action action) {
+		val booleanExpressions = action.getAllContentsOfType(BooleanExpression)
+		for (booleanExpression : booleanExpressions) {
+			if (booleanExpression.definitelyFalseExpression) {
+				expressionFactory.createFalseExpression.replace(booleanExpression)
+			}
+			else if (booleanExpression.definitelyTrueExpression) {
+				expressionFactory.createTrueExpression.replace(booleanExpression)
+			}
+			else {
+				if (booleanExpression instanceof OrExpression) {
+					booleanExpression.operands.removeIf[it instanceof FalseExpression]
+				}
+				else if (booleanExpression instanceof AndExpression) {
+					booleanExpression.operands.removeIf[it instanceof TrueExpression]
 				}
 			}
 		}

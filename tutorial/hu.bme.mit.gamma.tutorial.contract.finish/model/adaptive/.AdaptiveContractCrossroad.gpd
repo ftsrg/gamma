@@ -1,0 +1,8 @@
+import "/hu.bme.mit.gamma.tutorial.contract.finish/model/adaptive/.AdaptiveContractCrossroad.gsm"
+component AdaptiveContractStatechart
+@ ("AdaptiveContractStatechart.main.Normal")
+E F [ { state AdaptiveContractStatechart.main.Normal } ]
+@ ("AdaptiveContractStatechart.main.Init")
+E F [ { state AdaptiveContractStatechart.main.Init } ]
+@ ("AdaptiveContractStatechart.main.Blinking")
+E F [ { state AdaptiveContractStatechart.main.Blinking } ]

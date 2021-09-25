@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<genmodel:GenModel xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore"
+    xmlns:genmodel="http://www.eclipse.org/emf/2002/GenModel" modelDirectory="/hu.bme.mit.gamma.scenario.model/src-gen" modelPluginID="hu.bme.mit.gamma.scenario.model"
+    modelName="Scenario" rootExtendsClass="org.eclipse.emf.ecore.impl.MinimalEObjectImpl$Container"
+    importerID="org.eclipse.emf.importer.ecore" complianceLevel="8.0" copyrightFields="false"
+    language="" usedGenPackages="../../hu.bme.mit.gamma.expression.model/model/expression.genmodel#//model ../../hu.bme.mit.gamma.statechart.model/model/statechart.genmodel#//interface"
+    operationReflection="true" importOrganizing="true">
+  <foreignModel>scenario.ecore</foreignModel>
+  <genPackages prefix="ScenarioModel" basePackage="hu.bme.mit.gamma.scenario" disposableProviderFactory="true"
+      fileExtensions="gsc" ecorePackage="scenario.ecore#/">
+    <genEnums typeSafeEnumCompatible="false" ecoreEnum="scenario.ecore#//ModalityType">
+      <genEnumLiterals ecoreEnumLiteral="scenario.ecore#//ModalityType/COLD"/>
+      <genEnumLiterals ecoreEnumLiteral="scenario.ecore#//ModalityType/HOT"/>
+    </genEnums>
+    <genEnums typeSafeEnumCompatible="false" ecoreEnum="scenario.ecore#//InteractionDirection">
+      <genEnumLiterals ecoreEnumLiteral="scenario.ecore#//InteractionDirection/RECEIVE"/>
+      <genEnumLiterals ecoreEnumLiteral="scenario.ecore#//InteractionDirection/SEND"/>
+    </genEnums>
+    <genClasses ecoreClass="scenario.ecore#//ScenarioDeclaration">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference scenario.ecore#//ScenarioDeclaration/package"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference scenario.ecore#//ScenarioDeclaration/scenarios"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference scenario.ecore#//ScenarioDeclaration/component"/>
+    </genClasses>
+    <genClasses ecoreClass="scenario.ecore#//ScenarioDefinition">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference scenario.ecore#//ScenarioDefinition/chart"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference scenario.ecore#//ScenarioDefinition/annotation"/>
+    </genClasses>
+    <genClasses image="false" ecoreClass="scenario.ecore#//Chart">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference scenario.ecore#//Chart/fragment"/>
+    </genClasses>
+    <genClasses image="false" ecoreClass="scenario.ecore#//Interaction"/>
+    <genClasses ecoreClass="scenario.ecore#//InteractionFragment">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference scenario.ecore#//InteractionFragment/interactions"/>
+    </genClasses>
+    <genClasses image="false" ecoreClass="scenario.ecore#//CombinedFragment">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference scenario.ecore#//CombinedFragment/fragments"/>
+    </genClasses>
+    <genClasses ecoreClass="scenario.ecore#//AlternativeCombinedFragment"/>
+    <genClasses ecoreClass="scenario.ecore#//UnorderedCombinedFragment"/>
+    <genClasses ecoreClass="scenario.ecore#//ParallelCombinedFragment"/>
+    <genClasses ecoreClass="scenario.ecore#//ModalInteraction">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute scenario.ecore#//ModalInteraction/modality"/>
+    </genClasses>
+    <genClasses ecoreClass="scenario.ecore#//Reset"/>
+    <genClasses ecoreClass="scenario.ecore#//Signal">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference scenario.ecore#//Signal/port"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference scenario.ecore#//Signal/event"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute scenario.ecore#//Signal/direction"/>
+    </genClasses>
+    <genClasses ecoreClass="scenario.ecore#//ModalInteractionSet">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference scenario.ecore#//ModalInteractionSet/modalInteractions"/>
+    </genClasses>
+    <genClasses ecoreClass="scenario.ecore#//LoopCombinedFragment">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference scenario.ecore#//LoopCombinedFragment/minimum"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference scenario.ecore#//LoopCombinedFragment/maximum"/>
+    </genClasses>
+    <genClasses ecoreClass="scenario.ecore#//OptionalCombinedFragment"/>
+    <genClasses ecoreClass="scenario.ecore#//Delay">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference scenario.ecore#//Delay/minimum"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference scenario.ecore#//Delay/maximum"/>
+    </genClasses>
+    <genClasses ecoreClass="scenario.ecore#//NegatedModalInteraction">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference scenario.ecore#//NegatedModalInteraction/modalinteraction"/>
+    </genClasses>
+    <genClasses ecoreClass="scenario.ecore#//Annotation"/>
+    <genClasses ecoreClass="scenario.ecore#//WaitAnnotation">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute scenario.ecore#//WaitAnnotation/minimum"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute scenario.ecore#//WaitAnnotation/maximum"/>
+    </genClasses>
+    <genClasses ecoreClass="scenario.ecore#//InteractionDefinition"/>
+    <genClasses ecoreClass="scenario.ecore#//StrictAnnotation"/>
+    <genClasses ecoreClass="scenario.ecore#//PermissiveAnnotation"/>
+    <genClasses ecoreClass="scenario.ecore#//NegatedWaitAnnotation">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute scenario.ecore#//NegatedWaitAnnotation/minimum"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute scenario.ecore#//NegatedWaitAnnotation/maximum"/>
+    </genClasses>
+    <genClasses ecoreClass="scenario.ecore#//NegStrictAnnotation"/>
+    <genClasses ecoreClass="scenario.ecore#//NegPermissiveAnnotation"/>
+  </genPackages>
+</genmodel:GenModel>

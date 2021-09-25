@@ -1,0 +1,26 @@
+import "/hu.bme.mit.gamma.tutorial.contract.finish/model/Crossroad.gcd"
+trace InitTrace0 of Crossroad
+step {
+	act {
+		reset
+	}
+	assert {
+	}
+}
+step {
+	act {
+		schedule component
+	}
+	assert {
+		raise priorityOutput.displayRed
+		raise secondaryOutput.displayRed
+	}
+}
+step {
+	act {
+		schedule component
+	}
+	assert {
+		raise priorityOutput.displayGreen
+	}
+}
