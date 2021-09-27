@@ -21,6 +21,7 @@ import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeature
 import hu.bme.mit.gamma.expression.model.ArgumentedElement;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance;
+import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Event;
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction;
 import hu.bme.mit.gamma.statechart.statechart.State;
@@ -91,7 +92,8 @@ public class TraceModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 				new HashMap<SynchronousComponentInstance, Set<State>>();
 		List<InstanceStateConfiguration> stateConfigurations = getInstanceStateConfigurations(step);
 		for (InstanceStateConfiguration stateConfiguration : stateConfigurations) {
-			SynchronousComponentInstance instance = stateConfiguration.getInstance();
+			SynchronousComponentInstance instance = (SynchronousComponentInstance)
+					StatechartModelDerivedFeatures.getLastInstance(stateConfiguration.getInstance());
 			State state = stateConfiguration.getState();
 			if (!instanceStates.containsKey(instance)) {
 				instanceStates.put(instance, new HashSet<State>());

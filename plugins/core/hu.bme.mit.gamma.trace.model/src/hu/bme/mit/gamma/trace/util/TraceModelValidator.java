@@ -21,10 +21,10 @@ import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
-import hu.bme.mit.gamma.expression.util.ExpressionModelValidator;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponent;
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance;
+import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.Event;
 import hu.bme.mit.gamma.statechart.interface_.EventDeclaration;
@@ -33,6 +33,7 @@ import hu.bme.mit.gamma.statechart.interface_.RealizationMode;
 import hu.bme.mit.gamma.statechart.statechart.State;
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
 import hu.bme.mit.gamma.statechart.statechart.StatechartModelPackage;
+import hu.bme.mit.gamma.statechart.util.StatechartModelValidator;
 import hu.bme.mit.gamma.trace.derivedfeatures.TraceModelDerivedFeatures;
 import hu.bme.mit.gamma.trace.model.ComponentSchedule;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
@@ -44,7 +45,7 @@ import hu.bme.mit.gamma.trace.model.RaiseEventAct;
 import hu.bme.mit.gamma.trace.model.Step;
 import hu.bme.mit.gamma.trace.model.TraceModelPackage;
 
-public class TraceModelValidator extends ExpressionModelValidator {
+public class TraceModelValidator extends StatechartModelValidator {
 	// Singleton
 	public static final TraceModelValidator INSTANCE = new TraceModelValidator();
 	protected TraceModelValidator() {}
@@ -86,7 +87,8 @@ public class TraceModelValidator extends ExpressionModelValidator {
 	
 	public Collection<ValidationResultMessage> checkInstanceState(InstanceState instanceState) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		SynchronousComponentInstance instance = instanceState.getInstance();
+		SynchronousComponentInstance instance = (SynchronousComponentInstance)
+				StatechartModelDerivedFeatures.getLastInstance(instanceState.getInstance());
 		SynchronousComponent type = instance.getType();
 		if (!(type instanceof StatechartDefinition)) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
@@ -96,9 +98,11 @@ public class TraceModelValidator extends ExpressionModelValidator {
 		return validationResultMessages;
 	}
 	
-	public Collection<ValidationResultMessage> checkInstanceStateConfiguration(InstanceStateConfiguration configuration) {
+	public Collection<ValidationResultMessage> checkInstanceStateConfiguration(
+			InstanceStateConfiguration configuration) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		SynchronousComponentInstance instance = configuration.getInstance();
+		SynchronousComponentInstance instance = (SynchronousComponentInstance)
+				StatechartModelDerivedFeatures.getLastInstance(configuration.getInstance());
 		SynchronousComponent type = instance.getType();
 		if (type instanceof StatechartDefinition) {
 			State state = configuration.getState();
@@ -115,7 +119,8 @@ public class TraceModelValidator extends ExpressionModelValidator {
 	
 	public Collection<ValidationResultMessage> checkInstanceVariableState(InstanceVariableState variableState) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		SynchronousComponentInstance instance = variableState.getInstance();
+		SynchronousComponentInstance instance = (SynchronousComponentInstance)
+				StatechartModelDerivedFeatures.getLastInstance(variableState.getInstance());
 		SynchronousComponent type = instance.getType();
 		if (type instanceof StatechartDefinition) {
 			Declaration variable = variableState.getDeclaration();

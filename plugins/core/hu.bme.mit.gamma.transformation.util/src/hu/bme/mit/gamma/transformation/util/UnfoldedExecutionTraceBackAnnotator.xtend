@@ -1,6 +1,7 @@
 package hu.bme.mit.gamma.transformation.util
 
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
+import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.trace.model.Assert
@@ -114,7 +115,7 @@ class UnfoldedExecutionTraceBackAnnotator {
 	// Asserts
 	
 	protected def dispatch Assert transformAssert(InstanceStateConfiguration assert) {
-		val instance = assert.instance
+		val instance = assert.instance.lastInstance as SynchronousComponentInstance
 		val originalInstance = instance.getOriginalSimpleInstanceReference(originalTopComponent)
 		val originalState = originalInstance.getOriginalState(assert.state)
 		return createInstanceStateConfiguration => [
@@ -124,7 +125,7 @@ class UnfoldedExecutionTraceBackAnnotator {
 	}
 	
 	protected def dispatch Assert transformAssert(InstanceVariableState assert) {
-		val instance = assert.instance
+		val instance = assert.instance.lastInstance as SynchronousComponentInstance
 		val variable = assert.declaration as VariableDeclaration
 		val originalInstance = instance.getOriginalSimpleInstanceReference(originalTopComponent)
 		val originalVariable = originalInstance.getOriginalVariable(variable)

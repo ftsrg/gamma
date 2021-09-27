@@ -287,9 +287,9 @@ class TestGenerator {
 	
 	protected def dispatch String serializeAssert(RaiseEventAct assert) '''«TEST_INSTANCE_NAME».isRaisedEvent("«assert.port.name»", "«assert.event.name»", new Object[] {«FOR parameter : assert.arguments BEFORE " " SEPARATOR ", " AFTER " "»«parameter.serialize»«ENDFOR»})'''
 	
-	protected def dispatch String serializeAssert(InstanceStateConfiguration assert) '''«TEST_INSTANCE_NAME».«assert.instance.getFullContainmentHierarchy(null)».isStateActive("«assert.state.parentRegion.name»", "«assert.state.name»")'''
+	protected def dispatch String serializeAssert(InstanceStateConfiguration assert) '''«TEST_INSTANCE_NAME».«assert.instance.lastInstance.getFullContainmentHierarchy(null)».isStateActive("«assert.state.parentRegion.name»", "«assert.state.name»")'''
 	
-	protected def dispatch String serializeAssert(InstanceVariableState assert) '''«TEST_INSTANCE_NAME».«assert.instance.getFullContainmentHierarchy(null)».checkVariableValue("«assert.declaration.name»", «assert.value.serialize»)'''
+	protected def dispatch String serializeAssert(InstanceVariableState assert) '''«TEST_INSTANCE_NAME».«assert.instance.lastInstance.getFullContainmentHierarchy(null)».checkVariableValue("«assert.declaration.name»", «assert.value.serialize»)'''
 	
 	//
 	

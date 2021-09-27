@@ -29,6 +29,7 @@ import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.State
+import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.trace.model.InstanceVariableState
 import hu.bme.mit.gamma.trace.model.RaiseEventAct
 import hu.bme.mit.gamma.trace.model.Step
@@ -54,6 +55,7 @@ class TraceBuilder {
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension ExpressionEvaluator expressionEvaluator = ExpressionEvaluator.INSTANCE
 	protected final extension TraceUtil traceUtil = TraceUtil.INSTANCE
+	protected final StatechartUtil statechartUtil = StatechartUtil.INSTANCE // For component instance reference
 	
 	// In event
 	
@@ -201,7 +203,7 @@ class TraceBuilder {
 	def addInstanceVariableState(Step step, SynchronousComponentInstance instance,
 			VariableDeclaration variable, Expression value) {
 		step.asserts += createInstanceVariableState => [
-			it.instance = instance
+			it.instance = statechartUtil.createInstanceReference(instance)
 			it.declaration = variable
 			it.value = value
 		]
@@ -231,7 +233,7 @@ class TraceBuilder {
 			val type = variable.typeDefinition
 			val initialValue = type.initialValueOfType
 			step.asserts += createInstanceVariableState => [
-				it.instance = instance
+				it.instance = statechartUtil.createInstanceReference(instance)
 				it.declaration = variable
 				it.value = initialValue
 			]
@@ -247,7 +249,7 @@ class TraceBuilder {
 	
 	def addInstanceState(Step step, SynchronousComponentInstance instance, State state) {
 		step.asserts += createInstanceStateConfiguration => [
-			it.instance = instance
+			it.instance = statechartUtil.createInstanceReference(instance)
 			it.state = state
 		]
 	}
