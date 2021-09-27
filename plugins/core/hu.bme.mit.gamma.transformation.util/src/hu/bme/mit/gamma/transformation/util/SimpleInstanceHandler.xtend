@@ -179,11 +179,15 @@ class SimpleInstanceHandler {
 	def getNewPort(SynchronousComponentInstance newInstance, Port originalPort) {
 		val newType = newInstance.type
 		for (port : newType.ports) {
-			if (port.helperEquals(originalPort)) {
-				return port
+			if (port.nameEquals(originalPort)) {
+				return port // Port names must be unique
 			}
 		}
 		throw new IllegalStateException("Not found port: " + originalPort)
+	}
+	
+	private def nameEquals(NamedElement lhs, NamedElement rhs) {
+		return lhs.name == rhs.name
 	}
 	
 	// Component variable references
@@ -211,8 +215,8 @@ class SimpleInstanceHandler {
 			VariableDeclaration originalVariable) {
 		val newType = newInstance.getStatechart
 		for (variable : newType.variableDeclarations) {
-			if (variable.helperEquals(originalVariable)) {
-				return variable
+			if (variable.nameEquals(originalVariable)) {
+				return variable // Variable names must be unique
 			}
 		}
 		throw new IllegalStateException("Not found variable: " + originalVariable)
@@ -283,7 +287,7 @@ class SimpleInstanceHandler {
 	
 	def getNewAsynchronousSimpleInstances(ComponentInstanceReference original, Component newType) {
 		return newType.allAsynchronousSimpleInstances
-			.filter[original.contains(it)].toList
+				.filter[original.contains(it)].toList
 	}
 	
 	def contains(ComponentInstanceReference original, ComponentInstance copy) {
@@ -300,7 +304,7 @@ class SimpleInstanceHandler {
 	
 	// Currently not used- maybe in the future?
 	
-	def <T extends NamedElement> getNewObject(ComponentInstanceReference originalInstance,
+	protected def <T extends NamedElement> getNewObject(ComponentInstanceReference originalInstance,
 			T originalObject, Component newTopComponent) {
 		val originalFqn = originalObject.FQNUpToComponent
 		val newInstance = originalInstance.checkAndGetNewSimpleInstance(newTopComponent)
@@ -324,7 +328,7 @@ class SimpleInstanceHandler {
 		return originalType.allSimpleInstanceReferences
 	}
 	
-	def getOriginalSimpleInstanceReferences(
+	def getOriginalSimpleInstanceReference(
 			SynchronousComponentInstance newInstance, Component originalType) {
 		// NewInstance is statechart, only one result is accepted; if we want to handle
 		// composite new instances, "newInstance.contains(originalInstance)" has to be introduced
@@ -340,6 +344,55 @@ class SimpleInstanceHandler {
 		throw new IllegalStateException("Not found original instance for " + newInstance)
 	}
 	
-	// TODO getOriginal...() methods
+	// getOriginal.. methods
+	
+	def getOriginalPort(ComponentInstanceReference originalInstance, Port newPort) {
+		val statechartInstance = originalInstance.lastInstance
+		return statechartInstance.getOriginalPort(newPort)
+	}
+	
+	def getOriginalPort(ComponentInstance originalInstance, Port newPort) {
+		val originalType = originalInstance.getStatechart
+		return originalType.getOriginalPort(newPort)
+	}
+	
+	def getOriginalPort(Component originalComponent, Port newPort) {
+		for (port : originalComponent.ports) {
+			if (port.nameEquals(newPort)) {
+				return port // Port names must be unique
+			}
+		}
+		throw new IllegalArgumentException("Not found port: " + newPort)
+	}
+	
+	def getOriginalState(ComponentInstanceReference originalInstance, State newState) {
+		val statechartInstance = originalInstance.lastInstance
+		return statechartInstance.getOriginalState(newState)
+	}
+	
+	def getOriginalState(ComponentInstance originalInstance, State newState) {
+		val originalType = originalInstance.getStatechart
+		for (state : originalType.allStates) {
+			if (state.equal(newState)) {
+				return state
+			}
+		}
+		throw new IllegalArgumentException("Not found state: " + newState)
+	}
+	
+	def getOriginalVariable(ComponentInstanceReference originalInstance, VariableDeclaration newVariable) {
+		val statechartInstance = originalInstance.lastInstance
+		return statechartInstance.getOriginalVariable(newVariable)
+	}
+	
+	def getOriginalVariable(ComponentInstance originalInstance, VariableDeclaration newVariable) {
+		val originalType = originalInstance.getStatechart
+		for (variable : originalType.variableDeclarations) {
+			if (variable.nameEquals(newVariable)) {
+				return variable // Variable names must be unique
+			}
+		}
+		throw new IllegalArgumentException("Not found variable: " + newVariable)
+	}
 	
 }
