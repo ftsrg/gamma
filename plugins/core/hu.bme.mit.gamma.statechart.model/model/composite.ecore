@@ -102,7 +102,7 @@
         eType="#//ComponentInstanceReference" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="SynchronousCompositeComponent" eSuperTypes="#//AbstractSynchronousCompositeComponent"/>
-  <eClassifiers xsi:type="ecore:EClass" name="ComponentInstanceReference">
+  <eClassifiers xsi:type="ecore:EClass" name="ComponentInstanceReference" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ReferenceExpression">
     <eStructuralFeatures xsi:type="ecore:EReference" name="componentInstance" lowerBound="1"
         eType="#//ComponentInstance"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="child" eType="#//ComponentInstanceReference"

@@ -1,6 +1,6 @@
 package hu.bme.mit.gamma.plantuml.transformation
 
-import hu.bme.mit.gamma.expression.util.ExpressionSerializer
+import hu.bme.mit.gamma.statechart.util.ExpressionSerializer
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.trace.model.RaiseEventAct
 import hu.bme.mit.gamma.trace.model.Schedule
@@ -71,8 +71,8 @@ class TraceToPlantUmlTransformer {
 		«ENDFOR»
 		
 		hnote over System 
-		«FOR config : step.instanceStateConfigurations.groupBy[it.instance].entrySet.sortBy[it.key.name]»
-			«config.key.name» in {«config.value.map[it.state.name].join(", ")»} «IF step.instanceVariableStates.exists[it.instance.equals(config.key)]»with«ENDIF»
+		«FOR config : step.instanceStateConfigurations.groupBy[it.instance].entrySet.sortBy[it.key.serialize]»
+			«config.key.serialize» in {«config.value.map[it.state.name].join(", ")»} «IF step.instanceVariableStates.exists[it.instance.equals(config.key)]»with«ENDIF»
 			«FOR varconstraint : step.instanceVariableStates.filter[it.instance.equals(config.key)].sortBy[it.declaration.name]»
 				«varconstraint.declaration.name» = «varconstraint.value.serialize»
 			«ENDFOR»

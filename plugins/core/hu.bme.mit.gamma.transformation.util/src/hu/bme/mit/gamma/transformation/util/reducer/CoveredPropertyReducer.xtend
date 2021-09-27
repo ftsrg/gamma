@@ -120,7 +120,7 @@ class CoveredPropertyReducer {
 		val state = expression.state
 		
 		for (stateConfiguration : step.instanceStateConfigurations) {
-			val stateInstance = stateConfiguration.instance
+			val stateInstance = stateConfiguration.instance.lastInstance // Only one expected
 			val stateVariable = stateConfiguration.state
 			if (instanceHandler.contains(instance, stateInstance) && state.helperEquals(stateVariable)) {
 				return createTrueExpression
@@ -134,7 +134,7 @@ class CoveredPropertyReducer {
 		val variable = expression.variable
 		
 		for (variableState : step.instanceVariableStates) {
-			val stateInstance = variableState.instance
+			val stateInstance = variableState.instance.lastInstance // Only one expected
 			val stateVariable = variableState.declaration
 			if (instanceHandler.contains(instance, stateInstance) && variable.helperEquals(stateVariable)) {
 				val value = variableState.value

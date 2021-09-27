@@ -53,10 +53,10 @@ class ActAndAssertSerializer {
 		RaiseEventAct assert) '''«TEST_INSTANCE_NAME».isRaisedEvent("«assert.port.name»", "«assert.event.name»", new Object[] {«FOR parameter : assert.arguments BEFORE " " SEPARATOR ", " AFTER " "»«parameter.serialize»«ENDFOR»})'''
 
 	protected def dispatch String serializeAssert(
-		InstanceStateConfiguration assert) '''«TEST_INSTANCE_NAME».«util.getFullContainmentHierarchy(assert.instance, null)».isStateActive("«assert.state.parentRegion.name»", "«assert.state.name»")'''
+		InstanceStateConfiguration assert) '''«TEST_INSTANCE_NAME».«util.getFullContainmentHierarchy(assert.instance.lastInstance, null)».isStateActive("«assert.state.parentRegion.name»", "«assert.state.name»")'''
 
 	protected def dispatch String serializeAssert(
-		InstanceVariableState assert) '''«TEST_INSTANCE_NAME».«util.getFullContainmentHierarchy(assert.instance, null)».checkVariableValue("«assert.declaration.name»", «assert.value.serialize»)'''
+		InstanceVariableState assert) '''«TEST_INSTANCE_NAME».«util.getFullContainmentHierarchy(assert.instance.lastInstance, null)».checkVariableValue("«assert.declaration.name»", «assert.value.serialize»)'''
 
 
 

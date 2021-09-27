@@ -147,6 +147,23 @@ public class StatechartUtil extends ActionUtil {
 		return head;
 	}
 	
+	public List<ComponentInstanceReference> prepend(
+			Collection<? extends ComponentInstanceReference> references, ComponentInstance instance) {
+		List<ComponentInstanceReference> newReferences = new ArrayList<ComponentInstanceReference>();
+		for (ComponentInstanceReference reference : references) {
+			ComponentInstanceReference newReference = prepend(reference, instance);
+			newReferences.add(newReference);
+		}
+		return newReferences;
+	}
+	
+	public ComponentInstanceReference prepend(
+			ComponentInstanceReference reference, ComponentInstance instance) {
+		ComponentInstanceReference newReference = createInstanceReference(instance);
+		newReference.setChild(reference);
+		return newReference;
+	}
+	
 	//
 	
 	public Set<VariableDeclaration> getVariables(EObject object) {

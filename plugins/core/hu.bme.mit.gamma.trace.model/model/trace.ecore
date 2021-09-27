@@ -38,7 +38,8 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="InstanceState" abstract="true" eSuperTypes="#//Assert">
     <eStructuralFeatures xsi:type="ecore:EReference" name="instance" lowerBound="1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/composite.ecore#//SynchronousComponentInstance"/>
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/composite.ecore#//ComponentInstanceReference"
+        containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Cycle">
     <eStructuralFeatures xsi:type="ecore:EReference" name="steps" upperBound="-1"
