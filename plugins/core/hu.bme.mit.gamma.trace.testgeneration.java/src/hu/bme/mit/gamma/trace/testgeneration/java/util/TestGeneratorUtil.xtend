@@ -1,5 +1,7 @@
 package hu.bme.mit.gamma.trace.testgeneration.java.util
 
+import hu.bme.mit.gamma.expression.model.Declaration
+import hu.bme.mit.gamma.statechart.composite.AbstractAsynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.composite.AsynchronousCompositeComponent
@@ -7,9 +9,14 @@ import hu.bme.mit.gamma.statechart.composite.ComponentInstance
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponent
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.interface_.Component
+import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
+import hu.bme.mit.gamma.trace.model.InstanceStateConfiguration
+import hu.bme.mit.gamma.trace.model.InstanceVariableState
+import hu.bme.mit.gamma.trace.model.Step
 import hu.bme.mit.gamma.trace.testgeneration.java.ExpressionSerializer
 import hu.bme.mit.gamma.trace.util.TraceUtil
+import hu.bme.mit.gamma.transformation.util.annotations.AnnotationNamings
 import hu.bme.mit.gamma.uppaal.verification.patterns.InstanceContainer
 import hu.bme.mit.gamma.uppaal.verification.patterns.WrapperInstanceContainer
 import org.eclipse.emf.ecore.resource.ResourceSet
@@ -19,6 +26,7 @@ import org.eclipse.viatra.query.runtime.emf.EMFScope
 import static com.google.common.base.Preconditions.checkArgument
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.trace.derivedfeatures.TraceModelDerivedFeatures.*
 
 class TestGeneratorUtil {
 
@@ -27,19 +35,20 @@ class TestGeneratorUtil {
 
 	protected final ResourceSet resourceSet
 	protected final Component component
+	
+	protected final String[] NOT_HANDLED_STATE_NAME_PATTERNS = #['LocalReactionState[0-9]*','FinalState[0-9]*']
 
 	protected final extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
 	protected final extension TraceUtil traceUtil = TraceUtil.INSTANCE
 
 	new(Component _component) {
-
 		this.component = _component
 		this.resourceSet = component.eResource.resourceSet
 		checkArgument(this.resourceSet !== null)
 		this.engine = ViatraQueryEngine.on(new EMFScope(this.resourceSet))
 	}
 
-	public def CharSequence getFullContainmentHierarchy(ComponentInstance actual, ComponentInstance child) {
+	def CharSequence getFullContainmentHierarchy(ComponentInstance actual, ComponentInstance child) {
 		if (actual === null) {
 			// This is the border of the sync components
 			if (component instanceof SynchronousComponent) {
@@ -71,7 +80,7 @@ class TestGeneratorUtil {
 		}
 	}
 
-	protected def getAsyncParent(SynchronousComponentInstance instance) {
+	def getAsyncParent(SynchronousComponentInstance instance) {
 		checkArgument(instance !== null, "The instance is a null value.")
 		if (instance.isTopInstance) {
 			// Needed due to resource set issues: component can be referenced from other composite systems
@@ -92,7 +101,7 @@ class TestGeneratorUtil {
 	 * Instance names in the model contain the containment hierarchy from the root.
 	 * Instances in the generated do not, therefore the deletion of containment hierarchy is needed during test-generation.
 	 */
-	protected def getLocalName(ComponentInstance instance) {
+	def getLocalName(ComponentInstance instance) {
 		val parent = instance.parent
 		var String parentName
 		var int startIndex
@@ -121,24 +130,74 @@ class TestGeneratorUtil {
 		}
 	}
 
-	/**
-	 * Returns whether there are timing specifications in any of the statecharts.
-	 */
-	public def boolean needTimer(Component component) {
-		if (component instanceof StatechartDefinition) {
-			return component.timeoutDeclarations.size > 0
-		} else if (component instanceof AbstractSynchronousCompositeComponent) {
-			return component.components.map[it.type.needTimer].contains(true)
-		} else if (component instanceof AsynchronousAdapter) {
-			return component.wrappedComponent.type.needTimer
-		} else if (component instanceof AsynchronousCompositeComponent) {
-			return component.components.map[it.type.needTimer].contains(true)
-		} else {
-			throw new IllegalArgumentException("Not known component: " + component)
+	def filterAsserts(Step step) {
+		val asserts = newArrayList
+		for (assertion : step.asserts) {
+			val lowermostAssert = assertion.lowermostAssert
+			if (lowermostAssert instanceof InstanceStateConfiguration) {
+				if (lowermostAssert.state.handled) {
+					asserts += assertion
+				}
+			}
+			else if (lowermostAssert instanceof InstanceVariableState) {
+				if (lowermostAssert.declaration.handled) {
+					asserts += assertion
+				}
+			}
+			else {
+				asserts += assertion
+			}
 		}
+		return asserts
 	}
+	
+	/**
+	 * Returns whether the given Gamma State is a state that is not present in Yakindu.
+	 */
+	def boolean isHandled(State state) {
+		val stateName = state.name
+		for (notHandledStateNamePattern: NOT_HANDLED_STATE_NAME_PATTERNS) {
+			if (stateName.matches(notHandledStateNamePattern)) {
+				return false
+			}
+		}
+		return true
+	}
+	
+	protected def boolean isHandled(Declaration declaration) {
+		// Not perfect as other variables can be named liked this, but works 99,99% of the time
+		val name = declaration.name
+		if (name.startsWith(AnnotationNamings.PREFIX) &&
+				name.endsWith(AnnotationNamings.POSTFIX) ||
+				component.allSimpleInstances.map[it.type].filter(StatechartDefinition)
+					.map[it.transitions].flatten.exists[it.id == name] /*Transition id*/) {
+			return false
+		}
+		return true
+	}
+	
+	/**
+     * Returns whether there are timing specifications in any of the statecharts.
+     */
+    def boolean needTimer(Component component) {
+    	if (component instanceof StatechartDefinition) {
+    		return component.timeoutDeclarations.size > 0
+    	}
+    	else if (component instanceof AbstractSynchronousCompositeComponent) {
+    		return component.components.map[it.type.needTimer].contains(true)
+    	}
+    	else if (component instanceof AsynchronousAdapter) {
+    		return component.wrappedComponent.type.needTimer
+    	}
+    	else if (component instanceof AbstractAsynchronousCompositeComponent) {
+    		return component.components.map[it.type.needTimer].contains(true)
+    	}
+    	else {
+    		throw new IllegalArgumentException("Not known component: " + component)
+    	}
+    }
 
-	protected def getParent(ComponentInstance instance) {
+	def getParent(ComponentInstance instance) {
 		checkArgument(instance !== null, "The instance is a null value.")
 		if (instance.isTopInstance) {
 			// Needed due to resource set issues: component can be referenced from other composite systems

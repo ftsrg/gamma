@@ -52,7 +52,6 @@ class TestGenerator {
 	protected final String TEST_NAME = "step"	
 	protected final String ASSERT_TRUE = "assertTrue"	
 	
-	protected final String[] NOT_HANDLED_STATE_NAME_PATTERNS = #['LocalReactionState[0-9]*','FinalState[0-9]*']
 	
 	// Value is assigned by the execute methods
 	protected final String PACKAGE_NAME
@@ -220,8 +219,8 @@ class TestGenerator {
 							«actAndAssertSerializer.serialize(act)»
 						«ENDFOR»
 						// Assert
-						«IF !step.filterAsserts.nullOrEmpty»
-							«waitingHandle.generateAssertBlock(step.asserts)»
+						«IF !testGeneratorUtil.filterAsserts(step).nullOrEmpty»
+							«waitingHandle.generateAssertBlock(testGeneratorUtil.filterAsserts(step))»
 						«ENDIF»
 					}
 					
@@ -236,74 +235,5 @@ class TestGenerator {
 	
 
 	
-	// Assert serialization
-	
-	protected def filterAsserts(Step step) {
-		val asserts = newArrayList
-		for (assertion : step.asserts) {
-			val lowermostAssert = assertion.lowermostAssert
-			if (lowermostAssert instanceof InstanceStateConfiguration) {
-				if (lowermostAssert.state.handled) {
-					asserts += assertion
-				}
-			}
-			else if (lowermostAssert instanceof InstanceVariableState) {
-				if (lowermostAssert.declaration.handled) {
-					asserts += assertion
-				}
-			}
-			else {
-				asserts += assertion
-			}
-		}
-		return asserts
-	}
-	
-	/**
-	 * Returns whether the given Gamma State is a state that is not present in Yakindu.
-	 */
-	protected def boolean isHandled(State state) {
-		val stateName = state.name
-		for (notHandledStateNamePattern: NOT_HANDLED_STATE_NAME_PATTERNS) {
-			if (stateName.matches(notHandledStateNamePattern)) {
-				return false
-			}
-		}
-		return true
-	}
-	
-	protected def boolean isHandled(Declaration declaration) {
-		// Not perfect as other variables can be named liked this, but works 99,99% of the time
-		val name = declaration.name
-		if (name.startsWith(AnnotationNamings.PREFIX) &&
-				name.endsWith(AnnotationNamings.POSTFIX) ||
-				component.allSimpleInstances.map[it.type].filter(StatechartDefinition)
-					.map[it.transitions].flatten.exists[it.id == name] /*Transition id*/) {
-			return false
-		}
-		return true
-	}
-	
-	/**
-     * Returns whether there are timing specifications in any of the statecharts.
-     */
-    protected def boolean needTimer(Component component) {
-    	if (component instanceof StatechartDefinition) {
-    		return component.timeoutDeclarations.size > 0
-    	}
-    	else if (component instanceof AbstractSynchronousCompositeComponent) {
-    		return component.components.map[it.type.needTimer].contains(true)
-    	}
-    	else if (component instanceof AsynchronousAdapter) {
-    		return component.wrappedComponent.type.needTimer
-    	}
-    	else if (component instanceof AbstractAsynchronousCompositeComponent) {
-    		return component.components.map[it.type.needTimer].contains(true)
-    	}
-    	else {
-    		throw new IllegalArgumentException("Not known component: " + component)
-    	}
-    }
-	
-	
+
 }

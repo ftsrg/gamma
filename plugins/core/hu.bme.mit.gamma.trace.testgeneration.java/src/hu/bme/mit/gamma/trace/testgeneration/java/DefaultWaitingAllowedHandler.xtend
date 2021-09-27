@@ -12,7 +12,7 @@ class DefaultWaitingAllowedHandler extends AbstractAllowedWaitingHandler {
 
 	override generateAssertBlock(List<Assert> asserts) '''
 		«FOR _assert : asserts»
-			«serializer.serializeAssert(_assert)»;
+			assertTrue(«serializer.serializeAssert(_assert)»);
 		«ENDFOR»
 	'''
 

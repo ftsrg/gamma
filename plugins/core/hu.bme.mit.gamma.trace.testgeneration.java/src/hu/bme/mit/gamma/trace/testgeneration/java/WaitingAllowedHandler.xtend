@@ -23,7 +23,7 @@ class WaitingAllowedHandler extends AbstractAllowedWaitingHandler {
 				wasPresent = true;
 				try {
 					«FOR _assert : asserts»
-						«serializer.serializeAssert(_assert)»;
+						assertTrue(«serializer.serializeAssert(_assert)»);
 					«ENDFOR»
 					} catch (AssertionError error) {
 					wasPresent= false;
