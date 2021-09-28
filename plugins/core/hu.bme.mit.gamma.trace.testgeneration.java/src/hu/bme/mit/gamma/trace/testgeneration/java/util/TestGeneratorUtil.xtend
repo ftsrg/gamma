@@ -1,8 +1,6 @@
 package hu.bme.mit.gamma.trace.testgeneration.java.util
 
 import hu.bme.mit.gamma.expression.model.Declaration
-import hu.bme.mit.gamma.statechart.composite.AbstractAsynchronousCompositeComponent
-import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.composite.AsynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance
@@ -189,27 +187,6 @@ class TestGeneratorUtil {
 		return true
 	}
 	
-	/**
-     * Returns whether there are timing specifications in any of the statecharts.
-     */
-    def boolean needTimer(Component component) {
-    	if (component instanceof StatechartDefinition) {
-    		return component.timeoutDeclarations.size > 0
-    	}
-    	else if (component instanceof AbstractSynchronousCompositeComponent) {
-    		return component.components.map[it.type.needTimer].contains(true)
-    	}
-    	else if (component instanceof AsynchronousAdapter) {
-    		return component.wrappedComponent.type.needTimer
-    	}
-    	else if (component instanceof AbstractAsynchronousCompositeComponent) {
-    		return component.components.map[it.type.needTimer].contains(true)
-    	}
-    	else {
-    		throw new IllegalArgumentException("Not known component: " + component)
-    	}
-    }
-
 	def getParent(ComponentInstance instance) {
 		checkArgument(instance !== null, "The instance is a null value.")
 		if (instance.isTopInstance) {

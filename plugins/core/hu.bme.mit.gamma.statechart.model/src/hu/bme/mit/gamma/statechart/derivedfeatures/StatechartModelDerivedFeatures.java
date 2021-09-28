@@ -952,6 +952,27 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		throw new IllegalArgumentException("Not known type: " + composite);
 	}
 	
+    public static boolean isTimed(Component component) {
+    	if (component instanceof StatechartDefinition) {
+    		StatechartDefinition statechart = (StatechartDefinition) component;
+    		return statechart.getTimeoutDeclarations().size() > 0;
+    	}
+    	else if (component instanceof AbstractSynchronousCompositeComponent) {
+    		AbstractSynchronousCompositeComponent composite = (AbstractSynchronousCompositeComponent) component;
+    		return composite.getComponents().stream().anyMatch(it -> isTimed(it.getType()));
+    	}
+    	else if (component instanceof AsynchronousAdapter) {
+    		// Clocks maybe?
+    		AsynchronousAdapter adapter = (AsynchronousAdapter) component;
+    		return isTimed(adapter.getWrappedComponent().getType());
+    	}
+    	else if (component instanceof AbstractAsynchronousCompositeComponent) {
+    		AbstractAsynchronousCompositeComponent composite = (AbstractAsynchronousCompositeComponent) component;
+    		return composite.getComponents().stream().anyMatch(it -> isTimed(it.getType()));
+    	}
+		throw new IllegalArgumentException("Not known component: " + component);
+    }
+	
     public static boolean isSynchronous(Component component) {
     	return component instanceof SynchronousComponent;
     }

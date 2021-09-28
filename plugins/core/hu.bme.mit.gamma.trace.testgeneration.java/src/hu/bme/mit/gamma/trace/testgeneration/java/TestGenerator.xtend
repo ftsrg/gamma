@@ -120,11 +120,11 @@ class TestGenerator {
 			
 			private static «TEST_CLASS_NAME» «TEST_INSTANCE_NAME»;
 «««			Only if there are timing specis in the model
-			«IF testGeneratorUtil.needTimer(component)»private static «TIMER_CLASS_NAME» «TIMER_OBJECT_NAME»;«ENDIF»
+			«IF component.timed»private static «TIMER_CLASS_NAME» «TIMER_OBJECT_NAME»;«ENDIF»
 			
 			@Before
 			public void init() {
-				«IF testGeneratorUtil.needTimer(component)»
+				«IF component.timed»
 «««					Only if there are timing specis in the model
 					«TIMER_OBJECT_NAME» = new «TIMER_CLASS_NAME»();
 					«TEST_INSTANCE_NAME» = new «TEST_CLASS_NAME»(«FOR parameter : firstTrace.arguments SEPARATOR ', ' AFTER ', '»«parameter.serialize»«ENDFOR»«TIMER_OBJECT_NAME»);  // Virtual timer is automatically set
@@ -141,7 +141,7 @@ class TestGenerator {
 			
 			// Only for override by potential subclasses
 			protected void stop() {
-				«IF testGeneratorUtil.needTimer(component)»
+				«IF component.timed»
 					«TIMER_OBJECT_NAME» = null;
 				«ENDIF»
 				«TEST_INSTANCE_NAME» = null;				

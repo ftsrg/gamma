@@ -61,7 +61,7 @@ class ActAndAssertSerializer {
 	// Acts
 	
 	protected def dispatch String serialize(Reset reset) '''
-		«IF util.needTimer(component)»«TIMER_OBJECT_NAME».reset(); // Timer before the system«ENDIF»
+		«IF component.timed»«TIMER_OBJECT_NAME».reset(); // Timer before the system«ENDIF»
 		«TEST_INSTANCE_NAME».reset();
 	'''
 
