@@ -76,6 +76,22 @@ class GammaEcoreUtil {
 		EcoreUtil.remove(object)
 	}
 	
+	def <T extends EObject> removeContainmentChains(
+			Collection<? extends T> removableElements, Class<? extends T> clazz) {
+		val queue = newLinkedList
+		queue += removableElements
+		while (!queue.empty) {
+			val removableElement = queue.poll
+			val container = removableElement.eContainer
+			removableElement.remove
+			if (clazz.isInstance(container)) {
+				if (container.eContents.empty) {
+					queue += container as T
+				}
+			}
+		}
+	}
+	
 	def void changeAndDelete(EObject newObject, EObject oldObject, EObject container) {
 		change(newObject, oldObject, container)
 		oldObject.delete // Remove does not delete other references

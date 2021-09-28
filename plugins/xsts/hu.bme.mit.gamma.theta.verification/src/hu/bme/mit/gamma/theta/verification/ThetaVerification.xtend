@@ -36,8 +36,7 @@ class ThetaVerification extends AbstractVerification {
 		// --domain EXPL_PRED_COMBINED --autoexpl NEWOPERANDS --initprec CTRL
 	}
 	
-	def Result execute(File modelFile, File queryFile,
-			Collection<String> parameters) {
+	def Result execute(File modelFile, File queryFile, Collection<String> parameters) {
 		val fileName = modelFile.name
 		val packageFileName = fileName.unfoldedPackageFileName
 		val gammaPackage = ecoreUtil.normalLoad(modelFile.parent, packageFileName)

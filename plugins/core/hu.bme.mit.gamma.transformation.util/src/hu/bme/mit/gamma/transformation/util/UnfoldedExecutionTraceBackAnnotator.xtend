@@ -19,6 +19,9 @@ import hu.bme.mit.gamma.trace.model.TimeElapse
 import hu.bme.mit.gamma.trace.model.TraceModelFactory
 import hu.bme.mit.gamma.trace.util.TraceUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
+import java.util.List
+import java.util.logging.Level
+import java.util.logging.Logger
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
@@ -27,11 +30,15 @@ class UnfoldedExecutionTraceBackAnnotator {
 	protected final ExecutionTrace trace
 	protected final Component originalTopComponent
 	
+	protected final List<Assert> dummyAsserts = newArrayList
+	
 	protected final extension TraceModelFactory traceModelFactory = TraceModelFactory.eINSTANCE
 	protected final extension SimpleInstanceHandler instanceHandler = SimpleInstanceHandler.INSTANCE
 	protected final extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
 	protected final extension TraceUtil traceUtil = TraceUtil.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
+	
+	protected final Logger logger = Logger.getLogger("GammaLogger")
 	
 	new(ExecutionTrace trace, Component originalTopComponent) {
 		this.trace = trace
@@ -49,7 +56,7 @@ class UnfoldedExecutionTraceBackAnnotator {
 		
 		val steps = trace.steps
 		for (step : steps) {
-			originalExecutionTrace.steps != step.transformStep
+			originalExecutionTrace.steps += step.transformStep
 		}
 		
 		// Potential cycle at the end
@@ -57,6 +64,9 @@ class UnfoldedExecutionTraceBackAnnotator {
 		if (cycle !== null) {
 			originalExecutionTrace.cycle = cycle.transformCycle		
 		}
+		
+		// There are injected variables that cannot be back-annotated
+		removeDummyAsserts
 		
 		return originalExecutionTrace
 	}
@@ -93,7 +103,9 @@ class UnfoldedExecutionTraceBackAnnotator {
 	protected def dispatch transformAct(RaiseEventAct act) {
 		return createRaiseEventAct => [
 			it.port = originalTopComponent.getOriginalPort(act.port)
-			it.event = act.event
+			// Necessary as interfaces are loaded into different resource sets
+			it.event = it.port.allEvents
+				.findFirst[it.name == act.event.name]
 			it.arguments += act.arguments.map[it.clone]
 		]
 	}
@@ -128,12 +140,21 @@ class UnfoldedExecutionTraceBackAnnotator {
 		val instance = assert.instance.lastInstance as SynchronousComponentInstance
 		val variable = assert.declaration as VariableDeclaration
 		val originalInstance = instance.getOriginalSimpleInstanceReference(originalTopComponent)
-		val originalVariable = originalInstance.getOriginalVariable(variable)
-		return createInstanceVariableState => [
+		val originalVariable = try {
+			originalInstance.getOriginalVariable(variable)
+		} catch (IllegalArgumentException e) {
+			logger.log(Level.INFO, "Not found original variable for " + variable)
+			null
+		}
+		val variableState = createInstanceVariableState => [
 			it.instance = originalInstance
 			it.declaration = originalVariable
 			it.value = assert.value.clone
 		]
+		if (originalVariable === null) {
+			dummyAsserts += variableState
+		}
+		return variableState
 	}
 	
 	protected def dispatch Assert transformAssert(RaiseEventAct assert) {
@@ -152,6 +173,13 @@ class UnfoldedExecutionTraceBackAnnotator {
 		return createNegatedAssert => [
 			it.negatedAssert = act.negatedAssert.transformAssert
 		]
+	}
+	
+	// 
+	
+	protected def removeDummyAsserts() {
+		dummyAsserts.removeContainmentChains(Assert)
+		dummyAsserts.clear
 	}
 	
 }

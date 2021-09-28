@@ -123,7 +123,8 @@ public class GenModelFormatter extends AbstractDeclarativeFormatter {
         c.setLinewrap(1).after(f.getVerificationAccess().getSvgFileNameAssignment_3_2_2());
         c.setLinewrap(1).after(f.getVerificationAccess().getQueryFilesAssignment_3_4_2());
         c.setLinewrap(1).after(f.getVerificationAccess().getPropertyPackagesAssignment_3_5_2());
-        c.setLinewrap(1).after(f.getVerificationAccess().getTestFolderAssignment_3_9_2());
+        c.setLinewrap(1).after(f.getVerificationAccess().getBackAnnotateToOriginalKeyword_3_9_0());
+        c.setLinewrap(1).after(f.getVerificationAccess().getTestFolderAssignment_3_10_2());
         c.setLinewrap(1).after(f.getVerificationAccess().getAnalysisLanguagesAssignment_3_3_2());
         c.setLinewrap(1).after(f.getVerificationAccess().getOptimizeAssignment_3_8_2_1());
         c.setLinewrap(1).after(f.getVerificationAccess().getPackageNameAssignment_3_6_2());

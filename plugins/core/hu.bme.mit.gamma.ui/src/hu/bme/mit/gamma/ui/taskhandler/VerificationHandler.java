@@ -41,11 +41,14 @@ import hu.bme.mit.gamma.querygenerator.serializer.PropertySerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.ThetaPropertySerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.UppaalPropertySerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.XstsUppaalPropertySerializer;
+import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.theta.verification.ThetaVerification;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
 import hu.bme.mit.gamma.trace.testgeneration.java.TestGenerator;
 import hu.bme.mit.gamma.trace.util.TraceUtil;
 import hu.bme.mit.gamma.transformation.util.GammaFileNamer;
+import hu.bme.mit.gamma.transformation.util.StatechartEcoreUtil;
+import hu.bme.mit.gamma.transformation.util.UnfoldedExecutionTraceBackAnnotator;
 import hu.bme.mit.gamma.transformation.util.reducer.CoveredPropertyReducer;
 import hu.bme.mit.gamma.ui.taskhandler.VerificationHandler.ExecutionTraceSerializer.VerificationResult;
 import hu.bme.mit.gamma.uppaal.verification.UppaalVerification;
@@ -64,6 +67,7 @@ public class VerificationHandler extends TaskHandler {
 	protected final String traceFileName = "ExecutionTrace";
 	protected final String testFileName = traceFileName + "Simulation";
 	protected TraceUtil traceUtil = TraceUtil.INSTANCE;
+	protected StatechartEcoreUtil statechartEcoreUtil = StatechartEcoreUtil.INSTANCE;
 	protected ExecutionTraceSerializer serializer = ExecutionTraceSerializer.INSTANCE;
 	
 	public VerificationHandler(IFile file) {
@@ -159,6 +163,22 @@ public class VerificationHandler extends TaskHandler {
 		// Serializing
 		String testFolderUri = serializeTest ? this.testFolderUri : null;
 		String testFileName = serializeTest ? this.testFileName : null;
+		
+		// Back-annotating
+		if (verification.isBackAnnotateToOriginal()) {
+			List<ExecutionTrace> backAnnotatedTraces = new ArrayList<ExecutionTrace>();
+			for (ExecutionTrace trace : retrievedTraces) {
+				Component newComponent = trace.getComponent();
+				Component originalComponent = statechartEcoreUtil.loadOriginalComponent(newComponent);
+				UnfoldedExecutionTraceBackAnnotator backAnnotator =
+						new UnfoldedExecutionTraceBackAnnotator(trace, originalComponent);
+				ExecutionTrace orignalTrace = backAnnotator.execute();
+				backAnnotatedTraces.add(orignalTrace);
+			}
+			retrievedTraces.clear();
+			retrievedTraces.addAll(backAnnotatedTraces);
+		}
+		
 		for (ExecutionTrace trace : retrievedTraces) {
 			serializer.serialize(targetFolderUri, traceFileName, svgFileName,
 					testFolderUri, testFileName, packageName, trace);
@@ -168,7 +188,7 @@ public class VerificationHandler extends TaskHandler {
 			serializer.serialize(targetFolderUri, traceFileName, verificationResult);
 		}
 	}
-
+	
 	protected Result execute(AbstractVerification verificationTask, File modelFile,
 			File queryFile, List<ExecutionTrace> retrievedTraces, boolean isOptimize) {
 		Result result = verificationTask.execute(modelFile, queryFile);

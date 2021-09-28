@@ -57,6 +57,14 @@ class FileUtil {
 		return new File(sourceFolder + File.separator + packageName.toPath + File.separator + className + ".java")
 	}
 	
+	def getFile(String fileUri) {
+		return new File(fileUri)
+	}
+	
+	def getFileName(String fileUri) {
+		return fileUri.file.name
+	} 
+	
 	def getExtensionlessName(File file) {
 		return file.name.extensionlessName
 	}
@@ -93,8 +101,20 @@ class FileUtil {
 		return "." + fileName
 	}
 	
+	def toUnhiddenFileName(String fileName) {
+		if (fileName.startsWith(".")) {
+			return fileName.substring(1)
+		}
+		return fileName
+	}
+	
 	def changeExtension(String fileName, String newExtension) {
 		return fileName.extensionlessName + "." + newExtension
+	}
+	
+	def getParent(String fileUri) {
+		val file = new File(fileUri)
+		return file.parent
 	}
 	
 	def File exploreRelativeFile(File anchor, String relativePath) {

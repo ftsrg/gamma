@@ -11,6 +11,7 @@
 package hu.bme.mit.gamma.transformation.util
 
 import hu.bme.mit.gamma.util.FileUtil
+import java.io.File
 
 class GammaFileNamer {
 	// Singleton
@@ -69,5 +70,9 @@ class GammaFileNamer {
 	def String getXtextXStsFileName(String fileName) '''«fileName.extensionlessName».«XSTS_XTEXT_EXTENSION»'''
 	
 	def String getEmfXStsFileName(String fileName) '''«fileName.extensionlessName».«XSTS_EMF_EXTENSION»'''
+	
+	//
+	
+	def String getOriginalComponentUri(String unfoldedComponentUri) '''«unfoldedComponentUri.parent»«File.separator»«unfoldedComponentUri.fileName.toUnhiddenFileName.packageFileName»'''
 	
 }
