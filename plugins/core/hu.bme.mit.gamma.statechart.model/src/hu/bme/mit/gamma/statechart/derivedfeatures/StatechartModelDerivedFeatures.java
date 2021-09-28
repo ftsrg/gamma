@@ -187,6 +187,10 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return topComponentArguments;
 	}
 	
+	public static boolean isUnfolded(Component component) {
+		return isUnfolded(getContainingPackage(component));
+	}
+	
 	public static boolean isUnfolded(Package gammaPackage) {
 		return hasAnnotation(gammaPackage, UnfoldedPackageAnnotation.class);
 	}

@@ -14,31 +14,36 @@ class WaitingAllowedHandler extends AbstractAssertionHandler {
 		}
 	}
 
-	override generateAssertBlock(List<Assert> asserts) '''
-		boolean done = false;
-		boolean wasPresent = true;
-		int idx = 0;
-		
-		while (!done) {
-			wasPresent = true;
-			try {
-				«FOR _assert : asserts»
-					assertTrue(«serializer.serializeAssert(_assert)»);
-				«ENDFOR»
-				} catch (AssertionError error) {
-				wasPresent = false;
-				if (idx > «max») {
-					throw(error);
-				}
-			}
-			if (wasPresent && idx >= «min») {
-				done = true;
-			}
-			else {
-				«schedule»
-			}
-			idx++;
+	override generateAssertBlock(List<Assert> asserts) {
+		if (asserts.nullOrEmpty) {
+			return ''''''
 		}
-	'''
+		return '''
+			boolean done = false;
+			boolean wasPresent = true;
+			int idx = 0;
+			
+			while (!done) {
+				wasPresent = true;
+				try {
+					«FOR _assert : asserts»
+						assertTrue(«serializer.serializeAssert(_assert)»);
+					«ENDFOR»
+					} catch (AssertionError error) {
+					wasPresent = false;
+					if (idx > «max») {
+						throw(error);
+					}
+				}
+				if (wasPresent && idx >= «min») {
+					done = true;
+				}
+				else {
+					«schedule»
+				}
+				idx++;
+			}
+		'''
+	}
 
 }

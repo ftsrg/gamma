@@ -53,10 +53,10 @@ class ActAndAssertSerializer {
 		'''«TEST_INSTANCE_NAME».isRaisedEvent("«assert.port.name»", "«assert.event.name»", new Object[] {«FOR parameter : assert.arguments BEFORE " " SEPARATOR ", " AFTER " "»«parameter.serialize»«ENDFOR»})'''
 
 	protected def dispatch String serializeAssert(InstanceStateConfiguration assert)
-		'''«TEST_INSTANCE_NAME».«util.getFullContainmentHierarchy(assert.instance.lastInstance, null)».isStateActive("«assert.state.parentRegion.name»", "«assert.state.name»")'''
+		'''«TEST_INSTANCE_NAME».«util.getFullContainmentHierarchy(assert.instance)».isStateActive("«assert.state.parentRegion.name»", "«assert.state.name»")'''
 
 	protected def dispatch String serializeAssert(InstanceVariableState assert)
-		'''«TEST_INSTANCE_NAME».«util.getFullContainmentHierarchy(assert.instance.lastInstance, null)».checkVariableValue("«assert.declaration.name»", «assert.value.serialize»)'''
+		'''«TEST_INSTANCE_NAME».«util.getFullContainmentHierarchy(assert.instance)».checkVariableValue("«assert.declaration.name»", «assert.value.serialize»)'''
 	
 	// Acts
 	
@@ -74,11 +74,12 @@ class ActAndAssertSerializer {
 	'''
 
 	protected def dispatch serialize(InstanceSchedule schedule) '''
-		«TEST_INSTANCE_NAME».«util.getFullContainmentHierarchy(schedule.scheduledInstance, null)».schedule(null);
+«««		Theoretically, we do not use such models
+		«TEST_INSTANCE_NAME».«util.getFullContainmentHierarchy(schedule.scheduledInstance)».schedule(null);
 	'''
 
 	protected def dispatch String serialize(ComponentSchedule schedule) '''
-«««		In theory only asynchronous adapters and synchronous adapters are used
+«««		Theoretically, only asynchronous adapters and synchronous adapters are used
 		«TEST_INSTANCE_NAME».schedule();
 	'''
 

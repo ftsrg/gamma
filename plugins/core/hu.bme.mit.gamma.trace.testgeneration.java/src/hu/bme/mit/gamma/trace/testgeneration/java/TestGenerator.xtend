@@ -199,9 +199,7 @@ class TestGenerator {
 							«actAndAssertSerializer.serialize(act)»
 						«ENDFOR»
 						// Assert
-						«IF !testGeneratorUtil.filterAsserts(step).nullOrEmpty»
-							«waitingHandle.generateAssertBlock(testGeneratorUtil.filterAsserts(step))»
-						«ENDIF»
+						«waitingHandle.generateAssertBlock(testGeneratorUtil.filterAsserts(step))»
 					}
 					
 				'''

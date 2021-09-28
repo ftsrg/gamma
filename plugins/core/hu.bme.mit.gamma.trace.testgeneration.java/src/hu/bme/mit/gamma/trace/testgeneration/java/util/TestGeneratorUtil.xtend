@@ -6,6 +6,7 @@ import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeCompone
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.composite.AsynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponent
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.interface_.Component
@@ -46,6 +47,18 @@ class TestGeneratorUtil {
 		this.resourceSet = component.eResource.resourceSet
 		checkArgument(this.resourceSet !== null)
 		this.engine = ViatraQueryEngine.on(new EMFScope(this.resourceSet))
+	}
+	
+	def CharSequence getFullContainmentHierarchy(ComponentInstanceReference instanceReference) {
+		if (component.unfolded) {
+			return instanceReference.lastInstance.fullContainmentHierarchy
+		}
+		// Original component instance references
+		return '''«FOR instance : instanceReference.componentInstanceChain»getComponent("«instance.name»")«ENDFOR»'''
+	}
+	
+	def CharSequence getFullContainmentHierarchy(ComponentInstance actual) {
+		return actual.getFullContainmentHierarchy(null)
 	}
 
 	def CharSequence getFullContainmentHierarchy(ComponentInstance actual, ComponentInstance child) {
