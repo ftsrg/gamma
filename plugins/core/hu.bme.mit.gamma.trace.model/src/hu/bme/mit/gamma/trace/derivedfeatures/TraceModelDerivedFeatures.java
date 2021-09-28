@@ -27,6 +27,8 @@ import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction;
 import hu.bme.mit.gamma.statechart.statechart.State;
 import hu.bme.mit.gamma.trace.model.Assert;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
+import hu.bme.mit.gamma.trace.model.ExecutionTraceAllowedWaitingAnnotation;
+import hu.bme.mit.gamma.trace.model.ExecutionTraceAnnotation;
 import hu.bme.mit.gamma.trace.model.InstanceStateConfiguration;
 import hu.bme.mit.gamma.trace.model.InstanceVariableState;
 import hu.bme.mit.gamma.trace.model.NegatedAssert;
@@ -46,6 +48,24 @@ public class TraceModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 			return trace.getComponent().getParameterDeclarations();
 		}
 		throw new IllegalArgumentException("Not supported element: " + element);
+	}
+	
+	// Annotations
+	
+	public static boolean hasAllowedWaitingAnnotation(ExecutionTrace trace) {
+		return hasAnnotation(trace, ExecutionTraceAllowedWaitingAnnotation.class);
+	}
+	
+	public static boolean hasAnnotation(ExecutionTrace trace,
+			Class<? extends ExecutionTraceAnnotation> annotation) {
+		return trace.getAnnotations().stream().anyMatch(it -> annotation.isInstance(it));
+	}
+	
+	public static ExecutionTraceAllowedWaitingAnnotation getAllowedWaitingAnnotation(
+				ExecutionTrace trace) {
+		List<ExecutionTraceAnnotation> annotations = trace.getAnnotations();
+		return javaUtil.filterIntoList(annotations,
+				ExecutionTraceAllowedWaitingAnnotation.class).get(0);
 	}
 	
 	//
