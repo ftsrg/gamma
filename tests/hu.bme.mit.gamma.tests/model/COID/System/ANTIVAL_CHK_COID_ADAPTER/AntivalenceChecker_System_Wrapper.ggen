@@ -19,4 +19,5 @@ verification {
 	query-file : "AntivalenceChecker_System_Wrapper.prop"
 	optimize : true
 	test-language : java
+	back-annotate-to-original : true
 }
