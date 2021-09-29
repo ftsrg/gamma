@@ -18,6 +18,8 @@ import static com.google.common.base.Preconditions.checkState
 import static extension hu.bme.mit.gamma.statechart.lowlevel.derivedfeatures.LowlevelStatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
 import static extension java.lang.Math.abs
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.Nodes
+import hu.bme.mit.gamma.xsts.model.ParallelAction
 
 class HierarchicalTransitionMerger extends AbstractTransitionMerger {
 	
@@ -38,11 +40,27 @@ class HierarchicalTransitionMerger extends AbstractTransitionMerger {
 		val statechart = statecharts.head
 		val xStsMergedAction = createNonDeterministicAction
 		statechart.mergeTransitions(xStsMergedAction)
+		
+		val activityMergedAction = createParallelAction
+		mergeActivityTransitions(activityMergedAction)
+		activityMergedAction.actions += xStsMergedAction
+		
 		// The many transitions are now replaced by a single merged transition
-		xSts.changeTransitions(xStsMergedAction.wrap)
+		xSts.changeTransitions(activityMergedAction.wrap)
 		// Adding default else branch: if "region" cannot fire
 		xStsMergedAction.extendChoiceWithDefaultBranch(createEmptyAction)
 		// For this to work, each assume action has to be at index 0 of the containing composite action
+	}
+	
+	protected def mergeActivityTransitions(ParallelAction xStsAction) {
+		val nodes = Nodes.Matcher.on(engine).allValuesOfactivityNode
+					
+		for (node : nodes) {
+			val action = trace.getXStsAction(node) as NonDeterministicAction
+			
+			xStsAction.actions += action
+			action.extendChoiceWithDefaultBranch(createEmptyAction)
+		}	
 	}
 	
 	protected def void mergeTransitions(CompositeElement lowlevelComposite, NonDeterministicAction xStsAction) {
