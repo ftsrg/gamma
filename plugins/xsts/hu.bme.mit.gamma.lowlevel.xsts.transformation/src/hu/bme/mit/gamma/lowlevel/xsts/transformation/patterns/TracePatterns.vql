@@ -46,7 +46,7 @@ pattern activityNodeTrace(activityNode : ActivityNode, xStsVariable : VariableDe
 	ActivityNodeTrace.xStsVariable(trace, xStsVariable);
 }
 
-pattern activityNodeTransitionTrace(activityNode : ActivityNode, xStsAction : Action) {
+pattern activityNodeTransitionTrace(activityNode : ActivityNode, xStsAction : NonDeterministicAction) {
 	ActivityNodeTransitionTrace.activityNode(trace, activityNode);
 	ActivityNodeTransitionTrace.xStsAction(trace, xStsAction);
 }

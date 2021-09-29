@@ -105,6 +105,6 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="activityNode" lowerBound="1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.activity.model/model/activity.ecore#//ActivityNode"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="xStsAction" lowerBound="1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.xsts.model/model/model.ecore#//Action"/>
+        eType="ecore:EClass ../../hu.bme.mit.gamma.xsts.model/model/model.ecore#//NonDeterministicAction"/>
   </eClassifiers>
 </ecore:EPackage>
