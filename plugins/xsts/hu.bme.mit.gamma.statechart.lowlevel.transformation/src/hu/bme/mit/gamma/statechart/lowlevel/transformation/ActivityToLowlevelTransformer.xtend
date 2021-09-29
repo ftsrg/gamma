@@ -38,6 +38,8 @@ import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.activity.model.Definition
 import hu.bme.mit.gamma.activity.model.Flow
 
+import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
+
 class ActivityToLowlevelTransformer {
 	// Auxiliary objects
 	protected final extension TypeTransformer typeTransformer
@@ -61,7 +63,7 @@ class ActivityToLowlevelTransformer {
 	new(Trace trace, State state, boolean functionInlining, int maxRecursionDepth) {
 		this.trace = trace
 		this.state = state
-		this.prefix = state?.name ?: ""
+		this.prefix = state.containingStatechart.name + "_" + state.name + "_"
 		this.typeTransformer = new TypeTransformer(this.trace)
 		this.expressionTransformer = new ExpressionTransformer(this.trace,
 				functionInlining, maxRecursionDepth)
