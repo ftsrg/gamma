@@ -14,13 +14,11 @@ import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 
 import static com.google.common.base.Preconditions.checkState
-import hu.bme.mit.gamma.activity.model.ActivityDeclaration
 
 class GammaToLowlevelTransformer {
 	
 	protected final Trace trace = new Trace
 	protected final extension StatechartToLowlevelTransformer statechartTransformer = new StatechartToLowlevelTransformer(trace)
-	protected final extension ActivityToLowlevelTransformer activityTransformer = new ActivityToLowlevelTransformer(trace, null)
 	
 	def hu.bme.mit.gamma.statechart.lowlevel.model.Package execute(Package _package) {
 		checkState(!_package.name.nullOrEmpty)
@@ -39,9 +37,5 @@ class GammaToLowlevelTransformer {
 	def hu.bme.mit.gamma.statechart.lowlevel.model.StatechartDefinition transform(StatechartDefinition statechart) {
 		return statechart.execute
 	}
-	
-	def ActivityDeclaration transform(ActivityDeclaration activity) {
-		return activity.execute
-	}
-	
+		
 }
