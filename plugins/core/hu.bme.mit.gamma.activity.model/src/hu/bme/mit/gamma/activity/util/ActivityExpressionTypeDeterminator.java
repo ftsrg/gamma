@@ -5,17 +5,17 @@ import hu.bme.mit.gamma.activity.model.OutputPinReference;
 import hu.bme.mit.gamma.activity.model.Pin;
 import hu.bme.mit.gamma.activity.model.PinReference;
 import hu.bme.mit.gamma.expression.model.Expression;
-import hu.bme.mit.gamma.expression.util.ExpressionType;
-import hu.bme.mit.gamma.expression.util.ExpressionTypeDeterminator;
+import hu.bme.mit.gamma.expression.model.Type;
+import hu.bme.mit.gamma.expression.util.ExpressionTypeDeterminator2;
 
-public class ActivityExpressionTypeDeterminator extends ExpressionTypeDeterminator {
+public class ActivityExpressionTypeDeterminator extends ExpressionTypeDeterminator2 {
 	// Singleton
 	public static final ActivityExpressionTypeDeterminator INSTANCE = new ActivityExpressionTypeDeterminator();
 	protected ActivityExpressionTypeDeterminator() {}
 	//
-	
+
 	@Override
-	public ExpressionType getType(Expression expression) {
+	public Type getType(Expression expression) {
 		if (expression instanceof PinReference) {
 			return getType((PinReference)expression);
 		}
@@ -23,7 +23,7 @@ public class ActivityExpressionTypeDeterminator extends ExpressionTypeDeterminat
 		return super.getType(expression);
 	}
 	
-	public ExpressionType getType(PinReference reference) {
+	public Type getType(PinReference reference) {
 		Pin pin;
 		
 		if (reference instanceof InputPinReference) {
@@ -32,6 +32,6 @@ public class ActivityExpressionTypeDeterminator extends ExpressionTypeDeterminat
 			pin = ((OutputPinReference)reference).getOutputPin();
 		}
 		
-		return transform(pin.getType());
+		return pin.getType();
 	}
 }

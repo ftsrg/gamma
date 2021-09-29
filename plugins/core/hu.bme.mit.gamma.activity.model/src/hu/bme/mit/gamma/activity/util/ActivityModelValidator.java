@@ -15,6 +15,7 @@ import hu.bme.mit.gamma.activity.model.Pin;
 import hu.bme.mit.gamma.activity.model.PinReference;
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
 import hu.bme.mit.gamma.expression.model.NamedElement;
+import hu.bme.mit.gamma.expression.util.ExpressionModelValidator.ReferenceInfo;
 import hu.bme.mit.gamma.expression.util.ExpressionModelValidator.ValidationResultMessage;
 
 public class ActivityModelValidator extends ActionModelValidator {
@@ -60,7 +61,7 @@ public class ActivityModelValidator extends ActionModelValidator {
 				if (nameCount > 1) {
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 							"In a Gamma model, these identifiers must be unique in the same context.",
-							new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME, null)));
+							new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME)));
 				}
 			}
 		}

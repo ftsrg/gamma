@@ -19,6 +19,10 @@ pattern nodes(activityNode : ActivityNode) {
 	ActivityNode(activityNode);
 }
 
+pattern initialNodes(node : InitialNode) {
+	InitialNode(node);
+}
+
 pattern flows(flow : Flow) {
 	Flow(flow);
 }
@@ -27,30 +31,18 @@ pattern pins(pin : Pin) {
 	Pin(pin);
 }
 
-pattern inputControlFlows(flow: ControlFlow, node: ActivityNode) {
+pattern inputFlows(flow: Flow, node: ActivityNode) {
 	ControlFlow.targetNode(flow, node);
-}
-
-pattern outputControlFlows(flow: ControlFlow, node: ActivityNode) {
-	ControlFlow.sourceNode(flow, node);
-}
-
-pattern inputDataFlows(flow: DataFlow, node: ActivityNode) {
+} or {
 	DataFlow.dataTargetReference(flow, targetReference);
 	DataNodeReference.dataNode(targetReference, node);
 }
 
-pattern outputDataFlows(flow: DataFlow, node: ActivityNode) {
+pattern outputFlows(flow: Flow, node: ActivityNode) {
+	ControlFlow.sourceNode(flow, node);
+} or {
 	DataFlow.dataSourceReference(flow, sourceReference);
 	DataNodeReference.dataNode(sourceReference, node);
-}
-
-pattern normalActivityNodes(node: ActivityNode) {
-	neg find decisionNodes(node);
-}
-
-pattern decisionNodes(node: ActivityNode) {
-	DecisionNode(node);
 }
 
 pattern dataFlowDirectSourceType(flow: DataFlow, type: Type) {

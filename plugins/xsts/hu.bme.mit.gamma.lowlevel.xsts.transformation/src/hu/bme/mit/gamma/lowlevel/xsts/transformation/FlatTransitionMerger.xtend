@@ -17,6 +17,7 @@ import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.statechart.lowlevel.derivedfeatures.LowlevelStatechartModelDerivedFeatures.*
 import static extension java.lang.Math.abs
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.Nodes
 
 class FlatTransitionMerger extends AbstractTransitionMerger {
 	

@@ -65,6 +65,8 @@ import hu.bme.mit.gamma.activity.model.Pin
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.PinTrace
 
 import static extension java.lang.Math.abs
+import hu.bme.mit.gamma.xsts.model.Action
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.ActivityNodeTransitionTrace
 
 package class Trace {
 	// Trace model
@@ -619,6 +621,35 @@ package class Trace {
 	def getActivityNode(VariableDeclaration xStsVariable) {
 		checkArgument(xStsVariable !== null)
 		val matches = ActivityNodeTrace.Matcher.on(tracingEngine).getAllValuesOfactivityNode(xStsVariable)
+		checkState(matches.size == 1, matches.size)
+		return matches.head
+	}
+	
+	// ActivityNode - transition
+	def put(ActivityNode activityNode, Action xStsAction) {
+		checkArgument(activityNode !== null)
+		checkArgument(xStsAction !== null)
+		trace.traces += createActivityNodeTransitionTrace => [
+			it.activityNode = activityNode
+			it.XStsAction = xStsAction
+		]
+	}
+	
+	def isTransitionTraced(ActivityNode activityNode) {
+		checkArgument(activityNode !== null)
+		return ActivityNodeTransitionTrace.Matcher.on(tracingEngine).hasMatch(activityNode, null)
+	}
+	
+	def getXStsAction(ActivityNode activityNode) {
+		checkArgument(activityNode !== null)
+		val matches = ActivityNodeTransitionTrace.Matcher.on(tracingEngine).getAllValuesOfxStsAction(activityNode)
+		checkState(matches.size == 1, matches.size)
+		return matches.head
+	}
+	
+	def getActivityNode(Action xStsAction) {
+		checkArgument(xStsAction !== null)
+		val matches = ActivityNodeTransitionTrace.Matcher.on(tracingEngine).getAllValuesOfactivityNode(xStsAction)
 		checkState(matches.size == 1, matches.size)
 		return matches.head
 	}

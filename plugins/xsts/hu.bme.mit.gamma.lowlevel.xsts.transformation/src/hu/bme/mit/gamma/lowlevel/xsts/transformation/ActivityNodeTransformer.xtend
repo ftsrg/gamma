@@ -1,44 +1,33 @@
 package hu.bme.mit.gamma.lowlevel.xsts.transformation
 
-import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
-import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
-import hu.bme.mit.gamma.xsts.util.XstsActionUtil
-import hu.bme.mit.gamma.util.GammaEcoreUtil
-import hu.bme.mit.gamma.activity.model.ActivityNode
+import hu.bme.mit.gamma.activity.model.ActionDefinition
 import hu.bme.mit.gamma.activity.model.ActionNode
 import hu.bme.mit.gamma.activity.model.ActivityDefinition
-import hu.bme.mit.gamma.activity.model.ActionDefinition
+import hu.bme.mit.gamma.activity.model.ActivityNode
+import hu.bme.mit.gamma.activity.model.DecisionNode
+import hu.bme.mit.gamma.activity.model.Flow
+import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 
 import static extension hu.bme.mit.gamma.activity.derivedfeatures.ActivityModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.lowlevel.derivedfeatures.LowlevelStatechartModelDerivedFeatures.*
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.InputFlows
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.OutputFlows
 
-class ActivityNodeTransformer {
+class ActivityNodeTransformer extends LowlevelTransitionToXTransitionTransformer {
 	
-	// Model factories
-	protected final extension XSTSModelFactory factory = XSTSModelFactory.eINSTANCE
-	protected final extension ExpressionModelFactory expressionFactory = ExpressionModelFactory.eINSTANCE
-	// Action utility
-	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
-	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
-	// Needed for the transformation of assignment actions
-	protected final extension ActionTransformer actionTransformer
-	protected final extension ExpressionTransformer expressionTransformer
 	protected final extension VariableDeclarationTransformer variableDeclarationTransformer
-	protected final extension StateAssumptionCreator stateAssumptionCreator
-	// Trace
-	protected final Trace trace
+	protected final extension ActivityFlowTransformer activityFlowTransformer
 	
 	protected final extension ActivityLiterals activityLiterals = ActivityLiterals.INSTANCE 
-	
-	new(Trace trace) {
-		this.trace = trace
-		this.actionTransformer = new ActionTransformer(this.trace)
-		this.expressionTransformer = new ExpressionTransformer(this.trace)
+		
+	new(ViatraQueryEngine engine, Trace trace) {
+		super(engine, trace, null, false)
+		
 		this.variableDeclarationTransformer = new VariableDeclarationTransformer(this.trace)
-		this.stateAssumptionCreator = new StateAssumptionCreator(this.trace)
+		this.activityFlowTransformer = new ActivityFlowTransformer(this.trace)
 	}
 	
-	def createRunningAssumeAction(ActivityNode node) {
+	protected def createRunningAssumeAction(ActivityNode node) {
 		val nodeVariable = trace.getXStsVariable(node)
 
 		val expression = createAndExpression => [
@@ -54,7 +43,7 @@ class ActivityNodeTransformer {
 		return expression.createAssumeAction
 	}
 	
-	def createDoneAssignmentAction(ActivityNode node) {
+	protected def createDoneAssignmentAction(ActivityNode node) {
 		val nodeVariable = trace.getXStsVariable(node)
 	
 		return createAssignmentAction(
@@ -65,7 +54,7 @@ class ActivityNodeTransformer {
 		)
 	}
 	
-	def createRunningAssignmentAction(ActivityNode node) {
+	protected def createRunningAssignmentAction(ActivityNode node) {
 		val nodeVariable = trace.getXStsVariable(node)
 
 		return createAssignmentAction(
@@ -76,7 +65,37 @@ class ActivityNodeTransformer {
 		)
 	}
 	
-	def dispatch transform(ActionNode node) {
+	protected dispatch def createActivityNodeTransitionAction(ActivityNode node, Iterable<Flow> inputFlows, Iterable<Flow> outputFlows) {
+		return createNonDeterministicAction => [
+			it.actions += createParallelAction => [
+				for (flow : inputFlows) {
+					it.actions += flow.transformInwards
+				}
+			]
+			it.actions += createParallelAction => [
+				for (flow : outputFlows) {
+					it.actions += flow.transformOutwards
+				}
+			]
+		]
+	}
+	
+	protected dispatch def createActivityNodeTransitionAction(DecisionNode node, Iterable<Flow> inputFlows, Iterable<Flow> outputFlows) {
+		return createNonDeterministicAction => [
+			it.actions += createNonDeterministicAction => [
+				for (flow : inputFlows) {
+					it.actions += flow.transformInwards
+				}
+			]
+			it.actions += createNonDeterministicAction => [
+				for (flow : outputFlows) {
+					it.actions += flow.transformOutwards
+				}
+			]
+		]
+	}
+	
+	protected def dispatch createNodeTransitionAction(ActionNode node) {
 		if (node.activityDeclarationReference !== null) {	
 			val definition = node.activityDeclarationReference.definition
 			if (definition instanceof ActionDefinition) {
@@ -103,11 +122,55 @@ class ActivityNodeTransformer {
 		}
 	}
 	
-	def dispatch transform(ActivityNode node) {
+	protected def dispatch createNodeTransitionAction(ActivityNode node) {
 		return createSequentialAction => [
 			it.actions.add(node.createRunningAssumeAction)
 			it.actions.add(node.createDoneAssignmentAction)
 		]
+	}
+	
+	protected dispatch def createActivityNodeFlowAction(ActivityNode node, Iterable<Flow> inputFlows, Iterable<Flow> outputFlows) {
+		return createNonDeterministicAction => [
+			it.actions += createParallelAction => [
+				for (flow : inputFlows) {
+					it.actions += flow.transformInwards
+				}
+			]
+			it.actions += createParallelAction => [
+				for (flow : outputFlows) {
+					it.actions += flow.transformOutwards
+				}
+			]
+		]
+	}
+	
+	protected dispatch def createActivityNodeFlowAction(DecisionNode node, Iterable<Flow> inputFlows, Iterable<Flow> outputFlows) {
+		return createNonDeterministicAction => [
+			it.actions += createNonDeterministicAction => [
+				for (flow : inputFlows) {
+					it.actions += flow.transformInwards
+				}
+			]
+			it.actions += createNonDeterministicAction => [
+				for (flow : outputFlows) {
+					it.actions += flow.transformOutwards
+				}
+			]
+		]
+	}
+	
+	def transform(ActivityNode node) {
+		val inputFlows = InputFlows.Matcher.on(engine).getAllValuesOfflow(node)
+		val outputFlows = OutputFlows.Matcher.on(engine).getAllValuesOfflow(node)
+	
+		val action = createNonDeterministicAction => [
+			it.actions += node.createActivityNodeFlowAction(inputFlows, outputFlows)
+			it.actions += node.createNodeTransitionAction
+		]
+		
+		trace.put(node, action)
+		
+		return action.createXStsTransition		
 	}
 	
 }

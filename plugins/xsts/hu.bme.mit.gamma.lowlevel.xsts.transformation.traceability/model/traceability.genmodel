@@ -78,5 +78,9 @@
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//PinTrace/pin"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//PinTrace/xStsVariable"/>
     </genClasses>
+    <genClasses ecoreClass="traceability.ecore#//ActivityNodeTransitionTrace">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//ActivityNodeTransitionTrace/activityNode"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//ActivityNodeTransitionTrace/xStsAction"/>
+    </genClasses>
   </genPackages>
 </genmodel:GenModel>

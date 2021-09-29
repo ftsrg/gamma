@@ -53,10 +53,7 @@ class PropertyLanguageScopeProvider extends AbstractPropertyLanguageScopeProvide
 		}
 		val root = ecoreUtil.getSelfOrContainerOfType(context, PropertyPackage)
 		val component = root.component
-		val activity = root.activity
-		if (reference == CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE__COMPONENT_INSTANCE_HIERARCHY) {
-			return Scopes.scopeFor(component.allInstances)
-		}		
+		val activity = root.activity	
 			
 		if (context instanceof NamedActivityDeclarationReference &&			reference == ActivityModelPackage.Literals.NAMED_ACTIVITY_DECLARATION_REFERENCE__NAMED_ACTIVITY_DECLARATION) {
 			val imports = root.import
