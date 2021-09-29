@@ -241,9 +241,12 @@ class GammaEcoreUtil {
 	def containsOneOtherTransitively(EObject lhs, EObject rhs) {
 		return lhs.containsTransitively(rhs) || rhs.containsTransitively(lhs)
 	}
-
+	
 	def EObject normalLoad(URI uri) {
-		val resourceSet = new ResourceSetImpl
+		return uri.normalLoad(new ResourceSetImpl)
+	}
+
+	def EObject normalLoad(URI uri, ResourceSet resourceSet) {
 		val resource = resourceSet.getResource(uri, true)
 		return resource.getContents().get(0)
 	}
@@ -251,9 +254,17 @@ class GammaEcoreUtil {
 	def EObject normalLoad(File file) {
 		return normalLoad(file.parent, file.name)
 	}
+	
+	def EObject normalLoad(File file, ResourceSet resourceSet) {
+		return normalLoad(file.parent, file.name, resourceSet)
+	}
 
 	def EObject normalLoad(String parentFolder, String fileName) {
-		return normalLoad(URI.createFileURI(parentFolder + File.separator + fileName))
+		return URI.createFileURI(parentFolder + File.separator + fileName).normalLoad
+	}
+	
+	def EObject normalLoad(String parentFolder, String fileName, ResourceSet resourceSet) {
+		return URI.createFileURI(parentFolder + File.separator + fileName).normalLoad(resourceSet)
 	}
 
 	def Resource normalSave(ResourceSet resourceSet, EObject rootElem, URI uri) {
@@ -374,15 +385,28 @@ class GammaEcoreUtil {
 		return new File(URI.decode(location))
 	}
 	
+	def hasPlatformUri(Resource resource) {
+		return resource.URI.isPlatform
+	}
+	
+	def getPlatformUri(String path) {
+		val file = new File(path)
+		return file.platformUri
+	}
+	
+	def getPlatformUri(File file) {
+		val projectFile = file.parentFile.projectFile
+		val location = file.toString.substring(projectFile.parent.length)
+		return URI.createPlatformResourceURI(location, true)
+	}
+	
 	def getPlatformUri(Resource resource) {
 		val uri = resource.URI
 		if (uri.isPlatform) {
 			return uri
 		}
 		val resourceFile = resource.file
-		val projectFile = resourceFile.parentFile.projectFile
-		val location = resourceFile.toString.substring(projectFile.parent.length)
-		return URI.createPlatformResourceURI(location, true)
+		return resourceFile.platformUri
 	}
 	
 	def getAbsoluteUri(Resource resource) {
@@ -392,6 +416,17 @@ class GammaEcoreUtil {
 		}
 		val resourceFile = resource.file
 		return URI.createFileURI(resourceFile.toString)
+	}
+	
+	def matchUri(String changableAbsoluteUri, Resource resource) {
+		return changableAbsoluteUri.matchUri(resource.URI)
+	}
+	
+	def matchUri(String changableAbsoluteUri, URI pivot) {
+		if (pivot.isPlatform) {
+			return changableAbsoluteUri.platformUri
+		}
+		return URI.createFileURI(changableAbsoluteUri)
 	}
 	
 	def File getProjectFile(File file) {

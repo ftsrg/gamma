@@ -103,9 +103,9 @@ class UnfoldedExecutionTraceBackAnnotator {
 	protected def dispatch transformAct(RaiseEventAct act) {
 		return createRaiseEventAct => [
 			it.port = originalTopComponent.getOriginalPort(act.port)
-			// Necessary as interfaces are loaded into different resource sets
-			it.event = it.port.allEvents
-				.findFirst[it.name == act.event.name]
+			// Does not work if the interfaces/types are loaded into different resources
+			// Resource set and URI type (absolute/platform) must match
+			it.event = act.event
 			it.arguments += act.arguments.map[it.clone]
 		]
 	}
@@ -149,6 +149,8 @@ class UnfoldedExecutionTraceBackAnnotator {
 		val variableState = createInstanceVariableState => [
 			it.instance = originalInstance
 			it.declaration = originalVariable
+			// Does not work if the types (enums) are loaded into different resources
+			// Resource set and URI type (absolute/platform) must match
 			it.value = assert.value.clone
 		]
 		if (originalVariable === null) {

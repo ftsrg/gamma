@@ -52,7 +52,7 @@ class TestGeneratorUtil {
 			return instanceReference.lastInstance.fullContainmentHierarchy
 		}
 		// Original component instance references
-		return '''«FOR instance : instanceReference.componentInstanceChain»getComponent("«instance.name»")«ENDFOR»'''
+		return '''«FOR instance : instanceReference.componentInstanceChain SEPARATOR '.'»getComponent("«instance.name»")«ENDFOR»'''
 	}
 	
 	def CharSequence getFullContainmentHierarchy(ComponentInstance actual) {
