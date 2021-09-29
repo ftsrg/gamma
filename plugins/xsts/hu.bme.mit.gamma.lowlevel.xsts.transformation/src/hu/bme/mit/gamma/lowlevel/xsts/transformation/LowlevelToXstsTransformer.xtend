@@ -234,7 +234,7 @@ class LowlevelToXstsTransformer {
 		getOutEventEnvironmentalActionRule.fireAllCurrent
 	
 		mergeTransitions
-		//optimizeActions
+		optimizeActions
 		xSts.fillNullTransitions
 		handleTransientAndResettableVariableAnnotations
 		// The created EMF models are returned
