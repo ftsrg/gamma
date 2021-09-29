@@ -626,7 +626,7 @@ package class Trace {
 	}
 	
 	// ActivityNode - transition
-	def put(ActivityNode activityNode, Action xStsAction) {
+	def put(ActivityNode activityNode, NonDeterministicAction xStsAction) {
 		checkArgument(activityNode !== null)
 		checkArgument(xStsAction !== null)
 		trace.traces += createActivityNodeTransitionTrace => [
@@ -647,7 +647,7 @@ package class Trace {
 		return matches.head
 	}
 	
-	def getActivityNode(Action xStsAction) {
+	def getActivityNode(NonDeterministicAction xStsAction) {
 		checkArgument(xStsAction !== null)
 		val matches = ActivityNodeTransitionTrace.Matcher.on(tracingEngine).getAllValuesOfactivityNode(xStsAction)
 		checkState(matches.size == 1, matches.size)
