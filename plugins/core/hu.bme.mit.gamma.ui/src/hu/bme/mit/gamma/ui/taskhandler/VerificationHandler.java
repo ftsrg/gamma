@@ -16,12 +16,15 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.emf.common.util.URI;
@@ -81,6 +84,9 @@ public class VerificationHandler extends TaskHandler {
 		setVerification(verification);
 		Set<AnalysisLanguage> languagesSet = new HashSet<AnalysisLanguage>(verification.getAnalysisLanguages());
 		checkArgument(languagesSet.size() == 1);
+		
+		boolean distinguishStringFormulas = false;
+		
 		AbstractVerification verificationTask = null;
 		PropertySerializer propertySerializer = null;
 		for (AnalysisLanguage analysisLanguage : languagesSet) {
@@ -92,6 +98,7 @@ public class VerificationHandler extends TaskHandler {
 				case THETA:
 					verificationTask = ThetaVerification.INSTANCE;
 					propertySerializer = ThetaPropertySerializer.INSTANCE;
+					distinguishStringFormulas = true;
 					break;
 				case XSTS_UPPAAL:
 					verificationTask = XstsUppaalVerification.INSTANCE;
@@ -106,23 +113,47 @@ public class VerificationHandler extends TaskHandler {
 		boolean isOptimize = verification.isOptimize();
 		String packageName = verification.getPackageName().get(0);
 		
-		List<String> queryFileLocations = new ArrayList<String>();
-		// String locations
-		queryFileLocations.addAll(verification.getQueryFiles());
 		// Retrieved traces
 		List<VerificationResult> retrievedVerificationResults = new ArrayList<VerificationResult>();
 		List<ExecutionTrace> retrievedTraces = new ArrayList<ExecutionTrace>();
 		
-		// Execution based on property models
-		Queue<StateFormula> stateFormulas = new LinkedList<StateFormula>();
+		// Map for collecting both supported property representations
+		Map<String, StateFormula> formulas = new LinkedHashMap<String, StateFormula>();
+		// LinkedHashMap needed to match .get and .json files
+		
+		// Serializing property formulas
 		for (PropertyPackage propertyPackage : verification.getPropertyPackages()) {
 			for (CommentableStateFormula formula : propertyPackage.getFormulas()) {
-				stateFormulas.add(formula.getFormula());
+				StateFormula stateFormula = formula.getFormula();
+				String serializedFormula = propertySerializer.serialize(stateFormula);
+				formulas.put(serializedFormula, stateFormula);
 			}
 		}
-		while (!stateFormulas.isEmpty()) {
-			StateFormula formula = stateFormulas.poll();
-			String serializedFormula = propertySerializer.serialize(formula);
+		// Retrieving string formulas
+		for (String queryFileLocation : verification.getQueryFiles()) {
+			File queryFile = new File(queryFileLocation);
+			String formulaFileString = fileUtil.loadString(queryFile);
+			if (distinguishStringFormulas) {
+				String[] lines = formulaFileString.split(System.lineSeparator());
+				for (String line : lines) {
+					formulas.put(line, null);
+				}
+			}
+			else {
+				// UPPAAL would benefit from the merging of all query files into one string
+				formulas.put(formulaFileString, null);
+			}
+		}
+		
+		// Creating a queue to enable property removal during optimization 
+		Queue<Entry<String, StateFormula>> formulaQueue = new LinkedList<Entry<String, StateFormula>>();
+		formulaQueue.addAll(formulas.entrySet());
+		
+		// Execution
+		while (!formulaQueue.isEmpty()) {
+			Entry<String, StateFormula> formula = formulaQueue.poll();
+			String serializedFormula = formula.getKey();
+			
 			// Saving the string
 			File file = modelFile;
 			String fileName = fileNamer.getHiddenSerializedPropertyFileName(file.getName());
@@ -133,27 +164,25 @@ public class VerificationHandler extends TaskHandler {
 			Result result = execute(verificationTask, modelFile, queryFile, retrievedTraces, isOptimize);
 			ExecutionTrace trace = result.getTrace();
 			ThreeStateBoolean verificationResult = result.getResult();
-			retrievedVerificationResults.add(new VerificationResult(serializedFormula, verificationResult));
+			retrievedVerificationResults.add(
+					new VerificationResult(serializedFormula, verificationResult));
 			
 			// Checking if some of the unchecked properties are already covered
 			if (trace != null && isOptimize) {
+				List<StateFormula> stateFormulas = formulaQueue.stream()
+						.map(it -> it.getValue())
+						.filter(it -> it != null)
+						.collect(Collectors.toList()); // Not null state formulas
 				CoveredPropertyReducer reducer = new CoveredPropertyReducer(stateFormulas, trace);
 				List<StateFormula> coveredProperties = reducer.execute();
-				if (coveredProperties.size() > 0) {
-					for (StateFormula coveredProperty : coveredProperties) {
-						String serializedProperty = propertySerializer.serialize(coveredProperty);
-						logger.log(Level.INFO, "Property already covered: " + serializedProperty);
-					}
-					stateFormulas.removeAll(coveredProperties);
+				
+				for (StateFormula coveredProperty : coveredProperties) {
+					String serializedProperty = propertySerializer.serialize(coveredProperty);
+					logger.log(Level.INFO, "Property already covered: " + serializedProperty);
+					formulaQueue.removeIf(it -> it.getValue() == coveredProperty);
 				}
+				
 			}
-		}
-		// Execution based on string queries
-		for (String queryFileLocation : queryFileLocations) {
-			File queryFile = new File(queryFileLocation);
-			execute(verificationTask, modelFile, queryFile,	retrievedTraces, isOptimize);
-			// No result here (yet) as UPPAAL returns multiple traces in one ExecutionTrace
-			// It could be implemented using fileUtil.loadString
 		}
 		if (isOptimize) {
 			// Optimization again on the retrieved tests (front to back and vice versa)
@@ -183,6 +212,7 @@ public class VerificationHandler extends TaskHandler {
 			serializer.serialize(targetFolderUri, traceFileName, svgFileName,
 					testFolderUri, testFileName, packageName, trace);
 		}
+		
 		// Note that .get and .json postfix ids will not match if optimization is applied
 		for (VerificationResult verificationResult : retrievedVerificationResults) {
 			serializer.serialize(targetFolderUri, traceFileName, verificationResult);
