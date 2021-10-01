@@ -165,12 +165,4 @@ class EntryActionRetriever {
 		)
 	}
 	
-	protected def Action createSingleXStsAssumeStateEntryActions(State lowlevelState) {
-		val xStsStateExitActions = lowlevelState.entryAction.transformAction
-		val xStsStateAssumption = lowlevelState.createSingleXStsStateAssumption
-		// Action taken only if the state is "active" (assume action)
-		return xStsStateAssumption.createIfActionBranch(xStsStateExitActions)
-	}
-	
-	
 }

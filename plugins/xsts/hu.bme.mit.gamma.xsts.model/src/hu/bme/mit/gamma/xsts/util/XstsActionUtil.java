@@ -532,9 +532,8 @@ public class XstsActionUtil extends ExpressionUtil {
 		}
 		List<Expression> newConditions = new ArrayList<Expression>();
 		for (Expression condition : conditions) {
-			EqualityExpression equalityExpression = expressionFactory.createEqualityExpression();
-			equalityExpression.setLeftOperand(clone(controlExpresion));
-			equalityExpression.setRightOperand(condition);
+			EqualityExpression equalityExpression = createEqualityExpression(
+					clone(controlExpresion), condition);
 			newConditions.add(equalityExpression);
 		}
 		return createIfElseAction(newConditions, actions);
