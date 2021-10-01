@@ -444,6 +444,15 @@ public class StatechartModelValidator extends ActionModelValidator {
 				"A region must have at least one entry node", 
 					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME)));
 		}
+		for (StateNode entry : entries) {
+			Class<? extends StateNode> clazz = entry.getClass();
+			long count = entries.stream().filter(it -> clazz.isInstance(it)).count();
+			if (count > 1) {
+				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+					"A region must have at most one entry node of a certain type", 
+						new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME, entry)));
+			}
+		}
 		return validationResultMessages;
 	}
 	
