@@ -74,6 +74,11 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//LoopAction/iterationParameterDeclaration"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//LoopAction/range"/>
     </genClasses>
+    <genClasses ecoreClass="model.ecore#//IfAction">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//IfAction/condition"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//IfAction/then"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//IfAction/else"/>
+    </genClasses>
     <genClasses ecoreClass="model.ecore#//CompositeAction"/>
     <genClasses ecoreClass="model.ecore#//AssertAction">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//AssertAction/assertion"/>
