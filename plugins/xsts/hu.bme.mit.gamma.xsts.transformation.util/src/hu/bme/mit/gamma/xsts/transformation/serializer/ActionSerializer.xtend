@@ -14,6 +14,7 @@ import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.AssumeAction
 import hu.bme.mit.gamma.xsts.model.EmptyAction
 import hu.bme.mit.gamma.xsts.model.HavocAction
+import hu.bme.mit.gamma.xsts.model.IfAction
 import hu.bme.mit.gamma.xsts.model.LoopAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.OrthogonalAction
@@ -76,6 +77,15 @@ class ActionSerializer {
 			}
 		'''
 	}
+	
+	def dispatch String serialize(IfAction action) '''
+		if («action.condition.serialize») {
+			«action.then.serialize»
+		}
+		«IF action.^else !== null»else {
+			«action.^else.serialize»
+		}«ENDIF»
+	'''
 	
 	def dispatch String serialize(NonDeterministicAction action) '''
 		choice «FOR subaction : action.actions SEPARATOR " or "»{

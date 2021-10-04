@@ -56,7 +56,7 @@ class EntryActionRetriever {
 			it.actions += lowlevelParentState.createRecursiveXStsParentStateEntryActions(lowlevelTopState, inclusiveTopState)
 			// This level
 			val xStsStateAssumption = lowlevelParentState.createSingleXStsStateAssumption
-			it.actions += xStsStateAssumption.createIfAction(lowlevelParentState.entryAction.transformAction)
+			it.actions += xStsStateAssumption.createIfAction1(lowlevelParentState.entryAction.transformAction)
 			// Action taken only if the state is "active" (assume action)
 		]
 		return xStsEntryAction
@@ -81,7 +81,7 @@ class EntryActionRetriever {
 			// This level
 			val xStsStateAssumption = lowlevelParentState.createSingleXStsStateAssumption
 			// Action taken only if the state is "active" (assume action)
-			val xStsStateEntryAction = xStsStateAssumption.createIfAction(lowlevelParentState.entryAction.transformAction)
+			val xStsStateEntryAction = xStsStateAssumption.createIfAction1(lowlevelParentState.entryAction.transformAction)
 			if (lowlevelGrandparentRegion.hasOrthogonalRegion  && !lowlevelGrandparentRegion.stateNodes.contains(lowlevelTopState)) {
 				// Orthogonal region exit actions
 				it.actions += lowlevelGrandparentRegion.createRecursiveXStsOrthogonalRegionEntryActions as ParallelAction => [
@@ -100,8 +100,8 @@ class EntryActionRetriever {
 	// Subregion handling
 	
 	protected def createRecursiveXStsRegionAndSubregionEntryActions(Region lowlevelRegion) {
-		return createNonDeterministicAction => [
-			for (lowlevelSubstate : lowlevelRegion.stateNodes.filter(State)) {
+		return createSequentialAction => [
+			for (lowlevelSubstate : lowlevelRegion.states) {
 				it.actions += lowlevelSubstate.createRecursiveXStsStateAndSubstateEntryActions
 			}
 		]
@@ -133,7 +133,7 @@ class EntryActionRetriever {
 			it.actions += XStsStateAndSubstateEntryActions
 			// Orthogonal region actions
 			for (lowlevelOrthogonalRegion : lowlevelParentRegion.orthogonalRegions) {
-				for (lowlevelSubstate : lowlevelOrthogonalRegion.stateNodes.filter(State)) {
+				for (lowlevelSubstate : lowlevelOrthogonalRegion.states) {
 					it.actions += lowlevelSubstate.createRecursiveXStsStateAndSubstateEntryActions
 				}
 			}
@@ -148,15 +148,14 @@ class EntryActionRetriever {
 		// Recursion for the entry action of contained states
 		for (lowlevelSubregion : lowlevelState.regions) {
 			xStsSubstateEntryActions += createParallelAction => [
-				it.actions += createNonDeterministicAction => [
-					for (lowlevelSubstate : lowlevelSubregion.stateNodes.filter(State)) {
+				it.actions += createSequentialAction => [
+					for (lowlevelSubstate : lowlevelSubregion.states) {
 						it.actions += lowlevelSubstate.createRecursiveXStsStateAndSubstateEntryActions
 					}
 				]
 			]
 		}
-		// This is wrapped in a NonDeterministicAction, therefore it is createIfActionBranch and not createIfAction
-		return xStsStateAssumption.createIfActionBranch(
+		return xStsStateAssumption.createIfAction1(
 			createSequentialAction => [
 				it.actions += xStsStateEntryActions
 				// Order is very important

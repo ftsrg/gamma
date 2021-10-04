@@ -34,11 +34,19 @@ class TransitionPreconditionCreator {
 	// Auxiliary object
 	protected final extension StateAssumptionCreator stateAssumptionCreator
 	protected final extension ExpressionTransformer expressionTransformer
-	// Trace
+	
 	protected final Trace trace
+	protected final boolean addConflictGuard
+	protected final boolean addPriorityGuard
 	
 	new(Trace trace) {
+		this(trace, false, false)
+	}
+	
+	new(Trace trace, boolean addConflictGuard, boolean addPriorityGuard) {
 		this.trace = trace
+		this.addConflictGuard = addConflictGuard
+		this.addPriorityGuard = addPriorityGuard
 		this.stateAssumptionCreator = new StateAssumptionCreator(this.trace)
 		this.expressionTransformer = new ExpressionTransformer(this.trace)
 	}
@@ -63,8 +71,10 @@ class TransitionPreconditionCreator {
 			lowlevelTransition.ancestorTransitions 
 			
 		}
+		// TODO
 		val xStsConflictExpression = lowlevelPotentialConflictingTransitions.createXStsTransitionConflictExclusion
 		
+		// TODO
 		val lowlevelHigherPriorityTransitions = lowlevelTransition.higherPriorityTransitions
 		val xStsPriorityExpression = lowlevelHigherPriorityTransitions.createXStsTransitionConflictExclusion
 		
@@ -75,8 +85,12 @@ class TransitionPreconditionCreator {
 		
 		val xStsPreconditionExpression = createAndExpression => [
 			it.operands += xStsEnablednessExpression // Source state enabledness
-			it.operands += xStsPriorityExpression // Priority resolution
-			it.operands += xStsConflictExpression // Potential conflict resolution
+			if (addPriorityGuard) {
+				it.operands += xStsPriorityExpression // Priority resolution
+			}
+			if (addConflictGuard) {
+				it.operands += xStsConflictExpression // Potential conflict resolution
+			}
 		]
 		
 		val xStsOperands = xStsPreconditionExpression.operands

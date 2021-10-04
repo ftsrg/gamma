@@ -20,7 +20,6 @@ import hu.bme.mit.gamma.statechart.lowlevel.model.State
 import hu.bme.mit.gamma.statechart.lowlevel.model.StateNode
 import hu.bme.mit.gamma.statechart.lowlevel.model.Transition
 import hu.bme.mit.gamma.xsts.model.Action
-import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.ParallelAction
 import hu.bme.mit.gamma.xsts.model.SequentialAction
 import java.util.List
@@ -54,19 +53,9 @@ class PrecursoryTransitionToXTransitionTransformer extends LowlevelTransitionToX
 		return xStsComplexTransition
 	}
 	
-	// TODO delete merge states
-	
 	def transform(MergeState lowlevelLastMergeState) {
-		val xStsAction = lowlevelLastMergeState.transformBackward
-		val xStsChoiceAction = xStsAction.actions.head as NonDeterministicAction
-		val xStsRecursivePrecondition = lowlevelLastMergeState.createRecursiveXStsBackwardPrecondition
-		// The precondition has to be contained in an EMF tree (trace serialization) at index 0
-		xStsAction.actions.add(0, xStsRecursivePrecondition.createAssumeAction)
-		val xStsForwardAction = lowlevelLastMergeState.transformForward
-		xStsAction.actions += xStsForwardAction
-		val xStsComplexTransition = xStsAction.createXStsTransition
-		trace.put(lowlevelLastMergeState, xStsComplexTransition, xStsRecursivePrecondition, xStsChoiceAction)
-		return xStsComplexTransition
+		// Not supported anymore, a preprocessing step takes care of merge states
+		throw new IllegalArgumentException("Merge states are not supported")
 	}
 	
 	// Backward
@@ -105,28 +94,8 @@ class PrecursoryTransitionToXTransitionTransformer extends LowlevelTransitionToX
 	}
 	
 	protected def dispatch SequentialAction transformBackward(MergeState lowlevelMergeState) {
-		val lowlevelIncomingTransitions = lowlevelMergeState.incomingTransitions
-		checkArgument(lowlevelIncomingTransitions.size >= 1)
-		val lowlevelOutgoingTransitions = lowlevelMergeState.outgoingTransitions
-		checkArgument(lowlevelOutgoingTransitions.size == 1)
-		val xStsMergedPreconditionAction = createNonDeterministicAction
-		for (lowlevelIncomingTransition : lowlevelMergeState.incomingTransitions) {
-			val lowlevelSourceNode = lowlevelIncomingTransition.source
-			// This "inner condition" is needed so the corresponding state exit can be executed
-			val branchGuard = lowlevelSourceNode.createRecursiveXStsBackwardPrecondition(lowlevelIncomingTransition)
-			xStsMergedPreconditionAction.extendChoiceWithBranch(branchGuard,
-				// Going backward
-				lowlevelMergeState.createRecursiveXStsBackwardNodeConnection(lowlevelIncomingTransition, lowlevelSourceNode)
-			)
-		}
-		// Postcondition
-		val xStsTransitionAction = createSequentialAction => [
-			// Precondition is needed for trace and method mergeTransitions (otherwise not needed for this particular action)
-			it.actions += xStsMergedPreconditionAction // Contains "backward" actions"
-			// Precondition action (state and guard) is not needed separately in this action
-			// No forward: it would lead to infinite recursion
-		]
-		return xStsTransitionAction
+		// Not supported anymore, a preprocessing step takes care of merge states
+		throw new IllegalArgumentException("Merge states are not supported")
 	}
 	
 	// Note that choices and forks cannot be before merges and joins
@@ -296,7 +265,7 @@ class PrecursoryTransitionToXTransitionTransformer extends LowlevelTransitionToX
 			if (!exitedRegions.contains(lowlevelSubregion)) {
 				xStsRegionExitActions += createSequentialAction => [
 					// State exits
-					for (lowlevelSubstate : lowlevelSubregion.stateNodes.filter(State)) {
+					for (lowlevelSubstate : lowlevelSubregion.states) {
 						it.actions += lowlevelSubstate.createRecursiveXStsStateAndSubstateExitActions
 					}
 					// Region deactivations
@@ -305,7 +274,7 @@ class PrecursoryTransitionToXTransitionTransformer extends LowlevelTransitionToX
 			}
 			else {
 				// Recursion
-				for (lowlevelCompositeSubstate : lowlevelSubregion.stateNodes.filter(State).filter[it.composite]) {
+				for (lowlevelCompositeSubstate : lowlevelSubregion.states.filter[it.composite]) {
 					xStsRegionExitActions += lowlevelCompositeSubstate.createXStsUnexitedRegionExitAction(exitedRegions)
 				}
 			}

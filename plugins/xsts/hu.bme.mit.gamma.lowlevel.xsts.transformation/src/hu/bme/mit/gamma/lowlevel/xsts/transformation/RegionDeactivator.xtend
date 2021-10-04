@@ -17,6 +17,7 @@ import hu.bme.mit.gamma.statechart.lowlevel.model.StateNode
 import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.ParallelAction
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
+import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 
 import static extension hu.bme.mit.gamma.statechart.lowlevel.derivedfeatures.LowlevelStatechartModelDerivedFeatures.*
 
@@ -24,6 +25,7 @@ class RegionDeactivator {
 	// Model factories
 	protected final extension XSTSModelFactory factory = XSTSModelFactory.eINSTANCE
 	protected final extension ExpressionModelFactory constraintFactory = ExpressionModelFactory.eINSTANCE
+	protected final extension XstsActionUtil actionFactory = XstsActionUtil.INSTANCE
 	// Trace needed for variable references
 	protected final Trace trace
 		
@@ -147,7 +149,7 @@ class RegionDeactivator {
 			it.actions += lowlevelRegion.createSingleXStsRegionDeactivatingAction
 			if (!lowlevelRegion.isLeaf) {
 				it.actions += createParallelAction => [
-					for (lowlevelSubstate : lowlevelRegion.stateNodes.filter(State)) {
+					for (lowlevelSubstate : lowlevelRegion.states) {
 						for (lowlevelSubregion : lowlevelSubstate.regions) {
 							it.actions += lowlevelSubregion.createRecursiveXStsRegionAndSubregionDeactivatingAction
 						} 
@@ -163,14 +165,8 @@ class RegionDeactivator {
 			return createEmptyAction
 		}
 		else {
-			return createAssignmentAction => [
-				it.lhs = createDirectReferenceExpression => [
-					it.declaration = trace.getXStsVariable(lowlevelRegion)
-				]
-				it.rhs = createEnumerationLiteralExpression => [
-					it.reference = trace.getXStsInactiveEnumLiteral(lowlevelRegion)
-				]
-			]
+			return trace.getXStsVariable(lowlevelRegion).createAssignmentAction(
+				trace.getXStsInactiveEnumLiteral(lowlevelRegion).createEnumerationLiteralExpression)
 		}
 	}
 	

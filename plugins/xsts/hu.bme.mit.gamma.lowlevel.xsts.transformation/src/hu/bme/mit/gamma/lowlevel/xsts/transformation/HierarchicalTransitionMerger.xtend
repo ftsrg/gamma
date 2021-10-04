@@ -2,15 +2,16 @@ package hu.bme.mit.gamma.lowlevel.xsts.transformation
 
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.Statecharts
 import hu.bme.mit.gamma.statechart.lowlevel.model.ChoiceState
-import hu.bme.mit.gamma.statechart.lowlevel.model.CompositeElement
 import hu.bme.mit.gamma.statechart.lowlevel.model.ForkState
 import hu.bme.mit.gamma.statechart.lowlevel.model.GuardEvaluation
 import hu.bme.mit.gamma.statechart.lowlevel.model.JoinState
 import hu.bme.mit.gamma.statechart.lowlevel.model.MergeState
 import hu.bme.mit.gamma.statechart.lowlevel.model.Region
-import hu.bme.mit.gamma.statechart.lowlevel.model.State
-import hu.bme.mit.gamma.xsts.model.AssumeAction
-import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
+import hu.bme.mit.gamma.statechart.lowlevel.model.SchedulingOrder
+import hu.bme.mit.gamma.xsts.model.SequentialAction
+import hu.bme.mit.gamma.xsts.model.XTransition
+import java.util.Comparator
+import java.util.List
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 
 import static com.google.common.base.Preconditions.checkState
@@ -24,6 +25,7 @@ class HierarchicalTransitionMerger extends AbstractTransitionMerger {
 	// Guard extraction is not yet supported
 	
 	new(ViatraQueryEngine engine, Trace trace, boolean extractGuards) {
+		// Conflict and priority encoding are unnecessary
 		super(engine, trace, extractGuards)
 	}
 	
@@ -36,72 +38,83 @@ class HierarchicalTransitionMerger extends AbstractTransitionMerger {
 		val statecharts = Statecharts.Matcher.on(engine).allValuesOfstatechart
 		checkState(statecharts.size == 1)
 		val statechart = statecharts.head
-		val xStsMergedAction = createNonDeterministicAction
-		statechart.mergeTransitions(xStsMergedAction)
+		
+		val regionGroups = (statechart.schedulingOrder == SchedulingOrder.TOP_DOWN) ?
+			statechart.topDownRegionGroups : statechart.bottomUpRegionGroups
+		
+		var ifAction = createIfAction
+		
+		for (regionGroup : regionGroups) {
+			if (regionGroup.size > 1) {
+				// Orthogonal regions
+				val parallelAction = createParallelAction => [
+					
+				]
+			}
+			else {
+				// Simple region
+				val lowlevelRegion = regionGroup.head
+				val xStsRegionBehavior = lowlevelRegion.mergeTransitionsOfRegion
+			}
+		}
+		
+		val xStsMergedAction = ifAction
 		// The many transitions are now replaced by a single merged transition
 		xSts.changeTransitions(xStsMergedAction.wrap)
-		// Adding default else branch: if "region" cannot fire
-		xStsMergedAction.extendChoiceWithDefaultBranch(createEmptyAction)
-		// For this to work, each assume action has to be at index 0 of the containing composite action
 	}
 	
-	protected def void mergeTransitions(CompositeElement lowlevelComposite, NonDeterministicAction xStsAction) {
-		val lowlevelRegions = lowlevelComposite.regions
-		if (lowlevelRegions.size > 1) {
-			val xStsSequentialAction = createSequentialAction
-			xStsAction.actions += xStsSequentialAction
-			val orExpression = createOrExpression // This parallel action can fire only if one of its regions can fire
-			val xStsAssumeAction = createAssumeAction // Cannot be deleted, see: if (a || b) { if (a) if (!a) if (b) if (!b) } if (!(a || b))
-			xStsAssumeAction.assumption = orExpression
-			xStsSequentialAction.actions += xStsAssumeAction
-			val xStsParallelAction = createParallelAction
-			xStsSequentialAction.actions += xStsParallelAction
-			for (lowlevelRegion : lowlevelRegions) {
-				val xStsSubchoiceAction = createNonDeterministicAction
-				xStsParallelAction.actions += xStsSubchoiceAction
-				lowlevelRegion.mergeTransitionsOfRegion(xStsSubchoiceAction)
-				// Adding default else branch: if "region" cannot fire
-				val xStsPrecondition = xStsSubchoiceAction.precondition
-				if (xStsPrecondition !== null) { // Can be null if the region has no transitions
-					orExpression.operands += xStsPrecondition
-					xStsSubchoiceAction.extendChoiceWithDefaultBranch(createEmptyAction)
+	private def mergeTransitionsOfRegion(Region lowlevelRegion) {
+		val xStsTransitions =  <Integer, List<XTransition>>newTreeMap(
+			new Comparator<Integer>() {
+				override compare(Integer l, Integer r) {
+					return r.compareTo(l) // Higher value means higher priority
 				}
-				// For this to work, each assume action has to be at index 0 of the containing composite action
 			}
-		} else if (lowlevelRegions.size == 1) {
-			lowlevelRegions.head.mergeTransitionsOfRegion(xStsAction)
-		}
-	}
-	
-	private def void mergeTransitionsOfRegion(Region lowlevelRegion, NonDeterministicAction xStsAction) {
-		val xStsTransitions = newHashSet
-		val lowlevelStates = lowlevelRegion.stateNodes.filter(State)
+		)
+		
+		val lowlevelStates = lowlevelRegion.states
+		val hasDifferentPriorities = lowlevelStates.exists[
+				it.outgoingTransitions.hasDifferentPriorities]
+				
 		// Simple outgoing transitions
 		for (lowlevelState : lowlevelStates) {
-			for (lowlevelOutgoingTransition : lowlevelState.outgoingTransitions
-					.filter[trace.isTraced(it)] /* Simple transitions */ ) {
-				xStsTransitions += trace.getXStsTransition(lowlevelOutgoingTransition)
-			}
-			if (lowlevelState.isComposite) {
-				// Recursion
-				lowlevelState.mergeTransitions(xStsAction)
+			val lowlevelOutgoingTransitions = lowlevelState.outgoingTransitions
+			for (lowlevelOutgoingTransition : lowlevelOutgoingTransitions
+						.filter[trace.isTraced(it)] /* Simple transitions */ ) {
+				val priority = lowlevelOutgoingTransition.priority
+				val xTransitionList = xStsTransitions.getOrCreateList(priority)
+				xTransitionList += trace.getXStsTransition(lowlevelOutgoingTransition)
 			}
 		}
 		// Complex transitions
 		for (lastJoinState : lowlevelRegion.stateNodes.filter(JoinState).filter[it.isLastJoinState]) {
-			xStsTransitions += trace.getXStsTransition(lastJoinState)
+			val priority = lastJoinState.incomingTransitions.map[it.priority].max // Not correct
+			val xTransitionList = xStsTransitions.getOrCreateList(priority)
+			xTransitionList += trace.getXStsTransition(lastJoinState)
 		}
 		for (lastMergeState : lowlevelRegion.stateNodes.filter(MergeState).filter[it.isLastMergeState]) {
-			xStsTransitions += trace.getXStsTransition(lastMergeState)
+			throw new IllegalArgumentException("Merge states are not handled")
 		}
-		for (lastForkState : lowlevelRegion.stateNodes.filter(ForkState).filter[it.isFirstForkState]) {
-			xStsTransitions += trace.getXStsTransition(lastForkState)
+		for (firstForkState : lowlevelRegion.stateNodes.filter(ForkState).filter[it.isFirstForkState]) {
+			val priority = firstForkState.incomingTransitions.map[it.priority].max
+			val xTransitionList = xStsTransitions.getOrCreateList(priority)
+			xTransitionList += trace.getXStsTransition(firstForkState)
 		}
-		for (lastChoiceState : lowlevelRegion.stateNodes.filter(ChoiceState).filter[it.isFirstChoiceState]) {
-			xStsTransitions += trace.getXStsTransition(lastChoiceState)
+		for (firstChoiceState : lowlevelRegion.stateNodes.filter(ChoiceState).filter[it.isFirstChoiceState]) {
+			val priority = firstChoiceState.incomingTransitions.map[it.priority].max
+			val xTransitionList = xStsTransitions.getOrCreateList(priority)
+			xTransitionList += trace.getXStsTransition(firstChoiceState)
 		}
-		for (xStsTransition : xStsTransitions) {
-			xStsAction.actions += xStsTransition.action
+		
+		val xStsActions = xStsTransitions.values.flatten.map[it.action]
+				.filter(SequentialAction).toList
+		if (hasDifferentPriorities) {
+			return xStsActions.createChoiceActionWithEmptyDefaultBranch1
+			// The default branch must be extended by the caller
+		}
+		else {
+			return xStsActions.createIfAction
+			// The last else branch must be extended by the caller
 		}
 	}
 	
@@ -112,9 +125,8 @@ class HierarchicalTransitionMerger extends AbstractTransitionMerger {
 		val guardEvaluation = statechart.guardEvaluation
 		if (guardEvaluation == GuardEvaluation.BEGINNING_OF_STEP) {
 			val xStsNewMergedAction = createSequentialAction
-			// The trace.getGuards method is not correct as guard expressions for parallel actions and else guard expressions are not traced
 			val extractableExpressions = newArrayList
-			extractableExpressions += xSts.mergedAction.getAllContentsOfType(AssumeAction).map[it.assumption]
+			extractableExpressions += trace.getGuards.values.flatten.toList
 			extractableExpressions -= trace.getChoiceGuards.values.flatten.toList
 			
 			for (extractableExpression : extractableExpressions) {

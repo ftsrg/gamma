@@ -21,6 +21,7 @@ import static extension java.lang.Math.abs
 class FlatTransitionMerger extends AbstractTransitionMerger {
 	
 	new(ViatraQueryEngine engine, Trace trace, boolean extractGuards) {
+		// Relies on conflict and priority encoding
 		super(engine, trace, extractGuards)
 	}
 	

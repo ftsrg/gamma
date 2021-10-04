@@ -581,9 +581,7 @@ class LowlevelToXstsTransformer {
 	protected def getLastMergeTransitionsRule() {
 		if (lastMergeTransitionsRule === null) {
 			lastMergeTransitionsRule = createRule(LastMergeStates.instance).action [
-				val lowlevelLastMergeTransition = it.mergeState
-				val xStsComplexTransition = lowlevelLastMergeTransition.transform
-				xSts.transitions += xStsComplexTransition
+				throw new IllegalArgumentException("Merge states are not supported")
 			].build
 		}
 		return lastMergeTransitionsRule
@@ -642,7 +640,7 @@ class LowlevelToXstsTransformer {
 						]
 						
 						// Setting the parameter value
-						lowlevelEnvironmentalAction.actions += createIfAction(
+						lowlevelEnvironmentalAction.actions += createIfAction1(
 							// Only if the event is raised
 							xStsEventVariable.createReferenceExpression,
 							xStsInParameterAssignment

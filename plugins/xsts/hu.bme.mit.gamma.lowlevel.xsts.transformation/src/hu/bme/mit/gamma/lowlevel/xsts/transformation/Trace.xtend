@@ -42,6 +42,7 @@ import hu.bme.mit.gamma.statechart.lowlevel.model.Region
 import hu.bme.mit.gamma.statechart.lowlevel.model.State
 import hu.bme.mit.gamma.statechart.lowlevel.model.Transition
 import hu.bme.mit.gamma.util.GammaEcoreUtil
+import hu.bme.mit.gamma.xsts.model.CompositeAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.ParallelAction
 import hu.bme.mit.gamma.xsts.model.XSTS
@@ -87,7 +88,7 @@ package class Trace {
 	// Transition caching
 	
 	def getPrimaryIsActiveExpressions() {
-		return primaryIsActiveExpressions
+		return primaryIsActiveExpressions // No guards
 	}
 	
 	def getIsActiveExpressions() {
@@ -424,7 +425,8 @@ package class Trace {
 	}
 	
 	// Choice transition - xTransition
-	def put(ChoiceState lowlevelChoiceState, XTransition xStsTransition, Expression xStsPrecondition, NonDeterministicAction xStsChoiceAction) {
+	def put(ChoiceState lowlevelChoiceState, XTransition xStsTransition, Expression xStsPrecondition,
+			CompositeAction xStsChoiceAction /* If or NonDet */) {
 		checkArgument(lowlevelChoiceState !== null)
 		checkArgument(xStsTransition !== null)
 		checkArgument(xStsChoiceAction !== null)
