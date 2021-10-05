@@ -164,7 +164,30 @@ public class LowlevelStatechartModelDerivedFeatures extends ActionModelDerivedFe
 		Collections.reverse(topDownRegionGroups);
 		return topDownRegionGroups;
 	}
-
+	
+	public static List<Region> getAllRegions(CompositeElement element) {
+		List<Region> lowlevelSubregions = new ArrayList<Region>();
+		for (List<Region> regions : getTopDownRegionGroups(element)) {
+			lowlevelSubregions.addAll(regions);
+		}
+		return lowlevelSubregions;
+	}
+	
+	public static List<Region> getAllRegions(Region region) {
+		List<Region> lowlevelSubregions = new ArrayList<Region>();
+		for (State state : getStates(region)) {
+			if (isComposite(state)) {
+				lowlevelSubregions.addAll(getAllRegions(state));
+			}
+		}
+		return lowlevelSubregions;
+	}
+	
+	public static List<Region> getSelfAndAllRegions(Region region) {
+		List<Region> allRegions = getAllRegions(region);
+		allRegions.add(region);
+		return allRegions;
+	}
 	
 	public static boolean isTopRegion(Region lowlevelRegion) {
 		return lowlevelRegion.getParentElement() instanceof StatechartDefinition;

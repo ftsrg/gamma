@@ -9,6 +9,7 @@ import hu.bme.mit.gamma.statechart.lowlevel.model.JoinState
 import hu.bme.mit.gamma.statechart.lowlevel.model.MergeState
 import hu.bme.mit.gamma.statechart.lowlevel.model.State
 import hu.bme.mit.gamma.xsts.model.Action
+import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.XTransition
 import java.util.List
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
@@ -64,11 +65,12 @@ class FlatTransitionMerger extends AbstractTransitionMerger {
 			val xStsAction = xTransition.action
 			val name = '''_guard_«xTransition.hashCode.abs»'''
 			// Can later be changed to a single "if" for Theta (UPPAAL will not support it though)
-			if (extractGuards) {
-				xTransitionActions += xStsAction.createChoiceActionWithExtractedPreconditionsAndEmptyDefaultBranch(name)
-			} else {
-				xTransitionActions += #[xStsAction].createChoiceActionWithEmptyDefaultBranch
-			}
+//			if (extractGuards) {
+//				xTransitionActions += xStsAction.createChoiceActionWithExtractedPreconditionsAndEmptyDefaultBranch(name)
+//			} else {
+				val xStsSequentialAction = xStsAction as SequentialAction
+				xTransitionActions += xStsSequentialAction.createIfAction
+//			}
 		}
 		
 		val xStsMergedAction = createSequentialAction => [

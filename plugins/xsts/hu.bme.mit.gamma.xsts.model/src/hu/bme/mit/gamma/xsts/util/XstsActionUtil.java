@@ -520,21 +520,21 @@ public class XstsActionUtil extends ExpressionUtil {
 	
 	public NonDeterministicAction createChoiceAction1(Expression condition, Action thenAction) {
 		// If
-		NonDeterministicAction choiceAction = createChoiceActionBranch(condition, thenAction);
+		NonDeterministicAction choiceAction = createChoiceActionBranch1(condition, thenAction);
 		// Else
 		NotExpression negatedCondition = expressionFactory.createNotExpression();
 		negatedCondition.setOperand(ecoreUtil.clone(condition)); // Cloning needed
-		return extendChoiceWithBranch(choiceAction, negatedCondition, xStsFactory.createEmptyAction());
+		return extendChoiceWithBranch1(choiceAction, negatedCondition, xStsFactory.createEmptyAction());
 	}
 	
 	public NonDeterministicAction createChoiceAction1(
 			Expression condition, Action thenAction, Action elseAction) {
 		// If
-		NonDeterministicAction choiceAction = createChoiceActionBranch(condition, thenAction);
+		NonDeterministicAction choiceAction = createChoiceActionBranch1(condition, thenAction);
 		// Else
 		NotExpression negatedCondition = expressionFactory.createNotExpression();
 		negatedCondition.setOperand(ecoreUtil.clone(condition)); // Cloning needed
-		return extendChoiceWithBranch(choiceAction, negatedCondition, elseAction);
+		return extendChoiceWithBranch1(choiceAction, negatedCondition, elseAction);
 	}
 
 	public NonDeterministicAction extendChoiceWithBranch1(NonDeterministicAction choiceAction, 
@@ -565,12 +565,12 @@ public class XstsActionUtil extends ExpressionUtil {
 		}
 		// Else branch if needed
 		if (conditions.size() + 1 == actions.size()) {
-			extendChoiceWithDefaultBranch(choiceAction, actions.get(actions.size() - 1));
+			extendChoiceWithDefaultBranch1(choiceAction, actions.get(actions.size() - 1));
 		}
 		return choiceAction;
 	}
 	
-	public NonDeterministicAction createChoiceActionFromActions1(List<Action> actions) {
+	public NonDeterministicAction createChoiceActionFromActions1(List<? extends Action> actions) {
 		NonDeterministicAction switchAction = xStsFactory.createNonDeterministicAction();
 		for (Action action : actions) {
 			switchAction.getActions().add(action);
@@ -580,9 +580,9 @@ public class XstsActionUtil extends ExpressionUtil {
 	
 	public NonDeterministicAction createChoiceActionWithEmptyDefaultBranch1(
 			List<? extends Action> actions) {
-		NonDeterministicAction switchAction = createChoiceActionFromActions(actions);
+		NonDeterministicAction switchAction = createChoiceActionFromActions1(actions);
 		// Else branch
-		extendChoiceWithDefaultBranch(switchAction, xStsFactory.createEmptyAction());
+		extendChoiceWithDefaultBranch1(switchAction, xStsFactory.createEmptyAction());
 		return switchAction;
 	}
 	
@@ -596,7 +596,7 @@ public class XstsActionUtil extends ExpressionUtil {
 			VariableDeclarationAction variableDeclarationAction = extractExpression(
 					expressionFactory.createBooleanTypeDefinition(), name, expression);
 			actions.add(variableDeclarationAction);
-			NonDeterministicAction switchAction = createChoiceActionWithEmptyDefaultBranch(List.of(action));
+			NonDeterministicAction switchAction = createChoiceActionWithEmptyDefaultBranch1(List.of(action));
 			actions.add(switchAction);
 		}
 		else {

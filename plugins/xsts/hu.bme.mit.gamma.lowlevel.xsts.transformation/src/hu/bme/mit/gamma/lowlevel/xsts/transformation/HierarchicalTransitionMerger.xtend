@@ -1,17 +1,24 @@
 package hu.bme.mit.gamma.lowlevel.xsts.transformation
 
+import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.Statecharts
 import hu.bme.mit.gamma.statechart.lowlevel.model.ChoiceState
+import hu.bme.mit.gamma.statechart.lowlevel.model.CompositeElement
 import hu.bme.mit.gamma.statechart.lowlevel.model.ForkState
 import hu.bme.mit.gamma.statechart.lowlevel.model.GuardEvaluation
 import hu.bme.mit.gamma.statechart.lowlevel.model.JoinState
 import hu.bme.mit.gamma.statechart.lowlevel.model.MergeState
 import hu.bme.mit.gamma.statechart.lowlevel.model.Region
 import hu.bme.mit.gamma.statechart.lowlevel.model.SchedulingOrder
+import hu.bme.mit.gamma.xsts.model.Action
+import hu.bme.mit.gamma.xsts.model.CompositeAction
+import hu.bme.mit.gamma.xsts.model.IfAction
+import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.XTransition
 import java.util.Comparator
 import java.util.List
+import java.util.Map
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 
 import static com.google.common.base.Preconditions.checkState
@@ -39,28 +46,105 @@ class HierarchicalTransitionMerger extends AbstractTransitionMerger {
 		checkState(statecharts.size == 1)
 		val statechart = statecharts.head
 		
-		val regionGroups = (statechart.schedulingOrder == SchedulingOrder.TOP_DOWN) ?
-			statechart.topDownRegionGroups : statechart.bottomUpRegionGroups
+//		val regionGroups = (statechart.schedulingOrder == SchedulingOrder.TOP_DOWN) ?
+//			statechart.topDownRegionGroups : statechart.bottomUpRegionGroups
+//		
+//		var ifAction = createIfAction
+//		
+//		for (regionGroup : regionGroups) {
+//			if (regionGroup.size > 1) {
+//				// Orthogonal regions
+//				val parallelAction = createParallelAction => [
+//					
+//				]
+//			}
+//			else {
+//				// Simple region
+//				val lowlevelRegion = regionGroup.head
+//				val xStsRegionBehavior = lowlevelRegion.mergeTransitionsOfRegion
+//			}
+//		}
+
+		val lowlevelRegions = statechart.allRegions
+		val regionActions = newHashMap
+		for (lowlevelRegion : lowlevelRegions) {
+			val xStsAction = lowlevelRegion.mergeTransitionsOfRegion // If or NonDet
+			regionActions += lowlevelRegion -> xStsAction
+		}
 		
-		var ifAction = createIfAction
+		val xStsMergedAction = createSequentialAction
+		// The many transitions are now replaced by a single merged transition
+		xSts.changeTransitions(xStsMergedAction.wrap)
+	}
+	
+	private def Action mergeAllTransitionsOfRegion(CompositeElement element,
+			Map<Region, CompositeAction> regionActions) {
+		val lowlevelRegions = element.regions
 		
-		for (regionGroup : regionGroups) {
-			if (regionGroup.size > 1) {
-				// Orthogonal regions
-				val parallelAction = createParallelAction => [
+		if (lowlevelRegions.empty) {
+			return createEmptyAction
+		}
+		if (lowlevelRegions.size == 1) {
+			val lowlevelRegion = lowlevelRegions.head
+			return lowlevelRegion.mergeAllTransitionsOfRegion(regionActions)
+		}
+		else {
+			val xStsSequentialAction = createSequentialAction
+			
+			val xStsExecutedVariableAction = createBooleanTypeDefinition
+					.createVariableDeclarationAction('''isExec«element.hashCode.abs»''',
+						createFalseExpression)
+			val xStsExecutedVariable = xStsExecutedVariableAction.variableDeclaration
+			xStsSequentialAction.actions += xStsExecutedVariableAction
+			
+			val xStsParallelAction = createParallelAction
+			xStsSequentialAction.actions += xStsParallelAction
+			
+			for (lowlevelRegion : lowlevelRegions) {
+				for (Region subregion : lowlevelRegion.selfAndAllRegions) {
+					val xStsSubregionAction = regionActions.get(subregion)
+					xStsSubregionAction.injectExecutedVariableAnnotation(xStsExecutedVariable)
+				}
+				xStsParallelAction.actions += lowlevelRegion.mergeAllTransitionsOfRegion(regionActions)
+			}
+			xStsSequentialAction.actions += xStsExecutedVariable.createReferenceExpression
+					.createNotExpression.createIfAction1(createEmptyAction)
 					
-				]
+			return xStsSequentialAction
+		}
+		
+	}
+	
+	private def Action mergeAllTransitionsOfRegion(Region region,
+			Map<Region, CompositeAction> regionActions) {
+		val lowlevelStatechart = region.statechart
+		val lowlevelSchedulingOrder = lowlevelStatechart.schedulingOrder
+		
+		var Action firstXStsAction = null
+		var Action lastXStsAction = null
+		
+		val lowlevelCompositeStates = region.states.filter[it.composite]
+		for (lowlevelCompositeState : lowlevelCompositeStates) {
+			val xStsStateAction = lowlevelCompositeState.mergeAllTransitionsOfRegion(regionActions)
+			if (lastXStsAction === null) {
+				firstXStsAction = xStsStateAction
+				lastXStsAction = xStsStateAction
 			}
 			else {
-				// Simple region
-				val lowlevelRegion = regionGroup.head
-				val xStsRegionBehavior = lowlevelRegion.mergeTransitionsOfRegion
+				lastXStsAction.extendElse(xStsStateAction)
+				lastXStsAction = xStsStateAction
 			}
 		}
 		
-		val xStsMergedAction = ifAction
-		// The many transitions are now replaced by a single merged transition
-		xSts.changeTransitions(xStsMergedAction.wrap)
+		val xStsRegionAction = regionActions.get(region)
+		if (lowlevelSchedulingOrder == SchedulingOrder.TOP_DOWN) {
+			xStsRegionAction.extendElse(firstXStsAction)
+			return xStsRegionAction
+		}
+		else {
+			lastXStsAction.extendElse(xStsRegionAction)
+			return firstXStsAction
+		}
 	}
 	
 	private def mergeTransitionsOfRegion(Region lowlevelRegion) {
@@ -109,13 +193,48 @@ class HierarchicalTransitionMerger extends AbstractTransitionMerger {
 		val xStsActions = xStsTransitions.values.flatten.map[it.action]
 				.filter(SequentialAction).toList
 		if (hasDifferentPriorities) {
-			return xStsActions.createChoiceActionWithEmptyDefaultBranch1
+			return xStsActions.createChoiceActionFromActions1
 			// The default branch must be extended by the caller
 		}
 		else {
 			return xStsActions.createIfAction
 			// The last else branch must be extended by the caller
 		}
+	}
+	
+	private def injectExecutedVariableAnnotation(Action action, VariableDeclaration execVariable) {
+		if (action instanceof IfAction) {
+			val ifActions = action.getSelfAndAllContentsOfType(IfAction)
+			for (ifAction : ifActions) {
+				val then = ifAction.then
+				val execSetting = execVariable.createAssignmentAction(createTrueExpression)
+				then.appendToAction(execSetting)
+			}
+		}
+		else if (action instanceof NonDeterministicAction) {
+			for (branch : action.actions) {
+				val execSetting = execVariable.createAssignmentAction(createTrueExpression)
+				branch.appendToAction(execSetting)
+			}
+		}
+		throw new IllegalArgumentException("Not known action: " + action)
+	}
+	
+	private def extendElse(Action extendable, Action action) {
+		// Extendable is either an If, NonDet or a Sequential with an If at the end
+		// See mergeAllTransitionsOfRegion(CompositeElement element...
+		if (extendable instanceof IfAction) {
+			extendable.^else = action // See the referenced method
+		}
+		else if (extendable instanceof NonDeterministicAction) {
+			extendable.extendChoiceWithDefaultBranch1(action)
+		}
+		else if (extendable instanceof SequentialAction) {
+			val lastAction = extendable.actions.last
+			val ifAction = lastAction as IfAction
+			ifAction.then = action // See the referenced method
+		}
+		throw new IllegalArgumentException("Not known action: " + extendable)
 	}
 	
 	private def handleGuardEvaluations() {
