@@ -72,7 +72,7 @@ class HierarchicalTransitionMerger extends AbstractTransitionMerger {
 			regionActions += lowlevelRegion -> xStsAction
 		}
 		
-		val xStsMergedAction = createSequentialAction
+		val xStsMergedAction = statechart.mergeAllTransitionsOfRegion(regionActions)
 		// The many transitions are now replaced by a single merged transition
 		xSts.changeTransitions(xStsMergedAction.wrap)
 	}
@@ -137,6 +137,9 @@ class HierarchicalTransitionMerger extends AbstractTransitionMerger {
 		}
 		
 		val xStsRegionAction = regionActions.get(region)
+		if (firstXStsAction === null) {
+			return xStsRegionAction
+		}
 		if (lowlevelSchedulingOrder == SchedulingOrder.TOP_DOWN) {
 			xStsRegionAction.extendElse(firstXStsAction)
 			return xStsRegionAction
@@ -157,8 +160,8 @@ class HierarchicalTransitionMerger extends AbstractTransitionMerger {
 		)
 		
 		val lowlevelStates = lowlevelRegion.states
-		val hasDifferentPriorities = lowlevelStates.exists[
-				it.outgoingTransitions.hasDifferentPriorities]
+		val arePrioritiesUnique = lowlevelStates.forall[
+				it.outgoingTransitions.arePrioritiesUnique]
 				
 		// Simple outgoing transitions
 		for (lowlevelState : lowlevelStates) {
@@ -192,13 +195,13 @@ class HierarchicalTransitionMerger extends AbstractTransitionMerger {
 		
 		val xStsActions = xStsTransitions.values.flatten.map[it.action]
 				.filter(SequentialAction).toList
-		if (hasDifferentPriorities) {
-			return xStsActions.createChoiceActionFromActions1
-			// The default branch must be extended by the caller
-		}
-		else {
+		if (arePrioritiesUnique) {
 			return xStsActions.createIfAction
 			// The last else branch must be extended by the caller
+		}
+		else {
+			return xStsActions.createChoiceActionFromActions1
+			// The default branch must be extended by the caller
 		}
 	}
 	
@@ -234,7 +237,9 @@ class HierarchicalTransitionMerger extends AbstractTransitionMerger {
 			val ifAction = lastAction as IfAction
 			ifAction.then = action // See the referenced method
 		}
-		throw new IllegalArgumentException("Not known action: " + extendable)
+		else {
+			throw new IllegalArgumentException("Not known action: " + extendable)
+		}
 	}
 	
 	private def handleGuardEvaluations() {

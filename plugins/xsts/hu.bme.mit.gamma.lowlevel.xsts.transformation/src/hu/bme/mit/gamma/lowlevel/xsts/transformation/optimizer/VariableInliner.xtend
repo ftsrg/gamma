@@ -18,6 +18,7 @@ import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.AssumeAction
 import hu.bme.mit.gamma.xsts.model.EmptyAction
+import hu.bme.mit.gamma.xsts.model.IfAction
 import hu.bme.mit.gamma.xsts.model.LoopAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.SequentialAction
@@ -86,6 +87,22 @@ class VariableInliner {
 		// Returning the original maps from which the written variables were removed
 	}
 	
+	protected def dispatch void inline(IfAction action,
+			Map<VariableDeclaration, InlineEntry> concreteValues,
+			Map<VariableDeclaration, InlineEntry> symbolicValues) {
+		val condition = action.condition
+		condition.inlineExpression(concreteValues, symbolicValues)
+		
+		val branches = newArrayList
+		branches += action.then
+		val _else = action.^else
+		if (_else !== null) {
+			branches += _else
+		}
+		
+		branches.inlineBranches(concreteValues, symbolicValues)
+	}
+	
 	protected def dispatch void inline(SequentialAction action,
 			Map<VariableDeclaration, InlineEntry> concreteValues,
 			Map<VariableDeclaration, InlineEntry> symbolicValues) {
@@ -99,46 +116,15 @@ class VariableInliner {
 	protected def dispatch void inline(NonDeterministicAction action,
 			Map<VariableDeclaration, InlineEntry> concreteValues,
 			Map<VariableDeclaration, InlineEntry> symbolicValues) {
-		val branchConcreteValueList = newArrayList
-		val branchSymbolicValueList = newArrayList
-		val subactions = newArrayList
-		subactions += action.actions
-		for (branch : subactions) {
-			val branchConcreteValues = newHashMap
-			branchConcreteValues += concreteValues
-			// The action removing approach for concrete maps CAN be used via choices,
-			// as the oldAssignment in 'inline(AssignmentAction ...' is NOT removed
-			val branchSymbolicValues = newHashMap
-			// The action removing approach for symbolic maps CANNOT be used via choices,
-			// e.g., 'a := 1; if (...) { a := a + 1; } else { b := 2; } c := a + 3;'
-
-			// New maps
-			branch.inline(branchConcreteValues, branchSymbolicValues)
-			// Saving the new maps
-			branchConcreteValueList += branchConcreteValues
-			branchSymbolicValueList += branchSymbolicValues
-		}
-		
-		// "Commonizing" the values into a new map, that is,
-		// deleting the values that we are not aware of anymore
-		val commonizedConcreteValues = branchConcreteValueList.commonizeMaps
-		val commonizedSymbolicValues = branchSymbolicValueList.commonizeMaps
-		
-		// Setting the maps
-		concreteValues.clear
-		concreteValues += commonizedConcreteValues
-		symbolicValues.clear
-		symbolicValues += commonizedSymbolicValues
+		val branches = action.actions
+		branches.inlineBranches(concreteValues, symbolicValues)
 	}
 	
 	protected def dispatch void inline(AssumeAction action,
 			Map<VariableDeclaration, InlineEntry> concreteValues,
 			Map<VariableDeclaration, InlineEntry> symbolicValues) {
 		val assumption = action.assumption
-		assumption.inlineVariables(concreteValues) // Only concrete values
-		// Removing read variables - if a variable is read, then the
-		// oldAssignment (see AssignmentAction inline) must not be removed
-		symbolicValues.deleteReferencedVariableKeys(assumption)
+		assumption.inlineExpression(concreteValues, symbolicValues)
 	}
 	
 	protected def dispatch void inline(AssignmentAction action,
@@ -252,6 +238,48 @@ class VariableInliner {
 		]
 		
 		return newBranchValues
+	}
+	
+	protected def void inlineBranches(List<Action> actions,
+			Map<VariableDeclaration, InlineEntry> concreteValues,
+			Map<VariableDeclaration, InlineEntry> symbolicValues) {
+		val branchConcreteValueList = newArrayList
+		val branchSymbolicValueList = newArrayList
+		for (branch : actions) {
+			val branchConcreteValues = newHashMap
+			branchConcreteValues += concreteValues
+			// The action removing approach for concrete maps CAN be used via choices,
+			// as the oldAssignment in 'inline(AssignmentAction ...' is NOT removed
+			val branchSymbolicValues = newHashMap
+			// The action removing approach for symbolic maps CANNOT be used via choices,
+			// e.g., 'a := 1; if (...) { a := a + 1; } else { b := 2; } c := a + 3;'
+
+			// New maps
+			branch.inline(branchConcreteValues, branchSymbolicValues)
+			// Saving the new maps
+			branchConcreteValueList += branchConcreteValues
+			branchSymbolicValueList += branchSymbolicValues
+		}
+		
+		// "Commonizing" the values into a new map, that is,
+		// deleting the values that we are not aware of anymore
+		val commonizedConcreteValues = branchConcreteValueList.commonizeMaps
+		val commonizedSymbolicValues = branchSymbolicValueList.commonizeMaps
+		
+		// Setting the maps
+		concreteValues.clear
+		concreteValues += commonizedConcreteValues
+		symbolicValues.clear
+		symbolicValues += commonizedSymbolicValues
+	}
+	
+	protected def void inlineExpression(Expression expression,
+			Map<VariableDeclaration, InlineEntry> concreteValues,
+			Map<VariableDeclaration, InlineEntry> symbolicValues) {
+		expression.inlineVariables(concreteValues) // Only concrete values
+		// Removing read variables - if a variable is read, then the
+		// oldAssignment (see AssignmentAction inline) must not be removed
+		symbolicValues.deleteReferencedVariableKeys(expression)
 	}
 	
 	protected def inlineVariables(Expression expression, Map<VariableDeclaration, InlineEntry> values) {

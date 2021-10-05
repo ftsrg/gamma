@@ -33,6 +33,7 @@ import hu.bme.mit.gamma.xsts.model.AssumeAction;
 import hu.bme.mit.gamma.xsts.model.AtomicAction;
 import hu.bme.mit.gamma.xsts.model.EmptyAction;
 import hu.bme.mit.gamma.xsts.model.HavocAction;
+import hu.bme.mit.gamma.xsts.model.IfAction;
 import hu.bme.mit.gamma.xsts.model.LoopAction;
 import hu.bme.mit.gamma.xsts.model.MultiaryAction;
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction;
@@ -241,6 +242,17 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 		Action subAction = action.getAction();
 		return getReadVariables(subAction);
 	}
+	
+	private static Set<VariableDeclaration> _getReadVariables(IfAction action) {
+		Set<VariableDeclaration> readVariables = new HashSet<VariableDeclaration>();
+		readVariables.addAll(expressionUtil.getReferredVariables(action.getCondition()));
+		readVariables.addAll(getReadVariables(action.getThen()));
+		Action _else = action.getElse();
+		if (_else != null) {
+			readVariables.addAll(getReadVariables(_else));
+		}
+		return readVariables;
+	}
 
 	private static Set<VariableDeclaration> _getReadVariables(NonDeterministicAction action) {
 		Set<VariableDeclaration> variableList = new HashSet<VariableDeclaration>();
@@ -293,6 +305,16 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 		Action subAction = action.getAction();
 		return getWrittenVariables(subAction);
 	}
+	
+	private static Set<VariableDeclaration> _getWrittenVariables(IfAction action) {
+		Set<VariableDeclaration> writtenVariables = new HashSet<VariableDeclaration>();
+		writtenVariables.addAll(getWrittenVariables(action.getThen()));
+		Action _else = action.getElse();
+		if (_else != null) {
+			writtenVariables.addAll(getWrittenVariables(_else));
+		}
+		return writtenVariables;
+	}
 
 	private static Set<VariableDeclaration> _getWrittenVariables(NonDeterministicAction action) {
 		Set<VariableDeclaration> variableList = new HashSet<VariableDeclaration>();
@@ -337,6 +359,8 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 			return _getReadVariables((EmptyAction) action);
 		} else if (action instanceof LoopAction) {
 			return _getReadVariables((LoopAction) action);
+		} else if (action instanceof IfAction) {
+			return _getReadVariables((IfAction) action);
 		} else if (action instanceof NonDeterministicAction) {
 			return _getReadVariables((NonDeterministicAction) action);
 		} else if (action instanceof ParallelAction) {
@@ -359,6 +383,8 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 			return _getWrittenVariables((EmptyAction) action);
 		} else if (action instanceof LoopAction) {
 			return _getWrittenVariables((LoopAction) action);
+		} else if (action instanceof IfAction) {
+			return _getWrittenVariables((IfAction) action);
 		} else if (action instanceof NonDeterministicAction) {
 			return _getWrittenVariables((NonDeterministicAction) action);
 		} else if (action instanceof ParallelAction) {

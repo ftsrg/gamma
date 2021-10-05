@@ -155,12 +155,12 @@ class TerminalTransitionToXTransitionTransformer extends LowlevelTransitionToXTr
 		
 		val lowlevelOutgoingTransitions = lowlevelChoiceState.outgoingTransitions
 			.sortingAccordingToPriority
-		val differentPriorities = lowlevelOutgoingTransitions.hasDifferentPriorities
+		val arePrioritiesUnique = lowlevelOutgoingTransitions.arePrioritiesUnique
 		checkArgument(lowlevelOutgoingTransitions.size >= 1)
 		
 		// Note: precondition is easy now, as currently incoming actions are NOT supported
 		// Precondition (contains this source precondition and all upcoming ones as well)
-		val xStsChoicePostcondition = (differentPriorities) ?
+		val xStsChoicePostcondition = (arePrioritiesUnique) ?
 			createIfAction : createNonDeterministicAction // Will contain the branches
 		val xStsChoiceAction = createSequentialAction => [
 			// A precondition CANNOT be put here, it is taken care of by the previous postcondition
@@ -182,7 +182,7 @@ class TerminalTransitionToXTransitionTransformer extends LowlevelTransitionToXTr
 			val xStsNextAction = lowlevelChoiceState.createRecursiveXStsForwardNodeConnection(
 					lowlevelOutgoingTransition, lowlevelTargetNode)
 			
-			if (differentPriorities) {
+			if (arePrioritiesUnique) {
 				val xStsIfAction = xStsChoicePostcondition as IfAction
 				xStsIfAction.append(xStsGuard, xStsNextAction)
 			}

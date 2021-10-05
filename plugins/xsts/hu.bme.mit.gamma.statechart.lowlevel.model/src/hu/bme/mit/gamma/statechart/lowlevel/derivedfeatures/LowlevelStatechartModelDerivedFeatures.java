@@ -257,7 +257,7 @@ public class LowlevelStatechartModelDerivedFeatures extends ActionModelDerivedFe
 		return sortedTransitions;
 	}
 	
-	public static boolean hasDifferentPriorities(
+	public static boolean arePrioritiesUnique(
 			Collection<? extends Transition> lowlevelTransitions) {
 		Set<Integer> priorites = new HashSet<Integer>();
 		// Watch out for join nodes
