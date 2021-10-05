@@ -15,10 +15,10 @@ import hu.bme.mit.gamma.statechart.lowlevel.model.Region
 import hu.bme.mit.gamma.statechart.lowlevel.model.State
 import hu.bme.mit.gamma.statechart.lowlevel.model.StateNode
 import hu.bme.mit.gamma.xsts.model.Action
+import hu.bme.mit.gamma.xsts.model.IfAction
 import hu.bme.mit.gamma.xsts.model.ParallelAction
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
-import java.util.List
 
 import static extension hu.bme.mit.gamma.statechart.lowlevel.derivedfeatures.LowlevelStatechartModelDerivedFeatures.*
 
@@ -134,18 +134,16 @@ class ExitActionRetriever {
 		]
 	}
 	
-	protected def Action createRecursiveXStsStateAndSubstateExitActions(State lowlevelState) {
+	protected def IfAction createRecursiveXStsStateAndSubstateExitActions(State lowlevelState) {
 		val xStsStateExitActions = lowlevelState.exitAction.transformAction
-		val List<Action> xStsSubstateExitActions = newLinkedList
+		val xStsSubstateExitActions = createParallelAction
 		// Recursion for the exit action of contained states
 		for (lowlevelSubregion : lowlevelState.regions) {
-			xStsSubstateExitActions += createParallelAction => [
-				it.actions += createSequentialAction => [
-					for (lowlevelSubstate : lowlevelSubregion.states) {
-						it.actions += lowlevelSubstate.createRecursiveXStsStateAndSubstateExitActions
-					}
-				]
-			]
+			val xStsExitActions = newArrayList
+			for (lowlevelSubstate : lowlevelSubregion.states) {
+				xStsExitActions += lowlevelSubstate.createRecursiveXStsStateAndSubstateExitActions
+			}
+			xStsSubstateExitActions.actions += xStsExitActions.weave
 		}	
 		val xStsStateAssumption = lowlevelState.createSingleXStsStateAssumption
 		// Action taken only if the state is "active" (assume action)

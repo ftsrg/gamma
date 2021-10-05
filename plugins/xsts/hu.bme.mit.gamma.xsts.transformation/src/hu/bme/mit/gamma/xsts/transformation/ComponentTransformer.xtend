@@ -357,7 +357,7 @@ class ComponentTransformer {
 					branchActions += thenAction
 				}
 				// Excluding branches for the different event identifiers
-				block.actions += branchExpressions.createChoiceAction(branchActions)
+				block.actions += branchExpressions.createChoiceAction1(branchActions)
 			}
 			
 			// Dispatching events to connected message queues
@@ -426,7 +426,7 @@ class ComponentTransformer {
 			setQueuesAction.actions += xStsMasterQueue.addAndIncrement( // Or could be used 0 literals for index
 					xStsMasterSizeVariable, xStsEventIdVariable.createReferenceExpression)
 			
-			inEventAction.actions += isNotEmptyExpression.createIfAction(setQueuesAction)
+			inEventAction.actions += isNotEmptyExpression.createIfAction1(setQueuesAction)
 			
 			val branchExpressions = <Expression>newArrayList
 			val branchActions = <Action>newArrayList
@@ -459,7 +459,7 @@ class ComponentTransformer {
 					slaveQueueSetting.actions += xStsSlaveSizeVariable.increment
 				}
 			}
-			setQueuesAction.actions += branchExpressions.createChoiceAction(branchActions)
+			setQueuesAction.actions += branchExpressions.createChoiceAction1(branchActions)
 		}
 		xSts.inEventTransition = inEventAction.wrap
 		xSts.outEventTransition = outEventAction.wrap
@@ -542,7 +542,7 @@ class ComponentTransformer {
 					
 					if (eventDiscardStrategy == DiscardStrategy.INCOMING) {
 						// if (size < capacity) { "add elements into master and slave queues" }
-						thenAction.actions += hasFreeCapacityExpression.createIfAction(block)
+						thenAction.actions += hasFreeCapacityExpression.createIfAction1(block)
 					}
 					else if (eventDiscardStrategy == DiscardStrategy.OLDEST) {
 						val popActions = createSequentialAction
@@ -557,7 +557,7 @@ class ComponentTransformer {
 						// if ((!(size < capacity)) { "pop" }
 						// "add elements into master and slave queues"
 						thenAction.actions += hasFreeCapacityExpression.createNotExpression
-								.createIfAction(popActions)
+								.createIfAction1(popActions)
 						thenAction.actions += block
 					}
 					else {
@@ -566,7 +566,7 @@ class ComponentTransformer {
 				}
 			}
 			// if (inEvent) { "add elements into master and slave queues" }
-			eventDispatchAction.actions += ifExpression.createIfAction(thenAction)
+			eventDispatchAction.actions += ifExpression.createIfAction1(thenAction)
 		}
 		return eventDispatchAction
 	}
@@ -617,12 +617,8 @@ class ComponentTransformer {
 				val negatedVariables = newArrayList
 				negatedVariables += xStsReferencedEventVariables
 				negatedVariables -= xStsEventVariable
-				val branch = createIfActionBranch(
-					xStsActionUtil.connectThroughNegations(negatedVariables),
-					xStsEventVariable.createAssignmentAction(createTrueExpression)
-				)
-				branch.extendChoiceWithBranch(createTrueExpression, createEmptyAction)
-				newInEventAction.actions += branch
+				newInEventAction.actions += xStsActionUtil.connectThroughNegations(negatedVariables)
+						.createIfAction1(xStsEventVariable.createAssignmentAction(createTrueExpression))
 			}
 			// Binding event variables that come from the same ports
 			newInEventAction.actions += xSts.createEventAssignmentsBoundToTheSameSystemPort(wrappedType)

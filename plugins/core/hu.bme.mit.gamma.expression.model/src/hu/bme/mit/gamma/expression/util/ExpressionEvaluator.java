@@ -176,12 +176,13 @@ public class ExpressionEvaluator {
 		}
 		if (expression instanceof EqualityExpression) {
 			final EqualityExpression equalityExpression = (EqualityExpression) expression;
-			return evaluateBoolean(equalityExpression.getLeftOperand()) == evaluateBoolean(
+			// Evaluate to handle integer operands
+			return evaluate(equalityExpression.getLeftOperand()) == evaluate(
 					equalityExpression.getRightOperand());
 		}
 		if (expression instanceof InequalityExpression) {
 			final InequalityExpression inequalityExpression = (InequalityExpression) expression;
-			return evaluateBoolean(inequalityExpression.getLeftOperand()) != evaluateBoolean(
+			return evaluate(inequalityExpression.getLeftOperand()) != evaluate(
 					inequalityExpression.getRightOperand());
 		}
 		if (expression instanceof DirectReferenceExpression) {

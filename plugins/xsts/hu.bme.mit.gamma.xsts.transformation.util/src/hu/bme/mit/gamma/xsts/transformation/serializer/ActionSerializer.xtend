@@ -82,7 +82,7 @@ class ActionSerializer {
 		if («action.condition.serialize») {
 			«action.then.serialize»
 		}
-		«IF action.^else !== null»else {
+		«IF action.^else !== null && !(action.^else instanceof EmptyAction)»else {
 			«action.^else.serialize»
 		}«ENDIF»
 	'''
