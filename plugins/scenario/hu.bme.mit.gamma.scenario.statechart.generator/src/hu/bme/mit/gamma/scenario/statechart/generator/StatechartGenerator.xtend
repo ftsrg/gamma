@@ -63,7 +63,9 @@ import hu.bme.mit.gamma.statechart.statechart.UnaryType
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.math.BigInteger
 import java.util.ArrayList
+import java.util.HashMap
 import java.util.List
+import java.util.Map
 import org.eclipse.emf.common.util.EList
 import org.eclipse.emf.ecore.EObject
 
@@ -102,6 +104,7 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 	var nonDeclaredNegMessageMode = 1
 	var coldViolationExisits = true
 	val StatechartGenerationMode generationMode
+	val replacedStateWithValue = new HashMap<StateNode,StateNode>()
 
 	new(boolean coldViolationExisits, ScenarioDefinition scenario, Component component, StatechartGenerationMode mode) {
 		this.component = component
@@ -158,6 +161,24 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 				t.effects.add(setIntVariable(0, 2))
 			}
 		}
+		
+		val newmergeStates = newArrayList
+		for(stateNode : statechart.regions.get(0).stateNodes){
+			if(stateNode instanceof ChoiceState && StatechartModelDerivedFeatures.getIncomingTransitions(stateNode as ChoiceState).size>1){
+				val choice = stateNode as ChoiceState
+				val merge = createMergeState
+				merge.name = "merge"+stateCount++
+				for (t : StatechartModelDerivedFeatures.getIncomingTransitions(choice)) {
+					t.targetState = merge
+				}
+				val mergeTransition = createTransition
+				mergeTransition.sourceState = merge
+				mergeTransition.targetState = choice
+				statechart.transitions += mergeTransition
+				newmergeStates += merge
+			}
+		}
+		statechart.regions.get(0).stateNodes += newmergeStates
 
 		val a = createScenarioContractAnnotation
 		a.monitoredComponent = component
@@ -230,10 +251,10 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 	def dispatch Interaction process(AlternativeCombinedFragment a) {
 		var ends = newArrayList
 		var choice = addChoiceState
-		for (t : statechart.transitions) {
-			if (t.targetState.equals(previousState))
+		for (t : StatechartModelDerivedFeatures.getIncomingTransitions(previousState)) {
 				t.targetState = choice
 		}
+		replacedStateWithValue.put(previousState,choice)
 		statechart.regions.get(0).stateNodes.remove(previousState)
 		statechart.regions.get(0).stateNodes.add(choice)
 		var n = stateCount++
@@ -264,15 +285,33 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 
 	def dispatch Interaction process(LoopCombinedFragment loop) {
 
-		val prevprev = previousState
+		var prevprev = previousState
 		for (i : loop.fragments.get(0).interactions) {
 			i.process
 		}
-		var choice = addChoiceState
-		for (t : statechart.transitions) {
-			if (t.targetState.equals(previousState))
-				t.targetState = choice
+		if(replacedStateWithValue.containsKey(prevprev)){
+			prevprev = replacedStateWithValue.remove(prevprev)
 		}
+		var choice = addChoiceState
+		/*if(StatechartModelDerivedFeatures.getIncomingTransitions(previousState).size()>1){
+			val merge = createMergeState
+			merge.name = "merge"+stateCount++
+			for (t : StatechartModelDerivedFeatures.getIncomingTransitions(previousState)) {
+				t.targetState = merge
+			}
+			val mergeTransition = createTransition
+			mergeTransition.sourceState = merge
+			mergeTransition.targetState = choice
+			statechart.transitions += mergeTransition
+			statechart.regions.get(0).stateNodes += merge
+		} 
+		else {*/
+			for (t : StatechartModelDerivedFeatures.getIncomingTransitions(previousState)) {
+				t.targetState = choice
+			}
+		//}
+		
+		replacedStateWithValue.put(previousState,choice)
 		statechart.regions.get(0).stateNodes.remove(previousState)
 		statechart.regions.get(0).stateNodes.add(choice)
 		var stateNew = createNewState("state" + String.valueOf(stateCount++))
@@ -311,6 +350,7 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 			if (t.targetState.equals(previousState))
 				t.targetState = choice
 		}
+		replacedStateWithValue.put(previousState,choice)
 		statechart.regions.get(0).stateNodes.remove(previousState)
 		statechart.regions.get(0).stateNodes.add(choice)
 		var stateNew = createNewState("state" + String.valueOf(stateCount++))

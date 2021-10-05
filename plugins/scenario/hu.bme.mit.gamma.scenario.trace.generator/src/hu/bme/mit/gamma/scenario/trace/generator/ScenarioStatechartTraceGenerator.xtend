@@ -14,6 +14,7 @@ import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.TransitionMerging
 import hu.bme.mit.gamma.scenario.statechart.util.ScenarioStatechartUtil
 import hu.bme.mit.gamma.statechart.contract.NotDefinedEventMode
+import hu.bme.mit.gamma.statechart.contract.ScenarioAllowedWaitAnnotation
 import hu.bme.mit.gamma.statechart.contract.ScenarioContractAnnotation
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures
 import hu.bme.mit.gamma.statechart.interface_.Component
@@ -53,11 +54,18 @@ class ScenarioStatechartTraceGenerator {
 	String absoluteParentFolder
 
 	Package _package
-
+	
+	ScenarioAllowedWaitAnnotation annotation
+	
 	new(StatechartDefinition sd, int schedulingConstraint) {
+		this(sd,schedulingConstraint,null);
+	}
+
+	new(StatechartDefinition sd, int schedulingConstraint, ScenarioAllowedWaitAnnotation annotation) {
 		this.schedulingConstraint = schedulingConstraint
 		this.statechart = sd
 		this._package = statechart.containingPackage
+		this.annotation = annotation
 	}
 
 	def List<ExecutionTrace> execute() {
@@ -99,7 +107,7 @@ class ScenarioStatechartTraceGenerator {
 		val statechartName = statechart.name.toFirstUpper
 
 		val packageFileName = fileNamer.getUnfoldedPackageFileName(fileName)
-		val parameters = '''--refinement "MULTI_SEQ" --domain "EXPL" --initprec "ALLVARS"'''
+		val parameters = '''--refinement "MULTI_SEQ" --domain "EXPL" --initprec "ALLVARS" '''
 		val query = '''E<> ((«regionName + "_" + statechartName» == «scenarioStatechartUtil.accepting»))'''
 		val gammaPackage = ecoreUtil.normalLoad(modelFile.parent, packageFileName)
 
@@ -120,14 +128,12 @@ class ScenarioStatechartTraceGenerator {
 		val filteredTraces = backAnnotator.execute
 
 		for (et : filteredTraces) {
-			val waitingAnnotation = createExecutionTraceAllowedWaitingAnnotation
-			val upperLimit = createIntegerLiteralExpression
-			upperLimit.value = BigInteger.valueOf(1)
-			val lowerLimit = createIntegerLiteralExpression
-			lowerLimit.value = BigInteger.valueOf(0)
-			waitingAnnotation.lowerLimit = lowerLimit
-			waitingAnnotation.upperLimit = upperLimit
-			et.annotations += waitingAnnotation
+			if(annotation !==null){
+				val waitingAnnotation = createExecutionTraceAllowedWaitingAnnotation
+				waitingAnnotation.lowerLimit = annotation.lowerLimit.clone
+				waitingAnnotation.upperLimit = annotation.upperLimit.clone
+				et.annotations += waitingAnnotation
+			}
 			val eventAdder = new UnsentEventAssertExtender(et.steps, true)
 			if (scenarioContractType.equals(NotDefinedEventMode.STRICT)) {
 				eventAdder.execute
