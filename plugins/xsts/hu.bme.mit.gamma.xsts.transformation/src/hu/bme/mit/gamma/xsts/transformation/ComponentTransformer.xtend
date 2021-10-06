@@ -754,6 +754,7 @@ class ComponentTransformer {
 		
 		if (optimize) {
 			// Optimization: system in events (but not PERSISTENT parameters) can be reset after the merged transition
+			// E.g., synchronous components do not reset system events
 			xSts.resetInEventsAfterMergedAction(component)
 		}
 		
