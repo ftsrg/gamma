@@ -14,6 +14,7 @@ import hu.bme.mit.gamma.expression.model.AndExpression
 import hu.bme.mit.gamma.expression.model.BooleanExpression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.FalseExpression
+import hu.bme.mit.gamma.expression.model.MultiaryExpression
 import hu.bme.mit.gamma.expression.model.OrExpression
 import hu.bme.mit.gamma.expression.model.TrueExpression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
@@ -37,10 +38,12 @@ import hu.bme.mit.gamma.xsts.model.XTransition
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import java.util.Collection
 import java.util.List
+import org.eclipse.emf.ecore.EObject
 
 import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
+import hu.bme.mit.gamma.expression.model.ArithmeticExpression
 
 class ActionOptimizer {
 	// Singleton
@@ -810,7 +813,9 @@ class ActionOptimizer {
 	//
 	
 	protected def void optimizeExpressions(Action action) {
-		val booleanExpressions = action.getAllContentsOfType(BooleanExpression)
+		val eObjects = action.getAllContentsOfType(EObject)
+		
+		val booleanExpressions = eObjects.filter(BooleanExpression)
 		for (booleanExpression : booleanExpressions) {
 			if (booleanExpression.definitelyFalseExpression) {
 				expressionFactory.createFalseExpression.replace(booleanExpression)
@@ -824,6 +829,33 @@ class ActionOptimizer {
 				}
 				else if (booleanExpression instanceof AndExpression) {
 					booleanExpression.operands.removeIf[it instanceof TrueExpression]
+				}
+			}
+		}
+		
+		val multiaryExpressions = newArrayList
+		multiaryExpressions += eObjects.filter(ArithmeticExpression).filter(MultiaryExpression) // Add, Mul
+		multiaryExpressions += booleanExpressions.filter(MultiaryExpression) // And, Xor, Or
+		
+		for (multiaryExpression : multiaryExpressions) {
+			val operands = multiaryExpression.operands
+			val container = multiaryExpression.eContainer
+			if (container !== null) {
+				if (container.eClass == multiaryExpression.eClass) {
+					val _container = container as MultiaryExpression
+					_container.operands += operands
+					multiaryExpression.remove
+				}
+				else {
+					val operandSize = operands.size
+					if (operandSize == 0) {
+						multiaryExpression.remove
+					}
+					else if (operandSize == 1) {
+						val operand = operands.head
+						operand.replace(multiaryExpression)
+					
+					}
 				}
 			}
 		}

@@ -22,6 +22,7 @@ import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.AssumeAction
 import hu.bme.mit.gamma.xsts.model.EmptyAction
 import hu.bme.mit.gamma.xsts.model.HavocAction
+import hu.bme.mit.gamma.xsts.model.IfAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
@@ -262,8 +263,15 @@ class XstsToUppaalTransformer {
 		return target
 	}
 	
-	// TODO handle IfActions when they are introduced in XSTS
-	// TODO handle havoc for boolean and enums and do an exploration for integers
+	protected def dispatch Location transformAction(IfAction action, Location source) {
+		val xStsConditions = action.conditions
+		val xStsActions = action.branches
+		
+		// Tracing back to NonDeterministicAction transformation
+		val proxy = xStsConditions.createChoiceActionWithExclusiveBranches(xStsActions)
+		
+		return proxy.transformAction(source)
+	}
 	
 	// Reseting
 	
