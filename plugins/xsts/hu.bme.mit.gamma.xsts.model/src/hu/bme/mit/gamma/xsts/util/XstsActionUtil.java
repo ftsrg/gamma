@@ -24,7 +24,9 @@ import hu.bme.mit.gamma.expression.model.ArrayAccessExpression;
 import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression;
 import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Declaration;
+import hu.bme.mit.gamma.expression.model.DefaultExpression;
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
+import hu.bme.mit.gamma.expression.model.ElseExpression;
 import hu.bme.mit.gamma.expression.model.EqualityExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory;
@@ -585,6 +587,48 @@ public class XstsActionUtil extends ExpressionUtil {
 		NonDeterministicAction switchAction = createChoiceActionFromActions1(actions);
 		// Else branch
 		extendChoiceWithDefaultBranch1(switchAction, xStsFactory.createEmptyAction());
+		return switchAction;
+	}
+	
+	public NonDeterministicAction createChoiceActionWithExclusiveBranches(
+			List<Expression> conditions, List<Action> actions) {
+		int conditionsSize = conditions.size();
+		if (conditionsSize != actions.size() && conditionsSize + 1 != actions.size()) {
+			throw new IllegalArgumentException("The two lists must be of same size or the size of"
+				+ "the action list must be the size of the condition list + 1: "
+					+ conditions + " " + actions);
+		}
+		
+		NonDeterministicAction switchAction = xStsFactory.createNonDeterministicAction();
+		for (int i = 0; i < conditionsSize; ++i) {
+			SequentialAction sequentialAction = xStsFactory.createSequentialAction();
+			AndExpression andExpression = expressionFactory.createAndExpression();
+			for (int j = 0; j < i; ++j) {
+				// All previous expressions are false
+				NotExpression notExpression = expressionFactory.createNotExpression();
+				notExpression.setOperand(ecoreUtil.clone(conditions.get(j)));
+				andExpression.getOperands().add(notExpression);
+			}
+			
+			Expression actualCondition = conditions.get(i);
+			if (actualCondition instanceof ElseExpression ||
+					actualCondition instanceof DefaultExpression) {
+				throw new IllegalArgumentException("Cannot process else expressions here");
+			}
+			andExpression.getOperands().add(actualCondition);
+			
+			AssumeAction assumeAction = createAssumeAction(unwrapIfPossible(andExpression));
+			sequentialAction.getActions().add(assumeAction);
+			sequentialAction.getActions().add(actions.get(i));
+			// Merging into the main action
+			switchAction.getActions().add(sequentialAction);
+		}
+		
+		// Else branch if needed
+		if (conditionsSize + 1 == actions.size()) {
+			extendChoiceWithDefaultBranch1(switchAction, actions.get(actions.size() - 1));
+		}
+		
 		return switchAction;
 	}
 	

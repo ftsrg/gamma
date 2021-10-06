@@ -670,6 +670,9 @@ class ActionOptimizer {
 					xStsElseAction.replace(xStsIfAction)
 				}
 			}
+			else if (xStsThenAction === null && xStsElseAction === null) {
+				xStsIfAction.remove
+			}
 		}
 	}
 	
