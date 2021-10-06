@@ -462,7 +462,9 @@ public class XstsActionUtil extends ExpressionUtil {
 				IfAction _elseAction = (IfAction) elseAction;
 				append(_elseAction, action);
 			}
-			throw new IllegalArgumentException("If action cannot be extended");
+			else {
+				throw new IllegalArgumentException("If action cannot be extended");
+			}
 		}
 	}
 	

@@ -229,7 +229,7 @@ class HierarchicalTransitionMerger extends AbstractTransitionMerger {
 		// Extendable is either an If, NonDet or a Sequential with an If at the end
 		// See mergeAllTransitionsOfRegion(CompositeElement element...
 		if (extendable instanceof IfAction) {
-			extendable.^else = action // See the referenced method
+			extendable.append(action) // See the referenced method
 		}
 		else if (extendable instanceof NonDeterministicAction) {
 			extendable.extendChoiceWithDefaultBranch1(action)
