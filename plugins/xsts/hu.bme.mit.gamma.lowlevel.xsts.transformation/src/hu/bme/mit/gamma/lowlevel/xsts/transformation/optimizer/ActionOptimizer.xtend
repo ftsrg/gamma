@@ -86,6 +86,7 @@ class ActionOptimizer {
 				.simplifyOrthogonalActions
 				.simplifyNonDeterministicActions
 			newXStsAction.optimizeAssignmentActions
+			newXStsAction.optimizeIfActions
 			newXStsAction.deleteTrivialNonDeterministicActions
 			newXStsAction = newXStsAction.optimizeParallelActions // Might be resource intensive
 			newXStsAction.deleteUnnecessaryAssumeActions // Not correct in other transformation implementations
@@ -444,19 +445,19 @@ class ActionOptimizer {
 		val xStsElseAction = action.^else
 		val newXStsThenAction = xStsThenAction.simplifyNonDeterministicActions(true)
 		checkState(newXStsThenAction.size == 1)
-		if (xStsCondition.definitelyTrueExpression) {
-			return newXStsThenAction
-		}
+//		if (xStsCondition.definitelyTrueExpression) {
+//			return newXStsThenAction
+//		}
 		val newXStsElseAction = xStsElseAction?.simplifyNonDeterministicActions(true)
 		checkState(newXStsElseAction === null || newXStsElseAction.size == 1)
-		if (xStsCondition.definitelyFalseExpression) {
-			if (newXStsElseAction === null) {
-				return #[createEmptyAction]
-			}
-			else {
-				return newXStsElseAction
-			}
-		}
+//		if (xStsCondition.definitelyFalseExpression) {
+//			if (newXStsElseAction === null) {
+//				return #[createEmptyAction]
+//			}
+//			else {
+//				return newXStsElseAction
+//			}
+//		}
 		// Neither definitely true nor false
 		return #[
 			action => [
@@ -648,6 +649,27 @@ class ActionOptimizer {
 		// Recursion
 		for (xStsAction : action.actions.filter(CompositeAction)) {
 			xStsAction.optimizeAssignmentActions
+		}
+	}
+	
+	protected def void optimizeIfActions(Action action) {
+		val xStsIfActions = action.getSelfAndAllContentsOfType(IfAction)
+		for (xStsIfAction : xStsIfActions) {
+			val xStsCondition = xStsIfAction.condition
+			val xStsThenAction = xStsIfAction.then
+			val xStsElseAction = xStsIfAction.^else
+			
+			if (xStsCondition.definitelyTrueExpression) {
+				xStsThenAction.replace(xStsIfAction)
+			}
+			else if (xStsCondition.definitelyFalseExpression) {
+				if (xStsElseAction === null) {
+					createEmptyAction.replace(xStsIfAction)
+				}
+				else {
+					xStsElseAction.replace(xStsIfAction)
+				}
+			}
 		}
 	}
 	

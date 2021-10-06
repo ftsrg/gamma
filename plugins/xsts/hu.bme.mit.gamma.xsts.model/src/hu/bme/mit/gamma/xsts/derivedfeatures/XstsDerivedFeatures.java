@@ -139,7 +139,25 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 		PrimedVariable primedVariable = (PrimedVariable) variable;
 		return getPrimeCount(primedVariable.getPrimedVariable()) + 1;
 	}
-
+	
+	public static List<Action> getBranches(IfAction action) {
+		List<Action> branches = new ArrayList<Action>();
+		branches.add(action.getThen());
+		Action _else = action.getElse();
+		if (_else instanceof IfAction) {
+			IfAction elseIfAction = (IfAction) _else;
+			branches.addAll(getBranches(elseIfAction));
+		}
+		else if (_else != null) {
+			branches.add(_else);
+		}
+		else {
+			// Necessary for variable inline
+			branches.add(xStsFactory.createEmptyAction());
+		}
+		return branches;
+	}
+	
 	public static boolean isTrivialAssignment(SequentialAction action) {
 		List<Action> xStsSubactions = action.getActions();
 		if (xStsSubactions.stream().filter(it -> it instanceof AssumeAction).count() == 1

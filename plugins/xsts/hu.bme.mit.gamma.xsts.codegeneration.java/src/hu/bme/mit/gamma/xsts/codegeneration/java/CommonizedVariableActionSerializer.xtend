@@ -17,6 +17,7 @@ import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.AssumeAction
 import hu.bme.mit.gamma.xsts.model.CompositeAction
 import hu.bme.mit.gamma.xsts.model.EmptyAction
+import hu.bme.mit.gamma.xsts.model.IfAction
 import hu.bme.mit.gamma.xsts.model.LoopAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.SequentialAction
@@ -57,6 +58,20 @@ class CommonizedVariableActionSerializer extends ActionSerializer {
 			for (int «name» = «left.serialize»; «name» < «right.serialize»; ++i) {
 				«action.action.serialize»
 			}
+		'''
+	}
+	
+	def dispatch CharSequence serialize(IfAction action) {
+		val _else = action.^else
+		return '''
+			if («action.condition.serialize») {
+				«action.then.serialize»
+			}
+			«IF _else !== null && !(_else instanceof EmptyAction)»
+				else {
+					«_else.serialize»
+				}
+			«ENDIF»
 		'''
 	}
 	

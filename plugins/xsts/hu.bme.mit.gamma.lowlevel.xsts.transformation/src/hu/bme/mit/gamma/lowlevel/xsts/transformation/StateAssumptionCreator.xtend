@@ -10,8 +10,9 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.lowlevel.xsts.transformation
 
-import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.Expression
+import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
+import hu.bme.mit.gamma.expression.util.ExpressionUtil
 import hu.bme.mit.gamma.statechart.lowlevel.model.State
 
 import static extension hu.bme.mit.gamma.statechart.lowlevel.derivedfeatures.LowlevelStatechartModelDerivedFeatures.*
@@ -19,6 +20,7 @@ import static extension hu.bme.mit.gamma.statechart.lowlevel.derivedfeatures.Low
 class StateAssumptionCreator {
 	// Model factories
 	protected final extension ExpressionModelFactory constraintFactory = ExpressionModelFactory.eINSTANCE
+	protected final extension ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE
 	// Trace needed for variable references
 	protected final Trace trace
 		
@@ -35,14 +37,8 @@ class StateAssumptionCreator {
 		val lowlevelRegion = lowlevelState.parentRegion
 		val xStsParentRegionVariable = trace.getXStsVariable(lowlevelRegion)
 		val xStsEnumLiteral = trace.getXStsEnumLiteral(lowlevelState)
-		val xStsStateReference = createEqualityExpression => [
-			it.leftOperand = createDirectReferenceExpression => [
-				it.declaration = xStsParentRegionVariable
-			]
-			it.rightOperand = createEnumerationLiteralExpression => [
-				it.reference = xStsEnumLiteral
-			]
-		]
+		val xStsStateReference = xStsParentRegionVariable.createEqualityExpression(
+				xStsEnumLiteral.createEnumerationLiteralExpression)
 		// Caching
 		trace.add(trace.getStateReferenceExpressions, lowlevelState, xStsStateReference)
 		//

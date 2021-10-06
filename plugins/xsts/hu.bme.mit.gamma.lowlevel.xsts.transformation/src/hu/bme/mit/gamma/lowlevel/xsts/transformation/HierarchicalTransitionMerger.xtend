@@ -11,7 +11,6 @@ import hu.bme.mit.gamma.statechart.lowlevel.model.MergeState
 import hu.bme.mit.gamma.statechart.lowlevel.model.Region
 import hu.bme.mit.gamma.statechart.lowlevel.model.SchedulingOrder
 import hu.bme.mit.gamma.xsts.model.Action
-import hu.bme.mit.gamma.xsts.model.CompositeAction
 import hu.bme.mit.gamma.xsts.model.IfAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.SequentialAction
@@ -78,7 +77,7 @@ class HierarchicalTransitionMerger extends AbstractTransitionMerger {
 	}
 	
 	private def Action mergeAllTransitionsOfRegion(CompositeElement element,
-			Map<Region, CompositeAction> regionActions) {
+			Map<Region, Action> regionActions) {
 		val lowlevelRegions = element.regions
 		
 		if (lowlevelRegions.empty) {
@@ -116,7 +115,7 @@ class HierarchicalTransitionMerger extends AbstractTransitionMerger {
 	}
 	
 	private def Action mergeAllTransitionsOfRegion(Region region,
-			Map<Region, CompositeAction> regionActions) {
+			Map<Region, Action> regionActions) {
 		val lowlevelStatechart = region.statechart
 		val lowlevelSchedulingOrder = lowlevelStatechart.schedulingOrder
 		
@@ -195,7 +194,10 @@ class HierarchicalTransitionMerger extends AbstractTransitionMerger {
 		
 		val xStsActions = xStsTransitions.values.flatten.map[it.action]
 				.filter(SequentialAction).toList
-		if (arePrioritiesUnique) {
+		if (xStsActions.empty) {
+			return createEmptyAction
+		}
+		else if (arePrioritiesUnique) {
 			return xStsActions.createIfAction
 			// The last else branch must be extended by the caller
 		}

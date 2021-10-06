@@ -93,13 +93,7 @@ class VariableInliner {
 		val condition = action.condition
 		condition.inlineExpression(concreteValues, symbolicValues)
 		
-		val branches = newArrayList
-		branches += action.then
-		val _else = action.^else
-		if (_else !== null) {
-			branches += _else
-		}
-		
+		val branches = action.branches
 		branches.inlineBranches(concreteValues, symbolicValues)
 	}
 	
