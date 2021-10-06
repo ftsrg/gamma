@@ -264,8 +264,9 @@ class XstsToUppaalTransformer {
 	}
 	
 	protected def dispatch Location transformAction(IfAction action, Location source) {
-		val xStsConditions = action.conditions
-		val xStsActions = action.branches
+		val clonedAction = action.clone
+		val xStsConditions = clonedAction.conditions
+		val xStsActions = clonedAction.branches
 		
 		// Tracing back to NonDeterministicAction transformation
 		val proxy = xStsConditions.createChoiceActionWithExclusiveBranches(xStsActions)

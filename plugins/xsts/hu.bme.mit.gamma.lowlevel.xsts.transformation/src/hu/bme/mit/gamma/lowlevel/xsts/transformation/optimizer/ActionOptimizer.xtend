@@ -118,13 +118,14 @@ class ActionOptimizer {
 	}
 	
 	protected def dispatch Action simplifyCompositeActions(IfAction action) {
-		val simplifiedXStsThenAction = action.then.simplifyCompositeActions
+		val simplifiedXStsThenAction = action.then?.simplifyCompositeActions
 		val simplifiedXStsElseAction = action.^else?.simplifyCompositeActions
 		
-		if (simplifiedXStsThenAction instanceof EmptyAction &&
+		if ((simplifiedXStsThenAction instanceof EmptyAction ||
+				simplifiedXStsElseAction === null) &&
 				(simplifiedXStsElseAction instanceof EmptyAction ||
 					simplifiedXStsElseAction === null)) {
-			return simplifiedXStsThenAction
+			return createEmptyAction
 		}
 		return action => [
 			it.then = simplifiedXStsThenAction
@@ -202,13 +203,13 @@ class ActionOptimizer {
 	protected def dispatch List<Action> simplifySequentialActions(IfAction action, boolean isTop) {
 		val xStsThenAction = action.then
 		val xStsElseAction = action.^else
-		val newXStsThenAction = xStsThenAction.simplifySequentialActions(true)
+		val newXStsThenAction = xStsThenAction?.simplifySequentialActions(true) // Both can be null
 		val newXStsElseAction = xStsElseAction?.simplifySequentialActions(true)
-		checkState(newXStsThenAction.size == 1)
+		checkState(newXStsThenAction === null || newXStsThenAction.size == 1)
 		checkState(newXStsElseAction === null || newXStsElseAction.size == 1)
 		return #[
 			action => [
-				it.then = newXStsThenAction.head
+				it.then = newXStsThenAction?.head
 				it.^else = newXStsElseAction?.head
 			]
 		]
@@ -289,9 +290,9 @@ class ActionOptimizer {
 	protected def dispatch List<Action> simplifyParallelActions(IfAction action, boolean isTop) {
 		val xStsThenAction = action.then
 		val xStsElseAction = action.^else
-		val newXStsThenAction = xStsThenAction.simplifyParallelActions(true)
+		val newXStsThenAction = xStsThenAction?.simplifyParallelActions(true) // Both can be null
 		val newXStsElseAction = xStsElseAction?.simplifyParallelActions(true)
-		checkState(newXStsThenAction.size == 1)
+		checkState(newXStsThenAction === null || newXStsThenAction.size == 1)
 		checkState(newXStsElseAction === null || newXStsElseAction.size == 1)
 		return #[
 			action => [
@@ -367,9 +368,9 @@ class ActionOptimizer {
 	protected def dispatch List<Action> simplifyOrthogonalActions(IfAction action, boolean isTop) {
 		val xStsThenAction = action.then
 		val xStsElseAction = action.^else
-		val newXStsThenAction = xStsThenAction.simplifyOrthogonalActions(true)
+		val newXStsThenAction = xStsThenAction?.simplifyOrthogonalActions(true) // Both can be null
 		val newXStsElseAction = xStsElseAction?.simplifyOrthogonalActions(true)
-		checkState(newXStsThenAction.size == 1)
+		checkState(newXStsThenAction === null || newXStsThenAction.size == 1)
 		checkState(newXStsElseAction === null || newXStsElseAction.size == 1)
 		return #[
 			action => [
@@ -446,8 +447,8 @@ class ActionOptimizer {
 		val xStsCondition = action.condition
 		val xStsThenAction = action.then
 		val xStsElseAction = action.^else
-		val newXStsThenAction = xStsThenAction.simplifyNonDeterministicActions(true)
-		checkState(newXStsThenAction.size == 1)
+		val newXStsThenAction = xStsThenAction?.simplifyNonDeterministicActions(true) // Both can be null
+		checkState(newXStsThenAction === null || newXStsThenAction.size == 1)
 //		if (xStsCondition.definitelyTrueExpression) {
 //			return newXStsThenAction
 //		}
@@ -548,7 +549,7 @@ class ActionOptimizer {
 		val xStsThenAction = action.then
 		val xStsElseAction = action.^else
 		return action => [
-			it.then = xStsThenAction.optimizeParallelActions
+			it.then = xStsThenAction?.optimizeParallelActions
 			it.^else = xStsElseAction?.optimizeParallelActions
 		]
 	}
@@ -606,7 +607,7 @@ class ActionOptimizer {
 	protected def dispatch void optimizeAssignmentActions(IfAction action) {
 		val xStsThenAction = action.then
 		val xStsElseAction = action.^else
-		xStsThenAction.optimizeAssignmentActions
+		xStsThenAction?.optimizeAssignmentActions
 		xStsElseAction?.optimizeAssignmentActions
 	}
 	
@@ -663,7 +664,12 @@ class ActionOptimizer {
 			val xStsElseAction = xStsIfAction.^else
 			
 			if (xStsCondition.definitelyTrueExpression) {
-				xStsThenAction.replace(xStsIfAction)
+				if (xStsThenAction === null) {
+					createEmptyAction.replace(xStsIfAction)
+				}
+				else {
+					xStsThenAction.replace(xStsIfAction)
+				}
 			}
 			else if (xStsCondition.definitelyFalseExpression) {
 				if (xStsElseAction === null) {
@@ -718,7 +724,7 @@ class ActionOptimizer {
 	protected def dispatch void deleteTrivialNonDeterministicActions(IfAction action) {
 		val xStsThenAction = action.then
 		val xStsElseAction = action.^else
-		xStsThenAction.deleteTrivialNonDeterministicActions
+		xStsThenAction?.deleteTrivialNonDeterministicActions // Both can be nulls
 		xStsElseAction?.deleteTrivialNonDeterministicActions
 	}
 	
@@ -784,7 +790,7 @@ class ActionOptimizer {
 	protected def dispatch void deleteDefinitelyFalseBranches(IfAction action) {
 		val xStsThenAction = action.then
 		val xStsElseAction = action.^else
-		xStsThenAction.deleteDefinitelyFalseBranches
+		xStsThenAction?.deleteDefinitelyFalseBranches // Both can be null
 		xStsElseAction?.deleteDefinitelyFalseBranches
 	}
 	

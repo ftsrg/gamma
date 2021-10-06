@@ -372,7 +372,6 @@ package class Trace {
 		return matches.head
 	}
 	
-	
 	def getXStsPrecondition(XTransition xStsTransition) {
 		checkArgument(xStsTransition !== null)
 		var matches = SimpleTransitionTrace.Matcher.on(tracingEngine).getAllValuesOfxStsPrecondition(null, xStsTransition)
