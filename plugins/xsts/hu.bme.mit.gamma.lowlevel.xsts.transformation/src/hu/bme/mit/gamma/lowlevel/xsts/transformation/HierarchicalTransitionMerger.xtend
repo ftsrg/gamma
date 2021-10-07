@@ -150,7 +150,7 @@ class HierarchicalTransitionMerger extends AbstractTransitionMerger {
 	}
 	
 	private def mergeTransitionsOfRegion(Region lowlevelRegion) {
-		val xStsTransitions =  <Integer, List<XTransition>>newTreeMap(
+		val xStsTransitions = <Integer, List<XTransition>>newTreeMap(
 			new Comparator<Integer>() {
 				override compare(Integer l, Integer r) {
 					return r.compareTo(l) // Higher value means higher priority

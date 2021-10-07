@@ -51,8 +51,9 @@ public class ExpressionEvaluator {
 	public static final ExpressionEvaluator INSTANCE = new ExpressionEvaluator();
 	protected ExpressionEvaluator() {}
 	//
-	
-	private static final ExpressionModelFactory factory = ExpressionModelFactory.eINSTANCE;
+
+	protected final ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
+	protected final ExpressionModelFactory factory = ExpressionModelFactory.eINSTANCE;
 	
 	public int evaluate(Expression expression) {
 		try {
@@ -236,9 +237,8 @@ public class ExpressionEvaluator {
 	}
 	
 	public Expression of(EnumerationTypeDefinition type, int value) {
-		EnumerationLiteralExpression enumerationLiteralExpression = factory.createEnumerationLiteralExpression();
-		enumerationLiteralExpression.setReference(type.getLiterals().get(value));
-		return enumerationLiteralExpression;
+		EnumerationLiteralDefinition literal = type.getLiterals().get(value);
+		return expressionUtil.createEnumerationLiteralExpression(literal);
 	}
 	
 }

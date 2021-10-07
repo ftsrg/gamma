@@ -199,8 +199,8 @@ public class ExpressionUtil {
 		List<EnumerationLiteralExpression> literals = new ArrayList<EnumerationLiteralExpression>();
 		for (Expression expression : expressions) {
 			int index = evaluator.evaluate(expression);
-			EnumerationLiteralExpression literalExpression = factory.createEnumerationLiteralExpression();
-			literalExpression.setReference(type.getLiterals().get(index));
+			EnumerationLiteralDefinition literal = type.getLiterals().get(index);
+			EnumerationLiteralExpression literalExpression = createEnumerationLiteralExpression(literal);
 			literals.add(literalExpression);
 		}
 		return literals;
@@ -813,11 +813,8 @@ public class ExpressionUtil {
 	}
 
 	protected Expression _getInitialValueOfType(EnumerationTypeDefinition type) {
-		EnumerationLiteralExpression enumerationLiteralExpression = factory.createEnumerationLiteralExpression();
-		TypeDeclaration typeDeclaration = ecoreUtil.getContainerOfType(type, TypeDeclaration.class);
-		enumerationLiteralExpression.setTypeReference(createTypeReference(typeDeclaration));
-		enumerationLiteralExpression.setReference(type.getLiterals().get(0));
-		return enumerationLiteralExpression;
+		EnumerationLiteralDefinition literal = type.getLiterals().get(0);
+		return createEnumerationLiteralExpression(literal);
 	}
 	
 	protected Expression _getInitialValueOfType(ArrayTypeDefinition type) {

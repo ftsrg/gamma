@@ -172,6 +172,15 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 		return conditions;
 	}
 	
+	public static IfAction getLastIfAction(IfAction action) {
+		Action _else = action.getElse();
+		if (_else instanceof IfAction) {
+			IfAction elseIfAction = (IfAction) _else;
+			return getLastIfAction(elseIfAction);
+		}
+		return action;
+	}
+	
 	//
 	
 	public static boolean isTrivialAssignment(SequentialAction action) {

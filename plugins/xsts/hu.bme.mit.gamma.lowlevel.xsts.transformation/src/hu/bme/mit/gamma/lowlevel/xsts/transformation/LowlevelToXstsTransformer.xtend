@@ -377,9 +377,7 @@ class LowlevelToXstsTransformer {
 				it.reference = enumTypeDeclaration
 			] // Enum variable
 		]
-		xStsRegionVariable.expression = createEnumerationLiteralExpression => [
-			it.reference = lowlevelInactiveEnumLiteral
-		]
+		xStsRegionVariable.expression = lowlevelInactiveEnumLiteral.createEnumerationLiteralExpression
 		xSts.typeDeclarations += enumTypeDeclaration
 		xSts.variableDeclarations += xStsRegionVariable // Target model modification
 		xStsRegionVariable.addOnDemandControlAnnotation // It is worth following this variable

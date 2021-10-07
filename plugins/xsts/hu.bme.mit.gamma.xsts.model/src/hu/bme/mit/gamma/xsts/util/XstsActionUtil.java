@@ -41,6 +41,7 @@ import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.expression.model.VariableDeclarationAnnotation;
 import hu.bme.mit.gamma.expression.util.ExpressionUtil;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
+import hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures;
 import hu.bme.mit.gamma.xsts.model.AbstractAssignmentAction;
 import hu.bme.mit.gamma.xsts.model.Action;
 import hu.bme.mit.gamma.xsts.model.AssignmentAction;
@@ -419,12 +420,13 @@ public class XstsActionUtil extends ExpressionUtil {
 			}
 			else {
 				// Additional iterations
-				prepend(ifAction, condition, action);
+				append(ifAction, condition, action);
 			}
 		}
 		// If there is a final action for the else branch
 		if (i < actions.size()) {
-			ifAction.setElse(actions.get(i));
+			IfAction lastIfAction = XstsDerivedFeatures.getLastIfAction(ifAction);
+			lastIfAction.setElse(actions.get(i));
 		}
 		return ifAction;
  	}
@@ -468,6 +470,14 @@ public class XstsActionUtil extends ExpressionUtil {
 				throw new IllegalArgumentException("If action cannot be extended");
 			}
 		}
+	}
+	
+	public void appendElse(IfAction ifAction, Action _else) {
+		IfAction lastIfAction = XstsDerivedFeatures.getLastIfAction(ifAction);
+		if (lastIfAction.getElse() != null) {
+			throw new IllegalArgumentException("Not null else: " + ifAction);
+		}
+		lastIfAction.setElse(_else);
 	}
 	
 	public IfAction weave(List<IfAction> ifActions) {

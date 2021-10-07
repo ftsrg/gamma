@@ -122,7 +122,7 @@ class ActionOptimizer {
 		val simplifiedXStsElseAction = action.^else?.simplifyCompositeActions
 		
 		if ((simplifiedXStsThenAction instanceof EmptyAction ||
-				simplifiedXStsElseAction === null) &&
+				simplifiedXStsThenAction === null) &&
 				(simplifiedXStsElseAction instanceof EmptyAction ||
 					simplifiedXStsElseAction === null)) {
 			return createEmptyAction
@@ -860,7 +860,6 @@ class ActionOptimizer {
 					else if (operandSize == 1) {
 						val operand = operands.head
 						operand.replace(multiaryExpression)
-					
 					}
 				}
 			}
