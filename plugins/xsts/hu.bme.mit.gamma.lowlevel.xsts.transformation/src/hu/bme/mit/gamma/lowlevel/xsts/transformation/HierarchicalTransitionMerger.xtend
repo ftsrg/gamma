@@ -208,21 +208,22 @@ class HierarchicalTransitionMerger extends AbstractTransitionMerger {
 	}
 	
 	private def injectExecutedVariableAnnotation(Action action, VariableDeclaration execVariable) {
+		val execSetting = execVariable.createAssignmentAction(createTrueExpression)
 		if (action instanceof IfAction) {
 			val ifActions = action.getSelfAndAllContentsOfType(IfAction)
 			for (ifAction : ifActions) {
 				val then = ifAction.then
-				val execSetting = execVariable.createAssignmentAction(createTrueExpression)
 				then.appendToAction(execSetting)
 			}
 		}
 		else if (action instanceof NonDeterministicAction) {
 			for (branch : action.actions) {
-				val execSetting = execVariable.createAssignmentAction(createTrueExpression)
 				branch.appendToAction(execSetting)
 			}
 		}
-		throw new IllegalArgumentException("Not known action: " + action)
+		else {
+			throw new IllegalArgumentException("Not known action: " + action)
+		}
 	}
 	
 	private def extendElse(Action extendable, Action action) {
