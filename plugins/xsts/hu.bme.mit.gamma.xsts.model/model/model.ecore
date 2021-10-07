@@ -109,7 +109,7 @@
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="then" lowerBound="1" eType="#//Action"
         containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="else" eType="#//Action"
+    <eStructuralFeatures xsi:type="ecore:EReference" name="else" lowerBound="1" eType="#//Action"
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="CompositeAction" abstract="true" eSuperTypes="#//Action"/>

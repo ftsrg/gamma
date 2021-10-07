@@ -351,6 +351,10 @@ public class XstsActionUtil extends ExpressionUtil {
 		return createAssignmentAction(variable, createDecrementExpression(variable));
 	}
 	
+	public SequentialAction createSequentialAction(Action action) {
+		return createSequentialAction(Collections.singletonList(action));
+	}
+	
 	public SequentialAction createSequentialAction(Collection<? extends Action> actions) {
 		SequentialAction block = xStsFactory.createSequentialAction();
 		block.getActions().addAll(actions);
@@ -376,7 +380,7 @@ public class XstsActionUtil extends ExpressionUtil {
 	}
 	
 	public IfAction createIfAction1(Expression condition, Action then) {
-		return createIfAction(condition, then, null);
+		return createIfAction(condition, then, xStsFactory.createEmptyAction());
 	}
 	
 	public IfAction createIfAction(Expression condition, Action then, Action _else) {
@@ -426,6 +430,10 @@ public class XstsActionUtil extends ExpressionUtil {
 		// If there is a final action for the else branch
 		if (i < actions.size()) {
 			IfAction lastIfAction = XstsDerivedFeatures.getLastIfAction(ifAction);
+			Action _else = lastIfAction.getElse();
+			if (!XstsDerivedFeatures.isNullOrEmptyAction(_else)) {
+				throw new IllegalStateException("Not empty else branch: " + _else);
+			}
 			lastIfAction.setElse(actions.get(i));
 		}
 		return ifAction;
@@ -438,12 +446,14 @@ public class XstsActionUtil extends ExpressionUtil {
 	}
 	
 	public void append(IfAction ifAction, Expression condition, Action then) {
-		append(ifAction, condition, then, null);
+		append(ifAction, condition, then, xStsFactory.createEmptyAction());
 	}
 	
 	public void append(IfAction ifAction, Expression condition, Action then, Action _else) {
 		Action elseAction = ifAction.getElse();
-		if (ifAction.getCondition() == null && ifAction.getThen() == null && elseAction == null) {
+		if (ifAction.getCondition() == null &&
+				XstsDerivedFeatures.isNullOrEmptyAction(ifAction.getThen()) &&
+				XstsDerivedFeatures.isNullOrEmptyAction(elseAction)) {
 			ifAction.setCondition(condition);
 			ifAction.setThen(then);
 			ifAction.setElse(_else);
@@ -458,7 +468,7 @@ public class XstsActionUtil extends ExpressionUtil {
 	public void append(IfAction ifAction, Action action) {
 		Action elseAction = ifAction.getElse();
 		
-		if (elseAction == null) {
+		if (XstsDerivedFeatures.isNullOrEmptyAction(elseAction)) {
 			ifAction.setElse(action);
 		}
 		else {
@@ -474,8 +484,9 @@ public class XstsActionUtil extends ExpressionUtil {
 	
 	public void appendElse(IfAction ifAction, Action _else) {
 		IfAction lastIfAction = XstsDerivedFeatures.getLastIfAction(ifAction);
-		if (lastIfAction.getElse() != null) {
-			throw new IllegalArgumentException("Not null else: " + ifAction);
+		Action lastElse = lastIfAction.getElse();
+		if (!XstsDerivedFeatures.isNullOrEmptyAction(lastElse)) {
+			throw new IllegalArgumentException("Not empty else branch: " + ifAction);
 		}
 		lastIfAction.setElse(_else);
 	}
@@ -487,8 +498,9 @@ public class XstsActionUtil extends ExpressionUtil {
 				previous = ifAction;
 			}
 			else {
-				if (previous.getElse() != null) {
-					throw new IllegalArgumentException("Else is not null: " + previous);
+				Action previousElse = previous.getElse();
+				if (!XstsDerivedFeatures.isNullOrEmptyAction(previousElse)) {
+					throw new IllegalArgumentException("Not empty else branch: " + previous);
 				}
 				previous.setElse(ifAction);
 				previous = ifAction;

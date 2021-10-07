@@ -253,6 +253,10 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 		Expression expression = action.getAssumption();
 		return expressionUtil.isDefinitelyFalseExpression(expression);
 	}
+	
+	public static boolean isNullOrEmptyAction(Action action) {
+		return action == null || action instanceof EmptyAction;
+	}
 
 	// Read-write
 
@@ -336,7 +340,6 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 	}
 	
 	private static Set<VariableDeclaration> _getWrittenVariables(VariableDeclarationAction action) {
-//		VariableDeclaration variable = action.getVariableDeclaration(); // Or this should be an empty set?
 		return Collections.emptySet(); // Empty, as this is a declaration, not a "writing"
 	}
 
