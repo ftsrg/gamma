@@ -32,15 +32,12 @@ import static extension hu.bme.mit.gamma.statechart.lowlevel.derivedfeatures.Low
 
 class TerminalTransitionToXTransitionTransformer extends LowlevelTransitionToXTransitionTransformer {
 	
-	protected final boolean extractGuards
-	
-	new(ViatraQueryEngine engine, Trace trace, boolean extractGuards) {
-		this(engine, trace, null, extractGuards)
+	new(ViatraQueryEngine engine, Trace trace) {
+		this(engine, trace, null)
 	}
 	
-	new(ViatraQueryEngine engine, Trace trace, RegionActivator regionActivator, boolean extractGuards) {
-		super(engine, trace, regionActivator, extractGuards)
-		this.extractGuards = extractGuards
+	new(ViatraQueryEngine engine, Trace trace, RegionActivator regionActivator) {
+		super(engine, trace, regionActivator)
 	}
 	
 	def transform(ForkState lowlevelFirstForkState) {
@@ -154,26 +151,20 @@ class TerminalTransitionToXTransitionTransformer extends LowlevelTransitionToXTr
 		checkArgument(lowlevelIncomingTransitions.size == 1)
 		
 		val lowlevelOutgoingTransitions = lowlevelChoiceState.outgoingTransitions
-			.sortingAccordingToPriority
+				.sortingAccordingToPriority
 		val arePrioritiesUnique = lowlevelOutgoingTransitions.arePrioritiesUnique
 		checkArgument(lowlevelOutgoingTransitions.size >= 1)
 		
 		// Note: precondition is easy now, as currently incoming actions are NOT supported
 		// Precondition (contains this source precondition and all upcoming ones as well)
 		val xStsChoicePostcondition = (arePrioritiesUnique) ?
-			createIfAction : createNonDeterministicAction // Will contain the branches
+				createIfAction : createNonDeterministicAction // Will contain the branches
 		val xStsChoiceAction = createSequentialAction => [
 			// A precondition CANNOT be put here, it is taken care of by the previous postcondition
 			// No backward: it would lead to infinite recursion, just checking if it the source is a state
 			it.actions += xStsChoicePostcondition
 		]
-		val xStsActions = xStsChoiceAction.actions
-		//
-		val guardExpressions = trace.getChoiceGuards
-		if (extractGuards) {
-			guardExpressions.clear // Needed to not mess up local variable extraction at every choice
-		}
-		//
+		
 		// Postcondition
 		for (lowlevelOutgoingTransition : lowlevelOutgoingTransitions) {
 			// Simple guard, can be null
@@ -195,25 +186,16 @@ class TerminalTransitionToXTransitionTransformer extends LowlevelTransitionToXTr
 				// Priority: must NOT be extracted to the very beginning if we want to follow UML semantics - hence the lack of caching
 				val lowlevelHigherPriorityTransitions = lowlevelOutgoingTransition.higherPriorityTransitions
 				val xStsPriorityExpressions = lowlevelHigherPriorityTransitions
-					.map[it.getGuardExpression(trace.getChoiceGuards)].filterNull
+						.map[it.getGuardExpression(trace.getChoiceGuards)].filterNull
 				val xStsPriorityExpression = xStsPriorityExpressions.connectViaNegations
 				
 				val finalXStsGuard = xStsGuard.wrapIntoMultiaryExpression(xStsPriorityExpression, createAndExpression)
-					.unwrapIfPossible
+						.unwrapIfPossible
 				
 				xStsNonDeterministicAction.extendChoiceWithBranch(finalXStsGuard, xStsNextAction)
 			}
 		}
 		
-		// Extracting priority expressions
-		if (extractGuards) {
-			val extractedExpressions = trace.extractExpressions(guardExpressions)
-			val index = xStsActions.indexOf(xStsChoicePostcondition)
-			xStsActions.addAll(index, extractedExpressions)
-			guardExpressions.clear
-		}
-		//
-			
 		return xStsChoiceAction
 	}
 	

@@ -133,7 +133,7 @@ class LowlevelToXstsTransformer {
 		this (_package, optimize, false, TransitionMerging.HIERARCHICAL)
 	}
 	
-	new(Package _package, boolean optimize,	boolean extractGuards,
+	new(Package _package, boolean optimize,	boolean extractGuards1,
 			TransitionMerging transitionMerging) {
 		this._package = _package
 		// Note: we do not expect cross references to other resources
@@ -144,21 +144,21 @@ class LowlevelToXstsTransformer {
 		this.targetEngine = ViatraQueryEngine.on(new EMFScope(this.xSts))
 		this.trace = new Trace(_package, xSts)
 		// The transformers need the trace model for the variable mapping
-		this.regionActivator = new RegionActivator(this.engine, this.trace, extractGuards)
+		this.regionActivator = new RegionActivator(this.engine, this.trace)
 		this.entryActionRetriever = new EntryActionRetriever(this.trace)
 		this.expressionTransformer = new ExpressionTransformer(this.trace)
 		this.variableDeclarationTransformer = new VariableDeclarationTransformer(this.trace)
 		this.lowlevelTransitionToActionTransformer =
-				new LowlevelTransitionToActionTransformer(this.engine, this.trace, extractGuards)
+				new LowlevelTransitionToActionTransformer(this.engine, this.trace)
 		this.simpleTransitionToActionTransformer =
-				new SimpleTransitionToXTransitionTransformer(this.engine, this.trace, extractGuards)
+				new SimpleTransitionToXTransitionTransformer(this.engine, this.trace)
 		this.precursoryTransitionToXTransitionTransformer =
-				new PrecursoryTransitionToXTransitionTransformer(this.engine, this.trace, extractGuards)
+				new PrecursoryTransitionToXTransitionTransformer(this.engine, this.trace)
 		this.terminalTransitionToXTransitionTransformer =
-				new TerminalTransitionToXTransitionTransformer(this.engine, this.trace, extractGuards)
+				new TerminalTransitionToXTransitionTransformer(this.engine, this.trace)
 		this.transitionMerger = switch (transitionMerging) {
-			case HIERARCHICAL: new HierarchicalTransitionMerger(this.engine, this.trace, extractGuards)
-			case FLAT: new FlatTransitionMerger(this.engine, this.trace, extractGuards)
+			case HIERARCHICAL: new HierarchicalTransitionMerger(this.engine, this.trace)
+			case FLAT: new FlatTransitionMerger(this.engine, this.trace)
 			default: throw new IllegalArgumentException("Not known merging enum: " + transitionMerging)
 		}
 		this.transformation = BatchTransformation.forEngine(engine).build

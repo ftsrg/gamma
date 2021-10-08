@@ -16,8 +16,6 @@ abstract class AbstractTransitionMerger {
 	//
 	protected final XSTS xSts
 	
-	protected final boolean extractGuards
-	
 	protected final extension PseudoStateHandler pseudoStateHandler
 	protected final extension XSTSModelFactory factory = XSTSModelFactory.eINSTANCE
 	protected final extension ExpressionModelFactory expressionFactory = ExpressionModelFactory.eINSTANCE
@@ -25,12 +23,11 @@ abstract class AbstractTransitionMerger {
 	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension JavaUtil javaUtil = JavaUtil.INSTANCE
 	
-	new(ViatraQueryEngine engine, Trace trace, boolean extractGuards) {
+	new(ViatraQueryEngine engine, Trace trace) {
 		this.engine = engine
 		this.trace = trace
 		this.xSts = trace.XSts
 		this.pseudoStateHandler = new PseudoStateHandler(this.engine)
-		this.extractGuards = extractGuards
 	}
 	
 	abstract def void mergeTransitions()

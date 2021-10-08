@@ -28,11 +28,9 @@ import static extension java.lang.Math.abs
 
 class HierarchicalTransitionMerger extends AbstractTransitionMerger {
 	
-	// Guard extraction is not supported
-	
-	new(ViatraQueryEngine engine, Trace trace, boolean extractGuards) {
+	new(ViatraQueryEngine engine, Trace trace) {
 		// Conflict and priority encoding are unnecessary
-		super(engine, trace, extractGuards)
+		super(engine, trace)
 	}
 	
 	override mergeTransitions() {
@@ -233,13 +231,14 @@ class HierarchicalTransitionMerger extends AbstractTransitionMerger {
 		val guardEvaluation = statechart.guardEvaluation
 		if (guardEvaluation == GuardEvaluation.BEGINNING_OF_STEP) {
 			val xStsNewMergedAction = createSequentialAction
-			val extractableExpressions = newArrayList
-			extractableExpressions += trace.getGuards.values.flatten.toList
-			extractableExpressions -= trace.getChoiceGuards.values.flatten.toList
+			
+			val extractableExpressions = trace.getGuards.values.flatten
+			// trace.getGuards does not contain choice guards
 			
 			for (extractableExpression : extractableExpressions) {
 				val name = "_" + extractableExpression.hashCode.abs
-				xStsNewMergedAction.actions += createBooleanTypeDefinition.extractExpression(name, extractableExpression)
+				xStsNewMergedAction.actions += createBooleanTypeDefinition
+						.extractExpression(name, extractableExpression)
 			}
 			
 			xStsNewMergedAction.actions += xSts.mergedAction

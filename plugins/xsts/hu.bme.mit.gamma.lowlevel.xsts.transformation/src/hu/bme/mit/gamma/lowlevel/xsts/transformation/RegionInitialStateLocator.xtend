@@ -24,9 +24,9 @@ class RegionInitialStateLocator {
 	protected final extension SingleInitialStateLocator singleInitialStateLocator
 	protected final extension RecursiveInitialStateLocator recursiveInitialStateLocator
 	
-	new(ViatraQueryEngine engine, Trace trace, RegionActivator regionActivator, boolean extractGuards) {
-		this.singleInitialStateLocator = new SingleInitialStateLocator(engine, trace, regionActivator, extractGuards)
-		this.recursiveInitialStateLocator = new RecursiveInitialStateLocator(engine, trace, regionActivator, extractGuards)
+	new(ViatraQueryEngine engine, Trace trace, RegionActivator regionActivator) {
+		this.singleInitialStateLocator = new SingleInitialStateLocator(engine, trace, regionActivator)
+		this.recursiveInitialStateLocator = new RecursiveInitialStateLocator(engine, trace, regionActivator)
 	}
 		
 	protected def createSingleXStsInitialStateSettingAction(EntryState lowlevelEntry) {
@@ -39,8 +39,8 @@ class RegionInitialStateLocator {
 	
 	static class SingleInitialStateLocator extends TerminalTransitionToXTransitionTransformer {
 	
-		new(ViatraQueryEngine engine, Trace trace, RegionActivator regionActivator, boolean extractGuards) {
-			super(engine, trace, regionActivator, extractGuards)
+		new(ViatraQueryEngine engine, Trace trace, RegionActivator regionActivator) {
+			super(engine, trace, regionActivator)
 		}
 		
 		// Only single region activation, no entry actions, no orthogonality
@@ -72,8 +72,8 @@ class RegionInitialStateLocator {
 	
 	static class RecursiveInitialStateLocator extends TerminalTransitionToXTransitionTransformer {
 	
-		new(ViatraQueryEngine engine, Trace trace, RegionActivator regionActivator, boolean extractGuards) {
-			super(engine, trace, regionActivator, extractGuards)  
+		new(ViatraQueryEngine engine, Trace trace, RegionActivator regionActivator) {
+			super(engine, trace, regionActivator)  
 		}
 		
 		// Only recursive region activation, no entry actions, no orthogonality

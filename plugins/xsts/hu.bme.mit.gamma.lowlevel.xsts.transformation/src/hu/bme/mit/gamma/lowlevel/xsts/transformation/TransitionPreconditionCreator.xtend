@@ -71,12 +71,13 @@ class TransitionPreconditionCreator {
 			lowlevelTransition.ancestorTransitions 
 			
 		}
-		// TODO
-		val xStsConflictExpression = lowlevelPotentialConflictingTransitions.createXStsTransitionConflictExclusion
 		
-		// TODO
 		val lowlevelHigherPriorityTransitions = lowlevelTransition.higherPriorityTransitions
-		val xStsPriorityExpression = lowlevelHigherPriorityTransitions.createXStsTransitionConflictExclusion
+		val xStsPriorityExpression = (addPriorityGuard) ?
+				lowlevelHigherPriorityTransitions.createXStsTransitionConflictExclusion : null
+		
+		val xStsConflictExpression = (addConflictGuard) ?
+				lowlevelPotentialConflictingTransitions.createXStsTransitionConflictExclusion : null
 		
 		val xStsEnablednessExpression = lowlevelTransition.isEnabledExpression
 		// Caching: only the activeness must be cached if we want the guard evaluation to be flexible
@@ -107,7 +108,7 @@ class TransitionPreconditionCreator {
 	 */
 	def createXStsTransitionConflictExclusion(Collection<Transition> lowlevelTransitions) {
 		return lowlevelTransitions.map[it.isEnabledExpression]
-			.connectViaNegations
+				.connectViaNegations
 	}
 	
 	// Dispatch isActive (source elements are active and guard is true) expression
@@ -166,12 +167,7 @@ class TransitionPreconditionCreator {
 	}
 	
 	def dispatch createSingleXStsTransitionPrecondition(MergeState lowlevelMergeState) {
-		val lowlevelIncomingTransitions = lowlevelMergeState.incomingTransitions
-		val orExpression = createOrExpression
-		for (lowlevelIncomingTransition : lowlevelIncomingTransitions) {
-			orExpression.operands += lowlevelIncomingTransition.createXStsTransitionPrecondition
-		}
-		return orExpression
+		throw new IllegalArgumentException("Merge states are not supported: " + lowlevelMergeState)
 	}
 	
 }

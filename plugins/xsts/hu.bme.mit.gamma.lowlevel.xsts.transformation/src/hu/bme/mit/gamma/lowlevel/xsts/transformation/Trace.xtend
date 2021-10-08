@@ -88,15 +88,15 @@ package class Trace {
 	// Transition caching
 	
 	def getPrimaryIsActiveExpressions() {
-		return primaryIsActiveExpressions // No guards
+		return primaryIsActiveExpressions // No guards, only state configurations
 	}
 	
 	def getIsActiveExpressions() {
-		return isActiveExpressions
+		return isActiveExpressions // Complete enabledness
 	}
 	
 	def getGuards() {
-		return guards
+		return guards // Does not contain choice guards
 	}
 	
 	def getChoiceGuards() {

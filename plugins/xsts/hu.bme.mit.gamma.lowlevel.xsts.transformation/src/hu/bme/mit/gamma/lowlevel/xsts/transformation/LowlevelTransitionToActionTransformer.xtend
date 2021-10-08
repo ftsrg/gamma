@@ -44,17 +44,17 @@ class LowlevelTransitionToActionTransformer {
 	// Trace
 	protected final Trace trace
 	
-	new(ViatraQueryEngine engine, Trace trace, boolean extractGuards) {
-		this(engine, trace, null, extractGuards)
+	new(ViatraQueryEngine engine, Trace trace) {
+		this(engine, trace, null)
 	}
 	
-	new(ViatraQueryEngine engine, Trace trace, RegionActivator regionActivator, boolean extractGuards) {
+	new(ViatraQueryEngine engine, Trace trace, RegionActivator regionActivator) {
 		this.engine = engine
 		this.trace = trace
 		this.stateAssumptionCreator = new StateAssumptionCreator(this.trace)
 		this.transitionPreconditionCreator = new TransitionPreconditionCreator(this.trace)
 		if (regionActivator === null) {
-			this.regionActivator = new RegionActivator(this.engine, this.trace, extractGuards)
+			this.regionActivator = new RegionActivator(this.engine, this.trace)
 		}
 		else {
 			this.regionActivator = regionActivator
