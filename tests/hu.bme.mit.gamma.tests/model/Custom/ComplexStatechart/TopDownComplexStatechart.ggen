@@ -1,0 +1,30 @@
+import "ComplexStatechart/TopDownComplexStatechart.gcd"
+
+code {
+	component : TopDown
+	language : java
+}
+
+analysis {
+	component : TopDown
+	language : UPPAAL
+	language : Theta
+	transition-coverage
+}
+
+verification {
+	language : UPPAAL
+	file : "TopDownComplexStatechart.xml"
+	query-file : "TopDownComplexStatechart.q"
+	optimize : true
+	test-language : java
+	optimize : true
+}
+
+verification {
+	language : Theta
+	file : "TopDownComplexStatechart.xsts"
+	query-file : "TopDownComplexStatechart.prop"
+	test-language : java
+	optimize : true
+}
