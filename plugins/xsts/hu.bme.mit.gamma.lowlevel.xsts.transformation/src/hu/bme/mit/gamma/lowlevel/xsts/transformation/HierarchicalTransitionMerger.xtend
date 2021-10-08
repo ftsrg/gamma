@@ -28,7 +28,7 @@ import static extension java.lang.Math.abs
 
 class HierarchicalTransitionMerger extends AbstractTransitionMerger {
 	
-	// Guard extraction is not yet supported
+	// Guard extraction is not supported
 	
 	new(ViatraQueryEngine engine, Trace trace, boolean extractGuards) {
 		// Conflict and priority encoding are unnecessary
@@ -45,25 +45,6 @@ class HierarchicalTransitionMerger extends AbstractTransitionMerger {
 		checkState(statecharts.size == 1)
 		val statechart = statecharts.head
 		
-//		val regionGroups = (statechart.schedulingOrder == SchedulingOrder.TOP_DOWN) ?
-//			statechart.topDownRegionGroups : statechart.bottomUpRegionGroups
-//		
-//		var ifAction = createIfAction
-//		
-//		for (regionGroup : regionGroups) {
-//			if (regionGroup.size > 1) {
-//				// Orthogonal regions
-//				val parallelAction = createParallelAction => [
-//					
-//				]
-//			}
-//			else {
-//				// Simple region
-//				val lowlevelRegion = regionGroup.head
-//				val xStsRegionBehavior = lowlevelRegion.mergeTransitionsOfRegion
-//			}
-//		}
-
 		val lowlevelRegions = statechart.allRegions
 		val regionActions = newHashMap
 		for (lowlevelRegion : lowlevelRegions) {
@@ -91,7 +72,7 @@ class HierarchicalTransitionMerger extends AbstractTransitionMerger {
 			val xStsSequentialAction = createSequentialAction
 			
 			val xStsExecutedVariableAction = createBooleanTypeDefinition
-					.createVariableDeclarationAction('''isExec«element.hashCode.abs»''',
+					.createVariableDeclarationAction('''isExec_«element.hashCode.abs»''',
 						createFalseExpression)
 			val xStsExecutedVariable = xStsExecutedVariableAction.variableDeclaration
 			xStsSequentialAction.actions += xStsExecutedVariableAction
@@ -107,7 +88,7 @@ class HierarchicalTransitionMerger extends AbstractTransitionMerger {
 				xStsParallelAction.actions += lowlevelRegion.mergeAllTransitionsOfRegion(regionActions)
 			}
 			xStsSequentialAction.actions += xStsExecutedVariable.createReferenceExpression
-					.createNotExpression.createIfAction1(createEmptyAction)
+					.createNotExpression.createIfAction(createEmptyAction)
 					
 			return xStsSequentialAction
 		}
@@ -202,7 +183,7 @@ class HierarchicalTransitionMerger extends AbstractTransitionMerger {
 			// The last else branch must be extended by the caller
 		}
 		else {
-			return xStsActions.createChoiceActionFromActions1
+			return xStsActions.createChoiceAction
 			// The default branch must be extended by the caller
 		}
 	}
@@ -233,7 +214,7 @@ class HierarchicalTransitionMerger extends AbstractTransitionMerger {
 			extendable.append(action) // See the referenced method
 		}
 		else if (extendable instanceof NonDeterministicAction) {
-			extendable.extendChoiceWithDefaultBranch1(action)
+			extendable.extendChoiceWithDefaultBranch(action)
 		}
 		else if (extendable instanceof SequentialAction) {
 			val lastAction = extendable.actions.last

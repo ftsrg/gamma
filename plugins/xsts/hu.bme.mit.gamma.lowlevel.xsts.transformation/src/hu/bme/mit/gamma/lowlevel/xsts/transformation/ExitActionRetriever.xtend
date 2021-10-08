@@ -54,7 +54,7 @@ class ExitActionRetriever {
 		val xStsExitAction = createSequentialAction => [
 			// Action taken only if the state is "active" (assume action)
 			val xStsStateAssumption = lowlevelParentState.createSingleXStsStateAssumption
-			val xStsStateExitAction = xStsStateAssumption.createIfAction1(lowlevelParentState.exitAction.transformAction)
+			val xStsStateExitAction = xStsStateAssumption.createIfAction(lowlevelParentState.exitAction.transformAction)
 			// Action taken only if the state is "active" (assume action)
 			it.actions += xStsStateExitAction
 			// Recursion
@@ -79,7 +79,7 @@ class ExitActionRetriever {
 		val xStsExitAction = createSequentialAction => [
 			// Action taken only if the state is "active" (assume action)
 			val xStsStateAssumption = lowlevelParentState.createSingleXStsStateAssumption
-			val xStsStateExitAction = xStsStateAssumption.createIfAction1(lowlevelParentState.exitAction.transformAction)
+			val xStsStateExitAction = xStsStateAssumption.createIfAction(lowlevelParentState.exitAction.transformAction)
 			// Action taken only if the state is "active" (assume action)
 			if (lowlevelGrandparentRegion.hasOrthogonalRegion && !lowlevelGrandparentRegion.stateNodes.contains(lowlevelTopState)) {
 				// Orthogonal region exit actions
@@ -147,7 +147,7 @@ class ExitActionRetriever {
 		}	
 		val xStsStateAssumption = lowlevelState.createSingleXStsStateAssumption
 		// Action taken only if the state is "active" (assume action)
-		return xStsStateAssumption.createIfAction1(
+		return xStsStateAssumption.createIfAction(
 			createSequentialAction => [
 				it.actions += xStsSubstateExitActions
 				// Order is very important

@@ -379,7 +379,7 @@ public class XstsActionUtil extends ExpressionUtil {
 		return loopAction;
 	}
 	
-	public IfAction createIfAction1(Expression condition, Action then) {
+	public IfAction createIfAction(Expression condition, Action then) {
 		return createIfAction(condition, then, xStsFactory.createEmptyAction());
 	}
 	
@@ -398,7 +398,7 @@ public class XstsActionUtil extends ExpressionUtil {
 		AssumeAction assumeAction = (AssumeAction) actions.remove(0);
 		Expression assumption = assumeAction.getAssumption();
 		
-		return createIfAction1(assumption, _action);
+		return createIfAction(assumption, _action);
 	}
 	
 	public IfAction createIfAction(List<SequentialAction> actions) {
@@ -420,7 +420,7 @@ public class XstsActionUtil extends ExpressionUtil {
 			Action action = actions.get(i);
 			if (ifAction == null) {
 				// First iteration
-				ifAction = createIfAction1(condition, action);
+				ifAction = createIfAction(condition, action);
 			}
 			else {
 				// Additional iterations
@@ -440,7 +440,7 @@ public class XstsActionUtil extends ExpressionUtil {
  	}
 	
 	public IfAction prepend(IfAction ifAction, Expression condition, Action then) {
-		IfAction newIfAction = createIfAction1(condition, then);
+		IfAction newIfAction = createIfAction(condition, then);
 		newIfAction.setElse(ifAction);
 		return newIfAction;
 	}
@@ -509,7 +509,7 @@ public class XstsActionUtil extends ExpressionUtil {
 		return ifActions.get(0);
 	}
 	
-	public IfAction createSwitchAction1(
+	public IfAction createSwitchAction(
 			Expression controlExpresion, List<Expression> conditions, List<Action> actions) {
 		if (conditions.size() != actions.size() && conditions.size() + 1 != actions.size()) {
 			throw new IllegalArgumentException("The two lists must be of same size or the size of"
@@ -533,7 +533,7 @@ public class XstsActionUtil extends ExpressionUtil {
 	
 	// IfActions have been introduced, double-check if you really need NonDeterministicAction
 	
-	public NonDeterministicAction createChoiceActionBranch1(Expression condition, Action thenAction) {
+	public NonDeterministicAction createChoiceActionBranch(Expression condition, Action thenAction) {
 		SequentialAction ifSequentialAction = xStsFactory.createSequentialAction();
 		AssumeAction ifAssumeAction = createAssumeAction(condition);
 		ifSequentialAction.getActions().add(ifAssumeAction);
@@ -544,37 +544,37 @@ public class XstsActionUtil extends ExpressionUtil {
 		return ifAction;
 	}
 	
-	public NonDeterministicAction createChoiceAction1(Expression condition, Action thenAction) {
+	public NonDeterministicAction createChoiceAction(Expression condition, Action thenAction) {
 		// If
-		NonDeterministicAction choiceAction = createChoiceActionBranch1(condition, thenAction);
+		NonDeterministicAction choiceAction = createChoiceActionBranch(condition, thenAction);
 		// Else
 		NotExpression negatedCondition = expressionFactory.createNotExpression();
 		negatedCondition.setOperand(ecoreUtil.clone(condition)); // Cloning needed
-		return extendChoiceWithBranch1(choiceAction, negatedCondition, xStsFactory.createEmptyAction());
+		return extendChoiceWithBranch(choiceAction, negatedCondition, xStsFactory.createEmptyAction());
 	}
 	
-	public NonDeterministicAction createChoiceAction1(
+	public NonDeterministicAction createChoiceAction(
 			Expression condition, Action thenAction, Action elseAction) {
 		// If
-		NonDeterministicAction choiceAction = createChoiceActionBranch1(condition, thenAction);
+		NonDeterministicAction choiceAction = createChoiceActionBranch(condition, thenAction);
 		// Else
 		NotExpression negatedCondition = expressionFactory.createNotExpression();
 		negatedCondition.setOperand(ecoreUtil.clone(condition)); // Cloning needed
-		return extendChoiceWithBranch1(choiceAction, negatedCondition, elseAction);
+		return extendChoiceWithBranch(choiceAction, negatedCondition, elseAction);
 	}
 
-	public NonDeterministicAction extendChoiceWithBranch1(NonDeterministicAction choiceAction, 
+	public NonDeterministicAction extendChoiceWithBranch(NonDeterministicAction choiceAction, 
 			Expression condition, Action elseAction) {
 		SequentialAction elseSequentialAction = xStsFactory.createSequentialAction();
 		AssumeAction elseAssumeAction = createAssumeAction(condition);
 		elseSequentialAction.getActions().add(elseAssumeAction);
 		elseSequentialAction.getActions().add(elseAction);
-		// Merging into one
+		// Merging into parent
 		choiceAction.getActions().add(elseSequentialAction);
 		return choiceAction;
 	}
 	
-	public NonDeterministicAction createChoiceAction1(List<Expression> conditions, List<Action> actions) {
+	public NonDeterministicAction createChoiceAction(List<Expression> conditions, List<Action> actions) {
 		if (conditions.size() != actions.size() && conditions.size() + 1 != actions.size()) {
 			throw new IllegalArgumentException("The two lists must be of same size or the size of"
 				+ "the action list must be the size of the condition list + 1: "
@@ -591,12 +591,12 @@ public class XstsActionUtil extends ExpressionUtil {
 		}
 		// Else branch if needed
 		if (conditions.size() + 1 == actions.size()) {
-			extendChoiceWithDefaultBranch1(choiceAction, actions.get(actions.size() - 1));
+			extendChoiceWithDefaultBranch(choiceAction, actions.get(actions.size() - 1));
 		}
 		return choiceAction;
 	}
 	
-	public NonDeterministicAction createChoiceActionFromActions1(List<? extends Action> actions) {
+	public NonDeterministicAction createChoiceAction(List<? extends Action> actions) {
 		NonDeterministicAction switchAction = xStsFactory.createNonDeterministicAction();
 		for (Action action : actions) {
 			switchAction.getActions().add(action);
@@ -604,11 +604,11 @@ public class XstsActionUtil extends ExpressionUtil {
 		return switchAction;
 	}
 	
-	public NonDeterministicAction createChoiceActionWithEmptyDefaultBranch1(
+	public NonDeterministicAction createChoiceActionWithEmptyDefaultBranch(
 			List<? extends Action> actions) {
-		NonDeterministicAction switchAction = createChoiceActionFromActions1(actions);
+		NonDeterministicAction switchAction = createChoiceAction(actions);
 		// Else branch
-		extendChoiceWithDefaultBranch1(switchAction, xStsFactory.createEmptyAction());
+		extendChoiceWithDefaultBranch(switchAction, xStsFactory.createEmptyAction());
 		return switchAction;
 	}
 	
@@ -648,13 +648,13 @@ public class XstsActionUtil extends ExpressionUtil {
 		
 		// Else branch if needed
 		if (conditionsSize + 1 == actions.size()) {
-			extendChoiceWithDefaultBranch1(switchAction, actions.get(actions.size() - 1));
+			extendChoiceWithDefaultBranch(switchAction, actions.get(actions.size() - 1));
 		}
 		
 		return switchAction;
 	}
 	
-	public List<Action> createChoiceActionWithExtractedPreconditionsAndEmptyDefaultBranch1(
+	public List<Action> createChoiceActionWithExtractedPreconditionsAndEmptyDefaultBranch(
 			Action action, String name) {
 		List<Action> actions = new ArrayList<Action>();
 		if (action instanceof SequentialAction) {
@@ -664,7 +664,8 @@ public class XstsActionUtil extends ExpressionUtil {
 			VariableDeclarationAction variableDeclarationAction = extractExpression(
 					expressionFactory.createBooleanTypeDefinition(), name, expression);
 			actions.add(variableDeclarationAction);
-			NonDeterministicAction switchAction = createChoiceActionWithEmptyDefaultBranch1(List.of(action));
+			NonDeterministicAction switchAction = createChoiceActionWithEmptyDefaultBranch(
+					List.of(action));
 			actions.add(switchAction);
 		}
 		else {
@@ -673,7 +674,7 @@ public class XstsActionUtil extends ExpressionUtil {
 		return actions;
 	}
 	
-	public void extendChoiceWithDefaultBranch1(NonDeterministicAction switchAction, Action action) {
+	public void extendChoiceWithDefaultBranch(NonDeterministicAction switchAction, Action action) {
 		if (switchAction.getActions().isEmpty()) {
 			return;
 		}
@@ -699,12 +700,8 @@ public class XstsActionUtil extends ExpressionUtil {
 			orExpression.getOperands().add(ecoreUtil.clone(condition));
 		}
 		negatedCondition.setOperand(unwrapIfPossible(orExpression));
-		SequentialAction sequentialAction = xStsFactory.createSequentialAction();
-		AssumeAction assumeAction = createAssumeAction(negatedCondition);
-		sequentialAction.getActions().add(assumeAction);
-		sequentialAction.getActions().add(action); // Last action
-		// Merging into the parent
-		switchAction.getActions().add(sequentialAction);
+		
+		extendChoiceWithBranch(switchAction, negatedCondition, action);
 	}
 	
 	//

@@ -119,7 +119,7 @@ class ActionTransformer {
 		val actions = branches.value
 		
 		// In this case it is assumed that each case contains a break at the end
-		return createSwitchAction1(action.controlExpression, guards, actions)
+		return createSwitchAction(action.controlExpression, guards, actions)
 	}
 	
 	def dispatch Action transformAction(ChoiceStatement action) {
@@ -127,7 +127,7 @@ class ActionTransformer {
 		val guards = branches.key
 		val actions = branches.value
 		
-		return createChoiceAction1(guards, actions)
+		return createChoiceAction(guards, actions)
 	}
 	
 	protected def transformBranches(Collection<Branch> branches) {

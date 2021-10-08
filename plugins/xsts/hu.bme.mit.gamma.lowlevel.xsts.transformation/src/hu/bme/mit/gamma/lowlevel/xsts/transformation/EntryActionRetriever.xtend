@@ -56,7 +56,7 @@ class EntryActionRetriever {
 			it.actions += lowlevelParentState.createRecursiveXStsParentStateEntryActions(lowlevelTopState, inclusiveTopState)
 			// This level
 			val xStsStateAssumption = lowlevelParentState.createSingleXStsStateAssumption
-			it.actions += xStsStateAssumption.createIfAction1(lowlevelParentState.entryAction.transformAction)
+			it.actions += xStsStateAssumption.createIfAction(lowlevelParentState.entryAction.transformAction)
 			// Action taken only if the state is "active" (assume action)
 		]
 		return xStsEntryAction
@@ -81,7 +81,7 @@ class EntryActionRetriever {
 			// This level
 			val xStsStateAssumption = lowlevelParentState.createSingleXStsStateAssumption
 			// Action taken only if the state is "active" (assume action)
-			val xStsStateEntryAction = xStsStateAssumption.createIfAction1(lowlevelParentState.entryAction.transformAction)
+			val xStsStateEntryAction = xStsStateAssumption.createIfAction(lowlevelParentState.entryAction.transformAction)
 			if (lowlevelGrandparentRegion.hasOrthogonalRegion  && !lowlevelGrandparentRegion.stateNodes.contains(lowlevelTopState)) {
 				// Orthogonal region exit actions
 				it.actions += lowlevelGrandparentRegion.createRecursiveXStsOrthogonalRegionEntryActions as ParallelAction => [
@@ -153,7 +153,7 @@ class EntryActionRetriever {
 			}
 			xStsSubstateEntryActions.actions += xStsEntryActions.weave
 		}
-		return xStsStateAssumption.createIfAction1(
+		return xStsStateAssumption.createIfAction(
 			createSequentialAction => [
 				it.actions += xStsStateEntryActions
 				// Order is very important

@@ -154,7 +154,7 @@ class RegionActivator {
 		val lowlevelRegion = lowlevelHistory.parentRegion
 		val xStsInitialStateSettingAction = lowlevelHistory.createSingleXStsInitialStateSettingAction
 		// Note: this action is executed only once for the deep history node (later there will be history)
-		return createIfAction1(lowlevelRegion.createSingleXStsDeactivatedStateAssumption,
+		return createIfAction(lowlevelRegion.createSingleXStsDeactivatedStateAssumption,
 			createSequentialAction => [
 				it.actions += xStsInitialStateSettingAction
 				it.actions += lowlevelRegion.createRecursiveXStsHistoryBasedSubstateActivatingAction
@@ -167,7 +167,7 @@ class RegionActivator {
 		val lowlevelRegion = lowlevelHistory.parentRegion
 		val xStsInitialStateSettingAction = lowlevelHistory.createSingleXStsInitialStateSettingAction
 		// Note: this action is executed only once for the shallow history node (later there will be history)
-		val xStsIfDeactivatedAction = createIfAction1(
+		val xStsIfDeactivatedAction = createIfAction(
 			lowlevelRegion.createSingleXStsDeactivatedStateAssumption, xStsInitialStateSettingAction)	
 		return createSequentialAction => [
 			it.actions += xStsIfDeactivatedAction
@@ -273,7 +273,7 @@ class RegionActivator {
 	 */
 	protected def createRecursiveXStsStateAssumptionAndSubstateActivatingAction(State lowlevelState) {
 		val xStsStateAssumption = lowlevelState.createSingleXStsStateAssumption
-		return xStsStateAssumption.createIfAction1( // If this is the active state
+		return xStsStateAssumption.createIfAction( // If this is the active state
 			// Set all subregions too, that is why recursive method is called
 			lowlevelState.createRecursiveXStsSubstateActivatingAction
 		)

@@ -638,7 +638,7 @@ class LowlevelToXstsTransformer {
 						]
 						
 						// Setting the parameter value
-						lowlevelEnvironmentalAction.actions += createIfAction1(
+						lowlevelEnvironmentalAction.actions += createIfAction(
 							// Only if the event is raised
 							xStsEventVariable.createReferenceExpression,
 							xStsInParameterAssignment

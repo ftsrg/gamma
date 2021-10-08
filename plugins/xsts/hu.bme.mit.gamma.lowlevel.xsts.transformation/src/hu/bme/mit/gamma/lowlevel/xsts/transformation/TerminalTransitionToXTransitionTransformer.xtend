@@ -201,7 +201,7 @@ class TerminalTransitionToXTransitionTransformer extends LowlevelTransitionToXTr
 				val finalXStsGuard = xStsGuard.wrapIntoMultiaryExpression(xStsPriorityExpression, createAndExpression)
 					.unwrapIfPossible
 				
-				xStsNonDeterministicAction.extendChoiceWithBranch1(finalXStsGuard, xStsNextAction)
+				xStsNonDeterministicAction.extendChoiceWithBranch(finalXStsGuard, xStsNextAction)
 			}
 		}
 		
