@@ -130,11 +130,10 @@ class LowlevelToXstsTransformer {
 	}
 	
 	new(Package _package, boolean optimize) {
-		this (_package, optimize, false, TransitionMerging.HIERARCHICAL)
+		this (_package, optimize, TransitionMerging.HIERARCHICAL)
 	}
 	
-	new(Package _package, boolean optimize,	boolean extractGuards1,
-			TransitionMerging transitionMerging) {
+	new(Package _package, boolean optimize, TransitionMerging transitionMerging) {
 		this._package = _package
 		// Note: we do not expect cross references to other resources
 		this.engine = ViatraQueryEngine.on(new EMFScope(_package))
@@ -158,7 +157,7 @@ class LowlevelToXstsTransformer {
 				new TerminalTransitionToXTransitionTransformer(this.engine, this.trace)
 		this.transitionMerger = switch (transitionMerging) {
 			case HIERARCHICAL: new HierarchicalTransitionMerger(this.engine, this.trace)
-			case FLAT: new FlatTransitionMerger(this.engine, this.trace)
+//			case FLAT: new FlatTransitionMerger(this.engine, this.trace)
 			default: throw new IllegalArgumentException("Not known merging enum: " + transitionMerging)
 		}
 		this.transformation = BatchTransformation.forEngine(engine).build
