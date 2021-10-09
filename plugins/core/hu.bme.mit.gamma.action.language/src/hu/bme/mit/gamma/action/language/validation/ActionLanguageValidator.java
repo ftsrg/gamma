@@ -57,6 +57,11 @@ public class ActionLanguageValidator extends AbstractActionLanguageValidator {
 	}
 	
 	@Check
+	public void checkExecutionPathsForReturn(ProcedureDeclaration procedure) {
+		handleValidationResultMessage(actionModelValidator.checkExecutionPathsForReturn(procedure));
+	}
+	
+	@Check
 	public void checkBlockIsEmpty(Block block) {
 		handleValidationResultMessage(actionModelValidator.checkBlockIsEmpty(block));
 	}

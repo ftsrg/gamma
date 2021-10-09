@@ -37,19 +37,44 @@ procedure proc3 () : rational { return; }
 procedure proc4 () : Direction { return cPoint; }
 procedure proc5 () : Direction { return CardianalPoints::NORTH; }
 
+
 /**
- * We expect return statements to be final operations on all possible paths
+ * We expect return statements to be final operations on all possible execution paths
  * 
  * @Check - checkReturnStatementPositions
  */
 procedure proc6 () : integer {
-	return 1;
+	if (true) {
+		if (true) {
+			var a : integer;
+			return 1;
+		} else {
+			if (false) {
+				return 1;
+			}
+		}
+	} else {
+		switch (true) {
+			case false:
+				return 1;
+			case false:
+				var i : integer;
+		}
+	}
+	//
+}
+
+/**
+ * We expect all procedures to have a return statement, 
+ * unless the return type is void
+ * 
+ * @Check - checkReturnStatementPositions
+ */
+procedure proc7 () : integer {
 	var a : integer;
 }
 
-
-procedure exampleProc() : void {
-	
+procedure exampleProc() : integer {
 	/**
 	 * We expect the type of left hand expression be the same as the type of right hand expression
 	 * 
@@ -145,5 +170,5 @@ procedure exampleProc() : void {
 	assert(dir);
 	assert(1.1);
 	
-	return;
+	return 1;
 }
