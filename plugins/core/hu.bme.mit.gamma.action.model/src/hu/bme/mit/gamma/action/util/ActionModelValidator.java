@@ -25,6 +25,7 @@ import hu.bme.mit.gamma.action.model.Branch;
 import hu.bme.mit.gamma.action.model.ForStatement;
 import hu.bme.mit.gamma.action.model.ProcedureDeclaration;
 import hu.bme.mit.gamma.action.model.ReturnStatement;
+import hu.bme.mit.gamma.action.model.Statement;
 import hu.bme.mit.gamma.action.model.SwitchStatement;
 import hu.bme.mit.gamma.action.model.VariableDeclarationStatement;
 import hu.bme.mit.gamma.expression.model.ConstantDeclaration;
@@ -38,6 +39,7 @@ import hu.bme.mit.gamma.expression.model.IntegerRangeTypeDefinition;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
+import hu.bme.mit.gamma.expression.model.VoidTypeDefinition;
 import hu.bme.mit.gamma.expression.util.ExpressionModelValidator;
 
 public class ActionModelValidator extends ExpressionModelValidator {
@@ -123,7 +125,80 @@ public class ActionModelValidator extends ExpressionModelValidator {
 		for (ReturnStatement statement : ecoreUtil.getAllContentsOfType(block, ReturnStatement.class)) {
 			validationResultMessages.addAll(checkReturnStatementPosition(statement));
 		}
-		// TODO Check every possible path to see if a procedure can be exited without a return statement
+		return validationResultMessages;
+	}
+	
+	public Collection<ValidationResultMessage> checkExecutionPathsForReturn(ProcedureDeclaration procedure) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+
+		Block block = procedure.getBody();
+		
+		List<Statement> containersOfReturns = new ArrayList<>();
+		List<ReturnStatement> listOfReturnStatements = ecoreUtil.getAllContentsOfType(block, ReturnStatement.class);
+		List<Branch> listOfBranch = ecoreUtil.getAllContentsOfType(block, Branch.class);
+		
+		boolean hasRootReturn = false;
+		
+		if (listOfReturnStatements.size() != 0) {
+			// procedure has a root return statement
+			for (ReturnStatement rs : listOfReturnStatements) {
+				if (rs.eContainer().equals(block)) {
+					hasRootReturn = true;
+				}
+			}
+		
+			if (listOfBranch.size() != 0) {
+				for (Branch branch : listOfBranch) {
+					// containers of branches
+					Statement statement = ecoreUtil.getContainerOfType(branch, Statement.class);
+					if (!containersOfReturns.contains(statement)) {
+						containersOfReturns.add(statement);
+					}
+				}
+				
+				for (Statement statement : containersOfReturns) {
+					boolean eachPathContainReturn = true;
+					// all branch of statements
+					for (Branch branch : ecoreUtil.getAllContentsOfType(statement, Branch.class)) {
+						if (ecoreUtil.getAllContentsOfType(branch, ReturnStatement.class).size() == 0) {
+							eachPathContainReturn = false;
+						}
+					}
+					
+					// some branch dosen't contain return statement
+					if (!eachPathContainReturn) {
+						// check the upper levels
+						Statement content = ecoreUtil.clone(statement);
+						Statement container = ecoreUtil.getContainerOfType(content, Statement.class);
+						
+						while (container != null || eachPathContainReturn) {
+							// check the upper statement has more return statement, then the lower statement
+							if (ecoreUtil.getAllContentsOfType(container, ReturnStatement.class).size() > ecoreUtil.getAllContentsOfType(content, ReturnStatement.class).size()) {
+								eachPathContainReturn = true;
+							}
+							container = ecoreUtil.getContainerOfType(container, Statement.class);
+							content = ecoreUtil.getContainerOfType(content, Statement.class);
+						}
+						
+						// no root return statement and some branch doesn't contain return statement
+						if (!eachPathContainReturn && !hasRootReturn) {
+							validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+									"Each execution path must have a return statement",
+									new ReferenceInfo(ActionModelPackage.Literals.PROCEDURE_DECLARATION__BODY, procedure)));							
+						}
+					}
+				}
+			}
+		}
+		else {
+			// procedure doesn't contain return statement, but it's return type doesn't void
+			if (!(procedure.getType() instanceof VoidTypeDefinition)) {
+				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+						"Each procedure must have a return statement unless the return type of procedure is void",
+						new ReferenceInfo(ActionModelPackage.Literals.PROCEDURE_DECLARATION__BODY, procedure)));
+			}
+		}
+		
 		return validationResultMessages;
 	}
 	
