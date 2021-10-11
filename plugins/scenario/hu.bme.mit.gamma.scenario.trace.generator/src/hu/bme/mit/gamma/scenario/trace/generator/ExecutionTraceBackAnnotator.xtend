@@ -84,18 +84,17 @@ class ExecutionTraceBackAnnotator {
 		for (var i = 0; i < trace.steps.size; i++) {
 			val startingStep = trace.steps.get(i)
 			if (startingStep.isReceive) {
-				var j = i + 1
-				while (j < trace.steps.size && trace.steps.get(j).isWait) {
-					j++
-				}
-				if (j == trace.steps.size) {
+				if (i+1 == trace.steps.size) {
 					return
 				}
-				val nextNonWait = trace.steps.get(j)
-				if (nextNonWait.isSend) {
-					nextNonWait.actions.remove(nextNonWait.actions.filter(Schedule).head)
+				val next = trace.steps.get(i+1)
+				if (next.isSend) {
+					if(next.actions.findFirst[!(it instanceof Schedule || it instanceof TimeElapse)] === null){
+						next.actions.clear
+					} else {
+						throw(new IllegalArgumentException('''Step number «i» contains both actions other then schedules and time elapse and asserts.'''))
+					}
 				}
-				return
 			}
 		}
 	}
@@ -121,8 +120,7 @@ class ExecutionTraceBackAnnotator {
 					val portName = action.port.getName
 					if (scenarioStatechartUtil.isTurnedOut(action.port)) {
 						var asser = createRaiseEventAct
-						// TODO what is this 8?
-						asser.port = getPort(portName.substring(0, portName.length - 8))
+						asser.port = getPort(scenarioStatechartUtil.getTurnedOutPortName(action.port))
 						asser.event = getEvent(asser.port, action.event.name)
 						for (argument : action.arguments) {
 							asser.arguments += argument.clone
