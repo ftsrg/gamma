@@ -75,12 +75,16 @@ class ExecutionTraceBackAnnotator {
 			if (createOriginalActsAndAssertsBasedOnActs) {
 				resultTrace.createOriginalActsAndAsserts
 			}
-			resultTrace.removeScheduelingWhenSendAfterReceive
+			/* The actions need to be removed from the step, if it is a 'send' step after a 'receive' step.
+			 * This is necessary, to avoid two schedules between receiving the last interactions and asserting to the output.  
+			 * 'Send' after 'send' steps should no tbe modified, since there needs to be a schedule between the first assertions and the assertions of the sendos step.			 * 
+			 */
+			resultTrace.removeActionsWhenSendAfterReceive
 		}
 		return result
 	}
 
-	def removeScheduelingWhenSendAfterReceive(ExecutionTrace trace) {
+	def removeActionsWhenSendAfterReceive(ExecutionTrace trace) {
 		for (var i = 0; i < trace.steps.size; i++) {
 			val startingStep = trace.steps.get(i)
 			if (startingStep.isReceive) {
