@@ -143,6 +143,9 @@ public class ExpressionUtil {
 	
 	public Collection<TypeDeclaration> getTypeDeclarations(EObject context) {
 		ExpressionPackage _package = ecoreUtil.getSelfOrContainerOfType(context, ExpressionPackage.class);
+		if (_package == null) {
+			return Collections.emptyList();
+		}
 		return _package.getTypeDeclarations();
 	}
 	
