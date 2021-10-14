@@ -44,6 +44,7 @@ import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction;
 import hu.bme.mit.gamma.xsts.model.XSTS;
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory;
 import hu.bme.mit.gamma.xsts.model.XTransition;
+import hu.bme.mit.gamma.xsts.model.XstsAnnotation;
 
 public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 
@@ -51,6 +52,10 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 	
 	public static XSTS getContainingXsts(EObject object) {
 		return ecoreUtil.getSelfOrContainerOfType(object, XSTS.class);
+	}
+	
+	public static boolean hasAnnotation(XSTS xSts, Class<? extends XstsAnnotation> annotation) {
+		return xSts.getAnnotations().stream().anyMatch(it -> annotation.isInstance(it));
 	}
 	
 	public static boolean hasClockVariable(XSTS xSts) {

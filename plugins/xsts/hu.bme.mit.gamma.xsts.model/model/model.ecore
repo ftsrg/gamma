@@ -2,6 +2,8 @@
 <ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="model" nsURI="http://www.mit.bme.hu/gamma/xSTS/Model" nsPrefix="hu.bme.mit.gamma.xsts">
   <eClassifiers xsi:type="ecore:EClass" name="XSTS" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NamedElement">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="annotations" upperBound="-1"
+        eType="#//XstsAnnotation" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="typeDeclarations" upperBound="-1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//TypeDeclaration"
         containment="true"/>
@@ -124,6 +126,7 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="lhs" lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ReferenceExpression"
         containment="true"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="XstsAnnotation" abstract="true"/>
   <eClassifiers xsi:type="ecore:EClass" name="OnDemandControlVariableDeclarationAnnotation"
       eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclarationAnnotation"/>
   <eClassifiers xsi:type="ecore:EClass" name="StrictControlVariableDeclarationAnnotation"

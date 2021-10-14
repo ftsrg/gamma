@@ -10,6 +10,7 @@
   <genPackages prefix="XSTSModel" basePackage="hu.bme.mit.gamma.xsts" disposableProviderFactory="true"
       fileExtensions="xsts" ecorePackage="model.ecore#/">
     <genClasses ecoreClass="model.ecore#//XSTS">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//XSTS/annotations"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//XSTS/typeDeclarations"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//XSTS/publicTypeDeclarations"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//XSTS/variableDeclarations"/>
@@ -87,6 +88,7 @@
     <genClasses ecoreClass="model.ecore#//AbstractAssignmentAction">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//AbstractAssignmentAction/lhs"/>
     </genClasses>
+    <genClasses image="false" ecoreClass="model.ecore#//XstsAnnotation"/>
     <genClasses ecoreClass="model.ecore#//OnDemandControlVariableDeclarationAnnotation"/>
     <genClasses ecoreClass="model.ecore#//StrictControlVariableDeclarationAnnotation"/>
   </genPackages>
