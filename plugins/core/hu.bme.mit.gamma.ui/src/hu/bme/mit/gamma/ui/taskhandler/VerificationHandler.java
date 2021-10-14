@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
@@ -30,6 +31,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
 
+import com.google.common.base.Stopwatch;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -161,11 +163,21 @@ public class VerificationHandler extends TaskHandler {
 			fileUtil.saveString(queryFile, serializedFormula);
 			queryFile.deleteOnExit();
 			
+			Stopwatch stopwatch = Stopwatch.createStarted();
+			
 			Result result = execute(verificationTask, modelFile, queryFile, retrievedTraces, isOptimize);
 			ExecutionTrace trace = result.getTrace();
 			ThreeStateBoolean verificationResult = result.getResult();
+			
+			stopwatch.stop();
+			TimeUnit timeUnit = TimeUnit.MILLISECONDS;
+			long elapsed = stopwatch.elapsed(timeUnit);
+			String elapsedString = elapsed + " " + timeUnit;
+			
 			retrievedVerificationResults.add(
-					new VerificationResult(serializedFormula, verificationResult));
+					new VerificationResult(
+						serializedFormula, verificationResult,
+							verificationTask.getParameters(), elapsedString));
 			
 			// Checking if some of the unchecked properties are already covered
 			if (trace != null && isOptimize) {
@@ -336,10 +348,19 @@ public class VerificationHandler extends TaskHandler {
 			
 			private String query;
 			private ThreeStateBoolean result;
+			private String[] parameters;
+			private String executionTime;
 			
 			public VerificationResult(String query, ThreeStateBoolean result) {
+				this(query, result, null, null);
+			}
+			
+			public VerificationResult(String query, ThreeStateBoolean result,
+					String[] parameters, String executionTime) {
 				this.query = query;
 				this.result = result;
+				this.parameters = parameters;
+				this.executionTime = executionTime;
 			}
 			
 		}
