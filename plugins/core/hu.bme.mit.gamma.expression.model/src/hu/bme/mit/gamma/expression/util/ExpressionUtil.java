@@ -1037,9 +1037,9 @@ public class ExpressionUtil {
 		return ifThenElseExpression;
 	}
 	
-	public DirectReferenceExpression createReferenceExpression(ValueDeclaration variable) {
+	public DirectReferenceExpression createReferenceExpression(Declaration declaration) {
 		DirectReferenceExpression reference = factory.createDirectReferenceExpression();
-		reference.setDeclaration(variable);
+		reference.setDeclaration(declaration);
 		return reference;
 	}
 	

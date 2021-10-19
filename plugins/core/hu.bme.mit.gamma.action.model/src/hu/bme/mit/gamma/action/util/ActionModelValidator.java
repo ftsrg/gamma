@@ -28,6 +28,7 @@ import hu.bme.mit.gamma.action.model.ReturnStatement;
 import hu.bme.mit.gamma.action.model.Statement;
 import hu.bme.mit.gamma.action.model.SwitchStatement;
 import hu.bme.mit.gamma.action.model.VariableDeclarationStatement;
+import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
 import hu.bme.mit.gamma.expression.model.ConstantDeclaration;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.DefaultExpression;
@@ -131,6 +132,11 @@ public class ActionModelValidator extends ExpressionModelValidator {
 	public Collection<ValidationResultMessage> checkExecutionPathsForReturn(ProcedureDeclaration procedure) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 
+		Type type = procedure.getType();
+		if (ExpressionModelDerivedFeatures.getTypeDefinition(type) instanceof VoidTypeDefinition) {
+			return validationResultMessages;
+		}
+		
 		Block block = procedure.getBody();
 		
 		List<Statement> containersOfReturns = new ArrayList<>();
