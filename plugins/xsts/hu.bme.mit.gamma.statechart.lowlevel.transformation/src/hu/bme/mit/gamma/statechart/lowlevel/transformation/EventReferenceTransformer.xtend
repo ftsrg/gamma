@@ -126,9 +126,12 @@ class EventReferenceTransformer {
 		val gammaStatechart = timeoutDeclaration.containingStatechart
 		val timeoutSettings = gammaStatechart.getAllContentsOfType(SetTimeoutAction)
 		val correctTimeoutSetting = timeoutSettings.filter[it.timeoutDeclaration == timeoutDeclaration]
-		checkState(correctTimeoutSetting.size == 1, "Not one setting to the same timeout declaration: " + correctTimeoutSetting)
+		val times = correctTimeoutSetting.map[it.time].toList
+		checkState(times.allHelperEquals || // Exactly the same (e.g., with variables)
+			times.map[it.evaluateMilliseconds.toIntegerLiteral].allHelperEquals, // Same value
+			"Not one setting to the same timeout declaration: " + correctTimeoutSetting)
 		// Single assignment, expected branch
-		return correctTimeoutSetting.head.time.transform
+		return times.head.transform
 	}
 	
 	protected def Expression transform(TimeSpecification time) {

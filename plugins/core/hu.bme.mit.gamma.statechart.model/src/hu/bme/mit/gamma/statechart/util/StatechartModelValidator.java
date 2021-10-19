@@ -489,11 +489,16 @@ public class StatechartModelValidator extends ActionModelValidator {
 					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME)));
 		}
 		if (timeoutSettings.size() > 1) {
-			for (SetTimeoutAction timeoutSetting : timeoutSettings) {
-				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-					"This timeout declaration is set more than once", 
-						new ReferenceInfo(StatechartModelPackage.Literals.TIMEOUT_ACTION__TIMEOUT_DECLARATION,
-								timeoutSetting)));
+			List<TimeSpecification> times = timeoutSettings.stream()
+					.map(it -> it.getTime()).collect(Collectors.toList());
+			if (!ecoreUtil.allHelperEquals(times)) {
+				// Time evaluation and comparison could be added here
+				for (SetTimeoutAction timeoutSetting : timeoutSettings) {
+					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+						"This timeout declaration is set more than once", 
+							new ReferenceInfo(StatechartModelPackage.Literals.TIMEOUT_ACTION__TIMEOUT_DECLARATION,
+									timeoutSetting)));
+				}
 			}
 		}
 		return validationResultMessages;

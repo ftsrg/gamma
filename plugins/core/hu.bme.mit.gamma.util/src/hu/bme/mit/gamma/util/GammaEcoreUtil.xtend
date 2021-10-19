@@ -329,6 +329,17 @@ class GammaEcoreUtil {
 		return helper.equals(lhs, rhs)
 	}
 	
+	def boolean allHelperEquals(List<? extends EObject> objects) {
+		for (var i = 0; i < objects.size - 1; i++) {
+			val lhs = objects.get(i)
+			val rhs = objects.get(i + 1)
+			if (!lhs.helperEquals(rhs)) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
 	def <T extends EObject> List<T> clone(List<T> objects) {
 		if (objects === null) {
 			return null

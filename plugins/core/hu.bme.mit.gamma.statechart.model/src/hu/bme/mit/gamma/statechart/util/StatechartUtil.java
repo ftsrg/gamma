@@ -267,6 +267,16 @@ public class StatechartUtil extends ActionUtil {
 		return parameter;
 	}
 	
+	public void setSourceAndTarget(Transition gammaTransition, State gammaState) {
+		if (gammaTransition != null && gammaState != null) {
+			StatechartDefinition gammaStatechart = StatechartModelDerivedFeatures
+				.getContainingStatechart(gammaState);
+			gammaTransition.setSourceState(gammaState);
+			gammaTransition.setTargetState(gammaState);
+			gammaStatechart.getTransitions().add(gammaTransition);
+		}
+	}
+	
 	public void extendTrigger(Transition transition, Trigger trigger, BinaryType type) {
 		if (transition.getTrigger() == null) {
 			transition.setTrigger(trigger);
