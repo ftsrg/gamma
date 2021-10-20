@@ -13,6 +13,7 @@ import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.trace.model.InstanceStateConfiguration
 import hu.bme.mit.gamma.trace.model.InstanceVariableState
+import hu.bme.mit.gamma.trace.model.RaiseEventAct
 import hu.bme.mit.gamma.trace.model.Step
 import hu.bme.mit.gamma.trace.testgeneration.java.ExpressionSerializer
 import hu.bme.mit.gamma.trace.util.TraceUtil
@@ -208,5 +209,17 @@ class TestGeneratorUtil {
 			throw new IllegalArgumentException("More than one parent: " + parents)
 		}
 		return parents.head
+	}
+	
+	def String getPortOfAssert(RaiseEventAct assert){
+		'''"«assert.port.name»"'''
+	}
+	
+	def String getEventOfAssert(RaiseEventAct assert){
+		'''"«assert.event.name»"'''
+	}
+	
+	def String getParamsOfAssert(RaiseEventAct assert){
+		'''new Object[] {«FOR parameter : assert.arguments BEFORE " " SEPARATOR ", " AFTER " "»«parameter.serialize»«ENDFOR»}'''
 	}
 }

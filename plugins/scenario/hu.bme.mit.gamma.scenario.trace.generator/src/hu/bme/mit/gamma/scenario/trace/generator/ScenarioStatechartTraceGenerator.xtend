@@ -34,6 +34,7 @@ import java.math.BigInteger
 import java.util.List
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
+import hu.bme.mit.gamma.statechart.util.StatechartUtil
 
 class ScenarioStatechartTraceGenerator {
 
@@ -120,7 +121,7 @@ class ScenarioStatechartTraceGenerator {
 		for (list : derivedTraces) {
 			val containingPackage = StatechartModelDerivedFeatures.getContainingPackage(c)
 			val et = createExecutionTrace
-			et.setupExecutionTrace(list, baseTrace.name + i++, c, containingPackage)
+			et.setupExecutionTrace(list, baseTrace.name + i++, c, containingPackage, StatechartModelDerivedFeatures.getScenarioAllowedWaitAnnotation(statechart))
 			ets += et
 		}
 
@@ -128,12 +129,6 @@ class ScenarioStatechartTraceGenerator {
 		val filteredTraces = backAnnotator.execute
 
 		for (et : filteredTraces) {
-			if(annotation !==null){
-				val waitingAnnotation = createExecutionTraceAllowedWaitingAnnotation
-				waitingAnnotation.lowerLimit = annotation.lowerLimit.clone
-				waitingAnnotation.upperLimit = annotation.upperLimit.clone
-				et.annotations += waitingAnnotation
-			}
 			val eventAdder = new UnsentEventAssertExtender(et.steps, true)
 			if (scenarioContractType.equals(NotDefinedEventMode.STRICT)) {
 				eventAdder.execute

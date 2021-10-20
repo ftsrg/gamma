@@ -98,7 +98,7 @@ class TestGenerator {
     	this.testGeneratorUtil = new TestGeneratorUtil(component)
 		this.actAndAssertSerializer = new ActAndAssertSerializer(component, TEST_INSTANCE_NAME, TIMER_OBJECT_NAME)
 		if (traces.flatMap[it.annotations].findFirst[it instanceof ExecutionTraceAllowedWaitingAnnotation] !== null) {
-			this.waitingHandle = new WaitingAllowedHandler(firstTrace,actAndAssertSerializer)
+			this.waitingHandle = new WaitingAllowedInFunction(firstTrace,actAndAssertSerializer)
 		} 
 		else {
 			this.waitingHandle = new DefaultWaitingAllowedHandler(firstTrace,actAndAssertSerializer)
@@ -168,6 +168,10 @@ class TestGenerator {
 			}
 			
 			«traces.generateTestCases»
+			
+			«IF waitingHandle instanceof WaitingAllowedInFunction»
+				«generateWaitHandlerFunction()»
+			«ENDIF»
 		}
 	'''
 	
@@ -230,6 +234,36 @@ class TestGenerator {
 		}
 		return builder.toString
 	}
+	
+	def generateWaitHandlerFunction() '''
+		private void checkGeneralAsserts(String[] ports, String[] events, Object[][] objects) {
+			boolean done = false;
+			boolean wasPresent = true;
+			int idx=0;
+			 
+			while(!done) {
+				wasPresent = true;
+				try {
+					for(int i = 0; i<ports.length;i++) {
+						assertTrue(«TEST_INSTANCE_NAME».isRaisedEvent(ports[i], events[i], objects[i]));
+					}
+					} catch (AssertionError error) {
+					wasPresent= false;
+					if(idx>1) {
+						throw(error);
+					}
+				}
+				if(wasPresent && idx>=0) {
+					done=true;
+				}
+				else
+				{
+					«TEST_INSTANCE_NAME».schedule(null);
+				}
+				idx++;
+			}
+		}
+	'''
 	
 	private def addTabIfNeeded(List<ExecutionTrace> traces, ExecutionTrace trace) '''«IF traces.last !== trace»	«ENDIF»'''
 	
