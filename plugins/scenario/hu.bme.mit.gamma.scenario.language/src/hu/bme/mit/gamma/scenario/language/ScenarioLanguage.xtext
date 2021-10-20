@@ -22,7 +22,15 @@ ScenarioDeclaration returns ScenarioModel::ScenarioDeclaration:
 ScenarioDefinition returns ScenarioModel::ScenarioDefinition:
 	annotation+=Annotations*
 	'scenario' name=ID
+	(initialblock=InitialBlock)?
 	chart=Chart;
+	
+InitialBlock returns ScenarioModel::InitialBlock: 
+	'initial' 'outputs' '{'
+	interactiondefinition+=AbstractInteractionDefinition
+	'}'
+;
+
 
 Annotations returns ScenarioModel::Annotation:
 	AllowedWaitAnnotation | PermissiveAnnotation | StrictAnnotation | NegatedWaitAnnotation | NegStrictAnnotation |

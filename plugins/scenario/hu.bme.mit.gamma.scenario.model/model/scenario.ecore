@@ -14,6 +14,8 @@
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="annotation" upperBound="-1"
         eType="#//Annotation" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="initialblock" eType="#//InitialBlock"
+        containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Chart">
     <eStructuralFeatures xsi:type="ecore:EReference" name="fragment" lowerBound="1"
@@ -90,4 +92,8 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="NegStrictAnnotation" eSuperTypes="#//Annotation"/>
   <eClassifiers xsi:type="ecore:EClass" name="NegPermissiveAnnotation" eSuperTypes="#//Annotation"/>
+  <eClassifiers xsi:type="ecore:EClass" name="InitialBlock">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="interactiondefinition"
+        lowerBound="1" upperBound="-1" eType="#//InteractionDefinition" containment="true"/>
+  </eClassifiers>
 </ecore:EPackage>

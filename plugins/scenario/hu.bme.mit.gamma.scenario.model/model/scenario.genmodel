@@ -24,6 +24,7 @@
     <genClasses ecoreClass="scenario.ecore#//ScenarioDefinition">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference scenario.ecore#//ScenarioDefinition/chart"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference scenario.ecore#//ScenarioDefinition/annotation"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference scenario.ecore#//ScenarioDefinition/initialblock"/>
     </genClasses>
     <genClasses image="false" ecoreClass="scenario.ecore#//Chart">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference scenario.ecore#//Chart/fragment"/>
@@ -76,5 +77,8 @@
     </genClasses>
     <genClasses ecoreClass="scenario.ecore#//NegStrictAnnotation"/>
     <genClasses ecoreClass="scenario.ecore#//NegPermissiveAnnotation"/>
+    <genClasses ecoreClass="scenario.ecore#//InitialBlock">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference scenario.ecore#//InitialBlock/interactiondefinition"/>
+    </genClasses>
   </genPackages>
 </genmodel:GenModel>
