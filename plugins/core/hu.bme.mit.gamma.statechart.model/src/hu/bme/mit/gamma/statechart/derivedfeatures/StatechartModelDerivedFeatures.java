@@ -174,6 +174,18 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		}
 	}
 	
+	public static EventDirection adjust(EventDirection eventDirection,
+			RealizationMode realizationMode) {
+		switch (realizationMode) {
+			case PROVIDED:
+				return eventDirection;
+			case REQUIRED:
+				return getOpposite(eventDirection);
+			default:
+				throw new IllegalArgumentException("Not known realization mode: " + realizationMode);
+		}
+	}
+	
 	public static List<Expression> getTopComponentArguments(Package unfoldedPackage) {
 		List<Expression> topComponentArguments = new ArrayList<Expression>();
 		for (PackageAnnotation annotation : unfoldedPackage.getAnnotations()) {

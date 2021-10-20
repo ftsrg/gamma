@@ -30,6 +30,7 @@ import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.expression.util.ExpressionUtil;
+import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponent;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance;
 import hu.bme.mit.gamma.statechart.composite.CascadeCompositeComponent;
@@ -331,6 +332,22 @@ public class StatechartUtil extends ActionUtil {
 		default:
 			throw new IllegalArgumentException("Not known unit: " + unit);
 		}
+	}
+	
+	public AsynchronousAdapter wrapIntoAdapter(SynchronousComponent component,
+			String adapterName, String instanceName) {
+		AsynchronousAdapter adapter = wrapIntoAdapter(component, adapterName);
+		SynchronousComponentInstance synchronousInstance = adapter.getWrappedComponent();
+		synchronousInstance.setName(instanceName);
+		return adapter;
+	}
+	
+	public AsynchronousAdapter wrapIntoAdapter(SynchronousComponent component, String adapterName) {
+		AsynchronousAdapter adapter = compositeFactory.createAsynchronousAdapter();
+		adapter.setName(adapterName);
+		SynchronousComponentInstance synchronousInstance = instantiateSynchronousComponent(component);
+		adapter.setWrappedComponent(synchronousInstance);
+		return adapter;
 	}
 	
 	public Package wrapIntoPackage(Component component) {
