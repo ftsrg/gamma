@@ -92,7 +92,7 @@ class TestGeneratorUtil {
 	}
 
 	def getAsyncParent(SynchronousComponentInstance instance) {
-		checkArgument(instance !== null, "The instance is a null value.")
+		checkArgument(instance !== null, "The instance is a null value")
 		if (instance.isTopInstance) {
 			// Needed due to resource set issues: component can be referenced from other composite systems
 			return null
@@ -137,7 +137,7 @@ class TestGeneratorUtil {
 			return localName
 		} catch (StringIndexOutOfBoundsException e) {
 			throw new IllegalArgumentException("Instance " + parentName +
-				" has a child with the same name. This makes test generation impossible.")
+				" has a child with the same name, which makes test generation impossible")
 		}
 	}
 
@@ -188,7 +188,7 @@ class TestGeneratorUtil {
 	}
 	
 	def getParent(ComponentInstance instance) {
-		checkArgument(instance !== null, "The instance is a null value.")
+		checkArgument(instance !== null, "The instance is a null value")
 		if (instance.isTopInstance) {
 			// Needed due to resource set issues: component can be referenced from other composite systems
 			return null

@@ -1368,13 +1368,6 @@ public class StatechartModelValidator extends ActionModelValidator {
 	public Collection<ValidationResultMessage> checkComponentInstances(ComponentInstance instance) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		Component type = StatechartModelDerivedFeatures.getContainingComponent(instance);
-		String name = instance.getName();
-		if (name.startsWith("_") || name.endsWith("_")) {
-			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-				"A Gamma instance identifier cannot start or end with an '_' underscore character", 
-					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME)));
-			return validationResultMessages;
-		}
 		EObject container = instance.eContainer();
 		if (type instanceof AsynchronousAdapter || !(container instanceof CompositeComponent)) {
 			// Not checking AsynchronousAdapters or port bindings not contained by CompositeComponents
@@ -1385,7 +1378,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING, 
 				"The following ports are used neither in a system port binding nor a channel: " +
 					unusedPorts.stream().map(it -> it.getName()).collect(Collectors.toSet()),
-					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME)));
+						new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME)));
 		}
 		return validationResultMessages;
 	}
