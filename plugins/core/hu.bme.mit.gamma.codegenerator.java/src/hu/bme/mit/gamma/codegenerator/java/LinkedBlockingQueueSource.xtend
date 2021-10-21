@@ -16,8 +16,14 @@ package hu.bme.mit.gamma.codegenerator.java
 
 class LinkedBlockingQueueSource {
 	
-	public static val AbstractOfferable = '''
-		package lbmq;
+	protected final String basePackageName
+	
+	new(String basePackageName) {
+		this.basePackageName = basePackageName
+	}
+	
+	def generateAbstractOfferable() '''
+		package «basePackageName»;
 		
 		import java.util.AbstractCollection;
 		import java.util.Collection;
@@ -88,8 +94,8 @@ class LinkedBlockingQueueSource {
 		}		
 	'''
 	
-	public static val AbstractPollable = '''
-		package lbmq;
+	def generateAbstractPollable() '''
+		package «basePackageName»;
 		
 		import java.util.NoSuchElementException;
 		import java.util.Queue;
@@ -150,13 +156,13 @@ class LinkedBlockingQueueSource {
 		}		
 	'''
 	
-	public static val LinkedBlockingMultiQueue = '''
+	def generateLinkedBlockingMultiQueue() '''
 		/*
 		 * Derived from work made by Doug Lea with assistance from members of JCP JSR-166 Expert Group
 		 * (https://jcp.org/en/jsr/detail?id=166). The original work is in the public domain, as explained at
 		 * http://creativecommons.org/publicdomain/zero/1.0/
 		 */
-		package lbmq;
+		package «basePackageName»;
 		
 		import java.util.ArrayList;
 		import java.util.Collection;
@@ -1112,8 +1118,8 @@ class LinkedBlockingQueueSource {
 		}		
 	'''
 	
-	public static val Offerable = '''
-		package lbmq;
+	def generateOfferable() '''
+		package «basePackageName»;
 		
 		import java.util.Collection;
 		import java.util.concurrent.TimeUnit;
@@ -1214,8 +1220,8 @@ class LinkedBlockingQueueSource {
 		}
 	'''
 	
-	public static val Pollable = '''
-		package lbmq;
+	def generatePollable() '''
+		package «basePackageName»;
 		
 		import java.util.Collection;
 		import java.util.NoSuchElementException;
