@@ -251,12 +251,12 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 
 	public static boolean isDefinitelyTrueAssumeAction(AssumeAction action) {
 		Expression expression = action.getAssumption();
-		return expressionUtil.isDefinitelyTrueExpression(expression);
+		return evaluator.isDefinitelyTrueExpression(expression);
 	}
 
 	public static boolean isDefinitelyFalseAssumeAction(AssumeAction action) {
 		Expression expression = action.getAssumption();
-		return expressionUtil.isDefinitelyFalseExpression(expression);
+		return evaluator.isDefinitelyFalseExpression(expression);
 	}
 	
 	public static boolean isNullOrEmptyAction(Action action) {

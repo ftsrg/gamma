@@ -318,7 +318,7 @@ public class StatechartUtil extends ActionUtil {
 				ecoreUtil.replace(clonedArgument, parameterReference);
 			}
 		}
-		return isDefinitelyFalseExpression(clonedGuard);
+		return evaluator.isDefinitelyFalseExpression(clonedGuard);
 	}
 	
 	public int evaluateMilliseconds(TimeSpecification time) {
