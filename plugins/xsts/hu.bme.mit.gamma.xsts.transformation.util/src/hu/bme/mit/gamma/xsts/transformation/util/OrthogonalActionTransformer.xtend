@@ -14,8 +14,8 @@ import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.Action
-import hu.bme.mit.gamma.xsts.model.EventGroup
-import hu.bme.mit.gamma.xsts.model.EventParameterGroup
+import hu.bme.mit.gamma.xsts.model.InEventGroup
+import hu.bme.mit.gamma.xsts.model.InEventParameterGroup
 import hu.bme.mit.gamma.xsts.model.OrthogonalAction
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
@@ -112,8 +112,8 @@ class OrthogonalActionTransformer {
 	
 	protected def getEventAndParameterVariables(XSTS xSts) {
 		return xSts.variableGroups
-			.filter[it.annotation instanceof EventGroup ||
-				it.annotation instanceof EventParameterGroup]
+			.filter[it.annotation instanceof InEventGroup || // Out events are not considered
+				it.annotation instanceof InEventParameterGroup]
 			.map[it.variables].flatten.toSet
 	}
 	
