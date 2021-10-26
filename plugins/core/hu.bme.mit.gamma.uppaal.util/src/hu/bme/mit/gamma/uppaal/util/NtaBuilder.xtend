@@ -140,9 +140,7 @@ class NtaBuilder {
 			}
 		}
 		else {
-			val functionCallExpression = createFunctionCallExpression => [
-				it.function = function
-			]
+			val functionCallExpression = function.createFunctionCallExpression
 			container.add(reference, functionCallExpression)
 		}
 	}
@@ -520,10 +518,11 @@ class NtaBuilder {
 		if (statement instanceof Block) {
 			return statement
 		}
-		return #[statement].createBlock
+		return #[statement].filterNull
+			.createBlock
 	}
 	
-	def createStatement(Iterable<? extends Expression> expressions) {
+	def createStatements(Iterable<? extends Expression> expressions) {
 		val statements = newArrayList
 		for (expression : expressions) {
 			statements += expression.createStatement
@@ -555,6 +554,18 @@ class NtaBuilder {
 			it.returnType = type
 			it.name = name
 			it.block = block
+		]
+	}
+	
+	def createFunctionDeclaration(Function function) {
+		return createFunctionDeclaration => [
+			it.function = function
+		]
+	}
+	
+	def createFunctionCallExpression(Function function) {
+		return createFunctionCallExpression => [
+			it.function = function
 		]
 	}
 	

@@ -56,19 +56,25 @@ class FunctionActionTransformer {
 	// Transform action dispatch
 	
 	protected def dispatch Statement transformAction(EmptyAction action) {
-		throw new IllegalArgumentException("Empty actions are not supported: " + action)
+		return null
 	}
 	
 	protected def dispatch Statement transformAction(AssignmentAction action) {
 		// UPPAAL does not support 'a = {1, 2, 5}' like assignments
 		val assignmentActions = action.extractArrayLiteralAssignments
-		val uppaalStatements = newArrayList
+		val uppaalAssignments = newArrayList
 		for (assignmentAction : assignmentActions) {
 			val uppaalLhs = assignmentAction.lhs.transform
 			val uppaalRhs = assignmentAction.rhs.transform
-			uppaalStatements += uppaalLhs.createAssignmentExpression(uppaalRhs)
+			uppaalAssignments += uppaalLhs.createAssignmentExpression(uppaalRhs)
 		}
-		return uppaalStatements.createStatement.createBlock
+		
+		val uppaalStatements = uppaalAssignments.createStatements
+		
+		if (uppaalStatements.size > 1) {
+			return uppaalStatements.createBlock
+		}
+		return uppaalStatements.head
 	}
 	
 	protected def dispatch Statement transformAction(VariableDeclarationAction action) {
@@ -95,9 +101,10 @@ class FunctionActionTransformer {
 		val xStsActions = action.actions
 		val uppaalStatements = newArrayList
 		for (xStsAction : xStsActions) {
-			uppaalStatements += xStsAction.transformAction
+			uppaalStatements += xStsAction.transformAction // Might be null
 		}
-		return uppaalStatements.createBlock
+		return uppaalStatements.filterNull
+			.createBlock
 	}
 	
 	protected def dispatch Statement transformAction(NonDeterministicAction action) {
@@ -110,8 +117,8 @@ class FunctionActionTransformer {
 		val xStsElse = action.^else
 		
 		val uppaalCondition = xStsCondition.transform
-		val uppaalThen = xStsThen.transformAction
-		val uppaalElse = xStsElse.transformAction
+		val uppaalThen = xStsThen.transformAction // Might be null
+		val uppaalElse = xStsElse.transformAction // Might be null
 		
 		return uppaalCondition.createIfStatement(uppaalThen, uppaalElse)
 	}

@@ -242,6 +242,19 @@ class GammaEcoreUtil {
 		return lhs.containsTransitively(rhs) || rhs.containsTransitively(lhs)
 	}
 	
+	def <T extends EObject> boolean containsType(EObject container, Class<T> type) {
+		for (content : container.eContents) {
+			if (content.isOrContainsType(type)) {
+				return true
+			}
+		}
+		return false
+	}
+	
+	def <T extends EObject> boolean isOrContainsType(EObject container, Class<T> type) {
+		return type.isInstance(container) || container.containsType(type)
+	}
+	
 	def EObject normalLoad(URI uri) {
 		return uri.normalLoad(new ResourceSetImpl)
 	}

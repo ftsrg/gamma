@@ -183,15 +183,14 @@ class ExpressionTransformer {
 	'''
 	
 	def static dispatch String transformStatement(IfStatement statement) '''
-		if («statement.ifExpression.transform»)
-			«statement.thenStatement.transformStatement»
+		if («statement.ifExpression.transform») «statement.thenStatement.transformStatement»
 		«IF statement.elseStatement !== null»
-			else
-				«statement.elseStatement.transformStatement»
+			else «statement.elseStatement.transformStatement»
 		«ENDIF»
 	'''
 	
-	def static dispatch String transformStatement(Block block) ''' {
+	def static dispatch String transformStatement(Block block) '''
+		{
 			«IF block.declarations !== null»
 				«FOR declaration : block.declarations.declaration.filter(DataVariableDeclaration)»
 					«declaration.serializeVariable»

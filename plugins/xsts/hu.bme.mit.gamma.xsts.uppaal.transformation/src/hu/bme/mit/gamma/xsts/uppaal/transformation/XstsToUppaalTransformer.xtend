@@ -13,6 +13,8 @@ package hu.bme.mit.gamma.xsts.uppaal.transformation
 import hu.bme.mit.gamma.uppaal.util.AssignmentExpressionCreator
 import hu.bme.mit.gamma.uppaal.util.NtaBuilder
 import hu.bme.mit.gamma.uppaal.util.NtaOptimizer
+import hu.bme.mit.gamma.util.GammaEcoreUtil
+import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.XSTS
 import java.util.Set
 import uppaal.declarations.VariableContainer
@@ -33,8 +35,11 @@ class XstsToUppaalTransformer {
 	protected final extension NtaBuilder ntaBuilder
 	protected final extension AssignmentExpressionCreator assignmentExpressionCreator
 	protected final extension CfaActionTransformer actionTransformer
+	protected final extension FunctionActionTransformer functionctionTransformer
 	protected final extension VariableTransformer variableTransformer
 	protected final extension NtaOptimizer ntaOptimizer
+	
+	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	
 	new(XSTS xSts) {
 		this.xSts = xSts
@@ -43,6 +48,8 @@ class XstsToUppaalTransformer {
 		this.assignmentExpressionCreator = new AssignmentExpressionCreator(ntaBuilder)
 		this.actionTransformer = new CfaActionTransformer(
 			ntaBuilder, traceability, transientVariables)
+		this.functionctionTransformer = new FunctionActionTransformer(
+			ntaBuilder, traceability)
 		this.variableTransformer = new VariableTransformer(ntaBuilder, traceability)
 		this.ntaOptimizer = new NtaOptimizer(ntaBuilder)
 	}
@@ -75,12 +82,22 @@ class XstsToUppaalTransformer {
 		environmentFinishLocation.name = environmentFinishLocationName
 		environmentFinishLocation.locationTimeKind = LocationKind.NORMAL // So optimization does not delete it
 		
-		val systemFinishLocation = mergedAction.transformAction(environmentFinishLocation)
-		
-		// If there is no merged action, the loop edge is unnecessary
-		if (systemFinishLocation !== stableLocation) {
-			val lastEdge = systemFinishLocation.createEdge(stableLocation)
-			lastEdge.resetTransientVariables(transientVariables)
+		if (mergedAction.isOrContainsType(NonDeterministicAction)) {
+			val systemFinishLocation = mergedAction.transformAction(environmentFinishLocation)
+			
+			// If there is no merged action, the loop edge is unnecessary
+			if (systemFinishLocation !== stableLocation) {
+				val lastEdge = systemFinishLocation.createEdge(stableLocation)
+				lastEdge.resetTransientVariables(transientVariables) // TODO include in the class
+			}
+		}
+		else {
+			// Deterministic behavior, creating a function
+			val mergedActionFunction = mergedAction.transformIntoFunction
+			nta.globalDeclarations.declaration += mergedActionFunction.createFunctionDeclaration
+			
+			val lastEdge = environmentFinishLocation.createEdge(stableLocation)
+			lastEdge.update += mergedActionFunction.createFunctionCallExpression
 		}
 		
 		// Optimizing edges from these location
