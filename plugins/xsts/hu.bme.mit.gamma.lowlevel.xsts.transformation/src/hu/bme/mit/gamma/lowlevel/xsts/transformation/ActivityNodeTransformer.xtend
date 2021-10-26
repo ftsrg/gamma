@@ -12,6 +12,8 @@ import static extension hu.bme.mit.gamma.activity.derivedfeatures.ActivityModelD
 import static extension hu.bme.mit.gamma.statechart.lowlevel.derivedfeatures.LowlevelStatechartModelDerivedFeatures.*
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.InputFlows
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.OutputFlows
+import hu.bme.mit.gamma.statechart.lowlevel.model.TriggerNode
+import hu.bme.mit.gamma.expression.model.AndExpression
 
 class ActivityNodeTransformer extends LowlevelTransitionToXTransitionTransformer {
 	
@@ -120,6 +122,16 @@ class ActivityNodeTransformer extends LowlevelTransitionToXTransitionTransformer
 				it.actions.add(node.createDoneAssignmentAction)
 			]
 		}
+	}
+	
+	protected def dispatch createNodeTransitionAction(TriggerNode node) {
+		return createSequentialAction => [
+			it.actions.add(node.createRunningAssumeAction => [
+				val and = it.assumption as AndExpression
+				and.operands.add(node.triggerExpression.transformExpression)
+			])
+			it.actions.add(node.createDoneAssignmentAction)
+		]
 	}
 	
 	protected def dispatch createNodeTransitionAction(ActivityNode node) {

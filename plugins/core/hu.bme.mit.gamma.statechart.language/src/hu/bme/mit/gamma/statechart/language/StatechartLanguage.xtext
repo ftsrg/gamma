@@ -597,6 +597,18 @@ CallActivityAction returns ActivityModel::CallActivityAction:
 ;
 
 
+@Override 
+PseudoActivityNode returns ActivityModel::PseudoActivityNode:
+	InitialNode |
+	FinalNode |
+	DataNode |
+	TriggerNode
+;
+
+TriggerNode returns TriggerNode:
+	'trigger' name=ID 'when' trigger=Trigger
+;
+
 
 @Override 
 InlineStatement returns ActionModel::Statement:

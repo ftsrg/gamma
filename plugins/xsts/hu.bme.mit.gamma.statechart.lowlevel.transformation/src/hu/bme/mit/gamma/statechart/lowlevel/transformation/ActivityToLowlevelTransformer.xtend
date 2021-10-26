@@ -39,18 +39,22 @@ import hu.bme.mit.gamma.activity.model.Definition
 import hu.bme.mit.gamma.activity.model.Flow
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
+import hu.bme.mit.gamma.statechart.statechart.TriggerNode
+import hu.bme.mit.gamma.statechart.lowlevel.model.StatechartModelFactory
 
 class ActivityToLowlevelTransformer {
 	// Auxiliary objects
 	protected final extension TypeTransformer typeTransformer
 	protected final extension ActionTransformer actionTransformer
 	protected final extension ExpressionTransformer expressionTransformer
+	protected final extension TriggerTransformer triggerTransformer
 	protected final extension ValueDeclarationTransformer valueDeclarationTransformer
 	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension ActionUtil actionUtil = ActionUtil.INSTANCE
 	// Factory objects
 	protected final extension ExpressionModelFactory constraintFactory = ExpressionModelFactory.eINSTANCE
 	protected final extension ActivityModelFactory activityFactory = ActivityModelFactory.eINSTANCE
+	protected final extension StatechartModelFactory factory = StatechartModelFactory.eINSTANCE
 	// Trace
 	protected final Trace trace
 	protected final State state
@@ -67,6 +71,7 @@ class ActivityToLowlevelTransformer {
 		this.typeTransformer = new TypeTransformer(this.trace)
 		this.expressionTransformer = new ExpressionTransformer(this.trace,
 				functionInlining, maxRecursionDepth)
+		this.triggerTransformer = new TriggerTransformer(this.trace, functionInlining, maxRecursionDepth)
 		this.valueDeclarationTransformer = new ValueDeclarationTransformer(this.trace)
 		this.actionTransformer = new ActionTransformer(this.trace, functionInlining, maxRecursionDepth)
 	}
@@ -259,6 +264,23 @@ class ActivityToLowlevelTransformer {
 		return createNamedActivityDeclarationReference => [
 			namedActivityDeclaration = declarationReference.namedActivityDeclaration.transform as NamedActivityDeclaration
 		]
+	}
+	
+	def dispatch ActivityNode transformNode(TriggerNode node) {
+		val recordField = new Pair(state, node as ActivityNode)
+		
+		if (trace.isActivityNodeMapped(recordField)) {
+			return trace.getActivityNode(recordField)
+		}
+		
+		val newNode = createTriggerNode => [
+			it.name = prefix + node.name
+			it.triggerExpression = node.trigger.transformTrigger
+		]
+		
+		trace.put(state, node, newNode)
+		
+		return newNode
 	}
 	
 	def dispatch ActivityNode transformNode(PseudoActivityNode node) {
