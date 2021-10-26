@@ -61,31 +61,34 @@ class AssignmentExpressionCreator {
 	}
 	
 	def createAssignmentExpression(VariableContainer variable, String value) {
-		return createAssignmentExpression => [
-			it.firstExpr = variable.createIdentifierExpression
-			it.operator = AssignmentOperator.EQUAL
-			it.secondExpr = createLiteralExpression => [
-				it.text = value
-			]
-		]
+		return variable.createIdentifierExpression
+			.createAssignmentExpression(
+				createLiteralExpression => [
+					it.text = value
+				]
+			)
 	}
 	
 	def createAssignmentExpression(VariableContainer variable, Expression rhs) {
+		return variable.createIdentifierExpression
+				.createAssignmentExpression(rhs)
+	}
+	
+	def createAssignmentExpression(Expression lhs, Expression rhs) {
 		return createAssignmentExpression => [
-			it.firstExpr = variable.createIdentifierExpression
+			it.firstExpr = lhs
 			it.operator = AssignmentOperator.EQUAL
 			it.secondExpr = rhs
 		]
 	}
 	
 	def createResetingAssignmentExpression(VariableContainer variable) {
-		return createAssignmentExpression => [
-			it.firstExpr = variable.createIdentifierExpression
-			it.operator = AssignmentOperator.EQUAL
-			it.secondExpr = createLiteralExpression => [
-				it.text = "0"
-			]
-		]
+		return variable.createIdentifierExpression
+			.createAssignmentExpression(
+				createLiteralExpression => [
+					it.text = "0"
+				]
+			)
 	}
 	
 	/**
@@ -95,21 +98,16 @@ class AssignmentExpressionCreator {
 	def void createAssignmentExpression(EObject container, EReference reference,
 			DataVariableDeclaration lhs, DataVariableDeclaration rhs) {
    		container.add(reference,
-			createAssignmentExpression => [
-				it.firstExpr = lhs.createIdentifierExpression
-				it.operator = AssignmentOperator.EQUAL
-				it.secondExpr = rhs.createIdentifierExpression
-			]
+			lhs.createIdentifierExpression.createAssignmentExpression(
+				rhs.createIdentifierExpression
+			)
 		)
 	}
 	
 	def AssignmentExpression createAssignmentExpression(EObject container,
 			EReference reference, VariableContainer variable, Expression rhs) {
-		val assignmentExpression = createAssignmentExpression => [
-			it.firstExpr = variable.createIdentifierExpression
-			it.operator = AssignmentOperator.EQUAL
-			it.secondExpr = rhs
-		]
+		val assignmentExpression = variable.createIdentifierExpression
+			.createAssignmentExpression(rhs)
 		container.add(reference, assignmentExpression)
 		return assignmentExpression
 	}

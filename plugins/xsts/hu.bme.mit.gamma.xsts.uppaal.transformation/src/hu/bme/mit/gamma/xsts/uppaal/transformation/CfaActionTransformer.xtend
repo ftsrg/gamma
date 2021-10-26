@@ -54,12 +54,10 @@ class CfaActionTransformer {
 		val assignmentActions = action.extractArrayLiteralAssignments
 		var Location newSource = source
 		for (assignmentAction : assignmentActions) {
-			val xStsDeclaration = assignmentAction.lhs.declaration
-			val xStsVariable = xStsDeclaration as VariableDeclaration
-			val uppaalVariable = traceability.get(xStsVariable)
+			val uppaalLhs = assignmentAction.lhs.transform
 			val uppaalRhs = assignmentAction.rhs.transform
 			newSource = newSource.createUpdateEdge(nextCommittedLocationName,
-					uppaalVariable, uppaalRhs)
+					uppaalLhs, uppaalRhs)
 		}
 		return newSource
 	}
