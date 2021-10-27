@@ -30,7 +30,7 @@ import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import java.util.Collection
-import hu.bme.mit.gamma.activity.model.CallActivityAction
+import hu.bme.mit.gamma.statechart.lowlevel.model.InitialiseActivityAction
 
 class ActionTransformer {
 	// Model factories
@@ -42,6 +42,7 @@ class ActionTransformer {
 	// Needed for the transformation of assignment actions
 	protected final extension ExpressionTransformer expressionTransformer
 	protected final extension VariableDeclarationTransformer variableDeclarationTransformer
+	protected final extension ActivityInitialiser activityInitialiser
 	// Trace
 	protected final Trace trace
 	
@@ -49,6 +50,7 @@ class ActionTransformer {
 		this.trace = trace
 		this.expressionTransformer = new ExpressionTransformer(this.trace)
 		this.variableDeclarationTransformer = new VariableDeclarationTransformer(this.trace)
+		this.activityInitialiser = new ActivityInitialiser(this.trace)
 	}
 
 	def transformActions(Collection<? extends hu.bme.mit.gamma.action.model.Action> actions) {
@@ -132,8 +134,8 @@ class ActionTransformer {
 	}
 	
 	
-	def dispatch Action transformAction(CallActivityAction action) {
-		return createEmptyAction
+	def dispatch Action transformAction(InitialiseActivityAction action) {
+		return action.activityInstance.createInitialisationAction
 	}
 	
 	protected def transformBranches(Collection<Branch> branches) {

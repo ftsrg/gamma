@@ -189,7 +189,7 @@ class LowlevelToXstsTransformer {
 		
 		this.activityNodeTransformer = new ActivityNodeTransformer(this.engine, this.trace)
 		
-		this.optimize = optimize
+		this.optimize = false
 		if (optimize) {
 			this.referredEvents = ReferredEvents.Matcher.on(engine).allValuesOfevent
 			this.referredVariables = ReferredVariables.Matcher.on(engine).allValuesOfvariable
@@ -219,10 +219,7 @@ class LowlevelToXstsTransformer {
 		 * correctly with the trace model */
 		getVariableInitializationsRule.fireAllCurrent
 		initializeVariableInitializingAction // After getVariableInitializationsRule, but before getTopRegionsInitializationRule
-		
-		getActivityNodeTransitionsRule.fireAllCurrent
 
-		getInitialActivityNodeInitializationRule.fireAllCurrent
 		getTopRegionsInitializationRule.fireAllCurrent // Setting the top region (variables) into their initial states
 		getSimpleTransitionsBetweenStatesRule.fireAllCurrent
 		getSimpleTransitionsToHistoryStatesRule.fireAllCurrent
@@ -232,6 +229,8 @@ class LowlevelToXstsTransformer {
 		getFirstChoiceTransitionsRule.fireAllCurrent
 		getInEventEnvironmentalActionRule.fireAllCurrent
 		getOutEventEnvironmentalActionRule.fireAllCurrent
+		
+		getActivityNodeTransitionsRule.fireAllCurrent
 	
 		mergeTransitions
 		optimizeActions
@@ -781,22 +780,6 @@ class LowlevelToXstsTransformer {
 			].build
 		}
 		return activityNodeTransitionsRule
-	}
-	
-	private def getInitialActivityNodeInitializationRule() {
-		if (initialActivityNodeInitializationRule === null) {
-			initialActivityNodeInitializationRule = createRule(InitialNodes.instance).action [
-				val variable = trace.getXStsVariable(it.node)
-				variable.expression = createEnumerationLiteralExpression => [
-					reference = runningNodeStateEnumLiteral
-				]
-				
-				xSts.configurationInitializingAction.actions += createAssignmentAction(variable, createEnumerationLiteralExpression => [
-					reference = runningNodeStateEnumLiteral
-				])
-			].build
-		}
-		return initialActivityNodeInitializationRule
 	}
 
 	protected def optimizeActions() {

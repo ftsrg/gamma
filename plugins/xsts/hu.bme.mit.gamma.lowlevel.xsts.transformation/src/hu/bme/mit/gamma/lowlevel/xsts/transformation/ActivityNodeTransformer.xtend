@@ -14,6 +14,7 @@ import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.InputFlows
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.OutputFlows
 import hu.bme.mit.gamma.statechart.lowlevel.model.TriggerNode
 import hu.bme.mit.gamma.expression.model.AndExpression
+import hu.bme.mit.gamma.activity.model.MergeNode
 
 class ActivityNodeTransformer extends LowlevelTransitionToXTransitionTransformer {
 	
@@ -65,36 +66,6 @@ class ActivityNodeTransformer extends LowlevelTransitionToXTransitionTransformer
 				reference = runningNodeStateEnumLiteral
 			]
 		)
-	}
-	
-	protected dispatch def createActivityNodeTransitionAction(ActivityNode node, Iterable<Flow> inputFlows, Iterable<Flow> outputFlows) {
-		return createNonDeterministicAction => [
-			it.actions += createParallelAction => [
-				for (flow : inputFlows) {
-					it.actions += flow.transformInwards
-				}
-			]
-			it.actions += createParallelAction => [
-				for (flow : outputFlows) {
-					it.actions += flow.transformOutwards
-				}
-			]
-		]
-	}
-	
-	protected dispatch def createActivityNodeTransitionAction(DecisionNode node, Iterable<Flow> inputFlows, Iterable<Flow> outputFlows) {
-		return createNonDeterministicAction => [
-			it.actions += createNonDeterministicAction => [
-				for (flow : inputFlows) {
-					it.actions += flow.transformInwards
-				}
-			]
-			it.actions += createNonDeterministicAction => [
-				for (flow : outputFlows) {
-					it.actions += flow.transformOutwards
-				}
-			]
-		]
 	}
 	
 	protected def dispatch createNodeTransitionAction(ActionNode node) {
@@ -157,6 +128,21 @@ class ActivityNodeTransformer extends LowlevelTransitionToXTransitionTransformer
 	}
 	
 	protected dispatch def createActivityNodeFlowAction(DecisionNode node, Iterable<Flow> inputFlows, Iterable<Flow> outputFlows) {
+		return createNonDeterministicAction => [
+			it.actions += createNonDeterministicAction => [
+				for (flow : inputFlows) {
+					it.actions += flow.transformInwards
+				}
+			]
+			it.actions += createNonDeterministicAction => [
+				for (flow : outputFlows) {
+					it.actions += flow.transformOutwards
+				}
+			]
+		]
+	}
+	
+	protected dispatch def createActivityNodeFlowAction(MergeNode node, Iterable<Flow> inputFlows, Iterable<Flow> outputFlows) {
 		return createNonDeterministicAction => [
 			it.actions += createNonDeterministicAction => [
 				for (flow : inputFlows) {

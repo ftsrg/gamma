@@ -177,9 +177,9 @@ class ActivityToLowlevelTransformer {
 		
 		trace.put(state, flow, newFlow)
 		
-		createDataFlow.dataSourceReference = flow.dataSourceReference.transformDataSourceReference
-		createDataFlow.dataTargetReference = flow.dataTargetReference.transformDataTargetReference
-		createDataFlow.guard = flow.guard?.transformExpression?.wrapIntoMultiaryExpression(createAndExpression)
+		newFlow.dataSourceReference = flow.dataSourceReference.transformDataSourceReference
+		newFlow.dataTargetReference = flow.dataTargetReference.transformDataTargetReference
+		newFlow.guard = flow.guard?.transformExpression?.wrapIntoMultiaryExpression(createAndExpression)
 		
 		return newFlow
 	}

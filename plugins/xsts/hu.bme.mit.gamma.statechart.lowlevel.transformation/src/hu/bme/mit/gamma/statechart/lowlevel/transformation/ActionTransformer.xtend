@@ -99,10 +99,15 @@ class ActionTransformer {
 		val activityTransformer = new ActivityToLowlevelTransformer(trace, state)
 		val lowlevelActivity = activityTransformer.transform(activity)
 		
-		lowlevelState.activityInstance = createActivityInstance => [
+		val instance = createActivityInstance => [
 			it.activity = lowlevelActivity
 			it.state = lowlevelState
 		]
+		
+		lowlevelState.entryAction.append(createInitialiseActivityAction =>[
+			it.activityInstance = instance
+		])
+		lowlevelState.activityInstance = instance
 	}
 	
 	protected def dispatch List<Action> transformAction(CallActivityAction action) {	
