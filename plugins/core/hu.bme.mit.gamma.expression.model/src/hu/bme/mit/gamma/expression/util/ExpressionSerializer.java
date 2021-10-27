@@ -103,7 +103,7 @@ public class ExpressionSerializer {
 		final Declaration declaration = expression.getDeclaration();
 		return declaration.getName();
 	}
-
+	
 	protected String _serialize(final NotExpression expression) {
 		StringBuilder builder = new StringBuilder();
 		builder.append("!(");

@@ -13,6 +13,7 @@ package hu.bme.mit.gamma.trace.language.scoping
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.composite.AsynchronousCompositeComponent
+import hu.bme.mit.gamma.statechart.composite.CompositeModelPackage
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.StatechartModelPackage
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
@@ -34,7 +35,7 @@ import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartMo
 class TraceLanguageScopeProvider extends AbstractTraceLanguageScopeProvider {
 
 	new() {
-		super.util = TraceUtil.INSTANCE;
+		super.util = TraceUtil.INSTANCE
 	}
 
 	override getScope(EObject context, EReference reference) {
@@ -55,7 +56,7 @@ class TraceLanguageScopeProvider extends AbstractTraceLanguageScopeProvider {
 				val port = raiseEventAct.port
 				try {
 					val events = port.allEvents
-					return Scopes.scopeFor(events);
+					return Scopes.scopeFor(events)
 				} catch (NullPointerException e) {
 					// For some reason dirty editor errors emerge
 					return super.getScope(context, reference)
@@ -71,17 +72,17 @@ class TraceLanguageScopeProvider extends AbstractTraceLanguageScopeProvider {
 				return Scopes.scopeFor(instances)
 			}
 		}
-		if (reference == TraceModelPackage.Literals.INSTANCE_STATE__INSTANCE) {
+		if (reference == CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE__COMPONENT_INSTANCE) {
 			val executionTrace = ecoreUtil.getContainerOfType(context, ExecutionTrace)
 			val component = executionTrace.component
-			val simpleSyncInstances = component.allSimpleInstances
-			return Scopes.scopeFor(simpleSyncInstances)	
+			val instances = component.allInstances // Both atomic and chain references are supported
+			return Scopes.scopeFor(instances)
 		}
 		if (context instanceof InstanceStateConfiguration &&
 				reference == TraceModelPackage.Literals.INSTANCE_STATE_CONFIGURATION__STATE) {
 			val instanceState = context as InstanceStateConfiguration
 			val instance = instanceState.instance
-			val instanceType = instance.type
+			val instanceType = instance.lastInstance.derivedType
 			val executionTrace = ecoreUtil.getContainerOfType(context, ExecutionTrace)
 			val states = new HashSet<State>
 			if (instanceType === null) {
@@ -100,7 +101,7 @@ class TraceLanguageScopeProvider extends AbstractTraceLanguageScopeProvider {
 				reference == ExpressionModelPackage.Literals.DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
 			val instanceVariableState = context as InstanceVariableState
 			val instance = instanceVariableState.instance
-			val instanceType = instance.type
+			val instanceType = instance.lastInstance.derivedType
 			if (instanceType === null) {
 				return IScope.NULLSCOPE
 			}

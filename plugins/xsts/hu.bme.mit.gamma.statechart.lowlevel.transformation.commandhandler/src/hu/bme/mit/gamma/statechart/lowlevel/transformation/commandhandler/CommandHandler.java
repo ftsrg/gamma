@@ -94,7 +94,7 @@ public class CommandHandler extends AbstractHandler {
 		logger.log(Level.INFO, "Starting Gamma low level - xSTS transformation.");
 		// Note: the package is not in a resource
 		LowlevelToXstsTransformer lowlevelTransformer = new LowlevelToXstsTransformer(
-				lowlevelPackage, false, true, TransitionMerging.FLAT); // Could be led-out to UI
+				lowlevelPackage, false, TransitionMerging.HIERARCHICAL /* Flat does not work now */);
 		Entry<XSTS, L2STrace> resultModels = lowlevelTransformer.execute();
 		XSTS xSts = resultModels.getKey();
 		L2STrace traceability = resultModels.getValue();

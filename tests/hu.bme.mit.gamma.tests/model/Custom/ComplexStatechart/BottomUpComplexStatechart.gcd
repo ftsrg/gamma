@@ -1,0 +1,54 @@
+package complex
+
+import "Interfaces/Interfaces.gcd"
+
+@RegionSchedule = bottom-up
+statechart BottomUp [
+	port Execute : requires Execute
+] {
+	region main {
+		initial EntryMain
+		state A {
+			region A {
+				initial EntryA
+				state AA
+				state AB {
+					region ABA {
+						initial EntryABA
+						state ABAA
+						state ABAB
+					}
+					region ABB {
+						initial EntryABB
+						state ABBA
+						state ABBB
+					}
+				}
+			}
+			region B {
+				initial EntryB
+				state BA
+				state BB
+			}
+		}
+		state B
+		state C
+	}
+	
+	transition from EntryMain to A
+	transition from A to B when Execute.exec
+	transition from B to C when Execute.exec
+	
+	transition from EntryA to AA
+	transition from AA to AB when Execute.exec
+	
+	transition from EntryB to BA
+	transition from BA to BB when Execute.exec
+	
+	transition from EntryABA to ABAA
+	transition from ABAA to ABAB when Execute.exec
+	
+	transition from EntryABB to ABBA
+	transition from ABBA to ABBB when Execute.exec
+	
+}

@@ -150,11 +150,10 @@ class LowlevelToXstsTransformer {
 	}
 	
 	new(Package _package, boolean optimize) {
-		this (_package, optimize, false, TransitionMerging.HIERARCHICAL)
+		this (_package, optimize, TransitionMerging.HIERARCHICAL)
 	}
 	
-	new(Package _package, boolean optimize,	boolean extractGuards,
-			TransitionMerging transitionMerging) {
+	new(Package _package, boolean optimize, TransitionMerging transitionMerging) {
 		this._package = _package
 		// Note: we do not expect cross references to other resources
 		this.engine = ViatraQueryEngine.on(new EMFScope(_package))
@@ -167,21 +166,21 @@ class LowlevelToXstsTransformer {
 		this.trace = new Trace(_package, xSts)
 		
 		// The transformers need the trace model for the variable mapping
-		this.regionActivator = new RegionActivator(this.engine, this.trace, extractGuards)
+		this.regionActivator = new RegionActivator(this.engine, this.trace)
 		this.entryActionRetriever = new EntryActionRetriever(this.trace)
 		this.expressionTransformer = new ExpressionTransformer(this.trace)
 		this.variableDeclarationTransformer = new VariableDeclarationTransformer(this.trace)
 		this.lowlevelTransitionToActionTransformer =
-				new LowlevelTransitionToActionTransformer(this.engine, this.trace, extractGuards)
+				new LowlevelTransitionToActionTransformer(this.engine, this.trace)
 		this.simpleTransitionToActionTransformer =
-				new SimpleTransitionToXTransitionTransformer(this.engine, this.trace, extractGuards)
+				new SimpleTransitionToXTransitionTransformer(this.engine, this.trace)
 		this.precursoryTransitionToXTransitionTransformer =
-				new PrecursoryTransitionToXTransitionTransformer(this.engine, this.trace, extractGuards)
+				new PrecursoryTransitionToXTransitionTransformer(this.engine, this.trace)
 		this.terminalTransitionToXTransitionTransformer =
-				new TerminalTransitionToXTransitionTransformer(this.engine, this.trace, extractGuards)
+				new TerminalTransitionToXTransitionTransformer(this.engine, this.trace)
 		this.transitionMerger = switch (transitionMerging) {
-			case HIERARCHICAL: new HierarchicalTransitionMerger(this.engine, this.trace, extractGuards)
-			case FLAT: new FlatTransitionMerger(this.engine, this.trace, extractGuards)
+			case HIERARCHICAL: new HierarchicalTransitionMerger(this.engine, this.trace)
+//			case FLAT: new FlatTransitionMerger(this.engine, this.trace)
 			default: throw new IllegalArgumentException("Not known merging enum: " + transitionMerging)
 		}
 		this.transformation = BatchTransformation.forEngine(engine).build
@@ -377,9 +376,7 @@ class LowlevelToXstsTransformer {
 				it.reference = enumTypeDeclaration
 			] // Enum variable
 		]
-		xStsRegionVariable.expression = createEnumerationLiteralExpression => [
-			it.reference = lowlevelInactiveEnumLiteral
-		]
+		xStsRegionVariable.expression = lowlevelInactiveEnumLiteral.createEnumerationLiteralExpression
 		xSts.typeDeclarations += enumTypeDeclaration
 		xSts.variableDeclarations += xStsRegionVariable // Target model modification
 		xStsRegionVariable.addOnDemandControlAnnotation // It is worth following this variable
@@ -581,9 +578,7 @@ class LowlevelToXstsTransformer {
 	protected def getLastMergeTransitionsRule() {
 		if (lastMergeTransitionsRule === null) {
 			lastMergeTransitionsRule = createRule(LastMergeStates.instance).action [
-				val lowlevelLastMergeTransition = it.mergeState
-				val xStsComplexTransition = lowlevelLastMergeTransition.transform
-				xSts.transitions += xStsComplexTransition
+				throw new IllegalArgumentException("Merge states are not supported")
 			].build
 		}
 		return lastMergeTransitionsRule

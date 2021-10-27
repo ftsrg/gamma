@@ -16,7 +16,6 @@ import java.io.IOException
 import java.util.logging.Level
 import java.util.logging.Logger
 import uppaal.NTA
-import uppaal.declarations.DataVariableDeclaration
 import uppaal.declarations.FunctionDeclaration
 import uppaal.declarations.TypeDeclaration
 import uppaal.declarations.VariableDeclaration
@@ -102,16 +101,7 @@ class UppaalModelSerializer {
 		«ENDFOR»
 		
 		«FOR function : nta.globalDeclarations.declaration.filter(FunctionDeclaration).map[it.function] SEPARATOR "\n"»
-			«function.returnType.serializeTypeDefinition» «function.name»(«FOR param : function.parameter SEPARATOR ", "»«param.variableDeclaration.typeDefinition.serializeTypeDefinition»«param.callType.serializeCallType» «param.variableDeclaration.variable.head.name»«ENDFOR») {
-				«IF function.block.declarations !== null»
-					«FOR declaration : function.block.declarations.declaration.filter(DataVariableDeclaration)»
-						«declaration.serializeVariable»
-					«ENDFOR»
-				«ENDIF»
-				«FOR statement : function.block.statement»
-					«statement.transformStatement»
-				«ENDFOR»
-			}
+			«function.returnType.serializeTypeDefinition» «function.name»(«FOR param : function.parameter SEPARATOR ", "»«param.variableDeclaration.typeDefinition.serializeTypeDefinition»«param.callType.serializeCallType» «param.variableDeclaration.variable.head.name»«ENDFOR») «function.block.transformStatement»
 		«ENDFOR»
 		
 		</declaration>

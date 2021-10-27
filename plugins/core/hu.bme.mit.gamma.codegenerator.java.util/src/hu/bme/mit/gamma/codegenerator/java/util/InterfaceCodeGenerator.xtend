@@ -106,6 +106,10 @@ class InterfaceCodeGenerator {
 			
 			void schedule(String instance);
 			
+			default void schedule() {
+				schedule(null);
+			}
+			
 			boolean isStateActive(String region, String state);
 			
 			String[] getRegions();

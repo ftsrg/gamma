@@ -9,6 +9,7 @@ import hu.bme.mit.gamma.statechart.lowlevel.model.JoinState
 import hu.bme.mit.gamma.statechart.lowlevel.model.MergeState
 import hu.bme.mit.gamma.statechart.lowlevel.model.State
 import hu.bme.mit.gamma.xsts.model.Action
+import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.XTransition
 import java.util.List
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
@@ -16,13 +17,13 @@ import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.statechart.lowlevel.derivedfeatures.LowlevelStatechartModelDerivedFeatures.*
-import static extension java.lang.Math.abs
-import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.Nodes
 
 class FlatTransitionMerger extends AbstractTransitionMerger {
 	
-	new(ViatraQueryEngine engine, Trace trace, boolean extractGuards) {
-		super(engine, trace, extractGuards)
+	new(ViatraQueryEngine engine, Trace trace) {
+		// Relies on conflict and priority encoding of TransitionPreconditionCreator
+		// Right now, this is not yet set in the LowevelToXstsTransformer
+		super(engine, trace)
 	}
 	
 	override mergeTransitions() {
@@ -62,13 +63,8 @@ class FlatTransitionMerger extends AbstractTransitionMerger {
 		val xTransitionActions = <Action>newArrayList
 		for (xTransition : xTransitions) {
 			val xStsAction = xTransition.action
-			val name = '''_guard_«xTransition.hashCode.abs»'''
-			// Can later be changed to a single "if" for Theta (UPPAAL will not support it though)
-			if (extractGuards) {
-				xTransitionActions += xStsAction.createChoiceActionWithExtractedPreconditionsAndEmptyDefaultBranch(name)
-			} else {
-				xTransitionActions += #[xStsAction].createChoiceActionWithEmptyDefaultBranch
-			}
+			val xStsSequentialAction = xStsAction as SequentialAction
+			xTransitionActions += xStsSequentialAction.createIfAction
 		}
 		
 		val xStsMergedAction = createSequentialAction => [

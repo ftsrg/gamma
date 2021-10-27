@@ -54,7 +54,7 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="lowlevelChoiceState" lowerBound="1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.lowlevel.model/model/model.ecore#//ChoiceState"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="xStsChoiceAction" lowerBound="1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.xsts.model/model/model.ecore#//NonDeterministicAction"/>
+        eType="ecore:EClass ../../hu.bme.mit.gamma.xsts.model/model/model.ecore#//CompositeAction"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="MergeTransitionTrace" eSuperTypes="#//TransitionTrace">
     <eStructuralFeatures xsi:type="ecore:EReference" name="lowlevelMergeState" lowerBound="1"

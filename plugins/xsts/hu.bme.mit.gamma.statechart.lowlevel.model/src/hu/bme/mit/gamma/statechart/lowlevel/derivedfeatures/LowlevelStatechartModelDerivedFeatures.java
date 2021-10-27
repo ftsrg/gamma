@@ -11,7 +11,12 @@
 package hu.bme.mit.gamma.statechart.lowlevel.derivedfeatures;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.eclipse.emf.ecore.EObject;
@@ -88,6 +93,16 @@ public class LowlevelStatechartModelDerivedFeatures extends ActionModelDerivedFe
 				hasDeepHistoryAbove(parentRegion);
 	}
 	
+	public static List<State> getStates(Region lowlevelRegion) {
+		List<State> states = new ArrayList<State>();
+		for (StateNode node : lowlevelRegion.getStateNodes()) {
+			if (node instanceof State) {
+				states.add((State) node);
+			}
+		}
+		return states;
+	}
+	
 	public static Region getParentRegion(Region lowlevelRegion) {
 		CompositeElement parentElement = lowlevelRegion.getParentElement();
 		if (parentElement instanceof State) {
@@ -130,6 +145,56 @@ public class LowlevelStatechartModelDerivedFeatures extends ActionModelDerivedFe
 			}
 		}
 		return lowlevelSubregions;
+	}
+	
+	public static List<List<Region>> getTopDownRegionGroups(CompositeElement element) {
+		List<List<Region>> lowlevelSamePriorityRegionGroups = new ArrayList<List<Region>>();
+		
+		List<Region> lowlevelOrthogonalRegions = new ArrayList<Region>();
+		List<Region> lowlevelSubregions = element.getRegions();
+		lowlevelOrthogonalRegions.addAll(lowlevelSubregions);
+		
+		lowlevelSamePriorityRegionGroups.add(lowlevelOrthogonalRegions);
+		
+		for (Region lowlevelSubregion : lowlevelSubregions) {
+			for (State state : getStates(lowlevelSubregion)) {
+				if (isComposite(state)) {
+					lowlevelSamePriorityRegionGroups.addAll(getTopDownRegionGroups(state));
+				}
+			}
+		}
+		
+		return lowlevelSamePriorityRegionGroups;
+	}
+	
+	public static List<List<Region>> getBottomUpRegionGroups(CompositeElement element) {
+		List<List<Region>> topDownRegionGroups = getTopDownRegionGroups(element);
+		Collections.reverse(topDownRegionGroups);
+		return topDownRegionGroups;
+	}
+	
+	public static List<Region> getAllRegions(CompositeElement element) {
+		List<Region> lowlevelSubregions = new ArrayList<Region>();
+		for (List<Region> regions : getTopDownRegionGroups(element)) {
+			lowlevelSubregions.addAll(regions);
+		}
+		return lowlevelSubregions;
+	}
+	
+	public static List<Region> getAllRegions(Region region) {
+		List<Region> lowlevelSubregions = new ArrayList<Region>();
+		for (State state : getStates(region)) {
+			if (isComposite(state)) {
+				lowlevelSubregions.addAll(getAllRegions(state));
+			}
+		}
+		return lowlevelSubregions;
+	}
+	
+	public static List<Region> getSelfAndAllRegions(Region region) {
+		List<Region> allRegions = getAllRegions(region);
+		allRegions.add(region);
+		return allRegions;
 	}
 	
 	public static boolean isTopRegion(Region lowlevelRegion) {
@@ -182,6 +247,32 @@ public class LowlevelStatechartModelDerivedFeatures extends ActionModelDerivedFe
 			outgoingTransition.addAll(childState.getOutgoingTransitions());
 		}
 		return outgoingTransition;
+	}
+	
+	public static List<Transition> getSortingAccordingToPriority(
+			Collection<? extends Transition> lowlevelTransitions) {
+		List<Transition> sortedTransitions = new ArrayList<Transition>();
+		sortedTransitions.addAll(lowlevelTransitions);
+		sortedTransitions.sort(
+			new Comparator<Transition>() {
+				public int compare(Transition lhs, Transition rhs) {
+					Integer l = lhs.getPriority();
+					Integer r = rhs.getPriority();
+					return r.compareTo(l);
+				}
+			}
+		);
+		return sortedTransitions;
+	}
+	
+	public static boolean arePrioritiesUnique(
+			Collection<? extends Transition> lowlevelTransitions) {
+		Set<Integer> priorites = new HashSet<Integer>();
+		// Watch out for join nodes
+		for (Transition lowlevelTransition : lowlevelTransitions) {
+			priorites.add(lowlevelTransition.getPriority());
+		}
+		return lowlevelTransitions.size() == priorites.size();
 	}
 	
 }

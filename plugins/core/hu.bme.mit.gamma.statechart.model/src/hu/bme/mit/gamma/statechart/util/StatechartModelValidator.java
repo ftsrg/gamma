@@ -446,6 +446,15 @@ public class StatechartModelValidator extends ActivityModelValidator {
 				"A region must have at least one entry node", 
 					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME)));
 		}
+		for (StateNode entry : entries) {
+			Class<? extends StateNode> clazz = entry.getClass();
+			long count = entries.stream().filter(it -> clazz.isInstance(it)).count();
+			if (count > 1) {
+				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+					"A region must have at most one entry node of a certain type", 
+						new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME, entry)));
+			}
+		}
 		return validationResultMessages;
 	}
 	
@@ -482,11 +491,16 @@ public class StatechartModelValidator extends ActivityModelValidator {
 					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME)));
 		}
 		if (timeoutSettings.size() > 1) {
-			for (SetTimeoutAction timeoutSetting : timeoutSettings) {
-				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-					"This timeout declaration is set more than once", 
-						new ReferenceInfo(StatechartModelPackage.Literals.TIMEOUT_ACTION__TIMEOUT_DECLARATION,
-								timeoutSetting)));
+			List<TimeSpecification> times = timeoutSettings.stream()
+					.map(it -> it.getTime()).collect(Collectors.toList());
+			if (!ecoreUtil.allHelperEquals(times)) {
+				// Time evaluation and comparison could be added here
+				for (SetTimeoutAction timeoutSetting : timeoutSettings) {
+					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+						"This timeout declaration is set more than once", 
+							new ReferenceInfo(StatechartModelPackage.Literals.TIMEOUT_ACTION__TIMEOUT_DECLARATION,
+									timeoutSetting)));
+				}
 			}
 		}
 		return validationResultMessages;
@@ -1356,13 +1370,6 @@ public class StatechartModelValidator extends ActivityModelValidator {
 	public Collection<ValidationResultMessage> checkComponentInstances(ComponentInstance instance) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		Component type = StatechartModelDerivedFeatures.getContainingComponent(instance);
-		String name = instance.getName();
-		if (name.startsWith("_") || name.endsWith("_")) {
-			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-				"A Gamma instance identifier cannot start or end with an '_' underscore character", 
-					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME)));
-			return validationResultMessages;
-		}
 		EObject container = instance.eContainer();
 		if (type instanceof AsynchronousAdapter || !(container instanceof CompositeComponent)) {
 			// Not checking AsynchronousAdapters or port bindings not contained by CompositeComponents
@@ -1373,7 +1380,7 @@ public class StatechartModelValidator extends ActivityModelValidator {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING, 
 				"The following ports are used neither in a system port binding nor a channel: " +
 					unusedPorts.stream().map(it -> it.getName()).collect(Collectors.toSet()),
-					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME)));
+						new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME)));
 		}
 		return validationResultMessages;
 	}

@@ -46,7 +46,7 @@ abstract class AbstractVerifier {
 	def cancel() {
 		isCancelled = true
 		if (process !== null) {
-			process.destroy
+			process.destroyForcibly
 			try {
 				// Waiting for process to end
 				process.waitFor

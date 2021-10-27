@@ -11,12 +11,15 @@
 package hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer
 
 import hu.bme.mit.gamma.expression.model.AndExpression
+import hu.bme.mit.gamma.expression.model.ArithmeticExpression
 import hu.bme.mit.gamma.expression.model.BooleanExpression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.FalseExpression
+import hu.bme.mit.gamma.expression.model.MultiaryExpression
 import hu.bme.mit.gamma.expression.model.OrExpression
 import hu.bme.mit.gamma.expression.model.TrueExpression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
+import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.AbstractAssignmentAction
 import hu.bme.mit.gamma.xsts.model.Action
@@ -25,6 +28,7 @@ import hu.bme.mit.gamma.xsts.model.AssumeAction
 import hu.bme.mit.gamma.xsts.model.AtomicAction
 import hu.bme.mit.gamma.xsts.model.CompositeAction
 import hu.bme.mit.gamma.xsts.model.EmptyAction
+import hu.bme.mit.gamma.xsts.model.IfAction
 import hu.bme.mit.gamma.xsts.model.LoopAction
 import hu.bme.mit.gamma.xsts.model.MultiaryAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
@@ -36,6 +40,7 @@ import hu.bme.mit.gamma.xsts.model.XTransition
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import java.util.Collection
 import java.util.List
+import org.eclipse.emf.ecore.EObject
 
 import static com.google.common.base.Preconditions.checkState
 
@@ -47,6 +52,7 @@ class ActionOptimizer {
 	protected new() {}
 	// Auxiliary objects
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
+	protected final extension ExpressionEvaluator expressionEvaluator = ExpressionEvaluator.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	// Model factories
 	protected final ExpressionModelFactory expressionFactory = ExpressionModelFactory.eINSTANCE
@@ -84,6 +90,9 @@ class ActionOptimizer {
 				.simplifyParallelActions
 				.simplifyOrthogonalActions
 				.simplifyNonDeterministicActions
+				
+				.optimizeIfActions
+				
 			newXStsAction.optimizeAssignmentActions
 			newXStsAction.deleteTrivialNonDeterministicActions
 			newXStsAction = newXStsAction.optimizeParallelActions // Might be resource intensive
@@ -109,6 +118,20 @@ class ActionOptimizer {
 		}
 		return action => [ // Parameter and range are still needed
 			it.action = simplifiedXStsSubaction
+		]
+	}
+	
+	protected def dispatch Action simplifyCompositeActions(IfAction action) {
+		val simplifiedXStsThenAction = action.then.simplifyCompositeActions
+		val simplifiedXStsElseAction = action.^else.simplifyCompositeActions
+		
+		if (simplifiedXStsThenAction.nullOrEmptyAction &&
+				simplifiedXStsElseAction.nullOrEmptyAction) {
+			return createEmptyAction
+		}
+		return action => [
+			it.then = simplifiedXStsThenAction
+			it.^else = simplifiedXStsElseAction
 		]
 	}
 	
@@ -175,6 +198,21 @@ class ActionOptimizer {
 		return #[
 			action => [ // Parameter and range are still needed
 				it.action = newXStsSubactions.head
+			]
+		]
+	}
+	
+	protected def dispatch List<Action> simplifySequentialActions(IfAction action, boolean isTop) {
+		val xStsThenAction = action.then
+		val xStsElseAction = action.^else
+		val newXStsThenAction = xStsThenAction.simplifySequentialActions(true)
+		val newXStsElseAction = xStsElseAction.simplifySequentialActions(true)
+		checkState(newXStsThenAction.size == 1)
+		checkState(newXStsElseAction.size == 1)
+		return #[
+			action => [
+				it.then = newXStsThenAction.head
+				it.^else = newXStsElseAction.head
 			]
 		]
 	}
@@ -251,6 +289,21 @@ class ActionOptimizer {
 		]
 	}
 	
+	protected def dispatch List<Action> simplifyParallelActions(IfAction action, boolean isTop) {
+		val xStsThenAction = action.then
+		val xStsElseAction = action.^else
+		val newXStsThenAction = xStsThenAction.simplifyParallelActions(true)
+		val newXStsElseAction = xStsElseAction.simplifyParallelActions(true)
+		checkState(newXStsThenAction.size == 1)
+		checkState(newXStsElseAction.size == 1)
+		return #[
+			action => [
+				it.then = newXStsThenAction.head
+				it.^else = newXStsElseAction.head
+			]
+		]
+	}
+	
 	protected def dispatch List<Action> simplifyParallelActions(MultiaryAction action, boolean isTop) {
 		val xStsSubactions = newArrayList
 		xStsSubactions += action.actions
@@ -314,6 +367,21 @@ class ActionOptimizer {
 		]
 	}
 	
+	protected def dispatch List<Action> simplifyOrthogonalActions(IfAction action, boolean isTop) {
+		val xStsThenAction = action.then
+		val xStsElseAction = action.^else
+		val newXStsThenAction = xStsThenAction.simplifyOrthogonalActions(true)
+		val newXStsElseAction = xStsElseAction.simplifyOrthogonalActions(true)
+		checkState(newXStsThenAction.size == 1)
+		checkState(newXStsElseAction.size == 1)
+		return #[
+			action => [
+				it.then = newXStsThenAction.head
+				it.^else = newXStsElseAction.head
+			]
+		]
+	}
+	
 	protected def dispatch List<Action> simplifyOrthogonalActions(MultiaryAction action, boolean isTop) {
 		val xStsSubactions = newArrayList
 		xStsSubactions += action.actions
@@ -373,6 +441,22 @@ class ActionOptimizer {
 		return #[
 			action => [ // Parameter and range are still needed
 				it.action = newXStsSubactions.head
+			]
+		]
+	}
+	
+	protected def dispatch List<Action> simplifyNonDeterministicActions(IfAction action, boolean isTop) {
+		val xStsThenAction = action.then
+		val xStsElseAction = action.^else
+		val newXStsThenAction = xStsThenAction.simplifyNonDeterministicActions(true)
+		checkState(newXStsThenAction.size == 1)
+		val newXStsElseAction = xStsElseAction.simplifyNonDeterministicActions(true)
+		checkState(newXStsElseAction.size == 1)
+		// Neither definitely true nor false
+		return #[
+			action => [
+				it.then = newXStsThenAction.head
+				it.^else = newXStsElseAction.head
 			]
 		]
 	}
@@ -451,6 +535,15 @@ class ActionOptimizer {
 		]
 	}
 	
+	protected def dispatch Action optimizeParallelActions(IfAction action) {
+		val xStsThenAction = action.then
+		val xStsElseAction = action.^else
+		return action => [
+			it.then = xStsThenAction.optimizeParallelActions
+			it.^else = xStsElseAction.optimizeParallelActions
+		]
+	}
+	
 	protected def dispatch Action optimizeParallelActions(MultiaryAction action) {
 		val xStsSubactions = newArrayList
 		xStsSubactions += action.actions
@@ -501,6 +594,13 @@ class ActionOptimizer {
 		xStsSubaction.optimizeAssignmentActions
 	}
 	
+	protected def dispatch void optimizeAssignmentActions(IfAction action) {
+		val xStsThenAction = action.then
+		val xStsElseAction = action.^else
+		xStsThenAction.optimizeAssignmentActions
+		xStsElseAction.optimizeAssignmentActions
+	}
+	
 	protected def dispatch void optimizeAssignmentActions(MultiaryAction action) {
 		// Recursion
 		for (xStsAction : action.actions) {
@@ -546,6 +646,35 @@ class ActionOptimizer {
 		}
 	}
 	
+	protected def optimizeIfActions(Action action) {
+		val block = action.createSequentialAction // Due to replacement issues
+		
+		val xStsIfActions = action.getSelfAndAllContentsOfType(IfAction)
+		for (xStsIfAction : xStsIfActions) {
+			val xStsCondition = xStsIfAction.condition
+			val xStsThenAction = xStsIfAction.then
+			val xStsElseAction = xStsIfAction.^else
+			
+			if (xStsThenAction.nullOrEmptyAction && xStsElseAction.nullOrEmptyAction) {
+				xStsIfAction.remove
+			}
+			else if (xStsCondition.definitelyTrueExpression) {
+				xStsThenAction.replace(xStsIfAction)
+			}
+			else if (xStsCondition.definitelyFalseExpression) {
+				xStsElseAction.replace(xStsIfAction)
+			}
+			else if (xStsThenAction.nullOrEmptyAction) {
+				// Else branch is not empty due to first condition of this if-else
+				// if (a) {} else {...} === if (!a) {...} else {}
+				xStsIfAction.condition = xStsCondition.createNotExpression
+				xStsIfAction.then = xStsElseAction
+				xStsIfAction.^else = createEmptyAction
+			}
+		}
+		return block
+	}
+	
 	// Assume actions
 	
 	protected def void deleteUnnecessaryAssumeActions(Action action) {
@@ -580,6 +709,13 @@ class ActionOptimizer {
 	protected def dispatch void deleteTrivialNonDeterministicActions(LoopAction action) {
 		val xStsSubaction = action.action
 		xStsSubaction.deleteTrivialNonDeterministicActions
+	}
+	
+	protected def dispatch void deleteTrivialNonDeterministicActions(IfAction action) {
+		val xStsThenAction = action.then
+		val xStsElseAction = action.^else
+		xStsThenAction.deleteTrivialNonDeterministicActions
+		xStsElseAction.deleteTrivialNonDeterministicActions
 	}
 	
 	protected def dispatch void deleteTrivialNonDeterministicActions(MultiaryAction action) {
@@ -641,6 +777,13 @@ class ActionOptimizer {
 		xStsSubaction.deleteDefinitelyFalseBranches
 	}
 	
+	protected def dispatch void deleteDefinitelyFalseBranches(IfAction action) {
+		val xStsThenAction = action.then
+		val xStsElseAction = action.^else
+		xStsThenAction.deleteDefinitelyFalseBranches
+		xStsElseAction.deleteDefinitelyFalseBranches
+	}
+	
 	protected def dispatch void deleteDefinitelyFalseBranches(MultiaryAction action) {
 		for (xStsAction : action.actions) {
 			xStsAction.deleteDefinitelyFalseBranches
@@ -666,7 +809,9 @@ class ActionOptimizer {
 	//
 	
 	protected def void optimizeExpressions(Action action) {
-		val booleanExpressions = action.getAllContentsOfType(BooleanExpression)
+		val eObjects = action.getAllContentsOfType(EObject)
+		
+		val booleanExpressions = eObjects.filter(BooleanExpression)
 		for (booleanExpression : booleanExpressions) {
 			if (booleanExpression.definitelyFalseExpression) {
 				expressionFactory.createFalseExpression.replace(booleanExpression)
@@ -680,6 +825,32 @@ class ActionOptimizer {
 				}
 				else if (booleanExpression instanceof AndExpression) {
 					booleanExpression.operands.removeIf[it instanceof TrueExpression]
+				}
+			}
+		}
+		
+		val multiaryExpressions = newArrayList
+		multiaryExpressions += eObjects.filter(ArithmeticExpression).filter(MultiaryExpression) // Add, Mul
+		multiaryExpressions += booleanExpressions.filter(MultiaryExpression) // And, Xor, Or
+		
+		for (multiaryExpression : multiaryExpressions) {
+			val operands = multiaryExpression.operands
+			val container = multiaryExpression.eContainer
+			if (container !== null) {
+				if (container.eClass == multiaryExpression.eClass) {
+					val _container = container as MultiaryExpression
+					_container.operands += operands
+					multiaryExpression.remove
+				}
+				else {
+					val operandSize = operands.size
+					if (operandSize == 0) {
+						multiaryExpression.remove
+					}
+					else if (operandSize == 1) {
+						val operand = operands.head
+						operand.replace(multiaryExpression)
+					}
 				}
 			}
 		}

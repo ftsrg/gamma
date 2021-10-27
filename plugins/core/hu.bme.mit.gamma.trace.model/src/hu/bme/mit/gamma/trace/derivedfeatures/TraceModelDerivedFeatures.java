@@ -21,11 +21,14 @@ import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeature
 import hu.bme.mit.gamma.expression.model.ArgumentedElement;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance;
+import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Event;
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction;
 import hu.bme.mit.gamma.statechart.statechart.State;
 import hu.bme.mit.gamma.trace.model.Assert;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
+import hu.bme.mit.gamma.trace.model.ExecutionTraceAllowedWaitingAnnotation;
+import hu.bme.mit.gamma.trace.model.ExecutionTraceAnnotation;
 import hu.bme.mit.gamma.trace.model.InstanceStateConfiguration;
 import hu.bme.mit.gamma.trace.model.InstanceVariableState;
 import hu.bme.mit.gamma.trace.model.NegatedAssert;
@@ -45,6 +48,24 @@ public class TraceModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 			return trace.getComponent().getParameterDeclarations();
 		}
 		throw new IllegalArgumentException("Not supported element: " + element);
+	}
+	
+	// Annotations
+	
+	public static boolean hasAllowedWaitingAnnotation(ExecutionTrace trace) {
+		return hasAnnotation(trace, ExecutionTraceAllowedWaitingAnnotation.class);
+	}
+	
+	public static boolean hasAnnotation(ExecutionTrace trace,
+			Class<? extends ExecutionTraceAnnotation> annotation) {
+		return trace.getAnnotations().stream().anyMatch(it -> annotation.isInstance(it));
+	}
+	
+	public static ExecutionTraceAllowedWaitingAnnotation getAllowedWaitingAnnotation(
+				ExecutionTrace trace) {
+		List<ExecutionTraceAnnotation> annotations = trace.getAnnotations();
+		return javaUtil.filterIntoList(annotations,
+				ExecutionTraceAllowedWaitingAnnotation.class).get(0);
 	}
 	
 	//
@@ -91,7 +112,8 @@ public class TraceModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 				new HashMap<SynchronousComponentInstance, Set<State>>();
 		List<InstanceStateConfiguration> stateConfigurations = getInstanceStateConfigurations(step);
 		for (InstanceStateConfiguration stateConfiguration : stateConfigurations) {
-			SynchronousComponentInstance instance = stateConfiguration.getInstance();
+			SynchronousComponentInstance instance = (SynchronousComponentInstance)
+					StatechartModelDerivedFeatures.getLastInstance(stateConfiguration.getInstance());
 			State state = stateConfiguration.getState();
 			if (!instanceStates.containsKey(instance)) {
 				instanceStates.put(instance, new HashSet<State>());

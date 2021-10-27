@@ -113,7 +113,7 @@ class ActionTransformer {
 		val guards = branches.key
 		val actions = branches.value
 		
-		return createIfElseAction(guards, actions)
+		return createIfAction(guards, actions)
 	}
 	
 	def dispatch Action transformAction(SwitchStatement action) {

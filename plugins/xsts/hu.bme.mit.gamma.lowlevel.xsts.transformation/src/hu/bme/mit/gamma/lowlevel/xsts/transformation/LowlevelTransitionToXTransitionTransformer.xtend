@@ -16,8 +16,6 @@ import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 
-import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
-
 abstract class LowlevelTransitionToXTransitionTransformer {
 	// Auxiliary object
 	protected final extension LowlevelTransitionToActionTransformer lowlevelTransitionToActionTransformer
@@ -38,15 +36,15 @@ abstract class LowlevelTransitionToXTransitionTransformer {
 	// Trace
 	protected final Trace trace
 	
-	new(ViatraQueryEngine engine, Trace trace, boolean extractGuards) {
-		this(engine, trace, null, extractGuards)
+	new(ViatraQueryEngine engine, Trace trace) {
+		this(engine, trace, null)
 	}
 	
-	new(ViatraQueryEngine engine, Trace trace, RegionActivator regionActivator, boolean extractGuards) {
+	new(ViatraQueryEngine engine, Trace trace, RegionActivator regionActivator) {
 		this.engine = engine
 		this.trace = trace
 		this.lowlevelTransitionToActionTransformer = new LowlevelTransitionToActionTransformer(
-			engine, trace, regionActivator, extractGuards)
+			engine, trace, regionActivator)
 		// Delegating the contained objects to the subclasses too
 		this.stateAssumptionCreator = this.lowlevelTransitionToActionTransformer.stateAssumptionCreator
 		this.transitionPreconditionCreator = this.lowlevelTransitionToActionTransformer.transitionPreconditionCreator
@@ -64,8 +62,9 @@ abstract class LowlevelTransitionToXTransitionTransformer {
 	protected def createXStsTransition(Action xStsTransitionAction) {
 		val xStsTransition = createXTransition => [
 			it.action = xStsTransitionAction
-			it.reads += xStsTransitionAction.readVariables
-			it.writes += xStsTransitionAction.writtenVariables
+			// Noting uses it right now, so commenting out to speed up the transformation
+//			it.reads += xStsTransitionAction.readVariables
+//			it.writes += xStsTransitionAction.writtenVariables
 		]
 		// Cannot be traced here, as each transition needs different tracing
 		return xStsTransition

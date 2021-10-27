@@ -106,9 +106,13 @@ InstanceState returns InstanceState:
 ;
 
 InstanceStateConfiguration returns InstanceStateConfiguration:
-	instance=[CompositeModel::SynchronousComponentInstance] '.' state=[StatechartModel::State]
+	'state' instance=ComponentInstanceReference '.' state=[StatechartModel::State]
 ;
 
 InstanceVariableState returns InstanceVariableState:
-	instance=[CompositeModel::SynchronousComponentInstance] '.' declaration=[ConstraintModel::VariableDeclaration] '=' value=Expression
+	'variable' instance=ComponentInstanceReference '.' declaration=[ConstraintModel::VariableDeclaration] '=' value=Expression
+;
+
+ComponentInstanceReference returns CompositeModel::ComponentInstanceReference:
+	componentInstance=[CompositeModel::ComponentInstance] ('->' child=ComponentInstanceReference)?
 ;

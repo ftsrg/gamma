@@ -17,6 +17,9 @@ class MultiaryExpressionCreator {
 		
 	def createLogicalExpression(LogicalOperator operator,
 			Collection<? extends Expression> expressions) {
+			if (expressions.empty) {
+				println('AS')
+			}
 		checkArgument(!expressions.empty)
 		if (expressions.size == 1) {
 			return expressions.head

@@ -11,6 +11,7 @@
 package hu.bme.mit.gamma.xsts.transformation
 
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
+import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.interface_.Component
@@ -21,6 +22,7 @@ import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.AssumeAction
 import hu.bme.mit.gamma.xsts.model.CompositeAction
+import hu.bme.mit.gamma.xsts.model.IfAction
 import hu.bme.mit.gamma.xsts.model.LoopAction
 import hu.bme.mit.gamma.xsts.model.MultiaryAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
@@ -171,13 +173,27 @@ class EnvironmentalActionFilter {
 	
 	private def void delete(CompositeAction action, Set<String> necessaryNames) {
 		val copyXStsSubactions = newArrayList
+		
 		if (action instanceof LoopAction) {
 			copyXStsSubactions += action.action
+		}
+		else if (action instanceof IfAction) {
+			val xStsCondition = action.condition
+			if (xStsCondition.isDeletable(necessaryNames)) {
+				createEmptyAction.replace(action)
+				return
+			}
+			copyXStsSubactions += action.then
+			val _else = action.^else
+			if (_else !== null) {
+				copyXStsSubactions += _else
+			}
 		}
 		else {
 			val xStsMultiaryAction = action as MultiaryAction
 			copyXStsSubactions += xStsMultiaryAction.actions
 		}
+		
 		for (xStsSubaction : copyXStsSubactions) {
 			if (xStsSubaction instanceof AbstractAssignmentAction) {
 				val name = (xStsSubaction.lhs as DirectReferenceExpression).declaration.name
@@ -188,8 +204,7 @@ class EnvironmentalActionFilter {
 			}
 			else if (xStsSubaction instanceof AssumeAction) {
 				val assumption = xStsSubaction.assumption
-				val variables = assumption.referredVariables
-				if (!variables.exists[necessaryNames.contains(it.name)]) {
+				if (assumption.isDeletable(necessaryNames)) {
 					// Deleting the assume action
 					createEmptyAction.replace(xStsSubaction)
 				}
@@ -198,6 +213,11 @@ class EnvironmentalActionFilter {
 				xStsSubaction.delete(necessaryNames)
 			}
 		}
+	}
+	
+	private def isDeletable(Expression expression, Set<String> necessaryNames) {
+		val variables = expression.referredVariables
+		return !variables.exists[necessaryNames.contains(it.name)] // What if it is mixed?
 	}
 	
 }

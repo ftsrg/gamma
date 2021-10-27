@@ -107,8 +107,10 @@ public class TraceUtil extends ExpressionUtil {
 				// Two instance states: first - instance name, second - state level
 				InstanceStateConfiguration lhsInstanceStateConfiguration = (InstanceStateConfiguration) lhs;
 				InstanceStateConfiguration rhsInstanceStateConfiguration = (InstanceStateConfiguration) rhs;
-				ComponentInstance lhsInstance = lhsInstanceStateConfiguration.getInstance();
-				ComponentInstance rhsInstance = rhsInstanceStateConfiguration.getInstance();
+				ComponentInstance lhsInstance = StatechartModelDerivedFeatures.getLastInstance(
+						lhsInstanceStateConfiguration.getInstance());
+				ComponentInstance rhsInstance = StatechartModelDerivedFeatures.getLastInstance(
+						rhsInstanceStateConfiguration.getInstance());
 				int nameCompare = lhsInstance.getName().compareTo(rhsInstance.getName());
 				if (nameCompare != 0) {
 					return nameCompare;
@@ -121,9 +123,13 @@ public class TraceUtil extends ExpressionUtil {
 				// Two instance variable: name
 				InstanceVariableState lhsInstanceVariableState = (InstanceVariableState) lhs;
 				InstanceVariableState rhsInstanceVariableState = (InstanceVariableState) rhs;
-				String lhsName = lhsInstanceVariableState.getInstance().getName() +
+				ComponentInstance lhsInstance = StatechartModelDerivedFeatures.getLastInstance(
+						lhsInstanceVariableState.getInstance());
+				ComponentInstance rhsInstance = StatechartModelDerivedFeatures.getLastInstance(
+						rhsInstanceVariableState.getInstance());
+				String lhsName = lhsInstance.getName() +
 						lhsInstanceVariableState.getDeclaration().getName();
-				String rhsName = rhsInstanceVariableState.getInstance().getName() +
+				String rhsName = rhsInstance.getName() +
 						rhsInstanceVariableState.getDeclaration().getName();
 				return lhsName.compareTo(rhsName);
 			}

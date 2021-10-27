@@ -19,6 +19,7 @@ import uppaal.UppaalFactory
 import uppaal.core.NamedElement
 import uppaal.declarations.DataVariableDeclaration
 import uppaal.declarations.DataVariablePrefix
+import uppaal.declarations.Declaration
 import uppaal.declarations.Declarations
 import uppaal.declarations.DeclarationsFactory
 import uppaal.declarations.Function
@@ -30,7 +31,10 @@ import uppaal.expressions.CompareOperator
 import uppaal.expressions.Expression
 import uppaal.expressions.ExpressionsFactory
 import uppaal.expressions.LogicalOperator
+import uppaal.statements.Block
 import uppaal.statements.ExpressionStatement
+import uppaal.statements.Statement
+import uppaal.statements.StatementsFactory
 import uppaal.templates.Edge
 import uppaal.templates.Location
 import uppaal.templates.LocationKind
@@ -57,6 +61,7 @@ class NtaBuilder {
 	protected final extension DeclarationsFactory declFact= DeclarationsFactory.eINSTANCE
 	protected final extension TypesFactory typFact= TypesFactory.eINSTANCE
 	protected final extension SystemFactory sysFact= SystemFactory.eINSTANCE
+	protected final extension StatementsFactory stmtsFactory = StatementsFactory.eINSTANCE
 	// Auxiliary objects
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	
@@ -135,9 +140,7 @@ class NtaBuilder {
 			}
 		}
 		else {
-			val functionCallExpression = createFunctionCallExpression => [
-				it.function = function
-			]
+			val functionCallExpression = function.createFunctionCallExpression
 			container.add(reference, functionCallExpression)
 		}
 	}
@@ -457,9 +460,15 @@ class NtaBuilder {
 	
 	def createUpdateEdge(Location source, String nextCommittedLocationName,
 			VariableContainer uppaalVariable, Expression uppaalRhs) {
+		return source.createUpdateEdge(nextCommittedLocationName,
+			uppaalVariable.createIdentifierExpression, uppaalRhs)
+	}
+	
+	def createUpdateEdge(Location source, String nextCommittedLocationName,
+			Expression uppaalLhs, Expression uppaalRhs) {
 		val edge = source.createEdgeCommittedSource(nextCommittedLocationName)
 		if (uppaalRhs !== null) {
-			edge.update += uppaalVariable.createAssignmentExpression(uppaalRhs)
+			edge.update += uppaalLhs.createAssignmentExpression(uppaalRhs)
 		}
 		return edge.target
 	}
@@ -497,7 +506,74 @@ class NtaBuilder {
 		return createValueIndex => [
 			it.sizeExpression = expression
 		]
-	} 
+	}
+	
+	def createBlock(Iterable<? extends Statement> statements) {
+		return createBlock => [
+			it.statement += statements
+		]
+	}
+	
+	def createBlock(Statement statement) {
+		if (statement instanceof Block) {
+			return statement
+		}
+		return #[statement].filterNull
+			.createBlock
+	}
+	
+	def createStatements(Iterable<? extends Expression> expressions) {
+		val statements = newArrayList
+		for (expression : expressions) {
+			statements += expression.createStatement
+		}
+		return statements
+	}
+	
+	def createStatement(Expression expression) {
+		return createExpressionStatement => [
+			it.expression = expression
+		]
+	}
+	
+	def createIfStatement(Expression condition, Statement then, Statement ^else) {
+		return createIfStatement => [
+			it.ifExpression = condition
+			it.thenStatement = then
+			it.elseStatement = ^else
+		]
+	}
+	
+	def createVoidFunction(String name, Block block) {
+		return nta.void.createTypeReference
+				.createFunction(name, block)
+	}
+	
+	def createFunction(TypeDefinition type, String name, Block block) {
+		return createFunction => [
+			it.returnType = type
+			it.name = name
+			it.block = block
+		]
+	}
+	
+	def createFunctionDeclaration(Function function) {
+		return createFunctionDeclaration => [
+			it.function = function
+		]
+	}
+	
+	def createFunctionCallExpression(Function function) {
+		return createFunctionCallExpression => [
+			it.function = function
+		]
+	}
+	
+	def createLocalDeclarations(Iterable<? extends Declaration> declarations) {
+		return createLocalDeclarations => [
+			it.declaration += declarations
+		]
+	}
 	
 	def getNta() {
 		return nta

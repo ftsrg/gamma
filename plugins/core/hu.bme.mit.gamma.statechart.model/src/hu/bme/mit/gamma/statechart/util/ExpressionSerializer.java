@@ -29,24 +29,12 @@ public class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.Expre
 	}
 	
 	protected String _serialize(StateReferenceExpression expression) {
-		return"in-state(" + expression.getRegion().getName() + "."
+		return "in-state(" + expression.getRegion().getName() + "."
 				+ expression.getState().getName() + ")";
 	}
-
-
-	public String serialize(Expression expression) {
-		if (expression instanceof EventParameterReferenceExpression) {
-			return _serialize((EventParameterReferenceExpression) expression);
-		}
-		if (expression instanceof StateReferenceExpression) {
-			return _serialize((StateReferenceExpression) expression);
-		}
-		return super.serialize(expression);
-	}
 	
-	//
 	
-	protected String serialize(ComponentInstanceReference instance) {
+	protected String _serialize(ComponentInstanceReference instance) {
 		final String DELIMITER = ".";
 		StringBuilder builder = new StringBuilder();
 		boolean isFirst = true;
@@ -63,4 +51,18 @@ public class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.Expre
 		return builder.toString();
 	}
 
+
+	public String serialize(Expression expression) {
+		if (expression instanceof EventParameterReferenceExpression) {
+			return _serialize((EventParameterReferenceExpression) expression);
+		}
+		if (expression instanceof StateReferenceExpression) {
+			return _serialize((StateReferenceExpression) expression);
+		}
+		if (expression instanceof ComponentInstanceReference) {
+			return _serialize((ComponentInstanceReference) expression);
+		}
+		return super.serialize(expression);
+	}
+	
 }

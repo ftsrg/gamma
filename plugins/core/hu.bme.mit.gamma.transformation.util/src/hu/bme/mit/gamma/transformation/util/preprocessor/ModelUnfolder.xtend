@@ -322,7 +322,9 @@ class ModelUnfolder {
 		val names = newHashSet
 		for (instance : component.allInstances) {
 			val name = instance.name
-			checkState(!names.contains(name), "The string " + name + " is generated as a name for multiple instances.")
+			checkState(!names.contains(name),
+				"The string " + name + " is generated as a name for multiple instances; " +
+					"add different names for these instances")
 			names += name
 		}
 	}

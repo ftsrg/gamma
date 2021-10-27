@@ -15,7 +15,12 @@ class XstsUppaalVerification extends AbstractVerification {
 		val packageFileName = fileName.unfoldedPackageFileName
 		val gammaPackage = ecoreUtil.normalLoad(modelFile.parent, packageFileName)
 		val verifier = new UppaalVerifier
-		return verifier.verifyQuery(gammaPackage, "-C -T -t0", modelFile, queryFile)
+		val parameter = parameters.head
+		return verifier.verifyQuery(gammaPackage, parameter, modelFile, queryFile)
+	}
+	
+	override getParameters() {
+		return #[ "-C -T -t0" ]
 	}
 
 }

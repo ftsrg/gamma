@@ -16,8 +16,8 @@ analysis {
 verification {
 	language : Theta
 	file : "AntivalenceChecker_System_Wrapper.xsts"
-	query-file : "CustomQuery_ANTIVAL_CHK_COID_System.prop"
 	query-file : "AntivalenceChecker_System_Wrapper.prop"
 	optimize : true
 	test-language : java
+	back-annotate-to-original : true
 }

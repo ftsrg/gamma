@@ -30,6 +30,8 @@ class TraceLanguageFormatter extends AbstractDeclarativeFormatter {
         c.setLinewrap(0, 1, 2).between(f.executionTraceAccess.importAssignment_1,
         	f.executionTraceAccess.traceKeyword_3)
         // Line breaks after these rules
+        c.setLinewrap(1).before(f.executionTraceAnnotationsRule)
+        c.setLinewrap(1).after(f.executionTraceAnnotationsRule)
   		c.setLinewrap(1).after(f.executionTraceAccess.group_6)
         c.setLinewrap(1).after(f.actRule)
         c.setLinewrap(1).after(f.raiseEventActRule)

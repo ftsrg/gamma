@@ -68,7 +68,6 @@ class ComponentTransformer {
 	// Transformation settings
 	protected final boolean transformOrthogonalActions
 	protected final boolean optimize
-	protected final boolean extractGuards
 	protected final TransitionMerging transitionMerging
 	// Auxiliary objects
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
@@ -87,11 +86,10 @@ class ComponentTransformer {
 	protected final Logger logger = Logger.getLogger("GammaLogger")
 	
 	new(GammaToLowlevelTransformer gammaToLowlevelTransformer, boolean transformOrthogonalActions,
-			boolean optimize, boolean extractGuards, TransitionMerging transitionMerging) {
+			boolean optimize, TransitionMerging transitionMerging) {
 		this.gammaToLowlevelTransformer = gammaToLowlevelTransformer
 		this.transformOrthogonalActions = transformOrthogonalActions
 		this.optimize = optimize
-		this.extractGuards = extractGuards
 		this.transitionMerging = transitionMerging
 		this.queueTraceability = new MessageQueueTraceability
 	}
@@ -617,12 +615,8 @@ class ComponentTransformer {
 				val negatedVariables = newArrayList
 				negatedVariables += xStsReferencedEventVariables
 				negatedVariables -= xStsEventVariable
-				val branch = createIfActionBranch(
-					xStsActionUtil.connectThroughNegations(negatedVariables),
-					xStsEventVariable.createAssignmentAction(createTrueExpression)
-				)
-				branch.extendChoiceWithBranch(createTrueExpression, createEmptyAction)
-				newInEventAction.actions += branch
+				newInEventAction.actions += xStsActionUtil.connectThroughNegations(negatedVariables)
+						.createIfAction(xStsEventVariable.createAssignmentAction(createTrueExpression))
 			}
 			// Binding event variables that come from the same ports
 			newInEventAction.actions += xSts.createEventAssignmentsBoundToTheSameSystemPort(wrappedType)
@@ -758,6 +752,7 @@ class ComponentTransformer {
 		
 		if (optimize) {
 			// Optimization: system in events (but not PERSISTENT parameters) can be reset after the merged transition
+			// E.g., synchronous components do not reset system events
 			xSts.resetInEventsAfterMergedAction(component)
 		}
 		
@@ -771,7 +766,7 @@ class ComponentTransformer {
 		val lowlevelStatechart = gammaToLowlevelTransformer.transform(statechart)
 		lowlevelPackage.components += lowlevelStatechart
 		val lowlevelToXSTSTransformer = new LowlevelToXstsTransformer(
-			lowlevelPackage, optimize, extractGuards, transitionMerging)
+			lowlevelPackage, optimize, transitionMerging)
 		val xStsEntry = lowlevelToXSTSTransformer.execute
 		lowlevelPackage.components -= lowlevelStatechart // So that next time the matches do not return elements from this statechart
 		val xSts = xStsEntry.key

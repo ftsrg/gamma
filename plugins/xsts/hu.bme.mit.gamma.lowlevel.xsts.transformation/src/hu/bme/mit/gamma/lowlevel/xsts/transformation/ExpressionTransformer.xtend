@@ -107,9 +107,7 @@ class ExpressionTransformer {
 		val lowlevelEnumTypeDeclaration = lowlevelEnumLiteral.getContainerOfType(TypeDeclaration)
 		val xStsEnumTypeDeclaration = trace.getXStsTypeDeclaration(lowlevelEnumTypeDeclaration)
 		val xStsEnumTypeDefinition = xStsEnumTypeDeclaration.type as EnumerationTypeDefinition
-		return createEnumerationLiteralExpression => [
-			it.reference = xStsEnumTypeDefinition.literals.get(index)
-		]
+		return xStsEnumTypeDefinition.literals.get(index).createEnumerationLiteralExpression
 	}
 	
 	// Clonable expressions
