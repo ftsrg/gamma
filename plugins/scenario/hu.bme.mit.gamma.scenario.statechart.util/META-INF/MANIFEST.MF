@@ -8,3 +8,4 @@ Automatic-Module-Name: hu.bme.mit.gamma.scenario.statechart.util
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Require-Bundle: hu.bme.mit.gamma.statechart.model
 Export-Package: hu.bme.mit.gamma.scenario.statechart.util
+Import-Package: hu.bme.mit.gamma.scenario.model

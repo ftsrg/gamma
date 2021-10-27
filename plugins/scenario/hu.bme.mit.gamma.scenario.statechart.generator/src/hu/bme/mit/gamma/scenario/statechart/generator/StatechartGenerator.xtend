@@ -106,6 +106,7 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 	var coldViolationExisits = true
 	val StatechartGenerationMode generationMode
 	val replacedStateWithValue = new HashMap<StateNode,StateNode>()
+	val variableMap = <String,VariableDeclaration>newHashMap
 
 	new(ScenarioDefinition scenario, Component component, StatechartGenerationMode mode) {
 		this.component = component
@@ -158,11 +159,11 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 
 		for (t : statechart.transitions) {
 			if (t.getTargetState == coldViolation) {
-				t.effects.add(setIntVariable(0, 1))
+				t.effects.add(setIntVariable(variableMap.getOrCreate(scenarioStatechartUtil.result), 1))
 			} else if (t.targetState == hotViolation) {
-				t.effects.add(setIntVariable(0, 0))
+				t.effects.add(setIntVariable(variableMap.getOrCreate(scenarioStatechartUtil.result), 0))
 			} else if (t.targetState == lastState) {
-				t.effects.add(setIntVariable(0, 2))
+				t.effects.add(setIntVariable(variableMap.getOrCreate(scenarioStatechartUtil.result), 2))
 			}
 		}
 		
@@ -288,6 +289,7 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 	}
 
 	def dispatch Interaction process(LoopCombinedFragment loop) {
+		val loopDepth = scenarioStatechartUtil.getLoopDepth(loop)
 
 		var prevprev = previousState
 		for (i : loop.fragments.get(0).interactions) {
@@ -297,24 +299,10 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 			prevprev = replacedStateWithValue.remove(prevprev)
 		}
 		var choice = addChoiceState
-		/*if(StatechartModelDerivedFeatures.getIncomingTransitions(previousState).size()>1){
-			val merge = createMergeState
-			merge.name = "merge"+stateCount++
-			for (t : StatechartModelDerivedFeatures.getIncomingTransitions(previousState)) {
-				t.targetState = merge
-			}
-			val mergeTransition = createTransition
-			mergeTransition.sourceState = merge
-			mergeTransition.targetState = choice
-			statechart.transitions += mergeTransition
-			statechart.regions.get(0).stateNodes += merge
-		} 
-		else {*/
-			for (t : StatechartModelDerivedFeatures.getIncomingTransitions(previousState)) {
-				t.targetState = choice
-			}
-		//}
-		
+		for (t : StatechartModelDerivedFeatures.getIncomingTransitions(previousState)) {
+			t.targetState = choice
+		}
+
 		replacedStateWithValue.put(previousState,choice)
 		statechart.regions.get(0).stateNodes.remove(previousState)
 		statechart.regions.get(0).stateNodes.add(choice)
@@ -330,19 +318,20 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 		statechart.transitions.add(t1)
 		statechart.transitions.add(t2)
 
+		val variableForDepth = variableMap.getOrCreate(scenarioStatechartUtil.getLoopvariableNameForDepth(loopDepth))
 		val evaluator = ExpressionEvaluator.INSTANCE;
-		t1.guard = getMinCheck(2, evaluator.evaluateInteger(loop.minimum))
+		t1.guard = getMinCheck(variableForDepth, evaluator.evaluateInteger(loop.minimum))
 		var maxCheck = createLessExpression
 		var ref1 = createDirectReferenceExpression
-		ref1.declaration = statechart.variableDeclarations.get(2)
+		ref1.declaration = variableForDepth
 		maxCheck.leftOperand = ref1
 		var max = createIntegerLiteralExpression
 		max.value = BigInteger.valueOf(evaluator.evaluateInteger(loop.maximum))
 		maxCheck.rightOperand = max
 		t2.guard = maxCheck
 
-		t2.effects += incrementVar(2)
-		t1.effects += setIntVariable(2, 1)
+		t2.effects += incrementVar(variableForDepth)
+		t1.effects += setIntVariable(variableForDepth, 1)
 
 		return null;
 
@@ -437,18 +426,19 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 			handleDelays(set)
 			setupForwardTransition(set, first, true, isNegated, forwardTransition)
 			forwardTransition.priority = BigInteger.valueOf(3)
+			val iteratingVariable = variableMap.getOrCreate(scenarioStatechartUtil.iteratingVariable)
 			
 			if (generationMode != StatechartGenerationMode.GENERATE_ONLY_FORWARD){
-				forwardTransition.guard = getGuard(1, allowedGlobalWaitMin, allowedGlobalWaitMax)
-				forwardTransition.effects.add(setIntVariable(1, 0))				
+				forwardTransition.guard = getGuard(iteratingVariable, allowedGlobalWaitMin, allowedGlobalWaitMax)
+				forwardTransition.effects.add(setIntVariable(iteratingVariable, 0))				
 			}
 
 
 			t3.sourceState = tmpChoice
 			t3.targetState = previousState
-			t3.effects.add(incrementVar(1))
+			t3.effects.add(incrementVar(iteratingVariable))
 			t3.priority = BigInteger.valueOf(2)
-			t3.guard = getMaxCheck(1, allowedGlobalWaitMax)
+			t3.guard = getMaxCheck(iteratingVariable, allowedGlobalWaitMax)
 
 			var mode = -1
 			if (isAllNeg(set) || isNegated) {
@@ -474,7 +464,7 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 				forwardTransition.guard = null
 				var maxCheck = createLessExpression
 				var ref1 = createDirectReferenceExpression
-				ref1.declaration = statechart.variableDeclarations.get(1)
+				ref1.declaration = variableMap.getOrCreate(scenarioStatechartUtil.iteratingVariable)
 				maxCheck.leftOperand = ref1
 				var max = createIntegerLiteralExpression
 				max.value = BigInteger.valueOf(allowedGlobalWaitNegMax)
@@ -732,13 +722,13 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 		return true
 	}
 
-	protected def AssignmentStatement incrementVar(int n) {
+	protected def AssignmentStatement incrementVar(VariableDeclaration variable) {
 		var assign = createAssignmentStatement
 		var refe = createDirectReferenceExpression
-		refe.declaration = statechart.variableDeclarations.get(n)
+		refe.declaration = variable
 		var addition = createAddExpression
 		var ref3 = createDirectReferenceExpression
-		ref3.declaration = statechart.variableDeclarations.get(n)
+		ref3.declaration = variable
 		addition.operands.add(ref3)
 		var intLiteral = createIntegerLiteralExpression
 		intLiteral.value = BigInteger.valueOf(1)
@@ -747,12 +737,25 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 		assign.lhs = refe
 		return assign
 	}
+	
+	def VariableDeclaration getOrCreate(HashMap<String, VariableDeclaration> map, String string) {
+		val result = map.get(string)
+		if(result !== null){
+			return result
+		} 
+		else {
+			val newVariable = createIntegerVariable(string)
+			variableMap.put(string,newVariable)
+			statechart.variableDeclarations+=newVariable
+			return newVariable
+		}
+	}
 
-	protected def setIntVariable(int number, int Value) {
+	protected def setIntVariable(VariableDeclaration variable, int Value) {
 		var nullVariableValue = createAssignmentStatement
 		var lhs = createDirectReferenceExpression
 		var rhs = createIntegerLiteralExpression
-		lhs.declaration = statechart.variableDeclarations.get(number)
+		lhs.declaration = variable
 		rhs.value = BigInteger.valueOf(Value)
 		nullVariableValue.lhs = lhs
 		nullVariableValue.rhs = rhs
@@ -787,10 +790,10 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 		return InteractionDirection.RECEIVE
 	}
 
-	def protected Expression getMaxCheck(int variableNumber, int maxV) {
+	def protected Expression getMaxCheck(VariableDeclaration variable, int maxV) {
 		var maxCheck = createLessEqualExpression
 		var ref1 = createDirectReferenceExpression
-		ref1.declaration = statechart.variableDeclarations.get(variableNumber)
+		ref1.declaration = variable
 		maxCheck.leftOperand = ref1
 		var max = createIntegerLiteralExpression
 		max.value = BigInteger.valueOf(maxV)
@@ -798,10 +801,10 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 		return maxCheck
 	}
 
-	def protected Expression getMinCheck(int variableNumber, int minV) {
+	def protected Expression getMinCheck(VariableDeclaration variable, int minV) {
 		var minCheck = createGreaterEqualExpression
 		var ref2 = createDirectReferenceExpression
-		ref2.declaration = statechart.variableDeclarations.get(variableNumber)
+		ref2.declaration = variable
 		minCheck.leftOperand = ref2
 		var min = createIntegerLiteralExpression
 		min.value = BigInteger.valueOf(minV)
@@ -809,10 +812,10 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 		return minCheck
 	}
 
-	def protected Expression getGuard(int variableNumber, int minV, int maxV) {
+	def protected Expression getGuard(VariableDeclaration variable, int minV, int maxV) {
 		var and = createAndExpression
-		and.operands.add(getMinCheck(variableNumber, minV))
-		and.operands.add(getMaxCheck(variableNumber, maxV))
+		and.operands.add(getMinCheck(variable, minV))
+		and.operands.add(getMaxCheck(variable, maxV))
 		return and
 	}
 
@@ -1023,10 +1026,16 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 		var region = createRegion
 		region.name = "region"
 		statechart.regions.add(region)
-
-		statechart.variableDeclarations.add(createIntegerVariable("result"))
-		statechart.variableDeclarations.add(createIntegerVariable("IteratingVariable"))
-		statechart.variableDeclarations.add(createIntegerVariable("LoopIteratingVariable"))
+		
+//		variableMap.put(scenarioStatechartUtil.result,createIntegerVariable(scenarioStatechartUtil.result))
+//		variableMap.put(scenarioStatechartUtil.iteratingVariable,createIntegerVariable(scenarioStatechartUtil.iteratingVariable))
+//		variableMap.put(scenarioStatechartUtil.getLoopvariableNameForDepth(0),createIntegerVariable(scenarioStatechartUtil.getLoopvariableNameForDepth(0)))
+//		
+//
+//		statechart.variableDeclarations.add(variableMap.get(scenarioStatechartUtil.result))
+//		statechart.variableDeclarations.add(variableMap.get(scenarioStatechartUtil.iteratingVariable))
+//		statechart.variableDeclarations.add(variableMap.get(scenarioStatechartUtil.getLoopvariableNameForDepth(0)))
+		
 
 		var initial = createInitialState
 		initial.name = scenarioStatechartUtil.initial
@@ -1053,8 +1062,8 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 			var t = createTransition
 			t.sourceState = initial
 			t.targetState = s
-			t.effects += setIntVariable(0, 1)
-			t.effects += setIntVariable(2, 1)
+			t.effects += setIntVariable(variableMap.getOrCreate(scenarioStatechartUtil.iteratingVariable), 1)
+			t.effects += setIntVariable(variableMap.getOrCreate(scenarioStatechartUtil.getLoopvariableNameForDepth(0)), 1)
 			statechart.transitions.add(t)
 		} 
 		else {
@@ -1074,7 +1083,7 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 					t2.effects += a
 				}
 			}
-			t2.effects += setIntVariable(2, 1)
+			t2.effects += setIntVariable(variableMap.getOrCreate(scenarioStatechartUtil.getLoopvariableNameForDepth(0)), 1)
 			statechart.transitions.add(t2)
 			
 			var t3 = createTransition
@@ -1083,10 +1092,6 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 			t3.guard = createElseExpression
 			statechart.transitions.add(t3)
 		}
-
-		
-
-		
 	}
 
 	def protected addPorts(Component c) {
