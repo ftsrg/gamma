@@ -26,9 +26,9 @@ ScenarioDefinition returns ScenarioModel::ScenarioDefinition:
 	chart=Chart;
 	
 InitialBlock returns ScenarioModel::InitialBlock: 
-	'initial' 'outputs' '{'
-	interactiondefinition+=AbstractInteractionDefinition
-	'}'
+	'initial' 'outputs' '['
+	modalInteractions+=ModalInteraction*
+	']'
 ;
 
 

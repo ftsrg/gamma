@@ -39,10 +39,11 @@ class ExecutionTraceBackAnnotator {
 	val TraceUtil traceUtil = TraceUtil.INSTANCE
 	val ScenarioStatechartUtil scenarioStatechartUtil = ScenarioStatechartUtil.INSTANCE
 
-	List<Port> ports = null;
-	List<ExecutionTrace> traces = null;
-	List<ExecutionTrace> result = null;
-	boolean removeNotneededInteractions = true;
+	List<Port> ports = null
+	List<ExecutionTrace> traces = null
+	List<ExecutionTrace> result = null
+	boolean removeNotneededInteractions = true
+	
 
 	boolean createOriginalActsAndAssertsBasedOnActs
 
@@ -146,6 +147,17 @@ class ExecutionTraceBackAnnotator {
 					actions += action
 				}
 			}
+			if(step == trace.steps.get(0)){
+				for(raise : step.asserts.filter(RaiseEventAct).filter[!scenarioStatechartUtil.isTurnedOut(it.port)]){
+					var asser = createRaiseEventAct
+					asser.port = getPort(raise.port.name)
+					asser.event = getEvent(asser.port, raise.event.name)
+					for (argument : raise.arguments) {
+						asser.arguments += argument.clone
+					}
+					asserts += asser
+				}
+			}
 			step.actions.clear
 			step.actions += actions
 			step.asserts.clear
@@ -173,13 +185,15 @@ class ExecutionTraceBackAnnotator {
 
 	def removeNotNeededInteractions(ExecutionTrace trace) {
 		for (step : trace.steps) {
-			var notNeeded = newArrayList
-			for (act : step.actions) {
-				if (!isInteractionPairPresent(step, act)) {
-					notNeeded += act
+			if(!(step == trace.steps.get(0) && !(step.asserts.filter(RaiseEventAct).filter[scenarioStatechartUtil.isTurnedOut(it.port)].empty))){
+				var notNeeded = newArrayList
+				for (act : step.actions) {
+					if (!isInteractionPairPresent(step, act)) {
+						notNeeded += act
+					}
 				}
+				step.actions -= notNeeded
 			}
-			step.actions -= notNeeded
 		}
 	}
 

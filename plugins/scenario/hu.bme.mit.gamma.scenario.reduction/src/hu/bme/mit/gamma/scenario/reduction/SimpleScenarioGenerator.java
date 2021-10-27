@@ -20,10 +20,12 @@ import hu.bme.mit.gamma.expression.util.ExpressionEvaluator;
 import hu.bme.mit.gamma.scenario.model.AlternativeCombinedFragment;
 import hu.bme.mit.gamma.scenario.model.Annotation;
 import hu.bme.mit.gamma.scenario.model.Delay;
+import hu.bme.mit.gamma.scenario.model.InitialBlock;
 import hu.bme.mit.gamma.scenario.model.Interaction;
 import hu.bme.mit.gamma.scenario.model.InteractionDefinition;
 import hu.bme.mit.gamma.scenario.model.InteractionFragment;
 import hu.bme.mit.gamma.scenario.model.LoopCombinedFragment;
+import hu.bme.mit.gamma.scenario.model.ModalInteraction;
 import hu.bme.mit.gamma.scenario.model.ModalInteractionSet;
 import hu.bme.mit.gamma.scenario.model.NegPermissiveAnnotation;
 import hu.bme.mit.gamma.scenario.model.NegStrictAnnotation;
@@ -65,6 +67,7 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 		simple.setName(base.getName());
 		simple.setChart(factory.createChart());
 		simple.getChart().setFragment(factory.createInteractionFragment());
+		simple.setInitialblock(handleInitBlockCopy());
 		for (Annotation a : base.getAnnotation()) {
 			simple.getAnnotation().add((Annotation) this.doSwitch(a));
 		}
@@ -73,6 +76,14 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 			simple.getChart().getFragment().getInteractions().add((Interaction) this.doSwitch(i));
 		}
 		return simple;
+	}
+
+	private InitialBlock handleInitBlockCopy() {
+		InitialBlock initBloc = factory.createInitialBlock();
+		for(ModalInteraction mi : base.getInitialblock().getModalInteractions()) {
+			initBloc.getModalInteractions().add((ModalInteraction) doSwitch(mi));
+		}
+		return initBloc;
 	}
 
 	@Override
@@ -263,7 +274,7 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 				if (i instanceof Interaction)
 					iff.getInteractions().add((Interaction) i);
 				else
-					System.out.println(i + ": nem interaction");
+					System.out.println(i + ": not interaction");
 			}
 			alt.getFragments().add(iff);
 		}

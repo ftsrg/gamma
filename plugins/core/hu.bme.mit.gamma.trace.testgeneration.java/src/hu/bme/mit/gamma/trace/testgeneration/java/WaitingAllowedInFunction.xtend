@@ -18,9 +18,41 @@ class WaitingAllowedInFunction extends AbstractAllowedWaitingHandler {
 	
 
 	override String generateAssertBlock(List<Assert> asserts) '''
-		String[] ports = new String[]{«FOR _assert : asserts SEPARATOR ","»«testGeneratorutil.getPortOfAssert(_assert as RaiseEventAct)»«ENDFOR»};
-		String[] events = new String[]{«FOR _assert : asserts SEPARATOR ","»«testGeneratorutil.getEventOfAssert(_assert as RaiseEventAct)»«ENDFOR»};
-		Object[][] objects = new Object[][]{«FOR _assert : asserts SEPARATOR ","»«testGeneratorutil.getParamsOfAssert(_assert as RaiseEventAct)»«ENDFOR»};
-		checkGeneralAsserts(ports,events,objects);
+		checkGeneralAsserts(new String[] {«FOR _assert : asserts SEPARATOR ", "»«testGeneratorutil.getPortOfAssert(_assert as RaiseEventAct)»«ENDFOR»},
+							 new String[] {«FOR _assert : asserts SEPARATOR ", "»«testGeneratorutil.getEventOfAssert(_assert as RaiseEventAct)»«ENDFOR»},
+							  new Object[][] {«FOR _assert : asserts SEPARATOR ", "»«testGeneratorutil.getParamsOfAssert(_assert as RaiseEventAct)»«ENDFOR»});
 	'''
+	
+
+	
+	def generateWaitingHandlerFunction(String TEST_INSTANCE_NAME) '''
+		private void checkGeneralAsserts(String[] ports, String[] events, Object[][] objects) {
+			boolean done = false;
+			boolean wasPresent = true;
+			int idx=0;
+			 
+			while(!done) {
+				wasPresent = true;
+				try {
+					for(int i = 0; i<ports.length;i++) {
+						assertTrue(«TEST_INSTANCE_NAME».isRaisedEvent(ports[i], events[i], objects[i]));
+					}
+					} catch (AssertionError error) {
+					wasPresent= false;
+					if(idx>1) {
+						throw(error);
+					}
+				}
+				if(wasPresent && idx>=0) {
+					done=true;
+				}
+				else
+				{
+					«TEST_INSTANCE_NAME».schedule(null);
+				}
+				idx++;
+			}
+		}
+	'''
+	
 }

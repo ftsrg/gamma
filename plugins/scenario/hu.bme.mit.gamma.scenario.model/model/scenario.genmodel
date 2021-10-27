@@ -78,7 +78,7 @@
     <genClasses ecoreClass="scenario.ecore#//NegStrictAnnotation"/>
     <genClasses ecoreClass="scenario.ecore#//NegPermissiveAnnotation"/>
     <genClasses ecoreClass="scenario.ecore#//InitialBlock">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference scenario.ecore#//InitialBlock/interactiondefinition"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference scenario.ecore#//InitialBlock/modalInteractions"/>
     </genClasses>
   </genPackages>
 </genmodel:GenModel>

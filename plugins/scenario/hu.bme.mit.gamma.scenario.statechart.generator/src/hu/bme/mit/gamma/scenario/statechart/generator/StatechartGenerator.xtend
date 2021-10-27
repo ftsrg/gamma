@@ -120,7 +120,6 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 	def StatechartDefinition execute() {
 		statechart = createStatechartDefinition
 		initializeStateChart(scenario.name)
-		addPorts(component)
 		for (a : scenario.annotation) {
 			if (a instanceof WaitAnnotation) {
 				allowedGlobalWaitMax = a.maximum.intValue
@@ -705,8 +704,9 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 		for (t : triggers) {
 			signalCount++
 
-			if (runningbin.leftOperand === null)
+			if (runningbin.leftOperand === null) {
 				runningbin.leftOperand = t
+			}
 			else if (signalCount == triggers.size) {
 				runningbin.rightOperand = t
 			} else {
@@ -1012,6 +1012,7 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 	}
 
 	def protected initializeStateChart(String scenarioName) {
+		addPorts(component)
 		statechart.transitionPriority = TransitionPriority.VALUE_BASED
 		statechart.name = scenarioName
 		var region = createRegion
@@ -1030,14 +1031,7 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 		s.name = "firstState"
 		region.stateNodes.add(s)
 		previousState = s
-
-		var t = createTransition
-		t.sourceState = initial
-		t.targetState = s
-		t.effects += setIntVariable(0, 1)
-		t.effects += setIntVariable(2, 1)
-		statechart.transitions.add(t)
-
+		
 		var tmp = createNewState(scenarioStatechartUtil.hotViolation)
 		region.stateNodes.add(tmp)
 		hotViolation = tmp;
@@ -1048,6 +1042,46 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 		} else {
 			coldViolation = s
 		}
+		
+		val initBlock = scenario.initialblock
+		if(initBlock === null){
+			var t = createTransition
+			t.sourceState = initial
+			t.targetState = s
+			t.effects += setIntVariable(0, 1)
+			t.effects += setIntVariable(2, 1)
+			statechart.transitions.add(t)
+		} 
+		else {
+			val initChoice = addChoiceState
+			region.stateNodes += initChoice
+			var t1 = createTransition
+			t1.sourceState = initial
+			t1.targetState = initChoice
+			statechart.transitions.add(t1)
+			
+			var t2 = createTransition
+			t2.sourceState = initChoice
+			t2.targetState = s
+			for(interaction : initBlock.modalInteractions){
+				var a = getRaiseEventAction(interaction, false)
+				if (a !== null){
+					t2.effects += a
+				}
+			}
+			t2.effects += setIntVariable(2, 1)
+			statechart.transitions.add(t2)
+			
+			var t3 = createTransition
+			t3.sourceState = initChoice
+			t3.targetState = (initBlock.modalInteractions.get(0).modality == ModalityType.HOT)?hotViolation:coldViolation
+			t3.guard = createElseExpression
+			statechart.transitions.add(t3)
+		}
+
+		
+
+		
 	}
 
 	def protected addPorts(Component c) {

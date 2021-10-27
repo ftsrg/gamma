@@ -30,6 +30,7 @@ import hu.bme.mit.gamma.scenario.model.NegatedModalInteraction;
 import hu.bme.mit.gamma.scenario.model.ParallelCombinedFragment;
 import hu.bme.mit.gamma.scenario.model.PermissiveAnnotation;
 import hu.bme.mit.gamma.scenario.model.Reset;
+import hu.bme.mit.gamma.scenario.model.InitialBlock;
 import hu.bme.mit.gamma.scenario.model.ScenarioDeclaration;
 import hu.bme.mit.gamma.scenario.model.ScenarioDefinition;
 import hu.bme.mit.gamma.scenario.model.ScenarioModelPackage;
@@ -150,8 +151,9 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 			} else {
 				EObject eContainer = interaction.eContainer();
 				if (!(eContainer instanceof ModalInteractionSet)
-						&& !(eContainer instanceof NegatedModalInteraction
-								&& eContainer.eContainer() instanceof ModalInteractionSet)) {
+						&& !(eContainer instanceof InitialBlock)
+							&& !(eContainer instanceof NegatedModalInteraction
+									&& eContainer.eContainer() instanceof ModalInteractionSet)) {
 					int idx = 0;
 					if (eContainer instanceof InteractionFragment) {
 						InteractionFragment set = (InteractionFragment) eContainer;
