@@ -12,15 +12,17 @@ import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import java.util.Collection
-import uppaal.declarations.Function
+import uppaal.NTA
 import uppaal.declarations.VariableContainer
 import uppaal.declarations.VariableDeclaration
 import uppaal.statements.Statement
+import uppaal.templates.Location
 
 import static extension java.lang.Math.abs
 
 class FunctionActionTransformer {
 	
+	protected final NTA nta
 	protected final extension NtaBuilder ntaBuilder
 	
 	protected final Collection<VariableDeclaration> localVariables = newHashSet
@@ -34,6 +36,7 @@ class FunctionActionTransformer {
 	
 	new(NtaBuilder ntaBuilder, Traceability traceability) {
 		this.ntaBuilder = ntaBuilder
+		this.nta = ntaBuilder.nta
 		this.variableTransformer = new VariableTransformer(ntaBuilder, traceability)
 		this.expressionTransformer = new ExpressionTransformer(traceability)
 		this.assignmentExpressionCreator = new AssignmentExpressionCreator(ntaBuilder)
@@ -41,7 +44,7 @@ class FunctionActionTransformer {
 	
 	// Wrap into a function
 	
-	def Function transformIntoFunction(Action action) {
+	def void transformIntoFunction(Action action, Location source, Location finalTarget) {
 		localVariables.clear
 		
 		val uppaalAction = action.transformAction // localVariables are filled now
@@ -50,7 +53,12 @@ class FunctionActionTransformer {
 		uppaalBlock.declarations = localVariables.createLocalDeclarations
 		val name = '''action_«action.hashCode.abs»'''
 		
-		return name.createVoidFunction(uppaalBlock)
+		val actionFunction = name.createVoidFunction(uppaalBlock)
+		
+		nta.globalDeclarations.declaration += actionFunction.createFunctionDeclaration
+		
+		val lastEdge = source.createEdge(finalTarget)
+		lastEdge.update += actionFunction.createFunctionCallExpression
 	} 
 	
 	// Transform action dispatch
