@@ -16,5 +16,6 @@ abstract class AbstractVerification {
 	protected final Logger logger = Logger.getLogger("GammaLogger")
 	
 	abstract def Result execute(File modelFile, File queryFile)
+	abstract def String[] getParameters()
 
 }

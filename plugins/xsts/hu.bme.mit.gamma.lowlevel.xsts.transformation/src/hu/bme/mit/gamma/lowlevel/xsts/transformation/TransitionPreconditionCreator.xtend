@@ -34,11 +34,19 @@ class TransitionPreconditionCreator {
 	// Auxiliary object
 	protected final extension StateAssumptionCreator stateAssumptionCreator
 	protected final extension ExpressionTransformer expressionTransformer
-	// Trace
+	
 	protected final Trace trace
+	protected final boolean addConflictGuard
+	protected final boolean addPriorityGuard
 	
 	new(Trace trace) {
+		this(trace, false, false)
+	}
+	
+	new(Trace trace, boolean addConflictGuard, boolean addPriorityGuard) {
 		this.trace = trace
+		this.addConflictGuard = addConflictGuard
+		this.addPriorityGuard = addPriorityGuard
 		this.stateAssumptionCreator = new StateAssumptionCreator(this.trace)
 		this.expressionTransformer = new ExpressionTransformer(this.trace)
 	}
@@ -63,10 +71,13 @@ class TransitionPreconditionCreator {
 			lowlevelTransition.ancestorTransitions 
 			
 		}
-		val xStsConflictExpression = lowlevelPotentialConflictingTransitions.createXStsTransitionConflictExclusion
 		
 		val lowlevelHigherPriorityTransitions = lowlevelTransition.higherPriorityTransitions
-		val xStsPriorityExpression = lowlevelHigherPriorityTransitions.createXStsTransitionConflictExclusion
+		val xStsPriorityExpression = (addPriorityGuard) ?
+				lowlevelHigherPriorityTransitions.createXStsTransitionConflictExclusion : null
+		
+		val xStsConflictExpression = (addConflictGuard) ?
+				lowlevelPotentialConflictingTransitions.createXStsTransitionConflictExclusion : null
 		
 		val xStsEnablednessExpression = lowlevelTransition.isEnabledExpression
 		// Caching: only the activeness must be cached if we want the guard evaluation to be flexible
@@ -75,8 +86,12 @@ class TransitionPreconditionCreator {
 		
 		val xStsPreconditionExpression = createAndExpression => [
 			it.operands += xStsEnablednessExpression // Source state enabledness
-			it.operands += xStsPriorityExpression // Priority resolution
-			it.operands += xStsConflictExpression // Potential conflict resolution
+			if (addPriorityGuard) {
+				it.operands += xStsPriorityExpression // Priority resolution
+			}
+			if (addConflictGuard) {
+				it.operands += xStsConflictExpression // Potential conflict resolution
+			}
 		]
 		
 		val xStsOperands = xStsPreconditionExpression.operands
@@ -93,7 +108,7 @@ class TransitionPreconditionCreator {
 	 */
 	def createXStsTransitionConflictExclusion(Collection<Transition> lowlevelTransitions) {
 		return lowlevelTransitions.map[it.isEnabledExpression]
-			.connectViaNegations
+				.connectViaNegations
 	}
 	
 	// Dispatch isActive (source elements are active and guard is true) expression
@@ -152,12 +167,7 @@ class TransitionPreconditionCreator {
 	}
 	
 	def dispatch createSingleXStsTransitionPrecondition(MergeState lowlevelMergeState) {
-		val lowlevelIncomingTransitions = lowlevelMergeState.incomingTransitions
-		val orExpression = createOrExpression
-		for (lowlevelIncomingTransition : lowlevelIncomingTransitions) {
-			orExpression.operands += lowlevelIncomingTransition.createXStsTransitionPrecondition
-		}
-		return orExpression
+		throw new IllegalArgumentException("Merge states are not supported: " + lowlevelMergeState)
 	}
 	
 }

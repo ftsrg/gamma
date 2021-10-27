@@ -15,10 +15,10 @@ import hu.bme.mit.gamma.statechart.lowlevel.model.Region
 import hu.bme.mit.gamma.statechart.lowlevel.model.State
 import hu.bme.mit.gamma.statechart.lowlevel.model.StateNode
 import hu.bme.mit.gamma.xsts.model.Action
+import hu.bme.mit.gamma.xsts.model.IfAction
 import hu.bme.mit.gamma.xsts.model.ParallelAction
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
-import java.util.List
 
 import static extension hu.bme.mit.gamma.statechart.lowlevel.derivedfeatures.LowlevelStatechartModelDerivedFeatures.*
 
@@ -100,11 +100,11 @@ class EntryActionRetriever {
 	// Subregion handling
 	
 	protected def createRecursiveXStsRegionAndSubregionEntryActions(Region lowlevelRegion) {
-		return createNonDeterministicAction => [
-			for (lowlevelSubstate : lowlevelRegion.stateNodes.filter(State)) {
-				it.actions += lowlevelSubstate.createRecursiveXStsStateAndSubstateEntryActions
-			}
-		]
+		val xStsEntryActions = newArrayList
+		for (lowlevelSubstate : lowlevelRegion.states) {
+			xStsEntryActions += lowlevelSubstate.createRecursiveXStsStateAndSubstateEntryActions
+		}
+		return xStsEntryActions.weave
 	}
 	
 	protected def createRecursiveXStsOrthogonalRegionEntryActions(Region lowlevelRegion) {
@@ -133,30 +133,27 @@ class EntryActionRetriever {
 			it.actions += XStsStateAndSubstateEntryActions
 			// Orthogonal region actions
 			for (lowlevelOrthogonalRegion : lowlevelParentRegion.orthogonalRegions) {
-				for (lowlevelSubstate : lowlevelOrthogonalRegion.stateNodes.filter(State)) {
+				for (lowlevelSubstate : lowlevelOrthogonalRegion.states) {
 					it.actions += lowlevelSubstate.createRecursiveXStsStateAndSubstateEntryActions
 				}
 			}
 		]
 	}
 	
-	protected def Action createRecursiveXStsStateAndSubstateEntryActions(State lowlevelState) {
+	protected def IfAction createRecursiveXStsStateAndSubstateEntryActions(State lowlevelState) {
 		val xStsStateAssumption = lowlevelState.createSingleXStsStateAssumption
 		// Action taken only if the state is "active" (assume action)
 		val xStsStateEntryActions = lowlevelState.entryAction.transformAction
-		val List<Action> xStsSubstateEntryActions = newLinkedList
+		val xStsSubstateEntryActions = createParallelAction
 		// Recursion for the entry action of contained states
 		for (lowlevelSubregion : lowlevelState.regions) {
-			xStsSubstateEntryActions += createParallelAction => [
-				it.actions += createNonDeterministicAction => [
-					for (lowlevelSubstate : lowlevelSubregion.stateNodes.filter(State)) {
-						it.actions += lowlevelSubstate.createRecursiveXStsStateAndSubstateEntryActions
-					}
-				]
-			]
+			val xStsEntryActions = newArrayList
+			for (lowlevelSubstate : lowlevelSubregion.states) {
+				xStsEntryActions += lowlevelSubstate.createRecursiveXStsStateAndSubstateEntryActions
+			}
+			xStsSubstateEntryActions.actions += xStsEntryActions.weave
 		}
-		// This is wrapped in a NonDeterministicAction, therefore it is createIfActionBranch and not createIfAction
-		return xStsStateAssumption.createIfActionBranch(
+		return xStsStateAssumption.createIfAction(
 			createSequentialAction => [
 				it.actions += xStsStateEntryActions
 				// Order is very important
@@ -164,13 +161,5 @@ class EntryActionRetriever {
 			]
 		)
 	}
-	
-	protected def Action createSingleXStsAssumeStateEntryActions(State lowlevelState) {
-		val xStsStateExitActions = lowlevelState.entryAction.transformAction
-		val xStsStateAssumption = lowlevelState.createSingleXStsStateAssumption
-		// Action taken only if the state is "active" (assume action)
-		return xStsStateAssumption.createIfActionBranch(xStsStateExitActions)
-	}
-	
 	
 }

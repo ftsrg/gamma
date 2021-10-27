@@ -288,6 +288,7 @@ Verification returns Verification:
 			'base-package' ':' packageName+=STRING  | // Java base package
 			'test-language' ':' programmingLanguages+=ProgrammingLanguage |
 			'optimize' ':' ('false' | optimize?='true') |
+			'back-annotate-to-original' ':' ('false' | backAnnotateToOriginal?='true') |
 			'test-folder' ':' testFolder+=STRING
 		)*
 	'}'

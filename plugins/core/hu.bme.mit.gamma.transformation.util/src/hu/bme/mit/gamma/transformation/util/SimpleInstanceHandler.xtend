@@ -178,7 +178,7 @@ class SimpleInstanceHandler {
 	
 	def getNewPort(SynchronousComponentInstance newInstance, Port originalPort) {
 		val newType = newInstance.type
-		for (port : newType.ports) {
+		for (port : newType.allPorts) {
 			if (port.nameEquals(originalPort)) {
 				return port // Port names must be unique
 			}
@@ -357,7 +357,7 @@ class SimpleInstanceHandler {
 	}
 	
 	def getOriginalPort(Component originalComponent, Port newPort) {
-		for (port : originalComponent.ports) {
+		for (port : originalComponent.allPorts) {
 			if (port.nameEquals(newPort)) {
 				return port // Port names must be unique
 			}

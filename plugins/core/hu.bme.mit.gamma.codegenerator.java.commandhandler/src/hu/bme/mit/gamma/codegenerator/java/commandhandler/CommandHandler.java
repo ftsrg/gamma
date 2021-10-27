@@ -71,7 +71,7 @@ public class CommandHandler extends AbstractHandler {
 						obtainTraceURIs(file.getProject(), simpleStatechartFileNames, uriList);
 						if (simpleStatechartFileNames.size() != uriList.size()) {
 							logger.log(Level.INFO, "Some trace model is not found: " +
-									simpleStatechartFileNames + System.lineSeparator() + uriList + System.lineSeparator() +
+								simpleStatechartFileNames + System.lineSeparator() + uriList + System.lineSeparator() +
 									"Wrapper is not generated for the Gamma statecharts without trace.");
 						}
 						for (URI uri : uriList) {

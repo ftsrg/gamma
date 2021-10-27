@@ -1,11 +1,10 @@
 package hu.bme.mit.gamma.trace.testgeneration.java.util
 
 import hu.bme.mit.gamma.expression.model.Declaration
-import hu.bme.mit.gamma.statechart.composite.AbstractAsynchronousCompositeComponent
-import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.composite.AsynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponent
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.interface_.Component
@@ -48,6 +47,18 @@ class TestGeneratorUtil {
 		checkArgument(this.resourceSet !== null)
 		this.engine = ViatraQueryEngine.on(new EMFScope(this.resourceSet))
 	}
+	
+	def CharSequence getFullContainmentHierarchy(ComponentInstanceReference instanceReference) {
+		if (component.unfolded) {
+			return instanceReference.lastInstance.fullContainmentHierarchy
+		}
+		// Original component instance references
+		return '''«FOR instance : instanceReference.componentInstanceChain SEPARATOR '.'»getComponent("«instance.name»")«ENDFOR»'''
+	}
+	
+	def CharSequence getFullContainmentHierarchy(ComponentInstance actual) {
+		return actual.getFullContainmentHierarchy(null)
+	}
 
 	def CharSequence getFullContainmentHierarchy(ComponentInstance actual, ComponentInstance child) {
 		if (actual === null) {
@@ -82,7 +93,7 @@ class TestGeneratorUtil {
 	}
 
 	def getAsyncParent(SynchronousComponentInstance instance) {
-		checkArgument(instance !== null, "The instance is a null value.")
+		checkArgument(instance !== null, "The instance is a null value")
 		if (instance.isTopInstance) {
 			// Needed due to resource set issues: component can be referenced from other composite systems
 			return null
@@ -127,7 +138,7 @@ class TestGeneratorUtil {
 			return localName
 		} catch (StringIndexOutOfBoundsException e) {
 			throw new IllegalArgumentException("Instance " + parentName +
-				" has a child with the same name. This makes test generation impossible.")
+				" has a child with the same name, which makes test generation impossible")
 		}
 	}
 
@@ -177,29 +188,8 @@ class TestGeneratorUtil {
 		return true
 	}
 	
-	/**
-     * Returns whether there are timing specifications in any of the statecharts.
-     */
-    def boolean needTimer(Component component) {
-    	if (component instanceof StatechartDefinition) {
-    		return component.timeoutDeclarations.size > 0
-    	}
-    	else if (component instanceof AbstractSynchronousCompositeComponent) {
-    		return component.components.map[it.type.needTimer].contains(true)
-    	}
-    	else if (component instanceof AsynchronousAdapter) {
-    		return component.wrappedComponent.type.needTimer
-    	}
-    	else if (component instanceof AbstractAsynchronousCompositeComponent) {
-    		return component.components.map[it.type.needTimer].contains(true)
-    	}
-    	else {
-    		throw new IllegalArgumentException("Not known component: " + component)
-    	}
-    }
-
 	def getParent(ComponentInstance instance) {
-		checkArgument(instance !== null, "The instance is a null value.")
+		checkArgument(instance !== null, "The instance is a null value")
 		if (instance.isTopInstance) {
 			// Needed due to resource set issues: component can be referenced from other composite systems
 			return null

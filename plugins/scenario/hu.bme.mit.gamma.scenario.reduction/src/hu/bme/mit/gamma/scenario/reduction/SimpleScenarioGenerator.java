@@ -79,6 +79,9 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 	}
 
 	private InitialBlock handleInitBlockCopy() {
+		if(base.getInitialblock()== null) {
+			return null;
+		}
 		InitialBlock initBloc = factory.createInitialBlock();
 		for(ModalInteraction mi : base.getInitialblock().getModalInteractions()) {
 			initBloc.getModalInteractions().add((ModalInteraction) doSwitch(mi));

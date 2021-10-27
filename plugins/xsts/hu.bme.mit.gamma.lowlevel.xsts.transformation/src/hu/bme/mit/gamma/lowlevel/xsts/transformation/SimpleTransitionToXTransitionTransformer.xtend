@@ -21,8 +21,8 @@ import static extension hu.bme.mit.gamma.statechart.lowlevel.derivedfeatures.Low
 
 class SimpleTransitionToXTransitionTransformer extends LowlevelTransitionToXTransitionTransformer {
 
-	new(ViatraQueryEngine engine, Trace trace, boolean extractGuards) {
-		super(engine, trace, extractGuards)
+	new(ViatraQueryEngine engine, Trace trace) {
+		super(engine, trace)
 	}
 	
 	/**

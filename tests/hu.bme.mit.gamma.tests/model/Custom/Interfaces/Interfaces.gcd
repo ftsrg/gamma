@@ -1,0 +1,5 @@
+package interfaces
+
+interface Execute {
+	out event exec
+}

@@ -1,0 +1,30 @@
+import "ComplexStatechart/BottomUpComplexStatechart.gcd"
+
+code {
+	component : BottomUp
+	language : java
+}
+
+analysis {
+	component : BottomUp
+	language : UPPAAL
+	language : Theta
+	transition-coverage
+}
+
+verification {
+	language : UPPAAL
+	file : "BottomUpComplexStatechart.xml"
+	query-file : "BottomUpComplexStatechart.q"
+	optimize : true
+	test-language : java
+	optimize : true
+}
+
+verification {
+	language : Theta
+	file : "BottomUpComplexStatechart.xsts"
+	query-file : "BottomUpComplexStatechart.prop"
+	test-language : java
+	optimize : true
+}

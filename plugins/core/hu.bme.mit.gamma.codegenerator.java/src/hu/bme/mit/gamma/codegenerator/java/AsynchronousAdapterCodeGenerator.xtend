@@ -317,7 +317,6 @@ class AsynchronousAdapterCodeGenerator {
 		import java.util.Collections;
 		import java.util.List;
 		
-		import lbmq.*; 
 		import «PACKAGE_NAME».*;
 
 		«FOR _package : component.containingPackage.allImports /* For type declarations */»

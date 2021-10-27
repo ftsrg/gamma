@@ -23,13 +23,11 @@ import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.ParallelAction
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
-import java.util.List
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 
 import static com.google.common.base.Preconditions.checkArgument
 
 import static extension hu.bme.mit.gamma.statechart.lowlevel.derivedfeatures.LowlevelStatechartModelDerivedFeatures.*
-import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
 
 class RegionActivator {
 	// Model factories
@@ -43,10 +41,10 @@ class RegionActivator {
 	protected final ViatraQueryEngine engine
 	protected final Trace trace
 		
-	new(ViatraQueryEngine engine, Trace trace, boolean extractGuards) {
+	new(ViatraQueryEngine engine, Trace trace) {
 		this.engine = engine
 		this.trace = trace
-		this.regionInitialStateLocator = new RegionInitialStateLocator(this.engine, this.trace, this, extractGuards)
+		this.regionInitialStateLocator = new RegionInitialStateLocator(this.engine, this.trace, this)
 		this.stateAssumptionCreator = new StateAssumptionCreator(this.trace)
 	}
 	
@@ -169,8 +167,8 @@ class RegionActivator {
 		val lowlevelRegion = lowlevelHistory.parentRegion
 		val xStsInitialStateSettingAction = lowlevelHistory.createSingleXStsInitialStateSettingAction
 		// Note: this action is executed only once for the shallow history node (later there will be history)
-		val xStsIfDeactivatedAction = createIfAction(lowlevelRegion.createSingleXStsDeactivatedStateAssumption,
-			xStsInitialStateSettingAction)	
+		val xStsIfDeactivatedAction = createIfAction(
+			lowlevelRegion.createSingleXStsDeactivatedStateAssumption, xStsInitialStateSettingAction)	
 		return createSequentialAction => [
 			it.actions += xStsIfDeactivatedAction
 			// The following action is executed every time the region is entered
@@ -203,14 +201,8 @@ class RegionActivator {
 		val lowlevelRegion = lowlevelState.parentRegion
 		val xStsParentRegionVariable = trace.getXStsVariable(lowlevelRegion)
 		val xStsEnumLiteral = trace.getXStsEnumLiteral(lowlevelState)
-		return createAssignmentAction => [
-			it.lhs = createDirectReferenceExpression => [
-				it.declaration = xStsParentRegionVariable
-			]
-			it.rhs = createEnumerationLiteralExpression => [
-				it.reference = xStsEnumLiteral
-			]
-		]		
+		return xStsParentRegionVariable.createAssignmentAction(
+				xStsEnumLiteral.createEnumerationLiteralExpression)
 	}
 	
 	/**
@@ -266,15 +258,12 @@ class RegionActivator {
 	}
 	
 	protected def createRecursiveXStsHistoryBasedSubstateActivatingAction(Region lowlevelRegion) {
-		val List<Action> xStsStateAndSubstateActivationActions = newLinkedList
-		for (lowlevelSubstate : lowlevelRegion.stateNodes.filter(State)) {
-			val xStsStateAndSubstateActivationAction = lowlevelSubstate.createRecursiveXStsStateAssumptionAndSubstateActivatingAction
-			if (!xStsStateAndSubstateActivationAction.isTrivialAssignment) {
-				xStsStateAndSubstateActivationActions += xStsStateAndSubstateActivationAction
-			}
+		val xStsStateAndSubstateActivationActions = newArrayList
+		for (lowlevelSubstate : lowlevelRegion.states) {
+			xStsStateAndSubstateActivationActions +=
+				lowlevelSubstate.createRecursiveXStsStateAssumptionAndSubstateActivatingAction
 		}
-		// No default branch for optimality purposes (one of the branches is always true)
-		return xStsStateAndSubstateActivationActions.createChoiceActionFromActions
+		return xStsStateAndSubstateActivationActions.weave
 	}
 	
 	/**
@@ -283,26 +272,18 @@ class RegionActivator {
 	 * while paying respect to the high-priority initial states in lower subregions.
 	 */
 	protected def createRecursiveXStsStateAssumptionAndSubstateActivatingAction(State lowlevelState) {
-		val xStsStateAssumption = lowlevelState.createSingleXStsStateAssumption // If this is the active state
-		return createSequentialAction => [
-			// If this is the active state
-			it.actions += xStsStateAssumption.createAssumeAction
+		val xStsStateAssumption = lowlevelState.createSingleXStsStateAssumption
+		return xStsStateAssumption.createIfAction( // If this is the active state
 			// Set all subregions too, that is why recursive method is called
-			it.actions += lowlevelState.createRecursiveXStsSubstateActivatingAction
-		]
+			lowlevelState.createRecursiveXStsSubstateActivatingAction
+		)
 	}
 	
 	protected def createSingleXStsDeactivatedStateAssumption(Region lowlevelRegion) {
 		val xStsParentRegionVariable = trace.getXStsVariable(lowlevelRegion)
 		val xStsEnumLiteral = trace.getXStsInactiveEnumLiteral(lowlevelRegion)
-		return createEqualityExpression => [
-			it.leftOperand = createDirectReferenceExpression => [
-				it.declaration = xStsParentRegionVariable
-			]
-			it.rightOperand = createEnumerationLiteralExpression => [
-				it.reference = xStsEnumLiteral
-			]
-		]		
+		return xStsParentRegionVariable.createReferenceExpression.createEqualityExpression(
+			xStsEnumLiteral.createEnumerationLiteralExpression)
 	}
 	
 }

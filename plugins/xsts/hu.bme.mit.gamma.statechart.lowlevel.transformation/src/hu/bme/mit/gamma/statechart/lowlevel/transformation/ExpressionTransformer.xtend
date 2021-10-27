@@ -164,9 +164,7 @@ class ExpressionTransformer {
 		val lowlevelEnumTypeDeclaration = trace.get(gammaEnumTypeDeclaration)
 		val lowlevelEnumTypeDefinition = lowlevelEnumTypeDeclaration.type as EnumerationTypeDefinition
 		return #[
-			createEnumerationLiteralExpression => [
-				it.reference = lowlevelEnumTypeDefinition.literals.get(index)
-			]
+			lowlevelEnumTypeDefinition.literals.get(index).createEnumerationLiteralExpression
 		]
 	}
 	

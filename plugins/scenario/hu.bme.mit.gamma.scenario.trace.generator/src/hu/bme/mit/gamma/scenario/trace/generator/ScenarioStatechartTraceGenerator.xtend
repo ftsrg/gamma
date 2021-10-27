@@ -88,7 +88,7 @@ class ScenarioStatechartTraceGenerator {
 		var GammaToXstsTransformer gammaToXSTSTransformer = null
 		if (schedulingConstraint > 0) {
 			gammaToXSTSTransformer = new GammaToXstsTransformer(
-				schedulingConstraint, true, true, false, TransitionMerging.HIERARCHICAL)
+				schedulingConstraint, true, true, TransitionMerging.HIERARCHICAL)
 		}
 		else {
 			gammaToXSTSTransformer = new GammaToXstsTransformer

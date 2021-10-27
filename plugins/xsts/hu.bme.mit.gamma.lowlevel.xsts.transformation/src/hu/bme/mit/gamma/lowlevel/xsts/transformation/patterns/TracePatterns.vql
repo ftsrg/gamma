@@ -48,7 +48,7 @@ pattern simpleTransitionTrace(lowlevelSimpleTransition : Transition, xStsTransit
 }
 
 pattern choiceTransitionTrace(lowlevelChoiceState : ChoiceState, xStsTransition : XTransition, 
-		xStsPrecondition : Expression, xStsChoiceAction : NonDeterministicAction) {
+		xStsPrecondition : Expression, xStsChoiceAction : CompositeAction) {
 	ChoiceTransitionTrace.lowlevelChoiceState(trace, lowlevelChoiceState);
 	ChoiceTransitionTrace.xStsTransition(trace, xStsTransition);
 	ChoiceTransitionTrace.xStsPrecondition(trace, xStsPrecondition);

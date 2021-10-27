@@ -12,16 +12,13 @@ package hu.bme.mit.gamma.expression.util;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
@@ -47,25 +44,20 @@ import hu.bme.mit.gamma.expression.model.EqualityExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory;
 import hu.bme.mit.gamma.expression.model.ExpressionPackage;
-import hu.bme.mit.gamma.expression.model.FalseExpression;
 import hu.bme.mit.gamma.expression.model.FieldAssignment;
 import hu.bme.mit.gamma.expression.model.FieldDeclaration;
 import hu.bme.mit.gamma.expression.model.FieldReferenceExpression;
-import hu.bme.mit.gamma.expression.model.GreaterEqualExpression;
-import hu.bme.mit.gamma.expression.model.GreaterExpression;
 import hu.bme.mit.gamma.expression.model.IfThenElseExpression;
 import hu.bme.mit.gamma.expression.model.InequalityExpression;
 import hu.bme.mit.gamma.expression.model.InitializableElement;
 import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression;
 import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression;
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition;
-import hu.bme.mit.gamma.expression.model.LessEqualExpression;
 import hu.bme.mit.gamma.expression.model.LessExpression;
 import hu.bme.mit.gamma.expression.model.MultiaryExpression;
 import hu.bme.mit.gamma.expression.model.MultiplyExpression;
 import hu.bme.mit.gamma.expression.model.NotExpression;
 import hu.bme.mit.gamma.expression.model.NullaryExpression;
-import hu.bme.mit.gamma.expression.model.OrExpression;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.RationalLiteralExpression;
 import hu.bme.mit.gamma.expression.model.RationalTypeDefinition;
@@ -74,7 +66,6 @@ import hu.bme.mit.gamma.expression.model.RecordLiteralExpression;
 import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.SubtractExpression;
-import hu.bme.mit.gamma.expression.model.TrueExpression;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
 import hu.bme.mit.gamma.expression.model.TypeDefinition;
@@ -143,6 +134,9 @@ public class ExpressionUtil {
 	
 	public Collection<TypeDeclaration> getTypeDeclarations(EObject context) {
 		ExpressionPackage _package = ecoreUtil.getSelfOrContainerOfType(context, ExpressionPackage.class);
+		if (_package == null) {
+			return Collections.emptyList();
+		}
 		return _package.getTypeDeclarations();
 	}
 	
@@ -199,162 +193,11 @@ public class ExpressionUtil {
 		List<EnumerationLiteralExpression> literals = new ArrayList<EnumerationLiteralExpression>();
 		for (Expression expression : expressions) {
 			int index = evaluator.evaluate(expression);
-			EnumerationLiteralExpression literalExpression = factory.createEnumerationLiteralExpression();
-			literalExpression.setReference(type.getLiterals().get(index));
+			EnumerationLiteralDefinition literal = type.getLiterals().get(index);
+			EnumerationLiteralExpression literalExpression = createEnumerationLiteralExpression(literal);
 			literals.add(literalExpression);
 		}
 		return literals;
-	}
-
-	public boolean isDefinitelyTrueExpression(Expression expression) {
-		if (expression instanceof TrueExpression) {
-			return true;
-		}
-		if (expression instanceof BinaryExpression) {
-			BinaryExpression binaryExpression = (BinaryExpression) expression;
-			Expression leftOperand = binaryExpression.getLeftOperand();
-			Expression rightOperand = binaryExpression.getRightOperand();
-			if (expression instanceof EqualityExpression ||
-					expression instanceof GreaterEqualExpression ||
-					expression instanceof LessEqualExpression) {
-				if (ecoreUtil.helperEquals(leftOperand, rightOperand)) {
-					return true;
-				}
-			}
-			if (!(leftOperand instanceof EnumerationLiteralExpression
-					&& rightOperand instanceof EnumerationLiteralExpression)) {
-				// Different enum literals could be evaluated to the same value
-				try {
-					int leftValue = evaluator.evaluate(leftOperand);
-					int rightValue = evaluator.evaluate(rightOperand);
-					if (leftValue == rightValue) {
-						if (expression instanceof EqualityExpression ||
-								expression instanceof GreaterEqualExpression ||
-								expression instanceof LessEqualExpression) {
-							return true;
-						}
-					}
-					else if (leftValue < rightValue) {
-						if (expression instanceof LessExpression ||
-								expression instanceof LessEqualExpression) {
-							return true;
-						}
-					}
-					else { // leftValue > rightValue
-						if (expression instanceof GreaterExpression ||
-								expression instanceof GreaterEqualExpression) {
-							return true;
-						}
-					}
-				} catch (IllegalArgumentException e) {
-					// One of the arguments is not evaluable
-				}
-			}
-		}
-		if (expression instanceof NotExpression) {
-			NotExpression notExpression = (NotExpression) expression;
-			return isDefinitelyFalseExpression(notExpression.getOperand());
-		}
-		if (expression instanceof OrExpression) {
-			OrExpression orExpression = (OrExpression) expression;
-			for (Expression subExpression : orExpression.getOperands()) {
-				if (isDefinitelyTrueExpression(subExpression)) {
-					return true;
-				}
-			}
-		}
-		if (expression instanceof AndExpression) {
-			AndExpression andExpression = (AndExpression) expression;
-			for (Expression subExpression : andExpression.getOperands()) {
-				if (!isDefinitelyTrueExpression(subExpression)) {
-					return false;
-				}
-			}
-			return true;
-		}
-		return false;
-	}
-
-	public boolean isDefinitelyFalseExpression(Expression expression) {
-		if (expression instanceof FalseExpression) {
-			return true;
-		}
-		// Checking 'Red == Green' kind of assumptions
-		if (expression instanceof BinaryExpression) {
-			BinaryExpression binaryExpression = (BinaryExpression) expression;
-			Expression leftOperand = binaryExpression.getLeftOperand();
-			Expression rightOperand = binaryExpression.getRightOperand();
-			if (expression instanceof EqualityExpression) {
-				if (leftOperand instanceof EnumerationLiteralExpression
-						&& rightOperand instanceof EnumerationLiteralExpression) {
-					EnumerationLiteralExpression lhs = (EnumerationLiteralExpression) leftOperand;
-					EnumerationLiteralDefinition leftReference = lhs.getReference();
-					EnumerationLiteralExpression rhs = (EnumerationLiteralExpression) rightOperand;
-					EnumerationLiteralDefinition rightReference = rhs.getReference();
-					if (!ecoreUtil.helperEquals(leftReference, rightReference)) {
-						return true;
-					}
-				}
-			}
-			try {
-				int leftValue = evaluator.evaluate(leftOperand);
-				int rightValue = evaluator.evaluate(rightOperand);
-				if (leftValue == rightValue) {
-					if (expression instanceof InequalityExpression || 
-							expression instanceof LessExpression ||
-							expression instanceof GreaterExpression) {
-						return true;
-					}
-				}
-				else { // leftValue != rightValue
-					if (expression instanceof EqualityExpression) {
-						return true;
-					}
-					if (leftValue < rightValue) {
-						if (expression instanceof GreaterExpression ||
-								expression instanceof GreaterEqualExpression) {
-							return true;
-						}
-					}
-					else { // leftValue > rightValue
-						if (expression instanceof LessExpression ||
-								expression instanceof LessEqualExpression) {
-							return true;
-						}
-					}
-				}
-			} catch (IllegalArgumentException e) {
-				// One of the arguments is not evaluable
-			}
-		}
-		if (expression instanceof NotExpression) {
-			NotExpression notExpression = (NotExpression) expression;
-			return isDefinitelyTrueExpression(notExpression.getOperand());
-		}
-		if (expression instanceof AndExpression) {
-			AndExpression andExpression = (AndExpression) expression;
-			for (Expression subExpression : andExpression.getOperands()) {
-				if (isDefinitelyFalseExpression(subExpression)) {
-					return true;
-				}
-			}
-			Collection<EqualityExpression> allEqualityExpressions = collectAllEqualityExpressions(andExpression);
-			List<EqualityExpression> referenceEqualityExpressions = filterReferenceEqualityExpressions(
-					allEqualityExpressions);
-			if (hasEqualityToDifferentLiterals(referenceEqualityExpressions)) {
-				return true;
-			}
-		}
-		if (expression instanceof OrExpression) {
-			OrExpression orExpression = (OrExpression) expression;
-			for (Expression subExpression : orExpression.getOperands()) {
-				if (!isDefinitelyFalseExpression(subExpression)) {
-					return false;
-				}
-			}
-			return true;
-		}
-		return false;
 	}
 
 	/**
@@ -378,71 +221,6 @@ public class ExpressionUtil {
 		return false;
 	}
 	
-	private boolean hasEqualityToDifferentLiterals(List<EqualityExpression> expressions) {
-		for (int i = 0; i < expressions.size() - 1; ++i) {
-			try {
-				EqualityExpression leftEqualityExpression = expressions.get(i);
-				Entry<Declaration, Expression> left = getDeclarationExpressions(leftEqualityExpression);
-				Declaration leftDeclaration = left.getKey();
-				Expression leftValueExpression = left.getValue();
-				int leftValue = evaluator.evaluate(leftValueExpression);
-				for (int j = i + 1; j < expressions.size(); ++j) {
-					try {
-						EqualityExpression rightEqualityExpression = expressions.get(j);
-						Entry<Declaration, Expression> right = getDeclarationExpressions(rightEqualityExpression);
-						Declaration rightDeclaration = right.getKey();
-						if (leftDeclaration == rightDeclaration) {
-							Expression rightValueExpression = right.getValue();
-							int rightValue = evaluator.evaluate(rightValueExpression);
-							if (leftValue != rightValue) {
-								return true;
-							}
-						}
-					} catch (IllegalArgumentException e) {
-						// j is not evaluable
-						expressions.remove(j);
-						--j;
-					}
-				}
-			} catch (IllegalArgumentException e) {
-				// i is not evaluable
-				expressions.remove(i);
-				--i;
-			}
-		}
-		return false;
-	}
-	
-	protected Entry<Declaration, Expression> getDeclarationExpressions(BinaryExpression expression) {
-		Expression leftOperand = expression.getLeftOperand();
-		Declaration declaration = getDeclaration(leftOperand);
-		Expression rightOperand = expression.getRightOperand();
-		return new SimpleEntry<Declaration, Expression>(declaration, rightOperand);
-	}
-	
-	public Collection<EqualityExpression> collectAllEqualityExpressions(AndExpression expression) {
-		List<EqualityExpression> equalityExpressions = new ArrayList<EqualityExpression>();
-		for (Expression subexpression : expression.getOperands()) {
-			if (subexpression instanceof EqualityExpression) {
-				EqualityExpression equalityExpression = (EqualityExpression) subexpression;
-				equalityExpressions.add(equalityExpression);
-			}
-			else if (subexpression instanceof AndExpression) {
-				AndExpression andExpression = (AndExpression) subexpression;
-				equalityExpressions.addAll(collectAllEqualityExpressions(andExpression));
-			}
-		}
-		return equalityExpressions;
-	}
-
-	public List<EqualityExpression> filterReferenceEqualityExpressions(
-			Collection<EqualityExpression> expressions) {
-		return expressions.stream().filter(
-				it -> it.getLeftOperand() instanceof ReferenceExpression
-				&& !(it.getRightOperand() instanceof ReferenceExpression))
-			.collect(Collectors.toList());
-	}
-
 	// Arithmetic: for now, integers only
 
 	public Expression add(Expression expression, int value) {
@@ -813,11 +591,8 @@ public class ExpressionUtil {
 	}
 
 	protected Expression _getInitialValueOfType(EnumerationTypeDefinition type) {
-		EnumerationLiteralExpression enumerationLiteralExpression = factory.createEnumerationLiteralExpression();
-		TypeDeclaration typeDeclaration = ecoreUtil.getContainerOfType(type, TypeDeclaration.class);
-		enumerationLiteralExpression.setTypeReference(createTypeReference(typeDeclaration));
-		enumerationLiteralExpression.setReference(type.getLiterals().get(0));
-		return enumerationLiteralExpression;
+		EnumerationLiteralDefinition literal = type.getLiterals().get(0);
+		return createEnumerationLiteralExpression(literal);
 	}
 	
 	protected Expression _getInitialValueOfType(ArrayTypeDefinition type) {
@@ -1037,9 +812,9 @@ public class ExpressionUtil {
 		return ifThenElseExpression;
 	}
 	
-	public DirectReferenceExpression createReferenceExpression(ValueDeclaration variable) {
+	public DirectReferenceExpression createReferenceExpression(Declaration declaration) {
 		DirectReferenceExpression reference = factory.createDirectReferenceExpression();
-		reference.setDeclaration(variable);
+		reference.setDeclaration(declaration);
 		return reference;
 	}
 	

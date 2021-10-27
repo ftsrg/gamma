@@ -1,12 +1,12 @@
 package hu.bme.mit.gamma.trace.testgeneration.java
 
-import java.util.List
 import hu.bme.mit.gamma.trace.model.Assert
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
-import hu.bme.mit.gamma.trace.testgeneration.java.util.TestGeneratorUtil
 import hu.bme.mit.gamma.trace.model.RaiseEventAct
+import hu.bme.mit.gamma.trace.testgeneration.java.util.TestGeneratorUtil
+import java.util.List
 
-class WaitingAllowedInFunction extends AbstractAllowedWaitingHandler {
+class WaitingAllowedInFunction extends AbstractAssertionHandler {
 	
 	val TestGeneratorUtil testGeneratorutil ;
 	

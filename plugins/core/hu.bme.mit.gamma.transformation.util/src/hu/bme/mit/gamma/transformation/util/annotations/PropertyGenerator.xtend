@@ -162,8 +162,7 @@ class PropertyGenerator {
 		else if (typeDefinition instanceof EnumerationTypeDefinition) {
 			val Set<Expression> literals = newHashSet
 			for (literal : typeDefinition.literals) {
-				val expression = expressionFactory.createEnumerationLiteralExpression
-				expression.setReference(literal)
+				val expression = literal.createEnumerationLiteralExpression
 				literals += expression
 			}
 			return literals

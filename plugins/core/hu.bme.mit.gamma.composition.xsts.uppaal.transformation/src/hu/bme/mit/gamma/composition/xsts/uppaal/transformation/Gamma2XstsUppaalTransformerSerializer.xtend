@@ -24,7 +24,6 @@ class Gamma2XstsUppaalTransformerSerializer {
 	protected final Integer schedulingConstraint
 	// Configuration
 	protected final boolean optimize
-	protected final boolean extractGuards
 	protected final TransitionMerging transitionMerging
 	// Slicing
 	protected final PropertyPackage slicingProperties
@@ -50,7 +49,7 @@ class Gamma2XstsUppaalTransformerSerializer {
 			String targetFolderUri, String fileName,
 			Integer schedulingConstraint) {
 		this(component, arguments, targetFolderUri, fileName, schedulingConstraint,
-			true, false, TransitionMerging.HIERARCHICAL,
+			true, TransitionMerging.HIERARCHICAL,
 			null, new AnnotatablePreprocessableElements(
 				null, null, null, null, null,
 				InteractionCoverageCriterion.EVERY_INTERACTION,	InteractionCoverageCriterion.EVERY_INTERACTION,
@@ -63,7 +62,7 @@ class Gamma2XstsUppaalTransformerSerializer {
 	new(Component component, List<Expression> arguments,
 			String targetFolderUri, String fileName,
 			Integer schedulingConstraint,
-			boolean optimize, boolean extractGuards,
+			boolean optimize,
 			TransitionMerging transitionMerging,
 			PropertyPackage slicingProperties,
 			AnnotatablePreprocessableElements annotatableElements,
@@ -75,7 +74,6 @@ class Gamma2XstsUppaalTransformerSerializer {
 		this.schedulingConstraint = schedulingConstraint
 		//
 		this.optimize = optimize
-		this.extractGuards = extractGuards
 		this.transitionMerging = transitionMerging
 		//
 		this.slicingProperties = slicingProperties
@@ -90,7 +88,7 @@ class Gamma2XstsUppaalTransformerSerializer {
 		val xStsTransformer = new Gamma2XstsTransformerSerializer(component,
 			arguments, targetFolderUri,
 			fileName, schedulingConstraint,
-			optimize, extractGuards, 
+			optimize, 
 			transitionMerging,
 			slicingProperties, annotatableElements,
 			initialState, initialStateSetting)

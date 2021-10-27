@@ -44,17 +44,17 @@ class LowlevelTransitionToActionTransformer {
 	// Trace
 	protected final Trace trace
 	
-	new(ViatraQueryEngine engine, Trace trace, boolean extractGuards) {
-		this(engine, trace, null, extractGuards)
+	new(ViatraQueryEngine engine, Trace trace) {
+		this(engine, trace, null)
 	}
 	
-	new(ViatraQueryEngine engine, Trace trace, RegionActivator regionActivator, boolean extractGuards) {
+	new(ViatraQueryEngine engine, Trace trace, RegionActivator regionActivator) {
 		this.engine = engine
 		this.trace = trace
 		this.stateAssumptionCreator = new StateAssumptionCreator(this.trace)
 		this.transitionPreconditionCreator = new TransitionPreconditionCreator(this.trace)
 		if (regionActivator === null) {
-			this.regionActivator = new RegionActivator(this.engine, this.trace, extractGuards)
+			this.regionActivator = new RegionActivator(this.engine, this.trace)
 		}
 		else {
 			this.regionActivator = regionActivator
@@ -136,7 +136,7 @@ class LowlevelTransitionToActionTransformer {
 	protected def createRecursiveXStsTransitionExitActions(Transition lowlevelTransition,
 			boolean inclusiveTopState) {
 		val lowlevelSourceState = lowlevelTransition.source as State
-		val actions = newLinkedList
+		val actions = <Action>newArrayList
 		// Always exiting regions of it is a toHigher transition, see the consequence in createRecursiveXStsTransitionEntryActions
 		if (lowlevelTransition.isToHigherNode || lowlevelTransition.isToHigherAndLowerNode) {
 			// To lower characteristics
@@ -156,7 +156,7 @@ class LowlevelTransitionToActionTransformer {
 	
 	protected def createRecursiveXStsTransitionExitActionsWithOrthogonality(Transition lowlevelTransition) {
 		val lowlevelSourceState = lowlevelTransition.source as State
-		val actions = newLinkedList
+		val actions = <Action>newArrayList
 		// Always exiting regions of it is a toHigher transition, see the consequence in createRecursiveXStsTransitionEntryActionsWithOrthogonality
 		if (lowlevelTransition.isToHigherNode || lowlevelTransition.isToHigherAndLowerNode) {
 			// To higher characteristics
@@ -218,7 +218,7 @@ class LowlevelTransitionToActionTransformer {
 	protected def createRecursiveXStsTransitionEntryActions(Transition lowlevelTransition,
 			boolean inclusiveTopState) {
 		val lowlevelTargetState = lowlevelTransition.target as State
-		val actions = newLinkedList
+		val actions = <Action>newArrayList
 		var ancestor = if (isToLowerNode(null, lowlevelTransition, null, lowlevelTargetState) || 
 				isToHigherAndLowerNode(null, null, lowlevelTransition, null, lowlevelTargetState)) {
 			lowlevelTransition.targetAncestor
@@ -244,7 +244,7 @@ class LowlevelTransitionToActionTransformer {
 	
 	protected def createRecursiveXStsTransitionEntryActionsWithOrthogonality(Transition lowlevelTransition) {
 		val lowlevelTargetState = lowlevelTransition.target as State
-		val actions = newLinkedList
+		val actions = <Action>newArrayList
 		var ancestor = if (isToLowerNode(null, lowlevelTransition, null, lowlevelTargetState) || 
 				isToHigherAndLowerNode(null, null, lowlevelTransition, null, lowlevelTargetState)) {
 			lowlevelTransition.targetAncestor

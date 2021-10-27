@@ -76,6 +76,7 @@ class GlueCodeGenerator {
 	protected final extension StatechartWrapperCodeGenerator statechartWrapperCodeGenerator
 	protected final extension SynchronousCompositeComponentCodeGenerator synchronousCompositeComponentCodeGenerator
 	protected final extension AsynchronousAdapterCodeGenerator synchronousComponentWrapperCodeGenerator
+	protected final extension LinkedBlockingQueueSource linkedBlockingQueueSourceGenerator
 	protected final extension ChannelInterfaceGenerator channelInterfaceGenerator
 	protected final extension ChannelCodeGenerator channelCodeGenerator
 	protected final extension AsynchronousCompositeComponentCodeGenerator asynchronousCompositeComponentCodeGenerator
@@ -113,6 +114,7 @@ class GlueCodeGenerator {
 		this.statechartWrapperCodeGenerator = new StatechartWrapperCodeGenerator(this.BASE_PACKAGE_NAME, this.YAKINDU_PACKAGE_NAME, trace)
 		this.synchronousCompositeComponentCodeGenerator = new SynchronousCompositeComponentCodeGenerator(this.BASE_PACKAGE_NAME, this.YAKINDU_PACKAGE_NAME, trace)
 		this.synchronousComponentWrapperCodeGenerator = new AsynchronousAdapterCodeGenerator(this.BASE_PACKAGE_NAME, trace)
+		this.linkedBlockingQueueSourceGenerator = new LinkedBlockingQueueSource(this.BASE_PACKAGE_NAME)
 		this.channelInterfaceGenerator = new ChannelInterfaceGenerator(this.BASE_PACKAGE_NAME)
 		this.channelCodeGenerator = new ChannelCodeGenerator(this.BASE_PACKAGE_NAME)
 		this.asynchronousCompositeComponentCodeGenerator = new AsynchronousCompositeComponentCodeGenerator(this.BASE_PACKAGE_NAME, trace)
@@ -319,12 +321,12 @@ class GlueCodeGenerator {
 	}
 	
 	protected def void generateLinkedBlockingMultiQueueClasses() {
-		val compositeSystemUri = BASE_PACKAGE_URI.substring(0, BASE_PACKAGE_URI.length - BASE_PACKAGE_NAME.length) + File.separator + "lbmq"
-		LinkedBlockingQueueSource.AbstractOfferable.saveCode(compositeSystemUri + File.separator + "AbstractOfferable.java")
-		LinkedBlockingQueueSource.AbstractPollable.saveCode(compositeSystemUri + File.separator + "AbstractPollable.java")
-		LinkedBlockingQueueSource.LinkedBlockingMultiQueue.saveCode(compositeSystemUri + File.separator + "LinkedBlockingMultiQueue.java")
-		LinkedBlockingQueueSource.Offerable.saveCode(compositeSystemUri + File.separator + "Offerable.java")
-		LinkedBlockingQueueSource.Pollable.saveCode(compositeSystemUri + File.separator + "Pollable.java")
+		val compositeSystemUri = BASE_PACKAGE_URI
+		generateAbstractOfferable.saveCode(compositeSystemUri + File.separator + "AbstractOfferable.java")
+		generateAbstractPollable.saveCode(compositeSystemUri + File.separator + "AbstractPollable.java")
+		generateLinkedBlockingMultiQueue.saveCode(compositeSystemUri + File.separator + "LinkedBlockingMultiQueue.java")
+		generateOfferable.saveCode(compositeSystemUri + File.separator + "Offerable.java")
+		generatePollable.saveCode(compositeSystemUri + File.separator + "Pollable.java")
 	}
 	
 	protected def getAsynchronousAdapterRule() {

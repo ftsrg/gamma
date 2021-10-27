@@ -83,7 +83,6 @@ class CoveredPropertyReducer {
 		return unnecessaryFormulas
 	}
 	
-	
 	protected def dispatch evaluate(ComponentInstanceEventParameterReference expression, Step step) {
 		val topComponentPort = expression.port.boundTopComponentPort
 		val event = expression.event

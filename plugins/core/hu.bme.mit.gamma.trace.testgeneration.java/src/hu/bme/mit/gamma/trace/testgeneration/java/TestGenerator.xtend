@@ -10,26 +10,11 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.trace.testgeneration.java
 
-import hu.bme.mit.gamma.expression.model.Declaration
-import hu.bme.mit.gamma.statechart.composite.AbstractAsynchronousCompositeComponent
-import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent
-import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
-import hu.bme.mit.gamma.statechart.composite.AsynchronousCompositeComponent
-import hu.bme.mit.gamma.statechart.composite.ComponentInstance
-import hu.bme.mit.gamma.statechart.composite.SynchronousComponent
-import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Package
-import hu.bme.mit.gamma.statechart.statechart.State
-import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
-import hu.bme.mit.gamma.trace.model.ExecutionTraceAllowedWaitingAnnotation
-import hu.bme.mit.gamma.trace.model.InstanceStateConfiguration
-import hu.bme.mit.gamma.trace.model.InstanceVariableState
-import hu.bme.mit.gamma.trace.model.Step
 import hu.bme.mit.gamma.trace.testgeneration.java.util.TestGeneratorUtil
 import hu.bme.mit.gamma.trace.util.TraceUtil
-import hu.bme.mit.gamma.transformation.util.annotations.AnnotationNamings
 import java.util.Collections
 import java.util.List
 import org.eclipse.emf.ecore.resource.ResourceSet
@@ -43,15 +28,12 @@ import static extension hu.bme.mit.gamma.trace.derivedfeatures.TraceModelDerived
 class TestGenerator {
 	// Constant strings
 	protected final String BASE_PACKAGE
-	protected final String TEST_FOLDER = "test-gen"
 	protected final String TIMER_CLASS_NAME = "VirtualTimerService"
 	protected final String TIMER_OBJECT_NAME = "timer"
 	
-	protected final String FINAL_TEST_PREFIX = "final"	
-	protected final String TEST_ANNOTATION = "@Test"	
-	protected final String TEST_NAME = "step"	
-	protected final String ASSERT_TRUE = "assertTrue"	
-	
+	protected final String FINAL_TEST_PREFIX = "final"
+	protected final String TEST_ANNOTATION = "@Test"
+	protected final String TEST_NAME = "step"
 	
 	// Value is assigned by the execute methods
 	protected final String PACKAGE_NAME
@@ -60,7 +42,6 @@ class TestGenerator {
 	protected final String TEST_INSTANCE_NAME
 	
 	// Resources
-	
 	protected final ResourceSet resourceSet
 	
 	protected final Package gammaPackage
@@ -68,14 +49,11 @@ class TestGenerator {
 	protected final List<ExecutionTrace> traces // Traces in OR logical relation
 	protected final ExecutionTrace firstTrace
 	protected final TestGeneratorUtil testGeneratorUtil
-	protected final AbstractAllowedWaitingHandler waitingHandle 
+	protected final AbstractAssertionHandler waitingHandle 
 	protected final ActAndAssertSerializer actAndAssertSerializer	
-	
 	// Auxiliary objects
 	protected final extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
 	protected final extension TraceUtil traceUtil = TraceUtil.INSTANCE
-	
-	
 	
 	/**
 	 * Note that the lists of traces represents a set of behaviors the component must conform to.
@@ -83,25 +61,27 @@ class TestGenerator {
 	 */
 	new(List<ExecutionTrace> traces, String basePackage, String className) {
 		this.firstTrace = traces.head
-		this.component = firstTrace.component // Theoretically, the same thing what loadModels do
+		this.component = firstTrace.component
 		this.resourceSet = component.eResource.resourceSet
 		checkArgument(this.resourceSet !== null)
 		this.gammaPackage = component.eContainer as Package
-		this.BASE_PACKAGE = basePackage // For some reason, package platform URI does not work
 		this.traces = traces
+		
 		// Initializing the string variables
+		this.BASE_PACKAGE = basePackage
 		this.PACKAGE_NAME = getPackageName
     	this.CLASS_NAME = className
     	this.TEST_CLASS_NAME = component.reflectiveClassName
     	this.TEST_INSTANCE_NAME = TEST_CLASS_NAME.toFirstLower
     	
     	this.testGeneratorUtil = new TestGeneratorUtil(component)
-		this.actAndAssertSerializer = new ActAndAssertSerializer(component, TEST_INSTANCE_NAME, TIMER_OBJECT_NAME)
-		if (traces.flatMap[it.annotations].findFirst[it instanceof ExecutionTraceAllowedWaitingAnnotation] !== null) {
-			this.waitingHandle = new WaitingAllowedInFunction(firstTrace,actAndAssertSerializer)
+		this.actAndAssertSerializer = new ActAndAssertSerializer(component,
+			TEST_INSTANCE_NAME, TIMER_OBJECT_NAME)
+		if (firstTrace.hasAllowedWaitingAnnotation) {
+			this.waitingHandle = new WaitingAllowedInFunction(firstTrace, actAndAssertSerializer)
 		} 
 		else {
-			this.waitingHandle = new DefaultWaitingAllowedHandler(firstTrace,actAndAssertSerializer)
+			this.waitingHandle = new DefaultAssertionHandler(firstTrace, actAndAssertSerializer)
 		}
 	}
 	
@@ -117,14 +97,14 @@ class TestGenerator {
 	}
 	
 	def getPackageName() {
-		val suffix = "view";
+		val suffix = "view"
 		var String finalName
-		val name = gammaPackage.getName().toLowerCase();
+		val name = gammaPackage.name.toLowerCase
 		if (name.endsWith(suffix)) {
-			finalName = name.substring(0, name.length() - suffix.length());
+			finalName = name.substring(0, name.length - suffix.length)
 		}
 		else {
-			finalName = name;
+			finalName = name
 		}
 		return BASE_PACKAGE + "." + finalName
 	}
@@ -140,11 +120,11 @@ class TestGenerator {
 			
 			private static «TEST_CLASS_NAME» «TEST_INSTANCE_NAME»;
 «««			Only if there are timing specis in the model
-			«IF testGeneratorUtil.needTimer(component)»private static «TIMER_CLASS_NAME» «TIMER_OBJECT_NAME»;«ENDIF»
+			«IF component.timed»private static «TIMER_CLASS_NAME» «TIMER_OBJECT_NAME»;«ENDIF»
 			
 			@Before
 			public void init() {
-				«IF testGeneratorUtil.needTimer(component)»
+				«IF component.timed»
 «««					Only if there are timing specis in the model
 					«TIMER_OBJECT_NAME» = new «TIMER_CLASS_NAME»();
 					«TEST_INSTANCE_NAME» = new «TEST_CLASS_NAME»(«FOR parameter : firstTrace.arguments SEPARATOR ', ' AFTER ', '»«parameter.serialize»«ENDFOR»«TIMER_OBJECT_NAME»);  // Virtual timer is automatically set
@@ -161,7 +141,7 @@ class TestGenerator {
 			
 			// Only for override by potential subclasses
 			protected void stop() {
-				«IF testGeneratorUtil.needTimer(component)»
+				«IF component.timed»
 					«TIMER_OBJECT_NAME» = null;
 				«ENDIF»
 				«TEST_INSTANCE_NAME» = null;				
@@ -181,7 +161,7 @@ class TestGenerator {
 			import «_package.getPackageString(BASE_PACKAGE)».*;
 		«ENDFOR»
 		
-		import static org.junit.Assert.«ASSERT_TRUE»;
+		import static org.junit.Assert.assertTrue;
 		
 		import org.junit.Before;
 		import org.junit.After;
@@ -223,9 +203,7 @@ class TestGenerator {
 							«actAndAssertSerializer.serialize(act)»
 						«ENDFOR»
 						// Assert
-						«IF !testGeneratorUtil.filterAsserts(step).nullOrEmpty»
-							«waitingHandle.generateAssertBlock(testGeneratorUtil.filterAsserts(step))»
-						«ENDIF»
+						«waitingHandle.generateAssertBlock(testGeneratorUtil.filterAsserts(step))»
 					}
 					
 				'''
@@ -237,7 +215,4 @@ class TestGenerator {
 	
 	private def addTabIfNeeded(List<ExecutionTrace> traces, ExecutionTrace trace) '''«IF traces.last !== trace»	«ENDIF»'''
 	
-
-	
-
 }

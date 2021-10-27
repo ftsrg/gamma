@@ -33,6 +33,7 @@ import hu.bme.mit.gamma.xsts.model.AssumeAction;
 import hu.bme.mit.gamma.xsts.model.AtomicAction;
 import hu.bme.mit.gamma.xsts.model.EmptyAction;
 import hu.bme.mit.gamma.xsts.model.HavocAction;
+import hu.bme.mit.gamma.xsts.model.IfAction;
 import hu.bme.mit.gamma.xsts.model.LoopAction;
 import hu.bme.mit.gamma.xsts.model.MultiaryAction;
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction;
@@ -43,6 +44,7 @@ import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction;
 import hu.bme.mit.gamma.xsts.model.XSTS;
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory;
 import hu.bme.mit.gamma.xsts.model.XTransition;
+import hu.bme.mit.gamma.xsts.model.XstsAnnotation;
 
 public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 
@@ -50,6 +52,10 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 	
 	public static XSTS getContainingXsts(EObject object) {
 		return ecoreUtil.getSelfOrContainerOfType(object, XSTS.class);
+	}
+	
+	public static boolean hasAnnotation(XSTS xSts, Class<? extends XstsAnnotation> annotation) {
+		return xSts.getAnnotations().stream().anyMatch(it -> annotation.isInstance(it));
 	}
 	
 	public static boolean hasClockVariable(XSTS xSts) {
@@ -138,7 +144,50 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 		PrimedVariable primedVariable = (PrimedVariable) variable;
 		return getPrimeCount(primedVariable.getPrimedVariable()) + 1;
 	}
-
+	
+	//
+	
+	public static List<Action> getBranches(IfAction action) {
+		List<Action> branches = new ArrayList<Action>();
+		branches.add(action.getThen());
+		Action _else = action.getElse();
+		if (_else instanceof IfAction) {
+			IfAction elseIfAction = (IfAction) _else;
+			branches.addAll(getBranches(elseIfAction));
+		}
+		else if (_else != null) {
+			branches.add(_else);
+		}
+		else {
+			// Necessary for variable inline
+			branches.add(xStsFactory.createEmptyAction());
+		}
+		return branches;
+	}
+	
+	public static List<Expression> getConditions(IfAction action) {
+		List<Expression> conditions = new ArrayList<Expression>();
+		conditions.add(action.getCondition());
+		Action _else = action.getElse();
+		if (_else instanceof IfAction) {
+			IfAction elseIfAction = (IfAction) _else;
+			conditions.addAll(getConditions(elseIfAction));
+		}
+		// Else is not If - no more conditions
+		return conditions;
+	}
+	
+	public static IfAction getLastIfAction(IfAction action) {
+		Action _else = action.getElse();
+		if (_else instanceof IfAction) {
+			IfAction elseIfAction = (IfAction) _else;
+			return getLastIfAction(elseIfAction);
+		}
+		return action;
+	}
+	
+	//
+	
 	public static boolean isTrivialAssignment(SequentialAction action) {
 		List<Action> xStsSubactions = action.getActions();
 		if (xStsSubactions.stream().filter(it -> it instanceof AssumeAction).count() == 1
@@ -202,12 +251,16 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 
 	public static boolean isDefinitelyTrueAssumeAction(AssumeAction action) {
 		Expression expression = action.getAssumption();
-		return expressionUtil.isDefinitelyTrueExpression(expression);
+		return evaluator.isDefinitelyTrueExpression(expression);
 	}
 
 	public static boolean isDefinitelyFalseAssumeAction(AssumeAction action) {
 		Expression expression = action.getAssumption();
-		return expressionUtil.isDefinitelyFalseExpression(expression);
+		return evaluator.isDefinitelyFalseExpression(expression);
+	}
+	
+	public static boolean isNullOrEmptyAction(Action action) {
+		return action == null || action instanceof EmptyAction;
 	}
 
 	// Read-write
@@ -240,6 +293,17 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 	private static Set<VariableDeclaration> _getReadVariables(LoopAction action) {
 		Action subAction = action.getAction();
 		return getReadVariables(subAction);
+	}
+	
+	private static Set<VariableDeclaration> _getReadVariables(IfAction action) {
+		Set<VariableDeclaration> readVariables = new HashSet<VariableDeclaration>();
+		readVariables.addAll(expressionUtil.getReferredVariables(action.getCondition()));
+		readVariables.addAll(getReadVariables(action.getThen()));
+		Action _else = action.getElse();
+		if (_else != null) {
+			readVariables.addAll(getReadVariables(_else));
+		}
+		return readVariables;
 	}
 
 	private static Set<VariableDeclaration> _getReadVariables(NonDeterministicAction action) {
@@ -281,7 +345,6 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 	}
 	
 	private static Set<VariableDeclaration> _getWrittenVariables(VariableDeclarationAction action) {
-//		VariableDeclaration variable = action.getVariableDeclaration(); // Or this should be an empty set?
 		return Collections.emptySet(); // Empty, as this is a declaration, not a "writing"
 	}
 
@@ -292,6 +355,16 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 	private static Set<VariableDeclaration> _getWrittenVariables(LoopAction action) {
 		Action subAction = action.getAction();
 		return getWrittenVariables(subAction);
+	}
+	
+	private static Set<VariableDeclaration> _getWrittenVariables(IfAction action) {
+		Set<VariableDeclaration> writtenVariables = new HashSet<VariableDeclaration>();
+		writtenVariables.addAll(getWrittenVariables(action.getThen()));
+		Action _else = action.getElse();
+		if (_else != null) {
+			writtenVariables.addAll(getWrittenVariables(_else));
+		}
+		return writtenVariables;
 	}
 
 	private static Set<VariableDeclaration> _getWrittenVariables(NonDeterministicAction action) {
@@ -337,6 +410,8 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 			return _getReadVariables((EmptyAction) action);
 		} else if (action instanceof LoopAction) {
 			return _getReadVariables((LoopAction) action);
+		} else if (action instanceof IfAction) {
+			return _getReadVariables((IfAction) action);
 		} else if (action instanceof NonDeterministicAction) {
 			return _getReadVariables((NonDeterministicAction) action);
 		} else if (action instanceof ParallelAction) {
@@ -359,6 +434,8 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 			return _getWrittenVariables((EmptyAction) action);
 		} else if (action instanceof LoopAction) {
 			return _getWrittenVariables((LoopAction) action);
+		} else if (action instanceof IfAction) {
+			return _getWrittenVariables((IfAction) action);
 		} else if (action instanceof NonDeterministicAction) {
 			return _getWrittenVariables((NonDeterministicAction) action);
 		} else if (action instanceof ParallelAction) {
