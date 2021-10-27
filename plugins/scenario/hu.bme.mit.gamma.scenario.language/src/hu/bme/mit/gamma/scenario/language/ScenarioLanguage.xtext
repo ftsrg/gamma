@@ -26,15 +26,19 @@ ScenarioDefinition returns ScenarioModel::ScenarioDefinition:
 	chart=Chart;
 	
 InitialBlock returns ScenarioModel::InitialBlock: 
-	'initial' 'outputs' '['
+	{ScenarioModel::InitialBlock} 'initial' 'outputs' '['
 	modalInteractions+=ModalInteraction*
-	']'
-;
-
+	']';
 
 Annotations returns ScenarioModel::Annotation:
 	AllowedWaitAnnotation | PermissiveAnnotation | StrictAnnotation | NegatedWaitAnnotation | NegStrictAnnotation |
-	NegPermissiveAnnotation;
+	NegPermissiveAnnotation | DedicatedColdViolationAnnotation | StartAsColdViolationAnnotation;
+
+StartAsColdViolationAnnotation returns ScenarioModel::StartAsColdViolationAnnotation:
+	{ScenarioModel::StartAsColdViolationAnnotation} '@StartAsColdViolation';
+
+DedicatedColdViolationAnnotation returns ScenarioModel::DedicatedColdViolationAnnotation:
+	{ScenarioModel::DedicatedColdViolationAnnotation} '@DedicatedColdViolation';
 
 NegStrictAnnotation returns ScenarioModel::NegStrictAnnotation:
 	{ScenarioModel::NegStrictAnnotation} '@StrictNeg';

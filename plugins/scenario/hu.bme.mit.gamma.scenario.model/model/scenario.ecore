@@ -96,4 +96,6 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="modalInteractions" lowerBound="1"
         upperBound="-1" eType="#//ModalInteraction" containment="true"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="StartAsColdViolationAnnotation" eSuperTypes="#//Annotation"/>
+  <eClassifiers xsi:type="ecore:EClass" name="DedicatedColdViolationAnnotation" eSuperTypes="#//Annotation"/>
 </ecore:EPackage>

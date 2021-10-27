@@ -19,6 +19,7 @@ import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.scenario.model.AlternativeCombinedFragment
+import hu.bme.mit.gamma.scenario.model.DedicatedColdViolationAnnotation
 import hu.bme.mit.gamma.scenario.model.Delay
 import hu.bme.mit.gamma.scenario.model.Interaction
 import hu.bme.mit.gamma.scenario.model.InteractionDefinition
@@ -65,11 +66,11 @@ import java.math.BigInteger
 import java.util.ArrayList
 import java.util.HashMap
 import java.util.List
-import java.util.Map
 import org.eclipse.emf.common.util.EList
 import org.eclipse.emf.ecore.EObject
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
+import hu.bme.mit.gamma.scenario.model.StartAsColdViolationAnnotation
 
 enum StatechartGenerationMode {
 	GENERATE_MERGE_STATE,
@@ -106,20 +107,18 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 	val StatechartGenerationMode generationMode
 	val replacedStateWithValue = new HashMap<StateNode,StateNode>()
 
-	new(boolean coldViolationExisits, ScenarioDefinition scenario, Component component, StatechartGenerationMode mode) {
+	new(ScenarioDefinition scenario, Component component, StatechartGenerationMode mode) {
 		this.component = component
 		this.generationMode = mode
 		this.scenario = scenario
-		this.coldViolationExisits = coldViolationExisits
 	}
 
-	new(boolean coldViolationExisits, ScenarioDefinition scenario, Component component) {
-		this(coldViolationExisits, scenario, component, StatechartGenerationMode.GENERATE_MERGE_STATE)
+	new(ScenarioDefinition scenario, Component component) {
+		this(scenario, component, StatechartGenerationMode.GENERATE_MERGE_STATE)
 	}
 
 	def StatechartDefinition execute() {
 		statechart = createStatechartDefinition
-		initializeStateChart(scenario.name)
 		for (a : scenario.annotation) {
 			if (a instanceof WaitAnnotation) {
 				allowedGlobalWaitMax = a.maximum.intValue
@@ -134,8 +133,14 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 				nonDeclaredNegMessageMode = 1
 			} else if (a instanceof NegPermissiveAnnotation) {
 				nonDeclaredNegMessageMode = 0
+			} else if(a instanceof DedicatedColdViolationAnnotation) {
+				coldViolationExisits = true
+			} else if(a instanceof StartAsColdViolationAnnotation) {
+				coldViolationExisits = false
 			}
 		}
+		
+		initializeStateChart(scenario.name)
 
 		for (mi : scenario.chart.fragment.interactions) {
 			process(mi)

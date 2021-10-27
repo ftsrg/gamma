@@ -19,6 +19,7 @@ import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator;
 import hu.bme.mit.gamma.scenario.model.AlternativeCombinedFragment;
 import hu.bme.mit.gamma.scenario.model.Annotation;
+import hu.bme.mit.gamma.scenario.model.DedicatedColdViolationAnnotation;
 import hu.bme.mit.gamma.scenario.model.Delay;
 import hu.bme.mit.gamma.scenario.model.InitialBlock;
 import hu.bme.mit.gamma.scenario.model.Interaction;
@@ -38,6 +39,7 @@ import hu.bme.mit.gamma.scenario.model.Reset;
 import hu.bme.mit.gamma.scenario.model.ScenarioDefinition;
 import hu.bme.mit.gamma.scenario.model.ScenarioModelFactory;
 import hu.bme.mit.gamma.scenario.model.Signal;
+import hu.bme.mit.gamma.scenario.model.StartAsColdViolationAnnotation;
 import hu.bme.mit.gamma.scenario.model.StrictAnnotation;
 import hu.bme.mit.gamma.scenario.model.UnorderedCombinedFragment;
 import hu.bme.mit.gamma.scenario.model.WaitAnnotation;
@@ -79,11 +81,11 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 	}
 
 	private InitialBlock handleInitBlockCopy() {
-		if(base.getInitialblock()== null) {
+		if (base.getInitialblock() == null) {
 			return null;
 		}
 		InitialBlock initBloc = factory.createInitialBlock();
-		for(ModalInteraction mi : base.getInitialblock().getModalInteractions()) {
+		for (ModalInteraction mi : base.getInitialblock().getModalInteractions()) {
 			initBloc.getModalInteractions().add((ModalInteraction) doSwitch(mi));
 		}
 		return initBloc;
@@ -92,6 +94,16 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 	@Override
 	public EObject caseStrictAnnotation(StrictAnnotation object) {
 		return factory.createStrictAnnotation();
+	}
+
+	@Override
+	public EObject caseDedicatedColdViolationAnnotation(DedicatedColdViolationAnnotation object) {
+		return factory.createDedicatedColdViolationAnnotation();
+	}
+
+	@Override
+	public EObject caseStartAsColdViolationAnnotation(StartAsColdViolationAnnotation object) {
+		return factory.createStartAsColdViolationAnnotation();
 	}
 
 	@Override
@@ -154,12 +166,11 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 			loop.setMinimum(object.getMinimum());
 			InteractionFragment fragment = factory.createInteractionFragment();
 			loop.getFragments().add(fragment);
-			
-			for(Interaction i: object.getFragments().get(0).getInteractions()) {
+
+			for (Interaction i : object.getFragments().get(0).getInteractions()) {
 				fragment.getInteractions().add((Interaction) this.doSwitch(i));
 			}
-			
-			
+
 			return loop;
 		}
 		InteractionFragment prev = previousFragment;

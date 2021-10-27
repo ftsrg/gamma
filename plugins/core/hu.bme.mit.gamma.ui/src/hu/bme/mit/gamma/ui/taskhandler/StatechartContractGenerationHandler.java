@@ -30,8 +30,7 @@ public class StatechartContractGenerationHandler extends TaskHandler {
 		ScenarioDefinition simplifiedScenario= simpleGenerator.execute();
 		Component component = ecoreUtil.getContainerOfType(baseScenario, ScenarioDeclaration.class)
 				.getComponent();
-		StatechartGenerator statechartGenerator = new StatechartGenerator(
-				true, simplifiedScenario, component, StatechartGenerationMode.GENERATE_ONLY_FORWARD);
+		StatechartGenerator statechartGenerator = new StatechartGenerator(simplifiedScenario, component, StatechartGenerationMode.GENERATE_ONLY_FORWARD);
 		StatechartDefinition statechart = statechartGenerator.execute();
 		Package packageOfComponent = ecoreUtil.getContainerOfType(component, Package.class);
 		StatechartSerializer statechartSerializer = new StatechartSerializer(file);
