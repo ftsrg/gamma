@@ -24,7 +24,7 @@ class ActivityNodeTransformer extends LowlevelTransitionToXTransitionTransformer
 	protected final extension ActivityLiterals activityLiterals = ActivityLiterals.INSTANCE 
 		
 	new(ViatraQueryEngine engine, Trace trace) {
-		super(engine, trace, null, false)
+		super(engine, trace)
 		
 		this.variableDeclarationTransformer = new VariableDeclarationTransformer(this.trace)
 		this.activityFlowTransformer = new ActivityFlowTransformer(this.trace)
