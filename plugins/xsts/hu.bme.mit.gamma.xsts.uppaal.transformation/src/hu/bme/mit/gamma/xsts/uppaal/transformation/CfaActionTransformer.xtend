@@ -1,8 +1,10 @@
 package hu.bme.mit.gamma.xsts.uppaal.transformation
 
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
+import hu.bme.mit.gamma.uppaal.util.AssignmentExpressionCreator
 import hu.bme.mit.gamma.uppaal.util.NtaBuilder
 import hu.bme.mit.gamma.util.GammaEcoreUtil
+import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.AssumeAction
 import hu.bme.mit.gamma.xsts.model.EmptyAction
@@ -14,6 +16,7 @@ import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import java.util.Collection
 import uppaal.declarations.VariableContainer
+import uppaal.templates.Edge
 import uppaal.templates.Location
 import uppaal.templates.LocationKind
 
@@ -27,29 +30,43 @@ class CfaActionTransformer {
 	
 	protected final extension NtaBuilder ntaBuilder
 	protected final Traceability traceability
-	protected final Collection<VariableContainer> transientVariables
+	protected final Collection<VariableContainer> transientVariables = newHashSet
 	
 	protected final extension ExpressionTransformer expressionTransformer
 	protected final extension VariableTransformer variableTransformer
+	protected final extension AssignmentExpressionCreator assignmentExpressionCreator
 	
 	protected final extension HavocHandler havocHandler = HavocHandler.INSTANCE
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	
-	new (NtaBuilder ntaBuilder, Traceability traceability,
-			Collection<VariableContainer> transientVariables) {
+	new (NtaBuilder ntaBuilder, Traceability traceability) {
 		this.ntaBuilder = ntaBuilder
 		this.traceability = traceability
-		this.transientVariables = transientVariables // No cloning, original reference must be used
 		this.variableTransformer = new VariableTransformer(ntaBuilder, traceability)
 		this.expressionTransformer = new ExpressionTransformer(traceability)
+		this.assignmentExpressionCreator = new AssignmentExpressionCreator(ntaBuilder)
 	}
 	
-	def dispatch Location transformAction(EmptyAction action, Location source) {
+	def void transformIntoCfa(Action action, Location source, Location finalTarget) {
+		transientVariables.clear
+		
+		val finishLocation = action.transformAction(source) // transientVariables is filled
+			
+		// If there is no merged action, the loop edge is unnecessary
+		if (finishLocation !== finalTarget) { // Is this correct? Should it not be source?
+			val lastEdge = finishLocation.createEdge(finalTarget)
+			lastEdge.resetTransientVariables(transientVariables)
+		}
+	}
+	
+	// Dispatch
+	
+	protected def dispatch Location transformAction(EmptyAction action, Location source) {
 		return source
 	}
 	
-	def dispatch Location transformAction(AssignmentAction action, Location source) {
+	protected def dispatch Location transformAction(AssignmentAction action, Location source) {
 		// UPPAAL does not support 'a = {1, 2, 5}' like assignments
 		val assignmentActions = action.extractArrayLiteralAssignments
 		var Location newSource = source
@@ -62,7 +79,7 @@ class CfaActionTransformer {
 		return newSource
 	}
 	
-	def dispatch Location transformAction(HavocAction action, Location source) {
+	protected def dispatch Location transformAction(HavocAction action, Location source) {
 		val xStsDeclaration = action.lhs.declaration
 		val xStsVariable = xStsDeclaration as VariableDeclaration
 		val uppaalVariable = traceability.get(xStsVariable)
@@ -91,7 +108,7 @@ class CfaActionTransformer {
 		return target
 	}
 	
-	def dispatch Location transformAction(VariableDeclarationAction action, Location source) {
+	protected def dispatch Location transformAction(VariableDeclarationAction action, Location source) {
 		val xStsVariable = action.variableDeclaration
 		val uppaalVariable = xStsVariable.transformAndTraceVariable
 //		uppaalVariable.prefix = DataVariablePrefix.META // Does not work, see XSTS Crossroads
@@ -108,14 +125,14 @@ class CfaActionTransformer {
 		}
 	}
 	
-	def dispatch Location transformAction(AssumeAction action, Location source) {
+	protected def dispatch Location transformAction(AssumeAction action, Location source) {
 		val edge = source.createEdgeCommittedSource(nextCommittedLocationName)
 		val uppaalExpression = action.assumption.transform
 		edge.guard = uppaalExpression
 		return edge.target
 	}
 	
-	def dispatch Location transformAction(SequentialAction action, Location source) {
+	protected def dispatch Location transformAction(SequentialAction action, Location source) {
 		val xStsActions = action.actions
 		var actualSource = source
 		for (xStsAction : xStsActions) {
@@ -124,7 +141,7 @@ class CfaActionTransformer {
 		return actualSource
 	}
 	
-	def dispatch Location transformAction(NonDeterministicAction action, Location source) {
+	protected def dispatch Location transformAction(NonDeterministicAction action, Location source) {
 		val xStsActions = action.actions
 		val targets = newArrayList
 		for (xStsAction : xStsActions) {
@@ -138,7 +155,7 @@ class CfaActionTransformer {
 		return target
 	}
 	
-	def dispatch Location transformAction(IfAction action, Location source) {
+	protected def dispatch Location transformAction(IfAction action, Location source) {
 		val clonedAction = action.clone
 		val xStsConditions = clonedAction.conditions
 		val xStsActions = clonedAction.branches
@@ -147,6 +164,15 @@ class CfaActionTransformer {
 		val proxy = xStsConditions.createChoiceActionWithExclusiveBranches(xStsActions)
 		
 		return proxy.transformAction(source)
+	}
+	
+	// Resetting
+	
+	protected def resetTransientVariables(Edge edge,
+			Iterable<? extends VariableContainer> transientVariables) {
+		for (transientVariable : transientVariables) {
+			edge.update += transientVariable.createResetingAssignmentExpression
+		}
 	}
 	
 }
