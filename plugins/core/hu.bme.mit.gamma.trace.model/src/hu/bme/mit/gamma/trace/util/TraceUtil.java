@@ -43,6 +43,7 @@ import hu.bme.mit.gamma.trace.model.InstanceStateConfiguration;
 import hu.bme.mit.gamma.trace.model.InstanceVariableState;
 import hu.bme.mit.gamma.trace.model.RaiseEventAct;
 import hu.bme.mit.gamma.trace.model.Reset;
+import hu.bme.mit.gamma.trace.model.Schedule;
 import hu.bme.mit.gamma.trace.model.Step;
 import hu.bme.mit.gamma.trace.model.TraceModelFactory;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
@@ -373,6 +374,11 @@ public class TraceUtil extends ExpressionUtil {
 	public boolean equalsTo(EObject lhs, EObject rhs) {
 		EqualityHelper helper = new EqualityHelper();
 		return helper.equals(lhs, rhs);
+	}
+
+	public void removeScheduleAndReset(Step step) {
+			step.getActions().removeIf(it -> it instanceof Schedule);
+			step.getActions().removeIf(it -> it instanceof Reset);
 	}
 	
 }

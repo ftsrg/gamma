@@ -182,7 +182,9 @@ public class AdaptiveContractTestGenerationHandler extends TaskHandler {
 										.subList(1, executionTrace.getSteps().size()));
 						    }
 						    else {
-						    	tmp.getSteps().addAll(executionTrace.getSteps());
+						    	List<Step> steps = executionTrace.getSteps();
+						    	traceUtil.removeScheduleAndReset(steps.get(0));
+						    	tmp.getSteps().addAll(steps);
 						    }
 							testsTraces.add(tmp);
 						}
