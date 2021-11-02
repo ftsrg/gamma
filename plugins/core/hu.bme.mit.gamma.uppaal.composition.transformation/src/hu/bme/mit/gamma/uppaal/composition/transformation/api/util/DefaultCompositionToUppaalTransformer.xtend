@@ -4,7 +4,6 @@ import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.transformation.util.GammaFileNamer
-import hu.bme.mit.gamma.transformation.util.SimpleInstanceHandler
 import hu.bme.mit.gamma.uppaal.composition.transformation.CompositeToUppaalTransformer
 import hu.bme.mit.gamma.uppaal.composition.transformation.TestQueryGenerationHandler
 import hu.bme.mit.gamma.uppaal.serializer.UppaalModelSerializer
@@ -18,6 +17,8 @@ import java.util.Collections
 import java.util.List
 import java.util.logging.Level
 import org.eclipse.xtend.lib.annotations.Data
+
+import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class DefaultCompositionToUppaalTransformer {
 	
@@ -82,10 +83,9 @@ class DefaultCompositionToUppaalTransformer {
 	}
 	
 	private def getCoverableInstances(Component component, ElementCoverage expected, Collection<ElementCoverage> received) {
-		val instanceHandler = SimpleInstanceHandler.INSTANCE
 		val components = newHashSet
 		if (received.contains(expected)) {
-			components += instanceHandler.getNewSimpleInstances(component)
+			components += component.allSimpleInstances
 		}
 		return components
 	}

@@ -378,7 +378,12 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		else if (component instanceof AsynchronousAdapter) {
 			AsynchronousAdapter asynchronousAdapter = (AsynchronousAdapter) component;
 			SynchronousComponentInstance wrappedInstance = asynchronousAdapter.getWrappedComponent();
-			simpleInstances.addAll(getAllSimpleInstances(wrappedInstance));
+			if (isStatechart(wrappedInstance)) {
+				simpleInstances.add(wrappedInstance);
+			}
+			else {
+				simpleInstances.addAll(getAllSimpleInstances(wrappedInstance));
+			}
 		}
 		else if (component instanceof AbstractSynchronousCompositeComponent) {
 			AbstractSynchronousCompositeComponent synchronousCompositeComponent =
@@ -422,8 +427,14 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		else if (component instanceof AsynchronousAdapter) {
 			AsynchronousAdapter adapter = (AsynchronousAdapter) component;
 			SynchronousComponentInstance instance = adapter.getWrappedComponent();
-			List<ComponentInstanceReference> childReferences = getAllSimpleInstanceReferences(instance);
-			instanceReferences.addAll(statechartUtil.prepend(childReferences, instance));
+			if (isStatechart(instance)) {
+				ComponentInstanceReference instanceReference = statechartUtil.createInstanceReference(instance);
+				instanceReferences.add(instanceReference);
+			}
+			else {
+				List<ComponentInstanceReference> childReferences = getAllSimpleInstanceReferences(instance);
+				instanceReferences.addAll(statechartUtil.prepend(childReferences, instance));
+			}
 		}
 		else if (component instanceof AbstractSynchronousCompositeComponent) {
 			AbstractSynchronousCompositeComponent synchronousCompositeComponent =

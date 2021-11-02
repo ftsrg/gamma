@@ -34,8 +34,8 @@ import uppaal.templates.SynchronizationKind
 import uppaal.templates.TemplatesPackage
 
 import static hu.bme.mit.gamma.uppaal.util.Namings.*
-import hu.bme.mit.gamma.transformation.util.SimpleInstanceHandler
 import hu.bme.mit.gamma.statechart.interface_.Component
+import hu.bme.mit.gamma.transformation.util.UnfoldingTraceability
 
 class AsynchronousSchedulerTemplateCreator {
 	// NTA
@@ -69,7 +69,7 @@ class AsynchronousSchedulerTemplateCreator {
 	
     protected final extension InPlaceExpressionTransformer inPlaceExpressionTransformer
     	= InPlaceExpressionTransformer.INSTANCE
-	protected final SimpleInstanceHandler simpleInstanceHandler = SimpleInstanceHandler.INSTANCE;
+	protected final UnfoldingTraceability simpleInstanceHandler = UnfoldingTraceability.INSTANCE;
 	// Rules
 	protected BatchTransformationRule<TopWrapperComponents.Match, TopWrapperComponents.Matcher> topWrapperSchedulerRule
 	protected BatchTransformationRule<TopAsyncCompositeComponents.Match, TopAsyncCompositeComponents.Matcher> instanceWrapperSchedulerRule

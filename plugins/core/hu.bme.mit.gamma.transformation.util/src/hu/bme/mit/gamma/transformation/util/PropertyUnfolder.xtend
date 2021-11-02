@@ -34,7 +34,7 @@ class PropertyUnfolder {
 	
 	protected final extension CompositeModelFactory compositeFactory =
 			CompositeModelFactory.eINSTANCE
-	protected final extension SimpleInstanceHandler instanceHandler = SimpleInstanceHandler.INSTANCE
+	protected final extension UnfoldingTraceability traceability = UnfoldingTraceability.INSTANCE
 	protected final extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	

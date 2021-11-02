@@ -34,10 +34,9 @@ import static com.google.common.base.Preconditions.checkState
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.transformation.util.Namings.*
 
-// TODO rename class
-class SimpleInstanceHandler {
+class UnfoldingTraceability {
 	// Singleton
-	public static final SimpleInstanceHandler INSTANCE =  new SimpleInstanceHandler
+	public static final UnfoldingTraceability INSTANCE =  new UnfoldingTraceability
 	protected new() {}
 	//
 	
@@ -224,16 +223,12 @@ class SimpleInstanceHandler {
 	
 	// Component instance references
 	
-	def getNewSimpleInstances(Component newType) {
-		return newType.allSimpleInstances
-	}
-	
 	def getNewSimpleInstances(Collection<ComponentInstanceReference> includedOriginalInstances,
 			Collection<ComponentInstanceReference> excludedOriginalInstances, Component newType) {
 		val newInstances = newArrayList
 		if (includedOriginalInstances.empty) {
 			// If it is empty, it means all simple instances must be covered
-			newInstances += newType.getNewSimpleInstances
+			newInstances += newType.allSimpleInstances
 		}
 		// The semantics is defined here: including has priority over excluding
 		newInstances -= excludedOriginalInstances.getNewSimpleInstances(newType)

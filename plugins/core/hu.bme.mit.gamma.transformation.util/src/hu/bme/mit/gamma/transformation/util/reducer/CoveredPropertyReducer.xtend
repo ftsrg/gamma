@@ -22,7 +22,7 @@ import hu.bme.mit.gamma.property.model.StateFormula
 import hu.bme.mit.gamma.property.util.PropertyUtil
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.trace.model.Step
-import hu.bme.mit.gamma.transformation.util.SimpleInstanceHandler
+import hu.bme.mit.gamma.transformation.util.UnfoldingTraceability
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.util.Collection
 
@@ -39,7 +39,7 @@ class CoveredPropertyReducer {
 	protected final extension PropertyUtil propertyUtil = PropertyUtil.INSTANCE
 	protected final extension ExpressionEvaluator expressionEvaluator = ExpressionEvaluator.INSTANCE
 	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
-	protected final extension SimpleInstanceHandler instanceHandler = SimpleInstanceHandler.INSTANCE
+	protected final extension UnfoldingTraceability traceability = UnfoldingTraceability.INSTANCE
 	
 	new(Collection<StateFormula> formulas, ExecutionTrace trace) {
 		this(formulas, #[trace])
@@ -121,7 +121,7 @@ class CoveredPropertyReducer {
 		for (stateConfiguration : step.instanceStateConfigurations) {
 			val stateInstance = stateConfiguration.instance.lastInstance // Only one expected
 			val stateVariable = stateConfiguration.state
-			if (instanceHandler.contains(instance, stateInstance) && state.helperEquals(stateVariable)) {
+			if (traceability.contains(instance, stateInstance) && state.helperEquals(stateVariable)) {
 				return createTrueExpression
 			}
 		}
@@ -135,7 +135,7 @@ class CoveredPropertyReducer {
 		for (variableState : step.instanceVariableStates) {
 			val stateInstance = variableState.instance.lastInstance // Only one expected
 			val stateVariable = variableState.declaration
-			if (instanceHandler.contains(instance, stateInstance) && variable.helperEquals(stateVariable)) {
+			if (traceability.contains(instance, stateInstance) && variable.helperEquals(stateVariable)) {
 				val value = variableState.value
 				return value.clone
 			}

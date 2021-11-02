@@ -18,7 +18,7 @@ import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.Transition
-import hu.bme.mit.gamma.transformation.util.SimpleInstanceHandler
+import hu.bme.mit.gamma.transformation.util.UnfoldingTraceability
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.util.List
 import org.eclipse.xtend.lib.annotations.Data
@@ -32,7 +32,7 @@ class ModelAnnotatorPropertyGenerator {
 	protected final AnnotatablePreprocessableElements annotableElements
 	
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
-	protected final extension SimpleInstanceHandler simpleInstanceHandler = SimpleInstanceHandler.INSTANCE
+	protected final extension UnfoldingTraceability traceability = UnfoldingTraceability.INSTANCE
 	
 	new(Component newTopComponent, AnnotatablePreprocessableElements annotableElements) {
 		this.newTopComponent = newTopComponent
@@ -119,7 +119,7 @@ class ModelAnnotatorPropertyGenerator {
 		if (references === null) {
 			return #[]
 		}
-		return simpleInstanceHandler.getNewSimpleInstances(references.include,
+		return traceability.getNewSimpleInstances(references.include,
 			references.exclude, component)
 	}
 	
@@ -129,19 +129,18 @@ class ModelAnnotatorPropertyGenerator {
 			return #[]
 		}
 		val includedInstances =
-			simpleInstanceHandler.getNewSimpleInstances(references.instances.include, component)
+			traceability.getNewSimpleInstances(references.instances.include, component)
 		val excludedInstances =
-			simpleInstanceHandler.getNewSimpleInstances(references.instances.exclude, component)
+			traceability.getNewSimpleInstances(references.instances.exclude, component)
 		val includedPorts =
-			simpleInstanceHandler.getNewSimpleInstancePorts(references.ports.include, component)
+			traceability.getNewSimpleInstancePorts(references.ports.include, component)
 		val excludedPorts =
-			simpleInstanceHandler.getNewSimpleInstancePorts(references.ports.exclude, component)
+			traceability.getNewSimpleInstancePorts(references.ports.exclude, component)
 		
 		val ports = newArrayList
 		if (includedInstances.empty && includedPorts.empty) {
 			// If both includes are empty, then we include all the new instances
-			val List<SynchronousComponentInstance> newSimpleInstances =
-					simpleInstanceHandler.getNewSimpleInstances(component)
+			val newSimpleInstances = component.allSimpleInstances
 			ports += newSimpleInstances.ports
 		}
 		// The semantics is defined here: including has priority over excluding
@@ -167,13 +166,13 @@ class ModelAnnotatorPropertyGenerator {
 			return #[]
 		}
 		val stateReferences = references.getStates
-		var includedStates = simpleInstanceHandler.getNewSimpleInstanceStates(
+		var includedStates = traceability.getNewSimpleInstanceStates(
 			stateReferences.include, component).toList
 		if (includedStates.empty) {
 			includedStates = component.allSimpleInstances.map[it.type]
 				.filter(StatechartDefinition).map[it.allStates].flatten.toList
 		}
-		val excludedStates = simpleInstanceHandler.getNewSimpleInstanceStates(
+		val excludedStates = traceability.getNewSimpleInstanceStates(
 			stateReferences.exclude, component)
 		includedStates -= excludedStates
 		return includedStates
@@ -185,13 +184,13 @@ class ModelAnnotatorPropertyGenerator {
 			return #[]
 		}
 		val transitionReferences = references.transitions
-		var includedTransitions = simpleInstanceHandler.getNewSimpleInstanceTransitions(
+		var includedTransitions = traceability.getNewSimpleInstanceTransitions(
 			transitionReferences.include, component).toList
 		if (includedTransitions.empty) {
 			includedTransitions = component.allSimpleInstances.map[it.type]
 				.filter(StatechartDefinition).map[it.transitions].flatten.toList
 		}
-		val excludedTransitions = simpleInstanceHandler.getNewSimpleInstanceTransitions(
+		val excludedTransitions = traceability.getNewSimpleInstanceTransitions(
 			transitionReferences.exclude, component)
 		includedTransitions -= excludedTransitions
 		return includedTransitions
@@ -202,20 +201,19 @@ class ModelAnnotatorPropertyGenerator {
 		if (references === null) {
 			return #[]
 		}
-		val includedInstances =	simpleInstanceHandler
+		val includedInstances =	traceability
 				.getNewSimpleInstances(references.instances.include, component)
-		val excludedInstances =	simpleInstanceHandler
+		val excludedInstances =	traceability
 				.getNewSimpleInstances(references.instances.exclude, component)
-		val includedVariables =	simpleInstanceHandler
+		val includedVariables =	traceability
 				.getNewSimpleInstanceVariables(references.variables.include, component)
-		val excludedVariables =	simpleInstanceHandler
+		val excludedVariables =	traceability
 				.getNewSimpleInstanceVariables(references.variables.exclude, component)
 		
 		val variables = newArrayList
 		if (includedInstances.empty && includedVariables.empty) {
 			// If both includes are empty, then we include all the new instances
-			val List<SynchronousComponentInstance> newSimpleInstances =
-					simpleInstanceHandler.getNewSimpleInstances(component)
+			val newSimpleInstances = component.allSimpleInstances
 			variables += newSimpleInstances.map[it.type].filter(StatechartDefinition)
 				.map[it.variableDeclarations].flatten
 		}
