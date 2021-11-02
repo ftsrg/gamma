@@ -177,7 +177,7 @@ public class AdaptiveContractTestGenerationHandler extends TaskHandler {
 						    ExecutionTrace tmp = ecoreUtil.clone(clonedTrace);
 						    tmp.getAnnotations().clear();
 						    tmp.getAnnotations().addAll(executionTrace.getAnnotations());
-						    if(executionTrace.getSteps().get(0).getAsserts().isEmpty()) {
+						    if(!TraceModelDerivedFeatures.hasAssertInFirstStep(executionTrace)) {
 						    	tmp.getSteps().addAll(executionTrace.getSteps()
 										.subList(1, executionTrace.getSteps().size()));
 						    }
