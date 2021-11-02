@@ -77,7 +77,7 @@ public class ScenarioStatechartUtil {
 	}
 	
 	public String getLoopvariableNameForDepth(int depth) {
-		return LoopVariable+depth;
+		return LoopVariable + depth;
 	}
 
 }

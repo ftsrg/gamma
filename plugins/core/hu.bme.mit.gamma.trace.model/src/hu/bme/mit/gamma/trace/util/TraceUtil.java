@@ -310,7 +310,7 @@ public class TraceUtil extends ExpressionUtil {
 		if (imports != null) {
 			trace.setImport(imports);
 		}
-		if(annotation!= null) {
+		if (annotation!= null) {
 			TraceModelFactory factory = TraceModelFactory.eINSTANCE;
 			GammaEcoreUtil ecoreUtil =  GammaEcoreUtil.INSTANCE;
 			ExecutionTraceAllowedWaitingAnnotation newAnnotation = factory.createExecutionTraceAllowedWaitingAnnotation();
@@ -377,8 +377,8 @@ public class TraceUtil extends ExpressionUtil {
 	}
 
 	public void removeScheduleAndReset(Step step) {
-			step.getActions().removeIf(it -> it instanceof Schedule);
-			step.getActions().removeIf(it -> it instanceof Reset);
+		step.getActions().removeIf(it -> it instanceof Schedule);
+		step.getActions().removeIf(it -> it instanceof Reset);
 	}
 	
 }

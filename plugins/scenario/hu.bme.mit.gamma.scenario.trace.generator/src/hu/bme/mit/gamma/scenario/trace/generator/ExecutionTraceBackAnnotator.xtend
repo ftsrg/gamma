@@ -89,15 +89,15 @@ class ExecutionTraceBackAnnotator {
 		for (var i = 0; i < trace.steps.size; i++) {
 			val startingStep = trace.steps.get(i)
 			if (startingStep.isReceive) {
-				if (i+1 == trace.steps.size) {
+				if (i + 1 == trace.steps.size) {
 					return
 				}
 				val next = trace.steps.get(i+1)
 				if (next.isSend) {
-					if(next.actions.findFirst[!(it instanceof Schedule || it instanceof TimeElapse)] === null){
+					if (next.actions.findFirst[!(it instanceof Schedule || it instanceof TimeElapse)] === null){
 						next.actions.clear
 					} else {
-						throw(new IllegalArgumentException('''Step number «i» contains both actions other then schedules and time elapse and asserts.'''))
+						throw new IllegalArgumentException('''Step number «i» contains both actions other then schedules and time elapse and asserts.''')
 					}
 				}
 			}
@@ -147,8 +147,8 @@ class ExecutionTraceBackAnnotator {
 					actions += action
 				}
 			}
-			if(step == trace.steps.get(0)){
-				for(raise : step.asserts.filter(RaiseEventAct).filter[!scenarioStatechartUtil.isTurnedOut(it.port)]){
+			if (step == trace.steps.get(0)){
+				for (raise : step.asserts.filter(RaiseEventAct).filter[!scenarioStatechartUtil.isTurnedOut(it.port)]){
 					var asser = createRaiseEventAct
 					asser.port = getPort(raise.port.name)
 					asser.event = getEvent(asser.port, raise.event.name)
@@ -185,14 +185,16 @@ class ExecutionTraceBackAnnotator {
 
 	def removeNotNeededInteractions(ExecutionTrace trace) {
 		for (step : trace.steps) {
-			if(!(step == trace.steps.get(0) && !(step.asserts.filter(RaiseEventAct).filter[scenarioStatechartUtil.isTurnedOut(it.port)].empty))){
-				var notNeeded = newArrayList
-				for (act : step.actions) {
-					if (!isInteractionPairPresent(step, act)) {
-						notNeeded += act
+			if (step != trace.steps.get(0)) {
+				if (!(step.asserts.filter(RaiseEventAct).filter[scenarioStatechartUtil.isTurnedOut(it.port)].empty)) {
+					var notNeeded = newArrayList
+					for (act : step.actions) {
+						if (!isInteractionPairPresent(step, act)) {
+							notNeeded += act
+						}
 					}
+					step.actions -= notNeeded
 				}
-				step.actions -= notNeeded
 			}
 		}
 	}

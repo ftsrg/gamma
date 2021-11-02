@@ -35,6 +35,7 @@ import hu.bme.mit.gamma.scenario.model.OptionalCombinedFragment
 import hu.bme.mit.gamma.scenario.model.PermissiveAnnotation
 import hu.bme.mit.gamma.scenario.model.ScenarioDefinition
 import hu.bme.mit.gamma.scenario.model.Signal
+import hu.bme.mit.gamma.scenario.model.StartAsColdViolationAnnotation
 import hu.bme.mit.gamma.scenario.model.StrictAnnotation
 import hu.bme.mit.gamma.scenario.model.WaitAnnotation
 import hu.bme.mit.gamma.scenario.model.derivedfeatures.ScenarioModelDerivedFeatures
@@ -66,11 +67,11 @@ import java.math.BigInteger
 import java.util.ArrayList
 import java.util.HashMap
 import java.util.List
+import java.util.Map
 import org.eclipse.emf.common.util.EList
 import org.eclipse.emf.ecore.EObject
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
-import hu.bme.mit.gamma.scenario.model.StartAsColdViolationAnnotation
 
 enum StatechartGenerationMode {
 	GENERATE_MERGE_STATE,
@@ -120,61 +121,62 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 
 	def StatechartDefinition execute() {
 		statechart = createStatechartDefinition
-		for (a : scenario.annotation) {
-			if (a instanceof WaitAnnotation) {
-				allowedGlobalWaitMax = a.maximum.intValue
-				allowedGlobalWaitMin = (a as WaitAnnotation).minimum.intValue
-			} else if (a instanceof StrictAnnotation) {
+		for (annotation : scenario.annotation) {
+			if (annotation instanceof WaitAnnotation) {
+				allowedGlobalWaitMax = annotation.maximum.intValue
+				allowedGlobalWaitMin = (annotation as WaitAnnotation).minimum.intValue
+			} else if (annotation instanceof StrictAnnotation) {
 				nonDeclaredMessageMode = 1
-			} else if (a instanceof PermissiveAnnotation) {
+			} else if (annotation instanceof PermissiveAnnotation) {
 				nonDeclaredMessageMode = 0
-			} else if (a instanceof NegatedWaitAnnotation) {
-				allowedGlobalWaitNegMax = a.maximum.intValue
-			} else if (a instanceof NegStrictAnnotation) {
+			} else if (annotation instanceof NegatedWaitAnnotation) {
+				allowedGlobalWaitNegMax = annotation.maximum.intValue
+			} else if (annotation instanceof NegStrictAnnotation) {
 				nonDeclaredNegMessageMode = 1
-			} else if (a instanceof NegPermissiveAnnotation) {
+			} else if (annotation instanceof NegPermissiveAnnotation) {
 				nonDeclaredNegMessageMode = 0
-			} else if(a instanceof DedicatedColdViolationAnnotation) {
+			} else if (annotation instanceof DedicatedColdViolationAnnotation) {
 				coldViolationExisits = true
-			} else if(a instanceof StartAsColdViolationAnnotation) {
+			} else if (annotation instanceof StartAsColdViolationAnnotation) {
 				coldViolationExisits = false
 			}
 		}
 		
 		initializeStateChart(scenario.name)
 
-		for (mi : scenario.chart.fragment.interactions) {
-			process(mi)
+		for (modalInteraction : scenario.chart.fragment.interactions) {
+			process(modalInteraction)
 		}
 
 		var remove = new ArrayList<StateNode>()
-		for (s : statechart.regions.get(0).stateNodes) {
-			if (StatechartModelDerivedFeatures::getIncomingTransitions(s).isEmpty &&
-				!(s.name == scenarioStatechartUtil.initial))
-				remove += s
+		for (stateNode : statechart.regions.get(0).stateNodes) {
+			if (StatechartModelDerivedFeatures::getIncomingTransitions(stateNode).isEmpty &&
+				!(stateNode.name == scenarioStatechartUtil.initial))
+				remove += stateNode
 		}
 		statechart.regions.get(0).stateNodes.removeAll(remove)
 		val lastState = statechart.regions.get(0).stateNodes.get(statechart.regions.get(0).stateNodes.size - 1)
 		lastState.name = scenarioStatechartUtil.accepting
 
-		for (t : statechart.transitions) {
-			if (t.getTargetState == coldViolation) {
-				t.effects.add(setIntVariable(variableMap.getOrCreate(scenarioStatechartUtil.result), 1))
-			} else if (t.targetState == hotViolation) {
-				t.effects.add(setIntVariable(variableMap.getOrCreate(scenarioStatechartUtil.result), 0))
-			} else if (t.targetState == lastState) {
-				t.effects.add(setIntVariable(variableMap.getOrCreate(scenarioStatechartUtil.result), 2))
+		for (transition : statechart.transitions) {
+			if (transition.getTargetState == coldViolation) {
+				transition.effects.add(setIntVariable(variableMap.getOrCreate(scenarioStatechartUtil.result), 1))
+			} else if (transition.targetState == hotViolation) {
+				transition.effects.add(setIntVariable(variableMap.getOrCreate(scenarioStatechartUtil.result), 0))
+			} else if (transition.targetState == lastState) {
+				transition.effects.add(setIntVariable(variableMap.getOrCreate(scenarioStatechartUtil.result), 2))
 			}
 		}
 		
 		val newmergeStates = newArrayList
-		for(stateNode : statechart.regions.get(0).stateNodes){
-			if(stateNode instanceof ChoiceState && StatechartModelDerivedFeatures.getIncomingTransitions(stateNode as ChoiceState).size>1){
+		for (stateNode : statechart.regions.get(0).stateNodes){
+			if (stateNode instanceof ChoiceState &&
+				StatechartModelDerivedFeatures.getIncomingTransitions(stateNode as ChoiceState).size>1){
 				val choice = stateNode as ChoiceState
 				val merge = createMergeState
-				merge.name = "merge"+stateCount++
-				for (t : StatechartModelDerivedFeatures.getIncomingTransitions(choice)) {
-					t.targetState = merge
+				merge.name = "merge" + stateCount++
+				for (transition : StatechartModelDerivedFeatures.getIncomingTransitions(choice)) {
+					transition.targetState = merge
 				}
 				val mergeTransition = createTransition
 				mergeTransition.sourceState = merge
@@ -185,10 +187,10 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 		}
 		statechart.regions.get(0).stateNodes += newmergeStates
 
-		val a = createScenarioContractAnnotation
-		a.monitoredComponent = component
-		a.scenarioType = nonDeclaredMessageMode == 1 ? NotDefinedEventMode.STRICT : NotDefinedEventMode.PERMISSIVE
-		statechart.annotations += a
+		val annotation = createScenarioContractAnnotation
+		annotation.monitoredComponent = component
+		annotation.scenarioType = nonDeclaredMessageMode == 1 ? NotDefinedEventMode.STRICT : NotDefinedEventMode.PERMISSIVE
+		statechart.annotations += annotation
 		
 		val waitingAnnotation= createScenarioAllowedWaitAnnotation
 		val lower = createIntegerLiteralExpression
@@ -256,8 +258,8 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 	def dispatch Interaction process(AlternativeCombinedFragment a) {
 		var ends = newArrayList
 		var choice = addChoiceState
-		for (t : StatechartModelDerivedFeatures.getIncomingTransitions(previousState)) {
-				t.targetState = choice
+		for (transition : StatechartModelDerivedFeatures.getIncomingTransitions(previousState)) {
+				transition.targetState = choice
 		}
 		replacedStateWithValue.put(previousState,choice)
 		statechart.regions.get(0).stateNodes.remove(previousState)
@@ -271,15 +273,15 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 			t.sourceState = choice
 			t.targetState = state
 			statechart.transitions.add(t)
-			for (ints : a.fragments.get(i).interactions)
-				process(ints)
+			for (interaction : a.fragments.get(i).interactions)
+				process(interaction)
 			ends.add(previousState)
 			stateCount--
 		}
 		var merg = createState
-		for (t : statechart.transitions)
-			if (ends.contains(t.targetState))
-				t.targetState = merg
+		for (transition : statechart.transitions)
+			if (ends.contains(transition.targetState))
+				transition.targetState = merg
 		statechart.regions.get(0).stateNodes.removeAll(ends)
 
 		merg.name = "merge" + String.valueOf(exsistingMerges++)
@@ -292,15 +294,15 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 		val loopDepth = scenarioStatechartUtil.getLoopDepth(loop)
 
 		var prevprev = previousState
-		for (i : loop.fragments.get(0).interactions) {
-			i.process
+		for (interaction : loop.fragments.get(0).interactions) {
+			interaction.process
 		}
-		if(replacedStateWithValue.containsKey(prevprev)){
+		if (replacedStateWithValue.containsKey(prevprev)){
 			prevprev = replacedStateWithValue.remove(prevprev)
 		}
 		var choice = addChoiceState
-		for (t : StatechartModelDerivedFeatures.getIncomingTransitions(previousState)) {
-			t.targetState = choice
+		for (transition : StatechartModelDerivedFeatures.getIncomingTransitions(previousState)) {
+			transition.targetState = choice
 		}
 
 		replacedStateWithValue.put(previousState,choice)
@@ -339,9 +341,9 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 
 	def dispatch Interaction process(OptionalCombinedFragment ocf) {
 		var choice = addChoiceState
-		for (t : statechart.transitions) {
-			if (t.targetState.equals(previousState))
-				t.targetState = choice
+		for (transition : statechart.transitions) {
+			if (transition.targetState.equals(previousState))
+				transition.targetState = choice
 		}
 		replacedStateWithValue.put(previousState,choice)
 		statechart.regions.get(0).stateNodes.remove(previousState)
@@ -349,8 +351,8 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 		var stateNew = createNewState("state" + String.valueOf(stateCount++))
 		previousState = stateNew
 		statechart.regions.get(0).stateNodes.add(stateNew)
-		for (i : ocf.fragments.get(0).interactions) {
-			process(i)
+		for (interaction : ocf.fragments.get(0).interactions) {
+			process(interaction)
 		}
 		var t1 = createTransition
 		var t2 = createTransition
@@ -484,9 +486,9 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 				case GENERATE_MERGE_STATE: {
 					val mergeState = createMergeState
 					mergeState.name = "merge" + stateCount++
-					for (t : statechart.transitions) {
-						if (t.targetState == previousState && t !== t3) {
-							t.targetState = mergeState
+					for (transition : statechart.transitions) {
+						if (transition.targetState == previousState && transition !== t3) {
+							transition.targetState = mergeState
 						}
 					}
 					val newTransition = createTransition
@@ -500,8 +502,8 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 					statechart.transitions.remove(t3)
 				}
 				case GENERATE_DUPLICATED_CHOICES: {
-					for (t : previousState.incomingTransitions) {
-						if (t.sourceState !== tmpChoice) {
+					for (transition : previousState.incomingTransitions) {
+						if (transition.sourceState !== tmpChoice) {
 							val tmpChoice2 = addChoiceState
 							val forwardCopy = forwardTransition.clone
 							val violationCopy = violationTransition.clone
@@ -509,7 +511,7 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 							t3Copy.sourceState = tmpChoice2
 							forwardCopy.sourceState = tmpChoice2
 							violationCopy.sourceState = tmpChoice2
-							t.targetState = tmpChoice2
+							transition.targetState = tmpChoice2
 							statechart.regions.get(0).stateNodes += tmpChoice2
 							statechart.transitions += t3Copy
 							statechart.transitions += forwardCopy
@@ -555,8 +557,8 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 			t = getEventTrigger(first, reversed)
 		}
 		if (!isNegated) {
-			for (mi : set.modalInteractions) {
-				var a = getRaiseEventAction(mi, !reversed)
+			for (modalInteraction : set.modalInteractions) {
+				var a = getRaiseEventAction(modalInteraction, !reversed)
 				if (a !== null)
 					forwardTransition.effects.add(a)
 			}
@@ -645,15 +647,15 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 		var ports = newArrayList
 		val events = newArrayList
 		var allPorts = statechart.ports.filter[!it.inputEvents.empty]
-		for (s : set.modalInteractions) {
-			if (s instanceof Signal) {
-				val portName = s.direction == InteractionDirection.SEND
-						? scenarioStatechartUtil.getTurnedOutPortName(s.port)
-						: s.port.name
+		for (modalInteraction : set.modalInteractions) {
+			if (modalInteraction instanceof Signal) {
+				val portName = modalInteraction.direction == InteractionDirection.SEND
+						? scenarioStatechartUtil.getTurnedOutPortName(modalInteraction.port)
+						: modalInteraction.port.name
 				ports.add(getPort(portName))
-				events.add(getEvent(s.event.name, getPort(portName)))
-			} else if (s instanceof NegatedModalInteraction) {
-				val m = s.modalinteraction
+				events.add(getEvent(modalInteraction.event.name, getPort(portName)))
+			} else if (modalInteraction instanceof NegatedModalInteraction) {
+				val m = modalInteraction.modalinteraction
 				if (m instanceof Signal) {
 					val portName = m.direction == InteractionDirection.SEND
 							? scenarioStatechartUtil.getTurnedOutPortName(m.port)
@@ -663,10 +665,10 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 				}
 			}
 		}
-		for (p : allPorts) {
-			if (!ports.contains(p)) {
+		for (port : allPorts) {
+			if (!ports.contains(port)) {
 				var any = createAnyPortEventReference
-				any.port = p
+				any.port = port
 				var t = createEventTrigger
 				t.eventReference = any
 				var u = createUnaryTrigger
@@ -674,12 +676,12 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 				u.type = UnaryType.NOT
 				triggers.add(u)
 			} else {
-				var concrateEvents = p.inputEvents.filter[!(events.contains(it))]
-				for (c : concrateEvents) {
+				var concrateEvents = port.inputEvents.filter[!(events.contains(it))]
+				for (concrateEvent : concrateEvents) {
 					var t = createEventTrigger
 					var e = createPortEventReference
-					e.event = c
-					e.port = p
+					e.event = concrateEvent
+					e.port = port
 					t.eventReference = e
 					var u = createUnaryTrigger
 					u.operand = t
@@ -696,28 +698,28 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 		bin.type = type
 		var runningbin = bin
 		var signalCount = 0
-		for (t : triggers) {
+		for (trigger : triggers) {
 			signalCount++
 
 			if (runningbin.leftOperand === null) {
-				runningbin.leftOperand = t
+				runningbin.leftOperand = trigger
 			}
 			else if (signalCount == triggers.size) {
-				runningbin.rightOperand = t
+				runningbin.rightOperand = trigger
 			} else {
 				var newbin = createBinaryTrigger
 				runningbin.rightOperand = newbin
 				newbin.type = type
 				runningbin = newbin
-				runningbin.leftOperand = t
+				runningbin.leftOperand = trigger
 			}
 		}
 		return bin
 	}
 
 	protected def boolean isAllNeg(ModalInteractionSet set) {
-		for (i : set.modalInteractions)
-			if (!( i instanceof NegatedModalInteraction))
+		for (modalInteraction : set.modalInteractions)
+			if (!( modalInteraction instanceof NegatedModalInteraction))
 				return false
 		return true
 	}
@@ -738,9 +740,9 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 		return assign
 	}
 	
-	def VariableDeclaration getOrCreate(HashMap<String, VariableDeclaration> map, String string) {
+	def VariableDeclaration getOrCreate(Map<String, VariableDeclaration> map, String string) {
 		val result = map.get(string)
-		if(result !== null){
+		if (result !== null){
 			return result
 		} 
 		else {
@@ -953,8 +955,8 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 			port2 = getPort(s.port.name)
 		a.event = getEvent(s.event.name, port2)
 		a.port = port2
-		for (p : (s as Signal).arguments)
-			a.arguments.add(ecureUtil.clone(p))
+		for (argument : (s as Signal).arguments)
+			a.arguments.add(ecureUtil.clone(argument))
 		return a
 	}
 
@@ -985,23 +987,23 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 	}
 
 	def protected StateNode getState(String name) {
-		for (s : statechart.regions.get(0).stateNodes)
-			if (s.name.equals(name))
-				return s
+		for (stateNode : statechart.regions.get(0).stateNodes)
+			if (stateNode.name.equals(name))
+				return stateNode
 		return null
 	}
 
 	def protected Port getPort(String name) {
-		for (s : statechart.ports)
-			if (s.name.equals(name))
-				return s
+		for (port : statechart.ports)
+			if (port.name.equals(name))
+				return port
 		return null
 	}
 
 	def protected Event getEvent(String name, Port port) {
-		for (s : port.interfaceRealization.interface.events)
-			if (s.event.name.equals(name))
-				return s.event
+		for (event : port.interfaceRealization.interface.events)
+			if (event.event.name.equals(name))
+				return event.event
 		return null
 	}
 
@@ -1025,17 +1027,7 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 		statechart.name = scenarioName
 		var region = createRegion
 		region.name = "region"
-		statechart.regions.add(region)
-		
-//		variableMap.put(scenarioStatechartUtil.result,createIntegerVariable(scenarioStatechartUtil.result))
-//		variableMap.put(scenarioStatechartUtil.iteratingVariable,createIntegerVariable(scenarioStatechartUtil.iteratingVariable))
-//		variableMap.put(scenarioStatechartUtil.getLoopvariableNameForDepth(0),createIntegerVariable(scenarioStatechartUtil.getLoopvariableNameForDepth(0)))
-//		
-//
-//		statechart.variableDeclarations.add(variableMap.get(scenarioStatechartUtil.result))
-//		statechart.variableDeclarations.add(variableMap.get(scenarioStatechartUtil.iteratingVariable))
-//		statechart.variableDeclarations.add(variableMap.get(scenarioStatechartUtil.getLoopvariableNameForDepth(0)))
-		
+		statechart.regions.add(region)		
 
 		var initial = createInitialState
 		initial.name = scenarioStatechartUtil.initial
@@ -1058,7 +1050,7 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 		}
 		
 		val initBlock = scenario.initialblock
-		if(initBlock === null){
+		if (initBlock === null){
 			var t = createTransition
 			t.sourceState = initial
 			t.targetState = s
@@ -1077,7 +1069,7 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 			var t2 = createTransition
 			t2.sourceState = initChoice
 			t2.targetState = s
-			for(interaction : initBlock.modalInteractions){
+			for (interaction : initBlock.modalInteractions){
 				var a = getRaiseEventAction(interaction, false)
 				if (a !== null){
 					t2.effects += a
@@ -1088,26 +1080,26 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 			
 			var t3 = createTransition
 			t3.sourceState = initChoice
-			t3.targetState = (initBlock.modalInteractions.get(0).modality == ModalityType.HOT)?hotViolation:coldViolation
+			t3.targetState = (initBlock.modalInteractions.get(0).modality == ModalityType.HOT) ? hotViolation : coldViolation
 			t3.guard = createElseExpression
 			statechart.transitions.add(t3)
 		}
 	}
 
 	def protected addPorts(Component c) {
-		for (p : c.ports) {
+		for (port : c.ports) {
 			var pcopy = createPort
 			var iReali = createInterfaceRealization
-			iReali.realizationMode = p.interfaceRealization.realizationMode
-			iReali.interface = p.interfaceRealization.interface
+			iReali.realizationMode = port.interfaceRealization.realizationMode
+			iReali.interface = port.interfaceRealization.interface
 			pcopy.interfaceRealization = iReali
-			pcopy.name = p.name
+			pcopy.name = port.name
 			statechart.ports.add(pcopy)
 			var preverse = createPort
-			preverse.name = scenarioStatechartUtil.getTurnedOutPortName(p)
+			preverse.name = scenarioStatechartUtil.getTurnedOutPortName(port)
 			var iRealiR = createInterfaceRealization
-			iRealiR.interface = p.interfaceRealization.interface
-			iRealiR.realizationMode = p.interfaceRealization.realizationMode.opposite
+			iRealiR.interface = port.interfaceRealization.interface
+			iRealiR.realizationMode = port.interfaceRealization.realizationMode.opposite
 			preverse.interfaceRealization = iRealiR
 			statechart.ports.add(preverse)
 		}

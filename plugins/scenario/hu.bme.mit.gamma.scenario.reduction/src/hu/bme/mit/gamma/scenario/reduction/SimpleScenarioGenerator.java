@@ -70,12 +70,12 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 		simple.setChart(factory.createChart());
 		simple.getChart().setFragment(factory.createInteractionFragment());
 		simple.setInitialblock(handleInitBlockCopy());
-		for (Annotation a : base.getAnnotation()) {
-			simple.getAnnotation().add((Annotation) this.doSwitch(a));
+		for (Annotation annotation : base.getAnnotation()) {
+			simple.getAnnotation().add((Annotation) this.doSwitch(annotation));
 		}
 		previousFragment = simple.getChart().getFragment();
-		for (Interaction i : base.getChart().getFragment().getInteractions()) {
-			simple.getChart().getFragment().getInteractions().add((Interaction) this.doSwitch(i));
+		for (Interaction interaction : base.getChart().getFragment().getInteractions()) {
+			simple.getChart().getFragment().getInteractions().add((Interaction) this.doSwitch(interaction));
 		}
 		return simple;
 	}
@@ -85,8 +85,8 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 			return null;
 		}
 		InitialBlock initBloc = factory.createInitialBlock();
-		for (ModalInteraction mi : base.getInitialblock().getModalInteractions()) {
-			initBloc.getModalInteractions().add((ModalInteraction) doSwitch(mi));
+		for (ModalInteraction modalInteraction : base.getInitialblock().getModalInteractions()) {
+			initBloc.getModalInteractions().add((ModalInteraction) doSwitch(modalInteraction));
 		}
 		return initBloc;
 	}
@@ -123,25 +123,25 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 
 	@Override
 	public EObject caseWaitAnnotation(WaitAnnotation object) {
-		WaitAnnotation a = factory.createWaitAnnotation();
-		a.setMaximum(object.getMaximum());
-		a.setMinimum(object.getMinimum());
-		return a;
+		WaitAnnotation annotation = factory.createWaitAnnotation();
+		annotation.setMaximum(object.getMaximum());
+		annotation.setMinimum(object.getMinimum());
+		return annotation;
 	}
 
 	@Override
 	public EObject caseNegatedWaitAnnotation(NegatedWaitAnnotation object) {
-		NegatedWaitAnnotation a = factory.createNegatedWaitAnnotation();
-		a.setMaximum(object.getMaximum());
-		a.setMinimum(object.getMinimum());
-		return a;
+		NegatedWaitAnnotation annotation = factory.createNegatedWaitAnnotation();
+		annotation.setMaximum(object.getMaximum());
+		annotation.setMinimum(object.getMinimum());
+		return annotation;
 	}
 
 	@Override
 	public EObject caseAlternativeCombinedFragment(AlternativeCombinedFragment object) {
 		AlternativeCombinedFragment acf = factory.createAlternativeCombinedFragment();
-		for (InteractionFragment f : object.getFragments()) {
-			acf.getFragments().add((InteractionFragment) this.doSwitch(f));
+		for (InteractionFragment fragment : object.getFragments()) {
+			acf.getFragments().add((InteractionFragment) this.doSwitch(fragment));
 		}
 		return acf;
 	}
@@ -149,13 +149,13 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 	@Override
 	public EObject caseInteractionFragment(InteractionFragment object) {
 		InteractionFragment prev = previousFragment;
-		InteractionFragment i = factory.createInteractionFragment();
-		previousFragment = i;
+		InteractionFragment fragment = factory.createInteractionFragment();
+		previousFragment = fragment;
 		for (Interaction a : object.getInteractions()) {
-			i.getInteractions().add((Interaction) this.doSwitch(a));
+			fragment.getInteractions().add((Interaction) this.doSwitch(a));
 		}
 		previousFragment = prev;
-		return i;
+		return fragment;
 	}
 
 	@Override
@@ -167,8 +167,8 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 			InteractionFragment fragment = factory.createInteractionFragment();
 			loop.getFragments().add(fragment);
 
-			for (Interaction i : object.getFragments().get(0).getInteractions()) {
-				fragment.getInteractions().add((Interaction) this.doSwitch(i));
+			for (Interaction interaction : object.getFragments().get(0).getInteractions()) {
+				fragment.getInteractions().add((Interaction) this.doSwitch(interaction));
 			}
 
 			return loop;
@@ -343,51 +343,51 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 
 	@Override
 	public EObject caseNegatedModalInteraction(NegatedModalInteraction object) {
-		NegatedModalInteraction nm = factory.createNegatedModalInteraction();
-		nm.setModalinteraction((InteractionDefinition) this.doSwitch(object.getModalinteraction()));
-		return nm;
+		NegatedModalInteraction negatedModalInteraction = factory.createNegatedModalInteraction();
+		negatedModalInteraction.setModalinteraction((InteractionDefinition) this.doSwitch(object.getModalinteraction()));
+		return negatedModalInteraction;
 	}
 
 	@Override
 	public EObject caseReset(Reset object) {
-		Reset r = factory.createReset();
-		r.setModality(object.getModality());
-		return r;
+		Reset reset = factory.createReset();
+		reset.setModality(object.getModality());
+		return reset;
 	}
 
 	@Override
 	public EObject caseSignal(Signal object) {
-		Signal s = factory.createSignal();
-		s.setDirection(object.getDirection());
-		s.setModality(object.getModality());
-		s.setEvent(object.getEvent());
-		s.setPort(object.getPort());
-		for (Expression a : object.getArguments()) {
-			s.getArguments().add(ecoreUtil.clone(a));
+		Signal signal = factory.createSignal();
+		signal.setDirection(object.getDirection());
+		signal.setModality(object.getModality());
+		signal.setEvent(object.getEvent());
+		signal.setPort(object.getPort());
+		for (Expression argument : object.getArguments()) {
+			signal.getArguments().add(ecoreUtil.clone(argument));
 		}
-		return s;
+		return signal;
 	}
 
 	@Override
 	public EObject caseModalInteractionSet(ModalInteractionSet object) {
-		ModalInteractionSet mis = factory.createModalInteractionSet();
+		ModalInteractionSet modalInteractionSet = factory.createModalInteractionSet();
 		for (InteractionDefinition id : object.getModalInteractions()) {
-			mis.getModalInteractions().add((InteractionDefinition) this.doSwitch(id));
+			modalInteractionSet.getModalInteractions().add((InteractionDefinition) this.doSwitch(id));
 		}
-		return mis;
+		return modalInteractionSet;
 	}
 
 	@Override
 	public EObject caseDelay(Delay object) {
-		Delay d = factory.createDelay();
-		d.setModality(object.getModality());
+		Delay delay = factory.createDelay();
+		delay.setModality(object.getModality());
 		if (object.getMaximum() == null)
 
-			d.setMaximum(ecoreUtil.clone(object.getMinimum()));
+			delay.setMaximum(ecoreUtil.clone(object.getMinimum()));
 		else
-			d.setMaximum(ecoreUtil.clone(object.getMaximum()));
-		d.setMinimum(ecoreUtil.clone(object.getMinimum()));
-		return d;
+			delay.setMaximum(ecoreUtil.clone(object.getMaximum()));
+		delay.setMinimum(ecoreUtil.clone(object.getMinimum()));
+		return delay;
 	}
 
 }

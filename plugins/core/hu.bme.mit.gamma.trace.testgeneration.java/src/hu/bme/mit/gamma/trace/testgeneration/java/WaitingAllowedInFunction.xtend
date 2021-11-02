@@ -8,11 +8,11 @@ import java.util.List
 
 class WaitingAllowedInFunction extends AbstractAssertionHandler {
 	
-	val TestGeneratorUtil testGeneratorutil ;
+	val TestGeneratorUtil testGeneratorutil
 	
 	new(ExecutionTrace trace, ActAndAssertSerializer serializer) {
 		super(trace, serializer)
-		testGeneratorutil = new TestGeneratorUtil(trace.component);
+		testGeneratorutil = new TestGeneratorUtil(trace.component)
 	}
 	
 	
@@ -29,26 +29,25 @@ class WaitingAllowedInFunction extends AbstractAssertionHandler {
 		private void checkGeneralAsserts(String[] ports, String[] events, Object[][] objects) {
 			boolean done = false;
 			boolean wasPresent = true;
-			int idx=0;
+			int idx = 0;
 			 
-			while(!done) {
+			while (!done) {
 				wasPresent = true;
 				try {
-					for(int i = 0; i<ports.length;i++) {
-						assertTrue(«TEST_INSTANCE_NAME».isRaisedEvent(ports[i], events[i], objects[i]));
-					}
+						for(int i = 0; i<ports.length; i++) {
+							assertTrue(«TEST_INSTANCE_NAME».isRaisedEvent(ports[i], events[i], objects[i]));
+						}
 					} catch (AssertionError error) {
 					wasPresent= false;
-					if(idx>1) {
+					if (idx>1) {
 						throw(error);
 					}
 				}
-				if(wasPresent && idx>=0) {
-					done=true;
-				}
-				else
-				{
-					«TEST_INSTANCE_NAME».schedule(null);
+				if (wasPresent && idx >= 0) {
+					done = true;
+				} 
+				else {
+					«TEST_INSTANCE_NAME».schedule();
 				}
 				idx++;
 			}

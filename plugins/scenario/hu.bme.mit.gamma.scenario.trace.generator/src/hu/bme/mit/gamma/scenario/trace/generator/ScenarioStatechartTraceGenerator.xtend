@@ -10,7 +10,6 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.scenario.trace.generator
 
-import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.TransitionMerging
 import hu.bme.mit.gamma.scenario.statechart.util.ScenarioStatechartUtil
 import hu.bme.mit.gamma.statechart.contract.NotDefinedEventMode
@@ -30,11 +29,9 @@ import hu.bme.mit.gamma.util.FileUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.transformation.GammaToXstsTransformer
 import java.io.File
-import java.math.BigInteger
 import java.util.List
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
-import hu.bme.mit.gamma.statechart.util.StatechartUtil
 
 class ScenarioStatechartTraceGenerator {
 
@@ -44,7 +41,6 @@ class ScenarioStatechartTraceGenerator {
 	val extension GammaFileNamer fileNamer = GammaFileNamer.INSTANCE
 	val extension ScenarioStatechartUtil scenarioStatechartUtil = ScenarioStatechartUtil.INSTANCE
 	val extension TraceUtil traceUtil = TraceUtil.INSTANCE
-	val extension ExpressionModelFactory expressionFactory = ExpressionModelFactory.eINSTANCE
 
 	StatechartDefinition statechart = null
 
@@ -58,8 +54,8 @@ class ScenarioStatechartTraceGenerator {
 	
 	ScenarioAllowedWaitAnnotation annotation
 	
-	new(StatechartDefinition sd, int schedulingConstraint) {
-		this(sd,schedulingConstraint,null);
+	new(StatechartDefinition statechart, int schedulingConstraint) {
+		this(statechart, schedulingConstraint, null);
 	}
 
 	new(StatechartDefinition sd, int schedulingConstraint, ScenarioAllowedWaitAnnotation annotation) {
@@ -83,7 +79,6 @@ class ScenarioStatechartTraceGenerator {
 				}
 			}
 		}
-
 
 		var GammaToXstsTransformer gammaToXSTSTransformer = null
 		if (schedulingConstraint > 0) {
@@ -112,8 +107,12 @@ class ScenarioStatechartTraceGenerator {
 		val query = '''E<> ((«regionName + "_" + statechartName» == «scenarioStatechartUtil.accepting»))'''
 		val gammaPackage = ecoreUtil.normalLoad(modelFile.parent, packageFileName)
 
-		val r = verifier.verifyQuery(gammaPackage, parameters, modelFile, query)
-		val baseTrace = r.trace
+		val verifierResult = verifier.verifyQuery(gammaPackage, parameters, modelFile, query)
+		val baseTrace = verifierResult.trace
+		
+		if (baseTrace === null){
+			throw new IllegalArgumentException('''State «scenarioStatechartUtil.accepting» cannot be reached in the formal model.''')
+		}
 
 		var derivedTraces = identifySeparateTracesByReset(baseTrace)
 		var i = 0
@@ -128,12 +127,12 @@ class ScenarioStatechartTraceGenerator {
 		val backAnnotator = new ExecutionTraceBackAnnotator(ets, c, true, true)
 		val filteredTraces = backAnnotator.execute
 
-		for (et : filteredTraces) {
-			val eventAdder = new UnsentEventAssertExtender(et.steps, true)
+		for (trace : filteredTraces) {
+			val eventAdder = new UnsentEventAssertExtender(trace.steps, true)
 			if (scenarioContractType.equals(NotDefinedEventMode.STRICT)) {
 				eventAdder.execute
 			}
-			result += et
+			result += trace
 		}
 
 		return result

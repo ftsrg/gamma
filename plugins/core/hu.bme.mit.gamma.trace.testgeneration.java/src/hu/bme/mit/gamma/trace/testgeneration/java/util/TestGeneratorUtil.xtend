@@ -201,15 +201,18 @@ class TestGeneratorUtil {
 		return parents.head
 	}
 	
-	def String getPortOfAssert(RaiseEventAct assert){
-		'''"«assert.port.name»"'''
-	}
+	def String getPortOfAssert(RaiseEventAct assert) '''
+		"«assert.port.name»"
+	'''
 	
-	def String getEventOfAssert(RaiseEventAct assert){
-		'''"«assert.event.name»"'''
-	}
 	
-	def String getParamsOfAssert(RaiseEventAct assert){
-		'''new Object[] {«FOR parameter : assert.arguments BEFORE " " SEPARATOR ", " AFTER " "»«parameter.serialize»«ENDFOR»}'''
-	}
+	def String getEventOfAssert(RaiseEventAct assert) '''
+		"«assert.event.name»"
+	'''
+	
+	
+	def String getParamsOfAssert(RaiseEventAct assert) '''
+		new Object[] {«FOR parameter : assert.arguments BEFORE " " SEPARATOR ", " AFTER " "»«parameter.serialize»«ENDFOR»}
+	'''
+
 }
