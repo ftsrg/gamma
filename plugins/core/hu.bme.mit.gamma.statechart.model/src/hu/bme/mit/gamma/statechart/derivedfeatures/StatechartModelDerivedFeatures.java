@@ -46,6 +46,7 @@ import hu.bme.mit.gamma.statechart.composite.Channel;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference;
 import hu.bme.mit.gamma.statechart.composite.CompositeComponent;
+import hu.bme.mit.gamma.statechart.composite.ControlFunction;
 import hu.bme.mit.gamma.statechart.composite.ControlSpecification;
 import hu.bme.mit.gamma.statechart.composite.InstancePortReference;
 import hu.bme.mit.gamma.statechart.composite.MessageQueue;
@@ -73,6 +74,7 @@ import hu.bme.mit.gamma.statechart.interface_.RealizationMode;
 import hu.bme.mit.gamma.statechart.interface_.SimpleTrigger;
 import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
 import hu.bme.mit.gamma.statechart.interface_.TopComponentArgumentsAnnotation;
+import hu.bme.mit.gamma.statechart.interface_.Trigger;
 import hu.bme.mit.gamma.statechart.interface_.UnfoldedPackageAnnotation;
 import hu.bme.mit.gamma.statechart.interface_.WrappedPackageAnnotation;
 import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference;
@@ -1039,6 +1041,27 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
     
     public static StatechartDefinition getStatechart(ComponentInstance instance) {
     	return (StatechartDefinition) getDerivedType(instance);
+    }
+    
+    public static boolean isSimplifiable(AsynchronousAdapter adapter) {
+    	List<MessageQueue> messageQueues = adapter.getMessageQueues();
+		if (messageQueues.size() != 1) {
+			return false;
+		}
+		// The capacity (and priority) do not matter, as they are from the environment
+		// The method should check whether all port-events are contained
+		List<Clock> clocks = adapter.getClocks();
+		if (!clocks.isEmpty()) {
+			return false;
+		}
+		List<ControlSpecification> controlSpecifications = adapter.getControlSpecifications();
+		if (controlSpecifications.size() != 1) {
+			return false;
+		}
+		ControlSpecification controlSpecification = controlSpecifications.get(0);
+		Trigger trigger = controlSpecification.getTrigger();
+		ControlFunction controlFunction = controlSpecification.getControlFunction();
+		return trigger instanceof AnyTrigger && controlFunction == ControlFunction.RUN_ONCE;
     }
 	
 	public static int getLevel(StateNode stateNode) {

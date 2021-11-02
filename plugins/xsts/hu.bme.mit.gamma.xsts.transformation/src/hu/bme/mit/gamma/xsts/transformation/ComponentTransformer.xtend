@@ -23,11 +23,9 @@ import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeCompone
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.composite.CascadeCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance
-import hu.bme.mit.gamma.statechart.composite.ControlFunction
 import hu.bme.mit.gamma.statechart.composite.DiscardStrategy
 import hu.bme.mit.gamma.statechart.composite.MessageQueue
 import hu.bme.mit.gamma.statechart.composite.ScheduledAsynchronousCompositeComponent
-import hu.bme.mit.gamma.statechart.interface_.AnyTrigger
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.lowlevel.model.Package
@@ -98,7 +96,6 @@ class ComponentTransformer {
 		throw new IllegalArgumentException("Not supported component type: " + component)
 	}
 	
-	// TODO move most parts into the AA transformer and make sure in preprocess AAs are not top components
 	def dispatch XSTS transform(ScheduledAsynchronousCompositeComponent component,
 			Package lowlevelPackage) {
 		val systemPorts = component.allPorts
@@ -190,10 +187,10 @@ class ComponentTransformer {
 							val typeSlaveQueues = typeSlaveQueuesMap.getOrCreateList(parameterTypeDefinition)
 							
 							val index = parameter.indexOfParametersWithSameTypeDefinition
-							// Indexing works if parameters of an event are not deleted separately
+							// Indexing works: parameters of an event are not deleted separately
 							if (queue.isEnvironmental(systemPorts) || // Traceability reasons: no optimization for system parameters
 									typeSlaveQueues.size <= index) {
-								// index is at less at most by 1 - creating a new slave queue for type
+								// index is less at most by 1 - creating a new slave queue for type
 								val slaveQueueType = createArrayTypeDefinition => [
 									it.elementType = parameterType.clone // Not type definition due to enums
 									it.size = evaluatedCapacity.toIntegerLiteral
@@ -309,7 +306,7 @@ class ComponentTransformer {
 					val ifExpression = xStsEventIdVariable.createReferenceExpression
 							.createEqualityExpression(eventId.toIntegerLiteral)
 					val thenAction = createSequentialAction
-					// Setting the event variables to true (multiple binding is possible)
+					// Setting the event variables to true (multiple binding is supported)
 					for (xStsInEventVariable : xStsInEventVariables) {
 						thenAction.actions += xStsInEventVariable.createAssignmentAction(
 								createTrueExpression)
@@ -317,13 +314,14 @@ class ComponentTransformer {
 					// Setting the parameter variables with values stored in slave queues
 					val slaveQueueStructs = slaveQueues.get(portEvent) // Might be empty
 					
-					val parameters = event.parameterDeclarations
+					val inParameters = event.parameterDeclarations
 					val slaveQueueSize = slaveQueueStructs.size // Might be 0 if there is no in-event var
+					checkState(inParameters.size <= slaveQueueSize)
 					for (var i = 0; i < slaveQueueSize; i++) {
 						val slaveQueueStruct = slaveQueueStructs.get(i)
 						val slaveQueue = slaveQueueStruct.arrayVariable
 						val slaveSizeVariable = slaveQueueStruct.sizeVariable
-						val inParameter = parameters.get(i)
+						val inParameter = inParameters.get(i)
 						
 						val xStsSlaveQueues = variableTrace.getAll(slaveQueue)
 						val xStsSlaveSizeVariable = variableTrace.getAll(slaveSizeVariable).onlyElement
@@ -463,8 +461,6 @@ class ComponentTransformer {
 		xSts.outEventTransition = outEventAction.wrap
 		
 		xSts.changeTransitions(mergedAction.wrap)
-		
-		//
 		
 		return xSts
 	}
@@ -804,17 +800,7 @@ class ComponentTransformer {
 	}
 	
 	private def checkAdapter(AsynchronousAdapter component) {
-		val messageQueues = component.messageQueues
-		checkState(messageQueues.size == 1)
-		// The capacity (and priority) do not matter, as they are from the environment
-		checkState(component.clocks.empty)
-		val controlSpecifications = component.controlSpecifications
-		checkState(controlSpecifications.size == 1)
-		val controlSpecification = controlSpecifications.head
-		val trigger = controlSpecification.trigger
-		checkState(trigger instanceof AnyTrigger)
-		val controlFunction = controlSpecification.controlFunction
-		checkState(controlFunction == ControlFunction.RUN_ONCE)
+		checkState(component.simplifiable)
 	}
 	
 	private def getCapacity(MessageQueue queue, Collection<? extends Port> systemPorts) {
