@@ -19,8 +19,8 @@ class WaitingAllowedInFunction extends AbstractAssertionHandler {
 
 	override String generateAssertBlock(List<Assert> asserts) '''
 		checkGeneralAsserts(new String[] {«FOR _assert : asserts SEPARATOR ", "»«testGeneratorutil.getPortOfAssert(_assert as RaiseEventAct)»«ENDFOR»},
-							 new String[] {«FOR _assert : asserts SEPARATOR ", "»«testGeneratorutil.getEventOfAssert(_assert as RaiseEventAct)»«ENDFOR»},
-							  new Object[][] {«FOR _assert : asserts SEPARATOR ", "»«testGeneratorutil.getParamsOfAssert(_assert as RaiseEventAct)»«ENDFOR»});
+				new String[] {«FOR _assert : asserts SEPARATOR ", "»«testGeneratorutil.getEventOfAssert(_assert as RaiseEventAct)»«ENDFOR»},
+				new Object[][] {«FOR _assert : asserts SEPARATOR ", "»«testGeneratorutil.getParamsOfAssert(_assert as RaiseEventAct)»«ENDFOR»});
 	'''
 	
 
