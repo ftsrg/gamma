@@ -11,7 +11,6 @@
 package hu.bme.mit.gamma.xsts.transformation
 
 import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
-import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.TypeReference
@@ -574,19 +573,19 @@ class ComponentTransformer {
 		val wrappedInstance = component.wrappedComponent
 		val wrappedType = wrappedInstance.type
 		
-		val messageQueue = component.messageQueues.head
-		
 		wrappedType.extractParameters(wrappedInstance.arguments) 
 		val xSts = wrappedType.transform(lowlevelPackage)
+		// Customize names as the type can be a statechart (before setting the new in event)
+		xSts.customizeDeclarationNames(wrappedInstance)
 		
 		if (isTopInPackage) {
 			val inEventAction = xSts.inEventTransition
 			// Deleting synchronous event assignments
 			val xStsSynchronousInEventVariables = xSts.variableGroups
 				.filter[it.annotation instanceof InEventGroup].map[it.variables]
-				.flatten // There are more than one
+				.flatten.toSet // There are more than one
 			for (xStsAssignment : inEventAction.getAllContentsOfType(AbstractAssignmentAction)) {
-				val xStsReference = xStsAssignment.lhs as DirectReferenceExpression
+				val xStsReference = xStsAssignment.lhs
 				val xStsDeclaration = xStsReference.declaration
 				if (xStsSynchronousInEventVariables.contains(xStsDeclaration)) {
 					xStsAssignment.remove // Deleting in-event bool flags
@@ -595,23 +594,21 @@ class ComponentTransformer {
 			
 			val extension eventRef = new ReferenceToXstsVariableMapper(xSts)
 			// Collecting the referenced event variables
-			val xStsReferencedEventVariables = newHashSet
-			for (eventReference : messageQueue.eventReference) {
-				xStsReferencedEventVariables += eventReference.variables
-			}
+			val messageQueue = component.messageQueues.head // Only one
+			val xStsReferencedEventVariables = messageQueue.eventReference
+					.map[it.variables].flatten
 			
 			val newInEventAction = createSequentialAction
-			// Setting the referenced event variables to false
+			// Setting the referenced event variables to unknown
 			for (xStsEventVariable : xStsReferencedEventVariables) {
-				newInEventAction.actions += xStsEventVariable
-						.createAssignmentAction(createFalseExpression)
+				newInEventAction.actions += xStsEventVariable.createHavocAction
 			}
 			// Enabling the setting of the referenced event variables to true if no other is set
 			for (xStsEventVariable : xStsReferencedEventVariables) {
-				val negatedVariables = newArrayList
-				negatedVariables += xStsReferencedEventVariables
-				negatedVariables -= xStsEventVariable
-				newInEventAction.actions += xStsActionUtil.connectThroughNegations(negatedVariables)
+				val xStsNegatedVariables = newHashSet
+				xStsNegatedVariables += xStsReferencedEventVariables
+				xStsNegatedVariables -= xStsEventVariable
+				newInEventAction.actions += xStsActionUtil.connectThroughNegations(xStsNegatedVariables)
 						.createIfAction(xStsEventVariable.createAssignmentAction(createTrueExpression))
 			}
 			// Binding event variables that come from the same ports
@@ -622,6 +619,7 @@ class ComponentTransformer {
 			newInEventAction.actions += xSts.createParameterAssignmentsBoundToTheSameSystemPort(wrappedType)
 			xSts.inEventTransition = newInEventAction.wrap
 		}
+		
 		return xSts
 	}
 	
@@ -707,7 +705,7 @@ class ComponentTransformer {
 				xSts.outEventTransition = outEventAction.wrap
 			}
 			// Tracing merged action
-			componentMergedActions.put(componentType, actualComponentMergedAction.clone)
+			componentMergedActions += componentType -> actualComponentMergedAction.clone
 		}
 		
 		// Merged action based on scheduling instances
