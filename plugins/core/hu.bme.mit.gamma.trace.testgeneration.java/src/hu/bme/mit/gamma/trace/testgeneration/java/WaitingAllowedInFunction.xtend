@@ -34,9 +34,9 @@ class WaitingAllowedInFunction extends AbstractAssertionHandler {
 			while (!done) {
 				wasPresent = true;
 				try {
-						for(int i = 0; i<ports.length; i++) {
-							assertTrue(«TEST_INSTANCE_NAME».isRaisedEvent(ports[i], events[i], objects[i]));
-						}
+					for(int i = 0; i<ports.length; i++) {
+						assertTrue(«TEST_INSTANCE_NAME».isRaisedEvent(ports[i], events[i], objects[i]));
+					}
 					} catch (AssertionError error) {
 					wasPresent= false;
 					if (idx>1) {

@@ -1854,10 +1854,15 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return simpleInstances;
 	}
 	
+	public static Optional<StatechartAnnotation> getStatechartAnnotation(StatechartDefinition statechart,
+			Class<? extends StatechartAnnotation> annotation) {
+		return statechart.getAnnotations().stream().filter(it -> annotation.isInstance(it)).findFirst();
+	}
+	
 	public static ScenarioAllowedWaitAnnotation getScenarioAllowedWaitAnnotation(StatechartDefinition statechart) {
-		List<ScenarioAllowedWaitAnnotation> waitAnnotations = javaUtil.filterIntoList(statechart.getAnnotations(), ScenarioAllowedWaitAnnotation.class);
-		if(waitAnnotations.size()==1) {
-			return waitAnnotations.get(0);
+		Optional<StatechartAnnotation> waitAnnotation =getStatechartAnnotation(statechart, ScenarioAllowedWaitAnnotation.class);
+		if(waitAnnotation.isPresent()) {
+			return (ScenarioAllowedWaitAnnotation) waitAnnotation.get();
 		} else {
 			return null;
 		}
