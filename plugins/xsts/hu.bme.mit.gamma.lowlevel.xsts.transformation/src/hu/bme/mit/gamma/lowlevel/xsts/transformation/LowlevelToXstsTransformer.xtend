@@ -12,9 +12,7 @@ package hu.bme.mit.gamma.lowlevel.xsts.transformation
 
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
-import hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer.ActionOptimizer
-import hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer.VariableInliner
-import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.AssignmentActions
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer.XstsOptimizer
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.Events
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.FirstChoiceStates
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.FirstForkStates
@@ -22,7 +20,6 @@ import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.GlobalVariables
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.InEvents
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.LastJoinStates
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.LastMergeStates
-import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.NotReadVariables
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.OutEvents
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.PlainVariables
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.ReferredEvents
@@ -49,10 +46,8 @@ import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.VariableGroup
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
-import hu.bme.mit.gamma.xsts.model.XTransition
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import java.util.AbstractMap.SimpleEntry
-import java.util.List
 import java.util.Set
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 import org.eclipse.viatra.query.runtime.emf.EMFScope
@@ -72,14 +67,10 @@ import static extension hu.bme.mit.gamma.xsts.transformation.util.XstsNamings.*
 class LowlevelToXstsTransformer {
 	// Transformation-related extensions
 	extension BatchTransformation transformation
-	extension BatchTransformationStatements statements
+	final extension BatchTransformationStatements statements
 	// Transformation rule-related extensions
 	final extension BatchTransformationRuleFactory = new BatchTransformationRuleFactory
 	// Auxiliary objects
-	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
-	protected final extension XstsActionUtil actionFactory = XstsActionUtil.INSTANCE
-	protected final extension ActionOptimizer actionSimplifier = ActionOptimizer.INSTANCE
-	protected final extension VariableGroupRetriever variableGroupRetriever = VariableGroupRetriever.INSTANCE
 	protected final extension RegionActivator regionActivator
 	protected final extension EntryActionRetriever entryActionRetriever
 	protected final extension ExpressionTransformer expressionTransformer
@@ -89,9 +80,14 @@ class LowlevelToXstsTransformer {
 	protected final extension PrecursoryTransitionToXTransitionTransformer precursoryTransitionToXTransitionTransformer
 	protected final extension TerminalTransitionToXTransitionTransformer terminalTransitionToXTransitionTransformer
 	protected final extension AbstractTransitionMerger transitionMerger
+	
+	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
+	protected final extension XstsActionUtil actionFactory = XstsActionUtil.INSTANCE
+	protected final extension XstsOptimizer optimizer = XstsOptimizer.INSTANCE
+	protected final extension VariableGroupRetriever variableGroupRetriever = VariableGroupRetriever.INSTANCE
 	// Model factories
 	protected final extension XSTSModelFactory factory = XSTSModelFactory.eINSTANCE
-	protected final extension ExpressionModelFactory constraintFactory = ExpressionModelFactory.eINSTANCE
+	protected final extension ExpressionModelFactory expressionFactory = ExpressionModelFactory.eINSTANCE
 	// VIATRA engines
 	protected ViatraQueryEngine engine
 	protected ViatraQueryEngine targetEngine
@@ -197,7 +193,7 @@ class LowlevelToXstsTransformer {
 		getInEventEnvironmentalActionRule.fireAllCurrent
 		getOutEventEnvironmentalActionRule.fireAllCurrent
 		mergeTransitions
-		optimizeActions
+		xSts.optimizeXSts
 		xSts.fillNullTransitions
 		handleTransientAndResettableVariableAnnotations
 		// The created EMF models are returned
@@ -670,46 +666,6 @@ class LowlevelToXstsTransformer {
 			].build
 		}
 		return outEventEnvironmentalActionRule
-	}
-	
-	protected def optimizeActions() {
-		xSts.variableInitializingTransition = xSts.variableInitializingTransition.optimize
-		xSts.configurationInitializingTransition = xSts.configurationInitializingTransition.optimize
-		xSts.entryEventTransition = xSts.entryEventTransition.optimize
-		xSts.changeTransitions(xSts.transitions.optimize)
-		xSts.inEventTransition = xSts.inEventTransition.optimize
-		xSts.outEventTransition = xSts.outEventTransition.optimize
-		
-		// Note the original transition actions are already "broken"
-		
-		// Variable inlining
-		val inliner = VariableInliner.INSTANCE
-		
-		var List<XTransition> oldActions = null
-		var XTransition oldEntryEventAction = null
-		while (!oldActions.helperEquals(xSts.transitions) ||
-				!oldEntryEventAction.helperEquals(xSts.entryEventTransition)) {
-			oldActions = xSts.transitions.clone
-			oldEntryEventAction = xSts.entryEventTransition.clone
-			inliner.inline(xSts.transitions)
-			inliner.inline(xSts.entryEventTransition)
-			deleteUnreadTransientXStsVariables
-			xSts.changeTransitions(xSts.transitions.optimize)
-			xSts.entryEventTransition = xSts.entryEventTransition.optimize
-		}
-	}
-	
-	protected def deleteUnreadTransientXStsVariables() {
-		val unreadXStsVariableMacher = NotReadVariables.Matcher.on(targetEngine)
-		val unreadTransientXStsVariables = unreadXStsVariableMacher.allValuesOfvariable
-				.filter[it.transient || it.local]
-		val xStsAssignmentMatcher = AssignmentActions.Matcher.on(targetEngine)
-		for (unreadTransientXStsVariable : unreadTransientXStsVariables) {
-			val xStsAssignments = xStsAssignmentMatcher.getAllValuesOfaction(null, unreadTransientXStsVariable)
-			xStsAssignments.forEach[it.remove]
-			unreadTransientXStsVariable.deleteDeclaration // Deleting the potential containing VariableDeclarationAction too
-			trace.delete(unreadTransientXStsVariable) // Trace deletion
-		}
 	}
 	
 	protected def handleTransientAndResettableVariableAnnotations() {

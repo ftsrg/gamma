@@ -3,7 +3,7 @@ package hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.AssignmentActions
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.NotReadVariables
 import hu.bme.mit.gamma.util.GammaEcoreUtil
-import hu.bme.mit.gamma.xsts.model.Action
+import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 import org.eclipse.viatra.query.runtime.emf.EMFScope
@@ -19,8 +19,7 @@ class TransientVariableRemover {
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	
-	def void remove(Action action) {
-		val xSts = action.containingXsts
+	def void removeTransientVariables(XSTS xSts) {
 		val engine = ViatraQueryEngine.on(new EMFScope(xSts))
 		
 		val unreadXStsVariableMatcher = NotReadVariables.Matcher.on(engine)
@@ -31,7 +30,7 @@ class TransientVariableRemover {
 			val xStsAssignments = xStsAssignmentMatcher.getAllValuesOfaction(
 					null, unreadTransientXStsVariable)
 			for (xStsAssignment : xStsAssignments) {
-				ecoreUtil.remove(xStsAssignment)
+				xStsAssignment.remove
 			}
 			// Deleting the potential containing VariableDeclarationAction too
 			unreadTransientXStsVariable.deleteDeclaration

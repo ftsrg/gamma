@@ -58,7 +58,7 @@ class ActionOptimizer {
 	protected final ExpressionModelFactory expressionFactory = ExpressionModelFactory.eINSTANCE
 	protected final extension XSTSModelFactory xStsFactory = XSTSModelFactory.eINSTANCE
 	
-	def optimize(Collection<XTransition> transitions) {
+	def optimize(Iterable<? extends XTransition> transitions) {
 		val optimizedTransitions = newArrayList
 		for (transition : transitions) {
 			optimizedTransitions += transition.optimize
