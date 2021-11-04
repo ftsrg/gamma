@@ -78,7 +78,7 @@ class TestGenerator {
 		this.actAndAssertSerializer = new ActAndAssertSerializer(component,
 			TEST_INSTANCE_NAME, TIMER_OBJECT_NAME)
 		if (firstTrace.hasAllowedWaitingAnnotation) {
-			this.waitingHandle = new WaitingAllowedHandler(firstTrace, actAndAssertSerializer)
+			this.waitingHandle = new WaitingAllowedInFunction(firstTrace, actAndAssertSerializer)
 		} 
 		else {
 			this.waitingHandle = new DefaultAssertionHandler(firstTrace, actAndAssertSerializer)
@@ -148,6 +148,10 @@ class TestGenerator {
 			}
 			
 			«traces.generateTestCases»
+			
+			«IF waitingHandle instanceof WaitingAllowedInFunction»
+				«waitingHandle.generateWaitingHandlerFunction(TEST_INSTANCE_NAME)»
+			«ENDIF»
 		}
 	'''
 	
@@ -199,7 +203,10 @@ class TestGenerator {
 							«actAndAssertSerializer.serialize(act)»
 						«ENDFOR»
 						// Assert
-						«waitingHandle.generateAssertBlock(testGeneratorUtil.filterAsserts(step))»
+						«val filteredAsserts = testGeneratorUtil.filterAsserts(step)»
+						«IF !filteredAsserts.nullOrEmpty»
+							«waitingHandle.generateAssertBlock(filteredAsserts)»
+						«ENDIF»
 					}
 					
 				'''

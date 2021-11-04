@@ -52,6 +52,10 @@ public class TraceModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 	
 	// Annotations
 	
+	public static boolean hasAssertInFirstStep(ExecutionTrace trace) {
+		return !trace.getSteps().get(0).getAsserts().isEmpty();
+	}
+	
 	public static boolean hasAllowedWaitingAnnotation(ExecutionTrace trace) {
 		return hasAnnotation(trace, ExecutionTraceAllowedWaitingAnnotation.class);
 	}

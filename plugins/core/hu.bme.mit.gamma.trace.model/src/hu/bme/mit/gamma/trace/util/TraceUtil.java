@@ -28,6 +28,7 @@ import hu.bme.mit.gamma.expression.model.TypeDeclaration;
 import hu.bme.mit.gamma.expression.model.TypeReference;
 import hu.bme.mit.gamma.expression.util.ExpressionUtil;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
+import hu.bme.mit.gamma.statechart.contract.ScenarioAllowedWaitAnnotation;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.Interface;
@@ -37,11 +38,15 @@ import hu.bme.mit.gamma.trace.derivedfeatures.TraceModelDerivedFeatures;
 import hu.bme.mit.gamma.trace.model.Act;
 import hu.bme.mit.gamma.trace.model.Assert;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
+import hu.bme.mit.gamma.trace.model.ExecutionTraceAllowedWaitingAnnotation;
 import hu.bme.mit.gamma.trace.model.InstanceStateConfiguration;
 import hu.bme.mit.gamma.trace.model.InstanceVariableState;
 import hu.bme.mit.gamma.trace.model.RaiseEventAct;
 import hu.bme.mit.gamma.trace.model.Reset;
+import hu.bme.mit.gamma.trace.model.Schedule;
 import hu.bme.mit.gamma.trace.model.Step;
+import hu.bme.mit.gamma.trace.model.TraceModelFactory;
+import hu.bme.mit.gamma.util.GammaEcoreUtil;
 
 public class TraceUtil extends ExpressionUtil {
 	// Singleton
@@ -291,7 +296,7 @@ public class TraceUtil extends ExpressionUtil {
 	}
 	
 	public void setupExecutionTrace(ExecutionTrace trace, List<Step> steps,
-			String name, Component component, Package imports) {
+			String name, Component component, Package imports, ScenarioAllowedWaitAnnotation annotation) {
 		if (name != null) {
 			trace.setName(name);
 		}
@@ -304,6 +309,14 @@ public class TraceUtil extends ExpressionUtil {
 		}
 		if (imports != null) {
 			trace.setImport(imports);
+		}
+		if (annotation!= null) {
+			TraceModelFactory factory = TraceModelFactory.eINSTANCE;
+			GammaEcoreUtil ecoreUtil =  GammaEcoreUtil.INSTANCE;
+			ExecutionTraceAllowedWaitingAnnotation newAnnotation = factory.createExecutionTraceAllowedWaitingAnnotation();
+			newAnnotation.setLowerLimit(ecoreUtil.clone(annotation.getLowerLimit()));
+			newAnnotation.setUpperLimit(ecoreUtil.clone(annotation.getUpperLimit()));
+			trace.getAnnotations().add(newAnnotation);
 		}
 	}
 
@@ -361,6 +374,11 @@ public class TraceUtil extends ExpressionUtil {
 	public boolean equalsTo(EObject lhs, EObject rhs) {
 		EqualityHelper helper = new EqualityHelper();
 		return helper.equals(lhs, rhs);
+	}
+
+	public void removeScheduleAndReset(Step step) {
+		step.getActions().removeIf(it -> it instanceof Schedule);
+		step.getActions().removeIf(it -> it instanceof Reset);
 	}
 	
 }

@@ -56,6 +56,7 @@ import hu.bme.mit.gamma.statechart.composite.SimpleChannel;
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponent;
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance;
 import hu.bme.mit.gamma.statechart.contract.AdaptiveContractAnnotation;
+import hu.bme.mit.gamma.statechart.contract.ScenarioAllowedWaitAnnotation;
 import hu.bme.mit.gamma.statechart.interface_.AnyTrigger;
 import hu.bme.mit.gamma.statechart.interface_.Clock;
 import hu.bme.mit.gamma.statechart.interface_.Component;
@@ -1885,6 +1886,20 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 			}
 		}
 		return simpleInstances;
+	}
+	
+	public static Optional<StatechartAnnotation> getStatechartAnnotation(StatechartDefinition statechart,
+			Class<? extends StatechartAnnotation> annotation) {
+		return statechart.getAnnotations().stream().filter(it -> annotation.isInstance(it)).findFirst();
+	}
+	
+	public static ScenarioAllowedWaitAnnotation getScenarioAllowedWaitAnnotation(StatechartDefinition statechart) {
+		Optional<StatechartAnnotation> waitAnnotation =getStatechartAnnotation(statechart, ScenarioAllowedWaitAnnotation.class);
+		if(waitAnnotation.isPresent()) {
+			return (ScenarioAllowedWaitAnnotation) waitAnnotation.get();
+		} else {
+			return null;
+		}
 	}
 
 }
