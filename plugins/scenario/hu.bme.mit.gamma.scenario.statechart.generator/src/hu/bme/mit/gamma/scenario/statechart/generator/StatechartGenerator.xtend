@@ -43,7 +43,6 @@ import hu.bme.mit.gamma.scenario.model.util.ScenarioModelSwitch
 import hu.bme.mit.gamma.scenario.statechart.util.ScenarioStatechartUtil
 import hu.bme.mit.gamma.statechart.contract.ContractModelFactory
 import hu.bme.mit.gamma.statechart.contract.NotDefinedEventMode
-import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.EventTrigger
@@ -64,7 +63,6 @@ import hu.bme.mit.gamma.statechart.statechart.UnaryTrigger
 import hu.bme.mit.gamma.statechart.statechart.UnaryType
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.math.BigInteger
-import java.util.ArrayList
 import java.util.HashMap
 import java.util.List
 import java.util.Map
@@ -81,6 +79,7 @@ enum StatechartGenerationMode {
 }
 
 class StatechartGenerator extends ScenarioModelSwitch<EObject> {
+	
 	val extension StatechartModelFactory statechartfactory = StatechartModelFactory.eINSTANCE
 	val extension ExpressionModelFactory expressionfactory = ExpressionModelFactory.eINSTANCE
 	val extension InterfaceModelFactory interfacefactory = InterfaceModelFactory.eINSTANCE
@@ -148,82 +147,91 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 			process(modalInteraction)
 		}
 
-		var remove = new ArrayList<StateNode>()
+		var remove = <StateNode>newArrayList
 		for (stateNode : statechart.regions.get(0).stateNodes) {
-			if (StatechartModelDerivedFeatures::getIncomingTransitions(stateNode).isEmpty &&
-				!(stateNode.name == scenarioStatechartUtil.initial))
+			if (stateNode.incomingTransitions.isEmpty &&
+					stateNode.name != scenarioStatechartUtil.initial)
 				remove += stateNode
 		}
-		statechart.regions.get(0).stateNodes.removeAll(remove)
-		val lastState = statechart.regions.get(0).stateNodes.get(statechart.regions.get(0).stateNodes.size - 1)
+		statechart.regions.get(0).stateNodes -= remove
+		val lastState = statechart.regions.get(0).stateNodes.get(
+				statechart.regions.get(0).stateNodes.size - 1)
 		lastState.name = scenarioStatechartUtil.accepting
 
 		for (transition : statechart.transitions) {
 			if (transition.getTargetState == coldViolation) {
-				transition.effects.add(setIntVariable(variableMap.getOrCreate(scenarioStatechartUtil.result), 1))
+				transition.effects += setIntVariable(
+					variableMap.getOrCreate(scenarioStatechartUtil.result), 1)
 			} else if (transition.targetState == hotViolation) {
-				transition.effects.add(setIntVariable(variableMap.getOrCreate(scenarioStatechartUtil.result), 0))
+				transition.effects += setIntVariable(
+					variableMap.getOrCreate(scenarioStatechartUtil.result), 0)
 			} else if (transition.targetState == lastState) {
-				transition.effects.add(setIntVariable(variableMap.getOrCreate(scenarioStatechartUtil.result), 2))
+				transition.effects += setIntVariable(
+					variableMap.getOrCreate(scenarioStatechartUtil.result), 2)
 			}
 		}
 		
-		val newmergeStates = newArrayList
-		for (stateNode : statechart.regions.get(0).stateNodes){
-			if (stateNode instanceof ChoiceState &&
-				StatechartModelDerivedFeatures.getIncomingTransitions(stateNode as ChoiceState).size>1){
+		val newMergeStates = newArrayList
+		// TODO extract statechart.regions.get(0).stateNodes as it is used later as well
+		for (stateNode : statechart.regions.get(0).stateNodes) {
+			if (stateNode instanceof ChoiceState &&	stateNode.incomingTransitions.size > 1){
 				val choice = stateNode as ChoiceState
 				val merge = createMergeState
 				merge.name = "merge" + stateCount++
-				for (transition : StatechartModelDerivedFeatures.getIncomingTransitions(choice)) {
+				for (transition : choice.incomingTransitions) {
 					transition.targetState = merge
 				}
 				val mergeTransition = createTransition
 				mergeTransition.sourceState = merge
 				mergeTransition.targetState = choice
 				statechart.transitions += mergeTransition
-				newmergeStates += merge
+				newMergeStates += merge
 			}
 		}
-		statechart.regions.get(0).stateNodes += newmergeStates
+		statechart.regions.get(0).stateNodes += newMergeStates
 
 		val annotation = createScenarioContractAnnotation
 		annotation.monitoredComponent = component
-		annotation.scenarioType = nonDeclaredMessageMode == 1 ? NotDefinedEventMode.STRICT : NotDefinedEventMode.PERMISSIVE
+		annotation.scenarioType = nonDeclaredMessageMode == 1 ?
+			NotDefinedEventMode.STRICT : NotDefinedEventMode.PERMISSIVE
 		statechart.annotations += annotation
 		
 		val waitingAnnotation= createScenarioAllowedWaitAnnotation
+		// TODO use ExpressionUtil.toIntegerLiteral
 		val lower = createIntegerLiteralExpression
 		lower.value = BigInteger.valueOf(allowedGlobalWaitMin)
 		val upper = createIntegerLiteralExpression
 		upper.value = BigInteger.valueOf(allowedGlobalWaitMax)
 		waitingAnnotation.lowerLimit = lower
 		waitingAnnotation.upperLimit = upper
-		statechart.annotations +=waitingAnnotation
+		statechart.annotations += waitingAnnotation
+		
 		return statechart
 	}
 
-	def dispatch Interaction process(ModalInteractionSet s) {
-		processModalInteractionSet(s, false)
+	def dispatch Interaction process(ModalInteractionSet interactionSet) {
+		processModalInteractionSet(interactionSet, false)
 		return null;
 	}
 
-	def dispatch Interaction process(Delay d) {
+	def dispatch Interaction process(Delay delay) {
 		var state = createNewState("state" + String.valueOf(stateCount++))
 		var t = createTransition
 		t.sourceState = previousState
 		t.targetState = state
+		// TODO use more descriptive names
 		var td = createTimeoutDeclaration
 		td.name = "delay" + timeoutCount++
 		statechart.timeoutDeclarations += td
 		var ts = createTimeSpecification
 		ts.unit = TimeUnit.MILLISECOND
-		ts.value = d.minimum.clone
+		ts.value = delay.minimum.clone
 		var a = createSetTimeoutAction
 		a.timeoutDeclaration = td
 		a.time = ts
-		if (previousState instanceof State)
+		if (previousState instanceof State) {
 			previousState.entryActions += a
+		}
 		var e = createEventTrigger
 		var er = createTimeoutEventReference
 		er.timeout = td
@@ -231,10 +239,11 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 		e.eventReference = er
 		var t2 = createTransition
 		t2.sourceState = previousState
-		if (d.modality == ModalityType.COLD)
+		if (delay.modality == ModalityType.COLD) {
 			t2.targetState = coldViolation
-		else
+		} else {
 			t2.targetState = hotViolation
+		}
 		var e2 = createEventTrigger
 		var er2 = createTimeoutEventReference
 		er2.setTimeout(td)
@@ -242,15 +251,16 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 		t2.trigger = negateEventTrigger(e2)
 
 		previousState = state
-		statechart.transitions.add(t)
-		statechart.transitions.add(t2)
-		statechart.regions.get(0).stateNodes.add(state)
+		statechart.transitions += t
+		statechart.transitions += t2
+		statechart.regions.get(0).stateNodes += state
 		return null;
 	}
 
-	def dispatch Interaction process(NegatedModalInteraction n) {
-		if (n.modalinteraction instanceof ModalInteractionSet) {
-			processModalInteractionSet(n.modalinteraction as ModalInteractionSet, true)
+	def dispatch Interaction process(NegatedModalInteraction negatedModalInteraction) {
+		val modalInteraction = negatedModalInteraction.modalinteraction
+		if (modalInteraction instanceof ModalInteractionSet) {
+			processModalInteractionSet(modalInteraction, true)
 			return null
 		}
 	}
@@ -258,12 +268,13 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 	def dispatch Interaction process(AlternativeCombinedFragment a) {
 		var ends = newArrayList
 		var choice = addChoiceState
-		for (transition : StatechartModelDerivedFeatures.getIncomingTransitions(previousState)) {
-				transition.targetState = choice
+		for (transition : previousState.incomingTransitions) {
+			transition.targetState = choice
 		}
 		replacedStateWithValue.put(previousState,choice)
-		statechart.regions.get(0).stateNodes.remove(previousState)
-		statechart.regions.get(0).stateNodes.add(choice)
+		statechart.regions.get(0).stateNodes -= previousState
+		statechart.regions.get(0).stateNodes += choice
+		// TODO Use += and -= instead of add and remove
 		var n = stateCount++
 		for (i : 0 ..< a.fragments.size) {
 			var state = createNewState("state" + String.valueOf(n) + "_" + String.valueOf(i))
@@ -273,12 +284,14 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 			t.sourceState = choice
 			t.targetState = state
 			statechart.transitions.add(t)
-			for (interaction : a.fragments.get(i).interactions)
+			for (interaction : a.fragments.get(i).interactions) {
 				process(interaction)
+			}
 			ends.add(previousState)
 			stateCount--
 		}
 		var merg = createState
+		// TODO Use brackets
 		for (transition : statechart.transitions)
 			if (ends.contains(transition.targetState))
 				transition.targetState = merg
@@ -301,7 +314,7 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 			prevprev = replacedStateWithValue.remove(prevprev)
 		}
 		var choice = addChoiceState
-		for (transition : StatechartModelDerivedFeatures.getIncomingTransitions(previousState)) {
+		for (transition : previousState.incomingTransitions) {
 			transition.targetState = choice
 		}
 
@@ -320,13 +333,16 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 		statechart.transitions.add(t1)
 		statechart.transitions.add(t2)
 
-		val variableForDepth = variableMap.getOrCreate(scenarioStatechartUtil.getLoopvariableNameForDepth(loopDepth))
+		val variableForDepth = variableMap.getOrCreate(
+				scenarioStatechartUtil.getLoopvariableNameForDepth(loopDepth))
 		val evaluator = ExpressionEvaluator.INSTANCE;
 		t1.guard = getMinCheck(variableForDepth, evaluator.evaluateInteger(loop.minimum))
 		var maxCheck = createLessExpression
+		// TODO Use ExpressionUtil.createReference
 		var ref1 = createDirectReferenceExpression
 		ref1.declaration = variableForDepth
 		maxCheck.leftOperand = ref1
+		// TODO Use ExpressionUtil.toIntegerLiteral
 		var max = createIntegerLiteralExpression
 		max.value = BigInteger.valueOf(evaluator.evaluateInteger(loop.maximum))
 		maxCheck.rightOperand = max
@@ -367,6 +383,7 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 
 	protected def processModalInteractionSet(ModalInteractionSet set, boolean isNegated) {
 		var singleNegetedSignalWithArguments = false
+		// TODO Break into multiple conditions
 		if (set.modalInteractions.size == 1 && set.modalInteractions.get(0) instanceof NegatedModalInteraction) {
 			val negatedModalInteraction = set.modalInteractions.get(0) as NegatedModalInteraction
 			if (negatedModalInteraction.modalinteraction instanceof Signal) {
@@ -549,7 +566,7 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 	}
 
 	def setupForwardTransition(ModalInteractionSet set, InteractionDefinition first, boolean reversed,
-		boolean isNegated, Transition forwardTransition) {
+			boolean isNegated, Transition forwardTransition) {
 		var Trigger t = null
 		if (set.modalInteractions.size > 1) {
 			t = getBinaryTrigger(set.modalInteractions, BinaryType.AND, reversed)
@@ -718,6 +735,7 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 	}
 
 	protected def boolean isAllNeg(ModalInteractionSet set) {
+		// TODO brackets
 		for (modalInteraction : set.modalInteractions)
 			if (!( modalInteraction instanceof NegatedModalInteraction))
 				return false
@@ -763,7 +781,8 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 		nullVariableValue.rhs = rhs
 		return nullVariableValue
 	}
-
+	
+	// TODO Extracts these methods into the derived features class
 	def protected dispatch ModalityType getModality(Signal s) {
 		return s.modality
 	}

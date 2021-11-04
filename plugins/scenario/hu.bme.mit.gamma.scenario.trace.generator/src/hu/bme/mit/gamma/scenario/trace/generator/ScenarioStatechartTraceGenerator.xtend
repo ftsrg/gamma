@@ -15,7 +15,6 @@ import hu.bme.mit.gamma.scenario.statechart.util.ScenarioStatechartUtil
 import hu.bme.mit.gamma.statechart.contract.NotDefinedEventMode
 import hu.bme.mit.gamma.statechart.contract.ScenarioAllowedWaitAnnotation
 import hu.bme.mit.gamma.statechart.contract.ScenarioContractAnnotation
-import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
@@ -66,7 +65,7 @@ class ScenarioStatechartTraceGenerator {
 	}
 
 	def List<ExecutionTrace> execute() {
-		var Component c = statechart
+		var Component component = statechart
 		absoluteParentFolder = (statechart.eResource.file).parentFile.absolutePath
 		var NotDefinedEventMode scenarioContractType = null
 		var result = <ExecutionTrace>newArrayList
@@ -74,7 +73,7 @@ class ScenarioStatechartTraceGenerator {
 		for (annotation : annotations) {
 			if (annotation instanceof ScenarioContractAnnotation) {
 				if (testOriginal) {
-					c = annotation.monitoredComponent
+					component = annotation.monitoredComponent
 					scenarioContractType= annotation.scenarioType
 				}
 			}
@@ -116,15 +115,16 @@ class ScenarioStatechartTraceGenerator {
 
 		var derivedTraces = identifySeparateTracesByReset(baseTrace)
 		var i = 0
-		val ets = <ExecutionTrace>newArrayList
+		val traces = <ExecutionTrace>newArrayList
 		for (list : derivedTraces) {
-			val containingPackage = StatechartModelDerivedFeatures.getContainingPackage(c)
-			val et = createExecutionTrace
-			et.setupExecutionTrace(list, baseTrace.name + i++, c, containingPackage, StatechartModelDerivedFeatures.getScenarioAllowedWaitAnnotation(statechart))
-			ets += et
+			val containingPackage = component.containingPackage
+			val trace = createExecutionTrace
+			trace.setupExecutionTrace(list, baseTrace.name + i++, component, containingPackage,
+				statechart.scenarioAllowedWaitAnnotation)
+			traces += trace
 		}
 
-		val backAnnotator = new ExecutionTraceBackAnnotator(ets, c, true, true)
+		val backAnnotator = new ExecutionTraceBackAnnotator(traces, component, true, true)
 		val filteredTraces = backAnnotator.execute
 
 		for (trace : filteredTraces) {

@@ -46,7 +46,6 @@ import hu.bme.mit.gamma.trace.model.Reset;
 import hu.bme.mit.gamma.trace.model.Schedule;
 import hu.bme.mit.gamma.trace.model.Step;
 import hu.bme.mit.gamma.trace.model.TraceModelFactory;
-import hu.bme.mit.gamma.util.GammaEcoreUtil;
 
 public class TraceUtil extends ExpressionUtil {
 	// Singleton
@@ -55,6 +54,7 @@ public class TraceUtil extends ExpressionUtil {
 	//
 	
 	public static final AssertSorter assertSorter = new AssertSorter();
+	protected final TraceModelFactory factory = TraceModelFactory.eINSTANCE;
 	
 	// Extending super methods
 	
@@ -311,9 +311,8 @@ public class TraceUtil extends ExpressionUtil {
 			trace.setImport(imports);
 		}
 		if (annotation!= null) {
-			TraceModelFactory factory = TraceModelFactory.eINSTANCE;
-			GammaEcoreUtil ecoreUtil =  GammaEcoreUtil.INSTANCE;
-			ExecutionTraceAllowedWaitingAnnotation newAnnotation = factory.createExecutionTraceAllowedWaitingAnnotation();
+			ExecutionTraceAllowedWaitingAnnotation newAnnotation =
+					factory.createExecutionTraceAllowedWaitingAnnotation();
 			newAnnotation.setLowerLimit(ecoreUtil.clone(annotation.getLowerLimit()));
 			newAnnotation.setUpperLimit(ecoreUtil.clone(annotation.getUpperLimit()));
 			trace.getAnnotations().add(newAnnotation);

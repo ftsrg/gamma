@@ -1894,10 +1894,12 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	}
 	
 	public static ScenarioAllowedWaitAnnotation getScenarioAllowedWaitAnnotation(StatechartDefinition statechart) {
-		Optional<StatechartAnnotation> waitAnnotation =getStatechartAnnotation(statechart, ScenarioAllowedWaitAnnotation.class);
-		if(waitAnnotation.isPresent()) {
+		Optional<StatechartAnnotation> waitAnnotation =
+				getStatechartAnnotation(statechart, ScenarioAllowedWaitAnnotation.class);
+		if (waitAnnotation.isPresent()) {
 			return (ScenarioAllowedWaitAnnotation) waitAnnotation.get();
-		} else {
+		}
+		else {
 			return null;
 		}
 	}

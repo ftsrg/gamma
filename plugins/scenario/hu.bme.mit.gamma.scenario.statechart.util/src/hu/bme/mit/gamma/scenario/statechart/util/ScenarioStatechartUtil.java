@@ -20,6 +20,8 @@ public class ScenarioStatechartUtil {
 
 	protected ScenarioStatechartUtil() {
 	}
+	
+	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
 
 	private final String reversed = "REVERSED";
 
@@ -73,7 +75,7 @@ public class ScenarioStatechartUtil {
 	}
 	
 	public int getLoopDepth(LoopCombinedFragment loop) {
-		return GammaEcoreUtil.INSTANCE.getAllContainersOfType(loop, LoopCombinedFragment.class).size();
+		return ecoreUtil.getAllContainersOfType(loop, LoopCombinedFragment.class).size();
 	}
 	
 	public String getLoopvariableNameForDepth(int depth) {
