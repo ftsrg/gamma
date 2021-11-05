@@ -118,8 +118,10 @@ public class TraceUtil extends ExpressionUtil {
 				if (nameCompare != 0) {
 					return nameCompare;
 				}
-				Integer lhsLevel = StatechartModelDerivedFeatures.getLevel(lhsInstanceStateConfiguration.getState());
-				Integer rhsLevel = StatechartModelDerivedFeatures.getLevel(rhsInstanceStateConfiguration.getState());
+				Integer lhsLevel = StatechartModelDerivedFeatures
+						.getLevel(lhsInstanceStateConfiguration.getState());
+				Integer rhsLevel = StatechartModelDerivedFeatures
+						.getLevel(rhsInstanceStateConfiguration.getState());
 				return lhsLevel.compareTo(rhsLevel);
 			}
 			else if (lhs instanceof InstanceVariableState && rhs instanceof InstanceVariableState) {
@@ -278,10 +280,12 @@ public class TraceUtil extends ExpressionUtil {
 	}
 	
 	public boolean isCovered(Step covered, Step covering) {
-		// Only input actions are covered
+		// Only input actions are covered - we expect deterministic behavior
 		List<Act> coveredActions = covered.getActions();
 		List<Act> coveringActions = covering.getActions();
 		if (coveredActions.size() == coveringActions.size()) {
+			// Works if there is at most one schedule in the action lists
+			// Otherwise, the actions should be split along schedules...
 			for (Act act : coveredActions) {
 				boolean hasEqual = coveringActions.stream().anyMatch(
 						it -> ecoreUtil.helperEquals(act, it));
@@ -321,10 +325,7 @@ public class TraceUtil extends ExpressionUtil {
 	public boolean isCoveredByStates(ExecutionTrace covered, ExecutionTrace covering) {
 		List<Step> coveredTrace = covered.getSteps();
 		List<Step> coveringTrace = covering.getSteps();
-		if (isCoveredByStates(coveredTrace, coveringTrace)) {
-			return true;
-		}
-		return false;
+		return isCoveredByStates(coveredTrace, coveringTrace);
 	}
 
 	public boolean isCoveredByStates(List<Step> covered, List<Step> covering) {
@@ -344,6 +345,8 @@ public class TraceUtil extends ExpressionUtil {
 		List<Assert> coveringAsserts = covering.getAsserts();
 		InstanceStateConfiguration stateCovered = null;
 		InstanceStateConfiguration stateCovering = null;
+		// TODO stateCovering and stateCovered will contain a reference to the last
+		// InstanceStateConfiguration in the lists - is this expected?
 		for (Assert asser : coveringAsserts) {
 			if (asser instanceof InstanceStateConfiguration) {
 				stateCovering = (InstanceStateConfiguration) asser;
@@ -357,10 +360,7 @@ public class TraceUtil extends ExpressionUtil {
 		if (stateCovered == null || stateCovering == null) {
 			return false;
 		}
-		if (ecoreUtil.helperEquals(stateCovered.getState(), stateCovering.getState())) {
-			return true;
-		}
-		return false;
+		return ecoreUtil.helperEquals(stateCovered.getState(), stateCovering.getState());
 	}
 	
 	public void clearAsserts(ExecutionTrace trace, Class<?> clazz) {
