@@ -16,10 +16,8 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 
-import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.util.EcoreUtil;
-import org.eclipse.emf.ecore.util.EcoreUtil.EqualityHelper;
 
 import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
 import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
@@ -281,11 +279,12 @@ public class TraceUtil extends ExpressionUtil {
 	
 	public boolean isCovered(Step covered, Step covering) {
 		// Only input actions are covered
-		EList<Act> coveredActions = covered.getActions();
-		EList<Act> coveringActions = covering.getActions();
+		List<Act> coveredActions = covered.getActions();
+		List<Act> coveringActions = covering.getActions();
 		if (coveredActions.size() == coveringActions.size()) {
 			for (Act act : coveredActions) {
-				boolean hasEqual = coveringActions.stream().anyMatch(it -> equalsTo(act, it));
+				boolean hasEqual = coveringActions.stream().anyMatch(
+						it -> ecoreUtil.helperEquals(act, it));
 				if (!hasEqual) {
 					return false;
 				}
@@ -341,8 +340,8 @@ public class TraceUtil extends ExpressionUtil {
 	}
 
 	public boolean isCoveredByState(Step covered, Step covering) {
-		EList<Assert> coveredAsserts = covered.getAsserts();
-		EList<Assert> coveringAsserts = covering.getAsserts();
+		List<Assert> coveredAsserts = covered.getAsserts();
+		List<Assert> coveringAsserts = covering.getAsserts();
 		InstanceStateConfiguration stateCovered = null;
 		InstanceStateConfiguration stateCovering = null;
 		for (Assert asser : coveringAsserts) {
@@ -368,11 +367,6 @@ public class TraceUtil extends ExpressionUtil {
 		for (Step step : trace.getSteps()) {
 			step.getAsserts().removeIf(it -> clazz.isInstance(it));
 		}
-	}
-	
-	public boolean equalsTo(EObject lhs, EObject rhs) {
-		EqualityHelper helper = new EqualityHelper();
-		return helper.equals(lhs, rhs);
 	}
 
 	public void removeScheduleAndReset(Step step) {
