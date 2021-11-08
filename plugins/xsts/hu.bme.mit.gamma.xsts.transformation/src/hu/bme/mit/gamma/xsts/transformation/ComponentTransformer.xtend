@@ -604,13 +604,15 @@ class ComponentTransformer {
 				newInEventAction.actions += xStsEventVariable.createHavocAction
 			}
 			// Enabling the setting of the referenced event variables to true if no other is set
+			val xStsIfActions = newArrayList
 			for (xStsEventVariable : xStsReferencedEventVariables) {
 				val xStsNegatedVariables = newHashSet
 				xStsNegatedVariables += xStsReferencedEventVariables
 				xStsNegatedVariables -= xStsEventVariable
-				newInEventAction.actions += xStsActionUtil.connectThroughNegations(xStsNegatedVariables)
+				xStsIfActions += xStsActionUtil.connectThroughNegations(xStsNegatedVariables)
 						.createIfAction(xStsEventVariable.createAssignmentAction(createTrueExpression))
 			}
+			newInEventAction.actions += xStsIfActions.weave
 			// Binding event variables that come from the same ports
 			newInEventAction.actions += xSts.createEventAssignmentsBoundToTheSameSystemPort(wrappedType)
 			 // Original parameter settings
