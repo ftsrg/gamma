@@ -610,11 +610,9 @@ class ComponentTransformer {
 				xStsNegatedVariables += xStsReferencedEventVariables
 				xStsNegatedVariables -= xStsEventVariable
 				xStsIfActions += xStsActionUtil.connectThroughNegations(xStsNegatedVariables)
-									.createIfAction(xStsEventVariable.createAssignmentAction(createTrueExpression))
+								.createChoiceSequentialAction(xStsEventVariable.createAssignmentAction(createTrueExpression))
 			}
-			val xStsFinalIfAction = xStsIfActions.weave
-			xStsFinalIfAction.append(createFalseExpression.createAssumeAction) // To enforce exclusiveness
-			newInEventAction.actions += xStsFinalIfAction
+			newInEventAction.actions += xStsIfActions.createChoiceAction // To enforce exclusiveness
 			// Binding event variables that come from the same ports
 			newInEventAction.actions += xSts.createEventAssignmentsBoundToTheSameSystemPort(wrappedType)
 			 // Original parameter settings
