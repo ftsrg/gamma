@@ -50,18 +50,11 @@ class ScenarioStatechartTraceGenerator {
 	String absoluteParentFolder
 
 	Package _package
-	
-	ScenarioAllowedWaitAnnotation annotation
-	
+		
 	new(StatechartDefinition statechart, int schedulingConstraint) {
-		this(statechart, schedulingConstraint, null);
-	}
-
-	new(StatechartDefinition sd, int schedulingConstraint, ScenarioAllowedWaitAnnotation annotation) {
 		this.schedulingConstraint = schedulingConstraint
-		this.statechart = sd
+		this.statechart = statechart
 		this._package = statechart.containingPackage
-		this.annotation = annotation
 	}
 
 	def List<ExecutionTrace> execute() {
