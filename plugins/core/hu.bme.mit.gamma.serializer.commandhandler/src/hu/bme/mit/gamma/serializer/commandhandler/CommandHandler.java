@@ -1,7 +1,5 @@
 package hu.bme.mit.gamma.serializer.commandhandler;
 
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -22,9 +20,11 @@ import hu.bme.mit.gamma.property.language.ui.serializer.PropertyLanguageSerializ
 import hu.bme.mit.gamma.statechart.language.ui.serializer.StatechartLanguageSerializer;
 import hu.bme.mit.gamma.trace.language.ui.serializer.TraceLanguageSerializer;
 import hu.bme.mit.gamma.transformation.util.GammaFileNamer;
+import hu.bme.mit.gamma.util.GammaEcoreUtil;
 
 public class CommandHandler extends AbstractHandler {
-	
+
+	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
 	protected final GammaFileNamer fileNamer = GammaFileNamer.INSTANCE;
 	protected final Logger logger = Logger.getLogger("GammaLogger");
 
@@ -56,13 +56,15 @@ public class CommandHandler extends AbstractHandler {
 							case GammaFileNamer.PACKAGE_EMF_EXTENSION: {
 								// Multiple Packages in a single file - sorting them according to references
 								// to support referencing already serialized Packages
-								for (EObject rootElement : sort(contents)) {
+								List<EObject> sortedContents = ecoreUtil.sortAccordingToReferences(contents);
+								for (EObject rootElement : sortedContents) {
 									String extensionlessFileName = (size <= 1) ? extensionlessName :
 										extensionlessName + "_" + contents.indexOf(rootElement);
 									
 									String fileName = fileNamer.getPackageFileName(extensionlessFileName);
 									
 									StatechartLanguageSerializer serializer = new StatechartLanguageSerializer();
+									// The contents list changes here (rootElement is removed)
 									serializer.serialize(rootElement, parentFolder, fileName);
 									logger.log(Level.INFO, "Package serialization has been finished");
 								}
@@ -92,28 +94,6 @@ public class CommandHandler extends AbstractHandler {
 			e.printStackTrace();
 		}
 		return null;
-	}
-	
-	private <T extends EObject> List<T> sort(List<T> list) {
-		List<T> array = new ArrayList<T>(list);
-		array.sort(
-			new Comparator<T>() {
-				@Override
-				public int compare(T lhs, T rhs) {
-					List<EObject> lhsReferences = lhs.eCrossReferences();
-					List<EObject> rhsReferences = rhs.eCrossReferences();
-					// We do not handle circular references
-					if (lhsReferences.contains(rhs)) {
-						return 1;
-					}
-					if (rhsReferences.contains(lhs)) {
-						return -1;
-					}
-					return 0;
-				}
-			}
-		);
-		return array;
 	}
 	
 }

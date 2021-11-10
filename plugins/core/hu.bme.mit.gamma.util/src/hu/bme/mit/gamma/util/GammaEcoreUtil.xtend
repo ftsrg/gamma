@@ -13,6 +13,7 @@ package hu.bme.mit.gamma.util
 import java.io.File
 import java.util.Collection
 import java.util.Collections
+import java.util.Comparator
 import java.util.List
 import org.eclipse.core.resources.ResourcesPlugin
 import org.eclipse.core.runtime.Path
@@ -486,6 +487,28 @@ class GammaEcoreUtil {
 			return get.last == object
 		}
 		return true
+	}
+	
+	def <T extends EObject> List<T> sortAccordingToReferences(List<T> list) {
+		val array = newArrayList
+		array += list
+		array.sort(
+			new Comparator<T>() {
+				override compare(T lhs, T rhs) {
+					val lhsReferences = lhs.eCrossReferences
+					val rhsReferences = rhs.eCrossReferences
+					// We do not handle circular references
+					if (lhsReferences.contains(rhs)) {
+						return 1
+					}
+					if (rhsReferences.contains(lhs)) {
+						return -1
+					}
+					return 0
+				}
+			}
+		)
+		return array
 	}
 	
 }
