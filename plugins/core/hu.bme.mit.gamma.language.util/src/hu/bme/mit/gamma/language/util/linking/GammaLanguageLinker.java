@@ -11,7 +11,6 @@
 package hu.bme.mit.gamma.language.util.linking;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -66,8 +65,10 @@ public abstract class GammaLanguageLinker extends DefaultLinkingService {
 		    		}
 		    		URI uri = URI.createURI(finalPath);
 		    		Resource importedResource = resourceSet.getResource(uri, true);
+		    		// return importedResource.getContents(); would result in an Xtext exception
+		    		// if there is more than one root element in the resource
 		    		EObject importedPackage = importedResource.getContents().get(0);
-		    		return Collections.singletonList(importedPackage);
+		    		return List.of(importedPackage);
 				} catch (Exception e) {
 					// Trivial case: most of the time (during typing) the uri is not correct, thus the loading cannot be done
 				}
@@ -83,7 +84,7 @@ public abstract class GammaLanguageLinker extends DefaultLinkingService {
 		URI uri = URI.createURI(path);
 		try {
 	    	resourceSet.getResource(uri, true);
-	    	resourceSet.getResources().get(0).unload();
+	    	resourceSet.getResources().stream().forEach(it -> it.unload());
 	    	resourceSet.getResources().clear();
 	    	resourceSet = null;
 	    	return true;
@@ -93,6 +94,7 @@ public abstract class GammaLanguageLinker extends DefaultLinkingService {
 		}
     }
     
+    // Could be abstract, too
     private String addExtensionIfNeeded(String path) {
     	String[] splittedPath = path.split("/");
     	String fileName = splittedPath[splittedPath.length - 1];
