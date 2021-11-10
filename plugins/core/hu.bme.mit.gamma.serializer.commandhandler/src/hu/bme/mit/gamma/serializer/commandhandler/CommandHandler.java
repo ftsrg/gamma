@@ -1,5 +1,8 @@
 package hu.bme.mit.gamma.serializer.commandhandler;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -39,19 +42,30 @@ public class CommandHandler extends AbstractHandler {
 						String parentFolder = file.getParent().getFullPath().toString();
 						String name = file.getName();
 						String fileExtension = file.getFileExtension();
+						String extensionlessName = name.substring(0, name.length() - ("." + fileExtension).length());
 						
 						ResourceSet resourceSet = new ResourceSetImpl();
 						URI fileUri = URI.createPlatformResourceURI(path, true);
 						Resource resource = resourceSet.getResource(fileUri, true);
-						EObject rootElem = resource.getContents().get(0);
+						
+						List<EObject> contents = resource.getContents();
+						int size = contents.size();
+						EObject rootElem = contents.get(0);
 						
 						switch (fileExtension) {
 							case GammaFileNamer.PACKAGE_EMF_EXTENSION: {
-								String fileName = fileNamer.getPackageFileName(name);
-								
-								StatechartLanguageSerializer serializer = new StatechartLanguageSerializer();
-								serializer.serialize(rootElem, parentFolder, fileName);
-								logger.log(Level.INFO, "Package serialization has been finished");
+								// Multiple Packages in a single file - sorting them according to references
+								// to support referencing already serialized Packages
+								for (EObject rootElement : sort(contents)) {
+									String extensionlessFileName = (size <= 1) ? extensionlessName :
+										extensionlessName + "_" + contents.indexOf(rootElement);
+									
+									String fileName = fileNamer.getPackageFileName(extensionlessFileName);
+									
+									StatechartLanguageSerializer serializer = new StatechartLanguageSerializer();
+									serializer.serialize(rootElement, parentFolder, fileName);
+									logger.log(Level.INFO, "Package serialization has been finished");
+								}
 								break;
 							}
 							case GammaFileNamer.EXECUTION_EMF_EXTENSION: {
@@ -79,5 +93,27 @@ public class CommandHandler extends AbstractHandler {
 		}
 		return null;
 	}
-
+	
+	private <T extends EObject> List<T> sort(List<T> list) {
+		List<T> array = new ArrayList<T>(list);
+		array.sort(
+			new Comparator<T>() {
+				@Override
+				public int compare(T lhs, T rhs) {
+					List<EObject> lhsReferences = lhs.eCrossReferences();
+					List<EObject> rhsReferences = rhs.eCrossReferences();
+					// We do not handle circular references
+					if (lhsReferences.contains(rhs)) {
+						return 1;
+					}
+					if (rhsReferences.contains(lhs)) {
+						return -1;
+					}
+					return 0;
+				}
+			}
+		);
+		return array;
+	}
+	
 }
