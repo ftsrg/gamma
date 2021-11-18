@@ -290,8 +290,8 @@ class StatechartToLowlevelTransformer {
 
 	protected def hu.bme.mit.gamma.statechart.lowlevel.model.Region transform(Region region) {
 		val gammaStateNodes = region.stateNodes
-//		checkState(gammaStateNodes.filter(InitialState).size <= 1,
-//				"More than one initial state in " + region.name)
+		checkState(gammaStateNodes.filter(InitialState).size <= 1,
+				"More than one initial state in " + region.name)
 		checkState(gammaStateNodes.filter(ShallowHistoryState).size <= 1,
 				"More than one shallow history state in " + region.name)
 		checkState(gammaStateNodes.filter(DeepHistoryState).size <= 1,
