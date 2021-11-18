@@ -34,7 +34,7 @@
       <genEnumLiterals ecoreEnumLiteral="property.ecore#//UnaryLogicalOperator/NOT"/>
     </genEnums>
     <genClasses ecoreClass="property.ecore#//PropertyPackage">
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference property.ecore#//PropertyPackage/import"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference property.ecore#//PropertyPackage/imports"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference property.ecore#//PropertyPackage/component"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference property.ecore#//PropertyPackage/formulas"/>
     </genClasses>

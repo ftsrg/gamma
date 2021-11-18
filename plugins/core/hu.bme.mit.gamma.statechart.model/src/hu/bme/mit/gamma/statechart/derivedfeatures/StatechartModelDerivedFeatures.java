@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -34,6 +35,7 @@ import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression;
 import hu.bme.mit.gamma.expression.model.FunctionDeclaration;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
+import hu.bme.mit.gamma.expression.model.TypeDeclaration;
 import hu.bme.mit.gamma.expression.model.TypeDefinition;
 import hu.bme.mit.gamma.statechart.composite.AbstractAsynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent;
@@ -222,6 +224,25 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	public static Set<Package> getImportableInterfacePackages(Component component) {
 		return getAllPorts(component).stream().map(it -> getContainingPackage(
 				getInterface(it))).collect(Collectors.toSet());
+	}
+	
+	public static Set<Package> getImportableTypeDeclarationPackages(Component component) {
+		Package _package = getContainingPackage(component);
+		return getImportableTypeDeclarationPackages(_package);
+	}
+	
+	public static Set<Package> getImportableTypeDeclarationPackages(Package _package) {
+		Set<Package> importedPackages = new LinkedHashSet<Package>();
+		List<Package> importablePackages = new ArrayList<Package>();
+		importablePackages.add(_package);
+		importablePackages.addAll(_package.getImports());
+		for (Package importablePackage : importablePackages) {
+			List<TypeDeclaration> typeDeclarations = importablePackage.getTypeDeclarations();
+			if (!typeDeclarations.isEmpty()) {
+				importedPackages.add(importablePackage);
+			}
+		}
+		return importedPackages;
 	}
 	
 	public static Set<Package> getSelfAndImports(Package gammaPackage) {

@@ -60,7 +60,7 @@ public class PropertyUtil extends StatechartUtil {
 	public PropertyPackage wrapFormula(Component component, CommentableStateFormula formula) {
 		PropertyPackage propertyPackage = factory.createPropertyPackage();
 		Package _package = StatechartModelDerivedFeatures.getContainingPackage(component);
-		propertyPackage.getImport().add(_package);
+		propertyPackage.getImports().add(_package);
 		propertyPackage.setComponent(component);
 		propertyPackage.getFormulas().add(formula);
 		return propertyPackage;

@@ -70,9 +70,9 @@ class PropertyGenerator {
 
 	def PropertyPackage initializePackage(Component component) {
 		val PropertyPackage propertyPackage = factory.createPropertyPackage
-		val Package _package = StatechartModelDerivedFeatures.getContainingPackage(component)
-		propertyPackage.getImport() += _package
-		propertyPackage.setComponent(component)
+		val Package _package = component.containingPackage
+		propertyPackage.imports += _package
+		propertyPackage.component = component
 		return propertyPackage
 	}
 
