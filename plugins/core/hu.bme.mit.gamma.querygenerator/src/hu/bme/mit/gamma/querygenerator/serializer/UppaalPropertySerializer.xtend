@@ -27,7 +27,7 @@ class UppaalPropertySerializer extends PropertySerializer {
 	// Singleton
 	public static final UppaalPropertySerializer INSTANCE = new UppaalPropertySerializer
 	protected new() {
-		super(new PropertyExpressionSerializer(UppaalReferenceSerializer.INSTANCE))
+		super(new UppaalPropertyExpressionSerializer(UppaalReferenceSerializer.INSTANCE))
 	}
 	//
 	
