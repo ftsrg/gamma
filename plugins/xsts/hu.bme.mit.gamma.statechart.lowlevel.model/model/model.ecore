@@ -130,7 +130,8 @@
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="TriggerNode" eSuperTypes="../../hu.bme.mit.gamma.activity.model/model/activity.ecore#//PseudoActivityNode">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="triggerExpression" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="triggerExpression" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
+        containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="InitialiseActivityAction" eSuperTypes="../../hu.bme.mit.gamma.action.model/model/action.ecore#//Action">
     <eStructuralFeatures xsi:type="ecore:EReference" name="activityInstance" lowerBound="1"

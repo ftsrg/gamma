@@ -184,7 +184,7 @@ class LowlevelToXstsTransformer {
 		
 		this.activityNodeTransformer = new ActivityNodeTransformer(this.engine, this.trace)
 		
-		this.optimize = false
+		this.optimize = optimize
 		if (optimize) {
 			this.referredEvents = ReferredEvents.Matcher.on(engine).allValuesOfevent
 			this.referredVariables = ReferredVariables.Matcher.on(engine).allValuesOfvariable
