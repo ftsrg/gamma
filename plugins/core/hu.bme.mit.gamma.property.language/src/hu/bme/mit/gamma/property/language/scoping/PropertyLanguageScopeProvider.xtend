@@ -46,7 +46,7 @@ class PropertyLanguageScopeProvider extends AbstractPropertyLanguageScopeProvide
 				}
 			}
 			if (reference == PropertyModelPackage.Literals.PROPERTY_PACKAGE__ACTIVITY) {
-				val imports = context.import
+				val imports = context.imports
 				if (!imports.empty) {
 					return Scopes.scopeFor(imports.map[it.activities].flatten)
 				}
@@ -57,12 +57,12 @@ class PropertyLanguageScopeProvider extends AbstractPropertyLanguageScopeProvide
 		val activity = root.activity	
 			
 		if (context instanceof NamedActivityDeclarationReference && reference == ActivityModelPackage.Literals.NAMED_ACTIVITY_DECLARATION_REFERENCE__NAMED_ACTIVITY_DECLARATION) {
-			val imports = root.import
+			val imports = root.imports
 			return Scopes.scopeFor(imports.map[it.activities].flatten)
 		}
 		if (context instanceof ActivityDeclarationInstanceNodeReference) {
 			if (reference == ActivityModelPackage.Literals.NAMED_ACTIVITY_DECLARATION_REFERENCE__NAMED_ACTIVITY_DECLARATION) {
-				val imports = root.import
+				val imports = root.imports
 				return Scopes.scopeFor(imports.map[it.activities].flatten)
 			}
 			if (reference == PropertyModelPackage.Literals.ACTIVITY_DECLARATION_INSTANCE_NODE_REFERENCE__ACTIVITY_NODE) {
@@ -76,7 +76,7 @@ class PropertyLanguageScopeProvider extends AbstractPropertyLanguageScopeProvide
 		}
 		if (context instanceof ActivityDeclarationInstanceVariableReference) {
 			if (reference == ActivityModelPackage.Literals.NAMED_ACTIVITY_DECLARATION_REFERENCE__NAMED_ACTIVITY_DECLARATION) {
-				val imports = root.import
+				val imports = root.imports
 				return Scopes.scopeFor(imports.map[it.activities].flatten)
 			}
 			if (reference == PropertyModelPackage.Literals.ACTIVITY_DECLARATION_INSTANCE_VARIABLE_REFERENCE__VARIABLE) {

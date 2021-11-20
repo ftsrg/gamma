@@ -71,6 +71,7 @@ import static extension hu.bme.mit.gamma.statechart.lowlevel.derivedfeatures.Low
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.XstsNamings.*
 import hu.bme.mit.gamma.activity.model.InitialNode
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.Nodes
 
 class LowlevelToXstsTransformer {
 	// Transformation-related extensions
@@ -770,46 +771,6 @@ class LowlevelToXstsTransformer {
 			].build
 		}
 		return activityNodeTransitionsRule
-	}
-
-	protected def optimizeActions() {
-		xSts.variableInitializingTransition = xSts.variableInitializingTransition.optimize
-		xSts.configurationInitializingTransition = xSts.configurationInitializingTransition.optimize
-		xSts.entryEventTransition = xSts.entryEventTransition.optimize
-		xSts.changeTransitions(xSts.transitions.optimize)
-		xSts.inEventTransition = xSts.inEventTransition.optimize
-		xSts.outEventTransition = xSts.outEventTransition.optimize
-		
-		// Note the original transition actions are already "broken"
-		
-		// Variable inlining
-		val inliner = VariableInliner.INSTANCE
-		
-		var List<XTransition> oldActions = null
-		var XTransition oldEntryEventAction = null
-		while (!oldActions.helperEquals(xSts.transitions) ||
-				!oldEntryEventAction.helperEquals(xSts.entryEventTransition)) {
-			oldActions = xSts.transitions.clone
-			oldEntryEventAction = xSts.entryEventTransition.clone
-			inliner.inline(xSts.transitions)
-			inliner.inline(xSts.entryEventTransition)
-			deleteUnreadTransientXStsVariables
-			xSts.changeTransitions(xSts.transitions.optimize)
-			xSts.entryEventTransition = xSts.entryEventTransition.optimize
-		}
-	}
-	
-	protected def deleteUnreadTransientXStsVariables() {
-		val unreadXStsVariableMacher = NotReadVariables.Matcher.on(targetEngine)
-		val unreadTransientXStsVariables = unreadXStsVariableMacher.allValuesOfvariable
-				.filter[it.transient || it.local]
-		val xStsAssignmentMatcher = AssignmentActions.Matcher.on(targetEngine)
-		for (unreadTransientXStsVariable : unreadTransientXStsVariables) {
-			val xStsAssignments = xStsAssignmentMatcher.getAllValuesOfaction(null, unreadTransientXStsVariable)
-			xStsAssignments.forEach[it.remove]
-			unreadTransientXStsVariable.deleteDeclaration // Deleting the potential containing VariableDeclarationAction too
-			trace.delete(unreadTransientXStsVariable) // Trace deletion
-		}
 	}
 	
 	protected def handleTransientAndResettableVariableAnnotations() {
