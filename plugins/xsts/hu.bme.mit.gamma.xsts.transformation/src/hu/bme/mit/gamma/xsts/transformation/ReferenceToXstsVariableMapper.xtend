@@ -111,7 +111,8 @@ class ReferenceToXstsVariableMapper {
 	}
 	
 	def getInputParameterVariables(ParameterDeclaration parameter, Port port) {
-		return parameter.getInputParameterVariablesByPorts(port).flatten.toList
+		return parameter.getInputParameterVariablesByPorts(port)
+			.flatten.toList
 	}
 	
 	def getInputParameterVariablesByPorts(ParameterDeclaration parameter, Port port) {

@@ -171,12 +171,21 @@ public class AdaptiveContractTestGenerationHandler extends TaskHandler {
 							schedulingConstraint = statechartUtil.evaluateMilliseconds(minimumPeriod);
 						}
 						ScenarioStatechartTraceGenerator traceGenerator = new ScenarioStatechartTraceGenerator(
-								contract, schedulingConstraint);
+								contract, schedulingConstraint, StatechartModelDerivedFeatures.getScenarioAllowedWaitAnnotation(contract));
 						List<ExecutionTrace> traces = traceGenerator.execute();
 						for (ExecutionTrace executionTrace : traces) {						
 						    ExecutionTrace tmp = ecoreUtil.clone(clonedTrace);
-							tmp.getSteps().addAll(executionTrace.getSteps()
-									.subList(1, executionTrace.getSteps().size()));
+						    tmp.getAnnotations().clear();
+						    tmp.getAnnotations().addAll(executionTrace.getAnnotations());
+						    if (!TraceModelDerivedFeatures.hasAssertInFirstStep(executionTrace)) {
+						    	tmp.getSteps().addAll(executionTrace.getSteps()
+										.subList(1, executionTrace.getSteps().size()));
+						    }
+						    else {
+						    	List<Step> steps = executionTrace.getSteps();
+						    	traceUtil.removeScheduleAndReset(steps.get(0));
+						    	tmp.getSteps().addAll(steps);
+						    }
 							testsTraces.add(tmp);
 						}
 					}

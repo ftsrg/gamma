@@ -39,11 +39,11 @@ class ExecutionTraceBackAnnotator {
 	val TraceUtil traceUtil = TraceUtil.INSTANCE
 	val ScenarioStatechartUtil scenarioStatechartUtil = ScenarioStatechartUtil.INSTANCE
 
-	List<Port> ports = null;
-	List<ExecutionTrace> traces = null;
-	List<ExecutionTrace> result = null;
-	boolean removeNotneededInteractions = true;
-
+	List<Port> ports = null
+	List<ExecutionTrace> traces = null
+	List<ExecutionTrace> result = null
+	boolean removeNotneededInteractions = true
+	
 	boolean createOriginalActsAndAssertsBasedOnActs
 
 	new(List<ExecutionTrace> _traces, Component original) {
@@ -75,31 +75,35 @@ class ExecutionTraceBackAnnotator {
 			if (createOriginalActsAndAssertsBasedOnActs) {
 				resultTrace.createOriginalActsAndAsserts
 			}
-//			resultTrace.removeScheduelingWhenSendAfterReceive
+			/* The actions need to be removed from the step, if it is a 'send' step after a 'receive' step.
+			 * This is necessary, to avoid two schedules between receiving the last interactions and asserting to the output.  
+			 * 'Send' after 'send' steps should no tbe modified, since there needs to be a schedule between the first assertions and the assertions of the sendos step.			 * 
+			 */
+			resultTrace.removeActionsWhenSendAfterReceive
 		}
 		return result
 	}
 
-	def removeScheduelingWhenSendAfterReceive(ExecutionTrace trace) {
+	def removeActionsWhenSendAfterReceive(ExecutionTrace trace) {
 		for (var i = 0; i < trace.steps.size; i++) {
 			val startingStep = trace.steps.get(i)
 			if (startingStep.isReceive) {
-				var j = i + 1
-				while (j < trace.steps.size && trace.steps.get(j).isWait) {
-					j++
-				}
-				if (j == trace.steps.size) {
+				if (i + 1 == trace.steps.size) {
 					return
 				}
-				val nextNonWait = trace.steps.get(j)
-				if (nextNonWait.isSend) {
-					nextNonWait.actions.remove(nextNonWait.actions.filter(Schedule).head)
+				val next = trace.steps.get(i+1)
+				if (next.isSend) {
+					if (next.actions.findFirst[!(it instanceof Schedule || it instanceof TimeElapse)] === null){
+						next.actions.clear
+					} else {
+						throw new IllegalArgumentException('''Step number «i» contains both actions other then schedules and time elapse and asserts.''')
+					}
 				}
-				return
 			}
 		}
 	}
 
+	// TODO extract into derived feature class
 	def protected boolean isSend(Step step) {
 		return step.actions.filter(RaiseEventAct).empty && !step.asserts.filter(RaiseEventAct).empty
 	}
@@ -121,8 +125,7 @@ class ExecutionTraceBackAnnotator {
 					val portName = action.port.getName
 					if (scenarioStatechartUtil.isTurnedOut(action.port)) {
 						var asser = createRaiseEventAct
-						// TODO what is this 8?
-						asser.port = getPort(portName.substring(0, portName.length - 8))
+						asser.port = getPort(scenarioStatechartUtil.getTurnedOutPortName(action.port))
 						asser.event = getEvent(asser.port, action.event.name)
 						for (argument : action.arguments) {
 							asser.arguments += argument.clone
@@ -142,6 +145,17 @@ class ExecutionTraceBackAnnotator {
 				else if (action instanceof Reset ||
 						action instanceof TimeElapse || action instanceof Schedule) {
 					actions += action
+				}
+			}
+			if (step == trace.steps.get(0)){
+				for (raise : step.asserts.filter(RaiseEventAct).filter[!scenarioStatechartUtil.isTurnedOut(it.port)]){
+					var asser = createRaiseEventAct
+					asser.port = getPort(raise.port.name)
+					asser.event = getEvent(asser.port, raise.event.name)
+					for (argument : raise.arguments) {
+						asser.arguments += argument.clone
+					}
+					asserts += asser
 				}
 			}
 			step.actions.clear
@@ -171,13 +185,17 @@ class ExecutionTraceBackAnnotator {
 
 	def removeNotNeededInteractions(ExecutionTrace trace) {
 		for (step : trace.steps) {
-			var notNeeded = newArrayList
-			for (act : step.actions) {
-				if (!isInteractionPairPresent(step, act)) {
-					notNeeded += act
+			if (step != trace.steps.get(0)) {
+				if (!(step.asserts.filter(RaiseEventAct).filter[scenarioStatechartUtil.isTurnedOut(it.port)].empty)) {
+					var notNeeded = newArrayList
+					for (act : step.actions) {
+						if (!isInteractionPairPresent(step, act)) {
+							notNeeded += act
+						}
+					}
+					step.actions -= notNeeded
 				}
 			}
-			step.actions -= notNeeded
 		}
 	}
 

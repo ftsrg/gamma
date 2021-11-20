@@ -84,7 +84,11 @@ public class CommandHandler extends AbstractHandler {
 		return null;
 	}
 
-	public void run(StatechartDefinition gammaStatechart, String modelFolderUri, String targetFolderUri, String basePackageName) {
+	public void run(StatechartDefinition gammaStatechart, String modelFolderUri,
+			String targetFolderUri, String basePackageName) {
+		modelFolderUri = URI.decode(modelFolderUri);
+		targetFolderUri = URI.decode(targetFolderUri);
+		
 		String fileNameWithoutExtenstion = gammaStatechart.getName();
 		Package gammaPackage = (Package) gammaStatechart.eContainer();
 		GammaToLowlevelTransformer transformer = new GammaToLowlevelTransformer();

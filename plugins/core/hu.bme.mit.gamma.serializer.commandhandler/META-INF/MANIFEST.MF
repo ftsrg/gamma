@@ -1,0 +1,17 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Gamma Model Serializer Commandhandler
+Bundle-SymbolicName: hu.bme.mit.gamma.serializer.commandhandler;singleton:=true
+Bundle-Version: 2.5.1.qualifier
+Bundle-Vendor: BME-FTSRG
+Automatic-Module-Name: hu.bme.mit.gamma.serializer.commandhandler
+Bundle-RequiredExecutionEnvironment: JavaSE-11
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.emf.ecore,
+ org.eclipse.core.resources,
+ org.eclipse.equinox.registry,
+ hu.bme.mit.gamma.util,
+ hu.bme.mit.gamma.transformation.util,
+ hu.bme.mit.gamma.statechart.language.ui,
+ hu.bme.mit.gamma.trace.language.ui,
+ hu.bme.mit.gamma.property.language.ui

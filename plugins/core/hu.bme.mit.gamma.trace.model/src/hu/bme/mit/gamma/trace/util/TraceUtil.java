@@ -16,10 +16,8 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 
-import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.util.EcoreUtil;
-import org.eclipse.emf.ecore.util.EcoreUtil.EqualityHelper;
 
 import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
 import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
@@ -28,6 +26,7 @@ import hu.bme.mit.gamma.expression.model.TypeDeclaration;
 import hu.bme.mit.gamma.expression.model.TypeReference;
 import hu.bme.mit.gamma.expression.util.ExpressionUtil;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
+import hu.bme.mit.gamma.statechart.contract.ScenarioAllowedWaitAnnotation;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.Interface;
@@ -37,11 +36,14 @@ import hu.bme.mit.gamma.trace.derivedfeatures.TraceModelDerivedFeatures;
 import hu.bme.mit.gamma.trace.model.Act;
 import hu.bme.mit.gamma.trace.model.Assert;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
+import hu.bme.mit.gamma.trace.model.ExecutionTraceAllowedWaitingAnnotation;
 import hu.bme.mit.gamma.trace.model.InstanceStateConfiguration;
 import hu.bme.mit.gamma.trace.model.InstanceVariableState;
 import hu.bme.mit.gamma.trace.model.RaiseEventAct;
 import hu.bme.mit.gamma.trace.model.Reset;
+import hu.bme.mit.gamma.trace.model.Schedule;
 import hu.bme.mit.gamma.trace.model.Step;
+import hu.bme.mit.gamma.trace.model.TraceModelFactory;
 
 public class TraceUtil extends ExpressionUtil {
 	// Singleton
@@ -50,6 +52,7 @@ public class TraceUtil extends ExpressionUtil {
 	//
 	
 	public static final AssertSorter assertSorter = new AssertSorter();
+	protected final TraceModelFactory factory = TraceModelFactory.eINSTANCE;
 	
 	// Extending super methods
 	
@@ -115,8 +118,10 @@ public class TraceUtil extends ExpressionUtil {
 				if (nameCompare != 0) {
 					return nameCompare;
 				}
-				Integer lhsLevel = StatechartModelDerivedFeatures.getLevel(lhsInstanceStateConfiguration.getState());
-				Integer rhsLevel = StatechartModelDerivedFeatures.getLevel(rhsInstanceStateConfiguration.getState());
+				Integer lhsLevel = StatechartModelDerivedFeatures
+						.getLevel(lhsInstanceStateConfiguration.getState());
+				Integer rhsLevel = StatechartModelDerivedFeatures
+						.getLevel(rhsInstanceStateConfiguration.getState());
 				return lhsLevel.compareTo(rhsLevel);
 			}
 			else if (lhs instanceof InstanceVariableState && rhs instanceof InstanceVariableState) {
@@ -275,12 +280,15 @@ public class TraceUtil extends ExpressionUtil {
 	}
 	
 	public boolean isCovered(Step covered, Step covering) {
-		// Only input actions are covered
-		EList<Act> coveredActions = covered.getActions();
-		EList<Act> coveringActions = covering.getActions();
+		// Only input actions are covered - we expect deterministic behavior
+		List<Act> coveredActions = covered.getActions();
+		List<Act> coveringActions = covering.getActions();
 		if (coveredActions.size() == coveringActions.size()) {
+			// Works if there is at most one schedule in the action lists
+			// Otherwise, the actions should be split along schedules...
 			for (Act act : coveredActions) {
-				boolean hasEqual = coveringActions.stream().anyMatch(it -> equalsTo(act, it));
+				boolean hasEqual = coveringActions.stream().anyMatch(
+						it -> ecoreUtil.helperEquals(act, it));
 				if (!hasEqual) {
 					return false;
 				}
@@ -291,7 +299,7 @@ public class TraceUtil extends ExpressionUtil {
 	}
 	
 	public void setupExecutionTrace(ExecutionTrace trace, List<Step> steps,
-			String name, Component component, Package imports) {
+			String name, Component component, Package imports, ScenarioAllowedWaitAnnotation annotation) {
 		if (name != null) {
 			trace.setName(name);
 		}
@@ -305,15 +313,19 @@ public class TraceUtil extends ExpressionUtil {
 		if (imports != null) {
 			trace.setImport(imports);
 		}
+		if (annotation!= null) {
+			ExecutionTraceAllowedWaitingAnnotation newAnnotation =
+					factory.createExecutionTraceAllowedWaitingAnnotation();
+			newAnnotation.setLowerLimit(ecoreUtil.clone(annotation.getLowerLimit()));
+			newAnnotation.setUpperLimit(ecoreUtil.clone(annotation.getUpperLimit()));
+			trace.getAnnotations().add(newAnnotation);
+		}
 	}
 
 	public boolean isCoveredByStates(ExecutionTrace covered, ExecutionTrace covering) {
 		List<Step> coveredTrace = covered.getSteps();
 		List<Step> coveringTrace = covering.getSteps();
-		if (isCoveredByStates(coveredTrace, coveringTrace)) {
-			return true;
-		}
-		return false;
+		return isCoveredByStates(coveredTrace, coveringTrace);
 	}
 
 	public boolean isCoveredByStates(List<Step> covered, List<Step> covering) {
@@ -329,10 +341,12 @@ public class TraceUtil extends ExpressionUtil {
 	}
 
 	public boolean isCoveredByState(Step covered, Step covering) {
-		EList<Assert> coveredAsserts = covered.getAsserts();
-		EList<Assert> coveringAsserts = covering.getAsserts();
+		List<Assert> coveredAsserts = covered.getAsserts();
+		List<Assert> coveringAsserts = covering.getAsserts();
 		InstanceStateConfiguration stateCovered = null;
 		InstanceStateConfiguration stateCovering = null;
+		// TODO stateCovering and stateCovered will contain a reference to the last
+		// InstanceStateConfiguration in the lists - is this expected?
 		for (Assert asser : coveringAsserts) {
 			if (asser instanceof InstanceStateConfiguration) {
 				stateCovering = (InstanceStateConfiguration) asser;
@@ -346,10 +360,7 @@ public class TraceUtil extends ExpressionUtil {
 		if (stateCovered == null || stateCovering == null) {
 			return false;
 		}
-		if (ecoreUtil.helperEquals(stateCovered.getState(), stateCovering.getState())) {
-			return true;
-		}
-		return false;
+		return ecoreUtil.helperEquals(stateCovered.getState(), stateCovering.getState());
 	}
 	
 	public void clearAsserts(ExecutionTrace trace, Class<?> clazz) {
@@ -357,10 +368,10 @@ public class TraceUtil extends ExpressionUtil {
 			step.getAsserts().removeIf(it -> clazz.isInstance(it));
 		}
 	}
-	
-	public boolean equalsTo(EObject lhs, EObject rhs) {
-		EqualityHelper helper = new EqualityHelper();
-		return helper.equals(lhs, rhs);
+
+	public void removeScheduleAndReset(Step step) {
+		step.getActions().removeIf(it -> it instanceof Schedule);
+		step.getActions().removeIf(it -> it instanceof Reset);
 	}
 	
 }

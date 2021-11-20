@@ -665,8 +665,7 @@ public class ExpressionUtil {
 	public AndExpression connectThroughNegations(VariableDeclaration ponate,
 			Iterable<? extends ValueDeclaration> toBeNegated) {
 		AndExpression and = connectThroughNegations(toBeNegated);
-		DirectReferenceExpression ponateReference = factory.createDirectReferenceExpression();
-		ponateReference.setDeclaration(ponate);
+		DirectReferenceExpression ponateReference = createReferenceExpression(ponate);
 		and.getOperands().add(ponateReference);
 		return and;
 	}
@@ -674,9 +673,8 @@ public class ExpressionUtil {
 	public AndExpression connectThroughNegations(Iterable<? extends ValueDeclaration> toBeNegated) {
 		Collection<DirectReferenceExpression> toBeNegatedReferences = new ArrayList<DirectReferenceExpression>();
 		for (ValueDeclaration toBeNegatedVariable : toBeNegated) {
-			DirectReferenceExpression reference = factory.createDirectReferenceExpression();
-			reference.setDeclaration(toBeNegatedVariable);
-			toBeNegatedReferences.add(reference);
+			toBeNegatedReferences.add(
+					createReferenceExpression(toBeNegatedVariable));
 		}
 		return connectViaNegations(toBeNegatedReferences);
 	}

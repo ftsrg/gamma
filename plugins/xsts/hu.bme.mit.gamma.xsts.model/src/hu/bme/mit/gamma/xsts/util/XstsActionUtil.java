@@ -533,11 +533,17 @@ public class XstsActionUtil extends ExpressionUtil {
 	
 	// IfActions have been introduced, double-check if you really need NonDeterministicAction
 	
-	public NonDeterministicAction createChoiceActionBranch(Expression condition, Action thenAction) {
+	public SequentialAction createChoiceSequentialAction(Expression condition, Action thenAction) {
 		SequentialAction ifSequentialAction = xStsFactory.createSequentialAction();
 		AssumeAction ifAssumeAction = createAssumeAction(condition);
 		ifSequentialAction.getActions().add(ifAssumeAction);
 		ifSequentialAction.getActions().add(thenAction);
+		
+		return ifSequentialAction;
+	}
+	
+	public NonDeterministicAction createChoiceActionBranch(Expression condition, Action thenAction) {
+		SequentialAction ifSequentialAction = createChoiceSequentialAction(condition, thenAction);
 		// Merging into one
 		NonDeterministicAction ifAction = xStsFactory.createNonDeterministicAction();
 		ifAction.getActions().add(ifSequentialAction);

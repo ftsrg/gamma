@@ -12,6 +12,7 @@ package hu.bme.mit.gamma.property.language.scoping
 
 import hu.bme.mit.gamma.activity.model.ActivityModelPackage
 import hu.bme.mit.gamma.property.model.ActivityDeclarationInstanceNodeReference
+import hu.bme.mit.gamma.expression.model.ExpressionModelPackage
 import hu.bme.mit.gamma.property.model.ComponentInstanceEventParameterReference
 import hu.bme.mit.gamma.property.model.ComponentInstanceEventReference
 import hu.bme.mit.gamma.property.model.ComponentInstanceStateConfigurationReference
@@ -39,7 +40,7 @@ class PropertyLanguageScopeProvider extends AbstractPropertyLanguageScopeProvide
 	override getScope(EObject context, EReference reference) {
 		if (context instanceof PropertyPackage) {
 			if (reference == PropertyModelPackage.Literals.PROPERTY_PACKAGE__COMPONENT) {
-				val imports = context.import
+				val imports = context.imports
 				if (!imports.empty) {
 					return Scopes.scopeFor(imports.map[it.components].flatten)
 				}
@@ -55,7 +56,7 @@ class PropertyLanguageScopeProvider extends AbstractPropertyLanguageScopeProvide
 		val component = root.component
 		val activity = root.activity	
 			
-		if (context instanceof NamedActivityDeclarationReference &&			reference == ActivityModelPackage.Literals.NAMED_ACTIVITY_DECLARATION_REFERENCE__NAMED_ACTIVITY_DECLARATION) {
+		if (context instanceof NamedActivityDeclarationReference && reference == ActivityModelPackage.Literals.NAMED_ACTIVITY_DECLARATION_REFERENCE__NAMED_ACTIVITY_DECLARATION) {
 			val imports = root.import
 			return Scopes.scopeFor(imports.map[it.activities].flatten)
 		}
@@ -88,6 +89,12 @@ class PropertyLanguageScopeProvider extends AbstractPropertyLanguageScopeProvide
 					return Scopes.scopeFor(definition.action.variableDeclarations)
 				}
 			}
+		}
+		if (reference == ExpressionModelPackage.Literals.TYPE_REFERENCE__REFERENCE) {
+			// Util override is crucial because of this
+			val packages = root.imports
+			val typeDeclarations = packages.map[it.typeDeclarations].flatten
+			return Scopes.scopeFor(typeDeclarations)
 		}
 		if (reference == CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE__COMPONENT_INSTANCE) {
 			val instanceContainer = ecoreUtil.getSelfOrContainerOfType(

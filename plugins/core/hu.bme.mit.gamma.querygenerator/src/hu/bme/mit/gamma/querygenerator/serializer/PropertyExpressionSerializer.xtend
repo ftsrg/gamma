@@ -20,10 +20,13 @@ import hu.bme.mit.gamma.statechart.util.ExpressionSerializer
 import hu.bme.mit.gamma.property.model.ActivityDeclarationInstanceNodeReference
 import hu.bme.mit.gamma.property.model.ActivityDeclarationInstanceExpression
 import hu.bme.mit.gamma.property.model.ActivityDeclarationInstanceVariableReference
+import hu.bme.mit.gamma.util.GammaEcoreUtil
 
-class PropertyExpressionSerializer extends ExpressionSerializer {
+abstract class PropertyExpressionSerializer extends ExpressionSerializer {
 	
 	protected extension AbstractReferenceSerializer referenceSerializer
+	
+	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	
 	new(AbstractReferenceSerializer referenceSerializer) {
 		this.referenceSerializer = referenceSerializer

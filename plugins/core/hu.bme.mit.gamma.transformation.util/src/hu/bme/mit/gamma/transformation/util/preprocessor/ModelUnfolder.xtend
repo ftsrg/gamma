@@ -14,7 +14,6 @@ import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.statechart.composite.AbstractAsynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
-import hu.bme.mit.gamma.statechart.composite.AsynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.BroadcastChannel
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance
 import hu.bme.mit.gamma.statechart.composite.CompositeComponent
@@ -87,7 +86,8 @@ class ModelUnfolder {
 		for (instance : component.components) {
 			val type = instance.type
 			val clonedPackage = type.containingPackage.clone
-			val clonedComponent = clonedPackage.components.findFirst[it.helperEquals(type)] as SynchronousComponent // Sync Composite or Statechart
+			val clonedComponent = clonedPackage.components
+					.findFirst[it.helperEquals(type)] as SynchronousComponent // Sync composite or Statechart
 			clonedComponent.removeAnnotations // To prevent importing unnecessary resources into the resource set
 			gammaPackage.components += clonedComponent // Adding it to the "Instance container"
 			instance.type = clonedComponent // Setting the type to the new declaration
@@ -112,9 +112,10 @@ class ModelUnfolder {
 			Package gammaPackage, Trace trace) {
 		for (instance : component.components) {
 			val type = instance.type
-			if (type instanceof AsynchronousCompositeComponent) {
+			if (type instanceof AbstractAsynchronousCompositeComponent) {
 				val clonedPackage = type.containingPackage.clone
-				val clonedComposite = clonedPackage.components.findFirst[it.helperEquals(type)] as AsynchronousCompositeComponent // Cloning the declaration
+				val clonedComposite = clonedPackage.components
+						.findFirst[it.helperEquals(type)] as AbstractAsynchronousCompositeComponent // Cloning the declaration
 				gammaPackage.components += clonedComposite // Adding it to the "Instance container"
 				instance.type = clonedComposite // Setting the type to the new declaration
 				// Declarations must be copied AFTER moving component instances to enable reference changes
@@ -127,7 +128,8 @@ class ModelUnfolder {
 			else if (type instanceof AsynchronousAdapter) {
 				val clonedPackage = type.containingPackage.clone
 				// Declarations have been moved
-				val clonedWrapper = clonedPackage.components.findFirst[it.helperEquals(type)] as AsynchronousAdapter // Cloning the declaration
+				val clonedWrapper = clonedPackage.components
+						.findFirst[it.helperEquals(type)] as AsynchronousAdapter // Cloning the declaration
 				gammaPackage.components += clonedWrapper // Adding it to the "Instance container"
 				instance.type = clonedWrapper // Setting the type to the new declaration
 				// Declarations must be copied AFTER moving component instances to enable reference changes
@@ -150,7 +152,8 @@ class ModelUnfolder {
 			Trace trace) {
 		val type = component.wrappedComponent.type
 		val clonedPackage = type.containingPackage.clone
-		val clonedComponent = clonedPackage.components.findFirst[it.helperEquals(type)] as SynchronousComponent  // Sync Composite or Statechart
+		val clonedComponent = clonedPackage.components
+				.findFirst[it.helperEquals(type)] as SynchronousComponent  // Sync composite or Statechart
 		gammaPackage.components += clonedComponent // Adding it to the "Instance container"
 		component.wrappedComponent.type = clonedComponent // Setting the type to the new declaration
 		// Declarations must be copied AFTER moving component instances to enable reference changes
@@ -355,10 +358,11 @@ class ModelUnfolder {
 		val clones = <EObject, EObject>newHashMap 
 		gammaPackage.constantDeclarations += selfAndImports
 			.map[it.constantDeclarations].flatten.toSet
-			.map[val clone = it.clone; clones += it -> clone; clone] // Crucial as we must not "steal" declarations from e.g., Interfaces.gcd
+			.map[val clone = it.clone; clones += it -> clone; clone]
+		// Crucial as we must not "steal" declarations from e.g., Interfaces.gcd
 		gammaPackage.functionDeclarations += selfAndImports
 			.map[it.functionDeclarations].flatten.toSet
-			.map[val clone = it.clone; clones += it -> clone; clone] // Crucial as we must not "steal" declarations from e.g., Interfaces.gcd
+			.map[val clone = it.clone; clones += it -> clone; clone] // Crucial...
 		// Crucial as e.g, function declarations can refer to constant declarations
 		for (original : clones.keySet) {
 			val clone = clones.get(original)

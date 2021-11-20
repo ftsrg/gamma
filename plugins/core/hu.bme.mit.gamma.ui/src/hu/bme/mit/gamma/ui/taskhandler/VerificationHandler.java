@@ -15,8 +15,8 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -84,7 +84,8 @@ public class VerificationHandler extends TaskHandler {
 		setTargetFolder(verification);
 		//
 		setVerification(verification);
-		Set<AnalysisLanguage> languagesSet = new HashSet<AnalysisLanguage>(verification.getAnalysisLanguages());
+		Set<AnalysisLanguage> languagesSet = new LinkedHashSet<AnalysisLanguage>(
+				verification.getAnalysisLanguages());
 		checkArgument(languagesSet.size() == 1);
 		
 		boolean distinguishStringFormulas = false;

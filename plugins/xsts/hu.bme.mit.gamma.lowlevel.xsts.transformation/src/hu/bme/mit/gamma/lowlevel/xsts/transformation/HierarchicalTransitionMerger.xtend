@@ -223,7 +223,7 @@ class HierarchicalTransitionMerger extends AbstractTransitionMerger {
 		}
 	}
 	
-	private def extendElse(Action extendable, Action action) {
+	private def void extendElse(Action extendable, Action action) {
 		// Extendable is either an If, NonDet or a Sequential with an If at the end
 		// See mergeAllTransitionsOfRegion(CompositeElement element...
 		if (extendable instanceof IfAction) {
@@ -231,11 +231,21 @@ class HierarchicalTransitionMerger extends AbstractTransitionMerger {
 		}
 		else if (extendable instanceof NonDeterministicAction) {
 			extendable.extendChoiceWithDefaultBranch(action)
+			// Can the same NonDeterministicAction be extended multiple times?
 		}
 		else if (extendable instanceof SequentialAction) {
 			val lastAction = extendable.actions.last
 			val ifAction = lastAction as IfAction
-			ifAction.then = action // See the referenced method
+			val thenAction = ifAction.then // See the referenced method
+			// thenAction is EmptyAction the first time it is referenced, however,
+			// the same SequentialAction can be extended multiple times, hence this logic
+			// (see Procedure_Executive_and_Analysis model for an example)
+			if (thenAction.nullOrEmptyAction) {
+				ifAction.then = action
+			}
+			else {
+				thenAction.extendElse(action)
+			}
 		}
 		else {
 			throw new IllegalArgumentException("Not known action: " + extendable)

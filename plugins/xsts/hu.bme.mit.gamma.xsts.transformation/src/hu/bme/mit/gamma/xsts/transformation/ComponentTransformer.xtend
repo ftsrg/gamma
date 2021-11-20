@@ -11,7 +11,6 @@
 package hu.bme.mit.gamma.xsts.transformation
 
 import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
-import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.TypeReference
@@ -23,11 +22,9 @@ import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeCompone
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.composite.CascadeCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance
-import hu.bme.mit.gamma.statechart.composite.ControlFunction
 import hu.bme.mit.gamma.statechart.composite.DiscardStrategy
 import hu.bme.mit.gamma.statechart.composite.MessageQueue
 import hu.bme.mit.gamma.statechart.composite.ScheduledAsynchronousCompositeComponent
-import hu.bme.mit.gamma.statechart.interface_.AnyTrigger
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.lowlevel.model.Package
@@ -98,7 +95,6 @@ class ComponentTransformer {
 		throw new IllegalArgumentException("Not supported component type: " + component)
 	}
 	
-	// TODO move most parts into the AA transformer and make sure in preprocess AAs are not top components
 	def dispatch XSTS transform(ScheduledAsynchronousCompositeComponent component,
 			Package lowlevelPackage) {
 		val systemPorts = component.allPorts
@@ -190,10 +186,10 @@ class ComponentTransformer {
 							val typeSlaveQueues = typeSlaveQueuesMap.getOrCreateList(parameterTypeDefinition)
 							
 							val index = parameter.indexOfParametersWithSameTypeDefinition
-							// Indexing works if parameters of an event are not deleted separately
+							// Indexing works: parameters of an event are not deleted separately
 							if (queue.isEnvironmental(systemPorts) || // Traceability reasons: no optimization for system parameters
 									typeSlaveQueues.size <= index) {
-								// index is at less at most by 1 - creating a new slave queue for type
+								// index is less at most by 1 - creating a new slave queue for type
 								val slaveQueueType = createArrayTypeDefinition => [
 									it.elementType = parameterType.clone // Not type definition due to enums
 									it.size = evaluatedCapacity.toIntegerLiteral
@@ -309,7 +305,7 @@ class ComponentTransformer {
 					val ifExpression = xStsEventIdVariable.createReferenceExpression
 							.createEqualityExpression(eventId.toIntegerLiteral)
 					val thenAction = createSequentialAction
-					// Setting the event variables to true (multiple binding is possible)
+					// Setting the event variables to true (multiple binding is supported)
 					for (xStsInEventVariable : xStsInEventVariables) {
 						thenAction.actions += xStsInEventVariable.createAssignmentAction(
 								createTrueExpression)
@@ -317,13 +313,14 @@ class ComponentTransformer {
 					// Setting the parameter variables with values stored in slave queues
 					val slaveQueueStructs = slaveQueues.get(portEvent) // Might be empty
 					
-					val parameters = event.parameterDeclarations
+					val inParameters = event.parameterDeclarations
 					val slaveQueueSize = slaveQueueStructs.size // Might be 0 if there is no in-event var
+					checkState(inParameters.size <= slaveQueueSize)
 					for (var i = 0; i < slaveQueueSize; i++) {
 						val slaveQueueStruct = slaveQueueStructs.get(i)
 						val slaveQueue = slaveQueueStruct.arrayVariable
 						val slaveSizeVariable = slaveQueueStruct.sizeVariable
-						val inParameter = parameters.get(i)
+						val inParameter = inParameters.get(i)
 						
 						val xStsSlaveQueues = variableTrace.getAll(slaveQueue)
 						val xStsSlaveSizeVariable = variableTrace.getAll(slaveSizeVariable).onlyElement
@@ -464,8 +461,6 @@ class ComponentTransformer {
 		
 		xSts.changeTransitions(mergedAction.wrap)
 		
-		//
-		
 		return xSts
 	}
 	
@@ -578,19 +573,19 @@ class ComponentTransformer {
 		val wrappedInstance = component.wrappedComponent
 		val wrappedType = wrappedInstance.type
 		
-		val messageQueue = component.messageQueues.head
-		
 		wrappedType.extractParameters(wrappedInstance.arguments) 
 		val xSts = wrappedType.transform(lowlevelPackage)
+		// Customize names as the type can be a statechart (before setting the new in event)
+		xSts.customizeDeclarationNames(wrappedInstance)
 		
 		if (isTopInPackage) {
 			val inEventAction = xSts.inEventTransition
 			// Deleting synchronous event assignments
 			val xStsSynchronousInEventVariables = xSts.variableGroups
 				.filter[it.annotation instanceof InEventGroup].map[it.variables]
-				.flatten // There are more than one
+				.flatten.toSet // There are more than one
 			for (xStsAssignment : inEventAction.getAllContentsOfType(AbstractAssignmentAction)) {
-				val xStsReference = xStsAssignment.lhs as DirectReferenceExpression
+				val xStsReference = xStsAssignment.lhs
 				val xStsDeclaration = xStsReference.declaration
 				if (xStsSynchronousInEventVariables.contains(xStsDeclaration)) {
 					xStsAssignment.remove // Deleting in-event bool flags
@@ -599,25 +594,25 @@ class ComponentTransformer {
 			
 			val extension eventRef = new ReferenceToXstsVariableMapper(xSts)
 			// Collecting the referenced event variables
-			val xStsReferencedEventVariables = newHashSet
-			for (eventReference : messageQueue.eventReference) {
-				xStsReferencedEventVariables += eventReference.variables
-			}
+			val messageQueue = component.messageQueues.head // Only one
+			val xStsReferencedEventVariables = messageQueue.eventReference
+					.map[it.variables].flatten
 			
 			val newInEventAction = createSequentialAction
-			// Setting the referenced event variables to false
+			// Setting the referenced event variables to unknown
 			for (xStsEventVariable : xStsReferencedEventVariables) {
-				newInEventAction.actions += xStsEventVariable
-						.createAssignmentAction(createFalseExpression)
+				newInEventAction.actions += xStsEventVariable.createHavocAction
 			}
 			// Enabling the setting of the referenced event variables to true if no other is set
+			val xStsIfActions = newArrayList
 			for (xStsEventVariable : xStsReferencedEventVariables) {
-				val negatedVariables = newArrayList
-				negatedVariables += xStsReferencedEventVariables
-				negatedVariables -= xStsEventVariable
-				newInEventAction.actions += xStsActionUtil.connectThroughNegations(negatedVariables)
-						.createIfAction(xStsEventVariable.createAssignmentAction(createTrueExpression))
+				val xStsNegatedVariables = newHashSet
+				xStsNegatedVariables += xStsReferencedEventVariables
+				xStsNegatedVariables -= xStsEventVariable
+				xStsIfActions += xStsActionUtil.connectThroughNegations(xStsNegatedVariables)
+								.createChoiceSequentialAction(xStsEventVariable.createAssignmentAction(createTrueExpression))
 			}
+			newInEventAction.actions += xStsIfActions.createChoiceAction // To enforce exclusiveness
 			// Binding event variables that come from the same ports
 			newInEventAction.actions += xSts.createEventAssignmentsBoundToTheSameSystemPort(wrappedType)
 			 // Original parameter settings
@@ -626,6 +621,7 @@ class ComponentTransformer {
 			newInEventAction.actions += xSts.createParameterAssignmentsBoundToTheSameSystemPort(wrappedType)
 			xSts.inEventTransition = newInEventAction.wrap
 		}
+		
 		return xSts
 	}
 	
@@ -711,7 +707,7 @@ class ComponentTransformer {
 				xSts.outEventTransition = outEventAction.wrap
 			}
 			// Tracing merged action
-			componentMergedActions.put(componentType, actualComponentMergedAction.clone)
+			componentMergedActions += componentType -> actualComponentMergedAction.clone
 		}
 		
 		// Merged action based on scheduling instances
@@ -804,17 +800,7 @@ class ComponentTransformer {
 	}
 	
 	private def checkAdapter(AsynchronousAdapter component) {
-		val messageQueues = component.messageQueues
-		checkState(messageQueues.size == 1)
-		// The capacity (and priority) do not matter, as they are from the environment
-		checkState(component.clocks.empty)
-		val controlSpecifications = component.controlSpecifications
-		checkState(controlSpecifications.size == 1)
-		val controlSpecification = controlSpecifications.head
-		val trigger = controlSpecification.trigger
-		checkState(trigger instanceof AnyTrigger)
-		val controlFunction = controlSpecification.controlFunction
-		checkState(controlFunction == ControlFunction.RUN_ONCE)
+		checkState(component.simplifiable)
 	}
 	
 	private def getCapacity(MessageQueue queue, Collection<? extends Port> systemPorts) {

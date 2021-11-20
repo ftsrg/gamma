@@ -11,6 +11,7 @@
 package hu.bme.mit.gamma.transformation.util.preprocessor
 
 import hu.bme.mit.gamma.expression.model.Expression
+import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.contract.AdaptiveContractAnnotation
 import hu.bme.mit.gamma.statechart.contract.StateContractAnnotation
 import hu.bme.mit.gamma.statechart.interface_.Component
@@ -62,18 +63,25 @@ class AnalysisModelPreprocessor {
 		// Transforming parameters if there are any
 		component.transformTopComponentParameters(topComponentArguments)
 		
+		val name = component.name
 		// If it is an atomic component, we wrap it
 		if (component instanceof StatechartDefinition) {
-			logger.log(Level.INFO, "Wrapping statechart " + component)
+			logger.log(Level.INFO, "Wrapping statechart " + name)
 			_package.components.add(0, component.wrapSynchronousComponent)
 		}
-		// TODO check loop support in Theta configurations
-//		else if (component instanceof AsynchronousAdapter) {
-//			logger.log(Level.INFO, "Wrapping adapter " + component)
-//			_package.components.add(0, component.wrapAsynchronousComponent)
-//		}
+		// Check loop support in Theta configurations
+		else if (component instanceof AsynchronousAdapter) {
+			if (!component.simplifiable) {
+				// Queues have to be introduced 
+				logger.log(Level.INFO, "Wrapping adapter " + name)
+				_package.components.add(0, component.wrapAsynchronousComponent)
+			}
+			else {
+				logger.log(Level.INFO, "Adapter " + name + " does not have to be wrapped")
+			}
+		}
 		
-		// Saving the package, because VIATRA will NOT return matches if the models are not in the same ResourceSet
+		// Saving the package as VIATRA will NOT return matches if the models are not in the same ResourceSet
 		val flattenedModelUri = URI.createFileURI(targetFolderUri +
 				File.separator + fileNameExtensionless.unfoldedPackageFileName)
 		_package.normalSave(flattenedModelUri)
@@ -112,7 +120,7 @@ class AnalysisModelPreprocessor {
 	}
 	
 	def removeAnnotations(Component component) {
-		// Removing annotations only from the models; they are saved on disk
+		// Removing annotations only from the models; they remain saved on disk
 		val newPackage = component.containingPackage
 		newPackage.getAllContentsOfType(AdaptiveContractAnnotation).forEach[it.remove]
 		newPackage.getAllContentsOfType(StateContractAnnotation).forEach[it.remove]

@@ -26,6 +26,7 @@ import hu.bme.mit.gamma.statechart.lowlevel.model.EventDeclaration
 import hu.bme.mit.gamma.statechart.lowlevel.model.StateNode
 import hu.bme.mit.gamma.statechart.lowlevel.model.StatechartModelFactory
 import hu.bme.mit.gamma.statechart.statechart.GuardEvaluation
+import hu.bme.mit.gamma.statechart.statechart.InitialState
 import hu.bme.mit.gamma.statechart.statechart.PseudoState
 import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.SchedulingOrder
@@ -44,6 +45,8 @@ import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionMo
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.LowlevelNamings.*
 import hu.bme.mit.gamma.activity.model.ActivityDeclaration
+import hu.bme.mit.gamma.statechart.statechart.ShallowHistoryState
+import hu.bme.mit.gamma.statechart.statechart.DeepHistoryState
 
 class StatechartToLowlevelTransformer {
 	// Auxiliary objects
@@ -287,16 +290,24 @@ class StatechartToLowlevelTransformer {
 	}
 
 	protected def hu.bme.mit.gamma.statechart.lowlevel.model.Region transform(Region region) {
+		val gammaStateNodes = region.stateNodes
+		checkState(gammaStateNodes.filter(InitialState).size <= 1,
+				"More than one initial state in " + region.name)
+		checkState(gammaStateNodes.filter(ShallowHistoryState).size <= 1,
+				"More than one shallow history state in " + region.name)
+		checkState(gammaStateNodes.filter(DeepHistoryState).size <= 1,
+				"More than one deep history state in " + region.name)
+		
 		val lowlevelRegion = createRegion => [
 			it.name = region.regionName
 		]
 		trace.put(region, lowlevelRegion)
 		// Transforming normal nodes
-		for (stateNode : region.stateNodes.filter(State)) {
+		for (stateNode : gammaStateNodes.filter(State)) {
 			lowlevelRegion.stateNodes += stateNode.transformNode
 		}
 		// Transforming abstract transition nodes
-		for (pseudoState : region.stateNodes.filter(PseudoState)) {
+		for (pseudoState : gammaStateNodes.filter(PseudoState)) {
 			lowlevelRegion.stateNodes += pseudoState.transformPseudoState
 		}
 		return lowlevelRegion

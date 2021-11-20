@@ -43,7 +43,7 @@ class VariableInliner {
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 
-	def inline(Iterable<XTransition> transitions) {
+	def inline(Iterable<? extends XTransition> transitions) {
 		for (transition : transitions) {
 			transition.inline
 		}
