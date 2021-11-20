@@ -1,0 +1,12 @@
+package mission
+import "Interface/Interfaces"
+import "Groundstation/GroundStation"
+import "Spacecraft/Spacecraft"
+cascade Mission [
+	port _control : requires StationControl
+] {
+	component station : GroundStation
+	component satellite : Spacecraft
+	bind _control -> station._control
+	channel [ satellite.connection ] -o)- [ station.connection ]
+}

@@ -1,0 +1,139 @@
+package spacecraft
+import "Interface/Interfaces.gcd"
+@RegionSchedule = bottom-up
+statechart Spacecraft [
+	port connection : provides DataSource
+] {
+	var batteryVariable : integer := 100
+	var _data : integer := 100
+	
+	var batteryRecharging : boolean := false
+	var batteryFullyCharged : boolean := false
+	var transmitionDone : boolean := false
+	
+	timeout rechargeTimeout
+	timeout consumeTimeout
+	timeout transmitTimeout
+	
+	timeout checkTimeout
+	
+	region Communication { 
+		initial CommunicationEntry
+		state WaitingPing
+		state Transmitting {
+			do / call TransmitData;
+		}
+	}
+	region Battery {
+		initial BatteryEntry
+		state NotRecharging {
+			entry / batteryRecharging := false;
+		}
+		state Recharging {
+			do / call RechargeBatteries;
+			entry / batteryRecharging := true;
+		}
+	}
+	
+	region Check {
+		initial CheckEntry
+		state CheckTimeout {
+			entry / set checkTimeout := 500ms;
+		}
+	}
+	
+	transition from CheckEntry to CheckTimeout
+	transition from CheckTimeout to CheckTimeout when timeout checkTimeout
+	
+	transition from CommunicationEntry to WaitingPing
+	transition from WaitingPing to Transmitting when connection.ping [!batteryRecharging and _data > 0]
+	transition from Transmitting to WaitingPing when timeout checkTimeout [transmitionDone] / transmitionDone := false;
+	
+	transition from BatteryEntry to NotRecharging	
+	transition from NotRecharging to Recharging when timeout checkTimeout [batteryVariable < 80]
+	transition from Recharging to NotRecharging when timeout checkTimeout [batteryFullyCharged] / batteryFullyCharged := false;
+	
+	activity TransmitData {				
+		initial Initial
+		
+		fork Fork
+		
+		merge TransmitMerge
+		decision TransmitDecision
+		action SetTransmitWait : activity [language=action] {
+			set transmitTimeout := 1s;
+		}
+		trigger TransmitWait when timeout transmitTimeout
+		action TransmitData : activity [language=action] {
+			_data := _data - 1;
+			raise connection._data;
+		}
+		
+		merge ConsumeMerge
+		action SetConsumeWait : activity [language=action] {
+			set consumeTimeout := 1s;
+		}
+		trigger ConsumeWait when timeout consumeTimeout
+		action ConsumeEnergy : activity [language=action] {
+			batteryVariable := batteryVariable - 1;
+		}
+		decision ConsumeDecision
+		
+		merge Merge
+		
+		action SetDone : activity [language=action] {
+			transmitionDone := true;
+		}
+		
+		final Final
+		
+		control flow from Initial to Fork
+		
+		control flow from Fork to TransmitMerge
+		control flow from TransmitMerge to TransmitDecision
+		control flow from TransmitDecision to SetTransmitWait [_data > 0]
+		control flow from SetTransmitWait to TransmitWait
+		control flow from TransmitWait to TransmitData
+		control flow from TransmitData to TransmitMerge
+		control flow from TransmitDecision to Merge [_data <= 0]
+		
+		control flow from Fork to ConsumeMerge
+		control flow from ConsumeMerge to SetConsumeWait
+		control flow from SetConsumeWait to ConsumeWait
+		control flow from ConsumeWait to ConsumeEnergy
+		control flow from ConsumeEnergy to ConsumeDecision
+		control flow from ConsumeDecision to ConsumeMerge [batteryVariable >= 40]
+		control flow from ConsumeDecision to Merge [batteryVariable < 40]
+		
+		control flow from Merge to SetDone
+		control flow from SetDone to Final
+	}
+	
+	activity RechargeBatteries {
+		initial Initial
+		
+		merge Merge
+		decision Decision
+		action SetWait : activity [language=action] {
+			set rechargeTimeout := 10s;
+		}
+		trigger Wait when timeout rechargeTimeout
+		action Charge : activity [language=action] {
+			batteryVariable := batteryVariable + 1;
+		}
+		action Full : activity [language=action] {
+			batteryFullyCharged := true;
+		}
+		final Final
+		
+		control flow from Initial to Merge
+		control flow from Merge to Decision
+		control flow from Decision to SetWait [batteryVariable < 100]
+		control flow from SetWait to Wait
+		control flow from Wait to Charge
+		control flow from Charge to Merge
+		control flow from Decision to Full [batteryVariable >= 100]
+		control flow from Full to Final
+	}
+	
+}

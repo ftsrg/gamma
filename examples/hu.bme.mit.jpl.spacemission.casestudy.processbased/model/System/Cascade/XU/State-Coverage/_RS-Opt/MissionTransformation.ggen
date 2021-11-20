@@ -1,0 +1,14 @@
+import "Interface/Interfaces.gcd"
+import "System/Cascade/Mission.gcd"
+
+analysis {
+	component : Mission
+	language : XSTS-UPPAAL
+	state-coverage
+	constraint : {
+		minimum-orchestrating-period : SCHEDULE_CONSTRAINT ms
+		maximum-orchestrating-period : SCHEDULE_CONSTRAINT ms
+	}
+	optimize : true
+	property-file : "System/Cascade/Mission.gpd"
+}

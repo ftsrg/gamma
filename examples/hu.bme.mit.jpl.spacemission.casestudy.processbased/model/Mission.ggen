@@ -1,0 +1,43 @@
+// Transformation
+
+include "System/Cascade/DX/State-Coverage/_-_/MissionTransformation.ggen"
+include "System/Cascade/DX/State-Coverage/_-Opt/MissionTransformation.ggen"
+include "System/Cascade/DX/State-Coverage/_RS-_/MissionTransformation.ggen"
+include "System/Cascade/DX/State-Coverage/_RS-Opt/MissionTransformation.ggen"
+
+include "System/Cascade/XU/State-Coverage/_-_/MissionTransformation.ggen"
+include "System/Cascade/XU/State-Coverage/_-Opt/MissionTransformation.ggen"
+include "System/Cascade/XU/State-Coverage/_RS-_/MissionTransformation.ggen"
+include "System/Cascade/XU/State-Coverage/_RS-Opt/MissionTransformation.ggen"
+
+include "System/Synchronous/DX/State-Coverage/_-_/MissionTransformation.ggen"
+include "System/Synchronous/DX/State-Coverage/_-Opt/MissionTransformation.ggen"
+include "System/Synchronous/DX/State-Coverage/_RS-_/MissionTransformation.ggen"
+include "System/Synchronous/DX/State-Coverage/_RS-Opt/MissionTransformation.ggen"
+
+include "System/Synchronous/XU/State-Coverage/_-_/MissionTransformation.ggen"
+include "System/Synchronous/XU/State-Coverage/_-Opt/MissionTransformation.ggen"
+include "System/Synchronous/XU/State-Coverage/_RS-_/MissionTransformation.ggen"
+include "System/Synchronous/XU/State-Coverage/_RS-Opt/MissionTransformation.ggen"
+
+// Verification
+
+include "System/Cascade/DX/State-Coverage/_-_/MissionVerification.ggen"
+include "System/Cascade/DX/State-Coverage/_-Opt/MissionVerification.ggen"
+include "System/Cascade/DX/State-Coverage/_RS-_/MissionVerification.ggen"
+include "System/Cascade/DX/State-Coverage/_RS-Opt/MissionVerification.ggen"
+
+include "System/Cascade/XU/State-Coverage/_-_/MissionVerification.ggen"
+include "System/Cascade/XU/State-Coverage/_-Opt/MissionVerification.ggen"
+include "System/Cascade/XU/State-Coverage/_RS-_/MissionVerification.ggen"
+include "System/Cascade/XU/State-Coverage/_RS-Opt/MissionVerification.ggen"
+
+include "System/Synchronous/DX/State-Coverage/_-_/MissionVerification.ggen"
+include "System/Synchronous/DX/State-Coverage/_-Opt/MissionVerification.ggen"
+include "System/Synchronous/DX/State-Coverage/_RS-_/MissionVerification.ggen"
+include "System/Synchronous/DX/State-Coverage/_RS-Opt/MissionVerification.ggen"
+
+include "System/Synchronous/XU/State-Coverage/_-_/MissionVerification.ggen"
+include "System/Synchronous/XU/State-Coverage/_-Opt/MissionVerification.ggen"
+include "System/Synchronous/XU/State-Coverage/_RS-_/MissionVerification.ggen"
+include "System/Synchronous/XU/State-Coverage/_RS-Opt/MissionVerification.ggen"

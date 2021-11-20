@@ -1,0 +1,12 @@
+package spacecraft
+
+import "Interface/Interfaces.gcd"
+import "Spacecraft/Spacecraft.gcd"
+
+cascade SpacecraftWrapper [
+	port connection : provides DataSource
+] {
+	component spacecraft : Spacecraft
+	
+	bind connection -> spacecraft.connection
+}
