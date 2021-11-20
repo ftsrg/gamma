@@ -3,10 +3,10 @@ import "Interface/Interfaces"
 import "GroundstationAdapter/GroundStationAdapter.gcd"
 import "SpacecraftAdapter/SpacecraftAdapter.gcd"
 async Mission [
-	port control : requires StationControl
+	port _control : requires StationControl
 ] {
 	component stationInstance : GroundStationAdapter
 	component satelliteInstance : SpacecraftAdapter
-	bind control -> stationInstance.control
+	bind _control -> stationInstance._control
 	channel [ satelliteInstance.connection ] -o)- [ stationInstance.connection ]
 }

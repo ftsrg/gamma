@@ -5,10 +5,10 @@ import "Groundstation/GroundStation.gcd"
 
 cascade GroundStationWrapper [
 	port connection : requires DataSource
-	port control : requires StationControl
+	port _control : requires StationControl
 ] {
 	component groundStation : GroundStation
 	
 	bind connection -> groundStation.connection
-	bind control -> groundStation.control
+	bind _control -> groundStation._control
 }

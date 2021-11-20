@@ -5,11 +5,11 @@ import "GroundStationWrapper.gcd"
 adapter GroundStationAdapter of
 	component groundStationAdapter : GroundStationWrapper [
 ] {
-	when control.any / run
+	when _control.any / run
 	queue messages(priority = 1, capacity = 1) {
 		connection.any
 	}
 	queue controlMessages(priority = 2, capacity = 1) {
-		control.any
+		_control.any
 	}
 }
