@@ -13,11 +13,11 @@ package hu.bme.mit.gamma.lowlevel.xsts.transformation
 import hu.bme.mit.gamma.activity.model.ActivityDefinition
 import hu.bme.mit.gamma.activity.model.ActivityNode
 import hu.bme.mit.gamma.activity.model.Flow
+import hu.bme.mit.gamma.activity.model.InitialNode
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.statechart.lowlevel.model.ActivityInstance
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
-import hu.bme.mit.gamma.activity.model.InitialNode
 
 class ActivityInitialiser {
 	// Model factories

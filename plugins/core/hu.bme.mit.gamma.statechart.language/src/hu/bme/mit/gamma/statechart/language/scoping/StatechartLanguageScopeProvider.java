@@ -26,11 +26,10 @@ import org.eclipse.xtext.scoping.Scopes;
 import org.eclipse.xtext.scoping.impl.SimpleScope;
 
 import com.google.common.collect.Lists;
+
 import hu.bme.mit.gamma.action.model.Action;
-import hu.bme.mit.gamma.action.model.ActionModelPackage;
+import hu.bme.mit.gamma.activity.derivedfeatures.ActivityModelDerivedFeatures;
 import hu.bme.mit.gamma.activity.model.ActivityDeclaration;
-import hu.bme.mit.gamma.activity.model.ActivityDefinition;
-import hu.bme.mit.gamma.activity.derivedfeatures.*;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;

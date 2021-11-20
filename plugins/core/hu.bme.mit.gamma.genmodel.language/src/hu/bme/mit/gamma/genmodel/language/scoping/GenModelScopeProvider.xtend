@@ -49,11 +49,6 @@ class GenModelScopeProvider extends AbstractGenModelScopeProvider {
 			val components = genmodel.packageImports.map[it.components].flatten
 			return Scopes.scopeFor(components)
 		}
-		if (reference == GenmodelModelPackage.Literals.ACTIVITY_REFERENCE__ACTIVITY) {
-			val genmodel = ecoreUtil.getSelfOrContainerOfType(context, GenModel)
-			val components = genmodel.packageImports.map[it.activities].flatten
-			return Scopes.scopeFor(components)
-		}
 		if (reference == GenmodelModelPackage.Literals.EVENT_PRIORITY_TRANSFORMATION__STATECHART) {
 			val genmodel = context.eContainer as GenModel
 			val components = genmodel.packageImports.map[it.components].flatten.filter(StatechartDefinition)

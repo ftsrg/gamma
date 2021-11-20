@@ -17,8 +17,7 @@ import static com.google.common.base.Preconditions.checkState
 
 class GammaToLowlevelTransformer {
 	
-	protected final Trace trace = new Trace
-	protected final extension StatechartToLowlevelTransformer statechartTransformer = new StatechartToLowlevelTransformer(trace)
+	protected final extension StatechartToLowlevelTransformer transformer = new StatechartToLowlevelTransformer()
 	
 	def hu.bme.mit.gamma.statechart.lowlevel.model.Package execute(Package _package) {
 		checkState(!_package.name.nullOrEmpty)
@@ -31,11 +30,11 @@ class GammaToLowlevelTransformer {
 	}
 	
 	def hu.bme.mit.gamma.statechart.lowlevel.model.Package transform(Package _package) {
-		return statechartTransformer.execute(_package)
+		return transformer.execute(_package)
 	}
 	
 	def hu.bme.mit.gamma.statechart.lowlevel.model.StatechartDefinition transform(StatechartDefinition statechart) {
 		return statechart.execute
 	}
-		
+	
 }

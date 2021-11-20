@@ -10,23 +10,35 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.lowlevel.xsts.transformation
 
+import hu.bme.mit.gamma.action.model.ForStatement
+import hu.bme.mit.gamma.action.model.VariableDeclarationStatement
+import hu.bme.mit.gamma.activity.model.ActivityNode
+import hu.bme.mit.gamma.activity.model.Flow
+import hu.bme.mit.gamma.activity.model.Pin
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.Expression
+import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.ActivityNodeTrace
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.ActivityNodeTransitionTrace
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.ChoiceTransitionTrace
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.EventTrace
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.FlowDataTokenTrace
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.FlowTrace
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.ForkTransitionTrace
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.JoinTransitionTrace
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.MergeTransitionTrace
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.PinTrace
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.RegionTrace
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.SimpleTransitionTrace
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.StateTrace
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.TypeDeclarationTrace
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.VariableTrace
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.traceability.L2STrace
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.traceability.ParameterTrace
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.traceability.TraceabilityFactory
 import hu.bme.mit.gamma.statechart.lowlevel.model.ChoiceState
 import hu.bme.mit.gamma.statechart.lowlevel.model.EventDeclaration
@@ -53,21 +65,8 @@ import org.eclipse.viatra.query.runtime.emf.EMFScope
 
 import static com.google.common.base.Preconditions.checkArgument
 import static com.google.common.base.Preconditions.checkState
-import hu.bme.mit.gamma.action.model.VariableDeclarationStatement
-import hu.bme.mit.gamma.activity.model.ActivityNode
-import hu.bme.mit.gamma.activity.model.Flow
-import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.ActivityNodeTrace
-import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.FlowTrace
-import hu.bme.mit.gamma.expression.model.ParameterDeclaration
-import hu.bme.mit.gamma.action.model.ForStatement
-import hu.bme.mit.gamma.lowlevel.xsts.transformation.traceability.ParameterTrace
-import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.FlowDataTokenTrace
-import hu.bme.mit.gamma.activity.model.Pin
-import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.PinTrace
 
 import static extension java.lang.Math.abs
-import hu.bme.mit.gamma.xsts.model.Action
-import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.ActivityNodeTransitionTrace
 
 package class Trace {
 	// Trace model

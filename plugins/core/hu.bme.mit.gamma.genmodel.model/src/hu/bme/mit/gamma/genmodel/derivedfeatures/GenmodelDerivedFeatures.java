@@ -16,7 +16,6 @@ import java.util.List;
 import org.eclipse.emf.ecore.EObject;
 
 import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
-import hu.bme.mit.gamma.genmodel.model.ActivityReference;
 import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation;
 import hu.bme.mit.gamma.genmodel.model.ComponentReference;
 import hu.bme.mit.gamma.genmodel.model.GenModel;
@@ -49,10 +48,6 @@ public class GenmodelDerivedFeatures extends ExpressionModelDerivedFeatures {
 		if (modelReference instanceof XstsReference) {
 			XstsReference xStsReference = (XstsReference) modelReference;
 			return xStsReference.getXSts();
-		}
-		if (modelReference instanceof ActivityReference) {
-			ActivityReference activityReference = (ActivityReference) modelReference;
-			return activityReference.getActivity();
 		}
 		throw new IllegalArgumentException("Not supported model reference: " + modelReference);
 	}

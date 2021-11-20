@@ -10,6 +10,11 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.statechart.lowlevel.transformation
 
+import hu.bme.mit.gamma.activity.model.ActivityDeclaration
+import hu.bme.mit.gamma.activity.model.ActivityNode
+import hu.bme.mit.gamma.activity.model.Definition
+import hu.bme.mit.gamma.activity.model.Flow
+import hu.bme.mit.gamma.activity.model.Pin
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
@@ -34,14 +39,8 @@ import java.util.Set
 
 import static com.google.common.base.Preconditions.checkNotNull
 import static com.google.common.base.Preconditions.checkState
-import hu.bme.mit.gamma.activity.model.Pin
-import hu.bme.mit.gamma.activity.model.ActivityDeclaration
-import hu.bme.mit.gamma.activity.model.Definition
-import hu.bme.mit.gamma.activity.model.Flow
-import hu.bme.mit.gamma.activity.model.ActivityNode
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
-import hu.bme.mit.gamma.activity.model.ActivityDefinition
 
 class Trace {
 

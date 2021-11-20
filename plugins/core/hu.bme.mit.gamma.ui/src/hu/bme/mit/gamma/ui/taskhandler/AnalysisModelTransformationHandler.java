@@ -27,10 +27,8 @@ import org.eclipse.emf.ecore.EObject;
 
 import com.google.common.collect.Maps;
 
-import hu.bme.mit.gamma.activity.model.NamedActivityDeclaration;
 import hu.bme.mit.gamma.composition.xsts.uppaal.transformation.Gamma2XstsUppaalTransformerSerializer;
 import hu.bme.mit.gamma.genmodel.derivedfeatures.GenmodelDerivedFeatures;
-import hu.bme.mit.gamma.genmodel.model.ActivityReference;
 import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
 import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation;
 import hu.bme.mit.gamma.genmodel.model.ComponentReference;

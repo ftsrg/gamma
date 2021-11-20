@@ -32,7 +32,6 @@ import hu.bme.mit.gamma.action.model.ActionModelPackage;
 import hu.bme.mit.gamma.action.model.AssignmentStatement;
 import hu.bme.mit.gamma.action.model.Branch;
 import hu.bme.mit.gamma.action.model.ExpressionStatement;
-import hu.bme.mit.gamma.action.util.ActionModelValidator;
 import hu.bme.mit.gamma.activity.util.ActivityExpressionTypeDeterminator;
 import hu.bme.mit.gamma.activity.util.ActivityModelValidator;
 import hu.bme.mit.gamma.expression.model.ArgumentedElement;

@@ -25,11 +25,13 @@ import hu.bme.mit.gamma.statechart.lowlevel.model.Component
 import hu.bme.mit.gamma.statechart.lowlevel.model.EventDeclaration
 import hu.bme.mit.gamma.statechart.lowlevel.model.StateNode
 import hu.bme.mit.gamma.statechart.lowlevel.model.StatechartModelFactory
+import hu.bme.mit.gamma.statechart.statechart.DeepHistoryState
 import hu.bme.mit.gamma.statechart.statechart.GuardEvaluation
 import hu.bme.mit.gamma.statechart.statechart.InitialState
 import hu.bme.mit.gamma.statechart.statechart.PseudoState
 import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.SchedulingOrder
+import hu.bme.mit.gamma.statechart.statechart.ShallowHistoryState
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.TimeoutAction
@@ -44,9 +46,6 @@ import static com.google.common.base.Preconditions.checkState
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.LowlevelNamings.*
-import hu.bme.mit.gamma.activity.model.ActivityDeclaration
-import hu.bme.mit.gamma.statechart.statechart.ShallowHistoryState
-import hu.bme.mit.gamma.statechart.statechart.DeepHistoryState
 
 class StatechartToLowlevelTransformer {
 	// Auxiliary objects
@@ -66,12 +65,12 @@ class StatechartToLowlevelTransformer {
 	// Trace object for storing the mappings
 	protected final Trace trace
 
-	new(Trace trace) {
-		this(trace, true, 10)
+	new() {
+		this(true, 10)
 	}
 
-	new(Trace trace, boolean functionInlining, int maxRecursionDepth) {
-		this.trace = trace
+	new(boolean functionInlining, int maxRecursionDepth) {
+		this.trace = new Trace
 		this.typeTransformer = new TypeTransformer(this.trace)
 		this.expressionTransformer = new ExpressionTransformer(this.trace, functionInlining, maxRecursionDepth)
 		this.valueDeclarationTransformer = new ValueDeclarationTransformer(this.trace)

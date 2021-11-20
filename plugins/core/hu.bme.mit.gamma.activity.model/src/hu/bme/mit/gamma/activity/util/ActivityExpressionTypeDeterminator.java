@@ -17,7 +17,7 @@ public class ActivityExpressionTypeDeterminator extends ExpressionTypeDeterminat
 	@Override
 	public Type getType(Expression expression) {
 		if (expression instanceof PinReference) {
-			return getType((PinReference)expression);
+			return getType((PinReference) expression);
 		}
 		
 		return super.getType(expression);
@@ -27,9 +27,11 @@ public class ActivityExpressionTypeDeterminator extends ExpressionTypeDeterminat
 		Pin pin;
 		
 		if (reference instanceof InputPinReference) {
-			pin = ((InputPinReference)reference).getInputPin();
+			InputPinReference inputPinReference = (InputPinReference) reference;
+			pin = inputPinReference.getInputPin();
 		} else  {
-			pin = ((OutputPinReference)reference).getOutputPin();
+			OutputPinReference inputPinReference = (OutputPinReference) reference;
+			pin = inputPinReference.getOutputPin();
 		}
 		
 		return pin.getType();

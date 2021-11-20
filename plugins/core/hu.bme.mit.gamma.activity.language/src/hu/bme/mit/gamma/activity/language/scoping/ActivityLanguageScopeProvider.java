@@ -3,30 +3,21 @@
  */
 package hu.bme.mit.gamma.activity.language.scoping;
 
-import java.util.List;
-
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.xtext.scoping.IScope;
 import org.eclipse.xtext.scoping.Scopes;
 
-import hu.bme.mit.gamma.action.derivedfeatures.ActionModelDerivedFeatures;
 import hu.bme.mit.gamma.action.model.Action;
-import hu.bme.mit.gamma.action.model.Block;
-import hu.bme.mit.gamma.action.model.ForStatement;
 import hu.bme.mit.gamma.activity.derivedfeatures.ActivityModelDerivedFeatures;
 import hu.bme.mit.gamma.activity.model.ActivityDeclaration;
-import hu.bme.mit.gamma.activity.model.ActivityDeclarationReference;
 import hu.bme.mit.gamma.activity.model.ActivityDefinition;
 import hu.bme.mit.gamma.activity.model.ActivityModelPackage;
 import hu.bme.mit.gamma.activity.model.Flow;
 import hu.bme.mit.gamma.activity.model.InsidePinReference;
-import hu.bme.mit.gamma.activity.model.NamedActivityDeclaration;
-import hu.bme.mit.gamma.activity.model.NamedActivityDeclarationReference;
 import hu.bme.mit.gamma.activity.model.OutsidePinReference;
 import hu.bme.mit.gamma.activity.model.PinReference;
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
-import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 
 /**
  * This class contains custom scoping description.

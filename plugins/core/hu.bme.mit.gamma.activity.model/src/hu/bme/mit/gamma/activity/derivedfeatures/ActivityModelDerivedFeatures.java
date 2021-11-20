@@ -16,20 +16,18 @@ import hu.bme.mit.gamma.activity.model.DataNodeReference;
 import hu.bme.mit.gamma.activity.model.Definition;
 import hu.bme.mit.gamma.activity.model.InlineActivityDeclaration;
 import hu.bme.mit.gamma.activity.model.InputPinReference;
-import hu.bme.mit.gamma.activity.model.InsideOutputPinReference;
 import hu.bme.mit.gamma.activity.model.NamedActivityDeclarationReference;
 import hu.bme.mit.gamma.activity.model.OutputPinReference;
 import hu.bme.mit.gamma.activity.model.OutsidePinReference;
 import hu.bme.mit.gamma.activity.model.Pin;
 import hu.bme.mit.gamma.activity.model.PinReference;
-import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 
 public class ActivityModelDerivedFeatures extends ActionModelDerivedFeatures {
 
 	public static ActivityDeclaration getContainingActivityDeclaration(EObject element) {
 		if (element instanceof ActivityDeclaration) {
-			return (ActivityDeclaration)element;
+			return (ActivityDeclaration) element;
 		}
 		
 		return getContainingActivityDeclaration(element.eContainer());
@@ -37,7 +35,7 @@ public class ActivityModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	public static ActivityDefinition getContainingActivityDefinition(EObject element) {
 		if (element instanceof ActivityDefinition) {
-			return (ActivityDefinition)element;
+			return (ActivityDefinition) element;
 		}
 		
 		return getContainingActivityDefinition(element.eContainer());
@@ -47,10 +45,11 @@ public class ActivityModelDerivedFeatures extends ActionModelDerivedFeatures {
 		ActivityDeclarationReference declReference = reference.getActionNode().getActivityDeclarationReference();
 
 		if (declReference instanceof InlineActivityDeclaration) {
-			return (InlineActivityDeclaration)declReference;
+			return (InlineActivityDeclaration) declReference;
 		}
 		if (declReference instanceof NamedActivityDeclarationReference) {
-			return ((NamedActivityDeclarationReference)declReference).getNamedActivityDeclaration();
+			NamedActivityDeclarationReference activityDeclarationReference = (NamedActivityDeclarationReference) declReference;
+			return activityDeclarationReference.getNamedActivityDeclaration();
 		}
 		
 		return null;
@@ -58,7 +57,8 @@ public class ActivityModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	public static List<VariableDeclaration> getTransitiveVariableDeclarations(ActivityDeclaration declaration) {
 		if (declaration.getDefinition() instanceof ActivityDefinition) {
-			return ((ActivityDefinition)declaration.getDefinition()).getVariableDeclarations();
+			ActivityDefinition activityDefinition = (ActivityDefinition) declaration.getDefinition();
+			return activityDefinition.getVariableDeclarations();
 		}
 		
 		return Collections.emptyList();
@@ -66,7 +66,8 @@ public class ActivityModelDerivedFeatures extends ActionModelDerivedFeatures {
 
 	public static ActivityNode getSourceNode(DataFlow flow) {
 		if (flow.getDataSourceReference() instanceof PinReference) {
-			Pin pin = getPin((PinReference) flow.getDataSourceReference());
+			PinReference pinReference = (PinReference) flow.getDataSourceReference();
+			Pin pin = getPin(pinReference);
 			
 			return ecoreUtil.getContainerOfType(pin, ActivityNode.class);
 		}
@@ -82,7 +83,8 @@ public class ActivityModelDerivedFeatures extends ActionModelDerivedFeatures {
 
 	public static ActivityNode getTargetNode(DataFlow flow) {
 		if (flow.getDataTargetReference() instanceof PinReference) {
-			Pin pin = getPin((PinReference) flow.getDataTargetReference());
+			PinReference pinReference = (PinReference) flow.getDataTargetReference();
+			Pin pin = getPin(pinReference);
 			
 			return ecoreUtil.getContainerOfType(pin, ActivityNode.class);
 		}
@@ -111,11 +113,13 @@ public class ActivityModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	public static List<Pin> getPins(ActivityDeclarationReference reference) {
 		if (reference instanceof NamedActivityDeclarationReference) {
-			return ((NamedActivityDeclarationReference) reference).getNamedActivityDeclaration().getPins();
+			NamedActivityDeclarationReference activityDeclarationReference = (NamedActivityDeclarationReference) reference;
+			return activityDeclarationReference.getNamedActivityDeclaration().getPins();
 		}
 		
 		if (reference instanceof InlineActivityDeclaration) {
-			return ((InlineActivityDeclaration) reference).getPins();
+			InlineActivityDeclaration activityDeclarationReference = (InlineActivityDeclaration) reference;
+			return activityDeclarationReference.getPins();
 		}
 		
 		throw new IllegalStateException("ActivityDeclarationReference is not of a known type.");
@@ -123,11 +127,13 @@ public class ActivityModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	public static Definition getDefinition(ActivityDeclarationReference reference) {
 		if (reference instanceof NamedActivityDeclarationReference) {
-			return ((NamedActivityDeclarationReference) reference).getNamedActivityDeclaration().getDefinition();
+			NamedActivityDeclarationReference activityDeclarationReference = (NamedActivityDeclarationReference) reference;
+			return activityDeclarationReference.getNamedActivityDeclaration().getDefinition();
 		}
 		
 		if (reference instanceof InlineActivityDeclaration) {
-			return ((InlineActivityDeclaration) reference).getDefinition();
+			InlineActivityDeclaration activityDeclarationReference = (InlineActivityDeclaration) reference;
+			return activityDeclarationReference.getDefinition();
 		}
 		
 		throw new IllegalStateException("ActivityDeclarationReference is not of a known type.");

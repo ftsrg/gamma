@@ -6,15 +6,15 @@ import hu.bme.mit.gamma.activity.model.ActivityDefinition
 import hu.bme.mit.gamma.activity.model.ActivityNode
 import hu.bme.mit.gamma.activity.model.DecisionNode
 import hu.bme.mit.gamma.activity.model.Flow
+import hu.bme.mit.gamma.activity.model.MergeNode
+import hu.bme.mit.gamma.expression.model.AndExpression
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.InputFlows
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.OutputFlows
+import hu.bme.mit.gamma.statechart.lowlevel.model.TriggerNode
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 
 import static extension hu.bme.mit.gamma.activity.derivedfeatures.ActivityModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.lowlevel.derivedfeatures.LowlevelStatechartModelDerivedFeatures.*
-import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.InputFlows
-import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.OutputFlows
-import hu.bme.mit.gamma.statechart.lowlevel.model.TriggerNode
-import hu.bme.mit.gamma.expression.model.AndExpression
-import hu.bme.mit.gamma.activity.model.MergeNode
 
 class ActivityNodeTransformer extends LowlevelTransitionToXTransitionTransformer {
 	
@@ -74,41 +74,41 @@ class ActivityNodeTransformer extends LowlevelTransitionToXTransitionTransformer
 			if (definition instanceof ActionDefinition) {
 				// action definition, running -> execute action -> done
 				return createSequentialAction => [
-					it.actions.add(node.createRunningAssumeAction)
-					it.actions.add(definition.action.transformAction)
-					it.actions.add(node.createDoneAssignmentAction)
+					it.actions += node.createRunningAssumeAction
+					it.actions += definition.action.transformAction
+					it.actions += node.createDoneAssignmentAction
 				]
 			}				
 			if (definition instanceof ActivityDefinition) {
 				// TODO: activity definition, running -> execute inner activity (set inner initial, wait for final done) -> done
 				return createSequentialAction => [
-					it.actions.add(node.createRunningAssumeAction)
-					it.actions.add(node.createDoneAssignmentAction)
+					it.actions += node.createRunningAssumeAction
+					it.actions += node.createDoneAssignmentAction
 				]
 			}
 		} else {
 			// Has no definition, simple running -> done
 			return createSequentialAction => [
-				it.actions.add(node.createRunningAssumeAction)
-				it.actions.add(node.createDoneAssignmentAction)
+				it.actions += node.createRunningAssumeAction
+				it.actions += node.createDoneAssignmentAction
 			]
 		}
 	}
 	
 	protected def dispatch createNodeTransitionAction(TriggerNode node) {
 		return createSequentialAction => [
-			it.actions.add(node.createRunningAssumeAction => [
+			it.actions += node.createRunningAssumeAction => [
 				val and = it.assumption as AndExpression
-				and.operands.add(node.triggerExpression.transformExpression)
-			])
-			it.actions.add(node.createDoneAssignmentAction)
+				and.operands += node.triggerExpression.transformExpression
+			]
+			it.actions += node.createDoneAssignmentAction
 		]
 	}
 	
 	protected def dispatch createNodeTransitionAction(ActivityNode node) {
 		return createSequentialAction => [
-			it.actions.add(node.createRunningAssumeAction)
-			it.actions.add(node.createDoneAssignmentAction)
+			it.actions += node.createRunningAssumeAction
+			it.actions += node.createDoneAssignmentAction
 		]
 	}
 	

@@ -10,6 +10,8 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.querygenerator.serializer
 
+import hu.bme.mit.gamma.activity.model.ActivityDeclarationReference
+import hu.bme.mit.gamma.activity.model.ActivityNode
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference
@@ -18,8 +20,6 @@ import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.State
 import java.util.List
-import hu.bme.mit.gamma.activity.model.ActivityNode
-import hu.bme.mit.gamma.activity.model.ActivityDeclarationReference
 
 abstract interface AbstractReferenceSerializer {
 	

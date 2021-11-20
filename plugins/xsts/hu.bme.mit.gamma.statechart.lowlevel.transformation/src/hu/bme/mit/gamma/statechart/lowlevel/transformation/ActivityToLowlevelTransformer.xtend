@@ -21,6 +21,8 @@ import hu.bme.mit.gamma.activity.model.ControlFlow
 import hu.bme.mit.gamma.activity.model.DataFlow
 import hu.bme.mit.gamma.activity.model.DataNode
 import hu.bme.mit.gamma.activity.model.DataNodeReference
+import hu.bme.mit.gamma.activity.model.Definition
+import hu.bme.mit.gamma.activity.model.Flow
 import hu.bme.mit.gamma.activity.model.InlineActivityDeclaration
 import hu.bme.mit.gamma.activity.model.InputPin
 import hu.bme.mit.gamma.activity.model.InsideInputPinReference
@@ -30,17 +32,15 @@ import hu.bme.mit.gamma.activity.model.NamedActivityDeclarationReference
 import hu.bme.mit.gamma.activity.model.OutputPin
 import hu.bme.mit.gamma.activity.model.OutsideInputPinReference
 import hu.bme.mit.gamma.activity.model.OutsideOutputPinReference
+import hu.bme.mit.gamma.activity.model.Pin
 import hu.bme.mit.gamma.activity.model.PseudoActivityNode
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
-import hu.bme.mit.gamma.util.GammaEcoreUtil
-import hu.bme.mit.gamma.activity.model.Pin
+import hu.bme.mit.gamma.statechart.lowlevel.model.StatechartModelFactory
 import hu.bme.mit.gamma.statechart.statechart.State
-import hu.bme.mit.gamma.activity.model.Definition
-import hu.bme.mit.gamma.activity.model.Flow
+import hu.bme.mit.gamma.statechart.statechart.TriggerNode
+import hu.bme.mit.gamma.util.GammaEcoreUtil
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
-import hu.bme.mit.gamma.statechart.statechart.TriggerNode
-import hu.bme.mit.gamma.statechart.lowlevel.model.StatechartModelFactory
 
 class ActivityToLowlevelTransformer {
 	// Auxiliary objects

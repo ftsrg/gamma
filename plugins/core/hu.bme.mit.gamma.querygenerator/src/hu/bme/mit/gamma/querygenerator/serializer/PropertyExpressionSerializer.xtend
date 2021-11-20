@@ -11,15 +11,15 @@
 package hu.bme.mit.gamma.querygenerator.serializer
 
 import hu.bme.mit.gamma.expression.model.Expression
+import hu.bme.mit.gamma.property.model.ActivityDeclarationInstanceExpression
+import hu.bme.mit.gamma.property.model.ActivityDeclarationInstanceNodeReference
+import hu.bme.mit.gamma.property.model.ActivityDeclarationInstanceVariableReference
 import hu.bme.mit.gamma.property.model.ComponentInstanceEventParameterReference
 import hu.bme.mit.gamma.property.model.ComponentInstanceEventReference
 import hu.bme.mit.gamma.property.model.ComponentInstanceStateConfigurationReference
 import hu.bme.mit.gamma.property.model.ComponentInstanceStateExpression
 import hu.bme.mit.gamma.property.model.ComponentInstanceVariableReference
 import hu.bme.mit.gamma.statechart.util.ExpressionSerializer
-import hu.bme.mit.gamma.property.model.ActivityDeclarationInstanceNodeReference
-import hu.bme.mit.gamma.property.model.ActivityDeclarationInstanceExpression
-import hu.bme.mit.gamma.property.model.ActivityDeclarationInstanceVariableReference
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 
 abstract class PropertyExpressionSerializer extends ExpressionSerializer {

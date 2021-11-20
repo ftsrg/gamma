@@ -10,6 +10,8 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.querygenerator.serializer
 
+import hu.bme.mit.gamma.activity.model.ActivityDeclarationReference
+import hu.bme.mit.gamma.activity.model.ActivityNode
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference
@@ -20,8 +22,6 @@ import hu.bme.mit.gamma.statechart.statechart.State
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
-import hu.bme.mit.gamma.activity.model.ActivityNode
-import hu.bme.mit.gamma.activity.model.ActivityDeclarationReference
 
 class ThetaReferenceSerializer implements AbstractReferenceSerializer {
 	// Singleton

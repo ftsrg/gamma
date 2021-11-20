@@ -26,6 +26,7 @@ import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.InEvents
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.InitialNodes
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.LastJoinStates
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.LastMergeStates
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.Nodes
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.OutEvents
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.Pins
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.PlainVariables
@@ -70,8 +71,7 @@ import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionMo
 import static extension hu.bme.mit.gamma.statechart.lowlevel.derivedfeatures.LowlevelStatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.XstsNamings.*
-import hu.bme.mit.gamma.activity.model.InitialNode
-import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.Nodes
+import hu.bme.mit.gamma.xsts.util.XstsUtils
 
 class LowlevelToXstsTransformer {
 	// Transformation-related extensions
@@ -198,7 +198,7 @@ class LowlevelToXstsTransformer {
 		while (!allRegionsTransformed) {
 			// Transforming subregions one by one in accordance with containment hierarchy
 			getSubregionsRule.fireAllCurrent[!trace.isTraced(it.region) && trace.isTraced(it.parentRegion)]
-		}		
+		}
 		getComponentParametersRule.fireAllCurrent
 		getPlainVariablesRule.fireAllCurrent
 		// Now component parameters come as plain variables (from constants), so TimeoutsRule must follow PlainVariablesRule
@@ -214,7 +214,6 @@ class LowlevelToXstsTransformer {
 		 * correctly with the trace model */
 		getVariableInitializationsRule.fireAllCurrent
 		initializeVariableInitializingAction // After getVariableInitializationsRule, but before getTopRegionsInitializationRule
-
 		getTopRegionsInitializationRule.fireAllCurrent // Setting the top region (variables) into their initial states
 		getSimpleTransitionsBetweenStatesRule.fireAllCurrent
 		getSimpleTransitionsToHistoryStatesRule.fireAllCurrent

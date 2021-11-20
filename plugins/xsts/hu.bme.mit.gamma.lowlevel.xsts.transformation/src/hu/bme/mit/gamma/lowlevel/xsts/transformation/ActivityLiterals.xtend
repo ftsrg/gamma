@@ -1,7 +1,7 @@
 package hu.bme.mit.gamma.lowlevel.xsts.transformation
 
-import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
+import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
 
 class ActivityLiterals {
 

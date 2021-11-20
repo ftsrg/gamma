@@ -9,14 +9,10 @@ import hu.bme.mit.gamma.action.util.ActionModelValidator;
 import hu.bme.mit.gamma.activity.model.ActivityDeclaration;
 import hu.bme.mit.gamma.activity.model.ActivityDefinition;
 import hu.bme.mit.gamma.activity.model.ActivityNode;
-//import hu.bme.mit.gamma.activity.model.ActivityPackage;
-import hu.bme.mit.gamma.activity.model.NamedActivityDeclaration;
 import hu.bme.mit.gamma.activity.model.Pin;
 import hu.bme.mit.gamma.activity.model.PinReference;
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
 import hu.bme.mit.gamma.expression.model.NamedElement;
-import hu.bme.mit.gamma.expression.util.ExpressionModelValidator.ReferenceInfo;
-import hu.bme.mit.gamma.expression.util.ExpressionModelValidator.ValidationResultMessage;
 
 public class ActivityModelValidator extends ActionModelValidator {
 	// Singleton

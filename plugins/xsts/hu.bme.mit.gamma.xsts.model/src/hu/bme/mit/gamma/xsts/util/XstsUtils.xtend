@@ -1,4 +1,4 @@
-package hu.bme.mit.gamma.lowlevel.xsts.transformation
+package hu.bme.mit.gamma.xsts.util
 
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.model.SequentialAction

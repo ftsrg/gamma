@@ -10,9 +10,13 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.property.language.scoping
 
+import hu.bme.mit.gamma.activity.model.ActionDefinition
+import hu.bme.mit.gamma.activity.model.ActivityDefinition
 import hu.bme.mit.gamma.activity.model.ActivityModelPackage
-import hu.bme.mit.gamma.property.model.ActivityDeclarationInstanceNodeReference
+import hu.bme.mit.gamma.activity.model.NamedActivityDeclarationReference
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage
+import hu.bme.mit.gamma.property.model.ActivityDeclarationInstanceNodeReference
+import hu.bme.mit.gamma.property.model.ActivityDeclarationInstanceVariableReference
 import hu.bme.mit.gamma.property.model.ComponentInstanceEventParameterReference
 import hu.bme.mit.gamma.property.model.ComponentInstanceEventReference
 import hu.bme.mit.gamma.property.model.ComponentInstanceStateConfigurationReference
@@ -26,14 +30,9 @@ import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
 import org.eclipse.xtext.scoping.Scopes
 
-import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.action.derivedfeatures.ActionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.activity.derivedfeatures.ActivityModelDerivedFeatures.*
-import hu.bme.mit.gamma.activity.model.ActivityDefinition
-import hu.bme.mit.gamma.activity.model.ActionNode
-import hu.bme.mit.gamma.activity.model.NamedActivityDeclaration
-import hu.bme.mit.gamma.activity.model.NamedActivityDeclarationReference
-import hu.bme.mit.gamma.property.model.ActivityDeclarationInstanceVariableReference
-import hu.bme.mit.gamma.activity.model.ActionDefinition
+import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class PropertyLanguageScopeProvider extends AbstractPropertyLanguageScopeProvider {
 	
@@ -53,8 +52,7 @@ class PropertyLanguageScopeProvider extends AbstractPropertyLanguageScopeProvide
 			}
 		}
 		val root = ecoreUtil.getSelfOrContainerOfType(context, PropertyPackage)
-		val component = root.component
-		val activity = root.activity	
+		val component = root.component	
 			
 		if (context instanceof NamedActivityDeclarationReference && reference == ActivityModelPackage.Literals.NAMED_ACTIVITY_DECLARATION_REFERENCE__NAMED_ACTIVITY_DECLARATION) {
 			val imports = root.imports

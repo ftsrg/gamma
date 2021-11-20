@@ -1,9 +1,8 @@
 package hu.bme.mit.gamma.xsts.transformation.util
 
+import hu.bme.mit.gamma.activity.derivedfeatures.ActivityModelDerivedFeatures
 import hu.bme.mit.gamma.activity.model.ControlFlow
 import hu.bme.mit.gamma.activity.model.DataFlow
-
-import hu.bme.mit.gamma.activity.derivedfeatures.ActivityModelDerivedFeatures
 import hu.bme.mit.gamma.activity.model.Pin
 
 class XstsNamings {
