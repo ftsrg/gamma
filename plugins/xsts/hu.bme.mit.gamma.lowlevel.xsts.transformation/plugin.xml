@@ -14,6 +14,7 @@
       <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.sourcePin"/>
       <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.targetPin"/>
       <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.dataFlowType"/>
+      <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.dataNodeType"/>
     </group>
   </extension>
   <extension id="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.ComplexTransitionPatterns" point="org.eclipse.viatra.query.runtime.queryspecification">
@@ -70,6 +71,7 @@
       <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.regionTrace"/>
       <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.stateTrace"/>
       <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.activityNodeTrace"/>
+      <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.activityNodeDataTrace"/>
       <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.activityNodeTransitionTrace"/>
       <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.flowTrace"/>
       <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.flowDataTokenTrace"/>

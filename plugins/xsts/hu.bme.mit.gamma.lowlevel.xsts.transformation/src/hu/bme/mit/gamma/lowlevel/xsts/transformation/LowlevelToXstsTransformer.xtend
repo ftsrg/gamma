@@ -11,12 +11,15 @@
 package hu.bme.mit.gamma.lowlevel.xsts.transformation
 
 import hu.bme.mit.gamma.activity.model.ActivityNode
-import hu.bme.mit.gamma.activity.model.ControlFlow
 import hu.bme.mit.gamma.activity.model.DataFlow
+import hu.bme.mit.gamma.activity.model.DataNode
+import hu.bme.mit.gamma.activity.model.Flow
 import hu.bme.mit.gamma.activity.model.Pin
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer.XstsOptimizer
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.DataFlowType
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.DataNodeType
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.Events
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.FirstChoiceStates
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.FirstForkStates
@@ -55,6 +58,7 @@ import hu.bme.mit.gamma.xsts.model.VariableGroup
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
+import hu.bme.mit.gamma.xsts.util.XstsUtils
 import java.util.AbstractMap.SimpleEntry
 import java.util.Set
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
@@ -71,7 +75,7 @@ import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionMo
 import static extension hu.bme.mit.gamma.statechart.lowlevel.derivedfeatures.LowlevelStatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.XstsNamings.*
-import hu.bme.mit.gamma.xsts.util.XstsUtils
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.TargetNode
 
 class LowlevelToXstsTransformer {
 	// Transformation-related extensions
@@ -707,10 +711,26 @@ class LowlevelToXstsTransformer {
 		xStsActivityNodeVariable.addOnDemandControlAnnotation
 		xSts.variableDeclarations += xStsActivityNodeVariable
 		trace.put(activityNode, xStsActivityNodeVariable)
+		
+		if (activityNode instanceof DataNode) {
+			val dataTypeOptional = DataNodeType.Matcher.on(engine).getOneArbitraryMatch(activityNode, null)
+			
+			if (dataTypeOptional.present) {
+				val dataType = dataTypeOptional.get.type.clone()
+				
+				val xStsDataNodeVariable = createVariableDeclaration => [
+					name = activityNode.nodeDataTokenVariableName
+					type = dataType
+					expression = dataType.initialValueOfType
+				]
+				xSts.variableDeclarations += xStsDataNodeVariable
+				trace.putDataNodeVariable(activityNode, xStsDataNodeVariable)
+			}
+		}
 	}
 	
 	private def createActivityPinMapping(Pin pin) {
-		val pinType = pin.type
+		val pinType = pin.type.clone() // cloning to prevent loosing it from the original Pin
 		val xStsPinVariable = createVariableDeclaration => [
 			name = pin.pinVariableName
 			type = pinType
@@ -722,7 +742,7 @@ class LowlevelToXstsTransformer {
 		trace.put(pin, xStsPinVariable)
 	}
 
-	private dispatch def createActivityFlowMapping(ControlFlow flow) {
+	private def createActivityFlowMapping(Flow flow) {
 		val xStsFlowVariable = createVariableDeclaration => [
 			name = flow.flowVariableName
 			type = createTypeReference => [
@@ -735,32 +755,18 @@ class LowlevelToXstsTransformer {
 		xStsFlowVariable.addOnDemandControlAnnotation
 		xSts.variableDeclarations += xStsFlowVariable
 		trace.put(flow, xStsFlowVariable)
-	}
 
-	private dispatch def createActivityFlowMapping(DataFlow flow) {
-		val xStsFlowVariable = createVariableDeclaration => [
-			name = flow.flowVariableName
-			type = createTypeReference => [
-				reference = flowStateEnumTypeDeclaration
+		if (flow instanceof DataFlow) {
+			val dataType = DataFlowType.Matcher.on(engine).getOneArbitraryMatch(flow, null).get.type.clone()
+			
+			val xStsDataTokenVariable = createVariableDeclaration => [
+				name = flow.flowDataTokenVariableName
+				type = dataType
+				expression = dataType.initialValueOfType
 			]
-			expression = createEnumerationLiteralExpression => [
-				reference = emptyFlowStateEnumLiteral
-			]
-		]
-		xStsFlowVariable.addOnDemandControlAnnotation
-		xSts.variableDeclarations += xStsFlowVariable
-		trace.put(flow, xStsFlowVariable)
-				
-		val dataType = createIntegerTypeDefinition// DataFlowType.Matcher.on(engine).getOneArbitraryMatch(flow, null).get.type
-		
-		val xStsDataTokenVariable = createVariableDeclaration => [
-			name = flow.flowDataTokenVariableName
-			type = dataType
-			expression = dataType.initialValueOfType
-		]
-		xStsDataTokenVariable.addOnDemandControlAnnotation
-		xSts.variableDeclarations += xStsDataTokenVariable
-		trace.putDataTokenVariable(flow, xStsDataTokenVariable)
+			xSts.variableDeclarations += xStsDataTokenVariable
+			trace.putDataTokenVariable(flow, xStsDataTokenVariable)			
+		}
 	}
 	
 	private def getActivityNodeTransitionsRule() {

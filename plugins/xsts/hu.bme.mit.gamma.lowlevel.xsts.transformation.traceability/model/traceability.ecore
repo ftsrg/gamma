@@ -107,4 +107,11 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="xStsAction" lowerBound="1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.xsts.model/model/model.ecore#//NonDeterministicAction"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ActivityNodeDataTrace" eSuperTypes="#//AbstractTrace">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="activityNode" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.activity.model/model/activity.ecore#//ActivityNode"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="xStsVariable" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclaration"
+        containment="true"/>
+  </eClassifiers>
 </ecore:EPackage>

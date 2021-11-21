@@ -22,6 +22,7 @@ import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.ActivityNodeDataTrace
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.ActivityNodeTrace
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.ActivityNodeTransitionTrace
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.ChoiceTransitionTrace
@@ -621,6 +622,23 @@ package class Trace {
 	def getActivityNode(VariableDeclaration xStsVariable) {
 		checkArgument(xStsVariable !== null)
 		val matches = ActivityNodeTrace.Matcher.on(tracingEngine).getAllValuesOfactivityNode(xStsVariable)
+		checkState(matches.size == 1, matches.size)
+		return matches.head
+	}
+	
+	// ActivityNode - data variable
+	def putDataNodeVariable(ActivityNode activityNode, VariableDeclaration xStsVariable) {
+		checkArgument(activityNode !== null)
+		checkArgument(xStsVariable !== null)
+		trace.traces += createActivityNodeDataTrace => [
+			it.activityNode = activityNode
+			it.XStsVariable = xStsVariable
+		]
+	}
+	
+	def getXStsVariableDataNodeVariable(ActivityNode activityNode) {
+		checkArgument(activityNode !== null)
+		val matches = ActivityNodeDataTrace.Matcher.on(tracingEngine).getAllValuesOfxStsVariable(activityNode)
 		checkState(matches.size == 1, matches.size)
 		return matches.head
 	}

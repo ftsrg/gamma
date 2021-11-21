@@ -88,6 +88,10 @@ class ActivityFlowTransformer {
 					reference = runningNodeStateEnumLiteral
 				]
 			)
+				
+			if (flow instanceof DataFlow) {
+				
+			}
 		]
 	}
 	
@@ -125,6 +129,10 @@ class ActivityFlowTransformer {
 					reference = idleNodeStateEnumLiteral
 				]
 			)
+				
+			if (flow instanceof DataFlow) {
+				
+			}
 		]		
 	}
 	

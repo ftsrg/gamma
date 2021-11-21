@@ -56,9 +56,6 @@ pattern dataFlowDirectSourceType(flow: DataFlow, type: Type) {
 pattern priorDataFlow(flow: DataFlow, previousFlow: DataFlow) {
 	find sourceNode(flow, node);
 	find targetNode(previousFlow, node);
-} or {
-	find sourcePin(flow, pin);
-	find targetPin(previousFlow, pin);
 }
 
 pattern sourceNode(flow: Flow, node: ActivityNode) {
@@ -77,21 +74,21 @@ pattern targetNode(flow: Flow, node: ActivityNode) {
 
 pattern sourcePin(flow: DataFlow, pin: Pin) {
 	DataFlow.dataSourceReference(flow, sourceReference);
-	InputPinReference(sourceReference);
+	InsideInputPinReference(sourceReference);
 	InputPinReference.inputPin(sourceReference, pin);
 } or {
 	DataFlow.dataSourceReference(flow, sourceReference);
-	OutputPinReference(sourceReference);
+	OutsideOutputPinReference(sourceReference);
 	OutputPinReference.outputPin(sourceReference, pin);
 }
 
 pattern targetPin(flow: DataFlow, pin: Pin) {
 	DataFlow.dataTargetReference(flow, targetReference);
-	InputPinReference(targetReference);
+	OutsideInputPinReference(targetReference);
 	InputPinReference.inputPin(targetReference, pin);
 } or {
 	DataFlow.dataTargetReference(flow, targetReference);
-	OutputPinReference(targetReference);
+	InsideOutputPinReference(targetReference);
 	OutputPinReference.outputPin(targetReference, pin);
 }
 
@@ -100,4 +97,9 @@ pattern dataFlowType(flow: DataFlow, type: Type) {
 	find sourcePin(previous, pin);
 	
 	Pin.type(pin, type);
+}
+
+pattern dataNodeType(node: DataNode, type: Type) {
+	find targetNode(flow, node);
+	find dataFlowType(flow, type);
 }
