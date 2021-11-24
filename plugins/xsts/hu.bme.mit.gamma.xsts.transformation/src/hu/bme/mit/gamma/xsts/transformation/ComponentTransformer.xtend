@@ -253,7 +253,10 @@ class ComponentTransformer {
 			val adapterComponentType = adapterInstance.type as AsynchronousAdapter
 			val originalMergedAction = mergedActions.get(adapterInstance)
 			// Input event processing
-			for (queue : adapterComponentType.functioningMessageQueues) {
+			val inputIfAction = createIfAction // Will be appended when handling queues
+			mergedAction.actions += inputIfAction
+			// Queues in order of priority
+			for (queue : adapterComponentType.functioningMessageQueuesInPriorityOrder) {
 				val queueMapping = queueTraceability.get(queue)
 				val masterQueue = queueMapping.masterQueue.arrayVariable
 				val masterSizeVariable = queueMapping.masterQueue.sizeVariable
@@ -264,18 +267,9 @@ class ComponentTransformer {
 				val xStsMasterSizeVariable = variableTrace.getAll(masterSizeVariable).onlyElement
 				
 				val block = createSequentialAction
-				
-				val messageRetrievalCount = queue.checkAndGetMessageRetrievalCount
-				val maxValue = (messageRetrievalCount === null) ? 
-					xStsMasterSizeVariable.createReferenceExpression : // Null means ALL messages
-					xStsMasterSizeVariable.createReferenceExpression
-						.createMinExpression(messageRetrievalCount.toIntegerLiteral) // min(size, count)
-				
-				val queueLoop = loopIterationVariableName.createLoopAction(
-						0.toIntegerLiteral, maxValue) => [
-					it.action = block
-				]
-				mergedAction.actions += queueLoop
+				// if (0 < size) { ... }
+				inputIfAction.append(0.toIntegerLiteral.createLessExpression(
+					xStsMasterSizeVariable.createReferenceExpression), block)
 				
 				val xStsEventIdVariableAction = createIntegerTypeDefinition.createVariableDeclarationAction(
 						xStsMasterQueue.eventIdLocalVariableName, xStsMasterQueue.peek)
@@ -407,8 +401,7 @@ class ComponentTransformer {
 			val xStsMasterQueue = variableTrace.getAll(masterQueue).onlyElement
 			val xStsMasterSizeVariable = variableTrace.getAll(masterSizeVariable).onlyElement
 			
-			val xStsEventIdVariableAction = xStsMasterQueue
-				.createVariableDeclarationActionForArray(
+			val xStsEventIdVariableAction = xStsMasterQueue.createVariableDeclarationActionForArray(
 					xStsMasterQueue.eventIdLocalVariableName)
 			val xStsEventIdVariable = xStsEventIdVariableAction.variableDeclaration
 			inEventAction.actions += xStsEventIdVariableAction

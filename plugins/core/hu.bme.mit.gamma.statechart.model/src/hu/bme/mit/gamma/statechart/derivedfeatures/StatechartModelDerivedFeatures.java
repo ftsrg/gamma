@@ -659,6 +659,13 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 				.filter(it -> isFunctioning(it)).collect(Collectors.toList());
 	}
 	
+	public static List<MessageQueue> getFunctioningMessageQueuesInPriorityOrder(
+				AsynchronousAdapter adapter) {
+		List<MessageQueue> messageQueues = getFunctioningMessageQueues(adapter);
+		messageQueues.sort((l, r) -> r.getPriority().compareTo(l.getPriority()));
+		return messageQueues;
+	}
+	
 	public static List<Entry<Port, Event>> getStoredEvents(MessageQueue queue) {
 		List<Entry<Port, Event>> events = new ArrayList<Entry<Port, Event>>();
 		for (EventReference eventReference : queue.getEventReference()) {
