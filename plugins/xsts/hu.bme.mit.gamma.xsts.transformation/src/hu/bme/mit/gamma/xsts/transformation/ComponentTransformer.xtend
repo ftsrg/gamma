@@ -469,97 +469,99 @@ class ComponentTransformer {
 			Collection<? extends Port> systemPorts, Trace variableTrace) {
 		val eventDispatchAction = createSequentialAction
 		for (event : port.outputEvents) {
-			// Output is unidirectional
+			// Output binding is unidirectional
 			val xStsOutEventVariable = eventReferenceMapper.getOutputEventVariable(event, port)
+			if (xStsOutEventVariable !== null) { // This can happen if out events are never referenced
 			
-			val ifExpression = xStsOutEventVariable.createReferenceExpression
-			val thenAction = createSequentialAction
-			
-			val connectedAdapterPorts = port.allConnectedAsynchronousSimplePorts
-			for (connectedAdapterPort : connectedAdapterPorts) {
-				val connectedPortEvent = new SimpleEntry(connectedAdapterPort, event)
-				if (queueTraceability.contains(connectedPortEvent)) {
-					// The event is stored and not been removed due to optimization
-					val eventId = queueTraceability.get(connectedPortEvent)
-					// Highest priority in the case of multiple queues allowing storage 
-					val queueTrace = queueTraceability.getMessageQueues(connectedPortEvent)
-					val originalQueue = queueTrace.key
-					val capacity = originalQueue.getCapacity(systemPorts)
-					val eventDiscardStrategy = originalQueue.eventDiscardStrategy
-					val queueMapping = queueTrace.value
-					
-					val masterQueueStruct = queueMapping.masterQueue
-					val masterQueue = masterQueueStruct.arrayVariable
-					val masterSizeVariable = masterQueueStruct.sizeVariable
-					val slaveQueues = queueMapping.slaveQueues.get(connectedPortEvent)
-					
-					val xStsMasterQueue = variableTrace.getAll(masterQueue).onlyElement
-					val xStsMasterSizeVariable = variableTrace.getAll(masterSizeVariable).onlyElement
-					
-					// Expressions and actions that are used in every queue behavior
-					val evaluatedCapacity = capacity.toIntegerLiteral
-					val hasFreeCapacityExpression = createLessExpression => [
-						it.leftOperand = xStsMasterSizeVariable.createReferenceExpression
-						it.rightOperand = evaluatedCapacity
-					]
-					val block = createSequentialAction
-					// Master
-					block.actions += xStsMasterQueue.addAndIncrement(
-							xStsMasterSizeVariable, eventId.toIntegerLiteral)
-					// Resetting out event variable if it is not broadcast and led out to the system
-					val systemPort = systemPorts.contains(connectedAdapterPort.boundTopComponentPort)
-					if (!systemPort) {
-						block.actions += xStsOutEventVariable.createVariableResetAction
-					}
-					// Slaves
-					val parameters = event.parameterDeclarations
-					val slaveQueueSize = slaveQueues.size // Might be 0 if there is no in-event var
-					for (var i = 0; i < slaveQueueSize; i++) {
-						val parameter = parameters.get(i)
-						val slaveQueueStruct = slaveQueues.get(i)
-						val slaveQueue = slaveQueueStruct.arrayVariable
-						val slaveSizeVariable = slaveQueueStruct.sizeVariable
-						val xStsSlaveQueues = variableTrace.getAll(slaveQueue)
-						val xStsSlaveSizeVariable = variableTrace.getAll(slaveSizeVariable).onlyElement
-						// Output is unidirectional
-						val xStsOutParameterVariables = eventReferenceMapper
-								.getOutputParameterVariables(parameter, port)
-						// Parameter optimization problem: parameters are not deleted independently
-						block.actions += xStsSlaveQueues.addAllAndIncrement(xStsSlaveSizeVariable,
-								xStsOutParameterVariables.map[it.createReferenceExpression])
-						// Resetting out parameter variables if they are not broadcast and led out to the system
+				val ifExpression = xStsOutEventVariable.createReferenceExpression
+				val thenAction = createSequentialAction
+				
+				val connectedAdapterPorts = port.allConnectedAsynchronousSimplePorts
+				for (connectedAdapterPort : connectedAdapterPorts) {
+					val connectedPortEvent = new SimpleEntry(connectedAdapterPort, event)
+					if (queueTraceability.contains(connectedPortEvent)) {
+						// The event is stored and not been removed due to optimization
+						val eventId = queueTraceability.get(connectedPortEvent)
+						// Highest priority in the case of multiple queues allowing storage 
+						val queueTrace = queueTraceability.getMessageQueues(connectedPortEvent)
+						val originalQueue = queueTrace.key
+						val capacity = originalQueue.getCapacity(systemPorts)
+						val eventDiscardStrategy = originalQueue.eventDiscardStrategy
+						val queueMapping = queueTrace.value
+						
+						val masterQueueStruct = queueMapping.masterQueue
+						val masterQueue = masterQueueStruct.arrayVariable
+						val masterSizeVariable = masterQueueStruct.sizeVariable
+						val slaveQueues = queueMapping.slaveQueues.get(connectedPortEvent)
+						
+						val xStsMasterQueue = variableTrace.getAll(masterQueue).onlyElement
+						val xStsMasterSizeVariable = variableTrace.getAll(masterSizeVariable).onlyElement
+						
+						// Expressions and actions that are used in every queue behavior
+						val evaluatedCapacity = capacity.toIntegerLiteral
+						val hasFreeCapacityExpression = createLessExpression => [
+							it.leftOperand = xStsMasterSizeVariable.createReferenceExpression
+							it.rightOperand = evaluatedCapacity
+						]
+						val block = createSequentialAction
+						// Master
+						block.actions += xStsMasterQueue.addAndIncrement(
+								xStsMasterSizeVariable, eventId.toIntegerLiteral)
+						// Resetting out event variable if it is not broadcast and led out to the system
+						val systemPort = systemPorts.contains(connectedAdapterPort.boundTopComponentPort)
 						if (!systemPort) {
-							block.actions += xStsOutParameterVariables.map[it.createVariableResetAction]
+							block.actions += xStsOutEventVariable.createVariableResetAction
 						}
-					}
-					
-					if (eventDiscardStrategy == DiscardStrategy.INCOMING) {
-						// if (size < capacity) { "add elements into master and slave queues" }
-						thenAction.actions += hasFreeCapacityExpression.createIfAction(block)
-					}
-					else if (eventDiscardStrategy == DiscardStrategy.OLDEST) {
-						val popActions = createSequentialAction
-						popActions.actions += xStsMasterQueue.popAndDecrement(xStsMasterSizeVariable)
-						for (slaveQueueStruct : slaveQueues) {
+						// Slaves
+						val parameters = event.parameterDeclarations
+						val slaveQueueSize = slaveQueues.size // Might be 0 if there is no in-event var
+						for (var i = 0; i < slaveQueueSize; i++) {
+							val parameter = parameters.get(i)
+							val slaveQueueStruct = slaveQueues.get(i)
 							val slaveQueue = slaveQueueStruct.arrayVariable
 							val slaveSizeVariable = slaveQueueStruct.sizeVariable
 							val xStsSlaveQueues = variableTrace.getAll(slaveQueue)
 							val xStsSlaveSizeVariable = variableTrace.getAll(slaveSizeVariable).onlyElement
-							popActions.actions += xStsSlaveQueues.popAllAndDecrement(xStsSlaveSizeVariable)
+							// Output is unidirectional
+							val xStsOutParameterVariables = eventReferenceMapper
+									.getOutputParameterVariables(parameter, port)
+							// Parameter optimization problem: parameters are not deleted independently
+							block.actions += xStsSlaveQueues.addAllAndIncrement(xStsSlaveSizeVariable,
+									xStsOutParameterVariables.map[it.createReferenceExpression])
+							// Resetting out parameter variables if they are not broadcast and led out to the system
+							if (!systemPort) {
+								block.actions += xStsOutParameterVariables.map[it.createVariableResetAction]
+							}
 						}
-						// if ((!(size < capacity)) { "pop" }
-						// "add elements into master and slave queues"
-						thenAction.actions += hasFreeCapacityExpression.createNotExpression
-								.createIfAction(popActions)
-						thenAction.actions += block
-					}
-					else {
-						throw new IllegalStateException("Not known behavior: " + eventDiscardStrategy)
+						
+						if (eventDiscardStrategy == DiscardStrategy.INCOMING) {
+							// if (size < capacity) { "add elements into master and slave queues" }
+							thenAction.actions += hasFreeCapacityExpression.createIfAction(block)
+						}
+						else if (eventDiscardStrategy == DiscardStrategy.OLDEST) {
+							val popActions = createSequentialAction
+							popActions.actions += xStsMasterQueue.popAndDecrement(xStsMasterSizeVariable)
+							for (slaveQueueStruct : slaveQueues) {
+								val slaveQueue = slaveQueueStruct.arrayVariable
+								val slaveSizeVariable = slaveQueueStruct.sizeVariable
+								val xStsSlaveQueues = variableTrace.getAll(slaveQueue)
+								val xStsSlaveSizeVariable = variableTrace.getAll(slaveSizeVariable).onlyElement
+								popActions.actions += xStsSlaveQueues.popAllAndDecrement(xStsSlaveSizeVariable)
+							}
+							// if ((!(size < capacity)) { "pop" }
+							// "add elements into master and slave queues"
+							thenAction.actions += hasFreeCapacityExpression.createNotExpression
+									.createIfAction(popActions)
+							thenAction.actions += block
+						}
+						else {
+							throw new IllegalStateException("Not known behavior: " + eventDiscardStrategy)
+						}
 					}
 				}
+				// if (inEvent) { "add elements into master and slave queues" }
+				eventDispatchAction.actions += ifExpression.createIfAction(thenAction)
 			}
-			// if (inEvent) { "add elements into master and slave queues" }
-			eventDispatchAction.actions += ifExpression.createIfAction(thenAction)
 		}
 		return eventDispatchAction
 	}
