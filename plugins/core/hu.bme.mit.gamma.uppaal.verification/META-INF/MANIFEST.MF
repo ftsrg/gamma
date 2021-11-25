@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: UPPAAL Trace Back-Annotator
+Bundle-Name: UPPAAL Verifier
 Bundle-SymbolicName: hu.bme.mit.gamma.uppaal.verification;singleton:=true
 Bundle-Version: 2.5.1.qualifier
 Bundle-Vendor: BME-FTSRG

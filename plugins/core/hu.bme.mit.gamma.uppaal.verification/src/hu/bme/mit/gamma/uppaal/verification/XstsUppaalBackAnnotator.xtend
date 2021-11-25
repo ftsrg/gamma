@@ -137,10 +137,10 @@ class XstsUppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 											val index = Integer.parseInt(value)
 											val potentialStateString = '''«variable» == «index»'''
 											if (xStsUppaalQueryGenerator.isSourceState(potentialStateString)) {
-												val instanceState = xStsUppaalQueryGenerator.getSourceState(potentialStateString)
-												val controlState = instanceState.key
-												val instance = instanceState.value
 												if (index > 0) {
+													val instanceState = xStsUppaalQueryGenerator.getSourceState(potentialStateString)
+													val controlState = instanceState.key
+													val instance = instanceState.value
 													step.addInstanceState(instance, controlState)
 													activatedStates += controlState
 												}
