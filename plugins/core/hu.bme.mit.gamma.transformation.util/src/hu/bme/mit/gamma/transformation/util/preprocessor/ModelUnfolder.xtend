@@ -271,7 +271,8 @@ class ModelUnfolder {
 	protected def void fixMessageQueueEvents(AsynchronousAdapter wrapper) {
 		val wrappedComponent = wrapper.wrappedComponent
 		// Any port events
-		for (portEventReference : wrapper.messageQueues.map[it.eventReference].flatten.filter(AnyPortEventReference)
+		for (portEventReference : wrapper.messageQueues.map[it.eventReferences]
+				.flatten.filter(AnyPortEventReference)
 				.filter[it.port.eContainer instanceof SynchronousComponent] /* Wrapper ports are not rearranged */ ) {
 			val newPorts = wrappedComponent.type.ports.filter[it.helperEquals(portEventReference.port)]
 			if (newPorts.size != 1) {
@@ -280,7 +281,8 @@ class ModelUnfolder {
 			portEventReference.port = newPorts.head	
 		}
 		// Port events
-		for (portEventReference : wrapper.messageQueues.map[it.eventReference].flatten.filter(PortEventReference)
+		for (portEventReference : wrapper.messageQueues.map[it.eventReferences]
+				.flatten.filter(PortEventReference)
 				.filter[it.port.eContainer instanceof SynchronousComponent] /* Wrapper ports are not rearranged */ ) {
 			val newPorts = wrappedComponent.type.ports.filter[it.helperEquals(portEventReference.port)]
 			if (newPorts.size != 1) {
@@ -289,7 +291,8 @@ class ModelUnfolder {
 			portEventReference.port = newPorts.head	
 		}
 		// Clock events
-		for (clockTickReference : wrapper.messageQueues.map[it.eventReference].flatten.filter(ClockTickReference)) {
+		for (clockTickReference : wrapper.messageQueues.map[it.eventReferences]
+				.flatten.filter(ClockTickReference)) {
 			val newClocks = wrapper.clocks.filter[it.helperEquals(clockTickReference.clock)]
 			if (newClocks.size != 1) {
 				throw new IllegalArgumentException("Not one clock found: " + newClocks)

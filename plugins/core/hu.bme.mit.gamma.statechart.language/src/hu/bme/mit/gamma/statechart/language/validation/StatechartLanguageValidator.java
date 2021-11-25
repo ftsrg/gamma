@@ -460,12 +460,6 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		handleValidationResultMessage(statechartModelValidator.checkAnyPortControls(adapter));
 	}
 	
-	
-	@Check
-	public void checkMessageRetrievalCount(AsynchronousAdapter adapter) {
-		handleValidationResultMessage(statechartModelValidator.checkMessageRetrievalCount(adapter));
-	}
-	
 	@Check
 	public void checkMessageQueueAnyEventReferences(AnyPortEventReference anyPortEventReference) {
 		handleValidationResultMessage(statechartModelValidator

@@ -598,19 +598,19 @@ private pattern eventsOfPorts(port : Port, event : Event) {
 
 pattern queuesOfClocks(wrapper : AsynchronousAdapter, queue : MessageQueue, clock : Clock) {
 	AsynchronousAdapter.messageQueues(wrapper, queue);
-	MessageQueue.eventReference(queue, eventReference);
+	MessageQueue.eventReferences(queue, eventReference);
 	ClockTickReference.clock(eventReference, clock);
 }
 
 pattern queuesOfEvents(wrapper : AsynchronousAdapter, queue : MessageQueue, port : Port, event : Event) {
 	AsynchronousAdapter.messageQueues(wrapper, queue);
-	MessageQueue.eventReference(queue, eventReference);
+	MessageQueue.eventReferences(queue, eventReference);
 	PortEventReference.port(eventReference, port);
 	find eventsOfPorts(port, event);
 	PortEventReference.event(eventReference, event);
 } or {
 	AsynchronousAdapter.messageQueues(wrapper, queue);
-	MessageQueue.eventReference(queue, eventReference);
+	MessageQueue.eventReferences(queue, eventReference);
 	AnyPortEventReference.port(eventReference, port);
 	find eventsOfPorts(port, event);
 }

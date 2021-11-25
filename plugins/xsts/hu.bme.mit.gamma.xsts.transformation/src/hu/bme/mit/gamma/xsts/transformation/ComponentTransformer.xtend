@@ -590,7 +590,7 @@ class ComponentTransformer {
 			val extension eventRef = new ReferenceToXstsVariableMapper(xSts)
 			// Collecting the referenced event variables
 			val messageQueue = component.messageQueues.head // Only one
-			val xStsReferencedEventVariables = messageQueue.eventReference
+			val xStsReferencedEventVariables = messageQueue.eventReferences
 					.map[it.variables].flatten
 			
 			val newInEventAction = createSequentialAction
@@ -800,14 +800,15 @@ class ComponentTransformer {
 	
 	private def getCapacity(MessageQueue queue, Collection<? extends Port> systemPorts) {
 		if (queue.isEnvironmentalAndCheck(systemPorts)) {
-			val messageRetrievalCount = queue.checkAndGetMessageRetrievalCount
-			if (messageRetrievalCount !== null) {
-				// For environmental queues, message retrieval count can serve as capacity
-				return messageRetrievalCount
-			}
+			val messageRetrievalCount = queue.messageRetrievalCount
+			return messageRetrievalCount // capacity can be equal to messageRetrievalCount for env. queues
 		}
 		val capacity = queue.capacity
 		return capacity.evaluateInteger
+	}
+	
+	private def getMessageRetrievalCount(MessageQueue queue) {
+		return 1
 	}
 	
 	private def isEnvironmentalAndCheck(MessageQueue queue, Collection<? extends Port> systemPorts) {
@@ -826,17 +827,6 @@ class ComponentTransformer {
 		checkState(systemPorts.containsNone(topPorts) || capacity == 1,
 				"All or none of the ports must be system ports or the capacity must be one")
 		return false
-	}
-	
-	private def checkAndGetMessageRetrievalCount(MessageQueue queue) {
-		val messageRetrievalCount = queue.messageRetrievalCount
-		if (messageRetrievalCount === null) {
-			return null // Means ALL messages
-		}
-		val count = messageRetrievalCount.evaluateInteger
-		checkState(count > 0) // Maybe 0 should be accepted, too?
-		val capacity = queue.capacity.evaluateInteger
-		return Math.min(count, capacity) // Count cannot be greater than the capacity
 	}
 	
 	private def void resetInEventsAfterMergedAction(XSTS xSts, Component type) {

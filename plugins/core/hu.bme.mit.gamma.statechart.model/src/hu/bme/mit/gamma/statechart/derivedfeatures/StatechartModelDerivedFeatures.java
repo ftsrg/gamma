@@ -668,7 +668,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	public static List<Entry<Port, Event>> getStoredEvents(MessageQueue queue) {
 		List<Entry<Port, Event>> events = new ArrayList<Entry<Port, Event>>();
-		for (EventReference eventReference : queue.getEventReference()) {
+		for (EventReference eventReference : queue.getEventReferences()) {
 			events.addAll(getInputEvents(eventReference));
 		}
 		return events;
@@ -709,7 +709,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	}
 	
 	public static boolean isStoredInMessageQueue(Clock clock, MessageQueue queue) {
-		for (EventReference eventReference : queue.getEventReference()) {
+		for (EventReference eventReference : queue.getEventReferences()) {
 			if (eventReference instanceof ClockTickReference) {
 				ClockTickReference clockTickReference = (ClockTickReference) eventReference;
 				if (clockTickReference.getClock() == clock) {
@@ -734,10 +734,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	public static boolean isFunctioning(MessageQueue queue) {
 		Expression capacity = queue.getCapacity();
-		Expression messageRetrievalCount = queue.getMessageRetrievalCount();
-		return evaluator.evaluateInteger(capacity) > 0 &&
-				(messageRetrievalCount == null ||
-						evaluator.evaluateInteger(messageRetrievalCount) > 0);
+		return evaluator.evaluateInteger(capacity) > 0;
 	}
 	
 	public static List<Entry<Port, Event>> getInputEvents(EventReference eventReference) {

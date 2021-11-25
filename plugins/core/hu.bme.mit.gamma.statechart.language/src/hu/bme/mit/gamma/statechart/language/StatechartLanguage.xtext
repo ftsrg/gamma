@@ -439,7 +439,7 @@ AsynchronousCompositeComponent returns CompositeModel::AsynchronousCompositeComp
 
 ScheduledAsynchronousCompositeComponent returns CompositeModel::ScheduledAsynchronousCompositeComponent:
 	'scheduled-async' name=ID 
-	('(' ((parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*)? ')')?
+	('(' ((parameterDeclarations+=ParameterDeclaration) (',' parameterDeclarations+=ParameterDeclaration)*)? ')')?
 		('[' ((ports+=Port)((',')? ports+=Port)*)? ']')?
 		'{'
 			(
@@ -453,7 +453,8 @@ ScheduledAsynchronousCompositeComponent returns CompositeModel::ScheduledAsynchr
 ;
 
 AsynchronousAdapter returns CompositeModel::AsynchronousAdapter:
-	'adapter' name=ID ('(' ((parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*)? ')')?
+	'adapter' name=ID ('(' ((parameterDeclarations+=ParameterDeclaration)
+			(',' parameterDeclarations+=ParameterDeclaration)*)? ')')?
 		'of' wrappedComponent=SynchronousComponentInstance
 		('[' ((ports+=Port)((',')? ports+=Port)*)? ']')?
 		'{'
@@ -488,12 +489,10 @@ enum ControlFunction returns CompositeModel::ControlFunction:
 ;
 
 MessageQueue returns CompositeModel::MessageQueue:
-	'queue' name=ID '('('priority' '=' priority=INTEGER) (',' 'capacity' '=' capacity=Expression)
-			(
-				(',' 'discard' '=' eventDiscardStrategy=DiscardStrategy)? &
-				(',' 'retrieve-count' '=' messageRetrievalCount=Expression)?
-			) ')' '{'
-	 	(eventReference+=EventReference)(',' eventReference+=EventReference)*
+	'queue' name=ID '(' ('priority' '=' priority=INTEGER) (',' 'capacity' '=' capacity=Expression)
+				(',' 'discard' '=' eventDiscardStrategy=DiscardStrategy)?
+			')' '{'
+	 	(eventReferences+=EventReference) (',' eventReferences+=EventReference)*
 	'}'
 ;
 

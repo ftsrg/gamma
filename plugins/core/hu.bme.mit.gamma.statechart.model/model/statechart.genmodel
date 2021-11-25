@@ -53,8 +53,7 @@
     </genClasses>
     <genClasses ecoreClass="composite.ecore#//MessageQueue">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference composite.ecore#//MessageQueue/capacity"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference composite.ecore#//MessageQueue/messageRetrievalCount"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference composite.ecore#//MessageQueue/eventReference"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference composite.ecore#//MessageQueue/eventReferences"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute composite.ecore#//MessageQueue/eventDiscardStrategy"/>
     </genClasses>
     <genClasses image="false" ecoreClass="composite.ecore#//SynchronousComponent"/>

@@ -1674,8 +1674,9 @@ public class StatechartModelValidator extends ActionModelValidator {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		Map<Port, Collection<Event>> containedEvents = new HashMap<Port, Collection<Event>>();
 		for (MessageQueue queue : wrapper.getMessageQueues()) {
-			for (EventReference eventReference : queue.getEventReference()) {
-				int index = queue.getEventReference().indexOf(eventReference);
+			List<EventReference> eventReferences = queue.getEventReferences();
+			for (EventReference eventReference : eventReferences) {
+				int index = eventReferences.indexOf(eventReference);
 				if (eventReference instanceof PortEventReference) {
 					PortEventReference portEventReference = (PortEventReference) eventReference;
 					Port containedPort = portEventReference.getPort();
@@ -1684,7 +1685,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 						Collection<Event> alreadyContainedEvents = containedEvents.get(containedPort);
 						if (alreadyContainedEvents.contains(containedEvent)) {
 							validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-									"Event " + containedEvent.getName() + " is already forwarded to a message queue", 
+								"Event " + containedEvent.getName() + " is already forwarded to a message queue", 
 									new ReferenceInfo(CompositeModelPackage.Literals.CHANNEL__PROVIDED_PORT, index, queue)));
 						}
 						else {
@@ -1709,7 +1710,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 								.collect(Collectors.toSet());
 						validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 								"Events " + alreadyContainedEventNames + " are already forwarded to a message queue", 
-								new ReferenceInfo(CompositeModelPackage.Literals.MESSAGE_QUEUE__EVENT_REFERENCE, index, queue)));
+								new ReferenceInfo(CompositeModelPackage.Literals.MESSAGE_QUEUE__EVENT_REFERENCES, index, queue)));
 					}
 					else {
 						containedEvents.put(containedPort, events);
@@ -1724,7 +1725,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		if (wrapper.getControlSpecifications().isEmpty() && wrapper.getClocks().isEmpty()) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING, 
-					"This asynchronous adapter can never be executed",
+				"This asynchronous adapter can never be executed",
 					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME)));
 		}
 		return validationResultMessages;
@@ -1774,9 +1775,18 @@ public class StatechartModelValidator extends ActionModelValidator {
 	
 	public Collection<ValidationResultMessage> checkMessageQueuePriorities(AsynchronousAdapter wrapper) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		List<MessageQueue> messageQueues = wrapper.getMessageQueues();
+		
+		if (messageQueues.size() < 1) {
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+				"An asynchronous adapter must have at least one message queue", 
+					new ReferenceInfo(CompositeModelPackage.Literals.ASYNCHRONOUS_ADAPTER__MESSAGE_QUEUES)));
+			return validationResultMessages;
+		}
+		
 		Set<Integer> priorityValues = new HashSet<Integer>();
-		for (int i = 0; i < wrapper.getMessageQueues().size(); ++i) {
-			MessageQueue queue = wrapper.getMessageQueues().get(i);
+		for (int i = 0; i < messageQueues.size(); ++i) {
+			MessageQueue queue = messageQueues.get(i);
 			int priorityValue = queue.getPriority().intValue();
 			if (priorityValues.contains(priorityValue)) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING, 
@@ -1787,14 +1797,16 @@ public class StatechartModelValidator extends ActionModelValidator {
 				priorityValues.add(priorityValue);
 			}
 		}
+		
 		return validationResultMessages;
 	}
 	
 	public Collection<ValidationResultMessage> checkMessageQueue(MessageQueue queue) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		List<EventReference> eventReferences = queue.getEventReference();
+		
+		List<EventReference> eventReferences = queue.getEventReferences();
 		for (EventReference eventReference : eventReferences) {
-			int index = queue.getEventReference().indexOf(eventReference);
+			int index = eventReferences.indexOf(eventReference);
 			// Checking out-events
 			if (eventReference instanceof PortEventReference) {
 				PortEventReference portEventReference = (PortEventReference) eventReference;
@@ -1806,26 +1818,9 @@ public class StatechartModelValidator extends ActionModelValidator {
 					).anyMatch(it -> it == containedEvent)) {
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 						"Event " + containedEvent.getName() + " is an out event and can not be forwarded to a message queue", 
-							new ReferenceInfo(CompositeModelPackage.Literals.MESSAGE_QUEUE__EVENT_REFERENCE, index)));
+							new ReferenceInfo(CompositeModelPackage.Literals.MESSAGE_QUEUE__EVENT_REFERENCES, index)));
 				}
 			}			
-		}
-		
-		Expression messageRetrievalCount = queue.getMessageRetrievalCount();
-		if (messageRetrievalCount != null) {
-			int count = expressionEvaluator.evaluateInteger(messageRetrievalCount);
-			if (count < 1) {
-				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-					"Message retrieval count must not be less than 1", 
-						new ReferenceInfo(CompositeModelPackage.Literals.MESSAGE_QUEUE__MESSAGE_RETRIEVAL_COUNT)));
-			}
-			Expression capacityExpression = queue.getCapacity(); 
-			int capacity = expressionEvaluator.evaluateInteger(capacityExpression);
-			if (capacity < count) {
-				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-						"Message retrieval count must be less than or equals to the capacity", 
-							new ReferenceInfo(CompositeModelPackage.Literals.MESSAGE_QUEUE__MESSAGE_RETRIEVAL_COUNT)));
-			}
 		}
 		
 		return validationResultMessages;
@@ -1840,7 +1835,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 			if (trigger instanceof AnyTrigger) {
 				if (adapter.getControlSpecifications().size() > 1) {
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-							"This control specification with any trigger enshadows all other control specifications",
+						"This control specification with any trigger enshadows all other control specifications",
 							new ReferenceInfo(CompositeModelPackage.Literals.ASYNCHRONOUS_ADAPTER__CONTROL_SPECIFICATIONS, index, adapter)));
 					return validationResultMessages;
 				}
@@ -1889,36 +1884,12 @@ public class StatechartModelValidator extends ActionModelValidator {
 		return validationResultMessages;
 	}
 	
-	public Collection<ValidationResultMessage> checkMessageRetrievalCount(AsynchronousAdapter adapter) {
-		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		
-		List<ControlSpecification> controlSpecifications = adapter.getControlSpecifications();
-		List<MessageQueue> messageQueues = adapter.getMessageQueues();
-		if (messageQueues.size() == 1) {
-			MessageQueue messageQueue = messageQueues.get(0);
-			Expression messageRetrievalCount = messageQueue.getMessageRetrievalCount();
-			if (messageRetrievalCount != null) {
-				int count = expressionEvaluator.evaluateInteger(messageRetrievalCount);
-				if (count == 1) {
-					if (controlSpecifications.stream().noneMatch(it -> it.getTrigger() instanceof AnyTrigger)) {
-						validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING,
-							"Some messages might not be processed during execution as the message retrieval count is 1, "
-									+ "but there is no any trigger among the control specifications",
-								new ReferenceInfo(CompositeModelPackage.Literals.ASYNCHRONOUS_ADAPTER__MESSAGE_QUEUES)));
-					}
-				}
-			}
-		}
-		
-		return validationResultMessages;
-	}
-	
 	public Collection<ValidationResultMessage> checkMessageQueueAnyEventReferences(AnyPortEventReference anyPortEventReference) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		if (anyPortEventReference.eContainer() instanceof MessageQueue &&
 				StatechartModelDerivedFeatures.isBroadcast(anyPortEventReference.getPort())) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-					"There are no events coming in through this port", 
+				"There are no events coming in through this port", 
 					new ReferenceInfo(StatechartModelPackage.Literals.ANY_PORT_EVENT_REFERENCE__PORT)));
 		}
 		return validationResultMessages;
