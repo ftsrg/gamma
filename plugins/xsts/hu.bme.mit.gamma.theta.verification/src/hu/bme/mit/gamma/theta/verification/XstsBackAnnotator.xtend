@@ -26,7 +26,7 @@ class XstsBackAnnotator {
 		this.component = thetaQueryGenerator.component
 	}
 	
-	def handleState(String potentialStateString, Step step,
+	def parseState(String potentialStateString, Step step,
 			Collection<? super State> activatedStates) {
 		val instanceState = thetaQueryGenerator.getSourceState(potentialStateString)
 		val controlState = instanceState.key
@@ -35,7 +35,7 @@ class XstsBackAnnotator {
 		activatedStates += controlState
 	}
 	
-	def handleVariable(String id, String value, Step step) {
+	def parseVariable(String id, String value, Step step) {
 		val instanceVariable = thetaQueryGenerator.getSourceVariable(id)
 		val instance = instanceVariable.value
 		val variable = instanceVariable.key
@@ -51,7 +51,7 @@ class XstsBackAnnotator {
 		}
 	}
 	
-	def handleOutEvent(String id, String value, Step step,
+	def parseOutEvent(String id, String value, Step step,
 			Collection<? super Pair<Port, Event>> raisedOutEvents) {
 		val systemOutEvent = thetaQueryGenerator.getSourceOutEvent(id)
 		if (value == "true" || value == "1") { // For Theta and UPPAAL
@@ -64,7 +64,7 @@ class XstsBackAnnotator {
 		}
 	}
 	
-	def handleOutEventParameter(String id, String value, Step step) {
+	def parseOutEventParameter(String id, String value, Step step) {
 		val systemOutEvent = thetaQueryGenerator.getSourceOutEventParameter(id)
 		val event = systemOutEvent.get(0) as Event
 		val port = systemOutEvent.get(1) as Port
@@ -82,7 +82,7 @@ class XstsBackAnnotator {
 		}
 	}
 	
-	def handleSynchronousInEvent(String id, String value, Step step,
+	def parseSynchronousInEvent(String id, String value, Step step,
 			Collection<? super Pair<Port, Event>> raisedInEvents) {
 		val systemInEvent = thetaQueryGenerator.getSynchronousSourceInEvent(id)
 		if (value == "true" || value == "1") { // For Theta and UPPAAL
@@ -95,7 +95,7 @@ class XstsBackAnnotator {
 		}
 	}
 	
-	def handleSynchronousInEventParameter(String id, String value, Step step) {
+	def parseSynchronousInEventParameter(String id, String value, Step step) {
 		val systemInEvent = thetaQueryGenerator.getSynchronousSourceInEventParameter(id)
 		val event = systemInEvent.get(0) as Event
 		val port = systemInEvent.get(1) as Port
@@ -112,7 +112,7 @@ class XstsBackAnnotator {
 		}
 	}
 	
-	def handleAsynchronousInEvent(String id, String value, Step step,
+	def parseAsynchronousInEvent(String id, String value, Step step,
 			Collection<? super Pair<Port, Event>> raisedInEvents) {
 		val messageQueue = thetaQueryGenerator.getAsynchronousSourceMessageQueue(id)
 		val values = value.parseArray
@@ -135,7 +135,7 @@ class XstsBackAnnotator {
 		}
 	}
 	
-	def handleAsynchronousInEventParameter(String id, String value, Step step) {
+	def parseAsynchronousInEventParameter(String id, String value, Step step) {
 		val systemInEvent = thetaQueryGenerator.getAsynchronousSourceInEventParameter(id)
 		val event = systemInEvent.get(0) as Event
 		val port = systemInEvent.get(1) as Port
