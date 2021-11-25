@@ -445,9 +445,20 @@ public class GenmodelValidator extends ExpressionModelValidator {
 			packageImports.remove(parentPackage);
 		}
 		for (ReferenceExpression reference : ecoreUtil.getAllContentsOfType(genmodel, ReferenceExpression.class)) {
-			Declaration declaration = expressionUtil.getAccessedDeclaration(reference);
-			ExpressionPackage expressionPackage = ecoreUtil.getContainerOfType(declaration, ExpressionPackage.class);
-			packageImports.remove(expressionPackage);
+			if (reference instanceof ComponentInstanceReference) {
+				ComponentInstanceReference instanceReference = (ComponentInstanceReference) reference;
+				List<ComponentInstance> componentInstanceChain =
+						StatechartModelDerivedFeatures.getComponentInstanceChain(instanceReference);
+				List<Package> packages = componentInstanceChain.stream()
+						.map(it -> StatechartModelDerivedFeatures.getContainingPackage(it))
+						.collect(Collectors.toList());
+				packageImports.removeAll(packages);
+			}
+			else {
+				Declaration declaration = statechartUtil.getAccessedDeclaration(reference);
+				ExpressionPackage expressionPackage = ecoreUtil.getContainerOfType(declaration, ExpressionPackage.class);
+				packageImports.remove(expressionPackage);
+			}
 		}
 		for (Package packageImport : packageImports) {
 			int index = genmodel.getPackageImports().indexOf(packageImport);
