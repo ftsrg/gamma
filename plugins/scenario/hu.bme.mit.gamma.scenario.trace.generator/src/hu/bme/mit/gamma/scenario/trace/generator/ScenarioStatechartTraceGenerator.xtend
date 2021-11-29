@@ -95,7 +95,7 @@ class ScenarioStatechartTraceGenerator {
 		val statechartName = statechart.name.toFirstUpper
 
 		val packageFileName = fileNamer.getUnfoldedPackageFileName(fileName)
-		val parameters = '''--refinement "MULTI_SEQ" --domain "EXPL" --initprec "ALLVARS" '''
+		val parameters = '''--refinement "MULTI_SEQ" --domain "EXPL" --initprec "ALLVARS" --allpaths'''
 		val query = '''E<> ((«regionName + "_" + statechartName» == «scenarioStatechartUtil.accepting»))'''
 		val gammaPackage = ecoreUtil.normalLoad(modelFile.parent, packageFileName)
 
