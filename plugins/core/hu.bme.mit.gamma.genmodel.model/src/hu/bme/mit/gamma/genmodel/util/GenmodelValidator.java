@@ -37,6 +37,7 @@ import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Type;
+import hu.bme.mit.gamma.expression.model.TypeReference;
 import hu.bme.mit.gamma.expression.util.ExpressionModelValidator;
 import hu.bme.mit.gamma.genmodel.model.AbstractComplementaryTestGeneration;
 import hu.bme.mit.gamma.genmodel.model.AdaptiveContractTestGeneration;
@@ -844,34 +845,38 @@ public class GenmodelValidator extends ExpressionModelValidator {
 	
 	public boolean checkParameters(Event yakinduEvent, hu.bme.mit.gamma.statechart.interface_.Event gEvent) {
 		// event.type is null not void if no explicit type is declared
-		if (yakinduEvent.getType() == null && gEvent.getParameterDeclarations().isEmpty()) {
+		org.yakindu.base.types.Type yakinduType = yakinduEvent.getType();
+		List<ParameterDeclaration> gammaParameters = gEvent.getParameterDeclarations();
+		if (yakinduType == null && gammaParameters.isEmpty()) {
 			return true;
 		}
-		if (!gEvent.getParameterDeclarations().isEmpty()) {
-			Type eventType = gEvent.getParameterDeclarations().get(0).getType();
+		if (!gammaParameters.isEmpty()) {
+			Type eventType = gammaParameters.get(0).getType();
 			if (eventType instanceof IntegerTypeDefinition) {
-				if (yakinduEvent.getType() == null) {
+				if (yakinduType == null) {
 					return false;
 				}
-				return yakinduEvent.getType().getName().equals("integer") ||
-						yakinduEvent.getType().getName().equals("string"); 
+				return yakinduType.getName().equals("integer") ||
+						yakinduType.getName().equals("string"); 
 			}
 			else if (eventType instanceof BooleanTypeDefinition) {
-				if (yakinduEvent.getType() == null) {
+				if (yakinduType == null) {
 					return false;
 				}
-				return yakinduEvent.getType().getName().equals("boolean");
+				return yakinduType.getName().equals("boolean");
 			}
 			else if (eventType instanceof DecimalTypeDefinition) {
-				if (yakinduEvent.getType() == null) {
+				if (yakinduType == null) {
 					return false;
 				}
-				return yakinduEvent.getType().getName().equals("real");
+				return yakinduType.getName().equals("real");
+			}
+			else if (eventType instanceof TypeReference) {
+				return false; // Yakindu does not support composite types
 			}
 			else {
-				throw new IllegalArgumentException("Not known type: " + gEvent.getParameterDeclarations().get(0).getType());
+				throw new IllegalArgumentException("Not known type: " + gammaParameters.get(0).getType());
 			}
-					
 		}
 		return false;
 	}
