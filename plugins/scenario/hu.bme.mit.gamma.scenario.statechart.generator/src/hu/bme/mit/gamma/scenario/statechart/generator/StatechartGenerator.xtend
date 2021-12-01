@@ -18,6 +18,7 @@ import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
+import hu.bme.mit.gamma.expression.util.ExpressionUtil
 import hu.bme.mit.gamma.scenario.model.AlternativeCombinedFragment
 import hu.bme.mit.gamma.scenario.model.DedicatedColdViolationAnnotation
 import hu.bme.mit.gamma.scenario.model.Delay
@@ -86,6 +87,8 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 	val extension ActionModelFactory actionfactory = ActionModelFactory.eINSTANCE
 	val extension ContractModelFactory contractfactory = ContractModelFactory.eINSTANCE
 	val extension GammaEcoreUtil ecureUtil = GammaEcoreUtil.INSTANCE
+	val extension ExpressionEvaluator exprEval = ExpressionEvaluator.INSTANCE
+	val extension ExpressionUtil exprUtil = ExpressionUtil.INSTANCE
 	val ScenarioStatechartUtil scenarioStatechartUtil = ScenarioStatechartUtil.INSTANCE
 
 	var Component component = null
@@ -122,14 +125,14 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 		statechart = createStatechartDefinition
 		for (annotation : scenario.annotation) {
 			if (annotation instanceof WaitAnnotation) {
-				allowedGlobalWaitMax = annotation.maximum.intValue
-				allowedGlobalWaitMin = (annotation as WaitAnnotation).minimum.intValue
+				allowedGlobalWaitMax = annotation.maximum.evaluateInteger
+				allowedGlobalWaitMin = (annotation as WaitAnnotation).minimum.evaluateInteger
 			} else if (annotation instanceof StrictAnnotation) {
 				nonDeclaredMessageMode = 1
 			} else if (annotation instanceof PermissiveAnnotation) {
 				nonDeclaredMessageMode = 0
 			} else if (annotation instanceof NegatedWaitAnnotation) {
-				allowedGlobalWaitNegMax = annotation.maximum.intValue
+				allowedGlobalWaitNegMax = annotation.maximum.evaluateInteger
 			} else if (annotation instanceof NegStrictAnnotation) {
 				nonDeclaredNegMessageMode = 1
 			} else if (annotation instanceof NegPermissiveAnnotation) {
@@ -172,8 +175,8 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 		}
 		
 		val newMergeStates = newArrayList
-		// TODO extract statechart.regions.get(0).stateNodes as it is used later as well
-		for (stateNode : statechart.regions.get(0).stateNodes) {
+		val states = statechart.regions.get(0).stateNodes
+		for (stateNode : states) {
 			if (stateNode instanceof ChoiceState &&	stateNode.incomingTransitions.size > 1){
 				val choice = stateNode as ChoiceState
 				val merge = createMergeState
@@ -188,7 +191,7 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 				newMergeStates += merge
 			}
 		}
-		statechart.regions.get(0).stateNodes += newMergeStates
+		states += newMergeStates
 
 		val annotation = createScenarioContractAnnotation
 		annotation.monitoredComponent = component
@@ -197,15 +200,9 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 		statechart.annotations += annotation
 		
 		val waitingAnnotation= createScenarioAllowedWaitAnnotation
-		// TODO use ExpressionUtil.toIntegerLiteral
-		val lower = createIntegerLiteralExpression
-		lower.value = BigInteger.valueOf(allowedGlobalWaitMin)
-		val upper = createIntegerLiteralExpression
-		upper.value = BigInteger.valueOf(allowedGlobalWaitMax)
-		waitingAnnotation.lowerLimit = lower
-		waitingAnnotation.upperLimit = upper
+		waitingAnnotation.lowerLimit = allowedGlobalWaitMin.toIntegerLiteral
+		waitingAnnotation.upperLimit = allowedGlobalWaitMax.toIntegerLiteral
 		statechart.annotations += waitingAnnotation
-		
 		return statechart
 	}
 

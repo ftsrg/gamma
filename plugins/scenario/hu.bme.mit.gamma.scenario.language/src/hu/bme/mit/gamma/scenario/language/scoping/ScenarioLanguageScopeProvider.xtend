@@ -10,27 +10,20 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.scenario.language.scoping
 
+import com.google.common.collect.Lists
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
+import hu.bme.mit.gamma.expression.model.ExpressionModelPackage
 import hu.bme.mit.gamma.scenario.model.ScenarioDeclaration
 import hu.bme.mit.gamma.scenario.model.ScenarioModelPackage
 import hu.bme.mit.gamma.scenario.model.Signal
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures
+import hu.bme.mit.gamma.statechart.interface_.Package
+import hu.bme.mit.gamma.util.GammaEcoreUtil
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
 import org.eclipse.xtext.scoping.IScope
 import org.eclipse.xtext.scoping.Scopes
-import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
-import hu.bme.mit.gamma.statechart.interface_.Package
-import hu.bme.mit.gamma.expression.model.Declaration
-import java.util.Collection
-import hu.bme.mit.gamma.action.model.Action
-import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import org.eclipse.xtext.scoping.impl.SimpleScope
-import java.util.ArrayList
-import java.util.List
-import com.google.common.collect.Lists
-import hu.bme.mit.gamma.expression.model.ExpressionModelPackage
-import hu.bme.mit.gamma.expression.model.ParametricElement
-import hu.bme.mit.gamma.util.GammaEcoreUtil
 
 class ScenarioLanguageScopeProvider extends AbstractScenarioLanguageScopeProvider {
 	

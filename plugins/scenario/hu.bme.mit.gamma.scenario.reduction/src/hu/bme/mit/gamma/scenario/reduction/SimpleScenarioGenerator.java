@@ -82,6 +82,19 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 		}
 		return simple;
 	}
+	
+	private Expression ExtractExpression(Expression expr) {
+		if(expr instanceof DirectReferenceExpression) {
+			DirectReferenceExpression ref = (DirectReferenceExpression) expr;
+			Declaration decl = ref.getDeclaration();
+			if(decl instanceof ConstantDeclaration) {
+				ConstantDeclaration _const = (ConstantDeclaration) decl;
+				return _const.getExpression();
+			}
+			throw new IllegalArgumentException();
+		}
+		return expr;
+	}
 
 	private InitialBlock handleInitBlockCopy() {
 		if (base.getInitialblock() == null) {
@@ -127,16 +140,16 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 	@Override
 	public EObject caseWaitAnnotation(WaitAnnotation object) {
 		WaitAnnotation annotation = factory.createWaitAnnotation();
-		annotation.setMaximum(object.getMaximum());
-		annotation.setMinimum(object.getMinimum());
+		annotation.setMaximum(ExtractExpression(object.getMaximum()));
+		annotation.setMinimum(ExtractExpression(object.getMinimum()));
 		return annotation;
 	}
 
 	@Override
 	public EObject caseNegatedWaitAnnotation(NegatedWaitAnnotation object) {
 		NegatedWaitAnnotation annotation = factory.createNegatedWaitAnnotation();
-		annotation.setMaximum(object.getMaximum());
-		annotation.setMinimum(object.getMinimum());
+		annotation.setMaximum(ExtractExpression(object.getMaximum()));
+		annotation.setMinimum(ExtractExpression(object.getMinimum()));
 		return annotation;
 	}
 
@@ -160,21 +173,14 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 		previousFragment = prev;
 		return fragment;
 	}
+	
 
 	@Override
 	public EObject caseLoopCombinedFragment(LoopCombinedFragment object) {
 		if (!transformLoopFragments) {
 			LoopCombinedFragment loop = factory.createLoopCombinedFragment();
-			Expression mine = object.getMinimum();
-			Expression maxe = object.getMaximum();
-			if(maxe instanceof DirectReferenceExpression) {
-				maxe = getValueOfDirectReferenceExpression((DirectReferenceExpression) maxe);
-			}
-			if(mine instanceof DirectReferenceExpression) {
-				mine = getValueOfDirectReferenceExpression((DirectReferenceExpression) mine);
-			}
-			loop.setMaximum(maxe);
-			loop.setMinimum(mine);
+			loop.setMaximum(ExtractExpression(object.getMaximum()));
+			loop.setMinimum(ExtractExpression(object.getMinimum()));
 			InteractionFragment fragment = factory.createInteractionFragment();
 			loop.getFragments().add(fragment);
 
@@ -187,14 +193,8 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 		InteractionFragment prev = previousFragment;
 		AlternativeCombinedFragment alt = factory.createAlternativeCombinedFragment();
 		ExpressionEvaluator evaluator = ExpressionEvaluator.INSTANCE;
-		Expression mine = object.getMinimum();
-		Expression maxe = object.getMaximum();
-		if(maxe instanceof DirectReferenceExpression) {
-			maxe = getValueOfDirectReferenceExpression((DirectReferenceExpression) maxe);
-		}
-		if(mine instanceof DirectReferenceExpression) {
-			mine = getValueOfDirectReferenceExpression((DirectReferenceExpression) mine);
-		}
+		Expression mine = ExtractExpression(object.getMinimum());
+		Expression maxe = ExtractExpression(object.getMaximum());
 		int min = evaluator.evaluate(mine);
 		int max = 0;
 		if (maxe == null) {
@@ -218,15 +218,6 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 		}
 		previousFragment = prev;
 		return alt;
-	}
-	
-	private Expression getValueOfDirectReferenceExpression(DirectReferenceExpression ref) {
-		Declaration decl = ref.getDeclaration();
-		if(decl instanceof ConstantDeclaration) {
-			ConstantDeclaration cons = (ConstantDeclaration) decl;
-			return cons.getExpression();
-		}
-		return null;
 	}
 
 	@Override

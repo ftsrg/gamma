@@ -51,13 +51,13 @@ StrictAnnotation returns ScenarioModel::StrictAnnotation:
 	
 
 NegatedWaitAnnotation returns ScenarioModel::NegatedWaitAnnotation:
-	"@AllowedWaitingForNegated" ((minimum=INTEGER ".." maximum=INTEGER) | maximum=INTEGER);
+	"@AllowedWaitingForNegated" /*(*/(minimum=Expression ".." maximum=Expression) /*| minimum=Expression)*/;
 
 PermissiveAnnotation returns ScenarioModel::PermissiveAnnotation:
 	{ScenarioModel::PermissiveAnnotation} '@Permissive';
 
 AllowedWaitAnnotation returns ScenarioModel::WaitAnnotation:
-	"@AllowedWaiting" ((minimum=INTEGER ".." maximum=INTEGER) | maximum=INTEGER);
+	"@AllowedWaiting" /*(*/(minimum=Expression ".." maximum=Expression) /* | minimum=Expression)*/;
 
 Chart returns ScenarioModel::Chart:
 	'['

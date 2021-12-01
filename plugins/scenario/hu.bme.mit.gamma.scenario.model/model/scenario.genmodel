@@ -65,15 +65,15 @@
     </genClasses>
     <genClasses ecoreClass="scenario.ecore#//Annotation"/>
     <genClasses ecoreClass="scenario.ecore#//WaitAnnotation">
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute scenario.ecore#//WaitAnnotation/minimum"/>
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute scenario.ecore#//WaitAnnotation/maximum"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference scenario.ecore#//WaitAnnotation/minimum"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference scenario.ecore#//WaitAnnotation/maximum"/>
     </genClasses>
     <genClasses ecoreClass="scenario.ecore#//InteractionDefinition"/>
     <genClasses ecoreClass="scenario.ecore#//StrictAnnotation"/>
     <genClasses ecoreClass="scenario.ecore#//PermissiveAnnotation"/>
     <genClasses ecoreClass="scenario.ecore#//NegatedWaitAnnotation">
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute scenario.ecore#//NegatedWaitAnnotation/minimum"/>
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute scenario.ecore#//NegatedWaitAnnotation/maximum"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference scenario.ecore#//NegatedWaitAnnotation/minimum"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference scenario.ecore#//NegatedWaitAnnotation/maximum"/>
     </genClasses>
     <genClasses ecoreClass="scenario.ecore#//NegStrictAnnotation"/>
     <genClasses ecoreClass="scenario.ecore#//NegPermissiveAnnotation"/>
