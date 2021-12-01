@@ -18,8 +18,23 @@ import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
 import org.eclipse.xtext.scoping.IScope
 import org.eclipse.xtext.scoping.Scopes
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
+import hu.bme.mit.gamma.statechart.interface_.Package
+import hu.bme.mit.gamma.expression.model.Declaration
+import java.util.Collection
+import hu.bme.mit.gamma.action.model.Action
+import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
+import org.eclipse.xtext.scoping.impl.SimpleScope
+import java.util.ArrayList
+import java.util.List
+import com.google.common.collect.Lists
+import hu.bme.mit.gamma.expression.model.ExpressionModelPackage
+import hu.bme.mit.gamma.expression.model.ParametricElement
+import hu.bme.mit.gamma.util.GammaEcoreUtil
 
 class ScenarioLanguageScopeProvider extends AbstractScenarioLanguageScopeProvider {
+	
+	val util = GammaEcoreUtil.INSTANCE
 	
 	override getScope(EObject context, EReference reference) {
 		var IScope scope = null
@@ -28,6 +43,7 @@ class ScenarioLanguageScopeProvider extends AbstractScenarioLanguageScopeProvide
 			switch (context) {
 				ScenarioDeclaration: scope = getScope(context, reference)
 				Signal: scope = getScope(context, reference)
+				DirectReferenceExpression : scope = getScope(context, reference)
 			}
 		} catch (Exception ex) {
 			// left empty on purpose
@@ -37,11 +53,24 @@ class ScenarioLanguageScopeProvider extends AbstractScenarioLanguageScopeProvide
 
 		return scope
 	}
+	
+	private def IScope getScope(DirectReferenceExpression context, EReference reference) {
+		if (reference == ExpressionModelPackage.Literals.DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
+			var scope = IScope.NULLSCOPE;
+			var containingScenarioDecl = util.getContainerOfType(context,ScenarioDeclaration);
+			var imports = Lists.reverse(containingScenarioDecl.imports); // Latter imports are stronger
+			for (Package _import : imports) {
+				var parent = super.getScope(_import, reference);
+				scope = new SimpleScope(parent, scope.getAllElements());
+			}
+			return scope;
+		}
+	}
 
 	private def IScope getScope(ScenarioDeclaration declaration, EReference reference) {
 		if (reference == ScenarioModelPackage.Literals.SCENARIO_DECLARATION__COMPONENT) {
-			val importedPackage = declaration.package
-			return createScopeFor(importedPackage.components)
+			val importedPackages = declaration.imports
+			return createScopeFor(importedPackages.flatMap[it.components])
 		}
 	}
 	

@@ -15,6 +15,9 @@ import java.util.List;
 
 import org.eclipse.emf.ecore.EObject;
 
+import hu.bme.mit.gamma.expression.model.ConstantDeclaration;
+import hu.bme.mit.gamma.expression.model.Declaration;
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator;
 import hu.bme.mit.gamma.scenario.model.AlternativeCombinedFragment;
@@ -162,8 +165,16 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 	public EObject caseLoopCombinedFragment(LoopCombinedFragment object) {
 		if (!transformLoopFragments) {
 			LoopCombinedFragment loop = factory.createLoopCombinedFragment();
-			loop.setMaximum(object.getMaximum());
-			loop.setMinimum(object.getMinimum());
+			Expression mine = object.getMinimum();
+			Expression maxe = object.getMaximum();
+			if(maxe instanceof DirectReferenceExpression) {
+				maxe = getValueOfDirectReferenceExpression((DirectReferenceExpression) maxe);
+			}
+			if(mine instanceof DirectReferenceExpression) {
+				mine = getValueOfDirectReferenceExpression((DirectReferenceExpression) mine);
+			}
+			loop.setMaximum(maxe);
+			loop.setMinimum(mine);
 			InteractionFragment fragment = factory.createInteractionFragment();
 			loop.getFragments().add(fragment);
 
@@ -178,7 +189,12 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 		ExpressionEvaluator evaluator = ExpressionEvaluator.INSTANCE;
 		Expression mine = object.getMinimum();
 		Expression maxe = object.getMaximum();
-
+		if(maxe instanceof DirectReferenceExpression) {
+			maxe = getValueOfDirectReferenceExpression((DirectReferenceExpression) maxe);
+		}
+		if(mine instanceof DirectReferenceExpression) {
+			mine = getValueOfDirectReferenceExpression((DirectReferenceExpression) mine);
+		}
 		int min = evaluator.evaluate(mine);
 		int max = 0;
 		if (maxe == null) {
@@ -202,6 +218,15 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 		}
 		previousFragment = prev;
 		return alt;
+	}
+	
+	private Expression getValueOfDirectReferenceExpression(DirectReferenceExpression ref) {
+		Declaration decl = ref.getDeclaration();
+		if(decl instanceof ConstantDeclaration) {
+			ConstantDeclaration cons = (ConstantDeclaration) decl;
+			return cons.getExpression();
+		}
+		return null;
 	}
 
 	@Override

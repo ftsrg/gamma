@@ -2,8 +2,8 @@
 <ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="model" nsURI="http://www.mit.bme.hu/gamma/scenario/Model" nsPrefix="hu.bme.mit.gamma.scenario">
   <eClassifiers xsi:type="ecore:EClass" name="ScenarioDeclaration">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="package" lowerBound="1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/interface.ecore#//Package"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="imports" lowerBound="1"
+        upperBound="-1" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/interface.ecore#//Package"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="scenarios" lowerBound="1"
         upperBound="-1" eType="#//ScenarioDefinition" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="component" lowerBound="1"

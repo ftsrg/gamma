@@ -16,7 +16,7 @@
     <semanticResources>platform:/resource/hu.bme.mit.gamma.action.model/model/action.ecore</semanticResources>
     <ownedViews xmi:type="viewpoint:DView" uid="_PsEBQPauEeqlNaGwK3k1IQ">
       <viewpoint xmi:type="description:Viewpoint" href="platform:/plugin/org.eclipse.emf.ecoretools.design/description/ecore.odesign#//@ownedViewpoints[name='Design']"/>
-      <ownedRepresentationDescriptors xmi:type="viewpoint:DRepresentationDescriptor" uid="_QZ-QIPauEeqlNaGwK3k1IQ" name="model class diagram" repPath="#_QZ3icPauEeqlNaGwK3k1IQ" changeId="b4fbb8c9-4c1f-4654-88e2-bc52cc2ad455">
+      <ownedRepresentationDescriptors xmi:type="viewpoint:DRepresentationDescriptor" uid="_QZ-QIPauEeqlNaGwK3k1IQ" name="model class diagram" repPath="#_QZ3icPauEeqlNaGwK3k1IQ" changeId="e6ca2ed1-e5cc-4aa0-a879-743a432fa2ce">
         <description xmi:type="description_1:DiagramDescription" href="platform:/plugin/org.eclipse.emf.ecoretools.design/description/ecore.odesign#//@ownedViewpoints[name='Design']/@ownedRepresentations[name='Entities']"/>
         <target xmi:type="ecore:EPackage" href="scenario.ecore#/"/>
       </ownedRepresentationDescriptors>
@@ -924,9 +924,9 @@
         <description xmi:type="style:FlatContainerStyleDescription" href="platform:/plugin/org.eclipse.emf.ecoretools.design/description/ecore.odesign#//@ownedViewpoints[name='Design']/@ownedRepresentations[name='Entities']/@defaultLayer/@containerMappings[name='EC%20EClass']/@style"/>
       </ownedStyle>
       <actualMapping xmi:type="description_1:ContainerMapping" href="platform:/plugin/org.eclipse.emf.ecoretools.design/description/ecore.odesign#//@ownedViewpoints[name='Design']/@ownedRepresentations[name='Entities']/@defaultLayer/@containerMappings[name='EC%20EClass']"/>
-      <ownedElements xmi:type="diagram:DNodeListElement" uid="_WYjucPauEeqlNaGwK3k1IQ" name=" package : Package" tooltipText="">
-        <target xmi:type="ecore:EReference" href="scenario.ecore#//ScenarioDeclaration/package"/>
-        <semanticElements xmi:type="ecore:EReference" href="scenario.ecore#//ScenarioDeclaration/package"/>
+      <ownedElements xmi:type="diagram:DNodeListElement" uid="_WYjucPauEeqlNaGwK3k1IQ" name=" imports : Package" tooltipText="">
+        <target xmi:type="ecore:EReference" href="scenario.ecore#//ScenarioDeclaration/imports"/>
+        <semanticElements xmi:type="ecore:EReference" href="scenario.ecore#//ScenarioDeclaration/imports"/>
         <ownedStyle xmi:type="diagram:BundledImage" uid="_WYmxwPauEeqlNaGwK3k1IQ" labelAlignment="LEFT" description="_WYk8kPauEeqlNaGwK3k1IQ" color="114,159,207">
           <labelFormat>bold</labelFormat>
         </ownedStyle>

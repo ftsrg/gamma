@@ -15,7 +15,7 @@ import "http://www.mit.bme.hu/gamma/scenario/Model" as ScenarioModel
 import "http://www.mit.bme.hu/gamma/statechart/Model/Interface" as InterfaceModel
 
 ScenarioDeclaration returns ScenarioModel::ScenarioDeclaration:
-	'import' package=[InterfaceModel::Package|STRING]
+	('import' imports+=[InterfaceModel::Package|STRING])*
 	'component' component=[InterfaceModel::Component]
 	(scenarios+=ScenarioDefinition)+;
 
