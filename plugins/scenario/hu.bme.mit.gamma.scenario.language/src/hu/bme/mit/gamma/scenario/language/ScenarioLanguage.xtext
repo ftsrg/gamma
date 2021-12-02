@@ -19,9 +19,9 @@ ScenarioDeclaration returns ScenarioModel::ScenarioDeclaration:
 	'component' component=[InterfaceModel::Component]
 	(scenarios+=ScenarioDefinition)+;
 
-ScenarioDefinition returns ScenarioModel::ScenarioDefinition:
+ScenarioDefinition returns ScenarioModel::ScenarioDefinition://ParametricElement, argumentedElement
 	annotation+=Annotations*
-	'scenario' name=ID
+	'scenario' name=ID 
 	(initialblock=InitialBlock)?
 	chart=Chart;
 	
@@ -51,7 +51,7 @@ StrictAnnotation returns ScenarioModel::StrictAnnotation:
 	
 
 NegatedWaitAnnotation returns ScenarioModel::NegatedWaitAnnotation:
-	"@AllowedWaitingForNegated" /*(*/(minimum=Expression ".." maximum=Expression) /*| minimum=Expression)*/;
+	"@AllowedWaitingForNegated" (minimum=Expression )? ".." maximum=Expression;
 
 PermissiveAnnotation returns ScenarioModel::PermissiveAnnotation:
 	{ScenarioModel::PermissiveAnnotation} '@Permissive';

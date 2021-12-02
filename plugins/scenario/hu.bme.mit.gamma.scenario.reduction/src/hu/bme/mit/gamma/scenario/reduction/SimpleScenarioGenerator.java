@@ -83,13 +83,13 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 		return simple;
 	}
 	
-	private Expression ExtractExpression(Expression expr) {
-		if(expr instanceof DirectReferenceExpression) {
+	private Expression extractExpression(Expression expr) {
+		if (expr instanceof DirectReferenceExpression) {
 			DirectReferenceExpression ref = (DirectReferenceExpression) expr;
 			Declaration decl = ref.getDeclaration();
-			if(decl instanceof ConstantDeclaration) {
+			if (decl instanceof ConstantDeclaration) {
 				ConstantDeclaration _const = (ConstantDeclaration) decl;
-				return _const.getExpression();
+				return ecoreUtil.clone(_const.getExpression());
 			}
 			throw new IllegalArgumentException();
 		}
@@ -140,16 +140,16 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 	@Override
 	public EObject caseWaitAnnotation(WaitAnnotation object) {
 		WaitAnnotation annotation = factory.createWaitAnnotation();
-		annotation.setMaximum(ExtractExpression(object.getMaximum()));
-		annotation.setMinimum(ExtractExpression(object.getMinimum()));
+		annotation.setMaximum(extractExpression(object.getMaximum()));
+		annotation.setMinimum(extractExpression(object.getMinimum()));
 		return annotation;
 	}
 
 	@Override
 	public EObject caseNegatedWaitAnnotation(NegatedWaitAnnotation object) {
 		NegatedWaitAnnotation annotation = factory.createNegatedWaitAnnotation();
-		annotation.setMaximum(ExtractExpression(object.getMaximum()));
-		annotation.setMinimum(ExtractExpression(object.getMinimum()));
+		annotation.setMaximum(extractExpression(object.getMaximum()));
+		annotation.setMinimum(extractExpression(object.getMinimum()));
 		return annotation;
 	}
 
@@ -179,8 +179,8 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 	public EObject caseLoopCombinedFragment(LoopCombinedFragment object) {
 		if (!transformLoopFragments) {
 			LoopCombinedFragment loop = factory.createLoopCombinedFragment();
-			loop.setMaximum(ExtractExpression(object.getMaximum()));
-			loop.setMinimum(ExtractExpression(object.getMinimum()));
+			loop.setMaximum(extractExpression(object.getMaximum()));
+			loop.setMinimum(extractExpression(object.getMinimum()));
 			InteractionFragment fragment = factory.createInteractionFragment();
 			loop.getFragments().add(fragment);
 
@@ -193,8 +193,8 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 		InteractionFragment prev = previousFragment;
 		AlternativeCombinedFragment alt = factory.createAlternativeCombinedFragment();
 		ExpressionEvaluator evaluator = ExpressionEvaluator.INSTANCE;
-		Expression mine = ExtractExpression(object.getMinimum());
-		Expression maxe = ExtractExpression(object.getMaximum());
+		Expression mine = extractExpression(object.getMinimum());
+		Expression maxe = extractExpression(object.getMaximum());
 		int min = evaluator.evaluate(mine);
 		int max = 0;
 		if (maxe == null) {
