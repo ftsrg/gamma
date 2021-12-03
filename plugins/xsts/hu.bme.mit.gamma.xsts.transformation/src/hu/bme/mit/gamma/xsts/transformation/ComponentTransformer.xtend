@@ -473,9 +473,9 @@ class ComponentTransformer {
 			ReferenceToXstsVariableMapper eventReferenceMapper,
 			Collection<? extends Port> systemPorts, Trace variableTrace) {
 		val eventDispatchAction = createSequentialAction
-		for (event : port.outputEvents) {
+		for (outEvent : port.outputEvents) {
 			// Output binding is unidirectional
-			val xStsOutEventVariable = eventReferenceMapper.getOutputEventVariable(event, port)
+			val xStsOutEventVariable = eventReferenceMapper.getOutputEventVariable(outEvent, port)
 			if (xStsOutEventVariable !== null) { // This can happen if out events are never referenced
 			
 				val ifExpression = xStsOutEventVariable.createReferenceExpression
@@ -483,7 +483,7 @@ class ComponentTransformer {
 				
 				val connectedAdapterPorts = port.allConnectedAsynchronousSimplePorts
 				for (connectedAdapterPort : connectedAdapterPorts) {
-					val connectedPortEvent = new SimpleEntry(connectedAdapterPort, event)
+					val connectedPortEvent = new SimpleEntry(connectedAdapterPort, outEvent)
 					if (queueTraceability.contains(connectedPortEvent)) {
 						// The event is stored and not been removed due to optimization
 						val eventId = queueTraceability.get(connectedPortEvent)
@@ -504,21 +504,20 @@ class ComponentTransformer {
 						
 						// Expressions and actions that are used in every queue behavior
 						val evaluatedCapacity = capacity.toIntegerLiteral
-						val hasFreeCapacityExpression = createLessExpression => [
-							it.leftOperand = xStsMasterSizeVariable.createReferenceExpression
-							it.rightOperand = evaluatedCapacity
-						]
+						val hasFreeCapacityExpression = xStsMasterSizeVariable.createReferenceExpression
+								.createLessExpression(evaluatedCapacity)
 						val block = createSequentialAction
 						// Master
 						block.actions += xStsMasterQueue.addAndIncrement(
 								xStsMasterSizeVariable, eventId.toIntegerLiteral)
-						// Resetting out event variable if it is not broadcast and led out to the system
+						// Resetting out event variable if it is not  led out to the system
+						// Duplicated for broadcast ports - not a problem, but could be refactored
 						val systemPort = systemPorts.contains(connectedAdapterPort.boundTopComponentPort)
 						if (!systemPort) {
 							block.actions += xStsOutEventVariable.createVariableResetAction
 						}
 						// Slaves
-						val parameters = event.parameterDeclarations
+						val parameters = outEvent.parameterDeclarations
 						val slaveQueueSize = slaveQueues.size // Might be 0 if there is no in-event var
 						for (var i = 0; i < slaveQueueSize; i++) {
 							val parameter = parameters.get(i)
@@ -533,7 +532,8 @@ class ComponentTransformer {
 							// Parameter optimization problem: parameters are not deleted independently
 							block.actions += xStsSlaveQueues.addAllAndIncrement(xStsSlaveSizeVariable,
 									xStsOutParameterVariables.map[it.createReferenceExpression])
-							// Resetting out parameter variables if they are not broadcast and led out to the system
+							// Resetting out parameter variables if they are not led out to the system
+							// Duplicated for broadcast ports - not a problem, but could be refactored
 							if (!systemPort) {
 								block.actions += xStsOutParameterVariables.map[it.createVariableResetAction]
 							}

@@ -859,7 +859,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		}
 		else {
 			// Makes sense only if the containment hierarchy is a tree structure
-			ComponentInstance instance = getReferencingComponentInstance(component);
+			ComponentInstance instance = getReferencingComponentInstance(component); // Wrapper instance
 			Component containingComponent = getContainingComponent(instance);
 			if (containingComponent instanceof AsynchronousAdapter) {
 				simplePorts.add(port);
