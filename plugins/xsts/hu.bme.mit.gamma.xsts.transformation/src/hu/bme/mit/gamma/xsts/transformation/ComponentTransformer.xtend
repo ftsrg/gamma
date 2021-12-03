@@ -460,6 +460,7 @@ class ComponentTransformer {
 			}
 			setQueuesAction.actions += branchExpressions.createChoiceAction(branchActions)
 		}
+		
 		xSts.inEventTransition = inEventAction.wrap
 		xSts.outEventTransition = outEventAction.wrap
 		
