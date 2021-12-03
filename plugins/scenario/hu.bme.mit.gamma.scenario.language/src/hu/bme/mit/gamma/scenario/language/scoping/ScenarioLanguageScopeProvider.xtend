@@ -31,7 +31,6 @@ class ScenarioLanguageScopeProvider extends AbstractScenarioLanguageScopeProvide
 	
 	override getScope(EObject context, EReference reference) {
 		var IScope scope = null
-
 		try {
 			switch (context) {
 				ScenarioDeclaration: scope = getScope(context, reference)
@@ -49,6 +48,7 @@ class ScenarioLanguageScopeProvider extends AbstractScenarioLanguageScopeProvide
 	
 	private def IScope getScope(DirectReferenceExpression context, EReference reference) {
 		if (reference == ExpressionModelPackage.Literals.DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
+			//imported
 			var scope = IScope.NULLSCOPE;
 			var containingScenarioDecl = util.getContainerOfType(context,ScenarioDeclaration);
 			var imports = Lists.reverse(containingScenarioDecl.imports); // Latter imports are stronger
@@ -56,6 +56,10 @@ class ScenarioLanguageScopeProvider extends AbstractScenarioLanguageScopeProvide
 				var parent = super.getScope(_import, reference);
 				scope = new SimpleScope(parent, scope.getAllElements());
 			}
+			//params
+			
+			scope = new SimpleScope(getParentScope(context,reference), scope.getAllElements());
+			
 			return scope;
 		}
 	}

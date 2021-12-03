@@ -261,7 +261,7 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 	private Collection<ValidationResultMessage> checkInterval(Expression minimum, Expression maximum,
 			EStructuralFeature feature) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		try {
+		/*try {
 			int min = expressionEvaluator.evaluateInteger(minimum);
 			if (min < 0) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
@@ -278,7 +278,7 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 		} catch (IllegalArgumentException e) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 					"Both the minimum and maximum values must be of type integer", new ReferenceInfo(feature)));
-		}
+		}*/
 		return validationResultMessages;
 	}
 

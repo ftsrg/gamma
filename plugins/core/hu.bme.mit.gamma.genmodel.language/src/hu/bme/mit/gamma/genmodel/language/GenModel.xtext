@@ -361,7 +361,7 @@ StatechartContractTestGeneration returns StatechartContractTestGeneration:
 StatechartContractGeneration returns StatechartContractGeneration:
 	{StatechartContractGeneration} 
 	'statechart-contract' '{'
-	 'scenario' ':' scenario= [scenario::ScenarioDefinition]
+	 'scenario' ':' scenario= [scenario::ScenarioDefinition] ('(' arguments+=Expression  (',' arguments+=Expression )* ')')?
 	 ('folder' ':' targetFolder+=STRING)?
 	 ('name' ':' fileName+=STRING)?
 	'}'

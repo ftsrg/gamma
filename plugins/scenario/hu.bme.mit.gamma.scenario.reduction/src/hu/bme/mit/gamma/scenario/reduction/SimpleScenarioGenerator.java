@@ -11,6 +11,7 @@
 package hu.bme.mit.gamma.scenario.reduction;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.eclipse.emf.ecore.EObject;
@@ -19,6 +20,7 @@ import hu.bme.mit.gamma.expression.model.ConstantDeclaration;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
+import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator;
 import hu.bme.mit.gamma.scenario.model.AlternativeCombinedFragment;
 import hu.bme.mit.gamma.scenario.model.Annotation;
@@ -55,10 +57,16 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 	private ScenarioDefinition simple = null;
 	private ScenarioModelFactory factory = null;
 	private boolean transformLoopFragments = false;
+	private List<Expression> parameters = null;
 
 	public SimpleScenarioGenerator(ScenarioDefinition base, boolean transformLoopFragments) {
+		this(base, transformLoopFragments, new LinkedList<Expression>());
+	}
+	
+	public SimpleScenarioGenerator(ScenarioDefinition base, boolean transformLoopFragments, List<Expression> parameters) {
 		this.base = base;
 		this.transformLoopFragments = transformLoopFragments;
+		this.parameters  = parameters;
 	}
 
 	// Needs to be saved and reset after handling a new InteractionFragment, needs
@@ -90,6 +98,15 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 			if (decl instanceof ConstantDeclaration) {
 				ConstantDeclaration _const = (ConstantDeclaration) decl;
 				return ecoreUtil.clone(_const.getExpression());
+			}
+			if(decl instanceof ParameterDeclaration)
+			{
+				ParameterDeclaration param = (ParameterDeclaration) decl;
+				for(ParameterDeclaration paramD: base.getParameterDeclarations()) {
+					if(paramD.getName() == param.getName()) {
+						return ecoreUtil.clone(parameters.get(base.getParameterDeclarations().indexOf(paramD)));
+					}
+				}
 			}
 			throw new IllegalArgumentException();
 		}

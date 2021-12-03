@@ -9,7 +9,7 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="component" lowerBound="1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/interface.ecore#//Component"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="ScenarioDefinition" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NamedElement">
+  <eClassifiers xsi:type="ecore:EClass" name="ScenarioDefinition" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NamedElement ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ParametricElement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="chart" lowerBound="1" eType="#//Chart"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="annotation" upperBound="-1"

@@ -26,7 +26,7 @@ public class StatechartContractGenerationHandler extends TaskHandler {
 		setTargetFolder(statechartGeneration);
 		ScenarioDefinition baseScenario = statechartGeneration.getScenario();
 		SimpleScenarioGenerator simpleGenerator = new SimpleScenarioGenerator(
-				baseScenario, transformLoopFragments);
+				baseScenario, transformLoopFragments, statechartGeneration.getArguments());
 		ScenarioDefinition simplifiedScenario= simpleGenerator.execute();
 		Component component = ecoreUtil.getContainerOfType(baseScenario, ScenarioDeclaration.class)
 				.getComponent();
