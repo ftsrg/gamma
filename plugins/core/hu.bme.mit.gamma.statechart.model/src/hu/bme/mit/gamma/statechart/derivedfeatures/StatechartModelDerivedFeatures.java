@@ -680,6 +680,11 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return storedEvents.indexOf(portEvent) + 1; // Starts from 1, 0 is the "empty cell"
 	}
 	
+	public static int getMaxEventId(MessageQueue queue) {
+		List<Entry<Port,Event>> storedEvents = getStoredEvents(queue);
+		return storedEvents.size(); // Starts from 1, size is the max
+	}
+	
 	public static Entry<Port, Event> getEvent(MessageQueue queue, int eventId) {
 		List<Entry<Port,Event>> storedEvents = getStoredEvents(queue);
 		return storedEvents.get(eventId - 1); // Starts from 1, 0 is the "empty cell"

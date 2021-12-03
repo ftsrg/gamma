@@ -53,6 +53,7 @@ import hu.bme.mit.gamma.expression.model.InitializableElement;
 import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression;
 import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression;
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition;
+import hu.bme.mit.gamma.expression.model.LessEqualExpression;
 import hu.bme.mit.gamma.expression.model.LessExpression;
 import hu.bme.mit.gamma.expression.model.MultiaryExpression;
 import hu.bme.mit.gamma.expression.model.MultiplyExpression;
@@ -851,6 +852,13 @@ public class ExpressionUtil {
 		return lessExpression;
 	}
 	
+	public LessEqualExpression createLessEqualExpression(Expression lhs, Expression rhs) {
+		LessEqualExpression lessEqualExpression = factory.createLessEqualExpression();
+		lessEqualExpression.setLeftOperand(lhs);
+		lessEqualExpression.setRightOperand(rhs);
+		return lessEqualExpression;
+	}
+	
 	public IfThenElseExpression createMinExpression(Expression lhs, Expression rhs) {
 		return createIfThenElseExpression(createLessExpression(lhs, rhs),
 				ecoreUtil.clone(lhs), ecoreUtil.clone(rhs));
@@ -874,7 +882,8 @@ public class ExpressionUtil {
 	public Expression replaceAndWrapIntoMultiaryExpression(Expression original,
 			Expression addition, MultiaryExpression potentialContainer) {
 		if (original == null && addition == null) {
-			throw new IllegalArgumentException("Null original or addition parameter: " + original + " " + addition);
+			throw new IllegalArgumentException(
+					"Null original or addition parameter: " + original + " " + addition);
 		}
 		ecoreUtil.replace(potentialContainer, original);
 		return wrapIntoMultiaryExpression(original, addition, potentialContainer);
@@ -922,6 +931,10 @@ public class ExpressionUtil {
 		}
 		potentialContainer.getOperands().addAll(expressions);
 		return potentialContainer;
+	}
+	
+	public Expression wrapIntoAndExpression(Collection<? extends Expression> expressions) {
+		return wrapIntoMultiaryExpression(expressions, factory.createAndExpression());
 	}
 	
 	public Expression wrapIntoOrExpression(Collection<? extends Expression> expressions) {

@@ -773,6 +773,11 @@ public class XstsActionUtil extends ExpressionUtil {
 	
 	// Message queue - array handling
 	
+	public Expression isEmpty(VariableDeclaration sizeVariable) {
+		return createLessEqualExpression(
+				createReferenceExpression(sizeVariable), toIntegerLiteral(0));
+	}
+	
 	public VariableDeclarationAction createVariableDeclarationActionForArray(
 			VariableDeclaration queue, String name) {
 		TypeDefinition typeDefinition = ExpressionModelDerivedFeatures.getTypeDefinition(queue);

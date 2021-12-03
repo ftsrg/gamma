@@ -401,20 +401,32 @@ class ComponentTransformer {
 			val xStsMasterQueue = variableTrace.getAll(masterQueue).onlyElement
 			val xStsMasterSizeVariable = variableTrace.getAll(masterSizeVariable).onlyElement
 			
+			val xStsQueueHandlingAction = createSequentialAction
+			val isQueueEmptyExpression = xStsMasterSizeVariable.empty
+			val ifEmptyAction = isQueueEmptyExpression.createIfAction(xStsQueueHandlingAction)
+			// If queue is empty
+			inEventAction.actions += ifEmptyAction
+			
 			val xStsEventIdVariableAction = xStsMasterQueue.createVariableDeclarationActionForArray(
 					xStsMasterQueue.eventIdLocalVariableName)
 			val xStsEventIdVariable = xStsEventIdVariableAction.variableDeclaration
-			inEventAction.actions += xStsEventIdVariableAction
-			inEventAction.actions += xStsEventIdVariable.createHavocAction
 			
-			// If the id is not an "empty" event
+			xStsQueueHandlingAction.actions += xStsEventIdVariableAction
+			xStsQueueHandlingAction.actions += xStsEventIdVariable.createHavocAction
+			
+			// If the id is a valid event
 			val emptyValue = xStsEventIdVariable.defaultExpression
-			val isNotEmptyExpression = xStsEventIdVariable.createInequalityExpression(emptyValue)
+			val maxEventId = queue.maxEventId.toIntegerLiteral
+			// 0 < eventId && eventId <= maxPotentialEventId
+			val leftInterval = emptyValue.createLessExpression(xStsEventIdVariable.createReferenceExpression)
+			val rightInterval = xStsEventIdVariable.createReferenceExpression.createLessEqualExpression(maxEventId)
+			val isValidIdExpression = #[leftInterval, rightInterval].wrapIntoAndExpression
+			
 			val setQueuesAction = createSequentialAction
 			setQueuesAction.actions += xStsMasterQueue.addAndIncrement( // Or could be used 0 literals for index
 					xStsMasterSizeVariable, xStsEventIdVariable.createReferenceExpression)
 			
-			inEventAction.actions += isNotEmptyExpression.createIfAction(setQueuesAction)
+			xStsQueueHandlingAction.actions += isValidIdExpression.createIfAction(setQueuesAction)
 			
 			val branchExpressions = <Expression>newArrayList
 			val branchActions = <Action>newArrayList
