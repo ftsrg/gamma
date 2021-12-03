@@ -680,13 +680,17 @@ public class XstsActionUtil extends ExpressionUtil {
 		return actions;
 	}
 	
-	public void extendChoiceWithDefaultBranch(NonDeterministicAction switchAction, Action action) {
-		if (switchAction.getActions().isEmpty()) {
+	public void extendChoiceWithDefaultBranch(NonDeterministicAction choiceAction) {
+		extendChoiceWithDefaultBranch(choiceAction, xStsFactory.createEmptyAction());
+	}
+	
+	public void extendChoiceWithDefaultBranch(NonDeterministicAction choiceAction, Action action) {
+		if (choiceAction.getActions().isEmpty()) {
 			return;
 		}
 		NotExpression negatedCondition = expressionFactory.createNotExpression();
 		OrExpression orExpression = expressionFactory.createOrExpression();
-		List<SequentialAction> sequentialActions = switchAction.getActions().stream()
+		List<SequentialAction> sequentialActions = choiceAction.getActions().stream()
 				.filter(it -> it instanceof SequentialAction)
 				.map(it -> (SequentialAction) it)
 				.collect(Collectors.toList());
@@ -695,7 +699,7 @@ public class XstsActionUtil extends ExpressionUtil {
 				.map(it -> ((AssumeAction) it.getActions().get(0)).getAssumption())
 				.collect(Collectors.toList());
 		// Collecting atomic assumptions too
-		switchAction.getActions().stream()
+		choiceAction.getActions().stream()
 			.filter(it -> it instanceof AssumeAction)
 			.map(it -> ((AssumeAction) it).getAssumption())
 			.forEach(it -> conditions.add(it));
@@ -707,7 +711,7 @@ public class XstsActionUtil extends ExpressionUtil {
 		}
 		negatedCondition.setOperand(unwrapIfPossible(orExpression));
 		
-		extendChoiceWithBranch(switchAction, negatedCondition, action);
+		extendChoiceWithBranch(choiceAction, negatedCondition, action);
 	}
 	
 	//

@@ -18,6 +18,7 @@ import hu.bme.mit.gamma.xsts.model.XTransition
 import java.util.Comparator
 import java.util.List
 import java.util.Map
+import java.util.Set
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 
 import static com.google.common.base.Preconditions.checkState
@@ -27,6 +28,8 @@ import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeature
 import static extension java.lang.Math.abs
 
 class HierarchicalTransitionMerger extends AbstractTransitionMerger {
+	
+	protected Set<NonDeterministicAction> choicesWithDefaultBranch = newHashSet
 	
 	new(ViatraQueryEngine engine, Trace trace) {
 		// Conflict and priority encoding are unnecessary
@@ -39,6 +42,8 @@ class HierarchicalTransitionMerger extends AbstractTransitionMerger {
 	}
 	
 	private def internalMergeTransitions() {
+		choicesWithDefaultBranch.clear
+		
 		val statecharts = Statecharts.Matcher.on(engine).allValuesOfstatechart
 		checkState(statecharts.size == 1)
 		val statechart = statecharts.head
@@ -51,6 +56,15 @@ class HierarchicalTransitionMerger extends AbstractTransitionMerger {
 		}
 		
 		val xStsMergedAction = statechart.mergeAllTransitionsOfRegion(regionActions)
+		
+		// Adding default branch for yet unattended nondeterministic choices
+		// Cannot be done on the fly due to executedVariable injections (they are injected in very branch
+		for (defaultlessNonDeterministicChoice : xStsMergedAction
+					.getSelfAndAllContentsOfType(NonDeterministicAction)
+						.reject[choicesWithDefaultBranch.contains(it)]) {
+			defaultlessNonDeterministicChoice.extendChoiceWithDefaultBranch
+		}
+		
 		// The many transitions are now replaced by a single merged transition
 		xSts.changeTransitions(xStsMergedAction.wrap)
 	}
@@ -214,6 +228,7 @@ class HierarchicalTransitionMerger extends AbstractTransitionMerger {
 		else if (extendable instanceof NonDeterministicAction) {
 			extendable.extendChoiceWithDefaultBranch(action)
 			// Can the same NonDeterministicAction be extended multiple times?
+			choicesWithDefaultBranch += extendable
 		}
 		else if (extendable instanceof SequentialAction) {
 			val lastAction = extendable.actions.last
