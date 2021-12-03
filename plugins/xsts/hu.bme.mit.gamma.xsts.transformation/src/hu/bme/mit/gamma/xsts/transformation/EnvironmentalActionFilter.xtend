@@ -21,6 +21,7 @@ import hu.bme.mit.gamma.xsts.model.AbstractAssignmentAction
 import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.AssumeAction
+import hu.bme.mit.gamma.xsts.model.AtomicAction
 import hu.bme.mit.gamma.xsts.model.CompositeAction
 import hu.bme.mit.gamma.xsts.model.IfAction
 import hu.bme.mit.gamma.xsts.model.LoopAction
@@ -47,7 +48,7 @@ class EnvironmentalActionFilter {
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
 	
-	def void deleteEverythingExceptSystemEventsAndParameters(CompositeAction action, Component component) {
+	def void deleteEverythingExceptSystemEventsAndParameters(Action action, Component component) {
 		val necessaryNames = newHashSet
 		// Input and output events and parameters
 		for (port : component.allBoundSimplePorts) {
@@ -70,7 +71,7 @@ class EnvironmentalActionFilter {
 		action.delete(necessaryNames)
 	}
 	
-	def Action resetEverythingExceptPersistentParameters(CompositeAction action, Component component) {
+	def Action resetEverythingExceptPersistentParameters(Action action, Component component) {
 		val necessaryNames = newHashSet
 		for (port : component.allBoundSimplePorts) {
 			val statechart = port.containingStatechart
@@ -154,9 +155,9 @@ class EnvironmentalActionFilter {
 		}
 	}
 	
-	private def Action reset(CompositeAction action, Set<String> necessaryNames) {
+	private def Action reset(Action action, Set<String> necessaryNames) {
 		val xStsAssignments = newHashSet
-		for (xStsAssignment : action.getAllContentsOfType(AbstractAssignmentAction)) {
+		for (xStsAssignment : action.getSelfAndAllContentsOfType(AbstractAssignmentAction)) {
 			val lhs = xStsAssignment.lhs as DirectReferenceExpression
 			val declaration = lhs.declaration as VariableDeclaration
 			val name = declaration.name
@@ -171,7 +172,7 @@ class EnvironmentalActionFilter {
 		]
 	}
 	
-	private def void delete(CompositeAction action, Set<String> necessaryNames) {
+	private def void delete(Action action, Set<String> necessaryNames) {
 		val copyXStsSubactions = newArrayList
 		
 		if (action instanceof LoopAction) {
@@ -189,9 +190,11 @@ class EnvironmentalActionFilter {
 				copyXStsSubactions += _else
 			}
 		}
-		else {
-			val xStsMultiaryAction = action as MultiaryAction
-			copyXStsSubactions += xStsMultiaryAction.actions
+		else if (action instanceof MultiaryAction) {
+			copyXStsSubactions += action.actions
+		}
+		else if (action instanceof AtomicAction) {
+			copyXStsSubactions += action
 		}
 		
 		for (xStsSubaction : copyXStsSubactions) {

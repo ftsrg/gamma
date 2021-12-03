@@ -36,7 +36,6 @@ import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.util.JavaUtil
 import hu.bme.mit.gamma.xsts.model.AbstractAssignmentAction
 import hu.bme.mit.gamma.xsts.model.Action
-import hu.bme.mit.gamma.xsts.model.CompositeAction
 import hu.bme.mit.gamma.xsts.model.InEventGroup
 import hu.bme.mit.gamma.xsts.model.RegionGroup
 import hu.bme.mit.gamma.xsts.model.XSTS
@@ -582,8 +581,12 @@ class ComponentTransformer {
 		
 		wrappedType.extractParameters(wrappedInstance.arguments) 
 		val xSts = wrappedType.transform(lowlevelPackage)
-		// Customize names as the type can be a statechart (before setting the new in event)
-		xSts.customizeDeclarationNames(wrappedInstance)
+		if (wrappedType.statechart) {
+			// Customize names as the type can be a statechart (before setting the new in event)
+			xSts.customizeDeclarationNames(wrappedInstance)
+			// Resetting in events manually in the case of statecharts
+			xSts.resetInEventsAfterMergedAction(wrappedType)
+		}
 		
 		if (isTopInPackage) {
 			val inEventAction = xSts.inEventTransition
@@ -686,7 +689,7 @@ class ComponentTransformer {
 			// 2) the Casc semantics: Resetting channel OUT events BEFORE schedule would delete in events of subsequent components
 			// Note, System in and out events are reset in the env action
 			if (component instanceof CascadeCompositeComponent) {
-				// Resetting IN events AFTER schedule
+				// Resetting IN events AFTER schedule - refactor to method call
 				val clonedNewInEventAction = newInEventAction.clone
 						.resetEverythingExceptPersistentParameters(componentType) // Clone is important
 				actualComponentMergedAction.actions += clonedNewInEventAction // Putting the new action AFTER
@@ -843,14 +846,11 @@ class ComponentTransformer {
 	
 	private def void resetInEventsAfterMergedAction(XSTS xSts, Component type) {
 		val inEventAction = xSts.inEventTransition.action
-		// Maybe still not perfect?
-		if (inEventAction instanceof CompositeAction) {
-			val clonedInEventAction = inEventAction.clone
-			// Not PERSISTENT parameters
-			val resetAction = clonedInEventAction.resetEverythingExceptPersistentParameters(type)
-			val mergedAction = xSts.mergedAction
-			mergedAction.appendToAction(resetAction)
-		}
+		val clonedInEventAction = inEventAction.clone
+		// Not PERSISTENT parameters
+		val resetAction = clonedInEventAction.resetEverythingExceptPersistentParameters(type)
+		val mergedAction = xSts.mergedAction
+		mergedAction.appendToAction(resetAction)
 	}
 	
 	private def void customizeDeclarationNames(XSTS xSts, ComponentInstance instance) {
