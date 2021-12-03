@@ -22,6 +22,7 @@ import hu.bme.mit.gamma.action.model.AssertionStatement;
 import hu.bme.mit.gamma.action.model.AssignmentStatement;
 import hu.bme.mit.gamma.action.model.Block;
 import hu.bme.mit.gamma.action.model.Branch;
+import hu.bme.mit.gamma.action.model.ExpressionStatement;
 import hu.bme.mit.gamma.action.model.ForStatement;
 import hu.bme.mit.gamma.action.model.ProcedureDeclaration;
 import hu.bme.mit.gamma.action.model.ReturnStatement;
@@ -36,6 +37,7 @@ import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition;
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression;
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Expression;
+import hu.bme.mit.gamma.expression.model.FunctionAccessExpression;
 import hu.bme.mit.gamma.expression.model.IntegerRangeTypeDefinition;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Type;
@@ -300,8 +302,19 @@ public class ActionModelValidator extends ExpressionModelValidator {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		if (!typeDeterminator.isBoolean(assertStatement.getAssertion())) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-					"The expression of assertion statement must be boolean",
+				"The expressions of assertion statements must be of type boolean",
 					new ReferenceInfo(ActionModelPackage.Literals.ASSERTION_STATEMENT__ASSERTION)));
+		}
+		return validationResultMessages;
+	}
+	
+	public Collection<ValidationResultMessage> checkExpressionStatement(ExpressionStatement expressionStatement) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		Expression expression = expressionStatement.getExpression();
+		if (!(expression instanceof FunctionAccessExpression)) {
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING,
+				"This expression statement has no effect here",
+					new ReferenceInfo(ActionModelPackage.Literals.EXPRESSION_STATEMENT__EXPRESSION)));
 		}
 		return validationResultMessages;
 	}
