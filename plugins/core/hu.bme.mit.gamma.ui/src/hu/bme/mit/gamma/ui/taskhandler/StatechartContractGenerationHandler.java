@@ -5,7 +5,7 @@ import org.eclipse.core.resources.IFile;
 import hu.bme.mit.gamma.genmodel.model.StatechartContractGeneration;
 import hu.bme.mit.gamma.scenario.model.ScenarioDeclaration;
 import hu.bme.mit.gamma.scenario.model.ScenarioDefinition;
-import hu.bme.mit.gamma.scenario.reduction.SimpleScenarioGenerator;
+import hu.bme.mit.gamma.scenario.model.reduction.SimpleScenarioGenerator;
 import hu.bme.mit.gamma.scenario.statechart.generator.StatechartGenerationMode;
 import hu.bme.mit.gamma.scenario.statechart.generator.StatechartGenerator;
 import hu.bme.mit.gamma.scenario.statechart.generator.serializer.StatechartSerializer;

@@ -8,7 +8,7 @@
  *
  * SPDX-License-Identifier: EPL-1.0
  ********************************************************************************/
-package hu.bme.mit.gamma.scenario.reduction;
+package hu.bme.mit.gamma.scenario.model.reduction;
 
 public class FragmentInteractionPair {
 	

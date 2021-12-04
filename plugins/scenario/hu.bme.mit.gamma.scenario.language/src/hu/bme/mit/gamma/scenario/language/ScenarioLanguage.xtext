@@ -19,7 +19,7 @@ ScenarioDeclaration returns ScenarioModel::ScenarioDeclaration:
 	'component' component=[InterfaceModel::Component]
 	(scenarios+=ScenarioDefinition)+;
 
-ScenarioDefinition returns ScenarioModel::ScenarioDefinition:// argumentedElement
+ScenarioDefinition returns ScenarioModel::ScenarioDefinition:
 	annotation+=Annotations*
 	'scenario' name=ID ('['(parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*']')? 
 	(initialblock=InitialBlock)?
@@ -68,7 +68,11 @@ FragmentDefinition returns ScenarioModel::InteractionFragment:
 	(interactions+=AbstractInteraction)+;
 
 AbstractInteraction returns ScenarioModel::Interaction:
-	CombinedFragment | AbstractInteractionDefinition;
+	CombinedFragment | AbstractInteractionDefinition | ScenarioReference;
+
+ScenarioReference returns ScenarioModel::ScenarioDefinitionReference:
+	{ScenarioModel::ScenarioDefinitionReference}
+	'call' scenarioDefinition=[ScenarioModel::ScenarioDefinition];
 
 AbstractInteractionDefinition returns ScenarioModel::InteractionDefinition:
 	ModalInteraction | NegatedModalInteraction | ModalInteractionSet;

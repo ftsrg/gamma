@@ -102,4 +102,8 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="StartAsColdViolationAnnotation" eSuperTypes="#//Annotation"/>
   <eClassifiers xsi:type="ecore:EClass" name="DedicatedColdViolationAnnotation" eSuperTypes="#//Annotation"/>
+  <eClassifiers xsi:type="ecore:EClass" name="ScenarioDefinitionReference" eSuperTypes="#//Interaction">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="scenarioDefinition" lowerBound="1"
+        eType="#//ScenarioDefinition"/>
+  </eClassifiers>
 </ecore:EPackage>

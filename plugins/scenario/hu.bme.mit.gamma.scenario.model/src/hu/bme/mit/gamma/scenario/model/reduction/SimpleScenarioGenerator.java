@@ -8,7 +8,7 @@
  *
  * SPDX-License-Identifier: EPL-1.0
  ********************************************************************************/
-package hu.bme.mit.gamma.scenario.reduction;
+package hu.bme.mit.gamma.scenario.model.reduction;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -42,6 +42,7 @@ import hu.bme.mit.gamma.scenario.model.ParallelCombinedFragment;
 import hu.bme.mit.gamma.scenario.model.PermissiveAnnotation;
 import hu.bme.mit.gamma.scenario.model.Reset;
 import hu.bme.mit.gamma.scenario.model.ScenarioDefinition;
+import hu.bme.mit.gamma.scenario.model.ScenarioDefinitionReference;
 import hu.bme.mit.gamma.scenario.model.ScenarioModelFactory;
 import hu.bme.mit.gamma.scenario.model.Signal;
 import hu.bme.mit.gamma.scenario.model.StartAsColdViolationAnnotation;
@@ -58,6 +59,7 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 	private ScenarioModelFactory factory = null;
 	private boolean transformLoopFragments = false;
 	private List<Expression> parameters = null;
+	ScenarioReferenceResolver refResolver = new ScenarioReferenceResolver();
 
 	public SimpleScenarioGenerator(ScenarioDefinition base, boolean transformLoopFragments) {
 		this(base, transformLoopFragments, new LinkedList<Expression>());
@@ -81,6 +83,7 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 		simple.setChart(factory.createChart());
 		simple.getChart().setFragment(factory.createInteractionFragment());
 		simple.setInitialblock(handleInitBlockCopy());
+		refResolver.resolveReferences(base);
 		for (Annotation annotation : base.getAnnotation()) {
 			simple.getAnnotation().add((Annotation) this.doSwitch(annotation));
 		}
@@ -110,7 +113,7 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 			}
 			throw new IllegalArgumentException();
 		}
-		return expr;
+		return ecoreUtil.clone(expr);
 	}
 
 	private InitialBlock handleInitBlockCopy() {
@@ -396,7 +399,7 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 		signal.setEvent(object.getEvent());
 		signal.setPort(object.getPort());
 		for (Expression argument : object.getArguments()) {
-			signal.getArguments().add(ecoreUtil.clone(argument));
+			signal.getArguments().add(extractExpression(argument));
 		}
 		return signal;
 	}
@@ -416,10 +419,10 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 		delay.setModality(object.getModality());
 		if (object.getMaximum() == null)
 
-			delay.setMaximum(ecoreUtil.clone(object.getMinimum()));
+			delay.setMaximum(extractExpression(object.getMinimum()));
 		else
-			delay.setMaximum(ecoreUtil.clone(object.getMaximum()));
-		delay.setMinimum(ecoreUtil.clone(object.getMinimum()));
+			delay.setMaximum(extractExpression(object.getMaximum()));
+		delay.setMinimum(extractExpression(object.getMinimum()));
 		return delay;
 	}
 
