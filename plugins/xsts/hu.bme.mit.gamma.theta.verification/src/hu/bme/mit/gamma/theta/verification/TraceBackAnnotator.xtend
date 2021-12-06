@@ -62,7 +62,7 @@ class TraceBackAnnotator {
 		this.sortTrace = sortTrace
 		this.component = gammaPackage.firstComponent
 		this.thetaQueryGenerator = new ThetaQueryGenerator(component)
-		this.xStsBackAnnotator = new XstsBackAnnotator(thetaQueryGenerator)
+		this.xStsBackAnnotator = new XstsBackAnnotator(thetaQueryGenerator, ThetaArrayParser.INSTANCE)
 		val schedulingConstraintAnnotation = gammaPackage.annotations
 				.filter(SchedulingConstraintAnnotation).head
 		if (schedulingConstraintAnnotation !== null) {

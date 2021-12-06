@@ -29,6 +29,7 @@ import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.State
+import hu.bme.mit.gamma.statechart.util.ExpressionTypeDeterminator
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.trace.model.InstanceVariableState
 import hu.bme.mit.gamma.trace.model.RaiseEventAct
@@ -54,6 +55,7 @@ class TraceBuilder {
 	protected final extension ComplexTypeUtil complexTypeUtil = ComplexTypeUtil.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension ExpressionEvaluator expressionEvaluator = ExpressionEvaluator.INSTANCE
+	protected final extension ExpressionTypeDeterminator typeDeterminator = ExpressionTypeDeterminator.INSTANCE
 	protected final extension TraceUtil traceUtil = TraceUtil.INSTANCE
 	protected final StatechartUtil statechartUtil = StatechartUtil.INSTANCE // For component instance reference
 	
@@ -331,8 +333,8 @@ class TraceBuilder {
 	
 	private def changeValue(Expression literal,
 			FieldHierarchy fieldHierarchy, IndexHierarchy indexes, String value) {
-		val innerType = fieldHierarchy.last.typeDefinition
 		val valueToBeChanged = literal.getValue(fieldHierarchy, indexes)
+		val innerType = valueToBeChanged.typeDefinition // Works even if fieldHierarchy is empty
 		val newValue = innerType.createLiteral(value)
 		newValue.replace(valueToBeChanged)
 	}

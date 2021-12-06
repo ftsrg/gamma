@@ -41,4 +41,47 @@ class XstsUppaalQueryGenerator extends ThetaQueryGenerator {
 		throw new IllegalArgumentException("Not known id")
 	}
 	
+	// UPPAAL returns array values like this "b[1][2]" and here we need only "b"
+	
+	override getSourceVariable(String id) {
+		val bracketLessId = id.bracketLessId
+		return super.getSourceVariable(bracketLessId)
+	}
+	
+	override getSourceVariableFieldHierarchy(String id) {
+		val bracketLessId = id.bracketLessId
+		return super.getSourceVariableFieldHierarchy(bracketLessId)
+	}
+	
+	override getSourceOutEventParameterFieldHierarchy(String id) {
+		val bracketLessId = id.bracketLessId
+		return super.getSourceOutEventParameterFieldHierarchy(bracketLessId)
+	}
+	
+	override getSynchronousSourceInEventParameterFieldHierarchy(String id) {
+		val bracketLessId = id.bracketLessId
+		return super.getSynchronousSourceInEventParameterFieldHierarchy(bracketLessId)
+	}
+	
+	override getAsynchronousSourceMessageQueue(String id) {
+		val bracketLessId = id.bracketLessId
+		return super.getAsynchronousSourceMessageQueue(bracketLessId)
+	}
+	
+	override getAsynchronousSourceInEventParameter(String id) {
+		val bracketLessId = id.bracketLessId
+		return super.getAsynchronousSourceInEventParameter(bracketLessId)
+	}
+	
+	override getAsynchronousSourceInEventParameterFieldHierarchy(String id) {
+		val bracketLessId = id.bracketLessId
+		return super.getAsynchronousSourceInEventParameterFieldHierarchy(bracketLessId)
+	}
+	
+	///
+	
+	protected def getBracketLessId(String id) {
+		return (id.contains("[")) ? id.substring(0, id.indexOf("[")) : id
+	}
+	
 }

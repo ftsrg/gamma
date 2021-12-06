@@ -331,8 +331,9 @@ public class StatechartModelValidator extends ActionModelValidator {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		VariableDeclaration statechartVariable = variableBinding.getStatechartVariable();
 		VariableDeclaration variable = variableBinding.getInstanceVariableReference().getVariable();
-		validationResultMessages.addAll(checkTypeAndTypeConformance(statechartVariable.getType(), variable.getType(),
-				PhaseModelPackage.Literals.VARIABLE_BINDING__INSTANCE_VARIABLE_REFERENCE));
+		validationResultMessages.addAll(checkTypeAndTypeConformance(
+			statechartVariable.getType(), variable.getType(),
+				new ReferenceInfo(PhaseModelPackage.Literals.VARIABLE_BINDING__INSTANCE_VARIABLE_REFERENCE)));
 		return validationResultMessages;
 	}
 	

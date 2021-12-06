@@ -52,20 +52,20 @@ public class ActionModelValidator extends ExpressionModelValidator {
 	
 	public 	Collection<ValidationResultMessage> checkAssignmentActions(AssignmentStatement assignment) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		
 		ReferenceExpression lhs = assignment.getLhs();
 		Declaration declaration = expressionUtil.getDeclaration(lhs);
 		if (declaration instanceof ConstantDeclaration) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 				"Constants cannot be assigned new values",
-				new ReferenceInfo(ActionModelPackage.Literals.ASSIGNMENT_STATEMENT__LHS)));
+					new ReferenceInfo(ActionModelPackage.Literals.ASSIGNMENT_STATEMENT__LHS)));
 			return validationResultMessages;
 		}
 		// Other assignment type checking
 		try {
-			Type variableDeclarationType = declaration.getType();
-			validationResultMessages.addAll(checkTypeAndExpressionConformance(
-					variableDeclarationType, assignment.getRhs(),
-					new ReferenceInfo(ActionModelPackage.Literals.ASSIGNMENT_STATEMENT__RHS)));
+			Expression rhs = assignment.getRhs();
+			validationResultMessages.addAll(checkExpressionConformance(lhs, rhs,
+				new ReferenceInfo(ActionModelPackage.Literals.ASSIGNMENT_STATEMENT__RHS)));
 		} catch (Exception exception) {
 			// There is a type error on a lower level, no need to display the error message on this level too
 		}

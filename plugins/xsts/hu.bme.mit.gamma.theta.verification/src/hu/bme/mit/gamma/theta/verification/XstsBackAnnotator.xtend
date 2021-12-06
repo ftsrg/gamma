@@ -11,7 +11,6 @@ import hu.bme.mit.gamma.trace.model.RaiseEventAct
 import hu.bme.mit.gamma.trace.model.Step
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.verification.util.TraceBuilder
-import java.util.List
 import java.util.Set
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
@@ -20,7 +19,8 @@ import static extension hu.bme.mit.gamma.trace.derivedfeatures.TraceModelDerived
 class XstsBackAnnotator {
 	
 	protected final Component component
-	protected final ThetaQueryGenerator thetaQueryGenerator
+	protected final ThetaQueryGenerator xStsQueryGenerator
+	protected final extension XstsArrayParser arrayParser
 	
 	//
 	protected final Set<Pair<Port, Event>> storedAsynchronousInEvents = newHashSet
@@ -33,13 +33,14 @@ class XstsBackAnnotator {
 	protected final extension TraceBuilder traceBuilder = TraceBuilder.INSTANCE
 	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
 	
-	new(ThetaQueryGenerator thetaQueryGenerator) {
-		this.thetaQueryGenerator = thetaQueryGenerator
+	new(ThetaQueryGenerator thetaQueryGenerator, XstsArrayParser arrayParser) {
+		this.xStsQueryGenerator = thetaQueryGenerator
 		this.component = thetaQueryGenerator.component
+		this.arrayParser = arrayParser
 	}
 	
 	def void parseState(String potentialStateString, Step step) {
-		val instanceState = thetaQueryGenerator.getSourceState(potentialStateString)
+		val instanceState = xStsQueryGenerator.getSourceState(potentialStateString)
 		val controlState = instanceState.key
 		val instance = instanceState.value
 		step.addInstanceState(instance, controlState)
@@ -47,13 +48,13 @@ class XstsBackAnnotator {
 	}
 	
 	def void parseVariable(String id, String value, Step step) {
-		val instanceVariable = thetaQueryGenerator.getSourceVariable(id)
+		val instanceVariable = xStsQueryGenerator.getSourceVariable(id)
 		val instance = instanceVariable.value
 		val variable = instanceVariable.key
 		// Getting fields and indexes regardless of primitive or complex types
 		// In the case of primitive types, these hierarchies will be empty
-		val field = thetaQueryGenerator.getSourceVariableFieldHierarchy(id)
-		val indexPairs = value.parseArray
+		val field = xStsQueryGenerator.getSourceVariableFieldHierarchy(id)
+		val indexPairs = id.parseArray(value)
 		//
 		for (indexPair : indexPairs) {
 			val index = indexPair.key
@@ -63,7 +64,7 @@ class XstsBackAnnotator {
 	}
 	
 	def void parseOutEvent(String id, String value, Step step) {
-		val systemOutEvent = thetaQueryGenerator.getSourceOutEvent(id)
+		val systemOutEvent = xStsQueryGenerator.getSourceOutEvent(id)
 		if (value == "true" || value == "1") { // For Theta and UPPAAL
 			val event = systemOutEvent.get(0) as Event
 			val port = systemOutEvent.get(1) as Port
@@ -75,14 +76,14 @@ class XstsBackAnnotator {
 	}
 	
 	def void parseOutEventParameter(String id, String value, Step step) {
-		val systemOutEvent = thetaQueryGenerator.getSourceOutEventParameter(id)
+		val systemOutEvent = xStsQueryGenerator.getSourceOutEventParameter(id)
 		val event = systemOutEvent.get(0) as Event
 		val port = systemOutEvent.get(1) as Port
 		val systemPort = port.boundTopComponentPort // Back-tracking to the system port
 		val parameter = systemOutEvent.get(2) as ParameterDeclaration
 		// Getting fields and indexes regardless of primitive or complex types
-		val field = thetaQueryGenerator.getSourceOutEventParameterFieldHierarchy(id)
-		val indexPairs = value.parseArray
+		val field = xStsQueryGenerator.getSourceOutEventParameterFieldHierarchy(id)
+		val indexPairs = id.parseArray(value)
 		//
 		for (indexPair : indexPairs) {
 			val index = indexPair.key
@@ -93,7 +94,7 @@ class XstsBackAnnotator {
 	}
 	
 	def void parseSynchronousInEvent(String id, String value, Step step) {
-		val systemInEvent = thetaQueryGenerator.getSynchronousSourceInEvent(id)
+		val systemInEvent = xStsQueryGenerator.getSynchronousSourceInEvent(id)
 		if (value == "true" || value == "1") { // For Theta and UPPAAL
 			val event = systemInEvent.get(0) as Event
 			val port = systemInEvent.get(1) as Port
@@ -105,14 +106,14 @@ class XstsBackAnnotator {
 	}
 	
 	def void parseSynchronousInEventParameter(String id, String value, Step step) {
-		val systemInEvent = thetaQueryGenerator.getSynchronousSourceInEventParameter(id)
+		val systemInEvent = xStsQueryGenerator.getSynchronousSourceInEventParameter(id)
 		val event = systemInEvent.get(0) as Event
 		val port = systemInEvent.get(1) as Port
 		val systemPort = port.boundTopComponentPort // Back-tracking to the system port
 		val parameter = systemInEvent.get(2) as ParameterDeclaration
 		// Getting fields and indexes regardless of primitive or complex types
-		val field = thetaQueryGenerator.getSynchronousSourceInEventParameterFieldHierarchy(id)
-		val indexPairs = value.parseArray
+		val field = xStsQueryGenerator.getSynchronousSourceInEventParameterFieldHierarchy(id)
+		val indexPairs = id.parseArray(value)
 		//
 		for (indexPair : indexPairs) {
 			val index = indexPair.key
@@ -122,8 +123,8 @@ class XstsBackAnnotator {
 	}
 	
 	protected def parseAsynchronousInEvent(String id, String value) {
-		val messageQueue = thetaQueryGenerator.getAsynchronousSourceMessageQueue(id)
-		val values = value.parseArray
+		val messageQueue = xStsQueryGenerator.getAsynchronousSourceMessageQueue(id)
+		val values = id.parseArray(value)
 		val stringEventId = values.findFirst[it.key == new IndexHierarchy(0)]?.value
 		// If null - it is a default 0 value, nothing is raised
 		if (stringEventId !== null) {
@@ -156,7 +157,7 @@ class XstsBackAnnotator {
 	}
 	
 	def void parseAsynchronousInEventParameter(String id, String value, Step step) {
-		val systemInEvent = thetaQueryGenerator.getAsynchronousSourceInEventParameter(id)
+		val systemInEvent = xStsQueryGenerator.getAsynchronousSourceInEventParameter(id)
 		val event = systemInEvent.get(0) as Event
 		val port = systemInEvent.get(1) as Port
 		val systemPort = port.boundTopComponentPort // Back-tracking to the system port
@@ -164,8 +165,8 @@ class XstsBackAnnotator {
 		if (component.contains(systemPort)) {
 			val parameter = systemInEvent.get(2) as ParameterDeclaration
 			// Getting fields and indexes regardless of primitive or complex types
-			val field = thetaQueryGenerator.getAsynchronousSourceInEventParameterFieldHierarchy(id)
-			val indexPairs = value.parseArray
+			val field = xStsQueryGenerator.getAsynchronousSourceInEventParameterFieldHierarchy(id)
+			val indexPairs = id.parseArray(value)
 			val firstElement = indexPairs.findFirst[it.key == new IndexHierarchy(0)]
 			if (firstElement !== null) { // Default value, not necessary to add explicitly
 				// The slave queue should be a single-size array - sometimes there are more elements?
@@ -221,63 +222,6 @@ class XstsBackAnnotator {
 		}
 		raisedInEvents.clear // Crucial
 		storedAsynchronousInEvents.clear // Crucial
-	}
-	
-	///
-	
-	// Not every index is retrieved - if an index is missing, its value is the default value
-	protected def List<Pair<IndexHierarchy, String>> parseArray(String value) {
-		// (array (0 10) (1 11) (default 0))
-		val values = newArrayList
-		if (value.isArray) {
-			val unwrapped = thetaQueryGenerator.unwrap(value).substring("array ".length) // (0 10) (default 0)
-			val splits = unwrapped.parseAlongParentheses // 0 10, default array
-			for (split : splits) {
-				val splitPair = split.split(" ") // 0, 10
-				val index = splitPair.get(0) // 0
-				if (!index.equals("default")) { // Not parsing default values
-					val parsedIndex = Integer.parseInt(index) // 0
-					val storedValue = splitPair.get(1) // 10
-					val parsedValues = storedValue.parseArray
-					for (parsedValue : parsedValues) {
-						val indexHierarchy = parsedValue.key
-						indexHierarchy.prepend(parsedIndex) // So the "parent index" will be retrieved earlier
-						val stringValue = parsedValue.value
-						values += indexHierarchy -> stringValue
-					}
-				}
-			}
-			return values
-		}
-		else {
-			return #[new IndexHierarchy -> value]
-		}
-	}
-	
-	protected def parseAlongParentheses(String line) {
-		val result = newArrayList
-		var unclosedParanthesisCount = 0
-		var firstParanthesisIndex = 0
-		for (var i = 0; i < line.length; i++) {
-			val character = line.charAt(i).toString
-			if (character == "(") {
-				unclosedParanthesisCount++
-				if (unclosedParanthesisCount == 1) {
-					firstParanthesisIndex = i
-				}
-			}
-			else if (character == ")") {
-				unclosedParanthesisCount--
-				if (unclosedParanthesisCount == 0) {
-					result += line.substring(firstParanthesisIndex + 1, i)
-				}
-			}
-		}
-		return result
-	}
-	
-	protected def boolean isArray(String value) {
-		return value.startsWith("(array ")
 	}
 	
 }

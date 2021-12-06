@@ -36,7 +36,8 @@ class XstsUppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 	new(Package gammaPackage, Scanner traceScanner, boolean sortTrace) {
 		super(gammaPackage, traceScanner, sortTrace)
 		this.xStsUppaalQueryGenerator = new XstsUppaalQueryGenerator(component)
-		this.xStsBackAnnotator = new XstsBackAnnotator(xStsUppaalQueryGenerator)
+		this.xStsBackAnnotator = new XstsBackAnnotator(xStsUppaalQueryGenerator,
+				UppaalArrayParser.INSTANCE)
 		val schedulingConstraintAnnotation = gammaPackage.annotations
 				.filter(SchedulingConstraintAnnotation).head
 		if (schedulingConstraintAnnotation !== null) {
