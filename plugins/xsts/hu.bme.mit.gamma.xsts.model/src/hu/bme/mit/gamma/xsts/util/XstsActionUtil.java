@@ -200,7 +200,8 @@ public class XstsActionUtil extends ExpressionUtil {
 		// Note that 'a := b' like assignments (a and b are array variables) are supported in UPPAAL 
 		if (rhs instanceof ArrayLiteralExpression) {
 			ArrayLiteralExpression literal = (ArrayLiteralExpression) rhs;
-			List<Expression> operands = literal.getOperands();
+			List<Expression> operands = new ArrayList<Expression>(
+					literal.getOperands()); // To prevent messing up containment and indexing
 			int size = operands.size();
 			for (int i = 0; i < size; i++) {
 				ArrayAccessExpression newLhs = expressionFactory.createArrayAccessExpression();
