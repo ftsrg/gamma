@@ -13,28 +13,21 @@ package hu.bme.mit.gamma.theta.verification
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.querygenerator.ThetaQueryGenerator
 import hu.bme.mit.gamma.statechart.interface_.Component
-import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.Package
-import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.interface_.SchedulingConstraintAnnotation
-import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
-import hu.bme.mit.gamma.trace.model.RaiseEventAct
-import hu.bme.mit.gamma.trace.model.Step
 import hu.bme.mit.gamma.trace.model.TraceModelFactory
 import hu.bme.mit.gamma.trace.util.TraceUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.verification.util.TraceBuilder
 import java.util.NoSuchElementException
 import java.util.Scanner
-import java.util.Set
 import java.util.logging.Level
 import java.util.logging.Logger
 
 import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
-import static extension hu.bme.mit.gamma.trace.derivedfeatures.TraceModelDerivedFeatures.*
 
 class TraceBackAnnotator {
 	
@@ -96,10 +89,7 @@ class TraceBackAnnotator {
 		trace.arguments += topComponentArguments.map[it.clone]
 		var step = createStep
 		trace.steps += step
-		// Sets for raised in and out events and activated states
-		val raisedOutEvents = newHashSet
-		val raisedInEvents = newHashSet
-		val activatedStates = newHashSet
+		
 		// Parsing
 		var state = BackAnnotatorState.INIT
 		try {
@@ -121,7 +111,7 @@ class TraceBackAnnotator {
 								trace.steps += step
 							}
 							// Must be done for last step like in line 259
-							step.checkStates(raisedOutEvents, activatedStates)
+							step.checkStates
 							
 							step = createStep
 							trace.steps += step
@@ -135,7 +125,7 @@ class TraceBackAnnotator {
 						// Deleting unnecessary in and out events
 						switch (state) {
 							case STATE_CHECK: {
-								step.checkStates(raisedOutEvents, activatedStates)
+								step.checkStates
 								// Creating a new step
 								step = createStep
 								/// Add static delay every turn
@@ -148,7 +138,7 @@ class TraceBackAnnotator {
 								state = BackAnnotatorState.ENVIRONMENT_CHECK
 							}
 							case ENVIRONMENT_CHECK: {
-								step.checkInEvents(raisedInEvents)
+								step.checkInEvents
 								// Add schedule
 								step.addComponentScheduling
 								// Setting the state
@@ -171,22 +161,26 @@ class TraceBackAnnotator {
 					case STATE_CHECK: {
 						val potentialStateString = '''«id» == «value»'''
 						if (thetaQueryGenerator.isSourceState(potentialStateString)) {
-							potentialStateString.parseState(step, activatedStates)
+							potentialStateString.parseState(step)
 						}
 						else if (thetaQueryGenerator.isSourceVariable(id)) {
 							id.parseVariable(value, step)
 						}
 						else if (thetaQueryGenerator.isSourceOutEvent(id)) {
-							id.parseOutEvent(value, step, raisedOutEvents)
+							id.parseOutEvent(value, step)
 						}
 						else if (thetaQueryGenerator.isSourceOutEventParameter(id)) {
 							id.parseOutEventParameter(value, step)
+						}
+						// Checking if an asynchronous in-event is already stored in the queue
+						else if (thetaQueryGenerator.isAsynchronousSourceMessageQueue(id)) {
+							id.handleStoredAsynchronousInEvents(value)
 						}
 					}
 					case ENVIRONMENT_CHECK: {
 						// Synchronous in-event
 						if (thetaQueryGenerator.isSynchronousSourceInEvent(id)) {
-							id.parseSynchronousInEvent(value, step, raisedInEvents)
+							id.parseSynchronousInEvent(value, step)
 						}
 						// Synchronous in-event parameter
 						else if (thetaQueryGenerator.isSynchronousSourceInEventParameter(id)) {
@@ -194,7 +188,7 @@ class TraceBackAnnotator {
 						}
 						// Asynchronous in-event
 						else if (thetaQueryGenerator.isAsynchronousSourceMessageQueue(id)) {
-							id.parseAsynchronousInEvent(value, step, raisedInEvents)
+							id.parseAsynchronousInEvent(value, step)
 						}
 						// Asynchronous in-event parameter
 						else if (thetaQueryGenerator.isAsynchronousSourceInEventParameter(id)) {
@@ -206,7 +200,7 @@ class TraceBackAnnotator {
 				}
 			}
 			// Checking the last state (in events must NOT be deleted here though)
-			step.checkStates(raisedOutEvents, activatedStates)
+			step.checkStates
 			// Sorting if needed
 			if (sortTrace) {
 				trace.sortInstanceStates
@@ -216,36 +210,6 @@ class TraceBackAnnotator {
 			step.actions += createReset
 		}
 		return trace
-	}
-	
-	protected def void checkStates(Step step, Set<Pair<Port, Event>> raisedOutEvents,
-			Set<State> activatedStates) {
-		val raiseEventActs = step.outEvents
-		for (raiseEventAct : raiseEventActs) {
-			if (!raisedOutEvents.contains(raiseEventAct.port -> raiseEventAct.event)) {
-				raiseEventAct.delete
-			}
-		}
-		val instanceStates = step.instanceStateConfigurations
-		for (instanceState : instanceStates) {
-			// A state is active if all of its ancestor states are active
-			val ancestorStates = instanceState.state.ancestors
-			if (!activatedStates.containsAll(ancestorStates)) {
-				instanceState.delete
-			}
-		}
-		raisedOutEvents.clear
-		activatedStates.clear
-	}
-	
-	protected def void checkInEvents(Step step, Set<Pair<Port, Event>> raisedInEvents) {
-		val raiseEventActs = step.actions.filter(RaiseEventAct).toList
-		for (raiseEventAct : raiseEventActs) {
-			if (!raisedInEvents.contains(raiseEventAct.port -> raiseEventAct.event)) {
-				raiseEventAct.delete
-			}
-		}
-		raisedInEvents.clear
 	}
 	
 	def static getEngineSynchronizationObject() {

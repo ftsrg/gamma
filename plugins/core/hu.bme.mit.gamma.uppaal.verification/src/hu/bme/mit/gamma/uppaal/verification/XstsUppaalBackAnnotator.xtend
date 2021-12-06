@@ -12,24 +12,16 @@ package hu.bme.mit.gamma.uppaal.verification
 
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.querygenerator.XstsUppaalQueryGenerator
-import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.Package
-import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.interface_.SchedulingConstraintAnnotation
-import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.theta.verification.XstsBackAnnotator
 import hu.bme.mit.gamma.trace.model.ComponentSchedule
-import hu.bme.mit.gamma.trace.model.RaiseEventAct
 import hu.bme.mit.gamma.trace.model.Step
 import hu.bme.mit.gamma.trace.model.TimeElapse
 import hu.bme.mit.gamma.uppaal.util.XstsNamings
 import java.util.Scanner
-import java.util.Set
 
 import static com.google.common.base.Preconditions.checkState
-
-import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
-import static extension hu.bme.mit.gamma.trace.derivedfeatures.TraceModelDerivedFeatures.*
 
 class XstsUppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 	
@@ -59,10 +51,6 @@ class XstsUppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 		val trace = super.createTrace
 		
 		var Step step = null
-		
-		val raisedInEvents = newHashSet
-		val activatedStates = newHashSet
-		val raisedOutEvents = newHashSet
 		
 		var String line = null
 		var state = BackAnnotatorState.INITIAL
@@ -140,23 +128,27 @@ class XstsUppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 											val potentialStateString = '''«id» == «index»'''
 											if (xStsUppaalQueryGenerator.isSourceState(potentialStateString)) {
 												if (index > 0) {
-													potentialStateString.parseState(step, activatedStates)
+													potentialStateString.parseState(step)
 												}
 											}
 											else if (xStsUppaalQueryGenerator.isSourceVariable(id)) {
 												id.parseVariable(value, step)
 											}
 											else if (xStsUppaalQueryGenerator.isSourceOutEvent(id)) {
-												id.parseOutEvent(value, step, raisedOutEvents)
+												id.parseOutEvent(value, step)
 											}
 											else if (xStsUppaalQueryGenerator.isSourceOutEventParameter(id)) {
 												id.parseOutEventParameter(value, step)
 												// Will check in localState == StableEnvironmentState.ENVIRONMENT, if it is valid
 											}
+											// Checking if an asynchronous in-event is already stored in the queue
+											else if (xStsUppaalQueryGenerator.isAsynchronousSourceMessageQueue(id)) {
+												id.handleStoredAsynchronousInEvents(value)
+											}
 										}
 										case ENVIRONMENT: {
 											if (xStsUppaalQueryGenerator.isSynchronousSourceInEvent(id)) {
-												id.parseSynchronousInEvent(value, step, raisedInEvents)
+												id.parseSynchronousInEvent(value, step)
 											}
 											else if (xStsUppaalQueryGenerator.isSynchronousSourceInEventParameter(id)) {
 												id.parseSynchronousInEventParameter(value, step)
@@ -164,7 +156,7 @@ class XstsUppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 											}
 											// Asynchronous in-event
 											else if (xStsUppaalQueryGenerator.isAsynchronousSourceMessageQueue(id)) {
-												id.parseAsynchronousInEvent(value, step, raisedInEvents)
+												id.parseAsynchronousInEvent(value, step)
 											}
 											// Asynchronous in-event parameter
 											else if (xStsUppaalQueryGenerator.isAsynchronousSourceInEventParameter(id)) {
@@ -189,7 +181,7 @@ class XstsUppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 								}
 								else {
 									// Deleting states that are not inactive due to history
-									step.checkStates(raisedOutEvents, activatedStates)
+									step.checkStates
 									// Creating a new step
 									trace.steps += step
 									step = createStep
@@ -202,7 +194,7 @@ class XstsUppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 							}
 							if (localState == StableEnvironmentState.ENVIRONMENT) {
 								// Deleting events that are not raised (parameter values are always present)
-								step.checkInEvents(raisedInEvents)
+								step.checkInEvents
 								// Add schedule
 								step.addComponentScheduling
 							}
@@ -221,36 +213,6 @@ class XstsUppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 			trace.sortInstanceStates
 		}
 		return trace
-	}
-	
-	protected def void checkStates(Step step, Set<Pair<Port, Event>> raisedOutEvents,
-			Set<State> activatedStates) {
-		val raiseEventActs = step.outEvents
-		for (raiseEventAct : raiseEventActs) {
-			if (!raisedOutEvents.contains(raiseEventAct.port -> raiseEventAct.event)) {
-				raiseEventAct.delete
-			}
-		}
-		val instanceStates = step.instanceStateConfigurations
-		for (instanceState : instanceStates) {
-			// A state is active if all of its ancestor states are active
-			val ancestorStates = instanceState.state.ancestors
-			if (!activatedStates.containsAll(ancestorStates)) {
-				instanceState.delete
-			}
-		}
-		raisedOutEvents.clear
-		activatedStates.clear
-	}
-	
-	protected def void checkInEvents(Step step, Set<Pair<Port, Event>> raisedInEvents) {
-		val raiseEventActs = step.actions.filter(RaiseEventAct).toList
-		for (raiseEventAct : raiseEventActs) {
-			if (!raisedInEvents.contains(raiseEventAct.port -> raiseEventAct.event)) {
-				raiseEventAct.delete
-			}
-		}
-		raisedInEvents.clear
 	}
 	
 }

@@ -7,27 +7,38 @@ import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.State
+import hu.bme.mit.gamma.trace.model.RaiseEventAct
 import hu.bme.mit.gamma.trace.model.Step
+import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.verification.util.TraceBuilder
-import java.util.Collection
 import java.util.List
+import java.util.Set
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.trace.derivedfeatures.TraceModelDerivedFeatures.*
 
 class XstsBackAnnotator {
 	
 	protected final Component component
 	protected final ThetaQueryGenerator thetaQueryGenerator
 	
+	//
+	protected final Set<Pair<Port, Event>> storedAsynchronousInEvents = newHashSet
+	
+	// To check if certain elements are actually raised/reached
+	protected final Set<Pair<Port, Event>> raisedInEvents = newHashSet
+	protected final Set<Pair<Port, Event>> raisedOutEvents = newHashSet
+	protected final Set<State> activatedStates = newHashSet
+	
 	protected final extension TraceBuilder traceBuilder = TraceBuilder.INSTANCE
+	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
 	
 	new(ThetaQueryGenerator thetaQueryGenerator) {
 		this.thetaQueryGenerator = thetaQueryGenerator
 		this.component = thetaQueryGenerator.component
 	}
 	
-	def parseState(String potentialStateString, Step step,
-			Collection<? super State> activatedStates) {
+	def void parseState(String potentialStateString, Step step) {
 		val instanceState = thetaQueryGenerator.getSourceState(potentialStateString)
 		val controlState = instanceState.key
 		val instance = instanceState.value
@@ -35,7 +46,7 @@ class XstsBackAnnotator {
 		activatedStates += controlState
 	}
 	
-	def parseVariable(String id, String value, Step step) {
+	def void parseVariable(String id, String value, Step step) {
 		val instanceVariable = thetaQueryGenerator.getSourceVariable(id)
 		val instance = instanceVariable.value
 		val variable = instanceVariable.key
@@ -51,8 +62,7 @@ class XstsBackAnnotator {
 		}
 	}
 	
-	def parseOutEvent(String id, String value, Step step,
-			Collection<? super Pair<Port, Event>> raisedOutEvents) {
+	def void parseOutEvent(String id, String value, Step step) {
 		val systemOutEvent = thetaQueryGenerator.getSourceOutEvent(id)
 		if (value == "true" || value == "1") { // For Theta and UPPAAL
 			val event = systemOutEvent.get(0) as Event
@@ -64,7 +74,7 @@ class XstsBackAnnotator {
 		}
 	}
 	
-	def parseOutEventParameter(String id, String value, Step step) {
+	def void parseOutEventParameter(String id, String value, Step step) {
 		val systemOutEvent = thetaQueryGenerator.getSourceOutEventParameter(id)
 		val event = systemOutEvent.get(0) as Event
 		val port = systemOutEvent.get(1) as Port
@@ -82,8 +92,7 @@ class XstsBackAnnotator {
 		}
 	}
 	
-	def parseSynchronousInEvent(String id, String value, Step step,
-			Collection<? super Pair<Port, Event>> raisedInEvents) {
+	def void parseSynchronousInEvent(String id, String value, Step step) {
 		val systemInEvent = thetaQueryGenerator.getSynchronousSourceInEvent(id)
 		if (value == "true" || value == "1") { // For Theta and UPPAAL
 			val event = systemInEvent.get(0) as Event
@@ -95,7 +104,7 @@ class XstsBackAnnotator {
 		}
 	}
 	
-	def parseSynchronousInEventParameter(String id, String value, Step step) {
+	def void parseSynchronousInEventParameter(String id, String value, Step step) {
 		val systemInEvent = thetaQueryGenerator.getSynchronousSourceInEventParameter(id)
 		val event = systemInEvent.get(0) as Event
 		val port = systemInEvent.get(1) as Port
@@ -112,8 +121,7 @@ class XstsBackAnnotator {
 		}
 	}
 	
-	def parseAsynchronousInEvent(String id, String value, Step step,
-			Collection<? super Pair<Port, Event>> raisedInEvents) {
+	protected def parseAsynchronousInEvent(String id, String value) {
 		val messageQueue = thetaQueryGenerator.getAsynchronousSourceMessageQueue(id)
 		val values = value.parseArray
 		val stringEventId = values.findFirst[it.key == new IndexHierarchy(0)]?.value
@@ -127,15 +135,27 @@ class XstsBackAnnotator {
 				val systemPort = port.boundTopComponentPort // Back-tracking to the top port
 				// Sometimes message queue can contain internal events
 				if (component.contains(systemPort)) {
-					step.addInEvent(systemPort, event)
-					// Denoting that this event has been actually
-					raisedInEvents += systemPort -> event
+					return systemPort -> event
 				}
 			}
 		}
 	}
 	
-	def parseAsynchronousInEventParameter(String id, String value, Step step) {
+	def void parseAsynchronousInEvent(String id, String value, Step step) {
+		val systemPortEvent = id.parseAsynchronousInEvent(value)
+		if (systemPortEvent !== null) {
+			val systemPort = systemPortEvent.key
+			val event = systemPortEvent.value
+			// Checking if this event has been raised in the previous cycle
+			if (!storedAsynchronousInEvents.contains(systemPort -> event)) {
+				step.addInEvent(systemPort, event)
+				// Denoting that this event has been actually
+				raisedInEvents += systemPort -> event
+			}
+		}
+	}
+	
+	def void parseAsynchronousInEventParameter(String id, String value, Step step) {
 		val systemInEvent = thetaQueryGenerator.getAsynchronousSourceInEventParameter(id)
 		val event = systemInEvent.get(0) as Event
 		val port = systemInEvent.get(1) as Port
@@ -158,6 +178,52 @@ class XstsBackAnnotator {
 			}
 		}
 	}
+	
+	///
+	
+	def void handleStoredAsynchronousInEvents(String id, String value) {
+		val systemPortEvent = id.parseAsynchronousInEvent(value)
+		if (systemPortEvent !== null) {
+			val systemPort = systemPortEvent.key
+			val event = systemPortEvent.value
+			// Denoting that this event is already in the queue, not a new one
+			storedAsynchronousInEvents += systemPort -> event
+		}
+	}
+	
+	///
+	
+	def void checkStates(Step step) {
+		val raiseEventActs = step.outEvents
+		for (raiseEventAct : raiseEventActs) {
+			if (!raisedOutEvents.contains(raiseEventAct.port -> raiseEventAct.event)) {
+				raiseEventAct.delete
+			}
+		}
+		val instanceStates = step.instanceStateConfigurations
+		for (instanceState : instanceStates) {
+			// A state is active if all of its ancestor states are active
+			val ancestorStates = instanceState.state.ancestors
+			if (!activatedStates.containsAll(ancestorStates)) {
+				instanceState.delete
+			}
+		}
+		raisedOutEvents.clear // Crucial
+		activatedStates.clear // Crucial
+	}
+	
+	def void checkInEvents(Step step) {
+		val raiseEventActs = step.actions.filter(RaiseEventAct).toList
+		for (raiseEventAct : raiseEventActs) {
+			if (!raisedInEvents.contains(raiseEventAct.port -> raiseEventAct.event)) {
+				raiseEventAct.delete
+			}
+		}
+		raisedInEvents.clear // Crucial
+		storedAsynchronousInEvents.clear // Crucial
+	}
+	
+	///
 	
 	// Not every index is retrieved - if an index is missing, its value is the default value
 	protected def List<Pair<IndexHierarchy, String>> parseArray(String value) {
