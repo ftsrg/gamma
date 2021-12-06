@@ -32,7 +32,7 @@ import static com.google.common.base.Preconditions.checkState
 
 class GammaEcoreUtil {
 	// Singleton
-	public static final GammaEcoreUtil INSTANCE =  new GammaEcoreUtil
+	public static final GammaEcoreUtil INSTANCE = new GammaEcoreUtil
 	protected new() {}
 	//
 	

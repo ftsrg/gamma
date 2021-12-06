@@ -4,7 +4,13 @@ import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
 import hu.bme.mit.gamma.expression.model.BinaryExpression
 import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
+import hu.bme.mit.gamma.expression.model.EqualityExpression
+import hu.bme.mit.gamma.expression.model.GreaterEqualExpression
+import hu.bme.mit.gamma.expression.model.GreaterExpression
+import hu.bme.mit.gamma.expression.model.InequalityExpression
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition
+import hu.bme.mit.gamma.expression.model.LessEqualExpression
+import hu.bme.mit.gamma.expression.model.LessExpression
 import hu.bme.mit.gamma.expression.model.PredicateExpression
 import hu.bme.mit.gamma.expression.model.ReferenceExpression
 import hu.bme.mit.gamma.expression.model.TypeReference
@@ -13,6 +19,8 @@ import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.uppaal.util.NtaBuilder
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
+import java.util.Set
+import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend.lib.annotations.Data
 import uppaal.expressions.Expression
 import uppaal.templates.Selection
@@ -30,9 +38,10 @@ class HavocHandler {
 	
 	protected final NtaBuilder ntaBuilder
 	
-	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
-	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
+	protected final extension PredicateHandler predicateHandler = PredicateHandler.INSTANCE
 	protected final extension ExpressionEvaluator expressionEvaluator = ExpressionEvaluator.INSTANCE
+	
+	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	
 	// Entry point
 	
@@ -44,8 +53,7 @@ class HavocHandler {
 	//
 	
 	def dispatch SelectionStruct createSelection(TypeReference type, VariableDeclaration variable) {
-		val typeDeclaration = type.reference
-		val typeDefinition = typeDeclaration.type
+		val typeDefinition = type.typeDefinition
 		return typeDefinition.createSelection(variable)
 	}
 	
@@ -69,19 +77,8 @@ class HavocHandler {
 	
 	def dispatch SelectionStruct createSelection(IntegerTypeDefinition type, VariableDeclaration variable) {
 		val root = variable.root
-		
-		val predicates = root.getAllContentsOfType(PredicateExpression).filter(BinaryExpression)
-		val expressions = newArrayList
-		
-		expressions += predicates.filter[it.leftOperand instanceof ReferenceExpression]
-			.filter[it.leftOperand.declaration === variable]
-			.map[it.rightOperand]
-		expressions += predicates.filter[it.rightOperand instanceof ReferenceExpression]
-			.filter[it.rightOperand.declaration === variable]
-			.map[it.leftOperand]
 			
-		val integerValues = newHashSet
-		integerValues += expressions.map[it.evaluateInteger]
+		val integerValues = root.calculateIntegerValues(variable)
 		
 		if (integerValues.empty) {
 			// Sometimes input parameters are not referenced
@@ -121,6 +118,85 @@ class HavocHandler {
 	}
 	
 	// Auxiliary structures
+	
+	static class PredicateHandler {
+		// Singleton
+		public static final PredicateHandler INSTANCE = new PredicateHandler
+		protected new() {}
+		//
+		
+		protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
+		protected final extension ExpressionEvaluator expressionEvaluator = ExpressionEvaluator.INSTANCE
+		protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
+		
+		protected def int getIntegerValue(BinaryExpression predicate, VariableDeclaration variable) {
+			val left = predicate.leftOperand
+			val right = predicate.rightOperand
+			
+			if (left instanceof ReferenceExpression) {
+				val declaration = left.declaration
+				if (declaration === variable) {
+					return right.evaluateInteger
+				}
+			}
+			else if (right instanceof ReferenceExpression) {
+				val declaration = right.declaration
+				if (declaration === variable) {
+					return left.evaluateInteger
+				}
+			}
+			
+			throw new IllegalArgumentException("No referenced variable")
+		}
+		
+		// Should handle intervals, this is just an initial iteration
+		
+		def dispatch int calculateIntegerValue(EqualityExpression predicate, VariableDeclaration variable) {
+			return predicate.getIntegerValue(variable)
+		}
+		
+		def dispatch int calculateIntegerValue(LessEqualExpression predicate, VariableDeclaration variable) {
+			return predicate.getIntegerValue(variable)
+		}
+		
+		def dispatch int calculateIntegerValue(GreaterEqualExpression predicate, VariableDeclaration variable) {
+			return predicate.getIntegerValue(variable)
+		}
+		
+		def dispatch int calculateIntegerValue(LessExpression predicate, VariableDeclaration variable) {
+			val value = predicate.getIntegerValue(variable)
+			val left = predicate.leftOperand
+			return (left instanceof ReferenceExpression) ? value - 1 : value + 1
+		}
+		
+		def dispatch int calculateIntegerValue(GreaterExpression predicate, VariableDeclaration variable) {
+			val value = predicate.getIntegerValue(variable)
+			val left = predicate.leftOperand
+			return (left instanceof ReferenceExpression) ? value + 1 : value - 1
+		}
+		
+		def dispatch int calculateIntegerValue(InequalityExpression predicate, VariableDeclaration variable) {
+			return predicate.getIntegerValue(variable) - 1
+		}
+		
+		///
+		
+		def Set<Integer> calculateIntegerValues(EObject root, VariableDeclaration variable) {
+			val integerValues = newHashSet
+			val predicates = root.getAllContentsOfType(PredicateExpression).filter(BinaryExpression)
+			
+			for (predicate : predicates) {
+				try {
+					integerValues += predicate.calculateIntegerValue(variable)
+				} catch (IllegalArgumentException e) {
+					// Predicate does not contain variable references
+				}
+			}
+			
+			return integerValues
+		}
+	
+	}
 	
 	@Data
 	static class SelectionStruct {
