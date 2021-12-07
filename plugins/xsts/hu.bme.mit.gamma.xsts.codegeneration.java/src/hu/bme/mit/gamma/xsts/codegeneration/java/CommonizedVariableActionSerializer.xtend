@@ -164,11 +164,14 @@ class CommonizedVariableActionSerializer extends ActionSerializer {
 	}
 	
 	private def dispatch boolean isUnnecessaryAction(AssignmentAction action) {
-		val lhs = (action.lhs as DirectReferenceExpression).declaration
-		val rhs = action.rhs
-		if (rhs instanceof DirectReferenceExpression) {
-			if (lhs.originalVariable == rhs.declaration.originalVariable) {
-				return true
+		val lhs = action.lhs
+		if (lhs instanceof DirectReferenceExpression) {
+			val lhsDeclaration = lhs.declaration
+			val rhs = action.rhs
+			if (rhs instanceof DirectReferenceExpression) {
+				if (lhsDeclaration.originalVariable == rhs.declaration.originalVariable) {
+					return true
+				}
 			}
 		}
 		return false

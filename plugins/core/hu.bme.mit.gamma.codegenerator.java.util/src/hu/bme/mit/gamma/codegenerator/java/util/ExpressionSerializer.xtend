@@ -74,7 +74,8 @@ class ExpressionSerializer {
 	
 	def dispatch String serialize(ArrayLiteralExpression expression) {
 		// TODO casting should be here if the type determinator is finished
-		val casting = '''new «expression.type.serialize»'''
+		val type = expression.type
+		val casting = '''new «type.serialize»'''
 		return '''«casting» { «FOR operand : expression.operands SEPARATOR ', '»«operand.serialize»«ENDFOR» }'''
 	}
 	
