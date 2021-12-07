@@ -1,0 +1,19 @@
+import "model/RegionMachine/RegionMachine"
+import "model/RegionMachine/RegionMachineWrapper"
+import trace "RegionMachineTest"
+
+code {
+	component: RegionMachine
+	language: java
+}
+
+code {
+	component: RegionMachineWrapper
+	language: java
+}
+
+test {
+	trace: RegionMachineTest
+	file: "RegionMachineTest"
+	language: java
+}

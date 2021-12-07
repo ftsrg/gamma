@@ -20,9 +20,7 @@ import hu.bme.mit.gamma.statechart.statechart.StateReferenceExpression;
 public class ExpressionTypeDeterminator extends ExpressionTypeDeterminator2 {
 	// Singleton
 	public static final ExpressionTypeDeterminator INSTANCE = new ExpressionTypeDeterminator();
-	protected ExpressionTypeDeterminator() {
-		expressionUtil = StatechartUtil.INSTANCE;
-	}
+	protected ExpressionTypeDeterminator() {}
 	//
 	
 	@Override

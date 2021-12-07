@@ -1,0 +1,19 @@
+import "model/ReturnFunctionMachine/ReturnFunctionMachine"
+import "model/ReturnFunctionMachine/ReturnFunctionMachineWrapper"
+import trace "ReturnFunctionMachineTest"
+
+code {
+	component: ReturnFunctionMachine
+	language: java
+}
+
+code {
+	component: ReturnFunctionMachineWrapper
+	language: java
+}
+
+test {
+	trace: ReturnFunctionMachineTest
+	file: "ReturnFunctionMachineTest"
+	language: java
+}

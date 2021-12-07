@@ -1,0 +1,12 @@
+package StateMachine
+
+import "/hu.prolan.xsmltools.gamma.transformation.test/model/StateMachine/StateMachineDeclarations.gcd"
+import "/hu.prolan.xsmltools.gamma.transformation.test/model/StateMachine/StateMachine.gcd"
+
+cascade StateMachineWrapper [
+	port portA : requires portA
+] {
+	component stateMachine : StateMachine
+	
+	bind portA -> stateMachine.portA
+}

@@ -1,0 +1,19 @@
+import "model/TimedMachine/TimedMachine"
+import "model/TimedMachine/TimedMachineWrapper"
+import trace "TimedMachineTest"
+
+code {
+	component: TimedMachine
+	language: java
+}
+
+code {
+	component: TimedMachineWrapper
+	language: java
+}
+
+test {
+	trace: TimedMachineTest
+	file: "TimedMachineTest"
+	language: java
+}

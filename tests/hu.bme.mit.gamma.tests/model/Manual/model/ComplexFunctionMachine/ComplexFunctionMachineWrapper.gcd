@@ -1,0 +1,12 @@
+package ComplexFunctionMachine
+
+import "/hu.prolan.xsmltools.gamma.transformation.test/model/ComplexFunctionMachine/ComplexFunctionMachineDeclarations.gcd"
+import "/hu.prolan.xsmltools.gamma.transformation.test/model/ComplexFunctionMachine/ComplexFunctionMachine.gcd"
+
+cascade ComplexFunctionMachineWrapper [
+	port portA : requires portA
+] {
+	component complexFunctionMachine : ComplexFunctionMachine
+	
+	bind portA -> complexFunctionMachine.portA
+}

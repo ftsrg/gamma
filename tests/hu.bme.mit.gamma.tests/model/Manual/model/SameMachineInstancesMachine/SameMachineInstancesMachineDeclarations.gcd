@@ -1,0 +1,7 @@
+package SameMachineInstancesMachine
+type _SameMachineInstancesMachine_Submachine_ : enum {
+	Init
+}
+interface portA {
+	out event message_bool(message_boolValue : boolean)
+}

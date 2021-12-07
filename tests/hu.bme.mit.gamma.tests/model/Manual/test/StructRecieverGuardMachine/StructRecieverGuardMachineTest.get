@@ -1,0 +1,73 @@
+import "model/StructRecieverGuardMachine/StructRecieverGuardMachineWrapper"
+
+trace StructRecieverGuardMachineTest of StructRecieverGuardMachineWrapper
+
+step {
+	act {
+		reset
+	}
+	assert {
+		variable structRecieverGuardMachine.posCnt = 0
+		variable structRecieverGuardMachine.negCnt = 0
+	}
+}
+step {
+	act {
+		raise portA.message_SampleStruct(#SampleStruct {
+			val := 1
+		})
+		schedule component
+	}
+	assert {
+		variable structRecieverGuardMachine.posCnt = 1
+		variable structRecieverGuardMachine.negCnt = 0
+	}
+}
+step {
+	act {
+		raise portA.message_SampleStruct(#SampleStruct {
+			val := 15
+		})
+		schedule component
+	}
+	assert {
+		variable structRecieverGuardMachine.posCnt = 2
+		variable structRecieverGuardMachine.negCnt = 0
+	}
+}
+step {
+	act {
+		raise portA.message_SampleStruct(#SampleStruct {
+			val := 0
+		})
+		schedule component
+	}
+	assert {
+		variable structRecieverGuardMachine.posCnt = 2
+		variable structRecieverGuardMachine.negCnt = 0
+	}
+}
+step {
+	act {
+		raise portA.message_SampleStruct(#SampleStruct {
+			val := -1
+		})
+		schedule component
+	}
+	assert {
+		variable structRecieverGuardMachine.posCnt = 2
+		variable structRecieverGuardMachine.negCnt = 1
+	}
+}
+step {
+	act {
+		raise portA.message_SampleStruct(#SampleStruct {
+			val := -42
+		})
+		schedule component
+	}
+	assert {
+		variable structRecieverGuardMachine.posCnt = 2
+		variable structRecieverGuardMachine.negCnt = 2
+	}
+}

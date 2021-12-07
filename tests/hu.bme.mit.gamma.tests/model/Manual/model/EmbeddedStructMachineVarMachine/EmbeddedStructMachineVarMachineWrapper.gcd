@@ -1,0 +1,12 @@
+package EmbeddedStructMachineVarMachine
+
+import "/hu.prolan.xsmltools.gamma.transformation.test/model/EmbeddedStructMachineVarMachine/EmbeddedStructMachineVarMachineDeclarations.gcd"
+import "/hu.prolan.xsmltools.gamma.transformation.test/model/EmbeddedStructMachineVarMachine/EmbeddedStructMachineVarMachine.gcd"
+
+cascade EmbeddedStructMachineVarMachineWrapper [
+	port portA : requires portA
+] {
+	component embeddedStructMachineVarMachine : EmbeddedStructMachineVarMachine
+	
+	bind portA -> embeddedStructMachineVarMachine.portA
+}

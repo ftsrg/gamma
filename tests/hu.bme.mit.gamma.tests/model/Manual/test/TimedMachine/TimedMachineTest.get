@@ -1,0 +1,42 @@
+import "model/TimedMachine/TimedMachineWrapper"
+
+trace TimedMachineTest of TimedMachineWrapper
+
+step {
+	act {
+		reset
+	}
+	assert {
+		variable timedMachine._timedMachine_ = _TimedMachine_::Init
+	}
+}
+step {
+	act {
+		raise portA.message_bool(true)
+		schedule component
+	}
+	assert {
+		variable timedMachine._timedMachine_ = _TimedMachine_::Other
+		variable timedMachine._timedMachine_Other_ = _TimedMachine_Other_::OtherA
+	}
+}
+step {
+	act {
+		elapse 1
+		schedule component
+	}
+	assert {
+		variable timedMachine._timedMachine_ = _TimedMachine_::Other
+		variable timedMachine._timedMachine_Other_ = _TimedMachine_Other_::OtherB
+	}
+}
+step {
+	act {
+		elapse 2
+		schedule component
+	}
+	assert {
+		variable timedMachine._timedMachine_ = _TimedMachine_::Other
+		variable timedMachine._timedMachine_Other_ = _TimedMachine_Other_::OtherA
+	}
+}

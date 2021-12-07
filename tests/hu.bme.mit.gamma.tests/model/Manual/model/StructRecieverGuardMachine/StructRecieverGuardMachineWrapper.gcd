@@ -1,0 +1,13 @@
+package StructRecieverGuardMachine
+
+import "/hu.prolan.xsmltools.gamma.transformation.test/model/StructRecieverGuardMachine/StructRecieverGuardMachineDeclarations"
+import "/hu.prolan.xsmltools.gamma.transformation.test/model/StructRecieverGuardMachine/StructRecieverGuardMachine"
+
+
+ cascade StructRecieverGuardMachineWrapper [
+ 	port portA : requires portA
+ ] {
+ 	component structRecieverGuardMachine : StructRecieverGuardMachine
+ 	
+ 	bind portA -> structRecieverGuardMachine.portA
+ }

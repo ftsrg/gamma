@@ -1,0 +1,14 @@
+package ComplexFunctionMachine
+procedure big(a : integer) : boolean {
+	return a > 10;
+}
+procedure zero : integer {
+	return 0;
+}
+procedure self(a : integer) : integer {
+	return a;
+}
+interface portA {
+	out event message_bool(message_boolValue : boolean)
+	out event message_int(message_intValue : integer)
+}

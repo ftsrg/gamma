@@ -1,0 +1,19 @@
+import "model/ComplexRegionMachine/ComplexRegionMachine"
+import "model/ComplexRegionMachine/ComplexRegionMachineWrapper"
+import trace "ComplexRegionMachineTest"
+
+code {
+	component: ComplexRegionMachine
+	language: java
+}
+
+code {
+	component: ComplexRegionMachineWrapper
+	language: java
+}
+
+test {
+	trace: ComplexRegionMachineTest
+	file: "ComplexRegionMachineTest"
+	language: java
+}

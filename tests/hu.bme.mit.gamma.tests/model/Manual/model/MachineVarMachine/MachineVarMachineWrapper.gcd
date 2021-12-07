@@ -1,0 +1,12 @@
+package MachineVarMachine
+
+import "/hu.prolan.xsmltools.gamma.transformation.test/model/MachineVarMachine/MachineVarMachineDeclarations.gcd"
+import "/hu.prolan.xsmltools.gamma.transformation.test/model/MachineVarMachine/MachineVarMachine.gcd"
+
+cascade MachineVarMachineWrapper [
+	port portA : requires portA
+] {
+	component machineVarMachine : MachineVarMachine
+	
+	bind portA -> machineVarMachine.portA
+}

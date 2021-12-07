@@ -1,0 +1,20 @@
+package ReturnFunctionMachine
+procedure positive(x : integer) : boolean {
+	var result : boolean := false;
+	if (x = 0) {
+		return false;
+	}
+	if (x > 0) {
+		result := true;
+	}
+	elseif (else) {
+		result := false;
+	}
+	return result;
+}
+type _ReturnFunctionMachine_ : enum {
+	A, B
+}
+interface P {
+	out event message_int(message_intValue : integer)
+}
