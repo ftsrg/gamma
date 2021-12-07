@@ -64,7 +64,7 @@ public class Validator {
 	public static boolean checkIfProjectIsUnderLoad(String workspace, String projectName) throws IOException {
 		File jsonFile = new File(FileHandlerUtil.getProperty(DIRECTORY_OF_WORKSPACES_PROPERTY_NAME) + workspace
 				+ File.separator + projectName + File.separator + PROJECT_DESCRIPTOR_JSON);
-		if(!jsonFile.exists()) {
+		if (!jsonFile.exists()) {
 			return false;
 		}
 		String jsonString = FileUtils.readFileToString(jsonFile);
