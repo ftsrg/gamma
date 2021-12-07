@@ -1,0 +1,12 @@
+package GuardMachine
+
+import "/hu.prolan.xsmltools.gamma.transformation.test/model/GuardMachine/GuardMachineDeclarations.gcd"
+import "/hu.prolan.xsmltools.gamma.transformation.test/model/GuardMachine/GuardMachine.gcd"
+
+ cascade GuardMachineWrapper [
+ 	port portA : requires portA
+ ] {
+ 	component guardMachine : GuardMachine
+ 	
+ 	bind portA -> guardMachine.portA
+ }

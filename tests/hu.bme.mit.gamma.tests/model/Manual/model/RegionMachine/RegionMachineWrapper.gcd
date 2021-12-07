@@ -1,0 +1,12 @@
+package RegionMachine
+
+import "/hu.prolan.xsmltools.gamma.transformation.test/model/RegionMachine/RegionMachineDeclarations.gcd"
+import "/hu.prolan.xsmltools.gamma.transformation.test/model/RegionMachine/RegionMachine.gcd"
+
+cascade RegionMachineWrapper [
+	port portA : requires portA
+] {
+	component regionMachine : RegionMachine
+	
+	bind portA -> regionMachine.portA
+}

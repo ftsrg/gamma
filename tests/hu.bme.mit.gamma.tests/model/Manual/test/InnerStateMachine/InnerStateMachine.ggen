@@ -1,0 +1,19 @@
+import "model/InnerStateMachine/InnerStateMachine"
+import "model/InnerStateMachine/InnerStateMachineWrapper"
+import trace "InnerStateMachineTest"
+
+code {
+	component: InnerStateMachine
+	language: java
+}
+
+code {
+	component: InnerStateMachineWrapper
+	language: java
+}
+
+test {
+	trace: InnerStateMachineTest
+	file: "InnerStateMachineTest"
+	language: java
+}

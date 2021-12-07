@@ -1,0 +1,12 @@
+package ComplexInitMachine
+procedure tr : boolean {
+	return true;
+}
+type _ComplexInitMachine_NoInstance_ : enum {
+	State
+}
+type _ComplexInitMachine_Sub_ : enum {
+	State
+}
+interface portA {
+}

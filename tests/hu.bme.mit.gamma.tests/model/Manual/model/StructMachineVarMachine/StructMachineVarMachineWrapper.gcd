@@ -1,0 +1,13 @@
+package StructMachineVarMachine
+
+import "/hu.prolan.xsmltools.gamma.transformation.test/model/StructMachineVarMachine/StructMachineVarMachineDeclarations"
+import "/hu.prolan.xsmltools.gamma.transformation.test/model/StructMachineVarMachine/StructMachineVarMachine"
+
+
+ cascade StructMachineVarMachineWrapper [
+ 	port portA : requires portA
+ ] {
+ 	component structMachineVarMachine : StructMachineVarMachine
+ 	
+ 	bind portA -> structMachineVarMachine.portA
+ }

@@ -1,0 +1,7 @@
+package StateMachine
+type _StateMachine_ : enum {
+	Init, Other
+}
+interface portA {
+	out event message_bool(message_boolValue : boolean)
+}

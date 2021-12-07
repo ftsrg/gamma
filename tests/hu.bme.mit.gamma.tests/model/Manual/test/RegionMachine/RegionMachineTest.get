@@ -1,0 +1,48 @@
+import "model/RegionMachine/RegionMachineWrapper"
+
+trace RegionMachineTest of RegionMachineWrapper
+
+step {
+	act {
+		reset
+	}
+	assert {
+		variable regionMachine._regionMachine_Submachine__Region = _RegionMachine_Submachine_::Init
+	}
+}
+step {
+	act {
+		raise portA.message_bool(true)
+		schedule component
+	}
+	assert {
+		variable regionMachine._regionMachine_Submachine__Region = _RegionMachine_Submachine_::Other
+	}
+}
+step {
+	act {
+		raise portA.message_bool(false)
+		schedule component
+	}
+	assert {
+		variable regionMachine._regionMachine_Submachine__Region = _RegionMachine_Submachine_::Init
+	}
+}
+step {
+	act {
+		raise portA.message_bool(true)
+		schedule component
+	}
+	assert {
+		variable regionMachine._regionMachine_Submachine__Region = _RegionMachine_Submachine_::Other
+	}
+}
+step {
+	act {
+		raise portA.message_bool(false)
+		schedule component
+	}
+	assert {
+		variable regionMachine._regionMachine_Submachine__Region = _RegionMachine_Submachine_::Init
+	}
+}

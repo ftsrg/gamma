@@ -1,0 +1,7 @@
+package StructRecieverGuardMachine
+type SampleStruct : record {
+	val : integer
+}
+interface portA {
+	out event message_SampleStruct(message_SampleStructValue : SampleStruct)
+}

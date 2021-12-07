@@ -1,0 +1,12 @@
+package InnerStateMachine
+
+import "/hu.prolan.xsmltools.gamma.transformation.test/model/InnerStateMachine/InnerStateMachineDeclarations.gcd"
+import "/hu.prolan.xsmltools.gamma.transformation.test/model/InnerStateMachine/InnerStateMachine.gcd"
+
+cascade InnerStateMachineWrapper [
+	port portA : requires portA
+] {
+	component innerStateMachine : InnerStateMachine
+	
+	bind portA -> innerStateMachine.portA
+}

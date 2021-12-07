@@ -1,0 +1,39 @@
+import "model/GuardMachine/GuardMachineWrapper"
+
+trace GuardMachineTest of GuardMachineWrapper
+
+step {
+	act {
+		reset
+	}
+	assert {
+		variable guardMachine.cnt = 0
+	}
+}
+step {
+	act {
+		raise portA.message_int(0)
+		schedule component
+	}
+	assert {
+		variable guardMachine.cnt = 0
+	}
+}
+step {
+	act {
+		raise portA.message_int(1)
+		schedule component
+	}
+	assert {
+		variable guardMachine.cnt = 1
+	}
+}
+step {
+	act {
+		raise portA.message_int(-1)
+		schedule component
+	}
+	assert {
+		variable guardMachine.cnt = 0
+	}
+}

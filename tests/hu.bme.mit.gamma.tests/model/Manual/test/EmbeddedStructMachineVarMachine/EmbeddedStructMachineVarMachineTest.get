@@ -1,0 +1,59 @@
+import "model/EmbeddedStructMachineVarMachine/EmbeddedStructMachineVarMachineWrapper"
+
+trace EmbeddedStructMachineVarMachineTest of EmbeddedStructMachineVarMachineWrapper
+
+step {
+	act {
+		reset
+	}
+	assert {
+		variable embeddedStructMachineVarMachine.outer = #OuterStruct {
+			cnt := 0,
+			inner := #InnerStruct {
+				cnt := 0
+			}
+		}
+	}
+}
+step {
+	act {
+		raise portA.message_int(5)
+		schedule component
+	}
+	assert {
+		variable embeddedStructMachineVarMachine.outer = #OuterStruct {
+			cnt := 1,
+			inner := #InnerStruct {
+				cnt := 1
+			}
+		}
+	}
+}
+step {
+	act {
+		raise portA.message_int(-42)
+		schedule component
+	}
+	assert {
+		variable embeddedStructMachineVarMachine.outer = #OuterStruct {
+			cnt := 2,
+			inner := #InnerStruct {
+				cnt := 2
+			}
+		}
+	}
+}
+step {
+	act {
+		raise portA.message_int(0)
+		schedule component
+	}
+	assert {
+		variable embeddedStructMachineVarMachine.outer = #OuterStruct {
+			cnt := 3,
+			inner := #InnerStruct {
+				cnt := 3
+			}
+		}
+	}
+}

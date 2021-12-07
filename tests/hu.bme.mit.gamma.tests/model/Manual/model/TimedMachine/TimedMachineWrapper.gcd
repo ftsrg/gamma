@@ -1,0 +1,12 @@
+package TimedMachine
+
+import "/hu.prolan.xsmltools.gamma.transformation.test/model/TimedMachine/TimedMachineDeclarations.gcd"
+import "/hu.prolan.xsmltools.gamma.transformation.test/model/TimedMachine/TimedMachine.gcd"
+
+cascade TimedMachineWrapper [
+	port portA : requires portA
+] {
+	component timedMachine : TimedMachine
+	
+	bind portA -> timedMachine.portA
+}

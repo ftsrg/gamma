@@ -1,0 +1,19 @@
+import "model/SameMachineInstancesMachine/SameMachineInstancesMachine"
+import "model/SameMachineInstancesMachine/SameMachineInstancesMachineWrapper"
+import trace "SameMachineInstancesMachineTest"
+
+code {
+	component: SameMachineInstancesMachine
+	language: java
+}
+
+code {
+	component: SameMachineInstancesMachineWrapper
+	language: java
+}
+
+test {
+	trace: SameMachineInstancesMachineTest
+	file: "SameMachineInstancesMachineTest"
+	language: java
+}

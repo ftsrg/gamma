@@ -1,0 +1,12 @@
+package ReturnFunctionMachine
+
+import "/hu.prolan.xsmltools.gamma.transformation.test/model/ReturnFunctionMachine/ReturnFunctionMachineDeclarations.gcd"
+import "/hu.prolan.xsmltools.gamma.transformation.test/model/ReturnFunctionMachine/ReturnFunctionMachine.gcd"
+
+cascade ReturnFunctionMachineWrapper [
+	port P : requires P
+] {
+	component returnFunctionMachine : ReturnFunctionMachine
+	
+	bind P -> returnFunctionMachine.P
+}

@@ -1,0 +1,19 @@
+import "model/StructMachineVarMachine/StructMachineVarMachine"
+import "model/StructMachineVarMachine/StructMachineVarMachineWrapper"
+import trace "StructMachineVarMachineTest"
+
+code {
+	component: StructMachineVarMachine
+	language: java
+}
+
+code {
+	component: StructMachineVarMachineWrapper
+	language: java
+}
+
+test {
+	trace: StructMachineVarMachineTest
+	file: "StructMachineVarMachineTest"
+	language: java
+}
