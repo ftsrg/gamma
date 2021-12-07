@@ -397,7 +397,7 @@ class StatechartToPlantUmlTransformer {
 		Variables:
 		
 		«FOR variable : statechart.variableDeclarations»
-			var «variable.name»: «variable.typeDefinition.serialize»«IF variable.expression !== null» = «variable.expression.serialize»«ENDIF»
+			var «variable.name»: «variable.type.serialize»«IF variable.expression !== null» = «variable.expression.serialize»«ENDIF»
 		«ENDFOR»
 		
 		Timeouts:
