@@ -1,0 +1,6 @@
+import "DispatcherMachine_Manual.gcd"
+
+code {
+	component : DispatcherMachine
+	language : java
+}

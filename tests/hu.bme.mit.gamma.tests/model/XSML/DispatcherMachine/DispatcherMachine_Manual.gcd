@@ -1,0 +1,42 @@
+package DispatcherMachine
+
+import "/Interfaces/DispatcherMachineDeclarations.gcd"
+
+statechart DispatcherMachine [
+	port portA : requires portA
+	port S1_Region1 : requires S1
+	port S2_Region2 : requires S2
+	port S1_Region1_Out : provides S1
+	port S2_Region2_Out : provides S2
+] {
+	var test : [3]boolean
+	var integerTest : integer
+	transition from _initialOfSubmachine1___Region1 to Submachine1__State_Region1
+	transition from Submachine1__State_Region1 to Submachine1__State_Region1 when
+		S1_Region1.message_bool / {
+		integerTest := integerTest + 1;
+		test[2] := S1_Region1.message_bool::message_boolValue;
+	}
+	transition from _initialOfSubmachine2___Region2 to Submachine2__State_Region2
+	transition from Submachine2__State_Region2 to Submachine2__State_Region2 when
+		S2_Region2.message_bool
+	transition from _initialOfDispatcherMachine__ to DispatcherMachine__State
+	transition from DispatcherMachine__State to DispatcherMachine__State when portA.message_int
+		[portA.message_int::message_intValue = 666] /
+	raise S1_Region1_Out.message_bool(true);
+	transition from DispatcherMachine__State to DispatcherMachine__State when portA.message_int
+		[portA.message_int::message_intValue = 2] /
+	raise S2_Region2_Out.message_bool(false);
+	region DispatcherMachine_ {
+		state DispatcherMachine__State
+		initial _initialOfDispatcherMachine__
+	}
+	region Submachine1__Region1 {
+		state Submachine1__State_Region1
+		initial _initialOfSubmachine1___Region1
+	}
+	region Submachine2__Region2 {
+		state Submachine2__State_Region2
+		initial _initialOfSubmachine2___Region2
+	}
+}

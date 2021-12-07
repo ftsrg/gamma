@@ -1,0 +1,14 @@
+package DispatcherMachine
+
+import "DispatcherMachine_Manual.gcd"
+
+adapter DispatcherMachineAdapter of component DispatcherMachine : DispatcherMachine
+{
+	when any / run
+	queue DispatcherMachineQueue (priority = 1, capacity = 1) {
+		portA.any
+	}
+	queue DispatcherInternalMachineQueue (priority = 2, capacity = 2) {
+		S1_Region1.any, S2_Region2.any
+	}
+}

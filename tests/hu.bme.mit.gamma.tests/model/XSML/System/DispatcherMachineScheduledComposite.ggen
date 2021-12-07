@@ -1,0 +1,18 @@
+import "DispatcherMachineScheduledComposite.gcd"
+
+code {
+	component : DispatcherMachineScheduledComposite
+	language : java
+}
+
+analysis {
+	component : DispatcherMachineScheduledComposite
+	language : Theta
+}
+
+verification {
+	language : Theta
+	test-language : java
+	file : "DispatcherMachineScheduledComposite.xsts"
+	query-file : "CustomQueries.prop"
+}
