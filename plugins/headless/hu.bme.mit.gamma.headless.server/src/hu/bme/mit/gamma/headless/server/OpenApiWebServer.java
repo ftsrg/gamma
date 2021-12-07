@@ -268,6 +268,10 @@ public class OpenApiWebServer extends AbstractVerticle {
 							ProcessBuilderCli.stopOperation(projectName, workspace);
 							logger.log(Level.INFO, ANSI_YELLOW
 									+ "Operation \"stopOperation\": parameters passed to CLI." + ANSI_RESET);
+							
+							errorHandlerPOJO = getErrorObject(workspace, projectName);
+							success = errorHandlerPOJO.getStatusCode() != 503;
+						} else {
 							success = true;
 						}
 					} catch (IOException e) {
