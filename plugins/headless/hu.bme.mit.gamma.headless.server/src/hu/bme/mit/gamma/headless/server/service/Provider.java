@@ -96,7 +96,7 @@ public class Provider {
 				deleteDirectory(file);
 			}
 		}
-		Files.delete(Paths.get(directoryToBeDeleted.getPath()));
+		Files.delete(directoryToBeDeleted.toPath());
 		return true;
 	}
 
@@ -144,7 +144,6 @@ public class Provider {
 				e.printStackTrace();
 			}
 		}
-
 		return false;
 	}
 
