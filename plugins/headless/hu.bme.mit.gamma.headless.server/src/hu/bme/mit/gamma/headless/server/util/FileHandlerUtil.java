@@ -1,7 +1,6 @@
 package hu.bme.mit.gamma.headless.server.util;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
@@ -26,11 +25,14 @@ public class FileHandlerUtil {
 	protected static Logger logger = Logger.getLogger("GammaLogger");
 	
 	public static Map<String, Set<String>> getProjectsByWorkspaces(){
-		final FileFilter directoryFilter = new IsDirectoryFilter();
 		File workspacesFolder = new File(getProperty(DIRECTORY_OF_WORKSPACES_PROPERTY_NAME));
-		List<File> workspaces = Arrays.asList(workspacesFolder.listFiles(directoryFilter));
+		List<File> workspaces = Arrays.asList(workspacesFolder.listFiles(IsDirectoryFilter.Create()));
 		return workspaces.stream().map(workspace -> {
-			Set<String> projects = Arrays.asList(workspace.listFiles(directoryFilter)).stream().map(File::getName).collect(Collectors.toSet());
+			Set<String> projects = Arrays.asList(workspace
+					.listFiles(IsEclipseProjectFilter.Create()))
+					.stream()
+					.map(File::getName)
+					.collect(Collectors.toSet());
 			return Map.entry(workspace.getName(), projects);
 		}).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 	}

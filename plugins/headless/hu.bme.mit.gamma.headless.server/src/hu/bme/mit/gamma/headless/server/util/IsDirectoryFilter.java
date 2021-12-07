@@ -9,5 +9,9 @@ public class IsDirectoryFilter implements FileFilter {
 	public boolean accept(File file) {
 		return file.isDirectory();
 	}
+	
+	public static IsDirectoryFilter Create() {
+		return new IsDirectoryFilter();
+	}
 
 }
