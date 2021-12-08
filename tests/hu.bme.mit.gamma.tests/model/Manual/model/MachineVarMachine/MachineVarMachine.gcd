@@ -1,6 +1,6 @@
 package MachineVarMachine
 import
-	"/hu.prolan.xsmltools.gamma.transformation.test/model/MachineVarMachine/MachineVarMachineDeclarations.gcd"
+	"/model/MachineVarMachine/MachineVarMachineDeclarations.gcd"
 @TransitionPriority = order-based
 statechart MachineVarMachine [
 	port portA : requires portA

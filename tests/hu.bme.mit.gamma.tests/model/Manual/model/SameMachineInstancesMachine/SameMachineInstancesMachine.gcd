@@ -1,6 +1,6 @@
 package SameMachineInstancesMachine
 import
-	"/hu.prolan.xsmltools.gamma.transformation.test/model/SameMachineInstancesMachine/SameMachineInstancesMachineDeclarations.gcd"
+	"/model/SameMachineInstancesMachine/SameMachineInstancesMachineDeclarations.gcd"
 @TransitionPriority = order-based
 statechart SameMachineInstancesMachine [
 	port portA : requires portA

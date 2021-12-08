@@ -1,7 +1,7 @@
 package EmbeddedStructMachineVarMachine
 
-import "/hu.prolan.xsmltools.gamma.transformation.test/model/EmbeddedStructMachineVarMachine/EmbeddedStructMachineVarMachineDeclarations.gcd"
-import "/hu.prolan.xsmltools.gamma.transformation.test/model/EmbeddedStructMachineVarMachine/EmbeddedStructMachineVarMachine.gcd"
+import "/model/EmbeddedStructMachineVarMachine/EmbeddedStructMachineVarMachineDeclarations.gcd"
+import "/model/EmbeddedStructMachineVarMachine/EmbeddedStructMachineVarMachine.gcd"
 
 cascade EmbeddedStructMachineVarMachineWrapper [
 	port portA : requires portA

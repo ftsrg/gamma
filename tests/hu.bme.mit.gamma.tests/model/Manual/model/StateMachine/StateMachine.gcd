@@ -1,6 +1,6 @@
 package StateMachine
 import
-	"/hu.prolan.xsmltools.gamma.transformation.test/model/StateMachine/StateMachineDeclarations.gcd"
+	"/model/StateMachine/StateMachineDeclarations.gcd"
 @TransitionPriority = order-based
 statechart StateMachine [
 	port portA : requires portA

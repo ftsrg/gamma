@@ -1,7 +1,7 @@
 package TimedMachine
 
-import "/hu.prolan.xsmltools.gamma.transformation.test/model/TimedMachine/TimedMachineDeclarations.gcd"
-import "/hu.prolan.xsmltools.gamma.transformation.test/model/TimedMachine/TimedMachine.gcd"
+import "/model/TimedMachine/TimedMachineDeclarations.gcd"
+import "/model/TimedMachine/TimedMachine.gcd"
 
 cascade TimedMachineWrapper [
 	port portA : requires portA

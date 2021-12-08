@@ -1,6 +1,6 @@
 package StructMachineVarMachine
 import
-	"/hu.prolan.xsmltools.gamma.transformation.test/model/StructMachineVarMachine/StructMachineVarMachineDeclarations.gcd"
+	"/model/StructMachineVarMachine/StructMachineVarMachineDeclarations.gcd"
 @TransitionPriority = order-based
 statechart StructMachineVarMachine [
 	port portA : requires portA

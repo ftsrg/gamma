@@ -1,6 +1,6 @@
 package ReturnFunctionMachine
 import
-	"/hu.prolan.xsmltools.gamma.transformation.test/model/ReturnFunctionMachine/ReturnFunctionMachineDeclarations.gcd"
+	"/model/ReturnFunctionMachine/ReturnFunctionMachineDeclarations.gcd"
 @TransitionPriority = order-based
 statechart ReturnFunctionMachine [
 	port P : requires P

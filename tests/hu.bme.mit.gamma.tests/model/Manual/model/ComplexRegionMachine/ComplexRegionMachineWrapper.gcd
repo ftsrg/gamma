@@ -1,7 +1,7 @@
 package ComplexRegionMachine
 
-import "/hu.prolan.xsmltools.gamma.transformation.test/model/ComplexRegionMachine/ComplexRegionMachineDeclarations.gcd"
-import "/hu.prolan.xsmltools.gamma.transformation.test/model/ComplexRegionMachine/ComplexRegionMachine.gcd"
+import "/model/ComplexRegionMachine/ComplexRegionMachineDeclarations.gcd"
+import "/model/ComplexRegionMachine/ComplexRegionMachine.gcd"
 
 cascade ComplexRegionMachineWrapper [
 	port portA : requires portA

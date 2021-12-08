@@ -1,6 +1,6 @@
 package StructRecieverMachine
 import
-	"/hu.prolan.xsmltools.gamma.transformation.test/model/StructRecieverMachine/StructRecieverMachineDeclarations.gcd"
+	"/model/StructRecieverMachine/StructRecieverMachineDeclarations.gcd"
 @TransitionPriority = order-based
 statechart StructRecieverMachine [
 	port portA : requires portA

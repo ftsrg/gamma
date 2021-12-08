@@ -1,6 +1,6 @@
 package ComplexRegionMachine
 import
-	"/hu.prolan.xsmltools.gamma.transformation.test/model/ComplexRegionMachine/ComplexRegionMachineDeclarations.gcd"
+	"/model/ComplexRegionMachine/ComplexRegionMachineDeclarations.gcd"
 @TransitionPriority = order-based
 statechart ComplexRegionMachine [
 	port portA : requires portA

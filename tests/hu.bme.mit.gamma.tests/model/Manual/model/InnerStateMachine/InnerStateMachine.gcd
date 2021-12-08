@@ -1,6 +1,6 @@
 package InnerStateMachine
 import
-	"/hu.prolan.xsmltools.gamma.transformation.test/model/InnerStateMachine/InnerStateMachineDeclarations.gcd"
+	"/model/InnerStateMachine/InnerStateMachineDeclarations.gcd"
 @TransitionPriority = order-based
 statechart InnerStateMachine [
 	port portA : requires portA

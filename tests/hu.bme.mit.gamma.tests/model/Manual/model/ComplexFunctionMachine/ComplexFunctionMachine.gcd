@@ -1,6 +1,5 @@
 package ComplexFunctionMachine
-import
-	"/hu.prolan.xsmltools.gamma.transformation.test/model/ComplexFunctionMachine/ComplexFunctionMachineDeclarations.gcd"
+import "/model/ComplexFunctionMachine/ComplexFunctionMachineDeclarations.gcd"
 @TransitionPriority = order-based
 statechart ComplexFunctionMachine [
 	port portA : requires portA

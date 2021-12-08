@@ -1,7 +1,7 @@
 package StructRecieverMachine
 
-import "/hu.prolan.xsmltools.gamma.transformation.test/model/StructRecieverMachine/StructRecieverMachineDeclarations"
-import "/hu.prolan.xsmltools.gamma.transformation.test/model/StructRecieverMachine/StructRecieverMachine"
+import "/model/StructRecieverMachine/StructRecieverMachineDeclarations"
+import "/model/StructRecieverMachine/StructRecieverMachine"
 
 
  cascade StructRecieverMachineWrapper [

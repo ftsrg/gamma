@@ -1,6 +1,6 @@
 package EmbeddedStructMachineVarMachine
 import
-	"/hu.prolan.xsmltools.gamma.transformation.test/model/EmbeddedStructMachineVarMachine/EmbeddedStructMachineVarMachineDeclarations.gcd"
+	"/model/EmbeddedStructMachineVarMachine/EmbeddedStructMachineVarMachineDeclarations.gcd"
 @TransitionPriority = order-based
 statechart EmbeddedStructMachineVarMachine [
 	port portA : requires portA

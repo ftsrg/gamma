@@ -1,7 +1,7 @@
 package MachineVarMachine
 
-import "/hu.prolan.xsmltools.gamma.transformation.test/model/MachineVarMachine/MachineVarMachineDeclarations.gcd"
-import "/hu.prolan.xsmltools.gamma.transformation.test/model/MachineVarMachine/MachineVarMachine.gcd"
+import "/model/MachineVarMachine/MachineVarMachineDeclarations.gcd"
+import "/model/MachineVarMachine/MachineVarMachine.gcd"
 
 cascade MachineVarMachineWrapper [
 	port portA : requires portA

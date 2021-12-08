@@ -1,6 +1,6 @@
 package GuardMachine
 import
-	"/hu.prolan.xsmltools.gamma.transformation.test/model/GuardMachine/GuardMachineDeclarations.gcd"
+	"/model/GuardMachine/GuardMachineDeclarations.gcd"
 @TransitionPriority = order-based
 statechart GuardMachine [
 	port portA : requires portA

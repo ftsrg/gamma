@@ -1,7 +1,7 @@
 package ComplexInitMachine
 
-import "/hu.prolan.xsmltools.gamma.transformation.test/model/ComplexInitMachine/ComplexInitMachineDeclarations.gcd"
-import "/hu.prolan.xsmltools.gamma.transformation.test/model/ComplexInitMachine/ComplexInitMachine.gcd"
+import "/model/ComplexInitMachine/ComplexInitMachineDeclarations.gcd"
+import "/model/ComplexInitMachine/ComplexInitMachine.gcd"
 
 cascade ComplexInitMachineWrapper [
 	port portA : requires portA

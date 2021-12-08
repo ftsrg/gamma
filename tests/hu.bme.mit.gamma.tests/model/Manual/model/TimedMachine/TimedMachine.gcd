@@ -1,6 +1,6 @@
 package TimedMachine
 import
-	"/hu.prolan.xsmltools.gamma.transformation.test/model/TimedMachine/TimedMachineDeclarations.gcd"
+	"/model/TimedMachine/TimedMachineDeclarations.gcd"
 @TransitionPriority = order-based
 statechart TimedMachine [
 	port portA : requires portA

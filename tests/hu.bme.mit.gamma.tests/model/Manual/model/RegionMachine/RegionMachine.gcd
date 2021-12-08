@@ -1,6 +1,6 @@
 package RegionMachine
 import
-	"/hu.prolan.xsmltools.gamma.transformation.test/model/RegionMachine/RegionMachineDeclarations.gcd"
+	"/model/RegionMachine/RegionMachineDeclarations.gcd"
 @TransitionPriority = order-based
 statechart RegionMachine [
 	port portA : requires portA

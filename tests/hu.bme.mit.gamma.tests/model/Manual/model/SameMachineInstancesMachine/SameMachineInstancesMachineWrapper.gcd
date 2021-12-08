@@ -1,7 +1,7 @@
 package SameMachineInstancesMachine
 
-import "/hu.prolan.xsmltools.gamma.transformation.test/model/SameMachineInstancesMachine/SameMachineInstancesMachineDeclarations.gcd"
-import "/hu.prolan.xsmltools.gamma.transformation.test/model/SameMachineInstancesMachine/SameMachineInstancesMachine.gcd"
+import "/model/SameMachineInstancesMachine/SameMachineInstancesMachineDeclarations.gcd"
+import "/model/SameMachineInstancesMachine/SameMachineInstancesMachine.gcd"
 
 cascade SameMachineInstancesMachineWrapper [
 	port portA : requires portA
