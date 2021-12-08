@@ -5,11 +5,10 @@ import java.io.FileFilter;
 import java.io.FilenameFilter;
 
 public class EclipseProjectFilter implements FileFilter {
-
-	public static EclipseProjectFilter INSTANCE = new EclipseProjectFilter();
-
-	private EclipseProjectFilter() {
-	}
+	// Singleton
+	public static final EclipseProjectFilter INSTANCE = new EclipseProjectFilter();
+	protected EclipseProjectFilter() {}
+	//
 
 	@Override
 	public boolean accept(File file) {

@@ -4,11 +4,10 @@ import java.io.File;
 import java.io.FileFilter;
 
 public class DirectoryFilter implements FileFilter {
-
-	public static DirectoryFilter INSTANCE = new DirectoryFilter();
-
-	private DirectoryFilter() {
-	}
+	// Singleton
+	public static final DirectoryFilter INSTANCE = new DirectoryFilter();
+	protected DirectoryFilter() {}
+	//
 
 	@Override
 	public boolean accept(File file) {
