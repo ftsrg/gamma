@@ -228,7 +228,7 @@ class TraceBuilder {
 			VariableDeclaration variable) {
 		val variableStates = step.asserts.filter(InstanceVariableState)
 		val variableState = variableStates.filter[
-			it.instance === instance &&	it.declaration === variable].head
+			it.instance.componentInstance === instance && it.declaration === variable].head
 		var Expression value
 		if (variableState === null) {
 			// Creating the literal, similar to "getInstance" in singletons
