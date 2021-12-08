@@ -26,10 +26,10 @@ public class FileHandlerUtil {
 	
 	public static Map<String, Set<String>> getProjectsByWorkspaces(){
 		File workspacesFolder = new File(getProperty(DIRECTORY_OF_WORKSPACES_PROPERTY_NAME));
-		List<File> workspaces = Arrays.asList(workspacesFolder.listFiles(IsDirectoryFilter.Create()));
+		List<File> workspaces = Arrays.asList(workspacesFolder.listFiles(DirectoryFilter.INSTANCE));
 		return workspaces.stream().map(workspace -> {
 			Set<String> projects = Arrays.asList(workspace
-					.listFiles(IsEclipseProjectFilter.Create()))
+					.listFiles(EclipseProjectFilter.INSTANCE))
 					.stream()
 					.map(File::getName)
 					.collect(Collectors.toSet());

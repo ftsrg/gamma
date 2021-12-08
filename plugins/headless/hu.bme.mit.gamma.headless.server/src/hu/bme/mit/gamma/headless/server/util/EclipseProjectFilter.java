@@ -4,7 +4,12 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.FilenameFilter;
 
-public class IsEclipseProjectFilter implements FileFilter {
+public class EclipseProjectFilter implements FileFilter {
+
+	public static EclipseProjectFilter INSTANCE = new EclipseProjectFilter();
+
+	private EclipseProjectFilter() {
+	}
 
 	@Override
 	public boolean accept(File file) {
@@ -19,10 +24,6 @@ public class IsEclipseProjectFilter implements FileFilter {
 			return eclipseProjectFiles.length > 0;
 		}
 		return false;
-	}
-
-	public static IsEclipseProjectFilter Create() {
-		return new IsEclipseProjectFilter();
 	}
 
 }
