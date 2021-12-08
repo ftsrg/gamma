@@ -8,19 +8,19 @@ public class IsEclipseProjectFilter implements FileFilter {
 
 	@Override
 	public boolean accept(File file) {
-		if(file.isDirectory()) {
+		if (file.isDirectory()) {
 			File[] eclipseProjectFiles = file.listFiles(new FilenameFilter() {
 				@Override
 				public boolean accept(File dir, String name) {
 					return ".project".equals(name);
 				}
-				
+
 			});
 			return eclipseProjectFiles.length > 0;
 		}
 		return false;
 	}
-	
+
 	public static IsEclipseProjectFilter Create() {
 		return new IsEclipseProjectFilter();
 	}

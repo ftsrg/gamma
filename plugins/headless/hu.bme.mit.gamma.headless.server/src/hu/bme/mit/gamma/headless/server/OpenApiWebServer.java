@@ -643,7 +643,7 @@ public class OpenApiWebServer extends AbstractVerticle {
 			return;
 		}
 		
-		for(Map.Entry<String, Set<String>> projectsByWorkspace: projectsByWorkspaces.entrySet()) {
+		for (Map.Entry<String, Set<String>> projectsByWorkspace: projectsByWorkspaces.entrySet()) {
 			String workspace = projectsByWorkspace.getKey();
 			Set<String> projects = projectsByWorkspace.getValue();
 			logger.log(Level.INFO, System.lineSeparator() + "Currently ongoing operations: ");
