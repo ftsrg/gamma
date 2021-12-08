@@ -1,23 +1,24 @@
 package hu.bme.mit.gamma.headless.server.service;
 
-import com.google.gson.*;
-import hu.bme.mit.gamma.headless.server.entity.WorkspaceProjectWrapper;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.SystemUtils;
-import org.joda.time.DateTime;
-import org.json.simple.JSONObject;
-import hu.bme.mit.gamma.headless.server.util.FileHandlerUtil;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.UUID;
-import java.util.logging.Level;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.SystemUtils;
+import org.joda.time.DateTime;
+import org.json.simple.JSONObject;
+
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
+import hu.bme.mit.gamma.headless.server.util.FileHandlerUtil;
 
 // The ProcesssBuilderCli builds command line interface commands to be passed to the Headless Gamma
 public class ProcessBuilderCli {
@@ -28,7 +29,6 @@ public class ProcessBuilderCli {
 	private static final String DIRECTORY_OF_GAMMA_HEADLESS_ECLIPSE_PROPERTY = "headless.gamma.path";
 	private static final String CONSTANT_ARGUMENTS = " -consoleLog -data ";
 	public static final String PROJECT_DESCRIPTOR_JSON = "projectDescriptor.json";
-	private static final String ROOT_WRAPPER_JSON = "wrapperList.json";
 	public static final String UNDER_OPERATION_PROPERTY = "underOperation";
 	private static final String PID_OPERATION_PROPERTY = "pid";
 	private static final String GAMMA_OPERATION = "gamma";
@@ -125,7 +125,6 @@ public class ProcessBuilderCli {
 		Runtime rt = Runtime.getRuntime();
 		Process pr = rt.exec(commandToExecute);
 		pr.waitFor();
-		addWorkspaceProjectWrapperToRootJson(projectName, workspace);
 		createProjectJSONFile(workspace, projectName);
 		deleteSourceZip(workspace, projectName);
 	}
@@ -139,26 +138,7 @@ public class ProcessBuilderCli {
 		Runtime rt = Runtime.getRuntime();
 		Process pr = rt.exec(commandToExecute);
 		pr.waitFor();
-		addWorkspaceProjectWrapperToRootJson(null, workspace);
 		return workspace;
-	}
-
-	// Adds the workspace to the wrapper list, which keeps track of workspaces and
-	// projects under them
-	private static void addWorkspaceProjectWrapperToRootJson(String projectName, String workspace) throws IOException {
-		List<WorkspaceProjectWrapper> yourList = FileHandlerUtil.getWrapperListFromJson();
-		if (yourList == null) {
-			yourList = new ArrayList<>();
-		}
-		yourList.add(new WorkspaceProjectWrapper(workspace, projectName));
-		try {
-			FileWriter writer = new FileWriter(
-					FileHandlerUtil.getProperty(DIRECTORY_OF_WORKSPACES_PROPERTY_NAME) + ROOT_WRAPPER_JSON);
-			new Gson().toJson(yourList, writer);
-			writer.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 	}
 
 	// Deletes the uploaded zip after copying the contents to the workspace
