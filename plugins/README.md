@@ -6,12 +6,12 @@ You will need Java 11 to setup Gamma.
 
 Gamma has been implemented as a set of Eclipse plugins. To use the
 framework, you will need an Eclipse with the following plugins installed:
-* Eclipse Modeling Framework SDK 2.25.0.
+* Eclipse Modeling Framework SDK 2.28.0.
 * Xtext Complete SDK 2.25.0. (It contains Xtend, no need for the additional download
 of Xtend.)
-* VIATRA SDK 2.5.0.
+* VIATRA SDK 2.6.0.
 * Yakindu Statechart Tools 3.5.13.
-* PlantUML 1.1.25.
+* PlantUML 1.1.26.
 
 We recommend to start-up from an Eclipse IDE for Java and DSL Developers as it
 contains EMF and Xtext so only VIATRA and Yakindu need to be downloaded.
@@ -23,7 +23,7 @@ contains EMF and Xtext so only VIATRA and Yakindu need to be downloaded.
 path_to_your_java_insallation/Java/jdk-version/bin/javaw.exe
 ```
 - Install the following two packages. The _Install_ window can be opened via the _Help > Install New Software..._ menu item. In the _Install_ window click _Add..._, and paste the necessary URL in the _Location_ text field. 
- - Install VIATRA 2.5.0 from update site: http://download.eclipse.org/viatra/updates/release/2.5.0.
+ - Install VIATRA 2.6.0 from update site: http://download.eclipse.org/viatra/updates/release/2.6.0.
     - Choose the whole _VIATRA Query and Transformation SDK_ package.
  - Install the Yakindu Statechart Tools 3.5.13. from update site: http://updates.yakindu.com/statecharts/releases/3.5.13. From the  _YAKINDU Statechart Tools Standard Edition_ package choose
 	- _YAKINDU Statechart Tools_,
@@ -37,11 +37,11 @@ If you want to use the *XSTS* formalism for formal verification (via *Theta*) an
 
 If you want to use *UPPAAL* for formal verification, download and extract *UPPAAL 4.1.24*. In order to let Gamma find the UPPAAL executables, add the `bin-Win32` or `bin-Linux` folder to the path environment variable (depending on the operating system being used).
 
-_Tip: It is advised to turn on automatic refreshing for the _runtime workspace_. The other option is to refresh it manually with F5 after every Gamma command._
-
 Make sure to set the text file encoding of your Eclipse workspace to **UTF-8**: _Window > Preferences..._ Start typing `workspace` in the left upper textfield (in the place of `type filter text`). Select _General > Workspace_ from the filtered item list and check the `Text file encoding` setting at the bottom of the window.
 
 Make sure to set the Java compiler compliance level to **11**: _Window > Preferences..._ Start typing `compiler` in the left upper textfield (in the place of `type filter text`). Select _Java > Compiler_ from the filtered item list and set the `Compiler compliance level` to **11** at the top of the window.
+
+_Tip: It is advised to turn on automatic refreshing for the _runtime workspace_. The other option is to refresh it manually with F5 after every Gamma command._
 
 ## Plugin setup
 
