@@ -1,6 +1,6 @@
 # The Gamma Statechart Composition Framework
 
-*Version 2.5.1* - For the latest version, check out the [dev](https://github.com/ftsrg/gamma/tree/dev) branch.
+*Version 2.6.0* - For the latest version, check out the [dev](https://github.com/ftsrg/gamma/tree/dev) branch.
 
 The Gamma Statechart Composition Framework is a toolset to model, verify and generate code for component-based reactive systems. The framework builds on Yakindu, an open source statechart modeling tool and provides an additional modeling layer to instatiate a communicating network of statecharts. Compositionality is hierarchical, which facilitates the creation of reusable component libraries. Individual statecharts, as well as composite statechart networks can be validated and verified by an automated translation to UPPAAL, a model checker for timed automata, or [Theta](https://github.com/ftsrg/theta), a generic, modular and configurable model checking framework. Once a complete model is built, designers can use the code generation functionality of the framework, which can generate Java code for the whole system.
 
@@ -29,13 +29,13 @@ To cite Gamma, please cite the following paper. You can find additional publicat
 ### Dependencies
 
 ##### Recommended Eclipse version and bundle:
-* Eclipse IDE 2021-03, Eclipse IDE for Java and DSL Developers bundle.
+* Eclipse IDE 2021-12, Eclipse IDE for Java and DSL Developers bundle.
 
 ##### 3rd-party Eclipse components (should be installed separately):
 * Xtext 2.25.0 (https://www.eclipse.org/Xtext/, included in Eclipse bundle),
-* VIATRA 2.5.0 (https://www.eclipse.org/viatra/),
+* VIATRA 2.6.0 (https://www.eclipse.org/viatra/),
 * Yakindu Statechart Tools 3.5.13 (https://www.itemis.com/en/yakindu/state-machine/).
-* PlantUML 1.1.25 (https://plantuml.com/).
+* PlantUML 1.1.26 (https://plantuml.com/).
 
 ##### 3rd-party tools used by Gamma (should be installed separately):
 * UPPAAL (Uppsala and Aalborg Universities, http://www.uppaal.org/).
