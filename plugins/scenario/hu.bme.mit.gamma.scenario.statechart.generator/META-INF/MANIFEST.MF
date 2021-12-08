@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Gamma Scenario to Statechart Model Generator
 Bundle-SymbolicName: hu.bme.mit.gamma.scenario.statechart.generator
-Bundle-Version: 2.5.1.qualifier
+Bundle-Version: 2.6.0.qualifier
 Bundle-Vendor: BME-FTSRG
 Automatic-Module-Name: hu.bme.mit.gamma.scenario.statechart.generator
 Bundle-RequiredExecutionEnvironment: JavaSE-11
