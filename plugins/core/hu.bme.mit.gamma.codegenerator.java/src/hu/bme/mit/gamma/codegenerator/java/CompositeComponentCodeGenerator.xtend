@@ -12,7 +12,7 @@ package hu.bme.mit.gamma.codegenerator.java
 
 import hu.bme.mit.gamma.codegenerator.java.util.Namings
 import hu.bme.mit.gamma.codegenerator.java.util.TimingDeterminer
-import hu.bme.mit.gamma.statechart.composite.AsynchronousCompositeComponent
+import hu.bme.mit.gamma.statechart.composite.AbstractAsynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.CompositeComponent
 import hu.bme.mit.gamma.statechart.interface_.Port
 
@@ -49,10 +49,10 @@ class CompositeComponentCodeGenerator {
 		import java.util.LinkedList;
 		
 		import «PACKAGE_NAME».*;
-		«FOR _package : component.containingPackage.allImports /* For type declarations */»
+		«FOR _package : component.containingPackage.allImports.toSet /* For type declarations */»
 			import «_package.getPackageString(PACKAGE_NAME)».*;
 		«ENDFOR»
-		«IF component instanceof AsynchronousCompositeComponent»
+		«IF component instanceof AbstractAsynchronousCompositeComponent»
 			import «PACKAGE_NAME».«Namings.CHANNEL_PACKAGE_POSTFIX».*;
 		«ENDIF»
 	'''

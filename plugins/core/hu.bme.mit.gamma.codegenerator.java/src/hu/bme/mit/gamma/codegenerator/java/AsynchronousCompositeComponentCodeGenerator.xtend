@@ -14,7 +14,9 @@ import hu.bme.mit.gamma.codegenerator.java.queries.BroadcastChannels
 import hu.bme.mit.gamma.codegenerator.java.queries.SimpleChannels
 import hu.bme.mit.gamma.codegenerator.java.util.Namings
 import hu.bme.mit.gamma.codegenerator.java.util.TimingDeterminer
+import hu.bme.mit.gamma.statechart.composite.AbstractAsynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.AsynchronousCompositeComponent
+import hu.bme.mit.gamma.statechart.composite.ScheduledAsynchronousCompositeComponent
 
 import static extension hu.bme.mit.gamma.codegenerator.java.util.Namings.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
@@ -39,15 +41,22 @@ class AsynchronousCompositeComponentCodeGenerator {
 		this.compositeComponentCodeGenerator = new CompositeComponentCodeGenerator(this.PACKAGE_NAME, this.trace)
 	}
 	
+	def createAsynchronousCompositeComponentClass(
+			AbstractAsynchronousCompositeComponent component) {
+		return component.createAsynchronousCompositeComponentClass(0, 0)
+	}
+	
 	/**
 	* Creates the Java code of the asynchronous composite class, containing asynchronous components.
 	*/
-	protected def createAsynchronousCompositeComponentClass(AsynchronousCompositeComponent component, int channelId1, int channelId2) '''
+	protected def createAsynchronousCompositeComponentClass(
+			AbstractAsynchronousCompositeComponent component, int channelId1, int channelId2) '''
 		package «component.generateComponentPackageName»;
 		
 		«component.generateCompositeSystemImports»
 		
-		public class «component.generateComponentClassName» implements «component.generatePortOwnerInterfaceName» {
+		public class «component.generateComponentClassName» implements «component.generatePortOwnerInterfaceName»«IF component instanceof ScheduledAsynchronousCompositeComponent», Runnable«ENDIF» {
+			«IF component instanceof ScheduledAsynchronousCompositeComponent»private Thread thread;«ENDIF»
 			// Component instances
 			«FOR instance : component.components»
 				private «instance.type.generateComponentClassName» «instance.name»;
@@ -81,6 +90,7 @@ class AsynchronousCompositeComponentCodeGenerator {
 			/** Resets the contained statemachines recursively. Must be called to initialize the component. */
 			@Override
 			public void reset() {
+				«IF component instanceof ScheduledAsynchronousCompositeComponent»interrupt();«ENDIF»
 				«FOR instance : component.components»
 					«instance.name».reset();
 				«ENDFOR»
@@ -133,17 +143,53 @@ class AsynchronousCompositeComponentCodeGenerator {
 				}
 			«ENDFOR»
 			
-			/** Starts the running of the asynchronous component. */
-			@Override
-			public void start() {
-				«FOR instance : component.components»
-					«instance.name».start();
-				«ENDFOR»
-			}
-			
-			public boolean isWaiting() {
-				return «FOR instance : component.components SEPARATOR " && "»«instance.name».isWaiting()«ENDFOR»;
-			}
+			«IF component instanceof AsynchronousCompositeComponent»
+				/** Starts the running of the asynchronous component. */
+				@Override
+				public void start() {
+					«FOR instance : component.components»
+						«instance.name».start();
+					«ENDFOR»
+				}
+				
+				public boolean isWaiting() {
+					return «FOR instance : component.components SEPARATOR " && "»«instance.name».isWaiting()«ENDFOR»;
+				}
+				
+				/** Delegates the interruptions. */
+				public void interrupt() {
+					«FOR instance : component.components»
+						«instance.name».interrupt();
+					«ENDFOR»
+				}
+			«ELSEIF component instanceof ScheduledAsynchronousCompositeComponent»
+				/** Starts the running of the asynchronous component. */
+				@Override
+				public void start() {
+					thread = new Thread(this);
+					thread.start();
+				}
+				
+				@Override
+				public void run() {
+					while (!Thread.currentThread().isInterrupted()) {
+						schedule(); // Resource-intensive, should be changed
+					}
+				}
+				
+				public void schedule() {
+					«FOR instance : component.scheduledInstances»
+						«instance.name».schedule();
+					«ENDFOR»
+				}
+				
+				/** Stops the thread running this composite instance. */
+				public void interrupt() {
+					if (thread != null) {
+						thread.interrupt();
+					}
+				}
+			«ENDIF»
 			
 			«IF component.needTimer»
 				/** Setter for the timer e.g., a virtual timer. */

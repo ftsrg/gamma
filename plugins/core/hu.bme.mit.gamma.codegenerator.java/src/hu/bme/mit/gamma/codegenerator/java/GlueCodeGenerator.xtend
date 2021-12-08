@@ -25,9 +25,10 @@ import hu.bme.mit.gamma.codegenerator.java.util.TimerServiceCodeGenerator
 import hu.bme.mit.gamma.codegenerator.java.util.TimingDeterminer
 import hu.bme.mit.gamma.codegenerator.java.util.TypeDeclarationGenerator
 import hu.bme.mit.gamma.codegenerator.java.util.VirtualTimerServiceCodeGenerator
+import hu.bme.mit.gamma.statechart.composite.ScheduledAsynchronousCompositeComponent
+import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
-import hu.bme.mit.gamma.statechart.interface_.Component
 import java.io.File
 import java.io.FileWriter
 import java.util.HashSet
@@ -118,7 +119,8 @@ class GlueCodeGenerator {
 		this.channelInterfaceGenerator = new ChannelInterfaceGenerator(this.BASE_PACKAGE_NAME)
 		this.channelCodeGenerator = new ChannelCodeGenerator(this.BASE_PACKAGE_NAME)
 		this.asynchronousCompositeComponentCodeGenerator = new AsynchronousCompositeComponentCodeGenerator(this.BASE_PACKAGE_NAME, trace)
-		setup
+		this.transformation = BatchTransformation.forEngine(engine).build
+		this.statements = transformation.transformationStatements
 	}
 	
 	/**
@@ -140,16 +142,6 @@ class GlueCodeGenerator {
 		}	
 	}
 	
-	/**
-	 * Sets up the transformation infrastructure.
-	 */
-	protected def setup() {
-		//Create VIATRA Batch transformation
-		transformation = BatchTransformation.forEngine(engine).build
-		//Initialize batch transformation statements
-		statements = transformation.transformationStatements
-	}
-
 	/**
 	 * Executes the code generation.
 	 */
@@ -365,10 +357,16 @@ class GlueCodeGenerator {
 			 asynchronousCompositeComponentsRule = createRule(AsynchronousCompositeComponents.instance).action [
 				val compositeSystemUri = BASE_PACKAGE_URI + File.separator + it.asynchronousCompositeComponent.containingPackage.name.toLowerCase
 				// Main components
-				val code = it.asynchronousCompositeComponent.createAsynchronousCompositeComponentClass(0, 0)
+				val code = it.asynchronousCompositeComponent.createAsynchronousCompositeComponentClass
 				code.saveCode(compositeSystemUri + File.separator + it.asynchronousCompositeComponent.generateComponentClassName + ".java")
 				val interfaceCode = it.asynchronousCompositeComponent.generateComponentInterface
 				interfaceCode.saveCode(compositeSystemUri + File.separator + it.asynchronousCompositeComponent.generatePortOwnerInterfaceName + ".java")
+				
+				if (it.asynchronousCompositeComponent instanceof ScheduledAsynchronousCompositeComponent) {
+					// Generating the reflective class
+					val reflectiveCode = it.asynchronousCompositeComponent.generateReflectiveClass
+					reflectiveCode.saveCode(compositeSystemUri + File.separator + it.asynchronousCompositeComponent.reflectiveClassName + ".java")
+				}
 			].build		
 		}
 		return asynchronousCompositeComponentsRule

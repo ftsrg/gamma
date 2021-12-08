@@ -13,6 +13,7 @@ package hu.bme.mit.gamma.codegenerator.java.util
 import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.composite.CompositeComponent
+import hu.bme.mit.gamma.statechart.composite.ScheduledAsynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponent
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
@@ -158,7 +159,8 @@ class ReflectiveComponentCodeGenerator {
 		public void schedule(String instance) {
 			«IF component instanceof SynchronousComponent»
 					«Namings.REFLECTIVE_WRAPPED_COMPONENT».runCycle();
-			«ELSEIF component instanceof AsynchronousAdapter»
+			«ELSEIF component instanceof AsynchronousAdapter ||
+				component instanceof ScheduledAsynchronousCompositeComponent»
 					«Namings.REFLECTIVE_WRAPPED_COMPONENT».schedule();
 			«ELSE»
 «««					TODO

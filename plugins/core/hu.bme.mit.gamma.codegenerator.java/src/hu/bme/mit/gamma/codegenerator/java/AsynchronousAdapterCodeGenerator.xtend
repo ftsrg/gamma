@@ -106,6 +106,7 @@ class AsynchronousAdapterCodeGenerator {
 			/** Resets the wrapped component. Must be called to initialize the component. */
 			@Override
 			public void reset() {
+				interrupt();
 				«component.generateWrappedComponentName».reset();
 			}
 			
@@ -215,7 +216,7 @@ class AsynchronousAdapterCodeGenerator {
 						«GAMMA_EVENT_CLASS» «EVENT_INSTANCE_NAME» = __asyncQueue.take();		
 						processEvent(«EVENT_INSTANCE_NAME»);
 					} catch (InterruptedException e) {
-						thread.interrupt();
+						interrupt();
 					}
 				}
 			}
@@ -291,7 +292,9 @@ class AsynchronousAdapterCodeGenerator {
 			
 			/** Stops the thread running this wrapper instance. */
 			public void interrupt() {
-				thread.interrupt();
+				if (thread != null) {
+					thread.interrupt();
+				}
 			}
 			
 			public «component.wrappedComponent.type.generateComponentClassName» get«component.generateWrappedComponentName.toFirstUpper»() {
@@ -319,7 +322,7 @@ class AsynchronousAdapterCodeGenerator {
 		
 		import «PACKAGE_NAME».*;
 
-		«FOR _package : component.containingPackage.allImports /* For type declarations */»
+		«FOR _package : component.containingPackage.allImports.toSet /* For type declarations */»
 			import «_package.getPackageString(PACKAGE_NAME)».*;
 		«ENDFOR»
 		

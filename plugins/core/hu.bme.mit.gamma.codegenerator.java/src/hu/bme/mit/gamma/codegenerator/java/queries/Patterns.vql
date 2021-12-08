@@ -200,6 +200,6 @@ pattern clockTriggersOfWrappers(wrapper : AsynchronousAdapter, controlSpecificat
 
 // Asynchronous composite components
 
-pattern asynchronousCompositeComponents(asynchronousCompositeComponent : AsynchronousCompositeComponent) {
-	AsynchronousCompositeComponent(asynchronousCompositeComponent);
+pattern asynchronousCompositeComponents(asynchronousCompositeComponent : AbstractAsynchronousCompositeComponent){
+	AbstractAsynchronousCompositeComponent(asynchronousCompositeComponent);
 }

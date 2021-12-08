@@ -1,8 +1,8 @@
 package hu.bme.mit.gamma.trace.testgeneration.java.util
 
 import hu.bme.mit.gamma.expression.model.Declaration
+import hu.bme.mit.gamma.statechart.composite.AbstractAsynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
-import hu.bme.mit.gamma.statechart.composite.AsynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponent
@@ -71,7 +71,7 @@ class TestGeneratorUtil {
 				// This is the end
 				return ''''''
 			}
-			if (component instanceof AsynchronousCompositeComponent) {
+			if (component instanceof AbstractAsynchronousCompositeComponent) {
 				if (child instanceof SynchronousComponentInstance) {
 					// We are on the border of async-sync components
 					val wrapperInstance = child.asyncParent
@@ -81,7 +81,8 @@ class TestGeneratorUtil {
 					return ''''''
 				}
 			}
-		} else {
+		}
+		else {
 			val parent = actual.parent
 			if (child === null) {
 				// No dot after the last instance
@@ -119,7 +120,7 @@ class TestGeneratorUtil {
 		var int startIndex
 		if (parent === null) {
 			if (instance instanceof SynchronousComponentInstance &&
-				component instanceof AsynchronousCompositeComponent) {
+				component instanceof AbstractAsynchronousCompositeComponent) {
 				// An async-sync step is needed
 				val syncInstance = instance as SynchronousComponentInstance
 				val wrapperParent = syncInstance.asyncParent
