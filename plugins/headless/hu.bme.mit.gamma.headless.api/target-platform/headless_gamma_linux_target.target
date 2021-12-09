@@ -72,7 +72,6 @@
 		<plugin id="javax.websocket"/>
 		<plugin id="javax.xml"/>
 		<plugin id="javax.xml.bind"/>
-		<plugin id="lpg.runtime.java"/>
 		<plugin id="net.i2p.crypto.eddsa"/>
 		<plugin id="net.sourceforge.plantuml.eclipse"/>
 		<plugin id="net.sourceforge.plantuml.eclipse.imagecontrol"/>
@@ -124,7 +123,7 @@
 		<plugin id="org.apache.lucene.core.source"/>
 		<plugin id="org.apache.sshd.osgi"/>
 		<plugin id="org.apache.sshd.sftp"/>
-		<plugin id="org.apache.xerces" version="2.12.1.v20210115-0812"/>
+		<plugin id="org.apache.xerces"/>
 		<plugin id="org.apache.xml.resolver"/>
 		<plugin id="org.apache.xml.serializer"/>
 		<plugin id="org.apache.xmlgraphics"/>
@@ -342,10 +341,7 @@
 		<plugin id="org.eclipse.emf.transaction"/>
 		<plugin id="org.eclipse.emf.transaction.ui"/>
 		<plugin id="org.eclipse.emf.validation"/>
-		<plugin id="org.eclipse.emf.validation.ui"/>
-		<plugin id="org.eclipse.emf.validation.ui.ide"/>
 		<plugin id="org.eclipse.emf.workspace"/>
-		<plugin id="org.eclipse.emf.workspace.ui"/>
 		<plugin id="org.eclipse.equinox.app"/>
 		<plugin id="org.eclipse.equinox.app.source"/>
 		<plugin id="org.eclipse.equinox.bidi"/>
@@ -445,8 +441,8 @@
 		<plugin id="org.eclipse.fx.osgi"/>
 		<plugin id="org.eclipse.help"/>
 		<plugin id="org.eclipse.jdt"/>
-		<plugin id="org.eclipse.jdt.annotation" version="1.1.500.v20200407-1355"/>
 		<plugin id="org.eclipse.jdt.annotation" version="2.2.600.v20200408-1511"/>
+		<plugin id="org.eclipse.jdt.annotation" version="1.1.500.v20200407-1355"/>
 		<plugin id="org.eclipse.jdt.annotation.source" version="2.2.600.v20200408-1511"/>
 		<plugin id="org.eclipse.jdt.annotation.source" version="1.1.500.v20200407-1355"/>
 		<plugin id="org.eclipse.jdt.apt.core"/>
@@ -563,9 +559,6 @@
 		<plugin id="org.eclipse.m2e.sourcelookup"/>
 		<plugin id="org.eclipse.m2e.sourcelookup.ui"/>
 		<plugin id="org.eclipse.m2e.workspace.cli"/>
-		<plugin id="org.eclipse.ocl"/>
-		<plugin id="org.eclipse.ocl.common"/>
-		<plugin id="org.eclipse.ocl.ecore"/>
 		<plugin id="org.eclipse.osgi"/>
 		<plugin id="org.eclipse.osgi.compatibility.state"/>
 		<plugin id="org.eclipse.osgi.compatibility.state.source"/>
