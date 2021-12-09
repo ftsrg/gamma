@@ -188,7 +188,7 @@ Run the test cases and make sure they are really present in the implementation. 
 
 ## Fixing the Controller
 
-As mentioned before, the problem is in the _crossroad controller_. As the last step of this tutorial, let us fix it and re-run the analysis. Fix the `/model/Controller/Controller.stc` Yakindu statechart to ensure it stays synchronized after a _police interruption_ is received.
+As mentioned before, the problem is in the _crossroad controller_. As the last step of this tutorial, let us fix it and re-run the analysis. Fix the `/model/Controller/Controller.sct` Yakindu statechart to ensure it stays synchronized after a _police interruption_ is received.
 
 1. Recompile the Yakindu model.
 2. Regenerate Java code from the new Crossroad composite model.
