@@ -15,19 +15,6 @@
       </application>
    </extension>
    <extension
-         id="gamma.api.headless.product"
-         name="gamma.api.headless.product"
-         point="org.eclipse.core.runtime.products">
-      <product
-            application="gamma.api.headless.application"
-            name="name">
-         <property
-               name="hu.bme.mit.gamma.api.headless.property1"
-               value="hu.bme.mit.gamma.api.headless.property1">
-         </property>
-      </product>
-   </extension>
-   <extension
          id="product"
          point="org.eclipse.core.runtime.products">
       <product
