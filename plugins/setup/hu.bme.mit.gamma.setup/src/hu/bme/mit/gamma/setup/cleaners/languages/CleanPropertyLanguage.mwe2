@@ -15,7 +15,8 @@ import org.eclipse.xtext.xtext.generator.model.project.*
 import org.eclipse.emf.mwe.utils.*
 import org.eclipse.emf.ecore.resource.impl.*
 
-var rootPath = "../core"
+var repositoryRootPath = "../.."
+var rootPath = "${repositoryRootPath}/core"
 
 Workflow {
 	bean = ResourceSetImpl : resourceSet {}
@@ -25,6 +26,6 @@ Workflow {
     }
 	
 	component = org.eclipse.emf.mwe.utils.DirectoryCleaner {
-        directory = "../core/hu.bme.mit.gamma.property.language/src-gen"
+        directory = "${rootPath}/hu.bme.mit.gamma.property.language/src-gen"
     }
 }

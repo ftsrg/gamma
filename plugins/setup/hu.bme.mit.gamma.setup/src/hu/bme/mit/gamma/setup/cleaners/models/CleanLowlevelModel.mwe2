@@ -13,7 +13,8 @@ module hu.bme.mit.gamma.setup.cleaners.models.CleanLowlevelModel
 import org.eclipse.emf.mwe.utils.*
 import org.eclipse.emf.ecore.resource.impl.*
 
-var rootPath = ".."
+var repositoryRootPath = "../.."
+var rootPath = "${repositoryRootPath}/xsts"
 var projectName = "hu.bme.mit.gamma.statechart.lowlevel.model"
 
 Workflow {	
@@ -24,6 +25,6 @@ Workflow {
     }
     
     component = org.eclipse.emf.mwe.utils.DirectoryCleaner {
-        directory = "../xsts/${projectName}/src-gen"
+        directory = "${rootPath}/${projectName}/src-gen"
     }
 }

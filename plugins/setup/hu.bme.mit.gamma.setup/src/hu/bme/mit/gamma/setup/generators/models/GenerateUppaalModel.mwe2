@@ -13,7 +13,8 @@ module hu.bme.mit.gamma.setup.generators.models.GenerateUppaalModel
 import org.eclipse.emf.mwe.utils.*
 import org.eclipse.emf.ecore.resource.impl.*
 
-var rootPath = ".."
+var repositoryRootPath = "../.."
+var rootPath = "${repositoryRootPath}/core"
 var projectName = "de.uni_paderborn.uppaal"
 var modelName = "uppaal"
 
@@ -25,7 +26,7 @@ Workflow {
     }
     
     component = org.eclipse.emf.mwe.utils.DirectoryCleaner {
-        directory = "../core/${projectName}/src-gen"
+        directory = "${rootPath}/${projectName}/src-gen"
     }
     
     component = org.eclipse.emf.mwe2.ecore.EcoreGenerator {

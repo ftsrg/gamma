@@ -13,7 +13,8 @@ module hu.bme.mit.gamma.setup.generators.models.GenerateExpressionModel
 import org.eclipse.emf.mwe.utils.*
 import org.eclipse.emf.ecore.resource.impl.*
 
-var rootPath = ".."
+var repositoryRootPath = "../.."
+var rootPath = "${repositoryRootPath}/core"
 var projectName = "hu.bme.mit.gamma.expression.model"
 var modelName = "expression"
 
@@ -25,7 +26,7 @@ Workflow {
     }
     
     component = org.eclipse.emf.mwe.utils.DirectoryCleaner {
-        directory = "../core/${projectName}/src-gen"
+        directory = "${rootPath}/${projectName}/src-gen"
     }
     
     component = org.eclipse.emf.mwe2.ecore.EcoreGenerator {

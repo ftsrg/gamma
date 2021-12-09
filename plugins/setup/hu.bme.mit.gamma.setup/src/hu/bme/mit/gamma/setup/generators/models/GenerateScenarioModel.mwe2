@@ -13,7 +13,8 @@ module hu.bme.mit.gamma.setup.generators.models.GenerateScenarioModel
 import org.eclipse.emf.mwe.utils.*
 import org.eclipse.emf.ecore.resource.impl.*
 
-var rootPath = ".."
+var repositoryRootPath = "../.."
+var rootPath = "${repositoryRootPath}/scenario"
 var projectName = "hu.bme.mit.gamma.scenario.model"
 var modelName = "scenario"
 
@@ -25,7 +26,7 @@ Workflow {
     }
     
     component = org.eclipse.emf.mwe.utils.DirectoryCleaner {
-        directory = "../scenario/${projectName}/src-gen"
+        directory = "${rootPath}/${projectName}/src-gen"
     }
     
     component = org.eclipse.emf.mwe2.ecore.EcoreGenerator {
