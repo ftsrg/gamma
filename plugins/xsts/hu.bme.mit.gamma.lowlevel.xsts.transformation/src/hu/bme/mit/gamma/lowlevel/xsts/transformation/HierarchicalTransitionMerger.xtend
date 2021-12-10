@@ -60,8 +60,9 @@ class HierarchicalTransitionMerger extends AbstractTransitionMerger {
 		// Adding default branch for yet unattended nondeterministic choices
 		// Cannot be done on the fly due to executedVariable injections (they are injected in very branch
 		for (defaultlessNonDeterministicChoice : xStsMergedAction
-					.getSelfAndAllContentsOfType(NonDeterministicAction)
-						.reject[choicesWithDefaultBranch.contains(it)]) {
+				.getSelfAndAllContentsOfType(NonDeterministicAction)
+					.reject[choicesWithDefaultBranch.contains(it)]
+					.reject[it.hasDefaultBranch]) { // Rejecting choices that already have default branches
 			defaultlessNonDeterministicChoice.extendChoiceWithDefaultBranch
 		}
 		

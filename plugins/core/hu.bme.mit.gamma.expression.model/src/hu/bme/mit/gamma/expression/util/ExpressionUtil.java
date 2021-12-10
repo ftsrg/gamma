@@ -879,6 +879,12 @@ public class ExpressionUtil {
 		return literalExpression;
 	}
 	
+	public Expression createDefaultExpression(Collection<? extends Expression> expressions) {
+		Expression orExpression = wrapIntoOrExpression(expressions);
+		NotExpression notExpression = createNotExpression(unwrapIfPossible(orExpression));
+		return notExpression;
+	}
+	
 	public Expression replaceAndWrapIntoMultiaryExpression(Expression original,
 			Expression addition, MultiaryExpression potentialContainer) {
 		if (original == null && addition == null) {

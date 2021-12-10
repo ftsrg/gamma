@@ -667,17 +667,22 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	}
 	
 	public static List<Entry<Port, Event>> getStoredEvents(MessageQueue queue) {
-		List<Entry<Port, Event>> events = new ArrayList<Entry<Port, Event>>();
+		Collection<Entry<Port, Event>> events = new LinkedHashSet<Entry<Port, Event>>();
+		// To filter possible duplicates
 		for (EventReference eventReference : queue.getEventReferences()) {
 			events.addAll(getInputEvents(eventReference));
 		}
-		return events;
+		return List.copyOf(events);
 	}
 	
 	public static int getEventId(MessageQueue queue,
 			Entry<Port, Event> portEvent) {
 		List<Entry<Port,Event>> storedEvents = getStoredEvents(queue);
 		return storedEvents.indexOf(portEvent) + 1; // Starts from 1, 0 is the "empty cell"
+	}
+	
+	public static int getMinEventId(MessageQueue queue) {
+		return 1; // Starts from 1, size is the max
 	}
 	
 	public static int getMaxEventId(MessageQueue queue) {

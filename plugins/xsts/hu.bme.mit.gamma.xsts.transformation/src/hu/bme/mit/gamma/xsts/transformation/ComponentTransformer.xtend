@@ -606,30 +606,46 @@ class ComponentTransformer {
 			val extension eventRef = new ReferenceToXstsVariableMapper(xSts)
 			// Collecting the referenced event variables
 			val messageQueue = component.messageQueues.head // Only one
-			val xStsReferencedEventVariables = messageQueue.eventReferences
-					.map[it.variables].flatten
 			
 			val newInEventAction = createSequentialAction
-			// Setting the referenced event variables to unknown
-			for (xStsEventVariable : xStsReferencedEventVariables) {
-				newInEventAction.actions += xStsEventVariable.createHavocAction
+			// Choosing a random event to raise
+			val storedEvents = messageQueue.storedEvents
+			val min = messageQueue.minEventId
+			val max = messageQueue.maxEventId
+			
+			val randomActions = createChoiceActionForRandomValues(
+					messageQueue.name + "_" + messageQueue.hashCode.abs, min, max + 1 /* exclusive */)
+			val storageAction = randomActions.key
+			newInEventAction.actions += storageAction
+			val choiceAction = randomActions.value
+			val branchActions = choiceAction.actions
+			
+			val removableBranchActions = newArrayList
+			for (var i = min; i <= max; i++) {
+				val index = i - min // As indexing starts from 0, not from min
+				val branchAction = branchActions.get(index)
+				val portEvent = storedEvents.get(index)
+				val port = portEvent.key
+				val event = portEvent.value
+				
+				val xStsInputEventVariables = event.getInputEventVariables(port)
+				if (xStsInputEventVariables.empty) {
+					removableBranchActions += branchAction // The input event is unused
+				}
+				else {
+					// Can be more than one - one port can be mapped to multiple instance ports
+					for (xStsInputEventVariable : xStsInputEventVariables) {
+						branchAction.appendToAction(xStsInputEventVariable
+							.createAssignmentAction(createTrueExpression))
+					}
+				}
 			}
-			// Enabling the setting of the referenced event variables to true if no other is set
-			val xStsIfActions = newArrayList
-			for (xStsEventVariable : xStsReferencedEventVariables) {
-				val xStsNegatedVariables = newHashSet
-				xStsNegatedVariables += xStsReferencedEventVariables
-				xStsNegatedVariables -= xStsEventVariable
-				xStsIfActions += xStsActionUtil.connectThroughNegations(xStsNegatedVariables)
-								.createChoiceSequentialAction(xStsEventVariable.createAssignmentAction(createTrueExpression))
-			}
-			newInEventAction.actions += xStsIfActions.createChoiceAction // To enforce exclusiveness
-			// Binding event variables that come from the same ports
-			newInEventAction.actions += xSts.createEventAssignmentsBoundToTheSameSystemPort(wrappedType)
-			 // Original parameter settings
+			removableBranchActions.forEach[it.remove] // Removing now - it would break the indexes in the loop
+			
+			// Original parameter settings
+			// Parameters that come from the same ports are bound to the same values - done by previous call
 			newInEventAction.actions += inEventAction.action
-			// Binding parameter variables that come from the same ports
-			newInEventAction.actions += xSts.createParameterAssignmentsBoundToTheSameSystemPort(wrappedType)
+			
 			xSts.inEventTransition = newInEventAction.wrap
 		}
 		

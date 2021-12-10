@@ -65,14 +65,10 @@ class XstsToUppaalTransformer {
 		stableLocation.name = stableLocationName
 		stableLocation.locationTimeKind = LocationKind.NORMAL
 		
-		var environmentFinishLocation = environmentalAction.transformAction(stableLocation)
-		// If there is no environmental action, we create an environmentFinishLocation (needed for back-annotation)
-		if (environmentFinishLocation === stableLocation) {
-			environmentFinishLocation = template.createLocation
-			stableLocation.createEdge(environmentFinishLocation)
-		}
+		val environmentFinishLocation = template.createLocation
 		environmentFinishLocation.name = environmentFinishLocationName
-		environmentFinishLocation.locationTimeKind = LocationKind.NORMAL // So optimization does not delete it
+		// Location kind is Normal, so optimization does not delete it
+		environmentalAction.transformIntoCfa(stableLocation, environmentFinishLocation)
 		
 		if (mergedAction.isOrContainsTypes(#[NonDeterministicAction, HavocAction]) ||
 				xSts.hasClockVariable) {
