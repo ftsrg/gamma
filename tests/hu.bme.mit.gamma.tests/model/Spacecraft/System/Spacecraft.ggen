@@ -1,0 +1,19 @@
+import "Spacecraft.gsm"
+
+analysis {
+	component : SystemAsyncAdapter
+	file : "Spacecraft.gsm"
+	language : XSTS-UPPAAL
+	constraint : {
+		top : {
+			minimum-orchestrating-period : 1 ms
+			maximum-orchestrating-period : 1 ms
+		}
+	}
+}
+
+verification {
+    language : XSTS-UPPAAL
+    file : "Spacecraft.xml"
+    property-file : "Spacecraft.gpm"
+}
