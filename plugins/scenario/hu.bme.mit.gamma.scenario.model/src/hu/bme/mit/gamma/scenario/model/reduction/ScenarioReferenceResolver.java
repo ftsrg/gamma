@@ -25,7 +25,7 @@ public class ScenarioReferenceResolver {
 		scenario.getChart().getFragment().getInteractions().clear();
 		scenario.getChart().getFragment().getInteractions().addAll(newInteractions);
 
-		resolveReferences(scenario);
+		resolveReferences(scenario);//ez kell change
 	}
 
 	private List<Interaction> resolveReferencesFromFragment(InteractionFragment fragment) {
