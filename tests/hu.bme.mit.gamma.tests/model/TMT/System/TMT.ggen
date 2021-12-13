@@ -1,4 +1,19 @@
 import "TMT.gsm"
+import "TMTComponent.gsm"
+
+// TMTComponent - atomic statechart code generation
+
+code {
+	component : Procedure_Executive_and_Analysis_Software
+	language : java
+}
+
+// TMT
+
+code {
+	component : Procedure_Executive_and_Analysis_SoftwareSyncWrapAsyncAdapter
+	language : java
+}
 
 analysis {
 	component : Procedure_Executive_and_Analysis_SoftwareSyncWrapAsyncAdapter
@@ -13,12 +28,14 @@ analysis {
 
 verification {
 	language : XSTS-UPPAAL
+	test-language : java
 	file : "TMT.xml"
 	property-file : "TMT.gpm"
 }
 
 verification {
 	language : Theta
+	test-language : java
 	file : "TMT.xsts"
 	property-file : "TMT.gpm"
 }

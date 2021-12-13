@@ -1,4 +1,24 @@
 import "Spacecraft.gsm"
+import "SpacecraftComponent.gsm"
+
+// SpacecraftComponent - atomic statechart code generation
+
+code {
+	component : GroundStation
+	language : java
+}
+
+code {
+	component : Spacecraft
+	language : java
+}
+
+// Spacecraft
+
+code {
+	component : SystemAsyncAdapter
+	language : java
+}
 
 analysis {
 	component : SystemAsyncAdapter
@@ -14,6 +34,7 @@ analysis {
 
 verification {
     language : XSTS-UPPAAL
+    test-language : java
     file : "Spacecraft.xml"
     property-file : "Spacecraft.gpm"
 }
