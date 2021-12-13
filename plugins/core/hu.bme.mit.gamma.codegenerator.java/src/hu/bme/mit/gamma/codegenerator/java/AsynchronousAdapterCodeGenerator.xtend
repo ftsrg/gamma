@@ -305,7 +305,8 @@ class AsynchronousAdapterCodeGenerator {
 				public void setTimer(«UNIFIED_TIMER_INTERFACE» timer) {
 					«IF !component.clocks.empty»timerService = timer;«ENDIF»
 					«IF component.wrappedComponent.type.needTimer»«component.generateWrappedComponentName».setTimer(timer);«ENDIF»
-					init(); // To set the service into functioning state with clocks (so that "after 1 s" works with new timer as well)
+					// No need for an explicit "init()" call here
+					// The above delegated calls set the service into functioning state with clocks (so that "after 1 s" works with new timer as well)
 				}
 			«ENDIF»
 			
