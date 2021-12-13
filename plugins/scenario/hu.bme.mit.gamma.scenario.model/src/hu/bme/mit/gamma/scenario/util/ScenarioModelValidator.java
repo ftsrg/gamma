@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
 
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
 import hu.bme.mit.gamma.expression.util.ExpressionModelValidator;
@@ -33,6 +34,7 @@ import hu.bme.mit.gamma.scenario.model.Reset;
 import hu.bme.mit.gamma.scenario.model.InitialBlock;
 import hu.bme.mit.gamma.scenario.model.ScenarioDeclaration;
 import hu.bme.mit.gamma.scenario.model.ScenarioDefinition;
+import hu.bme.mit.gamma.scenario.model.ScenarioDefinitionReference;
 import hu.bme.mit.gamma.scenario.model.ScenarioModelPackage;
 import hu.bme.mit.gamma.scenario.model.Signal;
 import hu.bme.mit.gamma.scenario.model.StrictAnnotation;
@@ -261,7 +263,8 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 	private Collection<ValidationResultMessage> checkInterval(Expression minimum, Expression maximum,
 			EStructuralFeature feature) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		/*try {
+		
+		try {
 			int min = expressionEvaluator.evaluateInteger(minimum);
 			if (min < 0) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
@@ -278,7 +281,7 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 		} catch (IllegalArgumentException e) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 					"Both the minimum and maximum values must be of type integer", new ReferenceInfo(feature)));
-		}*/
+		}
 		return validationResultMessages;
 	}
 
@@ -361,6 +364,44 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 			return combinedFragment.getFragments().stream()
 					.allMatch((fragment) -> fragment.getInteractions().stream()
 							.allMatch((i) -> interactionIsCold(i)));
+		}
+		return false;
+	}
+	
+	public Collection<ValidationResultMessage> checkScenarioReferenceParamCount(ScenarioDefinitionReference reference) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		if(reference.getArguments().size() != reference.getScenarioDefinition().getParameterDeclarations().size()) {
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "Scenario "
+					+ reference.getScenarioDefinition().getName() + " takes "
+					+ reference.getScenarioDefinition().getParameterDeclarations().size() + " parameters, but " 
+					+ reference.getArguments().size() + " argumnets are provided.",
+					new ReferenceInfo(ScenarioModelPackage.Literals.SCENARIO_DEFINITION_REFERENCE__SCENARIO_DEFINITION)));
+		}
+		return validationResultMessages;
+	}
+	
+	public Collection<ValidationResultMessage> checkRecursiveScenraioReference(ScenarioDefinitionReference reference) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		if(isScenarioReferenceRecursive(reference,reference.getScenarioDefinition())) {
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "Scenario "
+					+ reference.getScenarioDefinition().getName() + " is called recursively.",
+					new ReferenceInfo(ScenarioModelPackage.Literals.SCENARIO_DEFINITION_REFERENCE__SCENARIO_DEFINITION)));
+		}
+		return validationResultMessages;
+	}
+	
+	private boolean isScenarioReferenceRecursive(ScenarioDefinitionReference reference, ScenarioDefinition base) {
+		List<ScenarioDefinitionReference> references = ecoreUtil.getAllContentsOfType(reference.getScenarioDefinition(), ScenarioDefinitionReference.class);
+		for(ScenarioDefinitionReference innerReference : references) {
+			if(innerReference.getScenarioDefinition().equals(base)) {
+				return true;
+			}
+		}
+		for(ScenarioDefinitionReference innerReference : references) {
+			boolean isInnerWrong = isScenarioReferenceRecursive(innerReference, base);
+			if(isInnerWrong) {
+				return true;
+			}
 		}
 		return false;
 	}
