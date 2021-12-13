@@ -90,19 +90,21 @@ public class CommandHandler extends AbstractHandler {
 		targetFolderUri = URI.decode(targetFolderUri);
 		
 		String fileNameWithoutExtenstion = gammaStatechart.getName();
-		Package gammaPackage = (Package) gammaStatechart.eContainer();
+		
 		GammaToLowlevelTransformer transformer = new GammaToLowlevelTransformer();
-		hu.bme.mit.gamma.statechart.lowlevel.model.Package lowlevelPackage = transformer.execute(gammaPackage);
+		// Transforming only a single statechart
+		hu.bme.mit.gamma.statechart.lowlevel.model.Package lowlevelPackage = transformer.transformAndWrap(gammaStatechart);
 		ecoreUtil.normalSave(lowlevelPackage, modelFolderUri, fileNameWithoutExtenstion + ".lgsm");
-		logger.log(Level.INFO, "The Gamma - low level statechart transformation has been finished.");
-		logger.log(Level.INFO, "Starting Gamma low level - xSTS transformation.");
-		// Note: the package is not in a resource
+		logger.log(Level.INFO, "The Gamma - low level statechart transformation has been finished");
+		logger.log(Level.INFO, "Starting Gamma low level - xSTS transformation");
+		
 		LowlevelToXstsTransformer lowlevelTransformer = new LowlevelToXstsTransformer(
 				lowlevelPackage, false, TransitionMerging.HIERARCHICAL /* Flat does not work now */);
 		Entry<XSTS, L2STrace> resultModels = lowlevelTransformer.execute();
 		XSTS xSts = resultModels.getKey();
 		L2STrace traceability = resultModels.getValue();
 		lowlevelTransformer.dispose();
+		
 		// XSTS to Java serializer
 		hu.bme.mit.gamma.xsts.codegeneration.java.ActionSerializer javaActionSerializer = null;
 		// Set the following variable to specify the action priming setting
