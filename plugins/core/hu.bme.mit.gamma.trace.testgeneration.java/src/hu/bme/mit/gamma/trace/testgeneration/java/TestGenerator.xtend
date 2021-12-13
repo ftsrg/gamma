@@ -194,7 +194,6 @@ class TestGenerator {
 				steps += trace.cycle.steps
 			}
 			for (step : steps) {
-				
 				val testMethod = '''
 					public void «IF steps.indexOf(step) == steps.size - 1»«FINAL_TEST_PREFIX»«TEST_NAME.toFirstUpper»«traceId++»()«ELSE»«TEST_NAME + stepId++»()«ENDIF» {
 						«IF step !== steps.head»«TEST_NAME»«IF step === steps.last»«stepId - 1»«ELSE»«stepId - 2»«ENDIF»();«ENDIF»

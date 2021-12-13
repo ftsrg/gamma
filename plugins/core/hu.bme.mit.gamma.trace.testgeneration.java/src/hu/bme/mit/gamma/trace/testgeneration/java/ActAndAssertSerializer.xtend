@@ -70,12 +70,12 @@ class ActAndAssertSerializer {
 	'''
 
 	protected def dispatch String serialize(TimeElapse elapse) '''
-		«TIMER_OBJECT_NAME».elapse(«elapse.elapsedTime»);
+		«IF component.timed»«TIMER_OBJECT_NAME».elapse(«elapse.elapsedTime»);«ENDIF» // Otherwise, no TIMER_OBJECT_NAME
 	'''
 
 	protected def dispatch serialize(InstanceSchedule schedule) '''
 «««		Theoretically, we do not use such models
-		«TEST_INSTANCE_NAME».«util.getFullContainmentHierarchy(schedule.scheduledInstance)».schedule(null);
+		«TEST_INSTANCE_NAME».«util.getFullContainmentHierarchy(schedule.scheduledInstance)».schedule();
 	'''
 
 	protected def dispatch String serialize(ComponentSchedule schedule) '''

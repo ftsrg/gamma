@@ -29,7 +29,7 @@ class WaitingAllowedHandler extends AbstractAssertionHandler {
 					«FOR _assert : asserts»
 						assertTrue(«serializer.serializeAssert(_assert)»);
 					«ENDFOR»
-					} catch (AssertionError error) {
+				} catch (AssertionError error) {
 					wasPresent = false;
 					if (idx > «max») {
 						throw(error);

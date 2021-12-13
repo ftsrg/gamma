@@ -171,9 +171,9 @@ class GlueCodeGenerator {
 	protected def checkUniqueInterfaceNames() {
 		val interfaces = Interfaces.Matcher.on(engine).allValuesOfinterface
 		val nameSet = new HashSet<String>
-		for (name : interfaces.map[it.name.toLowerCase]) {
+		for (name : interfaces.map[it.name.toFirstUpper]) {
 			if (name.equals("state")) {
-				throw new IllegalArgumentException("Interface cannot be named \"state\"!")
+				throw new IllegalArgumentException("Interfaces cannot be named \"state\"!")
 			}
 			// Checking colliding interface names
 			if (nameSet.contains(name)) {

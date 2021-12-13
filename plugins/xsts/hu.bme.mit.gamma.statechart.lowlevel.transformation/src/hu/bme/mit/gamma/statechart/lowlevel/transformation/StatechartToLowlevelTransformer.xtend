@@ -96,17 +96,19 @@ class StatechartToLowlevelTransformer {
 			// It is already transformed
 			return trace.get(_package)
 		}
-		val lowlevelPackage = _package.createPackage
-		trace.put(_package, lowlevelPackage) // Saving in trace
+		val lowlevelPackage = _package.createAndTracePackage
 		// Transforming other type declarations in ExpressionTransformer during variable transformation
 		// Not transforming imports as it is unnecessary (Traces.getLowlevelPackage would not work either)
 		return lowlevelPackage
 	}
 	
-	protected def createPackage(Package _package) {
-		return createPackage => [
+	protected def createAndTracePackage(Package _package) {
+		val lowlevelPackage = createPackage => [
 			it.name = _package.name
 		]
+		trace.put(_package, lowlevelPackage) // Saving in trace
+		
+		return lowlevelPackage
 	}
 	
 	/**

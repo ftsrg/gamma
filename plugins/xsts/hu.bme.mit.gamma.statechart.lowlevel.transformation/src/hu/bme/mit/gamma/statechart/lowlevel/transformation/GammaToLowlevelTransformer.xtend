@@ -44,10 +44,9 @@ class GammaToLowlevelTransformer {
 	def hu.bme.mit.gamma.statechart.lowlevel.model.Package transformAndWrap(StatechartDefinition statechart) {
 		val gammaPackage = statechart.containingPackage
 		
-		// Always a new Package
-		val lowlevelPackage = gammaPackage.createPackage => [
-			it.components += statechart.transform
-		]
+		// Always a new Package (traced because of potential type declaration transformations)
+		val lowlevelPackage = gammaPackage.createAndTracePackage
+		lowlevelPackage.components += statechart.transform
 		
 		return lowlevelPackage
 	}
