@@ -10,13 +10,19 @@ import java.util.stream.Collectors;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
 
-import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
+import hu.bme.mit.gamma.expression.model.ArgumentedElement;
 import hu.bme.mit.gamma.expression.model.Expression;
+import hu.bme.mit.gamma.expression.model.ExpressionModelFactory;
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
+import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition;
+import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
+import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.util.ExpressionModelValidator;
+import hu.bme.mit.gamma.expression.util.ExpressionTypeDeterminator2;
 import hu.bme.mit.gamma.scenario.model.Annotation;
 import hu.bme.mit.gamma.scenario.model.CombinedFragment;
 import hu.bme.mit.gamma.scenario.model.Delay;
+import hu.bme.mit.gamma.scenario.model.InitialBlock;
 import hu.bme.mit.gamma.scenario.model.Interaction;
 import hu.bme.mit.gamma.scenario.model.InteractionDefinition;
 import hu.bme.mit.gamma.scenario.model.InteractionDirection;
@@ -31,7 +37,6 @@ import hu.bme.mit.gamma.scenario.model.NegatedModalInteraction;
 import hu.bme.mit.gamma.scenario.model.ParallelCombinedFragment;
 import hu.bme.mit.gamma.scenario.model.PermissiveAnnotation;
 import hu.bme.mit.gamma.scenario.model.Reset;
-import hu.bme.mit.gamma.scenario.model.InitialBlock;
 import hu.bme.mit.gamma.scenario.model.ScenarioDeclaration;
 import hu.bme.mit.gamma.scenario.model.ScenarioDefinition;
 import hu.bme.mit.gamma.scenario.model.ScenarioDefinitionReference;
@@ -53,6 +58,8 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 	protected ScenarioModelValidator() {}
 	//
 
+	ExpressionTypeDeterminator2 typeDeterminator = ExpressionTypeDeterminator2.INSTANCE;
+	 
 	public Collection<ValidationResultMessage> checkIncompatibleAnnotations(ScenarioDefinition scenario) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		boolean strictPresent = false;
@@ -252,35 +259,48 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 
 	public Collection<ValidationResultMessage> checkIntervals(LoopCombinedFragment loop) {
 		return checkInterval(loop.getMinimum(), loop.getMaximum(),
-				ScenarioModelPackage.Literals.LOOP_COMBINED_FRAGMENT__MINIMUM);
+				ScenarioModelPackage.Literals.LOOP_COMBINED_FRAGMENT__MINIMUM,
+				ScenarioModelPackage.Literals.LOOP_COMBINED_FRAGMENT__MAXIMUM);
 	}
 
 	public Collection<ValidationResultMessage> checkIntervals(Delay delay) {
 		return checkInterval(delay.getMinimum(), delay.getMaximum(),
-				ScenarioModelPackage.Literals.DELAY__MINIMUM);
+				ScenarioModelPackage.Literals.DELAY__MINIMUM,ScenarioModelPackage.Literals.DELAY__MAXIMUM);
 	}
 
 	private Collection<ValidationResultMessage> checkInterval(Expression minimum, Expression maximum,
-			EStructuralFeature feature) {
+			EStructuralFeature minimumFeature, EStructuralFeature maximumFeature) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		
 		try {
 			int min = expressionEvaluator.evaluateInteger(minimum);
-			if (min < 0) {
+			if (min < 1) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-						"The minimum value must be greater than or equals to 0", new ReferenceInfo(feature)));
+						"The minimum value must be greater than or equals to 1", new ReferenceInfo(minimumFeature)));
 			}
 			if (maximum != null) {
 				int max = expressionEvaluator.evaluateInteger(maximum);
 				if (min > max) {
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 							"The minimum value must not be greater than the maximum value",
-							new ReferenceInfo(feature)));
+							new ReferenceInfo(minimumFeature)));
 				}
 			}
 		} catch (IllegalArgumentException e) {
+			//empty on purpouse
+		}
+
+		Type minType = typeDeterminator.getType(minimum);
+		if (!(minType instanceof IntegerTypeDefinition)) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-					"Both the minimum and maximum values must be of type integer", new ReferenceInfo(feature)));
+					"The minimum value must be of type integer", new ReferenceInfo(minimumFeature)));
+		}
+		if (maximum != null) {
+			Type maxType = typeDeterminator.getType(maximum);
+			if(!(maxType instanceof IntegerTypeDefinition)) {
+				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+						"The maximum value must be of type integer", new ReferenceInfo(maximumFeature)));
+			}
 		}
 		return validationResultMessages;
 	}
@@ -377,6 +397,8 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 					+ reference.getArguments().size() + " argumnets are provided.",
 					new ReferenceInfo(ScenarioModelPackage.Literals.SCENARIO_DEFINITION_REFERENCE__SCENARIO_DEFINITION)));
 		}
+		validationResultMessages.addAll(checkArgumentTypes(reference,
+				reference.getScenarioDefinition().getParameterDeclarations()));
 		return validationResultMessages;
 	}
 	
