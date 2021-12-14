@@ -86,8 +86,7 @@ public class ScenarioReferenceResolver {
 				}
 				if(decl instanceof ParameterDeclaration)
 				{
-					ParameterDeclaration param = (ParameterDeclaration) decl;
-					
+					ParameterDeclaration param = (ParameterDeclaration) decl;					
 					for(ParameterDeclaration paramD: ref.getScenarioDefinition().getParameterDeclarations()) {
 						if(paramD.getName() == param.getName()) {
 							int index = ref.getScenarioDefinition().getParameterDeclarations().indexOf(paramD);

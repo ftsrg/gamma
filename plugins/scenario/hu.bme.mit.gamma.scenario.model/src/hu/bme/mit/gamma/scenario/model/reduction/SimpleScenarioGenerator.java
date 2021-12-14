@@ -58,7 +58,7 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 	private ScenarioDefinition simple = null;
 	private ScenarioModelFactory factory = null;
 	private boolean transformLoopFragments = false;
-	private List<Expression> parameters = null;
+	private List<Expression> arguments = null;
 	ScenarioReferenceResolver refResolver = new ScenarioReferenceResolver();
 
 	public SimpleScenarioGenerator(ScenarioDefinition base, boolean transformLoopFragments) {
@@ -68,7 +68,7 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 	public SimpleScenarioGenerator(ScenarioDefinition base, boolean transformLoopFragments, List<Expression> parameters) {
 		this.base = base;
 		this.transformLoopFragments = transformLoopFragments;
-		this.parameters  = parameters;
+		this.arguments  = parameters;
 	}
 
 	// Needs to be saved and reset after handling a new InteractionFragment, needs
@@ -91,29 +91,34 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 		for (Interaction interaction : base.getChart().getFragment().getInteractions()) {
 			simple.getChart().getFragment().getInteractions().add((Interaction) this.doSwitch(interaction));
 		}
+		inLineExpressions(simple, base);
 		return simple;
 	}
 	
-	private Expression extractExpression(Expression expr) {
-		if (expr instanceof DirectReferenceExpression) {
-			DirectReferenceExpression ref = (DirectReferenceExpression) expr;
-			Declaration decl = ref.getDeclaration();
+	private void inLineExpressions(ScenarioDefinition simple, ScenarioDefinition base) {
+		List<DirectReferenceExpression> references = ecoreUtil.getAllContentsOfType(simple, DirectReferenceExpression.class);
+		for (DirectReferenceExpression direct : references) {
+			Declaration decl = direct.getDeclaration();
 			if (decl instanceof ConstantDeclaration) {
 				ConstantDeclaration _const = (ConstantDeclaration) decl;
-				return ecoreUtil.clone(_const.getExpression());
+				Expression cloned = ecoreUtil.clone(_const.getExpression());
+				ecoreUtil.change(cloned, direct, direct.eContainer());
+				ecoreUtil.replace(cloned, direct);
 			}
 			if(decl instanceof ParameterDeclaration)
 			{
-				ParameterDeclaration param = (ParameterDeclaration) decl;
+				ParameterDeclaration param = (ParameterDeclaration) decl;					
 				for(ParameterDeclaration paramD: base.getParameterDeclarations()) {
 					if(paramD.getName() == param.getName()) {
-						return ecoreUtil.clone(parameters.get(base.getParameterDeclarations().indexOf(paramD)));
+						int index = base.getParameterDeclarations().indexOf(paramD);
+						Expression _new = arguments.get(index);
+						Expression cloned = ecoreUtil.clone(_new);
+						ecoreUtil.change(cloned, direct, direct.eContainer());
+						ecoreUtil.replace(cloned, direct);
 					}
 				}
 			}
-			throw new IllegalArgumentException();
 		}
-		return ecoreUtil.clone(expr);
 	}
 
 	private InitialBlock handleInitBlockCopy() {
@@ -160,16 +165,16 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 	@Override
 	public EObject caseWaitAnnotation(WaitAnnotation object) {
 		WaitAnnotation annotation = factory.createWaitAnnotation();
-		annotation.setMaximum(extractExpression(object.getMaximum()));
-		annotation.setMinimum(extractExpression(object.getMinimum()));
+		annotation.setMaximum(ecoreUtil.clone(object.getMaximum()));
+		annotation.setMinimum(ecoreUtil.clone(object.getMinimum()));
 		return annotation;
 	}
 
 	@Override
 	public EObject caseNegatedWaitAnnotation(NegatedWaitAnnotation object) {
 		NegatedWaitAnnotation annotation = factory.createNegatedWaitAnnotation();
-		annotation.setMaximum(extractExpression(object.getMaximum()));
-		annotation.setMinimum(extractExpression(object.getMinimum()));
+		annotation.setMaximum(ecoreUtil.clone(object.getMaximum()));
+		annotation.setMinimum(ecoreUtil.clone(object.getMinimum()));
 		return annotation;
 	}
 
@@ -199,8 +204,8 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 	public EObject caseLoopCombinedFragment(LoopCombinedFragment object) {
 		if (!transformLoopFragments) {
 			LoopCombinedFragment loop = factory.createLoopCombinedFragment();
-			loop.setMaximum(extractExpression(object.getMaximum()));
-			loop.setMinimum(extractExpression(object.getMinimum()));
+			loop.setMaximum(ecoreUtil.clone(object.getMaximum()));
+			loop.setMinimum(ecoreUtil.clone(object.getMinimum()));
 			InteractionFragment fragment = factory.createInteractionFragment();
 			loop.getFragments().add(fragment);
 
@@ -213,8 +218,8 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 		InteractionFragment prev = previousFragment;
 		AlternativeCombinedFragment alt = factory.createAlternativeCombinedFragment();
 		ExpressionEvaluator evaluator = ExpressionEvaluator.INSTANCE;
-		Expression mine = extractExpression(object.getMinimum());
-		Expression maxe = extractExpression(object.getMaximum());
+		Expression mine = ecoreUtil.clone(object.getMinimum());
+		Expression maxe = ecoreUtil.clone(object.getMaximum());
 		int min = evaluator.evaluate(mine);
 		int max = 0;
 		if (maxe == null) {
@@ -399,7 +404,7 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 		signal.setEvent(object.getEvent());
 		signal.setPort(object.getPort());
 		for (Expression argument : object.getArguments()) {
-			signal.getArguments().add(extractExpression(argument));
+			signal.getArguments().add(ecoreUtil.clone(argument));
 		}
 		return signal;
 	}
@@ -419,10 +424,10 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 		delay.setModality(object.getModality());
 		if (object.getMaximum() == null)
 
-			delay.setMaximum(extractExpression(object.getMinimum()));
+			delay.setMaximum(ecoreUtil.clone(object.getMinimum()));
 		else
-			delay.setMaximum(extractExpression(object.getMaximum()));
-		delay.setMinimum(extractExpression(object.getMinimum()));
+			delay.setMaximum(ecoreUtil.clone(object.getMaximum()));
+		delay.setMinimum(ecoreUtil.clone(object.getMinimum()));
 		return delay;
 	}
 
