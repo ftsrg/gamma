@@ -156,7 +156,7 @@ public class AdaptiveContractTestGenerationHandler extends TaskHandler {
 			// Extending the trace with the scenario testing
 			for (State contractState : adaptiveStates) {
 				// Extending trace of the adaptive contract with tests derived from the contracts of these states
-				for (StateAnnotation annotation : contractState.getAnnotation()) {
+				for (StateAnnotation annotation : contractState.getAnnotations()) {
 					if (annotation instanceof StateContractAnnotation) {
 						StateContractAnnotation stateContractAnnotation = (StateContractAnnotation) annotation;
 						for (StatechartDefinition contract : stateContractAnnotation.getContractStatecharts()) {

@@ -271,7 +271,7 @@ StateNode returns StateNode:
 ;
 
 State returns State:
-	(annotation+=StateAnnotation)*
+	(annotations+=StateAnnotation)*
 	'state' name=ID
 	(
 		'{'

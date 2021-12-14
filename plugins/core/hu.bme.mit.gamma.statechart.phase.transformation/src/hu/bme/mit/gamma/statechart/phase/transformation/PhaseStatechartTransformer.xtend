@@ -83,7 +83,7 @@ class PhaseStatechartTransformer {
 	}
 	
 	private def List<MissionPhaseStateAnnotation> getAllMissionPhaseStateAnnotations(StatechartDefinition statechart) {
-		return statechart.getAllContents(true).filter(State).map[it.annotation]
+		return statechart.getAllContentsOfType(State).map[it.annotations].flatten
 				.filter(MissionPhaseStateAnnotation).toList
 	}
 	
