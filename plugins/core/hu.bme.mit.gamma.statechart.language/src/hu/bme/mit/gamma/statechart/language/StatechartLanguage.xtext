@@ -232,18 +232,12 @@ enum NotDefinedEventMode returns ContractModel::NotDefinedEventMode:
 	PERMISSIVE = 'permissive' | STRICT ='strict'
 ;
 
-
 AdaptiveContractAnnotation returns ContractModel::AdaptiveContractAnnotation:
 	'@AdaptiveContractStatechart' '=' monitoredComponent=[InterfaceModel::Component]
 ;
 
 MissionPhaseAnnotation returns PhaseModel::MissionPhaseAnnotation:
 	{PhaseModel::MissionPhaseAnnotation} '@PhaseStatechart'
-;
-
-StatechartReference returns StatechartReference:
-	{StatechartReference}
-	'reference' reference=[CompositeModel::SynchronousComponent] ('(' ((arguments+=Expression)(',' arguments+=Expression)*)? ')')?
 ;
 
 Region returns Region:
@@ -268,7 +262,7 @@ TransitionAnnotation returns TransitionAnnotation:
 ;
 
 TransitionIdAnnotation returns TransitionIdAnnotation:
-	'@''(' name=ID ')'
+	'@' '(' name=ID ')'
 ;
 
 StateNode returns StateNode:
@@ -277,7 +271,7 @@ StateNode returns StateNode:
 ;
 
 State returns State:
-	(annotation=StateAnnotation)?
+	(annotation+=StateAnnotation)*
 	'state' name=ID
 	(
 		'{'

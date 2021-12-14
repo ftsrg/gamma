@@ -89,17 +89,17 @@ public class AdaptiveContractTestGenerationHandler extends TaskHandler {
 
 		String modelFileName = null;
 		switch (analysisLanguage) {
-		case THETA:
-			modelFileName = fileNamer.getXtextXStsFileName(plainFileName);
-			break;
-		case UPPAAL:
-			modelFileName = fileNamer.getXmlUppaalFileName(plainFileName);
-			break;
-		case XSTS_UPPAAL:
-			modelFileName = fileNamer.getXmlUppaalFileName(plainFileName);
-			break;
-		default:
-			throw new IllegalArgumentException("Not known language");
+			case THETA:
+				modelFileName = fileNamer.getXtextXStsFileName(plainFileName);
+				break;
+			case UPPAAL:
+				modelFileName = fileNamer.getXmlUppaalFileName(plainFileName);
+				break;
+			case XSTS_UPPAAL:
+				modelFileName = fileNamer.getXmlUppaalFileName(plainFileName);
+				break;
+			default:
+				throw new IllegalArgumentException("Not known language");
 		}
 		String modelFileUri = handler.getTargetFolderUri() + File.separator + modelFileName;
 
@@ -124,14 +124,13 @@ public class AdaptiveContractTestGenerationHandler extends TaskHandler {
 		List<ExecutionTrace> testsTraces = new ArrayList<ExecutionTrace>();
 		File temporaryTraceFolder = new File(verificationHandler.getTargetFolderUri());
 		for (File traceFile : getTraceFiles(temporaryTraceFolder)) {
-			ExecutionTrace trace = (ExecutionTrace) ecoreUtil.normalLoad(traceFile);
+			ExecutionTrace adaptiveTrace = (ExecutionTrace) ecoreUtil.normalLoad(traceFile);
 			StatechartDefinition adaptiveContract = (StatechartDefinition) GenmodelDerivedFeatures
 					.getModel(modelTransformation);
 			Component monitoredComponent = StatechartModelDerivedFeatures.getMonitoredComponent(adaptiveContract);
 
-			// Back-annotating ports: unfolded statechart -> adaptive statechart -> original
-			// component
-			for (RaiseEventAct act : ecoreUtil.getAllContentsOfType(trace, RaiseEventAct.class)) {
+			// Back-annotating ports: unfolded statechart -> adaptive statechart -> original component
+			for (RaiseEventAct act : ecoreUtil.getAllContentsOfType(adaptiveTrace, RaiseEventAct.class)) {
 				Port newPort = act.getPort();
 				Port originalPort = backAnnotatePort(monitoredComponent, newPort);
 				act.setPort(originalPort);
@@ -139,7 +138,7 @@ public class AdaptiveContractTestGenerationHandler extends TaskHandler {
 
 			// Back-annotating the final states: unfolded statechart -> adaptive statechart
 			Set<State> adaptiveStates = new HashSet<State>();
-			Step lastStep = TraceModelDerivedFeatures.getLastStep(trace);
+			Step lastStep = TraceModelDerivedFeatures.getLastStep(adaptiveTrace);
 			Map<SynchronousComponentInstance, Set<State>> instanceStateConfigurations =
 					TraceModelDerivedFeatures.groupInstanceStateConfigurations(lastStep);
 			for (SynchronousComponentInstance instance : instanceStateConfigurations.keySet()) {
@@ -148,51 +147,52 @@ public class AdaptiveContractTestGenerationHandler extends TaskHandler {
 			}
 
 			// Clearing unnecessary data
-			traceUtil.clearAsserts(trace, InstanceStateConfiguration.class);
-			traceUtil.clearAsserts(trace, InstanceVariableState.class);
+			traceUtil.clearAsserts(adaptiveTrace, InstanceStateConfiguration.class);
+			traceUtil.clearAsserts(adaptiveTrace, InstanceVariableState.class);
 			// Targeting the reference to the monitored component
-			trace.setImport(StatechartModelDerivedFeatures.getContainingPackage(monitoredComponent));
-			trace.setComponent(monitoredComponent);
+			adaptiveTrace.setImport(StatechartModelDerivedFeatures.getContainingPackage(monitoredComponent));
+			adaptiveTrace.setComponent(monitoredComponent);
 
 			// Extending the trace with the scenario testing
 			for (State contractState : adaptiveStates) {
-				// Extending trace of the adaptive contract with tests derived from the
-				// contracts of these states
-				StateAnnotation annotation = contractState.getAnnotation();
-				if (annotation instanceof StateContractAnnotation) {
-					StateContractAnnotation stateContractAnnotation = (StateContractAnnotation) annotation;
-					for (StatechartDefinition contract : stateContractAnnotation.getContractStatecharts()) {
-						ExecutionTrace clonedTrace = ecoreUtil.clone(trace);
-						Constraint constraint = testGeneration.getModelTransformation().getConstraint();
-						int schedulingConstraint = 0;
-						if (constraint instanceof OrchestratingConstraint) {
-							OrchestratingConstraint orchestratingConstraint = (OrchestratingConstraint) constraint;
-							TimeSpecification minimumPeriod = orchestratingConstraint.getMinimumPeriod();
-							schedulingConstraint = statechartUtil.evaluateMilliseconds(minimumPeriod);
-						}
-						ScenarioStatechartTraceGenerator traceGenerator = new ScenarioStatechartTraceGenerator(
-								contract, schedulingConstraint, StatechartModelDerivedFeatures.getScenarioAllowedWaitAnnotation(contract));
-						List<ExecutionTrace> traces = traceGenerator.execute();
-						for (ExecutionTrace executionTrace : traces) {						
-						    ExecutionTrace tmp = ecoreUtil.clone(clonedTrace);
-						    tmp.getAnnotations().clear();
-						    tmp.getAnnotations().addAll(executionTrace.getAnnotations());
-						    if (!TraceModelDerivedFeatures.hasAssertInFirstStep(executionTrace)) {
-						    	tmp.getSteps().addAll(executionTrace.getSteps()
-										.subList(1, executionTrace.getSteps().size()));
-						    }
-						    else {
-						    	List<Step> steps = executionTrace.getSteps();
-						    	traceUtil.removeScheduleAndReset(steps.get(0));
-						    	tmp.getSteps().addAll(steps);
-						    }
-							testsTraces.add(tmp);
+				// Extending trace of the adaptive contract with tests derived from the contracts of these states
+				for (StateAnnotation annotation : contractState.getAnnotation()) {
+					if (annotation instanceof StateContractAnnotation) {
+						StateContractAnnotation stateContractAnnotation = (StateContractAnnotation) annotation;
+						for (StatechartDefinition contract : stateContractAnnotation.getContractStatecharts()) {
+							ExecutionTrace clonedAdaptiveTrace = ecoreUtil.clone(adaptiveTrace);
+							Constraint constraint = testGeneration.getModelTransformation().getConstraint();
+							int schedulingConstraint = 0;
+							if (constraint instanceof OrchestratingConstraint) {
+								OrchestratingConstraint orchestratingConstraint = (OrchestratingConstraint) constraint;
+								TimeSpecification minimumPeriod = orchestratingConstraint.getMinimumPeriod();
+								schedulingConstraint = statechartUtil.evaluateMilliseconds(minimumPeriod);
+							}
+							ScenarioStatechartTraceGenerator traceGenerator = new ScenarioStatechartTraceGenerator(
+									contract, schedulingConstraint,
+									StatechartModelDerivedFeatures.getScenarioAllowedWaitAnnotation(contract));
+							List<ExecutionTrace> staticTraces = traceGenerator.execute();
+							for (ExecutionTrace staticTrace : staticTraces) {
+							    ExecutionTrace mergedTrace = ecoreUtil.clone(clonedAdaptiveTrace);
+							    mergedTrace.getAnnotations().clear();
+							    mergedTrace.getAnnotations().addAll(staticTrace.getAnnotations());
+							    if (!TraceModelDerivedFeatures.hasAssertInFirstStep(staticTrace)) {
+							    	mergedTrace.getSteps().addAll(staticTrace.getSteps()
+											.subList(1, staticTrace.getSteps().size()));
+							    }
+							    else {
+							    	List<Step> steps = staticTrace.getSteps();
+							    	traceUtil.removeScheduleAndReset(steps.get(0));
+							    	mergedTrace.getSteps().addAll(steps);
+							    }
+								testsTraces.add(mergedTrace);
+							}
 						}
 					}
-				}
-				// Branch to be removed: just to test now the workflow
-				else {
-					testsTraces.add(ecoreUtil.clone(trace));
+					// Branch to be removed: just to test now the workflow
+//					else {
+//						testsTraces.add(ecoreUtil.clone(adaptiveTrace));
+//					}
 				}
 			}
 		}
