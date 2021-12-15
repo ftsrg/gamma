@@ -211,7 +211,7 @@ public class VerificationHandler extends TaskHandler {
 			List<ExecutionTrace> backAnnotatedTraces = new ArrayList<ExecutionTrace>();
 			for (ExecutionTrace trace : retrievedTraces) {
 				Component newComponent = trace.getComponent();
-				Component originalComponent = statechartEcoreUtil.loadOriginalComponent(newComponent);
+				Component originalComponent = statechartEcoreUtil.loadAndReplaceToOriginalComponent(newComponent);
 				UnfoldedExecutionTraceBackAnnotator backAnnotator =
 						new UnfoldedExecutionTraceBackAnnotator(trace, originalComponent);
 				ExecutionTrace orignalTrace = backAnnotator.execute();
