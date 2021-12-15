@@ -35,6 +35,7 @@ analysis {
 verification {
     language : XSTS-UPPAAL
     test-language : java
+    back-annotate-to-original : true
     file : "Spacecraft.xml"
     property-file : "Spacecraft.gpm"
 }
