@@ -77,7 +77,7 @@ public class AdaptiveContractTestGenerationHandler extends TaskHandler {
 		checkArgument(testGeneration.getProgrammingLanguages().size() == 1,
 				"A single programming language must be specified: " + testGeneration.getProgrammingLanguages());
 		checkArgument(testGeneration.getProgrammingLanguages().get(0) == ProgrammingLanguage.JAVA,
-				"Currently only Java is supported.");
+				"Currently only Java is supported");
 		setAdaptiveContractTestGeneration(testGeneration);
 
 		AnalysisModelTransformation modelTransformation = testGeneration.getModelTransformation();

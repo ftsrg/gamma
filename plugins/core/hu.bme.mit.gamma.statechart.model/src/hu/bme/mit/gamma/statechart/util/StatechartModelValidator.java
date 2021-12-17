@@ -97,6 +97,7 @@ import hu.bme.mit.gamma.statechart.interface_.RealizationMode;
 import hu.bme.mit.gamma.statechart.interface_.SimpleTrigger;
 import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
 import hu.bme.mit.gamma.statechart.interface_.Trigger;
+import hu.bme.mit.gamma.statechart.phase.History;
 import hu.bme.mit.gamma.statechart.phase.MissionPhaseStateAnnotation;
 import hu.bme.mit.gamma.statechart.phase.MissionPhaseStateDefinition;
 import hu.bme.mit.gamma.statechart.phase.PhaseModelPackage;
@@ -305,10 +306,16 @@ public class StatechartModelValidator extends ActionModelValidator {
 		SynchronousComponentInstance component = stateDefinition.getComponent();
 		SynchronousComponent type = component.getType();
 		if (!(type instanceof StatechartDefinition)) {
-			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-				"Mission phase state definitions can refer only to statechart definitions as type", 
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.INFO,
+				"If the phase state definition does not refer to a statechart definition as type, " +
+					"the model cannot be merged into a single statechart model", 
 					new ReferenceInfo(CompositeModelPackage.Literals.SYNCHRONOUS_COMPONENT_INSTANCE__TYPE, component)));
-			
+			if (stateDefinition.getHistory() != History.NO_HISTORY) {
+				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+					"If the phase state definition does not refer to a statechart definition as type, " +
+						"there can be no history", 
+						new ReferenceInfo(CompositeModelPackage.Literals.SYNCHRONOUS_COMPONENT_INSTANCE__TYPE, component)));
+			}
 		}
 		List<VariableBinding> variableBindings = stateDefinition.getVariableBindings();
 		for (int i = 0; i < variableBindings.size() - 1; i++) {

@@ -391,20 +391,24 @@ class StatechartToPlantUmlTransformer {
 		}
 	}
 
-	protected def listVariablesInNote(StatechartDefinition statechart) '''
-		legend top
-		Variables:
+	protected def listVariablesInNote(StatechartDefinition statechart) {
+		val variableDeclarations = statechart.variableDeclarations
+		val timeoutDeclarations = statechart.timeoutDeclarations
 		
-		«FOR variable : statechart.variableDeclarations»
-			var «variable.name»: «variable.type.serialize»«IF variable.expression !== null» = «variable.expression.serialize»«ENDIF»
-		«ENDFOR»
-		
-		Timeouts:
-		
-		«FOR timeout : statechart.timeoutDeclarations»
-			timeout «timeout.name»
-		«ENDFOR»
-		endlegend
-	'''
+		if (variableDeclarations.empty && timeoutDeclarations.empty) {
+			return ''''''
+		}
+		return '''
+			legend top
+				«FOR variable : variableDeclarations»
+					var «variable.name»: «variable.type.serialize»«IF variable.expression !== null» = «variable.expression.serialize»«ENDIF»
+				«ENDFOR»
+				«FOR timeout : timeoutDeclarations»
+					timeout «timeout.name»
+				«ENDFOR»
+			endlegend
+		'''
+	
+	}
 
 }
