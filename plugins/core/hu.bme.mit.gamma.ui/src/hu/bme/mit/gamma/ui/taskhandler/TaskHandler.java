@@ -36,16 +36,22 @@ import hu.bme.mit.gamma.trace.model.ExecutionTrace;
 import hu.bme.mit.gamma.transformation.util.GammaFileNamer;
 import hu.bme.mit.gamma.util.FileUtil;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
+import hu.bme.mit.gamma.util.JavaUtil;
 
 public abstract class TaskHandler {
 	
 	protected final IFile file;
 	
 	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
+	protected final JavaUtil javaUtil = JavaUtil.INSTANCE;
 	protected final FileUtil fileUtil = FileUtil.INSTANCE;
+	
 	protected final GammaFileNamer fileNamer = GammaFileNamer.INSTANCE;
+	
 	protected final ModelSerializer serializer = ModelSerializer.INSTANCE;
+	
 	protected final Logger logger = Logger.getLogger("GammaLogger");
+	
 	protected final String projectLocation;
 	protected String targetFolderUri;
 	

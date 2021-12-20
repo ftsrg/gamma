@@ -80,6 +80,8 @@ import hu.bme.mit.gamma.statechart.interface_.TopComponentArgumentsAnnotation;
 import hu.bme.mit.gamma.statechart.interface_.Trigger;
 import hu.bme.mit.gamma.statechart.interface_.UnfoldedPackageAnnotation;
 import hu.bme.mit.gamma.statechart.interface_.WrappedPackageAnnotation;
+import hu.bme.mit.gamma.statechart.phase.History;
+import hu.bme.mit.gamma.statechart.phase.MissionPhaseStateDefinition;
 import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference;
 import hu.bme.mit.gamma.statechart.statechart.ChoiceState;
 import hu.bme.mit.gamma.statechart.statechart.ClockTickReference;
@@ -134,11 +136,22 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 
 	public static boolean isBroadcast(InterfaceRealization interfaceRealization) {
 		return isProvided(interfaceRealization) &&
-			interfaceRealization.getInterface().getEvents().stream().allMatch(it -> it.getDirection() == EventDirection.OUT);
+			getAllEventDeclarations(interfaceRealization.getInterface()).stream()
+				.allMatch(it -> it.getDirection() == EventDirection.OUT);
+	}
+	
+	public static boolean isBroadcastMatcher(InterfaceRealization interfaceRealization) {
+		return isRequired(interfaceRealization) &&
+			getAllEventDeclarations(interfaceRealization.getInterface()).stream()
+				.allMatch(it -> it.getDirection() == EventDirection.IN);
 	}
 	
 	public static boolean isProvided(InterfaceRealization interfaceRealization) {
 		return interfaceRealization.getRealizationMode() == RealizationMode.PROVIDED;
+	}
+	
+	public static boolean isRequired(InterfaceRealization interfaceRealization) {
+		return interfaceRealization.getRealizationMode() == RealizationMode.REQUIRED;
 	}
 	
 	public static RealizationMode getOpposite(RealizationMode realizationMode) {
@@ -154,6 +167,10 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	public static boolean isBroadcast(Port port) {
 		return isBroadcast(port.getInterfaceRealization());
+	}
+	
+	public static boolean isBroadcastMatcher(Port port) {
+		return isBroadcastMatcher(port.getInterfaceRealization());
 	}
 	
 	public static boolean isProvided(Port port) {
@@ -224,6 +241,16 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	public static Set<Package> getImportableInterfacePackages(Component component) {
 		return getAllPorts(component).stream().map(it -> getContainingPackage(
 				getInterface(it))).collect(Collectors.toSet());
+	}
+	
+	public static Set<Package> getImportableComponentPackages(Component component) {
+		Set<Package> importablePackages = new LinkedHashSet<Package>();
+		for (ComponentInstance instance : getInstances(component)) {
+			Component type = getDerivedType(instance);
+			Package containingPackage = getContainingPackage(type);
+			importablePackages.add(containingPackage);
+		}
+		return importablePackages;
 	}
 	
 	public static Set<Package> getImportableTypeDeclarationPackages(Component component) {
@@ -494,7 +521,8 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	}
 	
 	public static List<Event> getAllEvents(Interface _interface) {
-		return getAllEventDeclarations(_interface).stream().map(it -> it.getEvent()).collect(Collectors.toList());
+		return getAllEventDeclarations(_interface).stream()
+				.map(it -> it.getEvent()).collect(Collectors.toList());
 	}
 	
 	public static EventDirection getDirection(Event event) {
@@ -1937,6 +1965,11 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		else {
 			return null;
 		}
+	}
+	
+	public static boolean hasHistory(MissionPhaseStateDefinition missionPhaseStateDefinition) {
+		return missionPhaseStateDefinition.getHistory() != History.NO_HISTORY || 
+				missionPhaseStateDefinition.getVariableBindings().isEmpty();
 	}
 
 }

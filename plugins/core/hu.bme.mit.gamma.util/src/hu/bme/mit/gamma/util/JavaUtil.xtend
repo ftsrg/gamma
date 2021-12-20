@@ -33,7 +33,7 @@ class JavaUtil {
 		return list
 	}
 	
-	def <T> Iterable<T> flattenIntoList(Iterable<? extends Iterable<? extends T>> inputs) {
+	def <T> List<T> flattenIntoList(Iterable<? extends Iterable<? extends T>> inputs) {
 		return IterableExtensions.flatten(inputs).toList
 	}
 	

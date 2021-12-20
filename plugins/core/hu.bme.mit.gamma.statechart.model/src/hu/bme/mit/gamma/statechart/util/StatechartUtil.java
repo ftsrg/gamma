@@ -33,7 +33,9 @@ import hu.bme.mit.gamma.expression.util.ExpressionUtil;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponent;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance;
+import hu.bme.mit.gamma.statechart.composite.BroadcastChannel;
 import hu.bme.mit.gamma.statechart.composite.CascadeCompositeComponent;
+import hu.bme.mit.gamma.statechart.composite.Channel;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference;
 import hu.bme.mit.gamma.statechart.composite.CompositeComponent;
@@ -407,18 +409,23 @@ public class StatechartUtil extends ActionUtil {
 	private void wrapComponent(CompositeComponent wrapper, ComponentInstance instance) {
 		Component component = StatechartModelDerivedFeatures.getDerivedType(instance);
 		
-		// Package annotation to denote the wrapping
-		Package _package = StatechartModelDerivedFeatures.getContainingPackage(component);
-		WrappedPackageAnnotation wrappedAnnotation = interfaceFactory.createWrappedPackageAnnotation();
-		_package.getAnnotations().add(wrappedAnnotation);
+		// Package annotation to denote the wrapping (if there is a package - does this make sense?)
+		try {
+			Package _package = StatechartModelDerivedFeatures.getContainingPackage(wrapper);
+			WrappedPackageAnnotation wrappedAnnotation =
+					interfaceFactory.createWrappedPackageAnnotation();
+			_package.getAnnotations().add(wrappedAnnotation);
+		} catch (NullPointerException e) {}
 		
 		// Parameter declarations
-		for (ParameterDeclaration parameterDeclaration : component.getParameterDeclarations()) {
-			ParameterDeclaration newParameter = ecoreUtil.clone(parameterDeclaration);
-			wrapper.getParameterDeclarations().add(newParameter);
-			DirectReferenceExpression reference = expressionUtil
-					.createReferenceExpression(newParameter);
-			instance.getArguments().add(reference);
+		if (instance.getArguments().isEmpty()) {
+			for (ParameterDeclaration parameterDeclaration : component.getParameterDeclarations()) {
+				ParameterDeclaration newParameter = ecoreUtil.clone(parameterDeclaration);
+				wrapper.getParameterDeclarations().add(newParameter);
+				DirectReferenceExpression reference = expressionUtil
+						.createReferenceExpression(newParameter);
+				instance.getArguments().add(reference);
+			}
 		}
 		
 		// Ports
@@ -464,6 +471,32 @@ public class StatechartUtil extends ActionUtil {
 			requiredReference.setInstance(lhsInstance);
 			requiredReference.setPort(lhsPort);
 		}
+		return channel;
+	}
+	
+	public InstancePortReference createInstancePortReference(ComponentInstance instance, Port port) {
+		InstancePortReference instancePortReference =
+				compositeFactory.createInstancePortReference();
+		instancePortReference.setInstance(instance);
+		instancePortReference.setPort(port);
+		return instancePortReference;
+	}
+	
+	public Channel createChannel(InstancePortReference provided,
+			Collection<? extends InstancePortReference> required) {
+		Channel channel = null;
+		if (required.size() > 1) {
+			BroadcastChannel broadcastChannel = compositeFactory.createBroadcastChannel();
+			broadcastChannel.getRequiredPorts().addAll(required);
+			channel = broadcastChannel;
+		}
+		else {
+			SimpleChannel simpleChannel = compositeFactory.createSimpleChannel();
+			InstancePortReference element = required.iterator().next();
+			simpleChannel.setRequiredPort(element);
+			channel = simpleChannel;
+		}
+		channel.setProvidedPort(provided);
 		return channel;
 	}
 	

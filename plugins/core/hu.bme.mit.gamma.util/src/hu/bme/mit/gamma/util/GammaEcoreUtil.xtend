@@ -65,6 +65,12 @@ class GammaEcoreUtil {
 		}
 	}
 	
+	def void change(EObject newObject, EObject oldObject, Iterable<? extends EObject> containers) {
+		for (container : containers) {
+			newObject.change(oldObject, container)
+		}
+	}
+	
 	def void delete(EObject object) {
 		EcoreUtil.delete(object)
 	}
