@@ -67,7 +67,8 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 		ComponentReference modelReference = (ComponentReference) modelTransformation.getModel();
 		Component adaptiveComponent = modelReference.getComponent();
 		// restart-on-cold-violation
-		// back-transitions
+		// back-transitions are on
+		// permissive 
 		StatechartDefinition adaptiveStatechart = (StatechartDefinition) adaptiveComponent;
 		
 		// Collecting contract-behavior mappings
@@ -163,7 +164,9 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 				
 				SynchronousComponentInstance contractInstance =
 						statechartUtil.instantiateSynchronousComponent(contract);
-				cascade.getComponents().add(contractInstance);
+				String monitorName = contractInstance.getName() + "Monitor";
+				contractInstance.setName(monitorName);
+				cascade.getComponents().add(0, contractInstance); // Contract is executed first
 				
 				// Binding system ports
 				for (Port systemPort : StatechartModelDerivedFeatures.getAllPorts(cascade)) {
