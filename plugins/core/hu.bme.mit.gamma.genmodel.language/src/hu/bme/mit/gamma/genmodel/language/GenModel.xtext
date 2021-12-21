@@ -364,6 +364,8 @@ StatechartContractGeneration returns StatechartContractGeneration:
 	 'scenario' ':' scenario= [scenario::ScenarioDefinition] ('(' arguments+=Expression  (',' arguments+=Expression )* ')')?
 	 ('folder' ':' targetFolder+=STRING)?
 	 ('name' ':' fileName+=STRING)?
+	 ('start-as-cold-violation' ':' StartAsColdViolation=BOOLEAN)?
+	 ('loop-for-interaction' ':' UseIteratingVariable=BOOLEAN)?
 	'}'
 ;
 

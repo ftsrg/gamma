@@ -175,6 +175,8 @@
     </genClasses>
     <genClasses ecoreClass="genmodel.ecore#//StatechartContractGeneration">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference genmodel.ecore#//StatechartContractGeneration/scenario"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//StatechartContractGeneration/StartAsColdViolation"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//StatechartContractGeneration/UseIteratingVariable"/>
     </genClasses>
   </genPackages>
 </genmodel:GenModel>

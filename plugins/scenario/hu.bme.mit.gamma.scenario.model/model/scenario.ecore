@@ -100,8 +100,6 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="modalInteractions" lowerBound="1"
         upperBound="-1" eType="#//ModalInteraction" containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="StartAsColdViolationAnnotation" eSuperTypes="#//Annotation"/>
-  <eClassifiers xsi:type="ecore:EClass" name="DedicatedColdViolationAnnotation" eSuperTypes="#//Annotation"/>
   <eClassifiers xsi:type="ecore:EClass" name="ScenarioDefinitionReference" eSuperTypes="#//Interaction ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ArgumentedElement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="scenarioDefinition" lowerBound="1"
         eType="#//ScenarioDefinition"/>

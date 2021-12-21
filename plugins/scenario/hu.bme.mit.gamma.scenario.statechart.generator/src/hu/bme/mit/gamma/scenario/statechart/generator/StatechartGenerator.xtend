@@ -20,7 +20,6 @@ import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.expression.util.ExpressionUtil
 import hu.bme.mit.gamma.scenario.model.AlternativeCombinedFragment
-import hu.bme.mit.gamma.scenario.model.DedicatedColdViolationAnnotation
 import hu.bme.mit.gamma.scenario.model.Delay
 import hu.bme.mit.gamma.scenario.model.Interaction
 import hu.bme.mit.gamma.scenario.model.InteractionDefinition
@@ -36,7 +35,6 @@ import hu.bme.mit.gamma.scenario.model.OptionalCombinedFragment
 import hu.bme.mit.gamma.scenario.model.PermissiveAnnotation
 import hu.bme.mit.gamma.scenario.model.ScenarioDefinition
 import hu.bme.mit.gamma.scenario.model.Signal
-import hu.bme.mit.gamma.scenario.model.StartAsColdViolationAnnotation
 import hu.bme.mit.gamma.scenario.model.StrictAnnotation
 import hu.bme.mit.gamma.scenario.model.WaitAnnotation
 import hu.bme.mit.gamma.scenario.model.derivedfeatures.ScenarioModelDerivedFeatures
@@ -111,14 +109,15 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 	val replacedStateWithValue = new HashMap<StateNode,StateNode>()
 	val variableMap = <String,VariableDeclaration>newHashMap
 
-	new(ScenarioDefinition scenario, Component component, StatechartGenerationMode mode) {
+	new(ScenarioDefinition scenario, Component component, StatechartGenerationMode mode, boolean dedicatedColdViolation) {
 		this.component = component
 		this.generationMode = mode
 		this.scenario = scenario
+		this.coldViolationExisits = dedicatedColdViolation
 	}
 
 	new(ScenarioDefinition scenario, Component component) {
-		this(scenario, component, StatechartGenerationMode.GENERATE_MERGE_STATE)
+		this(scenario, component, StatechartGenerationMode.GENERATE_ONLY_FORWARD, true)
 	}
 
 	def StatechartDefinition execute() {
@@ -137,10 +136,6 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 				nonDeclaredNegMessageMode = 1
 			} else if (annotation instanceof NegPermissiveAnnotation) {
 				nonDeclaredNegMessageMode = 0
-			} else if (annotation instanceof DedicatedColdViolationAnnotation) {
-				coldViolationExisits = true
-			} else if (annotation instanceof StartAsColdViolationAnnotation) {
-				coldViolationExisits = false
 			}
 		}
 		
@@ -380,7 +375,6 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 
 	protected def processModalInteractionSet(ModalInteractionSet set, boolean isNegated) {
 		var singleNegetedSignalWithArguments = false
-		// TODO Break into multiple conditions
 		if (set.modalInteractions.size == 1 && set.modalInteractions.get(0) instanceof NegatedModalInteraction) {
 			val negatedModalInteraction = set.modalInteractions.get(0) as NegatedModalInteraction
 			if (negatedModalInteraction.modalinteraction instanceof Signal) {

@@ -80,8 +80,6 @@
     <genClasses ecoreClass="scenario.ecore#//InitialBlock">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference scenario.ecore#//InitialBlock/modalInteractions"/>
     </genClasses>
-    <genClasses ecoreClass="scenario.ecore#//StartAsColdViolationAnnotation"/>
-    <genClasses ecoreClass="scenario.ecore#//DedicatedColdViolationAnnotation"/>
     <genClasses ecoreClass="scenario.ecore#//ScenarioDefinitionReference">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference scenario.ecore#//ScenarioDefinitionReference/scenarioDefinition"/>
     </genClasses>

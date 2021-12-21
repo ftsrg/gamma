@@ -138,16 +138,6 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 	}
 
 	@Override
-	public EObject caseDedicatedColdViolationAnnotation(DedicatedColdViolationAnnotation object) {
-		return factory.createDedicatedColdViolationAnnotation();
-	}
-
-	@Override
-	public EObject caseStartAsColdViolationAnnotation(StartAsColdViolationAnnotation object) {
-		return factory.createStartAsColdViolationAnnotation();
-	}
-
-	@Override
 	public EObject casePermissiveAnnotation(PermissiveAnnotation object) {
 		return factory.createPermissiveAnnotation();
 	}

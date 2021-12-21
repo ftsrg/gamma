@@ -32,13 +32,7 @@ InitialBlock returns ScenarioModel::InitialBlock:
 
 Annotations returns ScenarioModel::Annotation:
 	AllowedWaitAnnotation | PermissiveAnnotation | StrictAnnotation | NegatedWaitAnnotation | NegStrictAnnotation |
-	NegPermissiveAnnotation | DedicatedColdViolationAnnotation | StartAsColdViolationAnnotation;
-
-StartAsColdViolationAnnotation returns ScenarioModel::StartAsColdViolationAnnotation:
-	{ScenarioModel::StartAsColdViolationAnnotation} '@StartAsColdViolation';
-
-DedicatedColdViolationAnnotation returns ScenarioModel::DedicatedColdViolationAnnotation:
-	{ScenarioModel::DedicatedColdViolationAnnotation} '@DedicatedColdViolation';
+	NegPermissiveAnnotation;
 
 NegStrictAnnotation returns ScenarioModel::NegStrictAnnotation:
 	{ScenarioModel::NegStrictAnnotation} '@StrictNeg';
