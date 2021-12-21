@@ -129,6 +129,9 @@
     <genClasses ecoreClass="genmodel.ecore#//AdaptiveContractTestGeneration">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference genmodel.ecore#//AdaptiveContractTestGeneration/modelTransformation"/>
     </genClasses>
+    <genClasses ecoreClass="genmodel.ecore#//AdaptiveBehaviorConformanceChecking">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference genmodel.ecore#//AdaptiveBehaviorConformanceChecking/modelTransformation"/>
+    </genClasses>
     <genClasses ecoreClass="genmodel.ecore#//PhaseStatechartGeneration">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference genmodel.ecore#//PhaseStatechartGeneration/statechart"/>
     </genClasses>

@@ -482,6 +482,10 @@ public class StatechartUtil extends ActionUtil {
 		return instancePortReference;
 	}
 	
+	public Channel createChannel(InstancePortReference provided, InstancePortReference required) {
+		return createChannel(provided, List.of(required));
+	}
+	
 	public Channel createChannel(InstancePortReference provided,
 			Collection<? extends InstancePortReference> required) {
 		Channel channel = null;

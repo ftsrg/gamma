@@ -143,7 +143,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	public static boolean isBroadcastMatcher(InterfaceRealization interfaceRealization) {
 		return isRequired(interfaceRealization) &&
 			getAllEventDeclarations(interfaceRealization.getInterface()).stream()
-				.allMatch(it -> it.getDirection() == EventDirection.IN);
+				.allMatch(it -> it.getDirection() == EventDirection.OUT);
 	}
 	
 	public static boolean isProvided(InterfaceRealization interfaceRealization) {
@@ -1976,7 +1976,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	public static boolean hasHistory(MissionPhaseStateDefinition missionPhaseStateDefinition) {
 		return missionPhaseStateDefinition.getHistory() != History.NO_HISTORY || 
-				missionPhaseStateDefinition.getVariableBindings().isEmpty();
+				!missionPhaseStateDefinition.getVariableBindings().isEmpty();
 	}
 
 }

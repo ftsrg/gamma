@@ -163,6 +163,11 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="modelTransformation" lowerBound="1"
         eType="#//AnalysisModelTransformation" containment="true"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="AdaptiveBehaviorConformanceChecking"
+      eSuperTypes="#//Task">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="modelTransformation" lowerBound="1"
+        eType="#//AnalysisModelTransformation" containment="true"/>
+  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="PhaseStatechartGeneration" eSuperTypes="#//Task ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ArgumentedElement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="statechart" lowerBound="1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//StatechartDefinition"/>

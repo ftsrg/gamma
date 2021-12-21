@@ -40,6 +40,7 @@ import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeReference;
 import hu.bme.mit.gamma.expression.util.ExpressionModelValidator;
 import hu.bme.mit.gamma.genmodel.model.AbstractComplementaryTestGeneration;
+import hu.bme.mit.gamma.genmodel.model.AdaptiveBehaviorConformanceChecking;
 import hu.bme.mit.gamma.genmodel.model.AdaptiveContractTestGeneration;
 import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
 import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation;
@@ -433,6 +434,10 @@ public class GenmodelValidator extends ExpressionModelValidator {
 		for (AdaptiveContractTestGeneration adaptiveContractTestGenerationTask :
 					javaUtil.filterIntoList(genmodel.getTasks(), AdaptiveContractTestGeneration.class)) {
 			packageImports.removeAll(getUsedPackages(adaptiveContractTestGenerationTask.getModelTransformation()));
+		}
+		for (AdaptiveBehaviorConformanceChecking adaptiveBehaviorConformanceChecking :
+					javaUtil.filterIntoList(genmodel.getTasks(), AdaptiveBehaviorConformanceChecking.class)) {
+			packageImports.removeAll(getUsedPackages(adaptiveBehaviorConformanceChecking.getModelTransformation()));
 		}
 		for (StatechartContractTestGeneration statechartContractTestGenerationTask :
 			javaUtil.filterIntoList(genmodel.getTasks(), StatechartContractTestGeneration.class)) {

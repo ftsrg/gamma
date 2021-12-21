@@ -10,8 +10,6 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.ui.taskhandler;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -23,10 +21,10 @@ import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IFile;
 
-import hu.bme.mit.gamma.genmodel.model.AdaptiveContractTestGeneration;
+import hu.bme.mit.gamma.genmodel.model.AdaptiveBehaviorConformanceChecking;
 import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation;
 import hu.bme.mit.gamma.genmodel.model.ComponentReference;
-import hu.bme.mit.gamma.genmodel.model.ProgrammingLanguage;
+import hu.bme.mit.gamma.scenario.statechart.util.ScenarioStatechartUtil;
 import hu.bme.mit.gamma.statechart.composite.CascadeCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.Channel;
 import hu.bme.mit.gamma.statechart.composite.CompositeModelFactory;
@@ -49,6 +47,8 @@ import hu.bme.mit.gamma.statechart.util.StatechartUtil;
 public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 	
 	protected final StatechartUtil statechartUtil = StatechartUtil.INSTANCE;
+	protected final ScenarioStatechartUtil scenarioStatechartUtil = ScenarioStatechartUtil.INSTANCE;
+	
 	protected final CompositeModelFactory factory = CompositeModelFactory.eINSTANCE;
 	protected final InterfaceModelFactory interfaceFactory = InterfaceModelFactory.eINSTANCE;
 	
@@ -56,21 +56,18 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 		super(file);
 	}
 	
-	public void execute(AdaptiveContractTestGeneration conformanceChecker) throws IOException {
+	public void execute(AdaptiveBehaviorConformanceChecking conformanceChecker) throws IOException {
 		// Setting target folder
 		setTargetFolder(conformanceChecker);
 		//
-		checkArgument(conformanceChecker.getProgrammingLanguages().size() == 1,
-				"A single programming language must be specified: " +
-						conformanceChecker.getProgrammingLanguages());
-		checkArgument(conformanceChecker.getProgrammingLanguages().get(0) == ProgrammingLanguage.JAVA,
-				"Currently only Java is supported");
 		setAdaptiveBehaviorConformanceChecker(conformanceChecker);
 		
 		AnalysisModelTransformation modelTransformation = conformanceChecker.getModelTransformation();
 		
 		ComponentReference modelReference = (ComponentReference) modelTransformation.getModel();
 		Component adaptiveComponent = modelReference.getComponent();
+		// restart-on-cold-violation
+		// back-transitions
 		StatechartDefinition adaptiveStatechart = (StatechartDefinition) adaptiveComponent;
 		
 		// Collecting contract-behavior mappings
@@ -95,7 +92,7 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 							contractBehaviors, contract);
 					for (MissionPhaseStateAnnotation phaseAnnotation : missionPhaseStateAnnotations) {
 						for (MissionPhaseStateDefinition stateDefinition :
-								phaseAnnotation.getStateDefinitions()) {
+								List.copyOf(phaseAnnotation.getStateDefinitions())) {
 							if (!StatechartModelDerivedFeatures.hasHistory(stateDefinition)) {
 														
 								behaviors.add(stateDefinition); // Maybe this should be cloned to prevent overwriting
@@ -139,7 +136,7 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 			// TODO this could be addressed later -> new statechart has to be serialized
 			if (!behaviors.isEmpty()) {
 				String name = contract.getName() + "_" + behaviors.stream()
-						.map(it -> it.getComponent().getName()).reduce((a,  b) -> a + "_" + b);
+						.map(it -> it.getComponent().getName()).reduce("", (a,  b) -> a + "_" + b);
 				CascadeCompositeComponent cascade = factory.createCascadeCompositeComponent();
 				cascade.setName(name);
 				
@@ -148,15 +145,14 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 				List<PortBinding> portBindings = javaUtil.flattenIntoList(
 						behaviors.stream().map(it -> it.getPortBindings())
 						.collect(Collectors.toList()));
-				Collection<Port> systemPorts = portBindings.stream()
-						.map(it -> it.getCompositeSystemPort()).collect(Collectors.toSet());
+				Collection<Port> systemPorts = adaptiveStatechart.getPorts();
 				for (Port systemPort : systemPorts) {
 					Port clonedSystemPort = ecoreUtil.clone(systemPort);
 					cascade.getPorts().add(clonedSystemPort);
 					ecoreUtil.change(clonedSystemPort, systemPort, behaviors);
 				}
 				
-				cascade.getPortBindings().addAll(portBindings);
+				cascade.getPortBindings().addAll(portBindings); // Could be cloned
 				
 				for (MissionPhaseStateDefinition behavior : behaviors) {
 					SynchronousComponentInstance componentInstance = behavior.getComponent();
@@ -167,33 +163,37 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 				
 				SynchronousComponentInstance contractInstance =
 						statechartUtil.instantiateSynchronousComponent(contract);
+				cascade.getComponents().add(contractInstance);
 				
-				// Binding system input ports
-				
+				// Binding system ports
 				for (Port systemPort : StatechartModelDerivedFeatures.getAllPorts(cascade)) {
-					Port contractPort = matchPort(systemPort, cascade);
+					Port contractPort = matchPort(systemPort, contract);
 					// Only for all input ports
 					if (StatechartModelDerivedFeatures.isBroadcastMatcher(contractPort)) {
-						PortBinding portBinding = factory.createPortBinding();
-						portBinding.setCompositeSystemPort(systemPort);
+						PortBinding inputPortBinding = factory.createPortBinding();
+						inputPortBinding.setCompositeSystemPort(systemPort);
 						
 						InstancePortReference instancePortReference = statechartUtil
 								.createInstancePortReference(contractInstance, contractPort);
+						inputPortBinding.setInstancePortReference(instancePortReference);
 						
-						portBinding.setInstancePortReference(instancePortReference);
+						cascade.getPortBindings().add(inputPortBinding);
 					}
 					// Only for output ports
-					if (StatechartModelDerivedFeatures.isBroadcastMatcher(contractPort)) {
+					else if (StatechartModelDerivedFeatures.isBroadcast(contractPort)) {
 						Collection<PortBinding> outputPortBindings =
 								StatechartModelDerivedFeatures.getPortBindings(systemPort);
+						
+						Port reservedContractPort = matchReversedPort(contractPort, contract);
+						
 						// Channeling ports to definitions
 						for (PortBinding outputPortBinding : outputPortBindings) {
 							InstancePortReference contractPortReference = statechartUtil
-									.createInstancePortReference(contractInstance, contractPort);
+									.createInstancePortReference(contractInstance, reservedContractPort);
 							InstancePortReference behaviorPortReference = ecoreUtil
 									.clone(outputPortBinding.getInstancePortReference());
 							Channel channel = statechartUtil.createChannel(
-									behaviorPortReference, List.of(contractPortReference));
+									behaviorPortReference, contractPortReference);
 							
 							cascade.getChannels().add(channel);
 						}
@@ -212,6 +212,8 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 				statelessAssocationPackage.getImports().addAll(
 						StatechartModelDerivedFeatures.getImportablePackages(cascade));
 				
+				statelessAssocationPackage.getComponents().add(cascade);
+				
 				// Serialization
 				String targetFolderUri = this.getTargetFolderUri();
 				String fileName = fileUtil.toHiddenFileName(fileNamer.getPackageFileName(name));
@@ -219,6 +221,9 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 				// Saving the file to set the analysis model transformer
 				historylessModelFileUris.add(targetFolderUri + File.separator + fileName);
 				this.serializer.saveModel(statelessAssocationPackage, targetFolderUri, fileName);
+				
+				// TODO Saving the property
+				
 			}
 		}
 		
@@ -236,8 +241,8 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 		
 		// Executing the analysis model transformation on the created models
 		
-		AnalysisModelTransformationHandler handler = new AnalysisModelTransformationHandler(file);
-		handler.execute(modelTransformation);
+//		AnalysisModelTransformationHandler handler = new AnalysisModelTransformationHandler(file);
+//		handler.execute(modelTransformation);
 		
 		// Executing verification
 		
@@ -254,9 +259,19 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 		throw new IllegalArgumentException("Not found bound port: " + matchablePort);
 	}
 	
+	private Port matchReversedPort(Port matchablePort, Component component) {
+		String name = scenarioStatechartUtil.getTurnedOutPortName(matchablePort);
+		for (Port port : StatechartModelDerivedFeatures.getAllPorts(component)) {
+			if (port.getName().equals(name)) {
+				return port;
+			}
+		}
+		throw new IllegalArgumentException("Not found reversed port: " + matchablePort);
+	}
+	
 	// Settings
 
-	private void setAdaptiveBehaviorConformanceChecker(AdaptiveContractTestGeneration conformanceChecker) {
+	private void setAdaptiveBehaviorConformanceChecker(AdaptiveBehaviorConformanceChecking conformanceChecker) {
 		
 	}
 

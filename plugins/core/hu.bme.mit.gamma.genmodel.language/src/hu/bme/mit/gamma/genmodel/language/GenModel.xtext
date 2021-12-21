@@ -37,8 +37,10 @@ GenModel returns GenModel:
 
 Task returns Task:
 	YakinduCompilation | CodeGeneration | AnalysisModelTransformation | TestGeneration |
-		EventPriorityTransformation | AdaptiveContractTestGeneration | PhaseStatechartGeneration |
-		Verification | TraceReplayModelGeneration | Slicing | StatechartContractTestGeneration | StatechartContractGeneration
+		EventPriorityTransformation | AdaptiveContractTestGeneration |
+		AdaptiveBehaviorConformanceChecking | PhaseStatechartGeneration |
+		Verification | TraceReplayModelGeneration | Slicing | StatechartContractTestGeneration |
+		StatechartContractGeneration
 ;
 
 YakinduCompilation returns YakinduCompilation:
@@ -345,6 +347,16 @@ AdaptiveContractTestGeneration returns AdaptiveContractTestGeneration:
 		'base-package' ':' packageName+=STRING | // Java base package
 		'language' ':' programmingLanguages+=ProgrammingLanguage |
 		'test-folder' ':' testFolder+=STRING
+		)*
+	'}'
+;
+
+AdaptiveBehaviorConformanceChecking returns AdaptiveBehaviorConformanceChecking:
+	{AdaptiveBehaviorConformanceChecking} 'adaptive-conformance-checking' '{'
+		modelTransformation=AnalysisModelTransformation
+		(
+		'folder' ':' targetFolder+=STRING |
+		'file' ':' fileName+=STRING // The name of the generated file
 		)*
 	'}'
 ;
