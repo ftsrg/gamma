@@ -12,7 +12,9 @@ package hu.bme.mit.gamma.ui.taskhandler;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -44,13 +46,13 @@ import hu.bme.mit.gamma.statechart.statechart.StateAnnotation;
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
 import hu.bme.mit.gamma.statechart.util.StatechartUtil;
 
-public class AdaptiveBehaviorConformanceChecker extends TaskHandler {
+public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 	
 	protected final StatechartUtil statechartUtil = StatechartUtil.INSTANCE;
 	protected final CompositeModelFactory factory = CompositeModelFactory.eINSTANCE;
 	protected final InterfaceModelFactory interfaceFactory = InterfaceModelFactory.eINSTANCE;
 	
-	public AdaptiveBehaviorConformanceChecker(IFile file) {
+	public AdaptiveBehaviorConformanceCheckingHandler(IFile file) {
 		super(file);
 	}
 	
@@ -129,13 +131,17 @@ public class AdaptiveBehaviorConformanceChecker extends TaskHandler {
 		}
 		
 		// Processing historyless associations
+		List<String> historylessModelFileUris = new ArrayList<String>();
 		
 		for (StatechartDefinition contract : contractBehaviors.keySet()) {
 			List<MissionPhaseStateDefinition> behaviors = contractBehaviors.get(contract);
 			// We expect: a mission phase statechart cannot contain other mission phase statecharts
+			// TODO this could be addressed later -> new statechart has to be serialized
 			if (!behaviors.isEmpty()) {
+				String name = contract.getName() + "_" + behaviors.stream()
+						.map(it -> it.getComponent().getName()).reduce((a,  b) -> a + "_" + b);
 				CascadeCompositeComponent cascade = factory.createCascadeCompositeComponent();
-				cascade.setName("_");
+				cascade.setName(name);
 				
 				// We expect: all component ports are bound:
 				// mission phase components do not introduce new ones
@@ -197,29 +203,44 @@ public class AdaptiveBehaviorConformanceChecker extends TaskHandler {
 					}
 				}
 				
+				// TODO Setting environment model if necessary
+				
 				// Wrapping into a package
 				Package statelessAssocationPackage = interfaceFactory.createPackage();
-				statelessAssocationPackage.setName("__");
+				statelessAssocationPackage.setName(name);
 				
 				statelessAssocationPackage.getImports().addAll(
-						StatechartModelDerivedFeatures.getImportableInterfacePackages(cascade));
-				statelessAssocationPackage.getImports().addAll(
-						StatechartModelDerivedFeatures.getImportableComponentPackages(cascade));
+						StatechartModelDerivedFeatures.getImportablePackages(cascade));
 				
 				// Serialization
+				String targetFolderUri = this.getTargetFolderUri();
+				String fileName = fileUtil.toHiddenFileName(fileNamer.getPackageFileName(name));
 				
-				// Saving the file to set he analysis model transformer
+				// Saving the file to set the analysis model transformer
+				historylessModelFileUris.add(targetFolderUri + File.separator + fileName);
+				this.serializer.saveModel(statelessAssocationPackage, targetFolderUri, fileName);
 			}
 		}
 		
 		// Processing original adaptive statechart if necessary
 		if (hasHistory) {
+			// Transforming (inlining) phases
+			
+			// Serialization
+			
+			// Saving the file to set he analysis model transformer
+			
+			// Setting environment model if necessary
 			
 		}
 		
 		// Executing the analysis model transformation on the created models
+		
 		AnalysisModelTransformationHandler handler = new AnalysisModelTransformationHandler(file);
 		handler.execute(modelTransformation);
+		
+		// Executing verification
+		
 	}
 	
 	// Traceability

@@ -253,6 +253,13 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return importablePackages;
 	}
 	
+	public static Set<Package> getImportablePackages(Component component) {
+		Set<Package> importablePackages = new LinkedHashSet<Package>();
+		importablePackages.addAll(getImportableInterfacePackages(component));
+		importablePackages.addAll(getImportableComponentPackages(component));
+		return importablePackages;
+	}
+	
 	public static Set<Package> getImportableTypeDeclarationPackages(Component component) {
 		Package _package = getContainingPackage(component);
 		return getImportableTypeDeclarationPackages(_package);
