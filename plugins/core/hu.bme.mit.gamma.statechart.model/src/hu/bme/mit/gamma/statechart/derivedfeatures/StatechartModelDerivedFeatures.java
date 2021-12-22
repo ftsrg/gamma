@@ -81,6 +81,7 @@ import hu.bme.mit.gamma.statechart.interface_.Trigger;
 import hu.bme.mit.gamma.statechart.interface_.UnfoldedPackageAnnotation;
 import hu.bme.mit.gamma.statechart.interface_.WrappedPackageAnnotation;
 import hu.bme.mit.gamma.statechart.phase.History;
+import hu.bme.mit.gamma.statechart.phase.MissionPhaseAnnotation;
 import hu.bme.mit.gamma.statechart.phase.MissionPhaseStateDefinition;
 import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference;
 import hu.bme.mit.gamma.statechart.statechart.ChoiceState;
@@ -257,6 +258,12 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		Set<Package> importablePackages = new LinkedHashSet<Package>();
 		importablePackages.addAll(getImportableInterfacePackages(component));
 		importablePackages.addAll(getImportableComponentPackages(component));
+		// If referenced components are in the same package
+		if (isContainedByPackage(component)) {
+			Package _package = getContainingPackage(component);
+			importablePackages.remove(_package);
+		}
+		
 		return importablePackages;
 	}
 	
@@ -1413,10 +1420,16 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		if (object instanceof Package) {
 			return (Package) object;
 		}
-//		if (object.eContainer() == null) {
-//			throw new IllegalArgumentException("Not contained by a package: " + object);
-//		}
 		return getContainingPackage(object.eContainer());
+	}
+	
+	public static boolean isContainedByPackage(EObject object) {
+		try {
+			getContainingPackage(object);
+			return true;
+		} catch (NullPointerException e) {
+			return false;
+		}
 	}
 	
 	public static boolean hasSamePortEvent(RaiseEventAction lhs, RaiseEventAction rhs) {
@@ -1972,6 +1985,16 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		else {
 			return null;
 		}
+	}
+	
+	public static boolean isMissionPhase(Component component) {
+		if (component instanceof StatechartDefinition) {
+			StatechartDefinition statechart = (StatechartDefinition) component;
+			Optional<StatechartAnnotation> annotation = getStatechartAnnotation(
+					statechart, MissionPhaseAnnotation.class);
+			return annotation.isPresent();
+		}
+		return false;
 	}
 	
 	public static boolean hasHistory(MissionPhaseStateDefinition missionPhaseStateDefinition) {
