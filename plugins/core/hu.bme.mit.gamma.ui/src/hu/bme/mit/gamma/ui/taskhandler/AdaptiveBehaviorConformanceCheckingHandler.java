@@ -26,8 +26,10 @@ import java.util.stream.Collectors;
 import org.eclipse.core.resources.IFile;
 
 import hu.bme.mit.gamma.genmodel.model.AdaptiveBehaviorConformanceChecking;
+import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
 import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation;
 import hu.bme.mit.gamma.genmodel.model.ComponentReference;
+import hu.bme.mit.gamma.genmodel.model.Verification;
 import hu.bme.mit.gamma.property.model.ComponentInstanceStateConfigurationReference;
 import hu.bme.mit.gamma.property.model.PropertyPackage;
 import hu.bme.mit.gamma.property.model.StateFormula;
@@ -215,13 +217,56 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 			}
 		}
 		
-		// TODO Executing the analysis model transformation on the created models
+		// Executing the analysis model transformation on the created models
 		
-//		AnalysisModelTransformationHandler handler = new AnalysisModelTransformationHandler(file);
-//		handler.execute(modelTransformation);
+		AnalysisLanguage analysisLanguage = modelTransformation.getLanguages().get(0);
 		
-		// TODO Executing verification
+		List<Entry<String, PropertyPackage>> modelFileUris =
+				new ArrayList<Entry<String, PropertyPackage>>();
+		modelFileUris.addAll(historylessModelFileUris);
+		modelFileUris.addAll(historyModelFileUris);
 		
+		List<Entry<String, PropertyPackage>> analyisModelFileUris =
+				new ArrayList<Entry<String, PropertyPackage>>();
+		
+		for (Entry<String, PropertyPackage> modelFileUri : modelFileUris) {
+			// Transformation
+			AnalysisModelTransformationHandler handler = new AnalysisModelTransformationHandler(file);
+			
+			AnalysisModelTransformation conformanceModelTransformation =
+					ecoreUtil.clone(modelTransformation);
+			ComponentReference conformanceModelReference =
+					(ComponentReference) conformanceModelTransformation.getModel();
+			
+			PropertyPackage propertyPackage = modelFileUri.getValue();
+			Component component = propertyPackage.getComponent();
+			conformanceModelReference.setComponent(component); // modelReference is contained by modelTransformation
+			conformanceModelTransformation.setPropertyPackage(propertyPackage);
+			
+			handler.execute(conformanceModelTransformation);
+			
+			String plainFileName = conformanceModelTransformation.getFileName().get(0);
+			String analysisModelFileName = handler.getFileName(plainFileName, analysisLanguage);
+			String analyisModelFileUri = handler.getTargetFolderUri() + File.separator + analysisModelFileName;
+			analyisModelFileUris.add(
+					new SimpleEntry<String, PropertyPackage>(analyisModelFileUri, propertyPackage));
+		}
+		
+		// Executing verification
+		
+		for (Entry<String, PropertyPackage> analyisModelFileUri : analyisModelFileUris) {
+			String analyisModelFile = analyisModelFileUri.getKey();
+			PropertyPackage propertyPackage = analyisModelFileUri.getValue();
+			
+			Verification verification = super.factory.createVerification();
+			verification.getAnalysisLanguages().add(analysisLanguage);
+			// No programming languages, we do not need temporary test classes
+			verification.getFileName().add(analyisModelFile);
+			verification.getPropertyPackages().add(propertyPackage);
+
+			VerificationHandler verificationHandler = new VerificationHandler(file);
+			verificationHandler.execute(verification);
+		}
 	}
 	
 	// Extraction

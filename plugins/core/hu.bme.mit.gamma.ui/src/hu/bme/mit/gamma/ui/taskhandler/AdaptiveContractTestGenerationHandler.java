@@ -86,21 +86,8 @@ public class AdaptiveContractTestGenerationHandler extends TaskHandler {
 		handler.execute(modelTransformation);
 
 		String plainFileName = modelTransformation.getFileName().get(0);
-
-		String modelFileName = null;
-		switch (analysisLanguage) {
-			case THETA:
-				modelFileName = fileNamer.getXtextXStsFileName(plainFileName);
-				break;
-			case UPPAAL:
-				modelFileName = fileNamer.getXmlUppaalFileName(plainFileName);
-				break;
-			case XSTS_UPPAAL:
-				modelFileName = fileNamer.getXmlUppaalFileName(plainFileName);
-				break;
-			default:
-				throw new IllegalArgumentException("Not known language");
-		}
+		
+		String modelFileName = handler.getFileName(plainFileName, analysisLanguage);
 		String modelFileUri = handler.getTargetFolderUri() + File.separator + modelFileName;
 
 		String propertyFileName = fileNamer.getHiddenPropertyFileName(plainFileName);
