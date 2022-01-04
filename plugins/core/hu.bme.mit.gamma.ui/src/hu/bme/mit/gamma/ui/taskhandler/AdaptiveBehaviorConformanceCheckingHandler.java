@@ -273,13 +273,23 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 
 	private Entry<String, PropertyPackage> insertMonitor(CascadeCompositeComponent cascade,
 			StatechartDefinition contract, String name) throws IOException {
+		// Behavior statechart
+		List<SynchronousComponentInstance> components = cascade.getComponents();
+		SynchronousComponentInstance behaviorInstance = javaUtil.getOnlyElement(components);
 		// Contract statechart
-		
 		SynchronousComponentInstance contractInstance =
 				statechartUtil.instantiateSynchronousComponent(contract);
 		String monitorName = contractInstance.getName() + "Monitor";
 		contractInstance.setName(monitorName);
-		cascade.getComponents().add(0, contractInstance); // Contract is executed first
+		// Contract is executed last due to initial action/assertion
+		components.add(contractInstance);
+		
+		// This execution order is correct if the scenario starts with a "receive" interaction
+		// TODO One monitor iteration is "wasted" if the scenario starts with a "receive" interaction
+		cascade.getExecutionList().add(statechartUtil.createInstanceReference(contractInstance));
+		cascade.getExecutionList().add(statechartUtil.createInstanceReference(behaviorInstance));
+		// Note that executing the monitor after the behavior component would be incorrect as
+		// the "send" and "receive" interaction handling could interleave in the first iteration
 		
 		// Binding system ports
 		for (Port systemPort : StatechartModelDerivedFeatures.getAllPorts(cascade)) {
