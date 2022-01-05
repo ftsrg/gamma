@@ -439,10 +439,10 @@ ScheduledAsynchronousCompositeComponent returns CompositeModel::ScheduledAsynchr
 			(
 				components+=AsynchronousComponentInstance |
 				portBindings+=PortBinding |
-				channels+=Channel | 
-				'execute' executionList+=AtomicComponentInstanceReference
-						(',' executionList+=AtomicComponentInstanceReference)*
+				channels+=Channel
 			)*
+			('execute' executionList+=AtomicComponentInstanceReference
+					(',' executionList+=AtomicComponentInstanceReference)*)?
 		'}'
 ;
 

@@ -323,7 +323,6 @@ Slicing returns Slicing:
 	'}'
 ;
 
-
 InterfaceMapping returns InterfaceMapping:
 	'map' yakinduInterface=[stext::InterfaceScope] '=' gammaInterface=[interface::Interface] 'as' realizationMode=RealizationMode ('{'
 		eventMappings+=EventMapping*
@@ -364,18 +363,18 @@ AdaptiveBehaviorConformanceChecking returns AdaptiveBehaviorConformanceChecking:
 StatechartContractTestGeneration returns StatechartContractTestGeneration:
 	{StatechartContractTestGeneration}
 	'statechart-contract-test' '{'
-	componentReference= ComponentReference 
-	('folder' ':' targetFolder+=STRING)?
-	('constraint' ':' '{'constraint= OrchestratingConstraint'}')?
+		componentReference=ComponentReference 
+		('folder' ':' targetFolder+=STRING)?
+		('constraint' ':' '{'constraint= OrchestratingConstraint'}')?
 	'}' 
 ;
 
 StatechartContractGeneration returns StatechartContractGeneration:
 	{StatechartContractGeneration} 
 	'statechart-contract' '{'
-	 'scenario' ':' scenario= [scenario::ScenarioDefinition]
-	 ('folder' ':' targetFolder+=STRING)?
-	 ('name' ':' fileName+=STRING)?
+		 'scenario' ':' scenario= [scenario::ScenarioDefinition]
+		 ('folder' ':' targetFolder+=STRING)?
+		 ('name' ':' fileName+=STRING)?
 	'}'
 ;
 
