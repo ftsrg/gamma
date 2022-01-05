@@ -14,9 +14,9 @@ import hu.bme.mit.gamma.codegenerator.java.queries.BroadcastChannels
 import hu.bme.mit.gamma.codegenerator.java.queries.SimpleChannels
 import hu.bme.mit.gamma.codegenerator.java.util.Namings
 import hu.bme.mit.gamma.codegenerator.java.util.TimingDeterminer
-import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.CascadeCompositeComponent
+import hu.bme.mit.gamma.statechart.composite.ComponentInstance
 import hu.bme.mit.gamma.statechart.composite.SynchronousCompositeComponent
 
 import static extension hu.bme.mit.gamma.codegenerator.java.util.Namings.*
@@ -87,13 +87,21 @@ class SynchronousCompositeComponentCodeGenerator {
 				«ENDFOR»
 				«IF component instanceof CascadeCompositeComponent»
 					// Setting only a single queue for cascade statecharts
-					«FOR instance : component.components.filter[it.type instanceof StatechartDefinition]»
+					«FOR instance : component.components.filter[it.isStatechart]»
 						«instance.name».change«INSERT_QUEUE.toFirstUpper»();
 					«ENDFOR»
 				«ENDIF»
 				clearPorts();
 				// Initializing chain of listeners and events 
-				notifyAllListeners();
+				notifyAllSublisteners();
+«««				Potentially executing instances before first environment transition (cascade only)
+«««				System out-events are NOT cleared
+				«FOR instance : component.initallyScheduledInstances»
+«««					Instance in-events are implicitly cleared of course
+					«instance.runCycleOrComponent(component)»
+				«ENDFOR»
+				// Notifying registered listeners
+				notifyListeners();
 			}
 			
 			/** Creates the channel mappings and enters the wrapped statemachines. */
@@ -191,10 +199,14 @@ class SynchronousCompositeComponentCodeGenerator {
 			/** Notifies all registered listeners in each contained port. */
 			public void notifyAllListeners() {
 «««				This subcomponent notification is necessery in hierarchical composite components
+				notifyAllSublisteners();
+				notifyListeners();
+			}
+			
+			public void notifyAllSublisteners() {
 				«FOR subcomponent : component.components»
 					«subcomponent.name».notifyAllListeners();
 				«ENDFOR»
-				notifyListeners();
 			}
 			
 			public void notifyListeners() {
@@ -246,11 +258,7 @@ class SynchronousCompositeComponentCodeGenerator {
 				clearPorts();
 				// Running contained components
 				«FOR instance : component.scheduledInstances»
-					«IF component instanceof CascadeCompositeComponent && instance.type instanceof SynchronousCompositeComponent»
-						«instance.name».runCycle();
-					«ELSE»
-						«instance.name».runComponent();
-					«ENDIF»
+					«instance.runCycleOrComponent(component)»
 				«ENDFOR»
 				// Notifying registered listeners
 				notifyListeners();
@@ -276,6 +284,15 @@ class SynchronousCompositeComponentCodeGenerator {
 			«ENDFOR»
 			
 		}
+	'''
+	
+	protected def runCycleOrComponent(ComponentInstance instance,
+			AbstractSynchronousCompositeComponent component) '''
+		«IF component instanceof CascadeCompositeComponent && instance.derivedType instanceof SynchronousCompositeComponent»
+			«instance.name».runCycle();
+		«ELSE»
+			«instance.name».runComponent();
+		«ENDIF»
 	'''
 	
 }

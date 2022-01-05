@@ -717,6 +717,9 @@ class ComponentTransformer {
 						.resetEverythingExceptPersistentParameters(componentType)
 				actualComponentMergedAction.actions.add(0, clonedNewOutEventAction) // Putting the new action BEFORE
 			}
+			// Tracing merged action
+			componentMergedActions += componentType -> actualComponentMergedAction.clone
+			
 			// In event
 			newInEventAction.deleteEverythingExceptSystemEventsAndParameters(component)
 			if (xSts !== newXSts) { // Only if this is not the first component
@@ -733,8 +736,18 @@ class ComponentTransformer {
 				outEventAction.actions += newOutEventAction
 				xSts.outEventTransition = outEventAction.wrap
 			}
-			// Tracing merged action
-			componentMergedActions += componentType -> actualComponentMergedAction.clone
+		}
+		
+		// Potentially executing instances before first environment transition (cascade only)
+		// System out events are NOT cleared
+		for (subcomponent : component.initallyScheduledInstances) {
+			val componentType = subcomponent.type
+			checkState(componentMergedActions.containsKey(componentType))
+			val entryEventAction = xSts.entryEventTransition.action
+			// Component instance in events are cleared, see above "newInEventAction.clone
+			//			.resetEverythingExceptPersistentParameters(componentType)"
+			val componentMergedAction = componentMergedActions.get(componentType).clone
+			entryEventAction.appendToAction(componentMergedAction)
 		}
 		
 		// Merged action based on scheduling instances
@@ -745,25 +758,30 @@ class ComponentTransformer {
 			val subcomponent = scheduledInstances.get(i)
 			val componentType = subcomponent.type
 			checkState(componentMergedActions.containsKey(componentType))
-			mergedAction.actions += componentMergedActions.get(componentType).clone
+			val componentMergedAction = componentMergedActions.get(componentType).clone
+			mergedAction.actions += componentMergedAction
 		}
 		xSts.changeTransitions(mergedAction.wrap)
 		
 		logger.log(Level.INFO, "Deleting unused instance ports in " + name)
 		xSts.deleteUnusedPorts(component) // Deleting variable assignments for unused ports
-		// Connect only after xSts.mergedTransition.action = mergedAction
+		
+		// Connect only after "xSts.mergedTransition.action = mergedAction" / "xSts.changeTransitions"
 		logger.log(Level.INFO, "Connecting events through channels in " + name)
 		xSts.connectEventsThroughChannels(component) // Event (variable setting) connecting across channels
+		
 		logger.log(Level.INFO, "Binding event to system port events in " + name)
 		val oldInEventAction = xSts.inEventTransition.action
 		val bindingAssignments = xSts.createEventAndParameterAssignmentsBoundToTheSameSystemPort(component)
 		// Optimization: removing old NonDeterministicActions 
 		bindingAssignments.removeNonDeterministicActionsReferencingAssignedVariables(oldInEventAction)
+		
 		val newInEventAction = createSequentialAction => [
 			it.actions += oldInEventAction
 			// Bind together ports connected to the same system port
 			it.actions += bindingAssignments
 		]
+		
 		xSts.inEventTransition = newInEventAction.wrap
 		
 		if (transformOrthogonalActions) {

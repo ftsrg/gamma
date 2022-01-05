@@ -351,11 +351,10 @@ AdaptiveContractTestGeneration returns AdaptiveContractTestGeneration:
 ;
 
 AdaptiveBehaviorConformanceChecking returns AdaptiveBehaviorConformanceChecking:
-	{AdaptiveBehaviorConformanceChecking} 'adaptive-conformance-checking' '{'
+	{AdaptiveBehaviorConformanceChecking} 'adaptive-conformance-check' '{'
 		modelTransformation=AnalysisModelTransformation
 		(
-		'folder' ':' targetFolder+=STRING |
-		'file' ':' fileName+=STRING // The name of the generated file
+		'folder' ':' targetFolder+=STRING
 		)*
 	'}'
 ;

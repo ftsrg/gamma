@@ -37,6 +37,7 @@ import hu.bme.mit.gamma.property.util.PropertyUtil;
 import hu.bme.mit.gamma.scenario.statechart.util.ScenarioStatechartUtil;
 import hu.bme.mit.gamma.statechart.composite.CascadeCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.Channel;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference;
 import hu.bme.mit.gamma.statechart.composite.CompositeModelFactory;
 import hu.bme.mit.gamma.statechart.composite.InstancePortReference;
 import hu.bme.mit.gamma.statechart.composite.PortBinding;
@@ -77,9 +78,7 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 		
 		ComponentReference modelReference = (ComponentReference) modelTransformation.getModel();
 		Component adaptiveComponent = modelReference.getComponent();
-		// restart-on-cold-violation
-		// back-transitions are on
-		// permissive or strict
+		// initial-blocks, restart-on-cold-violation, back-transitions are on, permissive or strict
 		StatechartDefinition adaptiveStatechart = (StatechartDefinition) adaptiveComponent;
 		
 		// Collecting contract-behavior mappings
@@ -284,14 +283,28 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 		// Contract is executed last due to initial action/assertion
 		components.add(contractInstance);
 		
-		// This execution order is correct if the scenario starts with a "receive" interaction
-		// TODO One monitor iteration is "wasted" if the scenario starts with a "receive" interaction
-		cascade.getExecutionList().add(statechartUtil.createInstanceReference(contractInstance));
-		cascade.getExecutionList().add(statechartUtil.createInstanceReference(behaviorInstance));
-		// Note that executing the monitor after the behavior component would be incorrect as
-		// the "send" and "receive" interaction handling could interleave in the first iteration
+		// Setting the component execution
+		
+		boolean hasInitialBlock = false; // TODO
+		if (hasInitialBlock) {
+			cascade.getInitialExecutionList().add(statechartUtil.createInstanceReference(contractInstance));
+		}
+		
+		boolean startsWithReceive = true; // TODO
+		ComponentInstanceReference contractReference =
+				statechartUtil.createInstanceReference(contractInstance);
+		ComponentInstanceReference behaviorReference =
+				statechartUtil.createInstanceReference(behaviorInstance);
+		cascade.getExecutionList().add(behaviorReference);
+		if (startsWithReceive) {
+			cascade.getExecutionList().add(0, contractReference);
+		}
+		else {
+			cascade.getExecutionList().add(contractReference);
+		}
 		
 		// Binding system ports
+		
 		for (Port systemPort : StatechartModelDerivedFeatures.getAllPorts(cascade)) {
 			Port contractPort = matchPort(systemPort, contract);
 			// Only for all input ports
@@ -394,6 +407,9 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 	// Settings
 
 	private void setAdaptiveBehaviorConformanceChecker(AdaptiveBehaviorConformanceChecking conformanceChecker) {
+		// Check if the contract automata are valid: initial blocks, restart-on-cold-violation,
+		// back-transitions are on
+		// Theoretically, both permissive and strict can be used
 		
 	}
 

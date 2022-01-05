@@ -387,10 +387,12 @@ CascadeCompositeComponent returns CompositeModel::CascadeCompositeComponent:
 			(
 				components+=SynchronousComponentInstance |
 				portBindings+=PortBinding |
-				channels+=Channel |
-				'execute' executionList+=AtomicComponentInstanceReference
-						(',' executionList+=AtomicComponentInstanceReference)*
+				channels+=Channel
 			)*
+			('initial' 'execute' initialExecutionList+=AtomicComponentInstanceReference
+					(',' initialExecutionList+=AtomicComponentInstanceReference)*)?
+			('execute' executionList+=AtomicComponentInstanceReference
+					(',' executionList+=AtomicComponentInstanceReference)*)?
 		'}'
 ;
 

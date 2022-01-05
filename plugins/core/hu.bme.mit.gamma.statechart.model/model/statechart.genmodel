@@ -81,6 +81,7 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference composite.ecore#//AsynchronousAdapter/wrappedComponent"/>
     </genClasses>
     <genClasses ecoreClass="composite.ecore#//CascadeCompositeComponent">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference composite.ecore#//CascadeCompositeComponent/initialExecutionList"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference composite.ecore#//CascadeCompositeComponent/executionList"/>
     </genClasses>
     <genClasses ecoreClass="composite.ecore#//SynchronousCompositeComponent"/>

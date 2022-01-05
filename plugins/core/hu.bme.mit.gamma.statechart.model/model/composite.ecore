@@ -95,6 +95,8 @@
         eType="#//SynchronousComponentInstance" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="CascadeCompositeComponent" eSuperTypes="#//AbstractSynchronousCompositeComponent">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="initialExecutionList" upperBound="-1"
+        eType="#//ComponentInstanceReference" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="executionList" upperBound="-1"
         eType="#//ComponentInstanceReference" containment="true"/>
   </eClassifiers>

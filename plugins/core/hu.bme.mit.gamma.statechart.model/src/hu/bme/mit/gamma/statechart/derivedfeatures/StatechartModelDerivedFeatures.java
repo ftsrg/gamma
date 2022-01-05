@@ -1914,6 +1914,22 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return instances.contains(instance);
 	}
 	
+	public static List<SynchronousComponentInstance> getInitallyScheduledInstances(
+			AbstractSynchronousCompositeComponent component) {
+		List<SynchronousComponentInstance> initallyScheduledInstances =
+				new ArrayList<SynchronousComponentInstance>();
+		if (component instanceof CascadeCompositeComponent) {
+			CascadeCompositeComponent cascade = (CascadeCompositeComponent) component;
+			for (ComponentInstanceReference instanceReference : cascade.getInitialExecutionList()) {
+				ComponentInstance componentInstance = instanceReference.getComponentInstance();
+				SynchronousComponentInstance synchronousComponentInstance =
+						(SynchronousComponentInstance) componentInstance;
+				initallyScheduledInstances.add(synchronousComponentInstance);
+			}
+		}
+		return initallyScheduledInstances;
+	}
+	
 	public static List<SynchronousComponentInstance> getScheduledInstances(
 			AbstractSynchronousCompositeComponent component) {
 		if (component instanceof CascadeCompositeComponent) {
