@@ -37,7 +37,6 @@ import hu.bme.mit.gamma.property.util.PropertyUtil;
 import hu.bme.mit.gamma.scenario.statechart.util.ScenarioStatechartUtil;
 import hu.bme.mit.gamma.statechart.composite.CascadeCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.Channel;
-import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference;
 import hu.bme.mit.gamma.statechart.composite.CompositeModelFactory;
 import hu.bme.mit.gamma.statechart.composite.InstancePortReference;
 import hu.bme.mit.gamma.statechart.composite.PortBinding;
@@ -274,34 +273,28 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 			StatechartDefinition contract, String name) throws IOException {
 		// Behavior statechart
 		List<SynchronousComponentInstance> components = cascade.getComponents();
-		SynchronousComponentInstance behaviorInstance = javaUtil.getOnlyElement(components);
 		// Contract statechart
 		SynchronousComponentInstance contractInstance =
 				statechartUtil.instantiateSynchronousComponent(contract);
 		String monitorName = contractInstance.getName() + "Monitor";
 		contractInstance.setName(monitorName);
-		// Contract is executed last due to initial action/assertion
+		
 		components.add(contractInstance);
 		
 		// Setting the component execution
 		
-		boolean hasInitialBlock = false; // TODO
+		boolean hasInitialBlock = true; // TODO
 		if (hasInitialBlock) {
-			cascade.getInitialExecutionList().add(statechartUtil.createInstanceReference(contractInstance));
+			cascade.getInitialExecutionList().add(
+					statechartUtil.createInstanceReference(contractInstance));
 		}
 		
-		boolean startsWithReceive = true; // TODO
-		ComponentInstanceReference contractReference =
-				statechartUtil.createInstanceReference(contractInstance);
-		ComponentInstanceReference behaviorReference =
-				statechartUtil.createInstanceReference(behaviorInstance);
-		cascade.getExecutionList().add(behaviorReference);
-		if (startsWithReceive) {
-			cascade.getExecutionList().add(0, contractReference);
+		// Monitor (input) - behavior - monitor (output)
+		cascade.getExecutionList().add(statechartUtil.createInstanceReference(contractInstance));
+		for (SynchronousComponentInstance componentInstance : components) {
+			cascade.getExecutionList().add(statechartUtil.createInstanceReference(componentInstance));
 		}
-		else {
-			cascade.getExecutionList().add(contractReference);
-		}
+		cascade.getExecutionList().add(statechartUtil.createInstanceReference(contractInstance));
 		
 		// Binding system ports
 		
@@ -408,7 +401,7 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 
 	private void setAdaptiveBehaviorConformanceChecker(AdaptiveBehaviorConformanceChecking conformanceChecker) {
 		// Check if the contract automata are valid: initial blocks, restart-on-cold-violation,
-		// back-transitions are on
+		// back-transitions are on, receives-sends sequences, iteration variables are set
 		// Theoretically, both permissive and strict can be used
 		
 	}
