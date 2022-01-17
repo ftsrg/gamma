@@ -480,6 +480,7 @@ class LowlevelToXstsTransformer {
 						it.type = lowlevelTimeoutVariable.type.transformType
 						it.expression = lowlevelTimeoutVariable.expression.transformExpression // Timeouts are initially true
 					]
+					xStsVariable.annotations.addAll(lowlevelTimeoutVariable.annotations)
 					xSts.variableDeclarations += xStsVariable // Target model modification
 					trace.put(lowlevelTimeoutVariable, xStsVariable) // Tracing
 					xStsVariable.addClockAnnotation 

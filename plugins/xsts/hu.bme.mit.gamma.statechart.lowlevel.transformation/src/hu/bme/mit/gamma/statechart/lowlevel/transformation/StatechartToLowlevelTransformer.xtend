@@ -208,6 +208,7 @@ class StatechartToLowlevelTransformer {
 			it.type = createIntegerTypeDefinition // Could be rational
 			// Initial expression in EventReferenceTransformer
 		]
+		lowlevelTimeout.annotations.addAll(timeout.annotations)
 		trace.put(timeout, lowlevelTimeout)
 		return lowlevelTimeout
 	}

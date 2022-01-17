@@ -41,7 +41,11 @@
     <eLiterals name="ON_THE_FLY"/>
     <eLiterals name="BEGINNING_OF_STEP" value="1"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="TimeoutDeclaration" eSuperTypes="interface.ecore#//EventSource"/>
+  <eClassifiers xsi:type="ecore:EClass" name="TimeoutDeclaration" eSuperTypes="interface.ecore#//EventSource">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="annotations" upperBound="-1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclarationAnnotation"
+        containment="true"/>
+  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="StatechartReference" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ArgumentedElement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="reference" lowerBound="1"
         eType="ecore:EClass interface.ecore#//Component"/>
