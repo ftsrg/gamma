@@ -742,6 +742,10 @@ public class ExpressionUtil {
 		addAnnotation(variable, factory.createClockVariableDeclarationAnnotation());
 	}
 	
+	public void addScheduledClockAnnotation(VariableDeclaration variable) {
+		addAnnotation(variable, factory.createScheduledClockVariableDeclarationAnnotation());
+	}
+	
 	public void addAnnotation(VariableDeclaration variable, VariableDeclarationAnnotation annotation) {
 		if (variable != null) {
 			variable.getAnnotations().add(annotation);

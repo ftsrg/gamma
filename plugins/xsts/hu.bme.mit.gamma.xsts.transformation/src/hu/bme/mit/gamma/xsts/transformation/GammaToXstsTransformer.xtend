@@ -167,12 +167,15 @@ class GammaToXstsTransformer {
 						it.^else = createReferenceExpression(xStsClockVariable)
 					]
 				it.actions += xStsClockVariable.createAssignmentAction(rhs)
+				// Denoting variable as scheduled clock variable
+				xStsClockVariable.addScheduledClockAnnotation
 			}
 			// Putting it in merged transition as it does not work in environment action
 			it.actions += xSts.mergedAction
 		]
 		xSts.changeTransitions(xStsClockSettingAction.wrap)
 		// Clearing the clock variables - they are handled like normal ones from now on
+		// This way the UPPAAL transformer will not use clock types as variable values 
 		xSts.removeVariableDeclarationAnnotations(ClockVariableDeclarationAnnotation)
 	}
 	

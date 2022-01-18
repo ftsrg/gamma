@@ -16,6 +16,7 @@ import hu.bme.mit.gamma.expression.model.DecimalTypeDefinition
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition
 import hu.bme.mit.gamma.expression.model.RationalTypeDefinition
+import hu.bme.mit.gamma.expression.model.ScheduledClockVariableDeclarationAnnotation
 import hu.bme.mit.gamma.expression.model.SubrangeTypeDefinition
 import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
@@ -92,5 +93,12 @@ class DeclarationSerializer {
 	
 	protected def dispatch serializeAnnotation(OnDemandControlVariableDeclarationAnnotation annotation) '''ctrl'''
 	
+	/*
+	 * PRED domain does not care about 'ctrl' annotations;
+	 * EXPL domain in the first iteration considers only 'ctrl' variables - this can be useful;
+	 * PRED_CART domain tracks 'ctrl' variables explicitly - this could be a potential disadvantage here.
+	 * Maybe a new distinguished annotation should be introduced for clock variables in Theta.
+	 */
+	protected def dispatch serializeAnnotation(ScheduledClockVariableDeclarationAnnotation annotation) '''ctrl'''
 	
 }
