@@ -16,7 +16,6 @@ import hu.bme.mit.gamma.verification.util.AbstractVerification
 import hu.bme.mit.gamma.verification.util.AbstractVerifier.Result
 import java.io.File
 import java.util.logging.Level
-import java.util.regex.Pattern
 
 class ThetaVerification extends AbstractVerification {
 	// Singleton
@@ -65,11 +64,8 @@ class ThetaVerification extends AbstractVerification {
 		// --domain EXPL_PRED_COMBINED --autoexpl NEWOPERANDS --initprec CTRL
 	}
 	
-	protected def sanitizeArgument(String argument) {
-		val match = Pattern.matches("(--[a-z]+( )[_0-9A-Z]+( )*)*", argument.trim)
-		if (!match) {
-			throw new IllegalArgumentException(argument + " is not a valid argument")
-		}
+	protected override String getArgumentPattern() {
+		return "(--[a-z]+( )[_0-9A-Z]+( )*)*"
 	}
 	
 }

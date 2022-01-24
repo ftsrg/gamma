@@ -14,8 +14,8 @@ import hu.bme.mit.gamma.verification.util.AbstractVerification
 
 abstract class AbstractUppaalVerification extends AbstractVerification {
 	
-	protected def sanitizeArgument(String argument) {
-		
+	protected override getArgumentPattern() {
+		return "((-A|-C|-H[0-9]*|-n[0-4]|-o[0-4]|-S[0-2]|-T|-Z|-N|-t[0-2])( )?)*"
 	}
 	
 }
