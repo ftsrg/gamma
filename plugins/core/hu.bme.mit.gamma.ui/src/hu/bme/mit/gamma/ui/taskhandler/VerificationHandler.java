@@ -87,6 +87,7 @@ public class VerificationHandler extends TaskHandler {
 		Set<AnalysisLanguage> languagesSet = new LinkedHashSet<AnalysisLanguage>(
 				verification.getAnalysisLanguages());
 		checkArgument(languagesSet.size() == 1);
+		List<String> verificationArguments = verification.getVerificationArguments();
 		
 		boolean distinguishStringFormulas = false;
 		
@@ -108,9 +109,14 @@ public class VerificationHandler extends TaskHandler {
 					propertySerializer = XstsUppaalPropertySerializer.INSTANCE;
 					break;
 				default:
-					throw new IllegalArgumentException("Currently only UPPAAL and Theta are supported.");
+					throw new IllegalArgumentException("Currently only UPPAAL and Theta are supported");
 			}
 		}
+		
+		String[] arguments = verificationArguments.isEmpty() ?
+				verificationTask.getDefaultArguments() :
+					verificationArguments.toArray(new String[0]);
+		
 		String filePath = verification.getFileName().get(0);
 		File modelFile = new File(filePath);
 		boolean isOptimize = verification.isOptimize();
@@ -166,7 +172,8 @@ public class VerificationHandler extends TaskHandler {
 			
 			Stopwatch stopwatch = Stopwatch.createStarted();
 			
-			Result result = execute(verificationTask, modelFile, queryFile, retrievedTraces, isOptimize);
+			Result result = execute(verificationTask, modelFile, queryFile, arguments,
+					retrievedTraces, isOptimize);
 			ExecutionTrace trace = result.getTrace();
 			ThreeStateBoolean verificationResult = result.getResult();
 			
@@ -176,9 +183,8 @@ public class VerificationHandler extends TaskHandler {
 			String elapsedString = elapsed + " " + timeUnit;
 			
 			retrievedVerificationResults.add(
-					new VerificationResult(
-						serializedFormula, verificationResult,
-							verificationTask.getParameters(), elapsedString));
+				new VerificationResult(
+					serializedFormula, verificationResult, arguments, elapsedString));
 			
 			// Checking if some of the unchecked properties are already covered
 			if (trace != null && isOptimize) {
@@ -234,7 +240,16 @@ public class VerificationHandler extends TaskHandler {
 	
 	protected Result execute(AbstractVerification verificationTask, File modelFile,
 			File queryFile, List<ExecutionTrace> retrievedTraces, boolean isOptimize) {
-		Result result = verificationTask.execute(modelFile, queryFile);
+		return this.execute(verificationTask, modelFile, queryFile,
+				new String[0], retrievedTraces, isOptimize);
+	}
+	
+	protected Result execute(AbstractVerification verificationTask, File modelFile, File queryFile,
+			String[] arguments, List<ExecutionTrace> retrievedTraces, boolean isOptimize) {
+		// If arguments are empty, we execute a task with default arguments
+		Result result = (arguments.length == 0) ? verificationTask.execute(modelFile, queryFile) :
+			verificationTask.execute(modelFile, queryFile, arguments);
+		
 		ExecutionTrace trace = result.getTrace();
 		// Maybe there is no trace
 		if (trace != null) {

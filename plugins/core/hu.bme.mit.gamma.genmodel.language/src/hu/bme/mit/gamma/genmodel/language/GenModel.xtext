@@ -283,9 +283,10 @@ Verification returns Verification:
 		(
 			'trace-folder' ':' targetFolder+=STRING | // Trace folder
 			'file' ':' fileName+=STRING | // Trace model
-			'svg-file' ':' svgFileName+=STRING | // Trace model
+			'svg-file' ':' svgFileName+=STRING |
 			'language' ':' analysisLanguages+=AnalysisLanguage |
 			'query-file' ':' queryFiles+=STRING | // Queries
+			'verification-argument' ':' verificationArguments+=STRING | // Potentially multiple - portfolio
 			'property-file' ':' propertyPackages+=[property::PropertyPackage | STRING] | // Property models
 			'base-package' ':' packageName+=STRING  | // Java base package
 			'test-language' ':' programmingLanguages+=ProgrammingLanguage |

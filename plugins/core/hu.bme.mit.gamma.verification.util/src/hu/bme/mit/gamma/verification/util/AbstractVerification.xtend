@@ -15,7 +15,10 @@ abstract class AbstractVerification {
 
 	protected final Logger logger = Logger.getLogger("GammaLogger")
 	
-	abstract def Result execute(File modelFile, File queryFile)
-	abstract def String[] getParameters()
-
+	def Result execute(File modelFile, File queryFile) {
+		return this.execute(modelFile, queryFile, defaultArguments)
+	}
+	abstract def Result execute(File modelFile, File queryFile, String[] arguments)
+	abstract def String[] getDefaultArguments()
+	
 }
