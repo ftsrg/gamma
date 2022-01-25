@@ -115,7 +115,7 @@ public class VerificationHandler extends TaskHandler {
 		
 		String[] arguments = verificationArguments.isEmpty() ?
 				verificationTask.getDefaultArguments() :
-					verificationArguments.toArray(new String[0]);
+					verificationArguments.toArray(new String[verificationArguments.size()]);
 		
 		String filePath = verification.getFileName().get(0);
 		File modelFile = new File(filePath);
