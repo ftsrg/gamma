@@ -102,8 +102,8 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 	var State coldViolation = null
 	var stateCount = 0
 	var timeoutCount = 0
-	var nonDeclaredMessageMode = 0
-	var nonDeclaredNegMessageMode = 1
+	var NotDefinedEventMode nonDeclaredMessageMode = NotDefinedEventMode.PERMISSIVE
+	var NotDefinedEventMode nonDeclaredNegMessageMode = NotDefinedEventMode.STRICT
 	var coldViolationExisits = true
 	val StatechartGenerationMode generationMode
 	val replacedStateWithValue = new HashMap<StateNode,StateNode>()
@@ -127,15 +127,15 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 				allowedGlobalWaitMax = annotation.maximum.evaluateInteger
 				allowedGlobalWaitMin = (annotation as WaitAnnotation).minimum.evaluateInteger
 			} else if (annotation instanceof StrictAnnotation) {
-				nonDeclaredMessageMode = 1
+				nonDeclaredMessageMode = NotDefinedEventMode.STRICT
 			} else if (annotation instanceof PermissiveAnnotation) {
-				nonDeclaredMessageMode = 0
+				nonDeclaredMessageMode = NotDefinedEventMode.PERMISSIVE
 			} else if (annotation instanceof NegatedWaitAnnotation) {
 				allowedGlobalWaitNegMax = annotation.maximum.evaluateInteger
 			} else if (annotation instanceof NegStrictAnnotation) {
-				nonDeclaredNegMessageMode = 1
+				nonDeclaredNegMessageMode = NotDefinedEventMode.STRICT
 			} else if (annotation instanceof NegPermissiveAnnotation) {
-				nonDeclaredNegMessageMode = 0
+				nonDeclaredNegMessageMode = NotDefinedEventMode.PERMISSIVE
 			}
 		}
 		
@@ -190,8 +190,7 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 
 		val annotation = createScenarioContractAnnotation
 		annotation.monitoredComponent = component
-		annotation.scenarioType = nonDeclaredMessageMode == 1 ?
-			NotDefinedEventMode.STRICT : NotDefinedEventMode.PERMISSIVE
+		annotation.scenarioType = nonDeclaredMessageMode
 		statechart.annotations += annotation
 		
 		val waitingAnnotation= createScenarioAllowedWaitAnnotation
@@ -425,7 +424,7 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 		if (dir.equals(InteractionDirection.RECEIVE)) {
 			handleDelays(set)
 			setupForwardTransition(set, first, false, isNegated, forwardTransition)
-			if (nonDeclaredMessageMode == 1) {
+			if (nonDeclaredMessageMode == NotDefinedEventMode.STRICT) {
 				var binary = createBinaryTrigger
 				binary.leftOperand = forwardTransition.trigger
 				binary.rightOperand = getBinaryTriggerFromTriggers(createOtherNegatedTriggers(set), BinaryType.AND)
@@ -450,18 +449,19 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 			t3.priority = BigInteger.valueOf(2)
 			t3.guard = getMaxCheck(iteratingVariable, allowedGlobalWaitMax)
 
-			var mode = -1
+			var NotDefinedEventMode mode 
 			if (isAllNeg(set) || isNegated) {
 				mode = nonDeclaredNegMessageMode
 				// does not need to be added, as it is overshadowed by the forward going transition
-				if (mode != 1)
+				if (mode != NotDefinedEventMode.STRICT) {
 					statechart.transitions.add(t3)
+				}
 			} else {
 				statechart.transitions.add(t3)
 				mode = nonDeclaredMessageMode
 			}
 
-			if (mode == 1) {
+			if (mode == NotDefinedEventMode.STRICT) {
 				var BinaryTrigger tmp = getAllEvents(BinaryType.AND)
 				negateBinaryTree(tmp)
 				t3.trigger = tmp
@@ -482,7 +482,7 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 				t3.guard = maxCheck
 			}
 
-			if (nonDeclaredMessageMode == 1) {
+			if (nonDeclaredMessageMode == NotDefinedEventMode.STRICT) {
 				var binary = createBinaryTrigger
 				binary.leftOperand = forwardTransition.trigger
 				binary.rightOperand = getBinaryTriggerFromTriggers(createOtherNegatedTriggers(set), BinaryType.AND)
