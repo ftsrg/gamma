@@ -11,7 +11,6 @@
 package hu.bme.mit.gamma.scenario.statechart.generator
 
 import hu.bme.mit.gamma.expression.model.Expression
-import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.scenario.model.AlternativeCombinedFragment
 import hu.bme.mit.gamma.scenario.model.Delay
 import hu.bme.mit.gamma.scenario.model.Interaction
@@ -167,23 +166,23 @@ class TestGeneratorStatechartGenerator extends AbstractContractStatechartGenerat
 		statechart.name = scenarioName
 		var region = createRegion
 		region.name = "region"
-		statechart.regions.add(region)		
+		statechart.regions+=region		
 
 		var initial = createInitialState
 		initial.name = scenarioStatechartUtil.initial
-		region.stateNodes.add(initial)
+		region.stateNodes+=initial
 
 		var s = createState
 		s.name = "firstState"
-		region.stateNodes.add(s)
+		region.stateNodes+=s
 		previousState = s
 		
 		var tmp = createNewState(scenarioStatechartUtil.hotViolation)
-		region.stateNodes.add(tmp)
+		region.stateNodes+=tmp
 		hotViolation = tmp;
 		if (coldViolationExisits) {
 			tmp = createNewState(scenarioStatechartUtil.coldViolation)
-			region.stateNodes.add(tmp)
+			region.stateNodes+=tmp
 			coldViolation = tmp
 		} else {
 			coldViolation = s
@@ -192,23 +191,19 @@ class TestGeneratorStatechartGenerator extends AbstractContractStatechartGenerat
 		val initBlock = scenario.initialblock
 		if (initBlock === null){
 			var t = createTransition
-			t.sourceState = initial
-			t.targetState = s
+			setupTransition(t, initial, s, null, null, null)
 			t.effects += setIntVariable(variableMap.getOrCreate(scenarioStatechartUtil.iteratingVariable), 1)
 			t.effects += setIntVariable(variableMap.getOrCreate(scenarioStatechartUtil.getLoopvariableNameForDepth(0)), 1)
-			statechart.transitions.add(t)
+			statechart.transitions+=t
 		} 
 		else {
 			val initChoice = addChoiceState
 			region.stateNodes += initChoice
 			var t1 = createTransition
-			t1.sourceState = initial
-			t1.targetState = initChoice
-			statechart.transitions.add(t1)
-			
+			setupTransition(t1, initial, initChoice, null, null, null)
+			statechart.transitions+=t1
 			var t2 = createTransition
-			t2.sourceState = initChoice
-			t2.targetState = s
+			setupTransition(t2, initChoice, s, null, null, null)
 			for (interaction : initBlock.modalInteractions){
 				var a = getRaiseEventAction(interaction, false)
 				if (a !== null){
@@ -216,13 +211,12 @@ class TestGeneratorStatechartGenerator extends AbstractContractStatechartGenerat
 				}
 			}
 			t2.effects += setIntVariable(variableMap.getOrCreate(scenarioStatechartUtil.getLoopvariableNameForDepth(0)), 1)
-			statechart.transitions.add(t2)
+			statechart.transitions+=t2
 			
 			var t3 = createTransition
-			t3.sourceState = initChoice
-			t3.targetState = (initBlock.modalInteractions.get(0).modality == ModalityType.HOT) ? hotViolation : coldViolation
-			t3.guard = createElseExpression
-			statechart.transitions.add(t3)
+			val violation = (initBlock.modalInteractions.get(0).modality == ModalityType.HOT) ? hotViolation : coldViolation
+			setupTransition(t3, initChoice, violation, null, createElseExpression, null)
+			statechart.transitions+=t3
 		}
 	}
 
@@ -234,74 +228,70 @@ class TestGeneratorStatechartGenerator extends AbstractContractStatechartGenerat
 			iReali.interface = port.interfaceRealization.interface
 			pcopy.interfaceRealization = iReali
 			pcopy.name = port.name
-			statechart.ports.add(pcopy)
+			statechart.ports+=pcopy
 			var preverse = createPort
 			preverse.name = scenarioStatechartUtil.getTurnedOutPortName(port)
 			var iRealiR = createInterfaceRealization
 			iRealiR.interface = port.interfaceRealization.interface
 			iRealiR.realizationMode = port.interfaceRealization.realizationMode.opposite
 			preverse.interfaceRealization = iRealiR
-			statechart.ports.add(preverse)
+			statechart.ports+=preverse
 		}
 	}
 
-	def dispatch Interaction process(ModalInteractionSet interactionSet) {
+	def dispatch void process(ModalInteractionSet interactionSet) {
 		processModalInteractionSet(interactionSet, false)
-		return null;
 	}
 
-	def dispatch Interaction process(Delay delay) {
-		var state = createNewState("state" + String.valueOf(stateCount++))
-		var t = createTransition
-		t.sourceState = previousState
-		t.targetState = state
-		// TODO use more descriptive names
-		var td = createTimeoutDeclaration
-		td.name = "delay" + timeoutCount++
-		statechart.timeoutDeclarations += td
-		var ts = createTimeSpecification
-		ts.unit = TimeUnit.MILLISECOND
-		ts.value = delay.minimum.clone
-		var a = createSetTimeoutAction
-		a.timeoutDeclaration = td
-		a.time = ts
+	def dispatch void process(Delay delay) {
+		var newState = createNewState()
+		var transition = createTransition
+		transition.sourceState = previousState
+		transition.targetState = newState
+		var timeoutDecl = createTimeoutDeclaration
+		timeoutDecl.name = "delay" + timeoutCount++
+		statechart.timeoutDeclarations += timeoutDecl
+		var timeSpecification = createTimeSpecification
+		timeSpecification.unit = TimeUnit.MILLISECOND
+		timeSpecification.value = delay.minimum.clone
+		var timeoutAction = createSetTimeoutAction
+		timeoutAction.timeoutDeclaration = timeoutDecl
+		timeoutAction.time = timeSpecification
 		if (previousState instanceof State) {
-			previousState.entryActions += a
+			previousState.entryActions += timeoutAction
 		}
-		var e = createEventTrigger
-		var er = createTimeoutEventReference
-		er.timeout = td
-		t.trigger = e
-		e.eventReference = er
-		var t2 = createTransition
-		t2.sourceState = previousState
+		var eventTrigger = createEventTrigger
+		var eventRef = createTimeoutEventReference
+		eventRef.timeout = timeoutDecl
+		transition.trigger = eventTrigger
+		eventTrigger.eventReference = eventRef
+		var violationTransition = createTransition
+		violationTransition.sourceState = previousState
 		if (delay.modality == ModalityType.COLD) {
-			t2.targetState = coldViolation
+			violationTransition.targetState = coldViolation
 		} else {
-			t2.targetState = hotViolation
+			violationTransition.targetState = hotViolation
 		}
-		var e2 = createEventTrigger
-		var er2 = createTimeoutEventReference
-		er2.setTimeout(td)
-		e2.eventReference = er2
-		t2.trigger = negateEventTrigger(e2)
+		var violationTrigger = createEventTrigger
+		var violationRventRef = createTimeoutEventReference
+		violationRventRef.setTimeout(timeoutDecl)
+		violationTrigger.eventReference = violationRventRef
+		violationTransition.trigger = negateEventTrigger(violationTrigger)
 
-		previousState = state
-		statechart.transitions += t
-		statechart.transitions += t2
-		statechart.regions.get(0).stateNodes += state
-		return null;
+		previousState = newState
+		statechart.transitions += transition
+		statechart.transitions += violationTransition
+		statechart.regions.get(0).stateNodes += newState
 	}
 
-	def dispatch Interaction process(NegatedModalInteraction negatedModalInteraction) {
+	def dispatch void process(NegatedModalInteraction negatedModalInteraction) {
 		val modalInteraction = negatedModalInteraction.modalinteraction
 		if (modalInteraction instanceof ModalInteractionSet) {
 			processModalInteractionSet(modalInteraction, true)
-			return null
 		}
 	}
 
-	def dispatch Interaction process(AlternativeCombinedFragment a) {
+	def dispatch void process(AlternativeCombinedFragment a) {
 		var ends = newArrayList
 		var choice = addChoiceState
 		for (transition : previousState.incomingTransitions) {
@@ -310,44 +300,41 @@ class TestGeneratorStatechartGenerator extends AbstractContractStatechartGenerat
 		replacedStateWithValue.put(previousState,choice)
 		statechart.regions.get(0).stateNodes -= previousState
 		statechart.regions.get(0).stateNodes += choice
-		// TODO Use += and -= instead of add and remove
 		var n = stateCount++
 		for (i : 0 ..< a.fragments.size) {
 			var state = createNewState("state" + String.valueOf(n) + "_" + String.valueOf(i))
 			previousState = state
-			statechart.regions.get(0).stateNodes.add(state)
+			statechart.regions.get(0).stateNodes+=state
 			var t = createTransition
 			t.sourceState = choice
 			t.targetState = state
-			statechart.transitions.add(t)
+			statechart.transitions+=t
 			for (interaction : a.fragments.get(i).interactions) {
 				process(interaction)
 			}
-			ends.add(previousState)
+			ends+=previousState
 			stateCount--
 		}
 		var merg = createState
-		// TODO Use brackets
-		for (transition : statechart.transitions)
-			if (ends.contains(transition.targetState))
+		for (transition : statechart.transitions) {
+			if (ends.contains(transition.targetState)) {
 				transition.targetState = merg
-		statechart.regions.get(0).stateNodes.removeAll(ends)
-
+			}
+		}
+		statechart.regions.get(0).stateNodes-=ends
 		merg.name = "merge" + String.valueOf(exsistingMerges++)
-		statechart.regions.get(0).stateNodes.add(merg)
+		statechart.regions.get(0).stateNodes+=merg
 		previousState = merg
-		return null
 	}
-
-	def dispatch Interaction process(LoopCombinedFragment loop) {
+ 
+	def dispatch void process(LoopCombinedFragment loop) {
 		val loopDepth = scenarioStatechartUtil.getLoopDepth(loop)
-
 		var prevprev = previousState
 		for (interaction : loop.fragments.get(0).interactions) {
 			interaction.process
 		}
 		if (replacedStateWithValue.containsKey(prevprev)){
-			prevprev = replacedStateWithValue.remove(prevprev)
+			prevprev = replacedStateWithValue-=prevprev
 		}
 		var choice = addChoiceState
 		for (transition : previousState.incomingTransitions) {
@@ -355,54 +342,42 @@ class TestGeneratorStatechartGenerator extends AbstractContractStatechartGenerat
 		}
 
 		replacedStateWithValue.put(previousState,choice)
-		statechart.regions.get(0).stateNodes.remove(previousState)
-		statechart.regions.get(0).stateNodes.add(choice)
-		var stateNew = createNewState("state" + String.valueOf(stateCount++))
+		statechart.regions.get(0).stateNodes-=previousState
+		statechart.regions.get(0).stateNodes+=choice
+		var stateNew = createNewState()
 		previousState = stateNew
-		statechart.regions.get(0).stateNodes.add(stateNew)
+		statechart.regions.get(0).stateNodes+=stateNew
 		var t1 = createTransition
 		var t2 = createTransition
 		t1.sourceState = choice
 		t2.sourceState = choice
 		t1.targetState = stateNew
 		t2.targetState = prevprev
-		statechart.transitions.add(t1)
-		statechart.transitions.add(t2)
+		statechart.transitions+=t1
+		statechart.transitions+=t2
 
-		val variableForDepth = variableMap.getOrCreate(
-				scenarioStatechartUtil.getLoopvariableNameForDepth(loopDepth))
-		val evaluator = ExpressionEvaluator.INSTANCE;
-		t1.guard = getVariableGreaterEqualParamExpression(variableForDepth, evaluator.evaluateInteger(loop.minimum))
+		val variableForDepth = variableMap.getOrCreate(scenarioStatechartUtil.getLoopvariableNameForDepth(loopDepth))
+		t1.guard = getVariableGreaterEqualParamExpression(variableForDepth, exprEval.evaluateInteger(loop.minimum))
 		var maxCheck = createLessExpression
-		// TODO Use ExpressionUtil.createReference
-		var ref1 = createDirectReferenceExpression
-		ref1.declaration = variableForDepth
-		maxCheck.leftOperand = ref1
-		// TODO Use ExpressionUtil.toIntegerLiteral
-		var max = createIntegerLiteralExpression
-		max.value = BigInteger.valueOf(evaluator.evaluateInteger(loop.maximum))
-		maxCheck.rightOperand = max
+		maxCheck.leftOperand = exprUtil.createReferenceExpression(variableForDepth)
+		maxCheck.rightOperand = exprUtil.toIntegerLiteral(exprEval.evaluateInteger(loop.maximum))
 		t2.guard = maxCheck
-
 		t2.effects += incrementVar(variableForDepth)
 		t1.effects += setIntVariable(variableForDepth, 1)
-
-		return null;
-
 	}
 
-	def dispatch Interaction process(OptionalCombinedFragment ocf) {
+	def dispatch void process(OptionalCombinedFragment ocf) {
 		var choice = addChoiceState
 		for (transition : statechart.transitions) {
 			if (transition.targetState.equals(previousState))
 				transition.targetState = choice
 		}
 		replacedStateWithValue.put(previousState,choice)
-		statechart.regions.get(0).stateNodes.remove(previousState)
-		statechart.regions.get(0).stateNodes.add(choice)
-		var stateNew = createNewState("state" + String.valueOf(stateCount++))
+		statechart.regions.get(0).stateNodes-=previousState
+		statechart.regions.get(0).stateNodes+=choice
+		var stateNew = createNewState()
 		previousState = stateNew
-		statechart.regions.get(0).stateNodes.add(stateNew)
+		statechart.regions.get(0).stateNodes+=stateNew
 		for (interaction : ocf.fragments.get(0).interactions) {
 			process(interaction)
 		}
@@ -412,12 +387,150 @@ class TestGeneratorStatechartGenerator extends AbstractContractStatechartGenerat
 		t2.sourceState = choice
 		t1.targetState = stateNew
 		t2.targetState = previousState
-		statechart.transitions.add(t1)
-		statechart.transitions.add(t2)
-		return null
+		statechart.transitions+=t1
+		statechart.transitions+=t2
 	}
 
 	def processModalInteractionSet(ModalInteractionSet set, boolean isNegated) {
+		var state = createNewState()
+		var forwardTransition = createTransition
+		var violationTransition = createTransition
+		var cycleTransition = createTransition
+		cycleTransition.trigger = createOnCycleTrigger
+		var backwardTransition = createTransition
+		cycleTransition.sourceState = previousState
+		var newChoice = addChoiceState
+		cycleTransition.targetState = newChoice
+		forwardTransition.sourceState = newChoice
+		forwardTransition.targetState = state
+		violationTransition.guard = createElseExpression
+
+		if (set.modalInteractions.empty) {
+			var t = createTransition
+			setupTransition(t, previousState, state, createOnCycleTrigger, createTrueExpression, null)
+			statechart.transitions += t
+			statechart.regions.get(0).stateNodes += state
+			previousState = state
+			return
+		}
+		var dir = ScenarioModelDerivedFeatures.getDirection(set)
+		var mod = ScenarioModelDerivedFeatures.getModality(set)
+		violationTransition.sourceState = newChoice
+		violationTransition.targetState = (mod == ModalityType.COLD) ? coldViolation : hotViolation
+		
+		handleDelays(set)
+		setupForwardTransition(set, dir.equals(InteractionDirection.SEND), isNegated, forwardTransition)
+		
+		if (nonDeclaredMessageMode == NotDefinedEventMode.STRICT) {
+				var binary = createBinaryTrigger
+				binary.leftOperand = forwardTransition.trigger
+				binary.rightOperand = getBinaryTriggerFromTriggers(createOtherNegatedTriggers(set), BinaryType.AND)
+				binary.type = BinaryType.AND
+				forwardTransition.trigger = binary
+		}
+		
+		if (dir.equals(InteractionDirection.SEND)) {
+			handleSends(set, isNegated, forwardTransition, backwardTransition, cycleTransition, violationTransition, newChoice)
+		}
+		
+		handleArguments(set.modalInteractions, forwardTransition);
+		handleSingleNegatedIfNeeded(set, forwardTransition, violationTransition)
+		
+		statechart.transitions+=forwardTransition
+		statechart.transitions+=violationTransition
+		statechart.transitions+=cycleTransition
+		
+		statechart.regions.get(0).stateNodes+=newChoice
+		statechart.regions.get(0).stateNodes+=state
+		previousState = state
+		return
+	}
+	
+	def handleSends(ModalInteractionSet set, boolean isNegated, Transition forwardTransition,
+		Transition backwardTransition, Transition cycleTransition, Transition violationTransition, ChoiceState newChoice) {
+		forwardTransition.priority = BigInteger.valueOf(3)
+		val iteratingVariable = variableMap.getOrCreate(scenarioStatechartUtil.iteratingVariable)
+		
+		if (generationMode != StatechartGenerationMode.GENERATE_ONLY_FORWARD){
+			forwardTransition.guard = getVariableInIntervalExpression(iteratingVariable, allowedGlobalWaitMin, allowedGlobalWaitMax)
+			forwardTransition.effects+=setIntVariable(iteratingVariable, 0)			
+		}
+		backwardTransition.sourceState = newChoice
+		backwardTransition.targetState = previousState
+		backwardTransition.effects+=incrementVar(iteratingVariable)
+		backwardTransition.priority = BigInteger.valueOf(2)
+		backwardTransition.guard = getVariableLessEqualParamExpression(iteratingVariable, allowedGlobalWaitMax)
+		violationTransition.priority = BigInteger.valueOf(1)
+		
+		var onlyNegated = ScenarioModelDerivedFeatures.isAllNeg(set) || isNegated
+		var NotDefinedEventMode mode = (onlyNegated) ? nonDeclaredNegMessageMode : nonDeclaredMessageMode
+		if (!onlyNegated || mode == NotDefinedEventMode.STRICT) {
+			// does not need to be added for allneg and strict, as it is overshadowed by the forward going transition
+			statechart.transitions+=backwardTransition
+		}
+		
+		if (mode == NotDefinedEventMode.STRICT) {
+			var BinaryTrigger tmp = getAllEvents(BinaryType.AND)
+			negateBinaryTree(tmp)
+			backwardTransition.trigger = tmp
+		}
+
+
+		if (onlyNegated) {
+			forwardTransition.guard = null
+			var maxCheck = createLessExpression
+			maxCheck.leftOperand = exprUtil.createReferenceExpression(variableMap.getOrCreate(scenarioStatechartUtil.iteratingVariable))
+			maxCheck.rightOperand = exprUtil.toIntegerLiteral(allowedGlobalWaitNegMax)
+			backwardTransition.guard = maxCheck
+		}
+
+		switch (generationMode) {
+			case GENERATE_MERGE_STATE: {
+				val mergeState = createMergeState
+				mergeState.name = "merge" + stateCount++
+				for (transition : statechart.transitions) {
+					if (transition.targetState == previousState && transition !== backwardTransition) {
+						transition.targetState = mergeState
+					}
+				}
+				val newTransition = createTransition
+				newTransition.sourceState = mergeState
+				newTransition.targetState = newChoice
+				cycleTransition.targetState = mergeState
+				statechart.transitions += newTransition
+				statechart.regions.get(0).stateNodes += mergeState
+			}
+			case GENERATE_ONLY_FORWARD: {
+				statechart.transitions-=backwardTransition
+			}
+			case GENERATE_DUPLICATED_CHOICES: {
+				for (transition : previousState.incomingTransitions) {
+					if (transition.sourceState !== newChoice) {
+						val tmpChoice2 = addChoiceState
+						val forwardCopy = forwardTransition.clone
+						val violationCopy = violationTransition.clone
+						val t3Copy = backwardTransition.clone
+						t3Copy.sourceState = tmpChoice2
+						forwardCopy.sourceState = tmpChoice2
+						violationCopy.sourceState = tmpChoice2
+						transition.targetState = tmpChoice2
+						statechart.regions.get(0).stateNodes += tmpChoice2
+						statechart.transitions += t3Copy
+						statechart.transitions += forwardCopy
+						statechart.transitions += violationCopy
+					}
+				}
+			}
+			case GENERATE_ORIGINAL_STRUCTURE: {
+				// does not need to be changed
+			}
+			default: {
+				throw new IllegalArgumentException("Unhandled generation mode.")
+			}
+		}
+	}
+	
+	def handleSingleNegatedIfNeeded(ModalInteractionSet set, Transition forwardTransition, Transition violationTransition) {
 		var singleNegetedSignalWithArguments = false
 		if (set.modalInteractions.size == 1 && set.modalInteractions.get(0) instanceof NegatedModalInteraction) {
 			val negatedModalInteraction = set.modalInteractions.get(0) as NegatedModalInteraction
@@ -426,166 +539,6 @@ class TestGeneratorStatechartGenerator extends AbstractContractStatechartGenerat
 				singleNegetedSignalWithArguments = !(negatedSignal.arguments.empty)
 			}
 		}
-
-		var state = createNewState("state" + String.valueOf(stateCount++))
-		var forwardTransition = createTransition
-		var violationTransition = createTransition
-		var cycleTransition = createTransition
-		cycleTransition.trigger = createOnCycleTrigger
-		var t3 = createTransition
-		cycleTransition.sourceState = previousState
-		var tmpChoice = addChoiceState
-		statechart.regions.get(0).stateNodes.add(tmpChoice)
-		cycleTransition.targetState = tmpChoice
-		forwardTransition.sourceState = tmpChoice
-		forwardTransition.targetState = state
-		violationTransition.guard = createElseExpression
-
-		if (set.modalInteractions.empty) {
-			var t = createTransition
-			t.sourceState = previousState
-			t.targetState = state
-			t.trigger = createOnCycleTrigger
-			t.guard = createTrueExpression
-			statechart.transitions += t
-			statechart.regions.get(0).stateNodes += state
-			previousState = state
-			return
-		}
-
-		var first = set.modalInteractions.get(0)
-		var dir = InteractionDirection.RECEIVE
-		var mod = ModalityType.COLD
-		dir = ScenarioModelDerivedFeatures.getDirection(set)
-		mod = ScenarioModelDerivedFeatures.getModality(set)
-
-		violationTransition.sourceState = tmpChoice
-		if (mod == ModalityType.COLD) {
-			violationTransition.targetState = coldViolation
-		} else {
-			violationTransition.targetState = hotViolation
-		}
-
-		if (dir.equals(InteractionDirection.RECEIVE)) {
-			handleDelays(set)
-			setupForwardTransition(set, first, false, isNegated, forwardTransition)
-			if (nonDeclaredMessageMode == NotDefinedEventMode.STRICT) {
-				var binary = createBinaryTrigger
-				binary.leftOperand = forwardTransition.trigger
-				binary.rightOperand = getBinaryTriggerFromTriggers(createOtherNegatedTriggers(set), BinaryType.AND)
-				binary.type = BinaryType.AND
-				forwardTransition.trigger = binary
-			}
-		} else {
-			handleDelays(set)
-			setupForwardTransition(set, first, true, isNegated, forwardTransition)
-			forwardTransition.priority = BigInteger.valueOf(3)
-			val iteratingVariable = variableMap.getOrCreate(scenarioStatechartUtil.iteratingVariable)
-			
-			if (generationMode != StatechartGenerationMode.GENERATE_ONLY_FORWARD){
-				forwardTransition.guard = getVariableInIntervalExpression(iteratingVariable, allowedGlobalWaitMin, allowedGlobalWaitMax)
-				forwardTransition.effects.add(setIntVariable(iteratingVariable, 0))				
-			}
-
-
-			t3.sourceState = tmpChoice
-			t3.targetState = previousState
-			t3.effects.add(incrementVar(iteratingVariable))
-			t3.priority = BigInteger.valueOf(2)
-			t3.guard = getVariableLessEqualParamExpression(iteratingVariable, allowedGlobalWaitMax)
-
-			var NotDefinedEventMode mode 
-			if (ScenarioModelDerivedFeatures.isAllNeg(set) || isNegated) {
-				mode = nonDeclaredNegMessageMode
-				// does not need to be added, as it is overshadowed by the forward going transition
-				if (mode != NotDefinedEventMode.STRICT) {
-					statechart.transitions.add(t3)
-				}
-			} else {
-				statechart.transitions.add(t3)
-				mode = nonDeclaredMessageMode
-			}
-
-			if (mode == NotDefinedEventMode.STRICT) {
-				var BinaryTrigger tmp = getAllEvents(BinaryType.AND)
-				negateBinaryTree(tmp)
-				t3.trigger = tmp
-			}
-
-			violationTransition.priority = BigInteger.valueOf(1)
-			violationTransition.guard = createElseExpression
-
-			if (ScenarioModelDerivedFeatures.isAllNeg(set) || isNegated) {
-				forwardTransition.guard = null
-				var maxCheck = createLessExpression
-				var ref1 = createDirectReferenceExpression
-				ref1.declaration = variableMap.getOrCreate(scenarioStatechartUtil.iteratingVariable)
-				maxCheck.leftOperand = ref1
-				var max = createIntegerLiteralExpression
-				max.value = BigInteger.valueOf(allowedGlobalWaitNegMax)
-				maxCheck.rightOperand = max
-				t3.guard = maxCheck
-			}
-
-			if (nonDeclaredMessageMode == NotDefinedEventMode.STRICT) {
-				var binary = createBinaryTrigger
-				binary.leftOperand = forwardTransition.trigger
-				binary.rightOperand = getBinaryTriggerFromTriggers(createOtherNegatedTriggers(set), BinaryType.AND)
-				binary.type = BinaryType.AND
-				forwardTransition.trigger = binary
-			}
-
-			switch (generationMode) {
-				case GENERATE_MERGE_STATE: {
-					val mergeState = createMergeState
-					mergeState.name = "merge" + stateCount++
-					for (transition : statechart.transitions) {
-						if (transition.targetState == previousState && transition !== t3) {
-							transition.targetState = mergeState
-						}
-					}
-					val newTransition = createTransition
-					newTransition.sourceState = mergeState
-					newTransition.targetState = tmpChoice
-					cycleTransition.targetState = mergeState
-					statechart.transitions += newTransition
-					statechart.regions.get(0).stateNodes += mergeState
-				}
-				case GENERATE_ONLY_FORWARD: {
-					statechart.transitions.remove(t3)
-				}
-				case GENERATE_DUPLICATED_CHOICES: {
-					for (transition : previousState.incomingTransitions) {
-						if (transition.sourceState !== tmpChoice) {
-							val tmpChoice2 = addChoiceState
-							val forwardCopy = forwardTransition.clone
-							val violationCopy = violationTransition.clone
-							val t3Copy = t3.clone
-							t3Copy.sourceState = tmpChoice2
-							forwardCopy.sourceState = tmpChoice2
-							violationCopy.sourceState = tmpChoice2
-							transition.targetState = tmpChoice2
-							statechart.regions.get(0).stateNodes += tmpChoice2
-							statechart.transitions += t3Copy
-							statechart.transitions += forwardCopy
-							statechart.transitions += violationCopy
-						}
-					}
-				}
-				case GENERATE_ORIGINAL_STRUCTURE: {
-					// does not need to be changed
-				}
-				default: {
-					throw new IllegalArgumentException("Unhandled generation mode.")
-				}
-			}
-		}
-
-		statechart.transitions.add(forwardTransition)
-		statechart.transitions.add(violationTransition)
-		statechart.transitions.add(cycleTransition)
-
-		handleArguments(set.modalInteractions, forwardTransition);
 		if (singleNegetedSignalWithArguments) {
 			var signal = (set.modalInteractions.get(0) as NegatedModalInteraction).modalinteraction as Signal
 			if (!signal.arguments.empty) { 
@@ -596,28 +549,28 @@ class TestGeneratorStatechartGenerator extends AbstractContractStatechartGenerat
 
 			}
 		}
-		statechart.regions.get(0).stateNodes.add(state)
-		previousState = state
-		return
 	}
 
-	def setupForwardTransition(ModalInteractionSet set, InteractionDefinition first, boolean reversed,
+	def setupForwardTransition(ModalInteractionSet set, boolean reversed,
 			boolean isNegated, Transition forwardTransition) {
 		var Trigger t = null
 		if (set.modalInteractions.size > 1) {
 			t = getBinaryTrigger(set.modalInteractions, BinaryType.AND, reversed)
 		} else {
-			t = getEventTrigger(first, reversed)
+			t = getEventTrigger(set.modalInteractions.get(0), reversed)
 		}
-		if (!isNegated) {
+		
+		
+		if (isNegated) {
+			forwardTransition.trigger = negateEventTrigger(t)
+		} else {
+			forwardTransition.trigger = t
 			for (modalInteraction : set.modalInteractions) {
 				var a = getRaiseEventAction(modalInteraction, !reversed)
-				if (a !== null)
-					forwardTransition.effects.add(a)
+				if (a !== null) {
+					forwardTransition.effects+=a
+				}
 			}
-			forwardTransition.trigger = t
-		} else {
-			forwardTransition.trigger = negateEventTrigger(t)
 		}
 	}
 
@@ -625,15 +578,15 @@ class TestGeneratorStatechartGenerator extends AbstractContractStatechartGenerat
 		var delays = set.modalInteractions.filter(Delay)
 		if (!delays.empty) {
 			var delay = delays.get(0) as Delay
-			var td = createTimeoutDeclaration
-			td.name = "delay" + timeoutCount++
-			statechart.timeoutDeclarations += td
-			var ts = createTimeSpecification
-			ts.unit = TimeUnit.MILLISECOND
-			ts.value = delay.minimum.clone
+			var timeoutDeclaration = createTimeoutDeclaration
+			timeoutDeclaration.name = "delay" + timeoutCount++
+			statechart.timeoutDeclarations += timeoutDeclaration
+			var timeSpecification = createTimeSpecification
+			timeSpecification.unit = TimeUnit.MILLISECOND
+			timeSpecification.value = delay.minimum.clone
 			var a = createSetTimeoutAction
-			a.timeoutDeclaration = td
-			a.time = ts
+			a.timeoutDeclaration = timeoutDeclaration
+			a.time = timeSpecification
 			if (previousState instanceof State) {
 				previousState.entryActions += a
 			}
@@ -642,18 +595,19 @@ class TestGeneratorStatechartGenerator extends AbstractContractStatechartGenerat
 
 	def handleArguments(EList<InteractionDefinition> set, Transition t1) {
 		var signals = set.filter[it instanceof Signal].filter[!(it as Signal).arguments.empty]
-
 		if (signals.empty) {
-			if (set.size == 1 && set.get(0) instanceof NegatedModalInteraction &&
-				(set.get(0) as NegatedModalInteraction).modalinteraction instanceof Signal &&
-				!((set.get(0) as NegatedModalInteraction).modalinteraction as Signal).arguments.empty) {
-				signals = set.filter[set.size == 1].filter(NegatedModalInteraction).filter [
-					it.modalinteraction instanceof Signal
-				].map[it.modalinteraction].filter[!(it as Signal).arguments.empty]
-
-			} else {
-				return
+			if (set.size == 1 && set.get(0) instanceof NegatedModalInteraction){
+				val interaction = set.get(0) as NegatedModalInteraction
+				if (interaction.modalinteraction instanceof Signal){
+					val signal = interaction.modalinteraction as Signal
+					if (!signal.arguments.empty){
+						signals = newArrayList(signal)
+					}
+				}
 			}
+		}
+		if (signals.empty) {
+			return
 		}
 		var guard1 = createAndExpression
 		for (signal : signals) {
@@ -661,8 +615,9 @@ class TestGeneratorStatechartGenerator extends AbstractContractStatechartGenerat
 			var i = 0
 			var String portName = tmp.port.name
 			if (tmp.direction.equals(InteractionDirection.SEND)) {
-				if (!scenarioStatechartUtil.isTurnedOut(tmp.port))
+				if (!scenarioStatechartUtil.isTurnedOut(tmp.port)) {
 					portName = scenarioStatechartUtil.getTurnedOutPortName(tmp.port)
+				}
 			}
 			var port = getPort(portName)
 			var event = getEvent(tmp.event.name, port)
@@ -674,7 +629,7 @@ class TestGeneratorStatechartGenerator extends AbstractContractStatechartGenerat
 				paramRef.event = event
 				equal.leftOperand = paramRef
 				equal.rightOperand = tmp.arguments.get(i).clone
-				guard1.operands.add(equal)
+				guard1.operands+=equal
 				i++
 			}
 		}
@@ -689,8 +644,8 @@ class TestGeneratorStatechartGenerator extends AbstractContractStatechartGenerat
 			t1.guard = expr
 		} else {
 			var and = createAndExpression
-			and.operands.add(expr)
-			and.operands.add(guard)
+			and.operands+=expr
+			and.operands+=guard
 			t1.guard = and
 		}
 	}

@@ -26,8 +26,10 @@ import hu.bme.mit.gamma.statechart.interface_.Trigger
 import hu.bme.mit.gamma.statechart.statechart.BinaryTrigger
 import hu.bme.mit.gamma.statechart.statechart.BinaryType
 import hu.bme.mit.gamma.statechart.statechart.ChoiceState
+import hu.bme.mit.gamma.statechart.statechart.StateNode
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.StatechartModelFactory
+import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.statechart.statechart.UnaryTrigger
 import hu.bme.mit.gamma.statechart.statechart.UnaryType
 import hu.bme.mit.gamma.util.GammaEcoreUtil
@@ -37,6 +39,7 @@ import java.util.Map
 import org.eclipse.emf.common.util.EList
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
+import hu.bme.mit.gamma.util.JavaUtil
 
 abstract class AbstractContractStatechartGeneration {
 	
@@ -49,6 +52,7 @@ abstract class AbstractContractStatechartGeneration {
 	protected val extension ExpressionEvaluator exprEval = ExpressionEvaluator.INSTANCE
 	protected val extension ExpressionUtil exprUtil = ExpressionUtil.INSTANCE
 	protected val ScenarioStatechartUtil scenarioStatechartUtil = ScenarioStatechartUtil.INSTANCE
+	protected static final JavaUtil javaUtil = JavaUtil.INSTANCE;
 	
 	protected var Component component = null
 	protected var ScenarioDefinition scenario = null
@@ -69,6 +73,25 @@ abstract class AbstractContractStatechartGeneration {
 			variableMap.put(string,newVariable)
 			statechart.variableDeclarations+=newVariable
 			return newVariable
+		}
+	}
+	
+	protected def setupTransition(Transition transition, StateNode source, StateNode target, Trigger trigger, Expression guard, List<Action> effects){
+		if (source !== null){
+			transition.sourceState = source
+		}
+		if (target !== null){
+			transition.targetState = target
+		}
+		if (trigger !== null){
+			transition.trigger = trigger
+		}
+		if (guard !== null){
+			transition.guard = guard
+		}
+		if (effects !== null){
+			transition.effects.clear
+			transition.effects += effects
 		}
 	}
 	
@@ -102,14 +125,14 @@ abstract class AbstractContractStatechartGeneration {
 	}
 	
 	protected def setIntVariable(VariableDeclaration variable, int Value) {
-		var nullVariableValue = createAssignmentStatement
+		var variableValue = createAssignmentStatement
 		var lhs = createDirectReferenceExpression
 		var rhs = createIntegerLiteralExpression
 		lhs.declaration = variable
 		rhs.value = BigInteger.valueOf(Value)
-		nullVariableValue.lhs = lhs
-		nullVariableValue.rhs = rhs
-		return nullVariableValue
+		variableValue.lhs = lhs
+		variableValue.rhs = rhs
+		return variableValue
 	}
 	
 	def protected Expression getVariableLessEqualParamExpression(VariableDeclaration variable, int maxV) {
@@ -378,6 +401,10 @@ abstract class AbstractContractStatechartGeneration {
 		state.name = name
 		return state
 	}
+	def protected createNewState() {
+		return createNewState("state" + String.valueOf(stateCount++))
+	}
+	
 	
 	def protected ChoiceState addChoiceState() {
 		exsistingChoices++;

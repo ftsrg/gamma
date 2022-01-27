@@ -130,7 +130,7 @@ public class StatechartGenerationTest {
 	}
 	
 	@Test
-	public void sendsStrictTest(){
+	public void sendsStrictTest(){ 
 		try {
 			assertTrue(comparator.compare(input+"SendsStrictStatechart.gcd", reference+"SendsStrictStatechart.gcd"));
 		} catch (IOException e) {
