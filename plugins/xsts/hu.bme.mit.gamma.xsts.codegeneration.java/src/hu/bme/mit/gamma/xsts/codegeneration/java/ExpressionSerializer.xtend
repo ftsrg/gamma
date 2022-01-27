@@ -15,7 +15,7 @@ import hu.bme.mit.gamma.expression.model.VariableDeclaration
 
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
 
-class ExpressionSerializer extends hu.bme.mit.gamma.codegenerator.java.util.ExpressionSerializer {
+class ExpressionSerializer extends hu.bme.mit.gamma.codegeneration.java.util.ExpressionSerializer {
 	// Singleton
 	public static final ExpressionSerializer INSTANCE = new ExpressionSerializer
 	protected new() {}

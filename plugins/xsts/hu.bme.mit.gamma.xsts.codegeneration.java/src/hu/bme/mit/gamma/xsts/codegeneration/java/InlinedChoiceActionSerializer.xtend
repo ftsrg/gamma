@@ -10,7 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.xsts.codegeneration.java
 
-import hu.bme.mit.gamma.codegenerator.java.util.TypeSerializer
+import hu.bme.mit.gamma.codegeneration.java.util.TypeSerializer
 import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.Expression

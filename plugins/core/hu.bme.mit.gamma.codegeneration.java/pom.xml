@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>hu.bme.mit</groupId>
+    <artifactId>hu.bme.mit.gamma</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <relativePath>../../</relativePath>
+  </parent>
+  <groupId>hu.bme.mit</groupId>
+  <artifactId>hu.bme.mit.gamma.codegeneration.java</artifactId>
+  <version>2.3.1-SNAPSHOT</version>
+  <packaging>eclipse-plugin</packaging>
+
+  <pluginRepositories>
+    <pluginRepository>
+      <id>viatra</id>
+      <url>https://repo.eclipse.org/content/groups/viatra2/</url>
+    </pluginRepository>
+  </pluginRepositories>
+  <build>
+  <plugins>
+  <!-- Using maven-clean-plugin to remove previously generated code -->
+  <plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-clean-plugin</artifactId>
+    <version>2.5</version>
+    <executions>
+      <execution>
+        <phase>clean</phase>
+        <goals>
+          <goal>clean</goal>
+        </goals>
+        <configuration>
+          <filesets>
+            <fileset>
+              <!-- Generated code folder -->
+              <directory>src-gen</directory>
+              <includes>
+                <include>**/*</include>
+              </includes>
+            </fileset>
+          </filesets>
+        </configuration>
+      </execution>
+    </executions>
+  </plugin>
+  <!-- Setting up generator -->
+  <plugin>
+    <groupId>org.eclipse.viatra</groupId>
+    <artifactId>viatra-maven-plugin</artifactId>
+    <version>${viatra.version}</version>
+    <!-- Binding execution to the code generation lifecycle phase -->
+    <executions>
+      <execution>
+        <goals>
+          <goal>generate</goal>
+        </goals>
+      </execution>
+    </executions>
+    <configuration>
+      <!-- Output directory - required -->
+      <outputDirectory>src-gen</outputDirectory>
+      <metamodels>
+        <metamodel>
+          <!-- Java class for the EMF EPackage - use this if generated EMF code is in the classpath -->
+          <packageClass>hu.bme.mit.gamma.expression.model.ExpressionModelPackage</packageClass>
+          <packageClass>hu.bme.mit.gamma.action.model.ActionModelPackage</packageClass>
+          <packageClass>hu.bme.mit.gamma.statechart.statechart.StatechartModelPackage</packageClass>
+          <packageClass>hu.bme.mit.gamma.statechart.interface_.InterfaceModelPackage</packageClass>
+          <packageClass>hu.bme.mit.gamma.statechart.composite.CompositeModelPackage</packageClass>
+          <packageClass>hu.bme.mit.gamma.statechart.phase.PhaseModelPackage</packageClass>
+          <packageClass>hu.bme.mit.gamma.statechart.contract.ContractModelPackage</packageClass>
+          <packageClass>hu.bme.mit.gamma.trace.model.TracePackage</packageClass>
+          <packageClass>hu.bme.mit.gamma.genmodel.model.GenmodelPackage</packageClass>
+          <packageClass>hu.bme.mit.gamma.yakindu.transformation.traceability.TraceabilityPackage</packageClass>
+          <packageClass>org.yakindu.sct.model.sgraph.SGraphPackage</packageClass>
+          <!-- genmodel file used for generating the EMF model classes - use this if EMF model is in the same project -->
+          <!-- <genmodelUri>../school/model/school.genmodel</genmodelUri> -->
+        </metamodel>
+      </metamodels>
+      <!-- Since 1.5, you can use the project dependencies instead of specific Maven dependencies - optional -->
+      <!-- <useProjectDependencies>true</useProjectDependencies> -->
+    </configuration>
+    
+  </plugin>
+  </plugins>
+  </build>
+</project>

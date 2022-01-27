@@ -21,7 +21,7 @@ import org.eclipse.emf.ecore.resource.ResourceSet
 
 import static com.google.common.base.Preconditions.checkArgument
 
-import static extension hu.bme.mit.gamma.codegenerator.java.util.Namings.*
+import static extension hu.bme.mit.gamma.codegeneration.java.util.Namings.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.trace.derivedfeatures.TraceModelDerivedFeatures.*
 

@@ -12,7 +12,7 @@ Require-Bundle: com.google.guava,
  org.eclipse.xtend.lib.macro,
  org.eclipse.viatra.query.runtime,
  hu.bme.mit.gamma.trace.model,
- hu.bme.mit.gamma.codegenerator.java.util,
+ hu.bme.mit.gamma.codegeneration.java.util,
  hu.bme.mit.gamma.uppaal.verification,
  hu.bme.mit.gamma.transformation.util
 Export-Package: hu.bme.mit.gamma.trace.testgeneration.java

@@ -12,7 +12,7 @@ package hu.bme.mit.gamma.trace.testgeneration.java
 
 import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression
 
-class ExpressionSerializer extends hu.bme.mit.gamma.codegenerator.java.util.ExpressionSerializer {
+class ExpressionSerializer extends hu.bme.mit.gamma.codegeneration.java.util.ExpressionSerializer {
 	// Singleton
 	public static final ExpressionSerializer INSTANCE = new ExpressionSerializer
 	protected new() {}
