@@ -13,6 +13,7 @@ package hu.bme.mit.gamma.xsts.transformation.serializer
 import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
 import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition
 import hu.bme.mit.gamma.expression.model.DecimalTypeDefinition
+import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition
 import hu.bme.mit.gamma.expression.model.RationalTypeDefinition
@@ -35,6 +36,7 @@ class DeclarationSerializer {
 	protected new() {}
 	// Auxiliary objects
 	protected final extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
+	protected final extension SerializationValidator serializationValidator = SerializationValidator.INSTANCE
 	
 	// xSts
 	
@@ -74,9 +76,14 @@ class DeclarationSerializer {
 	
 	def dispatch String serializeType(SubrangeTypeDefinition type) '''«type.lowerBound.serialize» : «type.upperBound.serialize»'''
 	
-	def dispatch String serializeType(EnumerationTypeDefinition type) '''{ «FOR literal : type.literals SEPARATOR ', '»«literal.name»«ENDFOR» }'''
+	def dispatch String serializeType(EnumerationTypeDefinition type) '''{ «FOR literal : type.literals SEPARATOR ', '»«literal.serializeLiteral»«ENDFOR» }'''
 
 	def dispatch String serializeType(ArrayTypeDefinition type) '''[integer] -> «type.elementType.serializeType»'''
+
+	protected def String serializeLiteral(EnumerationLiteralDefinition literal) {
+		literal.validateIdentifier // As these are the only element identifiers that come unchanged from the source model
+		return '''«literal.name»'''
+	}
 
 	// Variable
 
