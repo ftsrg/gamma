@@ -99,61 +99,41 @@ abstract class AbstractContractStatechartGeneration {
 	
 	protected def AssignmentStatement incrementVar(VariableDeclaration variable) {
 		var assign = createAssignmentStatement
-		var refe = createDirectReferenceExpression
-		refe.declaration = variable
 		var addition = createAddExpression
-		var ref3 = createDirectReferenceExpression
-		ref3.declaration = variable
-		addition.operands.add(ref3)
-		var intLiteral = createIntegerLiteralExpression
-		intLiteral.value = BigInteger.valueOf(1)
-		addition.operands.add(intLiteral)
+		addition.operands.add(exprUtil.createReferenceExpression(variable))
+		addition.operands.add(exprUtil.toIntegerLiteral(1))
 		assign.rhs = addition
-		assign.lhs = refe
+		assign.lhs = exprUtil.createReferenceExpression(variable)
 		return assign
 	}
 	
 	def protected VariableDeclaration createIntegerVariable(String name) {
 		var variable = createVariableDeclaration
 		variable.name = name
-		var e = createIntegerLiteralExpression
-		e.value = BigInteger.valueOf(0)
-		variable.expression = e
+		variable.expression = exprUtil.toIntegerLiteral(0)
 		var type = createIntegerTypeDefinition
 		variable.type = type
 		return variable
 	}
 	
 	protected def setIntVariable(VariableDeclaration variable, int Value) {
-		var variableValue = createAssignmentStatement
-		var lhs = createDirectReferenceExpression
-		var rhs = createIntegerLiteralExpression
-		lhs.declaration = variable
-		rhs.value = BigInteger.valueOf(Value)
-		variableValue.lhs = lhs
-		variableValue.rhs = rhs
-		return variableValue
+		var variableAssignment = createAssignmentStatement
+		variableAssignment.lhs = exprUtil.createReferenceExpression(variable)
+		variableAssignment.rhs = exprUtil.toIntegerLiteral(Value)
+		return variableAssignment
 	}
 	
 	def protected Expression getVariableLessEqualParamExpression(VariableDeclaration variable, int maxV) {
 		var maxCheck = createLessEqualExpression
-		var ref1 = createDirectReferenceExpression
-		ref1.declaration = variable
-		maxCheck.leftOperand = ref1
-		var max = createIntegerLiteralExpression
-		max.value = BigInteger.valueOf(maxV)
-		maxCheck.rightOperand = max
+		maxCheck.leftOperand = exprUtil.createReferenceExpression(variable)
+		maxCheck.rightOperand = exprUtil.toIntegerLiteral(maxV)
 		return maxCheck
 	}
 
 	def protected Expression getVariableGreaterEqualParamExpression(VariableDeclaration variable, int minV) {
 		var minCheck = createGreaterEqualExpression
-		var ref2 = createDirectReferenceExpression
-		ref2.declaration = variable
-		minCheck.leftOperand = ref2
-		var min = createIntegerLiteralExpression
-		min.value = BigInteger.valueOf(minV)
-		minCheck.rightOperand = min
+		minCheck.leftOperand = exprUtil.createReferenceExpression(variable)
+		minCheck.rightOperand = exprUtil.toIntegerLiteral(minV)
 		return minCheck
 	}
 
@@ -206,7 +186,6 @@ abstract class AbstractContractStatechartGeneration {
 		var signalCount = 0
 		for (trigger : triggers) {
 			signalCount++
-
 			if (runningbin.leftOperand === null) {
 				runningbin.leftOperand = trigger
 			}
@@ -256,21 +235,22 @@ abstract class AbstractContractStatechartGeneration {
 		val events = newArrayList
 		var allPorts = statechart.ports.filter[!it.inputEvents.empty]
 		for (modalInteraction : set.modalInteractions) {
+			var Signal signal = null
 			if (modalInteraction instanceof Signal) {
-				val portName = modalInteraction.direction == InteractionDirection.SEND
-						? scenarioStatechartUtil.getTurnedOutPortName(modalInteraction.port)
-						: modalInteraction.port.name
-				ports.add(getPort(portName))
-				events.add(getEvent(modalInteraction.event.name, getPort(portName)))
-			} else if (modalInteraction instanceof NegatedModalInteraction) {
+				signal = modalInteraction
+			} 
+			else if (modalInteraction instanceof NegatedModalInteraction) {
 				val m = modalInteraction.modalinteraction
 				if (m instanceof Signal) {
-					val portName = m.direction == InteractionDirection.SEND
-							? scenarioStatechartUtil.getTurnedOutPortName(m.port)
-							: m.port.name
-					ports.add(getPort(portName))
-					events.add(getEvent(m.event.name, getPort(portName)))
+					signal = m
 				}
+			}
+			if(signal !== null){
+				val portName = signal.direction == InteractionDirection.SEND
+						? scenarioStatechartUtil.getTurnedOutPortName(signal.port)
+						: signal.port.name
+				ports.add(getPort(portName))
+				events.add(getEvent(signal.event.name, getPort(portName)))
 			}
 		}
 		for (port : allPorts) {
@@ -306,11 +286,7 @@ abstract class AbstractContractStatechartGeneration {
 	def protected dispatch Trigger getEventTrigger(Signal s, boolean reversed) {
 		var t = createEventTrigger
 		var eventref = createPortEventReference
-		var port = createPort;
-		if (reversed)
-			port = getPort(scenarioStatechartUtil.getTurnedOutPortName(s.port))
-		else
-			port = getPort(s.port.name)
+		var port = reversed ? getPort(scenarioStatechartUtil.getTurnedOutPortName(s.port)) : getPort(s.port.name)
 		eventref.event = getEvent(s.event.name, port)
 		eventref.port = port
 		t.eventReference = eventref
@@ -321,7 +297,7 @@ abstract class AbstractContractStatechartGeneration {
 		var t = createEventTrigger
 		var er = createTimeoutEventReference
 		var td = statechart.timeoutDeclarations.last
-		er.setTimeout(td)
+		er.timeout = td
 		t.eventReference = er
 		return t
 	}
@@ -330,14 +306,10 @@ abstract class AbstractContractStatechartGeneration {
 		var t = createEventTrigger
 		if (s.modalinteraction instanceof Signal) {
 			var signal = s.modalinteraction as Signal
-			var Port port = null
-			var Event event = null
-			if (signal.direction.equals(InteractionDirection.SEND)) {
-				port = getPort(scenarioStatechartUtil.getTurnedOutPortName(signal.port))
-			} else {
-				port = getPort(signal.port.name)
-			}
-			event = getEvent(signal.event.name, port)
+			var Port port = signal.direction.equals(InteractionDirection.SEND) ? 
+					getPort(scenarioStatechartUtil.getTurnedOutPortName(signal.port)) :
+					getPort(signal.port.name)
+			var Event event = getEvent(signal.event.name, port)
 			var eventRef = createPortEventReference
 			eventRef.event = event
 			eventRef.port = port
@@ -347,7 +319,6 @@ abstract class AbstractContractStatechartGeneration {
 			unary.type = UnaryType.NOT
 			return unary
 		}
-
 		return t
 	}
 	
@@ -355,15 +326,9 @@ abstract class AbstractContractStatechartGeneration {
 
 	def protected dispatch Action getRaiseEventAction(Signal s, boolean reversed) {
 		var a = createRaiseEventAction
-		var port2 = createPort;
-		if (reversed) {
-			port2 = getPort(scenarioStatechartUtil.getTurnedOutPortName(s.port))
-		}
-		else {
-			port2 = getPort(s.port.name)
-		}
-		a.event = getEvent(s.event.name, port2)
-		a.port = port2
+		var port = reversed ? getPort(scenarioStatechartUtil.getTurnedOutPortName(s.port)) : getPort(s.port.name)
+		a.event = getEvent(s.event.name, port)
+		a.port = port
 		for (argument : (s as Signal).arguments) {
 			a.arguments.add(ecureUtil.clone(argument))
 		}
@@ -380,7 +345,7 @@ abstract class AbstractContractStatechartGeneration {
 	
 	def protected Port getPort(String name) {
 		for (port : statechart.ports) {
-			if (port.name.equals(name)) {
+			if (port.name == name) {
 				return port
 			}
 		}
@@ -389,7 +354,7 @@ abstract class AbstractContractStatechartGeneration {
 
 	def protected Event getEvent(String name, Port port) {
 		for (event : port.interfaceRealization.interface.events) {
-			if (event.event.name.equals(name)) {
+			if (event.event.name == name) {
 				return event.event
 			}
 		}

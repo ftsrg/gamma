@@ -448,19 +448,20 @@ class TestGeneratorStatechartGenerator extends AbstractContractStatechartGenerat
 	
 	def handleSends(ModalInteractionSet set, boolean isNegated, Transition forwardTransition,
 		Transition backwardTransition, Transition cycleTransition, Transition violationTransition, ChoiceState newChoice) {
-		forwardTransition.priority = BigInteger.valueOf(3)
 		val iteratingVariable = variableMap.getOrCreate(scenarioStatechartUtil.iteratingVariable)
+		
+		forwardTransition.priority = BigInteger.valueOf(3)
+		backwardTransition.priority = BigInteger.valueOf(2)
+		violationTransition.priority = BigInteger.valueOf(1)
+		backwardTransition.sourceState = newChoice
+		backwardTransition.targetState = previousState
+		backwardTransition.effects+=incrementVar(iteratingVariable)
+		backwardTransition.guard = getVariableLessEqualParamExpression(iteratingVariable, allowedGlobalWaitMax)
 		
 		if (generationMode != StatechartGenerationMode.GENERATE_ONLY_FORWARD){
 			forwardTransition.guard = getVariableInIntervalExpression(iteratingVariable, allowedGlobalWaitMin, allowedGlobalWaitMax)
 			forwardTransition.effects+=setIntVariable(iteratingVariable, 0)			
 		}
-		backwardTransition.sourceState = newChoice
-		backwardTransition.targetState = previousState
-		backwardTransition.effects+=incrementVar(iteratingVariable)
-		backwardTransition.priority = BigInteger.valueOf(2)
-		backwardTransition.guard = getVariableLessEqualParamExpression(iteratingVariable, allowedGlobalWaitMax)
-		violationTransition.priority = BigInteger.valueOf(1)
 		
 		var onlyNegated = ScenarioModelDerivedFeatures.isAllNeg(set) || isNegated
 		var NotDefinedEventMode mode = (onlyNegated) ? nonDeclaredNegMessageMode : nonDeclaredMessageMode
@@ -474,7 +475,6 @@ class TestGeneratorStatechartGenerator extends AbstractContractStatechartGenerat
 			negateBinaryTree(tmp)
 			backwardTransition.trigger = tmp
 		}
-
 
 		if (onlyNegated) {
 			forwardTransition.guard = null
@@ -541,7 +541,7 @@ class TestGeneratorStatechartGenerator extends AbstractContractStatechartGenerat
 		}
 		if (singleNegetedSignalWithArguments) {
 			var signal = (set.modalInteractions.get(0) as NegatedModalInteraction).modalinteraction as Signal
-			if (!signal.arguments.empty) { 
+			if (!signal.arguments.empty) {
 				var tmp = violationTransition.targetState
 				violationTransition.targetState = forwardTransition.targetState
 				forwardTransition.targetState = tmp
