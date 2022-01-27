@@ -7,7 +7,7 @@ import hu.bme.mit.gamma.scenario.model.ScenarioDeclaration;
 import hu.bme.mit.gamma.scenario.model.ScenarioDefinition;
 import hu.bme.mit.gamma.scenario.model.reduction.SimpleScenarioGenerator;
 import hu.bme.mit.gamma.scenario.statechart.generator.StatechartGenerationMode;
-import hu.bme.mit.gamma.scenario.statechart.generator.StatechartGenerator;
+import hu.bme.mit.gamma.scenario.statechart.generator.TestGeneratorStatechartGenerator;
 import hu.bme.mit.gamma.scenario.statechart.generator.serializer.StatechartSerializer;
 import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.Package;
@@ -32,7 +32,7 @@ public class StatechartContractGenerationHandler extends TaskHandler {
 				.getComponent();
 		StatechartGenerationMode generationMode = statechartGeneration.isUseIteratingVariable()?
 				StatechartGenerationMode.GENERATE_ORIGINAL_STRUCTURE : StatechartGenerationMode.GENERATE_ONLY_FORWARD;
-		StatechartGenerator statechartGenerator = new StatechartGenerator(simplifiedScenario, 
+		TestGeneratorStatechartGenerator statechartGenerator = new TestGeneratorStatechartGenerator(simplifiedScenario, 
 				component, generationMode, !statechartGeneration.isStartAsColdViolation());
 		StatechartDefinition statechart = statechartGenerator.execute();
 		Package packageOfComponent = ecoreUtil.getContainerOfType(component, Package.class);
