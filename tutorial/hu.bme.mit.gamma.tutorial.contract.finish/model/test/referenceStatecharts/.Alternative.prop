@@ -1,0 +1,3 @@
+prop {
+	!( ((region_Alternative == AcceptingState)))
+}

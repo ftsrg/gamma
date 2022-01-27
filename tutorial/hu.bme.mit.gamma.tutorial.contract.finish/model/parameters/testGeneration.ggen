@@ -1,0 +1,5 @@
+statechart-contract {
+	scenario : PoliceInterruption (10)
+	folder : "model/parameters"
+	name : "interrupt" 
+}
