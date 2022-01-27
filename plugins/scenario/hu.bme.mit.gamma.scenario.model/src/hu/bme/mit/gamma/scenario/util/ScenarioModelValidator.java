@@ -128,7 +128,13 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		ScenarioDeclaration scenario = ecoreUtil.getContainerOfType(modalInteractionSet, ScenarioDeclaration.class);
 		Component component = scenario.getComponent();
-		int idx = ecoreUtil.getIndex(modalInteractionSet);
+		int idx = -1;
+		if (modalInteractionSet.eContainer() instanceof NegatedModalInteraction) {
+			idx = ecoreUtil.getIndex(modalInteractionSet.eContainer());
+		} 
+		else {
+			idx = ecoreUtil.getIndex(modalInteractionSet);
+		}
 		EObject eContainer = modalInteractionSet.eContainer();
 		if (component instanceof SynchronousComponent) {
 			List<ModalInteractionSet> sets = ecoreUtil.getAllContentsOfType(modalInteractionSet, ModalInteractionSet.class);
