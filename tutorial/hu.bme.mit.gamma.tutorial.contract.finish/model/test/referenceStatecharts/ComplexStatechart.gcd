@@ -44,8 +44,8 @@ statechart Complex [
 	transition from Choice5 to Choice7 when timeout delay0 && !(PoliceInterrupt.any) &&
 		!(SecondaryPoliceREVERSED.any) && !(SecondaryControlREVERSED.any) &&
 		!(PriorityControlREVERSED.any) && !(PriorityPoliceREVERSED.any)
-	transition from Choice5 to coldViolation [else] /
-	result := 1;
+	transition from Choice5 to hotViolation [else] /
+	result := 0;
 	transition from state1 to Choice5 when cycle
 	transition from Choice9 to merge15 when PoliceInterrupt.police && !(SecondaryPoliceREVERSED.any)
 		&& !(SecondaryControlREVERSED.any) && !(PriorityControlREVERSED.any) &&

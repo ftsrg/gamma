@@ -24,8 +24,8 @@ statechart DelayAlone [
 	IteratingVariable := 1;
 	LoopIteratingVariable0 := 1;
 	transition from Choice1 to state0 when timeout delay0
-	transition from Choice1 to coldViolation [else] /
-	result := 1;
+	transition from Choice1 to hotViolation [else] /
+	result := 0;
 	transition from firstState to Choice1 when cycle
 	transition from Choice3 to AcceptingState when PoliceInterrupt.police /
 	raise PoliceInterruptREVERSED.police;
@@ -40,7 +40,6 @@ statechart DelayAlone [
 			set delay0 := 100 ms;
 		}
 		state hotViolation
-		state coldViolation
 		choice Choice1
 		state state0
 		choice Choice3

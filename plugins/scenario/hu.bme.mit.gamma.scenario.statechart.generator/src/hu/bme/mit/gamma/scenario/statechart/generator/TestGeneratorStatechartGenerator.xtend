@@ -43,10 +43,8 @@ import hu.bme.mit.gamma.statechart.statechart.StateNode
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.statechart.statechart.TransitionPriority
-import hu.bme.mit.gamma.statechart.statechart.UnaryType
 import java.math.BigInteger
 import java.util.HashMap
-import java.util.List
 import org.eclipse.emf.common.util.EList
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
