@@ -1,0 +1,13 @@
+package controller
+
+import "Interfaces/Interfaces.gcd"
+import "Controller.gcd"
+
+adapter ControllerAdapter of component controller: Controller [
+	port Execute : provides Executable
+] {
+	when any / run
+	queue messageQueue(priority = 1, capacity = 4) {
+		Execute.any, PoliceInterrupt.any
+	}
+}
