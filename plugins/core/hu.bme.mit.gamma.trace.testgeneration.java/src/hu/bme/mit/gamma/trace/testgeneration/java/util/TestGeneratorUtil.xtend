@@ -74,9 +74,10 @@ class TestGeneratorUtil {
 			if (component instanceof AbstractAsynchronousCompositeComponent) {
 				if (child instanceof SynchronousComponentInstance) {
 					// We are on the border of async-sync components
-					val wrapperInstance = child.asyncParent
-					return '''«wrapperInstance.getFullContainmentHierarchy(child)»getComponent("«child.localName»").'''
-				} else {
+					val adapterParent = child.asyncParent
+					return '''«adapterParent.getFullContainmentHierarchy(child)»'''
+				}
+				else {
 					// We are on the top of async components
 					return ''''''
 				}
@@ -84,13 +85,18 @@ class TestGeneratorUtil {
 		}
 		else {
 			val parent = actual.parent
+			val containmentHierarchy = '''«parent.getFullContainmentHierarchy(actual)»getComponent("«actual.localName»")'''
 			if (child === null) {
 				// No dot after the last instance
 				// Local names are needed to form parent_actual names
-				return '''«parent.getFullContainmentHierarchy(actual)»getComponent("«actual.localName»")'''
+				return containmentHierarchy
 			}
-			return '''«parent.getFullContainmentHierarchy(actual)»getComponent("«actual.localName»").'''
+			return '''«containmentHierarchy».'''
 		}
+	}
+
+	private def isTopInstance(ComponentInstance instance) {
+		return component.instances.contains(instance)
 	}
 
 	def getAsyncParent(SynchronousComponentInstance instance) {
@@ -105,9 +111,18 @@ class TestGeneratorUtil {
 		}
 		return parents.head
 	}
-
-	private def isTopInstance(ComponentInstance instance) {
-		return component.instances.contains(instance)
+	
+	def getParent(ComponentInstance instance) {
+		checkArgument(instance !== null, "The instance is a null value")
+		if (instance.isTopInstance) {
+			// Needed due to resource set issues: component can be referenced from other composite systems
+			return null
+		}
+		val parents = InstanceContainer.Matcher.on(engine).getAllValuesOfcontainerInstace(instance)
+		if (parents.size > 1) {
+			throw new IllegalArgumentException("More than one parent: " + parents)
+		}
+		return parents.head
 	}
 
 	/**
@@ -120,7 +135,7 @@ class TestGeneratorUtil {
 		var int startIndex
 		if (parent === null) {
 			if (instance instanceof SynchronousComponentInstance &&
-				component instanceof AbstractAsynchronousCompositeComponent) {
+					component instanceof AbstractAsynchronousCompositeComponent) {
 				// An async-sync step is needed
 				val syncInstance = instance as SynchronousComponentInstance
 				val wrapperParent = syncInstance.asyncParent
@@ -133,7 +148,7 @@ class TestGeneratorUtil {
 			parentName = parent.name
 		}
 		val instanceName = instance.name
-		startIndex = instanceName.lastIndexOf(parentName) + parentName.length + 1 // "_" is counted too
+		startIndex = /*instanceName.lastIndexOf(parentName + "_") +*/ parentName.length + 1 // "_" is counted too
 		try {
 			val localName = instanceName.substring(startIndex)
 			return localName
@@ -189,19 +204,6 @@ class TestGeneratorUtil {
 		return true
 	}
 	
-	def getParent(ComponentInstance instance) {
-		checkArgument(instance !== null, "The instance is a null value")
-		if (instance.isTopInstance) {
-			// Needed due to resource set issues: component can be referenced from other composite systems
-			return null
-		}
-		val parents = InstanceContainer.Matcher.on(engine).getAllValuesOfcontainerInstace(instance)
-		if (parents.size > 1) {
-			throw new IllegalArgumentException("More than one parent: " + parents)
-		}
-		return parents.head
-	}
-	
 	def String getPortOfAssert(RaiseEventAct assert) '''
 		"«assert.port.name»"
 	'''
@@ -210,7 +212,6 @@ class TestGeneratorUtil {
 	def String getEventOfAssert(RaiseEventAct assert) '''
 		"«assert.event.name»"
 	'''
-	
 	
 	def String getParamsOfAssert(RaiseEventAct assert) '''
 		new Object[] {«FOR parameter : assert.arguments BEFORE " " SEPARATOR ", " AFTER " "»«parameter.serialize»«ENDFOR»}

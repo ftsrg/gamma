@@ -75,7 +75,7 @@ class AsynchronousCompositeComponentCodeGenerator {
 			«component.generateParameterDeclarationFields»
 			
 			«IF component.needTimer»
-				public «component.generateComponentClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", " AFTER ", "»«parameter.type.transformType» «parameter.name»«ENDFOR»«Namings.YAKINDU_TIMER_INTERFACE» timer) {
+				public «component.generateComponentClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", " AFTER ", "»«parameter.type.transformType» «parameter.name»«ENDFOR»«Namings.UNIFIED_TIMER_INTERFACE» timer) {
 					«component.createInstances»
 					setTimer(timer);
 					init(); // Init is not called in setTimer like in the wrapper as it would be unnecessary
@@ -193,7 +193,7 @@ class AsynchronousCompositeComponentCodeGenerator {
 			
 			«IF component.needTimer»
 				/** Setter for the timer e.g., a virtual timer. */
-				public void setTimer(«Namings.YAKINDU_TIMER_INTERFACE» timer) {
+				public void setTimer(«Namings.UNIFIED_TIMER_INTERFACE» timer) {
 					«FOR instance : component.components»
 						«IF instance.type.needTimer»
 							«instance.name».setTimer(timer);

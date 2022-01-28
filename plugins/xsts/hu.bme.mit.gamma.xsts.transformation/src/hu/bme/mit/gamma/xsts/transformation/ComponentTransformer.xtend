@@ -308,34 +308,43 @@ class ComponentTransformer {
 					
 					val inParameters = event.parameterDeclarations
 					val slaveQueueSize = slaveQueueStructs.size // Might be 0 if there is no in-event var
-					checkState(inParameters.size <= slaveQueueSize)
-					for (var i = 0; i < slaveQueueSize; i++) {
-						val slaveQueueStruct = slaveQueueStructs.get(i)
-						val slaveQueue = slaveQueueStruct.arrayVariable
-						val slaveSizeVariable = slaveQueueStruct.sizeVariable
-						val inParameter = inParameters.get(i)
-						
-						val xStsSlaveQueues = variableTrace.getAll(slaveQueue)
-						val xStsSlaveSizeVariable = variableTrace.getAll(slaveSizeVariable).onlyElement
-						val xStsInParameterVariableLists = eventReferenceMapper
-								.getInputParameterVariablesByPorts(inParameter, port)
-						// Separated in the lists according to ports
-						for (xStsInParameterVariables : xStsInParameterVariableLists) {
-							// Parameter optimization problem: parameters are not deleted independently
-							val size = xStsInParameterVariables.size 
-							for (var j = 0; j < size; j++) {
-								val xStsInParameterVariable = xStsInParameterVariables.get(j)
-								val xStsSlaveQueue = xStsSlaveQueues.get(j)
-								// Setting type to prevent enum problems (multiple times, though, not a problem)
-								val xStsSlaveQueueType = xStsSlaveQueue.typeDefinition as ArrayTypeDefinition
-								xStsSlaveQueueType.elementType = xStsInParameterVariable.type.clone
-								//
-								thenAction.actions += xStsInParameterVariable
-										.createAssignmentAction(xStsSlaveQueue.peek)
+					
+					if (inParameters.size <= slaveQueueSize) {
+						for (var i = 0; i < slaveQueueSize; i++) {
+							val slaveQueueStruct = slaveQueueStructs.get(i)
+							val slaveQueue = slaveQueueStruct.arrayVariable
+							val slaveSizeVariable = slaveQueueStruct.sizeVariable
+							val inParameter = inParameters.get(i)
+							
+							val xStsSlaveQueues = variableTrace.getAll(slaveQueue)
+							val xStsSlaveSizeVariable = variableTrace.getAll(slaveSizeVariable).onlyElement
+							val xStsInParameterVariableLists = eventReferenceMapper
+									.getInputParameterVariablesByPorts(inParameter, port)
+							// Separated in the lists according to ports
+							for (xStsInParameterVariables : xStsInParameterVariableLists) {
+								// Parameter optimization problem: parameters are not deleted independently
+								val size = xStsInParameterVariables.size 
+								for (var j = 0; j < size; j++) {
+									val xStsInParameterVariable = xStsInParameterVariables.get(j)
+									val xStsSlaveQueue = xStsSlaveQueues.get(j)
+									// Setting type to prevent enum problems (multiple times, though, not a problem)
+									val xStsSlaveQueueType = xStsSlaveQueue.typeDefinition as ArrayTypeDefinition
+									xStsSlaveQueueType.elementType = xStsInParameterVariable.type.clone
+									//
+									thenAction.actions += xStsInParameterVariable
+											.createAssignmentAction(xStsSlaveQueue.peek)
+								}
 							}
+							thenAction.actions += xStsSlaveQueues.popAllAndDecrement(xStsSlaveSizeVariable)
 						}
-						thenAction.actions += xStsSlaveQueues.popAllAndDecrement(xStsSlaveSizeVariable)
 					}
+					else {
+						// It can happen that a control event, which has no in-event variable, has parameters
+						// In this case, the parameters are not handled and there are no slave queues:
+						// (inParameters.size > slaveQueueSize) -> slaveQueueSize == 0
+						checkState(slaveQueueSize == 0)
+					}
+					
 					// Execution if necessary
 					if (adapterComponentType.isControlSpecification(portEvent)) {
 						thenAction.actions += originalMergedAction.clone

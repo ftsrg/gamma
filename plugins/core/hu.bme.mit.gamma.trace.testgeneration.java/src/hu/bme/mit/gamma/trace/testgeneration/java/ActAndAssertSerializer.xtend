@@ -70,7 +70,7 @@ class ActAndAssertSerializer {
 	'''
 
 	protected def dispatch String serialize(TimeElapse elapse) '''
-		«IF component.timed»«TIMER_OBJECT_NAME».elapse(«elapse.elapsedTime»);«ENDIF» // Otherwise, no TIMER_OBJECT_NAME
+		«IF component.timed»«TIMER_OBJECT_NAME».elapse(«elapse.elapsedTime»);«ENDIF»
 	'''
 
 	protected def dispatch serialize(InstanceSchedule schedule) '''
