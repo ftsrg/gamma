@@ -32,164 +32,170 @@ import hu.bme.mit.gamma.statechart.statechart.StatechartModelFactory
 import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.statechart.statechart.UnaryTrigger
 import hu.bme.mit.gamma.statechart.statechart.UnaryType
+import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
-import java.math.BigInteger
+import hu.bme.mit.gamma.util.JavaUtil
 import java.util.List
 import java.util.Map
-import org.eclipse.emf.common.util.EList
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
-import hu.bme.mit.gamma.util.JavaUtil
+import hu.bme.mit.gamma.scenario.model.derivedfeatures.ScenarioModelDerivedFeatures
 
 abstract class AbstractContractStatechartGeneration {
-	
+
 	protected val extension StatechartModelFactory statechartfactory = StatechartModelFactory.eINSTANCE
 	protected val extension ExpressionModelFactory expressionfactory = ExpressionModelFactory.eINSTANCE
 	protected val extension InterfaceModelFactory interfacefactory = InterfaceModelFactory.eINSTANCE
 	protected val extension ActionModelFactory actionfactory = ActionModelFactory.eINSTANCE
 	protected val extension ContractModelFactory contractfactory = ContractModelFactory.eINSTANCE
-	protected val extension GammaEcoreUtil ecureUtil = GammaEcoreUtil.INSTANCE
+	protected val extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected val extension ExpressionEvaluator exprEval = ExpressionEvaluator.INSTANCE
 	protected val extension ExpressionUtil exprUtil = ExpressionUtil.INSTANCE
-	protected val ScenarioStatechartUtil scenarioStatechartUtil = ScenarioStatechartUtil.INSTANCE
-	protected static final JavaUtil javaUtil = JavaUtil.INSTANCE;
-	
+	protected val extension ScenarioStatechartUtil scenarioStatechartUtil = ScenarioStatechartUtil.INSTANCE
+	protected val extension ScenarioModelDerivedFeatures scenarioModelDerivedFeatures = ScenarioModelDerivedFeatures.INSTANCE
+	protected val StatechartUtil statechartUtil = StatechartUtil.INSTANCE
+
+	protected val JavaUtil javaUtil = JavaUtil.INSTANCE
+
 	protected var Component component = null
 	protected var ScenarioDefinition scenario = null
 	protected var StatechartDefinition statechart = null
-	protected val variableMap = <String,VariableDeclaration>newHashMap
-	protected int exsistingChoices = 0;
-	protected int exsistingMerges = 0;
+	protected val variableMap = <String, VariableDeclaration>newHashMap
+	protected var exsistingChoices = 0
+	protected var exsistingMerges = 0
 	protected var stateCount = 0
 	protected var timeoutCount = 0
-	
+
 	def VariableDeclaration getOrCreate(Map<String, VariableDeclaration> map, String string) {
 		val result = map.get(string)
-		if (result !== null){
+		if (result !== null) {
 			return result
-		} 
-		else {
+		} else {
 			val newVariable = createIntegerVariable(string)
-			variableMap.put(string,newVariable)
-			statechart.variableDeclarations+=newVariable
+			variableMap.put(string, newVariable)
+			statechart.variableDeclarations += newVariable
 			return newVariable
 		}
 	}
-	
-	protected def setupTransition(Transition transition, StateNode source, StateNode target, Trigger trigger, Expression guard, List<Action> effects){
-		if (source !== null){
+
+	protected def setupTransition(Transition transition, StateNode source, StateNode target, Trigger trigger,
+		Expression guard, List<Action> effects) {
+		if (source !== null) {
 			transition.sourceState = source
 		}
-		if (target !== null){
+		if (target !== null) {
 			transition.targetState = target
 		}
-		if (trigger !== null){
+		if (trigger !== null) {
 			transition.trigger = trigger
 		}
-		if (guard !== null){
+		if (guard !== null) {
 			transition.guard = guard
 		}
-		if (effects !== null){
+		if (effects !== null) {
 			transition.effects.clear
 			transition.effects += effects
 		}
 	}
-	
+
 ///////// Create Set and Check Variables
-	
 	protected def AssignmentStatement incrementVar(VariableDeclaration variable) {
 		var assign = createAssignmentStatement
 		var addition = createAddExpression
-		addition.operands.add(exprUtil.createReferenceExpression(variable))
-		addition.operands.add(exprUtil.toIntegerLiteral(1))
+		addition.operands += exprUtil.createReferenceExpression(variable)
+		addition.operands += exprUtil.toIntegerLiteral(1)
 		assign.rhs = addition
 		assign.lhs = exprUtil.createReferenceExpression(variable)
 		return assign
 	}
-	
+
 	def protected VariableDeclaration createIntegerVariable(String name) {
 		var variable = createVariableDeclaration
+		// exprUtil.createVariableDeclaration()
 		variable.name = name
 		variable.expression = exprUtil.toIntegerLiteral(0)
 		var type = createIntegerTypeDefinition
 		variable.type = type
 		return variable
 	}
-	
-	protected def setIntVariable(VariableDeclaration variable, int Value) {
+
+	protected def setIntVariable(VariableDeclaration variable, int value) {
 		var variableAssignment = createAssignmentStatement
 		variableAssignment.lhs = exprUtil.createReferenceExpression(variable)
-		variableAssignment.rhs = exprUtil.toIntegerLiteral(Value)
+		variableAssignment.rhs = exprUtil.toIntegerLiteral(value)
 		return variableAssignment
 	}
-	
-	def protected Expression getVariableLessEqualParamExpression(VariableDeclaration variable, int maxV) {
+
+	def protected Expression getVariableLessEqualParamExpression(VariableDeclaration variable, int maxValue) { // megnézni utilban összeset
 		var maxCheck = createLessEqualExpression
 		maxCheck.leftOperand = exprUtil.createReferenceExpression(variable)
-		maxCheck.rightOperand = exprUtil.toIntegerLiteral(maxV)
+		maxCheck.rightOperand = exprUtil.toIntegerLiteral(maxValue)
 		return maxCheck
 	}
 
-	def protected Expression getVariableGreaterEqualParamExpression(VariableDeclaration variable, int minV) {
+	def protected Expression getVariableGreaterEqualParamExpression(VariableDeclaration variable, int minValue) {
 		var minCheck = createGreaterEqualExpression
 		minCheck.leftOperand = exprUtil.createReferenceExpression(variable)
-		minCheck.rightOperand = exprUtil.toIntegerLiteral(minV)
+		minCheck.rightOperand = exprUtil.toIntegerLiteral(minValue)
 		return minCheck
 	}
 
 	def protected Expression getVariableInIntervalExpression(VariableDeclaration variable, int minV, int maxV) {
 		var and = createAndExpression
-		and.operands.add(getVariableGreaterEqualParamExpression(variable, minV))
-		and.operands.add(getVariableLessEqualParamExpression(variable, maxV))
+		and.operands += getVariableGreaterEqualParamExpression(variable, minV)
+		and.operands += getVariableLessEqualParamExpression(variable, maxV)
 		return and
 	}
-	
 
 //////// Create Binary and negate triggers
-	
-	def protected void negateBinaryTree(BinaryTrigger b) {
-		if (b.rightOperand instanceof EventTrigger) {
-			b.rightOperand = negateEventTrigger(b.rightOperand as EventTrigger)
+	def protected void negateBinaryTree(BinaryTrigger binaryTrigger) {
+		val right = binaryTrigger.rightOperand
+		val left = binaryTrigger.leftOperand
+		if (right instanceof EventTrigger) {
+			binaryTrigger.rightOperand = negateEventTrigger(right)
 		}
-		if (b.leftOperand instanceof EventTrigger) {
-			b.leftOperand = negateEventTrigger(b.leftOperand as EventTrigger)
+		if (left instanceof EventTrigger) {
+			binaryTrigger.leftOperand = negateEventTrigger(left as EventTrigger)
 		}
-		if (b.leftOperand instanceof BinaryTrigger) {
-			negateBinaryTree(b.leftOperand as BinaryTrigger)
+		if (left instanceof BinaryTrigger) {
+			negateBinaryTree(left as BinaryTrigger)
 		}
-		if (b.rightOperand instanceof BinaryTrigger) {
-			negateBinaryTree(b.rightOperand as BinaryTrigger)
+		if (right instanceof BinaryTrigger) {
+			negateBinaryTree(right as BinaryTrigger)
 		}
 	}
 
-	def protected Trigger negateEventTrigger(Trigger t) {
-		if (t instanceof UnaryTrigger && (t as UnaryTrigger).type == UnaryType.NOT)
-			return (t as UnaryTrigger).operand
-		var n = createUnaryTrigger
-		n.type = UnaryType.NOT
-		n.operand = t
-		return n
-	}
-	
-	def protected BinaryTrigger getBinaryTrigger(EList<InteractionDefinition> i, BinaryType type, boolean reversed) {
-		val triggers = newArrayList
-		for (interaction : i) {
-			triggers+= getEventTrigger(interaction, reversed)
+	def protected Trigger negateEventTrigger(Trigger trigger) {
+		if (trigger instanceof UnaryTrigger) {
+			if (trigger.type == UnaryType.NOT) {
+				return trigger.operand
+			}
 		}
-		return getBinaryTriggerFromTriggers(triggers,type);
+		var negated = createUnaryTrigger
+		negated.type = UnaryType.NOT
+		negated.operand = trigger
+		return negated
 	}
-	
+
+	def protected BinaryTrigger getBinaryTrigger(List<InteractionDefinition> interactions, BinaryType type,
+		boolean reversed) {
+		val triggers = newArrayList
+		for (interaction : interactions) {
+			triggers += getEventTrigger(interaction, reversed)
+		}
+		return getBinaryTriggerFromTriggers(triggers, type)
+	}
+
 	def protected BinaryTrigger getBinaryTriggerFromTriggers(List<Trigger> triggers, BinaryType type) {
-		var bin = createBinaryTrigger
-		bin.type = type
-		var runningbin = bin
+		val binaryTrigger = createBinaryTrigger
+		binaryTrigger.type = type
+		var runningbin = binaryTrigger
 		var signalCount = 0
 		for (trigger : triggers) {
 			signalCount++
 			if (runningbin.leftOperand === null) {
 				runningbin.leftOperand = trigger
-			}
-			else if (signalCount == triggers.size) {
+			} else if (signalCount == triggers.size) {
 				runningbin.rightOperand = trigger
 			} else {
 				var newbin = createBinaryTrigger
@@ -199,8 +205,9 @@ abstract class AbstractContractStatechartGeneration {
 				runningbin.leftOperand = trigger
 			}
 		}
-		return bin
+		return binaryTrigger
 	}
+
 	def protected BinaryTrigger getAllEvents(BinaryType type) {
 		var bin = createBinaryTrigger
 		bin.type = type
@@ -212,137 +219,135 @@ abstract class AbstractContractStatechartGeneration {
 			signalCount++
 			var ref = createAnyPortEventReference
 			ref.port = ports.get(i)
-			var t = createEventTrigger
-			t.eventReference = ref
+			var trigger = createEventTrigger
+			trigger.eventReference = ref
 			if (runningbin.leftOperand === null)
-				runningbin.leftOperand = t
+				runningbin.leftOperand = trigger
 			else if (signalCount == size) {
-				runningbin.rightOperand = t
+				runningbin.rightOperand = trigger
 			} else {
 				var newbin = createBinaryTrigger
 				runningbin.rightOperand = newbin
 				newbin.type = type
 				runningbin = newbin
-				runningbin.leftOperand = t
+				runningbin.leftOperand = trigger
 			}
 		}
 		return bin
 	}
-	
+
 	protected def List<Trigger> createOtherNegatedTriggers(ModalInteractionSet set) {
-		var triggers = newArrayList
-		var ports = newArrayList
+		val triggers = <Trigger>newArrayList
+		val ports = newArrayList
 		val events = newArrayList
-		var allPorts = statechart.ports.filter[!it.inputEvents.empty]
+		val allPorts = statechart.ports.filter[!it.inputEvents.empty]
 		for (modalInteraction : set.modalInteractions) {
 			var Signal signal = null
 			if (modalInteraction instanceof Signal) {
 				signal = modalInteraction
-			} 
-			else if (modalInteraction instanceof NegatedModalInteraction) {
-				val m = modalInteraction.modalinteraction
-				if (m instanceof Signal) {
-					signal = m
+			} else if (modalInteraction instanceof NegatedModalInteraction) {
+				val innerModalInteraction = modalInteraction.modalinteraction
+				if (innerModalInteraction instanceof Signal) {
+					signal = innerModalInteraction
 				}
 			}
-			if(signal !== null){
+			if (signal !== null) {
 				val portName = signal.direction == InteractionDirection.SEND
 						? scenarioStatechartUtil.getTurnedOutPortName(signal.port)
 						: signal.port.name
-				ports.add(getPort(portName))
-				events.add(getEvent(signal.event.name, getPort(portName)))
+				ports += getPort(portName)
+				events += getEvent(signal.event.name, getPort(portName))
 			}
 		}
 		for (port : allPorts) {
 			if (!ports.contains(port)) {
-				var any = createAnyPortEventReference
-				any.port = port
-				var t = createEventTrigger
-				t.eventReference = any
-				var u = createUnaryTrigger
-				u.operand = t
-				u.type = UnaryType.NOT
-				triggers.add(u)
+				var anyPortEvent = createAnyPortEventReference
+				anyPortEvent.port = port
+				var trigger = createEventTrigger
+				trigger.eventReference = anyPortEvent
+				var unary = createUnaryTrigger
+				unary.operand = trigger
+				unary.type = UnaryType.NOT
+				triggers += unary
 			} else {
 				var concrateEvents = port.inputEvents.filter[!(events.contains(it))]
 				for (concrateEvent : concrateEvents) {
-					var t = createEventTrigger
-					var e = createPortEventReference
-					e.event = concrateEvent
-					e.port = port
-					t.eventReference = e
+					var trigger = createEventTrigger
+					var portEventReference = createPortEventReference
+					portEventReference.event = concrateEvent
+					portEventReference.port = port
+					trigger.eventReference = portEventReference
 					var u = createUnaryTrigger
-					u.operand = t
+					u.operand = trigger
 					u.type = UnaryType.NOT
-					triggers.add(u)
+					triggers += u
 				}
 			}
 		}
 		return triggers
 	}
-	
+
 ///////////////// Event triggers based on Interactions	
-	
-	def protected dispatch Trigger getEventTrigger(Signal s, boolean reversed) {
-		var t = createEventTrigger
-		var eventref = createPortEventReference
-		var port = reversed ? getPort(scenarioStatechartUtil.getTurnedOutPortName(s.port)) : getPort(s.port.name)
-		eventref.event = getEvent(s.event.name, port)
+	def protected dispatch Trigger getEventTrigger(Signal signal, boolean reversed) {
+		val trigger = createEventTrigger
+		val eventref = createPortEventReference
+		val port = reversed ? getPort(scenarioStatechartUtil.getTurnedOutPortName(signal.port)) : getPort(
+				signal.port.name)
+		eventref.event = getEvent(signal.event.name, port)
 		eventref.port = port
-		t.eventReference = eventref
-		return t
+		trigger.eventReference = eventref
+		return trigger
 	}
 
 	def protected dispatch Trigger getEventTrigger(Delay s, boolean reversed) {
-		var t = createEventTrigger
-		var er = createTimeoutEventReference
-		var td = statechart.timeoutDeclarations.last
-		er.timeout = td
-		t.eventReference = er
-		return t
+		val trigger = createEventTrigger
+		val timeoutEventReference = createTimeoutEventReference
+		val timeoutDeclaration = statechart.timeoutDeclarations.last
+		timeoutEventReference.timeout = timeoutDeclaration
+		trigger.eventReference = timeoutEventReference
+		return trigger
 	}
 
-	def protected dispatch Trigger getEventTrigger(NegatedModalInteraction s, boolean reversed) {
-		var t = createEventTrigger
-		if (s.modalinteraction instanceof Signal) {
-			var signal = s.modalinteraction as Signal
-			var Port port = signal.direction.equals(InteractionDirection.SEND) ? 
-					getPort(scenarioStatechartUtil.getTurnedOutPortName(signal.port)) :
-					getPort(signal.port.name)
-			var Event event = getEvent(signal.event.name, port)
-			var eventRef = createPortEventReference
+	def protected dispatch Trigger getEventTrigger(NegatedModalInteraction negatedInteraction, boolean reversed) {
+		val trigger = createEventTrigger
+		if (negatedInteraction.modalinteraction instanceof Signal) {
+			var signal = negatedInteraction.modalinteraction as Signal
+			var Port port = signal.direction.equals(InteractionDirection.SEND) ? getPort(
+					scenarioStatechartUtil.getTurnedOutPortName(signal.port)) : getPort(signal.port.name)
+			val Event event = getEvent(signal.event.name, port)
+			val eventRef = createPortEventReference
 			eventRef.event = event
 			eventRef.port = port
-			t.eventReference = eventRef
-			var unary = createUnaryTrigger
-			unary.operand = t
+			trigger.eventReference = eventRef
+			val unary = createUnaryTrigger
+			unary.operand = trigger
 			unary.type = UnaryType.NOT
 			return unary
 		}
-		return t
+		return trigger
 	}
-	
+
 ////////// RaiseEventActions based on Interactions
-
-	def protected dispatch Action getRaiseEventAction(Signal s, boolean reversed) {
-		var a = createRaiseEventAction
-		var port = reversed ? getPort(scenarioStatechartUtil.getTurnedOutPortName(s.port)) : getPort(s.port.name)
-		a.event = getEvent(s.event.name, port)
-		a.port = port
-		for (argument : (s as Signal).arguments) {
-			a.arguments.add(ecureUtil.clone(argument))
+	def protected dispatch Action getRaiseEventAction(Signal signal, boolean reversed) {
+		var action = createRaiseEventAction
+		var port = reversed ? getPort(scenarioStatechartUtil.getTurnedOutPortName(signal.port)) : getPort(
+				signal.port.name)
+		action.event = getEvent(signal.event.name, port)
+		action.port = port
+		for (argument : signal.arguments) {
+			action.arguments += argument.clone
 		}
-		return a
+		return action
 	}
 
-	def protected dispatch Action getRaiseEventAction(Delay s, boolean reversed) {
+	def protected dispatch Action getRaiseEventAction(Delay delay, boolean reversed) {
 		return null
 	}
 
-	def protected dispatch Action getRaiseEventAction(NegatedModalInteraction s, boolean reversed) {
+	def protected dispatch Action getRaiseEventAction(NegatedModalInteraction negatedInteraction, boolean reversed) {
 		return null
 	}
-	
+
 	def protected Port getPort(String name) {
 		for (port : statechart.ports) {
 			if (port.name == name) {
@@ -353,30 +358,30 @@ abstract class AbstractContractStatechartGeneration {
 	}
 
 	def protected Event getEvent(String name, Port port) {
-		for (event : port.interfaceRealization.interface.events) {
+		for (event :   port.allEventDeclarations) {
 			if (event.event.name == name) {
 				return event.event
 			}
 		}
 		return null
 	}
-	
+
 	def protected createNewState(String name) {
 		var state = createState
 		state.name = name
 		return state
 	}
+
 	def protected createNewState() {
-		return createNewState("state" + String.valueOf(stateCount++))
+		return createNewState(scenarioStatechartUtil.stateName + String.valueOf(stateCount++))
 	}
-	
-	
-	def protected ChoiceState addChoiceState() {
-		exsistingChoices++;
+
+	def protected ChoiceState createNewChoiceState() {
+		exsistingChoices++
 		var choice = createChoiceState
-		var name = String.valueOf("Choice" + exsistingChoices++)
+		var name = String.valueOf(scenarioStatechartUtil.choiceName + exsistingChoices++)
 		choice.name = name
 		return choice
 	}
-	
+
 }

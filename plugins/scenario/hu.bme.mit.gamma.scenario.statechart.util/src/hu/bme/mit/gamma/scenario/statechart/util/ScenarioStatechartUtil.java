@@ -22,6 +22,10 @@ public class ScenarioStatechartUtil {
 	}
 	
 	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
+	
+	private final String stateName = "state";
+	
+	private final String choiceName = "Choice";
 
 	private final String reversed = "REVERSED";
 
@@ -38,6 +42,24 @@ public class ScenarioStatechartUtil {
 	private final String result = "result";
 	
 	private final String IteratingVariable = "IteratingVariable";
+	
+	private final String firstRegionName = "region";
+	
+	private final String firstStateName = "firstState";
+	
+	private final String mergeName = "merge";
+
+	public String getMergeName() {
+		return mergeName;
+	}
+
+	public String getFirstStateName() {
+		return firstStateName;
+	}
+
+	public String getFirstRegionName() { 
+		return firstRegionName;
+	}
 
 	public String getIteratingVariable() {
 		return IteratingVariable;
@@ -64,6 +86,14 @@ public class ScenarioStatechartUtil {
 
 	public String getHotViolation() {
 		return hotViolation;
+	}
+
+	public String getStateName() {
+		return stateName;
+	}
+
+	public String getChoiceName() {
+		return choiceName;
 	}
 
 	public String getAccepting() {

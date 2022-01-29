@@ -13,8 +13,13 @@ import hu.bme.mit.gamma.scenario.model.NegatedModalInteraction;
 import hu.bme.mit.gamma.scenario.model.Signal;
 
 public class ScenarioModelDerivedFeatures extends ExpressionModelDerivedFeatures {
+	
+	public static final ScenarioModelDerivedFeatures INSTANCE = new ScenarioModelDerivedFeatures();
 
-	public static InteractionDirection getDirection(ModalInteractionSet set) {
+	protected ScenarioModelDerivedFeatures() {
+	}
+
+	public InteractionDirection getDirection(ModalInteractionSet set) {
 		boolean isSend = false;
 		List<InteractionDirection> directions = javaUtil.filterIntoList(set.getModalInteractions(), Signal.class).stream()
 				.map(it -> it.getDirection()).collect(Collectors.toList());
@@ -33,7 +38,7 @@ public class ScenarioModelDerivedFeatures extends ExpressionModelDerivedFeatures
 		}
 	}
 
-	public static ModalityType getModality(ModalInteractionSet set) {
+	public ModalityType getModality(ModalInteractionSet set) {
 		List<Signal> signals = javaUtil.filterIntoList(set.getModalInteractions(), Signal.class);
 
 		if (!signals.isEmpty()) {
@@ -57,7 +62,7 @@ public class ScenarioModelDerivedFeatures extends ExpressionModelDerivedFeatures
 		return ModalityType.COLD;
 	}
 	
-	public static boolean isAllNeg(ModalInteractionSet set) {
+	public boolean isAllInteractionsOrBlockNegated(ModalInteractionSet set) {
 		for (InteractionDefinition modalInteraction : set.getModalInteractions()){
 			if (!(modalInteraction instanceof NegatedModalInteraction)) {
 				return false;
@@ -66,7 +71,7 @@ public class ScenarioModelDerivedFeatures extends ExpressionModelDerivedFeatures
 		return true;
 	}
 	
-	public static ModalityType getModality(InteractionDefinition i) {
+	public ModalityType getModality(InteractionDefinition i) {
 		if (i instanceof Signal) {
 			return ((Signal) i).getModality();
 		}
@@ -82,7 +87,7 @@ public class ScenarioModelDerivedFeatures extends ExpressionModelDerivedFeatures
 		return null;
 	}
 	
-	public static InteractionDirection getDirection(InteractionDefinition i) {
+	public InteractionDirection getDirection(InteractionDefinition i) {
 		if (i instanceof Signal) {
 			return ((Signal) i).getDirection();
 		}
