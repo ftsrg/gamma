@@ -41,7 +41,6 @@ import hu.bme.mit.gamma.scenario.model.ParallelCombinedFragment;
 import hu.bme.mit.gamma.scenario.model.PermissiveAnnotation;
 import hu.bme.mit.gamma.scenario.model.Reset;
 import hu.bme.mit.gamma.scenario.model.ScenarioDefinition;
-import hu.bme.mit.gamma.scenario.model.ScenarioDefinitionReference;
 import hu.bme.mit.gamma.scenario.model.ScenarioModelFactory;
 import hu.bme.mit.gamma.scenario.model.Signal;
 import hu.bme.mit.gamma.scenario.model.StrictAnnotation;
@@ -56,17 +55,19 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 	private ScenarioDefinition simple = null;
 	private ScenarioModelFactory factory = null;
 	private boolean transformLoopFragments = false;
+	private boolean makeAlternativesDeterministic = true;
 	private List<Expression> arguments = null;
 	ScenarioReferenceResolver refResolver = new ScenarioReferenceResolver();
 
 	public SimpleScenarioGenerator(ScenarioDefinition base, boolean transformLoopFragments) {
 		this(base, transformLoopFragments, new LinkedList<Expression>());
 	}
-	
-	public SimpleScenarioGenerator(ScenarioDefinition base, boolean transformLoopFragments, List<Expression> parameters) {
+
+	public SimpleScenarioGenerator(ScenarioDefinition base, boolean transformLoopFragments,
+			List<Expression> parameters) {
 		this.base = base;
 		this.transformLoopFragments = transformLoopFragments;
-		this.arguments  = parameters;
+		this.arguments = parameters;
 	}
 
 	// Needs to be saved and reset after handling a new InteractionFragment, needs
@@ -90,11 +91,15 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 			simple.getChart().getFragment().getInteractions().add((Interaction) this.doSwitch(interaction));
 		}
 		inLineExpressions(simple, base);
+		if (makeAlternativesDeterministic) {
+			
+		}
 		return simple;
 	}
-	
+
 	private void inLineExpressions(ScenarioDefinition simple, ScenarioDefinition base) {
-		List<DirectReferenceExpression> references = ecoreUtil.getAllContentsOfType(simple, DirectReferenceExpression.class);
+		List<DirectReferenceExpression> references = ecoreUtil.getAllContentsOfType(simple,
+				DirectReferenceExpression.class);
 		for (DirectReferenceExpression direct : references) {
 			Declaration decl = direct.getDeclaration();
 			if (decl instanceof ConstantDeclaration) {
@@ -103,11 +108,10 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 				ecoreUtil.change(cloned, direct, direct.eContainer());
 				ecoreUtil.replace(cloned, direct);
 			}
-			if(decl instanceof ParameterDeclaration)
-			{
-				ParameterDeclaration param = (ParameterDeclaration) decl;					
-				for(ParameterDeclaration paramD: base.getParameterDeclarations()) {
-					if(paramD.getName() == param.getName()) {
+			if (decl instanceof ParameterDeclaration) {
+				ParameterDeclaration param = (ParameterDeclaration) decl;
+				for (ParameterDeclaration paramD : base.getParameterDeclarations()) {
+					if (paramD.getName() == param.getName()) {
 						int index = base.getParameterDeclarations().indexOf(paramD);
 						Expression _new = arguments.get(index);
 						Expression cloned = ecoreUtil.clone(_new);
@@ -186,7 +190,6 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 		previousFragment = prev;
 		return fragment;
 	}
-	
 
 	@Override
 	public EObject caseLoopCombinedFragment(LoopCombinedFragment object) {
@@ -255,7 +258,7 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 		for (int i = 0; i < object.getFragments().size(); i++) {
 			list.add(i + 1);
 		}
-		generatePermutation(list.size(), list, permutations);
+		ScenarioReductionUtil.generatePermutation(list.size(), list, permutations);
 		for (int i = 0; i < permutations.size(); i++) {
 			InteractionFragment iff = factory.createInteractionFragment();
 			previousFragment = iff;
@@ -268,29 +271,6 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 		}
 		previousFragment = prev;
 		return alt;
-	}
-
-	// Heap's Algorithm
-	public static void generatePermutation(int k, List<Integer> a, List<List<Integer>> l) {
-
-		if (k == 1) {
-			l.add(new ArrayList<Integer>(a));
-		} else {
-			for (int i = 0; i < (k - 1); i++) {
-				int tmp;
-				generatePermutation(k - 1, a, l);
-				if (k % 2 == 0) {
-					tmp = a.get(i);
-					a.set(i, a.get(k - 1));
-					a.set(k - 1, tmp);
-				} else {
-					tmp = a.get(0);
-					a.set(0, a.get(k - 1));
-					a.set(k - 1, tmp);
-				}
-			}
-			generatePermutation(k - 1, a, l);
-		}
 	}
 
 	@Override
@@ -307,7 +287,7 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 		}
 		listlist.add(new ArrayList<FragmentInteractionPair>());
 		used.add(tmp);
-		createSequences(listlist, used, maximum);
+		ScenarioReductionUtil.createSequences(listlist, used, maximum);
 		for (List<FragmentInteractionPair> l : listlist) {
 			InteractionFragment iff = factory.createInteractionFragment();
 			previousFragment = iff;
@@ -325,55 +305,11 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 		return alt;
 	}
 
-	private void createSequences(List<List<FragmentInteractionPair>> listlist, List<List<Integer>> used,
-			List<Integer> maximum) {
-
-		boolean ok = false;
-
-		while (!ok) {
-			boolean wasAdded = false;
-			for (int i = 0; i < used.get(0).size(); i++) {
-				if (used.get(0).get(i) < maximum.get(i)) {
-					wasAdded = true;
-					List<FragmentInteractionPair> tmplist = new ArrayList<FragmentInteractionPair>();
-					List<Integer> tmpused = new ArrayList<Integer>();
-					for (int j = 0; j < used.get(0).size(); j++) {
-						tmpused.add(used.get(0).get(j));
-					}
-					for (int j = 0; j < listlist.get(0).size(); j++) {
-						tmplist.add(listlist.get(0).get(j));
-					}
-					tmplist.add(new FragmentInteractionPair(i, tmpused.get(i)));
-					tmpused.set(i, tmpused.get(i) + 1);
-
-					used.add(tmpused);
-					listlist.add(tmplist);
-				}
-			}
-			if (!wasAdded) {
-				used.add(used.get(0));
-				listlist.add(listlist.get(0));
-			}
-			used.remove(0);
-			listlist.remove(0);
-			ok = done(used, maximum);
-		}
-	}
-
-	private boolean done(List<List<Integer>> used, List<Integer> maximum) {
-		for (List<Integer> l : used) {
-			for (int i = 0; i < l.size(); i++) {
-				if (l.get(i) != maximum.get(i))
-					return false;
-			}
-		}
-		return true;
-	}
-
 	@Override
 	public EObject caseNegatedModalInteraction(NegatedModalInteraction object) {
 		NegatedModalInteraction negatedModalInteraction = factory.createNegatedModalInteraction();
-		negatedModalInteraction.setModalinteraction((InteractionDefinition) this.doSwitch(object.getModalinteraction()));
+		negatedModalInteraction
+				.setModalinteraction((InteractionDefinition) this.doSwitch(object.getModalinteraction()));
 		return negatedModalInteraction;
 	}
 

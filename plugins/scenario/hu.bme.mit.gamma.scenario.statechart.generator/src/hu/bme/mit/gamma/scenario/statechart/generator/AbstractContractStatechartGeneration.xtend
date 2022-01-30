@@ -1,6 +1,5 @@
 package hu.bme.mit.gamma.scenario.statechart.generator
 
-import hu.bme.mit.gamma.action.model.Action
 import hu.bme.mit.gamma.action.model.ActionModelFactory
 import hu.bme.mit.gamma.action.model.AssignmentStatement
 import hu.bme.mit.gamma.expression.model.Expression
@@ -8,13 +7,12 @@ import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.expression.util.ExpressionUtil
-import hu.bme.mit.gamma.scenario.model.Delay
-import hu.bme.mit.gamma.scenario.model.InteractionDefinition
 import hu.bme.mit.gamma.scenario.model.InteractionDirection
 import hu.bme.mit.gamma.scenario.model.ModalInteractionSet
 import hu.bme.mit.gamma.scenario.model.NegatedModalInteraction
 import hu.bme.mit.gamma.scenario.model.ScenarioDefinition
 import hu.bme.mit.gamma.scenario.model.Signal
+import hu.bme.mit.gamma.scenario.model.derivedfeatures.ScenarioModelDerivedFeatures
 import hu.bme.mit.gamma.scenario.statechart.util.ScenarioStatechartUtil
 import hu.bme.mit.gamma.statechart.contract.ContractModelFactory
 import hu.bme.mit.gamma.statechart.interface_.Component
@@ -26,10 +24,8 @@ import hu.bme.mit.gamma.statechart.interface_.Trigger
 import hu.bme.mit.gamma.statechart.statechart.BinaryTrigger
 import hu.bme.mit.gamma.statechart.statechart.BinaryType
 import hu.bme.mit.gamma.statechart.statechart.ChoiceState
-import hu.bme.mit.gamma.statechart.statechart.StateNode
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.StatechartModelFactory
-import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.statechart.statechart.UnaryTrigger
 import hu.bme.mit.gamma.statechart.statechart.UnaryType
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
@@ -39,7 +35,6 @@ import java.util.List
 import java.util.Map
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
-import hu.bme.mit.gamma.scenario.model.derivedfeatures.ScenarioModelDerivedFeatures
 
 abstract class AbstractContractStatechartGeneration {
 
@@ -75,26 +70,6 @@ abstract class AbstractContractStatechartGeneration {
 			variableMap.put(string, newVariable)
 			statechart.variableDeclarations += newVariable
 			return newVariable
-		}
-	}
-
-	protected def setupTransition(Transition transition, StateNode source, StateNode target, Trigger trigger,
-		Expression guard, List<Action> effects) {
-		if (source !== null) {
-			transition.sourceState = source
-		}
-		if (target !== null) {
-			transition.targetState = target
-		}
-		if (trigger !== null) {
-			transition.trigger = trigger
-		}
-		if (guard !== null) {
-			transition.guard = guard
-		}
-		if (effects !== null) {
-			transition.effects.clear
-			transition.effects += effects
 		}
 	}
 
@@ -175,15 +150,6 @@ abstract class AbstractContractStatechartGeneration {
 		negated.type = UnaryType.NOT
 		negated.operand = trigger
 		return negated
-	}
-
-	def protected BinaryTrigger getBinaryTrigger(List<InteractionDefinition> interactions, BinaryType type,
-		boolean reversed) {
-		val triggers = newArrayList
-		for (interaction : interactions) {
-			triggers += getEventTrigger(interaction, reversed)
-		}
-		return getBinaryTriggerFromTriggers(triggers, type)
 	}
 
 	def protected BinaryTrigger getBinaryTriggerFromTriggers(List<Trigger> triggers, BinaryType type) {
@@ -287,66 +253,7 @@ abstract class AbstractContractStatechartGeneration {
 		return triggers
 	}
 
-///////////////// Event triggers based on Interactions	
-	def protected dispatch Trigger getEventTrigger(Signal signal, boolean reversed) {
-		val trigger = createEventTrigger
-		val eventref = createPortEventReference
-		val port = reversed ? getPort(scenarioStatechartUtil.getTurnedOutPortName(signal.port)) : getPort(
-				signal.port.name)
-		eventref.event = getEvent(signal.event.name, port)
-		eventref.port = port
-		trigger.eventReference = eventref
-		return trigger
-	}
 
-	def protected dispatch Trigger getEventTrigger(Delay s, boolean reversed) {
-		val trigger = createEventTrigger
-		val timeoutEventReference = createTimeoutEventReference
-		val timeoutDeclaration = statechart.timeoutDeclarations.last
-		timeoutEventReference.timeout = timeoutDeclaration
-		trigger.eventReference = timeoutEventReference
-		return trigger
-	}
-
-	def protected dispatch Trigger getEventTrigger(NegatedModalInteraction negatedInteraction, boolean reversed) {
-		val trigger = createEventTrigger
-		if (negatedInteraction.modalinteraction instanceof Signal) {
-			var signal = negatedInteraction.modalinteraction as Signal
-			var Port port = signal.direction.equals(InteractionDirection.SEND) ? getPort(
-					scenarioStatechartUtil.getTurnedOutPortName(signal.port)) : getPort(signal.port.name)
-			val Event event = getEvent(signal.event.name, port)
-			val eventRef = createPortEventReference
-			eventRef.event = event
-			eventRef.port = port
-			trigger.eventReference = eventRef
-			val unary = createUnaryTrigger
-			unary.operand = trigger
-			unary.type = UnaryType.NOT
-			return unary
-		}
-		return trigger
-	}
-
-////////// RaiseEventActions based on Interactions
-	def protected dispatch Action getRaiseEventAction(Signal signal, boolean reversed) {
-		var action = createRaiseEventAction
-		var port = reversed ? getPort(scenarioStatechartUtil.getTurnedOutPortName(signal.port)) : getPort(
-				signal.port.name)
-		action.event = getEvent(signal.event.name, port)
-		action.port = port
-		for (argument : signal.arguments) {
-			action.arguments += argument.clone
-		}
-		return action
-	}
-
-	def protected dispatch Action getRaiseEventAction(Delay delay, boolean reversed) {
-		return null
-	}
-
-	def protected dispatch Action getRaiseEventAction(NegatedModalInteraction negatedInteraction, boolean reversed) {
-		return null
-	}
 
 	def protected Port getPort(String name) {
 		for (port : statechart.ports) {

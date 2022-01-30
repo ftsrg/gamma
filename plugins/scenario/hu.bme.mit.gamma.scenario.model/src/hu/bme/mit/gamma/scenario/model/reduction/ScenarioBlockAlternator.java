@@ -2,14 +2,12 @@ package hu.bme.mit.gamma.scenario.model.reduction;
 
 import hu.bme.mit.gamma.scenario.model.AlternativeCombinedFragment;
 import hu.bme.mit.gamma.scenario.model.Interaction;
-import hu.bme.mit.gamma.scenario.model.InteractionDefinition;
 import hu.bme.mit.gamma.scenario.model.InteractionDirection;
 import hu.bme.mit.gamma.scenario.model.InteractionFragment;
 import hu.bme.mit.gamma.scenario.model.LoopCombinedFragment;
 import hu.bme.mit.gamma.scenario.model.ModalInteractionSet;
 import hu.bme.mit.gamma.scenario.model.OptionalCombinedFragment;
 import hu.bme.mit.gamma.scenario.model.ScenarioModelFactory;
-import hu.bme.mit.gamma.scenario.model.derivedfeatures.ScenarioModelDerivedFeatures;
 
 public class ScenarioBlockAlternator {
 	
@@ -24,14 +22,14 @@ public class ScenarioBlockAlternator {
 		for (int i= 0; i< fragment.getInteractions().size();i++) {
 			Interaction interaction = fragment.getInteractions().get(i);
 			if (interaction instanceof ModalInteractionSet) {
-				ModalInteractionSet set= (ModalInteractionSet) interaction;
-				if (last == ScenarioModelDerivedFeatures.getDirection(set)) {
-					fragment.getInteractions().add(i, getEmptySet());
-					i++;
-				}
-				else {
-					last = getOther(last);
-				}
+//				ModalInteractionSet set= (ModalInteractionSet) interaction;
+//				if (last == set.getDirection) {
+//					fragment.getInteractions().add(i, getEmptySet());
+//					i++;
+//				}
+//				else {
+//					last = getOther(last);
+//				}
 			}
 			else if(interaction instanceof AlternativeCombinedFragment) {
 				AlternativeCombinedFragment alt = (AlternativeCombinedFragment) interaction;

@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.scenario.statechart.generator
 
+import hu.bme.mit.gamma.action.model.Action
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.scenario.model.AlternativeCombinedFragment
 import hu.bme.mit.gamma.scenario.model.Delay
@@ -28,9 +29,10 @@ import hu.bme.mit.gamma.scenario.model.ScenarioDefinition
 import hu.bme.mit.gamma.scenario.model.Signal
 import hu.bme.mit.gamma.scenario.model.StrictAnnotation
 import hu.bme.mit.gamma.scenario.model.WaitAnnotation
-import hu.bme.mit.gamma.scenario.model.derivedfeatures.ScenarioModelDerivedFeatures
 import hu.bme.mit.gamma.statechart.contract.NotDefinedEventMode
 import hu.bme.mit.gamma.statechart.interface_.Component
+import hu.bme.mit.gamma.statechart.interface_.Event
+import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.interface_.TimeUnit
 import hu.bme.mit.gamma.statechart.interface_.Trigger
 import hu.bme.mit.gamma.statechart.statechart.BinaryTrigger
@@ -42,6 +44,7 @@ import hu.bme.mit.gamma.statechart.statechart.StateNode
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.statechart.statechart.TransitionPriority
+import hu.bme.mit.gamma.statechart.statechart.UnaryType
 import java.math.BigInteger
 import java.util.HashMap
 import java.util.List
@@ -490,7 +493,7 @@ class TestGeneratorStatechartGenerator extends AbstractContractStatechartGenerat
 
 	def handleSingleNegatedIfNeeded(ModalInteractionSet set, Transition forwardTransition,
 		Transition violationTransition) {
-			var Signal signal = null
+		var Signal signal = null
 		var singleNegetedSignalWithArguments = false
 		val firstModalinteraction = set.modalInteractions.get(0)
 		if (set.modalInteractions.size == 1 && firstModalinteraction instanceof NegatedModalInteraction) {
@@ -498,7 +501,7 @@ class TestGeneratorStatechartGenerator extends AbstractContractStatechartGenerat
 			val innerModalInteraction = negatedModalInteraction.modalinteraction
 			if (innerModalInteraction instanceof Signal) {
 				singleNegetedSignalWithArguments = !(innerModalInteraction.arguments.empty)
-				if(singleNegetedSignalWithArguments){
+				if (singleNegetedSignalWithArguments) {
 					signal = innerModalInteraction
 				}
 			}
@@ -509,7 +512,6 @@ class TestGeneratorStatechartGenerator extends AbstractContractStatechartGenerat
 				violationTransition.targetState = forwardTransition.targetState
 				forwardTransition.targetState = tmp
 				forwardTransition.trigger = negateEventTrigger(forwardTransition.trigger)
-
 			}
 		}
 	}
@@ -539,7 +541,7 @@ class TestGeneratorStatechartGenerator extends AbstractContractStatechartGenerat
 	def handleDelays(ModalInteractionSet set) {
 		val delays = set.modalInteractions.filter(Delay)
 		if (!delays.empty) {
-			val delay = delays.get(0) as Delay
+			val delay = delays.get(0)
 			val timeoutDeclaration = createTimeoutDeclaration
 			timeoutDeclaration.name = "delay" + timeoutCount++
 			statechart.timeoutDeclarations += timeoutDeclaration
@@ -558,7 +560,7 @@ class TestGeneratorStatechartGenerator extends AbstractContractStatechartGenerat
 	def handleArguments(List<InteractionDefinition> set, Transition transition) {
 		var signals = set.filter(Signal).filter[!it.arguments.empty]
 		if (signals.empty) {
-			val firstInteraction  = set.get(0)
+			val firstInteraction = set.get(0)
 			if (set.size == 1 && firstInteraction instanceof NegatedModalInteraction) {
 				val interaction = firstInteraction as NegatedModalInteraction
 				if (interaction.modalinteraction instanceof Signal) {
@@ -608,6 +610,81 @@ class TestGeneratorStatechartGenerator extends AbstractContractStatechartGenerat
 			and.operands += guard
 			transition.guard = and
 		}
+	}
+	
+	
+	
+	def protected BinaryTrigger getBinaryTrigger(List<InteractionDefinition> interactions, BinaryType type,
+		boolean reversed) {
+		val triggers = newArrayList
+		for (interaction : interactions) {
+			triggers += getEventTrigger(interaction, reversed)
+		}
+		return getBinaryTriggerFromTriggers(triggers, type)
+	}
+
+	// /////////////// Event triggers based on Interactions	
+	def protected dispatch Trigger getEventTrigger(Signal signal, boolean reversed) {
+		val trigger = createEventTrigger
+		val eventref = createPortEventReference
+		val port = reversed
+				? getPort(scenarioStatechartUtil.getTurnedOutPortName(signal.port))
+				: getPort(signal.port.name)
+		eventref.event = getEvent(signal.event.name, port)
+		eventref.port = port
+		trigger.eventReference = eventref
+		return trigger
+	}
+
+	def protected dispatch Trigger getEventTrigger(Delay s, boolean reversed) {
+		val trigger = createEventTrigger
+		val timeoutEventReference = createTimeoutEventReference
+		val timeoutDeclaration = statechart.timeoutDeclarations.last
+		timeoutEventReference.timeout = timeoutDeclaration
+		trigger.eventReference = timeoutEventReference
+		return trigger
+	}
+
+	def protected dispatch Trigger getEventTrigger(NegatedModalInteraction negatedInteraction, boolean reversed) {
+		val trigger = createEventTrigger
+		if (negatedInteraction.modalinteraction instanceof Signal) {
+			var signal = negatedInteraction.modalinteraction as Signal
+			var Port port = signal.direction.equals(InteractionDirection.SEND)
+					? getPort(scenarioStatechartUtil.getTurnedOutPortName(signal.port))
+					: getPort(signal.port.name)
+			val Event event = getEvent(signal.event.name, port)
+			val eventRef = createPortEventReference
+			eventRef.event = event
+			eventRef.port = port
+			trigger.eventReference = eventRef
+			val unary = createUnaryTrigger
+			unary.operand = trigger
+			unary.type = UnaryType.NOT
+			return unary
+		}
+		return trigger
+	}
+
+////////// RaiseEventActions based on Interactions
+	def protected dispatch Action getRaiseEventAction(Signal signal, boolean reversed) {
+		var action = createRaiseEventAction
+		var port = reversed
+				? getPort(scenarioStatechartUtil.getTurnedOutPortName(signal.port))
+				: getPort(signal.port.name)
+		action.event = getEvent(signal.event.name, port)
+		action.port = port
+		for (argument : signal.arguments) {
+			action.arguments += argument.clone
+		}
+		return action
+	}
+
+	def protected dispatch Action getRaiseEventAction(Delay delay, boolean reversed) {
+		return null
+	}
+
+	def protected dispatch Action getRaiseEventAction(NegatedModalInteraction negatedInteraction, boolean reversed) {
+		return null
 	}
 
 }
