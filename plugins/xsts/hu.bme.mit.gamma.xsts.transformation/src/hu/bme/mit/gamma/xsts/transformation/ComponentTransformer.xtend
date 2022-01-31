@@ -115,7 +115,7 @@ class ComponentTransformer {
 		val entryAction = createSequentialAction
 		
 		val inEventAction = createSequentialAction
-		val outEventAction = createSequentialAction
+//		val outEventAction = createSequentialAction
 		
 		val mergedAction = createSequentialAction
 		
@@ -137,7 +137,8 @@ class ComponentTransformer {
 			
 			// inEventActions later
 			// Filtering events can be used (internal ones and ones led out to the environment)
-			outEventAction.actions += adapterXsts.outEventTransition.action
+			// Not necessary as the component instances do this, but this a reset here could save resource
+//			outEventAction.actions += adapterXsts.outEventTransition.action
 		}
 		
 		// Creating the message queue constructions
@@ -471,7 +472,8 @@ class ComponentTransformer {
 		}
 		
 		xSts.inEventTransition = inEventAction.wrap
-		xSts.outEventTransition = outEventAction.wrap
+		// Must not reset out events here: adapter instances reset them after running (no running, no reset)
+//		xSts.outEventTransition = outEventAction.wrap
 		
 		xSts.changeTransitions(mergedAction.wrap)
 		
@@ -594,9 +596,11 @@ class ComponentTransformer {
 		if (wrappedType.statechart) {
 			// Customize names as the type can be a statechart (before setting the new in event)
 			xSts.customizeDeclarationNames(wrappedInstance)
-			// Resetting in events manually in the case of statecharts
-			xSts.resetInEventsAfterMergedAction(wrappedType)
 		}
+		
+		// Resetting out and events manually as a "schedule" call in the code does that
+		xSts.resetOutEventsBeforeMergedAction(wrappedType)
+		xSts.resetInEventsAfterMergedAction(wrappedType)
 		
 		if (isTopInPackage) {
 			val inEventAction = xSts.inEventTransition
@@ -886,6 +890,15 @@ class ComponentTransformer {
 		checkState(systemPorts.containsNone(topPorts) || capacity == 1,
 				"All or none of the ports must be system ports or the capacity must be one")
 		return false
+	}
+	
+	private def void resetOutEventsBeforeMergedAction(XSTS xSts, Component type) {
+		val outEventAction = xSts.outEventTransition.action
+		val clonedOutEventAction = outEventAction.clone
+		// Not PERSISTENT parameters
+		val resetAction = clonedOutEventAction.resetEverythingExceptPersistentParameters(type)
+		val mergedAction = xSts.mergedAction
+		resetAction.prependToAction(mergedAction)
 	}
 	
 	private def void resetInEventsAfterMergedAction(XSTS xSts, Component type) {
