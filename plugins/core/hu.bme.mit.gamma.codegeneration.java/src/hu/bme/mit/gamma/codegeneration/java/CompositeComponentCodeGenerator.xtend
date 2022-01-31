@@ -49,8 +49,10 @@ class CompositeComponentCodeGenerator {
 		import java.util.LinkedList;
 		
 		import «PACKAGE_NAME».*;
-		«FOR _package : component.containingPackage.allImports.toSet /* For type declarations */»
-			import «_package.getPackageString(PACKAGE_NAME)».*;
+		«FOR packageName : component.containingPackage.allImports
+				.map['''«it.getPackageString(PACKAGE_NAME)».*''']
+				.toSet /* For type declarations and same-name packages*/»
+			import «packageName»;
 		«ENDFOR»
 		«IF component instanceof AbstractAsynchronousCompositeComponent»
 			import «PACKAGE_NAME».«Namings.CHANNEL_PACKAGE_POSTFIX».*;

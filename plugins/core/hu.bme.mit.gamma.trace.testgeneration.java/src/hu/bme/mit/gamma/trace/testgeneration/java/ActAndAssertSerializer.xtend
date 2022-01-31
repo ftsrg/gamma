@@ -73,10 +73,9 @@ class ActAndAssertSerializer {
 		«IF component.timed»«TIMER_OBJECT_NAME».elapse(«elapse.elapsedTime»);«ENDIF»
 	'''
 
-	protected def dispatch serialize(InstanceSchedule schedule) '''
-«««		Theoretically, we do not use such models
-		«TEST_INSTANCE_NAME».«util.getFullContainmentHierarchy(schedule.scheduledInstance)».schedule();
-	'''
+	protected def dispatch serialize(InstanceSchedule schedule) {
+		throw new IllegalArgumentException("Not supported act: " + schedule)
+	}
 
 	protected def dispatch String serialize(ComponentSchedule schedule) '''
 «««		Theoretically, only asynchronous adapters and synchronous adapters are used
