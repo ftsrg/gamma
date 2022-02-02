@@ -68,6 +68,7 @@ class AnalysisModelPreprocessor {
 		if (component instanceof StatechartDefinition) {
 			logger.log(Level.INFO, "Wrapping statechart " + name)
 			_package.components.add(0, component.wrapSynchronousComponent)
+			// TODO
 		}
 		// Check loop support in Theta configurations
 		else if (component instanceof AsynchronousAdapter) {
@@ -75,6 +76,7 @@ class AnalysisModelPreprocessor {
 				// Queues have to be introduced 
 				logger.log(Level.INFO, "Wrapping adapter " + name)
 				_package.components.add(0, component.wrapAsynchronousComponent)
+				// TODO
 			}
 			else {
 				logger.log(Level.INFO, "Adapter " + name + " does not have to be wrapped")

@@ -79,7 +79,6 @@ import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
 import hu.bme.mit.gamma.statechart.interface_.TopComponentArgumentsAnnotation;
 import hu.bme.mit.gamma.statechart.interface_.Trigger;
 import hu.bme.mit.gamma.statechart.interface_.UnfoldedPackageAnnotation;
-import hu.bme.mit.gamma.statechart.interface_.WrappedPackageAnnotation;
 import hu.bme.mit.gamma.statechart.phase.History;
 import hu.bme.mit.gamma.statechart.phase.MissionPhaseAnnotation;
 import hu.bme.mit.gamma.statechart.phase.MissionPhaseStateDefinition;
@@ -110,6 +109,7 @@ import hu.bme.mit.gamma.statechart.statechart.Transition;
 import hu.bme.mit.gamma.statechart.statechart.TransitionAnnotation;
 import hu.bme.mit.gamma.statechart.statechart.TransitionIdAnnotation;
 import hu.bme.mit.gamma.statechart.statechart.TransitionPriority;
+import hu.bme.mit.gamma.statechart.statechart.WrappedStatechartAnnotation;
 import hu.bme.mit.gamma.statechart.util.StatechartUtil;
 
 public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
@@ -228,10 +228,6 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	public static boolean isUnfolded(Package gammaPackage) {
 		return hasAnnotation(gammaPackage, UnfoldedPackageAnnotation.class);
-	}
-	
-	public static boolean isWrapped(Package gammaPackage) {
-		return hasAnnotation(gammaPackage, WrappedPackageAnnotation.class);
 	}
 	
 	public static boolean hasAnnotation(Package gammaPackage,
@@ -611,6 +607,10 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return events;
 	}
 	
+	public static boolean hasInputEvents(Port port) {
+		return !getInputEvents(port).isEmpty();
+	}
+	
 	public static List<Event> getOutputEvents(Iterable<? extends Port> ports) {
 		List<Event> events = new ArrayList<Event>();
 		for (Port port : ports) {
@@ -637,6 +637,10 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 					.collect(Collectors.toList()));
 		}
 		return events;
+	}
+	
+	public static boolean hasOutputEvents(Port port) {
+		return !getOutputEvents(port).isEmpty();
 	}
 	
 	public static boolean isInputEvent(Port port, Event event) {
@@ -676,6 +680,16 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 			return getAllPorts((AsynchronousAdapter) component);
 		}		
 		return component.getPorts();
+	}
+	
+	public static List<Port> getAllPortsWithInput(Component component) {
+		return getAllPorts(component).stream().filter(it -> hasInputEvents(it))
+			.collect(Collectors.toList());
+	}
+	
+	public static List<Port> getAllPortsWithOutput(Component component) {
+		return getAllPorts(component).stream().filter(it -> hasOutputEvents(it))
+			.collect(Collectors.toList());
 	}
 	
 	public static boolean isControlSpecification(AsynchronousAdapter adapter, Entry<Port, Event> portEvent) {
@@ -1848,10 +1862,18 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	public static List<ComponentInstance> getWraplessComponentInstanceChain(ComponentInstance instance) {
 		List<ComponentInstance> componentInstanceChain = getComponentInstanceChain(instance);
-		Package _package = getContainingPackage(instance);
-		if (isWrapped(_package)) {
-			componentInstanceChain.remove(0); // Removing the wrapper instance
+		
+		int size = componentInstanceChain.size();
+		int lastIndex = size - 1;
+		// TODO what if a single statechart is an original? Wrapper to component?
+		ComponentInstance lastInstance = componentInstanceChain.get(lastIndex);
+		Component lastInstanceType = getDerivedType(lastInstance);
+		if (isWrappedStatechart(lastInstanceType)) {
+			int wrapperIndex = size - 2;
+			// Removing the wrapper instance right before the wrapped statechart
+			componentInstanceChain.remove(wrapperIndex);
 		}
+		
 		return componentInstanceChain;
 	}
 	
@@ -2001,6 +2023,16 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		else {
 			return null;
 		}
+	}
+	
+	public static boolean isWrappedStatechart(Component component) {
+		if (component instanceof StatechartDefinition) {
+			StatechartDefinition statechart = (StatechartDefinition) component;
+			Optional<StatechartAnnotation> annotation = getStatechartAnnotation(
+					statechart, WrappedStatechartAnnotation.class);
+			return annotation.isPresent();
+		}
+		return false;
 	}
 	
 	public static boolean isMissionPhase(Component component) {

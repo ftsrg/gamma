@@ -2,10 +2,7 @@
 <ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="statechart" nsURI="http://www.mit.bme.hu/gamma/statechart/Model/Statechart"
     nsPrefix="hu.bme.mit.gamma.statechart">
-  <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore">
-    <details key="settingDelegates" value="org.eclipse.viatra.query.querybasedfeature"/>
-  </eAnnotations>
-  <eClassifiers xsi:type="ecore:EClass" name="StatechartDefinition" eSuperTypes="composite.ecore#//SynchronousComponent #//CompositeElement">
+  <eClassifiers xsi:type="ecore:EClass" name="AbstractStatechartDefinition" eSuperTypes="interface.ecore#//Component #//CompositeElement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="variableDeclarations" upperBound="-1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclaration"
         containment="true"/>
@@ -24,6 +21,9 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="annotations" upperBound="-1"
         eType="#//StatechartAnnotation" containment="true"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="StatechartDefinition" eSuperTypes="#//AbstractStatechartDefinition composite.ecore#//SynchronousComponent"/>
+  <eClassifiers xsi:type="ecore:EClass" name="AsynchronousStatechartDefinition" eSuperTypes="#//AbstractStatechartDefinition composite.ecore#//AsynchronousComponent"/>
+  <eClassifiers xsi:type="ecore:EClass" name="WrappedStatechartAnnotation" eSuperTypes="#//StatechartAnnotation"/>
   <eClassifiers xsi:type="ecore:EEnum" name="SchedulingOrder">
     <eLiterals name="TOP_DOWN"/>
     <eLiterals name="BOTTOM_UP" value="1"/>
@@ -42,10 +42,6 @@
     <eLiterals name="BEGINNING_OF_STEP" value="1"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="TimeoutDeclaration" eSuperTypes="interface.ecore#//EventSource"/>
-  <eClassifiers xsi:type="ecore:EClass" name="StatechartReference" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ArgumentedElement">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="reference" lowerBound="1"
-        eType="ecore:EClass interface.ecore#//Component"/>
-  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Region" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NamedElement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="stateNodes" upperBound="-1"
         eType="#//StateNode" containment="true"/>

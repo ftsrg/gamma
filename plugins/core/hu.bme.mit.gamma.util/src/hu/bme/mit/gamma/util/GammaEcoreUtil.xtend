@@ -171,6 +171,13 @@ class GammaEcoreUtil {
 		return allContainers
 	}
 	
+	def transferContent(EObject source, EObject target) {
+		for (object : source.eContents) {
+			val containingFeature = object.eContainmentFeature
+			target.eSet(containingFeature, object)
+		}
+	}
+	
 	def <T extends EObject> List<T> getAllContainersOfType(EObject object, Class<T> type) {
 		return object.allContainers.filter(type).toList
 	}

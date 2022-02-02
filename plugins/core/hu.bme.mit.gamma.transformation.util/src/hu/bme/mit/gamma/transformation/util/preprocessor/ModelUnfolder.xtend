@@ -23,10 +23,14 @@ import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.EventTrigger
 import hu.bme.mit.gamma.statechart.interface_.InterfaceModelFactory
 import hu.bme.mit.gamma.statechart.interface_.Package
+import hu.bme.mit.gamma.statechart.statechart.AbstractStatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference
+import hu.bme.mit.gamma.statechart.statechart.AsynchronousStatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.ClockTickReference
 import hu.bme.mit.gamma.statechart.statechart.PortEventReference
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
+import hu.bme.mit.gamma.statechart.statechart.StatechartModelFactory
+import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.util.Collection
 import java.util.HashMap
@@ -44,7 +48,10 @@ class ModelUnfolder {
 	protected final Package gammaPackage
 	
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
+	protected final extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
+	
 	protected final extension InterfaceModelFactory factory = InterfaceModelFactory.eINSTANCE
+	protected final extension StatechartModelFactory statechartFactory = StatechartModelFactory.eINSTANCE
 	
 	new(Package gammaPackage) {
 		this.gammaPackage = gammaPackage
@@ -111,7 +118,17 @@ class ModelUnfolder {
 	private dispatch def void copyComponents(AbstractAsynchronousCompositeComponent component,
 			Package gammaPackage, Trace trace) {
 		for (instance : component.components) {
-			val type = instance.type
+			val initialType = instance.type
+			// Potential asyncronous statechart unwrapping
+			val type =
+			if (initialType instanceof AsynchronousStatechartDefinition) {
+				initialType.copyComponents(gammaPackage, trace)
+				gammaPackage.components.last // The created adapter is the last component now
+			}
+			else {
+				initialType
+			}
+			//
 			if (type instanceof AbstractAsynchronousCompositeComponent) {
 				val clonedPackage = type.containingPackage.clone
 				val clonedComposite = clonedPackage.components
@@ -168,7 +185,32 @@ class ModelUnfolder {
 		type.traceComponentInstances(clonedComponent, trace)
 	}
 	
+	private dispatch def void copyComponents(AsynchronousStatechartDefinition component,
+			Package gammaPackage, Trace trace) {
+		val clonedPackage = component.containingPackage.clone
+		val clonedComponent = clonedPackage.components
+				.findFirst[it.helperEquals(component)] as AsynchronousStatechartDefinition // AsynchronousStatechartDefinition
 		
+		// Attributes
+		val synchronousStatechart = createStatechartDefinition => [
+			it.guardEvaluation = clonedComponent.guardEvaluation
+			it.name = clonedComponent.name
+			it.orthogonalRegionSchedulingOrder = clonedComponent.orthogonalRegionSchedulingOrder
+			it.schedulingOrder = clonedComponent.schedulingOrder
+			it.transitionPriority = clonedComponent.transitionPriority
+		]
+		// Containment
+		clonedComponent.transferContent(synchronousStatechart)
+		
+		// TODO message queue size
+		val adapter = synchronousStatechart.wrapIntoDefaultAdapter(synchronousStatechart.name)
+		synchronousStatechart.addWrappedStatechartAnnotation
+		
+		gammaPackage.components += adapter
+		gammaPackage.addDeclarations(clonedPackage)
+		// No tracing as it handles only instances
+	}
+	
 	protected def void removeAnnotations(Component component) {
 		if (component instanceof StatechartDefinition) {
 			component.annotations.clear
@@ -374,7 +416,7 @@ class ModelUnfolder {
 		// No interface and type declarations as their cloning causes a lot of trouble
 	}
 	
-	private def dispatch traceComponentInstances(StatechartDefinition oldComponent,
+	private def dispatch traceComponentInstances(AbstractStatechartDefinition oldComponent,
 			StatechartDefinition newComponent, Trace trace) {
 		// No op
 	}

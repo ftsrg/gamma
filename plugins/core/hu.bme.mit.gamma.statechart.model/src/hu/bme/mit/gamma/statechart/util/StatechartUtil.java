@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.statechart.util;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -40,7 +41,11 @@ import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference;
 import hu.bme.mit.gamma.statechart.composite.CompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.CompositeModelFactory;
+import hu.bme.mit.gamma.statechart.composite.ControlFunction;
+import hu.bme.mit.gamma.statechart.composite.ControlSpecification;
+import hu.bme.mit.gamma.statechart.composite.DiscardStrategy;
 import hu.bme.mit.gamma.statechart.composite.InstancePortReference;
+import hu.bme.mit.gamma.statechart.composite.MessageQueue;
 import hu.bme.mit.gamma.statechart.composite.PortBinding;
 import hu.bme.mit.gamma.statechart.composite.ScheduledAsynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.SimpleChannel;
@@ -56,7 +61,8 @@ import hu.bme.mit.gamma.statechart.interface_.Port;
 import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
 import hu.bme.mit.gamma.statechart.interface_.TimeUnit;
 import hu.bme.mit.gamma.statechart.interface_.Trigger;
-import hu.bme.mit.gamma.statechart.interface_.WrappedPackageAnnotation;
+import hu.bme.mit.gamma.statechart.statechart.AbstractStatechartDefinition;
+import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference;
 import hu.bme.mit.gamma.statechart.statechart.BinaryTrigger;
 import hu.bme.mit.gamma.statechart.statechart.BinaryType;
 import hu.bme.mit.gamma.statechart.statechart.CompositeElement;
@@ -65,6 +71,7 @@ import hu.bme.mit.gamma.statechart.statechart.InitialState;
 import hu.bme.mit.gamma.statechart.statechart.Region;
 import hu.bme.mit.gamma.statechart.statechart.State;
 import hu.bme.mit.gamma.statechart.statechart.StateNode;
+import hu.bme.mit.gamma.statechart.statechart.StatechartAnnotation;
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
 import hu.bme.mit.gamma.statechart.statechart.StatechartModelFactory;
 import hu.bme.mit.gamma.statechart.statechart.Transition;
@@ -352,6 +359,42 @@ public class StatechartUtil extends ActionUtil {
 		return adapter;
 	}
 	
+	public AsynchronousAdapter wrapIntoDefaultAdapter(SynchronousComponent component, String adapterName) {
+		return wrapIntoDefaultAdapter(component, adapterName, 4);
+	}
+	
+	public AsynchronousAdapter wrapIntoDefaultAdapter(SynchronousComponent component, String adapterName,
+			int capacity) {
+		return wrapIntoDefaultAdapter(component, adapterName, toIntegerLiteral(capacity));
+	}
+	
+	public AsynchronousAdapter wrapIntoDefaultAdapter(SynchronousComponent component, String adapterName,
+			Expression capacity) {
+		AsynchronousAdapter adapter = wrapIntoAdapter(component, adapterName);
+		
+		ControlSpecification controlSpecification = compositeFactory.createControlSpecification();
+		controlSpecification.setTrigger(interfaceFactory.createAnyTrigger());
+		controlSpecification.setControlFunction(ControlFunction.RUN_ONCE);
+		
+		adapter.getControlSpecifications().add(controlSpecification);
+		
+		MessageQueue messageQueue = compositeFactory.createMessageQueue();
+		messageQueue.setName(adapterName + "MessageQueue");
+		messageQueue.setEventDiscardStrategy(DiscardStrategy.INCOMING);
+		messageQueue.setPriority(BigInteger.ONE);
+		messageQueue.setCapacity(capacity);
+		
+		for (Port port : StatechartModelDerivedFeatures.getAllPortsWithInput(component)) {
+			AnyPortEventReference reference = statechartFactory.createAnyPortEventReference();
+			reference.setPort(port);
+			messageQueue.getEventReferences().add(reference);
+		}
+		
+		adapter.getMessageQueues().add(messageQueue);
+		
+		return adapter;
+	}
+	
 	public Package wrapIntoPackage(Component component) {
 		Package _package = interfaceFactory.createPackage();
 		_package.setName(component.getName().toLowerCase());
@@ -361,10 +404,12 @@ public class StatechartUtil extends ActionUtil {
 	
 	public ComponentInstance instantiateComponent(Component component) {
 		if (component instanceof SynchronousComponent) {
-			return instantiateSynchronousComponent((SynchronousComponent) component);
+			return instantiateSynchronousComponent(
+					(SynchronousComponent) component);
 		}
 		if (component instanceof AsynchronousComponent) {
-			return instantiateAsynchronousComponent((AsynchronousComponent) component);
+			return instantiateAsynchronousComponent(
+					(AsynchronousComponent) component);
 		}
 		throw new IllegalArgumentException("Not known type" + component);
 	}
@@ -408,14 +453,6 @@ public class StatechartUtil extends ActionUtil {
 
 	private void wrapComponent(CompositeComponent wrapper, ComponentInstance instance) {
 		Component component = StatechartModelDerivedFeatures.getDerivedType(instance);
-		
-		// Package annotation to denote the wrapping (if there is a package - does this make sense?)
-		try {
-			Package _package = StatechartModelDerivedFeatures.getContainingPackage(wrapper);
-			WrappedPackageAnnotation wrappedAnnotation =
-					interfaceFactory.createWrappedPackageAnnotation();
-			_package.getAnnotations().add(wrappedAnnotation);
-		} catch (NullPointerException e) {}
 		
 		// Parameter declarations
 		if (instance.getArguments().isEmpty()) {
@@ -502,6 +539,16 @@ public class StatechartUtil extends ActionUtil {
 		}
 		channel.setProvidedPort(provided);
 		return channel;
+	}
+	
+	// Statechart annotations
+	
+	protected void addAnnotation(AbstractStatechartDefinition statechart, StatechartAnnotation annotation) {
+		statechart.getAnnotations().add(annotation);
+	}
+	
+	public void addWrappedStatechartAnnotation(AbstractStatechartDefinition statechart) {
+		addAnnotation(statechart, statechartFactory.createWrappedStatechartAnnotation());
 	}
 	
 	// Statechart element creators
