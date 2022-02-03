@@ -178,7 +178,9 @@ StatechartDefinition returns StatechartDefinition:
 		('@OrthogonalRegionSchedule' '=' orthogonalRegionSchedulingOrder=OrthogonalRegionSchedulingOrder)? &
 		('@TransitionPriority' '=' transitionPriority=TransitionPriority)? &
 		('@GuardEvaluation' '=' guardEvaluation=GuardEvaluation)? &
-		(annotations+=StatechartContractAnnotation)*
+		(	annotations+=ComponentAnnotation |
+			annotations+=StatechartContractAnnotation
+		)*
 	)
 	'statechart' name=ID 
 	('(' ((parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*)? ')')?
@@ -195,7 +197,30 @@ StatechartDefinition returns StatechartDefinition:
 				transitions+=Transition |
 				regions+=Region
 			)*
-		(functionDeclarations+=FunctionDeclaration)*
+			(functionDeclarations+=FunctionDeclaration)*
+	'}'
+;
+
+AsynchronousStatechartDefinition returns AsynchronousStatechartDefinition:
+	(
+		('@RegionSchedule' '=' schedulingOrder=SchedulingOrder)? &
+		('@OrthogonalRegionSchedule' '=' orthogonalRegionSchedulingOrder=OrthogonalRegionSchedulingOrder)? &
+		('@TransitionPriority' '=' transitionPriority=TransitionPriority)? &
+		('@GuardEvaluation' '=' guardEvaluation=GuardEvaluation)? &
+		(	annotations+=ComponentAnnotation |
+			annotations+=StatechartContractAnnotation
+		)*
+	)
+	'async' 'statechart' name=ID 'capacity' '(' capacity=Expression ')'
+	('(' ((parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*)? ')')?
+		('[' ((ports+=Port)((',')? ports+=Port)*)? ']')? '{'
+			(
+				variableDeclarations+=VariableDeclaration |
+				timeoutDeclarations+=TimeoutDeclaration
+			)*
+			regions+=Region*
+			transitions+=Transition*
+			functionDeclarations+=FunctionDeclaration*
 	'}'
 ;
 
@@ -215,8 +240,13 @@ enum GuardEvaluation returns GuardEvaluation:
 	ON_THE_FLY = 'on-the-fly' | BEGINNING_OF_STEP = 'beginning-of-step'
 ;
 
+ComponentAnnotation returns InterfaceModel::ComponentAnnotation: 
+	WrapperComponentAnnotation
+;
+
 StatechartContractAnnotation returns StatechartAnnotation:
-	ScenarioAllowedWaitingAnnotation | ScenarioContractAnnotation | AdaptiveContractAnnotation | MissionPhaseAnnotation
+	ScenarioAllowedWaitingAnnotation | ScenarioContractAnnotation |
+	AdaptiveContractAnnotation | MissionPhaseAnnotation
 ;
 
 ScenarioAllowedWaitingAnnotation returns ContractModel::ScenarioAllowedWaitAnnotation:
@@ -238,6 +268,10 @@ AdaptiveContractAnnotation returns ContractModel::AdaptiveContractAnnotation:
 
 MissionPhaseAnnotation returns PhaseModel::MissionPhaseAnnotation:
 	{PhaseModel::MissionPhaseAnnotation} '@PhaseStatechart'
+;
+
+WrapperComponentAnnotation returns InterfaceModel::WrapperComponentAnnotation:
+	{InterfaceModel::WrapperComponentAnnotation} '@WrapperComponent'
 ;
 
 Region returns Region:
@@ -380,6 +414,7 @@ AbstractSynchronousComponent returns CompositeModel::AbstractSynchronousComposit
 ;
 
 CascadeCompositeComponent returns CompositeModel::CascadeCompositeComponent:
+	annotations+=ComponentAnnotation*
 	'cascade' name=ID 
 	('(' ((parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*)? ')')?
 		('[' ((ports+=Port)((',')? ports+=Port)*)? ']')?
@@ -397,6 +432,7 @@ CascadeCompositeComponent returns CompositeModel::CascadeCompositeComponent:
 ;
 
 SynchronousCompositeComponent returns CompositeModel::SynchronousCompositeComponent:
+	annotations+=ComponentAnnotation*
 	'sync' name=ID 
 	('(' ((parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*)? ')')?
 		('[' ((ports+=Port)((',')? ports+=Port)*)? ']')?
@@ -412,6 +448,7 @@ SynchronousCompositeComponent returns CompositeModel::SynchronousCompositeCompon
 AsynchronousComponent returns CompositeModel::AsynchronousComponent:
 	AbstractAsynchronousCompositeComponent |
 	AsynchronousAdapter
+//	| AsynchronousStatechartDefinition
 ;
 
 AbstractAsynchronousCompositeComponent returns CompositeModel::AbstractAsynchronousCompositeComponent:
@@ -421,6 +458,7 @@ AbstractAsynchronousCompositeComponent returns CompositeModel::AbstractAsynchron
 
 
 AsynchronousCompositeComponent returns CompositeModel::AsynchronousCompositeComponent:
+	annotations+=ComponentAnnotation*
 	'async' name=ID 
 	('(' ((parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*)? ')')?
 		('[' ((ports+=Port)((',')? ports+=Port)*)? ']')?
@@ -434,6 +472,7 @@ AsynchronousCompositeComponent returns CompositeModel::AsynchronousCompositeComp
 ;
 
 ScheduledAsynchronousCompositeComponent returns CompositeModel::ScheduledAsynchronousCompositeComponent:
+	annotations+=ComponentAnnotation*
 	'scheduled-async' name=ID 
 	('(' ((parameterDeclarations+=ParameterDeclaration) (',' parameterDeclarations+=ParameterDeclaration)*)? ')')?
 		('[' ((ports+=Port)((',')? ports+=Port)*)? ']')?
@@ -449,6 +488,7 @@ ScheduledAsynchronousCompositeComponent returns CompositeModel::ScheduledAsynchr
 ;
 
 AsynchronousAdapter returns CompositeModel::AsynchronousAdapter:
+	annotations+=ComponentAnnotation*
 	'adapter' name=ID ('(' ((parameterDeclarations+=ParameterDeclaration)
 			(',' parameterDeclarations+=ParameterDeclaration)*)? ')')?
 		'of' wrappedComponent=SynchronousComponentInstance
