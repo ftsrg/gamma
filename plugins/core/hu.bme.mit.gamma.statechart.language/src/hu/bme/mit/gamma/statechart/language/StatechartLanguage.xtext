@@ -191,6 +191,7 @@ StatechartDefinition returns StatechartDefinition:
 				transitions+=Transition
 			)*
 			regions+=Region
+			// TODO Here and in example models
 			(
 				variableDeclarations+=VariableDeclaration |
 				timeoutDeclarations+=TimeoutDeclaration |
@@ -207,8 +208,8 @@ AsynchronousStatechartDefinition returns AsynchronousStatechartDefinition:
 		('@OrthogonalRegionSchedule' '=' orthogonalRegionSchedulingOrder=OrthogonalRegionSchedulingOrder)? &
 		('@TransitionPriority' '=' transitionPriority=TransitionPriority)? &
 		('@GuardEvaluation' '=' guardEvaluation=GuardEvaluation)? &
-		(	annotations+=ComponentAnnotation |
-			annotations+=StatechartContractAnnotation
+		( annotations+=ComponentAnnotation |
+			('async' annotations+=StatechartContractAnnotation)
 		)*
 	)
 	'async' 'statechart' name=ID 'capacity' '(' capacity=Expression ')'
@@ -447,8 +448,8 @@ SynchronousCompositeComponent returns CompositeModel::SynchronousCompositeCompon
 
 AsynchronousComponent returns CompositeModel::AsynchronousComponent:
 	AbstractAsynchronousCompositeComponent |
-	AsynchronousAdapter
-//	| AsynchronousStatechartDefinition
+	AsynchronousAdapter |
+	AsynchronousStatechartDefinition
 ;
 
 AbstractAsynchronousCompositeComponent returns CompositeModel::AbstractAsynchronousCompositeComponent:
