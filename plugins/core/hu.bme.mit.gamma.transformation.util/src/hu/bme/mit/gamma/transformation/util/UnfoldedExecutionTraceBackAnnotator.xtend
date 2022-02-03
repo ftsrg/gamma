@@ -53,7 +53,8 @@ class UnfoldedExecutionTraceBackAnnotator {
 	protected final Logger logger = Logger.getLogger("GammaLogger")
 	
 	new(ExecutionTrace trace, Component originalTopComponent) {
-		checkArgument(!originalTopComponent.statechart, "The original component cannot be a statechart")
+		checkArgument(!originalTopComponent.abstractStatechart,
+			"The original component cannot be a statechart")
 		this.trace = trace
 		this.originalTopComponent = originalTopComponent
 	}

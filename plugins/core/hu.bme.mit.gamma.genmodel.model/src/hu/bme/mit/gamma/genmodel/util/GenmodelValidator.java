@@ -76,7 +76,6 @@ import hu.bme.mit.gamma.statechart.composite.AsynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference;
 import hu.bme.mit.gamma.statechart.composite.CompositeModelPackage;
-import hu.bme.mit.gamma.statechart.contract.AdaptiveContractAnnotation;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.EventDeclaration;
@@ -85,7 +84,6 @@ import hu.bme.mit.gamma.statechart.interface_.InterfaceModelPackage;
 import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.statechart.interface_.RealizationMode;
 import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
-import hu.bme.mit.gamma.statechart.statechart.StatechartAnnotation;
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
 import hu.bme.mit.gamma.statechart.util.StatechartUtil;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
@@ -391,11 +389,8 @@ public class GenmodelValidator extends ExpressionModelValidator {
 			Component component = componentReference.getComponent();
 			if (component instanceof StatechartDefinition) {
 				StatechartDefinition statechartDefinition = (StatechartDefinition) component;
-				List<StatechartAnnotation> annotations = statechartDefinition.getAnnotations();
-				for (StatechartAnnotation statechartAnnotation: annotations) {
-					if (statechartAnnotation instanceof AdaptiveContractAnnotation) {
-						return validationResultMessages; // Everything is correct, returning with empty list
-					}
+				if (StatechartModelDerivedFeatures.isAdaptiveContract(statechartDefinition)) {
+					return validationResultMessages; // Everything is correct, returning with empty list
 				}
 			}
 		}

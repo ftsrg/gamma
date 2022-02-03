@@ -59,6 +59,7 @@ class AnalysisModelPreprocessor {
 		val trace = modelUnfolder.unfold
 		var _package = trace.package
 		val component = trace.topComponent
+		checkState(!component.asynchronousStatechart) // ModelUnfolder handles them
 		
 		// Transforming parameters if there are any
 		component.transformTopComponentParameters(topComponentArguments)
@@ -67,16 +68,17 @@ class AnalysisModelPreprocessor {
 		// If it is an atomic component, we wrap it
 		if (component instanceof StatechartDefinition) {
 			logger.log(Level.INFO, "Wrapping statechart " + name)
-			_package.components.add(0, component.wrapSynchronousComponent)
-			// TODO
+			val wrapper = component.wrapSynchronousComponent
+			wrapper.addWrapperComponentAnnotation // Adding wrapper annotation
+			_package.components.add(0, wrapper)
 		}
-		// Check loop support in Theta configurations
 		else if (component instanceof AsynchronousAdapter) {
 			if (!component.simplifiable) {
 				// Queues have to be introduced 
 				logger.log(Level.INFO, "Wrapping adapter " + name)
-				_package.components.add(0, component.wrapAsynchronousComponent)
-				// TODO
+				val wrapper = component.wrapAsynchronousComponent
+				wrapper.addWrapperComponentAnnotation // Adding wrapper annotation
+				_package.components.add(0, wrapper)
 			}
 			else {
 				logger.log(Level.INFO, "Adapter " + name + " does not have to be wrapped")

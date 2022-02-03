@@ -62,6 +62,8 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="functionDeclarations" upperBound="-1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//FunctionDeclaration"
         containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="annotations" upperBound="-1"
+        eType="#//ComponentAnnotation" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Clock" eSuperTypes="#//EventSource">
     <eStructuralFeatures xsi:type="ecore:EReference" name="timeSpecification" eType="#//TimeSpecification"
@@ -84,6 +86,8 @@
     <eLiterals name="MILLISECOND"/>
     <eLiterals name="SECOND" value="1"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ComponentAnnotation" abstract="true"/>
+  <eClassifiers xsi:type="ecore:EClass" name="WrapperComponentAnnotation" eSuperTypes="#//ComponentAnnotation"/>
   <eClassifiers xsi:type="ecore:EClass" name="PackageAnnotation" abstract="true"/>
   <eClassifiers xsi:type="ecore:EClass" name="TopComponentArgumentsAnnotation" eSuperTypes="#//PackageAnnotation ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ArgumentedElement"/>
   <eClassifiers xsi:type="ecore:EClass" name="UnfoldedPackageAnnotation" eSuperTypes="#//PackageAnnotation"/>

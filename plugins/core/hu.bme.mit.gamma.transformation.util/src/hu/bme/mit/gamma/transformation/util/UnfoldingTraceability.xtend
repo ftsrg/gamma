@@ -288,7 +288,7 @@ class UnfoldingTraceability {
 	def contains(ComponentInstanceReference original, ComponentInstance copy) {
 		val originalInstances = original.componentInstanceChain
 		 // If the (AA) component is wrapped, the original will not contain the wrapper instance
-		val copyInstances = copy.wraplessComponentInstanceChain
+		val copyInstances = copy.wrapperlessComponentInstanceChain
 		
 		// The naming conventions are clear
 		// Without originalInstances.head.name == copyInstances.head.name ambiguous naming situations could occur

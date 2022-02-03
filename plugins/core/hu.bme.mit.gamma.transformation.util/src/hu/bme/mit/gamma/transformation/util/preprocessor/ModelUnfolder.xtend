@@ -189,12 +189,12 @@ class ModelUnfolder {
 			Package gammaPackage, Trace trace) {
 		val clonedPackage = component.containingPackage.clone
 		val clonedComponent = clonedPackage.components
-				.findFirst[it.helperEquals(component)] as AsynchronousStatechartDefinition // AsynchronousStatechartDefinition
+				.findFirst[it.helperEquals(component)] as AsynchronousStatechartDefinition
 		
 		// Attributes
 		val synchronousStatechart = createStatechartDefinition => [
-			it.guardEvaluation = clonedComponent.guardEvaluation
 			it.name = clonedComponent.name
+			it.guardEvaluation = clonedComponent.guardEvaluation
 			it.orthogonalRegionSchedulingOrder = clonedComponent.orthogonalRegionSchedulingOrder
 			it.schedulingOrder = clonedComponent.schedulingOrder
 			it.transitionPriority = clonedComponent.transitionPriority
@@ -202,11 +202,18 @@ class ModelUnfolder {
 		// Containment
 		clonedComponent.transferContent(synchronousStatechart)
 		
-		// TODO message queue size
-		val adapter = synchronousStatechart.wrapIntoDefaultAdapter(synchronousStatechart.name)
-		synchronousStatechart.addWrappedStatechartAnnotation
+		val capacity = component.capacity
+		val name = synchronousStatechart.name
+		val adapter = if (capacity !== null) {
+			synchronousStatechart.wrapIntoDefaultAdapter(name, capacity.clone)
+		}
+		else {
+			synchronousStatechart.wrapIntoDefaultAdapter(name)
+		}
+		adapter.addWrapperComponentAnnotation // The adapter is a wrapper component
 		
 		gammaPackage.components += adapter
+		gammaPackage.components += synchronousStatechart
 		gammaPackage.addDeclarations(clonedPackage)
 		// No tracing as it handles only instances
 	}

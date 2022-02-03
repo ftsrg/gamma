@@ -53,6 +53,7 @@ import hu.bme.mit.gamma.statechart.composite.SynchronousComponent;
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Component;
+import hu.bme.mit.gamma.statechart.interface_.ComponentAnnotation;
 import hu.bme.mit.gamma.statechart.interface_.Event;
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression;
 import hu.bme.mit.gamma.statechart.interface_.InterfaceModelFactory;
@@ -61,7 +62,6 @@ import hu.bme.mit.gamma.statechart.interface_.Port;
 import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
 import hu.bme.mit.gamma.statechart.interface_.TimeUnit;
 import hu.bme.mit.gamma.statechart.interface_.Trigger;
-import hu.bme.mit.gamma.statechart.statechart.AbstractStatechartDefinition;
 import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference;
 import hu.bme.mit.gamma.statechart.statechart.BinaryTrigger;
 import hu.bme.mit.gamma.statechart.statechart.BinaryType;
@@ -71,7 +71,6 @@ import hu.bme.mit.gamma.statechart.statechart.InitialState;
 import hu.bme.mit.gamma.statechart.statechart.Region;
 import hu.bme.mit.gamma.statechart.statechart.State;
 import hu.bme.mit.gamma.statechart.statechart.StateNode;
-import hu.bme.mit.gamma.statechart.statechart.StatechartAnnotation;
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
 import hu.bme.mit.gamma.statechart.statechart.StatechartModelFactory;
 import hu.bme.mit.gamma.statechart.statechart.Transition;
@@ -543,12 +542,12 @@ public class StatechartUtil extends ActionUtil {
 	
 	// Statechart annotations
 	
-	protected void addAnnotation(AbstractStatechartDefinition statechart, StatechartAnnotation annotation) {
-		statechart.getAnnotations().add(annotation);
+	protected void addAnnotation(Component component, ComponentAnnotation annotation) {
+		component.getAnnotations().add(annotation);
 	}
 	
-	public void addWrappedStatechartAnnotation(AbstractStatechartDefinition statechart) {
-		addAnnotation(statechart, statechartFactory.createWrappedStatechartAnnotation());
+	public void addWrapperComponentAnnotation(Component component) {
+		addAnnotation(component, interfaceFactory.createWrapperComponentAnnotation());
 	}
 	
 	// Statechart element creators

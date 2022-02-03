@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map.Entry;
@@ -62,6 +63,7 @@ import hu.bme.mit.gamma.statechart.contract.ScenarioAllowedWaitAnnotation;
 import hu.bme.mit.gamma.statechart.interface_.AnyTrigger;
 import hu.bme.mit.gamma.statechart.interface_.Clock;
 import hu.bme.mit.gamma.statechart.interface_.Component;
+import hu.bme.mit.gamma.statechart.interface_.ComponentAnnotation;
 import hu.bme.mit.gamma.statechart.interface_.Event;
 import hu.bme.mit.gamma.statechart.interface_.EventDeclaration;
 import hu.bme.mit.gamma.statechart.interface_.EventDirection;
@@ -79,10 +81,13 @@ import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
 import hu.bme.mit.gamma.statechart.interface_.TopComponentArgumentsAnnotation;
 import hu.bme.mit.gamma.statechart.interface_.Trigger;
 import hu.bme.mit.gamma.statechart.interface_.UnfoldedPackageAnnotation;
+import hu.bme.mit.gamma.statechart.interface_.WrapperComponentAnnotation;
 import hu.bme.mit.gamma.statechart.phase.History;
 import hu.bme.mit.gamma.statechart.phase.MissionPhaseAnnotation;
 import hu.bme.mit.gamma.statechart.phase.MissionPhaseStateDefinition;
+import hu.bme.mit.gamma.statechart.statechart.AbstractStatechartDefinition;
 import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference;
+import hu.bme.mit.gamma.statechart.statechart.AsynchronousStatechartDefinition;
 import hu.bme.mit.gamma.statechart.statechart.ChoiceState;
 import hu.bme.mit.gamma.statechart.statechart.ClockTickReference;
 import hu.bme.mit.gamma.statechart.statechart.CompositeElement;
@@ -109,7 +114,6 @@ import hu.bme.mit.gamma.statechart.statechart.Transition;
 import hu.bme.mit.gamma.statechart.statechart.TransitionAnnotation;
 import hu.bme.mit.gamma.statechart.statechart.TransitionIdAnnotation;
 import hu.bme.mit.gamma.statechart.statechart.TransitionPriority;
-import hu.bme.mit.gamma.statechart.statechart.WrappedStatechartAnnotation;
 import hu.bme.mit.gamma.statechart.util.StatechartUtil;
 
 public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
@@ -1105,6 +1109,14 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
     public static boolean isStatechart(Component component) {
     	return component instanceof StatechartDefinition;
     }
+    
+    public static boolean isAsynchronousStatechart(Component component) {
+    	return component instanceof AsynchronousStatechartDefinition;
+    }
+    
+    public static boolean isAbstractStatechart(Component component) {
+    	return component instanceof AbstractStatechartDefinition;
+    }
 	
     public static boolean isCascade(ComponentInstance instance) {
     	Component type = getDerivedType(instance);
@@ -1801,8 +1813,8 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	}
 	
 	public static Component getMonitoredComponent(StatechartDefinition adaptiveContract) {
-		List<StatechartAnnotation> annotations = adaptiveContract.getAnnotations();
-		for (StatechartAnnotation annotation: annotations) { 
+		List<ComponentAnnotation> annotations = adaptiveContract.getAnnotations();
+		for (ComponentAnnotation annotation: annotations) { 
 			if (annotation instanceof AdaptiveContractAnnotation) {
 				AdaptiveContractAnnotation adaptiveContractAnnotation = (AdaptiveContractAnnotation) annotation;
 				return adaptiveContractAnnotation.getMonitoredComponent();
@@ -1860,18 +1872,15 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		}
 	}
 	
-	public static List<ComponentInstance> getWraplessComponentInstanceChain(ComponentInstance instance) {
+	public static List<ComponentInstance> getWrapperlessComponentInstanceChain(ComponentInstance instance) {
 		List<ComponentInstance> componentInstanceChain = getComponentInstanceChain(instance);
 		
-		int size = componentInstanceChain.size();
-		int lastIndex = size - 1;
-		// TODO what if a single statechart is an original? Wrapper to component?
-		ComponentInstance lastInstance = componentInstanceChain.get(lastIndex);
-		Component lastInstanceType = getDerivedType(lastInstance);
-		if (isWrappedStatechart(lastInstanceType)) {
-			int wrapperIndex = size - 2;
-			// Removing the wrapper instance right before the wrapped statechart
-			componentInstanceChain.remove(wrapperIndex);
+		for (Iterator<ComponentInstance> it = componentInstanceChain.iterator(); it.hasNext(); ) {
+			ComponentInstance componentInstance = it.next();
+			Component component = getContainingComponent(componentInstance);
+			if (isWrapperComponent(component)) {
+				it.remove();
+			}
 		}
 		
 		return componentInstanceChain;
@@ -2009,40 +2018,36 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return simpleInstances;
 	}
 	
-	public static Optional<StatechartAnnotation> getStatechartAnnotation(StatechartDefinition statechart,
-			Class<? extends StatechartAnnotation> annotation) {
-		return statechart.getAnnotations().stream().filter(it -> annotation.isInstance(it)).findFirst();
+	protected static <T extends ComponentAnnotation> T getComponentAnnotation(
+			Component component, Class<T> annotation) {
+		Optional<ComponentAnnotation> componentAnnotation = component.getAnnotations().stream()
+				.filter(it -> annotation.isInstance(it)).findFirst();
+		if (componentAnnotation.isPresent()) {
+			componentAnnotation.get();
+		}
+		return null;
 	}
 	
-	public static ScenarioAllowedWaitAnnotation getScenarioAllowedWaitAnnotation(StatechartDefinition statechart) {
-		Optional<StatechartAnnotation> waitAnnotation =
-				getStatechartAnnotation(statechart, ScenarioAllowedWaitAnnotation.class);
-		if (waitAnnotation.isPresent()) {
-			return (ScenarioAllowedWaitAnnotation) waitAnnotation.get();
-		}
-		else {
-			return null;
-		}
+	protected static <T extends StatechartAnnotation> T getStatechartAnnotation(
+			StatechartDefinition statechart, Class<T> annotation) {
+		return getComponentAnnotation(statechart, annotation);
 	}
 	
-	public static boolean isWrappedStatechart(Component component) {
-		if (component instanceof StatechartDefinition) {
-			StatechartDefinition statechart = (StatechartDefinition) component;
-			Optional<StatechartAnnotation> annotation = getStatechartAnnotation(
-					statechart, WrappedStatechartAnnotation.class);
-			return annotation.isPresent();
-		}
-		return false;
+	public static ScenarioAllowedWaitAnnotation getScenarioAllowedWaitAnnotation(
+			StatechartDefinition statechart) {
+		return getStatechartAnnotation(statechart, ScenarioAllowedWaitAnnotation.class);
+	}
+	
+	public static boolean isWrapperComponent(Component component) {
+		return getComponentAnnotation(component, WrapperComponentAnnotation.class) != null;
 	}
 	
 	public static boolean isMissionPhase(Component component) {
-		if (component instanceof StatechartDefinition) {
-			StatechartDefinition statechart = (StatechartDefinition) component;
-			Optional<StatechartAnnotation> annotation = getStatechartAnnotation(
-					statechart, MissionPhaseAnnotation.class);
-			return annotation.isPresent();
-		}
-		return false;
+		return getComponentAnnotation(component, MissionPhaseAnnotation.class) != null;
+	}
+	
+	public static boolean isAdaptiveContract(Component component) {
+		return getComponentAnnotation(component, AdaptiveContractAnnotation.class) != null;
 	}
 	
 	public static boolean hasHistory(MissionPhaseStateDefinition missionPhaseStateDefinition) {
