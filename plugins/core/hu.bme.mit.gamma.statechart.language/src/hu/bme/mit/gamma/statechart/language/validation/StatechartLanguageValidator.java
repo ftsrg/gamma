@@ -42,6 +42,7 @@ import hu.bme.mit.gamma.statechart.phase.MissionPhaseStateDefinition;
 import hu.bme.mit.gamma.statechart.phase.VariableBinding;
 import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference;
 import hu.bme.mit.gamma.statechart.statechart.ChoiceState;
+import hu.bme.mit.gamma.statechart.statechart.ComplexTrigger;
 import hu.bme.mit.gamma.statechart.statechart.EntryState;
 import hu.bme.mit.gamma.statechart.statechart.ForkState;
 import hu.bme.mit.gamma.statechart.statechart.JoinState;
@@ -89,6 +90,11 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	@Check
 	public void checkUnsupportedTriggers(OpaqueTrigger trigger) {
 		handleValidationResultMessage(statechartModelValidator.checkUnsupportedTriggers(trigger));
+	}
+	
+	@Check
+	public void checComplexTriggers(ComplexTrigger trigger) {
+		handleValidationResultMessage(statechartModelValidator.checkComplexTriggers(trigger));
 	}
 	
 	@Check

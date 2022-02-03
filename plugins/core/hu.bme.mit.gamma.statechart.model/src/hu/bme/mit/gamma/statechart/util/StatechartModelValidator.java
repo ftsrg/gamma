@@ -105,6 +105,7 @@ import hu.bme.mit.gamma.statechart.phase.VariableBinding;
 import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference;
 import hu.bme.mit.gamma.statechart.statechart.ChoiceState;
 import hu.bme.mit.gamma.statechart.statechart.ClockTickReference;
+import hu.bme.mit.gamma.statechart.statechart.ComplexTrigger;
 import hu.bme.mit.gamma.statechart.statechart.EntryState;
 import hu.bme.mit.gamma.statechart.statechart.ForkState;
 import hu.bme.mit.gamma.statechart.statechart.JoinState;
@@ -172,6 +173,17 @@ public class StatechartModelValidator extends ActionModelValidator {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "Not supported trigger", 
 				new ReferenceInfo(StatechartModelPackage.Literals.OPAQUE_TRIGGER__TRIGGER)));
+		return validationResultMessages;
+	}
+	
+	public Collection<ValidationResultMessage> checkComplexTriggers(ComplexTrigger trigger) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		Component component = StatechartModelDerivedFeatures.getContainingComponent(trigger);
+		if (StatechartModelDerivedFeatures.isAsynchronousStatechart(component)) {
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+					"Asynchronous statecharts do not support complex triggers",
+					new ReferenceInfo(trigger.eContainingFeature())));
+		}
 		return validationResultMessages;
 	}
 	
