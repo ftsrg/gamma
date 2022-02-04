@@ -607,10 +607,15 @@ public class StatechartUtil extends ActionUtil {
 	// Synchronous-asynchronous statecharts
 	
 	public SynchronousStatechartDefinition mapIntoSynchronousStatechart(
-			StatechartDefinition statechart) {
+			AsynchronousStatechartDefinition statechart) {
+		Expression capacity = statechart.getCapacity();
+		ecoreUtil.remove(capacity); // As this element cannot be transferred to a synchronous statechart
+		
 		SynchronousStatechartDefinition synchronousStatechart =
 				statechartFactory.createSynchronousStatechartDefinition();
 		copyStatechart(statechart, synchronousStatechart);
+		
+		statechart.setCapacity(capacity); // Resetting capacity
 		
 		return synchronousStatechart;
 	}
