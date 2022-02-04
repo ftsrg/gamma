@@ -1,0 +1,19 @@
+import "AsynchronousTrafficLightCtrl.gcd"
+
+analysis {
+	component : TrafficLightCtrl
+	language : Theta
+	constraint : {
+		top : {
+			minimum-orchestrating-period : 500 ms
+			maximum-orchestrating-period : 500 ms
+		}
+	}
+}
+
+verification {
+	language : Theta
+	file : "AsynchronousTrafficLightCtrl.xsts"
+	property-file : "AsynchronousTrafficLightCtrl.gpd"
+	test-language : java
+}
