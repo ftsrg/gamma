@@ -21,7 +21,6 @@ analysis {
 	component : Crossroad
 	language : XSTS-UPPAAL
 	file : "Crossroad-XSTS"
-	interaction-coverage
 	constraint : {
 		top : {
 			minimum-orchestrating-period : 500 ms
