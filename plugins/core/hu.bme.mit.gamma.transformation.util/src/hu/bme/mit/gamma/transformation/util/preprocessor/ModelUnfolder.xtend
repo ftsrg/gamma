@@ -196,15 +196,7 @@ class ModelUnfolder {
 				.findFirst[it.helperEquals(component)] as AsynchronousStatechartDefinition
 		
 		// Attributes
-		val synchronousStatechart = createSynchronousStatechartDefinition => [
-			it.name = clonedComponent.name
-			it.guardEvaluation = clonedComponent.guardEvaluation
-			it.orthogonalRegionSchedulingOrder = clonedComponent.orthogonalRegionSchedulingOrder
-			it.schedulingOrder = clonedComponent.schedulingOrder
-			it.transitionPriority = clonedComponent.transitionPriority
-		]
-		// Containment
-		clonedComponent.transferContent(synchronousStatechart)
+		val synchronousStatechart = clonedComponent.mapIntoSynchronousStatechart
 		// Remove original async statechart as we create now an adapter
 		component.remove
 		

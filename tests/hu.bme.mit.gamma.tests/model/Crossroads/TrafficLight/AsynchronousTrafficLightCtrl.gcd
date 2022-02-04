@@ -1,7 +1,9 @@
 package trafficlightctrl
 import "/hu.bme.mit.gamma.tests/model/Crossroads/Interfaces/Interfaces.gcd"
+
+@Asynchronous
 @TransitionPriority = order-based
-async statechart TrafficLightCtrl [
+statechart TrafficLightCtrl [
 	port LightCommands : provides LightCommands
 	port PoliceInterrupt : requires PoliceInterrupt
 	port Control : requires Control

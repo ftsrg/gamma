@@ -57,9 +57,10 @@ public class StatechartLanguageFormatter extends AbstractDeclarativeFormatter {
         c.setLinewrap(1).after(f.getSynchronousStatechartDefinitionAccess().getSchedulingOrderAssignment_0_0_2());
         c.setLinewrap(1).after(f.getSynchronousStatechartDefinitionAccess().getOrthogonalRegionSchedulingOrderAssignment_0_1_2());
         c.setLinewrap(1).after(f.getSynchronousStatechartDefinitionAccess().getTransitionPriorityAssignment_0_2_2());
-        c.setLinewrap(1).after(f.getAsynchronousStatechartDefinitionAccess().getSchedulingOrderAssignment_0_0_2());
-        c.setLinewrap(1).after(f.getAsynchronousStatechartDefinitionAccess().getOrthogonalRegionSchedulingOrderAssignment_0_1_2());
-        c.setLinewrap(1).after(f.getAsynchronousStatechartDefinitionAccess().getTransitionPriorityAssignment_0_2_2());
+        c.setLinewrap(1).after(f.getAsynchronousStatechartDefinitionAccess().getAsynchronousKeyword_0());
+        c.setLinewrap(1).after(f.getAsynchronousStatechartDefinitionAccess().getSchedulingOrderAssignment_1_0_2());
+        c.setLinewrap(1).after(f.getAsynchronousStatechartDefinitionAccess().getOrthogonalRegionSchedulingOrderAssignment_1_1_2());
+        c.setLinewrap(1).after(f.getAsynchronousStatechartDefinitionAccess().getTransitionPriorityAssignment_1_2_2());
         c.setLinewrap(1).before(f.getTransitionRule());
         c.setLinewrap(1).after(f.getTransitionAnnotationRule());
         c.setLinewrap(1).after(f.getTransitionRule());

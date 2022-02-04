@@ -198,16 +198,17 @@ SynchronousStatechartDefinition returns SynchronousStatechartDefinition:
 ;
 
 AsynchronousStatechartDefinition returns AsynchronousStatechartDefinition:
+	'@Asynchronous'
 	(
 		('@RegionSchedule' '=' schedulingOrder=SchedulingOrder)? &
 		('@OrthogonalRegionSchedule' '=' orthogonalRegionSchedulingOrder=OrthogonalRegionSchedulingOrder)? &
 		('@TransitionPriority' '=' transitionPriority=TransitionPriority)? &
 		('@GuardEvaluation' '=' guardEvaluation=GuardEvaluation)? &
-		( annotations+=ComponentAnnotation |
-			('async' annotations+=StatechartContractAnnotation)
+		(	annotations+=ComponentAnnotation |
+			annotations+=StatechartContractAnnotation
 		)*
 	)
-	'async' 'statechart' name=ID ('capacity' '(' capacity=Expression ')')?
+	'statechart' name=ID ('capacity' '(' capacity=Expression ')')?
 	('(' ((parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*)? ')')?
 		('[' ((ports+=Port)((',')? ports+=Port)*)? ']')? '{'
 			(
@@ -298,8 +299,8 @@ TransitionIdAnnotation returns TransitionIdAnnotation:
 ;
 
 StateNode returns StateNode:
-	State |
-	PseudoState
+	PseudoState |
+	State
 ;
 
 State returns State:

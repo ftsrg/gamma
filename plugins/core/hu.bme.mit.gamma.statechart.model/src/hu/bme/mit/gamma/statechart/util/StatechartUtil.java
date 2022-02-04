@@ -63,6 +63,7 @@ import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
 import hu.bme.mit.gamma.statechart.interface_.TimeUnit;
 import hu.bme.mit.gamma.statechart.interface_.Trigger;
 import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference;
+import hu.bme.mit.gamma.statechart.statechart.AsynchronousStatechartDefinition;
 import hu.bme.mit.gamma.statechart.statechart.BinaryTrigger;
 import hu.bme.mit.gamma.statechart.statechart.BinaryType;
 import hu.bme.mit.gamma.statechart.statechart.CompositeElement;
@@ -73,6 +74,7 @@ import hu.bme.mit.gamma.statechart.statechart.State;
 import hu.bme.mit.gamma.statechart.statechart.StateNode;
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
 import hu.bme.mit.gamma.statechart.statechart.StatechartModelFactory;
+import hu.bme.mit.gamma.statechart.statechart.SynchronousStatechartDefinition;
 import hu.bme.mit.gamma.statechart.statechart.Transition;
 
 public class StatechartUtil extends ActionUtil {
@@ -600,6 +602,37 @@ public class StatechartUtil extends ActionUtil {
 		initialState.setName(initialStateName);
 		return createRegionWithState(compositeElement,
 				initialState, regionName, stateName);
+	}
+	
+	// Synchronous-asynchronous statecharts
+	
+	public SynchronousStatechartDefinition mapIntoSynchronousStatechart(
+			StatechartDefinition statechart) {
+		SynchronousStatechartDefinition synchronousStatechart =
+				statechartFactory.createSynchronousStatechartDefinition();
+		copyStatechart(statechart, synchronousStatechart);
+		
+		return synchronousStatechart;
+	}
+	
+	public AsynchronousStatechartDefinition mapIntoAsynchronousStatechart(
+			StatechartDefinition statechart) {
+		AsynchronousStatechartDefinition asynchronousStatechart =
+				statechartFactory.createAsynchronousStatechartDefinition();
+		copyStatechart(statechart, asynchronousStatechart);
+		
+		return asynchronousStatechart;
+	}
+
+	public void copyStatechart(StatechartDefinition source, StatechartDefinition target) {
+		// Attributes
+		target.setName(source.getName());
+		target.setGuardEvaluation(source.getGuardEvaluation());
+		target.setOrthogonalRegionSchedulingOrder(source.getOrthogonalRegionSchedulingOrder());
+		target.setSchedulingOrder(source.getSchedulingOrder());
+		target.setTransitionPriority(source.getTransitionPriority());
+		// Containment
+		ecoreUtil.copyContent(source, target);
 	}
 	
 }

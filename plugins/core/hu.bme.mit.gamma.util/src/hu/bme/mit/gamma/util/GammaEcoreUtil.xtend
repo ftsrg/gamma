@@ -171,6 +171,10 @@ class GammaEcoreUtil {
 		return allContainers
 	}
 	
+	def copyContent(EObject source, EObject target) {
+		source.clone.transferContent(target)
+	}
+	
 	def transferContent(EObject source, EObject target) {
 		val contents = newArrayList
 		contents += source.eContents
