@@ -119,7 +119,7 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 	}
 
 	def StatechartDefinition execute() {
-		statechart = createStatechartDefinition
+		statechart = createSynchronousStatechartDefinition
 		for (annotation : scenario.annotation) {
 			if (annotation instanceof WaitAnnotation) {
 				allowedGlobalWaitMax = annotation.maximum.intValue

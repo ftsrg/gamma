@@ -62,7 +62,6 @@ import hu.bme.mit.gamma.statechart.interface_.Port;
 import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
 import hu.bme.mit.gamma.statechart.interface_.TimeUnit;
 import hu.bme.mit.gamma.statechart.interface_.Trigger;
-import hu.bme.mit.gamma.statechart.statechart.AbstractStatechartDefinition;
 import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference;
 import hu.bme.mit.gamma.statechart.statechart.BinaryTrigger;
 import hu.bme.mit.gamma.statechart.statechart.BinaryType;
@@ -72,6 +71,7 @@ import hu.bme.mit.gamma.statechart.statechart.InitialState;
 import hu.bme.mit.gamma.statechart.statechart.Region;
 import hu.bme.mit.gamma.statechart.statechart.State;
 import hu.bme.mit.gamma.statechart.statechart.StateNode;
+import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
 import hu.bme.mit.gamma.statechart.statechart.StatechartModelFactory;
 import hu.bme.mit.gamma.statechart.statechart.Transition;
 
@@ -278,7 +278,7 @@ public class StatechartUtil extends ActionUtil {
 	
 	public void setSourceAndTarget(Transition gammaTransition, State gammaState) {
 		if (gammaTransition != null && gammaState != null) {
-			AbstractStatechartDefinition gammaStatechart = StatechartModelDerivedFeatures
+			StatechartDefinition gammaStatechart = StatechartModelDerivedFeatures
 				.getContainingStatechart(gammaState);
 			gammaTransition.setSourceState(gammaState);
 			gammaTransition.setTargetState(gammaState);
@@ -410,7 +410,7 @@ public class StatechartUtil extends ActionUtil {
 			return instantiateAsynchronousComponent(
 					(AsynchronousComponent) component);
 		}
-		throw new IllegalArgumentException("Not known type" + component);
+		throw new IllegalArgumentException("Not known type: " + component);
 	}
 	
 	public SynchronousComponentInstance instantiateSynchronousComponent(SynchronousComponent component) {
@@ -425,6 +425,18 @@ public class StatechartUtil extends ActionUtil {
 		instance.setName(getWrapperInstanceName(component));
 		instance.setType(component);
 		return instance;
+	}
+	
+	public CompositeComponent wrapComponent(Component component) {
+		if (component instanceof SynchronousComponent) {
+			return wrapSynchronousComponent(
+					(SynchronousComponent) component);
+		}
+		else if (component instanceof AsynchronousComponent) {
+			return wrapAsynchronousComponent(
+					(AsynchronousComponent) component);
+		}
+		throw new IllegalArgumentException("Not known type: " + component);
 	}
 	
 	public CascadeCompositeComponent wrapSynchronousComponent(SynchronousComponent component) {
@@ -557,7 +569,7 @@ public class StatechartUtil extends ActionUtil {
 		transition.setSourceState(source);
 		transition.setTargetState(target);
 		
-		AbstractStatechartDefinition statechart =
+		StatechartDefinition statechart =
 				StatechartModelDerivedFeatures.getContainingStatechart(source);
 		if (statechart != null) {
 			statechart.getTransitions().add(transition);

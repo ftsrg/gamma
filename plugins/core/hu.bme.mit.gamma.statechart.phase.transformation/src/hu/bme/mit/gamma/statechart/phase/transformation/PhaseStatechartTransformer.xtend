@@ -38,7 +38,7 @@ class PhaseStatechartTransformer {
 	
 	new(MissionPhaseStateAnnotation phaseStateAnnotation) {
 		checkState(phaseStateAnnotation.eContainer === null)
-		this.statechart = createStatechartDefinition => [
+		this.statechart = createSynchronousStatechartDefinition => [
 			it.name = '''_«phaseStateAnnotation.hashCode.abs»'''
 		]
 		val stateDefinitions = phaseStateAnnotation.stateDefinitions

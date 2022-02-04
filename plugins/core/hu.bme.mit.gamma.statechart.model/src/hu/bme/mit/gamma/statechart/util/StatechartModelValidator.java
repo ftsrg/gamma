@@ -102,7 +102,6 @@ import hu.bme.mit.gamma.statechart.phase.MissionPhaseStateAnnotation;
 import hu.bme.mit.gamma.statechart.phase.MissionPhaseStateDefinition;
 import hu.bme.mit.gamma.statechart.phase.PhaseModelPackage;
 import hu.bme.mit.gamma.statechart.phase.VariableBinding;
-import hu.bme.mit.gamma.statechart.statechart.AbstractStatechartDefinition;
 import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference;
 import hu.bme.mit.gamma.statechart.statechart.ChoiceState;
 import hu.bme.mit.gamma.statechart.statechart.ClockTickReference;
@@ -288,7 +287,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 	
 	public Collection<ValidationResultMessage> checkStateAnnotation(StateContractAnnotation annotation) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		AbstractStatechartDefinition statechart = StatechartModelDerivedFeatures.getContainingStatechart(annotation);
+		StatechartDefinition statechart = StatechartModelDerivedFeatures.getContainingStatechart(annotation);
 		if (!StatechartModelDerivedFeatures.isAdaptiveContract(statechart)) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 				"States with state contracts can be defined only in adaptive contract statecharts", 
@@ -362,7 +361,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 		if (statechart.getOrthogonalRegionSchedulingOrder() != OrthogonalRegionSchedulingOrder.SEQUENTIAL) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 				"Only the sequential scheduling of orthogonal regions is supported", 
-					new ReferenceInfo(StatechartModelPackage.Literals.ABSTRACT_STATECHART_DEFINITION__ORTHOGONAL_REGION_SCHEDULING_ORDER)));
+					new ReferenceInfo(StatechartModelPackage.Literals.STATECHART_DEFINITION__ORTHOGONAL_REGION_SCHEDULING_ORDER)));
 		}
 		return validationResultMessages;
 	}
@@ -376,10 +375,10 @@ public class StatechartModelValidator extends ActionModelValidator {
 				"The state is not contained by this region", 
 					new ReferenceInfo(StatechartModelPackage.Literals.STATE_REFERENCE_EXPRESSION__STATE)));
 		}
-		AbstractStatechartDefinition statechart = StatechartModelDerivedFeatures.getContainingStatechart(region);
+		StatechartDefinition statechart = StatechartModelDerivedFeatures.getContainingStatechart(region);
 		StateNode source = StatechartModelDerivedFeatures.getContainingOrSourceStateNode(reference);
 		Region parentRegion = StatechartModelDerivedFeatures.getParentRegion(source);
-		AbstractStatechartDefinition parentStatechart = StatechartModelDerivedFeatures.getContainingStatechart(parentRegion);
+		StatechartDefinition parentStatechart = StatechartModelDerivedFeatures.getContainingStatechart(parentRegion);
 		if (statechart != parentStatechart) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 				"The referenced state must be in the same state machine component", 
@@ -560,7 +559,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 	
 	public Collection<ValidationResultMessage> checkTransitionPriority(Transition transition) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		AbstractStatechartDefinition statechart = StatechartModelDerivedFeatures.getContainingStatechart(transition);
+		StatechartDefinition statechart = StatechartModelDerivedFeatures.getContainingStatechart(transition);
 		if (transition.getPriority() != null && !transition.getPriority().equals(BigInteger.ZERO) &&
 				statechart.getTransitionPriority() != TransitionPriority.VALUE_BASED) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING,
@@ -574,7 +573,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 	public Collection<ValidationResultMessage> checkElseTransitionPriority(Transition transition) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		if (StatechartModelDerivedFeatures.isElse(transition)) {
-			AbstractStatechartDefinition statechart = StatechartModelDerivedFeatures.getContainingStatechart(transition);
+			StatechartDefinition statechart = StatechartModelDerivedFeatures.getContainingStatechart(transition);
 			TransitionPriority priority = statechart.getTransitionPriority();
 			if (priority == TransitionPriority.ORDER_BASED) {
 				StateNode source = transition.getSourceState();

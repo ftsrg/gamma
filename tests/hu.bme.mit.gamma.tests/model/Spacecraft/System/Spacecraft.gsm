@@ -38,7 +38,7 @@
     </components>
   </hu.bme.mit.gamma.statechart.interface:Package>
   <hu.bme.mit.gamma.statechart.interface:Package name="StatechartsPkg" imports="/2">
-    <components xsi:type="hu.bme.mit.gamma.statechart:StatechartDefinition" name="GroundStation" schedulingOrder="BOTTOM_UP" transitionPriority="ORDER_BASED">
+    <components xsi:type="hu.bme.mit.gamma.statechart:SynchronousStatechartDefinition" name="GroundStation" schedulingOrder="BOTTOM_UP" transitionPriority="ORDER_BASED">
       <ports name="Status">
         <interfaceRealization interface="/2/@interfaces.3"/>
       </ports>
@@ -164,7 +164,7 @@
         </effects>
       </transitions>
     </components>
-    <components xsi:type="hu.bme.mit.gamma.statechart:StatechartDefinition" name="Spacecraft" schedulingOrder="BOTTOM_UP" transitionPriority="ORDER_BASED">
+    <components xsi:type="hu.bme.mit.gamma.statechart:SynchronousStatechartDefinition" name="Spacecraft" schedulingOrder="BOTTOM_UP" transitionPriority="ORDER_BASED">
       <ports name="Control">
         <interfaceRealization realizationMode="REQUIRED" interface="/2/@interfaces.2"/>
       </ports>

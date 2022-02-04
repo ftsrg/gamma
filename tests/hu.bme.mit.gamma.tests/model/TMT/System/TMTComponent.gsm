@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="ASCII"?>
 <xmi:XMI xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:hu.bme.mit.gamma.action="http://www.mit.bme.hu/gamma/action/Model" xmlns:hu.bme.mit.gamma.expression="http://www.mit.bme.hu/gamma/expression/Model" xmlns:hu.bme.mit.gamma.statechart="http://www.mit.bme.hu/gamma/statechart/Model/Statechart" xmlns:hu.bme.mit.gamma.statechart.interface="http://www.mit.bme.hu/gamma/statechart/Model/Interface">
   <hu.bme.mit.gamma.statechart.interface:Package name="StatechartsPkg" imports="/2">
-    <components xsi:type="hu.bme.mit.gamma.statechart:StatechartDefinition" name="Procedure_Executive_and_Analysis_Software" schedulingOrder="BOTTOM_UP">
+    <components xsi:type="hu.bme.mit.gamma.statechart:SynchronousStatechartDefinition" name="Procedure_Executive_and_Analysis_Software" schedulingOrder="BOTTOM_UP">
       <ports name="PEAS2APTOut">
         <interfaceRealization interface="/2/@interfaces.1"/>
       </ports>

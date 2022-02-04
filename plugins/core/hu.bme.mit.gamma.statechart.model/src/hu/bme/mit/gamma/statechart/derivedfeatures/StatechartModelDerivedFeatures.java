@@ -85,7 +85,6 @@ import hu.bme.mit.gamma.statechart.interface_.WrapperComponentAnnotation;
 import hu.bme.mit.gamma.statechart.phase.History;
 import hu.bme.mit.gamma.statechart.phase.MissionPhaseAnnotation;
 import hu.bme.mit.gamma.statechart.phase.MissionPhaseStateDefinition;
-import hu.bme.mit.gamma.statechart.statechart.AbstractStatechartDefinition;
 import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference;
 import hu.bme.mit.gamma.statechart.statechart.AsynchronousStatechartDefinition;
 import hu.bme.mit.gamma.statechart.statechart.ChoiceState;
@@ -108,6 +107,7 @@ import hu.bme.mit.gamma.statechart.statechart.StateAnnotation;
 import hu.bme.mit.gamma.statechart.statechart.StateNode;
 import hu.bme.mit.gamma.statechart.statechart.StatechartAnnotation;
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
+import hu.bme.mit.gamma.statechart.statechart.SynchronousStatechartDefinition;
 import hu.bme.mit.gamma.statechart.statechart.TimeoutDeclaration;
 import hu.bme.mit.gamma.statechart.statechart.TimeoutEventReference;
 import hu.bme.mit.gamma.statechart.statechart.Transition;
@@ -1110,12 +1110,12 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
     	return component instanceof StatechartDefinition;
     }
     
-    public static boolean isAsynchronousStatechart(Component component) {
-    	return component instanceof AsynchronousStatechartDefinition;
+    public static boolean isSynchronousStatechart(Component component) {
+    	return component instanceof SynchronousStatechartDefinition;
     }
     
-    public static boolean isAbstractStatechart(Component component) {
-    	return component instanceof AbstractStatechartDefinition;
+    public static boolean isAsynchronousStatechart(Component component) {
+    	return component instanceof AsynchronousStatechartDefinition;
     }
 	
     public static boolean isCascade(ComponentInstance instance) {
@@ -1178,13 +1178,13 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	}
 	
 	public static List<Transition> getOutgoingTransitions(StateNode node) {
-		AbstractStatechartDefinition statechart = getContainingStatechart(node);
+		StatechartDefinition statechart = getContainingStatechart(node);
 		return statechart.getTransitions().stream().filter(it -> it.getSourceState() == node)
 				.collect(Collectors.toList());
 	}
 	
 	public static List<Transition> getIncomingTransitions(StateNode node) {
-		AbstractStatechartDefinition statechart = getContainingStatechart(node);
+		StatechartDefinition statechart = getContainingStatechart(node);
 		return statechart.getTransitions().stream().filter(it -> it.getTargetState() == node)
 				.collect(Collectors.toList());
 	}
@@ -1425,8 +1425,8 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return fullParentRegionPathName + "." + lowestRegion.getName(); // Only regions are in path - states could be added too
 	}
 	
-	public static AbstractStatechartDefinition getContainingStatechart(EObject object) {
-		return ecoreUtil.getContainerOfType(object, AbstractStatechartDefinition.class);
+	public static StatechartDefinition getContainingStatechart(EObject object) {
+		return ecoreUtil.getContainerOfType(object, StatechartDefinition.class);
 	}
 	
 	public static Component getContainingComponent(EObject object) {
@@ -1503,7 +1503,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	}
 	
 	public static Collection<Transition> getPrioritizedTransitions(Transition gammaTransition) {
-		AbstractStatechartDefinition gammaStatechart = getContainingStatechart(gammaTransition);
+		StatechartDefinition gammaStatechart = getContainingStatechart(gammaTransition);
 		TransitionPriority transitionPriority = gammaStatechart.getTransitionPriority();
 		Collection<Transition> prioritizedTransitions = new ArrayList<Transition>();
 		if (transitionPriority != TransitionPriority.OFF) {
@@ -1520,7 +1520,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	}
 	
 	public static BigInteger calculatePriority(Transition transition) {
-		AbstractStatechartDefinition statechart = getContainingStatechart(transition);
+		StatechartDefinition statechart = getContainingStatechart(transition);
 		TransitionPriority transitionPriority = statechart.getTransitionPriority();
 		StateNode source = transition.getSourceState();
 		List<Transition> outgoingTransitions = getOutgoingTransitions(source);
@@ -1789,7 +1789,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	}
 	
 	public static TimeSpecification getTimeoutValue(TimeoutDeclaration timeout) {
-		AbstractStatechartDefinition statechart = getContainingStatechart(timeout);
+		StatechartDefinition statechart = getContainingStatechart(timeout);
 		TimeSpecification time = null;
 		TreeIterator<Object> contents = EcoreUtil.getAllContents(statechart, true);
 		while (contents.hasNext()) {
@@ -1852,7 +1852,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	}
 	
 	public static ComponentInstance getContainingComponentInstance(EObject object) {
-		AbstractStatechartDefinition statechart = getContainingStatechart(object);
+		StatechartDefinition statechart = getContainingStatechart(object);
 		return getReferencingComponentInstance(statechart);
 	}
 	
@@ -2027,12 +2027,12 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	}
 	
 	protected static <T extends StatechartAnnotation> T getStatechartAnnotation(
-			AbstractStatechartDefinition statechart, Class<T> annotation) {
+			StatechartDefinition statechart, Class<T> annotation) {
 		return getComponentAnnotation(statechart, annotation);
 	}
 	
 	public static ScenarioAllowedWaitAnnotation getScenarioAllowedWaitAnnotation(
-			AbstractStatechartDefinition statechart) {
+			StatechartDefinition statechart) {
 		return getStatechartAnnotation(statechart, ScenarioAllowedWaitAnnotation.class);
 	}
 	

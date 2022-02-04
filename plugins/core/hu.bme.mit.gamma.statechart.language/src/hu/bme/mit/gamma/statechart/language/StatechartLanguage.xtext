@@ -172,7 +172,7 @@ enum RealizationMode returns InterfaceModel::RealizationMode:
 	PROVIDED = 'provides' | REQUIRED = 'requires'
 ;
 
-StatechartDefinition returns StatechartDefinition:
+SynchronousStatechartDefinition returns SynchronousStatechartDefinition:
 	(
 		('@RegionSchedule' '=' schedulingOrder=SchedulingOrder)? &
 		('@OrthogonalRegionSchedule' '=' orthogonalRegionSchedulingOrder=OrthogonalRegionSchedulingOrder)? &
@@ -402,7 +402,7 @@ Component returns InterfaceModel::Component:
 ;
 
 SynchronousComponent returns CompositeModel::SynchronousComponent:
-	StatechartDefinition |
+	SynchronousStatechartDefinition |
 	AbstractSynchronousComponent
 ;
 

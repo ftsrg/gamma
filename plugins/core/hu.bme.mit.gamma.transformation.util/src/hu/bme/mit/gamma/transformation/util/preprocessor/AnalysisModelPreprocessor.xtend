@@ -17,7 +17,7 @@ import hu.bme.mit.gamma.statechart.contract.StateContractAnnotation
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.InterfaceModelFactory
 import hu.bme.mit.gamma.statechart.interface_.Package
-import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
+import hu.bme.mit.gamma.statechart.statechart.SynchronousStatechartDefinition
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.transformation.util.GammaFileNamer
 import hu.bme.mit.gamma.transformation.util.reducer.SystemReducer
@@ -66,8 +66,8 @@ class AnalysisModelPreprocessor {
 		
 		val name = component.name
 		// If it is an atomic component, we wrap it
-		if (component instanceof StatechartDefinition) {
-			logger.log(Level.INFO, "Wrapping statechart " + name)
+		if (component instanceof SynchronousStatechartDefinition) {
+			logger.log(Level.INFO, "Wrapping synchronous statechart " + name)
 			val wrapper = component.wrapSynchronousComponent
 			wrapper.addWrapperComponentAnnotation // Adding wrapper annotation
 			_package.components.add(0, wrapper)

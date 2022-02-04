@@ -23,7 +23,6 @@ import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.EventTrigger
 import hu.bme.mit.gamma.statechart.interface_.InterfaceModelFactory
 import hu.bme.mit.gamma.statechart.interface_.Package
-import hu.bme.mit.gamma.statechart.statechart.AbstractStatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference
 import hu.bme.mit.gamma.statechart.statechart.AsynchronousStatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.ClockTickReference
@@ -197,7 +196,7 @@ class ModelUnfolder {
 				.findFirst[it.helperEquals(component)] as AsynchronousStatechartDefinition
 		
 		// Attributes
-		val synchronousStatechart = createStatechartDefinition => [
+		val synchronousStatechart = createSynchronousStatechartDefinition => [
 			it.name = clonedComponent.name
 			it.guardEvaluation = clonedComponent.guardEvaluation
 			it.orthogonalRegionSchedulingOrder = clonedComponent.orthogonalRegionSchedulingOrder
@@ -376,7 +375,7 @@ class ModelUnfolder {
 		instance.name = instance.FQN
 	}
 	
-	private def dispatch void renameInstances(AbstractStatechartDefinition component) {}
+	private def dispatch void renameInstances(StatechartDefinition component) {}
 	
 	// Instance name validation
 	
@@ -430,8 +429,8 @@ class ModelUnfolder {
 		// No interface and type declarations as their cloning causes a lot of trouble
 	}
 	
-	private def dispatch traceComponentInstances(AbstractStatechartDefinition oldComponent,
-			AbstractStatechartDefinition newComponent, Trace trace) {
+	private def dispatch traceComponentInstances(StatechartDefinition oldComponent,
+			StatechartDefinition newComponent, Trace trace) {
 		// No op
 	}
 	

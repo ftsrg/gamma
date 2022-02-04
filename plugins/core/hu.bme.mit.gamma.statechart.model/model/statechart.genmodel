@@ -243,16 +243,16 @@
     <genEnums typeSafeEnumCompatible="false" ecoreEnum="statechart.ecore#//UnaryType">
       <genEnumLiterals ecoreEnumLiteral="statechart.ecore#//UnaryType/NOT"/>
     </genEnums>
-    <genClasses ecoreClass="statechart.ecore#//AbstractStatechartDefinition">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//AbstractStatechartDefinition/variableDeclarations"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//AbstractStatechartDefinition/timeoutDeclarations"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//AbstractStatechartDefinition/transitions"/>
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute statechart.ecore#//AbstractStatechartDefinition/schedulingOrder"/>
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute statechart.ecore#//AbstractStatechartDefinition/orthogonalRegionSchedulingOrder"/>
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute statechart.ecore#//AbstractStatechartDefinition/transitionPriority"/>
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute statechart.ecore#//AbstractStatechartDefinition/guardEvaluation"/>
+    <genClasses ecoreClass="statechart.ecore#//StatechartDefinition">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//StatechartDefinition/variableDeclarations"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//StatechartDefinition/timeoutDeclarations"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//StatechartDefinition/transitions"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute statechart.ecore#//StatechartDefinition/schedulingOrder"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute statechart.ecore#//StatechartDefinition/orthogonalRegionSchedulingOrder"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute statechart.ecore#//StatechartDefinition/transitionPriority"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute statechart.ecore#//StatechartDefinition/guardEvaluation"/>
     </genClasses>
-    <genClasses ecoreClass="statechart.ecore#//StatechartDefinition"/>
+    <genClasses ecoreClass="statechart.ecore#//SynchronousStatechartDefinition"/>
     <genClasses ecoreClass="statechart.ecore#//AsynchronousStatechartDefinition">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//AsynchronousStatechartDefinition/capacity"/>
     </genClasses>

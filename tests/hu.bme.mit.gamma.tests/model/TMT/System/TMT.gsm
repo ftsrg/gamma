@@ -246,7 +246,7 @@
     </components>
   </hu.bme.mit.gamma.statechart.interface:Package>
   <hu.bme.mit.gamma.statechart.interface:Package name="StatechartsPkg" imports="/2">
-    <components xsi:type="hu.bme.mit.gamma.statechart:StatechartDefinition" name="Procedure_Executive_and_Analysis_Software" schedulingOrder="BOTTOM_UP">
+    <components xsi:type="hu.bme.mit.gamma.statechart:SynchronousStatechartDefinition" name="Procedure_Executive_and_Analysis_Software" schedulingOrder="BOTTOM_UP">
       <ports name="PEAS2APTOut">
         <interfaceRealization interface="/2/@interfaces.1"/>
       </ports>

@@ -60,7 +60,7 @@ class TraceToEnvironmentModelTransformer {
 	def execute() {
 		validate
 		
-		val statechart = createStatechartDefinition => [
+		val statechart = createSynchronousStatechartDefinition => [
 			it.name = environmentModelName
 		]
 		

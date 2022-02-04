@@ -53,6 +53,7 @@ import hu.bme.mit.gamma.statechart.phase.transformation.PhaseStatechartTransform
 import hu.bme.mit.gamma.statechart.statechart.State;
 import hu.bme.mit.gamma.statechart.statechart.StateAnnotation;
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
+import hu.bme.mit.gamma.statechart.statechart.SynchronousStatechartDefinition;
 import hu.bme.mit.gamma.statechart.util.StatechartUtil;
 
 public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
@@ -78,7 +79,7 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 		ComponentReference modelReference = (ComponentReference) modelTransformation.getModel();
 		Component adaptiveComponent = modelReference.getComponent();
 		// initial-blocks, restart-on-cold-violation, back-transitions are on, permissive or strict
-		StatechartDefinition adaptiveStatechart = (StatechartDefinition) adaptiveComponent;
+		SynchronousStatechartDefinition adaptiveStatechart = (SynchronousStatechartDefinition) adaptiveComponent;
 		
 		// Collecting contract-behavior mappings
 		// History-based and no-history mappings have to be distinguished
@@ -141,7 +142,8 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 		List<Entry<String, PropertyPackage>> historylessModelFileUris =
 				new ArrayList<Entry<String, PropertyPackage>>();
 		
-		for (StatechartDefinition contract : contractBehaviors.keySet()) {
+		for (StatechartDefinition statechartContract : contractBehaviors.keySet()) {
+			SynchronousStatechartDefinition contract = (SynchronousStatechartDefinition) statechartContract;
 			List<MissionPhaseStateDefinition> behaviors = contractBehaviors.get(contract);
 			if (!behaviors.isEmpty()) {
 				String name = contract.getName() + "_" + behaviors.stream()
@@ -203,7 +205,8 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 			
 			for (StateContractAnnotation annotation :
 					ecoreUtil.getAllContentsOfType(adaptiveStatechart, StateContractAnnotation.class)) {
-				for (StatechartDefinition contract : annotation.getContractStatecharts()) {
+				for (StatechartDefinition statechartContract : annotation.getContractStatecharts()) {
+					SynchronousStatechartDefinition contract = (SynchronousStatechartDefinition) statechartContract;
 					// Creating a composition
 					CascadeCompositeComponent cascade = statechartUtil.wrapSynchronousComponent(adaptiveStatechart);
 					statechartUtil.wrapIntoPackage(cascade);
@@ -270,7 +273,7 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 	// Extraction
 
 	private Entry<String, PropertyPackage> insertMonitor(CascadeCompositeComponent cascade,
-			StatechartDefinition contract, String name) throws IOException {
+			SynchronousStatechartDefinition contract, String name) throws IOException {
 		// Behavior statechart
 		List<SynchronousComponentInstance> components = cascade.getComponents();
 		// Contract statechart
