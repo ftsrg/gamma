@@ -1178,13 +1178,13 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	}
 	
 	public static List<Transition> getOutgoingTransitions(StateNode node) {
-		StatechartDefinition statechart = getContainingStatechart(node);
+		AbstractStatechartDefinition statechart = getContainingStatechart(node);
 		return statechart.getTransitions().stream().filter(it -> it.getSourceState() == node)
 				.collect(Collectors.toList());
 	}
 	
 	public static List<Transition> getIncomingTransitions(StateNode node) {
-		StatechartDefinition statechart = getContainingStatechart(node);
+		AbstractStatechartDefinition statechart = getContainingStatechart(node);
 		return statechart.getTransitions().stream().filter(it -> it.getTargetState() == node)
 				.collect(Collectors.toList());
 	}
@@ -1425,11 +1425,8 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return fullParentRegionPathName + "." + lowestRegion.getName(); // Only regions are in path - states could be added too
 	}
 	
-	public static StatechartDefinition getContainingStatechart(EObject object) {
-		if (object.eContainer() instanceof StatechartDefinition) {
-			return (StatechartDefinition) object.eContainer();
-		}
-		return getContainingStatechart(object.eContainer());
+	public static AbstractStatechartDefinition getContainingStatechart(EObject object) {
+		return ecoreUtil.getContainerOfType(object, AbstractStatechartDefinition.class);
 	}
 	
 	public static Component getContainingComponent(EObject object) {
@@ -1506,7 +1503,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	}
 	
 	public static Collection<Transition> getPrioritizedTransitions(Transition gammaTransition) {
-		StatechartDefinition gammaStatechart = getContainingStatechart(gammaTransition);
+		AbstractStatechartDefinition gammaStatechart = getContainingStatechart(gammaTransition);
 		TransitionPriority transitionPriority = gammaStatechart.getTransitionPriority();
 		Collection<Transition> prioritizedTransitions = new ArrayList<Transition>();
 		if (transitionPriority != TransitionPriority.OFF) {
@@ -1523,7 +1520,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	}
 	
 	public static BigInteger calculatePriority(Transition transition) {
-		StatechartDefinition statechart = getContainingStatechart(transition);
+		AbstractStatechartDefinition statechart = getContainingStatechart(transition);
 		TransitionPriority transitionPriority = statechart.getTransitionPriority();
 		StateNode source = transition.getSourceState();
 		List<Transition> outgoingTransitions = getOutgoingTransitions(source);
@@ -1792,7 +1789,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	}
 	
 	public static TimeSpecification getTimeoutValue(TimeoutDeclaration timeout) {
-		StatechartDefinition statechart = getContainingStatechart(timeout);
+		AbstractStatechartDefinition statechart = getContainingStatechart(timeout);
 		TimeSpecification time = null;
 		TreeIterator<Object> contents = EcoreUtil.getAllContents(statechart, true);
 		while (contents.hasNext()) {
@@ -1855,7 +1852,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	}
 	
 	public static ComponentInstance getContainingComponentInstance(EObject object) {
-		StatechartDefinition statechart = getContainingStatechart(object);
+		AbstractStatechartDefinition statechart = getContainingStatechart(object);
 		return getReferencingComponentInstance(statechart);
 	}
 	
@@ -2030,12 +2027,12 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	}
 	
 	protected static <T extends StatechartAnnotation> T getStatechartAnnotation(
-			StatechartDefinition statechart, Class<T> annotation) {
+			AbstractStatechartDefinition statechart, Class<T> annotation) {
 		return getComponentAnnotation(statechart, annotation);
 	}
 	
 	public static ScenarioAllowedWaitAnnotation getScenarioAllowedWaitAnnotation(
-			StatechartDefinition statechart) {
+			AbstractStatechartDefinition statechart) {
 		return getStatechartAnnotation(statechart, ScenarioAllowedWaitAnnotation.class);
 	}
 	

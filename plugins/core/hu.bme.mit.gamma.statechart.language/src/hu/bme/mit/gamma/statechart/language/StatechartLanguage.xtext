@@ -207,7 +207,7 @@ AsynchronousStatechartDefinition returns AsynchronousStatechartDefinition:
 			('async' annotations+=StatechartContractAnnotation)
 		)*
 	)
-	'async' 'statechart' name=ID 'capacity' '(' capacity=Expression ')'
+	'async' 'statechart' name=ID ('capacity' '(' capacity=Expression ')')?
 	('(' ((parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*)? ')')?
 		('[' ((ports+=Port)((',')? ports+=Port)*)? ']')? '{'
 			(

@@ -172,9 +172,20 @@ class GammaEcoreUtil {
 	}
 	
 	def transferContent(EObject source, EObject target) {
-		for (object : source.eContents) {
+		val contents = newArrayList
+		contents += source.eContents
+		for (object : contents) {
 			val containingFeature = object.eContainmentFeature
-			target.eSet(containingFeature, object)
+			val targetElement = target.eGet(containingFeature)
+			if (targetElement instanceof List) {
+				// "Many" cardinality
+				targetElement += object
+			}
+			else {
+				// "Single" cardinality
+				checkState(targetElement === null)
+				target.eSet(containingFeature, object)
+			}
 		}
 	}
 	

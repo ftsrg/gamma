@@ -29,6 +29,7 @@ import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression
 import hu.bme.mit.gamma.statechart.interface_.InterfaceModelFactory
 import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.statechart.interface_.Port
+import hu.bme.mit.gamma.statechart.statechart.AbstractStatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.EntryState
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction
 import hu.bme.mit.gamma.statechart.statechart.Region
@@ -94,7 +95,7 @@ class StatechartAnnotator {
 	protected final Map<Transition, Long> receivingIds = newHashMap
 	protected final Map<Transition, List<Entry<Port, Event>>> receivingInteractions = newHashMap // Check: list must be unique
 	protected final Map<Region, List<VariablePair>> regionInteractionVariables = newHashMap // Check: list must be unique
-	protected final Map<StatechartDefinition, // Optimization: stores the variable pairs of other regions for reuse
+	protected final Map<AbstractStatechartDefinition, // Optimization: stores the variable pairs of other regions for reuse
 		List<VariablePair>> statechartInteractionVariables = newHashMap // Check: list must be unique
 	protected final List<Interaction> interactions = newArrayList
 	
@@ -391,7 +392,7 @@ class StatechartAnnotator {
 		return regionInteractionVariables.getOrCreateList(region)
 	}
 	
-	protected def getInteractionVariables(StatechartDefinition statechart) {
+	protected def getInteractionVariables(AbstractStatechartDefinition statechart) {
 		return statechartInteractionVariables.getOrCreateList(statechart)
 	}
 	
@@ -854,7 +855,7 @@ class StatechartAnnotator {
 		return statechart.getOrCreateVariablePair(localPool, globalPool, createSecond, resettable)
 	}
 	
-	protected def getOrCreateVariablePair(StatechartDefinition statechart,
+	protected def getOrCreateVariablePair(AbstractStatechartDefinition statechart,
 			List<VariablePair> localPool, List<VariablePair> globalPool, boolean createSecond, boolean resettable) {
 		val localPoolSize = localPool.size
 		val globalPoolSize = globalPool.size
@@ -871,7 +872,7 @@ class StatechartAnnotator {
 		}
 	}
 	
-	protected def createVariablePair(StatechartDefinition statechart,
+	protected def createVariablePair(AbstractStatechartDefinition statechart,
 			List<VariablePair> localPool, List<VariablePair> globalPool, boolean createSecond, boolean resettable) {
 		val senderVariable = createIntegerTypeDefinition.createVariableDeclaration(
 			namings.getFirstVariableName(statechart))

@@ -33,7 +33,6 @@ import hu.bme.mit.gamma.statechart.statechart.StatechartModelFactory
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.util.Collection
-import java.util.HashMap
 import java.util.Map
 import org.eclipse.emf.ecore.EObject
 
@@ -72,13 +71,19 @@ class ModelUnfolder {
 		val topComponent = clonedPackage.topComponentClearAdditionalComponents
 		
 		val trace = new Trace(clonedPackage, topComponent)
+		
 		topComponent.copyComponents(clonedPackage, trace)
 		topComponent.renameInstances
 		topComponent.validateInstanceNames
 		originalComponent.traceComponentInstances(topComponent, trace)
+		
 		// Resolving potential name collisions
 		clonedPackage.constantDeclarations.resolveNameCollisions
 		clonedPackage.functionDeclarations.resolveNameCollisions
+		
+		// Reset top component if the original one is replaces (async statechart)
+		trace.topComponent = clonedPackage.topComponent
+		
 		// The created package, and the top component are returned
 		return trace
 	}
@@ -201,6 +206,8 @@ class ModelUnfolder {
 		]
 		// Containment
 		clonedComponent.transferContent(synchronousStatechart)
+		// Remove original async statechart as we create now an adapter
+		component.remove
 		
 		val capacity = component.capacity
 		val name = synchronousStatechart.name
@@ -369,7 +376,7 @@ class ModelUnfolder {
 		instance.name = instance.FQN
 	}
 	
-	private def dispatch void renameInstances(StatechartDefinition component) {}
+	private def dispatch void renameInstances(AbstractStatechartDefinition component) {}
 	
 	// Instance name validation
 	
@@ -424,7 +431,7 @@ class ModelUnfolder {
 	}
 	
 	private def dispatch traceComponentInstances(AbstractStatechartDefinition oldComponent,
-			StatechartDefinition newComponent, Trace trace) {
+			AbstractStatechartDefinition newComponent, Trace trace) {
 		// No op
 	}
 	
@@ -458,10 +465,10 @@ class ModelUnfolder {
 	
 	static class Trace {
 		
-		Package _package;
-		Component topComponent;
+		Package _package
+		Component topComponent
 		
-		Map<ComponentInstance, ComponentInstance> componentInstanceMappings = new HashMap
+		Map<ComponentInstance, ComponentInstance> componentInstanceMappings = newHashMap
 		
 		new(Package _package, Component topComponent) {
 			this._package = _package

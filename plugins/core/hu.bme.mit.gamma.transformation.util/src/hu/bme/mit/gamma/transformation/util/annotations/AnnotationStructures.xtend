@@ -20,8 +20,8 @@ import hu.bme.mit.gamma.property.model.ComponentInstanceVariableReference
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference
 import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression
+import hu.bme.mit.gamma.statechart.statechart.AbstractStatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction
-import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.Transition
 import java.util.Collection
 import java.util.Map
@@ -183,9 +183,9 @@ class AnnotationNamings {
 	
 	def String getVariableName(Transition transition)
 		'''«IF transition.id !== null»«transition.id»«ELSE»«PREFIX»«transition.sourceState.name»_«id++»_«transition.targetState.name»«POSTFIX»«ENDIF»'''
-	def String getFirstVariableName(StatechartDefinition statechart)
+	def String getFirstVariableName(AbstractStatechartDefinition statechart)
 		'''«PREFIX»first_«statechart.name»«id++»«POSTFIX»'''
-	def String getSecondVariableName(StatechartDefinition statechart)
+	def String getSecondVariableName(AbstractStatechartDefinition statechart)
 		'''«PREFIX»second_«statechart.name»«id++»«POSTFIX»'''
 	def String getParameterName(Event event)
 		'''«PREFIX»«event.name»«POSTFIX»'''

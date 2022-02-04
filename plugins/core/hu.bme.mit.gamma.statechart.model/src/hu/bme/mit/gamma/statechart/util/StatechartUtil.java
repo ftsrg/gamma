@@ -62,6 +62,7 @@ import hu.bme.mit.gamma.statechart.interface_.Port;
 import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
 import hu.bme.mit.gamma.statechart.interface_.TimeUnit;
 import hu.bme.mit.gamma.statechart.interface_.Trigger;
+import hu.bme.mit.gamma.statechart.statechart.AbstractStatechartDefinition;
 import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference;
 import hu.bme.mit.gamma.statechart.statechart.BinaryTrigger;
 import hu.bme.mit.gamma.statechart.statechart.BinaryType;
@@ -71,7 +72,6 @@ import hu.bme.mit.gamma.statechart.statechart.InitialState;
 import hu.bme.mit.gamma.statechart.statechart.Region;
 import hu.bme.mit.gamma.statechart.statechart.State;
 import hu.bme.mit.gamma.statechart.statechart.StateNode;
-import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
 import hu.bme.mit.gamma.statechart.statechart.StatechartModelFactory;
 import hu.bme.mit.gamma.statechart.statechart.Transition;
 
@@ -278,7 +278,7 @@ public class StatechartUtil extends ActionUtil {
 	
 	public void setSourceAndTarget(Transition gammaTransition, State gammaState) {
 		if (gammaTransition != null && gammaState != null) {
-			StatechartDefinition gammaStatechart = StatechartModelDerivedFeatures
+			AbstractStatechartDefinition gammaStatechart = StatechartModelDerivedFeatures
 				.getContainingStatechart(gammaState);
 			gammaTransition.setSourceState(gammaState);
 			gammaTransition.setTargetState(gammaState);
@@ -557,7 +557,8 @@ public class StatechartUtil extends ActionUtil {
 		transition.setSourceState(source);
 		transition.setTargetState(target);
 		
-		StatechartDefinition statechart = StatechartModelDerivedFeatures.getContainingStatechart(source);
+		AbstractStatechartDefinition statechart =
+				StatechartModelDerivedFeatures.getContainingStatechart(source);
 		if (statechart != null) {
 			statechart.getTransitions().add(transition);
 		}

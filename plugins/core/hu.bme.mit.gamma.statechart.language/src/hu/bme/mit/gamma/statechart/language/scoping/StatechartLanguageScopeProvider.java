@@ -62,6 +62,7 @@ import hu.bme.mit.gamma.statechart.interface_.Port;
 import hu.bme.mit.gamma.statechart.phase.InstanceVariableReference;
 import hu.bme.mit.gamma.statechart.phase.MissionPhaseStateDefinition;
 import hu.bme.mit.gamma.statechart.phase.PhaseModelPackage;
+import hu.bme.mit.gamma.statechart.statechart.AbstractStatechartDefinition;
 import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference;
 import hu.bme.mit.gamma.statechart.statechart.PortEventReference;
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction;
@@ -102,7 +103,7 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 			if (context instanceof StateContractAnnotation &&
 					reference == ContractModelPackage.Literals.STATE_CONTRACT_ANNOTATION__CONTRACT_STATECHARTS) {
 				Package parentPackage = StatechartModelDerivedFeatures.getContainingPackage(context);
-				StatechartDefinition parentStatechart = StatechartModelDerivedFeatures.getContainingStatechart(context);
+				AbstractStatechartDefinition parentStatechart = StatechartModelDerivedFeatures.getContainingStatechart(context);
 				Set<StatechartDefinition> allComponents = StatechartModelDerivedFeatures.getAllStatechartComponents(parentPackage);
 				allComponents.remove(parentStatechart);
 				return Scopes.scopeFor(allComponents);
@@ -113,8 +114,8 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 				MissionPhaseStateDefinition container = EcoreUtil2.getContainerOfType(context, MissionPhaseStateDefinition.class);
 				SynchronousComponentInstance instance = container.getComponent();
 				SynchronousComponent type = instance.getType();
-				if (type instanceof StatechartDefinition) {
-					StatechartDefinition statechart = (StatechartDefinition) instance.getType();
+				if (type instanceof AbstractStatechartDefinition) {
+					AbstractStatechartDefinition statechart = (AbstractStatechartDefinition) instance.getType();
 					return Scopes.scopeFor(statechart.getVariableDeclarations());
 				}
 			}
@@ -133,7 +134,7 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 			}
 			if (reference == StatechartModelPackage.Literals.PORT_EVENT_REFERENCE__EVENT) {
 				// If the branch above does not work
-				StatechartDefinition statechart = StatechartModelDerivedFeatures.getContainingStatechart(context);
+				AbstractStatechartDefinition statechart = StatechartModelDerivedFeatures.getContainingStatechart(context);
 				Collection<Event> events = new HashSet<Event>();
 				statechart.getPorts()
 					.forEach(it -> events.addAll(StatechartModelDerivedFeatures.getAllEvents(it.getInterfaceRealization().getInterface())));
@@ -172,7 +173,7 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 				return Scopes.scopeFor(event.getParameterDeclarations());
 			}
 			if (reference == StatechartModelPackage.Literals.STATE_REFERENCE_EXPRESSION__REGION) {
-				StatechartDefinition statechart = StatechartModelDerivedFeatures.getContainingStatechart(context);
+				AbstractStatechartDefinition statechart = StatechartModelDerivedFeatures.getContainingStatechart(context);
 				Collection<Region> allRegions = StatechartModelDerivedFeatures.getAllRegions(statechart);
 				return Scopes.scopeFor(allRegions);
 			}
@@ -284,8 +285,8 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 				ParametricElement element = ecoreUtil.getSelfOrContainerOfType(context, ParametricElement.class);
 				if (element != null) {
 					IScope parentScope = super.getScope(context, reference); // Parameters and constants
-					if (element instanceof StatechartDefinition) {
-						StatechartDefinition statechart = (StatechartDefinition) element;
+					if (element instanceof AbstractStatechartDefinition) {
+						AbstractStatechartDefinition statechart = (AbstractStatechartDefinition) element;
 						Collection<Declaration> declarations = new ArrayList<Declaration>();
 						declarations.addAll(statechart.getVariableDeclarations());
 						declarations.addAll(statechart.getFunctionDeclarations());
@@ -315,7 +316,7 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 	}
 	
 	protected Collection<StateNode> stateNodesForTransition(Transition transition) {
-		StatechartDefinition rootElement = StatechartModelDerivedFeatures.getContainingStatechart(transition);
+		AbstractStatechartDefinition rootElement = StatechartModelDerivedFeatures.getContainingStatechart(transition);
 		Collection<StateNode> candidates = EcoreUtil2.getAllContentsOfType(rootElement, StateNode.class);
 		return candidates;
 	}
