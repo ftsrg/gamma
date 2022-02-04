@@ -1,19 +1,38 @@
 <?xml version="1.0" encoding="ASCII"?>
-<hu.bme.mit.gamma.property:PropertyPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:hu.bme.mit.gamma.property="http://www.mit.bme.hu/gamma/property/Model" xmlns:hu.bme.mit.gamma.statechart="http://www.mit.bme.hu/gamma/statechart/Model/Statechart" xmlns:hu.bme.mit.gamma.statechart.composite="http://www.mit.bme.hu/gamma/statechart/Model/Composite">
-  <component xsi:type="hu.bme.mit.gamma.statechart:StatechartDefinition" href="TMT.gsm#/1/@components.0"/>
+<hu.bme.mit.gamma.property:PropertyPackage
+    xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:hu.bme.mit.gamma.property="http://www.mit.bme.hu/gamma/property/Model"
+    xmlns:hu.bme.mit.gamma.statechart.composite="http://www.mit.bme.hu/gamma/statechart/Model/Composite">
+  <component
+      xsi:type="hu.bme.mit.gamma.statechart.composite:AsynchronousAdapter"
+      href="TMT.gsm#/0/@components.0"/>
   <formulas>
-    <formula xsi:type="hu.bme.mit.gamma.property:QuantifiedFormula" quantifier="EXISTS">
-      <formula xsi:type="hu.bme.mit.gamma.property:UnaryOperandPathFormula" operator="FUTURE">
-        <operand xsi:type="hu.bme.mit.gamma.property:AtomicFormula">
-          <expression xsi:type="hu.bme.mit.gamma.property:ComponentInstanceStateConfigurationReference">
+    <formula
+        xsi:type="hu.bme.mit.gamma.property:QuantifiedFormula"
+        quantifier="EXISTS">
+      <formula
+          xsi:type="hu.bme.mit.gamma.property:UnaryOperandPathFormula"
+          operator="FUTURE">
+        <operand
+            xsi:type="hu.bme.mit.gamma.property:AtomicFormula">
+          <expression
+              xsi:type="hu.bme.mit.gamma.property:ComponentInstanceStateConfigurationReference">
             <instance>
-              <componentInstance xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href="TMT.gsm#/0/@components.0/@wrappedComponent"/>
+              <componentInstance
+                  xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance"
+                  href="TMT.gsm#/0/@components.0/@wrappedComponent"/>
               <child>
-                <componentInstance xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href="TMT.gsm#/0/@components.1/@components.0"/>
+                <componentInstance
+                    xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance"
+                    href="TMT.gsm#/0/@components.1/@components.0"/>
               </child>
             </instance>
-            <region href="TMT.gsm#/1/@components.0/@regions.0/@stateNodes.4/@regions.0"/>
-            <state href="TMT.gsm#/1/@components.0/@regions.0/@stateNodes.4/@regions.0/@stateNodes.0"/>
+            <region
+                href="TMT.gsm#/1/@components.0/@regions.0/@stateNodes.4/@regions.0"/>
+            <state
+                href="TMT.gsm#/1/@components.0/@regions.0/@stateNodes.4/@regions.0/@stateNodes.0"/>
           </expression>
         </operand>
       </formula>
