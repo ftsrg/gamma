@@ -38,7 +38,8 @@ class UppaalVerifier extends AbstractVerifier {
 			// Reading the result of the command
 			resultReader = new Scanner(outputStream)
 			verificationResultReader = new VerificationResultReader(resultReader)
-			new Thread(verificationResultReader).start
+			val thread = new Thread(verificationResultReader)
+			thread.start
 			traceReader = new Scanner(errorStream)
 			if (isCancelled) {
 				// If the process is killed, this is where it can be checked

@@ -2018,12 +2018,13 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return simpleInstances;
 	}
 	
+	@SuppressWarnings("unchecked")
 	protected static <T extends ComponentAnnotation> T getComponentAnnotation(
 			Component component, Class<T> annotation) {
 		Optional<ComponentAnnotation> componentAnnotation = component.getAnnotations().stream()
 				.filter(it -> annotation.isInstance(it)).findFirst();
 		if (componentAnnotation.isPresent()) {
-			componentAnnotation.get();
+			return (T) componentAnnotation.get();
 		}
 		return null;
 	}

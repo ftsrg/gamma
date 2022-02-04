@@ -187,18 +187,13 @@ StatechartDefinition returns StatechartDefinition:
 		('[' ((ports+=Port)((',')? ports+=Port)*)? ']')? '{'
 			(
 				variableDeclarations+=VariableDeclaration |
-				timeoutDeclarations+=TimeoutDeclaration |
+				timeoutDeclarations+=TimeoutDeclaration
+			)*
+			(
+				regions+=Region |
 				transitions+=Transition
 			)*
-			regions+=Region
-			// TODO Here and in example models
-			(
-				variableDeclarations+=VariableDeclaration |
-				timeoutDeclarations+=TimeoutDeclaration |
-				transitions+=Transition |
-				regions+=Region
-			)*
-			(functionDeclarations+=FunctionDeclaration)*
+			functionDeclarations+=FunctionDeclaration*
 	'}'
 ;
 
@@ -219,8 +214,10 @@ AsynchronousStatechartDefinition returns AsynchronousStatechartDefinition:
 				variableDeclarations+=VariableDeclaration |
 				timeoutDeclarations+=TimeoutDeclaration
 			)*
-			regions+=Region*
-			transitions+=Transition*
+			(
+				regions+=Region |
+				transitions+=Transition
+			)*
 			functionDeclarations+=FunctionDeclaration*
 	'}'
 ;
