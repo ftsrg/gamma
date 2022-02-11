@@ -252,6 +252,21 @@ class GammaEcoreUtil {
 		return contents
 	}
 	
+	def <T extends EObject> T getFirstOfAllContentsOfType(EObject object, Class<T> type) {
+		val contents = newLinkedList
+		contents += object.eContents
+		while (!contents.empty) {
+			val content = contents.poll
+			if (type.isInstance(content)) {
+				return content as T
+			}
+			else {
+				contents += content.eContents
+			}
+		}
+		return null
+	}
+	
 	def boolean containsTransitively(EObject potentialContainer, EObject object) {
 		if (potentialContainer === null || object === null) {
 			return false
@@ -317,6 +332,10 @@ class GammaEcoreUtil {
 	
 	def EObject normalLoad(String parentFolder, String fileName, ResourceSet resourceSet) {
 		return URI.createFileURI(parentFolder + File.separator + fileName).normalLoad(resourceSet)
+	}
+	
+	def void resolveAll(ResourceSet resourceSet) {
+		EcoreUtil.resolveAll(resourceSet)
 	}
 
 	def Resource normalSave(ResourceSet resourceSet, EObject rootElem, URI uri) {

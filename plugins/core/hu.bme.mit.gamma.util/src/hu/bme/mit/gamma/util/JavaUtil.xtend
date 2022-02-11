@@ -37,6 +37,14 @@ class JavaUtil {
 		return IterableExtensions.flatten(inputs).toList
 	}
 	
+	def <T> T getFirstOfType(Iterable<? super T> collection, Class<T> clazz) {
+		for (element : collection) {
+			if (clazz.isInstance(element)) {
+				return element as T
+			}
+		}
+	}
+	
 	def boolean isUnique(Iterable<?> collection) {
 		val set = newHashSet
 		for (element : collection) {
