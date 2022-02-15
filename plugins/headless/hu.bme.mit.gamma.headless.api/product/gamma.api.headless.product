@@ -39,8 +39,8 @@
       <plugin id="hu.bme.mit.gamma.action.language.ide"/>
       <plugin id="hu.bme.mit.gamma.action.language.ui"/>
       <plugin id="hu.bme.mit.gamma.action.model"/>
-      <plugin id="hu.bme.mit.gamma.codegenerator.java"/>
-      <plugin id="hu.bme.mit.gamma.codegenerator.java.util"/>
+      <plugin id="hu.bme.mit.gamma.codegeneration.java"/>
+      <plugin id="hu.bme.mit.gamma.codegeneration.java.util"/>
       <plugin id="hu.bme.mit.gamma.composition.xsts.uppaal.transformation"/>
       <plugin id="hu.bme.mit.gamma.dialog"/>
       <plugin id="hu.bme.mit.gamma.eventpriority.transformation"/>
