@@ -782,6 +782,20 @@ public class ExpressionUtil {
 		return integerLiteral;
 	}
 	
+	public BigDecimal toBigDec(double value) {
+		return BigDecimal.valueOf(value);
+	}
+	
+	public DecimalLiteralExpression toDecimalLiteral(double value) {
+		return toDecimalLiteral(toBigDec(value));
+	}
+	
+	public DecimalLiteralExpression toDecimalLiteral(BigDecimal value) {
+		DecimalLiteralExpression decimalLiteral = factory.createDecimalLiteralExpression();
+		decimalLiteral.setValue(value);
+		return decimalLiteral;
+	}
+	
 	public VariableDeclaration createVariableDeclaration(Type type, String name) {
 		return createVariableDeclaration(type, name, null);
 	}

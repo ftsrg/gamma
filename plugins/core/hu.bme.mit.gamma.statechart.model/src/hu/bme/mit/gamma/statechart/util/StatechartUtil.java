@@ -598,10 +598,15 @@ public class StatechartUtil extends ActionUtil {
 	
 	public State createRegionWithState(CompositeElement compositeElement,
 			String regionName, String initialStateName, String stateName) {
-		InitialState initialState = statechartFactory.createInitialState();
-		initialState.setName(initialStateName);
+		InitialState initialState = createInitialState(initialStateName);
 		return createRegionWithState(compositeElement,
 				initialState, regionName, stateName);
+	}
+
+	public InitialState createInitialState(String name) {
+		InitialState initialState = statechartFactory.createInitialState();
+		initialState.setName(name);
+		return initialState;
 	}
 	
 	// Synchronous-asynchronous statecharts
