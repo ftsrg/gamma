@@ -273,6 +273,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	}
 	
 	public static Set<Package> getImportableTypeDeclarationPackages(Package _package) {
+		// Different functionality from importable interface and component packages...
 		Set<Package> importedPackages = new LinkedHashSet<Package>();
 		List<Package> importablePackages = new ArrayList<Package>();
 		importablePackages.add(_package);

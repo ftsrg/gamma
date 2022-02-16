@@ -56,6 +56,7 @@ import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.ComponentAnnotation;
 import hu.bme.mit.gamma.statechart.interface_.Event;
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression;
+import hu.bme.mit.gamma.statechart.interface_.Interface;
 import hu.bme.mit.gamma.statechart.interface_.InterfaceModelFactory;
 import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.statechart.interface_.Port;
@@ -397,9 +398,20 @@ public class StatechartUtil extends ActionUtil {
 	}
 	
 	public Package wrapIntoPackage(Component component) {
-		Package _package = interfaceFactory.createPackage();
-		_package.setName(component.getName().toLowerCase());
+		Package _package = createPackage(component.getName().toLowerCase());
 		_package.getComponents().add(component);
+		return _package;
+	}
+	
+	public Package wrapIntoPackage(Interface _interface) {
+		Package _package = createPackage(_interface.getName().toLowerCase());
+		_package.getInterfaces().add(_interface);
+		return _package;
+	}
+
+	public Package createPackage(String name) {
+		Package _package = interfaceFactory.createPackage();
+		_package.setName(name);
 		return _package;
 	}
 	
