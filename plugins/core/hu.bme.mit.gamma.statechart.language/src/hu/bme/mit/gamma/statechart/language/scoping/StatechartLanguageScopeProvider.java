@@ -195,6 +195,12 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 					return Scopes.scopeFor(interfaces);
 				}
 			}
+			if (reference == CompositeModelPackage.Literals.PORT_BINDING__COMPOSITE_SYSTEM_PORT) {
+				// Valid in the case of mission phase statecharts?
+				Component type = ecoreUtil.getSelfOrContainerOfType(context, Component.class);
+				List<Port> ports = StatechartModelDerivedFeatures.getAllPorts(type);
+				return Scopes.scopeFor(ports);
+			}
 			if (context instanceof InstancePortReference && reference == CompositeModelPackage.Literals.INSTANCE_PORT_REFERENCE__PORT) {
 				InstancePortReference portInstance = (InstancePortReference) context;
 				ComponentInstance instance = portInstance.getInstance();

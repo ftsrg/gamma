@@ -59,6 +59,7 @@ import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeCompone
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponent;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance;
+import hu.bme.mit.gamma.statechart.composite.AsynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.BroadcastChannel;
 import hu.bme.mit.gamma.statechart.composite.CascadeCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.Channel;
@@ -1970,8 +1971,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 		List<AsynchronousComponentInstance> components = scheduledComponent.getComponents();
 		for (AsynchronousComponentInstance component : components) {
 			AsynchronousComponent type = component.getType();
-			if (!(type instanceof ScheduledAsynchronousCompositeComponent ||
-					type instanceof AsynchronousAdapter)) {
+			if (type instanceof AsynchronousCompositeComponent) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 					"Scheduled asynchronous composite components cannot contain asynchronous components",
 						new ReferenceInfo(

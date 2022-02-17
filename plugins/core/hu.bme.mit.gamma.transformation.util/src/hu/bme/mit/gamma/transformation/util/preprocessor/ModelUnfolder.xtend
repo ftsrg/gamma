@@ -14,6 +14,7 @@ import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.statechart.composite.AbstractAsynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
+import hu.bme.mit.gamma.statechart.composite.AsynchronousComponent
 import hu.bme.mit.gamma.statechart.composite.BroadcastChannel
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance
 import hu.bme.mit.gamma.statechart.composite.CompositeComponent
@@ -31,6 +32,7 @@ import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.StatechartModelFactory
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
+import hu.bme.mit.gamma.util.JavaUtil
 import java.util.Collection
 import java.util.Map
 import org.eclipse.emf.ecore.EObject
@@ -45,6 +47,7 @@ class ModelUnfolder {
 	
 	protected final Package gammaPackage
 	
+	protected final extension JavaUtil javaUtil = JavaUtil.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
 	
@@ -122,44 +125,21 @@ class ModelUnfolder {
 	private dispatch def void copyComponents(AbstractAsynchronousCompositeComponent component,
 			Package gammaPackage, Trace trace) {
 		for (instance : component.components) {
-			val initialType = instance.type
-			// Potential asyncronous statechart unwrapping
-			val type =
-			if (initialType instanceof AsynchronousStatechartDefinition) {
-				initialType.copyComponents(gammaPackage, trace)
-				gammaPackage.components.last // The created adapter is the last component now
-			}
-			else {
-				initialType
-			}
-			//
-			if (type instanceof AbstractAsynchronousCompositeComponent) {
-				val clonedPackage = type.containingPackage.clone
-				val clonedComposite = clonedPackage.components
-						.findFirst[it.helperEquals(type)] as AbstractAsynchronousCompositeComponent // Cloning the declaration
-				gammaPackage.components += clonedComposite // Adding it to the "Instance container"
-				instance.type = clonedComposite // Setting the type to the new declaration
-				// Declarations must be copied AFTER moving component instances to enable reference changes
-				gammaPackage.addDeclarations(clonedPackage)
-				
-				clonedComposite.copyComponents(gammaPackage, trace) // Cloning the contained CompositeSystems recursively
-				// Tracing
-				type.traceComponentInstances(clonedComposite, trace)
-			}
-			else if (type instanceof AsynchronousAdapter) {
-				val clonedPackage = type.containingPackage.clone
-				// Declarations have been moved
-				val clonedWrapper = clonedPackage.components
-						.findFirst[it.helperEquals(type)] as AsynchronousAdapter // Cloning the declaration
-				gammaPackage.components += clonedWrapper // Adding it to the "Instance container"
-				instance.type = clonedWrapper // Setting the type to the new declaration
-				// Declarations must be copied AFTER moving component instances to enable reference changes
-				gammaPackage.addDeclarations(clonedPackage)
-				
-				clonedWrapper.copyComponents(gammaPackage, trace) // Cloning the contained CompositeSystems recursively
-				// Tracing
-				type.traceComponentInstances(clonedWrapper, trace)
-			}
+			val type = instance.type
+			
+			val clonedPackage = type.containingPackage.clone
+			val clonedComponent = clonedPackage.components
+						.findFirst[it.helperEquals(type)] as AsynchronousComponent
+			gammaPackage.components += clonedComponent
+			
+			instance.type = clonedComponent
+			// Declarations must be copied AFTER moving component instances to enable reference changes
+			gammaPackage.addDeclarations(clonedPackage)
+			
+			clonedComponent.copyComponents(gammaPackage, trace) // Cloning the contained CompositeSystems recursively
+			
+			// Tracing
+			type.traceComponentInstances(clonedComponent, trace)
 			// Changing the port binding
 			fixPortBindings(component, instance)
 			// Changing the providedPort references of Channels
@@ -197,8 +177,6 @@ class ModelUnfolder {
 		
 		// Attributes
 		val synchronousStatechart = clonedComponent.mapIntoSynchronousStatechart
-		// Remove original async statechart as we create now an adapter
-		component.remove
 		
 		val capacity = component.capacity
 		val name = synchronousStatechart.name
@@ -209,6 +187,10 @@ class ModelUnfolder {
 			synchronousStatechart.wrapIntoDefaultAdapter(name)
 		}
 		adapter.addWrapperComponentAnnotation // The adapter is a wrapper component
+		
+		// Removing original async statechart as we create now an adapter
+		adapter.change(component, gammaPackage)
+		component.remove
 		
 		gammaPackage.components += adapter
 		gammaPackage.components += synchronousStatechart

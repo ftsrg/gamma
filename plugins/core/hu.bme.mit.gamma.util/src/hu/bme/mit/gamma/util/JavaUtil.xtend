@@ -45,6 +45,12 @@ class JavaUtil {
 		}
 	}
 	
+	def <T> T getLastOfType(Iterable<? super T> collection, Class<T> clazz) {
+		return collection.toList
+			.reverseView
+			.getFirstOfType(clazz)
+	}
+	
 	def boolean isUnique(Iterable<?> collection) {
 		val set = newHashSet
 		for (element : collection) {
