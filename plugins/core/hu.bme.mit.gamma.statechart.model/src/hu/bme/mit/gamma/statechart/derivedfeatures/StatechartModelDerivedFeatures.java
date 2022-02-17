@@ -1144,9 +1144,19 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
     	return isStatechart(getDerivedType(instance));
     }
     
+    public static boolean isAsynchronousStatechart(ComponentInstance instance) {
+    	return isAsynchronousStatechart(getDerivedType(instance));
+    }
+    
     public static StatechartDefinition getStatechart(ComponentInstance instance) {
     	return (StatechartDefinition) getDerivedType(instance);
     }
+    
+	public static String getWrapperInstanceName(Component component) {
+		String name = component.getName();
+		// The same as in Namings.getComponentClassName
+		return Character.toUpperCase(name.charAt(0)) + name.substring(1);
+	}
     
     public static boolean isSimplifiable(AsynchronousAdapter adapter) {
     	List<MessageQueue> messageQueues = adapter.getMessageQueues();

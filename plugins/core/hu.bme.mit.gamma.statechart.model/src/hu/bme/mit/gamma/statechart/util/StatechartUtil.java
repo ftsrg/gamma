@@ -507,9 +507,8 @@ public class StatechartUtil extends ActionUtil {
 	}
 	
 	public String getWrapperInstanceName(Component component) {
-		String name = component.getName();
 		// The same as in Namings.getComponentClassName
-		return Character.toUpperCase(name.charAt(0)) + name.substring(1);
+		return StatechartModelDerivedFeatures.getWrapperInstanceName(component);
 	}
 	
 	public SimpleChannel connectPortsViaChannels(SynchronousComponentInstance lhsInstance, Port lhsPort,
