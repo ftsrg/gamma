@@ -138,6 +138,21 @@ public class StatechartUtil extends ActionUtil {
 		return createInstanceReference(componentInstanceChain);
 	}
 	
+	public ComponentInstanceReference createInstanceReferenceChain(
+			List<? extends ComponentInstanceReference> instanceReferences) {
+		ComponentInstanceReference first = instanceReferences.get(0);
+		int size = instanceReferences.size();
+		
+		for (int i = 0; i < size - 1; i++) {
+			ComponentInstanceReference actual = instanceReferences.get(i);
+			ComponentInstanceReference next = instanceReferences.get(i + 1);
+
+			actual.setChild(next);
+		}
+		
+		return first;
+	}
+	
 	public ComponentInstanceReference createInstanceReference(ComponentInstance instance) {
 		return createInstanceReference(List.of(instance));
 	}

@@ -123,6 +123,10 @@ public class PropertyUtil extends StatechartUtil {
 		return commentableStateFormula;
 	}
 	
+	public CommentableStateFormula createCommentableStateFormula(StateFormula formula) {
+		return createCommentableStateFormula("", formula);
+	}
+	
 	// Atomic expressions
 	
 	public ComponentInstanceStateConfigurationReference createStateReference(
