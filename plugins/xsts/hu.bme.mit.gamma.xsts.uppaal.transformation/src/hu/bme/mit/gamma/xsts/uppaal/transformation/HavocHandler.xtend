@@ -20,6 +20,8 @@ import hu.bme.mit.gamma.uppaal.util.NtaBuilder
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import java.util.Set
+import java.util.logging.Level
+import java.util.logging.Logger
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend.lib.annotations.Data
 import uppaal.expressions.Expression
@@ -42,6 +44,8 @@ class HavocHandler {
 	protected final extension ExpressionEvaluator expressionEvaluator = ExpressionEvaluator.INSTANCE
 	
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
+	
+	protected final Logger logger = Logger.getLogger("GammaLogger")
 	
 	// Entry point
 	
@@ -96,6 +100,8 @@ class HavocHandler {
 			ntaBuilder.createLiteralExpression(min.toString),
 			ntaBuilder.createLiteralExpression(max.toString)
 		)
+		
+		logger.log(Level.INFO, "Retrieved integer values for " + variable.name + " havoc: " + integerValues)
 		
 		if (integerValues.size == max - min + 1) {
 			// A  continuous range, no need for additional guards
@@ -182,7 +188,7 @@ class HavocHandler {
 		///
 		
 		def Set<Integer> calculateIntegerValues(EObject root, VariableDeclaration variable) {
-			val integerValues = newHashSet
+			val integerValues = newTreeSet(Integer l, Integer r | l.compareTo(r))
 			val predicates = root.getAllContentsOfType(PredicateExpression).filter(BinaryExpression)
 			
 			for (predicate : predicates) {
