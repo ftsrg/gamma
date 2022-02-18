@@ -34,6 +34,7 @@ import java.util.logging.Level
 import java.util.logging.Logger
 
 import static com.google.common.base.Preconditions.checkArgument
+import static com.google.common.base.Preconditions.checkNotNull
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
@@ -53,6 +54,7 @@ class UnfoldedExecutionTraceBackAnnotator {
 	protected final Logger logger = Logger.getLogger("GammaLogger")
 	
 	new(ExecutionTrace trace, Component originalTopComponent) {
+		checkNotNull(originalTopComponent)
 		checkArgument(!originalTopComponent.statechart,
 			"The original component cannot be a statechart")
 		this.trace = trace

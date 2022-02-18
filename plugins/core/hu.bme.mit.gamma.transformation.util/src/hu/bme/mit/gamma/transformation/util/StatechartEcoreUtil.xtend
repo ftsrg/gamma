@@ -16,6 +16,7 @@ import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.io.File
 import org.eclipse.emf.ecore.resource.Resource
 
+import static com.google.common.base.Preconditions.checkNotNull
 import static com.google.common.base.Preconditions.checkState
 
 class StatechartEcoreUtil {
@@ -53,6 +54,7 @@ class StatechartEcoreUtil {
 		
 		val originalPackage = originalMatchedUri.normalLoad(unfoldedResourceSet) as Package
 		val originalComponent = originalPackage.components.findFirst[it.name == unfoldedComponent.name]
+		checkNotNull(originalComponent)
 		
 		return originalComponent
 	}
