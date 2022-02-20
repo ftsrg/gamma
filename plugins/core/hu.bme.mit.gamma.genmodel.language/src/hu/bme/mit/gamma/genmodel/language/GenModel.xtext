@@ -366,6 +366,7 @@ StatechartContractGeneration returns StatechartContractGeneration:
 	 ('name' ':' fileName+=STRING)?
 	 ('restart-on-cold-violation' ':' StartAsColdViolation=BOOLEAN)?
 	 ('loop-for-interaction' ':' UseIteratingVariable=BOOLEAN)?
+	 ('generate-monitor-automaton' ':' GenerateMonitorAutomata=BOOLEAN)?
 	'}'
 ;
 

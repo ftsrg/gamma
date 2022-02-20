@@ -18,8 +18,14 @@ public class ScenarioStatechartUtil {
 
 	public static final ScenarioStatechartUtil INSTANCE = new ScenarioStatechartUtil();
 
+	
+
 	protected ScenarioStatechartUtil() {
 	}
+	
+	protected final String hotComponentViolation = "hotComponentViolation";
+
+	protected final String hotEnvironmentViolation = "hotEnvironmentViolation";
 	
 	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
 	
@@ -110,6 +116,14 @@ public class ScenarioStatechartUtil {
 	
 	public String getLoopvariableNameForDepth(int depth) {
 		return LoopVariable + depth;
+	}
+
+	public String getHotComponentViolation() {
+		return hotComponentViolation;
+	}
+
+	public String getHotEnvironmentViolation() {
+		return hotEnvironmentViolation;
 	}
 
 }
