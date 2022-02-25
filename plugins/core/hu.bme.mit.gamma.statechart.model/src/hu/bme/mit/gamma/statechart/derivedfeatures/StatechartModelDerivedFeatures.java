@@ -267,6 +267,17 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return importablePackages;
 	}
 	
+	public static Set<Package> getImportablePackages(Package _package) {
+		Set<Package> importablePackages = new LinkedHashSet<Package>();
+
+		for (Component component : _package.getComponents()) {
+			importablePackages.addAll(
+					getImportablePackages(component));
+		}
+		
+		return importablePackages;
+	}
+	
 	public static Set<Package> getImportableTypeDeclarationPackages(Component component) {
 		Package _package = getContainingPackage(component);
 		return getImportableTypeDeclarationPackages(_package);
@@ -1920,20 +1931,29 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return ecoreUtil.getContainerOfType(reference, ComponentInstanceReference.class);
 	}
 	
-	public static ComponentInstanceReference getFirstInstance(ComponentInstanceReference reference) {
+	public static ComponentInstanceReference getFirstInstanceReference(
+			ComponentInstanceReference reference) {
 		ComponentInstanceReference parent = getParent(reference);
 		if (parent == null) {
 			return reference;
 		}
-		return getFirstInstance(parent);
+		return getFirstInstanceReference(parent);
+	}
+	
+	public static ComponentInstanceReference getLastInstanceReference(
+			ComponentInstanceReference reference) {
+		ComponentInstanceReference child = reference.getChild();
+		if (child == null) {
+			return reference;
+		}
+		return getLastInstanceReference(child);
 	}
 	
 	public static ComponentInstance getLastInstance(ComponentInstanceReference reference) {
-		ComponentInstanceReference child = reference.getChild();
-		if (child == null) {
-			return reference.getComponentInstance();
-		}
-		return getLastInstance(child);
+		ComponentInstanceReference lastInstanceReference =
+				getLastInstanceReference(reference);
+		ComponentInstance lastInstance = lastInstanceReference.getComponentInstance();
+		return lastInstance;
 	}
 	
 	public static boolean isFirst(ComponentInstanceReference reference) {

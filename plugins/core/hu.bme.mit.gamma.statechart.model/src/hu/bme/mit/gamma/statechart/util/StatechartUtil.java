@@ -30,7 +30,6 @@ import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
-import hu.bme.mit.gamma.expression.util.ExpressionUtil;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponent;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance;
@@ -88,8 +87,6 @@ public class StatechartUtil extends ActionUtil {
 	protected StatechartModelFactory statechartFactory = StatechartModelFactory.eINSTANCE;
 	protected CompositeModelFactory compositeFactory = CompositeModelFactory.eINSTANCE;
 	
-	protected ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
-
 	// Extending super methods
 	
 	@Override
@@ -169,7 +166,7 @@ public class StatechartUtil extends ActionUtil {
 			reference = child;
 		}
 		ComponentInstanceReference head =
-				StatechartModelDerivedFeatures.getFirstInstance(reference);
+				StatechartModelDerivedFeatures.getFirstInstanceReference(reference);
 		ecoreUtil.remove(reference); // No instance
 		return head;
 	}
@@ -260,7 +257,7 @@ public class StatechartUtil extends ActionUtil {
 				ecoreUtil.getSelfAndAllContentsOfType(object, AssignmentStatement.class)) {
 			ReferenceExpression lhs = assignmentStatement.getLhs();
 			Expression rhs = assignmentStatement.getRhs();
-			Declaration lhsVariable = expressionUtil.getReferredValues(lhs).iterator().next();
+			Declaration lhsVariable = getReferredValues(lhs).iterator().next();
 			if (ecoreUtil.getSelfAndAllContentsOfType(object, DirectReferenceExpression.class)
 					.stream().filter(it -> it != lhs && it.getDeclaration() == lhsVariable)
 					.count() ==
@@ -499,8 +496,7 @@ public class StatechartUtil extends ActionUtil {
 			for (ParameterDeclaration parameterDeclaration : component.getParameterDeclarations()) {
 				ParameterDeclaration newParameter = ecoreUtil.clone(parameterDeclaration);
 				wrapper.getParameterDeclarations().add(newParameter);
-				DirectReferenceExpression reference = expressionUtil
-						.createReferenceExpression(newParameter);
+				DirectReferenceExpression reference = createReferenceExpression(newParameter);
 				instance.getArguments().add(reference);
 			}
 		}
@@ -548,6 +544,13 @@ public class StatechartUtil extends ActionUtil {
 			requiredReference.setPort(lhsPort);
 		}
 		return channel;
+	}
+	
+	public PortBinding createPortBinding(Port systemPort, InstancePortReference portReference) {
+		PortBinding portBinding = compositeFactory.createPortBinding();
+		portBinding.setCompositeSystemPort(systemPort);
+		portBinding.setInstancePortReference(portReference);
+		return portBinding;
 	}
 	
 	public InstancePortReference createInstancePortReference(ComponentInstance instance, Port port) {
