@@ -221,7 +221,7 @@ class MonitorStatechartgenerator extends AbstractContractStatechartGeneration {
 				violationState = environmentViolation
 			}
 		}
-		val violationTransition = statechartUtil.createTransition(previousState, violationState)
+//		val violationTransition = statechartUtil.createTransition(previousState, violationState)
 
 		if (set.modalInteractions.empty) {
 			val t = statechartUtil.createTransition(previousState, state)
@@ -235,9 +235,9 @@ class MonitorStatechartgenerator extends AbstractContractStatechartGeneration {
 		setupForwardTransition(set, isSend, isNegated, forwardTransition)
 
 		forwardTransition.priority = BigInteger.valueOf(3)
-		violationTransition.priority = BigInteger.valueOf(1)
+//		violationTransition.priority = BigInteger.valueOf(1)
 		handleArguments(set.modalInteractions, forwardTransition);
-		violationTransition.trigger = createAnyTrigger
+//		violationTransition.trigger = createAnyTrigger
 		previousState = state
 		return
 	}

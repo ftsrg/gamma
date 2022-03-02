@@ -246,7 +246,10 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="scenario" eType="ecore:EClass ../../hu.bme.mit.gamma.scenario.model/model/scenario.ecore#//ScenarioDefinition"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="StartAsColdViolation" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="UseIteratingVariable" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="GenerateMonitorAutomata"
-        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="AutomatonType" eType="#//ContractAutomatonType"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EEnum" name="ContractAutomatonType">
+    <eLiterals name="MONITOR"/>
+    <eLiterals name="TEST" value="1"/>
   </eClassifiers>
 </ecore:EPackage>

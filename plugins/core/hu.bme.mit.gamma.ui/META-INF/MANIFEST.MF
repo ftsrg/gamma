@@ -46,4 +46,5 @@ Export-Package: hu.bme.mit.gamma.ui,
  hu.bme.mit.gamma.ui.taskhandler,
  hu.bme.mit.gamma.ui.util
 Import-Package: hu.bme.mit.gamma.scenario.statechart.generator.serializer,
+ hu.bme.mit.gamma.scenario.statechart.transformation,
  hu.bme.mit.gamma.scenario.trace.generator
