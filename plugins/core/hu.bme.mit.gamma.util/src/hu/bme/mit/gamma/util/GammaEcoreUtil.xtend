@@ -40,6 +40,13 @@ class GammaEcoreUtil {
 		EcoreUtil.replace(oldObject, newObject)
 	}
 	
+	def void replaceEachOther(EObject left, EObject right) {
+		val dummy = left.clone // Might be resource-intensive
+		dummy.replace(left)
+		left.replace(right)
+		right.replace(dummy)
+	}
+	
 	/**
 	 * Note that this is used only to change cross-references and not containments.
 	 */

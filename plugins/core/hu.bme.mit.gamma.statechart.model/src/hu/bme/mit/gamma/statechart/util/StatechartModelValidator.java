@@ -1367,23 +1367,6 @@ public class StatechartModelValidator extends ActionModelValidator {
 		return validationResultMessages;
 	}
 	
-	public Collection<ValidationResultMessage> checkPortBinding(Port port) {
-		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		Component container = (Component) port.eContainer();
-		if (container instanceof CompositeComponent) {
-			CompositeComponent componentDefinition = (CompositeComponent) container;
-			for (PortBinding portDefinition : componentDefinition.getPortBindings()) {
-				if (portDefinition.getCompositeSystemPort() == port) {
-					return validationResultMessages;
-				}
-			}
-			validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING, 
-					"This system port is not connected to any ports of an instance",
-					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME)));
-		}
-		return validationResultMessages;
-	}
-	
 	public Collection<ValidationResultMessage> checkComponentInstances(ComponentInstance instance) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		Component type = StatechartModelDerivedFeatures.getContainingComponent(instance);
@@ -1425,26 +1408,45 @@ public class StatechartModelValidator extends ActionModelValidator {
 		return validationResultMessages;
 	}
 	
-	public Collection<ValidationResultMessage> checkPortBinding(PortBinding portDefinition) {
+	public Collection<ValidationResultMessage> checkPortBinding(PortBinding portBinding) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		InterfaceRealization compositeInterfaceRealization = portDefinition.getCompositeSystemPort().getInterfaceRealization();
-		InterfaceRealization instanceInterfaceRealization = portDefinition.getInstancePortReference().getPort().getInterfaceRealization();
-		RealizationMode systemPortIT = compositeInterfaceRealization.getRealizationMode();
-		RealizationMode instancePortIT = instanceInterfaceRealization.getRealizationMode();
-		Interface systemPortIf = compositeInterfaceRealization.getInterface();
-		Interface instancePortIf = instanceInterfaceRealization.getInterface(); 
-		if (systemPortIT != instancePortIT) {
+		InterfaceRealization compositeInterfaceRealization = portBinding
+				.getCompositeSystemPort().getInterfaceRealization();
+		InterfaceRealization instanceInterfaceRealization = portBinding
+				.getInstancePortReference()	.getPort().getInterfaceRealization();
+		RealizationMode systemPortRealizationMode = compositeInterfaceRealization.getRealizationMode();
+		RealizationMode instancePortRealizationMode = instanceInterfaceRealization.getRealizationMode();
+		Interface systemPortInterface = compositeInterfaceRealization.getInterface();
+		Interface instancePortInterface = instanceInterfaceRealization.getInterface(); 
+		if (systemPortRealizationMode != instancePortRealizationMode) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 				"Ports can be connected only if their interface types match and this is not realized in this case: " +
-					systemPortIT.getName() + " -> " + instancePortIT.getName(),
-					new ReferenceInfo(CompositeModelPackage.Literals.PORT_BINDING__INSTANCE_PORT_REFERENCE)));
+					systemPortRealizationMode.getName() + " -> " + instancePortRealizationMode.getName(),
+						new ReferenceInfo(CompositeModelPackage.Literals.PORT_BINDING__INSTANCE_PORT_REFERENCE)));
 		}	
-		if (systemPortIf != instancePortIf) {
+		if (systemPortInterface != instancePortInterface) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 				"Ports can be connected only if their interfaces match and this is not realized in this case: " + 
-					systemPortIf.getName() + " -> " + instancePortIf.getName(),
-					new ReferenceInfo(CompositeModelPackage.Literals.PORT_BINDING__INSTANCE_PORT_REFERENCE)));
+					systemPortInterface.getName() + " -> " + instancePortInterface.getName(),
+						new ReferenceInfo(CompositeModelPackage.Literals.PORT_BINDING__INSTANCE_PORT_REFERENCE)));
 		}	
+		return validationResultMessages;
+	}
+	
+	public Collection<ValidationResultMessage> checkPortBinding(Port port) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		Component container = StatechartModelDerivedFeatures.getContainingComponent(port);
+		if (container instanceof CompositeComponent) {
+			CompositeComponent componentDefinition = (CompositeComponent) container;
+			for (PortBinding portDefinition : componentDefinition.getPortBindings()) {
+				if (portDefinition.getCompositeSystemPort() == port) {
+					return validationResultMessages;
+				}
+			}
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING, 
+				"This system port is not connected to any ports of an instance",
+					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME)));
+		}
 		return validationResultMessages;
 	}
 	
