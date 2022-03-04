@@ -41,7 +41,7 @@ class GammaEcoreUtil {
 	}
 	
 	def void replaceEachOther(EObject left, EObject right) {
-		val dummy = left.clone // Might be resource-intensive
+		val dummy = EcoreUtil.create(left.eClass) // Empty object
 		dummy.replace(left)
 		left.replace(right)
 		right.replace(dummy)
