@@ -19,10 +19,11 @@ import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
 
 public class StatechartContractGenerationHandler extends TaskHandler {
 
-	private static boolean transformLoopFragments = false;
+	private static boolean transformLoopFragments;
 
 	public StatechartContractGenerationHandler(IFile file) {
 		super(file);
+		transformLoopFragments = false;
 	}
 
 	public void execute(StatechartContractGeneration statechartGeneration) {
@@ -45,7 +46,7 @@ public class StatechartContractGenerationHandler extends TaskHandler {
 		}
 		StatechartDefinition statechart = statechartGenerator.execute();
 		AutomatonDeterminizator determinizator = new AutomatonDeterminizator(statechart);
-		statechart = determinizator.execute();
+//		statechart = determinizator.execute();
 		Package packageOfComponent = ecoreUtil.getContainerOfType(component, Package.class);
 		StatechartSerializer statechartSerializer = new StatechartSerializer(file);
 		statechartSerializer.saveStatechart(statechart, packageOfComponent.getImports(), targetFolderUri);

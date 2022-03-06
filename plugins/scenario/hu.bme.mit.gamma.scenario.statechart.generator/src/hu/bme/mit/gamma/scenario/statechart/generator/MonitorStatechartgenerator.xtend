@@ -13,21 +13,21 @@ import hu.bme.mit.gamma.scenario.model.ScenarioDefinition
 import hu.bme.mit.gamma.statechart.contract.NotDefinedEventMode
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.TimeUnit
-import hu.bme.mit.gamma.statechart.interface_.Trigger
-import hu.bme.mit.gamma.statechart.statechart.BinaryType
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.StateNode
-import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.statechart.statechart.TransitionPriority
 import java.math.BigInteger
+import java.util.List
+import java.util.Map
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class MonitorStatechartgenerator extends AbstractContractStatechartGeneration {
-	
+
 	protected boolean skipNextinteraction = false
 	protected State componentViolation = null
 	protected State environmentViolation = null
+	protected List<Pair<StateNode, StateNode>> copyOutgoingTransitionsForOpt = newLinkedList
 
 	new(ScenarioDefinition scenario, Component component) {
 		super(scenario, component)
@@ -36,20 +36,46 @@ class MonitorStatechartgenerator extends AbstractContractStatechartGeneration {
 	override execute() {
 		statechart = createStatechartDefinition
 		intializeStatechart()
-
 		for (modalInteraction : scenario.chart.fragment.interactions) {
-			if(!skipNextinteraction){
-				process(modalInteraction)				
+			if (!skipNextinteraction) {
+				process(modalInteraction)
 			} else {
-				skipNextinteraction=false;
+				skipNextinteraction = false;
 			}
 		}
-		
 		firstRegion.stateNodes.get(firstRegion.stateNodes.size - 1).name = scenarioStatechartUtil.accepting
-		
+		fixReplacedStates()
+		copyTransitionsForOpt()
 		addScenarioContractAnnotation(NotDefinedEventMode.PERMISSIVE)
-		
 		return statechart
+	}
+
+	def fixReplacedStates() {
+		for (entry : replacedStateWithValue.entrySet) {
+			for (transition : statechart.transitions.filter[it.sourceState == entry.key]) {
+				transition.sourceState = entry.value
+			}
+			for (transition : statechart.transitions.filter[it.targetState == entry.key]) {
+				transition.targetState = entry.value
+			}
+		}
+	}
+
+	def void copyTransitionsForOpt() {
+		for (pair : copyOutgoingTransitionsForOpt) {
+			val compulsory = replacedStateWithValue.getOrDefault(pair.key, pair.key)
+			val optional = pair.value
+			for (t : compulsory.outgoingTransitions) {
+				if (t.targetState != optional) {
+					val tCopy = t.clone
+					tCopy.sourceState = optional
+					statechart.transitions += tCopy
+					if (optional.name.contains(accepting)) {
+						compulsory.name = '''«compulsory.name»__«accepting»'''
+					}
+				}
+			}
+		}
 	}
 
 	def protected intializeStatechart() {
@@ -103,10 +129,10 @@ class MonitorStatechartgenerator extends AbstractContractStatechartGeneration {
 		transition.trigger = eventTrigger
 		eventTrigger.eventReference = eventRef
 		var StateNode violationState
-		if(delay.modality == ModalityType.COLD){
+		if (delay.modality == ModalityType.COLD) {
 			violationState = coldViolation
 		} else {
-			violationState = componentViolation //TODO biztos?
+			violationState = componentViolation // TODO biztos?
 		}
 		val violationTransition = statechartUtil.createTransition(previousState, violationState)
 		val violationTrigger = createEventTrigger
@@ -137,6 +163,7 @@ class MonitorStatechartgenerator extends AbstractContractStatechartGeneration {
 		ends -= previousState
 		for (transition : statechart.transitions) {
 			if (ends.contains(transition.targetState)) {
+				replacedStateWithValue.put(transition.targetState, previousState)
 				transition.targetState = previousState
 			}
 		}
@@ -144,36 +171,7 @@ class MonitorStatechartgenerator extends AbstractContractStatechartGeneration {
 	}
 
 	def dispatch void process(LoopCombinedFragment loop) {
-//		val loopDepth = scenarioStatechartUtil.getLoopDepth(loop)
-//		var prevprev = previousState
-//		for (interaction : loop.fragments.get(0).interactions) {
-//			interaction.process
-//		}
-//		if (replacedStateWithValue.containsKey(prevprev)) {
-//			prevprev = replacedStateWithValue -= prevprev
-//		}
-//		val choice = createNewChoiceState
-//		for (transition : previousState.incomingTransitions) {
-//			transition.targetState = choice
-//		}
-//
-//		replacedStateWithValue.put(previousState, choice)
-//		firstRegion.stateNodes -= previousState
-//		firstRegion.stateNodes += choice
-//		val stateNew = createNewState()
-//		previousState = stateNew
-//		firstRegion.stateNodes += stateNew
-//		val t1 = statechartUtil.createTransition(choice, stateNew)
-//		val t2 = statechartUtil.createTransition(choice, prevprev)
-//
-//		val variableForDepth = variableMap.getOrCreate(scenarioStatechartUtil.getLoopvariableNameForDepth(loopDepth))
-//		t1.guard = getVariableGreaterEqualParamExpression(variableForDepth, exprEval.evaluateInteger(loop.minimum))
-//		val maxCheck = createLessExpression
-//		maxCheck.leftOperand = exprUtil.createReferenceExpression(variableForDepth)
-//		maxCheck.rightOperand = exprUtil.toIntegerLiteral(exprEval.evaluateInteger(loop.maximum))
-//		t2.guard = maxCheck
-//		t2.effects += incrementVar(variableForDepth)
-//		t1.effects += setIntVariable(variableForDepth, 1)
+		throw new UnsupportedOperationException
 	}
 
 	def dispatch void process(OptionalCombinedFragment optionalCombinedFragment) {
@@ -184,23 +182,21 @@ class MonitorStatechartgenerator extends AbstractContractStatechartGeneration {
 		for (interaction : firstFragment.interactions) {
 			process(interaction)
 		}
-		if(containingFragment.interactions.size > index+1){
-			val nextInteraction = containingFragment.interactions.get(index+1)
+		if (containingFragment.interactions.size > index + 1) {
+			val nextInteraction = containingFragment.interactions.get(index + 1)
 			nextInteraction.process
 			val previousAfterFirstProcess = previousState
 			previousState = prevprev
 			nextInteraction.process
-			for(transition : previousState.incomingTransitions){
+			for (transition : previousState.incomingTransitions) {
 				transition.targetState = previousAfterFirstProcess
 			}
 			firstRegion.stateNodes -= previousState
 			previousState = previousAfterFirstProcess
 			skipNextinteraction = true
 		} else {
-			//TODO fix naive implementation, allows infinite occurences of the content of the optional
-			for(transition : previousState.incomingTransitions){
-				transition.targetState = prevprev
-			}
+			copyOutgoingTransitionsForOpt.add(new Pair(prevprev, previousState))
+			previousState = prevprev
 		}
 	}
 
@@ -212,17 +208,16 @@ class MonitorStatechartgenerator extends AbstractContractStatechartGeneration {
 		val isSend = dir.equals(InteractionDirection.SEND)
 		val forwardTransition = statechartUtil.createTransition(previousState, state)
 		var StateNode violationState = null
-		if(mod == ModalityType.COLD){
+		if (mod == ModalityType.COLD) {
 			violationState = coldViolation
 		} else {
-			if(isSend) {
+			if (isSend) {
 				violationState = componentViolation
 			} else {
 				violationState = environmentViolation
 			}
 		}
 //		val violationTransition = statechartUtil.createTransition(previousState, violationState)
-
 		if (set.modalInteractions.empty) {
 			val t = statechartUtil.createTransition(previousState, state)
 			t.trigger = createOnCycleTrigger

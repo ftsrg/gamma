@@ -37,10 +37,10 @@ class AutomatonDeterminizator {
 	protected val extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
 
 	var StatechartDefinition oldStatechart = null
-	val newStateOldStates = <StateNode, List<StateNode>>newHashMap
-	val statesCollectiveState = <List<StateNode>, StateNode>newHashMap
-	val oldStateNewStates = <StateNode, List<StateNode>>newHashMap
-	val oldNewStateMap = <StateNode, StateNode>newHashMap
+	val newStateOldStates = <StateNode, List<StateNode>>newLinkedHashMap
+	val statesCollectiveState = <List<StateNode>, StateNode>newLinkedHashMap
+	val oldStateNewStates = <StateNode, List<StateNode>>newLinkedHashMap
+	val oldNewStateMap = <StateNode, StateNode>newLinkedHashMap
 	var Region firstRegion = null
 	var Region oldFirstRegion = null
 	var StatechartDefinition newStatechart = null
@@ -118,7 +118,7 @@ class AutomatonDeterminizator {
 	}
 
 	def handleState(StateNode node) {
-		val representedOldStates = newStateOldStates.get(node)
+		val representedOldStates = newStateOldStates.get(node).toSet
 		val outgoingTransitions = representedOldStates.flatMap[it.outgoingTransitions].toList
 		val sets = findNonDeterministicSets(outgoingTransitions)
 		for (set : sets) {
