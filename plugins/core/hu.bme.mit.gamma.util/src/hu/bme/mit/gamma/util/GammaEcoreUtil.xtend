@@ -353,6 +353,7 @@ class GammaEcoreUtil {
 	}
 
 	def Resource normalSave(ResourceSet resourceSet, EObject rootElem, String parentFolder, String fileName) {
+		// TODO check whether it is absolute or relative?
 		val uri = URI.createFileURI(parentFolder + File.separator + fileName)
 		return normalSave(resourceSet, rootElem, uri)
 	}
