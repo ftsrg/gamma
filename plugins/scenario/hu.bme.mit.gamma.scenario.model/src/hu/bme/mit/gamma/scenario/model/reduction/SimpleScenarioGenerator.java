@@ -55,7 +55,6 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 	private ScenarioDefinition simple = null;
 	private ScenarioModelFactory factory = null;
 	private boolean transformLoopFragments = false;
-	private boolean makeAlternativesDeterministic = true;
 	private List<Expression> arguments = null;
 	ScenarioReferenceResolver refResolver = new ScenarioReferenceResolver();
 
@@ -91,9 +90,6 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 			simple.getChart().getFragment().getInteractions().add((Interaction) this.doSwitch(interaction));
 		}
 		inLineExpressions(simple, base);
-		if (makeAlternativesDeterministic) {
-			
-		}
 		return simple;
 	}
 
@@ -205,35 +201,36 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 			}
 
 			return loop;
-		}
-		InteractionFragment prev = previousFragment;
-		AlternativeCombinedFragment alt = factory.createAlternativeCombinedFragment();
-		ExpressionEvaluator evaluator = ExpressionEvaluator.INSTANCE;
-		Expression mine = ecoreUtil.clone(object.getMinimum());
-		Expression maxe = ecoreUtil.clone(object.getMaximum());
-		int min = evaluator.evaluate(mine);
-		int max = 0;
-		if (maxe == null) {
-			max = min;
-		} else {
-			max = evaluator.evaluate(maxe);
-		}
-		for (int i = 0; i < min; i++) {
-			for (Interaction j : object.getFragments().get(0).getInteractions()) {
-				previousFragment.getInteractions().add((Interaction) this.doSwitch(j));
+		} else  {
+			InteractionFragment prev = previousFragment;
+			AlternativeCombinedFragment alt = factory.createAlternativeCombinedFragment();
+			ExpressionEvaluator evaluator = ExpressionEvaluator.INSTANCE;
+			Expression mine = ecoreUtil.clone(object.getMinimum());
+			Expression maxe = ecoreUtil.clone(object.getMaximum());
+			int min = evaluator.evaluate(mine);
+			int max = 0;
+			if (maxe == null) {
+				max = min;
+			} else {
+				max = evaluator.evaluate(maxe);
 			}
-		}
-		for (int i = 0; i <= max - min; i++) {
-			InteractionFragment frag = factory.createInteractionFragment();
-			previousFragment = frag;
-			for (int k = 0; k < i; k++)
+			for (int i = 0; i < min-1; i++) {
 				for (Interaction j : object.getFragments().get(0).getInteractions()) {
-					frag.getInteractions().add((Interaction) this.doSwitch(j));
+					previousFragment.getInteractions().add((Interaction) this.doSwitch(j));
 				}
-			alt.getFragments().add(frag);
+			}
+			for (int i = 0; i <= max - min; i++) {
+				InteractionFragment frag = factory.createInteractionFragment();
+				previousFragment = frag;
+				for (int k = 0; k < i+1; k++)
+					for (Interaction j : object.getFragments().get(0).getInteractions()) {
+						frag.getInteractions().add((Interaction) this.doSwitch(j));
+					}
+				alt.getFragments().add(frag);
+			}
+			previousFragment = prev;
+			return alt;
 		}
-		previousFragment = prev;
-		return alt;
 	}
 
 	@Override

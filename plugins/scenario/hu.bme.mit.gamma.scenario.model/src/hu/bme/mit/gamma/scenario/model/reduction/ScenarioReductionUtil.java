@@ -3,21 +3,12 @@ package hu.bme.mit.gamma.scenario.model.reduction;
 import java.util.ArrayList;
 import java.util.List;
 
-import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator;
-import hu.bme.mit.gamma.scenario.model.Delay;
-import hu.bme.mit.gamma.scenario.model.Interaction;
-import hu.bme.mit.gamma.scenario.model.InteractionDefinition;
-import hu.bme.mit.gamma.scenario.model.InteractionFragment;
-import hu.bme.mit.gamma.scenario.model.ModalInteractionSet;
-import hu.bme.mit.gamma.scenario.model.NegatedModalInteraction;
-import hu.bme.mit.gamma.scenario.model.Signal;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
 import hu.bme.mit.gamma.util.JavaUtil;
 
 public class ScenarioReductionUtil {
 
-	private static ExpressionEvaluator evaluator = ExpressionEvaluator.INSTANCE;
 	private static JavaUtil javaUtil = JavaUtil.INSTANCE;
 	private static GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
 

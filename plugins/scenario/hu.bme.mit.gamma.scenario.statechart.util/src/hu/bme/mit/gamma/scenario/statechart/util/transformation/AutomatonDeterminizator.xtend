@@ -1,4 +1,4 @@
-package hu.bme.mit.gamma.scenario.statechart.transformation
+package hu.bme.mit.gamma.scenario.statechart.util.transformation
 
 import hu.bme.mit.gamma.action.model.ActionModelFactory
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
@@ -19,7 +19,7 @@ import java.util.List
 import java.util.Set
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
-import java.util.HashSet
+import hu.bme.mit.gamma.statechart.contract.SpecialStateKind
 
 class AutomatonDeterminizator {
 
@@ -99,9 +99,19 @@ class AutomatonDeterminizator {
 		
 		//remove unreachable nodes
 		removeUnreachableNodes()
-
-
+		
+		//add annotation
+		addAnnotationForAcceptingStates()
+		
 		return newStatechart
+	}
+	
+	def addAnnotationForAcceptingStates() {
+		val annotation = createSpecialStateAnnotation
+		annotation.kind = SpecialStateKind.ACCEPTING
+		annotation.stateNodes.clear
+		annotation.stateNodes += firstRegion.stateNodes.filter[it.name.contains(accepting)]
+//		newStatechart.annotations+=annotation
 	}
 	
 	def void removeUnreachableNodes() {

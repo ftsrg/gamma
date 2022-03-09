@@ -18,7 +18,6 @@ import hu.bme.mit.gamma.statechart.statechart.StateNode
 import hu.bme.mit.gamma.statechart.statechart.TransitionPriority
 import java.math.BigInteger
 import java.util.List
-import java.util.Map
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
@@ -160,11 +159,13 @@ class MonitorStatechartgenerator extends AbstractContractStatechartGeneration {
 			}
 			ends += previousState
 		}
-		ends -= previousState
+		val mergeState = createNewState(mergeName+exsistingMerges)
+		firstRegion.stateNodes+=mergeState
+		previousState = mergeState
 		for (transition : statechart.transitions) {
 			if (ends.contains(transition.targetState)) {
 				replacedStateWithValue.put(transition.targetState, previousState)
-				transition.targetState = previousState
+//				transition.targetState = previousState
 			}
 		}
 		firstRegion.stateNodes -= ends
