@@ -15,6 +15,8 @@ import java.util.Collection
 import java.util.Collections
 import java.util.Comparator
 import java.util.List
+import java.util.logging.Level
+import java.util.logging.Logger
 import org.eclipse.core.resources.ResourcesPlugin
 import org.eclipse.core.runtime.Path
 import org.eclipse.emf.common.util.URI
@@ -34,6 +36,8 @@ class GammaEcoreUtil {
 	// Singleton
 	public static final GammaEcoreUtil INSTANCE = new GammaEcoreUtil
 	protected new() {}
+	//
+	protected final Logger logger = Logger.getLogger("GammaLogger")
 	//
 	
 	def void replace(EObject newObject, EObject oldObject) {
@@ -70,12 +74,18 @@ class GammaEcoreUtil {
 			if (referenceHolder instanceof List) {
 				val list =  referenceHolder as List<EObject>
 				val index = list.indexOf(oldObject)
-				if (list.contains(newObject)) {
-					// To avoid 'no duplicates' constraint violation
-					list.remove(index)
-				}
-				else {
-					list.set(index, newObject)
+				try {
+					if (list.contains(newObject)) {
+						// To avoid 'no duplicates' constraint violation
+						list.remove(index)
+					}
+					else {
+						list.set(index, newObject)
+					}
+				} catch (UnsupportedOperationException e) {
+					// Derived feature, cannot be changed
+					logger.log(Level.WARNING, "Reference from " + oldObject
+						+ " to " + newObject + " in " + container + " cannot be changed")
 				}
 			}
 			else {
@@ -357,11 +367,13 @@ class GammaEcoreUtil {
 	}
 
 	def EObject normalLoad(String parentFolder, String fileName) {
-		return URI.createFileURI(parentFolder + File.separator + fileName).normalLoad
+		return URI.createFileURI(parentFolder + File.separator + fileName)
+				.normalLoad
 	}
 	
 	def EObject normalLoad(String parentFolder, String fileName, ResourceSet resourceSet) {
-		return URI.createFileURI(parentFolder + File.separator + fileName).normalLoad(resourceSet)
+		return URI.createFileURI(parentFolder + File.separator + fileName)
+				.normalLoad(resourceSet)
 	}
 	
 	def void resolveAll(ResourceSet resourceSet) {
@@ -375,8 +387,9 @@ class GammaEcoreUtil {
 		return resource
 	}
 
-	def Resource normalSave(ResourceSet resourceSet, EObject rootElem, String parentFolder, String fileName) {
-		// TODO check whether it is absolute or relative?
+	def Resource normalSave(ResourceSet resourceSet, EObject rootElem,
+			String parentFolder, String fileName) {
+		// Save is always absolute
 		val uri = URI.createFileURI(parentFolder + File.separator + fileName)
 		return normalSave(resourceSet, rootElem, uri)
 	}
