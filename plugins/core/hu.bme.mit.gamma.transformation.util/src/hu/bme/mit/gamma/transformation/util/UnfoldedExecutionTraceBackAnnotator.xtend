@@ -119,9 +119,9 @@ class UnfoldedExecutionTraceBackAnnotator {
 	protected def dispatch transformAct(RaiseEventAct act) {
 		return createRaiseEventAct => [
 			it.port = originalTopComponent.getOriginalPort(act.port)
-			// Does not work if the interfaces/types are loaded into different resources
-			// Resource set and URI type (absolute/platform) must match
-			it.event = act.event
+			// Works if the interfaces/types are loaded into different resources
+			// even when resource set and URI type (absolute/platform) must match
+			it.event = it.port.allEvents.findFirst[it.name == act.event.name]
 			it.arguments += act.arguments.map[it.clone]
 		]
 	}
