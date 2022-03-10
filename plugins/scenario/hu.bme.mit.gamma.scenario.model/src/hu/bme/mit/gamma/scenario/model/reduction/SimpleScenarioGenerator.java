@@ -191,7 +191,11 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 	public EObject caseLoopCombinedFragment(LoopCombinedFragment object) {
 		if (!transformLoopFragments) {
 			LoopCombinedFragment loop = factory.createLoopCombinedFragment();
-			loop.setMaximum(ecoreUtil.clone(object.getMaximum()));
+			if (object.getMaximum() == null) {
+				loop.setMaximum(ecoreUtil.clone(object.getMinimum()));
+			} else {
+				loop.setMaximum(ecoreUtil.clone(object.getMaximum()));
+			}
 			loop.setMinimum(ecoreUtil.clone(object.getMinimum()));
 			InteractionFragment fragment = factory.createInteractionFragment();
 			loop.getFragments().add(fragment);
@@ -201,7 +205,7 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 			}
 
 			return loop;
-		} else  {
+		} else {
 			InteractionFragment prev = previousFragment;
 			AlternativeCombinedFragment alt = factory.createAlternativeCombinedFragment();
 			ExpressionEvaluator evaluator = ExpressionEvaluator.INSTANCE;
@@ -214,7 +218,7 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 			} else {
 				max = evaluator.evaluate(maxe);
 			}
-			for (int i = 0; i < min-1; i++) {
+			for (int i = 0; i < min - 1; i++) {
 				for (Interaction j : object.getFragments().get(0).getInteractions()) {
 					previousFragment.getInteractions().add((Interaction) this.doSwitch(j));
 				}
@@ -222,7 +226,7 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 			for (int i = 0; i <= max - min; i++) {
 				InteractionFragment frag = factory.createInteractionFragment();
 				previousFragment = frag;
-				for (int k = 0; k < i+1; k++)
+				for (int k = 0; k < i + 1; k++)
 					for (Interaction j : object.getFragments().get(0).getInteractions()) {
 						frag.getInteractions().add((Interaction) this.doSwitch(j));
 					}
