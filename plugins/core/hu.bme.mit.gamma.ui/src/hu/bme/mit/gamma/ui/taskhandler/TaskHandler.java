@@ -105,7 +105,7 @@ public abstract class TaskHandler {
 		return object.eResource().getURI().lastSegment();
 	}
 	
-	protected String getTargetFolderUri() {
+	public String getTargetFolderUri() {
 		return targetFolderUri;
 	}
 	
