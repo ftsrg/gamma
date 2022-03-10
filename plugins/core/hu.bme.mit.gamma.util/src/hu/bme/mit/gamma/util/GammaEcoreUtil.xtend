@@ -232,7 +232,15 @@ class GammaEcoreUtil {
 	//
 	
 	def <T extends EObject> List<T> getAllContainersOfType(EObject object, Class<T> type) {
-		return object.allContainers.filter(type).toList
+		return object.allContainers.filter(type)
+				.toList
+	}
+	
+	def <T extends EObject> List<T> getSelfAndAllContainersOfType(T object, Class<T> type) {
+		val elements = newArrayList
+		elements += object.getAllContainersOfType(type)
+		elements += object
+		return elements
 	}
 	
 	def <T extends EObject> T getSelfOrContainerOfType(EObject object, Class<T> type) {
