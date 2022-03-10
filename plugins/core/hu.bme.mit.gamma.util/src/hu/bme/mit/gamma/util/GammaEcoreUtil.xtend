@@ -47,6 +47,18 @@ class GammaEcoreUtil {
 		right.replace(dummy)
 	}
 	
+	def void changeAndReplaceEachOther(EObject left, EObject right,
+			EObject leftRoot, EObject rightRoot) {
+		val dummy = EcoreUtil.create(left.eClass) // Empty object
+		dummy.changeAndReplace(left, leftRoot)
+		left.changeAndReplace(right, rightRoot)
+		right.changeAndReplace(dummy, leftRoot)
+	}
+	
+	def void changeAndReplaceEachOther(EObject left, EObject right, EObject root) {
+		left.changeAndReplaceEachOther(right, root)
+	}
+	
 	/**
 	 * Note that this is used only to change cross-references and not containments.
 	 */
@@ -106,6 +118,11 @@ class GammaEcoreUtil {
 		}
 	}
 	
+	def void changeAndReplace(EObject newObject, EObject oldObject, EObject container) {
+		change(newObject, oldObject, container)
+		newObject.replace(oldObject)
+	}
+	
 	def void changeAndDelete(EObject newObject, EObject oldObject, EObject container) {
 		change(newObject, oldObject, container)
 		oldObject.delete // Remove does not delete other references
@@ -127,6 +144,8 @@ class GammaEcoreUtil {
 		changeAll(newObject, oldObject, container)
 		oldObject.delete
 	}
+	
+	//
 	
 	def void add(EObject container, EReference reference, EObject object) {
 		val referenceObject = container.eGet(reference)
@@ -199,6 +218,8 @@ class GammaEcoreUtil {
 			}
 		}
 	}
+	
+	//
 	
 	def <T extends EObject> List<T> getAllContainersOfType(EObject object, Class<T> type) {
 		return object.allContainers.filter(type).toList
@@ -316,6 +337,8 @@ class GammaEcoreUtil {
 		return container.isOrContainsTypes(#[type])
 	}
 	
+	//
+	
 	def EObject normalLoad(URI uri) {
 		return uri.normalLoad(new ResourceSetImpl)
 	}
@@ -383,6 +406,8 @@ class GammaEcoreUtil {
 	def void deleteResource(EObject object) {
 		object.eResource.delete(Collections.EMPTY_MAP)
 	}
+	
+	//
 	
 	def boolean helperEquals(List<? extends EObject> lhs, List<? extends EObject> rhs) {
 		if (lhs === null && rhs === null) {
