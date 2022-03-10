@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="ASCII"?>
+<hu.bme.mit.gamma.statechart.interface:Package xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:hu.bme.mit.gamma.action="http://www.mit.bme.hu/gamma/action/Model" xmlns:hu.bme.mit.gamma.expression="http://www.mit.bme.hu/gamma/expression/Model" xmlns:hu.bme.mit.gamma.statechart="http://www.mit.bme.hu/gamma/statechart/Model/Statechart" xmlns:hu.bme.mit.gamma.statechart.composite="http://www.mit.bme.hu/gamma/statechart/Model/Composite" xmlns:hu.bme.mit.gamma.statechart.interface="http://www.mit.bme.hu/gamma/statechart/Model/Interface" name="alternativeView">
+  <components xsi:type="hu.bme.mit.gamma.statechart.composite:CascadeCompositeComponent" name="Alternative">
+    <ports name="PoliceInterrupt">
+      <interfaceRealization realizationMode="REQUIRED">
+        <interface href="/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.3"/>
+      </interfaceRealization>
+    </ports>
+    <ports name="PoliceInterruptREVERSED">
+      <interfaceRealization>
+        <interface href="/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.3"/>
+      </interfaceRealization>
+    </ports>
+    <ports name="SecondaryPolice">
+      <interfaceRealization>
+        <interface href="/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.3"/>
+      </interfaceRealization>
+    </ports>
+    <ports name="SecondaryPoliceREVERSED">
+      <interfaceRealization realizationMode="REQUIRED">
+        <interface href="/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.3"/>
+      </interfaceRealization>
+    </ports>
+    <ports name="SecondaryControl">
+      <interfaceRealization>
+        <interface href="/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.2"/>
+      </interfaceRealization>
+    </ports>
+    <ports name="SecondaryControlREVERSED">
+      <interfaceRealization realizationMode="REQUIRED">
+        <interface href="/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.2"/>
+      </interfaceRealization>
+    </ports>
+    <ports name="PriorityControl">
+      <interfaceRealization>
+        <interface href="/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.2"/>
+      </interfaceRealization>
+    </ports>
+    <ports name="PriorityControlREVERSED">
+      <interfaceRealization realizationMode="REQUIRED">
+        <interface href="/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.2"/>
+      </interfaceRealization>
+    </ports>
+    <ports name="PriorityPolice">
+      <interfaceRealization>
+        <interface href="/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.3"/>
+      </interfaceRealization>
+    </ports>
+    <ports name="PriorityPoliceREVERSED">
+      <interfaceRealization realizationMode="REQUIRED">
+        <interface href="/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.3"/>
+      </interfaceRealization>
+    </ports>
+    <portBindings compositeSystemPort="//@components.0/@ports.0">
+      <instancePortReference instance="//@components.0/@components.0" port="//@components.1/@ports.0"/>
+    </portBindings>
+    <portBindings compositeSystemPort="//@components.0/@ports.1">
+      <instancePortReference instance="//@components.0/@components.0" port="//@components.1/@ports.1"/>
+    </portBindings>
+    <portBindings compositeSystemPort="//@components.0/@ports.2">
+      <instancePortReference instance="//@components.0/@components.0" port="//@components.1/@ports.2"/>
+    </portBindings>
+    <portBindings compositeSystemPort="//@components.0/@ports.3">
+      <instancePortReference instance="//@components.0/@components.0" port="//@components.1/@ports.3"/>
+    </portBindings>
+    <portBindings compositeSystemPort="//@components.0/@ports.4">
+      <instancePortReference instance="//@components.0/@components.0" port="//@components.1/@ports.4"/>
+    </portBindings>
+    <portBindings compositeSystemPort="//@components.0/@ports.5">
+      <instancePortReference instance="//@components.0/@components.0" port="//@components.1/@ports.5"/>
+    </portBindings>
+    <portBindings compositeSystemPort="//@components.0/@ports.6">
+      <instancePortReference instance="//@components.0/@components.0" port="//@components.1/@ports.6"/>
+    </portBindings>
+    <portBindings compositeSystemPort="//@components.0/@ports.7">
+      <instancePortReference instance="//@components.0/@components.0" port="//@components.1/@ports.7"/>
+    </portBindings>
+    <portBindings compositeSystemPort="//@components.0/@ports.8">
+      <instancePortReference instance="//@components.0/@components.0" port="//@components.1/@ports.8"/>
+    </portBindings>
+    <portBindings compositeSystemPort="//@components.0/@ports.9">
+      <instancePortReference instance="//@components.0/@components.0" port="//@components.1/@ports.9"/>
+    </portBindings>
+    <components name="Alternative" type="//@components.1"/>
+  </components>
+  <components xsi:type="hu.bme.mit.gamma.statechart:StatechartDefinition" name="Alternative" transitionPriority="VALUE_BASED">
+    <ports name="PoliceInterrupt">
+      <interfaceRealization realizationMode="REQUIRED">
+        <interface href="/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.3"/>
+      </interfaceRealization>
+    </ports>
+    <ports name="PoliceInterruptREVERSED">
+      <interfaceRealization>
+        <interface href="/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.3"/>
+      </interfaceRealization>
+    </ports>
+    <ports name="SecondaryPolice">
+      <interfaceRealization>
+        <interface href="/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.3"/>
+      </interfaceRealization>
+    </ports>
+    <ports name="SecondaryPoliceREVERSED">
+      <interfaceRealization realizationMode="REQUIRED">
+        <interface href="/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.3"/>
+      </interfaceRealization>
+    </ports>
+    <ports name="SecondaryControl">
+      <interfaceRealization>
+        <interface href="/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.2"/>
+      </interfaceRealization>
+    </ports>
+    <ports name="SecondaryControlREVERSED">
+      <interfaceRealization realizationMode="REQUIRED">
+        <interface href="/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.2"/>
+      </interfaceRealization>
+    </ports>
+    <ports name="PriorityControl">
+      <interfaceRealization>
+        <interface href="/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.2"/>
+      </interfaceRealization>
+    </ports>
+    <ports name="PriorityControlREVERSED">
+      <interfaceRealization realizationMode="REQUIRED">
+        <interface href="/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.2"/>
+      </interfaceRealization>
+    </ports>
+    <ports name="PriorityPolice">
+      <interfaceRealization>
+        <interface href="/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.3"/>
+      </interfaceRealization>
+    </ports>
+    <ports name="PriorityPoliceREVERSED">
+      <interfaceRealization realizationMode="REQUIRED">
+        <interface href="/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.3"/>
+      </interfaceRealization>
+    </ports>
+    <regions name="region">
+      <stateNodes xsi:type="hu.bme.mit.gamma.statechart:InitialState" name="Initial"/>
+      <stateNodes xsi:type="hu.bme.mit.gamma.statechart:State" name="hotViolation"/>
+      <stateNodes xsi:type="hu.bme.mit.gamma.statechart:ChoiceState" name="Choice1"/>
+      <stateNodes xsi:type="hu.bme.mit.gamma.statechart:State" name="state0_0"/>
+      <stateNodes xsi:type="hu.bme.mit.gamma.statechart:ChoiceState" name="Choice3"/>
+      <stateNodes xsi:type="hu.bme.mit.gamma.statechart:State" name="state0_1"/>
+      <stateNodes xsi:type="hu.bme.mit.gamma.statechart:ChoiceState" name="Choice5"/>
+      <stateNodes xsi:type="hu.bme.mit.gamma.statechart:State" name="state1"/>
+      <stateNodes xsi:type="hu.bme.mit.gamma.statechart:ChoiceState" name="Choice7"/>
+      <stateNodes xsi:type="hu.bme.mit.gamma.statechart:State" name="merge0"/>
+      <stateNodes xsi:type="hu.bme.mit.gamma.statechart:ChoiceState" name="Choice9"/>
+      <stateNodes xsi:type="hu.bme.mit.gamma.statechart:State" name="AcceptingState"/>
+    </regions>
+    <variableDeclarations name="IteratingVariable">
+      <type xsi:type="hu.bme.mit.gamma.expression:IntegerTypeDefinition"/>
+      <expression xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="0"/>
+    </variableDeclarations>
+    <variableDeclarations name="LoopIteratingVariable0">
+      <type xsi:type="hu.bme.mit.gamma.expression:IntegerTypeDefinition"/>
+      <expression xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="0"/>
+    </variableDeclarations>
+    <variableDeclarations name="result">
+      <type xsi:type="hu.bme.mit.gamma.expression:IntegerTypeDefinition"/>
+      <expression xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="0"/>
+    </variableDeclarations>
+    <transitions sourceState="//@components.1/@regions.0/@stateNodes.0" targetState="//@components.1/@regions.0/@stateNodes.2">
+      <effects xsi:type="hu.bme.mit.gamma.action:AssignmentStatement">
+        <lhs xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.0"/>
+        <rhs xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1"/>
+      </effects>
+      <effects xsi:type="hu.bme.mit.gamma.action:AssignmentStatement">
+        <lhs xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.1"/>
+        <rhs xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1"/>
+      </effects>
+    </transitions>
+    <transitions sourceState="//@components.1/@regions.0/@stateNodes.2" targetState="//@components.1/@regions.0/@stateNodes.3"/>
+    <transitions sourceState="//@components.1/@regions.0/@stateNodes.4" targetState="//@components.1/@regions.0/@stateNodes.9">
+      <trigger xsi:type="hu.bme.mit.gamma.statechart.interface:EventTrigger">
+        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.1/@ports.0">
+          <event href="/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.3/@events.0/@event"/>
+        </eventReference>
+      </trigger>
+      <effects xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.1/@ports.1">
+        <event href="/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.3/@events.0/@event"/>
+      </effects>
+    </transitions>
+    <transitions sourceState="//@components.1/@regions.0/@stateNodes.4" targetState="//@components.1/@regions.0/@stateNodes.1">
+      <guard xsi:type="hu.bme.mit.gamma.expression:ElseExpression"/>
+      <effects xsi:type="hu.bme.mit.gamma.action:AssignmentStatement">
+        <lhs xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.2"/>
+        <rhs xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="0"/>
+      </effects>
+    </transitions>
+    <transitions sourceState="//@components.1/@regions.0/@stateNodes.3" targetState="//@components.1/@regions.0/@stateNodes.4">
+      <trigger xsi:type="hu.bme.mit.gamma.statechart:OnCycleTrigger"/>
+    </transitions>
+    <transitions sourceState="//@components.1/@regions.0/@stateNodes.2" targetState="//@components.1/@regions.0/@stateNodes.5"/>
+    <transitions sourceState="//@components.1/@regions.0/@stateNodes.6" targetState="//@components.1/@regions.0/@stateNodes.7">
+      <trigger xsi:type="hu.bme.mit.gamma.statechart.interface:EventTrigger">
+        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.1/@ports.0">
+          <event href="/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.3/@events.0/@event"/>
+        </eventReference>
+      </trigger>
+      <effects xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.1/@ports.1">
+        <event href="/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.3/@events.0/@event"/>
+      </effects>
+    </transitions>
+    <transitions sourceState="//@components.1/@regions.0/@stateNodes.6" targetState="//@components.1/@regions.0/@stateNodes.1">
+      <guard xsi:type="hu.bme.mit.gamma.expression:ElseExpression"/>
+      <effects xsi:type="hu.bme.mit.gamma.action:AssignmentStatement">
+        <lhs xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.2"/>
+        <rhs xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="0"/>
+      </effects>
+    </transitions>
+    <transitions sourceState="//@components.1/@regions.0/@stateNodes.5" targetState="//@components.1/@regions.0/@stateNodes.6">
+      <trigger xsi:type="hu.bme.mit.gamma.statechart:OnCycleTrigger"/>
+    </transitions>
+    <transitions sourceState="//@components.1/@regions.0/@stateNodes.8" targetState="//@components.1/@regions.0/@stateNodes.9">
+      <trigger xsi:type="hu.bme.mit.gamma.statechart.interface:EventTrigger">
+        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.1/@ports.0">
+          <event href="/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.3/@events.0/@event"/>
+        </eventReference>
+      </trigger>
+      <effects xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.1/@ports.1">
+        <event href="/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.3/@events.0/@event"/>
+      </effects>
+    </transitions>
+    <transitions sourceState="//@components.1/@regions.0/@stateNodes.8" targetState="//@components.1/@regions.0/@stateNodes.1">
+      <guard xsi:type="hu.bme.mit.gamma.expression:ElseExpression"/>
+      <effects xsi:type="hu.bme.mit.gamma.action:AssignmentStatement">
+        <lhs xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.2"/>
+        <rhs xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="0"/>
+      </effects>
+    </transitions>
+    <transitions sourceState="//@components.1/@regions.0/@stateNodes.7" targetState="//@components.1/@regions.0/@stateNodes.8">
+      <trigger xsi:type="hu.bme.mit.gamma.statechart:OnCycleTrigger"/>
+    </transitions>
+    <transitions priority="3" sourceState="//@components.1/@regions.0/@stateNodes.10" targetState="//@components.1/@regions.0/@stateNodes.11">
+      <trigger xsi:type="hu.bme.mit.gamma.statechart.interface:EventTrigger">
+        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.1/@ports.7">
+          <event href="/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.2/@events.0/@event"/>
+        </eventReference>
+      </trigger>
+      <effects xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.1/@ports.6">
+        <event href="/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd#//@interfaces.2/@events.0/@event"/>
+      </effects>
+      <effects xsi:type="hu.bme.mit.gamma.action:AssignmentStatement">
+        <lhs xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.2"/>
+        <rhs xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="2"/>
+      </effects>
+    </transitions>
+    <transitions priority="1" sourceState="//@components.1/@regions.0/@stateNodes.10" targetState="//@components.1/@regions.0/@stateNodes.1">
+      <guard xsi:type="hu.bme.mit.gamma.expression:ElseExpression"/>
+      <effects xsi:type="hu.bme.mit.gamma.action:AssignmentStatement">
+        <lhs xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="//@components.1/@variableDeclarations.2"/>
+        <rhs xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="0"/>
+      </effects>
+    </transitions>
+    <transitions sourceState="//@components.1/@regions.0/@stateNodes.9" targetState="//@components.1/@regions.0/@stateNodes.10">
+      <trigger xsi:type="hu.bme.mit.gamma.statechart:OnCycleTrigger"/>
+    </transitions>
+  </components>
+  <annotations xsi:type="hu.bme.mit.gamma.statechart.interface:UnfoldedPackageAnnotation"/>
+  <annotations xsi:type="hu.bme.mit.gamma.statechart.interface:WrappedPackageAnnotation"/>
+  <annotations xsi:type="hu.bme.mit.gamma.statechart.interface:SchedulingConstraintAnnotation">
+    <schedulingConstraint xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="2000"/>
+  </annotations>
+</hu.bme.mit.gamma.statechart.interface:Package>

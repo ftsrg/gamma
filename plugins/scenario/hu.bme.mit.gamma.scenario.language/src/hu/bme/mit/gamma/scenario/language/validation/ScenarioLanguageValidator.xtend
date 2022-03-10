@@ -23,6 +23,7 @@ import hu.bme.mit.gamma.scenario.model.ScenarioDefinition
 import hu.bme.mit.gamma.scenario.model.Signal
 import hu.bme.mit.gamma.scenario.util.ScenarioModelValidator
 import org.eclipse.xtext.validation.Check
+import hu.bme.mit.gamma.scenario.model.ScenarioDefinitionReference
 
 class ScenarioLanguageValidator extends AbstractScenarioLanguageValidator {
 
@@ -91,6 +92,17 @@ class ScenarioLanguageValidator extends AbstractScenarioLanguageValidator {
 	@Check
 	def void checkIntervals(Delay delay) {
 		handleValidationResultMessage(validator.checkIntervals(delay))
+	}
+	
+	@Check
+	def void checkScenarioReferenceParamCount(ScenarioDefinitionReference ref) {
+		handleValidationResultMessage(validator.checkScenarioReferenceParamCount(ref))
+	}
+	
+
+	@Check
+	def void checkRecursiveScenraioReference(ScenarioDefinitionReference ref) {
+		handleValidationResultMessage(validator.checkRecursiveScenraioReference(ref))
 	}
 
 }
