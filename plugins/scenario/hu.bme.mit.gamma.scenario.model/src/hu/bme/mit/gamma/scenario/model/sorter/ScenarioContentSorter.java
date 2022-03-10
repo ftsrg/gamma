@@ -1,8 +1,12 @@
 package hu.bme.mit.gamma.scenario.model.sorter;
 
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+
+import org.eclipse.emf.common.util.ECollections;
+import org.eclipse.emf.common.util.EList;
+import org.eclipse.emf.common.util.EList;
+import org.eclipse.emf.common.util.EList;
 
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator;
@@ -26,8 +30,8 @@ public class ScenarioContentSorter {
 	}
 
 	private void sortInteractionSet(ModalInteractionSet set) {
-		List<InteractionDefinition> interactions = set.getModalInteractions();
-		Collections.sort(interactions, Comparator
+		EList<InteractionDefinition> interactions = set.getModalInteractions();
+		ECollections.sort(interactions, Comparator
 				.comparing((InteractionDefinition interaction) -> getSerializedInteractionDefinition(interaction)));
 	}
 

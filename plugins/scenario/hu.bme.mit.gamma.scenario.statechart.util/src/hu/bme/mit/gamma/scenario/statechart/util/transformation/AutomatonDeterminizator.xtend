@@ -90,30 +90,31 @@ class AutomatonDeterminizator {
 			val state = firstRegion.stateNodes.get(i)
 			handleState(state)
 		}
-		
-		//Reset references inside triggers
-		for(port : newStatechart.ports){
+
+		// Reset references inside triggers
+		for (port : newStatechart.ports) {
 			val oldPort = oldStatechart.ports.findFirst[it.name == port.name]
 			ecoreUtil.change(port, oldPort, newStatechart)
 		}
-		
-		//remove unreachable nodes
+
+		// remove unreachable nodes
 		removeUnreachableNodes()
-		
-		//add annotation
+
+		// add annotations
 		addAnnotationForAcceptingStates()
-		
+
 		return newStatechart
 	}
-	
+
 	def addAnnotationForAcceptingStates() {
-		val annotation = createSpecialStateAnnotation
-		annotation.kind = SpecialStateKind.ACCEPTING
-		annotation.stateNodes.clear
-		annotation.stateNodes += firstRegion.stateNodes.filter[it.name.contains(accepting)]
-//		newStatechart.annotations+=annotation
+		val acceptingStates = firstRegion.states.filter[it.name.contains(accepting)]
+		for (accState : acceptingStates) {
+			val annotation = createSpecialStateAnnotation
+			annotation.kind = SpecialStateKind.ACCEPTING
+			accState.annotation = annotation
+		}
 	}
-	
+
 	def void removeUnreachableNodes() {
 		val remove = <StateNode>newArrayList
 		for (stateNode : firstRegion.stateNodes) {
@@ -122,7 +123,8 @@ class AutomatonDeterminizator {
 		}
 		newStatechart.transitions.removeAll(remove.flatMap[it.outgoingTransitions])
 		firstRegion.stateNodes -= remove
-		if(firstRegion.stateNodes.exists[it.incomingTransitions.isEmpty && it.name != scenarioStatechartUtil.initial]){
+		if (firstRegion.stateNodes.
+			exists[it.incomingTransitions.isEmpty && it.name != scenarioStatechartUtil.initial]) {
 			removeUnreachableNodes()
 		}
 	}
@@ -157,7 +159,7 @@ class AutomatonDeterminizator {
 		newState.name = nodes.map[it.name].join('__')
 		firstRegion.stateNodes += newState
 		statesCollectiveState.put(nodes, newState)
-		newStateOldStates.put(newState,nodes)
+		newStateOldStates.put(newState, nodes)
 		return newState
 	}
 
@@ -186,9 +188,9 @@ class AutomatonDeterminizator {
 		val output = <Set<Transition>>newHashSet
 		for (a : transitions) {
 			for (b : transitions) {
-				if(a!=b && areTransitionsNonDeterministic(a,b)){
-					var containingSet = findContainingSetForEither(output,a,b)
-					if(containingSet === null){
+				if (a != b && areTransitionsNonDeterministic(a, b)) {
+					var containingSet = findContainingSetForEither(output, a, b)
+					if (containingSet === null) {
 						containingSet = newHashSet
 						output += containingSet
 					}
@@ -199,10 +201,10 @@ class AutomatonDeterminizator {
 		}
 		return output
 	}
-	
-	def Set<Transition> findContainingSetForEither(Set<Set<Transition>> sets,Transition a, Transition b) {
-		for(set : sets){
-			if(set.contains(a) || set.contains(b)){
+
+	def Set<Transition> findContainingSetForEither(Set<Set<Transition>> sets, Transition a, Transition b) {
+		for (set : sets) {
+			if (set.contains(a) || set.contains(b)) {
 				return set
 			}
 		}

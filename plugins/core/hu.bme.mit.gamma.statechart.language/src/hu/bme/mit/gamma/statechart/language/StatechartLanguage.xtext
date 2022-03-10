@@ -216,13 +216,10 @@ enum GuardEvaluation returns GuardEvaluation:
 ;
 
 StatechartContractAnnotation returns StatechartAnnotation:
-	ScenarioAllowedWaitingAnnotation | ScenarioContractAnnotation | AdaptiveContractAnnotation | MissionPhaseAnnotation | SpecialStateAnnotation
+	ScenarioAllowedWaitingAnnotation | ScenarioContractAnnotation | AdaptiveContractAnnotation | MissionPhaseAnnotation 
 ;
 
-SpecialStateAnnotation returns ContractModel::SpecialStateAnnotation :
-	{ContractModel::SpecialStateAnnotation}
-	'@SpecialStateAnnotation' kind=SpecialStateKind '[' stateNodes+=[StateNode](','stateNodes+=[StateNode])* ']'
-;
+
 enum SpecialStateKind returns ContractModel::SpecialStateKind:
 	ACCEPTING = 'accepting'
 ;
@@ -302,7 +299,12 @@ State returns State:
 ;
 
 StateAnnotation returns StateAnnotation:
-	StateContractAnnotation | MissionPhaseStateAnnotation
+	StateContractAnnotation | MissionPhaseStateAnnotation | SpecialStateAnnotation
+;
+
+SpecialStateAnnotation returns ContractModel::SpecialStateAnnotation :
+	{ContractModel::SpecialStateAnnotation}
+	'@SpecialStateAnnotation' kind=SpecialStateKind
 ;
 
 StateContractAnnotation returns ContractModel::StateContractAnnotation:

@@ -115,7 +115,6 @@
     </genClasses>
     <genClasses ecoreClass="contract.ecore#//SpecialStateAnnotation">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute contract.ecore#//SpecialStateAnnotation/kind"/>
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference contract.ecore#//SpecialStateAnnotation/stateNodes"/>
     </genClasses>
   </genPackages>
   <genPackages prefix="InterfaceModel" basePackage="hu.bme.mit.gamma.statechart" ecorePackage="interface.ecore#/">

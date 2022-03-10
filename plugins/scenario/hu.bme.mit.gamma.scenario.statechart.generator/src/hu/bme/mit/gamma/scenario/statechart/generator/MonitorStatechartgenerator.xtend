@@ -65,7 +65,7 @@ class MonitorStatechartgenerator extends AbstractContractStatechartGeneration {
 			val compulsory = replacedStateWithValue.getOrDefault(pair.key, pair.key)
 			val optional = pair.value
 			for (t : compulsory.outgoingTransitions) {
-				if (t.targetState != optional) {
+				if (t.targetState != optional && !t.targetState.reachableStates.contains(optional)) {
 					val tCopy = t.clone
 					tCopy.sourceState = optional
 					statechart.transitions += tCopy

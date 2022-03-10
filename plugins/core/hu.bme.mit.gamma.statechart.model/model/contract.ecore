@@ -38,10 +38,8 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="upperLimit" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
         containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="SpecialStateAnnotation" eSuperTypes="statechart.ecore#//StatechartAnnotation">
+  <eClassifiers xsi:type="ecore:EClass" name="SpecialStateAnnotation" eSuperTypes="statechart.ecore#//StateAnnotation">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="kind" eType="#//SpecialStateKind"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="stateNodes" upperBound="-1"
-        eType="ecore:EClass statechart.ecore#//StateNode"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EEnum" name="SpecialStateKind">
     <eLiterals name="ACCEPTING"/>

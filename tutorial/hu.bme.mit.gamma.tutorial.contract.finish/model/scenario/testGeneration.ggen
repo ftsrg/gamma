@@ -1,13 +1,24 @@
 import "policebehaviour"
 
 statechart-contract {
-	scenario : monitorTest 
-	folder : "model/scenario"
+	scenario : sortTest 
+	folder : "model/scenario/test"
 	name : "monitor"
-	
 	automaton-type : monitor
-	
-	
+}
+
+statechart-contract {
+	scenario : loopTest 
+	folder : "model/scenario/test"
+	name : "loop"
+	automaton-type : monitor
+}
+
+statechart-contract {
+	scenario : optTest 
+	folder : "model/scenario/test"
+	name : "opt"
+	automaton-type : monitor
 }
 
 

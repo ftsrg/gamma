@@ -14,19 +14,19 @@ scenario PoliceBehaviour [
 	}
 ]
 
-scenario monitorTest [
+scenario sortTest [
 	alternative {
 		{
-			cold receives PoliceInterrupt.police
+			hot sends PriorityPolice.police
+			hot sends SecondaryPolice.police
 		}
-		optional {
-			{
-				hot sends PriorityControl.toggle
-			} 
+		{
+			hot sends PriorityControl.toggle
 		}
 	} or {
 		{
-			cold receives PoliceInterrupt.police
+			hot sends SecondaryPolice.police
+			hot sends PriorityPolice.police
 		}
 		{
 			hot sends SecondaryPolice.police
@@ -34,8 +34,51 @@ scenario monitorTest [
 	}
 	{
 		hot sends PriorityControl.toggle
-	} //	{
-	//		hot sends SecondaryControl.toggle
-	//	}
+	}
+]
 
+scenario loopTest [
+	loop (2 .. 4) {
+		{
+			hot sends PriorityPolice.police
+			hot sends SecondaryPolice.police
+		}
+		{
+			hot sends PriorityControl.toggle
+		}
+	}
+	{
+		hot sends PriorityControl.toggle
+	}
+]
+
+scenario optTest [
+	alternative {
+		{
+			cold receives PoliceInterrupt.police
+		}
+	} or {
+		{
+			cold receives PoliceInterrupt.police
+		}
+		optional {
+			{
+				hot sends PriorityPolice.police
+				hot sends SecondaryPolice.police
+			}
+			{
+				hot sends PriorityControl.toggle
+			}
+		}
+	}
+	{
+		hot sends PriorityControl.toggle
+	}
+	{
+		cold receives PoliceInterrupt.police
+	}
+	{
+		hot sends PriorityPolice.police
+		hot sends SecondaryPolice.police
+	}
 ]

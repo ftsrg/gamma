@@ -7,6 +7,7 @@ import hu.bme.mit.gamma.genmodel.model.StatechartContractGeneration;
 import hu.bme.mit.gamma.scenario.model.ScenarioDeclaration;
 import hu.bme.mit.gamma.scenario.model.ScenarioDefinition;
 import hu.bme.mit.gamma.scenario.model.reduction.SimpleScenarioGenerator;
+import hu.bme.mit.gamma.scenario.model.sorter.ScenarioContentSorter;
 import hu.bme.mit.gamma.scenario.statechart.generator.AbstractContractStatechartGeneration;
 import hu.bme.mit.gamma.scenario.statechart.generator.MonitorStatechartgenerator;
 import hu.bme.mit.gamma.scenario.statechart.generator.StatechartGenerationMode;
@@ -34,6 +35,8 @@ public class StatechartContractGenerationHandler extends TaskHandler {
 				: StatechartGenerationMode.GENERATE_ONLY_FORWARD;
 		AbstractContractStatechartGeneration statechartGenerator = null;
 		SimpleScenarioGenerator simpleGenerator = null;
+		ScenarioContentSorter sorter = new ScenarioContentSorter();
+		sorter.sort(baseScenario);
 		if (statechartGeneration.getAutomatonType().equals(ContractAutomatonType.MONITOR)) {
 			simpleGenerator = new SimpleScenarioGenerator(baseScenario, true,
 					statechartGeneration.getArguments());
