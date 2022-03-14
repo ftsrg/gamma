@@ -33,7 +33,7 @@ class MonitorStatechartgenerator extends AbstractContractStatechartGeneration {
 	}
 
 	override execute() {
-		statechart = createStatechartDefinition
+		statechart = createSynchronousStatechartDefinition
 		intializeStatechart()
 		for (modalInteraction : scenario.chart.fragment.interactions) {
 			if (!skipNextinteraction) {
@@ -159,8 +159,8 @@ class MonitorStatechartgenerator extends AbstractContractStatechartGeneration {
 			}
 			ends += previousState
 		}
-		val mergeState = createNewState(mergeName+exsistingMerges)
-		firstRegion.stateNodes+=mergeState
+		val mergeState = createNewState(mergeName + exsistingMerges)
+		firstRegion.stateNodes += mergeState
 		previousState = mergeState
 		for (transition : statechart.transitions) {
 			if (ends.contains(transition.targetState)) {

@@ -18,19 +18,17 @@ public class ScenarioStatechartUtil {
 
 	public static final ScenarioStatechartUtil INSTANCE = new ScenarioStatechartUtil();
 
-	
-
 	protected ScenarioStatechartUtil() {
 	}
-	
+
 	protected final String hotComponentViolation = "hotComponentViolation";
 
 	protected final String hotEnvironmentViolation = "hotEnvironmentViolation";
-	
+
 	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
-	
+
 	private final String stateName = "state";
-	
+
 	private final String choiceName = "Choice";
 
 	private final String reversed = "REVERSED";
@@ -42,17 +40,17 @@ public class ScenarioStatechartUtil {
 	private final String Accepting = "AcceptingState";
 
 	private final String initial = "Initial";
-	
+
 	private final String LoopVariable = "LoopIteratingVariable";
 
 	private final String result = "result";
-	
+
 	private final String IteratingVariable = "IteratingVariable";
-	
+
 	private final String firstRegionName = "region";
-	
+
 	private final String firstStateName = "firstState";
-	
+
 	private final String mergeName = "merge";
 
 	public String getMergeName() {
@@ -63,7 +61,7 @@ public class ScenarioStatechartUtil {
 		return firstStateName;
 	}
 
-	public String getFirstRegionName() { 
+	public String getFirstRegionName() {
 		return firstRegionName;
 	}
 
@@ -109,11 +107,11 @@ public class ScenarioStatechartUtil {
 	public String getInitial() {
 		return initial;
 	}
-	
+
 	public int getLoopDepth(LoopCombinedFragment loop) {
 		return ecoreUtil.getAllContainersOfType(loop, LoopCombinedFragment.class).size();
 	}
-	
+
 	public String getLoopvariableNameForDepth(int depth) {
 		return LoopVariable + depth;
 	}

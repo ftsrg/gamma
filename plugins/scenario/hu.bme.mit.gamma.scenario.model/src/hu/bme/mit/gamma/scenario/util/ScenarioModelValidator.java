@@ -10,12 +10,9 @@ import java.util.stream.Collectors;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
 
-import hu.bme.mit.gamma.expression.model.ArgumentedElement;
 import hu.bme.mit.gamma.expression.model.Expression;
-import hu.bme.mit.gamma.expression.model.ExpressionModelFactory;
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition;
-import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.util.ExpressionModelValidator;
 import hu.bme.mit.gamma.expression.util.ExpressionTypeDeterminator2;
@@ -55,11 +52,13 @@ import hu.bme.mit.gamma.statechart.interface_.RealizationMode;
 public class ScenarioModelValidator extends ExpressionModelValidator {
 	// Singleton
 	public static final ScenarioModelValidator INSTANCE = new ScenarioModelValidator();
-	protected ScenarioModelValidator() {}
+
+	protected ScenarioModelValidator() {
+	}
 	//
 
 	ExpressionTypeDeterminator2 typeDeterminator = ExpressionTypeDeterminator2.INSTANCE;
-	 
+
 	public Collection<ValidationResultMessage> checkIncompatibleAnnotations(ScenarioDefinition scenario) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		boolean strictPresent = false;
@@ -69,17 +68,14 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 		for (Annotation annotation : scenario.getAnnotation()) {
 			if (annotation instanceof StrictAnnotation) {
 				strictPresent = true;
-			}
-			else if (annotation instanceof PermissiveAnnotation) {
+			} else if (annotation instanceof PermissiveAnnotation) {
 				permissivePresent = true;
-			}
-			else if (annotation instanceof NegStrictAnnotation) {
+			} else if (annotation instanceof NegStrictAnnotation) {
 				negstrictPresent = true;
-			}
-			else if (annotation instanceof NegPermissiveAnnotation) {
+			} else if (annotation instanceof NegPermissiveAnnotation) {
 				negpermissivePresent = true;
 			}
-		} 
+		}
 		if (permissivePresent && strictPresent) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 					"A scenario should be annotated with either a permissive or strict annotation",
@@ -87,7 +83,7 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 		}
 		if (negpermissivePresent && negstrictPresent) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-				"A scenario should be annotated with either a permissive or strict annotation with respect to negated sends blocks",
+					"A scenario should be annotated with either a permissive or strict annotation with respect to negated sends blocks",
 					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME)));
 		}
 		return validationResultMessages;
@@ -103,9 +99,9 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 				}
 			}
 			if (i > 1) {
-				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-						"Scenario names should be unique",
-						new ReferenceInfo(ScenarioModelPackage.Literals.SCENARIO_DECLARATION__SCENARIOS)));
+				validationResultMessages
+						.add(new ValidationResultMessage(ValidationResult.ERROR, "Scenario names should be unique",
+								new ReferenceInfo(ScenarioModelPackage.Literals.SCENARIO_DECLARATION__SCENARIOS)));
 				return validationResultMessages;
 			}
 		}
@@ -115,7 +111,7 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 	public Collection<ValidationResultMessage> checkAtLeastOneHotSignalInChart(ScenarioDefinition scenario) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		boolean allCold = scenario.getChart().getFragment().getInteractions().stream()
-				.allMatch((i) ->  interactionIsCold(i));
+				.allMatch((i) -> interactionIsCold(i));
 		if (allCold) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING,
 					"There should be at least one hot signal in chart",
@@ -131,21 +127,20 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 		int idx = -1;
 		if (modalInteractionSet.eContainer() instanceof NegatedModalInteraction) {
 			idx = ecoreUtil.getIndex(modalInteractionSet.eContainer());
-		} 
-		else {
+		} else {
 			idx = ecoreUtil.getIndex(modalInteractionSet);
 		}
 		EObject eContainer = modalInteractionSet.eContainer();
 		if (component instanceof SynchronousComponent) {
-			List<ModalInteractionSet> sets = ecoreUtil.getAllContentsOfType(modalInteractionSet, ModalInteractionSet.class);
+			List<ModalInteractionSet> sets = ecoreUtil.getAllContentsOfType(modalInteractionSet,
+					ModalInteractionSet.class);
 			if (!sets.isEmpty()) {
 				// Just to make sure, in the current grammar this is impossible
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 						"Modal interaction sets cannot contain modal interaction sets",
 						new ReferenceInfo(modalInteractionSet.eContainingFeature(), idx, eContainer)));
 			}
-		}
-		else {
+		} else {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 					"Scenarios with respect to asynchronous components cannot contain modal interaction sets",
 					new ReferenceInfo(modalInteractionSet.eContainingFeature(), idx, eContainer)));
@@ -165,10 +160,9 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 				return validationResultMessages;
 			} else {
 				EObject eContainer = interaction.eContainer();
-				if (!(eContainer instanceof ModalInteractionSet)
-						&& !(eContainer instanceof InitialBlock)
-							&& !(eContainer instanceof NegatedModalInteraction
-									&& eContainer.eContainer() instanceof ModalInteractionSet)) {
+				if (!(eContainer instanceof ModalInteractionSet) && !(eContainer instanceof InitialBlock)
+						&& !(eContainer instanceof NegatedModalInteraction
+								&& eContainer.eContainer() instanceof ModalInteractionSet)) {
 					int idx = 0;
 					if (eContainer instanceof InteractionFragment) {
 						InteractionFragment set = (InteractionFragment) eContainer;
@@ -191,8 +185,8 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 		if (eContainer instanceof ModalInteractionSet) {
 			if (idx != 0) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-						"Resets must be specified as the first element in a containing set", new ReferenceInfo(
-								eContainer.eContainingFeature(), idx, eContainer.eContainer())));
+						"Resets must be specified as the first element in a containing set",
+						new ReferenceInfo(eContainer.eContainingFeature(), idx, eContainer.eContainer())));
 			}
 		}
 		return validationResultMessages;
@@ -258,8 +252,8 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 		int idx = ecoreUtil.getIndex(fragment);
 		validationResultMessages.add(new ValidationResultMessage(ValidationResult.INFO,
 				"Beware that a parallel combined fragment will introduce every possible partial orderings of its fragments;"
-				+ " it may have a significant impact on the performance",
-				new ReferenceInfo(fragment.eContainingFeature(), idx,fragment.eContainer()))); 
+						+ " it may have a significant impact on the performance",
+				new ReferenceInfo(fragment.eContainingFeature(), idx, fragment.eContainer())));
 		return validationResultMessages;
 	}
 
@@ -270,14 +264,14 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 	}
 
 	public Collection<ValidationResultMessage> checkIntervals(Delay delay) {
-		return checkInterval(delay.getMinimum(), delay.getMaximum(),
-				ScenarioModelPackage.Literals.DELAY__MINIMUM,ScenarioModelPackage.Literals.DELAY__MAXIMUM);
+		return checkInterval(delay.getMinimum(), delay.getMaximum(), ScenarioModelPackage.Literals.DELAY__MINIMUM,
+				ScenarioModelPackage.Literals.DELAY__MAXIMUM);
 	}
 
 	private Collection<ValidationResultMessage> checkInterval(Expression minimum, Expression maximum,
 			EStructuralFeature minimumFeature, EStructuralFeature maximumFeature) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		
+
 		try {
 			int min = expressionEvaluator.evaluateInteger(minimum);
 			if (min < 1) {
@@ -293,7 +287,7 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 				}
 			}
 		} catch (IllegalArgumentException e) {
-			//empty on purpouse
+			// empty on purpouse
 		}
 
 		Type minType = typeDeterminator.getType(minimum);
@@ -303,7 +297,7 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 		}
 		if (maximum != null) {
 			Type maxType = typeDeterminator.getType(maximum);
-			if(!(maxType instanceof IntegerTypeDefinition)) {
+			if (!(maxType instanceof IntegerTypeDefinition)) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 						"The maximum value must be of type integer", new ReferenceInfo(maximumFeature)));
 			}
@@ -333,7 +327,8 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 		if (!eventDirIsWrong) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, prefix
 					+ " this event, because of incompatible port mode; should the port be Provided, set the event to be "
-					+ directionByMode.get(RealizationMode.PROVIDED) + "; should the port be Required, set the event to be "
+					+ directionByMode.get(RealizationMode.PROVIDED)
+					+ "; should the port be Required, set the event to be "
 					+ directionByMode.get(RealizationMode.REQUIRED),
 					new ReferenceInfo(ScenarioModelPackage.Literals.SIGNAL__EVENT)));
 		}
@@ -345,22 +340,18 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 		if (first instanceof ModalInteraction) {
 			ModalInteraction modalInteraction = (ModalInteraction) first;
 			return modalInteraction.getModality();
-		}
-		else if (first instanceof CombinedFragment) {
+		} else if (first instanceof CombinedFragment) {
 			CombinedFragment combinedFragment = (CombinedFragment) first;
-			List<Interaction> interactionsOfFirstFragment = combinedFragment.getFragments()
-					.get(0).getInteractions();
+			List<Interaction> interactionsOfFirstFragment = combinedFragment.getFragments().get(0).getInteractions();
 			return getFirstInteractionsModality(interactionsOfFirstFragment);
-		}
-		else if (first instanceof ModalInteractionSet) {
+		} else if (first instanceof ModalInteractionSet) {
 			ModalInteractionSet modalInteractionSet = (ModalInteractionSet) first;
 			if (modalInteractionSet.getModalInteractions().size() > 0) {
 				InteractionDefinition def = modalInteractionSet.getModalInteractions().get(0);
 				if (def instanceof ModalInteraction) {
 					ModalInteraction modalInteraction = (ModalInteraction) def;
 					return modalInteraction.getModality();
-				}
-				else if (def instanceof NegatedModalInteraction) {
+				} else if (def instanceof NegatedModalInteraction) {
 					NegatedModalInteraction negatedModalInteraction = (NegatedModalInteraction) def;
 					InteractionDefinition interactionDefinition = negatedModalInteraction.getModalinteraction();
 					if (interactionDefinition instanceof ModalInteraction) {
@@ -376,58 +367,57 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 	private boolean interactionIsCold(Interaction interaction) {
 		if (interaction instanceof Delay || interaction instanceof Reset) {
 			return true;
-		}
-		else if (interaction instanceof ModalInteractionSet) {
+		} else if (interaction instanceof ModalInteractionSet) {
 			ModalInteractionSet modalInteractionSet = (ModalInteractionSet) interaction;
 			return modalInteractionSet.getModalInteractions().stream().allMatch((i) -> interactionIsCold(i));
-		}
-		else if (interaction instanceof ModalInteraction) {
+		} else if (interaction instanceof ModalInteraction) {
 			ModalInteraction modalInteraction = (ModalInteraction) interaction;
 			return modalInteraction.getModality().equals(ModalityType.COLD);
-		}
-		else if (interaction instanceof CombinedFragment) {
+		} else if (interaction instanceof CombinedFragment) {
 			CombinedFragment combinedFragment = (CombinedFragment) interaction;
 			return combinedFragment.getFragments().stream()
-					.allMatch((fragment) -> fragment.getInteractions().stream()
-							.allMatch((i) -> interactionIsCold(i)));
+					.allMatch((fragment) -> fragment.getInteractions().stream().allMatch((i) -> interactionIsCold(i)));
 		}
 		return false;
 	}
-	
+
 	public Collection<ValidationResultMessage> checkScenarioReferenceParamCount(ScenarioDefinitionReference reference) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		if(reference.getArguments().size() != reference.getScenarioDefinition().getParameterDeclarations().size()) {
-			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "Scenario "
-					+ reference.getScenarioDefinition().getName() + " takes "
-					+ reference.getScenarioDefinition().getParameterDeclarations().size() + " parameters, but " 
-					+ reference.getArguments().size() + " argumnets are provided.",
-					new ReferenceInfo(ScenarioModelPackage.Literals.SCENARIO_DEFINITION_REFERENCE__SCENARIO_DEFINITION)));
+		if (reference.getArguments().size() != reference.getScenarioDefinition().getParameterDeclarations().size()) {
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+					"Scenario " + reference.getScenarioDefinition().getName() + " takes "
+							+ reference.getScenarioDefinition().getParameterDeclarations().size() + " parameters, but "
+							+ reference.getArguments().size() + " argumnets are provided.",
+					new ReferenceInfo(
+							ScenarioModelPackage.Literals.SCENARIO_DEFINITION_REFERENCE__SCENARIO_DEFINITION)));
 		}
-		validationResultMessages.addAll(checkArgumentTypes(reference,
-				reference.getScenarioDefinition().getParameterDeclarations()));
+		validationResultMessages
+				.addAll(checkArgumentTypes(reference, reference.getScenarioDefinition().getParameterDeclarations()));
 		return validationResultMessages;
 	}
-	
+
 	public Collection<ValidationResultMessage> checkRecursiveScenraioReference(ScenarioDefinitionReference reference) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		if(isScenarioReferenceRecursive(reference,reference.getScenarioDefinition())) {
-			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "Scenario "
-					+ reference.getScenarioDefinition().getName() + " is called recursively.",
-					new ReferenceInfo(ScenarioModelPackage.Literals.SCENARIO_DEFINITION_REFERENCE__SCENARIO_DEFINITION)));
+		if (isScenarioReferenceRecursive(reference, reference.getScenarioDefinition())) {
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+					"Scenario " + reference.getScenarioDefinition().getName() + " is called recursively.",
+					new ReferenceInfo(
+							ScenarioModelPackage.Literals.SCENARIO_DEFINITION_REFERENCE__SCENARIO_DEFINITION)));
 		}
 		return validationResultMessages;
 	}
-	
+
 	private boolean isScenarioReferenceRecursive(ScenarioDefinitionReference reference, ScenarioDefinition base) {
-		List<ScenarioDefinitionReference> references = ecoreUtil.getAllContentsOfType(reference.getScenarioDefinition(), ScenarioDefinitionReference.class);
-		for(ScenarioDefinitionReference innerReference : references) {
-			if(innerReference.getScenarioDefinition().equals(base)) {
+		List<ScenarioDefinitionReference> references = ecoreUtil.getAllContentsOfType(reference.getScenarioDefinition(),
+				ScenarioDefinitionReference.class);
+		for (ScenarioDefinitionReference innerReference : references) {
+			if (innerReference.getScenarioDefinition().equals(base)) {
 				return true;
 			}
 		}
-		for(ScenarioDefinitionReference innerReference : references) {
+		for (ScenarioDefinitionReference innerReference : references) {
 			boolean isInnerWrong = isScenarioReferenceRecursive(innerReference, base);
-			if(isInnerWrong) {
+			if (isInnerWrong) {
 				return true;
 			}
 		}

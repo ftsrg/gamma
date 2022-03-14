@@ -3,14 +3,10 @@ package hu.bme.mit.gamma.scenario.model.reduction;
 import java.util.ArrayList;
 import java.util.List;
 
-import hu.bme.mit.gamma.expression.util.ExpressionEvaluator;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
 import hu.bme.mit.gamma.util.JavaUtil;
 
 public class ScenarioReductionUtil {
-
-	private static JavaUtil javaUtil = JavaUtil.INSTANCE;
-	private static GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
 
 	public static void createSequences(List<List<FragmentInteractionPair>> listlist, List<List<Integer>> used,
 			List<Integer> maximum) {

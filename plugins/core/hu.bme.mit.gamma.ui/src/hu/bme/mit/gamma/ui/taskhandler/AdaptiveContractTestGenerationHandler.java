@@ -156,8 +156,7 @@ public class AdaptiveContractTestGenerationHandler extends TaskHandler {
 								schedulingConstraint = statechartUtil.evaluateMilliseconds(minimumPeriod);
 							}
 							ScenarioStatechartTraceGenerator traceGenerator = new ScenarioStatechartTraceGenerator(
-									contract, schedulingConstraint,
-									StatechartModelDerivedFeatures.getScenarioAllowedWaitAnnotation(contract));
+									contract, schedulingConstraint);
 							List<ExecutionTrace> staticTraces = traceGenerator.execute();
 							for (ExecutionTrace staticTrace : staticTraces) {
 							    ExecutionTrace mergedTrace = ecoreUtil.clone(clonedAdaptiveTrace);

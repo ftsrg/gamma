@@ -22,7 +22,7 @@ public class ScenarioReferenceResolver {
 	private GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
 
 	public void resolveReferences(ScenarioDefinition scenario) {
-		if(!containsAnyReferences(scenario)) {
+		if (!containsAnyReferences(scenario)) {
 			return;
 		}
 
@@ -38,11 +38,11 @@ public class ScenarioReferenceResolver {
 		for (Interaction interaction : fragment.getInteractions()) {
 			if (interaction instanceof ScenarioDefinitionReference) {
 				ScenarioDefinitionReference ref = (ScenarioDefinitionReference) interaction;
-				List<Interaction> clonedInteractions = ecoreUtil.clone(ref.getScenarioDefinition().getChart().getFragment()).getInteractions();
+				List<Interaction> clonedInteractions = ecoreUtil
+						.clone(ref.getScenarioDefinition().getChart().getFragment()).getInteractions();
 				checkReferencesToInline(clonedInteractions, ref);
 				newInteractions.addAll(clonedInteractions);
-			} 
-			else if (interaction instanceof CombinedFragment) {
+			} else if (interaction instanceof CombinedFragment) {
 				boolean isTransformationNeeded = containsAnyReferences(interaction);
 				if (isTransformationNeeded) {
 					CombinedFragment combinedFragmen = (CombinedFragment) interaction;
@@ -55,26 +55,24 @@ public class ScenarioReferenceResolver {
 					combinedFragmen.getFragments().clear();
 					combinedFragmen.getFragments().addAll(newFargments);
 					newInteractions.add(combinedFragmen);
-				}
-				else {
+				} else {
 					newInteractions.add(interaction);
 				}
-			} 
-			else {
+			} else {
 				newInteractions.add(interaction);
 			}
 		}
 		return newInteractions;
 	}
-	
+
 	private boolean containsAnyReferences(EObject object) {
-		return !ecoreUtil.getAllContentsOfType(object,
-				ScenarioDefinitionReference.class).isEmpty();
+		return !ecoreUtil.getAllContentsOfType(object, ScenarioDefinitionReference.class).isEmpty();
 	}
-	
+
 	private void checkReferencesToInline(List<Interaction> clonedInteractions, ScenarioDefinitionReference ref) {
 		for (Interaction interaction : clonedInteractions) {
-			List<DirectReferenceExpression> references = ecoreUtil.getAllContentsOfType(interaction, DirectReferenceExpression.class);
+			List<DirectReferenceExpression> references = ecoreUtil.getAllContentsOfType(interaction,
+					DirectReferenceExpression.class);
 			for (DirectReferenceExpression direct : references) {
 				Declaration decl = direct.getDeclaration();
 				if (decl instanceof ConstantDeclaration) {
@@ -83,11 +81,10 @@ public class ScenarioReferenceResolver {
 					ecoreUtil.change(cloned, direct, direct.eContainer());
 					ecoreUtil.replace(cloned, direct);
 				}
-				if(decl instanceof ParameterDeclaration)
-				{
-					ParameterDeclaration param = (ParameterDeclaration) decl;					
-					for(ParameterDeclaration paramD: ref.getScenarioDefinition().getParameterDeclarations()) {
-						if(paramD.getName() == param.getName()) {
+				if (decl instanceof ParameterDeclaration) {
+					ParameterDeclaration param = (ParameterDeclaration) decl;
+					for (ParameterDeclaration paramD : ref.getScenarioDefinition().getParameterDeclarations()) {
+						if (paramD.getName() == param.getName()) {
 							int index = ref.getScenarioDefinition().getParameterDeclarations().indexOf(paramD);
 							Expression _new = ref.getArguments().get(index);
 							Expression cloned = ecoreUtil.clone(_new);

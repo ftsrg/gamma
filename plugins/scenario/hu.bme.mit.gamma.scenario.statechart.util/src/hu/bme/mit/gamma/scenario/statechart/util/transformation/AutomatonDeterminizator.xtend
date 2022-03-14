@@ -111,7 +111,7 @@ class AutomatonDeterminizator {
 		for (accState : acceptingStates) {
 			val annotation = createSpecialStateAnnotation
 			annotation.kind = SpecialStateKind.ACCEPTING
-			accState.annotation = annotation
+			accState.annotations += annotation
 		}
 	}
 

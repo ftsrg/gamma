@@ -53,14 +53,14 @@ class TestGeneratorStatechartGenerator extends AbstractContractStatechartGenerat
 	var allowedGlobalWaitMax = 0
 	var allowedGlobalWaitMin = 0
 	var allowedGlobalWaitNegMax = 0
-	
+
 	var NotDefinedEventMode nonDeclaredMessageMode = NotDefinedEventMode.PERMISSIVE
 	var NotDefinedEventMode nonDeclaredNegMessageMode = NotDefinedEventMode.STRICT
 	val boolean coldViolationExisits
 	val StatechartGenerationMode generationMode
 
 	new(ScenarioDefinition scenario, Component component, StatechartGenerationMode mode,
-			boolean dedicatedColdViolation) {
+		boolean dedicatedColdViolation) {
 		super(scenario, component)
 		this.generationMode = mode
 		this.coldViolationExisits = dedicatedColdViolation
@@ -71,7 +71,7 @@ class TestGeneratorStatechartGenerator extends AbstractContractStatechartGenerat
 	}
 
 	override StatechartDefinition execute() {
-		statechart = createStatechartDefinition
+		statechart = createSynchronousStatechartDefinition
 		for (annotation : scenario.annotation) {
 			if (annotation instanceof WaitAnnotation) {
 				allowedGlobalWaitMax = annotation.maximum.evaluateInteger
@@ -141,7 +141,6 @@ class TestGeneratorStatechartGenerator extends AbstractContractStatechartGenerat
 		statechart.annotations += waitingAnnotation
 		return statechart
 	}
-
 
 	def protected initializeStateChart(String scenarioName) {
 		addPorts(component)
