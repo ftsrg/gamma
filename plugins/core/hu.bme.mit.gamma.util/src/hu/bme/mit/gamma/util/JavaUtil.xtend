@@ -33,8 +33,30 @@ class JavaUtil {
 		return list
 	}
 	
-	def <T> Iterable<T> flattenIntoList(Iterable<? extends Iterable<? extends T>> inputs) {
+	def <T> List<T> flattenIntoList(Iterable<? extends Iterable<? extends T>> inputs) {
 		return IterableExtensions.flatten(inputs).toList
+	}
+	
+	def <T> T getFirstOfType(Iterable<? super T> collection, Class<T> clazz) {
+		for (element : collection) {
+			if (clazz.isInstance(element)) {
+				return element as T
+			}
+		}
+	}
+	
+	def <T> T getLastOfType(Iterable<? super T> collection, Class<T> clazz) {
+		return collection.toList
+			.reverseView
+			.getFirstOfType(clazz)
+	}
+	
+	def <T> T getLast(Iterable<T> collection) {
+		var T last = null
+		for (element : collection) {
+			last = element
+		}
+		return last
 	}
 	
 	def boolean isUnique(Iterable<?> collection) {

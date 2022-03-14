@@ -288,7 +288,7 @@ class UnfoldingTraceability {
 	def contains(ComponentInstanceReference original, ComponentInstance copy) {
 		val originalInstances = original.componentInstanceChain
 		 // If the (AA) component is wrapped, the original will not contain the wrapper instance
-		val copyInstances = copy.wraplessComponentInstanceChain
+		val copyInstances = copy.wrapperlessComponentInstanceChain
 		
 		// The naming conventions are clear
 		// Without originalInstances.head.name == copyInstances.head.name ambiguous naming situations could occur
@@ -329,11 +329,13 @@ class UnfoldingTraceability {
 		// composite new instances, "newInstance.contains(originalInstance)" has to be introduced
 		checkState(newInstance.isStatechart)
 		
-		val originalInstances = originalType.originalSimpleInstanceReferences
+		val originalSimpleInstances = originalType.originalSimpleInstanceReferences
 		
-		for (originalInstance : originalInstances) {
-			if (originalInstance.contains(newInstance)) {
-				return originalInstance // Only one is expected
+		for (originalSimpleInstance : originalSimpleInstances) {
+			// There are some AA and CCC wrappings of statecharts in the unfolding process, which
+			// should be handled by the below method call ("contains" instead of "equals")
+			if (originalSimpleInstance.contains(newInstance)) {
+				return originalSimpleInstance // Only one is expected
 			}
 		}
 		throw new IllegalStateException("Not found original instance for " + newInstance)

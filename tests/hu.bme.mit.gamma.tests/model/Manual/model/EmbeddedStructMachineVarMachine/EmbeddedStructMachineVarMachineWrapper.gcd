@@ -1,0 +1,12 @@
+package EmbeddedStructMachineVarMachine
+
+import "/model/EmbeddedStructMachineVarMachine/EmbeddedStructMachineVarMachineDeclarations.gcd"
+import "/model/EmbeddedStructMachineVarMachine/EmbeddedStructMachineVarMachine.gcd"
+
+cascade EmbeddedStructMachineVarMachineWrapper [
+	port portA : requires portA
+] {
+	component embeddedStructMachineVarMachine : EmbeddedStructMachineVarMachine
+	
+	bind portA -> embeddedStructMachineVarMachine.portA
+}

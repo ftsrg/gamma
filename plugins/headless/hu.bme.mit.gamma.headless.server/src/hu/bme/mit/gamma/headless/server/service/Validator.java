@@ -1,19 +1,20 @@
 package hu.bme.mit.gamma.headless.server.service;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-
-import hu.bme.mit.gamma.headless.server.entity.WorkspaceProjectWrapper;
-import hu.bme.mit.gamma.headless.server.util.FileHandlerUtil;
+import java.io.File;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.SystemUtils;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
-import java.util.Optional;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
+import hu.bme.mit.gamma.headless.server.util.FileHandlerUtil;
 
 // The Validator class checks if an operation can be executed on a project or workspace
 public class Validator {
@@ -25,22 +26,16 @@ public class Validator {
 
 	// Checks whether a workspace already exists or not
 	public static boolean checkIfWorkspaceExists(String workspace) throws IOException {
-		List<WorkspaceProjectWrapper> wrapperList = FileHandlerUtil.getWrapperListFromJson();
-		if (wrapperList == null) {
-			return false;
-		}
-		return wrapperList.stream().anyMatch(w -> w.getWorkspace().equals(workspace));
+		Map<String, Set<String>> projectsByWorkspace = FileHandlerUtil.getProjectsByWorkspaces();
+		return projectsByWorkspace.containsKey(workspace);
 	}
 
 	// Checks whether a project already exists under a workspace or not
 	public static boolean checkIfProjectAlreadyExistsUnderWorkspace(String workspace, String projectName)
 			throws IOException {
-		List<WorkspaceProjectWrapper> wrapperList = FileHandlerUtil.getWrapperListFromJson();
-		if (wrapperList == null) {
-			return false;
-		}
-		return wrapperList.stream()
-				.anyMatch(w -> w.getWorkspace().equals(workspace) && projectName.equals(w.getProjectName()));
+		Map<String, Set<String>> projectsByWorkspace = FileHandlerUtil.getProjectsByWorkspaces();
+		Set<String> projects = projectsByWorkspace.getOrDefault(workspace, Collections.emptySet());
+		return projects.contains(projectName);
 	}
 
 	// Checks if the operation ended abruptly in a project
@@ -69,6 +64,9 @@ public class Validator {
 	public static boolean checkIfProjectIsUnderLoad(String workspace, String projectName) throws IOException {
 		File jsonFile = new File(FileHandlerUtil.getProperty(DIRECTORY_OF_WORKSPACES_PROPERTY_NAME) + workspace
 				+ File.separator + projectName + File.separator + PROJECT_DESCRIPTOR_JSON);
+		if (!jsonFile.exists()) {
+			return false;
+		}
 		String jsonString = FileUtils.readFileToString(jsonFile);
 		JsonElement jElement = new JsonParser().parse(jsonString);
 		JsonObject jObject = jElement.getAsJsonObject();

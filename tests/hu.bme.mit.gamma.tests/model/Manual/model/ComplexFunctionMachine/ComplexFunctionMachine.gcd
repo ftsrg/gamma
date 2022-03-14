@@ -1,0 +1,43 @@
+package ComplexFunctionMachine
+import "/model/ComplexFunctionMachine/ComplexFunctionMachineDeclarations.gcd"
+@TransitionPriority = order-based
+statechart ComplexFunctionMachine [
+	port portA : requires portA
+] {
+	var val : integer := 0
+	transition from _initialOfComplexFunctionMachine__ to ComplexFunctionMachine__State
+	transition from ComplexFunctionMachine__State to ComplexFunctionMachine__State when
+		portA.message_bool [portA.message_bool::message_boolValue] / {
+		incr();
+	}
+	transition from ComplexFunctionMachine__State to ComplexFunctionMachine__State when
+		portA.message_bool [!portA.message_bool::message_boolValue] / {
+		val := zero();
+	}
+	transition from ComplexFunctionMachine__State to ComplexFunctionMachine__State when
+		portA.message_int [big(portA.message_int::message_intValue)] / {
+		if (square1(self(portA.message_int::message_intValue)) =
+			self(square2(portA.message_int::message_intValue))) {
+			incr();
+		}
+	}
+	transition from ComplexFunctionMachine__State to ComplexFunctionMachine__State when
+		portA.message_int [!big(portA.message_int::message_intValue)] / {
+		val := self(zero());
+	}
+	region ComplexFunctionMachine_ {
+		state ComplexFunctionMachine__State
+		initial _initialOfComplexFunctionMachine__
+	}
+	procedure square1(a : integer) : integer {
+		return a * a;
+	}
+	procedure square2(a : integer) : integer {
+		var result : integer := a;
+		result := result * a;
+		return result;
+	}
+	procedure incr : void {
+		val := val + 1;
+	}
+}

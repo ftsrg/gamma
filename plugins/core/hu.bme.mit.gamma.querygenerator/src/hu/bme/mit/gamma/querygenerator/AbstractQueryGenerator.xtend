@@ -44,6 +44,10 @@ abstract class AbstractQueryGenerator {
 		this.engine = ViatraQueryEngine.on(scope)
 	}
 	
+	def getComponent() {
+		return component
+	}
+	
 	def wrap(String id) {
 		return "(" + id + ")"
 	}

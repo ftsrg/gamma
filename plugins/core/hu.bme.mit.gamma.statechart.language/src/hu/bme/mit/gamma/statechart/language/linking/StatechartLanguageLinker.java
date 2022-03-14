@@ -25,7 +25,8 @@ public class StatechartLanguageLinker extends GammaLanguageLinker {
 
 	@Override
 	public Map<Class<? extends EObject>, Collection<EReference>> getContext() {
-		return Collections.singletonMap(Package.class, Collections.singletonList(InterfaceModelPackage.eINSTANCE.getPackage_Imports()));
+		return Collections.singletonMap(Package.class,
+				Collections.singletonList(InterfaceModelPackage.eINSTANCE.getPackage_Imports()));
 	}
 	
 }

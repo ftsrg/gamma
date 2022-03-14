@@ -1,0 +1,22 @@
+package RegionMachine
+import
+	"/model/RegionMachine/RegionMachineDeclarations.gcd"
+@TransitionPriority = order-based
+statechart RegionMachine [
+	port portA : requires portA
+] {
+	var _regionMachine_Submachine__Region : _RegionMachine_Submachine_
+	transition from _initialOfSubmachine___Region to Submachine__State_Region
+	transition from Submachine__State_Region to Submachine__State_Region when portA.message_bool
+		[_regionMachine_Submachine__Region = _RegionMachine_Submachine_::Init] / {
+		_regionMachine_Submachine__Region := _RegionMachine_Submachine_::Other;
+	}
+	transition from Submachine__State_Region to Submachine__State_Region when portA.message_bool
+		[_regionMachine_Submachine__Region = _RegionMachine_Submachine_::Other] / {
+		_regionMachine_Submachine__Region := _RegionMachine_Submachine_::Init;
+	}
+	region Submachine__Region {
+		state Submachine__State_Region
+		initial _initialOfSubmachine___Region
+	}
+}

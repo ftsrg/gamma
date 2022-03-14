@@ -55,6 +55,8 @@ class GammaFileNamer {
 	
 	def String getGammaUppaalTraceabilityFileName(String fileName) '''«fileName.extensionlessName.toHiddenFileName».«GAMMA_UPPAAL_TRACEABILITY_EXTENSION»'''
 	
+	def String getExecutionTraceFileName(String fileName) '''«fileName.extensionlessName».«EXECUTION_XTEXT_EXTENSION»'''
+	
 	def String getPropertyFileName(String fileName) '''«fileName.extensionlessName».«PROPERTY_XTEXT_EXTENSION»'''
 	
 	def String getHiddenPropertyFileName(String fileName) '''«fileName.extensionlessName.toHiddenFileName».«PROPERTY_XTEXT_EXTENSION»'''
@@ -73,6 +75,7 @@ class GammaFileNamer {
 	
 	//
 	
-	def String getOriginalComponentUri(String unfoldedComponentUri) '''«unfoldedComponentUri.parent»«File.separator»«unfoldedComponentUri.fileName.toUnhiddenFileName.packageFileName»'''
+	def String getOriginalGcdComponentUri(String unfoldedComponentUri) '''«unfoldedComponentUri.parent»«File.separator»«unfoldedComponentUri.fileName.toUnhiddenFileName.packageFileName»'''
+	def String getOriginalGsmComponentUri(String unfoldedComponentUri) '''«unfoldedComponentUri.parent»«File.separator»«unfoldedComponentUri.fileName.toUnhiddenFileName»'''
 	
 }

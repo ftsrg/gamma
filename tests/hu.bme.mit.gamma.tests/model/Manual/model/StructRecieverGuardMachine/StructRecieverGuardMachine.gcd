@@ -1,0 +1,23 @@
+package StructRecieverGuardMachine
+import
+	"/model/StructRecieverGuardMachine/StructRecieverGuardMachineDeclarations.gcd"
+@TransitionPriority = order-based
+statechart StructRecieverGuardMachine [
+	port portA : requires portA
+] {
+	var posCnt : integer
+	var negCnt : integer
+	transition from _initialOfStructRecieverGuardMachine__ to StructRecieverGuardMachine__State
+	transition from StructRecieverGuardMachine__State to StructRecieverGuardMachine__State when
+		portA.message_SampleStruct [portA.message_SampleStruct::message_SampleStructValue.val > 0] / {
+		posCnt := posCnt + 1;
+	}
+	transition from StructRecieverGuardMachine__State to StructRecieverGuardMachine__State when
+		portA.message_SampleStruct [portA.message_SampleStruct::message_SampleStructValue.val < 0] / {
+		negCnt := negCnt + 1;
+	}
+	region StructRecieverGuardMachine_ {
+		state StructRecieverGuardMachine__State
+		initial _initialOfStructRecieverGuardMachine__
+	}
+}

@@ -14,6 +14,7 @@ import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.statechart.composite.AbstractAsynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
+import hu.bme.mit.gamma.statechart.composite.AsynchronousComponent
 import hu.bme.mit.gamma.statechart.composite.BroadcastChannel
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance
 import hu.bme.mit.gamma.statechart.composite.CompositeComponent
@@ -24,12 +25,15 @@ import hu.bme.mit.gamma.statechart.interface_.EventTrigger
 import hu.bme.mit.gamma.statechart.interface_.InterfaceModelFactory
 import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference
+import hu.bme.mit.gamma.statechart.statechart.AsynchronousStatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.ClockTickReference
 import hu.bme.mit.gamma.statechart.statechart.PortEventReference
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
+import hu.bme.mit.gamma.statechart.statechart.StatechartModelFactory
+import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
+import hu.bme.mit.gamma.util.JavaUtil
 import java.util.Collection
-import java.util.HashMap
 import java.util.Map
 import org.eclipse.emf.ecore.EObject
 
@@ -43,8 +47,12 @@ class ModelUnfolder {
 	
 	protected final Package gammaPackage
 	
+	protected final extension JavaUtil javaUtil = JavaUtil.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
+	protected final extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
+	
 	protected final extension InterfaceModelFactory factory = InterfaceModelFactory.eINSTANCE
+	protected final extension StatechartModelFactory statechartFactory = StatechartModelFactory.eINSTANCE
 	
 	new(Package gammaPackage) {
 		this.gammaPackage = gammaPackage
@@ -65,13 +73,19 @@ class ModelUnfolder {
 		val topComponent = clonedPackage.topComponentClearAdditionalComponents
 		
 		val trace = new Trace(clonedPackage, topComponent)
+		
 		topComponent.copyComponents(clonedPackage, trace)
 		topComponent.renameInstances
 		topComponent.validateInstanceNames
 		originalComponent.traceComponentInstances(topComponent, trace)
+		
 		// Resolving potential name collisions
 		clonedPackage.constantDeclarations.resolveNameCollisions
 		clonedPackage.functionDeclarations.resolveNameCollisions
+		
+		// Reset top component if the original one is replaces (async statechart)
+		trace.topComponent = clonedPackage.topComponent
+		
 		// The created package, and the top component are returned
 		return trace
 	}
@@ -112,33 +126,20 @@ class ModelUnfolder {
 			Package gammaPackage, Trace trace) {
 		for (instance : component.components) {
 			val type = instance.type
-			if (type instanceof AbstractAsynchronousCompositeComponent) {
-				val clonedPackage = type.containingPackage.clone
-				val clonedComposite = clonedPackage.components
-						.findFirst[it.helperEquals(type)] as AbstractAsynchronousCompositeComponent // Cloning the declaration
-				gammaPackage.components += clonedComposite // Adding it to the "Instance container"
-				instance.type = clonedComposite // Setting the type to the new declaration
-				// Declarations must be copied AFTER moving component instances to enable reference changes
-				gammaPackage.addDeclarations(clonedPackage)
-				
-				clonedComposite.copyComponents(gammaPackage, trace) // Cloning the contained CompositeSystems recursively
-				// Tracing
-				type.traceComponentInstances(clonedComposite, trace)
-			}
-			else if (type instanceof AsynchronousAdapter) {
-				val clonedPackage = type.containingPackage.clone
-				// Declarations have been moved
-				val clonedWrapper = clonedPackage.components
-						.findFirst[it.helperEquals(type)] as AsynchronousAdapter // Cloning the declaration
-				gammaPackage.components += clonedWrapper // Adding it to the "Instance container"
-				instance.type = clonedWrapper // Setting the type to the new declaration
-				// Declarations must be copied AFTER moving component instances to enable reference changes
-				gammaPackage.addDeclarations(clonedPackage)
-				
-				clonedWrapper.copyComponents(gammaPackage, trace) // Cloning the contained CompositeSystems recursively
-				// Tracing
-				type.traceComponentInstances(clonedWrapper, trace)
-			}
+			
+			val clonedPackage = type.containingPackage.clone
+			val clonedComponent = clonedPackage.components
+						.findFirst[it.helperEquals(type)] as AsynchronousComponent
+			gammaPackage.components += clonedComponent
+			
+			instance.type = clonedComponent
+			// Declarations must be copied AFTER moving component instances to enable reference changes
+			gammaPackage.addDeclarations(clonedPackage)
+			
+			clonedComponent.copyComponents(gammaPackage, trace) // Cloning the contained CompositeSystems recursively
+			
+			// Tracing
+			type.traceComponentInstances(clonedComponent, trace)
 			// Changing the port binding
 			fixPortBindings(component, instance)
 			// Changing the providedPort references of Channels
@@ -168,7 +169,35 @@ class ModelUnfolder {
 		type.traceComponentInstances(clonedComponent, trace)
 	}
 	
+	private dispatch def void copyComponents(AsynchronousStatechartDefinition component,
+			Package gammaPackage, Trace trace) {
+		val clonedPackage = component.containingPackage.clone
+		val clonedComponent = clonedPackage.components
+				.findFirst[it.helperEquals(component)] as AsynchronousStatechartDefinition
 		
+		// Attributes
+		val synchronousStatechart = clonedComponent.mapIntoSynchronousStatechart
+		
+		val capacity = component.capacity
+		val name = synchronousStatechart.name
+		val adapter = if (capacity !== null) {
+			synchronousStatechart.wrapIntoDefaultAdapter(name, capacity.clone)
+		}
+		else {
+			synchronousStatechart.wrapIntoDefaultAdapter(name)
+		}
+		adapter.addWrapperComponentAnnotation // The adapter is a wrapper component
+		
+		// Removing original async statechart as we create now an adapter
+		adapter.change(component, gammaPackage)
+		component.remove
+		
+		gammaPackage.components += adapter
+		gammaPackage.components += synchronousStatechart
+		gammaPackage.addDeclarations(clonedPackage)
+		// No tracing as it handles only instances
+	}
+	
 	protected def void removeAnnotations(Component component) {
 		if (component instanceof StatechartDefinition) {
 			component.annotations.clear
@@ -271,7 +300,8 @@ class ModelUnfolder {
 	protected def void fixMessageQueueEvents(AsynchronousAdapter wrapper) {
 		val wrappedComponent = wrapper.wrappedComponent
 		// Any port events
-		for (portEventReference : wrapper.messageQueues.map[it.eventReference].flatten.filter(AnyPortEventReference)
+		for (portEventReference : wrapper.messageQueues.map[it.eventReferences]
+				.flatten.filter(AnyPortEventReference)
 				.filter[it.port.eContainer instanceof SynchronousComponent] /* Wrapper ports are not rearranged */ ) {
 			val newPorts = wrappedComponent.type.ports.filter[it.helperEquals(portEventReference.port)]
 			if (newPorts.size != 1) {
@@ -280,7 +310,8 @@ class ModelUnfolder {
 			portEventReference.port = newPorts.head	
 		}
 		// Port events
-		for (portEventReference : wrapper.messageQueues.map[it.eventReference].flatten.filter(PortEventReference)
+		for (portEventReference : wrapper.messageQueues.map[it.eventReferences]
+				.flatten.filter(PortEventReference)
 				.filter[it.port.eContainer instanceof SynchronousComponent] /* Wrapper ports are not rearranged */ ) {
 			val newPorts = wrappedComponent.type.ports.filter[it.helperEquals(portEventReference.port)]
 			if (newPorts.size != 1) {
@@ -289,7 +320,8 @@ class ModelUnfolder {
 			portEventReference.port = newPorts.head	
 		}
 		// Clock events
-		for (clockTickReference : wrapper.messageQueues.map[it.eventReference].flatten.filter(ClockTickReference)) {
+		for (clockTickReference : wrapper.messageQueues.map[it.eventReferences]
+				.flatten.filter(ClockTickReference)) {
 			val newClocks = wrapper.clocks.filter[it.helperEquals(clockTickReference.clock)]
 			if (newClocks.size != 1) {
 				throw new IllegalArgumentException("Not one clock found: " + newClocks)
@@ -406,10 +438,10 @@ class ModelUnfolder {
 	
 	static class Trace {
 		
-		Package _package;
-		Component topComponent;
+		Package _package
+		Component topComponent
 		
-		Map<ComponentInstance, ComponentInstance> componentInstanceMappings = new HashMap
+		Map<ComponentInstance, ComponentInstance> componentInstanceMappings = newHashMap
 		
 		new(Package _package, Component topComponent) {
 			this._package = _package

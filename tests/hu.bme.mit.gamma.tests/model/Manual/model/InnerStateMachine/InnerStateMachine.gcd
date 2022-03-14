@@ -1,0 +1,48 @@
+package InnerStateMachine
+import
+	"/model/InnerStateMachine/InnerStateMachineDeclarations.gcd"
+@TransitionPriority = order-based
+statechart InnerStateMachine [
+	port portA : requires portA
+] {
+	var _innerStateMachine_ : _InnerStateMachine_
+	var _innerStateMachine_Other_ : _InnerStateMachine_Other_
+	transition from _initialOfInnerStateMachine__ to InnerStateMachine__State
+	transition from InnerStateMachine__State to InnerStateMachine__State when portA.message_bool
+		[_innerStateMachine_ = _InnerStateMachine_::Init] / {
+		{
+			_innerStateMachine_ := _InnerStateMachine_::Other;
+			_innerStateMachine_Other_ := _InnerStateMachine_Other_::Other_Init;
+		}
+	}
+	transition from InnerStateMachine__State to InnerStateMachine__State when portA.message_bool
+		[portA.message_bool::message_boolValue and _innerStateMachine_ = _InnerStateMachine_::Other and
+		_innerStateMachine_Other_ = _InnerStateMachine_Other_::Other_Init] / {
+		_innerStateMachine_ := _InnerStateMachine_::Init;
+	}
+	transition from InnerStateMachine__State to InnerStateMachine__State when portA.message_bool
+		[!portA.message_bool::message_boolValue and _innerStateMachine_ = _InnerStateMachine_::Other and
+		_innerStateMachine_Other_ = _InnerStateMachine_Other_::Other_Init] / {
+		{
+			_innerStateMachine_ := _InnerStateMachine_::Other;
+			_innerStateMachine_Other_ := _InnerStateMachine_Other_::Other_Other;
+		}
+	}
+	transition from InnerStateMachine__State to InnerStateMachine__State when portA.message_bool
+		[portA.message_bool::message_boolValue and _innerStateMachine_ = _InnerStateMachine_::Other and
+		_innerStateMachine_Other_ = _InnerStateMachine_Other_::Other_Other] / {
+		_innerStateMachine_ := _InnerStateMachine_::Init;
+	}
+	transition from InnerStateMachine__State to InnerStateMachine__State when portA.message_bool
+		[!portA.message_bool::message_boolValue and _innerStateMachine_ = _InnerStateMachine_::Other and
+		_innerStateMachine_Other_ = _InnerStateMachine_Other_::Other_Other] / {
+		{
+			_innerStateMachine_ := _InnerStateMachine_::Other;
+			_innerStateMachine_Other_ := _InnerStateMachine_Other_::Other_Init;
+		}
+	}
+	region InnerStateMachine_ {
+		state InnerStateMachine__State
+		initial _initialOfInnerStateMachine__
+	}
+}

@@ -10,10 +10,12 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.xsts.util;
 
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import org.eclipse.emf.ecore.EObject;
@@ -200,7 +202,8 @@ public class XstsActionUtil extends ExpressionUtil {
 		// Note that 'a := b' like assignments (a and b are array variables) are supported in UPPAAL 
 		if (rhs instanceof ArrayLiteralExpression) {
 			ArrayLiteralExpression literal = (ArrayLiteralExpression) rhs;
-			List<Expression> operands = literal.getOperands();
+			List<Expression> operands = new ArrayList<Expression>(
+					literal.getOperands()); // To prevent messing up containment and indexing
 			int size = operands.size();
 			for (int i = 0; i < size; i++) {
 				ArrayAccessExpression newLhs = expressionFactory.createArrayAccessExpression();
@@ -341,6 +344,14 @@ public class XstsActionUtil extends ExpressionUtil {
 		HavocAction havocAction = xStsFactory.createHavocAction();
 		havocAction.setLhs(createReferenceExpression(variable));
 		return havocAction;
+	}
+	
+	public Entry<VariableDeclarationAction, HavocAction> createHavocedVariableDeclarationAction(
+			Type type, String name) {
+		VariableDeclarationAction variableDeclarationAction = createVariableDeclarationAction(type, name);
+		VariableDeclaration variableDeclaration = variableDeclarationAction.getVariableDeclaration();
+		HavocAction havocAction = createHavocAction(variableDeclaration);
+		return new SimpleEntry<VariableDeclarationAction, HavocAction>(variableDeclarationAction, havocAction);
 	}
 	
 	public AssignmentAction increment(VariableDeclaration variable) {
@@ -533,11 +544,17 @@ public class XstsActionUtil extends ExpressionUtil {
 	
 	// IfActions have been introduced, double-check if you really need NonDeterministicAction
 	
-	public NonDeterministicAction createChoiceActionBranch(Expression condition, Action thenAction) {
+	public SequentialAction createChoiceSequentialAction(Expression condition, Action thenAction) {
 		SequentialAction ifSequentialAction = xStsFactory.createSequentialAction();
 		AssumeAction ifAssumeAction = createAssumeAction(condition);
 		ifSequentialAction.getActions().add(ifAssumeAction);
 		ifSequentialAction.getActions().add(thenAction);
+		
+		return ifSequentialAction;
+	}
+	
+	public NonDeterministicAction createChoiceActionBranch(Expression condition, Action thenAction) {
+		SequentialAction ifSequentialAction = createChoiceSequentialAction(condition, thenAction);
 		// Merging into one
 		NonDeterministicAction ifAction = xStsFactory.createNonDeterministicAction();
 		ifAction.getActions().add(ifSequentialAction);
@@ -674,37 +691,83 @@ public class XstsActionUtil extends ExpressionUtil {
 		return actions;
 	}
 	
-	public void extendChoiceWithDefaultBranch(NonDeterministicAction switchAction, Action action) {
-		if (switchAction.getActions().isEmpty()) {
-			return;
-		}
-		NotExpression negatedCondition = expressionFactory.createNotExpression();
-		OrExpression orExpression = expressionFactory.createOrExpression();
-		List<SequentialAction> sequentialActions = switchAction.getActions().stream()
-				.filter(it -> it instanceof SequentialAction)
-				.map(it -> (SequentialAction) it)
-				.collect(Collectors.toList());
-		List<Expression> conditions = sequentialActions.stream()
-				.filter(it -> it.getActions().get(0) instanceof AssumeAction)
-				.map(it -> ((AssumeAction) it.getActions().get(0)).getAssumption())
-				.collect(Collectors.toList());
-		// Collecting atomic assumptions too
-		switchAction.getActions().stream()
-			.filter(it -> it instanceof AssumeAction)
-			.map(it -> ((AssumeAction) it).getAssumption())
-			.forEach(it -> conditions.add(it));
-		if (conditions.isEmpty()) {
-			return;
-		}
-		for (Expression condition : conditions) {
-			orExpression.getOperands().add(ecoreUtil.clone(condition));
-		}
-		negatedCondition.setOperand(unwrapIfPossible(orExpression));
+	public Entry<Action, NonDeterministicAction> createChoiceActionForRandomValues(
+			String name, int lowerBound, int upperBound) {
+		// Inclusive-exclusive
+		List<Action> actions = new ArrayList<Action>();
 		
-		extendChoiceWithBranch(switchAction, negatedCondition, action);
+		Entry<VariableDeclarationAction, HavocAction> havocedVariableDeclarationActions =
+				createHavocedVariableDeclarationAction(factory.createIntegerTypeDefinition(), name);
+		VariableDeclarationAction variableDeclarationAction = havocedVariableDeclarationActions.getKey();
+		VariableDeclaration randomVariable = variableDeclarationAction.getVariableDeclaration();
+		HavocAction havocAction = havocedVariableDeclarationActions.getValue();
+		
+		actions.add(variableDeclarationAction);
+		actions.add(havocAction);
+		
+		// Branches
+		List<AssumeAction> assumeActions = new ArrayList<AssumeAction>();
+		for (int i = lowerBound; i < upperBound /* exclusive */; i++) {
+			EqualityExpression equalityExpression = createEqualityExpression(
+					randomVariable, toIntegerLiteral(i));
+			AssumeAction assumeAction = createAssumeAction(equalityExpression);
+			assumeActions.add(assumeAction);
+		}
+		NonDeterministicAction choiceAction = createChoiceAction(assumeActions);
+		actions.add(choiceAction);
+		
+		SequentialAction sequentialAction = createSequentialAction(actions);
+		
+		return new SimpleEntry<Action, NonDeterministicAction>(sequentialAction, choiceAction);
+	}
+	
+	public void extendChoiceWithDefaultBranch(NonDeterministicAction choiceAction) {
+		extendChoiceWithDefaultBranch(choiceAction, xStsFactory.createEmptyAction());
+	}
+	
+	public void extendChoiceWithDefaultBranch(NonDeterministicAction choiceAction, Action action) {
+		Expression defaultCondition = createDefaultCondition(choiceAction);
+		if (defaultCondition != null) {
+			extendChoiceWithBranch(choiceAction, defaultCondition, action);
+		}
+	}
+	
+	public Expression createDefaultCondition(NonDeterministicAction choiceAction) {
+		List<Action> branches = choiceAction.getActions();
+		return createDefaultCondition(branches);
+	}
+	
+	public Expression createDefaultCondition(Collection<? extends Action> branches) {
+		if (branches.isEmpty()) {
+			return null;
+		}
+		
+		List<Expression> conditions = new ArrayList<Expression>();
+		for (Action branch : branches) {
+			Expression condition = getPrecondition(branch); // Crucial - precondition is already cloned
+			conditions.add(condition);
+		}
+		if (conditions.isEmpty()) {
+			return null;
+		}
+		
+		return createDefaultExpression(conditions);
 	}
 	
 	//
+	
+	public boolean hasDefaultBranch(NonDeterministicAction choice) {
+		List<Action> branches = new ArrayList<Action>(choice.getActions());
+		int lastIndex = branches.size() - 1;
+		
+		Action lastBranch = branches.get(lastIndex);
+		branches.remove(lastIndex);
+		
+		Expression defaultCondition = createDefaultCondition(branches);
+		Expression lastCondition = getPrecondition(lastBranch);
+		
+		return ecoreUtil.helperEquals(defaultCondition, lastCondition);
+	}
 	
 	public Expression getPrecondition(Action action) {
 		if (action instanceof AssumeAction) {
@@ -766,6 +829,11 @@ public class XstsActionUtil extends ExpressionUtil {
 	}
 	
 	// Message queue - array handling
+	
+	public Expression isEmpty(VariableDeclaration sizeVariable) {
+		return createLessEqualExpression(
+				createReferenceExpression(sizeVariable), toIntegerLiteral(0));
+	}
 	
 	public VariableDeclarationAction createVariableDeclarationActionForArray(
 			VariableDeclaration queue, String name) {

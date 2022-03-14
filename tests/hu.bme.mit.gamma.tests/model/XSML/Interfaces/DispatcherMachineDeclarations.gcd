@@ -1,0 +1,10 @@
+package DispatcherMachine
+interface S2 {
+	out event message_bool(message_boolValue : boolean)
+}
+interface S1 {
+	out event message_bool(message_boolValue : boolean)
+}
+interface portA {
+	out event message_int(message_intValue : integer)
+}

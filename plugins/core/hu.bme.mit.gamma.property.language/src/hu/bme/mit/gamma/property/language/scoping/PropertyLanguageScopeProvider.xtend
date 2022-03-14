@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.property.language.scoping
 
+import hu.bme.mit.gamma.expression.model.ExpressionModelPackage
 import hu.bme.mit.gamma.property.model.ComponentInstanceEventParameterReference
 import hu.bme.mit.gamma.property.model.ComponentInstanceEventReference
 import hu.bme.mit.gamma.property.model.ComponentInstanceStateConfigurationReference
@@ -30,7 +31,7 @@ class PropertyLanguageScopeProvider extends AbstractPropertyLanguageScopeProvide
 	override getScope(EObject context, EReference reference) {
 		if (context instanceof PropertyPackage) {
 			if (reference == PropertyModelPackage.Literals.PROPERTY_PACKAGE__COMPONENT) {
-				val imports = context.import
+				val imports = context.imports
 				if (!imports.empty) {
 					return Scopes.scopeFor(imports.map[it.components].flatten)
 				}
@@ -38,6 +39,12 @@ class PropertyLanguageScopeProvider extends AbstractPropertyLanguageScopeProvide
 		}
 		val root = ecoreUtil.getSelfOrContainerOfType(context, PropertyPackage)
 		val component = root.component
+		if (reference == ExpressionModelPackage.Literals.TYPE_REFERENCE__REFERENCE) {
+			// Util override is crucial because of this
+			val packages = root.imports
+			val typeDeclarations = packages.map[it.typeDeclarations].flatten
+			return Scopes.scopeFor(typeDeclarations)
+		}
 		if (reference == CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE__COMPONENT_INSTANCE) {
 			val instanceContainer = ecoreUtil.getSelfOrContainerOfType(
 					context, ComponentInstanceReference)

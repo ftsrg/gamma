@@ -54,9 +54,13 @@ public class StatechartLanguageFormatter extends AbstractDeclarativeFormatter {
         c.setLinewrap(1, 1, 2).after(f.getVariableDeclarationRule());
         c.setLinewrap(1, 1, 2).after(f.getTimeoutDeclarationRule());
         c.setLinewrap(1).before(f.getComponentRule());
-        c.setLinewrap(1).after(f.getStatechartDefinitionAccess().getSchedulingOrderAssignment_0_0_2());
-        c.setLinewrap(1).after(f.getStatechartDefinitionAccess().getOrthogonalRegionSchedulingOrderAssignment_0_1_2());
-        c.setLinewrap(1).after(f.getStatechartDefinitionAccess().getTransitionPriorityAssignment_0_2_2());
+        c.setLinewrap(1).after(f.getSynchronousStatechartDefinitionAccess().getSchedulingOrderAssignment_0_0_2());
+        c.setLinewrap(1).after(f.getSynchronousStatechartDefinitionAccess().getOrthogonalRegionSchedulingOrderAssignment_0_1_2());
+        c.setLinewrap(1).after(f.getSynchronousStatechartDefinitionAccess().getTransitionPriorityAssignment_0_2_2());
+        c.setLinewrap(1).after(f.getAsynchronousStatechartDefinitionAccess().getAsynchronousKeyword_0());
+        c.setLinewrap(1).after(f.getAsynchronousStatechartDefinitionAccess().getSchedulingOrderAssignment_1_0_2());
+        c.setLinewrap(1).after(f.getAsynchronousStatechartDefinitionAccess().getOrthogonalRegionSchedulingOrderAssignment_1_1_2());
+        c.setLinewrap(1).after(f.getAsynchronousStatechartDefinitionAccess().getTransitionPriorityAssignment_1_2_2());
         c.setLinewrap(1).before(f.getTransitionRule());
         c.setLinewrap(1).after(f.getTransitionAnnotationRule());
         c.setLinewrap(1).after(f.getTransitionRule());
@@ -81,7 +85,8 @@ public class StatechartLanguageFormatter extends AbstractDeclarativeFormatter {
         c.setLinewrap(1, 1, 2).after(f.getChannelRule());
         c.setLinewrap(1, 1, 2).after(f.getSynchronousComponentInstanceRule());
         c.setLinewrap(1, 1, 2).after(f.getAsynchronousComponentInstanceRule());
-        c.setLinewrap(1, 1, 2).after(f.getCascadeCompositeComponentAccess().getExecutionListAssignment_5_3_2_1());
+        c.setLinewrap(1, 1, 2).after(f.getCascadeCompositeComponentAccess().getInitialExecutionListAssignment_7_3_1());
+        c.setLinewrap(1, 1, 2).after(f.getCascadeCompositeComponentAccess().getExecutionListAssignment_8_2_1());
         // Set line wrap after variable bindings
         c.setLinewrap(1, 1, 2).before(f.getStateDefinitionRule());
         c.setIndentationIncrement().before(f.getStateDefinitionRule());
@@ -103,11 +108,12 @@ public class StatechartLanguageFormatter extends AbstractDeclarativeFormatter {
         // No space around guards 
         c.setNoSpace().around(f.getTransitionAccess().getGuardAssignment_7_1_1());
         // No space before parameters and arguments 
-        c.setNoSpace().before(f.getStatechartDefinitionAccess().getGroup_3());
-        c.setNoSpace().before(f.getSynchronousCompositeComponentAccess().getGroup_2());
-        c.setNoSpace().before(f.getCascadeCompositeComponentAccess().getGroup_2());
-        c.setNoSpace().before(f.getAsynchronousAdapterAccess().getGroup_2());
-        c.setNoSpace().before(f.getAsynchronousCompositeComponentAccess().getGroup_2());
+        c.setNoSpace().before(f.getSynchronousStatechartDefinitionAccess().getGroup_3());
+        c.setNoSpace().before(f.getAsynchronousStatechartDefinitionAccess().getGroup_5());
+        c.setNoSpace().before(f.getSynchronousCompositeComponentAccess().getGroup_3());
+        c.setNoSpace().before(f.getCascadeCompositeComponentAccess().getGroup_3());
+        c.setNoSpace().before(f.getAsynchronousAdapterAccess().getGroup_3());
+        c.setNoSpace().before(f.getAsynchronousCompositeComponentAccess().getGroup_3());
         c.setNoSpace().before(f.getAsynchronousComponentInstanceAccess().getGroup_4());
         c.setNoSpace().before(f.getSynchronousComponentInstanceAccess().getGroup_4());
         c.setNoSpace().before(f.getEventAccess().getGroup_4());

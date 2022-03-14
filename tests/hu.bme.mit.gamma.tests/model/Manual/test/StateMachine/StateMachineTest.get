@@ -1,0 +1,48 @@
+import "model/StateMachine/StateMachineWrapper"
+
+trace StateMachineTest of StateMachineWrapper
+
+step {
+	act {
+		reset
+	}
+	assert {
+		variable stateMachine._stateMachine_ = _StateMachine_::Init
+	}
+}
+step {
+	act {
+		raise portA.message_bool(true)
+		schedule component
+	}
+	assert {
+		variable stateMachine._stateMachine_ = _StateMachine_::Other
+	}
+}
+step {
+	act {
+		raise portA.message_bool(false)
+		schedule component
+	}
+	assert {
+		variable stateMachine._stateMachine_ = _StateMachine_::Init
+	}
+}
+step {
+	act {
+		raise portA.message_bool(false)
+		schedule component
+	}
+	assert {
+		variable stateMachine._stateMachine_ = _StateMachine_::Other
+	}
+}
+step {
+	act {
+		raise portA.message_bool(true)
+		schedule component
+	}
+	assert {
+		variable stateMachine._stateMachine_ = _StateMachine_::Init
+	}
+}

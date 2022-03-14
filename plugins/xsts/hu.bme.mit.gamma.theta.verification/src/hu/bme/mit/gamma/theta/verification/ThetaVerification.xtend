@@ -15,7 +15,6 @@ import hu.bme.mit.gamma.util.ThreadRacer
 import hu.bme.mit.gamma.verification.util.AbstractVerification
 import hu.bme.mit.gamma.verification.util.AbstractVerifier.Result
 import java.io.File
-import java.util.Collection
 import java.util.logging.Level
 
 class ThetaVerification extends AbstractVerification {
@@ -24,11 +23,7 @@ class ThetaVerification extends AbstractVerification {
 	protected new() {}
 	//
 	
-	override Result execute(File modelFile, File queryFile) {
-		this.execute(modelFile, queryFile, parameters)
-	}
-	
-	def Result execute(File modelFile, File queryFile, Collection<String> parameters) {
+	override Result execute(File modelFile, File queryFile, String[] arguments) {
 		val fileName = modelFile.name
 		val packageFileName = fileName.unfoldedPackageFileName
 		val gammaPackage = ecoreUtil.normalLoad(modelFile.parent, packageFileName)
@@ -36,25 +31,29 @@ class ThetaVerification extends AbstractVerification {
 		
 		val racer = new ThreadRacer<Result>
 		val callables = <InterruptableCallable<Result>>newArrayList
-		for (parameter : parameters) {
+		for (argument : arguments) {
+			
+			argument.sanitizeArgument
+			
 			val verifier = new ThetaVerifier
 			callables += new InterruptableCallable<Result> {
 				override Result call() {
-					logger.log(Level.INFO, '''Starting Theta on thread «Thread.currentThread.name» with "«parameter»"''')
-					val result = verifier.verifyQuery(gammaPackage, parameter, modelFile, queries)
-					logger.log(Level.INFO, '''Thread «Thread.currentThread.name» with "«parameter»" has won''')
+					val currentThread = Thread.currentThread
+					logger.log(Level.INFO, '''Starting Theta on thread «currentThread.name» with "«argument»"''')
+					val result = verifier.verifyQuery(gammaPackage, argument, modelFile, queries)
+					logger.log(Level.INFO, '''Thread «currentThread.name» with "«argument»" has won''')
 					return result
 				}
 				override void cancel() {
 					verifier.cancel
-					logger.log(Level.INFO, '''Theta verification instance with "«parameter»" has been cancelled''')
+					logger.log(Level.INFO, '''Theta verification instance with "«argument»" has been cancelled''')
 				}
 			}
 		}
 		return racer.execute(callables)
 	}
 	
-	override getParameters() {
+	override getDefaultArguments() {
 		return #[
 				"",
 				"--domain EXPL --refinement SEQ_ITP --maxenum 250 --initprec CTRL"
@@ -63,6 +62,10 @@ class ThetaVerification extends AbstractVerification {
 		// --domain PRED_CART --refinement SEQ_ITP // default - cannot be used with loops
 		// --domain EXPL --refinement SEQ_ITP --maxenum 250 // --initprec CTRL should be used to support loops
 		// --domain EXPL_PRED_COMBINED --autoexpl NEWOPERANDS --initprec CTRL
+	}
+	
+	protected override String getArgumentPattern() {
+		return "(--[a-z]+( )[_0-9A-Z]+( )*)*"
 	}
 	
 }

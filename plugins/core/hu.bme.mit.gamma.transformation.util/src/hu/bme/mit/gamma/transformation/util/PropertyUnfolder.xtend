@@ -45,7 +45,7 @@ class PropertyUnfolder {
 	
 	def execute() {
 		val newPropertyPackage = propertyPackage.unfoldPackage
-		newPropertyPackage.import += newTopComponent.containingPackage
+		newPropertyPackage.imports += newTopComponent.containingPackage
 		newPropertyPackage.component = newTopComponent
 		return newPropertyPackage
 	}

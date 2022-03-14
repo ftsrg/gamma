@@ -1,0 +1,24 @@
+package GuardMachine
+import
+	"/model/GuardMachine/GuardMachineDeclarations.gcd"
+@TransitionPriority = order-based
+statechart GuardMachine [
+	port portA : requires portA
+] {
+	var cnt : integer
+	transition from _initialOfGuardMachine__ to GuardMachine__State
+	transition from GuardMachine__State to GuardMachine__State when portA.message_int
+		[portA.message_int::message_intValue > 0] / {
+		cnt := cnt + 1;
+	}
+	transition from GuardMachine__State to GuardMachine__State when portA.message_int
+		[portA.message_int::message_intValue < 0] / {
+		cnt := cnt - 1;
+	}
+	transition from GuardMachine__State to GuardMachine__State when portA.message_int
+		[portA.message_int::message_intValue = 0]
+	region GuardMachine_ {
+		state GuardMachine__State
+		initial _initialOfGuardMachine__
+	}
+}

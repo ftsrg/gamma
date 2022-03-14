@@ -1,0 +1,47 @@
+import "model/StructMachineVarMachine/StructMachineVarMachineWrapper"
+
+trace StructMachineVarMachineTest of StructMachineVarMachineWrapper
+
+step {
+	act {
+		reset
+	}
+	assert {
+		variable structMachineVarMachine.ss = #SampleStruct {
+			cnt := 0
+		}
+	}
+}
+step {
+	act {
+		raise portA.message_int(0)
+		schedule component
+	}
+	assert {
+		variable structMachineVarMachine.ss = #SampleStruct {
+			cnt := 1
+		}
+	}
+}
+step {
+	act {
+		raise portA.message_int(1)
+		schedule component
+	}
+	assert {
+		variable structMachineVarMachine.ss = #SampleStruct {
+			cnt := 2
+		}
+	}
+}
+step {
+	act {
+		raise portA.message_int(-1)
+		schedule component
+	}
+	assert {
+		variable structMachineVarMachine.ss = #SampleStruct {
+			cnt := 3
+		}
+	}
+}

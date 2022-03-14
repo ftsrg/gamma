@@ -1,0 +1,13 @@
+package ComplexRegionMachine
+type _ComplexRegionMachine_Submachine1_ : enum {
+	Init1, Other1
+}
+type _ComplexRegionMachine_Submachine2_ : enum {
+	Init2, Other2
+}
+interface portA {
+	out event message_bool(message_boolValue : boolean)
+}
+interface portB {
+	out event message_bool(message_boolValue : boolean)
+}

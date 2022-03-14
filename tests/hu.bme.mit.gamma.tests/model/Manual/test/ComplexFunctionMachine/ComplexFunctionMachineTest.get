@@ -1,0 +1,84 @@
+import "model/ComplexFunctionMachine/ComplexFunctionMachineWrapper"
+
+trace ComplexFunctionMachineTest of ComplexFunctionMachineWrapper
+
+step {
+	act {
+		reset
+	}
+	assert {
+		variable complexFunctionMachine.val = 0
+	}
+}
+step {
+	act {
+		raise portA.message_bool(true)
+		schedule component
+	}
+	assert {
+		variable complexFunctionMachine.val = 1
+	}
+}
+step {
+	act {
+		raise portA.message_bool(false)
+		schedule component
+	}
+	assert {
+		variable complexFunctionMachine.val = 0
+	}
+}
+step {
+	act {
+		raise portA.message_bool(false)
+		schedule component
+	}
+	assert {
+		variable complexFunctionMachine.val = 0
+	}
+}
+step {
+	act {
+		raise portA.message_bool(true)
+		schedule component
+	}
+	assert {
+		variable complexFunctionMachine.val = 1
+	}
+}
+step {
+	act {
+		raise portA.message_int(10)
+		schedule component
+	}
+	assert {
+		variable complexFunctionMachine.val = 0
+	}
+}
+step {
+	act {
+		raise portA.message_int(11)
+		schedule component
+	}
+	assert {
+		variable complexFunctionMachine.val = 1
+	}
+}
+step {
+	act {
+		raise portA.message_int(42)
+		schedule component
+	}
+	assert {
+		variable complexFunctionMachine.val = 2
+	}
+}
+step {
+	act {
+		raise portA.message_int(0)
+		schedule component
+	}
+	assert {
+		variable complexFunctionMachine.val = 0
+	}
+}

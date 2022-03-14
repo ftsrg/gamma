@@ -44,7 +44,6 @@ class ExecutionTraceBackAnnotator {
 	List<ExecutionTrace> result = null
 	boolean removeNotneededInteractions = true
 	
-
 	boolean createOriginalActsAndAssertsBasedOnActs
 
 	new(List<ExecutionTrace> _traces, Component original) {
@@ -104,6 +103,7 @@ class ExecutionTraceBackAnnotator {
 		}
 	}
 
+	// TODO extract into derived feature class
 	def protected boolean isSend(Step step) {
 		return step.actions.filter(RaiseEventAct).empty && !step.asserts.filter(RaiseEventAct).empty
 	}

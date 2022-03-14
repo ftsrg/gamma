@@ -22,6 +22,7 @@ import hu.bme.mit.gamma.action.model.ActionModelFactory;
 import hu.bme.mit.gamma.action.model.AssignmentStatement;
 import hu.bme.mit.gamma.action.model.Block;
 import hu.bme.mit.gamma.action.model.Branch;
+import hu.bme.mit.gamma.action.model.EmptyStatement;
 import hu.bme.mit.gamma.action.model.IfStatement;
 import hu.bme.mit.gamma.action.model.SwitchStatement;
 import hu.bme.mit.gamma.action.model.VariableDeclarationStatement;
@@ -56,6 +57,19 @@ public class ActionUtil extends ExpressionUtil {
 			return getDeclaration(lhs);
 		}
 		return (Declaration) ecoreUtil.getSelfOrContainerOfType(context, InitializableElement.class);
+	}
+	
+	//
+	
+	public void removeEmptyStatements(Action action) {
+		if (action == null) {
+			return;
+		}
+		List<EmptyStatement> emptyStatements = ecoreUtil
+				.getSelfAndAllContentsOfType(action, EmptyStatement.class);
+		for (EmptyStatement emptyStatement : emptyStatements) {
+			ecoreUtil.remove(emptyStatement);
+		}
 	}
 	
 	//
@@ -119,6 +133,19 @@ public class ActionUtil extends ExpressionUtil {
 	}
 	
 	//
+	
+	public IfStatement createIfStatement(Expression condition, Action then, Action _else) {
+		IfStatement ifStatement = actionFactory.createIfStatement();
+		ifStatement.getConditionals().add(
+			createBranch(condition, then)
+		);
+		if (_else != null) {
+			Branch elseBranch = getOrCreateElseBranch(ifStatement);
+			elseBranch.setAction(_else);
+		}
+		
+		return ifStatement;
+	}
 	
 	public Branch createBranch(Expression expression, Action action) {
 		Branch branch = actionFactory.createBranch();

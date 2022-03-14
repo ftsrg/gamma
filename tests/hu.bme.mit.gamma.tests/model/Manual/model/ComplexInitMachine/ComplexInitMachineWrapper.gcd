@@ -1,0 +1,12 @@
+package ComplexInitMachine
+
+import "/model/ComplexInitMachine/ComplexInitMachineDeclarations.gcd"
+import "/model/ComplexInitMachine/ComplexInitMachine.gcd"
+
+cascade ComplexInitMachineWrapper [
+	port portA : requires portA
+] {
+	component complexInitMachine : ComplexInitMachine
+	
+	bind portA -> complexInitMachine.portA
+}

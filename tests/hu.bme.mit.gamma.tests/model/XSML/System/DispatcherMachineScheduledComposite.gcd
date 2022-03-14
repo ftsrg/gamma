@@ -1,0 +1,15 @@
+package DispatcherMachine
+
+import "Interfaces/DispatcherMachineDeclarations.gcd"
+import "DispatcherMachine/DispatcherMachineAdapter.gcd"
+
+scheduled-async DispatcherMachineScheduledComposite [
+	port portA : requires portA
+] {
+	component dispatcherMachine : DispatcherMachineAdapter
+	
+	bind portA -> dispatcherMachine.portA
+
+	channel [ dispatcherMachine.S1_Region1_Out ] -o)- [ dispatcherMachine.S1_Region1 ]
+	channel [ dispatcherMachine.S2_Region2_Out ] -o)- [ dispatcherMachine.S2_Region2 ]
+}

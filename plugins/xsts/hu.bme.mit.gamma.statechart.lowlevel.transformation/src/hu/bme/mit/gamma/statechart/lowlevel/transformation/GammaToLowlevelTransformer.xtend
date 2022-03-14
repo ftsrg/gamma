@@ -15,17 +15,21 @@ import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 
 import static com.google.common.base.Preconditions.checkState
 
+import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
+
 class GammaToLowlevelTransformer {
 	
 	protected final extension StatechartToLowlevelTransformer transformer = new StatechartToLowlevelTransformer
 	
 	def hu.bme.mit.gamma.statechart.lowlevel.model.Package execute(Package _package) {
 		checkState(!_package.name.nullOrEmpty)
+		
 		val lowlevelPackage = _package.transform // This does not transform components anymore
 		// Interfaces are not transformed, the events are transformed (thus, "instantiated") when referred
 		for (statechart : _package.components.filter(StatechartDefinition)) {
 			lowlevelPackage.components += statechart.transform
 		}
+		
 		return lowlevelPackage
 	}
 	
@@ -35,6 +39,16 @@ class GammaToLowlevelTransformer {
 	
 	def hu.bme.mit.gamma.statechart.lowlevel.model.StatechartDefinition transform(StatechartDefinition statechart) {
 		return statechart.execute
+	}
+	
+	def hu.bme.mit.gamma.statechart.lowlevel.model.Package transformAndWrap(StatechartDefinition statechart) {
+		val gammaPackage = statechart.containingPackage
+		
+		// Always a new Package (traced because of potential type declaration transformations)
+		val lowlevelPackage = gammaPackage.createAndTracePackage
+		lowlevelPackage.components += statechart.transform
+		
+		return lowlevelPackage
 	}
 	
 }

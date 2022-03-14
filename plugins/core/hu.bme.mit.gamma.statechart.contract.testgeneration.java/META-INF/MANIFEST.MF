@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Gamma Statechart Contract Java JUnit Testgenerator
 Bundle-SymbolicName: hu.bme.mit.gamma.statechart.contract.testgeneration.java
-Bundle-Version: 2.5.1.qualifier
+Bundle-Version: 2.6.0.qualifier
 Bundle-Vendor: BME-FTSRG
 Automatic-Module-Name: hu.bme.mit.gamma.statechart.contract.testgeneration.java
 Bundle-RequiredExecutionEnvironment: JavaSE-11
@@ -17,5 +17,6 @@ Require-Bundle: com.google.guava,
  hu.bme.mit.gamma.uppaal.verification,
  hu.bme.mit.gamma.statechart.contract.tracegeneration,
  hu.bme.mit.gamma.trace.testgeneration.java,
- hu.bme.mit.gamma.util
+ hu.bme.mit.gamma.util,
+ hu.bme.mit.gamma.verification.util
 Export-Package: hu.bme.mit.gamma.statechart.contract.testgeneration.java

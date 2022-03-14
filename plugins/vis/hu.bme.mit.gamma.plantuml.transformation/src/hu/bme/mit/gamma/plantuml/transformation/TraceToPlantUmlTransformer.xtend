@@ -70,11 +70,11 @@ class TraceToPlantUmlTransformer {
 			System ->o] : «act.port.name».«act.event.name»(«FOR argument : act.arguments SEPARATOR ', '»«argument.serialize»«ENDFOR»)
 		«ENDFOR»
 		
-		hnote over System 
-		«FOR config : step.instanceStateConfigurations.groupBy[it.instance].entrySet.sortBy[it.key.serialize]»
-			«config.key.serialize» in {«config.value.map[it.state.name].join(", ")»} «IF step.instanceVariableStates.exists[it.instance.equals(config.key)]»with«ENDIF»
-			«FOR varconstraint : step.instanceVariableStates.filter[it.instance.equals(config.key)].sortBy[it.declaration.name]»
-				«varconstraint.declaration.name» = «varconstraint.value.serialize»
+		hnote over System
+		«FOR config : step.instanceStateConfigurations.groupBy[it.instance.serialize].entrySet.sortBy[it.key]»
+			«config.key» in {«config.value.map[it.state.name].join(", ")»} «IF step.instanceVariableStates.exists[it.instance.serialize == config.key]»with«ENDIF»
+			«FOR variableConstraint : step.instanceVariableStates.filter[it.instance.serialize == config.key].sortBy[it.declaration.name]»
+				«'''  '''»«variableConstraint.declaration.name» = «variableConstraint.value.serialize»
 			«ENDFOR»
 		«ENDFOR»
 		endhnote

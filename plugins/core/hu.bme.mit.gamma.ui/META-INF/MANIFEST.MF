@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Gamma UI
 Bundle-SymbolicName: hu.bme.mit.gamma.ui
-Bundle-Version: 2.5.1.qualifier
+Bundle-Version: 2.6.0.qualifier
 Bundle-Vendor: BME-FTSRG
 Automatic-Module-Name: hu.bme.mit.gamma.ui
 Bundle-RequiredExecutionEnvironment: JavaSE-11
@@ -19,7 +19,7 @@ Require-Bundle: com.google.gson,
  hu.bme.mit.gamma.statechart.language,
  hu.bme.mit.gamma.statechart.language.ui,
  hu.bme.mit.gamma.trace.language.ui,
- hu.bme.mit.gamma.codegenerator.java,
+ hu.bme.mit.gamma.codegeneration.java,
  hu.bme.mit.gamma.uppaal.composition.transformation,
  hu.bme.mit.gamma.uppaal.transformation.traceability,
  hu.bme.mit.gamma.uppaal.serializer,
@@ -31,6 +31,7 @@ Require-Bundle: com.google.gson,
  hu.bme.mit.gamma.statechart.phase.transformation,
  hu.bme.mit.gamma.xsts.transformation,
  hu.bme.mit.gamma.transformation.util,
+ hu.bme.mit.gamma.verification.util,
  hu.bme.mit.gamma.theta.verification,
  hu.bme.mit.gamma.statechart.lowlevel.transformation.commandhandler,
  hu.bme.mit.gamma.lowlevel.xsts.transformation,
@@ -43,7 +44,8 @@ Require-Bundle: com.google.gson,
  hu.bme.mit.gamma.statechart.plantuml.transformation,
  hu.bme.mit.gamma.scenario.statechart.util,
  hu.bme.mit.gamma.scenario.statechart.generator,
- hu.bme.mit.gamma.scenario.model
+ hu.bme.mit.gamma.scenario.reduction,
+ hu.bme.mit.gamma.scenario.statechart.util
 Export-Package: hu.bme.mit.gamma.ui,
  hu.bme.mit.gamma.ui.taskhandler,
  hu.bme.mit.gamma.ui.util

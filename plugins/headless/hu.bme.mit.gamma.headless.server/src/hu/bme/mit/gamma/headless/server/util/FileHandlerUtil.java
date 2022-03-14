@@ -1,45 +1,40 @@
 package hu.bme.mit.gamma.headless.server.util;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.google.gson.reflect.TypeToken;
-
-import hu.bme.mit.gamma.headless.server.entity.WorkspaceProjectWrapper;
-
-import org.apache.commons.io.FileUtils;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Type;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+
+import org.apache.commons.io.FileUtils;
+
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 // Contains functions that are used for file and process handling
 public class FileHandlerUtil {
 	private static final String DIRECTORY_OF_WORKSPACES_PROPERTY_NAME = "root.of.workspaces.path";
-	private static final String ROOT_WRAPPER_JSON = "wrapperList.json";
 	public static final String PROJECT_DESCRIPTOR_JSON = "projectDescriptor.json";
 	protected static Logger logger = Logger.getLogger("GammaLogger");
-
-	// Gets the wrapperList.json file
-	public static List<WorkspaceProjectWrapper> getWrapperListFromJson() throws IOException {
-		File jsonFile = new File(getProperty(DIRECTORY_OF_WORKSPACES_PROPERTY_NAME) + ROOT_WRAPPER_JSON);
-		if (!jsonFile.exists()) {
-			Files.createFile(Paths.get(jsonFile.getPath()));
-		}
-		String jsonString = FileUtils.readFileToString(jsonFile);
-		JsonElement jElement = new JsonParser().parse(jsonString);
-		Type listType = new TypeToken<List<WorkspaceProjectWrapper>>() {
-		}.getType();
-
-		return new Gson().fromJson(jElement, listType);
+	
+	public static Map<String, Set<String>> getProjectsByWorkspaces(){
+		File workspacesFolder = new File(getProperty(DIRECTORY_OF_WORKSPACES_PROPERTY_NAME));
+		List<File> workspaces = Arrays.asList(workspacesFolder.listFiles(DirectoryFilter.INSTANCE));
+		return workspaces.stream().map(workspace -> {
+			Set<String> projects = Arrays.asList(workspace
+					.listFiles(EclipseProjectFilter.INSTANCE))
+					.stream()
+					.map(File::getName)
+					.collect(Collectors.toSet());
+			return Map.entry(workspace.getName(), projects);
+		}).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 	}
 
 	// Gets the PID of an undergoing operation

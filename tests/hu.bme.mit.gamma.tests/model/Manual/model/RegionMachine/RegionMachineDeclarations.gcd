@@ -1,0 +1,7 @@
+package RegionMachine
+type _RegionMachine_Submachine_ : enum {
+	Init, Other
+}
+interface portA {
+	out event message_bool(message_boolValue : boolean)
+}

@@ -10,9 +10,9 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.transformation.util.annotations
 
+import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.property.model.PropertyPackage
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
-import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.State
@@ -40,9 +40,10 @@ class ModelAnnotatorPropertyGenerator {
 	}
 	
 	def execute() {
-		val newPackage = StatechartModelDerivedFeatures.getContainingPackage(newTopComponent)
+		val newPackage = newTopComponent.containingPackage
 		// Checking if we need annotation and property generation
 		var PropertyPackage generatedPropertyPackage
+		val importablePackages = newHashSet
 		
 		// State coverage
 		val testedComponentsForStates = getIncludedSynchronousInstances(
@@ -59,6 +60,9 @@ class ModelAnnotatorPropertyGenerator {
 		if (!testedPortsForOutEvents.nullOrEmpty) {
 			// Only system out events are covered as other internal events might be removed
 			testedPortsForOutEvents.retainAll(newTopComponent.allBoundSimplePorts)
+			importablePackages += testedPortsForOutEvents.map[it.interface.allEvents].flatten
+				.map[it.parameterDeclarations].flatten
+				.map[it.type].filter(TypeReference).map[it.reference.containingPackage]
 		}
 		// Interaction coverage
 		val testedPortsForInteractions = getIncludedSynchronousInstancePorts(
@@ -96,6 +100,8 @@ class ModelAnnotatorPropertyGenerator {
 			// We are after model unfolding, so the argument is true
 			val propertyGenerator = new PropertyGenerator(true)
 			generatedPropertyPackage = propertyGenerator.initializePackage(newTopComponent)
+			generatedPropertyPackage.imports += importablePackages
+			
 			val formulas = generatedPropertyPackage.formulas
 			formulas += propertyGenerator.createTransitionReachability(
 							annotator.getTransitionVariables)

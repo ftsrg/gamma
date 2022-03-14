@@ -1,0 +1,19 @@
+import "model/ComplexInitMachine/ComplexInitMachine"
+import "model/ComplexInitMachine/ComplexInitMachineWrapper"
+import trace "ComplexInitMachineTest"
+
+code {
+	component: ComplexInitMachine
+	language: java
+}
+
+code {
+	component: ComplexInitMachineWrapper
+	language: java
+}
+
+test {
+	trace: ComplexInitMachineTest
+	file: "ComplexInitMachineTest"
+	language: java
+}

@@ -1,0 +1,19 @@
+import "model/StateMachine/StateMachine"
+import "model/StateMachine/StateMachineWrapper"
+import trace "StateMachineTest"
+
+code {
+	component: StateMachine
+	language: java
+}
+
+code {
+	component: StateMachineWrapper
+	language: java
+}
+
+test {
+	trace: StateMachineTest
+	file: "StateMachineTest"
+	language: java
+}

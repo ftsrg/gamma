@@ -36,7 +36,6 @@ import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.util.JavaUtil
 import hu.bme.mit.gamma.xsts.model.AbstractAssignmentAction
 import hu.bme.mit.gamma.xsts.model.Action
-import hu.bme.mit.gamma.xsts.model.CompositeAction
 import hu.bme.mit.gamma.xsts.model.InEventGroup
 import hu.bme.mit.gamma.xsts.model.RegionGroup
 import hu.bme.mit.gamma.xsts.model.XSTS
@@ -116,7 +115,7 @@ class ComponentTransformer {
 		val entryAction = createSequentialAction
 		
 		val inEventAction = createSequentialAction
-		val outEventAction = createSequentialAction
+//		val outEventAction = createSequentialAction
 		
 		val mergedAction = createSequentialAction
 		
@@ -138,7 +137,8 @@ class ComponentTransformer {
 			
 			// inEventActions later
 			// Filtering events can be used (internal ones and ones led out to the environment)
-			outEventAction.actions += adapterXsts.outEventTransition.action
+			// Not necessary as the component instances do this, but this a reset here could save resource
+//			outEventAction.actions += adapterXsts.outEventTransition.action
 		}
 		
 		// Creating the message queue constructions
@@ -253,7 +253,10 @@ class ComponentTransformer {
 			val adapterComponentType = adapterInstance.type as AsynchronousAdapter
 			val originalMergedAction = mergedActions.get(adapterInstance)
 			// Input event processing
-			for (queue : adapterComponentType.functioningMessageQueues) {
+			val inputIfAction = createIfAction // Will be appended when handling queues
+			mergedAction.actions += inputIfAction
+			// Queues in order of priority
+			for (queue : adapterComponentType.functioningMessageQueuesInPriorityOrder) {
 				val queueMapping = queueTraceability.get(queue)
 				val masterQueue = queueMapping.masterQueue.arrayVariable
 				val masterSizeVariable = queueMapping.masterQueue.sizeVariable
@@ -264,18 +267,9 @@ class ComponentTransformer {
 				val xStsMasterSizeVariable = variableTrace.getAll(masterSizeVariable).onlyElement
 				
 				val block = createSequentialAction
-				
-				val messageRetrievalCount = queue.checkAndGetMessageRetrievalCount
-				val maxValue = (messageRetrievalCount === null) ? 
-					xStsMasterSizeVariable.createReferenceExpression : // Null means ALL messages
-					xStsMasterSizeVariable.createReferenceExpression
-						.createMinExpression(messageRetrievalCount.toIntegerLiteral) // min(size, count)
-				
-				val queueLoop = loopIterationVariableName.createLoopAction(
-						0.toIntegerLiteral, maxValue) => [
-					it.action = block
-				]
-				mergedAction.actions += queueLoop
+				// if (0 < size) { ... }
+				inputIfAction.append(0.toIntegerLiteral.createLessExpression(
+					xStsMasterSizeVariable.createReferenceExpression), block)
 				
 				val xStsEventIdVariableAction = createIntegerTypeDefinition.createVariableDeclarationAction(
 						xStsMasterQueue.eventIdLocalVariableName, xStsMasterQueue.peek)
@@ -315,34 +309,43 @@ class ComponentTransformer {
 					
 					val inParameters = event.parameterDeclarations
 					val slaveQueueSize = slaveQueueStructs.size // Might be 0 if there is no in-event var
-					checkState(inParameters.size <= slaveQueueSize)
-					for (var i = 0; i < slaveQueueSize; i++) {
-						val slaveQueueStruct = slaveQueueStructs.get(i)
-						val slaveQueue = slaveQueueStruct.arrayVariable
-						val slaveSizeVariable = slaveQueueStruct.sizeVariable
-						val inParameter = inParameters.get(i)
-						
-						val xStsSlaveQueues = variableTrace.getAll(slaveQueue)
-						val xStsSlaveSizeVariable = variableTrace.getAll(slaveSizeVariable).onlyElement
-						val xStsInParameterVariableLists = eventReferenceMapper
-								.getInputParameterVariablesByPorts(inParameter, port)
-						// Separated in the lists according to ports
-						for (xStsInParameterVariables : xStsInParameterVariableLists) {
-							// Parameter optimization problem: parameters are not deleted independently
-							val size = xStsInParameterVariables.size 
-							for (var j = 0; j < size; j++) {
-								val xStsInParameterVariable = xStsInParameterVariables.get(j)
-								val xStsSlaveQueue = xStsSlaveQueues.get(j)
-								// Setting type to prevent enum problems (multiple times, though, not a problem)
-								val xStsSlaveQueueType = xStsSlaveQueue.typeDefinition as ArrayTypeDefinition
-								xStsSlaveQueueType.elementType = xStsInParameterVariable.type.clone
-								//
-								thenAction.actions += xStsInParameterVariable
-										.createAssignmentAction(xStsSlaveQueue.peek)
+					
+					if (inParameters.size <= slaveQueueSize) {
+						for (var i = 0; i < slaveQueueSize; i++) {
+							val slaveQueueStruct = slaveQueueStructs.get(i)
+							val slaveQueue = slaveQueueStruct.arrayVariable
+							val slaveSizeVariable = slaveQueueStruct.sizeVariable
+							val inParameter = inParameters.get(i)
+							
+							val xStsSlaveQueues = variableTrace.getAll(slaveQueue)
+							val xStsSlaveSizeVariable = variableTrace.getAll(slaveSizeVariable).onlyElement
+							val xStsInParameterVariableLists = eventReferenceMapper
+									.getInputParameterVariablesByPorts(inParameter, port)
+							// Separated in the lists according to ports
+							for (xStsInParameterVariables : xStsInParameterVariableLists) {
+								// Parameter optimization problem: parameters are not deleted independently
+								val size = xStsInParameterVariables.size 
+								for (var j = 0; j < size; j++) {
+									val xStsInParameterVariable = xStsInParameterVariables.get(j)
+									val xStsSlaveQueue = xStsSlaveQueues.get(j)
+									// Setting type to prevent enum problems (multiple times, though, not a problem)
+									val xStsSlaveQueueType = xStsSlaveQueue.typeDefinition as ArrayTypeDefinition
+									xStsSlaveQueueType.elementType = xStsInParameterVariable.type.clone
+									//
+									thenAction.actions += xStsInParameterVariable
+											.createAssignmentAction(xStsSlaveQueue.peek)
+								}
 							}
+							thenAction.actions += xStsSlaveQueues.popAllAndDecrement(xStsSlaveSizeVariable)
 						}
-						thenAction.actions += xStsSlaveQueues.popAllAndDecrement(xStsSlaveSizeVariable)
 					}
+					else {
+						// It can happen that a control event, which has no in-event variable, has parameters
+						// In this case, the parameters are not handled and there are no slave queues:
+						// (inParameters.size > slaveQueueSize) -> slaveQueueSize == 0
+						checkState(slaveQueueSize == 0)
+					}
+					
 					// Execution if necessary
 					if (adapterComponentType.isControlSpecification(portEvent)) {
 						thenAction.actions += originalMergedAction.clone
@@ -407,21 +410,32 @@ class ComponentTransformer {
 			val xStsMasterQueue = variableTrace.getAll(masterQueue).onlyElement
 			val xStsMasterSizeVariable = variableTrace.getAll(masterSizeVariable).onlyElement
 			
-			val xStsEventIdVariableAction = xStsMasterQueue
-				.createVariableDeclarationActionForArray(
+			val xStsQueueHandlingAction = createSequentialAction
+			val isQueueEmptyExpression = xStsMasterSizeVariable.empty
+			val ifEmptyAction = isQueueEmptyExpression.createIfAction(xStsQueueHandlingAction)
+			// If queue is empty
+			inEventAction.actions += ifEmptyAction
+			
+			val xStsEventIdVariableAction = xStsMasterQueue.createVariableDeclarationActionForArray(
 					xStsMasterQueue.eventIdLocalVariableName)
 			val xStsEventIdVariable = xStsEventIdVariableAction.variableDeclaration
-			inEventAction.actions += xStsEventIdVariableAction
-			inEventAction.actions += xStsEventIdVariable.createHavocAction
 			
-			// If the id is not an "empty" event
+			xStsQueueHandlingAction.actions += xStsEventIdVariableAction
+			xStsQueueHandlingAction.actions += xStsEventIdVariable.createHavocAction
+			
+			// If the id is a valid event
 			val emptyValue = xStsEventIdVariable.defaultExpression
-			val isNotEmptyExpression = xStsEventIdVariable.createInequalityExpression(emptyValue)
+			val maxEventId = queue.maxEventId.toIntegerLiteral
+			// 0 < eventId && eventId <= maxPotentialEventId
+			val leftInterval = emptyValue.createLessExpression(xStsEventIdVariable.createReferenceExpression)
+			val rightInterval = xStsEventIdVariable.createReferenceExpression.createLessEqualExpression(maxEventId)
+			val isValidIdExpression = #[leftInterval, rightInterval].wrapIntoAndExpression
+			
 			val setQueuesAction = createSequentialAction
 			setQueuesAction.actions += xStsMasterQueue.addAndIncrement( // Or could be used 0 literals for index
 					xStsMasterSizeVariable, xStsEventIdVariable.createReferenceExpression)
 			
-			inEventAction.actions += isNotEmptyExpression.createIfAction(setQueuesAction)
+			xStsQueueHandlingAction.actions += isValidIdExpression.createIfAction(setQueuesAction)
 			
 			val branchExpressions = <Expression>newArrayList
 			val branchActions = <Action>newArrayList
@@ -456,8 +470,10 @@ class ComponentTransformer {
 			}
 			setQueuesAction.actions += branchExpressions.createChoiceAction(branchActions)
 		}
+		
 		xSts.inEventTransition = inEventAction.wrap
-		xSts.outEventTransition = outEventAction.wrap
+		// Must not reset out events here: adapter instances reset them after running (no running, no reset)
+//		xSts.outEventTransition = outEventAction.wrap
 		
 		xSts.changeTransitions(mergedAction.wrap)
 		
@@ -468,98 +484,100 @@ class ComponentTransformer {
 			ReferenceToXstsVariableMapper eventReferenceMapper,
 			Collection<? extends Port> systemPorts, Trace variableTrace) {
 		val eventDispatchAction = createSequentialAction
-		for (event : port.outputEvents) {
-			// Output is unidirectional
-			val xStsOutEventVariable = eventReferenceMapper.getOutputEventVariable(event, port)
+		for (outEvent : port.outputEvents) {
+			// Output binding is unidirectional
+			val xStsOutEventVariable = eventReferenceMapper.getOutputEventVariable(outEvent, port)
+			if (xStsOutEventVariable !== null) { // This can happen if out events are never referenced
 			
-			val ifExpression = xStsOutEventVariable.createReferenceExpression
-			val thenAction = createSequentialAction
-			
-			val connectedAdapterPorts = port.allConnectedAsynchronousSimplePorts
-			for (connectedAdapterPort : connectedAdapterPorts) {
-				val connectedPortEvent = new SimpleEntry(connectedAdapterPort, event)
-				if (queueTraceability.contains(connectedPortEvent)) {
-					// The event is stored and not been removed due to optimization
-					val eventId = queueTraceability.get(connectedPortEvent)
-					// Highest priority in the case of multiple queues allowing storage 
-					val queueTrace = queueTraceability.getMessageQueues(connectedPortEvent)
-					val originalQueue = queueTrace.key
-					val capacity = originalQueue.getCapacity(systemPorts)
-					val eventDiscardStrategy = originalQueue.eventDiscardStrategy
-					val queueMapping = queueTrace.value
-					
-					val masterQueueStruct = queueMapping.masterQueue
-					val masterQueue = masterQueueStruct.arrayVariable
-					val masterSizeVariable = masterQueueStruct.sizeVariable
-					val slaveQueues = queueMapping.slaveQueues.get(connectedPortEvent)
-					
-					val xStsMasterQueue = variableTrace.getAll(masterQueue).onlyElement
-					val xStsMasterSizeVariable = variableTrace.getAll(masterSizeVariable).onlyElement
-					
-					// Expressions and actions that are used in every queue behavior
-					val evaluatedCapacity = capacity.toIntegerLiteral
-					val hasFreeCapacityExpression = createLessExpression => [
-						it.leftOperand = xStsMasterSizeVariable.createReferenceExpression
-						it.rightOperand = evaluatedCapacity
-					]
-					val block = createSequentialAction
-					// Master
-					block.actions += xStsMasterQueue.addAndIncrement(
-							xStsMasterSizeVariable, eventId.toIntegerLiteral)
-					// Resetting out event variable if it is not broadcast and led out to the system
-					val systemPort = systemPorts.contains(connectedAdapterPort.boundTopComponentPort)
-					if (!systemPort) {
-						block.actions += xStsOutEventVariable.createVariableResetAction
-					}
-					// Slaves
-					val parameters = event.parameterDeclarations
-					val slaveQueueSize = slaveQueues.size // Might be 0 if there is no in-event var
-					for (var i = 0; i < slaveQueueSize; i++) {
-						val parameter = parameters.get(i)
-						val slaveQueueStruct = slaveQueues.get(i)
-						val slaveQueue = slaveQueueStruct.arrayVariable
-						val slaveSizeVariable = slaveQueueStruct.sizeVariable
-						val xStsSlaveQueues = variableTrace.getAll(slaveQueue)
-						val xStsSlaveSizeVariable = variableTrace.getAll(slaveSizeVariable).onlyElement
-						// Output is unidirectional
-						val xStsOutParameterVariables = eventReferenceMapper
-								.getOutputParameterVariables(parameter, port)
-						// Parameter optimization problem: parameters are not deleted independently
-						block.actions += xStsSlaveQueues.addAllAndIncrement(xStsSlaveSizeVariable,
-								xStsOutParameterVariables.map[it.createReferenceExpression])
-						// Resetting out parameter variables if they are not broadcast and led out to the system
+				val ifExpression = xStsOutEventVariable.createReferenceExpression
+				val thenAction = createSequentialAction
+				
+				val connectedAdapterPorts = port.allConnectedAsynchronousSimplePorts
+				for (connectedAdapterPort : connectedAdapterPorts) {
+					val connectedPortEvent = new SimpleEntry(connectedAdapterPort, outEvent)
+					if (queueTraceability.contains(connectedPortEvent)) {
+						// The event is stored and not been removed due to optimization
+						val eventId = queueTraceability.get(connectedPortEvent)
+						// Highest priority in the case of multiple queues allowing storage 
+						val queueTrace = queueTraceability.getMessageQueues(connectedPortEvent)
+						val originalQueue = queueTrace.key
+						val capacity = originalQueue.getCapacity(systemPorts)
+						val eventDiscardStrategy = originalQueue.eventDiscardStrategy
+						val queueMapping = queueTrace.value
+						
+						val masterQueueStruct = queueMapping.masterQueue
+						val masterQueue = masterQueueStruct.arrayVariable
+						val masterSizeVariable = masterQueueStruct.sizeVariable
+						val slaveQueues = queueMapping.slaveQueues.get(connectedPortEvent)
+						
+						val xStsMasterQueue = variableTrace.getAll(masterQueue).onlyElement
+						val xStsMasterSizeVariable = variableTrace.getAll(masterSizeVariable).onlyElement
+						
+						// Expressions and actions that are used in every queue behavior
+						val evaluatedCapacity = capacity.toIntegerLiteral
+						val hasFreeCapacityExpression = xStsMasterSizeVariable.createReferenceExpression
+								.createLessExpression(evaluatedCapacity)
+						val block = createSequentialAction
+						// Master
+						block.actions += xStsMasterQueue.addAndIncrement(
+								xStsMasterSizeVariable, eventId.toIntegerLiteral)
+						// Resetting out event variable if it is not  led out to the system
+						// Duplicated for broadcast ports - not a problem, but could be refactored
+						val systemPort = systemPorts.contains(connectedAdapterPort.boundTopComponentPort)
 						if (!systemPort) {
-							block.actions += xStsOutParameterVariables.map[it.createVariableResetAction]
+							block.actions += xStsOutEventVariable.createVariableResetAction
 						}
-					}
-					
-					if (eventDiscardStrategy == DiscardStrategy.INCOMING) {
-						// if (size < capacity) { "add elements into master and slave queues" }
-						thenAction.actions += hasFreeCapacityExpression.createIfAction(block)
-					}
-					else if (eventDiscardStrategy == DiscardStrategy.OLDEST) {
-						val popActions = createSequentialAction
-						popActions.actions += xStsMasterQueue.popAndDecrement(xStsMasterSizeVariable)
-						for (slaveQueueStruct : slaveQueues) {
+						// Slaves
+						val parameters = outEvent.parameterDeclarations
+						val slaveQueueSize = slaveQueues.size // Might be 0 if there is no in-event var
+						for (var i = 0; i < slaveQueueSize; i++) {
+							val parameter = parameters.get(i)
+							val slaveQueueStruct = slaveQueues.get(i)
 							val slaveQueue = slaveQueueStruct.arrayVariable
 							val slaveSizeVariable = slaveQueueStruct.sizeVariable
 							val xStsSlaveQueues = variableTrace.getAll(slaveQueue)
 							val xStsSlaveSizeVariable = variableTrace.getAll(slaveSizeVariable).onlyElement
-							popActions.actions += xStsSlaveQueues.popAllAndDecrement(xStsSlaveSizeVariable)
+							// Output is unidirectional
+							val xStsOutParameterVariables = eventReferenceMapper
+									.getOutputParameterVariables(parameter, port)
+							// Parameter optimization problem: parameters are not deleted independently
+							block.actions += xStsSlaveQueues.addAllAndIncrement(xStsSlaveSizeVariable,
+									xStsOutParameterVariables.map[it.createReferenceExpression])
+							// Resetting out parameter variables if they are not led out to the system
+							// Duplicated for broadcast ports - not a problem, but could be refactored
+							if (!systemPort) {
+								block.actions += xStsOutParameterVariables.map[it.createVariableResetAction]
+							}
 						}
-						// if ((!(size < capacity)) { "pop" }
-						// "add elements into master and slave queues"
-						thenAction.actions += hasFreeCapacityExpression.createNotExpression
-								.createIfAction(popActions)
-						thenAction.actions += block
-					}
-					else {
-						throw new IllegalStateException("Not known behavior: " + eventDiscardStrategy)
+						
+						if (eventDiscardStrategy == DiscardStrategy.INCOMING) {
+							// if (size < capacity) { "add elements into master and slave queues" }
+							thenAction.actions += hasFreeCapacityExpression.createIfAction(block)
+						}
+						else if (eventDiscardStrategy == DiscardStrategy.OLDEST) {
+							val popActions = createSequentialAction
+							popActions.actions += xStsMasterQueue.popAndDecrement(xStsMasterSizeVariable)
+							for (slaveQueueStruct : slaveQueues) {
+								val slaveQueue = slaveQueueStruct.arrayVariable
+								val slaveSizeVariable = slaveQueueStruct.sizeVariable
+								val xStsSlaveQueues = variableTrace.getAll(slaveQueue)
+								val xStsSlaveSizeVariable = variableTrace.getAll(slaveSizeVariable).onlyElement
+								popActions.actions += xStsSlaveQueues.popAllAndDecrement(xStsSlaveSizeVariable)
+							}
+							// if ((!(size < capacity)) { "pop" }
+							// "add elements into master and slave queues"
+							thenAction.actions += hasFreeCapacityExpression.createNotExpression
+									.createIfAction(popActions)
+							thenAction.actions += block
+						}
+						else {
+							throw new IllegalStateException("Not known behavior: " + eventDiscardStrategy)
+						}
 					}
 				}
+				// if (inEvent) { "add elements into master and slave queues" }
+				eventDispatchAction.actions += ifExpression.createIfAction(thenAction)
 			}
-			// if (inEvent) { "add elements into master and slave queues" }
-			eventDispatchAction.actions += ifExpression.createIfAction(thenAction)
 		}
 		return eventDispatchAction
 	}
@@ -575,8 +593,14 @@ class ComponentTransformer {
 		
 		wrappedType.extractParameters(wrappedInstance.arguments) 
 		val xSts = wrappedType.transform(lowlevelPackage)
-		// Customize names as the type can be a statechart (before setting the new in event)
-		xSts.customizeDeclarationNames(wrappedInstance)
+		if (wrappedType.statechart) {
+			// Customize names as the type can be a statechart (before setting the new in event)
+			xSts.customizeDeclarationNames(wrappedInstance)
+		}
+		
+		// Resetting out and events manually as a "schedule" call in the code does that
+		xSts.resetOutEventsBeforeMergedAction(wrappedType)
+		xSts.resetInEventsAfterMergedAction(wrappedType)
 		
 		if (isTopInPackage) {
 			val inEventAction = xSts.inEventTransition
@@ -595,28 +619,46 @@ class ComponentTransformer {
 			val extension eventRef = new ReferenceToXstsVariableMapper(xSts)
 			// Collecting the referenced event variables
 			val messageQueue = component.messageQueues.head // Only one
-			val xStsReferencedEventVariables = messageQueue.eventReference
-					.map[it.variables].flatten
 			
 			val newInEventAction = createSequentialAction
-			// Setting the referenced event variables to unknown
-			for (xStsEventVariable : xStsReferencedEventVariables) {
-				newInEventAction.actions += xStsEventVariable.createHavocAction
+			// Choosing a random event to raise
+			val storedEvents = messageQueue.storedEvents
+			val min = messageQueue.minEventId
+			val max = messageQueue.maxEventId
+			
+			val randomActions = createChoiceActionForRandomValues(
+					messageQueue.name + "_" + messageQueue.hashCode.abs, min, max + 1 /* exclusive */)
+			val storageAction = randomActions.key
+			newInEventAction.actions += storageAction
+			val choiceAction = randomActions.value
+			val branchActions = choiceAction.actions
+			
+			val removableBranchActions = newArrayList
+			for (var i = min; i <= max; i++) {
+				val index = i - min // As indexing starts from 0, not from min
+				val branchAction = branchActions.get(index)
+				val portEvent = storedEvents.get(index)
+				val port = portEvent.key
+				val event = portEvent.value
+				
+				val xStsInputEventVariables = event.getInputEventVariables(port)
+				if (xStsInputEventVariables.empty) {
+					removableBranchActions += branchAction // The input event is unused
+				}
+				else {
+					// Can be more than one - one port can be mapped to multiple instance ports
+					for (xStsInputEventVariable : xStsInputEventVariables) {
+						branchAction.appendToAction(xStsInputEventVariable
+							.createAssignmentAction(createTrueExpression))
+					}
+				}
 			}
-			// Enabling the setting of the referenced event variables to true if no other is set
-			for (xStsEventVariable : xStsReferencedEventVariables) {
-				val xStsNegatedVariables = newHashSet
-				xStsNegatedVariables += xStsReferencedEventVariables
-				xStsNegatedVariables -= xStsEventVariable
-				newInEventAction.actions += xStsActionUtil.connectThroughNegations(xStsNegatedVariables)
-						.createIfAction(xStsEventVariable.createAssignmentAction(createTrueExpression))
-			}
-			// Binding event variables that come from the same ports
-			newInEventAction.actions += xSts.createEventAssignmentsBoundToTheSameSystemPort(wrappedType)
-			 // Original parameter settings
+			removableBranchActions.forEach[it.remove] // Removing now - it would break the indexes in the loop
+			
+			// Original parameter settings
+			// Parameters that come from the same ports are bound to the same values - done by previous call
 			newInEventAction.actions += inEventAction.action
-			// Binding parameter variables that come from the same ports
-			newInEventAction.actions += xSts.createParameterAssignmentsBoundToTheSameSystemPort(wrappedType)
+			
 			xSts.inEventTransition = newInEventAction.wrap
 		}
 		
@@ -677,7 +719,7 @@ class ComponentTransformer {
 			// 2) the Casc semantics: Resetting channel OUT events BEFORE schedule would delete in events of subsequent components
 			// Note, System in and out events are reset in the env action
 			if (component instanceof CascadeCompositeComponent) {
-				// Resetting IN events AFTER schedule
+				// Resetting IN events AFTER schedule - refactor to method call
 				val clonedNewInEventAction = newInEventAction.clone
 						.resetEverythingExceptPersistentParameters(componentType) // Clone is important
 				actualComponentMergedAction.actions += clonedNewInEventAction // Putting the new action AFTER
@@ -688,6 +730,9 @@ class ComponentTransformer {
 						.resetEverythingExceptPersistentParameters(componentType)
 				actualComponentMergedAction.actions.add(0, clonedNewOutEventAction) // Putting the new action BEFORE
 			}
+			// Tracing merged action
+			componentMergedActions += componentType -> actualComponentMergedAction.clone
+			
 			// In event
 			newInEventAction.deleteEverythingExceptSystemEventsAndParameters(component)
 			if (xSts !== newXSts) { // Only if this is not the first component
@@ -704,8 +749,18 @@ class ComponentTransformer {
 				outEventAction.actions += newOutEventAction
 				xSts.outEventTransition = outEventAction.wrap
 			}
-			// Tracing merged action
-			componentMergedActions += componentType -> actualComponentMergedAction.clone
+		}
+		
+		// Potentially executing instances before first environment transition (cascade only)
+		// System out events are NOT cleared
+		for (subcomponent : component.initallyScheduledInstances) {
+			val componentType = subcomponent.type
+			checkState(componentMergedActions.containsKey(componentType))
+			val entryEventAction = xSts.entryEventTransition.action
+			// Component instance in events are cleared, see above "newInEventAction.clone
+			//			.resetEverythingExceptPersistentParameters(componentType)"
+			val componentMergedAction = componentMergedActions.get(componentType).clone
+			entryEventAction.appendToAction(componentMergedAction)
 		}
 		
 		// Merged action based on scheduling instances
@@ -716,25 +771,30 @@ class ComponentTransformer {
 			val subcomponent = scheduledInstances.get(i)
 			val componentType = subcomponent.type
 			checkState(componentMergedActions.containsKey(componentType))
-			mergedAction.actions += componentMergedActions.get(componentType).clone
+			val componentMergedAction = componentMergedActions.get(componentType).clone
+			mergedAction.actions += componentMergedAction
 		}
 		xSts.changeTransitions(mergedAction.wrap)
 		
 		logger.log(Level.INFO, "Deleting unused instance ports in " + name)
 		xSts.deleteUnusedPorts(component) // Deleting variable assignments for unused ports
-		// Connect only after xSts.mergedTransition.action = mergedAction
+		
+		// Connect only after "xSts.mergedTransition.action = mergedAction" / "xSts.changeTransitions"
 		logger.log(Level.INFO, "Connecting events through channels in " + name)
 		xSts.connectEventsThroughChannels(component) // Event (variable setting) connecting across channels
+		
 		logger.log(Level.INFO, "Binding event to system port events in " + name)
 		val oldInEventAction = xSts.inEventTransition.action
 		val bindingAssignments = xSts.createEventAndParameterAssignmentsBoundToTheSameSystemPort(component)
 		// Optimization: removing old NonDeterministicActions 
 		bindingAssignments.removeNonDeterministicActionsReferencingAssignedVariables(oldInEventAction)
+		
 		val newInEventAction = createSequentialAction => [
 			it.actions += oldInEventAction
 			// Bind together ports connected to the same system port
 			it.actions += bindingAssignments
 		]
+		
 		xSts.inEventTransition = newInEventAction.wrap
 		
 		if (transformOrthogonalActions) {
@@ -803,14 +863,15 @@ class ComponentTransformer {
 	
 	private def getCapacity(MessageQueue queue, Collection<? extends Port> systemPorts) {
 		if (queue.isEnvironmentalAndCheck(systemPorts)) {
-			val messageRetrievalCount = queue.checkAndGetMessageRetrievalCount
-			if (messageRetrievalCount !== null) {
-				// For environmental queues, message retrieval count can serve as capacity
-				return messageRetrievalCount
-			}
+			val messageRetrievalCount = queue.messageRetrievalCount
+			return messageRetrievalCount // capacity can be equal to messageRetrievalCount for env. queues
 		}
 		val capacity = queue.capacity
 		return capacity.evaluateInteger
+	}
+	
+	private def getMessageRetrievalCount(MessageQueue queue) {
+		return 1
 	}
 	
 	private def isEnvironmentalAndCheck(MessageQueue queue, Collection<? extends Port> systemPorts) {
@@ -831,27 +892,22 @@ class ComponentTransformer {
 		return false
 	}
 	
-	private def checkAndGetMessageRetrievalCount(MessageQueue queue) {
-		val messageRetrievalCount = queue.messageRetrievalCount
-		if (messageRetrievalCount === null) {
-			return null // Means ALL messages
-		}
-		val count = messageRetrievalCount.evaluateInteger
-		checkState(count > 0) // Maybe 0 should be accepted, too?
-		val capacity = queue.capacity.evaluateInteger
-		return Math.min(count, capacity) // Count cannot be greater than the capacity
+	private def void resetOutEventsBeforeMergedAction(XSTS xSts, Component type) {
+		val outEventAction = xSts.outEventTransition.action
+		val clonedOutEventAction = outEventAction.clone
+		// Not PERSISTENT parameters
+		val resetAction = clonedOutEventAction.resetEverythingExceptPersistentParameters(type)
+		val mergedAction = xSts.mergedAction
+		resetAction.prependToAction(mergedAction)
 	}
 	
 	private def void resetInEventsAfterMergedAction(XSTS xSts, Component type) {
 		val inEventAction = xSts.inEventTransition.action
-		// Maybe still not perfect?
-		if (inEventAction instanceof CompositeAction) {
-			val clonedInEventAction = inEventAction.clone
-			// Not PERSISTENT parameters
-			val resetAction = clonedInEventAction.resetEverythingExceptPersistentParameters(type)
-			val mergedAction = xSts.mergedAction
-			mergedAction.appendToAction(resetAction)
-		}
+		val clonedInEventAction = inEventAction.clone
+		// Not PERSISTENT parameters
+		val resetAction = clonedInEventAction.resetEverythingExceptPersistentParameters(type)
+		val mergedAction = xSts.mergedAction
+		mergedAction.appendToAction(resetAction)
 	}
 	
 	private def void customizeDeclarationNames(XSTS xSts, ComponentInstance instance) {

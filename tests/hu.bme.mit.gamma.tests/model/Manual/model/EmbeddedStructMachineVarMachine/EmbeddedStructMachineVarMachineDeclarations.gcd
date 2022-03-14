@@ -1,0 +1,11 @@
+package EmbeddedStructMachineVarMachine
+type InnerStruct : record {
+	cnt : integer
+}
+type OuterStruct : record {
+	cnt : integer,
+	inner : InnerStruct
+}
+interface portA {
+	out event message_int(message_intValue : integer)
+}

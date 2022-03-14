@@ -24,7 +24,7 @@ class ThetaPropertySerializer extends PropertySerializer {
 	// Singleton
 	public static final ThetaPropertySerializer INSTANCE = new ThetaPropertySerializer
 	protected new() {
-		super(new PropertyExpressionSerializer(ThetaReferenceSerializer.INSTANCE))
+		super(new ThetaPropertyExpressionSerializer(ThetaReferenceSerializer.INSTANCE))
 	}
 	//
 	

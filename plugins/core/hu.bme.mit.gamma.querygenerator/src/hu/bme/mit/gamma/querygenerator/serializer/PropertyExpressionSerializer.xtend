@@ -17,10 +17,13 @@ import hu.bme.mit.gamma.property.model.ComponentInstanceStateConfigurationRefere
 import hu.bme.mit.gamma.property.model.ComponentInstanceStateExpression
 import hu.bme.mit.gamma.property.model.ComponentInstanceVariableReference
 import hu.bme.mit.gamma.statechart.util.ExpressionSerializer
+import hu.bme.mit.gamma.util.GammaEcoreUtil
 
-class PropertyExpressionSerializer extends ExpressionSerializer {
+abstract class PropertyExpressionSerializer extends ExpressionSerializer {
 	
 	protected extension AbstractReferenceSerializer referenceSerializer
+	
+	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	
 	new(AbstractReferenceSerializer referenceSerializer) {
 		this.referenceSerializer = referenceSerializer

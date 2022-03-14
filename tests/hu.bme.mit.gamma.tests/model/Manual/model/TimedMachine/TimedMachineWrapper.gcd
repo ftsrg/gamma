@@ -1,0 +1,12 @@
+package TimedMachine
+
+import "/model/TimedMachine/TimedMachineDeclarations.gcd"
+import "/model/TimedMachine/TimedMachine.gcd"
+
+cascade TimedMachineWrapper [
+	port portA : requires portA
+] {
+	component timedMachine : TimedMachine
+	
+	bind portA -> timedMachine.portA
+}

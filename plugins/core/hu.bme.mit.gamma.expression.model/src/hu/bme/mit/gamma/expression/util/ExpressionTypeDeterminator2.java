@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.expression.util;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -74,7 +75,6 @@ public class ExpressionTypeDeterminator2 {
 	
 	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
 	protected final ExpressionModelFactory factory = ExpressionModelFactory.eINSTANCE;
-	protected ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE; // Redefinable
 	
 	public Type getType(Expression expression) {
 		if (expression instanceof BooleanExpression) { // BooleanLiteralExpression is a BooleanExpression
@@ -113,7 +113,8 @@ public class ExpressionTypeDeterminator2 {
 			Expression firstOperand = operands.get(0);
 			ArrayTypeDefinition arrayTypeDefinition = factory.createArrayTypeDefinition();
 			arrayTypeDefinition.setElementType(getType(firstOperand));
-			IntegerLiteralExpression size = expressionUtil.toIntegerLiteral(operands.size());
+			IntegerLiteralExpression size = factory.createIntegerLiteralExpression();
+			size.setValue(BigInteger.valueOf(operands.size()));
 			arrayTypeDefinition.setSize(size);
 			return arrayTypeDefinition;
 		}
@@ -176,8 +177,9 @@ public class ExpressionTypeDeterminator2 {
 			}
 		}
 		if (expression instanceof FunctionAccessExpression) {
-			Type declarationType = expressionUtil.getDeclaration(expression).getType();
-			return ecoreUtil.clone(declarationType);
+			FunctionAccessExpression functionAccessExpression = (FunctionAccessExpression) expression;
+			Expression operand = functionAccessExpression.getOperand();
+			return getType(operand);
 		}
 		if (expression instanceof FieldReferenceExpression) {
 			FieldReferenceExpression fieldReferenceExpression = (FieldReferenceExpression) expression;

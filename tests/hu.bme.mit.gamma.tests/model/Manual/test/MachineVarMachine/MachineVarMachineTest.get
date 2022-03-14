@@ -1,0 +1,39 @@
+import "model/MachineVarMachine/MachineVarMachineWrapper"
+
+trace MachineVarMachineTest of MachineVarMachineWrapper
+
+step {
+	act {
+		reset
+	}
+	assert {
+		variable machineVarMachine.cnt = 0
+	}
+}
+step {
+	act {
+		raise portA.message_int(0)
+		schedule component
+	}
+	assert {
+		variable machineVarMachine.cnt = 1
+	}
+}
+step {
+	act {
+		raise portA.message_int(42)
+		schedule component
+	}
+	assert {
+		variable machineVarMachine.cnt = 2
+	}
+}
+step {
+	act {
+		raise portA.message_int(-7)
+		schedule component
+	}
+	assert {
+		variable machineVarMachine.cnt = 3
+	}
+}

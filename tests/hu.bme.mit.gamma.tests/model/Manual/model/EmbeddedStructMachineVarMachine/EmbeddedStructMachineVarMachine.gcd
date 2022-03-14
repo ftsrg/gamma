@@ -1,0 +1,20 @@
+package EmbeddedStructMachineVarMachine
+import
+	"/model/EmbeddedStructMachineVarMachine/EmbeddedStructMachineVarMachineDeclarations.gcd"
+@TransitionPriority = order-based
+statechart EmbeddedStructMachineVarMachine [
+	port portA : requires portA
+] {
+	var outer : OuterStruct
+	transition from _initialOfEmbeddedStructMachineVarMachine__ to
+		EmbeddedStructMachineVarMachine__State
+	transition from EmbeddedStructMachineVarMachine__State to EmbeddedStructMachineVarMachine__State
+		when portA.message_int / {
+		outer.cnt := outer.cnt + 1;
+		outer.inner.cnt := outer.inner.cnt + 1;
+	}
+	region EmbeddedStructMachineVarMachine_ {
+		state EmbeddedStructMachineVarMachine__State
+		initial _initialOfEmbeddedStructMachineVarMachine__
+	}
+}

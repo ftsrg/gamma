@@ -1,0 +1,25 @@
+package ComplexInitMachine
+import
+	"/model/ComplexInitMachine/ComplexInitMachineDeclarations.gcd"
+@TransitionPriority = order-based
+statechart ComplexInitMachine [
+	port portA : requires portA
+] {
+	var ini : boolean := false
+	var a : integer := 0
+	var b : integer := 0
+	var c : integer := 0
+	var d : integer := 0
+	var subini_sub1 : boolean := false
+	var _complexInitMachine_Sub__sub1 : _ComplexInitMachine_Sub_
+	transition from _initialOfSub___sub1 to Sub__State_sub1 /
+	ini := tr();
+	b := 1;
+	c := 1;
+	subini_sub1 := tr();
+	b := 2;
+	region Sub__sub1 {
+		state Sub__State_sub1
+		initial _initialOfSub___sub1
+	}
+}

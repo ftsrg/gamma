@@ -241,4 +241,6 @@
       eSuperTypes="#//VariableDeclarationAnnotation"/>
   <eClassifiers xsi:type="ecore:EClass" name="ClockVariableDeclarationAnnotation"
       eSuperTypes="#//VariableDeclarationAnnotation"/>
+  <eClassifiers xsi:type="ecore:EClass" name="ScheduledClockVariableDeclarationAnnotation"
+      eSuperTypes="#//VariableDeclarationAnnotation"/>
 </ecore:EPackage>

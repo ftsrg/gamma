@@ -36,7 +36,7 @@ pattern instanceContainer(containerInstace : ComponentInstance, instance : Compo
 	AbstractSynchronousCompositeComponent.components(type, instance);
 } or {
 	AsynchronousComponentInstance.type(containerInstace, type);
-	AsynchronousCompositeComponent.components(type, instance);
+	AbstractAsynchronousCompositeComponent.components(type, instance);
 }
 
 pattern wrapperInstanceContainer(wrapperInstance : AsynchronousComponentInstance, syncInstance : SynchronousComponentInstance) {
@@ -280,7 +280,7 @@ private pattern topSyncComponents(component : SynchronousComponent) {
 	find wrappers(_, component);
 }
 
-pattern topAsyncCompositeComponents(asyncComposite : AsynchronousCompositeComponent) {
+pattern topAsyncCompositeComponents(asyncComposite : AbstractAsynchronousCompositeComponent) {
 	neg find asynchronousInstances(_, asyncComposite);
 }
 
@@ -324,35 +324,35 @@ pattern wrapperInstanceOutEvents(instance : AsynchronousComponentInstance, port 
 	find wrapperOutEvents(wrapper, port, event);
 }
 
-private pattern asyncSystemInEvents(composite : AsynchronousCompositeComponent, systemPort : Port,
+private pattern asyncSystemInEvents(composite : AbstractAsynchronousCompositeComponent, systemPort : Port,
 	instance : AsynchronousComponentInstance, port : Port, event : Event) {
 	find portBindings(composite, systemPort, instance, port);
 	find wrapperInstanceInEvents(instance, port, event);
 } or {
 	// Finding embedded composite systems and the port of simple instances
-	AsynchronousCompositeComponent.ports(composite, systemPort);
+	AbstractAsynchronousCompositeComponent.ports(composite, systemPort);
 	find portToInstancePort(systemPort, instance, port);
 	find wrapperInstanceInEvents(instance, port, event);
 }
 
-private pattern asyncSystemOutEvents(composite : AsynchronousCompositeComponent, systemPort : Port,
+private pattern asyncSystemOutEvents(composite : AbstractAsynchronousCompositeComponent, systemPort : Port,
 	instance : AsynchronousComponentInstance, port : Port, event : Event) {
 	find portBindings(composite, systemPort, instance, port);
 	find wrapperInstanceOutEvents(instance, port, event);
 } or {
 	// Finding embedded composite systems and the port of simple instances
-	AsynchronousCompositeComponent.ports(composite, systemPort);
+	AbstractAsynchronousCompositeComponent.ports(composite, systemPort);
 	find portToInstancePort(systemPort, instance, port);
 	find wrapperInstanceOutEvents(instance, port, event);
 }
 
-pattern topAsyncSystemInEvents(composite : AsynchronousCompositeComponent, systemPort : Port,
+pattern topAsyncSystemInEvents(composite : AbstractAsynchronousCompositeComponent, systemPort : Port,
 	instance : AsynchronousComponentInstance, port : Port, event : Event) {
 	find topAsyncCompositeComponents(composite);
 	find asyncSystemInEvents(composite, systemPort, instance, port, event);
 }
 
-pattern topAsyncSystemOutEvents(composite : AsynchronousCompositeComponent, systemPort : Port,
+pattern topAsyncSystemOutEvents(composite : AbstractAsynchronousCompositeComponent, systemPort : Port,
 	instance : AsynchronousComponentInstance, port : Port, event : Event) {
 	find topAsyncCompositeComponents(composite);
 	find asyncSystemOutEvents(composite, systemPort, instance, port, event);

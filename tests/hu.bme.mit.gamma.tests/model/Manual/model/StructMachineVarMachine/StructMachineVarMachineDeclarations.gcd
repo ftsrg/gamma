@@ -1,0 +1,7 @@
+package StructMachineVarMachine
+type SampleStruct : record {
+	cnt : integer
+}
+interface portA {
+	out event message_int(message_intValue : integer)
+}

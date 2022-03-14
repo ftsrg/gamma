@@ -1,0 +1,12 @@
+package MachineVarMachine
+
+import "/model/MachineVarMachine/MachineVarMachineDeclarations.gcd"
+import "/model/MachineVarMachine/MachineVarMachine.gcd"
+
+cascade MachineVarMachineWrapper [
+	port portA : requires portA
+] {
+	component machineVarMachine : MachineVarMachine
+	
+	bind portA -> machineVarMachine.portA
+}

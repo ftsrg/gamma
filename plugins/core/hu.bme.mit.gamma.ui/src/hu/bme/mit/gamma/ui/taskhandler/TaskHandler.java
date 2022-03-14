@@ -19,6 +19,7 @@ import java.util.logging.Logger;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.resource.Resource;
 
 import hu.bme.mit.gamma.dialog.DialogUtil;
 import hu.bme.mit.gamma.genmodel.model.AdaptiveContractTestGeneration;
@@ -36,16 +37,22 @@ import hu.bme.mit.gamma.trace.model.ExecutionTrace;
 import hu.bme.mit.gamma.transformation.util.GammaFileNamer;
 import hu.bme.mit.gamma.util.FileUtil;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
+import hu.bme.mit.gamma.util.JavaUtil;
 
 public abstract class TaskHandler {
 	
 	protected final IFile file;
 	
 	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
+	protected final JavaUtil javaUtil = JavaUtil.INSTANCE;
 	protected final FileUtil fileUtil = FileUtil.INSTANCE;
+	
 	protected final GammaFileNamer fileNamer = GammaFileNamer.INSTANCE;
+	
 	protected final ModelSerializer serializer = ModelSerializer.INSTANCE;
+	
 	protected final Logger logger = Logger.getLogger("GammaLogger");
+	
 	protected final String projectLocation;
 	protected String targetFolderUri;
 	
@@ -71,11 +78,18 @@ public abstract class TaskHandler {
 				targetFolder = "test-gen";
 			}
 			else {
-				URI relativeUri = task.eResource().getURI();
-				URI parentUri = relativeUri.trimSegments(1);
-				String platformUri = parentUri.toPlatformString(true);
-				targetFolder = platformUri.substring(
-					(File.separator + file.getProject().getName() + File.separator).length());
+				Resource resource = task.eResource();
+				if (resource != null) { 
+					URI relativeUri = resource.getURI();
+					URI parentUri = relativeUri.trimSegments(1);
+					String platformUri = parentUri.toPlatformString(true);
+					targetFolder = platformUri.substring(
+						(File.separator + file.getProject().getName() + File.separator).length());
+				}
+				else {
+					String relativeFolder = file.getParent().getLocation().toString();
+					targetFolder = relativeFolder.substring(projectLocation.length() + 1); // Counting the sperator
+				}
 			}
 			task.getTargetFolder().add(targetFolder);
 		}
@@ -91,7 +105,7 @@ public abstract class TaskHandler {
 		return object.eResource().getURI().lastSegment();
 	}
 	
-	protected String getTargetFolderUri() {
+	public String getTargetFolderUri() {
 		return targetFolderUri;
 	}
 	

@@ -1,0 +1,10 @@
+package InnerStateMachine
+type _InnerStateMachine_Other_ : enum {
+	Other_Init, Other_Other
+}
+type _InnerStateMachine_ : enum {
+	Init, Other
+}
+interface portA {
+	out event message_bool(message_boolValue : boolean)
+}

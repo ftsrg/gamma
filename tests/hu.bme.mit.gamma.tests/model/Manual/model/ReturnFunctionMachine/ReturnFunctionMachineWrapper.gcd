@@ -1,0 +1,12 @@
+package ReturnFunctionMachine
+
+import "/model/ReturnFunctionMachine/ReturnFunctionMachineDeclarations.gcd"
+import "/model/ReturnFunctionMachine/ReturnFunctionMachine.gcd"
+
+cascade ReturnFunctionMachineWrapper [
+	port P : requires P
+] {
+	component returnFunctionMachine : ReturnFunctionMachine
+	
+	bind P -> returnFunctionMachine.P
+}

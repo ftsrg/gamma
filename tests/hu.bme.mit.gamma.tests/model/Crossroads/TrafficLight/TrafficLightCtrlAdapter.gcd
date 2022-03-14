@@ -1,0 +1,10 @@
+package trafficlightctrl
+
+import "TrafficLightCtrl.gcd"
+
+adapter TrafficLightCtrlAdapter of component trafficLightCtrl : TrafficLightCtrl {
+	when any / run
+	queue messageQueue(priority = 1, capacity = 4) {
+		Control.any, PoliceInterrupt.any
+	}
+}

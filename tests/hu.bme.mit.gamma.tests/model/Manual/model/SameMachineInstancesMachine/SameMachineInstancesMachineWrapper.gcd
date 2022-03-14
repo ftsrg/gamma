@@ -1,0 +1,12 @@
+package SameMachineInstancesMachine
+
+import "/model/SameMachineInstancesMachine/SameMachineInstancesMachineDeclarations.gcd"
+import "/model/SameMachineInstancesMachine/SameMachineInstancesMachine.gcd"
+
+cascade SameMachineInstancesMachineWrapper [
+	port portA : requires portA
+] {
+	component sameMachineInstancesMachine : SameMachineInstancesMachine
+	
+	bind portA -> sameMachineInstancesMachine.portA
+}

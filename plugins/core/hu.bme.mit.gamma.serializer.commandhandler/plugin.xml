@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+  <extension point="org.eclipse.ui.commands">
+    <command id="hu.bme.mit.gamma.serializer" name="Serialize Model"/>
+  </extension>
+  <extension point="org.eclipse.ui.menus">
+    <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.navigator.ProjectExplorer#PopupMenu">
+       <menu id="gammaProjectMenu"
+             label="Gamma Commands"
+             icon="icons/gamma-icon-16.png">
+        <!-- Generating Gamma artefacts -->	    
+	    <command commandId="hu.bme.mit.gamma.serializer" label="Serialize Model" style="push">
+	    	<visibleWhen checkEnabled="false">
+            	<iterate ifEmpty="false" operator="or">
+					<test property="org.eclipse.core.resources.name"
+				        value="*.gsm">
+				    </test>
+    			</iterate>
+            </visibleWhen>  
+	    </command>
+      </menu>
+    </menuContribution>
+    <menuContribution allPopups="false" locationURI="popup:org.eclipse.jdt.ui.PackageExplorer">
+      <menu id="gammaPackageMenu"
+            label="Gamma Commands"
+             icon="icons/gamma-icon-16.png">
+        <!-- Generating Gamma artefacts -->	    
+	    <command commandId="hu.bme.mit.gamma.serializer" label="Serialize Model" style="push">
+	    	<visibleWhen checkEnabled="false">
+            	<iterate ifEmpty="false" operator="or">
+					<test property="org.eclipse.core.resources.name"
+				        value="*.gsm">
+				    </test>
+    			</iterate>
+            </visibleWhen>  
+	    </command>
+      </menu>
+    </menuContribution>
+  </extension>
+  <extension point="org.eclipse.ui.handlers"> 
+    <handler class="hu.bme.mit.gamma.serializer.commandhandler.CommandHandler" commandId="hu.bme.mit.gamma.serializer"/>
+  </extension>
+</plugin>

@@ -1,0 +1,13 @@
+package StructRecieverMachine
+
+import "/model/StructRecieverMachine/StructRecieverMachineDeclarations"
+import "/model/StructRecieverMachine/StructRecieverMachine"
+
+
+ cascade StructRecieverMachineWrapper [
+ 	port portA : requires portA
+ ] {
+ 	component structRecieverMachine : StructRecieverMachine
+ 	
+ 	bind portA -> structRecieverMachine.portA
+ }

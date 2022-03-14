@@ -17,7 +17,7 @@ import hu.bme.mit.gamma.property.model.PropertyPackage
 class PropertyLanguageLinker extends GammaLanguageLinker {
 	
 	override getContext() {
-		return newHashMap(PropertyPackage -> #[PropertyModelPackage.eINSTANCE.propertyPackage_Import])
+		return newHashMap(PropertyPackage -> #[PropertyModelPackage.eINSTANCE.propertyPackage_Imports])
 	}
     
 }

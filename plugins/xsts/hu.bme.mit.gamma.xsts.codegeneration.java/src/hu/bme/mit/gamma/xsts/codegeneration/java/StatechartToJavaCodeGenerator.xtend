@@ -10,21 +10,21 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.xsts.codegeneration.java
 
-import hu.bme.mit.gamma.codegenerator.java.util.EventCodeGenerator
-import hu.bme.mit.gamma.codegenerator.java.util.InterfaceCodeGenerator
-import hu.bme.mit.gamma.codegenerator.java.util.ReflectiveComponentCodeGenerator
-import hu.bme.mit.gamma.codegenerator.java.util.TimerCallbackInterfaceGenerator
-import hu.bme.mit.gamma.codegenerator.java.util.TimerInterfaceGenerator
-import hu.bme.mit.gamma.codegenerator.java.util.TimerServiceCodeGenerator
-import hu.bme.mit.gamma.codegenerator.java.util.TypeDeclarationGenerator
-import hu.bme.mit.gamma.codegenerator.java.util.VirtualTimerServiceCodeGenerator
+import hu.bme.mit.gamma.codegeneration.java.util.EventCodeGenerator
+import hu.bme.mit.gamma.codegeneration.java.util.InterfaceCodeGenerator
+import hu.bme.mit.gamma.codegeneration.java.util.ReflectiveComponentCodeGenerator
+import hu.bme.mit.gamma.codegeneration.java.util.TimerCallbackInterfaceGenerator
+import hu.bme.mit.gamma.codegeneration.java.util.TimerInterfaceGenerator
+import hu.bme.mit.gamma.codegeneration.java.util.TimerServiceCodeGenerator
+import hu.bme.mit.gamma.codegeneration.java.util.TypeDeclarationGenerator
+import hu.bme.mit.gamma.codegeneration.java.util.VirtualTimerServiceCodeGenerator
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.util.FileUtil
 import hu.bme.mit.gamma.xsts.model.XSTS
 import java.io.File
 
-import static extension hu.bme.mit.gamma.codegenerator.java.util.Namings.*
+import static extension hu.bme.mit.gamma.codegeneration.java.util.Namings.*
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 

@@ -41,9 +41,9 @@ class ScenarioStatechartTraceGenerator {
 	val extension ScenarioStatechartUtil scenarioStatechartUtil = ScenarioStatechartUtil.INSTANCE
 	val extension TraceUtil traceUtil = TraceUtil.INSTANCE
 
-	StatechartDefinition statechart = null
+	val boolean TEST_ORIGINAL = true
 
-	val boolean testOriginal = true
+	StatechartDefinition statechart = null
 
 	var int schedulingConstraint = 0
 
@@ -61,11 +61,11 @@ class ScenarioStatechartTraceGenerator {
 		var Component component = statechart
 		absoluteParentFolder = (statechart.eResource.file).parentFile.absolutePath
 		var NotDefinedEventMode scenarioContractType = null
-		var result = <ExecutionTrace>newArrayList
+		val result = <ExecutionTrace>newArrayList
 		val annotations = statechart.annotations
 		for (annotation : annotations) {
 			if (annotation instanceof ScenarioContractAnnotation) {
-				if (testOriginal) {
+				if (TEST_ORIGINAL) {
 					component = annotation.monitoredComponent
 					scenarioContractType= annotation.scenarioType
 				}
@@ -82,10 +82,9 @@ class ScenarioStatechartTraceGenerator {
 		}
 		
 		val name = statechart.name
-		val xStsFile = new File(absoluteParentFolder + File.separator +
-			fileNamer.getXtextXStsFileName(name))
+		val xStsFile = new File(absoluteParentFolder + File.separator +	fileNamer.getXtextXStsFileName(name))
 		val xStsString = gammaToXSTSTransformer.preprocessAndExecuteAndSerialize(
-			_package, absoluteParentFolder,	name)
+				_package, absoluteParentFolder,	name)
 		fileUtil.saveString(xStsFile, xStsString)
 
 		val verifier = new ThetaVerifier
@@ -103,7 +102,7 @@ class ScenarioStatechartTraceGenerator {
 		val baseTrace = verifierResult.trace
 		
 		if (baseTrace === null){
-			throw new IllegalArgumentException('''State «scenarioStatechartUtil.accepting» cannot be reached in the formal model.''')
+			throw new IllegalArgumentException('''State «scenarioStatechartUtil.accepting» cannot be reached in the formal model''')
 		}
 
 		var derivedTraces = identifySeparateTracesByReset(baseTrace)
@@ -122,7 +121,7 @@ class ScenarioStatechartTraceGenerator {
 
 		for (trace : filteredTraces) {
 			val eventAdder = new UnsentEventAssertExtender(trace.steps, true)
-			if (scenarioContractType.equals(NotDefinedEventMode.STRICT)) {
+			if (scenarioContractType == NotDefinedEventMode.STRICT) {
 				eventAdder.execute
 			}
 			result += trace

@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
@@ -53,6 +54,7 @@ import hu.bme.mit.gamma.expression.model.InitializableElement;
 import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression;
 import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression;
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition;
+import hu.bme.mit.gamma.expression.model.LessEqualExpression;
 import hu.bme.mit.gamma.expression.model.LessExpression;
 import hu.bme.mit.gamma.expression.model.MultiaryExpression;
 import hu.bme.mit.gamma.expression.model.MultiplyExpression;
@@ -75,6 +77,7 @@ import hu.bme.mit.gamma.expression.model.ValueDeclaration;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.expression.model.VariableDeclarationAnnotation;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
+import hu.bme.mit.gamma.util.JavaUtil;
 
 public class ExpressionUtil {
 	// Singleton
@@ -83,6 +86,7 @@ public class ExpressionUtil {
 	//
 	
 	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
+	protected final JavaUtil javaUtil = JavaUtil.INSTANCE;
 	protected final ExpressionEvaluator evaluator = ExpressionEvaluator.INSTANCE;
 	protected final ExpressionTypeDeterminator2 typeDeterminator = ExpressionTypeDeterminator2.INSTANCE;
 	protected final ExpressionModelFactory factory = ExpressionModelFactory.eINSTANCE;
@@ -320,7 +324,7 @@ public class ExpressionUtil {
 
 	protected Set<VariableDeclaration> _getReferredVariables(MultiaryExpression expression) {
 		Set<VariableDeclaration> variables = new HashSet<VariableDeclaration>();
-		EList<Expression> _operands = expression.getOperands();
+		List<Expression> _operands = expression.getOperands();
 		for (Expression operand : _operands) {
 			variables.addAll(getReferredVariables(operand));
 		}
@@ -554,6 +558,22 @@ public class ExpressionUtil {
 		return constants;
 	}
 	
+	public void inlineParamaters(List<? extends ParameterDeclaration> parameters,
+			List<? extends Expression> arguments) {
+		for (var i = 0; i < arguments.size(); i++) {
+			ParameterDeclaration parameter = parameters.get(i);
+			Expression argument = arguments.get(i);
+			EObject root = parameter.eContainer();
+			for (DirectReferenceExpression reference : ecoreUtil.getSelfAndAllContentsOfType(
+					root, DirectReferenceExpression.class).stream()
+						.filter(it -> it.getDeclaration() == parameter)
+						.collect(Collectors.toList())) {
+				Expression clonedArgument = ecoreUtil.clone(argument);
+				ecoreUtil.replace(clonedArgument, reference);
+			}
+		}
+	}
+	
 	// Initial values of types
 
 	public Expression getInitialValue(VariableDeclaration variableDeclaration) {
@@ -724,6 +744,10 @@ public class ExpressionUtil {
 		addAnnotation(variable, factory.createClockVariableDeclarationAnnotation());
 	}
 	
+	public void addScheduledClockAnnotation(VariableDeclaration variable) {
+		addAnnotation(variable, factory.createScheduledClockVariableDeclarationAnnotation());
+	}
+	
 	public void addAnnotation(VariableDeclaration variable, VariableDeclarationAnnotation annotation) {
 		if (variable != null) {
 			variable.getAnnotations().add(annotation);
@@ -758,6 +782,20 @@ public class ExpressionUtil {
 		IntegerLiteralExpression integerLiteral = factory.createIntegerLiteralExpression();
 		integerLiteral.setValue(value);
 		return integerLiteral;
+	}
+	
+	public BigDecimal toBigDec(double value) {
+		return BigDecimal.valueOf(value);
+	}
+	
+	public DecimalLiteralExpression toDecimalLiteral(double value) {
+		return toDecimalLiteral(toBigDec(value));
+	}
+	
+	public DecimalLiteralExpression toDecimalLiteral(BigDecimal value) {
+		DecimalLiteralExpression decimalLiteral = factory.createDecimalLiteralExpression();
+		decimalLiteral.setValue(value);
+		return decimalLiteral;
 	}
 	
 	public VariableDeclaration createVariableDeclaration(Type type, String name) {
@@ -851,6 +889,13 @@ public class ExpressionUtil {
 		return lessExpression;
 	}
 	
+	public LessEqualExpression createLessEqualExpression(Expression lhs, Expression rhs) {
+		LessEqualExpression lessEqualExpression = factory.createLessEqualExpression();
+		lessEqualExpression.setLeftOperand(lhs);
+		lessEqualExpression.setRightOperand(rhs);
+		return lessEqualExpression;
+	}
+	
 	public IfThenElseExpression createMinExpression(Expression lhs, Expression rhs) {
 		return createIfThenElseExpression(createLessExpression(lhs, rhs),
 				ecoreUtil.clone(lhs), ecoreUtil.clone(rhs));
@@ -871,10 +916,17 @@ public class ExpressionUtil {
 		return literalExpression;
 	}
 	
+	public Expression createDefaultExpression(Collection<? extends Expression> expressions) {
+		Expression orExpression = wrapIntoOrExpression(expressions);
+		NotExpression notExpression = createNotExpression(unwrapIfPossible(orExpression));
+		return notExpression;
+	}
+	
 	public Expression replaceAndWrapIntoMultiaryExpression(Expression original,
 			Expression addition, MultiaryExpression potentialContainer) {
 		if (original == null && addition == null) {
-			throw new IllegalArgumentException("Null original or addition parameter: " + original + " " + addition);
+			throw new IllegalArgumentException(
+					"Null original or addition parameter: " + original + " " + addition);
 		}
 		ecoreUtil.replace(potentialContainer, original);
 		return wrapIntoMultiaryExpression(original, addition, potentialContainer);
@@ -922,6 +974,10 @@ public class ExpressionUtil {
 		}
 		potentialContainer.getOperands().addAll(expressions);
 		return potentialContainer;
+	}
+	
+	public Expression wrapIntoAndExpression(Collection<? extends Expression> expressions) {
+		return wrapIntoMultiaryExpression(expressions, factory.createAndExpression());
 	}
 	
 	public Expression wrapIntoOrExpression(Collection<? extends Expression> expressions) {

@@ -1,0 +1,22 @@
+package StateMachine
+import
+	"/model/StateMachine/StateMachineDeclarations.gcd"
+@TransitionPriority = order-based
+statechart StateMachine [
+	port portA : requires portA
+] {
+	var _stateMachine_ : _StateMachine_
+	transition from _initialOfStateMachine__ to StateMachine__State
+	transition from StateMachine__State to StateMachine__State when portA.message_bool
+		[_stateMachine_ = _StateMachine_::Init] / {
+		_stateMachine_ := _StateMachine_::Other;
+	}
+	transition from StateMachine__State to StateMachine__State when portA.message_bool
+		[_stateMachine_ = _StateMachine_::Other] / {
+		_stateMachine_ := _StateMachine_::Init;
+	}
+	region StateMachine_ {
+		state StateMachine__State
+		initial _initialOfStateMachine__
+	}
+}

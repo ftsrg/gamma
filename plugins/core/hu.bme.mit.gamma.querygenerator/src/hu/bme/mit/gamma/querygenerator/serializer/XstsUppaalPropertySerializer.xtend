@@ -19,7 +19,7 @@ class XstsUppaalPropertySerializer extends UppaalPropertySerializer {
 	// Singleton
 	public static final XstsUppaalPropertySerializer INSTANCE = new XstsUppaalPropertySerializer
 	protected new() {
-		super.serializer = new PropertyExpressionSerializer(XstsUppaalReferenceSerializer.INSTANCE)
+		super.serializer = new UppaalPropertyExpressionSerializer(XstsUppaalReferenceSerializer.INSTANCE)
 	}
 	//
 	

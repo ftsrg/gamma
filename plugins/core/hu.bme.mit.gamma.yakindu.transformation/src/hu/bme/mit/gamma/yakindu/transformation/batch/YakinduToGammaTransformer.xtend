@@ -166,7 +166,7 @@ class YakinduToGammaTransformer {
 				yakinduStatechart.name : statechartCompilation.statechartName.head
 		val packageName = (statechartCompilation.packageName.empty) ?
 				yakinduStatechart.name.toLowerCase : statechartCompilation.packageName.head.toLowerCase
-		this.gammaStatechart = StatechartModelFactory.eINSTANCE.createStatechartDefinition => [
+		this.gammaStatechart = StatechartModelFactory.eINSTANCE.createSynchronousStatechartDefinition => [
 			it.name = statechartName
 			it.transitionPriority = TransitionPriority.ORDER_BASED // Yakindu models are always prioritized
 		]
@@ -493,7 +493,8 @@ class YakinduToGammaTransformer {
 		for (finalStateTopRegionMatch : engine.getMatcher(FinalStates.instance).allMatches) {
 			//  The "end" variable is during for the first iteration
 			if (endVariable === null) {
-				endVariable = gammaStatechart.createChild(statechartDefinition_VariableDeclarations, variableDeclaration) as VariableDeclaration => [
+				endVariable = gammaStatechart.createChild(statechartDefinition_VariableDeclarations,
+						variableDeclaration) as VariableDeclaration => [
 					it.name = "end"
 					it.createType("boolean")
 				]
@@ -634,7 +635,8 @@ class YakinduToGammaTransformer {
 		// Otherwise a plain variableDeclaration is created	in the statechart
 		else { 
 			val statechartDef = yakinduStatechart.getAllValuesOfTo.filter(StatechartDefinition).head 
-			gammaVariable = statechartDef.createChild(statechartDefinition_VariableDeclarations, variableDeclaration) as VariableDeclaration
+			gammaVariable = statechartDef.createChild(statechartDefinition_VariableDeclarations,
+					variableDeclaration) as VariableDeclaration
 			setVariable(it.variable, gammaVariable, it.name, it.type.name)
 		}
 	].build
@@ -828,7 +830,8 @@ class YakinduToGammaTransformer {
 	 */
 	private def transformTimedTrigger(Transition gammaTransition, State gammaState, Expression yExpression, TimeEventSpec yTrigger, TimeUnit timeUnit) {
 		// Creating a Gamma TimeoutDeclaration for this particular trigger
-		val gammaTimeoutVariable = gammaStatechart.createChild(statechartDefinition_TimeoutDeclarations, timeoutDeclaration) as TimeoutDeclaration => [
+		val gammaTimeoutVariable = gammaStatechart.createChild(statechartDefinition_TimeoutDeclarations,
+				timeoutDeclaration) as TimeoutDeclaration => [
 			it.name = gammaState.name + "Timeout" + id++ // A more special name is needed, hence the id
 		]
 		// Creating the entry event that initializes the timer

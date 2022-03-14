@@ -1,0 +1,117 @@
+import "model/ComplexRegionMachine/ComplexRegionMachineWrapper"
+
+trace ComplexRegionMachineTest of ComplexRegionMachineWrapper
+
+//Check initial states
+step {
+	act {
+		reset
+	}
+	assert {
+		variable complexRegionMachine._complexRegionMachine_Submachine1__Region1 = _ComplexRegionMachine_Submachine1_::Init1
+		variable complexRegionMachine._complexRegionMachine_Submachine2__Region2 = _ComplexRegionMachine_Submachine2_::Init2
+	}
+}
+//Check guards
+step {
+	act {
+		raise portA.message_bool(false)
+		schedule component
+	}
+	assert {
+		variable complexRegionMachine._complexRegionMachine_Submachine1__Region1 = _ComplexRegionMachine_Submachine1_::Init1
+		variable complexRegionMachine._complexRegionMachine_Submachine2__Region2 = _ComplexRegionMachine_Submachine2_::Init2
+	}
+}
+step {
+	act {
+		raise portB.message_bool(false)
+		schedule component
+	}
+	assert {
+		variable complexRegionMachine._complexRegionMachine_Submachine1__Region1 = _ComplexRegionMachine_Submachine1_::Init1
+		variable complexRegionMachine._complexRegionMachine_Submachine2__Region2 = _ComplexRegionMachine_Submachine2_::Init2
+	}
+}
+//Check portA
+step {
+	act {
+		raise portA.message_bool(true)
+		schedule component
+	}
+	assert {
+		variable complexRegionMachine._complexRegionMachine_Submachine1__Region1 = _ComplexRegionMachine_Submachine1_::Other1
+		variable complexRegionMachine._complexRegionMachine_Submachine2__Region2 = _ComplexRegionMachine_Submachine2_::Init2
+	}
+}
+step {
+	act {
+		raise portA.message_bool(true)
+		schedule component
+	}
+	assert {
+		variable complexRegionMachine._complexRegionMachine_Submachine1__Region1 = _ComplexRegionMachine_Submachine1_::Init1
+		variable complexRegionMachine._complexRegionMachine_Submachine2__Region2 = _ComplexRegionMachine_Submachine2_::Init2
+	}
+}
+step {
+	act {
+		raise portA.message_bool(true)
+		schedule component
+	}
+	assert {
+		variable complexRegionMachine._complexRegionMachine_Submachine1__Region1 = _ComplexRegionMachine_Submachine1_::Other1
+		variable complexRegionMachine._complexRegionMachine_Submachine2__Region2 = _ComplexRegionMachine_Submachine2_::Init2
+	}
+}
+step {
+	act {
+		raise portA.message_bool(true)
+		schedule component
+	}
+	assert {
+		variable complexRegionMachine._complexRegionMachine_Submachine1__Region1 = _ComplexRegionMachine_Submachine1_::Init1
+		variable complexRegionMachine._complexRegionMachine_Submachine2__Region2 = _ComplexRegionMachine_Submachine2_::Init2
+	}
+}
+//Check portB
+step {
+	act {
+		raise portB.message_bool(true)
+		schedule component
+	}
+	assert {
+		variable complexRegionMachine._complexRegionMachine_Submachine1__Region1 = _ComplexRegionMachine_Submachine1_::Init1
+		variable complexRegionMachine._complexRegionMachine_Submachine2__Region2 = _ComplexRegionMachine_Submachine2_::Other2
+	}
+}
+step {
+	act {
+		raise portB.message_bool(true)
+		schedule component
+	}
+	assert {
+		variable complexRegionMachine._complexRegionMachine_Submachine1__Region1 = _ComplexRegionMachine_Submachine1_::Init1
+		variable complexRegionMachine._complexRegionMachine_Submachine2__Region2 = _ComplexRegionMachine_Submachine2_::Init2
+	}
+}
+step {
+	act {
+		raise portB.message_bool(true)
+		schedule component
+	}
+	assert {
+		variable complexRegionMachine._complexRegionMachine_Submachine1__Region1 = _ComplexRegionMachine_Submachine1_::Init1
+		variable complexRegionMachine._complexRegionMachine_Submachine2__Region2 = _ComplexRegionMachine_Submachine2_::Other2
+	}
+}
+step {
+	act {
+		raise portB.message_bool(true)
+		schedule component
+	}
+	assert {
+		variable complexRegionMachine._complexRegionMachine_Submachine1__Region1 = _ComplexRegionMachine_Submachine1_::Init1
+		variable complexRegionMachine._complexRegionMachine_Submachine2__Region2 = _ComplexRegionMachine_Submachine2_::Init2
+	}
+}

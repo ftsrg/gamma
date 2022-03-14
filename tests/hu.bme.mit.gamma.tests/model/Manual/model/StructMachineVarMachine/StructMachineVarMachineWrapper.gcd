@@ -1,0 +1,13 @@
+package StructMachineVarMachine
+
+import "/model/StructMachineVarMachine/StructMachineVarMachineDeclarations"
+import "/model/StructMachineVarMachine/StructMachineVarMachine"
+
+
+ cascade StructMachineVarMachineWrapper [
+ 	port portA : requires portA
+ ] {
+ 	component structMachineVarMachine : StructMachineVarMachine
+ 	
+ 	bind portA -> structMachineVarMachine.portA
+ }

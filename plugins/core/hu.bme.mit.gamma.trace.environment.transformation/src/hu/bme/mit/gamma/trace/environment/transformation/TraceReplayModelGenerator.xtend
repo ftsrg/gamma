@@ -15,6 +15,7 @@ import hu.bme.mit.gamma.statechart.composite.SynchronousComponent
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.statechart.State
+import hu.bme.mit.gamma.statechart.statechart.SynchronousStatechartDefinition
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import org.eclipse.xtend.lib.annotations.Data
@@ -49,7 +50,8 @@ class TraceReplayModelGenerator {
 		val transformer = new TraceToEnvironmentModelTransformer(envrionmentModelName,
 				considerOutEvents, executionTrace, environmentModel)
 		val result = transformer.execute
-		val environmentModel = result.statechart
+		// Now only synchronous statecharts are supported - could be extended to asynchronous ones, too
+		val environmentModel = result.statechart as SynchronousStatechartDefinition
 		val lastState = result.lastState
 		val trace = transformer.getTrace
 		
