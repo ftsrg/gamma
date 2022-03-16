@@ -171,29 +171,29 @@ class TestGeneratorStatechartGenerator extends AbstractContractStatechartGenerat
 
 		val initBlock = scenario.initialblock
 		if (initBlock === null) {
-			val t = statechartUtil.createTransition(initial, firstState)
-			t.effects += setIntVariable(variableMap.getOrCreate(scenarioStatechartUtil.iteratingVariable), 1)
-			t.effects +=
+			val transition = statechartUtil.createTransition(initial, firstState)
+			transition.effects += setIntVariable(variableMap.getOrCreate(scenarioStatechartUtil.iteratingVariable), 1)
+			transition.effects +=
 				setIntVariable(variableMap.getOrCreate(scenarioStatechartUtil.getLoopvariableNameForDepth(0)), 1)
 		} else {
 			val initChoice = createNewChoiceState
 			firstRegion.stateNodes += initChoice
 			statechartUtil.createTransition(initial, initChoice)
-			val t2 = statechartUtil.createTransition(initChoice, firstState)
+			val initChoiceToFirstStateTransition = statechartUtil.createTransition(initChoice, firstState)
 			for (interaction : initBlock.modalInteractions) {
-				val a = getRaiseEventAction(interaction, false)
-				if (a !== null) {
-					t2.effects += a
+				val action = getRaiseEventAction(interaction, false)
+				if (action !== null) {
+					initChoiceToFirstStateTransition.effects += action
 				}
 			}
-			t2.effects +=
+			initChoiceToFirstStateTransition.effects +=
 				setIntVariable(variableMap.getOrCreate(scenarioStatechartUtil.getLoopvariableNameForDepth(0)), 1)
-			statechart.transitions += t2
+			statechart.transitions += initChoiceToFirstStateTransition
 
 			val violation = (initBlock.modalInteractions.get(0).modality ==
 					ModalityType.HOT) ? hotViolation : coldViolation
-			val t3 = statechartUtil.createTransition(initChoice, violation)
-			t3.guard = createElseExpression
+			val initialViolationTransition = statechartUtil.createTransition(initChoice, violation)
+			initialViolationTransition.guard = createElseExpression
 		}
 	}
 
@@ -239,7 +239,7 @@ class TestGeneratorStatechartGenerator extends AbstractContractStatechartGenerat
 		}
 	}
 
-	def dispatch void process(AlternativeCombinedFragment a) {
+	def dispatch void process(AlternativeCombinedFragment alternative) {
 		val ends = newArrayList
 		val choice = createNewChoiceState
 		for (transition : previousState.incomingTransitions) {
@@ -248,13 +248,13 @@ class TestGeneratorStatechartGenerator extends AbstractContractStatechartGenerat
 		replacedStateWithValue.put(previousState, choice)
 		firstRegion.stateNodes -= previousState
 		firstRegion.stateNodes += choice
-		val n = stateCount++
-		for (i : 0 ..< a.fragments.size) {
-			val state = createNewState(scenarioStatechartUtil.stateName + String.valueOf(n) + "_" + String.valueOf(i))
+		val savedStateCount = stateCount++
+		for (i : 0 ..< alternative.fragments.size) {
+			val state = createNewState(scenarioStatechartUtil.stateName + String.valueOf(savedStateCount) + "_" + String.valueOf(i))
 			previousState = state
 			firstRegion.stateNodes += state
 			statechartUtil.createTransition(choice, state)
-			for (interaction : a.fragments.get(i).interactions) {
+			for (interaction : alternative.fragments.get(i).interactions) {
 				process(interaction)
 			}
 			ends += previousState
@@ -292,17 +292,17 @@ class TestGeneratorStatechartGenerator extends AbstractContractStatechartGenerat
 		val stateNew = createNewState()
 		previousState = stateNew
 		firstRegion.stateNodes += stateNew
-		val t1 = statechartUtil.createTransition(choice, stateNew)
-		val t2 = statechartUtil.createTransition(choice, prevprev)
+		val forwardGoingTransition = statechartUtil.createTransition(choice, stateNew)
+		val iteratingTransition = statechartUtil.createTransition(choice, prevprev)
 
 		val variableForDepth = variableMap.getOrCreate(scenarioStatechartUtil.getLoopvariableNameForDepth(loopDepth))
-		t1.guard = getVariableGreaterEqualParamExpression(variableForDepth, exprEval.evaluateInteger(loop.minimum))
+		forwardGoingTransition.guard = getVariableGreaterEqualParamExpression(variableForDepth, exprEval.evaluateInteger(loop.minimum))
 		val maxCheck = createLessExpression
 		maxCheck.leftOperand = exprUtil.createReferenceExpression(variableForDepth)
 		maxCheck.rightOperand = exprUtil.toIntegerLiteral(exprEval.evaluateInteger(loop.maximum))
-		t2.guard = maxCheck
-		t2.effects += incrementVar(variableForDepth)
-		t1.effects += setIntVariable(variableForDepth, 1)
+		iteratingTransition.guard = maxCheck
+		iteratingTransition.effects += incrementVar(variableForDepth)
+		forwardGoingTransition.effects += setIntVariable(variableForDepth, 1)
 	}
 
 	def dispatch void process(OptionalCombinedFragment optionalCombinedFragment) {
@@ -342,9 +342,9 @@ class TestGeneratorStatechartGenerator extends AbstractContractStatechartGenerat
 		violationTransition.guard = createElseExpression
 
 		if (set.modalInteractions.empty) {
-			val t = statechartUtil.createTransition(previousState, state)
-			t.trigger = createOnCycleTrigger
-			t.guard = createTrueExpression
+			val emptyTransition = statechartUtil.createTransition(previousState, state)
+			emptyTransition.trigger = createOnCycleTrigger
+			emptyTransition.guard = createTrueExpression
 			firstRegion.stateNodes += state
 			previousState = state
 			return
@@ -449,7 +449,7 @@ class TestGeneratorStatechartGenerator extends AbstractContractStatechartGenerat
 				// does not need to be changed
 			}
 			default: {
-				throw new IllegalArgumentException("Unhandled generation mode.")
+				throw new IllegalArgumentException("Unhandled generation mode: "+generationMode)
 			}
 		}
 	}

@@ -7,6 +7,7 @@ import hu.bme.mit.gamma.expression.util.ExpressionUtil
 import hu.bme.mit.gamma.scenario.model.derivedfeatures.ScenarioModelDerivedFeatures
 import hu.bme.mit.gamma.scenario.statechart.util.ScenarioStatechartUtil
 import hu.bme.mit.gamma.statechart.contract.ContractModelFactory
+import hu.bme.mit.gamma.statechart.contract.SpecialStateKind
 import hu.bme.mit.gamma.statechart.interface_.InterfaceModelFactory
 import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.StateNode
@@ -19,7 +20,6 @@ import java.util.List
 import java.util.Set
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
-import hu.bme.mit.gamma.statechart.contract.SpecialStateKind
 
 class AutomatonDeterminizator {
 
@@ -186,16 +186,16 @@ class AutomatonDeterminizator {
 
 	def Set<Set<Transition>> findNonDeterministicSets(List<Transition> transitions) {
 		val output = <Set<Transition>>newHashSet
-		for (a : transitions) {
-			for (b : transitions) {
-				if (a != b && areTransitionsNonDeterministic(a, b)) {
-					var containingSet = findContainingSetForEither(output, a, b)
+		for (transitionI : transitions) {
+			for (transitionJ : transitions) {
+				if (transitionI != transitionJ && areTransitionsNonDeterministic(transitionI, transitionJ)) {
+					var containingSet = findContainingSetForEither(output, transitionI, transitionJ)
 					if (containingSet === null) {
 						containingSet = newHashSet
 						output += containingSet
 					}
-					containingSet += a
-					containingSet += b
+					containingSet += transitionI
+					containingSet += transitionJ
 				}
 			}
 		}

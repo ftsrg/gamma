@@ -17,7 +17,7 @@ statechart-contract-test {
 	component : Alternative
 	folder : "model/test/generatedTests"
 	constraint : {
-		minimum-orchestrating-period :2000 ms
+		minimum-orchestrating-period : 2000 ms
 		maximum-orchestrating-period : 2000 ms
 	}
 }
@@ -25,7 +25,7 @@ statechart-contract-test {
 	component : Complex
 	folder : "model/test/generatedTests"
 	constraint : {
-		minimum-orchestrating-period :2000 ms
+		minimum-orchestrating-period : 2000 ms
 		maximum-orchestrating-period : 2000 ms
 	}
 }
@@ -33,7 +33,7 @@ statechart-contract-test {
 	component : Delay
 	folder : "model/test/generatedTests"
 	constraint : {
-		minimum-orchestrating-period :2000 ms
+		minimum-orchestrating-period : 2000 ms
 		maximum-orchestrating-period : 2000 ms
 	}
 }
@@ -41,7 +41,7 @@ statechart-contract-test {
 	component : DelayAlone
 	folder : "model/test/generatedTests"
 	constraint : {
-		minimum-orchestrating-period :2000 ms
+		minimum-orchestrating-period : 2000 ms
 		maximum-orchestrating-period : 2000 ms
 	}
 }
@@ -49,7 +49,7 @@ statechart-contract-test {
 	component : DelayWithReceives
 	folder : "model/test/generatedTests"
 	constraint : {
-		minimum-orchestrating-period :2000 ms
+		minimum-orchestrating-period : 2000 ms
 		maximum-orchestrating-period : 2000 ms
 	}
 }
@@ -57,7 +57,7 @@ statechart-contract-test {
 	component : InitialOutputs
 	folder : "model/test/generatedTests"
 	constraint : {
-		minimum-orchestrating-period :2000 ms
+		minimum-orchestrating-period : 2000 ms
 		maximum-orchestrating-period : 2000 ms
 	}
 }
@@ -65,7 +65,7 @@ statechart-contract-test {
 	component : Loop
 	folder : "model/test/generatedTests"
 	constraint : {
-		minimum-orchestrating-period :2000 ms
+		minimum-orchestrating-period : 2000 ms
 		maximum-orchestrating-period : 2000 ms
 	}
 }
@@ -73,7 +73,7 @@ statechart-contract-test {
 	component : NegBlockSendsPermissive
 	folder : "model/test/generatedTests"
 	constraint : {
-		minimum-orchestrating-period :2000 ms
+		minimum-orchestrating-period : 2000 ms
 		maximum-orchestrating-period : 2000 ms
 	}
 }
@@ -81,7 +81,7 @@ statechart-contract-test {
 	component : NegSendsStrict
 	folder : "model/test/generatedTests"
 	constraint : {
-		minimum-orchestrating-period :2000 ms
+		minimum-orchestrating-period : 2000 ms
 		maximum-orchestrating-period : 2000 ms
 	}
 }
@@ -89,7 +89,7 @@ statechart-contract-test {
 	component : Optional
 	folder : "model/test/generatedTests"
 	constraint : {
-		minimum-orchestrating-period :2000 ms
+		minimum-orchestrating-period : 2000 ms
 		maximum-orchestrating-period : 2000 ms
 	}
 }
@@ -97,7 +97,7 @@ statechart-contract-test {
 	component : ReceivesStrict
 	folder : "model/test/generatedTests"
 	constraint : {
-		minimum-orchestrating-period :2000 ms
+		minimum-orchestrating-period : 2000 ms
 		maximum-orchestrating-period : 2000 ms
 	}
 }
@@ -105,7 +105,7 @@ statechart-contract-test {
 	component : SendsStrict
 	folder : "model/test/generatedTests"
 	constraint : {
-		minimum-orchestrating-period :2000 ms
+		minimum-orchestrating-period : 2000 ms
 		maximum-orchestrating-period : 2000 ms
 	}
 }
@@ -113,7 +113,7 @@ statechart-contract-test {
 	component : ReceivesPermissive
 	folder : "model/test/generatedTests"
 	constraint : {
-		minimum-orchestrating-period :2000 ms
+		minimum-orchestrating-period : 2000 ms
 		maximum-orchestrating-period : 2000 ms
 	}
 }
@@ -121,7 +121,7 @@ statechart-contract-test {
 	component : SendsPermissive
 	folder : "model/test/generatedTests"
 	constraint : {
-		minimum-orchestrating-period :2000 ms
+		minimum-orchestrating-period : 2000 ms
 		maximum-orchestrating-period : 2000 ms
 	}
 }

@@ -64,13 +64,13 @@ class MonitorStatechartgenerator extends AbstractContractStatechartGeneration {
 		for (pair : copyOutgoingTransitionsForOpt) {
 			val compulsory = replacedStateWithValue.getOrDefault(pair.key, pair.key)
 			val optional = pair.value
-			for (t : compulsory.outgoingTransitions) {
-				if (t.targetState != optional && !t.targetState.reachableStates.contains(optional)) {
-					val tCopy = t.clone
+			for (transition : compulsory.outgoingTransitions) {
+				if (transition.targetState != optional && !transition.targetState.reachableStates.contains(optional)) {
+					val tCopy = transition.clone
 					tCopy.sourceState = optional
 					statechart.transitions += tCopy
 					if (optional.name.contains(accepting)) {
-						compulsory.name = '''«compulsory.name»__«accepting»'''
+						compulsory.name = compulsory.name.getCombinedStateAcceptingName
 					}
 				}
 			}
@@ -131,7 +131,7 @@ class MonitorStatechartgenerator extends AbstractContractStatechartGeneration {
 		if (delay.modality == ModalityType.COLD) {
 			violationState = coldViolation
 		} else {
-			violationState = componentViolation // TODO biztos?
+			violationState = componentViolation
 		}
 		val violationTransition = statechartUtil.createTransition(previousState, violationState)
 		val violationTrigger = createEventTrigger

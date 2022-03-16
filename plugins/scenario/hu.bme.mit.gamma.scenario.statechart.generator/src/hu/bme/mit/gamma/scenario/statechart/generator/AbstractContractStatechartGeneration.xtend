@@ -96,8 +96,8 @@ abstract class AbstractContractStatechartGeneration {
 		}
 	}
 
-	def protected addPorts(Component c) {
-		for (port : c.ports) {
+	def protected addPorts(Component component) {
+		for (port : component.ports) {
 			val pcopy = createPort
 			val iReali = createInterfaceRealization
 			iReali.realizationMode = port.interfaceRealization.realizationMode
@@ -134,13 +134,7 @@ abstract class AbstractContractStatechartGeneration {
 	}
 
 	def protected VariableDeclaration createIntegerVariable(String name) {
-		var variable = createVariableDeclaration
-		// exprUtil.createVariableDeclaration()
-		variable.name = name
-		variable.expression = exprUtil.toIntegerLiteral(0)
-		var type = createIntegerTypeDefinition
-		variable.type = type
-		return variable
+		return exprUtil.createVariableDeclaration(createIntegerTypeDefinition, name, exprUtil.toIntegerLiteral(0))
 	}
 
 	protected def setIntVariable(VariableDeclaration variable, int value) {
@@ -150,7 +144,7 @@ abstract class AbstractContractStatechartGeneration {
 		return variableAssignment
 	}
 
-	def protected Expression getVariableLessEqualParamExpression(VariableDeclaration variable, int maxValue) { // megnézni utilban összeset
+	def protected Expression getVariableLessEqualParamExpression(VariableDeclaration variable, int maxValue) {
 		var maxCheck = createLessEqualExpression
 		maxCheck.leftOperand = exprUtil.createReferenceExpression(variable)
 		maxCheck.rightOperand = exprUtil.toIntegerLiteral(maxValue)
@@ -179,13 +173,13 @@ abstract class AbstractContractStatechartGeneration {
 			binaryTrigger.rightOperand = negateEventTrigger(right)
 		}
 		if (left instanceof EventTrigger) {
-			binaryTrigger.leftOperand = negateEventTrigger(left as EventTrigger)
+			binaryTrigger.leftOperand = negateEventTrigger(left)
 		}
 		if (left instanceof BinaryTrigger) {
-			negateBinaryTree(left as BinaryTrigger)
+			negateBinaryTree(left)
 		}
 		if (right instanceof BinaryTrigger) {
-			negateBinaryTree(right as BinaryTrigger)
+			negateBinaryTree(right)
 		}
 	}
 
@@ -275,26 +269,26 @@ abstract class AbstractContractStatechartGeneration {
 		}
 		for (port : allPorts) {
 			if (!ports.contains(port)) {
-				var anyPortEvent = createAnyPortEventReference
+				val anyPortEvent = createAnyPortEventReference
 				anyPortEvent.port = port
-				var trigger = createEventTrigger
+				val trigger = createEventTrigger
 				trigger.eventReference = anyPortEvent
-				var unary = createUnaryTrigger
+				val unary = createUnaryTrigger
 				unary.operand = trigger
 				unary.type = UnaryType.NOT
 				triggers += unary
 			} else {
-				var concrateEvents = port.inputEvents.filter[!(events.contains(it))]
+				val concrateEvents = port.inputEvents.filter[!(events.contains(it))]
 				for (concrateEvent : concrateEvents) {
-					var trigger = createEventTrigger
-					var portEventReference = createPortEventReference
+					val trigger = createEventTrigger
+					val portEventReference = createPortEventReference
 					portEventReference.event = concrateEvent
 					portEventReference.port = port
 					trigger.eventReference = portEventReference
-					var u = createUnaryTrigger
-					u.operand = trigger
-					u.type = UnaryType.NOT
-					triggers += u
+					val unaryTrigger = createUnaryTrigger
+					unaryTrigger.operand = trigger
+					unaryTrigger.type = UnaryType.NOT
+					triggers += unaryTrigger
 				}
 			}
 		}
@@ -413,10 +407,10 @@ abstract class AbstractContractStatechartGeneration {
 			val firstInteraction = set.get(0)
 			if (set.size == 1 && firstInteraction instanceof NegatedModalInteraction) {
 				val interaction = firstInteraction as NegatedModalInteraction
-				if (interaction.modalinteraction instanceof Signal) {
-					val signal = interaction.modalinteraction as Signal
-					if (!signal.arguments.empty) {
-						signals = newArrayList(signal)
+				val innerInteraction = interaction.modalinteraction
+				if (innerInteraction instanceof Signal) {
+					if (!innerInteraction.arguments.empty) {
+						signals = newArrayList(innerInteraction)
 					}
 				}
 			}
@@ -489,7 +483,7 @@ abstract class AbstractContractStatechartGeneration {
 		if (!delays.empty) {
 			val delay = delays.get(0)
 			val timeoutDeclaration = createTimeoutDeclaration
-			timeoutDeclaration.name = "delay" + timeoutCount++
+			timeoutDeclaration.name = getDelayName(timeoutCount++)
 			statechart.timeoutDeclarations += timeoutDeclaration
 			val timeSpecification = createTimeSpecification
 			timeSpecification.unit = TimeUnit.MILLISECOND

@@ -1,5 +1,5 @@
-import
-"controller" component Controller //@Strict
+import "controller" 
+component Controller 
 @AllowedWaiting 0 .. 1
 scenario PoliceBehaviour [
 	{

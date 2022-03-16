@@ -52,6 +52,12 @@ public class ScenarioStatechartUtil {
 	private final String firstStateName = "firstState";
 
 	private final String mergeName = "merge";
+	
+	private final String delayName = "delay";
+	
+	public String getDelayName(int delayCount) {
+		return delayName + delayCount;
+	}
 
 	public String getMergeName() {
 		return mergeName;
@@ -122,6 +128,10 @@ public class ScenarioStatechartUtil {
 
 	public String getHotEnvironmentViolation() {
 		return hotEnvironmentViolation;
+	}
+	
+	public String getCombinedStateAcceptingName(String name) {
+		return name+"__"+Accepting;
 	}
 
 }
