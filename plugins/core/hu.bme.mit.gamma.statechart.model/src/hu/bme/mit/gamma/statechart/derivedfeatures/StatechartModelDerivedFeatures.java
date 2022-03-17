@@ -591,6 +591,10 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return (EventDeclaration) event.eContainer();
 	}
 	
+	public static Interface getContainingInterface(Event event) {
+		return ecoreUtil.getContainerOfType(event, Interface.class);
+	}
+	
 	public static List<EventDeclaration> getAllEventDeclarations(Port port) {
 		return getAllEventDeclarations(port.getInterfaceRealization().getInterface());
 	}
