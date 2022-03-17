@@ -50,8 +50,10 @@ public class StatechartContractGenerationHandler extends TaskHandler {
 				!statechartGeneration.isStartAsColdViolation());
 		}
 		StatechartDefinition statechart = statechartGenerator.execute();
-		AutomatonDeterminizator determinizator = new AutomatonDeterminizator(statechart);
-		statechart = determinizator.execute();
+		if (statechartGeneration.getAutomatonType().equals(ContractAutomatonType.MONITOR)) {
+			AutomatonDeterminizator determinizator = new AutomatonDeterminizator(statechart);
+			statechart = determinizator.execute();
+		}
 		Package packageOfComponent = ecoreUtil.getContainerOfType(component, Package.class);
 		StatechartSerializer statechartSerializer = new StatechartSerializer(file);
 		statechartSerializer.saveStatechart(statechart, packageOfComponent.getImports(), targetFolderUri);

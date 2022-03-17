@@ -16,6 +16,7 @@ import hu.bme.mit.gamma.statechart.statechart.StatechartModelFactory
 import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
+import java.util.Collection
 import java.util.List
 import java.util.Set
 
@@ -37,9 +38,9 @@ class AutomatonDeterminizator {
 	protected val extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
 
 	var StatechartDefinition oldStatechart = null
-	val newStateOldStates = <StateNode, List<StateNode>>newLinkedHashMap
-	val statesCollectiveState = <List<StateNode>, StateNode>newLinkedHashMap
-	val oldStateNewStates = <StateNode, List<StateNode>>newLinkedHashMap
+	val newStateOldStates = <StateNode, Collection<StateNode>>newLinkedHashMap
+	val statesCollectiveState = <Collection<StateNode>, StateNode>newLinkedHashMap
+	val oldStateNewStates = <StateNode, Collection<StateNode>>newLinkedHashMap
 	val oldNewStateMap = <StateNode, StateNode>newLinkedHashMap
 	var Region firstRegion = null
 	var Region oldFirstRegion = null
@@ -134,8 +135,13 @@ class AutomatonDeterminizator {
 		val outgoingTransitions = representedOldStates.flatMap[it.outgoingTransitions].toList
 		val sets = findNonDeterministicSets(outgoingTransitions)
 		for (set : sets) {
-			val targetStates = set.map[it.targetState].toList
-			var state = findCollectiveState(targetStates)
+			val targetStates = set.map[it.targetState].toSet
+			var StateNode state = null
+			if (targetStates.size == 1) {
+				state = oldNewStateMap.get(targetStates.head)
+			} else {
+				state = findCollectiveState(targetStates)
+			}
 			if (state === null) {
 				state = creatCollectiveState(targetStates)
 			}
@@ -154,7 +160,7 @@ class AutomatonDeterminizator {
 		}
 	}
 
-	def StateNode creatCollectiveState(List<StateNode> nodes) {
+	def StateNode creatCollectiveState(Collection<StateNode> nodes) {
 		val newState = createState
 		newState.name = nodes.map[it.name].join('__')
 		firstRegion.stateNodes += newState
@@ -163,7 +169,7 @@ class AutomatonDeterminizator {
 		return newState
 	}
 
-	def StateNode findCollectiveState(List<StateNode> nodes) {
+	def StateNode findCollectiveState(Collection<StateNode> nodes) {
 		for (key : statesCollectiveState.keySet) {
 			if (areListsEqual(key, nodes)) {
 				return statesCollectiveState.get(key)
@@ -172,7 +178,7 @@ class AutomatonDeterminizator {
 		return null
 	}
 
-	def boolean areListsEqual(List<StateNode> list1, List<StateNode> list2) {
+	def boolean areListsEqual(Collection<StateNode> list1, Collection<StateNode> list2) {
 		if (list1.size != list2.size) {
 			return false
 		}
@@ -184,7 +190,7 @@ class AutomatonDeterminizator {
 		return true
 	}
 
-	def Set<Set<Transition>> findNonDeterministicSets(List<Transition> transitions) {
+	def Set<Set<Transition>> findNonDeterministicSets(Collection<Transition> transitions) {
 		val output = <Set<Transition>>newHashSet
 		for (transitionI : transitions) {
 			for (transitionJ : transitions) {

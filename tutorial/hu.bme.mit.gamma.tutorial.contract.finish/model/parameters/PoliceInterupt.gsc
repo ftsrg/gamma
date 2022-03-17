@@ -15,7 +15,7 @@ scenario PoliceInterruption(loopMax : integer) [
 		{
 			hot receives PoliceInterrupt.police
 		}
-		call PoliceInterruptionResponse(10)
+		call PoliceInterruptionResponse
 	}
 ]
 	

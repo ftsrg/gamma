@@ -75,7 +75,7 @@ scenario optTest [
 		hot sends PriorityControl.toggle
 	}
 	{
-		cold receives PoliceInterrupt.police
+		hot receives PoliceInterrupt.police
 	}
 	{
 		hot sends PriorityPolice.police

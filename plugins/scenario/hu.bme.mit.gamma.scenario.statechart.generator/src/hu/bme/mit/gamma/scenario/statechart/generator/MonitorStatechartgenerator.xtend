@@ -23,7 +23,7 @@ import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartMo
 
 class MonitorStatechartgenerator extends AbstractContractStatechartGeneration {
 
-	protected boolean skipNextinteraction = false
+	protected boolean skipNextInteraction = false
 	protected State componentViolation = null
 	protected State environmentViolation = null
 	protected List<Pair<StateNode, StateNode>> copyOutgoingTransitionsForOpt = newLinkedList
@@ -36,10 +36,10 @@ class MonitorStatechartgenerator extends AbstractContractStatechartGeneration {
 		statechart = createSynchronousStatechartDefinition
 		intializeStatechart()
 		for (modalInteraction : scenario.chart.fragment.interactions) {
-			if (!skipNextinteraction) {
+			if (!skipNextInteraction) {
 				process(modalInteraction)
 			} else {
-				skipNextinteraction = false;
+				skipNextInteraction = false;
 			}
 		}
 		firstRegion.stateNodes.get(firstRegion.stateNodes.size - 1).name = scenarioStatechartUtil.accepting
@@ -94,11 +94,12 @@ class MonitorStatechartgenerator extends AbstractContractStatechartGeneration {
 		firstRegion.stateNodes += firstState
 		previousState = firstState
 
-		coldViolation = firstState
+		coldViolation = createNewState(scenarioStatechartUtil.coldViolation)
 		componentViolation = createNewState(scenarioStatechartUtil.hotComponentViolation)
 		environmentViolation = createNewState(scenarioStatechartUtil.hotEnvironmentViolation)
 		firstRegion.stateNodes += componentViolation
 		firstRegion.stateNodes += environmentViolation
+		firstRegion.stateNodes += coldViolation
 		statechartUtil.createTransition(initial, firstState)
 	}
 
@@ -165,7 +166,6 @@ class MonitorStatechartgenerator extends AbstractContractStatechartGeneration {
 		for (transition : statechart.transitions) {
 			if (ends.contains(transition.targetState)) {
 				replacedStateWithValue.put(transition.targetState, previousState)
-//				transition.targetState = previousState
 			}
 		}
 		firstRegion.stateNodes -= ends
@@ -194,7 +194,7 @@ class MonitorStatechartgenerator extends AbstractContractStatechartGeneration {
 			}
 			firstRegion.stateNodes -= previousState
 			previousState = previousAfterFirstProcess
-			skipNextinteraction = true
+			skipNextInteraction = true
 		} else {
 			copyOutgoingTransitionsForOpt.add(new Pair(prevprev, previousState))
 			previousState = prevprev
@@ -218,7 +218,7 @@ class MonitorStatechartgenerator extends AbstractContractStatechartGeneration {
 				violationState = environmentViolation
 			}
 		}
-//		val violationTransition = statechartUtil.createTransition(previousState, violationState)
+		val violationTransition = statechartUtil.createTransition(previousState, violationState)
 		if (set.modalInteractions.empty) {
 			val t = statechartUtil.createTransition(previousState, state)
 			t.trigger = createOnCycleTrigger
@@ -231,9 +231,9 @@ class MonitorStatechartgenerator extends AbstractContractStatechartGeneration {
 		setupForwardTransition(set, isSend, isNegated, forwardTransition)
 
 		forwardTransition.priority = BigInteger.valueOf(3)
-//		violationTransition.priority = BigInteger.valueOf(1)
+		violationTransition.priority = BigInteger.valueOf(1)
 		handleArguments(set.modalInteractions, forwardTransition);
-//		violationTransition.trigger = createAnyTrigger
+		violationTransition.trigger = createAnyTrigger
 		previousState = state
 		return
 	}
