@@ -10,6 +10,12 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.transformation.util
 
+import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition
+import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
+import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
+import hu.bme.mit.gamma.expression.model.Expression
+import hu.bme.mit.gamma.expression.model.TypeDeclaration
+import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.interface_.Component
@@ -30,6 +36,7 @@ import hu.bme.mit.gamma.trace.model.TraceModelFactory
 import hu.bme.mit.gamma.trace.util.TraceUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.util.List
+import java.util.Set
 import java.util.logging.Level
 import java.util.logging.Logger
 
@@ -42,6 +49,13 @@ class UnfoldedExecutionTraceBackAnnotator {
 	
 	protected final ExecutionTrace trace
 	protected final Component originalTopComponent
+	
+	//
+	
+	protected final Set<TypeDeclaration> originalTypeDeclarations
+	protected final Set<EnumerationLiteralDefinition> originalEnumLiterals
+	
+	//
 	
 	protected final List<Assert> dummyAsserts = newArrayList
 	
@@ -59,6 +73,11 @@ class UnfoldedExecutionTraceBackAnnotator {
 			"The original component cannot be a statechart")
 		this.trace = trace
 		this.originalTopComponent = originalTopComponent
+		//
+		this.originalTypeDeclarations = originalTopComponent.containingPackage
+					.selfAndImports.map[it.typeDeclarations].flatten.toSet
+		this.originalEnumLiterals = originalTypeDeclarations.map[it.type]
+					.filter(EnumerationTypeDefinition).map[it.literals].flatten.toSet
 	}
 	
 	def execute() {
@@ -67,7 +86,7 @@ class UnfoldedExecutionTraceBackAnnotator {
 			it.annotations += trace.annotations.map[it.clone] // References not expected
 			it.name = trace.name
 			it.component = originalTopComponent
-			it.arguments += trace.arguments.map[it.clone]
+			it.arguments += trace.arguments.map[it.transformExpression]
 		]
 		
 		val steps = trace.steps
@@ -118,11 +137,14 @@ class UnfoldedExecutionTraceBackAnnotator {
 	
 	protected def dispatch transformAct(RaiseEventAct act) {
 		return createRaiseEventAct => [
-			it.port = originalTopComponent.getOriginalPort(act.port)
+			it.port = originalTopComponent
+					.getOriginalPort(act.port)
 			// Works if the interfaces/types are loaded into different resources
 			// even when resource set and URI type (absolute/platform) must match
-			it.event = it.port.allEvents.findFirst[it.name == act.event.name]
-			it.arguments += act.arguments.map[it.clone]
+			it.event = it.port.allEvents
+					.findFirst[it.name == act.event.name]
+			it.arguments += act.arguments
+					.map[it.transformExpression]
 		]
 	}
 	
@@ -167,7 +189,7 @@ class UnfoldedExecutionTraceBackAnnotator {
 			it.declaration = originalVariable
 			// Does not work if the types (enums) are loaded into different resources
 			// Resource set and URI type (absolute/platform) must match
-			it.value = assert.value.clone
+			it.value = assert.value.transformExpression
 		]
 		if (originalVariable === null) {
 			dummyAsserts += variableState
@@ -193,7 +215,30 @@ class UnfoldedExecutionTraceBackAnnotator {
 		]
 	}
 	
-	// 
+	//
+	
+	protected def transformExpression(Expression value) {
+		val clonedValue = value.clone
+		
+		val typeReferences = clonedValue.getSelfAndAllContentsOfType(TypeReference)
+		for (typeReference : typeReferences) {
+			val typeDeclaration = typeReference.reference
+			val originalTypeDeclaration = originalTypeDeclarations
+					.findFirst[it.name == typeDeclaration.name]
+			typeReference.reference = originalTypeDeclaration
+		}
+		// Enum literal setting in addition to the type reference
+		if (clonedValue instanceof EnumerationLiteralExpression) {
+			val enumLiteral = clonedValue.reference
+			val originalEnumLiteral = originalEnumLiterals
+					.findFirst[it.name == enumLiteral.name]
+			clonedValue.reference = originalEnumLiteral
+		}
+		
+		return clonedValue
+	}
+	
+	//
 	
 	protected def removeDummyAsserts() {
 		dummyAsserts.removeContainmentChains(Assert)
