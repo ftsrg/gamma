@@ -19,6 +19,7 @@ import hu.bme.mit.gamma.statechart.statechart.TransitionPriority
 import java.math.BigInteger
 import java.util.List
 
+import static extension hu.bme.mit.gamma.scenario.model.derivedfeatures.ScenarioModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class MonitorStatechartgenerator extends AbstractContractStatechartGeneration {

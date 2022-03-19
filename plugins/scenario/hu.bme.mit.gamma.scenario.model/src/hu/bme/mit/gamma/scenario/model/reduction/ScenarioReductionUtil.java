@@ -3,12 +3,9 @@ package hu.bme.mit.gamma.scenario.model.reduction;
 import java.util.ArrayList;
 import java.util.List;
 
-import hu.bme.mit.gamma.util.GammaEcoreUtil;
-import hu.bme.mit.gamma.util.JavaUtil;
-
 public class ScenarioReductionUtil {
 
-	public static void createSequences(List<List<FragmentInteractionPair>> listlist, List<List<Integer>> used,
+	public static void createSequences(List<List<FragmentInteractionPair>> sequenceList, List<List<Integer>> used,
 			List<Integer> maximum) {
 		boolean ok = false;
 		while (!ok) {
@@ -21,22 +18,22 @@ public class ScenarioReductionUtil {
 					for (int j = 0; j < used.get(0).size(); j++) {
 						tmpused.add(used.get(0).get(j));
 					}
-					for (int j = 0; j < listlist.get(0).size(); j++) {
-						tmplist.add(listlist.get(0).get(j));
+					for (int j = 0; j < sequenceList.get(0).size(); j++) {
+						tmplist.add(sequenceList.get(0).get(j));
 					}
 					tmplist.add(new FragmentInteractionPair(i, tmpused.get(i)));
 					tmpused.set(i, tmpused.get(i) + 1);
 
 					used.add(tmpused);
-					listlist.add(tmplist);
+					sequenceList.add(tmplist);
 				}
 			}
 			if (!wasAdded) {
 				used.add(used.get(0));
-				listlist.add(listlist.get(0));
+				sequenceList.add(sequenceList.get(0));
 			}
 			used.remove(0);
-			listlist.remove(0);
+			sequenceList.remove(0);
 			ok = done(used, maximum);
 		}
 	}

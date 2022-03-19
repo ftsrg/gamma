@@ -39,6 +39,7 @@ import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.statechart.statechart.TransitionPriority
 import java.math.BigInteger
 
+import static extension hu.bme.mit.gamma.scenario.model.derivedfeatures.ScenarioModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 enum StatechartGenerationMode {
@@ -250,7 +251,8 @@ class TestGeneratorStatechartGenerator extends AbstractContractStatechartGenerat
 		firstRegion.stateNodes += choice
 		val savedStateCount = stateCount++
 		for (i : 0 ..< alternative.fragments.size) {
-			val state = createNewState(scenarioStatechartUtil.stateName + String.valueOf(savedStateCount) + "_" + String.valueOf(i))
+			val state = createNewState(scenarioStatechartUtil.stateName + String.valueOf(savedStateCount) + "_" +
+				String.valueOf(i))
 			previousState = state
 			firstRegion.stateNodes += state
 			statechartUtil.createTransition(choice, state)
@@ -296,7 +298,8 @@ class TestGeneratorStatechartGenerator extends AbstractContractStatechartGenerat
 		val iteratingTransition = statechartUtil.createTransition(choice, prevprev)
 
 		val variableForDepth = variableMap.getOrCreate(scenarioStatechartUtil.getLoopvariableNameForDepth(loopDepth))
-		forwardGoingTransition.guard = getVariableGreaterEqualParamExpression(variableForDepth, exprEval.evaluateInteger(loop.minimum))
+		forwardGoingTransition.guard = getVariableGreaterEqualParamExpression(variableForDepth,
+			exprEval.evaluateInteger(loop.minimum))
 		val maxCheck = createLessExpression
 		maxCheck.leftOperand = exprUtil.createReferenceExpression(variableForDepth)
 		maxCheck.rightOperand = exprUtil.toIntegerLiteral(exprEval.evaluateInteger(loop.maximum))
@@ -449,7 +452,7 @@ class TestGeneratorStatechartGenerator extends AbstractContractStatechartGenerat
 				// does not need to be changed
 			}
 			default: {
-				throw new IllegalArgumentException("Unhandled generation mode: "+generationMode)
+				throw new IllegalArgumentException("Unhandled generation mode: " + generationMode)
 			}
 		}
 	}

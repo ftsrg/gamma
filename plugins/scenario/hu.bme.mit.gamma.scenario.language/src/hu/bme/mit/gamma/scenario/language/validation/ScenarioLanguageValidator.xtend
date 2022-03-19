@@ -75,8 +75,8 @@ class ScenarioLanguageValidator extends AbstractScenarioLanguageValidator {
 	}
 
 	@Check(NORMAL)
-	def void negatedReceives(NegatedModalInteraction nmi) {
-		handleValidationResultMessage(validator.negatedReceives(nmi))
+	def void negatedReceives(NegatedModalInteraction negatedModalInteraction) {
+		handleValidationResultMessage(validator.negatedReceives(negatedModalInteraction))
 	}
 
 	@Check
@@ -95,14 +95,14 @@ class ScenarioLanguageValidator extends AbstractScenarioLanguageValidator {
 	}
 	
 	@Check
-	def void checkScenarioReferenceParamCount(ScenarioDefinitionReference ref) {
-		handleValidationResultMessage(validator.checkScenarioReferenceParamCount(ref))
+	def void checkScenarioReferenceParamCount(ScenarioDefinitionReference scenarioReference) {
+		handleValidationResultMessage(validator.checkScenarioReferenceParamCount(scenarioReference))
 	}
 	
 
 	@Check
-	def void checkRecursiveScenraioReference(ScenarioDefinitionReference ref) {
-		handleValidationResultMessage(validator.checkRecursiveScenraioReference(ref))
+	def void checkRecursiveScenraioReference(ScenarioDefinitionReference scenarioReference) {
+		handleValidationResultMessage(validator.checkRecursiveScenraioReference(scenarioReference))
 	}
 
 }

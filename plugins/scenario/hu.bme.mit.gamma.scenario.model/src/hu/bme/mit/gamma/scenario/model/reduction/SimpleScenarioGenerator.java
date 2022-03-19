@@ -56,7 +56,7 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 	private ScenarioModelFactory factory = null;
 	private boolean transformLoopFragments = false;
 	private List<Expression> arguments = null;
-	ScenarioReferenceResolver refResolver = new ScenarioReferenceResolver();
+	private ScenarioReferenceResolver refResolver = new ScenarioReferenceResolver();
 
 	public SimpleScenarioGenerator(ScenarioDefinition base, boolean transformLoopFragments) {
 		this(base, transformLoopFragments, new LinkedList<Expression>());
@@ -89,11 +89,11 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 		for (Interaction interaction : base.getChart().getFragment().getInteractions()) {
 			simple.getChart().getFragment().getInteractions().add((Interaction) this.doSwitch(interaction));
 		}
-		inLineExpressions(simple, base);
+		inlineExpressions(simple, base);
 		return simple;
 	}
 
-	private void inLineExpressions(ScenarioDefinition simple, ScenarioDefinition base) {
+	private void inlineExpressions(ScenarioDefinition simple, ScenarioDefinition base) {
 		List<DirectReferenceExpression> references = ecoreUtil.getAllContentsOfType(simple,
 				DirectReferenceExpression.class);
 		for (DirectReferenceExpression direct : references) {
@@ -101,7 +101,8 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 			if (decl instanceof ConstantDeclaration) {
 				ConstantDeclaration _const = (ConstantDeclaration) decl;
 				Expression cloned = ecoreUtil.clone(_const.getExpression());
-				ecoreUtil.change(cloned, direct, direct.eContainer());
+				EObject container = direct.eContainer();
+				ecoreUtil.change(cloned, direct, container);
 				ecoreUtil.replace(cloned, direct);
 			}
 			if (decl instanceof ParameterDeclaration) {
@@ -209,14 +210,14 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 			InteractionFragment prev = previousFragment;
 			AlternativeCombinedFragment alt = factory.createAlternativeCombinedFragment();
 			ExpressionEvaluator evaluator = ExpressionEvaluator.INSTANCE;
-			Expression mine = ecoreUtil.clone(object.getMinimum());
-			Expression maxe = ecoreUtil.clone(object.getMaximum());
-			int min = evaluator.evaluate(mine);
+			Expression minExpression = ecoreUtil.clone(object.getMinimum());
+			Expression maxExpression = ecoreUtil.clone(object.getMaximum());
+			int min = evaluator.evaluate(minExpression);
 			int max = 0;
-			if (maxe == null) {
+			if (maxExpression == null) {
 				max = min;
 			} else {
-				max = evaluator.evaluate(maxe);
+				max = evaluator.evaluate(maxExpression);
 			}
 			for (int i = 0; i < min - 1; i++) {
 				for (Interaction j : object.getFragments().get(0).getInteractions()) {

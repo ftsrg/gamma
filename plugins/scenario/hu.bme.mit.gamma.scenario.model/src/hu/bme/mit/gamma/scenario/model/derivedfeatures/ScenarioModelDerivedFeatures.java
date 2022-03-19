@@ -13,17 +13,13 @@ import hu.bme.mit.gamma.scenario.model.NegatedModalInteraction;
 import hu.bme.mit.gamma.scenario.model.Signal;
 
 public class ScenarioModelDerivedFeatures extends ExpressionModelDerivedFeatures {
-	
-	public static final ScenarioModelDerivedFeatures INSTANCE = new ScenarioModelDerivedFeatures();
 
-	protected ScenarioModelDerivedFeatures() {
-	}
-
-	public InteractionDirection getDirection(ModalInteractionSet set) {
+	public static InteractionDirection getDirection(ModalInteractionSet set) {
 		boolean isSend = false;
-		List<InteractionDirection> directions = javaUtil.filterIntoList(set.getModalInteractions(), Signal.class).stream()
-				.map(it -> it.getDirection()).collect(Collectors.toList());
-		List<NegatedModalInteraction> negatedInteractions = javaUtil.filterIntoList(set.getModalInteractions(), NegatedModalInteraction.class);
+		List<InteractionDirection> directions = javaUtil.filterIntoList(set.getModalInteractions(), Signal.class)
+				.stream().map(it -> it.getDirection()).collect(Collectors.toList());
+		List<NegatedModalInteraction> negatedInteractions = javaUtil.filterIntoList(set.getModalInteractions(),
+				NegatedModalInteraction.class);
 		directions.addAll(negatedInteractions.stream()
 				.filter(it -> it.getModalinteraction() instanceof Signal)
 				.map(it -> ((Signal) it.getModalinteraction()).getDirection())
@@ -38,15 +34,15 @@ public class ScenarioModelDerivedFeatures extends ExpressionModelDerivedFeatures
 		}
 	}
 
-	public ModalityType getModality(ModalInteractionSet set) {
+	public static ModalityType getModality(ModalInteractionSet set) {
 		List<Signal> signals = javaUtil.filterIntoList(set.getModalInteractions(), Signal.class);
 
 		if (!signals.isEmpty()) {
 			return signals.get(0).getModality();
 		}
-		List<InteractionDefinition> negatedSignal = javaUtil.filterIntoList(set.getModalInteractions(), NegatedModalInteraction.class).stream()
-				.map(it -> it.getModalinteraction())
-				.collect(Collectors.toList());
+		List<InteractionDefinition> negatedSignal = javaUtil
+				.filterIntoList(set.getModalInteractions(), NegatedModalInteraction.class).stream()
+				.map(it -> it.getModalinteraction()).collect(Collectors.toList());
 		if (!negatedSignal.isEmpty()) {
 			InteractionDefinition interactionDefinition = negatedSignal.get(0);
 			if (interactionDefinition instanceof Signal) {
@@ -54,48 +50,48 @@ public class ScenarioModelDerivedFeatures extends ExpressionModelDerivedFeatures
 				return signal.getModality();
 			}
 		}
-		
-		List<Delay> delays = javaUtil.filterIntoList(set.getModalInteractions(),Delay.class);
+
+		List<Delay> delays = javaUtil.filterIntoList(set.getModalInteractions(), Delay.class);
 		if (!delays.isEmpty()) {
 			return delays.get(0).getModality();
 		}
 		return ModalityType.COLD;
 	}
-	
-	public boolean isAllInteractionsOrBlockNegated(ModalInteractionSet set) {
-		for (InteractionDefinition modalInteraction : set.getModalInteractions()){
+
+	public static boolean isAllInteractionsOrBlockNegated(ModalInteractionSet set) {
+		for (InteractionDefinition modalInteraction : set.getModalInteractions()) {
 			if (!(modalInteraction instanceof NegatedModalInteraction)) {
 				return false;
-			}			
+			}
 		}
 		return true;
 	}
-	
-	public ModalityType getModality(InteractionDefinition i) {
-		if (i instanceof Signal) {
-			return ((Signal) i).getModality();
+
+	public static ModalityType getModality(InteractionDefinition interaction) {
+		if (interaction instanceof Signal) {
+			return ((Signal) interaction).getModality();
 		}
-		if (i instanceof Delay) {
-			return ((Delay) i).getModality();
+		if (interaction instanceof Delay) {
+			return ((Delay) interaction).getModality();
 		}
-		if (i instanceof NegatedModalInteraction) {
-			NegatedModalInteraction negated = (NegatedModalInteraction)i;
+		if (interaction instanceof NegatedModalInteraction) {
+			NegatedModalInteraction negated = (NegatedModalInteraction) interaction;
 			if (negated.getModalinteraction() instanceof Signal) {
 				return getModality(negated.getModalinteraction());
 			}
 		}
 		return null;
 	}
-	
-	public InteractionDirection getDirection(InteractionDefinition i) {
-		if (i instanceof Signal) {
-			return ((Signal) i).getDirection();
+
+	public static InteractionDirection getDirection(InteractionDefinition interaction) {
+		if (interaction instanceof Signal) {
+			return ((Signal) interaction).getDirection();
 		}
-		if (i instanceof Delay) {
+		if (interaction instanceof Delay) {
 			return InteractionDirection.RECEIVE;
 		}
-		if (i instanceof NegatedModalInteraction) {
-			NegatedModalInteraction negated = (NegatedModalInteraction)i;
+		if (interaction instanceof NegatedModalInteraction) {
+			NegatedModalInteraction negated = (NegatedModalInteraction) interaction;
 			if (negated.getModalinteraction() instanceof Signal) {
 				return getDirection(negated.getModalinteraction());
 			}

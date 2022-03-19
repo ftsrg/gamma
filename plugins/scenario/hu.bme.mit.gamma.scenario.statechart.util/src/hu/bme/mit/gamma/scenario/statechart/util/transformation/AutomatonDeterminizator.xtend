@@ -4,7 +4,6 @@ import hu.bme.mit.gamma.action.model.ActionModelFactory
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.expression.util.ExpressionUtil
-import hu.bme.mit.gamma.scenario.model.derivedfeatures.ScenarioModelDerivedFeatures
 import hu.bme.mit.gamma.scenario.statechart.util.ScenarioStatechartUtil
 import hu.bme.mit.gamma.statechart.contract.ContractModelFactory
 import hu.bme.mit.gamma.statechart.contract.SpecialStateKind
@@ -17,7 +16,6 @@ import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.util.Collection
-import java.util.List
 import java.util.Set
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
@@ -33,8 +31,6 @@ class AutomatonDeterminizator {
 	protected val extension ExpressionEvaluator exprEval = ExpressionEvaluator.INSTANCE
 	protected val extension ExpressionUtil exprUtil = ExpressionUtil.INSTANCE
 	protected val extension ScenarioStatechartUtil scenarioStatechartUtil = ScenarioStatechartUtil.INSTANCE
-	protected val extension ScenarioModelDerivedFeatures scenarioModelDerivedFeatures = ScenarioModelDerivedFeatures.
-		INSTANCE
 	protected val extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
 
 	var StatechartDefinition oldStatechart = null

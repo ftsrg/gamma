@@ -25,10 +25,10 @@ public class ScenarioReferenceResolver {
 		if (!containsAnyReferences(scenario)) {
 			return;
 		}
-
+		List<Interaction> interactions = scenario.getChart().getFragment().getInteractions();
 		List<Interaction> newInteractions = resolveReferencesFromFragment(scenario.getChart().getFragment());
-		scenario.getChart().getFragment().getInteractions().clear();
-		scenario.getChart().getFragment().getInteractions().addAll(newInteractions);
+		interactions.clear();
+		interactions.addAll(newInteractions);
 
 		resolveReferences(scenario);
 	}

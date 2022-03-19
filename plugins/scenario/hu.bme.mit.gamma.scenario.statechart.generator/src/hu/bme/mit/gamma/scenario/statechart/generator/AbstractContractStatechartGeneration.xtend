@@ -15,7 +15,6 @@ import hu.bme.mit.gamma.scenario.model.ModalInteractionSet
 import hu.bme.mit.gamma.scenario.model.NegatedModalInteraction
 import hu.bme.mit.gamma.scenario.model.ScenarioDefinition
 import hu.bme.mit.gamma.scenario.model.Signal
-import hu.bme.mit.gamma.scenario.model.derivedfeatures.ScenarioModelDerivedFeatures
 import hu.bme.mit.gamma.scenario.statechart.util.ScenarioStatechartUtil
 import hu.bme.mit.gamma.statechart.contract.ContractModelFactory
 import hu.bme.mit.gamma.statechart.contract.NotDefinedEventMode
@@ -40,7 +39,6 @@ import hu.bme.mit.gamma.statechart.statechart.UnaryType
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.util.JavaUtil
-import java.util.HashMap
 import java.util.List
 import java.util.Map
 
@@ -57,8 +55,6 @@ abstract class AbstractContractStatechartGeneration {
 	protected val extension ExpressionEvaluator exprEval = ExpressionEvaluator.INSTANCE
 	protected val extension ExpressionUtil exprUtil = ExpressionUtil.INSTANCE
 	protected val extension ScenarioStatechartUtil scenarioStatechartUtil = ScenarioStatechartUtil.INSTANCE
-	protected val extension ScenarioModelDerivedFeatures scenarioModelDerivedFeatures = ScenarioModelDerivedFeatures.
-		INSTANCE
 	protected val StatechartUtil statechartUtil = StatechartUtil.INSTANCE
 
 	protected val JavaUtil javaUtil = JavaUtil.INSTANCE
@@ -66,7 +62,7 @@ abstract class AbstractContractStatechartGeneration {
 	protected var Component component = null
 	protected var ScenarioDefinition scenario = null
 	protected var StatechartDefinition statechart = null
-	protected val variableMap = <String, VariableDeclaration>newHashMap
+	protected val Map<String, VariableDeclaration> variableMap = <String, VariableDeclaration>newHashMap
 	protected var exsistingChoices = 0
 	protected var exsistingMerges = 0
 	protected var stateCount = 0
@@ -75,9 +71,9 @@ abstract class AbstractContractStatechartGeneration {
 	protected var StateNode previousState = null
 	protected var State hotViolation = null
 	protected var State coldViolation = null
-	protected val replacedStateWithValue = new HashMap<StateNode, StateNode>()
+	protected val Map<StateNode, StateNode> replacedStateWithValue = <StateNode, StateNode>newHashMap
 
-	def abstract StatechartDefinition execute();
+	def abstract StatechartDefinition execute()
 
 	new(ScenarioDefinition scenario, Component component) {
 		this.component = component

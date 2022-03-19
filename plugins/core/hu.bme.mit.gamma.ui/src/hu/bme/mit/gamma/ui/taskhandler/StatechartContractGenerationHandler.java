@@ -20,7 +20,6 @@ import hu.bme.mit.gamma.scenario.statechart.util.transformation.AutomatonDetermi
 
 public class StatechartContractGenerationHandler extends TaskHandler {
 
-
 	public StatechartContractGenerationHandler(IFile file) {
 		super(file);
 	}
@@ -29,7 +28,9 @@ public class StatechartContractGenerationHandler extends TaskHandler {
 
 		setTargetFolder(statechartGeneration);
 		ScenarioDefinition baseScenario = statechartGeneration.getScenario();
-		Component component = ecoreUtil.getContainerOfType(baseScenario, ScenarioDeclaration.class).getComponent();
+		ScenarioDeclaration containingScenarioDeclaration = ecoreUtil.getContainerOfType(baseScenario,
+				ScenarioDeclaration.class);
+		Component component = containingScenarioDeclaration.getComponent();
 		StatechartGenerationMode generationMode = statechartGeneration.isUseIteratingVariable()
 				? StatechartGenerationMode.GENERATE_ORIGINAL_STRUCTURE
 				: StatechartGenerationMode.GENERATE_ONLY_FORWARD;
@@ -37,20 +38,19 @@ public class StatechartContractGenerationHandler extends TaskHandler {
 		SimpleScenarioGenerator simpleGenerator = null;
 		ScenarioContentSorter sorter = new ScenarioContentSorter();
 		sorter.sort(baseScenario);
-		if (statechartGeneration.getAutomatonType().equals(ContractAutomatonType.MONITOR)) {
-			simpleGenerator = new SimpleScenarioGenerator(baseScenario, true,
-					statechartGeneration.getArguments());
+		ContractAutomatonType type = statechartGeneration.getAutomatonType();
+		if (type.equals(ContractAutomatonType.MONITOR)) {
+			simpleGenerator = new SimpleScenarioGenerator(baseScenario, true, statechartGeneration.getArguments());
 			ScenarioDefinition simplifiedScenario = simpleGenerator.execute();
 			statechartGenerator = new MonitorStatechartgenerator(simplifiedScenario, component);
 		} else {
-			simpleGenerator = new SimpleScenarioGenerator(baseScenario, false,
-					statechartGeneration.getArguments());
+			simpleGenerator = new SimpleScenarioGenerator(baseScenario, false, statechartGeneration.getArguments());
 			ScenarioDefinition simplifiedScenario = simpleGenerator.execute();
 			statechartGenerator = new TestGeneratorStatechartGenerator(simplifiedScenario, component, generationMode,
-				!statechartGeneration.isStartAsColdViolation());
+					!statechartGeneration.isStartAsColdViolation());
 		}
 		StatechartDefinition statechart = statechartGenerator.execute();
-		if (statechartGeneration.getAutomatonType().equals(ContractAutomatonType.MONITOR)) {
+		if (type.equals(ContractAutomatonType.MONITOR)) {
 			AutomatonDeterminizator determinizator = new AutomatonDeterminizator(statechart);
 			statechart = determinizator.execute();
 		}
