@@ -46,18 +46,18 @@ To cite Gamma, please cite the following paper. You can find additional publicat
 * Install the required 3rd-party Eclipse components. Detailed instructions can be found in the [`plugins/README.md`](plugins/README.md) file.
 * Exit Eclipse and extract the Gamma zip file containing the `dropins/plugins` folder (with the Gamma JAR files) into the root folder of Eclipse. This will create the plugins directory in the `dropins` folder of your root Eclipse folder, which should contain all JAR files of Gamma. (If not, make sure you copy all the JAR files contained in the Gamma zip file in the plugins directory of the `dropins` folder of the root folder of Eclipse.)
 * When starting Eclipse for the first time, you might need to start it with the `-clean` flag.
-* Check if the plugin installed successfully in *Help > About Eclipse* and by clicking Installation Details. On the `Plug-ins tab`, sort the entries by `Plugin-in Id` and look for entries starting with `hu.bme.mit.gamma`. 
+* Check if the plugin installed successfully in *Help > About Eclipse* and by clicking Installation Details. On the `Plug-ins tab`, sort the entries by `Plugin-in Id` and look for entries starting with `hu.bme.mit.gamma`.
 * For formal verification, download and extract UPPAAL. In order to let Gamma find the UPPAAL executables, add the `bin-Win32` or `bin-Linux` folder to the path environment variable (depending on the operating system being used).
-* If you want to use Theta, check out the installation steps [here](https://github.com/ftsrg/gamma/blob/master/plugins/xsts/README.md).
+* If you want to use Theta, check out the installation steps [here](plugins/xsts/README.md).
 
 ### Tutorials
 
-The tutorials for the framework can be found in the following [folder](https://github.com/ftsrg/gamma/blob/master/tutorial).
+The tutorials for the framework can be found in the following [folder](tutorial).
 
 ## Contact
 
 Contact us by sending an e-mail to `gamma [at] mit.bme.hu`.
- 
+
 ## Acknowledgement
 
 Supporters of the Gamma project:
@@ -72,7 +72,7 @@ Supporters of the Gamma project:
 * [EU ECSEL and NRDI Fund of Hungary](https://www.arrowhead.eu/arrowheadtools) (EU ECSEL 826452 and NRDI Fund 2019-2.1.3-NEMZ_ECSEL-2019-00003 Arrowhead Tools project),
 * [Versenyképességi és kiválósági együttműködések program (VKE)](https://prolan.hu/hu/oldal/VKE) (2018-1.3.1-VKE-2018-00040 projekt).
 
-Special thanks to: 
+Special thanks to:
 
 * András Vörös,
 * Oszkár Semeráth,
