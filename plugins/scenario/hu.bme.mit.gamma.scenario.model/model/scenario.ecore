@@ -2,14 +2,14 @@
 <ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="model" nsURI="http://www.mit.bme.hu/gamma/scenario/Model" nsPrefix="hu.bme.mit.gamma.scenario">
   <eClassifiers xsi:type="ecore:EClass" name="ScenarioDeclaration">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="package" lowerBound="1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/interface.ecore#//Package"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="imports" lowerBound="1"
+        upperBound="-1" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/interface.ecore#//Package"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="scenarios" lowerBound="1"
         upperBound="-1" eType="#//ScenarioDefinition" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="component" lowerBound="1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/interface.ecore#//Component"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="ScenarioDefinition" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NamedElement">
+  <eClassifiers xsi:type="ecore:EClass" name="ScenarioDefinition" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NamedElement ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ParametricElement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="chart" lowerBound="1" eType="#//Chart"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="annotation" upperBound="-1"
@@ -77,18 +77,22 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Annotation" abstract="true"/>
   <eClassifiers xsi:type="ecore:EClass" name="WaitAnnotation" eSuperTypes="#//Annotation">
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="minimum" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBigInteger"
-        defaultValueLiteral="1"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="maximum" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBigInteger"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="minimum" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="maximum" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
+        containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="InteractionDefinition" abstract="true"
       eSuperTypes="#//Interaction"/>
   <eClassifiers xsi:type="ecore:EClass" name="StrictAnnotation" eSuperTypes="#//Annotation"/>
   <eClassifiers xsi:type="ecore:EClass" name="PermissiveAnnotation" eSuperTypes="#//Annotation"/>
   <eClassifiers xsi:type="ecore:EClass" name="NegatedWaitAnnotation" eSuperTypes="#//Annotation">
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="minimum" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBigInteger"
-        defaultValueLiteral="1"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="maximum" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBigInteger"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="minimum" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="maximum" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
+        containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="NegStrictAnnotation" eSuperTypes="#//Annotation"/>
   <eClassifiers xsi:type="ecore:EClass" name="NegPermissiveAnnotation" eSuperTypes="#//Annotation"/>
@@ -96,6 +100,8 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="modalInteractions" lowerBound="1"
         upperBound="-1" eType="#//ModalInteraction" containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="StartAsColdViolationAnnotation" eSuperTypes="#//Annotation"/>
-  <eClassifiers xsi:type="ecore:EClass" name="DedicatedColdViolationAnnotation" eSuperTypes="#//Annotation"/>
+  <eClassifiers xsi:type="ecore:EClass" name="ScenarioDefinitionReference" eSuperTypes="#//Interaction ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ArgumentedElement">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="scenarioDefinition" lowerBound="1"
+        eType="#//ScenarioDefinition"/>
+  </eClassifiers>
 </ecore:EPackage>

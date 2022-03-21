@@ -1,6 +1,5 @@
-import "controller"
+import "controller" 
 component Controller
-
 @Strict
 @AllowedWaiting 0 .. 1
 scenario exampleScenario [

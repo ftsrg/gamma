@@ -30,7 +30,7 @@ public class StatechartContractTestGenerationHandler extends TaskHandler {
 
 		StatechartDefinition stateChart = (StatechartDefinition) testGeneration.getComponentReference().getComponent();
 		ScenarioStatechartTraceGenerator traceGenerator = new ScenarioStatechartTraceGenerator(
-				stateChart,	constraintValue, StatechartModelDerivedFeatures.getScenarioAllowedWaitAnnotation(stateChart));
+				stateChart,	constraintValue);
 		List<ExecutionTrace> testTraces = traceGenerator.execute();
 		for (ExecutionTrace testTrace : testTraces) {
 			try {
