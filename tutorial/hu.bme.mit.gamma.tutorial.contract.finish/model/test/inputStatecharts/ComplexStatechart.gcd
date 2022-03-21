@@ -1,0 +1,220 @@
+package complex
+import "/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd"
+import "/hu.bme.mit.gamma.tutorial.contract.finish/model/Controller/Controller.gcd"
+@TransitionPriority = value-based
+@ScenarioContractStatechart = Controller (strict)
+@ScenarioAllowedWaitAnnotation = 0 .. 1
+statechart Complex [
+	port PoliceInterrupt : requires PoliceInterrupt
+	port PoliceInterruptREVERSED : provides PoliceInterrupt
+	port SecondaryPolice : provides PoliceInterrupt
+	port SecondaryPoliceREVERSED : requires PoliceInterrupt
+	port SecondaryControl : provides Control
+	port SecondaryControlREVERSED : requires Control
+	port PriorityControl : provides Control
+	port PriorityControlREVERSED : requires Control
+	port PriorityPolice : provides PoliceInterrupt
+	port PriorityPoliceREVERSED : requires PoliceInterrupt
+] {
+	var IteratingVariable : integer := 0
+	var LoopIteratingVariable0 : integer := 0
+	var result : integer := 0
+	timeout delay0
+	timeout delay1
+	transition from Initial to firstState /
+	IteratingVariable := 1;
+	LoopIteratingVariable0 := 1;
+	transition from Choice1 to state0 when PoliceInterrupt.police && !(SecondaryPoliceREVERSED.any)
+		&& !(SecondaryControlREVERSED.any) && !(PriorityControlREVERSED.any) &&
+		!(PriorityPoliceREVERSED.any)
+	/
+	raise PoliceInterruptREVERSED.police;
+	transition from Choice1 to coldViolation [else] /
+	result := 1;
+	transition from firstState to Choice1 when cycle
+	transition (3) from Choice3 to state1 when (PriorityPoliceREVERSED.police &&
+		SecondaryPoliceREVERSED.police) && !(PoliceInterrupt.any) && !(SecondaryControlREVERSED.any) &&
+		!(PriorityControlREVERSED.any)
+	/
+	raise PriorityPolice.police;
+	raise SecondaryPolice.police;
+	transition (1) from Choice3 to hotViolation [else] /
+	result := 0;
+	transition from state0 to Choice3 when cycle
+	transition from Choice5 to Choice7 when timeout delay0 && !(PoliceInterrupt.any) &&
+		!(SecondaryPoliceREVERSED.any) && !(SecondaryControlREVERSED.any) &&
+		!(PriorityControlREVERSED.any) && !(PriorityPoliceREVERSED.any)
+	transition from Choice5 to hotViolation [else] /
+	result := 0;
+	transition from state1 to Choice5 when cycle
+	transition from Choice9 to merge15 when PoliceInterrupt.police && !(SecondaryPoliceREVERSED.any)
+		&& !(SecondaryControlREVERSED.any) && !(PriorityControlREVERSED.any) &&
+		!(PriorityPoliceREVERSED.any)
+	/
+	raise PoliceInterruptREVERSED.police;
+	transition from Choice9 to coldViolation [else] /
+	result := 1;
+	transition from state3 to Choice9 when cycle
+	transition from Choice7 to state3
+	transition from Choice7 to merge15
+	transition from Choice11 to state5_0
+	transition (3) from Choice13 to merge0 when PriorityControlREVERSED.toggle &&
+		!(PoliceInterrupt.any) && !(SecondaryPoliceREVERSED.any) && !(SecondaryControlREVERSED.any) &&
+		!(PriorityPoliceREVERSED.any)
+	/
+	raise PriorityControl.toggle;
+	transition (1) from Choice13 to hotViolation [else] /
+	result := 0;
+	transition from state5_0 to Choice13 when cycle
+	transition from Choice11 to state5_1
+	transition (3) from Choice15 to merge0 when SecondaryControlREVERSED.toggle &&
+		!(PoliceInterrupt.any) && !(SecondaryPoliceREVERSED.any) && !(PriorityControlREVERSED.any) &&
+		!(PriorityPoliceREVERSED.any)
+	/
+	raise SecondaryControl.toggle;
+	transition (1) from Choice15 to hotViolation [else] /
+	result := 0;
+	transition from state5_1 to Choice15 when cycle
+	transition from Choice17 to state6 when timeout delay1 && !(PoliceInterrupt.any) &&
+		!(SecondaryPoliceREVERSED.any) && !(SecondaryControlREVERSED.any) &&
+		!(PriorityControlREVERSED.any) && !(PriorityPoliceREVERSED.any)
+	transition from Choice17 to coldViolation [else] /
+	result := 1;
+	transition from merge0 to Choice17 when cycle
+	transition (3) from Choice19 to Choice21 when (PriorityPoliceREVERSED.police &&
+		SecondaryPoliceREVERSED.police) && !(PoliceInterrupt.any) && !(SecondaryControlREVERSED.any) &&
+		!(PriorityControlREVERSED.any)
+	/
+	raise PriorityPolice.police;
+	raise SecondaryPolice.police;
+	transition (1) from Choice19 to hotViolation [else] /
+	result := 0;
+	transition from state6 to Choice19 when cycle
+	transition from Choice21 to Choice23 [LoopIteratingVariable0 >= 1] /
+	LoopIteratingVariable0 := 1;
+	transition from Choice21 to merge0 [LoopIteratingVariable0 < 10] /
+	LoopIteratingVariable0 := LoopIteratingVariable0 + 1;
+	transition from Choice23 to state9_0
+	transition (3) from Choice25 to state10 when PriorityControlREVERSED.toggle &&
+		!(PoliceInterrupt.any) && !(SecondaryPoliceREVERSED.any) && !(SecondaryControlREVERSED.any) &&
+		!(PriorityPoliceREVERSED.any)
+	/
+	raise PriorityControl.toggle;
+	transition (1) from Choice25 to hotViolation [else] /
+	result := 0;
+	transition from state9_0 to Choice25 when cycle
+	transition (3) from Choice27 to merge16 when SecondaryControlREVERSED.toggle &&
+		!(PoliceInterrupt.any) && !(SecondaryPoliceREVERSED.any) && !(PriorityControlREVERSED.any) &&
+		!(PriorityPoliceREVERSED.any)
+	/
+	raise SecondaryControl.toggle;
+	transition (1) from Choice27 to hotViolation [else] /
+	result := 0;
+	transition from state10 to Choice27 when cycle
+	transition from Choice23 to state9_1
+	transition (3) from Choice29 to state11 when SecondaryControlREVERSED.toggle &&
+		!(PoliceInterrupt.any) && !(SecondaryPoliceREVERSED.any) && !(PriorityControlREVERSED.any) &&
+		!(PriorityPoliceREVERSED.any)
+	/
+	raise SecondaryControl.toggle;
+	transition (1) from Choice29 to hotViolation [else] /
+	result := 0;
+	transition from state9_1 to Choice29 when cycle
+	transition (3) from Choice31 to merge16 when PriorityControlREVERSED.toggle &&
+		!(PoliceInterrupt.any) && !(SecondaryPoliceREVERSED.any) && !(SecondaryControlREVERSED.any) &&
+		!(PriorityPoliceREVERSED.any)
+	/
+	raise PriorityControl.toggle;
+	transition (1) from Choice31 to hotViolation [else] /
+	result := 0;
+	transition from state11 to Choice31 when cycle
+	transition from Choice33 to state12_0
+	transition (3) from Choice35 to state13 when PriorityControlREVERSED.toggle &&
+		!(PoliceInterrupt.any) && !(SecondaryPoliceREVERSED.any) && !(SecondaryControlREVERSED.any) &&
+		!(PriorityPoliceREVERSED.any)
+	/
+	raise PriorityControl.toggle;
+	transition (1) from Choice35 to hotViolation [else] /
+	result := 0;
+	transition from state12_0 to Choice35 when cycle
+	transition (3) from Choice37 to AcceptingState when SecondaryControlREVERSED.toggle &&
+		!(PoliceInterrupt.any) && !(SecondaryPoliceREVERSED.any) && !(PriorityControlREVERSED.any) &&
+		!(PriorityPoliceREVERSED.any)
+	/
+	raise SecondaryControl.toggle;
+	result := 2;
+	transition (1) from Choice37 to hotViolation [else] /
+	result := 0;
+	transition from state13 to Choice37 when cycle
+	transition from Choice33 to state12_1
+	transition (3) from Choice39 to state14 when SecondaryControlREVERSED.toggle &&
+		!(PoliceInterrupt.any) && !(SecondaryPoliceREVERSED.any) && !(PriorityControlREVERSED.any) &&
+		!(PriorityPoliceREVERSED.any)
+	/
+	raise SecondaryControl.toggle;
+	transition (1) from Choice39 to hotViolation [else] /
+	result := 0;
+	transition from state12_1 to Choice39 when cycle
+	transition (3) from Choice41 to AcceptingState when PriorityControlREVERSED.toggle &&
+		!(PoliceInterrupt.any) && !(SecondaryPoliceREVERSED.any) && !(SecondaryControlREVERSED.any) &&
+		!(PriorityPoliceREVERSED.any)
+	/
+	raise PriorityControl.toggle;
+	result := 2;
+	transition (1) from Choice41 to hotViolation [else] /
+	result := 0;
+	transition from state14 to Choice41 when cycle
+	transition from merge15 to Choice11
+	transition from merge16 to Choice33
+	region ^region {
+		initial Initial
+		state firstState
+		state hotViolation
+		state coldViolation
+		choice Choice1
+		state state0
+		choice Choice3
+		state state1 {
+			entry /
+			set delay0 := 500 ms;
+		}
+		choice Choice5
+		choice Choice7
+		state state3
+		choice Choice9
+		choice Choice11
+		state state5_0
+		choice Choice13
+		state state5_1
+		choice Choice15
+		state merge0 {
+			entry /
+			set delay1 := 500 ms;
+		}
+		choice Choice17
+		state state6
+		choice Choice19
+		choice Choice21
+		choice Choice23
+		state state9_0
+		choice Choice25
+		state state10
+		choice Choice27
+		state state9_1
+		choice Choice29
+		state state11
+		choice Choice31
+		choice Choice33
+		state state12_0
+		choice Choice35
+		state state13
+		choice Choice37
+		state state12_1
+		choice Choice39
+		state state14
+		choice Choice41
+		state AcceptingState
+		merge merge15
+		merge merge16
+	}
+}

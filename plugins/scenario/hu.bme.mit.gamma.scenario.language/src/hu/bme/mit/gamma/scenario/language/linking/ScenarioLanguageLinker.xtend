@@ -13,12 +13,10 @@ package hu.bme.mit.gamma.scenario.language.linking
 import hu.bme.mit.gamma.language.util.linking.GammaLanguageLinker
 import hu.bme.mit.gamma.scenario.model.ScenarioDeclaration
 import hu.bme.mit.gamma.scenario.model.ScenarioModelPackage
-import java.util.Collections
 
 class ScenarioLanguageLinker extends GammaLanguageLinker {
-
+	
 	override getContext() {
-		return Collections.singletonMap(ScenarioDeclaration,
-			Collections.singletonList(ScenarioModelPackage.eINSTANCE.scenarioDeclaration_Package));
+		return newHashMap(ScenarioDeclaration -> #[ScenarioModelPackage.eINSTANCE.scenarioDeclaration_Imports])
 	}
 }

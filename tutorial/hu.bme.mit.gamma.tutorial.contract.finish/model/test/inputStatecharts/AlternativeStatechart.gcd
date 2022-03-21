@@ -1,0 +1,62 @@
+package alternative
+import "/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd"
+import "/hu.bme.mit.gamma.tutorial.contract.finish/model/Controller/Controller.gcd"
+@TransitionPriority = value-based
+@ScenarioContractStatechart = Controller (permissive)
+@ScenarioAllowedWaitAnnotation = 0 .. 1
+statechart Alternative [
+	port PoliceInterrupt : requires PoliceInterrupt
+	port PoliceInterruptREVERSED : provides PoliceInterrupt
+	port SecondaryPolice : provides PoliceInterrupt
+	port SecondaryPoliceREVERSED : requires PoliceInterrupt
+	port SecondaryControl : provides Control
+	port SecondaryControlREVERSED : requires Control
+	port PriorityControl : provides Control
+	port PriorityControlREVERSED : requires Control
+	port PriorityPolice : provides PoliceInterrupt
+	port PriorityPoliceREVERSED : requires PoliceInterrupt
+] {
+	var IteratingVariable : integer := 0
+	var LoopIteratingVariable0 : integer := 0
+	var result : integer := 0
+	transition from Initial to Choice1 /
+	IteratingVariable := 1;
+	LoopIteratingVariable0 := 1;
+	transition from Choice1 to state0_0
+	transition from Choice3 to merge0 when PoliceInterrupt.police /
+	raise PoliceInterruptREVERSED.police;
+	transition from Choice3 to hotViolation [else] /
+	result := 0;
+	transition from state0_0 to Choice3 when cycle
+	transition from Choice1 to state0_1
+	transition from Choice5 to state1 when PoliceInterrupt.police /
+	raise PoliceInterruptREVERSED.police;
+	transition from Choice5 to hotViolation [else] /
+	result := 0;
+	transition from state0_1 to Choice5 when cycle
+	transition from Choice7 to merge0 when PoliceInterrupt.police /
+	raise PoliceInterruptREVERSED.police;
+	transition from Choice7 to hotViolation [else] /
+	result := 0;
+	transition from state1 to Choice7 when cycle
+	transition (3) from Choice9 to AcceptingState when PriorityControlREVERSED.toggle /
+	raise PriorityControl.toggle;
+	result := 2;
+	transition (1) from Choice9 to hotViolation [else] /
+	result := 0;
+	transition from merge0 to Choice9 when cycle
+	region ^region {
+		initial Initial
+		state hotViolation
+		choice Choice1
+		state state0_0
+		choice Choice3
+		state state0_1
+		choice Choice5
+		state state1
+		choice Choice7
+		state merge0
+		choice Choice9
+		state AcceptingState
+	}
+}

@@ -96,6 +96,9 @@
       <genEnumLiterals ecoreEnumLiteral="contract.ecore#//NotDefinedEventMode/PERMISSIVE"/>
       <genEnumLiterals ecoreEnumLiteral="contract.ecore#//NotDefinedEventMode/STRICT"/>
     </genEnums>
+    <genEnums typeSafeEnumCompatible="false" ecoreEnum="contract.ecore#//SpecialStateKind">
+      <genEnumLiterals ecoreEnumLiteral="contract.ecore#//SpecialStateKind/ACCEPTING"/>
+    </genEnums>
     <genClasses ecoreClass="contract.ecore#//AdaptiveContractAnnotation">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference contract.ecore#//AdaptiveContractAnnotation/monitoredComponent"/>
     </genClasses>
@@ -109,6 +112,9 @@
     <genClasses ecoreClass="contract.ecore#//ScenarioAllowedWaitAnnotation">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference contract.ecore#//ScenarioAllowedWaitAnnotation/lowerLimit"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference contract.ecore#//ScenarioAllowedWaitAnnotation/upperLimit"/>
+    </genClasses>
+    <genClasses ecoreClass="contract.ecore#//SpecialStateAnnotation">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute contract.ecore#//SpecialStateAnnotation/kind"/>
     </genClasses>
   </genPackages>
   <genPackages prefix="InterfaceModel" basePackage="hu.bme.mit.gamma.statechart" ecorePackage="interface.ecore#/">

@@ -1,0 +1,75 @@
+package looptest
+import "/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd"
+import "/hu.bme.mit.gamma.tutorial.contract.finish/model/Controller/Controller.gcd"
+@TransitionPriority = value-based
+@ScenarioContractStatechart = Controller (permissive)
+statechart loopTest [
+	port PoliceInterrupt : requires PoliceInterrupt
+	port PoliceInterruptREVERSED : provides PoliceInterrupt
+	port SecondaryPolice : provides PoliceInterrupt
+	port SecondaryPoliceREVERSED : requires PoliceInterrupt
+	port SecondaryControl : provides Control
+	port SecondaryControlREVERSED : requires Control
+	port PriorityControl : provides Control
+	port PriorityControlREVERSED : requires Control
+	port PriorityPolice : provides PoliceInterrupt
+	port PriorityPoliceREVERSED : requires PoliceInterrupt
+] {
+	region ^region {
+		initial Initial
+		state firstState
+		state hotComponentViolation
+		state state0
+		state state1
+		state state12
+		state merge0
+		@SpecialStateAnnotation accepting
+		state AcceptingState
+		state state2__state4__state8
+		state state5__state9__merge0
+		state state6__state10
+		state state11__merge0
+	}
+	transition from Initial to firstState
+	transition (3) from firstState to state0 when PriorityPoliceREVERSED.police &&
+		SecondaryPoliceREVERSED.police /
+	raise PriorityPolice.police;
+	raise SecondaryPolice.police;
+	transition (1) from firstState to hotComponentViolation when any
+	transition (3) from state0 to state1 when PriorityControlREVERSED.toggle /
+	raise PriorityControl.toggle;
+	transition (1) from state0 to hotComponentViolation when any
+	transition (3) from state1 to state2__state4__state8 when PriorityPoliceREVERSED.police &&
+		SecondaryPoliceREVERSED.police /
+	raise PriorityPolice.police;
+	raise SecondaryPolice.police;
+	transition (1) from state1 to hotComponentViolation when any
+	transition (3) from state12 to merge0 when PriorityControlREVERSED.toggle /
+	raise PriorityControl.toggle;
+	transition (1) from state12 to hotComponentViolation when any
+	transition (3) from merge0 to AcceptingState when PriorityControlREVERSED.toggle /
+	raise PriorityControl.toggle;
+	transition (1) from merge0 to hotComponentViolation when any
+	transition (3) from state2__state4__state8 to state5__state9__merge0 when
+		PriorityControlREVERSED.toggle /
+	raise PriorityControl.toggle;
+	transition (1) from state2__state4__state8 to hotComponentViolation when any
+	transition (3) from state5__state9__merge0 to state6__state10 when PriorityPoliceREVERSED.police
+		&& SecondaryPoliceREVERSED.police /
+	raise PriorityPolice.police;
+	raise SecondaryPolice.police;
+	transition (1) from state5__state9__merge0 to hotComponentViolation when any
+	transition (3) from state5__state9__merge0 to AcceptingState when PriorityControlREVERSED.toggle
+		/
+	raise PriorityControl.toggle;
+	transition (3) from state6__state10 to state11__merge0 when PriorityControlREVERSED.toggle /
+	raise PriorityControl.toggle;
+	transition (1) from state6__state10 to hotComponentViolation when any
+	transition (1) from state11__merge0 to hotComponentViolation when any
+	transition (3) from state11__merge0 to state12 when PriorityPoliceREVERSED.police &&
+		SecondaryPoliceREVERSED.police /
+	raise PriorityPolice.police;
+	raise SecondaryPolice.police;
+	transition (3) from state11__merge0 to AcceptingState when PriorityControlREVERSED.toggle /
+	raise PriorityControl.toggle;
+}

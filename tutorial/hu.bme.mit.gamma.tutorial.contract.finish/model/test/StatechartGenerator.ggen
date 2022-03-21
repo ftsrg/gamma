@@ -1,0 +1,70 @@
+statechart-contract {
+	scenario : Alternative
+	folder : "model/test/inputStatecharts"
+	name : "Alternative"
+}
+statechart-contract {
+	scenario : Complex
+	folder : "model/test/inputStatecharts"
+	name : "Complex"
+}
+statechart-contract {
+	scenario : Delay
+	folder : "model/test/inputStatecharts"
+	name : "Delay"
+}
+statechart-contract {
+	scenario : DelayAlone
+	folder : "model/test/inputStatecharts"
+	name : "DelayAlone"
+}
+statechart-contract {
+	scenario : DelayWithReceives
+	folder : "model/test/inputStatecharts"
+	name : "DelayWithReceives"
+}
+statechart-contract {
+	scenario : InitialOutputs
+	folder : "model/test/inputStatecharts"
+	name : "InitialOutputs"
+}
+statechart-contract {
+	scenario : Loop
+	folder : "model/test/inputStatecharts"
+	name : "Loop"
+}
+statechart-contract {
+	scenario : NegBlockSendsPermissive
+	folder : "model/test/inputStatecharts"
+	name : "NegBlockSendsPermissive"
+}
+statechart-contract {
+	scenario : NegSendsStrict
+	folder : "model/test/inputStatecharts"
+	name : "NegSendsStrict"
+}
+statechart-contract {
+	scenario : Optional
+	folder : "model/test/inputStatecharts"
+	name : "Optional"
+}
+statechart-contract {
+	scenario : ReceivesStrict
+	folder : "model/test/inputStatecharts"
+	name : "ReceivesStrict"
+}
+statechart-contract {
+	scenario : SendsStrict
+	folder : "model/test/inputStatecharts"
+	name : "SendsStrict"
+}
+statechart-contract {
+	scenario : ReceivesPermissive
+	folder : "model/test/inputStatecharts"
+	name : "ReceivesPermissive"
+}
+statechart-contract {
+	scenario : SendsPermissive
+	folder : "model/test/inputStatecharts"
+	name : "SendsPermissive"
+}
