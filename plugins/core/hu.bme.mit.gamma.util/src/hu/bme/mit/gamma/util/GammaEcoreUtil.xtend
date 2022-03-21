@@ -566,7 +566,11 @@ class GammaEcoreUtil {
 	}
 	
 	def File getProjectFile(File file) {
-		val containedFileNames = file.listFiles.map[it.name]
+		val containedFileNames = newHashSet
+		val listedFiles = file.listFiles
+		if (!listedFiles.nullOrEmpty) {
+			containedFileNames += listedFiles.map[it.name]
+		}
 		if (containedFileNames.contains(".project")) {
 			return file
 		}
