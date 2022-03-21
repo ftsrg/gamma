@@ -46,13 +46,8 @@ public class GammaLanguageSerializer {
 //	}
 
 	public void save(EObject object, String fileUri) throws IOException {
-//		File file = new File(fileUri);
-//		if (file.isAbsolute()) {
-		save(object, URI.createFileURI(fileUri));
-//		}
-//		else {
-//			save(object, URI.createPlatformResourceURI(fileUri, true));
-//		}
+		URI fileURI = URI.createFileURI(fileUri);
+		save(object, fileURI);
 	}
 	
 	public void save(EObject object, URI uri) throws IOException {
