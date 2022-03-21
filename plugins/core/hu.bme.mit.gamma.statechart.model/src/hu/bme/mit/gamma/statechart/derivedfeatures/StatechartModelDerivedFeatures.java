@@ -18,9 +18,11 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.Queue;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -309,17 +311,47 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return imports;
 	}
 	
-	public static Set<Package> getAllImports(Package gammaPackage) {
+	public static Set<Package> getComponentImports(Package gammaPackage) {
 		Set<Package> imports = new HashSet<Package>();
 		imports.addAll(gammaPackage.getImports());
 		for (Component component : gammaPackage.getComponents()) {
 			for (ComponentInstance componentInstance : getAllInstances(component)) {
 				Component type = getDerivedType(componentInstance);
 				Package referencedPackage = getContainingPackage(type);
-				imports.add(referencedPackage);
-				imports.addAll(referencedPackage.getImports());
+				imports.addAll(
+						getSelfAndImports(referencedPackage));
 			}
 		}
+		return imports;
+	}
+	
+	public static Set<Package> getSelfAndAllImports(Package gammaPackage) {
+		Set<Package> imports = new LinkedHashSet<Package>();
+		imports.add(gammaPackage);
+		imports.addAll(getAllImports(gammaPackage));
+		return imports;
+	}
+	
+	public static Set<Package> getAllImports(Package gammaPackage) {
+		Set<Package> imports = new LinkedHashSet<Package>();
+		
+		Queue<Package> packages = new LinkedList<Package>();
+		packages.add(gammaPackage);
+		// Queue-based recursive approach instead of a recursive function
+		while (!packages.isEmpty()) {
+			Package _package = packages.poll();
+			List<Package> insideImports = _package.getImports();
+			
+			for (Package insideImport : insideImports) {
+				// To counter possible inconsistent import hierarchies
+				if (!imports.contains(insideImport)) {
+					packages.add(insideImport);
+				}
+			}
+			
+			imports.addAll(insideImports);
+		}
+		
 		return imports;
 	}
 	

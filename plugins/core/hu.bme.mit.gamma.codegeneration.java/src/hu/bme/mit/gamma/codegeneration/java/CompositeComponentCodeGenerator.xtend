@@ -49,7 +49,7 @@ class CompositeComponentCodeGenerator {
 		import java.util.LinkedList;
 		
 		import «PACKAGE_NAME».*;
-		«FOR packageName : component.containingPackage.allImports
+		«FOR packageName : component.containingPackage.componentImports
 				.map['''«it.getPackageString(PACKAGE_NAME)».*''']
 				.toSet /* For type declarations and same-name packages*/»
 			import «packageName»;

@@ -103,7 +103,7 @@ class TraceReplayModelGenerator {
 		val systemPackage = systemModel.wrapIntoPackage
 		systemPackage.name = testModelPackage.name // So test generation remains simple
 		
-		environmentPackage.imports += testModelPackage.allImports // E.g., interfaces and types
+		environmentPackage.imports += testModelPackage.componentImports // E.g., interfaces and types
 		systemPackage.imports += environmentPackage
 		systemPackage.imports += testModelPackage
 		systemPackage.imports += systemModel.importableInterfacePackages // If ports were not cleared

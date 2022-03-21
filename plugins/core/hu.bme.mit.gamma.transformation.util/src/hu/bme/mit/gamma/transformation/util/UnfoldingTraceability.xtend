@@ -437,7 +437,7 @@ class UnfoldingTraceability {
 	
 	protected def getOriginalTypeDeclarations(Component originalComponent) {
 		return originalComponent.containingPackage
-				.selfAndImports.map[it.typeDeclarations].flatten
+				.selfAndAllImports.map[it.typeDeclarations].flatten
 				.toSet
 	}
 	
