@@ -28,9 +28,11 @@ class MonitorStatechartgenerator extends AbstractContractStatechartGeneration {
 	protected State componentViolation = null
 	protected State environmentViolation = null
 	protected List<Pair<StateNode, StateNode>> copyOutgoingTransitionsForOpt = newLinkedList
+	protected boolean restartOnColdViolation = false
 
-	new(ScenarioDefinition scenario, Component component) {
+	new(ScenarioDefinition scenario, Component component, boolean restartOnColdViolation) {
 		super(scenario, component)
+		this.restartOnColdViolation = restartOnColdViolation
 	}
 
 	override execute() {
@@ -95,13 +97,23 @@ class MonitorStatechartgenerator extends AbstractContractStatechartGeneration {
 		firstRegion.stateNodes += firstState
 		previousState = firstState
 
-		coldViolation = createNewState(scenarioStatechartUtil.coldViolation)
+		if (restartOnColdViolation) {
+			coldViolation = firstState
+		} else {
+			coldViolation = createNewState(scenarioStatechartUtil.coldViolation)
+			firstRegion.stateNodes += coldViolation
+		}
 		componentViolation = createNewState(scenarioStatechartUtil.hotComponentViolation)
 		environmentViolation = createNewState(scenarioStatechartUtil.hotEnvironmentViolation)
 		firstRegion.stateNodes += componentViolation
 		firstRegion.stateNodes += environmentViolation
-		firstRegion.stateNodes += coldViolation
 		statechartUtil.createTransition(initial, firstState)
+
+		if (scenario.initialblock !== null) {
+			val syncBlock = createModalInteractionSet
+			syncBlock.modalInteractions += scenario.initialblock.modalInteractions
+			scenario.chart.fragment.interactions.add(0, syncBlock)
+		}
 	}
 
 	def dispatch void process(ModalInteractionSet interactionSet) {

@@ -3,7 +3,7 @@ package crossroad
 import "model/Interfaces/Interfaces.gcd"
 import "model/Crossroad.gcd"
 
-import "scenario/automaton/InitStatechart"
+//import "scenario/automaton/InitStatechart"
 //import "scenario/automaton/BlinkingStatechart"
 //import "scenario/automaton/NormalStatechart"
 

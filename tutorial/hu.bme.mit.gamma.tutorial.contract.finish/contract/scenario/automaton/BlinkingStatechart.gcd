@@ -1,0 +1,52 @@
+package blinking
+import "/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd"
+import "/hu.bme.mit.gamma.tutorial.contract.finish/model/Crossroad.gcd"
+import "/hu.bme.mit.gamma.tutorial.contract.finish/contract/phase/Init.gcd"
+import "/hu.bme.mit.gamma.tutorial.contract.finish/contract/phase/Blinking.gcd"
+import "/hu.bme.mit.gamma.tutorial.contract.finish/contract/adaptive/Crossroads.gcd"
+@TransitionPriority = value-based
+@ScenarioContractStatechart = Crossroads (permissive)
+statechart Blinking [
+	port police : requires PoliceInterrupt
+	port policeREVERSED : provides PoliceInterrupt
+	port priorityOutput : provides LightCommands
+	port priorityOutputREVERSED : requires LightCommands
+	port secondaryOutput : provides LightCommands
+	port secondaryOutputREVERSED : requires LightCommands
+] {
+	timeout delay0
+	timeout delay1
+	region ^region {
+		initial Initial
+		state firstState
+		state hotComponentViolation
+		state state0 {
+			entry /
+			set delay0 := 500 ms;
+		}
+		state state1 {
+			entry /
+			set delay1 := 500 ms;
+		}
+		@SpecialStateAnnotation accepting
+		state AcceptingState
+	}
+	transition from Initial to firstState
+	transition (3) from firstState to state0 when priorityOutputREVERSED.displayYellow &&
+		secondaryOutputREVERSED.displayYellow /
+	raise priorityOutput.displayYellow;
+	raise secondaryOutput.displayYellow;
+	transition (1) from firstState to hotComponentViolation when any
+	transition (3) from state0 to state1 when timeout delay0 && priorityOutputREVERSED.displayNone &&
+		secondaryOutputREVERSED.displayNone
+	/
+	raise priorityOutput.displayNone;
+	raise secondaryOutput.displayNone;
+	transition (1) from state0 to hotComponentViolation when any
+	transition (3) from state1 to AcceptingState when timeout delay1 &&
+		priorityOutputREVERSED.displayYellow && secondaryOutputREVERSED.displayYellow
+	/
+	raise priorityOutput.displayYellow;
+	raise secondaryOutput.displayYellow;
+	transition (1) from state1 to hotComponentViolation when any
+}

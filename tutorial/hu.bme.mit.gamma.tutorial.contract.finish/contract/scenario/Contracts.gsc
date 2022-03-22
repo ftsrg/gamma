@@ -25,8 +25,8 @@ scenario Blinking initial outputs [
 @Strict
 @AllowedWaiting 0 .. 1
 scenario Init initial outputs [
-	hot sends priorityOutput.displayRed
-	hot sends secondaryOutput.displayRed
+	cold sends priorityOutput.displayRed
+	cold sends secondaryOutput.displayRed
 ] [
 	{
 		hot sends priorityOutput.displayGreen

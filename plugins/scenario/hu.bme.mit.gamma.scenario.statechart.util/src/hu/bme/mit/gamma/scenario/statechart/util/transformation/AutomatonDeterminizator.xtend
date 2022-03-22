@@ -93,6 +93,11 @@ class AutomatonDeterminizator {
 			val oldPort = oldStatechart.ports.findFirst[it.name == port.name]
 			ecoreUtil.change(port, oldPort, newStatechart)
 		}
+		
+		for(timeout : oldStatechart.timeoutDeclarations){
+			val newTimeout = newStatechart.timeoutDeclarations.findFirst[it.name == timeout.name]
+			ecoreUtil.change(newTimeout, timeout, newStatechart)
+		}
 
 		// remove unreachable nodes
 		removeUnreachableNodes()
