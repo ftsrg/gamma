@@ -14,6 +14,7 @@ import hu.bme.mit.gamma.scenario.model.InteractionDirection
 import hu.bme.mit.gamma.scenario.model.ModalInteractionSet
 import hu.bme.mit.gamma.scenario.model.NegatedModalInteraction
 import hu.bme.mit.gamma.scenario.model.ScenarioDefinition
+import hu.bme.mit.gamma.scenario.model.ScenarioModelFactory
 import hu.bme.mit.gamma.scenario.model.Signal
 import hu.bme.mit.gamma.scenario.statechart.util.ScenarioStatechartUtil
 import hu.bme.mit.gamma.statechart.contract.ContractModelFactory
@@ -47,6 +48,7 @@ import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartMo
 abstract class AbstractContractStatechartGeneration {
 
 	protected val extension StatechartModelFactory statechartfactory = StatechartModelFactory.eINSTANCE
+	protected val extension ScenarioModelFactory scenariofactory = ScenarioModelFactory.eINSTANCE
 	protected val extension ExpressionModelFactory expressionfactory = ExpressionModelFactory.eINSTANCE
 	protected val extension InterfaceModelFactory interfacefactory = InterfaceModelFactory.eINSTANCE
 	protected val extension ActionModelFactory actionfactory = ActionModelFactory.eINSTANCE
