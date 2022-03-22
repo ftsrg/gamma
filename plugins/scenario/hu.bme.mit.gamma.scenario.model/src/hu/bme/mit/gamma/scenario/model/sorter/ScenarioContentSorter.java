@@ -44,8 +44,13 @@ public class ScenarioContentSorter {
 	}
 
 	private String getSerializedDelay(Delay delay) {
-		return "Delay" + delay.getModality() + evaluator.evaluate(delay.getMaximum())
-				+ evaluator.evaluate(delay.getMinimum());
+		Expression minimum = delay.getMinimum();
+		Expression maximum = delay.getMaximum();
+		if (maximum == null) {
+			maximum = minimum;
+		}
+		return "Delay" + delay.getModality() + evaluator.evaluate(maximum)
+				+ evaluator.evaluate(minimum);
 	}
 
 	private String getSerializedSignal(Signal signal) {

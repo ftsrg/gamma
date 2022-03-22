@@ -286,18 +286,18 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 		
 		// Setting the component execution
 		
-		boolean hasInitialBlock = true; // TODO
-		if (hasInitialBlock) {
-			cascade.getInitialExecutionList().add(
-					statechartUtil.createInstanceReference(contractInstance));
-		}
+//		boolean hasInitialBlock = false; // TODO Is it still necessary?
+//		if (hasInitialBlock) {
+//			cascade.getInitialExecutionList().add(
+//					statechartUtil.createInstanceReference(contractInstance));
+//		}
 		
 		// Monitor (input) - behavior - monitor (output)
 		cascade.getExecutionList().add(statechartUtil.createInstanceReference(contractInstance));
+		// Behavior - monitor (output)
 		for (SynchronousComponentInstance componentInstance : components) {
 			cascade.getExecutionList().add(statechartUtil.createInstanceReference(componentInstance));
 		}
-		cascade.getExecutionList().add(statechartUtil.createInstanceReference(contractInstance));
 		
 		// Binding system ports
 		
@@ -331,6 +331,10 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 							behaviorPortReference, contractPortReference);
 					
 					cascade.getChannels().add(channel);
+					
+					// To prevent the reseting of events transferred into the monitor
+					ecoreUtil.remove(outputPortBinding);
+					// Actually, this a semantical inconsistency between the model checker and code generator
 				}
 			}
 			else {
@@ -369,7 +373,7 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 		return new SimpleEntry<String, PropertyPackage>(modelFileUri, violationPropertyPackage);
 	}
 	
-	// Traceability
+	// TODO Traceability class
 	
 	private Port matchPort(Port matchablePort, Component component) {
 		for (Port port : StatechartModelDerivedFeatures.getAllPorts(component)) {
@@ -391,7 +395,7 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 	}
 	
 	private State getViolationState(StatechartDefinition contractStatechart) {
-		String name = scenarioStatechartUtil.getHotViolation(); // TODO Change to contract violation
+		String name = scenarioStatechartUtil.getHotComponentViolation();
 		for (State state : StatechartModelDerivedFeatures.getAllStates(contractStatechart)) {
 			if (state.getName().equals(name)) {
 				return state;
@@ -399,6 +403,8 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 		}
 		throw new IllegalArgumentException("Not found violation state: " + contractStatechart);
 	}
+	
+	// TODO Namings class
 	
 	// Settings
 
