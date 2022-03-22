@@ -1,0 +1,45 @@
+import "hu.bme.mit.gamma.tutorial.contract.finish/contract/adaptive/Crossroads.gcd"
+//import trace "/hu.bme.mit.gamma.tutorial.contract.finish/trace/ExecutionTrace0.get"
+
+//adaptive-test {
+//	analysis {
+//		component : Crossroads
+//		language : Theta
+//		constraint : {
+//			minimum-orchestrating-period : 2000 ms
+//			maximum-orchestrating-period : 2000 ms
+//		}
+//		state-coverage
+//	}
+//	language : java
+//}
+//
+//verification {
+//	language : Theta
+//	file : "Crossroads.xsts"
+//	property-file : ".Crossroads.gpd"
+//}
+//
+//test {
+//	trace : CrossroadsTrace
+//	language : java
+//}
+
+adaptive-conformance-check {
+	analysis {
+		component : Crossroads
+		language : Theta
+		constraint : {
+			minimum-orchestrating-period : 2000 ms
+			maximum-orchestrating-period : 2000 ms
+		}
+		folder: ".temporary"
+	}
+	folder : ".temporary"
+}
+
+//verification {
+//	language : Theta
+//	file : ".temporary/.Init__init.xsts"
+//	property-file : ".temporary/.Init__init.gpd"
+//}

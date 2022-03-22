@@ -1,0 +1,53 @@
+package crossroad
+
+import "model/Interfaces/Interfaces.gcd"
+import "model/Crossroad.gcd"
+
+import "scenario/automaton/InitStatechart"
+//import "scenario/automaton/BlinkingStatechart"
+//import "scenario/automaton/NormalStatechart"
+
+import "contract/phase/Init"
+import "contract/phase/Blinking"
+
+@AdaptiveContractStatechart = Crossroads
+@PhaseStatechart 
+statechart Crossroads [
+	port police : requires PoliceInterrupt
+	port priorityOutput : provides LightCommands
+	port secondaryOutput : provides LightCommands
+] {
+	timeout InitTimeout
+	timeout BlinkingTimeout
+	region main {
+		initial Entry
+		@StatechartContract = Init
+		@Phase = [
+			no history component init : InitPhase {
+				bind priorityOutput -> init.priorityOutput
+				bind secondaryOutput -> init.secondaryOutput
+			}
+		]
+		state Init {
+			entry /
+			set InitTimeout := 2 s;
+		}
+//		@StatechartContract = Normal
+		state Normal
+//		@StatechartContract = Blinking
+		@Phase = [
+			no history component blinking : BlinkingPhase {
+				bind priorityOutput -> blinking.priorityOutput
+				bind secondaryOutput -> blinking.secondaryOutput
+			}
+		]
+		state Blinking {
+			entry /
+			set BlinkingTimeout := 1 s;
+		}
+	}
+	transition from Entry to Init
+	transition from Init to Normal when timeout InitTimeout
+	transition from Normal to Blinking when police.police
+	transition from Blinking to Normal when police.police && timeout BlinkingTimeout
+}
