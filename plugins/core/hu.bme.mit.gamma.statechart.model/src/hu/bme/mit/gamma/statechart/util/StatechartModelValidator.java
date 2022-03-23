@@ -17,9 +17,12 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Queue;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -1289,32 +1292,41 @@ public class StatechartModelValidator extends ActionModelValidator {
 	}
 	
 	
-	public Collection<ValidationResultMessage> checkCircularDependencies(Package statechart) {
+	public Collection<ValidationResultMessage> checkCircularDependencies(Package _package) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		for (Package referredStatechart : statechart.getImports()) {
-			Package parentStatechart = getReferredPackages(statechart, referredStatechart);
-			if (parentStatechart != null) {
-				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-					"This statechart is in a dependency circle, referred by " + parentStatechart.getName() +
-						", composite systems must have an acyclical dependency hierarchy",
+		Package referringPackage = getReferringPackages(_package);
+		if (referringPackage != null) {
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+				"This package is in a dependency circle, referred by package " + referringPackage.getName() +
+					", composite systems must have an acyclical dependency hierarchy",
 						new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME)));
 			}
-		}
 		return validationResultMessages;
 	}
 	
-	public Package getReferredPackages(Package initialStatechart, Package statechart) {
-		for (Package referredStatechart : statechart.getImports()) {
-			if (referredStatechart == initialStatechart) {
-				return statechart;
+	public Package getReferringPackages(Package rootPackage) {
+		Set<Package> imports = new LinkedHashSet<Package>();
+		
+		Queue<Package> packages = new LinkedList<Package>();
+		packages.add(rootPackage);
+		// Queue-based recursive approach instead of a recursive function
+		while (!packages.isEmpty()) {
+			Package _package = packages.poll();
+			List<Package> insideImports = _package.getImports();
+			
+			for (Package insideImport : insideImports) {
+				if (insideImport == rootPackage) {
+					return _package;
+				}
+				// To counter possible inconsistent import hierarchies
+				if (!imports.contains(insideImport)) {
+					packages.add(insideImport);
+				}
 			}
+			
+			imports.addAll(insideImports);
 		}
-		for (Package referredStatechart : statechart.getImports()) {
-			Package parentStatechart = getReferredPackages(initialStatechart, referredStatechart);
-			if (parentStatechart != null) {
-				return parentStatechart;
-			}
-		}
+		
 		return null;
 	}
 	
