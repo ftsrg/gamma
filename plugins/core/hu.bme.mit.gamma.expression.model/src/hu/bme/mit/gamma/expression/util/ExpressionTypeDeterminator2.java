@@ -40,6 +40,7 @@ import hu.bme.mit.gamma.expression.model.FieldDeclaration;
 import hu.bme.mit.gamma.expression.model.FieldReferenceExpression;
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression;
 import hu.bme.mit.gamma.expression.model.IfThenElseExpression;
+import hu.bme.mit.gamma.expression.model.InfinityExpression;
 import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression;
 import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression;
 import hu.bme.mit.gamma.expression.model.IntegerRangeTypeDefinition;
@@ -79,6 +80,10 @@ public class ExpressionTypeDeterminator2 {
 	public Type getType(Expression expression) {
 		if (expression instanceof BooleanExpression) { // BooleanLiteralExpression is a BooleanExpression
 			return factory.createBooleanTypeDefinition();
+		}
+		if (expression instanceof InfinityExpression) {
+			// Not the cleanest solution, but good for an initial iteration
+			return factory.createIntegerTypeDefinition();
 		}
 		if (expression instanceof IntegerLiteralExpression) {
 			return factory.createIntegerTypeDefinition();
