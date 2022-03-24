@@ -271,7 +271,12 @@ LiteralExpression returns Expression:
 	RecordLiteralExpression |
 	EnumerationLiteralExpression |
 	IntegerRangeLiteralExpression  |
-	OpaqueExpression
+	OpaqueExpression |
+	InfinityExpression
+;
+
+InfinityExpression returns InfinityExpression:
+	{InfinityExpression} 'infinity'
 ;
 
 IntegerLiteralExpression:

@@ -31,7 +31,7 @@ public class ScenarioStatechartUtil {
 
 	private final String choiceName = "Choice";
 
-	private final String reversed = "REVERSED";
+	private final String reversed = "Reversed";
 
 	private final String coldViolation = "coldViolation";
 
@@ -83,11 +83,11 @@ public class ScenarioStatechartUtil {
 		return p.getName().endsWith(reversed);
 	}
 
-	public String getTurnedOutPortName(Port p) {
-		if (isTurnedOut(p)) {
-			return p.getName().substring(0, p.getName().length() - reversed.length());
+	public String getTurnedOutPortName(Port port) {
+		if (isTurnedOut(port)) {
+			return port.getName().substring(0, port.getName().length() - reversed.length());
 		}
-		return p.getName() + reversed;
+		return port.getName() + reversed;
 	}
 
 	public String getColdViolation() {
@@ -131,7 +131,7 @@ public class ScenarioStatechartUtil {
 	}
 	
 	public String getCombinedStateAcceptingName(String name) {
-		return name+"__"+Accepting;
+		return name + "__" + Accepting;
 	}
 
 }

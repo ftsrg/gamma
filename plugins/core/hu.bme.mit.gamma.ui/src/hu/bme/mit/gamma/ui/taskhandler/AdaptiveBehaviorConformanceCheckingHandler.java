@@ -264,6 +264,7 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 			// No programming languages, we do not need temporary test classes
 			verification.getFileName().add(analyisModelFile);
 			verification.getPropertyPackages().add(propertyPackage);
+			verification.setBackAnnotateToOriginal(true);
 
 			VerificationHandler verificationHandler = new VerificationHandler(file);
 			verificationHandler.execute(verification);
@@ -286,11 +287,11 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 		
 		// Setting the component execution
 		
-//		boolean hasInitialBlock = false; // TODO Is it still necessary?
-//		if (hasInitialBlock) {
-//			cascade.getInitialExecutionList().add(
-//					statechartUtil.createInstanceReference(contractInstance));
-//		}
+		boolean hasInitialBlock = true; // TODO Still necessary
+		if (hasInitialBlock) {
+			cascade.getInitialExecutionList().add(
+					statechartUtil.createInstanceReference(contractInstance));
+		}
 		
 		// Monitor (input) - behavior - monitor (output)
 		cascade.getExecutionList().add(statechartUtil.createInstanceReference(contractInstance));

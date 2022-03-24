@@ -42,7 +42,6 @@ Statement returns ActionModel::Statement:
 ;
 
 InlineStatement returns ActionModel::Statement:
-	EmptyStatement | // Not working
 	(
 	
 	VariableDeclarationStatement |
@@ -54,7 +53,9 @@ InlineStatement returns ActionModel::Statement:
 	=>AssignmentStatement |
 	 
 	AssertionStatement |
-	ExpressionStatement
+	ExpressionStatement |
+	EmptyStatement
+	
 	)
 	
 	';'
@@ -81,7 +82,7 @@ ExpressionStatement returns ActionModel::ExpressionStatement:
 ;
 
 EmptyStatement returns ActionModel::EmptyStatement:
-	{ActionModel::EmptyStatement} 'nop'
+	{ActionModel::EmptyStatement} 'no' 'operation'
 ;
 
 IfBranch returns ActionModel::Branch:

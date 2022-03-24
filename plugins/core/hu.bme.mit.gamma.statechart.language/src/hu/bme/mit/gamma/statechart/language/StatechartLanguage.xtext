@@ -360,7 +360,7 @@ InstanceVariableReference returns PhaseModel::InstanceVariableReference:
 ;
 
 enum History returns PhaseModel::History:
-	NO_HISTORY = 'no history' | SHALLOW_HISTORY = 'shallow' | DEEP_HISTORY = 'deep'
+	NO_HISTORY = 'no-history' | SHALLOW_HISTORY = 'shallow' | DEEP_HISTORY = 'deep'
 ;
 
 PseudoState returns PseudoState:
@@ -634,22 +634,14 @@ EventParameterReferenceExpression returns InterfaceModel::EventParameterReferenc
 
 @Override 
 InlineStatement returns ActionModel::Statement:
+	super |
 	(
-		VariableDeclarationStatement |
-		ConstantDeclarationStatement |
-		
-		ReturnStatement |
-		BreakStatement |
-		
-		=> AssignmentStatement |
-		
-		//Extensions:
+		(
 		RaiseEventAction |
-		SetTimeoutAction |
-		
-		AssertionStatement |
-		ExpressionStatement
-	)';'
+		SetTimeoutAction
+		)
+		';'
+	)
 ;
 
 RaiseEventAction returns RaiseEventAction:
