@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -1245,6 +1245,16 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 				.collect(Collectors.toList());
 	}
 	
+	public static Collection<Transition> getOutgoingTransitionsOfAncestors(StateNode node) {
+		Set<Transition> outgoingTransitionsOfAncestors = new LinkedHashSet<Transition>();
+		List<State> ancestors = getAncestors(node);
+		for (State ancestor : ancestors) {
+			outgoingTransitionsOfAncestors.addAll(
+					getOutgoingTransitions(ancestor));
+		}
+		return outgoingTransitionsOfAncestors;
+	}
+	
 	public static List<Transition> getIncomingTransitions(StateNode node) {
 		StatechartDefinition statechart = getContainingStatechart(node);
 		return statechart.getTransitions().stream().filter(it -> it.getTargetState() == node)
@@ -1485,6 +1495,35 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		}
 		String fullParentRegionPathName = getFullRegionPathName(getParentRegion(lowestRegion));
 		return fullParentRegionPathName + "." + lowestRegion.getName(); // Only regions are in path - states could be added too
+	}
+	
+	public static Component getReferringSubcomponent(Component rootComponent) {
+		Set<Component> imports = new LinkedHashSet<Component>();
+		
+		Queue<Component> components = new LinkedList<Component>();
+		components.add(rootComponent);
+		// Queue-based recursive approach instead of a recursive function
+		while (!components.isEmpty()) {
+			Component component = components.poll();
+			List<Component> insideComponents = StatechartModelDerivedFeatures
+					.getInstances(component).stream()
+					.map(it -> StatechartModelDerivedFeatures.getDerivedType(it))
+					.collect(Collectors.toList());
+			
+			for (Component insideComponent : insideComponents) {
+				if (insideComponent == rootComponent) {
+					return component;
+				}
+				// To counter possible inconsistent import hierarchies
+				if (!imports.contains(insideComponent)) {
+					components.add(insideComponent);
+				}
+			}
+			
+			imports.addAll(insideComponents);
+		}
+		
+		return null;
 	}
 	
 	public static StatechartDefinition getContainingStatechart(EObject object) {
