@@ -1,0 +1,59 @@
+package normal
+import "/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd"
+import "/hu.bme.mit.gamma.tutorial.contract.finish/model/Crossroad.gcd"
+import "/hu.bme.mit.gamma.tutorial.contract.finish/contract/phase/Init.gcd"
+import "/hu.bme.mit.gamma.tutorial.contract.finish/contract/phase/Blinking.gcd"
+import "/hu.bme.mit.gamma.tutorial.contract.finish/contract/adaptive/Crossroads.gcd"
+@TransitionPriority = value-based
+@ScenarioContractStatechart = Crossroads (permissive)
+statechart Normal [
+	port police : requires PoliceInterrupt
+	port policeREVERSED : provides PoliceInterrupt
+	port priorityOutput : provides LightCommands
+	port priorityOutputREVERSED : requires LightCommands
+	port secondaryOutput : provides LightCommands
+	port secondaryOutputREVERSED : requires LightCommands
+] {
+	timeout delay0
+	timeout delay1
+	timeout delay2
+	region ^region {
+		initial Initial
+		state firstState
+		state hotComponentViolation
+		state state0 {
+			entry /
+			set delay0 := 1000 ms;
+		}
+		state state1 {
+			entry /
+			set delay1 := 2000 ms;
+		}
+		state state2 {
+			entry /
+			set delay2 := 1000 ms;
+		}
+		@SpecialStateAnnotation accepting
+		state AcceptingState
+	}
+	transition from Initial to firstState
+	transition (3) from firstState to state0 when priorityOutputREVERSED.displayYellow /
+	raise priorityOutput.displayYellow;
+	transition (1) from firstState to hotComponentViolation when any
+	transition (3) from state0 to state1 when timeout delay0 && priorityOutputREVERSED.displayRed &&
+		secondaryOutputREVERSED.displayGreen
+	/
+	raise priorityOutput.displayRed;
+	raise secondaryOutput.displayGreen;
+	transition (1) from state0 to hotComponentViolation when any
+	transition (3) from state1 to state2 when timeout delay1 && secondaryOutputREVERSED.displayYellow
+		/
+	raise secondaryOutput.displayYellow;
+	transition (1) from state1 to hotComponentViolation when any
+	transition (3) from state2 to AcceptingState when timeout delay2 &&
+		priorityOutputREVERSED.displayGreen && secondaryOutputREVERSED.displayRed
+	/
+	raise priorityOutput.displayGreen;
+	raise secondaryOutput.displayRed;
+	transition (1) from state2 to hotComponentViolation when any
+}

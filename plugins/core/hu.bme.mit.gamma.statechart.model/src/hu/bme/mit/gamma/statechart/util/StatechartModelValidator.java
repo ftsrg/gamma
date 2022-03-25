@@ -17,9 +17,12 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Queue;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -1289,32 +1292,41 @@ public class StatechartModelValidator extends ActionModelValidator {
 	}
 	
 	
-	public Collection<ValidationResultMessage> checkCircularDependencies(Package statechart) {
+	public Collection<ValidationResultMessage> checkCircularDependencies(Package _package) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		for (Package referredStatechart : statechart.getImports()) {
-			Package parentStatechart = getReferredPackages(statechart, referredStatechart);
-			if (parentStatechart != null) {
-				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-					"This statechart is in a dependency circle, referred by " + parentStatechart.getName() +
-						", composite systems must have an acyclical dependency hierarchy",
+		Package referringPackage = getReferringPackages(_package);
+		if (referringPackage != null) {
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+				"This package is in a dependency circle, referred by package " + referringPackage.getName() +
+					", composite systems must have an acyclical dependency hierarchy",
 						new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME)));
 			}
-		}
 		return validationResultMessages;
 	}
 	
-	public Package getReferredPackages(Package initialStatechart, Package statechart) {
-		for (Package referredStatechart : statechart.getImports()) {
-			if (referredStatechart == initialStatechart) {
-				return statechart;
+	public Package getReferringPackages(Package rootPackage) {
+		Set<Package> imports = new LinkedHashSet<Package>();
+		
+		Queue<Package> packages = new LinkedList<Package>();
+		packages.add(rootPackage);
+		// Queue-based recursive approach instead of a recursive function
+		while (!packages.isEmpty()) {
+			Package _package = packages.poll();
+			List<Package> insideImports = _package.getImports();
+			
+			for (Package insideImport : insideImports) {
+				if (insideImport == rootPackage) {
+					return _package;
+				}
+				// To counter possible inconsistent import hierarchies
+				if (!imports.contains(insideImport)) {
+					packages.add(insideImport);
+				}
 			}
+			
+			imports.addAll(insideImports);
 		}
-		for (Package referredStatechart : statechart.getImports()) {
-			Package parentStatechart = getReferredPackages(initialStatechart, referredStatechart);
-			if (parentStatechart != null) {
-				return parentStatechart;
-			}
-		}
+		
 		return null;
 	}
 	
@@ -1367,23 +1379,6 @@ public class StatechartModelValidator extends ActionModelValidator {
 		return validationResultMessages;
 	}
 	
-	public Collection<ValidationResultMessage> checkPortBinding(Port port) {
-		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		Component container = (Component) port.eContainer();
-		if (container instanceof CompositeComponent) {
-			CompositeComponent componentDefinition = (CompositeComponent) container;
-			for (PortBinding portDefinition : componentDefinition.getPortBindings()) {
-				if (portDefinition.getCompositeSystemPort() == port) {
-					return validationResultMessages;
-				}
-			}
-			validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING, 
-					"This system port is not connected to any ports of an instance",
-					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME)));
-		}
-		return validationResultMessages;
-	}
-	
 	public Collection<ValidationResultMessage> checkComponentInstances(ComponentInstance instance) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		Component type = StatechartModelDerivedFeatures.getContainingComponent(instance);
@@ -1425,26 +1420,45 @@ public class StatechartModelValidator extends ActionModelValidator {
 		return validationResultMessages;
 	}
 	
-	public Collection<ValidationResultMessage> checkPortBinding(PortBinding portDefinition) {
+	public Collection<ValidationResultMessage> checkPortBinding(PortBinding portBinding) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		InterfaceRealization compositeInterfaceRealization = portDefinition.getCompositeSystemPort().getInterfaceRealization();
-		InterfaceRealization instanceInterfaceRealization = portDefinition.getInstancePortReference().getPort().getInterfaceRealization();
-		RealizationMode systemPortIT = compositeInterfaceRealization.getRealizationMode();
-		RealizationMode instancePortIT = instanceInterfaceRealization.getRealizationMode();
-		Interface systemPortIf = compositeInterfaceRealization.getInterface();
-		Interface instancePortIf = instanceInterfaceRealization.getInterface(); 
-		if (systemPortIT != instancePortIT) {
+		InterfaceRealization compositeInterfaceRealization = portBinding
+				.getCompositeSystemPort().getInterfaceRealization();
+		InterfaceRealization instanceInterfaceRealization = portBinding
+				.getInstancePortReference()	.getPort().getInterfaceRealization();
+		RealizationMode systemPortRealizationMode = compositeInterfaceRealization.getRealizationMode();
+		RealizationMode instancePortRealizationMode = instanceInterfaceRealization.getRealizationMode();
+		Interface systemPortInterface = compositeInterfaceRealization.getInterface();
+		Interface instancePortInterface = instanceInterfaceRealization.getInterface(); 
+		if (systemPortRealizationMode != instancePortRealizationMode) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 				"Ports can be connected only if their interface types match and this is not realized in this case: " +
-					systemPortIT.getName() + " -> " + instancePortIT.getName(),
-					new ReferenceInfo(CompositeModelPackage.Literals.PORT_BINDING__INSTANCE_PORT_REFERENCE)));
+					systemPortRealizationMode.getName() + " -> " + instancePortRealizationMode.getName(),
+						new ReferenceInfo(CompositeModelPackage.Literals.PORT_BINDING__INSTANCE_PORT_REFERENCE)));
 		}	
-		if (systemPortIf != instancePortIf) {
+		if (systemPortInterface != instancePortInterface) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 				"Ports can be connected only if their interfaces match and this is not realized in this case: " + 
-					systemPortIf.getName() + " -> " + instancePortIf.getName(),
-					new ReferenceInfo(CompositeModelPackage.Literals.PORT_BINDING__INSTANCE_PORT_REFERENCE)));
+					systemPortInterface.getName() + " -> " + instancePortInterface.getName(),
+						new ReferenceInfo(CompositeModelPackage.Literals.PORT_BINDING__INSTANCE_PORT_REFERENCE)));
 		}	
+		return validationResultMessages;
+	}
+	
+	public Collection<ValidationResultMessage> checkPortBinding(Port port) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		Component container = StatechartModelDerivedFeatures.getContainingComponent(port);
+		if (container instanceof CompositeComponent) {
+			CompositeComponent componentDefinition = (CompositeComponent) container;
+			for (PortBinding portDefinition : componentDefinition.getPortBindings()) {
+				if (portDefinition.getCompositeSystemPort() == port) {
+					return validationResultMessages;
+				}
+			}
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING, 
+				"This system port is not connected to any ports of an instance",
+					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME)));
+		}
 		return validationResultMessages;
 	}
 	

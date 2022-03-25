@@ -50,18 +50,11 @@ class ScenarioStatechartTraceGenerator {
 	String absoluteParentFolder
 
 	Package _package
-	
-	ScenarioAllowedWaitAnnotation annotation
-	
+		
 	new(StatechartDefinition statechart, int schedulingConstraint) {
-		this(statechart, schedulingConstraint, null);
-	}
-
-	new(StatechartDefinition sd, int schedulingConstraint, ScenarioAllowedWaitAnnotation annotation) {
 		this.schedulingConstraint = schedulingConstraint
-		this.statechart = sd
+		this.statechart = statechart
 		this._package = statechart.containingPackage
-		this.annotation = annotation
 	}
 
 	def List<ExecutionTrace> execute() {
@@ -101,7 +94,7 @@ class ScenarioStatechartTraceGenerator {
 		val statechartName = statechart.name.toFirstUpper
 
 		val packageFileName = fileNamer.getUnfoldedPackageFileName(fileName)
-		val parameters = '''--refinement "MULTI_SEQ" --domain "EXPL" --initprec "ALLVARS" '''
+		val parameters = '''--refinement "MULTI_SEQ" --domain "EXPL" --initprec "ALLVARS" --allpaths'''
 		val query = '''E<> ((«regionName + "_" + statechartName» == «scenarioStatechartUtil.accepting»))'''
 		val gammaPackage = ecoreUtil.normalLoad(modelFile.parent, packageFileName)
 

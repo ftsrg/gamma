@@ -145,7 +145,7 @@ class FileUtil {
 	}
 	
 	def toFile(IResource resource) {
-		return resource.fullPath.toFile
+		return resource.location.toFile
 	}
 	
 	def void forceDelete(File file) {

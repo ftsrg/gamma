@@ -20,10 +20,18 @@ public class ScenarioStatechartUtil {
 
 	protected ScenarioStatechartUtil() {
 	}
-	
+
+	protected final String hotComponentViolation = "hotComponentViolation";
+
+	protected final String hotEnvironmentViolation = "hotEnvironmentViolation";
+
 	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
 
-	private final String reversed = "REVERSED";
+	private final String stateName = "state";
+
+	private final String choiceName = "Choice";
+
+	private final String reversed = "Reversed";
 
 	private final String coldViolation = "coldViolation";
 
@@ -32,12 +40,36 @@ public class ScenarioStatechartUtil {
 	private final String Accepting = "AcceptingState";
 
 	private final String initial = "Initial";
-	
+
 	private final String LoopVariable = "LoopIteratingVariable";
 
 	private final String result = "result";
-	
+
 	private final String IteratingVariable = "IteratingVariable";
+
+	private final String firstRegionName = "region";
+
+	private final String firstStateName = "firstState";
+
+	private final String mergeName = "merge";
+	
+	private final String delayName = "delay";
+	
+	public String getDelayName(int delayCount) {
+		return delayName + delayCount;
+	}
+
+	public String getMergeName() {
+		return mergeName;
+	}
+
+	public String getFirstStateName() {
+		return firstStateName;
+	}
+
+	public String getFirstRegionName() {
+		return firstRegionName;
+	}
 
 	public String getIteratingVariable() {
 		return IteratingVariable;
@@ -51,11 +83,11 @@ public class ScenarioStatechartUtil {
 		return p.getName().endsWith(reversed);
 	}
 
-	public String getTurnedOutPortName(Port p) {
-		if (isTurnedOut(p)) {
-			return p.getName().substring(0, p.getName().length() - reversed.length());
+	public String getTurnedOutPortName(Port port) {
+		if (isTurnedOut(port)) {
+			return port.getName().substring(0, port.getName().length() - reversed.length());
 		}
-		return p.getName() + reversed;
+		return port.getName() + reversed;
 	}
 
 	public String getColdViolation() {
@@ -66,6 +98,14 @@ public class ScenarioStatechartUtil {
 		return hotViolation;
 	}
 
+	public String getStateName() {
+		return stateName;
+	}
+
+	public String getChoiceName() {
+		return choiceName;
+	}
+
 	public String getAccepting() {
 		return Accepting;
 	}
@@ -73,13 +113,25 @@ public class ScenarioStatechartUtil {
 	public String getInitial() {
 		return initial;
 	}
-	
+
 	public int getLoopDepth(LoopCombinedFragment loop) {
 		return ecoreUtil.getAllContainersOfType(loop, LoopCombinedFragment.class).size();
 	}
-	
+
 	public String getLoopvariableNameForDepth(int depth) {
 		return LoopVariable + depth;
+	}
+
+	public String getHotComponentViolation() {
+		return hotComponentViolation;
+	}
+
+	public String getHotEnvironmentViolation() {
+		return hotEnvironmentViolation;
+	}
+	
+	public String getCombinedStateAcceptingName(String name) {
+		return name + "__" + Accepting;
 	}
 
 }

@@ -10,6 +10,9 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.transformation.util
 
+import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
+import hu.bme.mit.gamma.expression.model.Expression
+import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.interface_.Component
@@ -34,6 +37,7 @@ import java.util.logging.Level
 import java.util.logging.Logger
 
 import static com.google.common.base.Preconditions.checkArgument
+import static com.google.common.base.Preconditions.checkNotNull
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
@@ -41,6 +45,8 @@ class UnfoldedExecutionTraceBackAnnotator {
 	
 	protected final ExecutionTrace trace
 	protected final Component originalTopComponent
+	
+	//
 	
 	protected final List<Assert> dummyAsserts = newArrayList
 	
@@ -53,6 +59,7 @@ class UnfoldedExecutionTraceBackAnnotator {
 	protected final Logger logger = Logger.getLogger("GammaLogger")
 	
 	new(ExecutionTrace trace, Component originalTopComponent) {
+		checkNotNull(originalTopComponent)
 		checkArgument(!originalTopComponent.statechart,
 			"The original component cannot be a statechart")
 		this.trace = trace
@@ -65,7 +72,7 @@ class UnfoldedExecutionTraceBackAnnotator {
 			it.annotations += trace.annotations.map[it.clone] // References not expected
 			it.name = trace.name
 			it.component = originalTopComponent
-			it.arguments += trace.arguments.map[it.clone]
+			it.arguments += trace.arguments.map[it.transformExpression]
 		]
 		
 		val steps = trace.steps
@@ -117,10 +124,11 @@ class UnfoldedExecutionTraceBackAnnotator {
 	protected def dispatch transformAct(RaiseEventAct act) {
 		return createRaiseEventAct => [
 			it.port = originalTopComponent.getOriginalPort(act.port)
-			// Does not work if the interfaces/types are loaded into different resources
-			// Resource set and URI type (absolute/platform) must match
-			it.event = act.event
-			it.arguments += act.arguments.map[it.clone]
+			// Works if the interfaces/types are loaded into different resources
+			// even when resource set and URI type (absolute/platform) must match
+			it.event = originalTopComponent.getOriginalEvent(act.event)
+			it.arguments += act.arguments
+					.map[it.transformExpression]
 		]
 	}
 	
@@ -163,9 +171,7 @@ class UnfoldedExecutionTraceBackAnnotator {
 		val variableState = createInstanceVariableState => [
 			it.instance = originalInstance
 			it.declaration = originalVariable
-			// Does not work if the types (enums) are loaded into different resources
-			// Resource set and URI type (absolute/platform) must match
-			it.value = assert.value.clone
+			it.value = assert.value.transformExpression
 		]
 		if (originalVariable === null) {
 			dummyAsserts += variableState
@@ -191,7 +197,30 @@ class UnfoldedExecutionTraceBackAnnotator {
 		]
 	}
 	
-	// 
+	//
+	
+	protected def transformExpression(Expression value) {
+		val clonedValue = value.clone
+		
+		val typeReferences = clonedValue.getSelfAndAllContentsOfType(TypeReference)
+		for (typeReference : typeReferences) {
+			val typeDeclaration = typeReference.reference
+			val originalTypeDeclaration = originalTopComponent
+					.getOriginalTypeDeclaration(typeDeclaration)
+			typeReference.reference = originalTypeDeclaration
+		}
+		// Enum literal setting in addition to the type reference setting
+		if (clonedValue instanceof EnumerationLiteralExpression) {
+			val enumLiteral = clonedValue.reference
+			val originalEnumLiteral = originalTopComponent
+					.getOriginalEnumLiteral(enumLiteral)
+			clonedValue.reference = originalEnumLiteral
+		}
+		
+		return clonedValue
+	}
+	
+	//
 	
 	protected def removeDummyAsserts() {
 		dummyAsserts.removeContainmentChains(Assert)

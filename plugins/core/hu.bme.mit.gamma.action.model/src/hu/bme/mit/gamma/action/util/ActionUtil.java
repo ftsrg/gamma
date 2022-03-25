@@ -22,6 +22,7 @@ import hu.bme.mit.gamma.action.model.ActionModelFactory;
 import hu.bme.mit.gamma.action.model.AssignmentStatement;
 import hu.bme.mit.gamma.action.model.Block;
 import hu.bme.mit.gamma.action.model.Branch;
+import hu.bme.mit.gamma.action.model.EmptyStatement;
 import hu.bme.mit.gamma.action.model.IfStatement;
 import hu.bme.mit.gamma.action.model.SwitchStatement;
 import hu.bme.mit.gamma.action.model.VariableDeclarationStatement;
@@ -56,6 +57,19 @@ public class ActionUtil extends ExpressionUtil {
 			return getDeclaration(lhs);
 		}
 		return (Declaration) ecoreUtil.getSelfOrContainerOfType(context, InitializableElement.class);
+	}
+	
+	//
+	
+	public void removeEmptyStatements(Action action) {
+		if (action == null) {
+			return;
+		}
+		List<EmptyStatement> emptyStatements = ecoreUtil
+				.getSelfAndAllContentsOfType(action, EmptyStatement.class);
+		for (EmptyStatement emptyStatement : emptyStatements) {
+			ecoreUtil.remove(emptyStatement);
+		}
 	}
 	
 	//

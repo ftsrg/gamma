@@ -18,9 +18,11 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.Queue;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -178,6 +180,10 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return isBroadcastMatcher(port.getInterfaceRealization());
 	}
 	
+	public static boolean isProvided(InstancePortReference port) {
+		return isProvided(port.getPort());
+	}
+	
 	public static boolean isProvided(Port port) {
 		return isProvided(port.getInterfaceRealization());
 	}
@@ -267,6 +273,17 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return importablePackages;
 	}
 	
+	public static Set<Package> getImportablePackages(Package _package) {
+		Set<Package> importablePackages = new LinkedHashSet<Package>();
+
+		for (Component component : _package.getComponents()) {
+			importablePackages.addAll(
+					getImportablePackages(component));
+		}
+		
+		return importablePackages;
+	}
+	
 	public static Set<Package> getImportableTypeDeclarationPackages(Component component) {
 		Package _package = getContainingPackage(component);
 		return getImportableTypeDeclarationPackages(_package);
@@ -294,17 +311,47 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return imports;
 	}
 	
-	public static Set<Package> getAllImports(Package gammaPackage) {
+	public static Set<Package> getComponentImports(Package gammaPackage) {
 		Set<Package> imports = new HashSet<Package>();
 		imports.addAll(gammaPackage.getImports());
 		for (Component component : gammaPackage.getComponents()) {
 			for (ComponentInstance componentInstance : getAllInstances(component)) {
 				Component type = getDerivedType(componentInstance);
 				Package referencedPackage = getContainingPackage(type);
-				imports.add(referencedPackage);
-				imports.addAll(referencedPackage.getImports());
+				imports.addAll(
+						getSelfAndImports(referencedPackage));
 			}
 		}
+		return imports;
+	}
+	
+	public static Set<Package> getSelfAndAllImports(Package gammaPackage) {
+		Set<Package> imports = new LinkedHashSet<Package>();
+		imports.add(gammaPackage);
+		imports.addAll(getAllImports(gammaPackage));
+		return imports;
+	}
+	
+	public static Set<Package> getAllImports(Package gammaPackage) {
+		Set<Package> imports = new LinkedHashSet<Package>();
+		
+		Queue<Package> packages = new LinkedList<Package>();
+		packages.add(gammaPackage);
+		// Queue-based recursive approach instead of a recursive function
+		while (!packages.isEmpty()) {
+			Package _package = packages.poll();
+			List<Package> insideImports = _package.getImports();
+			
+			for (Package insideImport : insideImports) {
+				// To counter possible inconsistent import hierarchies
+				if (!imports.contains(insideImport)) {
+					packages.add(insideImport);
+				}
+			}
+			
+			imports.addAll(insideImports);
+		}
+		
 		return imports;
 	}
 	
@@ -574,6 +621,10 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	public static EventDeclaration getContainingEventDeclaration(Event event) {
 		return (EventDeclaration) event.eContainer();
+	}
+	
+	public static Interface getContainingInterface(Event event) {
+		return ecoreUtil.getContainerOfType(event, Interface.class);
 	}
 	
 	public static List<EventDeclaration> getAllEventDeclarations(Port port) {
@@ -1920,20 +1971,29 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return ecoreUtil.getContainerOfType(reference, ComponentInstanceReference.class);
 	}
 	
-	public static ComponentInstanceReference getFirstInstance(ComponentInstanceReference reference) {
+	public static ComponentInstanceReference getFirstInstanceReference(
+			ComponentInstanceReference reference) {
 		ComponentInstanceReference parent = getParent(reference);
 		if (parent == null) {
 			return reference;
 		}
-		return getFirstInstance(parent);
+		return getFirstInstanceReference(parent);
+	}
+	
+	public static ComponentInstanceReference getLastInstanceReference(
+			ComponentInstanceReference reference) {
+		ComponentInstanceReference child = reference.getChild();
+		if (child == null) {
+			return reference;
+		}
+		return getLastInstanceReference(child);
 	}
 	
 	public static ComponentInstance getLastInstance(ComponentInstanceReference reference) {
-		ComponentInstanceReference child = reference.getChild();
-		if (child == null) {
-			return reference.getComponentInstance();
-		}
-		return getLastInstance(child);
+		ComponentInstanceReference lastInstanceReference =
+				getLastInstanceReference(reference);
+		ComponentInstance lastInstance = lastInstanceReference.getComponentInstance();
+		return lastInstance;
 	}
 	
 	public static boolean isFirst(ComponentInstanceReference reference) {

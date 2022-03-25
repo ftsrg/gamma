@@ -42,7 +42,9 @@ Statement returns ActionModel::Statement:
 ;
 
 InlineStatement returns ActionModel::Statement:
-	(VariableDeclarationStatement |
+	(
+	
+	VariableDeclarationStatement |
 	ConstantDeclarationStatement |
 	
 	ReturnStatement |
@@ -51,7 +53,9 @@ InlineStatement returns ActionModel::Statement:
 	=>AssignmentStatement |
 	 
 	AssertionStatement |
-	ExpressionStatement 
+	ExpressionStatement |
+	EmptyStatement
+	
 	)
 	
 	';'
@@ -75,6 +79,10 @@ ConstantDeclarationStatement returns ActionModel::ConstantDeclarationStatement:
 
 ExpressionStatement returns ActionModel::ExpressionStatement:
 	expression=Expression
+;
+
+EmptyStatement returns ActionModel::EmptyStatement:
+	{ActionModel::EmptyStatement} 'no' 'operation'
 ;
 
 IfBranch returns ActionModel::Branch:
@@ -116,8 +124,7 @@ IfStatement returns ActionModel::IfStatement:
 ;
 
 SwitchStatement returns ActionModel::SwitchStatement:
-	'switch' '(' controlExpression=Expression ')'
-	'{'
+	'switch' '(' controlExpression=Expression ')' '{'
 	('case' cases+=SwitchBranch ('case' cases+=SwitchBranch)*)
 	(cases+=DefaultBranch)?
 	'}'
@@ -138,8 +145,7 @@ BreakStatement returns ActionModel::BreakStatement:
 ;
 
 ChoiceStatement returns ActionModel::ChoiceStatement:
-	'choice'
-	'{'
+	'choice' '{'
 	('branch' branches+=ChoiceBranch ('branch' branches+=ChoiceBranch)*)
 	'}'
 ;

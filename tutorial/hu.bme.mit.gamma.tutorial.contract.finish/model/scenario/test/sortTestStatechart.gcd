@@ -1,0 +1,41 @@
+package sorttest
+import "/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd"
+import "/hu.bme.mit.gamma.tutorial.contract.finish/model/Controller/Controller.gcd"
+@TransitionPriority = value-based
+@ScenarioContractStatechart = Controller (permissive)
+statechart sortTest [
+	port PoliceInterrupt : requires PoliceInterrupt
+	port PoliceInterruptREVERSED : provides PoliceInterrupt
+	port SecondaryPolice : provides PoliceInterrupt
+	port SecondaryPoliceREVERSED : requires PoliceInterrupt
+	port SecondaryControl : provides Control
+	port SecondaryControlREVERSED : requires Control
+	port PriorityControl : provides Control
+	port PriorityControlREVERSED : requires Control
+	port PriorityPolice : provides PoliceInterrupt
+	port PriorityPoliceREVERSED : requires PoliceInterrupt
+] {
+	region ^region {
+		initial Initial
+		state firstState
+		state hotComponentViolation
+		state merge0
+		@SpecialStateAnnotation accepting
+		state AcceptingState
+		state state2__state0
+	}
+	transition from Initial to firstState
+	transition (3) from firstState to state2__state0 when PriorityPoliceREVERSED.police &&
+		SecondaryPoliceREVERSED.police /
+	raise PriorityPolice.police;
+	raise SecondaryPolice.police;
+	transition (1) from firstState to hotComponentViolation when any
+	transition (3) from merge0 to AcceptingState when PriorityControlREVERSED.toggle /
+	raise PriorityControl.toggle;
+	transition (1) from merge0 to hotComponentViolation when any
+	transition (1) from state2__state0 to hotComponentViolation when any
+	transition (3) from state2__state0 to merge0 when SecondaryPoliceREVERSED.police /
+	raise SecondaryPolice.police;
+	transition (3) from state2__state0 to merge0 when PriorityControlREVERSED.toggle /
+	raise PriorityControl.toggle;
+}

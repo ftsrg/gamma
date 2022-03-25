@@ -372,10 +372,17 @@ StatechartContractTestGeneration returns StatechartContractTestGeneration:
 StatechartContractGeneration returns StatechartContractGeneration:
 	{StatechartContractGeneration} 
 	'statechart-contract' '{'
-		 'scenario' ':' scenario= [scenario::ScenarioDefinition]
-		 ('folder' ':' targetFolder+=STRING)?
-		 ('name' ':' fileName+=STRING)?
+	 'scenario' ':' scenario= [scenario::ScenarioDefinition] ('(' arguments+=Expression  (',' arguments+=Expression )* ')')?
+	 ('folder' ':' targetFolder+=STRING)?
+	 ('name' ':' fileName+=STRING)?
+	 ('restart-on-cold-violation' ':' StartAsColdViolation=BOOLEAN)?
+	 ('loop-for-interaction' ':' UseIteratingVariable=BOOLEAN)?
+	 ('automaton-type' ':' AutomatonType=ContractAutomatonType)?
 	'}'
+;
+
+enum ContractAutomatonType returns  ContractAutomatonType:
+	MONITOR = 'monitor' | TEST = 'test'
 ;
 
 PhaseStatechartGeneration returns PhaseStatechartGeneration:

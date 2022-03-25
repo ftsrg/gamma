@@ -15,13 +15,13 @@ import "http://www.mit.bme.hu/gamma/scenario/Model" as ScenarioModel
 import "http://www.mit.bme.hu/gamma/statechart/Model/Interface" as InterfaceModel
 
 ScenarioDeclaration returns ScenarioModel::ScenarioDeclaration:
-	'import' package=[InterfaceModel::Package|STRING]
+	('import' imports+=[InterfaceModel::Package|STRING])*
 	'component' component=[InterfaceModel::Component]
 	(scenarios+=ScenarioDefinition)+;
 
 ScenarioDefinition returns ScenarioModel::ScenarioDefinition:
 	annotation+=Annotations*
-	'scenario' name=ID
+	'scenario' name=ID ('('(parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*')')? 
 	(initialblock=InitialBlock)?
 	chart=Chart;
 	
@@ -32,13 +32,7 @@ InitialBlock returns ScenarioModel::InitialBlock:
 
 Annotations returns ScenarioModel::Annotation:
 	AllowedWaitAnnotation | PermissiveAnnotation | StrictAnnotation | NegatedWaitAnnotation | NegStrictAnnotation |
-	NegPermissiveAnnotation | DedicatedColdViolationAnnotation | StartAsColdViolationAnnotation;
-
-StartAsColdViolationAnnotation returns ScenarioModel::StartAsColdViolationAnnotation:
-	{ScenarioModel::StartAsColdViolationAnnotation} '@StartAsColdViolation';
-
-DedicatedColdViolationAnnotation returns ScenarioModel::DedicatedColdViolationAnnotation:
-	{ScenarioModel::DedicatedColdViolationAnnotation} '@DedicatedColdViolation';
+	NegPermissiveAnnotation;
 
 NegStrictAnnotation returns ScenarioModel::NegStrictAnnotation:
 	{ScenarioModel::NegStrictAnnotation} '@StrictNeg';
@@ -51,13 +45,13 @@ StrictAnnotation returns ScenarioModel::StrictAnnotation:
 	
 
 NegatedWaitAnnotation returns ScenarioModel::NegatedWaitAnnotation:
-	"@AllowedWaitingForNegated" ((minimum=INTEGER ".." maximum=INTEGER) | maximum=INTEGER);
+	"@AllowedWaitingForNegated" (minimum=Expression )? ".." maximum=Expression;
 
 PermissiveAnnotation returns ScenarioModel::PermissiveAnnotation:
 	{ScenarioModel::PermissiveAnnotation} '@Permissive';
 
 AllowedWaitAnnotation returns ScenarioModel::WaitAnnotation:
-	"@AllowedWaiting" ((minimum=INTEGER ".." maximum=INTEGER) | maximum=INTEGER);
+	"@AllowedWaiting" (minimum=Expression)? ".." maximum=Expression;
 
 Chart returns ScenarioModel::Chart:
 	'['
@@ -68,7 +62,12 @@ FragmentDefinition returns ScenarioModel::InteractionFragment:
 	(interactions+=AbstractInteraction)+;
 
 AbstractInteraction returns ScenarioModel::Interaction:
-	CombinedFragment | AbstractInteractionDefinition;
+	CombinedFragment | AbstractInteractionDefinition | ScenarioReference;
+
+ScenarioReference returns ScenarioModel::ScenarioDefinitionReference:
+	{ScenarioModel::ScenarioDefinitionReference}
+	'call' scenarioDefinition=[ScenarioModel::ScenarioDefinition]
+	('('arguments+=Expression(',' arguments+=Expression)*')')?;
 
 AbstractInteractionDefinition returns ScenarioModel::InteractionDefinition:
 	ModalInteraction | NegatedModalInteraction | ModalInteractionSet;
@@ -84,7 +83,7 @@ Negateable returns ScenarioModel::InteractionDefinition:
 	ModalInteractionSet | SignalDefinition;
 
 ModalInteraction returns ScenarioModel::ModalInteraction:
-	SignalDefinition | Reset | Delay;
+	SignalDefinition | Delay;
 
 ModalInteractionSet returns ScenarioModel::ModalInteractionSet:
 	{ScenarioModel::ModalInteractionSet}
@@ -95,9 +94,6 @@ ModalInteractionSet returns ScenarioModel::ModalInteractionSet:
 SignalDefinition returns ScenarioModel::Signal:
 	modality=ModalityDefinition direction=InteractionDirectionDefinition port=[InterfaceModel::Port] '.'
 	event=[InterfaceModel::Event] ('(' arguments+=Expression (',' arguments+=Expression)* ')')?;
-
-Reset returns ScenarioModel::Reset:
-	{ScenarioModel::Reset} modality=ModalityDefinition 'reset';
 
 Delay returns ScenarioModel::Delay:
 	modality=ModalityDefinition 'delay' '(' minimum=Expression ('..' maximum=Expression)? ')';
@@ -120,10 +116,5 @@ LoopCombinedFragmentDefinition returns ScenarioModel::LoopCombinedFragment:
 enum InteractionDirectionDefinition returns ScenarioModel::InteractionDirection:
 	SEND='sends' | RECEIVE='receives';
 
-enum ReceiveDirectionDefinition returns ScenarioModel::InteractionDirection:
-	RECEIVE='receives';
-
 enum ModalityDefinition returns ScenarioModel::ModalityType:
 	COLD='cold' | HOT='hot';
-	
-	

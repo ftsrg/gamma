@@ -16,6 +16,7 @@ import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.io.File
 import org.eclipse.emf.ecore.resource.Resource
 
+import static com.google.common.base.Preconditions.checkNotNull
 import static com.google.common.base.Preconditions.checkState
 
 class StatechartEcoreUtil {
@@ -42,7 +43,7 @@ class StatechartEcoreUtil {
 		val unfoldedResource = unfoldedComponent.eResource
 		val unfoldedResourceSet = unfoldedResource.resourceSet
 		val resources = unfoldedResourceSet.resources
-		resources -= unfoldedResource // Removing unfolded component resource from the resource set!
+		resources -= unfoldedResource // Necessary?
 		
 		// Does not work if the interfaces/types are loaded into different resources
 		// Resource set and URI type (absolute/platform) must match
@@ -50,9 +51,14 @@ class StatechartEcoreUtil {
 		val matchResource = (resources.nullOrEmpty) ? unfoldedResource : resources.head
 		
 		val originalMatchedUri = originalComponentAbsoluteUri.matchUri(matchResource)
+		// Is this 'URI matching' necessary? So far, it has not worked and the problem
+		// (that is, the interfaces are reloaded twice into the resource set -
+		// file-URI for unfolded and and platform-URI for the original package)
+		// has been solved by back-annotating the events, too
 		
 		val originalPackage = originalMatchedUri.normalLoad(unfoldedResourceSet) as Package
 		val originalComponent = originalPackage.components.findFirst[it.name == unfoldedComponent.name]
+		checkNotNull(originalComponent)
 		
 		return originalComponent
 	}

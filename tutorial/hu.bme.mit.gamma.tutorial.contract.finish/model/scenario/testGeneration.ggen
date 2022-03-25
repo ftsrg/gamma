@@ -1,19 +1,34 @@
 import "policebehaviour"
 
 statechart-contract {
-	scenario : PoliceBehaviour 
-	folder : "model/scenario"
-	name : "PoliceStatechart" 
+	scenario : sortTest 
+	folder : "model/scenario/test"
+	name : "monitor"
+	automaton-type : monitor
+}
+
+statechart-contract {
+	scenario : loopTest 
+	folder : "model/scenario/test"
+	name : "loop"
+	automaton-type : monitor
+}
+
+statechart-contract {
+	scenario : optTest 
+	folder : "model/scenario/test"
+	name : "opt"
+	automaton-type : monitor
 }
 
 
 
 
-statechart-contract-test { 
-	component : PoliceBehaviour
-	folder : "model/scenario/abstractTestFolderForPoliceBehaviour"
-	constraint : {
-		minimum-orchestrating-period :2000 ms
-		maximum-orchestrating-period : 2000 ms
-	}  
-}  
+//statechart-contract-test { 
+//	component : PoliceBehaviour
+//	folder : "model/scenario/abstractTestFolderForPoliceBehaviour"
+//	constraint : {
+//		minimum-orchestrating-period :2000 ms 
+//		maximum-orchestrating-period : 2000 ms
+//	}  
+//}  

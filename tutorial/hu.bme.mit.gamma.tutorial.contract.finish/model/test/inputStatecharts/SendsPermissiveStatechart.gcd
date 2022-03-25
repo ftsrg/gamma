@@ -1,0 +1,38 @@
+package sendspermissive
+import "/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd"
+import "/hu.bme.mit.gamma.tutorial.contract.finish/model/Controller/Controller.gcd"
+@TransitionPriority = value-based
+@ScenarioContractStatechart = Controller (permissive)
+@ScenarioAllowedWaitAnnotation = 0 .. 1
+statechart SendsPermissive [
+	port PoliceInterrupt : requires PoliceInterrupt
+	port PoliceInterruptREVERSED : provides PoliceInterrupt
+	port SecondaryPolice : provides PoliceInterrupt
+	port SecondaryPoliceREVERSED : requires PoliceInterrupt
+	port SecondaryControl : provides Control
+	port SecondaryControlREVERSED : requires Control
+	port PriorityControl : provides Control
+	port PriorityControlREVERSED : requires Control
+	port PriorityPolice : provides PoliceInterrupt
+	port PriorityPoliceREVERSED : requires PoliceInterrupt
+] {
+	var IteratingVariable : integer := 0
+	var LoopIteratingVariable0 : integer := 0
+	var result : integer := 0
+	transition from Initial to firstState /
+	IteratingVariable := 1;
+	LoopIteratingVariable0 := 1;
+	transition (3) from Choice1 to AcceptingState when PriorityPoliceREVERSED.police /
+	raise PriorityPolice.police;
+	result := 2;
+	transition (1) from Choice1 to hotViolation [else] /
+	result := 0;
+	transition from firstState to Choice1 when cycle
+	region ^region {
+		initial Initial
+		state firstState
+		state hotViolation
+		choice Choice1
+		state AcceptingState
+	}
+}
