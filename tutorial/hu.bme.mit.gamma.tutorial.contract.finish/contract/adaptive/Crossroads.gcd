@@ -3,12 +3,13 @@ package crossroad
 import "model/Interfaces/Interfaces.gcd"
 import "model/Crossroad.gcd"
 
-//import "scenario/automaton/InitStatechart"
-//import "scenario/automaton/BlinkingStatechart"
-//import "scenario/automaton/NormalStatechart"
+import "scenario/automaton/InitStatechart"
+import "scenario/automaton/BlinkingStatechart"
+import "scenario/automaton/NormalStatechart"
 
 import "contract/phase/Init"
 import "contract/phase/Blinking"
+import "contract/phase/Normal"
 
 @AdaptiveContractStatechart = Crossroads
 @PhaseStatechart 
@@ -23,7 +24,7 @@ statechart Crossroads [
 		initial Entry
 		@StatechartContract = Init
 		@Phase = [
-			no history component init : InitPhase {
+			no-history component init : InitPhase {
 				bind priorityOutput -> init.priorityOutput
 				bind secondaryOutput -> init.secondaryOutput
 			}
@@ -32,11 +33,17 @@ statechart Crossroads [
 			entry /
 			set InitTimeout := 2 s;
 		}
-//		@StatechartContract = Normal
-		state Normal
-//		@StatechartContract = Blinking
+		@StatechartContract = Normal
 		@Phase = [
-			no history component blinking : BlinkingPhase {
+			no-history component normal : NormalPhase {
+				bind priorityOutput -> normal.priorityOutput
+				bind secondaryOutput -> normal.secondaryOutput
+			}
+		]
+		state Normal
+		@StatechartContract = Blinking
+		@Phase = [
+			no-history component blinking : BlinkingPhase {
 				bind priorityOutput -> blinking.priorityOutput
 				bind secondaryOutput -> blinking.secondaryOutput
 			}
