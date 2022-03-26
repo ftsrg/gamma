@@ -287,7 +287,7 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 		
 		// Setting the component execution
 		
-		boolean hasInitialBlock = true; // TODO Still necessary
+		boolean hasInitialBlock = StatechartModelDerivedFeatures.hasInitialOutputsBlock(contract);
 		if (hasInitialBlock) {
 			cascade.getInitialExecutionList().add(
 					statechartUtil.createInstanceReference(contractInstance));
