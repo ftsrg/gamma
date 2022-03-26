@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -59,10 +59,6 @@ import hu.bme.mit.gamma.statechart.statechart.TimeoutDeclaration;
 import hu.bme.mit.gamma.statechart.statechart.Transition;
 import hu.bme.mit.gamma.statechart.util.StatechartModelValidator;
 
-/**
- * This class contains custom validation rules. 
- * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#validation
- */
 public class StatechartLanguageValidator extends AbstractStatechartLanguageValidator {
 
 	protected StatechartModelValidator statechartModelValidator = StatechartModelValidator.INSTANCE;
@@ -293,7 +289,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	
 	@Check
 	public void checkTransitionOcclusion(Transition transition) {
-		statechartModelValidator.checkTransitionOcclusion(transition);
+		handleValidationResultMessage(statechartModelValidator.checkTransitionOcclusion(transition));
 	}
 	
 	@Check
@@ -324,8 +320,10 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	}
 	
 	@Check
-	public void checkCircularDependencies(Package statechart) {
-		handleValidationResultMessage(statechartModelValidator.checkCircularDependencies(statechart));
+	public void checkCircularDependencies(Component component) {
+		if (!StatechartModelDerivedFeatures.isStatechart(component)) {
+			handleValidationResultMessage(statechartModelValidator.checkCircularDependencies(component));
+		}
 	}
 	
 	@Check
