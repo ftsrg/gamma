@@ -245,7 +245,12 @@ ComponentAnnotation returns InterfaceModel::ComponentAnnotation:
 
 StatechartContractAnnotation returns StatechartAnnotation:
 	ScenarioAllowedWaitingAnnotation | ScenarioContractAnnotation |
-	AdaptiveContractAnnotation | MissionPhaseAnnotation
+	AdaptiveContractAnnotation | MissionPhaseAnnotation | HasInitialoutpustBlockAnnotation
+;
+
+HasInitialoutpustBlockAnnotation returns ContractModel::HasInitialOutputsBlockAnnotation:
+	{ContractModel::HasInitialOutputsBlockAnnotation}
+	'@HasInitialOutputBlock'
 ;
 
 

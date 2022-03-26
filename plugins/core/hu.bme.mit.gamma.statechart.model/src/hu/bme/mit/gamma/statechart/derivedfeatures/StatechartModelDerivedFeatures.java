@@ -61,6 +61,7 @@ import hu.bme.mit.gamma.statechart.composite.SimpleChannel;
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponent;
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance;
 import hu.bme.mit.gamma.statechart.contract.AdaptiveContractAnnotation;
+import hu.bme.mit.gamma.statechart.contract.HasInitialOutputsBlockAnnotation;
 import hu.bme.mit.gamma.statechart.contract.ScenarioAllowedWaitAnnotation;
 import hu.bme.mit.gamma.statechart.interface_.AnyTrigger;
 import hu.bme.mit.gamma.statechart.interface_.Clock;
@@ -2122,6 +2123,10 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	public static boolean hasHistory(MissionPhaseStateDefinition missionPhaseStateDefinition) {
 		return missionPhaseStateDefinition.getHistory() != History.NO_HISTORY || 
 				!missionPhaseStateDefinition.getVariableBindings().isEmpty();
+	}
+	
+	public static boolean hasInitialOutputsBlock(Component component) {
+		return getComponentAnnotation(component, HasInitialOutputsBlockAnnotation.class) != null;
 	}
 
 }

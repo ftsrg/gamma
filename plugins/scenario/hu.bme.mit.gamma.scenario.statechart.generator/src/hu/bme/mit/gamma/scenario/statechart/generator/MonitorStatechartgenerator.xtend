@@ -12,10 +12,18 @@ import hu.bme.mit.gamma.scenario.model.OptionalCombinedFragment
 import hu.bme.mit.gamma.scenario.model.ScenarioDefinition
 import hu.bme.mit.gamma.statechart.contract.NotDefinedEventMode
 import hu.bme.mit.gamma.statechart.interface_.Component
+import hu.bme.mit.gamma.statechart.interface_.EventDirection
+import hu.bme.mit.gamma.statechart.interface_.EventTrigger
+import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.interface_.TimeUnit
+import hu.bme.mit.gamma.statechart.interface_.Trigger
+import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference
+import hu.bme.mit.gamma.statechart.statechart.BinaryType
+import hu.bme.mit.gamma.statechart.statechart.PortEventReference
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.StateNode
 import hu.bme.mit.gamma.statechart.statechart.TransitionPriority
+import hu.bme.mit.gamma.statechart.statechart.UnaryTrigger
 import java.math.BigInteger
 import java.util.List
 
@@ -110,6 +118,7 @@ class MonitorStatechartgenerator extends AbstractContractStatechartGeneration {
 		statechartUtil.createTransition(initial, firstState)
 
 		if (scenario.initialblock !== null) {
+			statechart.annotations += createHasInitialOutputsBlockAnnotation
 			val syncBlock = createModalInteractionSet
 			syncBlock.modalInteractions += scenario.initialblock.modalInteractions
 			scenario.chart.fragment.interactions.add(0, syncBlock)
@@ -246,7 +255,31 @@ class MonitorStatechartgenerator extends AbstractContractStatechartGeneration {
 		forwardTransition.priority = BigInteger.valueOf(3)
 		violationTransition.priority = BigInteger.valueOf(1)
 		handleArguments(set.modalInteractions, forwardTransition);
-		violationTransition.trigger = createAnyTrigger
+		val eventRefs = createOtherNegatedTriggers(set).filter(UnaryTrigger).map[it.operand].filter(EventTrigger).map [
+			it.eventReference
+		]
+		val triggersWithCorrectDir = <Trigger>newArrayList
+		for (eventRef : eventRefs) {
+			var Port port = null
+			if (eventRef instanceof PortEventReference) {
+				port = eventRef.port
+			} else if (eventRef instanceof AnyPortEventReference) {
+				port = eventRef.port
+			}
+			if ((port.isTurnedOut && isSend) || (!port.isTurnedOut && !isSend)) {
+				val trigger = createEventTrigger
+				trigger.eventReference = eventRef
+				triggersWithCorrectDir += trigger
+			} 
+		}
+		if (triggersWithCorrectDir.size > 1) {
+			violationTransition.trigger = getBinaryTriggerFromTriggers(triggersWithCorrectDir, BinaryType.OR)
+		} else if (triggersWithCorrectDir.size == 1) {
+			violationTransition.trigger = triggersWithCorrectDir.head
+		} else {
+			violationTransition.trigger = createAnyTrigger
+			violationTransition.guard = createFalseExpression
+		}
 		previousState = state
 		return
 	}

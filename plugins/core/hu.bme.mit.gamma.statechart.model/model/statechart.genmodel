@@ -116,6 +116,7 @@
     <genClasses ecoreClass="contract.ecore#//SpecialStateAnnotation">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute contract.ecore#//SpecialStateAnnotation/kind"/>
     </genClasses>
+    <genClasses ecoreClass="contract.ecore#//HasInitialOutputsBlockAnnotation"/>
   </genPackages>
   <genPackages prefix="InterfaceModel" basePackage="hu.bme.mit.gamma.statechart" ecorePackage="interface.ecore#/">
     <genEnums typeSafeEnumCompatible="false" ecoreEnum="interface.ecore#//EventDirection">

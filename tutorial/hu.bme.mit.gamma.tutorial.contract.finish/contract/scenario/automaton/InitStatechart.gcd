@@ -5,14 +5,15 @@ import "/hu.bme.mit.gamma.tutorial.contract.finish/contract/phase/Init.gcd"
 import "/hu.bme.mit.gamma.tutorial.contract.finish/contract/phase/Blinking.gcd"
 import "/hu.bme.mit.gamma.tutorial.contract.finish/contract/adaptive/Crossroads.gcd"
 @TransitionPriority = value-based
+@HasInitialOutputBlock
 @ScenarioContractStatechart = Crossroads (permissive)
 statechart Init [
 	port police : requires PoliceInterrupt
-	port policeREVERSED : provides PoliceInterrupt
+	port policeReversed : provides PoliceInterrupt
 	port priorityOutput : provides LightCommands
-	port priorityOutputREVERSED : requires LightCommands
+	port priorityOutputReversed : requires LightCommands
 	port secondaryOutput : provides LightCommands
-	port secondaryOutputREVERSED : requires LightCommands
+	port secondaryOutputReversed : requires LightCommands
 ] {
 	region ^region {
 		initial Initial
@@ -23,12 +24,17 @@ statechart Init [
 		state AcceptingState
 	}
 	transition from Initial to firstState
-	transition (3) from firstState to state0 when priorityOutputREVERSED.displayRed &&
-		secondaryOutputREVERSED.displayRed /
+	transition (3) from firstState to state0 when priorityOutputReversed.displayRed &&
+		secondaryOutputReversed.displayRed /
 	raise priorityOutput.displayRed;
 	raise secondaryOutput.displayRed;
-	transition (1) from firstState to firstState when any
-	transition (3) from state0 to AcceptingState when priorityOutputREVERSED.displayGreen /
+	transition (1) from firstState to firstState when priorityOutputReversed.displayYellow ||
+		priorityOutputReversed.displayGreen || priorityOutputReversed.displayNone ||
+		secondaryOutputReversed.displayYellow || secondaryOutputReversed.displayGreen ||
+		secondaryOutputReversed.displayNone
+	transition (3) from state0 to AcceptingState when priorityOutputReversed.displayGreen /
 	raise priorityOutput.displayGreen;
-	transition (1) from state0 to hotComponentViolation when any
+	transition (1) from state0 to hotComponentViolation when priorityOutputReversed.displayRed ||
+		priorityOutputReversed.displayYellow || priorityOutputReversed.displayNone ||
+		secondaryOutputReversed.any
 }
