@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2021 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -17,12 +17,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Queue;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -567,8 +564,8 @@ public class StatechartModelValidator extends ActionModelValidator {
 		if (transition.getPriority() != null && !transition.getPriority().equals(BigInteger.ZERO) &&
 				statechart.getTransitionPriority() != TransitionPriority.VALUE_BASED) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING,
-				"The transition priority setting is not set to value-based, it is set to " + statechart.getTransitionPriority() +
-					" therefore this priority specification has no effect",  
+				"The transition priority setting is not set to value-based, it is set to " +
+					 statechart.getTransitionPriority() + " therefore this priority specification has no effect",  
 						new ReferenceInfo(CompositeModelPackage.Literals.PRIORITIZED_ELEMENT__PRIORITY)));
 		}
 		return validationResultMessages;
@@ -775,18 +772,18 @@ public class StatechartModelValidator extends ActionModelValidator {
 		if (incomingTransitions.stream().map(it -> it.getSourceState()).anyMatch(it -> !(it instanceof EntryState) &&
 				StatechartModelDerivedFeatures.getParentRegion(it) == parentRegion)) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-					"Entry nodes must not have incoming transitions from non-entry nodes in the same region", 
+				"Entry nodes must not have incoming transitions from non-entry nodes in the same region", 
 					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME)));
 		}
 		if (incomingTransitions.stream().map(it -> it.getSourceState()).anyMatch(it -> it instanceof EntryState &&
 				StatechartModelDerivedFeatures.getParentRegion(it) != parentRegion)) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-					"Entry nodes must not have incoming transitions from entry nodes in other regions", 
+				"Entry nodes must not have incoming transitions from entry nodes in other regions", 
 					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME)));		
 		}
 		if (outgoingTransitions.size() != 1) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-					"Entry nodes must have a single outgoing transition", 
+				"Entry nodes must have a single outgoing transition", 
 					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME)));
 		}
 		else {
@@ -836,7 +833,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 				PseudoState pseudoState = (PseudoState) target;
 				if (visitedNodes.contains(pseudoState)) {
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-							"This transition creates a circle of pseudo nodes, which is forbidden", 
+						"This transition creates a forbidden circle of pseudo nodes", 
 							new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__TARGET_STATE, outgoingTransition)));
 					return validationResultMessages;
 				}
@@ -1139,28 +1136,20 @@ public class StatechartModelValidator extends ActionModelValidator {
 	
 	public Collection<ValidationResultMessage> checkTransitionOcclusion(Transition transition) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		StateNode sourceState = transition.getSourceState();
-		Collection<Transition> parentTransitions = getOutgoingTransitionsOfAncestors(sourceState);
-		Transition nonDeterministicTransition = checkTransitionDeterminism(transition, parentTransitions);
-		StatechartDefinition statechart = (StatechartDefinition) nonDeterministicTransition.eContainer(); 
-		if (nonDeterministicTransition != null && 
-				statechart.getSchedulingOrder() == SchedulingOrder.TOP_DOWN) {
-			validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING, 
+		StatechartDefinition statechart = StatechartModelDerivedFeatures.getContainingStatechart(transition);
+		SchedulingOrder schedulingOrder = statechart.getSchedulingOrder();
+		if (schedulingOrder == SchedulingOrder.TOP_DOWN) {
+			StateNode sourceState = transition.getSourceState();
+			Collection<Transition> parentTransitions = StatechartModelDerivedFeatures
+					.getOutgoingTransitionsOfAncestors(sourceState);
+			Transition nonDeterministicTransition = checkTransitionDeterminism(transition, parentTransitions);
+			if (nonDeterministicTransition != null) {
+				validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING, 
 					"This transitions is occluded by a higher level transition", 
-					new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__TRIGGER)));
+						new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__TRIGGER)));
+			}
 		}
 		return validationResultMessages;
-	}
-	
-	public Collection<Transition> getOutgoingTransitionsOfAncestors(StateNode source) {
-		EObject parentContainer = source.eContainer().eContainer();
-		if (parentContainer instanceof hu.bme.mit.gamma.statechart.statechart.State) {
-			hu.bme.mit.gamma.statechart.statechart.State parentState = (hu.bme.mit.gamma.statechart.statechart.State) parentContainer;
-			Collection<Transition> transitions = StatechartModelDerivedFeatures.getOutgoingTransitions(parentState);
-			transitions.addAll(getOutgoingTransitionsOfAncestors(parentState));
-			return transitions;
-		}
-		return new HashSet<Transition>();
 	}
 	
 	public Collection<ValidationResultMessage> checkParallelTransitionAssignments(Transition transition) {
@@ -1168,10 +1157,12 @@ public class StatechartModelValidator extends ActionModelValidator {
 		Transition sameTriggerParallelTransition = getSameTriggedTransitionOfParallelRegions(transition);
 		Declaration declaration = getSameVariableOfAssignments(transition, sameTriggerParallelTransition);
 		if (declaration != null) {
+			StateNode source = sameTriggerParallelTransition.getSourceState();
+			StateNode target = sameTriggerParallelTransition.getTargetState();
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING, 
-				"Both this and transition between " + sameTriggerParallelTransition.getSourceState().getName() + 
-					" and " + sameTriggerParallelTransition.getTargetState().getName() + " assigns value to variable " + declaration.getName(),
-					new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__EFFECTS)));
+				"Both this transition and the transition between " + source.getName() + " and " +
+					target.getName() + " assign value to the same variable " + declaration.getName(),
+						new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__EFFECTS)));
 		}
 		return validationResultMessages;
 	}
@@ -1292,42 +1283,17 @@ public class StatechartModelValidator extends ActionModelValidator {
 	}
 	
 	
-	public Collection<ValidationResultMessage> checkCircularDependencies(Package _package) {
+	public Collection<ValidationResultMessage> checkCircularDependencies(Component component) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		Package referringPackage = getReferringPackages(_package);
-		if (referringPackage != null) {
+		Component referringComponent = StatechartModelDerivedFeatures.getReferringSubcomponent(component);
+		if (referringComponent != null) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-				"This package is in a dependency circle, referred by package " + referringPackage.getName() +
-					", composite systems must have an acyclical dependency hierarchy",
+				"This component is in a dependency circle, referred by component " +
+						referringComponent.getName() +
+				"; composite systems must have an acyclical dependency hierarchy",
 						new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME)));
 			}
 		return validationResultMessages;
-	}
-	
-	public Package getReferringPackages(Package rootPackage) {
-		Set<Package> imports = new LinkedHashSet<Package>();
-		
-		Queue<Package> packages = new LinkedList<Package>();
-		packages.add(rootPackage);
-		// Queue-based recursive approach instead of a recursive function
-		while (!packages.isEmpty()) {
-			Package _package = packages.poll();
-			List<Package> insideImports = _package.getImports();
-			
-			for (Package insideImport : insideImports) {
-				if (insideImport == rootPackage) {
-					return _package;
-				}
-				// To counter possible inconsistent import hierarchies
-				if (!imports.contains(insideImport)) {
-					packages.add(insideImport);
-				}
-			}
-			
-			imports.addAll(insideImports);
-		}
-		
-		return null;
 	}
 	
 	public Collection<ValidationResultMessage> checkMultipleImports(Package gammaPackage) {

@@ -45,24 +45,26 @@ scenario Init initial outputs [
 
 //@Strict
 @AllowedWaiting 0 .. 1
-scenario Normal [
-//	loop (1 .. 2) {
-	{
+scenario Normal initial outputs [
 		hot sends priorityOutput.displayYellow
-	}
+] [
 	{
+		hot delay (1000)
 		hot sends priorityOutput.displayRed
 		hot sends secondaryOutput.displayGreen
-		hot delay (1000)
 	}
 	{
 		hot delay (2000)
 		hot sends secondaryOutput.displayYellow
 	}
 	{
+		hot delay (1000)
 		hot sends secondaryOutput.displayRed
 		hot sends priorityOutput.displayGreen
-		hot delay (1000)
+	}
+	{
+		hot delay (2000)
+		hot sends priorityOutput.displayYellow
 	}
 //	}
 ]
