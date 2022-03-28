@@ -66,6 +66,7 @@ class TraceReplayModelGenerator {
 		
 		val environmentInstance = environmentModel.instantiateSynchronousComponent
 		systemModel.components.add(0, environmentInstance)
+		systemModel.initialExecutionList += environmentInstance.createInstanceReference // Initial out-raises
 		if (considerOutEvents) {
 			systemModel.executionList += environmentInstance.createInstanceReference // In
 			systemModel.executionList += componentInstance.createInstanceReference 
