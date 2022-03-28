@@ -11,6 +11,8 @@
 package hu.bme.mit.gamma.ui.taskhandler;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static hu.bme.mit.gamma.ui.taskhandler.Namings.getCompositeComponentName;
+import static hu.bme.mit.gamma.ui.taskhandler.Namings.getMonitorName;
 
 import java.io.File;
 import java.io.IOException;
@@ -55,11 +57,12 @@ import hu.bme.mit.gamma.statechart.statechart.StateAnnotation;
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
 import hu.bme.mit.gamma.statechart.statechart.SynchronousStatechartDefinition;
 import hu.bme.mit.gamma.statechart.util.StatechartUtil;
+import hu.bme.mit.gamma.util.GammaEcoreUtil;
 
 public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 	
 	protected final StatechartUtil statechartUtil = StatechartUtil.INSTANCE;
-	protected final ScenarioStatechartUtil scenarioStatechartUtil = ScenarioStatechartUtil.INSTANCE;
+	protected final ElementTracer elementTracer = ElementTracer.INSTANCE;
 	protected final PropertyUtil propertyUtil = PropertyUtil.INSTANCE;
 	
 	protected final CompositeModelFactory factory = CompositeModelFactory.eINSTANCE;
@@ -146,10 +149,9 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 			SynchronousStatechartDefinition contract = (SynchronousStatechartDefinition) statechartContract;
 			List<MissionPhaseStateDefinition> behaviors = contractBehaviors.get(contract);
 			if (!behaviors.isEmpty()) {
-				String name = contract.getName() + "_" + behaviors.stream()
-					.map(it -> it.getComponent().getName()).reduce("", (a,  b) -> a + "_" + b);
 				
 				CascadeCompositeComponent cascade = factory.createCascadeCompositeComponent();
+				String name = getCompositeComponentName(contract, behaviors);
 				cascade.setName(name);
 				
 				Package statelessAssocationPackage = statechartUtil.wrapIntoPackage(cascade);
@@ -271,8 +273,6 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 		}
 	}
 	
-	// Extraction
-
 	private Entry<String, PropertyPackage> insertMonitor(CascadeCompositeComponent cascade,
 			SynchronousStatechartDefinition contract, String name) throws IOException {
 		// Behavior statechart
@@ -280,7 +280,7 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 		// Contract statechart
 		SynchronousComponentInstance contractInstance =
 				statechartUtil.instantiateSynchronousComponent(contract);
-		String monitorName = contractInstance.getName() + "Monitor";
+		String monitorName = getMonitorName();
 		contractInstance.setName(monitorName);
 		
 		components.add(contractInstance);
@@ -303,7 +303,7 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 		// Binding system ports
 		
 		for (Port systemPort : StatechartModelDerivedFeatures.getAllPorts(cascade)) {
-			Port contractPort = matchPort(systemPort, contract);
+			Port contractPort = elementTracer.matchPort(systemPort, contract);
 			// Only for all input ports
 			if (StatechartModelDerivedFeatures.isBroadcastMatcher(contractPort)) {
 				PortBinding inputPortBinding = factory.createPortBinding();
@@ -320,7 +320,7 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 				Collection<PortBinding> outputPortBindings =
 						StatechartModelDerivedFeatures.getPortBindings(systemPort);
 				
-				Port reservedContractPort = matchReversedPort(contractPort, contract);
+				Port reservedContractPort = elementTracer.matchReversedPort(contractPort, contract);
 				
 				// Channeling ports to definitions
 				for (PortBinding outputPortBinding : outputPortBindings) {
@@ -359,7 +359,7 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 		String modelFileUri = targetFolderUri + File.separator + packageFileName;
 		
 		// Saving the property
-		State violationState = getViolationState(contract);
+		State violationState = elementTracer.getViolationState(contract);
 		ComponentInstanceStateConfigurationReference violationStateReference =
 				propertyUtil.createStateReference(
 						propertyUtil.createInstanceReference(contractInstance), violationState);
@@ -374,9 +374,40 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 		return new SimpleEntry<String, PropertyPackage>(modelFileUri, violationPropertyPackage);
 	}
 	
-	// TODO Traceability class
+	// Settings
 	
-	private Port matchPort(Port matchablePort, Component component) {
+	private void setAdaptiveBehaviorConformanceChecker(AdaptiveBehaviorConformanceChecking conformanceChecker) {
+		// Check if the contract automata are valid: initial blocks, restart-on-cold-violation,
+		// back-transitions are on, receives-sends sequences, iteration variables are set
+		// Theoretically, both permissive and strict can be used
+		
+	}
+	
+}
+
+class Namings {
+	
+	public static String getCompositeComponentName(Component contract,
+			List<MissionPhaseStateDefinition> behaviors) {
+		return contract.getName() + "_" + behaviors.stream()
+			.map(it -> it.getComponent().getName()).reduce("", (a,  b) -> a + "_" + b);
+	}
+	
+	public static String getMonitorName() {
+		return "monitor";
+	}
+	
+}
+
+class ElementTracer {
+	// Singleton
+	public static final ElementTracer INSTANCE = new ElementTracer();
+	protected ElementTracer() {}
+	//
+	protected final ScenarioStatechartUtil scenarioStatechartUtil = ScenarioStatechartUtil.INSTANCE;
+	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
+	//
+	public Port matchPort(Port matchablePort, Component component) {
 		for (Port port : StatechartModelDerivedFeatures.getAllPorts(component)) {
 			if (ecoreUtil.helperEquals(matchablePort, port)) {
 				return port;
@@ -385,7 +416,7 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 		throw new IllegalArgumentException("Not found bound port: " + matchablePort);
 	}
 	
-	private Port matchReversedPort(Port matchablePort, Component component) {
+	public Port matchReversedPort(Port matchablePort, Component component) {
 		String name = scenarioStatechartUtil.getTurnedOutPortName(matchablePort);
 		for (Port port : StatechartModelDerivedFeatures.getAllPorts(component)) {
 			if (port.getName().equals(name)) {
@@ -395,7 +426,7 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 		throw new IllegalArgumentException("Not found reversed port: " + matchablePort);
 	}
 	
-	private State getViolationState(StatechartDefinition contractStatechart) {
+	public State getViolationState(StatechartDefinition contractStatechart) {
 		String name = scenarioStatechartUtil.getHotComponentViolation();
 		for (State state : StatechartModelDerivedFeatures.getAllStates(contractStatechart)) {
 			if (state.getName().equals(name)) {
@@ -405,15 +436,4 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 		throw new IllegalArgumentException("Not found violation state: " + contractStatechart);
 	}
 	
-	// TODO Namings class
-	
-	// Settings
-
-	private void setAdaptiveBehaviorConformanceChecker(AdaptiveBehaviorConformanceChecking conformanceChecker) {
-		// Check if the contract automata are valid: initial blocks, restart-on-cold-violation,
-		// back-transitions are on, receives-sends sequences, iteration variables are set
-		// Theoretically, both permissive and strict can be used
-		
-	}
-
 }
