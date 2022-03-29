@@ -24,7 +24,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.eclipse.emf.ecore.EObject;
-import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 
 import hu.bme.mit.gamma.action.model.Action;
@@ -1899,8 +1898,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 		List<SynchronousComponentInstance> components = cascade.getComponents();
 		List<ComponentInstanceReference> executionList = cascade.getExecutionList();
 		
-		return checkExecutionList(components, executionList,
-				CompositeModelPackage.Literals.CASCADE_COMPOSITE_COMPONENT__EXECUTION_LIST);
+		return checkExecutionList(components, executionList);
 	}
 	
 	public Collection<ValidationResultMessage> checkExecutionLists(
@@ -1908,13 +1906,12 @@ public class StatechartModelValidator extends ActionModelValidator {
 		List<AsynchronousComponentInstance> components = scheduledComponent.getComponents();
 		List<ComponentInstanceReference> executionList = scheduledComponent.getExecutionList();
 		
-		return checkExecutionList(components, executionList,
-				CompositeModelPackage.Literals.SCHEDULED_ASYNCHRONOUS_COMPOSITE_COMPONENT__EXECUTION_LIST);
+		return checkExecutionList(components, executionList);
 	}
 	
 	private Collection<ValidationResultMessage> checkExecutionList(
 			List<? extends ComponentInstance> components,
-			List<? extends ComponentInstanceReference> executionList, EStructuralFeature reference) {
+			List<? extends ComponentInstanceReference> executionList) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 
 		if (executionList.isEmpty()) {
@@ -1926,11 +1923,13 @@ public class StatechartModelValidator extends ActionModelValidator {
 			ComponentInstance instance = instanceReference.getComponentInstance();
 			if (!components.contains(instance)) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-					instance.getName() + " is not a contained component", new ReferenceInfo(reference)));
+					instance.getName() + " is not a contained component",
+					new ReferenceInfo(CompositeModelPackage.Literals.SCHEDULABLE_COMPOSITE_COMPONENT__EXECUTION_LIST)));
 			}
 			if (!StatechartModelDerivedFeatures.isAtomic(instanceReference)) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-					instance.getName() + " is not an atomic component", new ReferenceInfo(reference)));
+					instance.getName() + " is not an atomic component",
+					new ReferenceInfo(CompositeModelPackage.Literals.SCHEDULABLE_COMPOSITE_COMPONENT__EXECUTION_LIST)));
 			}
 			
 			containedInstances.remove(instance);
@@ -1938,7 +1937,8 @@ public class StatechartModelValidator extends ActionModelValidator {
 		if (!containedInstances.isEmpty()) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 				"The following instances are never executed: " + containedInstances.stream()
-					.map(it -> it.getName()).collect(Collectors.toList()), new ReferenceInfo(reference)));
+					.map(it -> it.getName()).collect(Collectors.toList()),
+					new ReferenceInfo(CompositeModelPackage.Literals.SCHEDULABLE_COMPOSITE_COMPONENT__EXECUTION_LIST)));
 		}
 		
 		return validationResultMessages;

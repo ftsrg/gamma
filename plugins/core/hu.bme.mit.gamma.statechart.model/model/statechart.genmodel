@@ -29,6 +29,10 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference composite.ecore#//CompositeComponent/portBindings"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference composite.ecore#//CompositeComponent/channels"/>
     </genClasses>
+    <genClasses image="false" ecoreClass="composite.ecore#//SchedulableCompositeComponent">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference composite.ecore#//SchedulableCompositeComponent/initialExecutionList"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference composite.ecore#//SchedulableCompositeComponent/executionList"/>
+    </genClasses>
     <genClasses image="false" ecoreClass="composite.ecore#//ComponentInstance"/>
     <genClasses ecoreClass="composite.ecore#//PortBinding">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference composite.ecore#//PortBinding/compositeSystemPort"/>
@@ -71,19 +75,14 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference composite.ecore#//AbstractAsynchronousCompositeComponent/components"/>
     </genClasses>
     <genClasses ecoreClass="composite.ecore#//AsynchronousCompositeComponent"/>
-    <genClasses ecoreClass="composite.ecore#//ScheduledAsynchronousCompositeComponent">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference composite.ecore#//ScheduledAsynchronousCompositeComponent/executionList"/>
-    </genClasses>
+    <genClasses ecoreClass="composite.ecore#//ScheduledAsynchronousCompositeComponent"/>
     <genClasses ecoreClass="composite.ecore#//AsynchronousAdapter">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference composite.ecore#//AsynchronousAdapter/controlSpecifications"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference composite.ecore#//AsynchronousAdapter/messageQueues"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference composite.ecore#//AsynchronousAdapter/clocks"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference composite.ecore#//AsynchronousAdapter/wrappedComponent"/>
     </genClasses>
-    <genClasses ecoreClass="composite.ecore#//CascadeCompositeComponent">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference composite.ecore#//CascadeCompositeComponent/initialExecutionList"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference composite.ecore#//CascadeCompositeComponent/executionList"/>
-    </genClasses>
+    <genClasses ecoreClass="composite.ecore#//CascadeCompositeComponent"/>
     <genClasses ecoreClass="composite.ecore#//SynchronousCompositeComponent"/>
     <genClasses ecoreClass="composite.ecore#//ComponentInstanceReference">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference composite.ecore#//ComponentInstanceReference/componentInstance"/>

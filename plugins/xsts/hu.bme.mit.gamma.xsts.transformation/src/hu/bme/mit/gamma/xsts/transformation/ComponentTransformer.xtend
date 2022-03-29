@@ -248,6 +248,8 @@ class ComponentTransformer {
 		
 		// Creating queue process behavior
 		
+		val queueHandlingMergedActions = newHashMap // Cache for queue-handling merged action and message dispatch
+		
 		val executionList = component.allScheduledAsynchronousSimpleInstances // One instance could be executed multiple times
 		for (adapterInstance : executionList) {
 			val adapterComponentType = adapterInstance.type as AsynchronousAdapter
@@ -255,6 +257,7 @@ class ComponentTransformer {
 			// Input event processing
 			val inputIfAction = createIfAction // Will be appended when handling queues
 			mergedAction.actions += inputIfAction
+			
 			// Queues in order of priority
 			for (queue : adapterComponentType.functioningMessageQueuesInPriorityOrder) {
 				val queueMapping = queueTraceability.get(queue)
@@ -359,13 +362,19 @@ class ComponentTransformer {
 			}
 			
 			// Dispatching events to connected message queues
+			val eventDispatches = createSequentialAction // For caching
 			for (port : adapterComponentType.allPorts) {
 				// Semantical question: now out events are dispatched according to this order
 				val eventDispatchAction = port.createEventDispatchAction(
 						eventReferenceMapper, systemPorts, variableTrace)
 				mergedAction.actions += eventDispatchAction.clone
 				entryAction.actions += eventDispatchAction // Same for initial action
+				
+				eventDispatches.actions += eventDispatchAction.clone // Caching
 			}
+			// Caching
+			queueHandlingMergedActions += adapterInstance -> (inputIfAction.clone /* Crucial */ -> eventDispatches)
+			//
 		}
 		
 		// Initializing message queue related variables - done here and not in initial expression
@@ -387,6 +396,16 @@ class ComponentTransformer {
 		xSts.variableInitializingTransition = variableInitAction.wrap
 		xSts.configurationInitializingTransition = configInitAction.wrap
 		xSts.entryEventTransition = entryAction.wrap
+		
+		// Setting initial execution lists
+		for (adapterInstance : component.allInitallyScheduledAsynchronousSimpleInstances) {
+			val actions = queueHandlingMergedActions.get(adapterInstance)
+			val inputIfAction = actions.key // These actions are already cloned
+			val eventDispatches = actions.value
+			
+			entryAction.actions += inputIfAction
+			entryAction.actions += eventDispatches
+		}
 		
 		// Creating environment behavior
 		
@@ -753,14 +772,16 @@ class ComponentTransformer {
 		
 		// Potentially executing instances before first environment transition (cascade only)
 		// System out events are NOT cleared
-		for (subcomponent : component.initallyScheduledInstances) {
-			val componentType = subcomponent.type
-			checkState(componentMergedActions.containsKey(componentType))
-			val entryEventAction = xSts.entryEventTransition.action
-			// Component instance in events are cleared, see above "newInEventAction.clone
-			//			.resetEverythingExceptPersistentParameters(componentType)"
-			val componentMergedAction = componentMergedActions.get(componentType).clone
-			entryEventAction.appendToAction(componentMergedAction)
+		if (component instanceof CascadeCompositeComponent) {
+			for (subcomponent : component.initallyScheduledInstances) {
+				val componentType = subcomponent.derivedType
+				checkState(componentMergedActions.containsKey(componentType))
+				val entryEventAction = xSts.entryEventTransition.action
+				// Component instance in events are cleared, see above "newInEventAction.clone
+				//			.resetEverythingExceptPersistentParameters(componentType)"
+				val componentMergedAction = componentMergedActions.get(componentType).clone
+				entryEventAction.appendToAction(componentMergedAction)
+			}
 		}
 		
 		// Merged action based on scheduling instances

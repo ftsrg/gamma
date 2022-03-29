@@ -56,6 +56,7 @@ import hu.bme.mit.gamma.statechart.composite.ControlSpecification;
 import hu.bme.mit.gamma.statechart.composite.InstancePortReference;
 import hu.bme.mit.gamma.statechart.composite.MessageQueue;
 import hu.bme.mit.gamma.statechart.composite.PortBinding;
+import hu.bme.mit.gamma.statechart.composite.SchedulableCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.ScheduledAsynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.SimpleChannel;
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponent;
@@ -2053,17 +2054,28 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return instances.contains(instance);
 	}
 	
-	public static List<SynchronousComponentInstance> getInitallyScheduledInstances(
-			AbstractSynchronousCompositeComponent component) {
-		List<SynchronousComponentInstance> initallyScheduledInstances =
-				new ArrayList<SynchronousComponentInstance>();
-		if (component instanceof CascadeCompositeComponent) {
-			CascadeCompositeComponent cascade = (CascadeCompositeComponent) component;
-			for (ComponentInstanceReference instanceReference : cascade.getInitialExecutionList()) {
-				ComponentInstance componentInstance = instanceReference.getComponentInstance();
-				SynchronousComponentInstance synchronousComponentInstance =
-						(SynchronousComponentInstance) componentInstance;
-				initallyScheduledInstances.add(synchronousComponentInstance);
+	public static List<ComponentInstance> getInitallyScheduledInstances(
+			SchedulableCompositeComponent component) {
+		List<ComponentInstance> initallyScheduledInstances = new ArrayList<ComponentInstance>();
+		for (ComponentInstanceReference instanceReference : component.getInitialExecutionList()) {
+			ComponentInstance componentInstance = instanceReference.getComponentInstance(); // No child
+			initallyScheduledInstances.add(componentInstance);
+		}
+		return initallyScheduledInstances;
+	}
+	
+	public static List<ComponentInstance> getAllInitallyScheduledAsynchronousSimpleInstances(
+			ScheduledAsynchronousCompositeComponent component) {
+		List<ComponentInstance> initallyScheduledInstances = new ArrayList<ComponentInstance>();
+		for (ComponentInstanceReference instanceReference : component.getInitialExecutionList()) {
+			ComponentInstance componentInstance = instanceReference.getComponentInstance(); // No child
+			Component subtype = getDerivedType(componentInstance);
+			if (subtype instanceof SchedulableCompositeComponent) {
+				initallyScheduledInstances.addAll(
+					getAllAsynchronousSimpleInstances(subtype));
+			}
+			else { // Asynchronous adapter
+				initallyScheduledInstances.add(componentInstance);
 			}
 		}
 		return initallyScheduledInstances;
