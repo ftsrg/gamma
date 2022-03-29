@@ -30,6 +30,8 @@ import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
+import hu.bme.mit.gamma.statechart.composite.AbstractAsynchronousCompositeComponent;
+import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponent;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance;
@@ -46,6 +48,7 @@ import hu.bme.mit.gamma.statechart.composite.DiscardStrategy;
 import hu.bme.mit.gamma.statechart.composite.InstancePortReference;
 import hu.bme.mit.gamma.statechart.composite.MessageQueue;
 import hu.bme.mit.gamma.statechart.composite.PortBinding;
+import hu.bme.mit.gamma.statechart.composite.SchedulableCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.ScheduledAsynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.SimpleChannel;
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponent;
@@ -453,7 +456,41 @@ public class StatechartUtil extends ActionUtil {
 		return instance;
 	}
 	
-	public CompositeComponent wrapComponent(Component component) {
+	public void prependComponentInstance(Component component, ComponentInstance instance) {
+		if (component instanceof AbstractSynchronousCompositeComponent) {
+			AbstractSynchronousCompositeComponent compositeComponent =
+					(AbstractSynchronousCompositeComponent) component;
+			SynchronousComponentInstance synchronousInstance = (SynchronousComponentInstance) instance;
+			compositeComponent.getComponents().add(0, synchronousInstance);
+			return;
+		}
+		else if (component instanceof AbstractAsynchronousCompositeComponent) {
+			AbstractAsynchronousCompositeComponent compositeComponent =
+					(AbstractAsynchronousCompositeComponent) component;
+			AsynchronousComponentInstance asynchronousInstance = (AsynchronousComponentInstance) instance;
+			compositeComponent.getComponents().add(0, asynchronousInstance);
+			return;
+		}
+		throw new IllegalArgumentException("Not known type: " + component);
+	}
+	
+	public ComponentInstance addComponentInstance(Component component, ComponentInstance instance) {
+		if (component instanceof AbstractSynchronousCompositeComponent) {
+			AbstractSynchronousCompositeComponent compositeComponent =
+					(AbstractSynchronousCompositeComponent) component;
+			SynchronousComponentInstance synchronousInstance = (SynchronousComponentInstance) instance;
+			compositeComponent.getComponents().add(synchronousInstance);
+		}
+		else if (component instanceof AbstractAsynchronousCompositeComponent) {
+			AbstractAsynchronousCompositeComponent compositeComponent =
+					(AbstractAsynchronousCompositeComponent) component;
+			AsynchronousComponentInstance asynchronousInstance = (AsynchronousComponentInstance) instance;
+			compositeComponent.getComponents().add(asynchronousInstance);
+		}
+		throw new IllegalArgumentException("Not known type: " + component);
+	}
+	
+	public SchedulableCompositeComponent wrapComponent(Component component) {
 		if (component instanceof SynchronousComponent) {
 			return wrapSynchronousComponent(
 					(SynchronousComponent) component);
@@ -522,8 +559,8 @@ public class StatechartUtil extends ActionUtil {
 		return StatechartModelDerivedFeatures.getWrapperInstanceName(component);
 	}
 	
-	public SimpleChannel connectPortsViaChannels(SynchronousComponentInstance lhsInstance, Port lhsPort,
-			SynchronousComponentInstance rhsInstance, Port rhsPort) {
+	public SimpleChannel connectPortsViaChannels(ComponentInstance lhsInstance, Port lhsPort,
+			ComponentInstance rhsInstance, Port rhsPort) {
 		SimpleChannel channel = compositeFactory.createSimpleChannel();
 		
 		InstancePortReference providedReference = compositeFactory.createInstancePortReference();
