@@ -38,6 +38,10 @@ adaptive-conformance-check {
 	folder : ".temporary"
 }
 
+//phase-statechart {
+//	statechart : Crossroads
+//}
+
 //verification {
 //	language : Theta
 //	file : ".temporary/.Init__init.xsts"
