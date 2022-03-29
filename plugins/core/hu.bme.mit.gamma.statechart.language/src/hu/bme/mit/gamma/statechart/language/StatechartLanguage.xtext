@@ -350,7 +350,7 @@ MissionPhaseStateAnnotation returns PhaseModel::MissionPhaseStateAnnotation:
 ;
 
 StateDefinition returns PhaseModel::MissionPhaseStateDefinition:
-	history=History component=SynchronousComponentInstance '{'
+	history=History component=ComponentInstance '{'
 		portBindings+=PortBinding*
 		variableBindings+=VariableBinding*
 	'}'
@@ -361,7 +361,7 @@ VariableBinding returns PhaseModel::VariableBinding:
 ;
 
 InstanceVariableReference returns PhaseModel::InstanceVariableReference:
-	instance=[CompositeModel::SynchronousComponentInstance] '.' variable=[ConstraintModel::VariableDeclaration]
+	instance=[CompositeModel::ComponentInstance] '.' variable=[ConstraintModel::VariableDeclaration]
 ;
 
 enum History returns PhaseModel::History:
@@ -561,7 +561,7 @@ InstancePortReference returns CompositeModel::InstancePortReference:
 ;
 
 ComponentInstance returns CompositeModel::ComponentInstance:
-	SynchronousComponentInstance | AsynchronousComponentInstance
+	SynchronousComponentInstance | 'async' AsynchronousComponentInstance
 ;
 
 AtomicComponentInstanceReference returns CompositeModel::ComponentInstanceReference:

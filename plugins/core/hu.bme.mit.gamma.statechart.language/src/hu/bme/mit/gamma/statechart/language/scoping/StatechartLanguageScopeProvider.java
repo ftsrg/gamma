@@ -110,11 +110,11 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 			// Phase
 			if (context instanceof InstanceVariableReference &&
 					reference == PhaseModelPackage.Literals.INSTANCE_VARIABLE_REFERENCE__VARIABLE) {
-				MissionPhaseStateDefinition container = EcoreUtil2.getContainerOfType(context, MissionPhaseStateDefinition.class);
-				SynchronousComponentInstance instance = container.getComponent();
-				SynchronousComponent type = instance.getType();
+				MissionPhaseStateDefinition container = ecoreUtil.getContainerOfType(context, MissionPhaseStateDefinition.class);
+				ComponentInstance instance = container.getComponent();
+				Component type = StatechartModelDerivedFeatures.getDerivedType(instance);
 				if (type instanceof StatechartDefinition) {
-					StatechartDefinition statechart = (StatechartDefinition) instance.getType();
+					StatechartDefinition statechart = (StatechartDefinition) type;
 					return Scopes.scopeFor(statechart.getVariableDeclarations());
 				}
 			}

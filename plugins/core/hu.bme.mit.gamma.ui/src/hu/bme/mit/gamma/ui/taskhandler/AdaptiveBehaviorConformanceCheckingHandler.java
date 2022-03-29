@@ -116,8 +116,9 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 							}
 							else {
 								hasHistory = true;
-								checkArgument(StatechartModelDerivedFeatures.isMissionPhase(
-										stateDefinition.getComponent().getType()));
+								ComponentInstance component = stateDefinition.getComponent();
+								Component type = StatechartModelDerivedFeatures.getDerivedType(component);
+								checkArgument(StatechartModelDerivedFeatures.isMissionPhase(type));
 							}
 						}
 					}
