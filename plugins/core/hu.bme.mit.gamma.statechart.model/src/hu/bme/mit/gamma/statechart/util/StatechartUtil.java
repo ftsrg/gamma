@@ -474,18 +474,20 @@ public class StatechartUtil extends ActionUtil {
 		throw new IllegalArgumentException("Not known type: " + component);
 	}
 	
-	public ComponentInstance addComponentInstance(Component component, ComponentInstance instance) {
+	public void addComponentInstance(Component component, ComponentInstance instance) {
 		if (component instanceof AbstractSynchronousCompositeComponent) {
 			AbstractSynchronousCompositeComponent compositeComponent =
 					(AbstractSynchronousCompositeComponent) component;
 			SynchronousComponentInstance synchronousInstance = (SynchronousComponentInstance) instance;
 			compositeComponent.getComponents().add(synchronousInstance);
+			return;
 		}
 		else if (component instanceof AbstractAsynchronousCompositeComponent) {
 			AbstractAsynchronousCompositeComponent compositeComponent =
 					(AbstractAsynchronousCompositeComponent) component;
 			AsynchronousComponentInstance asynchronousInstance = (AsynchronousComponentInstance) instance;
 			compositeComponent.getComponents().add(asynchronousInstance);
+			return;
 		}
 		throw new IllegalArgumentException("Not known type: " + component);
 	}

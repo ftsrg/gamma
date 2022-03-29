@@ -37,13 +37,12 @@ import hu.bme.mit.gamma.property.model.PropertyPackage;
 import hu.bme.mit.gamma.property.model.StateFormula;
 import hu.bme.mit.gamma.property.util.PropertyUtil;
 import hu.bme.mit.gamma.scenario.statechart.util.ScenarioStatechartUtil;
-import hu.bme.mit.gamma.statechart.composite.CascadeCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.Channel;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.composite.CompositeModelFactory;
 import hu.bme.mit.gamma.statechart.composite.InstancePortReference;
 import hu.bme.mit.gamma.statechart.composite.PortBinding;
-import hu.bme.mit.gamma.statechart.composite.SynchronousComponent;
-import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance;
+import hu.bme.mit.gamma.statechart.composite.SchedulableCompositeComponent;
 import hu.bme.mit.gamma.statechart.contract.StateContractAnnotation;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Component;
@@ -82,7 +81,7 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 		ComponentReference modelReference = (ComponentReference) modelTransformation.getModel();
 		Component adaptiveComponent = modelReference.getComponent();
 		// initial-blocks, restart-on-cold-violation, back-transitions are on, permissive or strict
-		SynchronousStatechartDefinition adaptiveStatechart = (SynchronousStatechartDefinition) adaptiveComponent;
+		StatechartDefinition adaptiveStatechart = (StatechartDefinition) adaptiveComponent;
 		
 		// Collecting contract-behavior mappings
 		// History-based and no-history mappings have to be distinguished
@@ -145,16 +144,18 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 		List<Entry<String, PropertyPackage>> historylessModelFileUris =
 				new ArrayList<Entry<String, PropertyPackage>>();
 		
-		for (StatechartDefinition statechartContract : contractBehaviors.keySet()) {
-			SynchronousStatechartDefinition contract = (SynchronousStatechartDefinition) statechartContract;
+		for (StatechartDefinition contract : contractBehaviors.keySet()) {
 			List<MissionPhaseStateDefinition> behaviors = contractBehaviors.get(contract);
 			if (!behaviors.isEmpty()) {
+				SchedulableCompositeComponent composite =
+					(StatechartModelDerivedFeatures.isSynchronous(contract)) ?
+						factory.createCascadeCompositeComponent() :
+							factory.createScheduledAsynchronousCompositeComponent();
 				
-				CascadeCompositeComponent cascade = factory.createCascadeCompositeComponent();
 				String name = getCompositeComponentName(contract, behaviors);
-				cascade.setName(name);
+				composite.setName(name);
 				
-				Package statelessAssocationPackage = statechartUtil.wrapIntoPackage(cascade);
+				Package statelessAssocationPackage = statechartUtil.wrapIntoPackage(composite);
 				
 				List<PortBinding> portBindings = javaUtil.flattenIntoList(
 						behaviors.stream().map(it -> it.getPortBindings())
@@ -162,16 +163,16 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 				Collection<Port> systemPorts = adaptiveStatechart.getPorts();
 				for (Port systemPort : systemPorts) {
 					Port clonedSystemPort = ecoreUtil.clone(systemPort);
-					cascade.getPorts().add(clonedSystemPort);
+					composite.getPorts().add(clonedSystemPort);
 					ecoreUtil.change(clonedSystemPort, systemPort, behaviors);
 				}
 				
-				cascade.getPortBindings().addAll(portBindings); // Could be cloned
+				composite.getPortBindings().addAll(portBindings); // Could be cloned
 				
 				for (MissionPhaseStateDefinition behavior : behaviors) {
-					SynchronousComponentInstance componentInstance = behavior.getComponent();
-					cascade.getComponents().add(componentInstance);
-					SynchronousComponent behaviorType = componentInstance.getType();
+					ComponentInstance componentInstance = behavior.getComponent();
+					statechartUtil.addComponentInstance(composite, componentInstance);
+					Component behaviorType = StatechartModelDerivedFeatures.getDerivedType(componentInstance);
 					// Supporting hierarchical mission phase statecharts
 					if (StatechartModelDerivedFeatures.isMissionPhase(behaviorType)) {
 						StatechartDefinition phaseStatechart = (StatechartDefinition) behaviorType;
@@ -184,7 +185,7 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 				}
 				
 				// Inserting the monitor into the composition
-				Entry<String, PropertyPackage> modelFileUri = insertMonitor(cascade, contract, name);
+				Entry<String, PropertyPackage> modelFileUri = insertMonitor(composite, contract, name);
 				historylessModelFileUris.add(modelFileUri);
 			}
 		}
@@ -210,7 +211,7 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 				for (StatechartDefinition statechartContract : annotation.getContractStatecharts()) {
 					SynchronousStatechartDefinition contract = (SynchronousStatechartDefinition) statechartContract;
 					// Creating a composition
-					CascadeCompositeComponent cascade = statechartUtil.wrapSynchronousComponent(adaptiveStatechart);
+					SchedulableCompositeComponent cascade = statechartUtil.wrapComponent(adaptiveStatechart);
 					statechartUtil.wrapIntoPackage(cascade);
 					
 					Entry<String, PropertyPackage> modelFileUri = insertMonitor(
@@ -273,36 +274,36 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 		}
 	}
 	
-	private Entry<String, PropertyPackage> insertMonitor(CascadeCompositeComponent cascade,
-			SynchronousStatechartDefinition contract, String name) throws IOException {
-		// Behavior statechart
-		List<SynchronousComponentInstance> components = cascade.getComponents();
+	private Entry<String, PropertyPackage> insertMonitor(SchedulableCompositeComponent composite,
+			StatechartDefinition contract, String name) throws IOException {
+		// Behavior statechart(s)
+		List<? extends ComponentInstance> components =
+				StatechartModelDerivedFeatures.getDerivedComponents(composite);
 		// Contract statechart
-		SynchronousComponentInstance contractInstance =
-				statechartUtil.instantiateSynchronousComponent(contract);
+		ComponentInstance contractInstance = statechartUtil.instantiateComponent(contract);
 		String monitorName = getMonitorName();
 		contractInstance.setName(monitorName);
 		
-		components.add(contractInstance);
+		statechartUtil.addComponentInstance(composite, contractInstance);
 		
 		// Setting the component execution
 		
 		boolean hasInitialBlock = StatechartModelDerivedFeatures.hasInitialOutputsBlock(contract);
 		if (hasInitialBlock) {
-			cascade.getInitialExecutionList().add(
+			composite.getInitialExecutionList().add(
 					statechartUtil.createInstanceReference(contractInstance));
 		}
 		
 		// Monitor (input) - behavior - monitor (output)
-		cascade.getExecutionList().add(statechartUtil.createInstanceReference(contractInstance));
+		composite.getExecutionList().add(statechartUtil.createInstanceReference(contractInstance));
 		// Behavior - monitor (output)
-		for (SynchronousComponentInstance componentInstance : components) {
-			cascade.getExecutionList().add(statechartUtil.createInstanceReference(componentInstance));
+		for (ComponentInstance componentInstance : components) {
+			composite.getExecutionList().add(statechartUtil.createInstanceReference(componentInstance));
 		}
 		
 		// Binding system ports
 		
-		for (Port systemPort : StatechartModelDerivedFeatures.getAllPorts(cascade)) {
+		for (Port systemPort : StatechartModelDerivedFeatures.getAllPorts(composite)) {
 			Port contractPort = elementTracer.matchPort(systemPort, contract);
 			// Only for all input ports
 			if (StatechartModelDerivedFeatures.isBroadcastMatcher(contractPort)) {
@@ -313,7 +314,7 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 						.createInstancePortReference(contractInstance, contractPort);
 				inputPortBinding.setInstancePortReference(instancePortReference);
 				
-				cascade.getPortBindings().add(inputPortBinding);
+				composite.getPortBindings().add(inputPortBinding);
 			}
 			// Only for output ports
 			else if (StatechartModelDerivedFeatures.isBroadcast(contractPort)) {
@@ -331,7 +332,7 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 					Channel channel = statechartUtil.createChannel(
 							behaviorPortReference, contractPortReference);
 					
-					cascade.getChannels().add(channel);
+					composite.getChannels().add(channel);
 					
 					// To prevent the reseting of events transferred into the monitor
 					ecoreUtil.remove(outputPortBinding);
@@ -346,9 +347,9 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 		// TODO Setting environment model if necessary
 		
 		// Setting imports
-		Package statelessAssocationPackage = StatechartModelDerivedFeatures.getContainingPackage(cascade);
+		Package statelessAssocationPackage = StatechartModelDerivedFeatures.getContainingPackage(composite);
 		statelessAssocationPackage.getImports().addAll(
-				StatechartModelDerivedFeatures.getImportablePackages(cascade));
+				StatechartModelDerivedFeatures.getImportablePackages(composite));
 		
 		// Serialization
 		String targetFolderUri = this.getTargetFolderUri();
@@ -365,7 +366,7 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 						propertyUtil.createInstanceReference(contractInstance), violationState);
 		StateFormula eFViolation = propertyUtil.createEF(
 					propertyUtil.createAtomicFormula(violationStateReference));
-		PropertyPackage violationPropertyPackage = propertyUtil.wrapFormula(cascade, eFViolation);
+		PropertyPackage violationPropertyPackage = propertyUtil.wrapFormula(composite, eFViolation);
 		String propertyFileName = fileNamer.getHiddenPropertyFileName(name);
 
 		this.serializer.saveModel(violationPropertyPackage, targetFolderUri, propertyFileName);
