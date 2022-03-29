@@ -94,7 +94,7 @@ class AutomatonDeterminizator {
 			ecoreUtil.change(port, oldPort, newStatechart)
 		}
 		
-		for(timeout : oldStatechart.timeoutDeclarations){
+		for (timeout : oldStatechart.timeoutDeclarations){
 			val newTimeout = newStatechart.timeoutDeclarations.findFirst[it.name == timeout.name]
 			ecoreUtil.change(newTimeout, timeout, newStatechart)
 		}
@@ -110,10 +110,10 @@ class AutomatonDeterminizator {
 
 	def addAnnotationForAcceptingStates() {
 		val acceptingStates = firstRegion.states.filter[it.name.contains(accepting)]
-		for (accState : acceptingStates) {
+		for (acceptingState : acceptingStates) {
 			val annotation = createSpecialStateAnnotation
 			annotation.kind = SpecialStateKind.ACCEPTING
-			accState.annotations += annotation
+			acceptingState.annotations += annotation
 		}
 	}
 
@@ -125,8 +125,8 @@ class AutomatonDeterminizator {
 		}
 		newStatechart.transitions.removeAll(remove.flatMap[it.outgoingTransitions])
 		firstRegion.stateNodes -= remove
-		if (firstRegion.stateNodes.
-			exists[it.incomingTransitions.isEmpty && it.name != scenarioStatechartUtil.initial]) {
+		if (firstRegion.stateNodes
+				.exists[it.incomingTransitions.isEmpty && it.name != scenarioStatechartUtil.initial]) {
 			removeUnreachableNodes()
 		}
 	}

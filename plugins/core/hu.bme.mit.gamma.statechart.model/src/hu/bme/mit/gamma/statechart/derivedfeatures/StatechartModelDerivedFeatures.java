@@ -91,6 +91,7 @@ import hu.bme.mit.gamma.statechart.phase.MissionPhaseAnnotation;
 import hu.bme.mit.gamma.statechart.phase.MissionPhaseStateDefinition;
 import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference;
 import hu.bme.mit.gamma.statechart.statechart.AsynchronousStatechartDefinition;
+import hu.bme.mit.gamma.statechart.statechart.BinaryTrigger;
 import hu.bme.mit.gamma.statechart.statechart.ChoiceState;
 import hu.bme.mit.gamma.statechart.statechart.ClockTickReference;
 import hu.bme.mit.gamma.statechart.statechart.CompositeElement;
@@ -118,6 +119,7 @@ import hu.bme.mit.gamma.statechart.statechart.Transition;
 import hu.bme.mit.gamma.statechart.statechart.TransitionAnnotation;
 import hu.bme.mit.gamma.statechart.statechart.TransitionIdAnnotation;
 import hu.bme.mit.gamma.statechart.statechart.TransitionPriority;
+import hu.bme.mit.gamma.statechart.statechart.UnaryTrigger;
 import hu.bme.mit.gamma.statechart.util.StatechartUtil;
 
 public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
@@ -1717,6 +1719,64 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 			return false;
 		}
 		return true;
+	}
+	
+	public static Set<Trigger> getAllSimpleTriggers(StatechartDefinition statechart) {
+		List<Transition> transitions = statechart.getTransitions();
+		return getAllSimpleTriggers(transitions);
+	}
+	
+	public static Set<Trigger> getAllSimpleTriggers(State state) {
+		List<Transition> outgoingTransitions = getOutgoingTransitions(state);
+		return getAllSimpleTriggers(outgoingTransitions);
+	}
+	
+	public static Set<Trigger> getAllSimpleTriggers(Iterable<? extends Transition> transitions) {
+		Set<Trigger> simpleTriggers = new HashSet<Trigger>();
+		
+		for (Transition transition : transitions) {
+			simpleTriggers.addAll(
+					getAllSimpleTriggers(transition));
+		}
+		
+		return simpleTriggers;
+	}
+	
+	public static Set<Trigger> getAllSimpleTriggers(Transition transition) {
+		Trigger trigger = transition.getTrigger();
+		return getAllSimpleTriggers(trigger);
+	}
+	
+	public static Set<Trigger> getAllSimpleTriggers(Trigger trigger) {
+		Set<Trigger> simpleTriggers = new HashSet<Trigger>();
+		
+		if (trigger == null) {
+			return simpleTriggers;
+		}
+		
+		if (trigger instanceof SimpleTrigger) {
+			simpleTriggers.add(trigger);
+		}
+		else if (trigger instanceof UnaryTrigger) {
+			UnaryTrigger unaryTrigger = (UnaryTrigger) trigger;
+			Trigger operand = unaryTrigger.getOperand();
+			simpleTriggers.addAll(
+					getAllSimpleTriggers(operand));
+		}
+		else if (trigger instanceof BinaryTrigger) {
+			BinaryTrigger binaryTrigger = (BinaryTrigger) trigger;
+			Trigger leftOperand = binaryTrigger.getLeftOperand();
+			Trigger rightOperand = binaryTrigger.getRightOperand();
+			simpleTriggers.addAll(
+					getAllSimpleTriggers(leftOperand));
+			simpleTriggers.addAll(
+					getAllSimpleTriggers(rightOperand));
+		}
+		else {
+			throw new IllegalArgumentException("Not known trigger: " + trigger);
+		}
+		
+		return simpleTriggers;
 	}
 	
 	public static boolean hasTrigger(Transition transition) {

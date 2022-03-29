@@ -20,6 +20,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -135,6 +136,8 @@ public class StatechartModelValidator extends ActionModelValidator {
 		super.expressionUtil = StatechartUtil.INSTANCE; // For getDeclaration
 	}
 	//
+	
+	protected final StatechartUtil statechartUtil = StatechartUtil.INSTANCE;
 	
 	// Some elements must have globally unique names
 
@@ -291,8 +294,47 @@ public class StatechartModelValidator extends ActionModelValidator {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 				"States with state contracts can be defined only in adaptive contract statecharts", 
 					new ReferenceInfo(ContractModelPackage.Literals.STATE_CONTRACT_ANNOTATION__CONTRACT_STATECHARTS)));
-			
 		}
+		
+		State parentState = ecoreUtil.getContainerOfType(annotation, State.class);
+		Set<Trigger> adaptiveStateTriggers = StatechartModelDerivedFeatures.getAllSimpleTriggers(parentState);
+		List<Trigger> unwrappedAdaptiveTriggers = statechartUtil.unwrapAnyTriggers(adaptiveStateTriggers);
+		for (StatechartDefinition contractStatechart : annotation.getContractStatecharts()) {
+			Set<Trigger> contractTriggers = StatechartModelDerivedFeatures.getAllSimpleTriggers(contractStatechart);
+			List<Trigger> unwrappedContractTriggers = statechartUtil.unwrapAnyTriggers(contractTriggers);
+			
+			for (Trigger trigger : unwrappedContractTriggers) {
+				if (trigger instanceof EventTrigger) {
+					EventTrigger eventTrigger = (EventTrigger) ecoreUtil.clone(trigger);
+					EventReference eventReference = eventTrigger.getEventReference();
+					if (eventReference instanceof PortEventReference) {
+						PortEventReference portEventReference = (PortEventReference) eventReference;
+						Port contractPort = portEventReference.getPort();
+						// Port tracing
+						Optional<Port> optionalAdaptivePort = statechart.getPorts().stream()
+								.filter(it -> it.getName().equals(contractPort.getName()))
+								.findFirst();
+						
+						if (optionalAdaptivePort.isPresent()) {
+							Port adaptivePort = optionalAdaptivePort.get();
+							portEventReference.setPort(adaptivePort);
+							
+							boolean hasSameTrigger = unwrappedAdaptiveTriggers.stream()
+									.filter(it -> ecoreUtil.helperEquals(it, eventTrigger))
+									.count() > 0;
+							if (hasSameTrigger) {
+								Event event = portEventReference.getEvent();
+								validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+									"The triggers of transitions leaving this adaptive state and the contract statechart must be disjunct, " +
+										"but transitions are triggered by '" + adaptivePort.getName() + "." + event.getName() + "' in both sets",
+											new ReferenceInfo(ContractModelPackage.Literals.STATE_CONTRACT_ANNOTATION__CONTRACT_STATECHARTS)));
+							}
+						}
+					}
+				}
+			}
+		}
+		
 		return validationResultMessages;
 	}
 	
@@ -318,14 +360,14 @@ public class StatechartModelValidator extends ActionModelValidator {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.INFO,
 				"If the phase state definition does not refer to a statechart definition as type, " +
 					"the model cannot be merged into a single statechart model", 
-					new ReferenceInfo(CompositeModelPackage.Literals.SYNCHRONOUS_COMPONENT_INSTANCE__TYPE, component)));
+						new ReferenceInfo(CompositeModelPackage.Literals.SYNCHRONOUS_COMPONENT_INSTANCE__TYPE, component)));
 			if (stateDefinition.getHistory() != History.NO_HISTORY) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-					"If the phase state definition does not refer to a statechart definition as type, " +
-						"there can be no history", 
+					"If the phase state definition does not refer to a statechart definition as type, there can be no history", 
 						new ReferenceInfo(CompositeModelPackage.Literals.SYNCHRONOUS_COMPONENT_INSTANCE__TYPE, component)));
 			}
 		}
+		
 		List<VariableBinding> variableBindings = stateDefinition.getVariableBindings();
 		for (int i = 0; i < variableBindings.size() - 1; i++) {
 			VariableBinding lhs = variableBindings.get(i);
