@@ -39,6 +39,7 @@ import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
 import hu.bme.mit.gamma.genmodel.model.Verification;
 import hu.bme.mit.gamma.plantuml.serialization.SvgSerializer;
 import hu.bme.mit.gamma.plantuml.transformation.TraceToPlantUmlTransformer;
+import hu.bme.mit.gamma.promela.verification.PromelaVerification;
 import hu.bme.mit.gamma.property.model.CommentableStateFormula;
 import hu.bme.mit.gamma.property.model.PropertyPackage;
 import hu.bme.mit.gamma.property.model.StateFormula;
@@ -114,6 +115,10 @@ public class VerificationHandler extends TaskHandler {
 				case XSTS_UPPAAL:
 					verificationTask = XstsUppaalVerification.INSTANCE;
 					propertySerializer = XstsUppaalPropertySerializer.INSTANCE;
+					break;
+				case PROMELA:
+					verificationTask = PromelaVerification.INSTANCE;
+					propertySerializer = null;
 					break;
 				default:
 					throw new IllegalArgumentException("Currently only UPPAAL and Theta are supported");

@@ -72,6 +72,7 @@
     <module>core/hu.bme.mit.gamma.yakindu.interface.transformation.commandhandler</module>
     <module>core/hu.bme.mit.gamma.yakindu.transformation</module>
     <module>core/hu.bme.mit.gamma.yakindu.transformation.traceability</module>
+    <module>promela/hu.bme.mit.gamma.promela.verification</module>
     <module>promela/hu.bme.mit.gamma.xsts.promela.transformation</module>
     <module>setup</module>
     <module>vis/hu.bme.mit.gamma.plantuml.textprovider</module>
