@@ -22,6 +22,12 @@ class XstsToPromelaTransformer {
 		this.xSts = targetFolderUri.normalLoad(file.name) as XSTS
 	}
 	
+	new(XSTS xSts, String targetFolderUri, String fileName) {
+		this.xSts = xSts;
+		this.targetFolderUri = targetFolderUri;
+		this.fileName = fileName;
+	}
+	
 	def void execute() {
 		val promelaFile = new File(targetFolderUri + File.separator + fileName + ".pml")
 		val promelaString = xSts.serializePromela

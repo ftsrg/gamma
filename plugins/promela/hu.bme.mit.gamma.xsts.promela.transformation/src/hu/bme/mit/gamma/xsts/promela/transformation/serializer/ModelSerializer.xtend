@@ -72,10 +72,13 @@ class ModelSerializer {
 	
 	def dispatch String serialize(IfAction action) '''
 		if
-		:: («action.condition.serialize») -> 
+		:: «action.condition.serialize» -> 
 			«action.then.serialize»
-		«IF action.^else !== null && !(action.^else instanceof EmptyAction)»:: else -> 
+		«IF action.^else !== null && !(action.^else instanceof EmptyAction)»
+		:: else ->
 			«action.^else.serialize»
+		«ELSE»
+		:: else
 		«ENDIF»
 		fi;
 	'''
