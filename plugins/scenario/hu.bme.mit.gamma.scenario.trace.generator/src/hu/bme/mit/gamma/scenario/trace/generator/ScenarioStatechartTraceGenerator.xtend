@@ -13,7 +13,6 @@ package hu.bme.mit.gamma.scenario.trace.generator
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.TransitionMerging
 import hu.bme.mit.gamma.scenario.statechart.util.ScenarioStatechartUtil
 import hu.bme.mit.gamma.statechart.contract.NotDefinedEventMode
-import hu.bme.mit.gamma.statechart.contract.ScenarioAllowedWaitAnnotation
 import hu.bme.mit.gamma.statechart.contract.ScenarioContractAnnotation
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Package

@@ -94,6 +94,11 @@ class AsynchronousCompositeComponentCodeGenerator {
 				«FOR instance : component.components»
 					«instance.name».reset();
 				«ENDFOR»
+				«IF component instanceof ScheduledAsynchronousCompositeComponent»
+					«FOR instance : component.initallyScheduledInstances»
+						«instance.name».schedule();
+					«ENDFOR»
+				«ENDIF»
 			}
 			
 			/** Creates the channel mappings and enters the wrapped statemachines. */

@@ -12,7 +12,7 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="MissionPhaseStateDefinition">
     <eStructuralFeatures xsi:type="ecore:EReference" name="component" lowerBound="1"
-        eType="ecore:EClass composite.ecore#//SynchronousComponentInstance" containment="true"/>
+        eType="ecore:EClass composite.ecore#//ComponentInstance" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="portBindings" upperBound="-1"
         eType="ecore:EClass composite.ecore#//PortBinding" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="variableBindings" upperBound="-1"
@@ -28,7 +28,7 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="InstanceVariableReference">
     <eStructuralFeatures xsi:type="ecore:EReference" name="instance" lowerBound="1"
-        eType="ecore:EClass composite.ecore#//SynchronousComponentInstance"/>
+        eType="ecore:EClass composite.ecore#//ComponentInstance"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="variable" lowerBound="1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclaration"/>
   </eClassifiers>

@@ -10,8 +10,8 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.statechart.phase.transformation
 
+import hu.bme.mit.gamma.statechart.composite.ComponentInstance
 import hu.bme.mit.gamma.statechart.composite.PortBinding
-import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.phase.MissionPhaseStateAnnotation
 import hu.bme.mit.gamma.statechart.phase.MissionPhaseStateDefinition
 import hu.bme.mit.gamma.statechart.phase.VariableBinding
@@ -67,7 +67,7 @@ class PhaseStatechartTransformer {
 				val stateDefinitions = annotation.stateDefinitions
 				for (stateDefinition : stateDefinitions) {
 					val component = stateDefinition.component
-					val inlineableStatechart = component.type.clone as StatechartDefinition
+					val inlineableStatechart = component.derivedType.clone as StatechartDefinition
 					for (portBinding : stateDefinition.portBindings) {
 						portBinding.inlinePorts(inlineableStatechart)
 					}
@@ -142,7 +142,7 @@ class PhaseStatechartTransformer {
 		statechart.variableDeclarations += variableCopy
 	}
 	
-	private def void inlineParameters(SynchronousComponentInstance instance, StatechartDefinition inlineableStatechart) {
+	private def void inlineParameters(ComponentInstance instance, StatechartDefinition inlineableStatechart) {
 		val parameters = inlineableStatechart.parameterDeclarations
 		val arguments = instance.arguments
 		parameters.inlineParamaters(arguments)
@@ -157,15 +157,16 @@ class PhaseStatechartTransformer {
 		for (inlineableRegion : inlineableRegions) {
 			val newEntryState = switch (history) {
 				case NO_HISTORY: {
-					createInitialState => [it.name = history.getName(instance)]
+					createInitialState
 				}
 				case SHALLOW_HISTORY : {
-					createShallowHistoryState => [it.name = history.getName(instance)]
+					createShallowHistoryState
 				}
 				case DEEP_HISTORY : {
-					createDeepHistoryState => [it.name = history.getName(instance)]
+					createDeepHistoryState
 				}
 			}
+			newEntryState.name = history.getName(instance)
 			inlineableRegion.stateNodes += newEntryState
 			val oldEntryState = inlineableRegion.entryState
 			newEntryState.changeAndDelete(oldEntryState, inlineableStatechart)

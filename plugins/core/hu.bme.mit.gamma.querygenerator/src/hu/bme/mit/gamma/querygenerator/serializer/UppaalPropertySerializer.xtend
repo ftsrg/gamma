@@ -41,11 +41,11 @@ class UppaalPropertySerializer extends PropertySerializer {
 		}
 		// Or a simple CTL
 		val serializedFormula = formula.serializeFormula
-		checkArgument(formula.isSimpleCTL, serializedFormula)
+		checkArgument(formula.isSimpleCtl, serializedFormula)
 		return serializedFormula
 	}
 	
-	protected def isSimpleCTL(StateFormula formula) {
+	protected def isSimpleCtl(StateFormula formula) {
 		if (formula instanceof QuantifiedFormula) {
 			// A or E
 			val quantifiedFormula = formula.formula

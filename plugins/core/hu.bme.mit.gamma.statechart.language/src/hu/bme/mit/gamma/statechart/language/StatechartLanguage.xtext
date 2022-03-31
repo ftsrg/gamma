@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -245,7 +245,12 @@ ComponentAnnotation returns InterfaceModel::ComponentAnnotation:
 
 StatechartContractAnnotation returns StatechartAnnotation:
 	ScenarioAllowedWaitingAnnotation | ScenarioContractAnnotation |
-	AdaptiveContractAnnotation | MissionPhaseAnnotation
+	AdaptiveContractAnnotation | MissionPhaseAnnotation | HasInitialoutputsBlockAnnotation
+;
+
+HasInitialoutputsBlockAnnotation returns ContractModel::HasInitialOutputsBlockAnnotation:
+	{ContractModel::HasInitialOutputsBlockAnnotation}
+	'@HasInitialOutputsBlock'
 ;
 
 
@@ -345,7 +350,7 @@ MissionPhaseStateAnnotation returns PhaseModel::MissionPhaseStateAnnotation:
 ;
 
 StateDefinition returns PhaseModel::MissionPhaseStateDefinition:
-	history=History component=SynchronousComponentInstance '{'
+	history=History component=ComponentInstance '{'
 		portBindings+=PortBinding*
 		variableBindings+=VariableBinding*
 	'}'
@@ -356,7 +361,7 @@ VariableBinding returns PhaseModel::VariableBinding:
 ;
 
 InstanceVariableReference returns PhaseModel::InstanceVariableReference:
-	instance=[CompositeModel::SynchronousComponentInstance] '.' variable=[ConstraintModel::VariableDeclaration]
+	instance=[CompositeModel::ComponentInstance] '.' variable=[ConstraintModel::VariableDeclaration]
 ;
 
 enum History returns PhaseModel::History:
@@ -491,6 +496,8 @@ ScheduledAsynchronousCompositeComponent returns CompositeModel::ScheduledAsynchr
 				portBindings+=PortBinding |
 				channels+=Channel
 			)*
+			('initial' 'execute' initialExecutionList+=AtomicComponentInstanceReference
+					(',' initialExecutionList+=AtomicComponentInstanceReference)*)?
 			('execute' executionList+=AtomicComponentInstanceReference
 					(',' executionList+=AtomicComponentInstanceReference)*)?
 		'}'
@@ -554,7 +561,7 @@ InstancePortReference returns CompositeModel::InstancePortReference:
 ;
 
 ComponentInstance returns CompositeModel::ComponentInstance:
-	SynchronousComponentInstance | AsynchronousComponentInstance
+	SynchronousComponentInstance | 'async' AsynchronousComponentInstance
 ;
 
 AtomicComponentInstanceReference returns CompositeModel::ComponentInstanceReference:

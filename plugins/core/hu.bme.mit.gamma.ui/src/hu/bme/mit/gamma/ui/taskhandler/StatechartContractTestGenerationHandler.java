@@ -7,7 +7,6 @@ import org.eclipse.core.resources.IFile;
 
 import hu.bme.mit.gamma.genmodel.model.StatechartContractTestGeneration;
 import hu.bme.mit.gamma.scenario.trace.generator.ScenarioStatechartTraceGenerator;
-import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
 import hu.bme.mit.gamma.ui.taskhandler.AnalysisModelTransformationHandler.Gamma2XstsTransformer;

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -56,11 +56,13 @@ import hu.bme.mit.gamma.statechart.composite.ControlSpecification;
 import hu.bme.mit.gamma.statechart.composite.InstancePortReference;
 import hu.bme.mit.gamma.statechart.composite.MessageQueue;
 import hu.bme.mit.gamma.statechart.composite.PortBinding;
+import hu.bme.mit.gamma.statechart.composite.SchedulableCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.ScheduledAsynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.SimpleChannel;
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponent;
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance;
 import hu.bme.mit.gamma.statechart.contract.AdaptiveContractAnnotation;
+import hu.bme.mit.gamma.statechart.contract.HasInitialOutputsBlockAnnotation;
 import hu.bme.mit.gamma.statechart.contract.ScenarioAllowedWaitAnnotation;
 import hu.bme.mit.gamma.statechart.interface_.AnyTrigger;
 import hu.bme.mit.gamma.statechart.interface_.Clock;
@@ -89,6 +91,7 @@ import hu.bme.mit.gamma.statechart.phase.MissionPhaseAnnotation;
 import hu.bme.mit.gamma.statechart.phase.MissionPhaseStateDefinition;
 import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference;
 import hu.bme.mit.gamma.statechart.statechart.AsynchronousStatechartDefinition;
+import hu.bme.mit.gamma.statechart.statechart.BinaryTrigger;
 import hu.bme.mit.gamma.statechart.statechart.ChoiceState;
 import hu.bme.mit.gamma.statechart.statechart.ClockTickReference;
 import hu.bme.mit.gamma.statechart.statechart.CompositeElement;
@@ -116,6 +119,7 @@ import hu.bme.mit.gamma.statechart.statechart.Transition;
 import hu.bme.mit.gamma.statechart.statechart.TransitionAnnotation;
 import hu.bme.mit.gamma.statechart.statechart.TransitionIdAnnotation;
 import hu.bme.mit.gamma.statechart.statechart.TransitionPriority;
+import hu.bme.mit.gamma.statechart.statechart.UnaryTrigger;
 import hu.bme.mit.gamma.statechart.util.StatechartUtil;
 
 public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
@@ -971,16 +975,11 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 				}
 			}
 		}
-		else if (component instanceof AsynchronousAdapter) {
-			simplePorts.add(port);
-		}
 		else {
-			// Makes sense only if the containment hierarchy is a tree structure
-			ComponentInstance instance = getReferencingComponentInstance(component); // Wrapper instance
-			Component containingComponent = getContainingComponent(instance);
-			if (containingComponent instanceof AsynchronousAdapter) {
-				simplePorts.add(port);
-			}
+			// If it is an asynchronous adapter or synchronous component, we "return"
+			// If 'port' is contained by a synchronous component, we "return" right away,
+			// even if that component is not contained by any asynchronous components
+			simplePorts.add(port);
 		}
 		// Note that one port can be in the list multiple times iff the component is NOT unfolded
 		return simplePorts;
@@ -1245,6 +1244,16 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 				.collect(Collectors.toList());
 	}
 	
+	public static Collection<Transition> getOutgoingTransitionsOfAncestors(StateNode node) {
+		Set<Transition> outgoingTransitionsOfAncestors = new LinkedHashSet<Transition>();
+		List<State> ancestors = getAncestors(node);
+		for (State ancestor : ancestors) {
+			outgoingTransitionsOfAncestors.addAll(
+					getOutgoingTransitions(ancestor));
+		}
+		return outgoingTransitionsOfAncestors;
+	}
+	
 	public static List<Transition> getIncomingTransitions(StateNode node) {
 		StatechartDefinition statechart = getContainingStatechart(node);
 		return statechart.getTransitions().stream().filter(it -> it.getTargetState() == node)
@@ -1487,12 +1496,41 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return fullParentRegionPathName + "." + lowestRegion.getName(); // Only regions are in path - states could be added too
 	}
 	
+	public static Component getReferringSubcomponent(Component rootComponent) {
+		Set<Component> imports = new LinkedHashSet<Component>();
+		
+		Queue<Component> components = new LinkedList<Component>();
+		components.add(rootComponent);
+		// Queue-based recursive approach instead of a recursive function
+		while (!components.isEmpty()) {
+			Component component = components.poll();
+			List<Component> insideComponents = StatechartModelDerivedFeatures
+					.getInstances(component).stream()
+					.map(it -> StatechartModelDerivedFeatures.getDerivedType(it))
+					.collect(Collectors.toList());
+			
+			for (Component insideComponent : insideComponents) {
+				if (insideComponent == rootComponent) {
+					return component;
+				}
+				// To counter possible inconsistent import hierarchies
+				if (!imports.contains(insideComponent)) {
+					components.add(insideComponent);
+				}
+			}
+			
+			imports.addAll(insideComponents);
+		}
+		
+		return null;
+	}
+	
 	public static StatechartDefinition getContainingStatechart(EObject object) {
 		return ecoreUtil.getContainerOfType(object, StatechartDefinition.class);
 	}
 	
 	public static Component getContainingComponent(EObject object) {
-		if (object.eContainer() == null) {
+		if (object == null) {
 			throw new IllegalArgumentException("Not contained by a component: " + object);
 		}
 		if (object instanceof Component) {
@@ -1676,6 +1714,64 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 			return false;
 		}
 		return true;
+	}
+	
+	public static Set<Trigger> getAllSimpleTriggers(StatechartDefinition statechart) {
+		List<Transition> transitions = statechart.getTransitions();
+		return getAllSimpleTriggers(transitions);
+	}
+	
+	public static Set<Trigger> getAllSimpleTriggers(State state) {
+		List<Transition> outgoingTransitions = getOutgoingTransitions(state);
+		return getAllSimpleTriggers(outgoingTransitions);
+	}
+	
+	public static Set<Trigger> getAllSimpleTriggers(Iterable<? extends Transition> transitions) {
+		Set<Trigger> simpleTriggers = new HashSet<Trigger>();
+		
+		for (Transition transition : transitions) {
+			simpleTriggers.addAll(
+					getAllSimpleTriggers(transition));
+		}
+		
+		return simpleTriggers;
+	}
+	
+	public static Set<Trigger> getAllSimpleTriggers(Transition transition) {
+		Trigger trigger = transition.getTrigger();
+		return getAllSimpleTriggers(trigger);
+	}
+	
+	public static Set<Trigger> getAllSimpleTriggers(Trigger trigger) {
+		Set<Trigger> simpleTriggers = new HashSet<Trigger>();
+		
+		if (trigger == null) {
+			return simpleTriggers;
+		}
+		
+		if (trigger instanceof SimpleTrigger) {
+			simpleTriggers.add(trigger);
+		}
+		else if (trigger instanceof UnaryTrigger) {
+			UnaryTrigger unaryTrigger = (UnaryTrigger) trigger;
+			Trigger operand = unaryTrigger.getOperand();
+			simpleTriggers.addAll(
+					getAllSimpleTriggers(operand));
+		}
+		else if (trigger instanceof BinaryTrigger) {
+			BinaryTrigger binaryTrigger = (BinaryTrigger) trigger;
+			Trigger leftOperand = binaryTrigger.getLeftOperand();
+			Trigger rightOperand = binaryTrigger.getRightOperand();
+			simpleTriggers.addAll(
+					getAllSimpleTriggers(leftOperand));
+			simpleTriggers.addAll(
+					getAllSimpleTriggers(rightOperand));
+		}
+		else {
+			throw new IllegalArgumentException("Not known trigger: " + trigger);
+		}
+		
+		return simpleTriggers;
 	}
 	
 	public static boolean hasTrigger(Transition transition) {
@@ -2013,17 +2109,28 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return instances.contains(instance);
 	}
 	
-	public static List<SynchronousComponentInstance> getInitallyScheduledInstances(
-			AbstractSynchronousCompositeComponent component) {
-		List<SynchronousComponentInstance> initallyScheduledInstances =
-				new ArrayList<SynchronousComponentInstance>();
-		if (component instanceof CascadeCompositeComponent) {
-			CascadeCompositeComponent cascade = (CascadeCompositeComponent) component;
-			for (ComponentInstanceReference instanceReference : cascade.getInitialExecutionList()) {
-				ComponentInstance componentInstance = instanceReference.getComponentInstance();
-				SynchronousComponentInstance synchronousComponentInstance =
-						(SynchronousComponentInstance) componentInstance;
-				initallyScheduledInstances.add(synchronousComponentInstance);
+	public static List<ComponentInstance> getInitallyScheduledInstances(
+			SchedulableCompositeComponent component) {
+		List<ComponentInstance> initallyScheduledInstances = new ArrayList<ComponentInstance>();
+		for (ComponentInstanceReference instanceReference : component.getInitialExecutionList()) {
+			ComponentInstance componentInstance = instanceReference.getComponentInstance(); // No child
+			initallyScheduledInstances.add(componentInstance);
+		}
+		return initallyScheduledInstances;
+	}
+	
+	public static List<ComponentInstance> getAllInitallyScheduledAsynchronousSimpleInstances(
+			ScheduledAsynchronousCompositeComponent component) {
+		List<ComponentInstance> initallyScheduledInstances = new ArrayList<ComponentInstance>();
+		for (ComponentInstanceReference instanceReference : component.getInitialExecutionList()) {
+			ComponentInstance componentInstance = instanceReference.getComponentInstance(); // No child
+			Component subtype = getDerivedType(componentInstance);
+			if (subtype instanceof SchedulableCompositeComponent) {
+				initallyScheduledInstances.addAll(
+					getAllAsynchronousSimpleInstances(subtype));
+			}
+			else { // Asynchronous adapter
+				initallyScheduledInstances.add(componentInstance);
 			}
 		}
 		return initallyScheduledInstances;
@@ -2122,6 +2229,10 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	public static boolean hasHistory(MissionPhaseStateDefinition missionPhaseStateDefinition) {
 		return missionPhaseStateDefinition.getHistory() != History.NO_HISTORY || 
 				!missionPhaseStateDefinition.getVariableBindings().isEmpty();
+	}
+	
+	public static boolean hasInitialOutputsBlock(Component component) {
+		return getComponentAnnotation(component, HasInitialOutputsBlockAnnotation.class) != null;
 	}
 
 }

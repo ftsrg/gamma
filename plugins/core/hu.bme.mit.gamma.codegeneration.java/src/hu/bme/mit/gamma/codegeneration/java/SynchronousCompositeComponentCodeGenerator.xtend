@@ -96,10 +96,12 @@ class SynchronousCompositeComponentCodeGenerator {
 				notifyAllSublisteners();
 «««				Potentially executing instances before first environment transition (cascade only)
 «««				System out-events are NOT cleared
-				«FOR instance : component.initallyScheduledInstances»
-«««					Instance in-events are implicitly cleared of course
-					«instance.runCycleOrComponent(component)»
-				«ENDFOR»
+				«IF component instanceof CascadeCompositeComponent»
+					«FOR instance : component.initallyScheduledInstances»
+«««						Instance in-events are implicitly cleared of course
+						«instance.runCycleOrComponent(component)»
+					«ENDFOR»
+				«ENDIF»
 				// Notifying registered listeners
 				notifyListeners();
 			}

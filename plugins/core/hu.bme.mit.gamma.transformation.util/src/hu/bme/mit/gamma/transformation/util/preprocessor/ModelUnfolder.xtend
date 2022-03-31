@@ -181,7 +181,7 @@ class ModelUnfolder {
 		val capacity = component.capacity
 		val name = synchronousStatechart.name
 		val adapter = if (capacity !== null) {
-			synchronousStatechart.wrapIntoDefaultAdapter(name, capacity.clone)
+			synchronousStatechart.wrapIntoDefaultAdapter(name, name + "Queue", capacity.clone)
 		}
 		else {
 			synchronousStatechart.wrapIntoDefaultAdapter(name)

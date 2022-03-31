@@ -55,7 +55,8 @@ class OriginalEnvironmentBehaviorCreator {
 		if (considerOutEvents) {
 			val envrionmentModel = lastState.containingStatechart
 			val inOutCycleVariable = createBooleanTypeDefinition.createVariableDeclaration(
-				inOutCycleVariableName, createTrueExpression)
+				inOutCycleVariableName, createFalseExpression /* false- check initial execution
+				 * of the composite component to handle initial raises*/)
 			envrionmentModel.variableDeclarations += inOutCycleVariable
 			
 			val stateTransitions = envrionmentModel.transitions.filter[it.sourceState instanceof State]

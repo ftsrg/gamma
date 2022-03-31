@@ -87,6 +87,8 @@ public class StatechartLanguageFormatter extends AbstractDeclarativeFormatter {
         c.setLinewrap(1, 1, 2).after(f.getAsynchronousComponentInstanceRule());
         c.setLinewrap(1, 1, 2).after(f.getCascadeCompositeComponentAccess().getGroup_7());
         c.setLinewrap(1, 1, 2).after(f.getCascadeCompositeComponentAccess().getGroup_8());
+        c.setLinewrap(1, 1, 2).after(f.getScheduledAsynchronousCompositeComponentAccess().getGroup_7());
+        c.setLinewrap(1, 1, 2).after(f.getScheduledAsynchronousCompositeComponentAccess().getGroup_8());
         // Set line wrap after variable bindings
         c.setLinewrap(1, 1, 2).before(f.getStateDefinitionRule());
         c.setIndentationIncrement().before(f.getStateDefinitionRule());
