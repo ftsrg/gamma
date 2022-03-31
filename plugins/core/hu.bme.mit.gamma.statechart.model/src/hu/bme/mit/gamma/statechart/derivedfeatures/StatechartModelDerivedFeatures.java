@@ -975,16 +975,11 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 				}
 			}
 		}
-		else if (component instanceof AsynchronousAdapter) {
-			simplePorts.add(port);
-		}
 		else {
-			// Makes sense only if the containment hierarchy is a tree structure
-			ComponentInstance instance = getReferencingComponentInstance(component); // Wrapper instance
-			Component containingComponent = getContainingComponent(instance);
-			if (containingComponent instanceof AsynchronousAdapter) {
-				simplePorts.add(port);
-			}
+			// If it is an asynchronous adapter or synchronous component, we "return"
+			// If 'port' is contained by a synchronous component, we "return" right away,
+			// even if that component is not contained by any asynchronous components
+			simplePorts.add(port);
 		}
 		// Note that one port can be in the list multiple times iff the component is NOT unfolded
 		return simplePorts;
@@ -1535,7 +1530,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	}
 	
 	public static Component getContainingComponent(EObject object) {
-		if (object.eContainer() == null) {
+		if (object == null) {
 			throw new IllegalArgumentException("Not contained by a component: " + object);
 		}
 		if (object instanceof Component) {

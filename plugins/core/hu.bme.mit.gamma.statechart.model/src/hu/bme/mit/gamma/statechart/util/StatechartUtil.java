@@ -443,16 +443,16 @@ public class StatechartUtil extends ActionUtil {
 	}
 	
 	public AsynchronousAdapter wrapIntoDefaultAdapter(SynchronousComponent component, String adapterName) {
-		return wrapIntoDefaultAdapter(component, adapterName, 4);
+		return wrapIntoDefaultAdapter(component, adapterName, adapterName + "MessageQueue", 4);
 	}
 	
 	public AsynchronousAdapter wrapIntoDefaultAdapter(SynchronousComponent component, String adapterName,
-			int capacity) {
-		return wrapIntoDefaultAdapter(component, adapterName, toIntegerLiteral(capacity));
+			String messageQueueName, int capacity) {
+		return wrapIntoDefaultAdapter(component, adapterName, messageQueueName, toIntegerLiteral(capacity));
 	}
 	
 	public AsynchronousAdapter wrapIntoDefaultAdapter(SynchronousComponent component, String adapterName,
-			Expression capacity) {
+			String messageQueueName, Expression capacity) {
 		AsynchronousAdapter adapter = wrapIntoAdapter(component, adapterName);
 		
 		ControlSpecification controlSpecification = compositeFactory.createControlSpecification();
@@ -462,7 +462,7 @@ public class StatechartUtil extends ActionUtil {
 		adapter.getControlSpecifications().add(controlSpecification);
 		
 		MessageQueue messageQueue = compositeFactory.createMessageQueue();
-		messageQueue.setName(adapterName + "MessageQueue");
+		messageQueue.setName(messageQueueName);
 		messageQueue.setEventDiscardStrategy(DiscardStrategy.INCOMING);
 		messageQueue.setPriority(BigInteger.ONE);
 		messageQueue.setCapacity(capacity);

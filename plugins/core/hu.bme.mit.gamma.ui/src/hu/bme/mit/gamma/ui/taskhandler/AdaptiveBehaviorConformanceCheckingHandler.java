@@ -91,6 +91,7 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 				new HashMap<StatechartDefinition, List<MissionPhaseStateDefinition>>(); 
 		Collection<State> adaptiveStates = StatechartModelDerivedFeatures.getAllStates(adaptiveStatechart);
 		for (State adaptiveState : adaptiveStates) {
+			// TODO add super state handling, too
 			List<StateAnnotation> annotations = adaptiveState.getAnnotations();
 			List<StateContractAnnotation> stateContractAnnotations =
 					javaUtil.filterIntoList(annotations, StateContractAnnotation.class);
