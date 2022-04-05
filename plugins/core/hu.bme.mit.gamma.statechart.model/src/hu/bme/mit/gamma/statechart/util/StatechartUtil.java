@@ -63,8 +63,10 @@ import hu.bme.mit.gamma.statechart.interface_.EventReference;
 import hu.bme.mit.gamma.statechart.interface_.EventTrigger;
 import hu.bme.mit.gamma.statechart.interface_.Interface;
 import hu.bme.mit.gamma.statechart.interface_.InterfaceModelFactory;
+import hu.bme.mit.gamma.statechart.interface_.InterfaceRealization;
 import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.statechart.interface_.Port;
+import hu.bme.mit.gamma.statechart.interface_.RealizationMode;
 import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
 import hu.bme.mit.gamma.statechart.interface_.TimeUnit;
 import hu.bme.mit.gamma.statechart.interface_.Trigger;
@@ -76,6 +78,7 @@ import hu.bme.mit.gamma.statechart.statechart.CompositeElement;
 import hu.bme.mit.gamma.statechart.statechart.EntryState;
 import hu.bme.mit.gamma.statechart.statechart.InitialState;
 import hu.bme.mit.gamma.statechart.statechart.PortEventReference;
+import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction;
 import hu.bme.mit.gamma.statechart.statechart.Region;
 import hu.bme.mit.gamma.statechart.statechart.State;
 import hu.bme.mit.gamma.statechart.statechart.StateNode;
@@ -496,6 +499,16 @@ public class StatechartUtil extends ActionUtil {
 		return _package;
 	}
 	
+	public Port createPort(Interface _interface, RealizationMode mode, String name) {
+		Port port = interfaceFactory.createPort();
+		port.setName(name);
+		InterfaceRealization interfaceRealization = interfaceFactory.createInterfaceRealization();
+		interfaceRealization.setRealizationMode(mode);
+		interfaceRealization.setInterface(_interface);
+		port.setInterfaceRealization(interfaceRealization);
+		return port;
+	}
+	
 	public ComponentInstance instantiateComponent(Component component) {
 		if (component instanceof SynchronousComponent) {
 			return instantiateSynchronousComponent(
@@ -753,6 +766,25 @@ public class StatechartUtil extends ActionUtil {
 		InitialState initialState = statechartFactory.createInitialState();
 		initialState.setName(name);
 		return initialState;
+	}
+	
+	public EventParameterReferenceExpression createEventParameterReference(
+			Port port, ParameterDeclaration parameter) {
+		EventParameterReferenceExpression expression = interfaceFactory.createEventParameterReferenceExpression();
+		expression.setPort(port);
+		Event event = ecoreUtil.getContainerOfType(parameter, Event.class);
+		expression.setEvent(event);
+		expression.setParameter(parameter);
+		return expression;
+	}
+	
+	public RaiseEventAction createRaiseEventAction(
+			Port port, Event event, List<? extends Expression> parameters) {
+		RaiseEventAction raiseEventAction = statechartFactory.createRaiseEventAction();
+		raiseEventAction.setPort(port);
+		raiseEventAction.setEvent(event);
+		raiseEventAction.getArguments().addAll(parameters);
+		return raiseEventAction;
 	}
 	
 	// Synchronous-asynchronous statecharts

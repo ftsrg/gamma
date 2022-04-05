@@ -64,6 +64,8 @@ import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance;
 import hu.bme.mit.gamma.statechart.contract.AdaptiveContractAnnotation;
 import hu.bme.mit.gamma.statechart.contract.HasInitialOutputsBlockAnnotation;
 import hu.bme.mit.gamma.statechart.contract.ScenarioAllowedWaitAnnotation;
+import hu.bme.mit.gamma.statechart.contract.ScenarioContractAnnotation;
+import hu.bme.mit.gamma.statechart.contract.StateContractAnnotation;
 import hu.bme.mit.gamma.statechart.interface_.AnyTrigger;
 import hu.bme.mit.gamma.statechart.interface_.Clock;
 import hu.bme.mit.gamma.statechart.interface_.Component;
@@ -264,10 +266,35 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return importablePackages;
 	}
 	
+	public static Set<Package> getImportableAnnotationPackages(Component component) {
+		Set<Package> importablePackages = new LinkedHashSet<Package>();
+		for (AdaptiveContractAnnotation annotation :
+				ecoreUtil.getContentsOfType(component, AdaptiveContractAnnotation.class)) {
+			Component monitoredComponent = annotation.getMonitoredComponent();
+			Package containingPackage = getContainingPackage(monitoredComponent);
+			importablePackages.add(containingPackage);
+		}
+		for (ScenarioContractAnnotation annotation :
+				ecoreUtil.getContentsOfType(component, ScenarioContractAnnotation.class)) {
+			Component monitoredComponent = annotation.getMonitoredComponent();
+			Package containingPackage = getContainingPackage(monitoredComponent);
+			importablePackages.add(containingPackage);
+		}
+		for (StateContractAnnotation annotation :
+				ecoreUtil.getContentsOfType(component, StateContractAnnotation.class)) {
+			for (StatechartDefinition contract : annotation.getContractStatecharts()) {
+				Package containingPackage = getContainingPackage(contract);
+				importablePackages.add(containingPackage);
+			}
+		}
+		return importablePackages;
+	}
+	
 	public static Set<Package> getImportablePackages(Component component) {
 		Set<Package> importablePackages = new LinkedHashSet<Package>();
 		importablePackages.addAll(getImportableInterfacePackages(component));
 		importablePackages.addAll(getImportableComponentPackages(component));
+		importablePackages.addAll(getImportableAnnotationPackages(component));
 		// If referenced components are in the same package
 		if (isContainedByPackage(component)) {
 			Package _package = getContainingPackage(component);
@@ -1799,6 +1826,10 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	public static boolean isElse(Transition transition) {
 		return transition.getGuard() instanceof ElseExpression;
+	}
+	
+	public static boolean isLeavingState(Transition transition) {
+		return transition.getSourceState() instanceof State;
 	}
 	
 	public static boolean isLoop(Transition transition) {

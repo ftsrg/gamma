@@ -732,7 +732,8 @@ public class StatechartModelValidator extends ActionModelValidator {
 					.filter(it -> eContainer.eContents().indexOf(it) > eContainer.eContents().indexOf(raiseEvent))
 					.collect(Collectors.toList())) {
 				RaiseEventAction otherRaiseEvent = (RaiseEventAction) raiseEventObject;
-				if (otherRaiseEvent.getPort() == raiseEvent.getPort() &&
+				if (otherRaiseEvent.eContainmentFeature() == raiseEvent.eContainmentFeature() &&
+						otherRaiseEvent.getPort() == raiseEvent.getPort() &&
 						otherRaiseEvent.getEvent() == raiseEvent.getEvent() &&
 						!otherRaiseEvent.getArguments().isEmpty()) {
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING, 
