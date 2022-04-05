@@ -558,6 +558,18 @@ public class StatechartUtil extends ActionUtil {
 		}
 	}
 	
+	public void scheduleInstance(SchedulableCompositeComponent composite, ComponentInstance instance) {
+		scheduleInstances(composite, List.of(instance));
+	}
+	
+	public void scheduleInstances(SchedulableCompositeComponent composite,
+			List<? extends ComponentInstance> instances) {
+		List<ComponentInstanceReference> executionList = composite.getExecutionList();
+		for (ComponentInstance componentInstance : instances) {
+			executionList.add(createInstanceReference(componentInstance));
+		}
+	}
+	
 	public SchedulableCompositeComponent wrapComponent(Component component) {
 		if (component instanceof SynchronousComponent) {
 			return wrapSynchronousComponent(

@@ -109,4 +109,12 @@ class JavaUtil {
 		return entries
 	}
 	
+	def String toFirstCharUpper(String string) {
+		return string.toFirstUpper
+	}
+	
+	def String toFirstCharLower(String string) {
+		return string.toFirstLower
+	}
+	
 }
