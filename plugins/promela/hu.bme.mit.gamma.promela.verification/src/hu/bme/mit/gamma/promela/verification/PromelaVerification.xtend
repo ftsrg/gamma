@@ -17,23 +17,39 @@ class PromelaVerification extends AbstractVerification {
 		val verifier = new PromelaVerifier
 		val argument = arguments.head
 		
+		argument.sanitizeArgument
+		
 		val model = fileUtil.loadString(modelFile)
 		val query = fileUtil.loadString(queryFile)
 		
-		var i = 0
-		var modelsWithLtl = new ArrayList<File> 
-		for (singleQuery : query.split(System.lineSeparator).reject[it.nullOrEmpty]) {
-			val ltl = '''ltl ltl_«i» { «singleQuery» }'''
-			val modelWithLtl = model + "\n" + ltl
-			val fileWithQuery = new File(modelFile.parent, fileUtil.getExtensionlessName(modelFile) + "-" + i + "-LTL.pml")
-			modelsWithLtl.add(fileWithQuery)
-			fileUtil.saveString(fileWithQuery, modelWithLtl)
-			i++
+		val queries = query.split(System.lineSeparator).reject[it.nullOrEmpty]
+		if (!queries.isEmpty) {
+			var i = 0
+			var modelsWithLtl = new ArrayList<File>
+			var resultList = new ArrayList<Result>
+			for (singleQuery : queries) {
+				val ltl = '''ltl ltl_«i» { «singleQuery» }'''
+				val modelWithLtl = model + "\n" + ltl
+				val tmpGenFolder = new File(modelFile.parent, "." + fileUtil.getExtensionlessName(modelFile) + File.separator + '''«i»-LTL''')
+				tmpGenFolder.mkdirs
+				val fileWithQuery = new File(tmpGenFolder, fileUtil.getExtensionlessName(modelFile) + "-" + i + "-LTL.pml")
+				fileUtil.saveString(fileWithQuery, modelWithLtl)
+				modelsWithLtl += fileWithQuery
+				val result = verifier.verifyQuery(gammaPackage, argument, modelsWithLtl.get(0), queryFile)
+				resultList += result
+				
+				i++
+			}
+			return resultList.get(0)
+		} else {
+			val tmpGenFolder = new File(modelFile.parent, "." + fileUtil.getExtensionlessName(modelFile) + File.separator + '''NO-LTL''')
+			tmpGenFolder.mkdirs
+			val file = new File(tmpGenFolder, fileUtil.getExtensionlessName(modelFile) + "-NO-LTL.pml")
+			fileUtil.saveString(file, model)
+			
+			//val verifier = new PromelaVerifier
+			return verifier.verifyQuery(gammaPackage, argument, file, queryFile)
 		}
-		
-		argument.sanitizeArgument
-		
-		return verifier.verifyQuery(gammaPackage, argument, modelsWithLtl.get(0), queryFile)
 	}
 	
 	override getDefaultArguments() {
