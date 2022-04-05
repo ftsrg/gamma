@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -13,6 +13,8 @@ package hu.bme.mit.gamma.xsts.transformation
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.composite.CompositeComponent
+import hu.bme.mit.gamma.statechart.interface_.Component
+import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.XSTS
@@ -40,6 +42,11 @@ class EventConnector {
 		val mapper = new ReferenceToXstsVariableMapper(xSts)
 		// AssignmentAction not AbstractAssignmentAction as we do not use havoc in the system behavior
 		val xStsAssignmentActions = xSts.getAllContentsOfType(AssignmentAction) // Caching
+		xStsAssignmentActions -= xSts.inEventTransition.getAllContentsOfType(AssignmentAction)
+		xStsAssignmentActions -= xSts.outEventTransition.getAllContentsOfType(AssignmentAction)
+		// We do not connect event in in and out transitions, e.g., in the case of
+		// "bound and channeled" broadcast ports, this would cause problems
+		
 		val xStsDeletableVariables = newHashSet
 		val optimizableSimplePorts = newHashSet
 		for (channel : component.channels) {
@@ -67,10 +74,12 @@ class EventConnector {
 								// In-parameters
 								for (parameter : event.parameterDeclarations) {
 									val requiredInParamaterNames = parameter.customizeInNames(requiredSimplePort, requiredInstance)
-									val xStsInParameterVariables = xSts.variableDeclarations.filter[requiredInParamaterNames.contains(it.name)].toList
+									val xStsInParameterVariables = xSts.variableDeclarations
+											.filter[requiredInParamaterNames.contains(it.name)].toList
 									if (!xStsInParameterVariables.nullOrEmpty) { // Can be null due to XSTS optimization
 										val providedOutParamaterNames = parameter.customizeOutNames(providedSimplePort, providedInstance)
-										val xStsOutParameterVariables = xSts.variableDeclarations.filter[providedOutParamaterNames.contains(it.name)].toList
+										val xStsOutParameterVariables = xSts.variableDeclarations
+												.filter[providedOutParamaterNames.contains(it.name)].toList
 										if (!xStsOutParameterVariables.nullOrEmpty) { // Can be null due to XSTS optimization
 											xStsOutParameterVariables.connectEvents(xStsInParameterVariables, xStsAssignmentActions)
 										}
@@ -91,10 +100,12 @@ class EventConnector {
 								// Out-parameters
 								for (parameter : event.parameterDeclarations) {
 									val requiredOutParamaterNames = parameter.customizeOutNames(requiredSimplePort, requiredInstance)
-									val xStsOutParameterVariables = xSts.variableDeclarations.filter[requiredOutParamaterNames.contains(it.name)].toList
+									val xStsOutParameterVariables = xSts.variableDeclarations
+											.filter[requiredOutParamaterNames.contains(it.name)].toList
 									if (!xStsOutParameterVariables.nullOrEmpty) { // Can be null due to XSTS optimization
 										val providedInParamaterNames = parameter.customizeInNames(providedSimplePort, providedInstance)
-										val xStsInParameterVariables = xSts.variableDeclarations.filter[providedInParamaterNames.contains(it.name)].toList
+										val xStsInParameterVariables = xSts.variableDeclarations
+												.filter[providedInParamaterNames.contains(it.name)].toList
 										if (!xStsInParameterVariables.nullOrEmpty) { // Can be null due to XSTS optimization
 											xStsOutParameterVariables.connectEvents(xStsInParameterVariables, xStsAssignmentActions)
 										}
@@ -105,7 +116,9 @@ class EventConnector {
 					}
 					optimizableSimplePorts += requiredSimplePort
 				}
-				optimizableSimplePorts += providedSimplePort
+				if (providedSimplePort.isOptimizable(component)) {
+					optimizableSimplePorts += providedSimplePort
+				}
 				optimizableSimplePorts += component.derivedComponents
 					.map[it.unusedPorts].flatten.map[it.allBoundSimplePorts].flatten
 			}
@@ -135,6 +148,12 @@ class EventConnector {
 			// Assignment removal before variable deletion!
 			xStsDeletableVariable.delete // Delete needed due to e.g., transientVariables list
 		}
+	}
+	
+	protected def boolean isOptimizable(Port simplePort, Component component) {
+		val allBoundSimplePorts = component.allBoundSimplePorts
+		// "Bound and channeled" broadcast ports are not optimizable
+		return !(simplePort.isBroadcast && allBoundSimplePorts.contains(simplePort))
 	}
 	
 	protected def void connectEvents(VariableDeclaration xStsOutVariable,

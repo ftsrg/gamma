@@ -356,10 +356,6 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 							behaviorPortReference, contractPortReference);
 					
 					composite.getChannels().add(channel);
-					
-					// To prevent the reseting of events transferred into the monitor
-					ecoreUtil.remove(outputPortBinding);
-					// Actually, this a semantical inconsistency between the model checker and code generator
 				}
 			}
 			else {

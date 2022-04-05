@@ -908,6 +908,9 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		}
 		return null;
 	}
+	public static boolean hasBoundCompositePort(Port port) {
+		return getBoundCompositePort(port) != null;
+	}
 	
 	public static Collection<PortBinding> getPortBindings(Port port) {
 		EObject component = port.eContainer();

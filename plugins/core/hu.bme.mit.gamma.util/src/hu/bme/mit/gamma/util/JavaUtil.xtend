@@ -19,7 +19,7 @@ import java.util.Set
 
 class JavaUtil {
 	// Singleton
-	public static final JavaUtil INSTANCE =  new JavaUtil
+	public static final JavaUtil INSTANCE = new JavaUtil
 	protected new() {}
 	//
 
