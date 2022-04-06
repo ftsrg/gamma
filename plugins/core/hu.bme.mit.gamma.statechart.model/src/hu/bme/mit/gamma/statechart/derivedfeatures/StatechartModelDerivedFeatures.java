@@ -1649,6 +1649,18 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return prioritizedTransitions;
 	}
 	
+	public static BigInteger getHighestPriority(StateNode stateNode) {
+		List<Transition> outgoingTransitions = getOutgoingTransitions(stateNode);
+		BigInteger max = outgoingTransitions.get(0).getPriority();
+		for (Transition transition : outgoingTransitions) {
+			BigInteger priority = transition.getPriority();
+			if (max.compareTo(priority) < 0) {
+				max = priority;
+			}
+		}
+		return max;
+	}
+	
 	public static BigInteger calculatePriority(Transition transition) {
 		StatechartDefinition statechart = getContainingStatechart(transition);
 		TransitionPriority transitionPriority = statechart.getTransitionPriority();
@@ -1950,6 +1962,15 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 			throw new IllegalArgumentException(outgoingTransitions.toString());
 		}
 		return outgoingTransitions.get(0);
+	}
+	
+	public static State getInitialState(Region region) {
+		EntryState entryState = getEntryState(region);
+		Set<State> reachableStates = getReachableStates(entryState);
+		if (reachableStates.size() != 1) {
+			throw new IllegalArgumentException("Not one state: " + reachableStates);
+		}
+		return reachableStates.iterator().next();
 	}
 	
 	public static Set<State> getPrecedingStates(StateNode node) {

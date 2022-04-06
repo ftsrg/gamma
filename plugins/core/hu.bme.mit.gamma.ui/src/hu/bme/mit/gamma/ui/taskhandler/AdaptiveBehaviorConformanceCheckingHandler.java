@@ -21,6 +21,7 @@ import static hu.bme.mit.gamma.ui.taskhandler.Namings.getPhaseComponentName;
 
 import java.io.File;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -62,6 +63,7 @@ import hu.bme.mit.gamma.statechart.interface_.Event;
 import hu.bme.mit.gamma.statechart.interface_.EventDeclaration;
 import hu.bme.mit.gamma.statechart.interface_.EventDirection;
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression;
+import hu.bme.mit.gamma.statechart.interface_.EventTrigger;
 import hu.bme.mit.gamma.statechart.interface_.Interface;
 import hu.bme.mit.gamma.statechart.interface_.InterfaceModelFactory;
 import hu.bme.mit.gamma.statechart.interface_.Package;
@@ -72,6 +74,7 @@ import hu.bme.mit.gamma.statechart.phase.MissionPhaseStateAnnotation;
 import hu.bme.mit.gamma.statechart.phase.MissionPhaseStateDefinition;
 import hu.bme.mit.gamma.statechart.phase.transformation.PhaseStatechartTransformer;
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction;
+import hu.bme.mit.gamma.statechart.statechart.Region;
 import hu.bme.mit.gamma.statechart.statechart.State;
 import hu.bme.mit.gamma.statechart.statechart.StateAnnotation;
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
@@ -138,7 +141,7 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 						for (MissionPhaseStateDefinition stateDefinition :
 									List.copyOf(phaseAnnotation.getStateDefinitions())) {
 							if (!StatechartModelDerivedFeatures.hasHistory(stateDefinition)) {
-								behaviors.add(stateDefinition); // Maybe this should be cloned to prevent overwriting
+								behaviors.add(stateDefinition); // Maybe cloning to prevent overwriting?
 								
 								// No history: contract - behavior equivalence can be analyzed
 								// independently of the context -> removing from adaptive statechart
@@ -299,14 +302,13 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 				Port activityPort = javaUtil.getOnlyElement(
 						activityPortsList.stream().filter(it -> contractPorts.contains(it))
 							.collect(Collectors.toList()));
+				
 				//
 				List<Transition> transitions = ecoreUtil.getAllContentsOfType(
 						extendedContract, Transition.class).stream()
 							.filter(it -> StatechartModelDerivedFeatures.isLeavingState(it))
 							.collect(Collectors.toList());
 				// Extending all transitions with a guard that handles activity
-				// TODO handle deactivation (no guard for transitions going to the initial state)
-				// TODO a superstate with a loop edge
 				for (Transition transition : transitions) {
 					Expression guard = transition.getGuard();
 					EventParameterReferenceExpression isActiveExpression =
@@ -315,7 +317,36 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 							statechartUtil.wrapIntoAndExpression(guard, isActiveExpression);
 					transition.setGuard(extendedGuard);
 				}
+				
+				// Handling deactivations by introducing new transitions
+				boolean hasContractHistory = false; // With this, contract history could be supported
+				if (!hasContractHistory) {
+					List<State> states = ecoreUtil.getAllContentsOfType(extendedContract, State.class);
+					Region region = javaUtil.getOnlyElement(extendedContract.getRegions());
+					State initialState = StatechartModelDerivedFeatures.getInitialState(region);
+					states.remove(initialState); // It would be unnecessary to create a loop edge here
+					for (State state : states) {
+						Transition deactivatingTransition = statechartUtil
+								.createTransition(state, initialState);
+						EventTrigger deactivatingTrigger =
+								statechartUtil.createEventTrigger(activityPort, event);
+						deactivatingTransition.setTrigger(deactivatingTrigger);
+						// We do not add an event reference to support loop edges in adaptive states
+						// that deactivate an activate the contract in a single cycle
+						// This works as all activity events denote deactivation inside the contact
+//						EventParameterReferenceExpression isActiveExpression =
+//								statechartUtil.createEventParameterReference(activityPort, isActiveParameter);
+//						NotExpression isNotActiveExpression =
+//								statechartUtil.createNotExpression(isActiveExpression);
+//						deactivatingTransition.setGuard(isNotActiveExpression);
+						BigInteger highestPriority = StatechartModelDerivedFeatures.getHighestPriority(state);
+						deactivatingTransition.setPriority(highestPriority.add(BigInteger.ONE));
+						// Note that this way, the deactivation has priority over hot violation
+						// in the case of synchronous statecharts
+					}
+				}
 				//
+				
 				Package extendedContractPackage = statechartUtil.wrapIntoPackage(extendedContract);
 				extendedContractPackage.getImports().addAll(
 						StatechartModelDerivedFeatures.getImportablePackages(extendedContractPackage));

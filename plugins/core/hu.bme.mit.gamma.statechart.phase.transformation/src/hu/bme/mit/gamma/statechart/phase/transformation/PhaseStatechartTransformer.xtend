@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -33,7 +33,7 @@ class PhaseStatechartTransformer {
 	protected final StatechartDefinition statechart
 	
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
-	protected final extension StatechartModelFactory statechartModelFactory = StatechartModelFactory.eINSTANCE
+	protected final extension StatechartModelFactory statechartFactory = StatechartModelFactory.eINSTANCE
 	protected final extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
 	
 	new(MissionPhaseStateAnnotation phaseStateAnnotation) {
@@ -130,11 +130,13 @@ class PhaseStatechartTransformer {
 		statechart.ports += portCopy
 	}
 	
-	private def void inlineVariables(VariableBinding variableBinding, StatechartDefinition inlineableStatechart) {
+	private def void inlineVariables(
+				VariableBinding variableBinding, StatechartDefinition inlineableStatechart) {
 		val statechart = variableBinding.containingStatechart
 		val originalVariable = variableBinding.instanceVariableReference.variable
 		val instance = variableBinding.instanceVariableReference.instance
-		val variableCopies = inlineableStatechart.variableDeclarations.filter[it.helperEquals(originalVariable)]
+		val variableCopies = inlineableStatechart.variableDeclarations
+				.filter[it.helperEquals(originalVariable)]
 		checkState(variableCopies.size == 1, variableCopies)
 		val variableCopy = variableCopies.head
 		variableCopy.name = variableCopy.getName(instance)
@@ -142,7 +144,8 @@ class PhaseStatechartTransformer {
 		statechart.variableDeclarations += variableCopy
 	}
 	
-	private def void inlineParameters(ComponentInstance instance, StatechartDefinition inlineableStatechart) {
+	private def void inlineParameters(
+				ComponentInstance instance, StatechartDefinition inlineableStatechart) {
 		val parameters = inlineableStatechart.parameterDeclarations
 		val arguments = instance.arguments
 		parameters.inlineParamaters(arguments)
@@ -150,7 +153,7 @@ class PhaseStatechartTransformer {
 	
 	private def void inlineRemainingStatechart(StatechartDefinition statechart,
 			StatechartDefinition inlineableStatechart, MissionPhaseStateDefinition stateDefinition) {
-		val state = stateDefinition.eContainer.eContainer as State
+		val state = stateDefinition.getContainerOfType(State)
 		val instance = stateDefinition.component
 		val history = stateDefinition.history
 		val inlineableRegions = inlineableStatechart.regions
@@ -167,8 +170,8 @@ class PhaseStatechartTransformer {
 				}
 			}
 			newEntryState.name = history.getName(instance)
-			inlineableRegion.stateNodes += newEntryState
 			val oldEntryState = inlineableRegion.entryState
+			inlineableRegion.stateNodes += newEntryState
 			newEntryState.changeAndDelete(oldEntryState, inlineableStatechart)
 		}
 		// Renames
@@ -177,23 +180,28 @@ class PhaseStatechartTransformer {
 				stateNode.name = stateNode.getName(instance) // TODO name recursively
 			}
 		}
+		
 		for (inlineableRegion : inlineableRegions) {
 			for (region : inlineableRegion.allRegions) {
 				region.name = region.getName(instance)
 			}
 		}
 		state.regions += inlineableRegions
+		
 		statechart.transitions += inlineableStatechart.transitions
+		
 		val ports = inlineableStatechart.ports
 		for (port : ports) {
 			port.name = port.getName(instance)
 		}
 		statechart.ports += ports
+		
 		val timeoutDeclarations = inlineableStatechart.timeoutDeclarations
 		for (timeoutDeclaration : timeoutDeclarations) {
 			timeoutDeclaration.name = timeoutDeclaration.getName(instance)
 		}
 		statechart.timeoutDeclarations += timeoutDeclarations
+		
 		val variableDeclarations = inlineableStatechart.variableDeclarations
 		for (variableDeclaration : variableDeclarations) {
 			variableDeclaration.name = variableDeclaration.getName(instance)
