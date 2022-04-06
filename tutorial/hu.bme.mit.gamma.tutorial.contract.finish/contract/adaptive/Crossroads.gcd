@@ -12,7 +12,8 @@ import "contract/phase/Blinking"
 import "contract/phase/Normal"
 
 @AdaptiveContractStatechart = Crossroads
-@PhaseStatechart 
+@PhaseStatechart
+@RegionSchedule = top-down
 statechart Crossroads [
 	port police : requires PoliceInterrupt
 	port priorityOutput : provides LightCommands
@@ -20,6 +21,7 @@ statechart Crossroads [
 ] {
 	timeout InitTimeout
 	timeout BlinkingTimeout
+	var count : integer
 	region main {
 		initial Entry
 		@StatechartContract = Init
@@ -27,6 +29,7 @@ statechart Crossroads [
 			no-history component init : InitPhase {
 				bind priorityOutput -> init.priorityOutput
 				bind secondaryOutput -> init.secondaryOutput
+				tie count -> init.count
 			}
 		]
 		state Init {
@@ -38,6 +41,7 @@ statechart Crossroads [
 			no-history component normal : NormalPhase {
 				bind priorityOutput -> normal.priorityOutput
 				bind secondaryOutput -> normal.secondaryOutput
+				tie count -> normal.count
 			}
 		]
 		state Normal
@@ -46,6 +50,7 @@ statechart Crossroads [
 			no-history component blinking : BlinkingPhase {
 				bind priorityOutput -> blinking.priorityOutput
 				bind secondaryOutput -> blinking.secondaryOutput
+				tie count -> blinking.count
 			}
 		]
 		state Blinking {

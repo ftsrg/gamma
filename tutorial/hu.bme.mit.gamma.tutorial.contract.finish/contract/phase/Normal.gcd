@@ -7,6 +7,7 @@ statechart NormalPhase [
 	port priorityOutput : provides LightCommands
 	port secondaryOutput : provides LightCommands
 ] {
+	var count : integer
 	timeout SecondaryPreparesTimeout
 	timeout PriorityTimeout
 	timeout SecondaryTimeout
@@ -15,6 +16,7 @@ statechart NormalPhase [
 		shallow history Entry
 		state PriorityPrepares {
 			entry /
+			count := count + 1;
 			set PriorityPreparesTimeout := 1 s;
 			raise priorityOutput.displayYellow;
 		}
