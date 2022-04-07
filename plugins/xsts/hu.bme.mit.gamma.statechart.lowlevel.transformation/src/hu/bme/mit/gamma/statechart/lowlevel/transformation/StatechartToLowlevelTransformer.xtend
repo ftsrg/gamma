@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -140,7 +140,9 @@ class StatechartToLowlevelTransformer {
 		}
 		else {
 			// In-out events
-			checkState(gammaDirection == EventDirection.INOUT)
+			// At low-level, INTERNAL events are transformed as INOUT events
+			checkState(gammaDirection == EventDirection.INOUT ||
+				gammaDirection == EventDirection.INTERNAL)
 			val lowlevelEventIn = declaration.event.transform(gammaPort, EventDirection.IN)
 			trace.put(gammaPort, declaration, lowlevelEventIn) // Tracing the EventDeclaration
 			val lowlevelEventOut = declaration.event.transform(gammaPort, EventDirection.OUT)
@@ -251,8 +253,13 @@ class StatechartToLowlevelTransformer {
 		}
 		for (port : statechart.ports) {
 			// Both in and out events are transformed to a boolean VarDecl with additional parameters
-			for (eventDecl : port.allEventDeclarations) {
-				lowlevelStatechart.eventDeclarations += eventDecl.transform(port)
+			for (eventDeclaration : port.allEventDeclarations) {
+				val lowlevelEventDeclarations = eventDeclaration.transform(port)
+				lowlevelStatechart.eventDeclarations += lowlevelEventDeclarations
+				if (eventDeclaration.direction == EventDirection.INTERNAL) {
+					// Tracing
+					lowlevelStatechart.internalEventDeclarations += lowlevelEventDeclarations
+				}
 			}
 		}
 		for (region : statechart.regions) {

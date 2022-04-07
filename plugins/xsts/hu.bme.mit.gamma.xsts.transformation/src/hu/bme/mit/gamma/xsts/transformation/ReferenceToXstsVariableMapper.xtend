@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -98,6 +98,13 @@ class ReferenceToXstsVariableMapper {
 		return xStsVariables
 	}
 	
+	def getInputEventVariables(Port port) {
+		val xStsVariables = newArrayList
+		for (inputEvent : port.inputEvents) {
+			xStsVariables += inputEvent.getInputEventVariables(port)
+		}
+	}
+	
 	def checkInputParameterVariable(ParameterDeclaration parameter, Port port) {
 		val inputParameterVariable = parameter.getInputParameterVariable(port)
 		checkState(inputParameterVariable !== null)
@@ -165,6 +172,13 @@ class ReferenceToXstsVariableMapper {
 			}
 		}
 		return xStsVariables
+	}
+	
+	def getOutputEventVariables(Port port) {
+		val xStsVariables = newArrayList
+		for (outputEvent : port.outputEvents) {
+			xStsVariables += outputEvent.getOutputEventVariables(port)
+		}
 	}
 	
 	def checkOutputParameterVariable(ParameterDeclaration parameter, Port port) {

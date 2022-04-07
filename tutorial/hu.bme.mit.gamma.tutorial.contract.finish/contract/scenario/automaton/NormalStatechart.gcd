@@ -1,10 +1,17 @@
- package normal
+package normal
 import "/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd"
 import "/hu.bme.mit.gamma.tutorial.contract.finish/model/Crossroad.gcd"
+import "/hu.bme.mit.gamma.tutorial.contract.finish/contract/scenario/automaton/InitStatechart.gcd"
+import
+	"/hu.bme.mit.gamma.tutorial.contract.finish/contract/scenario/automaton/BlinkingStatechart.gcd"
+import
+	"/hu.bme.mit.gamma.tutorial.contract.finish/contract/scenario/automaton/NormalStatechart.gcd"
 import "/hu.bme.mit.gamma.tutorial.contract.finish/contract/phase/Init.gcd"
 import "/hu.bme.mit.gamma.tutorial.contract.finish/contract/phase/Blinking.gcd"
+import "/hu.bme.mit.gamma.tutorial.contract.finish/contract/phase/Normal.gcd"
 import "/hu.bme.mit.gamma.tutorial.contract.finish/contract/adaptive/Crossroads.gcd"
 @TransitionPriority = value-based
+@HasInitialOutputsBlock
 @ScenarioContractStatechart = Crossroads (permissive)
 statechart Normal [
 	port police : requires PoliceInterrupt
@@ -17,6 +24,7 @@ statechart Normal [
 	timeout delay0
 	timeout delay1
 	timeout delay2
+	timeout delay3
 	region ^region {
 		initial Initial
 		state firstState
@@ -32,6 +40,10 @@ statechart Normal [
 		state state2 {
 			entry /
 			set delay2 := 1000 ms;
+		}
+		state state3 {
+			entry /
+			set delay3 := 2000 ms;
 		}
 		@SpecialStateAnnotation accepting
 		state AcceptingState
@@ -56,12 +68,18 @@ statechart Normal [
 	transition (1) from state1 to hotComponentViolation when priorityOutputReversed.any ||
 		secondaryOutputReversed.displayRed || secondaryOutputReversed.displayGreen ||
 		secondaryOutputReversed.displayNone
-	transition (3) from state2 to AcceptingState when timeout delay2 &&
-		priorityOutputReversed.displayGreen && secondaryOutputReversed.displayRed
+	transition (3) from state2 to state3 when timeout delay2 && priorityOutputReversed.displayGreen
+		&& secondaryOutputReversed.displayRed
 	/
 	raise priorityOutput.displayGreen;
 	raise secondaryOutput.displayRed;
 	transition (1) from state2 to hotComponentViolation when priorityOutputReversed.displayYellow ||
 		priorityOutputReversed.displayNone || secondaryOutputReversed.displayYellow ||
 		secondaryOutputReversed.displayNone
+	transition (3) from state3 to AcceptingState when timeout delay3 &&
+		priorityOutputReversed.displayYellow /
+	raise priorityOutput.displayYellow;
+	transition (1) from state3 to hotComponentViolation when priorityOutputReversed.displayRed ||
+		priorityOutputReversed.displayGreen || priorityOutputReversed.displayNone ||
+		secondaryOutputReversed.any
 }

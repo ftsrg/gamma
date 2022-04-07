@@ -12,6 +12,7 @@
     <eLiterals name="IN"/>
     <eLiterals name="OUT" value="1"/>
     <eLiterals name="INOUT" value="2"/>
+    <eLiterals name="INTERNAL" value="4" literal="INTERNAL"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="EventDeclaration">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="direction" eType="#//EventDirection"/>

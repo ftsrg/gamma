@@ -95,7 +95,7 @@ public class GammaApi {
 		IProject project = file.getProject();
 		// Multiple compilations due to the dependencies between models
 		final int MAX_ITERATION_COUNT = 6;
-		for (int i = 0; i < MAX_ITERATION_COUNT; ++i) {
+		for (int i = 0; i < MAX_ITERATION_COUNT; ++i) { // TODO, some refreshing should be added - not working now
 			// To support different implementations
 			ResourceSet resourceSet = resourceSetCreator.createResourceSet();
 			//

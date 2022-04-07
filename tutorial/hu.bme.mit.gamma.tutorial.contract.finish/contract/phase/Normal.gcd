@@ -1,0 +1,47 @@
+package normal
+
+import "model/Interfaces/Interfaces.gcd"
+
+@TransitionPriority = order-based
+statechart NormalPhase [
+	port priorityOutput : provides LightCommands
+	port secondaryOutput : provides LightCommands
+] {
+	var count : integer
+	timeout SecondaryPreparesTimeout
+	timeout PriorityTimeout
+	timeout SecondaryTimeout
+	timeout PriorityPreparesTimeout
+	region Operating {
+		shallow history Entry
+		state PriorityPrepares {
+			entry /
+			count := count + 1;
+			set PriorityPreparesTimeout := 1 s;
+			raise priorityOutput.displayYellow;
+		}
+		state Secondary {
+			entry /
+			set SecondaryTimeout := 2 s;
+			raise priorityOutput.displayRed;
+			raise secondaryOutput.displayGreen;
+		}
+		state SecondaryPrepares {
+			entry /
+			set SecondaryPreparesTimeout := 1 s;
+			raise secondaryOutput.displayYellow;
+		}
+		state Priority {
+			entry /
+			set PriorityTimeout := 2 s;
+			raise priorityOutput.displayGreen;
+			raise secondaryOutput.displayRed;
+		}
+	}
+	transition from Entry to PriorityPrepares
+	transition from PriorityPrepares to Secondary when timeout PriorityPreparesTimeout
+	transition from Secondary to SecondaryPrepares when timeout SecondaryTimeout
+	transition from SecondaryPrepares to Priority when timeout SecondaryPreparesTimeout
+	transition from Priority to PriorityPrepares when timeout PriorityTimeout
+	
+}

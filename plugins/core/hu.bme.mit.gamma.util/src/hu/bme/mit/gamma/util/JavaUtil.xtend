@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2021 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -19,7 +19,7 @@ import java.util.Set
 
 class JavaUtil {
 	// Singleton
-	public static final JavaUtil INSTANCE =  new JavaUtil
+	public static final JavaUtil INSTANCE = new JavaUtil
 	protected new() {}
 	//
 
@@ -107,6 +107,14 @@ class JavaUtil {
 			entries += new SimpleEntry(entry.value, entry.key)
 		}
 		return entries
+	}
+	
+	def String toFirstCharUpper(String string) {
+		return string.toFirstUpper
+	}
+	
+	def String toFirstCharLower(String string) {
+		return string.toFirstLower
 	}
 	
 }

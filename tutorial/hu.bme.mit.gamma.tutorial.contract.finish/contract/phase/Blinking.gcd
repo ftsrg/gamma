@@ -5,6 +5,7 @@ statechart BlinkingPhase [
 	port priorityOutput : provides LightCommands
 	port secondaryOutput : provides LightCommands
 ] {
+	var count : integer
 	timeout BlackTimeout3
 	timeout BlinkingYellowTimeout4
 	transition from Black to BlinkingYellow when timeout BlackTimeout3
@@ -14,6 +15,7 @@ statechart BlinkingPhase [
 		initial Entry
 		state BlinkingYellow {
 			entry / {
+				count := count + 1;
 				set BlinkingYellowTimeout4 := 500 ms;
 				raise priorityOutput.displayYellow;
 				raise secondaryOutput.displayYellow;

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2021 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -17,7 +17,6 @@ import java.io.File
 import org.eclipse.emf.ecore.resource.Resource
 
 import static com.google.common.base.Preconditions.checkNotNull
-import static com.google.common.base.Preconditions.checkState
 
 class StatechartEcoreUtil {
 	// Singleton
@@ -47,7 +46,7 @@ class StatechartEcoreUtil {
 		
 		// Does not work if the interfaces/types are loaded into different resources
 		// Resource set and URI type (absolute/platform) must match
-		checkState(resources.checkUriTypes, "The resource URIs are not all consistently platform or absolute")
+//		checkState(resources.checkUriTypes, "The resource URIs are not all consistently platform or absolute")
 		val matchResource = (resources.nullOrEmpty) ? unfoldedResource : resources.head
 		
 		val originalMatchedUri = originalComponentAbsoluteUri.matchUri(matchResource)
