@@ -122,6 +122,7 @@
       <genEnumLiterals ecoreEnumLiteral="interface.ecore#//EventDirection/IN"/>
       <genEnumLiterals ecoreEnumLiteral="interface.ecore#//EventDirection/OUT"/>
       <genEnumLiterals ecoreEnumLiteral="interface.ecore#//EventDirection/INOUT"/>
+      <genEnumLiterals ecoreEnumLiteral="interface.ecore#//EventDirection/INTERNAL"/>
     </genEnums>
     <genEnums typeSafeEnumCompatible="false" ecoreEnum="interface.ecore#//Persistency">
       <genEnumLiterals ecoreEnumLiteral="interface.ecore#//Persistency/TRANSIENT"/>

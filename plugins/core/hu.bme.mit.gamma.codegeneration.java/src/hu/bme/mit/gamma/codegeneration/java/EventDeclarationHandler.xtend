@@ -47,7 +47,9 @@ class EventDeclarationHandler {
 		for (parentInterface : anInterface.parents) {
 			eventSet.addAll(parentInterface.getAllEvents(oppositeDirection))
 		}
-		for (event : anInterface.events.filter[it.direction != oppositeDirection].map[it.event]) {
+		for (event : anInterface.events
+				.filter[it.direction != oppositeDirection]
+				.map[it.event]) {
 			eventSet.add(event)
 		}
 		return eventSet

@@ -346,6 +346,7 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 					}
 				}
 				//
+				// TODO An error event could be introduced in the hot violation state 
 				
 				Package extendedContractPackage = statechartUtil.wrapIntoPackage(extendedContract);
 				extendedContractPackage.getImports().addAll(

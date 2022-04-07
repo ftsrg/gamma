@@ -115,6 +115,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	@Check
 	public void checkInterfaceInheritance(Interface gammaInterface) {
 		handleValidationResultMessage(statechartModelValidator.checkInterfaceInheritance(gammaInterface));
+		handleValidationResultMessage(statechartModelValidator.checkInternalEvents(gammaInterface));
 	}
 	
 	@Check

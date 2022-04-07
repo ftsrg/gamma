@@ -194,6 +194,23 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return isProvided(port.getInterfaceRealization());
 	}
 	
+	public static boolean isRequired(InstancePortReference port) {
+		return isRequired(port.getPort());
+	}
+	
+	public static boolean isRequired(Port port) {
+		return isRequired(port.getInterfaceRealization());
+	}
+	
+	public static boolean isInternal(Port port) {
+		return getAllEventDeclarations(port).stream().anyMatch(
+				it -> it.getDirection() == EventDirection.INTERNAL);
+	}
+	
+	public static boolean isInternal(InstancePortReference port) {
+		return isInternal(port.getPort());
+	}
+	
 	public static Interface getInterface(Port port) {
 		return port.getInterfaceRealization().getInterface();
 	}
@@ -208,6 +225,8 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 				return EventDirection.OUT;
 			case OUT:
 				return EventDirection.IN;
+			case INTERNAL:
+				return EventDirection.INTERNAL;
 			default:
 				throw new IllegalArgumentException("Not known event direction: " + eventDirection);
 		}
@@ -605,16 +624,39 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return statecharts;
 	}
 	
+	public static List<Interface> getAllParents(Interface _interface) {
+		List<Interface> interfaces = new ArrayList<Interface>();
+		for (Interface parent : _interface.getParents()) {
+			interfaces.addAll(
+					getAllParents(parent));
+		}
+		interfaces.addAll(_interface.getParents());
+		return interfaces;
+	}
+	
+	public static List<Interface> getAllParentsAndSelf(Interface _interface) {
+		List<Interface> interfaces = getAllParents(_interface);
+		interfaces.add(_interface);
+		return interfaces;
+	}
+	
 	public static List<EventDeclaration> getAllEventDeclarations(Interface _interface) {
-		List<EventDeclaration> eventDeclarations = new ArrayList<EventDeclaration>(_interface.getEvents());
-		for (Interface parentInterface : _interface.getParents()) {
-			eventDeclarations.addAll(getAllEventDeclarations(parentInterface));
+		List<EventDeclaration> eventDeclarations = new ArrayList<EventDeclaration>();
+		List<Interface> interfaces = getAllParentsAndSelf(_interface);
+		for (Interface parentInterface : interfaces) {
+			eventDeclarations.addAll(parentInterface.getEvents());
 		}
 		return eventDeclarations;
 	}
 	
 	public static List<Event> getAllEvents(Interface _interface) {
 		return getAllEventDeclarations(_interface).stream()
+				.map(it -> it.getEvent()).collect(Collectors.toList());
+	}
+	
+	public static List<Event> getAllInternalEvents(Interface _interface) {
+		return getAllEventDeclarations(_interface).stream()
+				.filter(it -> it.getDirection() == EventDirection.INTERNAL)
 				.map(it -> it.getEvent()).collect(Collectors.toList());
 	}
 	
@@ -678,16 +720,18 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		List<Event> events = new ArrayList<Event>();
 		InterfaceRealization interfaceRealization = port.getInterfaceRealization();
 		Interface _interface = interfaceRealization.getInterface();
-		final Collection<EventDeclaration> allEventDeclarations = getAllEventDeclarations(_interface);
+		Collection<EventDeclaration> allEventDeclarations = getAllEventDeclarations(_interface);
 		if (interfaceRealization.getRealizationMode() == RealizationMode.PROVIDED) {
 			events.addAll(allEventDeclarations.stream()
-					.filter(it -> it.getDirection() != EventDirection.OUT)
+					.filter(it -> it.getDirection() == EventDirection.IN ||
+							 it.getDirection() == EventDirection.INOUT)
 					.map(it -> it.getEvent())
 					.collect(Collectors.toList()));
 		}
 		if (interfaceRealization.getRealizationMode() == RealizationMode.REQUIRED) {
 			events.addAll(allEventDeclarations.stream()
-					.filter(it -> it.getDirection() != EventDirection.IN)
+					.filter(it -> it.getDirection() == EventDirection.OUT ||
+							 it.getDirection() == EventDirection.INOUT)
 					.map(it -> it.getEvent())
 					.collect(Collectors.toList()));
 		}
@@ -710,16 +754,18 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		List<Event> events = new ArrayList<Event>();
 		InterfaceRealization interfaceRealization = port.getInterfaceRealization();
 		Interface _interface = interfaceRealization.getInterface();
-		final Collection<EventDeclaration> allEventDeclarations = getAllEventDeclarations(_interface);
+		Collection<EventDeclaration> allEventDeclarations = getAllEventDeclarations(_interface);
 		if (interfaceRealization.getRealizationMode() == RealizationMode.PROVIDED) {
 			events.addAll(allEventDeclarations.stream()
-					.filter(it -> it.getDirection() != EventDirection.IN)
+					.filter(it -> it.getDirection() == EventDirection.OUT ||
+							 it.getDirection() == EventDirection.INOUT)
 					.map(it -> it.getEvent())
 					.collect(Collectors.toList()));
 		}
 		if (interfaceRealization.getRealizationMode() == RealizationMode.REQUIRED) {
 			events.addAll(allEventDeclarations.stream()
-					.filter(it -> it.getDirection() != EventDirection.OUT)
+					.filter(it -> it.getDirection() == EventDirection.IN ||
+							 it.getDirection() == EventDirection.INOUT)
 					.map(it -> it.getEvent())
 					.collect(Collectors.toList()));
 		}
@@ -730,12 +776,40 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return !getOutputEvents(port).isEmpty();
 	}
 	
+	public static List<Event> getInternalEvents(Iterable<? extends Port> ports) {
+		List<Event> events = new ArrayList<Event>();
+		for (Port port : ports) {
+			events.addAll(getInternalEvents(port));
+		}
+		return events;
+	}
+	
+	public static List<Event> getInternalEvents(Port port) {
+		List<Event> events = new ArrayList<Event>();
+		InterfaceRealization interfaceRealization = port.getInterfaceRealization();
+		Interface _interface = interfaceRealization.getInterface();
+		Collection<EventDeclaration> allEventDeclarations = getAllEventDeclarations(_interface);
+		events.addAll(allEventDeclarations.stream()
+				.filter(it -> it.getDirection() == EventDirection.INTERNAL)
+				.map(it -> it.getEvent())
+				.collect(Collectors.toList()));
+		return events;
+	}
+	
+	public static boolean hasInternalEvents(Port port) {
+		return !getInternalEvents(port).isEmpty();
+	}
+	
 	public static boolean isInputEvent(Port port, Event event) {
 		return getInputEvents(port).contains(event);
 	}
 	
 	public static boolean isOutputEvent(Port port, Event event) {
 		return getOutputEvents(port).contains(event);
+	}
+	
+	public static boolean isInternalEvent(Port port, Event event) {
+		return getInternalEvents(port).contains(event);
 	}
 	
 	public static boolean isTopInPackage(Component component) {
