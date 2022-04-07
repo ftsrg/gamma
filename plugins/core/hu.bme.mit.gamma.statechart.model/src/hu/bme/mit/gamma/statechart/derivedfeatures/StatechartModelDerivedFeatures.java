@@ -843,6 +843,12 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return component.getPorts();
 	}
 	
+	public static List<Port> getAllInternalPorts(Component component) {
+		List<Port> allPorts = getAllPorts(component);
+		return allPorts.stream().filter(it -> isInternal(it))
+				.collect(Collectors.toList());
+	}
+	
 	public static List<Port> getAllPortsWithInput(Component component) {
 		return getAllPorts(component).stream().filter(it -> hasInputEvents(it))
 			.collect(Collectors.toList());
@@ -1175,10 +1181,15 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	public static Set<Port> getUnusedPorts(ComponentInstance instance) {
 		Component container = getContainingComponent(instance);
-		Set<Port> usedPorts = ecoreUtil.getAllContentsOfType(container, InstancePortReference.class).stream()
-				.filter(it -> it.getInstance() == instance).map(it -> it.getPort()).collect(Collectors.toSet());
-		Set<Port> unusedPorts = new HashSet<Port>(getAllPorts(StatechartModelDerivedFeatures.getDerivedType(instance)));
+		Set<Port> usedPorts = ecoreUtil.getAllContentsOfType(
+				container, InstancePortReference.class).stream()
+				.filter(it -> it.getInstance() == instance)
+				.map(it -> it.getPort()).collect(Collectors.toSet());
+		Component type = StatechartModelDerivedFeatures.getDerivedType(instance);
+		Set<Port> unusedPorts = new HashSet<Port>(
+				getAllPorts(type));
 		unusedPorts.removeAll(usedPorts);
+		unusedPorts.removeAll(getAllInternalPorts(type)); // Internal ports are always used
 		return unusedPorts;
 	}
 	

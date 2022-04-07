@@ -231,7 +231,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		List<Event> events = StatechartModelDerivedFeatures.getAllEvents(_interface);
 		List<Event> internalEvents = StatechartModelDerivedFeatures.getAllInternalEvents(_interface);
-		if (events.size() != internalEvents.size()) {
+		if (!internalEvents.isEmpty() && events.size() != internalEvents.size()) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 				"If an interface contains internal events, it cannot contain other kind of events", 
 					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME)));
@@ -697,7 +697,8 @@ public class StatechartModelValidator extends ActionModelValidator {
 				Port port = portEventReference.getPort();
 				Event event = portEventReference.getEvent();
 				List<Event> inputEvents = StatechartModelDerivedFeatures.getInputEvents(port);
-				if (!inputEvents.contains(event)) {
+				List<Event> internalEvents = StatechartModelDerivedFeatures.getInternalEvents(port);
+				if (!inputEvents.contains(event) && !internalEvents.contains(event)) {
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 						"This event is not an in event",
 							new ReferenceInfo(StatechartModelPackage.Literals.PORT_EVENT_REFERENCE__EVENT)));
@@ -726,7 +727,9 @@ public class StatechartModelValidator extends ActionModelValidator {
 		Event event = raiseEvent.getEvent();
 		List<ParameterDeclaration> parameterDeclarations = event.getParameterDeclarations();
 		List<Expression> arguments = raiseEvent.getArguments();
-		if (!StatechartModelDerivedFeatures.getOutputEvents(port).contains(event)) {
+		List<Event> outputEvents = StatechartModelDerivedFeatures.getOutputEvents(port);
+		List<Event> internalEvents = StatechartModelDerivedFeatures.getInternalEvents(port);
+		if (!outputEvents.contains(event) && !internalEvents.contains(event)) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 				"This event is not an out event",
 					new ReferenceInfo(StatechartModelPackage.Literals.RAISE_EVENT_ACTION__EVENT)));
