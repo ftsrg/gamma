@@ -43,7 +43,11 @@ class MonitorStatechartgenerator extends AbstractContractStatechartGeneration {
 	}
 
 	override execute() {
-		statechart = createSynchronousStatechartDefinition
+		if(component.isSynchronousStatechart){
+			statechart = createSynchronousStatechartDefinition
+		} else {
+			statechart = createAsynchronousStatechartDefinition
+		}
 		intializeStatechart()
 		for (modalInteraction : scenario.chart.fragment.interactions) {
 			if (!skipNextInteraction) {
