@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -284,6 +284,12 @@ class SynchronousCompositeComponentCodeGenerator {
 					return «instance.name»;
 				}
 			«ENDFOR»
+			
+			public void setHandleInternalEvents(boolean handleInternalEvents) {
+				«FOR instance : component.components»
+					«instance.name».setHandleInternalEvents(handleInternalEvents);
+				«ENDFOR»
+			}
 			
 		}
 	'''

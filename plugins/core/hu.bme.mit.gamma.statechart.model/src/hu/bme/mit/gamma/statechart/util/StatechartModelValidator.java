@@ -697,8 +697,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 				Port port = portEventReference.getPort();
 				Event event = portEventReference.getEvent();
 				List<Event> inputEvents = StatechartModelDerivedFeatures.getInputEvents(port);
-				List<Event> internalEvents = StatechartModelDerivedFeatures.getInternalEvents(port);
-				if (!inputEvents.contains(event) && !internalEvents.contains(event)) {
+				if (!inputEvents.contains(event)) {
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 						"This event is not an in event",
 							new ReferenceInfo(StatechartModelPackage.Literals.PORT_EVENT_REFERENCE__EVENT)));
@@ -728,8 +727,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 		List<ParameterDeclaration> parameterDeclarations = event.getParameterDeclarations();
 		List<Expression> arguments = raiseEvent.getArguments();
 		List<Event> outputEvents = StatechartModelDerivedFeatures.getOutputEvents(port);
-		List<Event> internalEvents = StatechartModelDerivedFeatures.getInternalEvents(port);
-		if (!outputEvents.contains(event) && !internalEvents.contains(event)) {
+		if (!outputEvents.contains(event)) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 				"This event is not an out event",
 					new ReferenceInfo(StatechartModelPackage.Literals.RAISE_EVENT_ACTION__EVENT)));
@@ -1804,14 +1802,15 @@ public class StatechartModelValidator extends ActionModelValidator {
 	public Collection<ValidationResultMessage> checkWrappedPort(AsynchronousAdapter wrapper) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		for (Port port : StatechartModelDerivedFeatures.getAllPorts(wrapper)) {
-			for (Event event : StatechartModelDerivedFeatures.getInputEvents(port)) {
+			List<Event> inputEvents = StatechartModelDerivedFeatures.getInputEvents(port);
+			for (Event event : inputEvents) {
 				Entry<Port, Event> portEvent = new SimpleEntry<Port, Event>(port, event);
 				int count = StatechartModelDerivedFeatures.countAssignedMessageQueues(portEvent, wrapper);
 				if (count != 1) {
 					ValidationResult result = (count < 1) ? ValidationResult.WARNING : ValidationResult.ERROR;
 					validationResultMessages.add(new ValidationResultMessage(result, 
-						"Event " + event.getName() + " of port " + port.getName() +
-							" is not forwarded to a single message queue but to " + count,
+						"Event '" + event.getName() + "' of port '" + port.getName() +
+							"' is not forwarded to a single message queue but to " + count,
 						new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME)));
 				}
 			}
@@ -1882,12 +1881,12 @@ public class StatechartModelValidator extends ActionModelValidator {
 				PortEventReference portEventReference = (PortEventReference) eventReference;
 				Port containedPort = portEventReference.getPort();
 				Event containedEvent = portEventReference.getEvent();
-				List<Event> outputEvents = StatechartModelDerivedFeatures.getOutputEvents(containedPort);
-				if (outputEvents.stream().filter(it ->
-						StatechartModelDerivedFeatures.getContainingEventDeclaration(it).getDirection() != EventDirection.INOUT
-					).anyMatch(it -> it == containedEvent)) {
+				List<Event> outputEvents = new ArrayList<Event>(
+						StatechartModelDerivedFeatures.getOutputEvents(containedPort));
+				outputEvents.removeAll(StatechartModelDerivedFeatures.getInputEvents(containedPort));
+				if (outputEvents.contains(containedEvent)) {
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-						"Event " + containedEvent.getName() + " is an out event and can not be forwarded to a message queue", 
+						"Event '" + containedEvent.getName() + "' is an out event and can not be forwarded to a message queue", 
 							new ReferenceInfo(CompositeModelPackage.Literals.MESSAGE_QUEUE__EVENT_REFERENCES, index)));
 				}
 			}			

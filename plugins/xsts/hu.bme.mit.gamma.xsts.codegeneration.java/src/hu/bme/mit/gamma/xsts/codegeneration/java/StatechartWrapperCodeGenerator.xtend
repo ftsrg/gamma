@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.xsts.codegeneration.java
 
+import hu.bme.mit.gamma.codegeneration.java.util.InternalEventHandlerCodeGenerator
 import hu.bme.mit.gamma.codegeneration.java.util.TypeSerializer
 import hu.bme.mit.gamma.statechart.interface_.EventDirection
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
@@ -32,7 +33,7 @@ class StatechartWrapperCodeGenerator {
 	final extension TypeSerializer typeSerializer = TypeSerializer.INSTANCE
 	final extension PortDiagnoser portDiagnoser = PortDiagnoser.INSTANCE
 	final extension ValueDeclarationAccessor valueDeclarationAccessor = ValueDeclarationAccessor.INSTANCE
-	
+	final extension InternalEventHandlerCodeGenerator internalEventHandler = InternalEventHandlerCodeGenerator.INSTANCE
 	
 	new(String basePackageName, String statechartPackageName,
 			StatechartDefinition gammaStatechart, XSTS xSts) {
@@ -71,6 +72,7 @@ class StatechartWrapperCodeGenerator {
 			private Queue<Event> eventQueue2 = new LinkedList<Event>();
 			// Clocks
 			private «GAMMA_TIMER_INTERFACE» timer = new «GAMMA_TIMER_CLASS»();
+			«IF gammaStatechart.hasInternalPort»private boolean handleInternalEvents = true;«ENDIF»
 			
 			public «CLASS_NAME»(«FOR parameter : gammaStatechart.parameterDeclarations SEPARATOR ', '»«parameter.type.serialize» «parameter.name»«ENDFOR») {
 				«CLASS_NAME.toFirstLower» = new «gammaStatechart.wrappedStatemachineClassName»(«FOR parameter : gammaStatechart.parameterDeclarations SEPARATOR ', '»«parameter.name»«ENDFOR»);
@@ -82,6 +84,7 @@ class StatechartWrapperCodeGenerator {
 				processQueue = false;
 				eventQueue1.clear();
 				eventQueue2.clear();
+				«IF gammaStatechart.hasInternalPort»handleInternalEvents = true;«ENDIF»
 				//
 				«CLASS_NAME.toFirstLower».reset();
 				timer.saveTime(this);
@@ -157,6 +160,11 @@ class StatechartWrapperCodeGenerator {
 			«ENDFOR»
 			
 			public void runCycle() {
+				«IF gammaStatechart.hasInternalPort»
+					if (handleInternalEvents) {
+						handleInternalEvents();
+					}
+				«ENDIF»
 				changeEventQueues();
 				runComponent();
 			}
@@ -229,6 +237,12 @@ class StatechartWrapperCodeGenerator {
 					return «CLASS_NAME.toFirstLower.access(plainVariable)»;
 				}
 			«ENDFOR»
+			
+			public void setHandleInternalEvents(boolean handleInternalEvents) {
+				«IF gammaStatechart.hasInternalPort»this.handleInternalEvents = handleInternalEvents;«ENDIF»
+			}
+			
+			«gammaStatechart.createInternalEventHandlingCode»
 			
 			@Override
 			public String toString() {
