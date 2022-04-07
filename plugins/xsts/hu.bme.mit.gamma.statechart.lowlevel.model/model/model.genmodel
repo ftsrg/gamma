@@ -44,6 +44,7 @@
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute model.ecore#//StatechartDefinition/schedulingOrder"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute model.ecore#//StatechartDefinition/guardEvaluation"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//StatechartDefinition/timeoutDeclarations"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//StatechartDefinition/internalEventDeclarations"/>
     </genClasses>
     <genClasses ecoreClass="model.ecore#//CompositeElement">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//CompositeElement/regions"/>

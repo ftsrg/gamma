@@ -253,8 +253,13 @@ class StatechartToLowlevelTransformer {
 		}
 		for (port : statechart.ports) {
 			// Both in and out events are transformed to a boolean VarDecl with additional parameters
-			for (eventDecl : port.allEventDeclarations) {
-				lowlevelStatechart.eventDeclarations += eventDecl.transform(port)
+			for (eventDeclaration : port.allEventDeclarations) {
+				val lowlevelEventDeclarations = eventDeclaration.transform(port)
+				lowlevelStatechart.eventDeclarations += lowlevelEventDeclarations
+				if (eventDeclaration.direction == EventDirection.INTERNAL) {
+					// Tracing
+					lowlevelStatechart.internalEventDeclarations += lowlevelEventDeclarations
+				}
 			}
 		}
 		for (region : statechart.regions) {

@@ -660,6 +660,11 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 				.map(it -> it.getEvent()).collect(Collectors.toList());
 	}
 	
+	public static boolean isInternal(Event event) {
+		EventDirection direction = getDirection(event);
+		return direction == EventDirection.INTERNAL;
+	}
+	
 	public static EventDirection getDirection(Event event) {
 		EventDeclaration eventDeclaration = ecoreUtil.getContainerOfType(event, EventDeclaration.class);
 		return eventDeclaration.getDirection();

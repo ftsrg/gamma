@@ -213,6 +213,9 @@ class XstsUppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 		if (sortTrace) {
 			trace.sortInstanceStates
 		}
+		
+		trace.removeInternalEventRaiseActs
+		
 		return trace
 	}
 	

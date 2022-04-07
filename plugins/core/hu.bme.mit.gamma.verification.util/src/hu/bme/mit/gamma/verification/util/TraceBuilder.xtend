@@ -31,6 +31,7 @@ import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.util.ExpressionTypeDeterminator
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
+import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.trace.model.InstanceVariableState
 import hu.bme.mit.gamma.trace.model.RaiseEventAct
 import hu.bme.mit.gamma.trace.model.Step
@@ -43,6 +44,7 @@ import java.math.BigInteger
 import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class TraceBuilder {
 	// Singleton
@@ -58,6 +60,18 @@ class TraceBuilder {
 	protected final extension ExpressionTypeDeterminator typeDeterminator = ExpressionTypeDeterminator.INSTANCE
 	protected final extension TraceUtil traceUtil = TraceUtil.INSTANCE
 	protected final StatechartUtil statechartUtil = StatechartUtil.INSTANCE // For component instance reference
+	
+	// Remove internal events
+	
+	def removeInternalEventRaiseActs(ExecutionTrace trace) {
+		val raiseEventActs = trace.getAllContentsOfType(RaiseEventAct)
+		for (raiseEventAct : raiseEventActs) {
+			val event = raiseEventAct.event
+			if (event.internal) {
+				raiseEventAct.remove
+			}
+		}
+	}
 	
 	// In event
 	
