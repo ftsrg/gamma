@@ -80,6 +80,7 @@ import hu.bme.mit.gamma.statechart.interface_.Interface;
 import hu.bme.mit.gamma.statechart.interface_.InterfaceRealization;
 import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.statechart.interface_.PackageAnnotation;
+import hu.bme.mit.gamma.statechart.interface_.Persistency;
 import hu.bme.mit.gamma.statechart.interface_.Port;
 import hu.bme.mit.gamma.statechart.interface_.RealizationMode;
 import hu.bme.mit.gamma.statechart.interface_.SimpleTrigger;
@@ -658,6 +659,26 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return getAllEventDeclarations(_interface).stream()
 				.filter(it -> it.getDirection() == EventDirection.INTERNAL)
 				.map(it -> it.getEvent()).collect(Collectors.toList());
+	}
+	
+	public static boolean isPersistent(Event event) {
+		Persistency persistency = event.getPersistency();
+		return persistency == Persistency.PERSISTENT;
+	}
+	
+	public static boolean isTransient(Event event) {
+		Persistency persistency = event.getPersistency();
+		return persistency == Persistency.TRANSIENT;
+	}
+	
+	public static boolean isPersistent(ParameterDeclaration parameter) {
+		Event event = getContainingEvent(parameter);
+		return isPersistent(event);
+	}
+	
+	public static boolean isTransient(ParameterDeclaration parameter) {
+		Event event = getContainingEvent(parameter);
+		return isTransient(event);
 	}
 	
 	public static boolean isInternal(Event event) {
@@ -1333,6 +1354,11 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	}
     
     public static boolean isSimplifiable(AsynchronousAdapter adapter) {
+    	// Internal ports might induce multiple messages in message queues
+    	if (hasInternalPort(adapter)) {
+    		return false;
+    	}
+    	
     	List<MessageQueue> messageQueues = adapter.getMessageQueues();
 		if (messageQueues.size() != 1) {
 			return false;

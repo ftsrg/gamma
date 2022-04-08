@@ -606,22 +606,14 @@ class LowlevelToXstsTransformer {
 		if (inEventEnvironmentalActionRule === null) {
 			inEventEnvironmentalActionRule = createRule(InEvents.instance).action [
 				val lowlevelEvent = it.event
-				if (lowlevelEvent.notOptimizable) {
-					val isInternal = lowlevelEvent.internal
+				if (lowlevelEvent.notOptimizable && !lowlevelEvent.internal) {
 					val lowlevelEnvironmentalAction = inEventAction as SequentialAction
 					val xStsEventVariable = trace.getXStsVariable(lowlevelEvent)
 					
 					// In event variable
-					val xStsInEventAssignment = if (isInternal) {
-						// Copying to the in event variable from the out event variable
-						val lowlevelOutEvent = lowlevelEvent.internalEventPair
-						val xStsOutEventVariable = trace.getXStsVariable(lowlevelOutEvent)
-						xStsEventVariable.createAssignmentAction(xStsOutEventVariable)
-					} else {
-						createHavocAction => [
-							it.lhs = xStsEventVariable.createReferenceExpression
-						]
-					}
+					val xStsInEventAssignment = createHavocAction => [
+						it.lhs = xStsEventVariable.createReferenceExpression
+					]
 					
 					lowlevelEnvironmentalAction.actions += xStsInEventAssignment
 					// Parameter variables
@@ -636,19 +628,9 @@ class LowlevelToXstsTransformer {
 									.createAssignmentAction(xStsParameterVariable.initialValue)
 						}
 						
-						val xStsInParameterAssignment = if (isInternal) {
-							// Copying to the in event variable from the out event variable
-							val lowlevelOutEvent = lowlevelEvent.internalEventPair
-							val lowlevelOutEventParameters = lowlevelOutEvent.parameters
-							val lowlevelOutEventParameter = lowlevelOutEventParameters.get(
-									lowlevelParameterDeclaration.index)
-							val xStsOutParameterVariable = trace.getXStsVariable(lowlevelOutEventParameter)
-							xStsParameterVariable.createAssignmentAction(xStsOutParameterVariable)
-						} else {
-							createHavocAction => [
-								it.lhs = xStsParameterVariable.createReferenceExpression
-							]
-						}
+						val xStsInParameterAssignment = createHavocAction => [
+							it.lhs = xStsParameterVariable.createReferenceExpression
+						]
 						
 						// Setting the parameter value
 						lowlevelEnvironmentalAction.actions += createIfAction(
@@ -667,7 +649,7 @@ class LowlevelToXstsTransformer {
 		if (outEventEnvironmentalActionRule === null) {
 			outEventEnvironmentalActionRule = createRule(OutEvents.instance).action [
 				val lowlevelEvent = it.event
-				if (lowlevelEvent.notOptimizable) {
+				if (lowlevelEvent.notOptimizable && !lowlevelEvent.internal) {
 					val lowlevelEnvironmentalAction = outEventAction as SequentialAction
 					val xStsEventVariable = trace.getXStsVariable(lowlevelEvent)
 					lowlevelEnvironmentalAction.actions += xStsEventVariable

@@ -189,6 +189,7 @@ class StatechartWrapperCodeGenerator {
 					}
 				}
 				executeStep();
+«««				TODO extract internal port handling here?
 			}
 			
 			private void executeStep() {

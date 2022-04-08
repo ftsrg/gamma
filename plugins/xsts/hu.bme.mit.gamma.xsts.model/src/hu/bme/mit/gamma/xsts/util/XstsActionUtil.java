@@ -158,8 +158,10 @@ public class XstsActionUtil extends ExpressionUtil {
 	}
 	
 	public void appendToAction(Action pivot, Collection<? extends Action> actions) {
+		Action actualPivot = pivot;
 		for (Action action : actions) {
-			appendToAction(pivot, action);
+			appendToAction(actualPivot, action);
+			actualPivot = action;
 		}
 	}
 	

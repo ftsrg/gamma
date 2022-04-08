@@ -12,6 +12,7 @@ package hu.bme.mit.gamma.codegeneration.java
 
 import hu.bme.mit.gamma.codegeneration.java.queries.BroadcastChannels
 import hu.bme.mit.gamma.codegeneration.java.queries.SimpleChannels
+import hu.bme.mit.gamma.codegeneration.java.util.InternalEventHandlerCodeGenerator
 import hu.bme.mit.gamma.codegeneration.java.util.Namings
 import hu.bme.mit.gamma.codegeneration.java.util.TimingDeterminer
 import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent
@@ -26,13 +27,15 @@ class SynchronousCompositeComponentCodeGenerator {
 	
 	protected final String PACKAGE_NAME
 	// 
-	protected final extension TimingDeterminer timingDeterminer = TimingDeterminer.INSTANCE
 	protected final extension Trace trace
 	protected final extension NameGenerator nameGenerator
 	protected final extension TypeTransformer typeTransformer
 	protected final extension EventDeclarationHandler gammaEventDeclarationHandler
 	protected final extension ComponentCodeGenerator componentCodeGenerator
 	protected final extension CompositeComponentCodeGenerator compositeComponentCodeGenerator
+	//
+	protected final extension TimingDeterminer timingDeterminer = TimingDeterminer.INSTANCE
+	protected final extension InternalEventHandlerCodeGenerator internalEventHandler = InternalEventHandlerCodeGenerator.INSTANCE
 	//
 	protected final String INSERT_QUEUE = "insertQueue"
 	protected final String EVENT_QUEUE = "eventQueue"

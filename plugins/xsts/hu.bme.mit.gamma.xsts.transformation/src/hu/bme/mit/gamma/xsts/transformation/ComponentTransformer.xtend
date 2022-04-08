@@ -61,6 +61,8 @@ class ComponentTransformer {
 	// This gammaToLowlevelTransformer must be the same during this transformation cycle due to tracing
 	protected final GammaToLowlevelTransformer gammaToLowlevelTransformer
 	protected final MessageQueueTraceability queueTraceability
+	// Traceability
+	protected final Traceability traceability
 	// Transformation settings
 	protected final boolean transformOrthogonalActions
 	protected final boolean optimize
@@ -74,7 +76,9 @@ class ComponentTransformer {
 	protected final extension OrthogonalActionTransformer orthogonalActionTransformer =
 			OrthogonalActionTransformer.INSTANCE
 	protected final extension EventConnector eventConnector = EventConnector.INSTANCE
+	protected final extension InternalEventHandler internalEventHandler = InternalEventHandler.INSTANCE
 	protected final extension SystemReducer systemReducer = SystemReducer.INSTANCE
+	
 	protected final extension ExpressionModelFactory expressionModelFactory = ExpressionModelFactory.eINSTANCE
 	protected final extension XSTSModelFactory xStsModelFactory = XSTSModelFactory.eINSTANCE
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
@@ -88,6 +92,7 @@ class ComponentTransformer {
 		this.optimize = optimize
 		this.transitionMerging = transitionMerging
 		this.queueTraceability = new MessageQueueTraceability
+		this.traceability = new Traceability
 	}
 	
 	def dispatch XSTS transform(Component component, Package lowlevelPackage) {
@@ -409,17 +414,18 @@ class ComponentTransformer {
 		
 		// Creating environment behavior
 		
-		val systemEvents = newHashSet
-		for (systemAsynchronousSimplePort : component.allBoundAsynchronousSimplePorts) {
+		val systemInEvents = newHashSet
+		for (systemAsynchronousSimplePort : component.allBoundAsynchronousSimplePorts
+					.reject[it.internal]) {
 			for (inEvent : systemAsynchronousSimplePort.inputEvents) {
 				val portEvent = new SimpleEntry(systemAsynchronousSimplePort, inEvent)
 				if (queueTraceability.contains(portEvent)) {
 					logger.log(Level.INFO,
 						'''Found «systemAsynchronousSimplePort.name».«inEvent.name» as system input event''')
-					systemEvents += portEvent
+					systemInEvents += portEvent
 				}
 			}
-		}
+		} // TODO internal?
 		for (queue : environmentalQueues) { // All with capacity 1 and size 0
 			val queueMapping = queueTraceability.get(queue)
 			val masterQueue = queueMapping.masterQueue.arrayVariable
@@ -459,7 +465,7 @@ class ComponentTransformer {
 			val branchExpressions = <Expression>newArrayList
 			val branchActions = <Action>newArrayList
 			for (portEvent : slaveQueues.keySet
-						.filter[systemEvents.contains(it) /*Only system events*/]) {
+						.filter[systemInEvents.contains(it) /*Only system events*/]) {
 				val slaveQueueStructs = slaveQueues.get(portEvent)
 				val eventId = queueTraceability.get(portEvent)
 				branchExpressions += xStsEventIdVariable
@@ -511,11 +517,17 @@ class ComponentTransformer {
 				val ifExpression = xStsOutEventVariable.createReferenceExpression
 				val thenAction = createSequentialAction
 				
-				val connectedAdapterPorts = port.allConnectedAsynchronousSimplePorts
+				val connectedAdapterPorts = newLinkedHashSet
+				connectedAdapterPorts += port.allConnectedAsynchronousSimplePorts
+				if (port.internal) {
+					// Works as the same internal event is connected to the same port and traced in the message queue
+					connectedAdapterPorts += port
+				}
+				
 				for (connectedAdapterPort : connectedAdapterPorts) {
 					val connectedPortEvent = new SimpleEntry(connectedAdapterPort, outEvent)
 					if (queueTraceability.contains(connectedPortEvent)) {
-						// The event is stored and not been removed due to optimization
+						// The event is stored and has not been removed due to optimization
 						val eventId = queueTraceability.get(connectedPortEvent)
 						// Highest priority in the case of multiple queues allowing storage 
 						val queueTrace = queueTraceability.getMessageQueues(connectedPortEvent)
@@ -542,8 +554,8 @@ class ComponentTransformer {
 								xStsMasterSizeVariable, eventId.toIntegerLiteral)
 						// Resetting out event variable if it is not  led out to the system
 						// Duplicated for broadcast ports - not a problem, but could be refactored
-						val systemPort = systemPorts.contains(connectedAdapterPort.boundTopComponentPort)
-						if (!systemPort) {
+						val isSystemPort = systemPorts.contains(connectedAdapterPort.boundTopComponentPort)
+						if (!isSystemPort) {
 							block.actions += xStsOutEventVariable.createVariableResetAction
 						}
 						// Slaves
@@ -564,7 +576,7 @@ class ComponentTransformer {
 									xStsOutParameterVariables.map[it.createReferenceExpression])
 							// Resetting out parameter variables if they are not led out to the system
 							// Duplicated for broadcast ports - not a problem, but could be refactored
-							if (!systemPort) {
+							if (!isSystemPort) {
 								block.actions += xStsOutParameterVariables.map[it.createVariableResetAction]
 							}
 						}
@@ -620,6 +632,23 @@ class ComponentTransformer {
 		// Resetting out and events manually as a "schedule" call in the code does that
 		xSts.resetOutEventsBeforeMergedAction(wrappedType)
 		xSts.resetInEventsAfterMergedAction(wrappedType)
+		//
+		
+		// Internal event handling
+		// Internal events in the entry action do not have to be removed here either:
+		// the caller method will handle the message queue handling based on these flags 
+		
+		// Merged action has to be handled due to resetInEventsAfterMergedAction
+		xSts.replaceInternalEventHandlingActionsInMergedAction(component, traceability)
+		
+//		val internalEventHandlingActions = traceability.internalEventHandlingActions
+//		internalEventHandlingActions.forEach[it.remove]
+//		traceability.clearInternalEventHandlingActions
+//		val xStsInternalEventHandlings = xSts.createInternalEventHandlingActions(component)
+//		traceability.putInternalEventHandlingAction(xStsInternalEventHandlings)
+//		val xStsMergedAction = xSts.mergedAction
+//		xStsMergedAction.appendToAction(xStsInternalEventHandlings)
+		//
 		
 		if (isTopInPackage) {
 			val inEventAction = xSts.inEventTransition
@@ -699,15 +728,22 @@ class ComponentTransformer {
 		// Input, output and tracing merged actions
 		for (var i = 0; i < components.size; i++) {
 			val subcomponent = components.get(i)
-			val componentType = subcomponent.type
+			val subcomponentType = subcomponent.type
 			
 			// Normal transformation
-			componentType.extractParameters(subcomponent.arguments) // Change the reference from parameters to constants
-			val newXSts = componentType.transform(lowlevelPackage)
+			subcomponentType.extractParameters(subcomponent.arguments) // Change the reference from parameters to constants
+			val newXSts = subcomponentType.transform(lowlevelPackage)
 			newXSts.customizeDeclarationNames(subcomponent)
 			
 			// Adding new elements
 			xSts.merge(newXSts)
+			
+			// Internal event handling here as EventReferenceHandler cannot be used without customizeDeclarationNames
+			if (subcomponentType.statechart) {
+				xSts.addInternalEventHandlingActionsToEntryAction(subcomponentType)
+				// Not replace but first addition, but the traceability is handled like this
+				xSts.replaceInternalEventHandlingActionsInMergedAction(component, traceability)
+			}
 			
 			// Initializing action
 			val variableInitAction = createSequentialAction
@@ -740,17 +776,17 @@ class ComponentTransformer {
 			if (component instanceof CascadeCompositeComponent) {
 				// Resetting IN events AFTER schedule - refactor to method call
 				val clonedNewInEventAction = newInEventAction.clone
-						.resetEverythingExceptPersistentParameters(componentType) // Clone is important
+						.resetEverythingExceptPersistentParameters(subcomponentType) // Clone is important
 				actualComponentMergedAction.actions += clonedNewInEventAction // Putting the new action AFTER
 			}
 			else {
 				// Resetting OUT events BEFORE schedule
 				val clonedNewOutEventAction = newOutEventAction.clone // Clone is important
-						.resetEverythingExceptPersistentParameters(componentType)
+						.resetEverythingExceptPersistentParameters(subcomponentType)
 				actualComponentMergedAction.actions.add(0, clonedNewOutEventAction) // Putting the new action BEFORE
 			}
 			// Tracing merged action
-			componentMergedActions += componentType -> actualComponentMergedAction.clone
+			componentMergedActions += subcomponentType -> actualComponentMergedAction.clone
 			
 			// In event
 			newInEventAction.deleteEverythingExceptSystemEventsAndParameters(component)
@@ -769,6 +805,9 @@ class ComponentTransformer {
 				xSts.outEventTransition = outEventAction.wrap
 			}
 		}
+		
+		// Internal event handlings in entry event transitions do not need to be readjusted:
+		// the result would be the same as only the order of the assignments would change
 		
 		// Potentially executing instances before first environment transition (cascade only)
 		// System out events are NOT cleared
@@ -796,6 +835,9 @@ class ComponentTransformer {
 			mergedAction.actions += componentMergedAction
 		}
 		xSts.changeTransitions(mergedAction.wrap)
+		
+		logger.log(Level.INFO, "Readjusting internal event handlings in " + name)
+		xSts.replaceInternalEventHandlingActionsInMergedAction(component, traceability)
 		
 		logger.log(Level.INFO, "Deleting unused instance ports in " + name)
 		xSts.deleteUnusedPorts(component) // Deleting variable assignments for unused ports
@@ -845,10 +887,22 @@ class ComponentTransformer {
 		val xStsEntry = lowlevelToXSTSTransformer.execute
 		lowlevelPackage.components -= lowlevelStatechart // So that next time the matches do not return elements from this statechart
 		val xSts = xStsEntry.key
+		
 		// 0-ing all variable declaration initial expression, the normal ones are in the init action
 		for (variable : xSts.variableDeclarations) {
 			variable.expression = variable.defaultExpression
 		}
+		
+//		// TODO move into parent to support event reference handling Handling internal events
+//		val xStsInternalEventHandlingActions = xSts.createInternalEventHandlingActions(statechart)
+//		
+//		val entryEventAction = xSts.entryEventTransition.action
+//		entryEventAction.appendToAction(xStsInternalEventHandlingActions)
+//		
+//		val mergedAction = xSts.mergedAction
+//		mergedAction.appendToAction(xStsInternalEventHandlingActions.map[it.clone])
+//		// 
+		
 		return xSts
 	}
 	
@@ -904,9 +958,11 @@ class ComponentTransformer {
 		val topPorts = ports.map[it.boundTopComponentPort]
 		val capacity = queue.capacity.evaluateInteger
 		if (systemPorts.containsOne(topPorts) && capacity == 1) {
-			return true /* Contains other events too, but the queue will always be empty,
-				when handling it in the in-event action */
-			// TODO except if the initial action raises some internal events 
+//			return true /* Contains other events too, but the queue will always be empty,
+//				when handling it in the in-event action */
+			// Not true: except if the initial action raises some internal events
+			// Not true: internal events?
+			return false
 		}
 		checkState(systemPorts.containsNone(topPorts) || capacity == 1,
 				"All or none of the ports must be system ports or the capacity must be one")
