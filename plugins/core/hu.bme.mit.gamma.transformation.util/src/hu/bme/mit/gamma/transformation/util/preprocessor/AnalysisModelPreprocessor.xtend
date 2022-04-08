@@ -79,6 +79,7 @@ class AnalysisModelPreprocessor {
 				val wrapper = component.wrapAsynchronousComponent
 				wrapper.addWrapperComponentAnnotation // Adding wrapper annotation
 				_package.components.add(0, wrapper)
+				modelUnfolder.renameInstances(wrapper) // Renaming manually due to Scheduled-Adapter extension
 			}
 			else {
 				logger.log(Level.INFO, "Adapter " + name + " does not have to be wrapped")

@@ -340,6 +340,7 @@ class UnfoldingTraceability {
 		for (originalSimpleInstance : originalSimpleInstances) {
 			// There are some AA and CCC wrappings of statecharts in the unfolding process, which
 			// should be handled by the below method call ("contains" instead of "equals")
+			// TODO not working
 			if (originalSimpleInstance.contains(newInstance)) {
 				return originalSimpleInstance // Only one is expected
 			}

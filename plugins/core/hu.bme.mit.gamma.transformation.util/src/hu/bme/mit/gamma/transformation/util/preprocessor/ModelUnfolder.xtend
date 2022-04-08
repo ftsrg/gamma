@@ -332,7 +332,7 @@ class ModelUnfolder {
 	
 	// Instance renames
 	
-	private def dispatch void renameInstances(CompositeComponent component) {
+	protected def dispatch void renameInstances(CompositeComponent component) {
 		for (instance : component.derivedComponents) {
 			val type = instance.derivedType
 			type.renameInstances
@@ -341,7 +341,7 @@ class ModelUnfolder {
 		}
 	}
 	
-	private def dispatch void renameInstances(AsynchronousAdapter component) {
+	protected def dispatch void renameInstances(AsynchronousAdapter component) {
 		val instance = component.wrappedComponent
 		val type = instance.type
 		type.renameInstances
@@ -349,7 +349,7 @@ class ModelUnfolder {
 		instance.name = instance.FQN
 	}
 	
-	private def dispatch void renameInstances(StatechartDefinition component) {}
+	protected def dispatch void renameInstances(StatechartDefinition component) {}
 	
 	// Instance name validation
 	

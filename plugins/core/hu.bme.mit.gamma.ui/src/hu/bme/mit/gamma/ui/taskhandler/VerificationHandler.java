@@ -139,6 +139,7 @@ public class VerificationHandler extends TaskHandler {
 		
 		// Serializing property formulas
 		for (PropertyPackage propertyPackage : verification.getPropertyPackages()) {
+			// TODO Handle wrapped adapters 
 			for (CommentableStateFormula formula : propertyPackage.getFormulas()) {
 				StateFormula stateFormula = formula.getFormula();
 				String serializedFormula = propertySerializer.serialize(stateFormula);
