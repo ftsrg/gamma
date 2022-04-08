@@ -68,6 +68,7 @@ class SynchronousCompositeComponentCodeGenerator {
 				private «port.name.toFirstUpper» «port.name.toFirstLower»;
 			«ENDFOR»
 			«component.generateParameterDeclarationFields»
+			«component.createInternalPortHandlingAttributes»
 			
 			«IF component.needTimer»
 				public «component.generateComponentClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", " AFTER ", "»«parameter.type.transformType» «parameter.name»«ENDFOR»«Namings.UNIFIED_TIMER_INTERFACE» timer) {
@@ -97,16 +98,19 @@ class SynchronousCompositeComponentCodeGenerator {
 				clearPorts();
 				// Initializing chain of listeners and events 
 				notifyAllSublisteners();
+				«component.createInternalPortHandlingSettingCode»
+				«IF component.hasInternalPort»handleAllSubinternalEvents();«ENDIF» ««« TODO Not necessary? depends on initallyScheduledInstances
 «««				Potentially executing instances before first environment transition (cascade only)
 «««				System out-events are NOT cleared
 				«IF component instanceof CascadeCompositeComponent»
 					«FOR instance : component.initallyScheduledInstances»
 «««						Instance in-events are implicitly cleared of course
-						«instance.runCycleOrComponent(component)»
+						«instance.runCycleOrComponent(component)» ««« TODO Not runCycle? There are in events, so not sure
 					«ENDFOR»
 				«ENDIF»
 				// Notifying registered listeners
 				notifyListeners();
+				«IF component.hasInternalPort»handleInternalEvents();«ENDIF» ««« TODO Not necessary?
 			}
 			
 			/** Creates the channel mappings and enters the wrapped statemachines. */
@@ -267,6 +271,7 @@ class SynchronousCompositeComponentCodeGenerator {
 				«ENDFOR»
 				// Notifying registered listeners
 				notifyListeners();
+				«IF component.hasInternalPort»handleInternalEvents();«ENDIF»
 			}
 		
 			«IF component.needTimer»
@@ -288,11 +293,9 @@ class SynchronousCompositeComponentCodeGenerator {
 				}
 			«ENDFOR»
 			
-			public void setHandleInternalEvents(boolean handleInternalEvents) {
-				«FOR instance : component.components»
-					«instance.name».setHandleInternalEvents(handleInternalEvents);
-				«ENDFOR»
-			}
+			«component.createInternalPortHandlingSetters»
+			
+			«component.createInternalEventHandlingCode»
 			
 		}
 	'''

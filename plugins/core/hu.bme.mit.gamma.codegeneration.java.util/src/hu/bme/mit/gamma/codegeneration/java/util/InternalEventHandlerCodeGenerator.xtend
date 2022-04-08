@@ -11,6 +11,7 @@
 package hu.bme.mit.gamma.codegeneration.java.util
 
 import hu.bme.mit.gamma.statechart.interface_.Component
+import hu.bme.mit.gamma.statechart.interface_.Port
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
@@ -20,18 +21,70 @@ class InternalEventHandlerCodeGenerator {
 	protected new() {}
 	//
 	
+	def createInternalPortHandlingAttributes(Component component) '''
+		«FOR internalPort : component.allInternalPorts»
+			private boolean handle«internalPort.name.toFirstUpper» = true;
+		«ENDFOR»
+	'''
+	
+	// TODO incorporate
+	def createInternalPortHandlingAttributeResets(Component component) '''
+		«FOR internalPort : component.allInternalPorts»
+			handle«internalPort.name.toFirstUpper» = true;
+		«ENDFOR»
+	'''
+	
+	def createInternalPortHandlingSettingCode(Component component) '''
+		«FOR internalPort : component.allInternalPorts»
+			«FOR subcomponent : component.instances»
+				«FOR subport : subcomponent.derivedType.allInternalPorts.filter[it === internalPort || it.boundCompositePort === internalPort]»
+					«subcomponent.name».handle«subport.name.toFirstUpper»(false);
+				«ENDFOR»
+			«ENDFOR»
+		«ENDFOR»
+	'''
+	
+	def createInternalPortHandlingSetters(Component component) '''
+		«FOR internalPort : component.allInternalPorts»
+			public void handle«internalPort.name.toFirstUpper»(boolean handle«internalPort.name.toFirstUpper») {
+				this.handle«internalPort.name.toFirstUpper» = handle«internalPort.name.toFirstUpper»;
+			}
+		«ENDFOR»
+	'''
+	
 	def createInternalEventHandlingCode(Component component) '''
 		«IF component.hasInternalPort»
-			private void handleInternalEvents() {
+			public void handleInternalEvents() {
 				«FOR internalPort : component.allInternalPorts»
-					«FOR internalEvent : internalPort.internalEvents»
-						if («internalPort.name.toFirstLower».isRaised«internalEvent.name.toFirstUpper»()) {
-							«internalPort.name.toFirstLower».raise«internalEvent.name.toFirstUpper»(«FOR parameter : internalEvent.parameterDeclarations SEPARATOR ', '»«internalPort.name.toFirstLower».get«parameter.name.toFirstUpper»()«ENDFOR»);
+					«IF component.adapter»
+						«internalPort.createInternalEventRaisings»
+					«ELSE»
+						if (handle«internalPort.name.toFirstUpper») {
+							«internalPort.createInternalEventRaisings»
 						}
-					«ENDFOR»
+					«ENDIF»
+				«ENDFOR»
+			}
+			
+			public void handleAllInternalEvents() {
+				handleAllSubinternalEvents();
+				handleInternalEvents();
+			}
+			
+			public void handleAllSubinternalEvents() {
+				«FOR subcomponent : component.instances»
+					«subcomponent.name».handleAllInternalEvents();
 				«ENDFOR»
 			}
 		«ENDIF»
+	'''
+	
+	protected def createInternalEventRaisings(Port internalPort) '''
+		«FOR internalEvent : internalPort.internalEvents»
+			if («internalPort.name.toFirstLower».isRaised«internalEvent.name.toFirstUpper»()) {
+				«internalPort.name.toFirstLower».raise«internalEvent.name.toFirstUpper»(«FOR parameter : internalEvent.parameterDeclarations SEPARATOR ', '»«internalPort.name.toFirstLower».get«parameter.name.toFirstUpper»()«ENDFOR»);
+			}
+		«ENDFOR»
 	'''
 	
 }
