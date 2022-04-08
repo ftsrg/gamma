@@ -425,7 +425,7 @@ class ComponentTransformer {
 					systemInEvents += portEvent
 				}
 			}
-		} // TODO internal?
+		}
 		for (queue : environmentalQueues) { // All with capacity 1 and size 0
 			val queueMapping = queueTraceability.get(queue)
 			val masterQueue = queueMapping.masterQueue.arrayVariable
@@ -449,12 +449,28 @@ class ComponentTransformer {
 			xStsQueueHandlingAction.actions += xStsEventIdVariable.createHavocAction
 			
 			// If the id is a valid event
-			val emptyValue = xStsEventIdVariable.defaultExpression
-			val maxEventId = queue.maxEventId.toIntegerLiteral
-			// 0 < eventId && eventId <= maxPotentialEventId
-			val leftInterval = emptyValue.createLessExpression(xStsEventIdVariable.createReferenceExpression)
-			val rightInterval = xStsEventIdVariable.createReferenceExpression.createLessEqualExpression(maxEventId)
-			val isValidIdExpression = #[leftInterval, rightInterval].wrapIntoAndExpression
+			val storesInternalPort = queue.storedEvents.exists[it.key.internal]
+			// Semantically equivalent but maybe the second interval is easier to handle by SMT solvers
+			val isValidIdExpression = if (storesInternalPort) {
+				// (0 < eventId && eventId <= maxPotentialEventId) does not work now with internal events
+				val eventIds = queue.eventIdsOfNonInternalEvents
+				// (eventId == 1 || eventId == 3 || ...)
+				val idComparisons = eventIds.map[
+					xStsEventIdVariable.createReferenceExpression
+						.createEqualityExpression(
+							it.toIntegerLiteral)]
+				idComparisons.wrapIntoOrExpression
+			}
+			else {
+				val emptyValue = xStsEventIdVariable.defaultExpression
+				val maxEventId = queue.maxEventId.toIntegerLiteral
+				// 0 < eventId && eventId <= maxPotentialEventId
+				val leftInterval = emptyValue
+						.createLessExpression(xStsEventIdVariable.createReferenceExpression)
+				val rightInterval = xStsEventIdVariable.createReferenceExpression
+						.createLessEqualExpression(maxEventId)
+				#[leftInterval, rightInterval].wrapIntoAndExpression
+			}
 			
 			val setQueuesAction = createSequentialAction
 			setQueuesAction.actions += xStsMasterQueue.addAndIncrement( // Or could be used 0 literals for index
@@ -638,8 +654,9 @@ class ComponentTransformer {
 		// Internal events in the entry action do not have to be removed here either:
 		// the caller method will handle the message queue handling based on these flags 
 		
-		// Merged action has to be handled due to resetInEventsAfterMergedAction
+		// Merged action has to be handled regarding internal events due to resetInEventsAfterMergedAction
 		xSts.replaceInternalEventHandlingActionsInMergedAction(component, traceability)
+		//
 		
 //		val internalEventHandlingActions = traceability.internalEventHandlingActions
 //		internalEventHandlingActions.forEach[it.remove]
@@ -744,6 +761,7 @@ class ComponentTransformer {
 				// Not replace but first addition, but the traceability is handled like this
 				xSts.replaceInternalEventHandlingActionsInMergedAction(component, traceability)
 			}
+			//
 			
 			// Initializing action
 			val variableInitAction = createSequentialAction
@@ -806,9 +824,6 @@ class ComponentTransformer {
 			}
 		}
 		
-		// Internal event handlings in entry event transitions do not need to be readjusted:
-		// the result would be the same as only the order of the assignments would change
-		
 		// Potentially executing instances before first environment transition (cascade only)
 		// System out events are NOT cleared
 		if (component instanceof CascadeCompositeComponent) {
@@ -838,6 +853,8 @@ class ComponentTransformer {
 		
 		logger.log(Level.INFO, "Readjusting internal event handlings in " + name)
 		xSts.replaceInternalEventHandlingActionsInMergedAction(component, traceability)
+		// Internal event handlings in entry event transitions do not need to be readjusted:
+		// the result would be the same as only the order of the assignments would change
 		
 		logger.log(Level.INFO, "Deleting unused instance ports in " + name)
 		xSts.deleteUnusedPorts(component) // Deleting variable assignments for unused ports

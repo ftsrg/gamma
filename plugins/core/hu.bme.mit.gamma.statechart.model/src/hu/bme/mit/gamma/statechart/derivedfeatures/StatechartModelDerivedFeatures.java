@@ -943,6 +943,21 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return storedEvents.size(); // Starts from 1, size is the max
 	}
 	
+	public static List<Integer> getEventIdsOfNonInternalEvents(MessageQueue queue) {
+		List<Integer> ids = new ArrayList<Integer>();
+		
+		List<Entry<Port,Event>> storedEvents = getStoredEvents(queue);
+		int size = storedEvents.size();
+		for (int i = 0; i < size; i++) {
+			Entry<Port, Event> storedEvent = storedEvents.get(i);
+			Port port = storedEvent.getKey();
+			if (!isInternal(port)) {
+				ids.add(i + 1); // Starts from 1, size is the max
+			}
+		}
+		return ids;
+	}
+	
 	public static Entry<Port, Event> getEvent(MessageQueue queue, int eventId) {
 		List<Entry<Port,Event>> storedEvents = getStoredEvents(queue);
 		return storedEvents.get(eventId - 1); // Starts from 1, 0 is the "empty cell"
