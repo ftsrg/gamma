@@ -1,0 +1,10 @@
+package interfaces
+interface Internal {
+	internal event first(firstValue : integer)
+	internal event second(secondValue : boolean)
+	internal event third(thirdValue : integer)
+}
+
+interface Toggle {
+	out event toggle
+}
