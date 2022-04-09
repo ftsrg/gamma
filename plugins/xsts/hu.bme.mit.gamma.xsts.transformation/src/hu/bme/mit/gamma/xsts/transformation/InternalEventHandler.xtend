@@ -13,8 +13,11 @@ package hu.bme.mit.gamma.xsts.transformation
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.util.GammaEcoreUtil
+import hu.bme.mit.gamma.xsts.model.AbstractAssignmentAction
+import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
+import java.util.Collection
 
 import static com.google.common.base.Preconditions.checkArgument
 import static com.google.common.base.Preconditions.checkState
@@ -30,7 +33,98 @@ class InternalEventHandler {
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	
-	def createInternalEventHandlingActions(XSTS xSts, Component component) {
+	//
+	
+	def void addInternalEventHandlingActions(
+			XSTS xSts, Component component, Traceability traceability) {
+		xSts.addInternalEventHandlingActionsInEntryAction(component, traceability)
+		xSts.addInternalEventHandlingActionsInMergedAction(component, traceability)
+	}
+	
+	protected def void addInternalEventHandlingActionsInEntryAction(
+			XSTS xSts, Component component, Traceability traceability) {
+		val xStsEntryEventAction = xSts.entryEventTransition.action
+		xStsEntryEventAction.addInternalEventHandlingActions(
+				component, traceability.internalEventHandlingActionsOfEntryAction)
+	}
+	
+	protected def void addInternalEventHandlingActionsInMergedAction(
+			XSTS xSts, Component component, Traceability traceability) {
+		val xStsMergedAction = xSts.mergedAction
+		xStsMergedAction.addInternalEventHandlingActions(
+				component, traceability.internalEventHandlingActionsOfMergedAction)
+	}
+	
+	def void removeInternalEventHandlingActions(
+			XSTS xSts, Component component, Traceability traceability) {
+		xSts.removeInternalEventHandlingActionsInEntryAction(component, traceability)
+		xSts.removeInternalEventHandlingActionsInMergedAction(component, traceability)
+	}
+	
+	protected def void removeInternalEventHandlingActionsInEntryAction(
+			XSTS xSts, Component component, Traceability traceability) {
+		val xStsEntryEventAction = xSts.entryEventTransition.action
+		xStsEntryEventAction.removeInternalEventHandlingActions(
+				component, traceability.internalEventHandlingActionsOfEntryAction)
+	}
+	
+	protected def void removeInternalEventHandlingActionsInMergedAction(
+			XSTS xSts, Component component, Traceability traceability) {
+		val xStsMergedAction = xSts.mergedAction
+		xStsMergedAction.removeInternalEventHandlingActions(
+				component, traceability.internalEventHandlingActionsOfEntryAction)
+	}
+	
+	def void replaceInternalEventHandlingActions(
+			XSTS xSts, Component component, Traceability traceability) {
+		xSts.replaceInternalEventHandlingActionsInEntryAction(component, traceability)
+		xSts.replaceInternalEventHandlingActionsInMergedAction(component, traceability)
+	}
+	
+	protected def void replaceInternalEventHandlingActionsInEntryAction(
+			XSTS xSts, Component component, Traceability traceability) {
+		val xStsEntryEventAction = xSts.entryEventTransition.action
+		xStsEntryEventAction.replaceInternalEventHandlingActions(
+				component, traceability.internalEventHandlingActionsOfEntryAction)
+	}
+	
+	protected def void replaceInternalEventHandlingActionsInMergedAction(
+			XSTS xSts, Component component, Traceability traceability) {
+		val xStsMergedAction = xSts.mergedAction
+		xStsMergedAction.replaceInternalEventHandlingActions(
+				component, traceability.internalEventHandlingActionsOfMergedAction)
+	}
+	
+	//
+	
+	protected def void replaceInternalEventHandlingActions(
+			Action action, Component component, Collection<Action> internalEventHandlingActions) {
+		action.removeInternalEventHandlingActions(component, internalEventHandlingActions)
+		action.addInternalEventHandlingActions(component, internalEventHandlingActions)
+	}
+	
+	protected def void removeInternalEventHandlingActions(
+			Action action, Component component, Collection<Action> internalEventHandlingActions) {
+		val allInternalEventHandlingActions = action.getInternalEventHandlingActions(component)
+		
+		allInternalEventHandlingActions.retainAll(internalEventHandlingActions)
+		allInternalEventHandlingActions.forEach[it.remove]
+		
+		internalEventHandlingActions.clear // Clearing the trace set
+	}
+	
+	protected def void addInternalEventHandlingActions(
+			Action action, Component component, Collection<Action> internalEventHandlingActions) {
+		val xSts = action.containingXsts
+		val xStsInternalEventHandlings = xSts.createInternalEventHandlingActions(component)
+		action.appendToAction(xStsInternalEventHandlings)
+		
+		internalEventHandlingActions += xStsInternalEventHandlings // Filling the trace set
+	}
+	
+	//
+	
+	protected def createInternalEventHandlingActions(XSTS xSts, Component component) {
 		val actions = newArrayList
 		
 		val internalPorts = component.allInternalPorts
@@ -41,7 +135,7 @@ class InternalEventHandler {
 		return actions
 	}
 	
-	def createInternalEventHandlingActions(XSTS xSts, Port port) {
+	protected def createInternalEventHandlingActions(XSTS xSts, Port port) {
 		checkArgument(port.internal, "Port '" + port.name + "' is not internal")
 		
 		val actions = newArrayList
@@ -80,22 +174,46 @@ class InternalEventHandler {
 	
 	//
 	
-	def void addInternalEventHandlingActionsToEntryAction(XSTS xSts, Component component) {
-		val xStsInternalEventHandlingActions = xSts.createInternalEventHandlingActions(component)
+	protected def getInternalEventHandlingActions(Action action, Component component) {
+		val xStsVariableAssignments = newArrayList
 		
-		val xStsEntryEventAction = xSts.entryEventTransition.action
-		xStsEntryEventAction.appendToAction(xStsInternalEventHandlingActions)
+		val internalPorts = component.allInternalPorts
+		for (internalPort : internalPorts) {
+			xStsVariableAssignments += action.getInternalEventHandlingActions(internalPort)
+		}
+		
+		return xStsVariableAssignments
 	}
 	
-	def void replaceInternalEventHandlingActionsInMergedAction(
-			XSTS xSts, Component component, Traceability traceability) {
-		val internalEventHandlingActions = traceability.internalEventHandlingActions
-		internalEventHandlingActions.forEach[it.remove]
-		traceability.clearInternalEventHandlingActions
-		val xStsInternalEventHandlings = xSts.createInternalEventHandlingActions(component)
-		traceability.putInternalEventHandlingAction(xStsInternalEventHandlings)
-		val xStsMergedAction = xSts.mergedAction
-		xStsMergedAction.appendToAction(xStsInternalEventHandlings)
+	protected def getInternalEventHandlingActions(Action action, Port port) {
+		checkArgument(port.internal, "Port '" + port.name + "' is not internal")
+		
+		val xSts = action.containingXsts
+		val extension ReferenceToXstsVariableMapper mapper = new ReferenceToXstsVariableMapper(xSts)
+		
+		val xStsVariables = newArrayList
+		val xStsVariableAssignments = newArrayList
+		
+		val internalEvents = port.internalEvents
+		for (internalEvent : internalEvents) {
+			xStsVariables += internalEvent.getInputEventVariable(port)
+			xStsVariables += internalEvent.getOutputEventVariable(port)
+			
+			for (parameter : internalEvent.parameterDeclarations) {
+				xStsVariables += parameter.getInputParameterVariables(port)
+				xStsVariables += parameter.getOutputParameterVariables(port)
+			}
+		}
+		
+		val xStsAssignments = action.getSelfAndAllContentsOfType(AbstractAssignmentAction)
+		for (xStsAssignment : xStsAssignments) {
+			val xStsLhsDeclaration = xStsAssignment.lhs.declaration
+			if (xStsVariables.contains(xStsLhsDeclaration)) {
+				xStsVariableAssignments += xStsAssignment
+			}
+		}
+		
+		return xStsVariableAssignments
 	}
 	
 //	def void removeInternalEventHandlingActions(XSTS xSts, Component component) {

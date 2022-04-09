@@ -650,21 +650,8 @@ class ComponentTransformer {
 		xSts.resetInEventsAfterMergedAction(wrappedType)
 		//
 		
-		// Internal event handling
-		// Internal events in the entry action do not have to be removed here either:
-		// the caller method will handle the message queue handling based on these flags 
-		
-		// Merged action has to be handled regarding internal events due to resetInEventsAfterMergedAction
-		xSts.replaceInternalEventHandlingActionsInMergedAction(component, traceability)
-		//
-		
-//		val internalEventHandlingActions = traceability.internalEventHandlingActions
-//		internalEventHandlingActions.forEach[it.remove]
-//		traceability.clearInternalEventHandlingActions
-//		val xStsInternalEventHandlings = xSts.createInternalEventHandlingActions(component)
-//		traceability.putInternalEventHandlingAction(xStsInternalEventHandlings)
-//		val xStsMergedAction = xSts.mergedAction
-//		xStsMergedAction.appendToAction(xStsInternalEventHandlings)
+		// Internal event handling: only remove - event dispatch will tend to the addition
+		xSts.removeInternalEventHandlingActions(component, traceability)
 		//
 		
 		if (isTopInPackage) {
@@ -757,9 +744,7 @@ class ComponentTransformer {
 			
 			// Internal event handling here as EventReferenceHandler cannot be used without customizeDeclarationNames
 			if (subcomponentType.statechart) {
-				xSts.addInternalEventHandlingActionsToEntryAction(subcomponentType)
-				// Not replace but first addition, but the traceability is handled like this
-				xSts.replaceInternalEventHandlingActionsInMergedAction(component, traceability)
+				xSts.addInternalEventHandlingActions(subcomponentType, traceability)
 			}
 			//
 			
@@ -851,11 +836,6 @@ class ComponentTransformer {
 		}
 		xSts.changeTransitions(mergedAction.wrap)
 		
-		logger.log(Level.INFO, "Readjusting internal event handlings in " + name)
-		xSts.replaceInternalEventHandlingActionsInMergedAction(component, traceability)
-		// Internal event handlings in entry event transitions do not need to be readjusted:
-		// the result would be the same as only the order of the assignments would change
-		
 		logger.log(Level.INFO, "Deleting unused instance ports in " + name)
 		xSts.deleteUnusedPorts(component) // Deleting variable assignments for unused ports
 		
@@ -890,6 +870,10 @@ class ComponentTransformer {
 			xSts.resetInEventsAfterMergedAction(component)
 		}
 		
+		// After in event optimizatino
+		logger.log(Level.INFO, "Readjusting internal event handlings in " + name)
+		xSts.replaceInternalEventHandlingActions(component, traceability)
+		
 		return xSts
 	}
 	
@@ -909,16 +893,6 @@ class ComponentTransformer {
 		for (variable : xSts.variableDeclarations) {
 			variable.expression = variable.defaultExpression
 		}
-		
-//		// TODO move into parent to support event reference handling Handling internal events
-//		val xStsInternalEventHandlingActions = xSts.createInternalEventHandlingActions(statechart)
-//		
-//		val entryEventAction = xSts.entryEventTransition.action
-//		entryEventAction.appendToAction(xStsInternalEventHandlingActions)
-//		
-//		val mergedAction = xSts.mergedAction
-//		mergedAction.appendToAction(xStsInternalEventHandlingActions.map[it.clone])
-//		// 
 		
 		return xSts
 	}

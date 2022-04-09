@@ -27,13 +27,6 @@ class InternalEventHandlerCodeGenerator {
 		«ENDFOR»
 	'''
 	
-	// TODO incorporate
-	def createInternalPortHandlingAttributeResets(Component component) '''
-		«FOR internalPort : component.allInternalPorts»
-			handle«internalPort.name.toFirstUpper» = true;
-		«ENDFOR»
-	'''
-	
 	def createInternalPortHandlingSettingCode(Component component) '''
 		«FOR internalPort : component.allInternalPorts»
 			«FOR subcomponent : component.instances»
@@ -63,17 +56,6 @@ class InternalEventHandlerCodeGenerator {
 							«internalPort.createInternalEventRaisings»
 						}
 					«ENDIF»
-				«ENDFOR»
-			}
-			
-			public void handleAllInternalEvents() {
-				handleAllSubinternalEvents();
-				handleInternalEvents();
-			}
-			
-			public void handleAllSubinternalEvents() {
-				«FOR subcomponent : component.instances»
-					«subcomponent.name».handleAllInternalEvents();
 				«ENDFOR»
 			}
 		«ENDIF»

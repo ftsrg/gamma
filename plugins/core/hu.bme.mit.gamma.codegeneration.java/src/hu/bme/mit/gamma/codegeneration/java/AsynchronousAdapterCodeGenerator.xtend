@@ -110,7 +110,6 @@ class AsynchronousAdapterCodeGenerator {
 			public void reset() {
 				interrupt();
 				«component.generateWrappedComponentName».reset();
-				«component.createInternalPortHandlingSettingCode»
 				«IF component.hasInternalPort»handleInternalEvents();«ENDIF»
 			}
 			
@@ -127,6 +126,7 @@ class AsynchronousAdapterCodeGenerator {
 				«FOR match : QueuesOfClocks.Matcher.on(engine).getAllMatches(component, null, null)»
 					 timerService.setTimer(createTimerCallback(), «match.clock.name», «match.clock.timeSpecification.valueInMs», true);
 				«ENDFOR»
+				«component.createInternalPortHandlingSettingCode»
 				// The thread has to be started manually
 			}
 			

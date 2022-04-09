@@ -98,19 +98,17 @@ class SynchronousCompositeComponentCodeGenerator {
 				clearPorts();
 				// Initializing chain of listeners and events 
 				notifyAllSublisteners();
-				«component.createInternalPortHandlingSettingCode»
-				«IF component.hasInternalPort»handleAllSubinternalEvents();«ENDIF» ««« TODO Not necessary? depends on initallyScheduledInstances
 «««				Potentially executing instances before first environment transition (cascade only)
 «««				System out-events are NOT cleared
 				«IF component instanceof CascadeCompositeComponent»
 					«FOR instance : component.initallyScheduledInstances»
 «««						Instance in-events are implicitly cleared of course
-						«instance.runCycleOrComponent(component)» ««« TODO Not runCycle? There are in events, so not sure
+						«instance.runCycleOrComponent(component)» ««« Not runCycle?
 					«ENDFOR»
 				«ENDIF»
 				// Notifying registered listeners
 				notifyListeners();
-				«IF component.hasInternalPort»handleInternalEvents();«ENDIF» ««« TODO Not necessary?
+				«IF component.hasInternalPort»handleInternalEvents();«ENDIF»
 			}
 			
 			/** Creates the channel mappings and enters the wrapped statemachines. */
@@ -124,6 +122,7 @@ class SynchronousCompositeComponentCodeGenerator {
 				«FOR channelMatch : BroadcastChannels.Matcher.on(engine).getAllMatches(component, null, null, null)»
 					«channelMatch.providedPort.instance.name».get«channelMatch.providedPort.port.name.toFirstUpper»().registerListener(«channelMatch.requiredPort.instance.name».get«channelMatch.requiredPort.port.name.toFirstUpper»());
 				«ENDFOR»
+				«component.createInternalPortHandlingSettingCode»
 			}
 			
 			// Inner classes representing Ports

@@ -8,27 +8,49 @@ import static com.google.common.base.Preconditions.checkNotNull
 
 class Traceability {
 	
-	Set<Action> internalEventHandlingActions = newHashSet
+	Set<Action> internalEventHandlingActionsOfMergedAction = newHashSet
+	Set<Action> internalEventHandlingActionsOfEntryAction = newHashSet
 	
 	//
 	
-	def putInternalEventHandlingAction(Iterable<? extends Action> actions) {
+	def putInternalEventHandlingActionsOfMergedAction(Iterable<? extends Action> actions) {
 		for (action : actions) {
-			putInternalEventHandlingAction(action)
+			putInternalEventHandlingActionsOfMergedAction(action)
 		}
 	}
 	
-	def putInternalEventHandlingAction(Action action) {
+	def putInternalEventHandlingActionsOfMergedAction(Action action) {
 		checkNotNull(action)
-		internalEventHandlingActions += action
+		internalEventHandlingActionsOfMergedAction += action
 	}
 	
-	def getInternalEventHandlingActions() {
-		return internalEventHandlingActions
+	def getInternalEventHandlingActionsOfMergedAction() {
+		return internalEventHandlingActionsOfMergedAction
 	}
 	
-	def clearInternalEventHandlingActions() {
-		internalEventHandlingActions.clear
+	def clearInternalEventHandlingActionsOfMergedAction() {
+		internalEventHandlingActionsOfMergedAction.clear
+	}
+	
+	//
+	
+	def putInternalEventHandlingActionsOfEntryAction(Iterable<? extends Action> actions) {
+		for (action : actions) {
+			putInternalEventHandlingActionsOfEntryAction(action)
+		}
+	}
+	
+	def putInternalEventHandlingActionsOfEntryAction(Action action) {
+		checkNotNull(action)
+		internalEventHandlingActionsOfEntryAction += action
+	}
+	
+	def getInternalEventHandlingActionsOfEntryAction() {
+		return internalEventHandlingActionsOfEntryAction
+	}
+	
+	def clearInternalEventHandlingActionsOfEntryAction() {
+		internalEventHandlingActionsOfEntryAction.clear
 	}
 	
 }
