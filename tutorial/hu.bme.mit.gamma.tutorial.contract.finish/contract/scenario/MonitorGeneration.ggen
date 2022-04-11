@@ -1,6 +1,8 @@
+import "contractsPackage"
+ 
 statechart-contract {
 	scenario : Blinking
-	folder  : "contract/scenario/automaton"
+	folder  : "contract/scenario/automaton" 
 	name : "Blinking"
 	restart-on-cold-violation : true
 	automaton-type : monitor

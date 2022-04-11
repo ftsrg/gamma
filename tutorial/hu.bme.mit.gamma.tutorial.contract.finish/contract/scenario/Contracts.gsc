@@ -1,14 +1,14 @@
-import "/contract/adaptive/Crossroads.gcd"
+package contractsPackage
+import "crossroad"
+component Crossroads 
 
-component Crossroads
+const one : integer := 1
 
-//@Strict
 @AllowedWaiting 0 .. 1
 scenario Blinking initial outputs [
 	hot sends priorityOutput.displayYellow
 	hot sends secondaryOutput.displayYellow
 ] [
-//	loop (1 .. 2) {
 	{
 		hot sends priorityOutput.displayNone
 		hot sends secondaryOutput.displayNone
@@ -19,7 +19,6 @@ scenario Blinking initial outputs [
 		hot sends secondaryOutput.displayYellow
 		hot delay (500)
 	}
-//	}
 ]
 
 @Strict
@@ -33,17 +32,6 @@ scenario Init initial outputs [
 	}
 ]
 
-//scenario Init [
-//	{
-//		hot sends priorityOutput.displayRed
-//		hot sends secondaryOutput.displayRed
-//	}
-//	{
-//		hot sends priorityOutput.displayGreen
-//	}
-//]
-
-//@Strict
 @AllowedWaiting 0 .. 1
 scenario Normal initial outputs [
 		hot sends priorityOutput.displayYellow
@@ -66,5 +54,4 @@ scenario Normal initial outputs [
 		hot delay (2000)
 		hot sends priorityOutput.displayYellow
 	}
-//	}
 ]

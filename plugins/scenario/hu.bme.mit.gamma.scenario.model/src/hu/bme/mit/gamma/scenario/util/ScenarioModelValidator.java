@@ -35,9 +35,9 @@ import hu.bme.mit.gamma.scenario.model.ParallelCombinedFragment;
 import hu.bme.mit.gamma.scenario.model.PermissiveAnnotation;
 import hu.bme.mit.gamma.scenario.model.Reset;
 import hu.bme.mit.gamma.scenario.model.ScenarioDeclaration;
-import hu.bme.mit.gamma.scenario.model.ScenarioDefinition;
 import hu.bme.mit.gamma.scenario.model.ScenarioDefinitionReference;
 import hu.bme.mit.gamma.scenario.model.ScenarioModelPackage;
+import hu.bme.mit.gamma.scenario.model.ScenarioPackage;
 import hu.bme.mit.gamma.scenario.model.Signal;
 import hu.bme.mit.gamma.scenario.model.StrictAnnotation;
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponent;
@@ -59,7 +59,7 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 
 	protected final ExpressionTypeDeterminator2 typeDeterminator = ExpressionTypeDeterminator2.INSTANCE;
 
-	public Collection<ValidationResultMessage> checkIncompatibleAnnotations(ScenarioDefinition scenario) {
+	public Collection<ValidationResultMessage> checkIncompatibleAnnotations(ScenarioDeclaration scenario) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		boolean strictPresent = false;
 		boolean permissivePresent = false;
@@ -89,11 +89,11 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 		return validationResultMessages;
 	}
 
-	public Collection<ValidationResultMessage> checkScenarioNamesAreUnique(ScenarioDeclaration scenarioDeclaration) {
+	public Collection<ValidationResultMessage> checkScenarioNamesAreUnique(ScenarioPackage scenarioPackage) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		for (ScenarioDefinition scen : scenarioDeclaration.getScenarios()) {
+		for (ScenarioDeclaration scen : scenarioPackage.getScenarios()) {
 			int i = 0;
-			for (ScenarioDefinition sd : scenarioDeclaration.getScenarios()) {
+			for (ScenarioDeclaration sd : scenarioPackage.getScenarios()) {
 				if (scen.getName().equals(sd.getName())) {
 					i++;
 				}
@@ -101,28 +101,28 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 			if (i > 1) {
 				validationResultMessages
 						.add(new ValidationResultMessage(ValidationResult.ERROR, "Scenario names should be unique",
-								new ReferenceInfo(ScenarioModelPackage.Literals.SCENARIO_DECLARATION__SCENARIOS)));
+								new ReferenceInfo(ScenarioModelPackage.Literals.SCENARIO_PACKAGE__SCENARIOS)));
 				return validationResultMessages;
 			}
 		}
 		return validationResultMessages;
 	}
 
-	public Collection<ValidationResultMessage> checkAtLeastOneHotSignalInChart(ScenarioDefinition scenario) {
+	public Collection<ValidationResultMessage> checkAtLeastOneHotSignalInChart(ScenarioDeclaration scenario) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		boolean allCold = scenario.getChart().getFragment().getInteractions().stream()
 				.allMatch((i) -> interactionIsCold(i));
 		if (allCold) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING,
 					"There should be at least one hot signal in chart",
-					new ReferenceInfo(ScenarioModelPackage.Literals.SCENARIO_DEFINITION__CHART)));
+					new ReferenceInfo(ScenarioModelPackage.Literals.SCENARIO_DECLARATION__CHART)));
 		}
 		return validationResultMessages;
 	}
 
 	public Collection<ValidationResultMessage> checkModalInteractionSets(ModalInteractionSet modalInteractionSet) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		ScenarioDeclaration scenario = ecoreUtil.getContainerOfType(modalInteractionSet, ScenarioDeclaration.class);
+		ScenarioPackage scenario = ecoreUtil.getContainerOfType(modalInteractionSet, ScenarioPackage.class);
 		Component component = scenario.getComponent();
 		int idx = -1;
 		if (modalInteractionSet.eContainer() instanceof NegatedModalInteraction) {
@@ -151,7 +151,7 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 	public Collection<ValidationResultMessage> checkModalInteractionsInSynchronousComponents(
 			ModalInteraction interaction) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		ScenarioDeclaration scenario = ecoreUtil.getContainerOfType(interaction, ScenarioDeclaration.class);
+		ScenarioPackage scenario = ecoreUtil.getContainerOfType(interaction, ScenarioPackage.class);
 		Component component = scenario.getComponent();
 		if (component instanceof SynchronousComponent) {
 			if (interaction instanceof ModalInteractionSet || interaction instanceof Reset
@@ -407,7 +407,7 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 		return validationResultMessages;
 	}
 
-	private boolean isScenarioReferenceRecursive(ScenarioDefinitionReference reference, ScenarioDefinition base) {
+	private boolean isScenarioReferenceRecursive(ScenarioDefinitionReference reference, ScenarioDeclaration base) {
 		List<ScenarioDefinitionReference> references = ecoreUtil.getAllContentsOfType(reference.getScenarioDefinition(),
 				ScenarioDefinitionReference.class);
 		for (ScenarioDefinitionReference innerReference : references) {

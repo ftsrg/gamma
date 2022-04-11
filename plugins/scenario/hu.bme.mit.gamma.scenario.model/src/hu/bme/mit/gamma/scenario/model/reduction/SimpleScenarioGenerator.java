@@ -40,7 +40,7 @@ import hu.bme.mit.gamma.scenario.model.OptionalCombinedFragment;
 import hu.bme.mit.gamma.scenario.model.ParallelCombinedFragment;
 import hu.bme.mit.gamma.scenario.model.PermissiveAnnotation;
 import hu.bme.mit.gamma.scenario.model.Reset;
-import hu.bme.mit.gamma.scenario.model.ScenarioDefinition;
+import hu.bme.mit.gamma.scenario.model.ScenarioDeclaration;
 import hu.bme.mit.gamma.scenario.model.ScenarioModelFactory;
 import hu.bme.mit.gamma.scenario.model.Signal;
 import hu.bme.mit.gamma.scenario.model.StrictAnnotation;
@@ -51,18 +51,18 @@ import hu.bme.mit.gamma.util.GammaEcoreUtil;
 
 public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 
-	private ScenarioDefinition base = null;
-	private ScenarioDefinition simple = null;
+	private ScenarioDeclaration base = null;
+	private ScenarioDeclaration simple = null;
 	private ScenarioModelFactory factory = null;
 	private boolean transformLoopFragments = false;
 	private List<Expression> arguments = null;
 	private ScenarioReferenceResolver refResolver = new ScenarioReferenceResolver();
 
-	public SimpleScenarioGenerator(ScenarioDefinition base, boolean transformLoopFragments) {
+	public SimpleScenarioGenerator(ScenarioDeclaration base, boolean transformLoopFragments) {
 		this(base, transformLoopFragments, new LinkedList<Expression>());
 	}
 
-	public SimpleScenarioGenerator(ScenarioDefinition base, boolean transformLoopFragments,
+	public SimpleScenarioGenerator(ScenarioDeclaration base, boolean transformLoopFragments,
 			List<Expression> parameters) {
 		this.base = base;
 		this.transformLoopFragments = transformLoopFragments;
@@ -74,9 +74,9 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 	private InteractionFragment previousFragment = null;
 	GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
 
-	public ScenarioDefinition execute() {
+	public ScenarioDeclaration execute() {
 		factory = ScenarioModelFactory.eINSTANCE;
-		simple = factory.createScenarioDefinition();
+		simple = factory.createScenarioDeclaration();
 		simple.setName(base.getName());
 		simple.setChart(factory.createChart());
 		simple.getChart().setFragment(factory.createInteractionFragment());
@@ -93,7 +93,7 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 		return simple;
 	}
 
-	private void inlineExpressions(ScenarioDefinition simple, ScenarioDefinition base) {
+	private void inlineExpressions(ScenarioDeclaration simple, ScenarioDeclaration base) {
 		List<DirectReferenceExpression> references = ecoreUtil.getAllContentsOfType(simple,
 				DirectReferenceExpression.class);
 		for (DirectReferenceExpression direct : references) {

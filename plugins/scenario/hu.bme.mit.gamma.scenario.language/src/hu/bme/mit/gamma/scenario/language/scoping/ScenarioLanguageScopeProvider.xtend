@@ -24,6 +24,7 @@ import org.eclipse.emf.ecore.EReference
 import org.eclipse.xtext.scoping.IScope
 import org.eclipse.xtext.scoping.Scopes
 import org.eclipse.xtext.scoping.impl.SimpleScope
+import hu.bme.mit.gamma.scenario.model.ScenarioPackage
 
 class ScenarioLanguageScopeProvider extends AbstractScenarioLanguageScopeProvider {
 
@@ -33,7 +34,7 @@ class ScenarioLanguageScopeProvider extends AbstractScenarioLanguageScopeProvide
 		var IScope scope = null
 		try {
 			switch (context) {
-				ScenarioDeclaration: scope = getScope(context, reference)
+				ScenarioPackage: scope = getScope(context, reference)
 				Signal: scope = getScope(context, reference)
 				DirectReferenceExpression: scope = getScope(context, reference)
 			}
@@ -50,8 +51,8 @@ class ScenarioLanguageScopeProvider extends AbstractScenarioLanguageScopeProvide
 		if (reference == ExpressionModelPackage.Literals.DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
 			// imported
 			var scope = IScope.NULLSCOPE;
-			val containingScenarioDecl = util.getContainerOfType(context, ScenarioDeclaration);
-			val imports = Lists.reverse(containingScenarioDecl.imports); // Latter imports are stronger
+			val containingScenariopackage = util.getContainerOfType(context, ScenarioPackage);
+			val imports = Lists.reverse(containingScenariopackage.imports); // Latter imports are stronger
 			for (Package _import : imports) {
 				var parent = super.getScope(_import, reference);
 				scope = new SimpleScope(parent, scope.getAllElements());
@@ -63,16 +64,16 @@ class ScenarioLanguageScopeProvider extends AbstractScenarioLanguageScopeProvide
 		}
 	}
 
-	private def IScope getScope(ScenarioDeclaration declaration, EReference reference) {
-		if (reference == ScenarioModelPackage.Literals.SCENARIO_DECLARATION__COMPONENT) {
-			val importedPackages = declaration.imports
+	private def IScope getScope(ScenarioPackage scenarioPackage, EReference reference) {
+		if (reference == ScenarioModelPackage.Literals.SCENARIO_PACKAGE__COMPONENT) {
+			val importedPackages = scenarioPackage.imports
 			return createScopeFor(importedPackages.flatMap[it.components])
 		}
 	}
 
 	private def IScope getScope(Signal signal, EReference reference) {
 		if (reference == ScenarioModelPackage.Literals.SIGNAL__PORT) {
-			val ports = ecoreUtil.getContainerOfType(signal, ScenarioDeclaration).component.ports
+			val ports = ecoreUtil.getContainerOfType(signal, ScenarioPackage).component.ports
 			return createScopeFor(ports)
 		} else if (reference == ScenarioModelPackage.Literals.SIGNAL__EVENT) {
 			val interface = signal.port.interfaceRealization.interface

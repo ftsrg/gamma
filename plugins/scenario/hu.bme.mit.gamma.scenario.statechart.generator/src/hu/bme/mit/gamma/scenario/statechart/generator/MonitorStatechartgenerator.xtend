@@ -9,7 +9,7 @@ import hu.bme.mit.gamma.scenario.model.ModalInteractionSet
 import hu.bme.mit.gamma.scenario.model.ModalityType
 import hu.bme.mit.gamma.scenario.model.NegatedModalInteraction
 import hu.bme.mit.gamma.scenario.model.OptionalCombinedFragment
-import hu.bme.mit.gamma.scenario.model.ScenarioDefinition
+import hu.bme.mit.gamma.scenario.model.ScenarioDeclaration
 import hu.bme.mit.gamma.statechart.contract.NotDefinedEventMode
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.EventTrigger
@@ -37,7 +37,7 @@ class MonitorStatechartgenerator extends AbstractContractStatechartGeneration {
 	protected List<Pair<StateNode, StateNode>> copyOutgoingTransitionsForOpt = newLinkedList
 	protected boolean restartOnColdViolation = false
 
-	new(ScenarioDefinition scenario, Component component, boolean restartOnColdViolation) {
+	new(ScenarioDeclaration scenario, Component component, boolean restartOnColdViolation) {
 		super(scenario, component)
 		this.restartOnColdViolation = restartOnColdViolation
 	}

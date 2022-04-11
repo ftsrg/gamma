@@ -33,6 +33,8 @@ import org.eclipse.xtext.scoping.Scopes
 import org.yakindu.sct.model.stext.stext.InterfaceScope
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
+import hu.bme.mit.gamma.genmodel.model.StatechartContractGeneration
+import hu.bme.mit.gamma.scenario.model.ScenarioPackage
 
 class GenModelScopeProvider extends AbstractGenModelScopeProvider {
 
@@ -157,6 +159,10 @@ class GenModelScopeProvider extends AbstractGenModelScopeProvider {
 			val gammaInterface = ((context as EventMapping).eContainer as InterfaceMapping).gammaInterface
 			val events = gammaInterface.allEventDeclarations.map[it.event]
 			return Scopes.scopeFor(events)
+		}
+		if (context instanceof StatechartContractGeneration && reference == GenmodelModelPackage.Literals.STATECHART_CONTRACT_GENERATION__SCENARIO){
+			val genmodel = context.eContainer as GenModel
+			return Scopes.scopeFor(genmodel.packageImports.filter(ScenarioPackage).flatMap[it.scenarios])
 		}
 		// Expression scoping
 		if (reference == ExpressionModelPackage.Literals.DIRECT_REFERENCE_EXPRESSION__DECLARATION) {

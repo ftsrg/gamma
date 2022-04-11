@@ -1,15 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="model" nsURI="http://www.mit.bme.hu/gamma/scenario/Model" nsPrefix="hu.bme.mit.gamma.scenario">
-  <eClassifiers xsi:type="ecore:EClass" name="ScenarioDeclaration">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="imports" lowerBound="1"
-        upperBound="-1" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/interface.ecore#//Package"/>
+  <eClassifiers xsi:type="ecore:EClass" name="ScenarioPackage" eSuperTypes="../../hu.bme.mit.gamma.statechart.model/model/interface.ecore#//Package">
     <eStructuralFeatures xsi:type="ecore:EReference" name="scenarios" lowerBound="1"
-        upperBound="-1" eType="#//ScenarioDefinition" containment="true"/>
+        upperBound="-1" eType="#//ScenarioDeclaration" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="component" lowerBound="1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/interface.ecore#//Component"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="ScenarioDefinition" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NamedElement ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ParametricElement">
+  <eClassifiers xsi:type="ecore:EClass" name="ScenarioDeclaration" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NamedElement ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ParametricElement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="chart" lowerBound="1" eType="#//Chart"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="annotation" upperBound="-1"
@@ -102,6 +100,6 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ScenarioDefinitionReference" eSuperTypes="#//Interaction ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ArgumentedElement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="scenarioDefinition" lowerBound="1"
-        eType="#//ScenarioDefinition"/>
+        eType="#//ScenarioDeclaration"/>
   </eClassifiers>
 </ecore:EPackage>

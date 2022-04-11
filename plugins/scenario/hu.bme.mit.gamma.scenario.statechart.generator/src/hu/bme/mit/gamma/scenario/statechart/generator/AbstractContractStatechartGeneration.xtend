@@ -13,7 +13,6 @@ import hu.bme.mit.gamma.scenario.model.InteractionDefinition
 import hu.bme.mit.gamma.scenario.model.InteractionDirection
 import hu.bme.mit.gamma.scenario.model.ModalInteractionSet
 import hu.bme.mit.gamma.scenario.model.NegatedModalInteraction
-import hu.bme.mit.gamma.scenario.model.ScenarioDefinition
 import hu.bme.mit.gamma.scenario.model.ScenarioModelFactory
 import hu.bme.mit.gamma.scenario.model.Signal
 import hu.bme.mit.gamma.scenario.statechart.util.ScenarioStatechartUtil
@@ -44,6 +43,7 @@ import java.util.List
 import java.util.Map
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
+import hu.bme.mit.gamma.scenario.model.ScenarioDeclaration
 
 abstract class AbstractContractStatechartGeneration {
 
@@ -62,7 +62,7 @@ abstract class AbstractContractStatechartGeneration {
 	protected val JavaUtil javaUtil = JavaUtil.INSTANCE
 
 	protected var Component component = null
-	protected var ScenarioDefinition scenario = null
+	protected var ScenarioDeclaration scenario = null
 	protected var StatechartDefinition statechart = null
 	protected val Map<String, VariableDeclaration> variableMap = <String, VariableDeclaration>newHashMap
 	protected var exsistingChoices = 0
@@ -77,7 +77,7 @@ abstract class AbstractContractStatechartGeneration {
 
 	def abstract StatechartDefinition execute()
 
-	new(ScenarioDefinition scenario, Component component) {
+	new(ScenarioDeclaration scenario, Component component) {
 		this.component = component
 		this.scenario = scenario
 	}

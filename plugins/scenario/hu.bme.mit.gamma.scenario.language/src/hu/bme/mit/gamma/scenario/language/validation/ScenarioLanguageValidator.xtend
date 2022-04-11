@@ -19,28 +19,28 @@ import hu.bme.mit.gamma.scenario.model.NegatedModalInteraction
 import hu.bme.mit.gamma.scenario.model.ParallelCombinedFragment
 import hu.bme.mit.gamma.scenario.model.Reset
 import hu.bme.mit.gamma.scenario.model.ScenarioDeclaration
-import hu.bme.mit.gamma.scenario.model.ScenarioDefinition
+import hu.bme.mit.gamma.scenario.model.ScenarioDefinitionReference
+import hu.bme.mit.gamma.scenario.model.ScenarioPackage
 import hu.bme.mit.gamma.scenario.model.Signal
 import hu.bme.mit.gamma.scenario.util.ScenarioModelValidator
 import org.eclipse.xtext.validation.Check
-import hu.bme.mit.gamma.scenario.model.ScenarioDefinitionReference
 
 class ScenarioLanguageValidator extends AbstractScenarioLanguageValidator {
 
 	protected ScenarioModelValidator validator = ScenarioModelValidator.INSTANCE
 
 	@Check(NORMAL)
-	def void checkIncompatibleAnnotations(ScenarioDefinition scenario) {
+	def void checkIncompatibleAnnotations(ScenarioDeclaration scenario) {
 		handleValidationResultMessage(validator.checkIncompatibleAnnotations(scenario))
 	}
 
 	@Check
-	def void checkScenarioNamesAreUnique(ScenarioDeclaration scenarioDeclaration) {
-		handleValidationResultMessage(validator.checkScenarioNamesAreUnique(scenarioDeclaration))
+	def void checkScenarioNamesAreUnique(ScenarioPackage _package) {
+		handleValidationResultMessage(validator.checkScenarioNamesAreUnique(_package))
 	}
 
 	@Check
-	def void checkAtLeastOneHotSignalInChart(ScenarioDefinition scenario) {
+	def void checkAtLeastOneHotSignalInChart(ScenarioDeclaration scenario) {
 		handleValidationResultMessage(validator.checkAtLeastOneHotSignalInChart(scenario))
 	}
 

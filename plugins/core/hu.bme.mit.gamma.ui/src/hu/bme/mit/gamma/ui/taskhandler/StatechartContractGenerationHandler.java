@@ -5,7 +5,7 @@ import org.eclipse.core.resources.IFile;
 import hu.bme.mit.gamma.genmodel.model.ContractAutomatonType;
 import hu.bme.mit.gamma.genmodel.model.StatechartContractGeneration;
 import hu.bme.mit.gamma.scenario.model.ScenarioDeclaration;
-import hu.bme.mit.gamma.scenario.model.ScenarioDefinition;
+import hu.bme.mit.gamma.scenario.model.ScenarioPackage;
 import hu.bme.mit.gamma.scenario.model.reduction.SimpleScenarioGenerator;
 import hu.bme.mit.gamma.scenario.model.sorter.ScenarioContentSorter;
 import hu.bme.mit.gamma.scenario.statechart.generator.AbstractContractStatechartGeneration;
@@ -13,10 +13,10 @@ import hu.bme.mit.gamma.scenario.statechart.generator.MonitorStatechartgenerator
 import hu.bme.mit.gamma.scenario.statechart.generator.StatechartGenerationMode;
 import hu.bme.mit.gamma.scenario.statechart.generator.TestGeneratorStatechartGenerator;
 import hu.bme.mit.gamma.scenario.statechart.generator.serializer.StatechartSerializer;
+import hu.bme.mit.gamma.scenario.statechart.util.transformation.AutomatonDeterminizator;
 import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
-import hu.bme.mit.gamma.scenario.statechart.util.transformation.AutomatonDeterminizator;
 
 public class StatechartContractGenerationHandler extends TaskHandler {
 
@@ -27,10 +27,10 @@ public class StatechartContractGenerationHandler extends TaskHandler {
 	public void execute(StatechartContractGeneration statechartGeneration) {
 
 		setTargetFolder(statechartGeneration);
-		ScenarioDefinition baseScenario = statechartGeneration.getScenario();
-		ScenarioDeclaration containingScenarioDeclaration = ecoreUtil.getContainerOfType(baseScenario,
-				ScenarioDeclaration.class);
-		Component component = containingScenarioDeclaration.getComponent();
+		ScenarioDeclaration baseScenario = statechartGeneration.getScenario();
+		ScenarioPackage containingScenarioPackage = ecoreUtil.getContainerOfType(baseScenario,
+				ScenarioPackage.class);
+		Component component = containingScenarioPackage.getComponent();
 		StatechartGenerationMode generationMode = statechartGeneration.isUseIteratingVariable()
 				? StatechartGenerationMode.GENERATE_ORIGINAL_STRUCTURE
 				: StatechartGenerationMode.GENERATE_ONLY_FORWARD;
@@ -41,12 +41,12 @@ public class StatechartContractGenerationHandler extends TaskHandler {
 		ContractAutomatonType type = statechartGeneration.getAutomatonType();
 		if (type.equals(ContractAutomatonType.MONITOR)) {
 			simpleGenerator = new SimpleScenarioGenerator(baseScenario, true, statechartGeneration.getArguments());
-			ScenarioDefinition simplifiedScenario = simpleGenerator.execute();
+			ScenarioDeclaration simplifiedScenario = simpleGenerator.execute();
 			statechartGenerator = new MonitorStatechartgenerator(simplifiedScenario, component,
 					statechartGeneration.isStartAsColdViolation());
 		} else {
 			simpleGenerator = new SimpleScenarioGenerator(baseScenario, false, statechartGeneration.getArguments());
-			ScenarioDefinition simplifiedScenario = simpleGenerator.execute();
+			ScenarioDeclaration simplifiedScenario = simpleGenerator.execute();
 			statechartGenerator = new TestGeneratorStatechartGenerator(simplifiedScenario, component, generationMode,
 					!statechartGeneration.isStartAsColdViolation());
 		}

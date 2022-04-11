@@ -12,11 +12,11 @@ package hu.bme.mit.gamma.scenario.language.linking
 
 import hu.bme.mit.gamma.language.util.linking.GammaLanguageLinker
 import hu.bme.mit.gamma.scenario.model.ScenarioDeclaration
-import hu.bme.mit.gamma.scenario.model.ScenarioModelPackage
+import hu.bme.mit.gamma.statechart.interface_.InterfaceModelPackage
 
 class ScenarioLanguageLinker extends GammaLanguageLinker {
 	
 	override getContext() {
-		return newHashMap(ScenarioDeclaration -> #[ScenarioModelPackage.eINSTANCE.scenarioDeclaration_Imports])
+		return newHashMap(ScenarioDeclaration -> #[InterfaceModelPackage.eINSTANCE.package_Imports])
 	}
 }

@@ -13,7 +13,7 @@ import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.scenario.model.CombinedFragment;
 import hu.bme.mit.gamma.scenario.model.Interaction;
 import hu.bme.mit.gamma.scenario.model.InteractionFragment;
-import hu.bme.mit.gamma.scenario.model.ScenarioDefinition;
+import hu.bme.mit.gamma.scenario.model.ScenarioDeclaration;
 import hu.bme.mit.gamma.scenario.model.ScenarioDefinitionReference;
 import hu.bme.mit.gamma.scenario.model.ScenarioModelFactory;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
@@ -21,7 +21,7 @@ import hu.bme.mit.gamma.util.GammaEcoreUtil;
 public class ScenarioReferenceResolver {
 	private GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
 
-	public void resolveReferences(ScenarioDefinition scenario) {
+	public void resolveReferences(ScenarioDeclaration scenario) {
 		if (!containsAnyReferences(scenario)) {
 			return;
 		}

@@ -14,12 +14,17 @@ import "http://www.eclipse.org/emf/2002/Ecore" as ecore
 import "http://www.mit.bme.hu/gamma/scenario/Model" as ScenarioModel
 import "http://www.mit.bme.hu/gamma/statechart/Model/Interface" as InterfaceModel
 
-ScenarioDeclaration returns ScenarioModel::ScenarioDeclaration:
+ScenarioPackage returns ScenarioModel::ScenarioPackage:
+	'package' name=ID
 	('import' imports+=[InterfaceModel::Package|STRING])*
 	'component' component=[InterfaceModel::Component]
-	(scenarios+=ScenarioDefinition)+;
+	(typeDeclarations+=TypeDeclaration |
+	 constantDeclarations+=ConstantDeclaration |
+	 functionDeclarations+=FunctionDeclaration |
+	 basicConstraintDefinitions+=BasicConstraintDefinition)*
+	(scenarios+=ScenarioDeclaration)+;
 
-ScenarioDefinition returns ScenarioModel::ScenarioDefinition:
+ScenarioDeclaration returns ScenarioModel::ScenarioDeclaration:
 	annotation+=Annotations*
 	'scenario' name=ID ('('(parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*')')? 
 	(initialblock=InitialBlock)?
@@ -66,7 +71,7 @@ AbstractInteraction returns ScenarioModel::Interaction:
 
 ScenarioReference returns ScenarioModel::ScenarioDefinitionReference:
 	{ScenarioModel::ScenarioDefinitionReference}
-	'call' scenarioDefinition=[ScenarioModel::ScenarioDefinition]
+	'call' scenarioDefinition=[ScenarioModel::ScenarioDeclaration]
 	('('arguments+=Expression(',' arguments+=Expression)*')')?;
 
 AbstractInteractionDefinition returns ScenarioModel::InteractionDefinition:

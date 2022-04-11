@@ -5,13 +5,12 @@ import java.util.List;
 
 import org.eclipse.emf.common.util.ECollections;
 import org.eclipse.emf.common.util.EList;
-
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator;
 import hu.bme.mit.gamma.scenario.model.Delay;
 import hu.bme.mit.gamma.scenario.model.InteractionDefinition;
 import hu.bme.mit.gamma.scenario.model.ModalInteractionSet;
-import hu.bme.mit.gamma.scenario.model.ScenarioDefinition;
+import hu.bme.mit.gamma.scenario.model.ScenarioDeclaration;
 import hu.bme.mit.gamma.scenario.model.Signal;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
 
@@ -20,7 +19,7 @@ public class ScenarioContentSorter {
 	private static GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
 	private static ExpressionEvaluator evaluator = ExpressionEvaluator.INSTANCE;
 
-	public void sort(ScenarioDefinition scenario) {
+	public void sort(ScenarioDeclaration scenario) {
 		List<ModalInteractionSet> sets = ecoreUtil.getAllContentsOfType(scenario, ModalInteractionSet.class);
 		for (ModalInteractionSet set : sets) {
 			sortInteractionSet(set);

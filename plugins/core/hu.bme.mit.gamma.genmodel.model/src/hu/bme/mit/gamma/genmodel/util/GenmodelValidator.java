@@ -61,6 +61,7 @@ import hu.bme.mit.gamma.genmodel.model.PhaseStatechartGeneration;
 import hu.bme.mit.gamma.genmodel.model.SchedulingConstraint;
 import hu.bme.mit.gamma.genmodel.model.StateCoverage;
 import hu.bme.mit.gamma.genmodel.model.StatechartCompilation;
+import hu.bme.mit.gamma.genmodel.model.StatechartContractGeneration;
 import hu.bme.mit.gamma.genmodel.model.StatechartContractTestGeneration;
 import hu.bme.mit.gamma.genmodel.model.Task;
 import hu.bme.mit.gamma.genmodel.model.TestGeneration;
@@ -438,6 +439,11 @@ public class GenmodelValidator extends ExpressionModelValidator {
 			javaUtil.filterIntoList(genmodel.getTasks(), StatechartContractTestGeneration.class)) {
 			packageImports.remove(StatechartModelDerivedFeatures.getContainingPackage(
 					statechartContractTestGenerationTask.getComponentReference()));
+		}
+		for (StatechartContractGeneration statechartContractGenerationTask :
+			javaUtil.filterIntoList(genmodel.getTasks(), StatechartContractGeneration.class)) {
+			packageImports.remove(StatechartModelDerivedFeatures.getContainingPackage(
+					statechartContractGenerationTask.getScenario()));
 		}
 		for (PhaseStatechartGeneration phaseStatechartGenerationTask :
 					javaUtil.filterIntoList(genmodel.getTasks(), PhaseStatechartGeneration.class)) {
