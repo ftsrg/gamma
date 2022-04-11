@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2021 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -42,10 +42,12 @@ import hu.bme.mit.gamma.plantuml.transformation.TraceToPlantUmlTransformer;
 import hu.bme.mit.gamma.property.model.CommentableStateFormula;
 import hu.bme.mit.gamma.property.model.PropertyPackage;
 import hu.bme.mit.gamma.property.model.StateFormula;
+import hu.bme.mit.gamma.property.util.PropertyUtil;
 import hu.bme.mit.gamma.querygenerator.serializer.PropertySerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.ThetaPropertySerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.UppaalPropertySerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.XstsUppaalPropertySerializer;
+import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.theta.verification.ThetaVerification;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
@@ -79,6 +81,7 @@ public class VerificationHandler extends TaskHandler {
 	//
 	
 	protected final TraceUtil traceUtil = TraceUtil.INSTANCE;
+	protected final PropertyUtil propertyUtil = PropertyUtil.INSTANCE;
 	protected final StatechartEcoreUtil statechartEcoreUtil = StatechartEcoreUtil.INSTANCE;
 	protected final ExecutionTraceSerializer serializer = ExecutionTraceSerializer.INSTANCE;
 	
@@ -139,12 +142,22 @@ public class VerificationHandler extends TaskHandler {
 		
 		// Serializing property formulas
 		for (PropertyPackage propertyPackage : verification.getPropertyPackages()) {
-			// TODO Handle wrapped adapters 
+			// Handle wrapped "atomic" components
+			Component component = propertyPackage.getComponent();
+			if (StatechartModelDerivedFeatures.needsWrapping(component)) {
+				propertyUtil.extendFormulasWithWrapperInstance(propertyPackage);
+			}
+			//
 			for (CommentableStateFormula formula : propertyPackage.getFormulas()) {
 				StateFormula stateFormula = formula.getFormula();
 				String serializedFormula = propertySerializer.serialize(stateFormula);
 				formulas.put(serializedFormula, stateFormula);
 			}
+			//
+			if (StatechartModelDerivedFeatures.needsWrapping(component)) {
+				propertyUtil.removeFirstInstanceFromFormulas(propertyPackage);
+			}
+			//
 		}
 		// Retrieving string formulas
 		for (String queryFileLocation : verification.getQueryFiles()) {

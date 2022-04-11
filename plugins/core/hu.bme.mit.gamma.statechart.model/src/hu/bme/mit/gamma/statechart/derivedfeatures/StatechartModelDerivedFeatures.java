@@ -919,6 +919,16 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return messageQueues;
 	}
 	
+	public static boolean storesOnlyInternalEvents(MessageQueue queue) {
+		List<Entry<Port,Event>> storedEvents = getStoredEvents(queue);
+		return storedEvents.stream().allMatch(it -> isInternal(it.getKey()));
+	}
+	
+	public static boolean storesOnlyNotInternalEvents(MessageQueue queue) {
+		List<Entry<Port,Event>> storedEvents = getStoredEvents(queue);
+		return storedEvents.stream().allMatch(it -> !isInternal(it.getKey()));
+	}
+	
 	public static List<Entry<Port, Event>> getStoredEvents(MessageQueue queue) {
 		Collection<Entry<Port, Event>> events = new LinkedHashSet<Entry<Port, Event>>();
 		// To filter possible duplicates
@@ -1005,6 +1015,9 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	public static boolean isEnvironmental(MessageQueue queue,
 			Collection<? extends Port> systemPorts) {
+		if (!storesOnlyNotInternalEvents(queue)) {
+			return false;
+		}
 		List<Port> topBoundPorts = getStoredEvents(queue).stream()
 				.map(it -> getBoundTopComponentPort(it.getKey())).collect(Collectors.toList());
 		return systemPorts.containsAll(topBoundPorts);
@@ -1361,6 +1374,14 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
     public static StatechartDefinition getStatechart(ComponentInstance instance) {
     	return (StatechartDefinition) getDerivedType(instance);
     }
+    
+	public static boolean needsWrapping(Component component) {
+		if (component instanceof AsynchronousAdapter) {
+			AsynchronousAdapter adapter = (AsynchronousAdapter) component;
+			return !isSimplifiable(adapter);
+		}
+		return isStatechart(component);
+	}
     
 	public static String getWrapperInstanceName(Component component) {
 		String name = component.getName();

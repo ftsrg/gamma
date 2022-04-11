@@ -426,7 +426,7 @@ class ComponentTransformer {
 				}
 			}
 		}
-		for (queue : environmentalQueues) { // All with capacity 1 and size 0
+		for (queue : environmentalQueues) { // All with capacity 1 and size 0, no internal events
 			val queueMapping = queueTraceability.get(queue)
 			val masterQueue = queueMapping.masterQueue.arrayVariable
 			val masterSizeVariable = queueMapping.masterQueue.sizeVariable
@@ -532,6 +532,7 @@ class ComponentTransformer {
 			
 				val ifExpression = xStsOutEventVariable.createReferenceExpression
 				val thenAction = createSequentialAction
+				val outEventResetActions = createSequentialAction
 				
 				val connectedAdapterPorts = newLinkedHashSet
 				connectedAdapterPorts += port.allConnectedAsynchronousSimplePorts
@@ -571,8 +572,9 @@ class ComponentTransformer {
 						// Resetting out event variable if it is not  led out to the system
 						// Duplicated for broadcast ports - not a problem, but could be refactored
 						val isSystemPort = systemPorts.contains(connectedAdapterPort.boundTopComponentPort)
-						if (!isSystemPort) {
-							block.actions += xStsOutEventVariable.createVariableResetAction
+						if (!isSystemPort || connectedAdapterPort.internal /* Though, the code keeps the internal raisings */) {
+							// Variable can be reset even if the event is persistent as the in-pair will store it
+							outEventResetActions.actions += xStsOutEventVariable.createVariableResetAction
 						}
 						// Slaves
 						val parameters = outEvent.parameterDeclarations
@@ -592,8 +594,8 @@ class ComponentTransformer {
 									xStsOutParameterVariables.map[it.createReferenceExpression])
 							// Resetting out parameter variables if they are not led out to the system
 							// Duplicated for broadcast ports - not a problem, but could be refactored
-							if (!isSystemPort) {
-								block.actions += xStsOutParameterVariables.map[it.createVariableResetAction]
+							if (!isSystemPort || connectedAdapterPort.internal /* Though, the code keeps the internal raisings */) {
+								outEventResetActions.actions += xStsOutParameterVariables.map[it.createVariableResetAction]
 							}
 						}
 						
@@ -620,6 +622,8 @@ class ComponentTransformer {
 						else {
 							throw new IllegalStateException("Not known behavior: " + eventDiscardStrategy)
 						}
+						// if (isRaised) { if ((!(size < capacity)) { "pop" }; isRasied = false; }
+						thenAction.actions += outEventResetActions
 					}
 				}
 				// if (inEvent) { "add elements into master and slave queues" }
@@ -648,6 +652,7 @@ class ComponentTransformer {
 		// Resetting out and events manually as a "schedule" call in the code does that
 		xSts.resetOutEventsBeforeMergedAction(wrappedType)
 		xSts.resetInEventsAfterMergedAction(wrappedType)
+		xSts.addInternalEventResetingActionsInMergedAction(wrappedType)
 		//
 		
 		// Internal event handling: only remove - event dispatch will tend to the addition
@@ -942,7 +947,7 @@ class ComponentTransformer {
 	
 	private def isEnvironmentalAndCheck(MessageQueue queue, Collection<? extends Port> systemPorts) {
 		if (queue.isEnvironmental(systemPorts)) {
-			return true // All events are system events
+			return true // All events are system events (no internal events)
 		}
 		val portEvents = queue.storedEvents
 		val ports = portEvents.map[it.key]
@@ -955,8 +960,8 @@ class ComponentTransformer {
 			// Not true: internal events?
 			return false
 		}
-		checkState(systemPorts.containsNone(topPorts) || capacity == 1,
-				"All or none of the ports must be system ports or the capacity must be one")
+		checkState(systemPorts.containsNone(topPorts) || topPorts.forall[it.internal],
+				"All or none of the ports must be system ports")
 		return false
 	}
 	

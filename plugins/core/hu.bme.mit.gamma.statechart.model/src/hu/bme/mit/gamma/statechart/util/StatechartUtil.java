@@ -198,6 +198,14 @@ public class StatechartUtil extends ActionUtil {
 		return newReference;
 	}
 	
+	public ComponentInstanceReference prependAndReplace(
+			ComponentInstanceReference reference, ComponentInstance instance) {
+		ComponentInstanceReference newReference = createInstanceReference(instance);
+		ecoreUtil.replace(newReference, reference);
+		newReference.setChild(reference);
+		return newReference;
+	}
+	
 	//
 	
 	public Set<VariableDeclaration> getVariables(EObject object) {
