@@ -1,0 +1,20 @@
+package trafficlightctrl
+import "/hu.bme.mit.gamma.tests/model/Crossroads/TrafficLight/Test.gcd"
+import "/hu.bme.mit.gamma.tests/model/Crossroads/TrafficLight/TrafficLightCtrl.gcd"
+import "/hu.bme.mit.gamma.tests/model/Crossroads/Interfaces/Interfaces.gcd"
+cascade Tests [
+	port LightCommands : provides LightCommands
+	port PoliceInterrupt : requires PoliceInterrupt
+	port Control : requires Control
+] {
+	component Test : Test
+	component tests : TrafficLightCtrl
+	bind LightCommands -> Test.LightCommands
+	bind PoliceInterrupt -> Test.PoliceInterrupt
+	bind Control -> Test.Control
+	channel [ tests.LightCommands ] -o)- [ Test._LightCommands_ ]
+	channel [ Test._Control_ ] -o)- [ tests.Control ]
+	channel [ Test._PoliceInterrupt_ ] -o)- [ tests.PoliceInterrupt ]
+	initial execute Test
+	execute Test, tests, Test
+}

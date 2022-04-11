@@ -1,7 +1,7 @@
 package internals
 
 import "Interface/Interfaces.gcd"
-import "Statechart/Asynchronous.gcd"
+import "Asynchronous.gcd"
 
 scheduled-async Scheduled [
 	port control : requires Toggle
