@@ -2416,9 +2416,12 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return getComponentAnnotation(component, AdaptiveContractAnnotation.class) != null;
 	}
 	
-	public static boolean hasHistory(MissionPhaseStateDefinition missionPhaseStateDefinition) {
-		return missionPhaseStateDefinition.getHistory() != History.NO_HISTORY || 
-				!missionPhaseStateDefinition.getVariableBindings().isEmpty();
+	public static boolean hasHistory(MissionPhaseStateDefinition stateDefinition) {
+		return stateDefinition.getHistory() != History.NO_HISTORY || 
+				!stateDefinition.getVariableBindings().isEmpty() ||
+				// Internal ports are not really history, more like context dependency
+				stateDefinition.getPortBindings().stream().anyMatch(
+						it -> isInternal(it.getCompositeSystemPort()));
 	}
 	
 	public static boolean hasInitialOutputsBlock(Component component) {
