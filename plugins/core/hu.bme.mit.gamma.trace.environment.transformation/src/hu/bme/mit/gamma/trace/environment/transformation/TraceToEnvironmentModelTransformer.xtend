@@ -35,6 +35,8 @@ class TraceToEnvironmentModelTransformer {
 	protected final EnvironmentModel environmentModel
 	protected final Trace trace
 	
+	protected final boolean isComponentSynchronous
+	
 	protected extension TriggerTransformer triggerTransformer
 	protected extension OriginalEnvironmentBehaviorCreator originalEnvironmentBehaviorCreator
 	
@@ -49,6 +51,7 @@ class TraceToEnvironmentModelTransformer {
 		this.environmentModelName = environmentModelName
 		this.considerOutEvents = considerOutEvents
 		this.executionTrace = executionTrace
+		this.isComponentSynchronous = executionTrace.component.synchronous
 		this.environmentModel = environmentModel
 		this.namings = new Namings
 		this.trace = new Trace
@@ -60,9 +63,9 @@ class TraceToEnvironmentModelTransformer {
 	def execute() {
 		validate
 		
-		val statechart = createStatechartDefinition => [
-			it.name = environmentModelName
-		]
+		val statechart = (isComponentSynchronous) ?
+				createSynchronousStatechartDefinition : createAsynchronousStatechartDefinition
+		statechart.name = environmentModelName
 		
 		statechart.transformPorts(trace)
 		

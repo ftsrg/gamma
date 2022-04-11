@@ -1,0 +1,17 @@
+package MachineVarMachine
+import
+	"/model/MachineVarMachine/MachineVarMachineDeclarations.gcd"
+@TransitionPriority = order-based
+statechart MachineVarMachine [
+	port portA : requires portA
+] {
+	var cnt : integer
+	transition from _initialOfMachineVarMachine__ to MachineVarMachine__State
+	transition from MachineVarMachine__State to MachineVarMachine__State when portA.message_int / {
+		cnt := cnt + 1;
+	}
+	region MachineVarMachine_ {
+		state MachineVarMachine__State
+		initial _initialOfMachineVarMachine__
+	}
+}

@@ -138,7 +138,6 @@
 * A timeout trigger bug regarding statechart complex triggers in the UPPAAL transformation has been fixed.
 * Various UPPAAL back-annotation bugs have been fixed.
 
-
 ## 2020.05.06. - Version 2.3.1
 
 ### What is New
@@ -202,3 +201,15 @@
 * New validation rules in the GEL and GAL have been introduced.
 * Some optimizations in the XSTS transformation chain have been fixed.
 * Some bugs while transforming models with special characteristics (e.g., models without input and output events) have been fixed.
+
+## 2021.12.08. - Version 2.6.0
+
+### What is New
+
+* A new composition semantics has been introdued based on the scheduled asynchronous composite component.
+
+### Improvements
+
+* New validation rules in the GEL and GAL have been introduced.
+* Some optimizations in the XSTS transformation chain have been introduced.
+

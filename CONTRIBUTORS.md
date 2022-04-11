@@ -2,7 +2,7 @@
 
 * [Bence Graics](https://github.com/grbeni) ([homepage](https://inf.mit.bme.hu/members/graicsb)) [1, 2]: core framework
 * [Vince Molnár](https://github.com/vincemolnar) ([homepage](https://inf.mit.bme.hu/members/molnarv)) [1, 2]: tutorials, PlantUML visualization, build system and design
-* [Benedek Horváth](https://github.com/benedekh) [1]: initial UPPAAL serialization and dialog window
+* [Benedek Horváth](https://github.com/benedekh) [1]: initial UPPAAL serialization and dialog window, headless Eclipse, webserver API
 * [Bence Beöthy](https://github.com/beothy) [1]: metamodel changes
 * [Tamás Tóth](https://github.com/tothtamas28) ([homepage](https://inf.mit.bme.hu/members/totht)) [1]: initial metamodels
 * [Márton Búr](https://github.com/imbur) ([homepage](https://inf.mit.bme.hu/members/burm)) [1, 2]: bugfixes

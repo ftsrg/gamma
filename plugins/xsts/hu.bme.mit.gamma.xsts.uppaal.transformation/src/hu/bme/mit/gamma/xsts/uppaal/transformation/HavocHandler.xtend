@@ -1,18 +1,17 @@
 package hu.bme.mit.gamma.xsts.uppaal.transformation
 
 import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
-import hu.bme.mit.gamma.expression.model.BinaryExpression
 import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition
-import hu.bme.mit.gamma.expression.model.PredicateExpression
-import hu.bme.mit.gamma.expression.model.ReferenceExpression
 import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
+import hu.bme.mit.gamma.expression.util.PredicateHandler
 import hu.bme.mit.gamma.uppaal.util.NtaBuilder
 import hu.bme.mit.gamma.util.GammaEcoreUtil
-import hu.bme.mit.gamma.xsts.util.XstsActionUtil
+import java.util.logging.Level
+import java.util.logging.Logger
 import org.eclipse.xtend.lib.annotations.Data
 import uppaal.expressions.Expression
 import uppaal.templates.Selection
@@ -30,9 +29,12 @@ class HavocHandler {
 	
 	protected final NtaBuilder ntaBuilder
 	
-	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
-	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
+	protected final extension PredicateHandler predicateHandler = PredicateHandler.INSTANCE
 	protected final extension ExpressionEvaluator expressionEvaluator = ExpressionEvaluator.INSTANCE
+	
+	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
+	
+	protected final Logger logger = Logger.getLogger("GammaLogger")
 	
 	// Entry point
 	
@@ -44,8 +46,7 @@ class HavocHandler {
 	//
 	
 	def dispatch SelectionStruct createSelection(TypeReference type, VariableDeclaration variable) {
-		val typeDeclaration = type.reference
-		val typeDefinition = typeDeclaration.type
+		val typeDefinition = type.typeDefinition
 		return typeDefinition.createSelection(variable)
 	}
 	
@@ -69,19 +70,8 @@ class HavocHandler {
 	
 	def dispatch SelectionStruct createSelection(IntegerTypeDefinition type, VariableDeclaration variable) {
 		val root = variable.root
-		
-		val predicates = root.getAllContentsOfType(PredicateExpression).filter(BinaryExpression)
-		val expressions = newArrayList
-		
-		expressions += predicates.filter[it.leftOperand instanceof ReferenceExpression]
-			.filter[it.leftOperand.declaration === variable]
-			.map[it.rightOperand]
-		expressions += predicates.filter[it.rightOperand instanceof ReferenceExpression]
-			.filter[it.rightOperand.declaration === variable]
-			.map[it.leftOperand]
 			
-		val integerValues = newHashSet
-		integerValues += expressions.map[it.evaluateInteger]
+		val integerValues = root.calculateIntegerValues(variable)
 		
 		if (integerValues.empty) {
 			// Sometimes input parameters are not referenced
@@ -99,6 +89,8 @@ class HavocHandler {
 			ntaBuilder.createLiteralExpression(min.toString),
 			ntaBuilder.createLiteralExpression(max.toString)
 		)
+		
+		logger.log(Level.INFO, "Retrieved integer values for " + variable.name + " havoc: " + integerValues)
 		
 		if (integerValues.size == max - min + 1) {
 			// A  continuous range, no need for additional guards

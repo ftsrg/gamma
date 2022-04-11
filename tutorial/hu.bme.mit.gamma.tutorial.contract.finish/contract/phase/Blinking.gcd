@@ -1,0 +1,32 @@
+package crossroads
+import "/model/Interfaces/Interfaces.gcd"
+@TransitionPriority = order-based
+statechart BlinkingPhase [
+	port priorityOutput : provides LightCommands
+	port secondaryOutput : provides LightCommands
+] {
+	var count : integer
+	timeout BlackTimeout3
+	timeout BlinkingYellowTimeout4
+	transition from Black to BlinkingYellow when timeout BlackTimeout3
+	transition from BlinkingYellow to Black when timeout BlinkingYellowTimeout4
+	transition from Entry to BlinkingYellow
+	region Main {
+		initial Entry
+		state BlinkingYellow {
+			entry / {
+				count := count + 1;
+				set BlinkingYellowTimeout4 := 500 ms;
+				raise priorityOutput.displayYellow;
+				raise secondaryOutput.displayYellow;
+			}
+		}
+		state Black {
+			entry / {
+				set BlackTimeout3 := 500 ms;
+				raise priorityOutput.displayNone;
+				raise secondaryOutput.displayNone;
+			}
+		}
+	}
+}

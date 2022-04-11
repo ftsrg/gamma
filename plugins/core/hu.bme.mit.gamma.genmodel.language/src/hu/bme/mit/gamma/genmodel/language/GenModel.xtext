@@ -37,8 +37,10 @@ GenModel returns GenModel:
 
 Task returns Task:
 	YakinduCompilation | CodeGeneration | AnalysisModelTransformation | TestGeneration |
-		EventPriorityTransformation | AdaptiveContractTestGeneration | PhaseStatechartGeneration |
-		Verification | TraceReplayModelGeneration | Slicing | StatechartContractTestGeneration | StatechartContractGeneration
+		EventPriorityTransformation | AdaptiveContractTestGeneration |
+		AdaptiveBehaviorConformanceChecking | PhaseStatechartGeneration |
+		Verification | TraceReplayModelGeneration | Slicing | StatechartContractTestGeneration |
+		StatechartContractGeneration
 ;
 
 YakinduCompilation returns YakinduCompilation:
@@ -281,9 +283,10 @@ Verification returns Verification:
 		(
 			'trace-folder' ':' targetFolder+=STRING | // Trace folder
 			'file' ':' fileName+=STRING | // Trace model
-			'svg-file' ':' svgFileName+=STRING | // Trace model
+			'svg-file' ':' svgFileName+=STRING |
 			'language' ':' analysisLanguages+=AnalysisLanguage |
 			'query-file' ':' queryFiles+=STRING | // Queries
+			'verification-argument' ':' verificationArguments+=STRING | // Potentially multiple - portfolio
 			'property-file' ':' propertyPackages+=[property::PropertyPackage | STRING] | // Property models
 			'base-package' ':' packageName+=STRING  | // Java base package
 			'test-language' ':' programmingLanguages+=ProgrammingLanguage |
@@ -321,7 +324,6 @@ Slicing returns Slicing:
 	'}'
 ;
 
-
 InterfaceMapping returns InterfaceMapping:
 	'map' yakinduInterface=[stext::InterfaceScope] '=' gammaInterface=[interface::Interface] 'as' realizationMode=RealizationMode ('{'
 		eventMappings+=EventMapping*
@@ -349,22 +351,38 @@ AdaptiveContractTestGeneration returns AdaptiveContractTestGeneration:
 	'}'
 ;
 
+AdaptiveBehaviorConformanceChecking returns AdaptiveBehaviorConformanceChecking:
+	{AdaptiveBehaviorConformanceChecking} 'adaptive-conformance-check' '{'
+		modelTransformation=AnalysisModelTransformation
+		(
+		'folder' ':' targetFolder+=STRING
+		)*
+	'}'
+;
+
 StatechartContractTestGeneration returns StatechartContractTestGeneration:
 	{StatechartContractTestGeneration}
 	'statechart-contract-test' '{'
-	componentReference= ComponentReference 
-	('folder' ':' targetFolder+=STRING)?
-	('constraint' ':' '{'constraint= OrchestratingConstraint'}')?
+		componentReference=ComponentReference 
+		('folder' ':' targetFolder+=STRING)?
+		('constraint' ':' '{'constraint= OrchestratingConstraint'}')?
 	'}' 
 ;
 
 StatechartContractGeneration returns StatechartContractGeneration:
 	{StatechartContractGeneration} 
 	'statechart-contract' '{'
-	 'scenario' ':' scenario= [scenario::ScenarioDefinition]
+	 'scenario' ':' scenario= [scenario::ScenarioDefinition] ('(' arguments+=Expression  (',' arguments+=Expression )* ')')?
 	 ('folder' ':' targetFolder+=STRING)?
 	 ('name' ':' fileName+=STRING)?
+	 ('restart-on-cold-violation' ':' StartAsColdViolation=BOOLEAN)?
+	 ('loop-for-interaction' ':' UseIteratingVariable=BOOLEAN)?
+	 ('automaton-type' ':' AutomatonType=ContractAutomatonType)?
 	'}'
+;
+
+enum ContractAutomatonType returns  ContractAutomatonType:
+	MONITOR = 'monitor' | TEST = 'test'
 ;
 
 PhaseStatechartGeneration returns PhaseStatechartGeneration:

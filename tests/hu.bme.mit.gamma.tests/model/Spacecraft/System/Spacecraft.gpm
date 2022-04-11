@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="ASCII"?>
+<hu.bme.mit.gamma.property:PropertyPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:hu.bme.mit.gamma.expression="http://www.mit.bme.hu/gamma/expression/Model" xmlns:hu.bme.mit.gamma.property="http://www.mit.bme.hu/gamma/property/Model" xmlns:hu.bme.mit.gamma.statechart.composite="http://www.mit.bme.hu/gamma/statechart/Model/Composite">
+  <component xsi:type="hu.bme.mit.gamma.statechart.composite:AsynchronousAdapter" href="Spacecraft.gsm#/0/@components.0"/>
+  <formulas>
+    <formula xsi:type="hu.bme.mit.gamma.property:QuantifiedFormula" quantifier="EXISTS">
+      <formula xsi:type="hu.bme.mit.gamma.property:UnaryOperandPathFormula" operator="FUTURE">
+        <operand xsi:type="hu.bme.mit.gamma.property:AtomicFormula">
+          <expression xsi:type="hu.bme.mit.gamma.expression:AndExpression">
+            <operands xsi:type="hu.bme.mit.gamma.expression:AndExpression">
+              <operands xsi:type="hu.bme.mit.gamma.property:ComponentInstanceStateConfigurationReference">
+                <instance>
+                  <componentInstance xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href="Spacecraft.gsm#/0/@components.0/@wrappedComponent"/>
+                  <child>
+                    <componentInstance xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href="Spacecraft.gsm#/0/@components.1/@components.0"/>
+                  </child>
+                </instance>
+                <region href="Spacecraft.gsm#/1/@components.1/@regions.0/@stateNodes.0/@regions.1"/>
+                <state href="Spacecraft.gsm#/1/@components.1/@regions.0/@stateNodes.0/@regions.1/@stateNodes.1"/>
+              </operands>
+              <operands xsi:type="hu.bme.mit.gamma.expression:LessExpression">
+                <leftOperand xsi:type="hu.bme.mit.gamma.property:ComponentInstanceVariableReference">
+                  <instance>
+                    <componentInstance xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href="Spacecraft.gsm#/0/@components.0/@wrappedComponent"/>
+                    <child>
+                      <componentInstance xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href="Spacecraft.gsm#/0/@components.1/@components.0"/>
+                    </child>
+                  </instance>
+                  <variable href="Spacecraft.gsm#/1/@components.1/@variableDeclarations.1"/>
+                </leftOperand>
+                <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="80"/>
+              </operands>
+            </operands>
+            <operands xsi:type="hu.bme.mit.gamma.expression:AndExpression">
+              <operands xsi:type="hu.bme.mit.gamma.property:ComponentInstanceStateConfigurationReference">
+                <instance>
+                  <componentInstance xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href="Spacecraft.gsm#/0/@components.0/@wrappedComponent"/>
+                  <child>
+                    <componentInstance xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href="Spacecraft.gsm#/0/@components.1/@components.1"/>
+                  </child>
+                </instance>
+                <region href="Spacecraft.gsm#/1/@components.0/@regions.0/@stateNodes.0/@regions.0"/>
+                <state href="Spacecraft.gsm#/1/@components.0/@regions.0/@stateNodes.0/@regions.0/@stateNodes.1"/>
+              </operands>
+              <operands xsi:type="hu.bme.mit.gamma.expression:GreaterEqualExpression">
+                <leftOperand xsi:type="hu.bme.mit.gamma.property:ComponentInstanceVariableReference">
+                  <instance>
+                    <componentInstance xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href="Spacecraft.gsm#/0/@components.0/@wrappedComponent"/>
+                    <child>
+                      <componentInstance xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href="Spacecraft.gsm#/0/@components.1/@components.1"/>
+                    </child>
+                  </instance>
+                  <variable href="Spacecraft.gsm#/1/@components.0/@variableDeclarations.1"/>
+                </leftOperand>
+                <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="20"/>
+              </operands>
+            </operands>
+          </expression>
+        </operand>
+      </formula>
+    </formula>
+  </formulas>
+</hu.bme.mit.gamma.property:PropertyPackage>

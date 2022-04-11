@@ -1,0 +1,19 @@
+import "model/EmbeddedStructMachineVarMachine/EmbeddedStructMachineVarMachine"
+import "model/EmbeddedStructMachineVarMachine/EmbeddedStructMachineVarMachineWrapper"
+import trace "EmbeddedStructMachineVarMachineTest"
+
+code {
+	component: EmbeddedStructMachineVarMachine
+	language: java
+}
+
+code {
+	component: EmbeddedStructMachineVarMachineWrapper
+	language: java
+}
+
+test {
+	trace: EmbeddedStructMachineVarMachineTest
+	file: "EmbeddedStructMachineVarMachineTest"
+	language: java
+}

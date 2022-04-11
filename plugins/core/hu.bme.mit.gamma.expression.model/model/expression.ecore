@@ -166,6 +166,7 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="reference" lowerBound="1"
         eType="#//EnumerationLiteralDefinition"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="InfinityExpression" eSuperTypes="#//ArithmeticLiteralExpression"/>
   <eClassifiers xsi:type="ecore:EClass" name="FieldAssignment">
     <eStructuralFeatures xsi:type="ecore:EReference" name="reference" lowerBound="1"
         eType="#//FieldReferenceExpression" containment="true"/>
@@ -240,5 +241,7 @@
   <eClassifiers xsi:type="ecore:EClass" name="EnvironmentResettableVariableDeclarationAnnotation"
       eSuperTypes="#//VariableDeclarationAnnotation"/>
   <eClassifiers xsi:type="ecore:EClass" name="ClockVariableDeclarationAnnotation"
+      eSuperTypes="#//VariableDeclarationAnnotation"/>
+  <eClassifiers xsi:type="ecore:EClass" name="ScheduledClockVariableDeclarationAnnotation"
       eSuperTypes="#//VariableDeclarationAnnotation"/>
 </ecore:EPackage>

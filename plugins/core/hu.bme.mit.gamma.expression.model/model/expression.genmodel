@@ -134,6 +134,7 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference expression.ecore#//EnumerationLiteralExpression/typeReference"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference expression.ecore#//EnumerationLiteralExpression/reference"/>
     </genClasses>
+    <genClasses ecoreClass="expression.ecore#//InfinityExpression"/>
     <genClasses ecoreClass="expression.ecore#//FieldAssignment">
       <genFeatures createChild="false" ecoreFeature="ecore:EReference expression.ecore#//FieldAssignment/reference"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference expression.ecore#//FieldAssignment/value"/>
@@ -192,5 +193,6 @@
     <genClasses ecoreClass="expression.ecore#//FinalVariableDeclarationAnnotation"/>
     <genClasses ecoreClass="expression.ecore#//EnvironmentResettableVariableDeclarationAnnotation"/>
     <genClasses ecoreClass="expression.ecore#//ClockVariableDeclarationAnnotation"/>
+    <genClasses ecoreClass="expression.ecore#//ScheduledClockVariableDeclarationAnnotation"/>
   </genPackages>
 </genmodel:GenModel>

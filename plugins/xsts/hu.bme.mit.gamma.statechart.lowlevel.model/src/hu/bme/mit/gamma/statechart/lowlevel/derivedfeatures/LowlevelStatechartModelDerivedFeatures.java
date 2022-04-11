@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -25,6 +25,8 @@ import hu.bme.mit.gamma.action.derivedfeatures.ActionModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.lowlevel.model.ActivityInstance;
 import hu.bme.mit.gamma.statechart.lowlevel.model.CompositeElement;
 import hu.bme.mit.gamma.statechart.lowlevel.model.DeepHistoryState;
+import hu.bme.mit.gamma.statechart.lowlevel.model.EventDeclaration;
+import hu.bme.mit.gamma.statechart.lowlevel.model.EventDirection;
 import hu.bme.mit.gamma.statechart.lowlevel.model.HistoryState;
 import hu.bme.mit.gamma.statechart.lowlevel.model.InitialState;
 import hu.bme.mit.gamma.statechart.lowlevel.model.Region;
@@ -48,6 +50,31 @@ public class LowlevelStatechartModelDerivedFeatures extends ActionModelDerivedFe
 			return (ActivityInstance) object;
 		}
 		return getActivityInstance(object.eContainer());
+	}
+
+	public static boolean isInternal(EventDeclaration lowlevelEventDeclaration) {
+		StatechartDefinition statechart = getStatechart(lowlevelEventDeclaration);
+		List<EventDeclaration> internalEventDeclarations = statechart.getInternalEventDeclarations();
+		return internalEventDeclarations.contains(lowlevelEventDeclaration);
+	}
+	
+	public static EventDeclaration getInternalEventPair(EventDeclaration lowlevelEventDeclaration) {
+		StatechartDefinition statechart = getStatechart(lowlevelEventDeclaration);
+		
+		List<EventDeclaration> internalEventDeclarations = statechart.getInternalEventDeclarations();
+		List<EventDeclaration> inEventDeclarations = internalEventDeclarations.stream()
+				.filter(it -> it.getDirection() == EventDirection.IN).collect(Collectors.toList());
+		List<EventDeclaration> outEventDeclarations = internalEventDeclarations.stream()
+				.filter(it -> it.getDirection() == EventDirection.OUT).collect(Collectors.toList());
+		
+		int inIndex = inEventDeclarations.indexOf(lowlevelEventDeclaration);
+		if (inIndex >= 0) {
+			return outEventDeclarations.get(inIndex);
+		}
+		else {
+			int outIndex = outEventDeclarations.indexOf(lowlevelEventDeclaration);
+			return inEventDeclarations.get(outIndex);
+		}
 	}
 	
 	public static boolean hasOrthogonalRegion(Region lowlevelRegion) {

@@ -1,0 +1,14 @@
+package ComplexRegionMachine
+
+import "/model/ComplexRegionMachine/ComplexRegionMachineDeclarations.gcd"
+import "/model/ComplexRegionMachine/ComplexRegionMachine.gcd"
+
+cascade ComplexRegionMachineWrapper [
+	port portA : requires portA
+	port portB : requires portB
+] {
+	component complexRegionMachine : ComplexRegionMachine
+	
+	bind portA -> complexRegionMachine.portA
+	bind portB -> complexRegionMachine.portB
+}

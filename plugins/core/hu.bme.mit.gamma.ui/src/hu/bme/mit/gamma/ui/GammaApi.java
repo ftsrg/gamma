@@ -24,8 +24,10 @@ import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
+import org.eclipse.emf.ecore.util.EcoreUtil;
 
 import hu.bme.mit.gamma.genmodel.derivedfeatures.GenmodelDerivedFeatures;
+import hu.bme.mit.gamma.genmodel.model.AdaptiveBehaviorConformanceChecking;
 import hu.bme.mit.gamma.genmodel.model.AdaptiveContractTestGeneration;
 import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation;
 import hu.bme.mit.gamma.genmodel.model.CodeGeneration;
@@ -42,6 +44,7 @@ import hu.bme.mit.gamma.genmodel.model.TestGeneration;
 import hu.bme.mit.gamma.genmodel.model.TraceReplayModelGeneration;
 import hu.bme.mit.gamma.genmodel.model.Verification;
 import hu.bme.mit.gamma.genmodel.model.YakinduCompilation;
+import hu.bme.mit.gamma.ui.taskhandler.AdaptiveBehaviorConformanceCheckingHandler;
 import hu.bme.mit.gamma.ui.taskhandler.AdaptiveContractTestGenerationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.AnalysisModelTransformationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.CodeGenerationHandler;
@@ -92,13 +95,17 @@ public class GammaApi {
 		IProject project = file.getProject();
 		// Multiple compilations due to the dependencies between models
 		final int MAX_ITERATION_COUNT = 6;
-		for (int i = 0; i < MAX_ITERATION_COUNT; ++i) {
+		for (int i = 0; i < MAX_ITERATION_COUNT; ++i) { // TODO, some refreshing should be added - not working now
 			// To support different implementations
 			ResourceSet resourceSet = resourceSetCreator.createResourceSet();
 			//
 			Resource resource = resourceSet.getResource(fileURI, true);
 			// Assume that the resource has a single object as content
 			EObject content = resource.getContents().get(0);
+			// Resolve all is needed if there are proxys referring to different resources:
+			// if we remove containers from the element tree that contain references to other resources
+			// they will be broken - theoretically, this call should not require too much resource
+			EcoreUtil.resolveAll(resourceSet);
 			if (content instanceof GenModel) {
 				GenModel genmodel = (GenModel) content;
 				// WARNING: workspace location and imported project locations are not to be confused
@@ -178,17 +185,25 @@ public class GammaApi {
 								handler.execute(testGeneration);
 								logger.log(Level.INFO, "The adaptive contract test generation has been finished");
 							}
+							else if (task instanceof AdaptiveBehaviorConformanceChecking) {
+								logger.log(Level.INFO, "The adaptive behavior conformance checking has been started");
+								AdaptiveBehaviorConformanceChecking conformanceChecking = (AdaptiveBehaviorConformanceChecking) task;
+								AdaptiveBehaviorConformanceCheckingHandler handler =
+										new AdaptiveBehaviorConformanceCheckingHandler(file);
+								handler.execute(conformanceChecking);
+								logger.log(Level.INFO, "The adaptive behavior conformance checking has been finished");
+							}
 							else if (task instanceof StatechartContractTestGeneration) {
 								StatechartContractTestGeneration testGeneration = (StatechartContractTestGeneration) task; 
 								StatechartContractTestGenerationHandler handler = new StatechartContractTestGenerationHandler(file);
 								handler.execute(testGeneration);
-								logger.log(Level.INFO, "The contract based test generation has been finished.");
+								logger.log(Level.INFO, "The contract-based test generation has been finished");
 							}
 							else if (task instanceof StatechartContractGeneration) {
 								StatechartContractGeneration statechartGeneration = (StatechartContractGeneration) task; 
 								StatechartContractGenerationHandler handler = new StatechartContractGenerationHandler(file);
 								handler.execute(statechartGeneration);
-								logger.log(Level.INFO, "The contract statechart generation has been finished.");
+								logger.log(Level.INFO, "The contract statechart generation has been finished");
 							}
 							else if (task instanceof EventPriorityTransformation) {
 								logger.log(Level.INFO, "The event priority transformation has been started");
@@ -254,6 +269,7 @@ public class GammaApi {
 				return allTasks.stream()
 						.filter(it -> it instanceof TestGeneration || it instanceof Verification ||
 								it instanceof AdaptiveContractTestGeneration ||
+								it instanceof AdaptiveBehaviorConformanceChecking ||
 								it instanceof TraceReplayModelGeneration ||
 								it instanceof StatechartContractTestGeneration || it instanceof StatechartContractGeneration)
 						.collect(Collectors.toList());

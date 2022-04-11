@@ -13,7 +13,6 @@ package hu.bme.mit.gamma.scenario.trace.generator
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.TransitionMerging
 import hu.bme.mit.gamma.scenario.statechart.util.ScenarioStatechartUtil
 import hu.bme.mit.gamma.statechart.contract.NotDefinedEventMode
-import hu.bme.mit.gamma.statechart.contract.ScenarioAllowedWaitAnnotation
 import hu.bme.mit.gamma.statechart.contract.ScenarioContractAnnotation
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Package
@@ -41,38 +40,31 @@ class ScenarioStatechartTraceGenerator {
 	val extension ScenarioStatechartUtil scenarioStatechartUtil = ScenarioStatechartUtil.INSTANCE
 	val extension TraceUtil traceUtil = TraceUtil.INSTANCE
 
-	StatechartDefinition statechart = null
+	val boolean TEST_ORIGINAL = true
 
-	val boolean testOriginal = true
+	StatechartDefinition statechart = null
 
 	var int schedulingConstraint = 0
 
 	String absoluteParentFolder
 
 	Package _package
-	
-	ScenarioAllowedWaitAnnotation annotation
-	
+		
 	new(StatechartDefinition statechart, int schedulingConstraint) {
-		this(statechart, schedulingConstraint, null);
-	}
-
-	new(StatechartDefinition sd, int schedulingConstraint, ScenarioAllowedWaitAnnotation annotation) {
 		this.schedulingConstraint = schedulingConstraint
-		this.statechart = sd
+		this.statechart = statechart
 		this._package = statechart.containingPackage
-		this.annotation = annotation
 	}
 
 	def List<ExecutionTrace> execute() {
 		var Component component = statechart
 		absoluteParentFolder = (statechart.eResource.file).parentFile.absolutePath
 		var NotDefinedEventMode scenarioContractType = null
-		var result = <ExecutionTrace>newArrayList
+		val result = <ExecutionTrace>newArrayList
 		val annotations = statechart.annotations
 		for (annotation : annotations) {
 			if (annotation instanceof ScenarioContractAnnotation) {
-				if (testOriginal) {
+				if (TEST_ORIGINAL) {
 					component = annotation.monitoredComponent
 					scenarioContractType= annotation.scenarioType
 				}
@@ -89,10 +81,9 @@ class ScenarioStatechartTraceGenerator {
 		}
 		
 		val name = statechart.name
-		val xStsFile = new File(absoluteParentFolder + File.separator +
-			fileNamer.getXtextXStsFileName(name))
+		val xStsFile = new File(absoluteParentFolder + File.separator +	fileNamer.getXtextXStsFileName(name))
 		val xStsString = gammaToXSTSTransformer.preprocessAndExecuteAndSerialize(
-			_package, absoluteParentFolder,	name)
+				_package, absoluteParentFolder,	name)
 		fileUtil.saveString(xStsFile, xStsString)
 
 		val verifier = new ThetaVerifier
@@ -102,7 +93,7 @@ class ScenarioStatechartTraceGenerator {
 		val statechartName = statechart.name.toFirstUpper
 
 		val packageFileName = fileNamer.getUnfoldedPackageFileName(fileName)
-		val parameters = '''--refinement "MULTI_SEQ" --domain "EXPL" --initprec "ALLVARS" '''
+		val parameters = '''--refinement "MULTI_SEQ" --domain "EXPL" --initprec "ALLVARS" --allpaths'''
 		val query = '''E<> ((«regionName + "_" + statechartName» == «scenarioStatechartUtil.accepting»))'''
 		val gammaPackage = ecoreUtil.normalLoad(modelFile.parent, packageFileName)
 
@@ -110,7 +101,7 @@ class ScenarioStatechartTraceGenerator {
 		val baseTrace = verifierResult.trace
 		
 		if (baseTrace === null){
-			throw new IllegalArgumentException('''State «scenarioStatechartUtil.accepting» cannot be reached in the formal model.''')
+			throw new IllegalArgumentException('''State «scenarioStatechartUtil.accepting» cannot be reached in the formal model''')
 		}
 
 		var derivedTraces = identifySeparateTracesByReset(baseTrace)
@@ -129,7 +120,7 @@ class ScenarioStatechartTraceGenerator {
 
 		for (trace : filteredTraces) {
 			val eventAdder = new UnsentEventAssertExtender(trace.steps, true)
-			if (scenarioContractType.equals(NotDefinedEventMode.STRICT)) {
+			if (scenarioContractType == NotDefinedEventMode.STRICT) {
 				eventAdder.execute
 			}
 			result += trace

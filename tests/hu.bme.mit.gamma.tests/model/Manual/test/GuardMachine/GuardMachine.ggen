@@ -1,0 +1,19 @@
+import "model/GuardMachine/GuardMachine"
+import "model/GuardMachine/GuardMachineWrapper"
+import trace "GuardMachineTest"
+
+code {
+	component: GuardMachine
+	language: java
+}
+
+code {
+	component: GuardMachineWrapper
+	language: java
+}
+
+test {
+	trace: GuardMachineTest
+	file: "GuardMachineTest"
+	language: java
+}

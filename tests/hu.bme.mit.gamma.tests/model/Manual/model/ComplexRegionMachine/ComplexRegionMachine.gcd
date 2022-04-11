@@ -1,0 +1,41 @@
+package ComplexRegionMachine
+import
+	"/model/ComplexRegionMachine/ComplexRegionMachineDeclarations.gcd"
+@TransitionPriority = order-based
+statechart ComplexRegionMachine [
+	port portA : requires portA
+	port portB : requires portB
+] {
+	var _complexRegionMachine_Submachine1__Region1 : _ComplexRegionMachine_Submachine1_
+	var _complexRegionMachine_Submachine2__Region2 : _ComplexRegionMachine_Submachine2_
+	transition from _initialOfSubmachine1___Region1 to Submachine1__State_Region1
+	transition from Submachine1__State_Region1 to Submachine1__State_Region1 when portA.message_bool
+		[portA.message_bool::message_boolValue and _complexRegionMachine_Submachine1__Region1 =
+		_ComplexRegionMachine_Submachine1_::Init1] / {
+		_complexRegionMachine_Submachine1__Region1 := _ComplexRegionMachine_Submachine1_::Other1;
+	}
+	transition from Submachine1__State_Region1 to Submachine1__State_Region1 when portA.message_bool
+		[portA.message_bool::message_boolValue and _complexRegionMachine_Submachine1__Region1 =
+		_ComplexRegionMachine_Submachine1_::Other1] / {
+		_complexRegionMachine_Submachine1__Region1 := _ComplexRegionMachine_Submachine1_::Init1;
+	}
+	transition from _initialOfSubmachine2___Region2 to Submachine2__State_Region2
+	transition from Submachine2__State_Region2 to Submachine2__State_Region2 when portB.message_bool
+		[portB.message_bool::message_boolValue and _complexRegionMachine_Submachine2__Region2 =
+		_ComplexRegionMachine_Submachine2_::Init2] / {
+		_complexRegionMachine_Submachine2__Region2 := _ComplexRegionMachine_Submachine2_::Other2;
+	}
+	transition from Submachine2__State_Region2 to Submachine2__State_Region2 when portB.message_bool
+		[portB.message_bool::message_boolValue and _complexRegionMachine_Submachine2__Region2 =
+		_ComplexRegionMachine_Submachine2_::Other2] / {
+		_complexRegionMachine_Submachine2__Region2 := _ComplexRegionMachine_Submachine2_::Init2;
+	}
+	region Submachine1__Region1 {
+		state Submachine1__State_Region1
+		initial _initialOfSubmachine1___Region1
+	}
+	region Submachine2__Region2 {
+		state Submachine2__State_Region2
+		initial _initialOfSubmachine2___Region2
+	}
+}

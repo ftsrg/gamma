@@ -29,7 +29,9 @@ import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.State
+import hu.bme.mit.gamma.statechart.util.ExpressionTypeDeterminator
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
+import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.trace.model.InstanceVariableState
 import hu.bme.mit.gamma.trace.model.RaiseEventAct
 import hu.bme.mit.gamma.trace.model.Step
@@ -42,6 +44,7 @@ import java.math.BigInteger
 import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class TraceBuilder {
 	// Singleton
@@ -54,8 +57,21 @@ class TraceBuilder {
 	protected final extension ComplexTypeUtil complexTypeUtil = ComplexTypeUtil.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension ExpressionEvaluator expressionEvaluator = ExpressionEvaluator.INSTANCE
+	protected final extension ExpressionTypeDeterminator typeDeterminator = ExpressionTypeDeterminator.INSTANCE
 	protected final extension TraceUtil traceUtil = TraceUtil.INSTANCE
 	protected final StatechartUtil statechartUtil = StatechartUtil.INSTANCE // For component instance reference
+	
+	// Remove internal events
+	
+	def removeInternalEventRaiseActs(ExecutionTrace trace) {
+		val raiseEventActs = trace.getAllContentsOfType(RaiseEventAct)
+		for (raiseEventAct : raiseEventActs) {
+			val event = raiseEventAct.event
+			if (event.internal) {
+				raiseEventAct.remove
+			}
+		}
+	}
 	
 	// In event
 	
@@ -226,7 +242,7 @@ class TraceBuilder {
 			VariableDeclaration variable) {
 		val variableStates = step.asserts.filter(InstanceVariableState)
 		val variableState = variableStates.filter[
-			it.instance === instance &&	it.declaration === variable].head
+			it.instance.componentInstance === instance && it.declaration === variable].head
 		var Expression value
 		if (variableState === null) {
 			// Creating the literal, similar to "getInstance" in singletons
@@ -331,8 +347,8 @@ class TraceBuilder {
 	
 	private def changeValue(Expression literal,
 			FieldHierarchy fieldHierarchy, IndexHierarchy indexes, String value) {
-		val innerType = fieldHierarchy.last.typeDefinition
 		val valueToBeChanged = literal.getValue(fieldHierarchy, indexes)
+		val innerType = valueToBeChanged.typeDefinition // Works even if fieldHierarchy is empty
 		val newValue = innerType.createLiteral(value)
 		newValue.replace(valueToBeChanged)
 	}

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -10,15 +10,15 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.statechart.phase.transformation
 
-import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
+import hu.bme.mit.gamma.statechart.composite.ComponentInstance
 import hu.bme.mit.gamma.statechart.composite.PortBinding
-import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.phase.MissionPhaseStateAnnotation
 import hu.bme.mit.gamma.statechart.phase.MissionPhaseStateDefinition
 import hu.bme.mit.gamma.statechart.phase.VariableBinding
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.StatechartModelFactory
+import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.util.List
 
@@ -26,14 +26,33 @@ import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.phase.transformation.Namings.*
-import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
+import static extension java.lang.Math.abs
 
 class PhaseStatechartTransformer {
-
+	
 	protected final StatechartDefinition statechart
-
+	
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
-	protected final extension StatechartModelFactory statechartModelFactory = StatechartModelFactory.eINSTANCE
+	protected final extension StatechartModelFactory statechartFactory = StatechartModelFactory.eINSTANCE
+	protected final extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
+	
+	new(MissionPhaseStateAnnotation phaseStateAnnotation) {
+		checkState(phaseStateAnnotation.eContainer === null)
+		this.statechart = createSynchronousStatechartDefinition => [
+			it.name = '''_«phaseStateAnnotation.hashCode.abs»'''
+		]
+		val stateDefinitions = phaseStateAnnotation.stateDefinitions
+		val systemPorts = stateDefinitions.map[it.portBindings].flatten
+				.map[it.compositeSystemPort].toSet
+		for (systemPort : systemPorts) {
+			val clonedSystemPort = systemPort.clone
+			statechart.ports += clonedSystemPort
+			clonedSystemPort.change(systemPort, phaseStateAnnotation)
+		}
+		
+		val state = statechart.createRegionWithState("_", "__", "___")
+		state.annotations += phaseStateAnnotation
+	}
 	
 	new(StatechartDefinition statechart) {
 		// No cloning to save resources, we process the original model
@@ -48,7 +67,7 @@ class PhaseStatechartTransformer {
 				val stateDefinitions = annotation.stateDefinitions
 				for (stateDefinition : stateDefinitions) {
 					val component = stateDefinition.component
-					val inlineableStatechart = component.type.clone as StatechartDefinition
+					val inlineableStatechart = component.derivedType.clone as StatechartDefinition
 					for (portBinding : stateDefinition.portBindings) {
 						portBinding.inlinePorts(inlineableStatechart)
 					}
@@ -82,8 +101,22 @@ class PhaseStatechartTransformer {
 		return statechart
 	}
 	
-	private def List<MissionPhaseStateAnnotation> getAllMissionPhaseStateAnnotations(StatechartDefinition statechart) {
-		return statechart.getAllContents(true).filter(State).map[it.annotation]
+	// Can be used if statechart is created based on MissionPhaseStateAnnotation
+	def moveRegion() {
+		val regions = statechart.regions
+		checkState(regions.size == 1)
+		val region = regions.head
+		val states = region.states
+		checkState(states.size == 1)
+		val state = states.head
+		
+		statechart.regions.clear
+		statechart.regions += state.regions
+	}
+	
+	private def List<MissionPhaseStateAnnotation> getAllMissionPhaseStateAnnotations(
+			StatechartDefinition statechart) {
+		return statechart.getAllContentsOfType(State).map[it.annotations].flatten
 				.filter(MissionPhaseStateAnnotation).toList
 	}
 	
@@ -97,11 +130,13 @@ class PhaseStatechartTransformer {
 		statechart.ports += portCopy
 	}
 	
-	private def void inlineVariables(VariableBinding variableBinding, StatechartDefinition inlineableStatechart) {
+	private def void inlineVariables(
+				VariableBinding variableBinding, StatechartDefinition inlineableStatechart) {
 		val statechart = variableBinding.containingStatechart
 		val originalVariable = variableBinding.instanceVariableReference.variable
 		val instance = variableBinding.instanceVariableReference.instance
-		val variableCopies = inlineableStatechart.variableDeclarations.filter[it.helperEquals(originalVariable)]
+		val variableCopies = inlineableStatechart.variableDeclarations
+				.filter[it.helperEquals(originalVariable)]
 		checkState(variableCopies.size == 1, variableCopies)
 		val variableCopy = variableCopies.head
 		variableCopy.name = variableCopy.getName(instance)
@@ -109,38 +144,34 @@ class PhaseStatechartTransformer {
 		statechart.variableDeclarations += variableCopy
 	}
 	
-	private def void inlineParameters(SynchronousComponentInstance instance, StatechartDefinition inlineableStatechart) {
+	private def void inlineParameters(
+				ComponentInstance instance, StatechartDefinition inlineableStatechart) {
 		val parameters = inlineableStatechart.parameterDeclarations
-		for (var i = 0; i < parameters.size; i++) {
-			val parameter = parameters.get(i)
-			for (reference : inlineableStatechart.getAllContents(true).filter(DirectReferenceExpression)
-					.filter[it.declaration === parameter].toList) {
-				val argument = instance.arguments.get(i)
-				reference.replace(argument)
-			}
-		}
+		val arguments = instance.arguments
+		parameters.inlineParamaters(arguments)
 	}
 	
 	private def void inlineRemainingStatechart(StatechartDefinition statechart,
 			StatechartDefinition inlineableStatechart, MissionPhaseStateDefinition stateDefinition) {
-		val state = stateDefinition.eContainer.eContainer as State
+		val state = stateDefinition.getContainerOfType(State)
 		val instance = stateDefinition.component
 		val history = stateDefinition.history
 		val inlineableRegions = inlineableStatechart.regions
 		for (inlineableRegion : inlineableRegions) {
 			val newEntryState = switch (history) {
 				case NO_HISTORY: {
-					createInitialState => [it.name = history.getName(instance)]
+					createInitialState
 				}
 				case SHALLOW_HISTORY : {
-					createShallowHistoryState => [it.name = history.getName(instance)]
+					createShallowHistoryState
 				}
 				case DEEP_HISTORY : {
-					createDeepHistoryState => [it.name = history.getName(instance)]
+					createDeepHistoryState
 				}
 			}
-			inlineableRegion.stateNodes += newEntryState
+			newEntryState.name = history.getName(instance)
 			val oldEntryState = inlineableRegion.entryState
+			inlineableRegion.stateNodes += newEntryState
 			newEntryState.changeAndDelete(oldEntryState, inlineableStatechart)
 		}
 		// Renames
@@ -149,23 +180,28 @@ class PhaseStatechartTransformer {
 				stateNode.name = stateNode.getName(instance) // TODO name recursively
 			}
 		}
+		
 		for (inlineableRegion : inlineableRegions) {
 			for (region : inlineableRegion.allRegions) {
 				region.name = region.getName(instance)
 			}
 		}
 		state.regions += inlineableRegions
+		
 		statechart.transitions += inlineableStatechart.transitions
+		
 		val ports = inlineableStatechart.ports
 		for (port : ports) {
 			port.name = port.getName(instance)
 		}
 		statechart.ports += ports
+		
 		val timeoutDeclarations = inlineableStatechart.timeoutDeclarations
 		for (timeoutDeclaration : timeoutDeclarations) {
 			timeoutDeclaration.name = timeoutDeclaration.getName(instance)
 		}
 		statechart.timeoutDeclarations += timeoutDeclarations
+		
 		val variableDeclarations = inlineableStatechart.variableDeclarations
 		for (variableDeclaration : variableDeclarations) {
 			variableDeclaration.name = variableDeclaration.getName(instance)

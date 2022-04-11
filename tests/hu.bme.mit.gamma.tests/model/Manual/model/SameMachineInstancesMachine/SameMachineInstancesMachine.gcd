@@ -1,0 +1,42 @@
+package SameMachineInstancesMachine
+import
+	"/model/SameMachineInstancesMachine/SameMachineInstancesMachineDeclarations.gcd"
+@TransitionPriority = order-based
+statechart SameMachineInstancesMachine [
+	port portA : requires portA
+] {
+	var sub_cnt_Sub1 : integer := 0
+	var _sameMachineInstancesMachine_Submachine__Sub1 : _SameMachineInstancesMachine_Submachine_
+	var sub_cnt_Sub2 : integer := 0
+	var _sameMachineInstancesMachine_Submachine__Sub2 : _SameMachineInstancesMachine_Submachine_
+	transition from _initialOfSubmachine___Sub1 to Submachine__State_Sub1
+	transition from Submachine__State_Sub1 to Submachine__State_Sub1 when portA.message_bool
+		[portA.message_bool::message_boolValue and _sameMachineInstancesMachine_Submachine__Sub1 =
+		_SameMachineInstancesMachine_Submachine_::Init] / {
+		sub_cnt_Sub1 := sub_cnt_Sub1 + 2;
+	}
+	transition from Submachine__State_Sub1 to Submachine__State_Sub1 when portA.message_bool
+		[!portA.message_bool::message_boolValue and _sameMachineInstancesMachine_Submachine__Sub1 =
+		_SameMachineInstancesMachine_Submachine_::Init] / {
+		sub_cnt_Sub1 := sub_cnt_Sub1 + 1;
+	}
+	transition from _initialOfSubmachine___Sub2 to Submachine__State_Sub2
+	transition from Submachine__State_Sub2 to Submachine__State_Sub2 when portA.message_bool
+		[portA.message_bool::message_boolValue and _sameMachineInstancesMachine_Submachine__Sub2 =
+		_SameMachineInstancesMachine_Submachine_::Init] / {
+		sub_cnt_Sub2 := sub_cnt_Sub2 + 2;
+	}
+	transition from Submachine__State_Sub2 to Submachine__State_Sub2 when portA.message_bool
+		[!portA.message_bool::message_boolValue and _sameMachineInstancesMachine_Submachine__Sub2 =
+		_SameMachineInstancesMachine_Submachine_::Init] / {
+		sub_cnt_Sub2 := sub_cnt_Sub2 + 1;
+	}
+	region Submachine__Sub1 {
+		state Submachine__State_Sub1
+		initial _initialOfSubmachine___Sub1
+	}
+	region Submachine__Sub2 {
+		state Submachine__State_Sub2
+		initial _initialOfSubmachine___Sub2
+	}
+}

@@ -1,0 +1,8 @@
+import "Synchronous/ANTIVAL_CHK_COID_System.gcd"
+
+analysis {
+	component : AntivalenceChecker_System
+	language : UPPAAL
+	transition-coverage
+	property-file : "Synchronous/ANTIVAL_CHK_COID_System.gpd"
+}

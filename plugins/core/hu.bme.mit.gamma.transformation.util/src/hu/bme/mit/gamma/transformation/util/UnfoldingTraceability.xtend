@@ -10,7 +10,10 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.transformation.util
 
+import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition
+import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.NamedElement
+import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.property.model.ComponentInstancePortReference
 import hu.bme.mit.gamma.property.model.ComponentInstanceStateConfigurationReference
@@ -20,6 +23,7 @@ import hu.bme.mit.gamma.statechart.composite.ComponentInstance
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.interface_.Component
+import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.State
@@ -31,6 +35,7 @@ import java.util.Collection
 
 import static com.google.common.base.Preconditions.checkState
 
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.transformation.util.Namings.*
 
@@ -288,11 +293,12 @@ class UnfoldingTraceability {
 	def contains(ComponentInstanceReference original, ComponentInstance copy) {
 		val originalInstances = original.componentInstanceChain
 		 // If the (AA) component is wrapped, the original will not contain the wrapper instance
-		val copyInstances = copy.wraplessComponentInstanceChain
+		val copyInstances = copy.wrapperlessComponentInstanceChain
 		
 		// The naming conventions are clear
-		// Without originalInstances.head.name == copyInstances.head.name ambiguous naming situations could occur
-		// E.g., the FQN of the chain "a -> b" is equal to the name of instance "a_b"
+		// Without originalInstances.head.name == copyInstances.head.name,
+		// ambiguous naming situations could occur, e.g.,
+		// the FQN of the chain "a -> b" is equal to the name of instance "a_b"
 		return originalInstances.head.name == copyInstances.head.name &&
 			copy.name.startsWith(originalInstances.FQN)
 	}
@@ -329,11 +335,14 @@ class UnfoldingTraceability {
 		// composite new instances, "newInstance.contains(originalInstance)" has to be introduced
 		checkState(newInstance.isStatechart)
 		
-		val originalInstances = originalType.originalSimpleInstanceReferences
+		val originalSimpleInstances = originalType.originalSimpleInstanceReferences
 		
-		for (originalInstance : originalInstances) {
-			if (originalInstance.contains(newInstance)) {
-				return originalInstance // Only one is expected
+		for (originalSimpleInstance : originalSimpleInstances) {
+			// There are some AA and CCC wrappings of statecharts in the unfolding process, which
+			// should be handled by the below method call ("contains" instead of "equals")
+			// TODO not working
+			if (originalSimpleInstance.contains(newInstance)) {
+				return originalSimpleInstance // Only one is expected
 			}
 		}
 		throw new IllegalStateException("Not found original instance for " + newInstance)
@@ -352,12 +361,23 @@ class UnfoldingTraceability {
 	}
 	
 	def getOriginalPort(Component originalComponent, Port newPort) {
-		for (port : originalComponent.allPorts) {
-			if (port.nameEquals(newPort)) {
-				return port // Port names must be unique
+		for (originalPort : originalComponent.allPorts) {
+			if (originalPort.nameEquals(newPort)) {
+				return originalPort // Port names must be unique
 			}
 		}
 		throw new IllegalArgumentException("Not found port: " + newPort)
+	}
+	
+	def getOriginalEvent(Component originalComponent, Event newEvent) {
+		for (originalEvent : originalComponent.allPorts
+				.map[it.allEvents].flatten ) {
+			if (originalEvent.containingInterface.nameEquals(newEvent.containingInterface) &&
+					originalEvent.nameEquals(newEvent)) {
+				return originalEvent
+			}
+		}
+		throw new IllegalArgumentException("Not found event: " + newEvent)
 	}
 	
 	def getOriginalState(ComponentInstanceReference originalInstance, State newState) {
@@ -367,9 +387,9 @@ class UnfoldingTraceability {
 	
 	def getOriginalState(ComponentInstance originalInstance, State newState) {
 		val originalType = originalInstance.getStatechart
-		for (state : originalType.allStates) {
-			if (state.equal(newState)) {
-				return state
+		for (originalState : originalType.allStates) {
+			if (originalState.equal(newState)) {
+				return originalState
 			}
 		}
 		throw new IllegalArgumentException("Not found state: " + newState)
@@ -382,12 +402,44 @@ class UnfoldingTraceability {
 	
 	def getOriginalVariable(ComponentInstance originalInstance, VariableDeclaration newVariable) {
 		val originalType = originalInstance.getStatechart
-		for (variable : originalType.variableDeclarations) {
-			if (variable.nameEquals(newVariable)) {
-				return variable // Variable names must be unique
+		for (originalVariable : originalType.variableDeclarations) {
+			if (originalVariable.nameEquals(newVariable)) {
+				return originalVariable // Variable names must be unique
 			}
 		}
 		throw new IllegalArgumentException("Not found variable: " + newVariable)
+	}
+	
+	def getOriginalTypeDeclaration(Component originalComponent, TypeDeclaration newTypeDeclaration) {
+		val originalTypeDeclarations = originalComponent.originalTypeDeclarations
+		for (originalTypeDeclaration : originalTypeDeclarations) {
+			if (originalTypeDeclaration.nameEquals(newTypeDeclaration)) {
+				return originalTypeDeclaration // Type declaration names must be unique
+			}
+		}
+		throw new IllegalArgumentException("Not found type declaration: " + newTypeDeclaration)
+	}
+	
+	def getOriginalEnumLiteral(Component originalComponent, EnumerationLiteralDefinition newEnumLiteral) {
+		val originalEnumLiterals = originalComponent.originalTypeDeclarations
+				.map[it.type].filter(EnumerationTypeDefinition)
+				.map[it.literals].flatten
+				.toSet
+		for (originalEnumLiteral : originalEnumLiterals) {
+			if (originalEnumLiteral.typeDeclaration.nameEquals(newEnumLiteral.typeDeclaration) &&
+					originalEnumLiteral.nameEquals(newEnumLiteral)) {
+				return originalEnumLiteral
+			}
+		}
+		throw new IllegalArgumentException("Not found enum literal: " + newEnumLiteral)
+	}
+	
+	//
+	
+	protected def getOriginalTypeDeclarations(Component originalComponent) {
+		return originalComponent.containingPackage
+				.selfAndAllImports.map[it.typeDeclarations].flatten
+				.toSet
 	}
 	
 }

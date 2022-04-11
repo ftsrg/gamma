@@ -1,0 +1,19 @@
+import "model/ComplexFunctionMachine/ComplexFunctionMachine"
+import "model/ComplexFunctionMachine/ComplexFunctionMachineWrapper"
+import trace "ComplexFunctionMachineTest"
+
+code {
+	component: ComplexFunctionMachine
+	language: java
+}
+
+code {
+	component: ComplexFunctionMachineWrapper
+	language: java
+}
+
+test {
+	trace: ComplexFunctionMachineTest
+	file: "ComplexFunctionMachineTest"
+	language: java
+}

@@ -1,0 +1,11 @@
+import "Cascade/ANTIVAL_CHK_COID_System.gcd"
+
+analysis {
+	component : AntivalenceChecker_System
+	language : UPPAAL
+	interaction-coverage {
+		sender-coverage-criterion : states-and-events
+		receiver-coverage-criterion : states-and-events
+	}
+	property-file : "Cascade/ANTIVAL_CHK_COID_System.gpd"
+}

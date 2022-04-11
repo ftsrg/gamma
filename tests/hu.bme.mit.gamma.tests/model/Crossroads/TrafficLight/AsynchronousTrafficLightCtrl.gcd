@@ -1,0 +1,57 @@
+package trafficlightctrl
+import "/hu.bme.mit.gamma.tests/model/Crossroads/Interfaces/Interfaces.gcd"
+
+@Asynchronous
+@TransitionPriority = order-based
+statechart TrafficLightCtrl [
+	port LightCommands : provides LightCommands
+	port PoliceInterrupt : requires PoliceInterrupt
+	port Control : requires Control
+] {
+	var c : boolean
+	var a : boolean
+	var asd : integer
+	var b : integer
+	timeout BlinkingYellowTimeout3
+	timeout BlackTimeout4
+	region Main_region {
+		state Interrupted {
+			region interrupted {
+				initial Entry2
+				state Black {
+					entry / set BlackTimeout4 := 500 ms; raise LightCommands.displayNone;
+				}
+				state BlinkingYellow {
+					entry / set BlinkingYellowTimeout3 := 500 ms; raise LightCommands.displayYellow;
+				}
+			}
+		}
+		state Normal {
+			exit / asd := 321;
+			region normal {
+				shallow history Entry0
+				state Yellow {
+					entry / raise LightCommands.displayYellow;
+				}
+				state Red {
+					entry / raise LightCommands.displayRed;
+					exit / a := true;
+				}
+				state Green {
+					entry / raise LightCommands.displayGreen;
+				}
+			}
+		}
+		initial Entry1
+	}
+	transition from Black to BlinkingYellow when timeout BlackTimeout4
+	transition from BlinkingYellow to Black when timeout BlinkingYellowTimeout3
+	transition from Entry0 to Red
+	transition from Entry1 to Normal
+	transition from Entry2 to BlinkingYellow
+	transition from Green to Yellow when Control.toggle / b := 4;
+	transition from Interrupted to Normal when PoliceInterrupt.police
+	transition from Normal to Interrupted when PoliceInterrupt.police
+	transition from Red to Green when Control.toggle
+	transition from Yellow to Red when Control.toggle
+}

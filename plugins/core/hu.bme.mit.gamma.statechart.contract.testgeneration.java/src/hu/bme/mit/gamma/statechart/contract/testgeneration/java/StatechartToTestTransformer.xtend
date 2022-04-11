@@ -86,8 +86,8 @@ class StatechartToTestTransformer {
 			val contractStates = newArrayList(simpleState)
 			contractStates += simpleState.ancestors
 			val contractStatecharts = newArrayList
-			contractStatecharts += contractStates.map[it.annotation].filter(StateContractAnnotation)
-				.map[it.contractStatecharts].flatten.toSet
+			contractStatecharts += contractStates.map[it.annotations].flatten
+				.filter(StateContractAnnotation).map[it.contractStatecharts].flatten.toSet
 			
 			val finalTraces = newArrayList
 			val contractToTraceTransformer = new StatechartContractToTraceTransformer
@@ -109,14 +109,14 @@ class StatechartToTestTransformer {
 	}
 	
 	private def findState(StatechartDefinition statechart, State newState) {
-		val brokenAnnotation = newState.annotation
-		newState.annotation = null
+		val brokenAnnotations = newState.annotations
+		newState.annotations.clear
 		for (state : statechart.allStates.filter[!it.composite]) {
 			val clonedState = state.clone => [
-				it.annotation = null
+				it.annotations.clear
 			]
 			if (clonedState.helperEquals(newState)) {
-				newState.annotation = brokenAnnotation
+				newState.annotations += brokenAnnotations
 				return state
 			}
 		}

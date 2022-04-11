@@ -62,7 +62,7 @@ public class TraceUtil extends ExpressionUtil {
 		ExecutionTrace trace = ecoreUtil.getSelfOrContainerOfType(context, ExecutionTrace.class);
 		Package _package = trace.getImport();
 		// Explicit imports
-		for (Package importedPackage : StatechartModelDerivedFeatures.getAllImports(_package)) {
+		for (Package importedPackage : StatechartModelDerivedFeatures.getComponentImports(_package)) {
 			types.addAll(importedPackage.getTypeDeclarations());
 		}
 		// Native references in the case the unfolded packages

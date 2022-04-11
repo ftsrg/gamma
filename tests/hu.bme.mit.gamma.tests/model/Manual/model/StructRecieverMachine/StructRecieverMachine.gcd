@@ -1,0 +1,20 @@
+package StructRecieverMachine
+import
+	"/model/StructRecieverMachine/StructRecieverMachineDeclarations.gcd"
+@TransitionPriority = order-based
+statechart StructRecieverMachine [
+	port portA : requires portA
+] {
+	var cnt : integer
+	var ss : SampleStruct
+	transition from _initialOfStructRecieverMachine__ to StructRecieverMachine__State
+	transition from StructRecieverMachine__State to StructRecieverMachine__State when
+		portA.message_SampleStruct / {
+		cnt := cnt + portA.message_SampleStruct::message_SampleStructValue.val;
+		ss.val := ss.val + portA.message_SampleStruct::message_SampleStructValue.val;
+	}
+	region StructRecieverMachine_ {
+		state StructRecieverMachine__State
+		initial _initialOfStructRecieverMachine__
+	}
+}

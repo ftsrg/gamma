@@ -20,10 +20,10 @@ import org.eclipse.emf.ecore.EObject;
 import hu.bme.mit.gamma.statechart.contract.ScenarioContractAnnotation;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Component;
+import hu.bme.mit.gamma.statechart.interface_.ComponentAnnotation;
 import hu.bme.mit.gamma.statechart.interface_.InterfaceModelFactory;
 import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.statechart.language.ui.serializer.StatechartLanguageSerializer;
-import hu.bme.mit.gamma.statechart.statechart.StatechartAnnotation;
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
 import hu.bme.mit.gamma.statechart.statechart.StatechartModelFactory;
 
@@ -45,8 +45,8 @@ public class StatechartSerializer {
 		_package.setName(statechart.getName().toLowerCase());
 		_package.getImports().addAll(interfaces);
 
-		List<StatechartAnnotation> annotations = statechart.getAnnotations();
-		for (StatechartAnnotation annotation : annotations) {
+		List<ComponentAnnotation> annotations = statechart.getAnnotations();
+		for (ComponentAnnotation annotation : annotations) {
 			if (annotation instanceof ScenarioContractAnnotation) {
 				ScenarioContractAnnotation scenarioContractAnnotation = (ScenarioContractAnnotation) annotation;
 				Component monitoredComponent = scenarioContractAnnotation.getMonitoredComponent();

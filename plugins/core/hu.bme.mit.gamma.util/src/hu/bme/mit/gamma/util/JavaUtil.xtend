@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2021 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -19,7 +19,7 @@ import java.util.Set
 
 class JavaUtil {
 	// Singleton
-	public static final JavaUtil INSTANCE =  new JavaUtil
+	public static final JavaUtil INSTANCE = new JavaUtil
 	protected new() {}
 	//
 
@@ -33,8 +33,30 @@ class JavaUtil {
 		return list
 	}
 	
-	def <T> Iterable<T> flattenIntoList(Iterable<? extends Iterable<? extends T>> inputs) {
+	def <T> List<T> flattenIntoList(Iterable<? extends Iterable<? extends T>> inputs) {
 		return IterableExtensions.flatten(inputs).toList
+	}
+	
+	def <T> T getFirstOfType(Iterable<? super T> collection, Class<T> clazz) {
+		for (element : collection) {
+			if (clazz.isInstance(element)) {
+				return element as T
+			}
+		}
+	}
+	
+	def <T> T getLastOfType(Iterable<? super T> collection, Class<T> clazz) {
+		return collection.toList
+			.reverseView
+			.getFirstOfType(clazz)
+	}
+	
+	def <T> T getLast(Iterable<T> collection) {
+		var T last = null
+		for (element : collection) {
+			last = element
+		}
+		return last
 	}
 	
 	def boolean isUnique(Iterable<?> collection) {
@@ -85,6 +107,14 @@ class JavaUtil {
 			entries += new SimpleEntry(entry.value, entry.key)
 		}
 		return entries
+	}
+	
+	def String toFirstCharUpper(String string) {
+		return string.toFirstUpper
+	}
+	
+	def String toFirstCharLower(String string) {
+		return string.toFirstLower
 	}
 	
 }

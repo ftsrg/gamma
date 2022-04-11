@@ -1,0 +1,12 @@
+package StateMachine
+
+import "/model/StateMachine/StateMachineDeclarations.gcd"
+import "/model/StateMachine/StateMachine.gcd"
+
+cascade StateMachineWrapper [
+	port portA : requires portA
+] {
+	component stateMachine : StateMachine
+	
+	bind portA -> stateMachine.portA
+}

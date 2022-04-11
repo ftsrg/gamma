@@ -51,10 +51,11 @@ class CfaActionTransformer {
 	def void transformIntoCfa(Action action, Location source, Location finalTarget) {
 		transientVariables.clear
 		
-		val finishLocation = action.transformAction(source) // transientVariables is filled
+		val finishLocation = action.transformAction(source) // transientVariables gets filled
 			
 		// If there is no merged action, the loop edge is unnecessary
-		if (finishLocation !== finalTarget) { // Is this correct? Should it not be source?
+		// E.g., source == finishLocation, source == finalTarget
+		if (finishLocation !== finalTarget) {
 			val lastEdge = finishLocation.createEdge(finalTarget)
 			lastEdge.resetTransientVariables(transientVariables)
 		}

@@ -1,0 +1,12 @@
+package ComplexFunctionMachine
+
+import "/model/ComplexFunctionMachine/ComplexFunctionMachineDeclarations.gcd"
+import "/model/ComplexFunctionMachine/ComplexFunctionMachine.gcd"
+
+cascade ComplexFunctionMachineWrapper [
+	port portA : requires portA
+] {
+	component complexFunctionMachine : ComplexFunctionMachine
+	
+	bind portA -> complexFunctionMachine.portA
+}

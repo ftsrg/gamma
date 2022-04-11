@@ -12,6 +12,7 @@ package hu.bme.mit.gamma.verification.util
 
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.trace.util.TraceUtil
+import hu.bme.mit.gamma.transformation.util.GammaFileNamer
 import hu.bme.mit.gamma.util.FileUtil
 import hu.bme.mit.gamma.util.PathEscaper
 import hu.bme.mit.gamma.verification.result.ThreeStateBoolean
@@ -27,6 +28,8 @@ abstract class AbstractVerifier {
 	
 	protected final Logger logger = Logger.getLogger("GammaLogger")
 	
+	protected final GammaFileNamer fileNamer = GammaFileNamer.INSTANCE
+	
 	protected extension FileUtil codeGeneratorUtil = FileUtil.INSTANCE
 	protected extension PathEscaper pathEscaper = PathEscaper.INSTANCE
 	protected extension TraceUtil traceUtil = TraceUtil.INSTANCE
@@ -36,9 +39,11 @@ abstract class AbstractVerifier {
 		val parentFolder = modelFile.parent
 		val tempQueryFile = new File(parentFolder + File.separator + modelFile.temporaryQueryFilename)
 		tempQueryFile.saveString(query)
-		// Deleting the file on the exit of the JVM
 		tempQueryFile.deleteOnExit
-		return verifyQuery(traceability, parameters, modelFile, tempQueryFile)
+		
+		val result = verifyQuery(traceability, parameters, modelFile, tempQueryFile)
+		
+		return result
 	}
 	
 	def abstract Result verifyQuery(Object traceability, String parameters, File modelFile,	File queryFile)
@@ -63,7 +68,7 @@ abstract class AbstractVerifier {
 	}
 	
 	protected def getTemporaryQueryFilename(File modelFile) {
-		return "." + modelFile.extensionlessName + ".q"
+		return fileNamer.getHiddenSerializedPropertyFileName(modelFile.name)
 	}
 	
 	@Data

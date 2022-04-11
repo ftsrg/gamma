@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Java JUnit Test Generator
 Bundle-SymbolicName: hu.bme.mit.gamma.trace.testgeneration.java
-Bundle-Version: 2.5.1.qualifier
+Bundle-Version: 2.6.0.qualifier
 Bundle-Vendor: BME-FTSRG
 Automatic-Module-Name: hu.bme.mit.gamma.trace.testgeneration.java
 Bundle-RequiredExecutionEnvironment: JavaSE-11
@@ -12,7 +12,7 @@ Require-Bundle: com.google.guava,
  org.eclipse.xtend.lib.macro,
  org.eclipse.viatra.query.runtime,
  hu.bme.mit.gamma.trace.model,
- hu.bme.mit.gamma.codegenerator.java.util,
+ hu.bme.mit.gamma.codegeneration.java.util,
  hu.bme.mit.gamma.uppaal.verification,
  hu.bme.mit.gamma.transformation.util
 Export-Package: hu.bme.mit.gamma.trace.testgeneration.java

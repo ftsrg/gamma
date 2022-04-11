@@ -10,9 +10,8 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.trace.environment.transformation
 
-import hu.bme.mit.gamma.statechart.composite.CascadeCompositeComponent
-import hu.bme.mit.gamma.statechart.composite.SynchronousComponent
-import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
+import hu.bme.mit.gamma.statechart.composite.ComponentInstance
+import hu.bme.mit.gamma.statechart.composite.SchedulableCompositeComponent
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
@@ -25,6 +24,7 @@ import static extension hu.bme.mit.gamma.trace.environment.transformation.TraceR
 class TraceReplayModelGenerator {
 	
 	protected final ExecutionTrace executionTrace
+	protected final Component testModel
 	protected final String systemName
 	protected final String envrionmentModelName
 	protected final EnvironmentModel environmentModel
@@ -35,6 +35,7 @@ class TraceReplayModelGenerator {
 	new(ExecutionTrace executionTrace, String systemName,
 			String envrionmentModelName, EnvironmentModel environmentModel, boolean considerOutEvents) {
 		this.executionTrace = executionTrace
+		this.testModel = executionTrace.component
 		this.systemName = systemName
 		this.envrionmentModelName = envrionmentModelName
 		this.environmentModel = environmentModel
@@ -49,21 +50,22 @@ class TraceReplayModelGenerator {
 		val transformer = new TraceToEnvironmentModelTransformer(envrionmentModelName,
 				considerOutEvents, executionTrace, environmentModel)
 		val result = transformer.execute
+		// Now only synchronous statecharts are supported - could be extended to asynchronous ones, too
 		val environmentModel = result.statechart
 		val lastState = result.lastState
 		val trace = transformer.getTrace
 		
-		val testModel = executionTrace.component as SynchronousComponent
 		val testModelPackage = testModel.containingPackage
-		val systemModel = testModel.wrapSynchronousComponent => [
+		val systemModel = testModel.wrapComponent => [
 			it.name = systemName
 		]
-		val componentInstance = systemModel.components.head => [
+		val componentInstance = systemModel.derivedComponents.head => [
 			it.name = systemModel.instanceName
 		]
 		
-		val environmentInstance = environmentModel.instantiateSynchronousComponent
-		systemModel.components.add(0, environmentInstance)
+		val environmentInstance = environmentModel.instantiateComponent
+		systemModel.prependComponentInstance(environmentInstance)
+		systemModel.initialExecutionList += environmentInstance.createInstanceReference // Initial out-raises
 		if (considerOutEvents) {
 			systemModel.executionList += environmentInstance.createInstanceReference // In
 			systemModel.executionList += componentInstance.createInstanceReference 
@@ -101,7 +103,7 @@ class TraceReplayModelGenerator {
 		val systemPackage = systemModel.wrapIntoPackage
 		systemPackage.name = testModelPackage.name // So test generation remains simple
 		
-		environmentPackage.imports += testModelPackage.allImports // E.g., interfaces and types
+		environmentPackage.imports += testModelPackage.componentImports // E.g., interfaces and types
 		systemPackage.imports += environmentPackage
 		systemPackage.imports += testModelPackage
 		systemPackage.imports += systemModel.importableInterfacePackages // If ports were not cleared
@@ -119,8 +121,8 @@ class TraceReplayModelGenerator {
 	
 	@Data
 	static class Result {
-		SynchronousComponentInstance environmentModelIntance
-		CascadeCompositeComponent systemModel
+		ComponentInstance environmentModelIntance
+		SchedulableCompositeComponent systemModel
 		State lastState
 	}
 	

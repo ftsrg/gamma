@@ -12,3 +12,7 @@
 *.gpd
 *.pd
 *.txt
+!/model/TMT/System/TMT.gsm
+!/model/TMT/System/TMTComponent.gsm
+!/model/Spacecraft/System/Spacecraft.gsm
+!/model/Spacecraft/System/SpacecraftComponent.gsm

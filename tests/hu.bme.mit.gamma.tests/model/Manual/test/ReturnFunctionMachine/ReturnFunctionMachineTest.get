@@ -1,0 +1,83 @@
+import "model/ReturnFunctionMachine/ReturnFunctionMachineWrapper"
+
+trace ReturnFunctionMachineTest of ReturnFunctionMachineWrapper
+
+step {
+	act {
+		reset
+	}
+	assert {
+		variable returnFunctionMachine.x = 0
+		variable returnFunctionMachine._returnFunctionMachine_ = _ReturnFunctionMachine_::A
+	}
+}
+step {
+	act {
+		raise P.message_int(0) 
+		schedule component
+	}
+	assert {
+		variable returnFunctionMachine.x = 0
+		variable returnFunctionMachine._returnFunctionMachine_ = _ReturnFunctionMachine_::B
+	}
+}
+step {
+	act {
+		raise P.message_int(0) 
+		schedule component
+	}
+	assert {
+		variable returnFunctionMachine.x = 0
+		variable returnFunctionMachine._returnFunctionMachine_ = _ReturnFunctionMachine_::B
+	}
+}
+step {
+	act {
+		raise P.message_int(-1) 
+		schedule component
+	}
+	assert {
+		variable returnFunctionMachine.x = 0
+		variable returnFunctionMachine._returnFunctionMachine_ = _ReturnFunctionMachine_::B
+	}
+}
+step {
+	act {
+		raise P.message_int(1) 
+		schedule component
+	}
+	assert {
+		variable returnFunctionMachine.x = 0
+		variable returnFunctionMachine._returnFunctionMachine_ = _ReturnFunctionMachine_::A
+	}
+}
+step {
+	act {
+		raise P.message_int(1) 
+		schedule component
+	}
+	assert {
+		variable returnFunctionMachine.x = 1
+		variable returnFunctionMachine._returnFunctionMachine_ = _ReturnFunctionMachine_::B
+	}
+}
+step {
+	act {
+		raise P.message_int(1) 
+		schedule component
+	}
+	assert {
+		variable returnFunctionMachine.x = 1
+		variable returnFunctionMachine._returnFunctionMachine_ = _ReturnFunctionMachine_::A
+	}
+}
+step {
+	act {
+		raise P.message_int(-1) 
+		schedule component
+	}
+	assert {
+		variable returnFunctionMachine.x = 0
+		variable returnFunctionMachine._returnFunctionMachine_ = _ReturnFunctionMachine_::B
+	}
+}

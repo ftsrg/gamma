@@ -1,0 +1,19 @@
+import "model/MachineVarMachine/MachineVarMachine"
+import "model/MachineVarMachine/MachineVarMachineWrapper"
+import trace "MachineVarMachineTest"
+
+code {
+	component: MachineVarMachine
+	language: java
+}
+
+code {
+	component: MachineVarMachineWrapper
+	language: java
+}
+
+test {
+	trace: MachineVarMachineTest
+	file: "MachineVarMachineTest"
+	language: java
+}

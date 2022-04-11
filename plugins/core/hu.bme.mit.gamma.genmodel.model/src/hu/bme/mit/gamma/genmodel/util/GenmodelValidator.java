@@ -37,8 +37,10 @@ import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Type;
+import hu.bme.mit.gamma.expression.model.TypeReference;
 import hu.bme.mit.gamma.expression.util.ExpressionModelValidator;
 import hu.bme.mit.gamma.genmodel.model.AbstractComplementaryTestGeneration;
+import hu.bme.mit.gamma.genmodel.model.AdaptiveBehaviorConformanceChecking;
 import hu.bme.mit.gamma.genmodel.model.AdaptiveContractTestGeneration;
 import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
 import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation;
@@ -74,7 +76,6 @@ import hu.bme.mit.gamma.statechart.composite.AsynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference;
 import hu.bme.mit.gamma.statechart.composite.CompositeModelPackage;
-import hu.bme.mit.gamma.statechart.contract.AdaptiveContractAnnotation;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.EventDeclaration;
@@ -83,7 +84,6 @@ import hu.bme.mit.gamma.statechart.interface_.InterfaceModelPackage;
 import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.statechart.interface_.RealizationMode;
 import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
-import hu.bme.mit.gamma.statechart.statechart.StatechartAnnotation;
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
 import hu.bme.mit.gamma.statechart.util.StatechartUtil;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
@@ -389,11 +389,8 @@ public class GenmodelValidator extends ExpressionModelValidator {
 			Component component = componentReference.getComponent();
 			if (component instanceof StatechartDefinition) {
 				StatechartDefinition statechartDefinition = (StatechartDefinition) component;
-				List<StatechartAnnotation> annotations = statechartDefinition.getAnnotations();
-				for (StatechartAnnotation statechartAnnotation: annotations) {
-					if (statechartAnnotation instanceof AdaptiveContractAnnotation) {
-						return validationResultMessages; // Everything is correct, returning with empty list
-					}
+				if (StatechartModelDerivedFeatures.isAdaptiveContract(statechartDefinition)) {
+					return validationResultMessages; // Everything is correct, returning with empty list
 				}
 			}
 		}
@@ -433,6 +430,10 @@ public class GenmodelValidator extends ExpressionModelValidator {
 					javaUtil.filterIntoList(genmodel.getTasks(), AdaptiveContractTestGeneration.class)) {
 			packageImports.removeAll(getUsedPackages(adaptiveContractTestGenerationTask.getModelTransformation()));
 		}
+		for (AdaptiveBehaviorConformanceChecking adaptiveBehaviorConformanceChecking :
+					javaUtil.filterIntoList(genmodel.getTasks(), AdaptiveBehaviorConformanceChecking.class)) {
+			packageImports.removeAll(getUsedPackages(adaptiveBehaviorConformanceChecking.getModelTransformation()));
+		}
 		for (StatechartContractTestGeneration statechartContractTestGenerationTask :
 			javaUtil.filterIntoList(genmodel.getTasks(), StatechartContractTestGeneration.class)) {
 			packageImports.remove(StatechartModelDerivedFeatures.getContainingPackage(
@@ -445,9 +446,20 @@ public class GenmodelValidator extends ExpressionModelValidator {
 			packageImports.remove(parentPackage);
 		}
 		for (ReferenceExpression reference : ecoreUtil.getAllContentsOfType(genmodel, ReferenceExpression.class)) {
-			Declaration declaration = expressionUtil.getAccessedDeclaration(reference);
-			ExpressionPackage expressionPackage = ecoreUtil.getContainerOfType(declaration, ExpressionPackage.class);
-			packageImports.remove(expressionPackage);
+			if (reference instanceof ComponentInstanceReference) {
+				ComponentInstanceReference instanceReference = (ComponentInstanceReference) reference;
+				List<ComponentInstance> componentInstanceChain =
+						StatechartModelDerivedFeatures.getComponentInstanceChain(instanceReference);
+				List<Package> packages = componentInstanceChain.stream()
+						.map(it -> StatechartModelDerivedFeatures.getContainingPackage(it))
+						.collect(Collectors.toList());
+				packageImports.removeAll(packages);
+			}
+			else {
+				Declaration declaration = statechartUtil.getAccessedDeclaration(reference);
+				ExpressionPackage expressionPackage = ecoreUtil.getContainerOfType(declaration, ExpressionPackage.class);
+				packageImports.remove(expressionPackage);
+			}
 		}
 		for (Package packageImport : packageImports) {
 			int index = genmodel.getPackageImports().indexOf(packageImport);
@@ -833,34 +845,38 @@ public class GenmodelValidator extends ExpressionModelValidator {
 	
 	public boolean checkParameters(Event yakinduEvent, hu.bme.mit.gamma.statechart.interface_.Event gEvent) {
 		// event.type is null not void if no explicit type is declared
-		if (yakinduEvent.getType() == null && gEvent.getParameterDeclarations().isEmpty()) {
+		org.yakindu.base.types.Type yakinduType = yakinduEvent.getType();
+		List<ParameterDeclaration> gammaParameters = gEvent.getParameterDeclarations();
+		if (yakinduType == null && gammaParameters.isEmpty()) {
 			return true;
 		}
-		if (!gEvent.getParameterDeclarations().isEmpty()) {
-			Type eventType = gEvent.getParameterDeclarations().get(0).getType();
+		if (!gammaParameters.isEmpty()) {
+			Type eventType = gammaParameters.get(0).getType();
 			if (eventType instanceof IntegerTypeDefinition) {
-				if (yakinduEvent.getType() == null) {
+				if (yakinduType == null) {
 					return false;
 				}
-				return yakinduEvent.getType().getName().equals("integer") ||
-						yakinduEvent.getType().getName().equals("string"); 
+				return yakinduType.getName().equals("integer") ||
+						yakinduType.getName().equals("string"); 
 			}
 			else if (eventType instanceof BooleanTypeDefinition) {
-				if (yakinduEvent.getType() == null) {
+				if (yakinduType == null) {
 					return false;
 				}
-				return yakinduEvent.getType().getName().equals("boolean");
+				return yakinduType.getName().equals("boolean");
 			}
 			else if (eventType instanceof DecimalTypeDefinition) {
-				if (yakinduEvent.getType() == null) {
+				if (yakinduType == null) {
 					return false;
 				}
-				return yakinduEvent.getType().getName().equals("real");
+				return yakinduType.getName().equals("real");
+			}
+			else if (eventType instanceof TypeReference) {
+				return false; // Yakindu does not support composite types
 			}
 			else {
-				throw new IllegalArgumentException("Not known type: " + gEvent.getParameterDeclarations().get(0).getType());
+				throw new IllegalArgumentException("Not known type: " + gammaParameters.get(0).getType());
 			}
-					
 		}
 		return false;
 	}

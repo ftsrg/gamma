@@ -1,0 +1,37 @@
+package ReturnFunctionMachine
+import
+	"/model/ReturnFunctionMachine/ReturnFunctionMachineDeclarations.gcd"
+@TransitionPriority = order-based
+statechart ReturnFunctionMachine [
+	port P : requires P
+] {
+	var x : integer := 0
+	var _returnFunctionMachine_ : _ReturnFunctionMachine_
+	transition from _initialOfReturnFunctionMachine__ to ReturnFunctionMachine__State
+	transition from ReturnFunctionMachine__State to ReturnFunctionMachine__State when P.message_int
+		[_returnFunctionMachine_ = _ReturnFunctionMachine_::A] / {
+		incrOrDecrX(P.message_int::message_intValue);
+		_returnFunctionMachine_ := _ReturnFunctionMachine_::B;
+	}
+	transition from ReturnFunctionMachine__State to ReturnFunctionMachine__State when P.message_int
+		[_returnFunctionMachine_ = _ReturnFunctionMachine_::B] / {
+		if (positive(P.message_int::message_intValue)) {
+			_returnFunctionMachine_ := _ReturnFunctionMachine_::A;
+		}
+	}
+	region ReturnFunctionMachine_ {
+		state ReturnFunctionMachine__State
+		initial _initialOfReturnFunctionMachine__
+	}
+	procedure incrOrDecrX(a : integer) : void {
+		if (a = 0) {
+			return;
+		}
+		if (a > 0) {
+			x := x + 1;
+		}
+		elseif (else) {
+			x := x - 1;
+		}
+	}
+}

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -20,8 +20,8 @@ import org.eclipse.core.resources.IFile;
 import hu.bme.mit.gamma.genmodel.model.TraceReplayModelGeneration;
 import hu.bme.mit.gamma.property.model.PropertyPackage;
 import hu.bme.mit.gamma.property.util.PropertyUtil;
-import hu.bme.mit.gamma.statechart.composite.CascadeCompositeComponent;
-import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
+import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.statechart.State;
 import hu.bme.mit.gamma.trace.environment.transformation.EnvironmentModel;
@@ -55,10 +55,10 @@ public class TraceReplayModelGenerationHandler extends TaskHandler {
 		TraceReplayModelGenerator modelGenerator = new TraceReplayModelGenerator(executionTrace,
 				systemName, environmentModelName, environmentModelSetting, considerOutEvents);
 		Result result = modelGenerator.execute();
-		SynchronousComponentInstance environmentInstance = result.getEnvironmentModelIntance();
-		Component environmentModel = environmentInstance.getType();
+		ComponentInstance environmentInstance = result.getEnvironmentModelIntance();
+		Component environmentModel = StatechartModelDerivedFeatures.getDerivedType(environmentInstance);
 		State lastState = result.getLastState();
-		CascadeCompositeComponent systemModel = result.getSystemModel();
+		Component systemModel = result.getSystemModel();
 		
 		PropertyPackage propertyPackage = util.createAtomicInstanceStateReachabilityProperty(
 				systemModel, environmentInstance, lastState);

@@ -1,0 +1,41 @@
+import "Spacecraft.gsm"
+import "SpacecraftComponent.gsm"
+
+// SpacecraftComponent - atomic statechart code generation
+
+code {
+	component : GroundStation
+	language : java
+}
+
+code {
+	component : Spacecraft
+	language : java
+}
+
+// Spacecraft
+
+code {
+	component : SystemAsyncAdapter
+	language : java
+}
+
+analysis {
+	component : SystemAsyncAdapter
+	file : "Spacecraft.gsm"
+	language : XSTS-UPPAAL
+	constraint : {
+		top : {
+			minimum-orchestrating-period : 1 ms
+			maximum-orchestrating-period : 1 ms
+		}
+	}
+}
+
+verification {
+    language : XSTS-UPPAAL
+    test-language : java
+    back-annotate-to-original : true
+    file : "Spacecraft.xml"
+    property-file : "Spacecraft.gpm"
+}

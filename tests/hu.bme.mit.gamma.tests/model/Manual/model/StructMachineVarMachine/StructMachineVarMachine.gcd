@@ -1,0 +1,18 @@
+package StructMachineVarMachine
+import
+	"/model/StructMachineVarMachine/StructMachineVarMachineDeclarations.gcd"
+@TransitionPriority = order-based
+statechart StructMachineVarMachine [
+	port portA : requires portA
+] {
+	var ss : SampleStruct
+	transition from _initialOfStructMachineVarMachine__ to StructMachineVarMachine__State
+	transition from StructMachineVarMachine__State to StructMachineVarMachine__State when
+		portA.message_int / {
+		ss.cnt := ss.cnt + 1;
+	}
+	region StructMachineVarMachine_ {
+		state StructMachineVarMachine__State
+		initial _initialOfStructMachineVarMachine__
+	}
+}

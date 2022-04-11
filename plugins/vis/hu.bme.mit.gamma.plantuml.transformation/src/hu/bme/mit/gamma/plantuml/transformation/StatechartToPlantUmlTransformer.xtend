@@ -43,7 +43,6 @@ import hu.bme.mit.gamma.statechart.util.ActionSerializer
 import hu.bme.mit.gamma.statechart.util.ExpressionSerializer
 import org.eclipse.emf.common.util.EList
 
-import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class StatechartToPlantUmlTransformer {
@@ -392,20 +391,24 @@ class StatechartToPlantUmlTransformer {
 		}
 	}
 
-	protected def listVariablesInNote(StatechartDefinition statechart) '''
-		legend top
-		Variables:
+	protected def listVariablesInNote(StatechartDefinition statechart) {
+		val variableDeclarations = statechart.variableDeclarations
+		val timeoutDeclarations = statechart.timeoutDeclarations
 		
-		«FOR variable : statechart.variableDeclarations»
-			var «variable.name»: «variable.typeDefinition.serialize»«IF variable.expression !== null» = «variable.expression.serialize»«ENDIF»
-		«ENDFOR»
-		
-		Timeouts:
-		
-		«FOR timeout : statechart.timeoutDeclarations»
-			timeout «timeout.name»
-		«ENDFOR»
-		endlegend
-	'''
+		if (variableDeclarations.empty && timeoutDeclarations.empty) {
+			return ''''''
+		}
+		return '''
+			legend top
+				«FOR variable : variableDeclarations»
+					var «variable.name»: «variable.type.serialize»«IF variable.expression !== null» = «variable.expression.serialize»«ENDIF»
+				«ENDFOR»
+				«FOR timeout : timeoutDeclarations»
+					timeout «timeout.name»
+				«ENDFOR»
+			endlegend
+		'''
+	
+	}
 
 }

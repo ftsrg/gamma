@@ -3,4 +3,5 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Expression Validation Test
 Bundle-SymbolicName: hu.bme.mit.gamma.expression.validation.test; singleton:=true
 Bundle-Version: 2.5.0.qualifier
+Automatic-Module-Name: hu.bme.mit.gamma.expression.validation.test
 Require-Bundle: org.eclipse.emf.ecore

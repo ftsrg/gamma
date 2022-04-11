@@ -1,0 +1,57 @@
+package opttest
+import "/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd"
+import "/hu.bme.mit.gamma.tutorial.contract.finish/model/Controller/Controller.gcd"
+@TransitionPriority = value-based
+@ScenarioContractStatechart = Controller (permissive)
+statechart optTest [
+	port PoliceInterrupt : requires PoliceInterrupt
+	port PoliceInterruptREVERSED : provides PoliceInterrupt
+	port SecondaryPolice : provides PoliceInterrupt
+	port SecondaryPoliceREVERSED : requires PoliceInterrupt
+	port SecondaryControl : provides Control
+	port SecondaryControlREVERSED : requires Control
+	port PriorityControl : provides Control
+	port PriorityControlREVERSED : requires Control
+	port PriorityPolice : provides PoliceInterrupt
+	port PriorityPoliceREVERSED : requires PoliceInterrupt
+] {
+	region ^region {
+		initial Initial
+		state firstState
+		state hotComponentViolation
+		state hotEnvironmentViolation
+		state coldViolation
+		state state2
+		state state3
+		state merge0
+		state state4
+		state state5
+		@SpecialStateAnnotation accepting
+		state AcceptingState
+	}
+	transition from Initial to firstState
+	transition (3) from firstState to merge0 when PoliceInterrupt.police /
+	raise PoliceInterruptREVERSED.police;
+	transition (1) from firstState to coldViolation when any
+	transition (3) from state2 to state3 when PriorityControlREVERSED.toggle /
+	raise PriorityControl.toggle;
+	transition (1) from state2 to hotComponentViolation when any
+	transition (1) from state3 to hotComponentViolation when any
+	transition (3) from state3 to state4 when PriorityControlREVERSED.toggle /
+	raise PriorityControl.toggle;
+	transition (1) from merge0 to hotComponentViolation when any
+	transition (3) from merge0 to state2 when PriorityPoliceREVERSED.police &&
+		SecondaryPoliceREVERSED.police /
+	raise PriorityPolice.police;
+	raise SecondaryPolice.police;
+	transition (3) from merge0 to state4 when PriorityControlREVERSED.toggle /
+	raise PriorityControl.toggle;
+	transition (3) from state4 to state5 when PoliceInterrupt.police /
+	raise PoliceInterruptREVERSED.police;
+	transition (1) from state4 to hotEnvironmentViolation when any
+	transition (3) from state5 to AcceptingState when PriorityPoliceREVERSED.police &&
+		SecondaryPoliceREVERSED.police /
+	raise PriorityPolice.police;
+	raise SecondaryPolice.police;
+	transition (1) from state5 to hotComponentViolation when any
+}

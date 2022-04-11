@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Gamma xSTS Java Code Generation
 Bundle-SymbolicName: hu.bme.mit.gamma.xsts.codegeneration.java
-Bundle-Version: 2.5.1.qualifier
+Bundle-Version: 2.6.0.qualifier
 Bundle-Vendor: BME-FTSRG
 Automatic-Module-Name: hu.bme.mit.gamma.xsts.codegeneration.java
 Bundle-RequiredExecutionEnvironment: JavaSE-11
@@ -12,7 +12,7 @@ Require-Bundle: com.google.guava,
  org.eclipse.xtend.lib.macro,
  hu.bme.mit.gamma.statechart.model,
  hu.bme.mit.gamma.xsts.model,
- hu.bme.mit.gamma.codegenerator.java.util,
+ hu.bme.mit.gamma.codegeneration.java.util,
  hu.bme.mit.gamma.xsts.transformation.util
 Export-Package: hu.bme.mit.gamma.xsts.codegeneration.java
 

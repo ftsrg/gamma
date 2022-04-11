@@ -1,0 +1,12 @@
+package GuardMachine
+
+import "/model/GuardMachine/GuardMachineDeclarations.gcd"
+import "/model/GuardMachine/GuardMachine.gcd"
+
+ cascade GuardMachineWrapper [
+ 	port portA : requires portA
+ ] {
+ 	component guardMachine : GuardMachine
+ 	
+ 	bind portA -> guardMachine.portA
+ }

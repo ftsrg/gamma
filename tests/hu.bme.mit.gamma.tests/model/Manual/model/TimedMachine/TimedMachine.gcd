@@ -1,0 +1,46 @@
+package TimedMachine
+import
+	"/model/TimedMachine/TimedMachineDeclarations.gcd"
+@TransitionPriority = order-based
+statechart TimedMachine [
+	port portA : requires portA
+] {
+	var _timedMachine_ : _TimedMachine_
+	var _timedMachine_Other_ : _TimedMachine_Other_
+	timeout timeout_1971455862
+	timeout timeout_1238298886
+	transition from _initialOfTimedMachine__ to TimedMachine__State
+	transition from TimedMachine__State to TimedMachine__State when portA.message_bool
+		[_timedMachine_ = _TimedMachine_::Init] / {
+		{
+			_timedMachine_ := _TimedMachine_::Other; {
+				set timeout_1971455862 := 1 ms;
+				_timedMachine_Other_ := _TimedMachine_Other_::OtherA;
+			}
+		}
+	}
+	transition from TimedMachine__State to TimedMachine__State when timeout timeout_1971455862
+		[_timedMachine_ = _TimedMachine_::Other and _timedMachine_Other_ = _TimedMachine_Other_::OtherA]
+		/ {
+		{
+			_timedMachine_ := _TimedMachine_::Other; {
+				set timeout_1238298886 := 2 ms;
+				_timedMachine_Other_ := _TimedMachine_Other_::OtherB;
+			}
+		}
+	}
+	transition from TimedMachine__State to TimedMachine__State when timeout timeout_1238298886
+		[_timedMachine_ = _TimedMachine_::Other and _timedMachine_Other_ = _TimedMachine_Other_::OtherB]
+		/ {
+		{
+			_timedMachine_ := _TimedMachine_::Other; {
+				set timeout_1971455862 := 1 ms;
+				_timedMachine_Other_ := _TimedMachine_Other_::OtherA;
+			}
+		}
+	}
+	region TimedMachine_ {
+		state TimedMachine__State
+		initial _initialOfTimedMachine__
+	}
+}

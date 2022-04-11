@@ -1,0 +1,19 @@
+import "model/StructRecieverMachine/StructRecieverMachine"
+import "model/StructRecieverMachine/StructRecieverMachineWrapper"
+import trace "StructRecieverMachineTest"
+
+code {
+	component: StructRecieverMachine
+	language: java
+}
+
+code {
+	component: StructRecieverMachineWrapper
+	language: java
+}
+
+test {
+	trace: StructRecieverMachineTest
+	file: "StructRecieverMachineTest"
+	language: java
+}

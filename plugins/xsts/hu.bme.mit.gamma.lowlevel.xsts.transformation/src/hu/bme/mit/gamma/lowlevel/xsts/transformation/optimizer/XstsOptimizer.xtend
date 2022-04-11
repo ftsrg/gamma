@@ -41,7 +41,7 @@ class XstsOptimizer {
 	def optimizeTransitions(Iterable<? extends XTransition> transitions) {
 		val optimizedTransitions = newArrayList
 		for (transition : transitions) {
-			optimizedTransitions += transition.optimize
+			optimizedTransitions += transition.optimizeTransition
 		}
 		return optimizedTransitions
 	}
@@ -52,7 +52,7 @@ class XstsOptimizer {
 		}
 		val action = transition.action
 		return createXTransition => [
-			it.action = action?.optimize
+			it.action = action?.optimizeAction
 		]
 	}
 	

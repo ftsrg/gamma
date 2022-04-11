@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -609,8 +609,8 @@ class LowlevelToXstsTransformer {
 		if (inEventEnvironmentalActionRule === null) {
 			inEventEnvironmentalActionRule = createRule(InEvents.instance).action [
 				val lowlevelEvent = it.event
-				if (lowlevelEvent.notOptimizable) {
-					val lowlevelEnvironmentalAction = xSts.inEventAction
+				if (lowlevelEvent.notOptimizable && !lowlevelEvent.internal) {
+					val lowlevelEnvironmentalAction = xSts.inEventAction as SequentialAction
 					val xStsEventVariable = trace.getXStsVariable(lowlevelEvent)
 					
 					// In event variable
@@ -652,8 +652,8 @@ class LowlevelToXstsTransformer {
 		if (outEventEnvironmentalActionRule === null) {
 			outEventEnvironmentalActionRule = createRule(OutEvents.instance).action [
 				val lowlevelEvent = it.event
-				if (lowlevelEvent.notOptimizable) {
-					val lowlevelEnvironmentalAction = xSts.outEventAction
+				if (lowlevelEvent.notOptimizable && !lowlevelEvent.internal) {
+					val lowlevelEnvironmentalAction = xSts.outEventAction as SequentialAction
 					val xStsEventVariable = trace.getXStsVariable(lowlevelEvent)
 					lowlevelEnvironmentalAction.actions += xStsEventVariable
 							.createAssignmentAction(createFalseExpression)

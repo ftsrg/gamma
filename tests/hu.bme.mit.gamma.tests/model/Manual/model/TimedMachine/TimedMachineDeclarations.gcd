@@ -1,0 +1,10 @@
+package TimedMachine
+type _TimedMachine_Other_ : enum {
+	OtherA, OtherB
+}
+type _TimedMachine_ : enum {
+	Init, Other
+}
+interface portA {
+	out event message_bool(message_boolValue : boolean)
+}

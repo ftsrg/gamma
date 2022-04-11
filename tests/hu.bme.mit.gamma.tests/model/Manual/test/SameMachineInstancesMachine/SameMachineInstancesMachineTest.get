@@ -1,0 +1,53 @@
+import "model/SameMachineInstancesMachine/SameMachineInstancesMachineWrapper"
+
+trace SameMachineInstancesMachineTest of SameMachineInstancesMachineWrapper
+
+step {
+	act {
+		reset
+	}
+	assert {
+		variable sameMachineInstancesMachine.sub_cnt_Sub1 = 0
+		variable sameMachineInstancesMachine.sub_cnt_Sub2 = 0
+	}
+}
+step {
+	act {
+		raise portA.message_bool(false) 
+		schedule component
+	}
+	assert {
+		variable sameMachineInstancesMachine.sub_cnt_Sub1 = 1
+		variable sameMachineInstancesMachine.sub_cnt_Sub2 = 1
+	}
+}
+step {
+	act {
+		raise portA.message_bool(true) 
+		schedule component
+	}
+	assert {
+		variable sameMachineInstancesMachine.sub_cnt_Sub1 = 3
+		variable sameMachineInstancesMachine.sub_cnt_Sub2 = 3
+	}
+}
+step {
+	act {
+		raise portA.message_bool(true) 
+		schedule component
+	}
+	assert {
+		variable sameMachineInstancesMachine.sub_cnt_Sub1 = 5
+		variable sameMachineInstancesMachine.sub_cnt_Sub2 = 5
+	}
+}
+step {
+	act {
+		raise portA.message_bool(false) 
+		schedule component
+	}
+	assert {
+		variable sameMachineInstancesMachine.sub_cnt_Sub1 = 6
+		variable sameMachineInstancesMachine.sub_cnt_Sub2 = 6
+	}
+}

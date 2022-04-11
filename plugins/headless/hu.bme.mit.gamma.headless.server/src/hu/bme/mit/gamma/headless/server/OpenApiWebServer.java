@@ -2,13 +2,14 @@ package hu.bme.mit.gamma.headless.server;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.FileHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -19,7 +20,6 @@ import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 
-import hu.bme.mit.gamma.headless.server.entity.WorkspaceProjectWrapper;
 import hu.bme.mit.gamma.headless.server.service.ProcessBuilderCli;
 import hu.bme.mit.gamma.headless.server.service.Provider;
 import hu.bme.mit.gamma.headless.server.service.Validator;
@@ -268,6 +268,10 @@ public class OpenApiWebServer extends AbstractVerticle {
 							ProcessBuilderCli.stopOperation(projectName, workspace);
 							logger.log(Level.INFO, ANSI_YELLOW
 									+ "Operation \"stopOperation\": parameters passed to CLI." + ANSI_RESET);
+							
+							errorHandlerPOJO = getErrorObject(workspace, projectName);
+							success = errorHandlerPOJO.getStatusCode() != 503;
+						} else {
 							success = true;
 						}
 					} catch (IOException e) {
@@ -633,27 +637,29 @@ public class OpenApiWebServer extends AbstractVerticle {
 	// Used to periodically list workspaces and projects that are undergoing an
 	// operation
 	private static void listWorkspacesAndProjects() throws IOException {
-		if (FileHandlerUtil.getWrapperListFromJson() != null) {
-			List<WorkspaceProjectWrapper> yourList = FileHandlerUtil.getWrapperListFromJson();
+		Map<String, Set<String>> projectsByWorkspaces = FileHandlerUtil.getProjectsByWorkspaces();
+		if (projectsByWorkspaces.isEmpty()) {
+			logger.log(Level.INFO, "No workspaces are present.");
+			return;
+		}
+		
+		for (Map.Entry<String, Set<String>> projectsByWorkspace: projectsByWorkspaces.entrySet()) {
+			String workspace = projectsByWorkspace.getKey();
+			Set<String> projects = projectsByWorkspace.getValue();
 			logger.log(Level.INFO, System.lineSeparator() + "Currently ongoing operations: ");
 			boolean noOp = true;
-			for (int i = 0; i < yourList.size(); i++) {
-				if (yourList.get(i).getProjectName() != null) {
-					if (Validator.checkIfProjectIsUnderLoad(yourList.get(i).getWorkspace(),
-							yourList.get(i).getProjectName())) {
-						if (noOp) {
-							noOp = false;
-						}
-						logger.log(Level.INFO, '\t' + "Workspace: " + yourList.get(i).getWorkspace() + " Project: "
-								+ yourList.get(i).getProjectName());
+			for (String project: projects) {
+				if (Validator.checkIfProjectIsUnderLoad(workspace, project)) {
+					if (noOp) {
+						noOp = false;
 					}
+					String message = String.format("\t Workspace: %s Project: %s", workspace, project);
+					logger.log(Level.INFO, message);
 				}
 			}
 			if (noOp) {
 				logger.log(Level.INFO, '\t' + "none");
 			}
-		} else {
-			logger.log(Level.INFO, "No workspaces are present.");
 		}
 	}
 

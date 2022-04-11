@@ -1,0 +1,12 @@
+package RegionMachine
+
+import "/model/RegionMachine/RegionMachineDeclarations.gcd"
+import "/model/RegionMachine/RegionMachine.gcd"
+
+cascade RegionMachineWrapper [
+	port portA : requires portA
+] {
+	component regionMachine : RegionMachine
+	
+	bind portA -> regionMachine.portA
+}

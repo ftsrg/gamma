@@ -2,9 +2,11 @@ include "Interfaces/Interfaces.ggen"
 include "TrafficLight/TrafficLightCtrl.ggen"
 include "Controller/Controller.ggen"
 include "Monitor/Monitor.ggen"
+include "TrafficLight/AsynchronousTrafficLightCtrl.ggen" // Asynchronous statechart
 include "System/Cascade/Crossroad.ggen"
 include "System/Synchronous/Crossroad.ggen"
 include "System/Monitored/MonitoredCrossroad.ggen"
+include "System/ScheduledAsynchronous/Crossroad.ggen"
 // Code generation has to be done after system code generation (there are .y2g traces)
 include "TrafficLight/TrafficLightCtrlCode.ggen"
 include "Controller/ControllerCode.ggen"

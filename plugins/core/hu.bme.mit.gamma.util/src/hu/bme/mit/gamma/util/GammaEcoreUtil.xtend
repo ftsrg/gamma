@@ -15,6 +15,8 @@ import java.util.Collection
 import java.util.Collections
 import java.util.Comparator
 import java.util.List
+import java.util.logging.Level
+import java.util.logging.Logger
 import org.eclipse.core.resources.ResourcesPlugin
 import org.eclipse.core.runtime.Path
 import org.eclipse.emf.common.util.URI
@@ -32,12 +34,33 @@ import static com.google.common.base.Preconditions.checkState
 
 class GammaEcoreUtil {
 	// Singleton
-	public static final GammaEcoreUtil INSTANCE =  new GammaEcoreUtil
+	public static final GammaEcoreUtil INSTANCE = new GammaEcoreUtil
 	protected new() {}
+	//
+	protected final Logger logger = Logger.getLogger("GammaLogger")
 	//
 	
 	def void replace(EObject newObject, EObject oldObject) {
 		EcoreUtil.replace(oldObject, newObject)
+	}
+	
+	def void replaceEachOther(EObject left, EObject right) {
+		val dummy = EcoreUtil.create(left.eClass) // Empty object
+		dummy.replace(left)
+		left.replace(right)
+		right.replace(dummy)
+	}
+	
+	def void changeAndReplaceEachOther(EObject left, EObject right,
+			EObject leftRoot, EObject rightRoot) {
+		val dummy = EcoreUtil.create(left.eClass) // Empty object
+		dummy.changeAndReplace(left, leftRoot)
+		left.changeAndReplace(right, rightRoot)
+		right.changeAndReplace(dummy, leftRoot)
+	}
+	
+	def void changeAndReplaceEachOther(EObject left, EObject right, EObject root) {
+		left.changeAndReplaceEachOther(right, root)
 	}
 	
 	/**
@@ -51,17 +74,29 @@ class GammaEcoreUtil {
 			if (referenceHolder instanceof List) {
 				val list =  referenceHolder as List<EObject>
 				val index = list.indexOf(oldObject)
-				if (list.contains(newObject)) {
-					// To avoid 'no duplicates' constraint violation
-					list.remove(index)
-				}
-				else {
-					list.set(index, newObject)
+				try {
+					if (list.contains(newObject)) {
+						// To avoid 'no duplicates' constraint violation
+						list.remove(index)
+					}
+					else {
+						list.set(index, newObject)
+					}
+				} catch (UnsupportedOperationException e) {
+					// Derived feature, cannot be changed
+					logger.log(Level.WARNING, "Reference from " + oldObject
+						+ " to " + newObject + " in " + container + " cannot be changed")
 				}
 			}
 			else {
 				oldReference.set(newObject)
 			}
+		}
+	}
+	
+	def void change(EObject newObject, EObject oldObject, Iterable<? extends EObject> containers) {
+		for (container : containers) {
+			newObject.change(oldObject, container)
 		}
 	}
 	
@@ -93,6 +128,11 @@ class GammaEcoreUtil {
 		}
 	}
 	
+	def void changeAndReplace(EObject newObject, EObject oldObject, EObject container) {
+		change(newObject, oldObject, container)
+		newObject.replace(oldObject)
+	}
+	
 	def void changeAndDelete(EObject newObject, EObject oldObject, EObject container) {
 		change(newObject, oldObject, container)
 		oldObject.delete // Remove does not delete other references
@@ -114,6 +154,8 @@ class GammaEcoreUtil {
 		changeAll(newObject, oldObject, container)
 		oldObject.delete
 	}
+	
+	//
 	
 	def void add(EObject container, EReference reference, EObject object) {
 		val referenceObject = container.eGet(reference)
@@ -165,8 +207,40 @@ class GammaEcoreUtil {
 		return allContainers
 	}
 	
+	def copyContent(EObject source, EObject target) {
+		source.clone.transferContent(target)
+	}
+	
+	def transferContent(EObject source, EObject target) {
+		val contents = newArrayList
+		contents += source.eContents
+		for (object : contents) {
+			val containingFeature = object.eContainmentFeature
+			val targetElement = target.eGet(containingFeature)
+			if (targetElement instanceof List) {
+				// "Many" cardinality
+				targetElement += object
+			}
+			else {
+				// "Single" cardinality
+				checkState(targetElement === null)
+				target.eSet(containingFeature, object)
+			}
+		}
+	}
+	
+	//
+	
 	def <T extends EObject> List<T> getAllContainersOfType(EObject object, Class<T> type) {
-		return object.allContainers.filter(type).toList
+		return object.allContainers.filter(type)
+				.toList
+	}
+	
+	def <T extends EObject> List<T> getSelfAndAllContainersOfType(T object, Class<T> type) {
+		val elements = newArrayList
+		elements += object.getAllContainersOfType(type)
+		elements += object
+		return elements
 	}
 	
 	def <T extends EObject> T getSelfOrContainerOfType(EObject object, Class<T> type) {
@@ -224,6 +298,21 @@ class GammaEcoreUtil {
 		return contents
 	}
 	
+	def <T extends EObject> T getFirstOfAllContentsOfType(EObject object, Class<T> type) {
+		val contents = newLinkedList
+		contents += object.eContents
+		while (!contents.empty) {
+			val content = contents.poll
+			if (type.isInstance(content)) {
+				return content as T
+			}
+			else {
+				contents += content.eContents
+			}
+		}
+		return null
+	}
+	
 	def boolean containsTransitively(EObject potentialContainer, EObject object) {
 		if (potentialContainer === null || object === null) {
 			return false
@@ -266,6 +355,8 @@ class GammaEcoreUtil {
 		return container.isOrContainsTypes(#[type])
 	}
 	
+	//
+	
 	def EObject normalLoad(URI uri) {
 		return uri.normalLoad(new ResourceSetImpl)
 	}
@@ -284,11 +375,17 @@ class GammaEcoreUtil {
 	}
 
 	def EObject normalLoad(String parentFolder, String fileName) {
-		return URI.createFileURI(parentFolder + File.separator + fileName).normalLoad
+		return URI.createFileURI(parentFolder + File.separator + fileName)
+				.normalLoad
 	}
 	
 	def EObject normalLoad(String parentFolder, String fileName, ResourceSet resourceSet) {
-		return URI.createFileURI(parentFolder + File.separator + fileName).normalLoad(resourceSet)
+		return URI.createFileURI(parentFolder + File.separator + fileName)
+				.normalLoad(resourceSet)
+	}
+	
+	def void resolveAll(ResourceSet resourceSet) {
+		EcoreUtil.resolveAll(resourceSet)
 	}
 
 	def Resource normalSave(ResourceSet resourceSet, EObject rootElem, URI uri) {
@@ -298,7 +395,9 @@ class GammaEcoreUtil {
 		return resource
 	}
 
-	def Resource normalSave(ResourceSet resourceSet, EObject rootElem, String parentFolder, String fileName) {
+	def Resource normalSave(ResourceSet resourceSet, EObject rootElem,
+			String parentFolder, String fileName) {
+		// Save is always absolute
 		val uri = URI.createFileURI(parentFolder + File.separator + fileName)
 		return normalSave(resourceSet, rootElem, uri)
 	}
@@ -328,6 +427,8 @@ class GammaEcoreUtil {
 	def void deleteResource(EObject object) {
 		object.eResource.delete(Collections.EMPTY_MAP)
 	}
+	
+	//
 	
 	def boolean helperEquals(List<? extends EObject> lhs, List<? extends EObject> rhs) {
 		if (lhs === null && rhs === null) {
@@ -465,7 +566,11 @@ class GammaEcoreUtil {
 	}
 	
 	def File getProjectFile(File file) {
-		val containedFileNames = file.listFiles.map[it.name]
+		val containedFileNames = newHashSet
+		val listedFiles = file.listFiles
+		if (!listedFiles.nullOrEmpty) {
+			containedFileNames += listedFiles.map[it.name]
+		}
 		if (containedFileNames.contains(".project")) {
 			return file
 		}

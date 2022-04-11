@@ -314,20 +314,24 @@ private pattern channels(channel : Channel, outInstance : ComponentInstance, out
 pattern simpleInstanceChannelEndings(channel : Channel, outInstance : SynchronousComponentInstance,
 	 outPort : Port, raisedEvent : Event, inInstance : SynchronousComponentInstance, inPort : Port) {
 	// Both instances are simple
-	find channels(channel, outInstance, outPort, raisedEvent, inInstance, inPort);
-	find simpleInstances(outInstance, _statechart1);
+	find channels(channel, outInstance_, outPort, raisedEvent, inInstance_, inPort);
+	find instanceToSimpleInstance(outInstance_, outInstance); // To handle adapter.statechartPort
+	find simpleInstances(outInstance, _);
+	find instanceToSimpleInstance(inInstance_, inInstance); // To handle adapter.statechartPort
 	find inputInstanceEvents(inInstance, inPort, raisedEvent);
 } or {
 	// Output instance simple, input instance composite	
 	find simpleInstances(outInstance, statechart1);
 	Component.ports(statechart1, outPort);
 	find portToInstancePort(outSytemPort, outInstance, outPort);
-	find channels(channel, _outCompositeInstance, outSytemPort, raisedEvent, inInstance, inPort);
+	find channels(channel, _outCompositeInstance, outSytemPort, raisedEvent, inInstance_, inPort);
+	find instanceToSimpleInstance(inInstance_, inInstance); // To handle adapter.statechartPort
 	find inputInstanceEvents(inInstance, inPort, raisedEvent);
 } or {
 	// Input instance simple, output instance composite
-	find simpleInstances(outInstance, _statechart1);	
-	find channels(channel, outInstance, outPort, raisedEvent, _inCompositeInstance, inSystemPort);
+	find simpleInstances(outInstance, _);
+	find instanceToSimpleInstance(outInstance_, outInstance); // To handle adapter.statechartPort
+	find channels(channel, outInstance_, outPort, raisedEvent, _inCompositeInstance, inSystemPort);
 	find portToInstancePort(inSystemPort, inInstance, inPort);
 	find inputInstanceEvents(inInstance, inPort, raisedEvent);
 } or {
@@ -445,6 +449,15 @@ pattern asynchronousSimpleInstances(instance : AsynchronousComponentInstance, ty
 	AsynchronousComponentInstance.type(instance, type);
 }
 
+private pattern instanceToSimpleInstance(instance : ComponentInstance, simpleInstance : SynchronousComponentInstance) {
+	AsynchronousComponentInstance.type(instance, type);
+	AsynchronousAdapter.wrappedComponent(type, simpleInstance);
+	find simpleInstances(simpleInstance, _);
+} or {
+	instance == simpleInstance;
+	find simpleInstances(simpleInstance, _);
+}
+
 private pattern wrappers(wrapper : AsynchronousAdapter, synchronousType : SynchronousComponent) {
 	AsynchronousAdapter.wrappedComponent.type(wrapper, synchronousType);
 }
@@ -465,7 +478,7 @@ pattern topWrapperComponents(wrapper : AsynchronousAdapter, composite : Synchron
 	find wrappers(wrapper, composite);
 }
 
-pattern topAsyncCompositeComponents(asyncComposite : AsynchronousCompositeComponent) {
+pattern topAsyncCompositeComponents(asyncComposite : AbstractAsynchronousCompositeComponent) {
 	neg find asynchronousInstances(_, asyncComposite);
 }
 
@@ -507,18 +520,18 @@ pattern wrapperInstanceInEvents(instance : AsynchronousComponentInstance, port :
 
 // In events of async composites
 
-private pattern asyncSystemInEvents(composite : AsynchronousCompositeComponent, systemPort : Port,
+private pattern asyncSystemInEvents(composite : AbstractAsynchronousCompositeComponent, systemPort : Port,
 	instance : AsynchronousComponentInstance, port : Port, event : Event) {
 	find portBindings(composite, systemPort, instance, port);
 	find wrapperInstanceInEvents(instance, port, event);
 } or {
 	// Finding embedded composite systems and the port of simple instances
-	AsynchronousCompositeComponent.ports(composite, systemPort);
+	AbstractAsynchronousCompositeComponent.ports(composite, systemPort);
 	find portToInstancePort(systemPort, instance, port);
 	find wrapperInstanceInEvents(instance, port, event);
 }
 
-pattern topAsyncSystemInEvents(composite : AsynchronousCompositeComponent, systemPort : Port,
+pattern topAsyncSystemInEvents(composite : AbstractAsynchronousCompositeComponent, systemPort : Port,
 	instance : AsynchronousComponentInstance, port : Port, event : Event) {
 	find topAsyncCompositeComponents(composite);
 	find asyncSystemInEvents(composite, systemPort, instance, port, event);
@@ -598,19 +611,19 @@ private pattern eventsOfPorts(port : Port, event : Event) {
 
 pattern queuesOfClocks(wrapper : AsynchronousAdapter, queue : MessageQueue, clock : Clock) {
 	AsynchronousAdapter.messageQueues(wrapper, queue);
-	MessageQueue.eventReference(queue, eventReference);
+	MessageQueue.eventReferences(queue, eventReference);
 	ClockTickReference.clock(eventReference, clock);
 }
 
 pattern queuesOfEvents(wrapper : AsynchronousAdapter, queue : MessageQueue, port : Port, event : Event) {
 	AsynchronousAdapter.messageQueues(wrapper, queue);
-	MessageQueue.eventReference(queue, eventReference);
+	MessageQueue.eventReferences(queue, eventReference);
 	PortEventReference.port(eventReference, port);
 	find eventsOfPorts(port, event);
 	PortEventReference.event(eventReference, event);
 } or {
 	AsynchronousAdapter.messageQueues(wrapper, queue);
-	MessageQueue.eventReference(queue, eventReference);
+	MessageQueue.eventReferences(queue, eventReference);
 	AnyPortEventReference.port(eventReference, port);
 	find eventsOfPorts(port, event);
 }

@@ -83,6 +83,37 @@ public class ExpressionModelValidator {
 	protected final JavaUtil javaUtil = JavaUtil.INSTANCE;
 	//
 	
+	public Collection<ValidationResultMessage> checkTypeAndTypeConformance(
+			Type lhs, Type rhs, ReferenceInfo referenceInfo) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		
+		if (!typeDeterminator.equals(lhs, rhs)) {
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+				"The types of the left hand side and the right hand side are not the same: " +
+					typeDeterminator.print(lhs) + " and " + typeDeterminator.print(rhs), referenceInfo));
+			return validationResultMessages;
+		}
+		
+		return validationResultMessages;
+	}
+	
+	public Collection<ValidationResultMessage> checkTypeAndExpressionConformance(
+			Type lhsExpressionType, Expression rhs, ReferenceInfo referenceInfo) {
+		Type rhsExpressionType = typeDeterminator.getType(rhs);
+
+		return checkTypeAndTypeConformance(lhsExpressionType, rhsExpressionType, referenceInfo);
+	}
+	
+	public Collection<ValidationResultMessage> checkExpressionConformance(
+			Expression lhs, Expression rhs, ReferenceInfo referenceInfo) {
+		Type lhsExpressionType = typeDeterminator.getType(lhs);
+		Type rhsExpressionType = typeDeterminator.getType(rhs);
+
+		return checkTypeAndTypeConformance(lhsExpressionType, rhsExpressionType, referenceInfo);
+	}
+	
+	//
+	
 	public Collection<ValidationResultMessage> checkNameUniqueness(EObject root) {
 		return checkNameUniqueness(ecoreUtil.getContentsOfType(root, NamedElement.class));
 	}
@@ -94,7 +125,7 @@ public class ExpressionModelValidator {
 			String name = element.getName();
 			if (names.contains(name)) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-						"Identifiers in a scope must be unique",
+					"Identifiers in a scope must be unique",
 						new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME, element)));
 			}
 			else {
@@ -384,35 +415,7 @@ public class ExpressionModelValidator {
 		return validationResultMessages;
 	}
 	
-	public Collection<ValidationResultMessage> checkTypeAndTypeConformance(Type lhs, Type rhs, EStructuralFeature feature) {
-		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		if (!typeDeterminator.equals(lhs, rhs)) {
-			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-					"The types of the left hand side and the right hand side are not the same: " +
-							typeDeterminator.print(lhs) + " and " + typeDeterminator.print(rhs), 
-					new ReferenceInfo(feature)));
-			return validationResultMessages;
-		}
-		return validationResultMessages;
-	}
-	
-	public Collection<ValidationResultMessage> checkTypeAndExpressionConformance(
-			Type lhsExpressionType, Expression rhs, ReferenceInfo referenceInfo) {
-		Type rhsExpressionType = typeDeterminator.getType(rhs);
-		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		if (!typeDeterminator.equals(lhsExpressionType, rhsExpressionType)) {
-			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-				"The types of the declaration and the assigned expression are not the same: " +
-					typeDeterminator.print(lhsExpressionType) + " and " + typeDeterminator.print(rhsExpressionType), 
-					referenceInfo));
-			return validationResultMessages;
-		}
-
-		return validationResultMessages;
-	}
-		
 	public Collection<ValidationResultMessage> checkArithmeticExpression(ArithmeticExpression expression) {
-		
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		
 		if (expression instanceof UnaryExpression) {

@@ -31,11 +31,11 @@ class ThetaPropertySerializer extends PropertySerializer {
 	override serialize(StateFormula formula) {
 		// A simple CTL
 		val serializedFormula = formula.serializeFormula
-		checkArgument(formula.isSimpleCTL, serializedFormula)
+		checkArgument(formula.isValidFormula, serializedFormula)
 		return serializedFormula
 	}
 	
-	protected def isSimpleCTL(StateFormula formula) {
+	protected def isValidFormula(StateFormula formula) {
 		if (formula instanceof QuantifiedFormula) {
 			// A or E
 			val quantifier = formula.quantifier

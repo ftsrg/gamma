@@ -1,0 +1,11 @@
+import "Synchronous/ANTIVAL_CHK_COID_System.gcd"
+
+analysis {
+	component : AntivalenceChecker_System
+	language : UPPAAL
+	interaction-coverage {
+		sender-coverage-criterion : states-and-events
+		receiver-coverage-criterion : states-and-events
+	}
+	property-file : "Synchronous/ANTIVAL_CHK_COID_System.gpd"
+}

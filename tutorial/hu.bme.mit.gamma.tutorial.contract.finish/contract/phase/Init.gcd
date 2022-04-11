@@ -1,0 +1,26 @@
+package crossroads
+import "/model/Interfaces/Interfaces.gcd"
+@TransitionPriority = order-based
+statechart InitPhase [
+	port priorityOutput : provides LightCommands
+	port secondaryOutput : provides LightCommands
+] {
+	var count : integer
+	transition from Entry to DisplayRed
+	transition from DisplayRed to DisplayGreen when cycle
+	region Main {
+		initial Entry
+		state DisplayRed {
+			entry / {
+				raise priorityOutput.displayRed;
+				raise secondaryOutput.displayRed;
+			}
+		}
+		state DisplayGreen {
+			entry / {
+				count := count + 1;
+				raise priorityOutput.displayGreen;
+			}
+		}
+	}
+}

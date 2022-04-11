@@ -16,6 +16,7 @@ import hu.bme.mit.gamma.action.model.AssertionStatement;
 import hu.bme.mit.gamma.action.model.AssignmentStatement;
 import hu.bme.mit.gamma.action.model.Block;
 import hu.bme.mit.gamma.action.model.Branch;
+import hu.bme.mit.gamma.action.model.ExpressionStatement;
 import hu.bme.mit.gamma.action.model.ForStatement;
 import hu.bme.mit.gamma.action.model.ProcedureDeclaration;
 import hu.bme.mit.gamma.action.model.ReturnStatement;
@@ -23,11 +24,6 @@ import hu.bme.mit.gamma.action.model.SwitchStatement;
 import hu.bme.mit.gamma.action.model.VariableDeclarationStatement;
 import hu.bme.mit.gamma.action.util.ActionModelValidator;
 
-/**
- * This class contains custom validation rules. 
- *
- * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#validation
- */
 public class ActionLanguageValidator extends AbstractActionLanguageValidator {
 	
 	protected ActionModelValidator actionModelValidator = ActionModelValidator.INSTANCE;
@@ -85,4 +81,10 @@ public class ActionLanguageValidator extends AbstractActionLanguageValidator {
 	public void checkAssertionStatement(AssertionStatement assertStatement) {
 		handleValidationResultMessage(actionModelValidator.checkAssertionStatement(assertStatement));
 	}
+	
+	@Check
+	public void checkExpressionStatement(ExpressionStatement expressionStatement) {
+		handleValidationResultMessage(actionModelValidator.checkExpressionStatement(expressionStatement));
+	}
+	
 }

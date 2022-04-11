@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -174,31 +174,55 @@ enum RealizationMode returns InterfaceModel::RealizationMode:
 	PROVIDED = 'provides' | REQUIRED = 'requires'
 ;
 
-StatechartDefinition returns StatechartDefinition:
+SynchronousStatechartDefinition returns SynchronousStatechartDefinition:
 	(
 		('@RegionSchedule' '=' schedulingOrder=SchedulingOrder)? &
 		('@OrthogonalRegionSchedule' '=' orthogonalRegionSchedulingOrder=OrthogonalRegionSchedulingOrder)? &
 		('@TransitionPriority' '=' transitionPriority=TransitionPriority)? &
 		('@GuardEvaluation' '=' guardEvaluation=GuardEvaluation)? &
-		(annotations+=StatechartContractAnnotation)*
+		(	annotations+=ComponentAnnotation |
+			annotations+=StatechartContractAnnotation
+		)*
 	)
 	'statechart' name=ID 
 	('(' ((parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*)? ')')?
 		('[' ((ports+=Port)((',')? ports+=Port)*)? ']')? '{'
 			(
 				variableDeclarations+=VariableDeclaration |
-				timeoutDeclarations+=TimeoutDeclaration |
+				timeoutDeclarations+=TimeoutDeclaration
+			)*
+			(
+				regions+=Region |
 				transitions+=Transition
 			)*
-			regions+=Region
+			functionDeclarations+=FunctionDeclaration*
+	'}'
+;
+
+AsynchronousStatechartDefinition returns AsynchronousStatechartDefinition:
+	'@Asynchronous'
+	(
+		('@RegionSchedule' '=' schedulingOrder=SchedulingOrder)? &
+		('@OrthogonalRegionSchedule' '=' orthogonalRegionSchedulingOrder=OrthogonalRegionSchedulingOrder)? &
+		('@TransitionPriority' '=' transitionPriority=TransitionPriority)? &
+		('@GuardEvaluation' '=' guardEvaluation=GuardEvaluation)? &
+		(	annotations+=ComponentAnnotation |
+			annotations+=StatechartContractAnnotation
+		)*
+	)
+	'statechart' name=ID ('capacity' '(' capacity=Expression ')')?
+	('(' ((parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*)? ')')?
+		('[' ((ports+=Port)((',')? ports+=Port)*)? ']')? '{'
 			(
 				variableDeclarations+=VariableDeclaration |
-				timeoutDeclarations+=TimeoutDeclaration |
-				transitions+=Transition |
-				regions+=Region
+				timeoutDeclarations+=TimeoutDeclaration
 			)*
-		(functionDeclarations+=FunctionDeclaration)*
-		(activityDeclarations+=NamedActivityDeclaration)*
+			(
+				regions+=Region |
+				transitions+=Transition
+			)*
+			functionDeclarations+=FunctionDeclaration*
+			activityDeclarations+=NamedActivityDeclaration*
 	'}'
 ;
 
@@ -218,8 +242,23 @@ enum GuardEvaluation returns GuardEvaluation:
 	ON_THE_FLY = 'on-the-fly' | BEGINNING_OF_STEP = 'beginning-of-step'
 ;
 
+ComponentAnnotation returns InterfaceModel::ComponentAnnotation: 
+	WrapperComponentAnnotation
+;
+
 StatechartContractAnnotation returns StatechartAnnotation:
-	ScenarioAllowedWaitingAnnotation | ScenarioContractAnnotation | AdaptiveContractAnnotation | MissionPhaseAnnotation
+	ScenarioAllowedWaitingAnnotation | ScenarioContractAnnotation |
+	AdaptiveContractAnnotation | MissionPhaseAnnotation | HasInitialoutputsBlockAnnotation
+;
+
+HasInitialoutputsBlockAnnotation returns ContractModel::HasInitialOutputsBlockAnnotation:
+	{ContractModel::HasInitialOutputsBlockAnnotation}
+	'@HasInitialOutputsBlock'
+;
+
+
+enum SpecialStateKind returns ContractModel::SpecialStateKind:
+	ACCEPTING = 'accepting'
 ;
 
 ScenarioAllowedWaitingAnnotation returns ContractModel::ScenarioAllowedWaitAnnotation:
@@ -235,7 +274,6 @@ enum NotDefinedEventMode returns ContractModel::NotDefinedEventMode:
 	PERMISSIVE = 'permissive' | STRICT ='strict'
 ;
 
-
 AdaptiveContractAnnotation returns ContractModel::AdaptiveContractAnnotation:
 	'@AdaptiveContractStatechart' '=' monitoredComponent=[InterfaceModel::Component]
 ;
@@ -244,9 +282,8 @@ MissionPhaseAnnotation returns PhaseModel::MissionPhaseAnnotation:
 	{PhaseModel::MissionPhaseAnnotation} '@PhaseStatechart'
 ;
 
-StatechartReference returns StatechartReference:
-	{StatechartReference}
-	'reference' reference=[CompositeModel::SynchronousComponent] ('(' ((arguments+=Expression)(',' arguments+=Expression)*)? ')')?
+WrapperComponentAnnotation returns InterfaceModel::WrapperComponentAnnotation:
+	{InterfaceModel::WrapperComponentAnnotation} '@WrapperComponent'
 ;
 
 Region returns Region:
@@ -271,16 +308,16 @@ TransitionAnnotation returns TransitionAnnotation:
 ;
 
 TransitionIdAnnotation returns TransitionIdAnnotation:
-	'@''(' name=ID ')'
+	'@' '(' name=ID ')'
 ;
 
 StateNode returns StateNode:
-	State |
-	PseudoState
+	PseudoState |
+	State
 ;
 
 State returns State:
-	(annotation=StateAnnotation)?
+	(annotations+=StateAnnotation)*
 	'state' name=ID
 	(
 		'{'
@@ -298,7 +335,12 @@ State returns State:
 ;
 
 StateAnnotation returns StateAnnotation:
-	StateContractAnnotation | MissionPhaseStateAnnotation
+	StateContractAnnotation | MissionPhaseStateAnnotation | SpecialStateAnnotation
+;
+
+SpecialStateAnnotation returns ContractModel::SpecialStateAnnotation :
+	{ContractModel::SpecialStateAnnotation}
+	'@SpecialStateAnnotation' kind=SpecialStateKind
 ;
 
 StateContractAnnotation returns ContractModel::StateContractAnnotation:
@@ -312,7 +354,7 @@ MissionPhaseStateAnnotation returns PhaseModel::MissionPhaseStateAnnotation:
 ;
 
 StateDefinition returns PhaseModel::MissionPhaseStateDefinition:
-	history=History component=SynchronousComponentInstance '{'
+	history=History component=ComponentInstance '{'
 		portBindings+=PortBinding*
 		variableBindings+=VariableBinding*
 	'}'
@@ -323,11 +365,11 @@ VariableBinding returns PhaseModel::VariableBinding:
 ;
 
 InstanceVariableReference returns PhaseModel::InstanceVariableReference:
-	instance=[CompositeModel::SynchronousComponentInstance] '.' variable=[ConstraintModel::VariableDeclaration]
+	instance=[CompositeModel::ComponentInstance] '.' variable=[ConstraintModel::VariableDeclaration]
 ;
 
 enum History returns PhaseModel::History:
-	NO_HISTORY = 'no history' | SHALLOW_HISTORY = 'shallow' | DEEP_HISTORY = 'deep'
+	NO_HISTORY = 'no-history' | SHALLOW_HISTORY = 'shallow' | DEEP_HISTORY = 'deep'
 ;
 
 PseudoState returns PseudoState:
@@ -380,7 +422,7 @@ Component returns InterfaceModel::Component:
 ;
 
 SynchronousComponent returns CompositeModel::SynchronousComponent:
-	StatechartDefinition |
+	SynchronousStatechartDefinition |
 	AbstractSynchronousComponent
 ;
 
@@ -390,6 +432,7 @@ AbstractSynchronousComponent returns CompositeModel::AbstractSynchronousComposit
 ;
 
 CascadeCompositeComponent returns CompositeModel::CascadeCompositeComponent:
+	annotations+=ComponentAnnotation*
 	'cascade' name=ID 
 	('(' ((parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*)? ')')?
 		('[' ((ports+=Port)((',')? ports+=Port)*)? ']')?
@@ -397,14 +440,17 @@ CascadeCompositeComponent returns CompositeModel::CascadeCompositeComponent:
 			(
 				components+=SynchronousComponentInstance |
 				portBindings+=PortBinding |
-				channels+=Channel |
-				'execute' executionList+=AtomicComponentInstanceReference
-						(',' executionList+=AtomicComponentInstanceReference)*
+				channels+=Channel
 			)*
+			('initial' 'execute' initialExecutionList+=AtomicComponentInstanceReference
+					(',' initialExecutionList+=AtomicComponentInstanceReference)*)?
+			('execute' executionList+=AtomicComponentInstanceReference
+					(',' executionList+=AtomicComponentInstanceReference)*)?
 		'}'
 ;
 
 SynchronousCompositeComponent returns CompositeModel::SynchronousCompositeComponent:
+	annotations+=ComponentAnnotation*
 	'sync' name=ID 
 	('(' ((parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*)? ')')?
 		('[' ((ports+=Port)((',')? ports+=Port)*)? ']')?
@@ -419,7 +465,8 @@ SynchronousCompositeComponent returns CompositeModel::SynchronousCompositeCompon
 
 AsynchronousComponent returns CompositeModel::AsynchronousComponent:
 	AbstractAsynchronousCompositeComponent |
-	AsynchronousAdapter
+	AsynchronousAdapter |
+	AsynchronousStatechartDefinition
 ;
 
 AbstractAsynchronousCompositeComponent returns CompositeModel::AbstractAsynchronousCompositeComponent:
@@ -429,6 +476,7 @@ AbstractAsynchronousCompositeComponent returns CompositeModel::AbstractAsynchron
 
 
 AsynchronousCompositeComponent returns CompositeModel::AsynchronousCompositeComponent:
+	annotations+=ComponentAnnotation*
 	'async' name=ID 
 	('(' ((parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*)? ')')?
 		('[' ((ports+=Port)((',')? ports+=Port)*)? ']')?
@@ -442,22 +490,27 @@ AsynchronousCompositeComponent returns CompositeModel::AsynchronousCompositeComp
 ;
 
 ScheduledAsynchronousCompositeComponent returns CompositeModel::ScheduledAsynchronousCompositeComponent:
+	annotations+=ComponentAnnotation*
 	'scheduled-async' name=ID 
-	('(' ((parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*)? ')')?
+	('(' ((parameterDeclarations+=ParameterDeclaration) (',' parameterDeclarations+=ParameterDeclaration)*)? ')')?
 		('[' ((ports+=Port)((',')? ports+=Port)*)? ']')?
 		'{'
 			(
 				components+=AsynchronousComponentInstance |
 				portBindings+=PortBinding |
-				channels+=Channel | 
-				'execute' executionList+=AtomicComponentInstanceReference
-						(',' executionList+=AtomicComponentInstanceReference)*
+				channels+=Channel
 			)*
+			('initial' 'execute' initialExecutionList+=AtomicComponentInstanceReference
+					(',' initialExecutionList+=AtomicComponentInstanceReference)*)?
+			('execute' executionList+=AtomicComponentInstanceReference
+					(',' executionList+=AtomicComponentInstanceReference)*)?
 		'}'
 ;
 
 AsynchronousAdapter returns CompositeModel::AsynchronousAdapter:
-	'adapter' name=ID ('(' ((parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*)? ')')?
+	annotations+=ComponentAnnotation*
+	'adapter' name=ID ('(' ((parameterDeclarations+=ParameterDeclaration)
+			(',' parameterDeclarations+=ParameterDeclaration)*)? ')')?
 		'of' wrappedComponent=SynchronousComponentInstance
 		('[' ((ports+=Port)((',')? ports+=Port)*)? ']')?
 		'{'
@@ -492,12 +545,10 @@ enum ControlFunction returns CompositeModel::ControlFunction:
 ;
 
 MessageQueue returns CompositeModel::MessageQueue:
-	'queue' name=ID '('('priority' '=' priority=INTEGER) (',' 'capacity' '=' capacity=Expression)
-			(
-				(',' 'discard' '=' eventDiscardStrategy=DiscardStrategy)? &
-				(',' 'retrieve-count' '=' messageRetrievalCount=Expression)?
-			) ')' '{'
-	 	(eventReference+=EventReference)(',' eventReference+=EventReference)*
+	'queue' name=ID '(' ('priority' '=' priority=INTEGER) (',' 'capacity' '=' capacity=Expression)
+				(',' 'discard' '=' eventDiscardStrategy=DiscardStrategy)?
+			')' '{'
+	 	(eventReferences+=EventReference) (',' eventReferences+=EventReference)*
 	'}'
 ;
 
@@ -514,7 +565,7 @@ InstancePortReference returns CompositeModel::InstancePortReference:
 ;
 
 ComponentInstance returns CompositeModel::ComponentInstance:
-	SynchronousComponentInstance | AsynchronousComponentInstance
+	SynchronousComponentInstance | 'async' AsynchronousComponentInstance
 ;
 
 AtomicComponentInstanceReference returns CompositeModel::ComponentInstanceReference:
@@ -557,7 +608,7 @@ Interface returns InterfaceModel::Interface:
 ;
 
 enum EventDirection returns InterfaceModel::EventDirection:
-	IN = 'in' | OUT = 'out' | INOUT = 'inout'
+	IN = 'in' | OUT = 'out' | INOUT = 'inout' | INTERNAL = 'internal'
 ;
 
 EventDeclaration returns InterfaceModel::EventDeclaration:
@@ -612,23 +663,15 @@ TriggerNode returns TriggerNode:
 
 @Override 
 InlineStatement returns ActionModel::Statement:
+	super |
 	(
-		VariableDeclarationStatement |
-		ConstantDeclarationStatement |
-		
-		ReturnStatement |
-		BreakStatement |
-		
-		=> AssignmentStatement |
-		
-		//Extensions:
+		(
 		RaiseEventAction |
 		SetTimeoutAction |
-		
-		AssertionStatement |
-		ExpressionStatement |
 		CallActivityAction
-	)';'
+		)
+		';'
+	)
 ;
 
 RaiseEventAction returns RaiseEventAction:

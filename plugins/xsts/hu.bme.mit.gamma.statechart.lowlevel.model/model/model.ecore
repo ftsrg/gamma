@@ -49,6 +49,8 @@
         eType="#//GuardEvaluation" defaultValueLiteral="ON_THE_FLY"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="timeoutDeclarations" upperBound="-1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclaration"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="internalEventDeclarations"
+        upperBound="-1" eType="#//EventDeclaration"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="CompositeElement" abstract="true">
     <eStructuralFeatures xsi:type="ecore:EReference" name="regions" upperBound="-1"

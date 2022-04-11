@@ -94,9 +94,11 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 					context instanceof ScenarioContractAnnotation && // Scenario contract
 					reference == ContractModelPackage.Literals.SCENARIO_CONTRACT_ANNOTATION__MONITORED_COMPONENT) {
 				Package parentPackage = StatechartModelDerivedFeatures.getContainingPackage(context);
-				StatechartDefinition parentStatechart = StatechartModelDerivedFeatures.getContainingStatechart(context);
 				Set<Component> allComponents = StatechartModelDerivedFeatures.getAllComponents(parentPackage);
-				allComponents.remove(parentStatechart);
+				// If we want to merge adaptive scenario and behavior descriptions,
+				// it makes sense to monitor the parent statechart
+				// StatechartDefinition parentStatechart = StatechartModelDerivedFeatures.getContainingStatechart(context);
+				// allComponents.remove(parentStatechart);
 				return Scopes.scopeFor(allComponents);
 			}
 			if (context instanceof StateContractAnnotation &&
@@ -110,11 +112,11 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 			// Phase
 			if (context instanceof InstanceVariableReference &&
 					reference == PhaseModelPackage.Literals.INSTANCE_VARIABLE_REFERENCE__VARIABLE) {
-				MissionPhaseStateDefinition container = EcoreUtil2.getContainerOfType(context, MissionPhaseStateDefinition.class);
-				SynchronousComponentInstance instance = container.getComponent();
-				SynchronousComponent type = instance.getType();
+				MissionPhaseStateDefinition container = ecoreUtil.getContainerOfType(context, MissionPhaseStateDefinition.class);
+				ComponentInstance instance = container.getComponent();
+				Component type = StatechartModelDerivedFeatures.getDerivedType(instance);
 				if (type instanceof StatechartDefinition) {
-					StatechartDefinition statechart = (StatechartDefinition) instance.getType();
+					StatechartDefinition statechart = (StatechartDefinition) type;
 					return Scopes.scopeFor(statechart.getVariableDeclarations());
 				}
 			}
@@ -194,6 +196,12 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 					gammaPackage.getImports().stream().map(it -> it.getInterfaces()).forEach(it -> interfaces.addAll(it));
 					return Scopes.scopeFor(interfaces);
 				}
+			}
+			if (reference == CompositeModelPackage.Literals.PORT_BINDING__COMPOSITE_SYSTEM_PORT) {
+				// Valid in the case of mission phase statecharts?
+				Component type = ecoreUtil.getSelfOrContainerOfType(context, Component.class);
+				List<Port> ports = StatechartModelDerivedFeatures.getAllPorts(type);
+				return Scopes.scopeFor(ports);
 			}
 			if (context instanceof InstancePortReference && reference == CompositeModelPackage.Literals.INSTANCE_PORT_REFERENCE__PORT) {
 				InstancePortReference portInstance = (InstancePortReference) context;

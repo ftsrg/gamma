@@ -1,0 +1,32 @@
+package scheduled_crossroads
+
+import "Interfaces/Interfaces.gcd"
+import "Controller/ControllerAdapter.gcd"
+import "TrafficLight/TrafficLightCtrlAdapter.gcd"
+
+scheduled-async Crossroad() [
+	// Execute port
+	port executePort : provides Executable 
+	// Component ports
+	port police : requires PoliceInterrupt
+	port priorityOutput : provides LightCommands
+	port secondaryOutput : provides LightCommands
+] {
+	// Components of the composite model
+	component controller : ControllerAdapter
+	component prior : TrafficLightCtrlAdapter
+	component second : TrafficLightCtrlAdapter
+
+	// Execute
+	bind executePort -> controller.Execute
+	// Binding system ports to the ports of the components
+	bind police -> controller.PoliceInterrupt
+	bind priorityOutput -> prior.LightCommands
+	bind secondaryOutput -> second.LightCommands
+
+	// Connecting ports of components using channels
+	channel [ controller.PriorityPolice ] -o)- [ prior.PoliceInterrupt ]
+	channel [ controller.SecondaryPolice ] -o)- [ second.PoliceInterrupt ]
+	channel [ controller.PriorityControl ] -o)- [ prior.Control ]
+	channel [ controller.SecondaryControl ] -o)- [ second.Control ]
+}

@@ -1,0 +1,16 @@
+package internals
+
+import "Interface/Interfaces.gcd"
+import "Statechart/Synchronous.gcd"
+
+adapter Asynchronous of component synchronous : Synchronous [
+	port control : requires Toggle
+] {
+	when any / run
+	queue controlMessages (priority = 1, capacity = 8) {
+		control.any
+	}
+	queue messages (priority = 2, capacity = 8) {
+		internalPort.any
+	}
+}

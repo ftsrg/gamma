@@ -1,0 +1,12 @@
+package InnerStateMachine
+
+import "/model/InnerStateMachine/InnerStateMachineDeclarations.gcd"
+import "/model/InnerStateMachine/InnerStateMachine.gcd"
+
+cascade InnerStateMachineWrapper [
+	port portA : requires portA
+] {
+	component innerStateMachine : InnerStateMachine
+	
+	bind portA -> innerStateMachine.portA
+}
