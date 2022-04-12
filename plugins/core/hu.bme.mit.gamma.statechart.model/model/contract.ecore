@@ -25,8 +25,9 @@
     <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
       <details key="documentation" value="Annotation for the states of adaptive contract statecharts, referring to scenario contracts."/>
     </eAnnotations>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="contractStatecharts" upperBound="-1"
+    <eStructuralFeatures xsi:type="ecore:EReference" name="contractStatechart" lowerBound="1"
         eType="ecore:EClass statechart.ecore#//StatechartDefinition"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="hasHistory" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EEnum" name="NotDefinedEventMode">
     <eLiterals name="PERMISSIVE"/>

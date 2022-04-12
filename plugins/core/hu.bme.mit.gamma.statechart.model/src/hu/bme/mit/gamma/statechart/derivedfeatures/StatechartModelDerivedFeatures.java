@@ -302,10 +302,9 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		}
 		for (StateContractAnnotation annotation :
 				ecoreUtil.getContentsOfType(component, StateContractAnnotation.class)) {
-			for (StatechartDefinition contract : annotation.getContractStatecharts()) {
-				Package containingPackage = getContainingPackage(contract);
-				importablePackages.add(containingPackage);
-			}
+			StatechartDefinition contract = annotation.getContractStatechart();
+			Package containingPackage = getContainingPackage(contract);
+			importablePackages.add(containingPackage);
 		}
 		return importablePackages;
 	}
