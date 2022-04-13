@@ -623,6 +623,16 @@ public class StatechartUtil extends ActionUtil {
 		
 		wrapComponent(asynchron, instance);
 		
+		// Binding internal ports in asynchronous systems is unnecessary
+		List<PortBinding> portBindings = new ArrayList<PortBinding>(asynchron.getPortBindings());
+		for (PortBinding portBinding : portBindings) {
+			Port compositeSystemPort = portBinding.getCompositeSystemPort();
+			if (StatechartModelDerivedFeatures.isInternal(compositeSystemPort)) {
+				ecoreUtil.remove(portBinding);
+				ecoreUtil.remove(compositeSystemPort);
+			}
+		}
+		
 		return asynchron;
 	}
 
