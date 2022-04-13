@@ -19,6 +19,7 @@
     <genClasses ecoreClass="scenario.ecore#//ScenarioPackage">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference scenario.ecore#//ScenarioPackage/scenarios"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference scenario.ecore#//ScenarioPackage/component"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference scenario.ecore#//ScenarioPackage/imports"/>
     </genClasses>
     <genClasses ecoreClass="scenario.ecore#//ScenarioDeclaration">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference scenario.ecore#//ScenarioDeclaration/chart"/>

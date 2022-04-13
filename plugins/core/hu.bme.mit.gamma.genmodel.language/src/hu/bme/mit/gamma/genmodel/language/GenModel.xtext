@@ -29,6 +29,7 @@ GenModel returns GenModel:
 	(('import' 
 		(packageImports+=[interface::Package | STRING] |
 		'external' statechartImports+=[sgraph::Statechart| STRING] |
+		'scenario' scenarioImports+=[scenario::ScenarioPackage| STRING] |
 		'trace' traceImports+=[trace::ExecutionTrace | STRING])) |
 		'include' genmodelImports+=[GenModel | STRING]
 	)*

@@ -1,4 +1,4 @@
-import "contractsPackage"
+import scenario "contractsPackage" 
  
 statechart-contract {
 	scenario : Blinking

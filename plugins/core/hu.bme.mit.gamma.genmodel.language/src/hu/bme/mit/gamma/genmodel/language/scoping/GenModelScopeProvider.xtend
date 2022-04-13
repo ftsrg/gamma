@@ -162,7 +162,7 @@ class GenModelScopeProvider extends AbstractGenModelScopeProvider {
 		}
 		if (context instanceof StatechartContractGeneration && reference == GenmodelModelPackage.Literals.STATECHART_CONTRACT_GENERATION__SCENARIO){
 			val genmodel = context.eContainer as GenModel
-			return Scopes.scopeFor(genmodel.packageImports.filter(ScenarioPackage).flatMap[it.scenarios])
+			return Scopes.scopeFor(genmodel.scenarioImports.flatMap[it.scenarios])
 		}
 		// Expression scoping
 		if (reference == ExpressionModelPackage.Literals.DIRECT_REFERENCE_EXPRESSION__DECLARATION) {

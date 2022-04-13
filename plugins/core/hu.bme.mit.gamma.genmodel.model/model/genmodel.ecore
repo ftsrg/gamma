@@ -12,6 +12,8 @@
         eType="ecore:EClass ../../hu.bme.mit.gamma.trace.model/model/trace.ecore#//ExecutionTrace"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="genmodelImports" upperBound="-1"
         eType="#//GenModel"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="scenarioImports" upperBound="-1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.scenario.model/model/scenario.ecore#//ScenarioPackage"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Task" abstract="true">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="fileName" unique="false"
