@@ -125,10 +125,10 @@ public class GenModelFormatter extends AbstractDeclarativeFormatter {
         c.setLinewrap(1).after(f.getVerificationAccess().getQueryFilesAssignment_3_4_2());
         c.setLinewrap(1).after(f.getVerificationAccess().getVerificationArgumentsAssignment_3_5_2());
         c.setLinewrap(1).after(f.getVerificationAccess().getPropertyPackagesAssignment_3_6_2());
-        c.setLinewrap(1).after(f.getVerificationAccess().getBackAnnotateToOriginalKeyword_3_10_0());
+        c.setLinewrap(1).after(f.getVerificationAccess().getGroup_3_10());
         c.setLinewrap(1).after(f.getVerificationAccess().getTestFolderAssignment_3_11_2());
         c.setLinewrap(1).after(f.getVerificationAccess().getAnalysisLanguagesAssignment_3_3_2());
-        c.setLinewrap(1).after(f.getVerificationAccess().getOptimizeAssignment_3_9_2_1());
+        c.setLinewrap(1).after(f.getVerificationAccess().getGroup_3_9());
         c.setLinewrap(1).after(f.getVerificationAccess().getPackageNameAssignment_3_7_2());
         // Interface mapping
         c.setLinewrap(1).after(f.getInterfaceMappingRule());

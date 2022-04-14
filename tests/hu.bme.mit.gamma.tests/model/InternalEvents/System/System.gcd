@@ -1,0 +1,11 @@
+package internals
+
+import "Interface/Interfaces.gcd"
+import "Asynchronous.gcd"
+
+scheduled-async Scheduled [
+	port control : requires Toggle
+] {
+	bind control -> asynchronous.control
+	component asynchronous : Asynchronous
+}

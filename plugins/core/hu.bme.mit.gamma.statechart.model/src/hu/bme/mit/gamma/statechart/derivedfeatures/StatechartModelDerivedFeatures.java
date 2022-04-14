@@ -80,6 +80,7 @@ import hu.bme.mit.gamma.statechart.interface_.Interface;
 import hu.bme.mit.gamma.statechart.interface_.InterfaceRealization;
 import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.statechart.interface_.PackageAnnotation;
+import hu.bme.mit.gamma.statechart.interface_.Persistency;
 import hu.bme.mit.gamma.statechart.interface_.Port;
 import hu.bme.mit.gamma.statechart.interface_.RealizationMode;
 import hu.bme.mit.gamma.statechart.interface_.SimpleTrigger;
@@ -301,10 +302,9 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		}
 		for (StateContractAnnotation annotation :
 				ecoreUtil.getContentsOfType(component, StateContractAnnotation.class)) {
-			for (StatechartDefinition contract : annotation.getContractStatecharts()) {
-				Package containingPackage = getContainingPackage(contract);
-				importablePackages.add(containingPackage);
-			}
+			StatechartDefinition contract = annotation.getContractStatechart();
+			Package containingPackage = getContainingPackage(contract);
+			importablePackages.add(containingPackage);
 		}
 		return importablePackages;
 	}
@@ -660,6 +660,26 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 				.map(it -> it.getEvent()).collect(Collectors.toList());
 	}
 	
+	public static boolean isPersistent(Event event) {
+		Persistency persistency = event.getPersistency();
+		return persistency == Persistency.PERSISTENT;
+	}
+	
+	public static boolean isTransient(Event event) {
+		Persistency persistency = event.getPersistency();
+		return persistency == Persistency.TRANSIENT;
+	}
+	
+	public static boolean isPersistent(ParameterDeclaration parameter) {
+		Event event = getContainingEvent(parameter);
+		return isPersistent(event);
+	}
+	
+	public static boolean isTransient(ParameterDeclaration parameter) {
+		Event event = getContainingEvent(parameter);
+		return isTransient(event);
+	}
+	
 	public static boolean isInternal(Event event) {
 		EventDirection direction = getDirection(event);
 		return direction == EventDirection.INTERNAL;
@@ -898,6 +918,16 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return messageQueues;
 	}
 	
+	public static boolean storesOnlyInternalEvents(MessageQueue queue) {
+		List<Entry<Port,Event>> storedEvents = getStoredEvents(queue);
+		return storedEvents.stream().allMatch(it -> isInternal(it.getKey()));
+	}
+	
+	public static boolean storesOnlyNotInternalEvents(MessageQueue queue) {
+		List<Entry<Port,Event>> storedEvents = getStoredEvents(queue);
+		return storedEvents.stream().allMatch(it -> !isInternal(it.getKey()));
+	}
+	
 	public static List<Entry<Port, Event>> getStoredEvents(MessageQueue queue) {
 		Collection<Entry<Port, Event>> events = new LinkedHashSet<Entry<Port, Event>>();
 		// To filter possible duplicates
@@ -920,6 +950,21 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	public static int getMaxEventId(MessageQueue queue) {
 		List<Entry<Port,Event>> storedEvents = getStoredEvents(queue);
 		return storedEvents.size(); // Starts from 1, size is the max
+	}
+	
+	public static List<Integer> getEventIdsOfNonInternalEvents(MessageQueue queue) {
+		List<Integer> ids = new ArrayList<Integer>();
+		
+		List<Entry<Port,Event>> storedEvents = getStoredEvents(queue);
+		int size = storedEvents.size();
+		for (int i = 0; i < size; i++) {
+			Entry<Port, Event> storedEvent = storedEvents.get(i);
+			Port port = storedEvent.getKey();
+			if (!isInternal(port)) {
+				ids.add(i + 1); // Starts from 1, size is the max
+			}
+		}
+		return ids;
 	}
 	
 	public static Entry<Port, Event> getEvent(MessageQueue queue, int eventId) {
@@ -969,6 +1014,9 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	public static boolean isEnvironmental(MessageQueue queue,
 			Collection<? extends Port> systemPorts) {
+		if (!storesOnlyNotInternalEvents(queue)) {
+			return false;
+		}
 		List<Port> topBoundPorts = getStoredEvents(queue).stream()
 				.map(it -> getBoundTopComponentPort(it.getKey())).collect(Collectors.toList());
 		return systemPorts.containsAll(topBoundPorts);
@@ -1326,6 +1374,14 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
     	return (StatechartDefinition) getDerivedType(instance);
     }
     
+	public static boolean needsWrapping(Component component) {
+		if (component instanceof AsynchronousAdapter) {
+			AsynchronousAdapter adapter = (AsynchronousAdapter) component;
+			return !isSimplifiable(adapter);
+		}
+		return isStatechart(component);
+	}
+    
 	public static String getWrapperInstanceName(Component component) {
 		String name = component.getName();
 		// The same as in Namings.getComponentClassName
@@ -1333,6 +1389,11 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	}
     
     public static boolean isSimplifiable(AsynchronousAdapter adapter) {
+    	// Internal ports might induce multiple messages in message queues
+    	if (hasInternalPort(adapter)) {
+    		return false;
+    	}
+    	
     	List<MessageQueue> messageQueues = adapter.getMessageQueues();
 		if (messageQueues.size() != 1) {
 			return false;
@@ -2375,9 +2436,12 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return getComponentAnnotation(component, AdaptiveContractAnnotation.class) != null;
 	}
 	
-	public static boolean hasHistory(MissionPhaseStateDefinition missionPhaseStateDefinition) {
-		return missionPhaseStateDefinition.getHistory() != History.NO_HISTORY || 
-				!missionPhaseStateDefinition.getVariableBindings().isEmpty();
+	public static boolean hasHistory(MissionPhaseStateDefinition stateDefinition) {
+		return stateDefinition.getHistory() != History.NO_HISTORY || 
+				!stateDefinition.getVariableBindings().isEmpty() ||
+				// Internal ports are not really history, more like context dependency
+				stateDefinition.getPortBindings().stream().anyMatch(
+						it -> isInternal(it.getCompositeSystemPort()));
 	}
 	
 	public static boolean hasInitialOutputsBlock(Component component) {

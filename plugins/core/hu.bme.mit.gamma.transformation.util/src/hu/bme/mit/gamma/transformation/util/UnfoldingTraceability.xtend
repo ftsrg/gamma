@@ -30,6 +30,7 @@ import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.statechart.statechart.TransitionIdAnnotation
+import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.util.Collection
 
@@ -45,6 +46,7 @@ class UnfoldingTraceability {
 	protected new() {}
 	//
 	
+	protected final extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	
 	// Folded -> unfolded mapping
@@ -293,7 +295,7 @@ class UnfoldingTraceability {
 	def contains(ComponentInstanceReference original, ComponentInstance copy) {
 		val originalInstances = original.componentInstanceChain
 		 // If the (AA) component is wrapped, the original will not contain the wrapper instance
-		val copyInstances = copy.wrapperlessComponentInstanceChain
+		val copyInstances = copy.componentInstanceChain
 		
 		// The naming conventions are clear
 		// Without originalInstances.head.name == copyInstances.head.name,
@@ -337,11 +339,25 @@ class UnfoldingTraceability {
 		
 		val originalSimpleInstances = originalType.originalSimpleInstanceReferences
 		
+		val needsWrapping = originalType.needsWrapping
+		if (needsWrapping) {
+			for (originalSimpleInstance : originalSimpleInstances.toSet) {
+				originalSimpleInstances -= originalSimpleInstance
+				val wrapperInstance = originalType.instantiateComponent
+				val wrappedOriginalSimpleInstance = originalSimpleInstance.prepend(wrapperInstance)
+				originalSimpleInstances += wrappedOriginalSimpleInstance
+			}
+		}
+		
 		for (originalSimpleInstance : originalSimpleInstances) {
 			// There are some AA and CCC wrappings of statecharts in the unfolding process, which
 			// should be handled by the below method call ("contains" instead of "equals")
 			if (originalSimpleInstance.contains(newInstance)) {
-				return originalSimpleInstance // Only one is expected
+				 // Only one is expected
+				if (needsWrapping) {
+					return originalSimpleInstance.child // Removing wrapper instance
+				}
+				return originalSimpleInstance
 			}
 		}
 		throw new IllegalStateException("Not found original instance for " + newInstance)

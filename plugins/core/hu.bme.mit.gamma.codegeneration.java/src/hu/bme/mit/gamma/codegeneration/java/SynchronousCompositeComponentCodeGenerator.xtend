@@ -12,6 +12,7 @@ package hu.bme.mit.gamma.codegeneration.java
 
 import hu.bme.mit.gamma.codegeneration.java.queries.BroadcastChannels
 import hu.bme.mit.gamma.codegeneration.java.queries.SimpleChannels
+import hu.bme.mit.gamma.codegeneration.java.util.InternalEventHandlerCodeGenerator
 import hu.bme.mit.gamma.codegeneration.java.util.Namings
 import hu.bme.mit.gamma.codegeneration.java.util.TimingDeterminer
 import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent
@@ -26,13 +27,15 @@ class SynchronousCompositeComponentCodeGenerator {
 	
 	protected final String PACKAGE_NAME
 	// 
-	protected final extension TimingDeterminer timingDeterminer = TimingDeterminer.INSTANCE
 	protected final extension Trace trace
 	protected final extension NameGenerator nameGenerator
 	protected final extension TypeTransformer typeTransformer
 	protected final extension EventDeclarationHandler gammaEventDeclarationHandler
 	protected final extension ComponentCodeGenerator componentCodeGenerator
 	protected final extension CompositeComponentCodeGenerator compositeComponentCodeGenerator
+	//
+	protected final extension TimingDeterminer timingDeterminer = TimingDeterminer.INSTANCE
+	protected final extension InternalEventHandlerCodeGenerator internalEventHandler = InternalEventHandlerCodeGenerator.INSTANCE
 	//
 	protected final String INSERT_QUEUE = "insertQueue"
 	protected final String EVENT_QUEUE = "eventQueue"
@@ -65,6 +68,7 @@ class SynchronousCompositeComponentCodeGenerator {
 				private «port.name.toFirstUpper» «port.name.toFirstLower»;
 			«ENDFOR»
 			«component.generateParameterDeclarationFields»
+			«component.createInternalPortHandlingAttributes»
 			
 			«IF component.needTimer»
 				public «component.generateComponentClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", " AFTER ", "»«parameter.type.transformType» «parameter.name»«ENDFOR»«Namings.UNIFIED_TIMER_INTERFACE» timer) {
@@ -99,11 +103,12 @@ class SynchronousCompositeComponentCodeGenerator {
 				«IF component instanceof CascadeCompositeComponent»
 					«FOR instance : component.initallyScheduledInstances»
 «««						Instance in-events are implicitly cleared of course
-						«instance.runCycleOrComponent(component)»
+						«instance.runCycleOrComponent(component)» ««« Not runCycle?
 					«ENDFOR»
 				«ENDIF»
 				// Notifying registered listeners
 				notifyListeners();
+				«IF component.hasInternalPort»handleInternalEvents();«ENDIF»
 			}
 			
 			/** Creates the channel mappings and enters the wrapped statemachines. */
@@ -117,6 +122,7 @@ class SynchronousCompositeComponentCodeGenerator {
 				«FOR channelMatch : BroadcastChannels.Matcher.on(engine).getAllMatches(component, null, null, null)»
 					«channelMatch.providedPort.instance.name».get«channelMatch.providedPort.port.name.toFirstUpper»().registerListener(«channelMatch.requiredPort.instance.name».get«channelMatch.requiredPort.port.name.toFirstUpper»());
 				«ENDFOR»
+				«component.createInternalPortHandlingSettingCode»
 			}
 			
 			// Inner classes representing Ports
@@ -264,6 +270,7 @@ class SynchronousCompositeComponentCodeGenerator {
 				«ENDFOR»
 				// Notifying registered listeners
 				notifyListeners();
+				«IF component.hasInternalPort»handleInternalEvents();«ENDIF»
 			}
 		
 			«IF component.needTimer»
@@ -285,11 +292,9 @@ class SynchronousCompositeComponentCodeGenerator {
 				}
 			«ENDFOR»
 			
-			public void setHandleInternalEvents(boolean handleInternalEvents) {
-				«FOR instance : component.components»
-					«instance.name».setHandleInternalEvents(handleInternalEvents);
-				«ENDFOR»
-			}
+			«component.createInternalPortHandlingSetters»
+			
+			«component.createInternalEventHandlingCode»
 			
 		}
 	'''

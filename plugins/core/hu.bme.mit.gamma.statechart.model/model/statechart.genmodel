@@ -106,7 +106,8 @@
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute contract.ecore#//ScenarioContractAnnotation/scenarioType"/>
     </genClasses>
     <genClasses ecoreClass="contract.ecore#//StateContractAnnotation">
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference contract.ecore#//StateContractAnnotation/contractStatecharts"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference contract.ecore#//StateContractAnnotation/contractStatechart"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute contract.ecore#//StateContractAnnotation/hasHistory"/>
     </genClasses>
     <genClasses ecoreClass="contract.ecore#//ScenarioAllowedWaitAnnotation">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference contract.ecore#//ScenarioAllowedWaitAnnotation/lowerLimit"/>

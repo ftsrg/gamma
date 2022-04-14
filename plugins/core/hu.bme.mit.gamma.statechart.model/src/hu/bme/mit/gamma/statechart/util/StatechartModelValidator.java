@@ -305,42 +305,54 @@ public class StatechartModelValidator extends ActionModelValidator {
 		if (!StatechartModelDerivedFeatures.isAdaptiveContract(statechart)) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 				"States with state contracts can be defined only in adaptive contract statecharts", 
-					new ReferenceInfo(ContractModelPackage.Literals.STATE_CONTRACT_ANNOTATION__CONTRACT_STATECHARTS)));
+					new ReferenceInfo(ContractModelPackage.Literals.STATE_CONTRACT_ANNOTATION__CONTRACT_STATECHART)));
 		}
 		
+		StatechartDefinition contractStatechart = annotation.getContractStatechart();
+		
 		State parentState = ecoreUtil.getContainerOfType(annotation, State.class);
+		List<StateContractAnnotation> otherStateContractAnnotations = javaUtil
+				.filterIntoList(parentState.getAnnotations(), StateContractAnnotation.class);
+		otherStateContractAnnotations.remove(annotation);
+		for (StateContractAnnotation stateContractAnnotation : otherStateContractAnnotations) {
+			if (stateContractAnnotation.getContractStatechart() == contractStatechart &&
+					stateContractAnnotation.isHasHistory() == annotation.isHasHistory()) {
+				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+					"This annotation refers to the same contract statechart with the same history as another one", 
+						new ReferenceInfo(ContractModelPackage.Literals.STATE_CONTRACT_ANNOTATION__CONTRACT_STATECHART)));
+			}
+		}
+		
 		Set<Trigger> adaptiveStateTriggers = StatechartModelDerivedFeatures.getAllSimpleTriggers(parentState);
 		List<Trigger> unwrappedAdaptiveTriggers = statechartUtil.unwrapAnyTriggers(adaptiveStateTriggers);
-		for (StatechartDefinition contractStatechart : annotation.getContractStatecharts()) {
-			Set<Trigger> contractTriggers = StatechartModelDerivedFeatures.getAllSimpleTriggers(contractStatechart);
-			List<Trigger> unwrappedContractTriggers = statechartUtil.unwrapAnyTriggers(contractTriggers);
-			
-			for (Trigger trigger : unwrappedContractTriggers) {
-				if (trigger instanceof EventTrigger) {
-					EventTrigger eventTrigger = (EventTrigger) ecoreUtil.clone(trigger);
-					EventReference eventReference = eventTrigger.getEventReference();
-					if (eventReference instanceof PortEventReference) {
-						PortEventReference portEventReference = (PortEventReference) eventReference;
-						Port contractPort = portEventReference.getPort();
-						// Port tracing
-						Optional<Port> optionalAdaptivePort = statechart.getPorts().stream()
-								.filter(it -> it.getName().equals(contractPort.getName()))
-								.findFirst();
+		Set<Trigger> contractTriggers = StatechartModelDerivedFeatures.getAllSimpleTriggers(contractStatechart);
+		List<Trigger> unwrappedContractTriggers = statechartUtil.unwrapAnyTriggers(contractTriggers);
+		
+		for (Trigger trigger : unwrappedContractTriggers) {
+			if (trigger instanceof EventTrigger) {
+				EventTrigger eventTrigger = (EventTrigger) ecoreUtil.clone(trigger);
+				EventReference eventReference = eventTrigger.getEventReference();
+				if (eventReference instanceof PortEventReference) {
+					PortEventReference portEventReference = (PortEventReference) eventReference;
+					Port contractPort = portEventReference.getPort();
+					// Port tracing
+					Optional<Port> optionalAdaptivePort = statechart.getPorts().stream()
+							.filter(it -> it.getName().equals(contractPort.getName()))
+							.findFirst();
+					
+					if (optionalAdaptivePort.isPresent()) {
+						Port adaptivePort = optionalAdaptivePort.get();
+						portEventReference.setPort(adaptivePort);
 						
-						if (optionalAdaptivePort.isPresent()) {
-							Port adaptivePort = optionalAdaptivePort.get();
-							portEventReference.setPort(adaptivePort);
-							
-							boolean hasSameTrigger = unwrappedAdaptiveTriggers.stream()
-									.filter(it -> ecoreUtil.helperEquals(it, eventTrigger))
-									.count() > 0;
-							if (hasSameTrigger) {
-								Event event = portEventReference.getEvent();
-								validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-									"The triggers of transitions leaving this adaptive state and the contract statechart must be disjunct, " +
-										"but transitions are triggered by '" + adaptivePort.getName() + "." + event.getName() + "' in both sets",
-											new ReferenceInfo(ContractModelPackage.Literals.STATE_CONTRACT_ANNOTATION__CONTRACT_STATECHARTS)));
-							}
+						boolean hasSameTrigger = unwrappedAdaptiveTriggers.stream()
+								.filter(it -> ecoreUtil.helperEquals(it, eventTrigger))
+								.count() > 0;
+						if (hasSameTrigger) {
+							Event event = portEventReference.getEvent();
+							validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+								"The triggers of transitions leaving this adaptive state and the contract statechart must be disjunct, " +
+									"but transitions are triggered by '" + adaptivePort.getName() + "." + event.getName() + "' in both sets",
+										new ReferenceInfo(ContractModelPackage.Literals.STATE_CONTRACT_ANNOTATION__CONTRACT_STATECHART)));
 						}
 					}
 				}
@@ -479,7 +491,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 		ecoreUtil.getAllContentsOfType(_package, ScenarioContractAnnotation.class).stream()
 			.forEach(it -> usedComponents.add(it.getMonitoredComponent()));
 		ecoreUtil.getAllContentsOfType(_package, StateContractAnnotation.class).stream()
-			.forEach(it -> usedComponents.addAll(it.getContractStatecharts()));
+			.forEach(it -> usedComponents.add(it.getContractStatechart()));
 		for (MissionPhaseStateAnnotation annotation : ecoreUtil.getAllContentsOfType(
 				_package, MissionPhaseStateAnnotation.class)) {
 			for (MissionPhaseStateDefinition state : annotation.getStateDefinitions()) {

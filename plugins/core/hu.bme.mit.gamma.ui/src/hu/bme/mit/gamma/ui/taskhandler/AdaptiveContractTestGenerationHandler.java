@@ -146,33 +146,32 @@ public class AdaptiveContractTestGenerationHandler extends TaskHandler {
 				for (StateAnnotation annotation : contractState.getAnnotations()) {
 					if (annotation instanceof StateContractAnnotation) {
 						StateContractAnnotation stateContractAnnotation = (StateContractAnnotation) annotation;
-						for (StatechartDefinition contract : stateContractAnnotation.getContractStatecharts()) {
-							ExecutionTrace clonedAdaptiveTrace = ecoreUtil.clone(adaptiveTrace);
-							Constraint constraint = testGeneration.getModelTransformation().getConstraint();
-							int schedulingConstraint = 0;
-							if (constraint instanceof OrchestratingConstraint) {
-								OrchestratingConstraint orchestratingConstraint = (OrchestratingConstraint) constraint;
-								TimeSpecification minimumPeriod = orchestratingConstraint.getMinimumPeriod();
-								schedulingConstraint = statechartUtil.evaluateMilliseconds(minimumPeriod);
-							}
-							ScenarioStatechartTraceGenerator traceGenerator = new ScenarioStatechartTraceGenerator(
-									contract, schedulingConstraint);
-							List<ExecutionTrace> staticTraces = traceGenerator.execute();
-							for (ExecutionTrace staticTrace : staticTraces) {
-							    ExecutionTrace mergedTrace = ecoreUtil.clone(clonedAdaptiveTrace);
-							    mergedTrace.getAnnotations().clear();
-							    mergedTrace.getAnnotations().addAll(staticTrace.getAnnotations());
-							    if (!TraceModelDerivedFeatures.hasAssertInFirstStep(staticTrace)) {
-							    	mergedTrace.getSteps().addAll(staticTrace.getSteps()
-											.subList(1, staticTrace.getSteps().size()));
-							    }
-							    else {
-							    	List<Step> steps = staticTrace.getSteps();
-							    	traceUtil.removeScheduleAndReset(steps.get(0));
-							    	mergedTrace.getSteps().addAll(steps);
-							    }
-								testsTraces.add(mergedTrace);
-							}
+						StatechartDefinition contract = stateContractAnnotation.getContractStatechart();
+						ExecutionTrace clonedAdaptiveTrace = ecoreUtil.clone(adaptiveTrace);
+						Constraint constraint = testGeneration.getModelTransformation().getConstraint();
+						int schedulingConstraint = 0;
+						if (constraint instanceof OrchestratingConstraint) {
+							OrchestratingConstraint orchestratingConstraint = (OrchestratingConstraint) constraint;
+							TimeSpecification minimumPeriod = orchestratingConstraint.getMinimumPeriod();
+							schedulingConstraint = statechartUtil.evaluateMilliseconds(minimumPeriod);
+						}
+						ScenarioStatechartTraceGenerator traceGenerator = new ScenarioStatechartTraceGenerator(
+								contract, schedulingConstraint);
+						List<ExecutionTrace> staticTraces = traceGenerator.execute();
+						for (ExecutionTrace staticTrace : staticTraces) {
+						    ExecutionTrace mergedTrace = ecoreUtil.clone(clonedAdaptiveTrace);
+						    mergedTrace.getAnnotations().clear();
+						    mergedTrace.getAnnotations().addAll(staticTrace.getAnnotations());
+						    if (!TraceModelDerivedFeatures.hasAssertInFirstStep(staticTrace)) {
+						    	mergedTrace.getSteps().addAll(staticTrace.getSteps()
+										.subList(1, staticTrace.getSteps().size()));
+						    }
+						    else {
+						    	List<Step> steps = staticTrace.getSteps();
+						    	traceUtil.removeScheduleAndReset(steps.get(0));
+						    	mergedTrace.getSteps().addAll(steps);
+						    }
+							testsTraces.add(mergedTrace);
 						}
 					}
 					// Branch to be removed: just to test now the workflow

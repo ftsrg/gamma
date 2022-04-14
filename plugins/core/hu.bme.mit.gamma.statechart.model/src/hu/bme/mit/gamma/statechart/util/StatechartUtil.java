@@ -198,6 +198,14 @@ public class StatechartUtil extends ActionUtil {
 		return newReference;
 	}
 	
+	public ComponentInstanceReference prependAndReplace(
+			ComponentInstanceReference reference, ComponentInstance instance) {
+		ComponentInstanceReference newReference = createInstanceReference(instance);
+		ecoreUtil.replace(newReference, reference);
+		newReference.setChild(reference);
+		return newReference;
+	}
+	
 	//
 	
 	public Set<VariableDeclaration> getVariables(EObject object) {
@@ -614,6 +622,16 @@ public class StatechartUtil extends ActionUtil {
 		asynchron.getComponents().add(instance);
 		
 		wrapComponent(asynchron, instance);
+		
+		// Binding internal ports in asynchronous systems is unnecessary
+		List<PortBinding> portBindings = new ArrayList<PortBinding>(asynchron.getPortBindings());
+		for (PortBinding portBinding : portBindings) {
+			Port compositeSystemPort = portBinding.getCompositeSystemPort();
+			if (StatechartModelDerivedFeatures.isInternal(compositeSystemPort)) {
+				ecoreUtil.remove(portBinding);
+				ecoreUtil.remove(compositeSystemPort);
+			}
+		}
 		
 		return asynchron;
 	}

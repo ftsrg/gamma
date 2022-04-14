@@ -1,0 +1,30 @@
+package internals
+
+import "Interface/Interfaces.gcd"
+
+statechart Synchronous [
+	port internalPort : provides Internal
+] {
+	region first {
+		initial FirstEntry
+		state FirstFirst
+		state FirstSecond
+		state FirstThird
+	}
+	
+	region second {
+		initial SecondEntry
+		state SecondFirst
+		state SecondSecond
+		state SecondThird
+	}
+	
+	transition from FirstEntry to FirstFirst
+	transition from FirstFirst to FirstSecond when cycle / raise internalPort.first(1);
+	transition from FirstSecond to FirstThird when internalPort.second / raise internalPort.third(3);
+
+	transition from SecondEntry to SecondFirst
+	transition from SecondFirst to SecondSecond when internalPort.first / raise internalPort.second(true);
+	@(SecondThird)
+	transition from SecondSecond to SecondThird when internalPort.third
+}

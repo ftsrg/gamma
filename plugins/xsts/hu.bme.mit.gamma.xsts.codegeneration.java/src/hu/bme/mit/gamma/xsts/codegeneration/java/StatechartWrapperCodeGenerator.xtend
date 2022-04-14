@@ -72,7 +72,7 @@ class StatechartWrapperCodeGenerator {
 			private Queue<Event> eventQueue2 = new LinkedList<Event>();
 			// Clocks
 			private «GAMMA_TIMER_INTERFACE» timer = new «GAMMA_TIMER_CLASS»();
-			«IF gammaStatechart.hasInternalPort»private boolean handleInternalEvents = true;«ENDIF»
+			«gammaStatechart.createInternalPortHandlingAttributes»
 			
 			public «CLASS_NAME»(«FOR parameter : gammaStatechart.parameterDeclarations SEPARATOR ', '»«parameter.type.serialize» «parameter.name»«ENDFOR») {
 				«CLASS_NAME.toFirstLower» = new «gammaStatechart.wrappedStatemachineClassName»(«FOR parameter : gammaStatechart.parameterDeclarations SEPARATOR ', '»«parameter.name»«ENDFOR»);
@@ -84,11 +84,11 @@ class StatechartWrapperCodeGenerator {
 				processQueue = false;
 				eventQueue1.clear();
 				eventQueue2.clear();
-				«IF gammaStatechart.hasInternalPort»handleInternalEvents = true;«ENDIF»
 				//
 				«CLASS_NAME.toFirstLower».reset();
 				timer.saveTime(this);
 				notifyListeners();
+				«IF gammaStatechart.hasInternalPort»handleInternalEvents();«ENDIF»
 			}
 
 			/** Changes the event queues of the component instance. Should be used only be the container (composite system) class. */
@@ -160,11 +160,6 @@ class StatechartWrapperCodeGenerator {
 			«ENDFOR»
 			
 			public void runCycle() {
-				«IF gammaStatechart.hasInternalPort»
-					if (handleInternalEvents) {
-						handleInternalEvents();
-					}
-				«ENDIF»
 				changeEventQueues();
 				runComponent();
 			}
@@ -189,6 +184,7 @@ class StatechartWrapperCodeGenerator {
 					}
 				}
 				executeStep();
+				«IF gammaStatechart.hasInternalPort»handleInternalEvents();«ENDIF»
 			}
 			
 			private void executeStep() {
@@ -238,9 +234,7 @@ class StatechartWrapperCodeGenerator {
 				}
 			«ENDFOR»
 			
-			public void setHandleInternalEvents(boolean handleInternalEvents) {
-				«IF gammaStatechart.hasInternalPort»this.handleInternalEvents = handleInternalEvents;«ENDIF»
-			}
+			«gammaStatechart.createInternalPortHandlingSetters»
 			
 			«gammaStatechart.createInternalEventHandlingCode»
 			

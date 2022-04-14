@@ -110,7 +110,7 @@ class AsynchronousAdapterCodeGenerator {
 			public void reset() {
 				interrupt();
 				«component.generateWrappedComponentName».reset();
-				«IF component.hasInternalPort»«component.generateWrappedComponentName».setHandleInternalEvents(false);«ENDIF»
+				«IF component.hasInternalPort»handleInternalEvents();«ENDIF»
 			}
 			
 			/** Creates the subqueues, clocks and enters the wrapped synchronous component. */
@@ -126,6 +126,7 @@ class AsynchronousAdapterCodeGenerator {
 				«FOR match : QueuesOfClocks.Matcher.on(engine).getAllMatches(component, null, null)»
 					 timerService.setTimer(createTimerCallback(), «match.clock.name», «match.clock.timeSpecification.valueInMs», true);
 				«ENDFOR»
+				«component.createInternalPortHandlingSettingCode»
 				// The thread has to be started manually
 			}
 			
@@ -203,13 +204,13 @@ class AsynchronousAdapterCodeGenerator {
 			
 			/** Manual scheduling. */
 			public void schedule() {
-				«IF component.hasInternalPort»handleInternalEvents();«ENDIF»
 				«GAMMA_EVENT_CLASS» «EVENT_INSTANCE_NAME» = __asyncQueue.poll();
 				if («EVENT_INSTANCE_NAME» == null) {
 					// There was no event in the queue
 					return;
 				}
 				processEvent(«EVENT_INSTANCE_NAME»);
+				«IF component.hasInternalPort»handleInternalEvents();«ENDIF»
 			}
 			
 			/** Operation. */
@@ -217,9 +218,9 @@ class AsynchronousAdapterCodeGenerator {
 			public void run() {
 				while (!Thread.currentThread().isInterrupted()) {
 					try {
-						«IF component.hasInternalPort»handleInternalEvents();«ENDIF»
 						«GAMMA_EVENT_CLASS» «EVENT_INSTANCE_NAME» = __asyncQueue.take();		
 						processEvent(«EVENT_INSTANCE_NAME»);
+						«IF component.hasInternalPort»handleInternalEvents();«ENDIF»
 					} catch (InterruptedException e) {
 						interrupt();
 					}
