@@ -1,4 +1,4 @@
-import scenario "contractsPackage" 
+import scenario "/contract/scenario/Contracts.gsc" 
  
 statechart-contract {
 	scenario : Blinking
