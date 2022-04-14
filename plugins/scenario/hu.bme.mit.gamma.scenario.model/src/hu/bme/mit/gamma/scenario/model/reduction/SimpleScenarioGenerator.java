@@ -20,6 +20,7 @@ import hu.bme.mit.gamma.expression.model.ConstantDeclaration;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
+import hu.bme.mit.gamma.expression.model.ExpressionModelFactory;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator;
 import hu.bme.mit.gamma.scenario.model.AlternativeCombinedFragment;
@@ -54,6 +55,7 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 	private ScenarioDeclaration base = null;
 	private ScenarioDeclaration simple = null;
 	private ScenarioModelFactory factory = null;
+	private ExpressionModelFactory expressionFactory = null;
 	private boolean transformLoopFragments = false;
 	private List<Expression> arguments = null;
 	private ScenarioReferenceResolver refResolver = new ScenarioReferenceResolver();
@@ -76,6 +78,7 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 
 	public ScenarioDeclaration execute() {
 		factory = ScenarioModelFactory.eINSTANCE;
+		expressionFactory = ExpressionModelFactory.eINSTANCE;
 		simple = factory.createScenarioDeclaration();
 		simple.setName(base.getName());
 		simple.setChart(factory.createChart());
@@ -348,11 +351,11 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 	public EObject caseDelay(Delay object) {
 		Delay delay = factory.createDelay();
 		delay.setModality(object.getModality());
-		if (object.getMaximum() == null)
-
-			delay.setMaximum(ecoreUtil.clone(object.getMinimum()));
-		else
+		if (object.getMaximum() == null) {
+			delay.setMaximum(expressionFactory.createInfinityExpression());
+		} else {
 			delay.setMaximum(ecoreUtil.clone(object.getMaximum()));
+		}
 		delay.setMinimum(ecoreUtil.clone(object.getMinimum()));
 		return delay;
 	}
