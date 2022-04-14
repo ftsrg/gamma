@@ -260,21 +260,13 @@ class MonitorStatechartgenerator extends AbstractContractStatechartGeneration {
 		forwardTransition.priority = BigInteger.valueOf(3)
 		violationTransition.priority = BigInteger.valueOf(1)
 		handleArguments(set.modalInteractions, forwardTransition)
-		val eventRefs = createOtherNegatedTriggers(set).filter(UnaryTrigger)
-														.map[it.operand]
-														.filter(EventTrigger)
-														.map [it.eventReference]
 		val triggersWithCorrectDir = <Trigger>newArrayList
-		for (eventRef : eventRefs) {
-			var Port port = null
-			if (eventRef instanceof PortEventReference) {
-				port = eventRef.port
-			} else if (eventRef instanceof AnyPortEventReference) {
-				port = eventRef.port
-			}
+		for (port : statechart.ports.filter[!it.inputEvents.empty]) {
 			if ((port.isTurnedOut && isSend) || (!port.isTurnedOut && !isSend)) {
 				val trigger = createEventTrigger
-				trigger.eventReference = eventRef
+				val anyPortEvent = createAnyPortEventReference
+				anyPortEvent.port = port
+				trigger.eventReference = anyPortEvent
 				triggersWithCorrectDir += trigger
 			} 
 		}

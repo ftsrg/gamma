@@ -12,12 +12,12 @@ scenario Blinking initial outputs [
 	{
 		hot sends priorityOutput.displayNone
 		hot sends secondaryOutput.displayNone
-		hot delay (500)
+		hot delay (500 .. 501)
 	}
 	{
 		hot sends priorityOutput.displayYellow
 		hot sends secondaryOutput.displayYellow
-		hot delay (500)
+		hot delay (500 .. 501)
 	}
 ]
 
