@@ -44,6 +44,8 @@ import java.util.Map
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import hu.bme.mit.gamma.scenario.model.ScenarioDeclaration
+import hu.bme.mit.gamma.statechart.statechart.TimeoutDeclaration
+import hu.bme.mit.gamma.statechart.interface_.TimeSpecification
 
 abstract class AbstractContractStatechartGeneration {
 
@@ -479,19 +481,33 @@ abstract class AbstractContractStatechartGeneration {
 	def protected handleDelays(ModalInteractionSet set) {
 		val delays = set.modalInteractions.filter(Delay)
 		if (!delays.empty) {
-			val delay = delays.get(0)
+			val delay = delays.head
 			val timeoutDeclaration = createTimeoutDeclaration
-			timeoutDeclaration.name = getDelayName(timeoutCount++)
-			statechart.timeoutDeclarations += timeoutDeclaration
-			val timeSpecification = createTimeSpecification
-			timeSpecification.unit = TimeUnit.MILLISECOND
-			timeSpecification.value = delay.minimum.clone
-			val action = createSetTimeoutAction
-			action.timeoutDeclaration = timeoutDeclaration
-			action.time = timeSpecification
-			if (previousState instanceof State) {
-				previousState.entryActions += action
-			}
+			val timeSpecification = createTimeSpecification(delay.minimum)
+			setTimeoutDeclarationForState(previousState, timeoutDeclaration, timeSpecification)
+		}
+	}
+	
+	def protected createTimeoutDeclaration() {
+		val timeoutDeclaration = statechartfactory.createTimeoutDeclaration
+		timeoutDeclaration.name = getDelayName(timeoutCount++)
+		statechart.timeoutDeclarations += timeoutDeclaration
+		return timeoutDeclaration
+	}
+	
+	def protected createTimeSpecification(Expression expr) {
+		val timeSpecification = createTimeSpecification
+		timeSpecification.unit = TimeUnit.MILLISECOND
+		timeSpecification.value = expr.clone
+		return timeSpecification
+	}
+	
+	def protected void setTimeoutDeclarationForState(StateNode state, TimeoutDeclaration timeoutDeclaration, TimeSpecification timeSpecification) {
+		val action = createSetTimeoutAction
+		action.timeoutDeclaration = timeoutDeclaration
+		action.time = timeSpecification
+		if (state instanceof State) {
+			state.entryActions += action
 		}
 	}
 }

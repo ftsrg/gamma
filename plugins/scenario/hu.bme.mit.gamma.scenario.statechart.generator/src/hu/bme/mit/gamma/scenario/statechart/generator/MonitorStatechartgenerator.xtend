@@ -1,5 +1,6 @@
 package hu.bme.mit.gamma.scenario.statechart.generator
 
+import hu.bme.mit.gamma.expression.model.InfinityExpression
 import hu.bme.mit.gamma.scenario.model.AlternativeCombinedFragment
 import hu.bme.mit.gamma.scenario.model.Delay
 import hu.bme.mit.gamma.scenario.model.InteractionDirection
@@ -23,6 +24,7 @@ import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.StateNode
 import hu.bme.mit.gamma.statechart.statechart.TransitionPriority
 import hu.bme.mit.gamma.statechart.statechart.UnaryTrigger
+import hu.bme.mit.gamma.statechart.statechart.UnaryType
 import java.math.BigInteger
 import java.util.List
 
@@ -280,10 +282,32 @@ class MonitorStatechartgenerator extends AbstractContractStatechartGeneration {
 			violationTransition.trigger = getBinaryTriggerFromTriggers(triggersWithCorrectDir, BinaryType.OR)
 		} else if (triggersWithCorrectDir.size == 1) {
 			violationTransition.trigger = triggersWithCorrectDir.head
-		} else {
-			violationTransition.trigger = createAnyTrigger
-			violationTransition.guard = createFalseExpression
 		}
+		
+		val delay = set.modalInteractions.filter(Delay).head
+		if (delay !== null && !(delay.maximum instanceof InfinityExpression)) {
+			val timeoutDeclaration = createTimeoutDeclaration
+			val timeSpecification = createTimeSpecification(delay.maximum)
+			setTimeoutDeclarationForState(previousState, timeoutDeclaration, timeSpecification)
+			val timeoutTrigger = getEventTrigger(delay, true)
+			val negatedTimeoutTrigger = createUnaryTrigger
+			negatedTimeoutTrigger.type = UnaryType.NOT
+			negatedTimeoutTrigger.operand = timeoutTrigger.clone
+			val binaryOr =createBinaryTrigger
+			binaryOr.type = BinaryType.OR
+			val binaryAND =createBinaryTrigger
+			binaryAND.type = BinaryType.AND
+			
+			binaryOr.leftOperand = timeoutTrigger
+			binaryOr.rightOperand = violationTransition.trigger
+			violationTransition.trigger = binaryOr
+			
+			binaryAND.leftOperand = negatedTimeoutTrigger
+			binaryAND.rightOperand = forwardTransition.trigger
+			forwardTransition.trigger = binaryAND
+		}
+		
+		
 		previousState = state
 		return
 	}
