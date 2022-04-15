@@ -363,7 +363,6 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 
 	@Override
 	public EObject caseScenarioCheckExpression(ScenarioCheckExpression object) {
-		// TODO Auto-generated method stub
 		ScenarioCheckExpression check = factory.createScenarioCheckExpression();
 		check.setExpression(ecoreUtil.clone(object.getExpression()));
 		return check;

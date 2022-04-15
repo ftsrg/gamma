@@ -13,6 +13,8 @@ import hu.bme.mit.gamma.scenario.model.InteractionDefinition
 import hu.bme.mit.gamma.scenario.model.InteractionDirection
 import hu.bme.mit.gamma.scenario.model.ModalInteractionSet
 import hu.bme.mit.gamma.scenario.model.NegatedModalInteraction
+import hu.bme.mit.gamma.scenario.model.ScenarioCheckExpression
+import hu.bme.mit.gamma.scenario.model.ScenarioDeclaration
 import hu.bme.mit.gamma.scenario.model.ScenarioModelFactory
 import hu.bme.mit.gamma.scenario.model.Signal
 import hu.bme.mit.gamma.scenario.statechart.util.ScenarioStatechartUtil
@@ -23,6 +25,7 @@ import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.EventTrigger
 import hu.bme.mit.gamma.statechart.interface_.InterfaceModelFactory
 import hu.bme.mit.gamma.statechart.interface_.Port
+import hu.bme.mit.gamma.statechart.interface_.TimeSpecification
 import hu.bme.mit.gamma.statechart.interface_.TimeUnit
 import hu.bme.mit.gamma.statechart.interface_.Trigger
 import hu.bme.mit.gamma.statechart.statechart.BinaryTrigger
@@ -33,6 +36,7 @@ import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.StateNode
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.StatechartModelFactory
+import hu.bme.mit.gamma.statechart.statechart.TimeoutDeclaration
 import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.statechart.statechart.UnaryTrigger
 import hu.bme.mit.gamma.statechart.statechart.UnaryType
@@ -43,10 +47,6 @@ import java.util.List
 import java.util.Map
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
-import hu.bme.mit.gamma.scenario.model.ScenarioDeclaration
-import hu.bme.mit.gamma.statechart.statechart.TimeoutDeclaration
-import hu.bme.mit.gamma.statechart.interface_.TimeSpecification
-import hu.bme.mit.gamma.scenario.model.ScenarioCheckExpression
 
 abstract class AbstractContractStatechartGeneration {
 
@@ -350,10 +350,15 @@ abstract class AbstractContractStatechartGeneration {
 		var action = createRaiseEventAction
 		var port = reversed ? getPort(scenarioStatechartUtil.getTurnedOutPortName(signal.port)) : getPort(
 				signal.port.name)
-		action.event = getEvent(signal.event.name, port)
+		val event = getEvent(signal.event.name, port)
+		action.event = event
 		action.port = port
-		for (argument : signal.arguments) {
-			action.arguments += argument.clone
+		for(argument : event.parameterDeclarations){
+			val reference = createEventParameterReferenceExpression
+			reference.event = event
+			reference.port = signal.port
+			reference.parameter = argument
+			action.arguments +=reference
 		}
 		return action
 	}

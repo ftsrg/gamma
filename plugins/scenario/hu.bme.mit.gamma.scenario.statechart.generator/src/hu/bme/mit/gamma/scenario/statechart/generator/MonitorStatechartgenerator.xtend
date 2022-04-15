@@ -11,19 +11,15 @@ import hu.bme.mit.gamma.scenario.model.ModalityType
 import hu.bme.mit.gamma.scenario.model.NegatedModalInteraction
 import hu.bme.mit.gamma.scenario.model.OptionalCombinedFragment
 import hu.bme.mit.gamma.scenario.model.ScenarioDeclaration
+import hu.bme.mit.gamma.scenario.model.ScenarioPackage
 import hu.bme.mit.gamma.statechart.contract.NotDefinedEventMode
 import hu.bme.mit.gamma.statechart.interface_.Component
-import hu.bme.mit.gamma.statechart.interface_.EventTrigger
-import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.interface_.TimeUnit
 import hu.bme.mit.gamma.statechart.interface_.Trigger
-import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference
 import hu.bme.mit.gamma.statechart.statechart.BinaryType
-import hu.bme.mit.gamma.statechart.statechart.PortEventReference
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.StateNode
 import hu.bme.mit.gamma.statechart.statechart.TransitionPriority
-import hu.bme.mit.gamma.statechart.statechart.UnaryTrigger
 import hu.bme.mit.gamma.statechart.statechart.UnaryType
 import java.math.BigInteger
 import java.util.List
@@ -62,6 +58,13 @@ class MonitorStatechartgenerator extends AbstractContractStatechartGeneration {
 		fixReplacedStates()
 		copyTransitionsForOpt()
 		addScenarioContractAnnotation(NotDefinedEventMode.PERMISSIVE)
+		
+		val oldPorts = component.ports.filter[!(it.inputEvents.empty)]
+		for (port : statechart.ports) {
+			val oldPort = oldPorts.findFirst[it.name == port.name || it.turnedOutPortName == port.name]
+			ecoreUtil.change(port, oldPort, statechart)
+		}
+		
 		return statechart
 	}
 
