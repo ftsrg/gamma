@@ -24,10 +24,15 @@ import hu.bme.mit.gamma.scenario.model.ScenarioPackage
 import hu.bme.mit.gamma.scenario.model.Signal
 import hu.bme.mit.gamma.scenario.util.ScenarioModelValidator
 import org.eclipse.xtext.validation.Check
+import hu.bme.mit.gamma.scenario.model.ScenarioCheckExpression
 
 class ScenarioLanguageValidator extends AbstractScenarioLanguageValidator {
 
 	protected ScenarioModelValidator validator = ScenarioModelValidator.INSTANCE
+	
+	new () {
+		super.expressionModelValidator = validator
+	}
 
 	@Check(NORMAL)
 	def void checkIncompatibleAnnotations(ScenarioDeclaration scenario) {
@@ -97,6 +102,11 @@ class ScenarioLanguageValidator extends AbstractScenarioLanguageValidator {
 	@Check
 	def void checkScenarioReferenceParamCount(ScenarioDefinitionReference scenarioReference) {
 		handleValidationResultMessage(validator.checkScenarioReferenceParamCount(scenarioReference))
+	}
+	
+	@Check
+	def void checkScenarioCheck(ScenarioCheckExpression check) {
+		handleValidationResultMessage(validator.checkScenarioCheck(check)) 
 	}
 	
 

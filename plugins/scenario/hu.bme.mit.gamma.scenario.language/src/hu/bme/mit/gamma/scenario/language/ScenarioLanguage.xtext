@@ -13,6 +13,8 @@ grammar hu.bme.mit.gamma.scenario.language.ScenarioLanguage with hu.bme.mit.gamm
 import "http://www.eclipse.org/emf/2002/Ecore" as ecore
 import "http://www.mit.bme.hu/gamma/scenario/Model" as ScenarioModel
 import "http://www.mit.bme.hu/gamma/statechart/Model/Interface" as InterfaceModel
+import "http://www.mit.bme.hu/gamma/expression/Model" as ConstraintModel 
+
 
 ScenarioPackage returns ScenarioModel::ScenarioPackage:
 	'package' name=ID
@@ -75,7 +77,12 @@ ScenarioReference returns ScenarioModel::ScenarioDefinitionReference:
 	('('arguments+=Expression(',' arguments+=Expression)*')')?;
 
 AbstractInteractionDefinition returns ScenarioModel::InteractionDefinition:
-	ModalInteraction | NegatedModalInteraction | ModalInteractionSet;
+	ModalInteraction | NegatedModalInteraction | ModalInteractionSet | ScenarioCheck;
+
+ScenarioCheck returns ScenarioModel::ScenarioCheckExpression:
+	{ScenarioModel::ScenarioCheckExpression}
+	'check' expression=Expression
+;
 
 CombinedFragment returns ScenarioModel::CombinedFragment:
 	AlternativeCombinedFragmentDefinition | OptionalCombinedFragmentDefinition | UnorderedCombinedFragmentDefinition |
@@ -102,6 +109,16 @@ SignalDefinition returns ScenarioModel::Signal:
 
 Delay returns ScenarioModel::Delay:
 	modality=ModalityDefinition 'delay' '(' minimum=Expression ('..' maximum=Expression)? ')';
+	
+@Override 
+PrimaryExpression returns ConstraintModel::Expression: 
+	super |
+	EventParameterReferenceExpression
+;
+
+EventParameterReferenceExpression returns InterfaceModel::EventParameterReferenceExpression:
+	port=[InterfaceModel::Port] '.' event=[InterfaceModel::Event] '::' parameter=[ConstraintModel::ParameterDeclaration];
+
 
 AlternativeCombinedFragmentDefinition returns ScenarioModel::AlternativeCombinedFragment:
 	'alternative' '{' fragments+=FragmentDefinition '}' ('or' '{' fragments+=FragmentDefinition '}')+;

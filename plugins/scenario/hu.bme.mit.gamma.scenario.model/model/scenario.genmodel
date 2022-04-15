@@ -83,5 +83,8 @@
     <genClasses ecoreClass="scenario.ecore#//ScenarioDefinitionReference">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference scenario.ecore#//ScenarioDefinitionReference/scenarioDefinition"/>
     </genClasses>
+    <genClasses ecoreClass="scenario.ecore#//ScenarioCheckExpression">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference scenario.ecore#//ScenarioCheckExpression/expression"/>
+    </genClasses>
   </genPackages>
 </genmodel:GenModel>

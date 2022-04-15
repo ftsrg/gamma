@@ -11,6 +11,7 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
 
 import hu.bme.mit.gamma.expression.model.Expression;
+import hu.bme.mit.gamma.expression.model.ExpressionModelFactory;
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Type;
@@ -34,6 +35,7 @@ import hu.bme.mit.gamma.scenario.model.NegatedModalInteraction;
 import hu.bme.mit.gamma.scenario.model.ParallelCombinedFragment;
 import hu.bme.mit.gamma.scenario.model.PermissiveAnnotation;
 import hu.bme.mit.gamma.scenario.model.Reset;
+import hu.bme.mit.gamma.scenario.model.ScenarioCheckExpression;
 import hu.bme.mit.gamma.scenario.model.ScenarioDeclaration;
 import hu.bme.mit.gamma.scenario.model.ScenarioDefinitionReference;
 import hu.bme.mit.gamma.scenario.model.ScenarioModelPackage;
@@ -46,14 +48,21 @@ import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.Event;
 import hu.bme.mit.gamma.statechart.interface_.EventDeclaration;
 import hu.bme.mit.gamma.statechart.interface_.EventDirection;
+import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression;
 import hu.bme.mit.gamma.statechart.interface_.Interface;
+import hu.bme.mit.gamma.statechart.interface_.InterfaceModelPackage;
+import hu.bme.mit.gamma.statechart.interface_.Port;
 import hu.bme.mit.gamma.statechart.interface_.RealizationMode;
+import hu.bme.mit.gamma.statechart.util.ExpressionTypeDeterminator;
 
 public class ScenarioModelValidator extends ExpressionModelValidator {
 	// Singleton
 	public static final ScenarioModelValidator INSTANCE = new ScenarioModelValidator();
 
+	private static final ExpressionModelFactory expressionFactory = ExpressionModelFactory.eINSTANCE;
+
 	protected ScenarioModelValidator() {
+		super.typeDeterminator = ExpressionTypeDeterminator.INSTANCE; // For eventParamreference
 	}
 	//
 
@@ -394,6 +403,72 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 		validationResultMessages
 				.addAll(checkArgumentTypes(reference, reference.getScenarioDefinition().getParameterDeclarations()));
 		return validationResultMessages;
+	}
+
+	public Collection<ValidationResultMessage> checkScenarioCheck(ScenarioCheckExpression check) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		List<EventParameterReferenceExpression> params = ecoreUtil.getAllContentsOfType(check.getExpression(),
+				EventParameterReferenceExpression.class);
+		if (!params.isEmpty()) {
+			EObject container = check.eContainer();
+			if (container instanceof ModalInteractionSet) {
+				ModalInteractionSet set = (ModalInteractionSet) container;
+				List<Signal> signals = set.getModalInteractions().stream().filter(it -> it instanceof Signal)
+						.map(it -> (Signal) it).collect(Collectors.toList());
+				for (EventParameterReferenceExpression paramRef : params) {
+					Event event = paramRef.getEvent();
+					Port port = paramRef.getPort();
+					boolean ok = false;
+					for (Signal signal : signals) {
+						if(signal.getPort().equals(port) && signal.getEvent().equals(event)) {
+							ok = true;
+						}
+					}
+					if (!ok) {
+						validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+								"This synchronous block does not contain any signal for the port and event of " + paramRef.getParameter().getName() + ".",
+								new ReferenceInfo(paramRef.eContainingFeature(),paramRef.eContainer())));
+					}
+				}
+			}  else if(container instanceof InteractionFragment) {
+				InteractionFragment fragment = (InteractionFragment) container;
+				int indexOfCheck = fragment.getInteractions().indexOf(check);
+				Interaction previousInteraction = findPreviousNonScenarioCheck(fragment,indexOfCheck);
+				if(!(previousInteraction instanceof Signal)) {
+					for (EventParameterReferenceExpression paramRef : params) {
+						validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+							"The previous interaction is not a Signal.",
+							new ReferenceInfo(paramRef.eContainingFeature(),paramRef.eContainer())));
+					}
+				} else {
+					Signal signal = (Signal) previousInteraction;
+					for (EventParameterReferenceExpression paramRef : params) {
+						Event event = paramRef.getEvent();
+						Port port = paramRef.getPort();
+						if(!signal.getPort().equals(port) || !signal.getEvent().equals(event)) {
+							validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+								"The previous interaction is not a Signal for the port and event of " + paramRef.getParameter().getName() + ".",
+								new ReferenceInfo(paramRef.eContainingFeature(),paramRef.eContainer())));
+						}
+					}
+				}
+			}
+		}
+		validationResultMessages.addAll(checkTypeAndExpressionConformance(
+				expressionFactory.createBooleanTypeDefinition(), check.getExpression(),
+				new ReferenceInfo(ScenarioModelPackage.Literals.SCENARIO_CHECK_EXPRESSION__EXPRESSION)));
+		return validationResultMessages;
+	}
+	
+	private Interaction findPreviousNonScenarioCheck(InteractionFragment fragment, int indexOfCheck) {
+		if(indexOfCheck == 0) {
+			return null;
+		}
+		Interaction previousInteraction = fragment.getInteractions().get(indexOfCheck-1);
+		if(previousInteraction instanceof ScenarioCheckExpression) {
+			return findPreviousNonScenarioCheck(fragment, indexOfCheck-1);
+		}
+		return previousInteraction;
 	}
 
 	public Collection<ValidationResultMessage> checkRecursiveScenraioReference(ScenarioDefinitionReference reference) {
