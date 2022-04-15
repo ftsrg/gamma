@@ -1,6 +1,6 @@
 package contractsPackage
 import "crossroad"
-component Crossroads 
+component Crossroads
 
 const one : integer := 1
 
@@ -18,6 +18,7 @@ scenario Blinking initial outputs [
 		hot sends priorityOutput.displayYellow
 		hot sends secondaryOutput.displayYellow
 		hot delay (500 .. 501)
+//		check 1 == 1 + 0
 	}
 ]
 

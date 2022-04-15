@@ -41,6 +41,7 @@ import hu.bme.mit.gamma.scenario.model.OptionalCombinedFragment;
 import hu.bme.mit.gamma.scenario.model.ParallelCombinedFragment;
 import hu.bme.mit.gamma.scenario.model.PermissiveAnnotation;
 import hu.bme.mit.gamma.scenario.model.Reset;
+import hu.bme.mit.gamma.scenario.model.ScenarioCheckExpression;
 import hu.bme.mit.gamma.scenario.model.ScenarioDeclaration;
 import hu.bme.mit.gamma.scenario.model.ScenarioModelFactory;
 import hu.bme.mit.gamma.scenario.model.Signal;
@@ -358,6 +359,14 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 		}
 		delay.setMinimum(ecoreUtil.clone(object.getMinimum()));
 		return delay;
+	}
+
+	@Override
+	public EObject caseScenarioCheckExpression(ScenarioCheckExpression object) {
+		// TODO Auto-generated method stub
+		ScenarioCheckExpression check = factory.createScenarioCheckExpression();
+		check.setExpression(ecoreUtil.clone(object.getExpression()));
+		return check;
 	}
 
 }

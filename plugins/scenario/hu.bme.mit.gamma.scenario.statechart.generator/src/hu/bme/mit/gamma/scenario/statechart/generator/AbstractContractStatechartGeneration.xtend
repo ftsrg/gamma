@@ -46,6 +46,7 @@ import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartMo
 import hu.bme.mit.gamma.scenario.model.ScenarioDeclaration
 import hu.bme.mit.gamma.statechart.statechart.TimeoutDeclaration
 import hu.bme.mit.gamma.statechart.interface_.TimeSpecification
+import hu.bme.mit.gamma.scenario.model.ScenarioCheckExpression
 
 abstract class AbstractContractStatechartGeneration {
 
@@ -459,23 +460,35 @@ abstract class AbstractContractStatechartGeneration {
 	def protected setupForwardTransition(ModalInteractionSet set, boolean reversed, boolean isNegated,
 		Transition forwardTransition) {
 		var Trigger trigger = null
-		if (set.modalInteractions.size > 1) {
-			trigger = getBinaryTrigger(set.modalInteractions, BinaryType.AND, reversed)
+		val checks = set.modalInteractions.filter(ScenarioCheckExpression)
+		val nonCheckInteractitons = set.modalInteractions.filter[!(it instanceof ScenarioCheckExpression)].toList
+		if (nonCheckInteractitons.size > 1) {
+			trigger = getBinaryTrigger(nonCheckInteractitons, BinaryType.AND, reversed)
+		} else if(nonCheckInteractitons.size == 1) {
+			trigger = getEventTrigger(nonCheckInteractitons.head, reversed)
 		} else {
-			trigger = getEventTrigger(set.modalInteractions.get(0), reversed)
+			trigger = createOnCycleTrigger
 		}
 
 		if (isNegated) {
 			forwardTransition.trigger = negateEventTrigger(trigger)
 		} else {
 			forwardTransition.trigger = trigger
-			for (modalInteraction : set.modalInteractions) {
+			for (modalInteraction : nonCheckInteractitons) {
 				val effect = getRaiseEventAction(modalInteraction, !reversed)
 				if (effect !== null) {
 					forwardTransition.effects += effect
 				}
 			}
 		}
+		if(checks.size>1){
+			val andExpression = createAndExpression
+			andExpression.operands += checks.map[it.expression]
+			forwardTransition.guard = andExpression
+		} else if(checks.size == 1){
+			forwardTransition.guard = checks.head.expression
+		}
+		
 	}
 
 	def protected handleDelays(ModalInteractionSet set) {
