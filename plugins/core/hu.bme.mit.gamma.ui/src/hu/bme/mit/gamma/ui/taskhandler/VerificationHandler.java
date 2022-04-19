@@ -43,6 +43,7 @@ import hu.bme.mit.gamma.promela.verification.PromelaVerification;
 import hu.bme.mit.gamma.property.model.CommentableStateFormula;
 import hu.bme.mit.gamma.property.model.PropertyPackage;
 import hu.bme.mit.gamma.property.model.StateFormula;
+import hu.bme.mit.gamma.querygenerator.serializer.PromelaPropertySerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.PropertySerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.ThetaPropertySerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.UppaalPropertySerializer;
@@ -118,7 +119,7 @@ public class VerificationHandler extends TaskHandler {
 					break;
 				case PROMELA:
 					verificationTask = PromelaVerification.INSTANCE;
-					propertySerializer = null;
+					propertySerializer = PromelaPropertySerializer.INSTANCE;
 					break;
 				default:
 					throw new IllegalArgumentException("Currently only UPPAAL and Theta are supported");

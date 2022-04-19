@@ -45,6 +45,7 @@ import hu.bme.mit.gamma.genmodel.model.TransitionPairCoverage;
 import hu.bme.mit.gamma.genmodel.model.XstsReference;
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.TransitionMerging;
 import hu.bme.mit.gamma.property.model.PropertyPackage;
+import hu.bme.mit.gamma.querygenerator.serializer.PromelaPropertySerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.PropertySerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.ThetaPropertySerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.UppaalPropertySerializer;
@@ -145,6 +146,8 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			return fileNamer.getXmlUppaalFileName(plainFileName);
 		case XSTS_UPPAAL:
 			return fileNamer.getXmlUppaalFileName(plainFileName);
+		case PROMELA:
+			return fileNamer.getPmlPromelaFileName(plainFileName);
 		default:
 			throw new IllegalArgumentException("Not known language " + analysisLanguage);
 		}
@@ -688,12 +691,12 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 		
 		@Override
 		protected PropertySerializer getPropertySerializer() {
-			return XstsUppaalPropertySerializer.INSTANCE;
+			return PromelaPropertySerializer.INSTANCE;
 		}
 
 		@Override
 		protected String getQueryFileExtension() {
-			return GammaFileNamer.UPPAAL_QUERY_EXTENSION;
+			return GammaFileNamer.PROMELA_QUERY_EXTENSION;
 		}
 	}
 	
