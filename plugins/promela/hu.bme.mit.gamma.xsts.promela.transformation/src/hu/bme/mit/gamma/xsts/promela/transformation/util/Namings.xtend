@@ -15,7 +15,5 @@ import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference
 class Namings {
 	static def String costumizeEnumLiteralName(EnumerationLiteralExpression expression) '''«expression.reference.typeDeclaration.name»«expression.reference.name»'''
 	static def String costumizeEnumLiteralName(EnumerationTypeDefinition type, EnumerationLiteralDefinition literal) '''«type.typeDeclaration.name»«literal.name»'''
-	static def String costumizeEnumLiteralName(State state, Region parentRegion, ComponentInstanceReference instance) '''
-		«parentRegion.name.regionTypeName»_«instance.FQN»«state.customizeName»
-	'''
+	static def String costumizeEnumLiteralName(State state, Region parentRegion, ComponentInstanceReference instance) '''«parentRegion.name.regionTypeName»_«instance.FQN»«state.customizeName»'''
 }
