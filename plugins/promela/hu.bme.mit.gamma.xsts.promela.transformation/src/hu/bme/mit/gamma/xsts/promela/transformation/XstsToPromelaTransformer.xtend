@@ -5,6 +5,7 @@ import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.util.FileUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.promela.transformation.serializer.ModelSerializer
+import hu.bme.mit.gamma.transformation.util.GammaFileNamer
 
 class XstsToPromelaTransformer {
 	
@@ -15,6 +16,7 @@ class XstsToPromelaTransformer {
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension ModelSerializer modelSerializer = ModelSerializer.INSTANCE
 	protected final extension FileUtil fileUtil = FileUtil.INSTANCE
+	protected final extension GammaFileNamer fileNamer = GammaFileNamer.INSTANCE
 	
 	new(File file) {
 		this.targetFolderUri = file.parent
@@ -29,7 +31,7 @@ class XstsToPromelaTransformer {
 	}
 	
 	def void execute() {
-		val promelaFile = new File(targetFolderUri + File.separator + fileName + ".pml")
+		val promelaFile = new File(targetFolderUri + File.separator + fileName.pmlPromelaFileName)
 		val promelaString = xSts.serializePromela
 		promelaFile.saveString(promelaString)
 	}

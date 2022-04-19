@@ -65,7 +65,7 @@ class ModelSerializer {
 	'''
 	
 	def dispatch String serialize(VariableDeclarationAction action) '''
-		«action.variableDeclaration.serializeLocalVariableDeclaration»;
+		«action.variableDeclaration.serializeLocalVariableDeclaration»
 	'''
 	
 	def dispatch String serialize(EmptyAction action) ''''''

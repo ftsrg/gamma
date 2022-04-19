@@ -14,29 +14,25 @@ import hu.bme.mit.gamma.expression.model.ArrayAccessExpression
 import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.DivExpression
-import hu.bme.mit.gamma.expression.model.ElseExpression
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
 import hu.bme.mit.gamma.expression.model.IfThenElseExpression
 import hu.bme.mit.gamma.expression.model.ModExpression
 import hu.bme.mit.gamma.expression.model.NotExpression
 import hu.bme.mit.gamma.expression.util.ExpressionTypeDeterminator2
-import hu.bme.mit.gamma.xsts.model.PrimedVariable
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
-import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
-import hu.bme.mit.gamma.xsts.promela.transformation.util.TypeHandler
+import static extension hu.bme.mit.gamma.xsts.promela.transformation.util.Namings.*
 
 class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSerializer {
 	// Singleton
 	public static final ExpressionSerializer INSTANCE = new ExpressionSerializer
 	protected new() {}
 	//
-	protected final extension TypeHandler typeHandler = TypeHandler.INSTANCE
 	protected final extension ExpressionTypeDeterminator2 expressionTypeDeterminator = ExpressionTypeDeterminator2.INSTANCE
 	
 	override String _serialize(IfThenElseExpression expression) '''(«expression.condition.serialize» -> («expression.then.serialize») : («expression.^else.serialize»))'''
 	
-	override String _serialize(EnumerationLiteralExpression expression) '''«expression.reference.typeDeclaration.name»«expression.reference.name»'''
+	override String _serialize(EnumerationLiteralExpression expression) '''«expression.costumizeEnumLiteralName»'''
 	
 	override String _serialize(ModExpression expression) '''(«expression.leftOperand.serialize» % «expression.rightOperand.serialize»)'''
 	

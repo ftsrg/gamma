@@ -10,7 +10,7 @@ import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.expression.util.ExpressionTypeDeterminator2
 
-import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.xsts.promela.transformation.util.Namings.*
 
 class DeclarationSerializer {
 	// Singleton
@@ -48,7 +48,7 @@ class DeclarationSerializer {
 	
 	def dispatch String serializeType(IntegerTypeDefinition type) '''int'''
 	
-	def dispatch String serializeType(EnumerationTypeDefinition type) '''{ «FOR literal : type.literals SEPARATOR ', '»«type.typeDeclaration.name»«literal.name»«ENDFOR» }'''
+	def dispatch String serializeType(EnumerationTypeDefinition type) '''{ «FOR literal : type.literals SEPARATOR ', '»«type.costumizeEnumLiteralName(literal)»«ENDFOR» }'''
 		
 	// Variable
 	

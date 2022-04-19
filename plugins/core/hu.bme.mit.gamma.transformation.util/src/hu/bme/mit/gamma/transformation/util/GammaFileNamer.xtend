@@ -43,8 +43,11 @@ class GammaFileNamer {
 	public static final String UPPAAL_EMF_EXTENSION = "uppaal";
 	public static final String UPPAAL_MODEL_EXTENSION = "xml";
 	
+	public static final String PROMELA_MODEL_EXTENSION = "pml";
+	
 	public static final String UPPAAL_QUERY_EXTENSION = "q";
 	public static final String THETA_QUERY_EXTENSION = "prop";
+	public static final String PROMELA_QUERY_EXTENSION = "pmlp";
 	//
 	
 	def String getPackageFileName(String fileName) '''«fileName.extensionlessName».«PACKAGE_XTEXT_EXTENSION»'''
@@ -72,6 +75,10 @@ class GammaFileNamer {
 	def String getXtextXStsFileName(String fileName) '''«fileName.extensionlessName».«XSTS_XTEXT_EXTENSION»'''
 	
 	def String getEmfXStsFileName(String fileName) '''«fileName.extensionlessName».«XSTS_EMF_EXTENSION»'''
+	
+	def String getPmlPromelaFileName(String fileName) '''«fileName.extensionlessName».«PROMELA_MODEL_EXTENSION»'''
+	
+	def String getPromelaQueryFileName(String fileName) '''«fileName.extensionlessName».«PROMELA_QUERY_EXTENSION»'''
 	
 	//
 	
