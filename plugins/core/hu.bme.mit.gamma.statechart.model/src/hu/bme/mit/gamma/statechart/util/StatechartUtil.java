@@ -500,7 +500,14 @@ public class StatechartUtil extends ActionUtil {
 		_package.getInterfaces().add(_interface);
 		return _package;
 	}
-
+	
+	public Package wrapIntoPackageAndAddImports(Component component) {
+		Package _package = wrapIntoPackage(component);
+		_package.getImports().addAll(
+				StatechartModelDerivedFeatures.getImportablePackages(component));
+		return _package;
+	}
+	
 	public Package createPackage(String name) {
 		Package _package = interfaceFactory.createPackage();
 		_package.setName(name);
