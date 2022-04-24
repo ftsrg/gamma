@@ -42,7 +42,7 @@ class DeclarationSerializer {
 	
 	// Type
 	
-	def dispatch String serializeType(TypeReference type) '''byte'''
+	def dispatch String serializeType(TypeReference type) '''mtype:«type.reference.name»'''
 	
 	def dispatch String serializeType(BooleanTypeDefinition type) '''bool'''
 	
