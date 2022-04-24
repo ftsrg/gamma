@@ -15,6 +15,8 @@ import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 
 import static extension hu.bme.mit.gamma.activity.derivedfeatures.ActivityModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.lowlevel.derivedfeatures.LowlevelStatechartModelDerivedFeatures.*
+import hu.bme.mit.gamma.activity.model.InitialNode
+import hu.bme.mit.gamma.activity.model.FinalNode
 
 class ActivityNodeTransformer extends LowlevelTransitionToXTransitionTransformer {
 	
@@ -152,6 +154,26 @@ class ActivityNodeTransformer extends LowlevelTransitionToXTransitionTransformer
 			it.actions += createNonDeterministicAction => [
 				for (flow : outputFlows) {
 					it.actions += flow.transformOutwards
+				}
+			]
+		]
+	}
+	
+	protected dispatch def createActivityNodeFlowAction(InitialNode node, Iterable<Flow> inputFlows, Iterable<Flow> outputFlows) {
+		return createNonDeterministicAction => [
+			it.actions += createNonDeterministicAction => [
+				for (flow : outputFlows) {
+					it.actions += flow.transformOutwards
+				}
+			]
+		]
+	}
+	
+	protected dispatch def createActivityNodeFlowAction(FinalNode node, Iterable<Flow> inputFlows, Iterable<Flow> outputFlows) {
+		return createNonDeterministicAction => [
+			it.actions += createNonDeterministicAction => [
+				for (flow : inputFlows) {
+					it.actions += flow.transformInwards
 				}
 			]
 		]
