@@ -35,21 +35,27 @@ class ModelSerializer {
 		proctype EnvTrans() {
 			(flag > 0);
 		ENV:
-			«xSts.environmentalAction.serialize»
-			flag = 2;
+			atomic {
+				«xSts.environmentalAction.serialize»
+				flag = 2;
+			};
 			goto TRANS;
 		TRANS:
-			«FOR transition : xSts.transitions»
-				«transition.action.serialize»
-			«ENDFOR»
-			flag = 1;
+			atomic {
+				«FOR transition : xSts.transitions»
+					«transition.action.serialize»
+				«ENDFOR»
+				flag = 1;
+			};
 			goto ENV;
 		}
 		
 		init {
-			«xSts.initializingAction.serialize»
-			run EnvTrans();
-			flag = 1;
+			atomic {
+				«xSts.initializingAction.serialize»
+				run EnvTrans();
+				flag = 1;
+			}
 		}
 	'''
 	
