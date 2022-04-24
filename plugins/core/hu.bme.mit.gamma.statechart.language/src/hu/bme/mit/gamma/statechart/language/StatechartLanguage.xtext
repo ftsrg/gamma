@@ -195,6 +195,7 @@ SynchronousStatechartDefinition returns SynchronousStatechartDefinition:
 				regions+=Region |
 				transitions+=Transition
 			)*
+			(activityDeclarations+=NamedActivityDeclaration)*
 			functionDeclarations+=FunctionDeclaration*
 	'}'
 ;
@@ -221,8 +222,8 @@ AsynchronousStatechartDefinition returns AsynchronousStatechartDefinition:
 				regions+=Region |
 				transitions+=Transition
 			)*
+			(activityDeclarations+=NamedActivityDeclaration)*
 			functionDeclarations+=FunctionDeclaration*
-			activityDeclarations+=NamedActivityDeclaration*
 	'}'
 ;
 
