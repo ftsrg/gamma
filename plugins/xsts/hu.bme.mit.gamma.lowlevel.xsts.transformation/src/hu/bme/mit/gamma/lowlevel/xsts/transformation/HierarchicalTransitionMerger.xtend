@@ -59,9 +59,6 @@ class HierarchicalTransitionMerger extends AbstractTransitionMerger {
 		
 		val xStsMergedAction = statechart.mergeAllTransitionsOfRegion(regionActions)
 		
-		val activityMergedAction = createParallelAction
-		mergeActivityTransitions(activityMergedAction)
-		activityMergedAction.actions += xStsMergedAction
 		// Adding default branch for yet unattended nondeterministic choices
 		// Cannot be done on the fly due to executedVariable injections (they are injected in very branch
 		for (defaultlessNonDeterministicChoice : xStsMergedAction
@@ -71,19 +68,26 @@ class HierarchicalTransitionMerger extends AbstractTransitionMerger {
 			defaultlessNonDeterministicChoice.extendChoiceWithDefaultBranch
 		}
 		
+		val activityMergedAction = mergeActivityTransitions
+		activityMergedAction.actions += xStsMergedAction
+		
 		// The many transitions are now replaced by a single merged transition
 		xSts.changeTransitions(activityMergedAction.wrap)
 	}
 	
-	protected def mergeActivityTransitions(ParallelAction xStsAction) {
+	protected def mergeActivityTransitions() {
+		val xStsAction = createNonDeterministicAction
+		
 		val nodes = Nodes.Matcher.on(engine).allValuesOfactivityNode
 					
 		for (node : nodes) {
 			val action = trace.getXStsAction(node) as NonDeterministicAction
 			
 			xStsAction.actions += action
-			action.extendChoiceWithDefaultBranch(createEmptyAction)
+			action.extendChoiceWithDefaultBranch
 		}	
+		
+		return xStsAction
 	}
 	
 	private def Action mergeAllTransitionsOfRegion(CompositeElement element,
