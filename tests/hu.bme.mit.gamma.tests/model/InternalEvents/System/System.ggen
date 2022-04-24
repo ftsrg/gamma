@@ -1,4 +1,5 @@
 import "Statechart/Synchronous.gcd"
+import "Asynchronous.gcd"
 import "System.gcd"
 
 code {
@@ -11,6 +12,8 @@ code {
 	language : java
 }
 
+//
+
 analysis {
 	component : Synchronous
 	language : Theta
@@ -22,6 +25,24 @@ verification {
 	file : "Synchronous.xsts"
 	query-file : "Synchronous.prop"
 }
+
+//
+
+analysis {
+	component : Asynchronous
+	language : Theta
+	state-coverage
+}
+
+verification {
+	language : Theta
+	test-language : java
+	file : "Asynchronous.xsts"
+	property-file : ".Asynchronous.gpd"
+	back-annotate-to-original : true
+}
+
+//
 
 analysis {
 	component : Scheduled

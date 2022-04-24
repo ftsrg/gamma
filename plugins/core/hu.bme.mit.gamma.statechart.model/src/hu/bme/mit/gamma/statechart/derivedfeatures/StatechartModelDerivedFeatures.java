@@ -204,7 +204,8 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	}
 	
 	public static boolean isInternal(Port port) {
-		return getAllEventDeclarations(port).stream().anyMatch(
+		List<EventDeclaration> eventDeclarations = getAllEventDeclarations(port);
+		return eventDeclarations.stream().anyMatch(
 				it -> it.getDirection() == EventDirection.INTERNAL);
 	}
 	
@@ -217,7 +218,8 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	}
 	
 	public static boolean contains(Component component, Port port) {
-		return getAllPorts(component).contains(port);
+		List<Port> ports = getAllPorts(component);
+		return ports.contains(port);
 	}
 	
 	public static EventDirection getOpposite(EventDirection eventDirection) {
@@ -272,17 +274,20 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	}
 	
 	public static Set<Package> getImportableInterfacePackages(Component component) {
-		return getAllPorts(component).stream().map(it -> getContainingPackage(
+		List<Port> ports = getAllPorts(component);
+		return ports.stream().map(it -> getContainingPackage(
 				getInterface(it))).collect(Collectors.toSet());
 	}
 	
 	public static Set<Package> getImportableComponentPackages(Component component) {
 		Set<Package> importablePackages = new LinkedHashSet<Package>();
+		
 		for (ComponentInstance instance : getInstances(component)) {
 			Component type = getDerivedType(instance);
 			Package containingPackage = getContainingPackage(type);
 			importablePackages.add(containingPackage);
 		}
+		
 		return importablePackages;
 	}
 	
@@ -302,19 +307,20 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		}
 		for (StateContractAnnotation annotation :
 				ecoreUtil.getContentsOfType(component, StateContractAnnotation.class)) {
-			for (StatechartDefinition contract : annotation.getContractStatecharts()) {
-				Package containingPackage = getContainingPackage(contract);
-				importablePackages.add(containingPackage);
-			}
+			StatechartDefinition contract = annotation.getContractStatechart();
+			Package containingPackage = getContainingPackage(contract);
+			importablePackages.add(containingPackage);
 		}
 		return importablePackages;
 	}
 	
 	public static Set<Package> getImportablePackages(Component component) {
 		Set<Package> importablePackages = new LinkedHashSet<Package>();
+		
 		importablePackages.addAll(getImportableInterfacePackages(component));
 		importablePackages.addAll(getImportableComponentPackages(component));
 		importablePackages.addAll(getImportableAnnotationPackages(component));
+		
 		// If referenced components are in the same package
 		if (isContainedByPackage(component)) {
 			Package _package = getContainingPackage(component);
@@ -344,6 +350,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		// Different functionality from importable interface and component packages...
 		Set<Package> importedPackages = new LinkedHashSet<Package>();
 		List<Package> importablePackages = new ArrayList<Package>();
+		
 		importablePackages.add(_package);
 		importablePackages.addAll(_package.getImports());
 		for (Package importablePackage : importablePackages) {
@@ -352,18 +359,22 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 				importedPackages.add(importablePackage);
 			}
 		}
+		
 		return importedPackages;
 	}
 	
 	public static Set<Package> getSelfAndImports(Package gammaPackage) {
 		Set<Package> imports = new HashSet<Package>();
+		
 		imports.add(gammaPackage);
 		imports.addAll(gammaPackage.getImports());
+		
 		return imports;
 	}
 	
 	public static Set<Package> getComponentImports(Package gammaPackage) {
 		Set<Package> imports = new HashSet<Package>();
+		
 		imports.addAll(gammaPackage.getImports());
 		for (Component component : gammaPackage.getComponents()) {
 			for (ComponentInstance componentInstance : getAllInstances(component)) {
@@ -373,13 +384,16 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 						getSelfAndImports(referencedPackage));
 			}
 		}
+		
 		return imports;
 	}
 	
 	public static Set<Package> getSelfAndAllImports(Package gammaPackage) {
 		Set<Package> imports = new LinkedHashSet<Package>();
+		
 		imports.add(gammaPackage);
 		imports.addAll(getAllImports(gammaPackage));
+		
 		return imports;
 	}
 	
@@ -919,6 +933,16 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return messageQueues;
 	}
 	
+	public static boolean storesOnlyInternalEvents(MessageQueue queue) {
+		List<Entry<Port,Event>> storedEvents = getStoredEvents(queue);
+		return storedEvents.stream().allMatch(it -> isInternal(it.getKey()));
+	}
+	
+	public static boolean storesOnlyNotInternalEvents(MessageQueue queue) {
+		List<Entry<Port,Event>> storedEvents = getStoredEvents(queue);
+		return storedEvents.stream().allMatch(it -> !isInternal(it.getKey()));
+	}
+	
 	public static List<Entry<Port, Event>> getStoredEvents(MessageQueue queue) {
 		Collection<Entry<Port, Event>> events = new LinkedHashSet<Entry<Port, Event>>();
 		// To filter possible duplicates
@@ -1005,6 +1029,9 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	public static boolean isEnvironmental(MessageQueue queue,
 			Collection<? extends Port> systemPorts) {
+		if (!storesOnlyNotInternalEvents(queue)) {
+			return false;
+		}
 		List<Port> topBoundPorts = getStoredEvents(queue).stream()
 				.map(it -> getBoundTopComponentPort(it.getKey())).collect(Collectors.toList());
 		return systemPorts.containsAll(topBoundPorts);
@@ -1361,6 +1388,14 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
     public static StatechartDefinition getStatechart(ComponentInstance instance) {
     	return (StatechartDefinition) getDerivedType(instance);
     }
+    
+	public static boolean needsWrapping(Component component) {
+		if (component instanceof AsynchronousAdapter) {
+			AsynchronousAdapter adapter = (AsynchronousAdapter) component;
+			return !isSimplifiable(adapter);
+		}
+		return isStatechart(component);
+	}
     
 	public static String getWrapperInstanceName(Component component) {
 		String name = component.getName();

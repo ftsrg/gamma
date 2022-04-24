@@ -11,6 +11,7 @@
 package hu.bme.mit.gamma.xsts.transformation
 
 import hu.bme.mit.gamma.statechart.interface_.Component
+import hu.bme.mit.gamma.statechart.interface_.EventDirection
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.AbstractAssignmentAction
@@ -215,6 +216,73 @@ class InternalEventHandler {
 		
 		return xStsVariableAssignments
 	}
+	
+	//
+	
+	def void addInternalEventResetingActionsInMergedAction(
+			XSTS xSts, Component component) {
+		val xStsMergedAction = xSts.mergedAction
+		
+		val xStsOutResets = xSts.createInternalEventResetingActions(component, EventDirection.OUT)
+		xStsOutResets.prependToAction(xStsMergedAction)
+		val xStsInResets = xSts.createInternalEventResetingActions(component, EventDirection.IN)
+		xStsMergedAction.appendToAction(xStsInResets)
+	}
+	
+	protected def createInternalEventResetingActions(
+			XSTS xSts, Component component, EventDirection direction) {
+		val xStsVariableAssignments = newArrayList
+		
+		val internalPorts = component.allInternalPorts
+		for (internalPort : internalPorts) {
+			xStsVariableAssignments += xSts.createInternalEventResetingActions(internalPort, direction)
+		}
+		
+		return xStsVariableAssignments
+	}
+	
+	protected def createInternalEventResetingActions(XSTS xSts, Port port, EventDirection direction) {
+		checkArgument(port.internal, "Port '" + port.name + "' is not internal")
+		
+		val extension ReferenceToXstsVariableMapper mapper = new ReferenceToXstsVariableMapper(xSts)
+		
+		val xStsVariables = newArrayList
+		val xStsVariableAssignments = newArrayList
+		
+		val internalEvents = port.internalEvents
+		for (internalEvent : internalEvents) {
+			if (direction == EventDirection.IN) {
+				xStsVariables += internalEvent.getInputEventVariable(port)
+			}
+			else if (direction == EventDirection.OUT) {
+				xStsVariables += internalEvent.getOutputEventVariable(port)
+			}
+			else {
+				throw new IllegalArgumentException
+			}
+			
+			if (internalEvent.transient) {
+				for (parameter : internalEvent.parameterDeclarations) {
+					if (direction == EventDirection.IN) {
+						xStsVariables += parameter.getInputParameterVariables(port)
+					}
+					else if (direction == EventDirection.OUT) {
+						xStsVariables += parameter.getOutputParameterVariables(port)
+					}
+					else {
+						throw new IllegalArgumentException("Not known direction: " + direction)
+					}
+				}
+			}
+		}
+		
+		for (xStsVariable : xStsVariables) {
+			xStsVariableAssignments += xStsVariable.createVariableResetAction
+		}
+		
+		return xStsVariableAssignments
+	}
+	
 	
 //	def void removeInternalEventHandlingActions(XSTS xSts, Component component) {
 //		val internalPorts = component.allInternalPorts

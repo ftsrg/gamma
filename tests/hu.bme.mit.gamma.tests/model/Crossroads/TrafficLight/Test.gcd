@@ -1,0 +1,102 @@
+package test
+import "/hu.bme.mit.gamma.tests/model/Crossroads/Interfaces/Interfaces.gcd"
+statechart Test [
+	port _LightCommands_ : requires LightCommands
+	port LightCommands : provides LightCommands
+	port _PoliceInterrupt_ : provides PoliceInterrupt
+	port PoliceInterrupt : requires PoliceInterrupt
+	port _Control_ : provides Control
+	port Control : requires Control
+] {
+	var inOutCycleVariable : boolean := false
+	region MainRegion {
+		initial Initial
+		state _0
+		state _1
+		state _2
+		state _3 {
+			region InputRegion {
+				initial InputInitialState
+				state InputState
+				choice Choice0
+				merge Merge0
+				choice Choice1
+			}
+		}
+	}
+	region OutputRegion {
+		initial OutputInitialState
+		state OutputState
+		choice Choice3
+		merge Merge2
+		choice Choice4
+		merge Merge3
+		choice Choice5
+		merge Merge4
+		choice Choice6
+		state FirstOutputState
+		choice Choice8
+		merge Merge6
+		choice Choice9
+		merge Merge7
+		choice Choice10
+		merge Merge8
+		choice Choice11
+	}
+	region InOutCycleRegion {
+		initial InOutCycleInitialState
+		state InOutCycleState
+	}
+	transition from Initial to _0
+	transition from _0 to _1 when cycle [inOutCycleVariable] /
+	raise _Control_.toggle;
+	transition from _1 to _2 when cycle [inOutCycleVariable] /
+	raise _Control_.toggle;
+	transition from _2 to _3 when cycle [inOutCycleVariable] /
+	raise _PoliceInterrupt_.police;
+	transition from InputInitialState to InputState
+	transition from InputState to Choice0 when cycle [inOutCycleVariable]
+	transition from Choice0 to Merge0 when Control.toggle /
+	raise _Control_.toggle;
+	transition from Choice0 to Merge0 [else]
+	transition from Merge0 to Choice1
+	transition from Choice1 to InputState when PoliceInterrupt.police /
+	raise _PoliceInterrupt_.police;
+	transition from Choice1 to InputState [else]
+	transition from OutputInitialState to FirstOutputState
+	transition from OutputState to Choice3 when cycle [not inOutCycleVariable]
+	transition from Choice3 to Merge2 when _LightCommands_.displayGreen /
+	raise LightCommands.displayGreen;
+	transition from Choice3 to Merge2 [else]
+	transition from Merge2 to Choice4
+	transition from Choice4 to Merge3 when _LightCommands_.displayNone /
+	raise LightCommands.displayNone;
+	transition from Choice4 to Merge3 [else]
+	transition from Merge3 to Choice5
+	transition from Choice5 to Merge4 when _LightCommands_.displayRed /
+	raise LightCommands.displayRed;
+	transition from Choice5 to Merge4 [else]
+	transition from Merge4 to Choice6
+	transition from Choice6 to OutputState when _LightCommands_.displayYellow /
+	raise LightCommands.displayYellow;
+	transition from Choice6 to OutputState [else]
+	transition from FirstOutputState to Choice8 when cycle
+	transition from Choice8 to Merge6 when _LightCommands_.displayGreen /
+	raise LightCommands.displayGreen;
+	transition from Choice8 to Merge6 [else]
+	transition from Merge6 to Choice9
+	transition from Choice9 to Merge7 when _LightCommands_.displayNone /
+	raise LightCommands.displayNone;
+	transition from Choice9 to Merge7 [else]
+	transition from Merge7 to Choice10
+	transition from Choice10 to Merge8 when _LightCommands_.displayRed /
+	raise LightCommands.displayRed;
+	transition from Choice10 to Merge8 [else]
+	transition from Merge8 to Choice11
+	transition from Choice11 to OutputState when _LightCommands_.displayYellow /
+	raise LightCommands.displayYellow;
+	transition from Choice11 to OutputState [else]
+	transition from InOutCycleInitialState to InOutCycleState
+	transition from InOutCycleState to InOutCycleState when cycle /
+	inOutCycleVariable := not inOutCycleVariable;
+}

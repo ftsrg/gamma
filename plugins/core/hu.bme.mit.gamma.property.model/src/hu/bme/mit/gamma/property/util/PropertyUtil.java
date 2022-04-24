@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -68,6 +68,35 @@ public class PropertyUtil extends StatechartUtil {
 		propertyPackage.setComponent(component);
 		propertyPackage.getFormulas().add(formula);
 		return propertyPackage;
+	}
+	
+	// Wrapping - adding proxy wrapper instance referenecs
+	
+	public void extendFormulasWithWrapperInstance(PropertyPackage propertyPackage) {
+		Component component = propertyPackage.getComponent();
+		for (CommentableStateFormula commentableStateFormula : propertyPackage.getFormulas()) {
+			StateFormula formula = commentableStateFormula.getFormula();
+			List<ComponentInstanceStateExpression> stateExpressions =
+					ecoreUtil.getAllContentsOfType(formula, ComponentInstanceStateExpression.class);
+			for (ComponentInstanceStateExpression stateExpression : stateExpressions) {
+				ComponentInstanceReference instanceReference = stateExpression.getInstance();
+				ComponentInstance wrapperInstance = instantiateComponent(component);
+				prependAndReplace(instanceReference, wrapperInstance);
+			}
+		}
+	}
+	
+	public void removeFirstInstanceFromFormulas(PropertyPackage propertyPackage) {
+		for (CommentableStateFormula commentableStateFormula : propertyPackage.getFormulas()) {
+			StateFormula formula = commentableStateFormula.getFormula();
+			List<ComponentInstanceStateExpression> stateExpressions =
+					ecoreUtil.getAllContentsOfType(formula, ComponentInstanceStateExpression.class);
+			for (ComponentInstanceStateExpression stateExpression : stateExpressions) {
+				ComponentInstanceReference instanceReference = stateExpression.getInstance();
+				ComponentInstanceReference child = instanceReference.getChild();
+				ecoreUtil.replace(child, instanceReference);
+			}
+		}
 	}
 	
 	//

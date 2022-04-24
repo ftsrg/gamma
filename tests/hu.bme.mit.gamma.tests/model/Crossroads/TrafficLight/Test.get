@@ -1,0 +1,33 @@
+import "/hu.bme.mit.gamma.tests/model/Crossroads/TrafficLight/TrafficLightCtrl.gcd"
+trace Test of TrafficLightCtrl
+step {
+	act {
+		reset
+	}
+	assert {
+	}
+}
+step {
+	act {
+		raise Control.toggle
+		schedule component
+	}
+	assert {
+	}
+}
+step {
+	act {
+		raise Control.toggle
+		schedule component
+	}
+	assert {
+	}
+}
+step {
+	act {
+		raise PoliceInterrupt.police
+		schedule component
+	}
+	assert {
+	}
+}

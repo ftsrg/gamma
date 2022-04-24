@@ -242,7 +242,7 @@ class ReflectiveComponentCodeGenerator {
 						}
 						return «component.getWrappedComponentName»;
 				«ENDIF»
-				«IF component instanceof StatechartDefinition»
+				«IF component instanceof StatechartDefinition || component instanceof AsynchronousAdapter»
 					// If the class name is given, then it will return itself
 					case "«component.getComponentClassName»":
 						return this;
