@@ -9,6 +9,7 @@ import hu.bme.mit.gamma.verification.result.ThreeStateBoolean
 import java.io.FileWriter
 import hu.bme.mit.gamma.util.FileUtil
 import java.util.ArrayList
+import hu.bme.mit.gamma.statechart.interface_.Package
 
 class PromelaVerifier extends AbstractVerifier {
 	
@@ -30,10 +31,16 @@ class PromelaVerifier extends AbstractVerifier {
 			i++
 		}
 		
+		// root temporary folder
+		val rootGenFolder = new File(modelFile.parent, "." + fileUtil.getExtensionlessName(modelFile))
+		rootGenFolder.deleteOnExit
+		rootGenFolder.mkdirs
 		// save model with all LTL
-		val tmpGenFolder = new File(modelFile.parent, "." + fileUtil.getExtensionlessName(modelFile) + File.separator + '''«i»-LTL''')
+		val tmpGenFolder = new File(rootGenFolder + File.separator + fileUtil.getExtensionlessName(modelFile) + "-LTL" + System.currentTimeMillis.toString)
 		tmpGenFolder.deleteOnExit
 		tmpGenFolder.mkdirs
+		
+		// save model with LTL
 		val fileWithLtl = new File(tmpGenFolder, fileUtil.getExtensionlessName(modelFile) + "-LTL.pml")
 		fileWithLtl.deleteOnExit
 		fileUtil.saveString(fileWithLtl, modelWithLtls)
@@ -56,34 +63,77 @@ class PromelaVerifier extends AbstractVerifier {
 			val execFolder = modelFile.parentFile
 			// spin -search -a PromelaFile.pml
 			val command = '''spin «parameters» «modelFile.canonicalPath.escapePath»'''
-			// Trace file
-			val traceFile = new File(modelFile.traceFile)
-			traceFile.delete
-			traceFile.deleteOnExit
+			
+			// trail file
+			val trailFile = new File(modelFile.trailFile)
+			trailFile.delete
+			trailFile.deleteOnExit
+			// pan file
+			val panFile = new File(modelFile.panFile)
+			panFile.delete
+			panFile.deleteOnExit
+			
 			// Executing the command
 			logger.log(Level.INFO, "Executing command: " + command)
 			process = Runtime.getRuntime().exec(command, null, execFolder)
 			val outputStream = process.inputStream
 			// Reading the result of the command
 			resultReader = new Scanner(outputStream)
+			
 			// save result of command
 			val outputFile = new File(execFolder, ".output.txt")
 			outputFile.deleteOnExit
-			val out = new FileWriter(outputFile)
+			var outputString = ""
 			while (resultReader.hasNext) {
-				val line = resultReader.nextLine
-				out.write(line + System.lineSeparator)
+				outputString += resultReader.nextLine + System.lineSeparator
 			}
-			out.flush
-			out.close
+			fileUtil.saveString(outputFile, outputString)
 			
-			// Adapting result
-			super.result = super.result.adaptResult
-			if (!traceFile.exists) {
+			if (!trailFile.exists) {
 				// No proof/counterexample
+				super.result = ThreeStateBoolean.TRUE
+				// Adapting result
+				super.result = super.result.adaptResult
 				return new Result(result, null)
 			}
-			return new Result(result, null)
+			
+			super.result = ThreeStateBoolean.FALSE
+			// Adapting result
+			super.result = super.result.adaptResult
+			
+			// spin -t -p PromelaFile.pml
+			val traceCommand = '''spin -t -p -g -l -w «modelFile.canonicalPath.escapePath»'''
+			// Trace file
+			val traceFile = new File(modelFile.traceFile)
+			traceFile.delete
+			traceFile.deleteOnExit
+			// Never claim file
+			val nvrFile = new File(execFolder, "_spin_nvr.tmp")
+			nvrFile.delete
+			nvrFile.deleteOnExit
+			
+			// Executing the trace command
+			logger.log(Level.INFO, "Executing command: " + traceCommand)
+			process = Runtime.getRuntime().exec(traceCommand, null, execFolder)
+			val traceOutputStream = process.inputStream
+			// Reading the result of the command
+			resultReader = new Scanner(traceOutputStream)
+			
+			// save result of command
+			val traceOutputFile = new File(modelFile.traceFile)
+			traceOutputFile.deleteOnExit
+			var traceString = ""
+			while (resultReader.hasNext) {
+				traceString += resultReader.nextLine + System.lineSeparator
+			}
+			fileUtil.saveString(traceOutputFile, traceString)
+			
+			val gammaPackage = traceability as Package
+			traceFileScanner = new Scanner(traceFile)
+			val backAnnotator = new TraceBackAnnotator(gammaPackage, traceFileScanner)
+			val trace = backAnnotator.execute
+			
+			return new Result(result, trace)
 		} finally {
 			if (resultReader !== null) {
 				resultReader.close
@@ -98,9 +148,18 @@ class PromelaVerifier extends AbstractVerifier {
 		super.cancel
 	}
 	
+	def getTrailFile(File modelFile) {
+		return modelFile.parent + File.separator + modelFile.name + 
+				".trail"
+	}
+	
 	def getTraceFile(File modelFile) {
 		return modelFile.parent + File.separator + modelFile.name + 
-				".trail";
+				".pmltrace"
+	}
+	
+	def getPanFile(File modelFile) {
+		return modelFile.parent + File.separator + "pan"
 	}
 }
 
@@ -127,7 +186,8 @@ class PromelaQueryAdapter {
 			invert = false
 			return query.substring(A.length)
 		}
-		throw new IllegalArgumentException("Not supported operator: " + query)
+		invert = false
+		return query
 	}
 	
 	def adaptResult(ThreeStateBoolean promelaResult) {

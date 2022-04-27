@@ -11,9 +11,11 @@ import static extension hu.bme.mit.gamma.transformation.util.Namings.*
 import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference
+import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
 
 class Namings {
 	static def String costumizeEnumLiteralName(EnumerationLiteralExpression expression) '''«expression.reference.typeDeclaration.name»«expression.reference.name»'''
 	static def String costumizeEnumLiteralName(EnumerationTypeDefinition type, EnumerationLiteralDefinition literal) '''«type.typeDeclaration.name»«literal.name»'''
 	static def String costumizeEnumLiteralName(State state, Region parentRegion, ComponentInstanceReference instance) '''«parentRegion.name.regionTypeName»_«instance.FQN»«state.customizeName»'''
+	static def String costumizeEnumLiteralName(State state, Region parentRegion, SynchronousComponentInstance instance) '''«parentRegion.name.regionTypeName»_«instance.FQN»«state.customizeName»'''
 }
