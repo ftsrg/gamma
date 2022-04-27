@@ -32,7 +32,6 @@ import hu.bme.mit.gamma.action.model.ActionModelPackage;
 import hu.bme.mit.gamma.action.model.AssignmentStatement;
 import hu.bme.mit.gamma.action.model.Branch;
 import hu.bme.mit.gamma.action.model.ExpressionStatement;
-import hu.bme.mit.gamma.activity.util.ActivityExpressionTypeDeterminator;
 import hu.bme.mit.gamma.activity.util.ActivityModelValidator;
 import hu.bme.mit.gamma.expression.model.ArgumentedElement;
 import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition;
@@ -133,7 +132,7 @@ public class StatechartModelValidator extends ActivityModelValidator {
 	// Singleton
 	public static final StatechartModelValidator INSTANCE = new StatechartModelValidator();
 	protected StatechartModelValidator() {
-		super.typeDeterminator = ActivityExpressionTypeDeterminator.INSTANCE; // For state reference
+		super.typeDeterminator = ExpressionTypeDeterminator.INSTANCE; // For state reference
 		super.expressionUtil = StatechartUtil.INSTANCE; // For getDeclaration
 	}
 	//
