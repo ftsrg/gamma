@@ -65,9 +65,9 @@ class ThetaVerifier extends AbstractVerifier {
 			val traceFile = new File(modelFile.traceFile)
 			traceFile.delete // So no invalid/old cex is parsed if this actual process does not generate one
 			traceFile.deleteOnExit // So the cex with this random name does not remain on disk
-			var String[] command = #["java", "-jar", jar] + parameters.split(" ") + #["--model", modelFile.canonicalPath, "--property", queryFile.canonicalPath, "--cex", traceFile.canonicalPath, "--stacktrace"]
+			val command = #["java", "-jar", jar] + parameters.split(" ") + #["--model", modelFile.canonicalPath, "--property", queryFile.canonicalPath, "--cex", traceFile.canonicalPath, "--stacktrace"]
 			// Executing the command
-			logger.log(Level.INFO, "Executing command: " + command)
+			logger.log(Level.INFO, "Executing command: " + command.join(" "))
 			process = Runtime.getRuntime().exec(command)
 			val outputStream = process.inputStream
 			resultReader = new Scanner(outputStream)
