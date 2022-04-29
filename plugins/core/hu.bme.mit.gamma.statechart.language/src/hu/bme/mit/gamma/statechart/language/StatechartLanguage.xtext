@@ -13,7 +13,7 @@ grammar hu.bme.mit.gamma.statechart.language.StatechartLanguage
 
 import "http://www.eclipse.org/emf/2002/Ecore" as Ecore
 import "http://www.mit.bme.hu/gamma/statechart/Model/Statechart" 
-import "http://www.mit.bme.hu/gamma/expression/Model" as ConstraintModel 
+import "http://www.mit.bme.hu/gamma/expression/Model" as ExpressionModel 
 import "http://www.mit.bme.hu/gamma/action/Model" as ActionModel 
 import "http://www.mit.bme.hu/gamma/statechart/Model/Composite" as CompositeModel
 import "http://www.mit.bme.hu/gamma/statechart/Model/Interface" as InterfaceModel 
@@ -357,11 +357,11 @@ StateDefinition returns PhaseModel::MissionPhaseStateDefinition:
 ;
 
 VariableBinding returns PhaseModel::VariableBinding:
-	'tie' statechartVariable=[ConstraintModel::VariableDeclaration] '->' instanceVariableReference=InstanceVariableReference
+	'tie' statechartVariable=[ExpressionModel::VariableDeclaration] '->' instanceVariableReference=InstanceVariableReference
 ;
 
 InstanceVariableReference returns PhaseModel::InstanceVariableReference:
-	instance=[CompositeModel::ComponentInstance] '.' variable=[ConstraintModel::VariableDeclaration]
+	instance=[CompositeModel::ComponentInstance] '.' variable=[ExpressionModel::VariableDeclaration]
 ;
 
 enum History returns PhaseModel::History:
@@ -623,7 +623,7 @@ enum Persistency returns InterfaceModel::Persistency:
 
 // Overriding it for the sake of EventParameterReferenceExpression
 @Override 
-PrimaryExpression returns ConstraintModel::Expression: 
+PrimaryExpression returns ExpressionModel::Expression: 
 	super |
 	EventParameterReferenceExpression |
 	StateReferenceExpression
@@ -634,7 +634,7 @@ StateReferenceExpression returns StateReferenceExpression:
 ;
 
 EventParameterReferenceExpression returns InterfaceModel::EventParameterReferenceExpression:
-	port=[InterfaceModel::Port] '.' event=[InterfaceModel::Event] '::' parameter=[ConstraintModel::ParameterDeclaration];
+	port=[InterfaceModel::Port] '.' event=[InterfaceModel::Event] '::' parameter=[ExpressionModel::ParameterDeclaration];
 
 
 // Action Language Extensions
@@ -662,3 +662,29 @@ SetTimeoutAction returns SetTimeoutAction:
 DeactivateTimeoutAction returns DeactivateTimeoutAction:
 	'deactivate' timeoutDeclaration=[TimeoutDeclaration]
 ;
+
+// Component instance element references for subgrammars
+
+ComponentInstanceStateExpression returns CompositeModel::ComponentInstanceElementReferenceExpression:
+	ComponentInstanceStateReferenceExpression | ComponentInstanceVariableReferenceExpression |
+		ComponentInstanceEventReferenceExpression | ComponentInstanceEventParameterReferenceExpression
+;
+
+ComponentInstanceStateReferenceExpression returns CompositeModel::ComponentInstanceStateReferenceExpression:
+	'state' instance=ComponentInstanceReference '.' region=[Region] '.' state=[State]
+;
+
+ComponentInstanceVariableReferenceExpression returns CompositeModel::ComponentInstanceVariableReferenceExpression:
+	'variable' instance=ComponentInstanceReference '.' variableDeclaration=[ExpressionModel::VariableDeclaration]
+;
+
+ComponentInstanceEventReferenceExpression returns CompositeModel::ComponentInstanceEventReferenceExpression:
+	'event' instance=ComponentInstanceReference '.' port=[InterfaceModel::Port] '.' event=[InterfaceModel::Event]
+;
+
+ComponentInstanceEventParameterReferenceExpression returns CompositeModel::ComponentInstanceEventParameterReferenceExpression:
+	'parameter' instance=ComponentInstanceReference '.' port=[InterfaceModel::Port] '.'
+		event=[InterfaceModel::Event] '::' parameterDeclaration=[ExpressionModel::ParameterDeclaration]
+;
+
+//

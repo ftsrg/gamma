@@ -1,3 +1,13 @@
+/********************************************************************************
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * SPDX-License-Identifier: EPL-1.0
+ ********************************************************************************/
 package hu.bme.mit.gamma.trace.testgeneration.java
 
 import hu.bme.mit.gamma.statechart.interface_.Component
@@ -56,7 +66,7 @@ class ActAndAssertSerializer {
 		'''«TEST_INSTANCE_NAME».«util.getFullContainmentHierarchy(assert.instance)».isStateActive("«assert.state.parentRegion.name»", "«assert.state.name»")'''
 
 	protected def dispatch String serializeAssert(InstanceVariableState assert)
-		'''«TEST_INSTANCE_NAME».«util.getFullContainmentHierarchy(assert.instance)».checkVariableValue("«assert.declaration.name»", «assert.value.serialize»)'''
+		'''«TEST_INSTANCE_NAME».«util.getFullContainmentHierarchy(assert.variableReference.instance)».checkVariableValue("«assert.variableReference.variableDeclaration.name»", «assert.value.serialize»)'''
 	
 	// Acts
 	

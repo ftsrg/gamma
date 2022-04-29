@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -24,8 +24,10 @@ import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
 import hu.bme.mit.gamma.expression.model.TypeReference;
+import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.expression.util.ExpressionUtil;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression;
 import hu.bme.mit.gamma.statechart.contract.ScenarioAllowedWaitAnnotation;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Component;
@@ -128,14 +130,18 @@ public class TraceUtil extends ExpressionUtil {
 				// Two instance variable: name
 				InstanceVariableState lhsInstanceVariableState = (InstanceVariableState) lhs;
 				InstanceVariableState rhsInstanceVariableState = (InstanceVariableState) rhs;
+				ComponentInstanceVariableReferenceExpression lhsVariableReference =
+						lhsInstanceVariableState.getVariableReference();
+				ComponentInstanceVariableReferenceExpression rhsVariableReference =
+						rhsInstanceVariableState.getVariableReference();
 				ComponentInstance lhsInstance = StatechartModelDerivedFeatures.getLastInstance(
-						lhsInstanceVariableState.getInstance());
+						lhsVariableReference.getInstance());
 				ComponentInstance rhsInstance = StatechartModelDerivedFeatures.getLastInstance(
-						rhsInstanceVariableState.getInstance());
-				String lhsName = lhsInstance.getName() +
-						lhsInstanceVariableState.getDeclaration().getName();
-				String rhsName = rhsInstance.getName() +
-						rhsInstanceVariableState.getDeclaration().getName();
+						rhsVariableReference.getInstance());
+				VariableDeclaration lhsVariable = lhsVariableReference.getVariableDeclaration();
+				VariableDeclaration rhsVariable = rhsVariableReference.getVariableDeclaration();
+				String lhsName = lhsInstance.getName() + lhsVariable.getName();
+				String rhsName = rhsInstance.getName() + rhsVariable.getName();
 				return lhsName.compareTo(rhsName);
 			}
 			else if (lhs instanceof InstanceStateConfiguration && rhs instanceof InstanceVariableState) {

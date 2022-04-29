@@ -530,7 +530,7 @@ public class ExpressionModelValidator {
 					}
 					else {
 						validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-								"The right hand side must be of type array literal", 
+							"The right hand side must be of type array literal", 
 								new ReferenceInfo(ExpressionModelPackage.Literals.INITIALIZABLE_ELEMENT__EXPRESSION)));
 					}
 				}
@@ -547,13 +547,13 @@ public class ExpressionModelValidator {
 			// The size of the array must be given as an integer
 			if (!typeDeterminator.isInteger(arrayType.getSize())) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-						"The size of the array must be given as an integer",
+					"The size of the array must be given as an integer",
 						new ReferenceInfo(ExpressionModelPackage.Literals.ARRAY_TYPE_DEFINITION__SIZE)));
 			}
 			// Array initial size must be greater than 0
 			if (expressionEvaluator.evaluateInteger(arrayType.getSize()) <= 0) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-						"The size of the array must be greater than 0",
+					"The size of the array must be greater than 0",
 						new ReferenceInfo(ExpressionModelPackage.Literals.ARRAY_TYPE_DEFINITION__SIZE)));
 			}
 		} catch (Exception exception) {
@@ -575,13 +575,13 @@ public class ExpressionModelValidator {
 					// EqualityExpression
 					if (equivalenceExpression instanceof EqualityExpression) {
 						validationResultMessages.add(new ValidationResultMessage(ValidationResult.INFO,
-								"This expression is always true, because the left and right hand sides are same",
+							"This expression is always true, because the left and right hand sides are same",
 								new ReferenceInfo(ExpressionModelPackage.Literals.BINARY_EXPRESSION__RIGHT_OPERAND)));
 					}
 					// InequalityExpression
 					if (equivalenceExpression instanceof InequalityExpression) {
 						validationResultMessages.add(new ValidationResultMessage(ValidationResult.INFO,
-								"This expression is always false, because the left and right hand sides are same",
+							"This expression is always false, because the left and right hand sides are same",
 								new ReferenceInfo(ExpressionModelPackage.Literals.BINARY_EXPRESSION__RIGHT_OPERAND)));
 					}
 				}
@@ -590,12 +590,12 @@ public class ExpressionModelValidator {
 					ComparisonExpression comparisionExpression = (ComparisonExpression) expression;
 					if (comparisionExpression instanceof LessEqualExpression || comparisionExpression instanceof GreaterEqualExpression) {
 						validationResultMessages.add(new ValidationResultMessage(ValidationResult.INFO,
-								"This expression is always true, because the left and right hand sides are same",
+							"This expression is always true, because the left and right hand sides are same",
 								new ReferenceInfo(ExpressionModelPackage.Literals.BINARY_EXPRESSION__RIGHT_OPERAND)));
 					}
 					if (comparisionExpression instanceof LessExpression || comparisionExpression instanceof GreaterExpression) {
 						validationResultMessages.add(new ValidationResultMessage(ValidationResult.INFO,
-								"This expression is always false, because the left and right hand sides are same",
+							"This expression is always false, because the left and right hand sides are same",
 								new ReferenceInfo(ExpressionModelPackage.Literals.BINARY_EXPRESSION__RIGHT_OPERAND)));
 					}
 				}
@@ -616,7 +616,7 @@ public class ExpressionModelValidator {
 					// Right hand side is zero
 					if (expressionEvaluator.evaluateInteger(binaryExpression.getRightOperand()) == 0) {
 						validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-								"Division by zero is not allowed",
+							"Division by zero is not allowed",
 								new ReferenceInfo(ExpressionModelPackage.Literals.BINARY_EXPRESSION__RIGHT_OPERAND)));
 					}
 				}
@@ -794,6 +794,9 @@ public class ExpressionModelValidator {
 		private EStructuralFeature reference;
 		private EObject source;
 		private Integer index;
+		//
+		protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
+		//
 		
 		public ReferenceInfo(EStructuralFeature reference){
 			this(reference, null, null);
@@ -811,6 +814,14 @@ public class ExpressionModelValidator {
 			this.reference = reference;
 			this.index = index;
 			this.source = source;
+		}
+		
+		public ReferenceInfo(EObject object) {
+			this.source = object.eContainer();
+			this.reference = object.eContainingFeature();
+			if (reference.isMany()) {
+				this.index = ecoreUtil.getIndex(source);
+			}
 		}
 		
 		public boolean hasSource() {

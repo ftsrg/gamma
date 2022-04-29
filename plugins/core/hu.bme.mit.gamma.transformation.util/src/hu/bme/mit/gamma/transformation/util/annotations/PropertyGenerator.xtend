@@ -18,12 +18,12 @@ import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.property.model.CommentableStateFormula
-import hu.bme.mit.gamma.property.model.ComponentInstanceVariableReference
 import hu.bme.mit.gamma.property.model.PropertyModelFactory
 import hu.bme.mit.gamma.property.model.PropertyPackage
 import hu.bme.mit.gamma.property.util.PropertyUtil
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.CompositeModelFactory
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures
@@ -82,7 +82,7 @@ class PropertyGenerator {
 			val Component type = instance.type
 			if (type instanceof StatechartDefinition) {
 				for (state : StatechartModelDerivedFeatures.getAllStates(type)) {
-					val stateReference = factory.createComponentInstanceStateConfigurationReference
+					val stateReference = compositeFactory.createComponentInstanceStateReferenceExpression
 					val parentRegion = StatechartModelDerivedFeatures.getParentRegion(state)
 					stateReference.setInstance(createInstanceReference(instance))
 					stateReference.setRegion(parentRegion)
@@ -187,7 +187,8 @@ class PropertyGenerator {
 		return formulas
 	}
 
-	def protected ComponentInstanceVariableReference createVariableReference(VariableDeclaration variable) {
+	def protected ComponentInstanceVariableReferenceExpression createVariableReference(
+			VariableDeclaration variable) {
 		val statechart = StatechartModelDerivedFeatures.getContainingStatechart(variable)
 		val instance = StatechartModelDerivedFeatures.getReferencingComponentInstance(statechart)
 		val reference = propertyUtil.createVariableReference(

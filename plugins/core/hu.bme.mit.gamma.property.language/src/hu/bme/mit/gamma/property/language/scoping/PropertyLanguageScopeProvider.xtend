@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -11,13 +11,13 @@
 package hu.bme.mit.gamma.property.language.scoping
 
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage
-import hu.bme.mit.gamma.property.model.ComponentInstanceEventParameterReference
-import hu.bme.mit.gamma.property.model.ComponentInstanceEventReference
-import hu.bme.mit.gamma.property.model.ComponentInstanceStateConfigurationReference
-import hu.bme.mit.gamma.property.model.ComponentInstanceStateExpression
 import hu.bme.mit.gamma.property.model.PropertyModelPackage
 import hu.bme.mit.gamma.property.model.PropertyPackage
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceElementReferenceExpression
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventParameterReferenceExpression
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.CompositeModelPackage
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import org.eclipse.emf.ecore.EObject
@@ -53,40 +53,40 @@ class PropertyLanguageScopeProvider extends AbstractPropertyLanguageScopeProvide
 				parent.componentInstance.instances
 			return Scopes.scopeFor(instances)
 		}
-		if (context instanceof ComponentInstanceStateExpression) {
+		if (context instanceof ComponentInstanceElementReferenceExpression) {
 			// Base
 			var instance = context.instance.lastInstance
 			val statechart = instance.derivedType
 			if (statechart !== null) {
 				if (statechart instanceof StatechartDefinition) {
 					// State
-					if (reference == PropertyModelPackage.Literals.COMPONENT_INSTANCE_STATE_CONFIGURATION_REFERENCE__REGION) {
+					if (reference == CompositeModelPackage.Literals.COMPONENT_INSTANCE_STATE_REFERENCE_EXPRESSION__REGION) {
 						return Scopes.scopeFor(statechart.allRegions)
 					}
-					if (reference == PropertyModelPackage.Literals.COMPONENT_INSTANCE_STATE_CONFIGURATION_REFERENCE__STATE) {
-						val stateConfigurationReference = context as ComponentInstanceStateConfigurationReference
+					if (reference == CompositeModelPackage.Literals.COMPONENT_INSTANCE_STATE_REFERENCE_EXPRESSION__STATE) {
+						val stateConfigurationReference = context as ComponentInstanceStateReferenceExpression
 						val region = stateConfigurationReference.region
 						return Scopes.scopeFor(region.states)
 					}
 					// Variable
-					if (reference == PropertyModelPackage.Literals.COMPONENT_INSTANCE_VARIABLE_REFERENCE__VARIABLE) {
+					if (reference == CompositeModelPackage.Literals.COMPONENT_INSTANCE_VARIABLE_REFERENCE_EXPRESSION__VARIABLE_DECLARATION) {
 						return Scopes.scopeFor(statechart.variableDeclarations)
 					}
 					// Port
-					if (reference == PropertyModelPackage.Literals.COMPONENT_INSTANCE_EVENT_REFERENCE__PORT ||
-							reference == PropertyModelPackage.Literals.COMPONENT_INSTANCE_EVENT_PARAMETER_REFERENCE__PORT) {
+					if (reference == CompositeModelPackage.Literals.COMPONENT_INSTANCE_EVENT_REFERENCE_EXPRESSION__PORT ||
+							reference == CompositeModelPackage.Literals.COMPONENT_INSTANCE_EVENT_PARAMETER_REFERENCE_EXPRESSION__PORT) {
 						return Scopes.scopeFor(statechart.ports)
 					}
 					// Event
-					if (reference == PropertyModelPackage.Literals.COMPONENT_INSTANCE_EVENT_REFERENCE__EVENT ||
-							reference == PropertyModelPackage.Literals.COMPONENT_INSTANCE_EVENT_PARAMETER_REFERENCE__EVENT) {
-						if (context instanceof ComponentInstanceEventReference) {
+					if (reference == CompositeModelPackage.Literals.COMPONENT_INSTANCE_EVENT_REFERENCE_EXPRESSION__EVENT ||
+							reference == CompositeModelPackage.Literals.COMPONENT_INSTANCE_EVENT_PARAMETER_REFERENCE_EXPRESSION__EVENT) {
+						if (context instanceof ComponentInstanceEventReferenceExpression) {
 							val port = context.port
 							if (!port.eIsProxy) {
 								return Scopes.scopeFor(port.outputEvents)
 							}
 						}
-						if (context instanceof ComponentInstanceEventParameterReference) {
+						if (context instanceof ComponentInstanceEventParameterReferenceExpression) {
 							val port = context.port
 							if (!port.eIsProxy) {
 								return Scopes.scopeFor(port.outputEvents)
@@ -94,8 +94,8 @@ class PropertyLanguageScopeProvider extends AbstractPropertyLanguageScopeProvide
 						}
 					}
 					// Parameter
-					if (reference == PropertyModelPackage.Literals.COMPONENT_INSTANCE_EVENT_PARAMETER_REFERENCE__PARAMETER) {
-						val eventParameterReference = context as ComponentInstanceEventParameterReference
+					if (reference == CompositeModelPackage.Literals.COMPONENT_INSTANCE_EVENT_PARAMETER_REFERENCE_EXPRESSION__PARAMETER_DECLARATION) {
+						val eventParameterReference = context as ComponentInstanceEventParameterReferenceExpression
 						return Scopes.scopeFor(eventParameterReference.event.parameterDeclarations)
 					}
 				}

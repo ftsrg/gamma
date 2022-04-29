@@ -44,7 +44,6 @@ import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
 import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation;
 import hu.bme.mit.gamma.genmodel.model.ComponentReference;
 import hu.bme.mit.gamma.genmodel.model.Verification;
-import hu.bme.mit.gamma.property.model.ComponentInstanceStateConfigurationReference;
 import hu.bme.mit.gamma.property.model.PropertyPackage;
 import hu.bme.mit.gamma.property.model.StateFormula;
 import hu.bme.mit.gamma.property.util.PropertyUtil;
@@ -52,6 +51,7 @@ import hu.bme.mit.gamma.scenario.statechart.util.ScenarioStatechartUtil;
 import hu.bme.mit.gamma.statechart.composite.Channel;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.CompositeModelFactory;
 import hu.bme.mit.gamma.statechart.composite.InstancePortReference;
 import hu.bme.mit.gamma.statechart.composite.PortBinding;
@@ -564,7 +564,7 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 		
 		// Saving the property
 		State violationState = elementTracer.getViolationState(contract);
-		ComponentInstanceStateConfigurationReference violationStateReference =
+		ComponentInstanceStateReferenceExpression violationStateReference =
 				propertyUtil.createStateReference(
 						propertyUtil.createInstanceReference(contractInstance), violationState);
 		StateFormula eFViolation = propertyUtil.createEF(

@@ -39,7 +39,11 @@ import hu.bme.mit.gamma.statechart.composite.BroadcastChannel;
 import hu.bme.mit.gamma.statechart.composite.CascadeCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.Channel;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventParameterReferenceExpression;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.CompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.CompositeModelFactory;
 import hu.bme.mit.gamma.statechart.composite.ControlFunction;
@@ -810,6 +814,48 @@ public class StatechartUtil extends ActionUtil {
 		raiseEventAction.setEvent(event);
 		raiseEventAction.getArguments().addAll(parameters);
 		return raiseEventAction;
+	}
+	
+	// Atomic component instance reference expressions
+	
+	public ComponentInstanceStateReferenceExpression createStateReference(
+			ComponentInstanceReference instance, State state) {
+		ComponentInstanceStateReferenceExpression reference =
+				compositeFactory.createComponentInstanceStateReferenceExpression();
+		reference.setInstance(instance);
+		reference.setRegion(StatechartModelDerivedFeatures.getParentRegion(state));
+		reference.setState(state);
+		return reference;
+	}
+	
+	public ComponentInstanceVariableReferenceExpression createVariableReference(ComponentInstanceReference instance,
+			VariableDeclaration variable) {
+		ComponentInstanceVariableReferenceExpression reference =
+				compositeFactory.createComponentInstanceVariableReferenceExpression();
+		reference.setInstance(instance);
+		reference.setVariableDeclaration(variable);
+		return reference;
+	}
+	
+	public ComponentInstanceEventReferenceExpression createEventReference(ComponentInstanceReference instance,
+			Port port, Event event) {
+		ComponentInstanceEventReferenceExpression reference =
+				compositeFactory.createComponentInstanceEventReferenceExpression();
+		reference.setInstance(instance);
+		reference.setPort(port);
+		reference.setEvent(event);
+		return reference;
+	}
+	
+	public ComponentInstanceEventParameterReferenceExpression createParameterReference(
+			ComponentInstanceReference instance, Port port, Event event, ParameterDeclaration parameter) {
+		ComponentInstanceEventParameterReferenceExpression reference =
+				compositeFactory.createComponentInstanceEventParameterReferenceExpression();
+		reference.setInstance(instance);
+		reference.setPort(port);
+		reference.setEvent(event);
+		reference.setParameterDeclaration(parameter);
+		return reference;
 	}
 	
 	// Synchronous-asynchronous statecharts

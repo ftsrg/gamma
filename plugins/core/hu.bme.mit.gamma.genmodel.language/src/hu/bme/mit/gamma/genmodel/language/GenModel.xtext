@@ -157,21 +157,23 @@ ComponentInstanceReference returns composite::ComponentInstanceReference:
 	componentInstance=[composite::ComponentInstance] ('->' child=ComponentInstanceReference )?
 ;
 
-ComponentInstancePortReference returns property::ComponentInstancePortReference:
+ComponentInstancePortReferenceExpression returns composite::ComponentInstancePortReferenceExpression:
 	instance=ComponentInstanceReference '.' port=[interface::Port]
 ;
 
-ComponentInstanceVariableReference returns property::ComponentInstanceVariableReference:
-	instance=ComponentInstanceReference '.' variable=[expression::VariableDeclaration]
+ComponentInstanceVariableReferenceExpression returns composite::ComponentInstanceVariableReferenceExpression:
+	instance=ComponentInstanceReference '.' variableDeclaration=[expression::VariableDeclaration]
 ;
 
-ComponentInstanceStateConfigurationReference returns property::ComponentInstanceStateConfigurationReference:
+ComponentInstanceStateConfigurationReferenceExpression returns composite::ComponentInstanceStateReferenceExpression:
 	instance=ComponentInstanceReference '.' region=[statechart::Region] '.' state=[statechart::State] 
 ;
 
-ComponentInstanceTransitionReference returns property::ComponentInstanceTransitionReference:
-	instance=ComponentInstanceReference '.' transition=[statechart::TransitionIdAnnotation]
+ComponentInstanceTransitionReferenceExpression returns composite::ComponentInstanceTransitionReferenceExpression:
+	instance=ComponentInstanceReference '.' transitionId=[statechart::TransitionIdAnnotation]
 ;
+
+//
 
 AsynchronousInstanceConstraint returns AsynchronousInstanceConstraint:
 	(instance=ComponentInstanceReference | 'top') ':' '{'
@@ -230,8 +232,8 @@ OutEventCoverage returns OutEventCoverage:
 	{OutEventCoverage} 'out-event-coverage' ('{' 
 		('include' ':' '[' include+=ComponentInstanceReference (',' include+=ComponentInstanceReference)* ']')?
 		('exclude' ':' '[' exclude+=ComponentInstanceReference (',' exclude+=ComponentInstanceReference)* ']')?
-		('port-include' ':' '[' portInclude+=ComponentInstancePortReference (',' portInclude+=ComponentInstancePortReference)* ']')?
-		('port-exclude' ':' '[' portExclude+=ComponentInstancePortReference (',' portExclude+=ComponentInstancePortReference)* ']')?
+		('port-include' ':' '[' portInclude+=ComponentInstancePortReferenceExpression (',' portInclude+=ComponentInstancePortReferenceExpression)* ']')?
+		('port-exclude' ':' '[' portExclude+=ComponentInstancePortReferenceExpression (',' portExclude+=ComponentInstancePortReferenceExpression)* ']')?
 	'}')?
 ;
 
@@ -241,12 +243,12 @@ InteractionCoverage returns InteractionCoverage:
 		('receiver-coverage-criterion' ':' receiverCoverageCriterion=InteractionCoverageCriterion)?
 		('include' ':' '[' include+=ComponentInstanceReference (',' include+=ComponentInstanceReference)* ']')?
 		('exclude' ':' '[' exclude+=ComponentInstanceReference (',' exclude+=ComponentInstanceReference)* ']')?
-		('port-include' ':' '[' portInclude+=ComponentInstancePortReference (',' portInclude+=ComponentInstancePortReference)* ']')?
-		('port-exclude' ':' '[' portExclude+=ComponentInstancePortReference (',' portExclude+=ComponentInstancePortReference)* ']')?
-		('state-include' ':' '[' stateInclude+=ComponentInstanceStateConfigurationReference (',' stateInclude+=ComponentInstanceStateConfigurationReference)* ']')?
-		('state-exclude' ':' '[' stateExclude+=ComponentInstanceStateConfigurationReference (',' stateExclude+=ComponentInstanceStateConfigurationReference)* ']')?
-		('transition-include' ':' '[' transitionInclude+=ComponentInstanceTransitionReference (',' transitionInclude+=ComponentInstanceTransitionReference)* ']')?
-		('transition-exclude' ':' '[' transitionExclude+=ComponentInstanceTransitionReference (',' transitionExclude+=ComponentInstanceTransitionReference)* ']')?
+		('port-include' ':' '[' portInclude+=ComponentInstancePortReferenceExpression (',' portInclude+=ComponentInstancePortReferenceExpression)* ']')?
+		('port-exclude' ':' '[' portExclude+=ComponentInstancePortReferenceExpression (',' portExclude+=ComponentInstancePortReferenceExpression)* ']')?
+		('state-include' ':' '[' stateInclude+=ComponentInstanceStateConfigurationReferenceExpression (',' stateInclude+=ComponentInstanceStateConfigurationReferenceExpression)* ']')?
+		('state-exclude' ':' '[' stateExclude+=ComponentInstanceStateConfigurationReferenceExpression (',' stateExclude+=ComponentInstanceStateConfigurationReferenceExpression)* ']')?
+		('transition-include' ':' '[' transitionInclude+=ComponentInstanceTransitionReferenceExpression (',' transitionInclude+=ComponentInstanceTransitionReferenceExpression)* ']')?
+		('transition-exclude' ':' '[' transitionExclude+=ComponentInstanceTransitionReferenceExpression (',' transitionExclude+=ComponentInstanceTransitionReferenceExpression)* ']')?
 	'}')?
 ;
 
@@ -255,8 +257,8 @@ DataflowCoverage returns DataflowCoverage:
 		('coverage-criterion' ':' dataflowCoverageCriterion=DataflowCoverageCriterion)?
 		('include' ':' '[' include+=ComponentInstanceReference (',' include+=ComponentInstanceReference)* ']')?
 		('exclude' ':' '[' exclude+=ComponentInstanceReference (',' exclude+=ComponentInstanceReference)* ']')?
-		('variable-include' ':' '[' variableInclude+=ComponentInstanceVariableReference (',' variableInclude+=ComponentInstanceVariableReference)* ']')?
-		('variable-exclude' ':' '[' variableExclude+=ComponentInstanceVariableReference (',' variableExclude+=ComponentInstanceVariableReference)* ']')?
+		('variable-include' ':' '[' variableInclude+=ComponentInstanceVariableReferenceExpression (',' variableInclude+=ComponentInstanceVariableReferenceExpression)* ']')?
+		('variable-exclude' ':' '[' variableExclude+=ComponentInstanceVariableReferenceExpression (',' variableExclude+=ComponentInstanceVariableReferenceExpression)* ']')?
 	'}')?
 ;
 
@@ -265,8 +267,8 @@ InteractionDataflowCoverage returns InteractionDataflowCoverage:
 		('coverage-criterion' ':' interactionDataflowCoverageCriterion=DataflowCoverageCriterion)?
 		('include' ':' '[' include+=ComponentInstanceReference (',' include+=ComponentInstanceReference)* ']')?
 		('exclude' ':' '[' exclude+=ComponentInstanceReference (',' exclude+=ComponentInstanceReference)* ']')?
-		('port-include' ':' '[' portInclude+=ComponentInstancePortReference (',' portInclude+=ComponentInstancePortReference)* ']')?
-		('port-exclude' ':' '[' portExclude+=ComponentInstancePortReference (',' portExclude+=ComponentInstancePortReference)* ']')?
+		('port-include' ':' '[' portInclude+=ComponentInstancePortReferenceExpression (',' portInclude+=ComponentInstancePortReferenceExpression)* ']')?
+		('port-exclude' ':' '[' portExclude+=ComponentInstancePortReferenceExpression (',' portExclude+=ComponentInstancePortReferenceExpression)* ']')?
 	'}')?
 ;
 

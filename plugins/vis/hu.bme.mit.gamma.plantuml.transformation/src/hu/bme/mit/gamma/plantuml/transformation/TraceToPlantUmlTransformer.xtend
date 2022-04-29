@@ -1,3 +1,13 @@
+/********************************************************************************
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * 
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ * 
+ * SPDX-License-Identifier: EPL-1.0
+ ********************************************************************************/
 package hu.bme.mit.gamma.plantuml.transformation
 
 import hu.bme.mit.gamma.statechart.util.ExpressionSerializer
@@ -72,9 +82,9 @@ class TraceToPlantUmlTransformer {
 		
 		hnote over System
 		«FOR config : step.instanceStateConfigurations.groupBy[it.instance.serialize].entrySet.sortBy[it.key]»
-			«config.key» in {«config.value.map[it.state.name].join(", ")»} «IF step.instanceVariableStates.exists[it.instance.serialize == config.key]»with«ENDIF»
-			«FOR variableConstraint : step.instanceVariableStates.filter[it.instance.serialize == config.key].sortBy[it.declaration.name]»
-				«'''  '''»«variableConstraint.declaration.name» = «variableConstraint.value.serialize»
+			«config.key» in {«config.value.map[it.state.name].join(", ")»} «IF step.instanceVariableStates.exists[it.instanceReference.serialize == config.key]»with«ENDIF»
+			«FOR variableConstraint : step.instanceVariableStates.filter[it.instanceReference.serialize == config.key].sortBy[it.variableReference.variableDeclaration.name]»
+				«'''  '''»«variableConstraint.variableReference.variableDeclaration.name» = «variableConstraint.value.serialize»
 			«ENDFOR»
 		«ENDFOR»
 		endhnote

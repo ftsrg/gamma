@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -10,23 +10,22 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.trace.language.scoping
 
-import hu.bme.mit.gamma.expression.model.ExpressionModelPackage
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.composite.AsynchronousCompositeComponent
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.CompositeModelPackage
+import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.StatechartModelPackage
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.trace.model.InstanceSchedule
 import hu.bme.mit.gamma.trace.model.InstanceStateConfiguration
-import hu.bme.mit.gamma.trace.model.InstanceVariableState
 import hu.bme.mit.gamma.trace.model.RaiseEventAct
 import hu.bme.mit.gamma.trace.model.TraceModelPackage
 import hu.bme.mit.gamma.trace.util.TraceUtil
 import java.util.HashSet
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
-import org.eclipse.xtext.EcoreUtil2
 import org.eclipse.xtext.scoping.IScope
 import org.eclipse.xtext.scoping.Scopes
 
@@ -78,34 +77,54 @@ class TraceLanguageScopeProvider extends AbstractTraceLanguageScopeProvider {
 			val instances = component.allInstances // Both atomic and chain references are supported
 			return Scopes.scopeFor(instances)
 		}
-		if (context instanceof InstanceStateConfiguration &&
-				reference == TraceModelPackage.Literals.INSTANCE_STATE_CONFIGURATION__STATE) {
-			val instanceState = context as InstanceStateConfiguration
-			val instance = instanceState.instance
+		if (context instanceof InstanceStateConfiguration) {
+			val instance = context.instance
 			val instanceType = instance.lastInstance.derivedType
 			val executionTrace = ecoreUtil.getContainerOfType(context, ExecutionTrace)
-			val states = new HashSet<State>
-			if (instanceType === null) {
-				val component = executionTrace.component
-				val simpleSyncInstances = component.allSimpleInstances
-				for (simpleInstance : simpleSyncInstances) {
-					states += EcoreUtil2.getAllContentsOfType(simpleInstance.type, State)
+			val component = executionTrace.component
+			if (reference == CompositeModelPackage.Literals.COMPONENT_INSTANCE_STATE_REFERENCE_EXPRESSION__REGION) {
+				val regions = new HashSet<Region>
+				if (instanceType === null) {
+					val simpleSyncInstances = component.allSimpleInstances
+					for (simpleInstance : simpleSyncInstances) {
+						regions += ecoreUtil.getAllContentsOfType(simpleInstance.type, Region)
+					}
+				}
+				else {
+					regions += ecoreUtil.getAllContentsOfType(instanceType, Region)
+				}
+				return Scopes.scopeFor(regions)
+			}
+			if (reference == CompositeModelPackage.Literals.COMPONENT_INSTANCE_STATE_REFERENCE_EXPRESSION__STATE) {
+				val region = context.region
+				if (region !== null) {
+					return Scopes.scopeFor(region.states) 
+				}
+				else {
+					val states = new HashSet<State>
+					if (instanceType === null) {
+						val simpleSyncInstances = component.allSimpleInstances
+						for (simpleInstance : simpleSyncInstances) {
+							states += ecoreUtil.getAllContentsOfType(simpleInstance.type, State)
+						}
+					}
+					else {
+						states += ecoreUtil.getAllContentsOfType(instanceType, State)
+					}
+					return Scopes.scopeFor(states)
 				}
 			}
-			else {
-				states += EcoreUtil2.getAllContentsOfType(instanceType, State)
-			}
-			return Scopes.scopeFor(states)
 		}
-		if (context instanceof InstanceVariableState &&
-				reference == ExpressionModelPackage.Literals.DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
-			val instanceVariableState = context as InstanceVariableState
+		if (reference == CompositeModelPackage.Literals
+				.COMPONENT_INSTANCE_VARIABLE_REFERENCE_EXPRESSION__VARIABLE_DECLARATION) {
+			val instanceVariableState = ecoreUtil.getSelfOrContainerOfType(
+					context, ComponentInstanceVariableReferenceExpression)
 			val instance = instanceVariableState.instance
 			val instanceType = instance.lastInstance.derivedType
 			if (instanceType === null) {
 				return IScope.NULLSCOPE
 			}
-			val variables = EcoreUtil2.getAllContentsOfType(instanceType, VariableDeclaration)
+			val variables = ecoreUtil.getAllContentsOfType(instanceType, VariableDeclaration)
 			return Scopes.scopeFor(variables)
 		}
 		super.getScope(context, reference)

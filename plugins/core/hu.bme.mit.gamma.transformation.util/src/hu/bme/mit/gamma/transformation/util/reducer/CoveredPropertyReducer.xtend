@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2021 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -13,13 +13,13 @@ package hu.bme.mit.gamma.transformation.util.reducer
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.property.model.AtomicFormula
-import hu.bme.mit.gamma.property.model.ComponentInstanceEventParameterReference
-import hu.bme.mit.gamma.property.model.ComponentInstanceEventReference
-import hu.bme.mit.gamma.property.model.ComponentInstanceStateConfigurationReference
-import hu.bme.mit.gamma.property.model.ComponentInstanceStateExpression
-import hu.bme.mit.gamma.property.model.ComponentInstanceVariableReference
 import hu.bme.mit.gamma.property.model.StateFormula
 import hu.bme.mit.gamma.property.util.PropertyUtil
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceElementReferenceExpression
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventParameterReferenceExpression
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventReferenceExpression
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.trace.model.Step
 import hu.bme.mit.gamma.transformation.util.UnfoldingTraceability
@@ -65,7 +65,7 @@ class CoveredPropertyReducer {
 							val clonedFormula = egLessFormula.clone
 							val step = steps.get(j)
 							for (instanceStateExpression : clonedFormula
-									.getAllContentsOfType(ComponentInstanceStateExpression)) {
+									.getAllContentsOfType(ComponentInstanceElementReferenceExpression)) {
 								val evaluation = instanceStateExpression.evaluate(step)
 								evaluation.replace(instanceStateExpression)
 							}
@@ -83,10 +83,10 @@ class CoveredPropertyReducer {
 		return unnecessaryFormulas
 	}
 	
-	protected def dispatch evaluate(ComponentInstanceEventParameterReference expression, Step step) {
+	protected def dispatch evaluate(ComponentInstanceEventParameterReferenceExpression expression, Step step) {
 		val topComponentPort = expression.port.boundTopComponentPort
 		val event = expression.event
-		val parameter = expression.parameter
+		val parameter = expression.parameterDeclaration
 		val parameterIndex = parameter.index
 		
 		for (raiseEventAct : step.outEvents) {
@@ -100,7 +100,7 @@ class CoveredPropertyReducer {
 		return createFalseExpression
 	}
 	
-	protected def dispatch evaluate(ComponentInstanceEventReference expression, Step step) {
+	protected def dispatch evaluate(ComponentInstanceEventReferenceExpression expression, Step step) {
 		val topComponentPort = expression.port.boundTopComponentPort
 		val event = expression.event
 		
@@ -114,7 +114,7 @@ class CoveredPropertyReducer {
 		return createFalseExpression
 	}
 	
-	protected def dispatch evaluate(ComponentInstanceStateConfigurationReference expression, Step step) {
+	protected def dispatch evaluate(ComponentInstanceStateReferenceExpression expression, Step step) {
 		val instance = expression.instance
 		val state = expression.state
 		
@@ -128,13 +128,14 @@ class CoveredPropertyReducer {
 		return createFalseExpression
 	}
 	
-	protected def dispatch evaluate(ComponentInstanceVariableReference expression, Step step) {
+	protected def dispatch evaluate(ComponentInstanceVariableReferenceExpression expression, Step step) {
 		val instance = expression.instance
-		val variable = expression.variable
+		val variable = expression.variableDeclaration
 		
 		for (variableState : step.instanceVariableStates) {
-			val stateInstance = variableState.instance.lastInstance // Only one expected
-			val stateVariable = variableState.declaration
+			val variableReference = variableState.variableReference
+			val stateInstance = variableReference.instance.lastInstance // Only one expected
+			val stateVariable = variableReference.variableDeclaration
 			if (traceability.contains(instance, stateInstance) && variable.helperEquals(stateVariable)) {
 				val value = variableState.value
 				return value.clone
