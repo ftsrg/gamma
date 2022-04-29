@@ -71,7 +71,7 @@ class TraceLanguageScopeProvider extends AbstractTraceLanguageScopeProvider {
 				return Scopes.scopeFor(instances)
 			}
 		}
-		if (reference == CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE__COMPONENT_INSTANCE) {
+		if (reference == CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE_EXPRESSION__COMPONENT_INSTANCE) {
 			val executionTrace = ecoreUtil.getContainerOfType(context, ExecutionTrace)
 			val component = executionTrace.component
 			val instances = component.allInstances // Both atomic and chain references are supported

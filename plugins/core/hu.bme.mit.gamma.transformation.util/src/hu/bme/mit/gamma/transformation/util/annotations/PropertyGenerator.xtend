@@ -22,7 +22,7 @@ import hu.bme.mit.gamma.property.model.PropertyModelFactory
 import hu.bme.mit.gamma.property.model.PropertyPackage
 import hu.bme.mit.gamma.property.util.PropertyUtil
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance
-import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.CompositeModelFactory
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
@@ -339,7 +339,7 @@ class PropertyGenerator {
 	}
 	
 	
-	def protected ComponentInstanceReference createInstanceReference(ComponentInstance instance) {
+	def protected ComponentInstanceReferenceExpression createInstanceReference(ComponentInstance instance) {
 		if (isSimpleComponentReference) {
 			return statechartUtil.createInstanceReference(instance)
 		}

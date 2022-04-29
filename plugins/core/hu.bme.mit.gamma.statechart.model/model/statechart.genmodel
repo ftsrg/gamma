@@ -84,9 +84,9 @@
     </genClasses>
     <genClasses ecoreClass="composite.ecore#//CascadeCompositeComponent"/>
     <genClasses ecoreClass="composite.ecore#//SynchronousCompositeComponent"/>
-    <genClasses ecoreClass="composite.ecore#//ComponentInstanceReference">
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference composite.ecore#//ComponentInstanceReference/componentInstance"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference composite.ecore#//ComponentInstanceReference/child"/>
+    <genClasses ecoreClass="composite.ecore#//ComponentInstanceReferenceExpression">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference composite.ecore#//ComponentInstanceReferenceExpression/componentInstance"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference composite.ecore#//ComponentInstanceReferenceExpression/child"/>
     </genClasses>
     <genClasses image="false" ecoreClass="composite.ecore#//ComponentInstanceElementReferenceExpression">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference composite.ecore#//ComponentInstanceElementReferenceExpression/instance"/>

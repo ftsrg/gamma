@@ -19,7 +19,7 @@ import hu.bme.mit.gamma.genmodel.model.GenmodelModelPackage
 import hu.bme.mit.gamma.genmodel.model.InterfaceMapping
 import hu.bme.mit.gamma.genmodel.model.YakinduCompilation
 import hu.bme.mit.gamma.statechart.composite.ComponentInstancePortReferenceExpression
-import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceTransitionReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression
@@ -58,17 +58,17 @@ class GenModelScopeProvider extends AbstractGenModelScopeProvider {
 			val components = genmodel.packageImports.map[it.components].flatten.filter(StatechartDefinition)
 			return Scopes.scopeFor(components)
 		}
-		if (reference == CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE__COMPONENT_INSTANCE) {
+		if (reference == CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE_EXPRESSION__COMPONENT_INSTANCE) {
 			val analysisModel = ecoreUtil.getSelfOrContainerOfType(context, AnalysisModelTransformation)
 			// Only if Gamma model is referenced
 			val modelReference = analysisModel.model
 			if (modelReference instanceof ComponentReference) {
 				val component = modelReference.component
 				val instanceContainer = ecoreUtil.getSelfOrContainerOfType(
-					context, ComponentInstanceReference)
+					context, ComponentInstanceReferenceExpression)
 				val parent = instanceContainer?.parent
 				val instances = (parent === null) ?	component.allInstances :
-					parent.componentInstance.instances
+					parent.getComponentInstance.instances
 				return Scopes.scopeFor(instances)
 			}
 		}

@@ -64,7 +64,7 @@ import hu.bme.mit.gamma.statechart.composite.BroadcastChannel;
 import hu.bme.mit.gamma.statechart.composite.CascadeCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.Channel;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
-import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.CompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.CompositeModelPackage;
 import hu.bme.mit.gamma.statechart.composite.ControlSpecification;
@@ -1988,7 +1988,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 	
 	public Collection<ValidationResultMessage> checkExecutionLists(CascadeCompositeComponent cascade) {
 		List<SynchronousComponentInstance> components = cascade.getComponents();
-		List<ComponentInstanceReference> executionList = cascade.getExecutionList();
+		List<ComponentInstanceReferenceExpression> executionList = cascade.getExecutionList();
 		
 		return checkExecutionList(components, executionList);
 	}
@@ -1996,14 +1996,14 @@ public class StatechartModelValidator extends ActionModelValidator {
 	public Collection<ValidationResultMessage> checkExecutionLists(
 			ScheduledAsynchronousCompositeComponent scheduledComponent) {
 		List<AsynchronousComponentInstance> components = scheduledComponent.getComponents();
-		List<ComponentInstanceReference> executionList = scheduledComponent.getExecutionList();
+		List<ComponentInstanceReferenceExpression> executionList = scheduledComponent.getExecutionList();
 		
 		return checkExecutionList(components, executionList);
 	}
 	
 	private Collection<ValidationResultMessage> checkExecutionList(
 			List<? extends ComponentInstance> components,
-			List<? extends ComponentInstanceReference> executionList) {
+			List<? extends ComponentInstanceReferenceExpression> executionList) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 
 		if (executionList.isEmpty()) {
@@ -2011,7 +2011,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 			return validationResultMessages;
 		}
 		Collection<ComponentInstance> containedInstances = new HashSet<ComponentInstance>(components);
-		for (ComponentInstanceReference instanceReference : executionList) {
+		for (ComponentInstanceReferenceExpression instanceReference : executionList) {
 			ComponentInstance instance = instanceReference.getComponentInstance();
 			if (!components.contains(instance)) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
@@ -2055,17 +2055,17 @@ public class StatechartModelValidator extends ActionModelValidator {
 		return validationResultMessages;
 	}
 	
-	public Collection<ValidationResultMessage> checkComponentInstanceReferences(ComponentInstanceReference reference) {
+	public Collection<ValidationResultMessage> checkComponentInstanceReferences(ComponentInstanceReferenceExpression reference) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		
 		ComponentInstance instance = reference.getComponentInstance();
-		ComponentInstanceReference child = reference.getChild();
+		ComponentInstanceReferenceExpression child = reference.getChild();
 		if (child != null) {
 			ComponentInstance childInstance = child.getComponentInstance();
 			if (!StatechartModelDerivedFeatures.contains(instance, childInstance)) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 					instance.getName() + " does not contain component instance " + childInstance.getName(),
-						new ReferenceInfo(CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE__COMPONENT_INSTANCE)));
+						new ReferenceInfo(CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE_EXPRESSION__COMPONENT_INSTANCE)));
 			}
 		}
 		

@@ -438,10 +438,10 @@ CascadeCompositeComponent returns CompositeModel::CascadeCompositeComponent:
 				portBindings+=PortBinding |
 				channels+=Channel
 			)*
-			('initial' 'execute' initialExecutionList+=AtomicComponentInstanceReference
-					(',' initialExecutionList+=AtomicComponentInstanceReference)*)?
-			('execute' executionList+=AtomicComponentInstanceReference
-					(',' executionList+=AtomicComponentInstanceReference)*)?
+			('initial' 'execute' initialExecutionList+=AtomicComponentInstanceReferenceExpression
+					(',' initialExecutionList+=AtomicComponentInstanceReferenceExpression)*)?
+			('execute' executionList+=AtomicComponentInstanceReferenceExpression
+					(',' executionList+=AtomicComponentInstanceReferenceExpression)*)?
 		'}'
 ;
 
@@ -496,10 +496,10 @@ ScheduledAsynchronousCompositeComponent returns CompositeModel::ScheduledAsynchr
 				portBindings+=PortBinding |
 				channels+=Channel
 			)*
-			('initial' 'execute' initialExecutionList+=AtomicComponentInstanceReference
-					(',' initialExecutionList+=AtomicComponentInstanceReference)*)?
-			('execute' executionList+=AtomicComponentInstanceReference
-					(',' executionList+=AtomicComponentInstanceReference)*)?
+			('initial' 'execute' initialExecutionList+=AtomicComponentInstanceReferenceExpression
+					(',' initialExecutionList+=AtomicComponentInstanceReferenceExpression)*)?
+			('execute' executionList+=AtomicComponentInstanceReferenceExpression
+					(',' executionList+=AtomicComponentInstanceReferenceExpression)*)?
 		'}'
 ;
 
@@ -564,12 +564,12 @@ ComponentInstance returns CompositeModel::ComponentInstance:
 	SynchronousComponentInstance | 'async' AsynchronousComponentInstance
 ;
 
-AtomicComponentInstanceReference returns CompositeModel::ComponentInstanceReference:
+AtomicComponentInstanceReferenceExpression returns CompositeModel::ComponentInstanceReferenceExpression:
 	componentInstance=[CompositeModel::ComponentInstance]
 ;
 // Subgrammars can use this
-ComponentInstanceReference returns CompositeModel::ComponentInstanceReference:
-	componentInstance=[CompositeModel::ComponentInstance] ('->' child=ComponentInstanceReference )?
+ComponentInstanceReferenceExpression returns CompositeModel::ComponentInstanceReferenceExpression:
+	componentInstance=[CompositeModel::ComponentInstance] ('->' child=ComponentInstanceReferenceExpression )?
 ;
 
 SynchronousComponentInstance returns CompositeModel::SynchronousComponentInstance:
@@ -671,19 +671,19 @@ ComponentInstanceStateExpression returns CompositeModel::ComponentInstanceElemen
 ;
 
 ComponentInstanceStateReferenceExpression returns CompositeModel::ComponentInstanceStateReferenceExpression:
-	'state' instance=ComponentInstanceReference '.' region=[Region] '.' state=[State]
+	'state' instance=ComponentInstanceReferenceExpression '.' region=[Region] '.' state=[State]
 ;
 
 ComponentInstanceVariableReferenceExpression returns CompositeModel::ComponentInstanceVariableReferenceExpression:
-	'variable' instance=ComponentInstanceReference '.' variableDeclaration=[ExpressionModel::VariableDeclaration]
+	'variable' instance=ComponentInstanceReferenceExpression '.' variableDeclaration=[ExpressionModel::VariableDeclaration]
 ;
 
 ComponentInstanceEventReferenceExpression returns CompositeModel::ComponentInstanceEventReferenceExpression:
-	'event' instance=ComponentInstanceReference '.' port=[InterfaceModel::Port] '.' event=[InterfaceModel::Event]
+	'event' instance=ComponentInstanceReferenceExpression '.' port=[InterfaceModel::Port] '.' event=[InterfaceModel::Event]
 ;
 
 ComponentInstanceEventParameterReferenceExpression returns CompositeModel::ComponentInstanceEventParameterReferenceExpression:
-	'parameter' instance=ComponentInstanceReference '.' port=[InterfaceModel::Port] '.'
+	'parameter' instance=ComponentInstanceReferenceExpression '.' port=[InterfaceModel::Port] '.'
 		event=[InterfaceModel::Event] '::' parameterDeclaration=[ExpressionModel::ParameterDeclaration]
 ;
 

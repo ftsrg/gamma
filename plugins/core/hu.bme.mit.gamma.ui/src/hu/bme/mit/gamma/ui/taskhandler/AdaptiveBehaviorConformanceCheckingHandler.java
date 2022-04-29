@@ -50,7 +50,7 @@ import hu.bme.mit.gamma.property.util.PropertyUtil;
 import hu.bme.mit.gamma.scenario.statechart.util.ScenarioStatechartUtil;
 import hu.bme.mit.gamma.statechart.composite.Channel;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
-import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.CompositeModelFactory;
 import hu.bme.mit.gamma.statechart.composite.InstancePortReference;
@@ -498,7 +498,7 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 		}
 		
 		// Monitor (input) - behavior (already present) - monitor (output)
-		List<ComponentInstanceReference> executionList = composite.getExecutionList();
+		List<ComponentInstanceReferenceExpression> executionList = composite.getExecutionList();
 		executionList.add(0, statechartUtil.createInstanceReference(contractInstance));
 		executionList.add(statechartUtil.createInstanceReference(contractInstance));
 		

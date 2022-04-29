@@ -12,7 +12,7 @@ package hu.bme.mit.gamma.trace.testgeneration.java.util
 
 import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance
-import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
@@ -40,7 +40,7 @@ class TestGeneratorUtil {
 		this.component = component
 	}
 	
-	def CharSequence getFullContainmentHierarchy(ComponentInstanceReference instanceReference) {
+	def CharSequence getFullContainmentHierarchy(ComponentInstanceReferenceExpression instanceReference) {
 		val instances = instanceReference.componentInstanceChain
 		val instanceNames = newArrayList
 		if (component.unfolded) {

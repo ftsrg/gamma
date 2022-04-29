@@ -14,7 +14,7 @@ import hu.bme.mit.gamma.expression.model.ReferenceExpression
 import hu.bme.mit.gamma.expression.model.ValueDeclaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.composite.ComponentInstancePortReferenceExpression
-import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceTransitionReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression
@@ -213,8 +213,8 @@ enum DataflowCoverageCriterion {
 
 @Data
 class ComponentInstanceReferences {
-	Collection<ComponentInstanceReference> include
-	Collection<ComponentInstanceReference> exclude
+	Collection<ComponentInstanceReferenceExpression> include
+	Collection<ComponentInstanceReferenceExpression> exclude
 }
 
 @Data

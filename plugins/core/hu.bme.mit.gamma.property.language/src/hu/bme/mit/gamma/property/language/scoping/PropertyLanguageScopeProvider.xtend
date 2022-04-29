@@ -16,7 +16,7 @@ import hu.bme.mit.gamma.property.model.PropertyPackage
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceElementReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventParameterReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventReferenceExpression
-import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.CompositeModelPackage
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
@@ -45,12 +45,12 @@ class PropertyLanguageScopeProvider extends AbstractPropertyLanguageScopeProvide
 			val typeDeclarations = packages.map[it.typeDeclarations].flatten
 			return Scopes.scopeFor(typeDeclarations)
 		}
-		if (reference == CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE__COMPONENT_INSTANCE) {
+		if (reference == CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE_EXPRESSION__COMPONENT_INSTANCE) {
 			val instanceContainer = ecoreUtil.getSelfOrContainerOfType(
-					context, ComponentInstanceReference)
+					context, ComponentInstanceReferenceExpression)
 			val parent = instanceContainer?.parent
 			val instances = (parent === null) ?	component.allInstances :
-				parent.componentInstance.instances
+				parent.getComponentInstance.instances
 			return Scopes.scopeFor(instances)
 		}
 		if (context instanceof ComponentInstanceElementReferenceExpression) {

@@ -49,7 +49,7 @@ import hu.bme.mit.gamma.statechart.composite.BroadcastChannel;
 import hu.bme.mit.gamma.statechart.composite.CascadeCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.Channel;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
-import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.CompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.ControlFunction;
 import hu.bme.mit.gamma.statechart.composite.ControlSpecification;
@@ -586,19 +586,19 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return javaUtil.filterIntoList(adapterInstances, AsynchronousComponentInstance.class);
 	}
 	
-	public static List<ComponentInstanceReference> getAllSimpleInstanceReferences(
+	public static List<ComponentInstanceReferenceExpression> getAllSimpleInstanceReferences(
 			ComponentInstance instance) {
 		Component type = getDerivedType(instance);
 		return getAllSimpleInstanceReferences(type);
 	}
 	
-	public static List<ComponentInstanceReference> getAllSimpleInstanceReferences(Component component) {
-		List<ComponentInstanceReference> instanceReferences = new ArrayList<ComponentInstanceReference>();
+	public static List<ComponentInstanceReferenceExpression> getAllSimpleInstanceReferences(Component component) {
+		List<ComponentInstanceReferenceExpression> instanceReferences = new ArrayList<ComponentInstanceReferenceExpression>();
 		if (component instanceof AbstractAsynchronousCompositeComponent) {
 			AbstractAsynchronousCompositeComponent asynchronousCompositeComponent =
 					(AbstractAsynchronousCompositeComponent) component;
 			for (AsynchronousComponentInstance instance : asynchronousCompositeComponent.getComponents()) {
-				List<ComponentInstanceReference> childReferences = getAllSimpleInstanceReferences(instance);
+				List<ComponentInstanceReferenceExpression> childReferences = getAllSimpleInstanceReferences(instance);
 				instanceReferences.addAll(statechartUtil.prepend(childReferences, instance));
 			}
 		}
@@ -606,11 +606,11 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 			AsynchronousAdapter adapter = (AsynchronousAdapter) component;
 			SynchronousComponentInstance instance = adapter.getWrappedComponent();
 			if (isStatechart(instance)) {
-				ComponentInstanceReference instanceReference = statechartUtil.createInstanceReference(instance);
+				ComponentInstanceReferenceExpression instanceReference = statechartUtil.createInstanceReference(instance);
 				instanceReferences.add(instanceReference);
 			}
 			else {
-				List<ComponentInstanceReference> childReferences = getAllSimpleInstanceReferences(instance);
+				List<ComponentInstanceReferenceExpression> childReferences = getAllSimpleInstanceReferences(instance);
 				instanceReferences.addAll(statechartUtil.prepend(childReferences, instance));
 			}
 		}
@@ -619,11 +619,11 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 					(AbstractSynchronousCompositeComponent) component;
 			for (SynchronousComponentInstance instance : synchronousCompositeComponent.getComponents()) {
 				if (isStatechart(instance)) {
-					ComponentInstanceReference instanceReference = statechartUtil.createInstanceReference(instance);
+					ComponentInstanceReferenceExpression instanceReference = statechartUtil.createInstanceReference(instance);
 					instanceReferences.add(instanceReference);
 				}
 				else {
-					List<ComponentInstanceReference> childReferences = getAllSimpleInstanceReferences(instance);
+					List<ComponentInstanceReferenceExpression> childReferences = getAllSimpleInstanceReferences(instance);
 					instanceReferences.addAll(statechartUtil.prepend(childReferences, instance));
 				}
 			}
@@ -2273,9 +2273,9 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	}
 	
 	public static List<ComponentInstance> getComponentInstanceChain(
-			ComponentInstanceReference reference) {
+			ComponentInstanceReferenceExpression reference) {
 		ComponentInstance instance = reference.getComponentInstance();
-		ComponentInstanceReference child = reference.getChild();
+		ComponentInstanceReferenceExpression child = reference.getChild();
 		if (child == null) {
 			List<ComponentInstance> instanceList = new ArrayList<ComponentInstance>();
 			instanceList.add(instance);
@@ -2288,44 +2288,44 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		}
 	}
 	
-	public static ComponentInstanceReference getParent(ComponentInstanceReference reference) {
-		return ecoreUtil.getContainerOfType(reference, ComponentInstanceReference.class);
+	public static ComponentInstanceReferenceExpression getParent(ComponentInstanceReferenceExpression reference) {
+		return ecoreUtil.getContainerOfType(reference, ComponentInstanceReferenceExpression.class);
 	}
 	
-	public static ComponentInstanceReference getFirstInstanceReference(
-			ComponentInstanceReference reference) {
-		ComponentInstanceReference parent = getParent(reference);
+	public static ComponentInstanceReferenceExpression getFirstInstanceReference(
+			ComponentInstanceReferenceExpression reference) {
+		ComponentInstanceReferenceExpression parent = getParent(reference);
 		if (parent == null) {
 			return reference;
 		}
 		return getFirstInstanceReference(parent);
 	}
 	
-	public static ComponentInstanceReference getLastInstanceReference(
-			ComponentInstanceReference reference) {
-		ComponentInstanceReference child = reference.getChild();
+	public static ComponentInstanceReferenceExpression getLastInstanceReference(
+			ComponentInstanceReferenceExpression reference) {
+		ComponentInstanceReferenceExpression child = reference.getChild();
 		if (child == null) {
 			return reference;
 		}
 		return getLastInstanceReference(child);
 	}
 	
-	public static ComponentInstance getLastInstance(ComponentInstanceReference reference) {
-		ComponentInstanceReference lastInstanceReference =
+	public static ComponentInstance getLastInstance(ComponentInstanceReferenceExpression reference) {
+		ComponentInstanceReferenceExpression lastInstanceReference =
 				getLastInstanceReference(reference);
 		ComponentInstance lastInstance = lastInstanceReference.getComponentInstance();
 		return lastInstance;
 	}
 	
-	public static boolean isFirst(ComponentInstanceReference reference) {
+	public static boolean isFirst(ComponentInstanceReferenceExpression reference) {
 		return getParent(reference) == null;
 	}
 	
-	public static boolean isLast(ComponentInstanceReference reference) {
+	public static boolean isLast(ComponentInstanceReferenceExpression reference) {
 		return reference.getChild() == null;
 	}
 	
-	public static boolean isAtomic(ComponentInstanceReference reference) {
+	public static boolean isAtomic(ComponentInstanceReferenceExpression reference) {
 		return isFirst(reference) && isLast(reference);
 	}
 	
@@ -2337,7 +2337,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	public static List<ComponentInstance> getInitallyScheduledInstances(
 			SchedulableCompositeComponent component) {
 		List<ComponentInstance> initallyScheduledInstances = new ArrayList<ComponentInstance>();
-		for (ComponentInstanceReference instanceReference : component.getInitialExecutionList()) {
+		for (ComponentInstanceReferenceExpression instanceReference : component.getInitialExecutionList()) {
 			ComponentInstance componentInstance = instanceReference.getComponentInstance(); // No child
 			initallyScheduledInstances.add(componentInstance);
 		}
@@ -2347,7 +2347,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	public static List<ComponentInstance> getAllInitallyScheduledAsynchronousSimpleInstances(
 			ScheduledAsynchronousCompositeComponent component) {
 		List<ComponentInstance> initallyScheduledInstances = new ArrayList<ComponentInstance>();
-		for (ComponentInstanceReference instanceReference : component.getInitialExecutionList()) {
+		for (ComponentInstanceReferenceExpression instanceReference : component.getInitialExecutionList()) {
 			ComponentInstance componentInstance = instanceReference.getComponentInstance(); // No child
 			Component subtype = getDerivedType(componentInstance);
 			if (subtype instanceof SchedulableCompositeComponent) {
@@ -2365,11 +2365,11 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 			AbstractSynchronousCompositeComponent component) {
 		if (component instanceof CascadeCompositeComponent) {
 			CascadeCompositeComponent cascade = (CascadeCompositeComponent) component;
-			List<ComponentInstanceReference> executionList = cascade.getExecutionList();
+			List<ComponentInstanceReferenceExpression> executionList = cascade.getExecutionList();
 			if (!executionList.isEmpty()) {
 				List<SynchronousComponentInstance> instances =
 						new ArrayList<SynchronousComponentInstance>();
-				for (ComponentInstanceReference instanceReference : executionList) {
+				for (ComponentInstanceReferenceExpression instanceReference : executionList) {
 					SynchronousComponentInstance componentInstance =
 						(SynchronousComponentInstance) instanceReference.getComponentInstance();
 					instances.add(componentInstance);
@@ -2385,11 +2385,11 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		if (component instanceof ScheduledAsynchronousCompositeComponent) {
 			ScheduledAsynchronousCompositeComponent scheduledComponent =
 					(ScheduledAsynchronousCompositeComponent) component;
-			List<ComponentInstanceReference> executionList = scheduledComponent.getExecutionList();
+			List<ComponentInstanceReferenceExpression> executionList = scheduledComponent.getExecutionList();
 			if (!executionList.isEmpty()) {
 				List<AsynchronousComponentInstance> instances =
 						new ArrayList<AsynchronousComponentInstance>();
-				for (ComponentInstanceReference instanceReference : executionList) {
+				for (ComponentInstanceReferenceExpression instanceReference : executionList) {
 					AsynchronousComponentInstance componentInstance =
 						(AsynchronousComponentInstance) instanceReference.getComponentInstance();
 					instances.add(componentInstance);

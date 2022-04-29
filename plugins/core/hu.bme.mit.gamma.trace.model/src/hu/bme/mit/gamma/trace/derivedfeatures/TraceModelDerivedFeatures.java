@@ -20,7 +20,7 @@ import java.util.Set;
 import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
 import hu.bme.mit.gamma.expression.model.ArgumentedElement;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
-import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
@@ -85,7 +85,7 @@ public class TraceModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 		return assertion;
 	}
 	
-	public static ComponentInstanceReference getInstanceReference(InstanceState instanceState) {
+	public static ComponentInstanceReferenceExpression getInstanceReference(InstanceState instanceState) {
 		if (instanceState instanceof InstanceStateConfiguration) {
 			InstanceStateConfiguration instanceStateConfiguration = (InstanceStateConfiguration) instanceState;
 			return instanceStateConfiguration.getInstance();

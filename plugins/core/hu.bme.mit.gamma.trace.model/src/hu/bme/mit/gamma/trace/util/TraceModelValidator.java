@@ -21,7 +21,7 @@ import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
-import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.CompositeModelPackage;
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponent;
@@ -89,7 +89,7 @@ public class TraceModelValidator extends StatechartModelValidator {
 	
 	public Collection<ValidationResultMessage> checkInstanceState(InstanceState instanceState) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		ComponentInstanceReference instanceReference = TraceModelDerivedFeatures.getInstanceReference(instanceState);
+		ComponentInstanceReferenceExpression instanceReference = TraceModelDerivedFeatures.getInstanceReference(instanceState);
 		ComponentInstance instance = StatechartModelDerivedFeatures.getLastInstance(instanceReference);
 		if (!StatechartModelDerivedFeatures.isStatechart(instance)) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
@@ -121,7 +121,7 @@ public class TraceModelValidator extends StatechartModelValidator {
 	public Collection<ValidationResultMessage> checkInstanceVariableState(InstanceVariableState variableState) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		ComponentInstanceVariableReferenceExpression variableReference = variableState.getVariableReference();
-		ComponentInstanceReference instanceReference = variableReference.getInstance();
+		ComponentInstanceReferenceExpression instanceReference = variableReference.getInstance();
 		ComponentInstance instance = StatechartModelDerivedFeatures.getLastInstance(instanceReference);
 		Component type = StatechartModelDerivedFeatures.getDerivedType(instance);
 		if (type instanceof StatechartDefinition) {

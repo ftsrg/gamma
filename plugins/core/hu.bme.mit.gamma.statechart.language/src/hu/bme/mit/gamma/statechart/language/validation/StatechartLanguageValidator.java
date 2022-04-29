@@ -20,7 +20,7 @@ import hu.bme.mit.gamma.statechart.composite.BroadcastChannel;
 import hu.bme.mit.gamma.statechart.composite.CascadeCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.Channel;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
-import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ControlSpecification;
 import hu.bme.mit.gamma.statechart.composite.InstancePortReference;
 import hu.bme.mit.gamma.statechart.composite.MessageQueue;
@@ -487,7 +487,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	}
 	
 	@Check
-	public void checkComponentInstanceReferences(ComponentInstanceReference reference) {
+	public void checkComponentInstanceReferences(ComponentInstanceReferenceExpression reference) {
 		handleValidationResultMessage(statechartModelValidator.checkComponentInstanceReferences(reference));
 	}
 	

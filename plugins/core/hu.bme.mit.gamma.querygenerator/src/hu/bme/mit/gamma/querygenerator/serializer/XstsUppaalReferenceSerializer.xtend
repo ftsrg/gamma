@@ -10,7 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.querygenerator.serializer
 
-import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression
 import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.State
 
@@ -23,11 +23,11 @@ class XstsUppaalReferenceSerializer extends ThetaReferenceSerializer {
 	protected new() {}
 	//
 	
-	override getId(State state, Region parentRegion, ComponentInstanceReference instance) {
+	override getId(State state, Region parentRegion, ComponentInstanceReferenceExpression instance) {
 		return '''«state.getSingleTargetStateName(parentRegion, instance)»«FOR parent : state.ancestors BEFORE " && " SEPARATOR " && "»«parent.getSingleTargetStateName(parent.parentRegion, instance)»«ENDFOR»'''
 	}
 	
-	override protected getSingleTargetStateName(State state, Region parentRegion, ComponentInstanceReference instance) {
+	override protected getSingleTargetStateName(State state, Region parentRegion, ComponentInstanceReferenceExpression instance) {
 		return '''«parentRegion.customizeName(instance)» == «state.literalIndex»'''
 	}
 	

@@ -15,7 +15,7 @@ import hu.bme.mit.gamma.statechart.composite.ComponentInstanceElementReferenceEx
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventParameterReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstancePortReferenceExpression
-import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceTransitionReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression
@@ -139,7 +139,7 @@ class PropertyUnfolder {
 		]
 	}
 	
-	protected def getNewSimpleInstance(ComponentInstanceReference instance) {
+	protected def getNewSimpleInstance(ComponentInstanceReferenceExpression instance) {
 		return instance.checkAndGetNewSimpleInstance(newTopComponent)
 	}
 	

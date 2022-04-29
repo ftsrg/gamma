@@ -240,7 +240,7 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 				components.remove(context.eContainer());
 				return Scopes.scopeFor(components);
 			}
-			if (reference == CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE__COMPONENT_INSTANCE) {
+			if (reference == CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE_EXPRESSION__COMPONENT_INSTANCE) {
 				// Execution list
 				if (context instanceof CascadeCompositeComponent) {
 					CascadeCompositeComponent cascade = (CascadeCompositeComponent) context;
