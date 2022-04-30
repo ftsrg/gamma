@@ -33,6 +33,7 @@ class ActivityInitialiser {
 	new(Trace trace) {
 		this.trace = trace
 	}
+	
 	def initialiseFlow(Flow flow) {
 		val flowVariable = trace.getXStsVariable(flow)
 		return createAssignmentAction(flowVariable, createEnumerationLiteralExpression => [
@@ -63,10 +64,10 @@ class ActivityInitialiser {
 		
 		if (definition instanceof ActivityDefinition) {
 			for (flow : definition.flows) {
-				action.actions.add(flow.initialiseFlow)
+				action.actions += flow.initialiseFlow
 			}
 			for (node : definition.activityNodes) {
-				action.actions.add(node.initialiseNode)
+				action.actions += node.initialiseNode
 			}
 		}
 		

@@ -68,11 +68,22 @@ class HierarchicalTransitionMerger extends AbstractTransitionMerger {
 			defaultlessNonDeterministicChoice.extendChoiceWithDefaultBranch
 		}
 		
-		val activityMergedAction = mergeActivityTransitions
-		activityMergedAction.actions += xStsMergedAction
+		// ========================================
+		// Now adding activity specific transitions
+		// ========================================
 		
-		// The many transitions are now replaced by a single merged transition
-		xSts.changeTransitions(activityMergedAction.wrap)
+		// merged activity action
+		val activityMergedAction = mergeActivityTransitions
+		activityMergedAction.extendChoiceWithDefaultBranch
+		
+		// Non-deterministic action, both branches can be executed any time.
+		val mergedChoiceAction = createChoiceAction(
+			#[createTrueExpression, 	createTrueExpression], // true - true
+			#[xStsMergedAction, 		activityMergedAction]  // statecharts - activities
+		)
+		
+		// The many transitions are now replaced by a single merged transition, representing the whole component
+		xSts.changeTransitions(mergedChoiceAction.wrap)
 	}
 	
 	protected def mergeActivityTransitions() {
@@ -83,9 +94,8 @@ class HierarchicalTransitionMerger extends AbstractTransitionMerger {
 		for (node : nodes) {
 			val action = trace.getXStsAction(node) as NonDeterministicAction
 			
-			xStsAction.actions += action
-			action.extendChoiceWithDefaultBranch
-		}	
+			xStsAction.actions += action.actions
+		}
 		
 		return xStsAction
 	}

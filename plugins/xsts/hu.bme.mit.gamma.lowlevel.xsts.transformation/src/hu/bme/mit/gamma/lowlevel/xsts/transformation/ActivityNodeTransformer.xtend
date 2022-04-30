@@ -7,7 +7,6 @@ import hu.bme.mit.gamma.activity.model.ActivityNode
 import hu.bme.mit.gamma.activity.model.DecisionNode
 import hu.bme.mit.gamma.activity.model.Flow
 import hu.bme.mit.gamma.activity.model.MergeNode
-import hu.bme.mit.gamma.expression.model.AndExpression
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.InputFlows
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.OutputFlows
 import hu.bme.mit.gamma.statechart.lowlevel.model.TriggerNode
@@ -32,7 +31,7 @@ class ActivityNodeTransformer extends LowlevelTransitionToXTransitionTransformer
 		this.activityFlowTransformer = new ActivityFlowTransformer(this.trace)
 	}
 	
-	protected def createRunningAssumeAction(ActivityNode node) {
+	protected def runningPrecondition(ActivityNode node) {
 		val nodeVariable = trace.getXStsVariable(node)
 
 		val expression = createAndExpression => [
@@ -45,7 +44,7 @@ class ActivityNodeTransformer extends LowlevelTransitionToXTransitionTransformer
 			)
 		]
 		
-		return expression.createAssumeAction
+		return expression
 	}
 	
 	protected def createDoneAssignmentAction(ActivityNode node) {
@@ -76,7 +75,7 @@ class ActivityNodeTransformer extends LowlevelTransitionToXTransitionTransformer
 			if (definition instanceof ActionDefinition) {
 				// action definition, running -> execute action -> done
 				return createSequentialAction => [
-					it.actions += node.createRunningAssumeAction
+					it.actions += node.runningPrecondition.createAssumeAction
 					it.actions += definition.action.transformAction
 					it.actions += node.createDoneAssignmentAction
 				]
@@ -84,14 +83,14 @@ class ActivityNodeTransformer extends LowlevelTransitionToXTransitionTransformer
 			if (definition instanceof ActivityDefinition) {
 				// TODO: activity definition, running -> execute inner activity (set inner initial, wait for final done) -> done
 				return createSequentialAction => [
-					it.actions += node.createRunningAssumeAction
+					it.actions += node.runningPrecondition.createAssumeAction
 					it.actions += node.createDoneAssignmentAction
 				]
 			}
 		} else {
 			// Has no definition, simple running -> done
 			return createSequentialAction => [
-				it.actions += node.createRunningAssumeAction
+				it.actions += node.runningPrecondition.createAssumeAction
 				it.actions += node.createDoneAssignmentAction
 			]
 		}
@@ -99,17 +98,17 @@ class ActivityNodeTransformer extends LowlevelTransitionToXTransitionTransformer
 	
 	protected def dispatch createNodeTransitionAction(TriggerNode node) {
 		return createSequentialAction => [
-			it.actions += node.createRunningAssumeAction => [
-				val and = it.assumption as AndExpression
-				and.operands += node.triggerExpression.transformExpression
-			]
+			val precondition = node.runningPrecondition
+			precondition.operands += node.triggerExpression.transformExpression
+			
+			it.actions += precondition.createAssumeAction
 			it.actions += node.createDoneAssignmentAction
 		]
 	}
 	
 	protected def dispatch createNodeTransitionAction(ActivityNode node) {
 		return createSequentialAction => [
-			it.actions += node.createRunningAssumeAction
+			it.actions += node.runningPrecondition.createAssumeAction
 			it.actions += node.createDoneAssignmentAction
 		]
 	}
@@ -130,21 +129,14 @@ class ActivityNodeTransformer extends LowlevelTransitionToXTransitionTransformer
 	}
 	
 	protected dispatch def createActivityNodeFlowAction(DecisionNode node, Iterable<Flow> inputFlows, Iterable<Flow> outputFlows) {
-		return createNonDeterministicAction => [
-			it.actions += createNonDeterministicAction => [
-				for (flow : inputFlows) {
-					it.actions += flow.transformInwards
-				}
-			]
-			it.actions += createNonDeterministicAction => [
-				for (flow : outputFlows) {
-					it.actions += flow.transformOutwards
-				}
-			]
-		]
+		return createRapidFireActivityNodeFlowAction(node, inputFlows, outputFlows)
 	}
 	
 	protected dispatch def createActivityNodeFlowAction(MergeNode node, Iterable<Flow> inputFlows, Iterable<Flow> outputFlows) {
+		return createRapidFireActivityNodeFlowAction(node, inputFlows, outputFlows)
+	}
+	
+	private def createRapidFireActivityNodeFlowAction(ActivityNode node, Iterable<Flow> inputFlows, Iterable<Flow> outputFlows) {
 		return createNonDeterministicAction => [
 			it.actions += createNonDeterministicAction => [
 				for (flow : inputFlows) {
@@ -160,22 +152,18 @@ class ActivityNodeTransformer extends LowlevelTransitionToXTransitionTransformer
 	}
 	
 	protected dispatch def createActivityNodeFlowAction(InitialNode node, Iterable<Flow> inputFlows, Iterable<Flow> outputFlows) {
-		return createNonDeterministicAction => [
-			it.actions += createNonDeterministicAction => [
-				for (flow : outputFlows) {
-					it.actions += flow.transformOutwards
-				}
-			]
+		return createParallelAction => [
+			for (flow : outputFlows) {
+				it.actions += flow.transformOutwards
+			}
 		]
 	}
 	
 	protected dispatch def createActivityNodeFlowAction(FinalNode node, Iterable<Flow> inputFlows, Iterable<Flow> outputFlows) {
-		return createNonDeterministicAction => [
-			it.actions += createNonDeterministicAction => [
-				for (flow : inputFlows) {
-					it.actions += flow.transformInwards
-				}
-			]
+		return createParallelAction => [
+			for (flow : inputFlows) {
+				it.actions += flow.transformInwards
+			}
 		]
 	}
 	
