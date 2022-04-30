@@ -14,7 +14,6 @@ import hu.bme.mit.gamma.action.model.ForStatement
 import hu.bme.mit.gamma.action.model.VariableDeclarationStatement
 import hu.bme.mit.gamma.activity.model.ActivityNode
 import hu.bme.mit.gamma.activity.model.Flow
-import hu.bme.mit.gamma.activity.model.Pin
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.Expression
@@ -22,19 +21,17 @@ import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
-import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.ActivityNodeDataTrace
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.ActivityNodeTrace
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.ActivityNodeTransitionTrace
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.ChoiceTransitionTrace
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.EventTrace
-import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.FlowDataTokenTrace
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.FlowTrace
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.ForkTransitionTrace
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.JoinTransitionTrace
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.MergeTransitionTrace
-import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.PinTrace
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.RegionTrace
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.SimpleTransitionTrace
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.DataContainerTrace
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.StateTrace
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.TypeDeclarationTrace
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.VariableTrace
@@ -68,6 +65,7 @@ import static com.google.common.base.Preconditions.checkArgument
 import static com.google.common.base.Preconditions.checkState
 
 import static extension java.lang.Math.abs
+import hu.bme.mit.gamma.activity.model.DataContainer
 
 package class Trace {
 	// Trace model
@@ -626,23 +624,6 @@ package class Trace {
 		return matches.head
 	}
 	
-	// ActivityNode - data variable
-	def putDataNodeVariable(ActivityNode activityNode, VariableDeclaration xStsVariable) {
-		checkArgument(activityNode !== null)
-		checkArgument(xStsVariable !== null)
-		trace.traces += createActivityNodeDataTrace => [
-			it.activityNode = activityNode
-			it.XStsVariable = xStsVariable
-		]
-	}
-	
-	def getXStsVariableDataNodeVariable(ActivityNode activityNode) {
-		checkArgument(activityNode !== null)
-		val matches = ActivityNodeDataTrace.Matcher.on(tracingEngine).getAllValuesOfxStsVariable(activityNode)
-		checkState(matches.size == 1, matches.size)
-		return matches.head
-	}
-	
 	// ActivityNode - transition
 	def put(ActivityNode activityNode, NonDeterministicAction xStsAction) {
 		checkArgument(activityNode !== null)
@@ -681,14 +662,6 @@ package class Trace {
 			it.XStsVariable = xStsVariable
 		]
 	}
-	def putDataTokenVariable(Flow flow, VariableDeclaration xStsVariable) {
-		checkArgument(flow !== null)
-		checkArgument(xStsVariable !== null)
-		trace.traces += createFlowDataTokenTrace => [
-			it.flow = flow
-			it.XStsVariable = xStsVariable
-		]
-	}
 	
 	def isTraced(Flow flow) {
 		checkArgument(flow !== null)
@@ -702,13 +675,6 @@ package class Trace {
 		return matches.head
 	}
 	
-	def getXStsVariableFlowDataToken(Flow flow) {
-		checkArgument(flow !== null)
-		val matches = FlowDataTokenTrace.Matcher.on(tracingEngine).getAllValuesOfxStsVariable(flow)
-		checkState(matches.size == 1, matches.size)
-		return matches.head
-	}
-	
 	def getFlow(VariableDeclaration xStsVariable) {
 		checkArgument(xStsVariable !== null)
 		val matches = FlowTrace.Matcher.on(tracingEngine).getAllValuesOfflow(xStsVariable)
@@ -716,31 +682,31 @@ package class Trace {
 		return matches.head
 	}
 	
-	// Pin - variable
-	def put(Pin pin, VariableDeclaration xStsVariable) {
-		checkArgument(pin !== null)
+	// Data container - variable
+	def putDataContainer(DataContainer dataContainer, VariableDeclaration xStsVariable) {
+		checkArgument(dataContainer !== null)
 		checkArgument(xStsVariable !== null)
-		trace.traces += createPinTrace => [
-			it.pin = pin
+		trace.traces += createDataContainerTrace => [
+			it.dataContainer = dataContainer
 			it.XStsVariable = xStsVariable
 		]
 	}
 	
-	def isTraced(Pin pin) {
-		checkArgument(pin !== null)
-		return PinTrace.Matcher.on(tracingEngine).hasMatch(pin, null)
+	def isDataContainerTraced(DataContainer dataContainer) {
+		checkArgument(dataContainer !== null)
+		return DataContainerTrace.Matcher.on(tracingEngine).hasMatch(dataContainer, null)
 	}
 	
-	def getXStsVariable(Pin pin) {
-		checkArgument(pin !== null)
-		val matches = PinTrace.Matcher.on(tracingEngine).getAllValuesOfxStsVariable(pin)
+	def getDataContainerXStsVariable(DataContainer dataContainer) {
+		checkArgument(dataContainer !== null)
+		val matches = DataContainerTrace.Matcher.on(tracingEngine).getAllValuesOfxStsVariable(dataContainer)
 		checkState(matches.size == 1, matches.size)
 		return matches.head
 	}
 	
-	def getPin(VariableDeclaration xStsVariable) {
+	def getDataContainer(VariableDeclaration xStsVariable) {
 		checkArgument(xStsVariable !== null)
-		val matches = PinTrace.Matcher.on(tracingEngine).getAllValuesOfpin(xStsVariable)
+		val matches = DataContainerTrace.Matcher.on(tracingEngine).getAllValuesOfdataContainer(xStsVariable)
 		checkState(matches.size == 1, matches.size)
 		return matches.head
 	}

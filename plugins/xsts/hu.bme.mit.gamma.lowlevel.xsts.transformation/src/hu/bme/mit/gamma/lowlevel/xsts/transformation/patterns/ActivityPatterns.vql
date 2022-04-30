@@ -36,6 +36,10 @@ pattern inputFlows(flow: Flow, node: ActivityNode) {
 } or {
 	DataFlow.dataTargetReference(flow, targetReference);
 	DataNodeReference.dataNode(targetReference, node);
+} or {
+	find targetPin(flow, pin);
+	find activityDeclaration(node, activityDeclaration);
+	ActivityDeclaration.pins(activityDeclaration, pin);
 }
 
 pattern outputFlows(flow: Flow, node: ActivityNode) {
@@ -43,6 +47,17 @@ pattern outputFlows(flow: Flow, node: ActivityNode) {
 } or {
 	DataFlow.dataSourceReference(flow, sourceReference);
 	DataNodeReference.dataNode(sourceReference, node);
+} or {
+	find sourcePin(flow, pin);
+	find activityDeclaration(node, activityDeclaration);
+	ActivityDeclaration.pins(activityDeclaration, pin);
+}
+
+pattern activityDeclaration(node: ActionNode, activityDeclaration: ActivityDeclaration) {
+	ActionNode.activityDeclarationReference(node, activityDeclaration);
+} or {
+	ActionNode.activityDeclarationReference(node, namedReference);
+	NamedActivityDeclarationReference.namedActivityDeclaration(namedReference, activityDeclaration);
 }
 
 pattern dataFlowDirectSourceType(flow: DataFlow, type: Type) {

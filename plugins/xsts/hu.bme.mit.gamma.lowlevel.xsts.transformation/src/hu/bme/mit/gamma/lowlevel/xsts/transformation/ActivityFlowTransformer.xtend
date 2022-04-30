@@ -90,7 +90,11 @@ class ActivityFlowTransformer {
 			)
 				
 			if (flow instanceof DataFlow) {
-				
+				val dataFlow = flow as DataFlow
+				val dataFlowVariable = trace.getDataContainerXStsVariable(dataFlow)
+				val targetDataContainer = dataFlow.targetDataContainer
+				val targetDataContainerVariable = trace.getDataContainerXStsVariable(targetDataContainer)
+				it.actions += createAssignmentAction(targetDataContainerVariable, dataFlowVariable)
 			}
 		]
 	}
@@ -131,7 +135,11 @@ class ActivityFlowTransformer {
 			)
 				
 			if (flow instanceof DataFlow) {
-				
+				val dataFlow = flow as DataFlow
+				val dataFlowVariable = trace.getDataContainerXStsVariable(dataFlow)
+				val sourceDataContainer = dataFlow.sourceDataContainer
+				val sourceDataContainerVariable = trace.getDataContainerXStsVariable(sourceDataContainer)
+				it.actions += createAssignmentAction(dataFlowVariable, sourceDataContainerVariable)
 			}
 		]		
 	}

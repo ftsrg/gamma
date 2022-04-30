@@ -7,6 +7,7 @@
       <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.pins"/>
       <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.inputFlows"/>
       <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.outputFlows"/>
+      <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.activityDeclaration"/>
       <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.dataFlowDirectSourceType"/>
       <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.priorDataFlow"/>
       <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.sourceNode"/>
@@ -71,11 +72,9 @@
       <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.regionTrace"/>
       <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.stateTrace"/>
       <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.activityNodeTrace"/>
-      <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.activityNodeDataTrace"/>
       <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.activityNodeTransitionTrace"/>
       <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.flowTrace"/>
-      <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.flowDataTokenTrace"/>
-      <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.pinTrace"/>
+      <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.dataContainerTrace"/>
       <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.simpleTransitionTrace"/>
       <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.choiceTransitionTrace"/>
       <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.mergeTransitionTrace"/>

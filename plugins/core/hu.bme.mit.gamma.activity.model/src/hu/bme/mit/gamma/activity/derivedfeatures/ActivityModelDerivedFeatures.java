@@ -11,6 +11,7 @@ import hu.bme.mit.gamma.activity.model.ActivityDeclaration;
 import hu.bme.mit.gamma.activity.model.ActivityDeclarationReference;
 import hu.bme.mit.gamma.activity.model.ActivityDefinition;
 import hu.bme.mit.gamma.activity.model.ActivityNode;
+import hu.bme.mit.gamma.activity.model.DataContainer;
 import hu.bme.mit.gamma.activity.model.DataFlow;
 import hu.bme.mit.gamma.activity.model.DataNodeReference;
 import hu.bme.mit.gamma.activity.model.Definition;
@@ -81,12 +82,46 @@ public class ActivityModelDerivedFeatures extends ActionModelDerivedFeatures {
 		throw new IllegalStateException("Data flow's source is not a known type.");
 	}
 
+	public static DataContainer getSourceDataContainer(DataFlow flow) {
+		if (flow.getDataSourceReference() instanceof PinReference) {
+			PinReference pinReference = (PinReference) flow.getDataSourceReference();
+			Pin pin = getPin(pinReference);
+			
+			return pin;
+		}
+
+		if (flow.getDataSourceReference() instanceof DataNodeReference) {
+			DataNodeReference reference = (DataNodeReference) flow.getDataSourceReference();
+			
+			return reference.getDataNode();
+		}
+		
+		throw new IllegalStateException("Data flow's source is not a known type.");
+	}
+
 	public static ActivityNode getTargetNode(DataFlow flow) {
 		if (flow.getDataTargetReference() instanceof PinReference) {
 			PinReference pinReference = (PinReference) flow.getDataTargetReference();
 			Pin pin = getPin(pinReference);
 			
 			return ecoreUtil.getContainerOfType(pin, ActivityNode.class);
+		}
+
+		if (flow.getDataTargetReference() instanceof DataNodeReference) {
+			DataNodeReference reference = (DataNodeReference) flow.getDataTargetReference();
+			
+			return reference.getDataNode();
+		}
+		
+		throw new IllegalStateException("Data flow's source is not of a known type.");
+	}
+
+	public static DataContainer getTargetDataContainer(DataFlow flow) {
+		if (flow.getDataTargetReference() instanceof PinReference) {
+			PinReference pinReference = (PinReference) flow.getDataTargetReference();
+			Pin pin = getPin(pinReference);
+			
+			return pin;
 		}
 
 		if (flow.getDataTargetReference() instanceof DataNodeReference) {

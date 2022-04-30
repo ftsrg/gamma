@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="model" nsURI="http://www.mit.bme.hu/gamma/activity/Model" nsPrefix="hu.bme.mit.gamma.activity">
-  <eClassifiers xsi:type="ecore:EClass" name="DataNode" abstract="true" eSuperTypes="#//PseudoActivityNode"/>
+  <eClassifiers xsi:type="ecore:EClass" name="DataNode" abstract="true" eSuperTypes="#//PseudoActivityNode #//DataContainer"/>
   <eClassifiers xsi:type="ecore:EClass" name="ActivityNode" abstract="true" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NamedElement"/>
   <eClassifiers xsi:type="ecore:EClass" name="ControlFlow" eSuperTypes="#//Flow">
     <eStructuralFeatures xsi:type="ecore:EReference" name="sourceNode" lowerBound="1"
@@ -9,7 +9,7 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="targetNode" lowerBound="1"
         eType="#//ActivityNode"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="DataFlow" eSuperTypes="#//Flow">
+  <eClassifiers xsi:type="ecore:EClass" name="DataFlow" eSuperTypes="#//Flow #//DataContainer">
     <eStructuralFeatures xsi:type="ecore:EReference" name="dataSourceReference" lowerBound="1"
         eType="#//DataSourceReference" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="dataTargetReference" lowerBound="1"
@@ -58,7 +58,7 @@
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="OutputPin" eSuperTypes="#//Pin"/>
-  <eClassifiers xsi:type="ecore:EClass" name="Pin" abstract="true" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NamedElement">
+  <eClassifiers xsi:type="ecore:EClass" name="Pin" abstract="true" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NamedElement #//DataContainer">
     <eStructuralFeatures xsi:type="ecore:EReference" name="type" lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Type"
         containment="true"/>
   </eClassifiers>
@@ -96,4 +96,5 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="activity" lowerBound="1"
         eType="#//ActivityDeclaration"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="DataContainer" abstract="true"/>
 </ecore:EPackage>

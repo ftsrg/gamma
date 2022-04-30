@@ -81,5 +81,6 @@
     <genClasses ecoreClass="activity.ecore#//CallActivityAction">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference activity.ecore#//CallActivityAction/activity"/>
     </genClasses>
+    <genClasses ecoreClass="activity.ecore#//DataContainer"/>
   </genPackages>
 </genmodel:GenModel>

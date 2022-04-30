@@ -9,7 +9,7 @@
  * SPDX-License-Identifier: EPL-1.0
  ********************************************************************************/
 package hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns
-
+ 
 import epackage "http://www.mit.bme.hu/gamma/lowlevel/xsts/transformation/traceability"
 import epackage "http://www.mit.bme.hu/gamma/xSTS/Model"
 import epackage "http://www.mit.bme.hu/gamma/statechart/lowlevel/Model"
@@ -46,11 +46,6 @@ pattern activityNodeTrace(activityNode : ActivityNode, xStsVariable : VariableDe
 	ActivityNodeTrace.xStsVariable(trace, xStsVariable);
 }
 
-pattern activityNodeDataTrace(activityNode : ActivityNode, xStsVariable : VariableDeclaration) {
-	ActivityNodeDataTrace.activityNode(trace, activityNode);
-	ActivityNodeDataTrace.xStsVariable(trace, xStsVariable);
-}
-
 pattern activityNodeTransitionTrace(activityNode : ActivityNode, xStsAction : NonDeterministicAction) {
 	ActivityNodeTransitionTrace.activityNode(trace, activityNode);
 	ActivityNodeTransitionTrace.xStsAction(trace, xStsAction);
@@ -61,14 +56,9 @@ pattern flowTrace(flow : Flow, xStsVariable : VariableDeclaration) {
 	FlowTrace.xStsVariable(trace, xStsVariable);
 }
 
-pattern flowDataTokenTrace(flow : Flow, xStsVariable : VariableDeclaration) {
-	FlowDataTokenTrace.flow(trace, flow);
-	FlowDataTokenTrace.xStsVariable(trace, xStsVariable);
-} 
-
-pattern pinTrace(pin : Pin, xStsVariable : VariableDeclaration) {
-	PinTrace.pin(trace, pin);
-	PinTrace.xStsVariable(trace, xStsVariable);
+pattern dataContainerTrace(dataContainer : DataContainer, xStsVariable : VariableDeclaration) {
+	DataContainerTrace.dataContainer(trace, dataContainer);
+	DataContainerTrace.xStsVariable(trace, xStsVariable);
 }
 
 pattern simpleTransitionTrace(lowlevelSimpleTransition : Transition, xStsTransition : XTransition, 

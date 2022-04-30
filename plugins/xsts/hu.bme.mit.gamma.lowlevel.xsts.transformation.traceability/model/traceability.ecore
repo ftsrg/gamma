@@ -91,27 +91,16 @@
         eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclaration"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="flow" lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.activity.model/model/activity.ecore#//Flow"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="FlowDataTokenTrace" eSuperTypes="#//AbstractTrace">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="xStsVariable" lowerBound="1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclaration"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="flow" lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.activity.model/model/activity.ecore#//Flow"/>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="PinTrace" eSuperTypes="#//AbstractTrace">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="pin" lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.activity.model/model/activity.ecore#//Pin"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="xStsVariable" lowerBound="1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclaration"/>
-  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ActivityNodeTransitionTrace" eSuperTypes="#//AbstractTrace">
     <eStructuralFeatures xsi:type="ecore:EReference" name="activityNode" lowerBound="1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.activity.model/model/activity.ecore#//ActivityNode"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="xStsAction" lowerBound="1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.xsts.model/model/model.ecore#//NonDeterministicAction"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="ActivityNodeDataTrace" eSuperTypes="#//AbstractTrace">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="activityNode" lowerBound="1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.activity.model/model/activity.ecore#//ActivityNode"/>
+  <eClassifiers xsi:type="ecore:EClass" name="DataContainerTrace" eSuperTypes="#//AbstractTrace">
     <eStructuralFeatures xsi:type="ecore:EReference" name="xStsVariable" lowerBound="1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclaration"
-        containment="true"/>
+        eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclaration"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="dataContainer" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.activity.model/model/activity.ecore#//DataContainer"/>
   </eClassifiers>
 </ecore:EPackage>

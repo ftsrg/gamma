@@ -724,7 +724,7 @@ class LowlevelToXstsTransformer {
 					expression = dataType.initialValueOfType
 				]
 				xSts.variableDeclarations += xStsDataNodeVariable
-				trace.putDataNodeVariable(activityNode, xStsDataNodeVariable)
+				trace.putDataContainer(activityNode, xStsDataNodeVariable)
 			}
 		}
 	}
@@ -736,10 +736,9 @@ class LowlevelToXstsTransformer {
 			type = pinType
 			expression = pinType.initialValueOfType
 		]
-		xStsPinVariable.addOnDemandControlAnnotation
 		xSts.variableDeclarations += xStsPinVariable
 		
-		trace.put(pin, xStsPinVariable)
+		trace.putDataContainer(pin, xStsPinVariable)
 	}
 
 	private def createActivityFlowMapping(Flow flow) {
@@ -765,7 +764,7 @@ class LowlevelToXstsTransformer {
 				expression = dataType.initialValueOfType
 			]
 			xSts.variableDeclarations += xStsDataTokenVariable
-			trace.putDataTokenVariable(flow, xStsDataTokenVariable)			
+			trace.putDataContainer(flow, xStsDataTokenVariable)	
 		}
 	}
 	
