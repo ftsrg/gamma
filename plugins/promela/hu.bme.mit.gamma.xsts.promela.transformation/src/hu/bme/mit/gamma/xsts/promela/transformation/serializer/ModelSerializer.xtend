@@ -15,6 +15,9 @@ import hu.bme.mit.gamma.xsts.promela.transformation.util.HavocHandler
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.ExpressionUtil
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
+import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
+import hu.bme.mit.gamma.expression.model.ArrayAccessExpression
+import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression
 
 class ModelSerializer {
 	// Singleton
@@ -66,9 +69,24 @@ class ModelSerializer {
 		fi;
 	'''
 	
-	def dispatch String serialize(AssignmentAction action) '''
-		«action.lhs.serialize» = «action.rhs.serialize»;
-	'''
+	def dispatch String serialize(AssignmentAction action) {
+		var lhsExpression = action.lhs
+		var lhsType = lhsExpression.declaration.typeDefinition
+		if (lhsType instanceof ArrayTypeDefinition) {
+			if (lhsExpression instanceof ArrayAccessExpression) {
+				if (arrayHandler.getDimensions(lhsExpression).size != arrayHandler.getDimensions(lhsType).size) {
+					val indices = arrayHandler.getIndices(lhsExpression)
+					val arrayLiteralExp = action.rhs as ArrayLiteralExpression
+					return '''«lhsExpression.declaration.serializeArrayAtomicInit(arrayLiteralExp, indices)»'''
+				}
+			}
+			else {
+				val arrayLiteralExp = action.rhs as ArrayLiteralExpression
+				return '''«lhsExpression.declaration.serializeArrayAtomicInit(arrayLiteralExp)»'''
+			}
+		}
+		return '''«action.lhs.serialize» = «action.rhs.serialize»;'''
+	}
 	
 	def dispatch String serialize(VariableDeclarationAction action) '''
 		«action.variableDeclaration.serializeLocalVariableDeclaration»

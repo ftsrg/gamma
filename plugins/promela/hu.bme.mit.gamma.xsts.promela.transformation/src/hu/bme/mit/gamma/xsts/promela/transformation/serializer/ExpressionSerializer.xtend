@@ -20,13 +20,16 @@ import hu.bme.mit.gamma.expression.model.ModExpression
 import hu.bme.mit.gamma.expression.model.NotExpression
 import hu.bme.mit.gamma.expression.util.ExpressionTypeDeterminator2
 
-import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.promela.transformation.util.Namings.*
+import hu.bme.mit.gamma.xsts.promela.transformation.util.ArrayHandler
 
 class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSerializer {
 	// Singleton
 	public static final ExpressionSerializer INSTANCE = new ExpressionSerializer
 	protected new() {}
+	
+	public static final ArrayHandler arrayHandler = ArrayHandler.INSTANCE
+	
 	//
 	protected final extension ExpressionTypeDeterminator2 expressionTypeDeterminator = ExpressionTypeDeterminator2.INSTANCE
 	
@@ -40,9 +43,9 @@ class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSe
 	
 	override String _serialize(NotExpression expression) '''(«super._serialize(expression)»)'''
 	
-	override String _serialize(ArrayAccessExpression expression) '''«expression.operand.serialize»[«expression.index.serialize»]'''
+	override String _serialize(ArrayAccessExpression expression) '''«arrayHandler.getPromelaArrayAccess(expression).serialize»[«arrayHandler.getPromelaIndex(expression)»]'''
 	
-	override String _serialize(ArrayLiteralExpression expression) '''[«FOR i : 0 ..< expression.operands.size SEPARATOR ', '»«i» <- «expression.operands.get(i).serialize»«ENDFOR», default <- «expression.operands.head.type.defaultExpression.serialize»]'''
+	override String _serialize(ArrayLiteralExpression expression) '''{ «FOR operand : arrayHandler.getAllArrayLiteral(expression) SEPARATOR ', '»«operand.serialize»«ENDFOR» }'''
 	
-	override String _serialize(DirectReferenceExpression expression) '''«expression.declaration.name»'''
+	override String _serialize(DirectReferenceExpression expression)  '''«expression.declaration.name»'''
 }
