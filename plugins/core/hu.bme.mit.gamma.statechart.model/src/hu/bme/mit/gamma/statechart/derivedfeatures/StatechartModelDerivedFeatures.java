@@ -91,7 +91,7 @@ import hu.bme.mit.gamma.statechart.interface_.UnfoldedPackageAnnotation;
 import hu.bme.mit.gamma.statechart.interface_.WrapperComponentAnnotation;
 import hu.bme.mit.gamma.statechart.phase.History;
 import hu.bme.mit.gamma.statechart.phase.MissionPhaseAnnotation;
-import hu.bme.mit.gamma.statechart.phase.MissionPhaseStateDefinition;
+import hu.bme.mit.gamma.statechart.phase.MissionPhaseStateAnnotation;
 import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference;
 import hu.bme.mit.gamma.statechart.statechart.AsynchronousStatechartDefinition;
 import hu.bme.mit.gamma.statechart.statechart.BinaryTrigger;
@@ -2451,11 +2451,11 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return getComponentAnnotation(component, AdaptiveContractAnnotation.class) != null;
 	}
 	
-	public static boolean hasHistory(MissionPhaseStateDefinition stateDefinition) {
-		return stateDefinition.getHistory() != History.NO_HISTORY || 
-				!stateDefinition.getVariableBindings().isEmpty() ||
+	public static boolean hasHistory(MissionPhaseStateAnnotation annotation) {
+		return annotation.getHistory() != History.NO_HISTORY || 
+				!annotation.getVariableBindings().isEmpty() ||
 				// Internal ports are not really history, more like context dependency
-				stateDefinition.getPortBindings().stream().anyMatch(
+				annotation.getPortBindings().stream().anyMatch(
 						it -> isInternal(it.getCompositeSystemPort()));
 	}
 	

@@ -11,14 +11,7 @@
 package hu.bme.mit.gamma.ui.taskhandler;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static hu.bme.mit.gamma.ui.taskhandler.Namings.getActivityEventName;
-import static hu.bme.mit.gamma.ui.taskhandler.Namings.getActivityInterfaceName;
-import static hu.bme.mit.gamma.ui.taskhandler.Namings.getActivityParameterName;
-import static hu.bme.mit.gamma.ui.taskhandler.Namings.getActivityPortName;
-import static hu.bme.mit.gamma.ui.taskhandler.Namings.getCompositeComponentName;
-import static hu.bme.mit.gamma.ui.taskhandler.Namings.getExtendedContractName;
-import static hu.bme.mit.gamma.ui.taskhandler.Namings.getMonitorName;
-import static hu.bme.mit.gamma.ui.taskhandler.Namings.getPhaseComponentName;
+import static hu.bme.mit.gamma.ui.taskhandler.Namings.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -71,7 +64,6 @@ import hu.bme.mit.gamma.statechart.interface_.Persistency;
 import hu.bme.mit.gamma.statechart.interface_.Port;
 import hu.bme.mit.gamma.statechart.interface_.RealizationMode;
 import hu.bme.mit.gamma.statechart.phase.MissionPhaseStateAnnotation;
-import hu.bme.mit.gamma.statechart.phase.MissionPhaseStateDefinition;
 import hu.bme.mit.gamma.statechart.phase.transformation.PhaseStatechartTransformer;
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction;
 import hu.bme.mit.gamma.statechart.statechart.Region;
@@ -115,9 +107,10 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 		// History-based and no-history mappings have to be distinguished
 		boolean hasHistory = false;
 		
-		Map<StatechartDefinition, List<MissionPhaseStateDefinition>> contractBehaviors = 
-				new HashMap<StatechartDefinition, List<MissionPhaseStateDefinition>>(); 
-		Collection<State> adaptiveStates = StatechartModelDerivedFeatures.getAllStates(adaptiveStatechart);
+		Map<StatechartDefinition, List<MissionPhaseStateAnnotation>> contractBehaviors = 
+				new HashMap<StatechartDefinition, List<MissionPhaseStateAnnotation>>(); 
+		Collection<State> adaptiveStates = StatechartModelDerivedFeatures
+				.getAllStates(adaptiveStatechart);
 		for (State adaptiveState : adaptiveStates) {
 			List<State> ancestorsAndSelfAdaptiveStates =
 					StatechartModelDerivedFeatures.getAncestorsAndSelf(adaptiveState);
@@ -136,40 +129,35 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 				// Statechart contract - cold violation must lead to initial state
 				StatechartDefinition contract = stateContractAnnotation.getContractStatechart();
 				// Java util - add contract - list
-				List<MissionPhaseStateDefinition> behaviors = javaUtil.getOrCreateList(
+				List<MissionPhaseStateAnnotation> behaviors = javaUtil.getOrCreateList(
 						contractBehaviors, contract);
-				for (MissionPhaseStateAnnotation phaseAnnotation : missionPhaseStateAnnotations) {
-					for (MissionPhaseStateDefinition stateDefinition :
-								List.copyOf(phaseAnnotation.getStateDefinitions())) {
-						if (!StatechartModelDerivedFeatures.hasHistory(stateDefinition)) {
-							behaviors.add(stateDefinition); // Maybe cloning to prevent overwriting?
-							
-							// No history: contract - behavior equivalence can be analyzed
-							// independently of the context -> removing from adaptive statechart
-							ecoreUtil.remove(stateDefinition);
-						}
-						else {
-							hasHistory = true;
-							ComponentInstance component = stateDefinition.getComponent();
-							Component type = StatechartModelDerivedFeatures.getDerivedType(component);
-							checkArgument(StatechartModelDerivedFeatures.isStatechart(type) ||
-									StatechartModelDerivedFeatures.isMissionPhase(type));
-						}
+				for (MissionPhaseStateAnnotation phaseAnnotation :
+							List.copyOf(missionPhaseStateAnnotations)) {
+					if (!StatechartModelDerivedFeatures.hasHistory(phaseAnnotation) &&
+							!stateContractAnnotation.isSetToSelf()) {
+						behaviors.add(phaseAnnotation); // Maybe cloning to prevent overwriting?
+						
+						// No history: contract - behavior equivalence can be analyzed
+						// independently of the context -> removing from adaptive statechart
+						ecoreUtil.remove(phaseAnnotation);
+						missionPhaseStateAnnotations.remove(phaseAnnotation);
+					}
+					else {
+						hasHistory = true;
+						ComponentInstance component = phaseAnnotation.getComponent();
+						Component type = StatechartModelDerivedFeatures.getDerivedType(component);
+						checkArgument(StatechartModelDerivedFeatures.isStatechart(type) ||
+								StatechartModelDerivedFeatures.isMissionPhase(type));
 					}
 				}
 			}
 			
-			// If there is no MissionPhaseStateDefinition, the state contracts can be removed
-			for (MissionPhaseStateAnnotation phaseAnnotation :
-						List.copyOf(missionPhaseStateAnnotations)) {
-				if (phaseAnnotation.getStateDefinitions().isEmpty()) {
-					missionPhaseStateAnnotations.remove(phaseAnnotation);
-					ecoreUtil.remove(phaseAnnotation);
-				}
-			}
+			// If there is no MissionPhaseStateAnnotation, the "non-self" state contracts can be removed
 			if (missionPhaseStateAnnotations.isEmpty()) {
 				for (StateContractAnnotation stateContractAnnotation : stateContractAnnotations) {
-					ecoreUtil.remove(stateContractAnnotation);
+					if (!stateContractAnnotation.isSetToSelf()) {
+						ecoreUtil.remove(stateContractAnnotation);
+					}
 				}
 			}
 			
@@ -180,7 +168,7 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 				new ArrayList<Entry<String, PropertyPackage>>();
 		
 		for (StatechartDefinition contract : contractBehaviors.keySet()) {
-			List<MissionPhaseStateDefinition> clonedBehaviors = ecoreUtil.clone(
+			List<MissionPhaseStateAnnotation> clonedBehaviors = ecoreUtil.clone(
 					contractBehaviors.get(contract));
 			if (!clonedBehaviors.isEmpty()) {
 				SchedulableCompositeComponent composite =
@@ -205,7 +193,7 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 				
 				composite.getPortBindings().addAll(portBindings);
 				
-				for (MissionPhaseStateDefinition behavior : clonedBehaviors) {
+				for (MissionPhaseStateAnnotation behavior : clonedBehaviors) {
 					ComponentInstance componentInstance = behavior.getComponent();
 					statechartUtil.addComponentInstance(composite, componentInstance);
 					Component behaviorType = StatechartModelDerivedFeatures.getDerivedType(componentInstance);
@@ -351,6 +339,7 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 						// Note that this way, deactivation has priority over hot violation
 						// in the case of synchronous statecharts
 					}
+					// TODO what about accepting state in the case of history?
 				}
 				// TODO If there is history, we cannot reset the contract timer on reactivation in sync models -
 				// the verification this way is more permitting than it should be
@@ -595,7 +584,7 @@ class Namings {
 	protected static final JavaUtil javaUtil = JavaUtil.INSTANCE;
 	//
 	public static String getCompositeComponentName(Component contract,
-			List<MissionPhaseStateDefinition> behaviors) {
+			List<MissionPhaseStateAnnotation> behaviors) {
 		return contract.getName() + "_" + behaviors.stream()
 			.map(it -> it.getComponent().getName()).reduce("", (a,  b) -> a + "_" + b);
 	}

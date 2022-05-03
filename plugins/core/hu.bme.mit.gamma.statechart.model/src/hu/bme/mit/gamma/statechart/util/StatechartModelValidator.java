@@ -99,7 +99,6 @@ import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
 import hu.bme.mit.gamma.statechart.interface_.Trigger;
 import hu.bme.mit.gamma.statechart.phase.History;
 import hu.bme.mit.gamma.statechart.phase.MissionPhaseStateAnnotation;
-import hu.bme.mit.gamma.statechart.phase.MissionPhaseStateDefinition;
 import hu.bme.mit.gamma.statechart.phase.PhaseModelPackage;
 import hu.bme.mit.gamma.statechart.phase.VariableBinding;
 import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference;
@@ -308,6 +307,12 @@ public class StatechartModelValidator extends ActionModelValidator {
 					new ReferenceInfo(ContractModelPackage.Literals.STATE_CONTRACT_ANNOTATION__CONTRACT_STATECHART)));
 		}
 		
+		if (annotation.isSetToSelf() && annotation.isHasHistory()) {
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+				"A state contract is either set to self or has histroy", 
+					new ReferenceInfo(ContractModelPackage.Literals.STATE_CONTRACT_ANNOTATION__CONTRACT_STATECHART)));
+		}
+		
 		StatechartDefinition contractStatechart = annotation.getContractStatechart();
 		
 		State parentState = ecoreUtil.getContainerOfType(annotation, State.class);
@@ -376,23 +381,23 @@ public class StatechartModelValidator extends ActionModelValidator {
 	
 	// Statechart mission phase
 	
-	public Collection<ValidationResultMessage> checkStateDefinition(MissionPhaseStateDefinition stateDefinition) {
+	public Collection<ValidationResultMessage> checkMissionPhaseStateAnnotation(MissionPhaseStateAnnotation annotation) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		ComponentInstance component = stateDefinition.getComponent();
+		ComponentInstance component = annotation.getComponent();
 		Component type = StatechartModelDerivedFeatures.getDerivedType(component);
 		if (!(type instanceof StatechartDefinition)) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.INFO,
 				"If the phase state definition does not refer to a statechart definition as type, " +
 					"the model cannot be merged into a single statechart model", 
 						new ReferenceInfo(CompositeModelPackage.Literals.SYNCHRONOUS_COMPONENT_INSTANCE__TYPE, component)));
-			if (stateDefinition.getHistory() != History.NO_HISTORY) {
+			if (annotation.getHistory() != History.NO_HISTORY) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 					"If the phase state definition does not refer to a statechart definition as type, there can be no history", 
 						new ReferenceInfo(CompositeModelPackage.Literals.SYNCHRONOUS_COMPONENT_INSTANCE__TYPE, component)));
 			}
 		}
 		
-		List<VariableBinding> variableBindings = stateDefinition.getVariableBindings();
+		List<VariableBinding> variableBindings = annotation.getVariableBindings();
 		for (int i = 0; i < variableBindings.size() - 1; i++) {
 			VariableBinding lhs = variableBindings.get(i);
 			VariableDeclaration lhsInstanceVariable = lhs.getInstanceVariableReference().getVariable();
@@ -494,11 +499,9 @@ public class StatechartModelValidator extends ActionModelValidator {
 			.forEach(it -> usedComponents.add(it.getContractStatechart()));
 		for (MissionPhaseStateAnnotation annotation : ecoreUtil.getAllContentsOfType(
 				_package, MissionPhaseStateAnnotation.class)) {
-			for (MissionPhaseStateDefinition state : annotation.getStateDefinitions()) {
-				ComponentInstance component = state.getComponent();
-				usedComponents.add(
-						StatechartModelDerivedFeatures.getDerivedType(component));
-			}
+			ComponentInstance component = annotation.getComponent();
+			usedComponents.add(
+					StatechartModelDerivedFeatures.getDerivedType(component));
 		}
 		// Checking the imports
 		for (Package importedPackage : _package.getImports()) {

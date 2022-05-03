@@ -133,6 +133,7 @@
     <genClasses ecoreClass="contract.ecore#//StateContractAnnotation">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference contract.ecore#//StateContractAnnotation/contractStatechart"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute contract.ecore#//StateContractAnnotation/hasHistory"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute contract.ecore#//StateContractAnnotation/setToSelf"/>
     </genClasses>
     <genClasses ecoreClass="contract.ecore#//ScenarioAllowedWaitAnnotation">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference contract.ecore#//ScenarioAllowedWaitAnnotation/lowerLimit"/>
@@ -230,13 +231,10 @@
     </genEnums>
     <genClasses ecoreClass="phase.ecore#//MissionPhaseAnnotation"/>
     <genClasses ecoreClass="phase.ecore#//MissionPhaseStateAnnotation">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference phase.ecore#//MissionPhaseStateAnnotation/stateDefinitions"/>
-    </genClasses>
-    <genClasses ecoreClass="phase.ecore#//MissionPhaseStateDefinition">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference phase.ecore#//MissionPhaseStateDefinition/component"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference phase.ecore#//MissionPhaseStateDefinition/portBindings"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference phase.ecore#//MissionPhaseStateDefinition/variableBindings"/>
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute phase.ecore#//MissionPhaseStateDefinition/history"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference phase.ecore#//MissionPhaseStateAnnotation/component"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference phase.ecore#//MissionPhaseStateAnnotation/portBindings"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference phase.ecore#//MissionPhaseStateAnnotation/variableBindings"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute phase.ecore#//MissionPhaseStateAnnotation/history"/>
     </genClasses>
     <genClasses ecoreClass="phase.ecore#//VariableBinding">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference phase.ecore#//VariableBinding/instanceVariableReference"/>

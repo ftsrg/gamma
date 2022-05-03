@@ -28,6 +28,7 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="contractStatechart" lowerBound="1"
         eType="ecore:EClass statechart.ecore#//StatechartDefinition"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="hasHistory" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="setToSelf" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EEnum" name="NotDefinedEventMode">
     <eLiterals name="PERMISSIVE"/>

@@ -340,20 +340,17 @@ SpecialStateAnnotation returns ContractModel::SpecialStateAnnotation :
 ;
 
 StateContractAnnotation returns ContractModel::StateContractAnnotation:
-	'@StatechartContract' '=' (hasHistory?='history')? contractStatechart=[StatechartDefinition]
+	'@StatechartContract' (setToSelf?=('self') | hasHistory?=('history'))?
+		'=' contractStatechart=[StatechartDefinition]
 ;
 
 MissionPhaseStateAnnotation returns PhaseModel::MissionPhaseStateAnnotation:
 	{PhaseModel::MissionPhaseStateAnnotation} '@Phase' '=' '['
-		stateDefinitions += StateDefinition*
+		(history=History component=ComponentInstance '{'
+			portBindings+=PortBinding*
+			variableBindings+=VariableBinding*
+		'}')
 	']'
-;
-
-StateDefinition returns PhaseModel::MissionPhaseStateDefinition:
-	history=History component=ComponentInstance '{'
-		portBindings+=PortBinding*
-		variableBindings+=VariableBinding*
-	'}'
 ;
 
 VariableBinding returns PhaseModel::VariableBinding:
