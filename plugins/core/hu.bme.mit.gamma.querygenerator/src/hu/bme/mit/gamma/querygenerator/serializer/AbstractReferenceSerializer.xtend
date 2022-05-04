@@ -12,7 +12,7 @@ package hu.bme.mit.gamma.querygenerator.serializer
 
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
-import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression
 import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.Region
@@ -21,9 +21,10 @@ import java.util.List
 
 abstract interface AbstractReferenceSerializer {
 	
-	def String getId(State state, Region parentRegion, ComponentInstanceReference instance)	
-	def String getId(Event event, Port port, ComponentInstanceReference instance)	
-	def List<String> getId(VariableDeclaration variable, ComponentInstanceReference instance)	
-	def List<String> getId(Event event, Port port, ParameterDeclaration parameter, ComponentInstanceReference instance)
+	def String getId(State state, Region parentRegion, ComponentInstanceReferenceExpression instance)
+	def String getId(Event event, Port port, ComponentInstanceReferenceExpression instance)
+	def List<String> getId(VariableDeclaration variable, ComponentInstanceReferenceExpression instance)
+	def List<String> getId(Event event, Port port, ParameterDeclaration parameter,
+			ComponentInstanceReferenceExpression instance)
 	
 }

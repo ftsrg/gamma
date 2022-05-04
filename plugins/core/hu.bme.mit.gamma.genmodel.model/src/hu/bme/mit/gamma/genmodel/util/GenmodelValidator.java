@@ -75,7 +75,7 @@ import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponent;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
-import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.CompositeModelPackage;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Component;
@@ -277,7 +277,7 @@ public class GenmodelValidator extends ExpressionModelValidator {
 				return validationResultMessages;
 			}
 			SchedulingConstraint scheduling = ecoreUtil.getContainerOfType(constraint, SchedulingConstraint.class);
-			ComponentInstanceReference instance = constraint.getInstance();
+			ComponentInstanceReferenceExpression instance = constraint.getInstance();
 			if (instance != null) {
 				ComponentInstance lastInstance = StatechartModelDerivedFeatures.getLastInstance(instance);
 				if (!hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.isAsynchronous(lastInstance)) {
@@ -452,8 +452,8 @@ public class GenmodelValidator extends ExpressionModelValidator {
 			packageImports.remove(parentPackage);
 		}
 		for (ReferenceExpression reference : ecoreUtil.getAllContentsOfType(genmodel, ReferenceExpression.class)) {
-			if (reference instanceof ComponentInstanceReference) {
-				ComponentInstanceReference instanceReference = (ComponentInstanceReference) reference;
+			if (reference instanceof ComponentInstanceReferenceExpression) {
+				ComponentInstanceReferenceExpression instanceReference = (ComponentInstanceReferenceExpression) reference;
 				List<ComponentInstance> componentInstanceChain =
 						StatechartModelDerivedFeatures.getComponentInstanceChain(instanceReference);
 				List<Package> packages = componentInstanceChain.stream()
@@ -486,10 +486,10 @@ public class GenmodelValidator extends ExpressionModelValidator {
 			packageImports.add(parentPackage);
 		}
 		for (Coverage coverage : analysisModelTransformationTask.getCoverages()) {
-			List<ComponentInstanceReference> allCoverages = new ArrayList<ComponentInstanceReference>();
+			List<ComponentInstanceReferenceExpression> allCoverages = new ArrayList<ComponentInstanceReferenceExpression>();
 			allCoverages.addAll(coverage.getInclude());
 			allCoverages.addAll(coverage.getExclude());
-			for (ComponentInstanceReference instance : allCoverages) {
+			for (ComponentInstanceReferenceExpression instance : allCoverages) {
 				Package instanceParentPackage = StatechartModelDerivedFeatures.getContainingPackage(instance);
 				packageImports.add(instanceParentPackage);
 			}
@@ -888,17 +888,17 @@ public class GenmodelValidator extends ExpressionModelValidator {
 	}
 	
 	// Duplicated in StatechartModelValidator
-	public Collection<ValidationResultMessage> checkComponentInstanceReferences(ComponentInstanceReference reference) {
+	public Collection<ValidationResultMessage> checkComponentInstanceReferences(ComponentInstanceReferenceExpression reference) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		
 		ComponentInstance instance = reference.getComponentInstance();
-		ComponentInstanceReference child = reference.getChild();
+		ComponentInstanceReferenceExpression child = reference.getChild();
 		if (child != null) {
 			ComponentInstance childInstance = child.getComponentInstance();
 			if (!StatechartModelDerivedFeatures.contains(instance, childInstance)) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 					instance.getName() + " does not contain component instance " + childInstance.getName(),
-						new ReferenceInfo(CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE__COMPONENT_INSTANCE)));
+						new ReferenceInfo(CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE_EXPRESSION__COMPONENT_INSTANCE)));
 			}
 		}
 		
@@ -913,7 +913,7 @@ public class GenmodelValidator extends ExpressionModelValidator {
 					if (!containedComponents.contains(instance)) {
 						validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 							"The first component instance must be the component of " + component.getName(),
-								new ReferenceInfo(CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE__COMPONENT_INSTANCE)));
+								new ReferenceInfo(CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE_EXPRESSION__COMPONENT_INSTANCE)));
 					}
 				}
 			}

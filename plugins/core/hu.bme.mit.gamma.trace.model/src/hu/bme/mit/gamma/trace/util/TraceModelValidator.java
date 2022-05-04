@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2021 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -17,11 +17,13 @@ import java.util.List;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 
 import hu.bme.mit.gamma.expression.model.ArgumentedElement;
-import hu.bme.mit.gamma.expression.model.Declaration;
-import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousCompositeComponent;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression;
+import hu.bme.mit.gamma.statechart.composite.CompositeModelPackage;
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponent;
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
@@ -87,13 +89,12 @@ public class TraceModelValidator extends StatechartModelValidator {
 	
 	public Collection<ValidationResultMessage> checkInstanceState(InstanceState instanceState) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		SynchronousComponentInstance instance = (SynchronousComponentInstance)
-				StatechartModelDerivedFeatures.getLastInstance(instanceState.getInstance());
-		SynchronousComponent type = instance.getType();
-		if (!(type instanceof StatechartDefinition)) {
+		ComponentInstanceReferenceExpression instanceReference = TraceModelDerivedFeatures.getInstanceReference(instanceState);
+		ComponentInstance instance = StatechartModelDerivedFeatures.getLastInstance(instanceReference);
+		if (!StatechartModelDerivedFeatures.isStatechart(instance)) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-					"This is not a statechart instance",
-					new ReferenceInfo(TraceModelPackage.Literals.INSTANCE_STATE__INSTANCE)));
+				"This is not a statechart instance",
+					new ReferenceInfo(instanceState)));
 		}
 		return validationResultMessages;
 	}
@@ -110,8 +111,8 @@ public class TraceModelValidator extends StatechartModelValidator {
 					hu.bme.mit.gamma.statechart.statechart.State.class);
 			if (!states.contains(state)) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-						"This is not a valid state in the specified statechart",
-						new ReferenceInfo(TraceModelPackage.Literals.INSTANCE_STATE_CONFIGURATION__STATE)));
+					"This is not a valid state in the specified statechart",
+						new ReferenceInfo(CompositeModelPackage.Literals.COMPONENT_INSTANCE_STATE_REFERENCE_EXPRESSION__STATE)));
 			}
 		}
 		return validationResultMessages;
@@ -119,17 +120,18 @@ public class TraceModelValidator extends StatechartModelValidator {
 	
 	public Collection<ValidationResultMessage> checkInstanceVariableState(InstanceVariableState variableState) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		SynchronousComponentInstance instance = (SynchronousComponentInstance)
-				StatechartModelDerivedFeatures.getLastInstance(variableState.getInstance());
-		SynchronousComponent type = instance.getType();
+		ComponentInstanceVariableReferenceExpression variableReference = variableState.getVariableReference();
+		ComponentInstanceReferenceExpression instanceReference = variableReference.getInstance();
+		ComponentInstance instance = StatechartModelDerivedFeatures.getLastInstance(instanceReference);
+		Component type = StatechartModelDerivedFeatures.getDerivedType(instance);
 		if (type instanceof StatechartDefinition) {
-			Declaration variable = variableState.getDeclaration();
-			StatechartDefinition statechartDefinition = (StatechartDefinition)type;
+			VariableDeclaration variable = variableReference.getVariableDeclaration();
+			StatechartDefinition statechartDefinition = (StatechartDefinition) type;
 			List<VariableDeclaration> variables = statechartDefinition.getVariableDeclarations();
 			if (!variables.contains(variable)) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-						"This is not a valid variable in the specified statechart",
-						new ReferenceInfo(ExpressionModelPackage.Literals.DIRECT_REFERENCE_EXPRESSION__DECLARATION)));
+					"This is not a valid variable in the specified statechart",
+						new ReferenceInfo(TraceModelPackage.Literals.INSTANCE_VARIABLE_STATE__VARIABLE_REFERENCE)));
 			}
 		}
 		return validationResultMessages;

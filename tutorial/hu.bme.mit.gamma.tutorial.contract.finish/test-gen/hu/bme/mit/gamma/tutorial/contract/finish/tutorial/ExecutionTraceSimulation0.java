@@ -1,12 +1,12 @@
 package hu.bme.mit.gamma.tutorial.contract.finish.tutorial;
 
-import hu.bme.mit.gamma.tutorial.contract.finish.*;
-
 import static org.junit.Assert.assertTrue;
 
-import org.junit.Before;
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
+
+import hu.bme.mit.gamma.tutorial.contract.finish.VirtualTimerService;
 
 public class ExecutionTraceSimulation0 {
 	
@@ -30,8 +30,9 @@ public class ExecutionTraceSimulation0 {
 		reflectiveCrossroad = null;				
 	}
 	
-	@Test
+	@Test(expected=AssertionError.class)
 	public void test() {
+		
 		finalStep0();
 		return;
 	}
@@ -46,7 +47,7 @@ public class ExecutionTraceSimulation0 {
 		step0();
 		// Act
 		timer.elapse(2000);
-		reflectiveCrossroad.schedule();
+		reflectiveCrossroad.schedule(null);
 		// Assert
 	}
 	
@@ -54,7 +55,7 @@ public class ExecutionTraceSimulation0 {
 		step1();
 		// Act
 		timer.elapse(2000);
-		reflectiveCrossroad.schedule();
+		reflectiveCrossroad.schedule(null);
 		// Assert
 		assertTrue(reflectiveCrossroad.isRaisedEvent("secondaryOutput", "displayYellow", new Object[] {}));
 		assertTrue(reflectiveCrossroad.isRaisedEvent("secondaryOutput", "displayRed", new Object[] {}));

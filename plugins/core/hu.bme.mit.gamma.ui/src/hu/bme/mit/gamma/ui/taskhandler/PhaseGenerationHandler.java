@@ -41,7 +41,8 @@ public class PhaseGenerationHandler extends TaskHandler {
 	}
 	
 	private void setFileName(PhaseStatechartGeneration phaseStatechartGeneration) {
-		String fileName = "Phase" + getNameWithoutExtension(getContainingFileName(phaseStatechartGeneration.getStatechart()));
+		String fileName = "Phase" + getNameWithoutExtension(
+				getContainingFileName(phaseStatechartGeneration.getStatechart()));
 		checkArgument(phaseStatechartGeneration.getFileName().size() <= 1);
 		if (phaseStatechartGeneration.getFileName().isEmpty()) {
 			phaseStatechartGeneration.getFileName().add(fileName);

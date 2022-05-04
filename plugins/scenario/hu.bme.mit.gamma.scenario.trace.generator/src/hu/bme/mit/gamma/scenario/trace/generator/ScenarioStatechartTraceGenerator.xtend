@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.scenario.trace.generator
 
+import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.TransitionMerging
 import hu.bme.mit.gamma.scenario.statechart.util.ScenarioStatechartUtil
 import hu.bme.mit.gamma.statechart.contract.NotDefinedEventMode
@@ -43,16 +44,18 @@ class ScenarioStatechartTraceGenerator {
 	val boolean TEST_ORIGINAL = true
 
 	StatechartDefinition statechart = null
-
+	List<Expression> arguments = newArrayList
 	var int schedulingConstraint = 0
 
 	String absoluteParentFolder
 
 	Package _package
 		
-	new(StatechartDefinition statechart, int schedulingConstraint) {
-		this.schedulingConstraint = schedulingConstraint
+	new(StatechartDefinition statechart,
+			List<? extends Expression> arguments, int schedulingConstraint) {
 		this.statechart = statechart
+		this.arguments += arguments
+		this.schedulingConstraint = schedulingConstraint
 		this._package = statechart.containingPackage
 	}
 
@@ -66,7 +69,7 @@ class ScenarioStatechartTraceGenerator {
 			if (annotation instanceof ScenarioContractAnnotation) {
 				if (TEST_ORIGINAL) {
 					component = annotation.monitoredComponent
-					scenarioContractType= annotation.scenarioType
+					scenarioContractType = annotation.scenarioType
 				}
 			}
 		}
@@ -81,9 +84,10 @@ class ScenarioStatechartTraceGenerator {
 		}
 		
 		val name = statechart.name
-		val xStsFile = new File(absoluteParentFolder + File.separator +	fileNamer.getXtextXStsFileName(name))
+		val xStsFile = new File(
+				absoluteParentFolder + File.separator +	fileNamer.getXtextXStsFileName(name))
 		val xStsString = gammaToXSTSTransformer.preprocessAndExecuteAndSerialize(
-				_package, absoluteParentFolder,	name)
+				_package, arguments, absoluteParentFolder, name)
 		fileUtil.saveString(xStsFile, xStsString)
 
 		val verifier = new ThetaVerifier

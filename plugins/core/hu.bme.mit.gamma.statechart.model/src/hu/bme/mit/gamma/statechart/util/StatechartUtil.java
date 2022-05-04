@@ -39,7 +39,11 @@ import hu.bme.mit.gamma.statechart.composite.BroadcastChannel;
 import hu.bme.mit.gamma.statechart.composite.CascadeCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.Channel;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
-import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventParameterReferenceExpression;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventReferenceExpression;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.CompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.CompositeModelFactory;
 import hu.bme.mit.gamma.statechart.composite.ControlFunction;
@@ -139,20 +143,20 @@ public class StatechartUtil extends ActionUtil {
 	
 	//
 	
-	public ComponentInstanceReference createInstanceReferenceChain(ComponentInstance instance) {
+	public ComponentInstanceReferenceExpression createInstanceReferenceChain(ComponentInstance instance) {
 		List<ComponentInstance> componentInstanceChain =
 				StatechartModelDerivedFeatures.getComponentInstanceChain(instance);
 		return createInstanceReference(componentInstanceChain);
 	}
 	
-	public ComponentInstanceReference createInstanceReferenceChain(
-			List<? extends ComponentInstanceReference> instanceReferences) {
-		ComponentInstanceReference first = instanceReferences.get(0);
+	public ComponentInstanceReferenceExpression createInstanceReferenceChain(
+			List<? extends ComponentInstanceReferenceExpression> instanceReferences) {
+		ComponentInstanceReferenceExpression first = instanceReferences.get(0);
 		int size = instanceReferences.size();
 		
 		for (int i = 0; i < size - 1; i++) {
-			ComponentInstanceReference actual = instanceReferences.get(i);
-			ComponentInstanceReference next = instanceReferences.get(i + 1);
+			ComponentInstanceReferenceExpression actual = instanceReferences.get(i);
+			ComponentInstanceReferenceExpression next = instanceReferences.get(i + 1);
 
 			actual.setChild(next);
 		}
@@ -160,47 +164,47 @@ public class StatechartUtil extends ActionUtil {
 		return first;
 	}
 	
-	public ComponentInstanceReference createInstanceReference(ComponentInstance instance) {
+	public ComponentInstanceReferenceExpression createInstanceReference(ComponentInstance instance) {
 		return createInstanceReference(List.of(instance));
 	}
 	
-	public ComponentInstanceReference createInstanceReference(List<ComponentInstance> instances) {
+	public ComponentInstanceReferenceExpression createInstanceReference(List<ComponentInstance> instances) {
 		if (instances.isEmpty()) {
 			throw new IllegalArgumentException("Empty instance list: " + instances);
 		}
-		ComponentInstanceReference reference = compositeFactory.createComponentInstanceReference();
+		ComponentInstanceReferenceExpression reference = compositeFactory.createComponentInstanceReferenceExpression();
 		for (ComponentInstance instance : instances) {
 			reference.setComponentInstance(instance);
-			ComponentInstanceReference child = compositeFactory.createComponentInstanceReference();
+			ComponentInstanceReferenceExpression child = compositeFactory.createComponentInstanceReferenceExpression();
 			reference.setChild(child);
 			reference = child;
 		}
-		ComponentInstanceReference head =
+		ComponentInstanceReferenceExpression head =
 				StatechartModelDerivedFeatures.getFirstInstanceReference(reference);
 		ecoreUtil.remove(reference); // No instance
 		return head;
 	}
 	
-	public List<ComponentInstanceReference> prepend(
-			Collection<? extends ComponentInstanceReference> references, ComponentInstance instance) {
-		List<ComponentInstanceReference> newReferences = new ArrayList<ComponentInstanceReference>();
-		for (ComponentInstanceReference reference : references) {
-			ComponentInstanceReference newReference = prepend(reference, instance);
+	public List<ComponentInstanceReferenceExpression> prepend(
+			Collection<? extends ComponentInstanceReferenceExpression> references, ComponentInstance instance) {
+		List<ComponentInstanceReferenceExpression> newReferences = new ArrayList<ComponentInstanceReferenceExpression>();
+		for (ComponentInstanceReferenceExpression reference : references) {
+			ComponentInstanceReferenceExpression newReference = prepend(reference, instance);
 			newReferences.add(newReference);
 		}
 		return newReferences;
 	}
 	
-	public ComponentInstanceReference prepend(
-			ComponentInstanceReference reference, ComponentInstance instance) {
-		ComponentInstanceReference newReference = createInstanceReference(instance);
+	public ComponentInstanceReferenceExpression prepend(
+			ComponentInstanceReferenceExpression reference, ComponentInstance instance) {
+		ComponentInstanceReferenceExpression newReference = createInstanceReference(instance);
 		newReference.setChild(reference);
 		return newReference;
 	}
 	
-	public ComponentInstanceReference prependAndReplace(
-			ComponentInstanceReference reference, ComponentInstance instance) {
-		ComponentInstanceReference newReference = createInstanceReference(instance);
+	public ComponentInstanceReferenceExpression prependAndReplace(
+			ComponentInstanceReferenceExpression reference, ComponentInstance instance) {
+		ComponentInstanceReferenceExpression newReference = createInstanceReference(instance);
 		ecoreUtil.replace(newReference, reference);
 		newReference.setChild(reference);
 		return newReference;
@@ -500,7 +504,14 @@ public class StatechartUtil extends ActionUtil {
 		_package.getInterfaces().add(_interface);
 		return _package;
 	}
-
+	
+	public Package wrapIntoPackageAndAddImports(Component component) {
+		Package _package = wrapIntoPackage(component);
+		_package.getImports().addAll(
+				StatechartModelDerivedFeatures.getImportablePackages(component));
+		return _package;
+	}
+	
 	public Package createPackage(String name) {
 		Package _package = interfaceFactory.createPackage();
 		_package.setName(name);
@@ -585,7 +596,7 @@ public class StatechartUtil extends ActionUtil {
 	
 	public void scheduleInstances(SchedulableCompositeComponent composite,
 			List<? extends ComponentInstance> instances) {
-		List<ComponentInstanceReference> executionList = composite.getExecutionList();
+		List<ComponentInstanceReferenceExpression> executionList = composite.getExecutionList();
 		for (ComponentInstance componentInstance : instances) {
 			executionList.add(createInstanceReference(componentInstance));
 		}
@@ -803,6 +814,48 @@ public class StatechartUtil extends ActionUtil {
 		raiseEventAction.setEvent(event);
 		raiseEventAction.getArguments().addAll(parameters);
 		return raiseEventAction;
+	}
+	
+	// Atomic component instance reference expressions
+	
+	public ComponentInstanceStateReferenceExpression createStateReference(
+			ComponentInstanceReferenceExpression instance, State state) {
+		ComponentInstanceStateReferenceExpression reference =
+				compositeFactory.createComponentInstanceStateReferenceExpression();
+		reference.setInstance(instance);
+		reference.setRegion(StatechartModelDerivedFeatures.getParentRegion(state));
+		reference.setState(state);
+		return reference;
+	}
+	
+	public ComponentInstanceVariableReferenceExpression createVariableReference(ComponentInstanceReferenceExpression instance,
+			VariableDeclaration variable) {
+		ComponentInstanceVariableReferenceExpression reference =
+				compositeFactory.createComponentInstanceVariableReferenceExpression();
+		reference.setInstance(instance);
+		reference.setVariableDeclaration(variable);
+		return reference;
+	}
+	
+	public ComponentInstanceEventReferenceExpression createEventReference(ComponentInstanceReferenceExpression instance,
+			Port port, Event event) {
+		ComponentInstanceEventReferenceExpression reference =
+				compositeFactory.createComponentInstanceEventReferenceExpression();
+		reference.setInstance(instance);
+		reference.setPort(port);
+		reference.setEvent(event);
+		return reference;
+	}
+	
+	public ComponentInstanceEventParameterReferenceExpression createParameterReference(
+			ComponentInstanceReferenceExpression instance, Port port, Event event, ParameterDeclaration parameter) {
+		ComponentInstanceEventParameterReferenceExpression reference =
+				compositeFactory.createComponentInstanceEventParameterReferenceExpression();
+		reference.setInstance(instance);
+		reference.setPort(port);
+		reference.setEvent(event);
+		reference.setParameterDeclaration(parameter);
+		return reference;
 	}
 	
 	// Synchronous-asynchronous statecharts

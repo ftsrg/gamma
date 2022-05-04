@@ -15,7 +15,7 @@ import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance
-import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.interface_.Clock
 import hu.bme.mit.gamma.statechart.interface_.Event
@@ -69,7 +69,7 @@ class Namings {
 		return "Of" + instance.name
 	}
 	
-	def static getOutEventName(Event event, Port port, ComponentInstanceReference owner) {
+	def static getOutEventName(Event event, Port port, ComponentInstanceReferenceExpression owner) {
 		return getOutEventName(event, port, owner.FQN)
 	}
 	
@@ -81,7 +81,7 @@ class Namings {
 		return port.name + "_" + event.name + "Of" + owner
 	}
 	
-	def static getToRaiseName(Event event, Port port, ComponentInstanceReference instance) {
+	def static getToRaiseName(Event event, Port port, ComponentInstanceReferenceExpression instance) {
 		return getToRaiseName(event, port, instance.FQN)
 	}
 	
@@ -93,7 +93,7 @@ class Namings {
 		return "toRaise_" + port.name + "_" + event.name + "Of" + instance
 	}
 	
-	def static getIsRaisedName(Event event, Port port, ComponentInstanceReference instance) {
+	def static getIsRaisedName(Event event, Port port, ComponentInstanceReferenceExpression instance) {
 		return getIsRaisedName(event, port, instance.FQN)
 	}
 	
@@ -105,7 +105,7 @@ class Namings {
 		return "isRaised_" + port.name + "_" + event.name + "Of" + instance
 	}
 	
-	def static getOutValueOfName(Event event, Port port, ParameterDeclaration parameter, ComponentInstanceReference instance) {
+	def static getOutValueOfName(Event event, Port port, ParameterDeclaration parameter, ComponentInstanceReferenceExpression instance) {
 		return getOutEventName(event, port, instance) + parameter.name
 	}
 	
@@ -113,7 +113,7 @@ class Namings {
 		return getOutEventName(event, port, instance) + parameter.name
 	}
 	
-	def static getToRaiseValueOfName(Event event, Port port, ParameterDeclaration parameter, ComponentInstanceReference instance) {
+	def static getToRaiseValueOfName(Event event, Port port, ParameterDeclaration parameter, ComponentInstanceReferenceExpression instance) {
 		return getToRaiseName(event, port, instance) + parameter.name
 	}
 	
@@ -125,7 +125,7 @@ class Namings {
 		return getIsRaisedName(event, port, instance) +  parameter.name
 	}
 	
-	def static getIsRaisedValueOfName(Event event, Port port, ParameterDeclaration parameter, ComponentInstanceReference instance) {
+	def static getIsRaisedValueOfName(Event event, Port port, ParameterDeclaration parameter, ComponentInstanceReferenceExpression instance) {
 		return getIsRaisedName(event, port, instance) +  parameter.name
 	}
 	
@@ -133,7 +133,7 @@ class Namings {
 		return variable.name + parameter.name
 	}
 	
-	def static getVariableName(VariableDeclaration variable, ComponentInstanceReference instance) {
+	def static getVariableName(VariableDeclaration variable, ComponentInstanceReferenceExpression instance) {
 		return getVariableName(variable.name, instance.FQN)
 	}
 	
@@ -148,7 +148,7 @@ class Namings {
 	/**
 	 * Returns the template name of a region.
 	 */
-	def static String getTemplateName(Region region, ComponentInstanceReference instance) {
+	def static String getTemplateName(Region region, ComponentInstanceReferenceExpression instance) {
 		return getTemplateName(region, instance.FQN)
 	}
 	

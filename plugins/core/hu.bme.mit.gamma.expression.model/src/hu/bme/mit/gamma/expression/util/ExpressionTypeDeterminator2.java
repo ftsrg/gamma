@@ -365,13 +365,17 @@ public class ExpressionTypeDeterminator2 {
 			return typeDefinition instanceof DecimalTypeDefinition ||
 				typeDefinition instanceof IntegerTypeDefinition ||
 				typeDefinition instanceof RationalTypeDefinition;
-		} catch (IllegalArgumentException e ) {
+		} catch (IllegalArgumentException e) {
 			return false; // Might be the result of inconsistent Xtext type reference (reference is null)
 		}
 	}
 	
 	public boolean isNumber(Expression expression) {
-		return isNumber(getType(expression));
+		try {
+			return isNumber(getType(expression));
+		} catch (IllegalArgumentException e) {
+			return false; // e.g., if getType(expression) throws an exception
+		}
 	}
 	
 	// Type is boolean

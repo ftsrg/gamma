@@ -13,7 +13,6 @@ package hu.bme.mit.gamma.statechart.phase.transformation
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance
 import hu.bme.mit.gamma.statechart.composite.PortBinding
 import hu.bme.mit.gamma.statechart.phase.MissionPhaseStateAnnotation
-import hu.bme.mit.gamma.statechart.phase.MissionPhaseStateDefinition
 import hu.bme.mit.gamma.statechart.phase.VariableBinding
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
@@ -41,8 +40,7 @@ class PhaseStatechartTransformer {
 		this.statechart = createSynchronousStatechartDefinition => [
 			it.name = '''_«phaseStateAnnotation.hashCode.abs»'''
 		]
-		val stateDefinitions = phaseStateAnnotation.stateDefinitions
-		val systemPorts = stateDefinitions.map[it.portBindings].flatten
+		val systemPorts = phaseStateAnnotation.portBindings
 				.map[it.compositeSystemPort].toSet
 		for (systemPort : systemPorts) {
 			val clonedSystemPort = systemPort.clone
@@ -64,38 +62,34 @@ class PhaseStatechartTransformer {
 		var annotations = statechart.allMissionPhaseStateAnnotations
 		while (!checkedAnnotations.containsAll(annotations)) {
 			for (annotation : annotations.reject[checkedAnnotations.contains(it)]) {
-				val stateDefinitions = annotation.stateDefinitions
-				for (stateDefinition : stateDefinitions) {
-					val component = stateDefinition.component
-					val inlineableStatechart = component.derivedType.clone as StatechartDefinition
-					for (portBinding : stateDefinition.portBindings) {
-						portBinding.inlinePorts(inlineableStatechart)
-					}
-					for (variableBinding : stateDefinition.variableBindings) {
-						variableBinding.inlineVariables(inlineableStatechart)
-					}
-					component.inlineParameters(inlineableStatechart)
-					statechart.inlineRemainingStatechart(inlineableStatechart, stateDefinition)
+				val component = annotation.component
+				val inlineableStatechart = component.derivedType.clone as StatechartDefinition
+				for (portBinding : annotation.portBindings) {
+					portBinding.inlinePorts(inlineableStatechart)
 				}
+				for (variableBinding : annotation.variableBindings) {
+					variableBinding.inlineVariables(inlineableStatechart)
+				}
+				component.inlineParameters(inlineableStatechart)
+				statechart.inlineRemainingStatechart(inlineableStatechart, annotation)
+				
 				checkedAnnotations += annotation
 			}
 			annotations = statechart.allMissionPhaseStateAnnotations
 		}
 		//
 		for (annotation : annotations) {
-			val stateDefinitions = annotation.stateDefinitions
-			for (stateDefinition : stateDefinitions) {
-				for (portBinding : stateDefinition.portBindings) {
-					val port = portBinding.compositeSystemPort
-					val removeablePort = portBinding.instancePortReference.port
-					port.changeAndDelete(removeablePort, statechart)
-				}
-				for (variableBinding : stateDefinition.variableBindings) {
-					val variable = variableBinding.statechartVariable
-					val removeableVariable = variableBinding.instanceVariableReference.variable
-					variable.changeAndDelete(removeableVariable, statechart)
-				}
+			for (portBinding : annotation.portBindings) {
+				val port = portBinding.compositeSystemPort
+				val removeablePort = portBinding.instancePortReference.port
+				port.changeAndDelete(removeablePort, statechart)
 			}
+			for (variableBinding : annotation.variableBindings) {
+				val variable = variableBinding.statechartVariable
+				val removeableVariable = variableBinding.instanceVariableReference.variable
+				variable.changeAndDelete(removeableVariable, statechart)
+			}
+			
 			annotation.remove
 		}
 		return statechart
@@ -152,10 +146,10 @@ class PhaseStatechartTransformer {
 	}
 	
 	private def void inlineRemainingStatechart(StatechartDefinition statechart,
-			StatechartDefinition inlineableStatechart, MissionPhaseStateDefinition stateDefinition) {
-		val state = stateDefinition.getContainerOfType(State)
-		val instance = stateDefinition.component
-		val history = stateDefinition.history
+			StatechartDefinition inlineableStatechart, MissionPhaseStateAnnotation annotation) {
+		val state = annotation.getContainerOfType(State)
+		val instance = annotation.component
+		val history = annotation.history
 		val inlineableRegions = inlineableStatechart.regions
 		for (inlineableRegion : inlineableRegions) {
 			val newEntryState = switch (history) {

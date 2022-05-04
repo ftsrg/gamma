@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -219,8 +219,8 @@ class TraceBuilder {
 	def addInstanceVariableState(Step step, SynchronousComponentInstance instance,
 			VariableDeclaration variable, Expression value) {
 		step.asserts += createInstanceVariableState => [
-			it.instance = statechartUtil.createInstanceReference(instance)
-			it.declaration = variable
+			it.variableReference = statechartUtil.createVariableReference(
+				statechartUtil.createInstanceReference(instance), variable)
 			it.value = value
 		]
 	}
@@ -241,16 +241,18 @@ class TraceBuilder {
 	private def getOrCreateLiteral(Step step, SynchronousComponentInstance instance,
 			VariableDeclaration variable) {
 		val variableStates = step.asserts.filter(InstanceVariableState)
+		// Finding the instance, if it has been already been created
 		val variableState = variableStates.filter[
-			it.instance.componentInstance === instance && it.declaration === variable].head
+			it.variableReference.instance.lastInstance === instance &&
+			it.variableReference.variableDeclaration === variable].head
 		var Expression value
 		if (variableState === null) {
 			// Creating the literal, similar to "getInstance" in singletons
 			val type = variable.typeDefinition
 			val initialValue = type.initialValueOfType
 			step.asserts += createInstanceVariableState => [
-				it.instance = statechartUtil.createInstanceReference(instance)
-				it.declaration = variable
+				it.variableReference = statechartUtil.createVariableReference(
+					statechartUtil.createInstanceReference(instance), variable)
 				it.value = initialValue
 			]
 			value = initialValue
@@ -266,6 +268,7 @@ class TraceBuilder {
 	def addInstanceState(Step step, SynchronousComponentInstance instance, State state) {
 		step.asserts += createInstanceStateConfiguration => [
 			it.instance = statechartUtil.createInstanceReference(instance)
+			it.region = state.parentRegion
 			it.state = state
 		]
 	}
