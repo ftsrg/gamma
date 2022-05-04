@@ -21,7 +21,7 @@
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="scenarioType" eType="#//NotDefinedEventMode"
         defaultValueLiteral="PERMISSIVE"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="StateContractAnnotation" eSuperTypes="statechart.ecore#//StateAnnotation">
+  <eClassifiers xsi:type="ecore:EClass" name="StateContractAnnotation" eSuperTypes="statechart.ecore#//StateAnnotation ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ArgumentedElement">
     <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
       <details key="documentation" value="Annotation for the states of adaptive contract statecharts, referring to scenario contracts."/>
     </eAnnotations>

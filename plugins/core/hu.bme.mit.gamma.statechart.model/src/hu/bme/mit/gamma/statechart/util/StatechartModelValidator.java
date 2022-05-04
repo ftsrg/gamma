@@ -464,15 +464,21 @@ public class StatechartModelValidator extends ActionModelValidator {
 
 	public Collection<ValidationResultMessage> checkImports(Package _package) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		EObject rootContainer = EcoreUtil.getRootContainer(_package);
+		
 		Collection<Interface> usedInterfaces = new HashSet<Interface>();
 		Collection<Component> usedComponents = new HashSet<Component>();
+		
+		Collection<Declaration> usedDeclarations =
+			ecoreUtil.getAllContentsOfType(rootContainer, DirectReferenceExpression.class)
+				.stream().map(it -> it.getDeclaration()).collect(Collectors.toSet());
 		Collection<TypeDeclaration> usedTypeDeclarations =
-			ecoreUtil.getAllContentsOfType(EcoreUtil.getRootContainer(_package), TypeReference.class)
+			ecoreUtil.getAllContentsOfType(rootContainer, TypeReference.class)
 				.stream().map(it -> it.getReference()).collect(Collectors.toSet());
-
 		Collection<EnumerationLiteralDefinition> usedEnumLiterals =
-			ecoreUtil.getAllContentsOfType(EcoreUtil.getRootContainer(_package), EnumerationLiteralExpression.class)
+			ecoreUtil.getAllContentsOfType(rootContainer, EnumerationLiteralExpression.class)
 				.stream().map(it -> it.getReference()).collect(Collectors.toSet());
+		
 		// Collecting the used components and interfaces
 		for (Component component : _package.getComponents()) {
 			for (Port port : component.getPorts()) {
@@ -507,15 +513,24 @@ public class StatechartModelValidator extends ActionModelValidator {
 		for (Package importedPackage : _package.getImports()) {
 			Collection<Interface> interfaces = new HashSet<Interface>(importedPackage.getInterfaces());
 			interfaces.retainAll(usedInterfaces);
+			
 			Collection<Component> components = new HashSet<Component>(importedPackage.getComponents());
 			components.retainAll(usedComponents);
+			
+			Collection<Declaration> declarations = new HashSet<Declaration>(importedPackage.getConstantDeclarations());
+			declarations.addAll(importedPackage.getFunctionDeclarations());
+			declarations.retainAll(usedDeclarations);
+			
 			Collection<TypeDeclaration> typeDeclarations = new HashSet<TypeDeclaration>(importedPackage.getTypeDeclarations());
 			typeDeclarations.retainAll(usedTypeDeclarations);
+			
 			EObject root = ecoreUtil.getRoot(importedPackage);
 			Collection<EnumerationLiteralDefinition> enumDefinitions = ecoreUtil.
 					getAllContentsOfType(root, EnumerationLiteralDefinition.class);
 			enumDefinitions.retainAll(usedEnumLiterals);
-			if (interfaces.isEmpty() && components.isEmpty() && typeDeclarations.isEmpty() && enumDefinitions.isEmpty()) {
+			
+			if (interfaces.isEmpty() && components.isEmpty() && declarations.isEmpty() &&
+					typeDeclarations.isEmpty() && enumDefinitions.isEmpty()) {
 				int index = _package.getImports().indexOf(importedPackage);
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING, 
 					"No component or interface or type declaration from this imported package is used", 

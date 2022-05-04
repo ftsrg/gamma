@@ -137,13 +137,19 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		}
 		if (element instanceof ComponentInstance) {
 			ComponentInstance instance = (ComponentInstance) element;
-			return getDerivedType(instance).getParameterDeclarations();
+			Component type = getDerivedType(instance);
+			return type.getParameterDeclarations();
 		}
 		if (element instanceof FunctionAccessExpression) {
 			FunctionAccessExpression functionAccess = (FunctionAccessExpression) element;
 			FunctionDeclaration functionDeclaration = (FunctionDeclaration)
 					expressionUtil.getDeclaration(functionAccess.getOperand());
 			return functionDeclaration.getParameterDeclarations();
+		}
+		if (element instanceof StateContractAnnotation) {
+			StateContractAnnotation annotation = (StateContractAnnotation) element;
+			StatechartDefinition statechart = annotation.getContractStatechart();
+			return statechart.getParameterDeclarations();
 		}
 		throw new IllegalArgumentException("Not supported element: " + element);
 	}

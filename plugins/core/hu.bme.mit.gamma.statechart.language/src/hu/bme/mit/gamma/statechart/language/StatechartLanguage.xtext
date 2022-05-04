@@ -341,7 +341,7 @@ SpecialStateAnnotation returns ContractModel::SpecialStateAnnotation :
 
 StateContractAnnotation returns ContractModel::StateContractAnnotation:
 	'@StatechartContract' (setToSelf?=('self') | hasHistory?=('history'))?
-		'=' contractStatechart=[StatechartDefinition]
+		'=' contractStatechart=[StatechartDefinition] ('(' arguments+=Expression (',' arguments+=Expression)* ')')?
 ;
 
 MissionPhaseStateAnnotation returns PhaseModel::MissionPhaseStateAnnotation:

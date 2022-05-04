@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020-2021 Contributors to the Gamma project
+ * Copyright (c) 2020-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -156,7 +156,7 @@ public class AdaptiveContractTestGenerationHandler extends TaskHandler {
 							schedulingConstraint = statechartUtil.evaluateMilliseconds(minimumPeriod);
 						}
 						ScenarioStatechartTraceGenerator traceGenerator = new ScenarioStatechartTraceGenerator(
-								contract, schedulingConstraint);
+								contract, stateContractAnnotation.getArguments(), schedulingConstraint);
 						List<ExecutionTrace> staticTraces = traceGenerator.execute();
 						for (ExecutionTrace staticTrace : staticTraces) {
 						    ExecutionTrace mergedTrace = ecoreUtil.clone(clonedAdaptiveTrace);
