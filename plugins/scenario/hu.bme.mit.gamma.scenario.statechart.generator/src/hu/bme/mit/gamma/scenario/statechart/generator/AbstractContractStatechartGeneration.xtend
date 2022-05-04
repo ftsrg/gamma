@@ -22,6 +22,7 @@ import hu.bme.mit.gamma.statechart.contract.ContractModelFactory
 import hu.bme.mit.gamma.statechart.contract.NotDefinedEventMode
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Event
+import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression
 import hu.bme.mit.gamma.statechart.interface_.EventTrigger
 import hu.bme.mit.gamma.statechart.interface_.InterfaceModelFactory
 import hu.bme.mit.gamma.statechart.interface_.Port
@@ -348,17 +349,16 @@ abstract class AbstractContractStatechartGeneration {
 ////////// RaiseEventActions based on Interactions
 	def protected dispatch Action getRaiseEventAction(Signal signal, boolean reversed) {
 		var action = createRaiseEventAction
-		var port = reversed ? getPort(scenarioStatechartUtil.getTurnedOutPortName(signal.port)) : getPort(
-				signal.port.name)
+		var port = getPort(getNameOfNewPort(signal.port, reversed))
 		val event = getEvent(signal.event.name, port)
 		action.event = event
 		action.port = port
-		for(argument : event.parameterDeclarations){
+		for (argument : event.parameterDeclarations) {
 			val reference = createEventParameterReferenceExpression
-			reference.event = event
-			reference.port = signal.port
+			reference.port = getPort(port.turnedOutPortName)
+			reference.event = getEvent(signal.event.name, reference.port)
 			reference.parameter = argument
-			action.arguments +=reference
+			action.arguments += reference
 		}
 		return action
 	}
@@ -464,17 +464,21 @@ abstract class AbstractContractStatechartGeneration {
 
 	def protected setupForwardTransition(ModalInteractionSet set, boolean reversed, boolean isNegated,
 		Transition forwardTransition) {
+		val eventParamRefs = ecoreUtil.getAllContentsOfType(set, EventParameterReferenceExpression)
+		for (eventParamRef : eventParamRefs) {
+			eventParamRef.port = getPort(getNameOfNewPort(eventParamRef.port, reversed))
+			eventParamRef.event = getEvent(eventParamRef.event.name, eventParamRef.port)
+		}
 		var Trigger trigger = null
 		val checks = set.modalInteractions.filter(ScenarioCheckExpression)
 		val nonCheckInteractitons = set.modalInteractions.filter[!(it instanceof ScenarioCheckExpression)].toList
 		if (nonCheckInteractitons.size > 1) {
 			trigger = getBinaryTrigger(nonCheckInteractitons, BinaryType.AND, reversed)
-		} else if(nonCheckInteractitons.size == 1) {
+		} else if (nonCheckInteractitons.size == 1) {
 			trigger = getEventTrigger(nonCheckInteractitons.head, reversed)
 		} else {
 			trigger = createOnCycleTrigger
 		}
-
 		if (isNegated) {
 			forwardTransition.trigger = negateEventTrigger(trigger)
 		} else {
@@ -486,14 +490,13 @@ abstract class AbstractContractStatechartGeneration {
 				}
 			}
 		}
-		if(checks.size>1){
+		if (checks.size > 1) {
 			val andExpression = createAndExpression
-			andExpression.operands += checks.map[it.expression]
+			andExpression.operands += checks.map[it.expression.clone]
 			forwardTransition.guard = andExpression
-		} else if(checks.size == 1){
-			forwardTransition.guard = checks.head.expression
+		} else if (checks.size == 1) {
+			forwardTransition.guard = checks.head.expression.clone
 		}
-		
 	}
 
 	def protected handleDelays(ModalInteractionSet set) {
@@ -505,22 +508,23 @@ abstract class AbstractContractStatechartGeneration {
 			setTimeoutDeclarationForState(previousState, timeoutDeclaration, timeSpecification)
 		}
 	}
-	
+
 	def protected createTimeoutDeclaration() {
 		val timeoutDeclaration = statechartfactory.createTimeoutDeclaration
 		timeoutDeclaration.name = getDelayName(timeoutCount++)
 		statechart.timeoutDeclarations += timeoutDeclaration
 		return timeoutDeclaration
 	}
-	
+
 	def protected createTimeSpecification(Expression expr) {
 		val timeSpecification = createTimeSpecification
 		timeSpecification.unit = TimeUnit.MILLISECOND
 		timeSpecification.value = expr.clone
 		return timeSpecification
 	}
-	
-	def protected void setTimeoutDeclarationForState(StateNode state, TimeoutDeclaration timeoutDeclaration, TimeSpecification timeSpecification) {
+
+	def protected void setTimeoutDeclarationForState(StateNode state, TimeoutDeclaration timeoutDeclaration,
+		TimeSpecification timeSpecification) {
 		val action = createSetTimeoutAction
 		action.timeoutDeclaration = timeoutDeclaration
 		action.time = timeSpecification
