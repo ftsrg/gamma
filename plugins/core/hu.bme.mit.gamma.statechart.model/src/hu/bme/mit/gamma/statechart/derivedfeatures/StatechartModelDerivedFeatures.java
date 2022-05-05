@@ -2063,6 +2063,14 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return false;
 	}
 	
+	public static boolean isState(StateNode node) {
+		return node instanceof State;
+	}
+	
+	public static boolean isPseudoState(StateNode node) {
+		return !isState(node);
+	}
+	
 	public static boolean isComposite(State state) {
 		return !state.getRegions().isEmpty();
 	}

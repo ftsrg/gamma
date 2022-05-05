@@ -358,12 +358,13 @@ class StatechartToPlantUmlTransformer {
 	 * 
 	 */
 	protected def stateSearch(Transition transition) {
+		val source = transition.sourceState
 		val trigger = transition.trigger
 		val guard = transition.guard
 		val effects = transition.effects
 		val target = transition.targetState
 		var arrow = ""
-		if (transition.sourceState instanceof EntryState) {
+		if (source instanceof EntryState || (source.parentRegion.orthogonal && target.state)) {
 			arrow = "->"
 		} else {
 			arrow = "-->"
