@@ -1,68 +1,160 @@
 package hu.bme.mit.gamma.xsts.promela.transformation.util
 
-import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
-import hu.bme.mit.gamma.util.GammaEcoreUtil
-import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
-import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression
-import hu.bme.mit.gamma.expression.model.Expression
-import java.util.List
 import hu.bme.mit.gamma.expression.model.ArrayAccessExpression
-import java.util.HashMap
-import hu.bme.mit.gamma.expression.util.IndexHierarchy
-import java.util.ArrayList
+import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression
+import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
+import hu.bme.mit.gamma.expression.model.Declaration
+import hu.bme.mit.gamma.expression.model.Expression
+import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.expression.util.ExpressionUtil
+import hu.bme.mit.gamma.expression.util.IndexHierarchy
+import hu.bme.mit.gamma.util.GammaEcoreUtil
+import hu.bme.mit.gamma.xsts.promela.transformation.serializer.ExpressionSerializer
+import java.util.ArrayList
+import java.util.List
+
+import static hu.bme.mit.gamma.xsts.promela.transformation.util.Namings.*
+
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 
 class ArrayHandler {
 	// Singleton
 	public static final ArrayHandler INSTANCE = new ArrayHandler
 	protected new() {}
 	
+	protected final extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
+	
 	protected final extension ExpressionEvaluator expressionEvaluator = ExpressionEvaluator.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE
 	
-	protected HashMap<String, HashMap<Integer, IndexHierarchy>> arrays = newHashMap
+	def getAllArrayTypeDefinition(List<ArrayTypeDefinition> typeDefinitions) {
+		var arrayTypeDefinitions = newArrayList
+		for (definitions : typeDefinitions) {
+			val type = definitions.getContainerOfType(Declaration).type
+			if (!arrayTypeDefinitions.contains(type)) {
+				arrayTypeDefinitions += type as ArrayTypeDefinition
+			}
+		}
+		return arrayTypeDefinitions
+	}
 	
-	def addArray(ArrayTypeDefinition typeDefinition, String name) {
+	// Array serialization
+	
+	def String serializeArrayInit(Declaration declaration, Expression initExpression, ArrayTypeDefinition type) {
+		if (initExpression instanceof ArrayLiteralExpression) {
+			// Array init with an ArrayLiteralExpression
+			val literals = getAllArrayLiteral(initExpression)
+			val listOfIndices = getIndices(type)
+			return '''
+			«FOR i : 0 ..< literals.size»
+				«declaration.name»«listOfIndices.get(i).serializeFullIndex» = «literals.get(i).serialize»;
+			«ENDFOR»
+			'''
+		}
+		if (initExpression instanceof ArrayAccessExpression) {
+			// Array init with an other array 
+			val listOfExpIndices = getIndices(initExpression)
+			val listOfIndices = getIndices(type)
+			return '''
+			«FOR i : 0..< listOfIndices.size»
+				«declaration.name»«listOfIndices.get(i).serializeFullIndex» = «initExpression.serialize»«listOfExpIndices.get(i).serializePartIndex»;
+			«ENDFOR»
+			'''
+		}
+	}
+	
+	// ArrayAccess serialization
+	
+	def String serializeFullIndex(IndexHierarchy hierarchy) '''«FOR index : hierarchy.indexes SEPARATOR arrayFieldAccess»[«index»]«ENDFOR»'''
+	def String serializePartIndex(IndexHierarchy hierarchy) '''«FOR index : hierarchy.indexes»«arrayFieldAccess»[«index»]«ENDFOR»'''
+	
+	// Array serialization in Assignments
+	
+	def String serializeArrayAssignment(Expression lhs, Expression rhs) {
+		val lhsType = lhs.declaration.typeDefinition
+		if (lhsType instanceof ArrayTypeDefinition) {
+			if (lhs instanceof ArrayAccessExpression) {
+				// ArrayAccess with ArrayLiteral
+				if (rhs instanceof ArrayLiteralExpression) {
+					val lhsIndices = getIndices(lhs)
+					val literals = getAllArrayLiteral(rhs)
+					return '''
+					«FOR i : 0 ..< literals.size»
+						«lhs.serialize»«lhsIndices.get(i).serializePartIndex» = «literals.get(i).serialize»;
+					«ENDFOR»
+					'''
+				}
+				// ArrayAccess with ArrayAccess
+				if (rhs instanceof ArrayAccessExpression) {
+					if (!(maxDimension(lhs) && maxDimension(rhs))) {
+						// lhs or rhs is an array
+						val lhsIndices = getIndices(lhs)
+						val rhsIndices = getIndices(rhs)
+						return '''
+						«FOR i : 0 ..< rhsIndices.size»
+							«lhs.serialize»«lhsIndices.get(i).serializePartIndex» = «rhs.serialize»«rhsIndices.get(i).serializePartIndex»;
+						«ENDFOR»
+						'''
+					}
+				}
+				// lhs and rhs is one-one element of an array
+				return '''«lhs.serialize» = «rhs.serialize»;'''
+			}
+			// lhs is a DirectReferenceExpression
+			return lhs.declaration.serializeArrayInit(rhs, lhsType)
+		}
+	}
+	
+	// get part of indices or full indices
+	
+	def getIndices(ArrayAccessExpression expression) {
+		var indices = newArrayList
+		val dim = expression.dimensions
+		val typeDefiniton = expression.declaration.typeDefinition as ArrayTypeDefinition
+		val allIndices = typeDefiniton.indices
+		for (index : allIndices) {
+			if (index.indexes.subList(0, dim.size).equals(dim)) {
+				indices += new IndexHierarchy(index.indexes.subList(dim.size, index.indexes.size))
+			}
+		}
+		return indices
+	}
+	
+	def getIndices(ArrayTypeDefinition typeDefinition) {
 		var dimensions = newArrayList
 		for (definitions : ecoreUtil.getAllContentsOfType(typeDefinition, ArrayTypeDefinition)) {
 			dimensions += definitions.size.evaluateInteger 
 		}
 		dimensions.add(0, typeDefinition.size.evaluateInteger)
-		// Promela - XSTS indices
-		var indices = newHashMap
-		dimensions.calcluateIndices(0, newArrayList, indices)
-		arrays.put(name, indices)
+		return dimensions.calcluateIndices(newArrayList)
 	}
 	
-	protected def void calcluateIndices(List<Integer> arrayDimensions, Integer acc, List<Integer> acc2, HashMap<Integer, IndexHierarchy> map) {
+	// calculate the right indices
+	
+	def List<IndexHierarchy> calcluateIndices(List<Integer> arrayDimensions, List<Integer> acc2) {
+		var list = newArrayList
         if (arrayDimensions.size() == 1) {
             for (var i = 0; i < arrayDimensions.get(0); i++) {
                 var IndexHierarchy newAcc = new IndexHierarchy(acc2)
-                newAcc.add(i);
-                map.put(acc + i, newAcc);
+                newAcc.add(i)
+                list += newAcc
             }
         } else {
-            var temp = 1;
+            var temp = 1
             for (var i = 1; i < arrayDimensions.size(); i++) {
-                temp *= arrayDimensions.get(i);
+                temp *= arrayDimensions.get(i)
             }
             for (var j = 0; j < arrayDimensions.get(0); j++) {
                 var ArrayList<Integer> newAcc = newArrayList(acc2);
-                newAcc.add(j);
-                calcluateIndices(arrayDimensions.subList(1, arrayDimensions.size()), acc + temp * j, newAcc, map);
+                newAcc += j
+                list += arrayDimensions.subList(1, arrayDimensions.size()).calcluateIndices(newAcc);
             }
         }
+        return list
     }
-	
-	def Integer getArraySize(ArrayTypeDefinition typeDefinition) {
-		var elementType = typeDefinition.elementType
-		val size = typeDefinition.size.evaluateInteger
-		if (elementType instanceof ArrayTypeDefinition) {
-			return size * elementType.getArraySize
-		}
-		return size
-	}
+    
+    // return list of embedded literals
 	
 	def List<Expression> getAllArrayLiteral(ArrayLiteralExpression literalExpression) {
 		var literals = newArrayList
@@ -77,39 +169,12 @@ class ArrayHandler {
 		return literals
 	}
 	
-	def getPromelaIndex(ArrayAccessExpression expression) {
-		val list = expression.getDimensions
-		val name = expression.declaration.name
-		val indices = arrays.get(name)
-		for (index : indices.entrySet) {
-			if (index.value.indexes.equals(list)) {
-				return index.key
-			}
-		}
-	}
+	// check max dimension
 	
-	def getPromelaArrayAccess(ArrayAccessExpression expression) {
-		var list = newArrayList
-		list += expression
-		for (arrayAccessExp : ecoreUtil.getAllContentsOfType(expression, ArrayAccessExpression)) {
-			list += arrayAccessExp
-		}
-		return list.last.operand
+	def maxDimension(ArrayAccessExpression expression) {
+		val expType = expression.declaration.typeDefinition as ArrayTypeDefinition
+		return expression.dimensions.size == expType.dimensions.size
 	}
-	
-	def getIndices(ArrayAccessExpression expression) {
-		var promelaIndices = newArrayList
-		val list = expression.getDimensions
-		val name = expression.declaration.name
-		val indices = arrays.get(name)
-		for (index : indices.entrySet) {
-			if (index.value.indexes.subList(0, list.size).equals(list)) {
-				promelaIndices += index.key
-			}
-		}
-		return promelaIndices
-	}
-	
 	
 	//number of dimensions
 	

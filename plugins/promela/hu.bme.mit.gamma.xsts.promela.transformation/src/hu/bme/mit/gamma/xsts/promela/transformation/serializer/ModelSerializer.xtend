@@ -1,33 +1,35 @@
 package hu.bme.mit.gamma.xsts.promela.transformation.serializer
 
-import hu.bme.mit.gamma.xsts.model.XSTS
-
-import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
-import hu.bme.mit.gamma.xsts.model.AssumeAction
-import hu.bme.mit.gamma.xsts.model.AssignmentAction
-import hu.bme.mit.gamma.xsts.model.SequentialAction
-import hu.bme.mit.gamma.xsts.model.IfAction
-import hu.bme.mit.gamma.xsts.model.EmptyAction
-import hu.bme.mit.gamma.xsts.model.HavocAction
-import hu.bme.mit.gamma.xsts.model.LoopAction
-import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
-import hu.bme.mit.gamma.xsts.promela.transformation.util.HavocHandler
+import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.ExpressionUtil
+import hu.bme.mit.gamma.xsts.model.AssignmentAction
+import hu.bme.mit.gamma.xsts.model.AssumeAction
+import hu.bme.mit.gamma.xsts.model.EmptyAction
+import hu.bme.mit.gamma.xsts.model.HavocAction
+import hu.bme.mit.gamma.xsts.model.IfAction
+import hu.bme.mit.gamma.xsts.model.LoopAction
+import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
+import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
-import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
-import hu.bme.mit.gamma.expression.model.ArrayAccessExpression
-import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression
+import hu.bme.mit.gamma.xsts.model.XSTS
+import hu.bme.mit.gamma.xsts.promela.transformation.util.ArrayHandler
+import hu.bme.mit.gamma.xsts.promela.transformation.util.HavocHandler
+
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
 
 class ModelSerializer {
 	// Singleton
 	public static final ModelSerializer INSTANCE = new ModelSerializer
 	protected new() {}
-	// Auxiliary objects
-	protected final extension DeclarationSerializer declarationSerializer = DeclarationSerializer.INSTANCE
-	protected final extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
+	
+	protected extension DeclarationSerializer declarationSerializer = DeclarationSerializer.INSTANCE
+	protected extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
+	
 	protected final extension HavocHandler havocHandler = HavocHandler.INSTANCE
 	protected final extension ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE
+	protected final extension ArrayHandler arrayHandler = ArrayHandler.INSTANCE
 	
 	def String serializePromela(XSTS xSts) '''
 		«xSts.serializeDeclaration»
@@ -70,20 +72,10 @@ class ModelSerializer {
 	'''
 	
 	def dispatch String serialize(AssignmentAction action) {
-		var lhsExpression = action.lhs
-		var lhsType = lhsExpression.declaration.typeDefinition
-		if (lhsType instanceof ArrayTypeDefinition) {
-			if (lhsExpression instanceof ArrayAccessExpression) {
-				if (arrayHandler.getDimensions(lhsExpression).size != arrayHandler.getDimensions(lhsType).size) {
-					val indices = arrayHandler.getIndices(lhsExpression)
-					val arrayLiteralExp = action.rhs as ArrayLiteralExpression
-					return '''«lhsExpression.declaration.serializeArrayAtomicInit(arrayLiteralExp, indices)»'''
-				}
-			}
-			else {
-				val arrayLiteralExp = action.rhs as ArrayLiteralExpression
-				return '''«lhsExpression.declaration.serializeArrayAtomicInit(arrayLiteralExp)»'''
-			}
+		//Proomela does not support multidimensional arrays, so they need to be handled differently.
+		//It also does not support the use of array init blocks in processes.
+		if (action.lhs.declaration.typeDefinition instanceof ArrayTypeDefinition) {
+			return action.lhs.serializeArrayAssignment(action.rhs)
 		}
 		return '''«action.lhs.serialize» = «action.rhs.serialize»;'''
 	}
