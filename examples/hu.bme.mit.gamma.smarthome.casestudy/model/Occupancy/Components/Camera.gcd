@@ -1,0 +1,66 @@
+package occupancy
+
+import "Interfaces/Constants.gcd"
+import "Interfaces/Interfaces.gcd"
+
+statechart Camera [
+	port Camera : requires Camera
+	port Motion : provides Motion
+	port Activation : provides InternalActivation
+] {
+	timeout timeoutTime // To turn off lightning automatically
+	timeout batteryRechargeTime
+	
+	// Read and written by controller, too
+	var battery : integer := 80 // Read by controller
+	var granularity : integer := BASE_GRANULARITY // Written by controller
+	//
+	var lastCount : integer := 0
+	
+	region main {
+		initial Entry
+		state On {
+			exit / lastCount := 0;
+			region operationRegion {
+				initial OperationEntry
+				state Idle
+				state SenseMotion {
+					entry / set timeoutTime := TIMEOUT_TIME s;
+						lastCount := 0;
+				}
+				state CountPersons {
+					entry / raise Motion.personPresence(lastCount);
+						battery := calculateBatteryDrownage(granularity);
+				}
+				choice CountPersonsChoice
+			}
+		}
+		state Off {
+			entry / set batteryRechargeTime := BATTERY_RECHARGE_TIME s;
+		}
+	}
+	
+	transition from Entry to Off
+	
+	transition from OperationEntry to Idle
+	transition from Idle to SenseMotion when Camera.motion /
+		raise Motion.motion(true);
+	transition from SenseMotion to CountPersons when Camera.personPresence [
+		Camera.personPresence::count >= 0] / lastCount := Camera.personPresence::count;
+	transition from SenseMotion to SenseMotion when Camera.motion
+	transition from SenseMotion to Idle when timeout timeoutTime /
+		raise Motion.motion(false);
+	transition from CountPersons to CountPersonsChoice when Camera.personPresence [
+		granularity <= calculateDifference(Camera.personPresence::count, lastCount)] /
+		lastCount := Camera.personPresence::count;
+	transition from CountPersonsChoice to SenseMotion [lastCount <= 0]
+	transition from CountPersonsChoice to CountPersons [else]
+	
+	transition from On to Off when cycle [isBatteryLow(battery)]
+	transition from On to Off when Activation.deactivate
+	
+	transition from Off to Off when timeout batteryRechargeTime [battery + 1 <= MAXIMUM_BATTERY] /
+		battery := battery + 1;
+	
+	transition from Off to On when Activation.activate
+}

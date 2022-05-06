@@ -1,0 +1,191 @@
+package control
+
+import "Interfaces/Constants.gcd"
+import "Interfaces/Interfaces.gcd"
+
+import "Occupancy/Components/Camera.gcd"
+import "Occupancy/Components/MotionDetector.gcd"
+
+import "Ventilation/Components/AdaptiveVentilator.gcd"
+import "Ventilation/Components/Switch.gcd"
+
+@TransitionPriority = order-based
+@AdaptiveContractStatechart = Controller
+statechart Controller(initialCameraBattery : integer,
+		initialCameraGranularity : integer) [
+	// Motion-related
+	port Camera : requires Camera
+	port MotionDetector : requires MotionDetector
+	// Internal communication related
+	port Motion : provides Motion
+	// Ventilation-related
+	port Ventilation : provides Ventilation
+	// Adaptation-related
+	port CameraState : requires ComponentState
+	port CameraActivation : provides InternalActivation
+	//
+	port MotionDetectorState : requires ComponentState
+	port MotionDetectorActivation : provides InternalActivation
+	//
+	port VentilatorState : requires ComponentState
+	port VentilatorActivation : provides InternalActivation
+	//
+	port SwitchState : requires ComponentState
+	port SwitchActivation : provides InternalActivation
+	//
+] {
+	// Tied to components
+	var cameraBattery : integer := initialCameraBattery
+	var cameraGranularity : integer := initialCameraGranularity
+	
+	var motionDetectorOverheated : boolean := false
+	//
+	
+	region main {
+		initial MainEntry
+		
+		state ControlVentilation {
+			region occupancy {
+				initial OccupancyEntry
+				
+				@Phase = [
+					no-history component camera : Camera {
+						bind Camera -> camera.Camera
+						bind Motion -> camera.Motion
+						bind CameraActivation -> camera.Activation
+						
+						tie cameraBattery -> camera.battery
+						tie cameraGranularity -> camera.granularity
+					}
+				]
+				state UseCamera {
+					entry / raise CameraActivation.activate;
+					exit / raise CameraActivation.deactivate;
+					region useCameraRegion  {
+						initial UseCameraEntry
+						
+						state DefaultCameraMode {
+							entry / cameraGranularity := BASE_GRANULARITY;
+						}
+						state HighGranularityCameraMode {
+							entry / cameraGranularity := MINIMUM_GRANULARITY;
+						}
+						state LowGranularityCameraMode {
+							entry / cameraGranularity := MAXIMUM_GRANULARITY;
+						}
+					}
+				}
+				
+				@Phase = [
+					no-history component motionDetector : MotionDetector {
+						bind MotionDetector -> motionDetector.MotionDetector
+						bind Motion -> motionDetector.Motion
+						bind MotionDetectorActivation -> motionDetector.Activation
+						
+						tie motionDetectorOverheated -> motionDetector.overheated
+					}
+				]
+				state UseMotionDetector {
+					entry / raise MotionDetectorActivation.activate;
+					exit / raise MotionDetectorActivation.deactivate;
+				}
+				
+				state NoDetection
+				
+				merge OccupancyComponentMerge
+				choice OccupancyComponentChoice
+			}
+			
+			region Ventilation {
+				initial VentilationEntry
+				
+				@Phase = [
+					no-history component ventilator : AdaptiveVentilator {
+						bind Ventilation -> ventilator.Ventilation
+						bind Motion -> ventilator.Motion
+						bind VentilatorActivation -> ventilator.Activation
+					}
+				]
+				state UseAdaptiveVentilator {
+					entry / raise VentilatorActivation.activate;
+					exit / raise VentilatorActivation.deactivate;
+				}
+				
+				@Phase = [
+					no-history component ^switch : Switch {
+						bind Ventilation -> ^switch.Ventilation
+						bind Motion -> ^switch.Motion
+						bind SwitchActivation -> ^switch.Activation
+					}
+				]
+				state UseSwitch  {
+					entry / raise SwitchActivation.activate;
+					exit / raise SwitchActivation.deactivate;
+				}
+				state FixVentilation {
+					entry / raise Ventilation.switchVentilation(true);
+						raise Ventilation.ventilate(BASE_VENTILATION);
+				}
+				
+				merge VentilationComponentMerge
+				choice VentilationComponentChoice
+			}
+		}
+	}
+	// Occupancy //
+	transition from MainEntry to ControlVentilation
+	
+	transition from OccupancyEntry to UseCamera
+	transition from UseCamera to OccupancyComponentMerge when cycle [
+		isBatteryLow(cameraBattery)]
+	transition from UseCamera to OccupancyComponentMerge when CameraState.availability
+		[!CameraState.availability::available]
+	transition from UseMotionDetector to OccupancyComponentMerge when cycle
+		[motionDetectorOverheated]
+	transition from UseMotionDetector to OccupancyComponentMerge when MotionDetectorState.availability
+		[!MotionDetectorState.availability::available]
+	transition from NoDetection to OccupancyComponentMerge when cycle
+		[CameraState.availability::available and !isBatteryLow(cameraBattery)]
+	transition from NoDetection to OccupancyComponentMerge when MotionDetectorState.availability
+		[MotionDetectorState.availability::available]
+	// Occupancy adaptation logic
+	transition from OccupancyComponentMerge to OccupancyComponentChoice
+	transition from OccupancyComponentChoice to UseCamera [CameraState.availability::available and
+		!isBatteryLow(cameraBattery)]
+	transition from OccupancyComponentChoice to UseMotionDetector [
+		MotionDetectorState.availability::available	and !motionDetectorOverheated]
+	transition from OccupancyComponentChoice to NoDetection [else]
+	
+	// Camera
+	transition from UseCameraEntry to DefaultCameraMode
+	
+	transition from DefaultCameraMode to HighGranularityCameraMode when cycle [
+		isBatteryHigh(cameraBattery)]
+	transition from HighGranularityCameraMode to DefaultCameraMode when cycle [
+		!isBatteryHigh(cameraBattery)]
+	transition from DefaultCameraMode to LowGranularityCameraMode when cycle [
+		isBatteryMediumLow(cameraBattery)]
+	transition from LowGranularityCameraMode to DefaultCameraMode when cycle [
+		!isBatteryMediumLow(cameraBattery)]
+	////
+	
+	// Ventilation //
+	transition from VentilationEntry to UseAdaptiveVentilator
+	
+	transition from UseAdaptiveVentilator to VentilationComponentMerge when VentilatorState.availability
+		[!VentilatorState.availability::available]
+	transition from UseSwitch to VentilationComponentMerge when SwitchState.availability
+		[!SwitchState.availability::available]
+	transition from FixVentilation to VentilationComponentMerge when VentilatorState.availability
+		[VentilatorState.availability::available]
+	transition from FixVentilation to VentilationComponentMerge when SwitchState.availability
+		[SwitchState.availability::available]
+	
+	// Ventilation adaptation logic
+	transition from VentilationComponentMerge to VentilationComponentChoice
+	transition from VentilationComponentChoice to UseAdaptiveVentilator [
+		VentilatorState.availability::available]
+	transition from VentilationComponentChoice to UseSwitch [SwitchState.availability::available]
+	transition from VentilationComponentChoice to FixVentilation [else]
+	////
+}

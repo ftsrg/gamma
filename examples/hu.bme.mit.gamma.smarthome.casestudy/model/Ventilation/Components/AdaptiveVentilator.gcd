@@ -1,0 +1,74 @@
+package light
+
+import "Interfaces/Constants.gcd"
+import "Interfaces/Interfaces.gcd"
+
+statechart AdaptiveVentilator [
+	port Motion : provides Motion
+	port Ventilation : provides Ventilation
+	port Activation : provides InternalActivation
+] {
+	timeout firstVentilationChangeTime
+	timeout ventilationChangeTime
+	timeout switchOffTime
+	
+	var ventilationLevel : integer := MINIMUM_VENTILATION
+	
+	region main {
+ 		initial Entry
+ 		state On {
+ 			region onRegion {
+ 				initial OnRegionEntry
+				state VentilationOff
+				state VentilationOn {
+					entry / raise Ventilation.switchVentilation(true);
+					exit / raise Ventilation.switchVentilation(false);
+					region VentilationOnRegion {
+						initial OnEntry
+						state BaseVentilation {
+							entry / set switchOffTime := SWITCH_OFF_TIME s;
+								ventilationLevel := BASE_VENTILATION;
+								raise Ventilation.ventilate(ventilationLevel);
+						}
+						state FixVentilation {
+							entry / set firstVentilationChangeTime := FIRST_VENTILATION_CHANGE_TIME s;
+								ventilationLevel := calculateVentilationLevel(Motion.personPresence::count);
+								raise Ventilation.ventilate(ventilationLevel);
+						}
+						state DecreasingVentilation {
+							entry / set ventilationChangeTime := VENTILATION_CHANGE_TIME s;
+								raise Ventilation.ventilate(ventilationLevel);
+						}
+						choice VentilationChoice
+					}
+				}
+			}
+		}
+		state Off
+	}
+	
+	transition from Entry to Off
+	
+	transition from OnRegionEntry to VentilationOn
+//	transition from Off to Off when Motion.motion [!Motion.motion::on]
+	transition from VentilationOff to VentilationOn when Motion.motion [Motion.motion::on]
+	transition from VentilationOn to VentilationOff when Motion.motion [!Motion.motion::on]
+		
+	transition from OnEntry to BaseVentilation
+	transition from BaseVentilation to FixVentilation when Motion.personPresence
+	
+	transition from FixVentilation to DecreasingVentilation when timeout firstVentilationChangeTime
+	transition from DecreasingVentilation to FixVentilation when Motion.personPresence
+	transition from DecreasingVentilation to VentilationChoice when timeout ventilationChangeTime
+	transition from VentilationChoice to BaseVentilation [
+		ventilationLevel - VENTILATION_DELTA <= BASE_VENTILATION]
+	transition from VentilationChoice to DecreasingVentilation [else] /
+		ventilationLevel := ventilationLevel - VENTILATION_DELTA;
+		
+	transition from BaseVentilation to VentilationOff when timeout switchOffTime
+	
+	transition from On to Off when Activation.deactivate
+	transition from Off to On when Activation.activate
+	
+}
+

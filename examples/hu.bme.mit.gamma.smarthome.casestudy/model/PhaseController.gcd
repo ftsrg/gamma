@@ -1,0 +1,354 @@
+package control
+
+import "/hu.bme.mit.gamma.illumination.casestudy/model/Interfaces/Constants.gcd"
+import "/hu.bme.mit.gamma.illumination.casestudy/model/Interfaces/Interfaces.gcd"
+
+import "/hu.bme.mit.gamma.illumination.casestudy/model/Occupancy/Components/Camera.gcd"
+import "/hu.bme.mit.gamma.illumination.casestudy/model/Occupancy/Components/MotionDetector.gcd"
+
+import "/hu.bme.mit.gamma.illumination.casestudy/model/Ventilation/Components/AdaptiveVentilator.gcd"
+import "/hu.bme.mit.gamma.illumination.casestudy/model/Ventilation/Components/Switch.gcd"
+
+@TransitionPriority = order-based
+@AdaptiveContractStatechart = Controller
+statechart Controller(initialCameraBattery : integer,
+		initialCameraGranularity : integer) [
+	// Motion-related
+	port Camera : requires Camera
+	port MotionDetector : requires MotionDetector
+	// Internal communication related
+	port Motion : provides Motion
+	// Ventilation-related
+	port Ventilation : provides Ventilation
+	// Adaptation-related
+	port CameraState : requires ComponentState
+	port CameraActivation : provides InternalActivation
+	//
+	port MotionDetectorState : requires ComponentState
+	port MotionDetectorActivation : provides InternalActivation
+	//
+	port VentilatorState : requires ComponentState
+	port VentilatorActivation : provides InternalActivation
+	//
+	port SwitchState : requires ComponentState
+	port SwitchActivation : provides InternalActivation
+	//
+] {
+	// Tied to components
+	var cameraBattery : integer := initialCameraBattery
+	var cameraGranularity : integer := initialCameraGranularity
+	
+	var motionDetectorOverheated : boolean := false
+	var lastCountOfcamera : integer := 0
+	var relayedMotionCountOfmotionDetector : integer := 0
+	var ventilationLevelOfventilator : integer := MINIMUM_VENTILATION
+	timeout timeoutTimeOfcamera
+	timeout batteryRechargeTimeOfcamera
+	timeout timeoutTimeOfmotionDetector
+	timeout cooldownTimeOfmotionDetector
+	timeout overheatTimeOfmotionDetector
+	timeout firstVentilationChangeTimeOfventilator
+	timeout ventilationChangeTimeOfventilator
+	timeout switchOffTimeOfventilator
+	//
+	
+	region main {
+		initial MainEntry
+		
+		state ControlVentilation {
+			region occupancy {
+				initial OccupancyEntry
+				state UseCamera {
+					entry / raise CameraActivation.activate;
+					exit / raise CameraActivation.deactivate;
+					region useCameraRegion  {
+						initial UseCameraEntry
+						
+						state DefaultCameraMode {
+							entry / cameraGranularity := BASE_GRANULARITY;
+						}
+						state HighGranularityCameraMode {
+							entry / cameraGranularity := MINIMUM_GRANULARITY;
+						}
+						state LowGranularityCameraMode {
+							entry / cameraGranularity := MAXIMUM_GRANULARITY;
+						}
+					}
+				region mainOfcamera {
+						state OnOfcamera {
+							exit /
+							lastCountOfcamera := 0;
+							region operationRegionOfcamera {
+								initial OperationEntryOfcamera
+								state IdleOfcamera
+								state SenseMotionOfcamera {
+									entry /
+									set timeoutTimeOfcamera := TIMEOUT_TIME s;
+									lastCountOfcamera := 0;
+								}
+								state CountPersonsOfcamera {
+									entry /
+									raise Motion.personPresence(lastCountOfcamera);
+									cameraBattery := calculateBatteryDrownage(cameraGranularity);
+								}
+								choice CountPersonsChoiceOfcamera
+							}
+						}
+						state OffOfcamera {
+							entry /
+							set batteryRechargeTimeOfcamera := BATTERY_RECHARGE_TIME s;
+						}
+						initial InitOfcameraOfcamera
+					}
+				}
+				state UseMotionDetector {
+					entry / raise MotionDetectorActivation.activate;
+					exit / raise MotionDetectorActivation.deactivate;
+				region mainOfmotionDetector {
+						state OnOfmotionDetector {
+							region operationRegionOfmotionDetector {
+								initial OperationEntryOfmotionDetector
+								state IdleOfmotionDetector
+								state SensedMotionOfmotionDetector {
+									entry /
+									set timeoutTimeOfmotionDetector := TIMEOUT_TIME s;
+								}
+							}
+							region overheatRegionOfmotionDetector {
+								initial OverheatEntryOfmotionDetector
+								state CountOfmotionDetector {
+									entry /
+									set cooldownTimeOfmotionDetector := COOLDOWN_TIME s;
+								}
+								choice OverheatChoiceOfmotionDetector
+							}
+						}
+						state OverheatedOfmotionDetector {
+							entry /
+							set overheatTimeOfmotionDetector := OVERHEAT_TIME s;
+							motionDetectorOverheated := true;
+						}
+						state OffOfmotionDetector
+						initial InitOfmotionDetectorOfmotionDetector
+					}
+				}
+				
+				state NoDetection
+				
+				merge OccupancyComponentMerge
+				choice OccupancyComponentChoice
+			}
+			
+			region Ventilation {
+				initial VentilationEntry
+				state UseAdaptiveVentilator {
+					entry / raise VentilatorActivation.activate;
+					exit / raise VentilatorActivation.deactivate;
+				region mainOfventilator {
+						state OnOfventilator {
+							region onRegionOfventilator {
+								initial OnRegionEntryOfventilator
+								state VentilationOffOfventilator
+								state VentilationOnOfventilator {
+									entry /
+									raise Ventilation.switchVentilation(true);
+									exit /
+									raise Ventilation.switchVentilation(false);
+									region VentilationOnRegionOfventilator {
+										initial OnEntryOfventilator
+										state BaseVentilationOfventilator {
+											entry /
+											set switchOffTimeOfventilator := SWITCH_OFF_TIME s;
+											ventilationLevelOfventilator := BASE_VENTILATION;
+											raise Ventilation.ventilate(ventilationLevelOfventilator);
+										}
+										state FixVentilationOfventilator {
+											entry /
+											set firstVentilationChangeTimeOfventilator := FIRST_VENTILATION_CHANGE_TIME s;
+											ventilationLevelOfventilator :=
+												calculateVentilationLevel(Motion.personPresence::count);
+											raise Ventilation.ventilate(ventilationLevelOfventilator);
+										}
+										state DecreasingVentilationOfventilator {
+											entry /
+											set ventilationChangeTimeOfventilator := VENTILATION_CHANGE_TIME s;
+											raise Ventilation.ventilate(ventilationLevelOfventilator);
+										}
+										choice VentilationChoiceOfventilator
+									}
+								}
+							}
+						}
+						state OffOfventilator
+						initial InitOfventilatorOfventilator
+					}
+				}
+				state UseSwitch  {
+					entry / raise SwitchActivation.activate;
+					exit / raise SwitchActivation.deactivate;
+				region mainOfswitch {
+						state OnOfswitch {
+							region onRegionOfswitch {
+								initial OnEntryOfswitch
+								state VentilationOnOfswitch {
+									entry /
+									raise Ventilation.switchVentilation(true);
+									raise Ventilation.ventilate(BASE_VENTILATION);
+									exit /
+									raise Ventilation.switchVentilation(false);
+								}
+								state VentilationOffOfswitch
+							}
+						}
+						state OffOfswitch
+						initial InitOfswitchOfswitch
+					}
+				}
+				state FixVentilation {
+					entry / raise Ventilation.switchVentilation(true);
+						raise Ventilation.ventilate(BASE_VENTILATION);
+				}
+				
+				merge VentilationComponentMerge
+				choice VentilationComponentChoice
+			}
+		}
+	}
+	// Occupancy //
+	transition from MainEntry to ControlVentilation
+	
+	transition from OccupancyEntry to UseCamera
+	transition from UseCamera to OccupancyComponentMerge when cycle [
+		isBatteryLow(cameraBattery)]
+	transition from UseCamera to OccupancyComponentMerge when CameraState.availability
+		[!CameraState.availability::available]
+	transition from UseMotionDetector to OccupancyComponentMerge when cycle
+		[motionDetectorOverheated]
+	transition from UseMotionDetector to OccupancyComponentMerge when MotionDetectorState.availability
+		[!MotionDetectorState.availability::available]
+	transition from NoDetection to OccupancyComponentMerge when cycle
+		[CameraState.availability::available and !isBatteryLow(cameraBattery)]
+	transition from NoDetection to OccupancyComponentMerge when MotionDetectorState.availability
+		[MotionDetectorState.availability::available]
+	// Occupancy adaptation logic
+	transition from OccupancyComponentMerge to OccupancyComponentChoice
+	transition from OccupancyComponentChoice to UseCamera [CameraState.availability::available and
+		!isBatteryLow(cameraBattery)]
+	transition from OccupancyComponentChoice to UseMotionDetector [
+		MotionDetectorState.availability::available	and !motionDetectorOverheated]
+	transition from OccupancyComponentChoice to NoDetection [else]
+	
+	// Camera
+	transition from UseCameraEntry to DefaultCameraMode
+	
+	transition from DefaultCameraMode to HighGranularityCameraMode when cycle [
+		isBatteryHigh(cameraBattery)]
+	transition from HighGranularityCameraMode to DefaultCameraMode when cycle [
+		!isBatteryHigh(cameraBattery)]
+	transition from DefaultCameraMode to LowGranularityCameraMode when cycle [
+		isBatteryMediumLow(cameraBattery)]
+	transition from LowGranularityCameraMode to DefaultCameraMode when cycle [
+		!isBatteryMediumLow(cameraBattery)]
+	////
+	
+	// Ventilation //
+	transition from VentilationEntry to UseAdaptiveVentilator
+	
+	transition from UseAdaptiveVentilator to VentilationComponentMerge when VentilatorState.availability
+		[!VentilatorState.availability::available]
+	transition from UseSwitch to VentilationComponentMerge when SwitchState.availability
+		[!SwitchState.availability::available]
+	transition from FixVentilation to VentilationComponentMerge when VentilatorState.availability
+		[VentilatorState.availability::available]
+	transition from FixVentilation to VentilationComponentMerge when SwitchState.availability
+		[SwitchState.availability::available]
+	
+	// Ventilation adaptation logic
+	transition from VentilationComponentMerge to VentilationComponentChoice
+	transition from VentilationComponentChoice to UseAdaptiveVentilator [
+		VentilatorState.availability::available]
+	transition from VentilationComponentChoice to UseSwitch [SwitchState.availability::available]
+	transition from VentilationComponentChoice to FixVentilation [else]
+	////
+transition from InitOfcameraOfcamera to OffOfcamera
+	transition from OperationEntryOfcamera to IdleOfcamera
+	transition from IdleOfcamera to SenseMotionOfcamera when Camera.motion /
+	raise Motion.motion(true);
+	transition from SenseMotionOfcamera to CountPersonsOfcamera when Camera.personPresence
+		[Camera.personPresence::count >= 0] /
+	lastCountOfcamera := Camera.personPresence::count;
+	transition from SenseMotionOfcamera to IdleOfcamera when timeout timeoutTimeOfcamera /
+	raise Motion.motion(false);
+	transition from CountPersonsOfcamera to CountPersonsChoiceOfcamera when Camera.personPresence
+		[cameraGranularity <= calculateDifference(Camera.personPresence::count, lastCountOfcamera)] /
+	lastCountOfcamera := Camera.personPresence::count;
+	transition from CountPersonsChoiceOfcamera to SenseMotionOfcamera [lastCountOfcamera <= 0]
+	transition from CountPersonsChoiceOfcamera to CountPersonsOfcamera [else]
+	transition from OnOfcamera to OffOfcamera when cycle [isBatteryLow(cameraBattery)]
+	transition from OnOfcamera to OffOfcamera when CameraActivation.^deactivate
+	transition from OffOfcamera to OffOfcamera when timeout batteryRechargeTimeOfcamera
+		[cameraBattery + 1 <= MAXIMUM_BATTERY] /
+	cameraBattery := cameraBattery + 1;
+	transition from OffOfcamera to OnOfcamera when CameraActivation.activate
+	transition from InitOfmotionDetectorOfmotionDetector to OffOfmotionDetector
+	transition from OperationEntryOfmotionDetector to IdleOfmotionDetector
+	transition from IdleOfmotionDetector to SensedMotionOfmotionDetector when MotionDetector.motion /
+	raise Motion.motion(true);
+	transition from SensedMotionOfmotionDetector to SensedMotionOfmotionDetector when
+		MotionDetector.motion
+	transition from SensedMotionOfmotionDetector to IdleOfmotionDetector when timeout
+		timeoutTimeOfmotionDetector /
+	raise Motion.motion(false);
+	transition from OverheatEntryOfmotionDetector to CountOfmotionDetector
+	transition from CountOfmotionDetector to OverheatChoiceOfmotionDetector when
+		MotionDetector.motion /
+	relayedMotionCountOfmotionDetector := relayedMotionCountOfmotionDetector + 1;
+	transition from OverheatChoiceOfmotionDetector to CountOfmotionDetector
+		[relayedMotionCountOfmotionDetector < MAXIMUM_RELAYED_MOTION_COUNT]
+	transition from CountOfmotionDetector to CountOfmotionDetector when timeout
+		cooldownTimeOfmotionDetector /
+	relayedMotionCountOfmotionDetector := relayedMotionCountOfmotionDetector - 1;
+	transition from OverheatedOfmotionDetector to OnOfmotionDetector when timeout
+		overheatTimeOfmotionDetector /
+	motionDetectorOverheated := false;
+	relayedMotionCountOfmotionDetector := 0;
+	transition from OnOfmotionDetector to OffOfmotionDetector when
+		MotionDetectorActivation.^deactivate
+	transition from OverheatedOfmotionDetector to OffOfmotionDetector when
+		MotionDetectorActivation.^deactivate
+	transition from OffOfmotionDetector to OnOfmotionDetector when MotionDetectorActivation.activate
+		[not motionDetectorOverheated]
+	transition from OffOfmotionDetector to OverheatedOfmotionDetector when
+		MotionDetectorActivation.activate [motionDetectorOverheated]
+	transition from InitOfventilatorOfventilator to OffOfventilator
+	transition from OnRegionEntryOfventilator to VentilationOnOfventilator
+	transition from VentilationOffOfventilator to VentilationOnOfventilator when Motion.motion
+		[Motion.motion::on]
+	transition from VentilationOnOfventilator to VentilationOffOfventilator when Motion.motion [not
+		Motion.motion::on]
+	transition from OnEntryOfventilator to BaseVentilationOfventilator
+	transition from BaseVentilationOfventilator to FixVentilationOfventilator when
+		Motion.personPresence
+	transition from FixVentilationOfventilator to DecreasingVentilationOfventilator when timeout
+		firstVentilationChangeTimeOfventilator
+	transition from DecreasingVentilationOfventilator to FixVentilationOfventilator when
+		Motion.personPresence
+	transition from DecreasingVentilationOfventilator to VentilationChoiceOfventilator when timeout
+		ventilationChangeTimeOfventilator
+	transition from VentilationChoiceOfventilator to BaseVentilationOfventilator
+		[ventilationLevelOfventilator - VENTILATION_DELTA <= BASE_VENTILATION]
+	transition from VentilationChoiceOfventilator to DecreasingVentilationOfventilator [else] /
+	ventilationLevelOfventilator := ventilationLevelOfventilator - VENTILATION_DELTA;
+	transition from BaseVentilationOfventilator to VentilationOffOfventilator when timeout
+		switchOffTimeOfventilator
+	transition from OnOfventilator to OffOfventilator when VentilatorActivation.^deactivate
+	transition from OffOfventilator to OnOfventilator when VentilatorActivation.activate
+	transition from InitOfswitchOfswitch to OffOfswitch
+	transition from OnEntryOfswitch to VentilationOnOfswitch
+	transition from VentilationOffOfswitch to VentilationOnOfswitch when Motion.motion
+		[Motion.motion::on]
+	transition from VentilationOnOfswitch to VentilationOffOfswitch when Motion.motion [not
+		Motion.motion::on]
+	transition from OffOfswitch to OnOfswitch when SwitchActivation.activate
+	transition from OnOfswitch to OffOfswitch when SwitchActivation.^deactivate
+}

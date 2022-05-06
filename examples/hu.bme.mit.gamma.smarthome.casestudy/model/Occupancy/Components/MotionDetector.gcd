@@ -1,0 +1,72 @@
+package occupancy
+
+import "Interfaces/Constants.gcd"
+import "Interfaces/Interfaces.gcd"
+
+statechart MotionDetector [
+	port MotionDetector : requires MotionDetector
+	port Motion : provides Motion
+	port Activation : provides InternalActivation
+] {
+	timeout timeoutTime
+	timeout cooldownTime
+	timeout overheatTime
+	
+	// Read by controller, too
+	var overheated : boolean := false // TODO call it deadBattery
+	//
+	var relayedMotionCount : integer := 0
+	
+	region main {
+		initial Entry
+		state On {
+			region operationRegion {
+				initial OperationEntry
+				state Idle
+				state SensedMotion {
+					entry / set timeoutTime := TIMEOUT_TIME s;
+				}
+			}
+			region overheatRegion {
+				initial OverheatEntry
+				state Count {
+					entry / set cooldownTime := COOLDOWN_TIME s;
+				}
+				choice OverheatChoice
+			}
+		}
+		// TODO merge Overheated and Off
+		state Overheated {
+			entry / set overheatTime := OVERHEAT_TIME s;
+				overheated := true;
+		}
+		state Off
+		//
+	}
+	
+	transition from Entry to Off
+	
+	transition from OperationEntry to Idle
+	transition from Idle to SensedMotion when MotionDetector.motion /
+		raise Motion.motion(true);
+	transition from SensedMotion to SensedMotion when MotionDetector.motion
+	transition from SensedMotion to Idle when timeout timeoutTime /
+		raise Motion.motion(false);
+	
+	transition from OverheatEntry to Count
+	transition from Count to OverheatChoice when MotionDetector.motion /
+		relayedMotionCount := relayedMotionCount + 1;
+	transition from OverheatChoice to Count [
+		relayedMotionCount < MAXIMUM_RELAYED_MOTION_COUNT]
+//	transition from OverheatChoice to Overheated [else]
+	transition from Count to Count when timeout cooldownTime /
+		relayedMotionCount := relayedMotionCount - 1;
+	
+	transition from Overheated to On when timeout overheatTime /
+		overheated := false; relayedMotionCount := 0;
+	
+	transition from On to Off when Activation.deactivate
+	transition from Overheated to Off when Activation.deactivate
+	transition from Off to On when Activation.activate [!overheated]
+	transition from Off to Overheated when Activation.activate [overheated]
+}
