@@ -38,7 +38,7 @@ statechart Controller(initialCameraBattery : integer,
 	var cameraBattery : integer := initialCameraBattery
 	var cameraGranularity : integer := initialCameraGranularity
 	
-	var motionDetectorOverheated : boolean := false
+	var motionDetectorTemporarilyOff : boolean := false
 	//
 	
 	region main {
@@ -59,8 +59,6 @@ statechart Controller(initialCameraBattery : integer,
 					}
 				]
 				state UseCamera {
-					entry / raise CameraActivation.activate;
-					exit / raise CameraActivation.deactivate;
 					region useCameraRegion  {
 						initial UseCameraEntry
 						
@@ -77,18 +75,15 @@ statechart Controller(initialCameraBattery : integer,
 				}
 				
 				@Phase = [
-					no-history component motionDetector : MotionDetector {
+					no-history component motionDetector : MotionDetector(true) {
 						bind MotionDetector -> motionDetector.MotionDetector
 						bind Motion -> motionDetector.Motion
 						bind MotionDetectorActivation -> motionDetector.Activation
 						
-						tie motionDetectorOverheated -> motionDetector.overheated
+						tie motionDetectorTemporarilyOff -> motionDetector.temporarilyOff
 					}
 				]
-				state UseMotionDetector {
-					entry / raise MotionDetectorActivation.activate;
-					exit / raise MotionDetectorActivation.deactivate;
-				}
+				state UseMotionDetector
 				
 				state NoDetection
 				
@@ -106,10 +101,7 @@ statechart Controller(initialCameraBattery : integer,
 						bind VentilatorActivation -> ventilator.Activation
 					}
 				]
-				state UseAdaptiveVentilator {
-					entry / raise VentilatorActivation.activate;
-					exit / raise VentilatorActivation.deactivate;
-				}
+				state UseAdaptiveVentilator
 				
 				@Phase = [
 					no-history component ^switch : Switch {
@@ -118,10 +110,7 @@ statechart Controller(initialCameraBattery : integer,
 						bind SwitchActivation -> ^switch.Activation
 					}
 				]
-				state UseSwitch  {
-					entry / raise SwitchActivation.activate;
-					exit / raise SwitchActivation.deactivate;
-				}
+				state UseSwitch
 				state FixVentilation {
 					entry / raise Ventilation.switchVentilation(true);
 						raise Ventilation.ventilate(BASE_VENTILATION);
@@ -140,21 +129,22 @@ statechart Controller(initialCameraBattery : integer,
 		isBatteryLow(cameraBattery)]
 	transition from UseCamera to OccupancyComponentMerge when CameraState.availability
 		[!CameraState.availability::available]
+	transition from UseCamera to OccupancyComponentMerge when CameraActivation.^deactivate
 	transition from UseMotionDetector to OccupancyComponentMerge when cycle
-		[motionDetectorOverheated]
+		[motionDetectorTemporarilyOff] // We try to adapt, but come back, if camera does not work
+		// Note that this will procure a deactivation -> activation event pair
 	transition from UseMotionDetector to OccupancyComponentMerge when MotionDetectorState.availability
 		[!MotionDetectorState.availability::available]
-	transition from NoDetection to OccupancyComponentMerge when cycle
-		[CameraState.availability::available and !isBatteryLow(cameraBattery)]
-	transition from NoDetection to OccupancyComponentMerge when MotionDetectorState.availability
-		[MotionDetectorState.availability::available]
+	transition from UseMotionDetector to OccupancyComponentMerge when MotionDetectorActivation.^deactivate
+	transition from NoDetection to OccupancyComponentMerge when cycle [canReconfigure]
 	// Occupancy adaptation logic
 	transition from OccupancyComponentMerge to OccupancyComponentChoice
 	transition from OccupancyComponentChoice to UseCamera [CameraState.availability::available and
 		!isBatteryLow(cameraBattery)]
 	transition from OccupancyComponentChoice to UseMotionDetector [
-		MotionDetectorState.availability::available	and !motionDetectorOverheated]
-	transition from OccupancyComponentChoice to NoDetection [else]
+		MotionDetectorState.availability::available]
+	transition from OccupancyComponentChoice to NoDetection [else] / // Adaptation in ventilation region
+		raise VentilatorActivation.deactivate; raise SwitchActivation.deactivate;
 	
 	// Camera
 	transition from UseCameraEntry to DefaultCameraMode
@@ -174,18 +164,24 @@ statechart Controller(initialCameraBattery : integer,
 	
 	transition from UseAdaptiveVentilator to VentilationComponentMerge when VentilatorState.availability
 		[!VentilatorState.availability::available]
+	transition from UseAdaptiveVentilator to VentilationComponentMerge when VentilatorActivation.^deactivate
 	transition from UseSwitch to VentilationComponentMerge when SwitchState.availability
 		[!SwitchState.availability::available]
-	transition from FixVentilation to VentilationComponentMerge when VentilatorState.availability
-		[VentilatorState.availability::available]
-	transition from FixVentilation to VentilationComponentMerge when SwitchState.availability
-		[SwitchState.availability::available]
+	transition from UseSwitch to VentilationComponentMerge when SwitchActivation.^deactivate
+	transition from FixVentilation to VentilationComponentMerge when cycle [canReconfigure]
 	
 	// Ventilation adaptation logic
 	transition from VentilationComponentMerge to VentilationComponentChoice
 	transition from VentilationComponentChoice to UseAdaptiveVentilator [
 		VentilatorState.availability::available]
 	transition from VentilationComponentChoice to UseSwitch [SwitchState.availability::available]
-	transition from VentilationComponentChoice to FixVentilation [else]
+	transition from VentilationComponentChoice to FixVentilation [else] / // Adaptation in occupancy region
+		raise CameraActivation.deactivate; raise MotionDetectorActivation.deactivate;
 	////
+	
+	lambda canReconfigure() : boolean := 
+		(CameraState.availability::available and !isBatteryLow(cameraBattery) or
+			MotionDetectorState.availability::available) and
+			(VentilatorState.availability::available or SwitchState.availability::available)
+	
 }

@@ -3,18 +3,16 @@ package occupancy
 import "Interfaces/Constants.gcd"
 import "Interfaces/Interfaces.gcd"
 
-statechart MotionDetector [
+statechart MotionDetector(selfDefense : boolean) [
 	port MotionDetector : requires MotionDetector
 	port Motion : provides Motion
 	port Activation : provides InternalActivation
 ] {
 	timeout timeoutTime
-	timeout cooldownTime
-	timeout overheatTime
+	timeout expectedDelayTime
+	timeout temporarilyOffTime
 	
-	// Read by controller, too
-	var overheated : boolean := false // TODO call it deadBattery
-	//
+	var temporarilyOff : boolean := false
 	var relayedMotionCount : integer := 0
 	
 	region main {
@@ -27,21 +25,20 @@ statechart MotionDetector [
 					entry / set timeoutTime := TIMEOUT_TIME s;
 				}
 			}
-			region overheatRegion {
-				initial OverheatEntry
+			region selfDefenseRegion {
+				initial SelfDefenseEntry
 				state Count {
-					entry / set cooldownTime := COOLDOWN_TIME s;
+					entry / set expectedDelayTime := EXPECTED_DELAY_TIME s;
 				}
 				choice OverheatChoice
 			}
 		}
-		// TODO merge Overheated and Off
-		state Overheated {
-			entry / set overheatTime := OVERHEAT_TIME s;
-				overheated := true;
+		state TemporarilyOff {
+			entry / set temporarilyOffTime := TEMPORARILY_OFF_TIME s;
+				temporarilyOff := true;
+			exit / temporarilyOff := false;
 		}
 		state Off
-		//
 	}
 	
 	transition from Entry to Off
@@ -53,20 +50,20 @@ statechart MotionDetector [
 	transition from SensedMotion to Idle when timeout timeoutTime /
 		raise Motion.motion(false);
 	
-	transition from OverheatEntry to Count
-	transition from Count to OverheatChoice when MotionDetector.motion /
+	transition from SelfDefenseEntry to Count
+	transition from Count to OverheatChoice when MotionDetector.motion [selfDefense] /
 		relayedMotionCount := relayedMotionCount + 1;
 	transition from OverheatChoice to Count [
 		relayedMotionCount < MAXIMUM_RELAYED_MOTION_COUNT]
-//	transition from OverheatChoice to Overheated [else]
-	transition from Count to Count when timeout cooldownTime /
+//	transition from OverheatChoice to TemporarilyOff [else]
+	transition from Count to Count when timeout expectedDelayTime [selfDefense] /
 		relayedMotionCount := relayedMotionCount - 1;
 	
-	transition from Overheated to On when timeout overheatTime /
-		overheated := false; relayedMotionCount := 0;
+	transition from TemporarilyOff to On when Activation.activate
+	transition from TemporarilyOff to On when timeout temporarilyOffTime /
+		relayedMotionCount := 0;
+	transition from TemporarilyOff to Off when Activation.deactivate
 	
 	transition from On to Off when Activation.deactivate
-	transition from Overheated to Off when Activation.deactivate
-	transition from Off to On when Activation.activate [!overheated]
-	transition from Off to Overheated when Activation.activate [overheated]
+	transition from Off to On when Activation.activate
 }

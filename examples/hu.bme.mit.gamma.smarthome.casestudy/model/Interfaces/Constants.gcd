@@ -37,8 +37,8 @@ lambda max(a : integer, b : integer) : integer :=
 // Motion detector related constants
 
 const TIMEOUT_TIME : integer := 10
-const COOLDOWN_TIME : integer := 1
-const OVERHEAT_TIME : integer := 5
+const EXPECTED_DELAY_TIME : integer := 1
+const TEMPORARILY_OFF_TIME : integer := 5
 const MAXIMUM_RELAYED_MOTION_COUNT : integer := 10
 
 // Brightness-related constants and procedures
