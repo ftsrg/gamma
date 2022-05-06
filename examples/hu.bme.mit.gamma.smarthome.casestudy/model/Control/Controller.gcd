@@ -34,11 +34,12 @@ statechart Controller(initialCameraBattery : integer,
 	port SwitchActivation : provides InternalActivation
 	//
 ] {
+	timeout batteryRechargeTime
 	// Tied to components
 	var cameraBattery : integer := initialCameraBattery
 	var cameraGranularity : integer := initialCameraGranularity
 	
-	var motionDetectorTemporarilyOff : boolean := false
+	var motionDetectorTemporarilyIdle : boolean := false
 	//
 	
 	region main {
@@ -52,7 +53,6 @@ statechart Controller(initialCameraBattery : integer,
 					no-history component camera : Camera {
 						bind Camera -> camera.Camera
 						bind Motion -> camera.Motion
-						bind CameraActivation -> camera.Activation
 						
 						tie cameraBattery -> camera.battery
 						tie cameraGranularity -> camera.granularity
@@ -78,9 +78,8 @@ statechart Controller(initialCameraBattery : integer,
 					no-history component motionDetector : MotionDetector(true) {
 						bind MotionDetector -> motionDetector.MotionDetector
 						bind Motion -> motionDetector.Motion
-						bind MotionDetectorActivation -> motionDetector.Activation
 						
-						tie motionDetectorTemporarilyOff -> motionDetector.temporarilyOff
+						tie motionDetectorTemporarilyIdle -> motionDetector.temporarilyIdle
 					}
 				]
 				state UseMotionDetector
@@ -98,7 +97,6 @@ statechart Controller(initialCameraBattery : integer,
 					no-history component ventilator : AdaptiveVentilator {
 						bind Ventilation -> ventilator.Ventilation
 						bind Motion -> ventilator.Motion
-						bind VentilatorActivation -> ventilator.Activation
 					}
 				]
 				state UseAdaptiveVentilator
@@ -107,7 +105,6 @@ statechart Controller(initialCameraBattery : integer,
 					no-history component ^switch : Switch {
 						bind Ventilation -> ^switch.Ventilation
 						bind Motion -> ^switch.Motion
-						bind SwitchActivation -> ^switch.Activation
 					}
 				]
 				state UseSwitch
@@ -118,6 +115,14 @@ statechart Controller(initialCameraBattery : integer,
 				
 				merge VentilationComponentMerge
 				choice VentilationComponentChoice
+			}
+			
+			region recharge {
+				initial RechargeEntry
+				state Idle
+				state RechargeCamera {
+					entry / set batteryRechargeTime := BATTERY_RECHARGE_TIME s;
+				}
 			}
 		}
 	}
@@ -131,17 +136,15 @@ statechart Controller(initialCameraBattery : integer,
 		[!CameraState.availability::available]
 	transition from UseCamera to OccupancyComponentMerge when CameraActivation.^deactivate
 	transition from UseMotionDetector to OccupancyComponentMerge when cycle
-		[motionDetectorTemporarilyOff] // We try to adapt, but come back, if camera does not work
-		// Note that this will procure a deactivation -> activation event pair
+		[motionDetectorTemporarilyIdle and isCameraAvailable()] // Camera should have priority?
 	transition from UseMotionDetector to OccupancyComponentMerge when MotionDetectorState.availability
 		[!MotionDetectorState.availability::available]
 	transition from UseMotionDetector to OccupancyComponentMerge when MotionDetectorActivation.^deactivate
-	transition from NoDetection to OccupancyComponentMerge when cycle [canReconfigure]
+	transition from NoDetection to OccupancyComponentMerge when cycle [canReconfigure()]
 	// Occupancy adaptation logic
 	transition from OccupancyComponentMerge to OccupancyComponentChoice
-	transition from OccupancyComponentChoice to UseCamera [CameraState.availability::available and
-		!isBatteryLow(cameraBattery)]
-	transition from OccupancyComponentChoice to UseMotionDetector [
+	transition from OccupancyComponentChoice to UseCamera when !(CameraActivation.^deactivate) [isCameraAvailable()]
+	transition from OccupancyComponentChoice to UseMotionDetector when !(MotionDetectorActivation.^deactivate) [
 		MotionDetectorState.availability::available]
 	transition from OccupancyComponentChoice to NoDetection [else] / // Adaptation in ventilation region
 		raise VentilatorActivation.deactivate; raise SwitchActivation.deactivate;
@@ -168,20 +171,34 @@ statechart Controller(initialCameraBattery : integer,
 	transition from UseSwitch to VentilationComponentMerge when SwitchState.availability
 		[!SwitchState.availability::available]
 	transition from UseSwitch to VentilationComponentMerge when SwitchActivation.^deactivate
-	transition from FixVentilation to VentilationComponentMerge when cycle [canReconfigure]
+	transition from UseSwitch to VentilationComponentMerge when cycle [
+		VentilatorState.availability::available] // Ventilator has priority
+	transition from FixVentilation to VentilationComponentMerge when cycle [canReconfigure()]
 	
 	// Ventilation adaptation logic
 	transition from VentilationComponentMerge to VentilationComponentChoice
-	transition from VentilationComponentChoice to UseAdaptiveVentilator [
+	transition from VentilationComponentChoice to UseAdaptiveVentilator when !(VentilatorActivation.^deactivate) [
 		VentilatorState.availability::available]
-	transition from VentilationComponentChoice to UseSwitch [SwitchState.availability::available]
+	transition from VentilationComponentChoice to UseSwitch  when !(SwitchActivation.^deactivate) [
+		SwitchState.availability::available]
 	transition from VentilationComponentChoice to FixVentilation [else] / // Adaptation in occupancy region
 		raise CameraActivation.deactivate; raise MotionDetectorActivation.deactivate;
 	////
 	
+	// Charge camera - TODO separate component
+	transition from RechargeEntry to Idle
+	
+	transition from Idle to RechargeCamera when CameraActivation.^deactivate
+	transition from RechargeCamera to RechargeCamera when timeout batteryRechargeTime [
+		cameraBattery + 1 <= MAXIMUM_BATTERY] / cameraBattery := cameraBattery + 1;
+	transition from RechargeCamera to Idle when cycle [in-state(occupancy.UseCamera)]
+	////
+	
 	lambda canReconfigure() : boolean := 
-		(CameraState.availability::available and !isBatteryLow(cameraBattery) or
-			MotionDetectorState.availability::available) and
+		(isCameraAvailable() or MotionDetectorState.availability::available) and
 			(VentilatorState.availability::available or SwitchState.availability::available)
 	
+	lambda isCameraAvailable() : boolean := 
+		CameraState.availability::available and !isBatteryLow(cameraBattery)
+		
 }

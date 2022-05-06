@@ -6,7 +6,6 @@ import "Interfaces/Interfaces.gcd"
 statechart Camera [
 	port Camera : requires Camera
 	port Motion : provides Motion
-	port Activation : provides InternalActivation
 ] {
 	timeout timeoutTime // To turn off lightning automatically
 	timeout batteryRechargeTime
@@ -19,7 +18,7 @@ statechart Camera [
 	
 	region main {
 		initial Entry
-		state On {
+		state Operating {
 			exit / lastCount := 0;
 			region operationRegion {
 				initial OperationEntry
@@ -35,12 +34,12 @@ statechart Camera [
 				choice CountPersonsChoice
 			}
 		}
-		state Off {
+		state Charging {
 			entry / set batteryRechargeTime := BATTERY_RECHARGE_TIME s;
 		}
 	}
 	
-	transition from Entry to Off
+	transition from Entry to Operating
 	
 	transition from OperationEntry to Idle
 	transition from Idle to SenseMotion when Camera.motion /
@@ -56,11 +55,9 @@ statechart Camera [
 	transition from CountPersonsChoice to SenseMotion [lastCount <= 0]
 	transition from CountPersonsChoice to CountPersons [else]
 	
-	transition from On to Off when cycle [isBatteryLow(battery)]
-	transition from On to Off when Activation.deactivate
-	
-	transition from Off to Off when timeout batteryRechargeTime [battery + 1 <= MAXIMUM_BATTERY] /
+	transition from Operating to Charging when cycle [isBatteryLow(battery)]
+	transition from Charging to Charging when timeout batteryRechargeTime [battery + 1 <= MAXIMUM_BATTERY] /
 		battery := battery + 1;
 	
-	transition from Off to On when Activation.activate
+	transition from Charging to Operating when cycle [isBatteryMedium(battery)]
 }

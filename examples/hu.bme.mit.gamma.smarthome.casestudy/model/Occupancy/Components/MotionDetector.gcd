@@ -6,13 +6,12 @@ import "Interfaces/Interfaces.gcd"
 statechart MotionDetector(selfDefense : boolean) [
 	port MotionDetector : requires MotionDetector
 	port Motion : provides Motion
-	port Activation : provides InternalActivation
 ] {
 	timeout timeoutTime
 	timeout expectedDelayTime
-	timeout temporarilyOffTime
+	timeout temporarilyIdleTime
 	
-	var temporarilyOff : boolean := false
+	var temporarilyIdle : boolean := false
 	var relayedMotionCount : integer := 0
 	
 	region main {
@@ -30,18 +29,17 @@ statechart MotionDetector(selfDefense : boolean) [
 				state Count {
 					entry / set expectedDelayTime := EXPECTED_DELAY_TIME s;
 				}
-				choice OverheatChoice
+				choice SelfDefenseChoice
 			}
 		}
-		state TemporarilyOff {
-			entry / set temporarilyOffTime := TEMPORARILY_OFF_TIME s;
-				temporarilyOff := true;
-			exit / temporarilyOff := false;
+		state TemporarilyIdle {
+			entry / set temporarilyIdleTime := TEMPORARILY_IDLE_TIME s;
+				temporarilyIdle := true;
+			exit / temporarilyIdle := false;
 		}
-		state Off
 	}
 	
-	transition from Entry to Off
+	transition from Entry to On
 	
 	transition from OperationEntry to Idle
 	transition from Idle to SensedMotion when MotionDetector.motion /
@@ -51,19 +49,14 @@ statechart MotionDetector(selfDefense : boolean) [
 		raise Motion.motion(false);
 	
 	transition from SelfDefenseEntry to Count
-	transition from Count to OverheatChoice when MotionDetector.motion [selfDefense] /
+	transition from Count to SelfDefenseChoice when MotionDetector.motion [selfDefense] /
 		relayedMotionCount := relayedMotionCount + 1;
-	transition from OverheatChoice to Count [
+	transition from SelfDefenseChoice to Count [
 		relayedMotionCount < MAXIMUM_RELAYED_MOTION_COUNT]
-//	transition from OverheatChoice to TemporarilyOff [else]
+	transition from SelfDefenseChoice to TemporarilyIdle [else]
 	transition from Count to Count when timeout expectedDelayTime [selfDefense] /
 		relayedMotionCount := relayedMotionCount - 1;
 	
-	transition from TemporarilyOff to On when Activation.activate
-	transition from TemporarilyOff to On when timeout temporarilyOffTime /
+	transition from TemporarilyIdle to On when timeout temporarilyIdleTime /
 		relayedMotionCount := 0;
-	transition from TemporarilyOff to Off when Activation.deactivate
-	
-	transition from On to Off when Activation.deactivate
-	transition from Off to On when Activation.activate
 }

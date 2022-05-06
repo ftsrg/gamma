@@ -6,31 +6,19 @@ import "Interfaces/Interfaces.gcd"
 statechart Switch [
 	port Motion : provides Motion
 	port Ventilation : provides Ventilation
-	port Activation : provides InternalActivation
 ] {
 	region main {
-		initial Entry
-		state On {
-			region onRegion {
-				initial OnEntry
-				state VentilationOn {
-					entry / raise Ventilation.switchVentilation(true);
-						raise Ventilation.ventilate(BASE_VENTILATION);
-					exit / raise Ventilation.switchVentilation(false);
-				}
-				state VentilationOff
-			}
+		initial OnEntry
+		state VentilationOn {
+			entry / raise Ventilation.switchVentilation(true);
+				raise Ventilation.ventilate(BASE_VENTILATION);
+			exit / raise Ventilation.switchVentilation(false);
 		}
-		state Off
+		state VentilationOff
 	}
-	
-	transition from Entry to Off
 	
 	transition from OnEntry to VentilationOn
 //	transition from Off to Off when Motion.motion [!Motion.motion::on]	
 	transition from VentilationOff to VentilationOn when Motion.motion [Motion.motion::on]		
 	transition from VentilationOn to VentilationOff when Motion.motion [!Motion.motion::on]
-
-	transition from Off to On when Activation.activate
-	transition from On to Off when Activation.deactivate
 }

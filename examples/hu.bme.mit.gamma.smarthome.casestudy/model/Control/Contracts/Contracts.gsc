@@ -27,16 +27,23 @@ scenario MotionIncreasesIllumination [
 	{
 		cold receives Camera.personPresence
 //		assign personCount := Camera.personPresence::count
+		
 	}
-	{
-		hot sends Illumination.dim // TODO match assign and check order in mapping
-//		assign brightness := calculateBrightness(personCount)
-//		check Illumination.dim::brightness == brightness
+	alternative {
+		check personCount > 10
+	} or {
+		check personCount <= 10
 	}
 	{
 		hot sends Illumination.dim
-//		assign brightness := brightness - BRIGHTNESS_DELTA
+		hot sends Illumination.dim // TODO match assign and check order in mapping
 //		check Illumination.dim::brightness == brightness
+//		assign brightness := calculateBrightness(personCount)
+	}
+	{
+		hot sends Illumination.dim
+//		check Illumination.dim::brightness == brightness
+//		assign brightness := brightness - BRIGHTNESS_DELTA
 	}
 ]
 
