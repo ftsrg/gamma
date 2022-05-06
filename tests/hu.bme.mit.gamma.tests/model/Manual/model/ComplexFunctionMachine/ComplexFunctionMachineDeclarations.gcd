@@ -5,7 +5,7 @@ procedure big(a : integer) : boolean {
 procedure zero : integer {
 	return 0;
 }
-procedure self(a : integer) : integer {
+procedure ^self(a : integer) : integer {
 	return a;
 }
 interface portA {
