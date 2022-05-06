@@ -71,7 +71,7 @@ class HierarchicalTransitionMerger extends AbstractTransitionMerger {
 	}
 	
 	private def Action mergeAllTransitionsOfRegion(CompositeElement element,
-			Map<Region, Action> regionActions) {
+			Map<Region, ? extends Action> regionActions) {
 		val lowlevelRegions = element.regions
 		
 		if (lowlevelRegions.empty) {
@@ -105,11 +105,10 @@ class HierarchicalTransitionMerger extends AbstractTransitionMerger {
 					
 			return xStsSequentialAction
 		}
-		
 	}
 	
 	private def Action mergeAllTransitionsOfRegion(Region region,
-			Map<Region, Action> regionActions) {
+			Map<Region, ? extends Action> regionActions) {
 		val lowlevelStatechart = region.statechart
 		val lowlevelSchedulingOrder = lowlevelStatechart.schedulingOrder
 		
@@ -189,7 +188,11 @@ class HierarchicalTransitionMerger extends AbstractTransitionMerger {
 		val xStsActions = xStsTransitions.values.flatten.map[it.action]
 				.filter(SequentialAction).toList
 		if (xStsActions.empty) {
-			return createEmptyAction
+			// If there are regions with no behavior (e.g., single state without transitions)
+//			return createEmptyAction
+			// Other methods can handle only IfActions and NonDeterministicActions
+			return createFalseExpression.createIfAction(
+					createEmptyAction, createEmptyAction)
 		}
 		else if (arePrioritiesUnique) {
 			return xStsActions.createIfAction
@@ -215,6 +218,11 @@ class HierarchicalTransitionMerger extends AbstractTransitionMerger {
 				branch.appendToAction(execSetting)
 			}
 		}
+//		else if (action instanceof EmptyAction) {
+//			// If there are regions with no behavior (e.g., single state without transitions)
+//			// Not correct as we can handle only IfActions and NonDeterministicActions
+//			execSetting.replace(action)
+//		}
 		else {
 			throw new IllegalArgumentException("Not known action: " + action)
 		}
@@ -245,6 +253,11 @@ class HierarchicalTransitionMerger extends AbstractTransitionMerger {
 				thenAction.extendElse(action)
 			}
 		}
+//		else if (action instanceof EmptyAction) {
+//			// If there are regions with no behavior (e.g., single state without transitions)
+//			// Not correct as we can handle only IfActions and NonDeterministicActions
+//			execSetting.replace(action)
+//		}
 		else {
 			throw new IllegalArgumentException("Not known action: " + extendable)
 		}
