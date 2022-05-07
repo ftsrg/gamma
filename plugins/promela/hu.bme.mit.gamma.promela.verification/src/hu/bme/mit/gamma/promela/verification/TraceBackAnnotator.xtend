@@ -1,23 +1,26 @@
 package hu.bme.mit.gamma.promela.verification
 
-import java.util.Scanner
+import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.querygenerator.PromelaQueryGenerator
 import hu.bme.mit.gamma.statechart.interface_.Component
-import hu.bme.mit.gamma.expression.model.Expression
-import hu.bme.mit.gamma.trace.model.TraceModelFactory
-import hu.bme.mit.gamma.trace.util.TraceUtil
-import hu.bme.mit.gamma.verification.util.TraceBuilder
-import hu.bme.mit.gamma.util.GammaEcoreUtil
-import java.util.logging.Logger
 import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.statechart.interface_.SchedulingConstraintAnnotation
+import hu.bme.mit.gamma.theta.verification.XstsBackAnnotator
+import hu.bme.mit.gamma.trace.model.ExecutionTrace
+import hu.bme.mit.gamma.trace.model.Step
+import hu.bme.mit.gamma.trace.model.TraceModelFactory
+import hu.bme.mit.gamma.trace.util.TraceUtil
+import hu.bme.mit.gamma.util.GammaEcoreUtil
+import hu.bme.mit.gamma.verification.util.TraceBuilder
+import java.util.NoSuchElementException
+import java.util.Scanner
+import java.util.logging.Level
+import java.util.logging.Logger
+import java.util.regex.Pattern
 
 import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
-import hu.bme.mit.gamma.trace.model.ExecutionTrace
-import java.util.logging.Level
-import java.util.NoSuchElementException
 
 class TraceBackAnnotator {
 	
@@ -32,7 +35,7 @@ class TraceBackAnnotator {
 	
 	protected final Scanner traceScanner
 	protected final PromelaQueryGenerator promelaQueryGenerator
-	protected final extension PromelaBackAnnotator promelaBackAnnotator
+	protected final extension XstsBackAnnotator xStsBackAnnotator
 	protected static final Object engineSynchronizationObject = new Object
 	
 	protected final Package gammaPackage
@@ -57,7 +60,7 @@ class TraceBackAnnotator {
 		this.sortTrace = sortTrace
 		this.component = gammaPackage.firstComponent
 		this.promelaQueryGenerator = new PromelaQueryGenerator(component)
-		this.promelaBackAnnotator = new PromelaBackAnnotator(promelaQueryGenerator, PromelaArrayParser.INSTANCE)
+		this.xStsBackAnnotator = new XstsBackAnnotator(promelaQueryGenerator, PromelaArrayParser.INSTANCE)
 		val schedulingConstraintAnnotation = gammaPackage.annotations
 				.filter(SchedulingConstraintAnnotation).head
 		if (schedulingConstraintAnnotation !== null) {
@@ -104,7 +107,7 @@ class TraceBackAnnotator {
 								
 								traceState = TraceState.REQUIRED
 								line = traceScanner.nextLine.trim
-								println("INIT")
+								//println("INIT")
 							}
 							case line.equals(INIT_END): {
 								traceState = TraceState.NOT_REQUIRED
@@ -119,7 +122,7 @@ class TraceBackAnnotator {
 								traceState = TraceState.REQUIRED
 								initError = true
 								line = traceScanner.nextLine.trim
-								println("INIT")
+								//println("INIT")
 							}
 							case line.equals(INIT_ERROR): {
 								if (initError) {
@@ -134,18 +137,18 @@ class TraceBackAnnotator {
 								step.checkStates
 								// Creating a new step
 								step = createStep
-								/// Add static delay every turn
+								// Add static delay every turn
 								if (schedulingConstraint !== null) {
 									step.addTimeElapse(schedulingConstraint)
 								}
-								///
+
 								trace.steps += step
 								// Setting the state
 								backAnnotatorState = BackAnnotatorState.ENVIRONMENT_CHECK
 								
 								traceState = TraceState.REQUIRED
 								line = traceScanner.nextLine.trim
-								println("ENVIRONMENT_CHECK")
+								//println("ENVIRONMENT_CHECK")
 							}
 							case line.equals(ENV_END): {
 								traceState = TraceState.NOT_REQUIRED
@@ -168,7 +171,7 @@ class TraceBackAnnotator {
 								
 								traceState = TraceState.REQUIRED
 								line = traceScanner.nextLine.trim
-								println("STATE_CHECK")
+								//println("STATE_CHECK")
 							}
 							case line.equals(TRANS_END): {
 								traceState = TraceState.NOT_REQUIRED
@@ -186,53 +189,28 @@ class TraceBackAnnotator {
 				
 				// We parse in every turn
 				if (traceState == TraceState.REQUIRED) {
-					println(line)
+					//println(line)
 					
-					val split = line.split(" = ")
-					val id = split.get(0)
-					val value = split.get(1)
+					var split = line.split(" = ")
+					var id = split.get(0)
+					var value = split.get(1)
 					
-					switch (backAnnotatorState) {
-						case STATE_CHECK: {
-							val potentialStateString = '''«id» == «value»'''
-							if (promelaQueryGenerator.isSourceState(potentialStateString)) {
-								potentialStateString.parseState(step)
-							}
-							else if (promelaQueryGenerator.isSourceVariable(id)) {
-								id.parseVariable(value, step)
-							}
-							else if (promelaQueryGenerator.isSourceOutEvent(id)) {
-								id.parseOutEvent(value, step)
-							}
-							else if (promelaQueryGenerator.isSourceOutEventParameter(id)) {
-								id.parseOutEventParameter(value, step)
-							}
-							// Checking if an asynchronous in-event is already stored in the queue
-							else if (promelaQueryGenerator.isAsynchronousSourceMessageQueue(id)) {
-								id.handleStoredAsynchronousInEvents(value)
-							}
+					// Array
+					while (id.endsWith("]")) {
+						val arrayName = id.split(Pattern.quote("[")).get(0)
+						line = traceScanner.nextLine.trim
+						var arrayValue = id + " = " + value
+						while (line.startsWith(arrayName)) {
+							arrayValue += "|" + line
+							line = traceScanner.nextLine.trim
 						}
-						case ENVIRONMENT_CHECK: {
-							// Synchronous in-event
-							if (promelaQueryGenerator.isSynchronousSourceInEvent(id)) {
-								id.parseSynchronousInEvent(value, step)
-							}
-							// Synchronous in-event parameter
-							else if (promelaQueryGenerator.isSynchronousSourceInEventParameter(id)) {
-								id.parseSynchronousInEventParameter(value, step)
-							}
-							// Asynchronous in-event
-							else if (promelaQueryGenerator.isAsynchronousSourceMessageQueue(id)) {
-								id.parseAsynchronousInEvent(value, step)
-							}
-							// Asynchronous in-event parameter
-							else if (promelaQueryGenerator.isAsynchronousSourceInEventParameter(id)) {
-								id.parseAsynchronousInEventParameter(value, step)
-							}
-						}
-						default:
-							throw new IllegalArgumentException("Not know state: " + backAnnotatorState)
+						// Elements of array in arrayValue
+						backAnnotatorState.parse(arrayName, arrayValue, step)
+						split = line.split(" = ")
+						id = split.get(0)
+						value = split.get(1)
 					}
+					backAnnotatorState.parse(id, value, step)
 				}
 			}
 			// Checking the last state (in events must NOT be deleted here though)
@@ -249,7 +227,51 @@ class TraceBackAnnotator {
 		return trace
 	}
 	
-	enum BackAnnotatorState {INIT, STATE_CHECK, ENVIRONMENT_CHECK}
-	enum ModelState {INIT, TRANS, ENV}
-	enum TraceState {REQUIRED, NOT_REQUIRED}
+	protected def parse(BackAnnotatorState backAnnotatorState, String id, String value, Step step) {
+		switch (backAnnotatorState) {
+			case STATE_CHECK: {
+				val potentialStateString = '''«id» == «value»'''
+				if (promelaQueryGenerator.isSourceState(potentialStateString)) {
+					potentialStateString.parseState(step)
+				}
+				else if (promelaQueryGenerator.isSourceVariable(id)) {
+					id.parseVariable(value, step)
+				}
+				else if (promelaQueryGenerator.isSourceOutEvent(id)) {
+					id.parseOutEvent(value, step)
+				}
+				else if (promelaQueryGenerator.isSourceOutEventParameter(id)) {
+					id.parseOutEventParameter(value, step)
+				}
+				// Checking if an asynchronous in-event is already stored in the queue
+				else if (promelaQueryGenerator.isAsynchronousSourceMessageQueue(id)) {
+					id.handleStoredAsynchronousInEvents(value)
+				}
+			}
+			case ENVIRONMENT_CHECK: {
+				// Synchronous in-event
+				if (promelaQueryGenerator.isSynchronousSourceInEvent(id)) {
+					id.parseSynchronousInEvent(value, step)
+				}
+				// Synchronous in-event parameter
+				else if (promelaQueryGenerator.isSynchronousSourceInEventParameter(id)) {
+					id.parseSynchronousInEventParameter(value, step)
+				}
+				// Asynchronous in-event
+				else if (promelaQueryGenerator.isAsynchronousSourceMessageQueue(id)) {
+					id.parseAsynchronousInEvent(value, step)
+				}
+				// Asynchronous in-event parameter
+				else if (promelaQueryGenerator.isAsynchronousSourceInEventParameter(id)) {
+					id.parseAsynchronousInEventParameter(value, step)
+				}
+			}
+			default:
+				throw new IllegalArgumentException("Not know state: " + backAnnotatorState)
+		}
+	}
+	
+	enum BackAnnotatorState { INIT, STATE_CHECK, ENVIRONMENT_CHECK }
+	enum ModelState { INIT, TRANS, ENV }
+	enum TraceState { REQUIRED, NOT_REQUIRED }
 }
