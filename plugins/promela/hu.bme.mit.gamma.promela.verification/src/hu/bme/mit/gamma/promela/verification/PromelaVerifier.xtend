@@ -1,15 +1,13 @@
 package hu.bme.mit.gamma.promela.verification
 
+import hu.bme.mit.gamma.statechart.interface_.Package
+import hu.bme.mit.gamma.util.FileUtil
+import hu.bme.mit.gamma.verification.result.ThreeStateBoolean
 import hu.bme.mit.gamma.verification.util.AbstractVerifier
 import java.io.File
+import java.util.ArrayList
 import java.util.Scanner
 import java.util.logging.Level
-import hu.bme.mit.gamma.verification.util.AbstractVerifier.Result
-import hu.bme.mit.gamma.verification.result.ThreeStateBoolean
-import java.io.FileWriter
-import hu.bme.mit.gamma.util.FileUtil
-import java.util.ArrayList
-import hu.bme.mit.gamma.statechart.interface_.Package
 
 class PromelaVerifier extends AbstractVerifier {
 	
