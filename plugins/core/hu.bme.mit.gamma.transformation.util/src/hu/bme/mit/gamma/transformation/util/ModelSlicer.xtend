@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2021 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -12,10 +12,10 @@ package hu.bme.mit.gamma.transformation.util
 
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.property.model.AtomicFormula
-import hu.bme.mit.gamma.property.model.ComponentInstanceEventParameterReference
-import hu.bme.mit.gamma.property.model.ComponentInstanceEventReference
-import hu.bme.mit.gamma.property.model.ComponentInstanceVariableReference
 import hu.bme.mit.gamma.property.model.PropertyPackage
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventParameterReferenceExpression
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventReferenceExpression
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures
 import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.Port
@@ -51,9 +51,9 @@ class ModelSlicer {
 		val Collection<VariableDeclaration> relevantVariables = newHashSet
 		for (atomicFormula : atomicFormulas) {
 			val variableReferences =
-					ecoreUtil.getAllContentsOfType(atomicFormula, ComponentInstanceVariableReference)
+					ecoreUtil.getAllContentsOfType(atomicFormula, ComponentInstanceVariableReferenceExpression)
 			for (variableReference : variableReferences) {
-				relevantVariables += variableReference.variable
+				relevantVariables += variableReference.variableDeclaration
 			}
 		}
 		val variableReducer = new WrittenOnlyVariableReducer(containingPackage, relevantVariables)
@@ -64,12 +64,12 @@ class ModelSlicer {
 			val Collection<Entry<Port, Event>> relevantEvents = newHashSet
 			for (atomicFormula : atomicFormulas) {
 				val eventReferences =
-						ecoreUtil.getAllContentsOfType(atomicFormula, ComponentInstanceEventReference)
+						ecoreUtil.getAllContentsOfType(atomicFormula, ComponentInstanceEventReferenceExpression)
 				for (eventReference : eventReferences) {
 					relevantEvents += new SimpleEntry<Port, Event>(eventReference.port, eventReference.event)
 				}
 				val parameterReferences =
-						ecoreUtil.getAllContentsOfType(atomicFormula, ComponentInstanceEventParameterReference)
+						ecoreUtil.getAllContentsOfType(atomicFormula, ComponentInstanceEventParameterReferenceExpression)
 				for (parameterReference : parameterReferences) {
 					relevantEvents += 
 							new SimpleEntry<Port, Event>(parameterReference.port, parameterReference.event)

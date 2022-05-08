@@ -11,11 +11,11 @@
 package hu.bme.mit.gamma.querygenerator.serializer
 
 import hu.bme.mit.gamma.expression.model.Expression
-import hu.bme.mit.gamma.property.model.ComponentInstanceEventParameterReference
-import hu.bme.mit.gamma.property.model.ComponentInstanceEventReference
-import hu.bme.mit.gamma.property.model.ComponentInstanceStateConfigurationReference
-import hu.bme.mit.gamma.property.model.ComponentInstanceStateExpression
-import hu.bme.mit.gamma.property.model.ComponentInstanceVariableReference
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceElementReferenceExpression
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventParameterReferenceExpression
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventReferenceExpression
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression
 import hu.bme.mit.gamma.statechart.util.ExpressionSerializer
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 
@@ -30,27 +30,27 @@ abstract class PropertyExpressionSerializer extends ExpressionSerializer {
 	}
 	
 	override String serialize(Expression expression) {
-		if (expression instanceof ComponentInstanceStateExpression) {
+		if (expression instanceof ComponentInstanceElementReferenceExpression) {
 			return expression.serializeStateExpression
 		}
 		return super.serialize(expression)
 	}
 	
-	protected def dispatch serializeStateExpression(ComponentInstanceStateConfigurationReference expression) {
+	protected def dispatch serializeStateExpression(ComponentInstanceStateReferenceExpression expression) {
 		val instance = expression.instance
 		val region = expression.region
 		val state = expression.state
 		return '''«state.getId(region, instance)»'''
 	}
 	
-	protected def dispatch serializeStateExpression(ComponentInstanceVariableReference expression) {
+	protected def dispatch serializeStateExpression(ComponentInstanceVariableReferenceExpression expression) {
 		val instance = expression.instance
-		val variable = expression.variable
+		val variable = expression.variableDeclaration
 		// TODO record?
 		return '''«variable.getId(instance).head»'''
 	}
 	
-	protected def dispatch serializeStateExpression(ComponentInstanceEventReference expression) {
+	protected def dispatch serializeStateExpression(ComponentInstanceEventReferenceExpression expression) {
 		val instance = expression.instance
 		val port = expression.port
 		val event = expression.event
@@ -58,11 +58,11 @@ abstract class PropertyExpressionSerializer extends ExpressionSerializer {
 		return '''«event.getId(port, instance)»'''
 	}
 	
-	protected def dispatch serializeStateExpression(ComponentInstanceEventParameterReference expression) {
+	protected def dispatch serializeStateExpression(ComponentInstanceEventParameterReferenceExpression expression) {
 		val instance = expression.instance
 		val port = expression.port
 		val event = expression.event
-		val parameter = expression.parameter
+		val parameter = expression.parameterDeclaration
 		// Could be extended with in-events too
 		// TODO record?
 		return '''«event.getId(port, parameter, instance).head»'''

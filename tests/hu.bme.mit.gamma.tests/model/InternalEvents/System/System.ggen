@@ -1,0 +1,59 @@
+import "Statechart/Synchronous.gcd"
+import "Asynchronous.gcd"
+import "System.gcd"
+
+code {
+	component : Synchronous
+	language : java
+}
+
+code {
+	component : Scheduled
+	language : java
+}
+
+//
+
+analysis {
+	component : Synchronous
+	language : Theta
+}
+
+verification {
+	language : Theta
+	test-language : java
+	file : "Synchronous.xsts"
+	query-file : "Synchronous.prop"
+}
+
+//
+
+analysis {
+	component : Asynchronous
+	language : Theta
+	state-coverage
+}
+
+verification {
+	language : Theta
+	test-language : java
+	file : "Asynchronous.xsts"
+	property-file : ".Asynchronous.gpd"
+	back-annotate-to-original : true
+}
+
+//
+
+analysis {
+	component : Scheduled
+	transition-pair-coverage
+	language : Theta
+}
+
+verification {
+	language : Theta
+	test-language : java
+	file : "System.xsts"
+	property-file : ".System.gpd"
+	back-annotate-to-original : true
+}

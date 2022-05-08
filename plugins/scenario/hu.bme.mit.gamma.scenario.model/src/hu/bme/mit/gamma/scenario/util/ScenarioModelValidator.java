@@ -57,7 +57,7 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 	}
 	//
 
-	ExpressionTypeDeterminator2 typeDeterminator = ExpressionTypeDeterminator2.INSTANCE;
+	protected final ExpressionTypeDeterminator2 typeDeterminator = ExpressionTypeDeterminator2.INSTANCE;
 
 	public Collection<ValidationResultMessage> checkIncompatibleAnnotations(ScenarioDefinition scenario) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();

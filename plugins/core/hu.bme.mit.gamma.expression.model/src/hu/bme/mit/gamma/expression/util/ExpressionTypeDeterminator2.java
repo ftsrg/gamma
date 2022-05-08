@@ -365,30 +365,34 @@ public class ExpressionTypeDeterminator2 {
 			return typeDefinition instanceof DecimalTypeDefinition ||
 				typeDefinition instanceof IntegerTypeDefinition ||
 				typeDefinition instanceof RationalTypeDefinition;
-		} catch (IllegalArgumentException e ) {
+		} catch (IllegalArgumentException e) {
 			return false; // Might be the result of inconsistent Xtext type reference (reference is null)
 		}
 	}
 	
 	public boolean isNumber(Expression expression) {
-		return isNumber(getType(expression));
+		try {
+			return expression != null && isNumber(getType(expression));
+		} catch (IllegalArgumentException e) {
+			return false; // e.g., if getType(expression) throws an exception
+		}
 	}
 	
 	// Type is boolean
 	
 	public boolean isBoolean(Expression expression) {
-		return getTypeDefinition(expression) instanceof BooleanTypeDefinition;
+		return expression != null && getTypeDefinition(expression) instanceof BooleanTypeDefinition;
 	}
 	
 	// Type is integer
 	
 	public boolean isInteger(Expression expression) {
-		return getTypeDefinition(expression) instanceof IntegerTypeDefinition;
+		return expression != null && getTypeDefinition(expression) instanceof IntegerTypeDefinition;
 	}
 	
 	public boolean isInteger(Type type) {
-		return ExpressionModelDerivedFeatures.getTypeDefinition(type) instanceof IntegerTypeDefinition;
-		//return getAliaslessTypeTree(type) instanceof IntegerTypeDefinition;
+		return type != null &&
+				ExpressionModelDerivedFeatures.getTypeDefinition(type) instanceof IntegerTypeDefinition;
 	}
 	
 	// Type pretty printer

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2021 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -10,15 +10,15 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.transformation.util
 
-import hu.bme.mit.gamma.property.model.ComponentInstanceEventParameterReference
-import hu.bme.mit.gamma.property.model.ComponentInstanceEventReference
-import hu.bme.mit.gamma.property.model.ComponentInstancePortReference
-import hu.bme.mit.gamma.property.model.ComponentInstanceStateConfigurationReference
-import hu.bme.mit.gamma.property.model.ComponentInstanceStateExpression
-import hu.bme.mit.gamma.property.model.ComponentInstanceTransitionReference
-import hu.bme.mit.gamma.property.model.ComponentInstanceVariableReference
 import hu.bme.mit.gamma.property.model.PropertyPackage
-import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceElementReferenceExpression
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventParameterReferenceExpression
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventReferenceExpression
+import hu.bme.mit.gamma.statechart.composite.ComponentInstancePortReferenceExpression
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceTransitionReferenceExpression
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.CompositeModelFactory
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
@@ -52,7 +52,7 @@ class PropertyUnfolder {
 	
 	def PropertyPackage unfoldPackage(PropertyPackage propertyPackage) {
 		val newPackage = propertyPackage.clone
-		val contents = newPackage.getAllContentsOfType(ComponentInstanceStateExpression)
+		val contents = newPackage.getAllContentsOfType(ComponentInstanceElementReferenceExpression)
 		val size = contents.size
 		for (var i = 0; i < size; i++) {
 			val content = contents.get(i)
@@ -62,7 +62,7 @@ class PropertyUnfolder {
 		return newPackage
 	}
 	
-	def dispatch EObject unfold(ComponentInstanceStateConfigurationReference reference) {
+	def dispatch EObject unfold(ComponentInstanceStateReferenceExpression reference) {
 		val oldInstance = reference.instance
 		val newInstance = oldInstance.newSimpleInstance
 		val newInstanceReference = newInstance.createInstanceReference
@@ -77,19 +77,19 @@ class PropertyUnfolder {
 		]
 	}
 	
-	def dispatch EObject unfold(ComponentInstanceVariableReference reference) {
+	def dispatch EObject unfold(ComponentInstanceVariableReferenceExpression reference) {
 		val oldInstance = reference.instance
 		val newInstance = oldInstance.newSimpleInstance
 		val newInstanceReference = newInstance.createInstanceReference
-		val variable = reference.variable
+		val variable = reference.variableDeclaration
 		val newVariable = newInstance.getNewVariable(variable)
 		return reference.clone	=> [
 			it.instance = newInstanceReference
-			it.variable = newVariable
+			it.variableDeclaration = newVariable
 		]
 	}
 	
-	def dispatch EObject unfold(ComponentInstanceEventReference reference) {
+	def dispatch EObject unfold(ComponentInstanceEventReferenceExpression reference) {
 		val oldInstance = reference.instance
 		val newInstance = oldInstance.newSimpleInstance
 		val newInstanceReference = newInstance.createInstanceReference
@@ -102,7 +102,7 @@ class PropertyUnfolder {
 		]
 	}
 	
-	def dispatch EObject unfold(ComponentInstanceEventParameterReference reference) {
+	def dispatch EObject unfold(ComponentInstanceEventParameterReferenceExpression reference) {
 		val oldInstance = reference.instance
 		val newInstance = oldInstance.newSimpleInstance
 		val newInstanceReference = newInstance.createInstanceReference
@@ -115,7 +115,7 @@ class PropertyUnfolder {
 		]
 	}
 	
-	def dispatch EObject unfold(ComponentInstancePortReference reference) {
+	def dispatch EObject unfold(ComponentInstancePortReferenceExpression reference) {
 		val oldInstance = reference.instance
 		val newInstance = oldInstance.newSimpleInstance
 		val newInstanceReference = newInstance.createInstanceReference
@@ -127,19 +127,19 @@ class PropertyUnfolder {
 		]
 	}
 	
-	def dispatch EObject unfold(ComponentInstanceTransitionReference reference) {
+	def dispatch EObject unfold(ComponentInstanceTransitionReferenceExpression reference) {
 		val oldInstance = reference.instance
 		val newInstance = oldInstance.newSimpleInstance
 		val newInstanceReference = newInstance.createInstanceReference
-		val transitionId = reference.transition
+		val transitionId = reference.transitionId
 		val newTransitionId = newInstance.getNewTransitionId(transitionId)
 		return reference.clone	=> [
 			it.instance = newInstanceReference
-			it.transition = newTransitionId
+			it.transitionId = newTransitionId
 		]
 	}
 	
-	protected def getNewSimpleInstance(ComponentInstanceReference instance) {
+	protected def getNewSimpleInstance(ComponentInstanceReferenceExpression instance) {
 		return instance.checkAndGetNewSimpleInstance(newTopComponent)
 	}
 	

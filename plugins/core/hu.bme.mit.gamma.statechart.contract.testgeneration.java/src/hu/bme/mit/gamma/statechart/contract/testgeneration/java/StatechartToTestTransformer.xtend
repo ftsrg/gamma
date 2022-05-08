@@ -87,7 +87,7 @@ class StatechartToTestTransformer {
 			contractStates += simpleState.ancestors
 			val contractStatecharts = newArrayList
 			contractStatecharts += contractStates.map[it.annotations].flatten
-				.filter(StateContractAnnotation).map[it.contractStatecharts].flatten.toSet
+				.filter(StateContractAnnotation).map[it.contractStatechart].toSet
 			
 			val finalTraces = newArrayList
 			val contractToTraceTransformer = new StatechartContractToTraceTransformer

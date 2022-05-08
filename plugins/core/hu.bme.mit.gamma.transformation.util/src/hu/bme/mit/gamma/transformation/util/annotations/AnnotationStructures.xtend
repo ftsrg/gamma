@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2021 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -13,11 +13,11 @@ package hu.bme.mit.gamma.transformation.util.annotations
 import hu.bme.mit.gamma.expression.model.ReferenceExpression
 import hu.bme.mit.gamma.expression.model.ValueDeclaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
-import hu.bme.mit.gamma.property.model.ComponentInstancePortReference
-import hu.bme.mit.gamma.property.model.ComponentInstanceStateConfigurationReference
-import hu.bme.mit.gamma.property.model.ComponentInstanceTransitionReference
-import hu.bme.mit.gamma.property.model.ComponentInstanceVariableReference
-import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference
+import hu.bme.mit.gamma.statechart.composite.ComponentInstancePortReferenceExpression
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceTransitionReferenceExpression
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression
 import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction
@@ -213,32 +213,32 @@ enum DataflowCoverageCriterion {
 
 @Data
 class ComponentInstanceReferences {
-	Collection<ComponentInstanceReference> include
-	Collection<ComponentInstanceReference> exclude
+	Collection<ComponentInstanceReferenceExpression> include
+	Collection<ComponentInstanceReferenceExpression> exclude
 }
 
 @Data
 class ComponentPortReferences {
-	Collection<ComponentInstancePortReference> include
-	Collection<ComponentInstancePortReference> exclude
+	Collection<ComponentInstancePortReferenceExpression> include
+	Collection<ComponentInstancePortReferenceExpression> exclude
 }
 
 @Data
 class ComponentStateReferences {
-	Collection<ComponentInstanceStateConfigurationReference> include
-	Collection<ComponentInstanceStateConfigurationReference> exclude
+	Collection<ComponentInstanceStateReferenceExpression> include
+	Collection<ComponentInstanceStateReferenceExpression> exclude
 }
 
 @Data
 class ComponentVariableReferences {
-	Collection<ComponentInstanceVariableReference> include
-	Collection<ComponentInstanceVariableReference> exclude
+	Collection<ComponentInstanceVariableReferenceExpression> include
+	Collection<ComponentInstanceVariableReferenceExpression> exclude
 }
 
 @Data
 class ComponentTransitionReferences {
-	Collection<ComponentInstanceTransitionReference> include
-	Collection<ComponentInstanceTransitionReference> exclude
+	Collection<ComponentInstanceTransitionReferenceExpression> include
+	Collection<ComponentInstanceTransitionReferenceExpression> exclude
 }
 
 @Data

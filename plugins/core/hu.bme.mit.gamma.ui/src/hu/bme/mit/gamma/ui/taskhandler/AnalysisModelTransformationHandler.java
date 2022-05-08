@@ -50,7 +50,7 @@ import hu.bme.mit.gamma.querygenerator.serializer.PropertySerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.ThetaPropertySerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.UppaalPropertySerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.XstsUppaalPropertySerializer;
-import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression;
 import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
 import hu.bme.mit.gamma.statechart.util.StatechartUtil;
@@ -442,7 +442,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 		
 		private AsynchronousInstanceConstraint transformAsynchronousInstanceConstraint(
 				hu.bme.mit.gamma.genmodel.model.AsynchronousInstanceConstraint asynchronousInstanceConstraint) {
-			ComponentInstanceReference reference = asynchronousInstanceConstraint.getInstance();
+			ComponentInstanceReferenceExpression reference = asynchronousInstanceConstraint.getInstance();
 				return new AsynchronousInstanceConstraint(reference /* null in the case of AA */,
 					(OrchestratingConstraint) transformSchedulingConstraint(asynchronousInstanceConstraint.getOrchestratingConstraint()));
 		}

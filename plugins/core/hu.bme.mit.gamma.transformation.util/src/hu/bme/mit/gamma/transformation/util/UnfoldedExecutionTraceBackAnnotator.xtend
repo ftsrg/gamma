@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2021 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -13,7 +13,6 @@ package hu.bme.mit.gamma.transformation.util
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.TypeReference
-import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
@@ -155,12 +154,14 @@ class UnfoldedExecutionTraceBackAnnotator {
 		return createInstanceStateConfiguration => [
 			it.instance = originalInstance
 			it.state = originalState
+			it.region = it.state.parentRegion
 		]
 	}
 	
 	protected def dispatch Assert transformAssert(InstanceVariableState assert) {
-		val instance = assert.instance.lastInstance as SynchronousComponentInstance
-		val variable = assert.declaration as VariableDeclaration
+		val variableReference = assert.variableReference
+		val instance = variableReference.instance.lastInstance as SynchronousComponentInstance
+		val variable = variableReference.variableDeclaration
 		val originalInstance = instance.getOriginalSimpleInstanceReference(originalTopComponent)
 		val originalVariable = try {
 			originalInstance.getOriginalVariable(variable)
@@ -169,8 +170,8 @@ class UnfoldedExecutionTraceBackAnnotator {
 			null
 		}
 		val variableState = createInstanceVariableState => [
-			it.instance = originalInstance
-			it.declaration = originalVariable
+			it.variableReference = statechartUtil.createVariableReference(
+				originalInstance, originalVariable)
 			it.value = assert.value.transformExpression
 		]
 		if (originalVariable === null) {

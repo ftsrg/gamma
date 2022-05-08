@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -31,6 +31,7 @@ import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.util.ExpressionTypeDeterminator
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
+import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.trace.model.InstanceVariableState
 import hu.bme.mit.gamma.trace.model.RaiseEventAct
 import hu.bme.mit.gamma.trace.model.Step
@@ -43,6 +44,7 @@ import java.math.BigInteger
 import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class TraceBuilder {
 	// Singleton
@@ -58,6 +60,18 @@ class TraceBuilder {
 	protected final extension ExpressionTypeDeterminator typeDeterminator = ExpressionTypeDeterminator.INSTANCE
 	protected final extension TraceUtil traceUtil = TraceUtil.INSTANCE
 	protected final StatechartUtil statechartUtil = StatechartUtil.INSTANCE // For component instance reference
+	
+	// Remove internal events
+	
+	def removeInternalEventRaiseActs(ExecutionTrace trace) {
+		val raiseEventActs = trace.getAllContentsOfType(RaiseEventAct)
+		for (raiseEventAct : raiseEventActs) {
+			val event = raiseEventAct.event
+			if (event.internal) {
+				raiseEventAct.remove
+			}
+		}
+	}
 	
 	// In event
 	
@@ -205,8 +219,8 @@ class TraceBuilder {
 	def addInstanceVariableState(Step step, SynchronousComponentInstance instance,
 			VariableDeclaration variable, Expression value) {
 		step.asserts += createInstanceVariableState => [
-			it.instance = statechartUtil.createInstanceReference(instance)
-			it.declaration = variable
+			it.variableReference = statechartUtil.createVariableReference(
+				statechartUtil.createInstanceReference(instance), variable)
 			it.value = value
 		]
 	}
@@ -227,16 +241,18 @@ class TraceBuilder {
 	private def getOrCreateLiteral(Step step, SynchronousComponentInstance instance,
 			VariableDeclaration variable) {
 		val variableStates = step.asserts.filter(InstanceVariableState)
+		// Finding the instance, if it has been already been created
 		val variableState = variableStates.filter[
-			it.instance.componentInstance === instance && it.declaration === variable].head
+			it.variableReference.instance.lastInstance === instance &&
+			it.variableReference.variableDeclaration === variable].head
 		var Expression value
 		if (variableState === null) {
 			// Creating the literal, similar to "getInstance" in singletons
 			val type = variable.typeDefinition
 			val initialValue = type.initialValueOfType
 			step.asserts += createInstanceVariableState => [
-				it.instance = statechartUtil.createInstanceReference(instance)
-				it.declaration = variable
+				it.variableReference = statechartUtil.createVariableReference(
+					statechartUtil.createInstanceReference(instance), variable)
 				it.value = initialValue
 			]
 			value = initialValue
@@ -252,6 +268,7 @@ class TraceBuilder {
 	def addInstanceState(Step step, SynchronousComponentInstance instance, State state) {
 		step.asserts += createInstanceStateConfiguration => [
 			it.instance = statechartUtil.createInstanceReference(instance)
+			it.region = state.parentRegion
 			it.state = state
 		]
 	}

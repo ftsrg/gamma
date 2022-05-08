@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -15,6 +15,7 @@ import hu.bme.mit.gamma.codegeneration.java.queries.ClockTriggersOfWrappers
 import hu.bme.mit.gamma.codegeneration.java.queries.PortEventTriggersOfWrappers
 import hu.bme.mit.gamma.codegeneration.java.queries.QueuesOfClocks
 import hu.bme.mit.gamma.codegeneration.java.queries.QueuesOfEvents
+import hu.bme.mit.gamma.codegeneration.java.util.InternalEventHandlerCodeGenerator
 import hu.bme.mit.gamma.codegeneration.java.util.TimingDeterminer
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.composite.ControlFunction
@@ -39,6 +40,7 @@ class AsynchronousAdapterCodeGenerator {
 	protected final extension TypeTransformer typeTransformer
 	protected final extension EventDeclarationHandler gammaEventDeclarationHandler
 	protected final extension ComponentCodeGenerator componentCodeGenerator
+	protected final extension InternalEventHandlerCodeGenerator internalEventHandler = InternalEventHandlerCodeGenerator.INSTANCE
 	//
 	protected final String EVENT_INSTANCE_NAME = "event"
 
@@ -108,6 +110,7 @@ class AsynchronousAdapterCodeGenerator {
 			public void reset() {
 				interrupt();
 				«component.generateWrappedComponentName».reset();
+				«IF component.hasInternalPort»handleInternalEvents();«ENDIF»
 			}
 			
 			/** Creates the subqueues, clocks and enters the wrapped synchronous component. */
@@ -123,6 +126,7 @@ class AsynchronousAdapterCodeGenerator {
 				«FOR match : QueuesOfClocks.Matcher.on(engine).getAllMatches(component, null, null)»
 					 timerService.setTimer(createTimerCallback(), «match.clock.name», «match.clock.timeSpecification.valueInMs», true);
 				«ENDFOR»
+				«component.createInternalPortHandlingSettingCode»
 				// The thread has to be started manually
 			}
 			
@@ -206,6 +210,7 @@ class AsynchronousAdapterCodeGenerator {
 					return;
 				}
 				processEvent(«EVENT_INSTANCE_NAME»);
+				«IF component.hasInternalPort»handleInternalEvents();«ENDIF»
 			}
 			
 			/** Operation. */
@@ -215,6 +220,7 @@ class AsynchronousAdapterCodeGenerator {
 					try {
 						«GAMMA_EVENT_CLASS» «EVENT_INSTANCE_NAME» = __asyncQueue.take();		
 						processEvent(«EVENT_INSTANCE_NAME»);
+						«IF component.hasInternalPort»handleInternalEvents();«ENDIF»
 					} catch (InterruptedException e) {
 						interrupt();
 					}
@@ -309,6 +315,8 @@ class AsynchronousAdapterCodeGenerator {
 					// The above delegated calls set the service into functioning state with clocks (so that "after 1 s" works with new timer as well)
 				}
 			«ENDIF»
+			
+			«component.createInternalEventHandlingCode»
 			
 		}
 		'''

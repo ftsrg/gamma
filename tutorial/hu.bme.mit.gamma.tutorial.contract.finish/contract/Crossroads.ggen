@@ -30,8 +30,8 @@ adaptive-conformance-check {
 		component : Crossroads
 		language : Theta
 		constraint : {
-			minimum-orchestrating-period : 2000 ms
-			maximum-orchestrating-period : 2000 ms
+			minimum-orchestrating-period : 999 ms
+			maximum-orchestrating-period : 999 ms
 		}
 		folder: ".temporary"
 	}

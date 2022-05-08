@@ -5,6 +5,7 @@ statechart InitPhase [
 	port priorityOutput : provides LightCommands
 	port secondaryOutput : provides LightCommands
 ] {
+	var count : integer
 	transition from Entry to DisplayRed
 	transition from DisplayRed to DisplayGreen when cycle
 	region Main {
@@ -17,6 +18,7 @@ statechart InitPhase [
 		}
 		state DisplayGreen {
 			entry / {
+				count := count + 1;
 				raise priorityOutput.displayGreen;
 			}
 		}

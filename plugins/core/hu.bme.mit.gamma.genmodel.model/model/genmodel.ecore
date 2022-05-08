@@ -97,10 +97,10 @@
   <eClassifiers xsi:type="ecore:EClass" name="StateCoverage" eSuperTypes="#//Coverage"/>
   <eClassifiers xsi:type="ecore:EClass" name="Coverage" abstract="true">
     <eStructuralFeatures xsi:type="ecore:EReference" name="include" upperBound="-1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/composite.ecore#//ComponentInstanceReference"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/composite.ecore#//ComponentInstanceReferenceExpression"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="exclude" upperBound="-1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/composite.ecore#//ComponentInstanceReference"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/composite.ecore#//ComponentInstanceReferenceExpression"
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="EventPriorityTransformation" eSuperTypes="#//Task">
@@ -114,16 +114,16 @@
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="receiverCoverageCriterion"
         eType="#//InteractionCoverageCriterion"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="stateInclude" upperBound="-1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.property.model/model/property.ecore#//ComponentInstanceStateConfigurationReference"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/composite.ecore#//ComponentInstanceStateReferenceExpression"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="stateExclude" upperBound="-1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.property.model/model/property.ecore#//ComponentInstanceStateConfigurationReference"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/composite.ecore#//ComponentInstanceStateReferenceExpression"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="transitionInclude" upperBound="-1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.property.model/model/property.ecore#//ComponentInstanceTransitionReference"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/composite.ecore#//ComponentInstanceTransitionReferenceExpression"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="transitionExclude" upperBound="-1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.property.model/model/property.ecore#//ComponentInstanceTransitionReference"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/composite.ecore#//ComponentInstanceTransitionReferenceExpression"
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EEnum" name="InteractionCoverageCriterion">
@@ -145,7 +145,7 @@
   <eClassifiers xsi:type="ecore:EClass" name="AsynchronousInstanceConstraint">
     <eStructuralFeatures xsi:type="ecore:EReference" name="orchestratingConstraint"
         lowerBound="1" eType="#//OrchestratingConstraint" containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="instance" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/composite.ecore#//ComponentInstanceReference"
+    <eStructuralFeatures xsi:type="ecore:EReference" name="instance" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/composite.ecore#//ComponentInstanceReferenceExpression"
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="AbstractCodeGeneration" abstract="true"
@@ -218,18 +218,18 @@
   <eClassifiers xsi:type="ecore:EClass" name="TransitionPairCoverage" eSuperTypes="#//Coverage"/>
   <eClassifiers xsi:type="ecore:EClass" name="EventCoverage" abstract="true" eSuperTypes="#//Coverage">
     <eStructuralFeatures xsi:type="ecore:EReference" name="portInclude" upperBound="-1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.property.model/model/property.ecore#//ComponentInstancePortReference"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/composite.ecore#//ComponentInstancePortReferenceExpression"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="portExclude" upperBound="-1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.property.model/model/property.ecore#//ComponentInstancePortReference"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/composite.ecore#//ComponentInstancePortReferenceExpression"
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="DataflowCoverage" eSuperTypes="#//Coverage">
     <eStructuralFeatures xsi:type="ecore:EReference" name="variableInclude" upperBound="-1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.property.model/model/property.ecore#//ComponentInstanceVariableReference"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/composite.ecore#//ComponentInstanceVariableReferenceExpression"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="variableExclude" upperBound="-1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.property.model/model/property.ecore#//ComponentInstanceVariableReference"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/composite.ecore#//ComponentInstanceVariableReferenceExpression"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="dataflowCoverageCriterion"
         eType="#//DataflowCoverageCriterion" defaultValueLiteral="ALL_USE"/>

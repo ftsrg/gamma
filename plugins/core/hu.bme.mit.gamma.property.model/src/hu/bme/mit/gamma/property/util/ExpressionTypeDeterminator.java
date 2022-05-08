@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2021 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -15,10 +15,9 @@ import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.expression.util.ExpressionTypeDeterminator2;
-import hu.bme.mit.gamma.property.model.ComponentInstanceEventParameterReference;
-import hu.bme.mit.gamma.property.model.ComponentInstanceEventReference;
-import hu.bme.mit.gamma.property.model.ComponentInstanceStateConfigurationReference;
-import hu.bme.mit.gamma.property.model.ComponentInstanceVariableReference;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceElementReferenceExpression;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventParameterReferenceExpression;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression;
 
 public class ExpressionTypeDeterminator extends ExpressionTypeDeterminator2 {
 	// Singleton
@@ -28,21 +27,22 @@ public class ExpressionTypeDeterminator extends ExpressionTypeDeterminator2 {
 	
 	@Override
 	public Type getType(Expression expression) {
-		if (expression instanceof ComponentInstanceStateConfigurationReference || 
-				expression instanceof ComponentInstanceEventReference) {
-			return factory.createBooleanTypeDefinition();
-		}
-		if (expression instanceof ComponentInstanceVariableReference) {
-			ComponentInstanceVariableReference reference = (ComponentInstanceVariableReference) expression;
-			VariableDeclaration variable = reference.getVariable();
+		if (expression instanceof ComponentInstanceVariableReferenceExpression) {
+			ComponentInstanceVariableReferenceExpression reference =
+					(ComponentInstanceVariableReferenceExpression) expression;
+			VariableDeclaration variable = reference.getVariableDeclaration();
 			Type declarationType = variable.getType();
 			return ecoreUtil.clone(declarationType);
 		}
-		if (expression instanceof ComponentInstanceEventParameterReference) {
-			ComponentInstanceEventParameterReference reference = (ComponentInstanceEventParameterReference) expression;
-			ParameterDeclaration parameter = reference.getParameter();
+		else if (expression instanceof ComponentInstanceEventParameterReferenceExpression) {
+			ComponentInstanceEventParameterReferenceExpression reference =
+					(ComponentInstanceEventParameterReferenceExpression) expression;
+			ParameterDeclaration parameter = reference.getParameterDeclaration();
 			Type declarationType = parameter.getType();
 			return ecoreUtil.clone(declarationType);
+		}
+		else if (expression instanceof ComponentInstanceElementReferenceExpression) {
+			return factory.createBooleanTypeDefinition();
 		}
 		return super.getType(expression);
 	}	

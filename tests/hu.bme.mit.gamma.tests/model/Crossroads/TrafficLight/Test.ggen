@@ -1,0 +1,25 @@
+import "Tests.gcd"
+import trace "Test.get"
+
+trace-replay {
+	trace : Test
+	consider-out-events : true
+	environment-model : synchronous
+	system-file : "Tests"
+}
+
+analysis {
+	component : Tests
+	language : XSTS-UPPAAL
+	constraint : {
+		minimum-orchestrating-period : 499 ms
+		maximum-orchestrating-period : 499 ms
+	}
+}
+
+verification {
+	file : "Tests.xml"
+	language : XSTS-UPPAAL
+	property-file : "Tests.gpd"
+	back-annotate-to-original : true
+}

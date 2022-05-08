@@ -19,7 +19,7 @@ import java.util.Set
 
 class JavaUtil {
 	// Singleton
-	public static final JavaUtil INSTANCE =  new JavaUtil
+	public static final JavaUtil INSTANCE = new JavaUtil
 	protected new() {}
 	//
 
@@ -107,6 +107,14 @@ class JavaUtil {
 			entries += new SimpleEntry(entry.value, entry.key)
 		}
 		return entries
+	}
+	
+	def String toFirstCharUpper(String string) {
+		return string.toFirstUpper
+	}
+	
+	def String toFirstCharLower(String string) {
+		return string.toFirstLower
 	}
 	
 }

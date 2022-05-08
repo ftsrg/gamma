@@ -61,9 +61,6 @@ class AnalysisModelPreprocessor {
 		val component = trace.topComponent
 		checkState(!component.asynchronousStatechart) // ModelUnfolder handles them
 		
-		// Transforming parameters if there are any
-		component.transformTopComponentParameters(topComponentArguments)
-		
 		val name = component.name
 		// If it is an atomic component, we wrap it
 		if (component instanceof SynchronousStatechartDefinition) {
@@ -79,11 +76,16 @@ class AnalysisModelPreprocessor {
 				val wrapper = component.wrapAsynchronousComponent
 				wrapper.addWrapperComponentAnnotation // Adding wrapper annotation
 				_package.components.add(0, wrapper)
+				modelUnfolder.renameInstances(wrapper) // Renaming manually due to Scheduled-Adapter extension
 			}
 			else {
 				logger.log(Level.INFO, "Adapter " + name + " does not have to be wrapped")
 			}
 		}
+		
+		// Transforming parameters if there are any - after wrapping!
+		val firstComponent = _package.firstComponent
+		firstComponent.transformTopComponentParameters(topComponentArguments)
 		
 		// Saving the package as VIATRA will NOT return matches if the models are not in the same ResourceSet
 		val flattenedModelUri = URI.createFileURI(targetFolderUri +
