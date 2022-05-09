@@ -46,6 +46,10 @@
       <genEnumLiterals ecoreEnumLiteral="genmodel.ecore#//ContractAutomatonType/MONITOR"/>
       <genEnumLiterals ecoreEnumLiteral="genmodel.ecore#//ContractAutomatonType/TEST"/>
     </genEnums>
+    <genEnums typeSafeEnumCompatible="false" ecoreEnum="genmodel.ecore#//TestAutomatonType">
+      <genEnumLiterals ecoreEnumLiteral="genmodel.ecore#//TestAutomatonType/POSITIVE"/>
+      <genEnumLiterals ecoreEnumLiteral="genmodel.ecore#//TestAutomatonType/NEGATIVE"/>
+    </genEnums>
     <genClasses ecoreClass="genmodel.ecore#//GenModel">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference genmodel.ecore#//GenModel/statechartImports"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference genmodel.ecore#//GenModel/packageImports"/>
@@ -187,6 +191,7 @@
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//StatechartContractGeneration/StartAsColdViolation"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//StatechartContractGeneration/UseIteratingVariable"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//StatechartContractGeneration/AutomatonType"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//StatechartContractGeneration/TestType"/>
     </genClasses>
   </genPackages>
 </genmodel:GenModel>

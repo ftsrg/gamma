@@ -381,9 +381,12 @@ StatechartContractGeneration returns StatechartContractGeneration:
 	 ('restart-on-cold-violation' ':' StartAsColdViolation=BOOLEAN)?
 	 ('loop-for-interaction' ':' UseIteratingVariable=BOOLEAN)?
 	 ('automaton-type' ':' AutomatonType=ContractAutomatonType)?
+	 ('test-type' ':' TestType=TestAutomatonType)?
 	'}'
 ;
-
+enum TestAutomatonType returns  TestAutomatonType:
+	NEGATIVE = 'negative' | POSITIVE = 'positive'
+;
 enum ContractAutomatonType returns  ContractAutomatonType:
 	MONITOR = 'monitor' | TEST = 'test'
 ;

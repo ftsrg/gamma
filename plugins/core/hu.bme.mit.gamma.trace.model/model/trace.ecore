@@ -63,4 +63,5 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="upperLimit" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
         containment="true"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="NegativeTestAnnotation" eSuperTypes="#//ExecutionTraceAnnotation"/>
 </ecore:EPackage>

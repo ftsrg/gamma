@@ -6,7 +6,7 @@ component Crossroads
 const one : integer := 1
 
 @AllowedWaiting 0 .. 1
-scenario Blinking(param : integer) initial outputs [
+scenario Blinking initial outputs [
 	hot sends priorityOutput.displayYellow
 	hot sends secondaryOutput.displayYellow
 ] [
@@ -19,11 +19,6 @@ scenario Blinking(param : integer) initial outputs [
 		hot sends priorityOutput.displayYellow
 		hot sends secondaryOutput.displayYellow
 		hot delay (500 .. 501)
-	}
-	{
-		hot receives police.police2
-		check police.police2::Name > 1 
-		check 1 == 1 + param
 	}
 ]
 

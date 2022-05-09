@@ -63,6 +63,7 @@ import hu.bme.mit.gamma.statechart.composite.SynchronousComponent;
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance;
 import hu.bme.mit.gamma.statechart.contract.AdaptiveContractAnnotation;
 import hu.bme.mit.gamma.statechart.contract.HasInitialOutputsBlockAnnotation;
+import hu.bme.mit.gamma.statechart.contract.NegativeContractStatechartAnnotation;
 import hu.bme.mit.gamma.statechart.contract.ScenarioAllowedWaitAnnotation;
 import hu.bme.mit.gamma.statechart.contract.ScenarioContractAnnotation;
 import hu.bme.mit.gamma.statechart.contract.StateContractAnnotation;
@@ -2468,5 +2469,11 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	public static boolean hasInitialOutputsBlock(Component component) {
 		return getComponentAnnotation(component, HasInitialOutputsBlockAnnotation.class) != null;
 	}
+	
+	public static boolean hasNegatedContratStatechartAnnotation(Component component) {
+		return getComponentAnnotation(component, NegativeContractStatechartAnnotation.class) != null;
+	}
+	
+	
 
 }
