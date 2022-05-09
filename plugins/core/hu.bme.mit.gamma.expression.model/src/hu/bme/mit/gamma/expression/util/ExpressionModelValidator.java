@@ -275,6 +275,24 @@ public class ExpressionModelValidator {
 		return validationResultMessages;
 	}
 	
+	public Collection<ValidationResultMessage> checkDirectReferenceExpression(
+				DirectReferenceExpression directReferenceExpression) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+
+		Declaration declaration = directReferenceExpression.getDeclaration();
+		if (declaration instanceof FunctionDeclaration) {
+			EObject eContainer = directReferenceExpression.eContainer();
+			if (!(eContainer instanceof FunctionAccessExpression)) {
+				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+					"No arguments are given in this function reference", 
+						new ReferenceInfo(ExpressionModelPackage.Literals.DIRECT_REFERENCE_EXPRESSION__DECLARATION)));
+				
+			}
+		}
+		
+		return validationResultMessages;
+	}
+	
 	public Collection<ValidationResultMessage> checkArrayAccessExpression(ArrayAccessExpression expression) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		Expression operand = expression.getOperand();

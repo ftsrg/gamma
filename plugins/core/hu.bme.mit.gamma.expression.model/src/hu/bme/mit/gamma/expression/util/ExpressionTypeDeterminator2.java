@@ -381,18 +381,30 @@ public class ExpressionTypeDeterminator2 {
 	// Type is boolean
 	
 	public boolean isBoolean(Expression expression) {
-		return expression != null && getTypeDefinition(expression) instanceof BooleanTypeDefinition;
+		try {
+			return expression != null && getTypeDefinition(expression) instanceof BooleanTypeDefinition;
+		} catch (IllegalArgumentException e) {
+			return false; // e.g., if getTypeDefinition(expression) throws an exception
+		}
 	}
 	
 	// Type is integer
 	
 	public boolean isInteger(Expression expression) {
-		return expression != null && getTypeDefinition(expression) instanceof IntegerTypeDefinition;
+		try {
+			return expression != null && getTypeDefinition(expression) instanceof IntegerTypeDefinition;
+		} catch (IllegalArgumentException e) {
+			return false; // e.g., if getTypeDefinition(expression) throws an exception
+		}
 	}
 	
 	public boolean isInteger(Type type) {
-		return type != null &&
+		try {
+			return type != null &&
 				ExpressionModelDerivedFeatures.getTypeDefinition(type) instanceof IntegerTypeDefinition;
+		} catch (IllegalArgumentException e) {
+			return false; // e.g., if getType(expression) throws an exception
+		}
 	}
 	
 	// Type pretty printer
