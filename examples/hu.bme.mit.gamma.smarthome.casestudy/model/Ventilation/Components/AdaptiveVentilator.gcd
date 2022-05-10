@@ -18,7 +18,7 @@ statechart AdaptiveVentilator [
 		state VentilationOn {
 			entry / raise Ventilation.switchVentilation(true);
 			exit / raise Ventilation.switchVentilation(false);
-			region VentilationOnRegion {
+			region ventilationOnRegion {
 				initial OnEntry
 				state BaseVentilation {
 					entry / set switchOffTime := SWITCH_OFF_TIME s;

@@ -15,7 +15,7 @@ interface MotionDetector {
 //
 // External failures and fixes
 interface ComponentState {
-	out persistent event availability(available : boolean)
+	out persistent event unavailability(unavailable : boolean)
 }
 //// For adaptation checks from the adaptation logic's point of view
 //interface Activation {
