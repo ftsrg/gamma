@@ -196,6 +196,7 @@ class TestGeneratorStatechartGenerator extends AbstractContractStatechartGenerat
 			val initialViolationTransition = statechartUtil.createTransition(initChoice, violation)
 			initialViolationTransition.guard = createElseExpression
 		}
+		statechart.variableDeclarations += scenario.variableDeclarations
 	}
 
 	def dispatch void process(ModalInteractionSet interactionSet) {

@@ -30,6 +30,7 @@ ScenarioDeclaration returns ScenarioModel::ScenarioDeclaration:
 	annotation+=Annotations*
 	'scenario' name=ID ('('(parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*')')? 
 	(initialblock=InitialBlock)?
+	(variableDeclarations+=VariableDeclaration)*
 	chart=Chart;
 	
 InitialBlock returns ScenarioModel::InitialBlock: 
@@ -77,7 +78,12 @@ ScenarioReference returns ScenarioModel::ScenarioDefinitionReference:
 	('('arguments+=Expression(',' arguments+=Expression)*')')?;
 
 AbstractInteractionDefinition returns ScenarioModel::InteractionDefinition:
-	ModalInteraction | NegatedModalInteraction | ModalInteractionSet | ScenarioCheck;
+	ModalInteraction | NegatedModalInteraction | ModalInteractionSet | ScenarioCheck | ScenarioAssignment;
+	
+ScenarioAssignment returns ScenarioModel::ScenarioAssignmentStatement:
+	{ScenarioModel::ScenarioAssignmentStatement}
+	'assign' lhs= DirectReferenceExpression '=' rhs=Expression
+;
 
 ScenarioCheck returns ScenarioModel::ScenarioCheckExpression:
 	{ScenarioModel::ScenarioCheckExpression}

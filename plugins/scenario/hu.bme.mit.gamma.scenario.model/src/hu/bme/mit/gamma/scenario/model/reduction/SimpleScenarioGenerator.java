@@ -22,6 +22,7 @@ import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
+import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator;
 import hu.bme.mit.gamma.scenario.model.AlternativeCombinedFragment;
 import hu.bme.mit.gamma.scenario.model.Annotation;
@@ -41,6 +42,7 @@ import hu.bme.mit.gamma.scenario.model.OptionalCombinedFragment;
 import hu.bme.mit.gamma.scenario.model.ParallelCombinedFragment;
 import hu.bme.mit.gamma.scenario.model.PermissiveAnnotation;
 import hu.bme.mit.gamma.scenario.model.Reset;
+import hu.bme.mit.gamma.scenario.model.ScenarioAssignmentStatement;
 import hu.bme.mit.gamma.scenario.model.ScenarioCheckExpression;
 import hu.bme.mit.gamma.scenario.model.ScenarioDeclaration;
 import hu.bme.mit.gamma.scenario.model.ScenarioModelFactory;
@@ -89,6 +91,9 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 		for (Annotation annotation : base.getAnnotation()) {
 			simple.getAnnotation().add((Annotation) this.doSwitch(annotation));
 		}
+		for (VariableDeclaration variable : base.getVariableDeclarations()) {
+			simple.getVariableDeclarations().add(ecoreUtil.clone(variable));
+		}
 		previousFragment = simple.getChart().getFragment();
 		for (Interaction interaction : base.getChart().getFragment().getInteractions()) {
 			simple.getChart().getFragment().getInteractions().add((Interaction) this.doSwitch(interaction));
@@ -118,6 +123,17 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 						Expression cloned = ecoreUtil.clone(_new);
 						ecoreUtil.change(cloned, direct, direct.eContainer());
 						ecoreUtil.replace(cloned, direct);
+					}
+				}
+			}
+			if (decl instanceof VariableDeclaration) {
+				VariableDeclaration var = (VariableDeclaration) decl;
+				for (VariableDeclaration newVar : simple.getVariableDeclarations()) {
+					if (newVar.getName().equals(var.getName())) {
+						DirectReferenceExpression newRef = ecoreUtil.clone(direct);
+						newRef.setDeclaration(newVar);
+						ecoreUtil.change(newRef, direct, direct.eContainer());
+						ecoreUtil.replace(newRef, direct);
 					}
 				}
 			}
@@ -346,6 +362,14 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 			modalInteractionSet.getModalInteractions().add((InteractionDefinition) this.doSwitch(id));
 		}
 		return modalInteractionSet;
+	}
+
+	@Override
+	public EObject caseScenarioAssignmentStatement(ScenarioAssignmentStatement object) {
+		ScenarioAssignmentStatement assignment = factory.createScenarioAssignmentStatement();
+		assignment.setLhs(ecoreUtil.clone(object.getLhs()));
+		assignment.setRhs(ecoreUtil.clone(object.getRhs()));
+		return assignment;
 	}
 
 	@Override

@@ -11,8 +11,8 @@
 package hu.bme.mit.gamma.scenario.language.scoping
 
 import com.google.common.collect.Lists
-import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage
+import hu.bme.mit.gamma.scenario.model.ScenarioCheckExpression
 import hu.bme.mit.gamma.scenario.model.ScenarioModelPackage
 import hu.bme.mit.gamma.scenario.model.ScenarioPackage
 import hu.bme.mit.gamma.scenario.model.Signal
@@ -28,7 +28,7 @@ import org.eclipse.xtext.scoping.Scopes
 import org.eclipse.xtext.scoping.impl.SimpleScope
 
 import static com.google.common.base.Preconditions.checkState
-import hu.bme.mit.gamma.scenario.model.ScenarioCheckExpression
+import hu.bme.mit.gamma.scenario.model.ScenarioDeclaration
 
 class ScenarioLanguageScopeProvider extends AbstractScenarioLanguageScopeProvider {
 
@@ -37,12 +37,53 @@ class ScenarioLanguageScopeProvider extends AbstractScenarioLanguageScopeProvide
 	override getScope(EObject context, EReference reference) {
 		var IScope scope = null
 		try {
-			switch (context) {
-				ScenarioPackage: scope = getScope(context, reference)
-				Signal: scope = getScope(context, reference)
-				DirectReferenceExpression: scope = getScope(context, reference)
-				EventParameterReferenceExpression: scope = getScope(context, reference)
-				ScenarioCheckExpression: scope = getScope(context, reference)
+			if (reference == ExpressionModelPackage.Literals.DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
+				// imported
+				var _scope = IScope.NULLSCOPE;
+				val containingScenarioPackage = util.getContainerOfType(context, ScenarioPackage);
+				val imports = Lists.reverse(containingScenarioPackage.imports); // Latter imports are stronger
+				for (Package _import : imports) {
+					var parent = super.getScope(_import, reference);
+					_scope = new SimpleScope(parent, _scope.getAllElements());
+				}
+				// params
+				val containingScenarioDecl = util.getContainerOfType(context, ScenarioDeclaration);
+				val variables = containingScenarioDecl.variableDeclarations
+				_scope = new SimpleScope(getParentScope(context, reference), _scope.getAllElements());
+				scope = Scopes.scopeFor(variables, _scope)
+			} else if (context instanceof ScenarioPackage &&
+				reference == ScenarioModelPackage.Literals.SCENARIO_PACKAGE__COMPONENT) {
+				val scenarioPackage = context as ScenarioPackage
+				val importedPackages = scenarioPackage.imports
+				scope = createScopeFor(importedPackages.flatMap[it.components])
+			} else if (context instanceof ScenarioCheckExpression &&
+				reference == InterfaceModelPackage.Literals.EVENT_PARAMETER_REFERENCE_EXPRESSION__PORT) {
+				val package = ecoreUtil.getContainerOfType(context, ScenarioPackage)
+				scope = Scopes.scopeFor(package.component.ports)
+			} else if (context instanceof EventParameterReferenceExpression &&
+				reference == InterfaceModelPackage.Literals.EVENT_PARAMETER_REFERENCE_EXPRESSION__PORT) {
+				val package = ecoreUtil.getContainerOfType(context, ScenarioPackage)
+				return Scopes.scopeFor(package.component.ports)
+			} else if (context instanceof EventParameterReferenceExpression && reference ==
+				InterfaceModelPackage.Literals.EVENT_PARAMETER_REFERENCE_EXPRESSION__EVENT) {
+				val expression = context as EventParameterReferenceExpression
+				checkState(expression.port !== null)
+				val port = expression.port
+				return Scopes.scopeFor(StatechartModelDerivedFeatures.getInputEvents(port))
+			} else if (context instanceof EventParameterReferenceExpression && reference ==
+				InterfaceModelPackage.Literals.EVENT_PARAMETER_REFERENCE_EXPRESSION__PARAMETER) {
+				val expression = context as EventParameterReferenceExpression
+				checkState(expression.port !== null)
+				val event = expression.event
+				return Scopes.scopeFor(event.getParameterDeclarations())
+			} else if (context instanceof Signal && reference == ScenarioModelPackage.Literals.SIGNAL__PORT) {
+				val ports = ecoreUtil.getContainerOfType(context, ScenarioPackage).component.ports
+				return createScopeFor(ports)
+			} else if (context instanceof Signal && reference == ScenarioModelPackage.Literals.SIGNAL__EVENT) {
+				val signal = context as Signal
+				val interface = signal.port.interfaceRealization.interface
+				val events = StatechartModelDerivedFeatures.getAllEventDeclarations(interface).map[it.event]
+				return createScopeFor(events)
 			}
 		} catch (Exception ex) {
 			// left empty on purpose
@@ -51,66 +92,6 @@ class ScenarioLanguageScopeProvider extends AbstractScenarioLanguageScopeProvide
 		}
 
 		return scope
-	}
-
-	private def IScope getScope(DirectReferenceExpression context, EReference reference) {
-		if (reference == ExpressionModelPackage.Literals.DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
-			// imported
-			var scope = IScope.NULLSCOPE;
-			val containingScenariopackage = util.getContainerOfType(context, ScenarioPackage);
-			val imports = Lists.reverse(containingScenariopackage.imports); // Latter imports are stronger
-			for (Package _import : imports) {
-				var parent = super.getScope(_import, reference);
-				scope = new SimpleScope(parent, scope.getAllElements());
-			}
-			// params
-			scope = new SimpleScope(getParentScope(context, reference), scope.getAllElements());
-
-			return scope;
-		}
-	}
-
-	private def IScope getScope(ScenarioPackage scenarioPackage, EReference reference) {
-		if (reference == ScenarioModelPackage.Literals.SCENARIO_PACKAGE__COMPONENT) {
-			val importedPackages = scenarioPackage.imports
-			return createScopeFor(importedPackages.flatMap[it.components])
-		}
-	}
-	
-	private def IScope getScope(ScenarioCheckExpression check, EReference reference) {
-		if (reference == InterfaceModelPackage.Literals.EVENT_PARAMETER_REFERENCE_EXPRESSION__PORT) {
-			val package = ecoreUtil.getContainerOfType(check, ScenarioPackage)
-			return Scopes.scopeFor(package.component.ports)
-		}
-	}
-
-	private def IScope getScope(EventParameterReferenceExpression expression, EReference reference) {
-		if (reference == InterfaceModelPackage.Literals.EVENT_PARAMETER_REFERENCE_EXPRESSION__PORT) {
-			val package = ecoreUtil.getContainerOfType(expression, ScenarioPackage)
-			return Scopes.scopeFor(package.component.ports)
-		}
-		if (reference == InterfaceModelPackage.Literals.EVENT_PARAMETER_REFERENCE_EXPRESSION__EVENT) {
-			checkState(expression.port !== null)
-			val port = expression.port
-			return Scopes.scopeFor(StatechartModelDerivedFeatures.getInputEvents(port))
-		}
-		if (reference == InterfaceModelPackage.Literals.EVENT_PARAMETER_REFERENCE_EXPRESSION__PARAMETER) {
-			checkState(expression.port !== null)
-			val event = expression.event
-			return Scopes.scopeFor(event.getParameterDeclarations())
-		}
-		return null
-	}
-
-	private def IScope getScope(Signal signal, EReference reference) {
-		if (reference == ScenarioModelPackage.Literals.SIGNAL__PORT) {
-			val ports = ecoreUtil.getContainerOfType(signal, ScenarioPackage).component.ports
-			return createScopeFor(ports)
-		} else if (reference == ScenarioModelPackage.Literals.SIGNAL__EVENT) {
-			val interface = signal.port.interfaceRealization.interface
-			val events = StatechartModelDerivedFeatures.getAllEventDeclarations(interface).map[it.event]
-			return createScopeFor(events)
-		}
 	}
 
 	private def getParentScopeP(EObject object, EReference reference) {

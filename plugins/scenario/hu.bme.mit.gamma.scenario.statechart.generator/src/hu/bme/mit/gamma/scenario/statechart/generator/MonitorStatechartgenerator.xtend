@@ -130,6 +130,7 @@ class MonitorStatechartgenerator extends AbstractContractStatechartGeneration {
 			syncBlock.modalInteractions += scenario.initialblock.modalInteractions
 			scenario.chart.fragment.interactions.add(0, syncBlock)
 		}
+		statechart.variableDeclarations += scenario.variableDeclarations
 	}
 
 	def dispatch void process(ModalInteractionSet interactionSet) {

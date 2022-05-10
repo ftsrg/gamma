@@ -5,8 +5,7 @@ statechart-contract {
 	folder  : "contract/scenario/automaton2" 
 	name : "Blinking2"
 	restart-on-cold-violation : true
-	automaton-type : test
-	test-type : negative
+	automaton-type : monitor
 }
 
 statechart-contract {
@@ -19,7 +18,7 @@ statechart-contract {
 
 statechart-contract {
 	scenario : Normal
-	folder  : "contract/scenario/automaton"
+	folder  : "contract/scenario/automaton" 
 	name : "Normal"
 	restart-on-cold-violation : true
 	automaton-type : monitor

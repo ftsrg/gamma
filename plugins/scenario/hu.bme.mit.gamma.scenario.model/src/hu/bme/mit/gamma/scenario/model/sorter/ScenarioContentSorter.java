@@ -10,6 +10,7 @@ import hu.bme.mit.gamma.expression.util.ExpressionEvaluator;
 import hu.bme.mit.gamma.scenario.model.Delay;
 import hu.bme.mit.gamma.scenario.model.InteractionDefinition;
 import hu.bme.mit.gamma.scenario.model.ModalInteractionSet;
+import hu.bme.mit.gamma.scenario.model.ScenarioAssignmentStatement;
 import hu.bme.mit.gamma.scenario.model.ScenarioCheckExpression;
 import hu.bme.mit.gamma.scenario.model.ScenarioDeclaration;
 import hu.bme.mit.gamma.scenario.model.Signal;
@@ -42,6 +43,9 @@ public class ScenarioContentSorter {
 		}
 		if (interaction instanceof ScenarioCheckExpression) {
 			return "check";
+		}
+		if (interaction instanceof ScenarioAssignmentStatement) {
+			return "assignment";
 		}
 		throw new IllegalArgumentException();
 	}

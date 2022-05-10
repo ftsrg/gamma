@@ -48,6 +48,7 @@ import java.util.List
 import java.util.Map
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
+import hu.bme.mit.gamma.scenario.model.ScenarioAssignmentStatement
 
 abstract class AbstractContractStatechartGeneration {
 
@@ -263,8 +264,9 @@ abstract class AbstractContractStatechartGeneration {
 				}
 			}
 			if (signal !== null) {
-				val portName = signal.direction == InteractionDirection.SEND ? scenarioStatechartUtil.
-						getTurnedOutPortName(signal.port) : signal.port.name
+				val portName = signal.direction == InteractionDirection.SEND
+						? scenarioStatechartUtil.getTurnedOutPortName(signal.port)
+						: signal.port.name
 				ports += getPort(portName)
 				events += getEvent(signal.event.name, getPort(portName))
 			}
@@ -310,8 +312,9 @@ abstract class AbstractContractStatechartGeneration {
 	def protected dispatch Trigger getEventTrigger(Signal signal, boolean reversed) {
 		val trigger = createEventTrigger
 		val eventref = createPortEventReference
-		val port = reversed ? getPort(scenarioStatechartUtil.getTurnedOutPortName(signal.port)) : getPort(
-				signal.port.name)
+		val port = reversed
+				? getPort(scenarioStatechartUtil.getTurnedOutPortName(signal.port))
+				: getPort(signal.port.name)
 		eventref.event = getEvent(signal.event.name, port)
 		eventref.port = port
 		trigger.eventReference = eventref
@@ -331,8 +334,9 @@ abstract class AbstractContractStatechartGeneration {
 		val trigger = createEventTrigger
 		if (negatedInteraction.modalinteraction instanceof Signal) {
 			var signal = negatedInteraction.modalinteraction as Signal
-			var Port port = signal.direction.equals(InteractionDirection.SEND) ? getPort(
-					scenarioStatechartUtil.getTurnedOutPortName(signal.port)) : getPort(signal.port.name)
+			var Port port = signal.direction.equals(InteractionDirection.SEND)
+					? getPort(scenarioStatechartUtil.getTurnedOutPortName(signal.port))
+					: getPort(signal.port.name)
 			val Event event = getEvent(signal.event.name, port)
 			val eventRef = createPortEventReference
 			eventRef.event = event
@@ -471,11 +475,14 @@ abstract class AbstractContractStatechartGeneration {
 		}
 		var Trigger trigger = null
 		val checks = set.modalInteractions.filter(ScenarioCheckExpression)
-		val nonCheckInteractitons = set.modalInteractions.filter[!(it instanceof ScenarioCheckExpression)].toList
-		if (nonCheckInteractitons.size > 1) {
-			trigger = getBinaryTrigger(nonCheckInteractitons, BinaryType.AND, reversed)
-		} else if (nonCheckInteractitons.size == 1) {
-			trigger = getEventTrigger(nonCheckInteractitons.head, reversed)
+		val assignments = set.modalInteractions.filter(ScenarioAssignmentStatement)
+		val nonCheckOrAssignmentInteractitons = set.modalInteractions.filter [
+			!(it instanceof ScenarioCheckExpression) && ! (it instanceof ScenarioAssignmentStatement)
+		].toList
+		if (nonCheckOrAssignmentInteractitons.size > 1) {
+			trigger = getBinaryTrigger(nonCheckOrAssignmentInteractitons, BinaryType.AND, reversed)
+		} else if (nonCheckOrAssignmentInteractitons.size == 1) {
+			trigger = getEventTrigger(nonCheckOrAssignmentInteractitons.head, reversed)
 		} else {
 			trigger = createOnCycleTrigger
 		}
@@ -483,7 +490,7 @@ abstract class AbstractContractStatechartGeneration {
 			forwardTransition.trigger = negateEventTrigger(trigger)
 		} else {
 			forwardTransition.trigger = trigger
-			for (modalInteraction : nonCheckInteractitons) {
+			for (modalInteraction : nonCheckOrAssignmentInteractitons) {
 				val effect = getRaiseEventAction(modalInteraction, !reversed)
 				if (effect !== null) {
 					forwardTransition.effects += effect
@@ -496,6 +503,12 @@ abstract class AbstractContractStatechartGeneration {
 			forwardTransition.guard = andExpression
 		} else if (checks.size == 1) {
 			forwardTransition.guard = checks.head.expression.clone
+		}
+		for (assignment : assignments) {
+			val newAssignment = createAssignmentStatement
+			newAssignment.lhs = assignment.lhs.clone
+			newAssignment.rhs = assignment.rhs.clone
+			forwardTransition.effects += newAssignment
 		}
 	}
 

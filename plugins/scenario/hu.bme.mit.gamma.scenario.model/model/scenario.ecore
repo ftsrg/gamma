@@ -16,6 +16,9 @@
         eType="#//Annotation" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="initialblock" eType="#//InitialBlock"
         containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="variableDeclarations" upperBound="-1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclaration"
+        containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Chart">
     <eStructuralFeatures xsi:type="ecore:EReference" name="fragment" lowerBound="1"
@@ -109,4 +112,5 @@
         eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
         containment="true"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ScenarioAssignmentStatement" eSuperTypes="#//InteractionDefinition ../../hu.bme.mit.gamma.action.model/model/action.ecore#//AssignmentStatement"/>
 </ecore:EPackage>

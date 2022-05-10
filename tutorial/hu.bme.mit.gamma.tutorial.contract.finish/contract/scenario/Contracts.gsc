@@ -9,11 +9,15 @@ const one : integer := 1
 scenario Blinking initial outputs [
 	hot sends priorityOutput.displayYellow
 	hot sends secondaryOutput.displayYellow
-] [
+] 
+var variable1 : integer :=0
+[
 	{
 		hot sends priorityOutput.displayNone
-		hot sends secondaryOutput.displayNone
-		hot delay (500 .. 501)
+		hot sends secondaryOutput.displayNone 
+		hot delay (500 .. 501) 
+		assign variable1 = 1 + one *3
+		check one + variable1 == 1
 	}
 	{
 		hot sends priorityOutput.displayYellow
