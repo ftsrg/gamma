@@ -18,19 +18,19 @@ import hu.bme.mit.gamma.scenario.model.ModalInteractionSet
 import hu.bme.mit.gamma.scenario.model.NegatedModalInteraction
 import hu.bme.mit.gamma.scenario.model.ParallelCombinedFragment
 import hu.bme.mit.gamma.scenario.model.Reset
+import hu.bme.mit.gamma.scenario.model.ScenarioCheckExpression
 import hu.bme.mit.gamma.scenario.model.ScenarioDeclaration
 import hu.bme.mit.gamma.scenario.model.ScenarioDefinitionReference
 import hu.bme.mit.gamma.scenario.model.ScenarioPackage
 import hu.bme.mit.gamma.scenario.model.Signal
 import hu.bme.mit.gamma.scenario.util.ScenarioModelValidator
 import org.eclipse.xtext.validation.Check
-import hu.bme.mit.gamma.scenario.model.ScenarioCheckExpression
 
 class ScenarioLanguageValidator extends AbstractScenarioLanguageValidator {
 
 	protected ScenarioModelValidator validator = ScenarioModelValidator.INSTANCE
-	
-	new () {
+
+	new() {
 		super.expressionModelValidator = validator
 	}
 
@@ -98,17 +98,16 @@ class ScenarioLanguageValidator extends AbstractScenarioLanguageValidator {
 	def void checkIntervals(Delay delay) {
 		handleValidationResultMessage(validator.checkIntervals(delay))
 	}
-	
+
 	@Check
 	def void checkScenarioReferenceParamCount(ScenarioDefinitionReference scenarioReference) {
 		handleValidationResultMessage(validator.checkScenarioReferenceParamCount(scenarioReference))
 	}
-	
+
 	@Check
 	def void checkScenarioCheck(ScenarioCheckExpression check) {
-		handleValidationResultMessage(validator.checkScenarioCheck(check)) 
+		handleValidationResultMessage(validator.checkScenarioCheck(check))
 	}
-	
 
 	@Check
 	def void checkRecursiveScenraioReference(ScenarioDefinitionReference scenarioReference) {

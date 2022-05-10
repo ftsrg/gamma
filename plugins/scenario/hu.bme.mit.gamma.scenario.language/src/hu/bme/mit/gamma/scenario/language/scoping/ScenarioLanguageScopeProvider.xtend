@@ -13,6 +13,7 @@ package hu.bme.mit.gamma.scenario.language.scoping
 import com.google.common.collect.Lists
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage
 import hu.bme.mit.gamma.scenario.model.ScenarioCheckExpression
+import hu.bme.mit.gamma.scenario.model.ScenarioDeclaration
 import hu.bme.mit.gamma.scenario.model.ScenarioModelPackage
 import hu.bme.mit.gamma.scenario.model.ScenarioPackage
 import hu.bme.mit.gamma.scenario.model.Signal
@@ -28,11 +29,10 @@ import org.eclipse.xtext.scoping.Scopes
 import org.eclipse.xtext.scoping.impl.SimpleScope
 
 import static com.google.common.base.Preconditions.checkState
-import hu.bme.mit.gamma.scenario.model.ScenarioDeclaration
 
 class ScenarioLanguageScopeProvider extends AbstractScenarioLanguageScopeProvider {
 
-	val util = GammaEcoreUtil.INSTANCE
+	val ecoreUtil = GammaEcoreUtil.INSTANCE
 
 	override getScope(EObject context, EReference reference) {
 		var IScope scope = null
@@ -40,14 +40,14 @@ class ScenarioLanguageScopeProvider extends AbstractScenarioLanguageScopeProvide
 			if (reference == ExpressionModelPackage.Literals.DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
 				// imported
 				var _scope = IScope.NULLSCOPE;
-				val containingScenarioPackage = util.getContainerOfType(context, ScenarioPackage);
+				val containingScenarioPackage = ecoreUtil.getContainerOfType(context, ScenarioPackage);
 				val imports = Lists.reverse(containingScenarioPackage.imports); // Latter imports are stronger
 				for (Package _import : imports) {
 					var parent = super.getScope(_import, reference);
 					_scope = new SimpleScope(parent, _scope.getAllElements());
 				}
 				// params
-				val containingScenarioDecl = util.getContainerOfType(context, ScenarioDeclaration);
+				val containingScenarioDecl = ecoreUtil.getContainerOfType(context, ScenarioDeclaration);
 				val variables = containingScenarioDecl.variableDeclarations
 				_scope = new SimpleScope(getParentScope(context, reference), _scope.getAllElements());
 				scope = Scopes.scopeFor(variables, _scope)

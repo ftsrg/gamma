@@ -40,7 +40,7 @@ class MonitorStatechartgenerator extends AbstractContractStatechartGeneration {
 	}
 
 	override execute() {
-		if(component.isSynchronousStatechart){
+		if (component.isSynchronousStatechart) {
 			statechart = createSynchronousStatechartDefinition
 		} else {
 			statechart = createAsynchronousStatechartDefinition
@@ -57,13 +57,13 @@ class MonitorStatechartgenerator extends AbstractContractStatechartGeneration {
 		fixReplacedStates()
 		copyTransitionsForOpt()
 		addScenarioContractAnnotation(NotDefinedEventMode.PERMISSIVE)
-		
+
 		val oldPorts = component.ports.filter[!(it.inputEvents.empty)]
 		for (port : statechart.ports) {
 			val oldPort = oldPorts.findFirst[it.name == port.name || it.turnedOutPortName == port.name]
 			ecoreUtil.change(port, oldPort, statechart)
 		}
-		
+
 		return statechart
 	}
 
@@ -271,14 +271,14 @@ class MonitorStatechartgenerator extends AbstractContractStatechartGeneration {
 				anyPortEvent.port = port
 				trigger.eventReference = anyPortEvent
 				triggersWithCorrectDir += trigger
-			} 
+			}
 		}
 		if (triggersWithCorrectDir.size > 1) {
 			violationTransition.trigger = getBinaryTriggerFromTriggers(triggersWithCorrectDir, BinaryType.OR)
 		} else if (triggersWithCorrectDir.size == 1) {
 			violationTransition.trigger = triggersWithCorrectDir.head
 		}
-		
+
 		val delay = set.modalInteractions.filter(Delay).head
 		if (delay !== null && !(delay.maximum instanceof InfinityExpression)) {
 			val timeoutDeclaration = createTimeoutDeclaration
@@ -288,21 +288,20 @@ class MonitorStatechartgenerator extends AbstractContractStatechartGeneration {
 			val negatedTimeoutTrigger = createUnaryTrigger
 			negatedTimeoutTrigger.type = UnaryType.NOT
 			negatedTimeoutTrigger.operand = timeoutTrigger.clone
-			val binaryOr =createBinaryTrigger
+			val binaryOr = createBinaryTrigger
 			binaryOr.type = BinaryType.OR
-			val binaryAND =createBinaryTrigger
+			val binaryAND = createBinaryTrigger
 			binaryAND.type = BinaryType.AND
-			
+
 			binaryOr.leftOperand = timeoutTrigger
 			binaryOr.rightOperand = violationTransition.trigger
 			violationTransition.trigger = binaryOr
-			
+
 			binaryAND.leftOperand = negatedTimeoutTrigger
 			binaryAND.rightOperand = forwardTransition.trigger
 			forwardTransition.trigger = binaryAND
 		}
-		
-		
+
 		previousState = state
 		return
 	}

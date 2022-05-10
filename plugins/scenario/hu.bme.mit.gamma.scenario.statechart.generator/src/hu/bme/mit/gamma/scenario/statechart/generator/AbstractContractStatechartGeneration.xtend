@@ -264,9 +264,8 @@ abstract class AbstractContractStatechartGeneration {
 				}
 			}
 			if (signal !== null) {
-				val portName = signal.direction == InteractionDirection.SEND
-						? scenarioStatechartUtil.getTurnedOutPortName(signal.port)
-						: signal.port.name
+				val portName = signal.direction == InteractionDirection.SEND ? scenarioStatechartUtil.
+						getTurnedOutPortName(signal.port) : signal.port.name
 				ports += getPort(portName)
 				events += getEvent(signal.event.name, getPort(portName))
 			}
@@ -312,9 +311,8 @@ abstract class AbstractContractStatechartGeneration {
 	def protected dispatch Trigger getEventTrigger(Signal signal, boolean reversed) {
 		val trigger = createEventTrigger
 		val eventref = createPortEventReference
-		val port = reversed
-				? getPort(scenarioStatechartUtil.getTurnedOutPortName(signal.port))
-				: getPort(signal.port.name)
+		val port = reversed ? getPort(scenarioStatechartUtil.getTurnedOutPortName(signal.port)) : getPort(
+				signal.port.name)
 		eventref.event = getEvent(signal.event.name, port)
 		eventref.port = port
 		trigger.eventReference = eventref
@@ -334,9 +332,8 @@ abstract class AbstractContractStatechartGeneration {
 		val trigger = createEventTrigger
 		if (negatedInteraction.modalinteraction instanceof Signal) {
 			var signal = negatedInteraction.modalinteraction as Signal
-			var Port port = signal.direction.equals(InteractionDirection.SEND)
-					? getPort(scenarioStatechartUtil.getTurnedOutPortName(signal.port))
-					: getPort(signal.port.name)
+			var Port port = signal.direction.equals(InteractionDirection.SEND) ? getPort(
+					scenarioStatechartUtil.getTurnedOutPortName(signal.port)) : getPort(signal.port.name)
 			val Event event = getEvent(signal.event.name, port)
 			val eventRef = createPortEventReference
 			eventRef.event = event
@@ -529,10 +526,10 @@ abstract class AbstractContractStatechartGeneration {
 		return timeoutDeclaration
 	}
 
-	def protected createTimeSpecification(Expression expr) {
+	def protected createTimeSpecification(Expression expression) {
 		val timeSpecification = createTimeSpecification
 		timeSpecification.unit = TimeUnit.MILLISECOND
-		timeSpecification.value = expr.clone
+		timeSpecification.value = expression.clone
 		return timeSpecification
 	}
 

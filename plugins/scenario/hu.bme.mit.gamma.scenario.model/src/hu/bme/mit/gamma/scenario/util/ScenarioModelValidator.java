@@ -100,10 +100,10 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 
 	public Collection<ValidationResultMessage> checkScenarioNamesAreUnique(ScenarioPackage scenarioPackage) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		for (ScenarioDeclaration scen : scenarioPackage.getScenarios()) {
+		for (ScenarioDeclaration scenarioDeclaration : scenarioPackage.getScenarios()) {
 			int i = 0;
-			for (ScenarioDeclaration sd : scenarioPackage.getScenarios()) {
-				if (scen.getName().equals(sd.getName())) {
+			for (ScenarioDeclaration otherScenario : scenarioPackage.getScenarios()) {
+				if (scenarioDeclaration.getName().equals(otherScenario.getName())) {
 					i++;
 				}
 			}
@@ -396,7 +396,7 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 					"Scenario " + reference.getScenarioDefinition().getName() + " takes "
 							+ reference.getScenarioDefinition().getParameterDeclarations().size() + " parameters, but "
-							+ reference.getArguments().size() + " argumnets are provided.",
+							+ reference.getArguments().size() + " argumnets are provided",
 					new ReferenceInfo(
 							ScenarioModelPackage.Literals.SCENARIO_DEFINITION_REFERENCE__SCENARIO_DEFINITION)));
 		}
@@ -420,35 +420,37 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 					Port port = paramRef.getPort();
 					boolean ok = false;
 					for (Signal signal : signals) {
-						if(signal.getPort().equals(port) && signal.getEvent().equals(event)) {
+						if (signal.getPort().equals(port) && signal.getEvent().equals(event)) {
 							ok = true;
 						}
 					}
 					if (!ok) {
 						validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-								"This synchronous block does not contain any signal for the port and event of " + paramRef.getParameter().getName() + ".",
-								new ReferenceInfo(paramRef.eContainingFeature(),paramRef.eContainer())));
+								"This synchronous block does not contain any signal for the port and event of "
+										+ paramRef.getParameter().getName(),
+								new ReferenceInfo(paramRef.eContainingFeature(), paramRef.eContainer())));
 					}
 				}
-			}  else if(container instanceof InteractionFragment) {
+			} else if (container instanceof InteractionFragment) {
 				InteractionFragment fragment = (InteractionFragment) container;
 				int indexOfCheck = fragment.getInteractions().indexOf(check);
-				Interaction previousInteraction = findPreviousNonScenarioCheck(fragment,indexOfCheck);
-				if(!(previousInteraction instanceof Signal)) {
+				Interaction previousInteraction = findPreviousNonScenarioCheck(fragment, indexOfCheck);
+				if (!(previousInteraction instanceof Signal)) {
 					for (EventParameterReferenceExpression paramRef : params) {
 						validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-							"The previous interaction is not a Signal.",
-							new ReferenceInfo(paramRef.eContainingFeature(),paramRef.eContainer())));
+								"The previous interaction is not a Signal.",
+								new ReferenceInfo(paramRef.eContainingFeature(), paramRef.eContainer())));
 					}
 				} else {
 					Signal signal = (Signal) previousInteraction;
 					for (EventParameterReferenceExpression paramRef : params) {
 						Event event = paramRef.getEvent();
 						Port port = paramRef.getPort();
-						if(!signal.getPort().equals(port) || !signal.getEvent().equals(event)) {
+						if (!signal.getPort().equals(port) || !signal.getEvent().equals(event)) {
 							validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-								"The previous interaction is not a Signal for the port and event of " + paramRef.getParameter().getName() + ".",
-								new ReferenceInfo(paramRef.eContainingFeature(),paramRef.eContainer())));
+									"The previous interaction is not a Signal for the port and event of "
+											+ paramRef.getParameter().getName(),
+									new ReferenceInfo(paramRef.eContainingFeature(), paramRef.eContainer())));
 						}
 					}
 				}
@@ -459,14 +461,14 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 				new ReferenceInfo(ScenarioModelPackage.Literals.SCENARIO_CHECK_EXPRESSION__EXPRESSION)));
 		return validationResultMessages;
 	}
-	
+
 	private Interaction findPreviousNonScenarioCheck(InteractionFragment fragment, int indexOfCheck) {
-		if(indexOfCheck == 0) {
+		if (indexOfCheck == 0) {
 			return null;
 		}
-		Interaction previousInteraction = fragment.getInteractions().get(indexOfCheck-1);
-		if(previousInteraction instanceof ScenarioCheckExpression) {
-			return findPreviousNonScenarioCheck(fragment, indexOfCheck-1);
+		Interaction previousInteraction = fragment.getInteractions().get(indexOfCheck - 1);
+		if (previousInteraction instanceof ScenarioCheckExpression) {
+			return findPreviousNonScenarioCheck(fragment, indexOfCheck - 1);
 		}
 		return previousInteraction;
 	}
@@ -475,7 +477,7 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		if (isScenarioReferenceRecursive(reference, reference.getScenarioDefinition())) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-					"Scenario " + reference.getScenarioDefinition().getName() + " is called recursively.",
+					"Scenario " + reference.getScenarioDefinition().getName() + " is called recursively",
 					new ReferenceInfo(
 							ScenarioModelPackage.Literals.SCENARIO_DEFINITION_REFERENCE__SCENARIO_DEFINITION)));
 		}

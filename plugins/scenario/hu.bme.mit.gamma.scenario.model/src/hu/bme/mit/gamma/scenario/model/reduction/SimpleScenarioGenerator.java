@@ -57,8 +57,8 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 
 	private ScenarioDeclaration base = null;
 	private ScenarioDeclaration simple = null;
-	private ScenarioModelFactory factory = null;
-	private ExpressionModelFactory expressionFactory = null;
+	private ScenarioModelFactory factory = ScenarioModelFactory.eINSTANCE;
+	private ExpressionModelFactory expressionFactory = ExpressionModelFactory.eINSTANCE;
 	private boolean transformLoopFragments = false;
 	private List<Expression> arguments = null;
 	private ScenarioReferenceResolver refResolver = new ScenarioReferenceResolver();
@@ -80,8 +80,6 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 	GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
 
 	public ScenarioDeclaration execute() {
-		factory = ScenarioModelFactory.eINSTANCE;
-		expressionFactory = ExpressionModelFactory.eINSTANCE;
 		simple = factory.createScenarioDeclaration();
 		simple.setName(base.getName());
 		simple.setChart(factory.createChart());
