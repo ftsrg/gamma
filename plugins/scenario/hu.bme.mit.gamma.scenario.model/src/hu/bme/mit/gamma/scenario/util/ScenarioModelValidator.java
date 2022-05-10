@@ -35,6 +35,7 @@ import hu.bme.mit.gamma.scenario.model.NegatedModalInteraction;
 import hu.bme.mit.gamma.scenario.model.ParallelCombinedFragment;
 import hu.bme.mit.gamma.scenario.model.PermissiveAnnotation;
 import hu.bme.mit.gamma.scenario.model.Reset;
+import hu.bme.mit.gamma.scenario.model.ScenarioAssignmentStatement;
 import hu.bme.mit.gamma.scenario.model.ScenarioCheckExpression;
 import hu.bme.mit.gamma.scenario.model.ScenarioDeclaration;
 import hu.bme.mit.gamma.scenario.model.ScenarioDefinitionReference;
@@ -480,6 +481,36 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 					"Scenario " + reference.getScenarioDefinition().getName() + " is called recursively",
 					new ReferenceInfo(
 							ScenarioModelPackage.Literals.SCENARIO_DEFINITION_REFERENCE__SCENARIO_DEFINITION)));
+		}
+		return validationResultMessages;
+	}
+	
+	public Collection<ValidationResultMessage> checkScenraioReferenceInitialBlock(ScenarioDefinitionReference reference) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		if (reference.getScenarioDefinition().getInitialblock() != null) {
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING,
+					"The initial block of scenario " + reference.getScenarioDefinition().getName() + " will not be included in this scenario",
+					new ReferenceInfo(
+							ScenarioModelPackage.Literals.SCENARIO_DEFINITION_REFERENCE__SCENARIO_DEFINITION)));
+		}
+		return validationResultMessages;
+	}
+	
+	public Collection<ValidationResultMessage> checkScenraioBlockOrder(ModalInteractionSet set) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		List<ScenarioCheckExpression> checks = javaUtil.filterIntoList(set.getModalInteractions(),	ScenarioCheckExpression.class);
+		List<ScenarioAssignmentStatement> assignments = javaUtil.filterIntoList(set.getModalInteractions(),	ScenarioAssignmentStatement.class);
+		
+		for (ScenarioCheckExpression check : checks) {
+			for (ScenarioAssignmentStatement assignment : assignments) {
+				int assingmentIdx = set.getModalInteractions().indexOf(assignment);
+				int checkIdx = set.getModalInteractions().indexOf(check);
+				if(checkIdx > assingmentIdx) {
+					validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING,
+						"The assignment will only be evaluated after the check",
+						new ReferenceInfo(assignment.eContainingFeature(), assingmentIdx, set)));
+				}
+			}
 		}
 		return validationResultMessages;
 	}

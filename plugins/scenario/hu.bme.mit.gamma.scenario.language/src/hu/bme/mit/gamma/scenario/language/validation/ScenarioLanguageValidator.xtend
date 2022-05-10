@@ -113,5 +113,15 @@ class ScenarioLanguageValidator extends AbstractScenarioLanguageValidator {
 	def void checkRecursiveScenraioReference(ScenarioDefinitionReference scenarioReference) {
 		handleValidationResultMessage(validator.checkRecursiveScenraioReference(scenarioReference))
 	}
+	
+	@Check
+	def void checkScenraioReferenceInitialBlock(ScenarioDefinitionReference scenarioReference) {
+		handleValidationResultMessage(validator.checkScenraioReferenceInitialBlock(scenarioReference))
+	}
+	
+	@Check
+	def void checkScenraioBlockOrder(ModalInteractionSet set) {
+		handleValidationResultMessage(validator.checkScenraioBlockOrder(set))
+	}
 
 }
