@@ -35,6 +35,7 @@ import hu.bme.mit.gamma.trace.model.InstanceState;
 import hu.bme.mit.gamma.trace.model.InstanceStateConfiguration;
 import hu.bme.mit.gamma.trace.model.InstanceVariableState;
 import hu.bme.mit.gamma.trace.model.NegatedAssert;
+import hu.bme.mit.gamma.trace.model.NegativeTestAnnotation;
 import hu.bme.mit.gamma.trace.model.RaiseEventAct;
 import hu.bme.mit.gamma.trace.model.Step;
 
@@ -73,6 +74,10 @@ public class TraceModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 		List<ExecutionTraceAnnotation> annotations = trace.getAnnotations();
 		return javaUtil.filterIntoList(annotations,
 				ExecutionTraceAllowedWaitingAnnotation.class).get(0);
+	}
+	
+	public static boolean isNegativeTest(ExecutionTrace trace) {
+		return hasAnnotation(trace, NegativeTestAnnotation.class);
 	}
 	
 	//

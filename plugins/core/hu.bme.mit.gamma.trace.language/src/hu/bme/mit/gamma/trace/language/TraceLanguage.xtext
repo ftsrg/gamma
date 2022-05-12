@@ -27,7 +27,12 @@ ExecutionTrace returns ExecutionTrace:
 ;
 
 ExecutionTraceAnnotations returns ExecutionTraceAnnotation:
-	AllowedWaitingAnnotation // | future annotations
+	AllowedWaitingAnnotation | NegativeTestAnnotation
+;
+
+NegativeTestAnnotation returns NegativeTestAnnotation:
+	{NegativeTestAnnotation}
+	'@NegativeTest'
 ;
 
 AllowedWaitingAnnotation returns ExecutionTraceAllowedWaitingAnnotation:

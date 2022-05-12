@@ -17,6 +17,6 @@ import hu.bme.mit.gamma.scenario.model.ScenarioModelPackage
 class ScenarioLanguageLinker extends GammaLanguageLinker {
 	
 	override getContext() {
-		return newHashMap(ScenarioDeclaration -> #[ScenarioModelPackage.eINSTANCE.scenarioDeclaration_Imports])
+		return newHashMap(ScenarioDeclaration -> #[ScenarioModelPackage.eINSTANCE.scenarioPackage_Imports])
 	}
 }

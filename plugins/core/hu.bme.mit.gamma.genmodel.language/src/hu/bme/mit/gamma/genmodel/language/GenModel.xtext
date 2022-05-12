@@ -29,6 +29,7 @@ GenModel returns GenModel:
 	(('import' 
 		(packageImports+=[interface::Package | STRING] |
 		'external' statechartImports+=[sgraph::Statechart| STRING] |
+		'scenario' scenarioImports+=[scenario::ScenarioPackage| STRING] |
 		'trace' traceImports+=[trace::ExecutionTrace | STRING])) |
 		'include' genmodelImports+=[GenModel | STRING]
 	)*
@@ -374,15 +375,18 @@ StatechartContractTestGeneration returns StatechartContractTestGeneration:
 StatechartContractGeneration returns StatechartContractGeneration:
 	{StatechartContractGeneration} 
 	'statechart-contract' '{'
-	 'scenario' ':' scenario= [scenario::ScenarioDefinition] ('(' arguments+=Expression  (',' arguments+=Expression )* ')')?
+	 'scenario' ':' scenario= [scenario::ScenarioDeclaration] ('(' arguments+=Expression  (',' arguments+=Expression )* ')')?
 	 ('folder' ':' targetFolder+=STRING)?
 	 ('name' ':' fileName+=STRING)?
 	 ('restart-on-cold-violation' ':' StartAsColdViolation=BOOLEAN)?
 	 ('loop-for-interaction' ':' UseIteratingVariable=BOOLEAN)?
 	 ('automaton-type' ':' AutomatonType=ContractAutomatonType)?
+	 ('test-type' ':' TestType=TestAutomatonType)?
 	'}'
 ;
-
+enum TestAutomatonType returns  TestAutomatonType:
+	NEGATIVE = 'negative' | POSITIVE = 'positive'
+;
 enum ContractAutomatonType returns  ContractAutomatonType:
 	MONITOR = 'monitor' | TEST = 'test'
 ;

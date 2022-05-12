@@ -1,11 +1,13 @@
+import scenario "/contract/scenario/Contracts.gsc" 
+ 
 statechart-contract {
-	scenario : Blinking
-	folder  : "contract/scenario/automaton"
-	name : "Blinking"
+	scenario : Blinking(0)
+	folder  : "contract/scenario/automaton2" 
+	name : "Blinking2"
 	restart-on-cold-violation : true
-	automaton-type : monitor
+	automaton-type : test
 }
-
+ 
 statechart-contract {
 	scenario : Init
 	folder  : "contract/scenario/automaton"
@@ -16,7 +18,7 @@ statechart-contract {
 
 statechart-contract {
 	scenario : Normal
-	folder  : "contract/scenario/automaton"
+	folder  : "contract/scenario/automaton" 
 	name : "Normal"
 	restart-on-cold-violation : true
 	automaton-type : monitor

@@ -48,6 +48,8 @@ class AutomatonDeterminizator {
 		this.oldFirstRegion = oldStatechart.regions.head
 		this.newStatechart = oldStatechart.clone
 		this.firstRegion = newStatechart.regions.head
+		newStatechart.variableDeclarations.clear
+		newStatechart.variableDeclarations += oldStatechart.variableDeclarations
 	}
 
 	def StatechartDefinition execute() {

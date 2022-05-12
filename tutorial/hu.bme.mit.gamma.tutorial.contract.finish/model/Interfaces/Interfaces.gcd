@@ -13,4 +13,5 @@ interface Control {
 }
 interface PoliceInterrupt {
 	out event police
+	out persistent event police2(Name : integer)
 }

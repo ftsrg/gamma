@@ -12,6 +12,8 @@
         eType="ecore:EClass ../../hu.bme.mit.gamma.trace.model/model/trace.ecore#//ExecutionTrace"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="genmodelImports" upperBound="-1"
         eType="#//GenModel"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="scenarioImports" upperBound="-1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.scenario.model/model/scenario.ecore#//ScenarioPackage"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Task" abstract="true">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="fileName" unique="false"
@@ -250,13 +252,18 @@
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="StatechartContractGeneration" eSuperTypes="#//Task ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ArgumentedElement">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="scenario" eType="ecore:EClass ../../hu.bme.mit.gamma.scenario.model/model/scenario.ecore#//ScenarioDefinition"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="scenario" eType="ecore:EClass ../../hu.bme.mit.gamma.scenario.model/model/scenario.ecore#//ScenarioDeclaration"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="StartAsColdViolation" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="UseIteratingVariable" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="AutomatonType" eType="#//ContractAutomatonType"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="TestType" eType="#//TestAutomatonType"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EEnum" name="ContractAutomatonType">
     <eLiterals name="MONITOR"/>
     <eLiterals name="TEST" value="1"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EEnum" name="TestAutomatonType">
+    <eLiterals name="POSITIVE"/>
+    <eLiterals name="NEGATIVE" value="1"/>
   </eClassifiers>
 </ecore:EPackage>

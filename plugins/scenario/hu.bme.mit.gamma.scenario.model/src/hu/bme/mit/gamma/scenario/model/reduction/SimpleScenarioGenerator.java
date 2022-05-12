@@ -20,7 +20,9 @@ import hu.bme.mit.gamma.expression.model.ConstantDeclaration;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
+import hu.bme.mit.gamma.expression.model.ExpressionModelFactory;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
+import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator;
 import hu.bme.mit.gamma.scenario.model.AlternativeCombinedFragment;
 import hu.bme.mit.gamma.scenario.model.Annotation;
@@ -40,7 +42,9 @@ import hu.bme.mit.gamma.scenario.model.OptionalCombinedFragment;
 import hu.bme.mit.gamma.scenario.model.ParallelCombinedFragment;
 import hu.bme.mit.gamma.scenario.model.PermissiveAnnotation;
 import hu.bme.mit.gamma.scenario.model.Reset;
-import hu.bme.mit.gamma.scenario.model.ScenarioDefinition;
+import hu.bme.mit.gamma.scenario.model.ScenarioAssignmentStatement;
+import hu.bme.mit.gamma.scenario.model.ScenarioCheckExpression;
+import hu.bme.mit.gamma.scenario.model.ScenarioDeclaration;
 import hu.bme.mit.gamma.scenario.model.ScenarioModelFactory;
 import hu.bme.mit.gamma.scenario.model.Signal;
 import hu.bme.mit.gamma.scenario.model.StrictAnnotation;
@@ -51,20 +55,21 @@ import hu.bme.mit.gamma.util.GammaEcoreUtil;
 
 public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 
-	private ScenarioDefinition base = null;
-	private ScenarioDefinition simple = null;
-	private ScenarioModelFactory factory = null;
+	private ScenarioDeclaration base = null;
+	private ScenarioDeclaration simple = null;
+	private ScenarioModelFactory factory = ScenarioModelFactory.eINSTANCE;
+	private ExpressionModelFactory expressionFactory = ExpressionModelFactory.eINSTANCE;
 	private boolean transformLoopFragments = false;
 	private List<Expression> arguments = null;
 	private ScenarioReferenceResolver refResolver = new ScenarioReferenceResolver();
 
-	public SimpleScenarioGenerator(ScenarioDefinition base, boolean transformLoopFragments) {
+	public SimpleScenarioGenerator(ScenarioDeclaration base, boolean transformLoopFragments) {
 		this(base, transformLoopFragments, new LinkedList<Expression>());
 	}
 
-	public SimpleScenarioGenerator(ScenarioDefinition base, boolean transformLoopFragments,
+	public SimpleScenarioGenerator(ScenarioDeclaration base, boolean transformLoopFragments,
 			List<Expression> parameters) {
-		this.base = base;
+		this.base = ecoreUtil.clone(base); // cloned so the variables and other objects are not moved from the original
 		this.transformLoopFragments = transformLoopFragments;
 		this.arguments = parameters;
 	}
@@ -74,9 +79,8 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 	private InteractionFragment previousFragment = null;
 	GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
 
-	public ScenarioDefinition execute() {
-		factory = ScenarioModelFactory.eINSTANCE;
-		simple = factory.createScenarioDefinition();
+	public ScenarioDeclaration execute() {
+		simple = factory.createScenarioDeclaration();
 		simple.setName(base.getName());
 		simple.setChart(factory.createChart());
 		simple.getChart().setFragment(factory.createInteractionFragment());
@@ -84,6 +88,9 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 		refResolver.resolveReferences(base);
 		for (Annotation annotation : base.getAnnotation()) {
 			simple.getAnnotation().add((Annotation) this.doSwitch(annotation));
+		}
+		for (VariableDeclaration variable : base.getVariableDeclarations()) {
+			simple.getVariableDeclarations().add(ecoreUtil.clone(variable));
 		}
 		previousFragment = simple.getChart().getFragment();
 		for (Interaction interaction : base.getChart().getFragment().getInteractions()) {
@@ -93,20 +100,20 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 		return simple;
 	}
 
-	private void inlineExpressions(ScenarioDefinition simple, ScenarioDefinition base) {
+	private void inlineExpressions(ScenarioDeclaration simple, ScenarioDeclaration base) {
 		List<DirectReferenceExpression> references = ecoreUtil.getAllContentsOfType(simple,
 				DirectReferenceExpression.class);
 		for (DirectReferenceExpression direct : references) {
-			Declaration decl = direct.getDeclaration();
-			if (decl instanceof ConstantDeclaration) {
-				ConstantDeclaration _const = (ConstantDeclaration) decl;
+			Declaration declaration = direct.getDeclaration();
+			if (declaration instanceof ConstantDeclaration) {
+				ConstantDeclaration _const = (ConstantDeclaration) declaration;
 				Expression cloned = ecoreUtil.clone(_const.getExpression());
 				EObject container = direct.eContainer();
 				ecoreUtil.change(cloned, direct, container);
 				ecoreUtil.replace(cloned, direct);
 			}
-			if (decl instanceof ParameterDeclaration) {
-				ParameterDeclaration param = (ParameterDeclaration) decl;
+			if (declaration instanceof ParameterDeclaration) {
+				ParameterDeclaration param = (ParameterDeclaration) declaration;
 				for (ParameterDeclaration paramD : base.getParameterDeclarations()) {
 					if (paramD.getName() == param.getName()) {
 						int index = base.getParameterDeclarations().indexOf(paramD);
@@ -114,6 +121,17 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 						Expression cloned = ecoreUtil.clone(_new);
 						ecoreUtil.change(cloned, direct, direct.eContainer());
 						ecoreUtil.replace(cloned, direct);
+					}
+				}
+			}
+			if (declaration instanceof VariableDeclaration) {
+				VariableDeclaration variable = (VariableDeclaration) declaration;
+				for (VariableDeclaration newVar : simple.getVariableDeclarations()) {
+					if (newVar.getName().equals(variable.getName())) {
+						DirectReferenceExpression newRef = ecoreUtil.clone(direct);
+						newRef.setDeclaration(newVar);
+						ecoreUtil.change(newRef, direct, direct.eContainer());
+						ecoreUtil.replace(newRef, direct);
 					}
 				}
 			}
@@ -345,16 +363,31 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 	}
 
 	@Override
+	public EObject caseScenarioAssignmentStatement(ScenarioAssignmentStatement object) {
+		ScenarioAssignmentStatement assignment = factory.createScenarioAssignmentStatement();
+		assignment.setLhs(ecoreUtil.clone(object.getLhs()));
+		assignment.setRhs(ecoreUtil.clone(object.getRhs()));
+		return assignment;
+	}
+
+	@Override
 	public EObject caseDelay(Delay object) {
 		Delay delay = factory.createDelay();
 		delay.setModality(object.getModality());
-		if (object.getMaximum() == null)
-
-			delay.setMaximum(ecoreUtil.clone(object.getMinimum()));
-		else
+		if (object.getMaximum() == null) {
+			delay.setMaximum(expressionFactory.createInfinityExpression());
+		} else {
 			delay.setMaximum(ecoreUtil.clone(object.getMaximum()));
+		}
 		delay.setMinimum(ecoreUtil.clone(object.getMinimum()));
 		return delay;
+	}
+
+	@Override
+	public EObject caseScenarioCheckExpression(ScenarioCheckExpression object) {
+		ScenarioCheckExpression check = factory.createScenarioCheckExpression();
+		check.setExpression(ecoreUtil.clone(object.getExpression()));
+		return check;
 	}
 
 }

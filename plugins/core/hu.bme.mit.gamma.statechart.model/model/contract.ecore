@@ -47,4 +47,6 @@
     <eLiterals name="ACCEPTING"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="HasInitialOutputsBlockAnnotation" eSuperTypes="statechart.ecore#//StatechartAnnotation"/>
+  <eClassifiers xsi:type="ecore:EClass" name="NegativeContractStatechartAnnotation"
+      eSuperTypes="statechart.ecore#//StatechartAnnotation"/>
 </ecore:EPackage>

@@ -22,7 +22,7 @@ import hu.bme.mit.gamma.scenario.model.NegatedModalInteraction
 import hu.bme.mit.gamma.scenario.model.NegatedWaitAnnotation
 import hu.bme.mit.gamma.scenario.model.OptionalCombinedFragment
 import hu.bme.mit.gamma.scenario.model.PermissiveAnnotation
-import hu.bme.mit.gamma.scenario.model.ScenarioDefinition
+import hu.bme.mit.gamma.scenario.model.ScenarioDeclaration
 import hu.bme.mit.gamma.scenario.model.Signal
 import hu.bme.mit.gamma.scenario.model.StrictAnnotation
 import hu.bme.mit.gamma.scenario.model.WaitAnnotation
@@ -60,14 +60,14 @@ class TestGeneratorStatechartGenerator extends AbstractContractStatechartGenerat
 	val boolean coldViolationExisits
 	val StatechartGenerationMode generationMode
 
-	new(ScenarioDefinition scenario, Component component, StatechartGenerationMode mode,
+	new(ScenarioDeclaration scenario, Component component, StatechartGenerationMode mode,
 		boolean dedicatedColdViolation) {
 		super(scenario, component)
 		this.generationMode = mode
 		this.coldViolationExisits = dedicatedColdViolation
 	}
 
-	new(ScenarioDefinition scenario, Component component) {
+	new(ScenarioDeclaration scenario, Component component) {
 		this(scenario, component, StatechartGenerationMode.GENERATE_ONLY_FORWARD, true)
 	}
 
@@ -196,6 +196,7 @@ class TestGeneratorStatechartGenerator extends AbstractContractStatechartGenerat
 			val initialViolationTransition = statechartUtil.createTransition(initChoice, violation)
 			initialViolationTransition.guard = createElseExpression
 		}
+		statechart.variableDeclarations += scenario.variableDeclarations
 	}
 
 	def dispatch void process(ModalInteractionSet interactionSet) {

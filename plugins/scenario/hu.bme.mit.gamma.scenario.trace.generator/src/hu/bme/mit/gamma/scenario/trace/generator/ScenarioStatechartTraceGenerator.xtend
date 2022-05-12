@@ -50,9 +50,8 @@ class ScenarioStatechartTraceGenerator {
 	String absoluteParentFolder
 
 	Package _package
-		
-	new(StatechartDefinition statechart,
-			List<? extends Expression> arguments, int schedulingConstraint) {
+
+	new(StatechartDefinition statechart, List<? extends Expression> arguments, int schedulingConstraint) {
 		this.statechart = statechart
 		this.arguments += arguments
 		this.schedulingConstraint = schedulingConstraint
@@ -76,18 +75,16 @@ class ScenarioStatechartTraceGenerator {
 
 		var GammaToXstsTransformer gammaToXSTSTransformer = null
 		if (schedulingConstraint > 0) {
-			gammaToXSTSTransformer = new GammaToXstsTransformer(
-				schedulingConstraint, true, true, TransitionMerging.HIERARCHICAL)
-		}
-		else {
+			gammaToXSTSTransformer = new GammaToXstsTransformer(schedulingConstraint, true, true,
+				TransitionMerging.HIERARCHICAL)
+		} else {
 			gammaToXSTSTransformer = new GammaToXstsTransformer
 		}
-		
+
 		val name = statechart.name
-		val xStsFile = new File(
-				absoluteParentFolder + File.separator +	fileNamer.getXtextXStsFileName(name))
-		val xStsString = gammaToXSTSTransformer.preprocessAndExecuteAndSerialize(
-				_package, arguments, absoluteParentFolder, name)
+		val xStsFile = new File(absoluteParentFolder + File.separator + fileNamer.getXtextXStsFileName(name))
+		val xStsString = gammaToXSTSTransformer.preprocessAndExecuteAndSerialize(_package, arguments,
+			absoluteParentFolder, name)
 		fileUtil.saveString(xStsFile, xStsString)
 
 		val verifier = new ThetaVerifier
@@ -96,15 +93,18 @@ class ScenarioStatechartTraceGenerator {
 		val regionName = statechart.regions.get(0).name
 		val statechartName = statechart.name.toFirstUpper
 
+		val targetStateName = statechart.hasNegatedContratStatechartAnnotation ? scenarioStatechartUtil.
+				hotViolation : scenarioStatechartUtil.accepting
+
 		val packageFileName = fileNamer.getUnfoldedPackageFileName(fileName)
 		val parameters = '''--refinement "MULTI_SEQ" --domain "EXPL" --initprec "ALLVARS" --allpaths'''
-		val query = '''E<> ((«regionName + "_" + statechartName» == «scenarioStatechartUtil.accepting»))'''
+		val query = '''E<> ((«regionName + "_" + statechartName» == «targetStateName»))'''
 		val gammaPackage = ecoreUtil.normalLoad(modelFile.parent, packageFileName)
 
 		val verifierResult = verifier.verifyQuery(gammaPackage, parameters, modelFile, query)
 		val baseTrace = verifierResult.trace
-		
-		if (baseTrace === null){
+
+		if (baseTrace === null) {
 			throw new IllegalArgumentException('''State «scenarioStatechartUtil.accepting» cannot be reached in the formal model''')
 		}
 
@@ -128,6 +128,12 @@ class ScenarioStatechartTraceGenerator {
 				eventAdder.execute
 			}
 			result += trace
+		}
+
+		if (statechart.hasNegatedContratStatechartAnnotation) {
+			for (trace : result) {
+				trace.annotations += createNegativeTestAnnotation
+			}
 		}
 
 		return result

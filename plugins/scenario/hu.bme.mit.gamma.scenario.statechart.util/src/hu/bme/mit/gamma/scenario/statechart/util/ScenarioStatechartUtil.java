@@ -133,5 +133,9 @@ public class ScenarioStatechartUtil {
 	public String getCombinedStateAcceptingName(String name) {
 		return name + "__" + Accepting;
 	}
+	
+	public String getNameOfNewPort(Port port, boolean isSend) {
+		return isSend ? getTurnedOutPortName(port) : port.getName();
+	}
 
 }

@@ -1,5 +1,6 @@
 package hu.bme.mit.gamma.scenario.statechart.generator
 
+import hu.bme.mit.gamma.expression.model.InfinityExpression
 import hu.bme.mit.gamma.scenario.model.AlternativeCombinedFragment
 import hu.bme.mit.gamma.scenario.model.Delay
 import hu.bme.mit.gamma.scenario.model.InteractionDirection
@@ -9,27 +10,23 @@ import hu.bme.mit.gamma.scenario.model.ModalInteractionSet
 import hu.bme.mit.gamma.scenario.model.ModalityType
 import hu.bme.mit.gamma.scenario.model.NegatedModalInteraction
 import hu.bme.mit.gamma.scenario.model.OptionalCombinedFragment
-import hu.bme.mit.gamma.scenario.model.ScenarioDefinition
+import hu.bme.mit.gamma.scenario.model.ScenarioDeclaration
 import hu.bme.mit.gamma.statechart.contract.NotDefinedEventMode
 import hu.bme.mit.gamma.statechart.interface_.Component
-import hu.bme.mit.gamma.statechart.interface_.EventTrigger
-import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.interface_.TimeUnit
 import hu.bme.mit.gamma.statechart.interface_.Trigger
-import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference
 import hu.bme.mit.gamma.statechart.statechart.BinaryType
-import hu.bme.mit.gamma.statechart.statechart.PortEventReference
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.StateNode
 import hu.bme.mit.gamma.statechart.statechart.TransitionPriority
-import hu.bme.mit.gamma.statechart.statechart.UnaryTrigger
+import hu.bme.mit.gamma.statechart.statechart.UnaryType
 import java.math.BigInteger
 import java.util.List
 
 import static extension hu.bme.mit.gamma.scenario.model.derivedfeatures.ScenarioModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
-class MonitorStatechartgenerator extends AbstractContractStatechartGeneration {
+class MonitorStatechartGenerator extends AbstractContractStatechartGeneration {
 
 	protected boolean skipNextInteraction = false
 	protected State componentViolation = null
@@ -37,13 +34,17 @@ class MonitorStatechartgenerator extends AbstractContractStatechartGeneration {
 	protected List<Pair<StateNode, StateNode>> copyOutgoingTransitionsForOpt = newLinkedList
 	protected boolean restartOnColdViolation = false
 
-	new(ScenarioDefinition scenario, Component component, boolean restartOnColdViolation) {
+	new(ScenarioDeclaration scenario, Component component, boolean restartOnColdViolation) {
 		super(scenario, component)
 		this.restartOnColdViolation = restartOnColdViolation
 	}
 
 	override execute() {
-		statechart = createSynchronousStatechartDefinition
+		if (component.isSynchronousStatechart) {
+			statechart = createSynchronousStatechartDefinition
+		} else {
+			statechart = createAsynchronousStatechartDefinition
+		}
 		intializeStatechart()
 		for (modalInteraction : scenario.chart.fragment.interactions) {
 			if (!skipNextInteraction) {
@@ -56,6 +57,13 @@ class MonitorStatechartgenerator extends AbstractContractStatechartGeneration {
 		fixReplacedStates()
 		copyTransitionsForOpt()
 		addScenarioContractAnnotation(NotDefinedEventMode.PERMISSIVE)
+
+		val oldPorts = component.ports.filter[!(it.inputEvents.empty)]
+		for (port : statechart.ports) {
+			val oldPort = oldPorts.findFirst[it.name == port.name || it.turnedOutPortName == port.name]
+			ecoreUtil.change(port, oldPort, statechart)
+		}
+
 		return statechart
 	}
 
@@ -122,6 +130,7 @@ class MonitorStatechartgenerator extends AbstractContractStatechartGeneration {
 			syncBlock.modalInteractions += scenario.initialblock.modalInteractions
 			scenario.chart.fragment.interactions.add(0, syncBlock)
 		}
+		statechart.variableDeclarations += scenario.variableDeclarations
 	}
 
 	def dispatch void process(ModalInteractionSet interactionSet) {
@@ -254,32 +263,45 @@ class MonitorStatechartgenerator extends AbstractContractStatechartGeneration {
 		forwardTransition.priority = BigInteger.valueOf(3)
 		violationTransition.priority = BigInteger.valueOf(1)
 		handleArguments(set.modalInteractions, forwardTransition)
-		val eventRefs = createOtherNegatedTriggers(set).filter(UnaryTrigger)
-														.map[it.operand]
-														.filter(EventTrigger)
-														.map [it.eventReference]
 		val triggersWithCorrectDir = <Trigger>newArrayList
-		for (eventRef : eventRefs) {
-			var Port port = null
-			if (eventRef instanceof PortEventReference) {
-				port = eventRef.port
-			} else if (eventRef instanceof AnyPortEventReference) {
-				port = eventRef.port
-			}
+		for (port : statechart.ports.filter[!it.inputEvents.empty]) {
 			if ((port.isTurnedOut && isSend) || (!port.isTurnedOut && !isSend)) {
 				val trigger = createEventTrigger
-				trigger.eventReference = eventRef
+				val anyPortEvent = createAnyPortEventReference
+				anyPortEvent.port = port
+				trigger.eventReference = anyPortEvent
 				triggersWithCorrectDir += trigger
-			} 
+			}
 		}
 		if (triggersWithCorrectDir.size > 1) {
 			violationTransition.trigger = getBinaryTriggerFromTriggers(triggersWithCorrectDir, BinaryType.OR)
 		} else if (triggersWithCorrectDir.size == 1) {
 			violationTransition.trigger = triggersWithCorrectDir.head
-		} else {
-			violationTransition.trigger = createAnyTrigger
-			violationTransition.guard = createFalseExpression
 		}
+
+		val delay = set.modalInteractions.filter(Delay).head
+		if (delay !== null && !(delay.maximum instanceof InfinityExpression)) {
+			val timeoutDeclaration = createTimeoutDeclaration
+			val timeSpecification = createTimeSpecification(delay.maximum)
+			setTimeoutDeclarationForState(previousState, timeoutDeclaration, timeSpecification)
+			val timeoutTrigger = getEventTrigger(delay, true)
+			val negatedTimeoutTrigger = createUnaryTrigger
+			negatedTimeoutTrigger.type = UnaryType.NOT
+			negatedTimeoutTrigger.operand = timeoutTrigger.clone
+			val binaryOr = createBinaryTrigger
+			binaryOr.type = BinaryType.OR
+			val binaryAND = createBinaryTrigger
+			binaryAND.type = BinaryType.AND
+
+			binaryOr.leftOperand = timeoutTrigger
+			binaryOr.rightOperand = violationTransition.trigger
+			violationTransition.trigger = binaryOr
+
+			binaryAND.leftOperand = negatedTimeoutTrigger
+			binaryAND.rightOperand = forwardTransition.trigger
+			forwardTransition.trigger = binaryAND
+		}
+
 		previousState = state
 		return
 	}
