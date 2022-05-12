@@ -10,7 +10,7 @@ import hu.bme.mit.gamma.scenario.model.ScenarioPackage;
 import hu.bme.mit.gamma.scenario.model.reduction.SimpleScenarioGenerator;
 import hu.bme.mit.gamma.scenario.model.sorter.ScenarioContentSorter;
 import hu.bme.mit.gamma.scenario.statechart.generator.AbstractContractStatechartGeneration;
-import hu.bme.mit.gamma.scenario.statechart.generator.MonitorStatechartgenerator;
+import hu.bme.mit.gamma.scenario.statechart.generator.MonitorStatechartGenerator;
 import hu.bme.mit.gamma.scenario.statechart.generator.StatechartGenerationMode;
 import hu.bme.mit.gamma.scenario.statechart.generator.TestGeneratorStatechartGenerator;
 import hu.bme.mit.gamma.scenario.statechart.generator.serializer.StatechartSerializer;
@@ -45,7 +45,7 @@ public class StatechartContractGenerationHandler extends TaskHandler {
 		if (type.equals(ContractAutomatonType.MONITOR)) {
 			simpleGenerator = new SimpleScenarioGenerator(baseScenario, true, statechartGeneration.getArguments());
 			ScenarioDeclaration simplifiedScenario = simpleGenerator.execute();
-			statechartGenerator = new MonitorStatechartgenerator(simplifiedScenario, component,
+			statechartGenerator = new MonitorStatechartGenerator(simplifiedScenario, component,
 					statechartGeneration.isStartAsColdViolation());
 		} else {
 			simpleGenerator = new SimpleScenarioGenerator(baseScenario, false, statechartGeneration.getArguments());

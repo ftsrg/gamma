@@ -93,12 +93,12 @@ class ScenarioStatechartTraceGenerator {
 		val regionName = statechart.regions.get(0).name
 		val statechartName = statechart.name.toFirstUpper
 
-		val targetStatename = statechart.hasNegatedContratStatechartAnnotation ? scenarioStatechartUtil.
+		val targetStateName = statechart.hasNegatedContratStatechartAnnotation ? scenarioStatechartUtil.
 				hotViolation : scenarioStatechartUtil.accepting
 
 		val packageFileName = fileNamer.getUnfoldedPackageFileName(fileName)
 		val parameters = '''--refinement "MULTI_SEQ" --domain "EXPL" --initprec "ALLVARS" --allpaths'''
-		val query = '''E<> ((«regionName + "_" + statechartName» == «targetStatename»))'''
+		val query = '''E<> ((«regionName + "_" + statechartName» == «targetStateName»))'''
 		val gammaPackage = ecoreUtil.normalLoad(modelFile.parent, packageFileName)
 
 		val verifierResult = verifier.verifyQuery(gammaPackage, parameters, modelFile, query)

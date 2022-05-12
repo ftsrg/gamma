@@ -7,6 +7,7 @@ import org.eclipse.emf.common.util.ECollections;
 import org.eclipse.emf.common.util.EList;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator;
+import hu.bme.mit.gamma.expression.util.ExpressionSerializer;
 import hu.bme.mit.gamma.scenario.model.Delay;
 import hu.bme.mit.gamma.scenario.model.InteractionDefinition;
 import hu.bme.mit.gamma.scenario.model.ModalInteractionSet;
@@ -20,6 +21,8 @@ public class ScenarioContentSorter {
 
 	private static GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
 	private static ExpressionEvaluator evaluator = ExpressionEvaluator.INSTANCE;
+	private static ExpressionSerializer serializer = ExpressionSerializer.INSTANCE;
+		
 
 	public void sort(ScenarioDeclaration scenario) {
 		List<ModalInteractionSet> sets = ecoreUtil.getAllContentsOfType(scenario, ModalInteractionSet.class);
@@ -63,8 +66,9 @@ public class ScenarioContentSorter {
 	private String getSerializedSignal(Signal signal) {
 		String output = "Signal" + signal.getDirection() + signal.getModality() + signal.getPort().getName()
 				+ signal.getEvent().getName();
-		for (Expression expr : signal.getArguments()) {
-			output += evaluator.evaluate(expr);
+		for (Expression expression : signal.getArguments()) {
+//			output += evaluator.evaluate(expression);
+			output = serializer.serialize(expression);
 		}
 		return output;
 	}

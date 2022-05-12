@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.scenario.language.validation
 
+import hu.bme.mit.gamma.scenario.model.AlternativeCombinedFragment
 import hu.bme.mit.gamma.scenario.model.CombinedFragment
 import hu.bme.mit.gamma.scenario.model.Delay
 import hu.bme.mit.gamma.scenario.model.LoopCombinedFragment
@@ -113,15 +114,20 @@ class ScenarioLanguageValidator extends AbstractScenarioLanguageValidator {
 	def void checkRecursiveScenraioReference(ScenarioDefinitionReference scenarioReference) {
 		handleValidationResultMessage(validator.checkRecursiveScenraioReference(scenarioReference))
 	}
-	
+
 	@Check
 	def void checkScenraioReferenceInitialBlock(ScenarioDefinitionReference scenarioReference) {
 		handleValidationResultMessage(validator.checkScenraioReferenceInitialBlock(scenarioReference))
 	}
-	
+
 	@Check
 	def void checkScenraioBlockOrder(ModalInteractionSet set) {
 		handleValidationResultMessage(validator.checkScenraioBlockOrder(set))
+	}
+
+	@Check
+	def void checkAlternativeWithCheckInteraction(AlternativeCombinedFragment alternative) {
+		handleValidationResultMessage(validator.checkAlternativeWithCheckInteraction(alternative))
 	}
 
 }

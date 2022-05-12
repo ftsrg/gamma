@@ -69,7 +69,7 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 
 	public SimpleScenarioGenerator(ScenarioDeclaration base, boolean transformLoopFragments,
 			List<Expression> parameters) {
-		this.base = base;
+		this.base = ecoreUtil.clone(base); // cloned so the variables and other objects are not moved from the original
 		this.transformLoopFragments = transformLoopFragments;
 		this.arguments = parameters;
 	}
@@ -104,16 +104,16 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 		List<DirectReferenceExpression> references = ecoreUtil.getAllContentsOfType(simple,
 				DirectReferenceExpression.class);
 		for (DirectReferenceExpression direct : references) {
-			Declaration decl = direct.getDeclaration();
-			if (decl instanceof ConstantDeclaration) {
-				ConstantDeclaration _const = (ConstantDeclaration) decl;
+			Declaration declaration = direct.getDeclaration();
+			if (declaration instanceof ConstantDeclaration) {
+				ConstantDeclaration _const = (ConstantDeclaration) declaration;
 				Expression cloned = ecoreUtil.clone(_const.getExpression());
 				EObject container = direct.eContainer();
 				ecoreUtil.change(cloned, direct, container);
 				ecoreUtil.replace(cloned, direct);
 			}
-			if (decl instanceof ParameterDeclaration) {
-				ParameterDeclaration param = (ParameterDeclaration) decl;
+			if (declaration instanceof ParameterDeclaration) {
+				ParameterDeclaration param = (ParameterDeclaration) declaration;
 				for (ParameterDeclaration paramD : base.getParameterDeclarations()) {
 					if (paramD.getName() == param.getName()) {
 						int index = base.getParameterDeclarations().indexOf(paramD);
@@ -124,10 +124,10 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 					}
 				}
 			}
-			if (decl instanceof VariableDeclaration) {
-				VariableDeclaration var = (VariableDeclaration) decl;
+			if (declaration instanceof VariableDeclaration) {
+				VariableDeclaration variable = (VariableDeclaration) declaration;
 				for (VariableDeclaration newVar : simple.getVariableDeclarations()) {
-					if (newVar.getName().equals(var.getName())) {
+					if (newVar.getName().equals(variable.getName())) {
 						DirectReferenceExpression newRef = ecoreUtil.clone(direct);
 						newRef.setDeclaration(newVar);
 						ecoreUtil.change(newRef, direct, direct.eContainer());

@@ -28,9 +28,9 @@ ScenarioPackage returns ScenarioModel::ScenarioPackage:
 
 ScenarioDeclaration returns ScenarioModel::ScenarioDeclaration:
 	annotation+=Annotations*
-	'scenario' name=ID ('('(parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*')')? 
-	(initialblock=InitialBlock)?
+	'scenario' name=ID ('('(parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*')')?
 	(variableDeclarations+=VariableDeclaration)*
+	(initialblock=InitialBlock)?
 	chart=Chart;
 	
 InitialBlock returns ScenarioModel::InitialBlock: 

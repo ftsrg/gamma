@@ -17,6 +17,7 @@ import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.util.ExpressionModelValidator;
 import hu.bme.mit.gamma.expression.util.ExpressionTypeDeterminator2;
+import hu.bme.mit.gamma.scenario.model.AlternativeCombinedFragment;
 import hu.bme.mit.gamma.scenario.model.Annotation;
 import hu.bme.mit.gamma.scenario.model.CombinedFragment;
 import hu.bme.mit.gamma.scenario.model.Delay;
@@ -51,7 +52,6 @@ import hu.bme.mit.gamma.statechart.interface_.EventDeclaration;
 import hu.bme.mit.gamma.statechart.interface_.EventDirection;
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression;
 import hu.bme.mit.gamma.statechart.interface_.Interface;
-import hu.bme.mit.gamma.statechart.interface_.InterfaceModelPackage;
 import hu.bme.mit.gamma.statechart.interface_.Port;
 import hu.bme.mit.gamma.statechart.interface_.RealizationMode;
 import hu.bme.mit.gamma.statechart.util.ExpressionTypeDeterminator;
@@ -419,13 +419,13 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 				for (EventParameterReferenceExpression paramRef : params) {
 					Event event = paramRef.getEvent();
 					Port port = paramRef.getPort();
-					boolean ok = false;
+					boolean isPresentInBlock = false;
 					for (Signal signal : signals) {
 						if (signal.getPort().equals(port) && signal.getEvent().equals(event)) {
-							ok = true;
+							isPresentInBlock = true;
 						}
 					}
-					if (!ok) {
+					if (!isPresentInBlock) {
 						validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 								"This synchronous block does not contain any signal for the port and event of "
 										+ paramRef.getParameter().getName(),
@@ -484,31 +484,35 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 		}
 		return validationResultMessages;
 	}
-	
-	public Collection<ValidationResultMessage> checkScenraioReferenceInitialBlock(ScenarioDefinitionReference reference) {
+
+	public Collection<ValidationResultMessage> checkScenraioReferenceInitialBlock(
+			ScenarioDefinitionReference reference) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		if (reference.getScenarioDefinition().getInitialblock() != null) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING,
-					"The initial block of scenario " + reference.getScenarioDefinition().getName() + " will not be included in this scenario",
+					"The initial block of scenario " + reference.getScenarioDefinition().getName()
+							+ " will not be included in this scenario",
 					new ReferenceInfo(
 							ScenarioModelPackage.Literals.SCENARIO_DEFINITION_REFERENCE__SCENARIO_DEFINITION)));
 		}
 		return validationResultMessages;
 	}
-	
+
 	public Collection<ValidationResultMessage> checkScenraioBlockOrder(ModalInteractionSet set) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		List<ScenarioCheckExpression> checks = javaUtil.filterIntoList(set.getModalInteractions(),	ScenarioCheckExpression.class);
-		List<ScenarioAssignmentStatement> assignments = javaUtil.filterIntoList(set.getModalInteractions(),	ScenarioAssignmentStatement.class);
-		
+		List<ScenarioCheckExpression> checks = javaUtil.filterIntoList(set.getModalInteractions(),
+				ScenarioCheckExpression.class);
+		List<ScenarioAssignmentStatement> assignments = javaUtil.filterIntoList(set.getModalInteractions(),
+				ScenarioAssignmentStatement.class);
+
 		for (ScenarioCheckExpression check : checks) {
 			for (ScenarioAssignmentStatement assignment : assignments) {
 				int assingmentIdx = set.getModalInteractions().indexOf(assignment);
 				int checkIdx = set.getModalInteractions().indexOf(check);
-				if(checkIdx > assingmentIdx) {
+				if (checkIdx > assingmentIdx) {
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING,
-						"The assignment will only be evaluated after the check",
-						new ReferenceInfo(assignment.eContainingFeature(), assingmentIdx, set)));
+							"The assignment will only be evaluated after the check",
+							new ReferenceInfo(assignment.eContainingFeature(), assingmentIdx, set)));
 				}
 			}
 		}
@@ -532,4 +536,32 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 		return false;
 	}
 
+	public Collection<ValidationResultMessage> checkAlternativeWithCheckInteraction(
+			AlternativeCombinedFragment alternative) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		List<InteractionFragment> fragments = new ArrayList<>();
+		for (InteractionFragment fragment : alternative.getFragments()) {
+			Interaction head = fragment.getInteractions().get(0);
+			if (head instanceof ModalInteractionSet) {
+				ModalInteractionSet set = (ModalInteractionSet) head;
+				List<ScenarioCheckExpression> checks = javaUtil.filterIntoList(set.getModalInteractions(),
+						ScenarioCheckExpression.class);
+				if (checks.size() > 0) {
+					fragments.add(fragment);
+				}
+			} else if (head instanceof ScenarioCheckExpression) {
+				fragments.add(fragment);
+			}
+		}
+
+		if (fragments.size() > 1) {
+			for (InteractionFragment fragment : fragments) {
+				validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING,
+						"Please ensure, that the checks of these interactions do not overlap",
+						new ReferenceInfo(fragment.eContainingFeature(), alternative.getFragments().indexOf(fragment),
+								fragment.eContainer())));
+			}
+		}
+		return validationResultMessages;
+	}
 }

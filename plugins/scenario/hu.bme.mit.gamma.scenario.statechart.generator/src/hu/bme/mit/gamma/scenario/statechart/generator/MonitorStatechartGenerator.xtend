@@ -26,7 +26,7 @@ import java.util.List
 import static extension hu.bme.mit.gamma.scenario.model.derivedfeatures.ScenarioModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
-class MonitorStatechartgenerator extends AbstractContractStatechartGeneration {
+class MonitorStatechartGenerator extends AbstractContractStatechartGeneration {
 
 	protected boolean skipNextInteraction = false
 	protected State componentViolation = null
