@@ -27,6 +27,24 @@ initial outputs [
 		check police.police2::Name > 1
 		assign variable1 = police.police2::Name
 	}
+	alternative {
+		{
+			hot receives police.police2(variable1)
+			check police.police2::Name > 1
+			assign variable1 = police.police2::Name
+		}
+	} or {
+		{
+			hot receives police.police2(variable1)
+			check police.police2::Name > 1
+			assign variable1 = police.police2::Name
+		}
+	} or {
+		{
+			hot receives police.police2(variable1)
+			assign variable1 = police.police2::Name
+		}
+	}
 ]
 
 @Strict

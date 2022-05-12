@@ -5,9 +5,9 @@ import java.util.List;
 
 import org.eclipse.emf.common.util.ECollections;
 import org.eclipse.emf.common.util.EList;
+
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator;
-import hu.bme.mit.gamma.expression.util.ExpressionSerializer;
 import hu.bme.mit.gamma.scenario.model.Delay;
 import hu.bme.mit.gamma.scenario.model.InteractionDefinition;
 import hu.bme.mit.gamma.scenario.model.ModalInteractionSet;
@@ -15,6 +15,7 @@ import hu.bme.mit.gamma.scenario.model.ScenarioAssignmentStatement;
 import hu.bme.mit.gamma.scenario.model.ScenarioCheckExpression;
 import hu.bme.mit.gamma.scenario.model.ScenarioDeclaration;
 import hu.bme.mit.gamma.scenario.model.Signal;
+import hu.bme.mit.gamma.scenario.util.ExpressionSerializer;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
 
 public class ScenarioContentSorter {
@@ -45,10 +46,10 @@ public class ScenarioContentSorter {
 			return getSerializedSignal((Signal) interaction);
 		}
 		if (interaction instanceof ScenarioCheckExpression) {
-			return "check";
+			return getSerializedCheck((ScenarioCheckExpression) interaction);
 		}
 		if (interaction instanceof ScenarioAssignmentStatement) {
-			return "assignment";
+			return getSerializedAssignment((ScenarioAssignmentStatement) interaction);
 		}
 		throw new IllegalArgumentException();
 	}
@@ -67,9 +68,16 @@ public class ScenarioContentSorter {
 		String output = "Signal" + signal.getDirection() + signal.getModality() + signal.getPort().getName()
 				+ signal.getEvent().getName();
 		for (Expression expression : signal.getArguments()) {
-//			output += evaluator.evaluate(expression);
 			output = serializer.serialize(expression);
 		}
 		return output;
+	}
+	
+	private String getSerializedAssignment(ScenarioAssignmentStatement assignment) {
+		return "Assign"+serializer.serialize(assignment.getLhs()) + serializer.serialize(assignment.getRhs());
+	}
+	
+	private String getSerializedCheck(ScenarioCheckExpression check) {
+		return "Check"+serializer.serialize(check.getExpression());
 	}
 }
