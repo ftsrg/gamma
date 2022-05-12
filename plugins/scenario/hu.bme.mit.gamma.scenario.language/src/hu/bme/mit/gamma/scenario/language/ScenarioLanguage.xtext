@@ -35,7 +35,7 @@ ScenarioDeclaration returns ScenarioModel::ScenarioDeclaration:
 	
 InitialBlock returns ScenarioModel::InitialBlock: 
 	{ScenarioModel::InitialBlock} 'initial' 'outputs' '['
-	modalInteractions+=ModalInteraction*
+		modalInteractions+=ModalInteraction*
 	']';
 
 Annotations returns ScenarioModel::Annotation:
@@ -50,7 +50,6 @@ NegPermissiveAnnotation returns ScenarioModel::NegPermissiveAnnotation:
 
 StrictAnnotation returns ScenarioModel::StrictAnnotation:
 	{ScenarioModel::StrictAnnotation} '@Strict';
-	
 
 NegatedWaitAnnotation returns ScenarioModel::NegatedWaitAnnotation:
 	"@AllowedWaitingForNegated" (minimum=Expression )? ".." maximum=Expression;
@@ -63,7 +62,7 @@ AllowedWaitAnnotation returns ScenarioModel::WaitAnnotation:
 
 Chart returns ScenarioModel::Chart:
 	'['
-	^fragment=FragmentDefinition
+		^fragment=FragmentDefinition
 	']';
 
 FragmentDefinition returns ScenarioModel::InteractionFragment:
@@ -82,13 +81,11 @@ AbstractInteractionDefinition returns ScenarioModel::InteractionDefinition:
 	
 ScenarioAssignment returns ScenarioModel::ScenarioAssignmentStatement:
 	{ScenarioModel::ScenarioAssignmentStatement}
-	'assign' lhs= DirectReferenceExpression '=' rhs=Expression
-;
+	'assign' lhs= DirectReferenceExpression ':=' rhs=Expression;
 
 ScenarioCheck returns ScenarioModel::ScenarioCheckExpression:
 	{ScenarioModel::ScenarioCheckExpression}
-	'check' expression=Expression
-;
+	'check' expression=Expression;
 
 CombinedFragment returns ScenarioModel::CombinedFragment:
 	AlternativeCombinedFragmentDefinition | OptionalCombinedFragmentDefinition | UnorderedCombinedFragmentDefinition |
@@ -119,12 +116,10 @@ Delay returns ScenarioModel::Delay:
 @Override 
 PrimaryExpression returns ConstraintModel::Expression: 
 	super |
-	EventParameterReferenceExpression
-;
+	EventParameterReferenceExpression;
 
 EventParameterReferenceExpression returns InterfaceModel::EventParameterReferenceExpression:
 	port=[InterfaceModel::Port] '.' event=[InterfaceModel::Event] '::' parameter=[ConstraintModel::ParameterDeclaration];
-
 
 AlternativeCombinedFragmentDefinition returns ScenarioModel::AlternativeCombinedFragment:
 	'alternative' '{' fragments+=FragmentDefinition '}' ('or' '{' fragments+=FragmentDefinition '}')+;

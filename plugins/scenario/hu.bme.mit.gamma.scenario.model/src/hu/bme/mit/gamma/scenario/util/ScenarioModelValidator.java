@@ -52,6 +52,7 @@ import hu.bme.mit.gamma.statechart.interface_.EventDeclaration;
 import hu.bme.mit.gamma.statechart.interface_.EventDirection;
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression;
 import hu.bme.mit.gamma.statechart.interface_.Interface;
+import hu.bme.mit.gamma.statechart.interface_.Persistency;
 import hu.bme.mit.gamma.statechart.interface_.Port;
 import hu.bme.mit.gamma.statechart.interface_.RealizationMode;
 import hu.bme.mit.gamma.statechart.util.ExpressionTypeDeterminator;
@@ -397,7 +398,7 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 					"Scenario " + reference.getScenarioDefinition().getName() + " takes "
 							+ reference.getScenarioDefinition().getParameterDeclarations().size() + " parameters, but "
-							+ reference.getArguments().size() + " argumnets are provided",
+							+ reference.getArguments().size() + " arguments are provided",
 					new ReferenceInfo(
 							ScenarioModelPackage.Literals.SCENARIO_DEFINITION_REFERENCE__SCENARIO_DEFINITION)));
 		}
@@ -408,28 +409,31 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 
 	public Collection<ValidationResultMessage> checkScenarioCheck(ScenarioCheckExpression check) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		List<EventParameterReferenceExpression> params = ecoreUtil.getAllContentsOfType(check.getExpression(),
+		List<EventParameterReferenceExpression> parameterReferences = ecoreUtil.getAllContentsOfType(check.getExpression(),
 				EventParameterReferenceExpression.class);
-		if (!params.isEmpty()) {
+		if (!parameterReferences.isEmpty()) {
 			EObject container = check.eContainer();
 			if (container instanceof ModalInteractionSet) {
 				ModalInteractionSet set = (ModalInteractionSet) container;
 				List<Signal> signals = set.getModalInteractions().stream().filter(it -> it instanceof Signal)
 						.map(it -> (Signal) it).collect(Collectors.toList());
-				for (EventParameterReferenceExpression paramRef : params) {
-					Event event = paramRef.getEvent();
-					Port port = paramRef.getPort();
-					boolean isPresentInBlock = false;
-					for (Signal signal : signals) {
-						if (signal.getPort().equals(port) && signal.getEvent().equals(event)) {
-							isPresentInBlock = true;
+				for (EventParameterReferenceExpression parameterReference : parameterReferences) {
+					Event event = parameterReference.getEvent();
+					Persistency eventPersistency = event.getPersistency();
+					if (eventPersistency == Persistency.TRANSIENT) {
+						Port port = parameterReference.getPort();
+						boolean isPresentInBlock = false;
+						for (Signal signal : signals) {
+							if (signal.getPort().equals(port) && signal.getEvent().equals(event)) {
+								isPresentInBlock = true;
+							}
 						}
-					}
-					if (!isPresentInBlock) {
-						validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+						if (!isPresentInBlock) {
+							validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 								"This synchronous block does not contain any signal for the port and event of "
-										+ paramRef.getParameter().getName(),
-								new ReferenceInfo(paramRef.eContainingFeature(), paramRef.eContainer())));
+										+ parameterReference.getParameter().getName(),
+									new ReferenceInfo(parameterReference.eContainingFeature(), parameterReference.eContainer())));
+						}
 					}
 				}
 			} else if (container instanceof InteractionFragment) {
@@ -437,21 +441,21 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 				int indexOfCheck = fragment.getInteractions().indexOf(check);
 				Interaction previousInteraction = findPreviousNonScenarioCheck(fragment, indexOfCheck);
 				if (!(previousInteraction instanceof Signal)) {
-					for (EventParameterReferenceExpression paramRef : params) {
+					for (EventParameterReferenceExpression parameterReference : parameterReferences) {
 						validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-								"The previous interaction is not a Signal.",
-								new ReferenceInfo(paramRef.eContainingFeature(), paramRef.eContainer())));
+							"The previous interaction is not a signal",
+								new ReferenceInfo(parameterReference.eContainingFeature(), parameterReference.eContainer())));
 					}
 				} else {
 					Signal signal = (Signal) previousInteraction;
-					for (EventParameterReferenceExpression paramRef : params) {
-						Event event = paramRef.getEvent();
-						Port port = paramRef.getPort();
+					for (EventParameterReferenceExpression paramReference : parameterReferences) {
+						Event event = paramReference.getEvent();
+						Port port = paramReference.getPort();
 						if (!signal.getPort().equals(port) || !signal.getEvent().equals(event)) {
 							validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-									"The previous interaction is not a Signal for the port and event of "
-											+ paramRef.getParameter().getName(),
-									new ReferenceInfo(paramRef.eContainingFeature(), paramRef.eContainer())));
+								"The previous interaction is not a signal for the port and event of "
+										+ paramReference.getParameter().getName(),
+									new ReferenceInfo(paramReference.eContainingFeature(), paramReference.eContainer())));
 						}
 					}
 				}
