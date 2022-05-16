@@ -11,8 +11,8 @@ statechart Camera [
 	timeout batteryRechargeTime
 	
 	// Read and written by controller, too
-	var battery : integer := 80 // Read by controller
-	var granularity : integer := BASE_GRANULARITY // Written by controller
+	var battery : integer := 80
+	var granularity : integer := BASE_GRANULARITY
 	//
 	var lastCount : integer := 0
 	
@@ -29,7 +29,7 @@ statechart Camera [
 				}
 				state CountPersons {
 					entry / raise Motion.personPresence(lastCount);
-						battery := calculateBatteryDrownage(granularity);
+						battery := battery - calculateBatteryDrownage(granularity);
 				}
 				choice CountPersonsChoice
 			}
@@ -45,7 +45,7 @@ statechart Camera [
 	transition from Idle to SenseMotion when Camera.motion /
 		raise Motion.motion(true);
 	transition from SenseMotion to CountPersons when Camera.personPresence [
-		Camera.personPresence::count >= 0] / lastCount := Camera.personPresence::count;
+		Camera.personPresence::count > 0] / lastCount := Camera.personPresence::count;
 	transition from SenseMotion to SenseMotion when Camera.motion
 	transition from SenseMotion to Idle when timeout timeoutTime /
 		raise Motion.motion(false);

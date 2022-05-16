@@ -26,16 +26,16 @@ class ScenarioLanguageFormatter extends AbstractDeclarativeFormatter {
 		// set a line wrap after each statechart and port assignment
 		expressionFormatter.format(config, grammar)
 
-		config.setLinewrap(1, 1, 2).after(grammar.scenarioDeclarationAccess.group_0)
-		config.setLinewrap(1, 1, 2).after(grammar.scenarioDeclarationAccess.componentAssignment_2)
+		config.setLinewrap.after(grammar.scenarioPackageAccess.importKeyword_2_0)
+		config.setLinewrap.after(grammar.scenarioPackageAccess.componentAssignment_4)
 
 		// set an empty line between statechart, port assignment, scenario definition AND scenario definition
-		config.setLinewrap(2).between(grammar.scenarioDeclarationAccess.importKeyword_0_0,
-			grammar.scenarioDeclarationAccess.scenariosAssignment_3)
-		config.setLinewrap(2).between(grammar.scenarioDeclarationAccess.scenariosAssignment_3,
-			grammar.scenarioDeclarationAccess.scenariosAssignment_3)
-		config.setLinewrap(2).between(grammar.scenarioDeclarationAccess.scenariosAssignment_3,
-			grammar.scenarioDeclarationAccess.scenariosAssignment_3)
+		config.setLinewrap(2).between(grammar.scenarioPackageAccess.importKeyword_2_0,
+			grammar.scenarioPackageAccess.scenariosAssignment_6)
+		config.setLinewrap(2).between(grammar.scenarioPackageAccess.scenariosAssignment_6,
+			grammar.scenarioPackageAccess.scenariosAssignment_6)
+		config.setLinewrap(2).between(grammar.scenarioPackageAccess.scenariosAssignment_6,
+			grammar.scenarioPackageAccess.scenariosAssignment_6)
 
 		config.setLinewrap(1, 1, 2).after(grammar.annotationsAccess.allowedWaitAnnotationParserRuleCall_0)
 		config.setLinewrap(1, 1, 2).after(grammar.annotationsAccess.negatedWaitAnnotationParserRuleCall_3)

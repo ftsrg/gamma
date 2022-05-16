@@ -18,9 +18,11 @@ import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.composite.SynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.statechart.statechart.Region
+import hu.bme.mit.gamma.statechart.statechart.SetTimeoutAction
 import hu.bme.mit.gamma.statechart.statechart.StateNode
 import hu.bme.mit.gamma.statechart.statechart.StateReferenceExpression
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
+import hu.bme.mit.gamma.statechart.statechart.TimeoutEventReference
 import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.transformation.util.queries.Regions
 import hu.bme.mit.gamma.transformation.util.queries.RemovableTransitions
@@ -34,6 +36,7 @@ import org.eclipse.emf.ecore.resource.ResourceSet
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 import org.eclipse.viatra.query.runtime.emf.EMFScope
 
+import static extension hu.bme.mit.gamma.action.derivedfeatures.ActionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class SystemReducer implements Reducer {
@@ -63,7 +66,10 @@ class SystemReducer implements Reducer {
 				transition.removeTransition
 			}
 		}
+		//
 		statecharts.removeFalseGuardedTransitions
+		// Timeout optimizing
+		statecharts.removeUnnecessaryTimeouts
 		// Region optimizing
 		val regionMatcher = Regions.Matcher.on(engine)
 		for (region : regionMatcher.allValuesOfregion) {
@@ -124,13 +130,39 @@ class SystemReducer implements Reducer {
 		}
 	}
 	
+	private def void removeUnnecessaryTimeouts(Collection<StatechartDefinition> statecharts) {
+		val timeouts = statecharts.map[it.timeoutDeclarations].flatten.toSet
+		val referencedTimeouts = newHashSet
+		val setTimeoutActions = newHashSet
+		for (statechart : statecharts) {
+			referencedTimeouts += statechart
+				.getAllContentsOfType(TimeoutEventReference).map[it.timeout]
+			setTimeoutActions += statechart.getAllContentsOfType(SetTimeoutAction)
+		}
+		val removableTimeouts = newHashSet
+		removableTimeouts += timeouts
+		removableTimeouts -= referencedTimeouts
+		for (setTimeoutAction : setTimeoutActions) {
+			val timeout = setTimeoutAction.timeoutDeclaration
+			if (removableTimeouts.contains(timeout)) {
+				setTimeoutAction.remove
+			}
+		}
+		for (removableTimeout : removableTimeouts) {
+			log(Level.INFO, "Removing timeout declaration " + removableTimeout.name +
+				" of " + removableTimeout.containingStatechart.name)
+			removableTimeout.remove
+		}
+	}
+	
 	private def void removeUnnecessaryRegion(Region region) {
 		val states = region.states
 		val pseudoStates = region.pseudoStates // E.g., choice might have an incoming transition from another transition
 		try {
 			if (pseudoStates.forall[it.precedingStates.empty] &&
 					states.forall[!it.composite && it.outgoingTransitions.empty &&
-					it.entryActions.empty && it.exitActions.empty || it.incomingTransitions.empty]) {
+					it.entryActions.forall[it.effectlessAction] && it.exitActions.forall[it.effectlessAction] ||
+					it.incomingTransitions.empty]) {
 				// First, removing all related transitions (as otherwise nullptr exceptions are generated in incomingTransitions)
 				val statechart = region.containingStatechart
 				statechart.transitions -= (states.map[it.incomingTransitions].flatten + 

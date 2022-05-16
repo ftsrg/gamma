@@ -174,7 +174,7 @@ class TestGenerator {
 		val builder = new StringBuilder
 		// The traces are in an OR-relation
 		builder.append('''
-			«TEST_ANNOTATION»
+			«TEST_ANNOTATION»«IF traces.head.isNegativeTest»(expected=AssertionError.class)«ENDIF»
 			public void test() {
 				«FOR trace : traces»
 					«IF traces.last !== trace»try {«ENDIF»

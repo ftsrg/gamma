@@ -12,7 +12,7 @@ import "Ventilation/Components/Switch.gcd"
 @TransitionPriority = order-based
 @AdaptiveContractStatechart = Controller
 statechart Controller(initialCameraBattery : integer,
-		initialCameraGranularity : integer) [
+		initialCameraGranularity : integer, selfDefence : boolean) [
 	// Motion-related
 	port Camera : requires Camera
 	port MotionDetector : requires MotionDetector
@@ -65,17 +65,17 @@ statechart Controller(initialCameraBattery : integer,
 						state DefaultCameraMode {
 							entry / cameraGranularity := BASE_GRANULARITY;
 						}
-						state HighGranularityCameraMode {
+						state LowGranularityCameraMode {
 							entry / cameraGranularity := MINIMUM_GRANULARITY;
 						}
-						state LowGranularityCameraMode {
+						state HighGranularityCameraMode {
 							entry / cameraGranularity := MAXIMUM_GRANULARITY;
 						}
 					}
 				}
 				
 				@Phase = [
-					no-history component motionDetector : MotionDetector(true) {
+					no-history component motionDetector : MotionDetector(selfDefence) {
 						bind MotionDetector -> motionDetector.MotionDetector
 						bind Motion -> motionDetector.Motion
 						
@@ -90,7 +90,7 @@ statechart Controller(initialCameraBattery : integer,
 				choice OccupancyComponentChoice
 			}
 			
-			region Ventilation {
+			region ventilation {
 				initial VentilationEntry
 				
 				@Phase = [
@@ -132,55 +132,55 @@ statechart Controller(initialCameraBattery : integer,
 	transition from OccupancyEntry to UseCamera
 	transition from UseCamera to OccupancyComponentMerge when cycle [
 		isBatteryLow(cameraBattery)]
-	transition from UseCamera to OccupancyComponentMerge when CameraState.availability
-		[!CameraState.availability::available]
+	transition from UseCamera to OccupancyComponentMerge when CameraState.unavailability
+		[CameraState.unavailability::unavailable]
 	transition from UseCamera to OccupancyComponentMerge when CameraActivation.^deactivate
 	transition from UseMotionDetector to OccupancyComponentMerge when cycle
 		[motionDetectorTemporarilyIdle and isCameraAvailable()] // Camera should have priority?
-	transition from UseMotionDetector to OccupancyComponentMerge when MotionDetectorState.availability
-		[!MotionDetectorState.availability::available]
+	transition from UseMotionDetector to OccupancyComponentMerge when MotionDetectorState.unavailability
+		[MotionDetectorState.unavailability::unavailable]
 	transition from UseMotionDetector to OccupancyComponentMerge when MotionDetectorActivation.^deactivate
 	transition from NoDetection to OccupancyComponentMerge when cycle [canReconfigure()]
 	// Occupancy adaptation logic
 	transition from OccupancyComponentMerge to OccupancyComponentChoice
 	transition from OccupancyComponentChoice to UseCamera when !(CameraActivation.^deactivate) [isCameraAvailable()]
 	transition from OccupancyComponentChoice to UseMotionDetector when !(MotionDetectorActivation.^deactivate) [
-		MotionDetectorState.availability::available]
+		!MotionDetectorState.unavailability::unavailable]
 	transition from OccupancyComponentChoice to NoDetection [else] / // Adaptation in ventilation region
 		raise VentilatorActivation.deactivate; raise SwitchActivation.deactivate;
 	
 	// Camera
 	transition from UseCameraEntry to DefaultCameraMode
 	
-	transition from DefaultCameraMode to HighGranularityCameraMode when cycle [
-		isBatteryHigh(cameraBattery)]
-	transition from HighGranularityCameraMode to DefaultCameraMode when cycle [
-		!isBatteryHigh(cameraBattery)]
 	transition from DefaultCameraMode to LowGranularityCameraMode when cycle [
-		isBatteryMediumLow(cameraBattery)]
+		isBatteryHigh(cameraBattery)]
 	transition from LowGranularityCameraMode to DefaultCameraMode when cycle [
+		!isBatteryHigh(cameraBattery)]
+	transition from DefaultCameraMode to HighGranularityCameraMode when cycle [
+		isBatteryMediumLow(cameraBattery)]
+	transition from HighGranularityCameraMode to DefaultCameraMode when cycle [
 		!isBatteryMediumLow(cameraBattery)]
 	////
 	
 	// Ventilation //
 	transition from VentilationEntry to UseAdaptiveVentilator
 	
-	transition from UseAdaptiveVentilator to VentilationComponentMerge when VentilatorState.availability
-		[!VentilatorState.availability::available]
+	transition from UseAdaptiveVentilator to VentilationComponentMerge when VentilatorState.unavailability
+		[VentilatorState.unavailability::unavailable]
 	transition from UseAdaptiveVentilator to VentilationComponentMerge when VentilatorActivation.^deactivate
-	transition from UseSwitch to VentilationComponentMerge when SwitchState.availability
-		[!SwitchState.availability::available]
+	transition from UseSwitch to VentilationComponentMerge when SwitchState.unavailability
+		[SwitchState.unavailability::unavailable]
 	transition from UseSwitch to VentilationComponentMerge when SwitchActivation.^deactivate
 	transition from UseSwitch to VentilationComponentMerge when cycle [
-		VentilatorState.availability::available] // Ventilator has priority
+		!VentilatorState.unavailability::unavailable] // Ventilator has priority
 	transition from FixVentilation to VentilationComponentMerge when cycle [canReconfigure()]
 	
 	// Ventilation adaptation logic
 	transition from VentilationComponentMerge to VentilationComponentChoice
 	transition from VentilationComponentChoice to UseAdaptiveVentilator when !(VentilatorActivation.^deactivate) [
-		VentilatorState.availability::available]
-	transition from VentilationComponentChoice to UseSwitch  when !(SwitchActivation.^deactivate) [
-		SwitchState.availability::available]
+		!VentilatorState.unavailability::unavailable]
+	transition from VentilationComponentChoice to UseSwitch when !(SwitchActivation.^deactivate) [
+		!SwitchState.unavailability::unavailable]
 	transition from VentilationComponentChoice to FixVentilation [else] / // Adaptation in occupancy region
 		raise CameraActivation.deactivate; raise MotionDetectorActivation.deactivate;
 	////
@@ -189,16 +189,16 @@ statechart Controller(initialCameraBattery : integer,
 	transition from RechargeEntry to Idle
 	
 	transition from Idle to RechargeCamera when CameraActivation.^deactivate
+	transition from RechargeCamera to Idle when cycle [in-state(occupancy.UseCamera)] // Note priority
 	transition from RechargeCamera to RechargeCamera when timeout batteryRechargeTime [
 		cameraBattery + 1 <= MAXIMUM_BATTERY] / cameraBattery := cameraBattery + 1;
-	transition from RechargeCamera to Idle when cycle [in-state(occupancy.UseCamera)]
 	////
 	
 	lambda canReconfigure() : boolean := 
-		(isCameraAvailable() or MotionDetectorState.availability::available) and
-			(VentilatorState.availability::available or SwitchState.availability::available)
+		(isCameraAvailable() or !MotionDetectorState.unavailability::unavailable) and
+			(!VentilatorState.unavailability::unavailable or !SwitchState.unavailability::unavailable)
 	
 	lambda isCameraAvailable() : boolean := 
-		CameraState.availability::available and !isBatteryLow(cameraBattery)
+		!CameraState.unavailability::unavailable and !isBatteryLow(cameraBattery)
 		
 }
