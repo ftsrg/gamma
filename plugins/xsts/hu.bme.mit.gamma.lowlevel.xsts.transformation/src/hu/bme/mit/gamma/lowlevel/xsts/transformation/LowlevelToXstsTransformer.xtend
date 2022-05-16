@@ -12,14 +12,11 @@ package hu.bme.mit.gamma.lowlevel.xsts.transformation
 
 import hu.bme.mit.gamma.activity.model.ActivityNode
 import hu.bme.mit.gamma.activity.model.DataFlow
-import hu.bme.mit.gamma.activity.model.DataNode
 import hu.bme.mit.gamma.activity.model.Flow
 import hu.bme.mit.gamma.activity.model.Pin
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer.XstsOptimizer
-import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.DataFlowType
-import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.DataNodeType
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.Events
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.FirstChoiceStates
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.FirstForkStates
@@ -31,7 +28,6 @@ import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.LastJoinStates
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.LastMergeStates
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.Nodes
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.OutEvents
-import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.Pins
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.PlainVariables
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.ReferredEvents
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.ReferredVariables
@@ -72,10 +68,12 @@ import static com.google.common.base.Preconditions.checkArgument
 import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.activity.derivedfeatures.ActivityModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.lowlevel.derivedfeatures.LowlevelStatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.XstsNamings.*
-import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.TargetNode
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.DataContainers
+import hu.bme.mit.gamma.activity.model.DataContainer
 
 class LowlevelToXstsTransformer {
 	// Transformation-related extensions
@@ -133,7 +131,7 @@ class LowlevelToXstsTransformer {
 	
 	protected BatchTransformationRule<Nodes.Match, Nodes.Matcher> activityNodesRule 
 	protected BatchTransformationRule<Flows.Match, Flows.Matcher> activityFlowsRule 
-	protected BatchTransformationRule<Pins.Match, Pins.Matcher> activityPinsRule
+	protected BatchTransformationRule<DataContainers.Match, DataContainers.Matcher> activityDataContainersRule
 	protected BatchTransformationRule<Nodes.Match, Nodes.Matcher> activityNodeTransitionsRule 
 	protected BatchTransformationRule<InitialNodes.Match, InitialNodes.Matcher> initialActivityNodeInitializationRule 
 	
@@ -209,7 +207,7 @@ class LowlevelToXstsTransformer {
 		// Timeouts can refer to constants
 		getTimeoutsRule.fireAllCurrent
 		
-		getActivityPinsRule.fireAllCurrent
+		getActivityDataContainersRule.fireAllCurrent
 		getActivityNodesRule.fireAllCurrent
 		getActivityFlowsRule.fireAllCurrent
 		
@@ -689,13 +687,13 @@ class LowlevelToXstsTransformer {
 		return activityFlowsRule
 	}
 
-	private def getActivityPinsRule() {
-		if (activityPinsRule === null) {
-			activityPinsRule = createRule(Pins.instance).action [
-				it.pin.createActivityPinMapping
+	private def getActivityDataContainersRule() {
+		if (activityDataContainersRule === null) {
+			activityDataContainersRule = createRule(DataContainers.instance).action [
+				it.dataContainer.createDataContainerMapping
 			].build
 		}
-		return activityPinsRule
+		return activityDataContainersRule
 	}
 	
 	private def createActivityNodeMapping(ActivityNode activityNode) {
@@ -711,25 +709,9 @@ class LowlevelToXstsTransformer {
 		xStsActivityNodeVariable.addOnDemandControlAnnotation
 		xSts.variableDeclarations += xStsActivityNodeVariable
 		trace.put(activityNode, xStsActivityNodeVariable)
-		
-		if (activityNode instanceof DataNode) {
-			val dataTypeOptional = DataNodeType.Matcher.on(engine).getOneArbitraryMatch(activityNode, null)
-			
-			if (dataTypeOptional.present) {
-				val dataType = dataTypeOptional.get.type.clone()
-				
-				val xStsDataNodeVariable = createVariableDeclaration => [
-					name = activityNode.nodeDataTokenVariableName
-					type = dataType
-					expression = dataType.initialValueOfType
-				]
-				xSts.variableDeclarations += xStsDataNodeVariable
-				trace.putDataContainer(activityNode, xStsDataNodeVariable)
-			}
-		}
 	}
 	
-	private def createActivityPinMapping(Pin pin) {
+	private dispatch def createDataContainerMapping(Pin pin) {
 		val pinType = pin.type.clone() // cloning to prevent loosing it from the original Pin
 		val xStsPinVariable = createVariableDeclaration => [
 			name = pin.pinVariableName
@@ -739,6 +721,18 @@ class LowlevelToXstsTransformer {
 		xSts.variableDeclarations += xStsPinVariable
 		
 		trace.putDataContainer(pin, xStsPinVariable)
+	}
+	
+	private dispatch def createDataContainerMapping(DataFlow dataFlow) {
+		val flowType = dataFlow.dataTargetReference.pin.type.clone() // cloning to prevent loosing it from the original Pin
+		val xStsFlowVariable = createVariableDeclaration => [
+			name = dataFlow.flowDataTokenVariableName
+			type = flowType
+			expression = flowType.initialValueOfType
+		]
+		xSts.variableDeclarations += xStsFlowVariable
+		
+		trace.putDataContainer(dataFlow, xStsFlowVariable)
 	}
 
 	private def createActivityFlowMapping(Flow flow) {
@@ -754,18 +748,6 @@ class LowlevelToXstsTransformer {
 		xStsFlowVariable.addOnDemandControlAnnotation
 		xSts.variableDeclarations += xStsFlowVariable
 		trace.put(flow, xStsFlowVariable)
-
-		if (flow instanceof DataFlow) {
-			val dataType = DataFlowType.Matcher.on(engine).getOneArbitraryMatch(flow, null).get.type.clone()
-			
-			val xStsDataTokenVariable = createVariableDeclaration => [
-				name = flow.flowDataTokenVariableName
-				type = dataType
-				expression = dataType.initialValueOfType
-			]
-			xSts.variableDeclarations += xStsDataTokenVariable
-			trace.putDataContainer(flow, xStsDataTokenVariable)	
-		}
 	}
 	
 	private def getActivityNodeTransitionsRule() {

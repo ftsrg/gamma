@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="model" nsURI="http://www.mit.bme.hu/gamma/activity/Model" nsPrefix="hu.bme.mit.gamma.activity">
-  <eClassifiers xsi:type="ecore:EClass" name="DataNode" abstract="true" eSuperTypes="#//PseudoActivityNode #//DataContainer"/>
   <eClassifiers xsi:type="ecore:EClass" name="ActivityNode" abstract="true" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NamedElement"/>
   <eClassifiers xsi:type="ecore:EClass" name="ControlFlow" eSuperTypes="#//Flow">
     <eStructuralFeatures xsi:type="ecore:EReference" name="sourceNode" lowerBound="1"
@@ -23,14 +22,13 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="activityDeclarationReference"
         eType="#//ActivityDeclarationReference" containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="JoinNode" eSuperTypes="#//DataNode"/>
-  <eClassifiers xsi:type="ecore:EClass" name="ForkNode" eSuperTypes="#//DataNode"/>
-  <eClassifiers xsi:type="ecore:EClass" name="DecisionNode" eSuperTypes="#//DataNode"/>
-  <eClassifiers xsi:type="ecore:EClass" name="MergeNode" eSuperTypes="#//DataNode"/>
-  <eClassifiers xsi:type="ecore:EClass" name="PseudoActivityNode" abstract="true"
-      eSuperTypes="#//ActivityNode"/>
-  <eClassifiers xsi:type="ecore:EClass" name="InitialNode" eSuperTypes="#//PseudoActivityNode"/>
-  <eClassifiers xsi:type="ecore:EClass" name="FinalNode" eSuperTypes="#//PseudoActivityNode"/>
+  <eClassifiers xsi:type="ecore:EClass" name="JoinNode" eSuperTypes="#//ControlNode"/>
+  <eClassifiers xsi:type="ecore:EClass" name="ForkNode" eSuperTypes="#//ControlNode"/>
+  <eClassifiers xsi:type="ecore:EClass" name="DecisionNode" eSuperTypes="#//ControlNode"/>
+  <eClassifiers xsi:type="ecore:EClass" name="MergeNode" eSuperTypes="#//ControlNode"/>
+  <eClassifiers xsi:type="ecore:EClass" name="ControlNode" abstract="true" eSuperTypes="#//ActivityNode"/>
+  <eClassifiers xsi:type="ecore:EClass" name="InitialNode" eSuperTypes="#//ControlNode"/>
+  <eClassifiers xsi:type="ecore:EClass" name="FinalNode" eSuperTypes="#//ControlNode"/>
   <eClassifiers xsi:type="ecore:EClass" name="ActivityDefinition" eSuperTypes="#//Definition">
     <eStructuralFeatures xsi:type="ecore:EReference" name="flows" upperBound="-1"
         eType="#//Flow" containment="true"/>
@@ -88,10 +86,6 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="DataSourceReference" abstract="true"/>
   <eClassifiers xsi:type="ecore:EClass" name="DataTargetReference" abstract="true"/>
-  <eClassifiers xsi:type="ecore:EClass" name="DataNodeReference" eSuperTypes="#//DataSourceReference #//DataTargetReference">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="dataNode" lowerBound="1"
-        eType="#//DataNode"/>
-  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="CallActivityAction" eSuperTypes="../../hu.bme.mit.gamma.action.model/model/action.ecore#//Statement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="activity" lowerBound="1"
         eType="#//ActivityDeclaration"/>

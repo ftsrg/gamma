@@ -65,7 +65,7 @@ DataFlow returns DataFlow:
 
 ActivityNode returns ActivityNode:
 	ActionNode |
-	PseudoActivityNode	
+	ControlNode	
 ;
 
 ActionNode returns ActionNode:
@@ -95,10 +95,13 @@ InlineActivityDeclaration returns InlineActivityDeclaration:
 ;
 
 
-PseudoActivityNode returns PseudoActivityNode:
+ControlNode returns ControlNode:
 	InitialNode |
 	FinalNode |
-	DataNode
+	ForkNode |
+	JoinNode |
+	DecisionNode |
+	MergeNode
 ;
 
 InitialNode returns InitialNode:
@@ -107,13 +110,6 @@ InitialNode returns InitialNode:
 
 FinalNode returns FinalNode:
 	'final' name=ID
-;
-
-DataNode returns DataNode:
-	ForkNode |
-	JoinNode |
-	DecisionNode |
-	MergeNode
 ;
 
 ForkNode returns ForkNode:
@@ -149,19 +145,13 @@ OutputPin returns OutputPin:
 
 
 DataSourceReference returns DataSourceReference:
-	DataNodeReference |
 	InsideInputPinReference |
 	OutsideOutputPinReference
 ;
 
 DataTargetReference returns DataTargetReference:
-	DataNodeReference |
 	OutsideInputPinReference |
 	InsideOutputPinReference	
-;
-
-DataNodeReference returns DataNodeReference:
-	dataNode=[DataNode]
 ;
 
 InsideInputPinReference returns InsideInputPinReference:

@@ -13,7 +13,8 @@ import hu.bme.mit.gamma.activity.model.ActivityDefinition;
 import hu.bme.mit.gamma.activity.model.ActivityNode;
 import hu.bme.mit.gamma.activity.model.DataContainer;
 import hu.bme.mit.gamma.activity.model.DataFlow;
-import hu.bme.mit.gamma.activity.model.DataNodeReference;
+import hu.bme.mit.gamma.activity.model.DataSourceReference;
+import hu.bme.mit.gamma.activity.model.DataTargetReference;
 import hu.bme.mit.gamma.activity.model.Definition;
 import hu.bme.mit.gamma.activity.model.InlineActivityDeclaration;
 import hu.bme.mit.gamma.activity.model.InputPinReference;
@@ -72,12 +73,6 @@ public class ActivityModelDerivedFeatures extends ActionModelDerivedFeatures {
 			
 			return ecoreUtil.getContainerOfType(pin, ActivityNode.class);
 		}
-
-		if (flow.getDataSourceReference() instanceof DataNodeReference) {
-			DataNodeReference reference = (DataNodeReference) flow.getDataSourceReference();
-			
-			return reference.getDataNode();
-		}
 		
 		throw new IllegalStateException("Data flow's source is not a known type.");
 	}
@@ -88,12 +83,6 @@ public class ActivityModelDerivedFeatures extends ActionModelDerivedFeatures {
 			Pin pin = getPin(pinReference);
 			
 			return pin;
-		}
-
-		if (flow.getDataSourceReference() instanceof DataNodeReference) {
-			DataNodeReference reference = (DataNodeReference) flow.getDataSourceReference();
-			
-			return reference.getDataNode();
 		}
 		
 		throw new IllegalStateException("Data flow's source is not a known type.");
@@ -106,12 +95,6 @@ public class ActivityModelDerivedFeatures extends ActionModelDerivedFeatures {
 			
 			return ecoreUtil.getContainerOfType(pin, ActivityNode.class);
 		}
-
-		if (flow.getDataTargetReference() instanceof DataNodeReference) {
-			DataNodeReference reference = (DataNodeReference) flow.getDataTargetReference();
-			
-			return reference.getDataNode();
-		}
 		
 		throw new IllegalStateException("Data flow's source is not of a known type.");
 	}
@@ -122,12 +105,6 @@ public class ActivityModelDerivedFeatures extends ActionModelDerivedFeatures {
 			Pin pin = getPin(pinReference);
 			
 			return pin;
-		}
-
-		if (flow.getDataTargetReference() instanceof DataNodeReference) {
-			DataNodeReference reference = (DataNodeReference) flow.getDataTargetReference();
-			
-			return reference.getDataNode();
 		}
 		
 		throw new IllegalStateException("Data flow's source is not of a known type.");
@@ -141,6 +118,22 @@ public class ActivityModelDerivedFeatures extends ActionModelDerivedFeatures {
 		if (pinReference instanceof OutputPinReference) {
 			OutputPinReference reference = (OutputPinReference) pinReference;
 			return reference.getOutputPin();
+		}
+		
+		throw new IllegalStateException("Pin is not of a known type.");
+	}
+	
+	public static Pin getPin(DataSourceReference sourceReference) {
+		if (sourceReference instanceof PinReference) {
+			return getPin(sourceReference);
+		}
+		
+		throw new IllegalStateException("Pin is not of a known type.");
+	}
+	
+	public static Pin getPin(DataTargetReference targetReference) {
+		if (targetReference instanceof PinReference) {
+			return getPin(targetReference);
 		}
 		
 		throw new IllegalStateException("Pin is not of a known type.");

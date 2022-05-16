@@ -4,7 +4,6 @@ import hu.bme.mit.gamma.activity.derivedfeatures.ActivityModelDerivedFeatures
 import hu.bme.mit.gamma.activity.model.ControlFlow
 import hu.bme.mit.gamma.activity.model.DataFlow
 import hu.bme.mit.gamma.activity.model.Pin
-import hu.bme.mit.gamma.activity.model.DataNode
 
 class XstsNamings {
 	
@@ -21,6 +20,5 @@ class XstsNamings {
 	static dispatch def String getFlowVariableName(ControlFlow flow) '''activity_control_flow_from_«flow.sourceNode.name»_to_«flow.targetNode.name»_state'''
 	static dispatch def String getFlowVariableName(DataFlow flow) '''activity_data_flow_from_«ActivityModelDerivedFeatures.getSourceNode(flow).name»_to_«ActivityModelDerivedFeatures.getTargetNode(flow).name»_state'''
 	static def String getFlowDataTokenVariableName(DataFlow flow) '''«flow.flowVariableName»_data_token'''
-	static def String nodeDataTokenVariableName(DataNode node) '''«node.name.activityNodeVariableName»_data'''
 	
 }

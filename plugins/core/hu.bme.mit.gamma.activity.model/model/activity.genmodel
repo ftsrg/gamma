@@ -11,7 +11,6 @@
   <testsDirectory xsi:nil="true"/>
   <genPackages prefix="ActivityModel" basePackage="hu.bme.mit.gamma.activity" disposableProviderFactory="true"
       ecorePackage="activity.ecore#/">
-    <genClasses image="false" ecoreClass="activity.ecore#//DataNode"/>
     <genClasses ecoreClass="activity.ecore#//ActivityNode"/>
     <genClasses ecoreClass="activity.ecore#//ControlFlow">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference activity.ecore#//ControlFlow/sourceNode"/>
@@ -31,7 +30,7 @@
     <genClasses ecoreClass="activity.ecore#//ForkNode"/>
     <genClasses ecoreClass="activity.ecore#//DecisionNode"/>
     <genClasses ecoreClass="activity.ecore#//MergeNode"/>
-    <genClasses ecoreClass="activity.ecore#//PseudoActivityNode"/>
+    <genClasses ecoreClass="activity.ecore#//ControlNode"/>
     <genClasses ecoreClass="activity.ecore#//InitialNode"/>
     <genClasses ecoreClass="activity.ecore#//FinalNode"/>
     <genClasses ecoreClass="activity.ecore#//ActivityDefinition">
@@ -75,9 +74,6 @@
     </genClasses>
     <genClasses ecoreClass="activity.ecore#//DataSourceReference"/>
     <genClasses ecoreClass="activity.ecore#//DataTargetReference"/>
-    <genClasses ecoreClass="activity.ecore#//DataNodeReference">
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference activity.ecore#//DataNodeReference/dataNode"/>
-    </genClasses>
     <genClasses ecoreClass="activity.ecore#//CallActivityAction">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference activity.ecore#//CallActivityAction/activity"/>
     </genClasses>

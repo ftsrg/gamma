@@ -19,8 +19,6 @@ import hu.bme.mit.gamma.activity.model.ActivityModelFactory
 import hu.bme.mit.gamma.activity.model.ActivityNode
 import hu.bme.mit.gamma.activity.model.ControlFlow
 import hu.bme.mit.gamma.activity.model.DataFlow
-import hu.bme.mit.gamma.activity.model.DataNode
-import hu.bme.mit.gamma.activity.model.DataNodeReference
 import hu.bme.mit.gamma.activity.model.Definition
 import hu.bme.mit.gamma.activity.model.Flow
 import hu.bme.mit.gamma.activity.model.InlineActivityDeclaration
@@ -33,7 +31,6 @@ import hu.bme.mit.gamma.activity.model.OutputPin
 import hu.bme.mit.gamma.activity.model.OutsideInputPinReference
 import hu.bme.mit.gamma.activity.model.OutsideOutputPinReference
 import hu.bme.mit.gamma.activity.model.Pin
-import hu.bme.mit.gamma.activity.model.PseudoActivityNode
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.statechart.lowlevel.model.StatechartModelFactory
 import hu.bme.mit.gamma.statechart.statechart.State
@@ -41,6 +38,9 @@ import hu.bme.mit.gamma.statechart.statechart.TriggerNode
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
+import hu.bme.mit.gamma.activity.model.ControlNode
+import hu.bme.mit.gamma.activity.model.DataSourceReference
+import hu.bme.mit.gamma.activity.model.DataTargetReference
 
 class ActivityToLowlevelTransformer {
 	// Auxiliary objects
@@ -183,38 +183,26 @@ class ActivityToLowlevelTransformer {
 		
 		return newFlow
 	}
-	
-	def dispatch transformDataSourceReference(DataNodeReference dataSourceReference) {		
-		return createDataNodeReference => [
-			dataNode = dataSourceReference.dataNode.transformNode as DataNode
-		]
-	}
-	
-	def dispatch transformDataSourceReference(InsideInputPinReference dataSourceReference) {		
+		
+	def dispatch DataSourceReference transformDataSourceReference(InsideInputPinReference dataSourceReference) {		
 		return createInsideInputPinReference => [
 			inputPin = dataSourceReference.inputPin.transformPin as InputPin
 		]
 	}
 	
-	def dispatch transformDataSourceReference(OutsideOutputPinReference dataSourceReference) {		
+	def dispatch DataSourceReference transformDataSourceReference(OutsideOutputPinReference dataSourceReference) {		
 		return createOutsideOutputPinReference => [
 			outputPin = dataSourceReference.outputPin.transformPin as OutputPin
 		]
 	}
 	
-	def dispatch transformDataTargetReference(DataNodeReference dataTargetReference) {		
-		return createDataNodeReference => [
-			dataNode = dataTargetReference.dataNode.transformNode as DataNode
-		]
-	}
-	
-	def dispatch transformDataTargetReference(InsideOutputPinReference dataTargetReference) {		
+	def dispatch DataTargetReference transformDataTargetReference(InsideOutputPinReference dataTargetReference) {		
 		return createInsideOutputPinReference => [
 			outputPin = dataTargetReference.outputPin.transformPin as OutputPin
 		]
 	}
 	
-	def dispatch transformDataTargetReference(OutsideInputPinReference dataTargetReference) {		
+	def dispatch DataTargetReference transformDataTargetReference(OutsideInputPinReference dataTargetReference) {		
 		return createOutsideInputPinReference => [
 			inputPin = dataTargetReference.inputPin.transformPin as InputPin
 		]
@@ -283,7 +271,7 @@ class ActivityToLowlevelTransformer {
 		return newNode
 	}
 	
-	def dispatch ActivityNode transformNode(PseudoActivityNode node) {
+	def dispatch ActivityNode transformNode(ControlNode node) {
 		val recordField = new Pair(state, node as ActivityNode)
 		
 		if (trace.isActivityNodeMapped(recordField)) {

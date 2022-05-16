@@ -158,7 +158,7 @@
   <eClassifiers xsi:type="ecore:EClass" name="StateAnnotation" abstract="true"/>
   <eClassifiers xsi:type="ecore:EClass" name="TransitionAnnotation" abstract="true"/>
   <eClassifiers xsi:type="ecore:EClass" name="TransitionIdAnnotation" eSuperTypes="#//TransitionAnnotation ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NamedElement"/>
-  <eClassifiers xsi:type="ecore:EClass" name="TriggerNode" eSuperTypes="../../hu.bme.mit.gamma.activity.model/model/activity.ecore#//PseudoActivityNode">
+  <eClassifiers xsi:type="ecore:EClass" name="TriggerNode" eSuperTypes="../../hu.bme.mit.gamma.activity.model/model/activity.ecore#//ControlNode">
     <eStructuralFeatures xsi:type="ecore:EReference" name="trigger" lowerBound="1"
         eType="ecore:EClass interface.ecore#//Trigger" containment="true"/>
   </eClassifiers>

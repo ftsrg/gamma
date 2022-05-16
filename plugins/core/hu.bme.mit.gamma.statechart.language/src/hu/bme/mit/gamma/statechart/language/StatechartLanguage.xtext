@@ -650,10 +650,8 @@ CallActivityAction returns ActivityModel::CallActivityAction:
 
 
 @Override 
-PseudoActivityNode returns ActivityModel::PseudoActivityNode:
-	InitialNode |
-	FinalNode |
-	DataNode |
+ControlNode returns ActivityModel::ControlNode:
+	super |
 	TriggerNode
 ;
 
