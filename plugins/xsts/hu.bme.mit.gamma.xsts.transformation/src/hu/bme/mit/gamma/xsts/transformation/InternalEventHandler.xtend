@@ -148,23 +148,26 @@ class InternalEventHandler {
 			val xStsInputEventVariable = internalEvent.getInputEventVariable(port)
 			val xStsOutputEventVariable = internalEvent.getOutputEventVariable(port)
 			
-			actions += xStsInputEventVariable.createAssignmentAction(xStsOutputEventVariable)
-			actions += xStsOutputEventVariable.createVariableResetAction
-			
-			for (parameter : internalEvent.parameterDeclarations) {
-				val xStsInputParameterVariables = parameter.getInputParameterVariables(port)
-				val xStsOutputParameterVariables = parameter.getOutputParameterVariables(port)
-				val size = xStsInputParameterVariables.size
-				checkState(size == xStsOutputParameterVariables.size)
+			// If output or input is not used, then there will be no variable for it
+			if (xStsInputEventVariable !== null && xStsOutputEventVariable !== null) {
+				actions += xStsInputEventVariable.createAssignmentAction(xStsOutputEventVariable)
+				actions += xStsOutputEventVariable.createVariableResetAction
 				
-				for (var i = 0; i < size; i++) {
-					val xStsInputParameterVariable = xStsInputParameterVariables.get(i)
-					val xStsOutputParameterVariable = xStsOutputParameterVariables.get(i)
+				for (parameter : internalEvent.parameterDeclarations) {
+					val xStsInputParameterVariables = parameter.getInputParameterVariables(port)
+					val xStsOutputParameterVariables = parameter.getOutputParameterVariables(port)
+					val size = xStsInputParameterVariables.size
+					checkState(size == xStsOutputParameterVariables.size)
 					
-					actions += xStsInputParameterVariable
-							.createAssignmentAction(xStsOutputParameterVariable)
-					if (parameter.transient) {
-						actions += xStsOutputParameterVariable.createVariableResetAction
+					for (var i = 0; i < size; i++) {
+						val xStsInputParameterVariable = xStsInputParameterVariables.get(i)
+						val xStsOutputParameterVariable = xStsOutputParameterVariables.get(i)
+						
+						actions += xStsInputParameterVariable
+								.createAssignmentAction(xStsOutputParameterVariable)
+						if (parameter.transient) {
+							actions += xStsOutputParameterVariable.createVariableResetAction
+						}
 					}
 				}
 			}

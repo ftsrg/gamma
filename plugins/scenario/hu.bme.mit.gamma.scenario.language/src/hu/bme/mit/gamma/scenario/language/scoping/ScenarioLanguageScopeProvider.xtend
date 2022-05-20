@@ -58,10 +58,6 @@ class ScenarioLanguageScopeProvider extends AbstractScenarioLanguageScopeProvide
 				scope = createScopeFor(importedPackages.flatMap[it.components])
 			} else if (reference == InterfaceModelPackage.Literals.EVENT_PARAMETER_REFERENCE_EXPRESSION__PORT) {
 				val package = ecoreUtil.getContainerOfType(context, ScenarioPackage)
-				scope = Scopes.scopeFor(package.component.ports)
-			} else if (context instanceof EventParameterReferenceExpression &&
-				reference == InterfaceModelPackage.Literals.EVENT_PARAMETER_REFERENCE_EXPRESSION__PORT) {
-				val package = ecoreUtil.getContainerOfType(context, ScenarioPackage)
 				return Scopes.scopeFor(package.component.ports)
 			} else if (context instanceof EventParameterReferenceExpression && reference ==
 				InterfaceModelPackage.Literals.EVENT_PARAMETER_REFERENCE_EXPRESSION__EVENT) {
@@ -74,7 +70,7 @@ class ScenarioLanguageScopeProvider extends AbstractScenarioLanguageScopeProvide
 				val expression = context as EventParameterReferenceExpression
 				checkState(expression.port !== null)
 				val event = expression.event
-				return Scopes.scopeFor(event.getParameterDeclarations())
+				return Scopes.scopeFor(event.parameterDeclarations)
 			} else if (context instanceof Signal && reference == ScenarioModelPackage.Literals.SIGNAL__PORT) {
 				val ports = ecoreUtil.getContainerOfType(context, ScenarioPackage).component.ports
 				return createScopeFor(ports)
@@ -87,7 +83,7 @@ class ScenarioLanguageScopeProvider extends AbstractScenarioLanguageScopeProvide
 		} catch (Exception ex) {
 			// left empty on purpose
 		} finally {
-			scope = if(scope === null) getParentScopeP(context, reference) else scope
+			scope = if (scope === null) getParentScopeP(context, reference) else scope
 		}
 
 		return scope

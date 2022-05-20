@@ -1451,6 +1451,11 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 				.collect(Collectors.toList());
 	}
 	
+	public static Transition getOutgoingTransition(StateNode node) {
+		List<Transition> outgoingTransitions = getOutgoingTransitions(node);
+		return javaUtil.getOnlyElement(outgoingTransitions);
+	}
+	
 	public static Collection<Transition> getOutgoingTransitionsOfAncestors(StateNode node) {
 		Set<Transition> outgoingTransitionsOfAncestors = new LinkedHashSet<Transition>();
 		List<State> ancestors = getAncestors(node);
@@ -1465,6 +1470,11 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		StatechartDefinition statechart = getContainingStatechart(node);
 		return statechart.getTransitions().stream().filter(it -> it.getTargetState() == node)
 				.collect(Collectors.toList());
+	}
+	
+	public static Transition getIncomingTransition(StateNode node) {
+		List<Transition> incomingTransitions = getIncomingTransitions(node);
+		return javaUtil.getOnlyElement(incomingTransitions);
 	}
 	
 	public static Collection<StateNode> getAllStateNodes(CompositeElement compositeElement) {
@@ -2062,6 +2072,14 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 			return isComposite((State) node);
 		}
 		return false;
+	}
+	
+	public static boolean isState(StateNode node) {
+		return node instanceof State;
+	}
+	
+	public static boolean isPseudoState(StateNode node) {
+		return !isState(node);
 	}
 	
 	public static boolean isComposite(State state) {

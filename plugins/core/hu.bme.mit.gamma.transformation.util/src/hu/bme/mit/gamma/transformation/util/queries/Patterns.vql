@@ -95,7 +95,8 @@ private pattern componentDeclarationEvents(type : Component, port : Port, realiz
 	Port.interfaceRealization(port, interfaceRealization);
 	InterfaceRealization.realizationMode(interfaceRealization, realizationMode);
 	InterfaceRealization.interface(interfaceRealization, interface);
-	Interface.events(interface, eventDeclaration);
+	find parentInterfaces*(interface, parentOrSameInterface);
+	Interface.events(parentOrSameInterface, eventDeclaration);
 	EventDeclaration.event(eventDeclaration, event);
 }
 
@@ -685,6 +686,11 @@ pattern timeoutValues(timeSpec : TimeSpecification, valueExp : Expression, unit 
 
 // Triggerable transition optimization patterns
 
+private pattern internalPorts(port : Port) {
+	Port.interfaceRealization.interface.events(port, eventDeclaration);
+	EventDeclaration.direction(eventDeclaration, EventDirection::INTERNAL);
+}
+
 pattern removableTransitions(transition : Transition) {
 	find transitionEventTrigger(transition, _, _); // It is important that the transition has an event trigger
 	neg find triggerableTransition(transition);
@@ -697,6 +703,9 @@ private pattern triggerableTransition(transition : Transition) {
 } or {
 	find topSyncSystemInEvents(_, _, _, inPort, raisedEvent);
 	find transitionEventTrigger(transition, inPort, raisedEvent);
+} or {
+	find internalPorts(internalPort);
+	find transitionEventTrigger(transition, internalPort, _raisedEvent);
 }
 
 private pattern transitionEventTrigger(transition : Transition, inPort : Port, raisedEvent : Event) {

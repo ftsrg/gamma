@@ -1,0 +1,61 @@
+package light
+
+import "Interfaces/Constants.gcd"
+import "Interfaces/Interfaces.gcd"
+
+statechart AdaptiveVentilator [
+	port Motion : provides Motion
+	port Ventilation : provides Ventilation
+] {
+	timeout firstVentilationChangeTime
+	timeout ventilationChangeTime
+	timeout switchOffTime
+	
+	var ventilationLevel : integer := MINIMUM_VENTILATION
+	
+	region main {
+		initial OnRegionEntry
+		state VentilationOn {
+			entry / raise Ventilation.switchVentilation(true);
+			exit / raise Ventilation.switchVentilation(false);
+			region ventilationOnRegion {
+				initial OnEntry
+				state BaseVentilation {
+					entry / set switchOffTime := SWITCH_OFF_TIME s;
+						ventilationLevel := BASE_VENTILATION;
+						raise Ventilation.ventilate(ventilationLevel);
+				}
+				state FixVentilation {
+					entry / set firstVentilationChangeTime := FIRST_VENTILATION_CHANGE_TIME s;
+						ventilationLevel := calculateVentilationLevel(Motion.personPresence::count);
+						raise Ventilation.ventilate(ventilationLevel);
+				}
+				state DecreasingVentilation {
+					entry / set ventilationChangeTime := VENTILATION_CHANGE_TIME s;
+						raise Ventilation.ventilate(ventilationLevel);
+				}
+				choice VentilationChoice
+			}
+		}
+		state VentilationOff
+	}
+	
+	transition from OnRegionEntry to VentilationOn
+	
+	transition from VentilationOff to VentilationOn when Motion.motion [Motion.motion::on]
+	transition from VentilationOn to VentilationOff when Motion.motion [!Motion.motion::on]
+		
+	transition from OnEntry to BaseVentilation
+	transition from BaseVentilation to FixVentilation when Motion.personPresence
+	
+	transition from FixVentilation to DecreasingVentilation when timeout firstVentilationChangeTime
+	transition from DecreasingVentilation to FixVentilation when Motion.personPresence
+	transition from DecreasingVentilation to VentilationChoice when timeout ventilationChangeTime
+	transition from VentilationChoice to BaseVentilation [
+		ventilationLevel - VENTILATION_DELTA <= BASE_VENTILATION]
+	transition from VentilationChoice to DecreasingVentilation [else] /
+		ventilationLevel := ventilationLevel - VENTILATION_DELTA;
+		
+	transition from BaseVentilation to VentilationOff when timeout switchOffTime
+}
+

@@ -160,6 +160,8 @@ pattern transitionsToHigherAndLowerNodes(source : StateNode, sourceAncestor : St
 	find substatesOfCompositeState+(targetAncestor, target);
 	find substatesOfCompositeState+(sourceAncestor, source);
 	find sameRegionStateNodes(_, sourceAncestor, targetAncestor);
+	// Not the same
+	sourceAncestor != targetAncestor;
 	// Not between same region states
 	neg find transitionsBetweenSameRegionNodes(source, transition, target);
 	// Note that this pattern returns transitions through orthogonal regions, which

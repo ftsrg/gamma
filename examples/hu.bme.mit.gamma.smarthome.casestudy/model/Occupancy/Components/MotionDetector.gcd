@@ -1,0 +1,62 @@
+package occupancy
+
+import "Interfaces/Constants.gcd"
+import "Interfaces/Interfaces.gcd"
+
+statechart MotionDetector(selfDefense : boolean) [
+	port MotionDetector : requires MotionDetector
+	port Motion : provides Motion
+] {
+	timeout timeoutTime
+	timeout expectedDelayTime
+	timeout temporarilyIdleTime
+	
+	var temporarilyIdle : boolean := false
+	var relayedMotionCount : integer := 0
+	
+	region main {
+		initial Entry
+		state On {
+			region operationRegion {
+				initial OperationEntry
+				state Idle
+				state SensedMotion {
+					entry / set timeoutTime := TIMEOUT_TIME s;
+				}
+			}
+			region selfDefenseRegion {
+				initial SelfDefenseEntry
+				state Count {
+					entry / set expectedDelayTime := EXPECTED_DELAY_TIME s;
+				}
+				choice SelfDefenseChoice
+			}
+		}
+		state TemporarilyIdle {
+			entry / set temporarilyIdleTime := TEMPORARILY_IDLE_TIME s;
+				temporarilyIdle := true;
+			exit / temporarilyIdle := false;
+		}
+	}
+	
+	transition from Entry to On
+	
+	transition from OperationEntry to Idle
+	transition from Idle to SensedMotion when MotionDetector.motion /
+		raise Motion.motion(true);
+	transition from SensedMotion to SensedMotion when MotionDetector.motion
+	transition from SensedMotion to Idle when timeout timeoutTime /
+		raise Motion.motion(false);
+	
+	transition from SelfDefenseEntry to Count
+	transition from Count to SelfDefenseChoice when MotionDetector.motion [selfDefense] /
+		relayedMotionCount := relayedMotionCount + 1;
+	transition from SelfDefenseChoice to Count [
+		relayedMotionCount < MAXIMUM_RELAYED_MOTION_COUNT]
+	transition from SelfDefenseChoice to TemporarilyIdle [else]
+	transition from Count to Count when timeout expectedDelayTime [selfDefense] /
+		relayedMotionCount := relayedMotionCount - 1;
+	
+	transition from TemporarilyIdle to On when timeout temporarilyIdleTime /
+		relayedMotionCount := 0;
+}
