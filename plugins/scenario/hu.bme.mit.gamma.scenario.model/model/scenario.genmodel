@@ -79,7 +79,7 @@
     <genClasses ecoreClass="scenario.ecore#//NegStrictAnnotation"/>
     <genClasses ecoreClass="scenario.ecore#//NegPermissiveAnnotation"/>
     <genClasses ecoreClass="scenario.ecore#//InitialBlock">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference scenario.ecore#//InitialBlock/modalInteractions"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference scenario.ecore#//InitialBlock/interactions"/>
     </genClasses>
     <genClasses ecoreClass="scenario.ecore#//ScenarioDefinitionReference">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference scenario.ecore#//ScenarioDefinitionReference/scenarioDefinition"/>

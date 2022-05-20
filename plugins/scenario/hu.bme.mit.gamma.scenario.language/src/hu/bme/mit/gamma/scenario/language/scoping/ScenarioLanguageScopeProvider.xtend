@@ -56,8 +56,7 @@ class ScenarioLanguageScopeProvider extends AbstractScenarioLanguageScopeProvide
 				val scenarioPackage = context as ScenarioPackage
 				val importedPackages = scenarioPackage.imports
 				scope = createScopeFor(importedPackages.flatMap[it.components])
-			} else if (context instanceof ScenarioCheckExpression &&
-				reference == InterfaceModelPackage.Literals.EVENT_PARAMETER_REFERENCE_EXPRESSION__PORT) {
+			} else if (reference == InterfaceModelPackage.Literals.EVENT_PARAMETER_REFERENCE_EXPRESSION__PORT) {
 				val package = ecoreUtil.getContainerOfType(context, ScenarioPackage)
 				scope = Scopes.scopeFor(package.component.ports)
 			} else if (context instanceof EventParameterReferenceExpression &&
@@ -69,7 +68,7 @@ class ScenarioLanguageScopeProvider extends AbstractScenarioLanguageScopeProvide
 				val expression = context as EventParameterReferenceExpression
 				checkState(expression.port !== null)
 				val port = expression.port
-				return Scopes.scopeFor(StatechartModelDerivedFeatures.getInputEvents(port))
+				return Scopes.scopeFor(StatechartModelDerivedFeatures.getAllEvents(port))
 			} else if (context instanceof EventParameterReferenceExpression && reference ==
 				InterfaceModelPackage.Literals.EVENT_PARAMETER_REFERENCE_EXPRESSION__PARAMETER) {
 				val expression = context as EventParameterReferenceExpression

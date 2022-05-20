@@ -127,7 +127,7 @@ class MonitorStatechartGenerator extends AbstractContractStatechartGeneration {
 		if (scenario.initialblock !== null) {
 			statechart.annotations += createHasInitialOutputsBlockAnnotation
 			val syncBlock = createModalInteractionSet
-			syncBlock.modalInteractions += scenario.initialblock.modalInteractions
+			syncBlock.modalInteractions += scenario.initialblock.interactions
 			scenario.chart.fragment.interactions.add(0, syncBlock)
 		}
 		statechart.variableDeclarations += scenario.variableDeclarations

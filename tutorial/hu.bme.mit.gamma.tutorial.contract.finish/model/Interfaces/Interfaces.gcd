@@ -2,6 +2,7 @@ package Interfaces
 interface LightCommands {
 	out event displayRed
 	out event displayYellow
+	out event displayYellow2(outEventName : integer)
 	out event displayGreen
 	out event displayNone
 }
