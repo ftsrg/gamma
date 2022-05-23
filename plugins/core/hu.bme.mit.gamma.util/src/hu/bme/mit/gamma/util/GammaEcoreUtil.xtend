@@ -465,7 +465,7 @@ class GammaEcoreUtil {
 		return true;
 	}
 	
-	def <T extends EObject> List<T> clone(List<T> objects) {
+	def <T extends EObject> List<T> clone(Iterable<T> objects) {
 		if (objects === null) {
 			return null
 		}
