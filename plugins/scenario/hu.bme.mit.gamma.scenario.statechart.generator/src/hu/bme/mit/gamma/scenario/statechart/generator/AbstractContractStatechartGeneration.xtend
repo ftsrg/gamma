@@ -1,3 +1,13 @@
+/********************************************************************************
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * SPDX-License-Identifier: EPL-1.0
+ ********************************************************************************/
 package hu.bme.mit.gamma.scenario.statechart.generator
 
 import hu.bme.mit.gamma.action.model.Action
@@ -50,7 +60,6 @@ import java.util.Map
 import org.eclipse.emf.ecore.EObject
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
-import hu.bme.mit.gamma.action.util.ActionUtil
 
 abstract class AbstractContractStatechartGeneration {
 
@@ -64,7 +73,6 @@ abstract class AbstractContractStatechartGeneration {
 	protected val extension ExpressionEvaluator exprEval = ExpressionEvaluator.INSTANCE
 	protected val extension ExpressionUtil exprUtil = ExpressionUtil.INSTANCE
 	protected val extension ScenarioStatechartUtil scenarioStatechartUtil = ScenarioStatechartUtil.INSTANCE
-	protected val ActionUtil actionUtil = ActionUtil.INSTANCE
 	protected val StatechartUtil statechartUtil = StatechartUtil.INSTANCE
 
 	protected val JavaUtil javaUtil = JavaUtil.INSTANCE
@@ -104,20 +112,21 @@ abstract class AbstractContractStatechartGeneration {
 
 	def protected addPorts(Component component) {
 		for (port : component.ports) {
-			val pcopy = createPort
-			val iReali = createInterfaceRealization
-			iReali.realizationMode = port.interfaceRealization.realizationMode
-			iReali.interface = port.interfaceRealization.interface
-			pcopy.interfaceRealization = iReali
-			pcopy.name = port.name
-			statechart.ports += pcopy
-			val preverse = createPort
-			preverse.name = scenarioStatechartUtil.getTurnedOutPortName(port)
-			val iRealiR = createInterfaceRealization
-			iRealiR.interface = port.interfaceRealization.interface
-			iRealiR.realizationMode = port.interfaceRealization.realizationMode.opposite
-			preverse.interfaceRealization = iRealiR
-			statechart.ports += preverse
+			val portCopy = createPort
+			val interfaceRealization = createInterfaceRealization
+			interfaceRealization.realizationMode = port.interfaceRealization.realizationMode
+			interfaceRealization.interface = port.interfaceRealization.interface
+			portCopy.interfaceRealization = interfaceRealization
+			portCopy.name = port.name
+			statechart.ports += portCopy
+			val portReverse = createPort
+			portReverse.name = scenarioStatechartUtil.getTurnedOutPortName(port)
+			val interfaceRealizationReverse = createInterfaceRealization
+			interfaceRealizationReverse.interface = port.interfaceRealization.interface
+			interfaceRealizationReverse.realizationMode =
+				port.interfaceRealization.realizationMode.opposite
+			portReverse.interfaceRealization = interfaceRealizationReverse
+			statechart.ports += portReverse
 		}
 	}
 
@@ -130,24 +139,17 @@ abstract class AbstractContractStatechartGeneration {
 
 ///////// Create Set and Check Variables
 	protected def AssignmentStatement incrementVar(VariableDeclaration variable) {
-		var assign = createAssignmentStatement
-		var addition = createAddExpression
-		addition.operands += exprUtil.createReferenceExpression(variable)
-		addition.operands += exprUtil.toIntegerLiteral(1)
-		assign.rhs = addition
-		assign.lhs = exprUtil.createReferenceExpression(variable)
-		return assign
+		return statechartUtil.createIncrementation(variable)
 	}
 
 	def protected VariableDeclaration createIntegerVariable(String name) {
-		return exprUtil.createVariableDeclaration(createIntegerTypeDefinition, name, exprUtil.toIntegerLiteral(0))
+		return exprUtil.createVariableDeclaration(createIntegerTypeDefinition,
+				name, exprUtil.toIntegerLiteral(0))
 	}
 
 	protected def setIntVariable(VariableDeclaration variable, int value) {
-		var variableAssignment = createAssignmentStatement
-		variableAssignment.lhs = exprUtil.createReferenceExpression(variable)
-		variableAssignment.rhs = exprUtil.toIntegerLiteral(value)
-		return variableAssignment
+		return statechartUtil.createAssignment(variable,
+				exprUtil.toIntegerLiteral(value))
 	}
 
 	def protected Expression getVariableLessEqualParamExpression(VariableDeclaration variable, int maxValue) {
@@ -164,10 +166,11 @@ abstract class AbstractContractStatechartGeneration {
 		return minCheck
 	}
 
-	def protected Expression getVariableInIntervalExpression(VariableDeclaration variable, int minV, int maxV) {
+	def protected Expression getVariableInIntervalExpression(VariableDeclaration variable,
+			int minValue, int maxValue) {
 		var and = createAndExpression
-		and.operands += getVariableGreaterEqualParamExpression(variable, minV)
-		and.operands += getVariableLessEqualParamExpression(variable, maxV)
+		and.operands += getVariableGreaterEqualParamExpression(variable, minValue)
+		and.operands += getVariableLessEqualParamExpression(variable, maxValue)
 		return and
 	}
 
@@ -302,8 +305,8 @@ abstract class AbstractContractStatechartGeneration {
 		return triggers
 	}
 
-	def protected BinaryTrigger getBinaryTrigger(List<InteractionDefinition> interactions, BinaryType type,
-		boolean reversed) {
+	def protected BinaryTrigger getBinaryTrigger(List<InteractionDefinition> interactions,
+			BinaryType type, boolean reversed) {
 		val triggers = newArrayList
 		for (interaction : interactions) {
 			triggers += getEventTrigger(interaction, reversed)
@@ -324,7 +327,7 @@ abstract class AbstractContractStatechartGeneration {
 		return trigger
 	}
 
-	def protected dispatch Trigger getEventTrigger(Delay s, boolean reversed) {
+	def protected dispatch Trigger getEventTrigger(Delay delay, boolean reversed) {
 		val trigger = createEventTrigger
 		val timeoutEventReference = createTimeoutEventReference
 		val timeoutDeclaration = statechart.timeoutDeclarations.last
@@ -333,7 +336,8 @@ abstract class AbstractContractStatechartGeneration {
 		return trigger
 	}
 
-	def protected dispatch Trigger getEventTrigger(NegatedModalInteraction negatedInteraction, boolean reversed) {
+	def protected dispatch Trigger getEventTrigger(
+			NegatedModalInteraction negatedInteraction, boolean reversed) {
 		val trigger = createEventTrigger
 		if (negatedInteraction.modalinteraction instanceof Signal) {
 			var signal = negatedInteraction.modalinteraction as Signal
@@ -374,7 +378,8 @@ abstract class AbstractContractStatechartGeneration {
 		return null
 	}
 
-	def protected dispatch Action getRaiseEventAction(NegatedModalInteraction negatedInteraction, boolean reversed) {
+	def protected dispatch Action getRaiseEventAction(
+			NegatedModalInteraction negatedInteraction, boolean reversed) {
 		return null
 	}
 
@@ -479,7 +484,8 @@ abstract class AbstractContractStatechartGeneration {
 
 	def protected addAssignmentsToTransition(Iterable<ScenarioAssignmentStatement> assignments, Transition transition) {
 		for (assignment : assignments) {
- 			transition.effects += actionUtil.createAssignment(assignment.lhs.clone,assignment.rhs.clone)
+ 			transition.effects += statechartUtil.createAssignment(
+ 				assignment.lhs.clone, assignment.rhs.clone)
 		}
 	}
 
