@@ -12,6 +12,7 @@ package hu.bme.mit.gamma.scenario.language.scoping
 
 import com.google.common.collect.Lists
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage
+import hu.bme.mit.gamma.scenario.model.ScenarioCheckExpression
 import hu.bme.mit.gamma.scenario.model.ScenarioDeclaration
 import hu.bme.mit.gamma.scenario.model.ScenarioModelPackage
 import hu.bme.mit.gamma.scenario.model.ScenarioPackage

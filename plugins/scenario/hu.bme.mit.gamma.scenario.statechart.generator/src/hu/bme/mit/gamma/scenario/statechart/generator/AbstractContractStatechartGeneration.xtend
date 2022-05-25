@@ -47,8 +47,10 @@ import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.util.JavaUtil
 import java.util.List
 import java.util.Map
+import org.eclipse.emf.ecore.EObject
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
+import hu.bme.mit.gamma.action.util.ActionUtil
 
 abstract class AbstractContractStatechartGeneration {
 
@@ -62,6 +64,7 @@ abstract class AbstractContractStatechartGeneration {
 	protected val extension ExpressionEvaluator exprEval = ExpressionEvaluator.INSTANCE
 	protected val extension ExpressionUtil exprUtil = ExpressionUtil.INSTANCE
 	protected val extension ScenarioStatechartUtil scenarioStatechartUtil = ScenarioStatechartUtil.INSTANCE
+	protected val ActionUtil actionUtil = ActionUtil.INSTANCE
 	protected val StatechartUtil statechartUtil = StatechartUtil.INSTANCE
 
 	protected val JavaUtil javaUtil = JavaUtil.INSTANCE
@@ -466,13 +469,45 @@ abstract class AbstractContractStatechartGeneration {
 		}
 	}
 
-	def protected setupForwardTransition(ModalInteractionSet set, boolean reversed, boolean isNegated,
-		Transition forwardTransition) {
-		val eventParamRefs = ecoreUtil.getAllContentsOfType(set, EventParameterReferenceExpression)
+	def protected retargetAllEventParamRefs(EObject container, boolean reversed) {
+		val eventParamRefs = ecoreUtil.getAllContentsOfType(container, EventParameterReferenceExpression)
 		for (eventParamRef : eventParamRefs) {
 			eventParamRef.port = getPort(getNameOfNewPort(eventParamRef.port, reversed))
 			eventParamRef.event = getEvent(eventParamRef.event.name, eventParamRef.port)
 		}
+	}
+
+	def protected addAssignmentsToTransition(Iterable<ScenarioAssignmentStatement> assignments, Transition transition) {
+		for (assignment : assignments) {
+ 			transition.effects += actionUtil.createAssignment(assignment.lhs.clone,assignment.rhs.clone)
+		}
+	}
+
+	def protected addChecksToTransition(Iterable<ScenarioCheckExpression> checks, Transition transition) {
+		if (checks.size == 0) {
+			return
+		}
+		var Expression newGuard = null
+		if (checks.size > 1) {
+			val andExpression = createAndExpression
+			andExpression.operands += checks.map[it.expression.clone]
+			newGuard = andExpression
+		} else if (checks.size == 1) {
+			newGuard = checks.head.expression.clone
+		}
+		if (transition.guard === null) {
+			transition.guard = newGuard
+		} else {
+			val and = createAndExpression
+			and.operands += newGuard
+			and.operands += transition.guard
+			transition.guard = and
+		}
+	}
+
+	def protected setupForwardTransition(ModalInteractionSet set, boolean reversed, boolean isNegated,
+		Transition forwardTransition) {
+		retargetAllEventParamRefs(set, reversed)
 		var Trigger trigger = null
 		val checks = set.modalInteractions.filter(ScenarioCheckExpression)
 		val assignments = set.modalInteractions.filter(ScenarioAssignmentStatement)
@@ -497,19 +532,8 @@ abstract class AbstractContractStatechartGeneration {
 				}
 			}
 		}
-		if (checks.size > 1) {
-			val andExpression = createAndExpression
-			andExpression.operands += checks.map[it.expression.clone]
-			forwardTransition.guard = andExpression
-		} else if (checks.size == 1) {
-			forwardTransition.guard = checks.head.expression.clone
-		}
-		for (assignment : assignments) {
-			val newAssignment = createAssignmentStatement
-			newAssignment.lhs = assignment.lhs.clone
-			newAssignment.rhs = assignment.rhs.clone
-			forwardTransition.effects += newAssignment
-		}
+		addChecksToTransition(checks, forwardTransition)
+		addAssignmentsToTransition(assignments, forwardTransition)
 	}
 
 	def protected handleDelays(ModalInteractionSet set) {

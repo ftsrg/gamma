@@ -35,7 +35,7 @@ ScenarioDeclaration returns ScenarioModel::ScenarioDeclaration:
 	
 InitialBlock returns ScenarioModel::InitialBlock: 
 	{ScenarioModel::InitialBlock} 'initial' 'outputs' '['
-		modalInteractions+=ModalInteraction*
+	interactions+=InitialInteraction*
 	']';
 
 Annotations returns ScenarioModel::Annotation:
@@ -96,6 +96,9 @@ NegatedModalInteraction returns ScenarioModel::NegatedModalInteraction:
 
 Negateable returns ScenarioModel::InteractionDefinition:
 	ModalInteractionSet | SignalDefinition;
+	
+InitialInteraction returns ScenarioModel::InteractionDefinition:
+	 ScenarioCheck |SignalDefinition | ScenarioAssignment;
 
 ModalInteraction returns ScenarioModel::ModalInteraction:
 	SignalDefinition | Delay;

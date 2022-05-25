@@ -6,8 +6,11 @@ const one : integer := 1
 scenario Blinking 
 var variable1 : integer := 0 
 initial outputs [
-	hot sends priorityOutput.displayYellow hot sends
-	secondaryOutput.displayYellow
+	hot sends priorityOutput.displayYellow 
+	hot sends secondaryOutput.displayYellow
+	hot sends secondaryOutput.displayYellow2
+	check one == variable1 + 1
+	assign variable1 :=secondaryOutput.displayYellow2::outEventName
 ]
 [
 	{
@@ -15,7 +18,7 @@ initial outputs [
 		hot sends secondaryOutput.displayNone
 		hot delay (500 .. 501)
 		check 0 < variable1 and variable1 < 10
-		assign variable1 = 1 + one * 3
+		assign variable1 := 1 + one * 3
 	}
 	{
 		hot sends priorityOutput.displayYellow
@@ -25,25 +28,7 @@ initial outputs [
 	{
 		hot receives police.police2(variable1)
 		check police.police2::Name > 1
-		assign variable1 = police.police2::Name
-	}
-	alternative {
-		{
-			hot receives police.police2(variable1)
-			check police.police2::Name > 1
-			assign variable1 = police.police2::Name
-		}
-	} or {
-		{
-			hot receives police.police2(variable1)
-			check police.police2::Name > 1
-			assign variable1 = police.police2::Name
-		}
-	} or {
-		{
-			hot receives police.police2(variable1)
-			assign variable1 = police.police2::Name
-		}
+		assign variable1 := police.police2::Name
 	}
 ]
 

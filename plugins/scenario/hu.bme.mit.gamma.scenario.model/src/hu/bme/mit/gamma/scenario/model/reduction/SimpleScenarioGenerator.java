@@ -143,8 +143,8 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 			return null;
 		}
 		InitialBlock initBloc = factory.createInitialBlock();
-		for (ModalInteraction modalInteraction : base.getInitialblock().getModalInteractions()) {
-			initBloc.getModalInteractions().add((ModalInteraction) doSwitch(modalInteraction));
+		for (InteractionDefinition interaction : base.getInitialblock().getInteractions()) {
+			initBloc.getInteractions().add((InteractionDefinition) doSwitch(interaction));
 		}
 		return initBloc;
 	}

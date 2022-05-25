@@ -22,6 +22,8 @@ import hu.bme.mit.gamma.scenario.model.NegatedModalInteraction
 import hu.bme.mit.gamma.scenario.model.NegatedWaitAnnotation
 import hu.bme.mit.gamma.scenario.model.OptionalCombinedFragment
 import hu.bme.mit.gamma.scenario.model.PermissiveAnnotation
+import hu.bme.mit.gamma.scenario.model.ScenarioAssignmentStatement
+import hu.bme.mit.gamma.scenario.model.ScenarioCheckExpression
 import hu.bme.mit.gamma.scenario.model.ScenarioDeclaration
 import hu.bme.mit.gamma.scenario.model.Signal
 import hu.bme.mit.gamma.scenario.model.StrictAnnotation
@@ -181,7 +183,15 @@ class TestGeneratorStatechartGenerator extends AbstractContractStatechartGenerat
 			firstRegion.stateNodes += initChoice
 			statechartUtil.createTransition(initial, initChoice)
 			val initChoiceToFirstStateTransition = statechartUtil.createTransition(initChoice, firstState)
-			for (interaction : initBlock.modalInteractions) {
+			retargetAllEventParamRefs(initBlock, true)
+			val checks = initBlock.interactions.filter(ScenarioCheckExpression)
+			val assignments = initBlock.interactions.filter(ScenarioAssignmentStatement)
+			addChecksToTransition(checks, initChoiceToFirstStateTransition)
+			addAssignmentsToTransition(assignments, initChoiceToFirstStateTransition)
+			val nonCheckOrAssignmentInteractitons = initBlock.interactions.filter [
+				!(it instanceof ScenarioCheckExpression) && ! (it instanceof ScenarioAssignmentStatement)
+			].toList
+			for (interaction : nonCheckOrAssignmentInteractitons) {
 				val action = getRaiseEventAction(interaction, false)
 				if (action !== null) {
 					initChoiceToFirstStateTransition.effects += action
@@ -191,8 +201,7 @@ class TestGeneratorStatechartGenerator extends AbstractContractStatechartGenerat
 				setIntVariable(variableMap.getOrCreate(scenarioStatechartUtil.getLoopvariableNameForDepth(0)), 1)
 			statechart.transitions += initChoiceToFirstStateTransition
 
-			val violation = (initBlock.modalInteractions.get(0).modality ==
-					ModalityType.HOT) ? hotViolation : coldViolation
+			val violation = (initBlock.interactions.head.modality == ModalityType.HOT) ? hotViolation : coldViolation
 			val initialViolationTransition = statechartUtil.createTransition(initChoice, violation)
 			initialViolationTransition.guard = createElseExpression
 		}
