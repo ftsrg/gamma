@@ -1477,6 +1477,20 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return javaUtil.getOnlyElement(incomingTransitions);
 	}
 	
+	public static List<Transition> getLoopTransitions(StateNode node) {
+		List<Transition> loopTransitions = new ArrayList<Transition>();
+		loopTransitions.addAll(
+				getIncomingTransitions(node));
+		loopTransitions.retainAll(
+				getOutgoingTransitions(node));
+		return loopTransitions;
+	}
+	
+	public static Transition getLoopTransition(StateNode node) {
+		List<Transition> loopTransitions = getLoopTransitions(node);
+		return javaUtil.getOnlyElement(loopTransitions);
+	}
+	
 	public static Collection<StateNode> getAllStateNodes(CompositeElement compositeElement) {
 		Set<StateNode> stateNodes = new HashSet<StateNode>();
 		for (Region region : compositeElement.getRegions()) {
@@ -1687,7 +1701,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 			region.getStateNodes().stream().anyMatch(it -> it instanceof DeepHistoryState);
 	}	
 	
-	public static String getFullContainmentHierarchy(State state) {
+	public static String getFullContainmentHierarchy(StateNode state) {
 		if (state == null) {
 			return "";
 		}
@@ -1697,12 +1711,14 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 			parentState = getParentState(parentRegion);
 		}
 		String parentRegionName = parentRegion.getName();
+		String stateName = state.getName();
 		if (parentState == null) {
 			// Yakindu bug? First character is set to lowercase in the case of top regions
-			parentRegionName = parentRegionName.substring(0, 1).toLowerCase() + parentRegionName.substring(1); // toFirstLowerCase
-			return parentRegionName + "_" + state.getName();
+			parentRegionName = parentRegionName.substring(0, 1).toLowerCase() +
+					parentRegionName.substring(1); // toFirstLowerCase
+			return parentRegionName + "_" + stateName;
 		}
-		return getFullContainmentHierarchy(parentState) + "_" + parentRegionName + "_" + state.getName();
+		return getFullContainmentHierarchy(parentState) + "_" + parentRegionName + "_" + stateName;
 	}
 	
 	public static String getFullRegionPathName(Region lowestRegion) {

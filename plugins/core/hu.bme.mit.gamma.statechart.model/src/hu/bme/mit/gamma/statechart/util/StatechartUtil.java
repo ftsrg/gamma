@@ -90,6 +90,8 @@ import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
 import hu.bme.mit.gamma.statechart.statechart.StatechartModelFactory;
 import hu.bme.mit.gamma.statechart.statechart.SynchronousStatechartDefinition;
 import hu.bme.mit.gamma.statechart.statechart.Transition;
+import hu.bme.mit.gamma.statechart.statechart.UnaryTrigger;
+import hu.bme.mit.gamma.statechart.statechart.UnaryType;
 
 public class StatechartUtil extends ActionUtil {
 	// Singleton
@@ -403,6 +405,13 @@ public class StatechartUtil extends ActionUtil {
 		binaryTrigger.setLeftOperand(oldTrigger);
 		binaryTrigger.setRightOperand(newTrigger);
 		return binaryTrigger;
+	}
+	
+	public UnaryTrigger createUnaryTrigger(Trigger trigger, UnaryType type) {
+		UnaryTrigger unaryTrigger = statechartFactory.createUnaryTrigger();
+		unaryTrigger.setType(type);
+		unaryTrigger.setOperand(trigger);
+		return unaryTrigger;
 	}
 	
 	public boolean areDefinitelyFalseArguments(Expression guard, Port port, Event event,
@@ -805,6 +814,10 @@ public class StatechartUtil extends ActionUtil {
 		expression.setEvent(event);
 		expression.setParameter(parameter);
 		return expression;
+	}
+	
+	public RaiseEventAction createRaiseEventAction(Port port, Event event, Expression parameter) {
+		return createRaiseEventAction(port, event, List.of(parameter));
 	}
 	
 	public RaiseEventAction createRaiseEventAction(
