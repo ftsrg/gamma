@@ -23,7 +23,6 @@ import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -68,7 +67,6 @@ import hu.bme.mit.gamma.statechart.statechart.Region;
 import hu.bme.mit.gamma.statechart.statechart.State;
 import hu.bme.mit.gamma.statechart.statechart.StateAnnotation;
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
-import hu.bme.mit.gamma.statechart.statechart.Transition;
 import hu.bme.mit.gamma.statechart.util.ExpressionSerializer;
 import hu.bme.mit.gamma.statechart.util.StatechartUtil;
 import hu.bme.mit.gamma.transformation.util.ComponentDeactivator;
@@ -290,29 +288,30 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 				Port adaptiveActivityPort = activityPorts.get(annotationState);
 				
 				ComponentDeactivator componentDeactivator = new ComponentDeactivator(
-						extendedContract, stateContractAnnotation.isHasHistory());
+						extendedContract, statechartUtil.createHistory(
+								stateContractAnnotation.isHasHistory()));
 				
 				Port contractActivityPort = componentDeactivator.addActivityPort();
 				List<Port> contractPorts = javaUtil.getOrCreateList(
 						connectedActivityPorts, adaptiveActivityPort);
 				contractPorts.add(contractActivityPort);
 				
-				componentDeactivator.addDeactivatingTransitions();
+				componentDeactivator.makeContractDeactivatable();
 				
 				// Handling loop transitions
-				Set<State> resetableStates = new LinkedHashSet<State>();
-				resetableStates.add(
-						elementTracer.getViolationState(extendedContract));
-				resetableStates.add(
-						elementTracer.getAcceptState(extendedContract));
-				for (State resetableState : resetableStates) {
-					Region region = StatechartModelDerivedFeatures.getParentRegion(resetableState);
-					State initialState = StatechartModelDerivedFeatures.getInitialState(region);
-					for (Transition loopTransition :
-							StatechartModelDerivedFeatures.getLoopTransitions(resetableState)) {
-						loopTransition.setTargetState(initialState);
-					}
-				}
+//				Set<State> resetableStates = new LinkedHashSet<State>();
+//				resetableStates.add(
+//						elementTracer.getViolationState(extendedContract));
+//				resetableStates.add(
+//						elementTracer.getAcceptState(extendedContract));
+//				for (State resetableState : resetableStates) {
+//					Region region = StatechartModelDerivedFeatures.getParentRegion(resetableState);
+//					State initialState = StatechartModelDerivedFeatures.getInitialState(region);
+//					for (Transition loopTransition :
+//							StatechartModelDerivedFeatures.getLoopTransitions(resetableState)) {
+//						loopTransition.setTargetState(initialState);
+//					}
+//				}
 				//
 				
 				// TODO An error event could be introduced in the hot violation state 
@@ -449,8 +448,7 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 	
 	private Triple<String, PropertyPackage, ComponentInstance> insertMonitor(
 			SchedulableCompositeComponent composite, StatechartDefinition contract,
-			List<? extends Expression> arguments, String name)
-					throws IOException {
+			List<? extends Expression> arguments, String name) throws IOException {
 		// Contract statechart
 		ComponentInstance contractInstance = statechartUtil.instantiateComponent(contract);
 		contractInstance.getArguments().addAll(
@@ -461,12 +459,12 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 		statechartUtil.addComponentInstance(composite, contractInstance);
 		
 		// Setting the component execution
-		
-		boolean hasInitialBlock = StatechartModelDerivedFeatures.hasInitialOutputsBlock(contract);
-		if (hasInitialBlock) {
-			composite.getInitialExecutionList().add(
-					statechartUtil.createInstanceReference(contractInstance));
-		}
+//		
+//		boolean hasInitialBlock = StatechartModelDerivedFeatures.hasInitialOutputsBlock(contract);
+//		if (hasInitialBlock) {
+//			composite.getInitialExecutionList().add(
+//					statechartUtil.createInstanceReference(contractInstance));
+//		}
 		
 		// Monitor (input) - behavior (already present) - monitor (output)
 		List<ComponentInstanceReferenceExpression> executionList = composite.getExecutionList();
@@ -667,13 +665,13 @@ class ElementTracer {
 		return findState(contractStatechart, name);
 	}
 	
-	protected State findState(StatechartDefinition contractStatechart, String name) {
-		for (State state : StatechartModelDerivedFeatures.getAllStates(contractStatechart)) {
+	protected State findState(StatechartDefinition statechart, String name) {
+		for (State state : StatechartModelDerivedFeatures.getAllStates(statechart)) {
 			if (state.getName().equals(name)) {
 				return state;
 			}
 		}
-		throw new IllegalArgumentException("Not found state: " + contractStatechart);
+		throw new IllegalArgumentException("Not found state: " + statechart);
 	}
 	
 }

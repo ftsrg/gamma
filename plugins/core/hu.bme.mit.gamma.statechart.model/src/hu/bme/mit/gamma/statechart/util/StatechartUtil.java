@@ -74,6 +74,7 @@ import hu.bme.mit.gamma.statechart.interface_.RealizationMode;
 import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
 import hu.bme.mit.gamma.statechart.interface_.TimeUnit;
 import hu.bme.mit.gamma.statechart.interface_.Trigger;
+import hu.bme.mit.gamma.statechart.phase.History;
 import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference;
 import hu.bme.mit.gamma.statechart.statechart.AsynchronousStatechartDefinition;
 import hu.bme.mit.gamma.statechart.statechart.BinaryTrigger;
@@ -774,6 +775,27 @@ public class StatechartUtil extends ActionUtil {
 			statechart.getTransitions().add(transition);
 		}
 		return transition;
+	}
+	
+	public History createHistory(boolean hasHistory) {
+		if (hasHistory) {
+			return History.DEEP_HISTORY;
+		}
+		else {
+			return History.NO_HISTORY;
+		}
+	}
+	
+	public EntryState createEntryState(History history) {
+		switch (history) {
+			case NO_HISTORY:
+				return statechartFactory.createInitialState();
+			case SHALLOW_HISTORY:
+				return statechartFactory.createShallowHistoryState();
+			case DEEP_HISTORY:
+				return statechartFactory.createDeepHistoryState();
+		}
+		throw new IllegalArgumentException("Not known history: " + history);
 	}
 	
 	public State createRegionWithState(CompositeElement compositeElement,

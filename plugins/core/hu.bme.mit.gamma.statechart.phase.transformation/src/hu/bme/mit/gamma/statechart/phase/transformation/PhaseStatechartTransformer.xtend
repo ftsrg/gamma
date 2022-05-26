@@ -152,17 +152,7 @@ class PhaseStatechartTransformer {
 		val history = annotation.history
 		val inlineableRegions = inlineableStatechart.regions
 		for (inlineableRegion : inlineableRegions) {
-			val newEntryState = switch (history) {
-				case NO_HISTORY: {
-					createInitialState
-				}
-				case SHALLOW_HISTORY : {
-					createShallowHistoryState
-				}
-				case DEEP_HISTORY : {
-					createDeepHistoryState
-				}
-			}
+			val newEntryState = history.createEntryState
 			newEntryState.name = history.getName(instance)
 			val oldEntryState = inlineableRegion.entryState
 			inlineableRegion.stateNodes += newEntryState

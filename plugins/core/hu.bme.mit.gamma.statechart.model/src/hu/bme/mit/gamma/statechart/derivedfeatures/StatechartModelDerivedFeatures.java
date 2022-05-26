@@ -1445,6 +1445,18 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		}
 	}
 	
+	public static List<Transition> getNonTrappingOutgoingTransitions(StateNode node) {
+		List<Transition> nonTrappingOutgoingTransitions = new ArrayList<Transition>();
+		for (Transition transition : getOutgoingTransitions(node)) {
+			StateNode target = transition.getTargetState();
+			List<Transition> outgoingTransitions = getOutgoingTransitions(target);
+			if (!outgoingTransitions.isEmpty()) {
+				nonTrappingOutgoingTransitions.add(transition);
+			}
+		}
+		return nonTrappingOutgoingTransitions;
+	}
+	
 	public static List<Transition> getOutgoingTransitions(StateNode node) {
 		StatechartDefinition statechart = getContainingStatechart(node);
 		return statechart.getTransitions().stream().filter(it -> it.getSourceState() == node)
