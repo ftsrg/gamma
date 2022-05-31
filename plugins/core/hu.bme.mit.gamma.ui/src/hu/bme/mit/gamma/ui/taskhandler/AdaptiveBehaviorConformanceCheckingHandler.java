@@ -224,6 +224,15 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 						new SimpleEntry<String, PropertyPackage>(
 								artifacts.getFirst(), artifacts.getSecond());
 				
+				// Setting an initial execution for contract instances if there are initial output blocks
+				boolean hasInitialBlock = StatechartModelDerivedFeatures.hasInitialOutputsBlock(contract);
+				if (hasInitialBlock) {
+					ComponentInstance contractInstance = artifacts.getThird();
+					composite.getInitialExecutionList().add(
+							statechartUtil.createInstanceReference(contractInstance));
+				}
+				// Note that this is unnecessary for historyful contracts due to the activation mechanism
+				
 				historylessModelFileUris.add(modelFileUri);
 			}
 		}
@@ -297,22 +306,6 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 				contractPorts.add(contractActivityPort);
 				
 				componentDeactivator.makeContractDeactivatable();
-				
-				// Handling loop transitions
-//				Set<State> resetableStates = new LinkedHashSet<State>();
-//				resetableStates.add(
-//						elementTracer.getViolationState(extendedContract));
-//				resetableStates.add(
-//						elementTracer.getAcceptState(extendedContract));
-//				for (State resetableState : resetableStates) {
-//					Region region = StatechartModelDerivedFeatures.getParentRegion(resetableState);
-//					State initialState = StatechartModelDerivedFeatures.getInitialState(region);
-//					for (Transition loopTransition :
-//							StatechartModelDerivedFeatures.getLoopTransitions(resetableState)) {
-//						loopTransition.setTargetState(initialState);
-//					}
-//				}
-				//
 				
 				// TODO An error event could be introduced in the hot violation state 
 				
@@ -458,13 +451,7 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 		
 		statechartUtil.addComponentInstance(composite, contractInstance);
 		
-		// Setting the component execution
-//		
-//		boolean hasInitialBlock = StatechartModelDerivedFeatures.hasInitialOutputsBlock(contract);
-//		if (hasInitialBlock) {
-//			composite.getInitialExecutionList().add(
-//					statechartUtil.createInstanceReference(contractInstance));
-//		}
+		// The initial execution does not have to be set anymore due to the initial block handling
 		
 		// Monitor (input) - behavior (already present) - monitor (output)
 		List<ComponentInstanceReferenceExpression> executionList = composite.getExecutionList();
