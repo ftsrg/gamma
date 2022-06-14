@@ -327,7 +327,10 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		importablePackages.addAll(getImportableInterfacePackages(component));
 		importablePackages.addAll(getImportableComponentPackages(component));
 		importablePackages.addAll(getImportableAnnotationPackages(component));
-		
+		// Expression packages manually
+		importablePackages.addAll(
+				javaUtil.filterIntoList(
+						getImportableConstantPackages(component), Package.class));
 		// If referenced components are in the same package
 		if (isContainedByPackage(component)) {
 			Package _package = getContainingPackage(component);

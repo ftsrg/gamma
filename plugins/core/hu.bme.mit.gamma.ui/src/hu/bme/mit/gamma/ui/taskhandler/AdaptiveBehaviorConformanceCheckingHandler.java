@@ -493,6 +493,10 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 						composite.getChannels().add(channel);
 					}
 				}
+				else if (StatechartModelDerivedFeatures.isInternal(systemPort)) {
+					logger.log(Level.INFO, "Not matching internal port: " +
+							contract.getName() + "." + systemPort.getName());
+				}
 				else {
 					throw new IllegalArgumentException("Not broadcast port: " + contractPort);
 				}

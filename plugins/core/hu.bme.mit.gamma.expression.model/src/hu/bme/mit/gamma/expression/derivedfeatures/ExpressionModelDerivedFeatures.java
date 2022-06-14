@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -12,21 +12,28 @@ package hu.bme.mit.gamma.expression.derivedfeatures;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
+
+import org.eclipse.emf.ecore.EObject;
 
 import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition;
 import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition;
 import hu.bme.mit.gamma.expression.model.ClockVariableDeclarationAnnotation;
+import hu.bme.mit.gamma.expression.model.ConstantDeclaration;
 import hu.bme.mit.gamma.expression.model.DecimalTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.DefaultExpression;
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.ElseExpression;
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition;
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition;
 import hu.bme.mit.gamma.expression.model.EnvironmentResettableVariableDeclarationAnnotation;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory;
+import hu.bme.mit.gamma.expression.model.ExpressionPackage;
 import hu.bme.mit.gamma.expression.model.FieldDeclaration;
 import hu.bme.mit.gamma.expression.model.FinalVariableDeclarationAnnotation;
 import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression;
@@ -114,6 +121,24 @@ public class ExpressionModelDerivedFeatures {
 			Class<? extends VariableDeclarationAnnotation> annotation) {
 		return variables.stream().filter(it -> hasAnnotation(it, annotation))
 				.collect(Collectors.toList());
+	}
+	
+	// Imports
+	
+	public static Set<ExpressionPackage> getImportableConstantPackages(EObject object) {
+		Set<ExpressionPackage> importablePackages = new LinkedHashSet<ExpressionPackage>();
+		
+		for (DirectReferenceExpression reference :
+				ecoreUtil.getSelfAndAllContentsOfType(object, DirectReferenceExpression.class)) {
+			Declaration declaration = reference.getDeclaration();
+			if (declaration instanceof ConstantDeclaration) {
+				ExpressionPackage constantPackage = ecoreUtil.getContainerOfType(
+						declaration, ExpressionPackage.class);
+				importablePackages.add(constantPackage);
+			}
+		}
+		
+		return importablePackages;
 	}
 	
 	// Types
