@@ -451,7 +451,14 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 		
 		statechartUtil.addComponentInstance(composite, contractInstance);
 		
-		// The initial execution does not have to be set anymore due to the initial block handling
+		// The initial execution does not have to be set anymore due to the initial block handling?
+		// It does due to the timing that the first active state may have to start measuring before
+		// the first environment transition
+		if (StatechartModelDerivedFeatures.hasInitialOutputsBlock(contract)) {
+			composite.getInitialExecutionList().add(
+					statechartUtil.createInstanceReference(contractInstance));
+		}
+		//
 		
 		// Monitor (input) - behavior (already present) - monitor (output)
 		List<ComponentInstanceReferenceExpression> executionList = composite.getExecutionList();

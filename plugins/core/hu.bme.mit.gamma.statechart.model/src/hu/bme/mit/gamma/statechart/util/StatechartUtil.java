@@ -91,6 +91,7 @@ import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
 import hu.bme.mit.gamma.statechart.statechart.StatechartModelFactory;
 import hu.bme.mit.gamma.statechart.statechart.SynchronousStatechartDefinition;
 import hu.bme.mit.gamma.statechart.statechart.Transition;
+import hu.bme.mit.gamma.statechart.statechart.TransitionPriority;
 import hu.bme.mit.gamma.statechart.statechart.UnaryTrigger;
 import hu.bme.mit.gamma.statechart.statechart.UnaryType;
 
@@ -775,6 +776,44 @@ public class StatechartUtil extends ActionUtil {
 			statechart.getTransitions().add(transition);
 		}
 		return transition;
+	}
+	
+	public Transition createMaximumPriorityTransition(StateNode sourceState, StateNode targetState) {
+		Transition transition = createTransition(sourceState, targetState);
+		maximizeTransitionPriority(transition); // To support if-else over nondeterministic choices
+
+		return transition;
+	}
+	
+	public void maximizeTransitionPriority(Transition transition) {
+		StatechartDefinition statechart =
+				StatechartModelDerivedFeatures.getContainingStatechart(transition);
+		TransitionPriority transitionPriority = statechart.getTransitionPriority();
+		if (transitionPriority == TransitionPriority.VALUE_BASED) {
+			StateNode source = transition.getSourceState();
+			List<Transition> outgoingTransitions =
+					StatechartModelDerivedFeatures.getOutgoingTransitions(source);
+			
+			BigInteger maxPriority = outgoingTransitions.stream()
+					.map(it -> it.getPriority())
+					.max((lhs, rhs) -> lhs.compareTo(rhs))
+					.get();
+			BigInteger newPriority = maxPriority.add(BigInteger.ONE);
+			
+			transition.setPriority(newPriority);
+		}
+		else if (transitionPriority == TransitionPriority.ORDER_BASED) {
+			List<Transition> transitions = statechart.getTransitions();
+			boolean foundTransition = false;
+			for (int i = 0; i < transitions.size() && !foundTransition; ++i) {
+				Transition potentiallySearchedTransition = transitions.get(i);
+				if (potentiallySearchedTransition.getSourceState() == transition.getSourceState()) {
+					transitions.add(i, transition);
+					
+					foundTransition = true;
+				}
+			}
+		}
 	}
 	
 	public History createHistory(boolean hasHistory) {
