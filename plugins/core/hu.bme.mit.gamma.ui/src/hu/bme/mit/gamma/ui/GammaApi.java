@@ -17,8 +17,10 @@ import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
@@ -227,6 +229,10 @@ public class GammaApi {
 					// All iteration ended
 					hook.endTaskProcess();
 					//
+					// Refreshing the project
+					logger.log(Level.INFO, "Refreshing project");
+					project.refreshLocal(IResource.DEPTH_INFINITE, new NullProgressMonitor());
+					logger.log(Level.INFO, "Refreshing project has been finished");
 				}
 			}
 			else {

@@ -63,7 +63,16 @@ class PhaseStatechartTransformer {
 		while (!checkedAnnotations.containsAll(annotations)) {
 			for (annotation : annotations.reject[checkedAnnotations.contains(it)]) {
 				val component = annotation.component
-				val inlineableStatechart = component.derivedType.clone as StatechartDefinition
+				val originalType = component.derivedType
+				
+				// Imports here due to the cloning below
+				val _package = statechart.containingPackage
+				val inlineablePackage = originalType.containingPackage
+				
+				_package.imports += inlineablePackage.imports
+				//
+				
+				val inlineableStatechart = originalType.clone as StatechartDefinition
 				for (portBinding : annotation.portBindings) {
 					portBinding.inlinePorts(inlineableStatechart)
 				}
@@ -152,17 +161,7 @@ class PhaseStatechartTransformer {
 		val history = annotation.history
 		val inlineableRegions = inlineableStatechart.regions
 		for (inlineableRegion : inlineableRegions) {
-			val newEntryState = switch (history) {
-				case NO_HISTORY: {
-					createInitialState
-				}
-				case SHALLOW_HISTORY : {
-					createShallowHistoryState
-				}
-				case DEEP_HISTORY : {
-					createDeepHistoryState
-				}
-			}
+			val newEntryState = history.createEntryState
 			newEntryState.name = history.getName(instance)
 			val oldEntryState = inlineableRegion.entryState
 			inlineableRegion.stateNodes += newEntryState

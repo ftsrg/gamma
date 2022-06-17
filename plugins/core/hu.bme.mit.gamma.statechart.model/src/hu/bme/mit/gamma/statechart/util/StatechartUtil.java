@@ -74,6 +74,7 @@ import hu.bme.mit.gamma.statechart.interface_.RealizationMode;
 import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
 import hu.bme.mit.gamma.statechart.interface_.TimeUnit;
 import hu.bme.mit.gamma.statechart.interface_.Trigger;
+import hu.bme.mit.gamma.statechart.phase.History;
 import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference;
 import hu.bme.mit.gamma.statechart.statechart.AsynchronousStatechartDefinition;
 import hu.bme.mit.gamma.statechart.statechart.BinaryTrigger;
@@ -90,6 +91,9 @@ import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
 import hu.bme.mit.gamma.statechart.statechart.StatechartModelFactory;
 import hu.bme.mit.gamma.statechart.statechart.SynchronousStatechartDefinition;
 import hu.bme.mit.gamma.statechart.statechart.Transition;
+import hu.bme.mit.gamma.statechart.statechart.TransitionPriority;
+import hu.bme.mit.gamma.statechart.statechart.UnaryTrigger;
+import hu.bme.mit.gamma.statechart.statechart.UnaryType;
 
 public class StatechartUtil extends ActionUtil {
 	// Singleton
@@ -403,6 +407,13 @@ public class StatechartUtil extends ActionUtil {
 		binaryTrigger.setLeftOperand(oldTrigger);
 		binaryTrigger.setRightOperand(newTrigger);
 		return binaryTrigger;
+	}
+	
+	public UnaryTrigger createUnaryTrigger(Trigger trigger, UnaryType type) {
+		UnaryTrigger unaryTrigger = statechartFactory.createUnaryTrigger();
+		unaryTrigger.setType(type);
+		unaryTrigger.setOperand(trigger);
+		return unaryTrigger;
 	}
 	
 	public boolean areDefinitelyFalseArguments(Expression guard, Port port, Event event,
@@ -767,6 +778,65 @@ public class StatechartUtil extends ActionUtil {
 		return transition;
 	}
 	
+	public Transition createMaximumPriorityTransition(StateNode sourceState, StateNode targetState) {
+		Transition transition = createTransition(sourceState, targetState);
+		maximizeTransitionPriority(transition); // To support if-else over nondeterministic choices
+
+		return transition;
+	}
+	
+	public void maximizeTransitionPriority(Transition transition) {
+		StatechartDefinition statechart =
+				StatechartModelDerivedFeatures.getContainingStatechart(transition);
+		TransitionPriority transitionPriority = statechart.getTransitionPriority();
+		if (transitionPriority == TransitionPriority.VALUE_BASED) {
+			StateNode source = transition.getSourceState();
+			List<Transition> outgoingTransitions =
+					StatechartModelDerivedFeatures.getOutgoingTransitions(source);
+			
+			BigInteger maxPriority = outgoingTransitions.stream()
+					.map(it -> it.getPriority())
+					.max((lhs, rhs) -> lhs.compareTo(rhs))
+					.get();
+			BigInteger newPriority = maxPriority.add(BigInteger.ONE);
+			
+			transition.setPriority(newPriority);
+		}
+		else if (transitionPriority == TransitionPriority.ORDER_BASED) {
+			List<Transition> transitions = statechart.getTransitions();
+			boolean foundTransition = false;
+			for (int i = 0; i < transitions.size() && !foundTransition; ++i) {
+				Transition potentiallySearchedTransition = transitions.get(i);
+				if (potentiallySearchedTransition.getSourceState() == transition.getSourceState()) {
+					transitions.add(i, transition);
+					
+					foundTransition = true;
+				}
+			}
+		}
+	}
+	
+	public History createHistory(boolean hasHistory) {
+		if (hasHistory) {
+			return History.DEEP_HISTORY;
+		}
+		else {
+			return History.NO_HISTORY;
+		}
+	}
+	
+	public EntryState createEntryState(History history) {
+		switch (history) {
+			case NO_HISTORY:
+				return statechartFactory.createInitialState();
+			case SHALLOW_HISTORY:
+				return statechartFactory.createShallowHistoryState();
+			case DEEP_HISTORY:
+				return statechartFactory.createDeepHistoryState();
+		}
+		throw new IllegalArgumentException("Not known history: " + history);
+	}
+	
 	public State createRegionWithState(CompositeElement compositeElement,
 			EntryState entry, String regionName, String stateName) {
 		Region region = statechartFactory.createRegion();
@@ -805,6 +875,10 @@ public class StatechartUtil extends ActionUtil {
 		expression.setEvent(event);
 		expression.setParameter(parameter);
 		return expression;
+	}
+	
+	public RaiseEventAction createRaiseEventAction(Port port, Event event, Expression parameter) {
+		return createRaiseEventAction(port, event, List.of(parameter));
 	}
 	
 	public RaiseEventAction createRaiseEventAction(

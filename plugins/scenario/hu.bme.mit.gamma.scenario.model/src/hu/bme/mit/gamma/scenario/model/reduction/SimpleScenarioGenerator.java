@@ -32,7 +32,6 @@ import hu.bme.mit.gamma.scenario.model.Interaction;
 import hu.bme.mit.gamma.scenario.model.InteractionDefinition;
 import hu.bme.mit.gamma.scenario.model.InteractionFragment;
 import hu.bme.mit.gamma.scenario.model.LoopCombinedFragment;
-import hu.bme.mit.gamma.scenario.model.ModalInteraction;
 import hu.bme.mit.gamma.scenario.model.ModalInteractionSet;
 import hu.bme.mit.gamma.scenario.model.NegPermissiveAnnotation;
 import hu.bme.mit.gamma.scenario.model.NegStrictAnnotation;
