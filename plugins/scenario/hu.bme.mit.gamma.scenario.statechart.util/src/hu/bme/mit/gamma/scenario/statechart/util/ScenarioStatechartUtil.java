@@ -49,7 +49,7 @@ public class ScenarioStatechartUtil {
 
 	private final String firstRegionName = "region";
 
-	private final String firstStateName = "firstState";
+	private final String firstStateName = "initialState";
 
 	private final String mergeName = "merge";
 	

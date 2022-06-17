@@ -123,14 +123,16 @@ class MonitorStatechartGenerator extends AbstractContractStatechartGeneration {
 		firstRegion.stateNodes += componentViolation
 		firstRegion.stateNodes += environmentViolation
 		statechartUtil.createTransition(initial, firstState)
-
+		statechart.variableDeclarations += scenario.variableDeclarations
 		if (scenario.initialblock !== null) {
 			statechart.annotations += createHasInitialOutputsBlockAnnotation
 			val syncBlock = createModalInteractionSet
 			syncBlock.modalInteractions += scenario.initialblock.interactions
-			scenario.chart.fragment.interactions.add(0, syncBlock)
+			processModalInteractionSet(syncBlock, false)
+			if (restartOnColdViolation) {
+				coldViolation = previousState as State
+			}
 		}
-		statechart.variableDeclarations += scenario.variableDeclarations
 	}
 
 	def dispatch void process(ModalInteractionSet interactionSet) {
