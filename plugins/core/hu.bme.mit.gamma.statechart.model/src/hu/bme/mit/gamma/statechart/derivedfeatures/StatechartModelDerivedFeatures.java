@@ -216,6 +216,27 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 				it -> it.getDirection() == EventDirection.INTERNAL);
 	}
 	
+	public static boolean isMappableToInputPort(Port port) {
+		Component component = getContainingComponent(port);
+		Collection<StatechartDefinition> statecharts = getAllContainedStatecharts(component);
+		
+		for (StatechartDefinition statechart : statecharts) {
+			for (RaiseEventAction raiseEventAction : 
+					ecoreUtil.getAllContentsOfType(statechart, RaiseEventAction.class)) {
+				if (raiseEventAction.getPort() == port) {
+					return false;
+				}
+			}
+		}
+		
+		return true;
+	}
+	
+	public static boolean isMappableToOutputPort(Port port) {
+		Component component = getContainingComponent(port);
+		return !isTriggeredVia(component, port);
+	}
+	
 	public static boolean isInternal(InstancePortReference port) {
 		return isInternal(port.getPort());
 	}
@@ -609,7 +630,8 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 					(AbstractAsynchronousCompositeComponent) component;
 			for (AsynchronousComponentInstance instance : asynchronousCompositeComponent.getComponents()) {
 				List<ComponentInstanceReferenceExpression> childReferences = getAllSimpleInstanceReferences(instance);
-				instanceReferences.addAll(statechartUtil.prepend(childReferences, instance));
+				instanceReferences.addAll(
+						statechartUtil.prepend(childReferences, instance));
 			}
 		}
 		else if (component instanceof AsynchronousAdapter) {
@@ -621,7 +643,8 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 			}
 			else {
 				List<ComponentInstanceReferenceExpression> childReferences = getAllSimpleInstanceReferences(instance);
-				instanceReferences.addAll(statechartUtil.prepend(childReferences, instance));
+				instanceReferences.addAll(
+						statechartUtil.prepend(childReferences, instance));
 			}
 		}
 		else if (component instanceof AbstractSynchronousCompositeComponent) {
@@ -629,24 +652,36 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 					(AbstractSynchronousCompositeComponent) component;
 			for (SynchronousComponentInstance instance : synchronousCompositeComponent.getComponents()) {
 				if (isStatechart(instance)) {
-					ComponentInstanceReferenceExpression instanceReference = statechartUtil.createInstanceReference(instance);
+					ComponentInstanceReferenceExpression instanceReference =
+							statechartUtil.createInstanceReference(instance);
 					instanceReferences.add(instanceReference);
 				}
 				else {
 					List<ComponentInstanceReferenceExpression> childReferences = getAllSimpleInstanceReferences(instance);
-					instanceReferences.addAll(statechartUtil.prepend(childReferences, instance));
+					instanceReferences.addAll(
+							statechartUtil.prepend(childReferences, instance));
 				}
 			}
 		}
 		return instanceReferences;
 	}
 	
-	public static Collection<StatechartDefinition> getAllContainedStatecharts(SynchronousComponent component) {
+	public static Collection<StatechartDefinition> getAllContainedStatecharts(Component component) {
 		List<StatechartDefinition> statecharts = new ArrayList<StatechartDefinition>();
 		for (SynchronousComponentInstance instance : getAllSimpleInstances(component)) {
-			statecharts.add(getStatechart(instance));
+			statecharts.add(
+					getStatechart(instance));
 		}
 		return statecharts;
+	}
+	
+	public static Collection<StatechartDefinition> getSelfOrAllContainedStatecharts(
+			Component component) {
+		if (component instanceof StatechartDefinition) {
+			StatechartDefinition statechart = (StatechartDefinition) component;
+			return List.of(statechart);
+		}
+		return getAllContainedStatecharts(component);
 	}
 	
 	public static List<Interface> getAllParents(Interface _interface) {
@@ -1058,15 +1093,18 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 			PortEventReference portEventReference = (PortEventReference) eventReference;
 			Port port = portEventReference.getPort();
 			Event event = portEventReference.getEvent();
-			if (getInputEvents(port).contains(event)) {
-				events.add(new SimpleEntry<Port, Event>(port, event));
+			List<Event> inputEvents = getInputEvents(port);
+			if (inputEvents.contains(event)) {
+				events.add(
+						new SimpleEntry<Port, Event>(port, event));
 			}
 		}
 		else if (eventReference instanceof AnyPortEventReference) {
 			AnyPortEventReference anyPortEventReference = (AnyPortEventReference) eventReference;
 			Port port = anyPortEventReference.getPort();
 			for (Event inputEvent : getInputEvents(port)) {
-				events.add(new SimpleEntry<Port, Event>(port, inputEvent));
+				events.add(
+						new SimpleEntry<Port, Event>(port, inputEvent));
 			}
 		}
 		else if (eventReference instanceof ClockTickReference) {
@@ -1273,6 +1311,11 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		unusedPorts.removeAll(usedPorts);
 		unusedPorts.removeAll(getAllInternalPorts(type)); // Internal ports are always used
 		return unusedPorts;
+	}
+	
+	public static EventSource getEventSource(EventTrigger eventTrigger) {
+		EventReference eventReference = eventTrigger.getEventReference();
+		return getEventSource(eventReference);
 	}
 	
 	public static EventSource getEventSource(EventReference eventReference) {
@@ -1976,18 +2019,48 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return true;
 	}
 	
-	public static Set<Trigger> getAllSimpleTriggers(StatechartDefinition statechart) {
+	public static boolean isTriggeredVia(Component component, Port port) {
+		Set<SimpleTrigger> triggers = getAllSimpleTriggers(component);
+		
+		for (SimpleTrigger trigger : triggers) {
+			if (trigger instanceof AnyTrigger) {
+				return true;
+			}
+			if (trigger instanceof EventTrigger) {
+				EventTrigger eventTrigger = (EventTrigger) trigger;
+				EventSource eventSource = getEventSource(eventTrigger);
+				if (eventSource == port) {
+					return true;
+				}
+			}
+		}
+		
+		return false;
+	}
+	
+	public static Set<SimpleTrigger> getAllSimpleTriggers(Component component) {
+		Set<SimpleTrigger> triggers = new LinkedHashSet<SimpleTrigger>();
+		
+		for (StatechartDefinition statechart : getSelfOrAllContainedStatecharts(component)) {
+			triggers.addAll(
+					getAllSimpleTriggers(statechart));
+		}
+		
+		return triggers;
+	}
+	
+	public static Set<SimpleTrigger> getAllSimpleTriggers(StatechartDefinition statechart) {
 		List<Transition> transitions = statechart.getTransitions();
 		return getAllSimpleTriggers(transitions);
 	}
 	
-	public static Set<Trigger> getAllSimpleTriggers(State state) {
+	public static Set<SimpleTrigger> getAllSimpleTriggers(State state) {
 		List<Transition> outgoingTransitions = getOutgoingTransitions(state);
 		return getAllSimpleTriggers(outgoingTransitions);
 	}
 	
-	public static Set<Trigger> getAllSimpleTriggers(Iterable<? extends Transition> transitions) {
-		Set<Trigger> simpleTriggers = new HashSet<Trigger>();
+	public static Set<SimpleTrigger> getAllSimpleTriggers(Iterable<? extends Transition> transitions) {
+		Set<SimpleTrigger> simpleTriggers = new HashSet<SimpleTrigger>();
 		
 		for (Transition transition : transitions) {
 			simpleTriggers.addAll(
@@ -1997,20 +2070,21 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return simpleTriggers;
 	}
 	
-	public static Set<Trigger> getAllSimpleTriggers(Transition transition) {
+	public static Set<SimpleTrigger> getAllSimpleTriggers(Transition transition) {
 		Trigger trigger = transition.getTrigger();
 		return getAllSimpleTriggers(trigger);
 	}
 	
-	public static Set<Trigger> getAllSimpleTriggers(Trigger trigger) {
-		Set<Trigger> simpleTriggers = new HashSet<Trigger>();
+	public static Set<SimpleTrigger> getAllSimpleTriggers(Trigger trigger) {
+		Set<SimpleTrigger> simpleTriggers = new HashSet<SimpleTrigger>();
 		
 		if (trigger == null) {
 			return simpleTriggers;
 		}
 		
 		if (trigger instanceof SimpleTrigger) {
-			simpleTriggers.add(trigger);
+			SimpleTrigger simpleTrigger = (SimpleTrigger) trigger;
+			simpleTriggers.add(simpleTrigger);
 		}
 		else if (trigger instanceof UnaryTrigger) {
 			UnaryTrigger unaryTrigger = (UnaryTrigger) trigger;
@@ -2510,9 +2584,18 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	public static boolean hasHistory(MissionPhaseStateAnnotation annotation) {
 		return annotation.getHistory() != History.NO_HISTORY || 
 				!annotation.getVariableBindings().isEmpty() ||
-				// Internal ports are not really history, more like context dependency
 				annotation.getPortBindings().stream().anyMatch(
 						it -> isInternal(it.getCompositeSystemPort()));
+	}
+	
+	public static boolean hasInternalPort(MissionPhaseStateAnnotation annotation) {
+		// Internal ports are not really history, more like context dependency
+		return annotation.getPortBindings().stream().anyMatch(
+				it -> isInternal(it.getCompositeSystemPort()));
+	}
+	
+	public static boolean hasHistoryOrInternalPort(MissionPhaseStateAnnotation annotation) {
+		return hasHistory(annotation) || hasInternalPort(annotation);
 	}
 	
 	public static boolean hasInitialOutputsBlock(Component component) {

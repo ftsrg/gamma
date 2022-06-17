@@ -307,11 +307,11 @@ public class StatechartModelValidator extends ActionModelValidator {
 					new ReferenceInfo(ContractModelPackage.Literals.STATE_CONTRACT_ANNOTATION__CONTRACT_STATECHART)));
 		}
 		
-		if (annotation.isSetToSelf() && annotation.isHasHistory()) {
-			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-				"A state contract is either set to self or has histroy", 
-					new ReferenceInfo(ContractModelPackage.Literals.STATE_CONTRACT_ANNOTATION__CONTRACT_STATECHART)));
-		}
+//		if (annotation.isSetToSelf() && annotation.isHasHistory()) {
+//			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+//				"A state contract is either set to self or has histroy", 
+//					new ReferenceInfo(ContractModelPackage.Literals.STATE_CONTRACT_ANNOTATION__CONTRACT_STATECHART)));
+//		}
 		
 		StatechartDefinition contractStatechart = annotation.getContractStatechart();
 		
@@ -328,9 +328,9 @@ public class StatechartModelValidator extends ActionModelValidator {
 			}
 		}
 		
-		Set<Trigger> adaptiveStateTriggers = StatechartModelDerivedFeatures.getAllSimpleTriggers(parentState);
+		Set<SimpleTrigger> adaptiveStateTriggers = StatechartModelDerivedFeatures.getAllSimpleTriggers(parentState);
 		List<Trigger> unwrappedAdaptiveTriggers = statechartUtil.unwrapAnyTriggers(adaptiveStateTriggers);
-		Set<Trigger> contractTriggers = StatechartModelDerivedFeatures.getAllSimpleTriggers(contractStatechart);
+		Set<SimpleTrigger> contractTriggers = StatechartModelDerivedFeatures.getAllSimpleTriggers(contractStatechart);
 		List<Trigger> unwrappedContractTriggers = statechartUtil.unwrapAnyTriggers(contractTriggers);
 		
 		for (Trigger trigger : unwrappedContractTriggers) {
