@@ -225,6 +225,14 @@ abstract class AbstractContractStatechartGeneration {
 		}
 		return binaryTrigger
 	}
+	
+	def protected Trigger getBinaryTriggerFromTriggersIfPossible(List<Trigger> triggers, BinaryType type) {
+		if (triggers.size > 1) {
+			return getBinaryTriggerFromTriggers(triggers, type)
+		} else if (triggers.size == 1) {
+			return triggers.head
+		}
+	}
 
 	def protected BinaryTrigger getAllEvents(BinaryType type) {
 		var bin = createBinaryTrigger
