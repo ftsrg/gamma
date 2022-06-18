@@ -32,8 +32,8 @@ public class ScenarioModelDerivedFeatures extends ExpressionModelDerivedFeatures
 				NegatedModalInteraction.class);
 		directions.addAll(negatedInteractions.stream()
 				.filter(it -> it.getModalinteraction() instanceof Signal)
-				.map(it -> ((Signal) it.getModalinteraction()).getDirection())
-				.collect(Collectors.toList()));
+				.map(it -> ((Signal) it.getModalinteraction())
+				.getDirection()).collect(Collectors.toList()));
 		if (!directions.isEmpty()) {
 			isSend = directions.stream().allMatch(it -> it.equals(InteractionDirection.SEND));
 		}
@@ -108,4 +108,5 @@ public class ScenarioModelDerivedFeatures extends ExpressionModelDerivedFeatures
 		}
 		return null;
 	}
+
 }
