@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 import hu.bme.mit.gamma.scenario.model.LoopCombinedFragment;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Component;
-import hu.bme.mit.gamma.statechart.interface_.EventDeclaration;
+import hu.bme.mit.gamma.statechart.interface_.Event;
 import hu.bme.mit.gamma.statechart.interface_.EventReference;
 import hu.bme.mit.gamma.statechart.interface_.EventTrigger;
 import hu.bme.mit.gamma.statechart.interface_.InterfaceModelFactory;
@@ -156,15 +156,15 @@ public class ScenarioStatechartUtil {
 	}
 
 	public List<EventReference> getAllEventReferencesForDirection(Component automaton, boolean isSentByComponent) {
-		List<EventReference> eventRefs = new LinkedList<>();
+		List<EventReference> eventRefs = new LinkedList<EventReference>();
 		List<Port> correctPorts = automaton.getPorts().stream()
 				.filter((it) -> (!((StatechartModelDerivedFeatures.getInputEvents(it)).isEmpty())))
 				.collect(Collectors.toList());
 		for (Port port : correctPorts) {
 			if ((isTurnedOut(port) && isSentByComponent) || (!isTurnedOut(port) && !isSentByComponent)) {
-				for (EventDeclaration eventDecl : port.getInterfaceRealization().getInterface().getEvents()) {
+				for (Event event : StatechartModelDerivedFeatures.getAllEvents(port)) {
 					PortEventReference eventRef = statechartFactory.createPortEventReference();
-					eventRef.setEvent(eventDecl.getEvent());
+					eventRef.setEvent(event);
 					eventRef.setPort(port);
 					eventRefs.add(eventRef);
 				}
@@ -175,7 +175,7 @@ public class ScenarioStatechartUtil {
 
 	public List<Trigger> getAllTriggersForDirection(Component automaton, boolean isSentByComponent) {
 		List<EventReference> eventRefs = getAllEventReferencesForDirection(automaton, isSentByComponent);
-		List<Trigger> triggers = new LinkedList<>();
+		List<Trigger> triggers = new LinkedList<Trigger>();
 		for (EventReference ref : eventRefs) {
 			EventTrigger eventTrigger = interfaceFactory.createEventTrigger();
 			eventTrigger.setEventReference(ref);

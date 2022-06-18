@@ -1,8 +1,6 @@
 package hu.bme.mit.gamma.scenario.model.derivedfeatures;
 
-import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
@@ -13,9 +11,6 @@ import hu.bme.mit.gamma.scenario.model.ModalInteractionSet;
 import hu.bme.mit.gamma.scenario.model.ModalityType;
 import hu.bme.mit.gamma.scenario.model.NegatedModalInteraction;
 import hu.bme.mit.gamma.scenario.model.Signal;
-import hu.bme.mit.gamma.statechart.interface_.Component;
-import hu.bme.mit.gamma.statechart.interface_.EventReference;
-import hu.bme.mit.gamma.statechart.interface_.Port;
 
 public class ScenarioModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 
@@ -25,8 +20,10 @@ public class ScenarioModelDerivedFeatures extends ExpressionModelDerivedFeatures
 				.stream().map(it -> it.getDirection()).collect(Collectors.toList());
 		List<NegatedModalInteraction> negatedInteractions = javaUtil.filterIntoList(set.getModalInteractions(),
 				NegatedModalInteraction.class);
-		directions.addAll(negatedInteractions.stream().filter(it -> it.getModalinteraction() instanceof Signal)
-				.map(it -> ((Signal) it.getModalinteraction()).getDirection()).collect(Collectors.toList()));
+		directions.addAll(negatedInteractions.stream()
+				.filter(it -> it.getModalinteraction() instanceof Signal)
+				.map(it -> ((Signal) it.getModalinteraction())
+				.getDirection()).collect(Collectors.toList()));
 		if (!directions.isEmpty()) {
 			isSend = directions.stream().allMatch(it -> it.equals(InteractionDirection.SEND));
 		}
