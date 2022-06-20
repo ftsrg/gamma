@@ -213,7 +213,7 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 				List<PortBinding> portBindings = javaUtil.flattenIntoList(
 						clonedBehaviors.stream().map(it -> it.getPortBindings())
 						.collect(Collectors.toList()));
-				Collection<Port> systemPorts = adaptiveStatechart.getPorts();
+				Collection<Port> systemPorts = adaptiveStatechart.getPorts(); // TODO change to component ports
 				for (Port systemPort : systemPorts) {
 					Port clonedSystemPort = ecoreUtil.clone(systemPort);
 					composite.getPorts().add(clonedSystemPort);
@@ -310,7 +310,8 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 				}
 				// Change monitor interfaces
 				StatechartDefinition insertableContract = ecoreUtil.clone(contract);
-				boolean contractNeedsReplacement = false;
+				Map<Interface, Interface> contractMappedInterfaces = new HashMap<Interface, Interface>();
+				// TODO there is a problem with inout/internal events
 				for (Port contractPort : StatechartModelDerivedFeatures.getAllPorts(insertableContract)) {
 					Interface contractInterface = StatechartModelDerivedFeatures.getInterface(contractPort);
 					if (mappedInterfaces.containsKey(contractInterface)) {
@@ -321,12 +322,18 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 						InterfaceRealization interfaceRealization = contractPort.getInterfaceRealization();
 						interfaceRealization.setInterface(mappedInterface);
 						interfaceRealization.setRealizationMode(realizationMode);
-						ecoreUtil.changeAll(mappedInterface, contractInterface, insertableContract); // For event references
-
-						contractNeedsReplacement = true;
+						
+						contractMappedInterfaces.put(contractInterface, mappedInterface);
+						// Interface changes cannot be done here as it would change interfaces
+						// in the reversed ports as well
 					}
 				}
-				if (contractNeedsReplacement) {
+				if (!contractMappedInterfaces.isEmpty()) {
+					for (Interface contractInterface : contractMappedInterfaces.keySet()) {
+						Interface mappedInterface = contractMappedInterfaces.get(contractInterface);
+						ecoreUtil.changeAll(mappedInterface, contractInterface, insertableContract);
+					}
+					
 					contract = insertableContract; // See insertMonitor
 					statelessAssocationPackage.getComponents().add(insertableContract); // For serialization
 				}

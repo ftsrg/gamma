@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020-2021 Contributors to the Gamma project
+ * Copyright (c) 2020-2022 Contributors to the Gamma project
  * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -272,16 +272,16 @@ class TestGeneratorStatechartGenerator extends AbstractContractStatechartGenerat
 			ends += previousState
 			stateCount--
 		}
-		var merg = createState
+		var merge = createState
 		for (transition : statechart.transitions) {
 			if (ends.contains(transition.targetState)) {
-				transition.targetState = merg
+				transition.targetState = merge
 			}
 		}
 		firstRegion.stateNodes -= ends
-		merg.name = scenarioStatechartUtil.mergeName + String.valueOf(exsistingMerges++)
-		firstRegion.stateNodes += merg
-		previousState = merg
+		merge.name = scenarioStatechartUtil.mergeName + String.valueOf(exsistingMerges++)
+		firstRegion.stateNodes += merge
+		previousState = merge
 	}
 
 	def dispatch void process(LoopCombinedFragment loop) {

@@ -838,7 +838,7 @@ public class ExpressionModelValidator {
 			this.source = object.eContainer();
 			this.reference = object.eContainingFeature();
 			if (reference.isMany()) {
-				this.index = ecoreUtil.getIndex(source);
+				this.index = ecoreUtil.getIndex(object);
 			}
 		}
 		

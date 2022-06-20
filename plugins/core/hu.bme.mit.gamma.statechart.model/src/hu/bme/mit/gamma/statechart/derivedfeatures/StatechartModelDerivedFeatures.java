@@ -33,6 +33,7 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
 import hu.bme.mit.gamma.action.derivedfeatures.ActionModelDerivedFeatures;
 import hu.bme.mit.gamma.action.model.Action;
 import hu.bme.mit.gamma.expression.model.ArgumentedElement;
+import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.ElseExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression;
@@ -143,9 +144,14 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		}
 		if (element instanceof FunctionAccessExpression) {
 			FunctionAccessExpression functionAccess = (FunctionAccessExpression) element;
-			FunctionDeclaration functionDeclaration = (FunctionDeclaration)
-					expressionUtil.getDeclaration(functionAccess.getOperand());
-			return functionDeclaration.getParameterDeclarations();
+			Declaration declaration = expressionUtil.getDeclaration(
+					functionAccess.getOperand());
+			if (declaration instanceof FunctionDeclaration) {
+				FunctionDeclaration functionDeclaration = (FunctionDeclaration)	declaration;
+				return functionDeclaration.getParameterDeclarations();
+			}
+			// Invalid model
+			throw new IllegalArgumentException("No function declaration: " + declaration);
 		}
 		if (element instanceof StateContractAnnotation) {
 			StateContractAnnotation annotation = (StateContractAnnotation) element;
@@ -218,7 +224,8 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	public static boolean isMappableToInputPort(Port port) {
 		Component component = getContainingComponent(port);
-		Collection<StatechartDefinition> statecharts = getAllContainedStatecharts(component);
+		Collection<StatechartDefinition> statecharts =
+				getSelfOrAllContainedStatecharts(component);
 		
 		for (StatechartDefinition statechart : statecharts) {
 			for (RaiseEventAction raiseEventAction : 

@@ -233,7 +233,7 @@ class MonitorStatechartGenerator extends AbstractContractStatechartGeneration {
 			}
 			ends += previousState
 		}
-		val mergeState = createNewState(mergeName + exsistingMerges)
+		val mergeState = createNewState(mergeName + exsistingMerges++)
 		firstRegion.stateNodes += mergeState
 		previousState = mergeState
 		for (transition : statechart.transitions) {
