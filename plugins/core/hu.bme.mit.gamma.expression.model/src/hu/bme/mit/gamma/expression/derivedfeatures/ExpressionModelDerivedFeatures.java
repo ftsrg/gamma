@@ -36,6 +36,7 @@ import hu.bme.mit.gamma.expression.model.ExpressionModelFactory;
 import hu.bme.mit.gamma.expression.model.ExpressionPackage;
 import hu.bme.mit.gamma.expression.model.FieldDeclaration;
 import hu.bme.mit.gamma.expression.model.FinalVariableDeclarationAnnotation;
+import hu.bme.mit.gamma.expression.model.FunctionDeclaration;
 import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression;
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
@@ -125,13 +126,15 @@ public class ExpressionModelDerivedFeatures {
 	
 	// Imports
 	
-	public static Set<ExpressionPackage> getImportableConstantPackages(EObject object) {
+	public static Set<ExpressionPackage> getImportableDeclarationPackages(EObject object) {
 		Set<ExpressionPackage> importablePackages = new LinkedHashSet<ExpressionPackage>();
 		
 		for (DirectReferenceExpression reference :
 				ecoreUtil.getSelfAndAllContentsOfType(object, DirectReferenceExpression.class)) {
 			Declaration declaration = reference.getDeclaration();
-			if (declaration instanceof ConstantDeclaration) {
+			if (declaration instanceof FunctionDeclaration ||
+					declaration instanceof TypeDeclaration ||
+					declaration instanceof ConstantDeclaration) {
 				ExpressionPackage constantPackage = ecoreUtil.getContainerOfType(
 						declaration, ExpressionPackage.class);
 				importablePackages.add(constantPackage);
