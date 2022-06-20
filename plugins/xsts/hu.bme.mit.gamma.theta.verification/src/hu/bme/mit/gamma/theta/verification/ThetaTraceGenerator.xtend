@@ -33,11 +33,17 @@ class ThetaTraceGenerator {
 	private def List<ExecutionTrace> generateTraces(Object traceability, File modelFile) {
 		val traceDir = new File(modelFile.parent + File.separator + "traces")
 		val jar = System.getenv(ENVIRONMENT_VARIABLE_FOR_THETA_JAR)
-		val command = #["java", "-jar", jar] + #["--model", modelFile.canonicalPath, "--stacktrace", "--tracegen", "--property null"]
+		val command = #["java", "-jar", jar] + #["--stacktrace", "--tracegen", "--model", modelFile.canonicalPath, "--property", modelFile.canonicalPath]
 		logger.log(Level.INFO, "Executing command: " + command.join(" "))
 		process = Runtime.getRuntime().exec(command)
 		val outputStream = process.inputStream
 		var resultReader = new Scanner(outputStream)
+		var line = ""
+		while (resultReader.hasNext) {
+			// (SafetyResult Safe) or (SafetyResult Unsafe)
+			line = resultReader.nextLine
+			logger.log(Level.INFO, line)
+		}
 		
 		val traceList = new ArrayList<ExecutionTrace>
 		val gammaPackage = traceability as Package
