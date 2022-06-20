@@ -49,7 +49,7 @@ class MonitorStatechartGenerator extends AbstractContractStatechartGeneration {
 	protected final boolean restartOnColdViolation
 
 	protected final boolean useColdViolationForEnvironmentViolation = true
-	protected final boolean useHotViolationForComponentViolation = true
+	protected final boolean useHotViolationForComponentViolation = false
 
 	new(ScenarioDeclaration scenario, Component component, boolean restartOnColdViolation) {
 		super(scenario, component)
@@ -341,7 +341,7 @@ class MonitorStatechartGenerator extends AbstractContractStatechartGeneration {
 		val otherDirViolationState = if (isSend) {
 			useColdViolationForEnvironmentViolation ? coldViolation : environmentViolation
 		} else {
-			componentViolation
+			useHotViolationForComponentViolation ? componentViolation : coldViolation
 		}
 		val violationForOtherDirection = statechartUtil
 				.createTransition(previousState, otherDirViolationState)

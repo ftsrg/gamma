@@ -2583,9 +2583,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	public static boolean hasHistory(MissionPhaseStateAnnotation annotation) {
 		return annotation.getHistory() != History.NO_HISTORY || 
-				!annotation.getVariableBindings().isEmpty() ||
-				annotation.getPortBindings().stream().anyMatch(
-						it -> isInternal(it.getCompositeSystemPort()));
+				!annotation.getVariableBindings().isEmpty();
 	}
 	
 	public static boolean hasInternalPort(MissionPhaseStateAnnotation annotation) {

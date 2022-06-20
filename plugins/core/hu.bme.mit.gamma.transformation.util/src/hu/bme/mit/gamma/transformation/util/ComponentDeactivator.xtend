@@ -239,8 +239,9 @@ class ComponentDeactivator {
 			// Entering the violation (and accept) state(s)
 			val firstValidState = nonTrappingOutgoingTransitions
 					.reject[it.loop] // Cold violation loop edges
-					.onlyElement
-					.targetState
+					.map[it.targetState]
+					.toSet // Can be multiple "parallel" transitions to the same state
+					.onlyElement // state0
 			incomingTransitionOfInitialBlockState.targetState = firstValidState
 			for (nonTrappingOutgoingTransition : nonTrappingOutgoingTransitions) {
 				nonTrappingOutgoingTransition.targetState = activityState
