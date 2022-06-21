@@ -317,7 +317,7 @@ class ComponentDeactivator {
 			
 			val mergeChoiceTransition = mergeState.createMaximumPriorityTransition(choiceState)
 			// Resetting variables if necessary
-			if (activityRegion.hasHistory) {
+			if (!activityRegion.hasHistory) {
 				val variables = newLinkedHashSet
 				variables += statechart.variableDeclarations
 				variables -= unresettableDeclarations
