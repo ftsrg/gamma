@@ -48,6 +48,7 @@ import hu.bme.mit.gamma.genmodel.model.AsynchronousInstanceConstraint;
 import hu.bme.mit.gamma.genmodel.model.CodeGeneration;
 import hu.bme.mit.gamma.genmodel.model.ComponentReference;
 import hu.bme.mit.gamma.genmodel.model.Constraint;
+import hu.bme.mit.gamma.genmodel.model.ContractAutomatonType;
 import hu.bme.mit.gamma.genmodel.model.Coverage;
 import hu.bme.mit.gamma.genmodel.model.EventMapping;
 import hu.bme.mit.gamma.genmodel.model.EventPriorityTransformation;
@@ -71,6 +72,9 @@ import hu.bme.mit.gamma.genmodel.model.Verification;
 import hu.bme.mit.gamma.genmodel.model.XstsReference;
 import hu.bme.mit.gamma.genmodel.model.YakinduCompilation;
 import hu.bme.mit.gamma.property.model.PropertyPackage;
+import hu.bme.mit.gamma.scenario.model.ModalInteractionSet;
+import hu.bme.mit.gamma.scenario.model.NegatedModalInteraction;
+import hu.bme.mit.gamma.scenario.model.Signal;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponent;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousCompositeComponent;
@@ -923,5 +927,22 @@ public class GenmodelValidator extends ExpressionModelValidator {
 		
 		return validationResultMessages;
 	}
-	
+
+	public Collection<ValidationResultMessage> checkNegatedInteractionInTestAutomatonGeneration(
+			StatechartContractGeneration statechartGeneration) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		if (statechartGeneration.getAutomatonType() == ContractAutomatonType.MONITOR) {
+			return validationResultMessages;
+		}
+		List<NegatedModalInteraction> negatedModelinteractions = ecoreUtil
+				.getAllContentsOfType(statechartGeneration.getScenario(), NegatedModalInteraction.class);
+		if (negatedModelinteractions.size() > 0) {
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING,
+					"The referenced scenario contains negated interactions, which will not take effect in the generated tests",
+					new ReferenceInfo(GenmodelModelPackage.Literals.STATECHART_CONTRACT_GENERATION__SCENARIO,
+							statechartGeneration)));
+		}
+		return validationResultMessages;
+	}
+
 }

@@ -45,7 +45,7 @@ class MonitorStatechartGenerator extends AbstractContractStatechartGeneration {
 	protected State componentViolation = null
 	protected State environmentViolation = null
 	protected final List<Pair<StateNode, StateNode>> copyOutgoingTransitionsForOptional = newLinkedList
-	
+
 	protected final boolean restartOnColdViolation
 
 	protected final boolean useColdViolationForEnvironmentViolation = true
@@ -62,7 +62,7 @@ class MonitorStatechartGenerator extends AbstractContractStatechartGeneration {
 		} else {
 			statechart = createAsynchronousStatechartDefinition
 		}
-		intializeStatechart
+		intializeStatechart()
 		for (modalInteraction : scenario.chart.fragment.interactions) {
 			if (!skipNextInteraction) {
 				process(modalInteraction)
@@ -70,23 +70,29 @@ class MonitorStatechartGenerator extends AbstractContractStatechartGeneration {
 				skipNextInteraction = false;
 			}
 		}
-		firstRegion.stateNodes.get(firstRegion.stateNodes.size - 1).name =
-				scenarioStatechartUtil.accepting
+		firstRegion.stateNodes.get(firstRegion.stateNodes.size - 1).name = scenarioStatechartUtil.accepting
 		fixReplacedStates
 		copyTransitionsForOpt
 		addScenarioContractAnnotation(NotDefinedEventMode.PERMISSIVE)
-
+		resetVariablesOnViolation()
 		val oldPorts = component.allPorts.filter[!it.inputEvents.empty]
 		for (port : statechart.allPorts) {
-			val oldPort = oldPorts.findFirst[it.name == port.name ||
-					it.turnedOutPortName == port.name]
+			val oldPort = oldPorts.findFirst[it.name == port.name || it.turnedOutPortName == port.name]
 			ecoreUtil.change(port, oldPort, statechart)
 		}
 
 		return statechart
 	}
 
-	def fixReplacedStates() {
+	protected def void resetVariablesOnViolation() {
+		val effects = newArrayList
+		for (variable : statechart.variableDeclarations) {
+			effects += actionUtil.createAssignment(variable, exprUtil.getInitialValue(variable))
+		}
+		coldViolation.entryActions += effects
+	}
+
+	protected def void fixReplacedStates() {
 		for (entry : replacedStateWithValue.entrySet) {
 			for (transition : statechart.transitions.filter[it.sourceState == entry.key]) {
 				transition.sourceState = entry.value
@@ -97,14 +103,13 @@ class MonitorStatechartGenerator extends AbstractContractStatechartGeneration {
 		}
 	}
 
-	def void copyTransitionsForOpt() {
+	protected def void copyTransitionsForOpt() {
 		for (pair : copyOutgoingTransitionsForOptional) {
 			val compulsory = replacedStateWithValue.getOrDefault(pair.key, pair.key)
 			val optional = pair.value
 			for (transition : compulsory.outgoingTransitions) {
 				val targetState = transition.targetState
-				if (targetState != optional &&
-						!targetState.reachableStates.contains(optional)) {
+				if (targetState != optional && !targetState.reachableStates.contains(optional)) {
 					val transitionCopy = transition.clone
 					transitionCopy.sourceState = optional
 					statechart.transitions += transitionCopy
@@ -116,7 +121,7 @@ class MonitorStatechartGenerator extends AbstractContractStatechartGeneration {
 		}
 	}
 
-	def protected intializeStatechart() {
+	def protected void intializeStatechart() {
 		addPorts(component)
 		statechart.transitionPriority = TransitionPriority.VALUE_BASED
 		statechart.name = scenario.name
@@ -128,8 +133,13 @@ class MonitorStatechartGenerator extends AbstractContractStatechartGeneration {
 		initial.name = scenarioStatechartUtil.initial
 		firstRegion.stateNodes += initial
 
-		val firstState = createState
-		firstState.name = firstStateName
+		var State firstState = null
+		if (scenario.initialblock === null) {
+			firstState = createNewState
+		} else {
+			firstState = createState
+			firstState.name = firstStateName
+		}
 		firstRegion.stateNodes += firstState
 		previousState = firstState
 
@@ -198,18 +208,17 @@ class MonitorStatechartGenerator extends AbstractContractStatechartGeneration {
 		} else {
 			useHotViolationForComponentViolation ? componentViolation : coldViolation
 		}
-		val violationForOtherDirection = statechartUtil
-				.createTransition(previousState, otherDirViolationState)
+		val violationForOtherDirection = statechartUtil.createTransition(previousState, otherDirViolationState)
 		violationForOtherDirection.priority = BigInteger.ZERO
 		val triggersWithReverseDir = getAllTriggersForDirection(statechart, !isSend)
-		violationForOtherDirection.trigger = getBinaryTriggerFromTriggersIfPossible(
-			triggersWithReverseDir, BinaryType.OR)
+		violationForOtherDirection.trigger = getBinaryTriggerFromTriggersIfPossible(triggersWithReverseDir,
+			BinaryType.OR)
 
 		val triggersWithCorrectDir = getAllTriggersForDirection(statechart, isSend)
 		val binary = createBinaryTrigger
 		binary.leftOperand = transition.trigger
-		binary.rightOperand = getBinaryTriggerFromTriggersIfPossible(
-				triggersWithCorrectDir, BinaryType.OR).negateEventTrigger
+		binary.rightOperand = getBinaryTriggerFromTriggersIfPossible(triggersWithCorrectDir, BinaryType.OR).
+			negateEventTrigger
 		transition.trigger = binary
 		binary.type = BinaryType.AND
 
@@ -249,8 +258,7 @@ class MonitorStatechartGenerator extends AbstractContractStatechartGeneration {
 	}
 
 	def dispatch void process(OptionalCombinedFragment optionalCombinedFragment) {
-		val containingFragment = ecoreUtil.getContainerOfType(
-				optionalCombinedFragment, InteractionFragment)
+		val containingFragment = ecoreUtil.getContainerOfType(optionalCombinedFragment, InteractionFragment)
 		val index = containingFragment.interactions.indexOf(optionalCombinedFragment)
 		val prevprev = previousState
 		val firstFragment = optionalCombinedFragment.fragments.get(0)
@@ -277,7 +285,7 @@ class MonitorStatechartGenerator extends AbstractContractStatechartGeneration {
 
 	def processModalInteractionSet(ModalInteractionSet set, boolean isNegated) {
 		val state = createNewState
-		if (restartOnColdViolation && set.eContainer == scenario.chart.fragment &&
+		if (scenario.initialblock !== null && restartOnColdViolation && set.eContainer == scenario.chart.fragment &&
 			scenario.chart.fragment.interactions.indexOf(set) == 0) {
 			coldViolation = state
 		}
@@ -312,8 +320,7 @@ class MonitorStatechartGenerator extends AbstractContractStatechartGeneration {
 		violationTransition.priority = BigInteger.valueOf(1)
 		handleArguments(set.modalInteractions, forwardTransition)
 		val triggersWithCorrectDir = getAllTriggersForDirection(statechart, isSend)
-		violationTransition.trigger = getBinaryTriggerFromTriggersIfPossible(
-				triggersWithCorrectDir, BinaryType.OR)
+		violationTransition.trigger = getBinaryTriggerFromTriggersIfPossible(triggersWithCorrectDir, BinaryType.OR)
 
 		val delay = set.modalInteractions.filter(Delay).head
 		if (delay !== null && !(delay.maximum instanceof InfinityExpression)) {
@@ -343,12 +350,11 @@ class MonitorStatechartGenerator extends AbstractContractStatechartGeneration {
 		} else {
 			useHotViolationForComponentViolation ? componentViolation : coldViolation
 		}
-		val violationForOtherDirection = statechartUtil
-				.createTransition(previousState, otherDirViolationState)
+		val violationForOtherDirection = statechartUtil.createTransition(previousState, otherDirViolationState)
 		violationForOtherDirection.priority = BigInteger.ZERO
 		val triggersWithReverseDir = getAllTriggersForDirection(statechart, !isSend)
-		violationForOtherDirection.trigger = getBinaryTriggerFromTriggersIfPossible(
-				triggersWithReverseDir, BinaryType.OR)
+		violationForOtherDirection.trigger = getBinaryTriggerFromTriggersIfPossible(triggersWithReverseDir,
+			BinaryType.OR)
 
 		val signals = set.modalInteractions.filter(Signal).toList
 		val otherTriggersWithCorrectDir = <Trigger>newArrayList
@@ -357,9 +363,9 @@ class MonitorStatechartGenerator extends AbstractContractStatechartGeneration {
 				val eventRef = trigger.eventReference
 				if (eventRef instanceof PortEventReference) {
 					if (!signals.exists [
-						(it.port.name == eventRef.port.name ||
-							it.port.turnedOutPortName == eventRef.port.name) &&
-								it.event.name == eventRef.event.name]) {
+						(it.port.name == eventRef.port.name || it.port.turnedOutPortName == eventRef.port.name) &&
+							it.event.name == eventRef.event.name
+					]) {
 						otherTriggersWithCorrectDir += trigger
 					}
 				}
@@ -367,8 +373,8 @@ class MonitorStatechartGenerator extends AbstractContractStatechartGeneration {
 		}
 		val binary = createBinaryTrigger
 		binary.leftOperand = forwardTransition.trigger
-		binary.rightOperand = getBinaryTriggerFromTriggersIfPossible(
-				otherTriggersWithCorrectDir, BinaryType.OR).negateEventTrigger
+		binary.rightOperand = getBinaryTriggerFromTriggersIfPossible(otherTriggersWithCorrectDir, BinaryType.OR).
+			negateEventTrigger
 		forwardTransition.trigger = binary
 		binary.type = BinaryType.AND
 		previousState = state
