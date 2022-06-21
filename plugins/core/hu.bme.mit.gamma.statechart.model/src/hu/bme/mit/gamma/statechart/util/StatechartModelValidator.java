@@ -32,6 +32,7 @@ import hu.bme.mit.gamma.action.model.ActionModelPackage;
 import hu.bme.mit.gamma.action.model.AssignmentStatement;
 import hu.bme.mit.gamma.action.model.Branch;
 import hu.bme.mit.gamma.action.model.ExpressionStatement;
+import hu.bme.mit.gamma.action.model.ProcedureDeclaration;
 import hu.bme.mit.gamma.action.util.ActionModelValidator;
 import hu.bme.mit.gamma.expression.model.ArgumentedElement;
 import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition;
@@ -219,8 +220,14 @@ public class StatechartModelValidator extends ActionModelValidator {
 	
 	public Collection<ValidationResultMessage> checkArgumentTypes(ArgumentedElement element) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		List<ParameterDeclaration> parameterDeclarations = StatechartModelDerivedFeatures.getParameterDeclarations(element);
-		validationResultMessages.addAll(super.checkArgumentTypes(element, parameterDeclarations));
+		try {
+			List<ParameterDeclaration> parameterDeclarations =
+					StatechartModelDerivedFeatures.getParameterDeclarations(element);
+				validationResultMessages.addAll(
+					super.checkArgumentTypes(element, parameterDeclarations));
+		} catch (IllegalArgumentException e) {
+			// Invalid model
+		}
 		return validationResultMessages;
 	}
 	
@@ -307,11 +314,11 @@ public class StatechartModelValidator extends ActionModelValidator {
 					new ReferenceInfo(ContractModelPackage.Literals.STATE_CONTRACT_ANNOTATION__CONTRACT_STATECHART)));
 		}
 		
-		if (annotation.isSetToSelf() && annotation.isHasHistory()) {
-			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-				"A state contract is either set to self or has histroy", 
-					new ReferenceInfo(ContractModelPackage.Literals.STATE_CONTRACT_ANNOTATION__CONTRACT_STATECHART)));
-		}
+//		if (annotation.isSetToSelf() && annotation.isHasHistory()) {
+//			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+//				"A state contract is either set to self or has histroy", 
+//					new ReferenceInfo(ContractModelPackage.Literals.STATE_CONTRACT_ANNOTATION__CONTRACT_STATECHART)));
+//		}
 		
 		StatechartDefinition contractStatechart = annotation.getContractStatechart();
 		
@@ -328,9 +335,9 @@ public class StatechartModelValidator extends ActionModelValidator {
 			}
 		}
 		
-		Set<Trigger> adaptiveStateTriggers = StatechartModelDerivedFeatures.getAllSimpleTriggers(parentState);
+		Set<SimpleTrigger> adaptiveStateTriggers = StatechartModelDerivedFeatures.getAllSimpleTriggers(parentState);
 		List<Trigger> unwrappedAdaptiveTriggers = statechartUtil.unwrapAnyTriggers(adaptiveStateTriggers);
-		Set<Trigger> contractTriggers = StatechartModelDerivedFeatures.getAllSimpleTriggers(contractStatechart);
+		Set<SimpleTrigger> contractTriggers = StatechartModelDerivedFeatures.getAllSimpleTriggers(contractStatechart);
 		List<Trigger> unwrappedContractTriggers = statechartUtil.unwrapAnyTriggers(contractTriggers);
 		
 		for (Trigger trigger : unwrappedContractTriggers) {
@@ -745,6 +752,16 @@ public class StatechartModelValidator extends ActionModelValidator {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 					"This guard is not a boolean expression",
 						new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__GUARD)));
+				return validationResultMessages;
+			}
+			for (DirectReferenceExpression reference :
+					ecoreUtil.getAllContentsOfType(guard, DirectReferenceExpression.class)) {
+				Declaration declaration = reference.getDeclaration();
+				if (declaration instanceof ProcedureDeclaration) {
+					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+						"Currently, procedure declarations cannot be referenced from guards", 
+								new ReferenceInfo(reference)));
+				}
 			}
 		}
 		return validationResultMessages;

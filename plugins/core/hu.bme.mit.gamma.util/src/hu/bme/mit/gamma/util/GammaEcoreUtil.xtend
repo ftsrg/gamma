@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -14,6 +14,7 @@ import java.io.File
 import java.util.Collection
 import java.util.Collections
 import java.util.Comparator
+import java.util.Iterator
 import java.util.List
 import java.util.logging.Level
 import java.util.logging.Logger
@@ -135,19 +136,62 @@ class GammaEcoreUtil {
 	
 	def void changeAndDelete(EObject newObject, EObject oldObject, EObject container) {
 		change(newObject, oldObject, container)
-		oldObject.delete // Remove does not delete other references
+		oldObject.delete // 'Remove' does not delete other references
+	}
+	
+	def void changeSelfAndContents(EObject newObject, EObject oldObject, Iterable<? extends EObject> containers) {
+		for (container : containers) {
+			newObject.changeSelfAndContents(oldObject, container)
+		}
+	}
+	
+	def void changeSelfAndContents(EObject newObject, EObject oldObject, EObject container) {
+		change(newObject, oldObject, container)
+		val lhsContents = newObject.eContents // Single level
+		val rhsContents = oldObject.eContents // Single level
+		lhsContents.change(rhsContents, container)
+	}
+	
+	def void changeAll(EObject newObject, EObject oldObject, Iterable<? extends EObject> containers) {
+		for (container : containers) {
+			newObject.changeAll(oldObject, container)
+		}
 	}
 	
 	def void changeAll(EObject newObject, EObject oldObject, EObject container) {
 		change(newObject, oldObject, container)
-		val lhsContents = newObject.eAllContents
-		val rhsContents = oldObject.eAllContents
-		while (lhsContents.hasNext()) {
-			val lhs = lhsContents.next
-			val rhs = rhsContents.next
+		val lhsContents = newObject.eAllContents // All
+		val rhsContents = oldObject.eAllContents // All
+		lhsContents.change(rhsContents, container)
+	}
+	
+	def change(Iterable<? extends EObject> newObjects,
+			Iterable<? extends EObject> oldObjects, Iterable<? extends EObject> containers) {
+		for (container : containers) {
+			newObjects.iterator.change(oldObjects.iterator, container)
+		}
+	}
+	
+	def change(Iterable<? extends EObject> newObjects,
+			Iterable<? extends EObject> oldObjects, EObject container) {
+		newObjects.iterator.change(oldObjects.iterator, container)
+	}
+	
+	def change(Iterator<? extends EObject> newObjects,
+			Iterator<? extends EObject> oldObjects, Iterable<? extends EObject> containers) {
+		for (container : containers) {
+			newObjects.change(oldObjects, container)
+		}
+	}
+	
+	def change(Iterator<? extends EObject> newObjects,
+			Iterator<? extends EObject> oldObjects, EObject container) {
+		while (newObjects.hasNext) {
+			val lhs = newObjects.next
+			val rhs = oldObjects.next
 			change(lhs, rhs, container)
 		}
-		checkState(!rhsContents.hasNext)
+		checkState(!oldObjects.hasNext)
 	}
 	
 	def void changeAllAndDelete(EObject newObject, EObject oldObject, EObject container) {

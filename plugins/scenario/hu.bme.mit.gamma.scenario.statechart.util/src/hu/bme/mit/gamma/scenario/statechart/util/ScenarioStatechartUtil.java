@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020-2021 Contributors to the Gamma project
+ * Copyright (c) 2020-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -96,8 +96,8 @@ public class ScenarioStatechartUtil {
 		return result;
 	}
 
-	public boolean isTurnedOut(Port p) {
-		return p.getName().endsWith(reversed);
+	public boolean isTurnedOut(Port port) {
+		return port.getName().endsWith(reversed);
 	}
 
 	public String getTurnedOutPortName(Port port) {
@@ -132,7 +132,8 @@ public class ScenarioStatechartUtil {
 	}
 
 	public int getLoopDepth(LoopCombinedFragment loop) {
-		return ecoreUtil.getAllContainersOfType(loop, LoopCombinedFragment.class).size();
+		return ecoreUtil.getAllContainersOfType(loop, LoopCombinedFragment.class)
+				.size();
 	}
 
 	public String getLoopvariableNameForDepth(int depth) {

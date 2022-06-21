@@ -14,7 +14,7 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="variableBindings" upperBound="-1"
         eType="#//VariableBinding" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="history" lowerBound="1"
-        eType="#//History"/>
+        eType="#//History" defaultValueLiteral="NO_HISTORY"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="VariableBinding">
     <eStructuralFeatures xsi:type="ecore:EReference" name="instanceVariableReference"
