@@ -154,6 +154,8 @@ class HierarchicalTransitionMerger extends AbstractTransitionMerger {
 		val lowlevelStates = lowlevelRegion.states
 		val arePrioritiesUnique = lowlevelStates.forall[
 				it.outgoingTransitions.arePrioritiesUnique]
+		val arePrioritiesSame = lowlevelStates.forall[
+				it.outgoingTransitions.arePrioritiesSame]
 				
 		// Simple outgoing transitions
 		for (lowlevelState : lowlevelStates) {
@@ -198,9 +200,22 @@ class HierarchicalTransitionMerger extends AbstractTransitionMerger {
 			return xStsActions.createIfAction
 			// The last else branch must be extended by the caller
 		}
-		else {
+		else if (arePrioritiesSame) {
 			return xStsActions.createChoiceAction
 			// The default branch must be extended by the caller
+		}
+		else {
+			// Not completely unique but there are different priorities
+			val exclusiveChoices = newArrayList
+			for (priority : xStsTransitions.keySet) {
+				val xStsSamePriorityActions = xStsTransitions.get(priority)
+						.map[it.action]
+				val choiceAction = xStsSamePriorityActions.createChoiceAction
+				val precondition = choiceAction.precondition
+				exclusiveChoices += precondition.createChoiceSequentialAction(choiceAction)
+			}
+			return exclusiveChoices.createIfAction
+			// The last else branch must be extended by the caller
 		}
 	}
 	
