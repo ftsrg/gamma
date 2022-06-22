@@ -60,6 +60,7 @@ import java.util.Map
 import org.eclipse.emf.ecore.EObject
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
+import hu.bme.mit.gamma.action.util.ActionUtil
 
 abstract class AbstractContractStatechartGeneration {
 
@@ -74,6 +75,7 @@ abstract class AbstractContractStatechartGeneration {
 	protected val extension ExpressionUtil exprUtil = ExpressionUtil.INSTANCE
 	protected val extension ScenarioStatechartUtil scenarioStatechartUtil = ScenarioStatechartUtil.INSTANCE
 	protected val StatechartUtil statechartUtil = StatechartUtil.INSTANCE
+	protected val ActionUtil actionUtil = ActionUtil.INSTANCE
 
 	protected val JavaUtil javaUtil = JavaUtil.INSTANCE
 
@@ -545,12 +547,13 @@ abstract class AbstractContractStatechartGeneration {
 			forwardTransition.trigger = negateEventTrigger(trigger)
 		} else {
 			forwardTransition.trigger = trigger
-			for (modalInteraction : nonCheckOrAssignmentInteractitons) {
-				val effect = getRaiseEventAction(modalInteraction, !reversed)
-				if (effect !== null) {
-					forwardTransition.effects += effect
-				}
-			}
+			//Uncomment these lines to allow effects on the reversed ports
+//			for (modalInteraction : nonCheckOrAssignmentInteractitons) {
+//				val effect = getRaiseEventAction(modalInteraction, !reversed)
+//				if (effect !== null) {
+//					forwardTransition.effects += effect
+//				}
+//			}
 		}
 		addChecksToTransition(checks, forwardTransition)
 		addAssignmentsToTransition(assignments, forwardTransition)
