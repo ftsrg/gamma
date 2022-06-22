@@ -72,7 +72,7 @@ class MonitorStatechartGenerator extends AbstractContractStatechartGeneration {
 		}
 		firstRegion.stateNodes.get(firstRegion.stateNodes.size - 1).name = scenarioStatechartUtil.accepting
 		fixReplacedStates
-		copyTransitionsForOpt
+		copyTransitionsForOptional
 		addScenarioContractAnnotation(NotDefinedEventMode.PERMISSIVE)
 		resetVariablesOnViolation()
 		val oldPorts = component.allPorts.filter[!it.inputEvents.empty]
@@ -87,7 +87,8 @@ class MonitorStatechartGenerator extends AbstractContractStatechartGeneration {
 	protected def void resetVariablesOnViolation() {
 		val effects = newArrayList
 		for (variable : statechart.variableDeclarations) {
-			effects += actionUtil.createAssignment(variable, exprUtil.getInitialValue(variable))
+			effects += statechartUtil.createAssignment(
+					variable, exprUtil.getInitialValue(variable))
 		}
 		coldViolation.entryActions += effects
 	}
@@ -103,7 +104,7 @@ class MonitorStatechartGenerator extends AbstractContractStatechartGeneration {
 		}
 	}
 
-	protected def void copyTransitionsForOpt() {
+	protected def void copyTransitionsForOptional() {
 		for (pair : copyOutgoingTransitionsForOptional) {
 			val compulsory = replacedStateWithValue.getOrDefault(pair.key, pair.key)
 			val optional = pair.value

@@ -60,7 +60,6 @@ import java.util.Map
 import org.eclipse.emf.ecore.EObject
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
-import hu.bme.mit.gamma.action.util.ActionUtil
 
 abstract class AbstractContractStatechartGeneration {
 
@@ -75,7 +74,6 @@ abstract class AbstractContractStatechartGeneration {
 	protected val extension ExpressionUtil exprUtil = ExpressionUtil.INSTANCE
 	protected val extension ScenarioStatechartUtil scenarioStatechartUtil = ScenarioStatechartUtil.INSTANCE
 	protected val StatechartUtil statechartUtil = StatechartUtil.INSTANCE
-	protected val ActionUtil actionUtil = ActionUtil.INSTANCE
 
 	protected val JavaUtil javaUtil = JavaUtil.INSTANCE
 
