@@ -25,6 +25,7 @@ import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -137,6 +138,8 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 					javaUtil.filterIntoList(annotations, StateContractAnnotation.class);
 			List<MissionPhaseStateAnnotation> missionPhaseStateAnnotations =
 					javaUtil.filterIntoList(annotations, MissionPhaseStateAnnotation.class);
+			Set<MissionPhaseStateAnnotation> contextlessMissionPhaseStateAnnotations =
+					new LinkedHashSet<MissionPhaseStateAnnotation>();
 			
 			for (StateContractAnnotation stateContractAnnotation : stateContractAnnotations) {
 				// Java util - add contract - list
@@ -159,9 +162,9 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 						contextlessBehaviors.add(behavior); // Maybe cloning to prevent overwriting?
 						
 						// No history or context-dependency: contract - behavior equivalence can be analyzed
-						// independently of the context -> removing from adaptive statechart
-						ecoreUtil.remove(behavior);
-						missionPhaseStateAnnotations.remove(behavior);
+						// independently of the context
+//						ecoreUtil.remove(behavior); // Cannot be removed as other contracts might still reference it
+						contextlessMissionPhaseStateAnnotations.add(behavior);
 					}
 					else {
 						hasContextDependency = true;
@@ -173,8 +176,8 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 				}
 			}
 			
-			// If there is no MissionPhaseStateAnnotation, the "non-self" state contracts can be removed
-			if (missionPhaseStateAnnotations.isEmpty()) {
+			// If every MissionPhaseStateAnnotation is contextless, the "non-self" state contracts can be removed
+			if (contextlessMissionPhaseStateAnnotations.containsAll(missionPhaseStateAnnotations)) {
 				for (StateContractAnnotation stateContractAnnotation : stateContractAnnotations) {
 					if (stateContractAnnotation.getLinkType() != LinkType.TO_CONTROLLER) {
 						ecoreUtil.remove(stateContractAnnotation);

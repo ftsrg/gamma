@@ -553,7 +553,8 @@ public class StatechartUtil extends ActionUtil {
 	
 	public SynchronousComponentInstance instantiateSynchronousComponent(SynchronousComponent component) {
 		SynchronousComponentInstance instance = compositeFactory.createSynchronousComponentInstance();
-		instance.setName(getWrapperInstanceName(component));
+		instance.setName(
+				getWrapperInstanceName(component));
 		instance.setType(component);
 		return instance;
 	}
