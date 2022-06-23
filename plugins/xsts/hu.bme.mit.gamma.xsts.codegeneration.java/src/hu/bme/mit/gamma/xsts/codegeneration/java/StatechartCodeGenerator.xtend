@@ -49,8 +49,8 @@ class StatechartCodeGenerator {
 	protected def createStatechartClass() '''
 		package «STATECHART_PACKAGE_NAME»;
 		
-		«FOR _package : gammaStatechart.containingPackage.imports.toSet»
-			import «_package.getPackageString(BASE_PACKAGE_NAME)».*; ««« Needed for the type declarations 
+		«FOR _package : gammaStatechart.containingPackage.importsWithComponentsOrInterfacesOrTypes.toSet»
+			import «_package.getPackageString(BASE_PACKAGE_NAME)».*;
 		«ENDFOR»
 		
 		public class «CLASS_NAME» {

@@ -14,7 +14,7 @@ initial outputs [
 ]
 [
 	{
-		hot sends priorityOutput.displayNone
+		negate hot sends priorityOutput.displayNone
 		hot sends secondaryOutput.displayNone
 		hot delay (500 .. 501)
 		check 0 < variable1 and variable1 < 10

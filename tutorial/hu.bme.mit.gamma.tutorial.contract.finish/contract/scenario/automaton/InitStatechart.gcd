@@ -23,21 +23,37 @@ statechart Init [
 ] {
 	region ^region {
 		initial Initial
-		state firstState
+		state initialState
 		state hotComponentViolation
 		state state0
 		@SpecialStateAnnotation accepting
 		state AcceptingState
 	}
-	transition from Initial to firstState
-	transition (3) from firstState to state0 when priorityOutputReversed.displayRed &&
-		secondaryOutputReversed.displayRed /
-	raise priorityOutput.displayRed;
-	raise secondaryOutput.displayRed;
-	transition (1) from firstState to firstState when priorityOutputReversed.any ||
-		secondaryOutputReversed.any
-	transition (3) from state0 to AcceptingState when priorityOutputReversed.displayGreen /
-	raise priorityOutput.displayGreen;
-	transition (1) from state0 to hotComponentViolation when priorityOutputReversed.any ||
-		secondaryOutputReversed.any
+	transition from Initial to initialState
+	transition (3) from initialState to state0 when (priorityOutputReversed.displayRed &&
+		secondaryOutputReversed.displayRed) && !(priorityOutputReversed.displayYellow ||
+		priorityOutputReversed.displayYellow2 || priorityOutputReversed.displayGreen ||
+		priorityOutputReversed.displayNone || secondaryOutputReversed.displayYellow ||
+		secondaryOutputReversed.displayYellow2 || secondaryOutputReversed.displayGreen ||
+		secondaryOutputReversed.displayNone)
+	transition (1) from initialState to state0 when priorityOutputReversed.displayRed ||
+		priorityOutputReversed.displayYellow || priorityOutputReversed.displayYellow2 ||
+		priorityOutputReversed.displayGreen || priorityOutputReversed.displayNone ||
+		secondaryOutputReversed.displayRed || secondaryOutputReversed.displayYellow ||
+		secondaryOutputReversed.displayYellow2 || secondaryOutputReversed.displayGreen ||
+		secondaryOutputReversed.displayNone
+	transition from initialState to state0 when police.police || police.police2
+	transition (3) from state0 to AcceptingState when priorityOutputReversed.displayGreen &&
+		!(priorityOutputReversed.displayRed || priorityOutputReversed.displayYellow ||
+		priorityOutputReversed.displayYellow2 || priorityOutputReversed.displayNone ||
+		secondaryOutputReversed.displayRed || secondaryOutputReversed.displayYellow ||
+		secondaryOutputReversed.displayYellow2 || secondaryOutputReversed.displayGreen ||
+		secondaryOutputReversed.displayNone)
+	transition (1) from state0 to hotComponentViolation when priorityOutputReversed.displayRed ||
+		priorityOutputReversed.displayYellow || priorityOutputReversed.displayYellow2 ||
+		priorityOutputReversed.displayGreen || priorityOutputReversed.displayNone ||
+		secondaryOutputReversed.displayRed || secondaryOutputReversed.displayYellow ||
+		secondaryOutputReversed.displayYellow2 || secondaryOutputReversed.displayGreen ||
+		secondaryOutputReversed.displayNone
+	transition from state0 to state0 when police.police || police.police2
 }

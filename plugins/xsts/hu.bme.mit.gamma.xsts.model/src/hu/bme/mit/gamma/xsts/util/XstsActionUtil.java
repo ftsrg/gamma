@@ -632,6 +632,21 @@ public class XstsActionUtil extends ExpressionUtil {
 	}
 	
 	public NonDeterministicAction createChoiceActionWithExclusiveBranches(
+			List<? extends Action> actions) {
+		NonDeterministicAction choiceAction = xStsFactory.createNonDeterministicAction();
+		for (int i = 0; i < actions.size(); i++) {
+			Action action = actions.get(i);
+			if (i == 0) {
+				choiceAction.getActions().add(action);
+			}
+			else {
+				extendChoiceWithDefaultBranch(choiceAction, action);
+			}
+		}
+		return choiceAction;
+	}
+	
+	public NonDeterministicAction createChoiceActionWithExclusiveBranches(
 			List<Expression> conditions, List<Action> actions) {
 		int conditionsSize = conditions.size();
 		if (conditionsSize != actions.size() && conditionsSize + 1 != actions.size()) {

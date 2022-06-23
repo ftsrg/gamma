@@ -25,6 +25,7 @@ import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -137,6 +138,8 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 					javaUtil.filterIntoList(annotations, StateContractAnnotation.class);
 			List<MissionPhaseStateAnnotation> missionPhaseStateAnnotations =
 					javaUtil.filterIntoList(annotations, MissionPhaseStateAnnotation.class);
+			Set<MissionPhaseStateAnnotation> contextlessMissionPhaseStateAnnotations =
+					new LinkedHashSet<MissionPhaseStateAnnotation>();
 			
 			for (StateContractAnnotation stateContractAnnotation : stateContractAnnotations) {
 				// Java util - add contract - list
@@ -159,9 +162,9 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 						contextlessBehaviors.add(behavior); // Maybe cloning to prevent overwriting?
 						
 						// No history or context-dependency: contract - behavior equivalence can be analyzed
-						// independently of the context -> removing from adaptive statechart
-						ecoreUtil.remove(behavior);
-						missionPhaseStateAnnotations.remove(behavior);
+						// independently of the context
+//						ecoreUtil.remove(behavior); // Cannot be removed as other contracts might still reference it
+						contextlessMissionPhaseStateAnnotations.add(behavior);
 					}
 					else {
 						hasContextDependency = true;
@@ -173,8 +176,8 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 				}
 			}
 			
-			// If there is no MissionPhaseStateAnnotation, the "non-self" state contracts can be removed
-			if (missionPhaseStateAnnotations.isEmpty()) {
+			// If every MissionPhaseStateAnnotation is contextless, the "non-self" state contracts can be removed
+			if (contextlessMissionPhaseStateAnnotations.containsAll(missionPhaseStateAnnotations)) {
 				for (StateContractAnnotation stateContractAnnotation : stateContractAnnotations) {
 					if (stateContractAnnotation.getLinkType() != LinkType.TO_CONTROLLER) {
 						ecoreUtil.remove(stateContractAnnotation);
@@ -184,11 +187,13 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 			
 		}
 		
+		// T-3 models
 		// Processing historyless associations
 		List<Entry<String, PropertyPackage>> historylessModelFileUris =
 				new ArrayList<Entry<String, PropertyPackage>>();
 
 		for (StateContractAnnotation contractAnnotation : contextlessContractBehaviors.keySet()) {
+			LinkType linkType = contractAnnotation.getLinkType();
 			StatechartDefinition contract = contractAnnotation.getContractStatechart();
 			List<Expression> contractArguments = contractAnnotation.getArguments();
 			
@@ -213,7 +218,10 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 				List<PortBinding> portBindings = javaUtil.flattenIntoList(
 						clonedBehaviors.stream().map(it -> it.getPortBindings())
 						.collect(Collectors.toList()));
-				Collection<Port> systemPorts = adaptiveStatechart.getPorts(); // TODO change to component ports
+				Collection<Port> systemPorts = (linkType == LinkType.TO_COMPONENT) ?
+						portBindings.stream().map(it -> it.getCompositeSystemPort())
+								.collect(Collectors.toSet()) : // T-3 restricted interface - note it is not general
+						adaptiveStatechart.getPorts(); // T-3 default interface
 				for (Port systemPort : systemPorts) {
 					Port clonedSystemPort = ecoreUtil.clone(systemPort);
 					composite.getPorts().add(clonedSystemPort);
@@ -311,7 +319,6 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 				// Change monitor interfaces
 				StatechartDefinition insertableContract = ecoreUtil.clone(contract);
 				Map<Interface, Interface> contractMappedInterfaces = new HashMap<Interface, Interface>();
-				// TODO there is a problem with inout/internal events
 				for (Port contractPort : StatechartModelDerivedFeatures.getAllPorts(insertableContract)) {
 					Interface contractInterface = StatechartModelDerivedFeatures.getInterface(contractPort);
 					if (mappedInterfaces.containsKey(contractInterface)) {
@@ -339,6 +346,7 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 				}
 				//
 				
+				// T-1 models
 				// Adding behavior
 				for (MissionPhaseStateAnnotation behavior : clonedBehaviors) {
 					ComponentInstance componentInstance = behavior.getComponent();
@@ -372,6 +380,7 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 		List<Entry<String, PropertyPackage>> historyModelFileUris =
 				new ArrayList<Entry<String, PropertyPackage>>();
 		
+		// T-2 models
 		// Processing original adaptive statechart if necessary
 		// TODO extract this whole functionality based on state-component links
 		// to support component adaptivity; make sure that monitor insertion is generalized
