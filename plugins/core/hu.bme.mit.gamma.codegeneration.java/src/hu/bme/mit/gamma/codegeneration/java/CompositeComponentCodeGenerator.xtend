@@ -50,6 +50,7 @@ class CompositeComponentCodeGenerator {
 		
 		import «PACKAGE_NAME».*;
 		«FOR packageName : component.containingPackage.componentImports
+				.filter[it.containsComponentsOrInterfacesOrTypes]
 				.map['''«it.getPackageString(PACKAGE_NAME)».*''']
 				.toSet /* For type declarations and same-name packages*/»
 			import «packageName»;

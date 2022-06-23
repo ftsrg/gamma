@@ -458,6 +458,24 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return imports;
 	}
 	
+	public static Set<Package> getImportsWithComponentsOrInterfacesOrTypes(Package gammaPackage) {
+		Set<Package> imports = new LinkedHashSet<Package>();
+		
+		for (Package importedPackage : gammaPackage.getImports()) {
+			if (containsComponentsOrInterfacesOrTypes(importedPackage)) {
+				imports.add(importedPackage);
+			}
+		}
+		
+		return imports;
+	}
+	
+	public static boolean containsComponentsOrInterfacesOrTypes(Package gammaPackage) {
+		return !gammaPackage.getInterfaces().isEmpty() ||
+				!gammaPackage.getComponents().isEmpty() ||
+				!gammaPackage.getTypeDeclarations().isEmpty();
+	}
+	
 	public static Component getFirstComponent(Package _package) {
 		return _package.getComponents().get(0);
 	}

@@ -52,7 +52,7 @@ class StatechartWrapperCodeGenerator {
 		import java.util.LinkedList;
 		import «BASE_PACKAGE_NAME».*;
 		import «BASE_PACKAGE_NAME».«GAMMA_TIMER_INTERFACE».*;
-		«FOR _package : gammaStatechart.containingPackage.imports.toSet»
+		«FOR _package : gammaStatechart.containingPackage.importsWithComponentsOrInterfacesOrTypes.toSet»
 			import «_package.getPackageString(BASE_PACKAGE_NAME)».*;
 		«ENDFOR»
 		import «STATECHART_PACKAGE_NAME».«gammaStatechart.wrappedStatemachineClassName».*;
