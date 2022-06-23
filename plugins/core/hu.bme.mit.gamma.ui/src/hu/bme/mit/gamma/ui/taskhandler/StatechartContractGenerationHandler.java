@@ -13,6 +13,7 @@ package hu.bme.mit.gamma.ui.taskhandler;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
 
@@ -31,6 +32,7 @@ import hu.bme.mit.gamma.scenario.statechart.generator.TestGeneratorStatechartGen
 import hu.bme.mit.gamma.scenario.statechart.generator.serializer.StatechartSerializer;
 import hu.bme.mit.gamma.scenario.statechart.util.transformation.AutomatonDeterminizator;
 import hu.bme.mit.gamma.statechart.contract.ContractModelFactory;
+import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
@@ -87,7 +89,8 @@ public class StatechartContractGenerationHandler extends TaskHandler {
 		
 		Package packageOfComponent = ecoreUtil.getContainerOfType(component, Package.class);
 		StatechartSerializer statechartSerializer = new StatechartSerializer(file);
-		statechartSerializer.saveStatechart(statechart, packageOfComponent.getImports(), targetFolderUri);
+		Set<Package> imports = StatechartModelDerivedFeatures.getImportablePackages(statechart);// packageOfComponent.getImports();
+		statechartSerializer.saveStatechart(statechart, imports, targetFolderUri);
 	}
 	
 	private void setFileName(StatechartContractGeneration task) {

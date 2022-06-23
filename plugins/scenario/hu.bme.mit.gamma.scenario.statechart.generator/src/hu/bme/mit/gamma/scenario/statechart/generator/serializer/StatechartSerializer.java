@@ -12,6 +12,7 @@ package hu.bme.mit.gamma.scenario.statechart.generator.serializer;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
@@ -39,7 +40,8 @@ public class StatechartSerializer {
 		this.projectLocation = file.getProject().getLocation().toString();
 	}
 
-	public void saveStatechart(StatechartDefinition statechart, List<Package> interfaces, String path) {
+	public void saveStatechart(StatechartDefinition statechart,
+				Collection<? extends Package> interfaces, String path) {
 		Package _package = interfacefactory.createPackage();
 		_package.getComponents().add(statechart);
 		_package.setName(statechart.getName().toLowerCase());
