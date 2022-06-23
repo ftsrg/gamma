@@ -270,7 +270,7 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 							else {
 								mappedInterface = ecoreUtil.clone(internalInterface); // New creation
 								mappedInterface.setName(
-										getMappedInterfaceName(mappedInterface, mappableToInputPort));
+										getMappedInterfaceName(mappedInterface));
 								mappedInterfaces.put(internalInterface, mappedInterface);
 							}
 							
@@ -753,8 +753,8 @@ class Namings {
 		return "__MappedInterfaces__";
 	}
 	
-	public static String getMappedInterfaceName(Interface _interface, boolean isInput) {
-		return _interface.getName() + "_" + (isInput ? "In" : "Out");
+	public static String getMappedInterfaceName(Interface _interface) {
+		return _interface.getName() + "_Externalized";
 	}
 	
 	public static String getActivityPortName(Component component, State state) {

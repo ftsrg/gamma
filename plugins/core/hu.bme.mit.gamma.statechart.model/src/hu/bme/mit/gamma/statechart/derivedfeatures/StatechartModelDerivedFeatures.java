@@ -223,12 +223,12 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	}
 	
 	public static boolean isMappableToInputPort(Port port) {
-		Component component = getContainingComponent(port);
-		Collection<StatechartDefinition> statecharts =
-				getSelfOrAllContainedStatecharts(component);
 		List<Port> simplePorts = getAllBoundSimplePorts(port);
+		Set<Component> statecharts = simplePorts.stream()
+				.map(it -> getContainingComponent(it))
+				.collect(Collectors.toSet());
 		
-		for (StatechartDefinition statechart : statecharts) {
+		for (Component statechart : statecharts) {
 			for (RaiseEventAction raiseEventAction : 
 					ecoreUtil.getAllContentsOfType(statechart, RaiseEventAction.class)) {
 				Port raisedPort = raiseEventAction.getPort();
