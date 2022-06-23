@@ -539,6 +539,17 @@ public class StatechartUtil extends ActionUtil {
 		return port;
 	}
 	
+	public Port createOppositePort(Port port) {
+		Port oppositePort = ecoreUtil.clone(port);
+		
+		InterfaceRealization interfaceRealization = oppositePort.getInterfaceRealization();
+		RealizationMode realizationMode = interfaceRealization.getRealizationMode();
+		RealizationMode opposite = StatechartModelDerivedFeatures.getOpposite(realizationMode);
+		interfaceRealization.setRealizationMode(opposite);
+		
+		return oppositePort;
+	}
+	
 	public ComponentInstance instantiateComponent(Component component) {
 		if (component instanceof SynchronousComponent) {
 			return instantiateSynchronousComponent(

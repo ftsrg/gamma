@@ -226,11 +226,13 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		Component component = getContainingComponent(port);
 		Collection<StatechartDefinition> statecharts =
 				getSelfOrAllContainedStatecharts(component);
+		List<Port> simplePorts = getAllBoundSimplePorts(port);
 		
 		for (StatechartDefinition statechart : statecharts) {
 			for (RaiseEventAction raiseEventAction : 
 					ecoreUtil.getAllContentsOfType(statechart, RaiseEventAction.class)) {
-				if (raiseEventAction.getPort() == port) {
+				Port raisedPort = raiseEventAction.getPort();
+				if (simplePorts.contains(raisedPort)) {
 					return false;
 				}
 			}
@@ -240,8 +242,14 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	}
 	
 	public static boolean isMappableToOutputPort(Port port) {
-		Component component = getContainingComponent(port);
-		return !isTriggeredVia(component, port);
+		List<Port> simplePorts = getAllBoundSimplePorts(port);
+		for (Port simplePort : simplePorts) {
+			Component statechart = getContainingComponent(simplePort);
+			if (isTriggeredVia(statechart, simplePort)) {
+				return false;
+			}
+		}
+		return true;
 	}
 	
 	public static boolean isInternal(InstancePortReference port) {
@@ -1181,7 +1189,8 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	public static List<Port> getAllBoundSimplePorts(Component component) {
 		List<Port> simplePorts = new ArrayList<Port>();
 		for (Port port : getAllPorts(component)) {
-			simplePorts.addAll(getAllBoundSimplePorts(port));
+			simplePorts.addAll(
+					getAllBoundSimplePorts(port));
 		}
 		// Note that one port can be in the list multiple times iff the component is NOT unfolded
 		return simplePorts;
@@ -1199,7 +1208,8 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 				if (portBinding.getCompositeSystemPort() == port) {
 					// Makes sense only if the containment hierarchy is a tree structure
 					InstancePortReference instancePortReference = portBinding.getInstancePortReference();
-					simplePorts.addAll(getAllBoundSimplePorts(
+					simplePorts.addAll(
+						getAllBoundSimplePorts(
 							instancePortReference.getPort()));
 				}
 			}
@@ -1211,7 +1221,8 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	public static List<Port> getAllBoundAsynchronousSimplePorts(AsynchronousComponent component) {
 		List<Port> simplePorts = new ArrayList<Port>();
 		for (Port port : getAllPorts(component)) {
-			simplePorts.addAll(getAllBoundAsynchronousSimplePorts(port));
+			simplePorts.addAll(
+					getAllBoundAsynchronousSimplePorts(port));
 		}
 		return simplePorts;
 	}
@@ -1225,7 +1236,8 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 				if (portBinding.getCompositeSystemPort() == port) {
 					// Makes sense only if the containment hierarchy is a tree structure
 					InstancePortReference instancePortReference = portBinding.getInstancePortReference();
-					simplePorts.addAll(getAllBoundAsynchronousSimplePorts(
+					simplePorts.addAll(
+						getAllBoundAsynchronousSimplePorts(
 							instancePortReference.getPort()));
 				}
 			}

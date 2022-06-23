@@ -608,48 +608,19 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 		
 		for (Port systemPort : StatechartModelDerivedFeatures.getAllPorts(composite)) {
 			if (elementTracer.hasMatchedPort(systemPort, contract)) {
-				Port contractPort = elementTracer.matchPort(systemPort, contract);
-				// Only for all input ports
-				if (StatechartModelDerivedFeatures.isBroadcastMatcher(contractPort)) {
-					PortBinding inputPortBinding = factory.createPortBinding();
-					inputPortBinding.setCompositeSystemPort(systemPort);
-					
-					InstancePortReference instancePortReference = statechartUtil
-							.createInstancePortReference(contractInstance, contractPort);
-					inputPortBinding.setInstancePortReference(instancePortReference);
-					
-					composite.getPortBindings().add(inputPortBinding);
-				}
-				// Only for output ports
-				else if (StatechartModelDerivedFeatures.isBroadcast(contractPort)) {
-					Collection<PortBinding> outputPortBindings =
-							StatechartModelDerivedFeatures.getPortBindings(systemPort);
-					
-					Port reversedContractPort = elementTracer.matchReversedPort(contractPort, contract);
-					
-					// Channeling ports to definitions
-					for (PortBinding outputPortBinding : outputPortBindings) {
-						InstancePortReference contractPortReference = statechartUtil
-								.createInstancePortReference(contractInstance, reversedContractPort);
-						InstancePortReference behaviorPortReference = ecoreUtil
-								.clone(outputPortBinding.getInstancePortReference());
-						Channel channel = statechartUtil.createChannel(
-								behaviorPortReference, contractPortReference);
-						
-						composite.getChannels().add(channel);
-					}
-				}
-				else if (StatechartModelDerivedFeatures.isInternal(contractPort)) {
-					logger.log(Level.INFO, "Not matching internal port: " +
-							contract.getName() + "." + systemPort.getName());
-				}
-				else {
-					throw new IllegalArgumentException("Not broadcast port: " + contractPort);
-				}
+				connectPorts(systemPort, contractInstance);
 			}
 			else {
-				logger.log(Level.INFO, "Not matchable port: " +
-						contract.getName() + "." + systemPort.getName());
+				// In case internal ports are transformed, some provided internal ports
+				// remain required due to handling all input events - checking the opposite ports
+				Port clonedSystemPort = statechartUtil.createOppositePort(systemPort);
+				if (elementTracer.hasMatchedPort(clonedSystemPort, contract)) {
+					connectPorts(systemPort, contractInstance);
+				}
+				else {
+					logger.log(Level.INFO, "Not matchable port: " +
+							contract.getName() + "." + systemPort.getName());
+				}
 			}
 		}
 		
@@ -683,6 +654,51 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 		// Returning the artifacts to set the analysis model transformer
 		return new Triple<String, PropertyPackage, ComponentInstance>(
 				modelFileUri, violationPropertyPackage, contractInstance);
+	}
+
+	private void connectPorts(Port systemPort, ComponentInstance contractInstance) {
+		SchedulableCompositeComponent composite = (SchedulableCompositeComponent)
+				StatechartModelDerivedFeatures.getContainingComponent(systemPort);
+		Component contract = StatechartModelDerivedFeatures.getDerivedType(contractInstance);
+		
+		// Only for all input ports
+		if (StatechartModelDerivedFeatures.isBroadcastMatcher(systemPort)) {
+			PortBinding inputPortBinding = factory.createPortBinding();
+			Port contractPort = elementTracer.matchPort(systemPort, contract);
+			inputPortBinding.setCompositeSystemPort(systemPort);
+			
+			InstancePortReference instancePortReference = statechartUtil
+					.createInstancePortReference(contractInstance, contractPort);
+			inputPortBinding.setInstancePortReference(instancePortReference);
+			
+			composite.getPortBindings().add(inputPortBinding);
+		}
+		// Only for output ports
+		else if (StatechartModelDerivedFeatures.isBroadcast(systemPort)) {
+			Collection<PortBinding> outputPortBindings =
+					StatechartModelDerivedFeatures.getPortBindings(systemPort);
+			
+			Port reversedContractPort = elementTracer.matchReversedPort(systemPort, contract);
+			
+			// Channeling ports to definitions
+			for (PortBinding outputPortBinding : outputPortBindings) {
+				InstancePortReference contractPortReference = statechartUtil
+						.createInstancePortReference(contractInstance, reversedContractPort);
+				InstancePortReference behaviorPortReference = ecoreUtil
+						.clone(outputPortBinding.getInstancePortReference());
+				Channel channel = statechartUtil.createChannel(
+						behaviorPortReference, contractPortReference);
+				
+				composite.getChannels().add(channel);
+			}
+		}
+		else if (StatechartModelDerivedFeatures.isInternal(systemPort)) {
+			logger.log(Level.INFO, "Not matching internal port: " +
+					contract.getName() + "." + systemPort.getName());
+		}
+		else {
+			throw new IllegalArgumentException("Not broadcast port: " + systemPort);
+		}
 	}
 	
 	// Settings
