@@ -87,7 +87,6 @@ public class StatechartContractGenerationHandler extends TaskHandler {
 					contractFactory.createNegativeContractStatechartAnnotation());
 		}
 		
-		Package packageOfComponent = ecoreUtil.getContainerOfType(component, Package.class);
 		StatechartSerializer statechartSerializer = new StatechartSerializer(file);
 		Set<Package> imports = StatechartModelDerivedFeatures.getImportablePackages(statechart);// packageOfComponent.getImports();
 		statechartSerializer.saveStatechart(statechart, imports, targetFolderUri);
