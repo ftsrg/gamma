@@ -62,6 +62,8 @@ import hu.bme.mit.gamma.statechart.interface_.AnyTrigger;
 import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.ComponentAnnotation;
 import hu.bme.mit.gamma.statechart.interface_.Event;
+import hu.bme.mit.gamma.statechart.interface_.EventDeclaration;
+import hu.bme.mit.gamma.statechart.interface_.EventDirection;
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression;
 import hu.bme.mit.gamma.statechart.interface_.EventReference;
 import hu.bme.mit.gamma.statechart.interface_.EventTrigger;
@@ -548,6 +550,16 @@ public class StatechartUtil extends ActionUtil {
 		interfaceRealization.setRealizationMode(opposite);
 		
 		return oppositePort;
+	}
+	
+	public Interface createBroadcastInterface(Interface _interface) {
+		Interface broadcastInterface = ecoreUtil.clone(_interface);
+		
+		for (EventDeclaration event : broadcastInterface.getEvents()) {
+			event.setDirection(EventDirection.OUT);
+		}
+		
+		return broadcastInterface;
 	}
 	
 	public ComponentInstance instantiateComponent(Component component) {

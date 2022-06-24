@@ -60,8 +60,6 @@ import hu.bme.mit.gamma.statechart.contract.StateContractAnnotation;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.Event;
-import hu.bme.mit.gamma.statechart.interface_.EventDeclaration;
-import hu.bme.mit.gamma.statechart.interface_.EventDirection;
 import hu.bme.mit.gamma.statechart.interface_.Interface;
 import hu.bme.mit.gamma.statechart.interface_.InterfaceModelFactory;
 import hu.bme.mit.gamma.statechart.interface_.InterfaceRealization;
@@ -268,14 +266,10 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 								mappedInterface = mappedInterfaces.get(internalInterface); // Retrieval
 							}
 							else {
-								mappedInterface = ecoreUtil.clone(internalInterface); // New creation
+								mappedInterface = statechartUtil.createBroadcastInterface(internalInterface); // New creation
 								mappedInterface.setName(
 										getMappedInterfaceName(mappedInterface));
 								mappedInterfaces.put(internalInterface, mappedInterface);
-							}
-							
-							for (EventDeclaration event : mappedInterface.getEvents()) {
-								event.setDirection(EventDirection.OUT); // Only broadcast ports are supported
 							}
 							
 							RealizationMode realizationMode = (mappableToInputPort) ?
@@ -296,6 +290,47 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 						}
 					}
 				}
+				// Change monitor interfaces
+				StatechartDefinition insertableContract = ecoreUtil.clone(contract);
+				Map<Interface, Interface> contractMappedInterfaces = new HashMap<Interface, Interface>();
+				for (Port contractPort : StatechartModelDerivedFeatures.getAllPorts(insertableContract)) {
+					Interface contractInterface = StatechartModelDerivedFeatures.getInterface(contractPort);
+					if (mappedInterfaces.containsKey(contractInterface)) {
+						Interface mappedInterface = mappedInterfaces.get(contractInterface);
+						RealizationMode realizationMode = // Unnecessary as only input events are used
+								(StatechartModelDerivedFeatures.isMappableToInputPort(contractPort)) ?
+										RealizationMode.REQUIRED : RealizationMode.PROVIDED;
+						InterfaceRealization interfaceRealization = contractPort.getInterfaceRealization();
+						interfaceRealization.setInterface(mappedInterface);
+						interfaceRealization.setRealizationMode(realizationMode);
+						
+						contractMappedInterfaces.put(contractInterface, mappedInterface);
+						// Interface changes cannot be done here as it would change interfaces
+						// in the reversed ports as well
+					}
+					else if (StatechartModelDerivedFeatures.isInternal(contractPort)) {
+						// All internal contract ports are mapped to input ports to support optimizations
+						Interface mappedInterface = statechartUtil
+								.createBroadcastInterface(contractInterface);
+						mappedInterface.setName(
+								getMappedInterfaceName(mappedInterface));
+						// Contracts use only input events, hence the required mode
+						InterfaceRealization realization = contractPort.getInterfaceRealization();
+						realization.setRealizationMode(RealizationMode.REQUIRED);
+						
+						mappedInterfaces.put(contractInterface, mappedInterface);
+						contractMappedInterfaces.put(contractInterface, mappedInterface);
+					}
+				}
+				if (!contractMappedInterfaces.isEmpty()) {
+					for (Interface contractInterface : contractMappedInterfaces.keySet()) {
+						Interface mappedInterface = contractMappedInterfaces.get(contractInterface);
+						ecoreUtil.changeAll(mappedInterface, contractInterface, insertableContract);
+					}
+					
+					contract = insertableContract; // See insertMonitor
+					statelessAssocationPackage.getComponents().add(insertableContract); // For serialization
+				}
 				// Save interface independently
 				if (!mappedInterfaces.isEmpty()) {
 					// Serializing the mapped interfaces
@@ -312,43 +347,16 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 							getMappedInterfacePackagename());
 					String interfacePackageFileName = fileUtil.toHiddenFileName(
 							fileNamer.getPackageFileName(
-								javaUtil.toFirstCharUpper(mappedInterfacePackage.getName())));
+									javaUtil.toFirstCharUpper(mappedInterfacePackage.getName())));
 					this.serializer.saveModel(mappedInterfacePackage,
 							this.getTargetFolderUri(), interfacePackageFileName);
-				}
-				// Change monitor interfaces
-				StatechartDefinition insertableContract = ecoreUtil.clone(contract);
-				Map<Interface, Interface> contractMappedInterfaces = new HashMap<Interface, Interface>();
-				for (Port contractPort : StatechartModelDerivedFeatures.getAllPorts(insertableContract)) {
-					Interface contractInterface = StatechartModelDerivedFeatures.getInterface(contractPort);
-					if (mappedInterfaces.containsKey(contractInterface)) {
-						Interface mappedInterface = mappedInterfaces.get(contractInterface);
-						RealizationMode realizationMode =
-								(StatechartModelDerivedFeatures.isMappableToInputPort(contractPort)) ?
-										RealizationMode.REQUIRED : RealizationMode.PROVIDED;
-						InterfaceRealization interfaceRealization = contractPort.getInterfaceRealization();
-						interfaceRealization.setInterface(mappedInterface);
-						interfaceRealization.setRealizationMode(realizationMode);
-						
-						contractMappedInterfaces.put(contractInterface, mappedInterface);
-						// Interface changes cannot be done here as it would change interfaces
-						// in the reversed ports as well
-					}
-				}
-				if (!contractMappedInterfaces.isEmpty()) {
-					for (Interface contractInterface : contractMappedInterfaces.keySet()) {
-						Interface mappedInterface = contractMappedInterfaces.get(contractInterface);
-						ecoreUtil.changeAll(mappedInterface, contractInterface, insertableContract);
-					}
-					
-					contract = insertableContract; // See insertMonitor
-					statelessAssocationPackage.getComponents().add(insertableContract); // For serialization
 				}
 				//
 				
 				// T-1 models
 				// Adding behavior
 				for (MissionPhaseStateAnnotation behavior : clonedBehaviors) {
+					// TODO note that only one (synchronous) behavior is supported due to bindings and channels
 					ComponentInstance componentInstance = behavior.getComponent();
 					statechartUtil.addComponentInstance(composite, componentInstance);
 					Component behaviorType = StatechartModelDerivedFeatures.getDerivedType(componentInstance);
