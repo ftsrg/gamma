@@ -334,6 +334,7 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 			Map<RealizationMode, EventDirection> directionByMode, String prefix) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		Port port = signal.getPort();
+		InteractionDirection direction = signal.getDirection();
 		InterfaceRealization interfaceRealization = port.getInterfaceRealization();
 		RealizationMode portRealizationMode = interfaceRealization.getRealizationMode();
 		Interface signalInterface = interfaceRealization.getInterface();
@@ -343,6 +344,19 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING,
 				"Internal events are currently supported only for component-linked behavior equivalence checking",
 					new ReferenceInfo(ScenarioModelPackage.Literals.SIGNAL__EVENT)));
+			
+			ScenarioDeclaration scenario = ecoreUtil.getContainerOfType(signal, ScenarioDeclaration.class);
+			List<Signal> signals = ecoreUtil.getAllContentsOfType(scenario, Signal.class);
+			for (Signal otherSignal : signals) {
+				Port otherPort = otherSignal.getPort();
+				InteractionDirection otherDirection = otherSignal.getDirection();
+				if (otherPort == port && direction != otherDirection) {
+					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+						"A certain internal port must be used in a single direction in every interaction",
+							new ReferenceInfo(ScenarioModelPackage.Literals.SIGNAL__EVENT)));
+				}
+			}
+			
 			return validationResultMessages;
 		}
 

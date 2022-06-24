@@ -148,12 +148,12 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 				
 				for (MissionPhaseStateAnnotation behavior : List.copyOf(missionPhaseStateAnnotations)) {
 					LinkType linkType = stateContractAnnotation.getLinkType();
-					if (!StatechartModelDerivedFeatures.hasHistory(behavior) &&
+					if (linkType == LinkType.TO_COMPONENT || // TO_COMPONENT means the user specifies context-independency
+							(!StatechartModelDerivedFeatures.hasHistory(behavior) &&
 								!stateContractAnnotation.isHasHistory() &&
 							(missionPhaseStateAnnotations.size() <= 1 || noInternalPorts) && // size() > 1 -> noInternalPorts
-							(!hasOrthogonalRegions && // Too strict check - simplifiable via port binding checks
-									linkType != LinkType.TO_CONTROLLER ||
-									linkType == LinkType.TO_COMPONENT)) { // TO_COMPONENT means the user specifies context-independency
+								!hasOrthogonalRegions && // Too strict check - simplifiable via port binding checks
+									linkType != LinkType.TO_CONTROLLER)) {
 						// Note that TO_CONTROLLER and TO_COMPONENT are exclusive but not the negated versions of each other;
 						// the third option is DEFAULT: then this algorithm can choose if they can be removed from the context
 						
