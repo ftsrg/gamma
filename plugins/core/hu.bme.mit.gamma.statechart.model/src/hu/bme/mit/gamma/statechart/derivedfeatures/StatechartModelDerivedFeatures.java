@@ -1338,6 +1338,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	public static Set<Port> getUnusedPorts(ComponentInstance instance) {
 		Component container = getContainingComponent(instance);
+		
 		Set<Port> usedPorts = ecoreUtil.getAllContentsOfType(
 				container, InstancePortReference.class).stream()
 				.filter(it -> it.getInstance() == instance)
@@ -1346,8 +1347,24 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		Set<Port> unusedPorts = new HashSet<Port>(
 				getAllPorts(type));
 		unusedPorts.removeAll(usedPorts);
-		unusedPorts.removeAll(getAllInternalPorts(type)); // Internal ports are always used
+		unusedPorts.removeAll(
+				getAllInternalPorts(type)); // Internal ports are always used...
+		unusedPorts.addAll(
+				getUnusedInternalPorts(type)); // Except if no internal event is raised
+		
 		return unusedPorts;
+	}
+	
+	public static Set<Port> getUnusedInternalPorts(ComponentInstance instance) {
+		Component type = StatechartModelDerivedFeatures.getDerivedType(instance);
+		return getUnusedInternalPorts(type);
+	}
+
+	private static Set<Port> getUnusedInternalPorts(Component type) {
+		List<Port> ports = getAllPorts(type);
+		return ports.stream()
+				.filter(it -> isInternal(it) && isMappableToInputPort(it)) // No raised events
+				.collect(Collectors.toSet());
 	}
 	
 	public static EventSource getEventSource(EventTrigger eventTrigger) {

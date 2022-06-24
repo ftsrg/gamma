@@ -296,10 +296,10 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 				for (Port contractPort : StatechartModelDerivedFeatures.getAllPorts(insertableContract)) {
 					Interface contractInterface = StatechartModelDerivedFeatures.getInterface(contractPort);
 					if (mappedInterfaces.containsKey(contractInterface)) {
+						checkArgument(  // Only input events are used
+								StatechartModelDerivedFeatures.isMappableToInputPort(contractPort));
 						Interface mappedInterface = mappedInterfaces.get(contractInterface);
-						RealizationMode realizationMode = // Unnecessary as only input events are used
-								(StatechartModelDerivedFeatures.isMappableToInputPort(contractPort)) ?
-										RealizationMode.REQUIRED : RealizationMode.PROVIDED;
+						RealizationMode realizationMode = RealizationMode.REQUIRED; // Only input events are used
 						InterfaceRealization interfaceRealization = contractPort.getInterfaceRealization();
 						interfaceRealization.setInterface(mappedInterface);
 						interfaceRealization.setRealizationMode(realizationMode);
@@ -308,19 +308,19 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 						// Interface changes cannot be done here as it would change interfaces
 						// in the reversed ports as well
 					}
-					else if (StatechartModelDerivedFeatures.isInternal(contractPort)) {
-						// All internal contract ports are mapped to input ports to support optimizations
-						Interface mappedInterface = statechartUtil
-								.createBroadcastInterface(contractInterface);
-						mappedInterface.setName(
-								getMappedInterfaceName(mappedInterface));
-						// Contracts use only input events, hence the required mode
-						InterfaceRealization realization = contractPort.getInterfaceRealization();
-						realization.setRealizationMode(RealizationMode.REQUIRED);
-						
-						mappedInterfaces.put(contractInterface, mappedInterface);
-						contractMappedInterfaces.put(contractInterface, mappedInterface);
-					}
+//					else if (StatechartModelDerivedFeatures.isInternal(contractPort)) {
+//						// All internal contract ports are mapped to input ports to support optimizations
+//						Interface mappedInterface = statechartUtil
+//								.createBroadcastInterface(contractInterface);
+//						mappedInterface.setName(
+//								getMappedInterfaceName(mappedInterface));
+//						// Contracts use only input events, hence the required mode
+//						InterfaceRealization realization = contractPort.getInterfaceRealization();
+//						realization.setRealizationMode(RealizationMode.REQUIRED);
+//						
+//						mappedInterfaces.put(contractInterface, mappedInterface);
+//						contractMappedInterfaces.put(contractInterface, mappedInterface);
+//					}
 				}
 				if (!contractMappedInterfaces.isEmpty()) {
 					for (Interface contractInterface : contractMappedInterfaces.keySet()) {
@@ -356,7 +356,8 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 				// T-1 models
 				// Adding behavior
 				for (MissionPhaseStateAnnotation behavior : clonedBehaviors) {
-					// TODO note that only one (synchronous) behavior is supported due to bindings and channels
+					// TODO note that only one (synchronous) behavior is supported per port
+					// due to bindings and channels
 					ComponentInstance componentInstance = behavior.getComponent();
 					statechartUtil.addComponentInstance(composite, componentInstance);
 					Component behaviorType = StatechartModelDerivedFeatures.getDerivedType(componentInstance);
