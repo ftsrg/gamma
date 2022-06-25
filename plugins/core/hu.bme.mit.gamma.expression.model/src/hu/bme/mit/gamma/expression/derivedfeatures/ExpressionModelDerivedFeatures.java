@@ -46,6 +46,7 @@ import hu.bme.mit.gamma.expression.model.RationalTypeDefinition;
 import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.ResettableVariableDeclarationAnnotation;
+import hu.bme.mit.gamma.expression.model.ScheduledClockVariableDeclarationAnnotation;
 import hu.bme.mit.gamma.expression.model.TransientVariableDeclarationAnnotation;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
@@ -115,6 +116,10 @@ public class ExpressionModelDerivedFeatures {
 	
 	public static boolean isClock(VariableDeclaration variable) {
 		return hasAnnotation(variable, ClockVariableDeclarationAnnotation.class);
+	}
+	
+	public static boolean isScheduledClock(VariableDeclaration variable) {
+		return hasAnnotation(variable, ScheduledClockVariableDeclarationAnnotation.class);
 	}
 	
 	public static boolean hasAnnotation(VariableDeclaration variable,
