@@ -39,6 +39,7 @@ import hu.bme.mit.gamma.expression.model.FinalVariableDeclarationAnnotation;
 import hu.bme.mit.gamma.expression.model.FunctionDeclaration;
 import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression;
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition;
+import hu.bme.mit.gamma.expression.model.LambdaDeclaration;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.ParametricElement;
 import hu.bme.mit.gamma.expression.model.RationalTypeDefinition;
@@ -72,9 +73,11 @@ public class ExpressionModelDerivedFeatures {
 			return leftOperand;
 		}
 		if (isLeftInclusive) { // Literal is inclusive, but caller wants exclusive
-			return expressionUtil.wrapIntoSubtract(ecoreUtil.clone(leftOperand), 1);
+			return expressionUtil.wrapIntoSubtract(
+					ecoreUtil.clone(leftOperand), 1);
 		}
-		return expressionUtil.wrapIntoAdd(ecoreUtil.clone(leftOperand), 1); // Literal is exclusive, but caller wants inclusive
+		return expressionUtil.wrapIntoAdd(
+				ecoreUtil.clone(leftOperand), 1); // Literal is exclusive, but caller wants inclusive
 	}
 	
 	public static Expression getRight(IntegerRangeLiteralExpression expression, boolean isInclusive) {
@@ -84,9 +87,11 @@ public class ExpressionModelDerivedFeatures {
 			return rightOperand;
 		}
 		if (isRightInclusive) { // Literal is inclusive, but caller wants exclusive
-			return expressionUtil.wrapIntoAdd(ecoreUtil.clone(rightOperand), 1);
+			return expressionUtil.wrapIntoAdd(
+					ecoreUtil.clone(rightOperand), 1);
 		}
-		return expressionUtil.wrapIntoSubtract(ecoreUtil.clone(rightOperand), 1); // Literal is exclusive, but caller wants inclusive
+		return expressionUtil.wrapIntoSubtract(
+				ecoreUtil.clone(rightOperand), 1); // Literal is exclusive, but caller wants inclusive
 	}
 	
 	public static boolean isTransient(VariableDeclaration variable) {
@@ -238,6 +243,24 @@ public class ExpressionModelDerivedFeatures {
 			return getFinalTypeReference(aliasReference);
 		}
 		return typeReference;
+	}
+	
+	// Functions
+	
+	public static Expression getLambdaExpression(FunctionDeclaration function) {
+		if (function instanceof LambdaDeclaration) {
+			LambdaDeclaration lambda = (LambdaDeclaration) function;
+			return lambda.getExpression();
+		}
+		// ProcedureDeclaration
+		List<EObject> contents = new ArrayList<EObject>(
+				function.eContents());
+		contents.removeAll(
+				function.getParameterDeclarations());
+		EObject block = javaUtil.getOnlyElement(contents);
+		EObject returnStatement = javaUtil.getOnlyElement(block.eContents());
+		EObject expression = javaUtil.getOnlyElement(returnStatement.eContents());
+		return (Expression) expression;
 	}
 	
 	//

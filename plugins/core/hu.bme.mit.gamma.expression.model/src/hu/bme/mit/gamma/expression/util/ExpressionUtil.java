@@ -19,9 +19,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
-import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
 
 import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
@@ -406,7 +404,7 @@ public class ExpressionUtil {
 
 	protected Set<ParameterDeclaration> _getReferredParameters(MultiaryExpression expression) {
 		Set<ParameterDeclaration> parameters = new HashSet<ParameterDeclaration>();
-		EList<Expression> _operands = expression.getOperands();
+		List<Expression> _operands = expression.getOperands();
 		for (Expression operand : _operands) {
 			parameters.addAll(getReferredParameters(operand));
 		}
@@ -485,7 +483,7 @@ public class ExpressionUtil {
 
 	protected Set<ConstantDeclaration> _getReferredConstants(MultiaryExpression expression) {
 		Set<ConstantDeclaration> constants = new HashSet<ConstantDeclaration>();
-		EList<Expression> _operands = expression.getOperands();
+		List<Expression> _operands = expression.getOperands();
 		for (Expression operand : _operands) {
 			constants.addAll(getReferredConstants(operand));
 		}
@@ -559,22 +557,6 @@ public class ExpressionUtil {
 			ecoreUtil.change(constant, parameter, parameter.eContainer());
 		}
 		return constants;
-	}
-	
-	public void inlineParamaters(List<? extends ParameterDeclaration> parameters,
-			List<? extends Expression> arguments) {
-		for (var i = 0; i < arguments.size(); i++) {
-			ParameterDeclaration parameter = parameters.get(i);
-			Expression argument = arguments.get(i);
-			EObject root = parameter.eContainer();
-			for (DirectReferenceExpression reference : ecoreUtil.getSelfAndAllContentsOfType(
-					root, DirectReferenceExpression.class).stream()
-						.filter(it -> it.getDeclaration() == parameter)
-						.collect(Collectors.toList())) {
-				Expression clonedArgument = ecoreUtil.clone(argument);
-				ecoreUtil.replace(clonedArgument, reference);
-			}
-		}
 	}
 	
 	// Initial values of types
