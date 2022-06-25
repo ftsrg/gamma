@@ -260,6 +260,8 @@ public class ExpressionModelDerivedFeatures {
 		// ProcedureDeclaration
 		List<EObject> contents = new ArrayList<EObject>(
 				function.eContents());
+		contents.remove(
+				function.getType());
 		contents.removeAll(
 				function.getParameterDeclarations());
 		EObject block = javaUtil.getOnlyElement(contents);
