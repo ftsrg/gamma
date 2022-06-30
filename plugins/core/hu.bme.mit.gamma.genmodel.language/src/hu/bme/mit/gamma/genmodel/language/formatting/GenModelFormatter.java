@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -55,16 +55,16 @@ public class GenModelFormatter extends AbstractDeclarativeFormatter {
         // Analysis model transformation
         c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getModelAssignment_2());
         c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getGroup_3_5());
-        c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getTargetFolderAssignment_3_0_2());
-        c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getFileNameAssignment_3_1_2());
-        c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getLanguagesAssignment_3_2_2());
-        c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getPropertyPackageAssignment_3_3_2());
-        c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getInitialStateAssignment_3_4_2());
-        c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getInitialStateSettingAssignment_3_5_2());
-        c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getOptimizeAssignment_3_6_2());
-        c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getConstraintAssignment_3_8_2());
-        c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getCoveragesAssignment_3_9());
-        c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getSchedulerAssignment_3_7_2());
+        c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getTargetFolderAssignment_3_1_2());
+        c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getFileNameAssignment_3_2_2());
+        c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getLanguagesAssignment_3_3_2());
+        c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getPropertyPackageAssignment_3_4_2());
+        c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getInitialStateAssignment_3_5_2());
+        c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getInitialStateSettingAssignment_3_6_2());
+        c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getOptimizeAssignment_3_7_2());
+        c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getSchedulerAssignment_3_8_2());
+        c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getConstraintAssignment_3_9_2());
+        c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getCoveragesAssignment_3_10());
         // Constraints
         c.setLinewrap(1).after(f.getOrchestratingConstraintAccess().getMinimumPeriodAssignment_2());
         c.setLinewrap(1).after(f.getOrchestratingConstraintAccess().getMaximumPeriodAssignment_5());

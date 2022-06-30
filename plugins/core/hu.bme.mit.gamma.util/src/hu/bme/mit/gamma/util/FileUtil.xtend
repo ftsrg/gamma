@@ -112,6 +112,11 @@ class FileUtil {
 		return fileName.extensionlessName + "." + newExtension
 	}
 	
+	def changeFileName(String fileUri, String newFileName) {
+		val parent = fileUri.parent
+		return parent + File.separator + newFileName
+	}
+	
 	def getParent(String fileUri) {
 		val file = new File(fileUri)
 		return file.parent
