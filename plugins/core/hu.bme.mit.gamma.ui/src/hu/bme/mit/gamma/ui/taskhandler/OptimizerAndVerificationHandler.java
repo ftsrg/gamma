@@ -100,8 +100,10 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 			XstsOptimizer xStsOptimizer = XstsOptimizer.INSTANCE;
 			xStsOptimizer.optimizeXSts(xSts); // To remove null/empty actions
 			// Serialize XSTS
-			String xStsString = xStsSerializer.serializeXsts(xSts);
-			fileUtil.saveString(analysisFile, xStsString);
+			if (analysisLanguages.contains(AnalysisLanguage.THETA)) {
+				String xStsString = xStsSerializer.serializeXsts(xSts);
+				fileUtil.saveString(analysisFile, xStsString);
+			}
 			if (analysisLanguages.contains(AnalysisLanguage.XSTS_UPPAAL)) {
 				XstsToUppaalTransformer transformer = new XstsToUppaalTransformer(xSts);
 				NTA nta = transformer.execute();
