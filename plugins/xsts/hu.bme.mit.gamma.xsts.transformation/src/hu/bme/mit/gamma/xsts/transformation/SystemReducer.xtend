@@ -119,19 +119,22 @@ class SystemReducer {
 			xStsKeepableVariables += mapper.getVariableVariables(keepableVariable)
 		}
 		
-		val xStsDeleteableWrittenOnlyVariables = xSts.writtenOnlyVariables
-		xStsDeleteableWrittenOnlyVariables.retainAll(
-				xSts.plainVariableGroup.variables) // So that only plain variables are deleted, not out events
-		xStsDeleteableWrittenOnlyVariables -= xStsKeepableVariables
-		val xStsDeletableAssignments = xStsDeleteableWrittenOnlyVariables.getAssignments(xSts)
-		
-		for (xStsDeletableAssignmentAction : xStsDeletableAssignments) {
-			createEmptyAction.replace(
-				xStsDeletableAssignmentAction) // To avoid nullptrs
-		}
-		
-		for (xStsDeletableVariable : xStsDeleteableWrittenOnlyVariables) {
-			xStsDeletableVariable.delete // Delete needed due to e.g., transientVariables list
+		for (var i = 0; i < 2; i++) { // Twice, to support transition-pair coverage
+			val xStsPlainVariables = xSts.plainVariableGroup.variables
+			val xStsDeleteableWrittenOnlyVariables = xSts.writtenOnlyVariables
+			xStsDeleteableWrittenOnlyVariables.retainAll(
+					xStsPlainVariables) // So that only plain variables are deleted, not out events
+			xStsDeleteableWrittenOnlyVariables -= xStsKeepableVariables
+			val xStsDeletableAssignments = xStsDeleteableWrittenOnlyVariables.getAssignments(xSts)
+			
+			for (xStsDeletableAssignmentAction : xStsDeletableAssignments) {
+				createEmptyAction.replace(
+					xStsDeletableAssignmentAction) // To avoid nullptrs
+			}
+			
+			for (xStsDeletableVariable : xStsDeleteableWrittenOnlyVariables) {
+				xStsDeletableVariable.delete // Delete needed due to e.g., transientVariables list
+			}
 		}
 	}
 	

@@ -291,6 +291,7 @@ Verification returns Verification:
 		(
 			'trace-folder' ':' targetFolder+=STRING | // Trace folder
 			'file' ':' fileName+=STRING | // Trace model
+			'optimize-model' ':' ('false' | optimizeModel?='true') |
 			'svg-file' ':' svgFileName+=STRING |
 			'language' ':' analysisLanguages+=AnalysisLanguage |
 			'query-file' ':' queryFiles+=STRING | // Queries

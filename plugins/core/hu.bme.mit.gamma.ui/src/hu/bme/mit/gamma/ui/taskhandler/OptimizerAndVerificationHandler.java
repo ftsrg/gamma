@@ -25,10 +25,10 @@ import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
 import hu.bme.mit.gamma.genmodel.model.Verification;
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer.XstsOptimizer;
+import hu.bme.mit.gamma.property.derivedfeatures.PropertyModelDerivedFeatures;
 import hu.bme.mit.gamma.property.model.CommentableStateFormula;
 import hu.bme.mit.gamma.property.model.PropertyPackage;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression;
-import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.uppaal.serializer.UppaalModelSerializer;
 import hu.bme.mit.gamma.util.FileUtil;
 import hu.bme.mit.gamma.xsts.model.XSTS;
@@ -64,7 +64,7 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 		PropertyPackage mainPropertyPackage = null;
 		
 		checkArgument(propertyPackages.stream()
-							.allMatch(it ->  StatechartModelDerivedFeatures.isUnfolded(it.getComponent())),
+							.allMatch(it ->  PropertyModelDerivedFeatures.isUnfolded(it)),
 					"Not all property packages are unfolded: " + propertyPackages);
 		for (PropertyPackage propertyPackage : propertyPackages) {
 			if (mainPropertyPackage == null) {

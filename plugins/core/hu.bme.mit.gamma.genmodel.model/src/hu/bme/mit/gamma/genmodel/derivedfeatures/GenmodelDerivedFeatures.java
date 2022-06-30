@@ -61,7 +61,7 @@ public class GenmodelDerivedFeatures extends ExpressionModelDerivedFeatures {
 	}
 	
 	public static boolean isOptimizableVerificationTask(Verification verification) {
-		return !verification.getPropertyPackages().isEmpty() && verification.isOptimize();
+		return verification.isOptimizeModel();
 	}
 	
 	public static boolean isNegativeContractGeneration(StatechartContractGeneration statechartGeneration) {
