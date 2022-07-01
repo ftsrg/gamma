@@ -97,6 +97,20 @@ class JavaUtil {
 		return map.get(key)
 	}
 	
+	def <K, V> Set<V> getOrCreateSet(Map<K, Set<V>> map, K key) {
+		if (!map.containsKey(key)) {
+			map += key -> newLinkedHashSet
+		}
+		return map.get(key)
+	}
+	
+	def <K, V> V checkAndGet(Map<K, V> map, K key) {
+		if (!map.containsKey(key)) {
+			throw new IllegalArgumentException("Not contained element: " + key)
+		}
+		return map.get(key)
+	}
+	
 	def <K, V> Set<Entry<V, K>> invert(Map<K, V> map) {
 		return map.entrySet.invert.toSet
 	}

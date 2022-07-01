@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -17,9 +17,9 @@ import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition
 import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
-import hu.bme.mit.gamma.expression.util.PredicateHandler
 import hu.bme.mit.gamma.uppaal.util.NtaBuilder
 import hu.bme.mit.gamma.util.GammaEcoreUtil
+import hu.bme.mit.gamma.xsts.util.PredicateHandler
 import java.util.logging.Level
 import java.util.logging.Logger
 import org.eclipse.xtend.lib.annotations.Data

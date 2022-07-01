@@ -96,6 +96,7 @@ class CfaActionTransformer {
 		val uppaalVariable = traceability.get(xStsVariable)
 		
 		val selectionStruct = xStsVariable.createSelection
+		
 		val selection = selectionStruct.selection
 		val guard = selectionStruct.guard
 		
@@ -185,5 +186,39 @@ class CfaActionTransformer {
 			edge.update += transientVariable.createResetingAssignmentExpression
 		}
 	}
+	
+//	// Variable binding
+//	
+//	def getVariableBindings() {
+//		return variableBindings
+//	}
+//	
+//	@Data
+//	static class VariableBindings {
+//		
+//		Map<VariableContainer, SelectionStruct> variableDomain = newLinkedHashMap
+//		Map<VariableContainer, Set<VariableContainer>> boundVariables = newHashMap
+//		//
+//		protected final extension JavaUtil javaUtil = JavaUtil.INSTANCE
+//		
+//		def put(VariableContainer variable, SelectionStruct selection) {
+//			variableDomain += variable -> selection
+//		}
+//		
+//		def get(VariableContainer variable) {
+//			return variableDomain.checkAndGet(variable)
+//		}
+//		
+//		def put(VariableContainer variable, VariableContainer boundVariable) {
+//			boundVariables.getOrCreateSet(variable) += boundVariable
+//			boundVariables.getOrCreateSet(boundVariable) += variable
+//		}
+//		
+//		def clear () {
+//			variableDomain.clear
+//			boundVariables.clear
+//		}
+//		
+//	}
 	
 }
