@@ -760,9 +760,12 @@ public class StatechartModelValidator extends ActionModelValidator {
 					ecoreUtil.getAllContentsOfType(guard, DirectReferenceExpression.class)) {
 				Declaration declaration = reference.getDeclaration();
 				if (declaration instanceof ProcedureDeclaration) {
-					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-						"Currently, procedure declarations cannot be referenced from guards", 
-								new ReferenceInfo(reference)));
+					ProcedureDeclaration procedure = (ProcedureDeclaration) declaration;
+					if (!StatechartModelDerivedFeatures.isLambda(procedure)) {
+						validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+							"Currently, procedure declarations cannot be referenced from guards", 
+									new ReferenceInfo(reference)));
+					}
 				}
 			}
 		}
