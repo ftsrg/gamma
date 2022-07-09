@@ -223,14 +223,16 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	}
 	
 	public static boolean isMappableToInputPort(Port port) {
-		Component component = getContainingComponent(port);
-		Collection<StatechartDefinition> statecharts =
-				getSelfOrAllContainedStatecharts(component);
+		List<Port> simplePorts = getAllBoundSimplePorts(port);
+		Set<Component> statecharts = simplePorts.stream()
+				.map(it -> getContainingComponent(it))
+				.collect(Collectors.toSet());
 		
-		for (StatechartDefinition statechart : statecharts) {
+		for (Component statechart : statecharts) {
 			for (RaiseEventAction raiseEventAction : 
 					ecoreUtil.getAllContentsOfType(statechart, RaiseEventAction.class)) {
-				if (raiseEventAction.getPort() == port) {
+				Port raisedPort = raiseEventAction.getPort();
+				if (simplePorts.contains(raisedPort)) {
 					return false;
 				}
 			}
@@ -240,8 +242,14 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	}
 	
 	public static boolean isMappableToOutputPort(Port port) {
-		Component component = getContainingComponent(port);
-		return !isTriggeredVia(component, port);
+		List<Port> simplePorts = getAllBoundSimplePorts(port);
+		for (Port simplePort : simplePorts) {
+			Component statechart = getContainingComponent(simplePort);
+			if (isTriggeredVia(statechart, simplePort)) {
+				return false;
+			}
+		}
+		return true;
 	}
 	
 	public static boolean isInternal(InstancePortReference port) {
@@ -1181,7 +1189,8 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	public static List<Port> getAllBoundSimplePorts(Component component) {
 		List<Port> simplePorts = new ArrayList<Port>();
 		for (Port port : getAllPorts(component)) {
-			simplePorts.addAll(getAllBoundSimplePorts(port));
+			simplePorts.addAll(
+					getAllBoundSimplePorts(port));
 		}
 		// Note that one port can be in the list multiple times iff the component is NOT unfolded
 		return simplePorts;
@@ -1199,7 +1208,8 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 				if (portBinding.getCompositeSystemPort() == port) {
 					// Makes sense only if the containment hierarchy is a tree structure
 					InstancePortReference instancePortReference = portBinding.getInstancePortReference();
-					simplePorts.addAll(getAllBoundSimplePorts(
+					simplePorts.addAll(
+						getAllBoundSimplePorts(
 							instancePortReference.getPort()));
 				}
 			}
@@ -1211,7 +1221,8 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	public static List<Port> getAllBoundAsynchronousSimplePorts(AsynchronousComponent component) {
 		List<Port> simplePorts = new ArrayList<Port>();
 		for (Port port : getAllPorts(component)) {
-			simplePorts.addAll(getAllBoundAsynchronousSimplePorts(port));
+			simplePorts.addAll(
+					getAllBoundAsynchronousSimplePorts(port));
 		}
 		return simplePorts;
 	}
@@ -1225,7 +1236,8 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 				if (portBinding.getCompositeSystemPort() == port) {
 					// Makes sense only if the containment hierarchy is a tree structure
 					InstancePortReference instancePortReference = portBinding.getInstancePortReference();
-					simplePorts.addAll(getAllBoundAsynchronousSimplePorts(
+					simplePorts.addAll(
+						getAllBoundAsynchronousSimplePorts(
 							instancePortReference.getPort()));
 				}
 			}
@@ -1326,6 +1338,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	public static Set<Port> getUnusedPorts(ComponentInstance instance) {
 		Component container = getContainingComponent(instance);
+		
 		Set<Port> usedPorts = ecoreUtil.getAllContentsOfType(
 				container, InstancePortReference.class).stream()
 				.filter(it -> it.getInstance() == instance)
@@ -1334,8 +1347,24 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		Set<Port> unusedPorts = new HashSet<Port>(
 				getAllPorts(type));
 		unusedPorts.removeAll(usedPorts);
-		unusedPorts.removeAll(getAllInternalPorts(type)); // Internal ports are always used
+		unusedPorts.removeAll(
+				getAllInternalPorts(type)); // Internal ports are always used...
+		unusedPorts.addAll(
+				getUnusedInternalPorts(type)); // Except if no internal event is raised
+		
 		return unusedPorts;
+	}
+	
+	public static Set<Port> getUnusedInternalPorts(ComponentInstance instance) {
+		Component type = StatechartModelDerivedFeatures.getDerivedType(instance);
+		return getUnusedInternalPorts(type);
+	}
+
+	private static Set<Port> getUnusedInternalPorts(Component type) {
+		List<Port> ports = getAllPorts(type);
+		return ports.stream()
+				.filter(it -> isInternal(it) && isMappableToInputPort(it)) // No raised events
+				.collect(Collectors.toSet());
 	}
 	
 	public static EventSource getEventSource(EventTrigger eventTrigger) {

@@ -115,10 +115,11 @@ AnalysisModelTransformation returns AnalysisModelTransformation:
 	'analysis' '{'
 		model=ModelReference
 		(
+			'task' ':' task=AnalysisTask |
 			'folder' ':' targetFolder+=STRING |			
 			'file' ':' fileName+=STRING |
 			'language' ':' languages+=AnalysisLanguage |
-			'property-file' ':' propertyPackage=[property::PropertyPackage | STRING] | // Slicing
+			'property-file' ':' propertyPackage=[property::PropertyPackage | STRING] | // Slicing and/or verification
 			'initial-state' ':' initialState=[property::PropertyPackage | STRING] |
 			'initial-state-setting' ':' initialStateSetting=InitialStateSetting |
 			'optimize' ':' optimize=BOOLEAN |
@@ -127,6 +128,10 @@ AnalysisModelTransformation returns AnalysisModelTransformation:
 			coverages+=Coverage
 		)*
 	'}'
+;
+
+enum AnalysisTask returns AnalysisTask:
+	TRANSFORMATION = "transform" | TRANSFORMATION_AND_VERIFICATION = "transform-and-verify"
 ;
 
 enum InitialStateSetting returns InitialStateSetting:
@@ -286,6 +291,7 @@ Verification returns Verification:
 		(
 			'trace-folder' ':' targetFolder+=STRING | // Trace folder
 			'file' ':' fileName+=STRING | // Trace model
+			'optimize-model' ':' ('false' | optimizeModel?='true') |
 			'svg-file' ':' svgFileName+=STRING |
 			'language' ':' analysisLanguages+=AnalysisLanguage |
 			'query-file' ':' queryFiles+=STRING | // Queries

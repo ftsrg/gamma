@@ -40,6 +40,7 @@ import hu.bme.mit.gamma.expression.model.ValueDeclaration;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.expression.util.ExpressionUtil;
 
+
 public class ActionUtil extends ExpressionUtil {
 	// Singleton
 	public static final ActionUtil INSTANCE = new ActionUtil();

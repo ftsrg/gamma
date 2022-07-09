@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -10,12 +10,14 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.statechart.language;
 
+import org.eclipse.xtext.formatting.IFormatter;
 import org.eclipse.xtext.linking.ILinkingService;
 import org.eclipse.xtext.scoping.IScopeProvider;
 import org.eclipse.xtext.serializer.tokens.ICrossReferenceSerializer;
 
 import com.google.inject.Binder;
 
+import hu.bme.mit.gamma.statechart.language.formatting.StatechartLanguageFormatter;
 import hu.bme.mit.gamma.statechart.language.linking.StatechartLanguageLinker;
 import hu.bme.mit.gamma.statechart.language.scoping.StatechartLanguageScopeProvider;
 import hu.bme.mit.gamma.statechart.language.serializing.StatechartLanguageCrossReferenceSerializer;
@@ -34,6 +36,11 @@ public class StatechartLanguageRuntimeModule extends AbstractStatechartLanguageR
 		binder.bind(org.eclipse.xtext.scoping.IScopeProvider.class).annotatedWith(org.eclipse.xtext.serializer.tokens.SerializerScopeProviderBinding.class).to(StatechartLanguageScopeProvider.class);
 	}
 	//
+	
+	@Override
+	public Class<? extends IFormatter> bindIFormatter() {
+		return StatechartLanguageFormatter.class;
+	}
 	
 	// Needed for importing
 	@Override

@@ -50,6 +50,7 @@ import hu.bme.mit.gamma.xsts.model.AssignmentAction;
 import hu.bme.mit.gamma.xsts.model.AssumeAction;
 import hu.bme.mit.gamma.xsts.model.CompositeAction;
 import hu.bme.mit.gamma.xsts.model.EmptyAction;
+import hu.bme.mit.gamma.xsts.model.GroupAnnotation;
 import hu.bme.mit.gamma.xsts.model.HavocAction;
 import hu.bme.mit.gamma.xsts.model.IfAction;
 import hu.bme.mit.gamma.xsts.model.LoopAction;
@@ -58,6 +59,7 @@ import hu.bme.mit.gamma.xsts.model.NonDeterministicAction;
 import hu.bme.mit.gamma.xsts.model.ParallelAction;
 import hu.bme.mit.gamma.xsts.model.SequentialAction;
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction;
+import hu.bme.mit.gamma.xsts.model.VariableGroup;
 import hu.bme.mit.gamma.xsts.model.XSTS;
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory;
 import hu.bme.mit.gamma.xsts.model.XTransition;
@@ -108,11 +110,37 @@ public class XstsActionUtil extends ExpressionUtil {
 	public void merge(XSTS pivot, XSTS mergable) {
 		pivot.getTypeDeclarations().addAll(mergable.getTypeDeclarations());
 		pivot.getPublicTypeDeclarations().addAll(mergable.getPublicTypeDeclarations());
-		pivot.getVariableGroups().addAll(mergable.getVariableGroups());
 		pivot.getVariableDeclarations().addAll(mergable.getVariableDeclarations());
 		pivot.getConstraints().addAll(mergable.getConstraints());
+		mergeVariableGroups(pivot, mergable);
 	}
 	
+	public void mergeVariableGroups(XSTS pivot, XSTS mergable) {
+		List<VariableGroup> variableGroups = pivot.getVariableGroups();
+		variableGroups.addAll(
+				mergable.getVariableGroups());
+		List<VariableGroup> deletableGroups = new ArrayList<VariableGroup>();
+		
+		int size = variableGroups.size();
+		for (int i = 0; i < size - 1; ++i) {
+			VariableGroup lhs = variableGroups.get(i);
+			GroupAnnotation lhsAnnotation = lhs.getAnnotation();
+			for (int j = i + 1; j < size; ++j) {
+				VariableGroup rhs = variableGroups.get(j);
+				GroupAnnotation rhsAnnotation = rhs.getAnnotation();
+				if (ecoreUtil.helperEquals(lhsAnnotation, rhsAnnotation)) {
+					lhs.getVariables().addAll(
+							rhs.getVariables());
+					deletableGroups.add(rhs);
+				}
+			}
+		}
+		
+		for (VariableGroup variableGroup : deletableGroups) {
+			ecoreUtil.delete(variableGroup);
+		}
+	}
+
 	public void changeTransitions(XSTS xSts, XTransition newAction) {
 		changeTransitions(xSts, Collections.singletonList(newAction));
 	}
@@ -260,10 +288,22 @@ public class XstsActionUtil extends ExpressionUtil {
 				.collect(Collectors.toList());
 	}
 	
+	public List<AbstractAssignmentAction> getAssignments(VariableDeclaration variable, XSTS xSts) {
+		List<AbstractAssignmentAction> assignments = ecoreUtil.getAllContentsOfType(
+				xSts, AbstractAssignmentAction.class);
+		return getAssignments(variable, assignments);
+	}
+	
 	public List<AbstractAssignmentAction> getAssignments(Collection<VariableDeclaration> variables,
 			Collection<AbstractAssignmentAction> assignments) {
 		return assignments.stream().filter(it -> variables.contains(getDeclaration(it.getLhs())))
 				.collect(Collectors.toList());
+	}
+	
+	public List<AbstractAssignmentAction> getAssignments(Collection<VariableDeclaration> variables,	XSTS xSts) {
+		List<AbstractAssignmentAction> assignments = ecoreUtil.getAllContentsOfType(
+				xSts, AbstractAssignmentAction.class);
+		return getAssignments(variables, assignments);
 	}
 	
 	public VariableDeclarationAction extractExpressions(

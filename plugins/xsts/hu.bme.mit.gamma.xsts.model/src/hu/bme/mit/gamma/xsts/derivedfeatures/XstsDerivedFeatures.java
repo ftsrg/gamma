@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -341,7 +341,8 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 	}
 
 	private static Set<VariableDeclaration> _getWrittenVariables(AbstractAssignmentAction action) {
-		return expressionUtil.getReferredVariables(action.getLhs());
+		return expressionUtil.getReferredVariables(
+				action.getLhs());
 	}
 	
 	private static Set<VariableDeclaration> _getWrittenVariables(VariableDeclarationAction action) {
@@ -453,5 +454,31 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 		referredVariables.addAll(getWrittenVariables(action));
 		return referredVariables;
 	}
+	
+	public static Set<VariableDeclaration> getWrittenOnlyVariables(Action action) {
+		Set<VariableDeclaration> writtenOnlyVariables =
+				new HashSet<VariableDeclaration>(getWrittenVariables(action));
+		writtenOnlyVariables.removeAll(getReadVariables(action));
+		return writtenOnlyVariables;
+	}
 
+	public static Set<VariableDeclaration> getWrittenOnlyVariables(
+			Collection<? extends Action> actions) {
+		Set<VariableDeclaration> writtenOnlyVariables = new HashSet<VariableDeclaration>();
+		
+		for (Action action : actions) {
+			writtenOnlyVariables.addAll(getWrittenVariables(action));
+		}
+		for (Action action : actions) {
+			writtenOnlyVariables.removeAll(getReadVariables(action));
+		}
+		
+		return writtenOnlyVariables;
+	}
+
+	public static Set<VariableDeclaration> getWrittenOnlyVariables(XSTS xSts) {
+		return getWrittenOnlyVariables(
+				getAllActions(xSts));
+	}
+	
 }

@@ -3,6 +3,7 @@ import "AsynchronousTrafficLightCtrl.gcd"
 analysis {
 	component : TrafficLightCtrl
 	language : Theta
+	state-coverage
 	constraint : {
 		top : {
 			minimum-orchestrating-period : 500 ms
@@ -14,6 +15,6 @@ analysis {
 verification {
 	language : Theta
 	file : "AsynchronousTrafficLightCtrl.xsts"
-	property-file : "AsynchronousTrafficLightCtrl.gpd"
+	property-file : ".AsynchronousTrafficLightCtrl.gpd"
 	test-language : java
 }

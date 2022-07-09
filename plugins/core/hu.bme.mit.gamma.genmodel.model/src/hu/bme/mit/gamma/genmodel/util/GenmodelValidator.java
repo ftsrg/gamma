@@ -71,6 +71,7 @@ import hu.bme.mit.gamma.genmodel.model.TransitionCoverage;
 import hu.bme.mit.gamma.genmodel.model.Verification;
 import hu.bme.mit.gamma.genmodel.model.XstsReference;
 import hu.bme.mit.gamma.genmodel.model.YakinduCompilation;
+import hu.bme.mit.gamma.property.derivedfeatures.PropertyModelDerivedFeatures;
 import hu.bme.mit.gamma.property.model.PropertyPackage;
 import hu.bme.mit.gamma.scenario.model.NegatedModalInteraction;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter;
@@ -190,36 +191,44 @@ public class GenmodelValidator extends ExpressionModelValidator {
 		List<AnalysisLanguage> languages = verification.getAnalysisLanguages();
 		if (languages.size() != 1) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-					"A single formal language must be specified",
+				"A single formal language must be specified",
 					new ReferenceInfo(GenmodelModelPackage.Literals.VERIFICATION__ANALYSIS_LANGUAGES)));
 		}
 		File resourceFile = ecoreUtil.getFile(verification.eResource());
 		List<String> modelFiles = verification.getFileName();
 		if (modelFiles.size() != 1) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-					"A single model file must be specified",
+				"A single model file must be specified",
 					new ReferenceInfo(GenmodelModelPackage.Literals.TASK__FILE_NAME)));
 		}
 		for (String modelFile : modelFiles) {
 			if (!fileUtil.isValidRelativeFile(resourceFile, modelFile)) {
 				int index = modelFiles.indexOf(modelFile);
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-						"This is not a valid relative path to a model file: " + modelFile,
+					"This is not a valid relative path to a model file: " + modelFile,
 						new ReferenceInfo(GenmodelModelPackage.Literals.TASK__FILE_NAME, index)));
 			}
 		}
 		List<String> queryFiles = verification.getQueryFiles();
 		List<PropertyPackage> propertyPackages = verification.getPropertyPackages();
+		if (verification.isOptimizeModel()) {
+			if (propertyPackages.stream().anyMatch(it ->
+					!PropertyModelDerivedFeatures.isUnfolded(it))) {
+				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+					"If optimization is set, then all property packages must refer to unfolded components",
+						new ReferenceInfo(GenmodelModelPackage.Literals.VERIFICATION__OPTIMIZE_MODEL)));
+			}
+		}
 		if (queryFiles.size() + propertyPackages.size() < 1) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-					"At least one query file must be specified",
+				"At least one query file must be specified",
 					new ReferenceInfo(GenmodelModelPackage.Literals.VERIFICATION__QUERY_FILES)));
 		}
 		for (String queryFile : queryFiles) {
 			if (!fileUtil.isValidRelativeFile(resourceFile, queryFile)) {
 				int index = queryFiles.indexOf(queryFile);
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-						"This is not a valid relative path to a query file: " + queryFile,
+					"This is not a valid relative path to a query file: " + queryFile,
 						new ReferenceInfo(GenmodelModelPackage.Literals.VERIFICATION__QUERY_FILES, index)));
 			}
 		}

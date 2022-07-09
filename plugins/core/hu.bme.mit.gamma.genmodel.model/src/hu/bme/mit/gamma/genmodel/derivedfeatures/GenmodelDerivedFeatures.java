@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2021 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -17,12 +17,14 @@ import org.eclipse.emf.ecore.EObject;
 
 import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
 import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation;
+import hu.bme.mit.gamma.genmodel.model.AnalysisTask;
 import hu.bme.mit.gamma.genmodel.model.ComponentReference;
 import hu.bme.mit.gamma.genmodel.model.GenModel;
 import hu.bme.mit.gamma.genmodel.model.ModelReference;
 import hu.bme.mit.gamma.genmodel.model.StatechartContractGeneration;
 import hu.bme.mit.gamma.genmodel.model.Task;
 import hu.bme.mit.gamma.genmodel.model.TestAutomatonType;
+import hu.bme.mit.gamma.genmodel.model.Verification;
 import hu.bme.mit.gamma.genmodel.model.XstsReference;
 
 public class GenmodelDerivedFeatures extends ExpressionModelDerivedFeatures {
@@ -54,11 +56,16 @@ public class GenmodelDerivedFeatures extends ExpressionModelDerivedFeatures {
 		throw new IllegalArgumentException("Not supported model reference: " + modelReference);
 	}
 
+	public static boolean isVerifyAnalysisTask(AnalysisModelTransformation analysisModelTransformation) {
+		return analysisModelTransformation.getTask() == AnalysisTask.TRANSFORMATION_AND_VERIFICATION;
+	}
+	
+	public static boolean isOptimizableVerificationTask(Verification verification) {
+		return verification.isOptimizeModel();
+	}
+	
 	public static boolean isNegativeContractGeneration(StatechartContractGeneration statechartGeneration) {
-		if (statechartGeneration.getTestType().equals(TestAutomatonType.NEGATIVE)) {
-			return true;
-		}
-		return false;
+		return statechartGeneration.getTestType() == TestAutomatonType.NEGATIVE;
 	}
 
 }

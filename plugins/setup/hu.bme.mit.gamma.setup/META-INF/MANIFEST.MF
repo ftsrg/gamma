@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Gamma Setup
 Bundle-SymbolicName: hu.bme.mit.gamma.setup
-Bundle-Version: 2.6.0.qualifier
+Bundle-Version: 2.7.0.qualifier
 Require-Bundle: org.eclipse.core.runtime,
  org.yakindu.base.types;visibility:=reexport,
  org.yakindu.sct.model.sgraph;visibility:=reexport,
@@ -15,7 +15,6 @@ Require-Bundle: org.eclipse.core.runtime,
  org.apache.commons.lang,
  org.eclipse.xtext.xbase.lib,
  org.eclipse.xtext,
- org.eclipse.xtext.generator,
  org.apache.commons.logging,
  org.eclipse.ui.workbench,
  org.eclipse.core.runtime,
@@ -23,6 +22,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.xtext.ui,
  org.eclipse.core.expressions,
  org.apache.log4j,
+ org.eclipse.xtext.xtext.generator,
  hu.bme.mit.gamma.expression.model,
  hu.bme.mit.gamma.action.model,
  hu.bme.mit.gamma.statechart.model,

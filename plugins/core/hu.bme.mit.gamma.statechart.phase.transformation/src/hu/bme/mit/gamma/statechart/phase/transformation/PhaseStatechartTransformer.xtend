@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.statechart.phase.transformation
 
+import hu.bme.mit.gamma.expression.util.ArgumentInliner
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance
 import hu.bme.mit.gamma.statechart.composite.PortBinding
 import hu.bme.mit.gamma.statechart.phase.MissionPhaseStateAnnotation
@@ -31,6 +32,7 @@ class PhaseStatechartTransformer {
 	
 	protected final StatechartDefinition statechart
 	
+	protected final extension ArgumentInliner argumentInliner = ArgumentInliner.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension StatechartModelFactory statechartFactory = StatechartModelFactory.eINSTANCE
 	protected final extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE

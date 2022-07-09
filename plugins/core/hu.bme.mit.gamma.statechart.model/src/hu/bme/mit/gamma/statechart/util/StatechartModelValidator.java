@@ -354,17 +354,19 @@ public class StatechartModelValidator extends ActionModelValidator {
 					
 					if (optionalAdaptivePort.isPresent()) {
 						Port adaptivePort = optionalAdaptivePort.get();
-						portEventReference.setPort(adaptivePort);
-						
-						boolean hasSameTrigger = unwrappedAdaptiveTriggers.stream()
-								.filter(it -> ecoreUtil.helperEquals(it, eventTrigger))
-								.count() > 0;
-						if (hasSameTrigger) {
-							Event event = portEventReference.getEvent();
-							validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-								"The triggers of transitions leaving this adaptive state and the contract statechart must be disjunct, " +
-									"but transitions are triggered by '" + adaptivePort.getName() + "." + event.getName() + "' in both sets",
-										new ReferenceInfo(ContractModelPackage.Literals.STATE_CONTRACT_ANNOTATION__CONTRACT_STATECHART)));
+						if (!StatechartModelDerivedFeatures.isInternal(adaptivePort)) {
+							portEventReference.setPort(adaptivePort);
+							
+							boolean hasSameTrigger = unwrappedAdaptiveTriggers.stream()
+									.filter(it -> ecoreUtil.helperEquals(it, eventTrigger))
+									.count() > 0;
+							if (hasSameTrigger) {
+								Event event = portEventReference.getEvent();
+								validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+									"The triggers of transitions leaving this adaptive state and the contract statechart must be disjunct, " +
+										"but transitions are triggered by '" + adaptivePort.getName() + "." + event.getName() + "' in both sets",
+											new ReferenceInfo(ContractModelPackage.Literals.STATE_CONTRACT_ANNOTATION__CONTRACT_STATECHART)));
+							}
 						}
 					}
 				}
@@ -758,9 +760,12 @@ public class StatechartModelValidator extends ActionModelValidator {
 					ecoreUtil.getAllContentsOfType(guard, DirectReferenceExpression.class)) {
 				Declaration declaration = reference.getDeclaration();
 				if (declaration instanceof ProcedureDeclaration) {
-					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-						"Currently, procedure declarations cannot be referenced from guards", 
-								new ReferenceInfo(reference)));
+					ProcedureDeclaration procedure = (ProcedureDeclaration) declaration;
+					if (!StatechartModelDerivedFeatures.isLambda(procedure)) {
+						validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+							"Currently, procedure declarations cannot be referenced from guards", 
+									new ReferenceInfo(reference)));
+					}
 				}
 			}
 		}

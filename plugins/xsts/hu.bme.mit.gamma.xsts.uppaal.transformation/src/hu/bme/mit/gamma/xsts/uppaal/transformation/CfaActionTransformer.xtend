@@ -1,3 +1,13 @@
+/********************************************************************************
+ * Copyright (c) 2018-2020 Contributors to the Gamma project
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * SPDX-License-Identifier: EPL-1.0
+ ********************************************************************************/
 package hu.bme.mit.gamma.xsts.uppaal.transformation
 
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
@@ -86,6 +96,7 @@ class CfaActionTransformer {
 		val uppaalVariable = traceability.get(xStsVariable)
 		
 		val selectionStruct = xStsVariable.createSelection
+		
 		val selection = selectionStruct.selection
 		val guard = selectionStruct.guard
 		
@@ -175,5 +186,39 @@ class CfaActionTransformer {
 			edge.update += transientVariable.createResetingAssignmentExpression
 		}
 	}
+	
+//	// Variable binding
+//	
+//	def getVariableBindings() {
+//		return variableBindings
+//	}
+//	
+//	@Data
+//	static class VariableBindings {
+//		
+//		Map<VariableContainer, SelectionStruct> variableDomain = newLinkedHashMap
+//		Map<VariableContainer, Set<VariableContainer>> boundVariables = newHashMap
+//		//
+//		protected final extension JavaUtil javaUtil = JavaUtil.INSTANCE
+//		
+//		def put(VariableContainer variable, SelectionStruct selection) {
+//			variableDomain += variable -> selection
+//		}
+//		
+//		def get(VariableContainer variable) {
+//			return variableDomain.checkAndGet(variable)
+//		}
+//		
+//		def put(VariableContainer variable, VariableContainer boundVariable) {
+//			boundVariables.getOrCreateSet(variable) += boundVariable
+//			boundVariables.getOrCreateSet(boundVariable) += variable
+//		}
+//		
+//		def clear () {
+//			variableDomain.clear
+//			boundVariables.clear
+//		}
+//		
+//	}
 	
 }
