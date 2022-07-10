@@ -130,4 +130,8 @@ class ScenarioLanguageValidator extends AbstractScenarioLanguageValidator {
 		handleValidationResultMessage(validator.checkAlternativeWithCheckInteraction(alternative))
 	}
 
+	@Check
+	def void checkDelayAndNegateInSameBlock(ModalInteractionSet set) {
+		handleValidationResultMessage(validator.checkDelayAndNegateInSameBlock(set))
+	}
 }
