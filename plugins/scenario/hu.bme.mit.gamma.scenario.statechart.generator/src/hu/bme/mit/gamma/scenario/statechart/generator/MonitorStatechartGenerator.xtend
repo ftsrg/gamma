@@ -109,7 +109,9 @@ class MonitorStatechartGenerator extends AbstractContractStatechartGeneration {
 						sends.forEach[it.priority = it.priority + BigInteger.valueOf(sends.indexOf(it) + currentBaseIcr)]						
 					}
 					if (receives !== null) {
-						receives.forEach [it.priority = it.priority + BigInteger.valueOf(receives.indexOf(it) + (sends !== null ? sends.size : 0) + currentBaseIcr)]
+						receives.forEach [it.priority = it.priority + BigInteger.valueOf(
+							receives.indexOf(it) + (sends !== null ? sends.size : 0) + currentBaseIcr
+						)]
 					}
 				}
 				baseIncrease += group.value.size
