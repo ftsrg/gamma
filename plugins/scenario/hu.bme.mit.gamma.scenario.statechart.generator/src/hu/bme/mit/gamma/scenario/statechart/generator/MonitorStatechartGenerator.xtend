@@ -75,6 +75,7 @@ class MonitorStatechartGenerator extends AbstractContractStatechartGeneration {
 		copyTransitionsForOptional
 		addScenarioContractAnnotation(NotDefinedEventMode.PERMISSIVE)
 		resetVariablesOnViolation()
+		resolveEqualPriorities()
 		val oldPorts = component.allPorts.filter[!it.inputEvents.empty]
 		for (port : statechart.allPorts) {
 			val oldPort = oldPorts.findFirst[it.name == port.name || it.turnedOutPortName == port.name]
@@ -87,10 +88,35 @@ class MonitorStatechartGenerator extends AbstractContractStatechartGeneration {
 	protected def void resetVariablesOnViolation() {
 		val effects = newArrayList
 		for (variable : statechart.variableDeclarations) {
-			effects += statechartUtil.createAssignment(
-					variable, exprUtil.getInitialValue(variable))
+			effects += statechartUtil.createAssignment(variable, exprUtil.getInitialValue(variable))
 		}
 		coldViolation.entryActions += effects
+	}
+
+	protected def void resolveEqualPriorities() {
+		for (state : firstRegion.states) {
+			val outgoingTransitions = state.outgoingTransitions
+			val groupByPriority = outgoingTransitions.groupBy[it.priority]
+			var baseIncrease = 0
+			for (group : groupByPriority.entrySet.sortBy[it.key]) {
+				if (group.value.size > 1) {
+					val transitions = group.value
+					val groupedByDirection = transitions.groupBy[it.direction]
+					val receives = groupedByDirection.get(InteractionDirection.RECEIVE)
+					val sends = groupedByDirection.get(InteractionDirection.SEND)
+					val currentBaseIcr = baseIncrease
+					if (sends !== null) {
+						sends.forEach[it.priority = it.priority + BigInteger.valueOf(sends.indexOf(it) + currentBaseIcr)]						
+					}
+					if (receives !== null) {
+						receives.forEach [it.priority = it.priority + BigInteger.valueOf(
+							receives.indexOf(it) + (sends !== null ? sends.size : 0) + currentBaseIcr
+						)]
+					}
+				}
+				baseIncrease += group.value.size
+			}
+		}
 	}
 
 	protected def void fixReplacedStates() {
@@ -347,10 +373,10 @@ class MonitorStatechartGenerator extends AbstractContractStatechartGeneration {
 		}
 
 		val otherDirViolationState = if (isSend) {
-			useColdViolationForEnvironmentViolation ? coldViolation : environmentViolation
-		} else {
-			useHotViolationForComponentViolation ? componentViolation : coldViolation
-		}
+				useColdViolationForEnvironmentViolation ? coldViolation : environmentViolation
+			} else {
+				useHotViolationForComponentViolation ? componentViolation : coldViolation
+			}
 		val violationForOtherDirection = statechartUtil.createTransition(previousState, otherDirViolationState)
 		violationForOtherDirection.priority = BigInteger.ZERO
 		val triggersWithReverseDir = getAllTriggersForDirection(statechart, !isSend)

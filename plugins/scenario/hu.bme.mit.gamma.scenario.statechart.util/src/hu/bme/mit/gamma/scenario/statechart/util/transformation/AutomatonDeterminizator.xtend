@@ -158,7 +158,7 @@ class AutomatonDeterminizator {
 			if (state === null) {
 				state = creatCollectiveState(targetStates)
 			}
-			val newTransition = set.get(0).clone
+			val newTransition = set.head.clone
 			newTransition.sourceState = node
 			newTransition.targetState = state
 			newStatechart.transitions += newTransition
