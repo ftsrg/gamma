@@ -1,0 +1,242 @@
+package s11motionthenpersoncountthendelay
+import "/hu.bme.mit.gamma.smarthome.casestudy/model/Interfaces/Interfaces.gcd"
+import "/hu.bme.mit.gamma.smarthome.casestudy/model/Control/Controller.gcd"
+import "/hu.bme.mit.gamma.smarthome.casestudy/model/Interfaces/Constants.gcd"
+@TransitionPriority = value-based
+@ScenarioContractStatechart = Controller (permissive)
+statechart S11MotionThenPersonCountThenDelay [
+	port Camera : requires Camera
+	port CameraReversed : provides Camera
+	port MotionDetector : requires MotionDetector
+	port MotionDetectorReversed : provides MotionDetector
+	port Motion : provides Motion
+	port MotionReversed : requires Motion
+	port Ventilation : provides Ventilation
+	port VentilationReversed : requires Ventilation
+	port CameraState : requires ComponentState
+	port CameraStateReversed : provides ComponentState
+	port CameraActivation : provides InternalActivation
+	port CameraActivationReversed : requires InternalActivation
+	port MotionDetectorState : requires ComponentState
+	port MotionDetectorStateReversed : provides ComponentState
+	port MotionDetectorActivation : provides InternalActivation
+	port MotionDetectorActivationReversed : requires InternalActivation
+	port VentilatorState : requires ComponentState
+	port VentilatorStateReversed : provides ComponentState
+	port VentilatorActivation : provides InternalActivation
+	port VentilatorActivationReversed : requires InternalActivation
+	port SwitchState : requires ComponentState
+	port SwitchStateReversed : provides ComponentState
+	port SwitchActivation : provides InternalActivation
+	port SwitchActivationReversed : requires InternalActivation
+] {
+	var personCount : integer
+	var ventilationLevel : integer
+	timeout delay0
+	timeout delay1
+	region ^region {
+		initial Initial
+		state state0 {
+			entry /
+			personCount := 0;
+			ventilationLevel := 0;
+		}
+		state hotComponentViolation
+		state state1
+		state state2
+		state state3
+		state state5 {
+			entry /
+			set delay0 := 5 * 1000 ms;
+		}
+		state state6
+		state state7 {
+			entry /
+			set delay1 := 1 * 1000 ms;
+		}
+		state state8
+		@SpecialStateAnnotation accepting
+		state AcceptingState
+	}
+	transition from Initial to state0
+	transition (3) from state0 to state1 when Motion.motion && !(Camera.personPresence ||
+		MotionDetector.motion || Motion.personPresence || CameraState.unavailability ||
+		CameraActivation.activate || CameraActivation.^deactivate || MotionDetectorState.unavailability
+		|| MotionDetectorActivation.activate || MotionDetectorActivation.^deactivate ||
+		VentilatorState.unavailability || VentilatorActivation.activate ||
+		VentilatorActivation.^deactivate || SwitchState.unavailability || SwitchActivation.activate ||
+		SwitchActivation.^deactivate)
+	[Motion.motion::on]
+	transition (1) from state0 to state0 when Camera.personPresence || MotionDetector.motion ||
+		Motion.motion || Motion.personPresence || CameraState.unavailability ||
+		CameraActivation.activate || CameraActivation.^deactivate || MotionDetectorState.unavailability
+		|| MotionDetectorActivation.activate || MotionDetectorActivation.^deactivate ||
+		VentilatorState.unavailability || VentilatorActivation.activate ||
+		VentilatorActivation.^deactivate || SwitchState.unavailability || SwitchActivation.activate ||
+		SwitchActivation.^deactivate
+	transition from state0 to state0 when MotionReversed.motion || MotionReversed.personPresence ||
+		VentilationReversed.switchVentilation || VentilationReversed.ventilate ||
+		CameraActivationReversed.activate || CameraActivationReversed.^deactivate ||
+		MotionDetectorActivationReversed.activate || MotionDetectorActivationReversed.^deactivate ||
+		VentilatorActivationReversed.activate || VentilatorActivationReversed.^deactivate ||
+		SwitchActivationReversed.activate || SwitchActivationReversed.^deactivate
+	transition (1) from state1 to state0 when MotionReversed.motion || MotionReversed.personPresence
+		|| VentilationReversed.switchVentilation || VentilationReversed.ventilate ||
+		CameraActivationReversed.activate || CameraActivationReversed.^deactivate ||
+		MotionDetectorActivationReversed.activate || MotionDetectorActivationReversed.^deactivate ||
+		VentilatorActivationReversed.activate || VentilatorActivationReversed.^deactivate ||
+		SwitchActivationReversed.activate || SwitchActivationReversed.^deactivate
+	transition (1) from state1 to state0 when Camera.personPresence || MotionDetector.motion ||
+		Motion.motion || Motion.personPresence || CameraState.unavailability ||
+		CameraActivation.activate || CameraActivation.^deactivate || MotionDetectorState.unavailability
+		|| MotionDetectorActivation.activate || MotionDetectorActivation.^deactivate ||
+		VentilatorState.unavailability || VentilatorActivation.activate ||
+		VentilatorActivation.^deactivate || SwitchState.unavailability || SwitchActivation.activate ||
+		SwitchActivation.^deactivate
+	transition (3) from state1 to state2 when VentilationReversed.switchVentilation &&
+		!(MotionReversed.motion || MotionReversed.personPresence || VentilationReversed.ventilate ||
+		CameraActivationReversed.activate || CameraActivationReversed.^deactivate ||
+		MotionDetectorActivationReversed.activate || MotionDetectorActivationReversed.^deactivate ||
+		VentilatorActivationReversed.activate || VentilatorActivationReversed.^deactivate ||
+		SwitchActivationReversed.activate || SwitchActivationReversed.^deactivate)
+	[VentilationReversed.switchVentilation::on]
+	transition (3) from state1 to state3 when Motion.personPresence && !(Camera.personPresence ||
+		MotionDetector.motion || Motion.motion || CameraState.unavailability ||
+		CameraActivation.activate || CameraActivation.^deactivate || MotionDetectorState.unavailability
+		|| MotionDetectorActivation.activate || MotionDetectorActivation.^deactivate ||
+		VentilatorState.unavailability || VentilatorActivation.activate ||
+		VentilatorActivation.^deactivate || SwitchState.unavailability || SwitchActivation.activate ||
+		SwitchActivation.^deactivate)
+	[0 <= Motion.personPresence::count and Motion.personPresence::count < 5] /
+	personCount := Motion.personPresence::count;
+	transition (3) from state2 to state3 when Motion.personPresence && !(Camera.personPresence ||
+		MotionDetector.motion || Motion.motion || CameraState.unavailability ||
+		CameraActivation.activate || CameraActivation.^deactivate || MotionDetectorState.unavailability
+		|| MotionDetectorActivation.activate || MotionDetectorActivation.^deactivate ||
+		VentilatorState.unavailability || VentilatorActivation.activate ||
+		VentilatorActivation.^deactivate || SwitchState.unavailability || SwitchActivation.activate ||
+		SwitchActivation.^deactivate)
+	[0 <= Motion.personPresence::count and Motion.personPresence::count < 5] /
+	personCount := Motion.personPresence::count;
+	transition (1) from state2 to state0 when Camera.personPresence || MotionDetector.motion ||
+		Motion.motion || Motion.personPresence || CameraState.unavailability ||
+		CameraActivation.activate || CameraActivation.^deactivate || MotionDetectorState.unavailability
+		|| MotionDetectorActivation.activate || MotionDetectorActivation.^deactivate ||
+		VentilatorState.unavailability || VentilatorActivation.activate ||
+		VentilatorActivation.^deactivate || SwitchState.unavailability || SwitchActivation.activate ||
+		SwitchActivation.^deactivate
+	transition from state2 to state0 when MotionReversed.motion || MotionReversed.personPresence ||
+		VentilationReversed.switchVentilation || VentilationReversed.ventilate ||
+		CameraActivationReversed.activate || CameraActivationReversed.^deactivate ||
+		MotionDetectorActivationReversed.activate || MotionDetectorActivationReversed.^deactivate ||
+		VentilatorActivationReversed.activate || VentilatorActivationReversed.^deactivate ||
+		SwitchActivationReversed.activate || SwitchActivationReversed.^deactivate
+	transition (3) from state3 to state5 when VentilationReversed.ventilate &&
+		!(MotionReversed.motion || MotionReversed.personPresence ||
+		VentilationReversed.switchVentilation || CameraActivationReversed.activate ||
+		CameraActivationReversed.^deactivate || MotionDetectorActivationReversed.activate ||
+		MotionDetectorActivationReversed.^deactivate || VentilatorActivationReversed.activate ||
+		VentilatorActivationReversed.^deactivate || SwitchActivationReversed.activate ||
+		SwitchActivationReversed.^deactivate)
+	[VentilationReversed.ventilate::level == calculateVentilationLevel(personCount)] /
+	ventilationLevel := VentilationReversed.ventilate::level;
+	transition (1) from state3 to hotComponentViolation when MotionReversed.motion ||
+		MotionReversed.personPresence || VentilationReversed.switchVentilation ||
+		VentilationReversed.ventilate || CameraActivationReversed.activate ||
+		CameraActivationReversed.^deactivate || MotionDetectorActivationReversed.activate ||
+		MotionDetectorActivationReversed.^deactivate || VentilatorActivationReversed.activate ||
+		VentilatorActivationReversed.^deactivate || SwitchActivationReversed.activate ||
+		SwitchActivationReversed.^deactivate
+	transition from state3 to state0 when Camera.personPresence || MotionDetector.motion ||
+		Motion.motion || Motion.personPresence || CameraState.unavailability ||
+		CameraActivation.activate || CameraActivation.^deactivate || MotionDetectorState.unavailability
+		|| MotionDetectorActivation.activate || MotionDetectorActivation.^deactivate ||
+		VentilatorState.unavailability || VentilatorActivation.activate ||
+		VentilatorActivation.^deactivate || SwitchState.unavailability || SwitchActivation.activate ||
+		SwitchActivation.^deactivate
+	transition (3) from state5 to state6 when timeout delay0 && !(Camera.personPresence ||
+		MotionDetector.motion || Motion.motion || Motion.personPresence || CameraState.unavailability ||
+		CameraActivation.activate || CameraActivation.^deactivate || MotionDetectorState.unavailability
+		|| MotionDetectorActivation.activate || MotionDetectorActivation.^deactivate ||
+		VentilatorState.unavailability || VentilatorActivation.activate ||
+		VentilatorActivation.^deactivate || SwitchState.unavailability || SwitchActivation.activate ||
+		SwitchActivation.^deactivate)
+	[ventilationLevel > 60]
+	transition (1) from state5 to state0 when Camera.personPresence || MotionDetector.motion ||
+		Motion.motion || Motion.personPresence || CameraState.unavailability ||
+		CameraActivation.activate || CameraActivation.^deactivate || MotionDetectorState.unavailability
+		|| MotionDetectorActivation.activate || MotionDetectorActivation.^deactivate ||
+		VentilatorState.unavailability || VentilatorActivation.activate ||
+		VentilatorActivation.^deactivate || SwitchState.unavailability || SwitchActivation.activate ||
+		SwitchActivation.^deactivate
+	transition from state5 to state0 when MotionReversed.motion || MotionReversed.personPresence ||
+		VentilationReversed.switchVentilation || VentilationReversed.ventilate ||
+		CameraActivationReversed.activate || CameraActivationReversed.^deactivate ||
+		MotionDetectorActivationReversed.activate || MotionDetectorActivationReversed.^deactivate ||
+		VentilatorActivationReversed.activate || VentilatorActivationReversed.^deactivate ||
+		SwitchActivationReversed.activate || SwitchActivationReversed.^deactivate
+	transition (3) from state6 to state7 when VentilationReversed.ventilate &&
+		!(MotionReversed.motion || MotionReversed.personPresence ||
+		VentilationReversed.switchVentilation || CameraActivationReversed.activate ||
+		CameraActivationReversed.^deactivate || MotionDetectorActivationReversed.activate ||
+		MotionDetectorActivationReversed.^deactivate || VentilatorActivationReversed.activate ||
+		VentilatorActivationReversed.^deactivate || SwitchActivationReversed.activate ||
+		SwitchActivationReversed.^deactivate)
+	[VentilationReversed.ventilate::level == ventilationLevel]
+	transition (1) from state6 to hotComponentViolation when MotionReversed.motion ||
+		MotionReversed.personPresence || VentilationReversed.switchVentilation ||
+		VentilationReversed.ventilate || CameraActivationReversed.activate ||
+		CameraActivationReversed.^deactivate || MotionDetectorActivationReversed.activate ||
+		MotionDetectorActivationReversed.^deactivate || VentilatorActivationReversed.activate ||
+		VentilatorActivationReversed.^deactivate || SwitchActivationReversed.activate ||
+		SwitchActivationReversed.^deactivate
+	transition from state6 to state0 when Camera.personPresence || MotionDetector.motion ||
+		Motion.motion || Motion.personPresence || CameraState.unavailability ||
+		CameraActivation.activate || CameraActivation.^deactivate || MotionDetectorState.unavailability
+		|| MotionDetectorActivation.activate || MotionDetectorActivation.^deactivate ||
+		VentilatorState.unavailability || VentilatorActivation.activate ||
+		VentilatorActivation.^deactivate || SwitchState.unavailability || SwitchActivation.activate ||
+		SwitchActivation.^deactivate
+	transition (3) from state7 to state8 when timeout delay1 && !(Camera.personPresence ||
+		MotionDetector.motion || Motion.motion || Motion.personPresence || CameraState.unavailability ||
+		CameraActivation.activate || CameraActivation.^deactivate || MotionDetectorState.unavailability
+		|| MotionDetectorActivation.activate || MotionDetectorActivation.^deactivate ||
+		VentilatorState.unavailability || VentilatorActivation.activate ||
+		VentilatorActivation.^deactivate || SwitchState.unavailability || SwitchActivation.activate ||
+		SwitchActivation.^deactivate)
+	transition (1) from state7 to state0 when Camera.personPresence || MotionDetector.motion ||
+		Motion.motion || Motion.personPresence || CameraState.unavailability ||
+		CameraActivation.activate || CameraActivation.^deactivate || MotionDetectorState.unavailability
+		|| MotionDetectorActivation.activate || MotionDetectorActivation.^deactivate ||
+		VentilatorState.unavailability || VentilatorActivation.activate ||
+		VentilatorActivation.^deactivate || SwitchState.unavailability || SwitchActivation.activate ||
+		SwitchActivation.^deactivate
+	transition from state7 to state0 when MotionReversed.motion || MotionReversed.personPresence ||
+		VentilationReversed.switchVentilation || VentilationReversed.ventilate ||
+		CameraActivationReversed.activate || CameraActivationReversed.^deactivate ||
+		MotionDetectorActivationReversed.activate || MotionDetectorActivationReversed.^deactivate ||
+		VentilatorActivationReversed.activate || VentilatorActivationReversed.^deactivate ||
+		SwitchActivationReversed.activate || SwitchActivationReversed.^deactivate
+	transition (3) from state8 to AcceptingState when VentilationReversed.ventilate &&
+		!(MotionReversed.motion || MotionReversed.personPresence ||
+		VentilationReversed.switchVentilation || CameraActivationReversed.activate ||
+		CameraActivationReversed.^deactivate || MotionDetectorActivationReversed.activate ||
+		MotionDetectorActivationReversed.^deactivate || VentilatorActivationReversed.activate ||
+		VentilatorActivationReversed.^deactivate || SwitchActivationReversed.activate ||
+		SwitchActivationReversed.^deactivate)
+	[VentilationReversed.ventilate::level == max(ventilationLevel - 1, 50)]
+	transition (1) from state8 to hotComponentViolation when MotionReversed.motion ||
+		MotionReversed.personPresence || VentilationReversed.switchVentilation ||
+		VentilationReversed.ventilate || CameraActivationReversed.activate ||
+		CameraActivationReversed.^deactivate || MotionDetectorActivationReversed.activate ||
+		MotionDetectorActivationReversed.^deactivate || VentilatorActivationReversed.activate ||
+		VentilatorActivationReversed.^deactivate || SwitchActivationReversed.activate ||
+		SwitchActivationReversed.^deactivate
+	transition from state8 to state0 when Camera.personPresence || MotionDetector.motion ||
+		Motion.motion || Motion.personPresence || CameraState.unavailability ||
+		CameraActivation.activate || CameraActivation.^deactivate || MotionDetectorState.unavailability
+		|| MotionDetectorActivation.activate || MotionDetectorActivation.^deactivate ||
+		VentilatorState.unavailability || VentilatorActivation.activate ||
+		VentilatorActivation.^deactivate || SwitchState.unavailability || SwitchActivation.activate ||
+		SwitchActivation.^deactivate
+}

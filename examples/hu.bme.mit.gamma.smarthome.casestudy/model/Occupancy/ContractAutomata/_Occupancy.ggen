@@ -1,0 +1,31 @@
+import scenario "Contracts/Occupancy.gsc"
+
+statechart-contract {
+	scenario : S3DelayThenMotions
+	restart-on-cold-violation : true
+	automaton-type : monitor
+}
+
+statechart-contract {
+	scenario : S4MotionThenMotion
+	restart-on-cold-violation : true
+	automaton-type : monitor
+}
+
+statechart-contract {
+	scenario : S5MotionThenTooEarlyMotion
+	restart-on-cold-violation : true
+	automaton-type : monitor
+}
+
+statechart-contract {
+	scenario : S6DelayThenMotionThenPersonPresence
+	restart-on-cold-violation : true
+	automaton-type : monitor
+}
+
+statechart-contract {
+	scenario : S7MaximumRelayedMotion
+	restart-on-cold-violation : true
+	automaton-type : monitor
+}

@@ -1,0 +1,29 @@
+@startuml
+
+		state VentilationOff
+		state VentilationOn {
+			state VentilationChoice <<choice>>
+				[*] -> BaseVentilation 
+				BaseVentilation : entry / switchOffTime := SWITCH_OFF_TIME s
+				BaseVentilation : entry / ventilationLevel := BASE_VENTILATION
+				BaseVentilation : entry / Ventilation.ventilate(ventilationLevel)
+				BaseVentilation --> FixVentilation : Motion.personPresence 
+				BaseVentilation --> VentilationOff : timeout switchOffTime 
+				FixVentilation : entry / firstVentilationChangeTime := FIRST_VENTILATION_CHANGE_TIME s
+				FixVentilation : entry / ventilationLevel := calculateVentilationLevel(\n  Motion.personPresence::count)
+				FixVentilation : entry / Ventilation.ventilate(ventilationLevel)
+				FixVentilation --> DecreasingVentilation : timeout firstVentilationChangeTime 
+				DecreasingVentilation : entry / ventilationChangeTime := VENTILATION_CHANGE_TIME s
+				DecreasingVentilation : entry / Ventilation.ventilate(ventilationLevel)
+				DecreasingVentilation --> FixVentilation : Motion.personPresence 
+				DecreasingVentilation -> VentilationChoice : timeout ventilationChangeTime 
+				VentilationChoice -> BaseVentilation :  [ventilationLevel - VENTILATION_DELTA <=\nBASE_VENTILATION]
+				VentilationChoice -> DecreasingVentilation :  [else] / ventilationLevel :=\nventilationLevel - VENTILATION_DELTA
+		}
+		[*] -> VentilationOn
+		VentilationOn : entry / Ventilation.switchVentilation(true)
+		VentilationOn : exit / Ventilation.switchVentilation(false)
+		VentilationOff --> VentilationOn : Motion.motion [Motion.motion::on]
+		VentilationOn -d-> VentilationOff : Motion.motion [!Motion.motion::on]
+		
+@enduml
