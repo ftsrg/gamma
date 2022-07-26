@@ -426,7 +426,7 @@ class OrchestratorCreator {
 		if (component.executionList.empty) {
 			return component.components
 		}
-		return component.executionList.map[it.componentInstance].filter(SynchronousComponentInstance)
+		return component.executionList.map[it.getComponentInstance].filter(SynchronousComponentInstance)
 	}
 	
 	/**

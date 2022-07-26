@@ -875,9 +875,10 @@ class ComponentTransformer {
 			xSts.resetInEventsAfterMergedAction(component)
 		}
 		
-		// After in event optimizatino
+		// After in event optimization
 		logger.log(Level.INFO, "Readjusting internal event handlings in " + name)
 		xSts.replaceInternalEventHandlingActions(component, traceability)
+		// TODO internal event optimization?
 		
 		return xSts
 	}

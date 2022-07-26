@@ -11,7 +11,7 @@
 package hu.bme.mit.gamma.trace.language.validation
 
 import hu.bme.mit.gamma.expression.model.ArgumentedElement
-import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression
 import hu.bme.mit.gamma.trace.model.ComponentSchedule
 import hu.bme.mit.gamma.trace.model.InstanceSchedule
 import hu.bme.mit.gamma.trace.model.InstanceState
@@ -70,7 +70,7 @@ class TraceLanguageValidator extends AbstractTraceLanguageValidator {
 	}
 	
 	@Check
-	def checkComponentInstanceReferences(ComponentInstanceReference reference) {
+	def checkComponentInstanceReferences(ComponentInstanceReferenceExpression reference) {
 		handleValidationResultMessage(traceModelValidator.checkComponentInstanceReferences(reference))
 	}
 	

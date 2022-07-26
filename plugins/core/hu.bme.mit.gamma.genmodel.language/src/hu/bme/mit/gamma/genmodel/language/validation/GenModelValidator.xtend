@@ -27,9 +27,10 @@ import hu.bme.mit.gamma.genmodel.model.TraceReplayModelGeneration
 import hu.bme.mit.gamma.genmodel.model.Verification
 import hu.bme.mit.gamma.genmodel.model.YakinduCompilation
 import hu.bme.mit.gamma.genmodel.util.GenmodelValidator
-import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression
 import hu.bme.mit.gamma.statechart.interface_.TimeSpecification
 import org.eclipse.xtext.validation.Check
+import hu.bme.mit.gamma.genmodel.model.StatechartContractGeneration
 
 class GenModelValidator extends AbstractGenModelValidator {
 	
@@ -172,8 +173,13 @@ class GenModelValidator extends AbstractGenModelValidator {
 	}
 	
 	@Check
-	def checkComponentInstanceReferences(ComponentInstanceReference reference) {
+	def checkComponentInstanceReferences(ComponentInstanceReferenceExpression reference) {
 		handleValidationResultMessage(genmodelValidator.checkComponentInstanceReferences(reference))
+	}
+	
+	@Check
+	def checkNegatedInteractionInTestAutomatonGeneration(StatechartContractGeneration statechartContractGeneration){
+		handleValidationResultMessage(genmodelValidator.checkNegatedInteractionInTestAutomatonGeneration(statechartContractGeneration))
 	}
 	
 }

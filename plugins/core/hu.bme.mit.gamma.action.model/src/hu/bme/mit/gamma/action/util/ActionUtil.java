@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -39,6 +39,7 @@ import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.ValueDeclaration;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.expression.util.ExpressionUtil;
+
 
 public class ActionUtil extends ExpressionUtil {
 	// Singleton
@@ -271,6 +272,11 @@ public class ActionUtil extends ExpressionUtil {
 			assignments.add(createAssignment(lhs, rhs));
 		}
 		return assignments;
+	}
+	
+	public AssignmentStatement createIncrementation(VariableDeclaration variable) {
+		return createAssignment(variable,
+				createIncrementExpression(variable));
 	}
 	
 }

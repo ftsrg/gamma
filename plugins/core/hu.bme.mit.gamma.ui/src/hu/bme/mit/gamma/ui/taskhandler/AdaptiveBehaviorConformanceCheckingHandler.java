@@ -11,22 +11,21 @@
 package hu.bme.mit.gamma.ui.taskhandler;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static hu.bme.mit.gamma.ui.taskhandler.Namings.getActivityEventName;
-import static hu.bme.mit.gamma.ui.taskhandler.Namings.getActivityInterfaceName;
-import static hu.bme.mit.gamma.ui.taskhandler.Namings.getActivityParameterName;
 import static hu.bme.mit.gamma.ui.taskhandler.Namings.getActivityPortName;
 import static hu.bme.mit.gamma.ui.taskhandler.Namings.getCompositeComponentName;
 import static hu.bme.mit.gamma.ui.taskhandler.Namings.getExtendedContractName;
+import static hu.bme.mit.gamma.ui.taskhandler.Namings.getMappedInterfaceName;
+import static hu.bme.mit.gamma.ui.taskhandler.Namings.getMappedInterfacePackagename;
 import static hu.bme.mit.gamma.ui.taskhandler.Namings.getMonitorName;
 import static hu.bme.mit.gamma.ui.taskhandler.Namings.getPhaseComponentName;
 
 import java.io.File;
 import java.io.IOException;
-import java.math.BigInteger;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -44,42 +43,39 @@ import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
 import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation;
 import hu.bme.mit.gamma.genmodel.model.ComponentReference;
 import hu.bme.mit.gamma.genmodel.model.Verification;
-import hu.bme.mit.gamma.property.model.ComponentInstanceStateConfigurationReference;
 import hu.bme.mit.gamma.property.model.PropertyPackage;
 import hu.bme.mit.gamma.property.model.StateFormula;
 import hu.bme.mit.gamma.property.util.PropertyUtil;
 import hu.bme.mit.gamma.scenario.statechart.util.ScenarioStatechartUtil;
 import hu.bme.mit.gamma.statechart.composite.Channel;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
-import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.CompositeModelFactory;
 import hu.bme.mit.gamma.statechart.composite.InstancePortReference;
 import hu.bme.mit.gamma.statechart.composite.PortBinding;
 import hu.bme.mit.gamma.statechart.composite.SchedulableCompositeComponent;
+import hu.bme.mit.gamma.statechart.contract.LinkType;
 import hu.bme.mit.gamma.statechart.contract.StateContractAnnotation;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.Event;
-import hu.bme.mit.gamma.statechart.interface_.EventDeclaration;
-import hu.bme.mit.gamma.statechart.interface_.EventDirection;
-import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression;
-import hu.bme.mit.gamma.statechart.interface_.EventTrigger;
 import hu.bme.mit.gamma.statechart.interface_.Interface;
 import hu.bme.mit.gamma.statechart.interface_.InterfaceModelFactory;
+import hu.bme.mit.gamma.statechart.interface_.InterfaceRealization;
 import hu.bme.mit.gamma.statechart.interface_.Package;
-import hu.bme.mit.gamma.statechart.interface_.Persistency;
 import hu.bme.mit.gamma.statechart.interface_.Port;
 import hu.bme.mit.gamma.statechart.interface_.RealizationMode;
 import hu.bme.mit.gamma.statechart.phase.MissionPhaseStateAnnotation;
-import hu.bme.mit.gamma.statechart.phase.MissionPhaseStateDefinition;
 import hu.bme.mit.gamma.statechart.phase.transformation.PhaseStatechartTransformer;
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction;
 import hu.bme.mit.gamma.statechart.statechart.Region;
 import hu.bme.mit.gamma.statechart.statechart.State;
 import hu.bme.mit.gamma.statechart.statechart.StateAnnotation;
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
-import hu.bme.mit.gamma.statechart.statechart.Transition;
+import hu.bme.mit.gamma.statechart.util.ExpressionSerializer;
 import hu.bme.mit.gamma.statechart.util.StatechartUtil;
+import hu.bme.mit.gamma.transformation.util.ComponentDeactivator;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
 import hu.bme.mit.gamma.util.JavaUtil;
 import hu.bme.mit.gamma.util.Triple;
@@ -110,78 +106,97 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 		Component adaptiveComponent = modelReference.getComponent();
 		// initial-blocks, restart-on-cold-violation, back-transitions are on, permissive or strict
 		StatechartDefinition adaptiveStatechart = (StatechartDefinition) adaptiveComponent;
-		
+		List<ParameterDeclaration> adaptiveStatechartParameters =
+					adaptiveStatechart.getParameterDeclarations();
+
 		// Collecting contract-behavior mappings
 		// History-based and no-history mappings have to be distinguished
-		boolean hasHistory = false;
+		boolean hasContextDependency = false;
 		
-		Map<StatechartDefinition, List<MissionPhaseStateDefinition>> contractBehaviors = 
-				new HashMap<StatechartDefinition, List<MissionPhaseStateDefinition>>(); 
-		Collection<State> adaptiveStates = StatechartModelDerivedFeatures.getAllStates(adaptiveStatechart);
+		Map<StateContractAnnotation, List<MissionPhaseStateAnnotation>> contextlessContractBehaviors = 
+				new HashMap<StateContractAnnotation, List<MissionPhaseStateAnnotation>>(); 
+		Collection<State> adaptiveStates = StatechartModelDerivedFeatures
+				.getAllStates(adaptiveStatechart);
 		for (State adaptiveState : adaptiveStates) {
 			List<State> ancestorsAndSelfAdaptiveStates =
 					StatechartModelDerivedFeatures.getAncestorsAndSelf(adaptiveState);
 			// Super state handling
+			boolean hasOrthogonalRegions = false;
 			List<StateAnnotation> annotations = new ArrayList<StateAnnotation>();
 			for (State state : ancestorsAndSelfAdaptiveStates) {
 				annotations.addAll(state.getAnnotations());
+				//
+				Region parentRegion = StatechartModelDerivedFeatures.getParentRegion(state);
+				if (StatechartModelDerivedFeatures.isOrthogonal(parentRegion)) {
+					hasOrthogonalRegions = true;
+				}
 			}
 			
 			List<StateContractAnnotation> stateContractAnnotations =
 					javaUtil.filterIntoList(annotations, StateContractAnnotation.class);
 			List<MissionPhaseStateAnnotation> missionPhaseStateAnnotations =
 					javaUtil.filterIntoList(annotations, MissionPhaseStateAnnotation.class);
+			Set<MissionPhaseStateAnnotation> contextlessMissionPhaseStateAnnotations =
+					new LinkedHashSet<MissionPhaseStateAnnotation>();
 			
 			for (StateContractAnnotation stateContractAnnotation : stateContractAnnotations) {
-				// Statechart contract - cold violation must lead to initial state
-				StatechartDefinition contract = stateContractAnnotation.getContractStatechart();
 				// Java util - add contract - list
-				List<MissionPhaseStateDefinition> behaviors = javaUtil.getOrCreateList(
-						contractBehaviors, contract);
-				for (MissionPhaseStateAnnotation phaseAnnotation : missionPhaseStateAnnotations) {
-					for (MissionPhaseStateDefinition stateDefinition :
-								List.copyOf(phaseAnnotation.getStateDefinitions())) {
-						if (!StatechartModelDerivedFeatures.hasHistory(stateDefinition)) {
-							behaviors.add(stateDefinition); // Maybe cloning to prevent overwriting?
-							
-							// No history: contract - behavior equivalence can be analyzed
-							// independently of the context -> removing from adaptive statechart
-							ecoreUtil.remove(stateDefinition);
-						}
-						else {
-							hasHistory = true;
-							ComponentInstance component = stateDefinition.getComponent();
-							Component type = StatechartModelDerivedFeatures.getDerivedType(component);
-							checkArgument(StatechartModelDerivedFeatures.isStatechart(type) ||
-									StatechartModelDerivedFeatures.isMissionPhase(type));
-						}
+				List<MissionPhaseStateAnnotation> contextlessBehaviors = javaUtil.getOrCreateList(
+						contextlessContractBehaviors, stateContractAnnotation);
+				boolean noInternalPorts = missionPhaseStateAnnotations.stream()
+						.allMatch(it -> !StatechartModelDerivedFeatures.hasInternalPort(it));
+				
+				for (MissionPhaseStateAnnotation behavior : List.copyOf(missionPhaseStateAnnotations)) {
+					LinkType linkType = stateContractAnnotation.getLinkType();
+					if (linkType == LinkType.TO_COMPONENT || // TO_COMPONENT means the user specifies context-independency
+							(!StatechartModelDerivedFeatures.hasHistory(behavior) &&
+								!stateContractAnnotation.isHasHistory() &&
+							(missionPhaseStateAnnotations.size() <= 1 || noInternalPorts) && // size() > 1 -> noInternalPorts
+								!hasOrthogonalRegions && // Too strict check - simplifiable via port binding checks
+									linkType != LinkType.TO_CONTROLLER)) {
+						// Note that TO_CONTROLLER and TO_COMPONENT are exclusive but not the negated versions of each other;
+						// the third option is DEFAULT: then this algorithm can choose if they can be removed from the context
+						
+						contextlessBehaviors.add(behavior); // Maybe cloning to prevent overwriting?
+						
+						// No history or context-dependency: contract - behavior equivalence can be analyzed
+						// independently of the context
+//						ecoreUtil.remove(behavior); // Cannot be removed as other contracts might still reference it
+						contextlessMissionPhaseStateAnnotations.add(behavior);
+					}
+					else {
+						hasContextDependency = true;
+						ComponentInstance component = behavior.getComponent();
+						Component type = StatechartModelDerivedFeatures.getDerivedType(component);
+						checkArgument(StatechartModelDerivedFeatures.isStatechart(type) ||
+								StatechartModelDerivedFeatures.isMissionPhase(type));
 					}
 				}
 			}
 			
-			// If there is no MissionPhaseStateDefinition, the state contracts can be removed
-			for (MissionPhaseStateAnnotation phaseAnnotation :
-						List.copyOf(missionPhaseStateAnnotations)) {
-				if (phaseAnnotation.getStateDefinitions().isEmpty()) {
-					missionPhaseStateAnnotations.remove(phaseAnnotation);
-					ecoreUtil.remove(phaseAnnotation);
-				}
-			}
-			if (missionPhaseStateAnnotations.isEmpty()) {
+			// If every MissionPhaseStateAnnotation is contextless, the "non-self" state contracts can be removed
+			if (contextlessMissionPhaseStateAnnotations.containsAll(missionPhaseStateAnnotations)) {
 				for (StateContractAnnotation stateContractAnnotation : stateContractAnnotations) {
-					ecoreUtil.remove(stateContractAnnotation);
+					if (stateContractAnnotation.getLinkType() != LinkType.TO_CONTROLLER) {
+						ecoreUtil.remove(stateContractAnnotation);
+					}
 				}
 			}
 			
 		}
 		
+		// T-3 models
 		// Processing historyless associations
 		List<Entry<String, PropertyPackage>> historylessModelFileUris =
 				new ArrayList<Entry<String, PropertyPackage>>();
-		
-		for (StatechartDefinition contract : contractBehaviors.keySet()) {
-			List<MissionPhaseStateDefinition> clonedBehaviors = ecoreUtil.clone(
-					contractBehaviors.get(contract));
+
+		for (StateContractAnnotation contractAnnotation : contextlessContractBehaviors.keySet()) {
+			LinkType linkType = contractAnnotation.getLinkType();
+			StatechartDefinition contract = contractAnnotation.getContractStatechart();
+			List<Expression> contractArguments = contractAnnotation.getArguments();
+			
+			List<MissionPhaseStateAnnotation> clonedBehaviors = ecoreUtil.clone(
+					contextlessContractBehaviors.get(contractAnnotation));
 			if (!clonedBehaviors.isEmpty()) {
 				SchedulableCompositeComponent composite =
 					(StatechartModelDerivedFeatures.isSynchronous(contract)) ?
@@ -190,22 +205,159 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 				
 				String name = getCompositeComponentName(contract, clonedBehaviors);
 				composite.setName(name);
+				List<ParameterDeclaration> clonedParameters =
+						ecoreUtil.clone(adaptiveStatechartParameters);
+				composite.getParameterDeclarations().addAll(clonedParameters);
+				ecoreUtil.change(clonedParameters, adaptiveStatechartParameters, clonedBehaviors);
 				
 				Package statelessAssocationPackage = statechartUtil.wrapIntoPackage(composite);
 				
+				// Reusing port bindings in the annotations
 				List<PortBinding> portBindings = javaUtil.flattenIntoList(
 						clonedBehaviors.stream().map(it -> it.getPortBindings())
 						.collect(Collectors.toList()));
-				Collection<Port> systemPorts = adaptiveStatechart.getPorts();
+				Collection<Port> systemPorts = (linkType == LinkType.TO_COMPONENT) ?
+						portBindings.stream().map(it -> it.getCompositeSystemPort())
+								.collect(Collectors.toSet()) : // T-3 restricted interface - note it is not general
+						adaptiveStatechart.getPorts(); // T-3 default interface
 				for (Port systemPort : systemPorts) {
 					Port clonedSystemPort = ecoreUtil.clone(systemPort);
 					composite.getPorts().add(clonedSystemPort);
 					ecoreUtil.change(clonedSystemPort, systemPort, clonedBehaviors);
 				}
-				
 				composite.getPortBindings().addAll(portBindings);
 				
-				for (MissionPhaseStateDefinition behavior : clonedBehaviors) {
+				// Checking transformable internal ports
+				logger.log(Level.INFO, "Checking if internal ports can be refactored into a " +
+						"broadcast or a broadcast matcher port");
+				Map<Interface, Interface> mappedInterfaces = new HashMap<Interface, Interface>();
+				Map<Component, Component> mappedComponents = new HashMap<Component, Component>();
+				
+				for (PortBinding portBinding : portBindings) {
+					Port systemPort = portBinding.getCompositeSystemPort();
+					if (StatechartModelDerivedFeatures.isInternal(systemPort)) {
+						boolean mappableToInputPort =
+								StatechartModelDerivedFeatures.isMappableToInputPort(systemPort);
+						boolean mappableToOutputPort =
+								StatechartModelDerivedFeatures.isMappableToOutputPort(systemPort);
+						if (mappableToInputPort || mappableToOutputPort) {
+							InstancePortReference instancePortReference = portBinding.getInstancePortReference();
+							ComponentInstance instance = instancePortReference.getInstance();
+							Component type = StatechartModelDerivedFeatures.getDerivedType(instance);
+							Component clonedType = null;
+							if (mappedComponents.containsKey(type)) {
+								clonedType = mappedComponents.get(type);
+								logger.log(Level.INFO, "Retrieved cloned version of '" + type.getName() + "'");
+							}
+							else {
+								logger.log(Level.INFO, "Cloning '" + type.getName() + "'");
+								clonedType = ecoreUtil.clone(type); // Clone
+								mappedComponents.put(type, clonedType);
+								// changeAll instead of changeSelfAndContents for elements contained multiple levels deep (variables)
+								ecoreUtil.changeAll(clonedType, type, clonedBehaviors);
+								ecoreUtil.changeAll(clonedType, type, composite);
+							}
+							
+							logger.log(Level.INFO, "Changing '" + systemPort.getName() + "'s interface");
+							Interface internalInterface = StatechartModelDerivedFeatures.getInterface(systemPort);
+							
+							Interface mappedInterface = null;
+							if (mappedInterfaces.containsKey(internalInterface)) {
+								mappedInterface = mappedInterfaces.get(internalInterface); // Retrieval
+							}
+							else {
+								mappedInterface = statechartUtil.createBroadcastInterface(internalInterface); // New creation
+								mappedInterface.setName(
+										getMappedInterfaceName(mappedInterface));
+								mappedInterfaces.put(internalInterface, mappedInterface);
+							}
+							
+							RealizationMode realizationMode = (mappableToInputPort) ?
+									RealizationMode.REQUIRED : RealizationMode.PROVIDED;
+							InterfaceRealization interfaceRealization = systemPort.getInterfaceRealization();
+							interfaceRealization.setInterface(mappedInterface);
+							interfaceRealization.setRealizationMode(realizationMode);
+							
+							Port instancePort = instancePortReference.getPort();
+							logger.log(Level.INFO, "Changing '" + instance.getName() + "." +
+									instancePort.getName() + "'s interface");
+
+							instancePort.setInterfaceRealization(
+									ecoreUtil.clone(interfaceRealization));
+							ecoreUtil.changeAll(mappedInterface, internalInterface, clonedType); // For event references
+							// Reworked content: component has to be saved and serialized (maybe multiple adds)
+							statelessAssocationPackage.getComponents().add(clonedType);
+						}
+					}
+				}
+				// Change monitor interfaces
+				StatechartDefinition insertableContract = ecoreUtil.clone(contract);
+				Map<Interface, Interface> contractMappedInterfaces = new HashMap<Interface, Interface>();
+				for (Port contractPort : StatechartModelDerivedFeatures.getAllPorts(insertableContract)) {
+					Interface contractInterface = StatechartModelDerivedFeatures.getInterface(contractPort);
+					if (mappedInterfaces.containsKey(contractInterface)) {
+						checkArgument(  // Only input events are used
+								StatechartModelDerivedFeatures.isMappableToInputPort(contractPort));
+						Interface mappedInterface = mappedInterfaces.get(contractInterface);
+						RealizationMode realizationMode = RealizationMode.REQUIRED; // Only input events are used
+						InterfaceRealization interfaceRealization = contractPort.getInterfaceRealization();
+						interfaceRealization.setInterface(mappedInterface);
+						interfaceRealization.setRealizationMode(realizationMode);
+						
+						contractMappedInterfaces.put(contractInterface, mappedInterface);
+						// Interface changes cannot be done here as it would change interfaces
+						// in the reversed ports as well
+					}
+//					else if (StatechartModelDerivedFeatures.isInternal(contractPort)) {
+//						// All internal contract ports are mapped to input ports to support optimizations
+//						Interface mappedInterface = statechartUtil
+//								.createBroadcastInterface(contractInterface);
+//						mappedInterface.setName(
+//								getMappedInterfaceName(mappedInterface));
+//						// Contracts use only input events, hence the required mode
+//						InterfaceRealization realization = contractPort.getInterfaceRealization();
+//						realization.setRealizationMode(RealizationMode.REQUIRED);
+//						
+//						mappedInterfaces.put(contractInterface, mappedInterface);
+//						contractMappedInterfaces.put(contractInterface, mappedInterface);
+//					}
+				}
+				if (!contractMappedInterfaces.isEmpty()) {
+					for (Interface contractInterface : contractMappedInterfaces.keySet()) {
+						Interface mappedInterface = contractMappedInterfaces.get(contractInterface);
+						ecoreUtil.changeAll(mappedInterface, contractInterface, insertableContract);
+					}
+					
+					contract = insertableContract; // See insertMonitor
+					statelessAssocationPackage.getComponents().add(insertableContract); // For serialization
+				}
+				// Save interface independently
+				if (!mappedInterfaces.isEmpty()) {
+					// Serializing the mapped interfaces
+					Package mappedInterfacePackage = null;
+					for (Interface mappedInterface : mappedInterfaces.values()) {
+						if (mappedInterfacePackage == null) {
+							mappedInterfacePackage = statechartUtil.wrapIntoPackage(mappedInterface);
+						}
+						else {
+							mappedInterfacePackage.getInterfaces().add(mappedInterface);
+						}
+					}
+					mappedInterfacePackage.setName(
+							getMappedInterfacePackagename());
+					String interfacePackageFileName = fileUtil.toHiddenFileName(
+							fileNamer.getPackageFileName(
+									javaUtil.toFirstCharUpper(mappedInterfacePackage.getName())));
+					this.serializer.saveModel(mappedInterfacePackage,
+							this.getTargetFolderUri(), interfacePackageFileName);
+				}
+				//
+				
+				// T-1 models
+				// Adding behavior
+				for (MissionPhaseStateAnnotation behavior : clonedBehaviors) {
+					// TODO note that only one (synchronous) behavior is supported per port
+					// due to bindings and channels
 					ComponentInstance componentInstance = behavior.getComponent();
 					statechartUtil.addComponentInstance(composite, componentInstance);
 					Component behaviorType = StatechartModelDerivedFeatures.getDerivedType(componentInstance);
@@ -225,7 +377,7 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 						StatechartModelDerivedFeatures.getDerivedComponents(composite));
 				// Inserting the monitor into the composition
 				Triple<String, PropertyPackage, ComponentInstance> artifacts =
-						insertMonitor(composite, contract, name);
+						insertMonitor(composite, contract, contractArguments, name);
 				Entry<String, PropertyPackage> modelFileUri =
 						new SimpleEntry<String, PropertyPackage>(
 								artifacts.getFirst(), artifacts.getSecond());
@@ -237,22 +389,15 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 		List<Entry<String, PropertyPackage>> historyModelFileUris =
 				new ArrayList<Entry<String, PropertyPackage>>();
 		
+		// T-2 models
 		// Processing original adaptive statechart if necessary
-		if (hasHistory) {
+		// TODO extract this whole functionality based on state-component links
+		// to support component adaptivity; make sure that monitor insertion is generalized
+		if (hasContextDependency) {
 			String targetFolderUri = this.getTargetFolderUri();
 			// Creating activity interface and event
-			Interface activityInterface = interfaceFactory.createInterface();
-			activityInterface.setName(getActivityInterfaceName());
-			EventDeclaration eventDeclaration = interfaceFactory.createEventDeclaration();
-			activityInterface.getEvents().add(eventDeclaration);
-			eventDeclaration.setDirection(EventDirection.OUT);
-			Event event = interfaceFactory.createEvent();
-			eventDeclaration.setEvent(event);
-			event.setPersistency(Persistency.PERSISTENT);
-			event.setName(getActivityEventName());
-			
-			ParameterDeclaration isActiveParameter = statechartUtil.extendEventWithParameter(
-					event, expressionFactory.createBooleanTypeDefinition(), getActivityParameterName());
+			Interface activityInterface = ComponentDeactivator.getActivityInterface();
+			Event event = ComponentDeactivator.getActivityEvent();
 			
 			// Serializing activity interface
 			Package activityInterfacePackage = statechartUtil.wrapIntoPackage(activityInterface);
@@ -260,111 +405,71 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 					fileNamer.getPackageFileName(activityInterface.getName()));
 			this.serializer.saveModel(activityInterfacePackage, targetFolderUri, interfacePackageFileName);
 			
-			Map<Port, List<Port>> activityPorts = new HashMap<Port, List<Port>>();
-			Map<Entry<StatechartDefinition, Boolean>, StatechartDefinition> extendedContracts =
-					new HashMap<Entry<StatechartDefinition, Boolean>, StatechartDefinition>();
+			// Adding activity ports in adaptive statechart
+			Map<State, Port> activityPorts = new HashMap<State, Port>();
 			
 			List<StateContractAnnotation> stateContractAnnotations =
 					ecoreUtil.getAllContentsOfType(adaptiveStatechart, StateContractAnnotation.class);
-			for (StateContractAnnotation stateContractAnnotation : stateContractAnnotations) {
-				State state = ecoreUtil.getContainerOfType(stateContractAnnotation, State.class);
-				Port adaptiveActivityPort = statechartUtil.createPort(activityInterface,
-						RealizationMode.PROVIDED, getActivityPortName(adaptiveStatechart, state));
+			Set<State> annotationStates = stateContractAnnotations.stream()
+					.map(it -> ecoreUtil.getContainerOfType(it, State.class))
+					.collect(Collectors.toSet()); // Important that it is a set
+			
+			for (State annotationState : annotationStates) {
+				Port adaptiveActivityPort = statechartUtil.createPort(
+						activityInterface, RealizationMode.PROVIDED,
+						getActivityPortName(adaptiveStatechart, annotationState));
+				activityPorts.put(annotationState, adaptiveActivityPort);
+				
 				adaptiveStatechart.getPorts().add(adaptiveActivityPort);
 				// Raising activity events
 				RaiseEventAction activateAction = statechartUtil.createRaiseEventAction(
-						adaptiveActivityPort, event, List.of(expressionFactory.createTrueExpression()));
-				state.getEntryActions().add(activateAction);
+						adaptiveActivityPort, event, expressionFactory.createTrueExpression());
+				annotationState.getEntryActions().add(activateAction);
 				RaiseEventAction deactivateAction = statechartUtil.createRaiseEventAction(
-						adaptiveActivityPort, event, List.of(expressionFactory.createFalseExpression()));
-				state.getExitActions().add(deactivateAction);
-				
-				StatechartDefinition contract = stateContractAnnotation.getContractStatechart();
-				boolean contractHistory = stateContractAnnotation.isHasHistory();
-				Entry<StatechartDefinition, Boolean> originalContract =
-						new SimpleEntry<StatechartDefinition, Boolean>(contract, contractHistory);
-				if (!extendedContracts.containsKey(originalContract)) {
-					Port contractActivityPort = statechartUtil.createPort(activityInterface,
-							RealizationMode.REQUIRED, getActivityPortName(contract));
-					// Cloning
-					StatechartDefinition clonedContract = ecoreUtil.clone(contract);
-					clonedContract.getPorts().add(contractActivityPort);
-					List<Port> contractPorts = javaUtil.getOrCreateList(
-							activityPorts, adaptiveActivityPort);
-					contractPorts.add(contractActivityPort);
-					
-					extendedContracts.put(originalContract, clonedContract);
-				}
-				// Removing annotations as they should not be serialized
-				ecoreUtil.remove(stateContractAnnotation);
+						adaptiveActivityPort, event, expressionFactory.createFalseExpression());
+				annotationState.getExitActions().add(deactivateAction);
 			}
+			//
 			
-			// Handling extended contracts
-			Set<Port> adaptiveStatechartActivityPorts = activityPorts.keySet();
-			List<Port> activityPortsList = javaUtil.flattenIntoList(activityPorts.values());
-			for (Entry<StatechartDefinition, Boolean> originalContract : extendedContracts.keySet()) {
-				StatechartDefinition extendedContract = extendedContracts.get(originalContract);
+			// Adding activity ports in contract statecharts
+			Map<StateContractAnnotation, StatechartDefinition> extendedContracts =
+					new HashMap<StateContractAnnotation, StatechartDefinition>();
+			Map<Port, List<Port>> connectedActivityPorts = new HashMap<Port, List<Port>>();
+			
+			for (StateContractAnnotation stateContractAnnotation : stateContractAnnotations) {
+				StatechartDefinition contract = stateContractAnnotation.getContractStatechart();
+				StatechartDefinition extendedContract = ecoreUtil.clone(contract);
+				extendedContracts.put(stateContractAnnotation, extendedContract);
 				
-				List<Port> contractPorts = StatechartModelDerivedFeatures.getAllPorts(extendedContract);
-				Port activityPort = javaUtil.getOnlyElement(
-						activityPortsList.stream().filter(it -> contractPorts.contains(it))
-							.collect(Collectors.toList()));
+				State annotationState = ecoreUtil.getContainerOfType(
+						stateContractAnnotation, State.class);
+				Port adaptiveActivityPort = activityPorts.get(annotationState);
 				
-				//
-				List<Transition> transitions = ecoreUtil.getAllContentsOfType(
-						extendedContract, Transition.class).stream()
-							.filter(it -> StatechartModelDerivedFeatures.isLeavingState(it))
-							.collect(Collectors.toList());
-				// Extending all transitions with a guard that handles activity
-				for (Transition transition : transitions) {
-					Expression guard = transition.getGuard();
-					EventParameterReferenceExpression isActiveExpression =
-							statechartUtil.createEventParameterReference(activityPort, isActiveParameter);
-					Expression extendedGuard =
-							statechartUtil.wrapIntoAndExpression(guard, isActiveExpression);
-					transition.setGuard(extendedGuard);
-				}
+				ComponentDeactivator componentDeactivator = new ComponentDeactivator(
+						extendedContract, statechartUtil.createHistory(
+								stateContractAnnotation.isHasHistory()));
 				
-				// Handling deactivations by introducing new transitions
-				boolean hasContractHistory = originalContract.getValue(); // Contract history is supported
-				if (!hasContractHistory) {
-					List<State> states = ecoreUtil.getAllContentsOfType(extendedContract, State.class);
-					Region region = javaUtil.getOnlyElement(extendedContract.getRegions());
-					State initialState = StatechartModelDerivedFeatures.getInitialState(region);
-					states.remove(initialState); // It would be unnecessary to create a loop edge here
-					for (State state : states) {
-						Transition deactivatingTransition = statechartUtil
-								.createTransition(state, initialState);
-						EventTrigger deactivatingTrigger =
-								statechartUtil.createEventTrigger(activityPort, event);
-						deactivatingTransition.setTrigger(deactivatingTrigger);
-						// We do not add an event parameter reference to support loop edges in adaptive states
-						// that deactivate and activate the contract in a 'single cycle'
-						// This works as all activity events denote deactivation inside the contact
-//						EventParameterReferenceExpression isActiveExpression =
-//								statechartUtil.createEventParameterReference(activityPort, isActiveParameter);
-//						NotExpression isNotActiveExpression =
-//								statechartUtil.createNotExpression(isActiveExpression);
-//						deactivatingTransition.setGuard(isNotActiveExpression);
-						BigInteger highestPriority = StatechartModelDerivedFeatures.getHighestPriority(state);
-						deactivatingTransition.setPriority(highestPriority.add(BigInteger.ONE));
-						// Note that this way, deactivation has priority over hot violation
-						// in the case of synchronous statecharts
-					}
-				}
-				// TODO If there is history, we cannot reset the contract timer on reactivation in sync models -
-				// the verification this way is more permitting than it should be
+				Port contractActivityPort = componentDeactivator.addActivityPort();
+				List<Port> contractPorts = javaUtil.getOrCreateList(
+						connectedActivityPorts, adaptiveActivityPort);
+				contractPorts.add(contractActivityPort);
+				
+				componentDeactivator.makeContractDeactivatable();
 				
 				// TODO An error event could be introduced in the hot violation state 
 				
+				// Removing annotations as they should not be serialized
+				ecoreUtil.remove(stateContractAnnotation);
+				//
 				Package extendedContractPackage = statechartUtil.wrapIntoPackage(extendedContract);
 				extendedContractPackage.getImports().addAll(
 						StatechartModelDerivedFeatures.getImportablePackages(extendedContractPackage));
 				String extendedContractPackageFileName = fileUtil.toHiddenFileName(
-						fileNamer.getPackageFileName(getExtendedContractName(extendedContract, hasContractHistory)));
+						fileNamer.getPackageFileName(getExtendedContractName(stateContractAnnotation)));
 				this.serializer.saveModel(
 						extendedContractPackage, targetFolderUri, extendedContractPackageFileName);
 			}
+			//
 			
 			// Transforming (inlining) phases
 			PhaseStatechartTransformer phaseStatechartTransformer =
@@ -379,10 +484,13 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 					fileNamer.getPackageFileName(componentFileName));
 			this.serializer.saveModel(missionPhasePackage, targetFolderUri, packageFileName);
 			
-			for (Entry<StatechartDefinition, Boolean> originalContract : extendedContracts.keySet()) {
-				StatechartDefinition statechartContract = extendedContracts.get(originalContract);
+			Set<Port> adaptiveStatechartActivityPorts = connectedActivityPorts.keySet();
+			for (StateContractAnnotation stateContractAnnotation : extendedContracts.keySet()) {
+				StatechartDefinition statechartContract = extendedContracts.get(stateContractAnnotation);
+				List<Expression> arguments = stateContractAnnotation.getArguments();
 				// Creating the composition without the activity ports
-				adaptiveStatechart.getPorts().removeAll(adaptiveStatechartActivityPorts);
+				adaptiveStatechart.getPorts()
+						.removeAll(adaptiveStatechartActivityPorts);
 				SchedulableCompositeComponent composite = statechartUtil.wrapComponent(adaptiveStatechart);
 				adaptiveStatechart.getPorts().addAll(adaptiveStatechartActivityPorts);
 				//
@@ -399,7 +507,7 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 				
 				// Inserting the monitor
 				Triple<String, PropertyPackage, ComponentInstance> artifacts =
-						insertMonitor(composite, statechartContract, name);
+						insertMonitor(composite, statechartContract, arguments, name);
 				Entry<String, PropertyPackage> modelFileUri =
 						new SimpleEntry<String, PropertyPackage>(
 								artifacts.getFirst(), artifacts.getSecond());
@@ -408,7 +516,7 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 				// Connecting the activity ports
 				ComponentInstance contractInstance = artifacts.getThird();
 				for (Port adaptiveStatechartPort : adaptiveStatechartActivityPorts) {
-					List<Port> connectedPorts = activityPorts.get(adaptiveStatechartPort);
+					List<Port> connectedPorts = connectedActivityPorts.get(adaptiveStatechartPort);
 					List<Port> contractPorts = new ArrayList<Port>(
 							StatechartModelDerivedFeatures.getAllPorts(statechartContract));
 					contractPorts.retainAll(connectedPorts);
@@ -480,25 +588,28 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 	}
 	
 	private Triple<String, PropertyPackage, ComponentInstance> insertMonitor(
-			SchedulableCompositeComponent composite, StatechartDefinition contract, String name)
-					throws IOException {
+			SchedulableCompositeComponent composite, StatechartDefinition contract,
+			List<? extends Expression> arguments, String name) throws IOException {
 		// Contract statechart
 		ComponentInstance contractInstance = statechartUtil.instantiateComponent(contract);
+		contractInstance.getArguments().addAll(
+				ecoreUtil.clone(arguments));
 		String monitorName = getMonitorName();
 		contractInstance.setName(monitorName);
 		
 		statechartUtil.addComponentInstance(composite, contractInstance);
 		
-		// Setting the component execution
-		
-		boolean hasInitialBlock = StatechartModelDerivedFeatures.hasInitialOutputsBlock(contract);
-		if (hasInitialBlock) {
+		// The initial execution does not have to be set anymore due to the initial block handling?
+		// It does due to the timing that the first active state may have to start measuring before
+		// the first environment transition
+		if (StatechartModelDerivedFeatures.hasInitialOutputsBlock(contract)) {
 			composite.getInitialExecutionList().add(
 					statechartUtil.createInstanceReference(contractInstance));
 		}
+		//
 		
 		// Monitor (input) - behavior (already present) - monitor (output)
-		List<ComponentInstanceReference> executionList = composite.getExecutionList();
+		List<ComponentInstanceReferenceExpression> executionList = composite.getExecutionList();
 		executionList.add(0, statechartUtil.createInstanceReference(contractInstance));
 		executionList.add(statechartUtil.createInstanceReference(contractInstance));
 		
@@ -506,44 +617,19 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 		
 		for (Port systemPort : StatechartModelDerivedFeatures.getAllPorts(composite)) {
 			if (elementTracer.hasMatchedPort(systemPort, contract)) {
-				Port contractPort = elementTracer.matchPort(systemPort, contract);
-				// Only for all input ports
-				if (StatechartModelDerivedFeatures.isBroadcastMatcher(contractPort)) {
-					PortBinding inputPortBinding = factory.createPortBinding();
-					inputPortBinding.setCompositeSystemPort(systemPort);
-					
-					InstancePortReference instancePortReference = statechartUtil
-							.createInstancePortReference(contractInstance, contractPort);
-					inputPortBinding.setInstancePortReference(instancePortReference);
-					
-					composite.getPortBindings().add(inputPortBinding);
-				}
-				// Only for output ports
-				else if (StatechartModelDerivedFeatures.isBroadcast(contractPort)) {
-					Collection<PortBinding> outputPortBindings =
-							StatechartModelDerivedFeatures.getPortBindings(systemPort);
-					
-					Port reversedContractPort = elementTracer.matchReversedPort(contractPort, contract);
-					
-					// Channeling ports to definitions
-					for (PortBinding outputPortBinding : outputPortBindings) {
-						InstancePortReference contractPortReference = statechartUtil
-								.createInstancePortReference(contractInstance, reversedContractPort);
-						InstancePortReference behaviorPortReference = ecoreUtil
-								.clone(outputPortBinding.getInstancePortReference());
-						Channel channel = statechartUtil.createChannel(
-								behaviorPortReference, contractPortReference);
-						
-						composite.getChannels().add(channel);
-					}
-				}
-				else {
-					throw new IllegalArgumentException("Not broadcast port: " + contractPort);
-				}
+				connectPorts(systemPort, contractInstance);
 			}
 			else {
-				logger.log(Level.INFO, "Not matchable port: " +
-						contract.getName() + "." + systemPort.getName());
+				// In case internal ports are transformed, some provided internal ports
+				// remain required due to handling all input events - checking the opposite ports
+				Port clonedSystemPort = statechartUtil.createOppositePort(systemPort);
+				if (elementTracer.hasMatchedPort(clonedSystemPort, contract)) {
+					connectPorts(systemPort, contractInstance);
+				}
+				else {
+					logger.log(Level.INFO, "Not matchable port: " +
+							contract.getName() + "." + systemPort.getName());
+				}
 			}
 		}
 		
@@ -552,7 +638,7 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 		// Setting imports
 		Package compositePackage = StatechartModelDerivedFeatures.getContainingPackage(composite);
 		compositePackage.getImports().addAll(
-				StatechartModelDerivedFeatures.getImportablePackages(composite));
+				StatechartModelDerivedFeatures.getImportablePackages(compositePackage));
 		
 		// Serialization
 		String targetFolderUri = this.getTargetFolderUri();
@@ -564,7 +650,7 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 		
 		// Saving the property
 		State violationState = elementTracer.getViolationState(contract);
-		ComponentInstanceStateConfigurationReference violationStateReference =
+		ComponentInstanceStateReferenceExpression violationStateReference =
 				propertyUtil.createStateReference(
 						propertyUtil.createInstanceReference(contractInstance), violationState);
 		StateFormula eFViolation = propertyUtil.createEF(
@@ -577,6 +663,51 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 		// Returning the artifacts to set the analysis model transformer
 		return new Triple<String, PropertyPackage, ComponentInstance>(
 				modelFileUri, violationPropertyPackage, contractInstance);
+	}
+
+	private void connectPorts(Port systemPort, ComponentInstance contractInstance) {
+		SchedulableCompositeComponent composite = (SchedulableCompositeComponent)
+				StatechartModelDerivedFeatures.getContainingComponent(systemPort);
+		Component contract = StatechartModelDerivedFeatures.getDerivedType(contractInstance);
+		
+		// Only for all input ports
+		if (StatechartModelDerivedFeatures.isBroadcastMatcher(systemPort)) {
+			PortBinding inputPortBinding = factory.createPortBinding();
+			Port contractPort = elementTracer.matchPort(systemPort, contract);
+			inputPortBinding.setCompositeSystemPort(systemPort);
+			
+			InstancePortReference instancePortReference = statechartUtil
+					.createInstancePortReference(contractInstance, contractPort);
+			inputPortBinding.setInstancePortReference(instancePortReference);
+			
+			composite.getPortBindings().add(inputPortBinding);
+		}
+		// Only for output ports
+		else if (StatechartModelDerivedFeatures.isBroadcast(systemPort)) {
+			Collection<PortBinding> outputPortBindings =
+					StatechartModelDerivedFeatures.getPortBindings(systemPort);
+			
+			Port reversedContractPort = elementTracer.matchReversedPort(systemPort, contract);
+			
+			// Channeling ports to definitions
+			for (PortBinding outputPortBinding : outputPortBindings) {
+				InstancePortReference contractPortReference = statechartUtil
+						.createInstancePortReference(contractInstance, reversedContractPort);
+				InstancePortReference behaviorPortReference = ecoreUtil
+						.clone(outputPortBinding.getInstancePortReference());
+				Channel channel = statechartUtil.createChannel(
+						behaviorPortReference, contractPortReference);
+				
+				composite.getChannels().add(channel);
+			}
+		}
+		else if (StatechartModelDerivedFeatures.isInternal(systemPort)) {
+			logger.log(Level.INFO, "Not matching internal port: " +
+					contract.getName() + "." + systemPort.getName());
+		}
+		else {
+			throw new IllegalArgumentException("Not broadcast port: " + systemPort);
+		}
 	}
 	
 	// Settings
@@ -592,10 +723,11 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 
 class Namings {
 	//
+	protected static final ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE;
 	protected static final JavaUtil javaUtil = JavaUtil.INSTANCE;
 	//
 	public static String getCompositeComponentName(Component contract,
-			List<MissionPhaseStateDefinition> behaviors) {
+			List<MissionPhaseStateAnnotation> behaviors) {
 		return contract.getName() + "_" + behaviors.stream()
 			.map(it -> it.getComponent().getName()).reduce("", (a,  b) -> a + "_" + b);
 	}
@@ -612,11 +744,27 @@ class Namings {
 		return "monitor";
 	}
 	
-	public static String getExtendedContractName(Component contract, Boolean hasHistory) {
-		return contract.getName() + "_" + javaUtil.toFirstCharUpper(hasHistory.toString());
+	public static String getExtendedContractName(StateContractAnnotation annotation) {
+		StatechartDefinition contract = annotation.getContractStatechart();
+		StringBuilder builder = new StringBuilder();
+		for (Expression argument : annotation.getArguments()) {
+			builder.append("_" +
+					expressionSerializer.serialize(argument));
+		}
+		Boolean hasHistory = annotation.isHasHistory();
+		return contract.getName() + builder.toString() + "_" +
+				javaUtil.toFirstCharUpper(hasHistory.toString());
 	}
 	
 	//
+	
+	public static String getMappedInterfacePackagename() {
+		return "__MappedInterfaces__";
+	}
+	
+	public static String getMappedInterfaceName(Interface _interface) {
+		return _interface.getName() + "_Externalized";
+	}
 	
 	public static String getActivityPortName(Component component, State state) {
 		return component.getName() + "_" + state.getName() + "_Activity";
@@ -677,14 +825,23 @@ class ElementTracer {
 		throw new IllegalArgumentException("Not found reversed port: " + matchablePort);
 	}
 	
+	public State getAcceptState(StatechartDefinition contractStatechart) {
+		String name = scenarioStatechartUtil.getAccepting();
+		return findState(contractStatechart, name);
+	}
+	
 	public State getViolationState(StatechartDefinition contractStatechart) {
 		String name = scenarioStatechartUtil.getHotComponentViolation();
-		for (State state : StatechartModelDerivedFeatures.getAllStates(contractStatechart)) {
+		return findState(contractStatechart, name);
+	}
+	
+	protected State findState(StatechartDefinition statechart, String name) {
+		for (State state : StatechartModelDerivedFeatures.getAllStates(statechart)) {
 			if (state.getName().equals(name)) {
 				return state;
 			}
 		}
-		throw new IllegalArgumentException("Not found violation state: " + contractStatechart);
+		throw new IllegalArgumentException("Not found state: " + statechart);
 	}
 	
 }

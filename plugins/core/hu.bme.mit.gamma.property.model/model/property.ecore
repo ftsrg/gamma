@@ -53,42 +53,6 @@
         eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
         containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="ComponentInstanceStateExpression" abstract="true"
-      eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="instance" lowerBound="1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/composite.ecore#//ComponentInstanceReference"
-        containment="true"/>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="ComponentInstanceStateConfigurationReference"
-      eSuperTypes="#//ComponentInstanceStateExpression">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="region" lowerBound="1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//Region"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="state" lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//State"/>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="ComponentInstanceVariableReference"
-      eSuperTypes="#//ComponentInstanceStateExpression">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="variable" lowerBound="1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclaration"/>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="ComponentInstancePortReference" eSuperTypes="#//ComponentInstanceStateExpression">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="port" lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/interface.ecore#//Port"/>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="ComponentInstanceEventReference" eSuperTypes="#//ComponentInstanceStateExpression">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="port" lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/interface.ecore#//Port"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="event" lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/interface.ecore#//Event"/>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="ComponentInstanceEventParameterReference"
-      eSuperTypes="#//ComponentInstanceStateExpression">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="port" lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/interface.ecore#//Port"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="event" lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/interface.ecore#//Event"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="parameter" lowerBound="1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ParameterDeclaration"/>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="ComponentInstanceTransitionReference"
-      eSuperTypes="#//ComponentInstanceStateExpression">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="transition" lowerBound="1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//TransitionIdAnnotation"/>
-  </eClassifiers>
   <eClassifiers xsi:type="ecore:EEnum" name="BinaryLogicalOperator">
     <eLiterals name="AND"/>
     <eLiterals name="XOR" value="1"/>

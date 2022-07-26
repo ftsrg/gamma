@@ -79,6 +79,10 @@ class ModelUnfolder {
 		topComponent.validateInstanceNames
 		originalComponent.traceComponentInstances(topComponent, trace)
 		
+		// Cloning and adding declarations from the original package
+		clonedPackage.addDeclarations(gammaPackage)
+		//
+		
 		// Resolving potential name collisions
 		clonedPackage.constantDeclarations.resolveNameCollisions
 		clonedPackage.functionDeclarations.resolveNameCollisions

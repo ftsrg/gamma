@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -65,10 +65,21 @@ class ThetaVerifier extends AbstractVerifier {
 			val traceFile = new File(modelFile.traceFile)
 			traceFile.delete // So no invalid/old cex is parsed if this actual process does not generate one
 			traceFile.deleteOnExit // So the cex with this random name does not remain on disk
-			val command = '''java -jar «jar.escapePath» «parameters» --model «modelFile.canonicalPath.escapePath» --property «queryFile.canonicalPath.escapePath» --cex «traceFile.canonicalPath.escapePath» --stacktrace'''
+			
+			val splitParameters = parameters.split(" ")
+			val command = newArrayList
+			command += #["java", "-jar", jar]
+			if (!parameters.nullOrEmpty && !splitParameters.empty) {
+				command += splitParameters // Some environments do not accept a space
+				// due to the join(" ") after the non-existing parameter
+			}
+			command +=
+				#["--model", modelFile.canonicalPath, "--property", queryFile.canonicalPath,
+					"--cex", traceFile.canonicalPath, "--stacktrace"]
 			// Executing the command
-			logger.log(Level.INFO, "Executing command: " + command)
+			logger.log(Level.INFO, "Executing command: " + command.join(" "))
 			process = Runtime.getRuntime().exec(command)
+			
 			val outputStream = process.inputStream
 			resultReader = new Scanner(outputStream)
 			var line = ""
@@ -123,7 +134,7 @@ class ThetaVerifier extends AbstractVerifier {
 	def getTraceFile(File modelFile) {
 		// Thread.currentThread.name is needed to prevent race conditions
 		return modelFile.parent + File.separator + modelFile.extensionlessName.toHiddenFileName +
-			"-" + Thread.currentThread.name + ".cex";
+			"-" + Thread.currentThread.name + ".cex"
 	}
 	
 }
@@ -136,7 +147,7 @@ class ThetaQueryAdapter {
 	final String AG = "A[]"
 	
 	extension FileUtil fileUtil = FileUtil.INSTANCE
-	boolean invert;
+	boolean invert
 	
 	def adaptQuery(File queryFile) {
 		return queryFile.loadString.adaptQuery
@@ -144,11 +155,11 @@ class ThetaQueryAdapter {
 	
 	def adaptQuery(String query) {
 		if (query.startsWith("E<>")) {
-			invert = true;
+			invert = true
 			return "!(" + query.substring(EF.length) + ")"
 		}
 		if (query.startsWith("A[]")) {
-			invert = false;
+			invert = false
 			return query.substring(AG.length)
 		}
 		throw new IllegalArgumentException("Not supported operator: " + query)

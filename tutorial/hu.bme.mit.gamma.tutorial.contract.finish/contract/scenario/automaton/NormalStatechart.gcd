@@ -51,35 +51,30 @@ statechart Normal [
 	transition from Initial to firstState
 	transition (3) from firstState to state0 when priorityOutputReversed.displayYellow /
 	raise priorityOutput.displayYellow;
-	transition (1) from firstState to hotComponentViolation when priorityOutputReversed.displayRed ||
-		priorityOutputReversed.displayGreen || priorityOutputReversed.displayNone ||
+	transition (1) from firstState to hotComponentViolation when priorityOutputReversed.any ||
 		secondaryOutputReversed.any
 	transition (3) from state0 to state1 when timeout delay0 && priorityOutputReversed.displayRed &&
 		secondaryOutputReversed.displayGreen
 	/
 	raise priorityOutput.displayRed;
 	raise secondaryOutput.displayGreen;
-	transition (1) from state0 to hotComponentViolation when priorityOutputReversed.displayYellow ||
-		priorityOutputReversed.displayNone || secondaryOutputReversed.displayYellow ||
-		secondaryOutputReversed.displayNone
+	transition (1) from state0 to hotComponentViolation when priorityOutputReversed.any ||
+		secondaryOutputReversed.any
 	transition (3) from state1 to state2 when timeout delay1 && secondaryOutputReversed.displayYellow
 		/
 	raise secondaryOutput.displayYellow;
 	transition (1) from state1 to hotComponentViolation when priorityOutputReversed.any ||
-		secondaryOutputReversed.displayRed || secondaryOutputReversed.displayGreen ||
-		secondaryOutputReversed.displayNone
+		secondaryOutputReversed.any
 	transition (3) from state2 to state3 when timeout delay2 && priorityOutputReversed.displayGreen
 		&& secondaryOutputReversed.displayRed
 	/
 	raise priorityOutput.displayGreen;
 	raise secondaryOutput.displayRed;
-	transition (1) from state2 to hotComponentViolation when priorityOutputReversed.displayYellow ||
-		priorityOutputReversed.displayNone || secondaryOutputReversed.displayYellow ||
-		secondaryOutputReversed.displayNone
+	transition (1) from state2 to hotComponentViolation when priorityOutputReversed.any ||
+		secondaryOutputReversed.any
 	transition (3) from state3 to AcceptingState when timeout delay3 &&
 		priorityOutputReversed.displayYellow /
 	raise priorityOutput.displayYellow;
-	transition (1) from state3 to hotComponentViolation when priorityOutputReversed.displayRed ||
-		priorityOutputReversed.displayGreen || priorityOutputReversed.displayNone ||
+	transition (1) from state3 to hotComponentViolation when priorityOutputReversed.any ||
 		secondaryOutputReversed.any
 }

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -50,6 +50,7 @@ class CompositeComponentCodeGenerator {
 		
 		import «PACKAGE_NAME».*;
 		«FOR packageName : component.containingPackage.componentImports
+				.filter[it.containsComponentsOrInterfacesOrTypes]
 				.map['''«it.getPackageString(PACKAGE_NAME)».*''']
 				.toSet /* For type declarations and same-name packages*/»
 			import «packageName»;
@@ -76,7 +77,7 @@ class CompositeComponentCodeGenerator {
 	/**
 	 * Generates methods for out-event check delegations in the case of composite components.
 	 */
-	protected def CharSequence delegateOutMethods(Port systemPort) '''
+	def CharSequence delegateOutMethods(Port systemPort) '''
 «««		Simple flag checks
 		«FOR event : systemPort.outputEvents»
 			@Override
@@ -100,7 +101,7 @@ class CompositeComponentCodeGenerator {
 	/**
 	 * Generates methods for own out-event checks in case of composite components.
 	 */
-	protected def CharSequence implementOutMethods(Port systemPort) '''
+	def CharSequence implementOutMethods(Port systemPort) '''
 «««		Simple flag checks
 		«FOR event : systemPort.outputEvents SEPARATOR "\n"»
 			@Override

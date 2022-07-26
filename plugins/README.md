@@ -6,10 +6,9 @@ You will need Java 11 to setup Gamma.
 
 Gamma has been implemented as a set of Eclipse plugins. To use the
 framework, you will need an Eclipse with the following plugins installed:
-* Eclipse Modeling Framework SDK 2.28.0.
-* Xtext Complete SDK 2.25.0. (It contains Xtend, no need for the additional download
-of Xtend.)
-* VIATRA SDK 2.6.0.
+* Eclipse Modeling Framework SDK 2.30.0.
+* Xtext Complete SDK 2.27.0. (It contains Xtend, there is no need for the additional download of Xtend.)
+* VIATRA SDK 2.7.0.
 * Yakindu Statechart Tools 3.5.13.
 * PlantUML 1.1.26.
 
@@ -23,7 +22,7 @@ contains EMF and Xtext so only VIATRA and Yakindu need to be downloaded.
 path_to_your_java_insallation/Java/jdk-version/bin/javaw.exe
 ```
 - Install the following two packages. The _Install_ window can be opened via the _Help > Install New Software..._ menu item. In the _Install_ window click _Add..._, and paste the necessary URL in the _Location_ text field. 
- - Install VIATRA 2.6.0 from update site: http://download.eclipse.org/viatra/updates/release/2.6.0.
+ - Install VIATRA 2.7.0 from update site: http://download.eclipse.org/viatra/updates/release/2.7.0.
     - Choose the whole _VIATRA Query and Transformation SDK_ package.
  - Install the Yakindu Statechart Tools 3.5.13. from update site: http://updates.yakindu.com/statecharts/releases/3.5.13. From the  _YAKINDU Statechart Tools Standard Edition_ package choose
 	- _YAKINDU Statechart Tools_,
@@ -33,7 +32,7 @@ path_to_your_java_insallation/Java/jdk-version/bin/javaw.exe
 	
 Furthermore, it is necessary to setup the environment for the *PlantUML* visualization plugins located in the [`vis`](vis) folder. The instructions are described in the [`README`](vis/README.md) file of the folder.
 
-If you want to use the *XSTS* formalism for formal verification (via *Theta*) and code generation for standalone statecharts, you will have to setup the plugins located in the [`xsts`](xsts) folder. The instructions are described in the [`README`](vis/README.md) file of the folder.
+If you want to use the *XSTS* formalism for formal verification (via *Theta*) and code generation for standalone statecharts, you will have to setup the plugins located in the [`xsts`](xsts) folder. The instructions are described in the [`README`](xsts/README.md) file of the folder.
 
 If you want to use *UPPAAL* for formal verification, download and extract *UPPAAL 4.1.24*. In order to let Gamma find the UPPAAL executables, add the `bin-Win32` or `bin-Linux` folder to the path environment variable (depending on the operating system being used).
 
@@ -41,7 +40,7 @@ Make sure to set the text file encoding of your Eclipse workspace to **UTF-8**: 
 
 Make sure to set the Java compiler compliance level to **11**: _Window > Preferences..._ Start typing `compiler` in the left upper textfield (in the place of `type filter text`). Select _Java > Compiler_ from the filtered item list and set the `Compiler compliance level` to **11** at the top of the window.
 
-_Tip: It is advised to turn on automatic refreshing for the _runtime workspace_. The other option is to refresh it manually with F5 after every Gamma command._
+_Tip: It is advised to turn on automatic refreshing for the _runtime workspace_. The other option is to refresh it manually with F5 after every Gamma command if the generated files do not appear._
 
 ## Plugin setup
 

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020-2021 Contributors to the Gamma project
+ * Copyright (c) 2020-2022 Contributors to the Gamma project
  * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -22,7 +22,9 @@ import hu.bme.mit.gamma.scenario.model.NegatedModalInteraction
 import hu.bme.mit.gamma.scenario.model.NegatedWaitAnnotation
 import hu.bme.mit.gamma.scenario.model.OptionalCombinedFragment
 import hu.bme.mit.gamma.scenario.model.PermissiveAnnotation
-import hu.bme.mit.gamma.scenario.model.ScenarioDefinition
+import hu.bme.mit.gamma.scenario.model.ScenarioAssignmentStatement
+import hu.bme.mit.gamma.scenario.model.ScenarioCheckExpression
+import hu.bme.mit.gamma.scenario.model.ScenarioDeclaration
 import hu.bme.mit.gamma.scenario.model.Signal
 import hu.bme.mit.gamma.scenario.model.StrictAnnotation
 import hu.bme.mit.gamma.scenario.model.WaitAnnotation
@@ -60,14 +62,14 @@ class TestGeneratorStatechartGenerator extends AbstractContractStatechartGenerat
 	val boolean coldViolationExisits
 	val StatechartGenerationMode generationMode
 
-	new(ScenarioDefinition scenario, Component component, StatechartGenerationMode mode,
+	new(ScenarioDeclaration scenario, Component component, StatechartGenerationMode mode,
 		boolean dedicatedColdViolation) {
 		super(scenario, component)
 		this.generationMode = mode
 		this.coldViolationExisits = dedicatedColdViolation
 	}
 
-	new(ScenarioDefinition scenario, Component component) {
+	new(ScenarioDeclaration scenario, Component component) {
 		this(scenario, component, StatechartGenerationMode.GENERATE_ONLY_FORWARD, true)
 	}
 
@@ -181,7 +183,15 @@ class TestGeneratorStatechartGenerator extends AbstractContractStatechartGenerat
 			firstRegion.stateNodes += initChoice
 			statechartUtil.createTransition(initial, initChoice)
 			val initChoiceToFirstStateTransition = statechartUtil.createTransition(initChoice, firstState)
-			for (interaction : initBlock.modalInteractions) {
+			retargetAllEventParamRefs(initBlock, true)
+			val checks = initBlock.interactions.filter(ScenarioCheckExpression)
+			val assignments = initBlock.interactions.filter(ScenarioAssignmentStatement)
+			addChecksToTransition(checks, initChoiceToFirstStateTransition)
+			addAssignmentsToTransition(assignments, initChoiceToFirstStateTransition)
+			val nonCheckOrAssignmentInteractitons = initBlock.interactions.filter [
+				!(it instanceof ScenarioCheckExpression) && ! (it instanceof ScenarioAssignmentStatement)
+			].toList
+			for (interaction : nonCheckOrAssignmentInteractitons) {
 				val action = getRaiseEventAction(interaction, false)
 				if (action !== null) {
 					initChoiceToFirstStateTransition.effects += action
@@ -191,11 +201,11 @@ class TestGeneratorStatechartGenerator extends AbstractContractStatechartGenerat
 				setIntVariable(variableMap.getOrCreate(scenarioStatechartUtil.getLoopvariableNameForDepth(0)), 1)
 			statechart.transitions += initChoiceToFirstStateTransition
 
-			val violation = (initBlock.modalInteractions.get(0).modality ==
-					ModalityType.HOT) ? hotViolation : coldViolation
+			val violation = (initBlock.interactions.head.modality == ModalityType.HOT) ? hotViolation : coldViolation
 			val initialViolationTransition = statechartUtil.createTransition(initChoice, violation)
 			initialViolationTransition.guard = createElseExpression
 		}
+		statechart.variableDeclarations += scenario.variableDeclarations
 	}
 
 	def dispatch void process(ModalInteractionSet interactionSet) {
@@ -262,16 +272,16 @@ class TestGeneratorStatechartGenerator extends AbstractContractStatechartGenerat
 			ends += previousState
 			stateCount--
 		}
-		var merg = createState
+		var merge = createState
 		for (transition : statechart.transitions) {
 			if (ends.contains(transition.targetState)) {
-				transition.targetState = merg
+				transition.targetState = merge
 			}
 		}
 		firstRegion.stateNodes -= ends
-		merg.name = scenarioStatechartUtil.mergeName + String.valueOf(exsistingMerges++)
-		firstRegion.stateNodes += merg
-		previousState = merg
+		merge.name = scenarioStatechartUtil.mergeName + String.valueOf(exsistingMerges++)
+		firstRegion.stateNodes += merge
+		previousState = merge
 	}
 
 	def dispatch void process(LoopCombinedFragment loop) {

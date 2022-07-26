@@ -287,7 +287,7 @@ class StatechartWrapperCodeGenerator {
 			import java.lang.reflect.Field;
 		«ENDIF»
 		
-		«FOR _package : component.containingPackage.imports.toSet»
+		«FOR _package : component.containingPackage.importsWithComponentsOrInterfacesOrTypes»
 			import «_package.getPackageString(PACKAGE_NAME)».*;
 		«ENDFOR»
 		// Yakindu listeners

@@ -1,3 +1,13 @@
+/********************************************************************************
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * SPDX-License-Identifier: EPL-1.0
+ ********************************************************************************/
 package hu.bme.mit.gamma.scenario.statechart.generator
 
 import hu.bme.mit.gamma.action.model.Action
@@ -13,7 +23,9 @@ import hu.bme.mit.gamma.scenario.model.InteractionDefinition
 import hu.bme.mit.gamma.scenario.model.InteractionDirection
 import hu.bme.mit.gamma.scenario.model.ModalInteractionSet
 import hu.bme.mit.gamma.scenario.model.NegatedModalInteraction
-import hu.bme.mit.gamma.scenario.model.ScenarioDefinition
+import hu.bme.mit.gamma.scenario.model.ScenarioAssignmentStatement
+import hu.bme.mit.gamma.scenario.model.ScenarioCheckExpression
+import hu.bme.mit.gamma.scenario.model.ScenarioDeclaration
 import hu.bme.mit.gamma.scenario.model.ScenarioModelFactory
 import hu.bme.mit.gamma.scenario.model.Signal
 import hu.bme.mit.gamma.scenario.statechart.util.ScenarioStatechartUtil
@@ -21,9 +33,11 @@ import hu.bme.mit.gamma.statechart.contract.ContractModelFactory
 import hu.bme.mit.gamma.statechart.contract.NotDefinedEventMode
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Event
+import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression
 import hu.bme.mit.gamma.statechart.interface_.EventTrigger
 import hu.bme.mit.gamma.statechart.interface_.InterfaceModelFactory
 import hu.bme.mit.gamma.statechart.interface_.Port
+import hu.bme.mit.gamma.statechart.interface_.TimeSpecification
 import hu.bme.mit.gamma.statechart.interface_.TimeUnit
 import hu.bme.mit.gamma.statechart.interface_.Trigger
 import hu.bme.mit.gamma.statechart.statechart.BinaryTrigger
@@ -34,6 +48,7 @@ import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.StateNode
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.StatechartModelFactory
+import hu.bme.mit.gamma.statechart.statechart.TimeoutDeclaration
 import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.statechart.statechart.UnaryTrigger
 import hu.bme.mit.gamma.statechart.statechart.UnaryType
@@ -42,6 +57,7 @@ import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.util.JavaUtil
 import java.util.List
 import java.util.Map
+import org.eclipse.emf.ecore.EObject
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
@@ -62,7 +78,7 @@ abstract class AbstractContractStatechartGeneration {
 	protected val JavaUtil javaUtil = JavaUtil.INSTANCE
 
 	protected var Component component = null
-	protected var ScenarioDefinition scenario = null
+	protected var ScenarioDeclaration scenario = null
 	protected var StatechartDefinition statechart = null
 	protected val Map<String, VariableDeclaration> variableMap = <String, VariableDeclaration>newHashMap
 	protected var exsistingChoices = 0
@@ -77,7 +93,7 @@ abstract class AbstractContractStatechartGeneration {
 
 	def abstract StatechartDefinition execute()
 
-	new(ScenarioDefinition scenario, Component component) {
+	new(ScenarioDeclaration scenario, Component component) {
 		this.component = component
 		this.scenario = scenario
 	}
@@ -95,21 +111,22 @@ abstract class AbstractContractStatechartGeneration {
 	}
 
 	def protected addPorts(Component component) {
-		for (port : component.ports) {
-			val pcopy = createPort
-			val iReali = createInterfaceRealization
-			iReali.realizationMode = port.interfaceRealization.realizationMode
-			iReali.interface = port.interfaceRealization.interface
-			pcopy.interfaceRealization = iReali
-			pcopy.name = port.name
-			statechart.ports += pcopy
-			val preverse = createPort
-			preverse.name = scenarioStatechartUtil.getTurnedOutPortName(port)
-			val iRealiR = createInterfaceRealization
-			iRealiR.interface = port.interfaceRealization.interface
-			iRealiR.realizationMode = port.interfaceRealization.realizationMode.opposite
-			preverse.interfaceRealization = iRealiR
-			statechart.ports += preverse
+		for (port : component.allPorts) {
+			val portCopy = createPort
+			val interfaceRealization = createInterfaceRealization
+			interfaceRealization.realizationMode = port.interfaceRealization.realizationMode
+			interfaceRealization.interface = port.interfaceRealization.interface
+			portCopy.interfaceRealization = interfaceRealization
+			portCopy.name = port.name
+			statechart.ports += portCopy
+			val portReverse = createPort
+			portReverse.name = scenarioStatechartUtil.getTurnedOutPortName(port)
+			val interfaceRealizationReverse = createInterfaceRealization
+			interfaceRealizationReverse.interface = port.interfaceRealization.interface
+			interfaceRealizationReverse.realizationMode =
+					port.interfaceRealization.realizationMode.opposite
+			portReverse.interfaceRealization = interfaceRealizationReverse
+			statechart.ports += portReverse
 		}
 	}
 
@@ -122,44 +139,42 @@ abstract class AbstractContractStatechartGeneration {
 
 ///////// Create Set and Check Variables
 	protected def AssignmentStatement incrementVar(VariableDeclaration variable) {
-		var assign = createAssignmentStatement
-		var addition = createAddExpression
-		addition.operands += exprUtil.createReferenceExpression(variable)
-		addition.operands += exprUtil.toIntegerLiteral(1)
-		assign.rhs = addition
-		assign.lhs = exprUtil.createReferenceExpression(variable)
-		return assign
+		return statechartUtil.createIncrementation(variable)
 	}
 
 	def protected VariableDeclaration createIntegerVariable(String name) {
-		return exprUtil.createVariableDeclaration(createIntegerTypeDefinition, name, exprUtil.toIntegerLiteral(0))
+		return exprUtil.createVariableDeclaration(createIntegerTypeDefinition,
+				name, exprUtil.toIntegerLiteral(0))
 	}
 
 	protected def setIntVariable(VariableDeclaration variable, int value) {
-		var variableAssignment = createAssignmentStatement
-		variableAssignment.lhs = exprUtil.createReferenceExpression(variable)
-		variableAssignment.rhs = exprUtil.toIntegerLiteral(value)
-		return variableAssignment
+		return statechartUtil.createAssignment(variable,
+				exprUtil.toIntegerLiteral(value))
 	}
-
-	def protected Expression getVariableLessEqualParamExpression(VariableDeclaration variable, int maxValue) {
+	
+	// TODO check if there are util methods in StatechartUtil for this
+	def protected Expression getVariableLessEqualParamExpression(
+				VariableDeclaration variable, int maxValue) {
 		var maxCheck = createLessEqualExpression
 		maxCheck.leftOperand = exprUtil.createReferenceExpression(variable)
 		maxCheck.rightOperand = exprUtil.toIntegerLiteral(maxValue)
 		return maxCheck
 	}
 
-	def protected Expression getVariableGreaterEqualParamExpression(VariableDeclaration variable, int minValue) {
+	// TODO check if there are util methods in StatechartUtil for this
+	def protected Expression getVariableGreaterEqualParamExpression(
+				VariableDeclaration variable, int minValue) {
 		var minCheck = createGreaterEqualExpression
 		minCheck.leftOperand = exprUtil.createReferenceExpression(variable)
 		minCheck.rightOperand = exprUtil.toIntegerLiteral(minValue)
 		return minCheck
 	}
 
-	def protected Expression getVariableInIntervalExpression(VariableDeclaration variable, int minV, int maxV) {
+	def protected Expression getVariableInIntervalExpression(VariableDeclaration variable,
+			int minValue, int maxValue) {
 		var and = createAndExpression
-		and.operands += getVariableGreaterEqualParamExpression(variable, minV)
-		and.operands += getVariableLessEqualParamExpression(variable, maxV)
+		and.operands += getVariableGreaterEqualParamExpression(variable, minValue)
+		and.operands += getVariableLessEqualParamExpression(variable, maxValue)
 		return and
 	}
 
@@ -214,6 +229,15 @@ abstract class AbstractContractStatechartGeneration {
 		}
 		return binaryTrigger
 	}
+	
+	def protected Trigger getBinaryTriggerFromTriggersIfPossible(
+			List<Trigger> triggers, BinaryType type) {
+		if (triggers.size > 1) {
+			return getBinaryTriggerFromTriggers(triggers, type)
+		} else if (triggers.size == 1) {
+			return triggers.head
+		}
+	}
 
 	def protected BinaryTrigger getAllEvents(BinaryType type) {
 		var bin = createBinaryTrigger
@@ -247,7 +271,7 @@ abstract class AbstractContractStatechartGeneration {
 		val triggers = <Trigger>newArrayList
 		val ports = newArrayList
 		val events = newArrayList
-		val allPorts = statechart.ports.filter[!it.inputEvents.empty]
+		val allPorts = statechart.allPorts.filter[!it.inputEvents.empty]
 		for (modalInteraction : set.modalInteractions) {
 			var Signal signal = null
 			if (modalInteraction instanceof Signal) {
@@ -259,8 +283,9 @@ abstract class AbstractContractStatechartGeneration {
 				}
 			}
 			if (signal !== null) {
-				val portName = signal.direction == InteractionDirection.SEND ? scenarioStatechartUtil.
-						getTurnedOutPortName(signal.port) : signal.port.name
+				val portName = signal.direction == InteractionDirection.SEND ?
+						scenarioStatechartUtil.getTurnedOutPortName(signal.port) :
+						signal.port.name
 				ports += getPort(portName)
 				events += getEvent(signal.event.name, getPort(portName))
 			}
@@ -293,8 +318,8 @@ abstract class AbstractContractStatechartGeneration {
 		return triggers
 	}
 
-	def protected BinaryTrigger getBinaryTrigger(List<InteractionDefinition> interactions, BinaryType type,
-		boolean reversed) {
+	def protected BinaryTrigger getBinaryTrigger(List<InteractionDefinition> interactions,
+			BinaryType type, boolean reversed) {
 		val triggers = newArrayList
 		for (interaction : interactions) {
 			triggers += getEventTrigger(interaction, reversed)
@@ -306,15 +331,16 @@ abstract class AbstractContractStatechartGeneration {
 	def protected dispatch Trigger getEventTrigger(Signal signal, boolean reversed) {
 		val trigger = createEventTrigger
 		val eventref = createPortEventReference
-		val port = reversed ? getPort(scenarioStatechartUtil.getTurnedOutPortName(signal.port)) : getPort(
-				signal.port.name)
+		val port = reversed ?
+				getPort(scenarioStatechartUtil.getTurnedOutPortName(signal.port)) :
+				getPort(signal.port.name)
 		eventref.event = getEvent(signal.event.name, port)
 		eventref.port = port
 		trigger.eventReference = eventref
 		return trigger
 	}
 
-	def protected dispatch Trigger getEventTrigger(Delay s, boolean reversed) {
+	def protected dispatch Trigger getEventTrigger(Delay delay, boolean reversed) {
 		val trigger = createEventTrigger
 		val timeoutEventReference = createTimeoutEventReference
 		val timeoutDeclaration = statechart.timeoutDeclarations.last
@@ -323,12 +349,14 @@ abstract class AbstractContractStatechartGeneration {
 		return trigger
 	}
 
-	def protected dispatch Trigger getEventTrigger(NegatedModalInteraction negatedInteraction, boolean reversed) {
+	def protected dispatch Trigger getEventTrigger(
+			NegatedModalInteraction negatedInteraction, boolean reversed) {
 		val trigger = createEventTrigger
 		if (negatedInteraction.modalinteraction instanceof Signal) {
 			var signal = negatedInteraction.modalinteraction as Signal
-			var Port port = signal.direction.equals(InteractionDirection.SEND) ? getPort(
-					scenarioStatechartUtil.getTurnedOutPortName(signal.port)) : getPort(signal.port.name)
+			var Port port = signal.direction.equals(InteractionDirection.SEND) ?
+					getPort(scenarioStatechartUtil.getTurnedOutPortName(signal.port)) :
+					getPort(signal.port.name)
 			val Event event = getEvent(signal.event.name, port)
 			val eventRef = createPortEventReference
 			eventRef.event = event
@@ -345,12 +373,16 @@ abstract class AbstractContractStatechartGeneration {
 ////////// RaiseEventActions based on Interactions
 	def protected dispatch Action getRaiseEventAction(Signal signal, boolean reversed) {
 		var action = createRaiseEventAction
-		var port = reversed ? getPort(scenarioStatechartUtil.getTurnedOutPortName(signal.port)) : getPort(
-				signal.port.name)
-		action.event = getEvent(signal.event.name, port)
+		var port = getPort(getNameOfNewPort(signal.port, reversed))
+		val event = getEvent(signal.event.name, port)
+		action.event = event
 		action.port = port
-		for (argument : signal.arguments) {
-			action.arguments += argument.clone
+		for (argument : event.parameterDeclarations) {
+			val reference = createEventParameterReferenceExpression
+			reference.port = getPort(port.turnedOutPortName)
+			reference.event = getEvent(signal.event.name, reference.port)
+			reference.parameter = argument
+			action.arguments += reference
 		}
 		return action
 	}
@@ -359,7 +391,8 @@ abstract class AbstractContractStatechartGeneration {
 		return null
 	}
 
-	def protected dispatch Action getRaiseEventAction(NegatedModalInteraction negatedInteraction, boolean reversed) {
+	def protected dispatch Action getRaiseEventAction(
+			NegatedModalInteraction negatedInteraction, boolean reversed) {
 		return null
 	}
 
@@ -454,44 +487,107 @@ abstract class AbstractContractStatechartGeneration {
 		}
 	}
 
-	def protected setupForwardTransition(ModalInteractionSet set, boolean reversed, boolean isNegated,
-		Transition forwardTransition) {
-		var Trigger trigger = null
-		if (set.modalInteractions.size > 1) {
-			trigger = getBinaryTrigger(set.modalInteractions, BinaryType.AND, reversed)
-		} else {
-			trigger = getEventTrigger(set.modalInteractions.get(0), reversed)
+	def protected retargetAllEventParamRefs(EObject container, boolean reversed) {
+		val eventParamRefs = ecoreUtil.getAllContentsOfType(container, EventParameterReferenceExpression)
+		for (eventParamRef : eventParamRefs) {
+			eventParamRef.port = getPort(getNameOfNewPort(eventParamRef.port, reversed))
+			eventParamRef.event = getEvent(eventParamRef.event.name, eventParamRef.port)
 		}
+	}
 
+	def protected addAssignmentsToTransition(Iterable<ScenarioAssignmentStatement> assignments,
+			Transition transition) {
+		for (assignment : assignments) {
+ 			transition.effects += statechartUtil.createAssignment(
+ 				assignment.lhs.clone, assignment.rhs.clone)
+		}
+	}
+
+	def protected addChecksToTransition(Iterable<ScenarioCheckExpression> checks, Transition transition) {
+		if (checks.size == 0) {
+			return
+		}
+		var Expression newGuard = null
+		if (checks.size > 1) {
+			val andExpression = createAndExpression
+			andExpression.operands += checks.map[it.expression.clone]
+			newGuard = andExpression
+		} else if (checks.size == 1) {
+			newGuard = checks.head.expression.clone
+		}
+		if (transition.guard === null) {
+			transition.guard = newGuard
+		} else {
+			val and = createAndExpression
+			and.operands += newGuard
+			and.operands += transition.guard
+			transition.guard = and
+		}
+	}
+
+	def protected setupForwardTransition(ModalInteractionSet set,
+			boolean reversed, boolean isNegated, Transition forwardTransition) {
+		retargetAllEventParamRefs(set, reversed)
+		var Trigger trigger = null
+		val checks = set.modalInteractions.filter(ScenarioCheckExpression)
+		val assignments = set.modalInteractions.filter(ScenarioAssignmentStatement)
+		val nonCheckOrAssignmentInteractitons = set.modalInteractions.filter [
+			!(it instanceof ScenarioCheckExpression) && ! (it instanceof ScenarioAssignmentStatement)
+		].toList
+		if (nonCheckOrAssignmentInteractitons.size > 1) {
+			trigger = getBinaryTrigger(nonCheckOrAssignmentInteractitons, BinaryType.AND, reversed)
+		} else if (nonCheckOrAssignmentInteractitons.size == 1) {
+			trigger = getEventTrigger(nonCheckOrAssignmentInteractitons.head, reversed)
+		} else {
+			trigger = createOnCycleTrigger
+		}
 		if (isNegated) {
 			forwardTransition.trigger = negateEventTrigger(trigger)
 		} else {
 			forwardTransition.trigger = trigger
-			for (modalInteraction : set.modalInteractions) {
-				val effect = getRaiseEventAction(modalInteraction, !reversed)
-				if (effect !== null) {
-					forwardTransition.effects += effect
-				}
-			}
+			//Uncomment these lines to allow effects on the reversed ports
+//			for (modalInteraction : nonCheckOrAssignmentInteractitons) {
+//				val effect = getRaiseEventAction(modalInteraction, !reversed)
+//				if (effect !== null) {
+//					forwardTransition.effects += effect
+//				}
+//			}
 		}
+		addChecksToTransition(checks, forwardTransition)
+		addAssignmentsToTransition(assignments, forwardTransition)
 	}
 
 	def protected handleDelays(ModalInteractionSet set) {
 		val delays = set.modalInteractions.filter(Delay)
 		if (!delays.empty) {
-			val delay = delays.get(0)
+			val delay = delays.head
 			val timeoutDeclaration = createTimeoutDeclaration
-			timeoutDeclaration.name = getDelayName(timeoutCount++)
-			statechart.timeoutDeclarations += timeoutDeclaration
-			val timeSpecification = createTimeSpecification
-			timeSpecification.unit = TimeUnit.MILLISECOND
-			timeSpecification.value = delay.minimum.clone
-			val action = createSetTimeoutAction
-			action.timeoutDeclaration = timeoutDeclaration
-			action.time = timeSpecification
-			if (previousState instanceof State) {
-				previousState.entryActions += action
-			}
+			val timeSpecification = createTimeSpecification(delay.minimum)
+			setTimeoutDeclarationForState(previousState, timeoutDeclaration, timeSpecification)
+		}
+	}
+
+	def protected createTimeoutDeclaration() {
+		val timeoutDeclaration = statechartfactory.createTimeoutDeclaration
+		timeoutDeclaration.name = getDelayName(timeoutCount++)
+		statechart.timeoutDeclarations += timeoutDeclaration
+		return timeoutDeclaration
+	}
+
+	def protected createTimeSpecification(Expression expression) {
+		val timeSpecification = createTimeSpecification
+		timeSpecification.unit = TimeUnit.MILLISECOND
+		timeSpecification.value = expression.clone
+		return timeSpecification
+	}
+
+	def protected void setTimeoutDeclarationForState(StateNode state,
+			TimeoutDeclaration timeoutDeclaration, TimeSpecification timeSpecification) {
+		val action = createSetTimeoutAction
+		action.timeoutDeclaration = timeoutDeclaration
+		action.time = timeSpecification
+		if (state instanceof State) {
+			state.entryActions += action
 		}
 	}
 }

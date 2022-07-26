@@ -35,7 +35,7 @@ class PortInterfaceGenerator {
 		package «anInterface.generateObjectPackageName»;
 		
 		import «PACKAGE_NAME».*;
-		«FOR _package : anInterface.containingPackage.imports.toSet»
+		«FOR _package : anInterface.containingPackage.importsWithComponentsOrInterfacesOrTypes»
 			import «_package.getPackageString(PACKAGE_NAME)».*;
 		«ENDFOR»
 		import java.util.List;

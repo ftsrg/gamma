@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2021 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -17,8 +17,10 @@ import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
@@ -46,10 +48,12 @@ import hu.bme.mit.gamma.genmodel.model.Verification;
 import hu.bme.mit.gamma.genmodel.model.YakinduCompilation;
 import hu.bme.mit.gamma.ui.taskhandler.AdaptiveBehaviorConformanceCheckingHandler;
 import hu.bme.mit.gamma.ui.taskhandler.AdaptiveContractTestGenerationHandler;
+import hu.bme.mit.gamma.ui.taskhandler.AnalysisModelTransformationAndVerificationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.AnalysisModelTransformationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.CodeGenerationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.EventPriorityTransformationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.InterfaceCompilationHandler;
+import hu.bme.mit.gamma.ui.taskhandler.OptimizerAndVerificationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.PhaseGenerationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.SlicingHandler;
 import hu.bme.mit.gamma.ui.taskhandler.StatechartCompilationHandler;
@@ -95,7 +99,7 @@ public class GammaApi {
 		IProject project = file.getProject();
 		// Multiple compilations due to the dependencies between models
 		final int MAX_ITERATION_COUNT = 6;
-		for (int i = 0; i < MAX_ITERATION_COUNT; ++i) { // TODO, some refreshing should be added - not working now
+		for (int i = 0; i < MAX_ITERATION_COUNT; ++i) {
 			// To support different implementations
 			ResourceSet resourceSet = resourceSetCreator.createResourceSet();
 			//
@@ -146,8 +150,16 @@ public class GammaApi {
 							else if (task instanceof AnalysisModelTransformation) {
 								logger.log(Level.INFO, "The analyis transformation has been started");
 								AnalysisModelTransformation analysisModelTransformation = (AnalysisModelTransformation) task;
-								AnalysisModelTransformationHandler handler = new AnalysisModelTransformationHandler(file);
-								handler.execute(analysisModelTransformation);
+								// Maybe different classes should be created for distinction?
+								if (GenmodelDerivedFeatures.isVerifyAnalysisTask(analysisModelTransformation)) {
+									AnalysisModelTransformationAndVerificationHandler handler =
+												new AnalysisModelTransformationAndVerificationHandler(file);
+									handler.execute(analysisModelTransformation);
+								}
+								else {
+									AnalysisModelTransformationHandler handler = new AnalysisModelTransformationHandler(file);
+									handler.execute(analysisModelTransformation);
+								}
 								logger.log(Level.INFO, "The analysis transformation has been finished");
 							}
 							else if (task instanceof TestGeneration) {
@@ -160,8 +172,15 @@ public class GammaApi {
 							else if (task instanceof Verification) {
 								logger.log(Level.INFO, "The verification has been started");
 								Verification verification = (Verification) task;
-								VerificationHandler handler = new VerificationHandler(file);
-								handler.execute(verification);
+								// Maybe different classes should be created for distinction?
+								if (GenmodelDerivedFeatures.isOptimizableVerificationTask(verification)) {
+									OptimizerAndVerificationHandler handler = new OptimizerAndVerificationHandler(file);
+									handler.execute(verification);
+								}
+								else {
+									VerificationHandler handler = new VerificationHandler(file);
+									handler.execute(verification);
+								}
 								logger.log(Level.INFO, "The verification has been finished");
 							}
 							else if (task instanceof Slicing) {
@@ -227,6 +246,10 @@ public class GammaApi {
 					// All iteration ended
 					hook.endTaskProcess();
 					//
+					// Refreshing the project
+					logger.log(Level.INFO, "Refreshing project");
+					project.refreshLocal(IResource.DEPTH_INFINITE, new NullProgressMonitor());
+					logger.log(Level.INFO, "Refreshing project has been finished");
 				}
 			}
 			else {

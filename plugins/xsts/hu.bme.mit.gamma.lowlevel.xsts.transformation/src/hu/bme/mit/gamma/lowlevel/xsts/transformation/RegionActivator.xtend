@@ -124,7 +124,7 @@ class RegionActivator {
 		val xStsStateAndSubstateActivationAction = lowlevelStateNode.createRecursiveXStsStateAndSubstateActivatingAction
 		// Has orthogonal regions
 		if (lowlevelParentRegion.hasOrthogonalRegion) {
-			return lowlevelParentRegion.createRecursiveXStsOrthogonalRegionActivatingAction as ParallelAction=> [
+			return lowlevelParentRegion.createRecursiveXStsOrthogonalRegionActivatingAction as ParallelAction => [
 				it.actions += xStsStateAndSubstateActivationAction
 			]
 		}

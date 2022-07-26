@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2021 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -19,9 +19,12 @@ import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
 
 import hu.bme.mit.gamma.action.model.Action;
+import hu.bme.mit.gamma.action.model.AssignmentStatement;
 import hu.bme.mit.gamma.action.model.Block;
 import hu.bme.mit.gamma.action.model.Branch;
 import hu.bme.mit.gamma.action.model.ChoiceStatement;
+import hu.bme.mit.gamma.action.model.EmptyStatement;
+import hu.bme.mit.gamma.action.model.ForStatement;
 import hu.bme.mit.gamma.action.model.IfStatement;
 import hu.bme.mit.gamma.action.model.ProcedureDeclaration;
 import hu.bme.mit.gamma.action.model.ReturnStatement;
@@ -33,6 +36,7 @@ import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression;
 import hu.bme.mit.gamma.expression.model.FunctionDeclaration;
 import hu.bme.mit.gamma.expression.model.LambdaDeclaration;
+import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 
 public class ActionModelDerivedFeatures extends ExpressionModelDerivedFeatures {
@@ -73,22 +77,6 @@ public class ActionModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 			}
 		}
 		return false;
-	}
-	
-	public static Expression getLambdaExpression(FunctionDeclaration function) {
-		if (function instanceof LambdaDeclaration) {
-			LambdaDeclaration lambda = (LambdaDeclaration) function;
-			return lambda.getExpression();
-		}
-		//
-		ProcedureDeclaration procedure = (ProcedureDeclaration) function;
-		Block block = procedure.getBody();
-		List<Action> actions = block.getActions();
-		if (actions.size() != 1) {
-			throw new IllegalArgumentException("Not a single action: " + actions);
-		}
-		ReturnStatement statement = (ReturnStatement) actions.get(0);
-		return statement.getExpression();
 	}
 	
 	//
@@ -191,6 +179,49 @@ public class ActionModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 			}
 		}
 		return true;
+	}
+	
+	public static boolean isNullOrEmptyStatement(Action action) {
+		return action == null || action instanceof EmptyStatement;
+	}
+	
+	public static boolean isEffectlessBranch(Branch branch) {
+		Action action = branch.getAction();
+		return isEffectlessAction(action);
+	}
+	
+	public static boolean isEffectlessAction(Action action) {
+		if (isNullOrEmptyStatement(action)) {
+			return true;
+		}
+		if (action instanceof AssignmentStatement) {
+			AssignmentStatement assignmentStatement = (AssignmentStatement) action;
+			ReferenceExpression lhs = assignmentStatement.getLhs();
+			Expression rhs = assignmentStatement.getRhs();
+			return ecoreUtil.helperEquals(lhs, rhs);
+		}
+		if (action instanceof ForStatement) {
+			ForStatement forStatement = (ForStatement) action;
+			Action body = forStatement.getBody();
+			return isEffectlessAction(body);
+		}
+		if (action instanceof Block) {
+			Block block = (Block) action;
+			return block.getActions().stream().allMatch(it -> isEffectlessAction(it));
+		}
+		if (action instanceof IfStatement) {
+			IfStatement ifStatement = (IfStatement) action;
+			return ifStatement.getConditionals().stream().allMatch(it -> isEffectlessBranch(it));
+		}
+		if (action instanceof ChoiceStatement) {
+			ChoiceStatement choiceStatement = (ChoiceStatement) action;
+			return choiceStatement.getBranches().stream().allMatch(it -> isEffectlessBranch(it));
+		}
+		if (action instanceof SwitchStatement) {
+			SwitchStatement switchStatement = (SwitchStatement) action;
+			return switchStatement.getCases().stream().allMatch(it -> isEffectlessBranch(it));
+		}
+		return false;
 	}
 	
 }

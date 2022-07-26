@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -37,11 +37,14 @@ public class PhaseGenerationHandler extends TaskHandler {
 		PhaseStatechartTransformer transformer = new PhaseStatechartTransformer(statechart);
 		StatechartDefinition phaseStatechart = transformer.execute();
 		Package _package = StatechartModelDerivedFeatures.getContainingPackage(phaseStatechart);
-		serializer.saveModel(_package, targetFolderUri, phaseStatechartGeneration.getFileName().get(0) + ".gcd");
+		serializer.saveModel(_package, targetFolderUri,
+				phaseStatechartGeneration.getFileName().get(0) + ".gcd");
 	}
 	
 	private void setFileName(PhaseStatechartGeneration phaseStatechartGeneration) {
-		String fileName = "Phase" + getNameWithoutExtension(getContainingFileName(phaseStatechartGeneration.getStatechart()));
+		String fileName = "Phase" + getNameWithoutExtension(
+				getContainingFileName(
+						phaseStatechartGeneration.getStatechart()));
 		checkArgument(phaseStatechartGeneration.getFileName().size() <= 1);
 		if (phaseStatechartGeneration.getFileName().isEmpty()) {
 			phaseStatechartGeneration.getFileName().add(fileName);

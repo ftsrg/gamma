@@ -13,7 +13,7 @@ grammar hu.bme.mit.gamma.statechart.language.StatechartLanguage
 
 import "http://www.eclipse.org/emf/2002/Ecore" as Ecore
 import "http://www.mit.bme.hu/gamma/statechart/Model/Statechart" 
-import "http://www.mit.bme.hu/gamma/expression/Model" as ConstraintModel 
+import "http://www.mit.bme.hu/gamma/expression/Model" as ExpressionModel 
 import "http://www.mit.bme.hu/gamma/action/Model" as ActionModel 
 import "http://www.mit.bme.hu/gamma/activity/Model" as ActivityModel 
 import "http://www.mit.bme.hu/gamma/statechart/Model/Composite" as CompositeModel
@@ -249,7 +249,12 @@ ComponentAnnotation returns InterfaceModel::ComponentAnnotation:
 
 StatechartContractAnnotation returns StatechartAnnotation:
 	ScenarioAllowedWaitingAnnotation | ScenarioContractAnnotation |
-	AdaptiveContractAnnotation | MissionPhaseAnnotation | HasInitialoutputsBlockAnnotation
+	AdaptiveContractAnnotation | MissionPhaseAnnotation | HasInitialoutputsBlockAnnotation | NegativeContractStatechartAnnotation
+;
+
+NegativeContractStatechartAnnotation returns ContractModel::NegativeContractStatechartAnnotation:
+	{ContractModel::NegativeContractStatechartAnnotation}
+	'@NegativeContractStatechart'
 ;
 
 HasInitialoutputsBlockAnnotation returns ContractModel::HasInitialOutputsBlockAnnotation:
@@ -345,28 +350,29 @@ SpecialStateAnnotation returns ContractModel::SpecialStateAnnotation :
 ;
 
 StateContractAnnotation returns ContractModel::StateContractAnnotation:
-	'@StatechartContract' '=' (hasHistory?='history')? contractStatechart=[StatechartDefinition]
+	'@StatechartContract' (linkType=LinkType)? (hasHistory?='history')?
+		'=' contractStatechart=[StatechartDefinition] ('(' arguments+=Expression (',' arguments+=Expression)* ')')?
+;
+
+enum LinkType returns ContractModel::LinkType:
+	TO_CONTROLLER = 'self' | TO_COMPONENT = 'component' // DEFAULT is set by default
 ;
 
 MissionPhaseStateAnnotation returns PhaseModel::MissionPhaseStateAnnotation:
 	{PhaseModel::MissionPhaseStateAnnotation} '@Phase' '=' '['
-		stateDefinitions += StateDefinition*
+		(history=History component=ComponentInstance '{'
+			portBindings+=PortBinding*
+			variableBindings+=VariableBinding*
+		'}')
 	']'
 ;
 
-StateDefinition returns PhaseModel::MissionPhaseStateDefinition:
-	history=History component=ComponentInstance '{'
-		portBindings+=PortBinding*
-		variableBindings+=VariableBinding*
-	'}'
-;
-
 VariableBinding returns PhaseModel::VariableBinding:
-	'tie' statechartVariable=[ConstraintModel::VariableDeclaration] '->' instanceVariableReference=InstanceVariableReference
+	'tie' statechartVariable=[ExpressionModel::VariableDeclaration] '->' instanceVariableReference=InstanceVariableReference
 ;
 
 InstanceVariableReference returns PhaseModel::InstanceVariableReference:
-	instance=[CompositeModel::ComponentInstance] '.' variable=[ConstraintModel::VariableDeclaration]
+	instance=[CompositeModel::ComponentInstance] '.' variable=[ExpressionModel::VariableDeclaration]
 ;
 
 enum History returns PhaseModel::History:
@@ -443,10 +449,10 @@ CascadeCompositeComponent returns CompositeModel::CascadeCompositeComponent:
 				portBindings+=PortBinding |
 				channels+=Channel
 			)*
-			('initial' 'execute' initialExecutionList+=AtomicComponentInstanceReference
-					(',' initialExecutionList+=AtomicComponentInstanceReference)*)?
-			('execute' executionList+=AtomicComponentInstanceReference
-					(',' executionList+=AtomicComponentInstanceReference)*)?
+			('initial' 'execute' initialExecutionList+=AtomicComponentInstanceReferenceExpression
+					(',' initialExecutionList+=AtomicComponentInstanceReferenceExpression)*)?
+			('execute' executionList+=AtomicComponentInstanceReferenceExpression
+					(',' executionList+=AtomicComponentInstanceReferenceExpression)*)?
 		'}'
 ;
 
@@ -501,10 +507,10 @@ ScheduledAsynchronousCompositeComponent returns CompositeModel::ScheduledAsynchr
 				portBindings+=PortBinding |
 				channels+=Channel
 			)*
-			('initial' 'execute' initialExecutionList+=AtomicComponentInstanceReference
-					(',' initialExecutionList+=AtomicComponentInstanceReference)*)?
-			('execute' executionList+=AtomicComponentInstanceReference
-					(',' executionList+=AtomicComponentInstanceReference)*)?
+			('initial' 'execute' initialExecutionList+=AtomicComponentInstanceReferenceExpression
+					(',' initialExecutionList+=AtomicComponentInstanceReferenceExpression)*)?
+			('execute' executionList+=AtomicComponentInstanceReferenceExpression
+					(',' executionList+=AtomicComponentInstanceReferenceExpression)*)?
 		'}'
 ;
 
@@ -534,8 +540,7 @@ TimeSpecification returns InterfaceModel::TimeSpecification:
 
 enum TimeUnit returns InterfaceModel::TimeUnit:
 	MILLISECOND = 'ms' | SECOND = 's'
-;	
-
+;
 
 ControlSpecificaiton returns CompositeModel::ControlSpecification:
 	 'when' trigger=SimpleTrigger '/' controlFunction=ControlFunction
@@ -569,12 +574,12 @@ ComponentInstance returns CompositeModel::ComponentInstance:
 	SynchronousComponentInstance | 'async' AsynchronousComponentInstance
 ;
 
-AtomicComponentInstanceReference returns CompositeModel::ComponentInstanceReference:
+AtomicComponentInstanceReferenceExpression returns CompositeModel::ComponentInstanceReferenceExpression:
 	componentInstance=[CompositeModel::ComponentInstance]
 ;
 // Subgrammars can use this
-ComponentInstanceReference returns CompositeModel::ComponentInstanceReference:
-	componentInstance=[CompositeModel::ComponentInstance] ('->' child=ComponentInstanceReference )?
+ComponentInstanceReferenceExpression returns CompositeModel::ComponentInstanceReferenceExpression:
+	componentInstance=[CompositeModel::ComponentInstance] ('->' child=ComponentInstanceReferenceExpression )?
 ;
 
 SynchronousComponentInstance returns CompositeModel::SynchronousComponentInstance:
@@ -628,7 +633,7 @@ enum Persistency returns InterfaceModel::Persistency:
 
 // Overriding it for the sake of EventParameterReferenceExpression
 @Override 
-PrimaryExpression returns ConstraintModel::Expression: 
+PrimaryExpression returns ExpressionModel::Expression: 
 	super |
 	EventParameterReferenceExpression |
 	StateReferenceExpression
@@ -639,7 +644,7 @@ StateReferenceExpression returns StateReferenceExpression:
 ;
 
 EventParameterReferenceExpression returns InterfaceModel::EventParameterReferenceExpression:
-	port=[InterfaceModel::Port] '.' event=[InterfaceModel::Event] '::' parameter=[ConstraintModel::ParameterDeclaration];
+	port=[InterfaceModel::Port] '.' event=[InterfaceModel::Event] '::' parameter=[ExpressionModel::ParameterDeclaration];
 
 
 // Action Language Extensions
@@ -684,3 +689,29 @@ SetTimeoutAction returns SetTimeoutAction:
 DeactivateTimeoutAction returns DeactivateTimeoutAction:
 	'deactivate' timeoutDeclaration=[TimeoutDeclaration]
 ;
+
+// Component instance element references for subgrammars
+
+ComponentInstanceStateExpression returns CompositeModel::ComponentInstanceElementReferenceExpression:
+	ComponentInstanceStateReferenceExpression | ComponentInstanceVariableReferenceExpression |
+		ComponentInstanceEventReferenceExpression | ComponentInstanceEventParameterReferenceExpression
+;
+
+ComponentInstanceStateReferenceExpression returns CompositeModel::ComponentInstanceStateReferenceExpression:
+	'state' instance=ComponentInstanceReferenceExpression '.' region=[Region] '.' state=[State]
+;
+
+ComponentInstanceVariableReferenceExpression returns CompositeModel::ComponentInstanceVariableReferenceExpression:
+	'variable' instance=ComponentInstanceReferenceExpression '.' variableDeclaration=[ExpressionModel::VariableDeclaration]
+;
+
+ComponentInstanceEventReferenceExpression returns CompositeModel::ComponentInstanceEventReferenceExpression:
+	'event' instance=ComponentInstanceReferenceExpression '.' port=[InterfaceModel::Port] '.' event=[InterfaceModel::Event]
+;
+
+ComponentInstanceEventParameterReferenceExpression returns CompositeModel::ComponentInstanceEventParameterReferenceExpression:
+	'parameter' instance=ComponentInstanceReferenceExpression '.' port=[InterfaceModel::Port] '.'
+		event=[InterfaceModel::Event] '::' parameterDeclaration=[ExpressionModel::ParameterDeclaration]
+;
+
+//

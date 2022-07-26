@@ -20,6 +20,8 @@ import java.util.Set;
 import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
 import hu.bme.mit.gamma.expression.model.ArgumentedElement;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Event;
@@ -29,9 +31,11 @@ import hu.bme.mit.gamma.trace.model.Assert;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
 import hu.bme.mit.gamma.trace.model.ExecutionTraceAllowedWaitingAnnotation;
 import hu.bme.mit.gamma.trace.model.ExecutionTraceAnnotation;
+import hu.bme.mit.gamma.trace.model.InstanceState;
 import hu.bme.mit.gamma.trace.model.InstanceStateConfiguration;
 import hu.bme.mit.gamma.trace.model.InstanceVariableState;
 import hu.bme.mit.gamma.trace.model.NegatedAssert;
+import hu.bme.mit.gamma.trace.model.NegativeTestAnnotation;
 import hu.bme.mit.gamma.trace.model.RaiseEventAct;
 import hu.bme.mit.gamma.trace.model.Step;
 
@@ -72,6 +76,10 @@ public class TraceModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 				ExecutionTraceAllowedWaitingAnnotation.class).get(0);
 	}
 	
+	public static boolean isNegativeTest(ExecutionTrace trace) {
+		return hasAnnotation(trace, NegativeTestAnnotation.class);
+	}
+	
 	//
 	
 	public static Assert getLowermostAssert(Assert assertion) {
@@ -80,6 +88,20 @@ public class TraceModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 			return getLowermostAssert(negatedAssert.getNegatedAssert());
 		}
 		return assertion;
+	}
+	
+	public static ComponentInstanceReferenceExpression getInstanceReference(InstanceState instanceState) {
+		if (instanceState instanceof InstanceStateConfiguration) {
+			InstanceStateConfiguration instanceStateConfiguration = (InstanceStateConfiguration) instanceState;
+			return instanceStateConfiguration.getInstance();
+		}
+		else if (instanceState instanceof InstanceVariableState) {
+			InstanceVariableState instanceVariableState = (InstanceVariableState) instanceState;
+			ComponentInstanceVariableReferenceExpression variableReference =
+					instanceVariableState.getVariableReference();
+			return variableReference.getInstance();
+		}
+		throw new IllegalArgumentException("Not known instance state: " + instanceState);
 	}
 
 	

@@ -17,17 +17,11 @@ import hu.bme.mit.gamma.expression.model.Comment;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
-import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.property.model.AtomicFormula;
 import hu.bme.mit.gamma.property.model.BinaryLogicalOperator;
 import hu.bme.mit.gamma.property.model.BinaryOperandLogicalPathFormula;
 import hu.bme.mit.gamma.property.model.CommentableStateFormula;
-import hu.bme.mit.gamma.property.model.ComponentInstanceEventParameterReference;
-import hu.bme.mit.gamma.property.model.ComponentInstanceEventReference;
-import hu.bme.mit.gamma.property.model.ComponentInstanceStateConfigurationReference;
-import hu.bme.mit.gamma.property.model.ComponentInstanceStateExpression;
-import hu.bme.mit.gamma.property.model.ComponentInstanceVariableReference;
 import hu.bme.mit.gamma.property.model.PathFormula;
 import hu.bme.mit.gamma.property.model.PathQuantifier;
 import hu.bme.mit.gamma.property.model.PropertyModelFactory;
@@ -37,12 +31,12 @@ import hu.bme.mit.gamma.property.model.StateFormula;
 import hu.bme.mit.gamma.property.model.UnaryOperandPathFormula;
 import hu.bme.mit.gamma.property.model.UnaryPathOperator;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
-import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceElementReferenceExpression;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Component;
-import hu.bme.mit.gamma.statechart.interface_.Event;
 import hu.bme.mit.gamma.statechart.interface_.Package;
-import hu.bme.mit.gamma.statechart.interface_.Port;
 import hu.bme.mit.gamma.statechart.statechart.State;
 import hu.bme.mit.gamma.statechart.util.StatechartUtil;
 
@@ -76,10 +70,10 @@ public class PropertyUtil extends StatechartUtil {
 		Component component = propertyPackage.getComponent();
 		for (CommentableStateFormula commentableStateFormula : propertyPackage.getFormulas()) {
 			StateFormula formula = commentableStateFormula.getFormula();
-			List<ComponentInstanceStateExpression> stateExpressions =
-					ecoreUtil.getAllContentsOfType(formula, ComponentInstanceStateExpression.class);
-			for (ComponentInstanceStateExpression stateExpression : stateExpressions) {
-				ComponentInstanceReference instanceReference = stateExpression.getInstance();
+			List<ComponentInstanceElementReferenceExpression> stateExpressions =
+					ecoreUtil.getAllContentsOfType(formula, ComponentInstanceElementReferenceExpression.class);
+			for (ComponentInstanceElementReferenceExpression stateExpression : stateExpressions) {
+				ComponentInstanceReferenceExpression instanceReference = stateExpression.getInstance();
 				ComponentInstance wrapperInstance = instantiateComponent(component);
 				prependAndReplace(instanceReference, wrapperInstance);
 			}
@@ -89,11 +83,11 @@ public class PropertyUtil extends StatechartUtil {
 	public void removeFirstInstanceFromFormulas(PropertyPackage propertyPackage) {
 		for (CommentableStateFormula commentableStateFormula : propertyPackage.getFormulas()) {
 			StateFormula formula = commentableStateFormula.getFormula();
-			List<ComponentInstanceStateExpression> stateExpressions =
-					ecoreUtil.getAllContentsOfType(formula, ComponentInstanceStateExpression.class);
-			for (ComponentInstanceStateExpression stateExpression : stateExpressions) {
-				ComponentInstanceReference instanceReference = stateExpression.getInstance();
-				ComponentInstanceReference child = instanceReference.getChild();
+			List<ComponentInstanceElementReferenceExpression> stateExpressions =
+					ecoreUtil.getAllContentsOfType(formula, ComponentInstanceElementReferenceExpression.class);
+			for (ComponentInstanceElementReferenceExpression stateExpression : stateExpressions) {
+				ComponentInstanceReferenceExpression instanceReference = stateExpression.getInstance();
+				ComponentInstanceReferenceExpression child = instanceReference.getChild();
 				ecoreUtil.replace(child, instanceReference);
 			}
 		}
@@ -101,14 +95,14 @@ public class PropertyUtil extends StatechartUtil {
 	
 	//
 	
-	public ComponentInstanceStateExpression chainReferences(
+	public ComponentInstanceElementReferenceExpression chainReferences(
 			List<? extends Expression> operands) {
 		List<Expression> expressions = new ArrayList<Expression>(operands);
 		// If it is a variable reference, we expect the first "n" elements
 		// to be ComponentInstanceReference
-		List<ComponentInstanceReference> instanceReferences =
-				javaUtil.filterIntoList(expressions, ComponentInstanceReference.class);
-		ComponentInstanceReference rootInstance =
+		List<ComponentInstanceReferenceExpression> instanceReferences =
+				javaUtil.filterIntoList(expressions, ComponentInstanceReferenceExpression.class);
+		ComponentInstanceReferenceExpression rootInstance =
 				createInstanceReferenceChain(instanceReferences);
 		
 		// Last operand is the declaration reference
@@ -117,7 +111,7 @@ public class PropertyUtil extends StatechartUtil {
 			Declaration declaration = getDeclaration(lastExpression);
 			if (declaration instanceof VariableDeclaration) {
 				VariableDeclaration variableDeclaration = (VariableDeclaration) declaration;
-				ComponentInstanceVariableReference variableReference =
+				ComponentInstanceVariableReferenceExpression variableReference =
 						createVariableReference(rootInstance, variableDeclaration);
 				return variableReference;
 			}
@@ -189,44 +183,6 @@ public class PropertyUtil extends StatechartUtil {
 	
 	public CommentableStateFormula createCommentableStateFormula(StateFormula formula) {
 		return createCommentableStateFormula("", formula);
-	}
-	
-	// Atomic expressions
-	
-	public ComponentInstanceStateConfigurationReference createStateReference(
-			ComponentInstanceReference instance, State state) {
-		ComponentInstanceStateConfigurationReference reference = propertyFactory.createComponentInstanceStateConfigurationReference();
-		reference.setInstance(instance);
-		reference.setRegion(StatechartModelDerivedFeatures.getParentRegion(state));
-		reference.setState(state);
-		return reference;
-	}
-	
-	public ComponentInstanceVariableReference createVariableReference(ComponentInstanceReference instance,
-			VariableDeclaration variable) {
-		ComponentInstanceVariableReference reference = propertyFactory.createComponentInstanceVariableReference();
-		reference.setInstance(instance);
-		reference.setVariable(variable);
-		return reference;
-	}
-	
-	public ComponentInstanceEventReference createEventReference(ComponentInstanceReference instance,
-			Port port, Event event) {
-		ComponentInstanceEventReference reference = propertyFactory.createComponentInstanceEventReference();
-		reference.setInstance(instance);
-		reference.setPort(port);
-		reference.setEvent(event);
-		return reference;
-	}
-	
-	public ComponentInstanceEventParameterReference createParameterReference(
-			ComponentInstanceReference instance, Port port, Event event, ParameterDeclaration parameter) {
-		ComponentInstanceEventParameterReference reference = propertyFactory.createComponentInstanceEventParameterReference();
-		reference.setInstance(instance);
-		reference.setPort(port);
-		reference.setEvent(event);
-		reference.setParameter(parameter);
-		return reference;
 	}
 	
 	// More complex

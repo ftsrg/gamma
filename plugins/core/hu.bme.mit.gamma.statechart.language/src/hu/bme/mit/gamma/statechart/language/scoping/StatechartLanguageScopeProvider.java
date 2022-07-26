@@ -61,7 +61,7 @@ import hu.bme.mit.gamma.statechart.interface_.InterfaceRealization;
 import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.statechart.interface_.Port;
 import hu.bme.mit.gamma.statechart.phase.InstanceVariableReference;
-import hu.bme.mit.gamma.statechart.phase.MissionPhaseStateDefinition;
+import hu.bme.mit.gamma.statechart.phase.MissionPhaseStateAnnotation;
 import hu.bme.mit.gamma.statechart.phase.PhaseModelPackage;
 import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference;
 import hu.bme.mit.gamma.statechart.statechart.PortEventReference;
@@ -111,7 +111,7 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 			// Phase
 			if (context instanceof InstanceVariableReference &&
 					reference == PhaseModelPackage.Literals.INSTANCE_VARIABLE_REFERENCE__VARIABLE) {
-				MissionPhaseStateDefinition container = ecoreUtil.getContainerOfType(context, MissionPhaseStateDefinition.class);
+				MissionPhaseStateAnnotation container = ecoreUtil.getContainerOfType(context, MissionPhaseStateAnnotation.class);
 				ComponentInstance instance = container.getComponent();
 				Component type = StatechartModelDerivedFeatures.getDerivedType(instance);
 				if (type instanceof StatechartDefinition) {
@@ -242,7 +242,7 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 				components.remove(context.eContainer());
 				return Scopes.scopeFor(components);
 			}
-			if (reference == CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE__COMPONENT_INSTANCE) {
+			if (reference == CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE_EXPRESSION__COMPONENT_INSTANCE) {
 				// Execution list
 				if (context instanceof CascadeCompositeComponent) {
 					CascadeCompositeComponent cascade = (CascadeCompositeComponent) context;

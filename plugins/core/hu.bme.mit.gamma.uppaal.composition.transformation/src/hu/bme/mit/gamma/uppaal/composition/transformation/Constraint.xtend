@@ -10,7 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.uppaal.composition.transformation
 
-import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression
 import hu.bme.mit.gamma.statechart.interface_.TimeSpecification
 import java.util.List
 import org.eclipse.xtend.lib.annotations.Data
@@ -31,6 +31,6 @@ class SchedulingConstraint extends Constraint {
 @Data
 class AsynchronousInstanceConstraint {
 	// This is not transformed to a concrete instance, has to be done manually in the scheduler
-	ComponentInstanceReference instance 
+	ComponentInstanceReferenceExpression instance 
 	OrchestratingConstraint orchestratingConstraint
 }

@@ -7,10 +7,6 @@
   </eAnnotations>
   <eClassifiers xsi:type="ecore:EClass" name="MissionPhaseAnnotation" eSuperTypes="statechart.ecore#//StatechartAnnotation"/>
   <eClassifiers xsi:type="ecore:EClass" name="MissionPhaseStateAnnotation" eSuperTypes="statechart.ecore#//StateAnnotation">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="stateDefinitions" upperBound="-1"
-        eType="#//MissionPhaseStateDefinition" containment="true"/>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="MissionPhaseStateDefinition">
     <eStructuralFeatures xsi:type="ecore:EReference" name="component" lowerBound="1"
         eType="ecore:EClass composite.ecore#//ComponentInstance" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="portBindings" upperBound="-1"
@@ -18,7 +14,7 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="variableBindings" upperBound="-1"
         eType="#//VariableBinding" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="history" lowerBound="1"
-        eType="#//History"/>
+        eType="#//History" defaultValueLiteral="NO_HISTORY"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="VariableBinding">
     <eStructuralFeatures xsi:type="ecore:EReference" name="instanceVariableReference"

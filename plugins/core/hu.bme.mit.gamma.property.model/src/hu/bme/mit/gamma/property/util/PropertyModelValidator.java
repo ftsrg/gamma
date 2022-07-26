@@ -18,7 +18,7 @@ import org.eclipse.emf.ecore.EObject;
 
 import hu.bme.mit.gamma.property.model.PropertyPackage;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
-import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.CompositeModelPackage;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Component;
@@ -34,7 +34,7 @@ public class PropertyModelValidator extends StatechartModelValidator {
 	//
 	
 	public Collection<ValidationResultMessage> checkComponentInstanceReferences(
-			ComponentInstanceReference reference) {
+			ComponentInstanceReferenceExpression reference) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		
 		validationResultMessages.addAll(
@@ -51,7 +51,7 @@ public class PropertyModelValidator extends StatechartModelValidator {
 						validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 							"The first component instance must be the component of " + component.getName(),
 							new ReferenceInfo(
-								CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE__COMPONENT_INSTANCE)));
+								CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE_EXPRESSION__COMPONENT_INSTANCE)));
 					}
 				}
 			}
@@ -62,7 +62,7 @@ public class PropertyModelValidator extends StatechartModelValidator {
 				!StatechartModelDerivedFeatures.isStatechart(lastInstance)) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 				"The last component instance must have a statechart type", 
-					new ReferenceInfo(CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE__COMPONENT_INSTANCE)));
+					new ReferenceInfo(CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE_EXPRESSION__COMPONENT_INSTANCE)));
 		}
 		
 		return validationResultMessages;

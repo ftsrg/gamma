@@ -12,7 +12,7 @@ package hu.bme.mit.gamma.transformation.util
 
 import hu.bme.mit.gamma.expression.model.NamedElement
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance
-import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.StateNode
@@ -25,7 +25,7 @@ import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartMo
 class Namings {
 	
 	def static String getFQN(List<ComponentInstance> instances) '''«FOR instance : instances SEPARATOR '_'»«instance.name»«IF instance.asynchronousStatechart»_«instance.derivedType.wrapperInstanceName»«ENDIF»«ENDFOR»'''
-	def static String getFQN(ComponentInstanceReference instance) '''«instance.componentInstanceChain.FQN»'''
+	def static String getFQN(ComponentInstanceReferenceExpression instance) '''«instance.componentInstanceChain.FQN»'''
 	def static String getFQN(ComponentInstance instance) '''«instance.componentInstanceChain.FQN»'''
 	
 	def static String getFQN(StateNode node) '''«node.parentRegion.FQN»_«node.name»'''

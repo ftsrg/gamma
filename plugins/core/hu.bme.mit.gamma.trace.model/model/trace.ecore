@@ -19,9 +19,6 @@
         eType="#//Assert" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Act" abstract="true"/>
-  <eClassifiers xsi:type="ecore:EClass" name="InstanceStateConfiguration" eSuperTypes="#//InstanceState">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="state" lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//State"/>
-  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="RaiseEventAct" eSuperTypes="#//Act ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//RaiseEventAction #//Assert"/>
   <eClassifiers xsi:type="ecore:EClass" name="TimeElapse" eSuperTypes="#//Act">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="elapsedTime" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBigInteger"/>
@@ -32,15 +29,15 @@
         eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/composite.ecore#//AsynchronousComponentInstance"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ComponentSchedule" eSuperTypes="#//Schedule"/>
-  <eClassifiers xsi:type="ecore:EClass" name="InstanceVariableState" eSuperTypes="#//InstanceState ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//DirectReferenceExpression">
+  <eClassifiers xsi:type="ecore:EClass" name="InstanceVariableState" eSuperTypes="#//InstanceState">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="variableReference" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/composite.ecore#//ComponentInstanceVariableReferenceExpression"
+        containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="value" lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
         containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="InstanceState" abstract="true" eSuperTypes="#//Assert">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="instance" lowerBound="1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/composite.ecore#//ComponentInstanceReference"
-        containment="true"/>
-  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="InstanceState" abstract="true" eSuperTypes="#//Assert"/>
+  <eClassifiers xsi:type="ecore:EClass" name="InstanceStateConfiguration" eSuperTypes="#//InstanceState ../../hu.bme.mit.gamma.statechart.model/model/composite.ecore#//ComponentInstanceStateReferenceExpression"/>
   <eClassifiers xsi:type="ecore:EClass" name="Cycle">
     <eStructuralFeatures xsi:type="ecore:EReference" name="steps" upperBound="-1"
         eType="#//Step" containment="true"/>
@@ -66,4 +63,5 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="upperLimit" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
         containment="true"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="NegativeTestAnnotation" eSuperTypes="#//ExecutionTraceAnnotation"/>
 </ecore:EPackage>

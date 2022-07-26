@@ -29,25 +29,33 @@ class UppaalVerifier extends AbstractVerifier {
 		val actualUppaalQuery = uppaalQueryFile.loadString
 		try {
 			// verifyta -t0 -T TestOneComponent.xml asd.q 
-			val command = '''verifyta «parameters» «uppaalFile.canonicalPath.escapePath» «uppaalQueryFile.canonicalPath.escapePath»'''
+			val command = #["verifyta"] + parameters.split(" ") + #[uppaalFile.canonicalPath, uppaalQueryFile.canonicalPath]
+			
 			// Executing the command
-			logger.log(Level.INFO, "Executing command: " + command)
+			logger.log(Level.INFO, "Executing command: " + command.join(" "))
 			process =  Runtime.getRuntime().exec(command)
 			val outputStream = process.inputStream
 			val errorStream = process.errorStream
+			
 			// Reading the result of the command
 			resultReader = new Scanner(outputStream)
 			verificationResultReader = new VerificationResultReader(resultReader)
 			val thread = new Thread(verificationResultReader)
 			thread.start
 			traceReader = new Scanner(errorStream)
+			
 			if (isCancelled) {
 				// If the process is killed, this is where it can be checked
 				throw new NotBackannotatedException(ThreeStateBoolean.UNDEF)
 			}
 			if (!traceReader.hasNext()) {
+				if (verificationResultReader.error) {
+					// E.g. out of memory
+					throw new NotBackannotatedException(ThreeStateBoolean.UNDEF)
+				}
 				// No back annotation of empty lines
-				throw new NotBackannotatedException(handleEmptyLines(actualUppaalQuery))
+				throw new NotBackannotatedException(
+						actualUppaalQuery.handleEmptyLines)
 			}
 			val backAnnotator = if (traceability instanceof G2UTrace) {
 				new UppaalBackAnnotator(traceability, traceReader)

@@ -1,0 +1,62 @@
+package constants
+
+// Controller-related constants
+
+
+
+// Camera-related constants
+
+const LOW_BATTERY : integer := 5
+const MEDIUM_LOW_BATTERY : integer := 20
+const HIGH_BATTERY : integer := 80
+const MAXIMUM_BATTERY : integer := 100
+const BATTERY_RECHARGE_TIME : integer := 1
+
+const BASE_GRANULARITY : integer := 5
+const MAXIMUM_GRANULARITY : integer := 10
+const MINIMUM_GRANULARITY : integer := 1
+
+lambda isBatteryHigh(battery : integer) : boolean := 
+	HIGH_BATTERY <= battery
+lambda isBatteryMedium(battery : integer) : boolean := 
+	MEDIUM_LOW_BATTERY <= battery and battery <= HIGH_BATTERY
+lambda isBatteryMediumLow(battery : integer) : boolean := 
+	battery <= MEDIUM_LOW_BATTERY
+lambda isBatteryLow(battery : integer) : boolean := 
+	battery <= LOW_BATTERY
+
+lambda calculateDifference(a : integer, b : integer) : integer := 
+	(a > b) ? (a - b) : (b - a)
+	
+lambda calculateBatteryDrownage(granularity : integer) : integer := 
+	max((MAXIMUM_GRANULARITY - granularity) / 2, 1)
+	
+lambda max(a : integer, b : integer) : integer := 
+	(a > b) ? a : b
+
+// Motion detector related constants
+
+const TIMEOUT_TIME : integer := 7
+const EXPECTED_DELAY_TIME : integer := 1
+const TEMPORARILY_IDLE_TIME : integer := 5
+const MAXIMUM_RELAYED_MOTION_COUNT : integer := 10
+
+// Brightness-related constants and procedures
+
+const MINIMUM_VENTILATION : integer := 0
+const BASE_VENTILATION : integer := 50
+const MAXIMUM_VENTILATION : integer := 100
+
+const VENTILATION_DELTA : integer := 1
+
+const SWITCH_OFF_TIME : integer := 15
+const FIRST_VENTILATION_CHANGE_TIME : integer := 5
+const VENTILATION_CHANGE_TIME : integer := 1
+
+const PERSON_VENTILATION : integer := 3
+
+procedure calculateVentilationLevel(personCount : integer) : integer {
+	var addition : integer :=
+		(personCount * PERSON_VENTILATION) mod (BASE_VENTILATION + 1);
+	return BASE_VENTILATION + addition;
+}

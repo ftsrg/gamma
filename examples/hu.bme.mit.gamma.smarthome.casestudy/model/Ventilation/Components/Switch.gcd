@@ -1,0 +1,24 @@
+package light
+
+import "Interfaces/Constants.gcd"
+import "Interfaces/Interfaces.gcd"
+
+statechart Switch [
+	port Motion : provides Motion
+	port Ventilation : provides Ventilation
+] {
+	region main {
+		initial OnEntry
+		state VentilationOn {
+			entry / raise Ventilation.switchVentilation(true);
+				raise Ventilation.ventilate(BASE_VENTILATION);
+			exit / raise Ventilation.switchVentilation(false);
+		}
+		state VentilationOff
+	}
+	
+	transition from OnEntry to VentilationOn
+//	transition from Off to Off when Motion.motion [!Motion.motion::on]	
+	transition from VentilationOff to VentilationOn when Motion.motion [Motion.motion::on]		
+	transition from VentilationOn to VentilationOff when Motion.motion [!Motion.motion::on]
+}

@@ -121,30 +121,6 @@ ActivityDeclarationInstanceVariableReference returns ActivityDeclarationInstance
 	'activity' instance=ActivityDeclarationReference '.' variable=[expression::VariableDeclaration]
 ;
 
-
-ComponentInstanceStateExpression returns ComponentInstanceStateExpression:
-	ComponentInstanceStateConfigurationReference |
-	ComponentInstanceVariableReference |
-		ComponentInstanceEventReference | ComponentInstanceEventParameterReference
-;
-
-ComponentInstanceStateConfigurationReference returns ComponentInstanceStateConfigurationReference:
-	'state' instance=ComponentInstanceReference '.' region=[statechart::Region] '.' state=[statechart::State]
-;
-
-ComponentInstanceVariableReference returns ComponentInstanceVariableReference:
-	'variable' instance=ComponentInstanceReference '.' variable=[expression::VariableDeclaration]
-;
-
-ComponentInstanceEventReference returns ComponentInstanceEventReference:
-	'event' instance=ComponentInstanceReference '.' port=[interface::Port] '.' event=[interface::Event]
-;
-
-ComponentInstanceEventParameterReference returns ComponentInstanceEventParameterReference:
-	'parameter' instance=ComponentInstanceReference '.' port=[interface::Port] '.'
-		event=[interface::Event] '::' parameter=[expression::ParameterDeclaration]
-;
-
 // Operators
 
 enum PathQuantifier returns PathQuantifier:

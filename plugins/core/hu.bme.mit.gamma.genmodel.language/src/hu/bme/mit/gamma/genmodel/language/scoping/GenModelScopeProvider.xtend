@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -17,13 +17,13 @@ import hu.bme.mit.gamma.genmodel.model.EventMapping
 import hu.bme.mit.gamma.genmodel.model.GenModel
 import hu.bme.mit.gamma.genmodel.model.GenmodelModelPackage
 import hu.bme.mit.gamma.genmodel.model.InterfaceMapping
+import hu.bme.mit.gamma.genmodel.model.StatechartContractGeneration
 import hu.bme.mit.gamma.genmodel.model.YakinduCompilation
-import hu.bme.mit.gamma.property.model.ComponentInstancePortReference
-import hu.bme.mit.gamma.property.model.ComponentInstanceStateConfigurationReference
-import hu.bme.mit.gamma.property.model.ComponentInstanceTransitionReference
-import hu.bme.mit.gamma.property.model.ComponentInstanceVariableReference
-import hu.bme.mit.gamma.property.model.PropertyModelPackage
-import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference
+import hu.bme.mit.gamma.statechart.composite.ComponentInstancePortReferenceExpression
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceTransitionReferenceExpression
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.CompositeModelPackage
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.TransitionIdAnnotation
@@ -59,30 +59,30 @@ class GenModelScopeProvider extends AbstractGenModelScopeProvider {
 			val components = genmodel.packageImports.map[it.components].flatten.filter(StatechartDefinition)
 			return Scopes.scopeFor(components)
 		}
-		if (reference == CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE__COMPONENT_INSTANCE) {
+		if (reference == CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE_EXPRESSION__COMPONENT_INSTANCE) {
 			val analysisModel = ecoreUtil.getSelfOrContainerOfType(context, AnalysisModelTransformation)
 			// Only if Gamma model is referenced
 			val modelReference = analysisModel.model
 			if (modelReference instanceof ComponentReference) {
 				val component = modelReference.component
 				val instanceContainer = ecoreUtil.getSelfOrContainerOfType(
-					context, ComponentInstanceReference)
+					context, ComponentInstanceReferenceExpression)
 				val parent = instanceContainer?.parent
 				val instances = (parent === null) ?	component.allInstances :
-					parent.componentInstance.instances
+					parent.getComponentInstance.instances
 				return Scopes.scopeFor(instances)
 			}
 		}
-		if (reference == PropertyModelPackage.Literals.COMPONENT_INSTANCE_PORT_REFERENCE__PORT) {
-			val componentInstanceReference = context as ComponentInstancePortReference
+		if (reference == CompositeModelPackage.Literals.COMPONENT_INSTANCE_PORT_REFERENCE_EXPRESSION__PORT) {
+			val componentInstanceReference = context as ComponentInstancePortReferenceExpression
 			val componentInstance = componentInstanceReference.instance.lastInstance
 			if (componentInstance !== null) {
 				val ports = componentInstance.derivedType.allPorts
 				return Scopes.scopeFor(ports)
 			}
 		}
-		if (reference == PropertyModelPackage.Literals.COMPONENT_INSTANCE_VARIABLE_REFERENCE__VARIABLE) {
-			val componentInstanceReference = context as ComponentInstanceVariableReference
+		if (reference == CompositeModelPackage.Literals.COMPONENT_INSTANCE_VARIABLE_REFERENCE_EXPRESSION__VARIABLE_DECLARATION) {
+			val componentInstanceReference = context as ComponentInstanceVariableReferenceExpression
 			val componentInstance = componentInstanceReference.instance.lastInstance
 			if (componentInstance !== null) {
 				val type = componentInstance.derivedType
@@ -92,8 +92,8 @@ class GenModelScopeProvider extends AbstractGenModelScopeProvider {
 				}
 			}
 		}
-		if (reference == PropertyModelPackage.Literals.COMPONENT_INSTANCE_STATE_CONFIGURATION_REFERENCE__REGION) {
-			val componentInstanceReference = context as ComponentInstanceStateConfigurationReference
+		if (reference == CompositeModelPackage.Literals.COMPONENT_INSTANCE_STATE_REFERENCE_EXPRESSION__REGION) {
+			val componentInstanceReference = context as ComponentInstanceStateReferenceExpression
 			val componentInstance = componentInstanceReference.instance.lastInstance
 			if (componentInstance !== null) {
 				val component = componentInstance.derivedType
@@ -102,8 +102,8 @@ class GenModelScopeProvider extends AbstractGenModelScopeProvider {
 				}
 			}
 		}
-		if (reference == PropertyModelPackage.Literals.COMPONENT_INSTANCE_STATE_CONFIGURATION_REFERENCE__STATE) {
-			val componentInstanceReference = context as ComponentInstanceStateConfigurationReference
+		if (reference == CompositeModelPackage.Literals.COMPONENT_INSTANCE_STATE_REFERENCE_EXPRESSION__STATE) {
+			val componentInstanceReference = context as ComponentInstanceStateReferenceExpression
 			val componentInstance = componentInstanceReference.instance.lastInstance
 			if (componentInstance !== null) {
 				val component = componentInstance.derivedType
@@ -115,14 +115,15 @@ class GenModelScopeProvider extends AbstractGenModelScopeProvider {
 				}
 			}
 		}
-		if (reference == PropertyModelPackage.Literals.COMPONENT_INSTANCE_TRANSITION_REFERENCE__TRANSITION) {
-			val componentInstanceReference = context as ComponentInstanceTransitionReference
+		if (reference == CompositeModelPackage.Literals.COMPONENT_INSTANCE_TRANSITION_REFERENCE_EXPRESSION__TRANSITION_ID) {
+			val componentInstanceReference = context as ComponentInstanceTransitionReferenceExpression
 			val componentInstance = componentInstanceReference.instance.lastInstance
 			if (componentInstance !== null) {
 				val component = componentInstance.derivedType
 				if (component instanceof StatechartDefinition) {
 					val transitions = component.transitions
-					val annotations = transitions.map[it.annotations].flatten.filter(TransitionIdAnnotation)
+					val annotations = transitions.map[it.annotations].flatten
+						.filter(TransitionIdAnnotation)
 					return Scopes.scopeFor(annotations)
 				}
 			}
@@ -157,6 +158,10 @@ class GenModelScopeProvider extends AbstractGenModelScopeProvider {
 			val gammaInterface = ((context as EventMapping).eContainer as InterfaceMapping).gammaInterface
 			val events = gammaInterface.allEventDeclarations.map[it.event]
 			return Scopes.scopeFor(events)
+		}
+		if (context instanceof StatechartContractGeneration && reference == GenmodelModelPackage.Literals.STATECHART_CONTRACT_GENERATION__SCENARIO){
+			val genmodel = context.eContainer as GenModel
+			return Scopes.scopeFor(genmodel.scenarioImports.flatMap[it.scenarios])
 		}
 		// Expression scoping
 		if (reference == ExpressionModelPackage.Literals.DIRECT_REFERENCE_EXPRESSION__DECLARATION) {

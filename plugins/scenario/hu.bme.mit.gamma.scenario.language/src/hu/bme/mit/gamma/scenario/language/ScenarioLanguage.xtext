@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020-2021 Contributors to the Gamma project
+ * Copyright (c) 2020-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -13,21 +13,29 @@ grammar hu.bme.mit.gamma.scenario.language.ScenarioLanguage with hu.bme.mit.gamm
 import "http://www.eclipse.org/emf/2002/Ecore" as ecore
 import "http://www.mit.bme.hu/gamma/scenario/Model" as ScenarioModel
 import "http://www.mit.bme.hu/gamma/statechart/Model/Interface" as InterfaceModel
+import "http://www.mit.bme.hu/gamma/expression/Model" as ConstraintModel 
 
-ScenarioDeclaration returns ScenarioModel::ScenarioDeclaration:
+
+ScenarioPackage returns ScenarioModel::ScenarioPackage:
+	'package' name=ID
 	('import' imports+=[InterfaceModel::Package|STRING])*
 	'component' component=[InterfaceModel::Component]
-	(scenarios+=ScenarioDefinition)+;
+	(typeDeclarations+=TypeDeclaration |
+	 constantDeclarations+=ConstantDeclaration |
+	 functionDeclarations+=FunctionDeclaration |
+	 basicConstraintDefinitions+=BasicConstraintDefinition)*
+	(scenarios+=ScenarioDeclaration)+;
 
-ScenarioDefinition returns ScenarioModel::ScenarioDefinition:
+ScenarioDeclaration returns ScenarioModel::ScenarioDeclaration:
 	annotation+=Annotations*
-	'scenario' name=ID ('('(parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*')')? 
+	'scenario' name=ID ('('(parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*')')?
+	(variableDeclarations+=VariableDeclaration)*
 	(initialblock=InitialBlock)?
 	chart=Chart;
 	
 InitialBlock returns ScenarioModel::InitialBlock: 
 	{ScenarioModel::InitialBlock} 'initial' 'outputs' '['
-	modalInteractions+=ModalInteraction*
+	interactions+=InitialInteraction*
 	']';
 
 Annotations returns ScenarioModel::Annotation:
@@ -42,7 +50,6 @@ NegPermissiveAnnotation returns ScenarioModel::NegPermissiveAnnotation:
 
 StrictAnnotation returns ScenarioModel::StrictAnnotation:
 	{ScenarioModel::StrictAnnotation} '@Strict';
-	
 
 NegatedWaitAnnotation returns ScenarioModel::NegatedWaitAnnotation:
 	"@AllowedWaitingForNegated" (minimum=Expression )? ".." maximum=Expression;
@@ -55,7 +62,7 @@ AllowedWaitAnnotation returns ScenarioModel::WaitAnnotation:
 
 Chart returns ScenarioModel::Chart:
 	'['
-	^fragment=FragmentDefinition
+		^fragment=FragmentDefinition
 	']';
 
 FragmentDefinition returns ScenarioModel::InteractionFragment:
@@ -66,11 +73,19 @@ AbstractInteraction returns ScenarioModel::Interaction:
 
 ScenarioReference returns ScenarioModel::ScenarioDefinitionReference:
 	{ScenarioModel::ScenarioDefinitionReference}
-	'call' scenarioDefinition=[ScenarioModel::ScenarioDefinition]
+	'call' scenarioDefinition=[ScenarioModel::ScenarioDeclaration]
 	('('arguments+=Expression(',' arguments+=Expression)*')')?;
 
 AbstractInteractionDefinition returns ScenarioModel::InteractionDefinition:
-	ModalInteraction | NegatedModalInteraction | ModalInteractionSet;
+	ModalInteraction | NegatedModalInteraction | ModalInteractionSet | ScenarioCheck | ScenarioAssignment;
+	
+ScenarioAssignment returns ScenarioModel::ScenarioAssignmentStatement:
+	{ScenarioModel::ScenarioAssignmentStatement}
+	'assign' lhs= DirectReferenceExpression ':=' rhs=Expression;
+
+ScenarioCheck returns ScenarioModel::ScenarioCheckExpression:
+	{ScenarioModel::ScenarioCheckExpression}
+	'check' expression=Expression;
 
 CombinedFragment returns ScenarioModel::CombinedFragment:
 	AlternativeCombinedFragmentDefinition | OptionalCombinedFragmentDefinition | UnorderedCombinedFragmentDefinition |
@@ -81,6 +96,9 @@ NegatedModalInteraction returns ScenarioModel::NegatedModalInteraction:
 
 Negateable returns ScenarioModel::InteractionDefinition:
 	ModalInteractionSet | SignalDefinition;
+	
+InitialInteraction returns ScenarioModel::InteractionDefinition:
+	 ScenarioCheck |SignalDefinition | ScenarioAssignment;
 
 ModalInteraction returns ScenarioModel::ModalInteraction:
 	SignalDefinition | Delay;
@@ -97,6 +115,14 @@ SignalDefinition returns ScenarioModel::Signal:
 
 Delay returns ScenarioModel::Delay:
 	modality=ModalityDefinition 'delay' '(' minimum=Expression ('..' maximum=Expression)? ')';
+	
+@Override 
+PrimaryExpression returns ConstraintModel::Expression: 
+	super |
+	EventParameterReferenceExpression;
+
+EventParameterReferenceExpression returns InterfaceModel::EventParameterReferenceExpression:
+	port=[InterfaceModel::Port] '.' event=[InterfaceModel::Event] '::' parameter=[ConstraintModel::ParameterDeclaration];
 
 AlternativeCombinedFragmentDefinition returns ScenarioModel::AlternativeCombinedFragment:
 	'alternative' '{' fragments+=FragmentDefinition '}' ('or' '{' fragments+=FragmentDefinition '}')+;

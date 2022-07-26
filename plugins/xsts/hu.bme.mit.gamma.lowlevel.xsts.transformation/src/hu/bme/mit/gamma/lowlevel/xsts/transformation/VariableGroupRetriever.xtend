@@ -31,7 +31,7 @@ class VariableGroupRetriever {
 	protected final extension XSTSModelFactory factory = XSTSModelFactory.eINSTANCE
 	
 	// During a single low-level statechart transformation, there is a single component parameter group
-	protected def getComponentParameterGroup(XSTS xSts) {
+	def getComponentParameterGroup(XSTS xSts) {
 		var componentParameterGroups = xSts.variableGroups
 									.filter[it.annotation instanceof ComponentParameterGroup]
 		if (componentParameterGroups.empty) {
@@ -46,7 +46,7 @@ class VariableGroupRetriever {
 	}
 
 	// During a single low-level statechart transformation, there is a single in event variable group
-	protected def getInEventVariableGroup(XSTS xSts) {
+	def getInEventVariableGroup(XSTS xSts) {
 		var eventVariableGroups = xSts.variableGroups
 									.filter[it.annotation instanceof InEventGroup]
 		if (eventVariableGroups.empty) {
@@ -61,7 +61,7 @@ class VariableGroupRetriever {
 	}
 	
 	// During a single low-level statechart transformation, there is a single out event variable group
-	protected def getOutEventVariableGroup(XSTS xSts) {
+	def getOutEventVariableGroup(XSTS xSts) {
 		var eventVariableGroups = xSts.variableGroups
 									.filter[it.annotation instanceof OutEventGroup]
 		if (eventVariableGroups.empty) {
@@ -76,7 +76,7 @@ class VariableGroupRetriever {
 	}
 	
 	// During a single low-level statechart transformation, there is a single in event parameter variable group
-	protected def getInEventParameterVariableGroup(XSTS xSts) {
+	def getInEventParameterVariableGroup(XSTS xSts) {
 		var eventParameterVariableGroups = xSts.variableGroups
 									.filter[it.annotation instanceof InEventParameterGroup]
 		if (eventParameterVariableGroups.empty) {
@@ -91,7 +91,7 @@ class VariableGroupRetriever {
 	}
 	
 	// During a single low-level statechart transformation, there is a single out event parameter variable group
-	protected def getOutEventParameterVariableGroup(XSTS xSts) {
+	def getOutEventParameterVariableGroup(XSTS xSts) {
 		var eventParameterVariableGroups = xSts.variableGroups
 									.filter[it.annotation instanceof OutEventParameterGroup]
 		if (eventParameterVariableGroups.empty) {
@@ -106,7 +106,7 @@ class VariableGroupRetriever {
 	}
 
 	// During a single low-level statechart transformation, there is a single plain variable group
-	protected def getPlainVariableGroup(XSTS xSts) {
+	def getPlainVariableGroup(XSTS xSts) {
 		var plainVariableGroups = xSts.variableGroups
 									.filter[it.annotation instanceof PlainVariableGroup]
 		if (plainVariableGroups.empty) {
@@ -121,7 +121,7 @@ class VariableGroupRetriever {
 	}
 	
 	// During a single low-level statechart transformation, there are multiple region variable group
-	protected def getRegionGroups(XSTS xSts) {
+	def getRegionGroups(XSTS xSts) {
 		val regionGroups = xSts.variableGroups
 									.filter[it.annotation instanceof RegionGroup]
 									.toList
@@ -130,7 +130,7 @@ class VariableGroupRetriever {
 	}
 	
 	// During a single low-level statechart transformation, there is a single timeout variable group
-	protected def getTimeoutGroup(XSTS xSts) {
+	def getTimeoutGroup(XSTS xSts) {
 		val timeoutGroups = xSts.variableGroups
 									.filter[it.annotation instanceof TimeoutGroup]
 		if (timeoutGroups.empty) {

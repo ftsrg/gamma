@@ -11,7 +11,7 @@
 package hu.bme.mit.gamma.property.language.validation
 
 import hu.bme.mit.gamma.property.util.PropertyModelValidator
-import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression
 import org.eclipse.xtext.validation.Check
 
 class PropertyLanguageValidator extends AbstractPropertyLanguageValidator {
@@ -25,7 +25,7 @@ class PropertyLanguageValidator extends AbstractPropertyLanguageValidator {
 	}
 	
 	@Check
-	override checkComponentInstanceReferences(ComponentInstanceReference reference) {
+	override checkComponentInstanceReferences(ComponentInstanceReferenceExpression reference) {
 		handleValidationResultMessage(validator.checkComponentInstanceReferences(reference))
 	}
 	

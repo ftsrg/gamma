@@ -1,3 +1,13 @@
+/********************************************************************************
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * SPDX-License-Identifier: EPL-1.0
+ ********************************************************************************/
 package hu.bme.mit.gamma.xsts.transformation
 
 import hu.bme.mit.gamma.expression.model.ConstantDeclaration
@@ -5,9 +15,9 @@ import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.EqualityExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.property.model.AtomicFormula
-import hu.bme.mit.gamma.property.model.ComponentInstanceStateConfigurationReference
-import hu.bme.mit.gamma.property.model.ComponentInstanceVariableReference
 import hu.bme.mit.gamma.property.model.PropertyPackage
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.lowlevel.transformation.ExpressionTransformer
 import hu.bme.mit.gamma.transformation.util.PropertyUnfolder
@@ -90,7 +100,7 @@ class InitialStateHandler {
 		val lhs = expression.leftOperand
 		val rhs = expression.rightOperand
 		
-		checkState(lhs instanceof ComponentInstanceVariableReference,
+		checkState(lhs instanceof ComponentInstanceVariableReferenceExpression,
 				lhs + " is not a variable reference")
 		
 		val xStsLhs = lhs.transformExpression
@@ -109,7 +119,7 @@ class InitialStateHandler {
 		return xStsLhs.createAssignmentActions(xStsRhs)
 	}
 	
-	protected def dispatch transform(ComponentInstanceStateConfigurationReference expression) {
+	protected def dispatch transform(ComponentInstanceStateReferenceExpression expression) {
 		val region = expression.region
 		val state = expression.state
 		
@@ -132,8 +142,8 @@ class InitialStateHandler {
 		}
 	
 		def dispatch List<Expression> transformExpression(
-				ComponentInstanceVariableReference expression) {
-			val variable = expression.variable
+				ComponentInstanceVariableReferenceExpression expression) {
+			val variable = expression.variableDeclaration
 			val xStsVariables = mapper.getVariableVariables(variable)
 			return xStsVariables.map[it.createReferenceExpression]
 		}

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -18,14 +18,6 @@ import org.eclipse.xtext.util.Pair;
 import hu.bme.mit.gamma.action.language.formatting.ActionLanguageFormatterUtil;
 import hu.bme.mit.gamma.statechart.language.services.StatechartLanguageGrammarAccess;
 
-/**
- * This class contains custom formatting declarations.
- * 
- * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#formatting
- * on how and when to use it.
- * 
- * Also see {@link org.eclipse.xtext.xtext.XtextFormattingTokenSerializer} as an example
- */
 public class StatechartLanguageFormatter extends AbstractDeclarativeFormatter {
 	
 	private final ActionLanguageFormatterUtil actionLanguageFormatterUtil =
@@ -90,10 +82,10 @@ public class StatechartLanguageFormatter extends AbstractDeclarativeFormatter {
         c.setLinewrap(1, 1, 2).after(f.getScheduledAsynchronousCompositeComponentAccess().getGroup_7());
         c.setLinewrap(1, 1, 2).after(f.getScheduledAsynchronousCompositeComponentAccess().getGroup_8());
         // Set line wrap after variable bindings
-        c.setLinewrap(1, 1, 2).before(f.getStateDefinitionRule());
-        c.setIndentationIncrement().before(f.getStateDefinitionRule());
-        c.setIndentationDecrement().after(f.getStateDefinitionRule());
-        c.setSpace(" ").before(f.getStateDefinitionAccess().getLeftCurlyBracketKeyword_2());
+        c.setLinewrap(1, 1, 2).before(f.getMissionPhaseStateAnnotationAccess().getGroup_4());
+        c.setIndentationIncrement().before(f.getMissionPhaseStateAnnotationAccess().getGroup_4());
+        c.setIndentationDecrement().after(f.getMissionPhaseStateAnnotationAccess().getGroup_4());
+        c.setSpace(" ").before(f.getMissionPhaseStateAnnotationAccess().getLeftCurlyBracketKeyword_4_2());
         c.setLinewrap(1, 1, 2).after(f.getVariableBindingRule());
         
         // Right indentation around ports

@@ -27,7 +27,12 @@ ExecutionTrace returns ExecutionTrace:
 ;
 
 ExecutionTraceAnnotations returns ExecutionTraceAnnotation:
-	AllowedWaitingAnnotation // | future annotations
+	AllowedWaitingAnnotation | NegativeTestAnnotation
+;
+
+NegativeTestAnnotation returns NegativeTestAnnotation:
+	{NegativeTestAnnotation}
+	'@NegativeTest'
 ;
 
 AllowedWaitingAnnotation returns ExecutionTraceAllowedWaitingAnnotation:
@@ -106,13 +111,17 @@ InstanceState returns InstanceState:
 ;
 
 InstanceStateConfiguration returns InstanceStateConfiguration:
-	'state' instance=ComponentInstanceReference '.' state=[StatechartModel::State]
+	'state' instance=ComponentInstanceReferenceExpression '.' region=[StatechartModel::Region] '.' state=[StatechartModel::State]
 ;
 
 InstanceVariableState returns InstanceVariableState:
-	'variable' instance=ComponentInstanceReference '.' declaration=[ConstraintModel::VariableDeclaration] '=' value=Expression
+	variableReference=ComponentInstanceVariableReferenceExpression '=' value=Expression
 ;
 
-ComponentInstanceReference returns CompositeModel::ComponentInstanceReference:
-	componentInstance=[CompositeModel::ComponentInstance] ('->' child=ComponentInstanceReference)?
+ComponentInstanceVariableReferenceExpression returns CompositeModel::ComponentInstanceVariableReferenceExpression:
+	'variable' instance=ComponentInstanceReferenceExpression '.' variableDeclaration=[ConstraintModel::VariableDeclaration]
+;
+
+ComponentInstanceReferenceExpression returns CompositeModel::ComponentInstanceReferenceExpression:
+	componentInstance=[CompositeModel::ComponentInstance] ('->' child=ComponentInstanceReferenceExpression)?
 ;

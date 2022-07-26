@@ -1,0 +1,48 @@
+package interfaces
+
+//
+// External camera-related events
+interface Camera extends MotionDetector {
+	out event personPresence(count: integer)
+}
+
+// External motion detector related events
+interface MotionDetector {
+	out event motion
+}
+//
+
+//
+// External failures and fixes
+interface ComponentState {
+	out persistent event unavailability(unavailable : boolean)
+}
+//// For adaptation checks from the adaptation logic's point of view
+//interface Activation {
+//	out event activate
+//	out event deactivate
+//}
+// Internal activation to turn component on and off
+interface InternalActivation {
+	internal event activate
+	internal event deactivate
+}
+//
+
+// Internal motion-related
+interface Motion {
+	internal event motion(on : boolean)
+	internal event personPresence(count: integer)
+}
+
+//// Controlling the brightness
+//interface Illumination {
+//	out event switchLight(on : boolean)
+//	out event dim(brightness : integer)
+//}
+
+// Controlling the ventilation
+interface Ventilation {
+	out event switchVentilation(on : boolean)
+	out event ventilate(level : integer)
+}
