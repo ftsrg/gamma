@@ -1,0 +1,14 @@
+import "/model/Control/Controller.gcd"
+
+adaptive-conformance-check {
+	analysis {
+		component : Controller(50, 5, false)
+		language : XSTS-UPPAAL
+		constraint : {
+			minimum-orchestrating-period : 1 s
+			maximum-orchestrating-period : 1 s
+		}
+		folder: ".temporary"
+	}
+	folder : ".temporary"
+}

@@ -2,7 +2,7 @@ package interfaces
 
 //
 // External camera-related events
-interface Camera extends MotionDetector {
+interface Camera {
 	out event personPresence(count: integer)
 }
 
@@ -33,6 +33,11 @@ interface InternalActivation {
 interface Motion {
 	internal event motion(on : boolean)
 	internal event personPresence(count: integer)
+}
+
+interface MotionExternal {
+	out event motion(on : boolean)
+	out event personPresence(count: integer)
 }
 
 //// Controlling the brightness

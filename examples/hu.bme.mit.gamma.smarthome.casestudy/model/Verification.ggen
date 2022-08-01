@@ -1,0 +1,24 @@
+import "/model/ControllerWrapper.gcd"
+
+analysis {
+	component : Controller
+	language : XSTS-UPPAAL
+	constraint : {
+		minimum-orchestrating-period : 1000 ms
+		maximum-orchestrating-period : 1000 ms
+	}
+	property-file : "PhaseController.gpd"
+	state-coverage
+}
+
+verification {
+	language : Theta
+	file : "ControllerWrapper.xsts"
+	property-file : "PhaseController.gpd"
+}
+
+verification {
+	language : XSTS-UPPAAL
+	file : "ControllerWrapper.xml"
+	property-file : ".ControllerWrapper.gpd"
+}

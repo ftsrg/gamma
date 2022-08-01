@@ -3,6 +3,7 @@ package light
 import "Interfaces/Constants.gcd"
 import "Interfaces/Interfaces.gcd"
 
+@TransitionPriority = order-based
 statechart Switch [
 	port Motion : provides Motion
 	port Ventilation : provides Ventilation

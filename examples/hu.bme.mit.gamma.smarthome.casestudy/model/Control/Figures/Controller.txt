@@ -1,0 +1,64 @@
+@startuml
+	legend top
+	 	param initialCameraBattery: long
+	 	param initialCameraGranularity: long
+	 	param selfDefence: boolean
+		var cameraBattery: long = initialCameraBattery
+		var cameraGranularity: long = initialCameraGranularity
+		var motionDetectorTemporarilyIdle: boolean = false
+		timeout batteryRechargeTime
+	endlegend
+		state ControlVentilation {
+			state OccupancyComponentMerge <<choice>>
+			state OccupancyComponentChoice <<choice>>
+				[*] -> UseCamera 
+			state UseCamera {
+					[*] -> DefaultCameraMode 
+					DefaultCameraMode : entry / cameraGranularity := BASE_GRANULARITY
+					DefaultCameraMode --> LowGranularityCameraMode : cycle [isBatteryHigh(cameraBattery)]
+					DefaultCameraMode --> HighGranularityCameraMode : cycle [isBatteryMediumLow(cameraBattery)]
+					LowGranularityCameraMode : entry / cameraGranularity := MINIMUM_GRANULARITY
+					LowGranularityCameraMode --> DefaultCameraMode : cycle [!(isBatteryHigh(cameraBattery))]
+					HighGranularityCameraMode : entry / cameraGranularity := MAXIMUM_GRANULARITY
+					HighGranularityCameraMode --> DefaultCameraMode : cycle [!(isBatteryMediumLow(cameraBattery))]
+			}
+			
+				UseCamera --> OccupancyComponentMerge : cycle [isBatteryLow(cameraBattery)]
+				UseCamera --> OccupancyComponentMerge : CameraState.availability [CameraState.availability::unavailable]
+				UseCamera --> OccupancyComponentMerge : CameraActivation.deactivate 
+				UseMotionDetector --> OccupancyComponentMerge : cycle [(motionDetectorTemporarilyIdle && isCameraAvailable())]
+				UseMotionDetector --> OccupancyComponentMerge : MotionDetectorState.availability [MotionDetectorState.availability::unavailable]
+				UseMotionDetector --> OccupancyComponentMerge : MotionDetectorActivation.deactivate 
+				NoDetection --> OccupancyComponentMerge : cycle [canReconfigure()]
+				OccupancyComponentMerge --> OccupancyComponentChoice 
+				OccupancyComponentChoice -> UseCamera : !(CameraActivation.deactivate) [isCameraAvailable()]
+				OccupancyComponentChoice -> UseMotionDetector : !(MotionDetectorActivation.deactivate) [!(MotionDetectorState.availability::unavailable)]
+				OccupancyComponentChoice -> NoDetection :  [else] /\nVentilatorActivation.deactivate()\nSwitchActivation.deactivate()
+			--
+			state VentilationComponentMerge <<choice>>
+			state VentilationComponentChoice <<choice>>
+				[*] -> UseAdaptiveVentilator 
+				UseAdaptiveVentilator --> VentilationComponentMerge : VentilatorState.availability [VentilatorState.availability::unavailable]
+				UseAdaptiveVentilator --> VentilationComponentMerge : VentilatorActivation.deactivate 
+				UseSwitch --> VentilationComponentMerge : SwitchState.availability [SwitchState.availability::unavailable]
+				UseSwitch --> VentilationComponentMerge : SwitchActivation.deactivate 
+				UseSwitch --> VentilationComponentMerge : cycle [!(VentilatorState.availability::unavailable)]
+				FixVentilation : entry / Ventilation.switchVentilation(true)
+				FixVentilation : entry / Ventilation.ventilate(BASE_VENTILATION)
+				FixVentilation --> VentilationComponentMerge : cycle [canReconfigure()]
+				VentilationComponentMerge --> VentilationComponentChoice 
+				VentilationComponentChoice -> UseAdaptiveVentilator : !(VentilatorActivation.deactivate) [!(VentilatorState.availability::unavailable)]
+				VentilationComponentChoice -> UseSwitch : !(SwitchActivation.deactivate) [!(SwitchState.availability::unavailable)]
+				VentilationComponentChoice -> FixVentilation :  [else] /\nCameraActivation.deactivate()\nMotionDetectorActivation.deactivate()
+			--
+				[*] -> Idle 
+				Idle -> RechargeCamera : CameraActivation.deactivate 
+				RechargeCamera : entry / batteryRechargeTime := BATTERY_RECHARGE_TIME s
+				RechargeCamera -> Idle : cycle [in-state(occupancy.UseCamera)]
+				RechargeCamera -> RechargeCamera : timeout batteryRechargeTime [((cameraBattery + 1) <= MAXIMUM_BATTERY)] /\ncameraBattery := (cameraBattery + 1)
+		}
+		
+		[*] -> ControlVentilation 
+		
+		
+@enduml
