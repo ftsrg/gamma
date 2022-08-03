@@ -27,6 +27,7 @@ import org.yakindu.sct.model.sgraph.Scope;
 import org.yakindu.sct.model.sgraph.Statechart;
 import org.yakindu.sct.model.stext.stext.InterfaceScope;
 
+import hu.bme.mit.gamma.expression.model.ArgumentedElement;
 import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition;
 import hu.bme.mit.gamma.expression.model.DecimalTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Declaration;
@@ -39,6 +40,7 @@ import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeReference;
 import hu.bme.mit.gamma.expression.util.ExpressionModelValidator;
+import hu.bme.mit.gamma.genmodel.derivedfeatures.GenmodelDerivedFeatures;
 import hu.bme.mit.gamma.genmodel.model.AbstractComplementaryTestGeneration;
 import hu.bme.mit.gamma.genmodel.model.AdaptiveBehaviorConformanceChecking;
 import hu.bme.mit.gamma.genmodel.model.AdaptiveContractTestGeneration;
@@ -543,15 +545,10 @@ public class GenmodelValidator extends ExpressionModelValidator {
 		return validationResultMessages;
 	}
 	
-	public Collection<ValidationResultMessage> checkParameters(ComponentReference componentReference) {
-		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		Component type = componentReference.getComponent();
-		if (componentReference.getArguments().size() != type.getParameterDeclarations().size()) {
-			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-					"The number of arguments is wrong",
-					new ReferenceInfo(ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS)));
-		}
-		return validationResultMessages;
+	public Collection<ValidationResultMessage> checkArgumentTypes(ArgumentedElement argumentedElement) {
+		List<ParameterDeclaration> parameterDeclarations =
+				GenmodelDerivedFeatures.getParameterDeclarations(argumentedElement);
+		return checkArgumentTypes(argumentedElement, parameterDeclarations);
 	}
 	
 	public Collection<ValidationResultMessage> checkComponentInstanceArguments(
