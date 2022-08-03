@@ -716,6 +716,12 @@ public class StatechartUtil extends ActionUtil {
 		return StatechartModelDerivedFeatures.getWrapperInstanceName(component);
 	}
 	
+	public SimpleChannel connectPortsViaChannels(InstancePortReference lhsReference,
+			InstancePortReference rhsReference) {
+		return connectPortsViaChannels(lhsReference.getInstance(), lhsReference.getPort(),
+				rhsReference.getInstance(), rhsReference.getPort());
+	}
+	
 	public SimpleChannel connectPortsViaChannels(ComponentInstance lhsInstance, Port lhsPort,
 			ComponentInstance rhsInstance, Port rhsPort) {
 		SimpleChannel channel = compositeFactory.createSimpleChannel();
