@@ -1,0 +1,23 @@
+package environment
+
+import "/model/Interfaces/Interfaces.gcd"
+
+@TransitionPriority = order-based
+statechart Environment [
+	port police : provides PoliceInterrupt
+] {
+	timeout Timeout
+	transition from Entry to StepOne
+	transition from StepOne to StepTwo when timeout Timeout / raise police.police;
+	region Main {
+		initial Entry
+		state StepOne {
+			entry / {
+				set Timeout := 500 ms;
+				raise police.police;
+			}
+		}
+		state StepTwo {
+		}
+	}
+}
