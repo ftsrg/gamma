@@ -20,6 +20,7 @@ import "http://www.mit.bme.hu/gamma/statechart/Model/Composite" as CompositeMode
 import "http://www.mit.bme.hu/gamma/statechart/Model/Interface" as InterfaceModel 
 import "http://www.mit.bme.hu/gamma/statechart/Model/Contract" as ContractModel 
 import "http://www.mit.bme.hu/gamma/statechart/Model/Phase" as PhaseModel 
+import "http://www.mit.bme.hu/gamma/statechart/Model/ActivityComposition" as ActivityComposition 
 
 Package returns InterfaceModel::Package:
 	'package' name=ID
@@ -29,8 +30,7 @@ Package returns InterfaceModel::Package:
 		functionDeclarations+=FunctionDeclaration |
 		typeDeclarations+=TypeDeclaration |
 		components+=Component |
-		interfaces+=Interface |
-		activities+=NamedActivityDeclaration
+		interfaces+=Interface
 	)*
 ;
 
@@ -195,7 +195,6 @@ SynchronousStatechartDefinition returns SynchronousStatechartDefinition:
 				regions+=Region |
 				transitions+=Transition
 			)*
-			(activityDeclarations+=NamedActivityDeclaration)*
 			functionDeclarations+=FunctionDeclaration*
 	'}'
 ;
@@ -222,7 +221,6 @@ AsynchronousStatechartDefinition returns AsynchronousStatechartDefinition:
 				regions+=Region |
 				transitions+=Transition
 			)*
-			(activityDeclarations+=NamedActivityDeclaration)*
 			functionDeclarations+=FunctionDeclaration*
 	'}'
 ;
@@ -330,7 +328,6 @@ State returns State:
 		(
 			(
 				('invariant' invariants+=Expression)*
-				('do' '/' (=> doActions+=Action)* )?
 				('entry' '/' (=> entryActions+=Action)* )?
 				('exit' '/' (=> exitActions+=Action)* )?
 			)
@@ -421,6 +418,23 @@ DeepHistoryState returns DeepHistoryState:
 	'deep' 'history' name=ID
 ;
 
+// Activity Composition
+
+
+SynchronousActivityDefinition returns ActivityComposition::SynchronousActivityDefinition:
+	'activity' name=ID 
+	('(' ((parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*)? ')')?
+		('[' ((ports+=Port)((',')? ports+=Port)*)? ']')? '{'
+			(
+				variableDeclarations+=VariableDeclaration |
+				timeoutDeclarations+=TimeoutDeclaration
+			)*
+			(activityNodes+=ActivityNode)*
+			(flows+=Flow)*
+			functionDeclarations+=FunctionDeclaration*
+	'}'
+;
+
 // Composition language 
  
 Component returns InterfaceModel::Component:
@@ -429,7 +443,8 @@ Component returns InterfaceModel::Component:
 ;
 
 SynchronousComponent returns CompositeModel::SynchronousComponent:
-	SynchronousStatechartDefinition |
+	SynchronousStatechartDefinition | 
+	SynchronousActivityDefinition |
 	AbstractSynchronousComponent
 ;
 
@@ -649,10 +664,6 @@ EventParameterReferenceExpression returns InterfaceModel::EventParameterReferenc
 
 // Action Language Extensions
 
-CallActivityAction returns ActivityModel::CallActivityAction:
-	'call' activity=[ActivityModel::ActivityDeclaration]
-;
-
 
 @Override 
 ControlNode returns ActivityModel::ControlNode:
@@ -660,7 +671,7 @@ ControlNode returns ActivityModel::ControlNode:
 	TriggerNode
 ;
 
-TriggerNode returns TriggerNode:
+TriggerNode returns ActivityComposition::TriggerNode:
 	'trigger' name=ID 'when' trigger=Trigger
 ;
 
@@ -671,8 +682,7 @@ InlineStatement returns ActionModel::Statement:
 	(
 		(
 		RaiseEventAction |
-		SetTimeoutAction |
-		CallActivityAction
+		SetTimeoutAction
 		)
 		';'
 	)

@@ -27,13 +27,12 @@ import org.eclipse.xtext.scoping.impl.SimpleScope;
 import com.google.common.collect.Lists;
 
 import hu.bme.mit.gamma.action.model.Action;
-import hu.bme.mit.gamma.activity.derivedfeatures.ActivityModelDerivedFeatures;
-import hu.bme.mit.gamma.activity.model.ActivityDeclaration;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
 import hu.bme.mit.gamma.expression.model.FieldDeclaration;
 import hu.bme.mit.gamma.expression.model.ParametricElement;
+import hu.bme.mit.gamma.statechart.ActivityComposition.ActivityDefinition;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponent;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance;
@@ -297,10 +296,10 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 						declarations.addAll(statechart.getVariableDeclarations());
 						declarations.addAll(statechart.getFunctionDeclarations());
 						scope = Scopes.scopeFor(declarations, parentScope);
-					} else if (element instanceof ActivityDeclaration) {
-						ActivityDeclaration activity = (ActivityDeclaration) element;
+					} else if (element instanceof ActivityDefinition) {
+						ActivityDefinition activity = (ActivityDefinition) element;
 						Collection<Declaration> declarations = new ArrayList<Declaration>();
-						declarations.addAll(ActivityModelDerivedFeatures.getTransitiveVariableDeclarations(activity));
+						declarations.addAll(activity.getVariableDeclarations());
 						scope = Scopes.scopeFor(declarations, parentScope);
 					} else {
 						scope = parentScope;

@@ -3,12 +3,7 @@
     xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="statechart" nsURI="http://www.mit.bme.hu/gamma/statechart/Model/Statechart"
     nsPrefix="hu.bme.mit.gamma.statechart">
   <eClassifiers xsi:type="ecore:EClass" name="StatechartDefinition" abstract="true"
-      eSuperTypes="interface.ecore#//Component #//CompositeElement">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="variableDeclarations" upperBound="-1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclaration"
-        containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="timeoutDeclarations" upperBound="-1"
-        eType="#//TimeoutDeclaration" containment="true"/>
+      eSuperTypes="#//CompositeElement composite.ecore#//StatefulComponent">
     <eStructuralFeatures xsi:type="ecore:EReference" name="transitions" upperBound="-1"
         eType="#//Transition" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="schedulingOrder" lowerBound="1"
@@ -19,9 +14,6 @@
         eType="#//TransitionPriority" defaultValueLiteral="OFF"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="guardEvaluation" lowerBound="1"
         eType="#//GuardEvaluation" defaultValueLiteral="ON_THE_FLY"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="activityDeclarations" upperBound="-1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.activity.model/model/activity.ecore#//ActivityDeclaration"
-        containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="SynchronousStatechartDefinition" eSuperTypes="#//StatechartDefinition composite.ecore#//SynchronousComponent"/>
   <eClassifiers xsi:type="ecore:EClass" name="AsynchronousStatechartDefinition" eSuperTypes="#//StatechartDefinition composite.ecore#//AsynchronousComponent">
@@ -158,8 +150,4 @@
   <eClassifiers xsi:type="ecore:EClass" name="StateAnnotation" abstract="true"/>
   <eClassifiers xsi:type="ecore:EClass" name="TransitionAnnotation" abstract="true"/>
   <eClassifiers xsi:type="ecore:EClass" name="TransitionIdAnnotation" eSuperTypes="#//TransitionAnnotation ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NamedElement"/>
-  <eClassifiers xsi:type="ecore:EClass" name="TriggerNode" eSuperTypes="../../hu.bme.mit.gamma.activity.model/model/activity.ecore#//ControlNode">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="trigger" lowerBound="1"
-        eType="ecore:EClass interface.ecore#//Trigger" containment="true"/>
-  </eClassifiers>
 </ecore:EPackage>

@@ -8,16 +8,15 @@ import org.eclipse.emf.ecore.EReference;
 import org.eclipse.xtext.scoping.IScope;
 import org.eclipse.xtext.scoping.Scopes;
 
-import hu.bme.mit.gamma.action.model.Action;
 import hu.bme.mit.gamma.activity.derivedfeatures.ActivityModelDerivedFeatures;
-import hu.bme.mit.gamma.activity.model.ActivityDeclaration;
-import hu.bme.mit.gamma.activity.model.ActivityDefinition;
 import hu.bme.mit.gamma.activity.model.ActivityModelPackage;
-import hu.bme.mit.gamma.activity.model.Flow;
+import hu.bme.mit.gamma.activity.model.CompositeNode;
+import hu.bme.mit.gamma.activity.model.InputPin;
 import hu.bme.mit.gamma.activity.model.InsidePinReference;
+import hu.bme.mit.gamma.activity.model.OutputPin;
 import hu.bme.mit.gamma.activity.model.OutsidePinReference;
 import hu.bme.mit.gamma.activity.model.PinReference;
-import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
+import hu.bme.mit.gamma.activity.model.PinnedNode;
 
 /**
  * This class contains custom scoping description.
@@ -31,39 +30,36 @@ public class ActivityLanguageScopeProvider extends AbstractActivityLanguageScope
 	public IScope getScope(final EObject context, final EReference reference) {
 
 		try {			
-			if (context instanceof Action &&
-					reference == ExpressionModelPackage.Literals.DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
-				IScope parentScope = getParentScope(context, reference);
-				EObject container = context.eContainer();
-				if (container instanceof Flow) {
-					ActivityDefinition definition = ActivityModelDerivedFeatures.getContainingActivityDefinition(context);
-					return Scopes.scopeFor(definition.getVariableDeclarations(), parentScope);
-				}
-				return parentScope;
-			}
-			
 			if (context instanceof PinReference) {
 				
 				if (context instanceof InsidePinReference) {
-					ActivityDeclaration declaration = ActivityModelDerivedFeatures.getContainingActivityDeclaration(context);
+					InsidePinReference pinReference = (InsidePinReference) context;
 					
-					return Scopes.scopeFor(declaration.getPins());
-				}
-				else { // instanceof OutsidePinReference
-					if (reference == ActivityModelPackage.Literals.OUTSIDE_PIN_REFERENCE__ACTION_NODE) {
-						ActivityDefinition definition = ActivityModelDerivedFeatures.getContainingActivityDefinition(context);
-						
-						return Scopes.scopeFor(definition.getActivityNodes());
-					}
-					if (reference == ActivityModelPackage.Literals.OUTPUT_PIN_REFERENCE__OUTPUT_PIN) {
-						ActivityDeclaration declaration = ActivityModelDerivedFeatures.getReferencedActivityDeclaration((OutsidePinReference)context);
-						
-						return Scopes.scopeFor(declaration.getPins());
+					PinnedNode node = ActivityModelDerivedFeatures.getContainingPinnedNode(pinReference);
+					
+					if (reference == ActivityModelPackage.Literals.OUTPUT_PIN_REFERENCE__OUTPUT_PIN) {						
+						return Scopes.scopeFor(node.getPins().stream().filter(pin -> pin instanceof OutputPin).toList());
 					}
 					if (reference == ActivityModelPackage.Literals.INPUT_PIN_REFERENCE__INPUT_PIN) {
-						ActivityDeclaration declaration = ActivityModelDerivedFeatures.getReferencedActivityDeclaration((OutsidePinReference)context);
+						return Scopes.scopeFor(node.getPins().stream().filter(pin -> pin instanceof InputPin).toList());
+					}
+				}
+				else { // instanceof OutsidePinReference
+					OutsidePinReference pinReference = (OutsidePinReference) context;
+					
+					if (reference == ActivityModelPackage.Literals.OUTSIDE_PIN_REFERENCE__ACTION_NODE) {
+						CompositeNode node = ActivityModelDerivedFeatures.getContainingCompositeNode(pinReference);
 						
-						return Scopes.scopeFor(declaration.getPins());
+						return Scopes.scopeFor(node.getActivityNodes());
+					}
+
+					PinnedNode node = pinReference.getActionNode();
+					
+					if (reference == ActivityModelPackage.Literals.OUTPUT_PIN_REFERENCE__OUTPUT_PIN) {						
+						return Scopes.scopeFor(node.getPins().stream().filter(pin -> pin instanceof OutputPin).toList());
+					}
+					if (reference == ActivityModelPackage.Literals.INPUT_PIN_REFERENCE__INPUT_PIN) {						
+						return Scopes.scopeFor(node.getPins().stream().filter(pin -> pin instanceof InputPin).toList());
 					}
 					
 				} 

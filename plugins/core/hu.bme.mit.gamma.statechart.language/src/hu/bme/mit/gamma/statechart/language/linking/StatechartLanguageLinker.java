@@ -18,8 +18,8 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
 
 import hu.bme.mit.gamma.language.util.linking.GammaLanguageLinker;
-import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.statechart.interface_.InterfaceModelPackage;
+import hu.bme.mit.gamma.statechart.interface_.Package;
 
 public class StatechartLanguageLinker extends GammaLanguageLinker {
 

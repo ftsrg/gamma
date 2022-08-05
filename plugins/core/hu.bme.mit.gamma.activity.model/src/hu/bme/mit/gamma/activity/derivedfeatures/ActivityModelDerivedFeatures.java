@@ -1,83 +1,49 @@
 package hu.bme.mit.gamma.activity.derivedfeatures;
 
-import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.eclipse.emf.ecore.EObject;
 
 import hu.bme.mit.gamma.action.derivedfeatures.ActionModelDerivedFeatures;
-import hu.bme.mit.gamma.activity.model.ActionNode;
-import hu.bme.mit.gamma.activity.model.ActivityDeclaration;
-import hu.bme.mit.gamma.activity.model.ActivityDeclarationReference;
-import hu.bme.mit.gamma.activity.model.ActivityDefinition;
 import hu.bme.mit.gamma.activity.model.ActivityNode;
-import hu.bme.mit.gamma.activity.model.DataContainer;
+import hu.bme.mit.gamma.activity.model.CompositeNode;
+import hu.bme.mit.gamma.activity.model.ControlFlow;
 import hu.bme.mit.gamma.activity.model.DataFlow;
 import hu.bme.mit.gamma.activity.model.DataSourceReference;
 import hu.bme.mit.gamma.activity.model.DataTargetReference;
-import hu.bme.mit.gamma.activity.model.Definition;
-import hu.bme.mit.gamma.activity.model.InlineActivityDeclaration;
+import hu.bme.mit.gamma.activity.model.Flow;
 import hu.bme.mit.gamma.activity.model.InputPinReference;
-import hu.bme.mit.gamma.activity.model.NamedActivityDeclarationReference;
 import hu.bme.mit.gamma.activity.model.OutputPinReference;
 import hu.bme.mit.gamma.activity.model.OutsidePinReference;
 import hu.bme.mit.gamma.activity.model.Pin;
 import hu.bme.mit.gamma.activity.model.PinReference;
-import hu.bme.mit.gamma.expression.model.VariableDeclaration;
+import hu.bme.mit.gamma.activity.model.PinnedNode;
 
 public class ActivityModelDerivedFeatures extends ActionModelDerivedFeatures {
 
-	public static ActivityDeclaration getContainingActivityDeclaration(EObject element) {
-		if (element instanceof ActivityDeclaration) {
-			return (ActivityDeclaration) element;
-		}
-		
-		return getContainingActivityDeclaration(element.eContainer());
-	}
-	
-	public static ActivityDefinition getContainingActivityDefinition(EObject element) {
-		if (element instanceof ActivityDefinition) {
-			return (ActivityDefinition) element;
-		}
-		
-		return getContainingActivityDefinition(element.eContainer());
-	}
-	
-	public static ActivityDeclaration getReferencedActivityDeclaration(OutsidePinReference reference) {
-		ActivityDeclarationReference declReference = reference.getActionNode().getActivityDeclarationReference();
-
-		if (declReference instanceof InlineActivityDeclaration) {
-			return (InlineActivityDeclaration) declReference;
-		}
-		if (declReference instanceof NamedActivityDeclarationReference) {
-			NamedActivityDeclarationReference activityDeclarationReference = (NamedActivityDeclarationReference) declReference;
-			return activityDeclarationReference.getNamedActivityDeclaration();
-		}
-		
-		return null;
-	}
-	
-	public static List<VariableDeclaration> getTransitiveVariableDeclarations(ActivityDeclaration declaration) {
-		if (declaration.getDefinition() instanceof ActivityDefinition) {
-			ActivityDefinition activityDefinition = (ActivityDefinition) declaration.getDefinition();
-			return activityDefinition.getVariableDeclarations();
-		}
-		
-		return Collections.emptyList();
-	}
-
-	public static ActivityNode getSourceNode(DataFlow flow) {
-		if (flow.getDataSourceReference() instanceof PinReference) {
-			PinReference pinReference = (PinReference) flow.getDataSourceReference();
-			Pin pin = getPin(pinReference);
+	public static ActivityNode getSourceNode(Flow flow) {
+		if (flow instanceof DataFlow) {
+			DataFlow dataFlow = (DataFlow) flow;
 			
-			return ecoreUtil.getContainerOfType(pin, ActivityNode.class);
+			if (dataFlow.getDataSourceReference() instanceof PinReference) {
+				PinReference pinReference = (PinReference) dataFlow.getDataSourceReference();
+				Pin pin = getPin(pinReference);
+				
+				return ecoreUtil.getContainerOfType(pin, PinnedNode.class);
+			}
 		}
+			
+		if (flow instanceof ControlFlow) {
+			ControlFlow controlFlow = (ControlFlow) flow;
+			
+			return controlFlow.getSourceNode();
+		}		
 		
-		throw new IllegalStateException("Data flow's source is not a known type.");
+		throw new IllegalStateException("Flow's source is not a known type.");
 	}
 
-	public static DataContainer getSourceDataContainer(DataFlow flow) {
+	public static Pin getSourcePin(DataFlow flow) {
 		if (flow.getDataSourceReference() instanceof PinReference) {
 			PinReference pinReference = (PinReference) flow.getDataSourceReference();
 			Pin pin = getPin(pinReference);
@@ -88,18 +54,28 @@ public class ActivityModelDerivedFeatures extends ActionModelDerivedFeatures {
 		throw new IllegalStateException("Data flow's source is not a known type.");
 	}
 
-	public static ActivityNode getTargetNode(DataFlow flow) {
-		if (flow.getDataTargetReference() instanceof PinReference) {
-			PinReference pinReference = (PinReference) flow.getDataTargetReference();
-			Pin pin = getPin(pinReference);
+	public static ActivityNode getTargetNode(Flow flow) {
+		if (flow instanceof DataFlow) {
+			DataFlow dataFlow = (DataFlow) flow;
 			
-			return ecoreUtil.getContainerOfType(pin, ActivityNode.class);
+			if (dataFlow.getDataTargetReference() instanceof PinReference) {
+				PinReference pinReference = (PinReference) dataFlow.getDataTargetReference();
+				Pin pin = getPin(pinReference);
+				
+				return ecoreUtil.getContainerOfType(pin, PinnedNode.class);
+			}
+		}
+			
+		if (flow instanceof ControlFlow) {
+			ControlFlow controlFlow = (ControlFlow) flow;
+			
+			return controlFlow.getTargetNode();
 		}
 		
-		throw new IllegalStateException("Data flow's source is not of a known type.");
+		throw new IllegalStateException("Flow's target is not of a known type.");
 	}
 
-	public static DataContainer getTargetDataContainer(DataFlow flow) {
+	public static Pin getTargetPin(DataFlow flow) {
 		if (flow.getDataTargetReference() instanceof PinReference) {
 			PinReference pinReference = (PinReference) flow.getDataTargetReference();
 			Pin pin = getPin(pinReference);
@@ -138,43 +114,35 @@ public class ActivityModelDerivedFeatures extends ActionModelDerivedFeatures {
 		
 		throw new IllegalStateException("Pin is not of a known type.");
 	}
-	
-	public static List<Pin> getPins(ActivityDeclarationReference reference) {
-		if (reference instanceof NamedActivityDeclarationReference) {
-			NamedActivityDeclarationReference activityDeclarationReference = (NamedActivityDeclarationReference) reference;
-			return activityDeclarationReference.getNamedActivityDeclaration().getPins();
-		}
-		
-		if (reference instanceof InlineActivityDeclaration) {
-			InlineActivityDeclaration activityDeclarationReference = (InlineActivityDeclaration) reference;
-			return activityDeclarationReference.getPins();
-		}
-		
-		throw new IllegalStateException("ActivityDeclarationReference is not of a known type.");
-	}
-	
-	public static Definition getDefinition(ActivityDeclarationReference reference) {
-		if (reference instanceof NamedActivityDeclarationReference) {
-			NamedActivityDeclarationReference activityDeclarationReference = (NamedActivityDeclarationReference) reference;
-			return activityDeclarationReference.getNamedActivityDeclaration().getDefinition();
-		}
-		
-		if (reference instanceof InlineActivityDeclaration) {
-			InlineActivityDeclaration activityDeclarationReference = (InlineActivityDeclaration) reference;
-			return activityDeclarationReference.getDefinition();
-		}
-		
-		throw new IllegalStateException("ActivityDeclarationReference is not of a known type.");
-	}
-	
-	public static ActivityDefinition getReferedActivityDefinition(ActionNode node) {
-		Definition definition = getDefinition(node.getActivityDeclarationReference());
 
-		if (definition instanceof ActivityDefinition) {
-			return (ActivityDefinition) definition;
+	public static PinnedNode getContainingPinnedNode(EObject context) {
+		return ecoreUtil.getContainerOfType(context, PinnedNode.class);
+	}
+
+	public static CompositeNode getContainingCompositeNode(EObject context) {
+		return ecoreUtil.getContainerOfType(context, CompositeNode.class);
+	}
+	
+	public static List<Flow> getIncomingFlows(ActivityNode node) {
+		CompositeNode parent = getContainingCompositeNode(node);
+		return parent.getFlows().stream().filter(it -> getTargetNode(it) == node)
+				.collect(Collectors.toList());
+	}
+	
+	public static List<Flow> getOutgoingFlows(ActivityNode node) {
+		CompositeNode parent = getContainingCompositeNode(node);
+		return parent.getFlows().stream().filter(it -> getSourceNode(it) == node)
+				.collect(Collectors.toList());
+	}
+	
+	public static CompositeNode getReferencedCompositeNode(OutsidePinReference reference) {
+		PinnedNode node = reference.getActionNode();
+		
+		if (node instanceof CompositeNode) {
+			return (CompositeNode) node;
 		}
 		
-		throw new IllegalStateException("ActionNode does not refer to an ActivityDefinition.");
+		throw new IllegalStateException("Referenced node is not a CompositeNode.");
 	}
 	
 }

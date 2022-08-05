@@ -3,7 +3,7 @@ Bundle-ManifestVersion: 2
 Automatic-Module-Name: hu.bme.mit.gamma.activity.language
 Bundle-Name: Gamma Activity Language
 Bundle-Vendor: BME-FTSRG
-Bundle-Version: 2.4.0.qualifier
+Bundle-Version: 2.7.0.qualifier
 Bundle-SymbolicName: hu.bme.mit.gamma.activity.language; singleton:=true
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.xtext,

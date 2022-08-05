@@ -46,4 +46,13 @@
             class="hu.bme.mit.gamma.statechart.statechart.StatechartModelPackage"
             genModel="model/statechart.genmodel"/>
    </extension>
+
+   <extension point="org.eclipse.emf.ecore.generated_package">
+      <!-- @generated statechart -->
+      <package
+            uri="http://www.mit.bme.hu/gamma/statechart/Model/ActivityComposition"
+            class="hu.bme.mit.gamma.statechart.ActivityComposition.ActivityCompositionPackage"
+            genModel="model/statechart.genmodel"/>
+   </extension>
+
 </plugin>

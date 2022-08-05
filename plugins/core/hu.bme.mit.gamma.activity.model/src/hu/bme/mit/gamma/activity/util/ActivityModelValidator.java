@@ -6,10 +6,6 @@ import java.util.Collections;
 
 import hu.bme.mit.gamma.action.model.AssignmentStatement;
 import hu.bme.mit.gamma.action.util.ActionModelValidator;
-import hu.bme.mit.gamma.activity.model.ActivityDeclaration;
-import hu.bme.mit.gamma.activity.model.ActivityDefinition;
-import hu.bme.mit.gamma.activity.model.ActivityNode;
-import hu.bme.mit.gamma.activity.model.Pin;
 import hu.bme.mit.gamma.activity.model.PinReference;
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
 import hu.bme.mit.gamma.expression.model.NamedElement;
@@ -25,16 +21,6 @@ public class ActivityModelValidator extends ActionModelValidator {
 	public Collection<ValidationResultMessage> checkNameUniqueness(NamedElement element) {
 		String name = element.getName();
 		
-		if (element instanceof ActivityNode) {
-			ActivityDefinition activityDefinition = ecoreUtil.getContainerOfType(element, ActivityDefinition.class);
-
-			return checkDirectNames(activityDefinition.getActivityNodes(), name);
-		}
-		if (element instanceof Pin) {
-			ActivityDeclaration activityDeclaration = ecoreUtil.getContainerOfType(element, ActivityDeclaration.class);
-			
-			return checkDirectNames(activityDeclaration.getPins(), name);
-		}
 		/*if (element instanceof NamedActivityDeclaration) {
 			ActivityPackage activityPackage = ecoreUtil.getContainerOfType(element, ActivityPackage.class);
 			

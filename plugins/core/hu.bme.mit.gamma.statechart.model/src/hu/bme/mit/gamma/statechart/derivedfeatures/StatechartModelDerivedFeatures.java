@@ -30,8 +30,8 @@ import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 
-import hu.bme.mit.gamma.action.derivedfeatures.ActionModelDerivedFeatures;
 import hu.bme.mit.gamma.action.model.Action;
+import hu.bme.mit.gamma.activity.derivedfeatures.ActivityModelDerivedFeatures;
 import hu.bme.mit.gamma.expression.model.ArgumentedElement;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.ElseExpression;
@@ -127,7 +127,7 @@ import hu.bme.mit.gamma.statechart.statechart.TransitionPriority;
 import hu.bme.mit.gamma.statechart.statechart.UnaryTrigger;
 import hu.bme.mit.gamma.statechart.util.StatechartUtil;
 
-public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
+public class StatechartModelDerivedFeatures extends ActivityModelDerivedFeatures {
 	
 	protected static final StatechartUtil statechartUtil = StatechartUtil.INSTANCE;
 	

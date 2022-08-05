@@ -15,19 +15,19 @@ import org.eclipse.xtext.formatting.impl.AbstractDeclarativeFormatter;
 import org.eclipse.xtext.formatting.impl.FormattingConfig;
 import org.eclipse.xtext.util.Pair;
 
-import hu.bme.mit.gamma.action.language.formatting.ActionLanguageFormatterUtil;
+import hu.bme.mit.gamma.activity.language.formatting.ActivityLanguageFormatterUtil;
 import hu.bme.mit.gamma.statechart.language.services.StatechartLanguageGrammarAccess;
 
 public class StatechartLanguageFormatter extends AbstractDeclarativeFormatter {
 	
-	private final ActionLanguageFormatterUtil actionLanguageFormatterUtil =
-			new ActionLanguageFormatterUtil();
+	private final ActivityLanguageFormatterUtil actionLanguageFormatterUtil =
+			new ActivityLanguageFormatterUtil();
 
 	@Override
 	protected void configureFormatting(FormattingConfig c) {
 		StatechartLanguageGrammarAccess f = (StatechartLanguageGrammarAccess) getGrammarAccess();
 		actionLanguageFormatterUtil.format(c, f);
-		actionLanguageFormatterUtil.formatExpressions(c, f.getActionLanguageGrammarAccess());
+		actionLanguageFormatterUtil.formatExpressions(c, f.getActivityLanguageGrammarAccess());
 		c.setWrappedLineIndentation(1);
 		// Setting the maximum size of lines
         c.setAutoLinewrap(100);

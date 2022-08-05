@@ -12,6 +12,26 @@
   <genPackages prefix="ActivityModel" basePackage="hu.bme.mit.gamma.activity" disposableProviderFactory="true"
       ecorePackage="activity.ecore#/">
     <genClasses ecoreClass="activity.ecore#//ActivityNode"/>
+    <genClasses ecoreClass="activity.ecore#//PinnedNode">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference activity.ecore#//PinnedNode/pins"/>
+    </genClasses>
+    <genClasses ecoreClass="activity.ecore#//CompositeNode">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference activity.ecore#//CompositeNode/flows"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference activity.ecore#//CompositeNode/activityNodes"/>
+    </genClasses>
+    <genClasses ecoreClass="activity.ecore#//ActionNode">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference activity.ecore#//ActionNode/action"/>
+    </genClasses>
+    <genClasses ecoreClass="activity.ecore#//ControlNode"/>
+    <genClasses ecoreClass="activity.ecore#//ForkNode"/>
+    <genClasses ecoreClass="activity.ecore#//JoinNode"/>
+    <genClasses ecoreClass="activity.ecore#//DecisionNode"/>
+    <genClasses ecoreClass="activity.ecore#//MergeNode"/>
+    <genClasses ecoreClass="activity.ecore#//InitialNode"/>
+    <genClasses ecoreClass="activity.ecore#//FinalNode"/>
+    <genClasses ecoreClass="activity.ecore#//Flow">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference activity.ecore#//Flow/guard"/>
+    </genClasses>
     <genClasses ecoreClass="activity.ecore#//ControlFlow">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference activity.ecore#//ControlFlow/sourceNode"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference activity.ecore#//ControlFlow/targetNode"/>
@@ -20,40 +40,12 @@
       <genFeatures children="true" createChild="true" propertySortChoices="true" ecoreFeature="ecore:EReference activity.ecore#//DataFlow/dataSourceReference"/>
       <genFeatures children="true" createChild="true" propertySortChoices="true" ecoreFeature="ecore:EReference activity.ecore#//DataFlow/dataTargetReference"/>
     </genClasses>
-    <genClasses ecoreClass="activity.ecore#//Flow">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference activity.ecore#//Flow/guard"/>
-    </genClasses>
-    <genClasses ecoreClass="activity.ecore#//ActionNode">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference activity.ecore#//ActionNode/activityDeclarationReference"/>
-    </genClasses>
-    <genClasses ecoreClass="activity.ecore#//JoinNode"/>
-    <genClasses ecoreClass="activity.ecore#//ForkNode"/>
-    <genClasses ecoreClass="activity.ecore#//DecisionNode"/>
-    <genClasses ecoreClass="activity.ecore#//MergeNode"/>
-    <genClasses ecoreClass="activity.ecore#//ControlNode"/>
-    <genClasses ecoreClass="activity.ecore#//InitialNode"/>
-    <genClasses ecoreClass="activity.ecore#//FinalNode"/>
-    <genClasses ecoreClass="activity.ecore#//ActivityDefinition">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference activity.ecore#//ActivityDefinition/flows"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference activity.ecore#//ActivityDefinition/activityNodes"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference activity.ecore#//ActivityDefinition/variableDeclarations"/>
-    </genClasses>
-    <genClasses ecoreClass="activity.ecore#//PinReference"/>
-    <genClasses ecoreClass="activity.ecore#//InputPin"/>
-    <genClasses ecoreClass="activity.ecore#//ActionDefinition">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference activity.ecore#//ActionDefinition/action"/>
-    </genClasses>
-    <genClasses ecoreClass="activity.ecore#//Definition"/>
-    <genClasses ecoreClass="activity.ecore#//NamedActivityDeclaration"/>
-    <genClasses ecoreClass="activity.ecore#//InlineActivityDeclaration"/>
-    <genClasses ecoreClass="activity.ecore#//ActivityDeclaration">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference activity.ecore#//ActivityDeclaration/definition"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference activity.ecore#//ActivityDeclaration/pins"/>
-    </genClasses>
-    <genClasses ecoreClass="activity.ecore#//OutputPin"/>
     <genClasses ecoreClass="activity.ecore#//Pin">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference activity.ecore#//Pin/type"/>
     </genClasses>
+    <genClasses ecoreClass="activity.ecore#//InputPin"/>
+    <genClasses ecoreClass="activity.ecore#//OutputPin"/>
+    <genClasses ecoreClass="activity.ecore#//PinReference"/>
     <genClasses ecoreClass="activity.ecore#//InputPinReference">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference activity.ecore#//InputPinReference/inputPin"/>
     </genClasses>
@@ -64,19 +56,11 @@
     <genClasses ecoreClass="activity.ecore#//OutsideInputPinReference"/>
     <genClasses ecoreClass="activity.ecore#//InsideOutputPinReference"/>
     <genClasses ecoreClass="activity.ecore#//OutsideOutputPinReference"/>
-    <genClasses ecoreClass="activity.ecore#//ActivityDeclarationReference"/>
-    <genClasses ecoreClass="activity.ecore#//NamedActivityDeclarationReference">
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference activity.ecore#//NamedActivityDeclarationReference/namedActivityDeclaration"/>
-    </genClasses>
     <genClasses ecoreClass="activity.ecore#//InsidePinReference"/>
     <genClasses ecoreClass="activity.ecore#//OutsidePinReference">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference activity.ecore#//OutsidePinReference/actionNode"/>
     </genClasses>
     <genClasses ecoreClass="activity.ecore#//DataSourceReference"/>
     <genClasses ecoreClass="activity.ecore#//DataTargetReference"/>
-    <genClasses ecoreClass="activity.ecore#//CallActivityAction">
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference activity.ecore#//CallActivityAction/activity"/>
-    </genClasses>
-    <genClasses ecoreClass="activity.ecore#//DataContainer"/>
   </genPackages>
 </genmodel:GenModel>

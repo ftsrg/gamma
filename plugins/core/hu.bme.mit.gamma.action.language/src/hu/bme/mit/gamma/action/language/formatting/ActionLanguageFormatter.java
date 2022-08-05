@@ -14,6 +14,7 @@ import org.eclipse.xtext.Keyword;
 import org.eclipse.xtext.formatting.impl.AbstractDeclarativeFormatter;
 import org.eclipse.xtext.formatting.impl.FormattingConfig;
 
+import hu.bme.mit.gamma.action.language.services.ActionLanguageGrammarAccess;
 import hu.bme.mit.gamma.expression.language.formatting.ExpressionLanguageFormatterUtil;
 
 public class ActionLanguageFormatter extends AbstractDeclarativeFormatter {
@@ -22,7 +23,7 @@ public class ActionLanguageFormatter extends AbstractDeclarativeFormatter {
 	
 	@Override
 	protected void configureFormatting(FormattingConfig c) {
-		hu.bme.mit.gamma.action.language.services.ActionLanguageGrammarAccess f = (hu.bme.mit.gamma.action.language.services.ActionLanguageGrammarAccess) getGrammarAccess();
+		ActionLanguageGrammarAccess f = (ActionLanguageGrammarAccess) getGrammarAccess();
 		expressionLanguageFormatterUtil.format(c, f);
 		expressionLanguageFormatterUtil.formatExpressions(c, f.getExpressionLanguageGrammarAccess());
 		for (Keyword comma: f.findKeywords(",")) {

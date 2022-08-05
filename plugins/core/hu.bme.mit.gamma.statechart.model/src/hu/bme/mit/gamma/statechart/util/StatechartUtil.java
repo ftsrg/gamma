@@ -20,7 +20,7 @@ import java.util.Set;
 import org.eclipse.emf.ecore.EObject;
 
 import hu.bme.mit.gamma.action.model.AssignmentStatement;
-import hu.bme.mit.gamma.action.util.ActionUtil;
+import hu.bme.mit.gamma.activity.util.ActivityUtil;
 import hu.bme.mit.gamma.expression.model.AccessExpression;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
@@ -97,7 +97,7 @@ import hu.bme.mit.gamma.statechart.statechart.TransitionPriority;
 import hu.bme.mit.gamma.statechart.statechart.UnaryTrigger;
 import hu.bme.mit.gamma.statechart.statechart.UnaryType;
 
-public class StatechartUtil extends ActionUtil {
+public class StatechartUtil extends ActivityUtil {
 	// Singleton
 	public static final StatechartUtil INSTANCE = new StatechartUtil();
 	protected StatechartUtil() {}

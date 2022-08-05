@@ -115,6 +115,7 @@ import org.yakindu.sct.model.stext.stext.VariableDefinition
 import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
+import hu.bme.mit.gamma.statechart.composite.CompositeModelPackage
 
 class YakinduToGammaTransformer {  
 	// Transformation-related extensions
@@ -149,6 +150,7 @@ class YakinduToGammaTransformer {
 	
 	// Packages of the metamodels
 	final extension StatechartModelPackage stmPackage = StatechartModelPackage.eINSTANCE
+	final extension CompositeModelPackage compositePackage = CompositeModelPackage.eINSTANCE
 	final extension InterfaceModelPackage ifPackage = InterfaceModelPackage.eINSTANCE
 	final extension ActionModelPackage acPackage = ActionModelPackage.eINSTANCE
 	final extension ExpressionModelPackage cmPackage = ExpressionModelPackage.eINSTANCE
@@ -493,7 +495,7 @@ class YakinduToGammaTransformer {
 		for (finalStateTopRegionMatch : engine.getMatcher(FinalStates.instance).allMatches) {
 			//  The "end" variable is during for the first iteration
 			if (endVariable === null) {
-				endVariable = gammaStatechart.createChild(statechartDefinition_VariableDeclarations,
+				endVariable = gammaStatechart.createChild(statefulComponent_VariableDeclarations,
 						variableDeclaration) as VariableDeclaration => [
 					it.name = "end"
 					it.createType("boolean")
@@ -635,7 +637,7 @@ class YakinduToGammaTransformer {
 		// Otherwise a plain variableDeclaration is created	in the statechart
 		else { 
 			val statechartDef = yakinduStatechart.getAllValuesOfTo.filter(StatechartDefinition).head 
-			gammaVariable = statechartDef.createChild(statechartDefinition_VariableDeclarations,
+			gammaVariable = statechartDef.createChild(statefulComponent_VariableDeclarations,
 					variableDeclaration) as VariableDeclaration
 			setVariable(it.variable, gammaVariable, it.name, it.type.name)
 		}
@@ -830,7 +832,7 @@ class YakinduToGammaTransformer {
 	 */
 	private def transformTimedTrigger(Transition gammaTransition, State gammaState, Expression yExpression, TimeEventSpec yTrigger, TimeUnit timeUnit) {
 		// Creating a Gamma TimeoutDeclaration for this particular trigger
-		val gammaTimeoutVariable = gammaStatechart.createChild(statechartDefinition_TimeoutDeclarations,
+		val gammaTimeoutVariable = gammaStatechart.createChild(statefulComponent_TimeoutDeclarations,
 				timeoutDeclaration) as TimeoutDeclaration => [
 			it.name = gammaState.name + "Timeout" + id++ // A more special name is needed, hence the id
 		]

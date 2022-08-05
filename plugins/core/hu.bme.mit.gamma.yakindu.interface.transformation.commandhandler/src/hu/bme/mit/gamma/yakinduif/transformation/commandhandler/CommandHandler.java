@@ -32,8 +32,8 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.yakindu.sct.model.sgraph.Statechart;
 
 import hu.bme.mit.gamma.dialog.DialogUtil;
-import hu.bme.mit.gamma.statechart.language.ui.serializer.StatechartLanguageSerializer;
 import hu.bme.mit.gamma.statechart.interface_.Package;
+import hu.bme.mit.gamma.statechart.language.ui.serializer.StatechartLanguageSerializer;
 import hu.bme.mit.gamma.yakindu.transformation.batch.InterfaceTransformer;
 import hu.bme.mit.gamma.yakindu.transformation.traceability.Y2GTrace;
 

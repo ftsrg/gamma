@@ -36,9 +36,9 @@ import org.eclipse.ui.handlers.HandlerUtil;
 
 import hu.bme.mit.gamma.codegeneration.java.GlueCodeGenerator;
 import hu.bme.mit.gamma.dialog.DialogUtil;
+import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
-import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.yakindu.transformation.traceability.Y2GTrace;
 
 public class CommandHandler extends AbstractHandler {

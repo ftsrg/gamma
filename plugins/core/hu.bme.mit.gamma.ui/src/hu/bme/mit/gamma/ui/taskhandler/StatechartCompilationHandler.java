@@ -17,8 +17,8 @@ import java.util.AbstractMap.SimpleEntry;
 
 import org.eclipse.core.resources.IFile;
 
-import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.genmodel.model.StatechartCompilation;
+import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.yakindu.transformation.batch.ModelValidator;
 import hu.bme.mit.gamma.yakindu.transformation.batch.YakinduToGammaTransformer;
 import hu.bme.mit.gamma.yakindu.transformation.traceability.Y2GTrace;

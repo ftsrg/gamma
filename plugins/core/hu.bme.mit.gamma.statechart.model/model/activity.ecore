@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="ActivityComposition" nsURI="http://www.mit.bme.hu/gamma/statechart/Model/ActivityComposition"
+    nsPrefix="hu.bme.mit.gamma.statechart.activitycomposition">
+  <eClassifiers xsi:type="ecore:EClass" name="ActivityDefinition" eSuperTypes="composite.ecore#//StatefulComponent ../../hu.bme.mit.gamma.activity.model/model/activity.ecore#//CompositeNode"/>
+  <eClassifiers xsi:type="ecore:EClass" name="SynchronousActivityDefinition" eSuperTypes="composite.ecore#//SynchronousComponent #//ActivityDefinition"/>
+  <eClassifiers xsi:type="ecore:EClass" name="TriggerNode" eSuperTypes="../../hu.bme.mit.gamma.activity.model/model/activity.ecore#//ControlNode">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="trigger" lowerBound="1"
+        eType="ecore:EClass interface.ecore#//Trigger" containment="true"/>
+  </eClassifiers>
+</ecore:EPackage>

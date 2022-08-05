@@ -5,42 +5,42 @@ import "http://www.mit.bme.hu/gamma/expression/Model" as ConstraintModel
 import "http://www.mit.bme.hu/gamma/action/Model" as ActionModel 
 import "http://www.mit.bme.hu/gamma/activity/Model"
 
-NamedActivityDeclaration returns NamedActivityDeclaration:
-	'activity'
+ActivityNode returns ActivityNode:
+	ConcreteNode |
+	ControlNode
+;
+
+ConcreteNode returns PinnedNode:
+	CompositeNode |
+	ActionNode
+;
+
+CompositeNode returns CompositeNode:
+	'action'
 	name=ID
 	(
 		'('
 			( (pins += Pin) (',' pins += Pin)* )?
 		')'
 	)?
-	definition = Definition
-;
-
-
-
-Definition returns Definition:
-	ActivityDefinition |
-	ActionDefinition
-;
-
-ActivityDefinition returns ActivityDefinition:
-	{ActivityDefinition} 
-	('[' 'language' '=' 'activity' ']')?
 	(
 		'{'
-			(variableDeclarations+=VariableDeclaration)*
 			(activityNodes+=ActivityNode)*
 			(flows+=Flow)*
 		'}'
 	)?
 ;
 
-ActionDefinition returns ActionDefinition:
-	'[' 'language' '=' 'action' ']'
-	action = Block
+ActionNode returns ActionNode:
+	'atomic' 'action'
+	name=ID
+	(
+		'('
+			( (pins += Pin) (',' pins += Pin)* )?
+		')'
+	)?
+	action=Block
 ;
-
-
 
 Flow returns Flow:
 	ControlFlow |
@@ -60,40 +60,6 @@ DataFlow returns DataFlow:
 	'to' dataTargetReference=DataTargetReference
 	('[' guard=Expression ']')?
 ;
-
-
-
-ActivityNode returns ActivityNode:
-	ActionNode |
-	ControlNode	
-;
-
-ActionNode returns ActionNode:
-	'action' name=ID
-	(
-		( ':' activityDeclarationReference=ActivityDeclarationReference )
-	)?
-;
-
-ActivityDeclarationReference returns ActivityDeclarationReference:
-	NamedActivityDeclarationReference |
-	InlineActivityDeclaration
-;
-
-NamedActivityDeclarationReference returns NamedActivityDeclarationReference:
-	namedActivityDeclaration=[NamedActivityDeclaration]
-;
-
-InlineActivityDeclaration returns InlineActivityDeclaration:
-	'activity'
- 	(
-		'('
-			( (pins += Pin) (',' pins += Pin)* )?
-		')'
-	)?
-	definition = Definition
-;
-
 
 ControlNode returns ControlNode:
 	InitialNode |
@@ -148,26 +114,22 @@ DataSourceReference returns DataSourceReference:
 	InsideInputPinReference |
 	OutsideOutputPinReference
 ;
+InsideInputPinReference returns InsideInputPinReference:
+	'self' '.' inputPin=[InputPin]
+;
+OutsideOutputPinReference returns OutsideOutputPinReference:
+	actionNode=[ActionNode] '.' outputPin=[OutputPin]
+;
 
 DataTargetReference returns DataTargetReference:
 	OutsideInputPinReference |
 	InsideOutputPinReference	
 ;
-
-InsideInputPinReference returns InsideInputPinReference:
-	'self' '.' inputPin=[InputPin]
-;
-
 OutsideInputPinReference returns OutsideInputPinReference:
 	actionNode=[ActionNode] '.' inputPin=[InputPin]
 ;
-
 InsideOutputPinReference returns InsideOutputPinReference:
 	'self' '.' outputPin=[OutputPin]
-;
-
-OutsideOutputPinReference returns OutsideOutputPinReference:
-	actionNode=[ActionNode] '.' outputPin=[OutputPin]
 ;
 
 @Override
