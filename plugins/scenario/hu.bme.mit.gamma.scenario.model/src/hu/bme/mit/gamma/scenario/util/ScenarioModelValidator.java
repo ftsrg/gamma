@@ -608,4 +608,20 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 		}
 		return validationResultMessages;
 	}
+	
+	public Collection<ValidationResultMessage> checkDelayAndNegateInSameBlock(ModalInteractionSet set) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		List<InteractionDefinition> interactions = set.getModalInteractions();
+		List<Signal> signals = javaUtil.filterIntoList(interactions, Signal.class);
+		List<Delay> delays = javaUtil.filterIntoList(interactions, Delay.class);
+		List<NegatedModalInteraction> negateds = javaUtil.filterIntoList(interactions, NegatedModalInteraction.class);
+		if (signals.size() > 0 || delays.size() == 0 || negateds.size() == 0) {
+			return validationResultMessages;
+		}
+		validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING,
+				"The use of a negated signal and a delay without a signal may lead to the desynchronization of the monitor system",
+				new ReferenceInfo(set.eContainingFeature(), ecoreUtil.getIndex(set),
+					set.eContainer())));
+		return validationResultMessages;
+	}
 }

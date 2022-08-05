@@ -3,8 +3,10 @@ package occupancy
 import "Interfaces/Constants.gcd"
 import "Interfaces/Interfaces.gcd"
 
+@TransitionPriority = order-based
 statechart Camera [
 	port Camera : requires Camera
+	port MotionDetector : requires MotionDetector
 	port Motion : provides Motion
 ] {
 	timeout timeoutTime // To turn off lightning automatically
@@ -42,14 +44,16 @@ statechart Camera [
 	transition from Entry to Operating
 	
 	transition from OperationEntry to Idle
-	transition from Idle to SenseMotion when Camera.motion /
+	transition from Idle to SenseMotion when MotionDetector.motion /
 		raise Motion.motion(true);
 	transition from SenseMotion to CountPersons when Camera.personPresence [
-		Camera.personPresence::count > 0] / lastCount := Camera.personPresence::count;
-	transition from SenseMotion to SenseMotion when Camera.motion
+		Camera.personPresence::count > 0 and Camera.personPresence::count < 10] /
+		lastCount := Camera.personPresence::count;
+	transition from SenseMotion to SenseMotion when MotionDetector.motion
 	transition from SenseMotion to Idle when timeout timeoutTime /
 		raise Motion.motion(false);
 	transition from CountPersons to CountPersonsChoice when Camera.personPresence [
+		Camera.personPresence::count > 0 and Camera.personPresence::count < 10 and
 		granularity <= calculateDifference(Camera.personPresence::count, lastCount)] /
 		lastCount := Camera.personPresence::count;
 	transition from CountPersonsChoice to SenseMotion [lastCount <= 0]

@@ -224,7 +224,7 @@ public class StatechartModelValidator extends ActivityModelValidator {
 		try {
 			List<ParameterDeclaration> parameterDeclarations =
 					StatechartModelDerivedFeatures.getParameterDeclarations(element);
-				validationResultMessages.addAll(
+			validationResultMessages.addAll(
 					super.checkArgumentTypes(element, parameterDeclarations));
 		} catch (IllegalArgumentException e) {
 			// Invalid model

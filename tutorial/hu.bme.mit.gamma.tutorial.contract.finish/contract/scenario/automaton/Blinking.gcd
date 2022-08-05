@@ -1,0 +1,64 @@
+package blinking
+import "/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd"
+import "/hu.bme.mit.gamma.tutorial.contract.finish/contract/adaptive/Crossroads.gcd"
+@TransitionPriority = value-based
+@HasInitialOutputsBlock
+@ScenarioContractStatechart = Crossroads (permissive)
+statechart Blinking [
+	port police : requires PoliceInterrupt
+	port policeReversed : provides PoliceInterrupt
+	port priorityOutput : provides LightCommands
+	port priorityOutputReversed : requires LightCommands
+	port secondaryOutput : provides LightCommands
+	port secondaryOutputReversed : requires LightCommands
+] {
+	timeout delay0
+	timeout delay1
+	region ^region {
+		initial Initial
+		state initialState
+		state hotComponentViolation
+		state state0 {
+			entry / set delay0 := 500 ms;
+		}
+		state state1 {
+			entry / set delay1 := 500 ms;
+		}
+		@SpecialStateAnnotation accepting
+		state AcceptingState
+	}
+	transition from Initial to initialState
+	transition (3) from initialState to state0 when (priorityOutputReversed.displayYellow &&
+		secondaryOutputReversed.displayYellow) && !(priorityOutputReversed.displayRed ||
+		priorityOutputReversed.displayGreen || priorityOutputReversed.displayNone ||
+		secondaryOutputReversed.displayRed || secondaryOutputReversed.displayGreen ||
+		secondaryOutputReversed.displayNone)
+	transition (1) from initialState to hotComponentViolation when priorityOutputReversed.displayRed
+		|| priorityOutputReversed.displayYellow || priorityOutputReversed.displayGreen ||
+		priorityOutputReversed.displayNone || secondaryOutputReversed.displayRed ||
+		secondaryOutputReversed.displayYellow || secondaryOutputReversed.displayGreen ||
+		secondaryOutputReversed.displayNone
+	transition from initialState to state0 when police.police
+	transition (3) from state0 to state1 when (timeout delay0 && priorityOutputReversed.displayNone
+		&& secondaryOutputReversed.displayNone) && !(priorityOutputReversed.displayRed ||
+		priorityOutputReversed.displayYellow || priorityOutputReversed.displayGreen ||
+		secondaryOutputReversed.displayRed || secondaryOutputReversed.displayYellow ||
+		secondaryOutputReversed.displayGreen)
+	transition (1) from state0 to hotComponentViolation when priorityOutputReversed.displayRed ||
+		priorityOutputReversed.displayYellow || priorityOutputReversed.displayGreen ||
+		priorityOutputReversed.displayNone || secondaryOutputReversed.displayRed ||
+		secondaryOutputReversed.displayYellow || secondaryOutputReversed.displayGreen ||
+		secondaryOutputReversed.displayNone
+	transition from state0 to state0 when police.police
+	transition (3) from state1 to AcceptingState when (timeout delay1 &&
+		priorityOutputReversed.displayYellow && secondaryOutputReversed.displayYellow) &&
+		!(priorityOutputReversed.displayRed || priorityOutputReversed.displayGreen ||
+		priorityOutputReversed.displayNone || secondaryOutputReversed.displayRed ||
+		secondaryOutputReversed.displayGreen || secondaryOutputReversed.displayNone)
+	transition (1) from state1 to hotComponentViolation when priorityOutputReversed.displayRed ||
+		priorityOutputReversed.displayYellow || priorityOutputReversed.displayGreen ||
+		priorityOutputReversed.displayNone || secondaryOutputReversed.displayRed ||
+		secondaryOutputReversed.displayYellow || secondaryOutputReversed.displayGreen ||
+		secondaryOutputReversed.displayNone
+	transition from state1 to state0 when police.police
+}

@@ -146,7 +146,7 @@ BreakStatement returns ActionModel::BreakStatement:
 
 ChoiceStatement returns ActionModel::ChoiceStatement:
 	'choice' '{'
-	('branch' branches+=ChoiceBranch ('branch' branches+=ChoiceBranch)*)
+		('branch' branches+=ChoiceBranch ('branch' branches+=ChoiceBranch)*)
 	'}'
 ;
 
