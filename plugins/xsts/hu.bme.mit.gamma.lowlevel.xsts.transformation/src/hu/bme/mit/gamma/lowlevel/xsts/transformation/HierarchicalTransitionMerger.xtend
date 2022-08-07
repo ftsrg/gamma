@@ -66,7 +66,7 @@ class HierarchicalTransitionMerger extends AbstractTransitionMerger {
 			defaultlessNonDeterministicChoice.extendChoiceWithDefaultBranch
 		}
 		
-		// The many transitions are now replaced by a single merged transition, representing the whole component
+		// The many transitions are now replaced by a single merged transition
 		xSts.changeTransitions(xStsMergedAction.wrap)
 	}
 		

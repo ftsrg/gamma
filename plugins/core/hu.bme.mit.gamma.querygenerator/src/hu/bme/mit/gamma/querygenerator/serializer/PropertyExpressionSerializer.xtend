@@ -11,14 +11,6 @@
 package hu.bme.mit.gamma.querygenerator.serializer
 
 import hu.bme.mit.gamma.expression.model.Expression
-import hu.bme.mit.gamma.property.model.ActivityDeclarationInstanceExpression
-import hu.bme.mit.gamma.property.model.ActivityDeclarationInstanceNodeReference
-import hu.bme.mit.gamma.property.model.ActivityDeclarationInstanceVariableReference
-import hu.bme.mit.gamma.property.model.ComponentInstanceEventParameterReference
-import hu.bme.mit.gamma.property.model.ComponentInstanceEventReference
-import hu.bme.mit.gamma.property.model.ComponentInstanceStateConfigurationReference
-import hu.bme.mit.gamma.property.model.ComponentInstanceStateExpression
-import hu.bme.mit.gamma.property.model.ComponentInstanceVariableReference
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceElementReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventParameterReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventReferenceExpression
@@ -41,26 +33,7 @@ abstract class PropertyExpressionSerializer extends ExpressionSerializer {
 		if (expression instanceof ComponentInstanceElementReferenceExpression) {
 			return expression.serializeStateExpression
 		}
-		if (expression instanceof ActivityDeclarationInstanceExpression) {
-			return expression.serializeActivityExpression
-		}
 		return super.serialize(expression)
-	}
-	
-	protected def dispatch serializeActivityExpression(ActivityDeclarationInstanceNodeReference expression) {
-		val instance = expression.instance
-		val activityNode = expression.activityNode
-		return '''«activityNode.getId(instance).head»'''
-	}
-	
-	protected def dispatch serializeActivityExpression(ActivityDeclarationInstanceVariableReference expression) {
-		val instance = expression.instance
-		val variable = expression.variable
-		return '''«variable.getId(instance).head»'''
-	}
-	
-	protected def dispatch serializeActivityExpression(ActivityDeclarationInstanceExpression expression) {
-		throw new IllegalArgumentException("Unknown expression")
 	}
 	
 	protected def dispatch serializeStateExpression(ComponentInstanceStateReferenceExpression expression) {

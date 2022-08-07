@@ -10,8 +10,6 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.querygenerator.serializer
 
-import hu.bme.mit.gamma.activity.model.ActivityDeclarationReference
-import hu.bme.mit.gamma.activity.model.ActivityNode
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression
@@ -53,14 +51,6 @@ class ThetaReferenceSerializer implements AbstractReferenceSerializer {
 			parameter.customizeInNames(port, instance)
 		}
 		return parameter.customizeOutNames(port, instance)
-	}
-	
-	override getId(ActivityNode activityNode, ActivityDeclarationReference instance) {
-		return #['''«activityNode.customizeName(instance)» == __Running__''']
-	}
-	
-	override getId(VariableDeclaration variable, ActivityDeclarationReference instance) {
-		return #['''«variable.customizeNames(instance)»''']
 	}
 	
 }

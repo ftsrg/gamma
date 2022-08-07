@@ -10,11 +10,13 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.action.language.ide;
 
+import org.eclipse.xtext.util.Modules2;
+
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+
 import hu.bme.mit.gamma.action.language.ActionLanguageRuntimeModule;
 import hu.bme.mit.gamma.action.language.ActionLanguageStandaloneSetup;
-import org.eclipse.xtext.util.Modules2;
 
 /**
  * Initialization support for running Xtext languages as language servers.

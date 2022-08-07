@@ -10,13 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.property.language.scoping
 
-import hu.bme.mit.gamma.activity.model.ActionDefinition
-import hu.bme.mit.gamma.activity.model.ActivityDefinition
-import hu.bme.mit.gamma.activity.model.ActivityModelPackage
-import hu.bme.mit.gamma.activity.model.NamedActivityDeclarationReference
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage
-import hu.bme.mit.gamma.property.model.ActivityDeclarationInstanceNodeReference
-import hu.bme.mit.gamma.property.model.ActivityDeclarationInstanceVariableReference
 import hu.bme.mit.gamma.property.model.PropertyModelPackage
 import hu.bme.mit.gamma.property.model.PropertyPackage
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceElementReferenceExpression
@@ -30,8 +24,6 @@ import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
 import org.eclipse.xtext.scoping.Scopes
 
-import static extension hu.bme.mit.gamma.action.derivedfeatures.ActionModelDerivedFeatures.*
-import static extension hu.bme.mit.gamma.activity.derivedfeatures.ActivityModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class PropertyLanguageScopeProvider extends AbstractPropertyLanguageScopeProvider {
@@ -44,50 +36,10 @@ class PropertyLanguageScopeProvider extends AbstractPropertyLanguageScopeProvide
 					return Scopes.scopeFor(imports.map[it.components].flatten)
 				}
 			}
-			if (reference == PropertyModelPackage.Literals.PROPERTY_PACKAGE__ACTIVITY) {
-				val imports = context.imports
-				if (!imports.empty) {
-					return Scopes.scopeFor(imports.map[it.activities].flatten)
-				}
-			}
 		}
 		val root = ecoreUtil.getSelfOrContainerOfType(context, PropertyPackage)
 		val component = root.component	
 			
-		if (context instanceof NamedActivityDeclarationReference && reference == ActivityModelPackage.Literals.NAMED_ACTIVITY_DECLARATION_REFERENCE__NAMED_ACTIVITY_DECLARATION) {
-			val imports = root.imports
-			return Scopes.scopeFor(imports.map[it.activities].flatten)
-		}
-		if (context instanceof ActivityDeclarationInstanceNodeReference) {
-			if (reference == ActivityModelPackage.Literals.NAMED_ACTIVITY_DECLARATION_REFERENCE__NAMED_ACTIVITY_DECLARATION) {
-				val imports = root.imports
-				return Scopes.scopeFor(imports.map[it.activities].flatten)
-			}
-			if (reference == PropertyModelPackage.Literals.ACTIVITY_DECLARATION_INSTANCE_NODE_REFERENCE__ACTIVITY_NODE) {
-				val declarationReference = context.instance
-				val definition = declarationReference.definition
-				
-				if (definition instanceof ActivityDefinition) {
-					return Scopes.scopeFor(definition.activityNodes)
-				}
-			}
-		}
-		if (context instanceof ActivityDeclarationInstanceVariableReference) {
-			if (reference == ActivityModelPackage.Literals.NAMED_ACTIVITY_DECLARATION_REFERENCE__NAMED_ACTIVITY_DECLARATION) {
-				val imports = root.imports
-				return Scopes.scopeFor(imports.map[it.activities].flatten)
-			}
-			if (reference == PropertyModelPackage.Literals.ACTIVITY_DECLARATION_INSTANCE_VARIABLE_REFERENCE__VARIABLE) {
-				val declarationReference = context.instance
-				val definition = declarationReference.definition
-				
-				if (definition instanceof ActivityDefinition) {
-					return Scopes.scopeFor(definition.variableDeclarations)
-				} else if (definition instanceof ActionDefinition) {
-					return Scopes.scopeFor(definition.action.variableDeclarations)
-				}
-			}
-		}
 		if (reference == ExpressionModelPackage.Literals.TYPE_REFERENCE__REFERENCE) {
 			// Util override is crucial because of this
 			val packages = root.imports

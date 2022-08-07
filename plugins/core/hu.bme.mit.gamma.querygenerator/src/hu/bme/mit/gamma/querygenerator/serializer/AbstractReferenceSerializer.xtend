@@ -10,8 +10,6 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.querygenerator.serializer
 
-import hu.bme.mit.gamma.activity.model.ActivityDeclarationReference
-import hu.bme.mit.gamma.activity.model.ActivityNode
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression
@@ -23,8 +21,6 @@ import java.util.List
 
 abstract interface AbstractReferenceSerializer {
 	
-	def List<String> getId(ActivityNode activityNode, ActivityDeclarationReference instance)	
-	def List<String> getId(VariableDeclaration variable, ActivityDeclarationReference instance)	
 	def String getId(State state, Region parentRegion, ComponentInstanceReferenceExpression instance)
 	def String getId(Event event, Port port, ComponentInstanceReferenceExpression instance)
 	def List<String> getId(VariableDeclaration variable, ComponentInstanceReferenceExpression instance)

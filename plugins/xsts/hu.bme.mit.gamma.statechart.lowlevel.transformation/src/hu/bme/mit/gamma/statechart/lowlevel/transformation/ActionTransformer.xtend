@@ -27,12 +27,10 @@ import hu.bme.mit.gamma.action.model.ReturnStatement
 import hu.bme.mit.gamma.action.model.SwitchStatement
 import hu.bme.mit.gamma.action.model.VariableDeclarationStatement
 import hu.bme.mit.gamma.action.util.ActionUtil
-import hu.bme.mit.gamma.activity.model.ActivityModelFactory
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.InitializableElement
 import hu.bme.mit.gamma.expression.model.ValueDeclaration
 import hu.bme.mit.gamma.statechart.lowlevel.model.EventDirection
-import hu.bme.mit.gamma.statechart.lowlevel.model.StatechartModelFactory
 import hu.bme.mit.gamma.statechart.statechart.DeactivateTimeoutAction
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction
 import hu.bme.mit.gamma.statechart.statechart.SetTimeoutAction
@@ -52,8 +50,6 @@ class ActionTransformer {
 	// Factory objects
 	protected final extension ExpressionModelFactory constraintFactory = ExpressionModelFactory.eINSTANCE
 	protected final extension ActionModelFactory actionFactory = ActionModelFactory.eINSTANCE
-	protected final extension ActivityModelFactory activityFactory = ActivityModelFactory.eINSTANCE
-	protected final extension StatechartModelFactory statechartFactory = StatechartModelFactory.eINSTANCE
 	// Trace
 	protected final Trace trace
 	

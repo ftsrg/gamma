@@ -10,8 +10,6 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.xsts.transformation.util
 
-import hu.bme.mit.gamma.activity.model.ActivityDeclarationReference
-import hu.bme.mit.gamma.activity.model.ActivityNode
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
@@ -108,10 +106,5 @@ class Namings {
 	static def String getOrthogonalName(VariableDeclaration variable) '''_«variable.name»_''' // Caller must make sure there is no name collision
 	// XSTS instantiation
 	static def String getCustomizedName(VariableDeclaration variable, ComponentInstance instance) '''«variable.name»_«instance.name»''' // Caller must make sure there is no name collision
-
-	// Activity customization
-	
-	static def String customizeName(ActivityNode node, ActivityDeclarationReference instance) '''«node.name.activityNodeVariableName»'''
-	static def List<String> customizeNames(VariableDeclaration variable, ActivityDeclarationReference instance) { customizeNames(variable, "") }
 
 }
