@@ -15,6 +15,5 @@ Export-Package: hu.bme.mit.gamma.statechart.lowlevel.derivedfeatures,
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.emf.ecore;visibility:=reexport,
  hu.bme.mit.gamma.action.model;visibility:=reexport,
- hu.bme.mit.gamma.activity.model;visibility:=reexport,
  hu.bme.mit.gamma.expression.model;visibility:=reexport
 Bundle-ActivationPolicy: lazy

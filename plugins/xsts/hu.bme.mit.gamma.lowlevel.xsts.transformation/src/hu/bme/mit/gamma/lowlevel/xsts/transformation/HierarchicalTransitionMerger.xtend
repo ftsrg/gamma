@@ -1,7 +1,6 @@
 package hu.bme.mit.gamma.lowlevel.xsts.transformation
 
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
-import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.Nodes
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.Statecharts
 import hu.bme.mit.gamma.statechart.lowlevel.model.ChoiceState
 import hu.bme.mit.gamma.statechart.lowlevel.model.CompositeElement
@@ -14,7 +13,6 @@ import hu.bme.mit.gamma.statechart.lowlevel.model.SchedulingOrder
 import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.IfAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
-import hu.bme.mit.gamma.xsts.model.ParallelAction
 import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.XTransition
 import java.util.Comparator
@@ -68,38 +66,10 @@ class HierarchicalTransitionMerger extends AbstractTransitionMerger {
 			defaultlessNonDeterministicChoice.extendChoiceWithDefaultBranch
 		}
 		
-		// ========================================
-		// Now adding activity specific transitions
-		// ========================================
-		
-		// merged activity action
-		val activityMergedAction = mergeActivityTransitions
-		activityMergedAction.extendChoiceWithDefaultBranch
-		
-		// Non-deterministic action, both branches can be executed any time.
-		val mergedChoiceAction = createChoiceAction(
-			#[createTrueExpression, 	createTrueExpression], // true - true
-			#[xStsMergedAction, 		activityMergedAction]  // statecharts - activities
-		)
-		
 		// The many transitions are now replaced by a single merged transition, representing the whole component
-		xSts.changeTransitions(mergedChoiceAction.wrap)
+		xSts.changeTransitions(xStsMergedAction.wrap)
 	}
-	
-	protected def mergeActivityTransitions() {
-		val xStsAction = createNonDeterministicAction
 		
-		val nodes = Nodes.Matcher.on(engine).allValuesOfactivityNode
-					
-		for (node : nodes) {
-			val action = trace.getXStsAction(node) as NonDeterministicAction
-			
-			xStsAction.actions += action.actions
-		}
-		
-		return xStsAction
-	}
-	
 	private def Action mergeAllTransitionsOfRegion(CompositeElement element,
 			Map<Region, ? extends Action> regionActions) {
 		val lowlevelRegions = element.regions

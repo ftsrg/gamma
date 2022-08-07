@@ -42,6 +42,7 @@ import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.transformation.util.Namings.*
+import hu.bme.mit.gamma.statechart.ActivityComposition.ActivityDefinition
 
 class ModelUnfolder {
 	
@@ -355,6 +356,8 @@ class ModelUnfolder {
 	
 	protected def dispatch void renameInstances(StatechartDefinition component) {}
 	
+	protected def dispatch void renameInstances(ActivityDefinition component) {}
+	
 	// Instance name validation
 	
 	private def void validateInstanceNames(Component component) {
@@ -409,6 +412,11 @@ class ModelUnfolder {
 	
 	private def dispatch traceComponentInstances(StatechartDefinition oldComponent,
 			StatechartDefinition newComponent, Trace trace) {
+		// No op
+	}
+	
+	private def dispatch traceComponentInstances(ActivityDefinition oldComponent,
+			ActivityDefinition newComponent, Trace trace) {
 		// No op
 	}
 	

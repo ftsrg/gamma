@@ -82,18 +82,18 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ActivityNodeTrace" eSuperTypes="#//AbstractTrace">
     <eStructuralFeatures xsi:type="ecore:EReference" name="activityNode" lowerBound="1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.activity.model/model/activity.ecore#//ActivityNode"/>
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.lowlevel.model/model/model.ecore#//ActivityNode"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="xStsVariable" lowerBound="1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclaration"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="FlowTrace" eSuperTypes="#//AbstractTrace">
     <eStructuralFeatures xsi:type="ecore:EReference" name="xStsVariable" lowerBound="1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclaration"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="flow" lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.activity.model/model/activity.ecore#//Flow"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="flow" lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.lowlevel.model/model/model.ecore#//Flow"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ActivityNodeTransitionTrace" eSuperTypes="#//AbstractTrace">
     <eStructuralFeatures xsi:type="ecore:EReference" name="activityNode" lowerBound="1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.activity.model/model/activity.ecore#//ActivityNode"/>
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.lowlevel.model/model/model.ecore#//ActivityNode"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="xStsAction" lowerBound="1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.xsts.model/model/model.ecore#//NonDeterministicAction"/>
   </eClassifiers>
@@ -101,6 +101,6 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="xStsVariable" lowerBound="1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclaration"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="dataContainer" lowerBound="1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.activity.model/model/activity.ecore#//DataContainer"/>
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.lowlevel.model/model/model.ecore#//DataContainer"/>
   </eClassifiers>
 </ecore:EPackage>

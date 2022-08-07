@@ -12,7 +12,6 @@ package hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns
 
 import epackage "http://www.mit.bme.hu/gamma/expression/Model"
 import epackage "http://www.mit.bme.hu/gamma/action/Model"
-import epackage "http://www.mit.bme.hu/gamma/activity/Model"
 import epackage "http://www.mit.bme.hu/gamma/statechart/lowlevel/Model"
 
 pattern nodes(activityNode : ActivityNode) {
@@ -29,47 +28,4 @@ pattern flows(flow : Flow) {
 
 pattern dataContainers(dataContainer : DataContainer) {
 	DataContainer(dataContainer);
-}
-
-pattern inputFlows(flow: Flow, node: ActivityNode) {
-	ControlFlow.targetNode(flow, node);
-} or {
-	find targetPin(flow, pin);
-	find activityDeclaration(node, activityDeclaration);
-	ActivityDeclaration.pins(activityDeclaration, pin);
-}
-
-pattern outputFlows(flow: Flow, node: ActivityNode) {
-	ControlFlow.sourceNode(flow, node);
-} or {
-	find sourcePin(flow, pin);
-	find activityDeclaration(node, activityDeclaration);
-	ActivityDeclaration.pins(activityDeclaration, pin);
-}
-
-private pattern activityDeclaration(node: ActionNode, activityDeclaration: ActivityDeclaration) {
-	ActionNode.activityDeclarationReference(node, activityDeclaration);
-} or {
-	ActionNode.activityDeclarationReference(node, namedReference);
-	NamedActivityDeclarationReference.namedActivityDeclaration(namedReference, activityDeclaration);
-}
-
-pattern sourcePin(flow: DataFlow, pin: Pin) {
-	DataFlow.dataSourceReference(flow, sourceReference);
-	InsideInputPinReference(sourceReference);
-	InputPinReference.inputPin(sourceReference, pin);
-} or {
-	DataFlow.dataSourceReference(flow, sourceReference);
-	OutsideOutputPinReference(sourceReference);
-	OutputPinReference.outputPin(sourceReference, pin);
-}
-
-pattern targetPin(flow: DataFlow, pin: Pin) {
-	DataFlow.dataTargetReference(flow, targetReference);
-	OutsideInputPinReference(targetReference);
-	InputPinReference.inputPin(targetReference, pin);
-} or {
-	DataFlow.dataTargetReference(flow, targetReference);
-	InsideOutputPinReference(targetReference);
-	OutputPinReference.outputPin(targetReference, pin);
 }

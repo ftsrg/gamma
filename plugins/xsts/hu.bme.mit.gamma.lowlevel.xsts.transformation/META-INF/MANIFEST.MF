@@ -10,7 +10,6 @@ Export-Package: hu.bme.mit.gamma.lowlevel.xsts.transformation,
  hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns
 Require-Bundle: hu.bme.mit.gamma.expression.model,
  hu.bme.mit.gamma.action.model,
- hu.bme.mit.gamma.activity.model,
  hu.bme.mit.gamma.statechart.lowlevel.model,
  hu.bme.mit.gamma.xsts.model,
  org.eclipse.viatra.query.runtime,

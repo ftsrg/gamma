@@ -53,9 +53,6 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="exitActions" upperBound="-1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.action.model/model/action.ecore#//Action"
         containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="doActions" upperBound="-1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.action.model/model/action.ecore#//Action"
-        containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="annotations" upperBound="-1"
         eType="#//StateAnnotation" containment="true"/>
   </eClassifiers>

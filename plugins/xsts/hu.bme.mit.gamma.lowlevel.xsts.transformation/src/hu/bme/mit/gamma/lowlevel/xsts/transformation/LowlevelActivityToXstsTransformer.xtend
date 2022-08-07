@@ -13,33 +13,30 @@ package hu.bme.mit.gamma.lowlevel.xsts.transformation
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer.XstsOptimizer
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.DataContainers
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.Events
-import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.FirstChoiceStates
-import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.FirstForkStates
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.Flows
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.GlobalVariables
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.InEvents
-import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.LastJoinStates
-import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.LastMergeStates
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.InitialNodes
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.Nodes
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.OutEvents
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.PlainVariables
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.ReferredEvents
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.ReferredVariables
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.RegionVariableGroups
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.Regions
-import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.SimpleTransitionsBetweenStates
-import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.SimpleTransitionsToEntryStates
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.Statecharts
-import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.Subregions
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.Timeouts
-import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.TopRegions
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.TypeDeclarations
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.traceability.L2STrace
+import hu.bme.mit.gamma.statechart.lowlevel.model.ActivityNode
+import hu.bme.mit.gamma.statechart.lowlevel.model.DataFlow
 import hu.bme.mit.gamma.statechart.lowlevel.model.EventDeclaration
 import hu.bme.mit.gamma.statechart.lowlevel.model.EventDirection
 import hu.bme.mit.gamma.statechart.lowlevel.model.Package
 import hu.bme.mit.gamma.statechart.lowlevel.model.Persistency
-import hu.bme.mit.gamma.statechart.lowlevel.model.Region
-import hu.bme.mit.gamma.statechart.lowlevel.model.State
+import hu.bme.mit.gamma.statechart.lowlevel.model.Pin
 import hu.bme.mit.gamma.statechart.lowlevel.model.StatechartDefinition
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.SequentialAction
@@ -64,24 +61,19 @@ import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionMo
 import static extension hu.bme.mit.gamma.statechart.lowlevel.derivedfeatures.LowlevelStatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.XstsNamings.*
+import static extension hu.bme.mit.gamma.xsts.transformation.util.XstsNamings.*
+import hu.bme.mit.gamma.statechart.lowlevel.model.Flow
 
-class LowlevelToXstsTransformer {
+class LowlevelActivityToXstsTransformer {
 	// Transformation-related extensions
 	extension BatchTransformation transformation
 	final extension BatchTransformationStatements statements
 	// Transformation rule-related extensions
 	final extension BatchTransformationRuleFactory = new BatchTransformationRuleFactory
 	// Auxiliary objects
-	protected final extension RegionActivator regionActivator
-	protected final extension EntryActionRetriever entryActionRetriever
 	protected final extension ExpressionTransformer expressionTransformer
 	protected final extension VariableDeclarationTransformer variableDeclarationTransformer
-	protected final extension LowlevelTransitionToActionTransformer lowlevelTransitionToActionTransformer
-	protected final extension SimpleTransitionToXTransitionTransformer simpleTransitionToActionTransformer
-	protected final extension PrecursoryTransitionToXTransitionTransformer precursoryTransitionToXTransitionTransformer
-	protected final extension TerminalTransitionToXTransitionTransformer terminalTransitionToXTransitionTransformer
-	protected final extension AbstractTransitionMerger transitionMerger
-	
+	protected final extension ActivityNodeTransformer activityNodeTransformer	
 	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension XstsActionUtil actionFactory = XstsActionUtil.INSTANCE
 	protected final extension XstsOptimizer optimizer = XstsOptimizer.INSTANCE
@@ -100,29 +92,26 @@ class LowlevelToXstsTransformer {
 	// VIATRA rules
 	protected BatchTransformationRule<TypeDeclarations.Match, TypeDeclarations.Matcher> typeDeclarationsRule
 	protected BatchTransformationRule<Events.Match, Events.Matcher> eventsRule
-	protected BatchTransformationRule<TopRegions.Match, TopRegions.Matcher> topRegionsRule
-	protected BatchTransformationRule<Subregions.Match, Subregions.Matcher> subregionsRule
 	protected BatchTransformationRule<Statecharts.Match, Statecharts.Matcher> componentParametersRule
 	protected BatchTransformationRule<PlainVariables.Match, PlainVariables.Matcher> plainVariablesRule
 	protected BatchTransformationRule<Timeouts.Match, Timeouts.Matcher> timeoutsRule
 	protected BatchTransformationRule<GlobalVariables.Match, GlobalVariables.Matcher> variableInitializationsRule
-	protected BatchTransformationRule<Statecharts.Match, Statecharts.Matcher> topRegionInitializationRule
-	protected BatchTransformationRule<SimpleTransitionsBetweenStates.Match,
-				SimpleTransitionsBetweenStates.Matcher> simpleTransitionBetweenStatesRule
-	protected BatchTransformationRule<SimpleTransitionsToEntryStates.Match,
-				SimpleTransitionsToEntryStates.Matcher> simpleTransitionsToHistoryStatesRule
-	protected BatchTransformationRule<LastJoinStates.Match, LastJoinStates.Matcher> lastJoinTransitionsRule
-	protected BatchTransformationRule<LastMergeStates.Match, LastMergeStates.Matcher> lastMergeTransitionsRule
-	protected BatchTransformationRule<FirstForkStates.Match, FirstForkStates.Matcher> firstForkTransitionsRule
-	protected BatchTransformationRule<FirstChoiceStates.Match, FirstChoiceStates.Matcher> firstChoiceTransitionsRule
+	
 	protected BatchTransformationRule<InEvents.Match, InEvents.Matcher> inEventEnvironmentalActionRule
 	protected BatchTransformationRule<OutEvents.Match, OutEvents.Matcher> outEventEnvironmentalActionRule
 		
+	protected BatchTransformationRule<Nodes.Match, Nodes.Matcher> activityNodesRule 
+	protected BatchTransformationRule<Flows.Match, Flows.Matcher> activityFlowsRule 
+	protected BatchTransformationRule<DataContainers.Match, DataContainers.Matcher> activityDataContainersRule
+	protected BatchTransformationRule<Nodes.Match, Nodes.Matcher> activityNodeTransitionsRule 
+	protected BatchTransformationRule<InitialNodes.Match, InitialNodes.Matcher> initialActivityNodeInitializationRule 
+	
 	// Optimization
 	protected final boolean optimize
 	protected Set<EventDeclaration> referredEvents
 	protected Set<VariableDeclaration> referredVariables
 	
+	protected final extension ActivityLiterals activityLiterals = ActivityLiterals.INSTANCE
 	protected final extension XstsUtils xstsUtils = XstsUtils.INSTANCE
 	
 	new(Package _package) {
@@ -139,31 +128,19 @@ class LowlevelToXstsTransformer {
 		this.engine = ViatraQueryEngine.on(new EMFScope(_package))
 		this.xSts = createXSTS => [
 			it.name = _package.name
+			it.typeDeclarations += nodeStateEnumTypeDeclaration
+			it.typeDeclarations += flowStateEnumTypeDeclaration
 		]
 		this.targetEngine = ViatraQueryEngine.on(new EMFScope(this.xSts))
 		this.trace = new Trace(_package, xSts)
 		
 		// The transformers need the trace model for the variable mapping
-		this.regionActivator = new RegionActivator(this.engine, this.trace)
-		this.entryActionRetriever = new EntryActionRetriever(this.trace)
 		this.expressionTransformer = new ExpressionTransformer(this.trace)
 		this.variableDeclarationTransformer = new VariableDeclarationTransformer(this.trace)
-		this.lowlevelTransitionToActionTransformer =
-				new LowlevelTransitionToActionTransformer(this.engine, this.trace)
-		this.simpleTransitionToActionTransformer =
-				new SimpleTransitionToXTransitionTransformer(this.engine, this.trace)
-		this.precursoryTransitionToXTransitionTransformer =
-				new PrecursoryTransitionToXTransitionTransformer(this.engine, this.trace)
-		this.terminalTransitionToXTransitionTransformer =
-				new TerminalTransitionToXTransitionTransformer(this.engine, this.trace)
-		this.transitionMerger = switch (transitionMerging) {
-			case HIERARCHICAL: new HierarchicalTransitionMerger(this.engine, this.trace)
-//			case FLAT: new FlatTransitionMerger(this.engine, this.trace)
-			default: throw new IllegalArgumentException("Not known merging enum: " + transitionMerging)
-		}
 		this.transformation = BatchTransformation.forEngine(engine).build
 		this.statements = transformation.transformationStatements
 		
+		this.activityNodeTransformer = new ActivityNodeTransformer(this.engine, this.trace)
 		
 		this.optimize = optimize
 		if (optimize) {
@@ -175,38 +152,120 @@ class LowlevelToXstsTransformer {
 	def execute() {
 		getTypeDeclarationsRule.fireAllCurrent
 		getEventsRule.fireAllCurrent
-		getTopRegionsRule.fireAllCurrent
-		while (!allRegionsTransformed) {
-			// Transforming subregions one by one in accordance with containment hierarchy
-			getSubregionsRule.fireAllCurrent[!trace.isTraced(it.region) && trace.isTraced(it.parentRegion)]
-		}
 		getComponentParametersRule.fireAllCurrent
 		getPlainVariablesRule.fireAllCurrent
 		// Now component parameters come as plain variables (from constants), so TimeoutsRule must follow PlainVariablesRule
 		// Timeouts can refer to constants
 		getTimeoutsRule.fireAllCurrent
+		
+		getActivityDataContainersRule.fireAllCurrent
+		getActivityNodesRule.fireAllCurrent
+		getActivityFlowsRule.fireAllCurrent
 				
 		// Event variables, parameters, variables and timeouts are transformed already
 		/* By now all variables must be transformed so the expressions and actions can be transformed
 		 * correctly with the trace model */
 		getVariableInitializationsRule.fireAllCurrent
 		initializeVariableInitializingAction // After getVariableInitializationsRule, but before getTopRegionsInitializationRule
-		getTopRegionsInitializationRule.fireAllCurrent // Setting the top region (variables) into their initial states
-		getSimpleTransitionsBetweenStatesRule.fireAllCurrent
-		getSimpleTransitionsToHistoryStatesRule.fireAllCurrent
-		getLastJoinTransitionsRule.fireAllCurrent
-		getLastMergeTransitionsRule.fireAllCurrent
-		getFirstForkTransitionsRule.fireAllCurrent
-		getFirstChoiceTransitionsRule.fireAllCurrent
 		getInEventEnvironmentalActionRule.fireAllCurrent
 		getOutEventEnvironmentalActionRule.fireAllCurrent
+		getActivityNodeTransitionsRule.fireAllCurrent
 	
-		mergeTransitions
 		xSts.optimizeXSts
 		xSts.fillNullTransitions
 		handleTransientAndResettableVariableAnnotations
 		// The created EMF models are returned
 		return new SimpleEntry<XSTS, L2STrace>(xSts, trace.getTrace)
+	}
+	
+	private def getActivityNodesRule() {
+		if (activityNodesRule === null) {
+			activityNodesRule = createRule(Nodes.instance).action [
+				it.activityNode.createActivityNodeMapping
+			].build
+		}
+		return activityNodesRule
+	}
+
+	private def getActivityFlowsRule() {
+		if (activityFlowsRule === null) {
+			activityFlowsRule = createRule(Flows.instance).action [
+				it.flow.createActivityFlowMapping
+			].build
+		}
+		return activityFlowsRule
+	}
+
+	private def getActivityDataContainersRule() {
+		if (activityDataContainersRule === null) {
+			activityDataContainersRule = createRule(DataContainers.instance).action [
+				it.dataContainer.createDataContainerMapping
+			].build
+		}
+		return activityDataContainersRule
+	}
+	
+	private def createActivityNodeMapping(ActivityNode activityNode) {
+		val xStsActivityNodeVariable = createVariableDeclaration => [
+			name = activityNode.name.activityNodeVariableName
+			type = createTypeReference => [
+				reference = nodeStateEnumTypeDeclaration
+			]
+			expression = createEnumerationLiteralExpression => [
+				reference = idleNodeStateEnumLiteral
+			]
+		]
+		xStsActivityNodeVariable.addOnDemandControlAnnotation
+		xSts.variableDeclarations += xStsActivityNodeVariable
+		trace.put(activityNode, xStsActivityNodeVariable)
+	}
+	
+	private dispatch def createDataContainerMapping(Pin pin) {
+		val pinType = pin.type.clone() // cloning to prevent loosing it from the original Pin
+		val xStsPinVariable = createVariableDeclaration => [
+			name = pin.pinVariableName
+			type = pinType
+			expression = pinType.initialValueOfType
+		]
+		xSts.variableDeclarations += xStsPinVariable
+		
+		trace.putDataContainer(pin, xStsPinVariable)
+	}
+	
+	private dispatch def createDataContainerMapping(DataFlow dataFlow) {
+		val flowType = dataFlow.targetPin.type.clone() // cloning to prevent loosing it from the original Pin
+		val xStsFlowVariable = createVariableDeclaration => [
+			name = dataFlow.flowDataTokenVariableName
+			type = flowType
+			expression = flowType.initialValueOfType
+		]
+		xSts.variableDeclarations += xStsFlowVariable
+		
+		trace.putDataContainer(dataFlow, xStsFlowVariable)
+	}
+
+	private def createActivityFlowMapping(Flow flow) {
+		val xStsFlowVariable = createVariableDeclaration => [
+			name = flow.flowVariableName
+			type = createTypeReference => [
+				reference = flowStateEnumTypeDeclaration
+			]
+			expression = createEnumerationLiteralExpression => [
+				reference = emptyFlowStateEnumLiteral
+			]
+		]
+		xStsFlowVariable.addOnDemandControlAnnotation
+		xSts.variableDeclarations += xStsFlowVariable
+		trace.put(flow, xStsFlowVariable)
+	}
+	
+	private def getActivityNodeTransitionsRule() {
+		if (activityNodeTransitionsRule === null) {
+			activityNodeTransitionsRule = createRule(Nodes.instance).action [
+				xSts.transitions += it.activityNode.transform
+			].build
+		}
+		return activityNodeTransitionsRule
 	}
 	
 	protected def isNotOptimizable(EventDeclaration lowlevelEvent) {
@@ -281,81 +340,7 @@ class LowlevelToXstsTransformer {
 		return eventsRule
 	}
 
-	protected def getTopRegionsRule() {
-		if (topRegionsRule === null) {
-			topRegionsRule = createRule(TopRegions.instance).action [
-				val lowlevelRegion = it.region
-				lowlevelRegion.createRegionMapping
-			].build
-		}
-		return topRegionsRule
-	}
-
-	protected def getTopRegionsInitializationRule() {
-		if (topRegionInitializationRule === null) {
-			topRegionInitializationRule = createRule(Statecharts.instance).action [
-				val lowlevelStatechart = it.statechart
-				val regionInitializingAction = createParallelAction // Each region at the same time
-				xSts.configurationInitializingAction => [
-					it.actions += regionInitializingAction
-				]
-				for (lowlevelTopRegion : lowlevelStatechart.regions) {
-					regionInitializingAction.actions +=
-						lowlevelTopRegion.createRecursiveXStsRegionAndSubregionActivatingAction
-				}
-				val entryEventInitializingAction = createParallelAction // Each region at the same time
-				xSts.entryEventAction => [
-					it.actions += entryEventInitializingAction
-				]
-				for (lowlevelTopRegion : lowlevelStatechart.regions) {
-					entryEventInitializingAction.actions +=
-						lowlevelTopRegion.createRecursiveXStsRegionAndSubregionEntryActions
-				}
-			].build
-		}
-		return topRegionInitializationRule
-	}
-
-	/**
-	 * Maps a lowlevel region to an enum variable.
-	 */
-	protected def createRegionMapping(Region lowlevelRegion) {
-		val lowlevelInactiveEnumLiteral = createEnumerationLiteralDefinition => [
-			it.name = Namings.INACTIVE_ENUM_LITERAL
-		]
-		val enumType = createEnumerationTypeDefinition => [
-			// The __Inactive__ literal is needed
-			it.literals += lowlevelInactiveEnumLiteral
-		]
-		// Enum literals are based on states
-		for (lowlevelState : lowlevelRegion.stateNodes.filter(State)) {
-			val xStsEnumLiteral = createEnumerationLiteralDefinition => [
-				it.name = lowlevelState.name.stateEnumLiteralName
-			]
-			enumType.literals += xStsEnumLiteral
-			trace.put(lowlevelState, xStsEnumLiteral) // Tracing
-		}
-		// Creating type declaration from the enum type definition
-		val enumTypeDeclaration = createTypeDeclaration => [
-			it.type = enumType
-			it.name = lowlevelRegion.name.regionTypeName // Uppercase first character
-		]
-		val xStsRegionVariable = createVariableDeclaration => [
-			it.name = lowlevelRegion.name.regionVariableName // Lowercase first character
-			it.type = createTypeReference => [
-				it.reference = enumTypeDeclaration
-			] // Enum variable
-		]
-		xStsRegionVariable.expression = lowlevelInactiveEnumLiteral.createEnumerationLiteralExpression
-		xSts.typeDeclarations += enumTypeDeclaration
-		xSts.variableDeclarations += xStsRegionVariable // Target model modification
-		xStsRegionVariable.addOnDemandControlAnnotation // It is worth following this variable
-		trace.put(lowlevelRegion, xStsRegionVariable) // Tracing
-		// Creating top region variable group
-		xStsRegionVariable.getCorrespondingVariableGroup => [
-			it.variables += xStsRegionVariable
-		]
-	}
+	
 
 	/**
 	 * Returns the variable group an xSTS region variable should be contained in.
@@ -401,16 +386,6 @@ class LowlevelToXstsTransformer {
 		}
 	}
 
-	protected def getSubregionsRule() {
-		if (subregionsRule === null) {
-			subregionsRule = createRule(Subregions.instance).action [
-				// Only activated if parent is already traced
-				val lowlevelRegion = it.region
-				lowlevelRegion.createRegionMapping
-			].build
-		}
-		return subregionsRule
-	}
 
 	protected def getComponentParametersRule() {
 		if (componentParametersRule === null) {
@@ -503,78 +478,6 @@ class LowlevelToXstsTransformer {
 		}
 	}
 
-	/**
-	 * Simple transitions between any states, composite states are not differentiated.
-	 */
-	protected def getSimpleTransitionsBetweenStatesRule() {
-		if (simpleTransitionBetweenStatesRule === null) {
-			simpleTransitionBetweenStatesRule = createRule(SimpleTransitionsBetweenStates.instance).action [
-				val lowlevelSimpleTransition = it.transition
-				val xStsTransition = lowlevelSimpleTransition.transform
-				// Tracing is done in the transformation part
-				xSts.transitions += xStsTransition
-			].build
-		}
-		return simpleTransitionBetweenStatesRule
-	}
-
-	/**
-	 * Simple transitions to lower history states, shallow and deep are not differentiated.
-	 */
-	protected def getSimpleTransitionsToHistoryStatesRule() {
-		if (simpleTransitionsToHistoryStatesRule === null) {
-			simpleTransitionsToHistoryStatesRule = createRule(SimpleTransitionsToEntryStates.instance).action [
-				val lowlevelSimpleTransition = it.transition
-				val lowlevelTargetAncestor = it.targetAncestor
-				val xStsTransition = lowlevelSimpleTransition.transform(lowlevelTargetAncestor)
-				// Tracing is done in the transformation part
-				xSts.transitions += xStsTransition
-			].build
-		}
-		return simpleTransitionsToHistoryStatesRule
-	}
-
-	protected def getLastJoinTransitionsRule() {
-		if (lastJoinTransitionsRule === null) {
-			lastJoinTransitionsRule = createRule(LastJoinStates.instance).action [
-				val lowlevelLastJoinTransition = it.joinState
-				val xStsComplexTransition = lowlevelLastJoinTransition.transform
-				xSts.transitions += xStsComplexTransition
-			].build
-		}
-		return lastJoinTransitionsRule
-	}
-
-	protected def getLastMergeTransitionsRule() {
-		if (lastMergeTransitionsRule === null) {
-			lastMergeTransitionsRule = createRule(LastMergeStates.instance).action [
-				throw new IllegalArgumentException("Merge states are not supported")
-			].build
-		}
-		return lastMergeTransitionsRule
-	}
-
-	protected def getFirstForkTransitionsRule() {
-		if (firstForkTransitionsRule === null) {
-			firstForkTransitionsRule = createRule(FirstForkStates.instance).action [
-				val lowlevelFirstForkTransition = it.forkState
-				val xStsComplexTransition = lowlevelFirstForkTransition.transform
-				xSts.transitions += xStsComplexTransition
-			].build
-		}
-		return firstForkTransitionsRule
-	}
-
-	protected def getFirstChoiceTransitionsRule() {
-		if (firstChoiceTransitionsRule === null) {
-			firstChoiceTransitionsRule = createRule(FirstChoiceStates.instance).action [
-				val lowlevelFirstChoiceTransition = it.choiceState
-				val xStsComplexTransition = lowlevelFirstChoiceTransition.transform
-				xSts.transitions += xStsComplexTransition
-			].build
-		}
-		return firstChoiceTransitionsRule
-	}
 
 	protected def getInEventEnvironmentalActionRule() {
 		if (inEventEnvironmentalActionRule === null) {

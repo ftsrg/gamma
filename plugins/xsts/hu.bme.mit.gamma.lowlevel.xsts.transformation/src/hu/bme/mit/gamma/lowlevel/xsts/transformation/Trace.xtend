@@ -12,8 +12,6 @@ package hu.bme.mit.gamma.lowlevel.xsts.transformation
 
 import hu.bme.mit.gamma.action.model.ForStatement
 import hu.bme.mit.gamma.action.model.VariableDeclarationStatement
-import hu.bme.mit.gamma.activity.model.ActivityNode
-import hu.bme.mit.gamma.activity.model.Flow
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.Expression
@@ -65,7 +63,9 @@ import static com.google.common.base.Preconditions.checkArgument
 import static com.google.common.base.Preconditions.checkState
 
 import static extension java.lang.Math.abs
-import hu.bme.mit.gamma.activity.model.DataContainer
+import hu.bme.mit.gamma.statechart.lowlevel.model.ActivityNode
+import hu.bme.mit.gamma.statechart.lowlevel.model.Flow
+import hu.bme.mit.gamma.statechart.lowlevel.model.DataContainer
 
 package class Trace {
 	// Trace model

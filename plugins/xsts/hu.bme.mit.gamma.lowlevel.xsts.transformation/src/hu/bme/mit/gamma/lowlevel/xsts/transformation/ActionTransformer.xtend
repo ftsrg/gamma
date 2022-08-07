@@ -25,7 +25,6 @@ import hu.bme.mit.gamma.expression.model.DefaultExpression
 import hu.bme.mit.gamma.expression.model.ElseExpression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.ReferenceExpression
-import hu.bme.mit.gamma.statechart.lowlevel.model.InitialiseActivityAction
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
@@ -42,7 +41,6 @@ class ActionTransformer {
 	// Needed for the transformation of assignment actions
 	protected final extension ExpressionTransformer expressionTransformer
 	protected final extension VariableDeclarationTransformer variableDeclarationTransformer
-	protected final extension ActivityInitialiser activityInitialiser
 	// Trace
 	protected final Trace trace
 	
@@ -50,7 +48,6 @@ class ActionTransformer {
 		this.trace = trace
 		this.expressionTransformer = new ExpressionTransformer(this.trace)
 		this.variableDeclarationTransformer = new VariableDeclarationTransformer(this.trace)
-		this.activityInitialiser = new ActivityInitialiser(this.trace)
 	}
 
 	def transformActions(Collection<? extends hu.bme.mit.gamma.action.model.Action> actions) {
@@ -133,11 +130,7 @@ class ActionTransformer {
 		return createChoiceAction(guards, actions)
 	}
 	
-	
-	def dispatch Action transformAction(InitialiseActivityAction action) {
-		return action.activityInstance.createInitialisationAction
-	}
-	
+		
 	protected def transformBranches(Collection<Branch> branches) {
 		var Action elseAction = createEmptyAction // If we found one in the collection, we change this
 		val expressions = newArrayList

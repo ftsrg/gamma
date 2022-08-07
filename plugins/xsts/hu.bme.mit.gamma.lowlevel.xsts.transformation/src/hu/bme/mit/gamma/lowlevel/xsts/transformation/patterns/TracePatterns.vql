@@ -14,7 +14,6 @@ import epackage "http://www.mit.bme.hu/gamma/lowlevel/xsts/transformation/tracea
 import epackage "http://www.mit.bme.hu/gamma/xSTS/Model"
 import epackage "http://www.mit.bme.hu/gamma/statechart/lowlevel/Model"
 import epackage "http://www.mit.bme.hu/gamma/expression/Model"
-import epackage "http://www.mit.bme.hu/gamma/activity/Model"
 
 pattern typeDeclarationTrace(lowlevelTypeDeclaration : TypeDeclaration, xStsTypeDeclaration : TypeDeclaration) {
 	TypeDeclarationTrace.lowlevelTypeDeclaration(trace, lowlevelTypeDeclaration);

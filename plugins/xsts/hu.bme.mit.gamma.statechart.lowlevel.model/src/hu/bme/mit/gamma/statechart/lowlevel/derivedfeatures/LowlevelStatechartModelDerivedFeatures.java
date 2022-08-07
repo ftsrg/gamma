@@ -22,7 +22,6 @@ import java.util.stream.Collectors;
 import org.eclipse.emf.ecore.EObject;
 
 import hu.bme.mit.gamma.action.derivedfeatures.ActionModelDerivedFeatures;
-import hu.bme.mit.gamma.statechart.lowlevel.model.ActivityInstance;
 import hu.bme.mit.gamma.statechart.lowlevel.model.CompositeElement;
 import hu.bme.mit.gamma.statechart.lowlevel.model.DeepHistoryState;
 import hu.bme.mit.gamma.statechart.lowlevel.model.EventDeclaration;
@@ -43,13 +42,6 @@ public class LowlevelStatechartModelDerivedFeatures extends ActionModelDerivedFe
 			return (StatechartDefinition) object;
 		}
 		return getStatechart(object.eContainer());
-	}
-	
-	public static ActivityInstance getActivityInstance(EObject object) {
-		if (object instanceof ActivityInstance) {
-			return (ActivityInstance) object;
-		}
-		return getActivityInstance(object.eContainer());
 	}
 
 	public static boolean isInternal(EventDeclaration lowlevelEventDeclaration) {

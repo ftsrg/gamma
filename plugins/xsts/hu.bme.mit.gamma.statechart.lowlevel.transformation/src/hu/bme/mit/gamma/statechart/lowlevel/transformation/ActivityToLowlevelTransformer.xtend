@@ -10,281 +10,362 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.statechart.lowlevel.transformation
 
+import hu.bme.mit.gamma.action.model.ActionModelFactory
 import hu.bme.mit.gamma.action.util.ActionUtil
-import hu.bme.mit.gamma.activity.model.ActionDefinition
 import hu.bme.mit.gamma.activity.model.ActionNode
-import hu.bme.mit.gamma.activity.model.ActivityDeclaration
-import hu.bme.mit.gamma.activity.model.ActivityDefinition
-import hu.bme.mit.gamma.activity.model.ActivityModelFactory
-import hu.bme.mit.gamma.activity.model.ActivityNode
+import hu.bme.mit.gamma.activity.model.CompositeNode
 import hu.bme.mit.gamma.activity.model.ControlFlow
 import hu.bme.mit.gamma.activity.model.DataFlow
-import hu.bme.mit.gamma.activity.model.Definition
-import hu.bme.mit.gamma.activity.model.Flow
-import hu.bme.mit.gamma.activity.model.InlineActivityDeclaration
-import hu.bme.mit.gamma.activity.model.InputPin
-import hu.bme.mit.gamma.activity.model.InsideInputPinReference
-import hu.bme.mit.gamma.activity.model.InsideOutputPinReference
-import hu.bme.mit.gamma.activity.model.NamedActivityDeclaration
-import hu.bme.mit.gamma.activity.model.NamedActivityDeclarationReference
-import hu.bme.mit.gamma.activity.model.OutputPin
-import hu.bme.mit.gamma.activity.model.OutsideInputPinReference
-import hu.bme.mit.gamma.activity.model.OutsideOutputPinReference
+import hu.bme.mit.gamma.activity.model.DecisionNode
+import hu.bme.mit.gamma.activity.model.FinalNode
+import hu.bme.mit.gamma.activity.model.ForkNode
+import hu.bme.mit.gamma.activity.model.InitialNode
+import hu.bme.mit.gamma.activity.model.JoinNode
+import hu.bme.mit.gamma.activity.model.MergeNode
 import hu.bme.mit.gamma.activity.model.Pin
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
+import hu.bme.mit.gamma.statechart.ActivityComposition.TriggerNode
+import hu.bme.mit.gamma.statechart.interface_.EventDirection
 import hu.bme.mit.gamma.statechart.lowlevel.model.StatechartModelFactory
-import hu.bme.mit.gamma.statechart.statechart.State
-import hu.bme.mit.gamma.statechart.statechart.TriggerNode
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 
+import static hu.bme.mit.gamma.xsts.transformation.util.LowlevelNamings.*
+
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
-import hu.bme.mit.gamma.activity.model.ControlNode
-import hu.bme.mit.gamma.activity.model.DataSourceReference
-import hu.bme.mit.gamma.activity.model.DataTargetReference
+import static extension hu.bme.mit.gamma.activity.derivedfeatures.ActivityModelDerivedFeatures.*
+import hu.bme.mit.gamma.expression.model.VariableDeclaration
+import hu.bme.mit.gamma.statechart.statechart.TimeoutDeclaration
+import hu.bme.mit.gamma.activity.model.InputPin
+import hu.bme.mit.gamma.statechart.lowlevel.model.PinDirection
+import hu.bme.mit.gamma.statechart.ActivityComposition.ActivityDefinition
 
 class ActivityToLowlevelTransformer {
-	// Auxiliary objects
+// Auxiliary objects
 	protected final extension TypeTransformer typeTransformer
-	protected final extension ActionTransformer actionTransformer
 	protected final extension ExpressionTransformer expressionTransformer
-	protected final extension TriggerTransformer triggerTransformer
 	protected final extension ValueDeclarationTransformer valueDeclarationTransformer
+	protected final extension ActionTransformer actionTransformer
+	protected final extension TriggerTransformer triggerTransformer
+	protected final extension PseudoStateTransformer pseudoStateTransformer
 	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension ActionUtil actionUtil = ActionUtil.INSTANCE
-	// Factory objects
-	protected final extension ExpressionModelFactory constraintFactory = ExpressionModelFactory.eINSTANCE
-	protected final extension ActivityModelFactory activityFactory = ActivityModelFactory.eINSTANCE
+	protected final extension EventAttributeTransformer eventAttributeTransformer = EventAttributeTransformer.INSTANCE
+	protected final extension EventDeclarationTransformer eventDeclarationTransformer
+	// Low-level statechart model factory
 	protected final extension StatechartModelFactory factory = StatechartModelFactory.eINSTANCE
-	// Trace
+	protected final extension ExpressionModelFactory constraintFactory = ExpressionModelFactory.eINSTANCE
+	protected final extension ActionModelFactory actionFactory = ActionModelFactory.eINSTANCE
+	// Trace object for storing the mappings
 	protected final Trace trace
-	protected final State state
-	protected final String prefix
-	
-	new(Trace trace, State state) {
-		this(trace, state, true, 10)
+
+	new(Trace trace) {
+		this(trace, true, 10)
 	}
-	
-	new(Trace trace, State state, boolean functionInlining, int maxRecursionDepth) {
+
+	new(Trace trace, boolean functionInlining, int maxRecursionDepth) {
 		this.trace = trace
-		this.state = state
-		this.prefix = state.containingStatechart.name + "_" + state.name + "_"
 		this.typeTransformer = new TypeTransformer(this.trace)
-		this.expressionTransformer = new ExpressionTransformer(this.trace,
-				functionInlining, maxRecursionDepth)
-		this.triggerTransformer = new TriggerTransformer(this.trace, functionInlining, maxRecursionDepth)
+		this.expressionTransformer = new ExpressionTransformer(this.trace, functionInlining, maxRecursionDepth)
 		this.valueDeclarationTransformer = new ValueDeclarationTransformer(this.trace)
 		this.actionTransformer = new ActionTransformer(this.trace, functionInlining, maxRecursionDepth)
+		this.triggerTransformer = new TriggerTransformer(this.trace, functionInlining, maxRecursionDepth)
+		this.pseudoStateTransformer = new PseudoStateTransformer(this.trace)
+		this.eventDeclarationTransformer = new EventDeclarationTransformer(this.trace)
+	}
+		
+	protected def transformComponent(ActivityDefinition activity) {
+		if (trace.isMapped(activity)) {
+			return trace.get(activity)
+		}
+		val lowlevelActivity = createActivityDefinition => [
+			it.name = getName(activity)
+		]
+		trace.put(activity, lowlevelActivity) // Saving in trace
+		
+		
+		// Constants
+		val gammaPackage = activity.containingPackage
+		for (constantDeclaration : gammaPackage.selfAndImports // During code generation, imported constants can be referenced
+				.map[it.constantDeclarations].flatten) {
+			lowlevelActivity.variableDeclarations += constantDeclaration.transform
+		}
+		// No parameter declarations mapping
+		for (parameterDeclaration : activity.parameterDeclarations) {
+			val lowlevelParameterDeclaration = parameterDeclaration.transformComponentParameter
+			lowlevelActivity.variableDeclarations += lowlevelParameterDeclaration
+			lowlevelActivity.parameterDeclarations += lowlevelParameterDeclaration
+		}
+		for (variableDeclaration : activity.variableDeclarations) {
+			lowlevelActivity.variableDeclarations += variableDeclaration.transform
+		}
+		for (timeoutDeclaration : activity.timeoutDeclarations) {
+			// Timeout declarations are transformed to integer variable declarations
+			val lowlevelTimeoutDeclaration = timeoutDeclaration.transform
+			lowlevelActivity.variableDeclarations += lowlevelTimeoutDeclaration
+			lowlevelActivity.timeoutDeclarations += lowlevelTimeoutDeclaration
+		}
+		for (port : activity.ports) {
+			// Both in and out events are transformed to a boolean VarDecl with additional parameters
+			for (eventDeclaration : port.allEventDeclarations) {
+				val lowlevelEventDeclarations = eventDeclaration.transform(port)
+				lowlevelActivity.eventDeclarations += lowlevelEventDeclarations
+				if (eventDeclaration.direction == EventDirection.INTERNAL) {
+					// Tracing
+					lowlevelActivity.internalEventDeclarations += lowlevelEventDeclarations
+				}
+			}
+		}
+		
+		for (activityNode : activity.activityNodes) {
+			lowlevelActivity.activityNodes += activityNode.transformNode
+		}
+		
+		for (flow : activity.flows) {
+			lowlevelActivity.flows += flow.transformFlow
+		}
+		
+		return lowlevelActivity
 	}
 	
-	def ActivityDeclaration execute(ActivityDeclaration activity) {		
-		return activity.transform
-	}
-	
-	def ActivityDeclaration transform(ActivityDeclaration activity) {
-		val recordField = new Pair(state, activity)
-		
-		if (trace.isActivityDeclarationMapped(recordField)) {
-			return trace.getActivityDeclaration(recordField)
+	def transformPin(Pin pin) {		
+		if (trace.isPinMapped(pin)) {
+			return trace.getPin(pin)
 		}
 		
-		val newActivity = if (activity instanceof NamedActivityDeclaration) {
-			createNamedActivityDeclaration => [
-				name = prefix + activity.name
-			]
-		} else {
-			createInlineActivityDeclaration
-		}
-		
-		trace.put(state, activity, newActivity)
-		
-		for (pin : activity.pins) {
-			newActivity.pins += pin.transformPin
-		}
-		
-		newActivity.definition = activity.definition.transformDefinition
-		
-		return newActivity
-	}
-	
-	def dispatch transformDefinition(ActivityDefinition definition) {
-		val recordField = new Pair(state, definition as Definition)
-		
-		if (trace.isDefinitionMapped(recordField)) {
-			return trace.getDefinition(recordField)
-		}
-		
-		val newDefinition = createActivityDefinition
-		
-		trace.put(state, definition, newDefinition)
-		
-		for (variableDeclaration : definition.variableDeclarations) {
-			newDefinition.variableDeclarations += variableDeclaration.transform
-		}
-		
-		for (activityNode : definition.activityNodes) {
-			newDefinition.activityNodes += activityNode.transformNode
-		}
-		
-		for (flow : definition.flows) {
-			newDefinition.flows += flow.transformFlow
-		}
-		
-		return newDefinition
-	}
-	
-	def dispatch transformDefinition(ActionDefinition definition) {
-		val recordField = new Pair(state, definition as Definition)
-		
-		if (trace.isDefinitionMapped(recordField)) {
-			return trace.getDefinition(recordField)
-		}
-		
-		val newDefinition = createActionDefinition
-		
-		trace.put(state, definition, newDefinition)
-		
-		newDefinition.action = definition.action.transformAction.wrap
-		
-		return newDefinition
-	}
-	
-	def transformPin(Pin pin) {
-		val recordField = new Pair(state, pin)
-		
-		if (trace.isPinMapped(recordField)) {
-			return trace.getPin(recordField)
-		}
-		
-		val newPin = pin.clone => [
-			it.name = prefix + it.name
+		val lowlevelPin = createVariableDeclaration => [
+			it.name = pin.name
 		]
 		
-		trace.put(state, pin, newPin)
+		trace.put(pin, lowlevelPin)
 		
-		newPin.type = pin.type.transformType
+		lowlevelPin.type = pin.type.transformType
 		
-		return newPin
+		return lowlevelPin
 	}
 	
-	def dispatch transformFlow(DataFlow flow) {
-		val recordField = new Pair(state, flow as Flow)
-		
-		if (trace.isFlowMapped(recordField)) {
-			return trace.getFlow(recordField)
+	def dispatch transformFlow(DataFlow flow) {		
+		if (trace.isFlowMapped(flow)) {
+			return trace.getFlow(flow)
 		}
 		
-		val newFlow = createDataFlow
+		val lowlevelFlow = createDataFlow
 		
-		trace.put(state, flow, newFlow)
+		trace.put(flow, lowlevelFlow)
 		
-		newFlow.dataSourceReference = flow.dataSourceReference.transformDataSourceReference
-		newFlow.dataTargetReference = flow.dataTargetReference.transformDataTargetReference
-		newFlow.guard = flow.guard?.transformExpression?.wrapIntoMultiaryExpression(createAndExpression)
+		val sourcePin = flow.sourcePin
+		val targetPin = flow.targetPin
 		
-		return newFlow
-	}
+		lowlevelFlow.guard = flow.guard?.transformExpression?.wrapIntoMultiaryExpression(createAndExpression)		
+		lowlevelFlow.sourceNode = sourcePin.containingPinnedNode.transformNode
+		lowlevelFlow.targetNode = targetPin.containingPinnedNode.transformNode
 		
-	def dispatch DataSourceReference transformDataSourceReference(InsideInputPinReference dataSourceReference) {		
-		return createInsideInputPinReference => [
-			inputPin = dataSourceReference.inputPin.transformPin as InputPin
-		]
-	}
-	
-	def dispatch DataSourceReference transformDataSourceReference(OutsideOutputPinReference dataSourceReference) {		
-		return createOutsideOutputPinReference => [
-			outputPin = dataSourceReference.outputPin.transformPin as OutputPin
-		]
-	}
-	
-	def dispatch DataTargetReference transformDataTargetReference(InsideOutputPinReference dataTargetReference) {		
-		return createInsideOutputPinReference => [
-			outputPin = dataTargetReference.outputPin.transformPin as OutputPin
-		]
-	}
-	
-	def dispatch DataTargetReference transformDataTargetReference(OutsideInputPinReference dataTargetReference) {		
-		return createOutsideInputPinReference => [
-			inputPin = dataTargetReference.inputPin.transformPin as InputPin
-		]
-	}
+		return lowlevelFlow
+	} 
 	
 	def dispatch transformFlow(ControlFlow flow) {
-		val recordField = new Pair(state, flow as Flow)
-		
-		if (trace.isFlowMapped(recordField)) {
-			return trace.getFlow(recordField)
+		if (trace.isFlowMapped(flow)) {
+			return trace.getFlow(flow)
 		}
 		
-		val newFlow = createControlFlow
+		val lowlevelFlow = createControlFlow
 		
-		trace.put(state, flow, newFlow)
+		trace.put(flow, lowlevelFlow)
 		
-		newFlow.sourceNode = flow.sourceNode.transformNode
-		newFlow.targetNode = flow.targetNode.transformNode
-		newFlow.guard = flow.guard?.transformExpression?.wrapIntoMultiaryExpression(createAndExpression)
+		lowlevelFlow.guard = flow.guard?.transformExpression?.wrapIntoMultiaryExpression(createAndExpression)
+		lowlevelFlow.sourceNode = flow.sourceNode.transformNode
+		lowlevelFlow.targetNode = flow.targetNode.transformNode
 		
-		return newFlow
+		return lowlevelFlow
 	}
 	
-	def dispatch transformNode(ActionNode node) {
-		val recordField = new Pair(state, node as ActivityNode)
-		
-		if (trace.isActivityNodeMapped(recordField)) {
-			return trace.getActivityNode(recordField)
+	def dispatch hu.bme.mit.gamma.statechart.lowlevel.model.ActivityNode transformNode(CompositeNode node) {
+		if (trace.isActivityNodeMapped(node)) {
+			return trace.getActivityNode(node)
 		}
 		
-		val newNode = createActionNode => [
-			name = prefix + node.name
+		val lowlevelNode = createCompositeNode
+		
+		trace.put(node, lowlevelNode)
+		
+		lowlevelNode.pins += node.pins.map [
+			it.transformPin
+		]
+		lowlevelNode.incomingFlows += node.incomingFlows.map[
+			it.transformFlow
+		]
+		lowlevelNode.outgoingFlows += node.outgoingFlows.map[
+			it.transformFlow
 		]
 		
-		trace.put(state, node, newNode)
-		
-		newNode.activityDeclarationReference = node.activityDeclarationReference?.transformActivityDeclarationReference
-		
-		return newNode
+		return lowlevelNode
 	}
 	
-	def dispatch transformActivityDeclarationReference(InlineActivityDeclaration declarationReference) {
-		return declarationReference.transform as InlineActivityDeclaration
-	}
-	
-	def dispatch transformActivityDeclarationReference(NamedActivityDeclarationReference declarationReference) {
-		return createNamedActivityDeclarationReference => [
-			namedActivityDeclaration = declarationReference.namedActivityDeclaration.transform as NamedActivityDeclaration
-		]
-	}
-	
-	def dispatch ActivityNode transformNode(TriggerNode node) {
-		val recordField = new Pair(state, node as ActivityNode)
-		
-		if (trace.isActivityNodeMapped(recordField)) {
-			return trace.getActivityNode(recordField)
+	def dispatch hu.bme.mit.gamma.statechart.lowlevel.model.ActivityNode transformNode(ActionNode node) {
+		if (trace.isActivityNodeMapped(node)) {
+			return trace.getActivityNode(node)
 		}
 		
-		val newNode = createTriggerNode => [
-			it.name = prefix + node.name
-			it.triggerExpression = node.trigger.transformTrigger
+		val lowlevelNode = createActionNode
+		
+		trace.put(node, lowlevelNode)
+		
+		lowlevelNode.pins += node.pins.map [
+			it.transformPin
+		]
+		lowlevelNode.action = node.action.transformAction.wrap
+		lowlevelNode.incomingFlows += node.incomingFlows.map[
+			it.transformFlow
+		]
+		lowlevelNode.outgoingFlows += node.outgoingFlows.map[
+			it.transformFlow
 		]
 		
-		trace.put(state, node, newNode)
-		
-		return newNode
+		return lowlevelNode
 	}
 	
-	def dispatch ActivityNode transformNode(ControlNode node) {
-		val recordField = new Pair(state, node as ActivityNode)
-		
-		if (trace.isActivityNodeMapped(recordField)) {
-			return trace.getActivityNode(recordField)
+	def dispatch hu.bme.mit.gamma.statechart.lowlevel.model.ActivityNode transformNode(ForkNode node) {
+		if (trace.isActivityNodeMapped(node)) {
+			return trace.getActivityNode(node)
 		}
 		
-		val newNode = node.clone => [
-			it.name = prefix + it.name
+		val lowlevelNode = createForkNode
+		
+		trace.put(node, lowlevelNode)
+		
+		lowlevelNode.incomingFlows += node.incomingFlows.map[
+			it.transformFlow
+		]
+		lowlevelNode.outgoingFlows += node.outgoingFlows.map[
+			it.transformFlow
 		]
 		
-		trace.put(state, node, newNode)
+		return lowlevelNode
+	}
+	
+	def dispatch hu.bme.mit.gamma.statechart.lowlevel.model.ActivityNode transformNode(JoinNode node) {
+		if (trace.isActivityNodeMapped(node)) {
+			return trace.getActivityNode(node)
+		}
 		
-		return newNode
+		val lowlevelNode = createJoinNode
+		
+		trace.put(node, lowlevelNode)
+		
+		lowlevelNode.incomingFlows += node.incomingFlows.map[
+			it.transformFlow
+		]
+		lowlevelNode.outgoingFlows += node.outgoingFlows.map[
+			it.transformFlow
+		]
+		
+		return lowlevelNode
+	}
+	
+	def dispatch hu.bme.mit.gamma.statechart.lowlevel.model.ActivityNode transformNode(DecisionNode node) {
+		if (trace.isActivityNodeMapped(node)) {
+			return trace.getActivityNode(node)
+		}
+		
+		val lowlevelNode = createDecisionNode
+		
+		trace.put(node, lowlevelNode)
+		
+		lowlevelNode.incomingFlows += node.incomingFlows.map[
+			it.transformFlow
+		]
+		lowlevelNode.outgoingFlows += node.outgoingFlows.map[
+			it.transformFlow
+		]
+		
+		return lowlevelNode
+	}
+	
+	def dispatch hu.bme.mit.gamma.statechart.lowlevel.model.ActivityNode transformNode(MergeNode node) {
+		if (trace.isActivityNodeMapped(node)) {
+			return trace.getActivityNode(node)
+		}
+		
+		val lowlevelNode = createMergeNode
+		
+		trace.put(node, lowlevelNode)
+		
+		lowlevelNode.incomingFlows += node.incomingFlows.map[
+			it.transformFlow
+		]
+		lowlevelNode.outgoingFlows += node.outgoingFlows.map[
+			it.transformFlow
+		]
+		
+		return lowlevelNode
+	}
+	
+	def dispatch hu.bme.mit.gamma.statechart.lowlevel.model.ActivityNode transformNode(InitialNode node) {
+		if (trace.isActivityNodeMapped(node)) {
+			return trace.getActivityNode(node)
+		}
+		
+		val lowlevelNode = createInitialNode
+		
+		trace.put(node, lowlevelNode)
+		
+		lowlevelNode.incomingFlows += node.incomingFlows.map[
+			it.transformFlow
+		]
+		lowlevelNode.outgoingFlows += node.outgoingFlows.map[
+			it.transformFlow
+		]
+		
+		return lowlevelNode
+	}
+	
+	def dispatch hu.bme.mit.gamma.statechart.lowlevel.model.ActivityNode transformNode(FinalNode node) {
+		if (trace.isActivityNodeMapped(node)) {
+			return trace.getActivityNode(node)
+		}
+		
+		val lowlevelNode = createFinalNode
+		
+		trace.put(node, lowlevelNode)
+		
+		lowlevelNode.incomingFlows += node.incomingFlows.map[
+			it.transformFlow
+		]
+		lowlevelNode.outgoingFlows += node.outgoingFlows.map[
+			it.transformFlow
+		]
+		
+		return lowlevelNode
+	}
+		
+	def dispatch hu.bme.mit.gamma.statechart.lowlevel.model.ActivityNode transformNode(TriggerNode node) {
+		if (trace.isActivityNodeMapped(node)) {
+			return trace.getActivityNode(node)
+		}
+		
+		val lowlevelNode = createTriggerNode
+		
+		trace.put(node, lowlevelNode)
+		
+		lowlevelNode.incomingFlows += node.incomingFlows.map[
+			it.transformFlow
+		]
+		lowlevelNode.outgoingFlows += node.outgoingFlows.map[
+			it.transformFlow
+		]
+				
+		lowlevelNode.triggerExpression = node.trigger.transformTrigger
+		
+		return lowlevelNode
+	}
+	
+	protected def VariableDeclaration transform(TimeoutDeclaration timeout) {
+		val lowlevelTimeout = createVariableDeclaration => [
+			it.name = getName(timeout)
+			it.type = createIntegerTypeDefinition // Could be rational
+			// Initial expression in EventReferenceTransformer
+		]
+		trace.put(timeout, lowlevelTimeout)
+		return lowlevelTimeout
 	}
 	
 }

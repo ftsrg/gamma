@@ -15,7 +15,6 @@ import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
-import hu.bme.mit.gamma.lowlevel.xsts.transformation.LowlevelToXstsTransformer
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.TransitionMerging
 import hu.bme.mit.gamma.statechart.composite.AbstractAsynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent
@@ -56,6 +55,8 @@ import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeature
 import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.QueueNamings.*
 import static extension java.lang.Math.*
+import hu.bme.mit.gamma.statechart.ActivityComposition.ActivityDefinition
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.LowlevelActivityToXstsTransformer
 
 class ComponentTransformer {
 	// This gammaToLowlevelTransformer must be the same during this transformation cycle due to tracing
@@ -893,6 +894,26 @@ class ComponentTransformer {
 			lowlevelPackage, optimize, transitionMerging)
 		val xStsEntry = lowlevelToXSTSTransformer.execute
 		lowlevelPackage.components -= lowlevelStatechart // So that next time the matches do not return elements from this statechart
+		val xSts = xStsEntry.key
+		
+		// 0-ing all variable declaration initial expression, the normal ones are in the init action
+		for (variable : xSts.variableDeclarations) {
+			variable.expression = variable.defaultExpression
+		}
+		
+		return xSts
+	}
+	
+	def dispatch XSTS transform(ActivityDefinition activity, Package lowlevelPackage) {
+		logger.log(Level.INFO, "Transforming activity " + activity.name)
+		/* Note that the package is already transformed and traced because of
+		   the "val lowlevelPackage = gammaToLowlevelTransformer.transform(_package)" call */
+		val lowlevelActivity = gammaToLowlevelTransformer.transform(activity)
+		lowlevelPackage.components += lowlevelActivity
+		val lowlevelToXSTSTransformer = new LowlevelActivityToXstsTransformer(
+			lowlevelPackage, optimize, transitionMerging)
+		val xStsEntry = lowlevelToXSTSTransformer.execute
+		lowlevelPackage.components -= lowlevelActivity // So that next time the matches do not return elements from this component
 		val xSts = xStsEntry.key
 		
 		// 0-ing all variable declaration initial expression, the normal ones are in the init action

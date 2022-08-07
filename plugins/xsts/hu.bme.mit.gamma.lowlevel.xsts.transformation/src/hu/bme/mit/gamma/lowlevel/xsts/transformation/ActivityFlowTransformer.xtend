@@ -1,15 +1,12 @@
 package hu.bme.mit.gamma.lowlevel.xsts.transformation
 
-import hu.bme.mit.gamma.activity.model.ControlFlow
-import hu.bme.mit.gamma.activity.model.DataFlow
-import hu.bme.mit.gamma.activity.model.Flow
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
+import hu.bme.mit.gamma.statechart.lowlevel.model.ControlFlow
+import hu.bme.mit.gamma.statechart.lowlevel.model.DataFlow
+import hu.bme.mit.gamma.statechart.lowlevel.model.Flow
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
-
-import static extension hu.bme.mit.gamma.activity.derivedfeatures.ActivityModelDerivedFeatures.*
-import static extension hu.bme.mit.gamma.statechart.lowlevel.derivedfeatures.LowlevelStatechartModelDerivedFeatures.*
 
 class ActivityFlowTransformer {
 	
@@ -62,7 +59,6 @@ class ActivityFlowTransformer {
 		val nodeVariable = flow.targetNodeVariable
 		
 		return createAndExpression => [
-			it.operands += flow.activityInstance.state.createSingleXStsStateAssumption
 			it.operands += createEqualityExpression(flowVariable, createEnumerationLiteralExpression => [
 					reference = fullFlowStateEnumLiteral
 				]
@@ -92,7 +88,7 @@ class ActivityFlowTransformer {
 			if (flow instanceof DataFlow) {
 				val dataFlow = flow as DataFlow
 				val dataFlowVariable = trace.getDataContainerXStsVariable(dataFlow)
-				val targetDataContainer = dataFlow.targetDataContainer
+				val targetDataContainer = dataFlow.targetPin
 				val targetDataContainerVariable = trace.getDataContainerXStsVariable(targetDataContainer)
 				it.actions += createAssignmentAction(targetDataContainerVariable, dataFlowVariable)
 			}
@@ -104,7 +100,6 @@ class ActivityFlowTransformer {
 		val nodeVariable = flow.sourceNodeVariable
 		
 		return createAndExpression => [
-			it.operands += flow.activityInstance.state.createSingleXStsStateAssumption
 			if (flow.guard !== null) {
 				it.operands += flow.guard.transformExpression
 			}
@@ -137,7 +132,7 @@ class ActivityFlowTransformer {
 			if (flow instanceof DataFlow) {
 				val dataFlow = flow as DataFlow
 				val dataFlowVariable = trace.getDataContainerXStsVariable(dataFlow)
-				val sourceDataContainer = dataFlow.sourceDataContainer
+				val sourceDataContainer = dataFlow.sourcePin
 				val sourceDataContainerVariable = trace.getDataContainerXStsVariable(sourceDataContainer)
 				it.actions += createAssignmentAction(dataFlowVariable, sourceDataContainerVariable)
 			}

@@ -28,12 +28,10 @@ import hu.bme.mit.gamma.action.model.SwitchStatement
 import hu.bme.mit.gamma.action.model.VariableDeclarationStatement
 import hu.bme.mit.gamma.action.util.ActionUtil
 import hu.bme.mit.gamma.activity.model.ActivityModelFactory
-import hu.bme.mit.gamma.activity.model.CallActivityAction
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.InitializableElement
 import hu.bme.mit.gamma.expression.model.ValueDeclaration
 import hu.bme.mit.gamma.statechart.lowlevel.model.EventDirection
-import hu.bme.mit.gamma.statechart.lowlevel.model.State
 import hu.bme.mit.gamma.statechart.lowlevel.model.StatechartModelFactory
 import hu.bme.mit.gamma.statechart.statechart.DeactivateTimeoutAction
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction
@@ -81,37 +79,6 @@ class ActionTransformer {
 			result += action.transformAction
 		}
 		return result.wrap
-	}
-	
-	protected def transformDoActions(Collection<? extends Action> actions, State state) {
-		for (action : actions) {
-			action.transformDoAction(state)
-		}
-	}
-	
-	protected dispatch def transformDoAction(Action action, State state) {
-		throw new UnsupportedOperationException("Not supported do action: " + action)
-	}
-	
-	protected dispatch def transformDoAction(CallActivityAction action, State state) {
-		val highlevelState = action.eContainer as hu.bme.mit.gamma.statechart.statechart.State;
-		val activity = action.activity
-		val activityTransformer = new ActivityToLowlevelTransformer(trace, highlevelState)
-		val lowlevelActivity = activityTransformer.transform(activity)
-		
-		val instance = createActivityInstance => [
-			it.activity = lowlevelActivity
-			it.state = state
-		]
-		
-		state.entryAction.append(createInitialiseActivityAction => [
-			it.activityInstance = instance
-		])
-		state.activityInstance = instance
-	}
-	
-	protected def dispatch List<Action> transformAction(CallActivityAction action) {
-		throw new UnsupportedOperationException("Not supported action: " + action)
 	}
 	
 	protected def transformSimpleAction(Action action) {

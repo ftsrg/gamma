@@ -7,6 +7,7 @@ import hu.bme.mit.gamma.expression.model.ValueDeclaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.ComplexTypeUtil
 import hu.bme.mit.gamma.expression.util.FieldHierarchy
+import hu.bme.mit.gamma.statechart.ActivityComposition.ActivityDefinition
 import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.Region
@@ -23,6 +24,7 @@ class LowlevelNamings {
 	protected static final extension ComplexTypeUtil complexTypeUtil = ComplexTypeUtil.INSTANCE
 	//
 	static def String getName(StatechartDefinition statechart) '''«statechart.name»'''
+	static def String getName(ActivityDefinition activity) '''«activity.name»'''
 	static def String getStateName(State state) '''«state.name»'''
 	static def String getRegionName(Region region) '''«region.name»'''
 	static def String getInputName(Event event, Port port) '''«port.name»_«event.name»_In'''
