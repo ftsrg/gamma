@@ -52,8 +52,8 @@ class EnvironmentalActionFilter {
 		val necessaryNames = newHashSet
 		// Input and output events and parameters
 		for (port : component.allBoundSimplePorts) {
-			val statechart = port.containingStatechart
-			val instance = statechart.referencingComponentInstance
+			val statefulComponent = port.containingStatefulComponent
+			val instance = statefulComponent.referencingComponentInstance
 			for (eventDeclaration : port.allEventDeclarations) {
 				val event = eventDeclaration.event
 				necessaryNames += customizeInputName(event, port, instance)
@@ -74,8 +74,8 @@ class EnvironmentalActionFilter {
 	def Action resetEverythingExceptPersistentParameters(Action action, Component component) {
 		val necessaryNames = newHashSet
 		for (port : component.allBoundSimplePorts) {
-			val statechart = port.containingStatechart
-			val instance = statechart.referencingComponentInstance
+			val statefulComponent = port.containingStatefulComponent
+			val instance = statefulComponent.referencingComponentInstance
 			for (eventDeclaration : port.allEventDeclarations) {
 				val event = eventDeclaration.event
 				if (event.persistency == Persistency.PERSISTENT) {

@@ -123,7 +123,7 @@ class EventReferenceTransformer {
 	}
 	
 	private def Expression getValueOfTimeout(TimeoutDeclaration timeoutDeclaration) {
-		val gammaStatechart = timeoutDeclaration.containingStatechart
+		val gammaStatechart = timeoutDeclaration.containingStatefulComponent
 		val timeoutSettings = gammaStatechart.getAllContentsOfType(SetTimeoutAction)
 		val correctTimeoutSetting = timeoutSettings.filter[it.timeoutDeclaration == timeoutDeclaration]
 		val times = correctTimeoutSetting.map[it.time].toList

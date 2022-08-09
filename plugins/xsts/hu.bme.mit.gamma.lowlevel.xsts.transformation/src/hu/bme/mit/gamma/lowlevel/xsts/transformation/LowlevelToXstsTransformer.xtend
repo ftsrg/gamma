@@ -117,7 +117,6 @@ class LowlevelToXstsTransformer {
 	protected BatchTransformationRule<FirstChoiceStates.Match, FirstChoiceStates.Matcher> firstChoiceTransitionsRule
 	protected BatchTransformationRule<InEvents.Match, InEvents.Matcher> inEventEnvironmentalActionRule
 	protected BatchTransformationRule<OutEvents.Match, OutEvents.Matcher> outEventEnvironmentalActionRule
-		
 	// Optimization
 	protected final boolean optimize
 	protected Set<EventDeclaration> referredEvents
@@ -142,7 +141,6 @@ class LowlevelToXstsTransformer {
 		]
 		this.targetEngine = ViatraQueryEngine.on(new EMFScope(this.xSts))
 		this.trace = new Trace(_package, xSts)
-		
 		// The transformers need the trace model for the variable mapping
 		this.regionActivator = new RegionActivator(this.engine, this.trace)
 		this.entryActionRetriever = new EntryActionRetriever(this.trace)
@@ -163,8 +161,6 @@ class LowlevelToXstsTransformer {
 		}
 		this.transformation = BatchTransformation.forEngine(engine).build
 		this.statements = transformation.transformationStatements
-		
-		
 		this.optimize = optimize
 		if (optimize) {
 			this.referredEvents = ReferredEvents.Matcher.on(engine).allValuesOfevent
@@ -185,7 +181,6 @@ class LowlevelToXstsTransformer {
 		// Now component parameters come as plain variables (from constants), so TimeoutsRule must follow PlainVariablesRule
 		// Timeouts can refer to constants
 		getTimeoutsRule.fireAllCurrent
-				
 		// Event variables, parameters, variables and timeouts are transformed already
 		/* By now all variables must be transformed so the expressions and actions can be transformed
 		 * correctly with the trace model */
@@ -200,7 +195,6 @@ class LowlevelToXstsTransformer {
 		getFirstChoiceTransitionsRule.fireAllCurrent
 		getInEventEnvironmentalActionRule.fireAllCurrent
 		getOutEventEnvironmentalActionRule.fireAllCurrent
-	
 		mergeTransitions
 		xSts.optimizeXSts
 		xSts.fillNullTransitions

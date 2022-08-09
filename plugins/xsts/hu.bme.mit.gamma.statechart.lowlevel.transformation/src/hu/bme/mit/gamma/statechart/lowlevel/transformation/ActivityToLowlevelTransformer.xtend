@@ -24,20 +24,19 @@ import hu.bme.mit.gamma.activity.model.JoinNode
 import hu.bme.mit.gamma.activity.model.MergeNode
 import hu.bme.mit.gamma.activity.model.Pin
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
+import hu.bme.mit.gamma.expression.model.VariableDeclaration
+import hu.bme.mit.gamma.statechart.ActivityComposition.ActivityDefinition
 import hu.bme.mit.gamma.statechart.ActivityComposition.TriggerNode
 import hu.bme.mit.gamma.statechart.interface_.EventDirection
+import hu.bme.mit.gamma.statechart.lowlevel.model.ActivityNode
 import hu.bme.mit.gamma.statechart.lowlevel.model.StatechartModelFactory
+import hu.bme.mit.gamma.statechart.statechart.TimeoutDeclaration
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 
 import static hu.bme.mit.gamma.xsts.transformation.util.LowlevelNamings.*
 
-import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.activity.derivedfeatures.ActivityModelDerivedFeatures.*
-import hu.bme.mit.gamma.expression.model.VariableDeclaration
-import hu.bme.mit.gamma.statechart.statechart.TimeoutDeclaration
-import hu.bme.mit.gamma.activity.model.InputPin
-import hu.bme.mit.gamma.statechart.lowlevel.model.PinDirection
-import hu.bme.mit.gamma.statechart.ActivityComposition.ActivityDefinition
+import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class ActivityToLowlevelTransformer {
 // Auxiliary objects
@@ -178,12 +177,14 @@ class ActivityToLowlevelTransformer {
 		return lowlevelFlow
 	}
 	
-	def dispatch hu.bme.mit.gamma.statechart.lowlevel.model.ActivityNode transformNode(CompositeNode node) {
+	def dispatch ActivityNode transformNode(CompositeNode node) {
 		if (trace.isActivityNodeMapped(node)) {
 			return trace.getActivityNode(node)
 		}
 		
-		val lowlevelNode = createCompositeNode
+		val lowlevelNode = createCompositeNode => [
+			it.name = node.name
+		]
 		
 		trace.put(node, lowlevelNode)
 		
@@ -200,12 +201,14 @@ class ActivityToLowlevelTransformer {
 		return lowlevelNode
 	}
 	
-	def dispatch hu.bme.mit.gamma.statechart.lowlevel.model.ActivityNode transformNode(ActionNode node) {
+	def dispatch ActivityNode transformNode(ActionNode node) {
 		if (trace.isActivityNodeMapped(node)) {
 			return trace.getActivityNode(node)
 		}
 		
-		val lowlevelNode = createActionNode
+		val lowlevelNode = createActionNode => [
+			it.name = node.name
+		]
 		
 		trace.put(node, lowlevelNode)
 		
@@ -223,12 +226,14 @@ class ActivityToLowlevelTransformer {
 		return lowlevelNode
 	}
 	
-	def dispatch hu.bme.mit.gamma.statechart.lowlevel.model.ActivityNode transformNode(ForkNode node) {
+	def dispatch ActivityNode transformNode(ForkNode node) {
 		if (trace.isActivityNodeMapped(node)) {
 			return trace.getActivityNode(node)
 		}
 		
-		val lowlevelNode = createForkNode
+		val lowlevelNode = createForkNode => [
+			it.name = node.name
+		]
 		
 		trace.put(node, lowlevelNode)
 		
@@ -242,12 +247,14 @@ class ActivityToLowlevelTransformer {
 		return lowlevelNode
 	}
 	
-	def dispatch hu.bme.mit.gamma.statechart.lowlevel.model.ActivityNode transformNode(JoinNode node) {
+	def dispatch ActivityNode transformNode(JoinNode node) {
 		if (trace.isActivityNodeMapped(node)) {
 			return trace.getActivityNode(node)
 		}
 		
-		val lowlevelNode = createJoinNode
+		val lowlevelNode = createJoinNode => [
+			it.name = node.name
+		]
 		
 		trace.put(node, lowlevelNode)
 		
@@ -261,12 +268,14 @@ class ActivityToLowlevelTransformer {
 		return lowlevelNode
 	}
 	
-	def dispatch hu.bme.mit.gamma.statechart.lowlevel.model.ActivityNode transformNode(DecisionNode node) {
+	def dispatch ActivityNode transformNode(DecisionNode node) {
 		if (trace.isActivityNodeMapped(node)) {
 			return trace.getActivityNode(node)
 		}
 		
-		val lowlevelNode = createDecisionNode
+		val lowlevelNode = createDecisionNode => [
+			it.name = node.name
+		]
 		
 		trace.put(node, lowlevelNode)
 		
@@ -280,12 +289,14 @@ class ActivityToLowlevelTransformer {
 		return lowlevelNode
 	}
 	
-	def dispatch hu.bme.mit.gamma.statechart.lowlevel.model.ActivityNode transformNode(MergeNode node) {
+	def dispatch ActivityNode transformNode(MergeNode node) {
 		if (trace.isActivityNodeMapped(node)) {
 			return trace.getActivityNode(node)
 		}
 		
-		val lowlevelNode = createMergeNode
+		val lowlevelNode = createMergeNode => [
+			it.name = node.name
+		]
 		
 		trace.put(node, lowlevelNode)
 		
@@ -299,12 +310,14 @@ class ActivityToLowlevelTransformer {
 		return lowlevelNode
 	}
 	
-	def dispatch hu.bme.mit.gamma.statechart.lowlevel.model.ActivityNode transformNode(InitialNode node) {
+	def dispatch ActivityNode transformNode(InitialNode node) {
 		if (trace.isActivityNodeMapped(node)) {
 			return trace.getActivityNode(node)
 		}
 		
-		val lowlevelNode = createInitialNode
+		val lowlevelNode = createInitialNode => [
+			it.name = node.name
+		]
 		
 		trace.put(node, lowlevelNode)
 		
@@ -318,12 +331,14 @@ class ActivityToLowlevelTransformer {
 		return lowlevelNode
 	}
 	
-	def dispatch hu.bme.mit.gamma.statechart.lowlevel.model.ActivityNode transformNode(FinalNode node) {
+	def dispatch ActivityNode transformNode(FinalNode node) {
 		if (trace.isActivityNodeMapped(node)) {
 			return trace.getActivityNode(node)
 		}
 		
-		val lowlevelNode = createFinalNode
+		val lowlevelNode = createFinalNode => [
+			it.name = node.name
+		]
 		
 		trace.put(node, lowlevelNode)
 		
@@ -337,12 +352,14 @@ class ActivityToLowlevelTransformer {
 		return lowlevelNode
 	}
 		
-	def dispatch hu.bme.mit.gamma.statechart.lowlevel.model.ActivityNode transformNode(TriggerNode node) {
+	def dispatch ActivityNode transformNode(TriggerNode node) {
 		if (trace.isActivityNodeMapped(node)) {
 			return trace.getActivityNode(node)
 		}
 		
-		val lowlevelNode = createTriggerNode
+		val lowlevelNode = createTriggerNode => [
+			it.name = node.name
+		]
 		
 		trace.put(node, lowlevelNode)
 		

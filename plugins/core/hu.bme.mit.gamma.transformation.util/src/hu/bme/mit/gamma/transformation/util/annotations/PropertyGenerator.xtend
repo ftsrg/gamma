@@ -189,8 +189,8 @@ class PropertyGenerator {
 
 	def protected ComponentInstanceVariableReferenceExpression createVariableReference(
 			VariableDeclaration variable) {
-		val statechart = StatechartModelDerivedFeatures.getContainingStatechart(variable)
-		val instance = StatechartModelDerivedFeatures.getReferencingComponentInstance(statechart)
+		val statefulComponent = StatechartModelDerivedFeatures.getContainingStatefulComponent(variable)
+		val instance = StatechartModelDerivedFeatures.getReferencingComponentInstance(statefulComponent)
 		val reference = propertyUtil.createVariableReference(
 			createInstanceReference(instance), variable)
 		return reference
@@ -351,9 +351,9 @@ class PropertyGenerator {
 	// Comments
 	
 	def protected String getInstanceId(EObject object) {
-		val statechart = StatechartModelDerivedFeatures.getContainingStatechart(object)
+		val statefulComponent = StatechartModelDerivedFeatures.getContainingStatefulComponent(object)
 		try {
-			val instance = StatechartModelDerivedFeatures.getReferencingComponentInstance(statechart)
+			val instance = StatechartModelDerivedFeatures.getReferencingComponentInstance(statefulComponent)
 			return instance.name
 		} catch (IllegalArgumentException e) {
 			return ""

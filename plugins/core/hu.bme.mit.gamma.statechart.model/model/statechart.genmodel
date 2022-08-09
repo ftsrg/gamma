@@ -376,11 +376,8 @@
   </genPackages>
   <genPackages prefix="ActivityComposition" basePackage="hu.bme.mit.gamma.statechart"
       disposableProviderFactory="true" ecorePackage="activity.ecore#/">
-    <genClasses ecoreClass="activity.ecore#//ActivityComponent">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference activity.ecore#//ActivityComponent/activityNodes"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference activity.ecore#//ActivityComponent/flows"/>
-    </genClasses>
-    <genClasses ecoreClass="activity.ecore#//SynchronousActivityComponent"/>
+    <genClasses ecoreClass="activity.ecore#//ActivityDefinition"/>
+    <genClasses ecoreClass="activity.ecore#//SynchronousActivityDefinition"/>
     <genClasses ecoreClass="activity.ecore#//TriggerNode">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference activity.ecore#//TriggerNode/trigger"/>
     </genClasses>

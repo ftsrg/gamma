@@ -56,12 +56,12 @@ class EventConnector {
 			val providedSimplePorts = providedPort.allBoundSimplePorts
 			checkState(providedSimplePorts.size == 1)
 			val providedSimplePort = providedSimplePorts.head
-			val providedStatechart = providedSimplePort.containingStatechart
-			val providedInstance = providedStatechart.referencingComponentInstance
+			val providedStatefulComponent = providedSimplePort.containingStatefulComponent
+			val providedInstance = providedStatefulComponent.referencingComponentInstance
 			for (requiredPort : requiredPorts) {
 				for (requiredSimplePort : requiredPort.allBoundSimplePorts) {
-					val requiredStatechart = requiredSimplePort.containingStatechart
-					val requiredInstance = requiredStatechart.referencingComponentInstance
+					val requiredStatefulComponent = requiredSimplePort.containingStatefulComponent
+					val requiredInstance = requiredStatefulComponent.referencingComponentInstance
 					// In events on required port
 					for (event : requiredSimplePort.inputEvents) {
 						val requiredInEventName = event.customizeInputName(requiredSimplePort, requiredInstance)

@@ -21,6 +21,7 @@ import java.util.List
 import org.eclipse.emf.ecore.EObject
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
+import hu.bme.mit.gamma.activity.model.ActivityNode
 
 class Namings {
 	
@@ -40,6 +41,7 @@ class Namings {
 		}
 		throw new IllegalArgumentException("Not known container: " + container)
 	}
+	def static String getFQN(ActivityNode node) '''«node.getFQNUpToComponent»'''
 	
 	def static String getFQNUpToComponent(EObject element) {
 		if (element instanceof Component) {

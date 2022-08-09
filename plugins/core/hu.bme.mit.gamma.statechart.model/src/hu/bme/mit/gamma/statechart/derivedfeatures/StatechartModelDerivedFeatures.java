@@ -32,6 +32,8 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
 
 import hu.bme.mit.gamma.action.model.Action;
 import hu.bme.mit.gamma.activity.derivedfeatures.ActivityModelDerivedFeatures;
+import hu.bme.mit.gamma.activity.model.ActivityNode;
+import hu.bme.mit.gamma.activity.model.CompositeNode;
 import hu.bme.mit.gamma.expression.model.ArgumentedElement;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.ElseExpression;
@@ -60,6 +62,7 @@ import hu.bme.mit.gamma.statechart.composite.PortBinding;
 import hu.bme.mit.gamma.statechart.composite.SchedulableCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.ScheduledAsynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.SimpleChannel;
+import hu.bme.mit.gamma.statechart.composite.StatefulComponent;
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponent;
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance;
 import hu.bme.mit.gamma.statechart.contract.AdaptiveContractAnnotation;
@@ -1199,7 +1202,7 @@ public class StatechartModelDerivedFeatures extends ActivityModelDerivedFeatures
 	public static List<Port> getAllBoundSimplePorts(Port port) {
 		List<Port> simplePorts = new ArrayList<Port>();
 		Component component = getContainingComponent(port);
-		if (component instanceof StatechartDefinition) {
+		if (component instanceof StatefulComponent) {
 			simplePorts.add(port);
 		}
 		else if (component instanceof CompositeComponent) {
@@ -1260,7 +1263,7 @@ public class StatechartModelDerivedFeatures extends ActivityModelDerivedFeatures
 				Port systemPort = portBinding.getCompositeSystemPort();
 				// Correct as even broadcast ports cannot be bound to multiple system ports (would be unnecessary)
 				return getBoundTopComponentPort(systemPort);
-			}
+			} 
 		}
 		return port;
 	}
@@ -1874,6 +1877,10 @@ public class StatechartModelDerivedFeatures extends ActivityModelDerivedFeatures
 		return ecoreUtil.getContainerOfType(object, StatechartDefinition.class);
 	}
 	
+	public static StatefulComponent getContainingStatefulComponent(EObject object) {
+		return ecoreUtil.getContainerOfType(object, StatefulComponent.class);
+	}
+	
 	public static Component getContainingComponent(EObject object) {
 		if (object == null) {
 			throw new IllegalArgumentException("Not contained by a component: " + object);
@@ -2356,7 +2363,7 @@ public class StatechartModelDerivedFeatures extends ActivityModelDerivedFeatures
 	}
 	
 	public static TimeSpecification getTimeoutValue(TimeoutDeclaration timeout) {
-		StatechartDefinition statechart = getContainingStatechart(timeout);
+		StatefulComponent statechart = getContainingStatefulComponent(timeout);
 		TimeSpecification time = null;
 		TreeIterator<Object> contents = EcoreUtil.getAllContents(statechart, true);
 		while (contents.hasNext()) {
@@ -2419,7 +2426,7 @@ public class StatechartModelDerivedFeatures extends ActivityModelDerivedFeatures
 	}
 	
 	public static ComponentInstance getContainingComponentInstance(EObject object) {
-		StatechartDefinition statechart = getContainingStatechart(object);
+		StatefulComponent statechart = getContainingStatefulComponent(object);
 		return getReferencingComponentInstance(statechart);
 	}
 	

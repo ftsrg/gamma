@@ -37,7 +37,6 @@ import hu.bme.mit.gamma.statechart.lowlevel.model.EventDirection
 import hu.bme.mit.gamma.statechart.lowlevel.model.Package
 import hu.bme.mit.gamma.statechart.lowlevel.model.Persistency
 import hu.bme.mit.gamma.statechart.lowlevel.model.Pin
-import hu.bme.mit.gamma.statechart.lowlevel.model.StatechartDefinition
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.VariableGroup
@@ -166,10 +165,14 @@ class LowlevelActivityToXstsTransformer {
 		/* By now all variables must be transformed so the expressions and actions can be transformed
 		 * correctly with the trace model */
 		getVariableInitializationsRule.fireAllCurrent
-		initializeVariableInitializingAction // After getVariableInitializationsRule, but before getTopRegionsInitializationRule
 		getInEventEnvironmentalActionRule.fireAllCurrent
 		getOutEventEnvironmentalActionRule.fireAllCurrent
+		
 		getActivityNodeTransitionsRule.fireAllCurrent
+		
+		val xStsMergedAction = createNonDeterministicAction
+		xStsMergedAction.actions += xSts.transitions.map [it.action]
+		xSts.changeTransitions(xStsMergedAction.wrap)
 	
 		xSts.optimizeXSts
 		xSts.fillNullTransitions
@@ -207,7 +210,7 @@ class LowlevelActivityToXstsTransformer {
 	
 	private def createActivityNodeMapping(ActivityNode activityNode) {
 		val xStsActivityNodeVariable = createVariableDeclaration => [
-			name = activityNode.name.activityNodeVariableName
+			name = activityNode.activityNodeVariableName
 			type = createTypeReference => [
 				reference = nodeStateEnumTypeDeclaration
 			]
@@ -262,7 +265,7 @@ class LowlevelActivityToXstsTransformer {
 	private def getActivityNodeTransitionsRule() {
 		if (activityNodeTransitionsRule === null) {
 			activityNodeTransitionsRule = createRule(Nodes.instance).action [
-				xSts.transitions += it.activityNode.transform
+				xSts.transitions += it.activityNode.transform.wrap
 			].build
 		}
 		return activityNodeTransitionsRule
@@ -452,38 +455,13 @@ class LowlevelActivityToXstsTransformer {
 		}
 		return variableInitializationsRule
 	}
-	
-	protected def initializeVariableInitializingAction() {
-		val xStsVariables = newLinkedList
-		// Cycle on the original declarations, as their order is important due to 'var a = b'-like assignments
-		for (lowlevelStatechart : _package.components.filter(StatechartDefinition)) {
-			for (lowlevelVariable : lowlevelStatechart.variableDeclarations) {
-				if (lowlevelVariable.notOptimizable) {
-					xStsVariables += trace.getXStsVariable(lowlevelVariable)
-				}
-			}
-		}
-		// Parameters must not be given initial value
-		xStsVariables -= xSts.componentParameterGroup.variables
-		// The region variables must be set to __Inactive__
-		xStsVariables += xSts.regionGroups.map[it.variables].flatten
-		// Initial value to the events, their order is not interesting
-		xStsVariables += xSts.inEventVariableGroup.variables + xSts.outEventVariableGroup.variables
-		// Note that optimization is NOT needed here, as these are already XSTS variables
-		for (xStsVariable : xStsVariables) {
-			// variableInitializingAction as it must be set before setting the configuration
-			xSts.variableInitializingAction as SequentialAction => [
-				it.actions += xStsVariable.createAssignmentAction(xStsVariable.initialValue)
-			]
-		}
-	}
 
 
 	protected def getInEventEnvironmentalActionRule() {
 		if (inEventEnvironmentalActionRule === null) {
 			inEventEnvironmentalActionRule = createRule(InEvents.instance).action [
 				val lowlevelEvent = it.event
-				if (lowlevelEvent.notOptimizable && !lowlevelEvent.internal) {
+				if (lowlevelEvent.notOptimizable /*&& !lowlevelEvent.internal*/) { // Activities do not contain internal events yet
 					val lowlevelEnvironmentalAction = xSts.inEventAction as SequentialAction
 					val xStsEventVariable = trace.getXStsVariable(lowlevelEvent)
 					
@@ -526,8 +504,8 @@ class LowlevelActivityToXstsTransformer {
 		if (outEventEnvironmentalActionRule === null) {
 			outEventEnvironmentalActionRule = createRule(OutEvents.instance).action [
 				val lowlevelEvent = it.event
-				if (lowlevelEvent.notOptimizable && !lowlevelEvent.internal) {
-					val lowlevelEnvironmentalAction = xSts.outEventAction as SequentialAction
+				if (lowlevelEvent.notOptimizable /*&& !lowlevelEvent.internal*/) { // Activities do not contain internal events yet
+					val lowlevelEnvironmentalAction = xSts.outEventAction
 					val xStsEventVariable = trace.getXStsVariable(lowlevelEvent)
 					lowlevelEnvironmentalAction.actions += xStsEventVariable
 							.createAssignmentAction(createFalseExpression)

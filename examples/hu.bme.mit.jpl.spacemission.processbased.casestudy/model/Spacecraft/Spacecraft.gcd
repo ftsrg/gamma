@@ -81,7 +81,7 @@ statechart Spacecraft [
 	port rechargeBatteryActivityInterface : requires RechargeBatteryActivityInterface
 ] {	
 	var _data : integer := 100
-	var battery : integer := 100
+	var batteryValue : integer := 100
 	
 	region Communication { 
 		initial CommunicationEntry
@@ -110,17 +110,17 @@ statechart Spacecraft [
 	transition from CommunicationEntry to WaitingPing
 	transition from WaitingPing to Transmitting when pingSource.ping [in-state(Battery.NotRecharging) and _data > 0]
 	transition from Transmitting to WaitingPing when transmitDataActivityInterface.sendData [_data == 100]
-	transition from Transmitting to WaitingPing when transmitDataActivityInterface.consumeEnergy [battery <= 40]
+	transition from Transmitting to WaitingPing when transmitDataActivityInterface.consumeEnergy [batteryValue <= 40]
 	
 	transition from BatteryEntry to NotRecharging	
-	transition from NotRecharging to Recharging when transmitDataActivityInterface.sendData [battery < 80]
-	transition from Recharging to NotRecharging when rechargeBatteryActivityInterface.chargeBattery [battery >= 100]
+	transition from NotRecharging to Recharging when transmitDataActivityInterface.sendData [batteryValue < 80]
+	transition from Recharging to NotRecharging when rechargeBatteryActivityInterface.chargeBattery [batteryValue >= 100]
 	
 	transition from TransmitDataActivityInit to TransmitDataActivityLogic
-	transition from TransmitDataActivityLogic to TransmitDataActivityLogic when transmitDataActivityInterface.consumeEnergy / battery := battery - 1;
+	transition from TransmitDataActivityLogic to TransmitDataActivityLogic when transmitDataActivityInterface.consumeEnergy / batteryValue := batteryValue - 1;
 	transition from TransmitDataActivityLogic to TransmitDataActivityLogic when transmitDataActivityInterface.sendData / _data := _data - 1; raise dataSource._data;
 	
 	transition from RechargeBatteryActivityInit to RechargeBatteryActivityLogic
-	transition from RechargeBatteryActivityLogic to RechargeBatteryActivityLogic when rechargeBatteryActivityInterface.chargeBattery / battery := battery + 1;
+	transition from RechargeBatteryActivityLogic to RechargeBatteryActivityLogic when rechargeBatteryActivityInterface.chargeBattery / batteryValue := batteryValue + 1;
 	
 }

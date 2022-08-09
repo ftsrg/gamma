@@ -176,21 +176,7 @@ class ActivityNodeTransformer {
 		
 		trace.put(node, action)
 		
-		return action.createXStsTransition		
-	}
-	
-	/**
-	 * Creates an xSTS transition based on the low-level transition and the xSTS action to be contained.
-	 */
-	protected def createXStsTransition(Action xStsTransitionAction) {
-		val xStsTransition = createXTransition => [
-			it.action = xStsTransitionAction
-			// Noting uses it right now, so commenting out to speed up the transformation
-//			it.reads += xStsTransitionAction.readVariables
-//			it.writes += xStsTransitionAction.writtenVariables
-		]
-		// Cannot be traced here, as each transition needs different tracing
-		return xStsTransition
+		return action
 	}
 	
 }

@@ -200,7 +200,7 @@ class StatechartToLowlevelTransformer {
 		for (region : state.regions) {
 			lowlevelState.regions += region.transform
 		}
-
+		// Entry and exit actions
 		lowlevelState.entryAction = state.entryActions.transformActions
 		lowlevelState.exitAction = state.exitActions.transformActions
 		return lowlevelState

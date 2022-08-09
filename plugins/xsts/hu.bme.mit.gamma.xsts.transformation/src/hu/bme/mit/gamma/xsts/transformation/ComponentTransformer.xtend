@@ -57,6 +57,7 @@ import static extension hu.bme.mit.gamma.xsts.transformation.util.QueueNamings.*
 import static extension java.lang.Math.*
 import hu.bme.mit.gamma.statechart.ActivityComposition.ActivityDefinition
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.LowlevelActivityToXstsTransformer
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.LowlevelToXstsTransformer
 
 class ComponentTransformer {
 	// This gammaToLowlevelTransformer must be the same during this transformation cycle due to tracing
@@ -1016,6 +1017,12 @@ class ComponentTransformer {
 			for (regionType : xSts.variableGroups.filter[it.annotation instanceof RegionGroup]
 					.map[it.variables].flatten.map[it.type].filter(TypeReference).map[it.reference]) {
 				regionType.name = regionType.customizeRegionTypeName(type)
+			}
+		}
+		else if (type instanceof ActivityDefinition) {
+			// Customizing every variable name
+			for (variable : xSts.variableDeclarations) {
+				variable.name = variable.getCustomizedName(instance)
 			}
 		}
 	}

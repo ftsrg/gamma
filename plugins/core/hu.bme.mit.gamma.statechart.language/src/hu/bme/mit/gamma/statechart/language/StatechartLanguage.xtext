@@ -431,7 +431,7 @@ SynchronousActivityDefinition returns ActivityComposition::SynchronousActivityDe
 			)*
 			(activityNodes+=ActivityNode)*
 			(flows+=Flow)*
-			functionDeclarations+=FunctionDeclaration*
+			(functionDeclarations+=FunctionDeclaration)*
 	'}'
 ;
 
