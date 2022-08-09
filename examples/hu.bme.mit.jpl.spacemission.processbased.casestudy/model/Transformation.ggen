@@ -1,0 +1,29 @@
+include "System/Cascade/DX/State-Coverage/_-_/MissionTransformation.ggen"
+include "System/Cascade/DX/State-Coverage/_-Opt/MissionTransformation.ggen"
+include "System/Cascade/DX/State-Coverage/_RS-_/MissionTransformation.ggen"
+include "System/Cascade/DX/State-Coverage/_RS-Opt/MissionTransformation.ggen"
+
+include "System/Cascade/XU/State-Coverage/_-_/MissionTransformation.ggen"
+include "System/Cascade/XU/State-Coverage/_-Opt/MissionTransformation.ggen"
+include "System/Cascade/XU/State-Coverage/_RS-_/MissionTransformation.ggen"
+include "System/Cascade/XU/State-Coverage/_RS-Opt/MissionTransformation.ggen"
+
+include "System/Synchronous/DX/State-Coverage/_-_/MissionTransformation.ggen"
+include "System/Synchronous/DX/State-Coverage/_-Opt/MissionTransformation.ggen"
+include "System/Synchronous/DX/State-Coverage/_RS-_/MissionTransformation.ggen"
+include "System/Synchronous/DX/State-Coverage/_RS-Opt/MissionTransformation.ggen"
+
+include "System/Synchronous/XU/State-Coverage/_-_/MissionTransformation.ggen"
+include "System/Synchronous/XU/State-Coverage/_-Opt/MissionTransformation.ggen"
+include "System/Synchronous/XU/State-Coverage/_RS-_/MissionTransformation.ggen"
+include "System/Synchronous/XU/State-Coverage/_RS-Opt/MissionTransformation.ggen"
+
+include "System/Asynchronous/DX/State-Coverage/_-_/MissionTransformation.ggen"
+include "System/Asynchronous/DX/State-Coverage/_-Opt/MissionTransformation.ggen"
+include "System/Asynchronous/DX/State-Coverage/_RS-_/MissionTransformation.ggen"
+include "System/Asynchronous/DX/State-Coverage/_RS-Opt/MissionTransformation.ggen"
+
+include "System/Asynchronous/XU/State-Coverage/_-_/MissionTransformation.ggen"
+include "System/Asynchronous/XU/State-Coverage/_-Opt/MissionTransformation.ggen"
+include "System/Asynchronous/XU/State-Coverage/_RS-_/MissionTransformation.ggen"
+include "System/Asynchronous/XU/State-Coverage/_RS-Opt/MissionTransformation.ggen"

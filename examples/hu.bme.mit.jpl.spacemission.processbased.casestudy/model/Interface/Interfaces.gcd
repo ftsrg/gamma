@@ -1,0 +1,23 @@
+package interfaces
+
+interface DataSource {
+	out event _data
+}
+interface PingSource {
+	in event ping
+}
+
+interface StationControl {
+	in event start
+	in event shutdown
+}
+
+interface TransmitDataActivityInterface {
+	out event sendData
+	out event consumeEnergy
+}
+interface RechargeBatteryActivityInterface {
+	out event chargeBattery
+}
+
+const SCHEDULE_CONSTRAINT : integer := 1501

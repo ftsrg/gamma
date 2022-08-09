@@ -1,0 +1,15 @@
+package mission
+import "Interface/Interfaces"
+import "GroundstationAdapter/GroundStationAdapter.gcd"
+import "SpacecraftAdapter/SpacecraftAdapter.gcd"
+
+async Mission [
+	port stationControl : provides StationControl
+] {
+	component stationInstance : GroundStationAdapter
+	component satelliteInstance : SpacecraftAdapter
+	
+	bind stationControl -> stationInstance.stationControl
+	channel [ satelliteInstance.dataSource ] -o)- [ stationInstance.dataSource ]
+	channel [ satelliteInstance.pingSource ] -o)- [ stationInstance.pingSource ]
+}

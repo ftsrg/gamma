@@ -1,0 +1,15 @@
+package mission
+import "Interface/Interfaces"
+import "GroundstationAdapter/GroundStationWrapper.gcd"
+import "SpacecraftAdapter/SpacecraftWrapper.gcd"
+
+cascade Mission [
+	port stationControl : provides StationControl
+] {
+	component stationInstance : GroundStationWrapper
+	component satelliteInstance : SpacecraftWrapper
+	
+	bind stationControl -> stationInstance.stationControl
+	channel [ satelliteInstance.dataSource ] -o)- [ stationInstance.dataSource ]
+	channel [ satelliteInstance.pingSource ] -o)- [ stationInstance.pingSource ]
+}

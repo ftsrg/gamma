@@ -1,0 +1,16 @@
+package groundstation
+
+import "GroundStationWrapper.gcd"
+
+adapter GroundStationAdapter of component groundStationAdapter : GroundStationWrapper {
+	when stationControl.any / run
+	queue dataMessages(priority = 1, capacity = 1) {
+		dataSource.any
+	}
+	queue pingMessages(priority = 2, capacity = 1) {
+		pingSource.any
+	}
+	queue controlMessages(priority = 3, capacity = 1) {
+		stationControl.any
+	}
+}

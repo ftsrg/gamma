@@ -1,0 +1,22 @@
+package spacecraft
+
+import "Interface/Interfaces.gcd"
+import "Spacecraft/Spacecraft.gcd"
+
+sync SpacecraftWrapper [
+	port pingSource : provides PingSource
+	port dataSource : provides DataSource
+] {
+	component spacecraft : Spacecraft
+	component rechargeBattery : RechargeBattery
+	component transmitData : TransmitData
+	
+	bind pingSource -> spacecraft.pingSource
+	bind dataSource -> spacecraft.dataSource
+		
+	channel [ spacecraft.transmitDataController ] -o)- [ transmitData.controller ]
+	channel [ spacecraft.transmitDataActivityInterface ] -o)- [ transmitData.connection ]
+	
+	channel [ spacecraft.rechargeBatteryController ] -o)- [ rechargeBattery.controller ]
+	channel [ spacecraft.rechargeBatteryActivityInterface ] -o)- [ rechargeBattery.connection ]
+}

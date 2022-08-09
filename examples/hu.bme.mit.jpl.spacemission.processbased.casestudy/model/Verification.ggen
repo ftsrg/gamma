@@ -1,0 +1,29 @@
+include "System/Cascade/DX/State-Coverage/_-_/MissionVerification.ggen"
+include "System/Cascade/DX/State-Coverage/_-Opt/MissionVerification.ggen"
+include "System/Cascade/DX/State-Coverage/_RS-_/MissionVerification.ggen"
+include "System/Cascade/DX/State-Coverage/_RS-Opt/MissionVerification.ggen"
+
+include "System/Cascade/XU/State-Coverage/_-_/MissionVerification.ggen"
+include "System/Cascade/XU/State-Coverage/_-Opt/MissionVerification.ggen"
+include "System/Cascade/XU/State-Coverage/_RS-_/MissionVerification.ggen"
+include "System/Cascade/XU/State-Coverage/_RS-Opt/MissionVerification.ggen"
+
+include "System/Synchronous/DX/State-Coverage/_-_/MissionVerification.ggen"
+include "System/Synchronous/DX/State-Coverage/_-Opt/MissionVerification.ggen"
+include "System/Synchronous/DX/State-Coverage/_RS-_/MissionVerification.ggen"
+include "System/Synchronous/DX/State-Coverage/_RS-Opt/MissionVerification.ggen"
+
+include "System/Synchronous/XU/State-Coverage/_-_/MissionVerification.ggen"
+include "System/Synchronous/XU/State-Coverage/_-Opt/MissionVerification.ggen"
+include "System/Synchronous/XU/State-Coverage/_RS-_/MissionVerification.ggen"
+include "System/Synchronous/XU/State-Coverage/_RS-Opt/MissionVerification.ggen"
+
+include "System/Asynchronous/DX/State-Coverage/_-_/MissionVerification.ggen"
+include "System/Asynchronous/DX/State-Coverage/_-Opt/MissionVerification.ggen"
+include "System/Asynchronous/DX/State-Coverage/_RS-_/MissionVerification.ggen"
+include "System/Asynchronous/DX/State-Coverage/_RS-Opt/MissionVerification.ggen"
+
+include "System/Asynchronous/XU/State-Coverage/_-_/MissionVerification.ggen"
+include "System/Asynchronous/XU/State-Coverage/_-Opt/MissionVerification.ggen"
+include "System/Asynchronous/XU/State-Coverage/_RS-_/MissionVerification.ggen"
+include "System/Asynchronous/XU/State-Coverage/_RS-Opt/MissionVerification.ggen"
