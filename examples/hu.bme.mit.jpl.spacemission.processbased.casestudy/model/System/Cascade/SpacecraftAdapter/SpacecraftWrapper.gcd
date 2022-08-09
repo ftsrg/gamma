@@ -14,9 +14,9 @@ cascade SpacecraftWrapper [
 	bind pingSource -> spacecraft.pingSource
 	bind dataSource -> spacecraft.dataSource
 		
-	channel [ spacecraft.transmitDataController ] -o)- [ transmitData.controller ]
-	channel [ spacecraft.transmitDataActivityInterface ] -o)- [ transmitData.connection ]
+	//channel [ transmitData.controller ] -o)- [ spacecraft.transmitDataController ]
+	channel [ transmitData.connection ] -o)- [ spacecraft.transmitDataActivityInterface ]
 	
-	channel [ spacecraft.rechargeBatteryController ] -o)- [ rechargeBattery.controller ]
-	channel [ spacecraft.rechargeBatteryActivityInterface ] -o)- [ rechargeBattery.connection ]
+	//channel [ rechargeBattery.controller ] -o)- [ spacecraft.rechargeBatteryController ]
+	channel [ rechargeBattery.connection ] -o)- [ spacecraft.rechargeBatteryActivityInterface ]
 }

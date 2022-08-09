@@ -4,6 +4,7 @@ import "GroundStationWrapper.gcd"
 
 adapter GroundStationAdapter of component groundStationAdapter : GroundStationWrapper {
 	when stationControl.any / run
+	
 	queue dataMessages(priority = 1, capacity = 1) {
 		dataSource.any
 	}

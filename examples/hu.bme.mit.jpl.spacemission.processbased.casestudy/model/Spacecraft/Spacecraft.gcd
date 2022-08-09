@@ -74,8 +74,8 @@ statechart Spacecraft [
 	port pingSource : provides PingSource
 	port dataSource : provides DataSource
 	
-	port transmitDataController : requires TransmitData::controller
-	port rechargeBatteryController : requires RechargeBattery::controller
+	//port transmitDataController : requires TransmitData::controller
+	//port rechargeBatteryController : requires RechargeBattery::controller
 	
 	port transmitDataActivityInterface : requires TransmitDataActivityInterface
 	port rechargeBatteryActivityInterface : requires RechargeBatteryActivityInterface
@@ -87,14 +87,14 @@ statechart Spacecraft [
 		initial CommunicationEntry
 		state WaitingPing
 		state Transmitting {
-			do / run transmitDataController;
+			//do / run transmitDataController;
 		}
 	}
 	region Battery {
 		initial BatteryEntry
 		state NotRecharging
 		state Recharging {
-			do / run rechargeBatteryController;
+			//do / run rechargeBatteryController;
 		}
 	}
 	
