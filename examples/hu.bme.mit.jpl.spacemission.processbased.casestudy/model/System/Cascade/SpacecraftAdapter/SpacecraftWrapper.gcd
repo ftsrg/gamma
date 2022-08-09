@@ -4,7 +4,7 @@ import "Interface/Interfaces.gcd"
 import "Spacecraft/Spacecraft.gcd"
 
 cascade SpacecraftWrapper [
-	port pingSource : provides PingSource
+	port pingSource : requires PingSource
 	port dataSource : provides DataSource
 ] {
 	component spacecraft : Spacecraft

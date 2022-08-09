@@ -21,7 +21,7 @@ activity ReceiveData [
 
 statechart GroundStation [
 	//port receiveDataController : requires ReceiveData::controller
-	port pingSource : requires PingSource
+	port pingSource : provides PingSource
 	port stationControl : provides StationControl
 ] {
 	timeout pingTimeout

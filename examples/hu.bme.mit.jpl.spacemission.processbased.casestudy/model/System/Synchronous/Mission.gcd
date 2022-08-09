@@ -11,5 +11,5 @@ sync Mission [
 	
 	bind stationControl -> stationInstance.stationControl
 	channel [ satelliteInstance.dataSource ] -o)- [ stationInstance.dataSource ]
-	channel [ satelliteInstance.pingSource ] -o)- [ stationInstance.pingSource ]
+	channel [ stationInstance.pingSource ] -o)- [ satelliteInstance.pingSource ]
 }
