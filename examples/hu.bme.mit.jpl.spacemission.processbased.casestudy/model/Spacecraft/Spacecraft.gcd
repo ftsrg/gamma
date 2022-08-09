@@ -71,7 +71,7 @@ activity RechargeBattery [
 
 @RegionSchedule = bottom-up
 statechart Spacecraft [
-	port pingSource : provides PingSource
+	port pingSource : requires PingSource
 	port dataSource : provides DataSource
 	
 	//port transmitDataController : requires TransmitData::controller

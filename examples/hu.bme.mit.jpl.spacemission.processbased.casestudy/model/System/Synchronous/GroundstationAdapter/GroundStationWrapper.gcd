@@ -5,7 +5,7 @@ import "Groundstation/GroundStation.gcd"
 
 sync GroundStationWrapper [
 	port dataSource : requires DataSource
-	port pingSource : requires PingSource
+	port pingSource : provides PingSource
 	port stationControl : provides StationControl
 ] {
 	component groundStation : GroundStation
