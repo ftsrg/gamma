@@ -44,8 +44,8 @@ pattern parameterizedInstancesWithParameters(instance : ComponentInstance, type 
 	Component.parameterDeclarations(type, parameter);
 }
 
-pattern simpleInstances(instance : SynchronousComponentInstance, statechart : StatechartDefinition) {
-	SynchronousComponentInstance.type(instance, statechart); 
+pattern simpleInstances(instance : SynchronousComponentInstance, component : StatefulComponent) {
+	SynchronousComponentInstance.type(instance, component); 
 }
 
 pattern instanceContainer(containerInstace : SynchronousComponentInstance, instance : SynchronousComponentInstance) {
@@ -60,14 +60,14 @@ pattern referencedDeclarations(declaration : NamedElement) {
 }
 
 pattern instanceVariables(instance : SynchronousComponentInstance, variable : VariableDeclaration) {
-	find simpleInstances(instance, statechart);
-	StatechartDefinition.variableDeclarations(statechart, variable);
+	find simpleInstances(instance, component);
+	StatefulComponent.variableDeclarations(component, variable);
 	find referencedDeclarations(variable);
 }
 
 pattern instanceTimeouts(instance : SynchronousComponentInstance, timeout : TimeoutDeclaration) {
-	find simpleInstances(instance, statechart);
-	StatechartDefinition.timeoutDeclarations(statechart, timeout);
+	find simpleInstances(instance, component);
+	StatefulComponent.timeoutDeclarations(component, timeout);
 	find referencedDeclarations(timeout);
 }
 

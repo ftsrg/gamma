@@ -41,9 +41,9 @@ class SystemOutEventReducer implements Reducer {
 	override execute() {
 		val simplePortsConnectedToSystemPorts = topComponent.allBoundSimplePorts
 				.reject[it.isInChannel] // Broadcast ports can be connected using channels, hence the reject
-		val statecharts = simplePortsConnectedToSystemPorts.map[it.containingStatechart].toSet
-		for (statechart : statecharts) {
-			val raiseEventActions = statechart.getAllContentsOfType(RaiseEventAction)
+		val components = simplePortsConnectedToSystemPorts.map[it.containingStatefulComponent].toSet
+		for (component : components) {
+			val raiseEventActions = component.getAllContentsOfType(RaiseEventAction)
 				.filter[simplePortsConnectedToSystemPorts.contains(it.port)]
 			for (raiseEventAction : raiseEventActions) {
 				val port = raiseEventAction.port

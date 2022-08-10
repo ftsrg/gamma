@@ -184,25 +184,27 @@ class SystemReducer implements Reducer {
 	}
 	
 	private def void removeUnnecessaryStatechartInstance(SynchronousComponentInstance instance) {
-		val statechart = instance.type as StatechartDefinition
-		if (statechart.regions.empty) {
-			val container = instance.eContainer
-			// It can be either an asynchronous adapter or a synchronous composite
-			if (container instanceof SynchronousCompositeComponent) {
-				container.components -= instance
-				val _package = statechart.eContainer as Package
-				_package.components -= statechart
-				log(Level.INFO, "Removing statechart instance " + instance.name)
-				// Port binding remover
-				val unnecessaryPortBindings = container.portBindings
-					.filter[it.instancePortReference.instance === instance].toList
-				container.portBindings -= unnecessaryPortBindings
-				// Channel remover
-				val channels = container.channels
-				val unnecessaryChannels = (channels.filter[it.providedPort.instance === instance] + 
-					channels.filter(SimpleChannel).filter[it.requiredPort.instance === instance] +
-					channels.filter(BroadcastChannel).filter[it.requiredPorts.exists[it.instance === instance]]).toList
-				container.channels -= unnecessaryChannels
+		if (instance.type instanceof StatechartDefinition) {
+			val statechart = instance.type as StatechartDefinition
+			if (statechart.regions.empty) {
+				val container = instance.eContainer
+				// It can be either an asynchronous adapter or a synchronous composite
+				if (container instanceof SynchronousCompositeComponent) {
+					container.components -= instance
+					val _package = statechart.eContainer as Package
+					_package.components -= statechart
+					log(Level.INFO, "Removing statechart instance " + instance.name)
+					// Port binding remover
+					val unnecessaryPortBindings = container.portBindings
+						.filter[it.instancePortReference.instance === instance].toList
+					container.portBindings -= unnecessaryPortBindings
+					// Channel remover
+					val channels = container.channels
+					val unnecessaryChannels = (channels.filter[it.providedPort.instance === instance] + 
+						channels.filter(SimpleChannel).filter[it.requiredPort.instance === instance] +
+						channels.filter(BroadcastChannel).filter[it.requiredPorts.exists[it.instance === instance]]).toList
+					container.channels -= unnecessaryChannels
+				}
 			}
 		}
 	}
