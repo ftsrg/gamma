@@ -19,4 +19,7 @@ sync SpacecraftWrapper [
 	
 	//channel [ rechargeBattery.controller ] -o)- [ spacecraft.rechargeBatteryController ]
 	channel [ rechargeBattery.connection ] -o)- [ spacecraft.rechargeBatteryActivityInterface ]
+	
+	connect rechargeBattery -> spacecraft.rechargeBattery
+	connect transmitData -> spacecraft.transmitData
 }

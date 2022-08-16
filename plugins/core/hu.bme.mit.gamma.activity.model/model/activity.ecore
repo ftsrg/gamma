@@ -68,4 +68,7 @@
   <eClassifiers xsi:type="ecore:EClass" name="OutsideInputPinReference" eSuperTypes="#//InputPinReference #//OutsidePinReference #//DataTargetReference"/>
   <eClassifiers xsi:type="ecore:EClass" name="InsideOutputPinReference" eSuperTypes="#//OutputPinReference #//InsidePinReference #//DataTargetReference"/>
   <eClassifiers xsi:type="ecore:EClass" name="OutsideOutputPinReference" eSuperTypes="#//OutputPinReference #//OutsidePinReference #//DataSourceReference"/>
+  <eClassifiers xsi:type="ecore:EClass" name="ExecuteActivityAction" eSuperTypes="../../hu.bme.mit.gamma.action.model/model/action.ecore#//Statement">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="activity" eType="#//ActivityNode"/>
+  </eClassifiers>
 </ecore:EPackage>

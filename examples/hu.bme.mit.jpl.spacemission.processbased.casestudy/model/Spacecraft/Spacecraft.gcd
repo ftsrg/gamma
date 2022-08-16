@@ -31,19 +31,19 @@ activity TransmitData [
 		raise connection.consumeEnergy;
 	}
 	
-	control flow from Initial to Fork
+	succession from Initial to Fork
 	
-	control flow from Fork to TransmitMerge
-	control flow from TransmitMerge to SetTransmitWait
-	control flow from SetTransmitWait to TransmitWait
-	control flow from TransmitWait to TransmitData
-	control flow from TransmitData to TransmitMerge
+	succession from Fork to TransmitMerge
+	succession from TransmitMerge to SetTransmitWait
+	succession from SetTransmitWait to TransmitWait
+	succession from TransmitWait to TransmitData
+	succession from TransmitData to TransmitMerge
 	
-	control flow from Fork to ConsumeMerge
-	control flow from ConsumeMerge to SetConsumeWait
-	control flow from SetConsumeWait to ConsumeWait
-	control flow from ConsumeWait to ConsumeEnergy
-	control flow from ConsumeEnergy to ConsumeMerge
+	succession from Fork to ConsumeMerge
+	succession from ConsumeMerge to SetConsumeWait
+	succession from SetConsumeWait to ConsumeWait
+	succession from ConsumeWait to ConsumeEnergy
+	succession from ConsumeEnergy to ConsumeMerge
 }
 
 activity RechargeBattery [
@@ -62,11 +62,11 @@ activity RechargeBattery [
 		raise connection.chargeBattery;
 	}
 	
-	control flow from Initial to Merge
-	control flow from Merge to SetWait
-	control flow from SetWait to Wait
-	control flow from Wait to Charge
-	control flow from Charge to Merge
+	succession from Initial to Merge
+	succession from Merge to SetWait
+	succession from SetWait to Wait
+	succession from Wait to Charge
+	succession from Charge to Merge
 }
 
 @RegionSchedule = bottom-up
@@ -79,22 +79,25 @@ statechart Spacecraft [
 	
 	port transmitDataActivityInterface : requires TransmitDataActivityInterface
 	port rechargeBatteryActivityInterface : requires RechargeBatteryActivityInterface
-] {	
-	var _data : integer := 100
+	
+	activity-port transmitData : TransmitData
+	activity-port rechargeBattery : RechargeBattery
+] {
+	var data : integer := 100
 	var batteryValue : integer := 100
 	
 	region Communication { 
 		initial CommunicationEntry
 		state WaitingPing
 		state Transmitting {
-			//do / run transmitDataController;
+			do / run transmitData;
 		}
 	}
 	region Battery {
 		initial BatteryEntry
 		state NotRecharging
 		state Recharging {
-			//do / run rechargeBatteryController;
+			do / run rechargeBattery;
 		}
 	}
 	
@@ -108,8 +111,8 @@ statechart Spacecraft [
 	}
 	
 	transition from CommunicationEntry to WaitingPing
-	transition from WaitingPing to Transmitting when pingSource.ping [in-state(Battery.NotRecharging) and _data > 0]
-	transition from Transmitting to WaitingPing when transmitDataActivityInterface.sendData [_data == 100]
+	transition from WaitingPing to Transmitting when pingSource.ping [in-state(Battery.NotRecharging) and data > 0]
+	transition from Transmitting to WaitingPing when transmitDataActivityInterface.sendData [data == 100]
 	transition from Transmitting to WaitingPing when transmitDataActivityInterface.consumeEnergy [batteryValue <= 40]
 	
 	transition from BatteryEntry to NotRecharging	
@@ -118,7 +121,7 @@ statechart Spacecraft [
 	
 	transition from TransmitDataActivityInit to TransmitDataActivityLogic
 	transition from TransmitDataActivityLogic to TransmitDataActivityLogic when transmitDataActivityInterface.consumeEnergy / batteryValue := batteryValue - 1;
-	transition from TransmitDataActivityLogic to TransmitDataActivityLogic when transmitDataActivityInterface.sendData / _data := _data - 1; raise dataSource._data;
+	transition from TransmitDataActivityLogic to TransmitDataActivityLogic when transmitDataActivityInterface.sendData / data := data - 1; raise dataSource.data;
 	
 	transition from RechargeBatteryActivityInit to RechargeBatteryActivityLogic
 	transition from RechargeBatteryActivityLogic to RechargeBatteryActivityLogic when rechargeBatteryActivityInterface.chargeBattery / batteryValue := batteryValue + 1;

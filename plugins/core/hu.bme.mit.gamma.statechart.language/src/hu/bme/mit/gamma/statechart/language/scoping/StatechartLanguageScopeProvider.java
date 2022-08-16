@@ -32,7 +32,9 @@ import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
 import hu.bme.mit.gamma.expression.model.FieldDeclaration;
 import hu.bme.mit.gamma.expression.model.ParametricElement;
+import hu.bme.mit.gamma.statechart.ActivityComposition.ActivityCompositionPackage;
 import hu.bme.mit.gamma.statechart.ActivityComposition.ActivityDefinition;
+import hu.bme.mit.gamma.statechart.ActivityComposition.InstanceActivityControllerPortReference;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponent;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance;
@@ -227,6 +229,21 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 								.map(it ->StatechartModelDerivedFeatures.getAllPorts(it))
 								.forEach(it -> ports.addAll(it));
 				return Scopes.scopeFor(ports); 
+			}
+			if (context instanceof InstanceActivityControllerPortReference && reference == ActivityCompositionPackage.Literals.INSTANCE_ACTIVITY_CONTROLLER_PORT_REFERENCE__PORT) {
+				InstanceActivityControllerPortReference portInstance = (InstanceActivityControllerPortReference) context;
+				ComponentInstance instance = portInstance.getInstance();
+				Component type = (instance instanceof SynchronousComponentInstance) ? 
+						((SynchronousComponentInstance) instance).getType() : 
+							((AsynchronousComponentInstance) instance).getType();
+				if (type == null) {
+					return super.getScope(context, reference); 
+				}
+				if (type instanceof StatechartDefinition == false) {
+					return super.getScope(context, reference); 
+				} 
+				StatechartDefinition statechart = (StatechartDefinition) type;
+				return Scopes.scopeFor(statechart.getActivities());
 			}
 			// Types
 			if (context instanceof SynchronousComponentInstance && reference == CompositeModelPackage.Literals.SYNCHRONOUS_COMPONENT_INSTANCE__TYPE) {

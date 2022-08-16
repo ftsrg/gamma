@@ -9,20 +9,23 @@ activity ReceiveData [
 	
 	merge Merge
 	
-	trigger DataPacket when dataSource._data
+	trigger DataPacket when dataSource.data
 	
-	action ProcessData
+	atomic action ProcessData {
+		
+	}
 	
-	control flow from Initial to Merge
-	control flow from Merge to DataPacket
-	control flow from DataPacket to ProcessData
-	control flow from ProcessData to Merge
+	succession from Initial to Merge
+	succession from Merge to DataPacket
+	succession from DataPacket to ProcessData
+	succession from ProcessData to Merge
 }
 
 statechart GroundStation [
-	//port receiveDataController : requires ReceiveData::controller
 	port pingSource : provides PingSource
 	port stationControl : provides StationControl
+	
+	activity-port receiveData : ReceiveData
 ] {
 	timeout pingTimeout
 	timeout autoStart
@@ -33,8 +36,8 @@ statechart GroundStation [
 			entry / set autoStart := 30s;
 		}
 		state Operation {
-			//do / run receiveDataController;
 			entry / raise pingSource.ping; set pingTimeout := 10s;
+			do / run receiveData; 
 		}
 	}
 	

@@ -21,7 +21,8 @@ Action returns ActionModel::Action:
 
 @Override
 FunctionDeclaration returns ConstraintModel::FunctionDeclaration:
-	LambdaDeclaration | ProcedureDeclaration
+	super | 
+	ProcedureDeclaration
 ;
 
 ProcedureDeclaration returns ActionModel::ProcedureDeclaration:

@@ -15,5 +15,5 @@ sync GroundStationWrapper [
 	bind pingSource -> groundStation.pingSource
 	bind stationControl -> groundStation.stationControl
 	
-	//channel [ receiveData.controller ] -o)- [ groundStation.receiveDataController ]
+	connect receiveData -> groundStation.receiveData
 }

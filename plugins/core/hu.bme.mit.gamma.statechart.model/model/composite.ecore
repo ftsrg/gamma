@@ -19,6 +19,8 @@
         eType="#//PortBinding" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="channels" upperBound="-1"
         eType="#//Channel" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="activityConnections" upperBound="-1"
+        eType="ecore:EClass activity.ecore#//ActivityControllerPortConnection" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="SchedulableCompositeComponent" abstract="true"
       eSuperTypes="#//CompositeComponent">

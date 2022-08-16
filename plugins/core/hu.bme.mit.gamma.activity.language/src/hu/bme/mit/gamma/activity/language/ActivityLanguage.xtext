@@ -23,12 +23,10 @@ CompositeNode returns CompositeNode:
 			( (pins += Pin) (',' pins += Pin)* )?
 		')'
 	)?
-	(
-		'{'
-			(activityNodes+=ActivityNode)*
-			(flows+=Flow)*
-		'}'
-	)?
+	'{'
+		(activityNodes+=ActivityNode)*
+		(flows+=Flow)*
+	'}'
 ;
 
 ActionNode returns ActionNode:
@@ -48,14 +46,14 @@ Flow returns Flow:
 ;
 
 ControlFlow returns ControlFlow:
-	'control' 'flow'
+	'succession'
 	'from' sourceNode=[ActivityNode] 
 	'to' targetNode=[ActivityNode]
 	('[' guard=Expression ']')?
 ;
 
 DataFlow returns DataFlow:
-	'data' 'flow'
+	'flow'
 	'from' dataSourceReference=DataSourceReference 
 	'to' dataTargetReference=DataTargetReference
 	('[' guard=Expression ']')?
@@ -110,6 +108,35 @@ OutputPin returns OutputPin:
 ;
 
 
+// Action Language Extensions
+
+@Override 
+InlineStatement returns ActionModel::Statement:
+	super |
+	(
+		ExecuteActivityAction ';'
+	)
+;
+
+ExecuteActivityAction returns ExecuteActivityAction:
+	'execute' activity=[ActivityNode]
+;
+
+
+// Expression Language Extensions
+
+@Override
+AssignableAccessExpression returns ConstraintModel::ReferenceExpression:
+	super |
+	InsideOutputPinReference
+;
+
+@Override
+PrimaryExpression returns ConstraintModel::Expression:
+	super | 
+	InsideInputPinReference
+;
+
 DataSourceReference returns DataSourceReference:
 	InsideInputPinReference |
 	OutsideOutputPinReference
@@ -130,16 +157,4 @@ OutsideInputPinReference returns OutsideInputPinReference:
 ;
 InsideOutputPinReference returns InsideOutputPinReference:
 	'self' '.' outputPin=[OutputPin]
-;
-
-@Override
-AssignableAccessExpression returns ConstraintModel::ReferenceExpression:
-	super |
-	InsideOutputPinReference
-;
-
-@Override
-PrimaryExpression returns ConstraintModel::Expression:
-	super | 
-	InsideInputPinReference
 ;

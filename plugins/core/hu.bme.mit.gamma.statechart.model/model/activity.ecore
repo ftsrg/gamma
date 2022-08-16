@@ -8,4 +8,22 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="trigger" lowerBound="1"
         eType="ecore:EClass interface.ecore#//Trigger" containment="true"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ActivityControllerPort" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NamedElement">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="activity" eType="#//ActivityDefinition"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="InstanceActivityControllerPortReference">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="instance" lowerBound="1"
+        eType="ecore:EClass composite.ecore#//ComponentInstance"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="port" lowerBound="1" eType="#//ActivityControllerPort"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ActivityControllerPortConnection">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="provided" lowerBound="1"
+        eType="ecore:EClass composite.ecore#//ComponentInstance"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="required" lowerBound="1"
+        eType="#//InstanceActivityControllerPortReference" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="RunActivityAction" eSuperTypes="../../hu.bme.mit.gamma.action.model/model/action.ecore#//Statement">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="activity" lowerBound="1"
+        eType="#//ActivityControllerPort"/>
+  </eClassifiers>
 </ecore:EPackage>
