@@ -70,7 +70,7 @@ class JavaUtil {
 		return true
 	}
 	
-	def boolean containsOne(Collection<?> lhs, Iterable<?> rhs) {
+	def boolean containsAny(Collection<?> lhs, Iterable<?> rhs) {
 		for (element : rhs) {
 			if (lhs.contains(element)) {
 				return true
@@ -80,7 +80,7 @@ class JavaUtil {
 	}
 	
 	def boolean containsNone(Collection<?> lhs, Iterable<?> rhs) {
-		return !lhs.containsOne(rhs)
+		return !lhs.containsAny(rhs)
 	}
 	
 	def <T> T getOnlyElement(Iterable<T> collection) {
