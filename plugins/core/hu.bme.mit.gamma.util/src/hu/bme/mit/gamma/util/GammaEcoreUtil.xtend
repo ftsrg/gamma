@@ -621,11 +621,27 @@ class GammaEcoreUtil {
 		return file.parentFile.projectFile
 	}
 	
+	def int getContainmentLevel(EObject object) {
+		val container = object.eContainer
+		if (container === null) {
+			return 0
+		}
+		return container.containmentLevel + 1
+	}
+	
 	def getIndex(EObject object) {
 		val containingFeature = object.eContainingFeature
 		val container = object.eContainer
 		val list = container.eGet(containingFeature) as List<EObject>
 		return list.indexOf(object)
+	}
+	
+	def getIndexOrZero(EObject object) {
+		try {
+			return object.index
+		} catch (Exception e) {
+			return 0
+		}
 	}
 	
 	def isLast(EObject object) {
