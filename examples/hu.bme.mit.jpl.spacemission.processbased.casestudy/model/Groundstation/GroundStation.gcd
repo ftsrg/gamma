@@ -25,7 +25,7 @@ statechart GroundStation [
 	port pingSource : provides PingSource
 	port stationControl : provides StationControl
 	
-	activity-port receiveData : ReceiveData
+	//activity-port receiveData : ReceiveData
 ] {
 	timeout pingTimeout
 	timeout autoStart
@@ -37,7 +37,7 @@ statechart GroundStation [
 		}
 		state Operation {
 			entry / raise pingSource.ping; set pingTimeout := 10s;
-			do / run receiveData; 
+			//do / run receiveData; 
 		}
 	}
 	

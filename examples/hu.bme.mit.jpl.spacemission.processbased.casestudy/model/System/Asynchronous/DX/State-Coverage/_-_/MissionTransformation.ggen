@@ -1,5 +1,5 @@
 import "Interface/Interfaces.gcd"
-import "System/Synchronous/Mission.gcd"
+import "System/Asynchronous/Mission.gcd"
 
 analysis {
 	component : Mission

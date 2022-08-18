@@ -14,12 +14,9 @@ sync SpacecraftWrapper [
 	bind pingSource -> spacecraft.pingSource
 	bind dataSource -> spacecraft.dataSource
 		
-	//channel [ transmitData.controller ] -o)- [ spacecraft.transmitDataController ]
 	channel [ transmitData.connection ] -o)- [ spacecraft.transmitDataActivityInterface ]
-	
-	//channel [ rechargeBattery.controller ] -o)- [ spacecraft.rechargeBatteryController ]
 	channel [ rechargeBattery.connection ] -o)- [ spacecraft.rechargeBatteryActivityInterface ]
 	
-	connect rechargeBattery -> spacecraft.rechargeBattery
-	connect transmitData -> spacecraft.transmitData
+	//connect rechargeBattery -> spacecraft.rechargeBattery
+	//connect transmitData -> spacecraft.transmitData
 }

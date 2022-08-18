@@ -1,4 +1,4 @@
-package mo_antivalchk
+package groundstation
 
 import "Interface/Interfaces.gcd"
 import "Groundstation/GroundStation.gcd"
@@ -15,5 +15,5 @@ sync GroundStationWrapper [
 	bind pingSource -> groundStation.pingSource
 	bind stationControl -> groundStation.stationControl
 	
-	connect receiveData -> groundStation.receiveData
+	//connect receiveData -> groundStation.receiveData
 }
