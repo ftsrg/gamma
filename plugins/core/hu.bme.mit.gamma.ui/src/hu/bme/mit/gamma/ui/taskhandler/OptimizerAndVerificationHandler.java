@@ -79,6 +79,8 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 		
 		// Only one property package - we will add the formulas one by one
 		propertyPackages.add(mainPropertyPackage);
+		// As such, it is unnecessary to optimize the generated trace(s)
+		verification.setOptimize(false);
 		
 		for (CommentableStateFormula formula : formulas) {
 			checkableFormulas.clear();

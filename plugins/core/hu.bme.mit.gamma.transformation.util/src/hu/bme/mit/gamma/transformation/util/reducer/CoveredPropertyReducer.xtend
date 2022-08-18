@@ -93,6 +93,7 @@ class CoveredPropertyReducer {
 			val raisedPort = raiseEventAct.port
 			val rasiedEvent = raiseEventAct.event
 			val arguments = raiseEventAct.arguments
+			
 			if (topComponentPort.helperEquals(raisedPort) && event.helperEquals(rasiedEvent)) {
 				return arguments.get(parameterIndex).clone
 			}
@@ -107,6 +108,7 @@ class CoveredPropertyReducer {
 		for (raiseEventAct : step.outEvents) {
 			val raisedPort = raiseEventAct.port
 			val rasiedEvent = raiseEventAct.event
+			
 			if (topComponentPort.helperEquals(raisedPort) && event.helperEquals(rasiedEvent)) {
 				return createTrueExpression
 			}
@@ -121,6 +123,7 @@ class CoveredPropertyReducer {
 		for (stateConfiguration : step.instanceStateConfigurations) {
 			val stateInstance = stateConfiguration.instance.lastInstance // Only one expected
 			val stateVariable = stateConfiguration.state
+			
 			if (traceability.contains(instance, stateInstance) && state.helperEquals(stateVariable)) {
 				return createTrueExpression
 			}
@@ -136,12 +139,15 @@ class CoveredPropertyReducer {
 			val variableReference = variableState.variableReference
 			val stateInstance = variableReference.instance.lastInstance // Only one expected
 			val stateVariable = variableReference.variableDeclaration
+			
 			if (traceability.contains(instance, stateInstance) && variable.helperEquals(stateVariable)) {
 				val value = variableState.value
 				return value.clone
 			}
 		}
 		throw new IllegalStateException('''Not found variable: «variable.name»''')
+		// Maybe Theta did not return the necessary variables, that is why they cannot be found in the trace
+		// (This is a known Theta-bug). On the other hand, UPPAAL always returns all variables
 	}
 		
 }
