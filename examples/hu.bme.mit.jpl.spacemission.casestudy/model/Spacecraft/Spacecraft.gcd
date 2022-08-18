@@ -41,13 +41,16 @@ statechart Spacecraft [
 	transition from Entry1 to WaitingPing
 	transition from WaitingPing to Transmitting when connection.ping [recharging = false]
 	transition from Entry3 to Sending
-	transition from Sending to Sending when timeout transmitTimeout [data > 1 and batteryVariable >= 40] / data := data - 1; raise connection.data;
+	transition from Sending to Sending when timeout transmitTimeout [data > 1 and batteryVariable >= 40] / data :=
+		data - 1; raise connection.data;
 	transition from Entry4 to Consuming
-	transition from Consuming to Consuming when timeout consumeTimeout [batteryVariable >= 40] / batteryVariable := batteryVariable - 1;
+	transition from Consuming to Consuming when timeout consumeTimeout [batteryVariable >= 40] / batteryVariable :=
+		batteryVariable - 1;
 	transition from Transmitting to WaitingPing when timeout consumeTimeout [batteryVariable < 40]
 	transition from Transmitting to WaitingPing when timeout transmitTimeout [data <= 1 or batteryVariable < 40]
 	transition from Entry2 to NotRecharging
 	transition from NotRecharging to Recharging when timeout consumeTimeout [batteryVariable < 80]
-	transition from Recharging to Recharging when timeout rechargeTimeout [batteryVariable < 100] / batteryVariable := batteryVariable + 1;
+	transition from Recharging to Recharging when timeout rechargeTimeout [batteryVariable < 100] / batteryVariable :=
+		batteryVariable + 1;
 	transition from Recharging to NotRecharging when timeout rechargeTimeout [batteryVariable = 100]
 }
