@@ -2,7 +2,7 @@ package groundstation
 import "Interface/Interfaces.gcd"
 statechart GroundStation [
 	port connection : requires DataSource
-	port _control : requires StationControl
+	port control : requires StationControl
 ] {
 	timeout pingTimeout
 	timeout autoStart
@@ -20,10 +20,10 @@ statechart GroundStation [
 		}
 	}
 	transition from Entry1 to Idle
-	transition from Idle to Operation when _control.start
+	transition from Idle to Operation when control.start
 	transition from Idle to Operation when timeout autoStart
 	transition from Operation to Operation when timeout pingTimeout
-	transition from Operation to Idle when _control.shutdown
+	transition from Operation to Idle when control.shutdown
 	transition from Entry2 to Waiting
-	transition from Waiting to Waiting when connection._data
+	transition from Waiting to Waiting when connection.data
 }

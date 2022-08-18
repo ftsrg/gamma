@@ -3,10 +3,10 @@ import "Interface/Interfaces"
 import "Groundstation/GroundStation"
 import "Spacecraft/Spacecraft"
 sync Mission [
-	port _control : requires StationControl
+	port control : requires StationControl
 ] {
 	component station : GroundStation
 	component satellite : Spacecraft
-	bind _control -> station._control
+	bind control -> station.control
 	channel [ satellite.connection ] -o)- [ station.connection ]
 }

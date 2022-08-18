@@ -1,7 +1,7 @@
 package interfaces
 
 interface DataSource {
-	out event _data
+	out event data
 	in event ping
 }
 
