@@ -124,6 +124,7 @@ class EventConnector {
 			}
 		}
 		// Out-event optimization - maybe this should be moved to the SystemReducer?
+		// Only optimizableSimplePorts as out events can trigger in-events upper in the hierarchy
 		for (optimizableSimplePort : optimizableSimplePorts) {
 			for (outEvent : optimizableSimplePort.outputEvents) {
 				val xStsOutEventVariable = mapper.getOutputEventVariable(outEvent, optimizableSimplePort)

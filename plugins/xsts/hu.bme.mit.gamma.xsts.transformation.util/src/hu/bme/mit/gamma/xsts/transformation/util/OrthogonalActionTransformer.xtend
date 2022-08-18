@@ -93,29 +93,21 @@ class OrthogonalActionTransformer {
 			checkState(orthogonalBranches.size == readAndWrittenVariablesOfActions.size)
 			
 			for (orthogonalBranch : orthogonalBranches) {
-				if (orthogonalBranch.needsOrthogonality( // Useful when ort contains an ort
-						readAndWrittenVariablesOfActions, consideredVariables)) {
-					val readAndWrittenVariables = readAndWrittenVariablesOfActions.checkAndGet(orthogonalBranch)
-					val writtenVariables = newHashSet
-					writtenVariables += readAndWrittenVariables.value
-					writtenVariables.retainAll(consideredVariables) // Transforming only considered variables
-					
-					for (writtenVariable : writtenVariables) {
-						val orthogonalVariableDeclarationAction = writtenVariable
-								.createOrthogonalVariableAction(consideredVariables)
-						val orthogonalVariable = orthogonalVariableDeclarationAction.variableDeclaration
-						// Extend name to ensure uniqueness
-						orthogonalVariable.name = orthogonalVariable.name +
-								orthogonalAction.containmentLevel + "_" +
-								orthogonalAction.indexOrZero + "_" + orthogonalBranch.indexOrZero
-						
-						// local _var_ := var
-						setupAction.actions += orthogonalVariableDeclarationAction
-						// Each written var reference is changed to _var_ - note that reads are too
-						orthogonalVariable.change(writtenVariable, orthogonalBranch)
-						// var := _var_
-						commonizeAction.actions += writtenVariable.createAssignmentAction(orthogonalVariable)
-					}
+				val orthogonalizableVariables = orthogonalBranch
+						.getVariablesNeedingOrthogonality(
+							readAndWrittenVariablesOfActions, consideredVariables)
+				for (writtenVariable : orthogonalizableVariables) {
+					val orthogonalVariableDeclarationAction = writtenVariable
+							.createOrthogonalVariableAction(consideredVariables)
+					val orthogonalVariable = orthogonalVariableDeclarationAction.variableDeclaration
+					// Extend name to help with debugging
+					orthogonalVariable.name = orthogonalVariable.name + "_" + orthogonalBranch.indexOrZero
+					// local _var_ := var
+					setupAction.actions += orthogonalVariableDeclarationAction
+					// Each written var reference is changed to _var_ - note that reads are too
+					orthogonalVariable.change(writtenVariable, orthogonalBranch)
+					// var := _var_
+					commonizeAction.actions += writtenVariable.createAssignmentAction(orthogonalVariable)
 				}
 				mainAction.actions += orthogonalBranch
 			}
@@ -159,27 +151,24 @@ class OrthogonalActionTransformer {
 		)
 	}
 	
-	protected def needsOrthogonality(Action orthogonalBranch,
+	protected def getVariablesNeedingOrthogonality(Action orthogonalBranch,
 		Map<Action, Entry<Set<VariableDeclaration>, Set<VariableDeclaration>>> readAndWrittenVariablesOfActions,
 			Collection<VariableDeclaration> consideredVariables) {
 		val readAndWrittenVariables = readAndWrittenVariablesOfActions.checkAndGet(orthogonalBranch)
-		val writtenVariables = newHashSet
+		val writtenVariables = newHashSet // Variables written by this branch
 		writtenVariables += readAndWrittenVariables.value
 		writtenVariables.retainAll(consideredVariables)
+		
+		val otherReadVariables = newHashSet // Variables read by other branches
 		
 		for (otherBranch : readAndWrittenVariablesOfActions.keySet
 				.reject[it === orthogonalBranch]) {
 			val otherReadAndWrittenVariables = readAndWrittenVariablesOfActions.get(otherBranch)
-			val otherReadVariables = newHashSet
 			otherReadVariables += otherReadAndWrittenVariables.key
-			otherReadVariables.retainAll(consideredVariables)
-			
-			if (writtenVariables.containsAny(otherReadVariables)) {
-				return true
-			}
 		}
+		otherReadVariables.retainAll(writtenVariables) // These variables must be orthogonalized
 		
-		return false
+		return otherReadVariables
 	}
 	
 	protected def createOrthogonalVariableAction(VariableDeclaration variable,
