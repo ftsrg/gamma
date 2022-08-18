@@ -36,9 +36,9 @@ analysis {
 }
 
 verification {
-	language : UPPAAL
+	language : XSTS-UPPAAL
 	file : "MonitoredCrossroad-XSTS.xml"
 	property-file : ".MonitoredCrossroad-XSTS.gpd"
-	optimize : true
+	optimize-model : true
 	test-language : java
 }
