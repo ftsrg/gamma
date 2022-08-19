@@ -54,12 +54,17 @@ class AnalysisModelPreprocessor {
 			String targetFolderUri, String fileName, boolean optimize) {
 		val fileNameExtensionless = fileName.extensionlessName
 		
+		val activityPreprocessor = new ActivityConnectionPreprocessor
+		activityPreprocessor.unfoldActivityConnections(gammaPackage.components.head)
+		
 		// Unfolding the given system
 		val modelUnfolder = new ModelUnfolder(gammaPackage)
 		val trace = modelUnfolder.unfold
 		var _package = trace.package
 		val component = trace.topComponent
 		checkState(!component.asynchronousStatechart) // ModelUnfolder handles them
+		
+		_package.interfaces += ActivityConnectionPreprocessor.controllerInterface
 		
 		val name = component.name
 		// If it is an atomic component, we wrap it

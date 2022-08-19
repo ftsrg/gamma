@@ -1,7 +1,6 @@
 package spacecraft
 import "Interface/Interfaces.gcd"
 
-	
 activity TransmitData [
 	port connection : provides TransmitDataActivityInterface
 ] {
@@ -74,14 +73,11 @@ statechart Spacecraft [
 	port pingSource : requires PingSource
 	port dataSource : provides DataSource
 	
-	//port transmitDataController : requires TransmitData::controller
-	//port rechargeBatteryController : requires RechargeBattery::controller
-	
 	port transmitDataActivityInterface : requires TransmitDataActivityInterface
 	port rechargeBatteryActivityInterface : requires RechargeBatteryActivityInterface
 	
-	//activity-port transmitData : TransmitData
-	//activity-port rechargeBattery : RechargeBattery
+	activity-port transmitData : TransmitData
+	activity-port rechargeBattery : RechargeBattery
 ] {
 	var data : integer := 100
 	var batteryValue : integer := 100
@@ -90,14 +86,14 @@ statechart Spacecraft [
 		initial CommunicationEntry
 		state WaitingPing
 		state Transmitting {
-			//do / run transmitData;
+			do / run transmitData;
 		}
 	}
 	region Battery {
 		initial BatteryEntry
 		state NotRecharging
 		state Recharging {
-			//do / run rechargeBattery;
+			do / run rechargeBattery;
 		}
 	}
 	

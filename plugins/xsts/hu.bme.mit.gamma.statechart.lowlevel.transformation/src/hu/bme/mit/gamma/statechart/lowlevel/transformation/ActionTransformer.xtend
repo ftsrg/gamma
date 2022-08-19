@@ -39,6 +39,8 @@ import java.util.Collection
 import java.util.List
 
 import static extension com.google.common.collect.Iterables.getOnlyElement
+import hu.bme.mit.gamma.activity.model.ExecuteActivityAction
+import hu.bme.mit.gamma.statechart.ActivityComposition.RunActivityAction
 
 class ActionTransformer {
 	// Auxiliary objects
@@ -253,6 +255,14 @@ class ActionTransformer {
 			.createAssignment(createTrueExpression)
 		
 		return result
+	}
+	
+	protected def dispatch List<Action> transformAction(ExecuteActivityAction action) {
+		throw new UnsupportedOperationException("ExecuteActivityAction are not supported: " + action)
+	}
+	
+	protected def dispatch List<Action> transformAction(RunActivityAction action) {
+		throw new UnsupportedOperationException("RunActivityAction are not supported: " + action)
 	}
 
 	protected def dispatch List<Action> transformAction(SetTimeoutAction action) {
