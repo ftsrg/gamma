@@ -306,8 +306,9 @@ public class StatechartModelDerivedFeatures extends ActivityModelDerivedFeatures
 		return topComponentArguments;
 	}
 	
-	public static boolean isUnfolded(Component component) {
-		return isUnfolded(getContainingPackage(component));
+	public static boolean isUnfolded(EObject object) {
+		return isUnfolded(
+				getContainingPackage(object));
 	}
 	
 	public static boolean isUnfolded(Package gammaPackage) {
