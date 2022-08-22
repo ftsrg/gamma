@@ -62,6 +62,8 @@ import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeature
 import static extension hu.bme.mit.gamma.xsts.transformation.util.XstsNamings.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.XstsNamings.*
 import hu.bme.mit.gamma.statechart.lowlevel.model.Flow
+import hu.bme.mit.gamma.xsts.model.Action
+import hu.bme.mit.gamma.statechart.lowlevel.model.ActivityDefinition
 
 class LowlevelActivityToXstsTransformer {
 	// Transformation-related extensions
@@ -73,6 +75,7 @@ class LowlevelActivityToXstsTransformer {
 	protected final extension ExpressionTransformer expressionTransformer
 	protected final extension VariableDeclarationTransformer variableDeclarationTransformer
 	protected final extension ActivityNodeTransformer activityNodeTransformer	
+	protected final extension ActivityInitialiser activityInitialiser
 	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension XstsActionUtil actionFactory = XstsActionUtil.INSTANCE
 	protected final extension XstsOptimizer optimizer = XstsOptimizer.INSTANCE
@@ -140,6 +143,7 @@ class LowlevelActivityToXstsTransformer {
 		this.statements = transformation.transformationStatements
 		
 		this.activityNodeTransformer = new ActivityNodeTransformer(this.engine, this.trace)
+		this.activityInitialiser = new ActivityInitialiser(this.trace)
 		
 		this.optimize = optimize
 		if (optimize) {
@@ -169,16 +173,41 @@ class LowlevelActivityToXstsTransformer {
 		getOutEventEnvironmentalActionRule.fireAllCurrent
 		
 		getActivityNodeTransitionsRule.fireAllCurrent
-		
-		val xStsMergedAction = createNonDeterministicAction
-		xStsMergedAction.actions += xSts.transitions.map [it.action]
-		xSts.changeTransitions(xStsMergedAction.wrap)
-	
+				
+		xSts.changeTransitions(wrapActivityActions.wrap)
 		xSts.optimizeXSts
 		xSts.fillNullTransitions
 		handleTransientAndResettableVariableAnnotations
 		// The created EMF models are returned
 		return new SimpleEntry<XSTS, L2STrace>(xSts, trace.getTrace)
+	}
+	
+	private def wrapActivityActions() {
+		val activity = _package.components.head as ActivityDefinition
+		val controller = activity.activityControllerEvent
+				
+		val runAction = createNonDeterministicAction => [
+			it.actions += xSts.transitions.map [it.action]
+		]
+		val resetAction = activity.createInitialisationAction
+		
+		// should we run activity in the first cycle as well?
+		
+		createIfAction( // if
+			controller.isActiveExpression.transformExpression, // activity is enabled
+			createIfAction( // then
+				controller.isRaisedExpression.transformExpression, // if this is the first cycle
+				resetAction, // reset activity
+				runAction // otherwise run activity
+			)
+		)
+	}
+		
+	private def getIsActiveExpression(EventDeclaration declaration) {
+		declaration.parameters.get(0).createReferenceExpression // boolean parameter
+	}
+	private def getIsRaisedExpression(EventDeclaration declaration) {
+		declaration.isRaised.createReferenceExpression
 	}
 	
 	private def getActivityNodesRule() {
@@ -272,7 +301,7 @@ class LowlevelActivityToXstsTransformer {
 	}
 	
 	protected def isNotOptimizable(EventDeclaration lowlevelEvent) {
-		return !optimize || referredEvents.contains(lowlevelEvent)
+		return !optimize || lowlevelEvent.isActivityDerivedEvent || referredEvents.contains(lowlevelEvent)
 	}
 	
 	protected def isNotOptimizable(VariableDeclaration lowlevelVariable) {

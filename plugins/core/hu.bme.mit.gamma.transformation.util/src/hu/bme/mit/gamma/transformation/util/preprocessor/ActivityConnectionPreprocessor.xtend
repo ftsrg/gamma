@@ -198,6 +198,7 @@ class ActivityConnectionPreprocessor {
 				it.interface = getControllerInterface
 				it.realizationMode = RealizationMode.PROVIDED
 			]
+			it.annotations += activityCompositionFactory.createActivityControllerPortAnnotation
 		]
 		
 		trace.put(activity, port)

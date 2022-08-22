@@ -37,6 +37,8 @@
   <eClassifiers xsi:type="ecore:EClass" name="Port" eSuperTypes="#//EventSource">
     <eStructuralFeatures xsi:type="ecore:EReference" name="interfaceRealization" lowerBound="1"
         eType="#//InterfaceRealization" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="annotations" upperBound="-1"
+        eType="#//PortAnnotation" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="InterfaceRealization">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="realizationMode" eType="#//RealizationMode"/>
@@ -97,4 +99,5 @@
         eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
         containment="true"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="PortAnnotation" abstract="true"/>
 </ecore:EPackage>

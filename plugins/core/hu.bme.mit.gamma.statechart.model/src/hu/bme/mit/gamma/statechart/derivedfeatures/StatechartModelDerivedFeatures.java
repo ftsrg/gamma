@@ -32,8 +32,6 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
 
 import hu.bme.mit.gamma.action.model.Action;
 import hu.bme.mit.gamma.activity.derivedfeatures.ActivityModelDerivedFeatures;
-import hu.bme.mit.gamma.activity.model.ActivityNode;
-import hu.bme.mit.gamma.activity.model.CompositeNode;
 import hu.bme.mit.gamma.expression.model.ArgumentedElement;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.ElseExpression;
@@ -43,6 +41,8 @@ import hu.bme.mit.gamma.expression.model.FunctionDeclaration;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
 import hu.bme.mit.gamma.expression.model.TypeDefinition;
+import hu.bme.mit.gamma.statechart.ActivityComposition.ActivityControllerPortAnnotation;
+import hu.bme.mit.gamma.statechart.ActivityComposition.ActivityDerivedAnnotation;
 import hu.bme.mit.gamma.statechart.composite.AbstractAsynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter;
@@ -253,6 +253,14 @@ public class StatechartModelDerivedFeatures extends ActivityModelDerivedFeatures
 			}
 		}
 		return true;
+	}
+	
+	public static boolean isActivityDerivedPort(Port port) {
+		return port.getAnnotations().stream().anyMatch(annotation -> annotation instanceof ActivityDerivedAnnotation);
+	}
+	
+	public static boolean isActivityControllerPort(Port port) {
+		return port.getAnnotations().stream().anyMatch(annotation -> annotation instanceof ActivityControllerPortAnnotation);
 	}
 	
 	public static boolean isInternal(InstancePortReference port) {

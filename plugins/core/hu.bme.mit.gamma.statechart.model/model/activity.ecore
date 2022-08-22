@@ -26,4 +26,6 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="activity" lowerBound="1"
         eType="#//ActivityControllerPort"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ActivityDerivedAnnotation" abstract="true"/>
+  <eClassifiers xsi:type="ecore:EClass" name="ActivityControllerPortAnnotation" eSuperTypes="#//ActivityDerivedAnnotation interface.ecore#//PortAnnotation"/>
 </ecore:EPackage>

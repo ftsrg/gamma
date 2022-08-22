@@ -107,6 +107,12 @@ class ActivityToLowlevelTransformer {
 			// Both in and out events are transformed to a boolean VarDecl with additional parameters
 			for (eventDeclaration : port.allEventDeclarations) {
 				val lowlevelEventDeclarations = eventDeclaration.transform(port)
+				if (port.isActivityControllerPort) {
+					for (event : lowlevelEventDeclarations) {
+						event.annotations += createActivityControllerEventAnnotation
+					}
+				}
+				
 				lowlevelActivity.eventDeclarations += lowlevelEventDeclarations
 				if (eventDeclaration.direction == EventDirection.INTERNAL) {
 					// Tracing

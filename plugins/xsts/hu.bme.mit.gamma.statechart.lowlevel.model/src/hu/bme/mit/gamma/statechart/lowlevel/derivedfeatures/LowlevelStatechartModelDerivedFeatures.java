@@ -22,6 +22,9 @@ import java.util.stream.Collectors;
 import org.eclipse.emf.ecore.EObject;
 
 import hu.bme.mit.gamma.action.derivedfeatures.ActionModelDerivedFeatures;
+import hu.bme.mit.gamma.statechart.lowlevel.model.ActivityControllerEventAnnotation;
+import hu.bme.mit.gamma.statechart.lowlevel.model.ActivityDefinition;
+import hu.bme.mit.gamma.statechart.lowlevel.model.ActivityDerivedAnnotation;
 import hu.bme.mit.gamma.statechart.lowlevel.model.CompositeElement;
 import hu.bme.mit.gamma.statechart.lowlevel.model.DeepHistoryState;
 import hu.bme.mit.gamma.statechart.lowlevel.model.EventDeclaration;
@@ -48,6 +51,14 @@ public class LowlevelStatechartModelDerivedFeatures extends ActionModelDerivedFe
 		StatechartDefinition statechart = getStatechart(lowlevelEventDeclaration);
 		List<EventDeclaration> internalEventDeclarations = statechart.getInternalEventDeclarations();
 		return internalEventDeclarations.contains(lowlevelEventDeclaration);
+	}
+	
+	public static boolean isActivityDerivedEvent(EventDeclaration lowlevelEventDeclaration) {
+		return lowlevelEventDeclaration.getAnnotations().stream().anyMatch(annotation -> annotation instanceof ActivityDerivedAnnotation);
+	}
+	
+	public static boolean isActivityControllerEvent(EventDeclaration lowlevelEventDeclaration) {
+		return lowlevelEventDeclaration.getAnnotations().stream().anyMatch(annotation -> annotation instanceof ActivityControllerEventAnnotation);
 	}
 	
 	public static EventDeclaration getInternalEventPair(EventDeclaration lowlevelEventDeclaration) {
@@ -302,6 +313,10 @@ public class LowlevelStatechartModelDerivedFeatures extends ActionModelDerivedFe
 			priorites.add(lowlevelTransition.getPriority());
 		}
 		return priorites.size() == 1;
+	}
+	
+	public static EventDeclaration getActivityControllerEvent(ActivityDefinition activity) {
+		return activity.getEventDeclarations().stream().filter(event -> isActivityControllerEvent(event)).findFirst().orElseThrow();
 	}
 	
 }

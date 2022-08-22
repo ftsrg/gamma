@@ -98,6 +98,8 @@
         eType="#//Component" eOpposite="#//Component/eventDeclarations"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="persistency" lowerBound="1"
         eType="#//Persistency"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="annotations" upperBound="-1"
+        eType="#//EventAnnotation" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Transition">
     <eStructuralFeatures xsi:type="ecore:EReference" name="source" lowerBound="1"
@@ -198,4 +200,7 @@
         eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
         containment="true"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="EventAnnotation" abstract="true"/>
+  <eClassifiers xsi:type="ecore:EClass" name="ActivityDerivedAnnotation" abstract="true"/>
+  <eClassifiers xsi:type="ecore:EClass" name="ActivityControllerEventAnnotation" eSuperTypes="#//ActivityDerivedAnnotation #//EventAnnotation"/>
 </ecore:EPackage>
