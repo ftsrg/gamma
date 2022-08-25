@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.eclipse.emf.ecore.EObject;
 
@@ -59,6 +60,7 @@ import hu.bme.mit.gamma.expression.model.MultiplyExpression;
 import hu.bme.mit.gamma.expression.model.NotExpression;
 import hu.bme.mit.gamma.expression.model.NullaryExpression;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
+import hu.bme.mit.gamma.expression.model.ParametricElement;
 import hu.bme.mit.gamma.expression.model.RationalLiteralExpression;
 import hu.bme.mit.gamma.expression.model.RationalTypeDefinition;
 import hu.bme.mit.gamma.expression.model.RecordAccessExpression;
@@ -538,16 +540,24 @@ public class ExpressionUtil {
 	
 	// Extract parameters
 	
-	public List<ConstantDeclaration> extractParamaters(
+	public List<ConstantDeclaration> extractParameters(ParametricElement parametricElement,
+			List<String> names, List<? extends Expression> arguments) {
+		return extractParameters(parametricElement.getParameterDeclarations(), names, arguments);
+	}
+	
+	public List<ConstantDeclaration> extractParameters(
 			List<? extends ParameterDeclaration> parameters, List<String> names,
 			List<? extends Expression> arguments) {
 		List<ConstantDeclaration> constants = new ArrayList<ConstantDeclaration>();
 		int size = parameters.size();
 		for (int i = 0; i < size; i++) {
 			ParameterDeclaration parameter = parameters.get(i);
+			Expression argument = arguments.get(i);
+			
 			Type type = ecoreUtil.clone(parameter.getType());
 			String name = names.get(i);
-			Expression value = ecoreUtil.clone(arguments.get(i));
+			Expression value = ecoreUtil.clone(argument);
+			
 			ConstantDeclaration constant = factory.createConstantDeclaration();
 			constant.setName(name);
 			constant.setType(type);
@@ -557,6 +567,31 @@ public class ExpressionUtil {
 			ecoreUtil.change(constant, parameter, parameter.eContainer());
 		}
 		return constants;
+	}
+	
+	public void inlineParameters(ParametricElement parametricElement,
+			List<? extends Expression> arguments) {
+		inlineParameters(parametricElement.getParameterDeclarations(), arguments);
+	}
+	
+	public void inlineParameters(List<? extends ParameterDeclaration> parameters,
+				List<? extends Expression> arguments) {
+		int size = parameters.size();
+		for (int i = 0; i < size; i++) {
+			ParameterDeclaration parameter = parameters.get(i);
+			Expression argument = arguments.get(i);
+			
+			ParametricElement parametricElement = ecoreUtil.getContainerOfType(parameter, ParametricElement.class);
+			List<DirectReferenceExpression> references = ecoreUtil
+					.getAllContentsOfType(parametricElement, DirectReferenceExpression.class).stream()
+					.filter(it -> it.getDeclaration() == parameter).collect(Collectors.toList());
+			for (DirectReferenceExpression reference : references) {
+				Expression value = ecoreUtil.clone(argument);
+				ecoreUtil.replace(value, reference);
+			}
+			
+			ecoreUtil.remove(parameter);
+		}
 	}
 	
 	// Initial values of types
