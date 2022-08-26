@@ -577,6 +577,11 @@ class GammaEcoreUtil {
 	
 	def getPlatformUri(File file) {
 		val projectFile = file.parentFile.projectFile
+		if (projectFile === null) {
+			throw new IllegalStateException("Containing project not found for " + file.absolutePath +
+				". Add the artifacts into a valid Eclipse project containing a .project file.")
+		}
+		
 		val projectName = file.projectName
 		val location = projectName +
 			file.toString.substring(projectFile.toString.length)
@@ -614,6 +619,10 @@ class GammaEcoreUtil {
 	}
 	
 	def File getProjectFile(File file) {
+		if (file === null) {
+			return null
+		}
+		
 		val containedFileNames = newHashSet
 		val listedFiles = file.listFiles
 		if (!listedFiles.nullOrEmpty) {
@@ -627,6 +636,10 @@ class GammaEcoreUtil {
 	
 	def String getProjectName(File file) {
 		val projectFile = file.projectFile
+		if (projectFile === null) {
+			return null
+		}
+		
 		val _projectFile = projectFile.listFiles
 				.filter[it.name == ".project"].head
 		
