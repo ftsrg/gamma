@@ -38,6 +38,7 @@ class GammaEcoreUtil {
 	public static final GammaEcoreUtil INSTANCE = new GammaEcoreUtil
 	protected new() {}
 	//
+	protected final FileUtil fileUtil = FileUtil.INSTANCE
 	protected final Logger logger = Logger.getLogger("GammaLogger")
 	//
 	
@@ -576,7 +577,15 @@ class GammaEcoreUtil {
 	
 	def getPlatformUri(File file) {
 		val projectFile = file.parentFile.projectFile
-		val location = file.toString.substring(projectFile.parent.length)
+		if (projectFile === null) {
+			throw new IllegalStateException("Containing project not found for " + file.absolutePath +
+				". Add the artifacts into a valid Eclipse project containing a .project file.")
+		}
+		
+		val projectName = file.projectName
+		val location = projectName +
+			file.toString.substring(projectFile.toString.length)
+		
 		return URI.createPlatformResourceURI(location, true)
 	}
 	
@@ -610,6 +619,10 @@ class GammaEcoreUtil {
 	}
 	
 	def File getProjectFile(File file) {
+		if (file === null) {
+			return null
+		}
+		
 		val containedFileNames = newHashSet
 		val listedFiles = file.listFiles
 		if (!listedFiles.nullOrEmpty) {
@@ -619,6 +632,23 @@ class GammaEcoreUtil {
 			return file
 		}
 		return file.parentFile.projectFile
+	}
+	
+	def String getProjectName(File file) {
+		val projectFile = file.projectFile
+		if (projectFile === null) {
+			return null
+		}
+		
+		val _projectFile = projectFile.listFiles
+				.filter[it.name == ".project"].head
+		
+		val xml = fileUtil.loadXml(_projectFile)
+		
+		val nameNode = xml.getElementsByTagName("name").item(0)
+		val name = nameNode.textContent
+		
+		return name
 	}
 	
 	def int getContainmentLevel(EObject object) {

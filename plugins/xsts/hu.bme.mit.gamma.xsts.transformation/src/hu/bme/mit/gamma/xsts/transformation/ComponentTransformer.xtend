@@ -944,7 +944,7 @@ class ComponentTransformer {
 		parameters += component.parameterDeclarations // So delete does not mess the list up
 		// Theta back-annotation retrieves the argument values from the constant list
 		
-		_package.constantDeclarations += parameters.extractParamaters(
+		_package.constantDeclarations += parameters.extractParameters(
 				parameters.map['''_«it.name»_«it.hashCode.abs»'''], arguments)
 		
 		// Deleting after the index settings have been completed (otherwise the index always returns 0)

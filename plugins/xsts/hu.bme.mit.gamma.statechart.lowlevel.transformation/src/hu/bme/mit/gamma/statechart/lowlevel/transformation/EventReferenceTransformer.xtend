@@ -127,6 +127,10 @@ class EventReferenceTransformer {
 		val timeoutSettings = gammaStatechart.getAllContentsOfType(SetTimeoutAction)
 		val correctTimeoutSetting = timeoutSettings.filter[it.timeoutDeclaration == timeoutDeclaration]
 		val times = correctTimeoutSetting.map[it.time].toList
+		if (times.empty) {
+			throw new IllegalArgumentException("No value for " + timeoutDeclaration)
+		}
+		
 		checkState(times.allHelperEquals || // Exactly the same (e.g., with variables)
 			times.map[it.evaluateMilliseconds.toIntegerLiteral].allHelperEquals, // Same value
 			"Not one setting to the same timeout declaration: " + correctTimeoutSetting)
