@@ -86,21 +86,16 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="xStsVariable" lowerBound="1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclaration"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="FlowTrace" eSuperTypes="#//AbstractTrace">
+  <eClassifiers xsi:type="ecore:EClass" name="SuccessionTrace" eSuperTypes="#//AbstractTrace">
     <eStructuralFeatures xsi:type="ecore:EReference" name="xStsVariable" lowerBound="1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclaration"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="flow" lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.lowlevel.model/model/model.ecore#//Flow"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="succession" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.lowlevel.model/model/model.ecore#//Succession"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ActivityNodeTransitionTrace" eSuperTypes="#//AbstractTrace">
     <eStructuralFeatures xsi:type="ecore:EReference" name="activityNode" lowerBound="1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.lowlevel.model/model/model.ecore#//ActivityNode"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="xStsAction" lowerBound="1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.xsts.model/model/model.ecore#//NonDeterministicAction"/>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="DataContainerTrace" eSuperTypes="#//AbstractTrace">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="xStsVariable" lowerBound="1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclaration"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="dataContainer" lowerBound="1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.lowlevel.model/model/model.ecore#//DataContainer"/>
   </eClassifiers>
 </ecore:EPackage>

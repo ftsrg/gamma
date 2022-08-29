@@ -66,17 +66,13 @@
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//ActivityNodeTrace/activityNode"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//ActivityNodeTrace/xStsVariable"/>
     </genClasses>
-    <genClasses ecoreClass="traceability.ecore#//FlowTrace">
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//FlowTrace/xStsVariable"/>
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//FlowTrace/flow"/>
+    <genClasses ecoreClass="traceability.ecore#//SuccessionTrace">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//SuccessionTrace/xStsVariable"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//SuccessionTrace/succession"/>
     </genClasses>
     <genClasses ecoreClass="traceability.ecore#//ActivityNodeTransitionTrace">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//ActivityNodeTransitionTrace/activityNode"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//ActivityNodeTransitionTrace/xStsAction"/>
-    </genClasses>
-    <genClasses ecoreClass="traceability.ecore#//DataContainerTrace">
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//DataContainerTrace/xStsVariable"/>
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//DataContainerTrace/dataContainer"/>
     </genClasses>
   </genPackages>
 </genmodel:GenModel>

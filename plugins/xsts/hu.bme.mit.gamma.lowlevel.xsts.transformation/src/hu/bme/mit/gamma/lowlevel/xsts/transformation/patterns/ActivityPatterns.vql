@@ -22,10 +22,6 @@ pattern initialNodes(node : InitialNode) {
 	InitialNode(node);
 }
 
-pattern flows(flow : Flow) {
-	Flow(flow);
-}
-
-pattern dataContainers(dataContainer : DataContainer) {
-	DataContainer(dataContainer);
+pattern successions(succession : Succession) {
+	Succession(succession);
 }

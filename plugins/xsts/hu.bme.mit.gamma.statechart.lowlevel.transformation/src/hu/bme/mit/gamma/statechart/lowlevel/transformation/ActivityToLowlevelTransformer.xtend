@@ -37,6 +37,9 @@ import static hu.bme.mit.gamma.xsts.transformation.util.LowlevelNamings.*
 
 import static extension hu.bme.mit.gamma.activity.derivedfeatures.ActivityModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
+import hu.bme.mit.gamma.activity.model.InputPin
+import hu.bme.mit.gamma.activity.model.OutputPin
+import hu.bme.mit.gamma.activity.model.Flow
 
 class ActivityToLowlevelTransformer {
 // Auxiliary objects
@@ -129,50 +132,48 @@ class ActivityToLowlevelTransformer {
 			lowlevelActivity.flows += flow.transformFlow
 		}
 		
+		for (flow : activity.flows) {
+			lowlevelActivity.finalizeDataBindings(flow)
+		}
+		
 		return lowlevelActivity
 	}
 	
-	def transformPin(Pin pin) {		
+	def transformPin(Pin pin) {
 		if (trace.isPinMapped(pin)) {
 			return trace.getPin(pin)
 		}
 		
-		val lowlevelPin = createVariableDeclaration => [
+		val lowlevelVariable = createVariableDeclaration => [
 			it.name = pin.name
 		]
 		
-		trace.put(pin, lowlevelPin)
+		trace.put(pin, lowlevelVariable)
 		
-		lowlevelPin.type = pin.type.transformType
+		lowlevelVariable.type = pin.type.transformType
 		
-		return lowlevelPin
+		return lowlevelVariable
 	}
 	
-	def dispatch transformFlow(DataFlow flow) {		
-		if (trace.isFlowMapped(flow)) {
-			return trace.getFlow(flow)
-		}
-		
-		val lowlevelFlow = createDataFlow
-		
-		trace.put(flow, lowlevelFlow)
-		
-		val sourcePin = flow.sourcePin
-		val targetPin = flow.targetPin
-		
-		lowlevelFlow.guard = flow.guard?.transformExpression?.wrapIntoMultiaryExpression(createAndExpression)		
-		lowlevelFlow.sourceNode = sourcePin.containingPinnedNode.transformNode
-		lowlevelFlow.targetNode = targetPin.containingPinnedNode.transformNode
-		
-		return lowlevelFlow
-	} 
+	def dispatch finalizeDataBindings(hu.bme.mit.gamma.statechart.lowlevel.model.ActivityDefinition lowlevelActivity, ControlFlow flow) {
+		// NO-OP
+	}
 	
-	def dispatch transformFlow(ControlFlow flow) {
+	def dispatch finalizeDataBindings(hu.bme.mit.gamma.statechart.lowlevel.model.ActivityDefinition lowlevelActivity, DataFlow flow) {		
+		val sourceVariable = flow.sourcePin.transformPin
+		val targetVariable = flow.targetPin.transformPin
+		
+		sourceVariable.change(targetVariable, lowlevelActivity)
+		
+		targetVariable.remove
+	}
+	
+	def transformFlow(Flow flow) { 
 		if (trace.isFlowMapped(flow)) {
 			return trace.getFlow(flow)
 		}
 		
-		val lowlevelFlow = createControlFlow
+		val lowlevelFlow = createSuccession
 		
 		trace.put(flow, lowlevelFlow)
 		
@@ -194,13 +195,13 @@ class ActivityToLowlevelTransformer {
 		
 		trace.put(node, lowlevelNode)
 		
-		lowlevelNode.pins += node.pins.map [
+		lowlevelNode.variableDeclarations += node.pins.map [
 			it.transformPin
 		]
-		lowlevelNode.incomingFlows += node.incomingFlows.map[
+		lowlevelNode.incoming += node.incomingFlows.map[
 			it.transformFlow
 		]
-		lowlevelNode.outgoingFlows += node.outgoingFlows.map[
+		lowlevelNode.outgoing += node.outgoingFlows.map[
 			it.transformFlow
 		]
 		
@@ -218,14 +219,14 @@ class ActivityToLowlevelTransformer {
 		
 		trace.put(node, lowlevelNode)
 		
-		lowlevelNode.pins += node.pins.map [
+		lowlevelNode.variableDeclarations += node.pins.map [
 			it.transformPin
 		]
 		lowlevelNode.action = node.action.transformAction.wrap
-		lowlevelNode.incomingFlows += node.incomingFlows.map[
+		lowlevelNode.incoming += node.incomingFlows.map[
 			it.transformFlow
 		]
-		lowlevelNode.outgoingFlows += node.outgoingFlows.map[
+		lowlevelNode.outgoing += node.outgoingFlows.map[
 			it.transformFlow
 		]
 		
@@ -243,10 +244,10 @@ class ActivityToLowlevelTransformer {
 		
 		trace.put(node, lowlevelNode)
 		
-		lowlevelNode.incomingFlows += node.incomingFlows.map[
+		lowlevelNode.incoming += node.incomingFlows.map[
 			it.transformFlow
 		]
-		lowlevelNode.outgoingFlows += node.outgoingFlows.map[
+		lowlevelNode.outgoing += node.outgoingFlows.map[
 			it.transformFlow
 		]
 		
@@ -264,10 +265,10 @@ class ActivityToLowlevelTransformer {
 		
 		trace.put(node, lowlevelNode)
 		
-		lowlevelNode.incomingFlows += node.incomingFlows.map[
+		lowlevelNode.incoming += node.incomingFlows.map[
 			it.transformFlow
 		]
-		lowlevelNode.outgoingFlows += node.outgoingFlows.map[
+		lowlevelNode.outgoing += node.outgoingFlows.map[
 			it.transformFlow
 		]
 		
@@ -285,10 +286,10 @@ class ActivityToLowlevelTransformer {
 		
 		trace.put(node, lowlevelNode)
 		
-		lowlevelNode.incomingFlows += node.incomingFlows.map[
+		lowlevelNode.incoming += node.incomingFlows.map[
 			it.transformFlow
 		]
-		lowlevelNode.outgoingFlows += node.outgoingFlows.map[
+		lowlevelNode.outgoing += node.outgoingFlows.map[
 			it.transformFlow
 		]
 		
@@ -306,10 +307,10 @@ class ActivityToLowlevelTransformer {
 		
 		trace.put(node, lowlevelNode)
 		
-		lowlevelNode.incomingFlows += node.incomingFlows.map[
+		lowlevelNode.incoming += node.incomingFlows.map[
 			it.transformFlow
 		]
-		lowlevelNode.outgoingFlows += node.outgoingFlows.map[
+		lowlevelNode.outgoing += node.outgoingFlows.map[
 			it.transformFlow
 		]
 		
@@ -327,10 +328,10 @@ class ActivityToLowlevelTransformer {
 		
 		trace.put(node, lowlevelNode)
 		
-		lowlevelNode.incomingFlows += node.incomingFlows.map[
+		lowlevelNode.incoming += node.incomingFlows.map[
 			it.transformFlow
 		]
-		lowlevelNode.outgoingFlows += node.outgoingFlows.map[
+		lowlevelNode.outgoing += node.outgoingFlows.map[
 			it.transformFlow
 		]
 		
@@ -348,10 +349,10 @@ class ActivityToLowlevelTransformer {
 		
 		trace.put(node, lowlevelNode)
 		
-		lowlevelNode.incomingFlows += node.incomingFlows.map[
+		lowlevelNode.incoming += node.incomingFlows.map[
 			it.transformFlow
 		]
-		lowlevelNode.outgoingFlows += node.outgoingFlows.map[
+		lowlevelNode.outgoing += node.outgoingFlows.map[
 			it.transformFlow
 		]
 		
@@ -369,10 +370,10 @@ class ActivityToLowlevelTransformer {
 		
 		trace.put(node, lowlevelNode)
 		
-		lowlevelNode.incomingFlows += node.incomingFlows.map[
+		lowlevelNode.incoming += node.incomingFlows.map[
 			it.transformFlow
 		]
-		lowlevelNode.outgoingFlows += node.outgoingFlows.map[
+		lowlevelNode.outgoing += node.outgoingFlows.map[
 			it.transformFlow
 		]
 				

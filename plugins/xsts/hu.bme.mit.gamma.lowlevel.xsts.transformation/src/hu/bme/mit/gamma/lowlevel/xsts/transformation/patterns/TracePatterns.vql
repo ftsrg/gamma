@@ -50,14 +50,9 @@ pattern activityNodeTransitionTrace(activityNode : ActivityNode, xStsAction : No
 	ActivityNodeTransitionTrace.xStsAction(trace, xStsAction);
 }
 
-pattern flowTrace(flow : Flow, xStsVariable : VariableDeclaration) {
-	FlowTrace.flow(trace, flow);
-	FlowTrace.xStsVariable(trace, xStsVariable);
-}
-
-pattern dataContainerTrace(dataContainer : DataContainer, xStsVariable : VariableDeclaration) {
-	DataContainerTrace.dataContainer(trace, dataContainer);
-	DataContainerTrace.xStsVariable(trace, xStsVariable);
+pattern successionTrace(succession : Succession, xStsVariable : VariableDeclaration) {
+	SuccessionTrace.succession(trace, succession);
+	SuccessionTrace.xStsVariable(trace, xStsVariable);
 }
 
 pattern simpleTransitionTrace(lowlevelSimpleTransition : Transition, xStsTransition : XTransition, 

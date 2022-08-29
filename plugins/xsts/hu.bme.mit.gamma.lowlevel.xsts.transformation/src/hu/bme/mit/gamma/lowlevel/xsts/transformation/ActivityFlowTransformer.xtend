@@ -1,12 +1,10 @@
 package hu.bme.mit.gamma.lowlevel.xsts.transformation
 
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
-import hu.bme.mit.gamma.statechart.lowlevel.model.ControlFlow
-import hu.bme.mit.gamma.statechart.lowlevel.model.DataFlow
-import hu.bme.mit.gamma.statechart.lowlevel.model.Flow
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
+import hu.bme.mit.gamma.statechart.lowlevel.model.Succession
 
 class ActivityFlowTransformer {
 	
@@ -34,32 +32,24 @@ class ActivityFlowTransformer {
 		this.stateAssumptionCreator = new StateAssumptionCreator(this.trace)
 	}
 	
-	private def variable(Flow flow) {
-		return trace.getXStsVariable(flow)		
+	private def variable(Succession succession) {
+		return trace.getXStsVariable(succession)		
 	}
 	
-	private dispatch def sourceNodeVariable(ControlFlow flow) {
-		return trace.getXStsVariable(flow.sourceNode)
+	private dispatch def sourceNodeVariable(Succession succession) {
+		return trace.getXStsVariable(succession.sourceNode)
 	}
 	
-	private dispatch def sourceNodeVariable(DataFlow flow) {
-		return trace.getXStsVariable(flow.sourceNode)
+	private dispatch def targetNodeVariable(Succession succession) {
+		return trace.getXStsVariable(succession.targetNode)
 	}
 	
-	private dispatch def targetNodeVariable(ControlFlow flow) {
-		return trace.getXStsVariable(flow.targetNode)
-	}
-	
-	private dispatch def targetNodeVariable(DataFlow flow) {
-		return trace.getXStsVariable(flow.targetNode)
-	}
-	
-	private def inwardPrecondition(Flow flow) {
-		val flowVariable = flow.variable
-		val nodeVariable = flow.targetNodeVariable
+	private def inwardPrecondition(Succession succession) {
+		val successionVariable = succession.variable
+		val nodeVariable = succession.targetNodeVariable
 		
 		return createAndExpression => [
-			it.operands += createEqualityExpression(flowVariable, createEnumerationLiteralExpression => [
+			it.operands += createEqualityExpression(successionVariable, createEnumerationLiteralExpression => [
 					reference = fullFlowStateEnumLiteral
 				]
 			)
@@ -70,12 +60,12 @@ class ActivityFlowTransformer {
 		]
 	}
 	
-	def transformInwards(Flow flow) {
-		val flowVariable = flow.variable
-		val nodeVariable = flow.targetNodeVariable
+	def transformInwards(Succession succession) {
+		val flowVariable = succession.variable
+		val nodeVariable = succession.targetNodeVariable
 		
 		return createSequentialAction => [
-			it.actions += flow.inwardPrecondition.createAssumeAction
+			it.actions += succession.inwardPrecondition.createAssumeAction
 			it.actions += createAssignmentAction(flowVariable, createEnumerationLiteralExpression => [
 					reference = emptyFlowStateEnumLiteral
 				]
@@ -84,26 +74,18 @@ class ActivityFlowTransformer {
 					reference = runningNodeStateEnumLiteral
 				]
 			)
-				
-			if (flow instanceof DataFlow) {
-				val dataFlow = flow as DataFlow
-				val dataFlowVariable = trace.getDataContainerXStsVariable(dataFlow)
-				val targetDataContainer = dataFlow.targetPin
-				val targetDataContainerVariable = trace.getDataContainerXStsVariable(targetDataContainer)
-				it.actions += createAssignmentAction(targetDataContainerVariable, dataFlowVariable)
-			}
 		]
 	}
 	
-	private def outwardPrecondition(Flow flow) {
-		val flowVariable = flow.variable
-		val nodeVariable = flow.sourceNodeVariable
+	private def outwardPrecondition(Succession succession) {
+		val successionVariable = succession.variable
+		val nodeVariable = succession.sourceNodeVariable
 		
 		return createAndExpression => [
-			if (flow.guard !== null) {
-				it.operands += flow.guard.transformExpression
+			if (succession.guard !== null) {
+				it.operands += succession.guard.transformExpression
 			}
-			it.operands += createEqualityExpression(flowVariable, createEnumerationLiteralExpression => [
+			it.operands += createEqualityExpression(successionVariable, createEnumerationLiteralExpression => [
 					reference = emptyFlowStateEnumLiteral
 				]
 			)
@@ -114,13 +96,13 @@ class ActivityFlowTransformer {
 		]
 	}
 	
-	def transformOutwards(Flow flow) {
-		val flowVariable = flow.variable
-		val nodeVariable = flow.sourceNodeVariable
+	def transformOutwards(Succession succession) {
+		val successionVariable = succession.variable
+		val nodeVariable = succession.sourceNodeVariable
 		
 		return createSequentialAction => [
-			it.actions += flow.outwardPrecondition.createAssumeAction
-			it.actions += createAssignmentAction(flowVariable, createEnumerationLiteralExpression => [
+			it.actions += succession.outwardPrecondition.createAssumeAction
+			it.actions += createAssignmentAction(successionVariable, createEnumerationLiteralExpression => [
 					reference = fullFlowStateEnumLiteral
 				]
 			)
@@ -128,14 +110,6 @@ class ActivityFlowTransformer {
 					reference = idleNodeStateEnumLiteral
 				]
 			)
-				
-			if (flow instanceof DataFlow) {
-				val dataFlow = flow as DataFlow
-				val dataFlowVariable = trace.getDataContainerXStsVariable(dataFlow)
-				val sourceDataContainer = dataFlow.sourcePin
-				val sourceDataContainerVariable = trace.getDataContainerXStsVariable(sourceDataContainer)
-				it.actions += createAssignmentAction(dataFlowVariable, sourceDataContainerVariable)
-			}
 		]		
 	}
 	

@@ -13,30 +13,27 @@ package hu.bme.mit.gamma.lowlevel.xsts.transformation
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer.XstsOptimizer
-import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.DataContainers
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.Events
-import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.Flows
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.GlobalVariables
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.InEvents
-import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.InitialNodes
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.Nodes
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.OutEvents
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.PlainVariables
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.ReferredEvents
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.ReferredVariables
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.RegionVariableGroups
-import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.Regions
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.Statecharts
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.Successions
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.Timeouts
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.TypeDeclarations
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.traceability.L2STrace
+import hu.bme.mit.gamma.statechart.lowlevel.model.ActivityDefinition
 import hu.bme.mit.gamma.statechart.lowlevel.model.ActivityNode
-import hu.bme.mit.gamma.statechart.lowlevel.model.DataFlow
 import hu.bme.mit.gamma.statechart.lowlevel.model.EventDeclaration
 import hu.bme.mit.gamma.statechart.lowlevel.model.EventDirection
 import hu.bme.mit.gamma.statechart.lowlevel.model.Package
 import hu.bme.mit.gamma.statechart.lowlevel.model.Persistency
-import hu.bme.mit.gamma.statechart.lowlevel.model.Pin
+import hu.bme.mit.gamma.statechart.lowlevel.model.Succession
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.VariableGroup
@@ -60,10 +57,6 @@ import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionMo
 import static extension hu.bme.mit.gamma.statechart.lowlevel.derivedfeatures.LowlevelStatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.XstsNamings.*
-import static extension hu.bme.mit.gamma.xsts.transformation.util.XstsNamings.*
-import hu.bme.mit.gamma.statechart.lowlevel.model.Flow
-import hu.bme.mit.gamma.xsts.model.Action
-import hu.bme.mit.gamma.statechart.lowlevel.model.ActivityDefinition
 
 class LowlevelActivityToXstsTransformer {
 	// Transformation-related extensions
@@ -102,11 +95,9 @@ class LowlevelActivityToXstsTransformer {
 	protected BatchTransformationRule<InEvents.Match, InEvents.Matcher> inEventEnvironmentalActionRule
 	protected BatchTransformationRule<OutEvents.Match, OutEvents.Matcher> outEventEnvironmentalActionRule
 		
-	protected BatchTransformationRule<Nodes.Match, Nodes.Matcher> activityNodesRule 
-	protected BatchTransformationRule<Flows.Match, Flows.Matcher> activityFlowsRule 
-	protected BatchTransformationRule<DataContainers.Match, DataContainers.Matcher> activityDataContainersRule
-	protected BatchTransformationRule<Nodes.Match, Nodes.Matcher> activityNodeTransitionsRule 
-	protected BatchTransformationRule<InitialNodes.Match, InitialNodes.Matcher> initialActivityNodeInitializationRule 
+	protected BatchTransformationRule<Nodes.Match, Nodes.Matcher> nodesRule
+	protected BatchTransformationRule<Successions.Match, Successions.Matcher> successionsRule
+	protected BatchTransformationRule<Nodes.Match, Nodes.Matcher> nodeTransitionsRule
 	
 	// Optimization
 	protected final boolean optimize
@@ -161,9 +152,8 @@ class LowlevelActivityToXstsTransformer {
 		// Timeouts can refer to constants
 		getTimeoutsRule.fireAllCurrent
 		
-		getActivityDataContainersRule.fireAllCurrent
-		getActivityNodesRule.fireAllCurrent
-		getActivityFlowsRule.fireAllCurrent
+		getNodesRule.fireAllCurrent
+		getSuccessionsRule.fireAllCurrent
 				
 		// Event variables, parameters, variables and timeouts are transformed already
 		/* By now all variables must be transformed so the expressions and actions can be transformed
@@ -172,7 +162,7 @@ class LowlevelActivityToXstsTransformer {
 		getInEventEnvironmentalActionRule.fireAllCurrent
 		getOutEventEnvironmentalActionRule.fireAllCurrent
 		
-		getActivityNodeTransitionsRule.fireAllCurrent
+		getNodeTransitionsRule.fireAllCurrent
 				
 		xSts.changeTransitions(wrapActivityActions.wrap)
 		xSts.optimizeXSts
@@ -210,31 +200,22 @@ class LowlevelActivityToXstsTransformer {
 		declaration.isRaised.createReferenceExpression
 	}
 	
-	private def getActivityNodesRule() {
-		if (activityNodesRule === null) {
-			activityNodesRule = createRule(Nodes.instance).action [
+	private def getNodesRule() {
+		if (nodesRule === null) {
+			nodesRule = createRule(Nodes.instance).action [
 				it.activityNode.createActivityNodeMapping
 			].build
 		}
-		return activityNodesRule
+		return nodesRule
 	}
 
-	private def getActivityFlowsRule() {
-		if (activityFlowsRule === null) {
-			activityFlowsRule = createRule(Flows.instance).action [
-				it.flow.createActivityFlowMapping
+	private def getSuccessionsRule() {
+		if (successionsRule === null) {
+			successionsRule = createRule(Successions.instance).action [
+				it.succession.createSuccessionMapping
 			].build
 		}
-		return activityFlowsRule
-	}
-
-	private def getActivityDataContainersRule() {
-		if (activityDataContainersRule === null) {
-			activityDataContainersRule = createRule(DataContainers.instance).action [
-				it.dataContainer.createDataContainerMapping
-			].build
-		}
-		return activityDataContainersRule
+		return successionsRule
 	}
 	
 	private def createActivityNodeMapping(ActivityNode activityNode) {
@@ -251,34 +232,10 @@ class LowlevelActivityToXstsTransformer {
 		xSts.variableDeclarations += xStsActivityNodeVariable
 		trace.put(activityNode, xStsActivityNodeVariable)
 	}
-	
-	private dispatch def createDataContainerMapping(Pin pin) {
-		val pinType = pin.type.clone() // cloning to prevent loosing it from the original Pin
-		val xStsPinVariable = createVariableDeclaration => [
-			name = pin.pinVariableName
-			type = pinType
-			expression = pinType.initialValueOfType
-		]
-		xSts.variableDeclarations += xStsPinVariable
-		
-		trace.putDataContainer(pin, xStsPinVariable)
-	}
-	
-	private dispatch def createDataContainerMapping(DataFlow dataFlow) {
-		val flowType = dataFlow.targetPin.type.clone() // cloning to prevent loosing it from the original Pin
-		val xStsFlowVariable = createVariableDeclaration => [
-			name = dataFlow.flowDataTokenVariableName
-			type = flowType
-			expression = flowType.initialValueOfType
-		]
-		xSts.variableDeclarations += xStsFlowVariable
-		
-		trace.putDataContainer(dataFlow, xStsFlowVariable)
-	}
 
-	private def createActivityFlowMapping(Flow flow) {
+	private def createSuccessionMapping(Succession succession) {
 		val xStsFlowVariable = createVariableDeclaration => [
-			name = flow.flowVariableName
+			name = succession.successionVariableName
 			type = createTypeReference => [
 				reference = flowStateEnumTypeDeclaration
 			]
@@ -288,16 +245,16 @@ class LowlevelActivityToXstsTransformer {
 		]
 		xStsFlowVariable.addOnDemandControlAnnotation
 		xSts.variableDeclarations += xStsFlowVariable
-		trace.put(flow, xStsFlowVariable)
+		trace.put(succession, xStsFlowVariable)
 	}
 	
-	private def getActivityNodeTransitionsRule() {
-		if (activityNodeTransitionsRule === null) {
-			activityNodeTransitionsRule = createRule(Nodes.instance).action [
+	private def getNodeTransitionsRule() {
+		if (nodeTransitionsRule === null) {
+			nodeTransitionsRule = createRule(Nodes.instance).action [
 				xSts.transitions += it.activityNode.transform.wrap
 			].build
 		}
-		return activityNodeTransitionsRule
+		return nodeTransitionsRule
 	}
 	
 	protected def isNotOptimizable(EventDeclaration lowlevelEvent) {
@@ -320,13 +277,6 @@ class LowlevelActivityToXstsTransformer {
 			].build
 		}
 		return typeDeclarationsRule
-	}
-
-	/**
-	 * For the transformation of all subregions.
-	 */
-	protected def boolean allRegionsTransformed() {
-		return Regions.Matcher.on(engine).allValuesOfregion.forall[trace.isTraced(it)]
 	}
 
 	protected def getEventsRule() {
@@ -372,8 +322,6 @@ class LowlevelActivityToXstsTransformer {
 		return eventsRule
 	}
 
-	
-
 	/**
 	 * Returns the variable group an xSTS region variable should be contained in.
 	 */
@@ -417,7 +365,6 @@ class LowlevelActivityToXstsTransformer {
 			return regionVariableGroup
 		}
 	}
-
 
 	protected def getComponentParametersRule() {
 		if (componentParametersRule === null) {
@@ -484,7 +431,6 @@ class LowlevelActivityToXstsTransformer {
 		}
 		return variableInitializationsRule
 	}
-
 
 	protected def getInEventEnvironmentalActionRule() {
 		if (inEventEnvironmentalActionRule === null) {

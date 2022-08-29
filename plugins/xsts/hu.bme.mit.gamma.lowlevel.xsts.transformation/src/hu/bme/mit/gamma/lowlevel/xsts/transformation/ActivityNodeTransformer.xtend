@@ -117,12 +117,12 @@ class ActivityNodeTransformer {
 	protected dispatch def createActivityNodeFlowAction(ActivityNode node) {
 		return createNonDeterministicAction => [
 			it.actions += createParallelAction => [
-				for (flow : node.incomingFlows) {
+				for (flow : node.incoming) {
 					it.actions += flow.transformInwards
 				}
 			]
 			it.actions += createParallelAction => [
-				for (flow : node.outgoingFlows) {
+				for (flow : node.outgoing) {
 					it.actions += flow.transformOutwards
 				}
 			]
@@ -140,12 +140,12 @@ class ActivityNodeTransformer {
 	private def createRapidFireActivityNodeFlowAction(ActivityNode node) {
 		return createNonDeterministicAction => [
 			it.actions += createNonDeterministicAction => [
-				for (flow : node.incomingFlows) {
+				for (flow : node.incoming) {
 					it.actions += flow.transformInwards
 				}
 			]
 			it.actions += createNonDeterministicAction => [
-				for (flow : node.outgoingFlows) {
+				for (flow : node.outgoing) {
 					it.actions += flow.transformOutwards
 				}
 			]
@@ -154,7 +154,7 @@ class ActivityNodeTransformer {
 	
 	protected dispatch def createActivityNodeFlowAction(InitialNode node) {
 		return createParallelAction => [
-			for (flow : node.outgoingFlows) {
+			for (flow : node.outgoing) {
 				it.actions += flow.transformOutwards
 			}
 		]
@@ -162,7 +162,7 @@ class ActivityNodeTransformer {
 	
 	protected dispatch def createActivityNodeFlowAction(FinalNode node) {
 		return createParallelAction => [
-			for (flow : node.incomingFlows) {
+			for (flow : node.incoming) {
 				it.actions += flow.transformInwards
 			}
 		]

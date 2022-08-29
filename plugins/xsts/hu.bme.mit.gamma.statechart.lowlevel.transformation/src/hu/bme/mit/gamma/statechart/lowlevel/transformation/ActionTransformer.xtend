@@ -258,11 +258,11 @@ class ActionTransformer {
 	}
 	
 	protected def dispatch List<Action> transformAction(ExecuteActivityAction action) {
-		throw new UnsupportedOperationException("ExecuteActivityAction are not supported: " + action)
+		throw new UnsupportedOperationException("ExecuteActivityActions are not supported: " + action)
 	}
 	
 	protected def dispatch List<Action> transformAction(RunActivityAction action) {
-		throw new UnsupportedOperationException("RunActivityAction are not supported: " + action)
+		throw new UnsupportedOperationException("RunActivityActions are not supported: " + action)
 	}
 
 	protected def dispatch List<Action> transformAction(SetTimeoutAction action) {

@@ -17,6 +17,7 @@ import hu.bme.mit.gamma.activity.model.OutputPin;
 import hu.bme.mit.gamma.activity.model.OutsidePinReference;
 import hu.bme.mit.gamma.activity.model.PinReference;
 import hu.bme.mit.gamma.activity.model.PinnedNode;
+import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
 
 /**
  * This class contains custom scoping description.
@@ -29,7 +30,15 @@ public class ActivityLanguageScopeProvider extends AbstractActivityLanguageScope
 	@Override
 	public IScope getScope(final EObject context, final EReference reference) {
 
-		try {			
+		try {	
+			if (reference == ExpressionModelPackage.Literals.DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
+				PinnedNode element = ecoreUtil.getSelfOrContainerOfType(context, PinnedNode.class);
+				if (element != null) {
+					IScope parentScope = super.getScope(context, reference); // Parameters and constants
+					return Scopes.scopeFor(element.getPins(), parentScope);
+				}
+			}
+			
 			if (context instanceof PinReference) {
 				
 				if (context instanceof InsidePinReference) {

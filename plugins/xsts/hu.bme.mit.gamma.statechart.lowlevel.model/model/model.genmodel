@@ -21,10 +21,6 @@
       <genEnumLiterals ecoreEnumLiteral="model.ecore#//GuardEvaluation/ON_THE_FLY"/>
       <genEnumLiterals ecoreEnumLiteral="model.ecore#//GuardEvaluation/BEGINNING_OF_STEP"/>
     </genEnums>
-    <genEnums typeSafeEnumCompatible="false" ecoreEnum="model.ecore#//PinDirection">
-      <genEnumLiterals ecoreEnumLiteral="model.ecore#//PinDirection/IN"/>
-      <genEnumLiterals ecoreEnumLiteral="model.ecore#//PinDirection/OUT"/>
-    </genEnums>
     <genEnums typeSafeEnumCompatible="false" ecoreEnum="model.ecore#//Persistency">
       <genEnumLiterals ecoreEnumLiteral="model.ecore#//Persistency/TRANSIENT"/>
       <genEnumLiterals ecoreEnumLiteral="model.ecore#//Persistency/PERSISTENT"/>
@@ -77,6 +73,7 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//EventDeclaration/parameters"/>
       <genFeatures property="None" notify="false" createChild="false" ecoreFeature="ecore:EReference model.ecore#//EventDeclaration/component"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute model.ecore#//EventDeclaration/persistency"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//EventDeclaration/annotations"/>
     </genClasses>
     <genClasses ecoreClass="model.ecore#//Transition">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//Transition/source"/>
@@ -106,17 +103,12 @@
     <genClasses ecoreClass="model.ecore#//DataContainer">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//DataContainer/type"/>
     </genClasses>
-    <genClasses ecoreClass="model.ecore#//Pin">
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute model.ecore#//Pin/direction"/>
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//Pin/incomingFlow"/>
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//Pin/outgoingFlow"/>
-    </genClasses>
     <genClasses image="false" ecoreClass="model.ecore#//ActivityNode">
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//ActivityNode/incomingFlows"/>
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//ActivityNode/outgoingFlows"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//ActivityNode/incoming"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//ActivityNode/outgoing"/>
     </genClasses>
     <genClasses image="false" ecoreClass="model.ecore#//PinnedNode">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//PinnedNode/pins"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//PinnedNode/variableDeclarations"/>
     </genClasses>
     <genClasses ecoreClass="model.ecore#//CompositeNode">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//CompositeNode/flows"/>
@@ -132,18 +124,16 @@
     <genClasses ecoreClass="model.ecore#//MergeNode"/>
     <genClasses ecoreClass="model.ecore#//InitialNode"/>
     <genClasses ecoreClass="model.ecore#//FinalNode"/>
-    <genClasses image="false" ecoreClass="model.ecore#//Flow">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//Flow/guard"/>
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//Flow/sourceNode"/>
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//Flow/targetNode"/>
-    </genClasses>
-    <genClasses ecoreClass="model.ecore#//ControlFlow"/>
-    <genClasses ecoreClass="model.ecore#//DataFlow">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//DataFlow/sourcePin"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//DataFlow/targetPin"/>
+    <genClasses image="false" ecoreClass="model.ecore#//Succession">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//Succession/guard"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//Succession/sourceNode"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//Succession/targetNode"/>
     </genClasses>
     <genClasses ecoreClass="model.ecore#//TriggerNode">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//TriggerNode/triggerExpression"/>
     </genClasses>
+    <genClasses image="false" ecoreClass="model.ecore#//EventAnnotation"/>
+    <genClasses image="false" ecoreClass="model.ecore#//ActivityDerivedAnnotation"/>
+    <genClasses ecoreClass="model.ecore#//ActivityControllerEventAnnotation"/>
   </genPackages>
 </genmodel:GenModel>

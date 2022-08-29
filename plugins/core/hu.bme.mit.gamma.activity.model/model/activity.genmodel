@@ -40,27 +40,28 @@
       <genFeatures children="true" createChild="true" propertySortChoices="true" ecoreFeature="ecore:EReference activity.ecore#//DataFlow/dataSourceReference"/>
       <genFeatures children="true" createChild="true" propertySortChoices="true" ecoreFeature="ecore:EReference activity.ecore#//DataFlow/dataTargetReference"/>
     </genClasses>
-    <genClasses ecoreClass="activity.ecore#//Pin">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference activity.ecore#//Pin/type"/>
-    </genClasses>
+    <genClasses ecoreClass="activity.ecore#//Pin"/>
     <genClasses ecoreClass="activity.ecore#//InputPin"/>
     <genClasses ecoreClass="activity.ecore#//OutputPin"/>
     <genClasses ecoreClass="activity.ecore#//PinReference"/>
+    <genClasses ecoreClass="activity.ecore#//DataSourceReference"/>
+    <genClasses ecoreClass="activity.ecore#//DataTargetReference"/>
     <genClasses ecoreClass="activity.ecore#//InputPinReference">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference activity.ecore#//InputPinReference/inputPin"/>
     </genClasses>
     <genClasses ecoreClass="activity.ecore#//OutputPinReference">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference activity.ecore#//OutputPinReference/outputPin"/>
     </genClasses>
-    <genClasses ecoreClass="activity.ecore#//InsideInputPinReference"/>
-    <genClasses ecoreClass="activity.ecore#//OutsideInputPinReference"/>
-    <genClasses ecoreClass="activity.ecore#//InsideOutputPinReference"/>
-    <genClasses ecoreClass="activity.ecore#//OutsideOutputPinReference"/>
     <genClasses ecoreClass="activity.ecore#//InsidePinReference"/>
     <genClasses ecoreClass="activity.ecore#//OutsidePinReference">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference activity.ecore#//OutsidePinReference/actionNode"/>
     </genClasses>
-    <genClasses ecoreClass="activity.ecore#//DataSourceReference"/>
-    <genClasses ecoreClass="activity.ecore#//DataTargetReference"/>
+    <genClasses ecoreClass="activity.ecore#//InsideInputPinReference"/>
+    <genClasses ecoreClass="activity.ecore#//OutsideInputPinReference"/>
+    <genClasses ecoreClass="activity.ecore#//InsideOutputPinReference"/>
+    <genClasses ecoreClass="activity.ecore#//OutsideOutputPinReference"/>
+    <genClasses ecoreClass="activity.ecore#//ExecuteActivityAction">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference activity.ecore#//ExecuteActivityAction/activity"/>
+    </genClasses>
   </genPackages>
 </genmodel:GenModel>

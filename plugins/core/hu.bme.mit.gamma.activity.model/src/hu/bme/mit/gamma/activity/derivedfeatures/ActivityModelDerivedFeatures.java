@@ -30,7 +30,7 @@ public class ActivityModelDerivedFeatures extends ActionModelDerivedFeatures {
 				PinReference pinReference = (PinReference) dataFlow.getDataSourceReference();
 				Pin pin = getPin(pinReference);
 				
-				return ecoreUtil.getContainerOfType(pin, PinnedNode.class);
+				return getContainingPinnedNode(pin);
 			}
 		}
 			
@@ -62,7 +62,7 @@ public class ActivityModelDerivedFeatures extends ActionModelDerivedFeatures {
 				PinReference pinReference = (PinReference) dataFlow.getDataTargetReference();
 				Pin pin = getPin(pinReference);
 				
-				return ecoreUtil.getContainerOfType(pin, PinnedNode.class);
+				return getContainingPinnedNode(pin);
 			}
 		}
 			

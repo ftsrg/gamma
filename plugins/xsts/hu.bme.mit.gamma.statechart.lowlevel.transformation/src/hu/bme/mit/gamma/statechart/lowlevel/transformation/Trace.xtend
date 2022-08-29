@@ -71,7 +71,7 @@ class Trace {
 	final Map<FunctionAccessExpression, List<VariableDeclaration>> returnVariableMappings = newHashMap
 	// Activity variables
 	final Map<Pin, VariableDeclaration> pinMappings = newHashMap
-	final Map<Flow, hu.bme.mit.gamma.statechart.lowlevel.model.Flow> flowMappings = newHashMap
+	final Map<Flow, hu.bme.mit.gamma.statechart.lowlevel.model.Succession> flowMappings = newHashMap
 	final Map<ActivityNode, hu.bme.mit.gamma.statechart.lowlevel.model.ActivityNode> activityNodeMappings = newHashMap
 	
 	// Package
@@ -554,7 +554,7 @@ class Trace {
 		return pinMappings.get(pin)
 	}
 
-	def put(Flow flow, hu.bme.mit.gamma.statechart.lowlevel.model.Flow lowlevelFlow) {
+	def put(Flow flow, hu.bme.mit.gamma.statechart.lowlevel.model.Succession lowlevelFlow) {
 		checkNotNull(flow)
 		checkNotNull(lowlevelFlow)
 		flowMappings.put(flow, lowlevelFlow)

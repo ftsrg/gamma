@@ -23,13 +23,11 @@ import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.ActivityNodeTrace
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.ActivityNodeTransitionTrace
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.ChoiceTransitionTrace
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.EventTrace
-import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.FlowTrace
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.ForkTransitionTrace
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.JoinTransitionTrace
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.MergeTransitionTrace
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.RegionTrace
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.SimpleTransitionTrace
-import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.DataContainerTrace
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.StateTrace
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.TypeDeclarationTrace
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.VariableTrace
@@ -64,8 +62,8 @@ import static com.google.common.base.Preconditions.checkState
 
 import static extension java.lang.Math.abs
 import hu.bme.mit.gamma.statechart.lowlevel.model.ActivityNode
-import hu.bme.mit.gamma.statechart.lowlevel.model.Flow
-import hu.bme.mit.gamma.statechart.lowlevel.model.DataContainer
+import hu.bme.mit.gamma.statechart.lowlevel.model.Succession
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.SuccessionTrace
 
 package class Trace {
 	// Trace model
@@ -653,60 +651,31 @@ package class Trace {
 		return matches.head
 	}
 	
-	// Flow - variable
-	def put(Flow flow, VariableDeclaration xStsVariable) {
-		checkArgument(flow !== null)
+	// Succession - variable
+	def put(Succession succession, VariableDeclaration xStsVariable) {
+		checkArgument(succession !== null)
 		checkArgument(xStsVariable !== null)
-		trace.traces += createFlowTrace => [
-			it.flow = flow
+		trace.traces += createSuccessionTrace => [
+			it.succession = succession
 			it.XStsVariable = xStsVariable
 		]
 	}
 	
-	def isTraced(Flow flow) {
+	def isTraced(Succession flow) {
 		checkArgument(flow !== null)
-		return FlowTrace.Matcher.on(tracingEngine).hasMatch(flow, null)
+		return SuccessionTrace.Matcher.on(tracingEngine).hasMatch(flow, null)
 	}
 	
-	def getXStsVariable(Flow flow) {
+	def getXStsVariable(Succession flow) {
 		checkArgument(flow !== null)
-		val matches = FlowTrace.Matcher.on(tracingEngine).getAllValuesOfxStsVariable(flow)
+		val matches = SuccessionTrace.Matcher.on(tracingEngine).getAllValuesOfxStsVariable(flow)
 		checkState(matches.size == 1, matches.size)
 		return matches.head
 	}
 	
-	def getFlow(VariableDeclaration xStsVariable) {
+	def getSuccession(VariableDeclaration xStsVariable) {
 		checkArgument(xStsVariable !== null)
-		val matches = FlowTrace.Matcher.on(tracingEngine).getAllValuesOfflow(xStsVariable)
-		checkState(matches.size == 1, matches.size)
-		return matches.head
-	}
-	
-	// Data container - variable
-	def putDataContainer(DataContainer dataContainer, VariableDeclaration xStsVariable) {
-		checkArgument(dataContainer !== null)
-		checkArgument(xStsVariable !== null)
-		trace.traces += createDataContainerTrace => [
-			it.dataContainer = dataContainer
-			it.XStsVariable = xStsVariable
-		]
-	}
-	
-	def isDataContainerTraced(DataContainer dataContainer) {
-		checkArgument(dataContainer !== null)
-		return DataContainerTrace.Matcher.on(tracingEngine).hasMatch(dataContainer, null)
-	}
-	
-	def getDataContainerXStsVariable(DataContainer dataContainer) {
-		checkArgument(dataContainer !== null)
-		val matches = DataContainerTrace.Matcher.on(tracingEngine).getAllValuesOfxStsVariable(dataContainer)
-		checkState(matches.size == 1, matches.size)
-		return matches.head
-	}
-	
-	def getDataContainer(VariableDeclaration xStsVariable) {
-		checkArgument(xStsVariable !== null)
-		val matches = DataContainerTrace.Matcher.on(tracingEngine).getAllValuesOfdataContainer(xStsVariable)
+		val matches = SuccessionTrace.Matcher.on(tracingEngine).getAllValuesOfsuccession(xStsVariable)
 		checkState(matches.size == 1, matches.size)
 		return matches.head
 	}

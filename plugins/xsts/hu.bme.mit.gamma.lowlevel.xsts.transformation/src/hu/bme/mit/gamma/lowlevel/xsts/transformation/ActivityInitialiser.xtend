@@ -13,10 +13,10 @@ package hu.bme.mit.gamma.lowlevel.xsts.transformation
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
-import hu.bme.mit.gamma.statechart.lowlevel.model.Flow
 import hu.bme.mit.gamma.statechart.lowlevel.model.InitialNode
 import hu.bme.mit.gamma.statechart.lowlevel.model.ActivityNode
 import hu.bme.mit.gamma.statechart.lowlevel.model.ActivityDefinition
+import hu.bme.mit.gamma.statechart.lowlevel.model.Succession
 
 class ActivityInitialiser {
 	// Model factories
@@ -33,9 +33,9 @@ class ActivityInitialiser {
 		this.trace = trace
 	}
 	
-	def initialiseFlow(Flow flow) {
-		val flowVariable = trace.getXStsVariable(flow)
-		return createAssignmentAction(flowVariable, createEnumerationLiteralExpression => [
+	def initialiseSuccession(Succession succession) {
+		val successionVariable = trace.getXStsVariable(succession)
+		return createAssignmentAction(successionVariable, createEnumerationLiteralExpression => [
 				reference = emptyFlowStateEnumLiteral
 			]
 		)
@@ -61,7 +61,7 @@ class ActivityInitialiser {
 		val action = createSequentialAction
 		
 		for (flow : activity.flows) {
-			action.actions += flow.initialiseFlow
+			action.actions += flow.initialiseSuccession
 		}
 		for (node : activity.activityNodes) {
 			action.actions += node.initialiseNode
