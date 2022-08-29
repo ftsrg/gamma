@@ -1,5 +1,112 @@
-import "/model/Control/Controller.gcd"
+import "model/Occupancy/Components/Camera.gcd"
+import "model/Occupancy/Components/MotionDetector.gcd"
+import "model/Ventilation/Components/AdaptiveVentilator.gcd"
+import "model/Ventilation/Components/Switch.gcd"
+
+import "model/Control/Controller.gcd"
+
+import "Control/ContractAutomata/S1MotionThenDelay.gcd"
+import "Control/ContractAutomata/S2MotionThenMotionThenVentilation.gcd"
+
+import "Occupancy/ContractAutomata/S3DelayThenMotions.gcd"
+import "Occupancy/ContractAutomata/S4MotionThenMotion.gcd"
+import "Occupancy/ContractAutomata/S5MotionThenTooEarlyMotion.gcd"
+import "Occupancy/ContractAutomata/S6DelayThenMotionThenPersonPresence.gcd"
+import "Occupancy/ContractAutomata/S7MaximumRelayedMotion.gcd"
+
+import "Ventilation/ContractAutomata/S8MotionThenDelayThenMotion.gcd"
+import "Ventilation/ContractAutomata/S9Delay.gcd"
+import "Ventilation/ContractAutomata/S10DelayThenMotion.gcd"
+import "Ventilation/ContractAutomata/S11MotionThenPersonCountThenDelay.gcd"
+
 
 phase-statechart {
 	statechart : Controller
+}
+
+code {
+	component : Camera
+	language : java
+}
+
+code {
+	component : MotionDetector
+	language : java
+}
+
+code {
+	component : AdaptiveVentilator
+	language : java
+}
+
+code {
+	component : Switch
+	language : java
+}
+
+code {
+	component : Controller
+	language : java
+}
+
+code {
+	component : Controller // Should be PhaseController
+	language : java
+}
+
+//
+
+code {
+	component : S1MotionThenDelay
+	language : java
+}
+
+code {
+	component : S2MotionThenMotionThenVentilation
+	language : java
+}
+
+code {
+	component : S3DelayThenMotions
+	language : java
+}
+
+code {
+	component : S4MotionThenMotion
+	language : java
+}
+
+code {
+	component : S5MotionThenTooEarlyMotion
+	language : java
+}
+
+code {
+	component : S6DelayThenMotionThenPersonPresence
+	language : java
+}
+
+code {
+	component : S7MaximumRelayedMotion
+	language : java
+}
+
+code {
+	component : S8MotionThenDelayThenMotion
+	language : java
+}
+
+code {
+	component : S9Delay
+	language : java
+}
+
+code {
+	component : S10DelayThenMotion
+	language : java
+}
+
+code {
+	component : S11MotionThenPersonCountThenDelay
+	language : java
 }

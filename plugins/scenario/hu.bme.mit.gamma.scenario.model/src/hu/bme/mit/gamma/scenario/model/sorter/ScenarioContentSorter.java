@@ -1,3 +1,13 @@
+/********************************************************************************
+ * Copyright (c) 2020-2022 Contributors to the Gamma project
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * SPDX-License-Identifier: EPL-1.0
+ ********************************************************************************/
 package hu.bme.mit.gamma.scenario.model.sorter;
 
 import java.util.Comparator;
@@ -11,6 +21,7 @@ import hu.bme.mit.gamma.expression.util.ExpressionEvaluator;
 import hu.bme.mit.gamma.scenario.model.Delay;
 import hu.bme.mit.gamma.scenario.model.InteractionDefinition;
 import hu.bme.mit.gamma.scenario.model.ModalInteractionSet;
+import hu.bme.mit.gamma.scenario.model.NegatedModalInteraction;
 import hu.bme.mit.gamma.scenario.model.ScenarioAssignmentStatement;
 import hu.bme.mit.gamma.scenario.model.ScenarioCheckExpression;
 import hu.bme.mit.gamma.scenario.model.ScenarioDeclaration;
@@ -42,6 +53,9 @@ public class ScenarioContentSorter {
 		if (interaction instanceof Delay) {
 			return getSerializedDelay((Delay) interaction);
 		}
+		if (interaction instanceof NegatedModalInteraction) {
+			return getSerializedNegation((NegatedModalInteraction) interaction);
+		}
 		if (interaction instanceof Signal) {
 			return getSerializedSignal((Signal) interaction);
 		}
@@ -51,7 +65,7 @@ public class ScenarioContentSorter {
 		if (interaction instanceof ScenarioAssignmentStatement) {
 			return getSerializedAssignment((ScenarioAssignmentStatement) interaction);
 		}
-		throw new IllegalArgumentException();
+		throw new IllegalArgumentException("Not supported interaction: " + interaction);
 	}
 
 	private String getSerializedDelay(Delay delay) {
@@ -63,7 +77,12 @@ public class ScenarioContentSorter {
 		return "Delay" + delay.getModality() + evaluator.evaluate(maximum)
 				+ evaluator.evaluate(minimum);
 	}
-
+	
+	private String getSerializedNegation(NegatedModalInteraction negation) {
+		return "Negate" + getSerializedInteractionDefinition(
+				negation.getModalinteraction());
+	}
+	
 	private String getSerializedSignal(Signal signal) {
 		String output = "Signal" + signal.getDirection() + signal.getModality() + signal.getPort().getName()
 				+ signal.getEvent().getName();
@@ -74,10 +93,10 @@ public class ScenarioContentSorter {
 	}
 	
 	private String getSerializedAssignment(ScenarioAssignmentStatement assignment) {
-		return "Assign"+serializer.serialize(assignment.getLhs()) + serializer.serialize(assignment.getRhs());
+		return "Assign" + serializer.serialize(assignment.getLhs()) + serializer.serialize(assignment.getRhs());
 	}
 	
 	private String getSerializedCheck(ScenarioCheckExpression check) {
-		return "Check"+serializer.serialize(check.getExpression());
+		return "Check" + serializer.serialize(check.getExpression());
 	}
 }

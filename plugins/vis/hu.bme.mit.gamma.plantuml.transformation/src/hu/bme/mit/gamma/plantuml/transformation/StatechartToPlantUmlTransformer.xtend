@@ -86,7 +86,7 @@ class StatechartToPlantUmlTransformer {
 		val leftOperand = binaryTrigger.leftOperand
 		val rightOperand = binaryTrigger.rightOperand
 		val type = binaryTrigger.type
-		return '''(«leftOperand.transformTrigger» «type.transformOperator» «rightOperand.transformTrigger»)'''
+		return '''(«leftOperand.transformTrigger» «type.transformOperator»\n«rightOperand.transformTrigger»)'''
 	}
 
 	protected def transformOperator(BinaryType type) {
@@ -370,7 +370,7 @@ class StatechartToPlantUmlTransformer {
 			arrow = "-->"
 		}
 		return '''
-			«transition.sourceText» «arrow» «target.name»«IF !transition.empty» : «ENDIF»«IF trigger !== null»«trigger.transformTrigger»«ENDIF» «IF guard !== null»[«guard.serialize»]«ENDIF»«FOR effect : effects BEFORE ' /\\n' SEPARATOR '\\n'»«effect.transformAction»«ENDFOR»
+			«transition.sourceText» «arrow» «target.name»«IF !transition.empty» : «ENDIF»«IF trigger !== null»«trigger.transformTrigger»«ENDIF» «IF guard !== null»\n[«guard.serialize»]«ENDIF»«FOR effect : effects BEFORE ' /\\n' SEPARATOR '\\n'»«effect.transformAction»«ENDFOR»
 		'''
 	}
 

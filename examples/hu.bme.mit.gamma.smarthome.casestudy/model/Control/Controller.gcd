@@ -9,6 +9,20 @@ import "Occupancy/Components/MotionDetector.gcd"
 import "Ventilation/Components/AdaptiveVentilator.gcd"
 import "Ventilation/Components/Switch.gcd"
 
+import "Control/ContractAutomata/S1MotionThenDelay.gcd"
+import "Control/ContractAutomata/S2MotionThenMotionThenVentilation.gcd"
+
+import "Occupancy/ContractAutomata/S3DelayThenMotions.gcd"
+import "Occupancy/ContractAutomata/S4MotionThenMotion.gcd"
+import "Occupancy/ContractAutomata/S5MotionThenTooEarlyMotion.gcd"
+import "Occupancy/ContractAutomata/S6DelayThenMotionThenPersonPresence.gcd"
+import "Occupancy/ContractAutomata/S7MaximumRelayedMotion.gcd"
+
+import "Ventilation/ContractAutomata/S8MotionThenDelayThenMotion.gcd"
+import "Ventilation/ContractAutomata/S9Delay.gcd"
+import "Ventilation/ContractAutomata/S10DelayThenMotion.gcd"
+import "Ventilation/ContractAutomata/S11MotionThenPersonCountThenDelay.gcd"
+
 @TransitionPriority = order-based
 @AdaptiveContractStatechart = Controller
 statechart Controller(initialCameraBattery : integer,
@@ -52,13 +66,19 @@ statechart Controller(initialCameraBattery : integer,
 				@Phase = [
 					no-history component camera : Camera {
 						bind Camera -> camera.Camera
+						bind MotionDetector -> camera.MotionDetector
 						bind Motion -> camera.Motion
 						
 						tie cameraBattery -> camera.battery
 						tie cameraGranularity -> camera.granularity
 					}
 				]
+				@StatechartContract component = S3DelayThenMotions // Satisfied
+				@StatechartContract component = S4MotionThenMotion // Satisfied
+				@StatechartContract component = S5MotionThenTooEarlyMotion // Unsatisfied deliberately
+				@StatechartContract component = S6DelayThenMotionThenPersonPresence // Satisfied
 				state UseCamera {
+					exit / raise VentilatorActivation.deactivate;
 					region useCameraRegion  {
 						initial UseCameraEntry
 						
@@ -75,13 +95,17 @@ statechart Controller(initialCameraBattery : integer,
 				}
 				
 				@Phase = [
-					no-history component motionDetector : MotionDetector(selfDefence) {
+					no-history component motionDetector : MotionDetector(selfDefence) { // selfDefence
 						bind MotionDetector -> motionDetector.MotionDetector
 						bind Motion -> motionDetector.Motion
 						
-						tie motionDetectorTemporarilyIdle -> motionDetector.temporarilyIdle
+						tie motionDetectorTemporarilyIdle -> motionDetector.temporarilyIdle // Unnecessary if selfDefence is false
 					}
 				]
+				@StatechartContract component = S3DelayThenMotions // Satisfied
+				@StatechartContract component = S4MotionThenMotion // Satisfied
+				@StatechartContract component = S5MotionThenTooEarlyMotion // Unsatisfied deliberately
+				@StatechartContract component = S7MaximumRelayedMotion // Satisfied
 				state UseMotionDetector
 				
 				state NoDetection
@@ -99,6 +123,12 @@ statechart Controller(initialCameraBattery : integer,
 						bind Motion -> ventilator.Motion
 					}
 				]
+				@StatechartContract = S1MotionThenDelay // Unsatisfied - can be proven
+				@StatechartContract = S2MotionThenMotionThenVentilation // Unsatisfied - can be proven
+				@StatechartContract component = S8MotionThenDelayThenMotion // Satisfied
+				@StatechartContract component = S9Delay // Satisfied
+				@StatechartContract component = S10DelayThenMotion // Satisfied
+				@StatechartContract component = S11MotionThenPersonCountThenDelay // Satisfied (older check: execution cycle >= 5s)
 				state UseAdaptiveVentilator
 				
 				@Phase = [
@@ -107,6 +137,7 @@ statechart Controller(initialCameraBattery : integer,
 						bind Motion -> ^switch.Motion
 					}
 				]
+				@StatechartContract component = S10MotionThenDelayThenMotion // Satisfied
 				state UseSwitch
 				state FixVentilation {
 					entry / raise Ventilation.switchVentilation(true);
@@ -178,14 +209,14 @@ statechart Controller(initialCameraBattery : integer,
 	// Ventilation adaptation logic
 	transition from VentilationComponentMerge to VentilationComponentChoice
 	transition from VentilationComponentChoice to UseAdaptiveVentilator when !(VentilatorActivation.^deactivate) [
-		!VentilatorState.unavailability::unavailable]
+		!VentilatorState.unavailability::unavailable and isCameraAvailable()]
 	transition from VentilationComponentChoice to UseSwitch when !(SwitchActivation.^deactivate) [
 		!SwitchState.unavailability::unavailable]
 	transition from VentilationComponentChoice to FixVentilation [else] / // Adaptation in occupancy region
 		raise CameraActivation.deactivate; raise MotionDetectorActivation.deactivate;
 	////
 	
-	// Charge camera - TODO separate component
+	// Charge camera - Could be extracted into a separate component
 	transition from RechargeEntry to Idle
 	
 	transition from Idle to RechargeCamera when CameraActivation.^deactivate

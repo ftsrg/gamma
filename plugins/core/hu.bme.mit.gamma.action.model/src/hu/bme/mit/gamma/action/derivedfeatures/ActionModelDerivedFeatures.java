@@ -79,22 +79,6 @@ public class ActionModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 		return false;
 	}
 	
-	public static Expression getLambdaExpression(FunctionDeclaration function) {
-		if (function instanceof LambdaDeclaration) {
-			LambdaDeclaration lambda = (LambdaDeclaration) function;
-			return lambda.getExpression();
-		}
-		//
-		ProcedureDeclaration procedure = (ProcedureDeclaration) function;
-		Block block = procedure.getBody();
-		List<Action> actions = block.getActions();
-		if (actions.size() != 1) {
-			throw new IllegalArgumentException("Not a single action: " + actions);
-		}
-		ReturnStatement statement = (ReturnStatement) actions.get(0);
-		return statement.getExpression();
-	}
-	
 	//
 	
 	public static boolean isContainedByChoiceStatement(Branch branch) {

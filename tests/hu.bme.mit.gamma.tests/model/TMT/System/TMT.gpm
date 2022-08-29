@@ -18,7 +18,7 @@
         <operand
             xsi:type="hu.bme.mit.gamma.property:AtomicFormula">
           <expression
-              xsi:type="hu.bme.mit.gamma.property:ComponentInstanceStateConfigurationReference">
+              xsi:type="hu.bme.mit.gamma.statechart.composite:ComponentInstanceStateReferenceExpression">
             <instance>
               <componentInstance
                   xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance"

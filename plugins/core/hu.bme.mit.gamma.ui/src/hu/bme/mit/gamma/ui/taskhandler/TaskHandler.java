@@ -109,6 +109,15 @@ public abstract class TaskHandler {
 		return targetFolderUri;
 	}
 	
+	public File exporeRelativeFile(Task task, String relativePath) {
+		Resource resource = task.eResource();
+		File file = (resource != null) ?
+			ecoreUtil.getFile(resource).getParentFile() : // If task is contained in a resource
+				fileUtil.toFile(this.file).getParentFile(); // If task is created in Java
+		// Setting the file paths
+		return fileUtil.exploreRelativeFile(file, relativePath);
+	}
+	
 	public static class ModelSerializer {
 		//
 		public static final ModelSerializer INSTANCE = new ModelSerializer();

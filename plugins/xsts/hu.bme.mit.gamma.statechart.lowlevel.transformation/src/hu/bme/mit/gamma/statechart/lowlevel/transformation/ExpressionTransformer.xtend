@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -31,6 +31,7 @@ import hu.bme.mit.gamma.expression.model.RecordLiteralExpression
 import hu.bme.mit.gamma.expression.model.ReferenceExpression
 import hu.bme.mit.gamma.expression.model.UnaryExpression
 import hu.bme.mit.gamma.expression.model.ValueDeclaration
+import hu.bme.mit.gamma.expression.util.ArgumentInliner
 import hu.bme.mit.gamma.expression.util.ComplexTypeUtil
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression
 import hu.bme.mit.gamma.statechart.lowlevel.model.StatechartModelFactory
@@ -51,8 +52,9 @@ class ExpressionTransformer {
 	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
 	protected final extension ComplexTypeUtil complexTypeUtil = ComplexTypeUtil.INSTANCE
+	protected final extension ArgumentInliner argumentInliner = ArgumentInliner.INSTANCE
 	// Expression factory
-	protected final extension ExpressionModelFactory constraintFactory = ExpressionModelFactory.eINSTANCE
+	protected final extension ExpressionModelFactory expressionModelFactory = ExpressionModelFactory.eINSTANCE
 	protected final StatechartModelFactory statechartModelFactory = StatechartModelFactory.eINSTANCE
 	// Trace needed for variable mappings
 	protected final Trace trace
@@ -276,26 +278,7 @@ class ExpressionTransformer {
 				else {
 					currentRecursionDepth--
 					
-					val arguments = expression.arguments
-					val size = arguments.size
-					val parameters = function.parameterDeclarations
-					checkState(size == parameters.size)
-					var clonedBody = function.lambdaExpression.clone
-					for (var i = 0; i < size; i++) {
-						val argument = arguments.get(i)
-						val parameter = parameters.get(i)
-						// Precondition: here parameters can be referenced only via DirectReferenceExpressions
-						for (directReference : clonedBody.getSelfAndAllContentsOfType(DirectReferenceExpression)
-								.filter[it.declaration === parameter]) {
-							val clonedArgument = argument.clone
-							if (directReference === clonedBody) {
-								clonedBody = clonedArgument // A body consisting of a single reference
-							}
-							else {
-								clonedArgument.replace(directReference) // Inlining the argument
-							}
-						}
-					}
+					var clonedBody = expression.createInlinedLambaExpression
 					result += clonedBody.transformSimpleExpression // Possible recursion
 					
 					currentRecursionDepth++
@@ -303,7 +286,7 @@ class ExpressionTransformer {
 			}
 		}
 		else {
-			throw new IllegalArgumentException("Currently only function inlining is possible.")
+			throw new IllegalArgumentException("Currently only function inlining is possible")
 		}
 		return result
 	}

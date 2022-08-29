@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -14,6 +14,7 @@ import java.io.File
 import java.util.Collection
 import java.util.Collections
 import java.util.Comparator
+import java.util.Iterator
 import java.util.List
 import java.util.logging.Level
 import java.util.logging.Logger
@@ -37,6 +38,7 @@ class GammaEcoreUtil {
 	public static final GammaEcoreUtil INSTANCE = new GammaEcoreUtil
 	protected new() {}
 	//
+	protected final FileUtil fileUtil = FileUtil.INSTANCE
 	protected final Logger logger = Logger.getLogger("GammaLogger")
 	//
 	
@@ -135,19 +137,62 @@ class GammaEcoreUtil {
 	
 	def void changeAndDelete(EObject newObject, EObject oldObject, EObject container) {
 		change(newObject, oldObject, container)
-		oldObject.delete // Remove does not delete other references
+		oldObject.delete // 'Remove' does not delete other references
+	}
+	
+	def void changeSelfAndContents(EObject newObject, EObject oldObject, Iterable<? extends EObject> containers) {
+		for (container : containers) {
+			newObject.changeSelfAndContents(oldObject, container)
+		}
+	}
+	
+	def void changeSelfAndContents(EObject newObject, EObject oldObject, EObject container) {
+		change(newObject, oldObject, container)
+		val lhsContents = newObject.eContents // Single level
+		val rhsContents = oldObject.eContents // Single level
+		lhsContents.change(rhsContents, container)
+	}
+	
+	def void changeAll(EObject newObject, EObject oldObject, Iterable<? extends EObject> containers) {
+		for (container : containers) {
+			newObject.changeAll(oldObject, container)
+		}
 	}
 	
 	def void changeAll(EObject newObject, EObject oldObject, EObject container) {
 		change(newObject, oldObject, container)
-		val lhsContents = newObject.eAllContents
-		val rhsContents = oldObject.eAllContents
-		while (lhsContents.hasNext()) {
-			val lhs = lhsContents.next
-			val rhs = rhsContents.next
+		val lhsContents = newObject.eAllContents // All
+		val rhsContents = oldObject.eAllContents // All
+		lhsContents.change(rhsContents, container)
+	}
+	
+	def change(Iterable<? extends EObject> newObjects,
+			Iterable<? extends EObject> oldObjects, Iterable<? extends EObject> containers) {
+		for (container : containers) {
+			newObjects.iterator.change(oldObjects.iterator, container)
+		}
+	}
+	
+	def change(Iterable<? extends EObject> newObjects,
+			Iterable<? extends EObject> oldObjects, EObject container) {
+		newObjects.iterator.change(oldObjects.iterator, container)
+	}
+	
+	def change(Iterator<? extends EObject> newObjects,
+			Iterator<? extends EObject> oldObjects, Iterable<? extends EObject> containers) {
+		for (container : containers) {
+			newObjects.change(oldObjects, container)
+		}
+	}
+	
+	def change(Iterator<? extends EObject> newObjects,
+			Iterator<? extends EObject> oldObjects, EObject container) {
+		while (newObjects.hasNext) {
+			val lhs = newObjects.next
+			val rhs = oldObjects.next
 			change(lhs, rhs, container)
 		}
-		checkState(!rhsContents.hasNext)
+		checkState(!oldObjects.hasNext)
 	}
 	
 	def void changeAllAndDelete(EObject newObject, EObject oldObject, EObject container) {
@@ -465,7 +510,7 @@ class GammaEcoreUtil {
 		return true;
 	}
 	
-	def <T extends EObject> List<T> clone(List<T> objects) {
+	def <T extends EObject> List<T> clone(Iterable<T> objects) {
 		if (objects === null) {
 			return null
 		}
@@ -532,7 +577,15 @@ class GammaEcoreUtil {
 	
 	def getPlatformUri(File file) {
 		val projectFile = file.parentFile.projectFile
-		val location = file.toString.substring(projectFile.parent.length)
+		if (projectFile === null) {
+			throw new IllegalStateException("Containing project not found for " + file.absolutePath +
+				". Add the artifacts into a valid Eclipse project containing a .project file.")
+		}
+		
+		val projectName = file.projectName
+		val location = projectName +
+			file.toString.substring(projectFile.toString.length)
+		
 		return URI.createPlatformResourceURI(location, true)
 	}
 	
@@ -566,6 +619,10 @@ class GammaEcoreUtil {
 	}
 	
 	def File getProjectFile(File file) {
+		if (file === null) {
+			return null
+		}
+		
 		val containedFileNames = newHashSet
 		val listedFiles = file.listFiles
 		if (!listedFiles.nullOrEmpty) {
@@ -577,11 +634,44 @@ class GammaEcoreUtil {
 		return file.parentFile.projectFile
 	}
 	
+	def String getProjectName(File file) {
+		val projectFile = file.projectFile
+		if (projectFile === null) {
+			return null
+		}
+		
+		val _projectFile = projectFile.listFiles
+				.filter[it.name == ".project"].head
+		
+		val xml = fileUtil.loadXml(_projectFile)
+		
+		val nameNode = xml.getElementsByTagName("name").item(0)
+		val name = nameNode.textContent
+		
+		return name
+	}
+	
+	def int getContainmentLevel(EObject object) {
+		val container = object.eContainer
+		if (container === null) {
+			return 0
+		}
+		return container.containmentLevel + 1
+	}
+	
 	def getIndex(EObject object) {
 		val containingFeature = object.eContainingFeature
 		val container = object.eContainer
 		val list = container.eGet(containingFeature) as List<EObject>
 		return list.indexOf(object)
+	}
+	
+	def getIndexOrZero(EObject object) {
+		try {
+			return object.index
+		} catch (Exception e) {
+			return 0
+		}
 	}
 	
 	def isLast(EObject object) {

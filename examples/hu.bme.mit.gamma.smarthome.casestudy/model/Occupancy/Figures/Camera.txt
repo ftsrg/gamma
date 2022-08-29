@@ -1,0 +1,26 @@
+@startuml
+
+		state Operating {
+			state CountPersonsChoice <<choice>>
+				[*] -> Idle 
+				Idle -> SenseMotion : Camera.motion  /\nMotion.motion(true)
+				SenseMotion : entry / timeoutTime := TIMEOUT_TIME s
+				SenseMotion : entry / lastCount := 0
+				SenseMotion ---> CountPersons : Camera.personPresence\n[Camera.personPresence::count > 0] /\nlastCount := Camera.personPresence::count
+				SenseMotion --> SenseMotion : Camera.motion 
+				SenseMotion -> Idle : timeout timeoutTime  /\nMotion.motion(false)
+				CountPersons : entry / Motion.personPresence(lastCount)
+				CountPersons : entry / battery := (battery - calculateBatteryDrownage(granularity))
+				CountPersons -> CountPersonsChoice : Camera.personPresence [granularity <=\ncalculateDifference(\nCamera.personPresence::count, lastCount)] /\nlastCount := Camera.personPresence::count
+				CountPersonsChoice -> SenseMotion :  [lastCount <= 0]
+				CountPersonsChoice -> CountPersons :  [else]
+		}
+		
+		Operating : exit / lastCount := 0
+		Charging : entry / batteryRechargeTime := BATTERY_RECHARGE_TIME s
+		[*] -> Operating 
+		Charging --> Operating : cycle [isBatteryMedium(battery)]
+		Charging --> Charging : timeout batteryRechargeTime\n[battery + 1 <=MAXIMUM_BATTERY] /\nbattery := battery + 1
+		Operating --> Charging : cycle [isBatteryLow(battery)]
+		
+@enduml

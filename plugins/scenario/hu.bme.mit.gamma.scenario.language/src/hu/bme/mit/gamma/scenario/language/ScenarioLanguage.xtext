@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020-2021 Contributors to the Gamma project
+ * Copyright (c) 2020-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -35,7 +35,7 @@ ScenarioDeclaration returns ScenarioModel::ScenarioDeclaration:
 	
 InitialBlock returns ScenarioModel::InitialBlock: 
 	{ScenarioModel::InitialBlock} 'initial' 'outputs' '['
-		modalInteractions+=ModalInteraction*
+	interactions+=InitialInteraction*
 	']';
 
 Annotations returns ScenarioModel::Annotation:
@@ -96,6 +96,9 @@ NegatedModalInteraction returns ScenarioModel::NegatedModalInteraction:
 
 Negateable returns ScenarioModel::InteractionDefinition:
 	ModalInteractionSet | SignalDefinition;
+	
+InitialInteraction returns ScenarioModel::InteractionDefinition:
+	 ScenarioCheck |SignalDefinition | ScenarioAssignment;
 
 ModalInteraction returns ScenarioModel::ModalInteraction:
 	SignalDefinition | Delay;

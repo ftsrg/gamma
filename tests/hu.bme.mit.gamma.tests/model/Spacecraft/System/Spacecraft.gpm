@@ -7,7 +7,7 @@
         <operand xsi:type="hu.bme.mit.gamma.property:AtomicFormula">
           <expression xsi:type="hu.bme.mit.gamma.expression:AndExpression">
             <operands xsi:type="hu.bme.mit.gamma.expression:AndExpression">
-              <operands xsi:type="hu.bme.mit.gamma.property:ComponentInstanceStateConfigurationReference">
+              <operands xsi:type="hu.bme.mit.gamma.statechart.composite:ComponentInstanceStateReferenceExpression">
                 <instance>
                   <componentInstance xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href="Spacecraft.gsm#/0/@components.0/@wrappedComponent"/>
                   <child>
@@ -18,20 +18,20 @@
                 <state href="Spacecraft.gsm#/1/@components.1/@regions.0/@stateNodes.0/@regions.1/@stateNodes.1"/>
               </operands>
               <operands xsi:type="hu.bme.mit.gamma.expression:LessExpression">
-                <leftOperand xsi:type="hu.bme.mit.gamma.property:ComponentInstanceVariableReference">
+                <leftOperand xsi:type="hu.bme.mit.gamma.statechart.composite:ComponentInstanceVariableReferenceExpression">
                   <instance>
                     <componentInstance xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href="Spacecraft.gsm#/0/@components.0/@wrappedComponent"/>
                     <child>
                       <componentInstance xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href="Spacecraft.gsm#/0/@components.1/@components.0"/>
                     </child>
                   </instance>
-                  <variable href="Spacecraft.gsm#/1/@components.1/@variableDeclarations.1"/>
+                  <variableDeclaration href="Spacecraft.gsm#/1/@components.1/@variableDeclarations.1"/>
                 </leftOperand>
                 <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="80"/>
               </operands>
             </operands>
             <operands xsi:type="hu.bme.mit.gamma.expression:AndExpression">
-              <operands xsi:type="hu.bme.mit.gamma.property:ComponentInstanceStateConfigurationReference">
+              <operands xsi:type="hu.bme.mit.gamma.statechart.composite:ComponentInstanceStateReferenceExpression">
                 <instance>
                   <componentInstance xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href="Spacecraft.gsm#/0/@components.0/@wrappedComponent"/>
                   <child>
@@ -42,14 +42,14 @@
                 <state href="Spacecraft.gsm#/1/@components.0/@regions.0/@stateNodes.0/@regions.0/@stateNodes.1"/>
               </operands>
               <operands xsi:type="hu.bme.mit.gamma.expression:GreaterEqualExpression">
-                <leftOperand xsi:type="hu.bme.mit.gamma.property:ComponentInstanceVariableReference">
+                <leftOperand xsi:type="hu.bme.mit.gamma.statechart.composite:ComponentInstanceVariableReferenceExpression">
                   <instance>
                     <componentInstance xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href="Spacecraft.gsm#/0/@components.0/@wrappedComponent"/>
                     <child>
                       <componentInstance xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href="Spacecraft.gsm#/0/@components.1/@components.1"/>
                     </child>
                   </instance>
-                  <variable href="Spacecraft.gsm#/1/@components.0/@variableDeclarations.1"/>
+                  <variableDeclaration href="Spacecraft.gsm#/1/@components.0/@variableDeclarations.1"/>
                 </leftOperand>
                 <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="20"/>
               </operands>

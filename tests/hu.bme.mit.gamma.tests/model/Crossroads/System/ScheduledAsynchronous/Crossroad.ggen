@@ -21,6 +21,7 @@ analysis {
 	component : Crossroad
 	language : XSTS-UPPAAL
 	file : "Crossroad-XSTS"
+	state-coverage
 	constraint : {
 		top : {
 			minimum-orchestrating-period : 500 ms
@@ -39,6 +40,6 @@ analysis {
 verification {
 	language : XSTS-UPPAAL
 	file : "Crossroad-XSTS.xml"
-	property-file : "Crossroad.gpd"
+	property-file : ".Crossroad-XSTS.gpd"
 	test-language : java
 }

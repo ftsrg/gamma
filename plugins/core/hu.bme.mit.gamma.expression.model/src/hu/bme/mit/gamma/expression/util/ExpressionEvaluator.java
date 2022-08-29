@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -35,8 +35,10 @@ import hu.bme.mit.gamma.expression.model.EqualityExpression;
 import hu.bme.mit.gamma.expression.model.EquivalenceExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.FalseExpression;
+import hu.bme.mit.gamma.expression.model.FunctionAccessExpression;
 import hu.bme.mit.gamma.expression.model.GreaterEqualExpression;
 import hu.bme.mit.gamma.expression.model.GreaterExpression;
+import hu.bme.mit.gamma.expression.model.IfThenElseExpression;
 import hu.bme.mit.gamma.expression.model.ImplyExpression;
 import hu.bme.mit.gamma.expression.model.InequalityExpression;
 import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression;
@@ -58,6 +60,7 @@ public class ExpressionEvaluator {
 	protected ExpressionEvaluator() {}
 	//
 
+	protected final ArgumentInliner argumentInliner = ArgumentInliner.INSTANCE;
 	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
 	
 	public int evaluate(Expression expression) {
@@ -115,6 +118,21 @@ public class ExpressionEvaluator {
 			SubtractExpression subtractExpression = (SubtractExpression) expression;
 			return evaluateInteger(subtractExpression.getLeftOperand())
 					- evaluateInteger(subtractExpression.getRightOperand());
+		}
+		if (expression instanceof FunctionAccessExpression) {
+			FunctionAccessExpression functionAccessExpression = (FunctionAccessExpression) expression;
+			Expression inlinedLambaExpression = argumentInliner.createInlinedLambaExpression(functionAccessExpression);
+			return evaluateInteger(inlinedLambaExpression);
+		}
+		if (expression instanceof IfThenElseExpression) {
+			IfThenElseExpression ifThenElseExpression = (IfThenElseExpression) expression;
+			Expression condition = ifThenElseExpression.getCondition();
+			if (evaluateBoolean(condition)) {
+				return evaluateInteger(
+						ifThenElseExpression.getThen());
+			}
+			return evaluateInteger(
+					ifThenElseExpression.getElse());
 		}
 		throw new IllegalArgumentException("Not transformable expression: " + expression);
 	}
@@ -254,6 +272,21 @@ public class ExpressionEvaluator {
 			else {
 				throw new IllegalArgumentException("Not transformable expression: " + expression);
 			}
+		}
+		if (expression instanceof FunctionAccessExpression) {
+			FunctionAccessExpression functionAccessExpression = (FunctionAccessExpression) expression;
+			Expression inlinedLambaExpression = argumentInliner.createInlinedLambaExpression(functionAccessExpression);
+			return evaluateBoolean(inlinedLambaExpression);
+		}
+		if (expression instanceof IfThenElseExpression) {
+			IfThenElseExpression ifThenElseExpression = (IfThenElseExpression) expression;
+			Expression condition = ifThenElseExpression.getCondition();
+			if (evaluateBoolean(condition)) {
+				return evaluateBoolean(
+						ifThenElseExpression.getThen());
+			}
+			return evaluateBoolean(
+					ifThenElseExpression.getElse());
 		}
 		throw new IllegalArgumentException("Not transformable expression: " + expression);
 	}

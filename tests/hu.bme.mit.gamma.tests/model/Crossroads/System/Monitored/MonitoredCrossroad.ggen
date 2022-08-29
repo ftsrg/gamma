@@ -23,3 +23,22 @@ verification {
 	optimize : true
 	test-language : java
 }
+
+analysis {
+	component : MonitoredCrossroad // Gamma component to be transformed
+	file : "MonitoredCrossroad-XSTS"
+	language : XSTS-UPPAAL
+	transition-pair-coverage
+	constraint : {
+		minimum-orchestrating-period : 999 ms
+		maximum-orchestrating-period : 999 ms
+	}
+}
+
+verification {
+	language : XSTS-UPPAAL
+	file : "MonitoredCrossroad-XSTS.xml"
+	property-file : ".MonitoredCrossroad-XSTS.gpd"
+	optimize-model : true
+	test-language : java
+}

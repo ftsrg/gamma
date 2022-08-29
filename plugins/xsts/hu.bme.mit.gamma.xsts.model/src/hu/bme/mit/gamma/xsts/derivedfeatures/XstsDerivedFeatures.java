@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -10,11 +10,15 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.xsts.derivedfeatures;
 
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.eclipse.emf.ecore.EObject;
@@ -36,8 +40,6 @@ import hu.bme.mit.gamma.xsts.model.HavocAction;
 import hu.bme.mit.gamma.xsts.model.IfAction;
 import hu.bme.mit.gamma.xsts.model.LoopAction;
 import hu.bme.mit.gamma.xsts.model.MultiaryAction;
-import hu.bme.mit.gamma.xsts.model.NonDeterministicAction;
-import hu.bme.mit.gamma.xsts.model.ParallelAction;
 import hu.bme.mit.gamma.xsts.model.PrimedVariable;
 import hu.bme.mit.gamma.xsts.model.SequentialAction;
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction;
@@ -306,31 +308,11 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 		return readVariables;
 	}
 
-	private static Set<VariableDeclaration> _getReadVariables(NonDeterministicAction action) {
+	private static Set<VariableDeclaration> _getReadVariables(MultiaryAction action) {
 		Set<VariableDeclaration> variableList = new HashSet<VariableDeclaration>();
 		List<Action> _actions = action.getActions();
 		for (Action containedAction : _actions) {
-			Collection<VariableDeclaration> _readVariables = getReadVariables(containedAction);
-			variableList.addAll(_readVariables);
-		}
-		return variableList;
-	}
-
-	private static Set<VariableDeclaration> _getReadVariables(ParallelAction action) {
-		Set<VariableDeclaration> variableList = new HashSet<VariableDeclaration>();
-		List<Action> _actions = action.getActions();
-		for (Action containedAction : _actions) {
-			Collection<VariableDeclaration> _readVariables = getReadVariables(containedAction);
-			variableList.addAll(_readVariables);
-		}
-		return variableList;
-	}
-
-	private static Set<VariableDeclaration> _getReadVariables(SequentialAction action) {
-		Set<VariableDeclaration> variableList = new HashSet<VariableDeclaration>();
-		List<Action> _actions = action.getActions();
-		for (Action containedAction : _actions) {
-			Collection<VariableDeclaration> _readVariables = getReadVariables(containedAction);
+			Set<VariableDeclaration> _readVariables = getReadVariables(containedAction);
 			variableList.addAll(_readVariables);
 		}
 		return variableList;
@@ -341,7 +323,8 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 	}
 
 	private static Set<VariableDeclaration> _getWrittenVariables(AbstractAssignmentAction action) {
-		return expressionUtil.getReferredVariables(action.getLhs());
+		return expressionUtil.getReferredVariables(
+				action.getLhs());
 	}
 	
 	private static Set<VariableDeclaration> _getWrittenVariables(VariableDeclarationAction action) {
@@ -367,31 +350,11 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 		return writtenVariables;
 	}
 
-	private static Set<VariableDeclaration> _getWrittenVariables(NonDeterministicAction action) {
+	private static Set<VariableDeclaration> _getWrittenVariables(MultiaryAction action) {
 		Set<VariableDeclaration> variableList = new HashSet<VariableDeclaration>();
 		List<Action> _actions = action.getActions();
 		for (Action containedAction : _actions) {
-			Collection<VariableDeclaration> _writtenVariables = getWrittenVariables(containedAction);
-			variableList.addAll(_writtenVariables);
-		}
-		return variableList;
-	}
-
-	private static Set<VariableDeclaration> _getWrittenVariables(ParallelAction action) {
-		Set<VariableDeclaration> variableList = new HashSet<VariableDeclaration>();
-		List<Action> _actions = action.getActions();
-		for (Action containedAction : _actions) {
-			Collection<VariableDeclaration> _writtenVariables = getWrittenVariables(containedAction);
-			variableList.addAll(_writtenVariables);
-		}
-		return variableList;
-	}
-
-	private static Set<VariableDeclaration> _getWrittenVariables(SequentialAction action) {
-		Set<VariableDeclaration> variableList = new HashSet<VariableDeclaration>();
-		List<Action> _actions = action.getActions();
-		for (Action containedAction : _actions) {
-			Collection<VariableDeclaration> _writtenVariables = getWrittenVariables(containedAction);
+			Set<VariableDeclaration> _writtenVariables = getWrittenVariables(containedAction);
 			variableList.addAll(_writtenVariables);
 		}
 		return variableList;
@@ -412,12 +375,8 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 			return _getReadVariables((LoopAction) action);
 		} else if (action instanceof IfAction) {
 			return _getReadVariables((IfAction) action);
-		} else if (action instanceof NonDeterministicAction) {
-			return _getReadVariables((NonDeterministicAction) action);
-		} else if (action instanceof ParallelAction) {
-			return _getReadVariables((ParallelAction) action);
-		} else if (action instanceof SequentialAction) {
-			return _getReadVariables((SequentialAction) action);
+		} else if (action instanceof MultiaryAction) {
+			return _getReadVariables((MultiaryAction) action);
 		} else {
 			throw new IllegalArgumentException("Unhandled action type: " + action);
 		}
@@ -436,12 +395,8 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 			return _getWrittenVariables((LoopAction) action);
 		} else if (action instanceof IfAction) {
 			return _getWrittenVariables((IfAction) action);
-		} else if (action instanceof NonDeterministicAction) {
-			return _getWrittenVariables((NonDeterministicAction) action);
-		} else if (action instanceof ParallelAction) {
-			return _getWrittenVariables((ParallelAction) action);
-		} else if (action instanceof SequentialAction) {
-			return _getWrittenVariables((SequentialAction) action);
+		} else if (action instanceof MultiaryAction) {
+			return _getWrittenVariables((MultiaryAction) action);
 		} else {
 			throw new IllegalArgumentException("Unhandled action type: " + action);
 		}
@@ -453,5 +408,46 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 		referredVariables.addAll(getWrittenVariables(action));
 		return referredVariables;
 	}
+	
+	public static Set<VariableDeclaration> getWrittenOnlyVariables(Action action) {
+		Set<VariableDeclaration> writtenOnlyVariables =
+				new HashSet<VariableDeclaration>(getWrittenVariables(action));
+		writtenOnlyVariables.removeAll(getReadVariables(action));
+		return writtenOnlyVariables;
+	}
 
+	public static Set<VariableDeclaration> getWrittenOnlyVariables(
+			Collection<? extends Action> actions) {
+		Set<VariableDeclaration> writtenOnlyVariables = new HashSet<VariableDeclaration>();
+		
+		for (Action action : actions) {
+			writtenOnlyVariables.addAll(getWrittenVariables(action));
+		}
+		for (Action action : actions) {
+			writtenOnlyVariables.removeAll(getReadVariables(action));
+		}
+		
+		return writtenOnlyVariables;
+	}
+
+	public static Set<VariableDeclaration> getWrittenOnlyVariables(XSTS xSts) {
+		return getWrittenOnlyVariables(
+				getAllActions(xSts));
+	}
+	
+	public static Map<Action, Entry<Set<VariableDeclaration>, Set<VariableDeclaration>>>
+			getReadAndWrittenVariablesOfActions(MultiaryAction action) {
+		Map<Action, Entry<Set<VariableDeclaration>, Set<VariableDeclaration>>> readAndWrittenVariables =
+				new HashMap<Action, Entry<Set<VariableDeclaration>, Set<VariableDeclaration>>>();
+		
+		for (Action subaction : action.getActions()) {
+			readAndWrittenVariables.put(subaction,
+					new SimpleEntry<Set<VariableDeclaration>, Set<VariableDeclaration>>(
+							getReadVariables(subaction), getWrittenVariables(subaction))
+			);
+		}
+		
+		return readAndWrittenVariables;
+	}
+	
 }

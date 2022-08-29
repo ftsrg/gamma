@@ -1,4 +1,5 @@
 package Interfaces
+//// Do not modify these interfaces !
 interface LightCommands {
 	out event displayRed
 	out event displayYellow
@@ -13,5 +14,5 @@ interface Control {
 }
 interface PoliceInterrupt {
 	out event police
-	out persistent event police2(Name : integer)
 }
+////

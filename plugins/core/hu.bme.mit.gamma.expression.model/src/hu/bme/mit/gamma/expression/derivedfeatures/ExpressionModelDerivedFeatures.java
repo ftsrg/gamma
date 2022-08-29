@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -12,31 +12,41 @@ package hu.bme.mit.gamma.expression.derivedfeatures;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
+
+import org.eclipse.emf.ecore.EObject;
 
 import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition;
 import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition;
 import hu.bme.mit.gamma.expression.model.ClockVariableDeclarationAnnotation;
+import hu.bme.mit.gamma.expression.model.ConstantDeclaration;
 import hu.bme.mit.gamma.expression.model.DecimalTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.DefaultExpression;
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.ElseExpression;
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition;
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition;
 import hu.bme.mit.gamma.expression.model.EnvironmentResettableVariableDeclarationAnnotation;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory;
+import hu.bme.mit.gamma.expression.model.ExpressionPackage;
 import hu.bme.mit.gamma.expression.model.FieldDeclaration;
 import hu.bme.mit.gamma.expression.model.FinalVariableDeclarationAnnotation;
+import hu.bme.mit.gamma.expression.model.FunctionDeclaration;
 import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression;
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition;
+import hu.bme.mit.gamma.expression.model.LambdaDeclaration;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.ParametricElement;
 import hu.bme.mit.gamma.expression.model.RationalTypeDefinition;
 import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.ResettableVariableDeclarationAnnotation;
+import hu.bme.mit.gamma.expression.model.ScheduledClockVariableDeclarationAnnotation;
 import hu.bme.mit.gamma.expression.model.TransientVariableDeclarationAnnotation;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
@@ -64,9 +74,11 @@ public class ExpressionModelDerivedFeatures {
 			return leftOperand;
 		}
 		if (isLeftInclusive) { // Literal is inclusive, but caller wants exclusive
-			return expressionUtil.wrapIntoSubtract(ecoreUtil.clone(leftOperand), 1);
+			return expressionUtil.wrapIntoSubtract(
+					ecoreUtil.clone(leftOperand), 1);
 		}
-		return expressionUtil.wrapIntoAdd(ecoreUtil.clone(leftOperand), 1); // Literal is exclusive, but caller wants inclusive
+		return expressionUtil.wrapIntoAdd(
+				ecoreUtil.clone(leftOperand), 1); // Literal is exclusive, but caller wants inclusive
 	}
 	
 	public static Expression getRight(IntegerRangeLiteralExpression expression, boolean isInclusive) {
@@ -76,9 +88,11 @@ public class ExpressionModelDerivedFeatures {
 			return rightOperand;
 		}
 		if (isRightInclusive) { // Literal is inclusive, but caller wants exclusive
-			return expressionUtil.wrapIntoAdd(ecoreUtil.clone(rightOperand), 1);
+			return expressionUtil.wrapIntoAdd(
+					ecoreUtil.clone(rightOperand), 1);
 		}
-		return expressionUtil.wrapIntoSubtract(ecoreUtil.clone(rightOperand), 1); // Literal is exclusive, but caller wants inclusive
+		return expressionUtil.wrapIntoSubtract(
+				ecoreUtil.clone(rightOperand), 1); // Literal is exclusive, but caller wants inclusive
 	}
 	
 	public static boolean isTransient(VariableDeclaration variable) {
@@ -104,6 +118,10 @@ public class ExpressionModelDerivedFeatures {
 		return hasAnnotation(variable, ClockVariableDeclarationAnnotation.class);
 	}
 	
+	public static boolean isScheduledClock(VariableDeclaration variable) {
+		return hasAnnotation(variable, ScheduledClockVariableDeclarationAnnotation.class);
+	}
+	
 	public static boolean hasAnnotation(VariableDeclaration variable,
 			Class<? extends VariableDeclarationAnnotation> annotation) {
 		return variable.getAnnotations().stream().anyMatch(it -> annotation.isInstance(it));
@@ -114,6 +132,26 @@ public class ExpressionModelDerivedFeatures {
 			Class<? extends VariableDeclarationAnnotation> annotation) {
 		return variables.stream().filter(it -> hasAnnotation(it, annotation))
 				.collect(Collectors.toList());
+	}
+	
+	// Imports
+	
+	public static Set<ExpressionPackage> getImportableDeclarationPackages(EObject object) {
+		Set<ExpressionPackage> importablePackages = new LinkedHashSet<ExpressionPackage>();
+		
+		for (DirectReferenceExpression reference :
+				ecoreUtil.getSelfAndAllContentsOfType(object, DirectReferenceExpression.class)) {
+			Declaration declaration = reference.getDeclaration();
+			if (declaration instanceof FunctionDeclaration ||
+					declaration instanceof TypeDeclaration ||
+					declaration instanceof ConstantDeclaration) {
+				ExpressionPackage constantPackage = ecoreUtil.getContainerOfType(
+						declaration, ExpressionPackage.class);
+				importablePackages.add(constantPackage);
+			}
+		}
+		
+		return importablePackages;
 	}
 	
 	// Types
@@ -210,6 +248,26 @@ public class ExpressionModelDerivedFeatures {
 			return getFinalTypeReference(aliasReference);
 		}
 		return typeReference;
+	}
+	
+	// Functions
+	
+	public static Expression getLambdaExpression(FunctionDeclaration function) {
+		if (function instanceof LambdaDeclaration) {
+			LambdaDeclaration lambda = (LambdaDeclaration) function;
+			return lambda.getExpression();
+		}
+		// ProcedureDeclaration
+		List<EObject> contents = new ArrayList<EObject>(
+				function.eContents());
+		contents.remove(
+				function.getType());
+		contents.removeAll(
+				function.getParameterDeclarations());
+		EObject block = javaUtil.getOnlyElement(contents);
+		EObject returnStatement = javaUtil.getOnlyElement(block.eContents());
+		EObject expression = javaUtil.getOnlyElement(returnStatement.eContents());
+		return (Expression) expression;
 	}
 	
 	//

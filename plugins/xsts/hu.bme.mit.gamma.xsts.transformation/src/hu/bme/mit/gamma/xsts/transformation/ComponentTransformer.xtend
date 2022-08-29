@@ -922,7 +922,7 @@ class ComponentTransformer {
 		parameters += component.parameterDeclarations // So delete does not mess the list up
 		// Theta back-annotation retrieves the argument values from the constant list
 		
-		_package.constantDeclarations += parameters.extractParamaters(
+		_package.constantDeclarations += parameters.extractParameters(
 				parameters.map['''_«it.name»_«it.hashCode.abs»'''], arguments)
 		
 		// Deleting after the index settings have been completed (otherwise the index always returns 0)
@@ -954,7 +954,7 @@ class ComponentTransformer {
 		val ports = portEvents.map[it.key]
 		val topPorts = ports.map[it.boundTopComponentPort]
 		val capacity = queue.capacity.evaluateInteger
-		if (systemPorts.containsOne(topPorts) && capacity == 1) {
+		if (systemPorts.containsAny(topPorts) && capacity == 1) {
 //			return true /* Contains other events too, but the queue will always be empty,
 //				when handling it in the in-event action */
 			// Not true: except if the initial action raises some internal events

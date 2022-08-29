@@ -121,7 +121,7 @@ class AnalysisModelPreprocessor {
 			it.arguments += arguments.map[it.clone]
 		]
 		
-		_package.constantDeclarations += parameters.extractParamaters(
+		_package.constantDeclarations += parameters.extractParameters(
 			parameters.map['''__«it.name»__'''], arguments)
 	}
 	

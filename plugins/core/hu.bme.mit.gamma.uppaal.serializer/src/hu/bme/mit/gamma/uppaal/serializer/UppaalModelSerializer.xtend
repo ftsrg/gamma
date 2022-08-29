@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -36,6 +36,10 @@ import static extension hu.bme.mit.gamma.uppaal.serializer.ExpressionTransformer
  * @author Benedek Horvath, Bence Graics
  */
 class UppaalModelSerializer {
+	
+	def static saveToXML(NTA nta, File file) {
+		saveToXML(nta, file.parent, file.name)
+	}
 	
 	/**
 	 * Save the UPPAAL model specified by the UppaalModelBuilder to an XML file,

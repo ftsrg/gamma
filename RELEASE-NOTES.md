@@ -162,7 +162,7 @@
 ### What is New
 
 * Theta has been integrated as a new verification back-end.
-* A property langauge for defining CTL* expressions has been introduced.
+* A property language for defining CTL* expressions has been introduced.
 * Visualization for traces and composite systems has been introduced.
 * A test project for verifying the correctness of Gamma transformations has been introduced.
 * A test replayer functionality, which transforms the trace models into statechart models has been introduced.
@@ -206,10 +206,24 @@
 
 ### What is New
 
-* A new composition semantics has been introdued based on the scheduled asynchronous composite component.
+* A new composition semantics has been introduced based on the scheduled asynchronous composite component.
 
 ### Improvements
 
 * New validation rules in the GEL and GAL have been introduced.
 * Some optimizations in the XSTS transformation chain have been introduced.
 
+## 2022.07.04. - Version 2.7.0
+
+### What is New
+
+* Asynchronous statecharts have been introduced.
+* Internal ports have been introduced in the component and statechart languages that enable components to send events to themselves.
+* Conformance checking functionalities between scenarios and state-based components have been introduced.
+
+### Improvements
+
+* Command line arguments can now be added manually in verification tasks.
+* Optimizations (slicing based on the properties) have been introduced in the verification task.
+* Bugs related to clock and timing variables in the XSTS-UPPAAL transformation have been fixed.
+* Bugs related to transition handlings in the XSTS transformation have been fixed.

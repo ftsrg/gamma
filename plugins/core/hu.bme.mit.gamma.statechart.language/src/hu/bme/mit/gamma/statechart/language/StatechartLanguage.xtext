@@ -345,8 +345,12 @@ SpecialStateAnnotation returns ContractModel::SpecialStateAnnotation :
 ;
 
 StateContractAnnotation returns ContractModel::StateContractAnnotation:
-	'@StatechartContract' (setToSelf?=('self') | hasHistory?=('history'))?
+	'@StatechartContract' (linkType=LinkType)? (hasHistory?='history')?
 		'=' contractStatechart=[StatechartDefinition] ('(' arguments+=Expression (',' arguments+=Expression)* ')')?
+;
+
+enum LinkType returns ContractModel::LinkType:
+	TO_CONTROLLER = 'self' | TO_COMPONENT = 'component' // DEFAULT is set by default
 ;
 
 MissionPhaseStateAnnotation returns PhaseModel::MissionPhaseStateAnnotation:
@@ -531,8 +535,7 @@ TimeSpecification returns InterfaceModel::TimeSpecification:
 
 enum TimeUnit returns InterfaceModel::TimeUnit:
 	MILLISECOND = 'ms' | SECOND = 's'
-;	
-
+;
 
 ControlSpecificaiton returns CompositeModel::ControlSpecification:
 	 'when' trigger=SimpleTrigger '/' controlFunction=ControlFunction
