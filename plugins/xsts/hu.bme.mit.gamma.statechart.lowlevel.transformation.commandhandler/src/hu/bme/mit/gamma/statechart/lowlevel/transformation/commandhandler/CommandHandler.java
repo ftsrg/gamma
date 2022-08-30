@@ -95,7 +95,8 @@ public class CommandHandler extends AbstractHandler {
 		// Transforming only a single statechart
 		hu.bme.mit.gamma.statechart.lowlevel.model.Package lowlevelPackage = transformer.transformAndWrap(gammaStatechart);
 		ecoreUtil.normalSave(lowlevelPackage, modelFolderUri, fileNameWithoutExtenstion + ".lgsm");
-		logger.log(Level.INFO, "The Gamma - low level statechart transformation has been finished");
+		logger.log(Level.INFO, "The Gamma - low level statechart transformation has been finished: " +
+					gammaStatechart.getName());
 		logger.log(Level.INFO, "Starting Gamma low level - xSTS transformation");
 		
 		LowlevelToXstsTransformer lowlevelTransformer = new LowlevelToXstsTransformer(
@@ -130,17 +131,17 @@ public class CommandHandler extends AbstractHandler {
 		// Cannot be serialized anymore, as it references some XTransitions that are now not
 		// serialized due to variable inlinings (see LowlevelToXSTSTransformer.deleteNotReadTransientVariables)
 //		ecoreUtil.normalSave(traceability, modelFolderUri, "." + fileNameWithoutExtenstion + ".l2s");
-		logger.log(Level.INFO, "The Gamma low level - xSTS transformation has been finished.");
-		logger.log(Level.INFO, "Starting xSTS serialization.");
+		logger.log(Level.INFO, "The Gamma low level - xSTS transformation has been finished");
+		logger.log(Level.INFO, "Starting xSTS serialization: " + xSts.getName());
 		// Serializing the xSTS
 		ActionSerializer actionSerializer = ActionSerializer.INSTANCE;
 		CharSequence xStsString = actionSerializer.serializeXsts(xSts);
 		System.out.println(xStsString);
-		logger.log(Level.INFO, "Starting xSTS Java code generation.");
+		logger.log(Level.INFO, "Starting xSTS Java code generation");
 		StatechartToJavaCodeGenerator codeGenerator = new StatechartToJavaCodeGenerator(
 			targetFolderUri, basePackageName, gammaStatechart, xSts, javaActionSerializer);
 		codeGenerator.execute();
-		logger.log(Level.INFO, "The xSTS transformation has been finished.");
+		logger.log(Level.INFO, "The xSTS transformation has been finished");
 	}
 	
 	enum ActionPrimingSetting {

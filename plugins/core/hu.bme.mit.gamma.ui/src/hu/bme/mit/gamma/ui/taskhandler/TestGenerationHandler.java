@@ -40,7 +40,7 @@ public class TestGenerationHandler extends TaskHandler {
 				"Currently only Java is supported.");
 		setTestGeneration(testGeneration, packageName);
 		ExecutionTrace executionTrace = testGeneration.getExecutionTrace();
-		logger.log(Level.INFO, "Resource set content for test generation: " + executionTrace.eResource().getResourceSet());
+		logger.log(Level.INFO, "Test generation for: " + executionTrace.getName());
 		TestGenerator testGenerator = new TestGenerator(executionTrace,
 				testGeneration.getPackageName().get(0), testGeneration.getFileName().get(0));
 		String testClass = testGenerator.execute();

@@ -343,6 +343,17 @@ class GammaEcoreUtil {
 		return contents
 	}
 	
+	def <T extends EObject> List<T> getSelfAndAllContentsOfType(
+			Collection<? extends EObject> objects, Class<T> type) {
+		val contents = newArrayList
+		
+		for (object : objects) {
+			contents += object.getSelfAndAllContentsOfType(type)
+		}
+		
+		return contents
+	}
+	
 	def <T extends EObject> T getFirstOfAllContentsOfType(EObject object, Class<T> type) {
 		val contents = newLinkedList
 		contents += object.eContents
