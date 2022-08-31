@@ -770,8 +770,16 @@ public class ExpressionUtil {
 	
 	public void addAnnotation(VariableDeclaration variable, VariableDeclarationAnnotation annotation) {
 		if (variable != null) {
-			variable.getAnnotations().add(annotation);
+			List<VariableDeclarationAnnotation> annotations = variable.getAnnotations();
+			annotations.add(annotation);
 		}
+	}
+	
+	public boolean hasAnnotation(VariableDeclaration variable,
+			Class<? extends VariableDeclarationAnnotation> annotationClass) {
+		List<VariableDeclarationAnnotation> annotations = variable.getAnnotations();
+		return annotations.stream()
+				.anyMatch(it -> annotationClass.isInstance(it));
 	}
 	
 	public void removeVariableDeclarationAnnotations(
