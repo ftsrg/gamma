@@ -93,6 +93,8 @@ public class TraceGenerationHandler extends TaskHandler {
 		
 	public void execute(TraceGeneration tracegeneration) throws IOException {
 		setTargetFolder(tracegeneration);
+		File targetFolder = new File(targetFolderUri);
+		cleanFolder(targetFolder);
 		
 		// Based on the method setVerification in VerificationHandler
 		Resource resource = tracegeneration.eResource();
@@ -108,7 +110,7 @@ public class TraceGenerationHandler extends TaskHandler {
 		ThetaTraceGenerator ttg = new ThetaTraceGenerator();
 		retrievedTraces = ttg.execute(modelFile);
 		System.out.println(retrievedTraces.size());
-		
+
 		for (ExecutionTrace trace : retrievedTraces) {
 			serializer.serialize(targetFolderUri, traceFileName, svgFileName,
 					testFolderUri, testFileName, "", trace);
@@ -117,6 +119,33 @@ public class TraceGenerationHandler extends TaskHandler {
 		System.err.println(traces.size());
 	}
 
+	public static void cleanFolder(File folder) {
+		File[] files = folder.listFiles();
+	    if(files!=null) {
+	        for(File f: files) {
+	            if(f.isDirectory()) {
+	                deleteFolder(f);
+	            } else {
+	                f.delete();
+	            }
+	        }
+	    }
+	}
+	
+	public static void deleteFolder(File folder) {
+	    File[] files = folder.listFiles();
+	    if(files!=null) {
+	        for(File f: files) {
+	            if(f.isDirectory()) {
+	                deleteFolder(f);
+	            } else {
+	                f.delete();
+	            }
+	        }
+	    }
+	    folder.delete();
+	}
+	
 	public List<ExecutionTrace> getTraces() {
 		return traces;
 	}
