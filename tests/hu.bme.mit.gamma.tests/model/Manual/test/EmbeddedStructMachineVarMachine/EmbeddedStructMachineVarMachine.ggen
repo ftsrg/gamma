@@ -1,6 +1,6 @@
 import "model/EmbeddedStructMachineVarMachine/EmbeddedStructMachineVarMachine"
 import "model/EmbeddedStructMachineVarMachine/EmbeddedStructMachineVarMachineWrapper"
-import trace "EmbeddedStructMachineVarMachineTest"
+import trace "EmbeddedStructMachineVarMachineTest.get"
 
 code {
 	component: EmbeddedStructMachineVarMachine

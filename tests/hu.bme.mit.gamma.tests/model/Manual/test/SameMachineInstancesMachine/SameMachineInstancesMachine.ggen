@@ -1,6 +1,6 @@
 import "model/SameMachineInstancesMachine/SameMachineInstancesMachine"
 import "model/SameMachineInstancesMachine/SameMachineInstancesMachineWrapper"
-import trace "SameMachineInstancesMachineTest"
+import trace "SameMachineInstancesMachineTest.get"
 
 code {
 	component: SameMachineInstancesMachine

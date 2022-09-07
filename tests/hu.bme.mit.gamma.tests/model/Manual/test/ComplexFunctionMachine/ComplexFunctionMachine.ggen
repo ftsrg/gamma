@@ -1,6 +1,6 @@
 import "model/ComplexFunctionMachine/ComplexFunctionMachine"
 import "model/ComplexFunctionMachine/ComplexFunctionMachineWrapper"
-import trace "ComplexFunctionMachineTest"
+import trace "ComplexFunctionMachineTest.get"
 
 code {
 	component: ComplexFunctionMachine
