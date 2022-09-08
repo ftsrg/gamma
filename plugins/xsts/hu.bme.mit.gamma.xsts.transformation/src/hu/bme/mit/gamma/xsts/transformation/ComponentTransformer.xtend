@@ -699,11 +699,14 @@ class ComponentTransformer {
 				val event = portEvent.value
 				
 				val xStsInputEventVariables = event.getInputEventVariables(port)
-				if (xStsInputEventVariables.empty) {
+				if (xStsInputEventVariables.empty &&
+						// We have to keep the control ports
+						!component.ports.contains(port)) {
 					removableBranchActions += branchAction // The input event is unused
 				}
 				else {
 					// Can be more than one - one port can be mapped to multiple instance ports
+					// Can be empty if it is a control port
 					for (xStsInputEventVariable : xStsInputEventVariables) {
 						branchAction.appendToAction(xStsInputEventVariable
 							.createAssignmentAction(createTrueExpression))
