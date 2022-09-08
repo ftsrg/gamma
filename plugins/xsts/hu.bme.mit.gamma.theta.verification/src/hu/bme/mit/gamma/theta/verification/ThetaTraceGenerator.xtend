@@ -32,8 +32,10 @@ class ThetaTraceGenerator {
 	
 	private def List<ExecutionTrace> generateTraces(Object traceability, File modelFile) {
 		val traceDir = new File(modelFile.parent + File.separator + "traces")
+		cleanFolder(traceDir)
+		
 		val jar = System.getenv(ENVIRONMENT_VARIABLE_FOR_THETA_JAR)
-		val command = #["java", "-jar", jar] + #["--stacktrace", "--tracegen", "--model", modelFile.canonicalPath, "--property", modelFile.canonicalPath]
+		val command = #["java", "-jar", jar] + #["--stacktrace", "--tracegen", "--search", "DFS", "--model", modelFile.canonicalPath, "--property", modelFile.canonicalPath]
 		logger.log(Level.INFO, "Executing command: " + command.join(" "))
 		process = Runtime.getRuntime().exec(command)
 		val outputStream = process.inputStream
@@ -62,6 +64,33 @@ class ThetaTraceGenerator {
 			val backAnnotator = new TraceBackAnnotator(gammaPackage, traceFileScanner)
 			return backAnnotator.execute
 		}
+	}
+	
+	private def cleanFolder(File folder) {
+		val files = folder.listFiles();
+	    if(files!==null) {
+	        for(File f: files) {
+	            if(f.isDirectory()) {
+	                deleteFolder(f);
+	            } else {
+	                f.delete();
+	            }
+	        }
+	    }
+	}
+	
+	private def deleteFolder(File folder) {
+	    val files = folder.listFiles();
+	    if(files !== null) {
+	        for(File f: files) {
+	            if(f.isDirectory()) {
+	                deleteFolder(f);
+	            } else {
+	                f.delete();
+	            }
+	        }
+	    }
+	    folder.delete();
 	}
 	
 	def getProcess() {
