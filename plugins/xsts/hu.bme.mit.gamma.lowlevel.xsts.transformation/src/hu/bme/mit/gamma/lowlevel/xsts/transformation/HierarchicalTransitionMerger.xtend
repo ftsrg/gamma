@@ -246,6 +246,7 @@ class HierarchicalTransitionMerger extends AbstractTransitionMerger {
 		}
 		else if (action instanceof NonDeterministicAction) {
 			for (branch : action.actions) {
+				// TODO default branches?
 				branch.appendToAction(execSetting)
 			}
 		}
@@ -275,7 +276,8 @@ class HierarchicalTransitionMerger extends AbstractTransitionMerger {
 		}
 		else if (extendable instanceof NonDeterministicAction) {
 			extendable.extendChoiceWithDefaultBranch(action)
-			// TODO Can the same NonDeterministicAction be extended multiple times?
+			// Can the same NonDeterministicAction be extended multiple times?
+			checkState(!choicesWithDefaultBranch.contains(extendable))
 			choicesWithDefaultBranch += extendable
 		}
 		else if (extendable instanceof SequentialAction) {
