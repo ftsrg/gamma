@@ -8,8 +8,10 @@ Automatic-Module-Name: hu.bme.mit.gamma.serializer.commandhandler
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Require-Bundle: org.eclipse.ui,
  org.eclipse.emf.ecore,
+ org.eclipse.core.runtime,
  org.eclipse.core.resources,
  org.eclipse.equinox.registry,
+ hu.bme.mit.gamma.trace.model,
  hu.bme.mit.gamma.util,
  hu.bme.mit.gamma.transformation.util,
  hu.bme.mit.gamma.statechart.language.ui,

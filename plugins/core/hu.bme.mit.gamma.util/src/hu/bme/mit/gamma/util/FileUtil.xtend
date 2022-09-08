@@ -19,6 +19,7 @@ import java.util.Map
 import java.util.Scanner
 import javax.xml.XMLConstants
 import javax.xml.parsers.DocumentBuilderFactory
+import org.eclipse.core.resources.IFile
 import org.eclipse.core.resources.IResource
 
 class FileUtil {
@@ -60,6 +61,11 @@ class FileUtil {
 	
 	def toPath(String packageName) {
 		return packageName.replaceAll("\\.", "\\"+ File.separator)
+	}
+	
+	def getFile(IFile file) {
+		val fullPath = file.fullPath
+		return fullPath.toFile
 	}
 	
 	def getFile(File sourceFolder, String packageName, String className) {
