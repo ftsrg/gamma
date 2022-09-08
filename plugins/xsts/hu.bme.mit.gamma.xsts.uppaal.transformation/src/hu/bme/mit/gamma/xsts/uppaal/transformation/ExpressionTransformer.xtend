@@ -110,7 +110,6 @@ class ExpressionTransformer {
 				it.identifier = uppaalVariable.variable.head
 			]
 		}
-		
 	}
 	
 	def dispatch Expression transform(NotExpression expression) {

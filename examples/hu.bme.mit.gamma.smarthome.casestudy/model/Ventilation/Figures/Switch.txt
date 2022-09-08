@@ -1,0 +1,9 @@
+@startuml
+		VentilationOn : entry / Ventilation.switchVentilation(true)
+		VentilationOn : entry / Ventilation.ventilate(BASE_VENTILATION)
+		VentilationOn : exit / Ventilation.switchVentilation(false)
+		[*] -> VentilationOn 
+		VentilationOff --> VentilationOn : Motion.motion\n[Motion.motion::on]
+		VentilationOn --> VentilationOff : Motion.motion\n[!Motion.motion::on]
+		
+@enduml

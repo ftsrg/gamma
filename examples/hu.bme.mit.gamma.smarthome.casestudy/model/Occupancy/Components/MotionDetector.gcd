@@ -3,6 +3,7 @@ package occupancy
 import "Interfaces/Constants.gcd"
 import "Interfaces/Interfaces.gcd"
 
+@TransitionPriority = order-based
 statechart MotionDetector(selfDefense : boolean) [
 	port MotionDetector : requires MotionDetector
 	port Motion : provides Motion
@@ -54,9 +55,11 @@ statechart MotionDetector(selfDefense : boolean) [
 	transition from SelfDefenseChoice to Count [
 		relayedMotionCount < MAXIMUM_RELAYED_MOTION_COUNT]
 	transition from SelfDefenseChoice to TemporarilyIdle [else]
-	transition from Count to Count when timeout expectedDelayTime [selfDefense] /
+	transition from Count to Count when timeout expectedDelayTime [selfDefense and
+			relayedMotionCount > 0] /
 		relayedMotionCount := relayedMotionCount - 1;
 	
 	transition from TemporarilyIdle to On when timeout temporarilyIdleTime /
 		relayedMotionCount := 0;
+	transition from TemporarilyIdle to TemporarilyIdle when MotionDetector.motion // To conform to contract
 }

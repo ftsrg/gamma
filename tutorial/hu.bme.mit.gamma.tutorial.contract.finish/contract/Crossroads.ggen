@@ -1,4 +1,7 @@
 import "hu.bme.mit.gamma.tutorial.contract.finish/contract/adaptive/Crossroads.gcd"
+import "hu.bme.mit.gamma.tutorial.contract.finish/contract/environment/Environment.gcd"
+
+
 //import trace "/hu.bme.mit.gamma.tutorial.contract.finish/trace/ExecutionTrace0.get"
 
 //adaptive-test {
@@ -30,13 +33,27 @@ adaptive-conformance-check {
 		component : Crossroads
 		language : Theta
 		constraint : {
-			minimum-orchestrating-period : 999 ms
-			maximum-orchestrating-period : 999 ms
+			minimum-orchestrating-period : 1001 ms // Needed for police.police
+			maximum-orchestrating-period : 1001 ms
 		}
 		folder: ".temporary"
 	}
 	folder : ".temporary"
 }
+
+//adaptive-conformance-check {
+//	analysis {
+//		component : Crossroads
+//		language : Theta
+//		constraint : {
+//			minimum-orchestrating-period : 1001 ms // Needed for police.police
+//			maximum-orchestrating-period : 1001 ms
+//		}
+//		folder: ".temporary"
+//	}
+//	environment : Environment
+//	folder : ".temporary"
+//}
 
 //phase-statechart {
 //	statechart : Crossroads

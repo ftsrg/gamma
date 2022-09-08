@@ -1,6 +1,6 @@
 import "model/StructMachineVarMachine/StructMachineVarMachine"
 import "model/StructMachineVarMachine/StructMachineVarMachineWrapper"
-import trace "StructMachineVarMachineTest"
+import trace "StructMachineVarMachineTest.get"
 
 code {
 	component: StructMachineVarMachine

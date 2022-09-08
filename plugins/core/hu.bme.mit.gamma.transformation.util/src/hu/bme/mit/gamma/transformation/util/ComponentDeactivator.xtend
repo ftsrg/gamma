@@ -239,8 +239,9 @@ class ComponentDeactivator {
 			// Entering the violation (and accept) state(s)
 			val firstValidState = nonTrappingOutgoingTransitions
 					.reject[it.loop] // Cold violation loop edges
-					.onlyElement
-					.targetState
+					.map[it.targetState]
+					.toSet // Can be multiple "parallel" transitions to the same state
+					.onlyElement // state0
 			incomingTransitionOfInitialBlockState.targetState = firstValidState
 			for (nonTrappingOutgoingTransition : nonTrappingOutgoingTransitions) {
 				nonTrappingOutgoingTransition.targetState = activityState
@@ -308,15 +309,15 @@ class ComponentDeactivator {
 			choiceState.name = choiceStateName
 			activityRegion.stateNodes += choiceState
 			
-			val activityTransition = activityState.createTransition(mergeState)
+			val activityTransition = activityState.createMaximumPriorityTransition(mergeState)
 			activityTransition.trigger = activityPort.createEventTrigger(activityEvent)
 			
-			val inactivityTransition = inactivityState.createTransition(mergeState)
+			val inactivityTransition = inactivityState.createMaximumPriorityTransition(mergeState)
 			inactivityTransition.trigger = activityPort.createEventTrigger(activityEvent)
 			
-			val mergeChoiceTransition = mergeState.createTransition(choiceState)
+			val mergeChoiceTransition = mergeState.createMaximumPriorityTransition(choiceState)
 			// Resetting variables if necessary
-			if (activityRegion.hasHistory) {
+			if (!activityRegion.hasHistory) {
 				val variables = newLinkedHashSet
 				variables += statechart.variableDeclarations
 				variables -= unresettableDeclarations
@@ -327,10 +328,10 @@ class ComponentDeactivator {
 				}
 			}
 			
-			val isActiveTransition = choiceState.createTransition(activityState)
+			val isActiveTransition = choiceState.createMaximumPriorityTransition(activityState)
 			isActiveTransition.guard = activityPort.createEventParameterReference(isActiveParameter)
 			
-			val isInactiveTransition = choiceState.createTransition(inactivityState)
+			val isInactiveTransition = choiceState.createMaximumPriorityTransition(inactivityState)
 			isInactiveTransition.guard = activityPort.createEventParameterReference(isActiveParameter)
 					.createNotExpression
 		}

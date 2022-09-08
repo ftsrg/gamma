@@ -331,7 +331,8 @@ class AsynchronousAdapterCodeGenerator {
 		
 		import «PACKAGE_NAME».*;
 
-		«FOR _package : component.containingPackage.componentImports.toSet /* For type declarations */»
+		«FOR _package : component.containingPackage.componentImports.toSet /* For type declarations */
+				.filter[it.containsComponentsOrInterfacesOrTypes]»
 			import «_package.getPackageString(PACKAGE_NAME)».*;
 		«ENDFOR»
 		
@@ -342,7 +343,7 @@ class AsynchronousAdapterCodeGenerator {
 	 * Sets the parameters of the component and instantiates the necessary components with them.
 	 */
 	private def createInstances(AsynchronousAdapter component) '''
-		«FOR parameter : component.parameterDeclarations SEPARATOR ", "»
+		«FOR parameter : component.parameterDeclarations»
 			this.«parameter.name» = «parameter.name»;
 		«ENDFOR»
 		«component.generateWrappedComponentName» = new «component.wrappedComponent.type.generateComponentClassName»(«FOR argument : component.wrappedComponent.arguments SEPARATOR ", "»«argument.serialize»«ENDFOR»);

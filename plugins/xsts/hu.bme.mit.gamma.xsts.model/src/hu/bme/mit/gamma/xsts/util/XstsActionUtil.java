@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -50,6 +50,7 @@ import hu.bme.mit.gamma.xsts.model.AssignmentAction;
 import hu.bme.mit.gamma.xsts.model.AssumeAction;
 import hu.bme.mit.gamma.xsts.model.CompositeAction;
 import hu.bme.mit.gamma.xsts.model.EmptyAction;
+import hu.bme.mit.gamma.xsts.model.GroupAnnotation;
 import hu.bme.mit.gamma.xsts.model.HavocAction;
 import hu.bme.mit.gamma.xsts.model.IfAction;
 import hu.bme.mit.gamma.xsts.model.LoopAction;
@@ -58,6 +59,7 @@ import hu.bme.mit.gamma.xsts.model.NonDeterministicAction;
 import hu.bme.mit.gamma.xsts.model.ParallelAction;
 import hu.bme.mit.gamma.xsts.model.SequentialAction;
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction;
+import hu.bme.mit.gamma.xsts.model.VariableGroup;
 import hu.bme.mit.gamma.xsts.model.XSTS;
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory;
 import hu.bme.mit.gamma.xsts.model.XTransition;
@@ -108,11 +110,37 @@ public class XstsActionUtil extends ExpressionUtil {
 	public void merge(XSTS pivot, XSTS mergable) {
 		pivot.getTypeDeclarations().addAll(mergable.getTypeDeclarations());
 		pivot.getPublicTypeDeclarations().addAll(mergable.getPublicTypeDeclarations());
-		pivot.getVariableGroups().addAll(mergable.getVariableGroups());
 		pivot.getVariableDeclarations().addAll(mergable.getVariableDeclarations());
 		pivot.getConstraints().addAll(mergable.getConstraints());
+		mergeVariableGroups(pivot, mergable);
 	}
 	
+	public void mergeVariableGroups(XSTS pivot, XSTS mergable) {
+		List<VariableGroup> variableGroups = pivot.getVariableGroups();
+		variableGroups.addAll(
+				mergable.getVariableGroups());
+		List<VariableGroup> deletableGroups = new ArrayList<VariableGroup>();
+		
+		int size = variableGroups.size();
+		for (int i = 0; i < size - 1; ++i) {
+			VariableGroup lhs = variableGroups.get(i);
+			GroupAnnotation lhsAnnotation = lhs.getAnnotation();
+			for (int j = i + 1; j < size; ++j) {
+				VariableGroup rhs = variableGroups.get(j);
+				GroupAnnotation rhsAnnotation = rhs.getAnnotation();
+				if (ecoreUtil.helperEquals(lhsAnnotation, rhsAnnotation)) {
+					lhs.getVariables().addAll(
+							rhs.getVariables());
+					deletableGroups.add(rhs);
+				}
+			}
+		}
+		
+		for (VariableGroup variableGroup : deletableGroups) {
+			ecoreUtil.delete(variableGroup);
+		}
+	}
+
 	public void changeTransitions(XSTS xSts, XTransition newAction) {
 		changeTransitions(xSts, Collections.singletonList(newAction));
 	}
@@ -260,10 +288,22 @@ public class XstsActionUtil extends ExpressionUtil {
 				.collect(Collectors.toList());
 	}
 	
+	public List<AbstractAssignmentAction> getAssignments(VariableDeclaration variable, XSTS xSts) {
+		List<AbstractAssignmentAction> assignments = ecoreUtil.getAllContentsOfType(
+				xSts, AbstractAssignmentAction.class);
+		return getAssignments(variable, assignments);
+	}
+	
 	public List<AbstractAssignmentAction> getAssignments(Collection<VariableDeclaration> variables,
 			Collection<AbstractAssignmentAction> assignments) {
 		return assignments.stream().filter(it -> variables.contains(getDeclaration(it.getLhs())))
 				.collect(Collectors.toList());
+	}
+	
+	public List<AbstractAssignmentAction> getAssignments(Collection<VariableDeclaration> variables,	XSTS xSts) {
+		List<AbstractAssignmentAction> assignments = ecoreUtil.getAllContentsOfType(
+				xSts, AbstractAssignmentAction.class);
+		return getAssignments(variables, assignments);
 	}
 	
 	public VariableDeclarationAction extractExpressions(
@@ -632,6 +672,21 @@ public class XstsActionUtil extends ExpressionUtil {
 	}
 	
 	public NonDeterministicAction createChoiceActionWithExclusiveBranches(
+			List<? extends Action> actions) {
+		NonDeterministicAction choiceAction = xStsFactory.createNonDeterministicAction();
+		for (int i = 0; i < actions.size(); i++) {
+			Action action = actions.get(i);
+			if (i == 0) {
+				choiceAction.getActions().add(action);
+			}
+			else {
+				extendChoiceWithDefaultBranch(choiceAction, action);
+			}
+		}
+		return choiceAction;
+	}
+	
+	public NonDeterministicAction createChoiceActionWithExclusiveBranches(
 			List<Expression> conditions, List<Action> actions) {
 		int conditionsSize = conditions.size();
 		if (conditionsSize != actions.size() && conditionsSize + 1 != actions.size()) {
@@ -858,9 +913,12 @@ public class XstsActionUtil extends ExpressionUtil {
 			ArrayLiteralExpression arrayLiteral = factory.createArrayLiteralExpression();
 			for (int i = 1; i < size; i++) {
 				ArrayAccessExpression accessExpression = factory.createArrayAccessExpression();
-				accessExpression.setOperand(createReferenceExpression(queue));
-				accessExpression.setIndex(toIntegerLiteral(i));
-				arrayLiteral.getOperands().add(accessExpression);
+				accessExpression.setOperand(
+						createReferenceExpression(queue));
+				accessExpression.setIndex(
+						toIntegerLiteral(i));
+				arrayLiteral.getOperands()
+						.add(accessExpression);
 			}
 			// Shifting a default value at the end
 			// Would not be necessary in Theta (but it is in UPPAAL) due to the default branch
@@ -917,8 +975,10 @@ public class XstsActionUtil extends ExpressionUtil {
 		int queueSize = queues.size();
 		for (int i = 0; i < queueSize; i++) {
 			VariableDeclaration queue = queues.get(i);
+			Expression clonedIndex = ecoreUtil.clone(index);
 			Expression element = elements.get(i);
-			block.getActions().add(add(queue, index, element));
+			block.getActions().add(
+					add(queue, clonedIndex, element));
 		}
 		return block;
 	}
@@ -942,8 +1002,10 @@ public class XstsActionUtil extends ExpressionUtil {
 	public Action addAllAndIncrement(List<? extends VariableDeclaration> queues,
 			VariableDeclaration sizeVariable, List<? extends Expression> elements) {
 		SequentialAction block = xStsFactory.createSequentialAction();
-		block.getActions().add(addAll(queues, createReferenceExpression(sizeVariable), elements));
-		block.getActions().add(increment(sizeVariable));
+		block.getActions().add(
+				addAll(queues, createReferenceExpression(sizeVariable), elements));
+		block.getActions().add(
+				increment(sizeVariable));
 		return block;
 	}
 	

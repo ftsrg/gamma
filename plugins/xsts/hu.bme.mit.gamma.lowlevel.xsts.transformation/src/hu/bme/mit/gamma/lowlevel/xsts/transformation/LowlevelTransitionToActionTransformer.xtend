@@ -245,13 +245,15 @@ class LowlevelTransitionToActionTransformer {
 	protected def createRecursiveXStsTransitionEntryActionsWithOrthogonality(Transition lowlevelTransition) {
 		val lowlevelTargetState = lowlevelTransition.target as State
 		val actions = <Action>newArrayList
+		
 		var ancestor = if (isToLowerNode(null, lowlevelTransition, null, lowlevelTargetState) || 
 				isToHigherAndLowerNode(null, null, lowlevelTransition, null, lowlevelTargetState)) {
 			lowlevelTransition.targetAncestor
 		} else if (lowlevelTransition.isToHigherNode || lowlevelTransition.isToHigherAndLowerNode) {
 			// Consequence: The source ancestor has to be activated again, as it has been deactivated,
 			// e.g., in case of to higher choice transitions
-			lowlevelTransition.sourceAncestor
+//			lowlevelTransition.sourceAncestor // TODO This solution was not correct for sure for "toHigher" transitions
+			null
 		}
 		if (ancestor !== null) {
 			// To lower characteristics

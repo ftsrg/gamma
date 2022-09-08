@@ -1,6 +1,6 @@
 import "model/StructRecieverGuardMachine/StructRecieverGuardMachine"
 import "model/StructRecieverGuardMachine/StructRecieverGuardMachineWrapper"
-import trace "StructRecieverGuardMachineTest"
+import trace "StructRecieverGuardMachineTest.get"
 
 code {
 	component: StructRecieverGuardMachine

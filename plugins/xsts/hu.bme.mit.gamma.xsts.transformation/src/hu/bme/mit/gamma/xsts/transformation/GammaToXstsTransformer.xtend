@@ -20,6 +20,7 @@ import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.TransitionMerging
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer.ActionOptimizer
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer.ResettableVariableResetter
 import hu.bme.mit.gamma.property.model.PropertyPackage
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.InterfaceModelFactory
@@ -58,7 +59,8 @@ class GammaToXstsTransformer {
 	protected final extension ActionSerializer actionSerializer = ActionSerializer.INSTANCE
 	protected final extension EnvironmentalActionFilter environmentalActionFilter =
 			EnvironmentalActionFilter.INSTANCE
-	protected final extension ActionOptimizer actionSimplifier = ActionOptimizer.INSTANCE
+	protected final extension ActionOptimizer actionOptimizer = ActionOptimizer.INSTANCE
+	protected final extension ResettableVariableResetter resetter = ResettableVariableResetter.INSTANCE
 	protected final extension AnalysisModelPreprocessor modelPreprocessor = AnalysisModelPreprocessor.INSTANCE
 	protected final extension ExpressionModelFactory expressionModelFactory = ExpressionModelFactory.eINSTANCE
 	protected final extension InterfaceModelFactory interfaceModelFactory = InterfaceModelFactory.eINSTANCE
@@ -286,6 +288,8 @@ class GammaToXstsTransformer {
 		xSts.inEventTransition = xSts.inEventTransition.optimize
 		xSts.outEventTransition = xSts.outEventTransition.optimize
 		xSts.changeTransitions(xSts.transitions.optimize)
+		logger.log(Level.INFO, "Resetting resettable variables in the environment in " + xSts.name)
+		xSts.resetResettableVariables
 	}
 	
 }

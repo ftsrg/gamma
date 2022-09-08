@@ -13,8 +13,6 @@ package de.uni_paderborn.uppaal.derivedfeatures;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.emf.common.util.EList;
-
 import uppaal.declarations.Variable;
 import uppaal.declarations.VariableContainer;
 import uppaal.templates.Edge;
@@ -61,7 +59,7 @@ public class UppaalModelDerivedFeatures {
 	}
 	
 	public static Variable getOnlyVariable(VariableContainer container) {
-		EList<Variable> variable = container.getVariable();
+		List<Variable> variable = container.getVariable();
 		if (variable.size() != 1) {
 			throw new IllegalArgumentException("Not one variable: " + variable);
 		}

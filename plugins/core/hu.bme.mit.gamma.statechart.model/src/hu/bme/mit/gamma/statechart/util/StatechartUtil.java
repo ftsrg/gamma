@@ -62,6 +62,8 @@ import hu.bme.mit.gamma.statechart.interface_.AnyTrigger;
 import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.ComponentAnnotation;
 import hu.bme.mit.gamma.statechart.interface_.Event;
+import hu.bme.mit.gamma.statechart.interface_.EventDeclaration;
+import hu.bme.mit.gamma.statechart.interface_.EventDirection;
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression;
 import hu.bme.mit.gamma.statechart.interface_.EventReference;
 import hu.bme.mit.gamma.statechart.interface_.EventTrigger;
@@ -91,6 +93,7 @@ import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
 import hu.bme.mit.gamma.statechart.statechart.StatechartModelFactory;
 import hu.bme.mit.gamma.statechart.statechart.SynchronousStatechartDefinition;
 import hu.bme.mit.gamma.statechart.statechart.Transition;
+import hu.bme.mit.gamma.statechart.statechart.TransitionPriority;
 import hu.bme.mit.gamma.statechart.statechart.UnaryTrigger;
 import hu.bme.mit.gamma.statechart.statechart.UnaryType;
 
@@ -462,8 +465,20 @@ public class StatechartUtil extends ActionUtil {
 	public AsynchronousAdapter wrapIntoAdapter(SynchronousComponent component, String adapterName) {
 		AsynchronousAdapter adapter = compositeFactory.createAsynchronousAdapter();
 		adapter.setName(adapterName);
+		
 		SynchronousComponentInstance synchronousInstance = instantiateSynchronousComponent(component);
 		adapter.setWrappedComponent(synchronousInstance);
+		
+		for (ParameterDeclaration parameterDeclaration : component.getParameterDeclarations()) {
+			ParameterDeclaration clonedParamaterDeclaration = ecoreUtil.clone(parameterDeclaration);
+			adapter.getParameterDeclarations()
+					.add(clonedParamaterDeclaration);
+			
+			DirectReferenceExpression argument = createReferenceExpression(clonedParamaterDeclaration);
+			synchronousInstance.getArguments()
+					.add(argument);
+		}
+		
 		return adapter;
 	}
 	
@@ -538,6 +553,27 @@ public class StatechartUtil extends ActionUtil {
 		return port;
 	}
 	
+	public Port createOppositePort(Port port) {
+		Port oppositePort = ecoreUtil.clone(port);
+		
+		InterfaceRealization interfaceRealization = oppositePort.getInterfaceRealization();
+		RealizationMode realizationMode = interfaceRealization.getRealizationMode();
+		RealizationMode opposite = StatechartModelDerivedFeatures.getOpposite(realizationMode);
+		interfaceRealization.setRealizationMode(opposite);
+		
+		return oppositePort;
+	}
+	
+	public Interface createBroadcastInterface(Interface _interface) {
+		Interface broadcastInterface = ecoreUtil.clone(_interface);
+		
+		for (EventDeclaration event : broadcastInterface.getEvents()) {
+			event.setDirection(EventDirection.OUT);
+		}
+		
+		return broadcastInterface;
+	}
+	
 	public ComponentInstance instantiateComponent(Component component) {
 		if (component instanceof SynchronousComponent) {
 			return instantiateSynchronousComponent(
@@ -552,7 +588,8 @@ public class StatechartUtil extends ActionUtil {
 	
 	public SynchronousComponentInstance instantiateSynchronousComponent(SynchronousComponent component) {
 		SynchronousComponentInstance instance = compositeFactory.createSynchronousComponentInstance();
-		instance.setName(getWrapperInstanceName(component));
+		instance.setName(
+				getWrapperInstanceName(component));
 		instance.setType(component);
 		return instance;
 	}
@@ -691,6 +728,12 @@ public class StatechartUtil extends ActionUtil {
 		return StatechartModelDerivedFeatures.getWrapperInstanceName(component);
 	}
 	
+	public SimpleChannel connectPortsViaChannels(InstancePortReference lhsReference,
+			InstancePortReference rhsReference) {
+		return connectPortsViaChannels(lhsReference.getInstance(), lhsReference.getPort(),
+				rhsReference.getInstance(), rhsReference.getPort());
+	}
+	
 	public SimpleChannel connectPortsViaChannels(ComponentInstance lhsInstance, Port lhsPort,
 			ComponentInstance rhsInstance, Port rhsPort) {
 		SimpleChannel channel = compositeFactory.createSimpleChannel();
@@ -775,6 +818,44 @@ public class StatechartUtil extends ActionUtil {
 			statechart.getTransitions().add(transition);
 		}
 		return transition;
+	}
+	
+	public Transition createMaximumPriorityTransition(StateNode sourceState, StateNode targetState) {
+		Transition transition = createTransition(sourceState, targetState);
+		maximizeTransitionPriority(transition); // To support if-else over nondeterministic choices
+
+		return transition;
+	}
+	
+	public void maximizeTransitionPriority(Transition transition) {
+		StatechartDefinition statechart =
+				StatechartModelDerivedFeatures.getContainingStatechart(transition);
+		TransitionPriority transitionPriority = statechart.getTransitionPriority();
+		if (transitionPriority == TransitionPriority.VALUE_BASED) {
+			StateNode source = transition.getSourceState();
+			List<Transition> outgoingTransitions =
+					StatechartModelDerivedFeatures.getOutgoingTransitions(source);
+			
+			BigInteger maxPriority = outgoingTransitions.stream()
+					.map(it -> it.getPriority())
+					.max((lhs, rhs) -> lhs.compareTo(rhs))
+					.get();
+			BigInteger newPriority = maxPriority.add(BigInteger.ONE);
+			
+			transition.setPriority(newPriority);
+		}
+		else if (transitionPriority == TransitionPriority.ORDER_BASED) {
+			List<Transition> transitions = statechart.getTransitions();
+			boolean foundTransition = false;
+			for (int i = 0; i < transitions.size() && !foundTransition; ++i) {
+				Transition potentiallySearchedTransition = transitions.get(i);
+				if (potentiallySearchedTransition.getSourceState() == transition.getSourceState()) {
+					transitions.add(i, transition);
+					
+					foundTransition = true;
+				}
+			}
+		}
 	}
 	
 	public History createHistory(boolean hasHistory) {

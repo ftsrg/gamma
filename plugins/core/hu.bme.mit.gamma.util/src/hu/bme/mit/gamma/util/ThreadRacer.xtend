@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2021 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -14,6 +14,8 @@ import java.util.Collection
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.logging.Level
+import java.util.logging.Logger
 
 class ThreadRacer<T> {
 	
@@ -22,6 +24,8 @@ class ThreadRacer<T> {
 
 	int numberOfCallablesShouldBeRunning = 0
 	final AtomicInteger numberOfAbortedCallables = new AtomicInteger
+	
+	protected final Logger logger = Logger.getLogger("GammaLogger")
 
 	def T execute(Collection<InterruptableCallable<T>> callables) {
 		val size = callables.size
@@ -36,7 +40,9 @@ class ThreadRacer<T> {
 			futures += executor.submit(wrappedCallable)
 		}
 		// Racing
+		logger.log(Level.INFO, '''Waiting for the threads to return a result''')
 		latch.await
+		logger.log(Level.INFO, '''A result has been returned''')
 		// One of the threads won
 		for (future : futures) {
 			future.cancel(true)

@@ -70,7 +70,7 @@ class JavaUtil {
 		return true
 	}
 	
-	def boolean containsOne(Collection<?> lhs, Iterable<?> rhs) {
+	def boolean containsAny(Collection<?> lhs, Iterable<?> rhs) {
 		for (element : rhs) {
 			if (lhs.contains(element)) {
 				return true
@@ -80,7 +80,7 @@ class JavaUtil {
 	}
 	
 	def boolean containsNone(Collection<?> lhs, Iterable<?> rhs) {
-		return !lhs.containsOne(rhs)
+		return !lhs.containsAny(rhs)
 	}
 	
 	def <T> T getOnlyElement(Iterable<T> collection) {
@@ -93,6 +93,20 @@ class JavaUtil {
 	def <K, V> List<V> getOrCreateList(Map<K, List<V>> map, K key) {
 		if (!map.containsKey(key)) {
 			map += key -> newArrayList
+		}
+		return map.get(key)
+	}
+	
+	def <K, V> Set<V> getOrCreateSet(Map<K, Set<V>> map, K key) {
+		if (!map.containsKey(key)) {
+			map += key -> newLinkedHashSet
+		}
+		return map.get(key)
+	}
+	
+	def <K, V> V checkAndGet(Map<K, V> map, K key) {
+		if (!map.containsKey(key)) {
+			throw new IllegalArgumentException("Not contained element: " + key)
 		}
 		return map.get(key)
 	}

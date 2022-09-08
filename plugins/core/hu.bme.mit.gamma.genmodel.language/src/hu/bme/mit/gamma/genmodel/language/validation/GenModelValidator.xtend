@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -10,17 +10,18 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.genmodel.language.validation
 
+import hu.bme.mit.gamma.expression.model.ArgumentedElement
 import hu.bme.mit.gamma.genmodel.model.AbstractComplementaryTestGeneration
 import hu.bme.mit.gamma.genmodel.model.AdaptiveContractTestGeneration
 import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation
 import hu.bme.mit.gamma.genmodel.model.AsynchronousInstanceConstraint
 import hu.bme.mit.gamma.genmodel.model.CodeGeneration
-import hu.bme.mit.gamma.genmodel.model.ComponentReference
 import hu.bme.mit.gamma.genmodel.model.EventMapping
 import hu.bme.mit.gamma.genmodel.model.GenModel
 import hu.bme.mit.gamma.genmodel.model.InterfaceMapping
 import hu.bme.mit.gamma.genmodel.model.OrchestratingConstraint
 import hu.bme.mit.gamma.genmodel.model.StatechartCompilation
+import hu.bme.mit.gamma.genmodel.model.StatechartContractGeneration
 import hu.bme.mit.gamma.genmodel.model.Task
 import hu.bme.mit.gamma.genmodel.model.TestGeneration
 import hu.bme.mit.gamma.genmodel.model.TraceReplayModelGeneration
@@ -107,6 +108,11 @@ class GenModelValidator extends AbstractGenModelValidator {
 	// Additional validation rules
 	
 	@Check
+	def checkArgumentTypes(ArgumentedElement argumentedElement) {
+		handleValidationResultMessage(genmodelValidator.checkArgumentTypes(argumentedElement))
+	}
+	
+	@Check
 	def checkGammaImports(GenModel genmodel) {
 		handleValidationResultMessage(genmodelValidator.checkGammaImports(genmodel))
 	}
@@ -119,11 +125,6 @@ class GenModelValidator extends AbstractGenModelValidator {
 	@Check
 	def checkTraceImports(GenModel genmodel) {
 		handleValidationResultMessage(genmodelValidator.checkTraceImports(genmodel))
-	}
-	
-	@Check
-	def checkParameters(ComponentReference componentReference) {
-		handleValidationResultMessage(genmodelValidator.checkParameters(componentReference))
 	}
 	
 	@Check
@@ -174,6 +175,11 @@ class GenModelValidator extends AbstractGenModelValidator {
 	@Check
 	def checkComponentInstanceReferences(ComponentInstanceReferenceExpression reference) {
 		handleValidationResultMessage(genmodelValidator.checkComponentInstanceReferences(reference))
+	}
+	
+	@Check
+	def checkNegatedInteractionInTestAutomatonGeneration(StatechartContractGeneration statechartContractGeneration){
+		handleValidationResultMessage(genmodelValidator.checkNegatedInteractionInTestAutomatonGeneration(statechartContractGeneration))
 	}
 	
 }

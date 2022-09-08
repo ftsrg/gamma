@@ -1,3 +1,13 @@
+/********************************************************************************
+ * Copyright (c) 2020-2022 Contributors to the Gamma project
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * SPDX-License-Identifier: EPL-1.0
+ ********************************************************************************/
 package hu.bme.mit.gamma.scenario.util;
 
 import java.util.ArrayList;
@@ -52,6 +62,7 @@ import hu.bme.mit.gamma.statechart.interface_.EventDeclaration;
 import hu.bme.mit.gamma.statechart.interface_.EventDirection;
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression;
 import hu.bme.mit.gamma.statechart.interface_.Interface;
+import hu.bme.mit.gamma.statechart.interface_.InterfaceRealization;
 import hu.bme.mit.gamma.statechart.interface_.Persistency;
 import hu.bme.mit.gamma.statechart.interface_.Port;
 import hu.bme.mit.gamma.statechart.interface_.RealizationMode;
@@ -94,7 +105,8 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 		}
 		if (negpermissivePresent && negstrictPresent) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-					"A scenario should be annotated with either a permissive or strict annotation with respect to negated sends blocks",
+					"A scenario should be annotated with either a permissive or strict annotation " +
+							"with respect to negated sends blocks",
 					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME)));
 		}
 		return validationResultMessages;
@@ -181,7 +193,8 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 					}
 
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-							"Modal interactions in scenarios with respect to synchronous components must be contained by modal interaction sets",
+							"Modal interactions in scenarios with respect to synchronous components " +
+									"must be contained by modal interaction sets",
 							new ReferenceInfo(interaction.eContainingFeature(), idx, eContainer)));
 				}
 			}
@@ -213,7 +226,8 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 				ModalityType tmpModality = getFirstInteractionsModality(fragment.getInteractions());
 				if (!tmpModality.equals(firstModality)) {
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-							"First interaction's modality should be the same in each fragment belonging to the same combined fragment",
+							"First interaction's modality should be the same in each fragment " +
+									"belonging to the same combined fragment",
 							new ReferenceInfo(ScenarioModelPackage.Literals.COMBINED_FRAGMENT__FRAGMENTS)));
 					return validationResultMessages;
 				}
@@ -244,14 +258,14 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 		return checkEventDirections(signal, expectedDirections, "Port cannot receive");
 	}
 
-	public Collection<ValidationResultMessage> negatedReceives(NegatedModalInteraction nmi) {
+	public Collection<ValidationResultMessage> negatedReceives(NegatedModalInteraction negatedInteraction) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		InteractionDefinition mi = nmi.getModalinteraction();
-		if (mi instanceof Signal) {
-			Signal signal = (Signal) mi;
+		InteractionDefinition interaction = negatedInteraction.getModalinteraction();
+		if (interaction instanceof Signal) {
+			Signal signal = (Signal) interaction;
 			if (signal.getDirection().equals(InteractionDirection.RECEIVE)) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.INFO,
-						"Currently negated interactions received by the component are not processed",
+					"Currently negated interactions received by the component are not processed",
 						new ReferenceInfo(ScenarioModelPackage.Literals.NEGATED_MODAL_INTERACTION__MODALINTERACTION)));
 			}
 		}
@@ -310,7 +324,7 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 			Type maxType = typeDeterminator.getType(maximum);
 			if (!(maxType instanceof IntegerTypeDefinition)) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-						"The maximum value must be of type integer", new ReferenceInfo(maximumFeature)));
+					"The maximum value must be of type integer", new ReferenceInfo(maximumFeature)));
 			}
 		}
 		return validationResultMessages;
@@ -319,23 +333,48 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 	private Collection<ValidationResultMessage> checkEventDirections(Signal signal,
 			Map<RealizationMode, EventDirection> directionByMode, String prefix) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		RealizationMode portRealizationMode = signal.getPort().getInterfaceRealization().getRealizationMode();
-		Interface signalInterface = signal.getPort().getInterfaceRealization().getInterface();
+		Port port = signal.getPort();
+		InteractionDirection direction = signal.getDirection();
+		InterfaceRealization interfaceRealization = port.getInterfaceRealization();
+		RealizationMode portRealizationMode = interfaceRealization.getRealizationMode();
+		Interface signalInterface = interfaceRealization.getInterface();
 		Event signalEvent = signal.getEvent();
+		
+		if (StatechartModelDerivedFeatures.isInternal(signalEvent)) {
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING,
+				"Internal events are currently supported only for component-linked behavior equivalence checking",
+					new ReferenceInfo(ScenarioModelPackage.Literals.SIGNAL__EVENT)));
+			
+			ScenarioDeclaration scenario = ecoreUtil.getContainerOfType(signal, ScenarioDeclaration.class);
+			List<Signal> signals = ecoreUtil.getAllContentsOfType(scenario, Signal.class);
+			for (Signal otherSignal : signals) {
+				Port otherPort = otherSignal.getPort();
+				InteractionDirection otherDirection = otherSignal.getDirection();
+				if (otherPort == port && direction != otherDirection) {
+					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+						"A certain internal port must be used in a single direction in every interaction",
+							new ReferenceInfo(ScenarioModelPackage.Literals.SIGNAL__EVENT)));
+				}
+			}
+			
+			return validationResultMessages;
+		}
 
 		List<EventDeclaration> interfaceEventDeclarations = StatechartModelDerivedFeatures
 				.getAllEventDeclarations(signalInterface);
 		List<EventDeclaration> signalEventDeclarations = interfaceEventDeclarations.stream()
-				.filter((it) -> it.getEvent().equals(signalEvent)).collect(Collectors.toList());
+				.filter((it) -> it.getEvent().equals(signalEvent))
+				.collect(Collectors.toList());
 
-		EventDirection expectedDir = directionByMode.get(portRealizationMode);
+		EventDirection expectedDirection = directionByMode.get(portRealizationMode);
 
 		List<EventDirection> expectedDirections = new ArrayList<EventDirection>();
-		expectedDirections.add(expectedDir);
+		expectedDirections.add(expectedDirection);
 		expectedDirections.add(EventDirection.INOUT);
-		boolean eventDirIsWrong = signalEventDeclarations.stream()
+		
+		boolean isDirectionWrong = signalEventDeclarations.stream()
 				.anyMatch((it) -> expectedDirections.contains(it.getDirection()));
-		if (!eventDirIsWrong) {
+		if (!isDirectionWrong) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, prefix
 					+ " this event, because of incompatible port mode; should the port be Provided, set the event to be "
 					+ directionByMode.get(RealizationMode.PROVIDED)
@@ -343,6 +382,7 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 					+ directionByMode.get(RealizationMode.REQUIRED),
 					new ReferenceInfo(ScenarioModelPackage.Literals.SIGNAL__EVENT)));
 		}
+		
 		return validationResultMessages;
 	}
 
@@ -524,8 +564,8 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 	}
 
 	private boolean isScenarioReferenceRecursive(ScenarioDefinitionReference reference, ScenarioDeclaration base) {
-		List<ScenarioDefinitionReference> references = ecoreUtil.getAllContentsOfType(reference.getScenarioDefinition(),
-				ScenarioDefinitionReference.class);
+		List<ScenarioDefinitionReference> references = ecoreUtil.getAllContentsOfType(
+				reference.getScenarioDefinition(), ScenarioDefinitionReference.class);
 		for (ScenarioDefinitionReference innerReference : references) {
 			if (innerReference.getScenarioDefinition().equals(base)) {
 				return true;
@@ -566,6 +606,22 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 								fragment.eContainer())));
 			}
 		}
+		return validationResultMessages;
+	}
+	
+	public Collection<ValidationResultMessage> checkDelayAndNegateInSameBlock(ModalInteractionSet set) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		List<InteractionDefinition> interactions = set.getModalInteractions();
+		List<Signal> signals = javaUtil.filterIntoList(interactions, Signal.class);
+		List<Delay> delays = javaUtil.filterIntoList(interactions, Delay.class);
+		List<NegatedModalInteraction> negateds = javaUtil.filterIntoList(interactions, NegatedModalInteraction.class);
+		if (signals.size() > 0 || delays.size() == 0 || negateds.size() == 0) {
+			return validationResultMessages;
+		}
+		validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING,
+				"The use of a negated signal and a delay without a signal may lead to the desynchronization of the monitor system",
+				new ReferenceInfo(set.eContainingFeature(), ecoreUtil.getIndex(set),
+					set.eContainer())));
 		return validationResultMessages;
 	}
 }

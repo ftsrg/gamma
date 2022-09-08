@@ -1,0 +1,46 @@
+package init
+import "/hu.bme.mit.gamma.tutorial.contract.finish/model/Interfaces/Interfaces.gcd"
+import "/hu.bme.mit.gamma.tutorial.contract.finish/contract/adaptive/Crossroads.gcd"
+@TransitionPriority = value-based
+@HasInitialOutputsBlock
+@ScenarioContractStatechart = Crossroads (permissive)
+statechart Init [
+	port police : requires PoliceInterrupt
+	port policeReversed : provides PoliceInterrupt
+	port priorityOutput : provides LightCommands
+	port priorityOutputReversed : requires LightCommands
+	port secondaryOutput : provides LightCommands
+	port secondaryOutputReversed : requires LightCommands
+] {
+	region ^region {
+		initial Initial
+		state initialState
+		state hotComponentViolation
+		state state0
+		@SpecialStateAnnotation accepting
+		state AcceptingState
+	}
+	transition from Initial to initialState
+	transition (3) from initialState to state0 when (priorityOutputReversed.displayRed &&
+		secondaryOutputReversed.displayRed) && !(priorityOutputReversed.displayYellow ||
+		priorityOutputReversed.displayGreen || priorityOutputReversed.displayNone ||
+		secondaryOutputReversed.displayYellow || secondaryOutputReversed.displayGreen ||
+		secondaryOutputReversed.displayNone)
+	transition (1) from initialState to state0 when priorityOutputReversed.displayRed ||
+		priorityOutputReversed.displayYellow || priorityOutputReversed.displayGreen ||
+		priorityOutputReversed.displayNone || secondaryOutputReversed.displayRed ||
+		secondaryOutputReversed.displayYellow || secondaryOutputReversed.displayGreen ||
+		secondaryOutputReversed.displayNone
+	transition from initialState to state0 when police.police
+	transition (3) from state0 to AcceptingState when priorityOutputReversed.displayGreen &&
+		!(priorityOutputReversed.displayRed || priorityOutputReversed.displayYellow ||
+		priorityOutputReversed.displayNone || secondaryOutputReversed.displayRed ||
+		secondaryOutputReversed.displayYellow || secondaryOutputReversed.displayGreen ||
+		secondaryOutputReversed.displayNone)
+	transition (1) from state0 to hotComponentViolation when priorityOutputReversed.displayRed ||
+		priorityOutputReversed.displayYellow || priorityOutputReversed.displayGreen ||
+		priorityOutputReversed.displayNone || secondaryOutputReversed.displayRed ||
+		secondaryOutputReversed.displayYellow || secondaryOutputReversed.displayGreen ||
+		secondaryOutputReversed.displayNone
+	transition from state0 to state0 when police.police
+}

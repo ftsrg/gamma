@@ -296,4 +296,14 @@ public class LowlevelStatechartModelDerivedFeatures extends ActionModelDerivedFe
 		return lowlevelTransitions.size() == priorites.size();
 	}
 	
+	public static boolean arePrioritiesSame(
+			Collection<? extends Transition> lowlevelTransitions) {
+		Set<Integer> priorites = new HashSet<Integer>();
+		// Watch out for join nodes
+		for (Transition lowlevelTransition : lowlevelTransitions) {
+			priorites.add(lowlevelTransition.getPriority());
+		}
+		return priorites.size() == 1;
+	}
+	
 }

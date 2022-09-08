@@ -12,9 +12,9 @@ package hu.bme.mit.gamma.scenario.model.reduction;
 
 public class FragmentInteractionPair {
 	
-	private int fragment=-1;
+	private int fragment = -1;
 	
-	private int interaction=-1;
+	private int interaction = -1;
 
 	public int getFragment() {
 		return fragment;

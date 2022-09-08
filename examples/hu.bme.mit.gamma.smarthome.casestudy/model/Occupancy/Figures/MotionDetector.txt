@@ -1,0 +1,25 @@
+@startuml
+		state TemporarilyIdle
+		state On {
+				[*] -> Idle 
+				Idle -> SensedMotion : MotionDetector.motion  /\nMotion.motion(true)
+				SensedMotion : entry / timeoutTime := TIMEOUT_TIME s
+				SensedMotion -> SensedMotion : MotionDetector.motion 
+				SensedMotion -> Idle : timeout timeoutTime  /\nMotion.motion(false)
+			--
+			state SelfDefenseChoice <<choice>>
+				[*] -> Count 
+				Count : entry / expectedDelayTime := EXPECTED_DELAY_TIME s
+				Count --> SelfDefenseChoice : MotionDetector.motion [selfDefense] /\nrelayedMotionCount := relayedMotionCount + 1
+				Count -> Count : timeout expectedDelayTime [selfDefense] /\nrelayedMotionCount := relayedMotionCount - 1
+				SelfDefenseChoice -> Count :  [relayedMotionCount < \nMAXIMUM_RELAYED_MOTION_COUNT]
+		}
+		
+		TemporarilyIdle : entry / temporarilyIdleTime := TEMPORARILY_IDLE_TIME s
+		TemporarilyIdle : entry / temporarilyIdle := true
+		TemporarilyIdle : exit / temporarilyIdle := false
+		[*] -> On 
+		TemporarilyIdle --> On : timeout temporarilyIdleTime  /\nrelayedMotionCount := 0
+		
+		
+@enduml

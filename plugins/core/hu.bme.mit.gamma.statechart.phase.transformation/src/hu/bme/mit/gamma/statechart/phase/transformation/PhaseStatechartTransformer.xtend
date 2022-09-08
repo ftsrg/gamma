@@ -10,8 +10,10 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.statechart.phase.transformation
 
+import hu.bme.mit.gamma.expression.util.ArgumentInliner
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance
 import hu.bme.mit.gamma.statechart.composite.PortBinding
+import hu.bme.mit.gamma.statechart.phase.History
 import hu.bme.mit.gamma.statechart.phase.MissionPhaseStateAnnotation
 import hu.bme.mit.gamma.statechart.phase.VariableBinding
 import hu.bme.mit.gamma.statechart.statechart.State
@@ -31,6 +33,7 @@ class PhaseStatechartTransformer {
 	
 	protected final StatechartDefinition statechart
 	
+	protected final extension ArgumentInliner argumentInliner = ArgumentInliner.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension StatechartModelFactory statechartFactory = StatechartModelFactory.eINSTANCE
 	protected final extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
@@ -63,7 +66,16 @@ class PhaseStatechartTransformer {
 		while (!checkedAnnotations.containsAll(annotations)) {
 			for (annotation : annotations.reject[checkedAnnotations.contains(it)]) {
 				val component = annotation.component
-				val inlineableStatechart = component.derivedType.clone as StatechartDefinition
+				val originalType = component.derivedType
+				
+				// Imports here due to the cloning below
+				val _package = statechart.containingPackage
+				val inlineablePackage = originalType.containingPackage
+				
+				_package.imports += inlineablePackage.imports
+				//
+				
+				val inlineableStatechart = originalType.clone as StatechartDefinition
 				for (portBinding : annotation.portBindings) {
 					portBinding.inlinePorts(inlineableStatechart)
 				}
@@ -118,7 +130,9 @@ class PhaseStatechartTransformer {
 		val statechart = portBinding.containingStatechart
 		val originalPort = portBinding.instancePortReference.port
 		val portCopies = inlineableStatechart.ports.filter[it.helperEquals(originalPort)]
+		
 		checkState(portCopies.size == 1, portCopies)
+		
 		val portCopy = portCopies.head
 		portBinding.instancePortReference.port = portCopy
 		statechart.ports += portCopy
@@ -131,7 +145,9 @@ class PhaseStatechartTransformer {
 		val instance = variableBinding.instanceVariableReference.instance
 		val variableCopies = inlineableStatechart.variableDeclarations
 				.filter[it.helperEquals(originalVariable)]
+				
 		checkState(variableCopies.size == 1, variableCopies)
+		
 		val variableCopy = variableCopies.head
 		variableCopy.name = variableCopy.getName(instance)
 		variableBinding.instanceVariableReference.variable = variableCopy
@@ -158,6 +174,19 @@ class PhaseStatechartTransformer {
 			inlineableRegion.stateNodes += newEntryState
 			newEntryState.changeAndDelete(oldEntryState, inlineableStatechart)
 		}
+		
+		// If there is no history, we reset the variable values
+		// Note that doing this on exit will reduce the state space
+		if (history == History.NO_HISTORY) {
+			val resettableVariables = inlineableStatechart.variableDeclarations
+			// Note that the bound variables are already inlined into the statechart
+			for (resettableVariable : resettableVariables) {
+				val variableInitializationAction = resettableVariable.createAssignment(
+						resettableVariable.initialValue)
+				state.exitActions += variableInitializationAction
+			}
+		}
+		
 		// Renames
 		for (inlineableRegion : inlineableRegions) {
 			for (stateNode : inlineableRegion.allStateNodes) {

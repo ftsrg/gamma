@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -17,6 +17,9 @@ import java.util.ArrayList
 import java.util.Collections
 import java.util.Map
 import java.util.Scanner
+import javax.xml.XMLConstants
+import javax.xml.parsers.DocumentBuilderFactory
+import org.eclipse.core.resources.IFile
 import org.eclipse.core.resources.IResource
 
 class FileUtil {
@@ -45,8 +48,24 @@ class FileUtil {
 		return builder.toString
 	}
 	
+	def loadXml(File file) {
+		// https://mkyong.com/java/how-to-read-xml-file-in-java-dom-parser/
+		val documentBuilderFactory = DocumentBuilderFactory.newInstance
+		documentBuilderFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true)
+		val documentBuilder = documentBuilderFactory.newDocumentBuilder
+		val document = documentBuilder.parse(file)
+		
+		document.documentElement.normalize
+		return document
+	}
+	
 	def toPath(String packageName) {
 		return packageName.replaceAll("\\.", "\\"+ File.separator)
+	}
+	
+	def getFile(IFile file) {
+		val fullPath = file.fullPath
+		return fullPath.toFile
 	}
 	
 	def getFile(File sourceFolder, String packageName, String className) {
@@ -112,6 +131,11 @@ class FileUtil {
 		return fileName.extensionlessName + "." + newExtension
 	}
 	
+	def changeFileName(String fileUri, String newFileName) {
+		val parent = fileUri.parent
+		return parent + File.separator + newFileName
+	}
+	
 	def getParent(String fileUri) {
 		val file = new File(fileUri)
 		return file.parent
@@ -157,27 +181,27 @@ class FileUtil {
 		file.delete
 	}
 	
-    /**
-     * Returns the next valid name for the file that is suffixed by indices.
-     */
-    def Map.Entry<String, Integer> getFileName(File folder, String fileName, String fileExtension) {
-    	val usedIds = new ArrayList<Integer>();
-    	folder.mkdirs();
-    	// Searching the trace folder for highest id
-    	for (File file: folder.listFiles()) {
-    		if (file.getName().matches(fileName + "[0-9]+\\." + fileExtension)) {
-    			// File extension needed to distinguish .get and .json
-    			val id = file.getName().substring(fileName.length(), file.getName().length() - ("." + fileExtension).length());
-    			usedIds.add(Integer.parseInt(id));
-    		}
-    	}
-    	if (usedIds.isEmpty()) {
-    		return new AbstractMap.SimpleEntry<String, Integer>(fileName + "0." + fileExtension, 0);
-    	}
-    	Collections.sort(usedIds);
-    	val biggestId = usedIds.get(usedIds.size() - 1);
-    	return new AbstractMap.SimpleEntry<String, Integer>(
-    			fileName + (biggestId + 1) + "." + fileExtension, (biggestId + 1));
-    }
+	/**
+	 * Returns the next valid name for the file that is suffixed by indices.
+	 */
+	def Map.Entry<String, Integer> getFileName(File folder, String fileName, String fileExtension) {
+		val usedIds = new ArrayList<Integer>();
+		folder.mkdirs();
+		// Searching the trace folder for highest id
+		for (File file: folder.listFiles()) {
+			if (file.getName().matches(fileName + "[0-9]+\\." + fileExtension)) {
+				// File extension needed to distinguish .get and .json
+				val id = file.getName().substring(fileName.length(), file.getName().length() - ("." + fileExtension).length());
+				usedIds.add(Integer.parseInt(id));
+			}
+		}
+		if (usedIds.isEmpty()) {
+			return new AbstractMap.SimpleEntry<String, Integer>(fileName + "0." + fileExtension, 0);
+		}
+		Collections.sort(usedIds);
+		val biggestId = usedIds.get(usedIds.size() - 1);
+		return new AbstractMap.SimpleEntry<String, Integer>(
+				fileName + (biggestId + 1) + "." + fileExtension, (biggestId + 1));
+	}
 	
 }

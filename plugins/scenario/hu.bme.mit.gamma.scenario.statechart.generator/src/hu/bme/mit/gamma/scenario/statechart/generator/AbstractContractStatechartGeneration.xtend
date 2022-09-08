@@ -111,7 +111,7 @@ abstract class AbstractContractStatechartGeneration {
 	}
 
 	def protected addPorts(Component component) {
-		for (port : component.ports) {
+		for (port : component.allPorts) {
 			val portCopy = createPort
 			val interfaceRealization = createInterfaceRealization
 			interfaceRealization.realizationMode = port.interfaceRealization.realizationMode
@@ -124,7 +124,7 @@ abstract class AbstractContractStatechartGeneration {
 			val interfaceRealizationReverse = createInterfaceRealization
 			interfaceRealizationReverse.interface = port.interfaceRealization.interface
 			interfaceRealizationReverse.realizationMode =
-				port.interfaceRealization.realizationMode.opposite
+					port.interfaceRealization.realizationMode.opposite
 			portReverse.interfaceRealization = interfaceRealizationReverse
 			statechart.ports += portReverse
 		}
@@ -151,15 +151,19 @@ abstract class AbstractContractStatechartGeneration {
 		return statechartUtil.createAssignment(variable,
 				exprUtil.toIntegerLiteral(value))
 	}
-
-	def protected Expression getVariableLessEqualParamExpression(VariableDeclaration variable, int maxValue) {
+	
+	// TODO check if there are util methods in StatechartUtil for this
+	def protected Expression getVariableLessEqualParamExpression(
+				VariableDeclaration variable, int maxValue) {
 		var maxCheck = createLessEqualExpression
 		maxCheck.leftOperand = exprUtil.createReferenceExpression(variable)
 		maxCheck.rightOperand = exprUtil.toIntegerLiteral(maxValue)
 		return maxCheck
 	}
 
-	def protected Expression getVariableGreaterEqualParamExpression(VariableDeclaration variable, int minValue) {
+	// TODO check if there are util methods in StatechartUtil for this
+	def protected Expression getVariableGreaterEqualParamExpression(
+				VariableDeclaration variable, int minValue) {
 		var minCheck = createGreaterEqualExpression
 		minCheck.leftOperand = exprUtil.createReferenceExpression(variable)
 		minCheck.rightOperand = exprUtil.toIntegerLiteral(minValue)
@@ -225,6 +229,15 @@ abstract class AbstractContractStatechartGeneration {
 		}
 		return binaryTrigger
 	}
+	
+	def protected Trigger getBinaryTriggerFromTriggersIfPossible(
+			List<Trigger> triggers, BinaryType type) {
+		if (triggers.size > 1) {
+			return getBinaryTriggerFromTriggers(triggers, type)
+		} else if (triggers.size == 1) {
+			return triggers.head
+		}
+	}
 
 	def protected BinaryTrigger getAllEvents(BinaryType type) {
 		var bin = createBinaryTrigger
@@ -258,7 +271,7 @@ abstract class AbstractContractStatechartGeneration {
 		val triggers = <Trigger>newArrayList
 		val ports = newArrayList
 		val events = newArrayList
-		val allPorts = statechart.ports.filter[!it.inputEvents.empty]
+		val allPorts = statechart.allPorts.filter[!it.inputEvents.empty]
 		for (modalInteraction : set.modalInteractions) {
 			var Signal signal = null
 			if (modalInteraction instanceof Signal) {
@@ -270,9 +283,9 @@ abstract class AbstractContractStatechartGeneration {
 				}
 			}
 			if (signal !== null) {
-				val portName = signal.direction == InteractionDirection.SEND
-						? scenarioStatechartUtil.getTurnedOutPortName(signal.port)
-						: signal.port.name
+				val portName = signal.direction == InteractionDirection.SEND ?
+						scenarioStatechartUtil.getTurnedOutPortName(signal.port) :
+						signal.port.name
 				ports += getPort(portName)
 				events += getEvent(signal.event.name, getPort(portName))
 			}
@@ -318,9 +331,9 @@ abstract class AbstractContractStatechartGeneration {
 	def protected dispatch Trigger getEventTrigger(Signal signal, boolean reversed) {
 		val trigger = createEventTrigger
 		val eventref = createPortEventReference
-		val port = reversed
-				? getPort(scenarioStatechartUtil.getTurnedOutPortName(signal.port))
-				: getPort(signal.port.name)
+		val port = reversed ?
+				getPort(scenarioStatechartUtil.getTurnedOutPortName(signal.port)) :
+				getPort(signal.port.name)
 		eventref.event = getEvent(signal.event.name, port)
 		eventref.port = port
 		trigger.eventReference = eventref
@@ -341,9 +354,9 @@ abstract class AbstractContractStatechartGeneration {
 		val trigger = createEventTrigger
 		if (negatedInteraction.modalinteraction instanceof Signal) {
 			var signal = negatedInteraction.modalinteraction as Signal
-			var Port port = signal.direction.equals(InteractionDirection.SEND)
-					? getPort(scenarioStatechartUtil.getTurnedOutPortName(signal.port))
-					: getPort(signal.port.name)
+			var Port port = signal.direction.equals(InteractionDirection.SEND) ?
+					getPort(scenarioStatechartUtil.getTurnedOutPortName(signal.port)) :
+					getPort(signal.port.name)
 			val Event event = getEvent(signal.event.name, port)
 			val eventRef = createPortEventReference
 			eventRef.event = event
@@ -482,7 +495,8 @@ abstract class AbstractContractStatechartGeneration {
 		}
 	}
 
-	def protected addAssignmentsToTransition(Iterable<ScenarioAssignmentStatement> assignments, Transition transition) {
+	def protected addAssignmentsToTransition(Iterable<ScenarioAssignmentStatement> assignments,
+			Transition transition) {
 		for (assignment : assignments) {
  			transition.effects += statechartUtil.createAssignment(
  				assignment.lhs.clone, assignment.rhs.clone)
@@ -511,8 +525,8 @@ abstract class AbstractContractStatechartGeneration {
 		}
 	}
 
-	def protected setupForwardTransition(ModalInteractionSet set, boolean reversed, boolean isNegated,
-		Transition forwardTransition) {
+	def protected setupForwardTransition(ModalInteractionSet set,
+			boolean reversed, boolean isNegated, Transition forwardTransition) {
 		retargetAllEventParamRefs(set, reversed)
 		var Trigger trigger = null
 		val checks = set.modalInteractions.filter(ScenarioCheckExpression)
@@ -531,12 +545,13 @@ abstract class AbstractContractStatechartGeneration {
 			forwardTransition.trigger = negateEventTrigger(trigger)
 		} else {
 			forwardTransition.trigger = trigger
-			for (modalInteraction : nonCheckOrAssignmentInteractitons) {
-				val effect = getRaiseEventAction(modalInteraction, !reversed)
-				if (effect !== null) {
-					forwardTransition.effects += effect
-				}
-			}
+			//Uncomment these lines to allow effects on the reversed ports
+//			for (modalInteraction : nonCheckOrAssignmentInteractitons) {
+//				val effect = getRaiseEventAction(modalInteraction, !reversed)
+//				if (effect !== null) {
+//					forwardTransition.effects += effect
+//				}
+//			}
 		}
 		addChecksToTransition(checks, forwardTransition)
 		addAssignmentsToTransition(assignments, forwardTransition)
@@ -566,8 +581,8 @@ abstract class AbstractContractStatechartGeneration {
 		return timeSpecification
 	}
 
-	def protected void setTimeoutDeclarationForState(StateNode state, TimeoutDeclaration timeoutDeclaration,
-		TimeSpecification timeSpecification) {
+	def protected void setTimeoutDeclarationForState(StateNode state,
+			TimeoutDeclaration timeoutDeclaration, TimeSpecification timeSpecification) {
 		val action = createSetTimeoutAction
 		action.timeoutDeclaration = timeoutDeclaration
 		action.time = timeSpecification
