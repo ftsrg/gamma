@@ -245,8 +245,14 @@ class HierarchicalTransitionMerger extends AbstractTransitionMerger {
 //			}
 		}
 		else if (action instanceof NonDeterministicAction) {
+			// No default branches yet because this method is called before 'extendElse'
+//			val branches = newArrayList
+//			branches += action.actions
+//			if (choicesWithDefaultBranch.contains(action)) {
+//				branches.remove(branches.size - 1)
+//			}
+			checkState(!choicesWithDefaultBranch.contains(action))
 			for (branch : action.actions) {
-				// TODO default branches?
 				branch.appendToAction(execSetting)
 			}
 		}
