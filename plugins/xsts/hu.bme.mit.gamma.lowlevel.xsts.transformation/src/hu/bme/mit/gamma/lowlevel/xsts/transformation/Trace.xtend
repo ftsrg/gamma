@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -58,6 +58,7 @@ import org.eclipse.viatra.query.runtime.emf.EMFScope
 import static com.google.common.base.Preconditions.checkArgument
 import static com.google.common.base.Preconditions.checkState
 
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension java.lang.Math.abs
 
 package class Trace {
@@ -320,6 +321,12 @@ package class Trace {
 		return matches.head
 	}
 	
+	def getXStsEnumType(Region lowlevelRegion) {
+		val xStsVariable = lowlevelRegion.XStsVariable
+		val xStsEnumType = xStsVariable.typeDefinition as EnumerationTypeDefinition
+		return xStsEnumType
+	}
+	
 	def getLowlevelRegion(VariableDeclaration xStsVariable) {
 		checkArgument(xStsVariable !== null)
 		val matches = RegionTrace.Matcher.on(tracingEngine).getAllValuesOflowlevelRegion(xStsVariable)
@@ -363,6 +370,20 @@ package class Trace {
 		val matches = StateTrace.Matcher.on(tracingEngine).getAllValuesOfxStsEnumLiteral(lowlevelState)
 		checkState(matches.size == 1, matches.size)
 		return matches.head
+	}
+	
+	def getXStsInactiveHistoryEnumLiteral(State lowlevelState) {
+		val xStsEnumLiteral = lowlevelState.XStsEnumLiteral
+		val xStsEnumLiteralIndex = xStsEnumLiteral.index
+		val xStsEnumType = xStsEnumLiteral.getContainerOfType(EnumerationTypeDefinition)
+		val xStsEnumLiterals = xStsEnumType.literals
+		//
+		val xStsInactiveHistoryEnumLiteralOffset = (xStsEnumLiterals.size - 1) / 2
+		//
+		val xStsInactiveHistoryEnumLiteralIndex = xStsEnumLiteralIndex + xStsInactiveHistoryEnumLiteralOffset
+		val xStsInactiveHistoryEnumLiteral = xStsEnumLiterals.get(xStsInactiveHistoryEnumLiteralIndex)
+		
+		return xStsInactiveHistoryEnumLiteral
 	}
 	
 	def getLowlevelState(EnumerationLiteralDefinition xStsEnumLiteral) {

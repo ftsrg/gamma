@@ -876,6 +876,31 @@ public class ExpressionUtil {
 		return ifThenElseExpression;
 	}
 	
+	public IfThenElseExpression weave(Collection<? extends IfThenElseExpression> expressions) {
+		IfThenElseExpression first = null;
+		IfThenElseExpression last = null;
+		for (IfThenElseExpression expression : expressions) {
+			if (first == null) {
+				first = expression;
+			}
+			if (last != null) {
+				if (last.getElse() != null) {
+					throw new IllegalArgumentException("Not null else: " + expression);
+				}
+				last.setElse(expression);
+			}
+			last = expression;
+		}
+		// Replacing last if-then-else if else is null, otherwise there would be "null" branch
+		if (last.getElse() == null) {
+			Expression then = last.getThen();
+			ecoreUtil.replace(then, last);
+		}
+		//
+		
+		return first;
+	}
+	
 	public DirectReferenceExpression createReferenceExpression(Declaration declaration) {
 		DirectReferenceExpression reference = factory.createDirectReferenceExpression();
 		reference.setDeclaration(declaration);
