@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -20,6 +20,7 @@ import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.TransitionMerging
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer.ActionOptimizer
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer.ArrayOptimizer
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer.ResettableVariableResetter
 import hu.bme.mit.gamma.property.model.PropertyPackage
 import hu.bme.mit.gamma.statechart.interface_.Component
@@ -54,6 +55,7 @@ class GammaToXstsTransformer {
 	protected final Integer schedulingConstraint
 	protected final PropertyPackage initialState
 	protected final InitialStateSetting initialStateSetting
+	protected final boolean optimizeArrays
 	// Auxiliary objects
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension ActionSerializer actionSerializer = ActionSerializer.INSTANCE
@@ -61,6 +63,7 @@ class GammaToXstsTransformer {
 			EnvironmentalActionFilter.INSTANCE
 	protected final extension ActionOptimizer actionOptimizer = ActionOptimizer.INSTANCE
 	protected final extension ResettableVariableResetter resetter = ResettableVariableResetter.INSTANCE
+	protected final extension ArrayOptimizer arrayOptimizer = ArrayOptimizer.INSTANCE
 	protected final extension AnalysisModelPreprocessor modelPreprocessor = AnalysisModelPreprocessor.INSTANCE
 	protected final extension ExpressionModelFactory expressionModelFactory = ExpressionModelFactory.eINSTANCE
 	protected final extension InterfaceModelFactory interfaceModelFactory = InterfaceModelFactory.eINSTANCE
@@ -71,18 +74,18 @@ class GammaToXstsTransformer {
 	protected final Logger logger = Logger.getLogger("GammaLogger")
 	
 	new() {
-		this(null, true, true, TransitionMerging.HIERARCHICAL)
+		this(null, true, true, false, TransitionMerging.HIERARCHICAL)
 	}
 	
 	new(Integer schedulingConstraint, boolean transformOrthogonalActions,
-			boolean optimize, TransitionMerging transitionMerging) {
+			boolean optimize, boolean optimizeArrays, TransitionMerging transitionMerging) {
 		this(schedulingConstraint, transformOrthogonalActions,
-				optimize, transitionMerging,
+				optimize, optimizeArrays, transitionMerging,
 				null, null)
 	}
 	
 	new(Integer schedulingConstraint, boolean transformOrthogonalActions,
-			boolean optimize, TransitionMerging transitionMerging,
+			boolean optimize, boolean optimizeArrays, TransitionMerging transitionMerging,
 			PropertyPackage initialState, InitialStateSetting initialStateSetting) {
 		this.gammaToLowlevelTransformer = new GammaToLowlevelTransformer
 		this.componentTransformer = new ComponentTransformer(this.gammaToLowlevelTransformer,
@@ -90,6 +93,7 @@ class GammaToXstsTransformer {
 		this.schedulingConstraint = schedulingConstraint
 		this.initialState = initialState
 		this.initialStateSetting = initialStateSetting
+		this.optimizeArrays = optimizeArrays // TODO back-annotation
 	}
 	
 	def preprocessAndExecuteAndSerialize(Package _package,
@@ -290,6 +294,10 @@ class GammaToXstsTransformer {
 		xSts.changeTransitions(xSts.transitions.optimize)
 		logger.log(Level.INFO, "Resetting resettable variables in the environment in " + xSts.name)
 		xSts.resetResettableVariables
+		if (optimizeArrays) {
+			logger.log(Level.INFO, "Optimizing one capacity arrays in " + xSts.name)
+			xSts.optimizeOneCapacityArrays
+		}
 	}
 	
 }
