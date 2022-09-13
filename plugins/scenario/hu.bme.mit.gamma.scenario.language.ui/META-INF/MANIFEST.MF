@@ -20,7 +20,7 @@ Require-Bundle: org.eclipse.xtext.ui,
  hu.bme.mit.gamma.scenario.language,
  hu.bme.mit.gamma.scenario.language.ide
 Import-Package: org.apache.log4j
-Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Export-Package: hu.bme.mit.gamma.scenario.language.ui.quickfix,
  hu.bme.mit.gamma.scenario.language.ui.internal,
  hu.bme.mit.gamma.scenario.language.ui.contentassist

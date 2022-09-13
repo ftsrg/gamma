@@ -12,7 +12,7 @@ Require-Bundle: hu.bme.mit.gamma.statechart.language,
  org.antlr.runtime;bundle-version="[3.2.0,3.2.1)",
  hu.bme.mit.gamma.action.language,
  hu.bme.mit.gamma.expression.language
-Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Export-Package: hu.bme.mit.gamma.statechart.language.ide.contentassist.antlr.internal,
  hu.bme.mit.gamma.statechart.language.ide.contentassist.antlr
 Automatic-Module-Name: hu.bme.mit.gamma.statechart.language.ide

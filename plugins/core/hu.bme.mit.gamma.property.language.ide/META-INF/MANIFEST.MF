@@ -14,6 +14,6 @@ Require-Bundle: hu.bme.mit.gamma.property.model,
  org.eclipse.xtext.ide,
  org.eclipse.xtext.xbase.ide,
  org.antlr.runtime;bundle-version="[3.2.0,3.2.1)"
-Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Export-Package: hu.bme.mit.gamma.property.language.ide.contentassist.antlr.internal,
  hu.bme.mit.gamma.property.language.ide.contentassist.antlr

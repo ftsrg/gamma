@@ -7,6 +7,8 @@ To use the visualization function, you need to install the following tools:
 
 ## Graphviz
 
+For the newest PlantUML version, the installation of Graphviz is no longer necessary as PlantUML is released with packed Graphviz binaries. Nevertheless, you can still install Graphviz separately if you want to as follows.
+
 You can download Graphviz from the following site: https://graphviz.gitlab.io/download/.
 
 For Windows, the stable packages for version 2.38 can be found here: https://graphviz.gitlab.io/_pages/Download/Download_windows.html.

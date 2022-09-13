@@ -5,7 +5,7 @@ Bundle-SymbolicName: hu.bme.mit.gamma.scenario.statechart.generator
 Bundle-Version: 2.7.0.qualifier
 Bundle-Vendor: BME-FTSRG
 Automatic-Module-Name: hu.bme.mit.gamma.scenario.statechart.generator
-Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Export-Package: hu.bme.mit.gamma.scenario.statechart.generator,
  hu.bme.mit.gamma.scenario.statechart.generator.serializer
 Require-Bundle: com.google.guava,

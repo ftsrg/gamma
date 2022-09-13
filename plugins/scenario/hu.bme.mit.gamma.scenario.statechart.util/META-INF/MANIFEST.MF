@@ -5,7 +5,7 @@ Bundle-SymbolicName: hu.bme.mit.gamma.scenario.statechart.util
 Bundle-Version: 2.7.0.qualifier
 Bundle-Vendor: BME-FTSRG
 Automatic-Module-Name: hu.bme.mit.gamma.scenario.statechart.util
-Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Require-Bundle: hu.bme.mit.gamma.statechart.model,
  hu.bme.mit.gamma.scenario.model,
  com.google.guava,
