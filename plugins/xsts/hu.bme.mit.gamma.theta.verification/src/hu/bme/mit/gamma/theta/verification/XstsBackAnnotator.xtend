@@ -124,6 +124,8 @@ class XstsBackAnnotator {
 	
 	protected def parseAsynchronousInEvent(String id, String value) {
 		val messageQueue = xStsQueryGenerator.getAsynchronousSourceMessageQueue(id)
+		// Note that 'id' might be a single value instead of an array due to optimization:
+		// 'parseArray' should handle this, too
 		val values = id.parseArray(value)
 		val stringEventId = values.findFirst[it.key == new IndexHierarchy(0)]?.value
 		// If null - it is a default 0 value, nothing is raised
@@ -150,7 +152,7 @@ class XstsBackAnnotator {
 			// Checking if this event has been raised in the previous cycle
 			if (!storedAsynchronousInEvents.contains(systemPort -> event)) {
 				step.addInEvent(systemPort, event)
-				// Denoting that this event has been actually
+				// Denoting that this event has been actually raised
 				raisedInEvents += systemPort -> event
 			}
 		}

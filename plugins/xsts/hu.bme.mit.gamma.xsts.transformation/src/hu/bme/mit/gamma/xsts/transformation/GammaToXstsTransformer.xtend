@@ -93,7 +93,7 @@ class GammaToXstsTransformer {
 		this.schedulingConstraint = schedulingConstraint
 		this.initialState = initialState
 		this.initialStateSetting = initialStateSetting
-		this.optimizeArrays = optimizeArrays // TODO back-annotation
+		this.optimizeArrays = optimizeArrays
 	}
 	
 	def preprocessAndExecuteAndSerialize(Package _package,
