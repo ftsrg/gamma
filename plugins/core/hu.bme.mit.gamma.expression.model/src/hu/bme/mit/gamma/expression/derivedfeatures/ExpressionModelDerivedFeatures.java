@@ -172,6 +172,17 @@ public class ExpressionModelDerivedFeatures {
 		return typeDefinition instanceof ArrayTypeDefinition;
 	}
 	
+	public static boolean isOneCapacityArray(Type type) {
+		TypeDefinition typeDefinition = getTypeDefinition(type);
+		if (typeDefinition instanceof ArrayTypeDefinition) {
+			ArrayTypeDefinition arrayTypeDefinition = (ArrayTypeDefinition) typeDefinition;
+			Expression size = arrayTypeDefinition.getSize();
+			int evaluatedSize = evaluator.evaluate(size);
+			return evaluatedSize == 1;
+		}
+		return false;
+	}
+	
 	public static boolean isRecord(Type type) {
 		TypeDefinition typeDefinition = getTypeDefinition(type);
 		return typeDefinition instanceof RecordTypeDefinition;
