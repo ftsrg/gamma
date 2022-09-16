@@ -26,6 +26,7 @@ import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.JoinTransitionTrac
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.MergeTransitionTrace
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.RegionTrace
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.SimpleTransitionTrace
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.StateHistoryTrace
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.StateTrace
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.TypeDeclarationTrace
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.VariableTrace
@@ -350,7 +351,8 @@ package class Trace {
 	}
 	
 	def getXStsInactiveEnumLiteral(EnumerationTypeDefinition enumType) {
-		val enumLiterals = enumType.literals.filter[it.name.equals(Namings.INACTIVE_ENUM_LITERAL)]
+		val enumLiterals = enumType.literals.filter[
+				it.name.equals(Namings.INACTIVE_ENUM_LITERAL)]
 		checkState(enumLiterals.size == 1, enumLiterals)
 		return enumLiterals.head
 	}
@@ -365,6 +367,24 @@ package class Trace {
 		]
 	}
 	
+	def putInactiveHistoryEnumLiteral(State lowlevelState,
+			EnumerationLiteralDefinition xStsInactiveHistoryEnumLiteral) {
+		checkArgument(lowlevelState !== null)
+		checkArgument(xStsInactiveHistoryEnumLiteral !== null)
+		val matches = StateHistoryTrace.Matcher.on(tracingEngine).getAllValuesOfstateTrace(lowlevelState, null)
+		if (matches.empty) {
+			trace.traces += createStateTrace => [
+				it.lowlevelState= lowlevelState
+				it.XStsInactiveHistoryEnumLiteral = xStsInactiveHistoryEnumLiteral
+			]
+		}
+		else {
+			checkState(matches.size == 1, matches.size)
+			val trace = matches.head
+			trace.XStsInactiveHistoryEnumLiteral = xStsInactiveHistoryEnumLiteral
+		}
+	}
+	
 	def getXStsEnumLiteral(State lowlevelState) {
 		checkArgument(lowlevelState !== null)
 		val matches = StateTrace.Matcher.on(tracingEngine).getAllValuesOfxStsEnumLiteral(lowlevelState)
@@ -373,25 +393,14 @@ package class Trace {
 	}
 	
 	def getXStsInactiveHistoryEnumLiteral(State lowlevelState) {
-		val xStsEnumLiteral = lowlevelState.XStsEnumLiteral
-		val xStsEnumLiteralIndex = xStsEnumLiteral.index
-		val xStsEnumType = xStsEnumLiteral.getContainerOfType(EnumerationTypeDefinition)
-		val xStsEnumLiterals = xStsEnumType.literals
-		//
-		val xStsInactiveHistoryEnumLiteralOffset = (xStsEnumLiterals.size - 1) / 2
-		//
-		val xStsInactiveHistoryEnumLiteralIndex = xStsEnumLiteralIndex + xStsInactiveHistoryEnumLiteralOffset
-		val xStsInactiveHistoryEnumLiteral = xStsEnumLiterals.get(xStsInactiveHistoryEnumLiteralIndex)
-		
-		return xStsInactiveHistoryEnumLiteral
-	}
-	
-	def getLowlevelState(EnumerationLiteralDefinition xStsEnumLiteral) {
-		checkArgument(xStsEnumLiteral !== null)
-		val matches = StateTrace.Matcher.on(tracingEngine).getAllValuesOflowlevelState(xStsEnumLiteral)
+		checkArgument(lowlevelState !== null)
+		val matches = StateHistoryTrace.Matcher.on(tracingEngine)
+				.getAllValuesOfxStsInactiveHistoryEnumLiteral(null, lowlevelState)
 		checkState(matches.size == 1, matches.size)
 		return matches.head
 	}
+	
+	//
 	
 	def getXStsPrecondition(XTransition xStsTransition) {
 		checkArgument(xStsTransition !== null)

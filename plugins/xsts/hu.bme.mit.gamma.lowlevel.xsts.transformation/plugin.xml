@@ -52,6 +52,7 @@
       <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.variableTrace"/>
       <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.regionTrace"/>
       <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.stateTrace"/>
+      <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.stateHistoryTrace"/>
       <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.simpleTransitionTrace"/>
       <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.choiceTransitionTrace"/>
       <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.mergeTransitionTrace"/>

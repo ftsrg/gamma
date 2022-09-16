@@ -361,13 +361,15 @@ class LowlevelToXstsTransformer {
 			
 			trace.put(lowlevelState, xStsEnumLiteral) // Tracing
 		}
-		// History literals TODO tracing
+		// History literals
 		if (lowlevelRegion.hasHistory) {
 			for (lowlevelState : lowlevelRegion.states) {
 				val xStsHistoryEnumLiteral = createEnumerationLiteralDefinition => [
 					it.name = lowlevelState.name.stateInactiveHistoryEnumLiteralName
 				]
 				enumType.literals += xStsHistoryEnumLiteral
+				
+				trace.putInactiveHistoryEnumLiteral(lowlevelState, xStsHistoryEnumLiteral) // Tracing
 			}
 		}
 		//
