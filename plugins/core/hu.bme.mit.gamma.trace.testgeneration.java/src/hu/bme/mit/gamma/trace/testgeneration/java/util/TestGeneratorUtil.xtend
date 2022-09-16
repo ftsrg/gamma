@@ -41,30 +41,32 @@ class TestGeneratorUtil {
 	}
 	
 	def CharSequence getFullContainmentHierarchy(ComponentInstanceReferenceExpression instanceReference) {
-		val instances = instanceReference.componentInstanceChain
 		val instanceNames = newArrayList
-		if (component.unfolded) {
-			// If only a single instance is given, we explore the containment chain
-			if (instances.size == 1) {
-				val instance = instances.remove(0) // So the original list becomes empty
-				instances += instance.componentInstanceChain
-			}
-			
-			var ComponentInstance previousInstance = null
-			for (instance : instances) {
-				val instanceName = instance.name
-				if (previousInstance === null) {
-					instanceNames += instanceName
+		if (instanceReference !== null) {
+			val instances = instanceReference.componentInstanceChain
+			if (component.unfolded) {
+				// If only a single instance is given, we explore the containment chain
+				if (instances.size == 1) {
+					val instance = instances.remove(0) // So the original list becomes empty
+					instances += instance.componentInstanceChain
 				}
-				else {
-					instanceNames += instanceName.substring(previousInstance.name.length + 1) // "_" is counted too
+				
+				var ComponentInstance previousInstance = null
+				for (instance : instances) {
+					val instanceName = instance.name
+					if (previousInstance === null) {
+						instanceNames += instanceName
+					}
+					else {
+						instanceNames += instanceName.substring(previousInstance.name.length + 1) // "_" is counted too
+					}
+					previousInstance = instance
 				}
-				previousInstance = instance
 			}
-		}
-		else {
-			// Original component instance references
-			instanceNames += instances.map[it.name]
+			else {
+				// Original component instance references
+				instanceNames += instances.map[it.name]
+			}
 		}
 		return '''«FOR instanceName : instanceNames SEPARATOR '.'»getComponent("«instanceName»")«ENDFOR»'''
 	}

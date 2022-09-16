@@ -79,9 +79,9 @@ class TraceLanguageScopeProvider extends AbstractTraceLanguageScopeProvider {
 		}
 		if (context instanceof InstanceStateConfiguration) {
 			val instance = context.instance
-			val instanceType = instance.lastInstance.derivedType
 			val executionTrace = ecoreUtil.getContainerOfType(context, ExecutionTrace)
 			val component = executionTrace.component
+			val instanceType = (instance === null) ? component : instance.lastInstance.derivedType
 			if (reference == CompositeModelPackage.Literals.COMPONENT_INSTANCE_STATE_REFERENCE_EXPRESSION__REGION) {
 				val regions = new HashSet<Region>
 				if (instanceType === null) {
@@ -120,7 +120,9 @@ class TraceLanguageScopeProvider extends AbstractTraceLanguageScopeProvider {
 			val instanceVariableState = ecoreUtil.getSelfOrContainerOfType(
 					context, ComponentInstanceVariableReferenceExpression)
 			val instance = instanceVariableState.instance
-			val instanceType = instance.lastInstance.derivedType
+			val executionTrace = ecoreUtil.getContainerOfType(context, ExecutionTrace)
+			val component = executionTrace.component
+			val instanceType = (instance === null) ? component : instance.lastInstance.derivedType
 			if (instanceType === null) {
 				return IScope.NULLSCOPE
 			}
