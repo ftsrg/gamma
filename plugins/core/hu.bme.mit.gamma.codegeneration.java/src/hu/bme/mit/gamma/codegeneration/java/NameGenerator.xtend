@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -83,7 +83,7 @@ class NameGenerator {
 	 * Returns the name of the wrapped synchronous component instance.
 	 */
 	def generateWrappedComponentName(AsynchronousAdapter wrapper) {
-		return wrapper.wrappedComponent.name.toFirstLower
+		return wrapper.wrappedComponent.name
 	}
 	
 	/**

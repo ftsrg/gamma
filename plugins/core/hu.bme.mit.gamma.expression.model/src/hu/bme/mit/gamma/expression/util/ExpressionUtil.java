@@ -770,8 +770,16 @@ public class ExpressionUtil {
 	
 	public void addAnnotation(VariableDeclaration variable, VariableDeclarationAnnotation annotation) {
 		if (variable != null) {
-			variable.getAnnotations().add(annotation);
+			List<VariableDeclarationAnnotation> annotations = variable.getAnnotations();
+			annotations.add(annotation);
 		}
+	}
+	
+	public boolean hasAnnotation(VariableDeclaration variable,
+			Class<? extends VariableDeclarationAnnotation> annotationClass) {
+		List<VariableDeclarationAnnotation> annotations = variable.getAnnotations();
+		return annotations.stream()
+				.anyMatch(it -> annotationClass.isInstance(it));
 	}
 	
 	public void removeVariableDeclarationAnnotations(
@@ -866,6 +874,31 @@ public class ExpressionUtil {
 		ifThenElseExpression.setThen(then);
 		ifThenElseExpression.setElse(_else);
 		return ifThenElseExpression;
+	}
+	
+	public IfThenElseExpression weave(Collection<? extends IfThenElseExpression> expressions) {
+		IfThenElseExpression first = null;
+		IfThenElseExpression last = null;
+		for (IfThenElseExpression expression : expressions) {
+			if (first == null) {
+				first = expression;
+			}
+			if (last != null) {
+				if (last.getElse() != null) {
+					throw new IllegalArgumentException("Not null else: " + expression);
+				}
+				last.setElse(expression);
+			}
+			last = expression;
+		}
+		// Replacing last if-then-else if else is null, otherwise there would be "null" branch
+		if (last.getElse() == null) {
+			Expression then = last.getThen();
+			ecoreUtil.replace(then, last);
+		}
+		//
+		
+		return first;
 	}
 	
 	public DirectReferenceExpression createReferenceExpression(Declaration declaration) {

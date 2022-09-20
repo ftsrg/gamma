@@ -29,6 +29,7 @@ import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.EqualityExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
+import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.xsts.model.AbstractAssignmentAction;
 import hu.bme.mit.gamma.xsts.model.Action;
@@ -263,6 +264,35 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 	
 	public static boolean isNullOrEmptyAction(Action action) {
 		return action == null || action instanceof EmptyAction;
+	}
+	
+	public static boolean isEffectlessAction(Action action) {
+		if (isNullOrEmptyAction(action)) {
+			return true;
+		}
+		if (action instanceof AssignmentAction) {
+			AssignmentAction assignmentAction = (AssignmentAction) action;
+			ReferenceExpression lhs = assignmentAction.getLhs();
+			Expression rhs = assignmentAction.getRhs();
+			return ecoreUtil.helperEquals(lhs, rhs);
+		}
+		if (action instanceof IfAction) {
+			IfAction ifAction = (IfAction) action;
+			Action then = ifAction.getThen();
+			Action _else = ifAction.getElse();
+			return isEffectlessAction(then) && isEffectlessAction(_else);
+		}
+		if (action instanceof LoopAction) {
+			LoopAction loopAction = (LoopAction) action;
+			Action forAction = loopAction.getAction();
+			// Range could be examined, too
+			return isEffectlessAction(forAction);
+		}
+		if (action instanceof MultiaryAction) {
+			MultiaryAction multiaryAction = (MultiaryAction) action;
+			return multiaryAction.getActions().stream().allMatch(it -> isEffectlessAction(it));
+		}
+		return false;
 	}
 
 	// Read-write

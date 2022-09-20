@@ -18,7 +18,7 @@ Require-Bundle: hu.bme.mit.gamma.expression.language.ui,
  org.eclipse.compare,
  org.eclipse.xtext.builder
 Import-Package: org.apache.log4j
-Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Export-Package: hu.bme.mit.gamma.action.language.ui.contentassist,
  hu.bme.mit.gamma.action.language.ui.internal,
  hu.bme.mit.gamma.action.language.ui.quickfix

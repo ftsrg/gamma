@@ -42,7 +42,20 @@ ConstantDeclaration returns ConstantDeclaration:
 
 // Referred in the statechart language
 VariableDeclaration returns VariableDeclaration:
+	(annotations+=VariableDeclarationAnnotation)*
 	'var' name=ID ':' type=Type (':=' expression=Expression)?
+;
+
+VariableDeclarationAnnotation returns VariableDeclarationAnnotation:
+	TransientVariableDeclarationAnnotation | ResettableVariableDeclarationAnnotation
+;
+
+TransientVariableDeclarationAnnotation returns TransientVariableDeclarationAnnotation:
+	{TransientVariableDeclarationAnnotation} '@Transient'
+;
+
+ResettableVariableDeclarationAnnotation returns ResettableVariableDeclarationAnnotation:
+	{ResettableVariableDeclarationAnnotation} '@Resettable'
 ;
 
 //Abstraction for extensibility

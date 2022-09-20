@@ -56,8 +56,8 @@ class ThetaVerification extends AbstractVerification {
 	override getDefaultArguments() {
 		return #[
 				"",
-				"--domain EXPL --refinement SEQ_ITP --maxenum 250 --initprec CTRL"
-//				"--domain EXPL_PRED_COMBINED --autoexpl NEWOPERANDS --initprec CTRL"
+//				"--domain EXPL --refinement SEQ_ITP --maxenum 250 --initprec CTRL"
+				"--domain EXPL_PRED_COMBINED --autoexpl NEWOPERANDS --initprec CTRL"
 			]
 		// --domain PRED_CART --refinement SEQ_ITP // default - cannot be used with loops
 		// --domain EXPL --refinement SEQ_ITP --maxenum 250 // --initprec CTRL should be used to support loops

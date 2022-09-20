@@ -39,6 +39,8 @@
         eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.lowlevel.model/model/model.ecore#//State"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="xStsEnumLiteral" lowerBound="1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//EnumerationLiteralDefinition"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="xStsInactiveHistoryEnumLiteral"
+        lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//EnumerationLiteralDefinition"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="TransitionTrace" abstract="true" eSuperTypes="#//AbstractTrace">
     <eStructuralFeatures xsi:type="ecore:EReference" name="xStsTransition" lowerBound="1"

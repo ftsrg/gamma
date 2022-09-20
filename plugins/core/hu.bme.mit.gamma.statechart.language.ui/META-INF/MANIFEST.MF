@@ -21,7 +21,7 @@ Require-Bundle: hu.bme.mit.gamma.statechart.language,
  hu.bme.mit.gamma.expression.language.ui,
  hu.bme.mit.gamma.language.util
 Import-Package: org.apache.log4j
-Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Export-Package: hu.bme.mit.gamma.statechart.language.ui.contentassist,
  hu.bme.mit.gamma.statechart.language.ui.internal,
  hu.bme.mit.gamma.statechart.language.ui.quickfix,

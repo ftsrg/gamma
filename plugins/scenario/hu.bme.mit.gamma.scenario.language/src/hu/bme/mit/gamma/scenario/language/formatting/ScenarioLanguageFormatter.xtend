@@ -25,12 +25,14 @@ class ScenarioLanguageFormatter extends AbstractDeclarativeFormatter {
 	override protected configureFormatting(FormattingConfig config) {
 		// set a line wrap after each statechart and port assignment
 		expressionFormatter.format(config, grammar)
+		
+		config.setLinewrap(1, 1, 2).after(grammar.scenarioPackageAccess.nameAssignment_1)
 
-		config.setLinewrap.after(grammar.scenarioPackageAccess.importKeyword_2_0)
-		config.setLinewrap.after(grammar.scenarioPackageAccess.componentAssignment_4)
+		config.setLinewrap(1, 1, 2).after(grammar.scenarioPackageAccess.importsAssignment_2_1)
+		config.setLinewrap(1, 1, 2).after(grammar.scenarioPackageAccess.componentAssignment_4)
 
 		// set an empty line between statechart, port assignment, scenario definition AND scenario definition
-		config.setLinewrap(2).between(grammar.scenarioPackageAccess.importKeyword_2_0,
+		config.setLinewrap(2).between(grammar.scenarioPackageAccess.importsAssignment_2_1,
 			grammar.scenarioPackageAccess.scenariosAssignment_6)
 		config.setLinewrap(2).between(grammar.scenarioPackageAccess.scenariosAssignment_6,
 			grammar.scenarioPackageAccess.scenariosAssignment_6)
@@ -45,6 +47,8 @@ class ScenarioLanguageFormatter extends AbstractDeclarativeFormatter {
 		config.setLinewrap(1, 1, 2).after(grammar.annotationsAccess.strictAnnotationParserRuleCall_2)
 
 		config.setNoLinewrap.after(grammar.modalityDefinitionAccess.rule)
+		
+		config.setLinewrap(1).before(grammar.variableDeclarationRule)
 
 		grammar.findKeywordPairs("[", "]").forEach [ pair |
 			config.setIndentationIncrement.after(pair.first)

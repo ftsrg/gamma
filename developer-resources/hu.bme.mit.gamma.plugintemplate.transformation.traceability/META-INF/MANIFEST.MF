@@ -7,7 +7,7 @@ Bundle-Version: 2.5.0.qualifier
 Bundle-ClassPath: .
 Bundle-Vendor: BME-FTSRG
 Bundle-Localization: plugin
-Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Export-Package: hu.bme.mit.gamma.plugintemplate.transformation.traceability,
  hu.bme.mit.gamma.plugintemplate.transformation.traceability.impl,
  hu.bme.mit.gamma.plugintemplate.transformation.traceability.util

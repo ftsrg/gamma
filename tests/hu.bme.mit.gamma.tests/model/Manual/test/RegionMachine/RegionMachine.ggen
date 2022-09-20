@@ -1,6 +1,6 @@
 import "model/RegionMachine/RegionMachine"
 import "model/RegionMachine/RegionMachineWrapper"
-import trace "RegionMachineTest"
+import trace "RegionMachineTest.get"
 
 code {
 	component: RegionMachine

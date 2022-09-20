@@ -39,7 +39,6 @@ import hu.bme.mit.gamma.statechart.lowlevel.model.EventDirection
 import hu.bme.mit.gamma.statechart.lowlevel.model.Package
 import hu.bme.mit.gamma.statechart.lowlevel.model.Persistency
 import hu.bme.mit.gamma.statechart.lowlevel.model.Region
-import hu.bme.mit.gamma.statechart.lowlevel.model.State
 import hu.bme.mit.gamma.statechart.lowlevel.model.StatechartDefinition
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.SequentialAction
@@ -322,13 +321,27 @@ class LowlevelToXstsTransformer {
 			it.literals += lowlevelInactiveEnumLiteral
 		]
 		// Enum literals are based on states
-		for (lowlevelState : lowlevelRegion.stateNodes.filter(State)) {
+		for (lowlevelState : lowlevelRegion.states) {
 			val xStsEnumLiteral = createEnumerationLiteralDefinition => [
 				it.name = lowlevelState.name.stateEnumLiteralName
 			]
 			enumType.literals += xStsEnumLiteral
+			
 			trace.put(lowlevelState, xStsEnumLiteral) // Tracing
 		}
+		// History literals
+		if (lowlevelRegion.hasHistory) {
+			for (lowlevelState : lowlevelRegion.states) {
+				val xStsHistoryEnumLiteral = createEnumerationLiteralDefinition => [
+					it.name = lowlevelState.name.stateInactiveHistoryEnumLiteralName
+				]
+				enumType.literals += xStsHistoryEnumLiteral
+				
+				trace.putInactiveHistoryEnumLiteral(lowlevelState, xStsHistoryEnumLiteral) // Tracing
+			}
+		}
+		//
+		
 		// Creating type declaration from the enum type definition
 		val enumTypeDeclaration = createTypeDeclaration => [
 			it.type = enumType

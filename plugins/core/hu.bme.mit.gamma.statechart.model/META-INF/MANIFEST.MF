@@ -12,7 +12,7 @@ Require-Bundle: org.eclipse.core.runtime,
  hu.bme.mit.gamma.activity.model;visibility:=reexport,
  hu.bme.mit.gamma.expression.model;visibility:=reexport
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Export-Package: hu.bme.mit.gamma.statechart.ActivityComposition,
  hu.bme.mit.gamma.statechart.ActivityComposition.impl,
  hu.bme.mit.gamma.statechart.ActivityComposition.util,

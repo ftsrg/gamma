@@ -7,7 +7,7 @@ Bundle-Vendor: BME-FTSRG
 Require-Bundle: org.eclipse.xtext.xbase.lib,
  net.sourceforge.plantuml.lib,
  hu.bme.mit.gamma.trace.model
-Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Automatic-Module-Name: hu.bme.mit.gamma.statechart.plantuml.transformation
 Import-Package: org.apache.log4j
 Export-Package: hu.bme.mit.gamma.plantuml.serialization,
