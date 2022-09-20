@@ -125,11 +125,7 @@
         eType="#//Region"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="state" lowerBound="1" eType="#//State"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="ActivityDefinition" eSuperTypes="#//SynchronousComponent">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="activityNodes" upperBound="-1"
-        eType="#//ActivityNode" containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="flows" upperBound="-1"
-        eType="#//Succession" containment="true"/>
+  <eClassifiers xsi:type="ecore:EClass" name="ActivityDefinition" eSuperTypes="#//SynchronousComponent #//CompositeNode">
     <eStructuralFeatures xsi:type="ecore:EReference" name="variableDeclarations" upperBound="-1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclaration"
         containment="true"/>
@@ -145,8 +141,7 @@
         eType="#//Succession"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="PinnedNode" abstract="true" eSuperTypes="#//ActivityNode">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="variableDeclarations" upperBound="-1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclaration"
+    <eStructuralFeatures xsi:type="ecore:EReference" name="pins" upperBound="-1" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclaration"
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="CompositeNode" eSuperTypes="#//PinnedNode">
@@ -167,6 +162,11 @@
   <eClassifiers xsi:type="ecore:EClass" name="MergeNode" eSuperTypes="#//ControlNode"/>
   <eClassifiers xsi:type="ecore:EClass" name="InitialNode" eSuperTypes="#//ControlNode"/>
   <eClassifiers xsi:type="ecore:EClass" name="FinalNode" eSuperTypes="#//ControlNode"/>
+  <eClassifiers xsi:type="ecore:EClass" name="TriggerNode" eSuperTypes="#//ControlNode">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="triggerExpression" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
+        containment="true"/>
+  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Succession">
     <eStructuralFeatures xsi:type="ecore:EReference" name="guard" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
         containment="true"/>
@@ -174,11 +174,6 @@
         eType="#//ActivityNode"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="targetNode" lowerBound="1"
         eType="#//ActivityNode"/>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="TriggerNode" eSuperTypes="#//ControlNode">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="triggerExpression" lowerBound="1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
-        containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="EventAnnotation" abstract="true"/>
   <eClassifiers xsi:type="ecore:EClass" name="ActivityDerivedAnnotation" abstract="true"/>

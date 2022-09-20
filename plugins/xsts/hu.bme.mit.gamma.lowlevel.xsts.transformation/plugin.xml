@@ -3,8 +3,7 @@
     <group group="org.eclipse.viatra.query.runtime.extensibility.SingletonExtensionFactory:hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.ActivityPatterns" id="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.ActivityPatterns">
       <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.nodes"/>
       <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.initialNodes"/>
-      <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.flows"/>
-      <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.dataContainers"/>
+      <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.successions"/>
     </group>
   </extension>
   <extension id="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.ComplexTransitionPatterns" point="org.eclipse.viatra.query.runtime.queryspecification">
@@ -62,8 +61,7 @@
       <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.stateTrace"/>
       <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.activityNodeTrace"/>
       <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.activityNodeTransitionTrace"/>
-      <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.flowTrace"/>
-      <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.dataContainerTrace"/>
+      <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.successionTrace"/>
       <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.simpleTransitionTrace"/>
       <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.choiceTransitionTrace"/>
       <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.mergeTransitionTrace"/>

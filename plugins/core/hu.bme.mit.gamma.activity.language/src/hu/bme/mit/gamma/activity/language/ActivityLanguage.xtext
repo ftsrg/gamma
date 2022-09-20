@@ -16,7 +16,7 @@ ConcreteNode returns PinnedNode:
 ;
 
 CompositeNode returns CompositeNode:
-	'action'
+	'activity'
 	name=ID
 	(
 		'('
@@ -30,7 +30,7 @@ CompositeNode returns CompositeNode:
 ;
 
 ActionNode returns ActionNode:
-	'atomic' 'action'
+	'action'
 	name=ID
 	(
 		'('

@@ -94,21 +94,16 @@
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//StateReferenceExpression/state"/>
     </genClasses>
     <genClasses ecoreClass="model.ecore#//ActivityDefinition">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//ActivityDefinition/activityNodes"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//ActivityDefinition/flows"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//ActivityDefinition/variableDeclarations"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//ActivityDefinition/timeoutDeclarations"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//ActivityDefinition/internalEventDeclarations"/>
-    </genClasses>
-    <genClasses ecoreClass="model.ecore#//DataContainer">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//DataContainer/type"/>
     </genClasses>
     <genClasses image="false" ecoreClass="model.ecore#//ActivityNode">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//ActivityNode/incoming"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//ActivityNode/outgoing"/>
     </genClasses>
     <genClasses image="false" ecoreClass="model.ecore#//PinnedNode">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//PinnedNode/variableDeclarations"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//PinnedNode/pins"/>
     </genClasses>
     <genClasses ecoreClass="model.ecore#//CompositeNode">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//CompositeNode/flows"/>
@@ -124,13 +119,13 @@
     <genClasses ecoreClass="model.ecore#//MergeNode"/>
     <genClasses ecoreClass="model.ecore#//InitialNode"/>
     <genClasses ecoreClass="model.ecore#//FinalNode"/>
+    <genClasses ecoreClass="model.ecore#//TriggerNode">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//TriggerNode/triggerExpression"/>
+    </genClasses>
     <genClasses image="false" ecoreClass="model.ecore#//Succession">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//Succession/guard"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//Succession/sourceNode"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//Succession/targetNode"/>
-    </genClasses>
-    <genClasses ecoreClass="model.ecore#//TriggerNode">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//TriggerNode/triggerExpression"/>
     </genClasses>
     <genClasses image="false" ecoreClass="model.ecore#//EventAnnotation"/>
     <genClasses image="false" ecoreClass="model.ecore#//ActivityDerivedAnnotation"/>

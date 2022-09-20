@@ -40,6 +40,7 @@ import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartMo
 import hu.bme.mit.gamma.activity.model.InputPin
 import hu.bme.mit.gamma.activity.model.OutputPin
 import hu.bme.mit.gamma.activity.model.Flow
+import hu.bme.mit.gamma.statechart.interface_.Component
 
 class ActivityToLowlevelTransformer {
 // Auxiliary objects
@@ -193,9 +194,9 @@ class ActivityToLowlevelTransformer {
 			it.name = node.name
 		]
 		
-		trace.put(node, lowlevelNode)
+		trace.putActivityNode(node, lowlevelNode)
 		
-		lowlevelNode.variableDeclarations += node.pins.map [
+		lowlevelNode.pins += node.pins.map [
 			it.transformPin
 		]
 		lowlevelNode.incoming += node.incomingFlows.map[
@@ -217,9 +218,9 @@ class ActivityToLowlevelTransformer {
 			it.name = node.name
 		]
 		
-		trace.put(node, lowlevelNode)
+		trace.putActivityNode(node, lowlevelNode)
 		
-		lowlevelNode.variableDeclarations += node.pins.map [
+		lowlevelNode.pins += node.pins.map [
 			it.transformPin
 		]
 		lowlevelNode.action = node.action.transformAction.wrap
@@ -242,7 +243,7 @@ class ActivityToLowlevelTransformer {
 			it.name = node.name
 		]
 		
-		trace.put(node, lowlevelNode)
+		trace.putActivityNode(node, lowlevelNode)
 		
 		lowlevelNode.incoming += node.incomingFlows.map[
 			it.transformFlow
@@ -263,7 +264,7 @@ class ActivityToLowlevelTransformer {
 			it.name = node.name
 		]
 		
-		trace.put(node, lowlevelNode)
+		trace.putActivityNode(node, lowlevelNode)
 		
 		lowlevelNode.incoming += node.incomingFlows.map[
 			it.transformFlow
@@ -284,7 +285,7 @@ class ActivityToLowlevelTransformer {
 			it.name = node.name
 		]
 		
-		trace.put(node, lowlevelNode)
+		trace.putActivityNode(node, lowlevelNode)
 		
 		lowlevelNode.incoming += node.incomingFlows.map[
 			it.transformFlow
@@ -305,7 +306,7 @@ class ActivityToLowlevelTransformer {
 			it.name = node.name
 		]
 		
-		trace.put(node, lowlevelNode)
+		trace.putActivityNode(node, lowlevelNode)
 		
 		lowlevelNode.incoming += node.incomingFlows.map[
 			it.transformFlow
@@ -326,7 +327,7 @@ class ActivityToLowlevelTransformer {
 			it.name = node.name
 		]
 		
-		trace.put(node, lowlevelNode)
+		trace.putActivityNode(node, lowlevelNode)
 		
 		lowlevelNode.incoming += node.incomingFlows.map[
 			it.transformFlow
@@ -347,7 +348,7 @@ class ActivityToLowlevelTransformer {
 			it.name = node.name
 		]
 		
-		trace.put(node, lowlevelNode)
+		trace.putActivityNode(node, lowlevelNode)
 		
 		lowlevelNode.incoming += node.incomingFlows.map[
 			it.transformFlow
@@ -368,7 +369,7 @@ class ActivityToLowlevelTransformer {
 			it.name = node.name
 		]
 		
-		trace.put(node, lowlevelNode)
+		trace.putActivityNode(node, lowlevelNode)
 		
 		lowlevelNode.incoming += node.incomingFlows.map[
 			it.transformFlow

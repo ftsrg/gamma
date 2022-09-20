@@ -570,7 +570,7 @@ class Trace {
 		return flowMappings.get(flow)
 	}
 	
-	def put(ActivityNode node, hu.bme.mit.gamma.statechart.lowlevel.model.ActivityNode lowlevelNode) {
+	def putActivityNode(ActivityNode node, hu.bme.mit.gamma.statechart.lowlevel.model.ActivityNode lowlevelNode) {
 		checkNotNull(node)
 		checkNotNull(lowlevelNode)
 		activityNodeMappings.put(node, lowlevelNode)
