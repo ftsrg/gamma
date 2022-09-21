@@ -327,7 +327,7 @@ abstract class AbstractContractStatechartGeneration {
 		for (interaction : interactions) {
 			triggers += getEventTrigger(interaction, reversed)
 		}
-		return getBinaryTriggerFromTriggersIfPossible(triggers, type)
+		return getBinaryTriggerFromTriggersIfPossible(triggers.filterNull.toList, type)
 	}
 
 	// /////////////// Event triggers based on Interactions	
@@ -337,6 +337,9 @@ abstract class AbstractContractStatechartGeneration {
 		val port = reversed ?
 				getPort(scenarioStatechartUtil.getTurnedOutPortName(signal.port)) :
 				getPort(signal.port.name)
+		if (port.isInternal) {
+			return null
+		}
 		eventref.event = getEvent(signal.event.name, port)
 		eventref.port = port
 		trigger.eventReference = eventref
@@ -360,6 +363,9 @@ abstract class AbstractContractStatechartGeneration {
 			var Port port = signal.direction.equals(InteractionDirection.SEND) ?
 					getPort(scenarioStatechartUtil.getTurnedOutPortName(signal.port)) :
 					getPort(signal.port.name)
+			if (port.isInternal) {
+				return null
+			}
 			val Event event = getEvent(signal.event.name, port)
 			val eventRef = createPortEventReference
 			eventRef.event = event
@@ -541,7 +547,8 @@ abstract class AbstractContractStatechartGeneration {
 			trigger = getBinaryTrigger(nonCheckOrAssignmentInteractitons, BinaryType.AND, reversed)
 		} else if (nonCheckOrAssignmentInteractitons.size == 1) {
 			trigger = getEventTrigger(nonCheckOrAssignmentInteractitons.head, reversed)
-		} else {
+		} 
+		if (trigger === null) {
 			trigger = createOnCycleTrigger
 		}
 		if (isNegated) {

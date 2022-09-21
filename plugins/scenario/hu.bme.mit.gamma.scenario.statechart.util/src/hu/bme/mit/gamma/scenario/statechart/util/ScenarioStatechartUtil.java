@@ -162,6 +162,7 @@ public class ScenarioStatechartUtil {
 		List<EventReference> eventRefs = new LinkedList<EventReference>();
 		List<Port> correctPorts = automaton.getPorts().stream()
 				.filter((it) -> (!((StatechartModelDerivedFeatures.getInputEvents(it)).isEmpty())))
+				.filter((it) -> !StatechartModelDerivedFeatures.isInternal(it)) 
 				.collect(Collectors.toList());
 		for (Port port : correctPorts) {
 			if ((isTurnedOut(port) && isSentByComponent) || (!isTurnedOut(port) && !isSentByComponent)) {
