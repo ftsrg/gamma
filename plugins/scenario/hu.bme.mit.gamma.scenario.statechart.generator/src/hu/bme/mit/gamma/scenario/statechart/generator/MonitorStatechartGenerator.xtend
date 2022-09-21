@@ -37,6 +37,7 @@ import java.util.List
 
 import static extension hu.bme.mit.gamma.scenario.model.derivedfeatures.ScenarioModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
+import hu.bme.mit.gamma.statechart.statechart.OnCycleTrigger
 
 class MonitorStatechartGenerator extends AbstractContractStatechartGeneration {
 
@@ -357,12 +358,17 @@ class MonitorStatechartGenerator extends AbstractContractStatechartGeneration {
 				}
 			}
 		}
-		val binary = createBinaryTrigger
-		binary.leftOperand = forwardTransition.trigger
-		binary.rightOperand = getBinaryTriggerFromTriggersIfPossible(otherTriggersWithCorrectDir, BinaryType.OR).
-			negateEventTrigger
-		forwardTransition.trigger = binary
-		binary.type = BinaryType.AND
+		val othersNegated = getBinaryTriggerFromTriggersIfPossible(otherTriggersWithCorrectDir, BinaryType.OR).
+				negateEventTrigger
+		if (forwardTransition.trigger instanceof OnCycleTrigger) {
+			forwardTransition.trigger = othersNegated
+		} else {
+			val binary = createBinaryTrigger
+			binary.leftOperand = forwardTransition.trigger
+			binary.rightOperand = othersNegated
+			forwardTransition.trigger = binary
+			binary.type = BinaryType.AND
+		}
 		previousState = state
 		return
 	}
