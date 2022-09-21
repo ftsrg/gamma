@@ -1,6 +1,6 @@
 import "model/StructRecieverMachine/StructRecieverMachine"
 import "model/StructRecieverMachine/StructRecieverMachineWrapper"
-import trace "StructRecieverMachineTest"
+import trace "StructRecieverMachineTest.get"
 
 code {
 	component: StructRecieverMachine

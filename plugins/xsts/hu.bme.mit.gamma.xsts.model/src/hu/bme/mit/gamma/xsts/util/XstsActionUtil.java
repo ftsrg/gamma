@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -913,9 +913,12 @@ public class XstsActionUtil extends ExpressionUtil {
 			ArrayLiteralExpression arrayLiteral = factory.createArrayLiteralExpression();
 			for (int i = 1; i < size; i++) {
 				ArrayAccessExpression accessExpression = factory.createArrayAccessExpression();
-				accessExpression.setOperand(createReferenceExpression(queue));
-				accessExpression.setIndex(toIntegerLiteral(i));
-				arrayLiteral.getOperands().add(accessExpression);
+				accessExpression.setOperand(
+						createReferenceExpression(queue));
+				accessExpression.setIndex(
+						toIntegerLiteral(i));
+				arrayLiteral.getOperands()
+						.add(accessExpression);
 			}
 			// Shifting a default value at the end
 			// Would not be necessary in Theta (but it is in UPPAAL) due to the default branch
@@ -972,8 +975,10 @@ public class XstsActionUtil extends ExpressionUtil {
 		int queueSize = queues.size();
 		for (int i = 0; i < queueSize; i++) {
 			VariableDeclaration queue = queues.get(i);
+			Expression clonedIndex = ecoreUtil.clone(index);
 			Expression element = elements.get(i);
-			block.getActions().add(add(queue, index, element));
+			block.getActions().add(
+					add(queue, clonedIndex, element));
 		}
 		return block;
 	}
@@ -997,8 +1002,10 @@ public class XstsActionUtil extends ExpressionUtil {
 	public Action addAllAndIncrement(List<? extends VariableDeclaration> queues,
 			VariableDeclaration sizeVariable, List<? extends Expression> elements) {
 		SequentialAction block = xStsFactory.createSequentialAction();
-		block.getActions().add(addAll(queues, createReferenceExpression(sizeVariable), elements));
-		block.getActions().add(increment(sizeVariable));
+		block.getActions().add(
+				addAll(queues, createReferenceExpression(sizeVariable), elements));
+		block.getActions().add(
+				increment(sizeVariable));
 		return block;
 	}
 	

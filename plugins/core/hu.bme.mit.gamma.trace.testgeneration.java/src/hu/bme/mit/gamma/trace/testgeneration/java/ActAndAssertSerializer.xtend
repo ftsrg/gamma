@@ -62,12 +62,16 @@ class ActAndAssertSerializer {
 	protected def dispatch String serializeAssert(RaiseEventAct assert)
 		'''«TEST_INSTANCE_NAME».isRaisedEvent("«assert.port.name»", "«assert.event.name»", new Object[] {«FOR parameter : assert.arguments BEFORE " " SEPARATOR ", " AFTER " "»«parameter.serialize»«ENDFOR»})'''
 
-	protected def dispatch String serializeAssert(InstanceStateConfiguration assert)
-		'''«TEST_INSTANCE_NAME».«util.getFullContainmentHierarchy(assert.instance)».isStateActive("«assert.state.parentRegion.name»", "«assert.state.name»")'''
-
-	protected def dispatch String serializeAssert(InstanceVariableState assert)
-		'''«TEST_INSTANCE_NAME».«util.getFullContainmentHierarchy(assert.variableReference.instance)».checkVariableValue("«assert.variableReference.variableDeclaration.name»", «assert.value.serialize»)'''
-	
+	protected def dispatch String serializeAssert(InstanceStateConfiguration assert) {
+		val instance = assert.instance
+		val separator = (instance === null) ? '' : '.'
+		'''«TEST_INSTANCE_NAME»«separator»«util.getFullContainmentHierarchy(instance)».isStateActive("«assert.state.parentRegion.name»", "«assert.state.name»")'''
+	}
+	protected def dispatch String serializeAssert(InstanceVariableState assert) {
+		val instance = assert.variableReference.instance
+		val separator = (instance === null) ? '' : '.'
+		'''«TEST_INSTANCE_NAME»«separator»«util.getFullContainmentHierarchy(instance)».checkVariableValue("«assert.variableReference.variableDeclaration.name»", «assert.value.serialize»)'''
+	}
 	// Acts
 	
 	protected def dispatch String serialize(Reset reset) '''

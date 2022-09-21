@@ -2,7 +2,7 @@
 
 ## Eclipse setup
 
-You will need Java 11 to setup Gamma.
+You will need Java 17 to setup Gamma.
 
 Gamma has been implemented as a set of Eclipse plugins. To use the
 framework, you will need an Eclipse with the following plugins installed:

@@ -40,6 +40,12 @@ pattern stateTrace(lowlevelState : State, xStsEnumLiteral : EnumerationLiteralDe
 	StateTrace.xStsEnumLiteral(trace, xStsEnumLiteral);
 }
 
+pattern stateHistoryTrace(stateTrace : StateTrace,
+		lowlevelState : State, xStsInactiveHistoryEnumLiteral : EnumerationLiteralDefinition) {
+	StateTrace.lowlevelState(stateTrace, lowlevelState);
+	StateTrace.xStsInactiveHistoryEnumLiteral(stateTrace, xStsInactiveHistoryEnumLiteral);
+}
+
 pattern simpleTransitionTrace(lowlevelSimpleTransition : Transition, xStsTransition : XTransition, 
 		xStsPrecondition : Expression) {
 	SimpleTransitionTrace.lowlevelTransition(trace, lowlevelSimpleTransition);

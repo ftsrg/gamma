@@ -38,6 +38,7 @@ class GammaEcoreUtil {
 	public static final GammaEcoreUtil INSTANCE = new GammaEcoreUtil
 	protected new() {}
 	//
+	protected final FileUtil fileUtil = FileUtil.INSTANCE
 	protected final Logger logger = Logger.getLogger("GammaLogger")
 	//
 	
@@ -342,6 +343,17 @@ class GammaEcoreUtil {
 		return contents
 	}
 	
+	def <T extends EObject> List<T> getSelfAndAllContentsOfType(
+			Collection<? extends EObject> objects, Class<T> type) {
+		val contents = newArrayList
+		
+		for (object : objects) {
+			contents += object.getSelfAndAllContentsOfType(type)
+		}
+		
+		return contents
+	}
+	
 	def <T extends EObject> T getFirstOfAllContentsOfType(EObject object, Class<T> type) {
 		val contents = newLinkedList
 		contents += object.eContents
@@ -576,7 +588,15 @@ class GammaEcoreUtil {
 	
 	def getPlatformUri(File file) {
 		val projectFile = file.parentFile.projectFile
-		val location = file.toString.substring(projectFile.parent.length)
+		if (projectFile === null) {
+			throw new IllegalStateException("Containing project not found for " + file.absolutePath +
+				". Add the artifacts into a valid Eclipse project containing a .project file.")
+		}
+		
+		val projectName = file.projectName
+		val location = projectName +
+			file.toString.substring(projectFile.toString.length)
+		
 		return URI.createPlatformResourceURI(location, true)
 	}
 	
@@ -610,6 +630,10 @@ class GammaEcoreUtil {
 	}
 	
 	def File getProjectFile(File file) {
+		if (file === null) {
+			return null
+		}
+		
 		val containedFileNames = newHashSet
 		val listedFiles = file.listFiles
 		if (!listedFiles.nullOrEmpty) {
@@ -621,11 +645,44 @@ class GammaEcoreUtil {
 		return file.parentFile.projectFile
 	}
 	
+	def String getProjectName(File file) {
+		val projectFile = file.projectFile
+		if (projectFile === null) {
+			return null
+		}
+		
+		val _projectFile = projectFile.listFiles
+				.filter[it.name == ".project"].head
+		
+		val xml = fileUtil.loadXml(_projectFile)
+		
+		val nameNode = xml.getElementsByTagName("name").item(0)
+		val name = nameNode.textContent
+		
+		return name
+	}
+	
+	def int getContainmentLevel(EObject object) {
+		val container = object.eContainer
+		if (container === null) {
+			return 0
+		}
+		return container.containmentLevel + 1
+	}
+	
 	def getIndex(EObject object) {
 		val containingFeature = object.eContainingFeature
 		val container = object.eContainer
 		val list = container.eGet(containingFeature) as List<EObject>
 		return list.indexOf(object)
+	}
+	
+	def getIndexOrZero(EObject object) {
+		try {
+			return object.index
+		} catch (Exception e) {
+			return 0
+		}
 	}
 	
 	def isLast(EObject object) {

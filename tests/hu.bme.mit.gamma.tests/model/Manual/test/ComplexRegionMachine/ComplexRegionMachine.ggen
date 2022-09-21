@@ -1,6 +1,6 @@
 import "model/ComplexRegionMachine/ComplexRegionMachine"
 import "model/ComplexRegionMachine/ComplexRegionMachineWrapper"
-import trace "ComplexRegionMachineTest"
+import trace "ComplexRegionMachineTest.get"
 
 code {
 	component: ComplexRegionMachine

@@ -211,6 +211,7 @@ class TraceBackAnnotator {
 		}
 		
 		trace.removeInternalEventRaiseActs
+		trace.removeTransientVariableReferences // They always have default values
 		
 		return trace
 	}

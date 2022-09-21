@@ -1,6 +1,6 @@
 import "model/ComplexInitMachine/ComplexInitMachine"
 import "model/ComplexInitMachine/ComplexInitMachineWrapper"
-import trace "ComplexInitMachineTest"
+import trace "ComplexInitMachineTest.get"
 
 code {
 	component: ComplexInitMachine

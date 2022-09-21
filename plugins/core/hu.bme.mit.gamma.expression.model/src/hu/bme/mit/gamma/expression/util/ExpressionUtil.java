@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.eclipse.emf.ecore.EObject;
 
@@ -59,6 +60,7 @@ import hu.bme.mit.gamma.expression.model.MultiplyExpression;
 import hu.bme.mit.gamma.expression.model.NotExpression;
 import hu.bme.mit.gamma.expression.model.NullaryExpression;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
+import hu.bme.mit.gamma.expression.model.ParametricElement;
 import hu.bme.mit.gamma.expression.model.RationalLiteralExpression;
 import hu.bme.mit.gamma.expression.model.RationalTypeDefinition;
 import hu.bme.mit.gamma.expression.model.RecordAccessExpression;
@@ -538,16 +540,24 @@ public class ExpressionUtil {
 	
 	// Extract parameters
 	
-	public List<ConstantDeclaration> extractParamaters(
+	public List<ConstantDeclaration> extractParameters(ParametricElement parametricElement,
+			List<String> names, List<? extends Expression> arguments) {
+		return extractParameters(parametricElement.getParameterDeclarations(), names, arguments);
+	}
+	
+	public List<ConstantDeclaration> extractParameters(
 			List<? extends ParameterDeclaration> parameters, List<String> names,
 			List<? extends Expression> arguments) {
 		List<ConstantDeclaration> constants = new ArrayList<ConstantDeclaration>();
 		int size = parameters.size();
 		for (int i = 0; i < size; i++) {
 			ParameterDeclaration parameter = parameters.get(i);
+			Expression argument = arguments.get(i);
+			
 			Type type = ecoreUtil.clone(parameter.getType());
 			String name = names.get(i);
-			Expression value = ecoreUtil.clone(arguments.get(i));
+			Expression value = ecoreUtil.clone(argument);
+			
 			ConstantDeclaration constant = factory.createConstantDeclaration();
 			constant.setName(name);
 			constant.setType(type);
@@ -557,6 +567,31 @@ public class ExpressionUtil {
 			ecoreUtil.change(constant, parameter, parameter.eContainer());
 		}
 		return constants;
+	}
+	
+	public void inlineParameters(ParametricElement parametricElement,
+			List<? extends Expression> arguments) {
+		inlineParameters(parametricElement.getParameterDeclarations(), arguments);
+	}
+	
+	public void inlineParameters(List<? extends ParameterDeclaration> parameters,
+				List<? extends Expression> arguments) {
+		int size = parameters.size();
+		for (int i = 0; i < size; i++) {
+			ParameterDeclaration parameter = parameters.get(i);
+			Expression argument = arguments.get(i);
+			
+			ParametricElement parametricElement = ecoreUtil.getContainerOfType(parameter, ParametricElement.class);
+			List<DirectReferenceExpression> references = ecoreUtil
+					.getAllContentsOfType(parametricElement, DirectReferenceExpression.class).stream()
+					.filter(it -> it.getDeclaration() == parameter).collect(Collectors.toList());
+			for (DirectReferenceExpression reference : references) {
+				Expression value = ecoreUtil.clone(argument);
+				ecoreUtil.replace(value, reference);
+			}
+			
+			ecoreUtil.remove(parameter);
+		}
 	}
 	
 	// Initial values of types
@@ -735,8 +770,16 @@ public class ExpressionUtil {
 	
 	public void addAnnotation(VariableDeclaration variable, VariableDeclarationAnnotation annotation) {
 		if (variable != null) {
-			variable.getAnnotations().add(annotation);
+			List<VariableDeclarationAnnotation> annotations = variable.getAnnotations();
+			annotations.add(annotation);
 		}
+	}
+	
+	public boolean hasAnnotation(VariableDeclaration variable,
+			Class<? extends VariableDeclarationAnnotation> annotationClass) {
+		List<VariableDeclarationAnnotation> annotations = variable.getAnnotations();
+		return annotations.stream()
+				.anyMatch(it -> annotationClass.isInstance(it));
 	}
 	
 	public void removeVariableDeclarationAnnotations(
@@ -831,6 +874,31 @@ public class ExpressionUtil {
 		ifThenElseExpression.setThen(then);
 		ifThenElseExpression.setElse(_else);
 		return ifThenElseExpression;
+	}
+	
+	public IfThenElseExpression weave(Collection<? extends IfThenElseExpression> expressions) {
+		IfThenElseExpression first = null;
+		IfThenElseExpression last = null;
+		for (IfThenElseExpression expression : expressions) {
+			if (first == null) {
+				first = expression;
+			}
+			if (last != null) {
+				if (last.getElse() != null) {
+					throw new IllegalArgumentException("Not null else: " + expression);
+				}
+				last.setElse(expression);
+			}
+			last = expression;
+		}
+		// Replacing last if-then-else if else is null, otherwise there would be "null" branch
+		if (last.getElse() == null) {
+			Expression then = last.getThen();
+			ecoreUtil.replace(then, last);
+		}
+		//
+		
+		return first;
 	}
 	
 	public DirectReferenceExpression createReferenceExpression(Declaration declaration) {

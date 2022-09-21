@@ -5,11 +5,11 @@ import "Monitor/Monitor.gcd"
 import "Synchronous/Crossroad.gcd"
 
 sync MonitoredCrossroad [
-		// Component ports
-		port police : requires PoliceInterrupt,
-		port priorityOutput : provides LightCommands,
-		port secondaryOutput : provides LightCommands,
-		port monitorOutput : provides Error
+	// Component ports
+	port police : requires PoliceInterrupt,
+	port priorityOutput : provides LightCommands,
+	port secondaryOutput : provides LightCommands,
+	port monitorOutput : provides Error
 ] {		
 	component crossroad : Crossroad
 	component monitor : Monitor

@@ -139,14 +139,18 @@ enum InitialStateSetting returns InitialStateSetting:
 ;
 
 ModelReference returns ModelReference:
-	ComponentReference | XSTSReference
+	ComponentReference | XstsReference
 ;
 
 ComponentReference returns ComponentReference:
-	'component' ':' component=[interface::Component] ('(' arguments+=Expression (',' arguments+=Expression)* ')')? 
+	'component' ':' PlainComponentReference
 ;
 
-XSTSReference returns XstsReference:
+PlainComponentReference returns ComponentReference:
+	component=[interface::Component] ('(' arguments+=Expression (',' arguments+=Expression)* ')')?
+;
+
+XstsReference returns XstsReference:
 	'xsts' ':' xSts=[xsts::XSTS | STRING]
 ;
 
@@ -361,11 +365,11 @@ AdaptiveContractTestGeneration returns AdaptiveContractTestGeneration:
 ;
 
 AdaptiveBehaviorConformanceChecking returns AdaptiveBehaviorConformanceChecking:
-	{AdaptiveBehaviorConformanceChecking} 'adaptive-conformance-check' '{'
+	{AdaptiveBehaviorConformanceChecking}
+	'adaptive-conformance-check' '{'
 		modelTransformation=AnalysisModelTransformation
-		(
+		('environment' ':' environmentModel=PlainComponentReference)?
 		'folder' ':' targetFolder+=STRING
-		)*
 	'}'
 ;
 

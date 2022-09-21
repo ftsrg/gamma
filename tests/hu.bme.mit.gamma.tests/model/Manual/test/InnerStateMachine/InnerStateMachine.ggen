@@ -1,6 +1,6 @@
 import "model/InnerStateMachine/InnerStateMachine"
 import "model/InnerStateMachine/InnerStateMachineWrapper"
-import trace "InnerStateMachineTest"
+import trace "InnerStateMachineTest.get"
 
 code {
 	component: InnerStateMachine

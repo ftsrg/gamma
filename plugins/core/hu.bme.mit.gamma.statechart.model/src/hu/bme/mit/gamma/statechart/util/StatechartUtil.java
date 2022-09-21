@@ -465,8 +465,20 @@ public class StatechartUtil extends ActionUtil {
 	public AsynchronousAdapter wrapIntoAdapter(SynchronousComponent component, String adapterName) {
 		AsynchronousAdapter adapter = compositeFactory.createAsynchronousAdapter();
 		adapter.setName(adapterName);
+		
 		SynchronousComponentInstance synchronousInstance = instantiateSynchronousComponent(component);
 		adapter.setWrappedComponent(synchronousInstance);
+		
+		for (ParameterDeclaration parameterDeclaration : component.getParameterDeclarations()) {
+			ParameterDeclaration clonedParamaterDeclaration = ecoreUtil.clone(parameterDeclaration);
+			adapter.getParameterDeclarations()
+					.add(clonedParamaterDeclaration);
+			
+			DirectReferenceExpression argument = createReferenceExpression(clonedParamaterDeclaration);
+			synchronousInstance.getArguments()
+					.add(argument);
+		}
+		
 		return adapter;
 	}
 	
@@ -714,6 +726,12 @@ public class StatechartUtil extends ActionUtil {
 	public String getWrapperInstanceName(Component component) {
 		// The same as in Namings.getComponentClassName
 		return StatechartModelDerivedFeatures.getWrapperInstanceName(component);
+	}
+	
+	public SimpleChannel connectPortsViaChannels(InstancePortReference lhsReference,
+			InstancePortReference rhsReference) {
+		return connectPortsViaChannels(lhsReference.getInstance(), lhsReference.getPort(),
+				rhsReference.getInstance(), rhsReference.getPort());
 	}
 	
 	public SimpleChannel connectPortsViaChannels(ComponentInstance lhsInstance, Port lhsPort,

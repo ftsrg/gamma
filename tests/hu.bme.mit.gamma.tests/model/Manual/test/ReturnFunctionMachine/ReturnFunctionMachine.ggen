@@ -1,6 +1,6 @@
 import "model/ReturnFunctionMachine/ReturnFunctionMachine"
 import "model/ReturnFunctionMachine/ReturnFunctionMachineWrapper"
-import trace "ReturnFunctionMachineTest"
+import trace "ReturnFunctionMachineTest.get"
 
 code {
 	component: ReturnFunctionMachine

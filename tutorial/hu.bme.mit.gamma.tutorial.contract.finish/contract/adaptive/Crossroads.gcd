@@ -3,9 +3,9 @@ package crossroad
 import "model/Interfaces/Interfaces.gcd"
 import "model/Crossroad.gcd"
 
-import "scenario/automaton/InitStatechart"
-import "scenario/automaton/BlinkingStatechart"
-import "scenario/automaton/NormalStatechart"
+import "scenario/automaton/Init"
+import "scenario/automaton/Blinking"
+import "scenario/automaton/Normal"
 
 import "contract/phase/Init"
 import "contract/phase/Blinking"
@@ -24,7 +24,7 @@ statechart Crossroads [
 	var count : integer
 	region main {
 		initial Entry
-		@StatechartContract = Init
+		@StatechartContract = Init // Use 'component' to prevent unnecessary incoming events
 		@Phase = [
 			no-history component init : InitPhase {
 				bind priorityOutput -> init.priorityOutput
@@ -36,7 +36,7 @@ statechart Crossroads [
 			entry /
 			set InitTimeout := 2 s;
 		}
-		@StatechartContract = Normal
+		@StatechartContract = Normal // Use 'component' to prevent unnecessary incoming events
 		@Phase = [
 			no-history component normal : NormalPhase {
 				bind priorityOutput -> normal.priorityOutput
@@ -45,7 +45,7 @@ statechart Crossroads [
 			}
 		]
 		state Normal
-		@StatechartContract = Blinking
+		@StatechartContract = Blinking // Use 'component' to prevent unnecessary incoming events
 		@Phase = [
 			no-history component blinking : BlinkingPhase {
 				bind priorityOutput -> blinking.priorityOutput

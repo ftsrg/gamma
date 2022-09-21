@@ -75,6 +75,12 @@ public class IndexHierarchy {
 		return indexes.remove(0);
 	}
 	
+	public void removeFirstIfNotEmpty() {
+		if (!isEmpty()) {
+			removeFirst();
+		}
+	}
+	
 	public IndexHierarchy clone() {
 		return new IndexHierarchy(this);
 	}

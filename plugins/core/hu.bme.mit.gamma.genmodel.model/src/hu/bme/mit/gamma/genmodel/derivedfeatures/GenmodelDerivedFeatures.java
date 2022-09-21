@@ -16,6 +16,8 @@ import java.util.List;
 import org.eclipse.emf.ecore.EObject;
 
 import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
+import hu.bme.mit.gamma.expression.model.ArgumentedElement;
+import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation;
 import hu.bme.mit.gamma.genmodel.model.AnalysisTask;
 import hu.bme.mit.gamma.genmodel.model.ComponentReference;
@@ -26,9 +28,25 @@ import hu.bme.mit.gamma.genmodel.model.Task;
 import hu.bme.mit.gamma.genmodel.model.TestAutomatonType;
 import hu.bme.mit.gamma.genmodel.model.Verification;
 import hu.bme.mit.gamma.genmodel.model.XstsReference;
+import hu.bme.mit.gamma.scenario.model.ScenarioDeclaration;
+import hu.bme.mit.gamma.statechart.interface_.Component;
 
 public class GenmodelDerivedFeatures extends ExpressionModelDerivedFeatures {
 
+	public static List<ParameterDeclaration> getParameterDeclarations(ArgumentedElement element) {
+		if (element instanceof ComponentReference) {
+			ComponentReference componentReference = (ComponentReference) element;
+			Component component = componentReference.getComponent();
+			return component.getParameterDeclarations();
+		}
+		if (element instanceof StatechartContractGeneration) {
+			StatechartContractGeneration statechartContractGeneration = (StatechartContractGeneration) element;
+			ScenarioDeclaration scenarioDeclaration = statechartContractGeneration.getScenario();
+			return scenarioDeclaration.getParameterDeclarations();
+		}
+		throw new IllegalArgumentException("Not supported element: " + element);
+	}
+	
 	public static List<Task> getIncludedTasks(GenModel genmodel) {
 		List<Task> tasks = getAllTasks(genmodel);
 		tasks.removeAll(genmodel.getTasks());

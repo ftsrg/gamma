@@ -11,7 +11,7 @@ Require-Bundle: org.eclipse.xtext.ide,
  hu.bme.mit.gamma.expression.language,
  hu.bme.mit.gamma.scenario.model,
  hu.bme.mit.gamma.scenario.language
-Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Export-Package: hu.bme.mit.gamma.scenario.language.ide.contentassist.antlr.internal,
  hu.bme.mit.gamma.scenario.language.ide.contentassist.antlr,
  hu.bme.mit.gamma.scenario.language.ide.contentassist.antlr.internal,
