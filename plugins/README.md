@@ -38,7 +38,7 @@ If you want to use *UPPAAL* for formal verification, download and extract *UPPAA
 
 Make sure to set the text file encoding of your Eclipse workspace to **UTF-8**: _Window > Preferences..._ Start typing `workspace` in the left upper textfield (in the place of `type filter text`). Select _General > Workspace_ from the filtered item list and check the `Text file encoding` setting at the bottom of the window.
 
-Make sure to set the Java compiler compliance level to **11**: _Window > Preferences..._ Start typing `compiler` in the left upper textfield (in the place of `type filter text`). Select _Java > Compiler_ from the filtered item list and set the `Compiler compliance level` to **11** at the top of the window.
+Make sure to set the Java compiler compliance level to **17**: _Window > Preferences..._ Start typing `compiler` in the left upper textfield (in the place of `type filter text`). Select _Java > Compiler_ from the filtered item list and set the `Compiler compliance level` to **17** at the top of the window.
 
 _Tip: It is advised to turn on automatic refreshing for the _runtime workspace_. The other option is to refresh it manually with F5 after every Gamma command if the generated files do not appear._
 
