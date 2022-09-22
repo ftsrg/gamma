@@ -77,9 +77,9 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 	// Needs to be saved and reset after handling a new InteractionFragment, needs
 	// to be kept for transformation of loop fragment
 	private InteractionFragment previousFragment = null;
-	GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
-	JavaUtil javaUtil = JavaUtil.INSTANCE;
-	ExpressionEvaluator evaluator = ExpressionEvaluator.INSTANCE;
+	private GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
+	private JavaUtil javaUtil = JavaUtil.INSTANCE;
+	private ExpressionEvaluator evaluator = ExpressionEvaluator.INSTANCE;
 
 	public ScenarioDeclaration execute() {
 		simple = factory.createScenarioDeclaration();

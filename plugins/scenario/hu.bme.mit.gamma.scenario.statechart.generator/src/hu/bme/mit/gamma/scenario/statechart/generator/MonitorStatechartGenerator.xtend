@@ -27,6 +27,7 @@ import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.EventTrigger
 import hu.bme.mit.gamma.statechart.interface_.Trigger
 import hu.bme.mit.gamma.statechart.statechart.BinaryType
+import hu.bme.mit.gamma.statechart.statechart.OnCycleTrigger
 import hu.bme.mit.gamma.statechart.statechart.PortEventReference
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.StateNode
@@ -37,7 +38,6 @@ import java.util.List
 
 import static extension hu.bme.mit.gamma.scenario.model.derivedfeatures.ScenarioModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
-import hu.bme.mit.gamma.statechart.statechart.OnCycleTrigger
 
 class MonitorStatechartGenerator extends AbstractContractStatechartGeneration {
 
@@ -196,8 +196,7 @@ class MonitorStatechartGenerator extends AbstractContractStatechartGeneration {
 	}
 
 	def dispatch void process(Delay delay) {
-		throw new UnsupportedOperationException
-		// single delays are placed into a set in a previous step
+		throw new UnsupportedOperationException("Single delays are placed into a set in a previous step")
 	}
 
 	def dispatch void process(NegatedModalInteraction negatedModalInteraction) {
