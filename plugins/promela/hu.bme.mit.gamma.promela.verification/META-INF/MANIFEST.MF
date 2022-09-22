@@ -2,10 +2,10 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Promela Verifier
 Bundle-SymbolicName: hu.bme.mit.gamma.promela.verification
-Bundle-Version: 2.6.0.qualifier
+Bundle-Version: 2.7.0.qualifier
 Bundle-Vendor: BME-FTSRG
 Automatic-Module-Name: hu.bme.mit.gamma.promela.verification
-Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Require-Bundle: com.google.guava,
  org.eclipse.xtext.xbase.lib,
  org.eclipse.xtend.lib,
@@ -16,6 +16,6 @@ Require-Bundle: com.google.guava,
  hu.bme.mit.gamma.verification.util,
  hu.bme.mit.gamma.trace.model,
  hu.bme.mit.gamma.querygenerator,
- hu.bme.mit.gamma.theta.verification;bundle-version="2.6.0",
- hu.bme.mit.gamma.xsts.promela.transformation;bundle-version="2.6.0"
+ hu.bme.mit.gamma.theta.verification,
+ hu.bme.mit.gamma.xsts.promela.transformation
 Export-Package: hu.bme.mit.gamma.promela.verification
