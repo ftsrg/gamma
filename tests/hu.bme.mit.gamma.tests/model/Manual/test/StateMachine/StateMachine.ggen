@@ -1,6 +1,6 @@
 import "model/StateMachine/StateMachine"
 import "model/StateMachine/StateMachineWrapper"
-import trace "StateMachineTest"
+import trace "StateMachineTest.get"
 
 code {
 	component: StateMachine

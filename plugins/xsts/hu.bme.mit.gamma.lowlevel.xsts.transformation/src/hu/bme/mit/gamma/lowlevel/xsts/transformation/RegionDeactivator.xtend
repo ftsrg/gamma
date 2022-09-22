@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -26,11 +26,14 @@ class RegionDeactivator {
 	protected final extension XSTSModelFactory factory = XSTSModelFactory.eINSTANCE
 	protected final extension ExpressionModelFactory constraintFactory = ExpressionModelFactory.eINSTANCE
 	protected final extension XstsActionUtil actionFactory = XstsActionUtil.INSTANCE
+	//
+	protected final extension StateAssumptionCreator stateAssumptionCreator
 	// Trace needed for variable references
 	protected final Trace trace
 		
 	new(Trace trace) {
 		this.trace = trace
+		this.stateAssumptionCreator = new StateAssumptionCreator(this.trace)
 	}
 	
 	// Parent region handling
@@ -161,8 +164,8 @@ class RegionDeactivator {
 	
 	protected def createSingleXStsRegionDeactivatingAction(Region lowlevelRegion) {
 		if (lowlevelRegion.hasHistory) {
-			// If the parent region has history, no action
-			return createEmptyAction
+//			return createEmptyAction
+			return lowlevelRegion.createSingleXStsActiveInactiveStateAction
 		}
 		else {
 			return trace.getXStsVariable(lowlevelRegion).createAssignmentAction(

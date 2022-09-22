@@ -30,7 +30,6 @@ import hu.bme.mit.gamma.property.model.CommentableStateFormula;
 import hu.bme.mit.gamma.property.model.PropertyPackage;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression;
 import hu.bme.mit.gamma.uppaal.serializer.UppaalModelSerializer;
-import hu.bme.mit.gamma.util.FileUtil;
 import hu.bme.mit.gamma.xsts.model.XSTS;
 import hu.bme.mit.gamma.xsts.transformation.SystemReducer;
 import hu.bme.mit.gamma.xsts.transformation.serializer.ActionSerializer;
@@ -42,8 +41,6 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 	protected final SystemReducer xStsReducer = SystemReducer.INSTANCE;
 	protected final ActionSerializer xStsSerializer = ActionSerializer.INSTANCE;
 
-	protected final FileUtil fileUtil = FileUtil.INSTANCE;
-	
 	public OptimizerAndVerificationHandler(IFile file) {
 		super(file);
 	}
@@ -80,8 +77,12 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 		// Only one property package - we will add the formulas one by one
 		propertyPackages.add(mainPropertyPackage);
 		// As such, it is unnecessary to optimize the generated trace(s)
+		boolean isOptimize = verification.isOptimize();
 		verification.setOptimize(false);
 		
+		// A single one to store the traces and support later optimization - false: no trace serialization
+		VerificationHandler verificationHandler = new VerificationHandler(file, false);
+		//
 		for (CommentableStateFormula formula : formulas) {
 			checkableFormulas.clear();
 			int index = formulas.indexOf(formula) + 1; // Only for logging
@@ -113,10 +114,16 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 			}
 			//
 			
-			VerificationHandler verificationHandler = new VerificationHandler(file);
 			verificationHandler.execute(verification);
 			logger.log(Level.INFO, "Verification property " + index + "/" + size + " finished");
 		}
+		
+		if (isOptimize) {
+			// Traces have not been serialized yet, doing it now
+			verificationHandler.optimizeTraces();
+		}
+		verificationHandler.serializeTraces(); // Serialization in one pass
+		
 	}
 
 }

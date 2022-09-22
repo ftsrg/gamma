@@ -111,7 +111,7 @@ InstanceState returns InstanceState:
 ;
 
 InstanceStateConfiguration returns InstanceStateConfiguration:
-	'state' instance=ComponentInstanceReferenceExpression '.' region=[StatechartModel::Region] '.' state=[StatechartModel::State]
+	'state' (instance=ComponentInstanceReferenceExpression | 'self') '.' region=[StatechartModel::Region] '.' state=[StatechartModel::State]
 ;
 
 InstanceVariableState returns InstanceVariableState:
@@ -119,7 +119,7 @@ InstanceVariableState returns InstanceVariableState:
 ;
 
 ComponentInstanceVariableReferenceExpression returns CompositeModel::ComponentInstanceVariableReferenceExpression:
-	'variable' instance=ComponentInstanceReferenceExpression '.' variableDeclaration=[ConstraintModel::VariableDeclaration]
+	'variable' (instance=ComponentInstanceReferenceExpression | 'self') '.' variableDeclaration=[ConstraintModel::VariableDeclaration]
 ;
 
 ComponentInstanceReferenceExpression returns CompositeModel::ComponentInstanceReferenceExpression:

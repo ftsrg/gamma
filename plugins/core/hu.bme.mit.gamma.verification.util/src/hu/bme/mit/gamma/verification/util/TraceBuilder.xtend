@@ -61,7 +61,7 @@ class TraceBuilder {
 	protected final extension TraceUtil traceUtil = TraceUtil.INSTANCE
 	protected final StatechartUtil statechartUtil = StatechartUtil.INSTANCE // For component instance reference
 	
-	// Remove internal events
+	// Remove elements
 	
 	def removeInternalEventRaiseActs(ExecutionTrace trace) {
 		val raiseEventActs = trace.getAllContentsOfType(RaiseEventAct)
@@ -69,6 +69,17 @@ class TraceBuilder {
 			val event = raiseEventAct.event
 			if (event.internal) {
 				raiseEventAct.remove
+			}
+		}
+	}
+	
+	def removeTransientVariableReferences(ExecutionTrace trace) {
+		val instanceVariableStates = trace.getAllContentsOfType(InstanceVariableState)
+		for (instanceVariableState : instanceVariableStates) {
+			val variable = instanceVariableState.variableReference
+					.variableDeclaration
+			if (variable.transient) {
+				instanceVariableState.remove
 			}
 		}
 	}

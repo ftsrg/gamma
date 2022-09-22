@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -21,6 +21,7 @@ import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 
 import static extension hu.bme.mit.gamma.statechart.lowlevel.derivedfeatures.LowlevelStatechartModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
 
 class ExitActionRetriever {
 	// Model factories
@@ -143,7 +144,12 @@ class ExitActionRetriever {
 			for (lowlevelSubstate : lowlevelSubregion.states) {
 				xStsExitActions += lowlevelSubstate.createRecursiveXStsStateAndSubstateExitActions
 			}
-			xStsSubstateExitActions.actions += xStsExitActions.weave
+			//
+			xStsExitActions.removeIf[it.effectlessAction] // Optimization
+			//
+			if (!xStsExitActions.empty) {
+				xStsSubstateExitActions.actions += xStsExitActions.weave
+			}
 		}	
 		val xStsStateAssumption = lowlevelState.createSingleXStsStateAssumption
 		// Action taken only if the state is "active" (assume action)

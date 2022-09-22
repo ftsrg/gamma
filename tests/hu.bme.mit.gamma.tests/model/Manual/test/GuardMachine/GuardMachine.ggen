@@ -1,6 +1,6 @@
 import "model/GuardMachine/GuardMachine"
 import "model/GuardMachine/GuardMachineWrapper"
-import trace "GuardMachineTest"
+import trace "GuardMachineTest.get"
 
 code {
 	component: GuardMachine

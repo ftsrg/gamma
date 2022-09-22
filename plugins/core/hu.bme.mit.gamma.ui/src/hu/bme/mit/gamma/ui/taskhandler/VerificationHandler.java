@@ -69,9 +69,11 @@ import hu.bme.mit.gamma.verification.util.AbstractVerifier.Result;
 
 public class VerificationHandler extends TaskHandler {
 
+	protected boolean serializeTraces; // Denotes whether traces are serialized
 	protected boolean serializeTest; // Denotes whether test code is generated
 	protected String testFolderUri;
 	// targetFolderUri is traceFolderUri 
+	protected String packageName; // Set in setVerification
 	protected String svgFileName; // Set in setVerification
 	protected final String traceFileName = "ExecutionTrace";
 	protected final String testFileName = traceFileName + "Simulation";
@@ -87,9 +89,18 @@ public class VerificationHandler extends TaskHandler {
 	protected final StatechartEcoreUtil statechartEcoreUtil = StatechartEcoreUtil.INSTANCE;
 	protected final ExecutionTraceSerializer serializer = ExecutionTraceSerializer.INSTANCE;
 	
+	//
+	
 	public VerificationHandler(IFile file) {
-		super(file);
+		this(file, true);
 	}
+	
+	public VerificationHandler(IFile file, boolean serializeTraces) {
+		super(file);
+		this.serializeTraces = serializeTraces;
+	}
+	
+	//
 	
 	public void execute(Verification verification) throws IOException {
 		// Setting target folder
@@ -136,7 +147,6 @@ public class VerificationHandler extends TaskHandler {
 		String filePath = verification.getFileName().get(0);
 		File modelFile = new File(filePath);
 		boolean isOptimize = verification.isOptimize();
-		String packageName = verification.getPackageName().get(0);
 		
 		// Retrieved traces
 		List<VerificationResult> retrievedVerificationResults = new ArrayList<VerificationResult>();
@@ -235,10 +245,6 @@ public class VerificationHandler extends TaskHandler {
 			traceUtil.removeCoveredExecutionTraces(retrievedTraces);
 		}
 		
-		// Serializing
-		String testFolderUri = serializeTest ? this.testFolderUri : null;
-		String testFileName = serializeTest ? this.testFileName : null;
-		
 		// Back-annotating
 		if (verification.isBackAnnotateToOriginal()) {
 			List<ExecutionTrace> backAnnotatedTraces = new ArrayList<ExecutionTrace>();
@@ -254,11 +260,10 @@ public class VerificationHandler extends TaskHandler {
 			retrievedTraces.addAll(backAnnotatedTraces);
 		}
 		
-		for (ExecutionTrace trace : retrievedTraces) {
-			serializer.serialize(targetFolderUri, traceFileName, svgFileName,
-					testFolderUri, testFileName, packageName, trace);
-		}
 		traces.addAll(retrievedTraces);
+		if (serializeTraces) { // After 'traces.add...'
+			serializeTraces();
+		}
 		
 		// Note that .get and .json postfix ids will not match if optimization is applied
 		for (VerificationResult verificationResult : retrievedVerificationResults) {
@@ -300,7 +305,8 @@ public class VerificationHandler extends TaskHandler {
 	
 	private void setVerification(Verification verification) {
 		if (verification.getPackageName().isEmpty()) {
-			verification.getPackageName().add(file.getProject().getName().toLowerCase());
+			this.packageName = file.getProject().getName().toLowerCase();
+			verification.getPackageName().add(packageName);
 		}
 		if (verification.getTestFolder().isEmpty()) {
 			verification.getTestFolder().add("test-gen");
@@ -330,6 +336,22 @@ public class VerificationHandler extends TaskHandler {
 	
 	public List<ExecutionTrace> getTraces() {
 		return traces;
+	}
+	
+	public void optimizeTraces() {
+		// Optimization again on the retrieved tests (front to back and vice versa)
+		traceUtil.removeCoveredExecutionTraces(traces);
+	}
+	
+	public void serializeTraces() throws IOException {
+		// Serializing
+		String testFolderUri = serializeTest ? this.testFolderUri : null;
+		String testFileName = serializeTest ? this.testFileName : null;
+		String packageName = serializeTest ? this.packageName : null;
+		for (ExecutionTrace trace : traces) {
+			serializer.serialize(targetFolderUri, traceFileName, svgFileName,
+					testFolderUri, testFileName, packageName, trace);
+		}
 	}
 	
 	//

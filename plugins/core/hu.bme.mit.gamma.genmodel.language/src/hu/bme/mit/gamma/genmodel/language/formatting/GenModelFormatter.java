@@ -129,6 +129,7 @@ public class GenModelFormatter extends AbstractDeclarativeFormatter {
         c.setLinewrap(1).after(f.getVerificationAccess().getGroup_3_9());
         c.setLinewrap(1).after(f.getVerificationAccess().getProgrammingLanguagesAssignment_3_9_2());
         c.setLinewrap(1).after(f.getVerificationAccess().getGroup_3_10());
+        c.setLinewrap(1).after(f.getVerificationAccess().getAlternatives_3_2_2());
         c.setLinewrap(1).after(f.getVerificationAccess().getTestFolderAssignment_3_12_2());
         // Interface mapping
         c.setLinewrap(1).after(f.getInterfaceMappingRule());

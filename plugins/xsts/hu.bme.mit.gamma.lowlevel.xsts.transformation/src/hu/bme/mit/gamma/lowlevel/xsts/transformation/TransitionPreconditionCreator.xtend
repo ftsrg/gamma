@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -121,12 +121,13 @@ class TransitionPreconditionCreator {
 		if (lowlevelSourceNode instanceof State) { // Theoretically constant true
 			// e.g., local var a := region == Region.A
 			// e.g., local var b := region == Region.A (extractable) && region2 == Region.B
-			val recursiveXStsStateAssumption = lowlevelSourceNode.createRecursiveXStsStateAssumption
+			// Now only a single state assumption is here due to the introduction of history literals
+			val singleXStsStateAssumption = lowlevelSourceNode.createSingleXStsStateAssumption
 			// Caching
 			trace.add(trace.getIsActiveExpressions,
-				lowlevelTransition, recursiveXStsStateAssumption)
+				lowlevelTransition, singleXStsStateAssumption)
 			//
-			xStsOperands += recursiveXStsStateAssumption
+			xStsOperands += singleXStsStateAssumption
 		}
 		// Guard
 		val xStsGuardExpression = lowlevelTransition.getGuardExpression(trace.getGuards)

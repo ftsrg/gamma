@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -12,15 +12,16 @@ package hu.bme.mit.gamma.lowlevel.xsts.transformation
 
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
-import hu.bme.mit.gamma.expression.util.ExpressionUtil
+import hu.bme.mit.gamma.statechart.lowlevel.model.Region
 import hu.bme.mit.gamma.statechart.lowlevel.model.State
+import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 
 import static extension hu.bme.mit.gamma.statechart.lowlevel.derivedfeatures.LowlevelStatechartModelDerivedFeatures.*
 
 class StateAssumptionCreator {
 	// Model factories
 	protected final extension ExpressionModelFactory constraintFactory = ExpressionModelFactory.eINSTANCE
-	protected final extension ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE
+	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
 	// Trace needed for variable references
 	protected final Trace trace
 		
@@ -65,5 +66,74 @@ class StateAssumptionCreator {
 		]
 		return xStsCompositeStateAssumption
 	}
+	
+	/// Inactive history enum literal related methods
+	
+	protected def createSingleXStsInactiveHistoryStateAssumption(State lowlevelState) {
+		val lowlevelRegion = lowlevelState.parentRegion
+		val xStsParentRegionVariable = trace.getXStsVariable(lowlevelRegion)
+		val xStsEnumLiteral = trace.getXStsInactiveHistoryEnumLiteral(lowlevelState)
+		val xStsStateReference = xStsParentRegionVariable.createEqualityExpression(
+				xStsEnumLiteral.createEnumerationLiteralExpression)
+				
+		return xStsStateReference
+	}
+	
+	// Activation
+	protected def createSingleXStsInactiveActiveStateExpression(Region lowlevelRegion) {
+		val ifThenElses = newArrayList
+		val lowlevelStates = lowlevelRegion.states
+		for (lowlevelState : lowlevelStates) {
+			val singleXStsInactiveHistoryStateAssumption = lowlevelState.createSingleXStsInactiveHistoryStateAssumption
+			val singleXStsStateLiteral = trace.getXStsEnumLiteral(lowlevelState)
+					.createEnumerationLiteralExpression
+			ifThenElses += singleXStsInactiveHistoryStateAssumption.createIfThenElseExpression(
+					singleXStsStateLiteral, null)
+		}
+		// Else: _Inactive_ - if everything else is set correctly, this code is not necessary
+//		val last = ifThenElses.last
+//		if (last !== null) {
+//			last.^else = trace.getXStsInactiveEnumLiteral(lowlevelRegion)
+//					.createEnumerationLiteralExpression
+//		}
+		
+		return ifThenElses.weave
+	}
+	
+	protected def createSingleXStsInactiveActiveStateAction(Region lowlevelRegion) {
+		val xStsParentRegionVariable = trace.getXStsVariable(lowlevelRegion)
+		val xStsExpression = lowlevelRegion.createSingleXStsInactiveActiveStateExpression
+		
+		return xStsParentRegionVariable.createAssignmentAction(xStsExpression)
+	}
+	
+	// Deactivation
+	protected def createSingleXStsActiveInactiveStateExpression(Region lowlevelRegion) {
+		val ifThenElses = newArrayList
+		val lowlevelStates = lowlevelRegion.states
+		for (lowlevelState : lowlevelStates) {
+			val singleXStsStateAssumption = lowlevelState.createSingleXStsStateAssumption
+			val singleXStsInactiveStateLiteral = trace.getXStsInactiveHistoryEnumLiteral(lowlevelState)
+					.createEnumerationLiteralExpression
+			ifThenElses += singleXStsStateAssumption.createIfThenElseExpression(
+					singleXStsInactiveStateLiteral, null)
+		}
+		// Else: _Inactive_ - if everything else is set correctly, this code is not necessary
+//		val last = ifThenElses.last
+//		if (last !== null) {
+//			last.^else = trace.getXStsInactiveEnumLiteral(lowlevelRegion)
+//					.createEnumerationLiteralExpression
+//		}
+		return ifThenElses.weave
+	}
+	
+	protected def createSingleXStsActiveInactiveStateAction(Region lowlevelRegion) {
+		val xStsParentRegionVariable = trace.getXStsVariable(lowlevelRegion)
+		val xStsExpression = lowlevelRegion.createSingleXStsActiveInactiveStateExpression
+		
+		return xStsParentRegionVariable.createAssignmentAction(xStsExpression)
+	}
+	
+	///
 	
 }

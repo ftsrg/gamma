@@ -1,6 +1,6 @@
 import "model/TimedMachine/TimedMachine"
 import "model/TimedMachine/TimedMachineWrapper"
-import trace "TimedMachineTest"
+import trace "TimedMachineTest.get"
 
 code {
 	component: TimedMachine

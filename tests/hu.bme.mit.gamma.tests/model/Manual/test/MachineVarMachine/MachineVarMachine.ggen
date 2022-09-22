@@ -1,6 +1,6 @@
 import "model/MachineVarMachine/MachineVarMachine"
 import "model/MachineVarMachine/MachineVarMachineWrapper"
-import trace "MachineVarMachineTest"
+import trace "MachineVarMachineTest.get"
 
 code {
 	component: MachineVarMachine
