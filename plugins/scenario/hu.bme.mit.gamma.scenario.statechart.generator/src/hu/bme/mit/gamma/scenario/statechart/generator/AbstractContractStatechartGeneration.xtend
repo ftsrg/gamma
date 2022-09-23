@@ -44,11 +44,13 @@ import hu.bme.mit.gamma.statechart.statechart.BinaryTrigger
 import hu.bme.mit.gamma.statechart.statechart.BinaryType
 import hu.bme.mit.gamma.statechart.statechart.ChoiceState
 import hu.bme.mit.gamma.statechart.statechart.Region
+import hu.bme.mit.gamma.statechart.statechart.SetTimeoutAction
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.StateNode
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.StatechartModelFactory
 import hu.bme.mit.gamma.statechart.statechart.TimeoutDeclaration
+import hu.bme.mit.gamma.statechart.statechart.TimeoutEventReference
 import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.statechart.statechart.UnaryTrigger
 import hu.bme.mit.gamma.statechart.statechart.UnaryType
@@ -59,6 +61,7 @@ import java.util.List
 import java.util.Map
 import org.eclipse.emf.ecore.EObject
 
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 abstract class AbstractContractStatechartGeneration {
@@ -233,7 +236,7 @@ abstract class AbstractContractStatechartGeneration {
 	def protected Trigger getBinaryTriggerFromTriggersIfPossible(
 			List<Trigger> triggers, BinaryType type) {
 		if (triggers.size > 1) {
-			return getBinaryTriggerFromTriggers(triggers, type)
+			return getBinaryTriggerFromTriggers(triggers.filterNull.toList, type)
 		} else if (triggers.size == 1) {
 			return triggers.head
 		}
@@ -318,13 +321,13 @@ abstract class AbstractContractStatechartGeneration {
 		return triggers
 	}
 
-	def protected BinaryTrigger getBinaryTrigger(List<InteractionDefinition> interactions,
+	def protected Trigger getBinaryTrigger(List<InteractionDefinition> interactions,
 			BinaryType type, boolean reversed) {
 		val triggers = newArrayList
 		for (interaction : interactions) {
 			triggers += getEventTrigger(interaction, reversed)
 		}
-		return getBinaryTriggerFromTriggers(triggers, type)
+		return getBinaryTriggerFromTriggersIfPossible(triggers.filterNull.toList, type)
 	}
 
 	// /////////////// Event triggers based on Interactions	
@@ -334,6 +337,9 @@ abstract class AbstractContractStatechartGeneration {
 		val port = reversed ?
 				getPort(scenarioStatechartUtil.getTurnedOutPortName(signal.port)) :
 				getPort(signal.port.name)
+		if (port.isInternal) {
+			return null
+		}
 		eventref.event = getEvent(signal.event.name, port)
 		eventref.port = port
 		trigger.eventReference = eventref
@@ -357,6 +363,9 @@ abstract class AbstractContractStatechartGeneration {
 			var Port port = signal.direction.equals(InteractionDirection.SEND) ?
 					getPort(scenarioStatechartUtil.getTurnedOutPortName(signal.port)) :
 					getPort(signal.port.name)
+			if (port.isInternal) {
+				return null
+			}
 			val Event event = getEvent(signal.event.name, port)
 			val eventRef = createPortEventReference
 			eventRef.event = event
@@ -538,7 +547,8 @@ abstract class AbstractContractStatechartGeneration {
 			trigger = getBinaryTrigger(nonCheckOrAssignmentInteractitons, BinaryType.AND, reversed)
 		} else if (nonCheckOrAssignmentInteractitons.size == 1) {
 			trigger = getEventTrigger(nonCheckOrAssignmentInteractitons.head, reversed)
-		} else {
+		} 
+		if (trigger === null) {
 			trigger = createOnCycleTrigger
 		}
 		if (isNegated) {
@@ -588,6 +598,39 @@ abstract class AbstractContractStatechartGeneration {
 		action.time = timeSpecification
 		if (state instanceof State) {
 			state.entryActions += action
+		}
+	}
+	
+	def protected void removeZeroDelays() {
+		val timeoutDeclarationsToBeRemoved = newArrayList
+		for (timeout : statechart.timeoutDeclarations) {
+			val value = timeout.timeoutValue
+			if (value === null || (value.value.evaluable && value.value.evaluate == 0)) {
+				timeoutDeclarationsToBeRemoved += timeout
+			}
+		}
+		val eventRefs = ecoreUtil.getAllContentsOfType(statechart, TimeoutEventReference)
+			.filter[timeoutDeclarationsToBeRemoved.contains(it.timeout)]
+		val triggers = eventRefs.map[it.eContainer].filter(EventTrigger)	
+		for (trigger : triggers) {
+			val container = trigger.eContainer
+			if (container instanceof Transition) {
+				ecoreUtil.replace(createOnCycleTrigger, trigger)
+			} else if (container instanceof UnaryTrigger) {
+				ecoreUtil.replace(createOnCycleTrigger, trigger)
+			} else if (container instanceof BinaryTrigger) {
+				val otherSide = container.rightOperand == trigger ? container.leftOperand : container.rightOperand
+				ecoreUtil.replace(otherSide, container)
+			}
+		}
+		
+		statechart.timeoutDeclarations -= timeoutDeclarationsToBeRemoved
+		
+		for (state : firstRegion.states) {
+			state.entryActions -= state.entryActions
+				.filter(SetTimeoutAction)
+				.filter[it.time.value.evaluable && it.time.value.evaluate == 0]
+				.toList
 		}
 	}
 }

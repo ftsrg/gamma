@@ -299,9 +299,9 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 
 		try {
 			int min = expressionEvaluator.evaluateInteger(minimum);
-			if (min < 1) {
+			if (min < 0) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-						"The minimum value must be greater than or equals to 1", new ReferenceInfo(minimumFeature)));
+						"The minimum value must be greater than or equals to 0", new ReferenceInfo(minimumFeature)));
 			}
 			if (maximum != null) {
 				int max = expressionEvaluator.evaluateInteger(maximum);

@@ -51,6 +51,7 @@ import hu.bme.mit.gamma.scenario.model.UnorderedCombinedFragment;
 import hu.bme.mit.gamma.scenario.model.WaitAnnotation;
 import hu.bme.mit.gamma.scenario.model.util.ScenarioModelSwitch;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
+import hu.bme.mit.gamma.util.JavaUtil;
 
 public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 
@@ -76,7 +77,9 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 	// Needs to be saved and reset after handling a new InteractionFragment, needs
 	// to be kept for transformation of loop fragment
 	private InteractionFragment previousFragment = null;
-	GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
+	private GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
+	private JavaUtil javaUtil = JavaUtil.INSTANCE;
+	private ExpressionEvaluator evaluator = ExpressionEvaluator.INSTANCE;
 
 	public ScenarioDeclaration execute() {
 		simple = factory.createScenarioDeclaration();
@@ -188,7 +191,23 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 	public EObject caseAlternativeCombinedFragment(AlternativeCombinedFragment object) {
 		AlternativeCombinedFragment acf = factory.createAlternativeCombinedFragment();
 		for (InteractionFragment fragment : object.getFragments()) {
-			acf.getFragments().add((InteractionFragment) this.doSwitch(fragment));
+			boolean shouldBeAdded = true;
+			Interaction firstInteraction = fragment.getInteractions().get(0);
+			if (firstInteraction instanceof ModalInteractionSet) {
+				ModalInteractionSet set = (ModalInteractionSet) firstInteraction;
+				List<ScenarioCheckExpression> checks= javaUtil.filterIntoList(set.getModalInteractions(), ScenarioCheckExpression.class);
+				for (int i = 0; i < checks.size(); i++) {
+					ScenarioCheckExpression check = checks.get(i);
+					try {
+						shouldBeAdded = shouldBeAdded && evaluator.evaluateBoolean(check.getExpression());
+					} catch (Exception e) {
+						//Empty on purpose
+					}
+				}
+			}
+			if (shouldBeAdded) {
+				acf.getFragments().add((InteractionFragment) this.doSwitch(fragment));
+			}
 		}
 		return acf;
 	}
@@ -379,7 +398,13 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 			delay.setMaximum(ecoreUtil.clone(object.getMaximum()));
 		}
 		delay.setMinimum(ecoreUtil.clone(object.getMinimum()));
-		return delay;
+		if (object.eContainer() instanceof ModalInteractionSet) {
+			return delay;
+		} else {
+			ModalInteractionSet set = factory.createModalInteractionSet();
+			set.getModalInteractions().add(delay);
+			return set;
+		}
 	}
 
 	@Override
