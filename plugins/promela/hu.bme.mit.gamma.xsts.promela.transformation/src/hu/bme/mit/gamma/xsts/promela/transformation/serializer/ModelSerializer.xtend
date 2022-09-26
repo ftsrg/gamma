@@ -82,8 +82,8 @@ class ModelSerializer {
 	'''
 	
 	def dispatch String serialize(AssignmentAction action) {
-		//Proomela does not support multidimensional arrays, so they need to be handled differently.
-		//It also does not support the use of array init blocks in processes.
+		// Promela does not support multidimensional arrays, so they need to be handled differently.
+		// It also does not support the use of array init blocks in processes.
 		if (action.lhs.declaration.typeDefinition instanceof ArrayTypeDefinition) {
 			return action.lhs.serializeArrayAssignment(action.rhs)
 		}
