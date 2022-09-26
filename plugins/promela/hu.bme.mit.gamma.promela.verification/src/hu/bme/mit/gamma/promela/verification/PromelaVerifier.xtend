@@ -24,9 +24,7 @@ class PromelaVerifier extends AbstractVerifier {
 	extension FileUtil fileUtil = FileUtil.INSTANCE
 	protected final extension PromelaQueryAdapter promelaQueryAdapter = PromelaQueryAdapter.INSTANCE
 	
-	override Result verifyQuery(Object traceability, 
-		String parameters, File modelFile,	File queryFile
-	) {
+	override Result verifyQuery(Object traceability, String parameters, File modelFile,	File queryFile) {
 		val model = fileUtil.loadString(modelFile)
 		val query = fileUtil.loadString(queryFile)
 		
