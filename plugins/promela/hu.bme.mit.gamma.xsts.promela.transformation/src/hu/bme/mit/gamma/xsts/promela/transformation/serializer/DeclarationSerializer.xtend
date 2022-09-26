@@ -80,16 +80,16 @@ class DeclarationSerializer {
 	
 	// Array serialization
 	
-	def String serializeArrayTypeDefinition(Type type, Integer acc) {
+	def String serializeArrayTypeDefinition(Type type, Integer index) {
 		val typeDefinition = type as ArrayTypeDefinition
 		val elementType = typeDefinition.elementType
 		val declaration = typeDefinition.getContainerOfType(Declaration)
 		return '''
 		«IF elementType instanceof ArrayTypeDefinition»
-			«elementType.serializeArrayTypeDefinition(acc+1)»
-			typedef «declaration.name»«acc» { «declaration.name»«acc+1» «arrayFieldName»[«typeDefinition.size.serialize»] }
+			«elementType.serializeArrayTypeDefinition(index+1)»
+			typedef «declaration.name»«index» { «declaration.name»«index+1» «arrayFieldName»[«typeDefinition.size.serialize»] }
 		«ELSE»
-			typedef «declaration.name»«acc» { «elementType.serializeType» «arrayFieldName»[«typeDefinition.size.serialize»] }
+			typedef «declaration.name»«index» { «elementType.serializeType» «arrayFieldName»[«typeDefinition.size.serialize»] }
 		«ENDIF»
 		'''
 	}
