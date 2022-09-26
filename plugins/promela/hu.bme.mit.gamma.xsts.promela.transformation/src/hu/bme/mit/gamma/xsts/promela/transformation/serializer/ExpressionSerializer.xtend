@@ -31,7 +31,7 @@ class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSe
 	
 	override String _serialize(IfThenElseExpression expression) '''(«expression.condition.serialize» -> («expression.then.serialize») : («expression.^else.serialize»))'''
 	
-	override String _serialize(EnumerationLiteralExpression expression) '''«expression.costumizeEnumLiteralName»'''
+	override String _serialize(EnumerationLiteralExpression expression) '''«expression.customizeEnumLiteralName»'''
 	
 	override String _serialize(ModExpression expression) '''(«expression.leftOperand.serialize» % «expression.rightOperand.serialize»)'''
 	

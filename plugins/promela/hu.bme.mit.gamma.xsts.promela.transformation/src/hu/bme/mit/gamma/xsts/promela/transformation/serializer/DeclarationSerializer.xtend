@@ -74,7 +74,7 @@ class DeclarationSerializer {
 	
 	def dispatch String serializeType(IntegerTypeDefinition type) '''int'''
 	
-	def dispatch String serializeType(EnumerationTypeDefinition type) '''{ «FOR literal : type.literals SEPARATOR ', '»«type.costumizeEnumLiteralName(literal)»«ENDFOR» }'''
+	def dispatch String serializeType(EnumerationTypeDefinition type) '''{ «FOR literal : type.literals SEPARATOR ', '»«type.customizeEnumLiteralName(literal)»«ENDFOR» }'''
 	
 	def dispatch String serializeType(ArrayTypeDefinition type) '''«IF type.elementType instanceof ArrayTypeDefinition»«type.getContainerOfType(Declaration).name»0«ELSE»«type.elementType.serializeType»«ENDIF»'''
 	

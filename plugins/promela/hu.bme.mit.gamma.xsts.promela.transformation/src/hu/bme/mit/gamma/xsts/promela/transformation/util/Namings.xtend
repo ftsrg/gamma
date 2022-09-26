@@ -26,8 +26,8 @@ import static extension hu.bme.mit.gamma.xsts.transformation.util.XstsNamings.*
 class Namings {
 	public static final String arrayFieldName = "a"
 	public static final String arrayFieldAccess = "." + arrayFieldName
-	static def String costumizeEnumLiteralName(EnumerationLiteralExpression expression) '''«expression.reference.typeDeclaration.name»«expression.reference.name»'''
-	static def String costumizeEnumLiteralName(EnumerationTypeDefinition type, EnumerationLiteralDefinition literal) '''«type.typeDeclaration.name»«literal.name»'''
-	static def String costumizeEnumLiteralName(State state, Region parentRegion, ComponentInstanceReferenceExpression instance) '''«parentRegion.name.regionTypeName»_«instance.FQN»«state.customizeName»'''
-	static def String costumizeEnumLiteralName(State state, Region parentRegion, SynchronousComponentInstance instance) '''«parentRegion.name.regionTypeName»_«instance.FQN»«state.customizeName»'''
+	static def String customizeEnumLiteralName(EnumerationLiteralExpression expression) '''«expression.reference.typeDeclaration.name»«expression.reference.name»'''
+	static def String customizeEnumLiteralName(EnumerationTypeDefinition type, EnumerationLiteralDefinition literal) '''«type.typeDeclaration.name»«literal.name»'''
+	static def String customizeEnumLiteralName(State state, Region parentRegion, ComponentInstanceReferenceExpression instance) '''«parentRegion.name.regionTypeName»_«instance.FQN»«state.customizeName»'''
+	static def String customizeEnumLiteralName(State state, Region parentRegion, SynchronousComponentInstance instance) '''«parentRegion.name.regionTypeName»_«instance.FQN»«state.customizeName»'''
 }

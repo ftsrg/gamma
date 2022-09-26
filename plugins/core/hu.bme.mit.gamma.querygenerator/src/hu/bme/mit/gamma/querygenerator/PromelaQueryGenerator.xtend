@@ -25,6 +25,6 @@ class PromelaQueryGenerator extends ThetaQueryGenerator {
 	}
 	
 	override protected getSingleTargetStateName(State state, Region parentRegion, SynchronousComponentInstance instance) {
-		return '''«parentRegion.customizeName(instance)» == «state.costumizeEnumLiteralName(parentRegion, instance)»'''
+		return '''«parentRegion.customizeName(instance)» == «state.customizeEnumLiteralName(parentRegion, instance)»'''
 	}
 }

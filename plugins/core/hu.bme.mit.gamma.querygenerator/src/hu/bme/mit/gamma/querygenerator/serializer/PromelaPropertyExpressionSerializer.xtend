@@ -22,7 +22,7 @@ class PromelaPropertyExpressionSerializer extends ThetaPropertyExpressionSeriali
 	
 	override String serialize(Expression expression) {
 		if (expression instanceof EnumerationLiteralExpression) {
-			return Namings.costumizeEnumLiteralName(expression)
+			return Namings.customizeEnumLiteralName(expression)
 		}
 		return super.serialize(expression)
 	}
