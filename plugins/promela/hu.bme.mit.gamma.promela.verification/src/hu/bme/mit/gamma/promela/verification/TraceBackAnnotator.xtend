@@ -117,7 +117,6 @@ class TraceBackAnnotator {
 								
 								traceState = TraceState.REQUIRED
 								line = traceScanner.nextLine.trim
-								//println("INIT")
 							}
 							case line.equals(INIT_END): {
 								traceState = TraceState.NOT_REQUIRED
@@ -132,7 +131,6 @@ class TraceBackAnnotator {
 								traceState = TraceState.REQUIRED
 								initError = true
 								line = traceScanner.nextLine.trim
-								//println("INIT")
 							}
 							case line.equals(INIT_ERROR): {
 								if (initError) {
@@ -158,7 +156,6 @@ class TraceBackAnnotator {
 								
 								traceState = TraceState.REQUIRED
 								line = traceScanner.nextLine.trim
-								//println("ENVIRONMENT_CHECK")
 							}
 							case line.equals(ENV_END): {
 								traceState = TraceState.NOT_REQUIRED
@@ -181,7 +178,6 @@ class TraceBackAnnotator {
 								
 								traceState = TraceState.REQUIRED
 								line = traceScanner.nextLine.trim
-								//println("STATE_CHECK")
 							}
 							case line.equals(TRANS_END): {
 								traceState = TraceState.NOT_REQUIRED
@@ -199,7 +195,6 @@ class TraceBackAnnotator {
 				
 				// We parse in every turn
 				if (traceState == TraceState.REQUIRED) {
-					//println(line)
 					
 					var split = line.split(" = ")
 					var id = split.get(0)
