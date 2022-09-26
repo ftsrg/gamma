@@ -436,7 +436,7 @@ class ComponentTransformer {
 			val xStsMasterSizeVariable = variableTrace.getAll(masterSizeVariable).onlyElement
 			
 			val xStsQueueHandlingAction = createSequentialAction
-			val isQueueEmptyExpression = xStsMasterSizeVariable.empty
+			val isQueueEmptyExpression = xStsMasterSizeVariable.empty // It isn't always true as there can be more queues
 			val ifEmptyAction = isQueueEmptyExpression.createIfAction(xStsQueueHandlingAction)
 			// If queue is empty
 			inEventAction.actions += ifEmptyAction
@@ -446,70 +446,74 @@ class ComponentTransformer {
 			val xStsEventIdVariable = xStsEventIdVariableAction.variableDeclaration
 			
 			xStsQueueHandlingAction.actions += xStsEventIdVariableAction
-			xStsQueueHandlingAction.actions += xStsEventIdVariable.createHavocAction
 			
-			// If the id is a valid event
-			val storesInternalPort = queue.storedEvents.exists[it.key.internal]
-			// Semantically equivalent but maybe the second interval is easier to handle by SMT solvers
-			val isValidIdExpression = if (storesInternalPort) {
-				// (0 < eventId && eventId <= maxPotentialEventId) does not work now with internal events
-				val eventIds = queue.eventIdsOfNonInternalEvents
-				// (eventId == 1 || eventId == 3 || ...)
-				val idComparisons = eventIds.map[
-					xStsEventIdVariable.createReferenceExpression
-						.createEqualityExpression(
-							it.toIntegerLiteral)]
-				idComparisons.wrapIntoOrExpression
-			}
-			else {
-				val emptyValue = xStsEventIdVariable.defaultExpression
-				val maxEventId = queue.maxEventId.toIntegerLiteral
-				// 0 < eventId && eventId <= maxPotentialEventId
-				val leftInterval = emptyValue
-						.createLessExpression(xStsEventIdVariable.createReferenceExpression)
-				val rightInterval = xStsEventIdVariable.createReferenceExpression
-						.createLessEqualExpression(maxEventId)
-				#[leftInterval, rightInterval].wrapIntoAndExpression
-			}
-			
-			val setQueuesAction = createSequentialAction
-			setQueuesAction.actions += xStsMasterQueue.addAndIncrement( // Or could be used 0 literals for index
-					xStsMasterSizeVariable, xStsEventIdVariable.createReferenceExpression)
-			
-			xStsQueueHandlingAction.actions += isValidIdExpression.createIfAction(setQueuesAction)
-			
-			val branchExpressions = <Expression>newArrayList
-			val branchActions = <Action>newArrayList
-			for (portEvent : slaveQueues.keySet
-						.filter[systemInEvents.contains(it) /*Only system events*/]) {
-				val slaveQueueStructs = slaveQueues.get(portEvent)
-				val eventId = queueTraceability.get(portEvent)
-				branchExpressions += xStsEventIdVariable
-						.createEqualityExpression(eventId.toIntegerLiteral)
-				val slaveQueueSetting = createSequentialAction
-				branchActions += slaveQueueSetting
+			// Queue capacity can be greater than 1 if a component is executed multiple times in execution lists
+			for (var i = 0; i < queue.getCapacity(systemPorts); i++) {
+				// queue.getCapacity(systemPorts) is 1 most of the time, so i remains 0
+				xStsQueueHandlingAction.actions += xStsEventIdVariable.createHavocAction
 				
-				for (slaveQueueStruct : slaveQueueStructs) {
-					val slaveQueue = slaveQueueStruct.arrayVariable
-					val slaveSizeVariable = slaveQueueStruct.sizeVariable
-					
-					val xStsSlaveQueues = variableTrace.getAll(slaveQueue)
-					val xStsSlaveSizeVariable = variableTrace.getAll(slaveSizeVariable).onlyElement
-					
-					for (xStsSlaveQueue : xStsSlaveQueues) {
-						val xStsRandomVariableAction = xStsSlaveQueue
-							.createVariableDeclarationActionForArray(
-								xStsSlaveQueue.randomValueLocalVariableName)
-						val xStsRandomVariable = xStsRandomVariableAction.variableDeclaration
-						slaveQueueSetting.actions += xStsRandomVariableAction
-						slaveQueueSetting.actions += xStsRandomVariable.createHavocAction
-						slaveQueueSetting.actions += xStsSlaveQueue.add(
-							0.toIntegerLiteral,	xStsRandomVariable.createReferenceExpression)
-					}
-					slaveQueueSetting.actions += xStsSlaveSizeVariable.increment
+				// If the id is a valid event
+				val storesInternalPort = queue.storedEvents.exists[it.key.internal]
+				// Semantically equivalent but maybe the second interval is easier to handle by SMT solvers
+				val isValidIdExpression = if (storesInternalPort) {
+					// (0 < eventId && eventId <= maxPotentialEventId) does not work now with internal events
+					val eventIds = queue.eventIdsOfNonInternalEvents
+					// (eventId == 1 || eventId == 3 || ...)
+					val idComparisons = eventIds.map[
+						xStsEventIdVariable.createReferenceExpression
+							.createEqualityExpression(
+								it.toIntegerLiteral)]
+					idComparisons.wrapIntoOrExpression
 				}
+				else {
+					val emptyValue = xStsEventIdVariable.defaultExpression
+					val maxEventId = queue.maxEventId.toIntegerLiteral
+					// 0 < eventId && eventId <= maxPotentialEventId
+					val leftInterval = emptyValue.createLessExpression(xStsEventIdVariable.createReferenceExpression)
+					val rightInterval = xStsEventIdVariable.createReferenceExpression
+							.createLessEqualExpression(maxEventId)
+					#[leftInterval, rightInterval].wrapIntoAndExpression
+				}
+				
+				val setQueuesAction = createSequentialAction
+				setQueuesAction.actions += xStsMasterQueue.addAndIncrement( // Or could be used 0 literals for index
+						xStsMasterSizeVariable, xStsEventIdVariable.createReferenceExpression)
+				
+				xStsQueueHandlingAction.actions += isValidIdExpression.createIfAction(setQueuesAction)
+				
+				val branchExpressions = <Expression>newArrayList
+				val branchActions = <Action>newArrayList
+				for (portEvent : slaveQueues.keySet
+							.filter[systemInEvents.contains(it) /*Only system events*/]) {
+					val slaveQueueStructs = slaveQueues.get(portEvent)
+					val eventId = queueTraceability.get(portEvent)
+					branchExpressions += xStsEventIdVariable
+							.createEqualityExpression(eventId.toIntegerLiteral)
+					val slaveQueueSetting = createSequentialAction
+					branchActions += slaveQueueSetting
+					
+					for (slaveQueueStruct : slaveQueueStructs) {
+						val slaveQueue = slaveQueueStruct.arrayVariable
+						val slaveSizeVariable = slaveQueueStruct.sizeVariable
+						
+						val xStsSlaveQueues = variableTrace.getAll(slaveQueue)
+						val xStsSlaveSizeVariable = variableTrace.getAll(slaveSizeVariable).onlyElement
+						
+						for (xStsSlaveQueue : xStsSlaveQueues) {
+							val xStsRandomVariableAction = xStsSlaveQueue
+								.createVariableDeclarationActionForArray(
+									xStsSlaveQueue.randomValueLocalVariableName)
+							val xStsRandomVariable = xStsRandomVariableAction.variableDeclaration
+							slaveQueueSetting.actions += xStsRandomVariableAction
+							slaveQueueSetting.actions += xStsRandomVariable.createHavocAction
+							slaveQueueSetting.actions += xStsSlaveQueue.add(
+								0.toIntegerLiteral, xStsRandomVariable.createReferenceExpression)
+						}
+						slaveQueueSetting.actions += xStsSlaveSizeVariable.increment
+					}
+				}
+				setQueuesAction.actions += branchExpressions.createChoiceAction(branchActions)
 			}
-			setQueuesAction.actions += branchExpressions.createChoiceAction(branchActions)
 		}
 		
 		xSts.inEventTransition = inEventAction.wrap
@@ -938,15 +942,17 @@ class ComponentTransformer {
 	
 	private def getCapacity(MessageQueue queue, Collection<? extends Port> systemPorts) {
 		if (queue.isEnvironmentalAndCheck(systemPorts)) {
-			val messageRetrievalCount = queue.messageRetrievalCount
-			return messageRetrievalCount // capacity can be equal to messageRetrievalCount for env. queues
+			val adapter = queue.containingComponent
+			val messageRetrievalCount = queue.messageRetrievalCount // Always 1
+			val executionCount = adapter.scheduleCount // 1 if not scheduled composite
+			return messageRetrievalCount * executionCount // 1 * (how many times the component can be executed in a cycle)
 		}
 		val capacity = queue.capacity
 		return capacity.evaluateInteger
 	}
 	
 	private def getMessageRetrievalCount(MessageQueue queue) {
-		return 1
+		return 1 // This used to be customizable but loop actions did not work
 	}
 	
 	private def isEnvironmentalAndCheck(MessageQueue queue, Collection<? extends Port> systemPorts) {

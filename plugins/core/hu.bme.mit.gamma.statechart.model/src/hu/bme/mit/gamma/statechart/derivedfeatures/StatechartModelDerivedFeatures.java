@@ -2419,6 +2419,12 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return instances.stream().findFirst().get();
 	}
 	
+	public static Component getParentComponent(Component component) {
+		ComponentInstance instance = getReferencingComponentInstance(component);
+		Component parentComponent = StatechartModelDerivedFeatures.getContainingComponent(instance);
+		return parentComponent;
+	}
+	
 	public static ComponentInstance getContainingComponentInstance(EObject object) {
 		StatechartDefinition statechart = getContainingStatechart(object);
 		return getReferencingComponentInstance(statechart);
@@ -2546,6 +2552,19 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return initallyScheduledInstances;
 	}
 	
+	public static List<? extends ComponentInstance> getScheduledInstances(Component component) {
+		if (component instanceof AbstractSynchronousCompositeComponent synchronousComponent) {
+			return getScheduledInstances(synchronousComponent);
+		}
+		else if (component instanceof AbstractAsynchronousCompositeComponent asynchronousComponent) {
+			return getScheduledInstances(asynchronousComponent);
+		}
+		else if (component instanceof AsynchronousAdapter asynchronusAdapter) {
+			return List.of(asynchronusAdapter.getWrappedComponent());
+		}
+		throw new IllegalArgumentException("Not known component: " + component);
+	}
+	
 	public static List<SynchronousComponentInstance> getScheduledInstances(
 			AbstractSynchronousCompositeComponent component) {
 		if (component instanceof CascadeCompositeComponent) {
@@ -2601,6 +2620,36 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 			}
 		}
 		return simpleInstances;
+	}
+	
+	public static int getScheduleCount(Component component) {
+		if (isTop(component)) {
+			return 1;
+		}
+		
+		ComponentInstance instance = getReferencingComponentInstance(component);
+		Component parentComponent = getParentComponent(component);
+		List<? extends ComponentInstance> scheduledInstances = getScheduledInstances(parentComponent);
+		
+		int count = 0;
+		for (ComponentInstance scheduledInstance : scheduledInstances) {
+			if (scheduledInstance == instance) {
+				++count;
+			}
+		}
+		
+		int parentScheduleCount = getScheduleCount(parentComponent);
+		
+		return parentScheduleCount * count;
+	}
+	
+	public static boolean isTop(Component component) {
+		try {
+			getParentComponent(component);
+			return false;
+		} catch (IllegalArgumentException e) {
+			return true;
+		}
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -2659,6 +2708,4 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return getComponentAnnotation(component, NegativeContractStatechartAnnotation.class) != null;
 	}
 	
-	
-
 }

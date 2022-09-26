@@ -79,9 +79,9 @@ class UppaalVerifier extends AbstractVerifier {
 		} catch (Exception e) {
 			throw e
 		} finally {
-			resultReader.close
-			traceReader.close
-			resultLogger.cancel
+			resultReader?.close
+			traceReader?.close
+			resultLogger?.cancel
 		}
 	}
 	
