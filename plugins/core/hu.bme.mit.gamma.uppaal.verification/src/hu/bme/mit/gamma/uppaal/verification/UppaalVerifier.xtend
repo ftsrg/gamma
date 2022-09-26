@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -12,6 +12,7 @@ package hu.bme.mit.gamma.uppaal.verification
 
 import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.uppaal.transformation.traceability.G2UTrace
+import hu.bme.mit.gamma.util.ScannerLogger
 import hu.bme.mit.gamma.verification.result.ThreeStateBoolean
 import hu.bme.mit.gamma.verification.util.AbstractVerifier
 import java.io.File
@@ -20,7 +21,7 @@ import java.util.logging.Level
 
 class UppaalVerifier extends AbstractVerifier {
 	
-	VerificationResultReader verificationResultReader = null // Created one for each execution
+	protected ScannerLogger resultLogger = null // Created one for each execution
 	
 	override Result verifyQuery(Object traceability, String parameters,
 			File uppaalFile, File uppaalQueryFile) {
@@ -29,7 +30,8 @@ class UppaalVerifier extends AbstractVerifier {
 		val actualUppaalQuery = uppaalQueryFile.loadString
 		try {
 			// verifyta -t0 -T TestOneComponent.xml asd.q 
-			val command = #["verifyta"] + parameters.split(" ") + #[uppaalFile.canonicalPath, uppaalQueryFile.canonicalPath]
+			val command = #["verifyta"] + parameters.split(" ") +
+					#[uppaalFile.canonicalPath, uppaalQueryFile.canonicalPath]
 			
 			// Executing the command
 			logger.log(Level.INFO, "Executing command: " + command.join(" "))
@@ -39,9 +41,8 @@ class UppaalVerifier extends AbstractVerifier {
 			
 			// Reading the result of the command
 			resultReader = new Scanner(outputStream)
-			verificationResultReader = new VerificationResultReader(resultReader)
-			val thread = new Thread(verificationResultReader)
-			thread.start
+			resultLogger = new ScannerLogger(resultReader, "Out of memory")
+			resultLogger.start
 			traceReader = new Scanner(errorStream)
 			
 			if (isCancelled) {
@@ -49,7 +50,7 @@ class UppaalVerifier extends AbstractVerifier {
 				throw new NotBackannotatedException(ThreeStateBoolean.UNDEF)
 			}
 			if (!traceReader.hasNext()) {
-				if (verificationResultReader.error) {
+				if (resultLogger.error) {
 					// E.g. out of memory
 					throw new NotBackannotatedException(ThreeStateBoolean.UNDEF)
 				}
@@ -80,7 +81,7 @@ class UppaalVerifier extends AbstractVerifier {
 		} finally {
 			resultReader.close
 			traceReader.close
-			verificationResultReader.cancel
+			resultLogger.cancel
 		}
 	}
 	
@@ -97,7 +98,7 @@ class UppaalVerifier extends AbstractVerifier {
 	}
 	
 	override cancel() {
-		verificationResultReader.cancel
+		resultLogger.cancel
 		super.cancel
 	}
 	
