@@ -200,6 +200,10 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return isBroadcastMatcher(port.getInterfaceRealization());
 	}
 	
+	public static boolean isBroadcastOrBroadcastMatcher(Port port) {
+		return isBroadcast(port) || isBroadcastMatcher(port);
+	}
+	
 	public static boolean isProvided(InstancePortReference port) {
 		return isProvided(port.getPort());
 	}

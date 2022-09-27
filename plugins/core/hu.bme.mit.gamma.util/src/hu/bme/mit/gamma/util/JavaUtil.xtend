@@ -59,6 +59,16 @@ class JavaUtil {
 		return last
 	}
 	
+	def <T> T removeLast(List<T> list) {
+		return list.remove(list.size - 1)
+	}
+	
+	def <T> void removeAllButFirst(List<T> list) {
+		for (var i = 1; i < list.size; /* No op */) {
+			list.remove(i)
+		}
+	}
+	
 	def boolean isUnique(Iterable<?> collection) {
 		val set = newHashSet
 		for (element : collection) {

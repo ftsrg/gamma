@@ -67,6 +67,15 @@ public class ExpressionModelDerivedFeatures {
 	protected static final JavaUtil javaUtil = JavaUtil.INSTANCE;
 	protected static final ExpressionModelFactory factory = ExpressionModelFactory.eINSTANCE;
 	
+	//
+	
+	public static boolean isContainedByPackage(EObject object) {
+		EObject root = ecoreUtil.getRoot(object);
+		return root instanceof ExpressionPackage;
+	}
+	
+	//
+	
 	public static Expression getLeft(IntegerRangeLiteralExpression expression, boolean isInclusive) {
 		Expression leftOperand = expression.getLeftOperand();
 		boolean isLeftInclusive = expression.isLeftInclusive();

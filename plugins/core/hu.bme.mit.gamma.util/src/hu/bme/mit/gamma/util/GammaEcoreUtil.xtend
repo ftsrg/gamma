@@ -114,6 +114,17 @@ class GammaEcoreUtil {
 		EcoreUtil.remove(object)
 	}
 	
+	def void removeAll(Collection<? extends EObject> list) {
+		EcoreUtil.removeAll(list)
+	}
+	
+	def void removeAllButFirst(List<? extends EObject> list) {
+		for (var i = 1; i < list.size; /* No op */) {
+			val object = list.get(i)
+			object.remove
+		}
+	}
+	
 	def <T extends EObject> removeContainmentChains(
 			Collection<? extends T> removableElements, Class<? extends T> clazz) {
 		val queue = newLinkedList
@@ -308,6 +319,10 @@ class GammaEcoreUtil {
 			return container as T
 		}
 		return container.getContainerOfType(type)
+	}
+	
+	def <T extends EObject> boolean hasContainerOfType(EObject object, Class<T> type) {
+		return object.getContainerOfType(type) !== null
 	}
 	
 	def <T extends EObject> T getSelfOrLastContainerOfType(T object, Class<T> type) {
