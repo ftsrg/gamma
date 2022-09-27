@@ -30,7 +30,6 @@ class Trace {
 	
 	final Collection<Transition> firstStepTransitions = newLinkedHashSet
 	
-	State lastInState
 	State lastOutState
 	
 	// Component-environment ports
@@ -83,14 +82,6 @@ class Trace {
 	
 	def isFirstStepTransition(Transition transition) {
 		return firstStepTransitions.contains(transition)
-	}
-	
-	def setLastInState(State lastInState) {
-		this.lastInState = lastInState
-	}
-	
-	def getLastInState() {
-		return lastInState
 	}
 	
 	def setLastOutState(State lastOutState) {

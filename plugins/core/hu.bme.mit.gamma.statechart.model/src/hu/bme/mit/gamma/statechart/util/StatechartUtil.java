@@ -14,7 +14,9 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 import java.util.Set;
 
 import org.eclipse.emf.ecore.EObject;
@@ -1008,6 +1010,68 @@ public class StatechartUtil extends ActionUtil {
 		target.setTransitionPriority(source.getTransitionPriority());
 		// Containment
 		ecoreUtil.copyContent(source, target);
+	}
+	
+	public List<Transition> relocateIncomingTransitions(StateNode source, StateNode target) {
+		List<Transition> incomingTransitions = StatechartModelDerivedFeatures.getIncomingTransitions(source);
+		for (Transition incomingTransition : incomingTransitions) {
+			incomingTransition.setTargetState(target);
+		}
+		return incomingTransitions;
+	}
+	
+	public List<Transition> relocateOutgoingTransitions(StateNode source, StateNode target) {
+		List<Transition> outgoingTransitions = StatechartModelDerivedFeatures.getOutgoingTransitions(source);
+		for (Transition outgoingTransition : outgoingTransitions) {
+			outgoingTransition.setSourceState(target);
+		}
+		return outgoingTransitions;
+	}
+	
+	public void relocateOutgoingTransitionsAndNodes(StateNode source, StateNode target) {
+		List<Transition> outgoingTransitions = relocateOutgoingTransitions(source, target);
+		
+		Region targetRegion = StatechartModelDerivedFeatures.getParentRegion(target);
+		
+		Set<Transition> checkedTransitions = new HashSet<Transition>();
+		Queue<Transition> transitions = new LinkedList<Transition>(outgoingTransitions);
+		while (!transitions.isEmpty()) {
+			Transition transition = transitions.poll();
+			if (!checkedTransitions.contains(transition)) {
+				
+				StateNode targetNode = transition.getTargetState();
+				if (targetNode == source) {
+					// If there is a source --> .. --> source loop, we set 'target' as target
+					transition.setTargetState(target);
+				}
+				else {
+					targetRegion.getStateNodes().add(targetNode);
+				}
+				
+				transitions.addAll(
+						StatechartModelDerivedFeatures.getOutgoingTransitions(targetNode));
+				
+				checkedTransitions.add(transition);
+			}
+		}
+	}
+	
+	public void removeRegions(CompositeElement element) {
+		StatechartDefinition statechart = StatechartModelDerivedFeatures
+				.getContainingStatechart(element);
+		
+		List<StateNode> nodes = ecoreUtil.getAllContentsOfType(element, StateNode.class);
+		
+		List<Transition> transitions = new ArrayList<Transition>(
+				statechart.getTransitions());
+		for (Transition transition : transitions) {
+			if (nodes.contains(transition.getSourceState()) ||
+					nodes.contains(transition.getTargetState())) {
+				ecoreUtil.remove(transition);
+			}
+		}
+		
+		ecoreUtil.removeAll(element.getRegions());
 	}
 	
 }
