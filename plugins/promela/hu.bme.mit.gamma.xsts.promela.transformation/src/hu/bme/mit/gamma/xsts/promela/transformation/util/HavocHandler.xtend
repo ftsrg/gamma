@@ -12,15 +12,22 @@ package hu.bme.mit.gamma.xsts.promela.transformation.util
 
 import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
+import hu.bme.mit.gamma.expression.model.Expression
+import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition
+import hu.bme.mit.gamma.expression.model.LiteralExpression
 import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.expression.util.PredicateHandler
 import hu.bme.mit.gamma.util.GammaEcoreUtil
-import java.util.ArrayList
+import java.util.List
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
+import hu.bme.mit.gamma.expression.model.BooleanLiteralExpression
+import java.util.ArrayList
+import java.math.BigInteger
+import hu.bme.mit.gamma.action.model.ActionModelFactory
 
 class HavocHandler {
 	// Singleton
@@ -30,47 +37,56 @@ class HavocHandler {
 	protected final extension ExpressionEvaluator expressionEvaluator = ExpressionEvaluator.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension PredicateHandler predicateHandler = PredicateHandler.INSTANCE
+	protected final extension ExpressionModelFactory expressionFactory = ExpressionModelFactory.eINSTANCE
+	protected final extension ActionModelFactory actionModelFactory = ActionModelFactory.eINSTANCE
 	
-	def ArrayList<String> createSet(VariableDeclaration variable) {
+	// Entry point
+	
+	def createSet(VariableDeclaration variable) {
 		val type = variable.type
 		return type.createSet(variable)
 	}
 	
-	def dispatch ArrayList<String> createSet(TypeReference type, VariableDeclaration variable) {
+	//
+	
+	def dispatch List<Expression> createSet(TypeReference type, VariableDeclaration variable) {
 		val typeDefinition = type.typeDefinition
 		return typeDefinition.createSet(variable)
 	}
 	
-	def dispatch createSet(BooleanTypeDefinition type, VariableDeclaration variable) {
+	def dispatch List<Expression> createSet(BooleanTypeDefinition type, VariableDeclaration variable) {
 		var list = newArrayList
-		list.add("true")
-		list.add("false")
+		list.add(expressionFactory.createTrueExpression)
+		list.add(expressionFactory.createFalseExpression)
 		return list
 	}
 	
-	def dispatch createSet(EnumerationTypeDefinition type, VariableDeclaration variable) {
+	def dispatch List<Expression> createSet(EnumerationTypeDefinition type, VariableDeclaration variable) {
 		var list = newArrayList
 		for (literal : type.literals) {
-			list.add(type.typeDeclaration.name + literal.name)
+			val enumLiteralExpression = expressionFactory.createEnumerationLiteralExpression
+			enumLiteralExpression.reference = literal
+			list.add(enumLiteralExpression)
 		}
 		return list
 	}
 	
-	def dispatch createSet(IntegerTypeDefinition type, VariableDeclaration variable) {
+	def dispatch List<Expression> createSet(IntegerTypeDefinition type, VariableDeclaration variable) {
 		var list = newArrayList
+		
 		val root = variable.root
 		
 		val integerValues = root.calculateIntegerValues(variable)
 		
-		if (integerValues.empty) {
-			// Sometimes input parameters are not referenced
-			list.add("0")
-			return list
+		val defaultValue = type.defaultExpression.evaluateInteger // 0
+		val elseValue = integerValues.contains(defaultValue) ? integerValues.max + 1 : defaultValue
+		integerValues += elseValue // Adding another value for an "else" branch
+		
+		for (integerValue : integerValues) {
+			val integerLiteral = expressionFactory.createIntegerLiteralExpression
+			integerLiteral.value = BigInteger.valueOf(integerValue.intValue)
+			list.add(integerLiteral)
 		}
-		
-		for (i : integerValues)
-			list.add(i.toString)
-		
 		return list
 	}
 }

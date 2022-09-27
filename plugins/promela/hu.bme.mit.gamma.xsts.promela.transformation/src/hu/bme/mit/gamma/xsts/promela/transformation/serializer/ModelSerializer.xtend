@@ -115,8 +115,8 @@ class ModelSerializer {
 		
 		return '''
 			if
-			«FOR i : xStsVariable.createSet»
-			:: «xStsVariable.name» = «i»;
+			«FOR element : xStsVariable.createSet»
+			:: «xStsVariable.name» = «element.serialize»;
 			«ENDFOR»
 			fi;'''
 	}
