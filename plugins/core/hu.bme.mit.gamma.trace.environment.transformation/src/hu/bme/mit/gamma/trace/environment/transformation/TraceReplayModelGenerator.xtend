@@ -68,21 +68,34 @@ class TraceReplayModelGenerator {
 		]
 		
 		val environmentInstance = environmentModel.instantiateComponent
+		environmentInstance.name = environmentInstance.name.toFirstLower
 		systemModel.prependComponentInstance(environmentInstance)
 		
+		val isEveryOutPortBroadcast = systemModel.ports
+				.forall[it.broadcastOrBroadcastMatcher]
 		if (considerOutEvents) {
-			systemModel.initialExecutionList += environmentInstance.createInstanceReference // Initial out-raises
-			
-			systemModel.executionList += environmentInstance.createInstanceReference // In
-			systemModel.executionList += componentInstance.createInstanceReference 
-			systemModel.executionList += environmentInstance.createInstanceReference  // Out
+			if (!isEveryOutPortBroadcast) {
+				// Special scheduling for not broadcast port handling
+				systemModel.initialExecutionList += environmentInstance.createInstanceReference // Initial out-raises
+				
+				systemModel.executionList += environmentInstance.createInstanceReference // In
+				systemModel.executionList += componentInstance.createInstanceReference
+				systemModel.executionList += environmentInstance.createInstanceReference  // Out
+			}
+			else {
+				// Optimization: if every out port is broadcast the "proxy" environment ports are unnecessary
+				environmentModel.regions.removeAllButFirst
+				environmentModel.transitions.filter[!it.sourceState.hasContainerOfType(StatechartDefinition)]
+						.toList.removeAll
+				environmentModel.transitions.map[it.guard].filter(ReferenceExpression)
+						.toList.removeAll
+			}
 		}
 		
 		// Tending to the system and proxy ports
 		val portBindings = newArrayList
 		portBindings += systemModel.portBindings
 		if (this.environmentModel === EnvironmentModel.OFF) {
-			
 			if (!considerOutEvents) {
 				systemModel.ports.removeAll
 				systemModel.portBindings.removeAll
@@ -115,21 +128,6 @@ class TraceReplayModelGenerator {
 				}
 			}
 		}
-		
-		val isEveryOutPortBroadcast = systemModel.ports
-				.forall[it.broadcastOrBroadcastMatcher]
-		// Optimization if every out port is broadcast the "proxy" environment ports are unnecessary
-		if (considerOutEvents && isEveryOutPortBroadcast) {
-			systemModel.initialExecutionList.clear
-			systemModel.executionList.clear
-			
-			environmentModel.regions.removeAllButFirst
-			environmentModel.transitions.filter[!it.sourceState.hasContainerOfType(StatechartDefinition)]
-					.toList.removeAll
-			environmentModel.transitions.map[it.guard].filter(ReferenceExpression)
-					.toList.removeAll
-		}
-		//
 		
 		// Tending to the environment and component ports
 		for (portPair : trace.componentEnvironmentPortPairs) {
