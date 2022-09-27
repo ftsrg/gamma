@@ -10,24 +10,21 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.xsts.promela.transformation.util
 
+import hu.bme.mit.gamma.action.model.ActionModelFactory
 import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition
-import hu.bme.mit.gamma.expression.model.LiteralExpression
 import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.expression.util.PredicateHandler
 import hu.bme.mit.gamma.util.GammaEcoreUtil
+import java.math.BigInteger
 import java.util.List
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
-import hu.bme.mit.gamma.expression.model.BooleanLiteralExpression
-import java.util.ArrayList
-import java.math.BigInteger
-import hu.bme.mit.gamma.action.model.ActionModelFactory
 
 class HavocHandler {
 	// Singleton
