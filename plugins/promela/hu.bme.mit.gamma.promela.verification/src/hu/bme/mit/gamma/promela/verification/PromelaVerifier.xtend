@@ -18,11 +18,17 @@ import java.io.File
 import java.util.ArrayList
 import java.util.Scanner
 import java.util.logging.Level
+import java.io.FileOutputStream
+import java.io.BufferedWriter
+import java.io.OutputStreamWriter
 
 class PromelaVerifier extends AbstractVerifier {
 	
 	extension FileUtil fileUtil = FileUtil.INSTANCE
 	protected final extension PromelaQueryAdapter promelaQueryAdapter = PromelaQueryAdapter.INSTANCE
+
+	// save trace to file
+	protected final Boolean saveTrace = false
 	
 	override Result verifyQuery(Object traceability, String parameters, File modelFile,	File queryFile) {
 		val model = fileUtil.loadString(modelFile)
@@ -109,10 +115,7 @@ class PromelaVerifier extends AbstractVerifier {
 			
 			// spin -t -p PromelaFile.pml
 			val traceCommand = '''spin -t -p -g -l -w «modelFile.canonicalPath.escapePath»'''
-			// Trace file
-			val traceFile = new File(modelFile.traceFile)
-			traceFile.delete
-			traceFile.deleteOnExit
+			
 			// Never claim file
 			val nvrFile = new File(execFolder, "_spin_nvr.tmp")
 			nvrFile.delete
@@ -121,22 +124,38 @@ class PromelaVerifier extends AbstractVerifier {
 			// Executing the trace command
 			logger.log(Level.INFO, "Executing command: " + traceCommand)
 			process = Runtime.getRuntime().exec(traceCommand, null, execFolder)
+			
 			val traceOutputStream = process.inputStream
 			// Reading the result of the command
 			resultReader = new Scanner(traceOutputStream)
 			
-			// save result of command
-			val traceOutputFile = new File(modelFile.traceFile)
-			traceOutputFile.deleteOnExit
-			var traceString = ""
-			while (resultReader.hasNext) {
-				traceString += resultReader.nextLine + System.lineSeparator
+			// save trace
+			if (saveTrace) {
+				val traceReader = new Scanner(traceOutputStream)
+				// Trace file
+				val traceFile = new File(modelFile.traceFile)
+				traceFile.delete
+				traceFile.deleteOnExit
+				
+				val fos = new FileOutputStream(traceFile)
+				val bw = new BufferedWriter(new OutputStreamWriter(fos))
+				
+				while (traceReader.hasNext) {
+					bw.write(traceReader.nextLine)
+					bw.write(System.lineSeparator)
+				}
+				bw.close
+				
+				val gammaPackage = traceability as Package
+				traceFileScanner = new Scanner(traceFile)
+				val backAnnotator = new TraceBackAnnotator(gammaPackage, traceFileScanner)
+				val trace = backAnnotator.execute
+				
+				return new Result(result, trace)
 			}
-			fileUtil.saveString(traceOutputFile, traceString)
 			
 			val gammaPackage = traceability as Package
-			traceFileScanner = new Scanner(traceFile)
-			val backAnnotator = new TraceBackAnnotator(gammaPackage, traceFileScanner)
+			val backAnnotator = new TraceBackAnnotator(gammaPackage, resultReader)
 			val trace = backAnnotator.execute
 			
 			return new Result(result, trace)
