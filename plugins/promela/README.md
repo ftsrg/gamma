@@ -4,7 +4,7 @@ This folder contains plugins for the mapping of high-level Gamma (composite) mod
 
 ## Setup
 
-1. Set up an Eclipse with the [core Gamma plugins](https://github.com/ftsrg/gamma/tree/dev/plugins).
+1. Set up an Eclipse with the [core Gamma plugins](../README.md).
 2. Set up [Spin](https://spinroot.com/spin/Man/README.html).
    - *Windows*
      1. Download `pc_spin651.zip` from [here](https://spinroot.com/spin/Src/index.html).
@@ -17,8 +17,8 @@ This folder contains plugins for the mapping of high-level Gamma (composite) mod
         - `tar -xf *.tar`
         - `cd Src*`
         - `make`
-     1. Add the `spin` to the `PATH` environment.
-1. Set up the plugins in this folder.
+     3. Add the `spin` to the `PATH` environment.
+3. Set up the plugins in this folder.
    - Import all Eclipse projects from the the promela folder. 
 
 Now you can use the framework in one of the following ways: you either run a runtime Eclipse and work in that or install the plugins into your host Eclipse.
