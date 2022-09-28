@@ -35,6 +35,9 @@ Furthermore, it is necessary to setup the environment for the *PlantUML* visuali
 If you want to use the *XSTS* formalism for formal verification (via *Theta*) and code generation for standalone statecharts, you will have to setup the plugins located in the [`xsts`](xsts) folder. The instructions are described in the [`README`](xsts/README.md) file of the folder.
 
 If you want to use *UPPAAL* for formal verification, download and extract *UPPAAL 4.1.24*. In order to let Gamma find the UPPAAL executables, add the `bin-Win32` or `bin-Linux` folder to the path environment variable (depending on the operating system being used).
+- If you are on more recent Linux distributions *UPPAAL* has issues with the newer `libc`. In [this discussion](https://groups.google.com/g/uppaal/c/B_Fml7_z0IE) you will find a solution to this problem.
+
+If you want to use *Spin* for formal verification, download and extract *Spin 6.5.1* or higher version. In order to let Gamma find the Spin executable, add the `spin.exe` or `spin` to the path environment variable (depending on the operating system being used). The instructions are described in the [`README`](promela/README.md) file of the folder.
 
 Make sure to set the text file encoding of your Eclipse workspace to **UTF-8**: _Window > Preferences..._ Start typing `workspace` in the left upper textfield (in the place of `type filter text`). Select _General > Workspace_ from the filtered item list and check the `Text file encoding` setting at the bottom of the window.
 
