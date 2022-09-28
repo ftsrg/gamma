@@ -166,6 +166,18 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 					"Scenarios with respect to asynchronous components cannot contain modal interaction sets",
 					new ReferenceInfo(deterministicOccurrenceSet.eContainingFeature(), idx, eContainer)));
 		}
+		
+		List<Interaction> interactions = javaUtil.filterIntoList(deterministicOccurrenceSet.getDeterministicOccurrences(), Interaction.class);
+		if (!interactions.isEmpty()) {
+			boolean allHot = interactions.stream().allMatch((it) -> (it.getModality().equals(ModalityType.HOT)));
+			boolean allCold = interactions.stream().allMatch((it) -> (it.getModality().equals(ModalityType.COLD)));
+			if (!allCold && !allHot) {
+				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+						"Interactions should have the same modality within the same set",
+						new ReferenceInfo(deterministicOccurrenceSet.eContainingFeature(), idx, eContainer)));
+			}
+		}
+		
 		return validationResultMessages;
 	}
 

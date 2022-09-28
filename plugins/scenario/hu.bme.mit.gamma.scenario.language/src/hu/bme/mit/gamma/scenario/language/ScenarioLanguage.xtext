@@ -105,11 +105,11 @@ ModalInteractionSet returns ScenarioModel::DeterministicOccurrenceSet:
 	'}'; 
 
 SignalDefinition returns ScenarioModel::Interaction:
-	modality=ModalityDefinition direction=InteractionDirectionDefinition port=[InterfaceModel::Port] '.'
+	(modality=ModalityDefinition)? direction=InteractionDirectionDefinition port=[InterfaceModel::Port] '.'
 	event=[InterfaceModel::Event] ('(' arguments+=Expression (',' arguments+=Expression)* ')')?;
 
 Delay returns ScenarioModel::Delay:
-	/*modality=ModalityDefinition */'delay' '(' minimum=Expression ('..' maximum=Expression)? ')';
+	'delay' '(' minimum=Expression ('..' maximum=Expression)? ')';
 	
 @Override 
 PrimaryExpression returns ConstraintModel::Expression: 

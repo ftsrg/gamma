@@ -63,7 +63,7 @@ public class ScenarioModelDerivedFeatures extends ExpressionModelDerivedFeatures
 
 		List<Delay> delays = javaUtil.filterIntoList(set.getDeterministicOccurrences(), Delay.class);
 		if (!delays.isEmpty()) {
-			return ModalityType.COLD;//delays.get(0).getModality();
+			return ModalityType.COLD;
 		}
 		return ModalityType.COLD;
 	}
