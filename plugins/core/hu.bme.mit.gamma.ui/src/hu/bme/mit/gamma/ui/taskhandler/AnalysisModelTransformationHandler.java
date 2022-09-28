@@ -45,6 +45,7 @@ import hu.bme.mit.gamma.genmodel.model.TransitionPairCoverage;
 import hu.bme.mit.gamma.genmodel.model.XstsReference;
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.TransitionMerging;
 import hu.bme.mit.gamma.property.model.PropertyPackage;
+import hu.bme.mit.gamma.querygenerator.serializer.PromelaPropertySerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.PropertySerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.ThetaPropertySerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.UppaalPropertySerializer;
@@ -74,6 +75,7 @@ import hu.bme.mit.gamma.uppaal.composition.transformation.SchedulingConstraint;
 import hu.bme.mit.gamma.uppaal.composition.transformation.api.Gamma2UppaalTransformerSerializer;
 import hu.bme.mit.gamma.uppaal.composition.transformation.api.util.UppaalModelPreprocessor;
 import hu.bme.mit.gamma.xsts.model.XSTS;
+import hu.bme.mit.gamma.xsts.promela.transformation.Gamma2XstsPromelaTransformerSerializer;
 import hu.bme.mit.gamma.xsts.transformation.InitialStateSetting;
 import hu.bme.mit.gamma.xsts.transformation.api.Gamma2XstsTransformerSerializer;
 import hu.bme.mit.gamma.xsts.transformation.serializer.ActionSerializer;
@@ -113,6 +115,9 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 				case XSTS_UPPAAL:
 					transformer = new Gamma2XstsUppaalTransformer();
 					break;
+				case PROMELA:
+					transformer = new Gamma2XstsPromelaTransformer();
+					break;
 				default:
 					throw new IllegalArgumentException("Only UPPAAL and Theta are supported");
 			}
@@ -141,6 +146,8 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			return fileNamer.getXmlUppaalFileName(plainFileName);
 		case XSTS_UPPAAL:
 			return fileNamer.getXmlUppaalFileName(plainFileName);
+		case PROMELA:
+			return fileNamer.getPmlPromelaFileName(plainFileName);
 		default:
 			throw new IllegalArgumentException("Not known language " + analysisLanguage);
 		}
@@ -625,6 +632,72 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			return GammaFileNamer.UPPAAL_QUERY_EXTENSION;
 		}
 		
+	}
+	
+	class Gamma2XstsPromelaTransformer extends AnalysisModelTransformer {
+		
+		public void execute(AnalysisModelTransformation transformation) throws IOException {
+			ComponentReference reference = (ComponentReference) transformation.getModel();
+			Component component = reference.getComponent();
+			Integer schedulingConstraint = evaluateConstraint(transformation.getConstraint());
+			String fileName = transformation.getFileName().get(0);
+			// Coverages
+			List<Coverage> coverages = transformation.getCoverages();
+			
+			ComponentInstanceReferences testedComponentsForStates = getCoverageInstances(
+					coverages, StateCoverage.class);
+			ComponentInstanceReferences testedComponentsForTransitions = getCoverageInstances(
+					coverages, TransitionCoverage.class);
+			ComponentInstanceReferences testedComponentsForTransitionPairs = getCoverageInstances(
+					coverages, TransitionPairCoverage.class);
+			ComponentInstancePortReferences testedComponentsForOutEvents = getCoveragePorts(
+					coverages, OutEventCoverage.class);
+			ComponentInstancePortStateTransitionReferences testedInteractions = getCoverageInteractions(
+					coverages, InteractionCoverage.class);
+			Entry<InteractionCoverageCriterion, InteractionCoverageCriterion> criterion = getInteractionCoverageCriteria(coverages);
+			InteractionCoverageCriterion senderCoverageCriterion = criterion.getKey();
+			InteractionCoverageCriterion receiverCoverageCriterion = criterion.getValue();
+			ComponentInstanceVariableReferences dataflowTestedVariables = getDataflowCoverageVariables(
+					coverages, DataflowCoverage.class);
+			DataflowCoverageCriterion dataflowCoverageCriterion = getDataflowCoverageCriterion(coverages);
+			ComponentInstancePortReferences testedComponentsForInteractionDataflow = getCoveragePorts(
+					coverages, InteractionDataflowCoverage.class);
+			DataflowCoverageCriterion interactionDataflowCoverageCriterion =
+				getInteractionDataflowCoverageCriterion(coverages);
+			
+			InitialStateSetting initialStateSetting = transformInitialStateSetting(
+					transformation.getInitialStateSetting());
+			
+			Gamma2XstsPromelaTransformerSerializer transformer = new Gamma2XstsPromelaTransformerSerializer(
+					component, reference.getArguments(),
+					targetFolderUri, fileName, schedulingConstraint,
+					transformation.isOptimize(),
+					TransitionMerging.HIERARCHICAL,
+					transformation.getPropertyPackage(),
+					new AnnotatablePreprocessableElements(
+						testedComponentsForStates, testedComponentsForTransitions,
+						testedComponentsForTransitionPairs, testedComponentsForOutEvents,
+						testedInteractions, senderCoverageCriterion, receiverCoverageCriterion,
+						dataflowTestedVariables, dataflowCoverageCriterion,
+						testedComponentsForInteractionDataflow, interactionDataflowCoverageCriterion
+					),
+					transformation.getInitialState(), initialStateSetting
+			);
+			transformer.execute();
+			// Property serialization
+			serializeProperties(fileName);
+			logger.log(Level.INFO, "The Gamma -> XSTS-Promela transformation has been finished");
+		}
+		
+		@Override
+		protected PropertySerializer getPropertySerializer() {
+			return PromelaPropertySerializer.INSTANCE;
+		}
+
+		@Override
+		protected String getQueryFileExtension() {
+			return GammaFileNamer.PROMELA_QUERY_EXTENSION;
+		}
 	}
 	
 }
