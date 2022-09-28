@@ -19,15 +19,13 @@ import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.expression.util.ExpressionUtil
 import hu.bme.mit.gamma.scenario.model.Delay
-import hu.bme.mit.gamma.scenario.model.InteractionDefinition
 import hu.bme.mit.gamma.scenario.model.InteractionDirection
-import hu.bme.mit.gamma.scenario.model.ModalInteractionSet
-import hu.bme.mit.gamma.scenario.model.NegatedModalInteraction
+import hu.bme.mit.gamma.scenario.model.DeterministicOccurrenceSet
+import hu.bme.mit.gamma.scenario.model.NegatedDeterministicOccurrence
 import hu.bme.mit.gamma.scenario.model.ScenarioAssignmentStatement
 import hu.bme.mit.gamma.scenario.model.ScenarioCheckExpression
 import hu.bme.mit.gamma.scenario.model.ScenarioDeclaration
 import hu.bme.mit.gamma.scenario.model.ScenarioModelFactory
-import hu.bme.mit.gamma.scenario.model.Signal
 import hu.bme.mit.gamma.scenario.statechart.util.ScenarioStatechartUtil
 import hu.bme.mit.gamma.statechart.contract.ContractModelFactory
 import hu.bme.mit.gamma.statechart.contract.NotDefinedEventMode
@@ -63,6 +61,9 @@ import org.eclipse.emf.ecore.EObject
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
+import hu.bme.mit.gamma.scenario.model.Interaction
+import hu.bme.mit.gamma.scenario.model.DeterministicOccurrence
+import hu.bme.mit.gamma.scenario.model.NegatedDeterministicOccurrence
 
 abstract class AbstractContractStatechartGeneration {
 
@@ -270,27 +271,27 @@ abstract class AbstractContractStatechartGeneration {
 		return bin
 	}
 
-	protected def List<Trigger> createOtherNegatedTriggers(ModalInteractionSet set) {
+	protected def List<Trigger> createOtherNegatedTriggers(DeterministicOccurrenceSet set) {
 		val triggers = <Trigger>newArrayList
 		val ports = newArrayList
 		val events = newArrayList
 		val allPorts = statechart.allPorts.filter[!it.inputEvents.empty]
-		for (modalInteraction : set.modalInteractions) {
-			var Signal signal = null
-			if (modalInteraction instanceof Signal) {
+		for (modalInteraction : set.deterministicOccurrences) {
+			var Interaction signal = null
+			if (modalInteraction instanceof Interaction) {
 				signal = modalInteraction
-			} else if (modalInteraction instanceof NegatedModalInteraction) {
-				val innerModalInteraction = modalInteraction.modalinteraction
-				if (innerModalInteraction instanceof Signal) {
+			} else if (modalInteraction instanceof NegatedDeterministicOccurrence) {
+				val innerModalInteraction = modalInteraction.deterministicOccurrence
+				if (innerModalInteraction instanceof Interaction) {
 					signal = innerModalInteraction
 				}
 			}
 			if (signal !== null) {
-				val portName = signal.direction == InteractionDirection.SEND ?
-						scenarioStatechartUtil.getTurnedOutPortName(signal.port) :
-						signal.port.name
+				val portName = signal.getDirection == InteractionDirection.SEND ?
+						scenarioStatechartUtil.getTurnedOutPortName(signal.getPort) :
+						signal.getPort.name
 				ports += getPort(portName)
-				events += getEvent(signal.event.name, getPort(portName))
+				events += getEvent(signal.getEvent.name, getPort(portName))
 			}
 		}
 		for (port : allPorts) {
@@ -321,7 +322,7 @@ abstract class AbstractContractStatechartGeneration {
 		return triggers
 	}
 
-	def protected Trigger getBinaryTrigger(List<InteractionDefinition> interactions,
+	def protected Trigger getBinaryTrigger(List<DeterministicOccurrence> interactions,
 			BinaryType type, boolean reversed) {
 		val triggers = newArrayList
 		for (interaction : interactions) {
@@ -331,16 +332,16 @@ abstract class AbstractContractStatechartGeneration {
 	}
 
 	// /////////////// Event triggers based on Interactions	
-	def protected dispatch Trigger getEventTrigger(Signal signal, boolean reversed) {
+	def protected dispatch Trigger getEventTrigger(Interaction signal, boolean reversed) {
 		val trigger = createEventTrigger
 		val eventref = createPortEventReference
 		val port = reversed ?
-				getPort(scenarioStatechartUtil.getTurnedOutPortName(signal.port)) :
-				getPort(signal.port.name)
+				getPort(scenarioStatechartUtil.getTurnedOutPortName(signal.getPort)) :
+				getPort(signal.getPort.name)
 		if (port.isInternal) {
 			return null
 		}
-		eventref.event = getEvent(signal.event.name, port)
+		eventref.event = getEvent(signal.getEvent.name, port)
 		eventref.port = port
 		trigger.eventReference = eventref
 		return trigger
@@ -356,17 +357,17 @@ abstract class AbstractContractStatechartGeneration {
 	}
 
 	def protected dispatch Trigger getEventTrigger(
-			NegatedModalInteraction negatedInteraction, boolean reversed) {
+			NegatedDeterministicOccurrence negatedInteraction, boolean reversed) {
 		val trigger = createEventTrigger
-		if (negatedInteraction.modalinteraction instanceof Signal) {
-			var signal = negatedInteraction.modalinteraction as Signal
-			var Port port = signal.direction.equals(InteractionDirection.SEND) ?
-					getPort(scenarioStatechartUtil.getTurnedOutPortName(signal.port)) :
-					getPort(signal.port.name)
+		if (negatedInteraction.deterministicOccurrence instanceof Interaction) {
+			var signal = negatedInteraction.deterministicOccurrence as Interaction
+			var Port port = signal.getDirection.equals(InteractionDirection.SEND) ?
+					getPort(scenarioStatechartUtil.getTurnedOutPortName(signal.getPort)) :
+					getPort(signal.getPort.name)
 			if (port.isInternal) {
 				return null
 			}
-			val Event event = getEvent(signal.event.name, port)
+			val Event event = getEvent(signal.getEvent.name, port)
 			val eventRef = createPortEventReference
 			eventRef.event = event
 			eventRef.port = port
@@ -380,16 +381,16 @@ abstract class AbstractContractStatechartGeneration {
 	}
 
 ////////// RaiseEventActions based on Interactions
-	def protected dispatch Action getRaiseEventAction(Signal signal, boolean reversed) {
+	def protected dispatch Action getRaiseEventAction(Interaction signal, boolean reversed) {
 		var action = createRaiseEventAction
-		var port = getPort(getNameOfNewPort(signal.port, reversed))
-		val event = getEvent(signal.event.name, port)
+		var port = getPort(getNameOfNewPort(signal.getPort, reversed))
+		val event = getEvent(signal.getEvent.name, port)
 		action.event = event
 		action.port = port
 		for (argument : event.parameterDeclarations) {
 			val reference = createEventParameterReferenceExpression
 			reference.port = getPort(port.turnedOutPortName)
-			reference.event = getEvent(signal.event.name, reference.port)
+			reference.event = getEvent(signal.getEvent.name, reference.port)
 			reference.parameter = argument
 			action.arguments += reference
 		}
@@ -401,7 +402,7 @@ abstract class AbstractContractStatechartGeneration {
 	}
 
 	def protected dispatch Action getRaiseEventAction(
-			NegatedModalInteraction negatedInteraction, boolean reversed) {
+			NegatedDeterministicOccurrence negatedInteraction, boolean reversed) {
 		return null
 	}
 
@@ -441,14 +442,14 @@ abstract class AbstractContractStatechartGeneration {
 		return choice
 	}
 
-	def protected handleArguments(List<InteractionDefinition> set, Transition transition) {
-		var signals = set.filter(Signal).filter[!it.arguments.empty]
+	def protected handleArguments(List<DeterministicOccurrence> set, Transition transition) {
+		var signals = set.filter(Interaction).filter[!it.arguments.empty]
 		if (signals.empty) {
 			val firstInteraction = set.get(0)
-			if (set.size == 1 && firstInteraction instanceof NegatedModalInteraction) {
-				val interaction = firstInteraction as NegatedModalInteraction
-				val innerInteraction = interaction.modalinteraction
-				if (innerInteraction instanceof Signal) {
+			if (set.size == 1 && firstInteraction instanceof NegatedDeterministicOccurrence) {
+				val interaction = firstInteraction as NegatedDeterministicOccurrence
+				val innerInteraction = interaction.deterministicOccurrence
+				if (innerInteraction instanceof Interaction) {
 					if (!innerInteraction.arguments.empty) {
 						signals = newArrayList(innerInteraction)
 					}
@@ -462,14 +463,14 @@ abstract class AbstractContractStatechartGeneration {
 		for (signal : signals) {
 			val tmp = signal
 			var i = 0
-			var String portName = tmp.port.name
-			if (tmp.direction.equals(InteractionDirection.SEND)) {
-				if (!scenarioStatechartUtil.isTurnedOut(tmp.port)) {
-					portName = scenarioStatechartUtil.getTurnedOutPortName(tmp.port)
+			var String portName = tmp.getPort.name
+			if (tmp.getDirection.equals(InteractionDirection.SEND)) {
+				if (!scenarioStatechartUtil.isTurnedOut(tmp.getPort)) {
+					portName = scenarioStatechartUtil.getTurnedOutPortName(tmp.getPort)
 				}
 			}
 			val port = getPort(portName)
-			val event = getEvent(tmp.event.name, port)
+			val event = getEvent(tmp.getEvent.name, port)
 			for (paramDec : event.parameterDeclarations) {
 				val paramRef = createEventParameterReferenceExpression
 				paramRef.parameter = paramDec
@@ -534,13 +535,13 @@ abstract class AbstractContractStatechartGeneration {
 		}
 	}
 
-	def protected setupForwardTransition(ModalInteractionSet set,
+	def protected setupForwardTransition(DeterministicOccurrenceSet set,
 			boolean reversed, boolean isNegated, Transition forwardTransition) {
 		retargetAllEventParamRefs(set, reversed)
 		var Trigger trigger = null
-		val checks = set.modalInteractions.filter(ScenarioCheckExpression)
-		val assignments = set.modalInteractions.filter(ScenarioAssignmentStatement)
-		val nonCheckOrAssignmentInteractitons = set.modalInteractions.filter [
+		val checks = set.deterministicOccurrences.filter(ScenarioCheckExpression)
+		val assignments = set.deterministicOccurrences.filter(ScenarioAssignmentStatement)
+		val nonCheckOrAssignmentInteractitons = set.deterministicOccurrences.filter [
 			!(it instanceof ScenarioCheckExpression) && ! (it instanceof ScenarioAssignmentStatement)
 		].toList
 		if (nonCheckOrAssignmentInteractitons.size > 1) {
@@ -567,8 +568,8 @@ abstract class AbstractContractStatechartGeneration {
 		addAssignmentsToTransition(assignments, forwardTransition)
 	}
 
-	def protected handleDelays(ModalInteractionSet set) {
-		val delays = set.modalInteractions.filter(Delay)
+	def protected handleDelays(DeterministicOccurrenceSet set) {
+		val delays = set.deterministicOccurrences.filter(Delay)
 		if (!delays.empty) {
 			val delay = delays.head
 			val timeoutDeclaration = createTimeoutDeclaration

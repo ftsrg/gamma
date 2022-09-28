@@ -12,20 +12,20 @@ package hu.bme.mit.gamma.scenario.statechart.generator
 
 import hu.bme.mit.gamma.scenario.model.AlternativeCombinedFragment
 import hu.bme.mit.gamma.scenario.model.Delay
+import hu.bme.mit.gamma.scenario.model.DeterministicOccurrenceSet
+import hu.bme.mit.gamma.scenario.model.Interaction
 import hu.bme.mit.gamma.scenario.model.InteractionDirection
 import hu.bme.mit.gamma.scenario.model.LoopCombinedFragment
-import hu.bme.mit.gamma.scenario.model.ModalInteractionSet
 import hu.bme.mit.gamma.scenario.model.ModalityType
 import hu.bme.mit.gamma.scenario.model.NegPermissiveAnnotation
 import hu.bme.mit.gamma.scenario.model.NegStrictAnnotation
-import hu.bme.mit.gamma.scenario.model.NegatedModalInteraction
+import hu.bme.mit.gamma.scenario.model.NegatedDeterministicOccurrence
 import hu.bme.mit.gamma.scenario.model.NegatedWaitAnnotation
 import hu.bme.mit.gamma.scenario.model.OptionalCombinedFragment
 import hu.bme.mit.gamma.scenario.model.PermissiveAnnotation
 import hu.bme.mit.gamma.scenario.model.ScenarioAssignmentStatement
 import hu.bme.mit.gamma.scenario.model.ScenarioCheckExpression
 import hu.bme.mit.gamma.scenario.model.ScenarioDeclaration
-import hu.bme.mit.gamma.scenario.model.Signal
 import hu.bme.mit.gamma.scenario.model.StrictAnnotation
 import hu.bme.mit.gamma.scenario.model.WaitAnnotation
 import hu.bme.mit.gamma.statechart.contract.NotDefinedEventMode
@@ -94,7 +94,7 @@ class TestGeneratorStatechartGenerator extends AbstractContractStatechartGenerat
 
 		initializeStateChart(scenario.name)
 
-		for (modalInteraction : scenario.chart.fragment.interactions) {
+		for (modalInteraction : scenario.fragment.interactions) {
 			process(modalInteraction)
 		}
 
@@ -208,8 +208,8 @@ class TestGeneratorStatechartGenerator extends AbstractContractStatechartGenerat
 		statechart.variableDeclarations += scenario.variableDeclarations
 	}
 
-	def dispatch void process(ModalInteractionSet interactionSet) {
-		processModalInteractionSet(interactionSet, false)
+	def dispatch void process(DeterministicOccurrenceSet interactionSet) {
+		processDeterministicOccurrenceSet(interactionSet, false)
 	}
 
 	def dispatch void process(Delay delay) {
@@ -243,10 +243,10 @@ class TestGeneratorStatechartGenerator extends AbstractContractStatechartGenerat
 		previousState = newState
 	}
 
-	def dispatch void process(NegatedModalInteraction negatedModalInteraction) {
-		val modalInteraction = negatedModalInteraction.modalinteraction
-		if (modalInteraction instanceof ModalInteractionSet) {
-			processModalInteractionSet(modalInteraction, true)
+	def dispatch void process(NegatedDeterministicOccurrence negatedDeterministicOccurrence) {
+		val modalInteraction = negatedDeterministicOccurrence.deterministicOccurrence
+		if (modalInteraction instanceof DeterministicOccurrenceSet) {
+			processDeterministicOccurrenceSet(modalInteraction, true)
 		}
 	}
 
@@ -339,7 +339,7 @@ class TestGeneratorStatechartGenerator extends AbstractContractStatechartGenerat
 		statechartUtil.createTransition(choice, previousState)
 	}
 
-	def processModalInteractionSet(ModalInteractionSet set, boolean isNegated) {
+	def processDeterministicOccurrenceSet(DeterministicOccurrenceSet set, boolean isNegated) {
 		val state = createNewState
 		val newChoice = createNewChoiceState
 		firstRegion.stateNodes += newChoice
@@ -354,7 +354,7 @@ class TestGeneratorStatechartGenerator extends AbstractContractStatechartGenerat
 		val backwardTransition = createTransition
 		violationTransition.guard = createElseExpression
 
-		if (set.modalInteractions.empty) {
+		if (set.deterministicOccurrences.empty) {
 			val emptyTransition = statechartUtil.createTransition(previousState, state)
 			emptyTransition.trigger = createOnCycleTrigger
 			emptyTransition.guard = createTrueExpression
@@ -377,13 +377,13 @@ class TestGeneratorStatechartGenerator extends AbstractContractStatechartGenerat
 			handleSends(set, isNegated, forwardTransition, backwardTransition, cycleTransition, violationTransition,
 				newChoice)
 		}
-		handleArguments(set.modalInteractions, forwardTransition);
+		handleArguments(set.deterministicOccurrences, forwardTransition);
 		handleSingleNegatedIfNeeded(set, forwardTransition, violationTransition)
 		previousState = state
 		return
 	}
 
-	def handleSends(ModalInteractionSet set, boolean isNegated, Transition forwardTransition,
+	def handleSends(DeterministicOccurrenceSet set, boolean isNegated, Transition forwardTransition,
 		Transition backwardTransition, Transition cycleTransition, Transition violationTransition,
 		ChoiceState newChoice) {
 		val iteratingVariable = variableMap.getOrCreate(scenarioStatechartUtil.iteratingVariable)
@@ -467,15 +467,15 @@ class TestGeneratorStatechartGenerator extends AbstractContractStatechartGenerat
 		}
 	}
 
-	def handleSingleNegatedIfNeeded(ModalInteractionSet set, Transition forwardTransition,
+	def handleSingleNegatedIfNeeded(DeterministicOccurrenceSet set, Transition forwardTransition,
 		Transition violationTransition) {
-		var Signal signal = null
+		var Interaction signal = null
 		var singleNegetedSignalWithArguments = false
-		val firstModalinteraction = set.modalInteractions.get(0)
-		if (set.modalInteractions.size == 1 && firstModalinteraction instanceof NegatedModalInteraction) {
-			val negatedModalInteraction = firstModalinteraction as NegatedModalInteraction
-			val innerModalInteraction = negatedModalInteraction.modalinteraction
-			if (innerModalInteraction instanceof Signal) {
+		val firstModalinteraction = set.deterministicOccurrences.get(0)
+		if (set.deterministicOccurrences.size == 1 && firstModalinteraction instanceof NegatedDeterministicOccurrence) {
+			val negatedDeterministicOccurrence = firstModalinteraction as NegatedDeterministicOccurrence
+			val innerModalInteraction = negatedDeterministicOccurrence.deterministicOccurrence
+			if (innerModalInteraction instanceof Interaction) {
 				singleNegetedSignalWithArguments = !(innerModalInteraction.arguments.empty)
 				if (singleNegetedSignalWithArguments) {
 					signal = innerModalInteraction
