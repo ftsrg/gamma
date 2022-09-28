@@ -28,7 +28,7 @@ class PromelaVerifier extends AbstractVerifier {
 	protected final extension PromelaQueryAdapter promelaQueryAdapter = PromelaQueryAdapter.INSTANCE
 
 	// save trace to file
-	protected final Boolean saveTrace = false
+	protected val saveTrace = false
 	
 	override Result verifyQuery(Object traceability, String parameters, File modelFile,	File queryFile) {
 		val model = fileUtil.loadString(modelFile)
@@ -69,12 +69,13 @@ class PromelaVerifier extends AbstractVerifier {
 	
 	private def Result verify(Object traceability, String parameters, File modelFile) {
 		var Scanner resultReader = null
-		var Scanner traceFileScanner = null
 		try {
 			// Directory where executing the command
 			val execFolder = modelFile.parentFile
+			
 			// spin -search -a PromelaFile.pml
-			val command = '''spin «parameters» «modelFile.canonicalPath.escapePath»'''
+			val searchCommand = newArrayList
+			searchCommand += #["spin", parameters, modelFile.canonicalPath.escapePath]
 			
 			// trail file
 			val trailFile = new File(modelFile.trailFile)
@@ -86,8 +87,8 @@ class PromelaVerifier extends AbstractVerifier {
 			panFile.deleteOnExit
 			
 			// Executing the command
-			logger.log(Level.INFO, "Executing command: " + command)
-			process = Runtime.getRuntime().exec(command, null, execFolder)
+			logger.log(Level.INFO, "Executing command: " + searchCommand.join(" "))
+			process = Runtime.getRuntime().exec(searchCommand.join(" "), null, execFolder)
 			val outputStream = process.inputStream
 			// Reading the result of the command
 			resultReader = new Scanner(outputStream)
@@ -113,8 +114,9 @@ class PromelaVerifier extends AbstractVerifier {
 			// Adapting result
 			super.result = super.result.adaptResult
 			
-			// spin -t -p PromelaFile.pml
-			val traceCommand = '''spin -t -p -g -l -w «modelFile.canonicalPath.escapePath»'''
+			// spin -t -p -g -l -w PromelaFile.pml
+			val traceCommand = newArrayList
+			traceCommand += #["spin", "-t", "-p", "-g", "-l", "-w", modelFile.canonicalPath.escapePath]
 			
 			// Never claim file
 			val nvrFile = new File(execFolder, "_spin_nvr.tmp")
@@ -122,8 +124,8 @@ class PromelaVerifier extends AbstractVerifier {
 			nvrFile.deleteOnExit
 			
 			// Executing the trace command
-			logger.log(Level.INFO, "Executing command: " + traceCommand)
-			process = Runtime.getRuntime().exec(traceCommand, null, execFolder)
+			logger.log(Level.INFO, "Executing command: " + traceCommand.join(" "))
+			process = Runtime.getRuntime().exec(traceCommand.join(" "), null, execFolder)
 			
 			val traceOutputStream = process.inputStream
 			// Reading the result of the command
@@ -131,7 +133,6 @@ class PromelaVerifier extends AbstractVerifier {
 			
 			// save trace
 			if (saveTrace) {
-				val traceReader = new Scanner(traceOutputStream)
 				// Trace file
 				val traceFile = new File(modelFile.traceFile)
 				traceFile.delete
@@ -140,18 +141,13 @@ class PromelaVerifier extends AbstractVerifier {
 				val fos = new FileOutputStream(traceFile)
 				val bw = new BufferedWriter(new OutputStreamWriter(fos))
 				
-				while (traceReader.hasNext) {
-					bw.write(traceReader.nextLine)
+				while (resultReader.hasNext) {
+					bw.write(resultReader.nextLine)
 					bw.write(System.lineSeparator)
 				}
 				bw.close
 				
-				val gammaPackage = traceability as Package
-				traceFileScanner = new Scanner(traceFile)
-				val backAnnotator = new TraceBackAnnotator(gammaPackage, traceFileScanner)
-				val trace = backAnnotator.execute
-				
-				return new Result(result, trace)
+				resultReader = new Scanner(traceFile)
 			}
 			
 			val gammaPackage = traceability as Package
@@ -160,12 +156,7 @@ class PromelaVerifier extends AbstractVerifier {
 			
 			return new Result(result, trace)
 		} finally {
-			if (resultReader !== null) {
-				resultReader.close
-			}
-			if (traceFileScanner !== null) {
-				traceFileScanner.close
-			}
+			resultReader?.close
 		}
 	}
 	
