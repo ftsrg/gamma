@@ -42,12 +42,13 @@ public class TaskExecutionTimeMeasurer implements TaskHook {
 	protected final Logger logger = Logger.getLogger("GammaLogger");
 	
 	public TaskExecutionTimeMeasurer(Calculator<Double> calculator, String fileName) {
-		this(1, calculator, fileName, TimeUnit.SECONDS);
+		this(1, false, calculator, fileName, TimeUnit.SECONDS);
 	}
 	
-	public TaskExecutionTimeMeasurer(int iterationCount,
+	public TaskExecutionTimeMeasurer(int iterationCount, boolean considerJit,
 			Calculator<Double> calculator, String fileName, TimeUnit unit) {
-		this.iterationCount = iterationCount + 1; // Due to Java JIT, we do not count the first one
+		this.iterationCount = iterationCount +
+				((considerJit) ? 1 : 0); // Due to Java JIT, we do not count the first one
 		this.calculator = calculator;
 		this.fileName = fileName;
 		this.unit = unit;
