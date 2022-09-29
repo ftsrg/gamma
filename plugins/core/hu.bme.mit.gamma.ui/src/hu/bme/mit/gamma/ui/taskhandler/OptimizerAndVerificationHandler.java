@@ -68,7 +68,8 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 				mainPropertyPackage = ecoreUtil.clone(propertyPackage);
 			}
 			formulas.addAll(
-					propertyPackage.getFormulas());
+					ecoreUtil.clone( // To prevent destroying the original property packages
+							propertyPackage.getFormulas()));
 		}
 		propertyPackages.clear();
 		List<CommentableStateFormula> checkableFormulas = mainPropertyPackage.getFormulas();
