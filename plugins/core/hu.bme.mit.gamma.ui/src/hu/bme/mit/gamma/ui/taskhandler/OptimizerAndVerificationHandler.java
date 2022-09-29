@@ -57,6 +57,7 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 		
 		List<CommentableStateFormula> formulas = new ArrayList<CommentableStateFormula>();
 		List<PropertyPackage> propertyPackages = verification.getPropertyPackages();
+		List<PropertyPackage> savedPropertyPackages = new ArrayList<PropertyPackage>(propertyPackages);
 		
 		PropertyPackage mainPropertyPackage = null;
 		
@@ -124,7 +125,9 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 			verificationHandler.optimizeTraces();
 		}
 		verificationHandler.serializeTraces(); // Serialization in one pass
-		
+		// Reinstate original state
+		propertyPackages.clear();
+		propertyPackages.addAll(savedPropertyPackages);
 	}
 
 }
