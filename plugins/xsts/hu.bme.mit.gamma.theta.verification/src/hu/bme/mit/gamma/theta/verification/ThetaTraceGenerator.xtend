@@ -11,6 +11,10 @@ import java.util.logging.Logger
 import hu.bme.mit.gamma.verification.result.ThreeStateBoolean
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.transformation.util.GammaFileNamer
+import org.eclipse.emf.common.util.EList
+import java.io.BufferedWriter
+import java.io.FileWriter
+import hu.bme.mit.gamma.util.FileUtil
 
 class ThetaTraceGenerator {
 	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE	
@@ -23,19 +27,35 @@ class ThetaTraceGenerator {
 	final String ENVIRONMENT_VARIABLE_FOR_THETA_JAR = "THETA_XSTS_CLI_PATH"
 	protected final Logger logger = Logger.getLogger("GammaLogger")
 	
-	def List<ExecutionTrace> execute(File modelFile) {
+	def List<ExecutionTrace> execute(File modelFile, boolean fullTraces, EList<String> variableList) {
 		val packageFileName = modelFile.name.unfoldedPackageFileName
 		val gammaPackage = ecoreUtil.normalLoad(modelFile.parent, packageFileName)
 		
-		return generateTraces(gammaPackage, modelFile)
+		return generateTraces(gammaPackage, modelFile, fullTraces, variableList)
 	}
 	
-	private def List<ExecutionTrace> generateTraces(Object traceability, File modelFile) {
+	private def List<ExecutionTrace> generateTraces(Object traceability, File modelFile, boolean fullTraces, EList<String> variableList) {
 		val traceDir = new File(modelFile.parent + File.separator + "traces")
-		cleanFolder(traceDir)
-		
+		cleanFolder(traceDir)		
 		val jar = System.getenv(ENVIRONMENT_VARIABLE_FOR_THETA_JAR)
-		val command = #["java", "-jar", jar] + #["--stacktrace", "--tracegen", "--search", "DFS", "--model", modelFile.canonicalPath, "--property", modelFile.canonicalPath]
+		var command = #["java", "-jar", jar] + #["--stacktrace", "--tracegen", "--search", "DFS", "--model", modelFile.canonicalPath, "--property", modelFile.canonicalPath]
+		if(fullTraces) {
+			command = command + #["--get-full-traces"]
+		}
+		if(variableList.size()!=0) {
+			val varListFile = new File(modelFile.parent + File.separator + "variableList.txt");
+			varListFile.createNewFile();
+			val writer = new BufferedWriter(new FileWriter(varListFile));
+			
+			for(String varName : variableList) {
+				writer.append(varName);
+				writer.newLine();
+			}
+			
+			writer.close();
+			command = command + #["--variable-list", modelFile.parent + File.separator + "variableList.txt"]
+		}
+		
 		logger.log(Level.INFO, "Executing command: " + command.join(" "))
 		process = Runtime.getRuntime().exec(command)
 		val outputStream = process.inputStream

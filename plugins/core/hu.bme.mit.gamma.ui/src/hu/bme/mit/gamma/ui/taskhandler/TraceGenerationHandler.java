@@ -12,7 +12,9 @@ package hu.bme.mit.gamma.ui.taskhandler;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -28,6 +30,7 @@ import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
 
@@ -104,11 +107,14 @@ public class TraceGenerationHandler extends TaskHandler {
 		// Setting the file paths
 		tracegeneration.getFileName().replaceAll(it -> fileUtil.exploreRelativeFile(file, it).toString());
 
+		EList<String> variableList = tracegeneration.getVariables();
+		
+		boolean fullTraces = tracegeneration.isFullTraces();
 		String filePath = tracegeneration.getFileName().get(0);
-		File modelFile = new File(filePath);
+		File modelFile = new File(filePath);		
 		List<ExecutionTrace> retrievedTraces = new ArrayList<ExecutionTrace>();
 		ThetaTraceGenerator ttg = new ThetaTraceGenerator();
-		retrievedTraces = ttg.execute(modelFile);
+		retrievedTraces = ttg.execute(modelFile, fullTraces, variableList);
 		System.out.println(retrievedTraces.size());
 
 		for (ExecutionTrace trace : retrievedTraces) {

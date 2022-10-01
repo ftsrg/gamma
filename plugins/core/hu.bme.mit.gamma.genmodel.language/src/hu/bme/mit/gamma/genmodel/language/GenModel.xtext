@@ -313,7 +313,13 @@ Verification returns Verification:
 TraceGeneration returns TraceGeneration:
 	{TraceGeneration} 'trace-generation' '{'
 		(
-			'file' ':' fileName+=STRING // model
+			'file' ':' fileName+=STRING |
+			'variables' ':'	'{'
+				(
+					variables+=STRING
+				)*
+			'}'	|
+			'fullTraces' ':' fullTraces=BOOLEAN
 		)*
 	'}'
 ;
