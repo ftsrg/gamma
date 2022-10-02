@@ -110,11 +110,12 @@ public class TraceGenerationHandler extends TaskHandler {
 		EList<String> variableList = tracegeneration.getVariables();
 		
 		boolean fullTraces = tracegeneration.isFullTraces();
+		boolean noTransitionCoverage = tracegeneration.isNoTransitionCoverage();
 		String filePath = tracegeneration.getFileName().get(0);
 		File modelFile = new File(filePath);		
 		List<ExecutionTrace> retrievedTraces = new ArrayList<ExecutionTrace>();
 		ThetaTraceGenerator ttg = new ThetaTraceGenerator();
-		retrievedTraces = ttg.execute(modelFile, fullTraces, variableList);
+		retrievedTraces = ttg.execute(modelFile, fullTraces, variableList, noTransitionCoverage);
 		System.out.println(retrievedTraces.size());
 
 		for (ExecutionTrace trace : retrievedTraces) {

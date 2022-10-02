@@ -27,14 +27,14 @@ class ThetaTraceGenerator {
 	final String ENVIRONMENT_VARIABLE_FOR_THETA_JAR = "THETA_XSTS_CLI_PATH"
 	protected final Logger logger = Logger.getLogger("GammaLogger")
 	
-	def List<ExecutionTrace> execute(File modelFile, boolean fullTraces, EList<String> variableList) {
+	def List<ExecutionTrace> execute(File modelFile, boolean fullTraces, EList<String> variableList, boolean noTransitionCoverage) {
 		val packageFileName = modelFile.name.unfoldedPackageFileName
 		val gammaPackage = ecoreUtil.normalLoad(modelFile.parent, packageFileName)
 		
-		return generateTraces(gammaPackage, modelFile, fullTraces, variableList)
+		return generateTraces(gammaPackage, modelFile, fullTraces, variableList, noTransitionCoverage)
 	}
 	
-	private def List<ExecutionTrace> generateTraces(Object traceability, File modelFile, boolean fullTraces, EList<String> variableList) {
+	private def List<ExecutionTrace> generateTraces(Object traceability, File modelFile, boolean fullTraces, EList<String> variableList, boolean noTransitionCoverage) {
 		val traceDir = new File(modelFile.parent + File.separator + "traces")
 		cleanFolder(traceDir)		
 		val jar = System.getenv(ENVIRONMENT_VARIABLE_FOR_THETA_JAR)
@@ -54,6 +54,9 @@ class ThetaTraceGenerator {
 			
 			writer.close();
 			command = command + #["--variable-list", modelFile.parent + File.separator + "variableList.txt"]
+		}
+		if(noTransitionCoverage) {
+			command = command + #["--no-transition-coverage"]
 		}
 		
 		logger.log(Level.INFO, "Executing command: " + command.join(" "))

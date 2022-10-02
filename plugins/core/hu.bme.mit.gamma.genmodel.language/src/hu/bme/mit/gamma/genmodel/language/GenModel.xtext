@@ -319,7 +319,8 @@ TraceGeneration returns TraceGeneration:
 					variables+=STRING
 				)*
 			'}'	|
-			'fullTraces' ':' fullTraces=BOOLEAN
+			'fullTraces' ':' fullTraces=BOOLEAN |
+			'noTransitionCoverage' ':' noTransitionCoverage=BOOLEAN
 		)*
 	'}'
 ;
