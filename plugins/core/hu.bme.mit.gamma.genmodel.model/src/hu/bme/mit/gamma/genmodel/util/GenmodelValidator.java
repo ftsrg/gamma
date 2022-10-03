@@ -75,7 +75,7 @@ import hu.bme.mit.gamma.genmodel.model.XstsReference;
 import hu.bme.mit.gamma.genmodel.model.YakinduCompilation;
 import hu.bme.mit.gamma.property.derivedfeatures.PropertyModelDerivedFeatures;
 import hu.bme.mit.gamma.property.model.PropertyPackage;
-import hu.bme.mit.gamma.scenario.model.NegatedModalInteraction;
+import hu.bme.mit.gamma.scenario.model.NegatedDeterministicOccurrence;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponent;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousCompositeComponent;
@@ -938,8 +938,8 @@ public class GenmodelValidator extends ExpressionModelValidator {
 		if (statechartGeneration.getAutomatonType() == ContractAutomatonType.MONITOR) {
 			return validationResultMessages;
 		}
-		List<NegatedModalInteraction> negatedModelinteractions = ecoreUtil
-				.getAllContentsOfType(statechartGeneration.getScenario(), NegatedModalInteraction.class);
+		List<NegatedDeterministicOccurrence> negatedModelinteractions = ecoreUtil
+				.getAllContentsOfType(statechartGeneration.getScenario(), NegatedDeterministicOccurrence.class);
 		if (negatedModelinteractions.size() > 0) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING,
 					"The referenced scenario contains negated interactions, which will not take effect in the generated tests",

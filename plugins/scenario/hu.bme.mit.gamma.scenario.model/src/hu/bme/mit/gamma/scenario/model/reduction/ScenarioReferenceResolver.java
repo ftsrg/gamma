@@ -21,8 +21,8 @@ import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.scenario.model.CombinedFragment;
-import hu.bme.mit.gamma.scenario.model.Interaction;
-import hu.bme.mit.gamma.scenario.model.InteractionFragment;
+import hu.bme.mit.gamma.scenario.model.Occurrence;
+import hu.bme.mit.gamma.scenario.model.Fragment;
 import hu.bme.mit.gamma.scenario.model.ScenarioDeclaration;
 import hu.bme.mit.gamma.scenario.model.ScenarioDefinitionReference;
 import hu.bme.mit.gamma.scenario.model.ScenarioModelFactory;
@@ -35,30 +35,30 @@ public class ScenarioReferenceResolver {
 		if (!containsAnyReferences(scenario)) {
 			return;
 		}
-		List<Interaction> interactions = scenario.getChart().getFragment().getInteractions();
-		List<Interaction> newInteractions = resolveReferencesFromFragment(scenario.getChart().getFragment());
+		List<Occurrence> interactions = scenario.getFragment().getInteractions();
+		List<Occurrence> newInteractions = resolveReferencesFromFragment(scenario.getFragment());
 		interactions.clear();
 		interactions.addAll(newInteractions);
 
 		resolveReferences(scenario);
 	}
 
-	private List<Interaction> resolveReferencesFromFragment(InteractionFragment fragment) {
-		List<Interaction> newInteractions = new ArrayList<>();
-		for (Interaction interaction : fragment.getInteractions()) {
+	private List<Occurrence> resolveReferencesFromFragment(Fragment fragment) {
+		List<Occurrence> newInteractions = new ArrayList<>();
+		for (Occurrence interaction : fragment.getInteractions()) {
 			if (interaction instanceof ScenarioDefinitionReference) {
 				ScenarioDefinitionReference ref = (ScenarioDefinitionReference) interaction;
-				List<Interaction> clonedInteractions = ecoreUtil
-						.clone(ref.getScenarioDefinition().getChart().getFragment()).getInteractions();
+				List<Occurrence> clonedInteractions = ecoreUtil
+						.clone(ref.getScenarioDefinition().getFragment()).getInteractions();
 				checkReferencesToInline(clonedInteractions, ref);
 				newInteractions.addAll(clonedInteractions);
 			} else if (interaction instanceof CombinedFragment) {
 				boolean isTransformationNeeded = containsAnyReferences(interaction);
 				if (isTransformationNeeded) {
 					CombinedFragment combinedFragmen = (CombinedFragment) interaction;
-					List<InteractionFragment> newFargments = new ArrayList<>();
-					for (InteractionFragment subFragment : combinedFragmen.getFragments()) {
-						InteractionFragment newFragment = ScenarioModelFactory.eINSTANCE.createInteractionFragment();
+					List<Fragment> newFargments = new ArrayList<>();
+					for (Fragment subFragment : combinedFragmen.getFragments()) {
+						Fragment newFragment = ScenarioModelFactory.eINSTANCE.createFragment();
 						newFragment.getInteractions().addAll(resolveReferencesFromFragment(subFragment));
 						newFargments.add(newFragment);
 					}
@@ -79,8 +79,8 @@ public class ScenarioReferenceResolver {
 		return !ecoreUtil.getAllContentsOfType(object, ScenarioDefinitionReference.class).isEmpty();
 	}
 
-	private void checkReferencesToInline(List<Interaction> clonedInteractions, ScenarioDefinitionReference ref) {
-		for (Interaction interaction : clonedInteractions) {
+	private void checkReferencesToInline(List<Occurrence> clonedInteractions, ScenarioDefinitionReference ref) {
+		for (Occurrence interaction : clonedInteractions) {
 			List<DirectReferenceExpression> references = ecoreUtil.getAllContentsOfType(interaction,
 					DirectReferenceExpression.class);
 			for (DirectReferenceExpression direct : references) {

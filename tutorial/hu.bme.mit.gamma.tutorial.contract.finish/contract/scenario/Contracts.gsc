@@ -16,12 +16,12 @@ scenario Blinking initial outputs [
 	{
 		hot sends priorityOutput.displayNone
 		hot sends secondaryOutput.displayNone
-		hot delay (500)
+		delay (500)
 	}
 	{
 		hot sends priorityOutput.displayYellow
 		hot sends secondaryOutput.displayYellow
-		hot delay (500)
+		delay (500)
 	}
 //	}
 ]
@@ -43,21 +43,21 @@ scenario Normal initial outputs [
 	hot sends priorityOutput.displayYellow
 ] [
 	{
-		hot delay (1000)
+		delay (1000)
 		hot sends priorityOutput.displayRed
 		hot sends secondaryOutput.displayGreen
 	}
 	{
-		hot delay (2000)
+		delay (2000)
 		hot sends secondaryOutput.displayYellow
 	}
 	{
-		hot delay (1000)
+		delay (1000)
 		hot sends secondaryOutput.displayRed
 		hot sends priorityOutput.displayGreen
 	}
 	{
-		hot delay (2000)
+		delay (2000)
 		hot sends priorityOutput.displayYellow
 	}
 ]

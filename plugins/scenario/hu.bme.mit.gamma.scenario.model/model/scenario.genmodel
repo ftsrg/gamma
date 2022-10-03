@@ -22,17 +22,14 @@
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference scenario.ecore#//ScenarioPackage/imports"/>
     </genClasses>
     <genClasses ecoreClass="scenario.ecore#//ScenarioDeclaration">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference scenario.ecore#//ScenarioDeclaration/chart"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference scenario.ecore#//ScenarioDeclaration/annotation"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference scenario.ecore#//ScenarioDeclaration/initialblock"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference scenario.ecore#//ScenarioDeclaration/variableDeclarations"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference scenario.ecore#//ScenarioDeclaration/fragment"/>
     </genClasses>
-    <genClasses image="false" ecoreClass="scenario.ecore#//Chart">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference scenario.ecore#//Chart/fragment"/>
-    </genClasses>
-    <genClasses image="false" ecoreClass="scenario.ecore#//Interaction"/>
-    <genClasses ecoreClass="scenario.ecore#//InteractionFragment">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference scenario.ecore#//InteractionFragment/interactions"/>
+    <genClasses image="false" ecoreClass="scenario.ecore#//Occurrence"/>
+    <genClasses ecoreClass="scenario.ecore#//Fragment">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference scenario.ecore#//Fragment/interactions"/>
     </genClasses>
     <genClasses image="false" ecoreClass="scenario.ecore#//CombinedFragment">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference scenario.ecore#//CombinedFragment/fragments"/>
@@ -40,17 +37,14 @@
     <genClasses ecoreClass="scenario.ecore#//AlternativeCombinedFragment"/>
     <genClasses ecoreClass="scenario.ecore#//UnorderedCombinedFragment"/>
     <genClasses ecoreClass="scenario.ecore#//ParallelCombinedFragment"/>
-    <genClasses ecoreClass="scenario.ecore#//ModalInteraction">
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute scenario.ecore#//ModalInteraction/modality"/>
+    <genClasses image="false" ecoreClass="scenario.ecore#//Interaction">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference scenario.ecore#//Interaction/port"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference scenario.ecore#//Interaction/event"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute scenario.ecore#//Interaction/direction"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute scenario.ecore#//Interaction/modality"/>
     </genClasses>
-    <genClasses ecoreClass="scenario.ecore#//Reset"/>
-    <genClasses ecoreClass="scenario.ecore#//Signal">
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference scenario.ecore#//Signal/port"/>
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference scenario.ecore#//Signal/event"/>
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute scenario.ecore#//Signal/direction"/>
-    </genClasses>
-    <genClasses ecoreClass="scenario.ecore#//ModalInteractionSet">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference scenario.ecore#//ModalInteractionSet/modalInteractions"/>
+    <genClasses ecoreClass="scenario.ecore#//DeterministicOccurrenceSet">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference scenario.ecore#//DeterministicOccurrenceSet/deterministicOccurrences"/>
     </genClasses>
     <genClasses ecoreClass="scenario.ecore#//LoopCombinedFragment">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference scenario.ecore#//LoopCombinedFragment/minimum"/>
@@ -61,15 +55,15 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference scenario.ecore#//Delay/minimum"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference scenario.ecore#//Delay/maximum"/>
     </genClasses>
-    <genClasses ecoreClass="scenario.ecore#//NegatedModalInteraction">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference scenario.ecore#//NegatedModalInteraction/modalinteraction"/>
+    <genClasses ecoreClass="scenario.ecore#//NegatedDeterministicOccurrence">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference scenario.ecore#//NegatedDeterministicOccurrence/deterministicOccurrence"/>
     </genClasses>
     <genClasses ecoreClass="scenario.ecore#//Annotation"/>
     <genClasses ecoreClass="scenario.ecore#//WaitAnnotation">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference scenario.ecore#//WaitAnnotation/minimum"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference scenario.ecore#//WaitAnnotation/maximum"/>
     </genClasses>
-    <genClasses ecoreClass="scenario.ecore#//InteractionDefinition"/>
+    <genClasses image="false" ecoreClass="scenario.ecore#//DeterministicOccurrence"/>
     <genClasses ecoreClass="scenario.ecore#//StrictAnnotation"/>
     <genClasses ecoreClass="scenario.ecore#//PermissiveAnnotation"/>
     <genClasses ecoreClass="scenario.ecore#//NegatedWaitAnnotation">

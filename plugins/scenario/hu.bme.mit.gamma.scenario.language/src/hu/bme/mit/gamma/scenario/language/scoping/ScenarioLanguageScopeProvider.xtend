@@ -15,7 +15,6 @@ import hu.bme.mit.gamma.expression.model.ExpressionModelPackage
 import hu.bme.mit.gamma.scenario.model.ScenarioDeclaration
 import hu.bme.mit.gamma.scenario.model.ScenarioModelPackage
 import hu.bme.mit.gamma.scenario.model.ScenarioPackage
-import hu.bme.mit.gamma.scenario.model.Signal
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression
 import hu.bme.mit.gamma.statechart.interface_.InterfaceModelPackage
@@ -28,6 +27,7 @@ import org.eclipse.xtext.scoping.Scopes
 import org.eclipse.xtext.scoping.impl.SimpleScope
 
 import static com.google.common.base.Preconditions.checkState
+import hu.bme.mit.gamma.scenario.model.Interaction
 
 class ScenarioLanguageScopeProvider extends AbstractScenarioLanguageScopeProvider {
 
@@ -70,12 +70,12 @@ class ScenarioLanguageScopeProvider extends AbstractScenarioLanguageScopeProvide
 				checkState(expression.port !== null)
 				val event = expression.event
 				return Scopes.scopeFor(event.parameterDeclarations)
-			} else if (context instanceof Signal && reference == ScenarioModelPackage.Literals.SIGNAL__PORT) {
+			} else if (context instanceof Interaction && reference == ScenarioModelPackage.Literals.INTERACTION__PORT) { 
 				val ports = ecoreUtil.getContainerOfType(context, ScenarioPackage).component.ports
 				return createScopeFor(ports)
-			} else if (context instanceof Signal && reference == ScenarioModelPackage.Literals.SIGNAL__EVENT) {
-				val signal = context as Signal
-				val interface = signal.port.interfaceRealization.interface
+			} else if (context instanceof Interaction && reference == ScenarioModelPackage.Literals.INTERACTION__EVENT) {
+				val signal = context as Interaction
+				val interface = signal.getPort.interfaceRealization.interface
 				val events = StatechartModelDerivedFeatures.getAllEventDeclarations(interface).map[it.event]
 				return createScopeFor(events)
 			}

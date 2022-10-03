@@ -14,18 +14,16 @@ import hu.bme.mit.gamma.scenario.model.AlternativeCombinedFragment
 import hu.bme.mit.gamma.scenario.model.CombinedFragment
 import hu.bme.mit.gamma.scenario.model.Delay
 import hu.bme.mit.gamma.scenario.model.LoopCombinedFragment
-import hu.bme.mit.gamma.scenario.model.ModalInteraction
-import hu.bme.mit.gamma.scenario.model.ModalInteractionSet
-import hu.bme.mit.gamma.scenario.model.NegatedModalInteraction
+import hu.bme.mit.gamma.scenario.model.DeterministicOccurrenceSet
+import hu.bme.mit.gamma.scenario.model.NegatedDeterministicOccurrence
 import hu.bme.mit.gamma.scenario.model.ParallelCombinedFragment
-import hu.bme.mit.gamma.scenario.model.Reset
 import hu.bme.mit.gamma.scenario.model.ScenarioCheckExpression
 import hu.bme.mit.gamma.scenario.model.ScenarioDeclaration
 import hu.bme.mit.gamma.scenario.model.ScenarioDefinitionReference
 import hu.bme.mit.gamma.scenario.model.ScenarioPackage
-import hu.bme.mit.gamma.scenario.model.Signal
 import hu.bme.mit.gamma.scenario.util.ScenarioModelValidator
 import org.eclipse.xtext.validation.Check
+import hu.bme.mit.gamma.scenario.model.Interaction
 
 class ScenarioLanguageValidator extends AbstractScenarioLanguageValidator {
 
@@ -51,18 +49,13 @@ class ScenarioLanguageValidator extends AbstractScenarioLanguageValidator {
 	}
 
 	@Check
-	def void checkModalInteractionSets(ModalInteractionSet modalInteractionSet) {
-		handleValidationResultMessage(validator.checkModalInteractionSets(modalInteractionSet))
+	def void checkDeterministicOccurrenceSets(DeterministicOccurrenceSet modalInteractionSet) {
+		handleValidationResultMessage(validator.checkDeterministicOccurrenceSets(modalInteractionSet))
 	}
 
 	@Check
-	def void checkModalInteractionsInSynchronousComponents(ModalInteraction interaction) {
+	def void checkModalInteractionsInSynchronousComponents(Interaction interaction) {
 		handleValidationResultMessage(validator.checkModalInteractionsInSynchronousComponents(interaction))
-	}
-
-	@Check
-	def void checkModalInteractionsInSynchronousComponents(Reset reset) {
-		handleValidationResultMessage(validator.checkModalInteractionsInSynchronousComponents(reset))
 	}
 
 	@Check
@@ -71,17 +64,17 @@ class ScenarioLanguageValidator extends AbstractScenarioLanguageValidator {
 	}
 
 	@Check
-	def void checkPortCanSendSignal(Signal signal) {
+	def void checkPortCanSendSignal(Interaction signal) {
 		handleValidationResultMessage(validator.checkPortCanSendSignal(signal))
 	}
 
 	@Check
-	def void checkPortCanReceiveSignal(Signal signal) {
+	def void checkPortCanReceiveSignal(Interaction signal) {
 		handleValidationResultMessage(validator.checkPortCanReceiveSignal(signal))
 	}
 
 	@Check(NORMAL)
-	def void negatedReceives(NegatedModalInteraction negatedModalInteraction) {
+	def void negatedReceives(NegatedDeterministicOccurrence negatedModalInteraction) {
 		handleValidationResultMessage(validator.negatedReceives(negatedModalInteraction))
 	}
 
@@ -121,7 +114,7 @@ class ScenarioLanguageValidator extends AbstractScenarioLanguageValidator {
 	}
 
 	@Check
-	def void checkScenraioBlockOrder(ModalInteractionSet set) {
+	def void checkScenraioBlockOrder(DeterministicOccurrenceSet set) {
 		handleValidationResultMessage(validator.checkScenraioBlockOrder(set))
 	}
 
@@ -131,7 +124,7 @@ class ScenarioLanguageValidator extends AbstractScenarioLanguageValidator {
 	}
 
 	@Check
-	def void checkDelayAndNegateInSameBlock(ModalInteractionSet set) {
+	def void checkDelayAndNegateInSameBlock(DeterministicOccurrenceSet set) {
 		handleValidationResultMessage(validator.checkDelayAndNegateInSameBlock(set))
 	}
 }
