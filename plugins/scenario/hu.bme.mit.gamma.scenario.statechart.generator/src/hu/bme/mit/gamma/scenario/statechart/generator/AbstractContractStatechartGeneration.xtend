@@ -19,8 +19,10 @@ import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.expression.util.ExpressionUtil
 import hu.bme.mit.gamma.scenario.model.Delay
-import hu.bme.mit.gamma.scenario.model.InteractionDirection
+import hu.bme.mit.gamma.scenario.model.DeterministicOccurrence
 import hu.bme.mit.gamma.scenario.model.DeterministicOccurrenceSet
+import hu.bme.mit.gamma.scenario.model.Interaction
+import hu.bme.mit.gamma.scenario.model.InteractionDirection
 import hu.bme.mit.gamma.scenario.model.NegatedDeterministicOccurrence
 import hu.bme.mit.gamma.scenario.model.ScenarioAssignmentStatement
 import hu.bme.mit.gamma.scenario.model.ScenarioCheckExpression
@@ -61,9 +63,6 @@ import org.eclipse.emf.ecore.EObject
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
-import hu.bme.mit.gamma.scenario.model.Interaction
-import hu.bme.mit.gamma.scenario.model.DeterministicOccurrence
-import hu.bme.mit.gamma.scenario.model.NegatedDeterministicOccurrence
 
 abstract class AbstractContractStatechartGeneration {
 

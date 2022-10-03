@@ -6,23 +6,23 @@ You will need Java 17 to setup Gamma.
 
 Gamma has been implemented as a set of Eclipse plugins. To use the
 framework, you will need an Eclipse with the following plugins installed:
-* Eclipse Modeling Framework SDK 2.30.0.
-* Xtext Complete SDK 2.27.0. (It contains Xtend, there is no need for the additional download of Xtend.)
-* VIATRA SDK 2.7.0.
+* Eclipse Modeling Framework SDK 2.31.0.
+* Xtext Complete SDK 2.28.0. (It contains Xtend, there is no need for the additional download of Xtend.)
+* VIATRA SDK 2.7.1.
 * Yakindu Statechart Tools 3.5.13.
 * PlantUML 1.1.26.
 
 We recommend to start-up from an Eclipse IDE for Java and DSL Developers as it
 contains EMF and Xtext so only VIATRA and Yakindu need to be downloaded.
 
-- Download a new Eclipse IDE for [Java and DSL Developers package](https://www.eclipse.org/downloads/packages/release/2021-12/r/eclipse-ide-java-and-dsl-developers).
+- Download a new Eclipse IDE for [Java and DSL Developers package](https://www.eclipse.org/downloads/packages/release/2022-09/r/eclipse-ide-java-and-dsl-developers).
 - Run Eclipse. If an error message is thrown about the unavailability of Java (this happens if Java is not added to your path), you have to specifiy the path to your Java installation (`javaw.exe` in the `bin` folder) for Eclipse. Open the `eclipse.ini` file in the root folder of your Eclipse with a text editor and add the following two lines right above the `-vmargs` line:
 ```
 -vm
 path_to_your_java_insallation/Java/jdk-version/bin/javaw.exe
 ```
 - Install the following two packages. The _Install_ window can be opened via the _Help > Install New Software..._ menu item. In the _Install_ window click _Add..._, and paste the necessary URL in the _Location_ text field. 
- - Install VIATRA 2.7.0 from update site: http://download.eclipse.org/viatra/updates/release/2.7.0.
+ - Install VIATRA 2.7.1 from update site: http://download.eclipse.org/viatra/updates/release/2.7.1.
     - Choose the whole _VIATRA Query and Transformation SDK_ package.
  - Install the Yakindu Statechart Tools 3.5.13. from update site: http://updates.yakindu.com/statecharts/releases/3.5.13. From the  _YAKINDU Statechart Tools Standard Edition_ package choose
 	- _YAKINDU Statechart Tools_,
