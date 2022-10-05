@@ -259,7 +259,8 @@
     </genEnums>
     <genEnums typeSafeEnumCompatible="false" ecoreEnum="statechart.ecore#//OrthogonalRegionSchedulingOrder">
       <genEnumLiterals ecoreEnumLiteral="statechart.ecore#//OrthogonalRegionSchedulingOrder/SEQUENTIAL"/>
-      <genEnumLiterals ecoreEnumLiteral="statechart.ecore#//OrthogonalRegionSchedulingOrder/RANDOM"/>
+      <genEnumLiterals ecoreEnumLiteral="statechart.ecore#//OrthogonalRegionSchedulingOrder/UNORDERED"/>
+      <genEnumLiterals ecoreEnumLiteral="statechart.ecore#//OrthogonalRegionSchedulingOrder/PARALLEL"/>
     </genEnums>
     <genEnums typeSafeEnumCompatible="false" ecoreEnum="statechart.ecore#//TransitionPriority">
       <genEnumLiterals ecoreEnumLiteral="statechart.ecore#//TransitionPriority/OFF"/>

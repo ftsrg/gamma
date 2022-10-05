@@ -228,7 +228,7 @@ enum SchedulingOrder returns SchedulingOrder:
 ;
 
 enum OrthogonalRegionSchedulingOrder returns OrthogonalRegionSchedulingOrder:
-	SEQUENTIAL = 'sequential' | RANDOM = 'random'
+	SEQUENTIAL = 'sequential' | UNORDERED = 'unordered' | PARALLEL = 'parallel'
 ;
 
 enum TransitionPriority returns TransitionPriority:
