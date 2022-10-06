@@ -14,23 +14,22 @@ import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.util.FileUtil
 import hu.bme.mit.gamma.verification.result.ThreeStateBoolean
 import hu.bme.mit.gamma.verification.util.AbstractVerifier
+import java.io.BufferedWriter
 import java.io.File
-import java.util.ArrayList
+import java.io.FileOutputStream
+import java.io.OutputStreamWriter
 import java.util.Scanner
 import java.util.logging.Level
-import java.io.FileOutputStream
-import java.io.BufferedWriter
-import java.io.OutputStreamWriter
 
 class PromelaVerifier extends AbstractVerifier {
 	
-	extension FileUtil fileUtil = FileUtil.INSTANCE
+	protected final extension FileUtil fileUtil = FileUtil.INSTANCE
 	protected final extension PromelaQueryAdapter promelaQueryAdapter = PromelaQueryAdapter.INSTANCE
 
 	// save trace to file
 	protected val saveTrace = false
 	
-	override Result verifyQuery(Object traceability, String parameters, File modelFile,	File queryFile) {
+	override Result verifyQuery(Object traceability, String parameters, File modelFile, File queryFile) {
 		val model = fileUtil.loadString(modelFile)
 		val query = fileUtil.loadString(queryFile)
 		
@@ -57,7 +56,7 @@ class PromelaVerifier extends AbstractVerifier {
 		fileWithLtl.deleteOnExit
 		fileUtil.saveString(fileWithLtl, modelWithLtls)
 		
-		var resultList = new ArrayList<Result>
+		var resultList = newArrayList
 		for (var j = 0; j < i; j++) {
 			val result = verify(traceability, parameters, fileWithLtl)
 			resultList += result
@@ -74,8 +73,8 @@ class PromelaVerifier extends AbstractVerifier {
 			val execFolder = modelFile.parentFile
 			
 			// spin -search -a PromelaFile.pml
-			val searchCommand = newArrayList
-			searchCommand += #["spin", parameters, modelFile.canonicalPath.escapePath]
+			val splitParameters = parameters.split("\\s+")
+			val searchCommand = #["spin"] + splitParameters + #[modelFile.canonicalPath.escapePath]
 			
 			// trail file
 			val trailFile = new File(modelFile.trailFile)
@@ -88,7 +87,7 @@ class PromelaVerifier extends AbstractVerifier {
 			
 			// Executing the command
 			logger.log(Level.INFO, "Executing command: " + searchCommand.join(" "))
-			process = Runtime.getRuntime().exec(searchCommand.join(" "), null, execFolder)
+			process = Runtime.getRuntime().exec(searchCommand, null, execFolder)
 			val outputStream = process.inputStream
 			// Reading the result of the command
 			resultReader = new Scanner(outputStream)
@@ -115,8 +114,7 @@ class PromelaVerifier extends AbstractVerifier {
 			super.result = super.result.adaptResult
 			
 			// spin -t -p -g -l -w PromelaFile.pml
-			val traceCommand = newArrayList
-			traceCommand += #["spin", "-t", "-p", "-g", "-l", "-w", modelFile.canonicalPath.escapePath]
+			val traceCommand = #["spin", "-t", "-p", "-g", "-l", "-w", modelFile.canonicalPath.escapePath]
 			
 			// Never claim file
 			val nvrFile = new File(execFolder, "_spin_nvr.tmp")
@@ -125,7 +123,7 @@ class PromelaVerifier extends AbstractVerifier {
 			
 			// Executing the trace command
 			logger.log(Level.INFO, "Executing command: " + traceCommand.join(" "))
-			process = Runtime.getRuntime().exec(traceCommand.join(" "), null, execFolder)
+			process = Runtime.getRuntime().exec(traceCommand, null, execFolder)
 			
 			val traceOutputStream = process.inputStream
 			// Reading the result of the command

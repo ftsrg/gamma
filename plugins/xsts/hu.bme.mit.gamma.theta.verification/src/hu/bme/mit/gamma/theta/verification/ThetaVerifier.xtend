@@ -66,7 +66,7 @@ class ThetaVerifier extends AbstractVerifier {
 			traceFile.delete // So no invalid/old cex is parsed if this actual process does not generate one
 			traceFile.deleteOnExit // So the cex with this random name does not remain on disk
 			
-			val splitParameters = parameters.split(" ")
+			val splitParameters = parameters.split("\\s+")
 			val command = newArrayList
 			command += #["java", "-jar", jar]
 			if (!parameters.nullOrEmpty && !splitParameters.empty) {

@@ -30,7 +30,7 @@ class UppaalVerifier extends AbstractVerifier {
 		val actualUppaalQuery = uppaalQueryFile.loadString
 		try {
 			// verifyta -t0 -T TestOneComponent.xml asd.q 
-			val command = #["verifyta"] + parameters.split(" ") +
+			val command = #["verifyta"] + parameters.split("\\s+") +
 					#[uppaalFile.canonicalPath, uppaalQueryFile.canonicalPath]
 			
 			// Executing the command
