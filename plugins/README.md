@@ -12,8 +12,7 @@ framework, you will need an Eclipse with the following plugins installed:
 * Yakindu Statechart Tools 3.5.13.
 * PlantUML 1.1.26.
 
-We recommend to start-up from an Eclipse IDE for Java and DSL Developers as it
-contains EMF and Xtext so only VIATRA and Yakindu need to be downloaded.
+We recommend to start-up from an Eclipse IDE for Java and DSL Developers as it contains EMF and Xtext so only VIATRA and Yakindu need to be downloaded.
 
 - Download a new Eclipse IDE for [Java and DSL Developers package](https://www.eclipse.org/downloads/packages/release/2022-09/r/eclipse-ide-java-and-dsl-developers).
 - Run Eclipse. If an error message is thrown about the unavailability of Java (this happens if Java is not added to your path), you have to specifiy the path to your Java installation (`javaw.exe` in the `bin` folder) for Eclipse. Open the `eclipse.ini` file in the root folder of your Eclipse with a text editor and add the following two lines right above the `-vmargs` line:
@@ -30,7 +29,7 @@ path_to_your_java_insallation/Java/jdk-version/bin/javaw.exe
 	- _YAKINDU Statechart Tools Java Code Generator_ and
 	- _YAKINDU License Integration For Standard Edition_ subpackages.
 	
-Furthermore, it is necessary to setup the environment for the *PlantUML* visualization plugins located in the [`vis`](vis) folder. The instructions are described in the [`README`](vis/README.md) file of the folder.
+Furthermore, it is *necessary* to setup the environment for the *PlantUML* visualization plugins located in the [`vis`](vis) folder. The instructions are described in the [`README`](vis/README.md) file of the folder.
 
 If you want to use the *XSTS* formalism for formal verification (via *Theta*) and code generation for standalone statecharts, you will have to setup the plugins located in the [`xsts`](xsts) folder. The instructions are described in the [`README`](xsts/README.md) file of the folder.
 
