@@ -83,6 +83,10 @@ public abstract class TaskHandler {
 					URI relativeUri = resource.getURI();
 					URI parentUri = relativeUri.trimSegments(1);
 					String platformUri = parentUri.toPlatformString(true);
+					if (platformUri == null) {
+						// If there is a '/' at the beginning of the URI in the ggen-include...
+						platformUri = parentUri.toString();
+					}
 					targetFolder = platformUri.substring(
 						(File.separator + file.getProject().getName() + File.separator).length());
 				}
@@ -94,7 +98,8 @@ public abstract class TaskHandler {
 			task.getTargetFolder().add(targetFolder);
 		}
 		// Setting the attribute, the target folder is a RELATIVE path now from the project
-		targetFolderUri = URI.decode(projectLocation + File.separator + task.getTargetFolder().get(0));
+		targetFolderUri = URI.decode(
+				projectLocation + File.separator + task.getTargetFolder().get(0));
 	}
 	
 	protected String getNameWithoutExtension(String fileName) {
