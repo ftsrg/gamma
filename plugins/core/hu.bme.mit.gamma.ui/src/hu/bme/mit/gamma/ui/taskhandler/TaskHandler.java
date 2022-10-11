@@ -69,7 +69,11 @@ public abstract class TaskHandler {
 		checkArgument(task.getTargetFolder().size() <= 1);
 		if (task.getTargetFolder().isEmpty()) {
 			String targetFolder = null;
-			if (task instanceof Verification || task instanceof AdaptiveContractTestGeneration || task instanceof TraceGeneration) {
+			if (task instanceof TraceGeneration) {
+				String path = file.getParent().getFullPath().toString();
+				String path2 = path.substring(path.indexOf("/") + 1);
+				targetFolder = path2.substring(path2.indexOf("/") + 1);
+			} else if (task instanceof Verification || task instanceof AdaptiveContractTestGeneration) {
 				targetFolder = "trace";
 			}
 			else if (task instanceof CodeGeneration) {

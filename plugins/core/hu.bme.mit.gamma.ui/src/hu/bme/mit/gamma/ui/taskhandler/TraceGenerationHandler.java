@@ -96,8 +96,14 @@ public class TraceGenerationHandler extends TaskHandler {
 		
 	public void execute(TraceGeneration tracegeneration) throws IOException {
 		setTargetFolder(tracegeneration);
-		File targetFolder = new File(targetFolderUri);
-		cleanFolder(targetFolder);
+		
+		System.out.println(targetFolderUri);
+		File targetFolder = new File(targetFolderUri + File.separator + file.getName().split("\\.")[0] + File.separator);
+		if(targetFolder.exists()) {
+			cleanFolder(targetFolder);			
+		} else {
+			targetFolder.mkdirs();
+		}
 		
 		// Based on the method setVerification in VerificationHandler
 		Resource resource = tracegeneration.eResource();
@@ -119,7 +125,7 @@ public class TraceGenerationHandler extends TaskHandler {
 		System.out.println(retrievedTraces.size());
 
 		for (ExecutionTrace trace : retrievedTraces) {
-			serializer.serialize(targetFolderUri, traceFileName, svgFileName,
+			serializer.serialize(targetFolder.getAbsolutePath(), traceFileName, svgFileName,
 					testFolderUri, testFileName, "", trace);
 		}
 		traces.addAll(retrievedTraces);
