@@ -44,6 +44,7 @@ import hu.bme.mit.gamma.statechart.util.ExpressionSerializer
 import org.eclipse.emf.common.util.EList
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
+import java.util.List
 
 class StatechartToPlantUmlTransformer {
 
@@ -217,8 +218,9 @@ class StatechartToPlantUmlTransformer {
 										«stateActionsSearch(inner)»
 									«ENDIF»
 								«ENDIF»
+								«stateSearch(inner.loopTransitions)»
 								«FOR itransition: statechart.transitions»
-									«IF itransition.sourceState == inner»
+									«IF itransition.sourceState == inner && !inner.loopTransitions.contains(itransition)»
 										«stateSearch(itransition)»
 									«ENDIF»
 								«ENDFOR»
@@ -312,9 +314,10 @@ class StatechartToPlantUmlTransformer {
 							«ENDIF»
 						«ENDIF»
 					«ENDFOR»
-					«FOR transition : statechart.transitions»
-						«FOR mainstate: main.stateNodes»
-							«IF transition.sourceState == mainstate»
+					«FOR mainstate: main.stateNodes»
+						«stateSearch(mainstate.loopTransitions)»
+						«FOR transition : mainstate.outgoingTransitions»
+							«IF !mainstate.loopTransitions.contains(transition)»
 								«stateSearch(transition)»
 							«ENDIF»
 						«ENDFOR»
@@ -414,6 +417,44 @@ class StatechartToPlantUmlTransformer {
 			endlegend
 		'''
 	
+	}
+	
+	/**
+	 * stateSearch(Elist<Transition>)
+	 * 
+	 * This method searches the source and target state of the transition received as parameter.
+	 * This is where the visualization of the initial and history states is handled, as well as
+	 * the obtaining of the guards and triggers of transitions.
+	 * The end result will look like this:
+	 * 
+	 * State1 -> State1 : trigger [guard] / action trigger [guard] / action trigger [guard] / action ...
+	 * 
+	 */
+	protected def stateSearch(List<Transition> transitions) {
+		if (transitions.empty) {
+			return ''''''
+		} else {
+			val transition = transitions.get(0)
+			val source = transition.sourceState
+			val trigger = transition.trigger
+			val guard = transition.guard
+			val effects = transition.effects
+			val target = transition.targetState
+			var arrow = ""
+			if (source instanceof EntryState || (source.parentRegion.orthogonal && target.state)) {
+				arrow = "->"
+			} else {
+				arrow = "-->"
+			}
+			
+			var ret = '''
+				«transition.sourceText» «arrow» «target.name»«IF !transition.empty» : «ENDIF»«IF trigger !== null»«trigger.transformTrigger»«ENDIF» «IF guard !== null»\n[«guard.serialize»]«ENDIF»«FOR effect : effects BEFORE ' /\\n' SEPARATOR '\\n'»«effect.transformAction»«ENDFOR»«FOR i : 1 ..< transitions.size»\n\n«IF transitions.get(i).trigger !== null»«transitions.get(i).trigger.transformTrigger»«ENDIF» «IF transitions.get(i).guard !== null»\n[«transitions.get(i).guard.serialize»]«ENDIF»«FOR effect : transitions.get(i).effects BEFORE ' /\\n' SEPARATOR '\\n'»«effect.transformAction»«ENDFOR»«ENDFOR»
+			'''
+			
+			return ret
+			
+		}
+		
 	}
 
 }
