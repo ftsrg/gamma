@@ -27,14 +27,14 @@ class ThetaTraceGenerator {
 	final String ENVIRONMENT_VARIABLE_FOR_THETA_JAR = "THETA_XSTS_CLI_PATH"
 	protected final Logger logger = Logger.getLogger("GammaLogger")
 	
-	def List<ExecutionTrace> execute(File modelFile, boolean fullTraces, EList<String> variableList, boolean noTransitionCoverage) {
+	def List<ExecutionTrace> execute(File modelFile, boolean fullTraces, EList<String> variableList, boolean noTransitionCoverage, boolean useAbstraction) {
 		val packageFileName = modelFile.name.unfoldedPackageFileName
 		val gammaPackage = ecoreUtil.normalLoad(modelFile.parent, packageFileName)
 		
-		return generateTraces(gammaPackage, modelFile, fullTraces, variableList, noTransitionCoverage)
+		return generateTraces(gammaPackage, modelFile, fullTraces, variableList, noTransitionCoverage, useAbstraction)
 	}
 	
-	private def List<ExecutionTrace> generateTraces(Object traceability, File modelFile, boolean fullTraces, EList<String> variableList, boolean noTransitionCoverage) {
+	private def List<ExecutionTrace> generateTraces(Object traceability, File modelFile, boolean fullTraces, EList<String> variableList, boolean noTransitionCoverage, boolean useAbstraction) {
 		val traceDir = new File(modelFile.parent + File.separator + "traces")
 		cleanFolder(traceDir)		
 		val jar = System.getenv(ENVIRONMENT_VARIABLE_FOR_THETA_JAR)
@@ -42,7 +42,7 @@ class ThetaTraceGenerator {
 		if(fullTraces) {
 			command = command + #["--get-full-traces"]
 		}
-		if(variableList.size()!=0) {
+		if(useAbstraction) {
 			val varListFile = new File(modelFile.parent + File.separator + "variableList.txt");
 			varListFile.createNewFile();
 			val writer = new BufferedWriter(new FileWriter(varListFile));

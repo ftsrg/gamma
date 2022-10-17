@@ -97,7 +97,6 @@ public class TraceGenerationHandler extends TaskHandler {
 	public void execute(TraceGeneration tracegeneration) throws IOException {
 		setTargetFolder(tracegeneration);
 		
-		System.out.println(targetFolderUri);
 		File targetFolder = new File(targetFolderUri + File.separator + file.getName().split("\\.")[0] + File.separator);
 		if(targetFolder.exists()) {
 			cleanFolder(targetFolder);			
@@ -114,6 +113,7 @@ public class TraceGenerationHandler extends TaskHandler {
 		tracegeneration.getFileName().replaceAll(it -> fileUtil.exploreRelativeFile(file, it).toString());
 
 		EList<String> variableList = tracegeneration.getVariables();
+		boolean useAbstraction = tracegeneration.getVariableLists().size()!=0;
 		
 		boolean fullTraces = tracegeneration.isFullTraces();
 		boolean noTransitionCoverage = tracegeneration.isNoTransitionCoverage();
@@ -121,7 +121,7 @@ public class TraceGenerationHandler extends TaskHandler {
 		File modelFile = new File(filePath);		
 		List<ExecutionTrace> retrievedTraces = new ArrayList<ExecutionTrace>();
 		ThetaTraceGenerator ttg = new ThetaTraceGenerator();
-		retrievedTraces = ttg.execute(modelFile, fullTraces, variableList, noTransitionCoverage);
+		retrievedTraces = ttg.execute(modelFile, fullTraces, variableList, noTransitionCoverage, useAbstraction);
 		System.out.println(retrievedTraces.size());
 
 		for (ExecutionTrace trace : retrievedTraces) {

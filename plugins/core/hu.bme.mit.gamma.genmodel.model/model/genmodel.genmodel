@@ -160,6 +160,12 @@
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//Verification/optimize"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//Verification/backAnnotateToOriginal"/>
     </genClasses>
+    <genClasses ecoreClass="genmodel.ecore#//TraceGeneration">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//TraceGeneration/fullTraces"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//TraceGeneration/variables"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//TraceGeneration/noTransitionCoverage"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//TraceGeneration/useAbstraction"/>
+    </genClasses>
     <genClasses ecoreClass="genmodel.ecore#//TraceReplayModelGeneration">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference genmodel.ecore#//TraceReplayModelGeneration/executionTrace"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//TraceReplayModelGeneration/environmentModelFileName"/>

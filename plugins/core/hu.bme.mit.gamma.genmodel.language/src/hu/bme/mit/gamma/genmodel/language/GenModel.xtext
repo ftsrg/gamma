@@ -314,7 +314,7 @@ TraceGeneration returns TraceGeneration:
 	{TraceGeneration} 'trace-generation' '{'
 		(
 			'file' ':' fileName+=STRING |
-			'variables' ':'	'{'
+			variableLists+='variables' ':'	'{'
 				(
 					variables+=STRING
 				)*
