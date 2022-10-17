@@ -1709,6 +1709,34 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return compositeElement.getRegions().size() >= 2;
 	}
 	
+	public static boolean areOrthogonal(Region lhs, Region rhs) {
+		return getContainingCompositeElement(lhs) == getContainingCompositeElement(rhs);
+	}
+	
+	public static boolean areTransitivelyOrthogonal(StateNode lhs, StateNode rhs) {
+		List<Region> sourceAncestors = getRegionAncestors(lhs);
+		List<Region> targetAncestors = getRegionAncestors(rhs);
+		
+		int minSize = Integer.min(sourceAncestors.size(), targetAncestors.size());
+		for (int i = 0; i < minSize; ++i) {
+			Region sourceAncestor = sourceAncestors.get(i);
+			Region targetAncestor = targetAncestors.get(i);
+			
+			if (areOrthogonal(sourceAncestor, targetAncestor)) {
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	public static boolean isOrthogonal(Transition transition) {
+		StateNode source = transition.getSourceState();
+		StateNode target = transition.getTargetState();
+		
+		return areTransitivelyOrthogonal(source, target);
+	}
+	
 	public static CompositeElement getContainingCompositeElement(Region region) {
 		return (CompositeElement) region.eContainer();
 	}
