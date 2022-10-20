@@ -539,67 +539,6 @@ class ComponentTransformer {
 	
 	//
 	
-//	protected def traceAsynchronousAdapterActionq(
-//			AsynchronousComponentInstance instance, Action instanceAction) {
-//		val component = instance.type
-//		val parentAction = component.getOrCreateParentAsynchronousCompositeAction
-//		parentAction.actions += instanceAction
-//	}
-//	
-//	protected def getOrCreateParentAsynchronousCompositeAction(Component component) {
-//		val parentComponent = component.containingComponent as AbstractAsynchronousCompositeComponent
-//		return parentComponent.getOrCreateAsynchronousCompositeAction
-//	}
-//	
-//	protected def getOrCreateAsynchronousCompositeAction(AbstractAsynchronousCompositeComponent component) {
-//		if (traceability.hasAsynchronousCompositeAction(component)) {
-//			return traceability.getAsynchronousCompositeAction(component)
-//		}
-//		
-//		// Action has to be created
-//		val asynchronousCompositeAction = component.createAsynchronousCompositeAction
-//		
-//		traceability.putAsynchronousCompositeAction(component, asynchronousCompositeAction)
-//		
-//		return asynchronousCompositeAction
-//	}
-	
-	protected def createAsynchronousCompositeAction(AbstractAsynchronousCompositeComponent component) {
-		switch (component) {
-			ScheduledAsynchronousCompositeComponent: {
-				return createSequentialAction 
-			}
-			AsynchronousCompositeComponent: {
-				return createNonDeterministicAction
-			}
-			default: {
-				throw new IllegalArgumentException("Not known component: " + component)
-			}
-		}
-	}
-	
-	protected def Action mergeAsynchronousCompositeActions(
-			AbstractAsynchronousCompositeComponent component,
-			Map<AsynchronousComponentInstance, ? extends Action> mergedAdapterActions) {
-		val asynchronousCompositeAction = component.createAsynchronousCompositeAction
-		
-		for (instance : component.scheduledInstances) { // To support multiple execution
-			val instanceType = instance.type
-			asynchronousCompositeAction.actions +=
-			if (instanceType instanceof AbstractAsynchronousCompositeComponent) {
-				instanceType.mergeAsynchronousCompositeActions(mergedAdapterActions)
-			}
-			else {
-				val adapterAction = mergedAdapterActions.checkAndGet(instance)
-				adapterAction.clone // Important due to multiple executions
-			}
-		}
-		
-		return asynchronousCompositeAction
-	}
-	
-	//
-	
 	protected def createEventDispatchAction(Port port,
 			ReferenceToXstsVariableMapper eventReferenceMapper,
 			Collection<? extends Port> systemPorts, Trace variableTrace) {
@@ -711,6 +650,44 @@ class ComponentTransformer {
 		}
 		return eventDispatchAction
 	}
+	
+	//
+	
+	protected def createAsynchronousCompositeAction(AbstractAsynchronousCompositeComponent component) {
+		switch (component) {
+			ScheduledAsynchronousCompositeComponent: {
+				return createSequentialAction 
+			}
+			AsynchronousCompositeComponent: {
+				return createNonDeterministicAction
+			}
+			default: {
+				throw new IllegalArgumentException("Not known component: " + component)
+			}
+		}
+	}
+	
+	protected def Action mergeAsynchronousCompositeActions(
+			AbstractAsynchronousCompositeComponent component,
+			Map<AsynchronousComponentInstance, ? extends Action> mergedAdapterActions) {
+		val asynchronousCompositeAction = component.createAsynchronousCompositeAction
+		
+		for (instance : component.scheduledInstances) { // To support multiple execution
+			val instanceType = instance.type
+			asynchronousCompositeAction.actions +=
+			if (instanceType instanceof AbstractAsynchronousCompositeComponent) {
+				instanceType.mergeAsynchronousCompositeActions(mergedAdapterActions)
+			}
+			else {
+				val adapterAction = mergedAdapterActions.checkAndGet(instance)
+				adapterAction.clone // Important due to multiple executions
+			}
+		}
+		
+		return asynchronousCompositeAction
+	}
+	
+	//
 	
 	def dispatch XSTS transform(AsynchronousAdapter component, Package lowlevelPackage) {
 		val isTopInPackage = component.topInPackage
