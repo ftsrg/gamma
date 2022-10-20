@@ -5,13 +5,35 @@ import java.util.Set
 
 import static com.google.common.base.Preconditions.checkNotNull
 
-
 class Traceability {
 	
+//	Map<Component, MultiaryAction> asynchronousCompositeActions = newHashMap
+	//
 	Set<Action> internalEventHandlingActionsOfMergedAction = newHashSet
 	Set<Action> internalEventHandlingActionsOfEntryAction = newHashSet
 	
-	//
+//	//
+//	
+//	def putAsynchronousCompositeAction(
+//			AbstractAsynchronousCompositeComponent component, MultiaryAction action) {
+//		checkNotNull(component)
+//		checkNotNull(action)
+//		asynchronousCompositeActions += component -> action
+//	}
+//	
+//	def hasAsynchronousCompositeAction(AbstractAsynchronousCompositeComponent component) {
+//		checkNotNull(component)
+//		return asynchronousCompositeActions.containsKey(component)
+//	}
+//	
+//	def getAsynchronousCompositeAction(
+//			AbstractAsynchronousCompositeComponent component) {
+//		checkState(component.hasAsynchronousCompositeAction)
+//		val action = asynchronousCompositeActions.get(component)
+//		return action
+//	}
+//	
+//	//
 	
 	def putInternalEventHandlingActionsOfMergedAction(Iterable<? extends Action> actions) {
 		for (action : actions) {

@@ -2568,19 +2568,25 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	}
 	
 	public static List<ComponentInstance> getAllInitallyScheduledAsynchronousSimpleInstances(
-			ScheduledAsynchronousCompositeComponent component) {
+			AbstractAsynchronousCompositeComponent component) {
 		List<ComponentInstance> initallyScheduledInstances = new ArrayList<ComponentInstance>();
-		for (ComponentInstanceReferenceExpression instanceReference : component.getInitialExecutionList()) {
-			ComponentInstance componentInstance = instanceReference.getComponentInstance(); // No child
-			Component subtype = getDerivedType(componentInstance);
-			if (subtype instanceof SchedulableCompositeComponent) {
-				initallyScheduledInstances.addAll(
-					getAllAsynchronousSimpleInstances(subtype));
-			}
-			else { // Asynchronous adapter
-				initallyScheduledInstances.add(componentInstance);
+		
+		if (component instanceof SchedulableCompositeComponent schedulableComponent) {
+			for (ComponentInstanceReferenceExpression instanceReference :
+						schedulableComponent.getInitialExecutionList()) {
+				ComponentInstance componentInstance = instanceReference.getComponentInstance(); // No child
+				Component subtype = getDerivedType(componentInstance);
+				if (subtype instanceof SchedulableCompositeComponent) {
+					initallyScheduledInstances.addAll(
+						getAllAsynchronousSimpleInstances(subtype));
+				}
+				else { // Asynchronous adapter
+					initallyScheduledInstances.add(componentInstance);
+				}
 			}
 		}
+		// No else - not recursive/transitive property
+		
 		return initallyScheduledInstances;
 	}
 	

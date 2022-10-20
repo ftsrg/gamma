@@ -20,6 +20,8 @@ import hu.bme.mit.gamma.lowlevel.xsts.transformation.TransitionMerging
 import hu.bme.mit.gamma.statechart.composite.AbstractAsynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
+import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance
+import hu.bme.mit.gamma.statechart.composite.AsynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.CascadeCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance
 import hu.bme.mit.gamma.statechart.composite.DiscardStrategy
@@ -45,6 +47,7 @@ import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import java.util.AbstractMap.SimpleEntry
 import java.util.Collection
 import java.util.List
+import java.util.Map
 import java.util.logging.Level
 import java.util.logging.Logger
 
@@ -99,14 +102,13 @@ class ComponentTransformer {
 		throw new IllegalArgumentException("Not supported component type: " + component)
 	}
 	
-	def dispatch XSTS transform(ScheduledAsynchronousCompositeComponent component,
-			Package lowlevelPackage) {
+	def dispatch XSTS transform(AbstractAsynchronousCompositeComponent component, Package lowlevelPackage) {
 		val systemPorts = component.allPorts
 		// Parameters of all asynchronous composite components
 		component.extractAllParameters
 		// Retrieving the adapter instances - hierarchy does not matter here apart from the order
 		val adapterInstances = component.allAsynchronousSimpleInstances
-		val environmentalQueues = newHashSet
+		val environmentalQueues = newLinkedHashSet
 		
 		val name = component.name
 		val xSts = name.createXsts
@@ -122,11 +124,10 @@ class ComponentTransformer {
 		val inEventAction = createSequentialAction
 //		val outEventAction = createSequentialAction
 		
-		val mergedAction = createSequentialAction
-		
 		// Transforming and saving the adapter instances
 		
-		val mergedActions = newHashMap
+		val mergedSynchronousActions = newHashMap
+		
 		for (adapterInstance : adapterInstances) {
 			val adapterComponentType = adapterInstance.type as AsynchronousAdapter
 			
@@ -138,7 +139,7 @@ class ComponentTransformer {
 			configInitAction.actions += adapterXsts.configurationInitializingTransition.action
 			entryAction.actions += adapterXsts.entryEventTransition.action
 			
-			mergedActions += adapterInstance -> adapterXsts.mergedAction
+			mergedSynchronousActions += adapterInstance -> adapterXsts.mergedAction
 			
 			// inEventActions later
 			// Filtering events can be used (internal ones and ones led out to the environment)
@@ -254,14 +255,16 @@ class ComponentTransformer {
 		// Creating queue process behavior
 		
 		val queueHandlingMergedActions = newHashMap // Cache for queue-handling merged action and message dispatch
+		val mergedAdapterActions = newHashMap // Cache for adapter actions
 		
-		val executionList = component.allScheduledAsynchronousSimpleInstances // One instance could be executed multiple times
-		for (adapterInstance : executionList) {
+		for (adapterInstance : adapterInstances) {
+			val instanceMergedAction = createSequentialAction
+			
 			val adapterComponentType = adapterInstance.type as AsynchronousAdapter
-			val originalMergedAction = mergedActions.get(adapterInstance)
+			val originalMergedAction = mergedSynchronousActions.get(adapterInstance)
 			// Input event processing
 			val inputIfAction = createIfAction // Will be appended when handling queues
-			mergedAction.actions += inputIfAction
+			instanceMergedAction.actions += inputIfAction
 			
 			// Queues in order of priority
 			for (queue : adapterComponentType.functioningMessageQueuesInPriorityOrder) {
@@ -372,11 +375,16 @@ class ComponentTransformer {
 				// Semantical question: now out events are dispatched according to this order
 				val eventDispatchAction = port.createEventDispatchAction(
 						eventReferenceMapper, systemPorts, variableTrace)
-				mergedAction.actions += eventDispatchAction.clone
+				instanceMergedAction.actions += eventDispatchAction.clone
 				entryAction.actions += eventDispatchAction // Same for initial action
 				
 				eventDispatches.actions += eventDispatchAction.clone // Caching
 			}
+			
+			// Tracing the behavior of the atomic component to enable the construction of 
+			// choice ('pure' async) - seq (sheduled async) action trees later 
+			mergedAdapterActions += adapterInstance -> instanceMergedAction
+			
 			// Caching
 			queueHandlingMergedActions += adapterInstance -> (inputIfAction.clone /* Crucial */ -> eventDispatches)
 			//
@@ -520,10 +528,77 @@ class ComponentTransformer {
 		// Must not reset out events here: adapter instances reset them after running (no running, no reset)
 //		xSts.outEventTransition = outEventAction.wrap
 		
+		// Merging the adapter actions along a 'choice' and 'seq' tree 
+		val mergedAction = component.mergeAsynchronousCompositeActions(mergedAdapterActions)
+		//
+		
 		xSts.changeTransitions(mergedAction.wrap)
 		
 		return xSts
 	}
+	
+	//
+	
+//	protected def traceAsynchronousAdapterActionq(
+//			AsynchronousComponentInstance instance, Action instanceAction) {
+//		val component = instance.type
+//		val parentAction = component.getOrCreateParentAsynchronousCompositeAction
+//		parentAction.actions += instanceAction
+//	}
+//	
+//	protected def getOrCreateParentAsynchronousCompositeAction(Component component) {
+//		val parentComponent = component.containingComponent as AbstractAsynchronousCompositeComponent
+//		return parentComponent.getOrCreateAsynchronousCompositeAction
+//	}
+//	
+//	protected def getOrCreateAsynchronousCompositeAction(AbstractAsynchronousCompositeComponent component) {
+//		if (traceability.hasAsynchronousCompositeAction(component)) {
+//			return traceability.getAsynchronousCompositeAction(component)
+//		}
+//		
+//		// Action has to be created
+//		val asynchronousCompositeAction = component.createAsynchronousCompositeAction
+//		
+//		traceability.putAsynchronousCompositeAction(component, asynchronousCompositeAction)
+//		
+//		return asynchronousCompositeAction
+//	}
+	
+	protected def createAsynchronousCompositeAction(AbstractAsynchronousCompositeComponent component) {
+		switch (component) {
+			ScheduledAsynchronousCompositeComponent: {
+				return createSequentialAction 
+			}
+			AsynchronousCompositeComponent: {
+				return createNonDeterministicAction
+			}
+			default: {
+				throw new IllegalArgumentException("Not known component: " + component)
+			}
+		}
+	}
+	
+	protected def Action mergeAsynchronousCompositeActions(
+			AbstractAsynchronousCompositeComponent component,
+			Map<AsynchronousComponentInstance, ? extends Action> mergedAdapterActions) {
+		val asynchronousCompositeAction = component.createAsynchronousCompositeAction
+		
+		for (instance : component.scheduledInstances) { // To support multiple execution
+			val instanceType = instance.type
+			asynchronousCompositeAction.actions +=
+			if (instanceType instanceof AbstractAsynchronousCompositeComponent) {
+				instanceType.mergeAsynchronousCompositeActions(mergedAdapterActions)
+			}
+			else {
+				val adapterAction = mergedAdapterActions.checkAndGet(instance)
+				adapterAction.clone // Important due to multiple executions
+			}
+		}
+		
+		return asynchronousCompositeAction
+	}
+	
+	//
 	
 	protected def createEventDispatchAction(Port port,
 			ReferenceToXstsVariableMapper eventReferenceMapper,
