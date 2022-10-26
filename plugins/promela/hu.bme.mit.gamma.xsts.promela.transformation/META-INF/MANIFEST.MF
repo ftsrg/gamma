@@ -21,4 +21,5 @@ Require-Bundle: com.google.guava,
  hu.bme.mit.gamma.statechart.lowlevel.transformation,
  hu.bme.mit.gamma.lowlevel.xsts.transformation
 Export-Package: hu.bme.mit.gamma.xsts.promela.transformation,
+ hu.bme.mit.gamma.xsts.promela.transformation.serializer,
  hu.bme.mit.gamma.xsts.promela.transformation.util

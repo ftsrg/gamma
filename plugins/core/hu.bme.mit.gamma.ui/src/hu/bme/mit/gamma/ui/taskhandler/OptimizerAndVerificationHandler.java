@@ -40,6 +40,8 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 	
 	protected final SystemReducer xStsReducer = SystemReducer.INSTANCE;
 	protected final ActionSerializer xStsSerializer = ActionSerializer.INSTANCE;
+	protected final hu.bme.mit.gamma.xsts.promela.transformation.serializer.ModelSerializer promelaSerializer =
+			hu.bme.mit.gamma.xsts.promela.transformation.serializer.ModelSerializer.INSTANCE;
 
 	public OptimizerAndVerificationHandler(IFile file) {
 		super(file);
@@ -48,7 +50,8 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 	public void execute(Verification verification) throws IOException {
 		List<AnalysisLanguage> analysisLanguages = verification.getAnalysisLanguages();
 		checkArgument(analysisLanguages.contains(AnalysisLanguage.THETA) ||
-				analysisLanguages.contains(AnalysisLanguage.XSTS_UPPAAL));
+				analysisLanguages.contains(AnalysisLanguage.XSTS_UPPAAL) ||
+				analysisLanguages.contains(AnalysisLanguage.PROMELA));
 		
 		String analysisFilePath = verification.getFileName().get(0);
 		File analysisFile = super.exporeRelativeFile(verification, analysisFilePath);
@@ -113,6 +116,10 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 				XstsToUppaalTransformer transformer = new XstsToUppaalTransformer(xSts);
 				NTA nta = transformer.execute();
 				UppaalModelSerializer.saveToXML(nta, analysisFile);
+			}
+			if (analysisLanguages.contains(AnalysisLanguage.PROMELA)) {
+				String xStsString = promelaSerializer.serializePromela(xSts);
+				fileUtil.saveString(analysisFile, xStsString);
 			}
 			//
 			
