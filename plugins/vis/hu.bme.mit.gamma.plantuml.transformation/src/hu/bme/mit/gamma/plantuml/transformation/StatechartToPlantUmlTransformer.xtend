@@ -422,12 +422,12 @@ class StatechartToPlantUmlTransformer {
 	/**
 	 * stateSearch(Elist<Transition>)
 	 * 
-	 * This method searches the source and target state of the transition received as parameter.
-	 * This is where the visualization of the initial and history states is handled, as well as
-	 * the obtaining of the guards and triggers of transitions.
+	 * This method searches the source and target state of the transitions received as parameter.
+	 * 
+	 * This is where the visualization of self transitions handled and bundled together for transparent visualization.
 	 * The end result will look like this:
 	 * 
-	 * State1 -> State1 : trigger [guard] / action trigger [guard] / action trigger [guard] / action ...
+	 * State1 -> State1 : trigger1 [guard1] / action trigger2 [guard2] / action2 trigger3 [guard3] / action3 ...
 	 * 
 	 */
 	protected def stateSearch(List<Transition> transitions) {
