@@ -589,7 +589,10 @@ public class ExpressionUtil {
 				Expression value = ecoreUtil.clone(argument);
 				ecoreUtil.replace(value, reference);
 			}
-			
+		}
+		// Removing later to avoid messing up the indexes
+		for (ParameterDeclaration parameter :
+					new ArrayList<ParameterDeclaration>(parameters)) {
 			ecoreUtil.remove(parameter);
 		}
 	}
