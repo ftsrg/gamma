@@ -102,6 +102,15 @@ public class ActionUtil extends ExpressionUtil {
 				}
 			}
 		}
+		// Branch actions must not be null though
+		List<Branch> branches = ecoreUtil
+				.getSelfAndAllContentsOfType(action, Branch.class);
+		for (Branch branch : branches) {
+			if (branch.getAction() == null) {
+				branch.setAction(
+						actionFactory.createEmptyStatement());
+			}
+		}
 	}
 	
 	//
