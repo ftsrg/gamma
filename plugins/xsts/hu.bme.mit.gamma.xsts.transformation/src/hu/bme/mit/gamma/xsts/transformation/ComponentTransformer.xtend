@@ -131,6 +131,10 @@ class ComponentTransformer {
 		for (adapterInstance : adapterInstances) {
 			val adapterComponentType = adapterInstance.type as AsynchronousAdapter
 			
+			/// Deleting unnecessary port-event references in queues
+			adapterInstance.deleteUnusedPortReferencesInQueues
+			//
+			
 			adapterComponentType.extractParameters(adapterInstance.arguments) // Parameters
 			val adapterXsts = adapterComponentType.transform(lowlevelPackage)
 			xSts.merge(adapterXsts) // Adding variables, types, etc.
@@ -156,7 +160,7 @@ class ComponentTransformer {
 					environmentalQueues += queue // Tracing
 				}
 				
-				val storedPortEvents = newHashSet
+				val storedPortEvents = newLinkedHashSet
 				val events = queue.storedEvents
 				for (event : events) {
 					val id = queue.getEventId(event) // Id is needed during back-annotation
@@ -177,8 +181,8 @@ class ComponentTransformer {
 				val masterSizeVariable = createIntegerTypeDefinition
 						.createVariableDeclaration(masterSizeVariableName)
 				
-				val slaveQueuesMap = newHashMap
-				val typeSlaveQueuesMap = newHashMap // Reusing slave queues for same types if possible
+				val slaveQueuesMap = newLinkedHashMap
+				val typeSlaveQueuesMap = newLinkedHashMap // Reusing slave queues for same types if possible
 				for (portEvent : events) {
 					val port = portEvent.key
 					val event = portEvent.value
@@ -193,7 +197,7 @@ class ComponentTransformer {
 							
 							val index = parameter.indexOfParametersWithSameTypeDefinition
 							// Indexing works: parameters of an event are not deleted separately
-							if (queue.isEnvironmental(systemPorts) || // Traceability reasons: no optimization for system parameters
+							if (queue.isEnvironmentalAndCheck(systemPorts) || // Traceability reasons: no optimization for system parameters
 									typeSlaveQueues.size <= index) {
 								// index is less at most by 1 - creating a new slave queue for type
 								val slaveQueueType = createArrayTypeDefinition => [
@@ -293,10 +297,11 @@ class ComponentTransformer {
 				val branchExpressions = <Expression>newArrayList
 				val branchActions = <Action>newArrayList
 				
-				val emptyValue = xStsMasterQueue.arrayElementType.defaultExpression
-				// if (eventId == 0) { empty }
-				branchExpressions += xStsEventIdVariable.createEqualityExpression(emptyValue)
-				branchActions += createEmptyAction
+//				val emptyValue = xStsMasterQueue.arrayElementType.defaultExpression
+				// if (eventId == 0) { empty } // This is impossible
+//				branchExpressions += xStsEventIdVariable.createEqualityExpression(emptyValue)
+//				branchActions += createEmptyAction
+				// if (0 < sizeOfQueue) {..} - If this holds, then the emptyValue cannot be present in the queue 
 				
 				val events = queue.storedEvents
 				for (portEvent : events) {
@@ -434,7 +439,7 @@ class ComponentTransformer {
 				}
 			}
 		}
-		for (queue : environmentalQueues) { // All with capacity 1 and size 0, no internal events
+		for (queue : environmentalQueues) {
 			val queueMapping = queueTraceability.get(queue)
 			val masterQueue = queueMapping.masterQueue.arrayVariable
 			val masterSizeVariable = queueMapping.masterQueue.sizeVariable
@@ -461,11 +466,13 @@ class ComponentTransformer {
 				xStsQueueHandlingAction.actions += xStsEventIdVariable.createHavocAction
 				
 				// If the id is a valid event
-				val storesInternalPort = queue.storedEvents.exists[it.key.internal]
+				val storesOnlySystemPort = systemPorts.containsAll(
+						queue.storedPorts.map[it.boundTopComponentPort])
 				// Semantically equivalent but maybe the second interval is easier to handle by SMT solvers
-				val isValidIdExpression = if (storesInternalPort) {
+				val isValidIdExpression = if (!storesOnlySystemPort) {
 					// (0 < eventId && eventId <= maxPotentialEventId) does not work now with internal events
-					val eventIds = queue.eventIdsOfNonInternalEvents
+					val eventIds = queue.getEventIdsOfPorts(systemPorts)
+					
 					// (eventId == 1 || eventId == 3 || ...)
 					val idComparisons = eventIds.map[
 						xStsEventIdVariable.createReferenceExpression
@@ -998,6 +1005,7 @@ class ComponentTransformer {
 			val messageRetrievalCount = queue.messageRetrievalCount // Always 1
 			val executionCount = adapter.scheduleCount // 1 if not scheduled composite
 			return messageRetrievalCount * executionCount // 1 * (how many times the component can be executed in a cycle)
+			// TODO max original capacity?
 		}
 		val capacity = queue.capacity
 		return capacity.evaluateInteger
@@ -1014,16 +1022,17 @@ class ComponentTransformer {
 		val portEvents = queue.storedEvents
 		val ports = portEvents.map[it.key]
 		val topPorts = ports.map[it.boundTopComponentPort]
-		val capacity = queue.capacity.evaluateInteger
-		if (systemPorts.containsAny(topPorts) && capacity == 1) {
-//			return true /* Contains other events too, but the queue will always be empty,
-//				when handling it in the in-event action */
-			// Not true: except if the initial action raises some internal events
-			// Not true: internal events?
-			return false
+		val capacity = queue.capacity.evaluateInteger // TODO evaluateCapacity?
+		if (systemPorts.containsAny(topPorts) && capacity == 1 &&
+				queue.eventDiscardStrategy == DiscardStrategy.INCOMING) {
+			 /* Contains other events too, but the capacity is 1,
+			  * and the discard strategy is incoming: therefore, the 
+			  * if ((sizeOfQueue <= 0)) { .. } limits the valid addition possibilities,
+			  * if the queue is not empty, e.g., initial raises and internal events */
+			return true
 		}
 		checkState(systemPorts.containsNone(topPorts) || topPorts.forall[it.internal],
-				"All or none of the ports must be system ports")
+				"All or none of the ports must be system ports in " + queue.containingComponent.name)
 		return false
 	}
 	

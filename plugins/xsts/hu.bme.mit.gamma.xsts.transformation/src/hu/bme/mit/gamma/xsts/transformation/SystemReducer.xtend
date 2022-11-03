@@ -14,6 +14,8 @@ import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.VariableGroupRetriever
+import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
+import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.composite.CompositeComponent
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.AbstractAssignmentAction
@@ -21,6 +23,8 @@ import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import java.util.Collection
+import java.util.logging.Level
+import java.util.logging.Logger
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
@@ -37,7 +41,8 @@ class SystemReducer {
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
 	protected final extension ExpressionModelFactory factory = ExpressionModelFactory.eINSTANCE
 	protected final extension XSTSModelFactory xStsFactory = XSTSModelFactory.eINSTANCE
-	
+	// Logger
+	protected final Logger logger = Logger.getLogger("GammaLogger")
 	// TODO Introduce EventReferenceToXstsVariableMapper
 	
 	def void deleteUnusedPorts(XSTS xSts, CompositeComponent component) {
@@ -134,6 +139,27 @@ class SystemReducer {
 			
 			for (xStsDeletableVariable : xStsDeleteableWrittenOnlyVariables) {
 				xStsDeletableVariable.delete // Delete needed due to e.g., transientVariables list
+			}
+		}
+	}
+	
+	//
+	
+	def void deleteUnusedPortReferencesInQueues(AsynchronousComponentInstance adapterInstance) {
+		val adapterComponentType = adapterInstance.derivedType as AsynchronousAdapter
+		
+		val unusedPorts = adapterInstance.unusedPorts
+		for (queue : adapterComponentType.messageQueues) {
+			val storedPorts = queue.storedPorts
+			for (storedPort : storedPorts) {
+				if (unusedPorts.contains(storedPort)) {
+					for (eventReference : queue.eventReferences.toSet) {
+						if (storedPort === eventReference.eventSource) {
+							eventReference.remove
+							logger.log(Level.INFO, '''Removing unused «storedPort.name» reference from «queue.name»''')
+						}
+					}
+				}
 			}
 		}
 	}
