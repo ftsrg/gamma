@@ -149,7 +149,7 @@ class SystemReducer {
 		val adapterComponentType = adapterInstance.derivedType as AsynchronousAdapter
 		
 		val unusedPorts = adapterInstance.unusedPorts
-		for (queue : adapterComponentType.messageQueues) {
+		for (queue : adapterComponentType.messageQueues.toSet) {
 			val storedPorts = queue.storedPorts
 			for (storedPort : storedPorts) {
 				if (unusedPorts.contains(storedPort)) {
@@ -160,6 +160,12 @@ class SystemReducer {
 						}
 					}
 				}
+			}
+			
+			// Always empty queues are removed
+			if (queue.eventReferences.empty) {
+				logger.log(Level.INFO, '''Removing always empty «queue.name»''')
+				queue.remove
 			}
 		}
 	}
