@@ -87,6 +87,7 @@ class ComponentTransformer {
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
 	// Logger
 	protected final Logger logger = Logger.getLogger("GammaLogger")
+	//
 	
 	new(GammaToLowlevelTransformer gammaToLowlevelTransformer, boolean transformOrthogonalActions,
 			boolean optimize, TransitionMerging transitionMerging) {
@@ -1000,15 +1001,16 @@ class ComponentTransformer {
 	}
 	
 	private def getCapacity(MessageQueue queue, Collection<? extends Port> systemPorts) {
+		val capacity = queue.capacity
+		val originalCapacity = capacity.evaluateInteger
 		if (queue.isEnvironmentalAndCheck(systemPorts)) {
 			val adapter = queue.containingComponent
 			val messageRetrievalCount = queue.messageRetrievalCount // Always 1
 			val executionCount = adapter.scheduleCount // 1 if not scheduled composite
-			return messageRetrievalCount * executionCount // 1 * (how many times the component can be executed in a cycle)
-			// TODO max original capacity?
+			val maxCapacity = messageRetrievalCount * executionCount // 1 * (how many times the component can be executed in a cycle)
+			return Integer.min(originalCapacity, maxCapacity) // No more than the user-defined capacity
 		}
-		val capacity = queue.capacity
-		return capacity.evaluateInteger
+		return originalCapacity
 	}
 	
 	private def getMessageRetrievalCount(MessageQueue queue) {
@@ -1022,11 +1024,11 @@ class ComponentTransformer {
 		val portEvents = queue.storedEvents
 		val ports = portEvents.map[it.key]
 		val topPorts = ports.map[it.boundTopComponentPort]
-		val capacity = queue.capacity.evaluateInteger // TODO evaluateCapacity?
+		val capacity = queue.capacity.evaluateInteger // No evaluateCapacity: endless recursion
 		if (systemPorts.containsAny(topPorts) && capacity == 1 &&
 				queue.eventDiscardStrategy == DiscardStrategy.INCOMING) {
 			 /* Contains other events too, but the capacity is 1,
-			  * and the discard strategy is incoming: therefore, the 
+			  * and the discard strategy is incoming: therefore, the in-event handler
 			  * if ((sizeOfQueue <= 0)) { .. } limits the valid addition possibilities,
 			  * if the queue is not empty, e.g., initial raises and internal events */
 			return true
@@ -1063,7 +1065,9 @@ class ComponentTransformer {
 			}
 			// Customizing region type declaration name
 			for (regionType : xSts.variableGroups.filter[it.annotation instanceof RegionGroup]
-					.map[it.variables].flatten.map[it.type].filter(TypeReference).map[it.reference]) {
+					.map[it.variables].flatten
+					.map[it.type].filter(TypeReference)
+					.map[it.reference]) {
 				regionType.name = regionType.customizeRegionTypeName(type)
 			}
 		}

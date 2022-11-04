@@ -223,13 +223,14 @@ class GammaToXstsTransformer {
 	}
 	
 	protected def removeDuplicatedTypes(XSTS xSts) {
+		logger.log(Level.INFO, "Checking if the XSTS contains multiple type declarations with the same name")
 		val types = xSts.typeDeclarations
 		for (var i = 0; i < types.size - 1; i++) {
 			val lhs = types.get(i)
 			for (var j = i + 1; j < types.size; j++) {
 				val rhs = types.get(j)
-				if (lhs.helperEquals(rhs)) {
-					lhs.changeAllAndDelete(rhs, xSts)
+				if (lhs.name == rhs.name && lhs.helperEquals(rhs)) {
+					lhs.changeAllAndRemove(rhs, xSts) // Remove instead of delete to speed up
 					j--
 				}
 			}
