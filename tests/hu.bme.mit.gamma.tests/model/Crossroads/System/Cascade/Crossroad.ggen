@@ -36,6 +36,17 @@ analysis {
 	}
 }
 
+analysis {
+	component : Crossroad
+	language : Promela
+	file : "Crossroad-Promela"
+	transition-coverage
+	constraint : {
+		minimum-orchestrating-period : 500 ms
+		maximum-orchestrating-period : 500 ms
+	}
+}
+
 verification {
 	language : UPPAAL
 	file : "Crossroad.xml"
@@ -58,4 +69,12 @@ verification {
 	property-file : ".Crossroad-XSTS.gpd" // Checking test optimization
 	optimize : true
 	test-language : java
+}
+
+verification {
+	language : Promela
+	file : "Crossroad-Promela.pml"
+	property-file : ".Crossroad-Promela.gpd"
+	test-language : java
+	optimize-model : true // Checking model optimization
 }
