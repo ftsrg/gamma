@@ -47,6 +47,8 @@ import hu.bme.mit.gamma.expression.model.ExpressionPackage;
 import hu.bme.mit.gamma.expression.model.FieldAssignment;
 import hu.bme.mit.gamma.expression.model.FieldDeclaration;
 import hu.bme.mit.gamma.expression.model.FieldReferenceExpression;
+import hu.bme.mit.gamma.expression.model.GreaterEqualExpression;
+import hu.bme.mit.gamma.expression.model.GreaterExpression;
 import hu.bme.mit.gamma.expression.model.IfThenElseExpression;
 import hu.bme.mit.gamma.expression.model.InequalityExpression;
 import hu.bme.mit.gamma.expression.model.InitializableElement;
@@ -950,6 +952,20 @@ public class ExpressionUtil {
 		lessEqualExpression.setLeftOperand(lhs);
 		lessEqualExpression.setRightOperand(rhs);
 		return lessEqualExpression;
+	}
+	
+	public GreaterExpression createGreaterExpression(Expression lhs, Expression rhs) {
+		GreaterExpression greaterExpression = factory.createGreaterExpression();
+		greaterExpression.setLeftOperand(lhs);
+		greaterExpression.setRightOperand(rhs);
+		return greaterExpression;
+	}
+	
+	public GreaterEqualExpression createGreaterEqualExpression(Expression lhs, Expression rhs) {
+		GreaterEqualExpression greaterEqualExpression = factory.createGreaterEqualExpression();
+		greaterEqualExpression.setLeftOperand(lhs);
+		greaterEqualExpression.setRightOperand(rhs);
+		return greaterEqualExpression;
 	}
 	
 	public IfThenElseExpression createMinExpression(Expression lhs, Expression rhs) {

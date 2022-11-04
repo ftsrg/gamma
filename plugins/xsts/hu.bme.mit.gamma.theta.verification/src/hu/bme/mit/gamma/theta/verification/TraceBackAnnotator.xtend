@@ -50,6 +50,7 @@ class TraceBackAnnotator {
 	protected final extension TraceUtil traceUtil = TraceUtil.INSTANCE
 	protected final extension TraceBuilder traceBuilder = TraceBuilder.INSTANCE
 	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
+	
 	protected final Logger logger = Logger.getLogger("GammaLogger")
 	
 	new(Package gammaPackage, Scanner traceScanner) {

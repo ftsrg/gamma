@@ -1014,7 +1014,8 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	public static List<MessageQueue> getFunctioningMessageQueues(AsynchronousAdapter adapter) {
 		return adapter.getMessageQueues().stream()
-				.filter(it -> isFunctioning(it)).collect(Collectors.toList());
+				.filter(it -> isFunctioning(it))
+				.collect(Collectors.toList());
 	}
 	
 	public static List<MessageQueue> getFunctioningMessageQueuesInPriorityOrder(
@@ -1024,8 +1025,17 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return messageQueues;
 	}
 	
+	public static List<MessageQueue> getHigherPriorityQueues(MessageQueue queue) {
+		AsynchronousAdapter adapter = (AsynchronousAdapter) getContainingComponent(queue);
+		List<MessageQueue> queues = getFunctioningMessageQueues(adapter);
+		
+		queues.removeIf(it -> it.getPriority().compareTo(queue.getPriority()) <= 0);
+		
+		return queues;
+	}
+	
 	public static boolean storesOnlyInternalEvents(MessageQueue queue) {
-		List<Entry<Port,Event>> storedEvents = getStoredEvents(queue);
+		List<Entry<Port, Event>> storedEvents = getStoredEvents(queue);
 		return storedEvents.stream().allMatch(it -> isInternal(it.getKey()));
 	}
 	

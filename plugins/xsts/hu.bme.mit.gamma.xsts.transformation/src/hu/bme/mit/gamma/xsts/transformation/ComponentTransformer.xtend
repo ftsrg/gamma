@@ -450,9 +450,30 @@ class ComponentTransformer {
 			val xStsMasterSizeVariable = variableTrace.getAll(masterSizeVariable).onlyElement
 			
 			val xStsQueueHandlingAction = createSequentialAction
+			
 			val isQueueEmptyExpression = xStsMasterSizeVariable.empty // It isn't always true as there can be more queues
-			val ifEmptyAction = isQueueEmptyExpression.createIfAction(xStsQueueHandlingAction)
-			// If queue is empty
+			//
+			val areHigherPriorityQueuesNotFull = newArrayList
+			for (higherPriorityQueue : queue.higherPriorityQueues) {
+				val higherPriorityQueueMapping = queueTraceability.get(higherPriorityQueue)
+				val higherPriorityQueueMasterSizeVariable =
+						higherPriorityQueueMapping.masterQueue.sizeVariable
+				val xStsHigherPriorityQueueMasterSizeVariable = variableTrace
+						.getAll(higherPriorityQueueMasterSizeVariable).onlyElement
+				// higherSize < capacity
+				val isHigherPriorityQueueNotFull = xStsHigherPriorityQueueMasterSizeVariable.createReferenceExpression
+						.createLessExpression(
+							higherPriorityQueue
+								.getTheoreticallyInterestingMaximumCapacity(systemPorts).toIntegerLiteral)
+				areHigherPriorityQueuesNotFull += isHigherPriorityQueueNotFull
+				// Actually: higherNSize < capacityN - ( higher1Size + ... + higher(N-1)Size )
+				// But for now, we go with the easier solution
+			}
+			// size <= 0 && (higher1Size < capacity1 || ... || higherNSize < capacityN)
+			val isQueueInsertableExpression = #[isQueueEmptyExpression,
+					areHigherPriorityQueuesNotFull.wrapIntoOrExpression].wrapIntoAndExpression
+			val ifEmptyAction = isQueueInsertableExpression.createIfAction(xStsQueueHandlingAction)
+			// If queue is empty and some of the higher priority queues are not full
 			inEventAction.actions += ifEmptyAction
 			
 			val xStsEventIdVariableAction = xStsMasterQueue.createVariableDeclarationActionForArray(
@@ -1004,12 +1025,23 @@ class ComponentTransformer {
 		val capacity = queue.capacity
 		val originalCapacity = capacity.evaluateInteger
 		if (queue.isEnvironmentalAndCheck(systemPorts)) {
+			val maxCapacity = queue.getTheoreticallyInterestingMaximumCapacity(systemPorts)
+			return Integer.min(originalCapacity, maxCapacity) // No more than the user-defined capacity
+		}
+		return originalCapacity
+	}
+	
+	private def getTheoreticallyInterestingMaximumCapacity(MessageQueue queue, Collection<? extends Port> systemPorts) {
+		if (queue.isEnvironmentalAndCheck(systemPorts)) {
 			val adapter = queue.containingComponent
 			val messageRetrievalCount = queue.messageRetrievalCount // Always 1
 			val executionCount = adapter.scheduleCount // 1 if not scheduled composite
-			val maxCapacity = messageRetrievalCount * executionCount // 1 * (how many times the component can be executed in a cycle)
-			return Integer.min(originalCapacity, maxCapacity) // No more than the user-defined capacity
+			// 1 * (how many times the component can be executed in a cycle)
+			val maxCapacity = messageRetrievalCount * executionCount
+			return maxCapacity
 		}
+		val capacity = queue.capacity
+		val originalCapacity = capacity.evaluateInteger
 		return originalCapacity
 	}
 	
