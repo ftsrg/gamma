@@ -32,15 +32,14 @@ class PromelaVerifier extends AbstractVerifier {
 	override Result verifyQuery(Object traceability, String parameters, File modelFile, File queryFile) {
 		val model = fileUtil.loadString(modelFile)
 		val query = fileUtil.loadString(queryFile)
-		
-		var modelWithLtls = model
+
 		var i = 0
 		var Result result = null
 		
 		for (singleQuery : query.split(System.lineSeparator).reject[it.nullOrEmpty]) {
 			// Supporting multiple queries in separate files
 			val ltl = '''«System.lineSeparator»ltl ltl_«i» { «singleQuery.adaptQuery» }'''
-			modelWithLtls += ltl
+			val modelWithLtl = model + ltl
 			i++
 			
 			val rootGenFolder = new File(modelFile.parent, "." + fileUtil.getExtensionlessName(modelFile))
@@ -54,7 +53,7 @@ class PromelaVerifier extends AbstractVerifier {
 			// save model with LTL
 			val fileWithLtl = new File(tmpGenFolder, fileUtil.getExtensionlessName(modelFile) + "-LTL.pml")
 			fileWithLtl.deleteOnExit
-			fileUtil.saveString(fileWithLtl, modelWithLtls)
+			fileUtil.saveString(fileWithLtl, modelWithLtl)
 			
 			val newResult = verify(traceability, parameters, fileWithLtl)
 			val oldTrace = result?.trace
