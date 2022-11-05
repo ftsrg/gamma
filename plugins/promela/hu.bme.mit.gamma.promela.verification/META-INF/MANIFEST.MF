@@ -17,5 +17,7 @@ Require-Bundle: com.google.guava,
  hu.bme.mit.gamma.trace.model,
  hu.bme.mit.gamma.querygenerator,
  hu.bme.mit.gamma.theta.verification,
- hu.bme.mit.gamma.xsts.promela.transformation
+ hu.bme.mit.gamma.xsts.promela.transformation,
+ hu.bme.mit.gamma.xsts.transformation;bundle-version="2.8.0",
+ hu.bme.mit.gamma.xsts.model;bundle-version="2.8.0"
 Export-Package: hu.bme.mit.gamma.promela.verification

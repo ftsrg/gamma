@@ -22,6 +22,7 @@ import hu.bme.mit.gamma.trace.model.TraceModelFactory
 import hu.bme.mit.gamma.trace.util.TraceUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.verification.util.TraceBuilder
+import hu.bme.mit.gamma.xsts.transformation.GammaToXstsTransformer
 import java.util.NoSuchElementException
 import java.util.Scanner
 import java.util.logging.Level
@@ -29,6 +30,7 @@ import java.util.logging.Logger
 import java.util.regex.Pattern
 
 import static com.google.common.base.Preconditions.checkState
+import static hu.bme.mit.gamma.promela.verification.PromelaArrayParser.*
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
@@ -59,6 +61,7 @@ class TraceBackAnnotator {
 	protected final extension TraceBuilder traceBuilder = TraceBuilder.INSTANCE
 	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
 	protected final Logger logger = Logger.getLogger("GammaLogger")
+	protected final GammaToXstsTransformer transformer = new GammaToXstsTransformer
 	
 	new(Package gammaPackage, Scanner traceScanner) {
 		this(gammaPackage, traceScanner, true)
@@ -69,6 +72,9 @@ class TraceBackAnnotator {
 		this.traceScanner = traceScanner
 		this.sortTrace = sortTrace
 		this.component = gammaPackage.firstComponent
+		
+		PromelaArrayParser.xsts = transformer.execute(gammaPackage) 
+		
 		this.promelaQueryGenerator = new PromelaQueryGenerator(component)
 		this.xStsBackAnnotator = new XstsBackAnnotator(promelaQueryGenerator, PromelaArrayParser.INSTANCE)
 		val schedulingConstraintAnnotation = gammaPackage.annotations
@@ -233,6 +239,7 @@ class TraceBackAnnotator {
 	}
 	
 	protected def parse(BackAnnotatorState backAnnotatorState, String id, String value, Step step) {
+		
 		switch (backAnnotatorState) {
 			case STATE_CHECK: {
 				val potentialStateString = '''«id» == «value»'''
