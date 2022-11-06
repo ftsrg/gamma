@@ -13,6 +13,7 @@ package hu.bme.mit.gamma.xsts.promela.transformation.util
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
+import hu.bme.mit.gamma.expression.model.TypeDefinition
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
@@ -34,4 +35,5 @@ class Namings {
 	static def String customizeEnumLiteralName(State state, Region parentRegion, SynchronousComponentInstance instance) '''«parentRegion.name.regionTypeName»_«instance.FQN»«state.customizeName»'''
 	
 	static def String customizeEnumLiteralNameInverse(VariableDeclaration variable, String value) '''«value.replaceFirst(variable.type.typeDefinition.typeDeclaration.name, "")»'''
+	static def String customizeEnumLiteralNameInverse(TypeDefinition type, String value) '''«value.replaceFirst(type.typeDeclaration.name, "")»'''
 }

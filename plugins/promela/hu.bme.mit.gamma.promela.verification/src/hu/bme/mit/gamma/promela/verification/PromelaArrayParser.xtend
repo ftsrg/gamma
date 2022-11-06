@@ -21,6 +21,8 @@ import java.util.regex.Pattern
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.promela.transformation.util.Namings.*
+import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
+import hu.bme.mit.gamma.expression.model.TypeDefinition
 
 class PromelaArrayParser implements XstsArrayParser{
 	// Singleton
@@ -38,7 +40,7 @@ class PromelaArrayParser implements XstsArrayParser{
 			for (element : arrayElements) {
 				val splitPair = element.split(" = ")
 				val splitAccess = splitPair.get(0)
-				val splitValue = id.checkArrayValue(splitPair.get(1))
+				val splitValue = id.checkValue(splitPair.get(1))
 				val access = splitAccess.replaceFirst(id, "") // ArrayAccess
 				val splitIndices = access.split(Namings.arrayFieldAccess) // [0] [1] ...
 				var indexHierarchy = new IndexHierarchy
@@ -56,18 +58,17 @@ class PromelaArrayParser implements XstsArrayParser{
 		}
 	}
 	
-	protected def checkArrayValue(String id, String value) {
+	protected def String checkValue(String id, String value) {
 		val variable = xsts.checkVariable(id)
-		if (variable.type.arrayElementType instanceof EnumerationTypeDefinition) {
-			return variable.customizeEnumLiteralNameInverse(value)
-		}
-		return value
+		return variable.type.typeDefinition.checkValue(value)
 	}
 	
-	protected def checkValue(String id, String value) {
-		val variable = xsts.checkVariable(id)
-		if (variable.type.typeDefinition instanceof EnumerationTypeDefinition) {
-			return variable.customizeEnumLiteralNameInverse(value)
+	protected def String checkValue(TypeDefinition type, String value) {
+		if (type.typeDefinition instanceof EnumerationTypeDefinition) {
+			return type.typeDefinition.customizeEnumLiteralNameInverse(value)
+		}
+		else if (type.typeDefinition instanceof ArrayTypeDefinition) {
+			return type.typeDefinition.checkValue(value)
 		}
 		return value
 	}
