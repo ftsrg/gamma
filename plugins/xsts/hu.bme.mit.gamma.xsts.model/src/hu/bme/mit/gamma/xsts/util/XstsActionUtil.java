@@ -967,13 +967,13 @@ public class XstsActionUtil extends ExpressionUtil {
 		return block;
 	}
 	
-//	public Action popAllAndPotentiallyDecrement(Iterable<? extends VariableDeclaration> queues,
-//			VariableDeclaration sizeVariable) {
-//		if (sizeVariable == null) {
-//			return popAll(queues);
-//		}
-//		return popAllAndDecrement(queues, sizeVariable);
-//	}
+	public Action popAllAndPotentiallyDecrement(Iterable<? extends VariableDeclaration> queues,
+			VariableDeclaration sizeVariable) {
+		if (sizeVariable == null) {
+			return popAll(queues);
+		}
+		return popAllAndDecrement(queues, sizeVariable);
+	}
 	
 	public Action add(VariableDeclaration queue, Expression index, Expression element) {
 		TypeDefinition typeDefinition = ExpressionModelDerivedFeatures.getTypeDefinition(queue);
@@ -1046,12 +1046,12 @@ public class XstsActionUtil extends ExpressionUtil {
 		return block;
 	}
 	
-//	public Action addAllAndPotentiallyIncrement(List<? extends VariableDeclaration> queues,
-//			VariableDeclaration sizeVariable, List<? extends Expression> elements) {
-//		if (sizeVariable == null) {
-//			return addAll(queues, toIntegerLiteral(0), elements);
-//		}
-//		return addAllAndIncrement(queues, sizeVariable, elements);
-//	}
+	public Action addAllAndPotentiallyIncrement(List<? extends VariableDeclaration> queues,
+			VariableDeclaration sizeVariable, List<? extends Expression> elements) {
+		if (sizeVariable == null) {
+			return addAll(queues, toIntegerLiteral(0), elements);
+		}
+		return addAllAndIncrement(queues, sizeVariable, elements);
+	}
 	
 }

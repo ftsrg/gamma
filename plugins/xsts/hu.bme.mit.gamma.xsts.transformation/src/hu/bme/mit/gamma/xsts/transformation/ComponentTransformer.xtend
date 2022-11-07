@@ -211,7 +211,7 @@ class ComponentTransformer {
 								
 								val slaveSizeVariableName = parameter.getSlaveSizeVariableName(port, adapterInstance)
 								// Slave queue size variables cannot be optimized as 0 can be a valid value
-								val slaveSizeVariable = createIntegerTypeDefinition
+								val slaveSizeVariable = (masterSizeVariable === null) ? null : createIntegerTypeDefinition
 										.createVariableDeclaration(slaveSizeVariableName)
 								
 								val messageQueueStruct = new MessageQueueStruct(slaveQueue, slaveSizeVariable)
@@ -251,12 +251,14 @@ class ComponentTransformer {
 				checkState(slaveQueueStructs.unique)
 				for (slaveQueueStruct : slaveQueueStructs) {
 					val slaveQueue = slaveQueueStruct.arrayVariable
-					val slaveSizeVariable = slaveQueueStruct.sizeVariable
 					xSts.variableDeclarations += valueDeclarationTransformer.transform(slaveQueue)
-					val xStsSlaveSizeVariable = valueDeclarationTransformer.transform(slaveSizeVariable).onlyElement
-					xSts.variableDeclarations += xStsSlaveSizeVariable
-					xStsSlaveSizeVariable.addStrictControlAnnotation // Needed for loops
-					// The type might not be correct here and later has to be reassigned to handle enums
+					val slaveSizeVariable = slaveQueueStruct.sizeVariable
+					if (slaveSizeVariable !== null) {
+						val xStsSlaveSizeVariable = valueDeclarationTransformer.transform(slaveSizeVariable).onlyElement
+						xSts.variableDeclarations += xStsSlaveSizeVariable
+						xStsSlaveSizeVariable.addStrictControlAnnotation // Needed for loops
+						// The type might not be correct here and later has to be reassigned to handle enums
+					}
 				}
 			}
 		}
@@ -340,7 +342,8 @@ class ComponentTransformer {
 							val inParameter = inParameters.get(i)
 							
 							val xStsSlaveQueues = variableTrace.getAll(slaveQueue)
-							val xStsSlaveSizeVariable = variableTrace.getAll(slaveSizeVariable).onlyElement
+							val xStsSlaveSizeVariable = (slaveSizeVariable === null) ? null :
+									variableTrace.getAll(slaveSizeVariable).onlyElement
 							val xStsInParameterVariableLists = eventReferenceMapper
 									.getInputParameterVariablesByPorts(inParameter, port)
 							// Separated in the lists according to ports
@@ -358,7 +361,7 @@ class ComponentTransformer {
 											.createAssignmentAction(xStsSlaveQueue.peek)
 								}
 							}
-							thenAction.actions += xStsSlaveQueues.popAllAndDecrement(xStsSlaveSizeVariable)
+							thenAction.actions += xStsSlaveQueues.popAllAndPotentiallyDecrement(xStsSlaveSizeVariable)
 						}
 					}
 					else {
@@ -481,7 +484,7 @@ class ComponentTransformer {
 				queueSizes += xStsHigherPriorityMasterQueue.getMasterQueueSize(xStsHigherPriorityMasterQueueSizeVariable)
 			}
 			// A value should be inserted into the queue if
-			// size + (higher1Size + ... + higher(N-1)Size) < theoreticalTotalCapacity)
+			// (size + (higher1Size + ... + higher(N-1)Size) < theoreticalTotalCapacity))
 			val isThereTheoreticalCapacityExression = queueSizes.wrapIntoAddExpression.createLessExpression(
 					queueTheoreticalCapacities.toIntegerLiteral) // TODO remove itself
 			// And the actual queue is not full
@@ -556,8 +559,10 @@ class ComponentTransformer {
 						val slaveSizeVariable = slaveQueueStruct.sizeVariable
 						
 						val xStsSlaveQueues = variableTrace.getAll(slaveQueue)
-						val xStsSlaveSizeVariable = variableTrace.getAll(slaveSizeVariable).onlyElement
+						val xStsSlaveSizeVariable = (slaveSizeVariable === null) ? null :
+								variableTrace.getAll(slaveSizeVariable).onlyElement
 						
+						val xStsRandomValues = newArrayList
 						for (xStsSlaveQueue : xStsSlaveQueues) {
 							val xStsRandomVariableAction = xStsSlaveQueue
 								.createVariableDeclarationActionForArray(
@@ -565,10 +570,10 @@ class ComponentTransformer {
 							val xStsRandomVariable = xStsRandomVariableAction.variableDeclaration
 							xStsSlaveQueueSetting.actions += xStsRandomVariableAction
 							xStsSlaveQueueSetting.actions += xStsRandomVariable.createHavocAction
-							xStsSlaveQueueSetting.actions += xStsSlaveQueue.add(
-									xStsSlaveSizeVariable, xStsRandomVariable.createReferenceExpression)
+							xStsRandomValues += xStsRandomVariable.createReferenceExpression
 						}
-						xStsSlaveQueueSetting.actions += xStsSlaveSizeVariable.increment
+						xStsSlaveQueueSetting.actions += xStsSlaveQueues
+								.addAllAndPotentiallyIncrement(xStsSlaveSizeVariable, xStsRandomValues)
 					}
 				}
 				xStsSetQueuesAction.actions += branchExpressions.createChoiceAction(xStsBranchActions)
@@ -652,12 +657,13 @@ class ComponentTransformer {
 							val slaveQueue = slaveQueueStruct.arrayVariable
 							val slaveSizeVariable = slaveQueueStruct.sizeVariable
 							val xStsSlaveQueues = variableTrace.getAll(slaveQueue)
-							val xStsSlaveSizeVariable = variableTrace.getAll(slaveSizeVariable).onlyElement
+							val xStsSlaveSizeVariable = (slaveSizeVariable === null) ? null :
+									variableTrace.getAll(slaveSizeVariable).onlyElement
 							// Output is unidirectional
 							val xStsOutParameterVariables = eventReferenceMapper
 									.getOutputParameterVariables(parameter, port)
 							// Parameter optimization problem: parameters are not deleted independently
-							block.actions += xStsSlaveQueues.addAllAndIncrement(xStsSlaveSizeVariable,
+							block.actions += xStsSlaveQueues.addAllAndPotentiallyIncrement(xStsSlaveSizeVariable,
 									xStsOutParameterVariables.map[it.createReferenceExpression])
 							// Resetting out parameter variables if they are not led out to the system
 							// Duplicated for broadcast ports - not a problem, but could be refactored
@@ -678,8 +684,9 @@ class ComponentTransformer {
 								val slaveQueue = slaveQueueStruct.arrayVariable
 								val slaveSizeVariable = slaveQueueStruct.sizeVariable
 								val xStsSlaveQueues = variableTrace.getAll(slaveQueue)
-								val xStsSlaveSizeVariable = variableTrace.getAll(slaveSizeVariable).onlyElement
-								popActions.actions += xStsSlaveQueues.popAllAndDecrement(xStsSlaveSizeVariable)
+								val xStsSlaveSizeVariable = (slaveSizeVariable === null) ? null :
+										variableTrace.getAll(slaveSizeVariable).onlyElement
+								popActions.actions += xStsSlaveQueues.popAllAndPotentiallyDecrement(xStsSlaveSizeVariable)
 							}
 							// if ((!(size < capacity)) { "pop" }
 							// "add elements into master and slave queues"
