@@ -21,6 +21,7 @@ import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.State
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.transformation.util.Namings.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.XstsNamings.*
@@ -31,8 +32,8 @@ class Namings {
 	
 	static def String customizeEnumLiteralName(EnumerationLiteralExpression expression) '''«expression.reference.typeDeclaration.name»«expression.reference.name»'''
 	static def String customizeEnumLiteralName(EnumerationTypeDefinition type, EnumerationLiteralDefinition literal) '''«type.typeDeclaration.name»«literal.name»'''
-	static def String customizeEnumLiteralName(State state, Region parentRegion, ComponentInstanceReferenceExpression instance) '''«parentRegion.name.regionTypeName»_«instance.FQN»«state.customizeName»'''
-	static def String customizeEnumLiteralName(State state, Region parentRegion, SynchronousComponentInstance instance) '''«parentRegion.name.regionTypeName»_«instance.FQN»«state.customizeName»'''
+	static def String customizeEnumLiteralName(State state, Region parentRegion, ComponentInstanceReferenceExpression instance) '''«parentRegion.name.regionTypeName»_«parentRegion.containingComponent.FQNUpToComponent»«state.customizeName»'''
+	static def String customizeEnumLiteralName(State state, Region parentRegion, SynchronousComponentInstance instance) '''«parentRegion.name.regionTypeName»_«parentRegion.containingComponent.FQNUpToComponent»«state.customizeName»'''
 	
 	static def String customizeEnumLiteralNameInverse(VariableDeclaration variable, String value) '''«value.replaceFirst(variable.type.typeDefinition.typeDeclaration.name, "")»'''
 	static def String customizeEnumLiteralNameInverse(TypeDefinition type, String value) '''«value.replaceFirst(type.typeDeclaration.name, "")»'''
