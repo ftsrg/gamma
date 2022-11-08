@@ -117,9 +117,16 @@ class SystemReducer {
 	
 	def void deleteUnusedWrittenOnlyVariables(XSTS xSts,
 			Collection<? extends VariableDeclaration> keepableVariables) { // Unfolded Gamma variables
+		xSts.deleteUnusedWrittenOnlyVariables(keepableVariables, #[])
+	}
+	
+	def void deleteUnusedWrittenOnlyVariables(XSTS xSts,
+			Collection<? extends VariableDeclaration> keepableVariables, // Unfolded Gamma variables
+			Collection<? extends VariableDeclaration> keepableXStsVariables) { // XSTS variables
 		val mapper = new ReferenceToXstsVariableMapper(xSts)
 		
 		val xStsKeepableVariables = newLinkedList
+		xStsKeepableVariables += keepableXStsVariables
 		for (keepableVariable : keepableVariables) {
 			xStsKeepableVariables += mapper.getVariableVariables(keepableVariable)
 		}

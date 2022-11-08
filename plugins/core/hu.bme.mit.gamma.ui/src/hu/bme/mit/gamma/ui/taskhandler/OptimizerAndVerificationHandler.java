@@ -24,12 +24,14 @@ import org.eclipse.core.resources.IFile;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
 import hu.bme.mit.gamma.genmodel.model.Verification;
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.VariableGroupRetriever;
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer.XstsOptimizer;
 import hu.bme.mit.gamma.property.derivedfeatures.PropertyModelDerivedFeatures;
 import hu.bme.mit.gamma.property.model.CommentableStateFormula;
 import hu.bme.mit.gamma.property.model.PropertyPackage;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression;
 import hu.bme.mit.gamma.uppaal.serializer.UppaalModelSerializer;
+import hu.bme.mit.gamma.xsts.model.VariableGroup;
 import hu.bme.mit.gamma.xsts.model.XSTS;
 import hu.bme.mit.gamma.xsts.transformation.SystemReducer;
 import hu.bme.mit.gamma.xsts.transformation.serializer.ActionSerializer;
@@ -42,6 +44,7 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 	protected final ActionSerializer xStsSerializer = ActionSerializer.INSTANCE;
 	protected final hu.bme.mit.gamma.xsts.promela.transformation.serializer.ModelSerializer promelaSerializer =
 			hu.bme.mit.gamma.xsts.promela.transformation.serializer.ModelSerializer.INSTANCE;
+	protected final VariableGroupRetriever variableGroupRetriever = VariableGroupRetriever.INSTANCE;
 
 	public OptimizerAndVerificationHandler(IFile file) {
 		super(file);
@@ -100,11 +103,29 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 			List<ComponentInstanceVariableReferenceExpression> keepableVariableReferences =
 					ecoreUtil.getAllContentsOfType(formula,
 							ComponentInstanceVariableReferenceExpression.class); // Has to reference the unwrapped 
-			List<VariableDeclaration> keepableVariables = keepableVariableReferences.stream()
+			List<VariableDeclaration> keepableGammaVariables = keepableVariableReferences.stream()
 					.map(it -> it.getVariableDeclaration())
 					.collect(Collectors.toList());
+			
+			// Keeping the out events and parameters
+			List<VariableDeclaration> keepableXStsVariables = new ArrayList<VariableDeclaration>();
+			final boolean KEEP_OUT_EVENTS = true;
+			if (KEEP_OUT_EVENTS) {
+				VariableGroup systemOutEventVariableGroup =
+						variableGroupRetriever.getSystemOutEventVariableGroup(xSts);
+				List<VariableDeclaration> xStsOutEventVariables = systemOutEventVariableGroup.getVariables();
+				VariableGroup systemOutEventParameterVariableGroup =
+						variableGroupRetriever.getSystemOutEventParameterVariableGroup(xSts);
+				List<VariableDeclaration> xStsOutEventParameterVariables =
+						systemOutEventParameterVariableGroup.getVariables();
+				
+				keepableXStsVariables.addAll(xStsOutEventVariables);
+				keepableXStsVariables.addAll(xStsOutEventParameterVariables);
+			}
+			
 			// Maybe other optimizations could be added?
-			xStsReducer.deleteUnusedWrittenOnlyVariables(xSts, keepableVariables);
+			xStsReducer.deleteUnusedWrittenOnlyVariables(xSts,
+					keepableGammaVariables, keepableXStsVariables);
 			XstsOptimizer xStsOptimizer = XstsOptimizer.INSTANCE;
 			xStsOptimizer.optimizeXSts(xSts); // To remove null/empty actions
 			// Serialize XSTS
