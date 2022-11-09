@@ -184,8 +184,9 @@ class PromelaQueryAdapter {
 	public static PromelaQueryAdapter INSTANCE = new PromelaQueryAdapter
 	private new() {}
 	// Singleton
-	final String E = "E"
+	final String EF = "E<>"
 	final String A = "A"
+	final String G = "[]"
 	
 	extension FileUtil fileUtil = FileUtil.INSTANCE
 	boolean invert;
@@ -195,11 +196,11 @@ class PromelaQueryAdapter {
 	}
 	
 	def adaptQuery(String query) {
-		if (query.startsWith("E")) {
+		if (query.startsWith(EF)) {
 			invert = true
-			return "!(" + query.substring(E.length) + " )"
+			return G + "(!(" + query.substring(EF.length) + ") )"
 		}
-		if (query.startsWith("A")) {
+		if (query.startsWith(A)) {
 			invert = false
 			return query.substring(A.length)
 		}
