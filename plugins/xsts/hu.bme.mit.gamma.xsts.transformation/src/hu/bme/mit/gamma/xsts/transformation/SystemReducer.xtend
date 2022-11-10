@@ -115,12 +115,29 @@ class SystemReducer {
 		}
 	}
 	
-	def void deleteUnusedWrittenOnlyVariables(XSTS xSts,
+	//
+	
+	def void deleteUnusedAndWrittenOnlyVariablesExceptOutEvents(XSTS xSts,
 			Collection<? extends VariableDeclaration> keepableVariables) { // Unfolded Gamma variables
-		xSts.deleteUnusedWrittenOnlyVariables(keepableVariables, #[])
+		val keepableXStsVariables = newArrayList
+		
+		val systemOutEventVariableGroup = xSts.systemOutEventVariableGroup
+		val xStsOutEventVariables = systemOutEventVariableGroup.variables
+		val systemOutEventParameterVariableGroup = xSts.systemOutEventParameterVariableGroup
+		val xStsOutEventParameterVariables = systemOutEventParameterVariableGroup.variables
+		
+		keepableXStsVariables += xStsOutEventVariables
+		keepableXStsVariables += xStsOutEventParameterVariables
+		
+		xSts.deleteUnusedAndWrittenOnlyVariables(keepableVariables, keepableXStsVariables)
 	}
 	
-	def void deleteUnusedWrittenOnlyVariables(XSTS xSts,
+	def void deleteUnusedAndWrittenOnlyVariables(XSTS xSts,
+			Collection<? extends VariableDeclaration> keepableVariables) { // Unfolded Gamma variables
+		xSts.deleteUnusedAndWrittenOnlyVariables(keepableVariables, #[])
+	}
+	
+	def void deleteUnusedAndWrittenOnlyVariables(XSTS xSts,
 			Collection<? extends VariableDeclaration> keepableVariables, // Unfolded Gamma variables
 			Collection<? extends VariableDeclaration> keepableXStsVariables) { // XSTS variables
 		val mapper = new ReferenceToXstsVariableMapper(xSts)
@@ -131,20 +148,25 @@ class SystemReducer {
 			xStsKeepableVariables += mapper.getVariableVariables(keepableVariable)
 		}
 		
-		for (var i = 0; i < 2; i++) { // Twice, to support transition-pair coverage
-			val xStsPlainVariables = xSts.plainVariableGroup.variables
-			val xStsDeleteableWrittenOnlyVariables = xSts.writtenOnlyVariables
-			xStsDeleteableWrittenOnlyVariables.retainAll(
-					xStsPlainVariables) // So that only plain variables are deleted, not out events
-			xStsDeleteableWrittenOnlyVariables -= xStsKeepableVariables
-			val xStsDeletableAssignments = xStsDeleteableWrittenOnlyVariables.getAssignments(xSts)
+		var size = 0
+		val xStsVariables = xSts.variableDeclarations
+		while (size != xStsVariables.size) { // Until a fix point is reached
+			size = xStsVariables.size
 			
+			val xStsDeleteableVariables = newLinkedHashSet
+			
+			xStsDeleteableVariables += xStsVariables
+			
+			xStsDeleteableVariables -= xSts.readVariables
+			xStsDeleteableVariables -= xStsKeepableVariables
+			
+			val xStsDeletableAssignments = xStsDeleteableVariables.getAssignments(xSts)
 			for (xStsDeletableAssignmentAction : xStsDeletableAssignments) {
 				createEmptyAction.replace(
 					xStsDeletableAssignmentAction) // To avoid nullptrs
 			}
 			
-			for (xStsDeletableVariable : xStsDeleteableWrittenOnlyVariables) {
+			for (xStsDeletableVariable : xStsDeleteableVariables) {
 				xStsDeletableVariable.delete // Delete needed due to e.g., transientVariables list
 			}
 		}

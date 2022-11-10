@@ -209,7 +209,7 @@ class ReflectiveComponentCodeGenerator {
 		public Object getValue(String variable) {
 			switch (variable) {
 				«IF component instanceof StatechartDefinition»
-					«FOR variable : component.variableDeclarations»
+					«FOR variable : component.variableDeclarations.filter[!it.transient]»
 						case "«variable.name»":
 							return «Namings.REFLECTIVE_WRAPPED_COMPONENT».get«variable.name.toFirstUpper»();
 					«ENDFOR»

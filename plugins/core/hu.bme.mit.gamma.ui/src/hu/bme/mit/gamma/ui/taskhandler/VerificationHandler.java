@@ -15,6 +15,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -80,6 +81,10 @@ public class VerificationHandler extends TaskHandler {
 	
 	//
 	
+	protected PropertySerializer propertySerializer = null;
+	
+	//
+	
 	protected final List<ExecutionTrace> traces = new ArrayList<ExecutionTrace>();
 	
 	//
@@ -115,7 +120,7 @@ public class VerificationHandler extends TaskHandler {
 		boolean distinguishStringFormulas = false;
 		
 		AbstractVerification verificationTask = null;
-		PropertySerializer propertySerializer = null;
+		propertySerializer = null;
 		for (AnalysisLanguage analysisLanguage : languagesSet) {
 			switch (analysisLanguage) {
 				case UPPAAL:
@@ -195,6 +200,11 @@ public class VerificationHandler extends TaskHandler {
 		Queue<Entry<String, StateFormula>> formulaQueue = new LinkedList<Entry<String, StateFormula>>();
 		formulaQueue.addAll(formulas.entrySet());
 		
+		// Checking if some of the unchecked properties are already covered by stored traces
+		if (isOptimize) {
+			removeCoveredProperties(formulaQueue);
+		}
+		
 		// Execution
 		while (!formulaQueue.isEmpty()) {
 			Entry<String, StateFormula> formula = formulaQueue.poll();
@@ -224,20 +234,8 @@ public class VerificationHandler extends TaskHandler {
 					serializedFormula, verificationResult, arguments, elapsedString));
 			
 			// Checking if some of the unchecked properties are already covered
-			if (trace != null && isOptimize) {
-				List<StateFormula> stateFormulas = formulaQueue.stream()
-						.map(it -> it.getValue())
-						.filter(it -> it != null)
-						.collect(Collectors.toList()); // Not null state formulas
-				CoveredPropertyReducer reducer = new CoveredPropertyReducer(stateFormulas, trace);
-				List<StateFormula> coveredProperties = reducer.execute();
-				
-				for (StateFormula coveredProperty : coveredProperties) {
-					String serializedProperty = propertySerializer.serialize(coveredProperty);
-					logger.log(Level.INFO, "Property already covered: " + serializedProperty);
-					formulaQueue.removeIf(it -> it.getValue() == coveredProperty);
-				}
-				
+			if (isOptimize) {
+				removeCoveredProperties(trace, formulaQueue);
 			}
 		}
 		if (isOptimize) {
@@ -270,6 +268,39 @@ public class VerificationHandler extends TaskHandler {
 			serializer.serialize(targetFolderUri, traceFileName, verificationResult);
 		}
 	}
+	
+	//
+	
+	private void removeCoveredProperties(Queue<Entry<String, StateFormula>> formulaQueue) {
+		removeCoveredProperties(traces, formulaQueue);
+	}
+	
+	private void removeCoveredProperties(Collection<? extends ExecutionTrace> traces,
+			Queue<Entry<String, StateFormula>> formulaQueue) {
+		for (ExecutionTrace trace : traces) {
+			removeCoveredProperties(trace, formulaQueue);
+		}
+	}
+
+	private void removeCoveredProperties(ExecutionTrace trace,
+			Queue<Entry<String, StateFormula>> formulaQueue) {
+		if (trace != null) {
+			List<StateFormula> stateFormulas = formulaQueue.stream()
+					.map(it -> it.getValue())
+					.filter(it -> it != null)
+					.collect(Collectors.toList()); // Not null state formulas
+			CoveredPropertyReducer reducer = new CoveredPropertyReducer(stateFormulas, trace);
+			List<StateFormula> coveredProperties = reducer.execute();
+			
+			for (StateFormula coveredProperty : coveredProperties) {
+				String serializedProperty = propertySerializer.serialize(coveredProperty);
+				logger.log(Level.INFO, "Property already covered: " + serializedProperty);
+				formulaQueue.removeIf(it -> it.getValue() == coveredProperty);
+			}
+		}
+	}
+	
+	//
 	
 	protected Result execute(AbstractVerification verificationTask, File modelFile,
 			File queryFile, List<ExecutionTrace> retrievedTraces, boolean isOptimize) {

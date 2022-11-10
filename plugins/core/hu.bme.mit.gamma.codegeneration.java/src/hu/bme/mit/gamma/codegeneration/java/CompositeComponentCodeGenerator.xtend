@@ -12,11 +12,14 @@ package hu.bme.mit.gamma.codegeneration.java
 
 import hu.bme.mit.gamma.codegeneration.java.util.Namings
 import hu.bme.mit.gamma.codegeneration.java.util.TimingDeterminer
+import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition
+import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition
 import hu.bme.mit.gamma.statechart.composite.AbstractAsynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.CompositeComponent
 import hu.bme.mit.gamma.statechart.interface_.Port
 
 import static extension hu.bme.mit.gamma.codegeneration.java.util.Namings.*
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class CompositeComponentCodeGenerator {
@@ -82,17 +85,29 @@ class CompositeComponentCodeGenerator {
 		«FOR event : systemPort.outputEvents»
 			@Override
 			public boolean isRaised«event.name.toFirstUpper»() {
-				«FOR connector : systemPort.portBindings»
-					return «connector.instancePortReference.instance.name».get«connector.instancePortReference.port.name.toFirstUpper»().isRaised«event.name.toFirstUpper»();
-				«ENDFOR»
+				«IF systemPort.portBindings.empty»
+					return false;
+				«ELSE»
+					«FOR connector : systemPort.portBindings»
+						return «connector.instancePortReference.instance.name».get«connector.instancePortReference.port.name.toFirstUpper»().isRaised«event.name.toFirstUpper»();
+					«ENDFOR»
+				«ENDIF»
 			}
 «««			ValueOf checks
 			«FOR parameter : event.parameterDeclarations»
 				@Override
 				public «parameter.type.transformType» get«parameter.name.toFirstUpper»() {
-					«FOR connector : systemPort.portBindings»
-						return «connector.instancePortReference.instance.name».get«connector.instancePortReference.port.name.toFirstUpper»().get«parameter.name.toFirstUpper»();
-					«ENDFOR»
+					«IF systemPort.portBindings.empty»
+						«IF parameter.type.primitive»
+							return «parameter.type.defaultExpression.serialize»;
+						«ELSE»
+							return null;
+						«ENDIF»
+					«ELSE»
+						«FOR connector : systemPort.portBindings»
+							return «connector.instancePortReference.instance.name».get«connector.instancePortReference.port.name.toFirstUpper»().get«parameter.name.toFirstUpper»();
+						«ENDFOR»
+					«ENDIF»
 				}
 			«ENDFOR»
 		«ENDFOR»

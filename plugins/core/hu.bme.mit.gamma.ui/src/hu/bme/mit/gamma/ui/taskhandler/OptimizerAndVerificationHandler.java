@@ -31,7 +31,6 @@ import hu.bme.mit.gamma.property.model.CommentableStateFormula;
 import hu.bme.mit.gamma.property.model.PropertyPackage;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression;
 import hu.bme.mit.gamma.uppaal.serializer.UppaalModelSerializer;
-import hu.bme.mit.gamma.xsts.model.VariableGroup;
 import hu.bme.mit.gamma.xsts.model.XSTS;
 import hu.bme.mit.gamma.xsts.transformation.SystemReducer;
 import hu.bme.mit.gamma.xsts.transformation.serializer.ActionSerializer;
@@ -86,7 +85,7 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 		propertyPackages.add(mainPropertyPackage);
 		// As such, it is unnecessary to optimize the generated trace(s)
 		boolean isOptimize = verification.isOptimize();
-		verification.setOptimize(false);
+//		verification.setOptimize(false); // Now one by one optimization is also supported
 		
 		// A single one to store the traces and support later optimization - false: no trace serialization
 		VerificationHandler verificationHandler = new VerificationHandler(file, false);
@@ -107,25 +106,8 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 					.map(it -> it.getVariableDeclaration())
 					.collect(Collectors.toList());
 			
-			// Keeping the out events and parameters
-			List<VariableDeclaration> keepableXStsVariables = new ArrayList<VariableDeclaration>();
-			final boolean KEEP_OUT_EVENTS = true;
-			if (KEEP_OUT_EVENTS) {
-				VariableGroup systemOutEventVariableGroup =
-						variableGroupRetriever.getSystemOutEventVariableGroup(xSts);
-				List<VariableDeclaration> xStsOutEventVariables = systemOutEventVariableGroup.getVariables();
-				VariableGroup systemOutEventParameterVariableGroup =
-						variableGroupRetriever.getSystemOutEventParameterVariableGroup(xSts);
-				List<VariableDeclaration> xStsOutEventParameterVariables =
-						systemOutEventParameterVariableGroup.getVariables();
-				
-				keepableXStsVariables.addAll(xStsOutEventVariables);
-				keepableXStsVariables.addAll(xStsOutEventParameterVariables);
-			}
-			
 			// Maybe other optimizations could be added?
-			xStsReducer.deleteUnusedWrittenOnlyVariables(xSts,
-					keepableGammaVariables, keepableXStsVariables);
+			xStsReducer.deleteUnusedAndWrittenOnlyVariablesExceptOutEvents(xSts, keepableGammaVariables);
 			XstsOptimizer xStsOptimizer = XstsOptimizer.INSTANCE;
 			xStsOptimizer.optimizeXSts(xSts); // To remove null/empty actions
 			// Serialize XSTS
