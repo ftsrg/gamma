@@ -384,7 +384,8 @@ class ComponentTransformer {
 					branchActions += thenAction
 				}
 				// Excluding branches for the different event identifiers
-				block.actions += branchExpressions.createChoiceAction(branchActions)
+				// Fixed disjunct set of eventIds - 'if' instead of 'choice'
+				block.actions += branchExpressions.createIfAction(branchActions)
 			}
 			
 			// Dispatching events to connected message queues
