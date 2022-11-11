@@ -20,6 +20,7 @@ import java.io.FileOutputStream
 import java.io.OutputStreamWriter
 import java.util.Scanner
 import java.util.logging.Level
+import org.apache.commons.io.FileUtils
 
 class PromelaVerifier extends AbstractVerifier {
 	
@@ -43,11 +44,11 @@ class PromelaVerifier extends AbstractVerifier {
 			i++
 			
 			val rootGenFolder = new File(modelFile.parent, "." + fileUtil.getExtensionlessName(modelFile))
-			rootGenFolder.deleteOnExit
+			FileUtils.forceDeleteOnExit(rootGenFolder)
 			rootGenFolder.mkdirs
 			// save model with all LTL
 			val tmpGenFolder = new File(rootGenFolder + File.separator + fileUtil.getExtensionlessName(modelFile) + "-LTL" + System.currentTimeMillis.toString)
-			tmpGenFolder.deleteOnExit
+			FileUtils.forceDeleteOnExit(tmpGenFolder)
 			tmpGenFolder.mkdirs
 			
 			// save model with LTL
@@ -187,6 +188,7 @@ class PromelaQueryAdapter {
 	final String EF = "E<>"
 	final String A = "A"
 	final String G = "[]"
+	final String F = "<>"
 	
 	extension FileUtil fileUtil = FileUtil.INSTANCE
 	boolean invert;
@@ -198,7 +200,7 @@ class PromelaQueryAdapter {
 	def adaptQuery(String query) {
 		if (query.startsWith(EF)) {
 			invert = true
-			return G + "(!(" + query.substring(EF.length) + ") )"
+			return "!(" + F + "(" + query.substring(EF.length) + "))"
 		}
 		if (query.startsWith(A)) {
 			invert = false

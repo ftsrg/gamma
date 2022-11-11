@@ -13,12 +13,11 @@ package hu.bme.mit.gamma.xsts.promela.transformation.util
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
-import hu.bme.mit.gamma.expression.model.TypeDefinition
-import hu.bme.mit.gamma.expression.model.VariableDeclaration
-import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression
-import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.State
+import java.util.List
+
+import static hu.bme.mit.gamma.lowlevel.xsts.transformation.Namings.*
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
@@ -32,9 +31,37 @@ class Namings {
 	
 	static def String customizeEnumLiteralName(EnumerationLiteralExpression expression) '''«expression.reference.typeDeclaration.name»«expression.reference.name»'''
 	static def String customizeEnumLiteralName(EnumerationTypeDefinition type, EnumerationLiteralDefinition literal) '''«type.typeDeclaration.name»«literal.name»'''
-	static def String customizeEnumLiteralName(State state, Region parentRegion, ComponentInstanceReferenceExpression instance) '''«parentRegion.name.regionTypeName»_«parentRegion.containingComponent.FQNUpToComponent»«state.customizeName»'''
-	static def String customizeEnumLiteralName(State state, Region parentRegion, SynchronousComponentInstance instance) '''«parentRegion.name.regionTypeName»_«parentRegion.containingComponent.FQNUpToComponent»«state.customizeName»'''
+	static def String customizeEnumLiteralName(State state) '''«state.parentRegion.name.regionTypeName»_«state.parentRegion.containingComponent.FQNUpToComponent»«state.customizeName»''' 
+	static def String customizeEnumLiteralName(Region region, String literal) '''«region.name.regionTypeName»_«region.containingComponent.FQNUpToComponent»«literal»'''
+	static def String customizeEnumLiteralName(State state, Region parentRegion) '''«parentRegion.name.regionTypeName»_«parentRegion.containingComponent.FQNUpToComponent»«state.customizeName»'''
 	
-	static def String customizeEnumLiteralNameInverse(VariableDeclaration variable, String value) '''«value.replaceFirst(variable.type.typeDefinition.typeDeclaration.name, "")»'''
-	static def String customizeEnumLiteralNameInverse(TypeDefinition type, String value) '''«value.replaceFirst(type.typeDeclaration.name, "")»'''
+	static def createEnumMapping(List<Region> regions) {
+		val map = newHashMap
+		for (region : regions) {
+			map.putAll(region.createEnumMapping)
+		}
+		return map
+	}
+	
+	static def createEnumMapping(Region region) {
+		val map = newHashMap
+
+		// The __Inactive__ literal is needed
+		map.put(region.customizeEnumLiteralName(INACTIVE_ENUM_LITERAL), INACTIVE_ENUM_LITERAL)
+
+		// Enum literals are based on states
+		for (state : region.states) {
+			map.put(state.customizeEnumLiteralName(region), state.name.stateEnumLiteralName)
+		}
+
+		// History literals
+		if (region.hasHistory) {
+			for (state : region.states) {
+				val name = state.name
+				map.put(region.customizeEnumLiteralName(name.stateInactiveHistoryEnumLiteralName), name.stateInactiveHistoryEnumLiteralName)
+			}
+		}
+		
+		return map
+	}
 }

@@ -10,26 +10,21 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.promela.verification
 
-import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.util.IndexHierarchy
+import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.theta.verification.XstsArrayParser
-import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.promela.transformation.util.Namings
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
+import java.util.HashMap
 import java.util.List
 import java.util.regex.Pattern
 
-import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.promela.transformation.util.Namings.*
-import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
-import hu.bme.mit.gamma.expression.model.TypeDefinition
 
-class PromelaArrayParser implements XstsArrayParser{
+class PromelaArrayParser implements XstsArrayParser {
 	// Singleton
 	public static final PromelaArrayParser INSTANCE = new PromelaArrayParser
-	protected static final extension XstsActionUtil xstsActionUtil = XstsActionUtil.INSTANCE
-	
-	protected static XSTS xsts
+	protected static HashMap<String, String> enumMapping
 	
 	protected new() {}
 
@@ -40,7 +35,7 @@ class PromelaArrayParser implements XstsArrayParser{
 			for (element : arrayElements) {
 				val splitPair = element.split(" = ")
 				val splitAccess = splitPair.get(0)
-				val splitValue = id.checkValue(splitPair.get(1))
+				val splitValue = splitPair.get(1).checkValue
 				val access = splitAccess.replaceFirst(id, "") // ArrayAccess
 				val splitIndices = access.split(Namings.arrayFieldAccess) // [0] [1] ...
 				var indexHierarchy = new IndexHierarchy
@@ -53,24 +48,19 @@ class PromelaArrayParser implements XstsArrayParser{
 			return values
 		}
 		else {
-			val newValue = id.checkValue(value)
+			val newValue = value.checkValue
 			return #[new IndexHierarchy -> newValue]
 		}
 	}
 	
-	protected def String checkValue(String id, String value) {
-		val variable = xsts.checkVariable(id)
-		return variable.type.typeDefinition.checkValue(value)
-	}
-	
-	protected def String checkValue(TypeDefinition type, String value) {
-		if (type.typeDefinition instanceof EnumerationTypeDefinition) {
-			return type.typeDefinition.customizeEnumLiteralNameInverse(value)
+	protected def String checkValue(String key) {
+		val value = enumMapping.get(key)
+		if (value === null) {
+			return key
 		}
-		else if (type.typeDefinition instanceof ArrayTypeDefinition) {
-			return type.typeDefinition.checkValue(value)
+		else {
+			return value
 		}
-		return value
 	}
 
 	protected def boolean isArray(String value) {
@@ -79,5 +69,9 @@ class PromelaArrayParser implements XstsArrayParser{
 
 	protected def unwrap(String index) {
 		return index.substring(1, index.length - 1)
+	}
+	
+	static def createMapping(List<Region> regions) {
+		enumMapping = regions.createEnumMapping
 	}
 }

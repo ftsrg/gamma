@@ -15,6 +15,7 @@ import hu.bme.mit.gamma.querygenerator.PromelaQueryGenerator
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.statechart.interface_.SchedulingConstraintAnnotation
+import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.theta.verification.XstsBackAnnotator
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.trace.model.Step
@@ -22,7 +23,6 @@ import hu.bme.mit.gamma.trace.model.TraceModelFactory
 import hu.bme.mit.gamma.trace.util.TraceUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.verification.util.TraceBuilder
-import hu.bme.mit.gamma.xsts.transformation.GammaToXstsTransformer
 import java.util.NoSuchElementException
 import java.util.Scanner
 import java.util.logging.Level
@@ -30,7 +30,6 @@ import java.util.logging.Logger
 import java.util.regex.Pattern
 
 import static com.google.common.base.Preconditions.checkState
-import static hu.bme.mit.gamma.promela.verification.PromelaArrayParser.*
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
@@ -61,7 +60,6 @@ class TraceBackAnnotator {
 	protected final extension TraceBuilder traceBuilder = TraceBuilder.INSTANCE
 	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
 	protected final Logger logger = Logger.getLogger("GammaLogger")
-	protected final GammaToXstsTransformer transformer = new GammaToXstsTransformer
 	
 	new(Package gammaPackage, Scanner traceScanner) {
 		this(gammaPackage, traceScanner, true)
@@ -73,7 +71,7 @@ class TraceBackAnnotator {
 		this.sortTrace = sortTrace
 		this.component = gammaPackage.firstComponent
 		
-		PromelaArrayParser.xsts = transformer.execute(gammaPackage) 
+		PromelaArrayParser.createMapping(gammaPackage.getAllContentsOfType(Region))
 		
 		this.promelaQueryGenerator = new PromelaQueryGenerator(component)
 		this.xStsBackAnnotator = new XstsBackAnnotator(promelaQueryGenerator, PromelaArrayParser.INSTANCE)
