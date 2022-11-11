@@ -239,7 +239,9 @@ class ComponentTransformer {
 				// We do not care about the names (renaming) here
 				// Namings.customize* covers the same naming behavior as QueueNamings + valueDeclarationTransformer
 				
-				xSts.variableDeclarations += valueDeclarationTransformer.transform(masterQueue)
+				val xStsMasterQueueVariable = valueDeclarationTransformer.transform(masterQueue).onlyElement
+//				xStsMasterQueueVariable.addStrictControlAnnotation
+				xSts.variableDeclarations += xStsMasterQueueVariable
 				if (masterSizeVariable !== null) { // Can be null due to potential optimization
 					val xStsMasterSizeVariable = valueDeclarationTransformer.transform(masterSizeVariable).onlyElement
 					xSts.variableDeclarations += xStsMasterSizeVariable
