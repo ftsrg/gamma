@@ -20,6 +20,8 @@ import hu.bme.mit.gamma.xsts.model.ParallelAction
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 
+import static com.google.common.base.Preconditions.checkState
+
 import static extension hu.bme.mit.gamma.statechart.lowlevel.derivedfeatures.LowlevelStatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
 
@@ -152,15 +154,24 @@ class EntryActionRetriever {
 		val xStsSubstateEntryActions = createParallelAction
 		// Recursion for the entry action of contained states
 		for (lowlevelSubregion : lowlevelState.regions) {
+			// Actions on initial transitions
+			val xStsInitialTransitionAction = lowlevelSubregion.createInitialXStsTransitionAction
+			//
 			val xStsEntryActions = newArrayList
 			for (lowlevelSubstate : lowlevelSubregion.states) {
 				xStsEntryActions += lowlevelSubstate.createRecursiveXStsStateAndSubstateEntryActions
 			}
 			//
 			xStsEntryActions.removeIf[it.effectlessAction] // Optimization
+			val xStsEntryAction = (xStsEntryActions.empty) ? createEmptyAction : xStsEntryActions.weave
 			//
-			if (!xStsEntryActions.empty) {
-				xStsSubstateEntryActions.actions += xStsEntryActions.weave
+			val xStsRegionAction = createSequentialAction => [
+//				it.actions += xStsInitialTransitionAction // Already addressed by region initial state locator - even though the order is incorrect 
+				it.actions += xStsEntryAction
+			]
+			//
+			if (!xStsRegionAction.effectlessAction) {
+				xStsSubstateEntryActions.actions += xStsRegionAction
 			}
 		}
 		return xStsStateAssumption.createIfAction(
@@ -170,6 +181,19 @@ class EntryActionRetriever {
 				it.actions += xStsSubstateEntryActions
 			]
 		)
+	}
+	
+	protected def createInitialXStsTransitionAction(Region lowleveRegion) {
+		val lowlevelInitialTransition = lowleveRegion.initialTransition
+		checkState(lowlevelInitialTransition.target instanceof State) // Only simple transitions are supported
+		val lowlevelAction = lowlevelInitialTransition.action
+		
+		if (lowlevelAction !== null) {
+			return lowlevelAction.transformAction
+		}
+		else {
+			return createEmptyAction
+		}
 	}
 	
 }

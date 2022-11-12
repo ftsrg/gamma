@@ -151,6 +151,10 @@ class ExpressionPreconditionTransformer {
 		for (declaration : declarations) {
 			val name = declaration.name
 			declaration.name = '''«name»_«declaration.hashCode.abs»_'''
+			// A default expression is needed, otherwise some uninitialized parts of record can be havoced
+			if (declaration.expression === null) {
+				declaration.expression = declaration.type.defaultExpression
+			}
 		}
 		
 		// Create local parameter declarations

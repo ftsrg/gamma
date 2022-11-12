@@ -851,10 +851,6 @@ public class StatechartModelValidator extends ActionModelValidator {
 		return false;
 	}
 	
-	public boolean isLoopEdge(Transition transition) {
-		return transition.getSourceState() == transition.getTargetState();
-	}
-	
 	public boolean allTransitionsAreLoop(StateNode node) {
 		Collection<Transition> incomingTransitions = StatechartModelDerivedFeatures.getIncomingTransitions(node);
 		Collection<Transition> outgoingTransitions = StatechartModelDerivedFeatures.getOutgoingTransitions(node);
@@ -867,7 +863,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 		}
 		// The incoming and outgoing transitions are the same
 		for (Transition outgoingTransition : outgoingTransitions) {
-			if (!isLoopEdge(outgoingTransition)) {
+			if (!StatechartModelDerivedFeatures.isLoop(outgoingTransition)) {
 				return false;
 			}
 		}
@@ -1358,16 +1354,20 @@ public class StatechartModelValidator extends ActionModelValidator {
 	
 	public Collection<ValidationResultMessage> checkTransitionOrientation(Transition transition) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		
 		if (StatechartModelDerivedFeatures.isSameRegion(transition) ||
 				StatechartModelDerivedFeatures.isToLower(transition) ||
 				StatechartModelDerivedFeatures.isToHigher(transition) || 
-				StatechartModelDerivedFeatures.isToHigherAndLower(transition)) {
+				(!StatechartModelDerivedFeatures.isOrthogonal(transition) &&
+					StatechartModelDerivedFeatures.isToHigherAndLower(transition))) {
 			// These transitions are permitted
 			return validationResultMessages;
 		}
+		
 		validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 			"The orientation of this transition is incorrect as the source and target are in orthogonal regions", 
-				new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__SOURCE_STATE)));
+				new ReferenceInfo(transition)));
+		
 		return validationResultMessages;
 	}
 	

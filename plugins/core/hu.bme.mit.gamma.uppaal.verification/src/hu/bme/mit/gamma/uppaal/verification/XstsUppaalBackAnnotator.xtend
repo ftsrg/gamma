@@ -215,6 +215,7 @@ class XstsUppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 		}
 		
 		trace.removeInternalEventRaiseActs
+		trace.removeTransientVariableReferences // They always have default values
 		
 		return trace
 	}

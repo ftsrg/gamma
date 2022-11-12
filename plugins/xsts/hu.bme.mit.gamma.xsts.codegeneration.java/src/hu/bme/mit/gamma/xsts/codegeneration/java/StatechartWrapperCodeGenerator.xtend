@@ -228,7 +228,8 @@ class StatechartWrapperCodeGenerator {
 				return false;
 			}
 			
-			«FOR plainVariable : gammaStatechart.variableDeclarations SEPARATOR System.lineSeparator»
+			«FOR plainVariable : gammaStatechart.variableDeclarations
+					.filter[!it.transient] SEPARATOR System.lineSeparator»
 				public «plainVariable.type.serialize» get«plainVariable.name.toFirstUpper»() {
 					return «CLASS_NAME.toFirstLower.access(plainVariable)»;
 				}

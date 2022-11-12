@@ -516,15 +516,17 @@ class StatechartAnnotator {
 		
 		// Due to well-formedness constraints, unattended raise event actions
 		// have to have the correct number of arguments - they get the 0 (reset) id
-		val attendedRaiseEventActions = matches.map[it.raiseEventAction].toSet
+		val attendedRaiseEventActions = relevantMatches.map[it.raiseEventAction].toSet
 		attendedRaiseEventActions.extendUnattendedRaiseEventActions
 	}
 	
-	protected def extendUnattendedRaiseEventActions(Collection<RaiseEventAction> attendedRaiseEventActions) {
+	protected def extendUnattendedRaiseEventActions(
+			Collection<? extends RaiseEventAction> attendedRaiseEventActions) {
 		val rootContainers = attendedRaiseEventActions.map[it.root].toSet
 		val raisedEvents = attendedRaiseEventActions.map[it.event].toSet
-		val raiseEventActions = rootContainers.map[it.getAllContentsOfType(RaiseEventAction)].flatten
-			.filter[raisedEvents.contains(it.event)].toSet
+		val raiseEventActions = rootContainers
+				.map[it.getSelfAndAllContentsOfType(RaiseEventAction)].flatten
+				.filter[raisedEvents.contains(it.event)].toSet
 		raiseEventActions -= attendedRaiseEventActions
 		for (raiseEventAction : raiseEventActions) {
 			raiseEventAction.arguments += 0.toIntegerLiteral // Default value

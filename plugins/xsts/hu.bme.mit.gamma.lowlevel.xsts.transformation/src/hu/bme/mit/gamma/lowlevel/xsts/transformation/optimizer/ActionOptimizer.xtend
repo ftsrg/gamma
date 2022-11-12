@@ -794,14 +794,20 @@ class ActionOptimizer {
 		val xStsSubactions = newArrayList
 		xStsSubactions += action.actions
 		for (branch : xStsSubactions) {
-			val firstAction = branch.firstAtomicAction
-			if (firstAction instanceof AssumeAction) {
-				if (firstAction.isDefinitelyFalseAssumeAction) {
-					branch.remove
+			try {
+				val firstAction = branch.firstAtomicAction
+				if (firstAction instanceof AssumeAction) {
+					if (firstAction.isDefinitelyFalseAssumeAction) {
+						branch.remove
+					}
+					else {
+						branch.deleteDefinitelyFalseBranches
+					}
 				}
-				else {
-					branch.deleteDefinitelyFalseBranches
-				}
+			} catch (IllegalArgumentException e) {
+				// Branch does not contain a 'firstAtomicAction' - full nondeterministic
+				// continue...
+				branch.deleteDefinitelyFalseBranches
 			}
 		}
 	}

@@ -1,0 +1,10 @@
+package interfaces
+
+interface Execute {
+	out event ^execute
+}
+
+interface Toggle {
+	out event add
+	out event subtract
+}

@@ -67,7 +67,7 @@ public class TraceUtil extends ExpressionUtil {
 		for (Package importedPackage : StatechartModelDerivedFeatures.getComponentImports(_package)) {
 			types.addAll(importedPackage.getTypeDeclarations());
 		}
-		// Native references in the case the unfolded packages
+		// Native references in the case of unfolded packages
 		Collection<TypeReference> references = new ArrayList<TypeReference>();
 		references.addAll(ecoreUtil.getAllContentsOfType(_package, TypeReference.class));
 		// Events and parameters

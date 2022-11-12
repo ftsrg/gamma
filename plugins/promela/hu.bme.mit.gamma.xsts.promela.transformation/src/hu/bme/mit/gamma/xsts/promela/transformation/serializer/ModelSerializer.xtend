@@ -33,7 +33,7 @@ class ModelSerializer {
 	// Singleton
 	public static final ModelSerializer INSTANCE = new ModelSerializer
 	protected new() {}
-	
+	//
 	protected extension DeclarationSerializer declarationSerializer = DeclarationSerializer.INSTANCE
 	protected extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
 	

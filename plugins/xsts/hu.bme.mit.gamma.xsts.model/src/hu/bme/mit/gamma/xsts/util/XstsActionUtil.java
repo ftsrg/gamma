@@ -397,11 +397,13 @@ public class XstsActionUtil extends ExpressionUtil {
 	}
 	
 	public AssignmentAction increment(VariableDeclaration variable) {
-		return createAssignmentAction(variable, createIncrementExpression(variable));
+		return createAssignmentAction(variable,
+				createIncrementExpression(variable));
 	}
 	
 	public AssignmentAction decrement(VariableDeclaration variable) {
-		return createAssignmentAction(variable, createDecrementExpression(variable));
+		return createAssignmentAction(variable,
+				createDecrementExpression(variable));
 	}
 	
 	public SequentialAction createSequentialAction(Action action) {
@@ -887,11 +889,6 @@ public class XstsActionUtil extends ExpressionUtil {
 	
 	// Message queue - array handling
 	
-	public Expression isEmpty(VariableDeclaration sizeVariable) {
-		return createLessEqualExpression(
-				createReferenceExpression(sizeVariable), toIntegerLiteral(0));
-	}
-	
 	public VariableDeclarationAction createVariableDeclarationActionForArray(
 			VariableDeclaration queue, String name) {
 		TypeDefinition typeDefinition = ExpressionModelDerivedFeatures.getTypeDefinition(queue);
@@ -946,21 +943,44 @@ public class XstsActionUtil extends ExpressionUtil {
 		throw new IllegalArgumentException("Not an array: " + queue);
 	}
 	
-	public Action popAllAndDecrement(Iterable<? extends VariableDeclaration> queues,
-			VariableDeclaration sizeVariable) {
+	public Action popAndPotentiallyDecrement(VariableDeclaration queue, VariableDeclaration sizeVariable) {
+		if (sizeVariable == null) {
+			return pop(queue);
+		}
+		return popAndDecrement(queue, sizeVariable);
+	}
+	
+	private SequentialAction popAll(Iterable<? extends VariableDeclaration> queues) {
 		SequentialAction block = xStsFactory.createSequentialAction();
 		for (VariableDeclaration queue : queues) {
-			block.getActions().add(pop(queue));
+			block.getActions().add(
+					pop(queue));
 		}
-		block.getActions().add(decrement(sizeVariable));
 		return block;
+	}
+	
+	public Action popAllAndDecrement(Iterable<? extends VariableDeclaration> queues,
+			VariableDeclaration sizeVariable) {
+		SequentialAction block = popAll(queues);
+		block.getActions().add(
+				decrement(sizeVariable));
+		return block;
+	}
+	
+	public Action popAllAndPotentiallyDecrement(Iterable<? extends VariableDeclaration> queues,
+			VariableDeclaration sizeVariable) {
+		if (sizeVariable == null) {
+			return popAll(queues);
+		}
+		return popAllAndDecrement(queues, sizeVariable);
 	}
 	
 	public Action add(VariableDeclaration queue, Expression index, Expression element) {
 		TypeDefinition typeDefinition = ExpressionModelDerivedFeatures.getTypeDefinition(queue);
 		if (typeDefinition instanceof ArrayTypeDefinition) {
 			ArrayAccessExpression accessExpression = factory.createArrayAccessExpression();
-			accessExpression.setOperand(createReferenceExpression(queue));
+			accessExpression.setOperand(
+					createReferenceExpression(queue));
 			accessExpression.setIndex(index);
 			
 			Action assignment = createAssignmentAction(accessExpression, element);
@@ -983,11 +1003,15 @@ public class XstsActionUtil extends ExpressionUtil {
 		return block;
 	}
 	
+	public Action add(VariableDeclaration queue, VariableDeclaration sizeVariable, Expression element) {
+		return add(queue, createReferenceExpression(sizeVariable), element);
+	}
+	
 	public Action addAndIncrement(VariableDeclaration queue,
 			VariableDeclaration sizeVariable, Expression element) {
 		TypeDefinition typeDefinition = ExpressionModelDerivedFeatures.getTypeDefinition(queue);
 		if (typeDefinition instanceof ArrayTypeDefinition) {
-			Action assignment = add(queue, createReferenceExpression(sizeVariable), element);
+			Action assignment = add(queue, sizeVariable, element);
 			Action sizeIncrementAction = increment(sizeVariable);
 			
 			SequentialAction block = xStsFactory.createSequentialAction();
@@ -999,14 +1023,35 @@ public class XstsActionUtil extends ExpressionUtil {
 		throw new IllegalArgumentException("Not an array: " + queue);
 	}
 	
+	public Action addAndPotentiallyIncrement(VariableDeclaration queue,
+			VariableDeclaration sizeVariable, Expression element) {
+		if (sizeVariable == null) {
+			return add(queue, toIntegerLiteral(0), element);
+		}
+		return addAndIncrement(queue, sizeVariable, element);
+	}
+	
+	public Action addAll(List<? extends VariableDeclaration> queues, VariableDeclaration sizeVariable,
+			List<? extends Expression> elements) {
+		return addAll(queues, createReferenceExpression(sizeVariable), elements);
+	}
+	
 	public Action addAllAndIncrement(List<? extends VariableDeclaration> queues,
 			VariableDeclaration sizeVariable, List<? extends Expression> elements) {
 		SequentialAction block = xStsFactory.createSequentialAction();
 		block.getActions().add(
-				addAll(queues, createReferenceExpression(sizeVariable), elements));
+				addAll(queues, sizeVariable, elements));
 		block.getActions().add(
 				increment(sizeVariable));
 		return block;
+	}
+	
+	public Action addAllAndPotentiallyIncrement(List<? extends VariableDeclaration> queues,
+			VariableDeclaration sizeVariable, List<? extends Expression> elements) {
+		if (sizeVariable == null) {
+			return addAll(queues, toIntegerLiteral(0), elements);
+		}
+		return addAllAndIncrement(queues, sizeVariable, elements);
 	}
 	
 }
