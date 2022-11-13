@@ -74,8 +74,10 @@ class ThetaTraceGenerator {
 		val gammaPackage = traceability as Package
 		if(traceDir.listFiles() !== null) {
 			for(File tf : traceDir.listFiles()) {
-				var traceFileScanner = new Scanner(tf)
-				traceList.add(gammaPackage.backAnnotate(traceFileScanner))
+				if(tf.name.endsWith(".trace")) {
+					var traceFileScanner = new Scanner(tf)
+					traceList.add(gammaPackage.backAnnotate(traceFileScanner))					
+				}
 			}				
 		}
 		return traceList
