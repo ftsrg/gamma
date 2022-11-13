@@ -43,6 +43,13 @@ public class ActionModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 	
 	protected static final ActionUtil actionUtil = ActionUtil.INSTANCE;
 	
+	//
+	
+	public static boolean isLocal(VariableDeclaration variableDeclaration) {
+		EObject container = variableDeclaration.eContainer();
+		return container instanceof VariableDeclarationStatement;
+	}
+	
 	public static boolean isLambda(FunctionDeclaration function) {
 		return isLambda(function, new HashSet<FunctionDeclaration>());
 	}

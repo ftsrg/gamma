@@ -161,7 +161,7 @@ public class ExpressionModelValidator {
 		return checkArgumentTypes(element.getArguments(), parameterDeclarations);
 	}
 	
-	public Collection<ValidationResultMessage> checkArgumentTypes(List<Expression> arguments,
+	protected Collection<ValidationResultMessage> checkArgumentTypes(List<Expression> arguments,
 			List<ParameterDeclaration> parameterDeclarations) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		if (arguments.size() != parameterDeclarations.size()) {

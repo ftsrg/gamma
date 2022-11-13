@@ -14,6 +14,8 @@ import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.VariableGroupRetriever
+import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
+import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.composite.CompositeComponent
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.AbstractAssignmentAction
@@ -21,6 +23,8 @@ import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import java.util.Collection
+import java.util.logging.Level
+import java.util.logging.Logger
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
@@ -37,7 +41,8 @@ class SystemReducer {
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
 	protected final extension ExpressionModelFactory factory = ExpressionModelFactory.eINSTANCE
 	protected final extension XSTSModelFactory xStsFactory = XSTSModelFactory.eINSTANCE
-	
+	// Logger
+	protected final Logger logger = Logger.getLogger("GammaLogger")
 	// TODO Introduce EventReferenceToXstsVariableMapper
 	
 	def void deleteUnusedPorts(XSTS xSts, CompositeComponent component) {
@@ -110,30 +115,86 @@ class SystemReducer {
 		}
 	}
 	
-	def void deleteUnusedWrittenOnlyVariables(XSTS xSts,
+	//
+	
+	def void deleteUnusedAndWrittenOnlyVariablesExceptOutEvents(XSTS xSts,
 			Collection<? extends VariableDeclaration> keepableVariables) { // Unfolded Gamma variables
+		val keepableXStsVariables = newArrayList
+		
+		val systemOutEventVariableGroup = xSts.systemOutEventVariableGroup
+		val xStsOutEventVariables = systemOutEventVariableGroup.variables
+		val systemOutEventParameterVariableGroup = xSts.systemOutEventParameterVariableGroup
+		val xStsOutEventParameterVariables = systemOutEventParameterVariableGroup.variables
+		
+		keepableXStsVariables += xStsOutEventVariables
+		keepableXStsVariables += xStsOutEventParameterVariables
+		
+		xSts.deleteUnusedAndWrittenOnlyVariables(keepableVariables, keepableXStsVariables)
+	}
+	
+	def void deleteUnusedAndWrittenOnlyVariables(XSTS xSts,
+			Collection<? extends VariableDeclaration> keepableVariables) { // Unfolded Gamma variables
+		xSts.deleteUnusedAndWrittenOnlyVariables(keepableVariables, #[])
+	}
+	
+	def void deleteUnusedAndWrittenOnlyVariables(XSTS xSts,
+			Collection<? extends VariableDeclaration> keepableVariables, // Unfolded Gamma variables
+			Collection<? extends VariableDeclaration> keepableXStsVariables) { // XSTS variables
 		val mapper = new ReferenceToXstsVariableMapper(xSts)
 		
 		val xStsKeepableVariables = newLinkedList
+		xStsKeepableVariables += keepableXStsVariables
 		for (keepableVariable : keepableVariables) {
 			xStsKeepableVariables += mapper.getVariableVariables(keepableVariable)
 		}
 		
-		for (var i = 0; i < 2; i++) { // Twice, to support transition-pair coverage
-			val xStsPlainVariables = xSts.plainVariableGroup.variables
-			val xStsDeleteableWrittenOnlyVariables = xSts.writtenOnlyVariables
-			xStsDeleteableWrittenOnlyVariables.retainAll(
-					xStsPlainVariables) // So that only plain variables are deleted, not out events
-			xStsDeleteableWrittenOnlyVariables -= xStsKeepableVariables
-			val xStsDeletableAssignments = xStsDeleteableWrittenOnlyVariables.getAssignments(xSts)
+		var size = 0
+		val xStsVariables = xSts.variableDeclarations
+		while (size != xStsVariables.size) { // Until a fix point is reached
+			size = xStsVariables.size
 			
+			val xStsDeleteableVariables = newLinkedHashSet
+			
+			xStsDeleteableVariables += xStsVariables
+			
+			xStsDeleteableVariables -= xSts.readVariables
+			xStsDeleteableVariables -= xStsKeepableVariables
+			
+			val xStsDeletableAssignments = xStsDeleteableVariables.getAssignments(xSts)
 			for (xStsDeletableAssignmentAction : xStsDeletableAssignments) {
 				createEmptyAction.replace(
 					xStsDeletableAssignmentAction) // To avoid nullptrs
 			}
 			
-			for (xStsDeletableVariable : xStsDeleteableWrittenOnlyVariables) {
+			for (xStsDeletableVariable : xStsDeleteableVariables) {
 				xStsDeletableVariable.delete // Delete needed due to e.g., transientVariables list
+			}
+		}
+	}
+	
+	//
+	
+	def void deleteUnusedPortReferencesInQueues(AsynchronousComponentInstance adapterInstance) {
+		val adapterComponentType = adapterInstance.derivedType as AsynchronousAdapter
+		
+		val unusedPorts = adapterInstance.unusedPorts
+		for (queue : adapterComponentType.messageQueues.toSet) {
+			val storedPorts = queue.storedPorts
+			for (storedPort : storedPorts) {
+				if (unusedPorts.contains(storedPort)) {
+					for (eventReference : queue.eventReferences.toSet) {
+						if (storedPort === eventReference.eventSource) {
+							eventReference.remove
+							logger.log(Level.INFO, '''Removing unused «storedPort.name» reference from «queue.name»''')
+						}
+					}
+				}
+			}
+			
+			// Always empty queues are removed
+			if (queue.eventReferences.empty) {
+				logger.log(Level.INFO, '''Removing always empty «queue.name»''')
+				queue.remove
 			}
 		}
 	}
