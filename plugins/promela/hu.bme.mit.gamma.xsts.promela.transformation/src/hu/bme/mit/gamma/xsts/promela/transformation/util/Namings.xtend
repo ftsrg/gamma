@@ -13,11 +13,12 @@ package hu.bme.mit.gamma.xsts.promela.transformation.util
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
+import hu.bme.mit.gamma.expression.model.TypeReference
+import hu.bme.mit.gamma.statechart.interface_.InterfaceRealization
+import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.State
-import java.util.List
-
-import static hu.bme.mit.gamma.lowlevel.xsts.transformation.Namings.*
+import hu.bme.mit.gamma.util.GammaEcoreUtil
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
@@ -26,42 +27,44 @@ import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.XstsNamings.*
 
 class Namings {
+	protected final static extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
+	
 	public static final String arrayFieldName = "a"
 	public static final String arrayFieldAccess = "." + arrayFieldName
 	
 	static def String customizeEnumLiteralName(EnumerationLiteralExpression expression) '''«expression.reference.typeDeclaration.name»«expression.reference.name»'''
-	static def String customizeEnumLiteralName(EnumerationTypeDefinition type, EnumerationLiteralDefinition literal) '''«type.typeDeclaration.name»«literal.name»'''
-	static def String customizeEnumLiteralName(State state) '''«state.parentRegion.name.regionTypeName»_«state.parentRegion.containingComponent.FQNUpToComponent»«state.customizeName»''' 
-	static def String customizeEnumLiteralName(Region region, String literal) '''«region.name.regionTypeName»_«region.containingComponent.FQNUpToComponent»«literal»'''
+	static def String customizeEnumLiteralName(EnumerationTypeDefinition type, EnumerationLiteralDefinition literal) '''«type.typeDeclaration.name»«literal.name»''' 
 	static def String customizeEnumLiteralName(State state, Region parentRegion) '''«parentRegion.name.regionTypeName»_«parentRegion.containingComponent.FQNUpToComponent»«state.customizeName»'''
 	
-	static def createEnumMapping(List<Region> regions) {
-		val map = newHashMap
-		for (region : regions) {
-			map.putAll(region.createEnumMapping)
+	static def createEnumMapping(Package gammaPackage) {
+		val references = newArrayList
+		// Explicit imports
+		for (Package importedPackage : gammaPackage.getComponentImports) {
+			references += importedPackage.getAllContentsOfType(TypeReference)
 		}
-		return map
-	}
-	
-	static def createEnumMapping(Region region) {
-		val map = newHashMap
-
-		// The __Inactive__ literal is needed
-		map.put(region.customizeEnumLiteralName(INACTIVE_ENUM_LITERAL), INACTIVE_ENUM_LITERAL)
-
-		// Enum literals are based on states
-		for (state : region.states) {
-			map.put(state.customizeEnumLiteralName(region), state.name.stateEnumLiteralName)
+		// Native references in the case the unfolded packages
+		references += gammaPackage.getAllContentsOfType(TypeReference)
+		// Events and parameters
+		for (realization : gammaPackage.getAllContentsOfType(InterfaceRealization)) {
+			references += realization.interface.getAllContentsOfType(TypeReference)
 		}
-
-		// History literals
-		if (region.hasHistory) {
-			for (state : region.states) {
-				val name = state.name
-				map.put(region.customizeEnumLiteralName(name.stateInactiveHistoryEnumLiteralName), name.stateInactiveHistoryEnumLiteralName)
+		
+		val typeDefinitions = newArrayList
+		for (reference : references) {
+			val type = reference.reference.typeDefinition
+			if (type instanceof EnumerationTypeDefinition) {
+				if (!(typeDefinitions.contains(type))) {
+					typeDefinitions += type
+				}
 			}
 		}
 		
+		val map = newHashMap
+		for (type : typeDefinitions) {
+			for (literal : type.literals) {
+				map.put(type.customizeEnumLiteralName(literal), literal.name)
+			}
+		}
 		return map
 	}
 }

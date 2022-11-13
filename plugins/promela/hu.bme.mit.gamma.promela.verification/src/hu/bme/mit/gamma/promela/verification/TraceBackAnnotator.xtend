@@ -15,7 +15,6 @@ import hu.bme.mit.gamma.querygenerator.PromelaQueryGenerator
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.statechart.interface_.SchedulingConstraintAnnotation
-import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.theta.verification.XstsBackAnnotator
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.trace.model.Step
@@ -71,7 +70,7 @@ class TraceBackAnnotator {
 		this.sortTrace = sortTrace
 		this.component = gammaPackage.firstComponent
 		
-		PromelaArrayParser.createMapping(gammaPackage.getAllContentsOfType(Region))
+		PromelaArrayParser.createMapping(gammaPackage)
 		
 		this.promelaQueryGenerator = new PromelaQueryGenerator(component)
 		this.xStsBackAnnotator = new XstsBackAnnotator(promelaQueryGenerator, PromelaArrayParser.INSTANCE)

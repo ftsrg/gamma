@@ -11,12 +11,11 @@
 package hu.bme.mit.gamma.promela.verification
 
 import hu.bme.mit.gamma.expression.util.IndexHierarchy
-import hu.bme.mit.gamma.statechart.statechart.Region
+import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.theta.verification.XstsArrayParser
 import hu.bme.mit.gamma.xsts.promela.transformation.util.Namings
-import hu.bme.mit.gamma.xsts.util.XstsActionUtil
-import java.util.HashMap
 import java.util.List
+import java.util.Map
 import java.util.regex.Pattern
 
 import static extension hu.bme.mit.gamma.xsts.promela.transformation.util.Namings.*
@@ -24,7 +23,7 @@ import static extension hu.bme.mit.gamma.xsts.promela.transformation.util.Naming
 class PromelaArrayParser implements XstsArrayParser {
 	// Singleton
 	public static final PromelaArrayParser INSTANCE = new PromelaArrayParser
-	protected static HashMap<String, String> enumMapping
+	protected static Map<String, String> enumMapping
 	
 	protected new() {}
 
@@ -71,7 +70,7 @@ class PromelaArrayParser implements XstsArrayParser {
 		return index.substring(1, index.length - 1)
 	}
 	
-	static def createMapping(List<Region> regions) {
-		enumMapping = regions.createEnumMapping
+	static def createMapping(Package gammaPackage) {
+		enumMapping = gammaPackage.createEnumMapping
 	}
 }
