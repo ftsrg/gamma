@@ -556,12 +556,12 @@ abstract class AbstractContractStatechartGeneration {
 		} else {
 			forwardTransition.trigger = trigger
 			//Uncomment these lines to allow effects on the reversed ports
-//			for (modalInteraction : nonCheckOrAssignmentInteractitons) {
-//				val effect = getRaiseEventAction(modalInteraction, !reversed)
-//				if (effect !== null) {
-//					forwardTransition.effects += effect
-//				}
-//			}
+			for (modalInteraction : nonCheckOrAssignmentInteractitons) {
+				val effect = getRaiseEventAction(modalInteraction, !reversed)
+				if (effect !== null) {
+					forwardTransition.effects += effect
+				}
+			}
 		}
 		addChecksToTransition(checks, forwardTransition)
 		addAssignmentsToTransition(assignments, forwardTransition)

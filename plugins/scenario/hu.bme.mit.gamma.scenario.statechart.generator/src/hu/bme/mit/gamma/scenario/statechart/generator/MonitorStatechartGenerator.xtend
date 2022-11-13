@@ -133,16 +133,16 @@ class MonitorStatechartGenerator extends AbstractContractStatechartGeneration {
 
 	protected def void copyTransitionsForOptional() {
 		for (pair : copyOutgoingTransitionsForOptional) {
-			val compulsory = replacedStateWithValue.getOrDefault(pair.key, pair.key)
-			val optional = pair.value
-			for (transition : compulsory.outgoingTransitions) {
+			val compulsory = pair.key
+			val optional = replacedStateWithValue.getOrDefault(pair.value, pair.value)
+			for (transition : optional.outgoingTransitions) {
 				val targetState = transition.targetState
-				if (targetState != optional && !targetState.reachableStates.contains(optional)) {
+				if (targetState != compulsory && !targetState.reachableStates.contains(compulsory)) {
 					val transitionCopy = transition.clone
-					transitionCopy.sourceState = optional
+					transitionCopy.sourceState = compulsory
 					statechart.transitions += transitionCopy
-					if (optional.name.contains(accepting)) {
-						compulsory.name = compulsory.name.getCombinedStateAcceptingName
+					if (compulsory.name.contains(accepting)) {
+						optional.name = optional.name.getCombinedStateAcceptingName
 					}
 				}
 			}
@@ -217,17 +217,6 @@ class MonitorStatechartGenerator extends AbstractContractStatechartGeneration {
 			ends += previousState
 		}
 		
-		val direction = prevprev.outgoingTransitions.head.direction
-		val isSend = direction.equals(InteractionDirection.SEND)
-		val violationState = if (isSend) {
-			componentViolation
-		} else {
-			environmentViolation
-		}
-		val elseTransition = statechartUtil.createTransition(previousState, violationState)
-		elseTransition.priority = BigInteger.ZERO
-		elseTransition.trigger = createOnCycleTrigger
-		
 		val mergeState = createNewState(mergeName + exsistingMerges++)
 		firstRegion.stateNodes += mergeState
 		previousState = mergeState
@@ -236,7 +225,7 @@ class MonitorStatechartGenerator extends AbstractContractStatechartGeneration {
 				replacedStateWithValue.put(transition.targetState, previousState)
 			}
 		}
-		firstRegion.stateNodes -= ends
+//		firstRegion.stateNodes -= ends
 	}
 
 	def dispatch void process(LoopCombinedFragment loop) {
@@ -265,7 +254,6 @@ class MonitorStatechartGenerator extends AbstractContractStatechartGeneration {
 			skipNextInteraction = true
 		} else {
 			copyOutgoingTransitionsForOptional.add(prevprev -> previousState)
-			previousState = prevprev
 		}
 	}
 
