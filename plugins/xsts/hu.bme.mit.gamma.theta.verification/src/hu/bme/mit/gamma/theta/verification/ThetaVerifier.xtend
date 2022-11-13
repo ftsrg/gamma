@@ -28,7 +28,7 @@ class ThetaVerifier extends AbstractVerifier {
 	final String ENVIRONMENT_VARIABLE_FOR_THETA_JAR = "THETA_XSTS_CLI_PATH"
 	
 	final String SAFE = "SafetyResult Safe"
-	final String UNSAFE = "SafetyResult Unsafe"
+	final String UNSAFE = "SafetyResult Unsafe"	
 	
 	override Result verifyQuery(Object traceability, String parameters, File modelFile, String query) {
 		var Result result = null
@@ -63,6 +63,8 @@ class ThetaVerifier extends AbstractVerifier {
 			val jar = System.getenv(ENVIRONMENT_VARIABLE_FOR_THETA_JAR)
 			// java -jar %THETA_XSTS_CLI_PATH% --model trafficlight.xsts --property red_green.prop
 			val traceFile = new File(modelFile.traceFile)
+			modelFile.parent + File.separator + modelFile.extensionlessName.toHiddenFileName +
+			"-" + Thread.currentThread.name + ".cex";
 			traceFile.delete // So no invalid/old cex is parsed if this actual process does not generate one
 			traceFile.deleteOnExit // So the cex with this random name does not remain on disk
 			
@@ -97,7 +99,7 @@ class ThetaVerifier extends AbstractVerifier {
 			}
 			else {
 				// Some kind of error
-				throw new IllegalArgumentException(line)
+				throw new IllegalArgumentException(line) // TODO temporary
 			}
 			// Adapting result
 			super.result = super.result.adaptResult
@@ -107,7 +109,7 @@ class ThetaVerifier extends AbstractVerifier {
 			}
 			val gammaPackage = traceability as Package
 			traceFileScanner = new Scanner(traceFile)
-			val trace = gammaPackage.backAnnotate(traceFileScanner)
+			val trace = gammaPackage.backAnnotate(traceFileScanner)				
 			return new Result(result, trace)
 		} finally {
 			if (resultReader !== null) {
