@@ -30,6 +30,7 @@ import hu.bme.mit.gamma.property.derivedfeatures.PropertyModelDerivedFeatures;
 import hu.bme.mit.gamma.property.model.CommentableStateFormula;
 import hu.bme.mit.gamma.property.model.PropertyPackage;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression;
+import hu.bme.mit.gamma.transformation.util.GammaFileNamer;
 import hu.bme.mit.gamma.uppaal.serializer.UppaalModelSerializer;
 import hu.bme.mit.gamma.xsts.model.XSTS;
 import hu.bme.mit.gamma.xsts.transformation.SystemReducer;
@@ -108,6 +109,8 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 			
 			// Maybe other optimizations could be added?
 			xStsReducer.deleteUnusedAndWrittenOnlyVariablesExceptOutEvents(xSts, keepableGammaVariables);
+			xStsReducer.deleteUnusedInputEventVariables(xSts, keepableGammaVariables);
+			
 			XstsOptimizer xStsOptimizer = XstsOptimizer.INSTANCE;
 			xStsOptimizer.optimizeXSts(xSts); // To remove null/empty actions
 			// Serialize XSTS
@@ -119,6 +122,11 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 				XstsToUppaalTransformer transformer = new XstsToUppaalTransformer(xSts);
 				NTA nta = transformer.execute();
 				UppaalModelSerializer.saveToXML(nta, analysisFile);
+				
+				String xStsString = xStsSerializer.serializeXsts(xSts);
+				String xStsFile = fileUtil.changeExtension(
+						analysisFile.toString(), GammaFileNamer.XSTS_XTEXT_EXTENSION);
+				fileUtil.saveString(xStsFile, xStsString);
 			}
 			if (analysisLanguages.contains(AnalysisLanguage.PROMELA)) {
 				String xStsString = promelaSerializer.serializePromela(xSts);
