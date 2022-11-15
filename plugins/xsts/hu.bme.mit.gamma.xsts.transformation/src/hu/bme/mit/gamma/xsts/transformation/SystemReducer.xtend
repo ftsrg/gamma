@@ -199,8 +199,8 @@ class SystemReducer {
 			val xStsDeleteableVariables = newLinkedHashSet
 			
 			xStsDeleteableVariables += xStsVariables
-			// TODO check and remove a := a - 1 like deletable variables
-			xStsDeleteableVariables -= xSts.readVariables
+			// To check and remove a := a - 1 like deletable variables
+			xStsDeleteableVariables -= xSts.externallyReadVariables
 			xStsDeleteableVariables -= xStsKeepableVariables
 			
 			val xStsDeletableAssignments = xStsDeleteableVariables.getAssignments(xSts)
