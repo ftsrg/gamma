@@ -6,6 +6,7 @@ import uppaal.expressions.LogicalOperator
 import uppaal.templates.Edge
 import uppaal.templates.Location
 import uppaal.templates.LocationKind
+import uppaal.types.TypesFactory
 
 import static extension de.uni_paderborn.uppaal.derivedfeatures.UppaalModelDerivedFeatures.*
 
@@ -13,6 +14,9 @@ class NtaOptimizer {
 	
 	protected extension final NtaBuilder ntaBuilder
 	protected extension final GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
+	//
+	protected final extension TypesFactory typFact = TypesFactory.eINSTANCE
+	//
 	
 	new(NtaBuilder ntaBuilder) {
 		this.ntaBuilder = ntaBuilder
@@ -80,6 +84,27 @@ class NtaOptimizer {
 			for (outgoingEdge : targetOutgoingEdges.reject[visitedEdges.contains(it)]) {
 				edges += outgoingEdge
 			}
+		}
+	}
+	
+	//
+	
+	def optimizelIntegerCodomains() {
+		val nta = ntaBuilder.nta
+		val integerVariableCodomains = nta.integerVariableCodomains
+		
+		for (integerVariable : integerVariableCodomains.keySet) {
+			val codomain = integerVariableCodomains.get(integerVariable)
+			
+			val min = codomain.key
+			val max = codomain.value
+			// Limiting the codomain of the integer variable
+			integerVariable.typeDefinition = typFact.createRangeTypeSpecification => [
+				it.bounds = createIntegerBounds => [
+					it.lowerBound = min.toString.createLiteralExpression
+					it.upperBound = max.toString.createLiteralExpression
+				]
+			]
 		}
 	}
 	

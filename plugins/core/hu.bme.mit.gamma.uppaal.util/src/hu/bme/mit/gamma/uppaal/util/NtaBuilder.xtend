@@ -58,9 +58,9 @@ class NtaBuilder {
 	protected final extension ExpressionsFactory expFact = ExpressionsFactory.eINSTANCE
 	protected final extension TemplatesFactory tempFact = TemplatesFactory.eINSTANCE
 	protected final extension UppaalFactory upFact = UppaalFactory.eINSTANCE
-	protected final extension DeclarationsFactory declFact= DeclarationsFactory.eINSTANCE
-	protected final extension TypesFactory typFact= TypesFactory.eINSTANCE
-	protected final extension SystemFactory sysFact= SystemFactory.eINSTANCE
+	protected final extension DeclarationsFactory declFact = DeclarationsFactory.eINSTANCE
+	protected final extension TypesFactory typFact = TypesFactory.eINSTANCE
+	protected final extension SystemFactory sysFact = SystemFactory.eINSTANCE
 	protected final extension StatementsFactory stmtsFactory = StatementsFactory.eINSTANCE
 	// Auxiliary objects
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE

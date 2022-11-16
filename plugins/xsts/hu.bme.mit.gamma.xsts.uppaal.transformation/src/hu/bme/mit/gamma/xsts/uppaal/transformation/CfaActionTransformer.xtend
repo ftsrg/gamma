@@ -50,7 +50,7 @@ class CfaActionTransformer {
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	
-	new (NtaBuilder ntaBuilder, Traceability traceability) {
+	new(NtaBuilder ntaBuilder, Traceability traceability) {
 		this.ntaBuilder = ntaBuilder
 		this.traceability = traceability
 		this.variableTransformer = new VariableTransformer(ntaBuilder, traceability)
