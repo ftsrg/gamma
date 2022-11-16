@@ -40,8 +40,11 @@ import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression;
 import hu.bme.mit.gamma.expression.model.FunctionDeclaration;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
+import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
+import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
 import hu.bme.mit.gamma.expression.model.TypeDefinition;
+import hu.bme.mit.gamma.expression.model.TypeReference;
 import hu.bme.mit.gamma.statechart.composite.AbstractAsynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter;
@@ -131,6 +134,46 @@ import hu.bme.mit.gamma.statechart.util.StatechartUtil;
 public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	protected static final StatechartUtil statechartUtil = StatechartUtil.INSTANCE;
+	
+	//
+	
+	public static Set<TypeDeclaration> getReferencedTypedDeclarations(Package _package) {
+		Set<TypeDeclaration> types = new LinkedHashSet<TypeDeclaration>();
+		
+		// Explicit imports
+		for (Package importedPackage : StatechartModelDerivedFeatures.getComponentImports(_package)) {
+			types.addAll(importedPackage.getTypeDeclarations());
+		}
+		
+		// Native references in the case of unfolded packages
+		Collection<TypeReference> references = new ArrayList<TypeReference>();
+		references.addAll(
+				ecoreUtil.getAllContentsOfType(_package, TypeReference.class));
+		
+		// Events and parameters
+		for (InterfaceRealization realization :
+				ecoreUtil.getAllContentsOfType(_package, InterfaceRealization.class)) {
+			Interface _interface = realization.getInterface();
+			references.addAll(
+					ecoreUtil.getAllContentsOfType(_interface, TypeReference.class));
+		}
+		
+		// Collecting the type declarations
+		for (TypeReference reference : references) {
+			TypeDeclaration typeDeclaration = reference.getReference();
+			types.add(typeDeclaration);
+			Type containedType = typeDeclaration.getType();
+			Type type = getTypeDefinition(containedType);
+			if (type instanceof RecordTypeDefinition) {
+				RecordTypeDefinition recordType = (RecordTypeDefinition) type;
+				Collection<TypeDeclaration> containedTypeDeclarations =
+						getAllTypeDeclarations(recordType);
+				types.addAll(containedTypeDeclarations);
+			}
+		}
+		
+		return types;
+	}
 	
 	public static List<ParameterDeclaration> getParameterDeclarations(ArgumentedElement element) {
 		if (element instanceof RaiseEventAction) {
