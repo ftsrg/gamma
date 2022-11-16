@@ -237,10 +237,13 @@ public class XstsActionUtil extends ExpressionUtil {
 			int size = operands.size();
 			for (int i = 0; i < size; i++) {
 				ArrayAccessExpression newLhs = expressionFactory.createArrayAccessExpression();
-				newLhs.setOperand(ecoreUtil.clone(lhs)); // Cloning is important
-				newLhs.setIndex(toIntegerLiteral(i));
+				newLhs.setOperand(
+						ecoreUtil.clone(lhs)); // Cloning is important
+				newLhs.setIndex(
+						toIntegerLiteral(i));
 				
-				Expression newRhs = operands.get(i); // Cloning is not necessary
+				Expression newRhs = ecoreUtil.clone(
+						operands.get(i)); // Cloning is necessary if we want to keep the original XSTS
 				
 				AssignmentAction newAssignmentAction = createAssignmentAction(newLhs, newRhs);
 				arrayLiteralAssignments.addAll(

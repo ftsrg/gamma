@@ -74,6 +74,9 @@ class CoveredPropertyReducer {
 								val evaluation = instanceStateExpression.evaluate(step)
 								evaluation.replace(instanceStateExpression)
 							}
+							// No transient variables in traces (as they are also default)
+							// Resettable variable cannot be removed, think of
+							// transition-pair coverage
 							val expression = clonedFormula.expression
 							val evaluation = expression.definitelyTrueExpression
 							if (evaluation) {

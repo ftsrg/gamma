@@ -131,7 +131,8 @@ public class ExpressionUtil {
 		}
 		if (expression instanceof AccessExpression) {
 			AccessExpression access = (AccessExpression) expression;
-			return getAccessReference(access.getOperand());
+			return getAccessReference(
+					access.getOperand());
 		}
 		// Could be extended to literals too
 		throw new IllegalArgumentException("Not supported reference: " + expression);

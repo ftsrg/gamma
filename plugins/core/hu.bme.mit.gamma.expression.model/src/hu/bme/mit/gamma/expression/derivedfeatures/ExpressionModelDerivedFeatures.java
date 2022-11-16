@@ -331,13 +331,15 @@ public class ExpressionModelDerivedFeatures {
 				RecordTypeDefinition subrecord = (RecordTypeDefinition) typeDefinition;
 				for (FieldDeclaration field : subrecord.getFieldDeclarations()) {
 					Type fieldType = field.getType();
-					typeDeclarations.addAll(getAllTypeDeclarations(fieldType));
+					typeDeclarations.addAll(
+							getAllTypeDeclarations(fieldType));
 				}
 			}
 			else if (typeDefinition instanceof ArrayTypeDefinition) {
 				ArrayTypeDefinition array = (ArrayTypeDefinition) typeDefinition;
 				Type elementType = array.getElementType();
-				typeDeclarations.addAll(getAllTypeDeclarations(elementType));
+				typeDeclarations.addAll(
+						getAllTypeDeclarations(elementType));
 			}
 		}
 		return typeDeclarations;
