@@ -21,4 +21,6 @@ This folder contains plugins for the mapping of high-level Gamma (composite) mod
 3. Set up the plugins in this folder.
    - Import all Eclipse projects from the the promela folder. 
 
+*Note: You also need GCC to use Spin. On Unix/Linux you probably have GCC, or an equivalent, installed. On the Windows you need an installation of GCC. You need to download 32 bit Cygwin (even if your system is 64-bit, because of Spin use 32 bit version) from [here](https://www.cygwin.com/index.html). After downloading run the* `setup-x86.exe` *, then add the* `cygwin/bin` *to the path. The following should be selected in the installer:* `gcc-core`*,* `gcc-g++`*,* `libgcc1`*.*
+
 Now you can use the framework in one of the following ways: you either run a runtime Eclipse and work in that or install the plugins into your host Eclipse.

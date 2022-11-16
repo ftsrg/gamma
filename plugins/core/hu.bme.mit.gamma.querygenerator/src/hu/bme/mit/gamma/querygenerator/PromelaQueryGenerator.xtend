@@ -23,8 +23,8 @@ class PromelaQueryGenerator extends ThetaQueryGenerator {
 	new(Component component) {
 		super(component)
 	}
-	
+
 	override protected getSingleTargetStateName(State state, Region parentRegion, SynchronousComponentInstance instance) {
-		return '''«parentRegion.customizeName(instance)» == «state.customizeEnumLiteralName(parentRegion, instance)»'''
+		return '''«parentRegion.customizeName(instance)» == «state.customizeEnumLiteralName(parentRegion)»'''
 	}
 }
