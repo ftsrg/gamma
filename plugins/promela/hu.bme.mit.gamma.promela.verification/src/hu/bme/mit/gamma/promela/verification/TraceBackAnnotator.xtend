@@ -70,7 +70,7 @@ class TraceBackAnnotator {
 		this.sortTrace = sortTrace
 		this.component = gammaPackage.firstComponent
 		
-		PromelaArrayParser.createMapping(gammaPackage)
+		PromelaArrayParser.createMapping(gammaPackage.referencedTypedDeclarations)
 		
 		this.promelaQueryGenerator = new PromelaQueryGenerator(component)
 		this.xStsBackAnnotator = new XstsBackAnnotator(promelaQueryGenerator, PromelaArrayParser.INSTANCE)

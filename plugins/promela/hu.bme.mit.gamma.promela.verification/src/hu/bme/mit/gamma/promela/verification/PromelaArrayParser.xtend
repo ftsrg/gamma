@@ -10,12 +10,13 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.promela.verification
 
+import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.expression.util.IndexHierarchy
-import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.theta.verification.XstsArrayParser
 import hu.bme.mit.gamma.xsts.promela.transformation.util.Namings
 import java.util.List
 import java.util.Map
+import java.util.Set
 import java.util.regex.Pattern
 
 import static extension hu.bme.mit.gamma.xsts.promela.transformation.util.Namings.*
@@ -70,7 +71,7 @@ class PromelaArrayParser implements XstsArrayParser {
 		return index.substring(1, index.length - 1)
 	}
 	
-	static def createMapping(Package gammaPackage) {
-		enumMapping = gammaPackage.createEnumMapping
+	static def createMapping(Set<TypeDeclaration> typeDeclarations) {
+		enumMapping = typeDeclarations.createEnumMapping
 	}
 }

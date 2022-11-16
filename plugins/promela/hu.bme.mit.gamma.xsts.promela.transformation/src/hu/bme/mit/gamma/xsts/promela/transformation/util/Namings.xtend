@@ -13,12 +13,11 @@ package hu.bme.mit.gamma.xsts.promela.transformation.util
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
-import hu.bme.mit.gamma.expression.model.TypeReference
-import hu.bme.mit.gamma.statechart.interface_.InterfaceRealization
-import hu.bme.mit.gamma.statechart.interface_.Package
+import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.util.GammaEcoreUtil
+import java.util.Set
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
@@ -36,35 +35,18 @@ class Namings {
 	static def String customizeEnumLiteralName(EnumerationTypeDefinition type, EnumerationLiteralDefinition literal) '''«type.typeDeclaration.name»«literal.name»''' 
 	static def String customizeEnumLiteralName(State state, Region parentRegion) '''«parentRegion.name.regionTypeName»_«parentRegion.containingComponent.FQNUpToComponent»«state.customizeName»'''
 	
-	static def createEnumMapping(Package gammaPackage) {
-		val references = newArrayList
-		// Explicit imports
-		for (Package importedPackage : gammaPackage.getComponentImports) {
-			references += importedPackage.getAllContentsOfType(TypeReference)
-		}
-		// Native references in the case the unfolded packages
-		references += gammaPackage.getAllContentsOfType(TypeReference)
-		// Events and parameters
-		for (realization : gammaPackage.getAllContentsOfType(InterfaceRealization)) {
-			references += realization.interface.getAllContentsOfType(TypeReference)
-		}
+	static def createEnumMapping(Set<TypeDeclaration> typeDeclarations) {
+		val map = newHashMap
 		
-		val typeDefinitions = newArrayList
-		for (reference : references) {
-			val type = reference.reference.typeDefinition
+		for (typeDeclaration : typeDeclarations) {
+			val type = typeDeclaration.typeDefinition
 			if (type instanceof EnumerationTypeDefinition) {
-				if (!(typeDefinitions.contains(type))) {
-					typeDefinitions += type
+				for (literal : type.literals) {
+					map.put(type.customizeEnumLiteralName(literal), literal.name)
 				}
 			}
 		}
 		
-		val map = newHashMap
-		for (type : typeDefinitions) {
-			for (literal : type.literals) {
-				map.put(type.customizeEnumLiteralName(literal), literal.name)
-			}
-		}
 		return map
 	}
 }
