@@ -32,38 +32,41 @@ class PromelaVerifier extends AbstractVerifier {
 	override Result verifyQuery(Object traceability, String parameters, File modelFile, File queryFile) {
 		val model = fileUtil.loadString(modelFile)
 		val query = fileUtil.loadString(queryFile)
-		
-		var modelWithLtls = model
+
 		var i = 0
+		var Result result = null
+		
 		for (singleQuery : query.split(System.lineSeparator).reject[it.nullOrEmpty]) {
 			// Supporting multiple queries in separate files
 			val ltl = '''«System.lineSeparator»ltl ltl_«i» { «singleQuery.adaptQuery» }'''
-			modelWithLtls += ltl
+			val modelWithLtl = model + ltl
 			i++
+			
+			val rootGenFolder = new File(modelFile.parent, "." + fileUtil.getExtensionlessName(modelFile))
+			rootGenFolder.forceDeleteOnExit
+			rootGenFolder.mkdirs
+			// save model with all LTL
+			val tmpGenFolder = new File(rootGenFolder + File.separator + fileUtil.getExtensionlessName(modelFile) + "-LTL" + System.currentTimeMillis.toString)
+			tmpGenFolder.forceDeleteOnExit
+			tmpGenFolder.mkdirs
+			
+			// save model with LTL
+			val fileWithLtl = new File(tmpGenFolder, fileUtil.getExtensionlessName(modelFile) + "-LTL.pml")
+			fileWithLtl.deleteOnExit
+			fileUtil.saveString(fileWithLtl, modelWithLtl)
+			
+			val newResult = verify(traceability, parameters, fileWithLtl)
+			val oldTrace = result?.trace
+			val newTrace = newResult?.trace
+			if (oldTrace === null) {
+				result = newResult
+			}
+			else if (newTrace !== null) {
+				oldTrace.extend(newTrace)
+				result = new Result(ThreeStateBoolean.UNDEF, oldTrace)
+			}
 		}
-		
-		// root temporary folder
-		val rootGenFolder = new File(modelFile.parent, "." + fileUtil.getExtensionlessName(modelFile))
-		rootGenFolder.deleteOnExit
-		rootGenFolder.mkdirs
-		// save model with all LTL
-		val tmpGenFolder = new File(rootGenFolder + File.separator + fileUtil.getExtensionlessName(modelFile) + "-LTL" + System.currentTimeMillis.toString)
-		tmpGenFolder.deleteOnExit
-		tmpGenFolder.mkdirs
-		
-		// save model with LTL
-		val fileWithLtl = new File(tmpGenFolder, fileUtil.getExtensionlessName(modelFile) + "-LTL.pml")
-		fileWithLtl.deleteOnExit
-		fileUtil.saveString(fileWithLtl, modelWithLtls)
-		
-		var resultList = newArrayList
-		for (var j = 0; j < i; j++) {
-			val result = verify(traceability, parameters, fileWithLtl)
-			resultList += result
-		}
-		
-		// now return just one result
-		return resultList.get(0)
+		return result
 	}
 	
 	private def Result verify(Object traceability, String parameters, File modelFile) {
@@ -181,8 +184,8 @@ class PromelaQueryAdapter {
 	public static PromelaQueryAdapter INSTANCE = new PromelaQueryAdapter
 	private new() {}
 	// Singleton
-	final String E = "E"
 	final String A = "A"
+	final String E = "E"
 	
 	extension FileUtil fileUtil = FileUtil.INSTANCE
 	boolean invert;
@@ -192,11 +195,11 @@ class PromelaQueryAdapter {
 	}
 	
 	def adaptQuery(String query) {
-		if (query.startsWith("E")) {
+		if (query.startsWith(E)) {
 			invert = true
-			return "!(" + query.substring(E.length) + " )"
+			return "!(" + query.substring(E.length) + ")"
 		}
-		if (query.startsWith("A")) {
+		if (query.startsWith(A)) {
 			invert = false
 			return query.substring(A.length)
 		}

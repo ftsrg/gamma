@@ -69,6 +69,9 @@ class TraceBackAnnotator {
 		this.traceScanner = traceScanner
 		this.sortTrace = sortTrace
 		this.component = gammaPackage.firstComponent
+		
+		PromelaArrayParser.createMapping(gammaPackage.referencedTypedDeclarations)
+		
 		this.promelaQueryGenerator = new PromelaQueryGenerator(component)
 		this.xStsBackAnnotator = new XstsBackAnnotator(promelaQueryGenerator, PromelaArrayParser.INSTANCE)
 		val schedulingConstraintAnnotation = gammaPackage.annotations
@@ -233,6 +236,7 @@ class TraceBackAnnotator {
 	}
 	
 	protected def parse(BackAnnotatorState backAnnotatorState, String id, String value, Step step) {
+		
 		switch (backAnnotatorState) {
 			case STATE_CHECK: {
 				val potentialStateString = '''«id» == «value»'''
