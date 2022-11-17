@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2021 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -25,6 +25,7 @@ import hu.bme.mit.gamma.util.Triple;
 import uppaal.NTA;
 import uppaal.core.NamedElement;
 import uppaal.declarations.Declaration;
+import uppaal.declarations.GlobalDeclarations;
 import uppaal.declarations.Variable;
 import uppaal.declarations.VariableContainer;
 import uppaal.declarations.VariableDeclaration;
@@ -44,7 +45,15 @@ public class UppaalModelDerivedFeatures {
 	
 	//
 	
-	public static List<VariableDeclaration> getVariableDeclarations(NTA nta) {
+	public static boolean isGlobal(Declaration declaration) {
+		NTA nta = ecoreUtil.getContainerOfType(declaration, NTA.class);
+		GlobalDeclarations globalDeclarations = nta.getGlobalDeclarations();
+		List<Declaration> declarations = globalDeclarations.getDeclaration();
+		
+		return declarations.contains(declaration);
+	}
+	
+	public static List<VariableDeclaration> getGlobalVariableDeclarations(NTA nta) {
 		List<Declaration> declarations = nta.getGlobalDeclarations().getDeclaration();
 		List<VariableDeclaration> variableDeclarations = javaUtil
 				.filterIntoList(declarations, VariableDeclaration.class);
