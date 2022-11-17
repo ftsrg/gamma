@@ -1,8 +1,23 @@
+/********************************************************************************
+ * Copyright (c) 2020-2022 Contributors to the Gamma project
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution) and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * SPDX-License-Identifier: EPL-1.0
+ ********************************************************************************/
 package hu.bme.mit.gamma.uppaal.util
 
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.util.Set
+import java.util.logging.Level
+import java.util.logging.Logger
+import uppaal.expressions.AssignmentExpression
+import uppaal.expressions.IdentifierExpression
 import uppaal.expressions.LogicalOperator
+import uppaal.statements.StatementsFactory
 import uppaal.templates.Edge
 import uppaal.templates.Location
 import uppaal.templates.LocationKind
@@ -13,11 +28,13 @@ import static extension de.uni_paderborn.uppaal.derivedfeatures.UppaalModelDeriv
 class NtaOptimizer {
 	
 	protected extension final NtaBuilder ntaBuilder
-	protected extension final GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
+	protected extension final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	//
 	protected final extension TypesFactory typFact = TypesFactory.eINSTANCE
+	protected final extension StatementsFactory stmtsFactory = StatementsFactory.eINSTANCE
+	// Logger
+	protected final Logger logger = Logger.getLogger("GammaLogger")
 	//
-	
 	new(NtaBuilder ntaBuilder) {
 		this.ntaBuilder = ntaBuilder
 	}
@@ -93,18 +110,52 @@ class NtaOptimizer {
 		val nta = ntaBuilder.nta
 		val integerVariableCodomains = nta.integerVariableCodomains
 		
+		val identifiers = nta.getAllContentsOfType(IdentifierExpression)
 		for (integerVariable : integerVariableCodomains.keySet) {
 			val codomain = integerVariableCodomains.get(integerVariable)
 			
 			val min = codomain.key
 			val max = codomain.value
-			// Limiting the codomain of the integer variable
-			integerVariable.typeDefinition = typFact.createRangeTypeSpecification => [
-				it.bounds = createIntegerBounds => [
-					it.lowerBound = min.toString.createLiteralExpression
-					it.upperBound = max.toString.createLiteralExpression
+			
+			// Optimization for trivial codomains
+			if (min == max) {
+				// Deleting variables
+				val variable = integerVariable.variable.head
+				for (relevantIdentifier : identifiers
+						.filter[it.identifier === variable].toSet) {
+					val literal = max.toString.createLiteralExpression
+					
+					val container = relevantIdentifier.eContainer
+					if (container instanceof AssignmentExpression &&
+							(container as AssignmentExpression)
+									.firstExpr === relevantIdentifier) {
+						// Lhs - replacing assignment to the value
+						literal.replace(container)
+					}
+					else {
+						// Changing the reference to a literal value
+						literal.replace(relevantIdentifier)
+					}
+//					identifiers -= relevantIdentifier
+				}
+				
+				// TODO no out events
+				val outEvent = true
+				if (!outEvent) {
+					logger.log(Level.INFO, "Deleting trivial variable: " + variable.name)
+					integerVariable.remove
+					
+				}
+			}
+			else {
+				// Limiting the codomain of the integer variable
+				integerVariable.typeDefinition = typFact.createRangeTypeSpecification => [
+					it.bounds = createIntegerBounds => [
+						it.lowerBound = min.toString.createLiteralExpression
+						it.upperBound = max.toString.createLiteralExpression
+					]
 				]
-			]
+			}
 		}
 	}
 	

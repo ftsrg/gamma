@@ -21,6 +21,7 @@ import java.util.Set;
 
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
 import hu.bme.mit.gamma.util.JavaUtil;
+import hu.bme.mit.gamma.util.Triple;
 import uppaal.NTA;
 import uppaal.core.NamedElement;
 import uppaal.declarations.Declaration;
@@ -126,6 +127,145 @@ public class UppaalModelDerivedFeatures {
 	
 	public static Map<VariableContainer, Entry<Integer, Integer>>
 			getIntegerVariableCodomains(NTA nta) {
+		
+		Triple<Map<Variable, List<LiteralExpression>>, Map<Variable, List<Variable>>,
+			Set<Variable>> variableAssignmentGroups = getVariableAssignmentGroups(nta);
+		
+		Map<Variable, List<LiteralExpression>> integerVariableAssignments = variableAssignmentGroups.getFirst();
+		Map<Variable, List<Variable>> variableVariableAssignments = variableAssignmentGroups.getSecond();
+		Set<Variable> notIntegerLiteralVariables = variableAssignmentGroups.getThird();
+		
+		Map<Variable, List<LiteralExpression>> integerLiteralVariableAssignments =
+				new HashMap<Variable, List<LiteralExpression>>(integerVariableAssignments);
+		Set<Variable> integerLiteralVariables = integerLiteralVariableAssignments.keySet();
+		Set<Variable> variableVariables = variableVariableAssignments.keySet();
+		integerLiteralVariables.removeAll(variableVariables);
+		integerLiteralVariables.removeAll(notIntegerLiteralVariables);
+		// Every variable in this collection now has only integer value assignments
+		
+		// 1: Calculating precise domains based on these values
+		Map<VariableContainer, Entry<Integer, Integer>> integerVariableMinMax = calculatePresiceCodomains(
+				integerLiteralVariableAssignments, integerLiteralVariables);
+		
+		// 2: Extending min/max values for variables that need to hold low/large values
+		// e.g., a := 70.000
+		extendCodomainsForLiteralAssignments(integerVariableAssignments, integerVariableMinMax);
+		
+		// 3: Checking 'var := var2' assignments - note that this is done after the 'extension'
+		extendCodomainsForVariableAssignments(integerVariableAssignments, variableVariableAssignments,
+				notIntegerLiteralVariables, variableVariables, integerVariableMinMax);
+		
+		return integerVariableMinMax;
+	}
+
+	public static void extendCodomainsForVariableAssignments(
+			Map<Variable, List<LiteralExpression>> integerVariableAssignments,
+			Map<Variable, List<Variable>> variableVariableAssignments, Set<Variable> notIntegerLiteralVariables,
+			Set<Variable> variableVariables, Map<VariableContainer, Entry<Integer, Integer>> integerVariableMinMax) {
+		variableVariables.removeAll(notIntegerLiteralVariables);
+		// Every variable in this collection now has only integer value assignments
+		// or 'var := var2' assignments
+		int size = 0;
+		while (size != variableVariableAssignments.size()) {
+			size = variableVariableAssignments.size(); // While we can remove vars from here
+			
+			for (Variable assignedVariable :
+						new ArrayList<Variable>(variableVariables)) {
+				List<Variable> rhsVariables = variableVariableAssignments.get(assignedVariable);
+				if (rhsVariables.stream()
+						.allMatch(it ->
+							integerVariableMinMax.keySet().contains(it.getContainer()))) {
+					List<Integer> mins = new ArrayList<Integer>();
+					List<Integer> maxs = new ArrayList<Integer>();
+					
+					// Rhs variables
+					for (Variable rhsVariable : rhsVariables) {
+						VariableContainer container = rhsVariable.getContainer();
+						Entry<Integer, Integer> minMax = integerVariableMinMax.get(container);
+						mins.add(minMax.getKey());
+						maxs.add(minMax.getValue());
+					}
+					
+					// Rhs integer literals
+					if (integerVariableAssignments.containsKey(assignedVariable)) {
+						for (LiteralExpression integerLiteral :
+								integerVariableAssignments.get(assignedVariable)) {
+							mins.add(
+									toInteger(integerLiteral));
+							maxs.add(
+									toInteger(integerLiteral));
+						}
+					}
+					
+					int min = mins.stream()
+							.min((o1, o2) -> o1.compareTo(o2)).get();
+					int max = maxs.stream()
+							.max((o1, o2) -> o1.compareTo(o2)).get();
+					
+					// Now the codomain of the assigned variable is "known"
+					variableVariables.remove(assignedVariable);
+					// So we move it to the other map
+					VariableContainer container = assignedVariable.getContainer();
+					integerVariableMinMax.put(container,
+							new SimpleEntry<Integer, Integer>(min, max));
+				}
+			}
+		}
+	}
+
+	public static void extendCodomainsForLiteralAssignments(Map<Variable, List<LiteralExpression>> integerVariableAssignments,
+			Map<VariableContainer, Entry<Integer, Integer>> integerVariableMinMax) {
+		List<Variable> additionalIntegerVariables =
+				new ArrayList<Variable>(integerVariableAssignments.keySet());
+		additionalIntegerVariables.removeIf(
+				it -> integerVariableMinMax.containsKey(it.getContainer()));
+		for (Variable integerVariable : additionalIntegerVariables) {
+			List<LiteralExpression> integerLiterals =
+					integerVariableAssignments.get(integerVariable);
+			Integer min = integerLiterals.stream()
+					.map(it -> toInteger(it))
+					.min((o1, o2) -> o1.compareTo(o2)).get();
+			Integer max = integerLiterals.stream()
+					.map(it -> toInteger(it))
+					.max((o1, o2) -> o1.compareTo(o2)).get();
+			
+			VariableContainer container = integerVariable.getContainer();
+			min = Integer.min(Short.MIN_VALUE, min);
+			max = Integer.max(Short.MAX_VALUE, max);
+			
+			if (min < Short.MIN_VALUE || Short.MAX_VALUE < max) {
+				integerVariableMinMax.put(container,
+						new SimpleEntry<Integer, Integer>(min, max));
+			}
+		}
+	}
+
+	public static Map<VariableContainer, Entry<Integer, Integer>> calculatePresiceCodomains(
+			Map<Variable, List<LiteralExpression>> integerLiteralVariableAssignments,
+			Set<Variable> integerLiteralVariables) {
+		Map<VariableContainer, Entry<Integer, Integer>> integerVariableMinMax =
+				new HashMap<VariableContainer, Entry<Integer, Integer>>();
+		for (Variable integerLiteralVariable : integerLiteralVariables) {
+			List<LiteralExpression> integerLiterals =
+					integerLiteralVariableAssignments.get(integerLiteralVariable);
+			// Mapping into integers and computing min and max
+			Integer min = integerLiterals.stream()
+					.map(it -> toInteger(it))
+					.min((o1, o2) -> o1.compareTo(o2)).get();
+			Integer max = integerLiterals.stream()
+					.map(it -> toInteger(it))
+					.max((o1, o2) -> o1.compareTo(o2)).get();
+			
+			VariableContainer container = integerLiteralVariable.getContainer();
+			integerVariableMinMax.put(container,
+					new SimpleEntry<Integer, Integer>(min, max));
+		}
+		return integerVariableMinMax;
+	}
+	
+	public static Triple<
+			Map<Variable, List<LiteralExpression>>,	Map<Variable, List<Variable>>, Set<Variable>>
+				getVariableAssignmentGroups(NTA nta) {
 		List<AssignmentExpression> assignments = ecoreUtil.getAllContentsOfType(
 				nta, AssignmentExpression.class);
 		
@@ -165,125 +305,8 @@ public class UppaalModelDerivedFeatures {
 			}
 		}
 		
-		Map<Variable, List<LiteralExpression>> integerLiteralVariableAssignments =
-				new HashMap<Variable, List<LiteralExpression>>(integerVariableAssignments);
-		Set<Variable> integerLiteralVariables = integerLiteralVariableAssignments.keySet();
-		Set<Variable> variableVariables = variableVariableAssignments.keySet();
-		integerLiteralVariables.removeAll(variableVariables);
-		integerLiteralVariables.removeAll(notIntegerLiteralVariables);
-		// Every variable in this collection now has only integer value assignments
-		
-		Map<VariableContainer, Entry<Integer, Integer>> integerVariableMinMax =
-				new HashMap<VariableContainer, Entry<Integer, Integer>>();
-		for (Variable integerLiteralVariable : integerLiteralVariables) {
-			List<LiteralExpression> integerLiterals =
-					integerLiteralVariableAssignments.get(integerLiteralVariable);
-			// Mapping into integers and computing min and max
-			Integer min = integerLiterals.stream()
-					.map(it -> toInteger(it))
-					.min((o1, o2) -> o1.compareTo(o2)).get();
-			Integer max = integerLiterals.stream()
-					.map(it -> toInteger(it))
-					.max((o1, o2) -> o1.compareTo(o2)).get();
-			
-			VariableContainer container = integerLiteralVariable.getContainer();
-			integerVariableMinMax.put(container,
-					new SimpleEntry<Integer, Integer>(min, max));
-		}
-		
-		// Checking 'var := var2'
-		variableVariables.removeAll(notIntegerLiteralVariables);
-		// Every variable in this collection now has only integer value assignments
-		// or 'var := var2' assignments
-		int size = 0;
-		while (size != variableVariableAssignments.size()) {
-			size = variableVariableAssignments.size(); // While we can remove vars from here
-			
-			for (Variable assignedVariable :
-						new ArrayList<Variable>(variableVariables)) {
-				List<Variable> rhsVariables = variableVariableAssignments.get(assignedVariable);
-				if (rhsVariables.stream()
-						.allMatch(it ->
-							integerVariableMinMax.keySet().contains(it.getContainer()))) {
-					List<Integer> mins = new ArrayList<Integer>();
-					List<Integer> maxs = new ArrayList<Integer>();
-					
-					// Rhs variables
-					for (Variable rhsVariable : rhsVariables) {
-						VariableContainer container = rhsVariable.getContainer();
-//						if (integerVariableMinMax.keySet().contains(container)) {
-							Entry<Integer, Integer> minMax = integerVariableMinMax.get(container);
-							mins.add(minMax.getKey());
-							maxs.add(minMax.getValue());
-//						}
-//						else {
-//							// integerVariableAssignments.keySet().contains(rhsVariable)
-//							List<LiteralExpression> literalExpressions =
-//									integerVariableAssignments.get(rhsVariable);
-//							int min = literalExpressions.stream()
-//									.map(it -> toInteger(it))
-//									.min((o1, o2) -> o1.compareTo(o2)).get();
-//							int max = literalExpressions.stream()
-//									.map(it -> toInteger(it))
-//									.min((o1, o2) -> o1.compareTo(o2)).get();
-//							
-//							mins.add(min);
-//							maxs.add(max);
-//						}
-					}
-					
-					// Rhs integer literals
-					if (integerVariableAssignments.containsKey(assignedVariable)) {
-						for (LiteralExpression integerLiteral :
-								integerVariableAssignments.get(assignedVariable)) {
-							mins.add(
-									toInteger(integerLiteral));
-							maxs.add(
-									toInteger(integerLiteral));
-						}
-					}
-					
-					int min = mins.stream()
-							.min((o1, o2) -> o1.compareTo(o2)).get();
-					int max = maxs.stream()
-							.max((o1, o2) -> o1.compareTo(o2)).get();
-					
-					// Now the codomain of the assigned variable is "known"
-					variableVariables.remove(assignedVariable);
-					// So we move it to the other map
-					VariableContainer container = assignedVariable.getContainer();
-					integerVariableMinMax.put(container,
-							new SimpleEntry<Integer, Integer>(min, max));
-				}
-			}
-			
-			// Setting min/max values for variables that need to hold low/large values
-			// e.g., a := 70.000
-			List<Variable> additionalIntegerVariables =
-					new ArrayList<Variable>(integerVariableAssignments.keySet());
-			additionalIntegerVariables.removeIf(
-					it -> integerVariableMinMax.containsKey(it.getContainer()));
-			for (Variable integerVariable : additionalIntegerVariables) {
-				List<LiteralExpression> integerLiterals = integerVariableAssignments.get(integerVariable);
-				Integer min = integerLiterals.stream()
-						.map(it -> toInteger(it))
-						.min((o1, o2) -> o1.compareTo(o2)).get();
-				Integer max = integerLiterals.stream()
-						.map(it -> toInteger(it))
-						.max((o1, o2) -> o1.compareTo(o2)).get();
-				
-				VariableContainer container = integerVariable.getContainer();
-				min = Integer.min(Short.MIN_VALUE, min);
-				max = Integer.max(Short.MAX_VALUE, max);
-				
-				if (min < Short.MIN_VALUE || Short.MAX_VALUE < max) {
-					integerVariableMinMax.put(container,
-							new SimpleEntry<Integer, Integer>(min, max));
-				}
-			}
-		}
-		
-		return integerVariableMinMax;
+		return new Triple<Map<Variable, List<LiteralExpression>>, Map<Variable, List<Variable>>, Set<Variable>>(
+				integerVariableAssignments, variableVariableAssignments, notIntegerLiteralVariables);
 	}
 	
 }
