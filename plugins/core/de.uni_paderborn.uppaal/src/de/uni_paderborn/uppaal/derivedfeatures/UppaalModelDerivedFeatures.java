@@ -129,9 +129,11 @@ public class UppaalModelDerivedFeatures {
 		List<AssignmentExpression> assignments = ecoreUtil.getAllContentsOfType(
 				nta, AssignmentExpression.class);
 		
-		Map<Variable, List<AssignmentExpression>> assignmentsToVariables =
-				new HashMap<Variable, List<AssignmentExpression>>();
-		Set<Variable> unhandledVariables = new HashSet<Variable>();
+		Map<Variable, List<LiteralExpression>> integerVariableAssignments =
+				new HashMap<Variable, List<LiteralExpression>>();
+		Map<Variable, List<Variable>> variableVariableAssignments =
+				new HashMap<Variable, List<Variable>>();
+		Set<Variable> notIntegerLiteralVariables = new HashSet<Variable>();
 		for (AssignmentExpression assignment : assignments) {
 			Expression firstExpr = assignment.getFirstExpr();
 			if (firstExpr instanceof IdentifierExpression identifierExpression) {
@@ -142,44 +144,146 @@ public class UppaalModelDerivedFeatures {
 					if (operator == AssignmentOperator.EQUAL &&
 							secondExpr instanceof LiteralExpression literalExpression &&
 							isIntegerLiteral(literalExpression)) {
-						List<AssignmentExpression> assignmentExpressions =
-								javaUtil.getOrCreateList(assignmentsToVariables, variable);
-						assignmentExpressions.add(assignment);
+						List<LiteralExpression> integerLiterals =
+								javaUtil.getOrCreateList(integerVariableAssignments, variable);
+						integerLiterals.add(literalExpression);
+					}
+					else if (operator == AssignmentOperator.EQUAL &&
+								secondExpr instanceof IdentifierExpression rhsIdentifierExpression) {
+						NamedElement rhsNamedElement = rhsIdentifierExpression.getIdentifier();
+						if (rhsNamedElement instanceof Variable rhsVariable) {
+							List<Variable> variables = javaUtil
+									.getOrCreateList(variableVariableAssignments, variable);
+							variables.add(rhsVariable);
+						}
 					}
 					else {
-						// Not a simple '=' assignment or not an 'integer literal'
-						unhandledVariables.add(variable);
+						// Not a simple '=' assignment or not an 'integer literal' or 'var = var2'
+						notIntegerLiteralVariables.add(variable);
 					}
 				}
 			}
 		}
 		
-		// Deleting unhandleable variables
-		Set<Variable> handledVariables = assignmentsToVariables.keySet();
-		handledVariables.removeAll(unhandledVariables);
-		// Every variable that has only integer value assignments
+		Map<Variable, List<LiteralExpression>> integerLiteralVariableAssignments =
+				new HashMap<Variable, List<LiteralExpression>>(integerVariableAssignments);
+		Set<Variable> integerLiteralVariables = integerLiteralVariableAssignments.keySet();
+		Set<Variable> variableVariables = variableVariableAssignments.keySet();
+		integerLiteralVariables.removeAll(variableVariables);
+		integerLiteralVariables.removeAll(notIntegerLiteralVariables);
+		// Every variable in this collection now has only integer value assignments
 		
-		Map<VariableContainer, Entry<Integer, Integer>> variableMinMax =
+		Map<VariableContainer, Entry<Integer, Integer>> integerVariableMinMax =
 				new HashMap<VariableContainer, Entry<Integer, Integer>>();
-		for (Variable handledVariable : handledVariables) {
-			List<AssignmentExpression> integerAssignments =
-					assignmentsToVariables.get(handledVariable);
-			// Maping into integers and computing min and max
-			Integer max = integerAssignments.stream()
-					.map(it -> toInteger((LiteralExpression) it.getSecondExpr()))
-					.max((o1, o2) -> o1.compareTo(o2)).get();
-			Integer min = integerAssignments.stream()
-					.map(it -> toInteger((LiteralExpression) it.getSecondExpr()))
+		for (Variable integerLiteralVariable : integerLiteralVariables) {
+			List<LiteralExpression> integerLiterals =
+					integerLiteralVariableAssignments.get(integerLiteralVariable);
+			// Mapping into integers and computing min and max
+			Integer min = integerLiterals.stream()
+					.map(it -> toInteger(it))
 					.min((o1, o2) -> o1.compareTo(o2)).get();
+			Integer max = integerLiterals.stream()
+					.map(it -> toInteger(it))
+					.max((o1, o2) -> o1.compareTo(o2)).get();
 			
-			VariableContainer container = handledVariable.getContainer();
-			variableMinMax.put(container, new SimpleEntry<Integer, Integer>(min, max));
+			VariableContainer container = integerLiteralVariable.getContainer();
+			integerVariableMinMax.put(container,
+					new SimpleEntry<Integer, Integer>(min, max));
 		}
 		
-		// TODO check var := var2
+		// Checking 'var := var2'
+		variableVariables.removeAll(notIntegerLiteralVariables);
+		// Every variable in this collection now has only integer value assignments
+		// or 'var := var2' assignments
+		int size = 0;
+		while (size != variableVariableAssignments.size()) {
+			size = variableVariableAssignments.size(); // While we can remove vars from here
+			
+			for (Variable assignedVariable :
+						new ArrayList<Variable>(variableVariables)) {
+				List<Variable> rhsVariables = variableVariableAssignments.get(assignedVariable);
+				if (rhsVariables.stream()
+						.allMatch(it ->
+							integerVariableMinMax.keySet().contains(it.getContainer()))) {
+					List<Integer> mins = new ArrayList<Integer>();
+					List<Integer> maxs = new ArrayList<Integer>();
+					
+					// Rhs variables
+					for (Variable rhsVariable : rhsVariables) {
+						VariableContainer container = rhsVariable.getContainer();
+//						if (integerVariableMinMax.keySet().contains(container)) {
+							Entry<Integer, Integer> minMax = integerVariableMinMax.get(container);
+							mins.add(minMax.getKey());
+							maxs.add(minMax.getValue());
+//						}
+//						else {
+//							// integerVariableAssignments.keySet().contains(rhsVariable)
+//							List<LiteralExpression> literalExpressions =
+//									integerVariableAssignments.get(rhsVariable);
+//							int min = literalExpressions.stream()
+//									.map(it -> toInteger(it))
+//									.min((o1, o2) -> o1.compareTo(o2)).get();
+//							int max = literalExpressions.stream()
+//									.map(it -> toInteger(it))
+//									.min((o1, o2) -> o1.compareTo(o2)).get();
+//							
+//							mins.add(min);
+//							maxs.add(max);
+//						}
+					}
+					
+					// Rhs integer literals
+					if (integerVariableAssignments.containsKey(assignedVariable)) {
+						for (LiteralExpression integerLiteral :
+								integerVariableAssignments.get(assignedVariable)) {
+							mins.add(
+									toInteger(integerLiteral));
+							maxs.add(
+									toInteger(integerLiteral));
+						}
+					}
+					
+					int min = mins.stream()
+							.min((o1, o2) -> o1.compareTo(o2)).get();
+					int max = maxs.stream()
+							.max((o1, o2) -> o1.compareTo(o2)).get();
+					
+					// Now the codomain of the assigned variable is "known"
+					variableVariables.remove(assignedVariable);
+					// So we move it to the other map
+					VariableContainer container = assignedVariable.getContainer();
+					integerVariableMinMax.put(container,
+							new SimpleEntry<Integer, Integer>(min, max));
+				}
+			}
+			
+			// Setting min/max values for variables that need to hold low/large values
+			// e.g., a := 70.000
+			List<Variable> additionalIntegerVariables =
+					new ArrayList<Variable>(integerVariableAssignments.keySet());
+			additionalIntegerVariables.removeIf(
+					it -> integerVariableMinMax.containsKey(it.getContainer()));
+			for (Variable integerVariable : additionalIntegerVariables) {
+				List<LiteralExpression> integerLiterals = integerVariableAssignments.get(integerVariable);
+				Integer min = integerLiterals.stream()
+						.map(it -> toInteger(it))
+						.min((o1, o2) -> o1.compareTo(o2)).get();
+				Integer max = integerLiterals.stream()
+						.map(it -> toInteger(it))
+						.max((o1, o2) -> o1.compareTo(o2)).get();
+				
+				VariableContainer container = integerVariable.getContainer();
+				min = Integer.min(Short.MIN_VALUE, min);
+				max = Integer.max(Short.MAX_VALUE, max);
+				
+				if (min < Short.MIN_VALUE || Short.MAX_VALUE < max) {
+					integerVariableMinMax.put(container,
+							new SimpleEntry<Integer, Integer>(min, max));
+				}
+			}
+		}
 		
-		return variableMinMax;
+		return integerVariableMinMax;
 	}
-	
 	
 }
