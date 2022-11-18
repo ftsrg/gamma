@@ -85,9 +85,7 @@ class TypeTransformer {
 			lowlevelPackage.typeDeclarations += transformedTypeDeclaration
 			transformedTypeDeclaration
 		}
-		return createTypeReference => [
-			it.reference = lowlevelTypeDeclaration
-		]
+		return lowlevelTypeDeclaration.createTypeReference
 	}
 	
 	protected def transformTypeDeclaration(TypeDeclaration typeDeclaration) {

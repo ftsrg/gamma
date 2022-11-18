@@ -16,11 +16,14 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IFile;
 
+import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition;
+import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
 import hu.bme.mit.gamma.genmodel.model.Verification;
@@ -110,6 +113,12 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 			// Maybe other optimizations could be added?
 			xStsReducer.deleteUnusedAndWrittenOnlyVariablesExceptOutEvents(xSts, keepableGammaVariables);
 			xStsReducer.deleteUnusedInputEventVariables(xSts, keepableGammaVariables);
+			// Deleting enum literals
+			Set<EnumerationLiteralDefinition> keepableGammaEnumLiterals =
+					ecoreUtil.getAllContentsOfType(formula, EnumerationLiteralExpression.class).stream()
+							.map(it -> it.getReference())
+							.collect(Collectors.toSet());
+			xStsReducer.deleteUnusedEnumLiterals(xSts, keepableGammaEnumLiterals);
 			
 			XstsOptimizer xStsOptimizer = XstsOptimizer.INSTANCE;
 			xStsOptimizer.optimizeXSts(xSts); // To remove null/empty actions
