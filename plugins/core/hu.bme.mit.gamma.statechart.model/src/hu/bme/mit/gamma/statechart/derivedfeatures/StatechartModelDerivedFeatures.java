@@ -2850,7 +2850,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return getComponentAnnotation(component, HasInitialOutputsBlockAnnotation.class) != null;
 	}
 	
-	public static boolean hasNegatedContratStatechartAnnotation(Component component) {
+	public static boolean hasNegatedContractStatechartAnnotation(Component component) {
 		return getComponentAnnotation(component, NegativeContractStatechartAnnotation.class) != null;
 	}
 	

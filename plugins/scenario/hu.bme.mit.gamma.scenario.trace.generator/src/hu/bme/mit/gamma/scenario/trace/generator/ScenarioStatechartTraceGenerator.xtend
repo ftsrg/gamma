@@ -93,7 +93,7 @@ class ScenarioStatechartTraceGenerator {
 		val regionName = statechart.regions.get(0).name
 		val statechartName = statechart.name.toFirstUpper
 
-		val targetStateName = statechart.hasNegatedContratStatechartAnnotation ? scenarioStatechartUtil.
+		val targetStateName = statechart.hasNegatedContractStatechartAnnotation ? scenarioStatechartUtil.
 				hotViolation : scenarioStatechartUtil.accepting
 
 		val packageFileName = fileNamer.getUnfoldedPackageFileName(fileName)
@@ -130,7 +130,7 @@ class ScenarioStatechartTraceGenerator {
 			result += trace
 		}
 
-		if (statechart.hasNegatedContratStatechartAnnotation) {
+		if (statechart.hasNegatedContractStatechartAnnotation) {
 			for (trace : result) {
 				trace.annotations += createNegativeTestAnnotation
 			}
