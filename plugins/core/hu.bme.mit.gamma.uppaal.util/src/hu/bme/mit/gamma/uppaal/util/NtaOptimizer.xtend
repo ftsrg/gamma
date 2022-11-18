@@ -14,11 +14,13 @@ import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.util.Set
 import java.util.logging.Level
 import java.util.logging.Logger
+import org.eclipse.emf.ecore.EObject
 import uppaal.declarations.DataVariableDeclaration
 import uppaal.expressions.AssignmentExpression
 import uppaal.expressions.IdentifierExpression
 import uppaal.expressions.LiteralExpression
 import uppaal.expressions.LogicalOperator
+import uppaal.statements.ExpressionStatement
 import uppaal.templates.Edge
 import uppaal.templates.Location
 import uppaal.templates.LocationKind
@@ -171,6 +173,22 @@ class NtaOptimizer {
 				integerVariable.remove
 			}
 		}
+		
+		// Removing '0;' like statements
+		val literalExpressions = nta.getAllContentsOfType(LiteralExpression)
+		
+		val removableLiteralStatements = <EObject>newArrayList
+		removableLiteralStatements += literalExpressions
+				.map[it.eContainer]
+				.filter(ExpressionStatement)
+		removableLiteralStatements += literalExpressions
+				.filter[it.eContainer instanceof Edge &&
+					(it.eContainer as Edge).update.contains(it)]
+		
+		for (removableLiteralStatement : removableLiteralStatements) {
+			removableLiteralStatement.remove
+		}
+		
 	}
 	
 }
