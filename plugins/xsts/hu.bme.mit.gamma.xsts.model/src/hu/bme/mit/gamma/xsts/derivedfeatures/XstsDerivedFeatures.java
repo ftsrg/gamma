@@ -113,8 +113,12 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 	
 	public static SequentialAction getEnvironmentalAction(XSTS xSts) {
 		SequentialAction sequentialAction = xStsFactory.createSequentialAction();
-		sequentialAction.getActions().add(ecoreUtil.clone(xSts.getInEventTransition().getAction()));
-		sequentialAction.getActions().add(ecoreUtil.clone(xSts.getOutEventTransition().getAction()));
+		sequentialAction.getActions().add(
+				ecoreUtil.clone(
+						xSts.getInEventTransition().getAction()));
+		sequentialAction.getActions().add(
+				ecoreUtil.clone(
+						xSts.getOutEventTransition().getAction()));
 		return sequentialAction;
 	}
 	

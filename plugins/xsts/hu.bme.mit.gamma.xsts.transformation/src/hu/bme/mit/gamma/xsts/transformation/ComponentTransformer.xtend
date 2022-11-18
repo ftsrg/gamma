@@ -311,7 +311,7 @@ class ComponentTransformer {
 				// if (eventId == 0) { empty } // This is impossible
 //				branchExpressions += xStsEventIdVariable.createEqualityExpression(emptyValue)
 //				branchActions += createEmptyAction
-				// if (0 < sizeOfQueue) {..} - If this holds, then the emptyValue cannot be present in the queue 
+				// if (0 < sizeOfQueue) {..} - If this holds above, then the emptyValue cannot be present in the queue
 				
 				val events = queue.storedEvents
 				for (portEvent : events) {
@@ -383,9 +383,18 @@ class ComponentTransformer {
 					branchExpressions += ifExpression
 					branchActions += thenAction
 				}
-				// Excluding branches for the different event identifiers
-				// Fixed disjunct set of eventIds - 'if' instead of 'choice'
-				block.actions += branchExpressions.createIfAction(branchActions)
+				// Note that the last expression is unnecessary as all branches (event ids) are
+				// disjunct and complete -> removing the last one to create an 'else' branch (optimization)
+				// (works for UPPAAL havoc, too: see algorithm there)
+				branchExpressions.removeLast
+				if (branchExpressions.empty) {
+					block.actions += branchActions.onlyElement // Only one event can come
+				}
+				else {
+					// Excluding branches for the different event identifiers
+					// Fixed disjunct set of eventIds - 'if' + 'else' instead of 'choice'
+					block.actions += branchExpressions.createIfAction(branchActions)
+				}
 			}
 			
 			// Dispatching events to connected message queues
