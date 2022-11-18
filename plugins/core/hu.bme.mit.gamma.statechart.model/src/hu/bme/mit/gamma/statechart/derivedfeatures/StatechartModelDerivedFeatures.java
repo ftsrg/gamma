@@ -1766,15 +1766,16 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	}
 	
 	public static Collection<Region> getAllRegions(CompositeElement compositeElement) {
-		Set<Region> regions = new HashSet<Region>(compositeElement.getRegions());
+		Set<Region> regions = new LinkedHashSet<Region>(compositeElement.getRegions());
 		for (State state : getAllStates(compositeElement)) {
-			regions.addAll(getAllRegions(state));
+			regions.addAll(
+					getAllRegions(state)); // getRegions would be enough?
 		}
 		return regions;
 	}
 	
 	public static Collection<Region> getAllRegions(Region region) {
-		Set<Region> regions = new HashSet<Region>();
+		Set<Region> regions = new LinkedHashSet<Region>();
 		regions.add(region);
 		TreeIterator<Object> allContents = EcoreUtil.getAllContents(region, true);
 		while (allContents.hasNext()) {
@@ -1809,6 +1810,15 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	public static boolean areOrthogonal(Region lhs, Region rhs) {
 		return getContainingCompositeElement(lhs) == getContainingCompositeElement(rhs);
+	}
+	
+	public static boolean hasOrthogonalRegions(CompositeElement element) {
+		for (Region region : getAllRegions(element)) {
+			if (isOrthogonal(region)) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	public static boolean areTransitivelyOrthogonal(StateNode lhs, StateNode rhs) {
