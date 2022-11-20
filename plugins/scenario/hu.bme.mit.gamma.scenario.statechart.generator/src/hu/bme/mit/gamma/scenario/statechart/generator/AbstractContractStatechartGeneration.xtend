@@ -15,6 +15,7 @@ import hu.bme.mit.gamma.action.model.ActionModelFactory
 import hu.bme.mit.gamma.action.model.AssignmentStatement
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
+import hu.bme.mit.gamma.expression.model.InfinityExpression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.expression.util.ExpressionUtil
@@ -43,6 +44,7 @@ import hu.bme.mit.gamma.statechart.interface_.Trigger
 import hu.bme.mit.gamma.statechart.statechart.BinaryTrigger
 import hu.bme.mit.gamma.statechart.statechart.BinaryType
 import hu.bme.mit.gamma.statechart.statechart.ChoiceState
+import hu.bme.mit.gamma.statechart.statechart.OnCycleTrigger
 import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.SetTimeoutAction
 import hu.bme.mit.gamma.statechart.statechart.State
@@ -63,6 +65,7 @@ import org.eclipse.emf.ecore.EObject
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
+import java.util.Arrays
 
 abstract class AbstractContractStatechartGeneration {
 
@@ -186,10 +189,10 @@ abstract class AbstractContractStatechartGeneration {
 		val right = binaryTrigger.rightOperand
 		val left = binaryTrigger.leftOperand
 		if (right instanceof EventTrigger) {
-			binaryTrigger.rightOperand = negateEventTrigger(right)
+			binaryTrigger.rightOperand = negateTrigger(right)
 		}
 		if (left instanceof EventTrigger) {
-			binaryTrigger.leftOperand = negateEventTrigger(left)
+			binaryTrigger.leftOperand = negateTrigger(left)
 		}
 		if (left instanceof BinaryTrigger) {
 			negateBinaryTree(left)
@@ -199,7 +202,7 @@ abstract class AbstractContractStatechartGeneration {
 		}
 	}
 
-	def protected Trigger negateEventTrigger(Trigger trigger) {
+	def protected Trigger negateTrigger(Trigger trigger) {
 		if (trigger instanceof UnaryTrigger) {
 			if (trigger.type == UnaryType.NOT) {
 				return trigger.operand
@@ -270,10 +273,9 @@ abstract class AbstractContractStatechartGeneration {
 		return bin
 	}
 
-	protected def List<Trigger> createOtherNegatedTriggers(DeterministicOccurrenceSet set) {
+	protected def List<Trigger> createOtherNegatedTriggers(DeterministicOccurrenceSet set, boolean combineEvents) {
 		val triggers = <Trigger>newArrayList
-		val ports = newArrayList
-		val events = newArrayList
+		val portsAndEvents = <Port,List<Event>>newHashMap
 		val allPorts = statechart.allPorts.filter[!it.inputEvents.empty]
 		for (modalInteraction : set.deterministicOccurrences) {
 			var Interaction signal = null
@@ -289,12 +291,17 @@ abstract class AbstractContractStatechartGeneration {
 				val portName = signal.getDirection == InteractionDirection.SEND ?
 						scenarioStatechartUtil.getTurnedOutPortName(signal.getPort) :
 						signal.getPort.name
-				ports += getPort(portName)
-				events += getEvent(signal.getEvent.name, getPort(portName))
+				val port = getPort(portName)
+				val event = getEvent(signal.getEvent.name, port)
+				if(portsAndEvents.containsKey(port)) {
+					portsAndEvents.get(port).add(event)
+				} else {
+					portsAndEvents.put(port, Arrays.asList(event))
+				}
 			}
 		}
 		for (port : allPorts) {
-			if (!ports.contains(port)) {
+			if (!portsAndEvents.containsKey(port) && combineEvents) {
 				val anyPortEvent = createAnyPortEventReference
 				anyPortEvent.port = port
 				val trigger = createEventTrigger
@@ -304,7 +311,12 @@ abstract class AbstractContractStatechartGeneration {
 				unary.type = UnaryType.NOT
 				triggers += unary
 			} else {
-				val concrateEvents = port.inputEvents.filter[!(events.contains(it))]
+				val concrateEvents = 
+					if(portsAndEvents.containsKey(port)) {
+						port.inputEvents.filter[!(portsAndEvents.get(port).contains(it))]
+					} else {
+						port.inputEvents
+					}
 				for (concrateEvent : concrateEvents) {
 					val trigger = createEventTrigger
 					val portEventReference = createPortEventReference
@@ -552,28 +564,54 @@ abstract class AbstractContractStatechartGeneration {
 			trigger = createOnCycleTrigger
 		}
 		if (isNegated) {
-			forwardTransition.trigger = negateEventTrigger(trigger)
+			forwardTransition.trigger = negateTrigger(trigger)
 		} else {
 			forwardTransition.trigger = trigger
 			//Uncomment these lines to allow effects on the reversed ports
-			for (modalInteraction : nonCheckOrAssignmentInteractitons) {
-				val effect = getRaiseEventAction(modalInteraction, !reversed)
-				if (effect !== null) {
-					forwardTransition.effects += effect
-				}
-			}
+//			for (modalInteraction : nonCheckOrAssignmentInteractitons) {
+//				val effect = getRaiseEventAction(modalInteraction, !reversed)
+//				if (effect !== null) {
+//					forwardTransition.effects += effect
+//				}
+//			}
 		}
 		addChecksToTransition(checks, forwardTransition)
 		addAssignmentsToTransition(assignments, forwardTransition)
 	}
 
-	def protected handleDelays(DeterministicOccurrenceSet set) {
+	def protected handleDelays(DeterministicOccurrenceSet set, Transition forwardTransition, Transition violationTransition) {
 		val delays = set.deterministicOccurrences.filter(Delay)
 		if (!delays.empty) {
 			val delay = delays.head
 			val timeoutDeclaration = createTimeoutDeclaration
 			val timeSpecification = createTimeSpecification(delay.minimum)
 			setTimeoutDeclarationForState(previousState, timeoutDeclaration, timeSpecification)
+			if (!(delay.maximum instanceof InfinityExpression)) {
+				val timeoutDeclarationMax = createTimeoutDeclaration
+				val timeSpecificationMax = createTimeSpecification(delay.maximum)
+				setTimeoutDeclarationForState(previousState, timeoutDeclarationMax, timeSpecificationMax)
+				
+				val timeoutTrigger = getEventTrigger(delay, true)
+				val negatedTimeoutTrigger = createUnaryTrigger
+				negatedTimeoutTrigger.type = UnaryType.NOT
+				negatedTimeoutTrigger.operand = timeoutTrigger.clone
+
+				setOrExtendTrigger(violationTransition, timeoutTrigger, BinaryType.OR)
+
+				setOrExtendTrigger(forwardTransition, negatedTimeoutTrigger, BinaryType.AND)
+			}
+		}
+	}
+	
+	def protected setOrExtendTrigger(Transition transition, Trigger newTrigger, BinaryType logicalRelation) {
+		if(transition.trigger !== null && !(transition.trigger instanceof OnCycleTrigger)) {
+			val binaryAND = createBinaryTrigger
+			binaryAND.type = logicalRelation
+			binaryAND.leftOperand = newTrigger
+			binaryAND.rightOperand = transition.trigger
+			transition.trigger = binaryAND				
+		} else {
+			transition.trigger == newTrigger
 		}
 	}
 

@@ -16,21 +16,29 @@ import hu.bme.mit.gamma.scenario.statechart.util.ScenarioStatechartUtil
 import hu.bme.mit.gamma.statechart.contract.NotDefinedEventMode
 import hu.bme.mit.gamma.statechart.contract.ScenarioContractAnnotation
 import hu.bme.mit.gamma.statechart.interface_.Component
-import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
+import hu.bme.mit.gamma.theta.verification.ThetaTraceGenerator
 import hu.bme.mit.gamma.theta.verification.ThetaVerifier
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
+import hu.bme.mit.gamma.trace.model.InstanceStateConfiguration
 import hu.bme.mit.gamma.trace.model.TraceModelFactory
 import hu.bme.mit.gamma.trace.util.TraceUtil
 import hu.bme.mit.gamma.trace.util.UnsentEventAssertExtender
 import hu.bme.mit.gamma.transformation.util.GammaFileNamer
+import hu.bme.mit.gamma.transformation.util.annotations.AnnotatablePreprocessableElements
+import hu.bme.mit.gamma.transformation.util.annotations.DataflowCoverageCriterion
+import hu.bme.mit.gamma.transformation.util.annotations.InteractionCoverageCriterion
 import hu.bme.mit.gamma.util.FileUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.transformation.GammaToXstsTransformer
+import hu.bme.mit.gamma.xsts.transformation.api.Gamma2XstsTransformerSerializer
+import hu.bme.mit.gamma.statechart.interface_.Package
 import java.io.File
+import java.util.ArrayList
 import java.util.List
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
+import hu.bme.mit.gamma.transformation.util.annotations.ComponentInstanceReferences
 
 class ScenarioStatechartTraceGenerator {
 
@@ -42,6 +50,7 @@ class ScenarioStatechartTraceGenerator {
 	val extension TraceUtil traceUtil = TraceUtil.INSTANCE
 
 	val boolean TEST_ORIGINAL = true
+	val boolean USE_OWN_TRAVERSAL = false
 
 	StatechartDefinition statechart = null
 	List<Expression> arguments = newArrayList
@@ -57,13 +66,14 @@ class ScenarioStatechartTraceGenerator {
 		this.schedulingConstraint = schedulingConstraint
 		this._package = statechart.containingPackage
 	}
-
+	
 	def List<ExecutionTrace> execute() {
 		var Component component = statechart
 		absoluteParentFolder = (statechart.eResource.file).parentFile.absolutePath
 		var NotDefinedEventMode scenarioContractType = null
 		val result = <ExecutionTrace>newArrayList
 		val annotations = statechart.annotations
+		val isNegativeTest = statechart.hasNegatedContratStatechartAnnotation
 		for (annotation : annotations) {
 			if (annotation instanceof ScenarioContractAnnotation) {
 				if (TEST_ORIGINAL) {
@@ -82,25 +92,73 @@ class ScenarioStatechartTraceGenerator {
 		}
 
 		val name = statechart.name
+		val compInstanceRef = new ComponentInstanceReferences(newArrayList,newArrayList)
+		val transformator = new Gamma2XstsTransformerSerializer(statechart, arguments, absoluteParentFolder, name, schedulingConstraint,
+			true, false, TransitionMerging.HIERARCHICAL, null, 
+			new AnnotatablePreprocessableElements(null, compInstanceRef, null, null, null,
+				InteractionCoverageCriterion.EVERY_INTERACTION, InteractionCoverageCriterion.EVERY_INTERACTION, null,
+				DataflowCoverageCriterion.ALL_USE, null, DataflowCoverageCriterion.ALL_USE), null, null)
+		transformator.execute
+		
 		val xStsFile = new File(absoluteParentFolder + File.separator + fileNamer.getXtextXStsFileName(name))
-		val xStsString = gammaToXSTSTransformer.preprocessAndExecuteAndSerialize(_package, arguments,
-			absoluteParentFolder, name)
-		fileUtil.saveString(xStsFile, xStsString)
+		
+		val targetStateName = 	isNegativeTest ? 
+			scenarioStatechartUtil.hotViolation : 
+			scenarioStatechartUtil.accepting
+		val traces = 
+		if(USE_OWN_TRAVERSAL) {
+			deriveTracesWithOwn(targetStateName, component, xStsFile)
+		} else {
+			deriveTracesWithBuiltIn(targetStateName, component, xStsFile)
+		}
 
+		val backAnnotator = new ExecutionTraceBackAnnotator(traces, component, true, true, isNegativeTest)
+		val filteredTraces = backAnnotator.execute
+
+		for (trace : filteredTraces) {
+			val eventAdder = new UnsentEventAssertExtender(trace.steps, true)
+			if (scenarioContractType == NotDefinedEventMode.STRICT) {
+				eventAdder.execute
+			}
+			result += trace
+		}
+
+		if (isNegativeTest) {
+			for (trace : result) {
+				trace.annotations += createNegativeTestAnnotation
+			}
+		}
+		return result
+	}
+	
+	def List<ExecutionTrace> deriveTracesWithBuiltIn(String targetStateName, Component component, File xStsFile){
+		val derivedTraces = new ArrayList<ExecutionTrace>();
+		val ttg = new ThetaTraceGenerator()
+		derivedTraces += ttg.execute(xStsFile, true, <String>newArrayList, false, false)
+		val traces = <ExecutionTrace>newArrayList	
+		var i = 0
+		val containingPackage = component.containingPackage
+		for(trace : derivedTraces) {
+			val lastStep = trace.steps.last
+			val stateAssert = lastStep.asserts.filter(InstanceStateConfiguration).head // this filter is sufficient due to the simple assertions used in the tests
+			if(stateAssert !== null && stateAssert.state.name.contains(targetStateName)) {
+				trace.setupExecutionTrace(null, trace.name + i++, component, containingPackage, statechart.scenarioAllowedWaitAnnotation)
+				traces += trace
+			}
+		}
+		return traces
+	}
+	
+	def List<ExecutionTrace> deriveTracesWithOwn(String targetStateName, Component component, File xStsFile){
 		val verifier = new ThetaVerifier
 		val modelFile = new File(xStsFile.absolutePath)
 		val fileName = modelFile.name
 		val regionName = statechart.regions.get(0).name
 		val statechartName = statechart.name.toFirstUpper
-
-		val targetStateName = statechart.hasNegatedContratStatechartAnnotation ? scenarioStatechartUtil.
-				hotViolation : scenarioStatechartUtil.accepting
-
 		val packageFileName = fileNamer.getUnfoldedPackageFileName(fileName)
 		val parameters = '''--refinement "MULTI_SEQ" --domain "EXPL" --initprec "ALLVARS" --allpaths'''
 		val query = '''E<> ((«regionName + "_" + statechartName» == «targetStateName»))'''
 		val gammaPackage = ecoreUtil.normalLoad(modelFile.parent, packageFileName)
-
 		val verifierResult = verifier.verifyQuery(gammaPackage, parameters, modelFile, query)
 		val baseTrace = verifierResult.trace
 
@@ -118,25 +176,6 @@ class ScenarioStatechartTraceGenerator {
 				statechart.scenarioAllowedWaitAnnotation)
 			traces += trace
 		}
-
-		val backAnnotator = new ExecutionTraceBackAnnotator(traces, component, true, true)
-		val filteredTraces = backAnnotator.execute
-
-		for (trace : filteredTraces) {
-			val eventAdder = new UnsentEventAssertExtender(trace.steps, true)
-			if (scenarioContractType == NotDefinedEventMode.STRICT) {
-				eventAdder.execute
-			}
-			result += trace
-		}
-
-		if (statechart.hasNegatedContratStatechartAnnotation) {
-			for (trace : result) {
-				trace.annotations += createNegativeTestAnnotation
-			}
-		}
-
-		return result
+		return traces
 	}
-
 }

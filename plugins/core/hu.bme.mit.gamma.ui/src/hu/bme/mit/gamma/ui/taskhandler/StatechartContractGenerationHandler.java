@@ -61,6 +61,7 @@ public class StatechartContractGenerationHandler extends TaskHandler {
 		ScenarioContentSorter sorter = new ScenarioContentSorter();
 		sorter.sort(baseScenario);
 		
+		
 		ContractAutomatonType type = statechartGeneration.getAutomatonType();
 		List<Expression> arguments = statechartGeneration.getArguments();
 		if (type.equals(ContractAutomatonType.MONITOR)) {
@@ -72,7 +73,8 @@ public class StatechartContractGenerationHandler extends TaskHandler {
 			simpleGenerator = new SimpleScenarioGenerator(baseScenario, false, arguments);
 			ScenarioDeclaration simplifiedScenario = simpleGenerator.execute();
 			statechartGenerator = new TestGeneratorStatechartGenerator(simplifiedScenario,
-					component, generationMode, !statechartGeneration.isStartAsColdViolation());
+					component, generationMode, !statechartGeneration.isStartAsColdViolation(),
+					GenmodelDerivedFeatures.isNegativeContractGeneration(statechartGeneration));
 		}
 		StatechartDefinition statechart = statechartGenerator.execute();
 		String name = statechartGeneration.getFileName().get(0);

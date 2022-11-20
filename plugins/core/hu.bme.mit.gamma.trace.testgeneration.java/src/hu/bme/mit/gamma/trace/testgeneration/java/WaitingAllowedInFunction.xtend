@@ -26,13 +26,15 @@ class WaitingAllowedInFunction extends AbstractAssertionHandler {
 	}
 	
 	override String generateAssertBlock(List<Assert> asserts) '''
-		checkGeneralAsserts(new String[] {«FOR _assert : asserts SEPARATOR ", "»«testGeneratorutil.getPortOfAssert(_assert as RaiseEventAct)»«ENDFOR»},
-				new String[] {«FOR _assert : asserts SEPARATOR ", "»«testGeneratorutil.getEventOfAssert(_assert as RaiseEventAct)»«ENDFOR»},
-				new Object[][] {«FOR _assert : asserts SEPARATOR ", "»«testGeneratorutil.getParamsOfAssert(_assert as RaiseEventAct)»«ENDFOR»});
+		checkGeneralAsserts(new String[] {«FOR _assert : asserts SEPARATOR ", "»«testGeneratorutil.getPortOfAssert(_assert)»«ENDFOR»},
+				new String[] {«FOR _assert : asserts SEPARATOR ", "»«testGeneratorutil.getEventOfAssert(_assert)»«ENDFOR»},
+				new Object[][] {«FOR _assert : asserts SEPARATOR ", "»«testGeneratorutil.getParamsOfAssert(_assert)»«ENDFOR»},
+				new Boolean[]{«FOR _assert : asserts SEPARATOR ", "»«testGeneratorutil.isNegative(_assert)»«ENDFOR»});
 	'''
 	
+	
 	def generateWaitingHandlerFunction(String testInstanceName) '''
-		private void checkGeneralAsserts(String[] ports, String[] events, Object[][] objects) {
+		private void checkGeneralAsserts(String[] ports, String[] events, Object[][] objects, Boolean[] isNegatives) {
 			boolean done = false;
 			boolean wasPresent = true;
 			int idx = 0;
@@ -41,7 +43,11 @@ class WaitingAllowedInFunction extends AbstractAssertionHandler {
 				wasPresent = true;
 				try {
 					for(int i = 0; i < ports.length; i++) {
-						assertTrue(«testInstanceName».isRaisedEvent(ports[i], events[i], objects[i]));
+						if (isNegatives[i]) {
+							assertFalse(«testInstanceName».isRaisedEvent(ports[i], events[i], objects[i]));
+						} else {
+							assertTrue(«testInstanceName».isRaisedEvent(ports[i], events[i], objects[i]));
+						}
 					}
 				} catch (AssertionError error) {
 					wasPresent= false;

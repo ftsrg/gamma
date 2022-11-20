@@ -287,7 +287,7 @@ class MonitorStatechartGenerator extends AbstractContractStatechartGeneration {
 			previousState = state
 			return
 		}
-		handleDelays(set)
+		handleDelays(set, forwardTransition, violationTransition)
 		setupForwardTransition(set, isSend, isNegated, forwardTransition)
 
 		forwardTransition.priority = BigInteger.valueOf(3)
@@ -296,28 +296,7 @@ class MonitorStatechartGenerator extends AbstractContractStatechartGeneration {
 		val triggersWithCorrectDir = getAllTriggersForDirection(statechart, isSend)
 		violationTransition.trigger = getBinaryTriggerFromTriggersIfPossible(triggersWithCorrectDir, BinaryType.OR)
 
-		val delay = set.deterministicOccurrences.filter(Delay).head
-		if (delay !== null && !(delay.maximum instanceof InfinityExpression)) {
-			val timeoutDeclaration = createTimeoutDeclaration
-			val timeSpecification = createTimeSpecification(delay.maximum)
-			setTimeoutDeclarationForState(previousState, timeoutDeclaration, timeSpecification)
-			val timeoutTrigger = getEventTrigger(delay, true)
-			val negatedTimeoutTrigger = createUnaryTrigger
-			negatedTimeoutTrigger.type = UnaryType.NOT
-			negatedTimeoutTrigger.operand = timeoutTrigger.clone
-			val binaryOr = createBinaryTrigger
-			binaryOr.type = BinaryType.OR
-			val binaryAND = createBinaryTrigger
-			binaryAND.type = BinaryType.AND
-
-			binaryOr.leftOperand = timeoutTrigger
-			binaryOr.rightOperand = violationTransition.trigger
-			violationTransition.trigger = binaryOr
-
-			binaryAND.leftOperand = negatedTimeoutTrigger
-			binaryAND.rightOperand = forwardTransition.trigger
-			forwardTransition.trigger = binaryAND
-		}
+		
 
 		var otherDirViolationState = if (isSend) {
 				useColdViolationForEnvironmentViolation ? coldViolation : environmentViolation
@@ -349,7 +328,7 @@ class MonitorStatechartGenerator extends AbstractContractStatechartGeneration {
 			}
 		}
 		val othersNegated = getBinaryTriggerFromTriggersIfPossible(otherTriggersWithCorrectDir, BinaryType.OR).
-				negateEventTrigger
+				negateTrigger
 		if (forwardTransition.trigger instanceof OnCycleTrigger) {
 			forwardTransition.trigger = othersNegated
 		} else {
