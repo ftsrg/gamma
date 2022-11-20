@@ -12,7 +12,7 @@ package hu.bme.mit.gamma.trace.testgeneration.java
 
 import hu.bme.mit.gamma.trace.model.Assert
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
-import hu.bme.mit.gamma.trace.model.RaiseEventAct
+import hu.bme.mit.gamma.trace.model.NegatedAssert
 import hu.bme.mit.gamma.trace.testgeneration.java.util.TestGeneratorUtil
 import java.util.List
 
@@ -43,11 +43,16 @@ class WaitingAllowedInFunction extends AbstractAssertionHandler {
 				wasPresent = true;
 				try {
 					for(int i = 0; i < ports.length; i++) {
-						if (isNegatives[i]) {
-							assertFalse(«testInstanceName».isRaisedEvent(ports[i], events[i], objects[i]));
-						} else {
+						«IF trace.steps.flatMap[it.asserts].exists[it instanceof NegatedAssert]»
+							if (isNegatives[i]) {
+								assertFalse(«testInstanceName».isRaisedEvent(ports[i], events[i], objects[i]));
+							} else {
+								assertTrue(«testInstanceName».isRaisedEvent(ports[i], events[i], objects[i]));
+							}
+						«ELSE»
 							assertTrue(«testInstanceName».isRaisedEvent(ports[i], events[i], objects[i]));
-						}
+						«ENDIF»
+						
 					}
 				} catch (AssertionError error) {
 					wasPresent= false;

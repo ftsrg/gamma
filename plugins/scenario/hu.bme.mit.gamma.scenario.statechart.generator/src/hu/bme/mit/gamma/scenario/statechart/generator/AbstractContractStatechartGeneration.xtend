@@ -272,11 +272,16 @@ abstract class AbstractContractStatechartGeneration {
 		}
 		return bin
 	}
-
-	protected def List<Trigger> createOtherNegatedTriggers(DeterministicOccurrenceSet set, boolean combineEvents) {
+	
+	protected def List<Trigger> createOtherTriggers(DeterministicOccurrenceSet set, boolean combineEvents, boolean onlySend) {
 		val triggers = <Trigger>newArrayList
 		val portsAndEvents = <Port,List<Event>>newHashMap
-		val allPorts = statechart.allPorts.filter[!it.inputEvents.empty]
+		val allPorts = 
+		if(onlySend) {
+			statechart.allPorts.filter[!it.inputEvents.empty].filter[it.isTurnedOut]
+		} else {
+			statechart.allPorts.filter[!it.inputEvents.empty]
+		}
 		for (modalInteraction : set.deterministicOccurrences) {
 			var Interaction signal = null
 			if (modalInteraction instanceof Interaction) {
@@ -306,10 +311,7 @@ abstract class AbstractContractStatechartGeneration {
 				anyPortEvent.port = port
 				val trigger = createEventTrigger
 				trigger.eventReference = anyPortEvent
-				val unary = createUnaryTrigger
-				unary.operand = trigger
-				unary.type = UnaryType.NOT
-				triggers += unary
+				triggers += trigger
 			} else {
 				val concrateEvents = 
 					if(portsAndEvents.containsKey(port)) {
@@ -323,14 +325,21 @@ abstract class AbstractContractStatechartGeneration {
 					portEventReference.event = concrateEvent
 					portEventReference.port = port
 					trigger.eventReference = portEventReference
-					val unaryTrigger = createUnaryTrigger
-					unaryTrigger.operand = trigger
-					unaryTrigger.type = UnaryType.NOT
-					triggers += unaryTrigger
+					triggers += trigger
 				}
 			}
 		}
 		return triggers
+	}
+	
+	
+
+	protected def List<Trigger> createOtherNegatedTriggers(DeterministicOccurrenceSet set, boolean combineEvents) {
+		return createOtherTriggers(set,combineEvents, false).map[it.negateTrigger]
+	}
+	
+	protected def List<Trigger> createOtherNegatedTriggers(DeterministicOccurrenceSet set, boolean combineEvents, boolean onlySend) {
+		return createOtherTriggers(set,combineEvents, onlySend).map[it.negateTrigger]
 	}
 
 	def protected Trigger getBinaryTrigger(List<DeterministicOccurrence> interactions,

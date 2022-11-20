@@ -362,7 +362,7 @@ class TestGeneratorStatechartGenerator extends AbstractContractStatechartGenerat
 			statechart.transitions -= violationTransition
 			val negatedInteractions = set.deterministicOccurrences.filter(NegatedDeterministicOccurrence).toList
 			set.deterministicOccurrences -= negatedInteractions // this is fine, as no other transformation will handle it
-			val otherTriggers = createOtherNegatedTriggers(set, false).map[it.negateTrigger]
+			val otherTriggers = createOtherTriggers(set, false,true)
 			for(transition : source.outgoingTransitions) {
 				transition.priority = BigInteger.valueOf(otherTriggers.size) + transition.priority
 			}

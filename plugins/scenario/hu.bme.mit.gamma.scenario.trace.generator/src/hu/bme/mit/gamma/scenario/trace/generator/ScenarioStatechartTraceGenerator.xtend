@@ -26,25 +26,21 @@ import hu.bme.mit.gamma.trace.util.TraceUtil
 import hu.bme.mit.gamma.trace.util.UnsentEventAssertExtender
 import hu.bme.mit.gamma.transformation.util.GammaFileNamer
 import hu.bme.mit.gamma.transformation.util.annotations.AnnotatablePreprocessableElements
+import hu.bme.mit.gamma.transformation.util.annotations.ComponentInstanceReferences
 import hu.bme.mit.gamma.transformation.util.annotations.DataflowCoverageCriterion
 import hu.bme.mit.gamma.transformation.util.annotations.InteractionCoverageCriterion
-import hu.bme.mit.gamma.util.FileUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
-import hu.bme.mit.gamma.xsts.transformation.GammaToXstsTransformer
 import hu.bme.mit.gamma.xsts.transformation.api.Gamma2XstsTransformerSerializer
-import hu.bme.mit.gamma.statechart.interface_.Package
 import java.io.File
 import java.util.ArrayList
 import java.util.List
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
-import hu.bme.mit.gamma.transformation.util.annotations.ComponentInstanceReferences
 
 class ScenarioStatechartTraceGenerator {
 
 	val extension TraceModelFactory traceFactory = TraceModelFactory.eINSTANCE
 	val extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
-	val extension FileUtil fileUtil = FileUtil.INSTANCE
 	val extension GammaFileNamer fileNamer = GammaFileNamer.INSTANCE
 	val extension ScenarioStatechartUtil scenarioStatechartUtil = ScenarioStatechartUtil.INSTANCE
 	val extension TraceUtil traceUtil = TraceUtil.INSTANCE
@@ -54,17 +50,14 @@ class ScenarioStatechartTraceGenerator {
 
 	StatechartDefinition statechart = null
 	List<Expression> arguments = newArrayList
-	var int schedulingConstraint = 0
+	var Integer schedulingConstraint = 0
 
 	String absoluteParentFolder
 
-	Package _package
-
-	new(StatechartDefinition statechart, List<? extends Expression> arguments, int schedulingConstraint) {
+	new(StatechartDefinition statechart, List<? extends Expression> arguments, Integer schedulingConstraint) {
 		this.statechart = statechart
 		this.arguments += arguments
 		this.schedulingConstraint = schedulingConstraint
-		this._package = statechart.containingPackage
 	}
 	
 	def List<ExecutionTrace> execute() {
@@ -82,15 +75,9 @@ class ScenarioStatechartTraceGenerator {
 				}
 			}
 		}
-
-		var GammaToXstsTransformer gammaToXSTSTransformer = null
-		if (schedulingConstraint > 0) {
-			gammaToXSTSTransformer = new GammaToXstsTransformer(schedulingConstraint,
-				true, true, true, TransitionMerging.HIERARCHICAL)
-		} else {
-			gammaToXSTSTransformer = new GammaToXstsTransformer
+		if (schedulingConstraint <= 0) {
+			schedulingConstraint = null
 		}
-
 		val name = statechart.name
 		val compInstanceRef = new ComponentInstanceReferences(newArrayList,newArrayList)
 		val transformator = new Gamma2XstsTransformerSerializer(statechart, arguments, absoluteParentFolder, name, schedulingConstraint,
