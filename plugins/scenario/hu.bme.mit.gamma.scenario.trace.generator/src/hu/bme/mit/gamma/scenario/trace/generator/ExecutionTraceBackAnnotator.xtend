@@ -43,6 +43,7 @@ class ExecutionTraceBackAnnotator {
 	List<ExecutionTrace> traces = null
 	List<ExecutionTrace> result = null
 	boolean removeNotneededInteractions = true
+	val boolean isNegativeTest
 	
 	boolean createOriginalActsAndAssertsBasedOnActs
 
@@ -50,21 +51,23 @@ class ExecutionTraceBackAnnotator {
 		this.result = newArrayList
 		this.traces = _traces
 		this.ports = original.ports
+		this.isNegativeTest = false
 	}
 
 	new(List<ExecutionTrace> _traces, Component original, boolean removeNotneededInteractions,
-			boolean createOriginalActsAndAssertsBasedOnActs) {
+			boolean createOriginalActsAndAssertsBasedOnActs, boolean isNegativeTest) {
 		this.result = newArrayList
 		this.traces = _traces
 		this.ports = original.ports
 		this.removeNotneededInteractions = removeNotneededInteractions
 		this.createOriginalActsAndAssertsBasedOnActs = createOriginalActsAndAssertsBasedOnActs
+		this.isNegativeTest = isNegativeTest
 	}
 
 	def execute() {
 		for (var i = 0; i < traces.size; i++) {
 			val trace = traces.get(i)
-			if (!result.exists[traceUtil.isCoveredByStates(trace, it)].booleanValue) {
+			if (isNegativeTest || !result.exists[traceUtil.isCoveredByStates(trace, it)].booleanValue) {
 				result += trace
 			}
 		}

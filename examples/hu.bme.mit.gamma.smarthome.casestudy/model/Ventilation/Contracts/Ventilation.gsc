@@ -35,7 +35,7 @@ scenario S9Delay initial outputs [
 	check Ventilation.switchVentilation::on and Ventilation.ventilate::level == BASE_VENTILATION
 ] [
 	{
-		cold delay (SWITCH_OFF_TIME * 1000)
+		delay (SWITCH_OFF_TIME * 1000)
 	}
 	{
 		hot sends Ventilation.switchVentilation
@@ -89,7 +89,7 @@ scenario S11MotionThenPersonCountThenDelay
 		assign ventilationLevel := Ventilation.ventilate::level
 	}
 	{
-		cold delay (FIRST_VENTILATION_CHANGE_TIME * 1000)
+		delay (FIRST_VENTILATION_CHANGE_TIME * 1000)
 		check ventilationLevel > 60 // To demonstrate input values for violations
 	}
 	{
@@ -97,7 +97,7 @@ scenario S11MotionThenPersonCountThenDelay
 		check Ventilation.ventilate::level == ventilationLevel
 	}
 	{
-		cold delay (VENTILATION_CHANGE_TIME * 1000)
+		delay (VENTILATION_CHANGE_TIME * 1000)
 	}
 	{
 		hot sends Ventilation.ventilate

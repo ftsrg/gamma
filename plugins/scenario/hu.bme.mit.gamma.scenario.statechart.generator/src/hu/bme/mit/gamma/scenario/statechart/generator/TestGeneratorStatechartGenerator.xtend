@@ -61,16 +61,18 @@ class TestGeneratorStatechartGenerator extends AbstractContractStatechartGenerat
 	var NotDefinedEventMode nonDeclaredNegMessageMode = NotDefinedEventMode.STRICT
 	val boolean coldViolationExisits
 	val StatechartGenerationMode generationMode
+	val boolean negativeTest
 
 	new(ScenarioDeclaration scenario, Component component, StatechartGenerationMode mode,
-		boolean dedicatedColdViolation) {
+		boolean dedicatedColdViolation, boolean negativeTest) {
 		super(scenario, component)
 		this.generationMode = mode
 		this.coldViolationExisits = dedicatedColdViolation
+		this.negativeTest = negativeTest
 	}
 
 	new(ScenarioDeclaration scenario, Component component) {
-		this(scenario, component, StatechartGenerationMode.GENERATE_ONLY_FORWARD, true)
+		this(scenario, component, StatechartGenerationMode.GENERATE_ONLY_FORWARD, true, false)
 	}
 
 	override StatechartDefinition execute() {
@@ -213,34 +215,7 @@ class TestGeneratorStatechartGenerator extends AbstractContractStatechartGenerat
 	}
 
 	def dispatch void process(Delay delay) {
-		val newState = createNewState()
-		firstRegion.stateNodes += newState
-		val transition = statechartUtil.createTransition(previousState, newState)
-		val timeoutDecl = createTimeoutDeclaration
-		timeoutDecl.name = "delay" + timeoutCount++
-		statechart.timeoutDeclarations += timeoutDecl
-		val timeSpecification = createTimeSpecification
-		timeSpecification.unit = TimeUnit.MILLISECOND
-		timeSpecification.value = delay.minimum.clone
-		val timeoutAction = createSetTimeoutAction
-		timeoutAction.timeoutDeclaration = timeoutDecl
-		timeoutAction.time = timeSpecification
-		if (previousState instanceof State) {
-			previousState.entryActions += timeoutAction
-		}
-		val eventTrigger = createEventTrigger
-		val eventRef = createTimeoutEventReference
-		eventRef.timeout = timeoutDecl
-		transition.trigger = eventTrigger
-		eventTrigger.eventReference = eventRef
-		var StateNode violationState = (delay.modality == ModalityType.COLD) ? coldViolation : hotViolation
-		val violationTransition = statechartUtil.createTransition(previousState, violationState)
-		val violationTrigger = createEventTrigger
-		val violationRventRef = createTimeoutEventReference
-		violationRventRef.setTimeout(timeoutDecl)
-		violationTrigger.eventReference = violationRventRef
-		violationTransition.trigger = negateEventTrigger(violationTrigger)
-		previousState = newState
+		throw new UnsupportedOperationException("Single delays are placed into a set in a previous step")
 	}
 
 	def dispatch void process(NegatedDeterministicOccurrence negatedDeterministicOccurrence) {
@@ -353,6 +328,7 @@ class TestGeneratorStatechartGenerator extends AbstractContractStatechartGenerat
 		cycleTransition.trigger = createOnCycleTrigger
 		val backwardTransition = createTransition
 		violationTransition.guard = createElseExpression
+		
 
 		if (set.deterministicOccurrences.empty) {
 			val emptyTransition = statechartUtil.createTransition(previousState, state)
@@ -362,13 +338,13 @@ class TestGeneratorStatechartGenerator extends AbstractContractStatechartGenerat
 			previousState = state
 			return
 		}
-		handleDelays(set)
+		handleDelays(set, forwardTransition, violationTransition)
 		setupForwardTransition(set, dir.equals(InteractionDirection.SEND), isNegated, forwardTransition)
 
 		if (nonDeclaredMessageMode == NotDefinedEventMode.STRICT) {
 			val binary = createBinaryTrigger
 			binary.leftOperand = forwardTransition.trigger
-			binary.rightOperand = getBinaryTriggerFromTriggers(createOtherNegatedTriggers(set), BinaryType.AND)
+			binary.rightOperand = getBinaryTriggerFromTriggers(createOtherNegatedTriggers(set, true), BinaryType.AND)
 			binary.type = BinaryType.AND
 			forwardTransition.trigger = binary
 		}
@@ -377,8 +353,27 @@ class TestGeneratorStatechartGenerator extends AbstractContractStatechartGenerat
 			handleSends(set, isNegated, forwardTransition, backwardTransition, cycleTransition, violationTransition,
 				newChoice)
 		}
-		handleArguments(set.deterministicOccurrences, forwardTransition);
+		handleArguments(set.deterministicOccurrences, forwardTransition)
 		handleSingleNegatedIfNeeded(set, forwardTransition, violationTransition)
+		
+		if(negativeTest && dir == InteractionDirection.SEND && mod == ModalityType.HOT) {
+			val source = violationTransition.sourceState
+			val target = violationTransition.targetState
+			statechart.transitions -= violationTransition
+			val negatedInteractions = set.deterministicOccurrences.filter(NegatedDeterministicOccurrence).toList
+			set.deterministicOccurrences -= negatedInteractions // this is fine, as no other transformation will handle it
+			val otherTriggers = createOtherNegatedTriggers(set, false).map[it.negateTrigger]
+			for(transition : source.outgoingTransitions) {
+				transition.priority = BigInteger.valueOf(otherTriggers.size) + transition.priority
+			}
+			var i = 0
+			for(trigger : otherTriggers) {
+				val newTransition =statechartUtil.createTransition(source, target)
+				newTransition.priority = BigInteger.valueOf(i++)
+				newTransition.trigger = trigger
+			}
+		}
+		
 		previousState = state
 		return
 	}
@@ -487,7 +482,7 @@ class TestGeneratorStatechartGenerator extends AbstractContractStatechartGenerat
 				val tmp = violationTransition.targetState
 				violationTransition.targetState = forwardTransition.targetState
 				forwardTransition.targetState = tmp
-				forwardTransition.trigger = negateEventTrigger(forwardTransition.trigger)
+				forwardTransition.trigger = negateTrigger(forwardTransition.trigger)
 			}
 		}
 	}

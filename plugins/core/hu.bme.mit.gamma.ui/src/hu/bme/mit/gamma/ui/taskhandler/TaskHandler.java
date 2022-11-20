@@ -27,6 +27,7 @@ import hu.bme.mit.gamma.genmodel.model.CodeGeneration;
 import hu.bme.mit.gamma.genmodel.model.GenmodelModelFactory;
 import hu.bme.mit.gamma.genmodel.model.Task;
 import hu.bme.mit.gamma.genmodel.model.TestGeneration;
+import hu.bme.mit.gamma.genmodel.model.TraceGeneration;
 import hu.bme.mit.gamma.genmodel.model.Verification;
 import hu.bme.mit.gamma.property.language.ui.serializer.PropertyLanguageSerializer;
 import hu.bme.mit.gamma.property.model.PropertyPackage;
@@ -68,7 +69,11 @@ public abstract class TaskHandler {
 		checkArgument(task.getTargetFolder().size() <= 1);
 		if (task.getTargetFolder().isEmpty()) {
 			String targetFolder = null;
-			if (task instanceof Verification || task instanceof AdaptiveContractTestGeneration) {
+			if (task instanceof TraceGeneration) {
+				String path = file.getParent().getFullPath().toString();
+				String path2 = path.substring(path.indexOf("/") + 1);
+				targetFolder = path2.substring(path2.indexOf("/") + 1);
+			} else if (task instanceof Verification || task instanceof AdaptiveContractTestGeneration) {
 				targetFolder = "trace";
 			}
 			else if (task instanceof CodeGeneration) {
