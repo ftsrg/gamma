@@ -21,7 +21,6 @@ import hu.bme.mit.gamma.xsts.model.EmptyAction
 import hu.bme.mit.gamma.xsts.model.HavocAction
 import hu.bme.mit.gamma.xsts.model.IfAction
 import hu.bme.mit.gamma.xsts.model.LoopAction
-import hu.bme.mit.gamma.xsts.model.MultiaryAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.ParallelAction
 import hu.bme.mit.gamma.xsts.model.SequentialAction
@@ -29,34 +28,27 @@ import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.promela.transformation.util.ArrayHandler
 import hu.bme.mit.gamma.xsts.promela.transformation.util.HavocHandler
+import hu.bme.mit.gamma.xsts.promela.transformation.util.ParallelActionHandler
 import java.util.List
-import java.util.Map
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
 
 class ModelSerializer {
 	// Singleton
-	public static final ModelSerializer INSTANCE = new ModelSerializer
+	public static ModelSerializer INSTANCE = new ModelSerializer
 	protected new() {}
 	//
 	protected extension DeclarationSerializer declarationSerializer = DeclarationSerializer.INSTANCE
 	protected extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
+	protected extension ParallelActionHandler parallelHandler = ParallelActionHandler.INSTANCE
 	
 	protected final extension HavocHandler havocHandler = HavocHandler.INSTANCE
 	protected final extension ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE
 	protected final extension ArrayHandler arrayHandler = ArrayHandler.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	
-	protected Map<List<Action>, Integer> parallelMapping
-	protected Map<Action, List<VariableDeclaration>> parallelVariableMapping
-	protected int maxParallelNumber
-	
 	def String serializePromela(XSTS xSts) {
-		maxParallelNumber = 0
-		parallelMapping = newHashMap
-		parallelVariableMapping = newHashMap
-		
 		val initializingActions = xSts.initializingAction
 		val environmentalActions = xSts.environmentalAction
 		val List<Action> actions = newArrayList
@@ -87,9 +79,11 @@ class ModelSerializer {
 				goto TRANS;
 			TRANS:
 				atomic {
-					«FOR transition : transitions»
-						«transition.action.serialize»
+					if
+					«FOR transition : transitions SEPARATOR "\n"»
+					:: «transition.action.serialize»
 					«ENDFOR»
+					fi;
 					flag = 1;
 				};
 				goto ENV;
@@ -179,8 +173,8 @@ class ModelSerializer {
 	'''
 	
 	def dispatch String serialize(ParallelAction action) {
-		val actionSize = action.actions.size
 		val actions = action.actions
+		val actionSize = actions.size
 		
 		if (actionSize > 1) {
 			return '''
@@ -227,47 +221,4 @@ class ModelSerializer {
 	
 	def serializeParallelProcessesArguments(Action action) '''«IF parallelVariableMapping.get(action) !== null»«FOR varDecAction : parallelVariableMapping.get(action) SEPARATOR ", "»«varDecAction.type.serializeType» «varDecAction.name»«ENDFOR»«ENDIF»'''
 	def serializeParallelProcCallArguments(Action action) '''«IF parallelVariableMapping.get(action) !== null»«FOR varDecAction : parallelVariableMapping.get(action) SEPARATOR ", "»«varDecAction.name»«ENDFOR»«ENDIF»'''
-	
-	// Getters
-	
-	protected def createParallelMapping(List<Action> actions) {
-		// Promela supports the ParallelActions, but we need to create processes
-		for (subaction : actions) {
-			subaction.parallelActions
-		}
-	}
-	
-	protected def void getParallelActions(Action action) {
-		if (action instanceof ParallelAction) {
-			val actions = action.actions
-			val actionSize = actions.size
-			// ParallelAction has multiple Actions
-			if (actionSize > 1) {
-				parallelMapping.put(actions, parallelMapping.size)
-				maxParallelNumber = actionSize > maxParallelNumber ? actionSize : maxParallelNumber
-			}
-			// ParallelAction uses local variables
-			for (subaction : actions) {
-				if (actionSize > 1) {
-					val localVariables = newArrayList
-					for (variable : subaction.referredVariables) {
-						if (variable.getContainerOfType(VariableDeclarationAction) !== null) {
-							localVariables += variable
-						}
-					}
-					if (!localVariables.empty) {
-						parallelVariableMapping.put(subaction, localVariables)
-					}
-				}
-				subaction.parallelActions
-			}
-		}
-		else {
-			if (action instanceof MultiaryAction) {
-				for (subaction : action.actions) {
-					subaction.parallelActions
-				}
-			}
-		}
-	}
 }
