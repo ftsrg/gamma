@@ -204,12 +204,13 @@ class VariableInliner {
 	protected def commonizeMaps(List<? extends Map<VariableDeclaration, InlineEntry>> branchValueList) {
 		// Calculating variables present in all branches
 		val commonVariables = newHashSet
-		for (branchValues : branchValueList) {
+		for (var i = 0; i < branchValueList.size; i++) {
+			val branchValues = branchValueList.get(i)
 			val branchVariables = branchValues.keySet
-			if (commonVariables.empty) {
+			if (i <= 0) { // First addition
 				commonVariables += branchVariables
 			}
-			else {
+			else { // Then only retains
 				commonVariables.retainAll(branchVariables)
 			}
 		}
