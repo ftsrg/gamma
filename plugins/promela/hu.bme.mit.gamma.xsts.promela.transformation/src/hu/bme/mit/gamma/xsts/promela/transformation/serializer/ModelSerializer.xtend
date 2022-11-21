@@ -26,6 +26,7 @@ import hu.bme.mit.gamma.xsts.model.ParallelAction
 import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
 import hu.bme.mit.gamma.xsts.model.XSTS
+import hu.bme.mit.gamma.xsts.model.XTransition
 import hu.bme.mit.gamma.xsts.promela.transformation.util.ArrayHandler
 import hu.bme.mit.gamma.xsts.promela.transformation.util.HavocHandler
 import hu.bme.mit.gamma.xsts.promela.transformation.util.ParallelActionHandler
@@ -33,7 +34,6 @@ import java.util.List
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
-import hu.bme.mit.gamma.xsts.model.XTransition
 
 class ModelSerializer {
 	// Singleton
@@ -233,6 +233,6 @@ class ModelSerializer {
 		«ENDFOR»
 	'''
 	
-	def serializeParallelProcessesArguments(Action action) '''«IF parallelVariableMapping.get(action) !== null»«FOR varDecAction : parallelVariableMapping.get(action) SEPARATOR ", "»«varDecAction.type.serializeType» «varDecAction.name»«ENDFOR»«ENDIF»'''
+	def serializeParallelProcessesArguments(Action action) '''«IF parallelVariableMapping.get(action) !== null»«FOR varDecAction : parallelVariableMapping.get(action) SEPARATOR "; "»«varDecAction.type.serializeType» «varDecAction.name»«ENDFOR»«ENDIF»'''
 	def serializeParallelProcCallArguments(Action action) '''«IF parallelVariableMapping.get(action) !== null»«FOR varDecAction : parallelVariableMapping.get(action) SEPARATOR ", "»«varDecAction.name»«ENDFOR»«ENDIF»'''
 }

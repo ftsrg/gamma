@@ -1,9 +1,11 @@
 package hu.bme.mit.gamma.xsts.promela.transformation.util
 
-import hu.bme.mit.gamma.expression.model.VariableDeclaration
+import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.expression.util.ExpressionUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.Action
+import hu.bme.mit.gamma.xsts.model.IfAction
+import hu.bme.mit.gamma.xsts.model.LoopAction
 import hu.bme.mit.gamma.xsts.model.MultiaryAction
 import hu.bme.mit.gamma.xsts.model.ParallelAction
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
@@ -22,7 +24,7 @@ class ParallelActionHandler {
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	
 	public Map<List<Action>, Integer> parallelMapping
-	public Map<Action, List<VariableDeclaration>> parallelVariableMapping
+	public Map<Action, List<Declaration>> parallelVariableMapping
 	public int maxParallelNumber
 	
 	def createParallelMapping(List<Action> actions) {
@@ -47,7 +49,10 @@ class ParallelActionHandler {
 			// ParallelAction uses local variables
 			for (subaction : actions) {
 				if (actionSize > 1) {
-					val localVariables = newArrayList
+					val List<Declaration> localVariables = newArrayList
+					for (parameter : subaction.referredParameters) {
+						localVariables += parameter
+					}
 					for (variable : subaction.referredVariables) {
 						if (variable.getContainerOfType(VariableDeclarationAction) !== null) {
 							localVariables += variable
@@ -65,6 +70,13 @@ class ParallelActionHandler {
 				for (subaction : action.actions) {
 					subaction.parallelActions
 				}
+			}
+			else if (action instanceof IfAction) {
+				action.then.parallelActions
+				action.^else?.parallelActions
+			}
+			else if (action instanceof LoopAction) {
+				action.action.parallelActions
 			}
 		}
 	}
