@@ -4,6 +4,7 @@ import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.expression.util.ExpressionUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.Action
+import hu.bme.mit.gamma.xsts.model.CompositeAction
 import hu.bme.mit.gamma.xsts.model.IfAction
 import hu.bme.mit.gamma.xsts.model.LoopAction
 import hu.bme.mit.gamma.xsts.model.MultiaryAction
@@ -71,12 +72,17 @@ class ParallelActionHandler {
 					subaction.parallelActions
 				}
 			}
-			else if (action instanceof IfAction) {
-				action.then.parallelActions
-				action.^else?.parallelActions
-			}
-			else if (action instanceof LoopAction) {
-				action.action.parallelActions
+			else if (action instanceof CompositeAction) {
+				if (action instanceof IfAction) {
+					action.then.parallelActions
+					action.^else?.parallelActions
+				}
+				else if (action instanceof LoopAction) {
+					action.action.parallelActions
+				}
+				else {
+					throw new IllegalArgumentException("Not known CompositeAction: " + action)
+				}
 			}
 		}
 	}
