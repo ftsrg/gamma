@@ -90,6 +90,10 @@ class XstsToUppaalTransformer {
 			environmentFinishLocation.locationTimeKind = LocationKind.COMMITED
 		}
 		
+		//
+		optimizelIntegerCodomains
+		//
+		
 		ntaBuilder.instantiateTemplates
 		
 		return ntaBuilder.nta

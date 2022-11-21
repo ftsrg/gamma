@@ -181,6 +181,15 @@ class FileUtil {
 		file.delete
 	}
 	
+	def void forceDeleteOnExit(File file) {
+		if (file.isDirectory) {
+			for (subfile : file.listFiles) {
+				subfile.forceDeleteOnExit
+			}
+		}
+		file.deleteOnExit
+	}
+	
 	/**
 	 * Returns the next valid name for the file that is suffixed by indices.
 	 */

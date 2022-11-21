@@ -31,7 +31,9 @@ import hu.bme.mit.gamma.statechart.lowlevel.transformation.GammaToLowlevelTransf
 import hu.bme.mit.gamma.transformation.util.preprocessor.AnalysisModelPreprocessor
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.SystemInEventGroup
+import hu.bme.mit.gamma.xsts.model.SystemInEventParameterGroup
 import hu.bme.mit.gamma.xsts.model.SystemOutEventGroup
+import hu.bme.mit.gamma.xsts.model.SystemOutEventParameterGroup
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
 import hu.bme.mit.gamma.xsts.transformation.serializer.ActionSerializer
@@ -223,13 +225,14 @@ class GammaToXstsTransformer {
 	}
 	
 	protected def removeDuplicatedTypes(XSTS xSts) {
+		logger.log(Level.INFO, "Checking if the XSTS contains multiple type declarations with the same name")
 		val types = xSts.typeDeclarations
 		for (var i = 0; i < types.size - 1; i++) {
 			val lhs = types.get(i)
 			for (var j = i + 1; j < types.size; j++) {
 				val rhs = types.get(j)
-				if (lhs.helperEquals(rhs)) {
-					lhs.changeAllAndDelete(rhs, xSts)
+				if (lhs.name == rhs.name && lhs.helperEquals(rhs)) {
+					lhs.changeAllAndRemove(rhs, xSts) // Remove instead of delete to speed up
 					j--
 				}
 			}
@@ -254,16 +257,26 @@ class GammaToXstsTransformer {
 	
 	protected def void createSystemEventGroups(XSTS xSts, Component component) {
 		xSts.variableGroups.filter[it.annotation instanceof SystemInEventGroup].forEach[it.remove]
+		xSts.variableGroups.filter[it.annotation instanceof SystemInEventParameterGroup].forEach[it.remove]
 		xSts.variableGroups.filter[it.annotation instanceof SystemOutEventGroup].forEach[it.remove]
+		xSts.variableGroups.filter[it.annotation instanceof SystemOutEventParameterGroup].forEach[it.remove]
 		
 		val systemInEventGroup = createVariableGroup => [
 			it.annotation = createSystemInEventGroup
 		]
+		val systemInEventParameterGroup = createVariableGroup => [
+			it.annotation = createSystemInEventParameterGroup
+		]
 		val systemOutEventGroup = createVariableGroup => [
 			it.annotation = createSystemOutEventGroup
 		]
+		val systemOutEventParameterGroup = createVariableGroup => [
+			it.annotation = createSystemOutEventParameterGroup
+		]
 		xSts.variableGroups += systemInEventGroup
+		xSts.variableGroups += systemInEventParameterGroup
 		xSts.variableGroups += systemOutEventGroup
+		xSts.variableGroups += systemOutEventParameterGroup
 		
 		for (port : component.allBoundSimplePorts) {
 			val instance = port.containingComponentInstance
@@ -272,6 +285,16 @@ class GammaToXstsTransformer {
 				val inEventVariable = xSts.getVariable(inEventVariableName)
 				if (inEventVariable !== null) {
 					systemInEventGroup.variables += inEventVariable
+					// Parameters
+					for (inParameter : inEvent.parameterDeclarations) {
+						val inEventParameterVariableNames = customizeInNames(inParameter, port, instance)
+						for (inEventParameterVariableName : inEventParameterVariableNames) {
+							val inEventParameterVariable = xSts.getVariable(inEventParameterVariableName)
+							if (inEventParameterVariable !== null) {
+								systemInEventParameterGroup.variables += inEventParameterVariable
+							}
+						}
+					}
 				}
 			}
 			for (outEvent : port.outputEvents) {
@@ -279,6 +302,16 @@ class GammaToXstsTransformer {
 				val outEventVariable = xSts.getVariable(outEventVariableName)
 				if (outEventVariable !== null) {
 					systemOutEventGroup.variables += outEventVariable
+					// Parameters
+					for (outParameter : outEvent.parameterDeclarations) {
+						val outEventParameterVariableNames = customizeOutNames(outParameter, port, instance)
+						for (outEventParameterVariableName : outEventParameterVariableNames) {
+							val outEventParameterVariable = xSts.getVariable(outEventParameterVariableName)
+							if (outEventParameterVariable !== null) {
+								systemOutEventParameterGroup.variables += outEventParameterVariable
+							}
+						}
+					}
 				}
 			}
 		}

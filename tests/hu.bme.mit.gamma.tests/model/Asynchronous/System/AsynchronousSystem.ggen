@@ -1,0 +1,13 @@
+import "AsynchronousSystem.gcd"
+
+analysis {
+	component : AsynchronousSystem
+	language : XSTS-UPPAAL
+}
+
+verification {
+	file : "AsynchronousSystem.xml"
+	property-file : "AsynchronousSystem.gpd"
+	language : XSTS-UPPAAL
+	back-annotate-to-original : true
+}

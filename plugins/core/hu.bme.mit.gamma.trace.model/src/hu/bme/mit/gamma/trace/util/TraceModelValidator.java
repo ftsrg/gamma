@@ -24,8 +24,6 @@ import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.CompositeModelPackage;
-import hu.bme.mit.gamma.statechart.composite.SynchronousComponent;
-import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.Event;
@@ -102,9 +100,9 @@ public class TraceModelValidator extends StatechartModelValidator {
 	public Collection<ValidationResultMessage> checkInstanceStateConfiguration(
 			InstanceStateConfiguration configuration) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		SynchronousComponentInstance instance = (SynchronousComponentInstance)
+		ComponentInstance instance = (ComponentInstance)
 				StatechartModelDerivedFeatures.getLastInstance(configuration.getInstance());
-		SynchronousComponent type = instance.getType();
+		Component type = StatechartModelDerivedFeatures.getDerivedType(instance);
 		if (type instanceof StatechartDefinition) {
 			State state = configuration.getState();
 			List<State> states =  ecoreUtil.getAllContentsOfType(type,

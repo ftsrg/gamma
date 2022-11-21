@@ -16,6 +16,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -29,6 +30,7 @@ import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.EqualityExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
+import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.xsts.model.AbstractAssignmentAction;
@@ -48,10 +50,14 @@ import hu.bme.mit.gamma.xsts.model.XSTS;
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory;
 import hu.bme.mit.gamma.xsts.model.XTransition;
 import hu.bme.mit.gamma.xsts.model.XstsAnnotation;
+import hu.bme.mit.gamma.xsts.util.XstsActionUtil;
 
 public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 
+	protected static final XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE;
 	protected static XSTSModelFactory xStsFactory = XSTSModelFactory.eINSTANCE;
+	
+	//
 	
 	public static XSTS getContainingXsts(EObject object) {
 		return ecoreUtil.getSelfOrContainerOfType(object, XSTS.class);
@@ -107,8 +113,12 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 	
 	public static SequentialAction getEnvironmentalAction(XSTS xSts) {
 		SequentialAction sequentialAction = xStsFactory.createSequentialAction();
-		sequentialAction.getActions().add(ecoreUtil.clone(xSts.getInEventTransition().getAction()));
-		sequentialAction.getActions().add(ecoreUtil.clone(xSts.getOutEventTransition().getAction()));
+		sequentialAction.getActions().add(
+				ecoreUtil.clone(
+						xSts.getInEventTransition().getAction()));
+		sequentialAction.getActions().add(
+				ecoreUtil.clone(
+						xSts.getOutEventTransition().getAction()));
 		return sequentialAction;
 	}
 	
@@ -232,8 +242,8 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 	private static boolean isTrivialAssignment(EqualityExpression expression, AssignmentAction action) {
 		Expression xStsLeftOperand = expression.getLeftOperand();
 		Expression xStsRightOperand = expression.getRightOperand();
-		DirectReferenceExpression directReferenceExpression = (DirectReferenceExpression) action.getLhs();
-		Declaration xStsDeclaration = directReferenceExpression.getDeclaration();
+		DirectReferenceExpression reference = (DirectReferenceExpression) action.getLhs();
+		Declaration xStsDeclaration = reference.getDeclaration();
 		Expression xStsAssignmentRhs = action.getRhs();
 		// region_name == state_name
 		if (xStsLeftOperand instanceof DirectReferenceExpression) {
@@ -285,7 +295,16 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 		if (action instanceof LoopAction) {
 			LoopAction loopAction = (LoopAction) action;
 			Action forAction = loopAction.getAction();
-			// Range could be examined, too
+			// Examining range
+			IntegerRangeLiteralExpression range = loopAction.getRange();
+			Expression leftOperand = ExpressionModelDerivedFeatures.getLeft(range, true);
+			Expression rightOperand = ExpressionModelDerivedFeatures.getRight(range, true);
+			int left = evaluator.evaluateInteger(leftOperand);
+			int right = evaluator.evaluateInteger(rightOperand);
+			if (right - left <= 0) {
+				return true;
+			}
+			// Range is good, examining action
 			return isEffectlessAction(forAction);
 		}
 		if (action instanceof MultiaryAction) {
@@ -298,7 +317,8 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 	// Read-write
 
 	private static Set<VariableDeclaration> _getReadVariables(AssumeAction action) {
-		return expressionUtil.getReferredVariables(action.getAssumption());
+		return expressionUtil.getReferredVariables(
+				action.getAssumption());
 	}
 	
 	private static Set<VariableDeclaration> _getReadVariables(HavocAction action) {
@@ -306,7 +326,18 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 	}
 
 	private static Set<VariableDeclaration> _getReadVariables(AssignmentAction action) {
-		return expressionUtil.getReferredVariables(action.getRhs());
+		Set<VariableDeclaration> readVariables = new HashSet<VariableDeclaration>();
+
+		readVariables.addAll(
+				expressionUtil.getReferredVariables(
+						action.getLhs())); // Needed for array indexes
+		readVariables.addAll(
+				expressionUtil.getReferredVariables(
+						action.getRhs()));
+		readVariables.removeAll(
+				getWrittenVariables(action)); // Removing the array vars
+		
+		return readVariables;
 	}
 	
 	private static Set<VariableDeclaration> _getReadVariables(VariableDeclarationAction action) {
@@ -323,38 +354,121 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 	}
 	
 	private static Set<VariableDeclaration> _getReadVariables(LoopAction action) {
+		Set<VariableDeclaration> readVariables = new HashSet<VariableDeclaration>();
+		
+		IntegerRangeLiteralExpression range = action.getRange();
+		readVariables.addAll(
+				expressionUtil.getReferredVariables(
+						range.getLeftOperand()));
+		readVariables.addAll(
+				expressionUtil.getReferredVariables(
+						range.getRightOperand()));
+		
 		Action subAction = action.getAction();
-		return getReadVariables(subAction);
+		readVariables.addAll(
+				getReadVariables(subAction));
+		
+		return readVariables;
 	}
 	
 	private static Set<VariableDeclaration> _getReadVariables(IfAction action) {
 		Set<VariableDeclaration> readVariables = new HashSet<VariableDeclaration>();
-		readVariables.addAll(expressionUtil.getReferredVariables(action.getCondition()));
-		readVariables.addAll(getReadVariables(action.getThen()));
+		
+		readVariables.addAll(
+				expressionUtil.getReferredVariables(
+						action.getCondition()));
+		readVariables.addAll(
+				getReadVariables(
+						action.getThen()));
 		Action _else = action.getElse();
 		if (_else != null) {
-			readVariables.addAll(getReadVariables(_else));
+			readVariables.addAll(
+					getReadVariables(_else));
 		}
+		
 		return readVariables;
 	}
 
 	private static Set<VariableDeclaration> _getReadVariables(MultiaryAction action) {
 		Set<VariableDeclaration> variableList = new HashSet<VariableDeclaration>();
+		
 		List<Action> _actions = action.getActions();
 		for (Action containedAction : _actions) {
 			Set<VariableDeclaration> _readVariables = getReadVariables(containedAction);
 			variableList.addAll(_readVariables);
 		}
+		
 		return variableList;
 	}
+	
+	private static Set<VariableDeclaration> _getExternallyReadVariables(AssignmentAction action) {
+		Set<VariableDeclaration> readVariables = new HashSet<VariableDeclaration>();
+		
+		readVariables.addAll(
+				getReadVariables(action));
+		readVariables.removeAll(
+				getWrittenVariables(action));
+		
+		return readVariables;
+	}
+	
+	private static Set<VariableDeclaration> _getExternallyReadVariables(LoopAction action) {
+		Set<VariableDeclaration> readVariables = new HashSet<VariableDeclaration>();
+		
+		IntegerRangeLiteralExpression range = action.getRange();
+		readVariables.addAll(
+				expressionUtil.getReferredVariables(
+						range.getLeftOperand()));
+		readVariables.addAll(
+				expressionUtil.getReferredVariables(
+						range.getRightOperand()));
+		
+		Action subAction = action.getAction();
+		readVariables.addAll(
+				getExternallyReadVariables(subAction));
+		
+		return readVariables;
+	}
+	
+	private static Set<VariableDeclaration> _getExternallyReadVariables(IfAction action) {
+		Set<VariableDeclaration> readVariables = new HashSet<VariableDeclaration>();
+		
+		readVariables.addAll(
+				expressionUtil.getReferredVariables(
+						action.getCondition()));
+		readVariables.addAll(
+				getExternallyReadVariables(
+						action.getThen()));
+		Action _else = action.getElse();
+		if (_else != null) {
+			readVariables.addAll(
+					getExternallyReadVariables(_else));
+		}
+		
+		return readVariables;
+	}
 
+	private static Set<VariableDeclaration> _getExternallyReadVariables(MultiaryAction action) {
+		Set<VariableDeclaration> variableList = new HashSet<VariableDeclaration>();
+		
+		List<Action> _actions = action.getActions();
+		for (Action containedAction : _actions) {
+			Set<VariableDeclaration> _readVariables = getExternallyReadVariables(containedAction);
+			variableList.addAll(_readVariables);
+		}
+		
+		return variableList;
+	}
+	
 	private static Set<VariableDeclaration> _getWrittenVariables(AssumeAction action) {
 		return Collections.emptySet();
 	}
 
 	private static Set<VariableDeclaration> _getWrittenVariables(AbstractAssignmentAction action) {
-		return expressionUtil.getReferredVariables(
-				action.getLhs());
+		VariableDeclaration accessedDeclaration = (VariableDeclaration)
+				xStsActionUtil.getAccessedDeclaration(
+						action.getLhs()); // Not every variable, just the access
+		return Set.of(accessedDeclaration);
 	}
 	
 	private static Set<VariableDeclaration> _getWrittenVariables(VariableDeclarationAction action) {
@@ -372,21 +486,28 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 	
 	private static Set<VariableDeclaration> _getWrittenVariables(IfAction action) {
 		Set<VariableDeclaration> writtenVariables = new HashSet<VariableDeclaration>();
-		writtenVariables.addAll(getWrittenVariables(action.getThen()));
+		
+		writtenVariables.addAll(
+				getWrittenVariables(
+						action.getThen()));
 		Action _else = action.getElse();
 		if (_else != null) {
-			writtenVariables.addAll(getWrittenVariables(_else));
+			writtenVariables.addAll(
+					getWrittenVariables(_else));
 		}
+		
 		return writtenVariables;
 	}
 
 	private static Set<VariableDeclaration> _getWrittenVariables(MultiaryAction action) {
 		Set<VariableDeclaration> variableList = new HashSet<VariableDeclaration>();
+		
 		List<Action> _actions = action.getActions();
 		for (Action containedAction : _actions) {
 			Set<VariableDeclaration> _writtenVariables = getWrittenVariables(containedAction);
 			variableList.addAll(_writtenVariables);
 		}
+		
 		return variableList;
 	}
 
@@ -407,6 +528,28 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 			return _getReadVariables((IfAction) action);
 		} else if (action instanceof MultiaryAction) {
 			return _getReadVariables((MultiaryAction) action);
+		} else {
+			throw new IllegalArgumentException("Unhandled action type: " + action);
+		}
+	}
+	
+	public static Set<VariableDeclaration> getExternallyReadVariables(Action action) {
+		if (action instanceof AssignmentAction) {
+			return _getExternallyReadVariables((AssignmentAction) action);
+		} else if (action instanceof HavocAction) {
+			return _getReadVariables((HavocAction) action);
+		} else if (action instanceof VariableDeclarationAction) {
+			return _getReadVariables((VariableDeclarationAction) action);
+		} else if (action instanceof AssumeAction) {
+			return _getReadVariables((AssumeAction) action);
+		} else if (action instanceof EmptyAction) {
+			return _getReadVariables((EmptyAction) action);
+		} else if (action instanceof LoopAction) {
+			return _getExternallyReadVariables((LoopAction) action);
+		} else if (action instanceof IfAction) {
+			return _getExternallyReadVariables((IfAction) action);
+		} else if (action instanceof MultiaryAction) {
+			return _getExternallyReadVariables((MultiaryAction) action);
 		} else {
 			throw new IllegalArgumentException("Unhandled action type: " + action);
 		}
@@ -448,13 +591,15 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 
 	public static Set<VariableDeclaration> getWrittenOnlyVariables(
 			Collection<? extends Action> actions) {
-		Set<VariableDeclaration> writtenOnlyVariables = new HashSet<VariableDeclaration>();
+		Set<VariableDeclaration> writtenOnlyVariables = new LinkedHashSet<VariableDeclaration>();
 		
 		for (Action action : actions) {
-			writtenOnlyVariables.addAll(getWrittenVariables(action));
+			writtenOnlyVariables.addAll(
+					getWrittenVariables(action));
 		}
 		for (Action action : actions) {
-			writtenOnlyVariables.removeAll(getReadVariables(action));
+			writtenOnlyVariables.removeAll(
+					getReadVariables(action));
 		}
 		
 		return writtenOnlyVariables;
@@ -462,6 +607,40 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 
 	public static Set<VariableDeclaration> getWrittenOnlyVariables(XSTS xSts) {
 		return getWrittenOnlyVariables(
+				getAllActions(xSts));
+	}
+	
+	public static Set<VariableDeclaration> getReadVariables(
+			Collection<? extends Action> actions) {
+		Set<VariableDeclaration> readVariables = new LinkedHashSet<VariableDeclaration>();
+		
+		for (Action action : actions) {
+			readVariables.addAll(
+					getReadVariables(action));
+		}
+		
+		return readVariables;
+	}
+	
+	public static Set<VariableDeclaration> getExternallyReadVariables(
+			Collection<? extends Action> actions) {
+		Set<VariableDeclaration> externallyReadVariables = new LinkedHashSet<VariableDeclaration>();
+		
+		for (Action action : actions) {
+			externallyReadVariables.addAll(
+					getExternallyReadVariables(action));
+		}
+		
+		return externallyReadVariables;
+	}
+	
+	public static Set<VariableDeclaration> getReadVariables(XSTS xSts) {
+		return getReadVariables(
+				getAllActions(xSts));
+	}
+	
+	public static Set<VariableDeclaration> getExternallyReadVariables(XSTS xSts) {
+		return getExternallyReadVariables(
 				getAllActions(xSts));
 	}
 	
@@ -473,8 +652,7 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 		for (Action subaction : action.getActions()) {
 			readAndWrittenVariables.put(subaction,
 					new SimpleEntry<Set<VariableDeclaration>, Set<VariableDeclaration>>(
-							getReadVariables(subaction), getWrittenVariables(subaction))
-			);
+							getReadVariables(subaction), getWrittenVariables(subaction)));
 		}
 		
 		return readAndWrittenVariables;

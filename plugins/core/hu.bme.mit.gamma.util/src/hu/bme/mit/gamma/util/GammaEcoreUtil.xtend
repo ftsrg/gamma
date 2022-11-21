@@ -211,6 +211,11 @@ class GammaEcoreUtil {
 		oldObject.delete
 	}
 	
+	def void changeAllAndRemove(EObject newObject, EObject oldObject, EObject container) {
+		changeAll(newObject, oldObject, container)
+		oldObject.remove
+	}
+	
 	//
 	
 	def void add(EObject container, EReference reference, EObject object) {

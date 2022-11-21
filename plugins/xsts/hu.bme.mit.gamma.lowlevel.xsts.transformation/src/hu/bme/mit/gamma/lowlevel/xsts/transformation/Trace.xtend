@@ -60,6 +60,7 @@ import static com.google.common.base.Preconditions.checkArgument
 import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.statechart.lowlevel.derivedfeatures.LowlevelStatechartModelDerivedFeatures.*
 import static extension java.lang.Math.abs
 
 package class Trace {
@@ -398,6 +399,19 @@ package class Trace {
 				.getAllValuesOfxStsInactiveHistoryEnumLiteral(null, lowlevelState)
 		checkState(matches.size == 1, matches.size)
 		return matches.head
+	}
+	
+	def getXStsInactiveHistoryEnumLiterals(Region lowlevelRegion) {
+		val xStsEnumLiterals = newArrayList
+		if (lowlevelRegion.hasHistory) {
+			for (lowlevelState : lowlevelRegion.states) {
+				xStsEnumLiterals += lowlevelState.getXStsInactiveHistoryEnumLiteral
+			}
+		}
+		else {
+			xStsEnumLiterals += lowlevelRegion.getXStsInactiveEnumLiteral
+		}
+		return xStsEnumLiterals
 	}
 	
 	//

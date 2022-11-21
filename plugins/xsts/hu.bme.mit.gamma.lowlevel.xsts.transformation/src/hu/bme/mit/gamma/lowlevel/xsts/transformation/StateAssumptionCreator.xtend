@@ -10,7 +10,6 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.lowlevel.xsts.transformation
 
-import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.statechart.lowlevel.model.Region
 import hu.bme.mit.gamma.statechart.lowlevel.model.State
@@ -52,22 +51,44 @@ class StateAssumptionCreator {
 	 * and recursively all parent region variables are set to the corresponding parent state, e.g., main_region (region variable)
 	 * == Init (state enum literal) && subregion (region variable) == SubregionInit (state enum literal).
 	 */
-	protected def Expression createRecursiveXStsStateAssumption(State lowlevelState) {
-		val xStsActualStateAssumption = lowlevelState.createSingleXStsStateAssumption
-		if (lowlevelState.parentRegion.topRegion) {
-			return xStsActualStateAssumption
-		}
-		// Not a top region state, the parents need to be addressed too
-		val lowlevelParentState = lowlevelState.parentState
-		val xStsParentStateAssumptions = lowlevelParentState.createRecursiveXStsStateAssumption
-		val xStsCompositeStateAssumption = createAndExpression => [
-			it.operands += xStsParentStateAssumptions
-			it.operands += xStsActualStateAssumption
-		]
-		return xStsCompositeStateAssumption
-	}
+//	protected def Expression createRecursiveXStsStateAssumption(State lowlevelState) {
+//		val xStsActualStateAssumption = lowlevelState.createSingleXStsStateAssumption
+//		if (lowlevelState.parentRegion.topRegion) {
+//			return xStsActualStateAssumption
+//		}
+//		// Not a top region state, the parents need to be addressed too
+//		val lowlevelParentState = lowlevelState.parentState
+//		val xStsParentStateAssumptions = lowlevelParentState.createRecursiveXStsStateAssumption
+//		val xStsCompositeStateAssumption = createAndExpression => [
+//			it.operands += xStsParentStateAssumptions
+//			it.operands += xStsActualStateAssumption
+//		]
+//		return xStsCompositeStateAssumption
+//	}
+	
+	
 	
 	/// Inactive history enum literal related methods
+	
+	protected def createSingleXStsInactiveStateExpression(Region lowlevelRegion) { // Currently unused
+		val xStsInactiveHistoryEnumLiterals = trace.getXStsInactiveHistoryEnumLiterals(lowlevelRegion)
+		val xStsRegionVariable = trace.getXStsVariable(lowlevelRegion)
+		
+		val xStsInactivityPossibilities = newArrayList
+		for (xStsInactiveHistoryEnumLiteral : xStsInactiveHistoryEnumLiterals) {
+			xStsInactivityPossibilities += xStsRegionVariable.createEqualityExpression(
+					xStsInactiveHistoryEnumLiteral.createEnumerationLiteralExpression)
+		}
+		
+		return xStsInactivityPossibilities.wrapIntoOrExpression
+	}
+	
+//	protected def createSingleXStsInactiveStateAction(Region lowlevelRegion) {
+//		val xStsParentRegionVariable = trace.getXStsVariable(lowlevelRegion)
+//		val xStsExpression = lowlevelRegion.createSingleXStsInactiveActiveStateExpression
+//		
+//		return xStsParentRegionVariable.createAssignmentAction(xStsExpression)
+//	}
 	
 	protected def createSingleXStsInactiveHistoryStateAssumption(State lowlevelState) {
 		val lowlevelRegion = lowlevelState.parentRegion

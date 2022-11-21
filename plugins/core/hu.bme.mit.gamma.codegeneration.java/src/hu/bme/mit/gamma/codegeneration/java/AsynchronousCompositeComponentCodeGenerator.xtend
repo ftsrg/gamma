@@ -135,9 +135,13 @@ class AsynchronousCompositeComponentCodeGenerator {
 					
 					@Override
 					public List<«systemPort.interfaceRealization.interface.implementationName».Listener.«systemPort.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper»> getRegisteredListeners() {
-						«FOR portDef : systemPort.portBindings»
-							return «portDef.instancePortReference.instance.name».get«portDef.instancePortReference.port.name.toFirstUpper»().getRegisteredListeners();
-						«ENDFOR»
+						«IF systemPort.portBindings.empty»
+							return List.of();
+						«ELSE»
+							«FOR portDef : systemPort.portBindings»
+								return «portDef.instancePortReference.instance.name».get«portDef.instancePortReference.port.name.toFirstUpper»().getRegisteredListeners();
+							«ENDFOR»
+						«ENDIF»
 					}
 					
 				}

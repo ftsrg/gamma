@@ -17,6 +17,10 @@ import hu.bme.mit.gamma.xsts.model.OutEventGroup
 import hu.bme.mit.gamma.xsts.model.OutEventParameterGroup
 import hu.bme.mit.gamma.xsts.model.PlainVariableGroup
 import hu.bme.mit.gamma.xsts.model.RegionGroup
+import hu.bme.mit.gamma.xsts.model.SystemInEventGroup
+import hu.bme.mit.gamma.xsts.model.SystemInEventParameterGroup
+import hu.bme.mit.gamma.xsts.model.SystemOutEventGroup
+import hu.bme.mit.gamma.xsts.model.SystemOutEventParameterGroup
 import hu.bme.mit.gamma.xsts.model.TimeoutGroup
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
@@ -60,6 +64,21 @@ class VariableGroupRetriever {
 		return eventVariableGroups.head
 	}
 	
+	// During a single low-level statechart transformation, there is a single system In event variable group
+	def getSystemInEventVariableGroup(XSTS xSts) {
+		var eventVariableGroups = xSts.variableGroups
+									.filter[it.annotation instanceof SystemInEventGroup]
+		if (eventVariableGroups.empty) {
+			val eventVariableGroup = createVariableGroup => [
+				it.annotation = createSystemInEventGroup
+			]
+			xSts.variableGroups += eventVariableGroup
+			return eventVariableGroup
+		}
+		checkState(eventVariableGroups.size == 1)
+		return eventVariableGroups.head
+	}
+	
 	// During a single low-level statechart transformation, there is a single out event variable group
 	def getOutEventVariableGroup(XSTS xSts) {
 		var eventVariableGroups = xSts.variableGroups
@@ -67,6 +86,21 @@ class VariableGroupRetriever {
 		if (eventVariableGroups.empty) {
 			val eventVariableGroup = createVariableGroup => [
 				it.annotation = createOutEventGroup
+			]
+			xSts.variableGroups += eventVariableGroup
+			return eventVariableGroup
+		}
+		checkState(eventVariableGroups.size == 1)
+		return eventVariableGroups.head
+	}
+	
+	// During a single low-level statechart transformation, there is a single system out event variable group
+	def getSystemOutEventVariableGroup(XSTS xSts) {
+		var eventVariableGroups = xSts.variableGroups
+									.filter[it.annotation instanceof SystemOutEventGroup]
+		if (eventVariableGroups.empty) {
+			val eventVariableGroup = createVariableGroup => [
+				it.annotation = createSystemOutEventGroup
 			]
 			xSts.variableGroups += eventVariableGroup
 			return eventVariableGroup
@@ -90,6 +124,21 @@ class VariableGroupRetriever {
 		return eventParameterVariableGroups.head
 	}
 	
+	// During a single low-level statechart transformation, there is a single system in event parameter variable group
+	def getSystemInEventParameterVariableGroup(XSTS xSts) {
+		var eventParameterVariableGroups = xSts.variableGroups
+									.filter[it.annotation instanceof SystemInEventParameterGroup]
+		if (eventParameterVariableGroups.empty) {
+			val eventParameterVariableGroup = createVariableGroup => [
+				it.annotation = createSystemInEventParameterGroup
+			]
+			xSts.variableGroups += eventParameterVariableGroup
+			return eventParameterVariableGroup
+		}
+		checkState(eventParameterVariableGroups.size == 1)
+		return eventParameterVariableGroups.head
+	}
+	
 	// During a single low-level statechart transformation, there is a single out event parameter variable group
 	def getOutEventParameterVariableGroup(XSTS xSts) {
 		var eventParameterVariableGroups = xSts.variableGroups
@@ -97,6 +146,21 @@ class VariableGroupRetriever {
 		if (eventParameterVariableGroups.empty) {
 			val eventParameterVariableGroup = createVariableGroup => [
 				it.annotation = createOutEventParameterGroup
+			]
+			xSts.variableGroups += eventParameterVariableGroup
+			return eventParameterVariableGroup
+		}
+		checkState(eventParameterVariableGroups.size == 1)
+		return eventParameterVariableGroups.head
+	}
+	
+	// During a single low-level statechart transformation, there is a single system out event parameter variable group
+	def getSystemOutEventParameterVariableGroup(XSTS xSts) {
+		var eventParameterVariableGroups = xSts.variableGroups
+									.filter[it.annotation instanceof SystemOutEventParameterGroup]
+		if (eventParameterVariableGroups.empty) {
+			val eventParameterVariableGroup = createVariableGroup => [
+				it.annotation = createSystemOutEventParameterGroup
 			]
 			xSts.variableGroups += eventParameterVariableGroup
 			return eventParameterVariableGroup

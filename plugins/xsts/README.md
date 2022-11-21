@@ -1,6 +1,6 @@
 # Integration to Theta
 
-This folder contains plugins for the mapping of high-level Gamma (composite) models to a symbolic transition system formalism (xSTS). XSTS models can serve as input for [Theta](https://github.com/theta), a generic, modular and configurable model checking framework. Theta supports the formal verification of xSTS models based on reachability criteria. The plugins provide support for the seamless integration of Gamma and Theta, that is, the construction of queries, their evaluation using Theta, and the back-annotation of the verification results in addition to the automatic transformation of the Gamma models. 
+This folder contains plugins for the mapping of high-level Gamma (composite) models to a symbolic transition system formalism (xSTS). XSTS models can serve as input for [Theta](https://github.com/ftsrg/theta), a generic, modular and configurable model checking framework. Theta supports the formal verification of xSTS models based on reachability criteria. The plugins provide support for the seamless integration of Gamma and Theta, that is, the construction of queries, their evaluation using Theta, and the back-annotation of the verification results in addition to the automatic transformation of the Gamma models. 
 
 Furthermore, the plugins support the automatic generation of standalone Java statechart code from Gamma statecharts based on xSTS models.
 

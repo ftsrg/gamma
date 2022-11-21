@@ -23,7 +23,6 @@ import hu.bme.mit.gamma.trace.model.InstanceStateConfiguration
 import hu.bme.mit.gamma.trace.model.RaiseEventAct
 import hu.bme.mit.gamma.trace.model.TraceModelPackage
 import hu.bme.mit.gamma.trace.util.TraceUtil
-import java.util.HashSet
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
 import org.eclipse.xtext.scoping.IScope
@@ -83,7 +82,7 @@ class TraceLanguageScopeProvider extends AbstractTraceLanguageScopeProvider {
 			val component = executionTrace.component
 			val instanceType = (instance === null) ? component : instance.lastInstance.derivedType
 			if (reference == CompositeModelPackage.Literals.COMPONENT_INSTANCE_STATE_REFERENCE_EXPRESSION__REGION) {
-				val regions = new HashSet<Region>
+				val regions = newLinkedHashSet
 				if (instanceType === null) {
 					val simpleSyncInstances = component.allSimpleInstances
 					for (simpleInstance : simpleSyncInstances) {
@@ -101,7 +100,7 @@ class TraceLanguageScopeProvider extends AbstractTraceLanguageScopeProvider {
 					return Scopes.scopeFor(region.states) 
 				}
 				else {
-					val states = new HashSet<State>
+					val states = newLinkedHashSet
 					if (instanceType === null) {
 						val simpleSyncInstances = component.allSimpleInstances
 						for (simpleInstance : simpleSyncInstances) {
@@ -127,6 +126,7 @@ class TraceLanguageScopeProvider extends AbstractTraceLanguageScopeProvider {
 				return IScope.NULLSCOPE
 			}
 			val variables = ecoreUtil.getAllContentsOfType(instanceType, VariableDeclaration)
+			variables.removeIf[it.local]
 			return Scopes.scopeFor(variables)
 		}
 		super.getScope(context, reference)
