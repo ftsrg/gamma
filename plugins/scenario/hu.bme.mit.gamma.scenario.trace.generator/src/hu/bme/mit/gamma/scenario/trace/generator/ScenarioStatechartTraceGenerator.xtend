@@ -111,10 +111,49 @@ class ScenarioStatechartTraceGenerator {
 		}
 
 		if (isNegativeTest) {
+			val mergedTraces = <ExecutionTrace>newArrayList
+			val similarTracesSet = <List<ExecutionTrace>>newArrayList
+			similarTracesSet += <ExecutionTrace>newArrayList
+			
 			for (trace : result) {
+				var added = false
+				for (similarSet : similarTracesSet) {// traces should be at least 2 step long
+					val steps = trace.steps.subList(0,trace.steps.size-2)
+					if (!added && similarSet.exists[steps.isCovered(it.steps.subList(0, it.steps.size-2)) 
+						&& it.steps.subList(0, it.steps.size-2).isCovered(steps)]) {
+						similarSet += trace
+						added = true
+					}
+				}
+				if (!added) {
+					similarTracesSet += <ExecutionTrace>newArrayList
+					similarTracesSet.last += trace
+				}
+			}
+			
+			for (set : similarTracesSet.filter[!it.empty]) {
+				mergedTraces += mergeLastStepOfTraces(set)
+			}	
+
+			for (trace : mergedTraces) {
 				trace.annotations += createNegativeTestAnnotation
 			}
+			result.clear
+			result.addAll(mergedTraces)
 		}
+		return result
+	}
+	
+	def ExecutionTrace mergeLastStepOfTraces(List<ExecutionTrace> traces) {
+		if(traces.size == 1) {
+			return traces.head
+		}
+		val lastSteps = traces.map[it.steps.last]
+		val or = createOrAssert
+		or.asserts += lastSteps.flatMap[it.asserts.clone]
+		val result = traces.head
+		result.steps.last.asserts.clear
+		result.steps.last.asserts += or
 		return result
 	}
 	
