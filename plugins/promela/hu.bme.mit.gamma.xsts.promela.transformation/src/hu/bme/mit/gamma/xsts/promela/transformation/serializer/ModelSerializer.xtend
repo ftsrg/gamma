@@ -33,6 +33,7 @@ import java.util.List
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
+import hu.bme.mit.gamma.xsts.model.XTransition
 
 class ModelSerializer {
 	// Singleton
@@ -79,11 +80,7 @@ class ModelSerializer {
 				goto TRANS;
 			TRANS:
 				atomic {
-					if
-					«FOR transition : transitions SEPARATOR "\n"»
-					:: «transition.action.serialize»
-					«ENDFOR»
-					fi;
+					«transitions.serializeTransitions»
 					flag = 1;
 				};
 				goto ENV;
@@ -92,11 +89,28 @@ class ModelSerializer {
 			init {
 				atomic {
 					«initializingActions.serialize»
+				}
+				atomic {
 					run EnvTrans();
 					flag = 1;
 				}
 			}
 		'''
+	}
+	
+	def serializeTransitions(List<XTransition> transitions) {
+		if (transitions.size > 1) {
+			return '''
+				if
+				«FOR transition : transitions»
+				:: «transition.action.serialize»
+				«ENDFOR»
+				fi;
+			'''
+		}
+		else {
+			return '''«transitions.get(0).action.serialize»'''
+		}
 	}
 	
 	
