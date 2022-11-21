@@ -118,48 +118,4 @@ class TestGeneratorUtil {
 		}
 		return true
 	}
-	
-	def String getPortOfAssert(Assert assert) '''
-		«IF assert instanceof NegatedAssert»
-			«val negated = assert.negatedAssert»
-			«IF negated instanceof RaiseEventAct»
-				"«negated.port.name»"
-			«ENDIF»
-		«ELSEIF assert instanceof RaiseEventAct»
-			"«assert.port.name»"
-		«ENDIF»
-	'''
-	
-	
-	def String getEventOfAssert(Assert assert) '''
-		«IF assert instanceof NegatedAssert»
-			«val negated = assert.negatedAssert»
-			«IF negated instanceof RaiseEventAct»
-				"«negated.event.name»"
-			«ENDIF»
-		«ELSEIF assert instanceof RaiseEventAct»
-			"«assert.event.name»"
-		«ENDIF»
-	'''
-	
-	def String getParamsOfAssert(Assert assert) '''
-		«IF assert instanceof NegatedAssert»
-			«val negated = assert.negatedAssert»
-			«IF negated instanceof RaiseEventAct»
-				new Object[] {«FOR parameter : negated.arguments BEFORE " " SEPARATOR ", " AFTER " "»«parameter.serialize»«ENDFOR»}
-			«ENDIF»
-		«ELSEIF assert instanceof RaiseEventAct»
-			new Object[] {«FOR parameter : assert.arguments BEFORE " " SEPARATOR ", " AFTER " "»«parameter.serialize»«ENDFOR»}
-		«ENDIF»
-		
-	'''
-	
-	def isNegative(Assert assert) '''
-		«IF assert instanceof NegatedAssert && (assert as NegatedAssert).negatedAssert instanceof RaiseEventAct»
-			true
-		«ELSEIF assert instanceof RaiseEventAct»
-			false
-		«ENDIF»
-	'''
-
 }
