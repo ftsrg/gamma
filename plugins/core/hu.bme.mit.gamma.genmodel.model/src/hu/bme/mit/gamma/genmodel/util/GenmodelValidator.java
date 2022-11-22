@@ -73,7 +73,6 @@ import hu.bme.mit.gamma.genmodel.model.TransitionCoverage;
 import hu.bme.mit.gamma.genmodel.model.Verification;
 import hu.bme.mit.gamma.genmodel.model.XstsReference;
 import hu.bme.mit.gamma.genmodel.model.YakinduCompilation;
-import hu.bme.mit.gamma.property.derivedfeatures.PropertyModelDerivedFeatures;
 import hu.bme.mit.gamma.property.model.PropertyPackage;
 import hu.bme.mit.gamma.scenario.model.NegatedDeterministicOccurrence;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter;
@@ -213,14 +212,6 @@ public class GenmodelValidator extends ExpressionModelValidator {
 		}
 		List<String> queryFiles = verification.getQueryFiles();
 		List<PropertyPackage> propertyPackages = verification.getPropertyPackages();
-		if (verification.isOptimizeModel()) {
-			if (propertyPackages.stream().anyMatch(it ->
-					!PropertyModelDerivedFeatures.isUnfolded(it))) {
-				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-					"If optimization is set, then all property packages must refer to unfolded components",
-						new ReferenceInfo(GenmodelModelPackage.Literals.VERIFICATION__OPTIMIZE_MODEL)));
-			}
-		}
 		if (queryFiles.size() + propertyPackages.size() < 1) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 				"At least one query file must be specified",

@@ -360,6 +360,16 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return hasAnnotation(gammaPackage, UnfoldedPackageAnnotation.class);
 	}
 	
+	public static boolean isWrapped(EObject object) {
+		return hasWrapperComponent(
+				getContainingPackage(object));
+	}
+	
+	public static boolean hasWrapperComponent(Package gammaPackage) {
+		return isWrapperComponent(
+				getFirstComponent(gammaPackage));
+	}
+	
 	public static boolean hasAnnotation(Package gammaPackage,
 			Class<? extends PackageAnnotation> annotation) {
 		return gammaPackage.getAnnotations().stream().anyMatch(it -> annotation.isInstance(it));
