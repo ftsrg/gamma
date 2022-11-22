@@ -13,7 +13,6 @@ package hu.bme.mit.gamma.lowlevel.xsts.transformation
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.statechart.lowlevel.model.Region
 import hu.bme.mit.gamma.statechart.lowlevel.model.State
-import hu.bme.mit.gamma.statechart.lowlevel.model.StatechartDefinition
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 
@@ -161,7 +160,7 @@ class StateAssumptionCreator {
 	///
 	
 	def createRegionAction() {
-		val lowlevelStatechart = trace.getTrace.lowlevelPackage.components.filter(StatechartDefinition).head
+		val lowlevelStatechart = trace.statechart
 		val orthogonalRegionSchedulingOrder = lowlevelStatechart.orthogonalRegionSchedulingOrder
 		switch (orthogonalRegionSchedulingOrder) {
 			case SEQUENTIAL: {

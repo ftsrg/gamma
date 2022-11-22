@@ -41,8 +41,10 @@ import hu.bme.mit.gamma.statechart.lowlevel.model.MergeState
 import hu.bme.mit.gamma.statechart.lowlevel.model.Package
 import hu.bme.mit.gamma.statechart.lowlevel.model.Region
 import hu.bme.mit.gamma.statechart.lowlevel.model.State
+import hu.bme.mit.gamma.statechart.lowlevel.model.StatechartDefinition
 import hu.bme.mit.gamma.statechart.lowlevel.model.Transition
 import hu.bme.mit.gamma.util.GammaEcoreUtil
+import hu.bme.mit.gamma.util.JavaUtil
 import hu.bme.mit.gamma.xsts.model.CompositeAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.ParallelAction
@@ -73,6 +75,7 @@ package class Trace {
 	protected final extension TraceabilityFactory traceabilityFactory = TraceabilityFactory.eINSTANCE
 	// Auxiliary
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
+	protected final extension JavaUtil javaUtil = JavaUtil.INSTANCE
 	// Maps for caching transitions
 	protected final List<Expression> primaryIsActiveExpressions = newArrayList // Source state and its parent states - only ponated
 	protected final Map<Transition, List<Expression>> isActiveExpressions = newHashMap  // Source state and its parent states - also negated due to priority
@@ -87,6 +90,12 @@ package class Trace {
 		]
 		this.tracingEngine = ViatraQueryEngine.on(
 				new EMFScope(trace))
+	}
+	
+	def getStatechart() {
+		val statechart = trace.lowlevelPackage.components
+				.filter(StatechartDefinition).onlyElement
+		return statechart
 	}
 	
 	// Transition caching
