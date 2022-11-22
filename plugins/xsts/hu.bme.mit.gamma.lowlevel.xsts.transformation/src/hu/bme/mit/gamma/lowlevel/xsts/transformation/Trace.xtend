@@ -85,7 +85,8 @@ package class Trace {
 			it.lowlevelPackage = _package
 			it.XSts = xSts
 		]
-		this.tracingEngine = ViatraQueryEngine.on(new EMFScope(trace))
+		this.tracingEngine = ViatraQueryEngine.on(
+				new EMFScope(trace))
 	}
 	
 	// Transition caching

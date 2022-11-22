@@ -438,8 +438,8 @@ public class StatechartModelValidator extends ActionModelValidator {
 	public Collection<ValidationResultMessage> checkStatechartScheduling(StatechartDefinition statechart) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		if (statechart.getOrthogonalRegionSchedulingOrder() != OrthogonalRegionSchedulingOrder.SEQUENTIAL) {
-			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-				"Only the sequential scheduling of orthogonal regions is supported", 
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING,
+				"If the scheduling of orthogonal regions is not sequential, performance issues during formal verification may arise",
 					new ReferenceInfo(StatechartModelPackage.Literals.STATECHART_DEFINITION__ORTHOGONAL_REGION_SCHEDULING_ORDER)));
 		}
 		return validationResultMessages;

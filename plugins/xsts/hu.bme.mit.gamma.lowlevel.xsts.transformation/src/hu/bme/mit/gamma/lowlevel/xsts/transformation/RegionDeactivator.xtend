@@ -100,7 +100,7 @@ class RegionDeactivator {
 		if (!lowlevelRegion.hasOrthogonalRegion) {
 			return createEmptyAction
 		}
-		return createParallelAction => [
+		return createRegionAction => [
 			for (lowlevelOrthogonalRegion : lowlevelRegion.orthogonalRegions) {
 				it.actions += lowlevelOrthogonalRegion.createRecursiveXStsRegionAndSubregionDeactivatingAction
 			}
@@ -120,7 +120,7 @@ class RegionDeactivator {
 		return createSequentialAction => [
 			it.actions += lowlevelParentRegion.createSingleXStsRegionDeactivatingAction
 			if (lowlevelState.composite) {
-				it.actions += createParallelAction => [
+				it.actions += createRegionAction => [
 					for (lowlevelSubregion : lowlevelState.regions) {
 						it.actions += lowlevelSubregion.createRecursiveXStsRegionAndSubregionDeactivatingAction
 					} 
@@ -151,7 +151,7 @@ class RegionDeactivator {
 		return createSequentialAction => [
 			it.actions += lowlevelRegion.createSingleXStsRegionDeactivatingAction
 			if (!lowlevelRegion.isLeaf) {
-				it.actions += createParallelAction => [
+				it.actions += createRegionAction => [
 					for (lowlevelSubstate : lowlevelRegion.states) {
 						for (lowlevelSubregion : lowlevelSubstate.regions) {
 							it.actions += lowlevelSubregion.createRecursiveXStsRegionAndSubregionDeactivatingAction

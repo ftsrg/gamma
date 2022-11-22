@@ -140,7 +140,7 @@ class RegionActivator {
 		if (!lowlevelRegion.hasOrthogonalRegion) {
 			return createEmptyAction
 		}
-		return createParallelAction => [
+		return createRegionAction => [
 			for (lowlevelOrthogonalRegion : lowlevelRegion.orthogonalRegions) {
 				it.actions += lowlevelOrthogonalRegion.createRecursiveXStsRegionAndSubregionActivatingAction
 			}
@@ -220,7 +220,7 @@ class RegionActivator {
 	 */
 	protected def Action createRecursiveXStsSubstateActivatingAction(State lowlevelState) {
 		if (lowlevelState.isComposite) {
-			return createParallelAction => [
+			return createRegionAction => [
 				// Setting the contained regions
 				for (lowlevelSubregion : lowlevelState.regions) {
 					it.actions += lowlevelSubregion.createRecursiveXStsRegionAndSubregionActivatingAction

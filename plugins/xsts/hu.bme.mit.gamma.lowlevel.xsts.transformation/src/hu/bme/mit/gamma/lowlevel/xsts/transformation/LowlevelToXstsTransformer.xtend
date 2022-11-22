@@ -45,6 +45,7 @@ import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.VariableGroup
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
+import hu.bme.mit.gamma.xsts.transformation.util.UnorderedActionTransformer
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import java.util.AbstractMap.SimpleEntry
 import java.util.Set
@@ -72,6 +73,7 @@ class LowlevelToXstsTransformer {
 	// Auxiliary objects
 	protected final extension RegionActivator regionActivator
 	protected final extension EntryActionRetriever entryActionRetriever
+	protected final extension StateAssumptionCreator stateAssumptionCreator
 	protected final extension ExpressionTransformer expressionTransformer
 	protected final extension VariableDeclarationTransformer variableDeclarationTransformer
 	protected final extension LowlevelTransitionToActionTransformer lowlevelTransitionToActionTransformer
@@ -82,6 +84,7 @@ class LowlevelToXstsTransformer {
 	
 	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension XstsActionUtil actionFactory = XstsActionUtil.INSTANCE
+	protected final extension UnorderedActionTransformer unorderedActionTransformer = UnorderedActionTransformer.INSTANCE
 	protected final extension XstsOptimizer optimizer = XstsOptimizer.INSTANCE
 	protected final extension VariableGroupRetriever variableGroupRetriever = VariableGroupRetriever.INSTANCE
 	// Model factories
@@ -140,6 +143,7 @@ class LowlevelToXstsTransformer {
 		// The transformers need the trace model for the variable mapping
 		this.regionActivator = new RegionActivator(this.engine, this.trace)
 		this.entryActionRetriever = new EntryActionRetriever(this.trace)
+		this.stateAssumptionCreator = regionActivator.stateAssumptionCreator
 		this.expressionTransformer = new ExpressionTransformer(this.trace)
 		this.variableDeclarationTransformer = new VariableDeclarationTransformer(this.trace)
 		this.lowlevelTransitionToActionTransformer =
@@ -192,6 +196,9 @@ class LowlevelToXstsTransformer {
 		getInEventEnvironmentalActionRule.fireAllCurrent
 		getOutEventEnvironmentalActionRule.fireAllCurrent
 		mergeTransitions
+		
+		xSts.transformUnorderedActions // Transforming here, so optimizeXSts needn't be extended
+		
 		xSts.optimizeXSts
 		xSts.fillNullTransitions
 		handleTransientAndResettableVariableAnnotations
@@ -320,7 +327,7 @@ class LowlevelToXstsTransformer {
 		if (topRegionInitializationRule === null) {
 			topRegionInitializationRule = createRule(Statecharts.instance).action [
 				val lowlevelStatechart = it.statechart
-				val regionInitializingAction = createParallelAction // Each region at the same time
+				val regionInitializingAction = createRegionAction // Each region at the same time
 				configurationInitializingAction as SequentialAction => [
 					it.actions += regionInitializingAction
 				]
@@ -328,7 +335,7 @@ class LowlevelToXstsTransformer {
 					regionInitializingAction.actions +=
 						lowlevelTopRegion.createRecursiveXStsRegionAndSubregionActivatingAction
 				}
-				val entryEventInitializingAction = createParallelAction // Each region at the same time
+				val entryEventInitializingAction = createRegionAction // Each region at the same time
 				entryEventAction as SequentialAction => [
 					it.actions += entryEventInitializingAction
 				]

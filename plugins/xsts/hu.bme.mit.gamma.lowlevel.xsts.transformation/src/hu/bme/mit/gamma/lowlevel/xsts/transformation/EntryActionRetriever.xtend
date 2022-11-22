@@ -118,7 +118,7 @@ class EntryActionRetriever {
 		if (!lowlevelRegion.hasOrthogonalRegion) {
 			return createEmptyAction
 		}
-		return createParallelAction => [
+		return createRegionAction => [
 			for (lowlevelOrthogonalRegion : lowlevelRegion.orthogonalRegions) {
 				it.actions += lowlevelOrthogonalRegion.createRecursiveXStsRegionAndSubregionEntryActions
 			}
@@ -136,7 +136,7 @@ class EntryActionRetriever {
 			return XStsStateAndSubstateEntryActions
 		}
 		// Has orthogonal regions
-		return createParallelAction => [
+		return createRegionAction => [
 			it.actions += XStsStateAndSubstateEntryActions
 			// Orthogonal region actions
 			for (lowlevelOrthogonalRegion : lowlevelParentRegion.orthogonalRegions) {
@@ -151,7 +151,7 @@ class EntryActionRetriever {
 		val xStsStateAssumption = lowlevelState.createSingleXStsStateAssumption
 		// Action taken only if the state is "active" (assume action)
 		val xStsStateEntryActions = lowlevelState.entryAction.transformAction
-		val xStsSubstateEntryActions = createParallelAction
+		val xStsSubstateEntryActions = createRegionAction
 		// Recursion for the entry action of contained states
 		for (lowlevelSubregion : lowlevelState.regions) {
 			// Actions on initial transitions

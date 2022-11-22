@@ -104,7 +104,7 @@ class ExitActionRetriever {
 		if (!lowlevelRegion.hasOrthogonalRegion) {
 			return createEmptyAction
 		}
-		return createParallelAction => [
+		return createRegionAction => [
 			for (lowlevelOrthogonalRegion : lowlevelRegion.orthogonalRegions) {
 				for (lowlevelSubstate : lowlevelOrthogonalRegion.states) {
 					it.actions += lowlevelSubstate.createRecursiveXStsStateAndSubstateExitActions
@@ -124,7 +124,7 @@ class ExitActionRetriever {
 			return xStsStateAndSubstateExitActions
 		}
 		// Has orthogonal regions
-		return createParallelAction => [
+		return createRegionAction => [
 			it.actions += xStsStateAndSubstateExitActions
 			// Orthogonal region actions
 			for (lowlevelOrthogonalRegion : lowlevelParentRegion.orthogonalRegions) {
@@ -137,7 +137,7 @@ class ExitActionRetriever {
 	
 	protected def IfAction createRecursiveXStsStateAndSubstateExitActions(State lowlevelState) {
 		val xStsStateExitActions = lowlevelState.exitAction.transformAction
-		val xStsSubstateExitActions = createParallelAction
+		val xStsSubstateExitActions = createRegionAction
 		// Recursion for the exit action of contained states
 		for (lowlevelSubregion : lowlevelState.regions) {
 			val xStsExitActions = newArrayList

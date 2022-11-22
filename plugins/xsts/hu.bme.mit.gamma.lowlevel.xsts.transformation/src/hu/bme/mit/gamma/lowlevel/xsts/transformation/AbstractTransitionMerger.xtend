@@ -27,6 +27,8 @@ abstract class AbstractTransitionMerger {
 	protected final XSTS xSts
 	
 	protected final extension PseudoStateHandler pseudoStateHandler
+	protected final extension StateAssumptionCreator stateAssumptionCreator
+	
 	protected final extension XSTSModelFactory factory = XSTSModelFactory.eINSTANCE
 	protected final extension ExpressionModelFactory expressionFactory = ExpressionModelFactory.eINSTANCE
 	protected final extension XstsActionUtil actionUtil = XstsActionUtil.INSTANCE
@@ -38,6 +40,7 @@ abstract class AbstractTransitionMerger {
 		this.trace = trace
 		this.xSts = trace.XSts
 		this.pseudoStateHandler = new PseudoStateHandler(this.engine)
+		this.stateAssumptionCreator = new StateAssumptionCreator(this.trace)
 	}
 	
 	abstract def void mergeTransitions()
