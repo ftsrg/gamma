@@ -21,6 +21,7 @@ import hu.bme.mit.gamma.xsts.model.EmptyAction
 import hu.bme.mit.gamma.xsts.model.IfAction
 import hu.bme.mit.gamma.xsts.model.LoopAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
+import hu.bme.mit.gamma.xsts.model.ParallelAction
 import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
 import hu.bme.mit.gamma.xsts.model.XTransition
@@ -118,6 +119,24 @@ class VariableInliner {
 		for (subaction : subactions) {
 			subaction.inline(concreteValues, symbolicValues)
 		}
+	}
+	
+	protected def dispatch void inline(ParallelAction action,
+			Map<VariableDeclaration, InlineEntry> concreteValues,
+			Map<VariableDeclaration, InlineEntry> symbolicValues) {
+		val writtenVariables = action.writtenVariables
+		
+		concreteValues.keySet -= writtenVariables
+		symbolicValues.keySet -= writtenVariables
+		
+		val subactions = newArrayList
+		subactions += action.actions
+		for (subaction : subactions) {
+			subaction.inline(concreteValues, symbolicValues)
+		}
+		
+		concreteValues.keySet -= writtenVariables
+		symbolicValues.keySet -= writtenVariables
 	}
 	
 	protected def dispatch void inline(NonDeterministicAction action,

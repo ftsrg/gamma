@@ -1633,6 +1633,13 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		if (controlSpecifications.size() != 1) {
 			return false;
 		}
+		// If this is the case, back-annotation will not work if we consider this simplifiable
+		SynchronousComponentInstance wrappedComponent = adapter.getWrappedComponent();
+		SynchronousComponent type = wrappedComponent.getType();
+		if (type.getPorts().isEmpty()) {
+			return false;
+		}
+		
 		ControlSpecification controlSpecification = controlSpecifications.get(0);
 		Trigger trigger = controlSpecification.getTrigger();
 		ControlFunction controlFunction = controlSpecification.getControlFunction();

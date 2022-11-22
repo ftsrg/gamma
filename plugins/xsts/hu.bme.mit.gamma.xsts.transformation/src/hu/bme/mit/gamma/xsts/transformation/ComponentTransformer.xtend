@@ -502,7 +502,7 @@ class ComponentTransformer {
 			// And the actual queue is not full
 			val isMasterQueueNotFull = xStsMasterQueue.isMasterQueueNotFull(xStsMasterSizeVariable)
 			// The first part is necessary if there are more queues
-			val isQueueInsertableExpression = (queueSizes == 1) ? isMasterQueueNotFull : 
+			val isQueueInsertableExpression = (queueSizes.size == 1) ? isMasterQueueNotFull : 
 					isMasterQueueNotFull.wrapIntoAndExpression(isThereTheoreticalCapacityExression)
 			val xStsQueueInsertionAction = isQueueInsertableExpression.createIfAction(xStsQueueHandlingAction)
 			// If queue is insertable
@@ -840,6 +840,8 @@ class ComponentTransformer {
 				}
 			}
 			removableBranchActions.forEach[it.remove] // Removing now - it would break the indexes in the loop
+			
+			// Note that if the sync component has no port, the event transmission is not mapped
 			
 			// Original parameter settings
 			// Parameters that come from the same ports are bound to the same values - done by previous call
