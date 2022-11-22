@@ -1,0 +1,8 @@
+import "ParallelMachine/ParallelMachineAdapter.gcd"
+
+component ParallelMachineAdapter
+
+E F [ { variable parallelMachine.x = 1 and variable parallelMachine.y = 1 } ]
+E F [ { variable parallelMachine.x = 1 and variable parallelMachine.y = 2 } ]
+E F [ { variable parallelMachine.x = 2 and variable parallelMachine.y = 1 } ]
+E F [ { variable parallelMachine.x = 2 and variable parallelMachine.y = 2 } ]
