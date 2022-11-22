@@ -15,7 +15,7 @@ import hu.bme.mit.gamma.statechart.lowlevel.model.Region
 import hu.bme.mit.gamma.statechart.lowlevel.model.State
 import hu.bme.mit.gamma.statechart.lowlevel.model.StateNode
 import hu.bme.mit.gamma.xsts.model.Action
-import hu.bme.mit.gamma.xsts.model.ParallelAction
+import hu.bme.mit.gamma.xsts.model.MultiaryAction
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 
@@ -81,7 +81,7 @@ class RegionDeactivator {
 		return createSequentialAction => [
 			if (lowlevelGrandparentRegion.hasOrthogonalRegion && !lowlevelGrandparentRegion.stateNodes.contains(lowlevelTopState)) {
 				// Orthogonal region
-				it.actions += lowlevelGrandparentRegion.createRecursiveXStsOrthogonalRegionDeactivatingAction as ParallelAction => [
+				it.actions += lowlevelGrandparentRegion.createRecursiveXStsOrthogonalRegionDeactivatingAction as MultiaryAction => [
 					it.actions += singleXStsRegionDeactivatingAction
 				]
 			}
@@ -136,7 +136,7 @@ class RegionDeactivator {
 			return recursiveXStsStateAndSubstateDeactivatingAction
 		}
 		// Orthogonality
-		return lowlevelParentRegion.createRecursiveXStsOrthogonalRegionDeactivatingAction as ParallelAction => [
+		return lowlevelParentRegion.createRecursiveXStsOrthogonalRegionDeactivatingAction as MultiaryAction => [
 			it.actions += recursiveXStsStateAndSubstateDeactivatingAction
 		]
 	}

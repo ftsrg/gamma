@@ -16,7 +16,7 @@ import hu.bme.mit.gamma.statechart.lowlevel.model.State
 import hu.bme.mit.gamma.statechart.lowlevel.model.StateNode
 import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.IfAction
-import hu.bme.mit.gamma.xsts.model.ParallelAction
+import hu.bme.mit.gamma.xsts.model.MultiaryAction
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 
@@ -87,7 +87,7 @@ class EntryActionRetriever {
 			val xStsStateEntryAction = xStsStateAssumption.createIfAction(lowlevelParentState.entryAction.transformAction)
 			if (lowlevelGrandparentRegion.hasOrthogonalRegion  && !lowlevelGrandparentRegion.stateNodes.contains(lowlevelTopState)) {
 				// Orthogonal region exit actions
-				it.actions += lowlevelGrandparentRegion.createRecursiveXStsOrthogonalRegionEntryActions as ParallelAction => [
+				it.actions += lowlevelGrandparentRegion.createRecursiveXStsOrthogonalRegionEntryActions as MultiaryAction => [
 					it.actions += xStsStateEntryAction
 				]
 			}
