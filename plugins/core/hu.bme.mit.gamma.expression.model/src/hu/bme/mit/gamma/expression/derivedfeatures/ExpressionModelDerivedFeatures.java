@@ -252,6 +252,25 @@ public class ExpressionModelDerivedFeatures {
 		throw new IllegalArgumentException("Not array type: " + type);
 	}
 	
+	public static int getDimension(Declaration declaration) {
+		Type type = declaration.getType();
+		return getDimension(type);
+	}
+	
+	public static int getDimension(Type type) {
+		TypeDefinition typeDefinition = getTypeDefinition(type);
+		if (typeDefinition instanceof ArrayTypeDefinition) {
+			Type arrayElementType = getArrayElementType(typeDefinition);
+			return getDimension(arrayElementType) + 1;
+		}
+		else if (typeDefinition instanceof RecordTypeDefinition) {
+			throw new IllegalArgumentException("Not supported type: " + type);
+		}
+		else {
+			return 0;
+		}
+	}
+	
 	// Type references
 	
 	public static boolean refersToAnAlias(TypeReference typeReference) {
