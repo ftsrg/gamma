@@ -42,8 +42,8 @@ class ModelSerializer {
 	//
 	protected extension DeclarationSerializer declarationSerializer = DeclarationSerializer.INSTANCE
 	protected extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
-	protected extension ParallelActionHandler parallelHandler = ParallelActionHandler.INSTANCE
 	
+	protected extension ParallelActionHandler parallelHandler = new ParallelActionHandler
 	protected final extension HavocHandler havocHandler = HavocHandler.INSTANCE
 	protected final extension ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE
 	protected final extension ArrayHandler arrayHandler = ArrayHandler.INSTANCE
@@ -87,9 +87,7 @@ class ModelSerializer {
 			}
 			
 			init {
-				atomic {
-					«initializingActions.serialize»
-				}
+				«initializingActions.serialize»
 				atomic {
 					run EnvTrans();
 					flag = 1;

@@ -15,18 +15,14 @@ import java.util.List
 import java.util.Map
 
 class ParallelActionHandler {
-	// Singleton
-	public static final ParallelActionHandler INSTANCE = new ParallelActionHandler
-	protected new() {}
-	
 	protected extension DeclarationSerializer declarationSerializer = DeclarationSerializer.INSTANCE
 	
 	protected final extension ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	
-	public Map<List<Action>, Integer> parallelMapping
-	public Map<Action, List<Declaration>> parallelVariableMapping
-	public int maxParallelNumber
+	protected Map<List<Action>, Integer> parallelMapping
+	protected Map<Action, List<Declaration>> parallelVariableMapping
+	protected int maxParallelNumber
 	
 	def createParallelMapping(List<Action> actions) {
 		maxParallelNumber = 0
@@ -85,5 +81,19 @@ class ParallelActionHandler {
 				}
 			}
 		}
+	}
+	
+	// Getters
+	
+	def getParallelMapping() {
+		return parallelMapping
+	}
+	
+	def getParallelVariableMapping() {
+		return parallelVariableMapping
+	}
+	
+	def getMaxParallelNumber() {
+		return maxParallelNumber
 	}
 }
