@@ -55,7 +55,7 @@ import hu.bme.mit.gamma.xsts.util.XstsActionUtil;
 public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 
 	protected static final XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE;
-	protected static XSTSModelFactory xStsFactory = XSTSModelFactory.eINSTANCE;
+	protected static final XSTSModelFactory xStsFactory = XSTSModelFactory.eINSTANCE;
 	
 	//
 	
@@ -657,6 +657,49 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 		
 		return readAndWrittenVariables;
 	}
+	
+	//
+	
+	public static Set<VariableDeclaration> getAllReaderVariables(
+			Collection<? extends VariableDeclaration> variables) {
+		Set<VariableDeclaration> writtenVariables = new HashSet<VariableDeclaration>();
+		
+		for (VariableDeclaration variable : variables) {
+			writtenVariables.addAll(
+					getAllReaderVariables(variable));
+		}
+		
+		return writtenVariables;
+	}
+	
+	public static Set<VariableDeclaration> getAllReaderVariables(VariableDeclaration variable) {
+		Set<VariableDeclaration> writtenVariables = new HashSet<VariableDeclaration>();
+		
+		EObject root = ecoreUtil.getRoot(variable);
+		List<AssignmentAction> assignmentActions = ecoreUtil.getSelfAndAllContentsOfType(
+				root, AssignmentAction.class);
+		
+		int size = -1;
+		while (size != writtenVariables.size()) {
+			size = writtenVariables.size();
+			
+			for (AssignmentAction assignmentAction : assignmentActions) {
+				
+				Set<VariableDeclaration> readVariables = getReadVariables(assignmentAction);
+				if (readVariables.contains(variable) ||
+						javaUtil.containsAny(readVariables, writtenVariables)) {
+					Set<VariableDeclaration> writtenVariablesOfAction =
+							getWrittenVariables(assignmentAction); // Only one
+					
+					writtenVariables.addAll(writtenVariablesOfAction);
+				}
+			}
+		}
+		
+		return writtenVariables;
+	}
+	
+	//
 
 	public static boolean areSubactionsOrthogonal(MultiaryAction action) {
 		List<Collection<VariableDeclaration>> readVariables =
