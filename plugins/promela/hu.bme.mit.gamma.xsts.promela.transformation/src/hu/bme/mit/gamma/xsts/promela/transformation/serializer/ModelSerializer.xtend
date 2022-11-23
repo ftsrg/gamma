@@ -13,6 +13,8 @@ package hu.bme.mit.gamma.xsts.promela.transformation.serializer
 import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.ExpressionUtil
+import hu.bme.mit.gamma.util.GammaEcoreUtil
+import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.AssumeAction
 import hu.bme.mit.gamma.xsts.model.EmptyAction
@@ -20,59 +22,94 @@ import hu.bme.mit.gamma.xsts.model.HavocAction
 import hu.bme.mit.gamma.xsts.model.IfAction
 import hu.bme.mit.gamma.xsts.model.LoopAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
+import hu.bme.mit.gamma.xsts.model.ParallelAction
 import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
 import hu.bme.mit.gamma.xsts.model.XSTS
+import hu.bme.mit.gamma.xsts.model.XTransition
 import hu.bme.mit.gamma.xsts.promela.transformation.util.ArrayHandler
 import hu.bme.mit.gamma.xsts.promela.transformation.util.HavocHandler
+import hu.bme.mit.gamma.xsts.promela.transformation.util.ParallelActionHandler
+import java.util.List
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
 
 class ModelSerializer {
 	// Singleton
-	public static final ModelSerializer INSTANCE = new ModelSerializer
+	public static ModelSerializer INSTANCE = new ModelSerializer
 	protected new() {}
 	//
 	protected extension DeclarationSerializer declarationSerializer = DeclarationSerializer.INSTANCE
 	protected extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
 	
+	protected extension ParallelActionHandler parallelHandler = new ParallelActionHandler
 	protected final extension HavocHandler havocHandler = HavocHandler.INSTANCE
 	protected final extension ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE
 	protected final extension ArrayHandler arrayHandler = ArrayHandler.INSTANCE
+	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	
-	def String serializePromela(XSTS xSts) '''
-		«xSts.serializeDeclaration»
-		
-		byte flag = 0;
-		
-		
-		proctype EnvTrans() {
-			(flag > 0);
-		ENV:
-			atomic {
-				«xSts.environmentalAction.serialize»
-				flag = 2;
-			};
-			goto TRANS;
-		TRANS:
-			atomic {
-				«FOR transition : xSts.transitions»
-					«transition.action.serialize»
-				«ENDFOR»
-				flag = 1;
-			};
-			goto ENV;
+	def String serializePromela(XSTS xSts) {
+		val initializingActions = xSts.initializingAction
+		val environmentalActions = xSts.environmentalAction
+		val List<Action> actions = newArrayList
+		actions += initializingActions
+		actions += environmentalActions
+		val transitions = xSts.transitions
+		for (transition : transitions) {
+			actions += transition.action
 		}
 		
-		init {
-			atomic {
-				«xSts.initializingAction.serialize»
-				run EnvTrans();
-				flag = 1;
+		actions.createParallelMapping
+		
+		return '''
+			«xSts.serializeDeclaration»
+			
+			«serializeParallelChan»
+			byte flag = 0;
+			
+			«serializeParallelProcesses»
+			
+			proctype EnvTrans() {
+				(flag > 0);
+			ENV:
+				atomic {
+					«environmentalActions.serialize»
+					flag = 2;
+				};
+				goto TRANS;
+			TRANS:
+				atomic {
+					«transitions.serializeTransitions»
+					flag = 1;
+				};
+				goto ENV;
 			}
+			
+			init {
+				«initializingActions.serialize»
+				atomic {
+					run EnvTrans();
+					flag = 1;
+				}
+			}
+		'''
+	}
+	
+	def serializeTransitions(List<XTransition> transitions) {
+		if (transitions.size > 1) {
+			return '''
+				if
+				«FOR transition : transitions»
+				:: «transition.action.serialize»
+				«ENDFOR»
+				fi;
+			'''
 		}
-	'''
+		else {
+			return '''«transitions.get(0).action.serialize»'''
+		}
+	}
 	
 	
 	def dispatch String serialize(AssumeAction action) '''
@@ -146,4 +183,54 @@ class ModelSerializer {
 			«subaction.serialize»
 		«ENDFOR»
 	'''
+	
+	def dispatch String serialize(ParallelAction action) {
+		val actions = action.actions
+		val actionSize = actions.size
+		
+		if (actionSize > 1) {
+			return '''
+				«FOR index : 0 ..< actionSize»
+					run Parallel_«parallelMapping.get(actions)»_«index»(«actions.get(index).serializeParallelProcCallArguments»);
+				«ENDFOR»
+				
+				«FOR index : 0 ..< actionSize»
+					chan_parallel_«index»?msg_parallel_«index»;
+					msg_parallel_«index» == 1;
+					msg_parallel_«index» = 0;
+				«ENDFOR»
+			'''
+		}
+		else {
+			return '''
+				«actions.get(0).serialize»
+			'''
+		} 
+	}
+	
+	def serializeParallelProcesses() '''
+		«FOR actions : parallelMapping.keySet SEPARATOR "\n"»
+			«actions.serializeParallelProcess(parallelMapping.get(actions))»
+		«ENDFOR»
+	'''
+	
+	def serializeParallelProcess(List<Action> actions, int index) '''
+		«FOR i : 0 ..< actions.size SEPARATOR "\n"»
+			proctype Parallel_«index»_«i»(«actions.get(i).serializeParallelProcessesArguments») {
+				«actions.get(i).serialize»
+				
+				chan_parallel_«i»!1;
+			}
+		«ENDFOR»
+	'''
+	
+	def serializeParallelChan() '''
+		«FOR index : 0 ..< maxParallelNumber»
+			chan chan_parallel_«index» = [0] of { bit };
+			bit msg_parallel_«index» = 0;
+		«ENDFOR»
+	'''
+	
+	def serializeParallelProcessesArguments(Action action) '''«IF parallelVariableMapping.get(action) !== null»«FOR varDecAction : parallelVariableMapping.get(action) SEPARATOR "; "»«varDecAction.type.serializeType» «varDecAction.name»«ENDFOR»«ENDIF»'''
+	def serializeParallelProcCallArguments(Action action) '''«IF parallelVariableMapping.get(action) !== null»«FOR varDecAction : parallelVariableMapping.get(action) SEPARATOR ", "»«varDecAction.name»«ENDFOR»«ENDIF»'''
 }

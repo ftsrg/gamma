@@ -43,6 +43,8 @@ class TraceBackAnnotator {
 	protected final String TRANS_END = "flag = 1"
 	protected final String TRACE_END = "#processes:"
 	
+	protected boolean traceEnd = false
+	
 	protected final Scanner traceScanner
 	protected final PromelaQueryGenerator promelaQueryGenerator
 	protected final extension XstsBackAnnotator xStsBackAnnotator
@@ -133,6 +135,7 @@ class TraceBackAnnotator {
 								
 								traceState = TraceState.REQUIRED
 								initError = true
+								traceEnd = true
 								line = traceScanner.nextLine.trim
 							}
 							case line.equals(INIT_ERROR): {
@@ -166,6 +169,7 @@ class TraceBackAnnotator {
 								lastModelState = ModelState.ENV
 							}
 							case line.startsWith(TRACE_END): {
+								traceEnd = true
 								modelState = lastModelState
 							}
 						}
@@ -188,6 +192,7 @@ class TraceBackAnnotator {
 								lastModelState = ModelState.TRANS
 							}
 							case line.startsWith(TRACE_END): {
+								traceEnd = true
 								modelState = lastModelState
 							}
 						}
@@ -197,7 +202,7 @@ class TraceBackAnnotator {
 				}
 				
 				// We parse in every turn
-				if (traceState == TraceState.REQUIRED) {
+				if (traceState == TraceState.REQUIRED && line.checkLine) {
 					
 					var split = line.split(" = ")
 					var id = split.get(0)
@@ -283,4 +288,18 @@ class TraceBackAnnotator {
 	enum BackAnnotatorState { INIT, STATE_CHECK, ENVIRONMENT_CHECK }
 	enum ModelState { INIT, TRANS, ENV }
 	enum TraceState { REQUIRED, NOT_REQUIRED }
+	
+	// Filtering unnecessary lines
+	protected def checkLine(String line) {
+		if (line.contains(":") ||
+			(traceEnd && line.contains("proc  ")) ||
+			line.startsWith("Never claim moves to") ||
+			line.contains(" processes created")
+		) {
+			return false
+		}
+		else {
+			return true
+		}
+	}
 }
