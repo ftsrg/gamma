@@ -43,11 +43,9 @@ class PromelaVerifier extends AbstractVerifier {
 			i++
 			
 			val rootGenFolder = new File(modelFile.parent, "." + fileUtil.getExtensionlessName(modelFile))
-			rootGenFolder.forceDeleteOnExit
 			rootGenFolder.mkdirs
-			// save model with all LTL
+			// Save model with all LTL
 			val tmpGenFolder = new File(rootGenFolder + File.separator + fileUtil.getExtensionlessName(modelFile) + "-LTL" + System.currentTimeMillis.toString)
-			tmpGenFolder.forceDeleteOnExit
 			tmpGenFolder.mkdirs
 			
 			// save model with LTL
@@ -65,6 +63,10 @@ class PromelaVerifier extends AbstractVerifier {
 				oldTrace.extend(newTrace)
 				result = new Result(ThreeStateBoolean.UNDEF, oldTrace)
 			}
+			
+			// Setting for deletion after the exe has been generated
+			tmpGenFolder.forceDeleteOnExit
+			rootGenFolder.forceDeleteOnExit
 		}
 		return result
 	}

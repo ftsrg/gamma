@@ -182,12 +182,12 @@ class FileUtil {
 	}
 	
 	def void forceDeleteOnExit(File file) {
+		file.deleteOnExit // "Files (or directories) are deleted in the reverse order they are registered"
 		if (file.isDirectory) {
 			for (subfile : file.listFiles) {
 				subfile.forceDeleteOnExit
 			}
 		}
-		file.deleteOnExit
 	}
 	
 	/**
@@ -198,9 +198,11 @@ class FileUtil {
 		folder.mkdirs();
 		// Searching the trace folder for highest id
 		for (File file: folder.listFiles()) {
-			if (file.getName().matches(fileName + "[0-9]+\\." + fileExtension)) {
+			val name = file.getName();
+			if (name.matches(fileName + "[0-9]+\\." + fileExtension)) {
 				// File extension needed to distinguish .get and .json
-				val id = file.getName().substring(fileName.length(), file.getName().length() - ("." + fileExtension).length());
+				val id = name.substring(fileName.length(),
+						name.length() - ("." + fileExtension).length());
 				usedIds.add(Integer.parseInt(id));
 			}
 		}
