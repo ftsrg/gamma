@@ -40,10 +40,10 @@ class ModelSerializer {
 	public static ModelSerializer INSTANCE = new ModelSerializer
 	protected new() {}
 	//
-	protected extension DeclarationSerializer declarationSerializer = DeclarationSerializer.INSTANCE
-	protected extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
+	protected final extension DeclarationSerializer declarationSerializer = DeclarationSerializer.INSTANCE
+	protected final extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
 	
-	protected extension ParallelActionHandler parallelHandler = new ParallelActionHandler
+	protected final extension ParallelActionHandler parallelHandler = new ParallelActionHandler
 	protected final extension HavocHandler havocHandler = HavocHandler.INSTANCE
 	protected final extension ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE
 	protected final extension ArrayHandler arrayHandler = ArrayHandler.INSTANCE
@@ -52,9 +52,11 @@ class ModelSerializer {
 	def String serializePromela(XSTS xSts) {
 		val initializingActions = xSts.initializingAction
 		val environmentalActions = xSts.environmentalAction
-		val List<Action> actions = newArrayList
+		
+		val actions = <Action>newArrayList
 		actions += initializingActions
 		actions += environmentalActions
+		
 		val transitions = xSts.transitions
 		for (transition : transitions) {
 			actions += transition.action
@@ -65,7 +67,7 @@ class ModelSerializer {
 		return '''
 			«xSts.serializeDeclaration»
 			
-			«serializeParallelChan»
+			«serializeParallelChannels»
 			byte flag = 0;
 			
 			«serializeParallelProcesses»
@@ -96,7 +98,7 @@ class ModelSerializer {
 		'''
 	}
 	
-	def serializeTransitions(List<XTransition> transitions) {
+	protected def serializeTransitions(List<? extends XTransition> transitions) {
 		if (transitions.size > 1) {
 			return '''
 				if
@@ -107,33 +109,35 @@ class ModelSerializer {
 			'''
 		}
 		else {
-			return '''«transitions.get(0).action.serialize»'''
+			return '''«transitions.head.action.serialize»'''
 		}
 	}
 	
+	//
 	
-	def dispatch String serialize(AssumeAction action) '''
+	protected def dispatch String serialize(AssumeAction action) '''
 		if
 		:: («action.assumption.serialize»);
 		fi;
 	'''
 	
-	def dispatch String serialize(AssignmentAction action) {
-		// Promela does not support multidimensional arrays, so they need to be handled differently.
-		// It also does not support the use of array init blocks in processes.
-		if (action.lhs.declaration.typeDefinition instanceof ArrayTypeDefinition) {
-			return action.lhs.serializeArrayAssignment(action.rhs)
+	protected def dispatch String serialize(AssignmentAction action) {
+		// Promela does not support multidimensional arrays, so they need to be handled differently
+		// It also does not support the use of array init blocks in processes
+		val lhs = action.lhs
+		if (lhs.declaration.typeDefinition instanceof ArrayTypeDefinition) {
+			return lhs.serializeArrayAssignment(action.rhs)
 		}
-		return '''«action.lhs.serialize» = «action.rhs.serialize»;'''
+		return '''«lhs.serialize» = «action.rhs.serialize»;'''
 	}
 	
-	def dispatch String serialize(VariableDeclarationAction action) '''
+	protected def dispatch String serialize(VariableDeclarationAction action) '''
 		«action.variableDeclaration.serializeLocalVariableDeclaration»
 	'''
 	
-	def dispatch String serialize(EmptyAction action) ''''''
+	protected def dispatch String serialize(EmptyAction action) ''''''
 	
-	def dispatch String serialize(IfAction action) '''
+	protected def dispatch String serialize(IfAction action) '''
 		if
 		:: «action.condition.serialize» -> 
 			«action.then.serialize»
@@ -146,7 +150,7 @@ class ModelSerializer {
 		fi;
 	'''
 	
-	def dispatch String serialize(HavocAction action) {
+	protected def dispatch String serialize(HavocAction action) {
 		val xStsDeclaration = action.lhs.declaration
 		val xStsVariable = xStsDeclaration as VariableDeclaration
 		
@@ -158,7 +162,7 @@ class ModelSerializer {
 			fi;'''
 	}
 	
-	def dispatch String serialize(LoopAction action) {
+	protected def dispatch String serialize(LoopAction action) {
 		val name = action.iterationParameterDeclaration.name
 		val left = action.range.getLeft(true)
 		val right = action.range.getRight(true)
@@ -170,7 +174,7 @@ class ModelSerializer {
 		'''
 	}
 	
-	def dispatch String serialize(NonDeterministicAction action) '''
+	protected def dispatch String serialize(NonDeterministicAction action) '''
 		if
 		«FOR subaction : action.actions»
 		:: «subaction.serialize»
@@ -178,20 +182,20 @@ class ModelSerializer {
 		fi;
 	'''
 	
-	def dispatch String serialize(SequentialAction action) '''
+	protected def dispatch String serialize(SequentialAction action) '''
 		«FOR subaction : action.actions»
 			«subaction.serialize»
 		«ENDFOR»
 	'''
 	
-	def dispatch String serialize(ParallelAction action) {
+	protected def dispatch String serialize(ParallelAction action) {
 		val actions = action.actions
 		val actionSize = actions.size
 		
 		if (actionSize > 1) {
 			return '''
 				«FOR index : 0 ..< actionSize»
-					run Parallel_«parallelMapping.get(actions)»_«index»(«actions.get(index).serializeParallelProcCallArguments»);
+					run Parallel_«parallelMapping.get(actions)»_«index»(«actions.get(index).serializeParallelProcessCallArguments»);
 				«ENDFOR»
 				
 				«FOR index : 0 ..< actionSize»
@@ -205,17 +209,20 @@ class ModelSerializer {
 			return '''
 				«actions.get(0).serialize»
 			'''
-		} 
+		}
 	}
 	
-	def serializeParallelProcesses() '''
-		«FOR actions : parallelMapping.keySet SEPARATOR "\n"»
-			«actions.serializeParallelProcess(parallelMapping.get(actions))»
+	//
+	
+	protected def serializeParallelProcesses() '''
+		«FOR actions : parallelMapping.keySet SEPARATOR System.lineSeparator»
+			«actions.serializeParallelProcess(
+					parallelMapping.get(actions))»
 		«ENDFOR»
 	'''
 	
-	def serializeParallelProcess(List<Action> actions, int index) '''
-		«FOR i : 0 ..< actions.size SEPARATOR "\n"»
+	protected def serializeParallelProcess(List<? extends Action> actions, int index) '''
+		«FOR i : 0 ..< actions.size SEPARATOR System.lineSeparator»
 			proctype Parallel_«index»_«i»(«actions.get(i).serializeParallelProcessesArguments») {
 				«actions.get(i).serialize»
 				
@@ -224,13 +231,13 @@ class ModelSerializer {
 		«ENDFOR»
 	'''
 	
-	def serializeParallelChan() '''
+	protected def serializeParallelChannels() '''
 		«FOR index : 0 ..< maxParallelNumber»
 			chan chan_parallel_«index» = [0] of { bit };
 			bit msg_parallel_«index» = 0;
 		«ENDFOR»
 	'''
 	
-	def serializeParallelProcessesArguments(Action action) '''«IF parallelVariableMapping.get(action) !== null»«FOR varDecAction : parallelVariableMapping.get(action) SEPARATOR "; "»«varDecAction.type.serializeType» «varDecAction.name»«ENDFOR»«ENDIF»'''
-	def serializeParallelProcCallArguments(Action action) '''«IF parallelVariableMapping.get(action) !== null»«FOR varDecAction : parallelVariableMapping.get(action) SEPARATOR ", "»«varDecAction.name»«ENDFOR»«ENDIF»'''
+	protected def serializeParallelProcessesArguments(Action action) '''«IF parallelVariableMapping.get(action) !== null»«FOR varDecAction : parallelVariableMapping.get(action) SEPARATOR "; "»«varDecAction.type.serializeType» «varDecAction.name»«ENDFOR»«ENDIF»'''
+	protected def serializeParallelProcessCallArguments(Action action) '''«IF parallelVariableMapping.get(action) !== null»«FOR varDecAction : parallelVariableMapping.get(action) SEPARATOR ", "»«varDecAction.name»«ENDFOR»«ENDIF»'''
 }

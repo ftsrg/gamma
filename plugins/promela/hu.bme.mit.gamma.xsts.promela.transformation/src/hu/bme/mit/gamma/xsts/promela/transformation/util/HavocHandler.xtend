@@ -52,24 +52,28 @@ class HavocHandler {
 	}
 	
 	def dispatch List<Expression> createSet(BooleanTypeDefinition type, VariableDeclaration variable) {
-		var list = newArrayList
-		list.add(expressionFactory.createTrueExpression)
-		list.add(expressionFactory.createFalseExpression)
+		val list = <Expression>newArrayList
+		
+		list += expressionFactory.createTrueExpression
+		list += expressionFactory.createFalseExpression
+		
 		return list
 	}
 	
 	def dispatch List<Expression> createSet(EnumerationTypeDefinition type, VariableDeclaration variable) {
-		var list = newArrayList
+		val list = <Expression>newArrayList
+		
 		for (literal : type.literals) {
 			val enumLiteralExpression = expressionFactory.createEnumerationLiteralExpression
 			enumLiteralExpression.reference = literal
-			list.add(enumLiteralExpression)
+			list += enumLiteralExpression
 		}
+		
 		return list
 	}
 	
 	def dispatch List<Expression> createSet(IntegerTypeDefinition type, VariableDeclaration variable) {
-		var list = newArrayList
+		val list = <Expression>newArrayList
 		
 		val root = variable.root
 		
@@ -82,7 +86,7 @@ class HavocHandler {
 		for (integerValue : integerValues) {
 			val integerLiteral = expressionFactory.createIntegerLiteralExpression
 			integerLiteral.value = BigInteger.valueOf(integerValue.intValue)
-			list.add(integerLiteral)
+			list += integerLiteral
 		}
 		return list
 	}

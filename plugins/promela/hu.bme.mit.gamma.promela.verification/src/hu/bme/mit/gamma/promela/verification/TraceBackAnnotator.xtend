@@ -241,7 +241,6 @@ class TraceBackAnnotator {
 	}
 	
 	protected def parse(BackAnnotatorState backAnnotatorState, String id, String value, Step step) {
-		
 		switch (backAnnotatorState) {
 			case STATE_CHECK: {
 				val potentialStateString = '''«id» == «value»'''
@@ -291,15 +290,9 @@ class TraceBackAnnotator {
 	
 	// Filtering unnecessary lines
 	protected def checkLine(String line) {
-		if (line.contains(":") ||
-			(traceEnd && line.contains("proc  ")) ||
-			line.startsWith("Never claim moves to") ||
-			line.contains(" processes created")
-		) {
-			return false
-		}
-		else {
-			return true
-		}
+		return !(line.contains(":") ||
+				(traceEnd && line.contains("proc  ")) ||
+				line.startsWith("Never claim moves to") ||
+				line.contains(" processes created"))
 	}
 }
