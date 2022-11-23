@@ -65,6 +65,7 @@
     </eAnnotations>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="SequentialAction" eSuperTypes="#//MultiaryAction"/>
+  <eClassifiers xsi:type="ecore:EClass" name="UnorderedAction" eSuperTypes="#//MultiaryAction"/>
   <eClassifiers xsi:type="ecore:EClass" name="ParallelAction" eSuperTypes="#//MultiaryAction"/>
   <eClassifiers xsi:type="ecore:EClass" name="AssumeAction" eSuperTypes="#//AtomicAction">
     <eStructuralFeatures xsi:type="ecore:EReference" name="assumption" lowerBound="1"

@@ -15,7 +15,7 @@ import hu.bme.mit.gamma.statechart.lowlevel.model.Region
 import hu.bme.mit.gamma.statechart.lowlevel.model.State
 import hu.bme.mit.gamma.statechart.lowlevel.model.StateNode
 import hu.bme.mit.gamma.xsts.model.Action
-import hu.bme.mit.gamma.xsts.model.ParallelAction
+import hu.bme.mit.gamma.xsts.model.MultiaryAction
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 
@@ -81,7 +81,7 @@ class RegionDeactivator {
 		return createSequentialAction => [
 			if (lowlevelGrandparentRegion.hasOrthogonalRegion && !lowlevelGrandparentRegion.stateNodes.contains(lowlevelTopState)) {
 				// Orthogonal region
-				it.actions += lowlevelGrandparentRegion.createRecursiveXStsOrthogonalRegionDeactivatingAction as ParallelAction => [
+				it.actions += lowlevelGrandparentRegion.createRecursiveXStsOrthogonalRegionDeactivatingAction as MultiaryAction => [
 					it.actions += singleXStsRegionDeactivatingAction
 				]
 			}
@@ -100,7 +100,7 @@ class RegionDeactivator {
 		if (!lowlevelRegion.hasOrthogonalRegion) {
 			return createEmptyAction
 		}
-		return createParallelAction => [
+		return createRegionAction => [
 			for (lowlevelOrthogonalRegion : lowlevelRegion.orthogonalRegions) {
 				it.actions += lowlevelOrthogonalRegion.createRecursiveXStsRegionAndSubregionDeactivatingAction
 			}
@@ -120,7 +120,7 @@ class RegionDeactivator {
 		return createSequentialAction => [
 			it.actions += lowlevelParentRegion.createSingleXStsRegionDeactivatingAction
 			if (lowlevelState.composite) {
-				it.actions += createParallelAction => [
+				it.actions += createRegionAction => [
 					for (lowlevelSubregion : lowlevelState.regions) {
 						it.actions += lowlevelSubregion.createRecursiveXStsRegionAndSubregionDeactivatingAction
 					} 
@@ -136,7 +136,7 @@ class RegionDeactivator {
 			return recursiveXStsStateAndSubstateDeactivatingAction
 		}
 		// Orthogonality
-		return lowlevelParentRegion.createRecursiveXStsOrthogonalRegionDeactivatingAction as ParallelAction => [
+		return lowlevelParentRegion.createRecursiveXStsOrthogonalRegionDeactivatingAction as MultiaryAction => [
 			it.actions += recursiveXStsStateAndSubstateDeactivatingAction
 		]
 	}
@@ -151,7 +151,7 @@ class RegionDeactivator {
 		return createSequentialAction => [
 			it.actions += lowlevelRegion.createSingleXStsRegionDeactivatingAction
 			if (!lowlevelRegion.isLeaf) {
-				it.actions += createParallelAction => [
+				it.actions += createRegionAction => [
 					for (lowlevelSubstate : lowlevelRegion.states) {
 						for (lowlevelSubregion : lowlevelSubstate.regions) {
 							it.actions += lowlevelSubregion.createRecursiveXStsRegionAndSubregionDeactivatingAction

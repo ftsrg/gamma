@@ -113,8 +113,12 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 	
 	public static SequentialAction getEnvironmentalAction(XSTS xSts) {
 		SequentialAction sequentialAction = xStsFactory.createSequentialAction();
-		sequentialAction.getActions().add(ecoreUtil.clone(xSts.getInEventTransition().getAction()));
-		sequentialAction.getActions().add(ecoreUtil.clone(xSts.getOutEventTransition().getAction()));
+		sequentialAction.getActions().add(
+				ecoreUtil.clone(
+						xSts.getInEventTransition().getAction()));
+		sequentialAction.getActions().add(
+				ecoreUtil.clone(
+						xSts.getOutEventTransition().getAction()));
 		return sequentialAction;
 	}
 	
@@ -652,6 +656,40 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 		}
 		
 		return readAndWrittenVariables;
+	}
+
+	public static boolean areSubactionsOrthogonal(MultiaryAction action) {
+		List<Collection<VariableDeclaration>> readVariables =
+				new ArrayList<Collection<VariableDeclaration>>();
+		List<Collection<VariableDeclaration>> writtenVariables =
+				new ArrayList<Collection<VariableDeclaration>>();
+		List<Action> subactions = action.getActions();
+		for (int i = 0; i < subactions.size(); i++) {
+			var xStsSubaction = subactions.get(i);
+			
+			var newlyWrittenVariables = getWrittenVariables(xStsSubaction);
+			writtenVariables.add(newlyWrittenVariables);
+			
+			var newlyReadVariables = new HashSet<VariableDeclaration>();
+			newlyReadVariables.addAll(
+					getReadVariables(xStsSubaction));
+			newlyReadVariables.removeAll(newlyWrittenVariables);
+			readVariables.add(newlyReadVariables);
+			
+			for (int j = 0; j < i; j++) {
+				Collection<VariableDeclaration> previouslyReadVariables = readVariables.get(j);
+				Collection<VariableDeclaration> previouslyWrittenVariables = writtenVariables.get(j);
+				// If a written variable is read or written somewhere, the
+				// parallel or unordered action cannot be optimized
+				if (previouslyReadVariables.stream().anyMatch(it -> newlyWrittenVariables.contains(it)) ||
+						previouslyWrittenVariables.stream().anyMatch(it -> newlyWrittenVariables.contains(it)) ||
+						previouslyWrittenVariables.stream().anyMatch(it -> newlyReadVariables.contains(it))) {
+					return false;
+				}
+			}
+		}
+		
+		return true;
 	}
 	
 }

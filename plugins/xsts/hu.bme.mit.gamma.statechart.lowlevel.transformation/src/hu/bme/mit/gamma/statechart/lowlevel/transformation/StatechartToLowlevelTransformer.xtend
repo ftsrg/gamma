@@ -25,11 +25,14 @@ import hu.bme.mit.gamma.statechart.lowlevel.model.Component
 import hu.bme.mit.gamma.statechart.lowlevel.model.EventDeclaration
 import hu.bme.mit.gamma.statechart.lowlevel.model.StateNode
 import hu.bme.mit.gamma.statechart.lowlevel.model.StatechartModelFactory
+import hu.bme.mit.gamma.statechart.statechart.DeepHistoryState
 import hu.bme.mit.gamma.statechart.statechart.GuardEvaluation
 import hu.bme.mit.gamma.statechart.statechart.InitialState
+import hu.bme.mit.gamma.statechart.statechart.OrthogonalRegionSchedulingOrder
 import hu.bme.mit.gamma.statechart.statechart.PseudoState
 import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.SchedulingOrder
+import hu.bme.mit.gamma.statechart.statechart.ShallowHistoryState
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.TimeoutAction
@@ -44,8 +47,6 @@ import static com.google.common.base.Preconditions.checkState
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.LowlevelNamings.*
-import hu.bme.mit.gamma.statechart.statechart.ShallowHistoryState
-import hu.bme.mit.gamma.statechart.statechart.DeepHistoryState
 
 class StatechartToLowlevelTransformer {
 	// Auxiliary objects
@@ -227,6 +228,7 @@ class StatechartToLowlevelTransformer {
 			it.name = getName(statechart)
 			it.schedulingOrder = statechart.schedulingOrder.transform
 			it.guardEvaluation = statechart.guardEvaluation.transform
+			it.orthogonalRegionSchedulingOrder = statechart.orthogonalRegionSchedulingOrder.transform
 		]
 		trace.put(statechart, lowlevelStatechart) // Saving in trace
 		
@@ -297,6 +299,23 @@ class StatechartToLowlevelTransformer {
 			}
 			default: {
 				throw new IllegalArgumentException("Not known guard evaluation: " + guardEvaluation)
+			}
+		}
+	}
+	
+	protected def transform(OrthogonalRegionSchedulingOrder schedulingOrder) {
+		switch (schedulingOrder) {
+			case OrthogonalRegionSchedulingOrder.SEQUENTIAL: {
+				return hu.bme.mit.gamma.statechart.lowlevel.model.OrthogonalRegionSchedulingOrder.SEQUENTIAL
+			}
+			case OrthogonalRegionSchedulingOrder.UNORDERED: {
+				return hu.bme.mit.gamma.statechart.lowlevel.model.OrthogonalRegionSchedulingOrder.UNORDERED
+			}
+			case OrthogonalRegionSchedulingOrder.PARALLEL: {
+				return hu.bme.mit.gamma.statechart.lowlevel.model.OrthogonalRegionSchedulingOrder.PARALLEL
+			}
+			default: {
+				throw new IllegalArgumentException("Not known scheduling order: " + schedulingOrder)
 			}
 		}
 	}

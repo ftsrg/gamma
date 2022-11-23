@@ -1,0 +1,24 @@
+import "ParallelMachine/ParallelMachine.gcd"
+import "ParallelMachine/ParallelMachineAdapter.gcd"
+
+code {
+	component : ParallelMachine
+	language : java
+}
+
+code {
+	component : ParallelMachineAdapter
+	language : java
+}
+
+analysis {
+	component : ParallelMachineAdapter
+	language : Promela
+}
+
+verification {
+	language : Promela
+	file : "ParallelMachineAdapter.pml"
+	property-file : "ParallelRegion.gpd"
+	test-language : java
+}

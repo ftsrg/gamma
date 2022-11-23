@@ -13,13 +13,15 @@ package hu.bme.mit.gamma.lowlevel.xsts.transformation
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.statechart.lowlevel.model.Region
 import hu.bme.mit.gamma.statechart.lowlevel.model.State
+import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 
 import static extension hu.bme.mit.gamma.statechart.lowlevel.derivedfeatures.LowlevelStatechartModelDerivedFeatures.*
 
 class StateAssumptionCreator {
 	// Model factories
-	protected final extension ExpressionModelFactory constraintFactory = ExpressionModelFactory.eINSTANCE
+	protected final extension ExpressionModelFactory expressionFactory = ExpressionModelFactory.eINSTANCE
+	protected final extension XSTSModelFactory xStsFactory = XSTSModelFactory.eINSTANCE
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
 	// Trace needed for variable references
 	protected final Trace trace
@@ -156,5 +158,25 @@ class StateAssumptionCreator {
 	}
 	
 	///
+	
+	def createRegionAction() {
+		val lowlevelStatechart = trace.statechart
+		val orthogonalRegionSchedulingOrder = lowlevelStatechart.orthogonalRegionSchedulingOrder
+		switch (orthogonalRegionSchedulingOrder) {
+			case SEQUENTIAL: {
+				return createSequentialAction
+			}
+			case UNORDERED: {
+				return createUnorderedAction
+			}
+			case PARALLEL: {
+				return createParallelAction
+			}
+			default: {
+				throw new IllegalArgumentException("Not known region scheduling order: " +
+						orthogonalRegionSchedulingOrder)
+			}
+		}
+	}
 	
 }

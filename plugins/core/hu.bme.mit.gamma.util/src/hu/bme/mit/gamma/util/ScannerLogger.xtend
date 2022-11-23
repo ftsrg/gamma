@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.util
 
+import java.util.LinkedList
 import java.util.Scanner
 import java.util.logging.Level
 import java.util.logging.Logger
@@ -22,6 +23,13 @@ class ScannerLogger implements Runnable {
 	volatile boolean error = false
 	
 	final String errorLine
+	
+	//
+	
+	final int storedLineCapacity
+	final LinkedList<String> lines = newLinkedList
+	
+	//
 	
 	final Logger logger = Logger.getLogger("GammaLogger")
 	
@@ -36,8 +44,13 @@ class ScannerLogger implements Runnable {
 	}
 	
 	new(Scanner scanner, String errorLine) {
+		this(scanner, errorLine, 0)
+	}
+	
+	new(Scanner scanner, String errorLine, int storedLineCapacity) {
 		this.scanner = scanner
 		this.errorLine = errorLine
+		this.storedLineCapacity = storedLineCapacity
 	}
 	
 	override void run() {
@@ -45,6 +58,7 @@ class ScannerLogger implements Runnable {
 			val line = scanner.nextLine
 			if (errorLine !== null) {
 				line.checkError
+				line.storeLine
 			}
 			logger.log(Level.INFO, line)
 		}
@@ -67,6 +81,29 @@ class ScannerLogger implements Runnable {
 	
 	def isError() {
 		return error
+	}
+	
+	protected def storeLine(String line) {
+		if (storedLineCapacity <= 0) {
+			return
+		}
+		if (lines.size >= storedLineCapacity) {
+			lines.poll
+		}
+		lines.add(line)
+	}
+	
+	def getLine(int i) {
+		val reversedIndex = i - storedLineCapacity
+		return lines.get(reversedIndex)
+	}
+	
+	def getFirstStoredLine() {
+		return lines.poll
+	}
+	
+	def concatenateLines() {
+		return lines.reduce[p1, p2| p1 + p2]
 	}
 	
 	// 

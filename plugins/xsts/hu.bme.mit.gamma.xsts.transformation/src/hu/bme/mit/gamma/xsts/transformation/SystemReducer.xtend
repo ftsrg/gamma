@@ -11,6 +11,9 @@
 package hu.bme.mit.gamma.xsts.transformation
 
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
+import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition
+import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
+import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.VariableGroupRetriever
@@ -212,6 +215,36 @@ class SystemReducer {
 			for (xStsDeletableVariable : xStsDeleteableVariables) {
 				xStsDeletableVariable.delete // Delete needed due to e.g., transientVariables list
 				logger.log(Level.INFO, "Deleting XSTS variable " + xStsDeletableVariable.name)
+			}
+		}
+	}
+	
+	//
+	
+	def void deleteUnusedEnumLiterals(XSTS xSts,
+			Collection<? extends EnumerationLiteralDefinition> keepableLiterals) { // Unfolded Gamma variables
+		val xStsLiterals = xSts.getAllContentsOfType(EnumerationLiteralDefinition)
+		
+		val xStsLiteralReferences = xSts.getAllContentsOfType(EnumerationLiteralExpression)
+		val xStsReferencedLiterals = xStsLiteralReferences.map[it.reference].toSet
+		
+		val xStsKeepableLiterals = keepableLiterals.map[it.name] // customizeName? - remains the same
+									.map[val name = it
+										xSts.typeDeclarations.map[it.typeDefinition]
+											.filter(EnumerationTypeDefinition).map[it.literals].flatten
+											.filter[it.name === name]].flatten.toSet
+		
+		val xStsDeletableLiterals = newHashSet
+		xStsDeletableLiterals += xStsLiterals
+		xStsDeletableLiterals -= xStsReferencedLiterals
+		xStsDeletableLiterals -= xStsKeepableLiterals
+		
+		for (xStsDeletableLiteral : xStsDeletableLiterals) {
+			val xStsEnumerationType = xStsDeletableLiteral.getContainerOfType(EnumerationTypeDefinition)
+			logger.log(Level.INFO, "Deleting XSTS enum literal " + xStsDeletableLiteral.name)
+			xStsDeletableLiteral.remove
+			if (xStsEnumerationType.literals.empty) {
+				xStsEnumerationType.delete
 			}
 		}
 	}

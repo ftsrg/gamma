@@ -46,6 +46,7 @@
     <genClasses ecoreClass="model.ecore#//AtomicAction"/>
     <genClasses ecoreClass="model.ecore#//NonDeterministicAction"/>
     <genClasses ecoreClass="model.ecore#//SequentialAction"/>
+    <genClasses ecoreClass="model.ecore#//UnorderedAction"/>
     <genClasses ecoreClass="model.ecore#//ParallelAction"/>
     <genClasses ecoreClass="model.ecore#//AssumeAction">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//AssumeAction/assumption"/>

@@ -360,6 +360,16 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return hasAnnotation(gammaPackage, UnfoldedPackageAnnotation.class);
 	}
 	
+	public static boolean isWrapped(EObject object) {
+		return hasWrapperComponent(
+				getContainingPackage(object));
+	}
+	
+	public static boolean hasWrapperComponent(Package gammaPackage) {
+		return isWrapperComponent(
+				getFirstComponent(gammaPackage));
+	}
+	
 	public static boolean hasAnnotation(Package gammaPackage,
 			Class<? extends PackageAnnotation> annotation) {
 		return gammaPackage.getAnnotations().stream().anyMatch(it -> annotation.isInstance(it));
@@ -1633,6 +1643,13 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		if (controlSpecifications.size() != 1) {
 			return false;
 		}
+		// If this is the case, back-annotation will not work if we consider this simplifiable
+		SynchronousComponentInstance wrappedComponent = adapter.getWrappedComponent();
+		SynchronousComponent type = wrappedComponent.getType();
+		if (type.getPorts().isEmpty()) {
+			return false;
+		}
+		
 		ControlSpecification controlSpecification = controlSpecifications.get(0);
 		Trigger trigger = controlSpecification.getTrigger();
 		ControlFunction controlFunction = controlSpecification.getControlFunction();
@@ -1766,15 +1783,16 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	}
 	
 	public static Collection<Region> getAllRegions(CompositeElement compositeElement) {
-		Set<Region> regions = new HashSet<Region>(compositeElement.getRegions());
+		Set<Region> regions = new LinkedHashSet<Region>(compositeElement.getRegions());
 		for (State state : getAllStates(compositeElement)) {
-			regions.addAll(getAllRegions(state));
+			regions.addAll(
+					getAllRegions(state)); // getRegions would be enough?
 		}
 		return regions;
 	}
 	
 	public static Collection<Region> getAllRegions(Region region) {
-		Set<Region> regions = new HashSet<Region>();
+		Set<Region> regions = new LinkedHashSet<Region>();
 		regions.add(region);
 		TreeIterator<Object> allContents = EcoreUtil.getAllContents(region, true);
 		while (allContents.hasNext()) {
@@ -1809,6 +1827,15 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	public static boolean areOrthogonal(Region lhs, Region rhs) {
 		return getContainingCompositeElement(lhs) == getContainingCompositeElement(rhs);
+	}
+	
+	public static boolean hasOrthogonalRegions(CompositeElement element) {
+		for (Region region : getAllRegions(element)) {
+			if (isOrthogonal(region)) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	public static boolean areTransitivelyOrthogonal(StateNode lhs, StateNode rhs) {
@@ -2840,7 +2867,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return getComponentAnnotation(component, HasInitialOutputsBlockAnnotation.class) != null;
 	}
 	
-	public static boolean hasNegatedContratStatechartAnnotation(Component component) {
+	public static boolean hasNegatedContractStatechartAnnotation(Component component) {
 		return getComponentAnnotation(component, NegativeContractStatechartAnnotation.class) != null;
 	}
 	
