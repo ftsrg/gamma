@@ -297,6 +297,7 @@ public class UppaalModelDerivedFeatures {
 								javaUtil.getOrCreateList(integerVariableAssignments, variable);
 						integerLiterals.add(literalExpression);
 					}
+					// TODO if secondExpr is evaluable...
 					else if (operator == AssignmentOperator.EQUAL &&
 								secondExpr instanceof IdentifierExpression rhsIdentifierExpression) {
 						NamedElement rhsNamedElement = rhsIdentifierExpression.getIdentifier();
@@ -313,6 +314,8 @@ public class UppaalModelDerivedFeatures {
 				}
 			}
 		}
+		
+		// Variable initialization are transformed into assignments, so they are already handled
 		
 		return new Triple<Map<Variable, List<LiteralExpression>>, Map<Variable, List<Variable>>, Set<Variable>>(
 				integerVariableAssignments, variableVariableAssignments, notIntegerLiteralVariables);
