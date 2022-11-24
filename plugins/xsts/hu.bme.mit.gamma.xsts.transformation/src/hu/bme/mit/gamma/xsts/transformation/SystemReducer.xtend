@@ -188,7 +188,7 @@ class SystemReducer {
 			Collection<? extends VariableDeclaration> keepableXStsVariables) { // XSTS variables
 		val mapper = new ReferenceToXstsVariableMapper(xSts)
 		
-		val xStsKeepableVariables = newLinkedList
+		val xStsKeepableVariables = newArrayList
 		xStsKeepableVariables += keepableXStsVariables
 		for (keepableVariable : keepableVariables) {
 			xStsKeepableVariables += mapper.getVariableVariables(keepableVariable)
@@ -206,16 +206,60 @@ class SystemReducer {
 			xStsDeleteableVariables -= xSts.externallyReadVariables
 			xStsDeleteableVariables -= xStsKeepableVariables
 			
-			val xStsDeletableAssignments = xStsDeleteableVariables.getAssignments(xSts)
-			for (xStsDeletableAssignmentAction : xStsDeletableAssignments) {
-				createEmptyAction.replace(
-					xStsDeletableAssignmentAction) // To avoid nullptrs
-			}
+			xSts.deleteVariablesAndAssignments(xStsDeleteableVariables)
+		}
+	}
+	
+	def void deleteTrivialCodomainVariablesExceptOutEvents(XSTS xSts) {
+		val keepableXStsVariables = xSts.outputVariables
+		
+		xSts.deleteTrivialCodomainVariables(#[], keepableXStsVariables)
+	}
+	
+	def void deleteTrivialCodomainVariables(XSTS xSts,
+			Collection<? extends VariableDeclaration> keepableVariables, // Unfolded Gamma variables
+			Collection<? extends VariableDeclaration> keepableXStsVariables) { // XSTS variables
+		val mapper = new ReferenceToXstsVariableMapper(xSts)
+		
+		val xStsKeepableVariables = newArrayList
+		xStsKeepableVariables += keepableXStsVariables
+		for (keepableVariable : keepableVariables) {
+			xStsKeepableVariables += mapper.getVariableVariables(keepableVariable)
+		}
+		
+		val oneValueXStsVariableCodomains = xSts.oneValueVariableCodomains
+		val oneValueXStsVariables = oneValueXStsVariableCodomains.keySet
+		for (xStsVariable : oneValueXStsVariables) {
+			val xStsTrivialCodomain = oneValueXStsVariableCodomains.get(xStsVariable)
 			
-			for (xStsDeletableVariable : xStsDeleteableVariables) {
-				xStsDeletableVariable.delete // Delete needed due to e.g., transientVariables list
-				logger.log(Level.INFO, "Deleting XSTS variable " + xStsDeletableVariable.name)
+			for (reference : xSts.getAllContentsOfType(DirectReferenceExpression)
+					.filter[!it.isLhs && it.declaration === xStsVariable]) {
+				// No lhs references, so assignment actions can be deleted later 
+				val xStsLiteral = xStsTrivialCodomain.clone
+				xStsLiteral.replace(reference)
 			}
+		}
+		
+		val xStsDeleteableVariables = newHashSet
+		xStsDeleteableVariables += oneValueXStsVariables
+		xStsDeleteableVariables -= xStsKeepableVariables
+		
+		xSts.deleteVariablesAndAssignments(xStsDeleteableVariables)
+	}
+	
+	//
+	
+	protected def void deleteVariablesAndAssignments(XSTS xSts,
+			Collection<VariableDeclaration> xStsDeleteableVariables) {
+		val xStsDeletableAssignments = xStsDeleteableVariables.getAssignments(xSts)
+		for (xStsDeletableAssignmentAction : xStsDeletableAssignments) {
+			createEmptyAction.replace(
+				xStsDeletableAssignmentAction) // To avoid nullptrs
+		}
+		
+		for (xStsDeletableVariable : xStsDeleteableVariables) {
+			xStsDeletableVariable.delete // Delete needed due to e.g., transientVariables list
+			logger.log(Level.INFO, "Deleting XSTS variable " + xStsDeletableVariable.name)
 		}
 	}
 	

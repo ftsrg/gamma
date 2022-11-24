@@ -32,7 +32,6 @@ import hu.bme.mit.gamma.expression.model.EqualityExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression;
 import hu.bme.mit.gamma.expression.model.LiteralExpression;
-import hu.bme.mit.gamma.expression.model.NamedElement;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.util.Triple;
@@ -261,6 +260,14 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 					&& ecoreUtil.helperEquals(xStsLeftOperand, xStsAssignmentRhs)) {
 				return true;
 			}
+		}
+		return false;
+	}
+	
+	public static boolean isLhs(Expression expression) {
+		EObject container = expression.eContainer();
+		if (container instanceof AbstractAssignmentAction action) {
+			return action.getLhs() == expression;
 		}
 		return false;
 	}
@@ -774,7 +781,7 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 	}
 	
 	public static Map<VariableDeclaration, LiteralExpression>
-			getPreciseIntegerVariableCodomains(XSTS xSts) {
+			getOneValueVariableCodomains(XSTS xSts) {
 				
 		Triple<Map<VariableDeclaration, List<LiteralExpression>>, Map<VariableDeclaration, List<VariableDeclaration>>,
 			Set<VariableDeclaration>> variableAssignmentGroups = getVariableAssignmentGroups(xSts);
@@ -802,11 +809,10 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 			Entry<Integer, Integer> values = integerVariableMinMax.get(variableDeclaration);
 			Integer min = values.getKey();
 			Integer max = values.getValue();
-			if (min != max) {
-				throw new IllegalArgumentException("Min and max are not the same: " + min + " " + max);
+			if (min == max) { // If min == max -> there is only one valid value 
+				variableLiterals.put(variableDeclaration,
+						literalCreator.of(variableDeclaration, min));
 			}
-			variableLiterals.put(variableDeclaration,
-					literalCreator.of(variableDeclaration, min));
 		}
 		
 		return variableLiterals;
@@ -932,12 +938,19 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 		for (AbstractAssignmentAction abstractAssignment : abstractAssignments) {
 			Expression firstExpr = abstractAssignment.getLhs();
 			if (firstExpr instanceof DirectReferenceExpression identifierExpression) {
-				NamedElement element = identifierExpression.getDeclaration();
+				Declaration element = identifierExpression.getDeclaration();
 				if (element instanceof VariableDeclaration variable) {
 					if (abstractAssignment instanceof AssignmentAction assignment) {
 						Expression secondExpr = assignment.getRhs();
 						if (secondExpr instanceof LiteralExpression literalExpression &&
 								isNativeLiteral(literalExpression)) {
+							List<LiteralExpression> integerLiterals =
+									javaUtil.getOrCreateList(integerVariableAssignments, variable);
+							integerLiterals.add(literalExpression);
+						}
+						else if (isNative(element) && isEvaluable(secondExpr)) {
+							int value = evaluator.evaluate(secondExpr);
+							LiteralExpression literalExpression = literalCreator.of(element, value);
 							List<LiteralExpression> integerLiterals =
 									javaUtil.getOrCreateList(integerVariableAssignments, variable);
 							integerLiterals.add(literalExpression);
@@ -960,6 +973,24 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 						notIntegerLiteralVariables.add(variable);
 					}
 				}
+			}
+		}
+		
+		List<VariableDeclarationAction> variableDeclarationActions = ecoreUtil.getAllContentsOfType(
+				xSts, VariableDeclarationAction.class);
+		for (VariableDeclarationAction variableDeclarationAction : variableDeclarationActions) {
+			VariableDeclaration localVariable = variableDeclarationAction.getVariableDeclaration();
+			Expression initialValue = xStsActionUtil.getInitialValue(localVariable);
+			if (isEvaluable(initialValue)) {
+				int value = evaluator.evaluate(initialValue);
+				LiteralExpression literalExpression = literalCreator.of(localVariable, value);
+				List<LiteralExpression> integerLiterals =
+						javaUtil.getOrCreateList(integerVariableAssignments, localVariable);
+				integerLiterals.add(literalExpression);
+			}
+			else {
+				// Not evaluable so we do not know what it is
+				notIntegerLiteralVariables.add(localVariable);
 			}
 		}
 		

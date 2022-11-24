@@ -138,6 +138,7 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 							.map(it -> it.getReference())
 							.collect(Collectors.toSet());
 			xStsReducer.deleteUnusedEnumLiterals(xSts, keepableGammaEnumLiterals);
+			xStsReducer.deleteTrivialCodomainVariablesExceptOutEvents(xSts);
 			
 			XstsOptimizer xStsOptimizer = XstsOptimizer.INSTANCE;
 			xStsOptimizer.optimizeXSts(xSts); // To remove null/empty actions

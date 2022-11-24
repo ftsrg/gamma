@@ -170,15 +170,30 @@ public class ExpressionModelDerivedFeatures {
 	
 	// Types
 	
+	public static boolean isPrimitive(Declaration declaration) {
+		Type type = declaration.getType();
+		return isPrimitive(type);
+	}
+	
 	public static boolean isPrimitive(Type type) {
 		TypeDefinition typeDefinition = getTypeDefinition(type);
 		return typeDefinition instanceof BooleanTypeDefinition || typeDefinition instanceof IntegerTypeDefinition ||
 				typeDefinition instanceof DecimalTypeDefinition || typeDefinition instanceof RationalTypeDefinition;
 	}
 	
+	public static boolean isNative(Declaration declaration) {
+		Type type = declaration.getType();
+		return isNative(type);
+	}
+	
 	public static boolean isNative(Type type) {
 		TypeDefinition typeDefinition = getTypeDefinition(type);
 		return isPrimitive(typeDefinition) || typeDefinition instanceof EnumerationTypeDefinition;
+	}
+	
+	public static boolean isArray(Declaration declaration) {
+		Type type = declaration.getType();
+		return isArray(type);
 	}
 	
 	public static boolean isArray(Type type) {
@@ -197,9 +212,19 @@ public class ExpressionModelDerivedFeatures {
 		return false;
 	}
 	
+	public static boolean isRecord(Declaration declaration) {
+		Type type = declaration.getType();
+		return isRecord(type);
+	}
+	
 	public static boolean isRecord(Type type) {
 		TypeDefinition typeDefinition = getTypeDefinition(type);
 		return typeDefinition instanceof RecordTypeDefinition;
+	}
+	
+	public static boolean isComplex(Declaration declaration) {
+		Type type = declaration.getType();
+		return isComplex(type);
 	}
 	
 	public static boolean isComplex(Type type) {
