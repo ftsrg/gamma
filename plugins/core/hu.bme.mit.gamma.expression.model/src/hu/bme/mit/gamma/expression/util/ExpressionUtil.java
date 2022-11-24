@@ -98,6 +98,7 @@ public class ExpressionUtil {
 	protected final ExpressionEvaluator evaluator = ExpressionEvaluator.INSTANCE;
 	protected final ExpressionNegator negator = ExpressionNegator.INSTANCE;
 	protected final ExpressionTypeDeterminator2 typeDeterminator = ExpressionTypeDeterminator2.INSTANCE;
+	
 	protected final ExpressionModelFactory factory = ExpressionModelFactory.eINSTANCE;
 	
 	// The following methods are worth extending in subclasses

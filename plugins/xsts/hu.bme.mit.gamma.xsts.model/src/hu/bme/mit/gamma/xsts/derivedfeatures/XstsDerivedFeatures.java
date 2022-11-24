@@ -772,6 +772,45 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 		
 		return integerVariableMinMax;
 	}
+	
+	public static Map<VariableDeclaration, LiteralExpression>
+			getPreciseIntegerVariableCodomains(XSTS xSts) {
+				
+		Triple<Map<VariableDeclaration, List<LiteralExpression>>, Map<VariableDeclaration, List<VariableDeclaration>>,
+			Set<VariableDeclaration>> variableAssignmentGroups = getVariableAssignmentGroups(xSts);
+		
+		Map<VariableDeclaration, List<LiteralExpression>> integerVariableAssignments = variableAssignmentGroups.getFirst();
+		Map<VariableDeclaration, List<VariableDeclaration>> variableVariableAssignments = variableAssignmentGroups.getSecond();
+		Set<VariableDeclaration> notIntegerLiteralVariables = variableAssignmentGroups.getThird();
+		
+		Map<VariableDeclaration, List<LiteralExpression>> integerLiteralVariableAssignments =
+				new HashMap<VariableDeclaration, List<LiteralExpression>>(integerVariableAssignments);
+		Set<VariableDeclaration> integerLiteralVariables = integerLiteralVariableAssignments.keySet();
+		Set<VariableDeclaration> variableVariables = variableVariableAssignments.keySet();
+		integerLiteralVariables.removeAll(variableVariables);
+		integerLiteralVariables.removeAll(notIntegerLiteralVariables);
+		// Every variable in this collection now has only integer value assignments
+		
+		// 1: Calculating precise domains based on these values
+		Map<VariableDeclaration, Entry<Integer, Integer>> integerVariableMinMax = calculatePresiceCodomains(
+				integerLiteralVariableAssignments, integerLiteralVariables);
+		
+		// Creating literal expressions
+		Map<VariableDeclaration, LiteralExpression> variableLiterals =
+				new HashMap<VariableDeclaration, LiteralExpression>();
+		for (VariableDeclaration variableDeclaration : integerVariableMinMax.keySet()) {
+			Entry<Integer, Integer> values = integerVariableMinMax.get(variableDeclaration);
+			Integer min = values.getKey();
+			Integer max = values.getValue();
+			if (min != max) {
+				throw new IllegalArgumentException("Min and max are not the same: " + min + " " + max);
+			}
+			variableLiterals.put(variableDeclaration,
+					literalCreator.of(variableDeclaration, min));
+		}
+		
+		return variableLiterals;
+	}
 
 	public static void extendCodomainsForVariableAssignments(
 			Map<VariableDeclaration, List<LiteralExpression>> integerVariableAssignments,
@@ -880,7 +919,7 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 	}
 	
 	public static Triple<
-			Map<VariableDeclaration, List<LiteralExpression>>,	Map<VariableDeclaration, List<VariableDeclaration>>, Set<VariableDeclaration>>
+			Map<VariableDeclaration, List<LiteralExpression>>, Map<VariableDeclaration, List<VariableDeclaration>>, Set<VariableDeclaration>>
 				getVariableAssignmentGroups(XSTS xSts) {
 		List<AbstractAssignmentAction> abstractAssignments = ecoreUtil.getAllContentsOfType(
 				xSts, AbstractAssignmentAction.class);
