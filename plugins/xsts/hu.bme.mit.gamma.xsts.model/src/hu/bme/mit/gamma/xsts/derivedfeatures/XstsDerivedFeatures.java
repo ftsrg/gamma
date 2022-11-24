@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.eclipse.emf.ecore.EObject;
 
@@ -587,8 +588,10 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 	
 	public static Set<VariableDeclaration> getReferredVariables(Action action) {
 		Set<VariableDeclaration> referredVariables =
-				new HashSet<VariableDeclaration>(getReadVariables(action));
-		referredVariables.addAll(getWrittenVariables(action));
+				new HashSet<VariableDeclaration>(
+						getReadVariables(action));
+		referredVariables.addAll(
+				getWrittenVariables(action));
 		return referredVariables;
 	}
 	
@@ -694,7 +697,6 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 			size = writtenVariables.size();
 			
 			for (AssignmentAction assignmentAction : assignmentActions) {
-				
 				Set<VariableDeclaration> readVariables = getReadVariables(assignmentAction);
 				if (readVariables.contains(variable) ||
 						javaUtil.containsAny(readVariables, writtenVariables)) {
@@ -707,6 +709,40 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 		}
 		
 		return writtenVariables;
+	}
+	
+	//
+	
+	public static Set<VariableDeclaration> getVariablesReferencedFromConditions(XSTS xSts) {
+		Set<VariableDeclaration> variablesReferencedFromConditions = new HashSet<VariableDeclaration>();
+		
+		List<Expression> conditions = new ArrayList<Expression>();
+		
+		List<AssumeAction> assumeActions = ecoreUtil.getAllContentsOfType(xSts, AssumeAction.class);
+		List<IfAction> ifActions = ecoreUtil.getAllContentsOfType(xSts, IfAction.class);
+		List<LoopAction> loopActions = ecoreUtil.getAllContentsOfType(xSts, LoopAction.class);
+		
+		conditions.addAll(
+				assumeActions.stream()
+				.map(it -> it.getAssumption())
+				.collect(Collectors.toList()));
+		
+		conditions.addAll(
+				ifActions.stream()
+				.map(it -> it.getCondition())
+				.collect(Collectors.toList()));
+		
+		conditions.addAll(
+				loopActions.stream()
+				.map(it -> it.getRange())
+				.collect(Collectors.toList()));
+		
+		for (Expression condition : conditions) {
+			variablesReferencedFromConditions.addAll(
+					xStsActionUtil.getReferredVariables(condition));
+		}
+		
+		return variablesReferencedFromConditions;
 	}
 	
 	//

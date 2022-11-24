@@ -129,7 +129,6 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 					.map(it -> it.getVariableDeclaration())
 					.collect(Collectors.toList());
 			
-			// Maybe other optimizations could be added?
 			xStsReducer.deleteUnusedAndWrittenOnlyVariablesExceptOutEvents(xSts, keepableGammaVariables);
 			xStsReducer.deleteUnusedInputEventVariables(xSts, keepableGammaVariables);
 			// Deleting enum literals
@@ -139,6 +138,7 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 							.collect(Collectors.toSet());
 			xStsReducer.deleteUnusedEnumLiterals(xSts, keepableGammaEnumLiterals);
 			xStsReducer.deleteTrivialCodomainVariablesExceptOutEvents(xSts);
+			xStsReducer.deleteUnnecessaryInputVariablesExceptOutEvents(xSts);
 			
 			XstsOptimizer xStsOptimizer = XstsOptimizer.INSTANCE;
 			xStsOptimizer.optimizeXSts(xSts); // To remove null/empty actions

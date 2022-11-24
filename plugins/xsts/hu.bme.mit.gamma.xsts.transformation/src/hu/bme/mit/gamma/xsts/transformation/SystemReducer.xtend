@@ -22,6 +22,7 @@ import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.composite.CompositeComponent
 import hu.bme.mit.gamma.util.GammaEcoreUtil
+import hu.bme.mit.gamma.util.JavaUtil
 import hu.bme.mit.gamma.xsts.model.AbstractAssignmentAction
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
@@ -43,6 +44,7 @@ class SystemReducer {
 	protected final extension XstsOptimizer xStsOptimizer = XstsOptimizer.INSTANCE
 	protected final extension VariableGroupRetriever variableGroupRetriever = VariableGroupRetriever.INSTANCE
 	protected final extension GammaEcoreUtil expressionUtil = GammaEcoreUtil.INSTANCE
+	protected final extension JavaUtil javaUtil = JavaUtil.INSTANCE
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
 	protected final extension ExpressionModelFactory factory = ExpressionModelFactory.eINSTANCE
 	protected final extension XSTSModelFactory xStsFactory = XSTSModelFactory.eINSTANCE
@@ -137,7 +139,6 @@ class SystemReducer {
 		xSts.deleteUnusedInputEventVariables(#[])
 	}
 	
-	// TODO Create event propagation starting from input events (variables) to reveal cyclic dependencies 
 	def void deleteUnusedInputEventVariables(XSTS xSts,
 			Collection<? extends VariableDeclaration> keepableVariables) { // Unfolded Gamma variables
 		val clonedXSts = xSts.clone
@@ -240,13 +241,50 @@ class SystemReducer {
 			}
 		}
 		
-		val xStsDeleteableVariables = newHashSet
-		xStsDeleteableVariables += oneValueXStsVariables
-		xStsDeleteableVariables -= xStsKeepableVariables
+		val xStsDeletableVariables = newHashSet
+		xStsDeletableVariables += oneValueXStsVariables
+		xStsDeletableVariables -= xStsKeepableVariables
 		
-		xSts.deleteVariablesAndAssignments(xStsDeleteableVariables)
+		xSts.deleteVariablesAndAssignments(xStsDeletableVariables)
 	}
 	
+	def void deleteUnnecessaryInputVariablesExceptOutEvents(XSTS xSts) {
+		val keepableXStsVariables = xSts.outputVariables
+		
+		xSts.deleteUnnecessaryInputVariables(#[], keepableXStsVariables)
+	}
+	
+	def void deleteUnnecessaryInputVariables(XSTS xSts,
+			Collection<? extends VariableDeclaration> keepableVariables, // Unfolded Gamma variables
+			Collection<? extends VariableDeclaration> keepableXStsVariables) { // XSTS variables
+		val mapper = new ReferenceToXstsVariableMapper(xSts)
+		// TODO add message queue variables
+		val xStsKeepableVariables = newArrayList
+		xStsKeepableVariables += keepableXStsVariables
+		for (keepableVariable : keepableVariables) {
+			xStsKeepableVariables += mapper.getVariableVariables(keepableVariable)
+		}
+		
+		val xStsDeletableVariables = newHashSet
+		
+		val xStsInputVariables = xSts.inputVariables
+		val xStsVariablesReferencedFromConditions = xSts.variablesReferencedFromConditions
+		
+		for (xStsInputVariable : xStsInputVariables) {
+			val allReaderXStsVariables = xStsInputVariable.allReaderVariables
+			
+			if (xStsVariablesReferencedFromConditions.containsNone(allReaderXStsVariables)) {
+				xStsDeletableVariables += allReaderXStsVariables
+				if (!xStsVariablesReferencedFromConditions.contains(xStsInputVariable)) {
+					xStsDeletableVariables += xStsInputVariable
+				}
+			}
+		}
+	
+		xStsDeletableVariables -= xStsKeepableVariables
+		
+		xSts.deleteVariablesAndAssignments(xStsDeletableVariables)
+	}
 	//
 	
 	protected def void deleteVariablesAndAssignments(XSTS xSts,
