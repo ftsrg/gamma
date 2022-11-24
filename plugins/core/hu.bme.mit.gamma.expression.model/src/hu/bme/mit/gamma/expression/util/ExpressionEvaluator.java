@@ -86,7 +86,7 @@ public class ExpressionEvaluator {
 				return evaluateInteger(argument);
 			}
 			else {
-				throw new IllegalArgumentException("Not transformable expression: " + expression.toString());
+				throw new IllegalArgumentException("Not evaluable expression: " + expression.toString());
 			}
 		}
 		if (expression instanceof IntegerLiteralExpression) {

@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 import org.eclipse.emf.ecore.EObject;
 
 import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition;
+import hu.bme.mit.gamma.expression.model.BooleanLiteralExpression;
 import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition;
 import hu.bme.mit.gamma.expression.model.ClockVariableDeclarationAnnotation;
 import hu.bme.mit.gamma.expression.model.ConstantDeclaration;
@@ -29,6 +30,7 @@ import hu.bme.mit.gamma.expression.model.DefaultExpression;
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.ElseExpression;
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition;
+import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression;
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition;
 import hu.bme.mit.gamma.expression.model.EnvironmentResettableVariableDeclarationAnnotation;
 import hu.bme.mit.gamma.expression.model.Expression;
@@ -37,6 +39,7 @@ import hu.bme.mit.gamma.expression.model.ExpressionPackage;
 import hu.bme.mit.gamma.expression.model.FieldDeclaration;
 import hu.bme.mit.gamma.expression.model.FinalVariableDeclarationAnnotation;
 import hu.bme.mit.gamma.expression.model.FunctionDeclaration;
+import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression;
 import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression;
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition;
 import hu.bme.mit.gamma.expression.model.LambdaDeclaration;
@@ -326,8 +329,23 @@ public class ExpressionModelDerivedFeatures {
 	}
 	
 	public static boolean isEvaluable(Expression expression) {
-		return ecoreUtil.getSelfAndAllContentsOfType(
-				expression, ReferenceExpression.class).isEmpty();
+		List<ReferenceExpression> references = ecoreUtil.getSelfAndAllContentsOfType(
+				expression, ReferenceExpression.class);
+		for (ReferenceExpression reference : new ArrayList<ReferenceExpression>(references)) {
+			if (reference instanceof DirectReferenceExpression directReference) {
+				Declaration declaration = directReference.getDeclaration();
+				if (declaration instanceof ConstantDeclaration) {
+					references.remove(reference);
+				}
+			}
+		}
+		return references.isEmpty();
+	}
+	
+	public static boolean isNativeLiteral(Expression expression) {
+		return expression instanceof BooleanLiteralExpression ||
+				expression instanceof IntegerLiteralExpression ||
+				expression instanceof EnumerationLiteralExpression;
 	}
 	
 	public static List<TypeDeclaration> getSelfAndAllTypeDeclarations(Type type) {

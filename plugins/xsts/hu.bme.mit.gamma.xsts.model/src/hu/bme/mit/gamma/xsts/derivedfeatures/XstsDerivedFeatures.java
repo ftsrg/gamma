@@ -31,8 +31,11 @@ import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.EqualityExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression;
+import hu.bme.mit.gamma.expression.model.LiteralExpression;
+import hu.bme.mit.gamma.expression.model.NamedElement;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
+import hu.bme.mit.gamma.util.Triple;
 import hu.bme.mit.gamma.xsts.model.AbstractAssignmentAction;
 import hu.bme.mit.gamma.xsts.model.Action;
 import hu.bme.mit.gamma.xsts.model.AssignmentAction;
@@ -733,6 +736,196 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 		}
 		
 		return true;
+	}
+	
+	//
+	
+	public static Map<VariableDeclaration, Entry<Integer, Integer>>
+			getIntegerVariableCodomains(XSTS xSts) {
+		
+		Triple<Map<VariableDeclaration, List<LiteralExpression>>, Map<VariableDeclaration, List<VariableDeclaration>>,
+			Set<VariableDeclaration>> variableAssignmentGroups = getVariableAssignmentGroups(xSts);
+		
+		Map<VariableDeclaration, List<LiteralExpression>> integerVariableAssignments = variableAssignmentGroups.getFirst();
+		Map<VariableDeclaration, List<VariableDeclaration>> variableVariableAssignments = variableAssignmentGroups.getSecond();
+		Set<VariableDeclaration> notIntegerLiteralVariables = variableAssignmentGroups.getThird();
+		
+		Map<VariableDeclaration, List<LiteralExpression>> integerLiteralVariableAssignments =
+				new HashMap<VariableDeclaration, List<LiteralExpression>>(integerVariableAssignments);
+		Set<VariableDeclaration> integerLiteralVariables = integerLiteralVariableAssignments.keySet();
+		Set<VariableDeclaration> variableVariables = variableVariableAssignments.keySet();
+		integerLiteralVariables.removeAll(variableVariables);
+		integerLiteralVariables.removeAll(notIntegerLiteralVariables);
+		// Every variable in this collection now has only integer value assignments
+		
+		// 1: Calculating precise domains based on these values
+		Map<VariableDeclaration, Entry<Integer, Integer>> integerVariableMinMax = calculatePresiceCodomains(
+				integerLiteralVariableAssignments, integerLiteralVariables);
+		
+		// 2: Extending min/max values for variables that need to hold low/large values
+		// e.g., a := 70.000
+		extendCodomainsForLiteralAssignments(integerVariableAssignments, integerVariableMinMax);
+		
+		// 3: Checking 'var := var2' assignments - note that this is done after the 'extension'
+		extendCodomainsForVariableAssignments(integerVariableAssignments, variableVariableAssignments,
+				notIntegerLiteralVariables, variableVariables, integerVariableMinMax);
+		
+		return integerVariableMinMax;
+	}
+
+	public static void extendCodomainsForVariableAssignments(
+			Map<VariableDeclaration, List<LiteralExpression>> integerVariableAssignments,
+			Map<VariableDeclaration, List<VariableDeclaration>> variableVariableAssignments,
+			Set<VariableDeclaration> notIntegerLiteralVariables,
+			Set<VariableDeclaration> variableVariables,
+			Map<VariableDeclaration, Entry<Integer, Integer>> integerVariableMinMax) {
+		variableVariables.removeAll(notIntegerLiteralVariables);
+		// Every variable in this collection now has only integer value assignments
+		// or 'var := var2' assignments
+		int size = 0;
+		while (size != variableVariableAssignments.size()) {
+			size = variableVariableAssignments.size(); // While we can remove vars from here
+			
+			for (VariableDeclaration assignedVariable :
+						new ArrayList<VariableDeclaration>(variableVariables)) {
+				List<VariableDeclaration> rhsVariables = variableVariableAssignments.get(assignedVariable);
+				if (rhsVariables.stream()
+						.allMatch(it ->
+							integerVariableMinMax.keySet().contains(it))) {
+					List<Integer> mins = new ArrayList<Integer>();
+					List<Integer> maxs = new ArrayList<Integer>();
+					
+					// Rhs variables
+					for (VariableDeclaration rhsVariable : rhsVariables) {
+						VariableDeclaration container = rhsVariable;
+						Entry<Integer, Integer> minMax = integerVariableMinMax.get(container);
+						mins.add(
+								minMax.getKey());
+						maxs.add(
+								minMax.getValue());
+					}
+					
+					// Rhs integer literals
+					if (integerVariableAssignments.containsKey(assignedVariable)) {
+						for (LiteralExpression integerLiteral :
+								integerVariableAssignments.get(assignedVariable)) {
+							mins.add(
+									xStsActionUtil.toInteger(integerLiteral));
+							maxs.add(
+									xStsActionUtil.toInteger(integerLiteral));
+						}
+					}
+					
+					int min = mins.stream()
+							.min((o1, o2) -> o1.compareTo(o2)).get();
+					int max = maxs.stream()
+							.max((o1, o2) -> o1.compareTo(o2)).get();
+					
+					// Now the codomain of the assigned variable is "known"
+					variableVariables.remove(assignedVariable);
+					// So we move it to the other map
+					integerVariableMinMax.put(assignedVariable,
+							new SimpleEntry<Integer, Integer>(min, max));
+				}
+			}
+		}
+	}
+
+	public static void extendCodomainsForLiteralAssignments(Map<VariableDeclaration, List<LiteralExpression>> integerVariableAssignments,
+			Map<VariableDeclaration, Entry<Integer, Integer>> integerVariableMinMax) {
+		List<VariableDeclaration> additionalIntegerVariables =
+				new ArrayList<VariableDeclaration>(integerVariableAssignments.keySet());
+		additionalIntegerVariables.removeIf(
+				it -> integerVariableMinMax.containsKey(it));
+		for (VariableDeclaration integerVariable : additionalIntegerVariables) {
+			List<LiteralExpression> integerLiterals =
+					integerVariableAssignments.get(integerVariable);
+			Integer min = integerLiterals.stream()
+					.map(it -> xStsActionUtil.toInteger(it))
+					.min((o1, o2) -> o1.compareTo(o2)).get();
+			Integer max = integerLiterals.stream()
+					.map(it -> xStsActionUtil.toInteger(it))
+					.max((o1, o2) -> o1.compareTo(o2)).get();
+			
+			min = Integer.min(Short.MIN_VALUE, min);
+			max = Integer.max(Short.MAX_VALUE, max);
+			
+			if (min < Short.MIN_VALUE || Short.MAX_VALUE < max) {
+				integerVariableMinMax.put(integerVariable,
+						new SimpleEntry<Integer, Integer>(min, max));
+			}
+		}
+	}
+
+	public static Map<VariableDeclaration, Entry<Integer, Integer>> calculatePresiceCodomains(
+			Map<VariableDeclaration, List<LiteralExpression>> integerLiteralVariableAssignments,
+			Set<VariableDeclaration> integerLiteralVariables) {
+		Map<VariableDeclaration, Entry<Integer, Integer>> integerVariableMinMax =
+				new HashMap<VariableDeclaration, Entry<Integer, Integer>>();
+		for (VariableDeclaration integerLiteralVariable : integerLiteralVariables) {
+			List<LiteralExpression> integerLiterals =
+					integerLiteralVariableAssignments.get(integerLiteralVariable);
+			// Mapping into integers and computing min and max
+			Integer min = integerLiterals.stream()
+					.map(it -> xStsActionUtil.toInteger(it))
+					.min((o1, o2) -> o1.compareTo(o2)).get();
+			Integer max = integerLiterals.stream()
+					.map(it -> xStsActionUtil.toInteger(it))
+					.max((o1, o2) -> o1.compareTo(o2)).get();
+			
+			integerVariableMinMax.put(integerLiteralVariable,
+					new SimpleEntry<Integer, Integer>(min, max));
+		}
+		return integerVariableMinMax;
+	}
+	
+	public static Triple<
+			Map<VariableDeclaration, List<LiteralExpression>>,	Map<VariableDeclaration, List<VariableDeclaration>>, Set<VariableDeclaration>>
+				getVariableAssignmentGroups(XSTS xSts) {
+		List<AbstractAssignmentAction> abstractAssignments = ecoreUtil.getAllContentsOfType(
+				xSts, AbstractAssignmentAction.class);
+		
+		Map<VariableDeclaration, List<LiteralExpression>> integerVariableAssignments =
+				new HashMap<VariableDeclaration, List<LiteralExpression>>();
+		Map<VariableDeclaration, List<VariableDeclaration>> variableVariableAssignments =
+				new HashMap<VariableDeclaration, List<VariableDeclaration>>();
+		Set<VariableDeclaration> notIntegerLiteralVariables = new HashSet<VariableDeclaration>();
+		for (AbstractAssignmentAction abstractAssignment : abstractAssignments) {
+			Expression firstExpr = abstractAssignment.getLhs();
+			if (firstExpr instanceof DirectReferenceExpression identifierExpression) {
+				NamedElement element = identifierExpression.getDeclaration();
+				if (element instanceof VariableDeclaration variable) {
+					if (abstractAssignment instanceof AssignmentAction assignment) {
+						Expression secondExpr = assignment.getRhs();
+						if (secondExpr instanceof LiteralExpression literalExpression &&
+								isNativeLiteral(literalExpression)) {
+							List<LiteralExpression> integerLiterals =
+									javaUtil.getOrCreateList(integerVariableAssignments, variable);
+							integerLiterals.add(literalExpression);
+						}
+						else if (secondExpr instanceof DirectReferenceExpression rhsIdentifierExpression) {
+							Declaration rhsNamedElement = rhsIdentifierExpression.getDeclaration();
+							if (rhsNamedElement instanceof VariableDeclaration rhsVariable) {
+								List<VariableDeclaration> variables = javaUtil
+										.getOrCreateList(variableVariableAssignments, variable);
+								variables.add(rhsVariable);
+							}
+						}
+						else {
+							// Not an 'integer literal' or 'var = var2'
+							notIntegerLiteralVariables.add(variable);
+						}
+					}
+					else {
+						// Havoc
+						notIntegerLiteralVariables.add(variable);
+					}
+				}
+			}
+		}
+		
+		return new Triple<Map<VariableDeclaration, List<LiteralExpression>>, Map<VariableDeclaration, List<VariableDeclaration>>, Set<VariableDeclaration>>(
+				integerVariableAssignments, variableVariableAssignments, notIntegerLiteralVariables);
 	}
 	
 }
