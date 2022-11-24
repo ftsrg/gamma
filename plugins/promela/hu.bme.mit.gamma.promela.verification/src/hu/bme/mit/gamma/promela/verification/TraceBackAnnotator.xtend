@@ -106,7 +106,6 @@ class TraceBackAnnotator {
 		// Parsing
 		var backAnnotatorState = BackAnnotatorState.INIT
 		var modelState = ModelState.INIT
-		var lastModelState = ModelState.INIT
 		var traceState = TraceState.NOT_REQUIRED
 		var initError = false // error in INIT
 		var lastElementArray = false
@@ -174,11 +173,22 @@ class TraceBackAnnotator {
 							case line.equals(ENV_END): {
 								traceState = TraceState.NOT_REQUIRED
 								modelState = ModelState.TRANS
-								lastModelState = ModelState.ENV
 							}
 							case line.startsWith(TRACE_END): {
+								step.checkStates
+								// Creating a new step
+								step = createStep
+								// Add static delay every turn
+								if (schedulingConstraint !== null) {
+									step.addTimeElapse(schedulingConstraint)
+								}
+
+								trace.steps += step
+								// Setting the state
+								backAnnotatorState = BackAnnotatorState.ENVIRONMENT_CHECK
+								
 								traceEnd = true
-								modelState = lastModelState
+								traceState = TraceState.REQUIRED
 							}
 						}
 					}
@@ -197,11 +207,16 @@ class TraceBackAnnotator {
 							case line.equals(TRANS_END): {
 								traceState = TraceState.NOT_REQUIRED
 								modelState = ModelState.ENV
-								lastModelState = ModelState.TRANS
 							}
 							case line.startsWith(TRACE_END): {
+								step.checkInEvents
+								// Add schedule
+								step.addComponentScheduling
+								// Setting the state
+								backAnnotatorState = BackAnnotatorState.STATE_CHECK
+								
 								traceEnd = true
-								modelState = lastModelState
+								traceState = TraceState.REQUIRED
 							}
 						}
 					}
@@ -299,6 +314,7 @@ class TraceBackAnnotator {
 		return !(line.contains(":") ||
 				(traceEnd && line.contains("proc  ")) ||
 				line.startsWith("Never claim moves to") ||
-				line.contains(" processes created"))
+				line.contains(" processes created") ||
+				line.startsWith("msg_parallel_"))
 	}
 }
