@@ -109,9 +109,17 @@ class TraceBackAnnotator {
 		var lastModelState = ModelState.INIT
 		var traceState = TraceState.NOT_REQUIRED
 		var initError = false // error in INIT
+		var lastElementArray = false
+		var line = ""
 		try {
 			while (traceScanner.hasNext) {
-				var line = traceScanner.nextLine.trim // Trimming leading white spaces
+				if (lastElementArray) {
+					lastElementArray = false
+				}
+				else {
+					line = traceScanner.nextLine.trim // Trimming leading white spaces
+				}
+				
 				switch (modelState) {
 					case INIT: {
 						switch (line) {
@@ -209,7 +217,7 @@ class TraceBackAnnotator {
 					var value = split.get(1)
 					
 					// Array
-					while (id.endsWith("]")) {
+					if (id.endsWith("]")) {
 						val arrayName = id.split(Pattern.quote("[")).get(0)
 						line = traceScanner.nextLine.trim
 						var arrayValue = id + " = " + value
@@ -218,10 +226,9 @@ class TraceBackAnnotator {
 							line = traceScanner.nextLine.trim
 						}
 						// Elements of array in arrayValue
-						backAnnotatorState.parse(arrayName, arrayValue, step)
-						split = line.split(" = ")
-						id = split.get(0)
-						value = split.get(1)
+						id = arrayName
+						value = arrayValue
+						lastElementArray = true
 					}
 					backAnnotatorState.parse(id, value, step)
 				}
@@ -236,7 +243,6 @@ class TraceBackAnnotator {
 			// If there are not enough lines, that means there are no environment actions
 			step.actions += createReset
 		}
-		
 		return trace
 	}
 	
