@@ -19,6 +19,7 @@ import org.eclipse.emf.ecore.EObject;
 
 import hu.bme.mit.gamma.expression.model.BinaryExpression;
 import hu.bme.mit.gamma.expression.model.Declaration;
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.EqualityExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.GreaterEqualExpression;
@@ -125,10 +126,24 @@ public class PredicateHandler {
 		SortedSet<Integer> integerValues = new TreeSet<Integer>(
 				(Integer l, Integer r) -> l.compareTo(r));
 		
+		// NNF creation
 		EObject clonedRoot = ecoreUtil.clone(root); // Cloning, can be resource-intensive :(
+		VariableDeclaration potentiallyClonedVariable = null;
+		for (DirectReferenceExpression reference :
+				ecoreUtil.getSelfAndAllContentsOfType(clonedRoot, DirectReferenceExpression.class)) {
+			Declaration declaration = reference.getDeclaration();
+			if (ecoreUtil.helperEquals(variable, declaration)) {
+				potentiallyClonedVariable = (VariableDeclaration) declaration;
+				break;
+			}
+		}
+		if (potentiallyClonedVariable == null) {
+			return integerValues;
+		}
 		// Handling enclosing negation expressions if there is any
 		expressionNegator.transformTransformableNotExpressions(clonedRoot);
 		//
+		
 		List<Expression> predicateExpressions = new ArrayList<Expression>();
 		predicateExpressions.addAll(
 				ecoreUtil.getAllContentsOfType(clonedRoot, PredicateExpression.class));
@@ -138,7 +153,7 @@ public class PredicateHandler {
 		for (BinaryExpression predicate : predicates) {
 			try {
 				integerValues.add(
-						calculateIntegerValue(predicate, variable));
+						calculateIntegerValue(predicate, potentiallyClonedVariable));
 			} catch (IllegalArgumentException e) {
 				// Predicate does not contain variable references
 				// Note that inequality expressions can mess up things here
