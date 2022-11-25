@@ -144,10 +144,10 @@ class SystemReducer {
 		val clonedXSts = xSts.clone
 		clonedXSts.inEventTransition.action = createEmptyAction // Must not consider in event actions
 		clonedXSts.outEventTransition.action = createEmptyAction // Must not consider out event actions
-//		clonedXSts.entryEventTransition.action = createEmptyAction // TODO Handle init action
+//		clonedXSts.entryEventTransition.action = createEmptyAction
+		// TODO Handle init action: There can be event transmission e.g., in state entry actions
 		
 		val xStsInputEventVariables = clonedXSts.inputVariables
-		// TODO Handle init action independently
 		clonedXSts.deleteUnusedAndWrittenOnlyVariables
 		
 		val xStsDeletedInputEventVariables = xStsInputEventVariables
@@ -203,7 +203,7 @@ class SystemReducer {
 			val xStsDeleteableVariables = newLinkedHashSet
 			
 			xStsDeleteableVariables += xStsVariables
-			// To check and remove a := a - 1 like deletable variables
+			// To check and remove 'a := a - 1' like deletable variables
 			xStsDeleteableVariables -= xSts.externallyReadVariables
 			xStsDeleteableVariables -= xStsKeepableVariables
 			
@@ -258,7 +258,7 @@ class SystemReducer {
 			Collection<? extends VariableDeclaration> keepableVariables, // Unfolded Gamma variables
 			Collection<? extends VariableDeclaration> keepableXStsVariables) { // XSTS variables
 		val mapper = new ReferenceToXstsVariableMapper(xSts)
-		// TODO add message queue variables
+		
 		val xStsKeepableVariables = newArrayList
 		xStsKeepableVariables += keepableXStsVariables
 		for (keepableVariable : keepableVariables) {
@@ -343,6 +343,16 @@ class SystemReducer {
 		
 		xStsInputVariables += xStsInEventVariables
 		xStsInputVariables += xStsInEventParameterVariables
+		
+		// Also the message queues
+		
+		val masterQueueVariableGroup = xSts.masterMessageQueueGroup
+		val xStsMasterQueueVariables = masterQueueVariableGroup.variables
+		val slaveQueueVariableGroup = xSts.slaveMessageQueueGroup
+		val xStsSlaveQueueVariables = slaveQueueVariableGroup.variables
+		
+		xStsInputVariables += xStsMasterQueueVariables
+		xStsInputVariables += xStsSlaveQueueVariables
 		
 		return xStsInputVariables
 	}

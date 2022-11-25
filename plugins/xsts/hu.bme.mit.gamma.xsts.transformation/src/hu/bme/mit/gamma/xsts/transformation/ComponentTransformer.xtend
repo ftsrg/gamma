@@ -17,6 +17,7 @@ import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.LowlevelToXstsTransformer
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.TransitionMerging
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.VariableGroupRetriever
 import hu.bme.mit.gamma.statechart.composite.AbstractAsynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
@@ -73,6 +74,7 @@ class ComponentTransformer {
 	// Auxiliary objects
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension JavaUtil javaUtil = JavaUtil.INSTANCE
+	protected final extension VariableGroupRetriever retriever = VariableGroupRetriever.INSTANCE
 	protected final extension ExpressionEvaluator expressionEvaluator = ExpressionEvaluator.INSTANCE
 	protected final extension EnvironmentalActionFilter environmentalActionFilter =
 			EnvironmentalActionFilter.INSTANCE
@@ -178,6 +180,8 @@ class ComponentTransformer {
 				val masterQueueName = queue.getMasterQueueName(adapterInstance)
 				val masterQueue = masterQueueType.createVariableDeclaration(masterQueueName)
 				
+				xSts.masterMessageQueueGroup.variables += masterQueue
+				
 				val masterSizeVariableName = queue.getMasterSizeVariableName(adapterInstance)
 				val masterSizeVariable = (evaluatedCapacity == 1) ? null : // Master array size var optimization
 					createIntegerTypeDefinition
@@ -208,6 +212,8 @@ class ComponentTransformer {
 								]
 								val slaveQueueName = parameter.getSlaveQueueName(port, adapterInstance)
 								val slaveQueue = slaveQueueType.createVariableDeclaration(slaveQueueName)
+								
+								xSts.slaveMessageQueueGroup.variables += slaveQueue
 								
 								val slaveSizeVariableName = parameter.getSlaveSizeVariableName(port, adapterInstance)
 								// Slave queue size variables cannot be optimized as 0 can be a valid value
