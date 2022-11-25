@@ -12,6 +12,7 @@ package hu.bme.mit.gamma.theta.verification
 
 import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
+import hu.bme.mit.gamma.expression.util.FieldHierarchy
 import hu.bme.mit.gamma.expression.util.IndexHierarchy
 import hu.bme.mit.gamma.querygenerator.ThetaQueryGenerator
 import hu.bme.mit.gamma.statechart.interface_.Component
@@ -70,7 +71,7 @@ class XstsBackAnnotator {
 		// In the case of primitive types, these hierarchies will be empty
 		val field = xStsQueryGenerator.getSourceVariableFieldHierarchy(id)
 		val indexPairs = id.parseArray(value)
-		variable.handleOneCapacityArrayValues(indexPairs)
+		variable.handleOneCapacityArrayValues(field, indexPairs)
 		for (indexPair : indexPairs) {
 			val index = indexPair.key
 			val parsedValue = indexPair.value
@@ -99,7 +100,7 @@ class XstsBackAnnotator {
 		// Getting fields and indexes regardless of primitive or complex types
 		val field = xStsQueryGenerator.getSourceOutEventParameterFieldHierarchy(id)
 		val indexPairs = id.parseArray(value)
-		parameter.handleOneCapacityArrayValues(indexPairs)
+		parameter.handleOneCapacityArrayValues(field, indexPairs)
 		//
 		for (indexPair : indexPairs) {
 			val index = indexPair.key
@@ -130,7 +131,7 @@ class XstsBackAnnotator {
 		// Getting fields and indexes regardless of primitive or complex types
 		val field = xStsQueryGenerator.getSynchronousSourceInEventParameterFieldHierarchy(id)
 		val indexPairs = id.parseArray(value)
-		parameter.handleOneCapacityArrayValues(indexPairs)
+		parameter.handleOneCapacityArrayValues(field, indexPairs)
 		//
 		for (indexPair : indexPairs) {
 			val index = indexPair.key
@@ -190,7 +191,7 @@ class XstsBackAnnotator {
 			// Getting fields and indexes regardless of primitive or complex types
 			val field = xStsQueryGenerator.getAsynchronousSourceInEventParameterFieldHierarchy(id)
 			val indexPairs = id.parseArray(value)
-			parameter.handleOneCapacityArrayValues(indexPairs)
+			parameter.handleOneCapacityArrayValues(field, indexPairs)
 			
 			var firstElement = indexPairs.findFirst[it.key == new IndexHierarchy(0)]
 			// Note that 'id' might be a single value instead of an array due to optimization
@@ -223,8 +224,8 @@ class XstsBackAnnotator {
 	}
 	
 	protected def void handleOneCapacityArrayValues(Declaration targetValueHolder,
-			List<Pair<IndexHierarchy, String>> indexPairs) {
-		val dimension = targetValueHolder.dimension
+			FieldHierarchy fieldHierarchy, List<Pair<IndexHierarchy, String>> indexPairs) {
+		val dimension = targetValueHolder.getDimension(fieldHierarchy)
 		for (indexPair : indexPairs) {
 			val indexes = indexPair.key
 			val size = indexes.size
@@ -233,7 +234,7 @@ class XstsBackAnnotator {
 			
 			for (var i = size; i < dimension; i++) {
 				checkState(targetType.oneCapacityArray)
-				val value = 0;
+				val value = 0
 				indexes.prepend(value)
 				
 				targetType = targetType.arrayElementType.typeDefinition
