@@ -87,7 +87,7 @@ class HavocHandler {
 			bounds.lowerBound = lowerBound
 			bounds.upperBound = upperBound
 		}
-		// TODO select every referenced literal to be complete (negations can mess things up)
+		// Every referenced literal is selected to be complete (as negations can mess things up)
 		
 		return integerValueSelection
 	}
@@ -100,7 +100,7 @@ class HavocHandler {
 		val root = variable.root
 			
 		val integerValues = root.calculateIntegerValues(variable) // These are assumed values
-		// TODO unassumed values
+		// Both "valid" and "invalid" integer values are returned for predicates
 		
 		if (integerValues.empty) {
 			// Sometimes input parameters are not referenced
