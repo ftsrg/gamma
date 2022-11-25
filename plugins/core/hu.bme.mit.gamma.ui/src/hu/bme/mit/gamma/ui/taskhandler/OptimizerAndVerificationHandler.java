@@ -66,12 +66,10 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 		String analysisFilePath = verification.getFileName().get(0);
 		File analysisFile = super.exporeRelativeFile(verification, analysisFilePath);
 		
-		String gStsFilePath = fileNamer.getEmfXStsFileName(analysisFilePath);
+		String gStsFilePath = fileNamer.getEmfXStsUri(analysisFilePath);
 		File gStsFile = super.exporeRelativeFile(verification, gStsFilePath);
 		
-		String unfoldedGsmFilePath = fileNamer.getUnfoldedPackageFileName(analysisFilePath);
-		File unfoldedGsmFile = super.exporeRelativeFile(verification, unfoldedGsmFilePath);
-		Component newTopComponent = null;
+		Component newTopComponent = null; // See property unfolding a few lines below
 		
 		List<CommentableStateFormula> formulas = new ArrayList<CommentableStateFormula>();
 		List<PropertyPackage> propertyPackages = verification.getPropertyPackages();
@@ -84,6 +82,10 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 			if (!PropertyModelDerivedFeatures.isUnfolded(propertyPackage)) {
 				if (newTopComponent == null) {
 					logger.log(Level.INFO, "Loading unfolded package for property unfolding");
+					
+					String unfoldedGsmFilePath = fileNamer.getUnfoldedPackageUri(analysisFilePath);
+					File unfoldedGsmFile = super.exporeRelativeFile(verification, unfoldedGsmFilePath);
+					
 					Package newPackage = (Package) ecoreUtil.normalLoad(unfoldedGsmFile);
 					newTopComponent = StatechartModelDerivedFeatures.getFirstComponent(newPackage);
 				}

@@ -59,6 +59,7 @@ import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.expression.model.VariableDeclarationAnnotation;
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator;
 import hu.bme.mit.gamma.expression.util.ExpressionUtil;
+import hu.bme.mit.gamma.expression.util.FieldHierarchy;
 import hu.bme.mit.gamma.expression.util.LiteralExpressionCreator;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
 import hu.bme.mit.gamma.util.JavaUtil;
@@ -283,18 +284,31 @@ public class ExpressionModelDerivedFeatures {
 	}
 	
 	public static int getDimension(Declaration declaration) {
-		Type type = declaration.getType();
-		return getDimension(type);
+		return getDimension(declaration, new FieldHierarchy());
 	}
 	
 	public static int getDimension(Type type) {
+		return getDimension(type, new FieldHierarchy());
+	}
+	
+	public static int getDimension(Declaration declaration, FieldHierarchy fieldHierarchy) {
+		Type type = declaration.getType();
+		return getDimension(type, fieldHierarchy);
+	}
+	
+	public static int getDimension(Type type, FieldHierarchy fieldHierarchy) {
 		TypeDefinition typeDefinition = getTypeDefinition(type);
 		if (typeDefinition instanceof ArrayTypeDefinition) {
 			Type arrayElementType = getArrayElementType(typeDefinition);
-			return getDimension(arrayElementType) + 1;
+			return getDimension(arrayElementType, fieldHierarchy) + 1;
 		}
 		else if (typeDefinition instanceof RecordTypeDefinition) {
-			throw new IllegalArgumentException("Not supported type: " + type);
+			if (fieldHierarchy.isEmpty()) {
+				throw new IllegalArgumentException("No specified field: " + fieldHierarchy);
+			}
+			FieldDeclaration field = fieldHierarchy.getFirst();
+			FieldHierarchy remainingHierarchy = fieldHierarchy.cloneAndRemoveFirst();
+			return getDimension(field, remainingHierarchy);
 		}
 		else {
 			return 0;

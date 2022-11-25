@@ -108,6 +108,12 @@ public class FieldHierarchy {
 		return new FieldHierarchy(this);
 	}
 	
+	public FieldHierarchy cloneAndRemoveFirst() {
+		FieldHierarchy fieldHierarchy = clone();
+		fieldHierarchy.removeFirst();
+		return fieldHierarchy;
+	}
+	
 	@Override
 	public int hashCode() {
 		final int prime = 31;
