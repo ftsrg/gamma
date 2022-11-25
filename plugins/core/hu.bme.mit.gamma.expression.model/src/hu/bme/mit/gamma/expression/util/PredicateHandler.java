@@ -37,7 +37,8 @@ public class PredicateHandler {
 	public static final PredicateHandler INSTANCE = new PredicateHandler();
 	protected PredicateHandler() {}
 	//
-	
+
+	protected final ExpressionNegator expressionNegator = ExpressionNegator.INSTANCE;
 	protected final ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 	protected final ExpressionEvaluator expressionEvaluator = ExpressionEvaluator.INSTANCE;
 	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
@@ -95,9 +96,12 @@ public class PredicateHandler {
 		return (left instanceof ReferenceExpression) ? value + 1 : value - 1;
 	}
 	
+	// TODO methods for not assumed values
+	
 	///
 	
 	protected int calculateIntegerValue(Expression predicate, VariableDeclaration variable) {
+		// No enclosing negation is expected anymore here (NNF - see calculateIntegerValues)
 		if (predicate instanceof EqualityExpression) {
 			return _calculateIntegerValue((EqualityExpression) predicate, variable);
 		} else if (predicate instanceof GreaterEqualExpression) {
@@ -120,9 +124,14 @@ public class PredicateHandler {
 	public SortedSet<Integer> calculateIntegerValues(EObject root, VariableDeclaration variable) {
 		SortedSet<Integer> integerValues = new TreeSet<Integer>(
 				(Integer l, Integer r) -> l.compareTo(r));
+		
+		EObject clonedRoot = ecoreUtil.clone(root); // Cloning, can be resource-intensive :(
+		// Handling enclosing negation expressions if there is any
+		expressionNegator.transformTransformableNotExpressions(clonedRoot);
+		//
 		List<Expression> predicateExpressions = new ArrayList<Expression>();
 		predicateExpressions.addAll(
-				ecoreUtil.getAllContentsOfType(root, PredicateExpression.class));
+				ecoreUtil.getAllContentsOfType(clonedRoot, PredicateExpression.class));
 		List<BinaryExpression> predicates = javaUtil.filterIntoList(
 				predicateExpressions, BinaryExpression.class);
 		
@@ -132,6 +141,7 @@ public class PredicateHandler {
 						calculateIntegerValue(predicate, variable));
 			} catch (IllegalArgumentException e) {
 				// Predicate does not contain variable references
+				// Note that inequality expressions can mess up things here
 			}
 		}
 		

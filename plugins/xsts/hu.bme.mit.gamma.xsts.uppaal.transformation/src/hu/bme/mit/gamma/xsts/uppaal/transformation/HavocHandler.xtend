@@ -87,6 +87,7 @@ class HavocHandler {
 			bounds.lowerBound = lowerBound
 			bounds.upperBound = upperBound
 		}
+		// TODO select every referenced literal to be complete (negations can mess things up)
 		
 		return integerValueSelection
 	}
@@ -98,7 +99,8 @@ class HavocHandler {
 	protected def SelectionStruct createSelectionOfIntegerValues(VariableDeclaration variable) {
 		val root = variable.root
 			
-		val integerValues = root.calculateIntegerValues(variable)
+		val integerValues = root.calculateIntegerValues(variable) // These are assumed values
+		// TODO unassumed values
 		
 		if (integerValues.empty) {
 			// Sometimes input parameters are not referenced
