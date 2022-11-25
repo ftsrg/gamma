@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 import org.eclipse.emf.ecore.EObject;
 
 import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition;
+import hu.bme.mit.gamma.expression.model.BooleanLiteralExpression;
 import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition;
 import hu.bme.mit.gamma.expression.model.ClockVariableDeclarationAnnotation;
 import hu.bme.mit.gamma.expression.model.ConstantDeclaration;
@@ -29,6 +30,7 @@ import hu.bme.mit.gamma.expression.model.DefaultExpression;
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.ElseExpression;
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition;
+import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression;
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition;
 import hu.bme.mit.gamma.expression.model.EnvironmentResettableVariableDeclarationAnnotation;
 import hu.bme.mit.gamma.expression.model.Expression;
@@ -37,6 +39,7 @@ import hu.bme.mit.gamma.expression.model.ExpressionPackage;
 import hu.bme.mit.gamma.expression.model.FieldDeclaration;
 import hu.bme.mit.gamma.expression.model.FinalVariableDeclarationAnnotation;
 import hu.bme.mit.gamma.expression.model.FunctionDeclaration;
+import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression;
 import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression;
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition;
 import hu.bme.mit.gamma.expression.model.LambdaDeclaration;
@@ -56,6 +59,7 @@ import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.expression.model.VariableDeclarationAnnotation;
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator;
 import hu.bme.mit.gamma.expression.util.ExpressionUtil;
+import hu.bme.mit.gamma.expression.util.LiteralExpressionCreator;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
 import hu.bme.mit.gamma.util.JavaUtil;
 
@@ -63,6 +67,7 @@ public class ExpressionModelDerivedFeatures {
 	
 	protected static final ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 	protected static final ExpressionEvaluator evaluator = ExpressionEvaluator.INSTANCE;
+	protected static final LiteralExpressionCreator literalCreator = LiteralExpressionCreator.INSTANCE;
 	protected static final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
 	protected static final JavaUtil javaUtil = JavaUtil.INSTANCE;
 	protected static final ExpressionModelFactory factory = ExpressionModelFactory.eINSTANCE;
@@ -165,15 +170,30 @@ public class ExpressionModelDerivedFeatures {
 	
 	// Types
 	
+	public static boolean isPrimitive(Declaration declaration) {
+		Type type = declaration.getType();
+		return isPrimitive(type);
+	}
+	
 	public static boolean isPrimitive(Type type) {
 		TypeDefinition typeDefinition = getTypeDefinition(type);
 		return typeDefinition instanceof BooleanTypeDefinition || typeDefinition instanceof IntegerTypeDefinition ||
 				typeDefinition instanceof DecimalTypeDefinition || typeDefinition instanceof RationalTypeDefinition;
 	}
 	
+	public static boolean isNative(Declaration declaration) {
+		Type type = declaration.getType();
+		return isNative(type);
+	}
+	
 	public static boolean isNative(Type type) {
 		TypeDefinition typeDefinition = getTypeDefinition(type);
 		return isPrimitive(typeDefinition) || typeDefinition instanceof EnumerationTypeDefinition;
+	}
+	
+	public static boolean isArray(Declaration declaration) {
+		Type type = declaration.getType();
+		return isArray(type);
 	}
 	
 	public static boolean isArray(Type type) {
@@ -192,9 +212,19 @@ public class ExpressionModelDerivedFeatures {
 		return false;
 	}
 	
+	public static boolean isRecord(Declaration declaration) {
+		Type type = declaration.getType();
+		return isRecord(type);
+	}
+	
 	public static boolean isRecord(Type type) {
 		TypeDefinition typeDefinition = getTypeDefinition(type);
 		return typeDefinition instanceof RecordTypeDefinition;
+	}
+	
+	public static boolean isComplex(Declaration declaration) {
+		Type type = declaration.getType();
+		return isComplex(type);
 	}
 	
 	public static boolean isComplex(Type type) {
@@ -252,6 +282,25 @@ public class ExpressionModelDerivedFeatures {
 		throw new IllegalArgumentException("Not array type: " + type);
 	}
 	
+	public static int getDimension(Declaration declaration) {
+		Type type = declaration.getType();
+		return getDimension(type);
+	}
+	
+	public static int getDimension(Type type) {
+		TypeDefinition typeDefinition = getTypeDefinition(type);
+		if (typeDefinition instanceof ArrayTypeDefinition) {
+			Type arrayElementType = getArrayElementType(typeDefinition);
+			return getDimension(arrayElementType) + 1;
+		}
+		else if (typeDefinition instanceof RecordTypeDefinition) {
+			throw new IllegalArgumentException("Not supported type: " + type);
+		}
+		else {
+			return 0;
+		}
+	}
+	
 	// Type references
 	
 	public static boolean refersToAnAlias(TypeReference typeReference) {
@@ -307,8 +356,23 @@ public class ExpressionModelDerivedFeatures {
 	}
 	
 	public static boolean isEvaluable(Expression expression) {
-		return ecoreUtil.getSelfAndAllContentsOfType(
-				expression, ReferenceExpression.class).isEmpty();
+		List<ReferenceExpression> references = ecoreUtil.getSelfAndAllContentsOfType(
+				expression, ReferenceExpression.class);
+		for (ReferenceExpression reference : new ArrayList<ReferenceExpression>(references)) {
+			if (reference instanceof DirectReferenceExpression directReference) {
+				Declaration declaration = directReference.getDeclaration();
+				if (declaration instanceof ConstantDeclaration) {
+					references.remove(reference);
+				}
+			}
+		}
+		return references.isEmpty();
+	}
+	
+	public static boolean isNativeLiteral(Expression expression) {
+		return expression instanceof BooleanLiteralExpression ||
+				expression instanceof IntegerLiteralExpression ||
+				expression instanceof EnumerationLiteralExpression;
 	}
 	
 	public static List<TypeDeclaration> getSelfAndAllTypeDeclarations(Type type) {

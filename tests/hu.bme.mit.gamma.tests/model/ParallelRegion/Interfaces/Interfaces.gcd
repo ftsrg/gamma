@@ -1,0 +1,5 @@
+package interfaces
+
+interface Control {
+	out event control
+}

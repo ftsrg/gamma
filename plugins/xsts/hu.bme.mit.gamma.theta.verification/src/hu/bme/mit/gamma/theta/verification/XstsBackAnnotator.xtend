@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.theta.verification
 
+import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.util.IndexHierarchy
 import hu.bme.mit.gamma.querygenerator.ThetaQueryGenerator
@@ -21,8 +22,12 @@ import hu.bme.mit.gamma.trace.model.RaiseEventAct
 import hu.bme.mit.gamma.trace.model.Step
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.verification.util.TraceBuilder
+import java.util.List
 import java.util.Set
 
+import static com.google.common.base.Preconditions.checkState
+
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.trace.derivedfeatures.TraceModelDerivedFeatures.*
 
@@ -65,7 +70,7 @@ class XstsBackAnnotator {
 		// In the case of primitive types, these hierarchies will be empty
 		val field = xStsQueryGenerator.getSourceVariableFieldHierarchy(id)
 		val indexPairs = id.parseArray(value)
-		// TODO handle one-capacity arrays
+		variable.handleOneCapacityArrayValues(indexPairs)
 		for (indexPair : indexPairs) {
 			val index = indexPair.key
 			val parsedValue = indexPair.value
@@ -94,6 +99,7 @@ class XstsBackAnnotator {
 		// Getting fields and indexes regardless of primitive or complex types
 		val field = xStsQueryGenerator.getSourceOutEventParameterFieldHierarchy(id)
 		val indexPairs = id.parseArray(value)
+		parameter.handleOneCapacityArrayValues(indexPairs)
 		//
 		for (indexPair : indexPairs) {
 			val index = indexPair.key
@@ -124,6 +130,7 @@ class XstsBackAnnotator {
 		// Getting fields and indexes regardless of primitive or complex types
 		val field = xStsQueryGenerator.getSynchronousSourceInEventParameterFieldHierarchy(id)
 		val indexPairs = id.parseArray(value)
+		parameter.handleOneCapacityArrayValues(indexPairs)
 		//
 		for (indexPair : indexPairs) {
 			val index = indexPair.key
@@ -183,6 +190,7 @@ class XstsBackAnnotator {
 			// Getting fields and indexes regardless of primitive or complex types
 			val field = xStsQueryGenerator.getAsynchronousSourceInEventParameterFieldHierarchy(id)
 			val indexPairs = id.parseArray(value)
+			parameter.handleOneCapacityArrayValues(indexPairs)
 			
 			var firstElement = indexPairs.findFirst[it.key == new IndexHierarchy(0)]
 			// Note that 'id' might be a single value instead of an array due to optimization
@@ -190,7 +198,7 @@ class XstsBackAnnotator {
 				firstElement = indexPairs.findFirst[it.key == new IndexHierarchy]
 			}
 			
-			if (firstElement !== null) { // Default value, not necessary to add explicitly
+			if (firstElement !== null) { // Null: default value, not necessary to add explicitly
 				// The slave queue should be a single-size array - sometimes there are more elements?
 				val index = firstElement.key
 				index.removeFirstIfNotEmpty // If the slave queue is an array, we remove the first index
@@ -211,6 +219,25 @@ class XstsBackAnnotator {
 			val event = systemPortEvent.value
 			// Denoting that this event is already in the queue, not a new one
 			storedAsynchronousInEvents += systemPort -> event
+		}
+	}
+	
+	protected def void handleOneCapacityArrayValues(Declaration targetValueHolder,
+			List<Pair<IndexHierarchy, String>> indexPairs) {
+		val dimension = targetValueHolder.dimension
+		for (indexPair : indexPairs) {
+			val indexes = indexPair.key
+			val size = indexes.size
+			
+			var targetType = targetValueHolder.typeDefinition
+			
+			for (var i = size; i < dimension; i++) {
+				checkState(targetType.oneCapacityArray)
+				val value = 0;
+				indexes.prepend(value)
+				
+				targetType = targetType.arrayElementType.typeDefinition
+			}
 		}
 	}
 	

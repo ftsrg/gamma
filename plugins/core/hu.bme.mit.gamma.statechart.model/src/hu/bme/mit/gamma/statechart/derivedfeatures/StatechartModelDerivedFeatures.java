@@ -360,6 +360,16 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return hasAnnotation(gammaPackage, UnfoldedPackageAnnotation.class);
 	}
 	
+	public static boolean isWrapped(EObject object) {
+		return hasWrapperComponent(
+				getContainingPackage(object));
+	}
+	
+	public static boolean hasWrapperComponent(Package gammaPackage) {
+		return isWrapperComponent(
+				getFirstComponent(gammaPackage));
+	}
+	
 	public static boolean hasAnnotation(Package gammaPackage,
 			Class<? extends PackageAnnotation> annotation) {
 		return gammaPackage.getAnnotations().stream().anyMatch(it -> annotation.isInstance(it));
@@ -1633,6 +1643,13 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		if (controlSpecifications.size() != 1) {
 			return false;
 		}
+		// If this is the case, back-annotation will not work if we consider this simplifiable
+		SynchronousComponentInstance wrappedComponent = adapter.getWrappedComponent();
+		SynchronousComponent type = wrappedComponent.getType();
+		if (type.getPorts().isEmpty()) {
+			return false;
+		}
+		
 		ControlSpecification controlSpecification = controlSpecifications.get(0);
 		Trigger trigger = controlSpecification.getTrigger();
 		ControlFunction controlFunction = controlSpecification.getControlFunction();

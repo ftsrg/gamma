@@ -16,7 +16,7 @@ import hu.bme.mit.gamma.statechart.lowlevel.model.State
 import hu.bme.mit.gamma.statechart.lowlevel.model.StateNode
 import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.IfAction
-import hu.bme.mit.gamma.xsts.model.ParallelAction
+import hu.bme.mit.gamma.xsts.model.MultiaryAction
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 
@@ -87,7 +87,7 @@ class EntryActionRetriever {
 			val xStsStateEntryAction = xStsStateAssumption.createIfAction(lowlevelParentState.entryAction.transformAction)
 			if (lowlevelGrandparentRegion.hasOrthogonalRegion  && !lowlevelGrandparentRegion.stateNodes.contains(lowlevelTopState)) {
 				// Orthogonal region exit actions
-				it.actions += lowlevelGrandparentRegion.createRecursiveXStsOrthogonalRegionEntryActions as ParallelAction => [
+				it.actions += lowlevelGrandparentRegion.createRecursiveXStsOrthogonalRegionEntryActions as MultiaryAction => [
 					it.actions += xStsStateEntryAction
 				]
 			}
@@ -118,7 +118,7 @@ class EntryActionRetriever {
 		if (!lowlevelRegion.hasOrthogonalRegion) {
 			return createEmptyAction
 		}
-		return createParallelAction => [
+		return createRegionAction => [
 			for (lowlevelOrthogonalRegion : lowlevelRegion.orthogonalRegions) {
 				it.actions += lowlevelOrthogonalRegion.createRecursiveXStsRegionAndSubregionEntryActions
 			}
@@ -136,7 +136,7 @@ class EntryActionRetriever {
 			return XStsStateAndSubstateEntryActions
 		}
 		// Has orthogonal regions
-		return createParallelAction => [
+		return createRegionAction => [
 			it.actions += XStsStateAndSubstateEntryActions
 			// Orthogonal region actions
 			for (lowlevelOrthogonalRegion : lowlevelParentRegion.orthogonalRegions) {
@@ -151,7 +151,7 @@ class EntryActionRetriever {
 		val xStsStateAssumption = lowlevelState.createSingleXStsStateAssumption
 		// Action taken only if the state is "active" (assume action)
 		val xStsStateEntryActions = lowlevelState.entryAction.transformAction
-		val xStsSubstateEntryActions = createParallelAction
+		val xStsSubstateEntryActions = createRegionAction
 		// Recursion for the entry action of contained states
 		for (lowlevelSubregion : lowlevelState.regions) {
 			// Actions on initial transitions

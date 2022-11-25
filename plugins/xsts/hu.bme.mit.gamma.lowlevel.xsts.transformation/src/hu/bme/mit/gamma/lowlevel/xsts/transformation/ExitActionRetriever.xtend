@@ -16,7 +16,7 @@ import hu.bme.mit.gamma.statechart.lowlevel.model.State
 import hu.bme.mit.gamma.statechart.lowlevel.model.StateNode
 import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.IfAction
-import hu.bme.mit.gamma.xsts.model.ParallelAction
+import hu.bme.mit.gamma.xsts.model.MultiaryAction
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 
@@ -84,7 +84,7 @@ class ExitActionRetriever {
 			// Action taken only if the state is "active" (assume action)
 			if (lowlevelGrandparentRegion.hasOrthogonalRegion && !lowlevelGrandparentRegion.stateNodes.contains(lowlevelTopState)) {
 				// Orthogonal region exit actions
-				it.actions += lowlevelGrandparentRegion.createRecursiveXStsOrthogonalRegionExitActions as ParallelAction => [
+				it.actions += lowlevelGrandparentRegion.createRecursiveXStsOrthogonalRegionExitActions as MultiaryAction => [
 					it.actions += xStsStateExitAction
 				]
 			}
@@ -104,7 +104,7 @@ class ExitActionRetriever {
 		if (!lowlevelRegion.hasOrthogonalRegion) {
 			return createEmptyAction
 		}
-		return createParallelAction => [
+		return createRegionAction => [
 			for (lowlevelOrthogonalRegion : lowlevelRegion.orthogonalRegions) {
 				for (lowlevelSubstate : lowlevelOrthogonalRegion.states) {
 					it.actions += lowlevelSubstate.createRecursiveXStsStateAndSubstateExitActions
@@ -124,7 +124,7 @@ class ExitActionRetriever {
 			return xStsStateAndSubstateExitActions
 		}
 		// Has orthogonal regions
-		return createParallelAction => [
+		return createRegionAction => [
 			it.actions += xStsStateAndSubstateExitActions
 			// Orthogonal region actions
 			for (lowlevelOrthogonalRegion : lowlevelParentRegion.orthogonalRegions) {
@@ -137,7 +137,7 @@ class ExitActionRetriever {
 	
 	protected def IfAction createRecursiveXStsStateAndSubstateExitActions(State lowlevelState) {
 		val xStsStateExitActions = lowlevelState.exitAction.transformAction
-		val xStsSubstateExitActions = createParallelAction
+		val xStsSubstateExitActions = createRegionAction
 		// Recursion for the exit action of contained states
 		for (lowlevelSubregion : lowlevelState.regions) {
 			val xStsExitActions = newArrayList

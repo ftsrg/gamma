@@ -44,6 +44,7 @@ import hu.bme.mit.gamma.expression.model.EqualityExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory;
 import hu.bme.mit.gamma.expression.model.ExpressionPackage;
+import hu.bme.mit.gamma.expression.model.FalseExpression;
 import hu.bme.mit.gamma.expression.model.FieldAssignment;
 import hu.bme.mit.gamma.expression.model.FieldDeclaration;
 import hu.bme.mit.gamma.expression.model.FieldReferenceExpression;
@@ -57,6 +58,7 @@ import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression;
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition;
 import hu.bme.mit.gamma.expression.model.LessEqualExpression;
 import hu.bme.mit.gamma.expression.model.LessExpression;
+import hu.bme.mit.gamma.expression.model.LiteralExpression;
 import hu.bme.mit.gamma.expression.model.MultiaryExpression;
 import hu.bme.mit.gamma.expression.model.MultiplyExpression;
 import hu.bme.mit.gamma.expression.model.NotExpression;
@@ -70,6 +72,7 @@ import hu.bme.mit.gamma.expression.model.RecordLiteralExpression;
 import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.SubtractExpression;
+import hu.bme.mit.gamma.expression.model.TrueExpression;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
 import hu.bme.mit.gamma.expression.model.TypeDefinition;
@@ -95,6 +98,7 @@ public class ExpressionUtil {
 	protected final ExpressionEvaluator evaluator = ExpressionEvaluator.INSTANCE;
 	protected final ExpressionNegator negator = ExpressionNegator.INSTANCE;
 	protected final ExpressionTypeDeterminator2 typeDeterminator = ExpressionTypeDeterminator2.INSTANCE;
+	
 	protected final ExpressionModelFactory factory = ExpressionModelFactory.eINSTANCE;
 	
 	// The following methods are worth extending in subclasses
@@ -839,13 +843,33 @@ public class ExpressionUtil {
 	}
 	
 	public DecimalLiteralExpression toDecimalLiteral(double value) {
-		return toDecimalLiteral(toBigDec(value));
+		return toDecimalLiteral(
+				toBigDec(value));
 	}
 	
 	public DecimalLiteralExpression toDecimalLiteral(BigDecimal value) {
 		DecimalLiteralExpression decimalLiteral = factory.createDecimalLiteralExpression();
 		decimalLiteral.setValue(value);
 		return decimalLiteral;
+	}
+	
+	public Integer toInteger(LiteralExpression literalExpression) {
+		if (literalExpression instanceof IntegerLiteralExpression integer) {
+			return integer.getValue().intValue();
+		}
+		else if (literalExpression instanceof TrueExpression bool) {
+			return 1;
+		}
+		else if (literalExpression instanceof FalseExpression bool) {
+			return 0;
+		}
+		else if (literalExpression instanceof EnumerationLiteralExpression enumeration) {
+			EnumerationLiteralDefinition enumLiteral = enumeration.getReference();
+			return ecoreUtil.getIndex(enumLiteral);
+		}
+		else {
+			throw new IllegalArgumentException("Not known literal: " + literalExpression);
+		}
 	}
 	
 	public VariableDeclaration createVariableDeclaration(Type type, String name) {

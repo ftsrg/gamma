@@ -20,6 +20,7 @@ import hu.bme.mit.gamma.xsts.model.EmptyAction
 import hu.bme.mit.gamma.xsts.model.IfAction
 import hu.bme.mit.gamma.xsts.model.LoopAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
+import hu.bme.mit.gamma.xsts.model.ParallelAction
 import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
 import hu.bme.mit.gamma.xsts.model.XSTS
@@ -84,6 +85,11 @@ class CommonizedVariableActionSerializer extends ActionSerializer {
 	'''
 	
 	def dispatch CharSequence serialize(SequentialAction action) '''
+		«FOR xStsSubaction : action.actions»«xStsSubaction.serialize»«ENDFOR»
+	'''
+	
+	// Same as sequential
+	def dispatch CharSequence serialize(ParallelAction action) '''
 		«FOR xStsSubaction : action.actions»«xStsSubaction.serialize»«ENDFOR»
 	'''
 	

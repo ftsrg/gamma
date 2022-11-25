@@ -38,6 +38,10 @@ public class IndexHierarchy {
 		return indexes;
 	}
 	
+	public int getSize() {
+		return indexes.size();
+	}
+	
 	public void prepend(Integer index) {
 		indexes.add(0, index);
 	}

@@ -1,0 +1,34 @@
+package parallel_region
+
+@OrthogonalRegionSchedule = sequential
+statechart ParallelMachine [
+] {
+	var x : integer
+	var y : integer
+	
+	region A {
+		initial InitialA
+		state A_A
+		state A_B
+	}
+	transition from InitialA to A_A
+	transition from A_A to A_B when cycle / if (x == 0) {
+		x := 1;
+		if (y == 0) {
+			y := 1;
+		}
+	}
+	
+	region B {
+		initial InitialB
+		state B_A
+		state B_B
+	}
+	transition from InitialB to B_A
+	transition from B_A to B_B when cycle / if (x == 0) {
+		x := 2;
+		if (y == 0) {
+			y := 2;
+		}
+	}
+}

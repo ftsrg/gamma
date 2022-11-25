@@ -33,7 +33,11 @@ import hu.bme.mit.gamma.property.derivedfeatures.PropertyModelDerivedFeatures;
 import hu.bme.mit.gamma.property.model.CommentableStateFormula;
 import hu.bme.mit.gamma.property.model.PropertyPackage;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression;
+import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
+import hu.bme.mit.gamma.statechart.interface_.Component;
+import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.transformation.util.GammaFileNamer;
+import hu.bme.mit.gamma.transformation.util.PropertyUnfolder;
 import hu.bme.mit.gamma.uppaal.serializer.UppaalModelSerializer;
 import hu.bme.mit.gamma.xsts.model.XSTS;
 import hu.bme.mit.gamma.xsts.transformation.SystemReducer;
@@ -61,8 +65,13 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 		
 		String analysisFilePath = verification.getFileName().get(0);
 		File analysisFile = super.exporeRelativeFile(verification, analysisFilePath);
+		
 		String gStsFilePath = fileNamer.getEmfXStsFileName(analysisFilePath);
 		File gStsFile = super.exporeRelativeFile(verification, gStsFilePath);
+		
+		String unfoldedGsmFilePath = fileNamer.getUnfoldedPackageFileName(analysisFilePath);
+		File unfoldedGsmFile = super.exporeRelativeFile(verification, unfoldedGsmFilePath);
+		Component newTopComponent = null;
 		
 		List<CommentableStateFormula> formulas = new ArrayList<CommentableStateFormula>();
 		List<PropertyPackage> propertyPackages = verification.getPropertyPackages();
@@ -70,10 +79,20 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 		
 		PropertyPackage mainPropertyPackage = null;
 		
-		checkArgument(propertyPackages.stream()
-							.allMatch(it ->  PropertyModelDerivedFeatures.isUnfolded(it)),
-					"Not all property packages are unfolded: " + propertyPackages);
 		for (PropertyPackage propertyPackage : propertyPackages) {
+			// Checking if it is unfolded
+			if (!PropertyModelDerivedFeatures.isUnfolded(propertyPackage)) {
+				if (newTopComponent == null) {
+					logger.log(Level.INFO, "Loading unfolded package for property unfolding");
+					Package newPackage = (Package) ecoreUtil.normalLoad(unfoldedGsmFile);
+					newTopComponent = StatechartModelDerivedFeatures.getFirstComponent(newPackage);
+				}
+				PropertyUnfolder propertyUnfolder =
+						new PropertyUnfolder(propertyPackage, newTopComponent);
+				propertyPackage = propertyUnfolder.execute();
+			}
+			//
+			
 			if (mainPropertyPackage == null) {
 				mainPropertyPackage = ecoreUtil.clone(propertyPackage);
 			}
@@ -110,7 +129,6 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 					.map(it -> it.getVariableDeclaration())
 					.collect(Collectors.toList());
 			
-			// Maybe other optimizations could be added?
 			xStsReducer.deleteUnusedAndWrittenOnlyVariablesExceptOutEvents(xSts, keepableGammaVariables);
 			xStsReducer.deleteUnusedInputEventVariables(xSts, keepableGammaVariables);
 			// Deleting enum literals
@@ -119,6 +137,8 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 							.map(it -> it.getReference())
 							.collect(Collectors.toSet());
 			xStsReducer.deleteUnusedEnumLiterals(xSts, keepableGammaEnumLiterals);
+			xStsReducer.deleteTrivialCodomainVariablesExceptOutEvents(xSts);
+			xStsReducer.deleteUnnecessaryInputVariablesExceptOutEvents(xSts);
 			
 			XstsOptimizer xStsOptimizer = XstsOptimizer.INSTANCE;
 			xStsOptimizer.optimizeXSts(xSts); // To remove null/empty actions

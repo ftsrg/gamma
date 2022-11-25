@@ -43,6 +43,8 @@ class TraceBackAnnotator {
 	protected final String TRANS_END = "flag = 1"
 	protected final String TRACE_END = "#processes:"
 	
+	protected boolean traceEnd = false
+	
 	protected final Scanner traceScanner
 	protected final PromelaQueryGenerator promelaQueryGenerator
 	protected final extension XstsBackAnnotator xStsBackAnnotator
@@ -104,12 +106,19 @@ class TraceBackAnnotator {
 		// Parsing
 		var backAnnotatorState = BackAnnotatorState.INIT
 		var modelState = ModelState.INIT
-		var lastModelState = ModelState.INIT
 		var traceState = TraceState.NOT_REQUIRED
 		var initError = false // error in INIT
+		var lastElementArray = false
+		var line = ""
 		try {
 			while (traceScanner.hasNext) {
-				var line = traceScanner.nextLine.trim // Trimming leading white spaces
+				if (lastElementArray) {
+					lastElementArray = false
+				}
+				else {
+					line = traceScanner.nextLine.trim // Trimming leading white spaces
+				}
+				
 				switch (modelState) {
 					case INIT: {
 						switch (line) {
@@ -133,6 +142,7 @@ class TraceBackAnnotator {
 								
 								traceState = TraceState.REQUIRED
 								initError = true
+								traceEnd = true
 								line = traceScanner.nextLine.trim
 							}
 							case line.equals(INIT_ERROR): {
@@ -163,10 +173,22 @@ class TraceBackAnnotator {
 							case line.equals(ENV_END): {
 								traceState = TraceState.NOT_REQUIRED
 								modelState = ModelState.TRANS
-								lastModelState = ModelState.ENV
 							}
 							case line.startsWith(TRACE_END): {
-								modelState = lastModelState
+								step.checkStates
+								// Creating a new step
+								step = createStep
+								// Add static delay every turn
+								if (schedulingConstraint !== null) {
+									step.addTimeElapse(schedulingConstraint)
+								}
+
+								trace.steps += step
+								// Setting the state
+								backAnnotatorState = BackAnnotatorState.ENVIRONMENT_CHECK
+								
+								traceEnd = true
+								traceState = TraceState.REQUIRED
 							}
 						}
 					}
@@ -185,10 +207,16 @@ class TraceBackAnnotator {
 							case line.equals(TRANS_END): {
 								traceState = TraceState.NOT_REQUIRED
 								modelState = ModelState.ENV
-								lastModelState = ModelState.TRANS
 							}
 							case line.startsWith(TRACE_END): {
-								modelState = lastModelState
+								step.checkInEvents
+								// Add schedule
+								step.addComponentScheduling
+								// Setting the state
+								backAnnotatorState = BackAnnotatorState.STATE_CHECK
+								
+								traceEnd = true
+								traceState = TraceState.REQUIRED
 							}
 						}
 					}
@@ -197,14 +225,14 @@ class TraceBackAnnotator {
 				}
 				
 				// We parse in every turn
-				if (traceState == TraceState.REQUIRED) {
+				if (traceState == TraceState.REQUIRED && line.checkLine) {
 					
 					var split = line.split(" = ")
 					var id = split.get(0)
 					var value = split.get(1)
 					
 					// Array
-					while (id.endsWith("]")) {
+					if (id.endsWith("]")) {
 						val arrayName = id.split(Pattern.quote("[")).get(0)
 						line = traceScanner.nextLine.trim
 						var arrayValue = id + " = " + value
@@ -213,10 +241,9 @@ class TraceBackAnnotator {
 							line = traceScanner.nextLine.trim
 						}
 						// Elements of array in arrayValue
-						backAnnotatorState.parse(arrayName, arrayValue, step)
-						split = line.split(" = ")
-						id = split.get(0)
-						value = split.get(1)
+						id = arrayName
+						value = arrayValue
+						lastElementArray = true
 					}
 					backAnnotatorState.parse(id, value, step)
 				}
@@ -231,12 +258,10 @@ class TraceBackAnnotator {
 			// If there are not enough lines, that means there are no environment actions
 			step.actions += createReset
 		}
-		
 		return trace
 	}
 	
 	protected def parse(BackAnnotatorState backAnnotatorState, String id, String value, Step step) {
-		
 		switch (backAnnotatorState) {
 			case STATE_CHECK: {
 				val potentialStateString = '''«id» == «value»'''
@@ -283,4 +308,13 @@ class TraceBackAnnotator {
 	enum BackAnnotatorState { INIT, STATE_CHECK, ENVIRONMENT_CHECK }
 	enum ModelState { INIT, TRANS, ENV }
 	enum TraceState { REQUIRED, NOT_REQUIRED }
+	
+	// Filtering unnecessary lines
+	protected def checkLine(String line) {
+		return !(line.contains(":") ||
+				(traceEnd && line.contains("proc  ")) ||
+				line.startsWith("Never claim moves to") ||
+				line.contains(" processes created") ||
+				line.startsWith("msg_parallel_"))
+	}
 }

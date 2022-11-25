@@ -21,6 +21,11 @@
       <genEnumLiterals ecoreEnumLiteral="model.ecore#//GuardEvaluation/ON_THE_FLY"/>
       <genEnumLiterals ecoreEnumLiteral="model.ecore#//GuardEvaluation/BEGINNING_OF_STEP"/>
     </genEnums>
+    <genEnums typeSafeEnumCompatible="false" ecoreEnum="model.ecore#//OrthogonalRegionSchedulingOrder">
+      <genEnumLiterals ecoreEnumLiteral="model.ecore#//OrthogonalRegionSchedulingOrder/SEQUENTIAL"/>
+      <genEnumLiterals ecoreEnumLiteral="model.ecore#//OrthogonalRegionSchedulingOrder/UNORDERED"/>
+      <genEnumLiterals ecoreEnumLiteral="model.ecore#//OrthogonalRegionSchedulingOrder/PARALLEL"/>
+    </genEnums>
     <genEnums typeSafeEnumCompatible="false" ecoreEnum="model.ecore#//Persistency">
       <genEnumLiterals ecoreEnumLiteral="model.ecore#//Persistency/TRANSIENT"/>
       <genEnumLiterals ecoreEnumLiteral="model.ecore#//Persistency/PERSISTENT"/>
@@ -43,6 +48,7 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//StatechartDefinition/variableDeclarations"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute model.ecore#//StatechartDefinition/schedulingOrder"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute model.ecore#//StatechartDefinition/guardEvaluation"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute model.ecore#//StatechartDefinition/orthogonalRegionSchedulingOrder"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//StatechartDefinition/timeoutDeclarations"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//StatechartDefinition/internalEventDeclarations"/>
     </genClasses>

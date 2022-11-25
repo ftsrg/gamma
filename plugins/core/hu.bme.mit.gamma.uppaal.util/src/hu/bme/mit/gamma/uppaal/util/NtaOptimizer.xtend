@@ -119,7 +119,7 @@ class NtaOptimizer {
 			val min = codomain.key
 			val max = codomain.value
 			
-			// Limiting the codomain of the integer variable
+			// Limiting or extending the codomain of the integer variable
 			integerVariable.typeDefinition = typFact.createRangeTypeSpecification => [
 				it.bounds = createIntegerBounds => [
 					it.lowerBound = min.toString.createLiteralExpression

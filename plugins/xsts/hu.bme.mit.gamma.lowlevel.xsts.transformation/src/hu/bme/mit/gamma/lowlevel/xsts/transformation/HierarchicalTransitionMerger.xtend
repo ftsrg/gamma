@@ -100,7 +100,7 @@ class HierarchicalTransitionMerger extends AbstractTransitionMerger {
 			val xStsExecutedVariable = xStsExecutedVariableAction.variableDeclaration
 			xStsSequentialAction.actions += xStsExecutedVariableAction
 			
-			val xStsParallelAction = createParallelAction
+			val xStsParallelAction = createRegionAction
 			xStsSequentialAction.actions += xStsParallelAction
 			
 			for (lowlevelRegion : lowlevelRegions) {
