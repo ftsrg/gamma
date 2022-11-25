@@ -180,8 +180,6 @@ class ComponentTransformer {
 				val masterQueueName = queue.getMasterQueueName(adapterInstance)
 				val masterQueue = masterQueueType.createVariableDeclaration(masterQueueName)
 				
-				xSts.masterMessageQueueGroup.variables += masterQueue
-				
 				val masterSizeVariableName = queue.getMasterSizeVariableName(adapterInstance)
 				val masterSizeVariable = (evaluatedCapacity == 1) ? null : // Master array size var optimization
 					createIntegerTypeDefinition
@@ -212,8 +210,6 @@ class ComponentTransformer {
 								]
 								val slaveQueueName = parameter.getSlaveQueueName(port, adapterInstance)
 								val slaveQueue = slaveQueueType.createVariableDeclaration(slaveQueueName)
-								
-								xSts.slaveMessageQueueGroup.variables += slaveQueue
 								
 								val slaveSizeVariableName = parameter.getSlaveSizeVariableName(port, adapterInstance)
 								// Slave queue size variables cannot be optimized as 0 can be a valid value
@@ -248,6 +244,7 @@ class ComponentTransformer {
 				val xStsMasterQueueVariable = valueDeclarationTransformer.transform(masterQueue).onlyElement
 //				xStsMasterQueueVariable.addStrictControlAnnotation
 				xSts.variableDeclarations += xStsMasterQueueVariable
+				xSts.masterMessageQueueGroup.variables += xStsMasterQueueVariable
 				if (masterSizeVariable !== null) { // Can be null due to potential optimization
 					val xStsMasterSizeVariable = valueDeclarationTransformer.transform(masterSizeVariable).onlyElement
 					xSts.variableDeclarations += xStsMasterSizeVariable
@@ -264,6 +261,8 @@ class ComponentTransformer {
 					if (slaveSizeVariable !== null) {
 						val xStsSlaveSizeVariable = valueDeclarationTransformer.transform(slaveSizeVariable).onlyElement
 						xSts.variableDeclarations += xStsSlaveSizeVariable
+						xSts.slaveMessageQueueGroup.variables += xStsSlaveSizeVariable
+						
 						xStsSlaveSizeVariable.addStrictControlAnnotation // Needed for loops
 						// The type might not be correct here and later has to be reassigned to handle enums
 					}
