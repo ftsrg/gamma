@@ -25,6 +25,7 @@ import java.util.logging.Logger
 import org.eclipse.xtend.lib.annotations.Data
 import uppaal.expressions.Expression
 import uppaal.templates.Selection
+import uppaal.types.RangeTypeSpecification
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 
@@ -68,17 +69,33 @@ class HavocHandler {
 	}
 	
 	def dispatch SelectionStruct createSelection(EnumerationTypeDefinition type, VariableDeclaration variable) {
-		val name = Namings.name
+//		val name = Namings.name
 		val upperLiteral = type.literals.size - 1
-		
+//		
 		val lowerBound = ntaBuilder.createLiteralExpression("0")
 		val upperBound = ntaBuilder.createLiteralExpression(upperLiteral.toString)
-		val selection = ntaBuilder.createIntegerSelection(name, lowerBound, upperBound)
+//		val selection = ntaBuilder.createIntegerSelection(name, lowerBound, upperBound)
 		
-		return new SelectionStruct(selection, null)
+//		return new SelectionStruct(selection, null)
+		
+		// Limiting the range to actually used literals + another one
+		val integerValueSelection = variable.createSelectionOfIntegerValues // Already contains "else" literal
+		// Selection.variable can be null if it is not compared to anything
+		if (integerValueSelection.selection !== null) {
+			val range = integerValueSelection.selection.typeDefinition as RangeTypeSpecification
+			val bounds = range.bounds
+			bounds.lowerBound = lowerBound
+			bounds.upperBound = upperBound
+		}
+		
+		return integerValueSelection
 	}
 	
 	def dispatch SelectionStruct createSelection(IntegerTypeDefinition type, VariableDeclaration variable) {
+		return variable.createSelectionOfIntegerValues
+	}
+	
+	protected def SelectionStruct createSelectionOfIntegerValues(VariableDeclaration variable) {
 		val root = variable.root
 			
 		val integerValues = root.calculateIntegerValues(variable)
@@ -88,7 +105,7 @@ class HavocHandler {
 			return new SelectionStruct(null, null)
 		}
 		
-		val defaultValue = type.defaultExpression.evaluateInteger // 0
+		val defaultValue = 0 // 0 for integers and enums alike
 		val elseValue = integerValues.contains(defaultValue) ? integerValues.max + 1 : defaultValue
 		integerValues += elseValue // Adding another value for an "else" branch
 		

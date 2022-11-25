@@ -68,7 +68,7 @@ public class PredicateHandler {
 	// Should handle intervals, this is just an initial iteration
 	
 	protected int _calculateIntegerValue(InequalityExpression predicate, VariableDeclaration variable) {
-		return getIntegerValue(predicate, variable) - 1;
+		return getIntegerValue(predicate, variable) + 1;
 	}
 	
 	protected int _calculateIntegerValue(EqualityExpression predicate, VariableDeclaration variable) {

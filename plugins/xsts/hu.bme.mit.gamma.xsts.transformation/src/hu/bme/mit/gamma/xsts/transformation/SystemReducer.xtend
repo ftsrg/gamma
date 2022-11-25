@@ -303,7 +303,7 @@ class SystemReducer {
 	
 	//
 	
-	def void deleteUnusedEnumLiterals(XSTS xSts,
+	def void deleteUnusedEnumLiteralsExceptOne(XSTS xSts,
 			Collection<? extends EnumerationLiteralDefinition> keepableLiterals) { // Unfolded Gamma variables
 		val xStsLiterals = xSts.getAllContentsOfType(EnumerationLiteralDefinition)
 		
@@ -320,6 +320,12 @@ class SystemReducer {
 		xStsDeletableLiterals += xStsLiterals
 		xStsDeletableLiterals -= xStsReferencedLiterals
 		xStsDeletableLiterals -= xStsKeepableLiterals
+		
+		// Keeping the lowest literal for the "else" branch
+		if (!xStsDeletableLiterals.empty) {
+			xStsDeletableLiterals.remove(0)
+		}
+		//
 		
 		for (xStsDeletableLiteral : xStsDeletableLiterals) {
 			val xStsEnumerationType = xStsDeletableLiteral.getContainerOfType(EnumerationTypeDefinition)
