@@ -17,6 +17,7 @@ import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.LowlevelToXstsTransformer
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.TransitionMerging
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.VariableGroupRetriever
 import hu.bme.mit.gamma.statechart.composite.AbstractAsynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
@@ -73,6 +74,7 @@ class ComponentTransformer {
 	// Auxiliary objects
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension JavaUtil javaUtil = JavaUtil.INSTANCE
+	protected final extension VariableGroupRetriever retriever = VariableGroupRetriever.INSTANCE
 	protected final extension ExpressionEvaluator expressionEvaluator = ExpressionEvaluator.INSTANCE
 	protected final extension EnvironmentalActionFilter environmentalActionFilter =
 			EnvironmentalActionFilter.INSTANCE
@@ -242,6 +244,7 @@ class ComponentTransformer {
 				val xStsMasterQueueVariable = valueDeclarationTransformer.transform(masterQueue).onlyElement
 //				xStsMasterQueueVariable.addStrictControlAnnotation
 				xSts.variableDeclarations += xStsMasterQueueVariable
+				xSts.masterMessageQueueGroup.variables += xStsMasterQueueVariable
 				if (masterSizeVariable !== null) { // Can be null due to potential optimization
 					val xStsMasterSizeVariable = valueDeclarationTransformer.transform(masterSizeVariable).onlyElement
 					xSts.variableDeclarations += xStsMasterSizeVariable
@@ -258,6 +261,8 @@ class ComponentTransformer {
 					if (slaveSizeVariable !== null) {
 						val xStsSlaveSizeVariable = valueDeclarationTransformer.transform(slaveSizeVariable).onlyElement
 						xSts.variableDeclarations += xStsSlaveSizeVariable
+						xSts.slaveMessageQueueGroup.variables += xStsSlaveSizeVariable
+						
 						xStsSlaveSizeVariable.addStrictControlAnnotation // Needed for loops
 						// The type might not be correct here and later has to be reassigned to handle enums
 					}

@@ -138,7 +138,10 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 					ecoreUtil.getAllContentsOfType(formula, EnumerationLiteralExpression.class).stream()
 							.map(it -> it.getReference())
 							.collect(Collectors.toSet());
-			xStsReducer.deleteUnusedEnumLiterals(xSts, keepableGammaEnumLiterals);
+			if (!analysisLanguages.contains(AnalysisLanguage.XSTS_UPPAAL)) {
+				// In UPPAAL, literals are referenced via indexes, so they cannot be removed
+				xStsReducer.deleteUnusedEnumLiteralsExceptOne(xSts, keepableGammaEnumLiterals);
+			}
 			xStsReducer.deleteTrivialCodomainVariablesExceptOutEvents(xSts);
 			xStsReducer.deleteUnnecessaryInputVariablesExceptOutEvents(xSts);
 			

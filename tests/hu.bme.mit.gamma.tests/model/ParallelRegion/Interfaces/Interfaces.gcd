@@ -1,5 +1,5 @@
 package interfaces
 
-interface Control {
+interface ExternalControl {
 	out event control
 }

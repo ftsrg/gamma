@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.querygenerator.serializer
 
+import hu.bme.mit.gamma.property.model.BinaryOperandPathFormula
 import hu.bme.mit.gamma.property.model.BinaryPathOperator
 import hu.bme.mit.gamma.property.model.QuantifiedFormula
 import hu.bme.mit.gamma.property.model.StateFormula
@@ -18,6 +19,7 @@ import hu.bme.mit.gamma.property.model.UnaryPathOperator
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 
 import static com.google.common.base.Preconditions.checkArgument
+import static hu.bme.mit.gamma.xsts.promela.transformation.util.Namings.*
 
 class PromelaPropertySerializer extends ThetaPropertySerializer {
 	// Singleton
@@ -39,7 +41,14 @@ class PromelaPropertySerializer extends ThetaPropertySerializer {
 	override dispatch String serializeFormula(UnaryOperandPathFormula formula) {
 		val operator = formula.operator
 		val operand = formula.operand
-		return '''«operator.transform» («operand.serializeFormula»)'''
+		return '''«operator.transform» («operator.stableCondition»«operand.serializeFormula»)'''
+	}
+	
+	dispatch def String serializeFormula(BinaryOperandPathFormula formula) {
+		val operator = formula.operator
+		val leftOperand = formula.leftOperand
+		val rightOperand = formula.rightOperand
+		return '''(«orNotStable»«leftOperand.serializeFormula») «operator.transform» («andStable»«rightOperand.serializeFormula»)'''
 	}
 	
 	override protected isValidFormula(StateFormula stateFormula) {
@@ -61,9 +70,6 @@ class PromelaPropertySerializer extends ThetaPropertySerializer {
 	
 	protected def String transform(BinaryPathOperator operator) {
 		switch (operator) {
-			case RELEASE: {
-				return '''V'''
-			}
 			case UNTIL: {
 				return '''U'''
 			}
@@ -71,5 +77,21 @@ class PromelaPropertySerializer extends ThetaPropertySerializer {
 				throw new IllegalArgumentException("Not supported operator: " + operator)
 		}
 	}
+	
+	protected def String getStableCondition(UnaryPathOperator operator) {
+		switch (operator) {
+			case FUTURE: {
+				return andStable
+			}
+			case GLOBAL: {
+				return orNotStable
+			}
+			default:
+				throw new IllegalArgumentException("Not supported operator: " + operator)
+		}
+	}
+	
+	protected def String getOrNotStable() '''!«isStableVariableName» || '''
+	protected def String getAndStable() '''«isStableVariableName» && '''
 	
 }

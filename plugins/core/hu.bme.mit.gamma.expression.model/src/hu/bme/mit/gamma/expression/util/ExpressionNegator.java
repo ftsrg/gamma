@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2021 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -10,8 +10,13 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.expression.util;
 
+import java.util.List;
+
+import org.eclipse.emf.ecore.EObject;
+
 import hu.bme.mit.gamma.expression.model.AndExpression;
 import hu.bme.mit.gamma.expression.model.EqualityExpression;
+import hu.bme.mit.gamma.expression.model.EquivalenceExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory;
 import hu.bme.mit.gamma.expression.model.FalseExpression;
@@ -25,6 +30,7 @@ import hu.bme.mit.gamma.expression.model.NotExpression;
 import hu.bme.mit.gamma.expression.model.OrExpression;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.TrueExpression;
+import hu.bme.mit.gamma.expression.model.XorExpression;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
 
 public class ExpressionNegator {
@@ -61,7 +67,69 @@ public class ExpressionNegator {
 		return orExpression;
 	}
 	
-	// No Xor
+	public Expression _negate(XorExpression expression) {
+//		AddExpression addExpression = factory.createAddExpression();
+//		for (Expression operand : expression.getOperands()) {
+//			IfThenElseExpression ifThenElseExpression = factory.createIfThenElseExpression();
+//			ifThenElseExpression.setCondition(
+//					ecoreUtil.clone(operand));
+//			
+//			IntegerLiteralExpression one = factory.createIntegerLiteralExpression();
+//			one.setValue(BigInteger.ONE);
+//			ifThenElseExpression.setThen(one);
+//			
+//			IntegerLiteralExpression zero = factory.createIntegerLiteralExpression();
+//			zero.setValue(BigInteger.ZERO);
+//			ifThenElseExpression.setElse(zero);
+//			
+//			addExpression.getOperands().add(
+//					ifThenElseExpression);
+//		}
+//		ModExpression modExpression = factory.createModExpression();
+//		modExpression.setLeftOperand(addExpression);
+//		
+//		IntegerLiteralExpression two = factory.createIntegerLiteralExpression();
+//		two.setValue(BigInteger.TWO);
+//		modExpression.setRightOperand(two);
+//		
+//		EqualityExpression equalityExpression = factory.createEqualityExpression();
+//		equalityExpression.setLeftOperand(modExpression);
+//		
+//		IntegerLiteralExpression zero = factory.createIntegerLiteralExpression();
+//		zero.setValue(BigInteger.ZERO);
+//		equalityExpression.setRightOperand(zero);
+//		
+//		return equalityExpression;
+		// Xnor = equivalence
+		
+		EqualityExpression firstEqualityExpression = factory.createEqualityExpression();
+		EquivalenceExpression equivalence = firstEqualityExpression;
+		
+		for (Expression operand : expression.getOperands()) {
+			Expression clonedOperand = ecoreUtil.clone(operand);
+			if (equivalence == firstEqualityExpression) {
+				// 1.
+				equivalence.setLeftOperand(clonedOperand);
+			}
+			else if (equivalence.getRightOperand() == null) {
+				// 2.
+				equivalence.setRightOperand(clonedOperand);
+			}
+			else {
+				// 3. and others
+				Expression rightOperand = equivalence.getRightOperand();
+				InequalityExpression inequality = factory.createInequalityExpression();
+				inequality.setLeftOperand(rightOperand);
+				inequality.setRightOperand(clonedOperand);
+				
+				equivalence.setRightOperand(inequality);
+				
+				equivalence = inequality;
+			}
+		}
+		
+		return firstEqualityExpression;
+	}
 	
 	public Expression _negate(OrExpression expression) {
 		AndExpression andExpression = factory.createAndExpression();
@@ -136,6 +204,9 @@ public class ExpressionNegator {
 		else if (expression instanceof AndExpression) {
 			return _negate((AndExpression) expression);
 		}
+		else if (expression instanceof XorExpression) {
+			return _negate((XorExpression) expression);
+		}
 		else if (expression instanceof OrExpression) {
 			return _negate((OrExpression) expression);
 		}
@@ -162,6 +233,27 @@ public class ExpressionNegator {
 		}
 		else {
 			throw new IllegalArgumentException("Unhandled parameter types: " + expression);
+		}
+	}
+	
+	//
+	
+	public void transformTransformableNotExpressions(EObject root) {
+		List<NotExpression> negations = ecoreUtil.getSelfAndAllContentsOfType(
+				root, NotExpression.class);
+		
+		int size = 0;
+		while (size != negations.size()) {
+			size = negations.size();
+			
+			for (NotExpression notExpression : negations) {
+				Expression negatedExpression = negate(
+						notExpression.getOperand());
+				ecoreUtil.replace(negatedExpression, notExpression);
+			}
+			
+			negations = ecoreUtil.getSelfAndAllContentsOfType(
+					root, NotExpression.class);
 		}
 	}
 	

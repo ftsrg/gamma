@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -13,10 +13,12 @@ package hu.bme.mit.gamma.lowlevel.xsts.transformation
 import hu.bme.mit.gamma.xsts.model.ComponentParameterGroup
 import hu.bme.mit.gamma.xsts.model.InEventGroup
 import hu.bme.mit.gamma.xsts.model.InEventParameterGroup
+import hu.bme.mit.gamma.xsts.model.MasterMessageQueueGroup
 import hu.bme.mit.gamma.xsts.model.OutEventGroup
 import hu.bme.mit.gamma.xsts.model.OutEventParameterGroup
 import hu.bme.mit.gamma.xsts.model.PlainVariableGroup
 import hu.bme.mit.gamma.xsts.model.RegionGroup
+import hu.bme.mit.gamma.xsts.model.SlaveMessageQueueGroup
 import hu.bme.mit.gamma.xsts.model.SystemInEventGroup
 import hu.bme.mit.gamma.xsts.model.SystemInEventParameterGroup
 import hu.bme.mit.gamma.xsts.model.SystemOutEventGroup
@@ -167,6 +169,34 @@ class VariableGroupRetriever {
 		}
 		checkState(eventParameterVariableGroups.size == 1)
 		return eventParameterVariableGroups.head
+	}
+	
+	def getMasterMessageQueueGroup(XSTS xSts) {
+		var masterMessageQueueGroups = xSts.variableGroups
+									.filter[it.annotation instanceof MasterMessageQueueGroup]
+		if (masterMessageQueueGroups.empty) {
+			val masterMessageQueueGroup = createVariableGroup => [
+				it.annotation = createMasterMessageQueueGroup
+			]
+			xSts.variableGroups += masterMessageQueueGroup
+			return masterMessageQueueGroup
+		}
+		checkState(masterMessageQueueGroups.size == 1)
+		return masterMessageQueueGroups.head
+	}
+	
+	def getSlaveMessageQueueGroup(XSTS xSts) {
+		var slaveMessageQueueGroups = xSts.variableGroups
+									.filter[it.annotation instanceof SlaveMessageQueueGroup]
+		if (slaveMessageQueueGroups.empty) {
+			val slaveMessageQueueGroup = createVariableGroup => [
+				it.annotation = createSlaveMessageQueueGroup
+			]
+			xSts.variableGroups += slaveMessageQueueGroup
+			return slaveMessageQueueGroup
+		}
+		checkState(slaveMessageQueueGroups.size == 1)
+		return slaveMessageQueueGroups.head
 	}
 
 	// During a single low-level statechart transformation, there is a single plain variable group

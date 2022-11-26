@@ -30,6 +30,7 @@ class Namings {
 	
 	public static final String arrayFieldName = "a"
 	public static final String arrayFieldAccess = "." + arrayFieldName
+	public static final String isStableVariableName = "isStable"
 	
 	static def String customizeEnumLiteralName(EnumerationLiteralExpression expression) '''«expression.reference.typeDeclaration.name»«expression.reference.name»'''
 	static def String customizeEnumLiteralName(EnumerationTypeDefinition type, EnumerationLiteralDefinition literal) '''«type.typeDeclaration.name»«literal.name»''' 

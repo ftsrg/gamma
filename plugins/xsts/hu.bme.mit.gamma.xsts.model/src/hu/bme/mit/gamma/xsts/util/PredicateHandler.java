@@ -12,6 +12,7 @@ package hu.bme.mit.gamma.xsts.util;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -75,7 +76,7 @@ public class PredicateHandler extends hu.bme.mit.gamma.expression.util.Predicate
 	
 	public SortedSet<Integer> calculateIntegerValues(EObject root, VariableDeclaration variable) {
 		return calculateIntegerValues(root, variable,
-				new HashSet<VariableDeclaration>(), 
+				new LinkedHashSet<VariableDeclaration>(),
 				new HashSet<AssignmentAction>(
 						ecoreUtil.getSelfAndAllContentsOfType(root, AssignmentAction.class)));
 	}

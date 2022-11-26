@@ -118,7 +118,7 @@ public class ExpressionUtil {
 			return reference.getFieldDeclaration();
 		}
 		if (expression instanceof ArrayAccessExpression) {
-			// ?
+			// Below branch
 		}
 		if (expression instanceof AccessExpression) {
 			// Default access
