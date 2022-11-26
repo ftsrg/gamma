@@ -69,13 +69,16 @@ class ModelSerializer {
 			
 			«serializeParallelChannels»
 			byte flag = 0;
-			
+			bit isStable = 0; ««« TODO Reference ID of variable via Namings
+
 			«serializeParallelProcesses»
 			
 			proctype EnvTrans() {
 				(flag > 0);
+				isStable = 1;««« TODO Reference ID of variable via Namings
 			ENV:
 				atomic {
+					isStable = 0;««« TODO Reference ID of variable via Namings
 					«environmentalActions.serialize»
 					flag = 2;
 				};
@@ -83,8 +86,9 @@ class ModelSerializer {
 			TRANS:
 				atomic {
 					«transitions.serializeTransitions»
-					flag = 1;
+					isStable = 1;««« TODO Reference ID of variable via Namings
 				};
+				flag = 1; ««« Out of the atomic block to prevent the creating of an entirely empty step
 				goto ENV;
 			}
 			

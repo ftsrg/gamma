@@ -39,7 +39,7 @@ class PromelaPropertySerializer extends ThetaPropertySerializer {
 	override dispatch String serializeFormula(UnaryOperandPathFormula formula) {
 		val operator = formula.operator
 		val operand = formula.operand
-		return '''«operator.transform» («operand.serializeFormula»)'''
+		return '''«operator.transform» («operator.stableCondition»«operand.serializeFormula»)'''
 	}
 	
 	override protected isValidFormula(StateFormula stateFormula) {
@@ -59,7 +59,7 @@ class PromelaPropertySerializer extends ThetaPropertySerializer {
 		return true
 	}
 	
-	protected def String transform(BinaryPathOperator operator) {
+	protected def String transform(BinaryPathOperator operator) { // TODO Doesn't Spin support the U operator?
 		switch (operator) {
 			case RELEASE: {
 				return '''V'''
@@ -71,5 +71,21 @@ class PromelaPropertySerializer extends ThetaPropertySerializer {
 				throw new IllegalArgumentException("Not supported operator: " + operator)
 		}
 	}
+	
+	protected def String getStableCondition(UnaryPathOperator operator) {
+		switch (operator) {
+			case FUTURE: {
+				return andStable
+			}
+			case GLOBAL: {
+				return orNotStable
+			}
+			default:
+				throw new IllegalArgumentException("Not supported operator: " + operator)
+		}
+	}
+	
+	protected def String getOrNotStable() '''!isStable || ''' // TODO reference the ID of variable via Namings
+	protected def String getAndStable() '''isStable && '''
 	
 }
