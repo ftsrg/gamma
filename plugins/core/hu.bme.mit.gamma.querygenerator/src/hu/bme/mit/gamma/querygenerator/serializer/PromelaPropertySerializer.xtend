@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.querygenerator.serializer
 
+import hu.bme.mit.gamma.property.model.BinaryOperandPathFormula
 import hu.bme.mit.gamma.property.model.BinaryPathOperator
 import hu.bme.mit.gamma.property.model.QuantifiedFormula
 import hu.bme.mit.gamma.property.model.StateFormula
@@ -18,6 +19,7 @@ import hu.bme.mit.gamma.property.model.UnaryPathOperator
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 
 import static com.google.common.base.Preconditions.checkArgument
+import static hu.bme.mit.gamma.xsts.promela.transformation.util.Namings.*
 
 class PromelaPropertySerializer extends ThetaPropertySerializer {
 	// Singleton
@@ -42,6 +44,13 @@ class PromelaPropertySerializer extends ThetaPropertySerializer {
 		return '''«operator.transform» («operator.stableCondition»«operand.serializeFormula»)'''
 	}
 	
+	dispatch def String serializeFormula(BinaryOperandPathFormula formula) {
+		val operator = formula.operator
+		val leftOperand = formula.leftOperand
+		val rightOperand = formula.rightOperand
+		return '''(«orNotStable»«leftOperand.serializeFormula») «operator.transform» («andStable»«rightOperand.serializeFormula»)'''
+	}
+	
 	override protected isValidFormula(StateFormula stateFormula) {
 		val list = stateFormula.getSelfAndAllContentsOfType(QuantifiedFormula)
 		if (list.size > 1) {
@@ -59,11 +68,8 @@ class PromelaPropertySerializer extends ThetaPropertySerializer {
 		return true
 	}
 	
-	protected def String transform(BinaryPathOperator operator) { // TODO Doesn't Spin support the U operator?
+	protected def String transform(BinaryPathOperator operator) {
 		switch (operator) {
-			case RELEASE: {
-				return '''V'''
-			}
 			case UNTIL: {
 				return '''U'''
 			}
@@ -85,7 +91,7 @@ class PromelaPropertySerializer extends ThetaPropertySerializer {
 		}
 	}
 	
-	protected def String getOrNotStable() '''!isStable || ''' // TODO reference the ID of variable via Namings
-	protected def String getAndStable() '''isStable && '''
+	protected def String getOrNotStable() '''!«isStableVariableName» || '''
+	protected def String getAndStable() '''«isStableVariableName» && '''
 	
 }
