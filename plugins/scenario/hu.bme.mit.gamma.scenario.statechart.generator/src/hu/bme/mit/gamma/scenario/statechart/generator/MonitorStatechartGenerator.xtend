@@ -327,16 +327,19 @@ class MonitorStatechartGenerator extends AbstractContractStatechartGeneration {
 				}
 			}
 		}
-		val othersNegated = getBinaryTriggerFromTriggersIfPossible(otherTriggersWithCorrectDir, BinaryType.OR).
+		
+		if(otherTriggersWithCorrectDir.size > 0) {
+			val othersNegated = getBinaryTriggerFromTriggersIfPossible(otherTriggersWithCorrectDir, BinaryType.OR).
 				negateTrigger
-		if (forwardTransition.trigger instanceof OnCycleTrigger) {
-			forwardTransition.trigger = othersNegated
-		} else {
-			val binary = createBinaryTrigger
-			binary.leftOperand = forwardTransition.trigger
-			binary.rightOperand = othersNegated
-			forwardTransition.trigger = binary
-			binary.type = BinaryType.AND
+			if (forwardTransition.trigger instanceof OnCycleTrigger) {
+				forwardTransition.trigger = othersNegated
+			} else {
+				val binary = createBinaryTrigger
+				binary.leftOperand = forwardTransition.trigger
+				binary.rightOperand = othersNegated
+				forwardTransition.trigger = binary
+				binary.type = BinaryType.AND
+			}
 		}
 		previousState = state
 		return

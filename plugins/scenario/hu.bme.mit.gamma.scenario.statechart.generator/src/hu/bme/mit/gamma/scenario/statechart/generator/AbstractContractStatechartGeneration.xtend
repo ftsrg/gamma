@@ -301,7 +301,7 @@ abstract class AbstractContractStatechartGeneration {
 				if(portsAndEvents.containsKey(port)) {
 					portsAndEvents.get(port).add(event)
 				} else {
-					portsAndEvents.put(port, Arrays.asList(event))
+					portsAndEvents.put(port, <Event>newArrayList(Arrays.asList(event)))
 				}
 			}
 		}
