@@ -118,7 +118,7 @@ enum UnaryPathOperator returns UnaryPathOperator:
 ;
 
 enum BinaryPathOperator returns BinaryPathOperator:
-	UNTIL = 'U' | RELEASE = 'R'
+	UNTIL = 'U' | RELEASE = 'R' | WEAK_UNTIL = "WU"
 ;
 
 enum NotOperator returns UnaryLogicalOperator:
