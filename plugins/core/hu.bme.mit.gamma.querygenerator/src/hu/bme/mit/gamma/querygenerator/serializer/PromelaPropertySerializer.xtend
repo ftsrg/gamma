@@ -49,7 +49,7 @@ class PromelaPropertySerializer extends ThetaPropertySerializer {
 		val operator = formula.operator
 		val leftOperand = formula.leftOperand
 		val rightOperand = formula.rightOperand
-		return '''(«orNotStable»«leftOperand.serializeFormula») «operator.transform» («andStable»«rightOperand.serializeFormula»)'''
+		return leftOperand.getStableCondition(operator, rightOperand)
 	}
 	
 	override protected isValidFormula(StateFormula stateFormula) {
