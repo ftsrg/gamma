@@ -99,7 +99,15 @@ AndAssert returns Assert:
 ;
 
 PrimaryAssert returns Assert:
-	RaiseEventAct  | InstanceState | NegatedAssert | '{' Assert '}'
+	RaiseEventAct | EventParameterAssert | InstanceState | NegatedAssert | '{' Assert '}'
+;
+
+EventParameterAssert returns EventParameterAssert:
+	'parameter' reference=EventParameterReference '=' value=Expression
+;
+
+EventParameterReference returns InterfaceModel::EventParameterReferenceExpression:
+	port=[InterfaceModel::Port] '.' event=[InterfaceModel::Event] '::' parameter=[ConstraintModel::ParameterDeclaration]
 ;
 
 NegatedAssert returns NegatedAssert:

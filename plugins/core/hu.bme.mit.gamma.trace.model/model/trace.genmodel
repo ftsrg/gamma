@@ -37,6 +37,10 @@
     </genClasses>
     <genClasses ecoreClass="trace.ecore#//InstanceState"/>
     <genClasses ecoreClass="trace.ecore#//InstanceStateConfiguration"/>
+    <genClasses ecoreClass="trace.ecore#//EventParameterAssert">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference trace.ecore#//EventParameterAssert/reference"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference trace.ecore#//EventParameterAssert/value"/>
+    </genClasses>
     <genClasses ecoreClass="trace.ecore#//Cycle">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference trace.ecore#//Cycle/steps"/>
     </genClasses>

@@ -880,14 +880,14 @@ class ComponentTransformer {
 			val newXSts = subcomponentType.transform(lowlevelPackage)
 			newXSts.customizeDeclarationNames(subcomponent)
 			
-			// Adding new elements
-			xSts.merge(newXSts)
-			
 			// Internal event handling here as EventReferenceHandler cannot be used without customizeDeclarationNames
 			if (subcomponentType.statechart) {
-				xSts.addInternalEventHandlingActions(subcomponentType, traceability)
+				newXSts.addInternalEventHandlingActions(subcomponentType, traceability)
 			}
 			//
+			
+			// Adding new elements
+			xSts.merge(newXSts)
 			
 			// Initializing action
 			val variableInitAction = createSequentialAction

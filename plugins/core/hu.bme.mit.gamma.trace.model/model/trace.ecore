@@ -38,6 +38,13 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="InstanceState" abstract="true" eSuperTypes="#//Assert"/>
   <eClassifiers xsi:type="ecore:EClass" name="InstanceStateConfiguration" eSuperTypes="#//InstanceState ../../hu.bme.mit.gamma.statechart.model/model/composite.ecore#//ComponentInstanceStateReferenceExpression"/>
+  <eClassifiers xsi:type="ecore:EClass" name="EventParameterAssert" eSuperTypes="#//Assert">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="reference" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/interface.ecore#//EventParameterReferenceExpression"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="value" lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
+        containment="true"/>
+  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Cycle">
     <eStructuralFeatures xsi:type="ecore:EReference" name="steps" upperBound="-1"
         eType="#//Step" containment="true"/>
