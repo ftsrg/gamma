@@ -99,15 +99,18 @@ class PromelaPropertySerializer extends ThetaPropertySerializer {
 	}
 	
 	protected def String getStableCondition(PathFormula leftOperand, BinaryPathOperator operator, PathFormula rightOperand) {
+		val leftSerializedOperand = leftOperand.serializeFormula
+		val serializedOperator = operator.transform
+		val rightSerializedOperand = rightOperand.serializeFormula
 		switch (operator) {
 			case UNTIL: {
-				return '''(«orNotStable»«leftOperand.serializeFormula») «operator.transform» («andStable»«rightOperand.serializeFormula»)'''
-			}
-			case RELEASE: {
-				return '''(«andStable»«leftOperand.serializeFormula») «operator.transform» («orNotStable»«rightOperand.serializeFormula»)'''
+				return '''(«orNotStable»«leftSerializedOperand») «serializedOperator» («andStable»«rightSerializedOperand»)'''
 			}
 			case WEAK_UNTIL: {
-				return '''(«orNotStable»«leftOperand.serializeFormula») «operator.transform» («andStable»«rightOperand.serializeFormula»)'''
+				return '''(«orNotStable»«leftSerializedOperand») «serializedOperator» («andStable»«rightSerializedOperand»)'''
+			}
+			case RELEASE: {
+				return '''(«andStable»«leftSerializedOperand») «serializedOperator» («orNotStable»«rightSerializedOperand»)'''
 			}
 			default:
 				throw new IllegalArgumentException("Not supported binary operator: " + operator)
