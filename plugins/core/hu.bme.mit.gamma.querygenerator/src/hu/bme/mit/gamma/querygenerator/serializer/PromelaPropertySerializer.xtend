@@ -12,6 +12,7 @@ package hu.bme.mit.gamma.querygenerator.serializer
 
 import hu.bme.mit.gamma.property.model.BinaryOperandPathFormula
 import hu.bme.mit.gamma.property.model.BinaryPathOperator
+import hu.bme.mit.gamma.property.model.PathFormula
 import hu.bme.mit.gamma.property.model.QuantifiedFormula
 import hu.bme.mit.gamma.property.model.StateFormula
 import hu.bme.mit.gamma.property.model.UnaryOperandPathFormula
@@ -48,7 +49,7 @@ class PromelaPropertySerializer extends ThetaPropertySerializer {
 		val operator = formula.operator
 		val leftOperand = formula.leftOperand
 		val rightOperand = formula.rightOperand
-		return '''(«orNotStable»«leftOperand.serializeFormula») «operator.transform» («andStable»«rightOperand.serializeFormula»)'''
+		return leftOperand.getStableCondition(operator, rightOperand)
 	}
 	
 	override protected isValidFormula(StateFormula stateFormula) {
@@ -73,6 +74,12 @@ class PromelaPropertySerializer extends ThetaPropertySerializer {
 			case UNTIL: {
 				return '''U'''
 			}
+			case RELEASE: {
+				return '''V'''
+			}
+			case WEAK_UNTIL: {
+				return '''W'''
+			}
 			default: 
 				throw new IllegalArgumentException("Not supported operator: " + operator)
 		}
@@ -88,6 +95,22 @@ class PromelaPropertySerializer extends ThetaPropertySerializer {
 			}
 			default:
 				throw new IllegalArgumentException("Not supported operator: " + operator)
+		}
+	}
+	
+	protected def String getStableCondition(PathFormula leftOperand, BinaryPathOperator operator, PathFormula rightOperand) {
+		switch (operator) {
+			case UNTIL: {
+				return '''(«orNotStable»«leftOperand.serializeFormula») «operator.transform» («andStable»«rightOperand.serializeFormula»)'''
+			}
+			case RELEASE: {
+				return '''(«andStable»«leftOperand.serializeFormula») «operator.transform» («orNotStable»«rightOperand.serializeFormula»)'''
+			}
+			case WEAK_UNTIL: {
+				return '''(«orNotStable»«leftOperand.serializeFormula») «operator.transform» («andStable»«rightOperand.serializeFormula»)'''
+			}
+			default:
+				throw new IllegalArgumentException("Not supported binary operator: " + operator)
 		}
 	}
 	
