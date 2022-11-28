@@ -32,6 +32,8 @@ import hu.bme.mit.gamma.xsts.promela.transformation.util.HavocHandler
 import hu.bme.mit.gamma.xsts.promela.transformation.util.ParallelActionHandler
 import java.util.List
 
+import static hu.bme.mit.gamma.xsts.promela.transformation.util.Namings.*
+
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
 
@@ -69,16 +71,16 @@ class ModelSerializer {
 			
 			«serializeParallelChannels»
 			byte flag = 0;
-			bit isStable = 0; ««« TODO Reference ID of variable via Namings
+			bit «isStableVariableName» = 0;
 
 			«serializeParallelProcesses»
 			
 			proctype EnvTrans() {
 				(flag > 0);
-				isStable = 1;««« TODO Reference ID of variable via Namings
+				«isStableVariableName» = 1;
 			ENV:
 				atomic {
-					isStable = 0;««« TODO Reference ID of variable via Namings
+					«isStableVariableName» = 0;
 					«environmentalActions.serialize»
 					flag = 2;
 				};
@@ -86,7 +88,7 @@ class ModelSerializer {
 			TRANS:
 				atomic {
 					«transitions.serializeTransitions»
-					isStable = 1;««« TODO Reference ID of variable via Namings
+					«isStableVariableName» = 1;
 				};
 				flag = 1; ««« Out of the atomic block to prevent the creating of an entirely empty step
 				goto ENV;
