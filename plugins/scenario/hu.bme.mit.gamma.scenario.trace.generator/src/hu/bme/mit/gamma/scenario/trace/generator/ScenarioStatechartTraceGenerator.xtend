@@ -198,6 +198,7 @@ class ScenarioStatechartTraceGenerator {
 		for (list : derivedTraces) {
 			val containingPackage = component.containingPackage
 			val trace = createExecutionTrace
+			trace.arguments += arguments.clone
 			trace.setupExecutionTrace(list, baseTrace.name + i++, component, containingPackage,
 				statechart.scenarioAllowedWaitAnnotation)
 			traces += trace

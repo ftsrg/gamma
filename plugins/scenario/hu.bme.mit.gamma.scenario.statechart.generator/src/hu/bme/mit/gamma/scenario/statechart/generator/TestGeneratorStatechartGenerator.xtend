@@ -154,6 +154,8 @@ class TestGeneratorStatechartGenerator extends AbstractContractStatechartGenerat
 		firstRegion = createRegion
 		firstRegion.name = firstRegionName
 		statechart.regions += firstRegion
+		
+		statechart.parameterDeclarations += component.parameterDeclarations.clone
 
 		val initial = createInitialState
 		initial.name = scenarioStatechartUtil.initial
