@@ -179,9 +179,13 @@ class TestGeneratorStatechartGenerator extends AbstractContractStatechartGenerat
 		val initBlock = scenario.initialblock
 		if (initBlock === null) {
 			val transition = statechartUtil.createTransition(initial, firstState)
-			transition.effects += setIntVariable(variableMap.getOrCreate(scenarioStatechartUtil.iteratingVariable), 1)
-			transition.effects +=
-				setIntVariable(variableMap.getOrCreate(scenarioStatechartUtil.getLoopvariableNameForDepth(0)), 1)
+			if (generationMode != StatechartGenerationMode.GENERATE_ONLY_FORWARD) {
+				transition.effects += setIntVariable(variableMap.getOrCreate(scenarioStatechartUtil.iteratingVariable), 1)
+			}
+			if (!scenario.getContentsOfType(LoopCombinedFragment).empty) {
+				transition.effects +=
+					setIntVariable(variableMap.getOrCreate(scenarioStatechartUtil.getLoopvariableNameForDepth(0)), 1)
+			}
 		} else {
 			val initChoice = createNewChoiceState
 			firstRegion.stateNodes += initChoice
@@ -201,8 +205,10 @@ class TestGeneratorStatechartGenerator extends AbstractContractStatechartGenerat
 					initChoiceToFirstStateTransition.effects += action
 				}
 			}
-			initChoiceToFirstStateTransition.effects +=
-				setIntVariable(variableMap.getOrCreate(scenarioStatechartUtil.getLoopvariableNameForDepth(0)), 1)
+			if (!scenario.getContentsOfType(LoopCombinedFragment).empty) {
+				initChoiceToFirstStateTransition.effects +=
+					setIntVariable(variableMap.getOrCreate(scenarioStatechartUtil.getLoopvariableNameForDepth(0)), 1)
+			}
 			statechart.transitions += initChoiceToFirstStateTransition
 
 			val violation = (initBlock.interactions.head.modality == ModalityType.HOT) ? hotViolation : coldViolation
@@ -324,6 +330,7 @@ class TestGeneratorStatechartGenerator extends AbstractContractStatechartGenerat
 		val dir = set.direction
 		val mod = set.modality
 		val forwardTransition = statechartUtil.createTransition(newChoice, state)
+		forwardTransition.priority = BigInteger.valueOf(3)
 		val violationTransition = statechartUtil.createTransition(newChoice,
 			(mod == ModalityType.COLD) ? coldViolation : hotViolation)
 		val cycleTransition = statechartUtil.createTransition(previousState, newChoice)

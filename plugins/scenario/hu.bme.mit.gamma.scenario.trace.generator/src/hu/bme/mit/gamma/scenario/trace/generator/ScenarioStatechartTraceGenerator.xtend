@@ -13,10 +13,14 @@ package hu.bme.mit.gamma.scenario.trace.generator
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.TransitionMerging
 import hu.bme.mit.gamma.scenario.statechart.util.ScenarioStatechartUtil
+import hu.bme.mit.gamma.scenario.trace.generator.util.ExecutionTraceBackAnnotator
 import hu.bme.mit.gamma.statechart.contract.NotDefinedEventMode
 import hu.bme.mit.gamma.statechart.contract.ScenarioContractAnnotation
 import hu.bme.mit.gamma.statechart.interface_.Component
+import hu.bme.mit.gamma.statechart.statechart.State
+import hu.bme.mit.gamma.statechart.statechart.StateNode
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
+import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.theta.verification.ThetaTraceGenerator
 import hu.bme.mit.gamma.theta.verification.ThetaVerifier
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
@@ -32,10 +36,12 @@ import hu.bme.mit.gamma.transformation.util.annotations.InteractionCoverageCrite
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.transformation.api.Gamma2XstsTransformerSerializer
 import java.io.File
+import java.math.BigInteger
 import java.util.ArrayList
 import java.util.List
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
+import hu.bme.mit.gamma.scenario.trace.generator.util.TraceGenUtil
 
 class ScenarioStatechartTraceGenerator {
 
@@ -44,6 +50,7 @@ class ScenarioStatechartTraceGenerator {
 	val extension GammaFileNamer fileNamer = GammaFileNamer.INSTANCE
 	val extension ScenarioStatechartUtil scenarioStatechartUtil = ScenarioStatechartUtil.INSTANCE
 	val extension TraceUtil traceUtil = TraceUtil.INSTANCE
+	val extension TraceGenUtil traceGenUtil = TraceGenUtil.INSTANCE
 
 	val boolean TEST_ORIGINAL = true
 	val boolean USE_OWN_TRAVERSAL = false
@@ -98,6 +105,12 @@ class ScenarioStatechartTraceGenerator {
 		} else {
 			deriveTracesWithBuiltIn(targetStateName, component, xStsFile)
 		}
+		
+		
+		for (trace : traces) {
+			backAnnotateNegsChecksAndAssigns(component, trace)
+		}
+		
 
 		val backAnnotator = new ExecutionTraceBackAnnotator(traces, component, true, true, isNegativeTest)
 		val filteredTraces = backAnnotator.execute
@@ -142,20 +155,7 @@ class ScenarioStatechartTraceGenerator {
 			result.addAll(mergedTraces)
 		}
 		return result
-	}
-	
-	def ExecutionTrace mergeLastStepOfTraces(List<ExecutionTrace> traces) {
-		if(traces.size == 1) {
-			return traces.head
-		}
-		val lastSteps = traces.map[it.steps.last]
-		val or = createOrAssert
-		or.asserts += lastSteps.flatMap[it.asserts.clone]
-		val result = traces.head
-		result.steps.last.asserts.clear
-		result.steps.last.asserts += or
-		return result
-	}
+	}	
 	
 	def List<ExecutionTrace> deriveTracesWithBuiltIn(String targetStateName, Component component, File xStsFile){
 		val derivedTraces = new ArrayList<ExecutionTrace>();

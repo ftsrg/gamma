@@ -8,7 +8,7 @@
  * 
  * SPDX-License-Identifier: EPL-1.0
  ********************************************************************************/
-package hu.bme.mit.gamma.scenario.trace.generator
+package hu.bme.mit.gamma.scenario.trace.generator.util
 
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.statechart.interface_.Component
