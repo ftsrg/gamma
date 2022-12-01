@@ -7,7 +7,7 @@ step {
 		reset
 	}
 	assert {
-		variable complexFunctionMachine.val = 0
+		variable complexFunctionMachine.val = 0;
 	}
 }
 step {
@@ -16,7 +16,7 @@ step {
 		schedule component
 	}
 	assert {
-		variable complexFunctionMachine.val = 1
+		variable complexFunctionMachine.val = 1;
 	}
 }
 step {
@@ -25,7 +25,7 @@ step {
 		schedule component
 	}
 	assert {
-		variable complexFunctionMachine.val = 0
+		variable complexFunctionMachine.val = 0;
 	}
 }
 step {
@@ -34,7 +34,7 @@ step {
 		schedule component
 	}
 	assert {
-		variable complexFunctionMachine.val = 0
+		variable complexFunctionMachine.val = 0;
 	}
 }
 step {
@@ -43,7 +43,7 @@ step {
 		schedule component
 	}
 	assert {
-		variable complexFunctionMachine.val = 1
+		variable complexFunctionMachine.val = 1;
 	}
 }
 step {
@@ -52,7 +52,7 @@ step {
 		schedule component
 	}
 	assert {
-		variable complexFunctionMachine.val = 0
+		variable complexFunctionMachine.val = 0;
 	}
 }
 step {
@@ -61,7 +61,7 @@ step {
 		schedule component
 	}
 	assert {
-		variable complexFunctionMachine.val = 1
+		variable complexFunctionMachine.val = 1;
 	}
 }
 step {
@@ -70,7 +70,7 @@ step {
 		schedule component
 	}
 	assert {
-		variable complexFunctionMachine.val = 2
+		variable complexFunctionMachine.val = 2;
 	}
 }
 step {
@@ -79,6 +79,6 @@ step {
 		schedule component
 	}
 	assert {
-		variable complexFunctionMachine.val = 0
+		variable complexFunctionMachine.val = 0;
 	}
 }

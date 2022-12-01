@@ -7,7 +7,7 @@ step {
 		reset
 	}
 	assert {
-		variable stateMachine._stateMachine_ = _StateMachine_::Init
+		variable stateMachine._stateMachine_ = _StateMachine_::Init;
 	}
 }
 step {
@@ -16,7 +16,7 @@ step {
 		schedule component
 	}
 	assert {
-		variable stateMachine._stateMachine_ = _StateMachine_::Other
+		variable stateMachine._stateMachine_ = _StateMachine_::Other;
 	}
 }
 step {
@@ -25,7 +25,7 @@ step {
 		schedule component
 	}
 	assert {
-		variable stateMachine._stateMachine_ = _StateMachine_::Init
+		variable stateMachine._stateMachine_ = _StateMachine_::Init;
 	}
 }
 step {
@@ -34,7 +34,7 @@ step {
 		schedule component
 	}
 	assert {
-		variable stateMachine._stateMachine_ = _StateMachine_::Other
+		variable stateMachine._stateMachine_ = _StateMachine_::Other;
 	}
 }
 step {
@@ -43,6 +43,6 @@ step {
 		schedule component
 	}
 	assert {
-		variable stateMachine._stateMachine_ = _StateMachine_::Init
+		variable stateMachine._stateMachine_ = _StateMachine_::Init;
 	}
 }

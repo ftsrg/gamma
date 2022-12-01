@@ -7,7 +7,7 @@ step {
 		reset
 	}
 	assert {
-		variable guardMachine.cnt = 0
+		variable guardMachine.cnt = 0;
 	}
 }
 step {
@@ -16,7 +16,7 @@ step {
 		schedule component
 	}
 	assert {
-		variable guardMachine.cnt = 0
+		variable guardMachine.cnt = 0;
 	}
 }
 step {
@@ -25,7 +25,7 @@ step {
 		schedule component
 	}
 	assert {
-		variable guardMachine.cnt = 1
+		variable guardMachine.cnt = 1;
 	}
 }
 step {
@@ -34,6 +34,6 @@ step {
 		schedule component
 	}
 	assert {
-		variable guardMachine.cnt = 0
+		variable guardMachine.cnt = 0;
 	}
 }
