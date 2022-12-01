@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.trace.testgeneration.java
 
+import hu.bme.mit.gamma.expression.model.EqualityExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression
@@ -19,9 +20,7 @@ import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression
 import hu.bme.mit.gamma.trace.model.RaiseEventAct
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 
-import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
-import hu.bme.mit.gamma.expression.model.EqualityExpression
 
 class ExpressionSerializer extends hu.bme.mit.gamma.codegeneration.java.util.ExpressionSerializer {
 	
@@ -39,12 +38,6 @@ class ExpressionSerializer extends hu.bme.mit.gamma.codegeneration.java.util.Exp
 	
 	//
 	
-//	override dispatch String serialize(TrueExpression expression) '''Boolean.TRUE'''
-//	
-//	override dispatch String serialize(FalseExpression expression) '''Boolean.FALSE'''
-//	
-//	override dispatch String serialize(IntegerLiteralExpression expression) '''Long.valueOf(«expression.value.toString»)'''
-	
 	override dispatch String serialize(EqualityExpression expression) '''Objects.deepEquals(«expression.leftOperand.serialize», «expression.rightOperand.serialize»)'''
 	
 	//
@@ -54,7 +47,6 @@ class ExpressionSerializer extends hu.bme.mit.gamma.codegeneration.java.util.Exp
 
 	def dispatch String serialize(EventParameterReferenceExpression assert) {
 		val parameter = assert.parameter
-		val type = parameter.typeDefinition.serialize // Is casting needed with deepEquals?
 		'''«testInstanceName».getEventParameterValues("«assert.port.name»", "«assert.event.name»")[«parameter.index»]'''
 	}
 
@@ -68,7 +60,6 @@ class ExpressionSerializer extends hu.bme.mit.gamma.codegeneration.java.util.Exp
 		val instance = assert.instance
 		val separator = (instance === null) ? '' : '.'
 		val variable = assert.variableDeclaration
-		val type = variable.typeDefinition.serialize // Is casting needed with deepEquals?
 		'''«testInstanceName»«separator»«instance.fullContainmentHierarchy».getValue("«variable.name»")'''
 	}
 	
