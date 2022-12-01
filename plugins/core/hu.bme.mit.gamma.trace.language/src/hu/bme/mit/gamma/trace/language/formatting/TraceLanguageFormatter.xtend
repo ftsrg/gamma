@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -29,15 +29,15 @@ class TraceLanguageFormatter extends AbstractDeclarativeFormatter {
         // Line break between import and component keywords
         c.setLinewrap(0, 1, 2).between(f.executionTraceAccess.importAssignment_1,
         	f.executionTraceAccess.traceKeyword_3)
+        //	
+        c.setNoSpace.after(f.raiseEventActAccess.eventAssignment_3)
         // Line breaks after these rules
         c.setLinewrap(1).before(f.executionTraceAnnotationsRule)
         c.setLinewrap(1).after(f.executionTraceAnnotationsRule)
   		c.setLinewrap(1).after(f.executionTraceAccess.group_6)
         c.setLinewrap(1).after(f.actRule)
         c.setLinewrap(1).after(f.raiseEventActRule)
-        c.setLinewrap(1).after(f.instanceStateRule)
-        // Rules
-        c.setNoSpace.before(f.raiseEventActAccess.group_4)
+        c.setLinewrap(1).after(f.stepAccess.group_6)
         // Comments
 		c.setLinewrap(0, 1, 2).before(f.getSL_COMMENTRule()) 
 		c.setLinewrap(0, 1, 2).before(f.getML_COMMENTRule()) 

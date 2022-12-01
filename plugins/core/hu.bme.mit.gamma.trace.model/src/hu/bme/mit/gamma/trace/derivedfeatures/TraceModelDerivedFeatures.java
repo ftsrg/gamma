@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2021 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -19,22 +19,21 @@ import java.util.Set;
 
 import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
 import hu.bme.mit.gamma.expression.model.ArgumentedElement;
+import hu.bme.mit.gamma.expression.model.Expression;
+import hu.bme.mit.gamma.expression.model.NotExpression;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Event;
+import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression;
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction;
 import hu.bme.mit.gamma.statechart.statechart.State;
-import hu.bme.mit.gamma.trace.model.Assert;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
 import hu.bme.mit.gamma.trace.model.ExecutionTraceAllowedWaitingAnnotation;
 import hu.bme.mit.gamma.trace.model.ExecutionTraceAnnotation;
-import hu.bme.mit.gamma.trace.model.InstanceState;
-import hu.bme.mit.gamma.trace.model.InstanceStateConfiguration;
-import hu.bme.mit.gamma.trace.model.InstanceVariableState;
-import hu.bme.mit.gamma.trace.model.NegatedAssert;
 import hu.bme.mit.gamma.trace.model.NegativeTestAnnotation;
 import hu.bme.mit.gamma.trace.model.RaiseEventAct;
 import hu.bme.mit.gamma.trace.model.Step;
@@ -82,24 +81,19 @@ public class TraceModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 	
 	//
 	
-	public static Assert getLowermostAssert(Assert assertion) {
-		if (assertion instanceof NegatedAssert) {
-			NegatedAssert negatedAssert = (NegatedAssert) assertion;
-			return getLowermostAssert(negatedAssert.getNegatedAssert());
+	public static Expression getLowermostAssert(Expression assertion) {
+		if (assertion instanceof NotExpression negatedAssert) {
+			return getLowermostAssert(negatedAssert.getOperand());
 		}
 		return assertion;
 	}
 	
-	public static ComponentInstanceReferenceExpression getInstanceReference(InstanceState instanceState) {
-		if (instanceState instanceof InstanceStateConfiguration) {
-			InstanceStateConfiguration instanceStateConfiguration = (InstanceStateConfiguration) instanceState;
+	public static ComponentInstanceReferenceExpression getInstanceReference(Expression instanceState) {
+		if (instanceState instanceof ComponentInstanceStateReferenceExpression instanceStateConfiguration) {
 			return instanceStateConfiguration.getInstance();
 		}
-		else if (instanceState instanceof InstanceVariableState) {
-			InstanceVariableState instanceVariableState = (InstanceVariableState) instanceState;
-			ComponentInstanceVariableReferenceExpression variableReference =
-					instanceVariableState.getVariableReference();
-			return variableReference.getInstance();
+		else if (instanceState instanceof ComponentInstanceVariableReferenceExpression instanceVariableState) {
+			return instanceVariableState.getInstance();
 		}
 		throw new IllegalArgumentException("Not known instance state: " + instanceState);
 	}
@@ -115,19 +109,24 @@ public class TraceModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 
 	public static List<RaiseEventAct> getOutEvents(Step step) {
 		List<RaiseEventAct> outEvents = new ArrayList<RaiseEventAct>();
-		for (Assert assertion : step.getAsserts()) {
+		for (Expression assertion : step.getAsserts()) {
 			if (assertion instanceof RaiseEventAct) {
-				outEvents.add((RaiseEventAct) assertion);
+				outEvents.add(
+						(RaiseEventAct) assertion);
 			}
 		}
 		return outEvents;
 	}
+	
+	public static List<EventParameterReferenceExpression> getEventParameterReferences(Step step) {
+		return  ecoreUtil.getAllContentsOfType(step, EventParameterReferenceExpression.class);
+	}
 
-	public static List<InstanceStateConfiguration> getInstanceStateConfigurations(Step step) {
-		List<InstanceStateConfiguration> states = new ArrayList<InstanceStateConfiguration>();
-		for (Assert assertion : step.getAsserts()) {
-			if (assertion instanceof InstanceStateConfiguration) {
-				states.add((InstanceStateConfiguration) assertion);
+	public static List<ComponentInstanceStateReferenceExpression> getInstanceStateConfigurations(Step step) {
+		List<ComponentInstanceStateReferenceExpression> states = new ArrayList<ComponentInstanceStateReferenceExpression>();
+		for (Expression assertion : step.getAsserts()) {
+			if (assertion instanceof ComponentInstanceStateReferenceExpression) {
+				states.add((ComponentInstanceStateReferenceExpression) assertion);
 			}
 		}
 		return states;
@@ -136,8 +135,8 @@ public class TraceModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 	public static Map<SynchronousComponentInstance, Set<State>> groupInstanceStateConfigurations(Step step) {
 		Map<SynchronousComponentInstance, Set<State>> instanceStates =
 				new HashMap<SynchronousComponentInstance, Set<State>>();
-		List<InstanceStateConfiguration> stateConfigurations = getInstanceStateConfigurations(step);
-		for (InstanceStateConfiguration stateConfiguration : stateConfigurations) {
+		List<ComponentInstanceStateReferenceExpression> stateConfigurations = getInstanceStateConfigurations(step);
+		for (ComponentInstanceStateReferenceExpression stateConfiguration : stateConfigurations) {
 			SynchronousComponentInstance instance = (SynchronousComponentInstance)
 					StatechartModelDerivedFeatures.getLastInstance(stateConfiguration.getInstance());
 			State state = stateConfiguration.getState();
@@ -150,14 +149,8 @@ public class TraceModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 		return instanceStates;
 	}
 	
-	public static List<InstanceVariableState> getInstanceVariableStates(Step step) {
-		List<InstanceVariableState> states = new ArrayList<InstanceVariableState>();
-		for (Assert assertion : step.getAsserts()) {
-			if (assertion instanceof InstanceVariableState) {
-				states.add((InstanceVariableState) assertion);
-			}
-		}
-		return states;
+	public static List<ComponentInstanceVariableReferenceExpression> getInstanceVariableStates(Step step) {
+		return ecoreUtil.getAllContentsOfType(step, ComponentInstanceVariableReferenceExpression.class);
 	}
 	
 }

@@ -36,7 +36,7 @@ class TypeSerializer {
 	
 	def dispatch String serialize(BooleanTypeDefinition type) '''boolean'''
 	
-	def dispatch String serialize(IntegerTypeDefinition type) '''long'''
+	def dispatch String serialize(IntegerTypeDefinition type) '''int''' // Long cannot be passed as an Object then recast to int
 	
 	def dispatch String serialize(DecimalTypeDefinition type) '''double'''
 	

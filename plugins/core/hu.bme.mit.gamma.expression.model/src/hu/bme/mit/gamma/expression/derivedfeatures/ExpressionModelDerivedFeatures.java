@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 import org.eclipse.emf.ecore.EObject;
 
 import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition;
+import hu.bme.mit.gamma.expression.model.BinaryExpression;
 import hu.bme.mit.gamma.expression.model.BooleanLiteralExpression;
 import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition;
 import hu.bme.mit.gamma.expression.model.ClockVariableDeclarationAnnotation;
@@ -33,6 +34,7 @@ import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition;
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression;
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition;
 import hu.bme.mit.gamma.expression.model.EnvironmentResettableVariableDeclarationAnnotation;
+import hu.bme.mit.gamma.expression.model.EqualityExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory;
 import hu.bme.mit.gamma.expression.model.ExpressionPackage;
@@ -108,6 +110,55 @@ public class ExpressionModelDerivedFeatures {
 		}
 		return expressionUtil.wrapIntoSubtract(
 				ecoreUtil.clone(rightOperand), 1); // Literal is exclusive, but caller wants inclusive
+	}
+	
+	public static Expression getOtherOperandIfContainedByEquality(Expression expression) {
+		EObject container = expression.eContainer();
+		if (container instanceof EqualityExpression equality) {
+			Expression leftOperand = equality.getLeftOperand();
+			if (leftOperand == expression) {
+				Expression rightOperand = equality.getRightOperand();
+				return rightOperand;
+			}
+			else {
+				return leftOperand;
+			}
+		}
+		return null; // Not contained by equality (other operand cannot be null: 1..1 multiplicity)
+	}
+	
+	public static boolean hasOperandOfType(BinaryExpression expression, Class<?> clazz) {
+		Expression leftOperand = expression.getLeftOperand();
+		Expression rightOperand = expression.getRightOperand();
+		
+		return clazz.isInstance(leftOperand) || clazz.isInstance(rightOperand);
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static <T extends Expression> T getOperandOfType(BinaryExpression expression, Class<T> clazz) {
+		Expression leftOperand = expression.getLeftOperand();
+		Expression rightOperand = expression.getRightOperand();
+		
+		if (clazz.isInstance(leftOperand)) {
+			return (T) leftOperand;
+		}
+		else if (clazz.isInstance(rightOperand)) {
+			return (T) rightOperand;
+		}
+		return null;
+	}
+	
+	public static Expression getOtherOperandOfType(BinaryExpression expression, Class<?> clazz) {
+		Expression leftOperand = expression.getLeftOperand();
+		Expression rightOperand = expression.getRightOperand();
+		
+		if (clazz.isInstance(leftOperand)) {
+			return rightOperand;
+		}
+		else if (clazz.isInstance(rightOperand)) {
+			return leftOperand;
+		}
+		return null;
 	}
 	
 	public static boolean isTransient(VariableDeclaration variable) {

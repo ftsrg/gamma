@@ -266,13 +266,17 @@ FieldReferenceExpression returns FieldReferenceExpression:
 ;
 
 PrimaryExpression returns Expression: 
-	  DirectReferenceExpression | 
-	  LiteralExpression | 
+	ReferenceExpression | 
+	LiteralExpression | 
 	 '(' Expression ')'
 ;
 
+ReferenceExpression returns Expression: // So it can be overriden
+	DirectReferenceExpression
+;
+
 DirectReferenceExpression returns DirectReferenceExpression:
-		{DirectReferenceExpression} declaration=[ValueDeclaration] 
+	declaration=[ValueDeclaration]
 ;
 
 LiteralExpression returns Expression:

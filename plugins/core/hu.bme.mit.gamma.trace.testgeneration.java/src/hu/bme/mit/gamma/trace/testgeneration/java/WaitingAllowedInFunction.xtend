@@ -10,7 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.trace.testgeneration.java
 
-import hu.bme.mit.gamma.trace.model.Assert
+import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.trace.model.RaiseEventAct
 import hu.bme.mit.gamma.trace.testgeneration.java.util.TestGeneratorUtil
@@ -25,7 +25,7 @@ class WaitingAllowedInFunction extends AbstractAssertionHandler {
 		testGeneratorutil = new TestGeneratorUtil(trace.component)
 	}
 	
-	override String generateAssertBlock(List<Assert> asserts) '''
+	override String generateAssertBlock(List<Expression> asserts) '''
 		checkGeneralAsserts(new String[] {«FOR _assert : asserts SEPARATOR ", "»«testGeneratorutil.getPortOfAssert(_assert as RaiseEventAct)»«ENDFOR»},
 				new String[] {«FOR _assert : asserts SEPARATOR ", "»«testGeneratorutil.getEventOfAssert(_assert as RaiseEventAct)»«ENDFOR»},
 				new Object[][] {«FOR _assert : asserts SEPARATOR ", "»«testGeneratorutil.getParamsOfAssert(_assert as RaiseEventAct)»«ENDFOR»});

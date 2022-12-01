@@ -12,8 +12,6 @@ package hu.bme.mit.gamma.codegeneration.java
 
 import hu.bme.mit.gamma.codegeneration.java.util.Namings
 import hu.bme.mit.gamma.codegeneration.java.util.TimingDeterminer
-import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition
-import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition
 import hu.bme.mit.gamma.statechart.composite.AbstractAsynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.CompositeComponent
 import hu.bme.mit.gamma.statechart.interface_.Port
