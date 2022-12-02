@@ -101,8 +101,14 @@ class InterfaceCodeGenerator {
 			String[] getEvents(String port);
 					
 			void raiseEvent(String port, String event, Object[] parameters);
-					
+			
+			default boolean isRaisedEvent(String port, String event) {
+				return isRaisedEvent(port, event, null);
+			}
+			
 			boolean isRaisedEvent(String port, String event, Object[] parameters);
+			
+			Object[] getEventParameterValues(String port, String event);
 			
 			void schedule(String instance);
 			

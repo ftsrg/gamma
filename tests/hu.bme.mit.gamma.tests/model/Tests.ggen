@@ -1,4 +1,5 @@
 include "Crossroads/Crossroad.ggen"
+include "ParallelRegion/ParallelRegion.ggen"
 include "PIL/PIL.ggen"
 include "COID/COID.ggen"
 include "INPE/INPE.ggen"

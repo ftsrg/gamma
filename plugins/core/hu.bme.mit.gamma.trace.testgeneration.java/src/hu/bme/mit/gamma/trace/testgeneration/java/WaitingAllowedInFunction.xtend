@@ -10,7 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.trace.testgeneration.java
 
-import hu.bme.mit.gamma.trace.model.Assert
+import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import java.util.List
 
@@ -21,7 +21,7 @@ class WaitingAllowedInFunction extends AbstractAssertionHandler {
 		super(trace, serializer)
 	}
 	
-	override String generateAssertBlock(List<Assert> asserts) '''
+	override String generateAssertBlock(List<Expression> asserts) '''
 		«IF asserts.size == 1» 
 			checkGeneralAssert(() -> «serializer.serializeAssert(asserts.head)»);
 		«ELSEIF asserts.size > 1» 

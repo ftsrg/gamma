@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -52,8 +52,8 @@ class TestGenerator {
 	protected final TestGeneratorUtil testGeneratorUtil
 	protected final AbstractAssertionHandler waitingHandle 
 	protected final ActAndAssertSerializer actAndAssertSerializer	
+	protected final extension ExpressionSerializer expressionSerializer
 	// Auxiliary objects
-	protected final extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
 	protected final extension TraceUtil traceUtil = TraceUtil.INSTANCE
 	
 	/**
@@ -78,6 +78,7 @@ class TestGenerator {
     	this.testGeneratorUtil = new TestGeneratorUtil(component)
 		this.actAndAssertSerializer = new ActAndAssertSerializer(component,
 			TEST_INSTANCE_NAME, TIMER_OBJECT_NAME)
+		this.expressionSerializer = new ExpressionSerializer(component, TEST_INSTANCE_NAME)
 		if (firstTrace.hasAllowedWaitingAnnotation) {
 			this.waitingHandle = new WaitingAllowedInFunction(firstTrace, actAndAssertSerializer)
 		} 
@@ -161,6 +162,8 @@ class TestGenerator {
 		«FOR _package : firstTrace.typeDeclarations.map[it.containingPackage].toSet»
 			import «_package.getPackageString(BASE_PACKAGE)».*;
 		«ENDFOR»
+		
+		import java.util.Objects;
 		
 		import static org.junit.Assert.assertTrue;
 		

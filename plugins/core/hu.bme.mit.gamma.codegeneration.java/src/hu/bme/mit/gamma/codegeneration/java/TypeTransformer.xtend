@@ -16,6 +16,8 @@ import hu.bme.mit.gamma.expression.model.Type
 
 class TypeTransformer {
 	
+	protected final String INT_TYPE = "int" // Long cannot be passed as an Object then recast to int
+	
 	protected final extension Trace trace
 	
 	protected final extension TypeSerializer typeSerializer = TypeSerializer.INSTANCE
@@ -40,7 +42,7 @@ class TypeTransformer {
 	protected def transformType(String type) {
 		switch (type) {
 			case "integer": 
-				return "long"
+				return INT_TYPE
 			case "string": 
 				return "String"
 			case "real": 
@@ -66,7 +68,7 @@ class TypeTransformer {
 					return "string"
 				}
 				else {
-					return "long"
+					return INT_TYPE 
 				}
 			}				
 			default:

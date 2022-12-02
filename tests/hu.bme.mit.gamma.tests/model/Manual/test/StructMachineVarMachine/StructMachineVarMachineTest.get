@@ -9,7 +9,7 @@ step {
 	assert {
 		variable structMachineVarMachine.ss = #SampleStruct {
 			cnt := 0
-		}
+		};
 	}
 }
 step {
@@ -20,7 +20,7 @@ step {
 	assert {
 		variable structMachineVarMachine.ss = #SampleStruct {
 			cnt := 1
-		}
+		};
 	}
 }
 step {
@@ -31,7 +31,7 @@ step {
 	assert {
 		variable structMachineVarMachine.ss = #SampleStruct {
 			cnt := 2
-		}
+		};
 	}
 }
 step {
@@ -42,6 +42,6 @@ step {
 	assert {
 		variable structMachineVarMachine.ss = #SampleStruct {
 			cnt := 3
-		}
+		};
 	}
 }

@@ -20,7 +20,6 @@ import hu.bme.mit.gamma.expression.util.ExpressionUtil
 import hu.bme.mit.gamma.expression.util.IndexHierarchy
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.promela.transformation.serializer.ExpressionSerializer
-import java.util.ArrayList
 import java.util.List
 
 import static hu.bme.mit.gamma.xsts.promela.transformation.util.Namings.*
@@ -57,9 +56,9 @@ class ArrayHandler {
 			val literals = getAllArrayLiteral(initExpression)
 			val listOfIndices = getIndices(type)
 			return '''
-			«FOR i : 0 ..< literals.size»
-				«declaration.name»«listOfIndices.get(i).serializeFullIndex» = «literals.get(i).serialize»;
-			«ENDFOR»
+				«FOR i : 0 ..< literals.size»
+					«declaration.name»«listOfIndices.get(i).serializeFullIndex» = «literals.get(i).serialize»;
+				«ENDFOR»
 			'''
 		}
 		if (initExpression instanceof ArrayAccessExpression) {
@@ -67,9 +66,9 @@ class ArrayHandler {
 			val listOfExpIndices = getIndices(initExpression)
 			val listOfIndices = getIndices(type)
 			return '''
-			«FOR i : 0..< listOfIndices.size»
-				«declaration.name»«listOfIndices.get(i).serializeFullIndex» = «initExpression.serialize»«listOfExpIndices.get(i).serializePartIndex»;
-			«ENDFOR»
+				«FOR i : 0..< listOfIndices.size»
+					«declaration.name»«listOfIndices.get(i).serializeFullIndex» = «initExpression.serialize»«listOfExpIndices.get(i).serializePartIndex»;
+				«ENDFOR»
 			'''
 		}
 	}
@@ -90,9 +89,9 @@ class ArrayHandler {
 					val lhsIndices = getIndices(lhs)
 					val literals = getAllArrayLiteral(rhs)
 					return '''
-					«FOR i : 0 ..< literals.size»
-						«lhs.serialize»«lhsIndices.get(i).serializePartIndex» = «literals.get(i).serialize»;
-					«ENDFOR»
+						«FOR i : 0 ..< literals.size»
+							«lhs.serialize»«lhsIndices.get(i).serializePartIndex» = «literals.get(i).serialize»;
+						«ENDFOR»
 					'''
 				}
 				// ArrayAccess with ArrayAccess
@@ -102,9 +101,9 @@ class ArrayHandler {
 						val lhsIndices = getIndices(lhs)
 						val rhsIndices = getIndices(rhs)
 						return '''
-						«FOR i : 0 ..< rhsIndices.size»
-							«lhs.serialize»«lhsIndices.get(i).serializePartIndex» = «rhs.serialize»«rhsIndices.get(i).serializePartIndex»;
-						«ENDFOR»
+							«FOR i : 0 ..< rhsIndices.size»
+								«lhs.serialize»«lhsIndices.get(i).serializePartIndex» = «rhs.serialize»«rhsIndices.get(i).serializePartIndex»;
+							«ENDFOR»
 						'''
 					}
 				}
@@ -125,7 +124,8 @@ class ArrayHandler {
 		val allIndices = typeDefiniton.indices
 		for (index : allIndices) {
 			if (index.indexes.subList(0, dim.size).equals(dim)) {
-				indices += new IndexHierarchy(index.indexes.subList(dim.size, index.indexes.size))
+				indices += new IndexHierarchy(
+					index.indexes.subList(dim.size, index.indexes.size))
 			}
 		}
 		return indices
@@ -150,13 +150,14 @@ class ArrayHandler {
                 newAcc.add(i)
                 list += newAcc
             }
-        } else {
+        }
+        else {
             var temp = 1
             for (var i = 1; i < arrayDimensions.size(); i++) {
                 temp *= arrayDimensions.get(i)
             }
             for (var j = 0; j < arrayDimensions.get(0); j++) {
-                var ArrayList<Integer> newAcc = newArrayList(acc2);
+                val newAcc = <Integer>newArrayList(acc2);
                 newAcc += j
                 list += arrayDimensions.subList(1, arrayDimensions.size()).calcluateIndices(newAcc);
             }
@@ -167,7 +168,7 @@ class ArrayHandler {
     // return list of embedded literals
 	
 	def List<Expression> getAllArrayLiteral(ArrayLiteralExpression literalExpression) {
-		var literals = newArrayList
+		val literals = newArrayList
 		for (operand : literalExpression.operands) {
 			if (operand instanceof ArrayLiteralExpression) {
 				literals += operand.allArrayLiteral
@@ -186,10 +187,10 @@ class ArrayHandler {
 		return expression.dimensions.size == expType.dimensions.size
 	}
 	
-	//number of dimensions
+	// number of dimensions
 	
 	def getDimensions(ArrayAccessExpression expression) {
-		var listOfDimensions = newArrayList
+		val listOfDimensions = newArrayList
 		for (arrayAccessExp : ecoreUtil.getAllContentsOfType(expression, ArrayAccessExpression)) {
 			listOfDimensions.add(0, arrayAccessExp.index.evaluateInteger)
 		}
@@ -198,7 +199,7 @@ class ArrayHandler {
 	}
 	
 	def getDimensions(ArrayTypeDefinition typeDefinition) {
-		var listOfDimensions = newArrayList
+		val listOfDimensions = newArrayList
 		listOfDimensions += typeDefinition
 		for (definition : ecoreUtil.getAllContentsOfType(typeDefinition, ArrayTypeDefinition)) {
 			listOfDimensions += definition

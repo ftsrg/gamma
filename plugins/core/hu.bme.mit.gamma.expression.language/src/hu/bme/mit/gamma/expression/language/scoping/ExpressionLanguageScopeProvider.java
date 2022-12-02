@@ -45,9 +45,16 @@ public class ExpressionLanguageScopeProvider extends AbstractExpressionLanguageS
 			return Scopes.scopeFor(typeDeclarations);
 		}
 		if (reference == ExpressionModelPackage.Literals.FIELD_REFERENCE_EXPRESSION__FIELD_DECLARATION) {
+			TypeDeclaration typeDeclaration = null; 
 			RecordLiteralExpression literal = ecoreUtil.getSelfOrContainerOfType(context, RecordLiteralExpression.class);
-			TypeDeclaration typeDeclaration = literal.getTypeDeclaration();
-			RecordTypeDefinition recordType = (RecordTypeDefinition) typeDeclaration.getType();
+			if (literal == null) {
+				return super.getScope(context, reference);
+			}
+			else {
+				typeDeclaration = literal.getTypeDeclaration(); 
+			}
+			RecordTypeDefinition recordType = (RecordTypeDefinition)
+					ExpressionModelDerivedFeatures.getTypeDefinition(typeDeclaration);
 			return Scopes.scopeFor(recordType.getFieldDeclarations());
 		}
 		if (context instanceof ExpressionPackage &&

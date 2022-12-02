@@ -14,6 +14,11 @@
     <eLiterals name="ON_THE_FLY"/>
     <eLiterals name="BEGINNING_OF_STEP" value="1"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EEnum" name="OrthogonalRegionSchedulingOrder">
+    <eLiterals name="SEQUENTIAL"/>
+    <eLiterals name="UNORDERED" value="1"/>
+    <eLiterals name="PARALLEL" value="2"/>
+  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Package" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NamedElement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="imports" upperBound="-1"
         eType="#//Package" containment="true"/>
@@ -47,6 +52,8 @@
         eType="#//SchedulingOrder" defaultValueLiteral="TOP_DOWN"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="guardEvaluation" lowerBound="1"
         eType="#//GuardEvaluation" defaultValueLiteral="ON_THE_FLY"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="orthogonalRegionSchedulingOrder"
+        lowerBound="1" eType="#//OrthogonalRegionSchedulingOrder" defaultValueLiteral="SEQUENTIAL"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="timeoutDeclarations" upperBound="-1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclaration"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="internalEventDeclarations"

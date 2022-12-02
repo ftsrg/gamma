@@ -40,7 +40,8 @@ Export-Package: de.uni_paderborn.uppaal.derivedfeatures,
  uppaal.visuals.util
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.emf.ecore;visibility:=reexport,
- org.eclipse.emf.ecore.xmi;visibility:=reexport
+ org.eclipse.emf.ecore.xmi;visibility:=reexport,
+ hu.bme.mit.gamma.util
 Bundle-ActivationPolicy: lazy
 Automatic-Module-Name: de.uni_paderborn.uppaal
 

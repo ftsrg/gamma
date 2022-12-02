@@ -85,51 +85,51 @@ class DeclarationSerializer {
 		val elementType = typeDefinition.elementType
 		val declaration = typeDefinition.getContainerOfType(Declaration)
 		return '''
-		«IF elementType instanceof ArrayTypeDefinition»
-			«elementType.serializeArrayTypeDefinition(index+1)»
-			typedef «declaration.name»«index» { «declaration.name»«index+1» «arrayFieldName»[«typeDefinition.size.serialize»] }
-		«ELSE»
-			typedef «declaration.name»«index» { «elementType.serializeType» «arrayFieldName»[«typeDefinition.size.serialize»] }
-		«ENDIF»
+			«IF elementType instanceof ArrayTypeDefinition»
+				«elementType.serializeArrayTypeDefinition(index+1)»
+				typedef «declaration.name»«index» { «declaration.name»«index+1» «arrayFieldName»[«typeDefinition.size.serialize»] }
+			«ELSE»
+				typedef «declaration.name»«index» { «elementType.serializeType» «arrayFieldName»[«typeDefinition.size.serialize»] }
+			«ENDIF»
 		'''
 	}
 	
 	// Variable
 	
 	protected def String serializeVariableDeclaration(VariableDeclaration variable) {
-		//Proomela does not support multidimensional arrays, so they need to be handled differently.
-		//It also does not support the use of array init blocks in processes.
+		// Promela does not support multidimensional arrays, so they need to be handled differently
+		// It also does not support the use of array init blocks in processes
 		val type = variable.type
 		return '''
-		«IF type instanceof ArrayTypeDefinition»
-			«IF type.elementType instanceof ArrayTypeDefinition»
-				«type.serializeType» «variable.name»[«type.size.serialize»];
+			«IF type instanceof ArrayTypeDefinition»
+				«IF type.elementType instanceof ArrayTypeDefinition»
+					«type.serializeType» «variable.name»[«type.size.serialize»];
+				«ELSE»
+					«type.serializeType» «variable.name»[«type.size.serialize»]«IF variable.expression !== null» = «variable.expression.serialize»«ENDIF»;
+				«ENDIF»
 			«ELSE»
-				«type.serializeType» «variable.name»[«type.size.serialize»]«IF variable.expression !== null» = «variable.expression.serialize»«ENDIF»;
+				«type.serializeType» «variable.name»«IF variable.expression !== null» = «variable.expression.serialize»«ENDIF»;
 			«ENDIF»
-		«ELSE»
-			«type.serializeType» «variable.name»«IF variable.expression !== null» = «variable.expression.serialize»«ENDIF»;
-		«ENDIF»
 		'''
 	}
 	
 	def String serializeLocalVariableDeclaration(VariableDeclaration variable) {
-		//Proomela does not support multidimensional arrays, so they need to be handled differently.
-		//It also does not support the use of array init blocks in processes.
+		// Promela does not support multidimensional arrays, so they need to be handled differently
+		// It also does not support the use of array init blocks in processes
 		val type = variable.type
 		return '''
-		«IF type instanceof ArrayTypeDefinition»
-			«IF type.elementType instanceof ArrayTypeDefinition»
-				local «type.serializeType» «variable.name»[«type.size.serialize»];
-				«IF variable.expression !== null»
-				«variable.serializeArrayInit(variable.expression, type)»
+			«IF type instanceof ArrayTypeDefinition»
+				«IF type.elementType instanceof ArrayTypeDefinition»
+					local «type.serializeType» «variable.name»[«type.size.serialize»];
+					«IF variable.expression !== null»
+					«variable.serializeArrayInit(variable.expression, type)»
+					«ENDIF»
+				«ELSE»
+					local «type.serializeType» «variable.name»[«type.size.serialize»]«IF variable.expression !== null» = «variable.expression.serialize»«ENDIF»;
 				«ENDIF»
 			«ELSE»
-				local «type.serializeType» «variable.name»[«type.size.serialize»]«IF variable.expression !== null» = «variable.expression.serialize»«ENDIF»;
+				local «type.serializeType» «variable.name»«IF variable.expression !== null» = «variable.expression.serialize»«ENDIF»;
 			«ENDIF»
-		«ELSE»
-			local «type.serializeType» «variable.name»«IF variable.expression !== null» = «variable.expression.serialize»«ENDIF»;
-		«ENDIF»
 		'''
 	}
 }

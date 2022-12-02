@@ -41,7 +41,7 @@ class UppaalVerifier extends AbstractVerifier {
 			
 			// Reading the result of the command
 			resultReader = new Scanner(outputStream)
-			resultLogger = new ScannerLogger(resultReader, "Out of memory")
+			resultLogger = new ScannerLogger(resultReader, "Out of memory", 2 /* UPPAAL-specific */)
 			resultLogger.start
 			traceReader = new Scanner(errorStream)
 			
@@ -68,7 +68,17 @@ class UppaalVerifier extends AbstractVerifier {
 				throw new IllegalStateException("Not known traceability element: " + traceability)
 			}
 			val traceModel = backAnnotator.execute
-			result = actualUppaalQuery.handleEmptyLines.opposite
+			
+			val lines = resultLogger.concatenateLines
+			result =
+			if (lines.contains("Formula is NOT satisfied")) {
+				ThreeStateBoolean.FALSE
+			} else if (lines.contains("Formula is satisfied")) {
+				ThreeStateBoolean.TRUE
+			} else {
+				ThreeStateBoolean.UNDEF
+			}
+			
 			return new Result(result, traceModel)
 		} catch (EmptyTraceException e) {
 			result = handleEmptyLines(actualUppaalQuery)

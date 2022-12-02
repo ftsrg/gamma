@@ -10,7 +10,9 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.querygenerator.serializer
 
+import hu.bme.mit.gamma.property.model.BinaryOperandPathFormula
 import hu.bme.mit.gamma.property.model.BinaryPathOperator
+import hu.bme.mit.gamma.property.model.PathFormula
 import hu.bme.mit.gamma.property.model.QuantifiedFormula
 import hu.bme.mit.gamma.property.model.StateFormula
 import hu.bme.mit.gamma.property.model.UnaryOperandPathFormula
@@ -18,6 +20,7 @@ import hu.bme.mit.gamma.property.model.UnaryPathOperator
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 
 import static com.google.common.base.Preconditions.checkArgument
+import static hu.bme.mit.gamma.xsts.promela.transformation.util.Namings.*
 
 class PromelaPropertySerializer extends ThetaPropertySerializer {
 	// Singleton
@@ -34,6 +37,19 @@ class PromelaPropertySerializer extends ThetaPropertySerializer {
 		val serializedFormula = formula.serializeFormula
 		checkArgument(formula.isValidFormula, serializedFormula)
 		return serializedFormula
+	}
+	
+	override dispatch String serializeFormula(UnaryOperandPathFormula formula) {
+		val operator = formula.operator
+		val operand = formula.operand
+		return '''«operator.transform» («operator.stableCondition»«operand.serializeFormula»)'''
+	}
+	
+	dispatch def String serializeFormula(BinaryOperandPathFormula formula) {
+		val operator = formula.operator
+		val leftOperand = formula.leftOperand
+		val rightOperand = formula.rightOperand
+		return leftOperand.getStableCondition(operator, rightOperand)
 	}
 	
 	override protected isValidFormula(StateFormula stateFormula) {
@@ -55,15 +71,53 @@ class PromelaPropertySerializer extends ThetaPropertySerializer {
 	
 	protected def String transform(BinaryPathOperator operator) {
 		switch (operator) {
+			case UNTIL: {
+				return '''U'''
+			}
 			case RELEASE: {
 				return '''V'''
 			}
-			case UNTIL: {
-				return '''U'''
+			case WEAK_UNTIL: {
+				return '''W'''
 			}
 			default: 
 				throw new IllegalArgumentException("Not supported operator: " + operator)
 		}
 	}
+	
+	protected def String getStableCondition(UnaryPathOperator operator) {
+		switch (operator) {
+			case FUTURE: {
+				return andStable
+			}
+			case GLOBAL: {
+				return orNotStable
+			}
+			default:
+				throw new IllegalArgumentException("Not supported operator: " + operator)
+		}
+	}
+	
+	protected def String getStableCondition(PathFormula leftOperand, BinaryPathOperator operator, PathFormula rightOperand) {
+		val leftSerializedOperand = leftOperand.serializeFormula
+		val serializedOperator = operator.transform
+		val rightSerializedOperand = rightOperand.serializeFormula
+		switch (operator) {
+			case UNTIL: {
+				return '''(«orNotStable»«leftSerializedOperand») «serializedOperator» («andStable»«rightSerializedOperand»)'''
+			}
+			case WEAK_UNTIL: {
+				return '''(«orNotStable»«leftSerializedOperand») «serializedOperator» («andStable»«rightSerializedOperand»)'''
+			}
+			case RELEASE: {
+				return '''(«andStable»«leftSerializedOperand») «serializedOperator» («orNotStable»«rightSerializedOperand»)'''
+			}
+			default:
+				throw new IllegalArgumentException("Not supported binary operator: " + operator)
+		}
+	}
+	
+	protected def String getOrNotStable() '''!«isStableVariableName» || '''
+	protected def String getAndStable() '''«isStableVariableName» && '''
 	
 }

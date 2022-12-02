@@ -19,6 +19,7 @@ import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import org.yakindu.base.types.Direction
 import org.yakindu.base.types.Event
+import org.yakindu.base.types.TypedDeclaration
 import org.yakindu.sct.model.sgraph.Statechart
 import org.yakindu.sct.model.stext.stext.InterfaceScope
 import org.yakindu.sct.model.stext.stext.InternalScope
@@ -247,7 +248,7 @@ class StatechartWrapperCodeGenerator {
 					«FOR yakinduVariable : yakinduInterface.declarations.filter(VariableDefinition)»
 						«FOR gammaVariable : yakinduVariable.allValuesOfTo.filter(VariableDeclaration)»
 							public «gammaVariable.type.transformType» get«gammaVariable.name.toFirstUpper»() {
-								return «component.generateStatemachineInstanceName».get«port.yakinduInterfaceName»().get«yakinduVariable.name.toFirstUpper»();
+								return «yakinduVariable.castDeclaration» «component.generateStatemachineInstanceName».get«port.yakinduInterfaceName»().get«yakinduVariable.name.toFirstUpper»();
 							}
 						«ENDFOR»
 					«ENDFOR»
@@ -260,7 +261,7 @@ class StatechartWrapperCodeGenerator {
 				«IF (yakinduVariable.eContainer instanceof InterfaceScope && (yakinduVariable.eContainer as InterfaceScope).name.nullOrEmpty)
 					 	|| yakinduVariable.eContainer instanceof InternalScope»
 					public «yakinduVariable.allValuesOfTo.filter(VariableDeclaration).head.type.transformType» get«yakinduVariable.name.toFirstUpper»() {
-						return «component.generateStatemachineInstanceName».get«yakinduVariable.name.toFirstUpper»();
+						return «yakinduVariable.castDeclaration» «component.generateStatemachineInstanceName».get«yakinduVariable.name.toFirstUpper»();
 					}
 				«ENDIF»
 			«ENDFOR»
@@ -362,7 +363,7 @@ class StatechartWrapperCodeGenerator {
 							field.setAccessible(true);
 							«event.toYakinduEvent(port).type.eventParameterType» value = field.get«event.toYakinduEvent(port).type.eventParameterType.toFirstUpper»(«component.generateStatemachineInstanceName».get«port.yakinduInterfaceName»());
 							field.setAccessible(false);
-							return value;
+							return «event.toYakinduEvent(port).castDeclaration» value;
 						} catch (Exception e) {
 							throw new IllegalStateException(e);
 						}
@@ -371,13 +372,22 @@ class StatechartWrapperCodeGenerator {
 							return «component.generateStatemachineInstanceName».get«port.yakinduInterfaceName»().get«event.toYakinduEvent(port).name.toFirstUpper»Value();
 						} catch (IllegalStateException e) {
 							// If this is a reset parameter of a transient event, we return a default expression
-							return «event.toYakinduEvent(port).type.defaultExpression»;
+							return «event.toYakinduEvent(port).castDeclaration» «event.toYakinduEvent(port).type.defaultExpression»;
 						}
 					«ENDIF»
 				}
 			«ENDIF»
 		«ENDFOR»
 	'''
+	
+	protected def castDeclaration(TypedDeclaration yakinduDeclaration) {
+		val type = yakinduDeclaration.type
+		val typeName = type.name
+		if (typeName.equals("integer")) {
+			return "(int)"
+		}
+		return ""
+	}
 	
 	/**
 	 * Returns whether there is an out event in the given port.

@@ -86,7 +86,7 @@ public class ExpressionEvaluator {
 				return evaluateInteger(argument);
 			}
 			else {
-				throw new IllegalArgumentException("Not transformable expression: " + expression.toString());
+				throw new IllegalArgumentException("Not evaluable expression: " + expression.toString());
 			}
 		}
 		if (expression instanceof IntegerLiteralExpression) {
@@ -373,41 +373,5 @@ public class ExpressionEvaluator {
 				&& !(it.getRightOperand() instanceof ReferenceExpression))
 			.collect(Collectors.toList());
 	}
-	
-//	// Reverse
-//	
-//	public Expression of(Type type, int value) {
-//		TypeDefinition typeDefinition = ExpressionModelDerivedFeatures.getTypeDefinition(type);
-//		if (typeDefinition instanceof BooleanTypeDefinition) {
-//			return of((BooleanTypeDefinition) typeDefinition, value);
-//		}
-//		if (typeDefinition instanceof IntegerTypeDefinition) {
-//			return of((IntegerTypeDefinition) typeDefinition, value);
-//		}
-//		if (typeDefinition instanceof EnumerationTypeDefinition) {
-//			return of((EnumerationTypeDefinition) typeDefinition, value);
-//		}
-//		throw new IllegalArgumentException("Not known type: " + typeDefinition);
-//	}
-//	
-//	public Expression of(BooleanTypeDefinition type, int value) {
-//		switch (value) {
-//			case 0:
-//				return factory.createFalseExpression();
-//			default:
-//				return factory.createTrueExpression();
-//		} 
-//	}
-//	
-//	public Expression of(IntegerTypeDefinition type, int value) {
-//		IntegerLiteralExpression integerLiteralExpression = factory.createIntegerLiteralExpression();
-//		integerLiteralExpression.setValue(BigInteger.valueOf(value));
-//		return integerLiteralExpression;
-//	}
-//	
-//	public Expression of(EnumerationTypeDefinition type, int value) {
-//		EnumerationLiteralDefinition literal = type.getLiterals().get(value);
-//		return expressionUtil.createEnumerationLiteralExpression(literal);
-//	}
 	
 }

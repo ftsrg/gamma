@@ -52,14 +52,14 @@ class ScenarioStatechartTraceGenerator {
 	val extension TraceUtil traceUtil = TraceUtil.INSTANCE
 	val extension TraceGenUtil traceGenUtil = TraceGenUtil.INSTANCE
 
-	val boolean TEST_ORIGINAL = true
+	protected final boolean TEST_ORIGINAL = true
 	val boolean USE_OWN_TRAVERSAL = false
 
 	StatechartDefinition statechart = null
 	List<Expression> arguments = newArrayList
 	var Integer schedulingConstraint = 0
 
-	String absoluteParentFolder
+	protected String absoluteParentFolder
 
 	new(StatechartDefinition statechart, List<? extends Expression> arguments, Integer schedulingConstraint) {
 		this.statechart = statechart
@@ -69,7 +69,8 @@ class ScenarioStatechartTraceGenerator {
 	
 	def List<ExecutionTrace> execute() {
 		var Component component = statechart
-		absoluteParentFolder = (statechart.eResource.file).parentFile.absolutePath
+		absoluteParentFolder = statechart.eResource.file
+				.parentFile.absolutePath
 		var NotDefinedEventMode scenarioContractType = null
 		val result = <ExecutionTrace>newArrayList
 		val annotations = statechart.annotations

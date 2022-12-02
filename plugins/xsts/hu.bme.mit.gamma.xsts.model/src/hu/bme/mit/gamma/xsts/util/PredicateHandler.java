@@ -12,6 +12,7 @@ package hu.bme.mit.gamma.xsts.util;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -32,16 +33,22 @@ public class PredicateHandler extends hu.bme.mit.gamma.expression.util.Predicate
 	//
 	
 	protected SortedSet<Integer> calculateIntegerValues(EObject root, VariableDeclaration variable,
-				Collection<VariableDeclaration> checkedVariables, Collection<? extends AssignmentAction> assignmentStatements) {
+				Collection<VariableDeclaration> checkedVariables,
+				Collection<AssignmentAction> assignmentStatements) {
 		SortedSet<Integer> integerValues = new TreeSet<Integer>();
 		
 		if (!checkedVariables.contains(variable)) {
+			// Root change (due to context changes: local var -> global var)
+			root = ecoreUtil.getRoot(variable);
+			assignmentStatements.addAll(
+					ecoreUtil.getSelfAndAllContentsOfType(root, AssignmentAction.class));
+			
 			checkedVariables.add(variable);
 			// Basic function
 			integerValues.addAll(
 					super.calculateIntegerValues(root, variable));
 			//
-			for (AssignmentAction assignmentStatement : assignmentStatements) {
+			for (AssignmentAction assignmentStatement : new HashSet<AssignmentAction>(assignmentStatements)) {
 				ReferenceExpression lhs = assignmentStatement.getLhs();
 				VariableDeclaration lhsVariable = (VariableDeclaration) xStsUtil.getDeclaration(lhs);
 				Expression rhs = assignmentStatement.getRhs();
@@ -69,8 +76,9 @@ public class PredicateHandler extends hu.bme.mit.gamma.expression.util.Predicate
 	
 	public SortedSet<Integer> calculateIntegerValues(EObject root, VariableDeclaration variable) {
 		return calculateIntegerValues(root, variable,
-				new HashSet<VariableDeclaration>(), 
-				ecoreUtil.getSelfAndAllContentsOfType(root, AssignmentAction.class)); // Caching
+				new LinkedHashSet<VariableDeclaration>(),
+				new HashSet<AssignmentAction>(
+						ecoreUtil.getSelfAndAllContentsOfType(root, AssignmentAction.class)));
 	}
 	
 }

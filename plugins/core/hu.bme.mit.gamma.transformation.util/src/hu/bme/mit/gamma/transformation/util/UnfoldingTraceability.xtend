@@ -310,8 +310,20 @@ class UnfoldingTraceability {
 			// We handle if both are already unfolded - incorrect call: original is not actually original
 			return copy.name.startsWith(lastOriginalInstance.name)
 		}
+		
 		// Correct call, original is not unfolded
+		
 		val copyInstances = copy.componentInstanceChain
+		// copy might have a wrapper instance at front
+		if (copy.wrapped) {
+			val originalFirstInstance = originalInstances.head
+			val originalComponent = originalFirstInstance.containingComponent
+			val wrappedComponent = originalComponent.wrapComponent
+			val wrapperInstance = wrappedComponent.instances.head
+			
+			// "Adding" the wrapper instance to match the copy
+			originalInstances.add(0, wrapperInstance)
+		}
 		
 		// The naming conventions are clear
 		// Without originalInstances.head.name == copyInstances.head.name,
@@ -321,7 +333,7 @@ class UnfoldingTraceability {
 			copy.name.startsWith(originalInstances.FQN)
 	}
 	
-	// Currently not used- maybe in the future?
+	// Currently not used - maybe in the future?
 	
 	protected def <T extends NamedElement> getNewObject(ComponentInstanceReferenceExpression originalInstance,
 			T originalObject, Component newTopComponent) {
@@ -355,24 +367,24 @@ class UnfoldingTraceability {
 		
 		val originalSimpleInstances = originalType.originalSimpleInstanceReferences
 		
-		val needsWrapping = originalType.needsWrapping
-		if (needsWrapping) {
-			for (originalSimpleInstance : originalSimpleInstances.toSet) {
-				originalSimpleInstances -= originalSimpleInstance
-				val wrapperInstance = originalType.instantiateComponent
-				val wrappedOriginalSimpleInstance = originalSimpleInstance.prepend(wrapperInstance)
-				originalSimpleInstances += wrappedOriginalSimpleInstance
-			}
-		}
+//		val needsWrapping = originalType.needsWrapping
+//		if (needsWrapping) {
+//			for (originalSimpleInstance : originalSimpleInstances.toSet) {
+//				originalSimpleInstances -= originalSimpleInstance
+//				val wrapperInstance = originalType.instantiateComponent
+//				val wrappedOriginalSimpleInstance = originalSimpleInstance.prepend(wrapperInstance)
+//				originalSimpleInstances += wrappedOriginalSimpleInstance
+//			}
+//		}
 		
 		for (originalSimpleInstance : originalSimpleInstances) {
 			// There are some AA and CCC wrappings of statecharts in the unfolding process, which
 			// should be handled by the below method call ("contains" instead of "equals")
 			if (originalSimpleInstance.contains(newInstance)) {
 				 // Only one is expected
-				if (needsWrapping) {
-					return originalSimpleInstance.getChild // Removing wrapper instance
-				}
+//				if (needsWrapping) {
+//					return originalSimpleInstance.getChild // Removing wrapper instance
+//				}
 				return originalSimpleInstance
 			}
 		}

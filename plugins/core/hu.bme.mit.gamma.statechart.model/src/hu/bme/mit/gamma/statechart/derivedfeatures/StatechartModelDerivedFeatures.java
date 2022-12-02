@@ -40,8 +40,11 @@ import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression;
 import hu.bme.mit.gamma.expression.model.FunctionDeclaration;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
+import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
+import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
 import hu.bme.mit.gamma.expression.model.TypeDefinition;
+import hu.bme.mit.gamma.expression.model.TypeReference;
 import hu.bme.mit.gamma.statechart.composite.AbstractAsynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter;
@@ -131,6 +134,46 @@ import hu.bme.mit.gamma.statechart.util.StatechartUtil;
 public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	protected static final StatechartUtil statechartUtil = StatechartUtil.INSTANCE;
+	
+	//
+	
+	public static Set<TypeDeclaration> getReferencedTypedDeclarations(Package _package) {
+		Set<TypeDeclaration> types = new LinkedHashSet<TypeDeclaration>();
+		
+		// Explicit imports
+		for (Package importedPackage : StatechartModelDerivedFeatures.getComponentImports(_package)) {
+			types.addAll(importedPackage.getTypeDeclarations());
+		}
+		
+		// Native references in the case of unfolded packages
+		Collection<TypeReference> references = new ArrayList<TypeReference>();
+		references.addAll(
+				ecoreUtil.getAllContentsOfType(_package, TypeReference.class));
+		
+		// Events and parameters
+		for (InterfaceRealization realization :
+				ecoreUtil.getAllContentsOfType(_package, InterfaceRealization.class)) {
+			Interface _interface = realization.getInterface();
+			references.addAll(
+					ecoreUtil.getAllContentsOfType(_interface, TypeReference.class));
+		}
+		
+		// Collecting the type declarations
+		for (TypeReference reference : references) {
+			TypeDeclaration typeDeclaration = reference.getReference();
+			types.add(typeDeclaration);
+			Type containedType = typeDeclaration.getType();
+			Type type = getTypeDefinition(containedType);
+			if (type instanceof RecordTypeDefinition) {
+				RecordTypeDefinition recordType = (RecordTypeDefinition) type;
+				Collection<TypeDeclaration> containedTypeDeclarations =
+						getAllTypeDeclarations(recordType);
+				types.addAll(containedTypeDeclarations);
+			}
+		}
+		
+		return types;
+	}
 	
 	public static List<ParameterDeclaration> getParameterDeclarations(ArgumentedElement element) {
 		if (element instanceof RaiseEventAction) {
@@ -315,6 +358,16 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	public static boolean isUnfolded(Package gammaPackage) {
 		return hasAnnotation(gammaPackage, UnfoldedPackageAnnotation.class);
+	}
+	
+	public static boolean isWrapped(EObject object) {
+		return hasWrapperComponent(
+				getContainingPackage(object));
+	}
+	
+	public static boolean hasWrapperComponent(Package gammaPackage) {
+		return isWrapperComponent(
+				getFirstComponent(gammaPackage));
 	}
 	
 	public static boolean hasAnnotation(Package gammaPackage,
@@ -1590,6 +1643,13 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		if (controlSpecifications.size() != 1) {
 			return false;
 		}
+		// If this is the case, back-annotation will not work if we consider this simplifiable
+		SynchronousComponentInstance wrappedComponent = adapter.getWrappedComponent();
+		SynchronousComponent type = wrappedComponent.getType();
+		if (type.getPorts().isEmpty()) {
+			return false;
+		}
+		
 		ControlSpecification controlSpecification = controlSpecifications.get(0);
 		Trigger trigger = controlSpecification.getTrigger();
 		ControlFunction controlFunction = controlSpecification.getControlFunction();
@@ -1723,15 +1783,16 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	}
 	
 	public static Collection<Region> getAllRegions(CompositeElement compositeElement) {
-		Set<Region> regions = new HashSet<Region>(compositeElement.getRegions());
+		Set<Region> regions = new LinkedHashSet<Region>(compositeElement.getRegions());
 		for (State state : getAllStates(compositeElement)) {
-			regions.addAll(getAllRegions(state));
+			regions.addAll(
+					getAllRegions(state)); // getRegions would be enough?
 		}
 		return regions;
 	}
 	
 	public static Collection<Region> getAllRegions(Region region) {
-		Set<Region> regions = new HashSet<Region>();
+		Set<Region> regions = new LinkedHashSet<Region>();
 		regions.add(region);
 		TreeIterator<Object> allContents = EcoreUtil.getAllContents(region, true);
 		while (allContents.hasNext()) {
@@ -1766,6 +1827,15 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	public static boolean areOrthogonal(Region lhs, Region rhs) {
 		return getContainingCompositeElement(lhs) == getContainingCompositeElement(rhs);
+	}
+	
+	public static boolean hasOrthogonalRegions(CompositeElement element) {
+		for (Region region : getAllRegions(element)) {
+			if (isOrthogonal(region)) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	public static boolean areTransitivelyOrthogonal(StateNode lhs, StateNode rhs) {
@@ -2797,7 +2867,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return getComponentAnnotation(component, HasInitialOutputsBlockAnnotation.class) != null;
 	}
 	
-	public static boolean hasNegatedContratStatechartAnnotation(Component component) {
+	public static boolean hasNegatedContractStatechartAnnotation(Component component) {
 		return getComponentAnnotation(component, NegativeContractStatechartAnnotation.class) != null;
 	}
 	

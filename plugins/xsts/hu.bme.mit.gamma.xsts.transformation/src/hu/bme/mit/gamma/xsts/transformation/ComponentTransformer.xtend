@@ -17,6 +17,7 @@ import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.LowlevelToXstsTransformer
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.TransitionMerging
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.VariableGroupRetriever
 import hu.bme.mit.gamma.statechart.composite.AbstractAsynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
@@ -73,6 +74,7 @@ class ComponentTransformer {
 	// Auxiliary objects
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension JavaUtil javaUtil = JavaUtil.INSTANCE
+	protected final extension VariableGroupRetriever retriever = VariableGroupRetriever.INSTANCE
 	protected final extension ExpressionEvaluator expressionEvaluator = ExpressionEvaluator.INSTANCE
 	protected final extension EnvironmentalActionFilter environmentalActionFilter =
 			EnvironmentalActionFilter.INSTANCE
@@ -242,6 +244,7 @@ class ComponentTransformer {
 				val xStsMasterQueueVariable = valueDeclarationTransformer.transform(masterQueue).onlyElement
 //				xStsMasterQueueVariable.addStrictControlAnnotation
 				xSts.variableDeclarations += xStsMasterQueueVariable
+				xSts.masterMessageQueueGroup.variables += xStsMasterQueueVariable
 				if (masterSizeVariable !== null) { // Can be null due to potential optimization
 					val xStsMasterSizeVariable = valueDeclarationTransformer.transform(masterSizeVariable).onlyElement
 					xSts.variableDeclarations += xStsMasterSizeVariable
@@ -258,6 +261,8 @@ class ComponentTransformer {
 					if (slaveSizeVariable !== null) {
 						val xStsSlaveSizeVariable = valueDeclarationTransformer.transform(slaveSizeVariable).onlyElement
 						xSts.variableDeclarations += xStsSlaveSizeVariable
+						xSts.slaveMessageQueueGroup.variables += xStsSlaveSizeVariable
+						
 						xStsSlaveSizeVariable.addStrictControlAnnotation // Needed for loops
 						// The type might not be correct here and later has to be reassigned to handle enums
 					}
@@ -311,7 +316,7 @@ class ComponentTransformer {
 				// if (eventId == 0) { empty } // This is impossible
 //				branchExpressions += xStsEventIdVariable.createEqualityExpression(emptyValue)
 //				branchActions += createEmptyAction
-				// if (0 < sizeOfQueue) {..} - If this holds, then the emptyValue cannot be present in the queue 
+				// if (0 < sizeOfQueue) {..} - If this holds above, then the emptyValue cannot be present in the queue
 				
 				val events = queue.storedEvents
 				for (portEvent : events) {
@@ -383,9 +388,18 @@ class ComponentTransformer {
 					branchExpressions += ifExpression
 					branchActions += thenAction
 				}
-				// Excluding branches for the different event identifiers
-				// Fixed disjunct set of eventIds - 'if' instead of 'choice'
-				block.actions += branchExpressions.createIfAction(branchActions)
+				// Note that the last expression is unnecessary as all branches (event ids) are
+				// disjunct and complete -> removing the last one to create an 'else' branch (optimization)
+				// (works for UPPAAL havoc, too: see algorithm there)
+				branchExpressions.removeLast
+				if (branchExpressions.empty) {
+					block.actions += branchActions.onlyElement // Only one event can come
+				}
+				else {
+					// Excluding branches for the different event identifiers
+					// Fixed disjunct set of eventIds - 'if' + 'else' instead of 'choice'
+					block.actions += branchExpressions.createIfAction(branchActions)
+				}
 			}
 			
 			// Dispatching events to connected message queues
@@ -493,7 +507,7 @@ class ComponentTransformer {
 			// And the actual queue is not full
 			val isMasterQueueNotFull = xStsMasterQueue.isMasterQueueNotFull(xStsMasterSizeVariable)
 			// The first part is necessary if there are more queues
-			val isQueueInsertableExpression = (queueSizes == 1) ? isMasterQueueNotFull : 
+			val isQueueInsertableExpression = (queueSizes.size == 1) ? isMasterQueueNotFull : 
 					isMasterQueueNotFull.wrapIntoAndExpression(isThereTheoreticalCapacityExression)
 			val xStsQueueInsertionAction = isQueueInsertableExpression.createIfAction(xStsQueueHandlingAction)
 			// If queue is insertable
@@ -832,6 +846,8 @@ class ComponentTransformer {
 			}
 			removableBranchActions.forEach[it.remove] // Removing now - it would break the indexes in the loop
 			
+			// Note that if the sync component has no port, the event transmission is not mapped
+			
 			// Original parameter settings
 			// Parameters that come from the same ports are bound to the same values - done by previous call
 			newInEventAction.actions += inEventAction.action
@@ -864,14 +880,14 @@ class ComponentTransformer {
 			val newXSts = subcomponentType.transform(lowlevelPackage)
 			newXSts.customizeDeclarationNames(subcomponent)
 			
-			// Adding new elements
-			xSts.merge(newXSts)
-			
 			// Internal event handling here as EventReferenceHandler cannot be used without customizeDeclarationNames
 			if (subcomponentType.statechart) {
-				xSts.addInternalEventHandlingActions(subcomponentType, traceability)
+				newXSts.addInternalEventHandlingActions(subcomponentType, traceability)
 			}
 			//
+			
+			// Adding new elements
+			xSts.merge(newXSts)
 			
 			// Initializing action
 			val variableInitAction = createSequentialAction

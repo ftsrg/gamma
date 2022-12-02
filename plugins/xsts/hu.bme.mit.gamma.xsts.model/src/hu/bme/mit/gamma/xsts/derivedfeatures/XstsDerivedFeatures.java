@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.eclipse.emf.ecore.EObject;
 
@@ -30,8 +31,11 @@ import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.EqualityExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
+import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression;
+import hu.bme.mit.gamma.expression.model.LiteralExpression;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
+import hu.bme.mit.gamma.util.Triple;
 import hu.bme.mit.gamma.xsts.model.AbstractAssignmentAction;
 import hu.bme.mit.gamma.xsts.model.Action;
 import hu.bme.mit.gamma.xsts.model.AssignmentAction;
@@ -49,10 +53,14 @@ import hu.bme.mit.gamma.xsts.model.XSTS;
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory;
 import hu.bme.mit.gamma.xsts.model.XTransition;
 import hu.bme.mit.gamma.xsts.model.XstsAnnotation;
+import hu.bme.mit.gamma.xsts.util.XstsActionUtil;
 
 public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 
-	protected static XSTSModelFactory xStsFactory = XSTSModelFactory.eINSTANCE;
+	protected static final XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE;
+	protected static final XSTSModelFactory xStsFactory = XSTSModelFactory.eINSTANCE;
+	
+	//
 	
 	public static XSTS getContainingXsts(EObject object) {
 		return ecoreUtil.getSelfOrContainerOfType(object, XSTS.class);
@@ -108,8 +116,12 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 	
 	public static SequentialAction getEnvironmentalAction(XSTS xSts) {
 		SequentialAction sequentialAction = xStsFactory.createSequentialAction();
-		sequentialAction.getActions().add(ecoreUtil.clone(xSts.getInEventTransition().getAction()));
-		sequentialAction.getActions().add(ecoreUtil.clone(xSts.getOutEventTransition().getAction()));
+		sequentialAction.getActions().add(
+				ecoreUtil.clone(
+						xSts.getInEventTransition().getAction()));
+		sequentialAction.getActions().add(
+				ecoreUtil.clone(
+						xSts.getOutEventTransition().getAction()));
 		return sequentialAction;
 	}
 	
@@ -233,8 +245,8 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 	private static boolean isTrivialAssignment(EqualityExpression expression, AssignmentAction action) {
 		Expression xStsLeftOperand = expression.getLeftOperand();
 		Expression xStsRightOperand = expression.getRightOperand();
-		DirectReferenceExpression directReferenceExpression = (DirectReferenceExpression) action.getLhs();
-		Declaration xStsDeclaration = directReferenceExpression.getDeclaration();
+		DirectReferenceExpression reference = (DirectReferenceExpression) action.getLhs();
+		Declaration xStsDeclaration = reference.getDeclaration();
 		Expression xStsAssignmentRhs = action.getRhs();
 		// region_name == state_name
 		if (xStsLeftOperand instanceof DirectReferenceExpression) {
@@ -249,6 +261,14 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 					&& ecoreUtil.helperEquals(xStsLeftOperand, xStsAssignmentRhs)) {
 				return true;
 			}
+		}
+		return false;
+	}
+	
+	public static boolean isLhs(Expression expression) {
+		EObject container = expression.eContainer();
+		if (container instanceof AbstractAssignmentAction action) {
+			return action.getLhs() == expression;
 		}
 		return false;
 	}
@@ -286,7 +306,16 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 		if (action instanceof LoopAction) {
 			LoopAction loopAction = (LoopAction) action;
 			Action forAction = loopAction.getAction();
-			// Range could be examined, too
+			// Examining range
+			IntegerRangeLiteralExpression range = loopAction.getRange();
+			Expression leftOperand = ExpressionModelDerivedFeatures.getLeft(range, true);
+			Expression rightOperand = ExpressionModelDerivedFeatures.getRight(range, true);
+			int left = evaluator.evaluateInteger(leftOperand);
+			int right = evaluator.evaluateInteger(rightOperand);
+			if (right - left <= 0) {
+				return true;
+			}
+			// Range is good, examining action
 			return isEffectlessAction(forAction);
 		}
 		if (action instanceof MultiaryAction) {
@@ -299,7 +328,8 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 	// Read-write
 
 	private static Set<VariableDeclaration> _getReadVariables(AssumeAction action) {
-		return expressionUtil.getReferredVariables(action.getAssumption());
+		return expressionUtil.getReferredVariables(
+				action.getAssumption());
 	}
 	
 	private static Set<VariableDeclaration> _getReadVariables(HavocAction action) {
@@ -307,7 +337,18 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 	}
 
 	private static Set<VariableDeclaration> _getReadVariables(AssignmentAction action) {
-		return expressionUtil.getReferredVariables(action.getRhs());
+		Set<VariableDeclaration> readVariables = new HashSet<VariableDeclaration>();
+
+		readVariables.addAll(
+				expressionUtil.getReferredVariables(
+						action.getLhs())); // Needed for array indexes
+		readVariables.addAll(
+				expressionUtil.getReferredVariables(
+						action.getRhs()));
+		readVariables.removeAll(
+				getWrittenVariables(action)); // Removing the array vars
+		
+		return readVariables;
 	}
 	
 	private static Set<VariableDeclaration> _getReadVariables(VariableDeclarationAction action) {
@@ -324,38 +365,121 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 	}
 	
 	private static Set<VariableDeclaration> _getReadVariables(LoopAction action) {
+		Set<VariableDeclaration> readVariables = new HashSet<VariableDeclaration>();
+		
+		IntegerRangeLiteralExpression range = action.getRange();
+		readVariables.addAll(
+				expressionUtil.getReferredVariables(
+						range.getLeftOperand()));
+		readVariables.addAll(
+				expressionUtil.getReferredVariables(
+						range.getRightOperand()));
+		
 		Action subAction = action.getAction();
-		return getReadVariables(subAction);
+		readVariables.addAll(
+				getReadVariables(subAction));
+		
+		return readVariables;
 	}
 	
 	private static Set<VariableDeclaration> _getReadVariables(IfAction action) {
 		Set<VariableDeclaration> readVariables = new HashSet<VariableDeclaration>();
-		readVariables.addAll(expressionUtil.getReferredVariables(action.getCondition()));
-		readVariables.addAll(getReadVariables(action.getThen()));
+		
+		readVariables.addAll(
+				expressionUtil.getReferredVariables(
+						action.getCondition()));
+		readVariables.addAll(
+				getReadVariables(
+						action.getThen()));
 		Action _else = action.getElse();
 		if (_else != null) {
-			readVariables.addAll(getReadVariables(_else));
+			readVariables.addAll(
+					getReadVariables(_else));
 		}
+		
 		return readVariables;
 	}
 
 	private static Set<VariableDeclaration> _getReadVariables(MultiaryAction action) {
 		Set<VariableDeclaration> variableList = new HashSet<VariableDeclaration>();
+		
 		List<Action> _actions = action.getActions();
 		for (Action containedAction : _actions) {
 			Set<VariableDeclaration> _readVariables = getReadVariables(containedAction);
 			variableList.addAll(_readVariables);
 		}
+		
 		return variableList;
 	}
+	
+	private static Set<VariableDeclaration> _getExternallyReadVariables(AssignmentAction action) {
+		Set<VariableDeclaration> readVariables = new HashSet<VariableDeclaration>();
+		
+		readVariables.addAll(
+				getReadVariables(action));
+		readVariables.removeAll(
+				getWrittenVariables(action));
+		
+		return readVariables;
+	}
+	
+	private static Set<VariableDeclaration> _getExternallyReadVariables(LoopAction action) {
+		Set<VariableDeclaration> readVariables = new HashSet<VariableDeclaration>();
+		
+		IntegerRangeLiteralExpression range = action.getRange();
+		readVariables.addAll(
+				expressionUtil.getReferredVariables(
+						range.getLeftOperand()));
+		readVariables.addAll(
+				expressionUtil.getReferredVariables(
+						range.getRightOperand()));
+		
+		Action subAction = action.getAction();
+		readVariables.addAll(
+				getExternallyReadVariables(subAction));
+		
+		return readVariables;
+	}
+	
+	private static Set<VariableDeclaration> _getExternallyReadVariables(IfAction action) {
+		Set<VariableDeclaration> readVariables = new HashSet<VariableDeclaration>();
+		
+		readVariables.addAll(
+				expressionUtil.getReferredVariables(
+						action.getCondition()));
+		readVariables.addAll(
+				getExternallyReadVariables(
+						action.getThen()));
+		Action _else = action.getElse();
+		if (_else != null) {
+			readVariables.addAll(
+					getExternallyReadVariables(_else));
+		}
+		
+		return readVariables;
+	}
 
+	private static Set<VariableDeclaration> _getExternallyReadVariables(MultiaryAction action) {
+		Set<VariableDeclaration> variableList = new HashSet<VariableDeclaration>();
+		
+		List<Action> _actions = action.getActions();
+		for (Action containedAction : _actions) {
+			Set<VariableDeclaration> _readVariables = getExternallyReadVariables(containedAction);
+			variableList.addAll(_readVariables);
+		}
+		
+		return variableList;
+	}
+	
 	private static Set<VariableDeclaration> _getWrittenVariables(AssumeAction action) {
 		return Collections.emptySet();
 	}
 
 	private static Set<VariableDeclaration> _getWrittenVariables(AbstractAssignmentAction action) {
-		return expressionUtil.getReferredVariables(
-				action.getLhs());
+		VariableDeclaration accessedDeclaration = (VariableDeclaration)
+				xStsActionUtil.getAccessedDeclaration(
+						action.getLhs()); // Not every variable, just the access
+		return Set.of(accessedDeclaration);
 	}
 	
 	private static Set<VariableDeclaration> _getWrittenVariables(VariableDeclarationAction action) {
@@ -373,21 +497,28 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 	
 	private static Set<VariableDeclaration> _getWrittenVariables(IfAction action) {
 		Set<VariableDeclaration> writtenVariables = new HashSet<VariableDeclaration>();
-		writtenVariables.addAll(getWrittenVariables(action.getThen()));
+		
+		writtenVariables.addAll(
+				getWrittenVariables(
+						action.getThen()));
 		Action _else = action.getElse();
 		if (_else != null) {
-			writtenVariables.addAll(getWrittenVariables(_else));
+			writtenVariables.addAll(
+					getWrittenVariables(_else));
 		}
+		
 		return writtenVariables;
 	}
 
 	private static Set<VariableDeclaration> _getWrittenVariables(MultiaryAction action) {
 		Set<VariableDeclaration> variableList = new HashSet<VariableDeclaration>();
+		
 		List<Action> _actions = action.getActions();
 		for (Action containedAction : _actions) {
 			Set<VariableDeclaration> _writtenVariables = getWrittenVariables(containedAction);
 			variableList.addAll(_writtenVariables);
 		}
+		
 		return variableList;
 	}
 
@@ -408,6 +539,28 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 			return _getReadVariables((IfAction) action);
 		} else if (action instanceof MultiaryAction) {
 			return _getReadVariables((MultiaryAction) action);
+		} else {
+			throw new IllegalArgumentException("Unhandled action type: " + action);
+		}
+	}
+	
+	public static Set<VariableDeclaration> getExternallyReadVariables(Action action) {
+		if (action instanceof AssignmentAction) {
+			return _getExternallyReadVariables((AssignmentAction) action);
+		} else if (action instanceof HavocAction) {
+			return _getReadVariables((HavocAction) action);
+		} else if (action instanceof VariableDeclarationAction) {
+			return _getReadVariables((VariableDeclarationAction) action);
+		} else if (action instanceof AssumeAction) {
+			return _getReadVariables((AssumeAction) action);
+		} else if (action instanceof EmptyAction) {
+			return _getReadVariables((EmptyAction) action);
+		} else if (action instanceof LoopAction) {
+			return _getExternallyReadVariables((LoopAction) action);
+		} else if (action instanceof IfAction) {
+			return _getExternallyReadVariables((IfAction) action);
+		} else if (action instanceof MultiaryAction) {
+			return _getExternallyReadVariables((MultiaryAction) action);
 		} else {
 			throw new IllegalArgumentException("Unhandled action type: " + action);
 		}
@@ -435,8 +588,10 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 	
 	public static Set<VariableDeclaration> getReferredVariables(Action action) {
 		Set<VariableDeclaration> referredVariables =
-				new HashSet<VariableDeclaration>(getReadVariables(action));
-		referredVariables.addAll(getWrittenVariables(action));
+				new HashSet<VariableDeclaration>(
+						getReadVariables(action));
+		referredVariables.addAll(
+				getWrittenVariables(action));
 		return referredVariables;
 	}
 	
@@ -480,8 +635,25 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 		return readVariables;
 	}
 	
+	public static Set<VariableDeclaration> getExternallyReadVariables(
+			Collection<? extends Action> actions) {
+		Set<VariableDeclaration> externallyReadVariables = new LinkedHashSet<VariableDeclaration>();
+		
+		for (Action action : actions) {
+			externallyReadVariables.addAll(
+					getExternallyReadVariables(action));
+		}
+		
+		return externallyReadVariables;
+	}
+	
 	public static Set<VariableDeclaration> getReadVariables(XSTS xSts) {
 		return getReadVariables(
+				getAllActions(xSts));
+	}
+	
+	public static Set<VariableDeclaration> getExternallyReadVariables(XSTS xSts) {
+		return getExternallyReadVariables(
 				getAllActions(xSts));
 	}
 	
@@ -493,11 +665,373 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 		for (Action subaction : action.getActions()) {
 			readAndWrittenVariables.put(subaction,
 					new SimpleEntry<Set<VariableDeclaration>, Set<VariableDeclaration>>(
-							getReadVariables(subaction), getWrittenVariables(subaction))
-			);
+							getReadVariables(subaction), getWrittenVariables(subaction)));
 		}
 		
 		return readAndWrittenVariables;
+	}
+	
+	//
+	
+	public static Set<VariableDeclaration> getAllReaderVariables(
+			Collection<? extends VariableDeclaration> variables) {
+		Set<VariableDeclaration> writtenVariables = new HashSet<VariableDeclaration>();
+		
+		for (VariableDeclaration variable : variables) {
+			writtenVariables.addAll(
+					getAllReaderVariables(variable));
+		}
+		
+		return writtenVariables;
+	}
+	
+	public static Set<VariableDeclaration> getAllReaderVariables(VariableDeclaration variable) {
+		Set<VariableDeclaration> writtenVariables = new HashSet<VariableDeclaration>();
+		
+		EObject root = ecoreUtil.getRoot(variable);
+		List<AssignmentAction> assignmentActions = ecoreUtil.getSelfAndAllContentsOfType(
+				root, AssignmentAction.class);
+		
+		int size = -1;
+		while (size != writtenVariables.size()) {
+			size = writtenVariables.size();
+			
+			for (AssignmentAction assignmentAction : assignmentActions) {
+				Set<VariableDeclaration> readVariables = getReadVariables(assignmentAction);
+				if (readVariables.contains(variable) ||
+						javaUtil.containsAny(readVariables, writtenVariables)) {
+					Set<VariableDeclaration> writtenVariablesOfAction =
+							getWrittenVariables(assignmentAction); // Only one
+					
+					writtenVariables.addAll(writtenVariablesOfAction);
+				}
+			}
+		}
+		
+		return writtenVariables;
+	}
+	
+	//
+	
+	public static Set<VariableDeclaration> getVariablesReferencedFromConditions(XSTS xSts) {
+		Set<VariableDeclaration> variablesReferencedFromConditions = new HashSet<VariableDeclaration>();
+		
+		List<Expression> conditions = new ArrayList<Expression>();
+		
+		List<AssumeAction> assumeActions = ecoreUtil.getAllContentsOfType(xSts, AssumeAction.class);
+		List<IfAction> ifActions = ecoreUtil.getAllContentsOfType(xSts, IfAction.class);
+		List<LoopAction> loopActions = ecoreUtil.getAllContentsOfType(xSts, LoopAction.class);
+		
+		conditions.addAll(
+				assumeActions.stream()
+				.map(it -> it.getAssumption())
+				.collect(Collectors.toList()));
+		
+		conditions.addAll(
+				ifActions.stream()
+				.map(it -> it.getCondition())
+				.collect(Collectors.toList()));
+		
+		conditions.addAll(
+				loopActions.stream()
+				.map(it -> it.getRange())
+				.collect(Collectors.toList()));
+		
+		for (Expression condition : conditions) {
+			variablesReferencedFromConditions.addAll(
+					xStsActionUtil.getReferredVariables(condition));
+		}
+		
+		return variablesReferencedFromConditions;
+	}
+	
+	//
+
+	public static boolean areSubactionsOrthogonal(MultiaryAction action) {
+		List<Collection<VariableDeclaration>> readVariables =
+				new ArrayList<Collection<VariableDeclaration>>();
+		List<Collection<VariableDeclaration>> writtenVariables =
+				new ArrayList<Collection<VariableDeclaration>>();
+		List<Action> subactions = action.getActions();
+		for (int i = 0; i < subactions.size(); i++) {
+			var xStsSubaction = subactions.get(i);
+			
+			var newlyWrittenVariables = getWrittenVariables(xStsSubaction);
+			writtenVariables.add(newlyWrittenVariables);
+			
+			var newlyReadVariables = new HashSet<VariableDeclaration>();
+			newlyReadVariables.addAll(
+					getReadVariables(xStsSubaction));
+			newlyReadVariables.removeAll(newlyWrittenVariables);
+			readVariables.add(newlyReadVariables);
+			
+			for (int j = 0; j < i; j++) {
+				Collection<VariableDeclaration> previouslyReadVariables = readVariables.get(j);
+				Collection<VariableDeclaration> previouslyWrittenVariables = writtenVariables.get(j);
+				// If a written variable is read or written somewhere, the
+				// parallel or unordered action cannot be optimized
+				if (previouslyReadVariables.stream().anyMatch(it -> newlyWrittenVariables.contains(it)) ||
+						previouslyWrittenVariables.stream().anyMatch(it -> newlyWrittenVariables.contains(it)) ||
+						previouslyWrittenVariables.stream().anyMatch(it -> newlyReadVariables.contains(it))) {
+					return false;
+				}
+			}
+		}
+		
+		return true;
+	}
+	
+	//
+	
+	public static Map<VariableDeclaration, Entry<Integer, Integer>>
+			getIntegerVariableCodomains(XSTS xSts) {
+		
+		Triple<Map<VariableDeclaration, List<LiteralExpression>>, Map<VariableDeclaration, List<VariableDeclaration>>,
+			Set<VariableDeclaration>> variableAssignmentGroups = getVariableAssignmentGroups(xSts);
+		
+		Map<VariableDeclaration, List<LiteralExpression>> integerVariableAssignments = variableAssignmentGroups.getFirst();
+		Map<VariableDeclaration, List<VariableDeclaration>> variableVariableAssignments = variableAssignmentGroups.getSecond();
+		Set<VariableDeclaration> notIntegerLiteralVariables = variableAssignmentGroups.getThird();
+		
+		Map<VariableDeclaration, List<LiteralExpression>> integerLiteralVariableAssignments =
+				new HashMap<VariableDeclaration, List<LiteralExpression>>(integerVariableAssignments);
+		Set<VariableDeclaration> integerLiteralVariables = integerLiteralVariableAssignments.keySet();
+		Set<VariableDeclaration> variableVariables = variableVariableAssignments.keySet();
+		integerLiteralVariables.removeAll(variableVariables);
+		integerLiteralVariables.removeAll(notIntegerLiteralVariables);
+		// Every variable in this collection now has only integer value assignments
+		
+		// 1: Calculating precise domains based on these values
+		Map<VariableDeclaration, Entry<Integer, Integer>> integerVariableMinMax = calculatePresiceCodomains(
+				integerLiteralVariableAssignments, integerLiteralVariables);
+		
+		// 2: Extending min/max values for variables that need to hold low/large values
+		// e.g., a := 70.000
+		extendCodomainsForLiteralAssignments(integerVariableAssignments, integerVariableMinMax);
+		
+		// 3: Checking 'var := var2' assignments - note that this is done after the 'extension'
+		extendCodomainsForVariableAssignments(integerVariableAssignments, variableVariableAssignments,
+				notIntegerLiteralVariables, variableVariables, integerVariableMinMax);
+		
+		return integerVariableMinMax;
+	}
+	
+	public static Map<VariableDeclaration, LiteralExpression>
+			getOneValueVariableCodomains(XSTS xSts) {
+				
+		Triple<Map<VariableDeclaration, List<LiteralExpression>>, Map<VariableDeclaration, List<VariableDeclaration>>,
+			Set<VariableDeclaration>> variableAssignmentGroups = getVariableAssignmentGroups(xSts);
+		
+		Map<VariableDeclaration, List<LiteralExpression>> integerVariableAssignments = variableAssignmentGroups.getFirst();
+		Map<VariableDeclaration, List<VariableDeclaration>> variableVariableAssignments = variableAssignmentGroups.getSecond();
+		Set<VariableDeclaration> notIntegerLiteralVariables = variableAssignmentGroups.getThird();
+		
+		Map<VariableDeclaration, List<LiteralExpression>> integerLiteralVariableAssignments =
+				new HashMap<VariableDeclaration, List<LiteralExpression>>(integerVariableAssignments);
+		Set<VariableDeclaration> integerLiteralVariables = integerLiteralVariableAssignments.keySet();
+		Set<VariableDeclaration> variableVariables = variableVariableAssignments.keySet();
+		integerLiteralVariables.removeAll(variableVariables);
+		integerLiteralVariables.removeAll(notIntegerLiteralVariables);
+		// Every variable in this collection now has only integer value assignments
+		
+		// 1: Calculating precise domains based on these values
+		Map<VariableDeclaration, Entry<Integer, Integer>> integerVariableMinMax = calculatePresiceCodomains(
+				integerLiteralVariableAssignments, integerLiteralVariables);
+		
+		// Creating literal expressions
+		Map<VariableDeclaration, LiteralExpression> variableLiterals =
+				new HashMap<VariableDeclaration, LiteralExpression>();
+		for (VariableDeclaration variableDeclaration : integerVariableMinMax.keySet()) {
+			Entry<Integer, Integer> values = integerVariableMinMax.get(variableDeclaration);
+			Integer min = values.getKey();
+			Integer max = values.getValue();
+			if (min == max) { // If min == max -> there is only one valid value 
+				variableLiterals.put(variableDeclaration,
+						literalCreator.of(variableDeclaration, min));
+			}
+		}
+		
+		return variableLiterals;
+	}
+
+	public static void extendCodomainsForVariableAssignments(
+			Map<VariableDeclaration, List<LiteralExpression>> integerVariableAssignments,
+			Map<VariableDeclaration, List<VariableDeclaration>> variableVariableAssignments,
+			Set<VariableDeclaration> notIntegerLiteralVariables,
+			Set<VariableDeclaration> variableVariables,
+			Map<VariableDeclaration, Entry<Integer, Integer>> integerVariableMinMax) {
+		variableVariables.removeAll(notIntegerLiteralVariables);
+		// Every variable in this collection now has only integer value assignments
+		// or 'var := var2' assignments
+		int size = 0;
+		while (size != variableVariableAssignments.size()) {
+			size = variableVariableAssignments.size(); // While we can remove vars from here
+			
+			for (VariableDeclaration assignedVariable :
+						new ArrayList<VariableDeclaration>(variableVariables)) {
+				List<VariableDeclaration> rhsVariables = variableVariableAssignments.get(assignedVariable);
+				if (rhsVariables.stream()
+						.allMatch(it ->
+							integerVariableMinMax.keySet().contains(it))) {
+					List<Integer> mins = new ArrayList<Integer>();
+					List<Integer> maxs = new ArrayList<Integer>();
+					
+					// Rhs variables
+					for (VariableDeclaration rhsVariable : rhsVariables) {
+						VariableDeclaration container = rhsVariable;
+						Entry<Integer, Integer> minMax = integerVariableMinMax.get(container);
+						mins.add(
+								minMax.getKey());
+						maxs.add(
+								minMax.getValue());
+					}
+					
+					// Rhs integer literals
+					if (integerVariableAssignments.containsKey(assignedVariable)) {
+						for (LiteralExpression integerLiteral :
+								integerVariableAssignments.get(assignedVariable)) {
+							mins.add(
+									xStsActionUtil.toInteger(integerLiteral));
+							maxs.add(
+									xStsActionUtil.toInteger(integerLiteral));
+						}
+					}
+					
+					int min = mins.stream()
+							.min((o1, o2) -> o1.compareTo(o2)).get();
+					int max = maxs.stream()
+							.max((o1, o2) -> o1.compareTo(o2)).get();
+					
+					// Now the codomain of the assigned variable is "known"
+					variableVariables.remove(assignedVariable);
+					// So we move it to the other map
+					integerVariableMinMax.put(assignedVariable,
+							new SimpleEntry<Integer, Integer>(min, max));
+				}
+			}
+		}
+	}
+
+	public static void extendCodomainsForLiteralAssignments(Map<VariableDeclaration, List<LiteralExpression>> integerVariableAssignments,
+			Map<VariableDeclaration, Entry<Integer, Integer>> integerVariableMinMax) {
+		List<VariableDeclaration> additionalIntegerVariables =
+				new ArrayList<VariableDeclaration>(integerVariableAssignments.keySet());
+		additionalIntegerVariables.removeIf(
+				it -> integerVariableMinMax.containsKey(it));
+		for (VariableDeclaration integerVariable : additionalIntegerVariables) {
+			List<LiteralExpression> integerLiterals =
+					integerVariableAssignments.get(integerVariable);
+			Integer min = integerLiterals.stream()
+					.map(it -> xStsActionUtil.toInteger(it))
+					.min((o1, o2) -> o1.compareTo(o2)).get();
+			Integer max = integerLiterals.stream()
+					.map(it -> xStsActionUtil.toInteger(it))
+					.max((o1, o2) -> o1.compareTo(o2)).get();
+			
+			min = Integer.min(Short.MIN_VALUE, min);
+			max = Integer.max(Short.MAX_VALUE, max);
+			
+			if (min < Short.MIN_VALUE || Short.MAX_VALUE < max) {
+				integerVariableMinMax.put(integerVariable,
+						new SimpleEntry<Integer, Integer>(min, max));
+			}
+		}
+	}
+
+	public static Map<VariableDeclaration, Entry<Integer, Integer>> calculatePresiceCodomains(
+			Map<VariableDeclaration, List<LiteralExpression>> integerLiteralVariableAssignments,
+			Set<VariableDeclaration> integerLiteralVariables) {
+		Map<VariableDeclaration, Entry<Integer, Integer>> integerVariableMinMax =
+				new HashMap<VariableDeclaration, Entry<Integer, Integer>>();
+		for (VariableDeclaration integerLiteralVariable : integerLiteralVariables) {
+			List<LiteralExpression> integerLiterals =
+					integerLiteralVariableAssignments.get(integerLiteralVariable);
+			// Mapping into integers and computing min and max
+			Integer min = integerLiterals.stream()
+					.map(it -> xStsActionUtil.toInteger(it))
+					.min((o1, o2) -> o1.compareTo(o2)).get();
+			Integer max = integerLiterals.stream()
+					.map(it -> xStsActionUtil.toInteger(it))
+					.max((o1, o2) -> o1.compareTo(o2)).get();
+			
+			integerVariableMinMax.put(integerLiteralVariable,
+					new SimpleEntry<Integer, Integer>(min, max));
+		}
+		return integerVariableMinMax;
+	}
+	
+	public static Triple<
+			Map<VariableDeclaration, List<LiteralExpression>>, Map<VariableDeclaration, List<VariableDeclaration>>, Set<VariableDeclaration>>
+				getVariableAssignmentGroups(XSTS xSts) {
+		List<AbstractAssignmentAction> abstractAssignments = ecoreUtil.getAllContentsOfType(
+				xSts, AbstractAssignmentAction.class);
+		
+		Map<VariableDeclaration, List<LiteralExpression>> integerVariableAssignments =
+				new HashMap<VariableDeclaration, List<LiteralExpression>>();
+		Map<VariableDeclaration, List<VariableDeclaration>> variableVariableAssignments =
+				new HashMap<VariableDeclaration, List<VariableDeclaration>>();
+		Set<VariableDeclaration> notIntegerLiteralVariables = new HashSet<VariableDeclaration>();
+		for (AbstractAssignmentAction abstractAssignment : abstractAssignments) {
+			Expression firstExpr = abstractAssignment.getLhs();
+			if (firstExpr instanceof DirectReferenceExpression identifierExpression) {
+				Declaration element = identifierExpression.getDeclaration();
+				if (element instanceof VariableDeclaration variable) {
+					if (abstractAssignment instanceof AssignmentAction assignment) {
+						Expression secondExpr = assignment.getRhs();
+						if (secondExpr instanceof LiteralExpression literalExpression &&
+								isNativeLiteral(literalExpression)) {
+							List<LiteralExpression> integerLiterals =
+									javaUtil.getOrCreateList(integerVariableAssignments, variable);
+							integerLiterals.add(literalExpression);
+						}
+						else if (isNative(element) && isEvaluable(secondExpr)) {
+							int value = evaluator.evaluate(secondExpr);
+							LiteralExpression literalExpression = literalCreator.of(element, value);
+							List<LiteralExpression> integerLiterals =
+									javaUtil.getOrCreateList(integerVariableAssignments, variable);
+							integerLiterals.add(literalExpression);
+						}
+						else if (secondExpr instanceof DirectReferenceExpression rhsIdentifierExpression) {
+							Declaration rhsNamedElement = rhsIdentifierExpression.getDeclaration();
+							if (rhsNamedElement instanceof VariableDeclaration rhsVariable) {
+								List<VariableDeclaration> variables = javaUtil
+										.getOrCreateList(variableVariableAssignments, variable);
+								variables.add(rhsVariable);
+							}
+						}
+						else {
+							// Not an 'integer literal' or 'var = var2'
+							notIntegerLiteralVariables.add(variable);
+						}
+					}
+					else {
+						// Havoc
+						notIntegerLiteralVariables.add(variable);
+					}
+				}
+			}
+		}
+		
+		List<VariableDeclarationAction> variableDeclarationActions = ecoreUtil.getAllContentsOfType(
+				xSts, VariableDeclarationAction.class);
+		for (VariableDeclarationAction variableDeclarationAction : variableDeclarationActions) {
+			VariableDeclaration localVariable = variableDeclarationAction.getVariableDeclaration();
+			Expression initialValue = xStsActionUtil.getInitialValue(localVariable);
+			if (isEvaluable(initialValue)) {
+				int value = evaluator.evaluate(initialValue);
+				LiteralExpression literalExpression = literalCreator.of(localVariable, value);
+				List<LiteralExpression> integerLiterals =
+						javaUtil.getOrCreateList(integerVariableAssignments, localVariable);
+				integerLiterals.add(literalExpression);
+			}
+			else {
+				// Not evaluable so we do not know what it is
+				notIntegerLiteralVariables.add(localVariable);
+			}
+		}
+		
+		return new Triple<Map<VariableDeclaration, List<LiteralExpression>>, Map<VariableDeclaration, List<VariableDeclaration>>, Set<VariableDeclaration>>(
+				integerVariableAssignments, variableVariableAssignments, notIntegerLiteralVariables);
 	}
 	
 }

@@ -46,6 +46,7 @@
     <genClasses ecoreClass="model.ecore#//AtomicAction"/>
     <genClasses ecoreClass="model.ecore#//NonDeterministicAction"/>
     <genClasses ecoreClass="model.ecore#//SequentialAction"/>
+    <genClasses ecoreClass="model.ecore#//UnorderedAction"/>
     <genClasses ecoreClass="model.ecore#//ParallelAction"/>
     <genClasses ecoreClass="model.ecore#//AssumeAction">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//AssumeAction/assumption"/>
@@ -69,6 +70,8 @@
     <genClasses ecoreClass="model.ecore#//SystemOutEventGroup"/>
     <genClasses ecoreClass="model.ecore#//SystemInEventParameterGroup"/>
     <genClasses ecoreClass="model.ecore#//SystemOutEventParameterGroup"/>
+    <genClasses ecoreClass="model.ecore#//MasterMessageQueueGroup"/>
+    <genClasses ecoreClass="model.ecore#//SlaveMessageQueueGroup"/>
     <genClasses ecoreClass="model.ecore#//VariableDeclarationAction">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//VariableDeclarationAction/variableDeclaration"/>
     </genClasses>

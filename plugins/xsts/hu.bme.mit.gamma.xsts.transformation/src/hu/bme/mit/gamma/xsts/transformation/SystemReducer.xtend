@@ -11,13 +11,18 @@
 package hu.bme.mit.gamma.xsts.transformation
 
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
+import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition
+import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
+import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.VariableGroupRetriever
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer.XstsOptimizer
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.composite.CompositeComponent
 import hu.bme.mit.gamma.util.GammaEcoreUtil
+import hu.bme.mit.gamma.util.JavaUtil
 import hu.bme.mit.gamma.xsts.model.AbstractAssignmentAction
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
@@ -36,8 +41,10 @@ class SystemReducer {
 	public static final SystemReducer INSTANCE =  new SystemReducer
 	protected new() {}
 	// Auxiliary objects
+	protected final extension XstsOptimizer xStsOptimizer = XstsOptimizer.INSTANCE
 	protected final extension VariableGroupRetriever variableGroupRetriever = VariableGroupRetriever.INSTANCE
 	protected final extension GammaEcoreUtil expressionUtil = GammaEcoreUtil.INSTANCE
+	protected final extension JavaUtil javaUtil = JavaUtil.INSTANCE
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
 	protected final extension ExpressionModelFactory factory = ExpressionModelFactory.eINSTANCE
 	protected final extension XSTSModelFactory xStsFactory = XSTSModelFactory.eINSTANCE
@@ -117,19 +124,59 @@ class SystemReducer {
 	
 	//
 	
+	def void deleteUnusedAndWrittenOnlyVariablesExceptOutEvents(XSTS xSts) {
+		xSts.deleteUnusedAndWrittenOnlyVariablesExceptOutEvents(#[])
+	}
+	
 	def void deleteUnusedAndWrittenOnlyVariablesExceptOutEvents(XSTS xSts,
 			Collection<? extends VariableDeclaration> keepableVariables) { // Unfolded Gamma variables
-		val keepableXStsVariables = newArrayList
-		
-		val systemOutEventVariableGroup = xSts.systemOutEventVariableGroup
-		val xStsOutEventVariables = systemOutEventVariableGroup.variables
-		val systemOutEventParameterVariableGroup = xSts.systemOutEventParameterVariableGroup
-		val xStsOutEventParameterVariables = systemOutEventParameterVariableGroup.variables
-		
-		keepableXStsVariables += xStsOutEventVariables
-		keepableXStsVariables += xStsOutEventParameterVariables
+		val keepableXStsVariables = xSts.outputVariables
 		
 		xSts.deleteUnusedAndWrittenOnlyVariables(keepableVariables, keepableXStsVariables)
+	}
+	
+	def void deleteUnusedInputEventVariables(XSTS xSts) {
+		xSts.deleteUnusedInputEventVariables(#[])
+	}
+	
+	def void deleteUnusedInputEventVariables(XSTS xSts,
+			Collection<? extends VariableDeclaration> keepableVariables) { // Unfolded Gamma variables
+		val clonedXSts = xSts.clone
+		clonedXSts.inEventTransition.action = createEmptyAction // Must not consider in event actions
+		clonedXSts.outEventTransition.action = createEmptyAction // Must not consider out event actions
+//		clonedXSts.entryEventTransition.action = createEmptyAction
+		// TODO Handle init action: There can be event transmission e.g., in state entry actions
+		
+		val xStsInputEventVariables = clonedXSts.inputVariables
+		clonedXSts.deleteUnusedAndWrittenOnlyVariables
+		
+		val xStsDeletedInputEventVariables = xStsInputEventVariables
+				.filter[it.containingXsts === null]
+		
+		for (xStsDeletedInputEventVariable : xStsDeletedInputEventVariables) {
+			val name = xStsDeletedInputEventVariable.name
+			val xStsInputVariable = xSts.getVariable(name) // Tracing
+			logger.log(Level.INFO, "Deleting input variable " + name)
+			
+			for (reference : xSts.getAllContentsOfType(DirectReferenceExpression)) {
+				if (reference.declaration === xStsDeletedInputEventVariable) {
+					val xStsDefaultValue = xStsInputVariable.defaultExpression // Input: default value
+					xStsDefaultValue.replace(reference)
+				}
+			}
+			// These references cannot be rhs-s in assignments if the above algorithms are correct
+		}
+		// Optimization only if needed
+		if (!xStsDeletedInputEventVariables.empty) {
+			// Value propagation - inline: XstsOptimizer has this and many other techniques
+			xSts.optimizeXSts
+			// Another deletion of unused variables
+			xSts.deleteUnusedAndWrittenOnlyVariablesExceptOutEvents(keepableVariables)
+		}
+	}
+	
+	def void deleteUnusedAndWrittenOnlyVariables(XSTS xSts) {
+		xSts.deleteUnusedAndWrittenOnlyVariables(#[], #[])
 	}
 	
 	def void deleteUnusedAndWrittenOnlyVariables(XSTS xSts,
@@ -142,7 +189,7 @@ class SystemReducer {
 			Collection<? extends VariableDeclaration> keepableXStsVariables) { // XSTS variables
 		val mapper = new ReferenceToXstsVariableMapper(xSts)
 		
-		val xStsKeepableVariables = newLinkedList
+		val xStsKeepableVariables = newArrayList
 		xStsKeepableVariables += keepableXStsVariables
 		for (keepableVariable : keepableVariables) {
 			xStsKeepableVariables += mapper.getVariableVariables(keepableVariable)
@@ -156,20 +203,178 @@ class SystemReducer {
 			val xStsDeleteableVariables = newLinkedHashSet
 			
 			xStsDeleteableVariables += xStsVariables
-			
-			xStsDeleteableVariables -= xSts.readVariables
+			// To check and remove 'a := a - 1' like deletable variables
+			xStsDeleteableVariables -= xSts.externallyReadVariables
 			xStsDeleteableVariables -= xStsKeepableVariables
 			
-			val xStsDeletableAssignments = xStsDeleteableVariables.getAssignments(xSts)
-			for (xStsDeletableAssignmentAction : xStsDeletableAssignments) {
-				createEmptyAction.replace(
-					xStsDeletableAssignmentAction) // To avoid nullptrs
-			}
+			xSts.deleteVariablesAndAssignments(xStsDeleteableVariables)
+		}
+	}
+	
+	def void deleteTrivialCodomainVariablesExceptOutEvents(XSTS xSts) {
+		val keepableXStsVariables = xSts.outputVariables
+		
+		xSts.deleteTrivialCodomainVariables(#[], keepableXStsVariables)
+	}
+	
+	def void deleteTrivialCodomainVariables(XSTS xSts,
+			Collection<? extends VariableDeclaration> keepableVariables, // Unfolded Gamma variables
+			Collection<? extends VariableDeclaration> keepableXStsVariables) { // XSTS variables
+		val mapper = new ReferenceToXstsVariableMapper(xSts)
+		
+		val xStsKeepableVariables = newArrayList
+		xStsKeepableVariables += keepableXStsVariables
+		for (keepableVariable : keepableVariables) {
+			xStsKeepableVariables += mapper.getVariableVariables(keepableVariable)
+		}
+		
+		val oneValueXStsVariableCodomains = xSts.oneValueVariableCodomains
+		val oneValueXStsVariables = oneValueXStsVariableCodomains.keySet
+		for (xStsVariable : oneValueXStsVariables) {
+			val xStsTrivialCodomain = oneValueXStsVariableCodomains.get(xStsVariable)
 			
-			for (xStsDeletableVariable : xStsDeleteableVariables) {
-				xStsDeletableVariable.delete // Delete needed due to e.g., transientVariables list
+			for (reference : xSts.getAllContentsOfType(DirectReferenceExpression)
+					.filter[!it.isLhs && it.declaration === xStsVariable]) {
+				// No lhs references, so assignment actions can be deleted later 
+				val xStsLiteral = xStsTrivialCodomain.clone
+				xStsLiteral.replace(reference)
 			}
 		}
+		
+		val xStsDeletableVariables = newHashSet
+		xStsDeletableVariables += oneValueXStsVariables
+		xStsDeletableVariables -= xStsKeepableVariables
+		
+		xSts.deleteVariablesAndAssignments(xStsDeletableVariables)
+	}
+	
+	def void deleteUnnecessaryInputVariablesExceptOutEvents(XSTS xSts) {
+		val keepableXStsVariables = xSts.outputVariables
+		
+		xSts.deleteUnnecessaryInputVariables(#[], keepableXStsVariables)
+	}
+	
+	def void deleteUnnecessaryInputVariables(XSTS xSts,
+			Collection<? extends VariableDeclaration> keepableVariables, // Unfolded Gamma variables
+			Collection<? extends VariableDeclaration> keepableXStsVariables) { // XSTS variables
+		val mapper = new ReferenceToXstsVariableMapper(xSts)
+		
+		val xStsKeepableVariables = newArrayList
+		xStsKeepableVariables += keepableXStsVariables
+		for (keepableVariable : keepableVariables) {
+			xStsKeepableVariables += mapper.getVariableVariables(keepableVariable)
+		}
+		
+		val xStsDeletableVariables = newHashSet
+		
+		val xStsInputVariables = xSts.inputVariables
+		val xStsVariablesReferencedFromConditions = xSts.variablesReferencedFromConditions
+		
+		for (xStsInputVariable : xStsInputVariables) {
+			val allReaderXStsVariables = xStsInputVariable.allReaderVariables
+			
+			if (xStsVariablesReferencedFromConditions.containsNone(allReaderXStsVariables)) {
+				xStsDeletableVariables += allReaderXStsVariables
+				if (!xStsVariablesReferencedFromConditions.contains(xStsInputVariable)) {
+					xStsDeletableVariables += xStsInputVariable
+				}
+			}
+		}
+	
+		xStsDeletableVariables -= xStsKeepableVariables
+		
+		xSts.deleteVariablesAndAssignments(xStsDeletableVariables)
+	}
+	//
+	
+	protected def void deleteVariablesAndAssignments(XSTS xSts,
+			Collection<VariableDeclaration> xStsDeleteableVariables) {
+		val xStsDeletableAssignments = xStsDeleteableVariables.getAssignments(xSts)
+		for (xStsDeletableAssignmentAction : xStsDeletableAssignments) {
+			createEmptyAction.replace(
+				xStsDeletableAssignmentAction) // To avoid nullptrs
+		}
+		
+		for (xStsDeletableVariable : xStsDeleteableVariables) {
+			xStsDeletableVariable.delete // Delete needed due to e.g., transientVariables list
+			logger.log(Level.INFO, "Deleting XSTS variable " + xStsDeletableVariable.name)
+		}
+	}
+	
+	//
+	
+	def void deleteUnusedEnumLiteralsExceptOne(XSTS xSts,
+			Collection<? extends EnumerationLiteralDefinition> keepableLiterals) { // Unfolded Gamma variables
+		val xStsLiterals = xSts.getAllContentsOfType(EnumerationLiteralDefinition)
+		
+		val xStsLiteralReferences = xSts.getAllContentsOfType(EnumerationLiteralExpression)
+		val xStsReferencedLiterals = xStsLiteralReferences.map[it.reference].toSet
+		
+		val xStsKeepableLiterals = keepableLiterals.map[it.name] // customizeName? - remains the same
+									.map[val name = it
+										xSts.typeDeclarations.map[it.typeDefinition]
+											.filter(EnumerationTypeDefinition).map[it.literals].flatten
+											.filter[it.name === name]].flatten.toSet
+		
+		val xStsDeletableLiterals = newHashSet
+		xStsDeletableLiterals += xStsLiterals
+		xStsDeletableLiterals -= xStsReferencedLiterals
+		xStsDeletableLiterals -= xStsKeepableLiterals
+		
+		// Keeping the lowest literal for the "else" branch
+		if (!xStsDeletableLiterals.empty) {
+			xStsDeletableLiterals.remove(0)
+		}
+		//
+		
+		for (xStsDeletableLiteral : xStsDeletableLiterals) {
+			val xStsEnumerationType = xStsDeletableLiteral.getContainerOfType(EnumerationTypeDefinition)
+			logger.log(Level.INFO, "Deleting XSTS enum literal " + xStsDeletableLiteral.name)
+			xStsDeletableLiteral.remove
+			if (xStsEnumerationType.literals.empty) {
+				xStsEnumerationType.delete
+			}
+		}
+	}
+	
+	//
+	
+	protected def getInputVariables(XSTS xSts) {
+		val xStsInputVariables = newArrayList
+		
+		val systemInEventVariableGroup = xSts.systemInEventVariableGroup
+		val xStsInEventVariables = systemInEventVariableGroup.variables
+		val systemInEventParameterVariableGroup = xSts.systemInEventParameterVariableGroup
+		val xStsInEventParameterVariables = systemInEventParameterVariableGroup.variables
+		
+		xStsInputVariables += xStsInEventVariables
+		xStsInputVariables += xStsInEventParameterVariables
+		
+		// Also the message queues
+		
+		val masterQueueVariableGroup = xSts.masterMessageQueueGroup
+		val xStsMasterQueueVariables = masterQueueVariableGroup.variables
+		val slaveQueueVariableGroup = xSts.slaveMessageQueueGroup
+		val xStsSlaveQueueVariables = slaveQueueVariableGroup.variables
+		
+		xStsInputVariables += xStsMasterQueueVariables
+		xStsInputVariables += xStsSlaveQueueVariables
+		
+		return xStsInputVariables
+	}
+	
+	protected def getOutputVariables(XSTS xSts) {
+		val xStsOutputVariables = newArrayList
+		
+		val systemOutEventVariableGroup = xSts.systemOutEventVariableGroup
+		val xStsOutEventVariables = systemOutEventVariableGroup.variables
+		val systemOutEventParameterVariableGroup = xSts.systemOutEventParameterVariableGroup
+		val xStsOutEventParameterVariables = systemOutEventParameterVariableGroup.variables
+		
+		xStsOutputVariables += xStsOutEventVariables
+		xStsOutputVariables += xStsOutEventParameterVariables
+		
+		return xStsOutputVariables
 	}
 	
 	//

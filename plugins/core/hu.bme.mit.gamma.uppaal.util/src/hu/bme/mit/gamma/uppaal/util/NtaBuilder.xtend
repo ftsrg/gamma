@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -58,9 +58,9 @@ class NtaBuilder {
 	protected final extension ExpressionsFactory expFact = ExpressionsFactory.eINSTANCE
 	protected final extension TemplatesFactory tempFact = TemplatesFactory.eINSTANCE
 	protected final extension UppaalFactory upFact = UppaalFactory.eINSTANCE
-	protected final extension DeclarationsFactory declFact= DeclarationsFactory.eINSTANCE
-	protected final extension TypesFactory typFact= TypesFactory.eINSTANCE
-	protected final extension SystemFactory sysFact= SystemFactory.eINSTANCE
+	protected final extension DeclarationsFactory declFact = DeclarationsFactory.eINSTANCE
+	protected final extension TypesFactory typFact = TypesFactory.eINSTANCE
+	protected final extension SystemFactory sysFact = SystemFactory.eINSTANCE
 	protected final extension StatementsFactory stmtsFactory = StatementsFactory.eINSTANCE
 	// Auxiliary objects
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
@@ -250,12 +250,15 @@ class NtaBuilder {
 	/**
 	 * Initializes a variable with the given string value.
 	 */
-	def initVar(DataVariableDeclaration variable, String value) {		
+	def initVar(DataVariableDeclaration variable, String value) {
+		variable.initVar(
+			value.createLiteralExpression)
+	}
+	
+	def initVar(DataVariableDeclaration variable, Expression expression) {
 		val firstVariable = variable.variable.head
 		firstVariable.initializer = createExpressionInitializer => [
-			it.expression = createLiteralExpression => [
-				it.text = value
-			]
+			it.expression = expression
 		]
 	}
 	

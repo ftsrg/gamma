@@ -23,6 +23,6 @@ class PromelaReferenceSerializer extends ThetaReferenceSerializer {
 	protected new() {}
 	
 	override protected getSingleTargetStateName(State state, Region parentRegion, ComponentInstanceReferenceExpression instance) {
-		return '''«parentRegion.customizeName(instance)» == «state.customizeEnumLiteralName(parentRegion, instance)»'''
+		return '''«parentRegion.customizeName(instance)» == «state.customizeEnumLiteralName(parentRegion)»'''
 	}
 }

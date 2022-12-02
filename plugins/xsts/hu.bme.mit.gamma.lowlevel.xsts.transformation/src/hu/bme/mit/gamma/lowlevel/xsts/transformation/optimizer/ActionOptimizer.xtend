@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -18,7 +18,6 @@ import hu.bme.mit.gamma.expression.model.FalseExpression
 import hu.bme.mit.gamma.expression.model.MultiaryExpression
 import hu.bme.mit.gamma.expression.model.OrExpression
 import hu.bme.mit.gamma.expression.model.TrueExpression
-import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.AbstractAssignmentAction
@@ -38,7 +37,6 @@ import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
 import hu.bme.mit.gamma.xsts.model.XTransition
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
-import java.util.Collection
 import java.util.List
 import org.eclipse.emf.ecore.EObject
 
@@ -136,10 +134,10 @@ class ActionOptimizer {
 	}
 	
 	protected def dispatch Action simplifyCompositeActions(MultiaryAction action) {
-		var xStsActionList = newLinkedList
+		var xStsActionList = newArrayList
 		xStsActionList += action.actions
 		if (xStsActionList.size > 1) {
-			val remainingXStsActions = newLinkedList
+			val remainingXStsActions = newArrayList
 			// Sequence order must be reserved
 			xStsActionList.removeIf[it instanceof EmptyAction || 
 				it instanceof MultiaryAction && (it as MultiaryAction).actions.forall[it instanceof EmptyAction] ||
@@ -233,7 +231,7 @@ class ActionOptimizer {
 	protected def dispatch List<Action> simplifySequentialActions(SequentialAction action, boolean isTop) {
 		val xStsSubactions = newArrayList
 		xStsSubactions += action.actions
-		val newXStsActions = newLinkedList
+		val newXStsActions = newArrayList
 		// Additional checks - is a definitely false assumption there
 		if (xStsSubactions.filter(AssumeAction).exists[it.assumption.definitelyFalseExpression]) {
 			// This action cannot be executed
@@ -320,7 +318,7 @@ class ActionOptimizer {
 	protected def dispatch List<Action> simplifyParallelActions(ParallelAction action, boolean isTop) {
 		val xStsSubactions = newArrayList
 		xStsSubactions += action.actions
-		val newXStsActions = newLinkedList
+		val newXStsActions = newArrayList
 		for (xStsSubaction : xStsSubactions) {
 			if (xStsSubaction instanceof ParallelAction) {
 				// Subactions of a ParallelAction
@@ -398,7 +396,7 @@ class ActionOptimizer {
 	protected def dispatch List<Action> simplifyOrthogonalActions(OrthogonalAction action, boolean isTop) {
 		val xStsSubactions = newArrayList
 		xStsSubactions += action.actions
-		val newXStsActions = newLinkedList
+		val newXStsActions = newArrayList
 		for (xStsSubaction : xStsSubactions) {
 			if (xStsSubaction instanceof OrthogonalAction) {
 				// Subactions of a OrthogonalAction
@@ -476,7 +474,7 @@ class ActionOptimizer {
 	 */
 	protected def dispatch List<Action> simplifyNonDeterministicActions(NonDeterministicAction action, boolean isTop) {
 		val actions = action.actions
-		val newXStsActions = newLinkedList
+		val newXStsActions = newArrayList
 		// Removing same branches
 		val coveredXStsActions = newArrayList
 		for (var i = 0; i < actions.size - 1; i++) {
@@ -513,7 +511,7 @@ class ActionOptimizer {
 		val xStsSubactions = newArrayList
 		xStsSubactions += action.actions
 		// Now all parallel actions are optimized to sequential actions
-		if (true || action.isOptimizableToSequentialAction) {
+		if (action.areSubactionsOrthogonal) {
 			return createSequentialAction => [
 				for (xStsSubaction : xStsSubactions) {
 					it.actions += xStsSubaction.optimizeParallelActions
@@ -558,31 +556,6 @@ class ActionOptimizer {
 		return action
 	}
 	
-	protected def boolean isOptimizableToSequentialAction(ParallelAction action) {
-		val List<Collection<VariableDeclaration>> readVariables = newLinkedList
-		val List<Collection<VariableDeclaration>> writtenVariables = newLinkedList
-		for (var i = 0; i < action.actions.size; i++) {
-			val xStsSubaction = action.actions.get(i)
-			val newlyWrittenVariables = xStsSubaction.writtenVariables
-			writtenVariables += newlyWrittenVariables
-			val newlyReadVariables = newHashSet
-			newlyReadVariables += xStsSubaction.readVariables
-			newlyReadVariables -= newlyWrittenVariables
-			readVariables += newlyReadVariables
-			for (var j = 0; j < i; j++) {
-				val previouslyReadVariables = readVariables.get(j)
-				val previouslyWrittenVariables = writtenVariables.get(j)
-				// If a written variable is read or written somewhere, the parallel action cannot be optimized
-				if (previouslyReadVariables.exists[newlyWrittenVariables.contains(it)] ||
-						previouslyWrittenVariables.exists[newlyWrittenVariables.contains(it)] ||
-						previouslyWrittenVariables.exists[newlyReadVariables.contains(it)]) {
-					return false
-				}
-			}
-		}
-		return true
-	}
-	
 	// Assignment actions
 	
 	protected def dispatch void optimizeAssignmentActions(Action action) {
@@ -610,7 +583,7 @@ class ActionOptimizer {
 	
 	protected def dispatch void optimizeAssignmentActions(SequentialAction action) {
 		val xStsActions = action.actions
-		val removeableXStsActions = <AbstractAssignmentAction>newLinkedList
+		val removeableXStsActions = <AbstractAssignmentAction>newArrayList
 		for (var i = 0; i < xStsActions.size; i++) {
 			val xStsFirstAction = xStsActions.get(i)
 			if (xStsFirstAction instanceof AbstractAssignmentAction) {
@@ -719,7 +692,7 @@ class ActionOptimizer {
 	}
 	
 	protected def dispatch void deleteTrivialNonDeterministicActions(MultiaryAction action) {
-		val copiedXStsActions = newLinkedList
+		val copiedXStsActions = newArrayList
 		copiedXStsActions += action.actions
 		for (copiedXStsAction : copiedXStsActions) {
 			if (copiedXStsAction instanceof NonDeterministicAction) {

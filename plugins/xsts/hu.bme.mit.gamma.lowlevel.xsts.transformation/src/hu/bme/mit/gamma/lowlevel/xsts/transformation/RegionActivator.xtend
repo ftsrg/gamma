@@ -20,7 +20,7 @@ import hu.bme.mit.gamma.statechart.lowlevel.model.ShallowHistoryState
 import hu.bme.mit.gamma.statechart.lowlevel.model.State
 import hu.bme.mit.gamma.statechart.lowlevel.model.StateNode
 import hu.bme.mit.gamma.xsts.model.Action
-import hu.bme.mit.gamma.xsts.model.ParallelAction
+import hu.bme.mit.gamma.xsts.model.MultiaryAction
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
@@ -95,7 +95,7 @@ class RegionActivator {
 			// This level
 			if (lowlevelGrandparentRegion.hasOrthogonalRegion && !lowlevelGrandparentRegion.stateNodes.contains(lowlevelTopState)) {
 				// Orthogonal
-				it.actions += lowlevelGrandparentRegion.createRecursiveXStsOrthogonalRegionActivatingAction as ParallelAction => [
+				it.actions += lowlevelGrandparentRegion.createRecursiveXStsOrthogonalRegionActivatingAction as MultiaryAction => [
 					it.actions += singleXStsParentStateActivatingAction
 				]
 			}
@@ -128,7 +128,7 @@ class RegionActivator {
 		val xStsStateAndSubstateActivationAction = lowlevelStateNode.createRecursiveXStsStateAndSubstateActivatingAction
 		// Has orthogonal regions
 		if (lowlevelParentRegion.hasOrthogonalRegion) {
-			return lowlevelParentRegion.createRecursiveXStsOrthogonalRegionActivatingAction as ParallelAction => [
+			return lowlevelParentRegion.createRecursiveXStsOrthogonalRegionActivatingAction as MultiaryAction => [
 				it.actions += xStsStateAndSubstateActivationAction
 			]
 		}
@@ -140,7 +140,7 @@ class RegionActivator {
 		if (!lowlevelRegion.hasOrthogonalRegion) {
 			return createEmptyAction
 		}
-		return createParallelAction => [
+		return createRegionAction => [
 			for (lowlevelOrthogonalRegion : lowlevelRegion.orthogonalRegions) {
 				it.actions += lowlevelOrthogonalRegion.createRecursiveXStsRegionAndSubregionActivatingAction
 			}
@@ -220,7 +220,7 @@ class RegionActivator {
 	 */
 	protected def Action createRecursiveXStsSubstateActivatingAction(State lowlevelState) {
 		if (lowlevelState.isComposite) {
-			return createParallelAction => [
+			return createRegionAction => [
 				// Setting the contained regions
 				for (lowlevelSubregion : lowlevelState.regions) {
 					it.actions += lowlevelSubregion.createRecursiveXStsRegionAndSubregionActivatingAction
