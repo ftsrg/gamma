@@ -10,21 +10,21 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.scenario.trace.generator
 
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.Expression
+import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.TransitionMerging
 import hu.bme.mit.gamma.scenario.statechart.util.ScenarioStatechartUtil
 import hu.bme.mit.gamma.scenario.trace.generator.util.ExecutionTraceBackAnnotator
+import hu.bme.mit.gamma.scenario.trace.generator.util.TraceGenUtil
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression
 import hu.bme.mit.gamma.statechart.contract.NotDefinedEventMode
 import hu.bme.mit.gamma.statechart.contract.ScenarioContractAnnotation
 import hu.bme.mit.gamma.statechart.interface_.Component
-import hu.bme.mit.gamma.statechart.statechart.State
-import hu.bme.mit.gamma.statechart.statechart.StateNode
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
-import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.theta.verification.ThetaTraceGenerator
 import hu.bme.mit.gamma.theta.verification.ThetaVerifier
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
-import hu.bme.mit.gamma.trace.model.InstanceStateConfiguration
 import hu.bme.mit.gamma.trace.model.TraceModelFactory
 import hu.bme.mit.gamma.trace.util.TraceUtil
 import hu.bme.mit.gamma.trace.util.UnsentEventAssertExtender
@@ -36,12 +36,10 @@ import hu.bme.mit.gamma.transformation.util.annotations.InteractionCoverageCrite
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.transformation.api.Gamma2XstsTransformerSerializer
 import java.io.File
-import java.math.BigInteger
 import java.util.ArrayList
 import java.util.List
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
-import hu.bme.mit.gamma.scenario.trace.generator.util.TraceGenUtil
 
 class ScenarioStatechartTraceGenerator {
 
@@ -74,7 +72,7 @@ class ScenarioStatechartTraceGenerator {
 		var NotDefinedEventMode scenarioContractType = null
 		val result = <ExecutionTrace>newArrayList
 		val annotations = statechart.annotations
-		val isNegativeTest = statechart.hasNegatedContratStatechartAnnotation
+		val isNegativeTest = statechart.hasNegatedContractStatechartAnnotation
 		for (annotation : annotations) {
 			if (annotation instanceof ScenarioContractAnnotation) {
 				if (TEST_ORIGINAL) {
@@ -108,13 +106,23 @@ class ScenarioStatechartTraceGenerator {
 		}
 		
 		
-		for (trace : traces) {
-			backAnnotateNegsChecksAndAssigns(component, trace)
-		}
+
 		
 
 		val backAnnotator = new ExecutionTraceBackAnnotator(traces, component, true, true, isNegativeTest)
 		val filteredTraces = backAnnotator.execute
+		
+		for (trace : filteredTraces) {
+			trace.variableDeclarations += statechart.variableDeclarations.clone.filter[!it.name.startsWith("__id_")]
+			backAnnotateNegsChecksAndAssigns(component, trace)
+			val refs = getAllContentsOfType(trace, DirectReferenceExpression).filter[it.declaration instanceof VariableDeclaration]
+			for (oldRef : refs) {
+				val newRef = oldRef.clone
+				newRef.declaration = trace.variableDeclarations.findFirst[it.name == oldRef.declaration.name]
+				ecoreUtil.changeAndReplace(newRef, oldRef,trace)
+			}
+			trace.steps.forEach[it.asserts.removeIf([it instanceof ComponentInstanceStateReferenceExpression])]
+		}
 
 		for (trace : filteredTraces) {
 			val eventAdder = new UnsentEventAssertExtender(trace.steps, true)
@@ -167,7 +175,7 @@ class ScenarioStatechartTraceGenerator {
 		val containingPackage = component.containingPackage
 		for(trace : derivedTraces) {
 			val lastStep = trace.steps.last
-			val stateAssert = lastStep.asserts.filter(InstanceStateConfiguration).head // this filter is sufficient due to the simple assertions used in the tests
+			val stateAssert = lastStep.asserts.filter(ComponentInstanceStateReferenceExpression).head // this filter is sufficient due to the simple assertions used in the tests
 			if(stateAssert !== null && stateAssert.state.name.contains(targetStateName)) {
 				trace.setupExecutionTrace(null, trace.name + i++, component, containingPackage, statechart.scenarioAllowedWaitAnnotation)
 				traces += trace

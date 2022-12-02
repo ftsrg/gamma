@@ -13,6 +13,7 @@ package hu.bme.mit.gamma.scenario.trace.generator.util
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.scenario.statechart.util.ScenarioStatechartUtil
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction
@@ -163,6 +164,8 @@ class ExecutionTraceBackAnnotator {
 			}
 			step.actions.clear
 			step.actions += actions
+			
+			asserts += step.asserts.filter(ComponentInstanceStateReferenceExpression)
 			step.asserts.clear
 			step.asserts += asserts
 		}
