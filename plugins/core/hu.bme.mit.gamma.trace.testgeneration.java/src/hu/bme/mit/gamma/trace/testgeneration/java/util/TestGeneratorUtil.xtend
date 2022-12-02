@@ -17,7 +17,6 @@ import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceE
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
-import hu.bme.mit.gamma.trace.model.RaiseEventAct
 import hu.bme.mit.gamma.trace.model.Step
 import hu.bme.mit.gamma.trace.testgeneration.java.ExpressionSerializer
 import hu.bme.mit.gamma.trace.util.TraceUtil
@@ -26,8 +25,6 @@ import hu.bme.mit.gamma.transformation.util.annotations.AnnotationNamings
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.trace.derivedfeatures.TraceModelDerivedFeatures.*
-import hu.bme.mit.gamma.trace.model.Assert
-import hu.bme.mit.gamma.trace.model.NegatedAssert
 
 class TestGeneratorUtil {
 	// Resources

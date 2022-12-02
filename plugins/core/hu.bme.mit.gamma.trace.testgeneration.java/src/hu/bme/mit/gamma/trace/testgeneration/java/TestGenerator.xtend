@@ -24,7 +24,6 @@ import static com.google.common.base.Preconditions.checkArgument
 import static extension hu.bme.mit.gamma.codegeneration.java.util.Namings.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.trace.derivedfeatures.TraceModelDerivedFeatures.*
-import hu.bme.mit.gamma.trace.model.NegatedAssert
 
 class TestGenerator {
 	// Constant strings
