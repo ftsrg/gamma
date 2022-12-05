@@ -133,4 +133,8 @@ class ParallelActionHandler {
 	def getChanMapping() {
 		return parallelChanMapping
 	}
+	
+	def getChanNumber(List<Action> actions, Integer index) {
+		return parallelChanMapping.get(actions.get(index))
+	}
 }
