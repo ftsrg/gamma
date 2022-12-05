@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.trace.testgeneration.java
 
+import hu.bme.mit.gamma.codegeneration.java.util.TypeSerializer
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.trace.model.AssignmentAct
@@ -18,6 +19,7 @@ import hu.bme.mit.gamma.trace.model.InstanceSchedule
 import hu.bme.mit.gamma.trace.model.RaiseEventAct
 import hu.bme.mit.gamma.trace.model.Reset
 import hu.bme.mit.gamma.trace.model.TimeElapse
+import hu.bme.mit.gamma.trace.util.ExpressionTypeDeterminator
 import hu.bme.mit.gamma.trace.util.TraceUtil
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
@@ -31,6 +33,8 @@ class ActAndAssertSerializer {
 	
 	protected final extension ExpressionSerializer expressionSerializer
 	
+	protected final extension ExpressionTypeDeterminator typeDeterminator = ExpressionTypeDeterminator.INSTANCE
+	protected final extension TypeSerializer typeSerializer = TypeSerializer.INSTANCE
 	protected final extension TraceUtil traceUtil = TraceUtil.INSTANCE
 	
 	new(Component component, String TEST_INSTANCE_NAME, String TIMER_OBJECT_NAME) {
@@ -85,7 +89,7 @@ class ActAndAssertSerializer {
 	'''
 	
 	def dispatch String serialize(AssignmentAct assignment) '''
-		«assignment.lhs.serialize» = «assignment.rhs.serialize»;
+		«assignment.lhs.serialize» = («assignment.lhs.type.serialize») «assignment.rhs.serialize»;
 	'''
 
 	def dispatch serialize(InstanceSchedule schedule) {

@@ -58,6 +58,9 @@ class TestGeneratorUtil {
 						asserts += assertion
 					}
 				}
+				else {
+					asserts += assertion
+				}
 			}
 			else {
 				asserts += assertion
