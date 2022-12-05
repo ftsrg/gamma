@@ -205,9 +205,9 @@ class ModelSerializer {
 				«ENDFOR»
 				
 				«FOR index : 0 ..< actionSize»
-					chan_parallel_«index»?msg_parallel_«index»;
-					msg_parallel_«index» == 1;
-					msg_parallel_«index» = 0;
+					chan_parallel_«chanMapping.get(actions.get(index))»?msg_parallel_«chanMapping.get(actions.get(index))»;
+					msg_parallel_«chanMapping.get(actions.get(index))» == 1;
+					msg_parallel_«chanMapping.get(actions.get(index))» = 0;
 				«ENDFOR»
 			'''
 		}
@@ -232,13 +232,13 @@ class ModelSerializer {
 			proctype Parallel_«index»_«i»(«actions.get(i).serializeParallelProcessesArguments») {
 				«actions.get(i).serialize»
 				
-				chan_parallel_«i»!1;
+				chan_parallel_«chanMapping.get(actions.get(i))»!1;
 			}
 		«ENDFOR»
 	'''
 	
 	protected def serializeParallelChannels() '''
-		«FOR index : 0 ..< maxParallelNumber»
+		«FOR index : 0 .. maxParallelNumber»
 			chan chan_parallel_«index» = [0] of { bit };
 			bit msg_parallel_«index» = 0;
 		«ENDFOR»

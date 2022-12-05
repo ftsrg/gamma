@@ -32,12 +32,14 @@ class ParallelActionHandler {
 	
 	protected Map<List<Action>, Integer> parallelMapping
 	protected Map<Action, List<Declaration>> parallelVariableMapping
+	protected Map<Action, Integer> parallelChanMapping
 	protected int maxParallelNumber
 	
 	def createParallelMapping(List<? extends Action> actions) {
 		maxParallelNumber = 0
 		parallelMapping = newHashMap
 		parallelVariableMapping = newHashMap
+		parallelChanMapping = newHashMap
 		
 		// Promela supports the ParallelActions, but we need to create processes
 		for (subaction : actions) {
@@ -52,7 +54,7 @@ class ParallelActionHandler {
 			// ParallelAction has multiple Actions
 			if (actionSize > 1) {
 				parallelMapping.put(actions, parallelMapping.size)
-				maxParallelNumber = actionSize > maxParallelNumber ? actionSize : maxParallelNumber
+				action.createParallelChanMapping
 			}
 			// ParallelAction uses local variables
 			for (subaction : actions) {
@@ -62,8 +64,11 @@ class ParallelActionHandler {
 						localVariables += parameter
 					}
 					for (variable : subaction.referredVariables) {
-						if (variable.getContainerOfType(VariableDeclarationAction) !== null) {
-							localVariables += variable
+						val varDecAction = variable.getContainerOfType(VariableDeclarationAction) 
+						if (varDecAction !== null) {
+							if (!subaction.getAllContentsOfType(VariableDeclarationAction).contains(varDecAction)) {
+								localVariables += variable
+							}
 						}
 					}
 					if (!localVariables.empty) {
@@ -94,6 +99,23 @@ class ParallelActionHandler {
 		}
 	}
 	
+	protected def void createParallelChanMapping(ParallelAction action) {
+		val containers = action.getAllContainersOfType(ParallelAction)
+		var chanNumber = 0
+		if (containers.size > 0) {
+			for (container : containers) {
+				if (container.actions.size > 1) {
+					chanNumber += container.actions.size
+				}
+			}
+		}
+		for (subaction : action.actions) {
+			parallelChanMapping.put(subaction, chanNumber)
+			maxParallelNumber = chanNumber > maxParallelNumber ? chanNumber : maxParallelNumber
+			chanNumber += 1
+		}
+	}
+	
 	// Getters
 	
 	def getParallelMapping() {
@@ -106,5 +128,9 @@ class ParallelActionHandler {
 	
 	def getMaxParallelNumber() {
 		return maxParallelNumber
+	}
+	
+	def getChanMapping() {
+		return parallelChanMapping
 	}
 }
