@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.trace.testgeneration.java
 
+import hu.bme.mit.gamma.codegeneration.java.util.TypeSerializer
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
@@ -53,6 +54,7 @@ class TestGenerator {
 	protected final ActAndAssertSerializer actAndAssertSerializer	
 	protected final extension ExpressionSerializer expressionSerializer
 	// Auxiliary objects
+	protected final extension TypeSerializer typeSerializer = TypeSerializer.INSTANCE
 	protected final extension TraceUtil traceUtil = TraceUtil.INSTANCE
 	
 	/**
@@ -122,6 +124,10 @@ class TestGenerator {
 			private static «TEST_CLASS_NAME» «TEST_INSTANCE_NAME»;
 «««			Only if there are timing specis in the model
 			«IF component.timed»private static «TIMER_CLASS_NAME» «TIMER_OBJECT_NAME»;«ENDIF»
+			
+			«FOR variable : traces.head.variableDeclarations»
+				protected «variable.type.serialize» «variable.name»«IF variable.expression !== null» = «variable.expression.serialize»«ENDIF»;
+			«ENDFOR»
 			
 			@Before
 			public void init() {
