@@ -205,9 +205,9 @@ class ModelSerializer {
 				«ENDFOR»
 				
 				«FOR index : 0 ..< actionSize»
-					chan_parallel_«index»?msg_parallel_«index»;
-					msg_parallel_«index» == 1;
-					msg_parallel_«index» = 0;
+					chan_parallel_«actions.getChanNumber(index)»?msg_parallel_«actions.getChanNumber(index)»;
+					msg_parallel_«actions.getChanNumber(index)» == 1;
+					msg_parallel_«actions.getChanNumber(index)» = 0;
 				«ENDFOR»
 			'''
 		}
@@ -227,18 +227,18 @@ class ModelSerializer {
 		«ENDFOR»
 	'''
 	
-	protected def serializeParallelProcess(List<? extends Action> actions, int index) '''
+	protected def serializeParallelProcess(List<Action> actions, int index) '''
 		«FOR i : 0 ..< actions.size SEPARATOR System.lineSeparator»
 			proctype Parallel_«index»_«i»(«actions.get(i).serializeParallelProcessesArguments») {
 				«actions.get(i).serialize»
 				
-				chan_parallel_«i»!1;
+				chan_parallel_«actions.getChanNumber(i)»!1;
 			}
 		«ENDFOR»
 	'''
 	
 	protected def serializeParallelChannels() '''
-		«FOR index : 0 ..< maxParallelNumber»
+		«FOR index : 0 .. maxParallelNumber»
 			chan chan_parallel_«index» = [0] of { bit };
 			bit msg_parallel_«index» = 0;
 		«ENDFOR»
