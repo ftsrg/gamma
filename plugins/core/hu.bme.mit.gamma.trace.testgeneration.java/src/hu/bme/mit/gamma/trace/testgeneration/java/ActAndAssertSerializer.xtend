@@ -12,6 +12,7 @@ package hu.bme.mit.gamma.trace.testgeneration.java
 
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.statechart.interface_.Component
+import hu.bme.mit.gamma.trace.model.AssignmentAct
 import hu.bme.mit.gamma.trace.model.ComponentSchedule
 import hu.bme.mit.gamma.trace.model.InstanceSchedule
 import hu.bme.mit.gamma.trace.model.RaiseEventAct
@@ -81,6 +82,10 @@ class ActAndAssertSerializer {
 
 	def dispatch String serialize(TimeElapse elapse) '''
 		«IF component.timed»«TIMER_OBJECT_NAME».elapse(«elapse.elapsedTime.serialize»);«ENDIF»
+	'''
+	
+	def dispatch String serialize(AssignmentAct assignment) '''
+		«assignment.lhs.serialize» = «assignment.rhs.serialize»;
 	'''
 
 	def dispatch serialize(InstanceSchedule schedule) {

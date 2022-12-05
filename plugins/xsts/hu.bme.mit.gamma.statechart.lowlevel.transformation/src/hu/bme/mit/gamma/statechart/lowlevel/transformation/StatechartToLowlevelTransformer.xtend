@@ -230,6 +230,12 @@ class StatechartToLowlevelTransformer {
 			it.guardEvaluation = statechart.guardEvaluation.transform
 			it.orthogonalRegionSchedulingOrder = statechart.orthogonalRegionSchedulingOrder.transform
 		]
+		if (!statechart.hasOrthogonalRegions) {
+			// If there are no orthogonal regions, then the guard evaluation policy is irrelevant;
+			// on the fly is the faster option, though
+			lowlevelStatechart.guardEvaluation =
+				hu.bme.mit.gamma.statechart.lowlevel.model.GuardEvaluation.ON_THE_FLY
+		}
 		trace.put(statechart, lowlevelStatechart) // Saving in trace
 		
 		// Constants

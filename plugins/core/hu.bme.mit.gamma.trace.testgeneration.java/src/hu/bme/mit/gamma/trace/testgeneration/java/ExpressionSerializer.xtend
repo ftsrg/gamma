@@ -11,6 +11,10 @@
 package hu.bme.mit.gamma.trace.testgeneration.java
 
 import hu.bme.mit.gamma.expression.model.EqualityExpression
+import hu.bme.mit.gamma.expression.model.GreaterEqualExpression
+import hu.bme.mit.gamma.expression.model.GreaterExpression
+import hu.bme.mit.gamma.expression.model.LessEqualExpression
+import hu.bme.mit.gamma.expression.model.LessExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression
@@ -39,6 +43,21 @@ class ExpressionSerializer extends hu.bme.mit.gamma.codegeneration.java.util.Exp
 	//
 	
 	override dispatch String serialize(EqualityExpression expression) '''Objects.deepEquals(«expression.leftOperand.serialize», «expression.rightOperand.serialize»)'''
+	
+	override dispatch String serialize(LessExpression expression)
+		'''Objects.compare(«expression.leftOperand.serialize», «expression.rightOperand.serialize»,
+			«comparator») < 0'''
+	override dispatch String serialize(LessEqualExpression expression)
+		'''Objects.compare(«expression.leftOperand.serialize», «expression.rightOperand.serialize»,
+			«comparator») <= 0'''
+	override dispatch String serialize(GreaterExpression expression)
+		'''Objects.compare(«expression.leftOperand.serialize», «expression.rightOperand.serialize»,
+			«comparator») > 0'''
+	override dispatch String serialize(GreaterEqualExpression expression)
+		'''Objects.compare(«expression.leftOperand.serialize», «expression.rightOperand.serialize»,
+			«comparator») >= 0'''
+	
+	protected def String comparator() '''(a, b) -> Double.compare((((Number) a).doubleValue()), ((Number) b).doubleValue())''' // Could be refined; now we "cast" to double
 	
 	//
 	
