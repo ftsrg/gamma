@@ -146,24 +146,24 @@ class ReflectiveComponentCodeGenerator {
 					«FOR port : component.allPorts»
 						«FOR outEvent : port.outputEvents»
 							case "«port.name».«outEvent.name»":
-								if («Namings.REFLECTIVE_WRAPPED_COMPONENT».get«port.name.toFirstUpper»().isRaised«outEvent.name.toFirstUpper»()) {
-									«IF outEvent.parameterDeclarations.empty»
-										return new Object[0];
-									«ELSE»
-										return new Object[] {
-											«FOR parameter : outEvent.parameterDeclarations SEPARATOR ", "»
-												«port.generateEventParameterValuesGetter(parameter)»
-											«ENDFOR»
-										};
-									«ENDIF»
-								}
-								break;
+«««								if («Namings.REFLECTIVE_WRAPPED_COMPONENT».get«port.name.toFirstUpper»().isRaised«outEvent.name.toFirstUpper»()) {
+								«IF outEvent.parameterDeclarations.empty»
+									return new Object[0];
+								«ELSE»
+									return new Object[] {
+										«FOR parameter : outEvent.parameterDeclarations SEPARATOR ", "»
+											«port.generateEventParameterValuesGetter(parameter)»
+										«ENDFOR»
+									};
+								«ENDIF»
+«««								}
+«««								break;
 						«ENDFOR»
 					«ENDFOR»
 					default:
 						throw new IllegalArgumentException("Not known port-out event combination: " + portEvent);
 				}
-				«IF !component.allPorts.map[it.outputEvents].flatten.empty»return new Object[0];«ENDIF»
+«««				«IF !component.allPorts.map[it.outputEvents].flatten.empty»return new Object[0];«ENDIF»
 			}
 			
 			«component.generateIsActiveState»
