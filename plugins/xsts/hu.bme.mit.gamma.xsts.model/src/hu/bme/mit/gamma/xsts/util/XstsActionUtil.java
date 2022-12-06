@@ -410,7 +410,8 @@ public class XstsActionUtil extends ExpressionUtil {
 	}
 	
 	public SequentialAction createSequentialAction(Action action) {
-		return createSequentialAction(Collections.singletonList(action));
+		return createSequentialAction(
+				Collections.singletonList(action));
 	}
 	
 	public SequentialAction createSequentialAction(Collection<? extends Action> actions) {

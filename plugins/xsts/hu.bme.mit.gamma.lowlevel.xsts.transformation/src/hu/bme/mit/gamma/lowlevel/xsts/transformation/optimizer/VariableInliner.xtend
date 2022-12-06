@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2021 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -53,9 +53,21 @@ class VariableInliner {
 	def inline(XTransition transition) {
 		transition.action.inline
 	}
-
+	
 	def inline(Action action) {
-		action.inline(newHashMap, newHashMap)
+		action.inline(null)
+	}
+
+	def inline(Action action, Action context) {
+		val concreteValues = newHashMap
+		val symbolicValues = newHashMap
+		
+		if (!context.nullOrEmptyAction) {
+			// Filling the maps with the context
+			context.inline(concreteValues, symbolicValues)
+		}
+		
+		action.inline(concreteValues, symbolicValues)
 	}
 	
 	// The concreteValues and symbolicValues sets are disjunct!
