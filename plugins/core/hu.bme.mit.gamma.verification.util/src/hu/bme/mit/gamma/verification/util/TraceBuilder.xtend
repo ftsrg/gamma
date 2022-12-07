@@ -80,7 +80,8 @@ class TraceBuilder {
 		for (instanceVariableState : instanceVariableStates) {
 			val variable = instanceVariableState.variableDeclaration
 			if (variable.transient) {
-				instanceVariableState.remove
+				val expressionContainer = instanceVariableState.getSelfOrLastContainerOfType(Expression)
+				expressionContainer.remove
 			}
 		}
 	}

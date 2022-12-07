@@ -291,9 +291,10 @@ public class XstsActionUtil extends ExpressionUtil {
 				.collect(Collectors.toList());
 	}
 	
-	public List<AbstractAssignmentAction> getAssignments(VariableDeclaration variable, XSTS xSts) {
+	public List<AbstractAssignmentAction> getAssignments(VariableDeclaration variable,
+				EObject root) {
 		List<AbstractAssignmentAction> assignments = ecoreUtil.getAllContentsOfType(
-				xSts, AbstractAssignmentAction.class);
+				root, AbstractAssignmentAction.class);
 		return getAssignments(variable, assignments);
 	}
 	
@@ -303,9 +304,10 @@ public class XstsActionUtil extends ExpressionUtil {
 				getDeclaration(it.getLhs()))).collect(Collectors.toList());
 	}
 	
-	public List<AbstractAssignmentAction> getAssignments(Collection<VariableDeclaration> variables,	XSTS xSts) {
+	public List<AbstractAssignmentAction> getAssignments(Collection<VariableDeclaration> variables,
+				EObject root) {
 		List<AbstractAssignmentAction> assignments = ecoreUtil.getAllContentsOfType(
-				xSts, AbstractAssignmentAction.class);
+				root, AbstractAssignmentAction.class);
 		return getAssignments(variables, assignments);
 	}
 	
