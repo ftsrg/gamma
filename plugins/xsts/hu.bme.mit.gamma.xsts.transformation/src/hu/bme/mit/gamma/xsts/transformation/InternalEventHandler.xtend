@@ -279,7 +279,7 @@ class InternalEventHandler {
 			}
 		}
 		
-		for (xStsVariable : xStsVariables) {
+		for (xStsVariable : xStsVariables.filterNull) { // If internal events are filtered, there can be nulls
 			xStsVariableAssignments += xStsVariable.createVariableResetAction
 		}
 		
