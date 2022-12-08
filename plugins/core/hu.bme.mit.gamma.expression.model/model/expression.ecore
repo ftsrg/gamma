@@ -46,7 +46,10 @@
   <eClassifiers xsi:type="ecore:EClass" name="FunctionDeclaration" eSuperTypes="#//Declaration #//ParametricElement"/>
   <eClassifiers xsi:type="ecore:EClass" name="TypeDeclaration" eSuperTypes="#//Declaration"/>
   <eClassifiers xsi:type="ecore:EClass" name="ConstantDeclaration" eSuperTypes="#//ValueDeclaration #//InitializableElement"/>
-  <eClassifiers xsi:type="ecore:EClass" name="ParameterDeclaration" eSuperTypes="#//ValueDeclaration"/>
+  <eClassifiers xsi:type="ecore:EClass" name="ParameterDeclaration" eSuperTypes="#//ValueDeclaration">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="annotations" upperBound="-1"
+        eType="#//ParameterDeclarationAnnotation" containment="true"/>
+  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="FieldDeclaration" eSuperTypes="#//ValueDeclaration"/>
   <eClassifiers xsi:type="ecore:EClass" name="LambdaDeclaration" eSuperTypes="#//InitializableElement #//FunctionDeclaration"/>
   <eClassifiers xsi:type="ecore:EClass" name="Type"/>
@@ -231,7 +234,12 @@
   <eClassifiers xsi:type="ecore:EClass" name="ModExpression" eSuperTypes="#//ArithmeticExpression #//BinaryExpression"/>
   <eClassifiers xsi:type="ecore:EClass" name="UnaryMinusExpression" eSuperTypes="#//ArithmeticExpression #//UnaryExpression"/>
   <eClassifiers xsi:type="ecore:EClass" name="UnaryPlusExpression" eSuperTypes="#//ArithmeticExpression #//UnaryExpression"/>
+  <eClassifiers xsi:type="ecore:EClass" name="ParameterDeclarationAnnotation" abstract="true"/>
+  <eClassifiers xsi:type="ecore:EClass" name="InternalParameterDeclarationAnnotation"
+      eSuperTypes="#//ParameterDeclarationAnnotation"/>
   <eClassifiers xsi:type="ecore:EClass" name="VariableDeclarationAnnotation" abstract="true"/>
+  <eClassifiers xsi:type="ecore:EClass" name="InternalVariableDeclarationAnnotation"
+      eSuperTypes="#//VariableDeclarationAnnotation"/>
   <eClassifiers xsi:type="ecore:EClass" name="TransientVariableDeclarationAnnotation"
       eSuperTypes="#//VariableDeclarationAnnotation"/>
   <eClassifiers xsi:type="ecore:EClass" name="ResettableVariableDeclarationAnnotation"

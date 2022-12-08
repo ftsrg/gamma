@@ -4,7 +4,9 @@ import hu.bme.mit.gamma.expression.model.ConstantDeclaration
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.InitializableElement
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition
+import hu.bme.mit.gamma.expression.model.InternalParameterDeclarationAnnotation
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
+import hu.bme.mit.gamma.expression.model.ParameterDeclarationAnnotation
 import hu.bme.mit.gamma.expression.model.ValueDeclaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.model.VariableDeclarationAnnotation
@@ -162,8 +164,8 @@ class ValueDeclarationTransformer {
 		throw new IllegalArgumentException("Not known value declaration: " + gammaValue)
 	}
 	
-	private def List<VariableDeclaration> transformValue(ValueDeclaration variable, Tracer tracer) {
-		val type = variable.type
+	private def List<VariableDeclaration> transformValue(ValueDeclaration declaration, Tracer tracer) {
+		val type = declaration.type
 		val fieldHierarchies = type.fieldHierarchies
 		val nativeTypes = type.nativeTypes
 		checkState(fieldHierarchies.size == nativeTypes.size)
@@ -175,20 +177,25 @@ class ValueDeclarationTransformer {
 			val lowlevelVariable = createVariableDeclaration => [
 				// Name added later
 				it.type = nativeType
-				if (variable instanceof VariableDeclaration) {
-					for (annotation : variable.annotations) {
+				if (declaration instanceof VariableDeclaration) {
+					for (annotation : declaration.annotations) {
+						it.annotations += annotation.transformAnnotation
+					}
+				}
+				else if (declaration instanceof ParameterDeclaration) {
+					for (annotation : declaration.annotations) {
 						it.annotations += annotation.transformAnnotation
 					}
 				}
 			]
 			lowlevelVariables += lowlevelVariable
 			// Abstract tracing
-			tracer.trace(variable, fieldHierarchy, lowlevelVariable)
+			tracer.trace(declaration, fieldHierarchy, lowlevelVariable)
 		}
 		// Initial values - must come after variable transformation due to the lazy type transformation
 		val initialValues = newArrayList
-		if (variable instanceof InitializableElement) {
-			val initalExpression = variable.expression
+		if (declaration instanceof InitializableElement) {
+			val initalExpression = declaration.expression
 			if (initalExpression !== null) {
 				initialValues += initalExpression.transformExpression
 			}
@@ -205,6 +212,15 @@ class ValueDeclarationTransformer {
 	
 	private def transformAnnotation(VariableDeclarationAnnotation annotation) {
 		return annotation.clone
+	}
+	
+	private def transformAnnotation(ParameterDeclarationAnnotation annotation) {
+		switch (annotation) {
+			InternalParameterDeclarationAnnotation:
+				return createInternalVariableDeclarationAnnotation
+			default:
+				throw new IllegalArgumentException("Not known annotation: " + annotation)
+		}
 	}
 	
 	//

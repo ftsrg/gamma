@@ -464,7 +464,9 @@ class StatechartAnnotator {
 		val raisedEvents = relevantMatches.map[it.raisedEvent].toSet // Set, so one event is set only once
 		// Creating event parameters
 		for (event : raisedEvents) {
-			event.extendEventWithParameter(createIntegerTypeDefinition, namings.getParameterName(event))
+			val idParameter = event.extendEventWithParameter(
+					createIntegerTypeDefinition, namings.getParameterName(event))
+			idParameter.addInternalAnnotation
 			// Parameter is always the last
 		}
 		

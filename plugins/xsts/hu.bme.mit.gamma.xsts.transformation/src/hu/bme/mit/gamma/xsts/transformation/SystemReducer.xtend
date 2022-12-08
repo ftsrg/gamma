@@ -354,11 +354,11 @@ class SystemReducer {
 		xStsInputVariables += xStsInEventVariables
 		xStsInputVariables += xStsInEventParameterVariables
 		
-		// Also the message queues TODO only the input ones
+		// Also the system message queues
 		
-		val masterQueueVariableGroup = xSts.masterMessageQueueGroup
+		val masterQueueVariableGroup = xSts.systemMasterMessageQueueGroup
 		val xStsMasterQueueVariables = masterQueueVariableGroup.variables
-		val slaveQueueVariableGroup = xSts.slaveMessageQueueGroup
+		val slaveQueueVariableGroup = xSts.systemSlaveMessageQueueGroup
 		val xStsSlaveQueueVariables = slaveQueueVariableGroup.variables
 		
 		xStsInputVariables += xStsMasterQueueVariables

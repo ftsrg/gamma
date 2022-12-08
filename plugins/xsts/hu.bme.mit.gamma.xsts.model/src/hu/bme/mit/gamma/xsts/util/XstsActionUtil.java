@@ -311,6 +311,15 @@ public class XstsActionUtil extends ExpressionUtil {
 		return getAssignments(variables, assignments);
 	}
 	
+	public void changeAssignmentsToEmptyActions(
+			Collection<VariableDeclaration> variables, EObject root) {
+		List<AbstractAssignmentAction> assignments = getAssignments(variables, root);
+		for (AbstractAssignmentAction assignmentAction : assignments) {
+			EmptyAction emptyAction = xStsFactory.createEmptyAction();
+			ecoreUtil.replace(emptyAction, assignmentAction);
+		}
+	}
+	
 	public VariableDeclarationAction extractExpressions(
 			String name, List<? extends Expression> expressions) {
 		Expression firstExpression = expressions.get(0);

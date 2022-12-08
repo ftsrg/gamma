@@ -21,8 +21,10 @@ import hu.bme.mit.gamma.xsts.model.RegionGroup
 import hu.bme.mit.gamma.xsts.model.SlaveMessageQueueGroup
 import hu.bme.mit.gamma.xsts.model.SystemInEventGroup
 import hu.bme.mit.gamma.xsts.model.SystemInEventParameterGroup
+import hu.bme.mit.gamma.xsts.model.SystemMasterMessageQueueGroup
 import hu.bme.mit.gamma.xsts.model.SystemOutEventGroup
 import hu.bme.mit.gamma.xsts.model.SystemOutEventParameterGroup
+import hu.bme.mit.gamma.xsts.model.SystemSlaveMessageQueueGroup
 import hu.bme.mit.gamma.xsts.model.TimeoutGroup
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
@@ -191,6 +193,34 @@ class VariableGroupRetriever {
 		if (slaveMessageQueueGroups.empty) {
 			val slaveMessageQueueGroup = createVariableGroup => [
 				it.annotation = createSlaveMessageQueueGroup
+			]
+			xSts.variableGroups += slaveMessageQueueGroup
+			return slaveMessageQueueGroup
+		}
+		checkState(slaveMessageQueueGroups.size == 1)
+		return slaveMessageQueueGroups.head
+	}
+	
+	def getSystemMasterMessageQueueGroup(XSTS xSts) {
+		var masterMessageQueueGroups = xSts.variableGroups
+									.filter[it.annotation instanceof SystemMasterMessageQueueGroup]
+		if (masterMessageQueueGroups.empty) {
+			val masterMessageQueueGroup = createVariableGroup => [
+				it.annotation = createSystemMasterMessageQueueGroup
+			]
+			xSts.variableGroups += masterMessageQueueGroup
+			return masterMessageQueueGroup
+		}
+		checkState(masterMessageQueueGroups.size == 1)
+		return masterMessageQueueGroups.head
+	}
+	
+	def getSystemSlaveMessageQueueGroup(XSTS xSts) {
+		var slaveMessageQueueGroups = xSts.variableGroups
+									.filter[it.annotation instanceof SystemSlaveMessageQueueGroup]
+		if (slaveMessageQueueGroups.empty) {
+			val slaveMessageQueueGroup = createVariableGroup => [
+				it.annotation = createSystemSlaveMessageQueueGroup
 			]
 			xSts.variableGroups += slaveMessageQueueGroup
 			return slaveMessageQueueGroup

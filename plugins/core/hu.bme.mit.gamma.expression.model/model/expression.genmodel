@@ -43,7 +43,9 @@
     <genClasses ecoreClass="expression.ecore#//FunctionDeclaration"/>
     <genClasses ecoreClass="expression.ecore#//TypeDeclaration"/>
     <genClasses ecoreClass="expression.ecore#//ConstantDeclaration"/>
-    <genClasses ecoreClass="expression.ecore#//ParameterDeclaration"/>
+    <genClasses ecoreClass="expression.ecore#//ParameterDeclaration">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference expression.ecore#//ParameterDeclaration/annotations"/>
+    </genClasses>
     <genClasses ecoreClass="expression.ecore#//FieldDeclaration"/>
     <genClasses ecoreClass="expression.ecore#//LambdaDeclaration"/>
     <genClasses ecoreClass="expression.ecore#//Type"/>
@@ -187,7 +189,10 @@
     <genClasses ecoreClass="expression.ecore#//ModExpression"/>
     <genClasses ecoreClass="expression.ecore#//UnaryMinusExpression"/>
     <genClasses ecoreClass="expression.ecore#//UnaryPlusExpression"/>
+    <genClasses image="false" ecoreClass="expression.ecore#//ParameterDeclarationAnnotation"/>
+    <genClasses ecoreClass="expression.ecore#//InternalParameterDeclarationAnnotation"/>
     <genClasses image="false" ecoreClass="expression.ecore#//VariableDeclarationAnnotation"/>
+    <genClasses ecoreClass="expression.ecore#//InternalVariableDeclarationAnnotation"/>
     <genClasses ecoreClass="expression.ecore#//TransientVariableDeclarationAnnotation"/>
     <genClasses ecoreClass="expression.ecore#//ResettableVariableDeclarationAnnotation"/>
     <genClasses ecoreClass="expression.ecore#//FinalVariableDeclarationAnnotation"/>
