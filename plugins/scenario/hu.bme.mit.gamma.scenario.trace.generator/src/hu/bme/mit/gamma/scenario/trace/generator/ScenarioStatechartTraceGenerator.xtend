@@ -105,10 +105,6 @@ class ScenarioStatechartTraceGenerator {
 			deriveTracesWithBuiltIn(targetStateName, component, xStsFile)
 		}
 		
-		
-
-		
-
 		val backAnnotator = new ExecutionTraceBackAnnotator(traces, component, true, true, isNegativeTest)
 		val filteredTraces = backAnnotator.execute
 		

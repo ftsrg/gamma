@@ -25,7 +25,7 @@ class WaitingAllowedInFunction extends AbstractAssertionHandler {
 		«IF asserts.size == 1» 
 			checkGeneralAssert(() -> «serializer.serializeAssert(asserts.head)»);
 		«ELSEIF asserts.size > 1» 
-			checkGeneralAsserts(«FOR _assert : asserts SEPARATOR ", "»() -> «serializer.serializeAssert(_assert)»«ENDFOR»);
+			checkGeneralAsserts(Arrays.asList(«FOR _assert : asserts SEPARATOR ", "»() -> «serializer.serializeAssert(_assert)»«ENDFOR»));
 		«ENDIF»
 	'''
 	

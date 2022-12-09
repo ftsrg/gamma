@@ -30,11 +30,9 @@ import hu.bme.mit.gamma.scenario.model.StrictAnnotation
 import hu.bme.mit.gamma.scenario.model.WaitAnnotation
 import hu.bme.mit.gamma.statechart.contract.NotDefinedEventMode
 import hu.bme.mit.gamma.statechart.interface_.Component
-import hu.bme.mit.gamma.statechart.interface_.TimeUnit
 import hu.bme.mit.gamma.statechart.statechart.BinaryTrigger
 import hu.bme.mit.gamma.statechart.statechart.BinaryType
 import hu.bme.mit.gamma.statechart.statechart.ChoiceState
-import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.StateNode
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.Transition

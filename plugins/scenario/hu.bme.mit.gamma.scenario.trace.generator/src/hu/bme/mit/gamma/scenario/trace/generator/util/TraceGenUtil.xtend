@@ -69,14 +69,21 @@ class TraceGenUtil {
 			val current = stateChecks.get(i)
 			val next = stateChecks.get(i+1)
 			val transitions = findTransitionChain(current, next, <Transition>newArrayList, <StateNode>newArrayList)
-			val correctTransitions = transitions.filter[it.priority >= BigInteger.valueOf(2)].toList
+			val correctTransitions = transitions.filter[it.priority >= BigInteger.valueOf(2)].toList// TODO
 			
-			val checks = findCheckBasedGuards(correctTransitions)
-			val assignments = findAssignmentBasedActions(correctTransitions)
-			val negInteractions = finNegatedInteractions(correctTransitions)
+			val checks = findCheckBasedGuards(correctTransitions).filterNull
+			val assignments = findAssignmentBasedActions(correctTransitions).filterNull
+			val negInteractions = finNegatedInteractions(correctTransitions).filterNull
 			
-			val currentStep = trace.steps.get(i)
-			val nextStep = trace.steps.get(i+1)
+			val currentStep = trace.steps.get(i+1)
+			
+			val nextStep = if (trace.steps.size > i+2) {
+					trace.steps.get(i+2)
+				} else {
+					val newStep = createStep
+					trace.steps += newStep
+					newStep
+				}
 			
 			
 			for (assignment : assignments) {
@@ -93,7 +100,6 @@ class TraceGenUtil {
 				currentStep.asserts += clone
 			}
 		}
-		return null
 	}
 	
 	def fixParamRefs(Expression expression, Component component) {
