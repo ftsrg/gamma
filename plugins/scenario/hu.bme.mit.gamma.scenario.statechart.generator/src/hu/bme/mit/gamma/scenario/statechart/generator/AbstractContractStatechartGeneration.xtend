@@ -96,7 +96,8 @@ abstract class AbstractContractStatechartGeneration {
 	protected var State hotViolation = null
 	protected var State coldViolation = null
 	protected val Map<StateNode, StateNode> replacedStateWithValue = <StateNode, StateNode>newHashMap
-
+	protected val Map<Delay, TimeoutDeclaration> delaysToTimeouts = <Delay, TimeoutDeclaration>newHashMap
+	
 	def abstract StatechartDefinition execute()
 
 	new(ScenarioDeclaration scenario, Component component) {
@@ -366,14 +367,17 @@ abstract class AbstractContractStatechartGeneration {
 		trigger.eventReference = eventref
 		return trigger
 	}
-
-	def protected dispatch Trigger getEventTrigger(Delay delay, boolean reversed) {
+	
+	def protected Trigger createTimeoutTrigger(TimeoutDeclaration decl) {
 		val trigger = createEventTrigger
 		val timeoutEventReference = createTimeoutEventReference
-		val timeoutDeclaration = statechart.timeoutDeclarations.last
-		timeoutEventReference.timeout = timeoutDeclaration
+		timeoutEventReference.timeout = decl
 		trigger.eventReference = timeoutEventReference
 		return trigger
+	}
+
+	def protected dispatch Trigger getEventTrigger(Delay delay, boolean reversed) {
+		return createTimeoutTrigger(delaysToTimeouts.get(delay))
 	}
 
 	def protected dispatch Trigger getEventTrigger(
@@ -407,13 +411,18 @@ abstract class AbstractContractStatechartGeneration {
 		val event = getEvent(signal.getEvent.name, port)
 		action.event = event
 		action.port = port
-		for (argument : event.parameterDeclarations) {
-			val reference = createEventParameterReferenceExpression
-			reference.port = getPort(port.turnedOutPortName)
-			reference.event = getEvent(signal.getEvent.name, reference.port)
-			reference.parameter = argument
-			action.arguments += reference
+		if (signal.arguments.empty) {
+			for (argument : event.parameterDeclarations) {
+				val reference = createEventParameterReferenceExpression
+				reference.port = getPort(port.turnedOutPortName)
+				reference.event = getEvent(signal.getEvent.name, reference.port)
+				reference.parameter = argument
+				action.arguments += reference
+			}
+		} else {
+			action.arguments += signal.arguments.clone
 		}
+		
 		return action
 	}
 
@@ -573,9 +582,9 @@ abstract class AbstractContractStatechartGeneration {
 			trigger = createOnCycleTrigger
 		}
 		if (isNegated) {
-			forwardTransition.trigger = negateTrigger(trigger)
+			forwardTransition.setOrExtendTrigger(negateTrigger(trigger), BinaryType.AND)
 		} else {
-			forwardTransition.trigger = trigger
+			forwardTransition.setOrExtendTrigger(trigger, BinaryType.AND)
 			//Uncomment these lines to allow effects on the reversed ports
 //			for (modalInteraction : nonCheckOrAssignmentInteractitons) {
 //				val effect = getRaiseEventAction(modalInteraction, !reversed)
@@ -595,12 +604,14 @@ abstract class AbstractContractStatechartGeneration {
 			val timeoutDeclaration = createTimeoutDeclaration
 			val timeSpecification = createTimeSpecification(delay.minimum)
 			setTimeoutDeclarationForState(previousState, timeoutDeclaration, timeSpecification)
+			delaysToTimeouts.put(delay, timeoutDeclaration)
 			if (!(delay.maximum instanceof InfinityExpression)) {
 				val timeoutDeclarationMax = createTimeoutDeclaration
 				val timeSpecificationMax = createTimeSpecification(delay.maximum)
 				setTimeoutDeclarationForState(previousState, timeoutDeclarationMax, timeSpecificationMax)
 				
-				val timeoutTrigger = getEventTrigger(delay, true)
+				val timeoutTrigger = createTimeoutTrigger(timeoutDeclarationMax)
+				
 				val negatedTimeoutTrigger = createUnaryTrigger
 				negatedTimeoutTrigger.type = UnaryType.NOT
 				negatedTimeoutTrigger.operand = timeoutTrigger.clone
@@ -620,7 +631,7 @@ abstract class AbstractContractStatechartGeneration {
 			binaryAND.rightOperand = transition.trigger
 			transition.trigger = binaryAND				
 		} else {
-			transition.trigger == newTrigger
+			transition.trigger = newTrigger
 		}
 	}
 
