@@ -130,7 +130,7 @@ class SystemReducer {
 	
 	def void deleteUnusedAndWrittenOnlyVariablesExceptOutEvents(XSTS xSts,
 			Collection<? extends VariableDeclaration> keepableVariables) { // Unfolded Gamma variables
-		val keepableXStsVariables = xSts.outputVariables
+		val keepableXStsVariables = xSts.nonInternalOutputVariables
 		
 		xSts.deleteUnusedAndWrittenOnlyVariables(keepableVariables, keepableXStsVariables)
 	}
@@ -213,7 +213,7 @@ class SystemReducer {
 	
 	def void deleteTrivialCodomainVariablesExceptOutEvents(XSTS xSts,
 			Collection<? extends VariableDeclaration> keepableVariables) { // Unfolded Gamma variables
-		val keepableXStsVariables = xSts.outputVariables
+		val keepableXStsVariables = xSts.nonInternalOutputVariables
 		
 		xSts.deleteTrivialCodomainVariables(keepableVariables, keepableXStsVariables)
 	}
@@ -251,7 +251,7 @@ class SystemReducer {
 	
 	def void deleteUnnecessaryInputVariablesExceptOutEvents(XSTS xSts,
 			Collection<? extends VariableDeclaration> keepableVariables) { // Unfolded Gamma variables
-		val keepableXStsVariables = xSts.outputVariables
+		val keepableXStsVariables = xSts.nonInternalOutputVariables
 		
 		xSts.deleteUnnecessaryInputVariables(keepableVariables, keepableXStsVariables)
 	}
@@ -300,7 +300,7 @@ class SystemReducer {
 		// Note that only writes are handled - reads are not, so the following can cause
 		// nullptr exceptions if the method call (parameters) is not correct
 		for (xStsDeletableVariable : xStsDeleteableVariables) {
-			xStsDeletableVariable.delete // Delete needed due to e.g., transientVariables list
+			xStsDeletableVariable.deleteDeclaration // Delete needed due to e.g., transientVariables list
 			logger.log(Level.INFO, "Deleting XSTS variable " + xStsDeletableVariable.name)
 		}
 	}
@@ -377,6 +377,21 @@ class SystemReducer {
 		
 		xStsOutputVariables += xStsOutEventVariables
 		xStsOutputVariables += xStsOutEventParameterVariables
+		
+		return xStsOutputVariables
+	}
+	
+	protected def getNonInternalOutputVariables(XSTS xSts) {
+		val xStsOutputVariables = xSts.outputVariables
+		val xStsReadVariables = xSts.readVariables
+		
+		val xStsDeletableInternalOutputVariables = newHashSet
+		// Internal output parameter variables that are not read (not read in channels)
+		xStsDeletableInternalOutputVariables += xStsOutputVariables.filter[it.internal]
+		xStsDeletableInternalOutputVariables -= xStsReadVariables
+		//
+		
+		xStsOutputVariables -= xStsDeletableInternalOutputVariables
 		
 		return xStsOutputVariables
 	}

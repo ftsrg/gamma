@@ -286,7 +286,7 @@ public class XstsActionUtil extends ExpressionUtil {
 	}
 	
 	public List<AbstractAssignmentAction> getAssignments(VariableDeclaration variable,
-			Collection<AbstractAssignmentAction> assignments) {
+			Collection<? extends AbstractAssignmentAction> assignments) {
 		return assignments.stream().filter(it -> getDeclaration(it.getLhs()) == variable)
 				.collect(Collectors.toList());
 	}
@@ -298,26 +298,69 @@ public class XstsActionUtil extends ExpressionUtil {
 		return getAssignments(variable, assignments);
 	}
 	
-	public List<AbstractAssignmentAction> getAssignments(Collection<VariableDeclaration> variables,
-			Collection<AbstractAssignmentAction> assignments) {
+	public List<AbstractAssignmentAction> getAssignments(
+			Collection<? extends VariableDeclaration> variables,
+			Collection<? extends AbstractAssignmentAction> assignments) {
 		return assignments.stream().filter(it -> variables.contains(
 				getDeclaration(it.getLhs()))).collect(Collectors.toList());
 	}
 	
-	public List<AbstractAssignmentAction> getAssignments(Collection<VariableDeclaration> variables,
-				EObject root) {
+	public List<AbstractAssignmentAction> getAssignments(
+			Collection<? extends VariableDeclaration> variables, EObject root) {
 		List<AbstractAssignmentAction> assignments = ecoreUtil.getAllContentsOfType(
 				root, AbstractAssignmentAction.class);
 		return getAssignments(variables, assignments);
 	}
 	
 	public void changeAssignmentsToEmptyActions(
-			Collection<VariableDeclaration> variables, EObject root) {
+			Collection<? extends VariableDeclaration> variables, EObject root) {
 		List<AbstractAssignmentAction> assignments = getAssignments(variables, root);
+		changeAssignmentsToEmptyActions(assignments);
+	}
+
+	public void changeAssignmentsToEmptyActions(
+			Collection<? extends AbstractAssignmentAction> assignments) {
 		for (AbstractAssignmentAction assignmentAction : assignments) {
 			EmptyAction emptyAction = xStsFactory.createEmptyAction();
 			ecoreUtil.replace(emptyAction, assignmentAction);
 		}
+	}
+	
+	public List<AssignmentAction> getReadingAssignments(VariableDeclaration variable,
+			Collection<? extends AssignmentAction> assignments) {
+		return assignments.stream().filter(it ->
+				getReferredVariables(it.getRhs()).contains(variable))
+				.collect(Collectors.toList());
+	}
+	
+	public List<AssignmentAction> getReadingAssignments(
+			VariableDeclaration variable, EObject root) {
+		List<AssignmentAction> assignments = ecoreUtil.getAllContentsOfType(
+				root, AssignmentAction.class);
+		return getReadingAssignments(variable, assignments);
+	}
+	
+	public List<AssignmentAction> getReadingAssignments(
+			Collection<? extends VariableDeclaration> variables,
+			Collection<? extends AssignmentAction> assignments) {
+		return assignments.stream().filter(it -> javaUtil.containsAny(
+				variables, getReferredVariables(it.getRhs())))
+				.collect(Collectors.toList());
+	}
+	
+	public List<AssignmentAction> getReadingAssignments(
+			Collection<? extends VariableDeclaration> variables, EObject root) {
+		List<AssignmentAction> assignments = ecoreUtil.getAllContentsOfType(
+				root, AssignmentAction.class);
+		return getReadingAssignments(variables, assignments);
+	}
+	
+	public void changeAssignmentsAndReadingAssignmentsToEmptyActions(
+			Collection<? extends VariableDeclaration> variables, EObject root) {
+		changeAssignmentsToEmptyActions(variables, root);
+		
+		List<AssignmentAction> readingAssignments = getReadingAssignments(variables, root);
+		changeAssignmentsToEmptyActions(readingAssignments);
 	}
 	
 	public VariableDeclarationAction extractExpressions(

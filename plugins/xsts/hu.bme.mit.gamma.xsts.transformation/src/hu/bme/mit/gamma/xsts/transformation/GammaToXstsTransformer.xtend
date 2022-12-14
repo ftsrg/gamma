@@ -323,17 +323,18 @@ class GammaToXstsTransformer {
 	}
 	
 	protected def removeInternalParameterAssignment(XSTS xSts, Component component) {
-		val systemInEventParameter = xSts.systemInEventParameterVariableGroup.variables
-		val systemInEventInternalParameters = systemInEventParameter
+		val systemInEventParameters = xSts.systemInEventParameterVariableGroup.variables
+		val systemInEventInternalParameters = systemInEventParameters
 				.filter[it.internal].toList
 				
+				
+		// In the asynchronous case, the underlying transformation works
 		if (component.synchronous) {
 			val inEventTransition = xSts.inEventTransition
 			systemInEventInternalParameters.changeAssignmentsToEmptyActions(inEventTransition)
 		}
-		// In the asynchronous case, the underlying transformation works
 		
-		systemInEventParameter -= systemInEventInternalParameters
+		systemInEventParameters -= systemInEventInternalParameters
 	}
 		
 	

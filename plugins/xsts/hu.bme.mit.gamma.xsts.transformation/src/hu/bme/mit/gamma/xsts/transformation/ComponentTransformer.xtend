@@ -479,6 +479,7 @@ class ComponentTransformer {
 				}
 			}
 		}
+		val xStsDeletableSlaveQueues = newHashSet
 		for (queue : environmentalQueues) {
 			val adapter = queue.containingComponent
 			
@@ -596,9 +597,17 @@ class ComponentTransformer {
 							val xStsRandomVariable = xStsRandomVariableAction.variableDeclaration
 							xStsSlaveQueueSetting.actions += xStsRandomVariableAction
 							if (slaveQueueStruct.internal) {
-								// Assigning default values to internal parameter queues
-								// This is needed, otherwise parameter values can shift to wrong indexes
+								// Assigning default values to internal parameter queues. This is needed if 
+								// the queue is not environmental, otherwise parameter values can shift to wrong indexes
 								xStsRandomVariable.expression = xStsRandomVariable.defaultExpression
+								if (queue.isEnvironmentalAndCheck(systemPorts)) {
+									// We delete this slave queue later as we do not want to override internal parameters
+									logger.log(Level.INFO, "Internal parameter slave queue for system port: " + xStsSlaveQueue.name)
+									xStsDeletableSlaveQueues += xStsSlaveQueue
+								}
+								else {
+									// Currently cannot be reached due to isEnvironmentalAndCheck
+								}
 							}
 							else {
 								// Assigning a random value
@@ -623,6 +632,12 @@ class ComponentTransformer {
 		//
 		
 		xSts.changeTransitions(mergedAction.wrap)
+		
+		// Deleting environmental slave queues for internal parameters;
+		// after the construction of the entire XSTS to handle in events and merged events, too
+		xStsDeletableSlaveQueues.changeAssignmentsAndReadingAssignmentsToEmptyActions(xSts)
+		xStsDeletableSlaveQueues.forEach[it.deleteDeclaration] // Variable groups
+		//
 		
 		return xSts
 	}
