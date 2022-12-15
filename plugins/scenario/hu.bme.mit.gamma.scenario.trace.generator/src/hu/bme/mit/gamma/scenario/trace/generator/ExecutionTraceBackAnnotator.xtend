@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020-2021 Contributors to the Gamma project
+ * Copyright (c) 2020-2022 Contributors to the Gamma project
  * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -10,13 +10,14 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.scenario.trace.generator
 
+import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
+import hu.bme.mit.gamma.scenario.statechart.util.ScenarioStatechartUtil
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.trace.model.Act
-import hu.bme.mit.gamma.trace.model.Assert
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.trace.model.RaiseEventAct
 import hu.bme.mit.gamma.trace.model.Reset
@@ -26,7 +27,6 @@ import hu.bme.mit.gamma.trace.model.TimeElapse
 import hu.bme.mit.gamma.trace.model.TraceModelFactory
 import hu.bme.mit.gamma.trace.util.TraceUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
-import hu.bme.mit.gamma.scenario.statechart.util.ScenarioStatechartUtil
 import java.util.List
 
 class ExecutionTraceBackAnnotator {
@@ -36,15 +36,15 @@ class ExecutionTraceBackAnnotator {
 	protected final extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 
-	val TraceUtil traceUtil = TraceUtil.INSTANCE
-	val ScenarioStatechartUtil scenarioStatechartUtil = ScenarioStatechartUtil.INSTANCE
+	protected final TraceUtil traceUtil = TraceUtil.INSTANCE
+	protected final ScenarioStatechartUtil scenarioStatechartUtil = ScenarioStatechartUtil.INSTANCE
 
-	List<Port> ports = null
-	List<ExecutionTrace> traces = null
-	List<ExecutionTrace> result = null
-	boolean removeNotneededInteractions = true
+	protected List<Port> ports = null
+	protected List<ExecutionTrace> traces = null
+	protected List<ExecutionTrace> result = null
+	protected boolean removeNotneededInteractions = true
 	
-	boolean createOriginalActsAndAssertsBasedOnActs
+	protected boolean createOriginalActsAndAssertsBasedOnActs
 
 	new(List<ExecutionTrace> _traces, Component original) {
 		this.result = newArrayList
@@ -64,7 +64,8 @@ class ExecutionTraceBackAnnotator {
 	def execute() {
 		for (var i = 0; i < traces.size; i++) {
 			val trace = traces.get(i)
-			if (!result.exists[traceUtil.isCoveredByStates(trace, it)].booleanValue) {
+			if (!result.exists[
+					traceUtil.isCoveredByStates(trace, it)].booleanValue) {
 				result += trace
 			}
 		}
@@ -119,7 +120,7 @@ class ExecutionTraceBackAnnotator {
 	def createOriginalActsAndAsserts(ExecutionTrace trace) {
 		for (step : trace.steps) {
 			val actions = <Act>newArrayList
-			val asserts = <Assert>newArrayList
+			val asserts = <Expression>newArrayList
 			for (action : step.actions) {
 				if (action instanceof RaiseEventAct) {
 					val portName = action.port.getName
@@ -186,7 +187,7 @@ class ExecutionTraceBackAnnotator {
 	def removeNotNeededInteractions(ExecutionTrace trace) {
 		for (step : trace.steps) {
 			if (step != trace.steps.get(0)) {
-				if (!(step.asserts.filter(RaiseEventAct).filter[scenarioStatechartUtil.isTurnedOut(it.port)].empty)) {
+				if (!step.asserts.filter(RaiseEventAct).filter[scenarioStatechartUtil.isTurnedOut(it.port)].empty) {
 					var notNeeded = newArrayList
 					for (act : step.actions) {
 						if (!isInteractionPairPresent(step, act)) {

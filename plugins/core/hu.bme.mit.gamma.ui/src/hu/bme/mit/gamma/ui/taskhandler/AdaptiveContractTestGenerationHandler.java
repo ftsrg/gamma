@@ -34,6 +34,8 @@ import hu.bme.mit.gamma.genmodel.model.ProgrammingLanguage;
 import hu.bme.mit.gamma.genmodel.model.Verification;
 import hu.bme.mit.gamma.property.model.PropertyPackage;
 import hu.bme.mit.gamma.scenario.trace.generator.ScenarioStatechartTraceGenerator;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance;
 import hu.bme.mit.gamma.statechart.contract.StateContractAnnotation;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
@@ -46,8 +48,6 @@ import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
 import hu.bme.mit.gamma.statechart.util.StatechartUtil;
 import hu.bme.mit.gamma.trace.derivedfeatures.TraceModelDerivedFeatures;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
-import hu.bme.mit.gamma.trace.model.InstanceStateConfiguration;
-import hu.bme.mit.gamma.trace.model.InstanceVariableState;
 import hu.bme.mit.gamma.trace.model.RaiseEventAct;
 import hu.bme.mit.gamma.trace.model.Step;
 import hu.bme.mit.gamma.trace.util.TraceUtil;
@@ -134,8 +134,8 @@ public class AdaptiveContractTestGenerationHandler extends TaskHandler {
 			}
 
 			// Clearing unnecessary data
-			traceUtil.clearAsserts(adaptiveTrace, InstanceStateConfiguration.class);
-			traceUtil.clearAsserts(adaptiveTrace, InstanceVariableState.class);
+			traceUtil.clearAsserts(adaptiveTrace, ComponentInstanceStateReferenceExpression.class);
+			traceUtil.clearAsserts(adaptiveTrace, ComponentInstanceVariableReferenceExpression.class);
 			// Targeting the reference to the monitored component
 			adaptiveTrace.setImport(StatechartModelDerivedFeatures.getContainingPackage(monitoredComponent));
 			adaptiveTrace.setComponent(monitoredComponent);

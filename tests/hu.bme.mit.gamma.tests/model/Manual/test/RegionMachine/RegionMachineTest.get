@@ -7,7 +7,7 @@ step {
 		reset
 	}
 	assert {
-		variable regionMachine._regionMachine_Submachine__Region = _RegionMachine_Submachine_::Init
+		variable regionMachine._regionMachine_Submachine__Region = _RegionMachine_Submachine_::Init;
 	}
 }
 step {
@@ -16,7 +16,7 @@ step {
 		schedule component
 	}
 	assert {
-		variable regionMachine._regionMachine_Submachine__Region = _RegionMachine_Submachine_::Other
+		variable regionMachine._regionMachine_Submachine__Region = _RegionMachine_Submachine_::Other;
 	}
 }
 step {
@@ -25,7 +25,7 @@ step {
 		schedule component
 	}
 	assert {
-		variable regionMachine._regionMachine_Submachine__Region = _RegionMachine_Submachine_::Init
+		variable regionMachine._regionMachine_Submachine__Region = _RegionMachine_Submachine_::Init;
 	}
 }
 step {
@@ -34,7 +34,7 @@ step {
 		schedule component
 	}
 	assert {
-		variable regionMachine._regionMachine_Submachine__Region = _RegionMachine_Submachine_::Other
+		variable regionMachine._regionMachine_Submachine__Region = _RegionMachine_Submachine_::Other;
 	}
 }
 step {
@@ -43,6 +43,6 @@ step {
 		schedule component
 	}
 	assert {
-		variable regionMachine._regionMachine_Submachine__Region = _RegionMachine_Submachine_::Init
+		variable regionMachine._regionMachine_Submachine__Region = _RegionMachine_Submachine_::Init;
 	}
 }

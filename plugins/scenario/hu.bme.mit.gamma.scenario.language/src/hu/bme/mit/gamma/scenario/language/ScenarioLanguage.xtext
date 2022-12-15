@@ -77,7 +77,7 @@ AbstractInteractionDefinition returns ScenarioModel::DeterministicOccurrence:
 	
 ScenarioAssignment returns ScenarioModel::ScenarioAssignmentStatement:
 	{ScenarioModel::ScenarioAssignmentStatement}
-	'assign' lhs= DirectReferenceExpression ':=' rhs=Expression;
+	'assign' lhs=DirectReferenceExpression ':=' rhs=Expression; // TODO change to what you see in the action grammar
 
 ScenarioCheck returns ScenarioModel::ScenarioCheckExpression:
 	{ScenarioModel::ScenarioCheckExpression}

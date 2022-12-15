@@ -304,6 +304,10 @@ class LowlevelToXstsTransformer {
 							// Event is transient, its parameters are marked environment-resettable variables
 							xStsParam.addEnvironmentResettableAnnotation
 						}
+						if (lowlevelEventParameter.isInternal) {
+							// Variable (parameter) must not be set from the environment, only other components
+							xStsParam.addInternalAnnotation
+						}
 						eventParameterVariableGroup.variables += xStsParam
 						trace.put(lowlevelEventParameter, xStsParam) // Tracing
 					}

@@ -36,6 +36,7 @@ import hu.bme.mit.gamma.expression.model.MultiplyExpression
 import hu.bme.mit.gamma.expression.model.NotExpression
 import hu.bme.mit.gamma.expression.model.OrExpression
 import hu.bme.mit.gamma.expression.model.RationalLiteralExpression
+import hu.bme.mit.gamma.expression.model.RecordAccessExpression
 import hu.bme.mit.gamma.expression.model.RecordLiteralExpression
 import hu.bme.mit.gamma.expression.model.SubtractExpression
 import hu.bme.mit.gamma.expression.model.TrueExpression
@@ -113,7 +114,11 @@ class ExpressionSerializer {
 	
 	def dispatch String serialize(ArrayAccessExpression expression) {
 		return '''«expression.operand.serialize»[«expression.index.serialize»]'''
-	}		
+	}
+	
+	def dispatch String serialize(RecordAccessExpression expression) {
+		return '''«expression.operand.serialize».«expression.fieldReference.fieldDeclaration.name»'''
+	}
 	
 	def dispatch String serialize(NotExpression expression) {
 		return '''!(«expression.operand.serialize»)'''

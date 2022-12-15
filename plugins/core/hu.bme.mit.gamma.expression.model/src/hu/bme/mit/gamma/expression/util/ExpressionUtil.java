@@ -64,6 +64,7 @@ import hu.bme.mit.gamma.expression.model.MultiplyExpression;
 import hu.bme.mit.gamma.expression.model.NotExpression;
 import hu.bme.mit.gamma.expression.model.NullaryExpression;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
+import hu.bme.mit.gamma.expression.model.ParameterDeclarationAnnotation;
 import hu.bme.mit.gamma.expression.model.ParametricElement;
 import hu.bme.mit.gamma.expression.model.RationalLiteralExpression;
 import hu.bme.mit.gamma.expression.model.RationalTypeDefinition;
@@ -764,6 +765,19 @@ public class ExpressionUtil {
 		}
 	}
 	
+	// Parameter annotation handling
+	
+	public void addInternalAnnotation(ParameterDeclaration parameter) {
+		addAnnotation(parameter, factory.createInternalParameterDeclarationAnnotation());
+	}
+	
+	public void addAnnotation(ParameterDeclaration parameter, ParameterDeclarationAnnotation annotation) {
+		if (parameter != null) {
+			List<ParameterDeclarationAnnotation> annotations = parameter.getAnnotations();
+			annotations.add(annotation);
+		}
+	}
+	
 	// Variable annotation handling
 	
 	public void addTransientAnnotation(VariableDeclaration variable) {
@@ -784,6 +798,10 @@ public class ExpressionUtil {
 	
 	public void addScheduledClockAnnotation(VariableDeclaration variable) {
 		addAnnotation(variable, factory.createScheduledClockVariableDeclarationAnnotation());
+	}
+	
+	public void addInternalAnnotation(VariableDeclaration variable) {
+		addAnnotation(variable, factory.createInternalVariableDeclarationAnnotation());
 	}
 	
 	public void addAnnotation(VariableDeclaration variable, VariableDeclarationAnnotation annotation) {

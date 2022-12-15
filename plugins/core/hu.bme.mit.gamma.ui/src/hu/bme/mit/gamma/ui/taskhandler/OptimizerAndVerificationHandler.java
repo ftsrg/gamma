@@ -133,6 +133,8 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 			
 			xStsReducer.deleteUnusedAndWrittenOnlyVariablesExceptOutEvents(xSts, keepableGammaVariables);
 			xStsReducer.deleteUnusedInputEventVariables(xSts, keepableGammaVariables);
+			xStsReducer.deleteTrivialCodomainVariablesExceptOutEvents(xSts, keepableGammaVariables);
+			xStsReducer.deleteUnnecessaryInputVariablesExceptOutEvents(xSts, keepableGammaVariables);
 			// Deleting enum literals
 			Set<EnumerationLiteralDefinition> keepableGammaEnumLiterals =
 					ecoreUtil.getAllContentsOfType(formula, EnumerationLiteralExpression.class).stream()
@@ -142,8 +144,6 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 				// In UPPAAL, literals are referenced via indexes, so they cannot be removed
 				xStsReducer.deleteUnusedEnumLiteralsExceptOne(xSts, keepableGammaEnumLiterals);
 			}
-			xStsReducer.deleteTrivialCodomainVariablesExceptOutEvents(xSts);
-			xStsReducer.deleteUnnecessaryInputVariablesExceptOutEvents(xSts);
 			
 			XstsOptimizer xStsOptimizer = XstsOptimizer.INSTANCE;
 			xStsOptimizer.optimizeXSts(xSts); // To remove null/empty actions

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2021 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -15,13 +15,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import hu.bme.mit.gamma.expression.model.Expression;
+import hu.bme.mit.gamma.expression.model.ExpressionModelFactory;
+import hu.bme.mit.gamma.expression.model.NotExpression;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.Event;
 import hu.bme.mit.gamma.statechart.interface_.Port;
-import hu.bme.mit.gamma.trace.model.Assert;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
-import hu.bme.mit.gamma.trace.model.NegatedAssert;
 import hu.bme.mit.gamma.trace.model.RaiseEventAct;
 import hu.bme.mit.gamma.trace.model.Step;
 import hu.bme.mit.gamma.trace.model.TraceModelFactory;
@@ -29,13 +30,14 @@ import hu.bme.mit.gamma.util.GammaEcoreUtil;
 
 public class UnsentEventAssertExtender {
 	//
+	protected ExpressionModelFactory expressionFactory = ExpressionModelFactory.eINSTANCE;
 	protected TraceModelFactory traceFactory = TraceModelFactory.eINSTANCE;
 	protected GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
 	//
-	List<Step> steps = new ArrayList<Step>();
-	List<Port> ports = new ArrayList<Port>();
+	protected List<Step> steps = new ArrayList<Step>();
+	protected List<Port> ports = new ArrayList<Port>();
 	
-	Component component = null;
+	protected Component component = null;
 
 	boolean allSteps = false;
 	//
@@ -55,31 +57,31 @@ public class UnsentEventAssertExtender {
 		ports = component.getPorts();
 		
 		for (Step step : steps) {
-			List<NegatedAssert> negatedAsserts = new ArrayList<NegatedAssert>();
+			List<NotExpression> negatedAsserts = new ArrayList<NotExpression>();
 			for (Port port : ports) {
 				for (Event event : StatechartModelDerivedFeatures.getOutputEvents(port)) {
 					if (event.getParameterDeclarations().isEmpty()) {
-						NegatedAssert negatedAssert = traceFactory.createNegatedAssert();
+						NotExpression negatedAssert = expressionFactory.createNotExpression();
 						RaiseEventAct raise = traceFactory.createRaiseEventAct();
 						raise.setPort(port);
 						raise.setEvent(event);
-						negatedAssert.setNegatedAssert(raise);
+						negatedAssert.setOperand(raise);
 						negatedAsserts.add(negatedAssert);
 					}
 				}
 			}
 
-			List<Assert> baseAsserts = step.getAsserts();
+			List<Expression> baseAsserts = step.getAsserts();
 
-			for (Assert assertion : baseAsserts) {
-				Set<Assert> removable = new HashSet<Assert>();
+			for (Expression assertion : baseAsserts) {
+				Set<Expression> removable = new HashSet<Expression>();
 				if (assertion instanceof RaiseEventAct) {
 					RaiseEventAct raise = (RaiseEventAct) assertion;
 					Port aPort = raise.getPort();
 					Event aEvent = raise.getEvent();
-					for (NegatedAssert negatedAssert : negatedAsserts) {
-						if (negatedAssert.getNegatedAssert() instanceof RaiseEventAct) {
-							RaiseEventAct raiseEvent = (RaiseEventAct) negatedAssert.getNegatedAssert();
+					for (NotExpression negatedAssert : negatedAsserts) {
+						if (negatedAssert.getOperand() instanceof RaiseEventAct) {
+							RaiseEventAct raiseEvent = (RaiseEventAct) negatedAssert.getOperand();
 							if (equals(aPort, aEvent, raiseEvent)) {
 								removable.add(negatedAssert);
 							}

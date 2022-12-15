@@ -7,8 +7,8 @@ step {
 		reset
 	}
 	assert {
-		variable sameMachineInstancesMachine.sub_cnt_Sub1 = 0
-		variable sameMachineInstancesMachine.sub_cnt_Sub2 = 0
+		variable sameMachineInstancesMachine.sub_cnt_Sub1 = 0;
+		variable sameMachineInstancesMachine.sub_cnt_Sub2 = 0;
 	}
 }
 step {
@@ -17,8 +17,8 @@ step {
 		schedule component
 	}
 	assert {
-		variable sameMachineInstancesMachine.sub_cnt_Sub1 = 1
-		variable sameMachineInstancesMachine.sub_cnt_Sub2 = 1
+		variable sameMachineInstancesMachine.sub_cnt_Sub1 = 1;
+		variable sameMachineInstancesMachine.sub_cnt_Sub2 = 1;
 	}
 }
 step {
@@ -27,8 +27,8 @@ step {
 		schedule component
 	}
 	assert {
-		variable sameMachineInstancesMachine.sub_cnt_Sub1 = 3
-		variable sameMachineInstancesMachine.sub_cnt_Sub2 = 3
+		variable sameMachineInstancesMachine.sub_cnt_Sub1 = 3;
+		variable sameMachineInstancesMachine.sub_cnt_Sub2 = 3;
 	}
 }
 step {
@@ -37,8 +37,8 @@ step {
 		schedule component
 	}
 	assert {
-		variable sameMachineInstancesMachine.sub_cnt_Sub1 = 5
-		variable sameMachineInstancesMachine.sub_cnt_Sub2 = 5
+		variable sameMachineInstancesMachine.sub_cnt_Sub1 = 5;
+		variable sameMachineInstancesMachine.sub_cnt_Sub2 = 5;
 	}
 }
 step {
@@ -47,7 +47,7 @@ step {
 		schedule component
 	}
 	assert {
-		variable sameMachineInstancesMachine.sub_cnt_Sub1 = 6
-		variable sameMachineInstancesMachine.sub_cnt_Sub2 = 6
+		variable sameMachineInstancesMachine.sub_cnt_Sub1 = 6;
+		variable sameMachineInstancesMachine.sub_cnt_Sub2 = 6;
 	}
 }

@@ -14,16 +14,16 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.eclipse.emf.ecore.util.EcoreUtil;
-
 import hu.bme.mit.gamma.expression.model.ArgumentedElement;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.CompositeModelPackage;
+import hu.bme.mit.gamma.statechart.composite.ScheduledAsynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.Event;
@@ -38,9 +38,6 @@ import hu.bme.mit.gamma.trace.derivedfeatures.TraceModelDerivedFeatures;
 import hu.bme.mit.gamma.trace.model.ComponentSchedule;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
 import hu.bme.mit.gamma.trace.model.InstanceSchedule;
-import hu.bme.mit.gamma.trace.model.InstanceState;
-import hu.bme.mit.gamma.trace.model.InstanceStateConfiguration;
-import hu.bme.mit.gamma.trace.model.InstanceVariableState;
 import hu.bme.mit.gamma.trace.model.RaiseEventAct;
 import hu.bme.mit.gamma.trace.model.Step;
 import hu.bme.mit.gamma.trace.model.TraceModelPackage;
@@ -48,13 +45,17 @@ import hu.bme.mit.gamma.trace.model.TraceModelPackage;
 public class TraceModelValidator extends StatechartModelValidator {
 	// Singleton
 	public static final TraceModelValidator INSTANCE = new TraceModelValidator();
-	protected TraceModelValidator() {}
+	protected TraceModelValidator() {
+		super.typeDeterminator = ExpressionTypeDeterminator.INSTANCE; // For raise event
+		super.expressionUtil = TraceUtil.INSTANCE;
+	}
 	//
 	
 	public Collection<ValidationResultMessage> checkArgumentTypes(ArgumentedElement element) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		List<ParameterDeclaration> parameters = TraceModelDerivedFeatures.getParameterDeclarations(element);
-		validationResultMessages.addAll(super.checkArgumentTypes(element, parameters));
+		validationResultMessages.addAll(
+				super.checkArgumentTypes(element, parameters));
 		return validationResultMessages;
 	}
 	
@@ -85,20 +86,19 @@ public class TraceModelValidator extends StatechartModelValidator {
 		return validationResultMessages;
 	}
 	
-	public Collection<ValidationResultMessage> checkInstanceState(InstanceState instanceState) {
+	public Collection<ValidationResultMessage> checkInstanceState(ComponentInstanceReferenceExpression instanceReference) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		ComponentInstanceReferenceExpression instanceReference = TraceModelDerivedFeatures.getInstanceReference(instanceState);
 		ComponentInstance instance = StatechartModelDerivedFeatures.getLastInstance(instanceReference);
 		if (!StatechartModelDerivedFeatures.isStatechart(instance)) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 				"This is not a statechart instance",
-					new ReferenceInfo(instanceState)));
+					new ReferenceInfo(CompositeModelPackage.Literals.COMPONENT_INSTANCE_ELEMENT_REFERENCE_EXPRESSION__INSTANCE)));
 		}
 		return validationResultMessages;
 	}
 	
 	public Collection<ValidationResultMessage> checkInstanceStateConfiguration(
-			InstanceStateConfiguration configuration) {
+			ComponentInstanceStateReferenceExpression configuration) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		ComponentInstance instance = (ComponentInstance)
 				StatechartModelDerivedFeatures.getLastInstance(configuration.getInstance());
@@ -116,9 +116,8 @@ public class TraceModelValidator extends StatechartModelValidator {
 		return validationResultMessages;
 	}
 	
-	public Collection<ValidationResultMessage> checkInstanceVariableState(InstanceVariableState variableState) {
+	public Collection<ValidationResultMessage> checkInstanceVariableState(ComponentInstanceVariableReferenceExpression variableReference) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		ComponentInstanceVariableReferenceExpression variableReference = variableState.getVariableReference();
 		ComponentInstanceReferenceExpression instanceReference = variableReference.getInstance();
 		ComponentInstance instance = StatechartModelDerivedFeatures.getLastInstance(instanceReference);
 		Component type = StatechartModelDerivedFeatures.getDerivedType(instance);
@@ -129,7 +128,7 @@ public class TraceModelValidator extends StatechartModelValidator {
 			if (!variables.contains(variable)) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 					"This is not a valid variable in the specified statechart",
-						new ReferenceInfo(TraceModelPackage.Literals.INSTANCE_VARIABLE_STATE__VARIABLE_REFERENCE)));
+						new ReferenceInfo(CompositeModelPackage.Literals.COMPONENT_INSTANCE_VARIABLE_REFERENCE_EXPRESSION__VARIABLE_DECLARATION)));
 			}
 		}
 		return validationResultMessages;
@@ -137,14 +136,16 @@ public class TraceModelValidator extends StatechartModelValidator {
 	
 	public Collection<ValidationResultMessage> checkInstanceSchedule(InstanceSchedule schedule) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		ExecutionTrace executionTrace = (ExecutionTrace)EcoreUtil.getRootContainer(schedule, true);
-		Component component = executionTrace.getComponent();
-		if (component != null) {
-			if (!(component instanceof AsynchronousCompositeComponent)) {
-				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-						"Instance scheduling is valid only if the component is an asynchronous composite component",
-						new ReferenceInfo(TraceModelPackage.Literals.INSTANCE_SCHEDULE__SCHEDULED_INSTANCE)));
-			}
+		ComponentInstanceReferenceExpression instanceReference = schedule.getInstanceReference();
+		ComponentInstance instance = StatechartModelDerivedFeatures.getLastInstance(instanceReference);
+		Component type = StatechartModelDerivedFeatures.getDerivedType(instance);
+		if (type instanceof ScheduledAsynchronousCompositeComponent) {
+			// TODO check if parent is pure async
+		}
+		else {
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+					"Only scheduled-asynchronous and aynchronous adapter components can be scheduled",
+						new ReferenceInfo(TraceModelPackage.Literals.INSTANCE_SCHEDULE__INSTANCE_REFERENCE)));
 		}
 		return validationResultMessages;
 	}

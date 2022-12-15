@@ -8,8 +8,8 @@ step {
 		reset
 	}
 	assert {
-		variable complexRegionMachine._complexRegionMachine_Submachine1__Region1 = _ComplexRegionMachine_Submachine1_::Init1
-		variable complexRegionMachine._complexRegionMachine_Submachine2__Region2 = _ComplexRegionMachine_Submachine2_::Init2
+		variable complexRegionMachine._complexRegionMachine_Submachine1__Region1 = _ComplexRegionMachine_Submachine1_::Init1;
+		variable complexRegionMachine._complexRegionMachine_Submachine2__Region2 = _ComplexRegionMachine_Submachine2_::Init2;
 	}
 }
 //Check guards
@@ -19,8 +19,8 @@ step {
 		schedule component
 	}
 	assert {
-		variable complexRegionMachine._complexRegionMachine_Submachine1__Region1 = _ComplexRegionMachine_Submachine1_::Init1
-		variable complexRegionMachine._complexRegionMachine_Submachine2__Region2 = _ComplexRegionMachine_Submachine2_::Init2
+		variable complexRegionMachine._complexRegionMachine_Submachine1__Region1 = _ComplexRegionMachine_Submachine1_::Init1;
+		variable complexRegionMachine._complexRegionMachine_Submachine2__Region2 = _ComplexRegionMachine_Submachine2_::Init2;
 	}
 }
 step {
@@ -29,8 +29,8 @@ step {
 		schedule component
 	}
 	assert {
-		variable complexRegionMachine._complexRegionMachine_Submachine1__Region1 = _ComplexRegionMachine_Submachine1_::Init1
-		variable complexRegionMachine._complexRegionMachine_Submachine2__Region2 = _ComplexRegionMachine_Submachine2_::Init2
+		variable complexRegionMachine._complexRegionMachine_Submachine1__Region1 = _ComplexRegionMachine_Submachine1_::Init1;
+		variable complexRegionMachine._complexRegionMachine_Submachine2__Region2 = _ComplexRegionMachine_Submachine2_::Init2;
 	}
 }
 //Check portA
@@ -40,8 +40,8 @@ step {
 		schedule component
 	}
 	assert {
-		variable complexRegionMachine._complexRegionMachine_Submachine1__Region1 = _ComplexRegionMachine_Submachine1_::Other1
-		variable complexRegionMachine._complexRegionMachine_Submachine2__Region2 = _ComplexRegionMachine_Submachine2_::Init2
+		variable complexRegionMachine._complexRegionMachine_Submachine1__Region1 = _ComplexRegionMachine_Submachine1_::Other1;
+		variable complexRegionMachine._complexRegionMachine_Submachine2__Region2 = _ComplexRegionMachine_Submachine2_::Init2;
 	}
 }
 step {
@@ -50,8 +50,8 @@ step {
 		schedule component
 	}
 	assert {
-		variable complexRegionMachine._complexRegionMachine_Submachine1__Region1 = _ComplexRegionMachine_Submachine1_::Init1
-		variable complexRegionMachine._complexRegionMachine_Submachine2__Region2 = _ComplexRegionMachine_Submachine2_::Init2
+		variable complexRegionMachine._complexRegionMachine_Submachine1__Region1 = _ComplexRegionMachine_Submachine1_::Init1;
+		variable complexRegionMachine._complexRegionMachine_Submachine2__Region2 = _ComplexRegionMachine_Submachine2_::Init2;
 	}
 }
 step {
@@ -60,8 +60,8 @@ step {
 		schedule component
 	}
 	assert {
-		variable complexRegionMachine._complexRegionMachine_Submachine1__Region1 = _ComplexRegionMachine_Submachine1_::Other1
-		variable complexRegionMachine._complexRegionMachine_Submachine2__Region2 = _ComplexRegionMachine_Submachine2_::Init2
+		variable complexRegionMachine._complexRegionMachine_Submachine1__Region1 = _ComplexRegionMachine_Submachine1_::Other1;
+		variable complexRegionMachine._complexRegionMachine_Submachine2__Region2 = _ComplexRegionMachine_Submachine2_::Init2;
 	}
 }
 step {
@@ -70,8 +70,8 @@ step {
 		schedule component
 	}
 	assert {
-		variable complexRegionMachine._complexRegionMachine_Submachine1__Region1 = _ComplexRegionMachine_Submachine1_::Init1
-		variable complexRegionMachine._complexRegionMachine_Submachine2__Region2 = _ComplexRegionMachine_Submachine2_::Init2
+		variable complexRegionMachine._complexRegionMachine_Submachine1__Region1 = _ComplexRegionMachine_Submachine1_::Init1;
+		variable complexRegionMachine._complexRegionMachine_Submachine2__Region2 = _ComplexRegionMachine_Submachine2_::Init2;
 	}
 }
 //Check portB
@@ -81,8 +81,8 @@ step {
 		schedule component
 	}
 	assert {
-		variable complexRegionMachine._complexRegionMachine_Submachine1__Region1 = _ComplexRegionMachine_Submachine1_::Init1
-		variable complexRegionMachine._complexRegionMachine_Submachine2__Region2 = _ComplexRegionMachine_Submachine2_::Other2
+		variable complexRegionMachine._complexRegionMachine_Submachine1__Region1 = _ComplexRegionMachine_Submachine1_::Init1;
+		variable complexRegionMachine._complexRegionMachine_Submachine2__Region2 = _ComplexRegionMachine_Submachine2_::Other2;
 	}
 }
 step {
@@ -91,8 +91,8 @@ step {
 		schedule component
 	}
 	assert {
-		variable complexRegionMachine._complexRegionMachine_Submachine1__Region1 = _ComplexRegionMachine_Submachine1_::Init1
-		variable complexRegionMachine._complexRegionMachine_Submachine2__Region2 = _ComplexRegionMachine_Submachine2_::Init2
+		variable complexRegionMachine._complexRegionMachine_Submachine1__Region1 = _ComplexRegionMachine_Submachine1_::Init1;
+		variable complexRegionMachine._complexRegionMachine_Submachine2__Region2 = _ComplexRegionMachine_Submachine2_::Init2;
 	}
 }
 step {
@@ -101,8 +101,8 @@ step {
 		schedule component
 	}
 	assert {
-		variable complexRegionMachine._complexRegionMachine_Submachine1__Region1 = _ComplexRegionMachine_Submachine1_::Init1
-		variable complexRegionMachine._complexRegionMachine_Submachine2__Region2 = _ComplexRegionMachine_Submachine2_::Other2
+		variable complexRegionMachine._complexRegionMachine_Submachine1__Region1 = _ComplexRegionMachine_Submachine1_::Init1;
+		variable complexRegionMachine._complexRegionMachine_Submachine2__Region2 = _ComplexRegionMachine_Submachine2_::Other2;
 	}
 }
 step {
@@ -111,7 +111,7 @@ step {
 		schedule component
 	}
 	assert {
-		variable complexRegionMachine._complexRegionMachine_Submachine1__Region1 = _ComplexRegionMachine_Submachine1_::Init1
-		variable complexRegionMachine._complexRegionMachine_Submachine2__Region2 = _ComplexRegionMachine_Submachine2_::Init2
+		variable complexRegionMachine._complexRegionMachine_Submachine1__Region1 = _ComplexRegionMachine_Submachine1_::Init1;
+		variable complexRegionMachine._complexRegionMachine_Submachine2__Region2 = _ComplexRegionMachine_Submachine2_::Init2;
 	}
 }

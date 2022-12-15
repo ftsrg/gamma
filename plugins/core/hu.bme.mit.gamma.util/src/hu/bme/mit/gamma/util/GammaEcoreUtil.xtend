@@ -134,9 +134,10 @@ class GammaEcoreUtil {
 			val container = removableElement.eContainer
 			removableElement.remove
 			if (clazz.isInstance(container)) {
-				if (container.eContents.empty) {
-					queue += container as T
+				if (!container.eContents.empty) {
+					logger.log(Level.WARNING, "The content is not empty")
 				}
+				queue += container as T
 			}
 		}
 	}

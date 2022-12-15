@@ -6,7 +6,7 @@ step {
 		reset
 	}
 	assert {
-		variable innerStateMachine._innerStateMachine_ = _InnerStateMachine_::Init
+		variable innerStateMachine._innerStateMachine_ = _InnerStateMachine_::Init;
 	}
 }
 step {
@@ -15,8 +15,8 @@ step {
 		schedule component
 	}
 	assert {
-		variable innerStateMachine._innerStateMachine_ = _InnerStateMachine_::Other
-		variable innerStateMachine._innerStateMachine_Other_ = _InnerStateMachine_Other_::Other_Init
+		variable innerStateMachine._innerStateMachine_ = _InnerStateMachine_::Other;
+		variable innerStateMachine._innerStateMachine_Other_ = _InnerStateMachine_Other_::Other_Init;
 	}
 }
 step {
@@ -25,7 +25,7 @@ step {
 		schedule component
 	}
 	assert {
-		variable innerStateMachine._innerStateMachine_ = _InnerStateMachine_::Init
+		variable innerStateMachine._innerStateMachine_ = _InnerStateMachine_::Init;
 	}
 }
 step {
@@ -34,8 +34,8 @@ step {
 		schedule component
 	}
 	assert {
-		variable innerStateMachine._innerStateMachine_ = _InnerStateMachine_::Other
-		variable innerStateMachine._innerStateMachine_Other_ = _InnerStateMachine_Other_::Other_Init
+		variable innerStateMachine._innerStateMachine_ = _InnerStateMachine_::Other;
+		variable innerStateMachine._innerStateMachine_Other_ = _InnerStateMachine_Other_::Other_Init;
 	}
 }
 step {
@@ -44,8 +44,8 @@ step {
 		schedule component
 	}
 	assert {
-		variable innerStateMachine._innerStateMachine_ = _InnerStateMachine_::Other
-		variable innerStateMachine._innerStateMachine_Other_ = _InnerStateMachine_Other_::Other_Other
+		variable innerStateMachine._innerStateMachine_ = _InnerStateMachine_::Other;
+		variable innerStateMachine._innerStateMachine_Other_ = _InnerStateMachine_Other_::Other_Other;
 	}
 }
 step {
@@ -54,8 +54,8 @@ step {
 		schedule component
 	}
 	assert {
-		variable innerStateMachine._innerStateMachine_ = _InnerStateMachine_::Other
-		variable innerStateMachine._innerStateMachine_Other_ = _InnerStateMachine_Other_::Other_Init
+		variable innerStateMachine._innerStateMachine_ = _InnerStateMachine_::Other;
+		variable innerStateMachine._innerStateMachine_Other_ = _InnerStateMachine_Other_::Other_Init;
 	}
 }
 step {
@@ -64,8 +64,8 @@ step {
 		schedule component
 	}
 	assert {
-		variable innerStateMachine._innerStateMachine_ = _InnerStateMachine_::Other
-		variable innerStateMachine._innerStateMachine_Other_ = _InnerStateMachine_Other_::Other_Other
+		variable innerStateMachine._innerStateMachine_ = _InnerStateMachine_::Other;
+		variable innerStateMachine._innerStateMachine_Other_ = _InnerStateMachine_Other_::Other_Other;
 	}
 }
 step {
@@ -74,6 +74,6 @@ step {
 		schedule component
 	}
 	assert {
-		variable innerStateMachine._innerStateMachine_ = _InnerStateMachine_::Init
+		variable innerStateMachine._innerStateMachine_ = _InnerStateMachine_::Init;
 	}
 }

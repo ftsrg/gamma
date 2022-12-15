@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.trace.testgeneration.java
 
+import hu.bme.mit.gamma.codegeneration.java.util.TypeSerializer
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
@@ -51,8 +52,9 @@ class TestGenerator {
 	protected final TestGeneratorUtil testGeneratorUtil
 	protected final AbstractAssertionHandler waitingHandle 
 	protected final ActAndAssertSerializer actAndAssertSerializer	
+	protected final extension ExpressionSerializer expressionSerializer
 	// Auxiliary objects
-	protected final extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
+	protected final extension TypeSerializer typeSerializer = TypeSerializer.INSTANCE
 	protected final extension TraceUtil traceUtil = TraceUtil.INSTANCE
 	
 	/**
@@ -77,6 +79,7 @@ class TestGenerator {
     	this.testGeneratorUtil = new TestGeneratorUtil(component)
 		this.actAndAssertSerializer = new ActAndAssertSerializer(component,
 			TEST_INSTANCE_NAME, TIMER_OBJECT_NAME)
+		this.expressionSerializer = new ExpressionSerializer(component, TEST_INSTANCE_NAME)
 		if (firstTrace.hasAllowedWaitingAnnotation) {
 			this.waitingHandle = new WaitingAllowedInFunction(firstTrace, actAndAssertSerializer)
 		} 
@@ -122,6 +125,10 @@ class TestGenerator {
 «««			Only if there are timing specis in the model
 			«IF component.timed»private static «TIMER_CLASS_NAME» «TIMER_OBJECT_NAME»;«ENDIF»
 			
+			«FOR variable : traces.head.variableDeclarations»
+				protected «variable.type.serialize» «variable.name»«IF variable.expression !== null» = «variable.expression.serialize»«ENDIF»;
+			«ENDFOR»
+			
 			@Before
 			public void init() {
 				«IF component.timed»
@@ -160,6 +167,8 @@ class TestGenerator {
 		«FOR _package : firstTrace.typeDeclarations.map[it.containingPackage].toSet»
 			import «_package.getPackageString(BASE_PACKAGE)».*;
 		«ENDFOR»
+		
+		import java.util.Objects;
 		
 		import static org.junit.Assert.assertTrue;
 		

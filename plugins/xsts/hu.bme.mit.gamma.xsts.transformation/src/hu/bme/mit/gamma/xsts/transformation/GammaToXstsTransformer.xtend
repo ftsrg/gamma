@@ -19,6 +19,7 @@ import hu.bme.mit.gamma.expression.model.PredicateExpression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.TransitionMerging
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.VariableGroupRetriever
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer.ActionOptimizer
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer.ArrayOptimizer
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer.ResettableVariableResetter
@@ -45,6 +46,7 @@ import java.util.logging.Logger
 
 import static hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
 
@@ -72,6 +74,7 @@ class GammaToXstsTransformer {
 	protected final extension XSTSModelFactory xStsModelFactory = XSTSModelFactory.eINSTANCE
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
 	protected final extension ExpressionEvaluator expressionEvaluator = ExpressionEvaluator.INSTANCE
+	protected final extension VariableGroupRetriever variableGroupRetriever = VariableGroupRetriever.INSTANCE
 	// Logger
 	protected final Logger logger = Logger.getLogger("GammaLogger")
 	
@@ -140,6 +143,8 @@ class GammaToXstsTransformer {
 		// Setting clock variable increase
 		xSts.setClockVariables
 		_package.setSchedulingAnnotation(schedulingConstraint) // Needed for back-annotation
+		// Remove internal parameter assignments from environment
+		xSts.removeInternalParameterAssignment(gammaComponent)
 		// Optimizing
 		xSts.optimize
 		
@@ -316,6 +321,22 @@ class GammaToXstsTransformer {
 			}
 		}
 	}
+	
+	protected def removeInternalParameterAssignment(XSTS xSts, Component component) {
+		val systemInEventParameters = xSts.systemInEventParameterVariableGroup.variables
+		val systemInEventInternalParameters = systemInEventParameters
+				.filter[it.internal].toList
+				
+				
+		// In the asynchronous case, the underlying transformation works
+		if (component.synchronous) {
+			val inEventTransition = xSts.inEventTransition
+			systemInEventInternalParameters.changeAssignmentsToEmptyActions(inEventTransition)
+		}
+		
+		systemInEventParameters -= systemInEventInternalParameters
+	}
+		
 	
 	protected def optimize(XSTS xSts) {
 		logger.log(Level.INFO, "Optimizing reset, environment and merged actions in " + xSts.name)

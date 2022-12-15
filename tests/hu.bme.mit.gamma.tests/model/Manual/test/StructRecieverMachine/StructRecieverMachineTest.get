@@ -7,10 +7,10 @@ step {
 		reset
 	}
 	assert {
-		variable structRecieverMachine.cnt = 0
+		variable structRecieverMachine.cnt = 0;
 		variable structRecieverMachine.ss = #SampleStruct {
 			val := 0
-		}
+		};
 	}
 }
 step {
@@ -21,10 +21,10 @@ step {
 		schedule component
 	}
 	assert {
-		variable structRecieverMachine.cnt = 0
+		variable structRecieverMachine.cnt = 0;
 		variable structRecieverMachine.ss = #SampleStruct {
 			val := 0
-		}
+		};
 	}
 }
 step {
@@ -35,10 +35,10 @@ step {
 		schedule component
 	}
 	assert {
-		variable structRecieverMachine.cnt = 1
+		variable structRecieverMachine.cnt = 1;
 		variable structRecieverMachine.ss = #SampleStruct {
 			val := 1
-		}
+		};
 	}
 }
 step {
@@ -49,10 +49,10 @@ step {
 		schedule component
 	}
 	assert {
-		variable structRecieverMachine.cnt = 6
+		variable structRecieverMachine.cnt = 6;
 		variable structRecieverMachine.ss = #SampleStruct {
 			val := 6
-		}
+		};
 	}
 }
 step {
@@ -63,9 +63,9 @@ step {
 		schedule component
 	}
 	assert {
-		variable structRecieverMachine.cnt = 4
+		variable structRecieverMachine.cnt = 4;
 		variable structRecieverMachine.ss = #SampleStruct {
 			val := 4
-		}
+		};
 	}
 }

@@ -106,6 +106,20 @@ class CoveredPropertyReducer {
 				return arguments.get(parameterIndex).clone
 			}
 		}
+		// EventParameterReferenceExpressions too
+		for (eventParameterReference : step.eventParameterReferences) {
+			val referencedPort = eventParameterReference.port
+			val referencedEvent = eventParameterReference.event
+			
+			if (topComponentPort.helperEquals(referencedPort) && event.helperEquals(referencedEvent)) {
+				val value = eventParameterReference.otherOperandIfContainedByEquality
+				if (value === null) {
+					return expression.clone // Cannot evaluate it, returning the unknown reference
+				}
+				return value.clone
+			}
+		}
+		
 		return createFalseExpression
 	}
 	
@@ -143,18 +157,20 @@ class CoveredPropertyReducer {
 		val instance = expression.instance
 		val variable = expression.variableDeclaration
 		
-		for (variableState : step.instanceVariableStates) {
-			val variableReference = variableState.variableReference
+		for (variableReference : step.instanceVariableStates) {
 			val stateInstance = variableReference.instance.lastInstance // Only one expected
 			val stateVariable = variableReference.variableDeclaration
 			
 			if (traceability.contains(instance, stateInstance) && variable.helperEquals(stateVariable)) {
-				val value = variableState.value
+				val value = variableReference.otherOperandIfContainedByEquality
+				if (value === null) {
+					return expression.clone // Cannot evaluate it, returning the unknown reference
+				}
 				return value.clone
 			}
 		}
 		val isTransient = variable.transient
-		val isResettable = variable.resettable
+		val isResettable = variable.resettable // Not correct in every sense, but we do not distinguish between different values here
 		if (isTransient || isResettable) {
 			// This can happen if we run model checking as optimize&verify
 			logger.log(Level.WARNING, ('''Not found variable for transient («isTransient») or ''' +
