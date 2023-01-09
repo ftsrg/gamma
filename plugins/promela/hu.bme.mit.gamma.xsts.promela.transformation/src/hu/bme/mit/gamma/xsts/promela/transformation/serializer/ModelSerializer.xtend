@@ -108,9 +108,9 @@ class ModelSerializer {
 		if (transitions.size > 1) {
 			return '''
 				if
-				«FOR transition : transitions»
-				:: «transition.action.serialize»
-				«ENDFOR»
+					«FOR transition : transitions»
+					:: «transition.action.serialize»
+					«ENDFOR»
 				fi;
 			'''
 		}
@@ -122,9 +122,7 @@ class ModelSerializer {
 	//
 	
 	protected def dispatch String serialize(AssumeAction action) '''
-		if
-		:: («action.assumption.serialize»);
-		fi;
+		if :: («action.assumption.serialize»); fi;
 	'''
 	
 	protected def dispatch String serialize(AssignmentAction action) {
@@ -145,14 +143,14 @@ class ModelSerializer {
 	
 	protected def dispatch String serialize(IfAction action) '''
 		if
-		:: «action.condition.serialize» -> 
-			«action.then.serialize»
-		«IF action.^else !== null && !(action.^else instanceof EmptyAction)»
-		:: else ->
-			«action.^else.serialize»
-		«ELSE»
-		:: else
-		«ENDIF»
+			:: «action.condition.serialize» ->
+				«action.then.serialize»
+			«IF action.^else !== null && !(action.^else instanceof EmptyAction)»
+				:: else ->
+					«action.^else.serialize»
+			«ELSE»
+				:: else
+			«ENDIF»
 		fi;
 	'''
 	
@@ -162,9 +160,9 @@ class ModelSerializer {
 		
 		return '''
 			if
-			«FOR element : xStsVariable.createSet»
-			:: «xStsVariable.name» = «element.serialize»;
-			«ENDFOR»
+				«FOR element : xStsVariable.createSet»
+					:: «xStsVariable.name» = «element.serialize»;
+				«ENDFOR»
 			fi;'''
 	}
 	
@@ -182,9 +180,9 @@ class ModelSerializer {
 	
 	protected def dispatch String serialize(NonDeterministicAction action) '''
 		if
-		«FOR subaction : action.actions»
-		:: «subaction.serialize»
-		«ENDFOR»
+			«FOR subaction : action.actions»
+			:: «subaction.serialize»
+			«ENDFOR»
 		fi;
 	'''
 	
@@ -205,7 +203,8 @@ class ModelSerializer {
 				«ENDFOR»
 				
 				«FOR index : 0 ..< actionSize»
-					chan_parallel_«actions.getChanNumber(index)»?msg_parallel_«actions.getChanNumber(index)»;
+					bit msg_parallel_«actions.getChanNumber(index)» = 0;
+					chan_parallel_«actions.getChanNumber(index)» ? msg_parallel_«actions.getChanNumber(index)»;
 					msg_parallel_«actions.getChanNumber(index)» == 1;
 					msg_parallel_«actions.getChanNumber(index)» = 0;
 				«ENDFOR»
@@ -232,7 +231,7 @@ class ModelSerializer {
 			proctype Parallel_«index»_«i»(«actions.get(i).serializeParallelProcessesArguments») {
 				«actions.get(i).serialize»
 				
-				chan_parallel_«actions.getChanNumber(i)»!1;
+				chan_parallel_«actions.getChanNumber(i)» ! 1;
 			}
 		«ENDFOR»
 	'''
@@ -240,7 +239,6 @@ class ModelSerializer {
 	protected def serializeParallelChannels() '''
 		«FOR index : 0 .. maxParallelNumber»
 			chan chan_parallel_«index» = [0] of { bit };
-			bit msg_parallel_«index» = 0;
 		«ENDFOR»
 	'''
 	
