@@ -103,8 +103,8 @@ class ModelSerializer {
 				atomic {
 					«transitions.serializeTransitions»
 					«isStableVariableName» = 1;
+					flag = 1;
 				};
-				flag = 1; ««« Out of the atomic block to prevent the creating of an entirely empty step
 				goto ENV;
 			}
 			

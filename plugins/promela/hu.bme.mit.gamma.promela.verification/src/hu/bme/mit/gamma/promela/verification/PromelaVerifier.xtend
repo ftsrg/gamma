@@ -119,7 +119,7 @@ class PromelaVerifier extends AbstractVerifier {
 			super.result = super.result.adaptResult
 			
 			// spin -t -p -g -l -w PromelaFile.pml
-			val traceCommand = #["spin", "-t", "-p", "-g", "-l", "-w", modelFile.canonicalPath.escapePath]
+			val traceCommand = #["spin", "-t", "-p", "-g", /*"-l",*/ "-w", modelFile.canonicalPath.escapePath]
 			
 			// Never claim file
 			val nvrFile = new File(execFolder, "_spin_nvr.tmp")

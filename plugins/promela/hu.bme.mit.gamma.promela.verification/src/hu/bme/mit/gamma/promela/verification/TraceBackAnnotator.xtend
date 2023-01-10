@@ -175,20 +175,20 @@ class TraceBackAnnotator {
 								modelState = ModelState.TRANS
 							}
 							case line.startsWith(TRACE_END): {
-								step.checkStates
-								// Creating a new step
-								step = createStep
-								// Add static delay every turn
-								if (schedulingConstraint !== null) {
-									step.addTimeElapse(schedulingConstraint)
-								}
-
-								trace.steps += step
-								// Setting the state
-								backAnnotatorState = BackAnnotatorState.ENVIRONMENT_CHECK
-								
+//								step.checkStates
+//								// Creating a new step
+//								step = createStep
+//								// Add static delay every turn
+//								if (schedulingConstraint !== null) {
+//									step.addTimeElapse(schedulingConstraint)
+//								}
+//
+//								trace.steps += step
+//								// Setting the state
+//								backAnnotatorState = BackAnnotatorState.ENVIRONMENT_CHECK
+//								
 								traceEnd = true
-								traceState = TraceState.REQUIRED
+//								traceState = TraceState.REQUIRED
 							}
 						}
 					}
@@ -209,14 +209,14 @@ class TraceBackAnnotator {
 								modelState = ModelState.ENV
 							}
 							case line.startsWith(TRACE_END): {
-								step.checkInEvents
-								// Add schedule
-								step.addComponentScheduling
-								// Setting the state
-								backAnnotatorState = BackAnnotatorState.STATE_CHECK
-								
+//								step.checkInEvents
+//								// Add schedule
+//								step.addComponentScheduling
+//								// Setting the state
+//								backAnnotatorState = BackAnnotatorState.STATE_CHECK
+//								
 								traceEnd = true
-								traceState = TraceState.REQUIRED
+//								traceState = TraceState.REQUIRED
 							}
 						}
 					}
@@ -224,7 +224,7 @@ class TraceBackAnnotator {
 						throw new IllegalArgumentException("Not known state: " + modelState)
 				}
 				
-				// We parse in every turn
+				// We parse in every turn (at the end of env and trans)
 				if (traceState == TraceState.REQUIRED && line.checkLine) {
 					
 					var split = line.split(" = ")
@@ -315,6 +315,10 @@ class TraceBackAnnotator {
 				(traceEnd && line.contains("proc  ")) ||
 				line.startsWith("Never claim moves to") ||
 				line.contains(" processes created") ||
-				line.startsWith("msg_parallel_"))
+				line.startsWith("msg_parallel_")
+					// Addition
+					|| line.startsWith("queue ")
+				)
+				
 	}
 }

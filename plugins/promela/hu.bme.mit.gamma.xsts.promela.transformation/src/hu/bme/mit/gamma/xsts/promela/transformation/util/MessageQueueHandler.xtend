@@ -11,6 +11,7 @@
 package hu.bme.mit.gamma.xsts.promela.transformation.util
 
 import hu.bme.mit.gamma.expression.model.ArrayAccessExpression
+import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression
 import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
 import hu.bme.mit.gamma.expression.model.BinaryExpression
 import hu.bme.mit.gamma.expression.model.Declaration
@@ -18,13 +19,11 @@ import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.EqualityExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.GreaterExpression
-import hu.bme.mit.gamma.expression.model.IfThenElseExpression
 import hu.bme.mit.gamma.expression.model.InequalityExpression
 import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression
 import hu.bme.mit.gamma.expression.model.LessEqualExpression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.VariableGroupRetriever
-import hu.bme.mit.gamma.statechart.util.ExpressionTypeDeterminator
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
@@ -43,7 +42,7 @@ class MessageQueueHandler {
 	//
 //	protected final extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
 	protected final extension TypeSerializer typeSerializer = TypeSerializer.INSTANCE
-	protected final extension ExpressionTypeDeterminator typeDeterminator = ExpressionTypeDeterminator.INSTANCE
+//	protected final extension ExpressionTypeDeterminator typeDeterminator = ExpressionTypeDeterminator.INSTANCE
 	
 	protected final extension VariableGroupRetriever variableGroupRetriever = VariableGroupRetriever.INSTANCE
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
@@ -269,24 +268,24 @@ class MessageQueueHandler {
 					if (sizeVariable instanceof VariableDeclaration) {
 						val declarationReferenceAnnotation = sizeVariable.declarationReferenceAnnotation
 						val messageQueue = declarationReferenceAnnotation.declaration
-						if (expression.isContainedBy(IfThenElseExpression)) {
+//						if (expression.isContainedBy(IfThenElseExpression)) {
 							return messageQueue.serializeQueueExpression(functionName)
-						}
-						else {
-							return '''«functionName»(«messageQueue.name»)'''
-						}
+//						}
+//						else {
+//							return '''«functionName»(«messageQueue.name»)'''
+//						}
 					}
 				}
 			}
 			else if (masterQueueExpression.isInstance(expression)) { // 1-capacity master queue
 				val arrayAccess = expression.leftOperand as ArrayAccessExpression
 				val arrayDeclaration = arrayAccess.declaration
-				if (expression.isContainedBy(IfThenElseExpression)) {
+//				if (expression.isContainedBy(IfThenElseExpression)) {
 					return arrayDeclaration.serializeQueueExpression(functionName)
-				}
-				else {
-					return '''«functionName»(«arrayDeclaration.name»)'''
-				}
+//				}
+//				else {
+//					return '''«functionName»(«arrayDeclaration.name»)'''
+//				}
 			}
 		}
 		throw new IllegalArgumentException("Not known expression: " + expression)
@@ -313,7 +312,7 @@ class MessageQueueHandler {
 	
 	def isQueueAction(Action action) {
 		return action.queueAddAction || action.queuePeekAction || action.queuePopAction ||
-			action.queueSizeAction
+			action.queueSizeAction || action.queueInitializingAction
 	}
 	
 	def serializeQueueAction(Action action) {
@@ -328,6 +327,9 @@ class MessageQueueHandler {
 		}
 		else if (action.queueSizeAction) {
 			return action.serializeQueueSizeAction
+		}
+		else if (action.queueInitializingAction) { // After queuePopAction
+			return action.serializeQueueInitializingAction
 		}
 		throw new IllegalArgumentException("Not known action: " + action)
 	}
@@ -373,8 +375,18 @@ class MessageQueueHandler {
 				if (array.global) {
 					val xSts = array.containingXsts
 					val messageQueues = xSts.messageQueueGroup.variables
-					
-					return messageQueues.contains(array) && rhs.typeDefinition.array
+					if (messageQueues.contains(array)) {
+						if (rhs instanceof ArrayLiteralExpression) {
+							val head = rhs.operands.head // [ 0 <- array[1], ...]
+							if (head instanceof ArrayAccessExpression) {
+								val declaration = head.declaration
+								val index = head.index
+								if (index instanceof IntegerLiteralExpression) {
+									return declaration === array && index.value == BigInteger.ONE
+								}
+							}
+						}
+					}
 				}
 			}
 		}
@@ -382,12 +394,26 @@ class MessageQueueHandler {
 	}
 	
 	protected def serializeQueuePopAction(Action action) {
-		// We never serialize pop, because we already do this in the peek operation
-		// This can be done as we in XSTS the peek is always followed by a pop
-		return ''''''
+		if (action instanceof AssignmentAction) {
+			val lhs = action.lhs
+			if (lhs instanceof DirectReferenceExpression) {
+				val array = lhs.declaration
+				if (array.global) {
+					val type = array.type as ArrayTypeDefinition
+					val elementType = type.elementType
+					
+					val name = "pop_placeholder_" + action.hashCode.toString.replaceAll("-", "_")
+					
+					return '''
+						local «elementType.serializeType» «name»;
+						«array.name» ? «name»;
+					'''
+				}
+			}
+		}
 	}
 	
-	// peek -> q ? <x> || := queue[0]? - but we always use pop - see above
+	// peek -> q ? <x> || := queue[0]?
 	
 	protected def isQueuePeekAction(Action action) {
 		var Expression rhs = null
@@ -440,12 +466,36 @@ class MessageQueueHandler {
 					val xSts = array.containingXsts
 					val messageQueues = xSts.messageQueueGroup.variables
 					if (messageQueues.contains(array) && index.value == BigInteger.ZERO) {
-						return '''«array.name» ? «lhs.serialize»;'''
+						return '''«array.name» ? <«lhs.serialize»>;'''
 					}
 				}
 			}
 		}
 		throw new IllegalArgumentException("Not known action: " + action)
+	}
+	
+	//
+	
+	protected def isQueueInitializingAction(Action action) {
+		if (action instanceof AssignmentAction) {
+			val lhs = action.lhs
+			val rhs = action.rhs
+			if (lhs instanceof DirectReferenceExpression) {
+				val array = lhs.declaration
+				if (array.global) {
+					val xSts = array.containingXsts
+					val messageQueues = xSts.messageQueueGroup.variables
+					if (messageQueues.contains(array)) {
+						return rhs instanceof ArrayLiteralExpression
+					}
+				}
+			}
+		}
+		return false
+	}
+	
+	protected def serializeQueueInitializingAction(Action action) {
+		return ''''''
 	}
 	
 	// size := size + 1 / - 1

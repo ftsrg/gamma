@@ -38,6 +38,7 @@ class PromelaVerification extends AbstractVerification {
 //			 "-search -a -b" // default
 			 "-search -a -b -m10000000 -DVECTORSZ=4096" // recommended for models with ParallelAction
 		]
+		// -A apply slicing algorithm
 	}
 	
 	protected override String getArgumentPattern() {
