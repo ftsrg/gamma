@@ -11,6 +11,7 @@
 package hu.bme.mit.gamma.xsts.promela.transformation.serializer
 
 import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
+import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.ExpressionUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
@@ -33,6 +34,7 @@ import hu.bme.mit.gamma.xsts.promela.transformation.util.HavocHandler
 import hu.bme.mit.gamma.xsts.promela.transformation.util.MessageQueueHandler
 import hu.bme.mit.gamma.xsts.promela.transformation.util.ParallelActionHandler
 import java.util.List
+import java.util.Map
 
 import static hu.bme.mit.gamma.xsts.promela.transformation.util.Namings.*
 
@@ -43,6 +45,10 @@ class ModelSerializer {
 	// Singleton
 	public static ModelSerializer INSTANCE = new ModelSerializer
 	protected new() {}
+	//
+	
+	protected final Map<Declaration, String> names = newHashMap
+	
 	//
 	protected final extension DeclarationSerializer declarationSerializer = DeclarationSerializer.INSTANCE
 	protected final extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
@@ -55,7 +61,11 @@ class ModelSerializer {
 	protected final extension ArrayHandler arrayHandler = ArrayHandler.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	
+	//
+	
 	def String serializePromela(XSTS xSts) {
+		xSts.customizeLocalVariableNames
+		
 		val initializingActions = xSts.initializingAction
 		val environmentalActions = xSts.environmentalAction
 		
@@ -70,7 +80,7 @@ class ModelSerializer {
 		
 		actions.createParallelMapping
 		
-		return '''
+		val model = '''
 			«xSts.serializeDeclaration»
 			
 			«serializeParallelChannels»
@@ -106,7 +116,35 @@ class ModelSerializer {
 				}
 			}
 		'''
+		
+		xSts.restoreLocalVariableNames
+		
+		return model
 	}
+	
+	//
+	// Second hash is needed as Promela does not support local variables with the same name in different scopes
+	protected def customizeLocalVariableNames(XSTS xSts) {
+		names.clear
+		for (localVariableAction : xSts.getAllContentsOfType(VariableDeclarationAction)) {
+			val localVariable = localVariableAction.variableDeclaration
+			val name = localVariable.name
+			names += localVariable -> name
+			
+			localVariable.name = localVariable.name + localVariable.hashCode.toString.replaceAll("-","_")
+		}
+	}
+	
+	protected def restoreLocalVariableNames(XSTS xSts) {
+		for (localVariableAction : xSts.getAllContentsOfType(VariableDeclarationAction)) {
+			val localVariable = localVariableAction.variableDeclaration
+			val name = names.get(localVariable)
+			
+			localVariable.name = name
+		}
+	}
+	
+	//
 	
 	protected def serializeTransitions(List<? extends XTransition> transitions) {
 		if (transitions.size > 1) {

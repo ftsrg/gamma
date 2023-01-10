@@ -11,6 +11,7 @@
 package hu.bme.mit.gamma.xsts.promela.transformation.serializer
 
 import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
+import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.expression.util.ExpressionTypeDeterminator2
@@ -69,15 +70,15 @@ class DeclarationSerializer {
 				«IF Configuration.HANDLE_NATIVE_MESSAGE_QUEUES && variable.queueVariable»
 					«variable.serializeQueueVariable»
 				«ELSEIF type.elementType instanceof ArrayTypeDefinition»
-					«type.serializeType» «variable.name»[«type.size.serialize»];
+					«type.serializeType» «variable.serializeName»[«type.size.serialize»];
 					«IF variable.expression !== null && variable.local»
 						«variable.serializeArrayInit(variable.expression, type)»
 					«ENDIF»
 				«ELSE»
-					«type.serializeType» «variable.name»[«type.size.serialize»]«IF variable.expression !== null» = «variable.expression.serialize»«ENDIF»;
+					«type.serializeType» «variable.serializeName»[«type.size.serialize»]«IF variable.expression !== null» = «variable.expression.serialize»«ENDIF»;
 				«ENDIF»
 			«ELSE»
-				«type.serializeType» «variable.name»«IF variable.expression !== null» = «variable.expression.serialize»«ENDIF»;
+				«type.serializeType» «variable.serializeName»«IF variable.expression !== null» = «variable.expression.serialize»«ENDIF»;
 			«ENDIF»
 		'''
 	}
@@ -85,4 +86,10 @@ class DeclarationSerializer {
 	def String serializeLocalVariableDeclaration(VariableDeclaration variable) {
 		return '''local «variable.serializeVariableDeclaration»'''
 	}
+	
+	protected def String serializeName(Declaration variable) {
+		val name = variable.name
+		return name
+	}
+	
 }
