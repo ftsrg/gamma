@@ -36,6 +36,7 @@ import hu.bme.mit.gamma.expression.model.ConstantDeclaration;
 import hu.bme.mit.gamma.expression.model.DecimalLiteralExpression;
 import hu.bme.mit.gamma.expression.model.DecimalTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Declaration;
+import hu.bme.mit.gamma.expression.model.DeclarationReferenceAnnotation;
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition;
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression;
@@ -802,6 +803,12 @@ public class ExpressionUtil {
 	
 	public void addInternalAnnotation(VariableDeclaration variable) {
 		addAnnotation(variable, factory.createInternalVariableDeclarationAnnotation());
+	}
+	
+	public void addDeclarationReferenceAnnotation(VariableDeclaration variable, Declaration declaration) {
+		DeclarationReferenceAnnotation declarationReferenceAnnotation = factory.createDeclarationReferenceAnnotation();
+		declarationReferenceAnnotation.setDeclaration(declaration);
+		addAnnotation(variable, declarationReferenceAnnotation);
 	}
 	
 	public void addAnnotation(VariableDeclaration variable, VariableDeclarationAnnotation annotation) {

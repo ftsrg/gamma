@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022 Contributors to the Gamma project
+ * Copyright (c) 2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -8,8 +8,10 @@
  *
  * SPDX-License-Identifier: EPL-1.0
  ********************************************************************************/
-package hu.bme.mit.gamma.lowlevel.xsts.transformation
+package hu.bme.mit.gamma.xsts.promela.transformation.util
 
-enum TransitionMerging {
-	HIERARCHICAL, FLAT
+class Configuration {
+	
+	public static final boolean HANDLE_NATIVE_MESSAGE_QUEUES = true
+	
 }

@@ -199,5 +199,8 @@
     <genClasses ecoreClass="expression.ecore#//EnvironmentResettableVariableDeclarationAnnotation"/>
     <genClasses ecoreClass="expression.ecore#//ClockVariableDeclarationAnnotation"/>
     <genClasses ecoreClass="expression.ecore#//ScheduledClockVariableDeclarationAnnotation"/>
+    <genClasses ecoreClass="expression.ecore#//DeclarationReferenceAnnotation">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference expression.ecore#//DeclarationReferenceAnnotation/declaration"/>
+    </genClasses>
   </genPackages>
 </genmodel:GenModel>

@@ -27,6 +27,7 @@ import hu.bme.mit.gamma.expression.model.ClockVariableDeclarationAnnotation;
 import hu.bme.mit.gamma.expression.model.ConstantDeclaration;
 import hu.bme.mit.gamma.expression.model.DecimalTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Declaration;
+import hu.bme.mit.gamma.expression.model.DeclarationReferenceAnnotation;
 import hu.bme.mit.gamma.expression.model.DefaultExpression;
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.ElseExpression;
@@ -209,6 +210,21 @@ public class ExpressionModelDerivedFeatures {
 	public static boolean hasAnnotation(VariableDeclaration variable,
 			Class<? extends VariableDeclarationAnnotation> annotation) {
 		return variable.getAnnotations().stream().anyMatch(it -> annotation.isInstance(it));
+	}
+	
+	public static List<DeclarationReferenceAnnotation> getDeclarationReferenceAnnotations(VariableDeclaration variable) {
+		List<DeclarationReferenceAnnotation> annotations = new ArrayList<DeclarationReferenceAnnotation>();
+		for (VariableDeclarationAnnotation annotation : variable.getAnnotations()) {
+			if (annotation instanceof DeclarationReferenceAnnotation referenceAnnotation) {
+				annotations.add(referenceAnnotation);
+			}
+		}
+		return annotations;
+	}
+	
+	public static DeclarationReferenceAnnotation getDeclarationReferenceAnnotation(VariableDeclaration variable) {
+		List<DeclarationReferenceAnnotation> declarationReferenceAnnotations = getDeclarationReferenceAnnotations(variable);
+		return javaUtil.getOnlyElement(declarationReferenceAnnotations);
 	}
 	
 	public static List<VariableDeclaration> filterVariablesByAnnotation(

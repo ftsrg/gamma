@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022 Contributors to the Gamma project
+ * Copyright (c) 2022-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -28,7 +28,9 @@ import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.model.XTransition
 import hu.bme.mit.gamma.xsts.promela.transformation.util.ArrayHandler
+import hu.bme.mit.gamma.xsts.promela.transformation.util.Configuration
 import hu.bme.mit.gamma.xsts.promela.transformation.util.HavocHandler
+import hu.bme.mit.gamma.xsts.promela.transformation.util.MessageQueueHandler
 import hu.bme.mit.gamma.xsts.promela.transformation.util.ParallelActionHandler
 import java.util.List
 
@@ -44,6 +46,8 @@ class ModelSerializer {
 	//
 	protected final extension DeclarationSerializer declarationSerializer = DeclarationSerializer.INSTANCE
 	protected final extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
+	protected final extension TypeSerializer typeSerializer = TypeSerializer.INSTANCE
+	protected final extension MessageQueueHandler queueHandler = MessageQueueHandler.INSTANCE
 	
 	protected final extension ParallelActionHandler parallelHandler = new ParallelActionHandler
 	protected final extension HavocHandler havocHandler = HavocHandler.INSTANCE
@@ -126,18 +130,39 @@ class ModelSerializer {
 	'''
 	
 	protected def dispatch String serialize(AssignmentAction action) {
+		// Native message queue handling
+		if (Configuration.HANDLE_NATIVE_MESSAGE_QUEUES) {
+			if (action.queueAction) {
+				return action.serializeQueueAction
+			}
+		}
+		//
 		// Promela does not support multidimensional arrays, so they need to be handled differently
 		// It also does not support the use of array init blocks in processes
 		val lhs = action.lhs
-		if (lhs.declaration.typeDefinition instanceof ArrayTypeDefinition) {
+		val declaration = lhs.declaration
+		if (declaration.typeDefinition instanceof ArrayTypeDefinition) {
 			return lhs.serializeArrayAssignment(action.rhs)
 		}
 		return '''«lhs.serialize» = «action.rhs.serialize»;'''
 	}
 	
-	protected def dispatch String serialize(VariableDeclarationAction action) '''
-		«action.variableDeclaration.serializeLocalVariableDeclaration»
-	'''
+	protected def dispatch String serialize(VariableDeclarationAction action) {
+		val variableDeclaration = action.variableDeclaration
+		// Native message queue handling
+		if (Configuration.HANDLE_NATIVE_MESSAGE_QUEUES) {
+			if (action.queueAction) {
+				val clonedVariableDeclaration = variableDeclaration.clone
+				clonedVariableDeclaration.expression = null
+				return '''
+					«clonedVariableDeclaration.serializeLocalVariableDeclaration»
+					«action.serializeQueueAction»
+				'''
+			}
+		}
+		//
+		return variableDeclaration.serializeLocalVariableDeclaration
+	}
 	
 	protected def dispatch String serialize(EmptyAction action) ''''''
 	

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -253,7 +253,10 @@ class ComponentTransformer {
 				}
 				if (masterSizeVariable !== null) { // Can be null due to potential optimization
 					val xStsMasterSizeVariable = valueDeclarationTransformer.transform(masterSizeVariable).onlyElement
+					xStsMasterSizeVariable.addDeclarationReferenceAnnotation(xStsMasterQueueVariable)
+					
 					xSts.variableDeclarations += xStsMasterSizeVariable
+					xSts.messageQueueSizeGroup.variables += xStsMasterSizeVariable
 					xStsMasterSizeVariable.addStrictControlAnnotation // Needed for loops
 				}
 				
@@ -262,16 +265,19 @@ class ComponentTransformer {
 				checkState(slaveQueueStructs.unique)
 				for (slaveQueueStruct : slaveQueueStructs) {
 					val slaveQueue = slaveQueueStruct.arrayVariable
-					val xStsSlaveQueueVariable = valueDeclarationTransformer.transform(slaveQueue)
-					xSts.variableDeclarations += xStsSlaveQueueVariable
-					xSts.slaveMessageQueueGroup.variables += xStsSlaveQueueVariable
+					val xStsSlaveQueueVariables = valueDeclarationTransformer.transform(slaveQueue)
+					xSts.variableDeclarations += xStsSlaveQueueVariables
+					xSts.slaveMessageQueueGroup.variables += xStsSlaveQueueVariables
 					if (isQueueEnvironmental) {
-						xSts.systemSlaveMessageQueueGroup.variables += xStsSlaveQueueVariable
+						xSts.systemSlaveMessageQueueGroup.variables += xStsSlaveQueueVariables
 					}
 					val slaveSizeVariable = slaveQueueStruct.sizeVariable
 					if (slaveSizeVariable !== null) {
 						val xStsSlaveSizeVariable = valueDeclarationTransformer.transform(slaveSizeVariable).onlyElement
+						xStsSlaveSizeVariable.addDeclarationReferenceAnnotation(xStsSlaveQueueVariables.head) // Not sound due to slave queue opt?
+						
 						xSts.variableDeclarations += xStsSlaveSizeVariable
+						xSts.messageQueueSizeGroup.variables += xStsSlaveSizeVariable
 						xStsSlaveSizeVariable.addStrictControlAnnotation // Needed for loops
 						// The type might not be correct here and later has to be reassigned to handle enums
 					}

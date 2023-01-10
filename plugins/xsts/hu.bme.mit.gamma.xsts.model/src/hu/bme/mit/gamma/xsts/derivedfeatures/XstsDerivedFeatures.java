@@ -84,6 +84,10 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 		return container instanceof VariableDeclarationAction;
 	}
 	
+	public static boolean isGlobal(Declaration variable) {
+		return !isLocal(variable);
+	}
+	
 	public static List<Action> getAllActions(XSTS xSts) {
 		List<Action> actions = new ArrayList<Action>();
 		// Reference to the original actions

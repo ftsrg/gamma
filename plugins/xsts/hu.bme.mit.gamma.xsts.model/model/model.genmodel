@@ -75,6 +75,7 @@
     <genClasses ecoreClass="model.ecore#//SlaveMessageQueueGroup"/>
     <genClasses ecoreClass="model.ecore#//SystemMasterMessageQueueGroup"/>
     <genClasses ecoreClass="model.ecore#//SystemSlaveMessageQueueGroup"/>
+    <genClasses ecoreClass="model.ecore#//MessageQueueSizeGroup"/>
     <genClasses ecoreClass="model.ecore#//VariableDeclarationAction">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//VariableDeclarationAction/variableDeclaration"/>
     </genClasses>

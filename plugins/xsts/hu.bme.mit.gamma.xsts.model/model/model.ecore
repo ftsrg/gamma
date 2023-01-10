@@ -99,6 +99,7 @@
   <eClassifiers xsi:type="ecore:EClass" name="SlaveMessageQueueGroup" eSuperTypes="#//MessageQueueGroup"/>
   <eClassifiers xsi:type="ecore:EClass" name="SystemMasterMessageQueueGroup" eSuperTypes="#//MessageQueueGroup"/>
   <eClassifiers xsi:type="ecore:EClass" name="SystemSlaveMessageQueueGroup" eSuperTypes="#//MessageQueueGroup"/>
+  <eClassifiers xsi:type="ecore:EClass" name="MessageQueueSizeGroup" eSuperTypes="#//MessageQueueGroup"/>
   <eClassifiers xsi:type="ecore:EClass" name="VariableDeclarationAction" eSuperTypes="#//AtomicAction">
     <eStructuralFeatures xsi:type="ecore:EReference" name="variableDeclaration" lowerBound="1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclaration"

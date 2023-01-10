@@ -252,4 +252,8 @@
       eSuperTypes="#//VariableDeclarationAnnotation"/>
   <eClassifiers xsi:type="ecore:EClass" name="ScheduledClockVariableDeclarationAnnotation"
       eSuperTypes="#//VariableDeclarationAnnotation"/>
+  <eClassifiers xsi:type="ecore:EClass" name="DeclarationReferenceAnnotation" eSuperTypes="#//VariableDeclarationAnnotation">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="declaration" lowerBound="1"
+        eType="#//Declaration"/>
+  </eClassifiers>
 </ecore:EPackage>
