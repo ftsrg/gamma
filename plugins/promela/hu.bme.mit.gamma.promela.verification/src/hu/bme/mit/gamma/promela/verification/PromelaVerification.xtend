@@ -35,8 +35,8 @@ class PromelaVerification extends AbstractVerification {
 	
 	override getDefaultArguments() {
 		return #[
-			 "-search -a -b" // default
-//			 "-search -a -b -m10000000 -DVECTORSZ=4096" // recommended for models with ParallelAction			 
+//			 "-search -a -b" // default
+			 "-search -a -b -m10000000 -DVECTORSZ=4096" // recommended for models with ParallelAction
 		]
 	}
 	

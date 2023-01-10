@@ -27,7 +27,7 @@ class PromelaVerifier extends AbstractVerifier {
 	protected final extension PromelaQueryAdapter promelaQueryAdapter = PromelaQueryAdapter.INSTANCE
 
 	// save trace to file
-	protected val saveTrace = false
+	protected val saveTrace = true
 	
 	override Result verifyQuery(Object traceability, String parameters, File modelFile, File queryFile) {
 		val model = fileUtil.loadString(modelFile)

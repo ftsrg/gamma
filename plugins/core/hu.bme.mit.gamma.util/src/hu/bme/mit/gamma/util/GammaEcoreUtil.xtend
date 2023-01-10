@@ -305,6 +305,17 @@ class GammaEcoreUtil {
 		return elements
 	}
 	
+	def <T extends EObject> boolean isContainedBy(EObject object, Class<T> type) {
+		val container = object.eContainer
+		if (container === null) {
+			return false
+		}
+		if (type.isInstance(container)) {
+			return true
+		}
+		return container.isContainedBy(type)
+	}
+	
 	def <T extends EObject> T getSelfOrContainerOfType(EObject object, Class<T> type) {
 		if (type.isInstance(object)) {
 			return object as T

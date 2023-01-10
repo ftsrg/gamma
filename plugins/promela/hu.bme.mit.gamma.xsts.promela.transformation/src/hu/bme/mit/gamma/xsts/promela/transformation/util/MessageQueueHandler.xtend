@@ -18,12 +18,14 @@ import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.EqualityExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.GreaterExpression
+import hu.bme.mit.gamma.expression.model.IfThenElseExpression
 import hu.bme.mit.gamma.expression.model.InequalityExpression
 import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression
 import hu.bme.mit.gamma.expression.model.LessEqualExpression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.VariableGroupRetriever
 import hu.bme.mit.gamma.statechart.util.ExpressionTypeDeterminator
+import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
@@ -46,6 +48,8 @@ class MessageQueueHandler {
 	protected final extension VariableGroupRetriever variableGroupRetriever = VariableGroupRetriever.INSTANCE
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
 	
+	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
+	
 	// Declaration -> message queues new type - chan q = [8] of { byte };
 	
 	def isQueueVariable(VariableDeclaration variable) {
@@ -63,7 +67,15 @@ class MessageQueueHandler {
 		val extension expressionSerializer = ExpressionSerializer.INSTANCE // Cannot be an attribute due to cyclic references
 		val arrayType = queue.typeDefinition as ArrayTypeDefinition
 		val elementType = arrayType.elementType
-		return '''chan «queue.name» = [«arrayType.size.serialize»] of { «elementType.serializeType» };''' 
+		var serializedType = elementType.serializeType
+		if (queue.global) {
+			val xSts = queue.containingXsts
+			val masterQueues = xSts.masterMessageQueueGroup.variables
+			if (masterQueues.contains(queue)) {
+				serializedType = "byte" // Optimization
+			}
+		}
+		return '''chan «queue.name» = [«arrayType.size.serialize»] of { «serializedType» };''' 
 	}
 	
 	// Entry point for queue expression handling
@@ -75,17 +87,17 @@ class MessageQueueHandler {
 	}
 	
 	def serializeQueueExpression(Expression expression) {
-		if (expression.queueFullExpression) {
-			return expression.serializeQueueFullExpression
-		}
-		else if (expression.queueNotFullExpression) {
-			return expression.serializeQueueNotFullExpression
-		}
-		else if (expression.queueEmptyExpression) {
+		if (expression.queueEmptyExpression) {
 			return expression.serializeQueueEmptyExpression
 		}
 		else if (expression.queueNotEmptyExpression) {
 			return expression.serializeQueueNotEmptyExpression
+		}
+		else if (expression.queueFullExpression) {
+			return expression.serializeQueueFullExpression
+		}
+		else if (expression.queueNotFullExpression) {
+			return expression.serializeQueueNotFullExpression
 		}
 		else if (expression.queueSizeExpression) { // Last to handle basic variables
 			return expression.serializeQueueSizeExpression
@@ -257,14 +269,24 @@ class MessageQueueHandler {
 					if (sizeVariable instanceof VariableDeclaration) {
 						val declarationReferenceAnnotation = sizeVariable.declarationReferenceAnnotation
 						val messageQueue = declarationReferenceAnnotation.declaration
-						return messageQueue.serializeQueueExpression(functionName)
+						if (expression.isContainedBy(IfThenElseExpression)) {
+							return messageQueue.serializeQueueExpression(functionName)
+						}
+						else {
+							return '''«functionName»(«messageQueue.name»)'''
+						}
 					}
 				}
 			}
 			else if (masterQueueExpression.isInstance(expression)) { // 1-capacity master queue
 				val arrayAccess = expression.leftOperand as ArrayAccessExpression
 				val arrayDeclaration = arrayAccess.declaration
-				return arrayDeclaration.serializeQueueExpression(functionName)
+				if (expression.isContainedBy(IfThenElseExpression)) {
+					return arrayDeclaration.serializeQueueExpression(functionName)
+				}
+				else {
+					return '''«functionName»(«arrayDeclaration.name»)'''
+				}
 			}
 		}
 		throw new IllegalArgumentException("Not known expression: " + expression)
