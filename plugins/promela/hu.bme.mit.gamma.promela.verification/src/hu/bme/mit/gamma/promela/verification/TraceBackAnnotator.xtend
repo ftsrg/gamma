@@ -258,6 +258,10 @@ class TraceBackAnnotator {
 			// If there are not enough lines, that means there are no environment actions
 			step.actions += createReset
 		}
+		
+		trace.removeInternalEventRaiseActs
+		trace.removeTransientVariableReferences // They always have default values
+		
 		return trace
 	}
 	

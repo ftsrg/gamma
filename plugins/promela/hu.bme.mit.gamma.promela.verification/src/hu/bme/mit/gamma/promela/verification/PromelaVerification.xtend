@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022 Contributors to the Gamma project
+ * Copyright (c) 2022-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -35,10 +35,16 @@ class PromelaVerification extends AbstractVerification {
 	
 	override getDefaultArguments() {
 		return #[
-//			 "-search -a -b" // default
-			 "-search -a -b -m10000000 -DVECTORSZ=4096" // recommended for models with ParallelAction
+//			 "-search -a -b" // default: -a search for acceptance cycles, -b bounded search mode, makes it an error to exceed the search depth, triggering and error trail
+			 "-search -I -w32 -DVECTORSZ=4096"
 		]
 		// -A apply slicing algorithm
+		// -m Changes the semantics of send events. Ordinarily, a send action will be (blocked) if the target message buffer is full. With this option a message sent to a full buffer is lost.
+		// -b bounded search mode, makes it an error to exceed the search depth, triggering and error trail
+		// -I like -i, but approximate and faster
+		// -i search for shortest path to error (causes an increase of complexity)
+		// -n no listing of unreached states at the end of the run
+		// -PN for models with embedded C code, reproduce trail, but print only steps from the process with pid N
 	}
 	
 	protected override String getArgumentPattern() {
