@@ -717,6 +717,16 @@ class GammaEcoreUtil {
 		}
 	}
 	
+	def isFirst(EObject object) {
+		val containingFeature = object.eContainingFeature
+		val container = object.eContainer
+		val get = container.eGet(containingFeature)
+		if (get instanceof List) {
+			return get.get(0) == object
+		}
+		return true
+	}
+	
 	def isLast(EObject object) {
 		val containingFeature = object.eContainingFeature
 		val container = object.eContainer
@@ -725,6 +735,26 @@ class GammaEcoreUtil {
 			return get.last == object
 		}
 		return true
+	}
+	
+	def getPrevious(EObject object) {
+		val containingFeature = object.eContainingFeature
+		val container = object.eContainer
+		val get = container.eGet(containingFeature)
+		if (get instanceof List) {
+			return get.get(object.index - 1)
+		}
+		throw new IllegalArgumentException("Not a list: " + get)
+	}
+	
+	def getNext(EObject object) {
+		val containingFeature = object.eContainingFeature
+		val container = object.eContainer
+		val get = container.eGet(containingFeature)
+		if (get instanceof List) {
+			return get.get(object.index + 1)
+		}
+		throw new IllegalArgumentException("Not a list: " + get)
 	}
 	
 	def <T extends EObject> List<T> sortAccordingToReferences(List<T> list) {

@@ -16,6 +16,7 @@ import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.ExpressionUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.Action
+import hu.bme.mit.gamma.xsts.model.AssertAction
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.AssumeAction
 import hu.bme.mit.gamma.xsts.model.EmptyAction
@@ -98,8 +99,8 @@ class ModelSerializer {
 					«environmentalActions.serialize»
 					flag = 2;
 				};
-				goto TRANS;
-			TRANS:
+«««				goto TRANS; ««« The verification is faster if the ENV and TRANS are in different atomic blocks
+«««			TRANS:
 				atomic {
 					«transitions.serializeTransitions»
 					«isStableVariableName» = 1;
@@ -251,7 +252,12 @@ class ModelSerializer {
 	
 	protected def dispatch String serialize(SequentialAction action) '''
 		«FOR subaction : action.actions»
-			«subaction.serialize»
+			«subaction.serializeD_stepBeginBrackets»
+			«subaction.serialize /* Original action*/»
+			«IF subaction.last»
+				«action.resetLocalVariableDeclarations»
+			«ENDIF»
+			«subaction.serializeD_stepCloseBrackets»
 		«ENDFOR»
 	'''
 	
@@ -280,7 +286,42 @@ class ModelSerializer {
 		}
 	}
 	
-	//
+	// d_step
+	
+	val d_stepIncludedActions = #[AssertAction, AssignmentAction]
+	
+	protected def serializeD_stepBeginBrackets(Action action) {
+		if (d_stepIncludedActions.exists[it.isInstance(action)]) { // Correct type
+			if (action.first ||
+					!action.first && !d_stepIncludedActions.exists[it.isInstance(action.previous)]) {
+				// Could add another check - next one is also a good type to avoid single element d_steps
+				return "d_step {"
+			}
+		}
+		return "" // We serialize nothing
+	}
+	
+	protected def serializeD_stepCloseBrackets(Action action) {
+		if (d_stepIncludedActions.exists[it.isInstance(action)]) { // Correct type
+			// Potentially, action is already in the middle of the d_step block
+			if (action.last ||
+					!action.last && !d_stepIncludedActions.exists[it.isInstance(action.next)]) {
+				return "}"
+			}
+		}
+		return "" // We serialize nothing
+	}
+	
+	protected def resetLocalVariableDeclarations(SequentialAction action) {
+		val localVariableDeclarations = action.actions.filter(VariableDeclarationAction)
+		return '''
+			«FOR localVariableDeclaration : localVariableDeclarations»
+				«localVariableDeclaration.variableDeclaration.name» = «localVariableDeclaration.variableDeclaration.defaultExpression.serialize»;
+			«ENDFOR»
+		'''
+	}
+	
+	// Parallel
 	
 	protected def serializeParallelProcesses() '''
 		«FOR actions : parallelMapping.keySet SEPARATOR System.lineSeparator»
