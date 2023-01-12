@@ -291,7 +291,7 @@ class ModelSerializer {
 	val d_stepIncludedActions = #[AssertAction, AssignmentAction]
 	
 	protected def serializeD_stepBeginBrackets(Action action) {
-		if (d_stepIncludedActions.exists[it.isInstance(action)]) { // Correct type
+		if (!action.isContainedBy(ParallelAction) && d_stepIncludedActions.exists[it.isInstance(action)]) { // Correct type
 			if (action.first ||
 					!action.first && !d_stepIncludedActions.exists[it.isInstance(action.previous)]) {
 				// Could add another check - next one is also a good type to avoid single element d_steps
@@ -302,7 +302,7 @@ class ModelSerializer {
 	}
 	
 	protected def serializeD_stepCloseBrackets(Action action) {
-		if (d_stepIncludedActions.exists[it.isInstance(action)]) { // Correct type
+		if (!action.isContainedBy(ParallelAction) && d_stepIncludedActions.exists[it.isInstance(action)]) { // Correct type
 			// Potentially, action is already in the middle of the d_step block
 			if (action.last ||
 					!action.last && !d_stepIncludedActions.exists[it.isInstance(action.next)]) {
