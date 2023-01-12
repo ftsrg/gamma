@@ -293,6 +293,7 @@ class ModelSerializer {
 	
 	protected def serializeXrXs(XSTS xSts) {
 		// len(q) counts as a write/send, so xr and xs both can be asserted only if there are no pars
+		// Probably causes NO better performance as this info is utilized for ROP
 		if (Configuration.HANDLE_NATIVE_MESSAGE_QUEUES && !xSts.containsType(ParallelAction)) {
 			return '''
 				«FOR queue : xSts.messageQueueGroup.variables.filter[it.array]»
