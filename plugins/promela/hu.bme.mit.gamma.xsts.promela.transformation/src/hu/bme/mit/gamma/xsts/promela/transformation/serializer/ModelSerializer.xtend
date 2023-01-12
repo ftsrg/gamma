@@ -14,6 +14,7 @@ import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
 import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.ExpressionUtil
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.VariableGroupRetriever
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.AssertAction
@@ -55,6 +56,7 @@ class ModelSerializer {
 	protected final extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
 	protected final extension TypeSerializer typeSerializer = TypeSerializer.INSTANCE
 	protected final extension MessageQueueHandler queueHandler = MessageQueueHandler.INSTANCE
+	protected final extension VariableGroupRetriever variableGroupRetriever = VariableGroupRetriever.INSTANCE
 	
 	protected final extension ParallelActionHandler parallelHandler = new ParallelActionHandler
 	protected final extension HavocHandler havocHandler = HavocHandler.INSTANCE
@@ -91,6 +93,7 @@ class ModelSerializer {
 			«serializeParallelProcesses»
 			
 			proctype EnvTrans() {
+				«xSts.serializeXrXs»
 				(flag > 0);
 				«isStableVariableName» = 1;
 			ENV:
@@ -284,6 +287,21 @@ class ModelSerializer {
 				«actions.get(0).serialize»
 			'''
 		}
+	}
+	
+	// xr, xs
+	
+	protected def serializeXrXs(XSTS xSts) {
+		// len(q) counts as a write/send, so xr and xs both can be asserted only if there are no pars
+		if (Configuration.HANDLE_NATIVE_MESSAGE_QUEUES && !xSts.containsType(ParallelAction)) {
+			return '''
+				«FOR queue : xSts.messageQueueGroup.variables.filter[it.array]»
+					xr «queue.name»;
+					xs «queue.name»;
+				«ENDFOR»
+			'''
+		}
+		return ""
 	}
 	
 	// d_step
