@@ -18,6 +18,7 @@ import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition
 import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.expression.model.TypeReference
+import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.promela.transformation.util.MessageQueueHandler
 
@@ -27,7 +28,7 @@ class TypeSerializer {
 	// Singleton
 	public static final TypeSerializer INSTANCE = new TypeSerializer
 	//
-	protected final extension MessageQueueHandler queueHandler = MessageQueueHandler.INSTANCE
+//	protected final extension MessageQueueHandler queueHandler = MessageQueueHandler.INSTANCE // Cyclic dependency
 	protected final extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 		
@@ -47,11 +48,23 @@ class TypeSerializer {
 	
 	def dispatch String serializeType(BooleanTypeDefinition type) '''bool'''
 	
-	def dispatch String serializeType(IntegerTypeDefinition type) '''int'''
+	def dispatch String serializeType(IntegerTypeDefinition type) '''«IF type.masterArrayType»byte«ELSE»int«ENDIF»'''
 	
 	def dispatch String serializeType(EnumerationTypeDefinition type) '''{ «FOR literal : type.literals SEPARATOR ', '»«type.customizeEnumLiteralName(literal)»«ENDFOR» }'''
 	
-	def dispatch String serializeType(ArrayTypeDefinition type) '''«IF type.elementType instanceof ArrayTypeDefinition»«type.getContainerOfType(Declaration).name»0«ELSE»«type.elementType.serializeType»«ENDIF»'''
+	def dispatch String serializeType(ArrayTypeDefinition type) '''«IF type.elementType instanceof ArrayTypeDefinition»«type
+			.getContainerOfType(Declaration).name»0«ELSE»«type.elementType.serializeType»«ENDIF»'''
+	
+	// 
+	
+	protected def isMasterArrayType(Type type) {
+		val extension queueHandler = MessageQueueHandler.INSTANCE
+		val declaration = type.getContainerOfType(VariableDeclaration)
+		if (declaration?.masterQueueVariable) {
+			return true
+		}
+		return false
+	}
 	
 	// Multidimensional array declaration serialization
 	

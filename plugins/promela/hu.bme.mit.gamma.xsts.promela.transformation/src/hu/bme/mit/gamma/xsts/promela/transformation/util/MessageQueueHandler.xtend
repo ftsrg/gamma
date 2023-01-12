@@ -40,7 +40,7 @@ class MessageQueueHandler {
 	//
 	public static final MessageQueueHandler INSTANCE = new MessageQueueHandler
 	//
-//	protected final extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
+//	protected final extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE // Would cause a cyclic-dependency
 	protected final extension TypeSerializer typeSerializer = TypeSerializer.INSTANCE
 //	protected final extension ExpressionTypeDeterminator typeDeterminator = ExpressionTypeDeterminator.INSTANCE
 	
@@ -50,6 +50,17 @@ class MessageQueueHandler {
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	
 	// Declaration -> message queues new type - chan q = [8] of { byte };
+	
+	def isMasterQueueVariable(VariableDeclaration variable) {
+		val type = variable.typeDefinition
+		if (type instanceof ArrayTypeDefinition) {
+			val xSts = variable.containingXsts
+			val queueVariables = xSts.masterMessageQueueGroup.variables
+			
+			return queueVariables.contains(variable)
+		}
+		return false
+	}
 	
 	def isQueueVariable(VariableDeclaration variable) {
 		val type = variable.typeDefinition
@@ -394,6 +405,7 @@ class MessageQueueHandler {
 	}
 	
 	protected def serializeQueuePopAction(Action action) {
+		val extension expressionSerializer = ExpressionSerializer.INSTANCE
 		if (action instanceof AssignmentAction) {
 			val lhs = action.lhs
 			if (lhs instanceof DirectReferenceExpression) {
@@ -401,12 +413,16 @@ class MessageQueueHandler {
 				if (array.global) {
 					val type = array.type as ArrayTypeDefinition
 					val elementType = type.elementType
+					val defaultExpression= elementType.defaultExpression.serialize
 					
 					val name = "pop_placeholder_" + action.hashCode.toString.replaceAll("-", "_")
 					
 					return '''
-						local «elementType.serializeType» «name»;
-						«array.name» ? «name»;
+						d_step {
+							local «elementType.serializeType» «name» = «defaultExpression»;
+							«array.name» ? «name»;
+							«name» = «defaultExpression»;
+						}
 					'''
 				}
 			}
