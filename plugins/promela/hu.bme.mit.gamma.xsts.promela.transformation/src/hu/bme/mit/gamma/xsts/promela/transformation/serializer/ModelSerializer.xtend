@@ -238,10 +238,11 @@ class ModelSerializer {
 		val left = action.range.getLeft(true)
 		val right = action.range.getRight(true)
 		return '''
-			int «name»;
+			local int «name»;
 			for («name» : «left.serialize»..«right.serialize») {
 				«action.action.serialize»
 			}
+			«name» = 0;
 		'''
 	}
 	
@@ -269,16 +270,17 @@ class ModelSerializer {
 		val actionSize = actions.size
 		
 		if (actionSize > 1) {
+			val syncBitName = '''msg_parallel_«action.containmentLevel»_«action.indexOrZero»'''
 			return '''
 				«FOR index : 0 ..< actionSize»
 					run Parallel_«parallelMapping.get(actions)»_«index»(«actions.get(index).serializeParallelProcessCallArguments»);
 				«ENDFOR»
 				
+				local bit «syncBitName» = 0;
 				«FOR index : 0 ..< actionSize»
-					bit msg_parallel_«actions.getChanNumber(index)» = 0;
-					chan_parallel_«actions.getChanNumber(index)» ? msg_parallel_«actions.getChanNumber(index)»;
-					msg_parallel_«actions.getChanNumber(index)» == 1;
-					msg_parallel_«actions.getChanNumber(index)» = 0;
+					chan_parallel_«actions.getChanNumber(index)» ? «syncBitName»;
+					«syncBitName» == 1;
+					«syncBitName» = 0;
 				«ENDFOR»
 			'''
 		}
