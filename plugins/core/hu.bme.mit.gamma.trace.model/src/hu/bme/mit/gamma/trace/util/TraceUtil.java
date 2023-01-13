@@ -31,9 +31,12 @@ import hu.bme.mit.gamma.statechart.contract.ScenarioAllowedWaitAnnotation;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.Package;
+import hu.bme.mit.gamma.statechart.statechart.Region;
+import hu.bme.mit.gamma.statechart.statechart.State;
 import hu.bme.mit.gamma.statechart.util.StatechartUtil;
 import hu.bme.mit.gamma.trace.derivedfeatures.TraceModelDerivedFeatures;
 import hu.bme.mit.gamma.trace.model.Act;
+import hu.bme.mit.gamma.trace.model.Cycle;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
 import hu.bme.mit.gamma.trace.model.ExecutionTraceAllowedWaitingAnnotation;
 import hu.bme.mit.gamma.trace.model.RaiseEventAct;
@@ -91,11 +94,18 @@ public class TraceUtil extends StatechartUtil {
 				if (nameCompare != 0) {
 					return nameCompare;
 				}
-				Integer lhsLevel = StatechartModelDerivedFeatures
-						.getLevel(lhsInstanceStateConfiguration.getState());
-				Integer rhsLevel = StatechartModelDerivedFeatures
-						.getLevel(rhsInstanceStateConfiguration.getState());
-				return lhsLevel.compareTo(rhsLevel);
+				State lhsState = lhsInstanceStateConfiguration.getState();
+				Integer lhsLevel = StatechartModelDerivedFeatures.getLevel(lhsState);
+				State rhsState = rhsInstanceStateConfiguration.getState();
+				Integer rhsLevel = StatechartModelDerivedFeatures.getLevel(rhsState);
+				int regionCompare = lhsLevel.compareTo(rhsLevel);
+				if (regionCompare != 0) {
+					return regionCompare;
+				}
+				Region lhsRegion = StatechartModelDerivedFeatures.getParentRegion(lhsState);
+				Region rhsRegion = StatechartModelDerivedFeatures.getParentRegion(rhsState);
+				return lhsRegion.getName().compareTo(
+						rhsRegion.getName());
 			}
 			else if (lhs instanceof ComponentInstanceVariableReferenceExpression && rhs instanceof ComponentInstanceVariableReferenceExpression) {
 				// Two instance variable: name
@@ -126,6 +136,10 @@ public class TraceUtil extends StatechartUtil {
 	
 	public void sortInstanceStates(ExecutionTrace executionTrace) {
 		sortInstanceStates(executionTrace.getSteps());
+		Cycle cycle = executionTrace.getCycle();
+		if (cycle != null) {
+			sortInstanceStates(cycle.getSteps());
+		}
 	}
 	
 	public void sortInstanceStates(List<Step> steps) {

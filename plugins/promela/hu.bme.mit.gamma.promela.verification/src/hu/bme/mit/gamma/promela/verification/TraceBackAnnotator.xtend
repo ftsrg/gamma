@@ -17,6 +17,7 @@ import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.statechart.interface_.SchedulingConstraintAnnotation
 import hu.bme.mit.gamma.theta.verification.XstsBackAnnotator
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
+import hu.bme.mit.gamma.trace.model.Schedule
 import hu.bme.mit.gamma.trace.model.Step
 import hu.bme.mit.gamma.trace.model.TraceModelFactory
 import hu.bme.mit.gamma.trace.util.TraceUtil
@@ -250,6 +251,15 @@ class TraceBackAnnotator {
 			}
 			// Checking the last state (in events must NOT be deleted here though)
 			step.checkStates
+			
+			// Checking if Spin stopped in the middle due to finding an acceptance cycle
+			if (step.actions.filter(Schedule).empty && step.asserts.empty) {
+				val previousStep = step.previous as Step
+				step.remove
+				// Not correct as this is only the last step, but still, an indication for a cycle
+				trace.cycle = createCycle => [it.steps += previousStep]
+			}
+			
 			// Sorting if needed
 			if (sortTrace) {
 				trace.sortInstanceStates
@@ -319,6 +329,7 @@ class TraceBackAnnotator {
 				(traceEnd && line.contains("proc  ")) ||
 				line.startsWith("Never claim moves to") ||
 				line.contains(" processes created") ||
+				line.endsWith(" terminates") ||
 				line.startsWith("msg_parallel_")
 					// Addition
 					|| line.startsWith("queue ")
