@@ -163,8 +163,13 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 				fileUtil.saveString(xStsFile, xStsString);
 			}
 			if (analysisLanguages.contains(AnalysisLanguage.PROMELA)) {
-				String xStsString = promelaSerializer.serializePromela(xSts);
-				fileUtil.saveString(analysisFile, xStsString);
+				String promelaString = promelaSerializer.serializePromela(xSts);
+				fileUtil.saveString(analysisFile, promelaString);
+				
+				String xStsString = xStsSerializer.serializeXsts(xSts);
+				String xStsFile = fileUtil.changeExtension(
+						analysisFile.toString(), GammaFileNamer.XSTS_XTEXT_EXTENSION);
+				fileUtil.saveString(xStsFile, xStsString);
 			}
 			//
 			

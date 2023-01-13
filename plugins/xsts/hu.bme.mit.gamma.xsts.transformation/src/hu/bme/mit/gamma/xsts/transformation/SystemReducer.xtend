@@ -15,6 +15,7 @@ import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
+import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.VariableGroupRetriever
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer.XstsOptimizer
@@ -314,11 +315,12 @@ class SystemReducer {
 		val xStsLiteralReferences = xSts.getAllContentsOfType(EnumerationLiteralExpression)
 		val xStsReferencedLiterals = xStsLiteralReferences.map[it.reference].toSet
 		
-		val xStsKeepableLiterals = keepableLiterals.map[it.name] // customizeName? - remains the same
-									.map[val name = it
-										xSts.typeDeclarations.map[it.typeDefinition]
-											.filter(EnumerationTypeDefinition).map[it.literals].flatten
-											.filter[it.name === name]].flatten.toSet
+		val xStsKeepableLiterals = keepableLiterals // customizeName? - remains the same
+									.map[val name = it.name
+										val typeDeclarationName = it.getContainerOfType(TypeDeclaration).name
+										xStsLiterals
+											.filter[it.getContainerOfType(TypeDeclaration).name == typeDeclarationName &&
+													it.name === name]].flatten.toSet
 		
 		val xStsDeletableLiterals = newHashSet
 		xStsDeletableLiterals += xStsLiterals
@@ -326,18 +328,24 @@ class SystemReducer {
 		xStsDeletableLiterals -= xStsKeepableLiterals
 		
 		// Keeping the lowest literal for the "else" branch
-		if (!xStsDeletableLiterals.empty) {
-			xStsDeletableLiterals.remove(0)
+		val xStsElseBranchedEnums = newHashSet
+		for (xStsDeletableLiteral : xStsDeletableLiterals.toList) {
+			val xStsContainingEnum = xStsDeletableLiteral.getContainerOfType(EnumerationTypeDefinition)
+			if (!xStsElseBranchedEnums.contains(xStsContainingEnum)) {
+				xStsDeletableLiterals -= xStsDeletableLiteral // No else branch for this enum yet, the literal cannot be removed
+				xStsElseBranchedEnums += xStsContainingEnum
+			}
 		}
 		//
 		
 		for (xStsDeletableLiteral : xStsDeletableLiterals) {
-			val xStsEnumerationType = xStsDeletableLiteral.getContainerOfType(EnumerationTypeDefinition)
+//			val xStsEnumerationType = xStsDeletableLiteral.getContainerOfType(EnumerationTypeDefinition)
 			logger.log(Level.INFO, "Deleting XSTS enum literal " + xStsDeletableLiteral.name)
 			xStsDeletableLiteral.remove
-			if (xStsEnumerationType.literals.empty) {
-				xStsEnumerationType.delete
-			}
+			// Enum types cannot be deleted as there must remain an else literal for each of them
+//			if (xStsEnumerationType.literals.empty) {
+//				xStsEnumerationType.delete
+//			}
 		}
 	}
 	
