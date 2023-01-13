@@ -34,7 +34,7 @@ class PromelaVerification extends AbstractVerification {
 	}
 	
 	override getDefaultArguments() {
-		val MAX_DEPTH = 150000
+		val MAX_DEPTH = 350000
 		return #[
 //			 "-search -a -b" // default: -a search for acceptance cycles, -b bounded search mode, makes it an error to exceed the search depth, triggering and error trail
 			 '''-search -I -m«MAX_DEPTH» -w32 -DVECTORSZ=4096''' // 

@@ -360,7 +360,7 @@ class ModelSerializer {
 	'''
 	
 	protected def serializeParallelChannels() '''
-		«FOR index : 0 .. maxParallelNumber»
+		«FOR index : 0 ..< maxParallelNumber»
 			chan chan_parallel_«index» = [0] of { bit };
 		«ENDFOR»
 	'''

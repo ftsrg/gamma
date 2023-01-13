@@ -12,6 +12,6 @@ package hu.bme.mit.gamma.xsts.promela.transformation.util
 
 class Configuration {
 	
-	public static final boolean HANDLE_NATIVE_MESSAGE_QUEUES = true
+	public static final boolean HANDLE_NATIVE_MESSAGE_QUEUES = false
 	
 }

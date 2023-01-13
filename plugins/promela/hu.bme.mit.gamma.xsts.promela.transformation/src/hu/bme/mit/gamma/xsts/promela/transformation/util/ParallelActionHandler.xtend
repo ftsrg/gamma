@@ -111,8 +111,8 @@ class ParallelActionHandler {
 		}
 		for (subaction : action.actions) {
 			parallelChanMapping.put(subaction, chanNumber)
+			chanNumber++
 			maxParallelNumber = chanNumber > maxParallelNumber ? chanNumber : maxParallelNumber
-			chanNumber += 1
 		}
 	}
 	
