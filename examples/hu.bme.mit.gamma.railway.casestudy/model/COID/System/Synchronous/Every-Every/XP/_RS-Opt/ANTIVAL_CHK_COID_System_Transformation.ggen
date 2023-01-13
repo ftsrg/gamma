@@ -2,6 +2,6 @@ import "Synchronous/ANTIVAL_CHK_COID_System.gcd"
 
 analysis {
 	component : AntivalenceChecker_System
-	language : XSTS-UPPAAL
+	language : Promela
 	interaction-coverage
 }

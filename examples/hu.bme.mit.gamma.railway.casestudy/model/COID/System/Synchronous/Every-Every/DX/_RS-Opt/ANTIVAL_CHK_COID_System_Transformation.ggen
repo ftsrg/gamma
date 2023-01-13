@@ -4,5 +4,4 @@ analysis {
 	component : AntivalenceChecker_System
 	language : Theta
 	interaction-coverage
-	property-file : "Synchronous/ANTIVAL_CHK_COID_System.gpd"
 }
