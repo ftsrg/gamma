@@ -1,6 +1,6 @@
 verification {
-	language : XSTS-UPPAAL
-	file : "ANTIVAL_CHK_COID_System.xml"
+	language : Promela
+	file : "ANTIVAL_CHK_COID_System.pml"
 	property-file : ".ANTIVAL_CHK_COID_System.gpd"
 	optimize : true
 	optimize-model : true
