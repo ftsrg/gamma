@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2021 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -31,32 +31,45 @@ class ThetaVerification extends AbstractVerification {
 		
 		val racer = new ThreadRacer<Result>
 		val callables = <InterruptableCallable<Result>>newArrayList
-		for (argument : arguments) {
-			
-			argument.sanitizeArgument
-			
-			val verifier = new ThetaVerifier
-			callables += new InterruptableCallable<Result> {
-				override Result call() {
-					val currentThread = Thread.currentThread
-					logger.log(Level.INFO, '''Starting Theta on thread «currentThread.name» with "«argument»"''')
-					val result = verifier.verifyQuery(gammaPackage, argument, modelFile, queries)
-					logger.log(Level.INFO, '''Thread «currentThread.name» with "«argument»" has won''')
-					return result
-				}
-				override void cancel() {
-					verifier.cancel
-					logger.log(Level.INFO, '''Theta verification instance with "«argument»" has been cancelled''')
+		var Result result = null
+		
+		for (query : queries.splitLines) {
+			// Racing for every query separately
+			for (argument : arguments) {
+				argument.sanitizeArgument
+				
+				val verifier = new ThetaVerifier
+				callables += new InterruptableCallable<Result> {
+					override Result call() {
+						val currentThread = Thread.currentThread
+						logger.log(Level.INFO, '''Starting Theta on thread «currentThread.name» with "«argument»"''')
+						val result = verifier.verifyQuery(gammaPackage, argument, modelFile, queries)
+						logger.log(Level.INFO, '''Thread «currentThread.name» with "«argument»" has won''')
+						return result
+					}
+					override void cancel() {
+						verifier.cancel
+						logger.log(Level.INFO, '''Theta verification instance with "«argument»" has been cancelled''')
+					}
 				}
 			}
+			
+			val newResult = racer.execute(callables)
+			if (result === null) {
+				result = newResult
+			}
+			else {
+				result = result.extend(newResult)
+			}
 		}
-		return racer.execute(callables)
+		
+		return result
 	}
 	
 	override getDefaultArguments() {
 		return #[
 				"",
-//				"--domain EXPL --refinement SEQ_ITP --maxenum 250 --initprec CTRL"
+				"--domain EXPL --refinement SEQ_ITP --maxenum 250 --initprec CTRL",
 				"--domain EXPL_PRED_COMBINED --autoexpl NEWOPERANDS --initprec CTRL"
 			]
 		// --domain PRED_CART --refinement SEQ_ITP // default - cannot be used with loops
