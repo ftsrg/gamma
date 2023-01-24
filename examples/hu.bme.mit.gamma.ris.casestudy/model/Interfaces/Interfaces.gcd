@@ -1,0 +1,230 @@
+package rigel
+
+//
+
+procedure createInvalidateObj : RigelMsgHeader {
+	var invObj : RigelMsgHeader;
+	invObj.Length := 10;
+	invObj.Generation := 4;
+	invObj.MessageType := RigelMsgType::RigelMsgInvalidateObj;
+	invObj.ObjType := RigelObjType::Jelzo;
+	invObj.ObjId := 7317;
+	invObj.SafetyCode := 0;
+	invObj.SQCause := RigelSQCause::NormalRequest;
+	return invObj;
+}
+procedure createGqEnd : RigelMsgHeader {
+	var gqBegin : RigelMsgHeader;
+	gqBegin.Length := 10;
+	gqBegin.Generation := 4;
+	gqBegin.MessageType := RigelMsgType::RigelMsgGqEnd;
+	gqBegin.ObjType := RigelObjType::Invalid;
+	gqBegin.ObjId := 0;
+	gqBegin.SafetyCode := 0;
+	return gqBegin;
+}
+procedure createSq : RigelMsgHeader {
+	var sqMsg : RigelMsgHeader;
+	sqMsg.Length := 11;
+	sqMsg.Generation := 4;
+	sqMsg.MessageType := RigelMsgType::RigelMsgSq;
+	sqMsg.ObjType := RigelObjType::Invalid;
+	sqMsg.ObjId := 0;
+	sqMsg.SafetyCode := 0;
+	sqMsg.SQCause := RigelSQCause::NormalRequest;
+	return sqMsg;
+}
+procedure createGqBegin : RigelMsgHeader {
+	var gqBegin : RigelMsgHeader;
+	gqBegin.Length := 10;
+	gqBegin.Generation := 4;
+	gqBegin.MessageType := RigelMsgType::RigelMsgGqBegin;
+	gqBegin.ObjType := RigelObjType::Invalid;
+	gqBegin.ObjId := 0;
+	gqBegin.SafetyCode := 0;
+	return gqBegin;
+}
+
+procedure ProcessReqTs2(vkTimestamp : integer, objTimestamp : integer, sessionID : integer) :
+	RigelMsgHeader {
+	var ansTs1 : RigelMsgHeader;
+	ansTs1.Length := 10;
+	ansTs1.Generation := 4;
+	ansTs1.MessageType := RigelMsgType::RigelMsgAnsTs2;
+	ansTs1.ObjType := RigelObjType::Jelzo;
+	ansTs1.ObjId := 7317;
+	ansTs1.SafetyCode := 0;
+	ansTs1.Timestamp := vkTimestamp;
+	ansTs1.ConfirmedTimestamp := objTimestamp;
+	ansTs1.SessionId := sessionID;
+	return ansTs1;
+}
+procedure ProcessReqTs1(vkTimestamp : integer, objTimestamp : integer, sessionID : integer) :
+	RigelMsgHeader {
+	var ansTs1 : RigelMsgHeader;
+	ansTs1.Length := 10;
+	ansTs1.Generation := 4;
+	ansTs1.MessageType := RigelMsgType::RigelMsgAnsTs1;
+	ansTs1.ObjType := RigelObjType::Jelzo;
+	ansTs1.ObjId := 7317;
+	ansTs1.SafetyCode := 0;
+	ansTs1.Timestamp := vkTimestamp;
+	ansTs1.ConfirmedTimestamp := objTimestamp;
+	ansTs1.SessionId := sessionID;
+	return ansTs1;
+}
+procedure createStatusChangeData : RigelMsgHeader {
+	var naData : RigelMsgHeader;
+	naData.Length := 10;
+	naData.Generation := 4;
+	naData.MessageType := RigelMsgType::RigelMsgData;
+	naData.ObjType := RigelObjType::Jelzo;
+	naData.ObjId := 7317;
+	naData.SafetyCode := 0;
+	naData.DataCause := RigelDataCause::StatusChange;
+	return naData;
+}
+procedure createCommandResultConfirmWaiting(cmd : RigelObjControl, sessionId : integer) :
+	RigelMsgHeader {
+	return createCommandResultBase(cmd, sessionId, RigelCommandStatus::ConfirmWaiting);
+}
+procedure createNormalAnswerData : RigelMsgHeader {
+	var naData : RigelMsgHeader;
+	naData.Length := 10;
+	naData.Generation := 4;
+	naData.MessageType := RigelMsgType::RigelMsgData;
+	naData.ObjType := RigelObjType::Jelzo;
+	naData.ObjId := 7317;
+	naData.SafetyCode := 0;
+	naData.DataCause := RigelDataCause::NormalAnswer;
+	return naData;
+}
+procedure createCommandResultSessionIDError(cmd : RigelObjControl, sessionId : integer) :
+	RigelMsgHeader {
+	return createCommandResultBase(cmd, sessionId, RigelCommandStatus::SessionidError);
+}
+procedure createPeriodicAnswerData : RigelMsgHeader {
+	var naData : RigelMsgHeader;
+	naData.Length := 10;
+	naData.Generation := 4;
+	naData.MessageType := RigelMsgType::RigelMsgData;
+	naData.ObjType := RigelObjType::Jelzo;
+	naData.ObjId := 7317;
+	naData.SafetyCode := 0;
+	naData.DataCause := RigelDataCause::PeriodicAnswer;
+	return naData;
+}
+procedure createCommandResultTimestampError(cmd : RigelObjControl, sessionId : integer) :
+	RigelMsgHeader {
+	return createCommandResultBase(cmd, sessionId, RigelCommandStatus::TimestampError);
+}
+procedure createCommandResultBase(cmd : RigelObjControl, sessionId : integer, cmdStatus :
+	RigelCommandStatus) : RigelMsgHeader {
+	var cmdRes : RigelMsgHeader;
+	cmdRes.Length := 14;
+	cmdRes.Generation := 4;
+	cmdRes.MessageType := RigelMsgType::RigelMsgCommandResult;
+	cmdRes.ObjType := RigelObjType::Jelzo;
+	cmdRes.ObjId := 7317;
+	cmdRes.SafetyCode := 0;
+	cmdRes.Command := cmd;
+	cmdRes.SessionId := sessionId;
+	cmdRes.CommandResult := cmdStatus;
+	return cmdRes;
+}
+procedure createCommandResultCmdError(cmd : RigelObjControl, sessionId : integer) : RigelMsgHeader
+	{
+	return createCommandResultBase(cmd, sessionId, RigelCommandStatus::CmdError);
+}
+
+procedure ProcessOrionDisconn : void {
+}
+procedure createVkAlive : RigelMsgHeader {
+	var vkAliveMsg : RigelMsgHeader;
+	vkAliveMsg.Length := 10;
+	vkAliveMsg.Generation := 4;
+	vkAliveMsg.MessageType := RigelMsgType::RigelMsgVkAlive;
+	vkAliveMsg.ObjType := RigelObjType::Invalid;
+	vkAliveMsg.ObjId := 0;
+	vkAliveMsg.SafetyCode := 0;
+	return vkAliveMsg;
+}
+procedure createGqMessage : RigelMsgHeader {
+	var gqMsg : RigelMsgHeader;
+	gqMsg.Length := 10;
+	gqMsg.Generation := 4;
+	gqMsg.MessageType := RigelMsgType::RigelMsgGq;
+	gqMsg.ObjType := RigelObjType::Invalid;
+	gqMsg.ObjId := 0;
+	gqMsg.SafetyCode := 0;
+	return gqMsg;
+}
+
+//
+
+type RigelSQCause : enum {
+	NormalRequest, PeriodicRequest
+}
+type RigelMsgType : enum {
+	RigelMsgGq, RigelMsgSq, RigelMsgGqBegin, RigelMsgGqEnd, RigelMsgReqTs1, RigelMsgAnsTs1,
+		RigelMsgReqTs2, RigelMsgAnsTs2, RigelMsgData, RigelMsgCommand, RigelMsgCommandConfirm,
+		RigelMsgCommandResult, RigelMsgCommandConfirmResult, RigelMsgInvalidateObj, RigelMsgVkAlive
+}
+type RigelObjType : enum {
+	Invalid, Valto, Saru, Jelzo, JelzoCel, Hivasfeloldo, Vaganyszakasz, Elojelzo, Ismetlojelzo,
+		Allomasisorompo, Sorompovagany, Aramellatas, Tolatasjelzo, Ellenmenet, Terkozcsatlakozas,
+		Vonalisorompo, Vonalisorompovagany, Keresztezes, Kulcsoselem, OvKulcsoselem, Diagnosztika, AKJ
+}
+type RigelMsgHeader : record {
+	Length : integer,
+	Generation : integer,
+	MessageType : RigelMsgType,
+	ObjType : RigelObjType,
+	ObjId : integer,
+	SafetyCode : integer,
+	SQCause : RigelSQCause,
+	DataCause : RigelDataCause,
+	Command : RigelObjControl,
+	CommandResult : RigelCommandStatus,
+	Timestamp : integer,
+	ConfirmedTimestamp : integer,
+	SessionId : integer
+}
+type RigelCommandStatus : enum {
+	OK, CmdError, Refused, HwError, SessionidError, TimestampError, ConfirmWaiting, OperationDisabled
+}
+type RigelDataCause : enum {
+	NormalAnswer, StatusChange, PeriodicAnswer
+}
+type RigelObjControl : enum {
+	UV
+	, VA_AB, VA_AJ, VA_SZIKB, VA_SZIKJ, VA_OAKBE, VA_OAKKI, VA_ELBE, VA_ELKI, VA_TSZA, SA_AB
+		,SA_AJ, SA_SZIKB, SA_SZIKJ, J_L, J_JTBE, J_JTKI, J_JM, J_HI, JC_TO, JC_KO, HIF_HIFBE, HIF_HIFKI
+		,VSZ_TSZA, SR_FLE, SR_FBE, SR_KLBE, SR_KLKI, SV_SL, SV_SVKO, SV_TSZA, AE_AAKPBE, AE_AAKPLE
+		,AE_AAVPBE, AE_AAXXBE, AE_AAXXLE, AE_AAYYBE, AE_AAYYLE, AE_VLE, TJ_TJBE, TJ_JM, VSV_ZFM, EM_KIK
+		,EM_HJBE, EM_HJKI, OK_KUE, OK_KUT, OK_ELBE, OK_ELKI, KU_A2, KU_A1, KU_ELBE, KU_ELKI
+}
+
+interface Rigel {
+	out event message_RigelMsgHeader(message_RigelMsgHeaderValue : RigelMsgHeader)
+}
+
+interface OrionConn {
+	out event OrionConn
+}
+
+interface OrionDisconn {
+	out event OrionDisconn
+}
+
+interface OrionDisconnToVk {
+	out event OrionDisconnToVk
+}
+
+interface SendData {
+	out event SendData
+}
+
+interface AllObjDataSent {
+	out event AllObjDataSent
+}

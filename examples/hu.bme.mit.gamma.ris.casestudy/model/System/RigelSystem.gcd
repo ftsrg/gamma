@@ -1,0 +1,53 @@
+package rigel
+
+import "Interfaces/Interfaces.gcd"
+
+import "StateMachines/VezerloKozpont/CustomRigelVezerloKozpontAdapter.gcd"
+import "StateMachines/Diszpecser/CustomRigelDiszpecserAdapter.gcd"
+import "StateMachines/ObjektumKezelo/CustomRigelObjektumKezeloAdapter.gcd"
+
+scheduled-async RigelSystem(SchedulingTime : integer, SchedulingTimeMax : integer) [
+	port FelugyeloPortIn : requires Rigel
+	port FelugyeloPortOut : provides Rigel
+	
+	port OrionConn : requires OrionConn
+	port OrionDisconn : requires OrionDisconn
+	
+	port OrionDisconnToVk : requires OrionDisconnToVk
+	port AllObjDataSent : requires AllObjDataSent
+	
+	port SendData_objektumNyilvantarto : requires SendData
+	
+	port ObjektumKezeloPortIn : requires Rigel
+	port ObjektumKezeloPortOut : provides Rigel
+] {
+	component vezerloKozpont : CustomRigelVezerloKozpontAdapter(3, 3, 3)
+	component diszpecser : CustomRigelDiszpecserAdapter(4, 3, 2)
+	component objektumKezelo : CustomRigelObjektumKezeloAdapter(SchedulingTime, SchedulingTimeMax, 5, 4, 2, 3)
+	
+	// External control and answers
+	bind FelugyeloPortIn -> vezerloKozpont.FelugyeloPortIn
+	bind FelugyeloPortOut -> vezerloKozpont.FelugyeloPortOut
+	
+//	bind ObjektumKezeloPortIn -> diszpecser.ObjektumKezeloPortIn
+//	bind ObjektumKezeloPortOut -> diszpecser.ObjektumKezeloPortOut
+	
+	// Operation calls
+	bind OrionConn -> vezerloKozpont.OrionConn
+	
+//	bind OrionDisconn -> vezerloKozpont.OrionDisconn
+//	bind OrionDisconnToVk -> diszpecser.OrionDisconnToVk
+//	bind OrionDisconn -> objektumKezelo.OrionDisconn
+
+	bind AllObjDataSent -> diszpecser.AllObjDataSent
+	
+	bind SendData_objektumNyilvantarto -> objektumKezelo.SendData_objektumNyilvantarto
+
+	// Channels
+
+	channel [ vezerloKozpont.PortOut ] -o)- [ diszpecser.VezerloKozpontPortIn ]
+	channel [ diszpecser.VezerloKozpontPortOut ] -o)- [ vezerloKozpont.PortIn ]
+ 	
+	channel [ diszpecser.ObjektumKezeloPortOut ] -o)- [ objektumKezelo.DiszpecserPortIn ]
+	channel [ objektumKezelo.DiszpecserPortOut ] -o)- [ diszpecser.ObjektumKezeloPortIn ]
+}

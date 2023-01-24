@@ -1,0 +1,430 @@
+import "../Interfaces/Rigel.xsml"; 
+import "../Interfaces/RigelCommon.xsml"; 
+
+/*
+ * Modifications:
+ * - Rigel -> RigelMsgHeader
+ * - Additional in and out ports
+ * - Additional variable assignments
+ */
+function RigelMsgHeader createNormalAnswerData() { 
+	var RigelMsgHeader naData;
+	naData.Length = 10;
+	naData.Generation = 4;
+	naData.MessageType = RigelMsgType.RigelMsgData;
+	naData.ObjType = RigelObjType.Jelzo;
+	naData.ObjId = 73170;
+	naData.SafetyCode = 0;
+	naData.DataCause = RigelDataCause.NormalAnswer;
+	
+	return naData;
+}
+
+function RigelMsgHeader createPeriodicAnswerData() {
+	var RigelMsgHeader naData;
+	naData.Length = 10;
+	naData.Generation = 4;
+	naData.MessageType = RigelMsgType.RigelMsgData;
+	naData.ObjType = RigelObjType.Jelzo;
+	naData.ObjId = 73170;
+	naData.SafetyCode = 0;
+	naData.DataCause = RigelDataCause.PeriodicAnswer;
+	
+	return naData;
+}
+
+function RigelMsgHeader createStatusChangeData() {
+	var RigelMsgHeader naData;
+	naData.Length = 10;
+	naData.Generation = 4;
+	naData.MessageType = RigelMsgType.RigelMsgData;
+	naData.ObjType = RigelObjType.Jelzo;
+	naData.ObjId = 73170;
+	naData.SafetyCode = 0;
+	naData.DataCause = RigelDataCause.StatusChange;
+	
+	return naData;
+}
+
+function RigelMsgHeader ProcessReqTs1(U32 vkTimestamp, U32 objTimestamp, U8 sessionID) {
+	var RigelMsgHeader ansTs1;
+	ansTs1.Length = 10;
+	ansTs1.Generation = 4;
+	ansTs1.MessageType = RigelMsgType.RigelMsgAnsTs1;
+	ansTs1.ObjType = RigelObjType.Jelzo;
+	ansTs1.ObjId = 73170;
+	ansTs1.SafetyCode = 0;
+	ansTs1.Timestamp = vkTimestamp;
+	ansTs1.ConfirmedTimestamp = objTimestamp;
+	ansTs1.SessionId = sessionID;
+	
+	return ansTs1;
+}
+
+function RigelMsgHeader ProcessReqTs2(U32 vkTimestamp, U32 objTimestamp, U8 sessionID) {
+	var RigelMsgHeader ansTs1;
+	ansTs1.Length = 10;
+	ansTs1.Generation = 4;
+	ansTs1.MessageType = RigelMsgType.RigelMsgAnsTs2;
+	ansTs1.ObjType = RigelObjType.Jelzo;
+	ansTs1.ObjId = 73170;
+	ansTs1.SafetyCode = 0;
+	ansTs1.Timestamp = vkTimestamp;
+	ansTs1.ConfirmedTimestamp = objTimestamp;
+	ansTs1.SessionId = sessionID;
+	
+	return ansTs1;
+}
+
+function RigelMsgHeader createCommandResultBase(RigelObjControl cmd, U8 sessionId, RigelCommandStatus cmdStatus) {
+	var RigelMsgHeader cmdRes;
+	cmdRes.Length = 14;
+	cmdRes.Generation = 4;
+	cmdRes.MessageType = RigelMsgType.RigelMsgCommandResult;
+	cmdRes.ObjType = RigelObjType.Jelzo;
+	cmdRes.ObjId = 73170;
+	cmdRes.SafetyCode = 0;
+	cmdRes.Command = cmd;
+	cmdRes.SessionId = sessionId;
+	cmdRes.CommandResult = cmdStatus;
+	return cmdRes;
+}
+
+function RigelMsgHeader createCommandResultSessionIDError(RigelObjControl cmd, U8 sessionId) {
+	return createCommandResultBase(cmd, sessionId, RigelCommandStatus.SessionidError);
+}
+
+function RigelMsgHeader createCommandResultTimestampError(RigelObjControl cmd, U8 sessionId) {
+	return createCommandResultBase(cmd, sessionId, RigelCommandStatus.TimestampError);
+}
+
+function RigelMsgHeader createCommandResultConfirmWaiting(RigelObjControl cmd, U8 sessionId) {
+	return createCommandResultBase(cmd, sessionId, RigelCommandStatus.ConfirmWaiting);
+}
+
+function RigelMsgHeader createCommandResultCmdError(RigelObjControl cmd, U8 sessionId) {
+	return createCommandResultBase(cmd, sessionId, RigelCommandStatus.CmdError);
+}
+
+machine RigelObjektumKezelo {
+	
+	parameter int _TimeScheduling; // TODO added to manage LocalTime
+	parameter int _TimeSchedulingMax; // TODO added to manage LocalTime
+	
+	parameter int _TimeVkInactiveTimeout; // 300 .. 1200s - race condition with all timeouts
+	
+	parameter int _TimeSqTimeout; // 30 .. 1000s - race condition with the ones below
+	parameter int _TimeCommandTimeout; // 1 .. 10s
+	parameter int _TimeConfirmationTimeout; // 8 .. 60s
+	
+	operation OrionDisconn;
+	
+	port DiszpecserPortIn;
+	port DiszpecserPortOut;
+	
+	parallel machine instance ObjektumNyilvantarto objektumNyilvantarto {
+		TimeCommandTimeout = _TimeCommandTimeout, TimeSqTimeout = _TimeSqTimeout,
+		TimeConfirmationTimeout = _TimeConfirmationTimeout, TimeVkInactiveTimeout = _TimeVkInactiveTimeout
+	}; // TODO: Objektumonként egy
+	parallel machine instance ObjektumKezeloVezerloKozpontKezeloKepes objektumKezeloVezerloKozpontKezeloKepes {
+		TimeVkInactiveTimeout = _TimeVkInactiveTimeout
+	};
+	
+	function void OrionDisconnToDiszp() {}
+	
+	function void ProcessVkActive() {}
+	
+	function void ProcessVkInactive() {}
+	
+	function RigelMsgHeader createAlkCommandVegrehajtas(RigelObjControl Command) {
+		// Megvalósítás alkalmazásspecifikus
+		var RigelMsgHeader header;
+		
+		header.Command = Command;
+		
+		return header; // TODO added
+	}
+	
+	function bool isHardHandling() {
+		// Megvalósítás alkalmazásspecifikus
+		return true; // TODO added 
+	}
+	
+	machine ObjektumKezeloVezerloKozpontKezeloKepes {
+		parameter int TimeVkInactiveTimeout; // 300 .. 1200s
+		
+		initial state VkActive {
+			timeout after (TimeVkInactiveTimeout) {
+				ProcessVkInactive();
+				change VkInactive;
+			}
+			
+			event RigelMsgHeader msg [msg.MessageType == RigelMsgType.RigelMsgVkAlive] from DiszpecserPortIn
+			{
+				change VkActive;
+			}
+			
+			event RigelMsgHeader msg [msg.MessageType == RigelMsgType.RigelMsgCommand] from DiszpecserPortIn
+			{
+				change VkActive;
+			}
+			
+			event RigelMsgHeader msg [msg.MessageType == RigelMsgType.RigelMsgCommandConfirm] from DiszpecserPortIn
+			{
+				change VkActive;
+			}
+		}
+		
+		state VkInactive {
+			event RigelMsgHeader msg [msg.MessageType == RigelMsgType.RigelMsgVkAlive] from DiszpecserPortIn
+			{
+				ProcessVkActive();
+				change VkActive;
+			}
+			
+			event RigelMsgHeader msg [msg.MessageType == RigelMsgType.RigelMsgCommand] from DiszpecserPortIn
+			{
+				var bool isCommandAccepted = true;
+				if (isCommandAccepted) { // TODO set to true manually
+					ProcessVkActive();
+					change VkActive;
+				}
+			}
+			
+			event RigelMsgHeader msg [msg.MessageType == RigelMsgType.RigelMsgCommandConfirm] from DiszpecserPortIn
+			{
+				var bool isCommandConfirmAccepted = true;
+				if (isCommandConfirmAccepted) { // TODO set to true manually
+					ProcessVkActive();
+					change VkActive;
+				}
+			}
+		}
+	}
+	
+	machine ObjektumNyilvantarto {
+//		parameter RigelObject object; // TODO commented out
+		
+		parameter int TimeVkInactiveTimeout; // 300 .. 1200s
+		
+		parameter int TimeSqTimeout; // 30 .. 1000s -
+		
+		parameter int TimeCommandTimeout; // 1 .. 10s
+		parameter int TimeConfirmationTimeout; // 8 .. 60s
+		
+		operation SendData;
+		
+		U8 SessionID;
+		U32 TimestampObj1;
+		U32 TimestampObj2;
+		U32 TimestampVk1;
+		U32 TimestampVk2;
+		U32 LocalTime; // TODO: idő, kívülről változik
+		RigelObjControl Command;
+		
+		initial state NoConnection {
+			event RigelMsgHeader msg [msg.MessageType == RigelMsgType.RigelMsgSq && msg.SQCause == RigelSQCause.NormalRequest] from DiszpecserPortIn {
+				var RigelMsgHeader normalAnswerDataMsg = createNormalAnswerData();
+				send normalAnswerDataMsg to DiszpecserPortOut;
+				change Connected;
+			}
+		}
+		
+		state Connected {
+			parallel machine instance SendDataPeriodicMachine sendDataPeriodicMachine;
+			parallel machine instance SendDataChangeMachine sendDataChangeMachine;
+			parallel machine instance CommandProcessMachine commandProcessMachine;
+			parallel machine instance Idozito idozito;
+			
+			call OrionDisconn {
+				change NoConnection;
+			}
+			
+			event RigelMsgHeader msg [msg.MessageType == RigelMsgType.RigelMsgSq && msg.SQCause == RigelSQCause.NormalRequest] from DiszpecserPortIn {
+				var RigelMsgHeader normalAnswerDataMsg = createNormalAnswerData();
+				send normalAnswerDataMsg to DiszpecserPortOut;
+				change Connected;
+			}
+			
+			event RigelMsgHeader msg [msg.MessageType == RigelMsgType.RigelMsgGq
+				|| msg.MessageType == RigelMsgType.RigelMsgGqBegin
+				|| msg.MessageType == RigelMsgType.RigelMsgGqEnd
+				|| msg.MessageType == RigelMsgType.RigelMsgAnsTs1
+				|| msg.MessageType == RigelMsgType.RigelMsgAnsTs2
+				|| msg.MessageType == RigelMsgType.RigelMsgData
+				|| msg.MessageType == RigelMsgType.RigelMsgCommandResult
+				|| msg.MessageType == RigelMsgType.RigelMsgCommandConfirmResult
+				|| msg.MessageType == RigelMsgType.RigelMsgInvalidateObj
+			] from DiszpecserPortIn 
+			{
+				OrionDisconnToDiszp();
+				change NoConnection;
+			}
+			
+			// TODO added to manage LocalTime
+			machine Idozito {
+				event RigelMsgHeader msg from DiszpecserPortIn {
+					LocalTime = LocalTime + _TimeScheduling;
+					if (_TimeSchedulingMax < LocalTime) {
+						LocalTime = 0;
+					}
+				}
+			}
+			//
+			
+			machine SendDataPeriodicMachine {
+				initial state SendDataPeriodic {
+					timeout after (TimeSqTimeout)
+					{
+						OrionDisconnToDiszp();
+						change NoConnection;
+					}
+					
+					event RigelMsgHeader msg [msg.MessageType == RigelMsgType.RigelMsgSq && msg.SQCause == RigelSQCause.PeriodicRequest] from DiszpecserPortIn {
+						var RigelMsgHeader periodicAnswerDataMsg = createPeriodicAnswerData();
+						send periodicAnswerDataMsg to DiszpecserPortOut;
+						change SendDataPeriodic;
+					}
+				}
+			}
+			
+			machine SendDataChangeMachine {
+				initial state SendDataChange {
+					call SendData {
+						var RigelMsgHeader dataChange = createStatusChangeData();
+						send dataChange to DiszpecserPortOut;
+						change SendDataChange;
+					}
+				}
+			}
+			
+			machine CommandProcessMachine {
+				initial state WaitTS1Req {
+					event RigelMsgHeader msg [msg.MessageType == RigelMsgType.RigelMsgReqTs1] from DiszpecserPortIn {
+						TimestampVk1 = msg.Timestamp;
+						TimestampObj1 = LocalTime;
+						SessionID = msg.SessionId;
+						var RigelMsgHeader ansTs1Msg = ProcessReqTs1(TimestampVk1, TimestampObj1, SessionID);
+						send ansTs1Msg to DiszpecserPortOut;
+						change CommandProcess;
+					}
+				}
+				
+				state CommandProcess {
+					event RigelMsgHeader msg [msg.MessageType == RigelMsgType.RigelMsgReqTs1] from DiszpecserPortIn {
+						TimestampVk1 = msg.Timestamp;
+						TimestampObj1 = LocalTime;
+						SessionID = msg.SessionId;
+						var RigelMsgHeader ansTs1Msg = ProcessReqTs1(TimestampVk1, TimestampObj1, SessionID);
+						send ansTs1Msg to DiszpecserPortOut;
+						change WaitCommand;
+					}
+					
+					initial state WaitCommand {
+						timeout after (TimeCommandTimeout) {
+							change WaitTS1Req;
+						}
+						
+						event RigelMsgHeader msg [msg.MessageType == RigelMsgType.RigelMsgCommand] from DiszpecserPortIn {
+							// ProcessCommand
+							Command = msg.Command;
+							var RigelMsgHeader result;
+							var U8 msgSessionId = msg.SessionId;
+							var RigelObjControl msgCommand = msg.Command;
+							if (msgSessionId != SessionID) {
+								// SessionID nem helyes
+								result = createCommandResultSessionIDError(msgCommand, msgSessionId);
+								send result to DiszpecserPortOut;
+								change WaitTS1Req;
+							} else if (msg.ConfirmedTimestamp != TimestampObj1) {
+								// Nem a saját Timestamp-re jött
+								result = createCommandResultTimestampError(msgCommand, msgSessionId);
+								send result to DiszpecserPortOut;
+								change WaitTS1Req;
+							} else if (!(LocalTime < (TimestampObj1 + TimeCommandTimeout))) {
+								// Objektum oldali időtúllépés
+								result = createCommandResultTimestampError(msgCommand, msgSessionId);
+								send result to DiszpecserPortOut;
+								change WaitTS1Req;
+							} else if (!(msg.Timestamp < (TimestampVk1 + TimeCommandTimeout))) {
+								// Vezérlőközpont oldlai időtúllépés
+								result = createCommandResultTimestampError(msgCommand, msgSessionId);
+								send result to DiszpecserPortOut;
+								change WaitTS1Req;
+							} else {
+								// Parancs elfogadva
+								var bool isHardHandling = isHardHandling();
+								if (isHardHandling) {
+									result = createCommandResultConfirmWaiting(msgCommand, msgSessionId);
+									send result to DiszpecserPortOut;
+									change WaitTS2Req;
+								} else {
+									ProcessVkActive();
+									result = createAlkCommandVegrehajtas(msgCommand);
+									send result to DiszpecserPortOut;
+									change WaitTS1Req;
+								}
+							}
+						}
+					}
+					
+					state WaitTS2Req {
+						timeout after (TimeConfirmationTimeout) {
+							change WaitTS1Req;
+						}
+						
+						event RigelMsgHeader msg [msg.MessageType == RigelMsgType.RigelMsgReqTs2] from DiszpecserPortIn {
+							if (SessionID != msg.SessionId) {
+								change WaitCommandConfirm;
+							}
+							else {
+								TimestampVk2 = msg.Timestamp;
+								TimestampObj2 = LocalTime;
+								SessionID = msg.SessionId;
+								var RigelMsgHeader ansTs1Msg = ProcessReqTs2(TimestampVk1, TimestampObj1, SessionID);
+								send ansTs1Msg to DiszpecserPortOut;
+								change WaitTS1Req;
+							}
+						}
+					}
+					
+					state WaitCommandConfirm {
+						timeout after (TimeCommandTimeout) {
+							change WaitTS1Req;
+						}
+						
+						event RigelMsgHeader msg [msg.MessageType == RigelMsgType.RigelMsgCommandConfirm] from DiszpecserPortIn {
+							// ProcessCommandConfirm
+							var RigelMsgHeader result;
+							var U8 msgSessionId = msg.SessionId;
+							var RigelObjControl msgCommand = msg.Command;
+							if (msgSessionId != SessionID) {
+								// SessionID nem helyes
+								result = createCommandResultSessionIDError(msgCommand, msgSessionId);
+							} else if (msgCommand != Command) {
+								//Command nem helyes
+								result = createCommandResultCmdError(msgCommand, msgSessionId);
+							} else if (msg.ConfirmedTimestamp != TimestampObj2) {
+								// Nem a saját Timestamp-re jött
+								result = createCommandResultTimestampError(msgCommand, msgSessionId);
+							} else if (!(LocalTime < (TimestampObj2 + TimeCommandTimeout))) {
+								// Objektum oldali időtúllépés
+								result = createCommandResultTimestampError(msgCommand, msgSessionId);
+							} else if (!(msg.Timestamp < (TimestampVk2 + TimeCommandTimeout))) {
+								// Vezérlőközpont oldlai időtúllépés
+								result = createCommandResultTimestampError(msgCommand, msgSessionId);
+							} else {
+								// Parancs elfogadva
+								ProcessVkActive();
+								result = createAlkCommandVegrehajtas(msgCommand);
+							}
+							
+							send result to DiszpecserPortOut;
+							change WaitTS1Req;
+						}
+					}
+				}
+			}
+		}
+	}
+}

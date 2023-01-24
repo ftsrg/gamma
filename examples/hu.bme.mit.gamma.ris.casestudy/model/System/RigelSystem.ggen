@@ -1,0 +1,54 @@
+import "RigelSystem.gcd"
+
+//code {
+//	component : RigelSystem
+//	language : java
+//}
+
+//analysis {
+//	component : RigelSystem(1)
+//	language : Theta
+//	constraint : {
+//		top : {
+//			minimum-orchestrating-period : 1 ms // Must match the first argument of the adapter
+//			maximum-orchestrating-period : 1 ms
+//		}
+//	}
+//	state-coverage {
+////		include : [vezerloKozpont -> RigelVezerloKozpont, diszpecser -> RigelDiszpecser ]
+//		include : [ diszpecser ]
+//	}
+//}
+//
+//verification {
+//	language : Theta
+//	file : "RigelSystem.xsts"
+//	property-file : ".RigelSystem.gpd"
+//	optimize : true
+//	optimize-model : true
+//	test-language : java
+//}
+
+//analysis {
+//	component : RigelSystem(1, /*2*/ -1)
+//	language : Promela
+//	constraint : {
+//		top : {
+//			minimum-orchestrating-period : 1 ms // Must match the first argument of the adapter
+//			maximum-orchestrating-period : 1 ms
+//		}
+//	}
+////	state-coverage
+//	transition-coverage
+////	interaction-coverage
+//}
+
+verification {
+	language : Promela
+	file : "RigelSystem.pml"
+//	property-file : "RigelSystem.gpd" // "Basic" property
+	property-file : ".RigelSystem.gpd" // Set of properties for *-covering test set
+	optimize-model : true // Model reduction (slicing)
+	optimize : true // Optimizing test cases
+	test-language : java // JUnit tests
+}

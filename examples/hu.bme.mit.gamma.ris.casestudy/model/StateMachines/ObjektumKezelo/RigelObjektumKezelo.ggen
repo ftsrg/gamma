@@ -1,0 +1,54 @@
+import "RigelObjektumKezelo.gcd"
+import "RigelObjektumKezeloAdapter.gcd"
+
+//code {
+//	component : RigelDiszpecser
+//	language : java
+//}
+//
+//code {
+//	component : RigelDiszpecserAdapter
+//	language : java
+//}
+
+//analysis {
+//	component : RigelObjektumKezeloAdapter(1, 5, 4, 2, 3)
+//	language : XSTS-UPPAAL
+//	constraint : {
+//		top : {
+//			minimum-orchestrating-period : 1 ms // Must match the first argument of the adapter
+//			maximum-orchestrating-period : 1 ms
+//		}
+//	}
+//	transition-coverage
+//}
+//
+//verification {
+//	language : XSTS-UPPAAL
+//	file : "RigelObjektumKezeloAdapter.xml"
+//	property-file : ".RigelObjektumKezeloAdapter.gpd"
+////	optimize : true
+//	optimize-model : true
+//	test-language : java
+//}
+
+analysis {
+	component : RigelObjektumKezeloAdapter(1, 15, 5, 4, 2, 3)
+	language : Theta
+	constraint : {
+		top : {
+			minimum-orchestrating-period : 1 ms // Must match the first argument of the adapter
+			maximum-orchestrating-period : 1 ms
+		}
+	}
+	transition-coverage
+}
+
+verification {
+	language : Theta
+	file : "RigelObjektumKezeloAdapter.xsts"
+	property-file : ".RigelObjektumKezeloAdapter.gpd"
+//	optimize : true
+	optimize-model : true
+	test-language : java
+}

@@ -1,0 +1,14 @@
+package RigelObjektumKezelo
+import
+	"/hu.bme.mit.gamma.rigel.casestudy/model/StateMachines/ObjektumKezelo/RigelObjektumKezelo.gcd"
+adapter RigelObjektumKezeloAdapter(_TimeScheduling : integer, _TimeSchedulingMax : integer,
+	_TimeVkInactiveTimeout : integer, _TimeSqTimeout : integer, _TimeCommandTimeout : integer,
+	_TimeConfirmationTimeout : integer) of component RigelObjektumKezelo :
+	RigelObjektumKezelo(_TimeScheduling, _TimeSchedulingMax, _TimeVkInactiveTimeout, _TimeSqTimeout,
+	_TimeCommandTimeout, _TimeConfirmationTimeout)
+{
+	when any / run
+	queue RigelObjektumKezeloQueue (priority = 2, capacity = 1) {
+		DiszpecserPortIn.any, OrionDisconn.any, SendData_objektumNyilvantarto.any
+	}
+}

@@ -1,0 +1,242 @@
+import "../Static/Rigel.xsml";
+
+struct StartMsg {
+	int i;
+}
+ 
+function void ProcessOrionDisconn() {}
+
+function Rigel createGqMessage() {
+	var Rigel gqMsg;
+	gqMsg.Header.Length = 10;
+	gqMsg.Header.Generation = 4;
+	gqMsg.Header.MessageType = RigelMsgType.RigelMsgGq;
+	gqMsg.Header.ObjType = RigelObjType.Invalid;
+	gqMsg.Header.ObjId = 0;
+	gqMsg.Header.SafetyCode = 0;
+	
+	return gqMsg;
+} 
+
+function Rigel createVkAlive() {
+	var Rigel vkAliveMsg;
+	vkAliveMsg.Header.Length = 10;
+	vkAliveMsg.Header.Generation = 4;
+	vkAliveMsg.Header.MessageType = RigelMsgType.RigelMsgVkAlive;
+	vkAliveMsg.Header.ObjType = RigelObjType.Invalid;
+	vkAliveMsg.Header.ObjId = 0;
+	vkAliveMsg.Header.SafetyCode = 0;
+	
+	return vkAliveMsg;
+}
+
+machine VezerloKozpont {
+	operation OrionDisconn;
+	operation OrionConn;
+	
+	port Port;
+	port FelugyeloPort;
+	
+	parallel machine instance VkTeljesAdatLekerdezes teljesAdatLekerdezes;
+	parallel machine instance VkObjektumKezelo objektumKezelo1; // TODO: Objektumonként egy
+	
+	machine VkObjektumKezelo {
+		parameter RigelObject object;
+		
+		bool isValid;
+		
+		initial state ObjectInvalid {
+			event Rigel msg [msg.Header.MessageType == RigelMsgType.RigelMsgData && msg.Payload.data.cause == RigelDataCause.NormalAnswer] from Port
+			{
+				isValid = true;
+				change ObjectValid;
+			}
+		}
+		
+		state ObjectValid {
+			call OrionDisconn {
+				change ObjectInvalid;
+			}
+			
+			event Rigel msg [msg.Header.MessageType == RigelMsgType.RigelMsgInvalidateObj] from Port
+			{
+				isValid = false;
+				change ObjectInvalid;
+			} 
+		}
+	}
+	
+	machine VkTeljesAdatLekerdezes {
+		parameter int TimeReconn;
+		parameter int TimeConn;
+		parameter int TimeSendAlive;
+		
+		bool allDataReceived = false; // TODO: az értékének módosítása igény szerint
+		
+		initial state NoOrionConnected {
+			call OrionConn {
+				change HasOrionConnected;
+				var Rigel gqMsg = createGqMessage();
+				send gqMsg to Port;
+			}
+		}
+		
+		state HasOrionConnected {		
+			call OrionDisconn {
+				change NoOrionConnected;
+			}
+			
+			initial state WaitForConnection {
+				timeout after (TimeReconn)
+				{
+					var Rigel gqMsg = createGqMessage();
+					send gqMsg to Port;
+					change WaitForConnection;
+				}
+				
+				event Rigel msg [msg.Header.MessageType == RigelMsgType.RigelMsgGqBegin] from Port
+				{
+					//Rigel gqMsg = createGqMessage();
+					//send gqMsg to Port;
+					change ProcessQuery;
+				}
+				
+				event Rigel msg [msg.Header.MessageType != RigelMsgType.RigelMsgGqBegin] from Port
+				{
+					send msg to Port;
+					ProcessOrionDisconn();
+					change NoOrionConnected;
+				}
+			}
+			
+			state ProcessQuery {
+				timeout after (TimeConn)
+				{
+					ProcessOrionDisconn();
+					change NoOrionConnected;
+				}
+				
+				event Rigel msg [msg.Header.MessageType == RigelMsgType.RigelMsgGqEnd] from Port
+				{
+					if (allDataReceived) {
+						var Rigel vkAlive = createVkAlive();
+						send vkAlive to Port;
+						change Connected;
+					} else {
+						ProcessOrionDisconn();
+						change NoOrionConnected;
+					}
+				}
+				
+				event Rigel msg [msg.Header.MessageType != RigelMsgType.RigelMsgData 
+						&& msg.Header.MessageType != RigelMsgType.RigelMsgInvalidateObj
+						&& msg.Header.MessageType != RigelMsgType.RigelMsgGqEnd
+					] from Port
+				{
+					ProcessOrionDisconn();
+					change NoOrionConnected;
+				}
+				
+				initial state Receive {
+					event Rigel msg [msg.Header.MessageType == RigelMsgType.RigelMsgData && msg.Payload.data.cause == RigelDataCause.NormalAnswer] from Port
+					{
+						send msg to FelugyeloPort;
+						change Receive;
+					}
+					
+					event Rigel msg [msg.Header.MessageType == RigelMsgType.RigelMsgInvalidateObj] from Port
+					{
+						send msg to FelugyeloPort;
+						change Receive;
+					}
+				}
+			}
+			
+			state Connected {
+				parallel machine instance ReceiveMachine receiveMachine;
+				parallel machine instance SendMachine sendMachine;
+				
+				event Rigel msg [msg.Header.MessageType != RigelMsgType.RigelMsgInvalidateObj
+						&& msg.Header.MessageType != RigelMsgType.RigelMsgData
+						&& msg.Header.MessageType != RigelMsgType.RigelMsgAnsTs1
+						&& msg.Header.MessageType != RigelMsgType.RigelMsgAnsTs2
+						&& msg.Header.MessageType != RigelMsgType.RigelMsgCommandResult
+						&& msg.Header.MessageType != RigelMsgType.RigelMsgCommandConfirmResult
+					] from Port
+				{
+					ProcessOrionDisconn();
+					change NoOrionConnected;
+				}
+				
+				machine ReceiveMachine {
+					initial state Receive {
+						event Rigel msg [msg.Header.MessageType == RigelMsgType.RigelMsgInvalidateObj] from Port
+						{
+							send msg to FelugyeloPort;
+						}
+						
+						event Rigel msg [msg.Header.MessageType == RigelMsgType.RigelMsgData] from Port
+						{
+							send msg to FelugyeloPort;
+						}
+						
+						event Rigel msg [msg.Header.MessageType == RigelMsgType.RigelMsgAnsTs1] from Port
+						{
+							send msg to FelugyeloPort;
+						}
+						
+						event Rigel msg [msg.Header.MessageType == RigelMsgType.RigelMsgAnsTs2] from Port
+						{
+							send msg to FelugyeloPort;
+						}
+						
+						event Rigel msg [msg.Header.MessageType == RigelMsgType.RigelMsgCommandResult] from Port
+						{
+							send msg to FelugyeloPort;
+						}
+						
+						event Rigel msg [msg.Header.MessageType == RigelMsgType.RigelMsgCommandConfirmResult] from Port
+						{
+							send msg to FelugyeloPort;
+						}
+					}
+				}
+				
+				machine SendMachine {
+					initial state Send {
+						event Rigel msg [msg.Header.MessageType == RigelMsgType.RigelMsgReqTs1] from FelugyeloPort
+						{
+							send msg to Port;
+						}
+						
+						event Rigel msg [msg.Header.MessageType == RigelMsgType.RigelMsgReqTs2] from FelugyeloPort
+						{
+							send msg to Port;
+						}
+						
+						event Rigel msg [msg.Header.MessageType == RigelMsgType.RigelMsgCommand] from FelugyeloPort
+						{
+							send msg to Port;
+						}
+						
+						event Rigel msg [msg.Header.MessageType == RigelMsgType.RigelMsgCommandConfirm] from FelugyeloPort
+						{
+							send msg to Port;
+						}
+						
+						timeout after (TimeSendAlive)
+						{
+							var bool isVKActive;
+							
+							if (isVKActive) {
+								var Rigel vkAlive = createVkAlive();
+								send vkAlive to Port;
+								change Send;
+							}
+						}
+					}
+				}
+			}
+		}
+	}	
+}

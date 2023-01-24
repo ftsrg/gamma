@@ -1,0 +1,8 @@
+//include "Interaction/XP/RigelSystem_Verification.ggen"
+//include "Interaction/XU/RigelSystem_Verification.ggen"
+//
+//include "State/XP/RigelSystem_Verification.ggen"
+include "State/XU/RigelSystem_Verification.ggen"
+//
+//include "Transition/XP/RigelSystem_Verification.ggen"
+include "Transition/XU/RigelSystem_Verification.ggen"
