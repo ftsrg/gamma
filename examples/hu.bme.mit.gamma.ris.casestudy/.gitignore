@@ -13,3 +13,4 @@
 *.gpd
 *.pd
 *.txt
+!/measurement-results/*/*.txt
