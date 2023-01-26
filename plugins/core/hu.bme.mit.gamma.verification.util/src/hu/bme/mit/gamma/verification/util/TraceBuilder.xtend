@@ -136,10 +136,14 @@ class TraceBuilder {
 	// Time elapse
 	
 	def addTimeElapse(Step step, Expression elapsedTime) {
-		return step.addTimeElapse(elapsedTime.evaluateInteger)
+		step.addTimeElapse(elapsedTime.evaluateInteger)
 	}
 	
 	def addTimeElapse(Step step, int elapsedTime) {
+		if (elapsedTime <= 0) {
+			return
+		}
+		
 		val timeElapseActions = step.actions.filter(TimeElapse)
 		if (!timeElapseActions.empty) {
 			// A single time elapse action in all steps
@@ -149,9 +153,11 @@ class TraceBuilder {
 		}
 		else {
 			// No time elapses in this step so far
-			step.actions += createTimeElapse => [
-				it.elapsedTime = elapsedTime.toIntegerLiteral
-			]
+			step.actions.add(0, // Always in front
+				createTimeElapse => [
+					it.elapsedTime = elapsedTime.toIntegerLiteral
+				]
+			)
 		}
 	}
 	

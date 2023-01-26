@@ -132,6 +132,9 @@ class XstsUppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 													potentialStateString.parseState(step)
 												}
 											}
+											else if (xStsUppaalQueryGenerator.isDelay(id)) {
+												step.addTimeElapse(Integer.valueOf(value))
+											}
 											else if (xStsUppaalQueryGenerator.isSourceVariable(id)) {
 												id.parseVariable(value, step)
 											}

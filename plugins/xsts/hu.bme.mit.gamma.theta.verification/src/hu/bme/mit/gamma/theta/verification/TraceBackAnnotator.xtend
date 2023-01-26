@@ -164,6 +164,9 @@ class TraceBackAnnotator {
 						if (thetaQueryGenerator.isSourceState(potentialStateString)) {
 							potentialStateString.parseState(step)
 						}
+						else if (thetaQueryGenerator.isDelay(id)) {
+							step.addTimeElapse(Integer.valueOf(value))
+						}
 						else if (thetaQueryGenerator.isSourceVariable(id)) {
 							id.parseVariable(value, step)
 						}

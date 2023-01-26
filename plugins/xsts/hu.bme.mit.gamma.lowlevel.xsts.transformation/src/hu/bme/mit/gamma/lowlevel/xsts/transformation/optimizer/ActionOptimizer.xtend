@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -27,6 +27,7 @@ import hu.bme.mit.gamma.xsts.model.AssumeAction
 import hu.bme.mit.gamma.xsts.model.AtomicAction
 import hu.bme.mit.gamma.xsts.model.CompositeAction
 import hu.bme.mit.gamma.xsts.model.EmptyAction
+import hu.bme.mit.gamma.xsts.model.HavocAction
 import hu.bme.mit.gamma.xsts.model.IfAction
 import hu.bme.mit.gamma.xsts.model.LoopAction
 import hu.bme.mit.gamma.xsts.model.MultiaryAction
@@ -668,7 +669,18 @@ class ActionOptimizer {
 		val container = action.eContainer
 		if (container instanceof SequentialAction) {
 			val actions = container.actions
-			return actions.indexOf(action) != 0
+			val index = actions.indexOf(action)
+			// For choices, these are needed
+			if (index == 0) {
+				return false
+			}
+			// Right after havocs, they are needed
+			try {
+				val previousAction = actions.get(index - 1)
+				if (previousAction instanceof HavocAction) {
+					return false
+				}
+			} catch (IndexOutOfBoundsException e) {}
 		}
 		return false
 	}

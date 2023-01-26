@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -56,7 +56,9 @@ class GammaToXstsTransformer {
 	// Transformation utility
 	protected final extension ComponentTransformer componentTransformer
 	// Transformation settings
-	protected final Integer schedulingConstraint
+	protected final Integer minSchedulingConstraint
+	protected final Integer maxSchedulingConstraint
+	
 	protected final PropertyPackage initialState
 	protected final InitialStateSetting initialStateSetting
 	protected final boolean optimizeArrays
@@ -92,10 +94,20 @@ class GammaToXstsTransformer {
 	new(Integer schedulingConstraint, boolean transformOrthogonalActions,
 			boolean optimize, boolean optimizeArrays, TransitionMerging transitionMerging,
 			PropertyPackage initialState, InitialStateSetting initialStateSetting) {
+		this(schedulingConstraint, schedulingConstraint,
+			transformOrthogonalActions, optimize, optimizeArrays, transitionMerging,
+			initialState, initialStateSetting)
+	}
+	
+	new(Integer minSchedulingConstraint, Integer maxSchedulingConstraint,
+			boolean transformOrthogonalActions,	boolean optimize, boolean optimizeArrays,
+			TransitionMerging transitionMerging,
+			PropertyPackage initialState, InitialStateSetting initialStateSetting) {
 		this.gammaToLowlevelTransformer = new GammaToLowlevelTransformer
 		this.componentTransformer = new ComponentTransformer(this.gammaToLowlevelTransformer,
 			transformOrthogonalActions, optimize, transitionMerging)
-		this.schedulingConstraint = schedulingConstraint
+		this.minSchedulingConstraint = minSchedulingConstraint
+		this.maxSchedulingConstraint = maxSchedulingConstraint
 		this.initialState = initialState
 		this.initialStateSetting = initialStateSetting
 		this.optimizeArrays = optimizeArrays
@@ -142,7 +154,7 @@ class GammaToXstsTransformer {
 		xSts.removeDuplicatedTypes
 		// Setting clock variable increase
 		xSts.setClockVariables
-		_package.setSchedulingAnnotation(schedulingConstraint) // Needed for back-annotation
+		_package.setSchedulingAnnotation // Needed for back-annotation
 		// Remove internal parameter assignments from environment
 		xSts.removeInternalParameterAssignment(gammaComponent)
 		// Optimizing
@@ -159,33 +171,53 @@ class GammaToXstsTransformer {
 	}
 	
 	protected def void setClockVariables(XSTS xSts) {
-		if (schedulingConstraint === null) {
+		if (minSchedulingConstraint === null) {
 			return
 		}
-		val xStsClockSettingAction = createSequentialAction => [
-			// Increasing the clock variables
-			for (xStsClockVariable : xSts.clockVariables) {
-				val maxValue = xStsClockVariable.greatestComparison
-				val incrementExpression = createAddExpression => [
-					it.operands += createReferenceExpression(xStsClockVariable)
-					it.operands += toIntegerLiteral(schedulingConstraint)
-				]
-				val rhs = (maxValue === null) ? incrementExpression :
-					createIfThenElseExpression => [
-						it.condition = createLessExpression => [
-							it.leftOperand = createReferenceExpression(xStsClockVariable)
-							it.rightOperand = toIntegerLiteral(maxValue)
-						]
-						it.then = incrementExpression
-						it.^else = createReferenceExpression(xStsClockVariable)
+		val xStsClockSettingAction = createSequentialAction
+		// Increasing the clock variables
+		var VariableDeclaration xStsDelayVariable = null
+		if (minSchedulingConstraint != maxSchedulingConstraint) {
+			xStsDelayVariable = createIntegerTypeDefinition
+					.createVariableDeclaration(delayVariableName)
+			// Needed for back-annotation
+			xStsDelayVariable.addResettableAnnotation // So it is reset at the beginning
+			xSts.variableDeclarations += xStsDelayVariable
+			
+			val xStsDelayHavocAction = xStsDelayVariable.createHavocAction
+			xStsClockSettingAction.actions += xStsDelayHavocAction
+			
+			val xStsDelayAssume = minSchedulingConstraint.toIntegerLiteral
+					.createLessEqualExpression(xStsDelayVariable.createReferenceExpression)
+					.wrapIntoAndExpression(
+						xStsDelayVariable.createReferenceExpression
+							.createLessEqualExpression(maxSchedulingConstraint.toIntegerLiteral))
+					.createAssumeAction
+			xStsClockSettingAction.actions += xStsDelayAssume
+		}
+		
+		for (xStsClockVariable : xSts.clockVariables) {
+			val maxValue = xStsClockVariable.greatestComparison
+			val incrementExpression = xStsClockVariable.createReferenceExpression
+				.wrapIntoAddExpression(
+					(xStsDelayVariable === null) ?
+					toIntegerLiteral(minSchedulingConstraint) : xStsDelayVariable.createReferenceExpression)
+			val rhs = (maxValue === null) ? incrementExpression :
+				createIfThenElseExpression => [
+					it.condition = createLessExpression => [
+						it.leftOperand = createReferenceExpression(xStsClockVariable)
+						it.rightOperand = toIntegerLiteral(maxValue)
 					]
-				it.actions += xStsClockVariable.createAssignmentAction(rhs)
-				// Denoting variable as scheduled clock variable
-				xStsClockVariable.addScheduledClockAnnotation
-			}
-			// Putting it in merged transition as it does not work in environment action
-			it.actions += xSts.mergedAction
-		]
+					it.then = incrementExpression
+					it.^else = createReferenceExpression(xStsClockVariable)
+				]
+			xStsClockSettingAction.actions += xStsClockVariable.createAssignmentAction(rhs)
+			// Denoting variable as scheduled clock variable
+			xStsClockVariable.addScheduledClockAnnotation
+		}
+		// Putting it in merged transition as it does not work in environment action
+		xStsClockSettingAction.actions += xSts.mergedAction
+		
 		xSts.changeTransitions(xStsClockSettingAction.wrap)
 		// Clearing the clock variables - they are handled like normal ones from now on
 		// This way the UPPAAL transformer will not use clock types as variable values 
@@ -218,11 +250,11 @@ class GammaToXstsTransformer {
 		}
 	}
 	
-	protected def void setSchedulingAnnotation(Package _package, Integer schedulingConstraint) {
-		if (schedulingConstraint !== null) {
+	protected def void setSchedulingAnnotation(Package _package) {
+		if (minSchedulingConstraint !== null && minSchedulingConstraint == maxSchedulingConstraint) {
 			if (!_package.annotations.exists[it instanceof SchedulingConstraintAnnotation]) {
 				_package.annotations += createSchedulingConstraintAnnotation => [
-					it.schedulingConstraint = toIntegerLiteral(schedulingConstraint)
+					it.schedulingConstraint = toIntegerLiteral(minSchedulingConstraint)
 				]
 				_package.save
 			}
