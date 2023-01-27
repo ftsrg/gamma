@@ -10,7 +10,6 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.querygenerator.serializer
 
-import hu.bme.mit.gamma.property.model.BinaryLogicalOperator
 import hu.bme.mit.gamma.property.model.BinaryOperandLogicalPathFormula
 import hu.bme.mit.gamma.property.model.BinaryOperandPathFormula
 import hu.bme.mit.gamma.property.model.BinaryPathOperator
@@ -76,6 +75,8 @@ class PromelaPropertySerializer extends ThetaPropertySerializer {
 		}
 	}
 	
+	//
+	
 	override protected isValidFormula(StateFormula stateFormula) {
 		val list = stateFormula.getSelfAndAllContentsOfType(QuantifiedFormula)
 		if (list.size > 1) {
@@ -92,6 +93,8 @@ class PromelaPropertySerializer extends ThetaPropertySerializer {
 		}
 		return true
 	}
+	
+	//
 	
 	protected def String transform(BinaryPathOperator operator) {
 		switch (operator) {

@@ -11,6 +11,7 @@
 package hu.bme.mit.gamma.querygenerator.serializer
 
 import hu.bme.mit.gamma.expression.model.Expression
+import hu.bme.mit.gamma.expression.model.IfThenElseExpression
 import hu.bme.mit.gamma.expression.model.ImplyExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceElementReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventParameterReferenceExpression
@@ -34,11 +35,22 @@ abstract class PropertyExpressionSerializer extends ExpressionSerializer {
 		if (expression instanceof ImplyExpression) {
 			return '''(!(«expression.leftOperand.serialize») || («expression.rightOperand.serialize»))'''
 		}
+		if (expression instanceof IfThenElseExpression) {
+			return expression.serializeIfThenElseExpression
+		}
 		else if (expression instanceof ComponentInstanceElementReferenceExpression) {
 			return expression.serializeStateExpression
 		}
 		return super.serialize(expression)
 	}
+	
+	//
+	
+	protected def serializeIfThenElseExpression(IfThenElseExpression expression) {
+		return super.serialize(expression)
+	}
+	
+	//
 	
 	protected def dispatch serializeStateExpression(ComponentInstanceStateReferenceExpression expression) {
 		val instance = expression.instance
