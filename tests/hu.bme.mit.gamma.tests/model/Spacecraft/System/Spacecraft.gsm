@@ -7,8 +7,12 @@
       </controlSpecifications>
       <messageQueues name="MQ">
         <capacity xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1"/>
-        <eventReferences xsi:type="hu.bme.mit.gamma.statechart:AnyPortEventReference" port="/0/@components.1/@ports.0"/>
-        <eventReferences xsi:type="hu.bme.mit.gamma.statechart:AnyPortEventReference" port="/0/@components.1/@ports.1"/>
+        <eventPassings>
+        <source xsi:type="hu.bme.mit.gamma.statechart:AnyPortEventReference" port="/0/@components.1/@ports.0"/>
+        </eventPassings>
+        <eventPassings>
+        <source xsi:type="hu.bme.mit.gamma.statechart:AnyPortEventReference" port="/0/@components.1/@ports.1"/>
+        </eventPassings>
       </messageQueues>
       <wrappedComponent name="System" type="/0/@components.1"/>
     </components>
