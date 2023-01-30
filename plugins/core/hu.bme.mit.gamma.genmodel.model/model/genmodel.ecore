@@ -85,6 +85,7 @@
     <eLiterals name="THETA" value="1"/>
     <eLiterals name="XSTS_UPPAAL" value="2" literal="XSTS_UPPAAL"/>
     <eLiterals name="PROMELA" value="3" literal="PROMELA"/>
+    <eLiterals name="NUXMV" value="4" literal="NUXMV"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="YakinduCompilation" abstract="true"
       eSuperTypes="#//Task">
