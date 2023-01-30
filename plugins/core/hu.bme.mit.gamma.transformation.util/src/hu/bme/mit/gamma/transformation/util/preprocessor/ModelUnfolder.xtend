@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -304,7 +304,7 @@ class ModelUnfolder {
 	protected def void fixMessageQueueEvents(AsynchronousAdapter wrapper) {
 		val wrappedComponent = wrapper.wrappedComponent
 		// Any port events
-		for (portEventReference : wrapper.messageQueues.map[it.eventReferences]
+		for (portEventReference : wrapper.messageQueues.map[it.sourceAndTargetEventReferences]
 				.flatten.filter(AnyPortEventReference)
 				.filter[it.port.eContainer instanceof SynchronousComponent] /* Wrapper ports are not rearranged */ ) {
 			val newPorts = wrappedComponent.type.ports.filter[it.helperEquals(portEventReference.port)]
@@ -314,7 +314,7 @@ class ModelUnfolder {
 			portEventReference.port = newPorts.head	
 		}
 		// Port events
-		for (portEventReference : wrapper.messageQueues.map[it.eventReferences]
+		for (portEventReference : wrapper.messageQueues.map[it.sourceAndTargetEventReferences]
 				.flatten.filter(PortEventReference)
 				.filter[it.port.eContainer instanceof SynchronousComponent] /* Wrapper ports are not rearranged */ ) {
 			val newPorts = wrappedComponent.type.ports.filter[it.helperEquals(portEventReference.port)]
@@ -324,7 +324,7 @@ class ModelUnfolder {
 			portEventReference.port = newPorts.head	
 		}
 		// Clock events
-		for (clockTickReference : wrapper.messageQueues.map[it.eventReferences]
+		for (clockTickReference : wrapper.messageQueues.map[it.sourceAndTargetEventReferences]
 				.flatten.filter(ClockTickReference)) {
 			val newClocks = wrapper.clocks.filter[it.helperEquals(clockTickReference.clock)]
 			if (newClocks.size != 1) {

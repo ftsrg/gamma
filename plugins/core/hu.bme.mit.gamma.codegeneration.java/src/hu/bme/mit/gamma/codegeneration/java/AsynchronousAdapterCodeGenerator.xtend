@@ -428,10 +428,16 @@ class AsynchronousAdapterCodeGenerator {
 	* Generates event handlers for wrapped in ports of the given wrapper component .
 	*/
 	protected def generateWrapperEventHandlers(AsynchronousAdapter component) '''
-		«FOR port : component.wrappedComponent.type.ports»
-			«FOR event : port.inputEvents»
-				case "«port.name».«event.name»":
-					«component.generateWrappedComponentName».get«port.name.toFirstUpper»().raise«event.name.toFirstUpper»(«FOR parameter : event.parameterDeclarations SEPARATOR ", "» («parameter.type.transformType») event.getValue()[«event.parameterDeclarations.indexOf(parameter)»]«ENDFOR»);
+		«FOR queue : component.messageQueues»
+			«FOR portEvent : queue.storedEvents
+					.filter[component.wrappedComponent.derivedType.allPorts.contains(it.key)]»
+				case "«portEvent.key.name».«portEvent.value.name»":
+					«component.generateWrappedComponentName».get«
+					queue.getTargetPortEvent(portEvent).key.name.toFirstUpper»().raise«
+						queue.getTargetPortEvent(portEvent).value.name.toFirstUpper»(«
+							FOR parameter : portEvent.value.parameterDeclarations SEPARATOR ", "» («
+								parameter.type.transformType») event.getValue()[«
+									portEvent.value.parameterDeclarations.indexOf(parameter)»]«ENDFOR»);
 				break;
 			«ENDFOR»
 		«ENDFOR»

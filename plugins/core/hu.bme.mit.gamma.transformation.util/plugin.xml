@@ -43,6 +43,7 @@
       <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.instanceMessageQueues"/>
       <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.queuesOfClocks"/>
       <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.queuesOfEvents"/>
+      <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.sourceOfEventPassings"/>
       <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.queuesOfEventsOfWrappedComponents"/>
       <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.queuePriorities"/>
       <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.runOnceEventControl"/>

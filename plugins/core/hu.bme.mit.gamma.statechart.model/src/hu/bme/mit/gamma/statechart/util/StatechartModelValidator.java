@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -1794,7 +1794,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		Map<Port, Collection<Event>> containedEvents = new HashMap<Port, Collection<Event>>();
 		for (MessageQueue queue : wrapper.getMessageQueues()) {
-			List<EventReference> eventReferences = queue.getEventReferences();
+			List<EventReference> eventReferences = StatechartModelDerivedFeatures.getSourceEventReferences(queue);
 			for (EventReference eventReference : eventReferences) {
 				int index = eventReferences.indexOf(eventReference);
 				if (eventReference instanceof PortEventReference) {
@@ -1830,7 +1830,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 								.collect(Collectors.toSet());
 						validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 							"Events " + alreadyContainedEventNames + " are already forwarded to a message queue", 
-								new ReferenceInfo(CompositeModelPackage.Literals.MESSAGE_QUEUE__EVENT_REFERENCES, index, queue)));
+								new ReferenceInfo(CompositeModelPackage.Literals.MESSAGE_QUEUE__EVENT_PASSINGS, index, queue)));
 					}
 					else {
 						containedEvents.put(containedPort, events);
@@ -1925,7 +1925,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 	public Collection<ValidationResultMessage> checkMessageQueue(MessageQueue queue) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		
-		List<EventReference> eventReferences = queue.getEventReferences();
+		List<EventReference> eventReferences = StatechartModelDerivedFeatures.getSourceEventReferences(queue);
 		for (EventReference eventReference : eventReferences) {
 			int index = eventReferences.indexOf(eventReference);
 			// Checking out-events
@@ -1939,7 +1939,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 				if (outputEvents.contains(containedEvent)) {
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 						"Event '" + containedEvent.getName() + "' is an out event and can not be forwarded to a message queue", 
-							new ReferenceInfo(CompositeModelPackage.Literals.MESSAGE_QUEUE__EVENT_REFERENCES, index)));
+							new ReferenceInfo(CompositeModelPackage.Literals.MESSAGE_QUEUE__EVENT_PASSINGS, index)));
 				}
 			}			
 		}

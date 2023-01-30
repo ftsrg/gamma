@@ -335,12 +335,15 @@ class ComponentTransformer {
 				
 				val events = queue.storedEvents
 				for (portEvent : events) {
-					val port = portEvent.key
-					val event = portEvent.value
 					val eventId = queueTraceability.get(portEvent)
 					
+					val targetPortEvent = queue.getTargetPortEvent(portEvent)
+					val targetPort = targetPortEvent.key
+					val targetEvent = targetPortEvent.value
+					// Mapping source event reference to target 
+					
 					// Can be empty due to optimization or adapter event
-					val xStsInEventVariables = eventReferenceMapper.getInputEventVariables(event, port)
+					val xStsInEventVariables = eventReferenceMapper.getInputEventVariables(targetEvent, targetPort)
 					
 					val ifExpression = xStsEventIdVariable.createReferenceExpression
 							.createEqualityExpression(eventId.toIntegerLiteral)
@@ -353,7 +356,7 @@ class ComponentTransformer {
 					// Setting the parameter variables with values stored in slave queues
 					val slaveQueueStructs = slaveQueues.get(portEvent) // Might be empty
 					
-					val inParameters = event.parameterDeclarations
+					val inParameters = targetEvent.parameterDeclarations
 					val slaveQueueSize = slaveQueueStructs.size // Might be 0 if there is no in-event var
 					
 					if (inParameters.size <= slaveQueueSize) {
@@ -367,7 +370,7 @@ class ComponentTransformer {
 							val xStsSlaveSizeVariable = (slaveSizeVariable === null) ? null :
 									variableTrace.getAll(slaveSizeVariable).onlyElement
 							val xStsInParameterVariableLists = eventReferenceMapper
-									.getInputParameterVariablesByPorts(inParameter, port)
+									.getInputParameterVariablesByPorts(inParameter, targetPort)
 							// Separated in the lists according to ports
 							for (xStsInParameterVariables : xStsInParameterVariableLists) {
 								// Parameter optimization problem: parameters are not deleted independently

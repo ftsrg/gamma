@@ -96,7 +96,8 @@ class ThetaVerifier extends AbstractVerifier {
 				super.result = ThreeStateBoolean.FALSE
 			}
 			else {
-				// Some kind of error
+				// Some kind of error or interruption by another (winner) process
+				logger.log(Level.WARNING, line)
 				throw new IllegalArgumentException(line)
 			}
 			// Adapting result

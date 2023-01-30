@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -34,6 +34,7 @@ import hu.bme.mit.gamma.statechart.lowlevel.model.Region;
 import hu.bme.mit.gamma.statechart.lowlevel.model.ShallowHistoryState;
 import hu.bme.mit.gamma.statechart.lowlevel.model.State;
 import hu.bme.mit.gamma.statechart.lowlevel.model.StateNode;
+import hu.bme.mit.gamma.statechart.lowlevel.model.StatechartAnnotation;
 import hu.bme.mit.gamma.statechart.lowlevel.model.StatechartDefinition;
 import hu.bme.mit.gamma.statechart.lowlevel.model.Transition;
 
@@ -44,6 +45,11 @@ public class LowlevelStatechartModelDerivedFeatures extends ActionModelDerivedFe
 			return (StatechartDefinition) object;
 		}
 		return getStatechart(object.eContainer());
+	}
+	
+	public static boolean hasAnnotation(StatechartDefinition statechart,
+			Class<? extends StatechartAnnotation> annotation) {
+		return statechart.getAnnotations().stream().anyMatch(it -> annotation.isInstance(it));
 	}
 	
 	public static boolean isInternal(EventDeclaration lowlevelEventDeclaration) {

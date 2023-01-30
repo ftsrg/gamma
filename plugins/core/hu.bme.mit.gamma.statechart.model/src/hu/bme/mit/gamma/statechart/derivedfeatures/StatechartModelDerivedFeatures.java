@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -58,6 +58,7 @@ import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpressio
 import hu.bme.mit.gamma.statechart.composite.CompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.ControlFunction;
 import hu.bme.mit.gamma.statechart.composite.ControlSpecification;
+import hu.bme.mit.gamma.statechart.composite.EventPassing;
 import hu.bme.mit.gamma.statechart.composite.InstancePortReference;
 import hu.bme.mit.gamma.statechart.composite.MessageQueue;
 import hu.bme.mit.gamma.statechart.composite.PortBinding;
@@ -373,6 +374,11 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	public static boolean hasAnnotation(Package gammaPackage,
 			Class<? extends PackageAnnotation> annotation) {
 		return gammaPackage.getAnnotations().stream().anyMatch(it -> annotation.isInstance(it));
+	}
+	
+	public static boolean hasAnnotation(StatechartDefinition statechart,
+			Class<? extends StatechartAnnotation> annotation) {
+		return statechart.getAnnotations().stream().anyMatch(it -> annotation.isInstance(it));
 	}
 	
 	public static Set<Package> getImportableInterfacePackages(Component component) {
@@ -1100,7 +1106,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	public static List<Port> getStoredPorts(MessageQueue queue) {
 		Collection<Port> ports = new LinkedHashSet<Port>();
 		// To filter possible duplicates
-		for (EventReference eventReference : queue.getEventReferences()) {
+		for (EventReference eventReference : getSourceEventReferences(queue)) {
 			ports.addAll(
 					getInputEvents(eventReference).stream()
 					.map(it -> it.getKey())
@@ -1112,11 +1118,75 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	public static List<Entry<Port, Event>> getStoredEvents(MessageQueue queue) {
 		Collection<Entry<Port, Event>> events = new LinkedHashSet<Entry<Port, Event>>();
 		// To filter possible duplicates
-		for (EventReference eventReference : queue.getEventReferences()) {
+		for (EventReference eventReference : getSourceEventReferences(queue)) {
 			events.addAll(
 					getInputEvents(eventReference));
 		}
 		return List.copyOf(events);
+	}
+	
+	public static List<EventReference> getSourceEventReferences(MessageQueue queue) {
+		return queue.getEventPassings().stream()
+				.map(it -> it.getSource())
+				.collect(Collectors.toList());
+	}
+	
+	public static EventPassing getEventPassing(MessageQueue queue,
+			Entry<Port, Event> portEvent) {
+		for (EventPassing eventPassing : queue.getEventPassings()) {
+			EventReference source = eventPassing.getSource();
+			List<Entry<Port, Event>> inputEvents = getInputEvents(source);
+			if (inputEvents.contains(portEvent)) {
+				return eventPassing;
+			}
+		}
+		throw new IllegalArgumentException("Not found event passing: " + portEvent);
+	}
+	
+	public static EventReference getTargetEventReference(MessageQueue queue,
+				Entry<Port, Event> portEvent) {
+		EventPassing eventPassing = getEventPassing(queue, portEvent);
+		EventReference target = eventPassing.getTarget();
+		if (target != null) {
+			return target;
+		}
+		else {
+			EventReference source = eventPassing.getSource();
+			return source;
+		}
+	}
+	
+	public static Entry<Port, Event> getTargetPortEvent(MessageQueue queue,
+			Entry<Port, Event> sourcePortEvent) {
+		Port sourcePort = sourcePortEvent.getKey();
+		Event sourceEvent = sourcePortEvent.getValue();
+		EventReference target = getTargetEventReference(queue, sourcePortEvent);
+		if (target instanceof AnyPortEventReference anyPortEventReference) {
+			Port port = anyPortEventReference.getPort();
+			if (getInterface(sourcePort) != getInterface(port)) {
+				throw new IllegalArgumentException("Not the same interface: " + port);
+			}
+			return new SimpleEntry<Port, Event>(port, sourceEvent);
+		}
+		else if (target instanceof PortEventReference portEventReference) {
+			Port port = portEventReference.getPort();
+			Event targetEvent = portEventReference.getEvent();
+			return new SimpleEntry<Port, Event>(port, targetEvent);
+		}
+		throw new IllegalArgumentException("Not known target: " + sourcePortEvent);
+	}
+	
+	public static List<EventReference> getSourceAndTargetEventReferences(MessageQueue queue) {
+		List<EventReference> eventReferences = new ArrayList<EventReference>();
+		for (EventPassing eventPassing : queue.getEventPassings()) {
+			EventReference source = eventPassing.getSource();
+			eventReferences.add(source);
+			EventReference target = eventPassing.getTarget();
+			if (target != null) {
+				eventReferences.add(target);
+			}
+		}
+		return eventReferences;
 	}
 	
 	public static int getEventId(MessageQueue queue,
@@ -1191,7 +1261,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	}
 	
 	public static boolean isStoredInMessageQueue(Clock clock, MessageQueue queue) {
-		for (EventReference eventReference : queue.getEventReferences()) {
+		for (EventReference eventReference : getSourceEventReferences(queue)) {
 			if (eventReference instanceof ClockTickReference) {
 				ClockTickReference clockTickReference = (ClockTickReference) eventReference;
 				if (clockTickReference.getClock() == clock) {

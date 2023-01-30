@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -51,6 +51,7 @@ import hu.bme.mit.gamma.statechart.composite.CompositeModelFactory;
 import hu.bme.mit.gamma.statechart.composite.ControlFunction;
 import hu.bme.mit.gamma.statechart.composite.ControlSpecification;
 import hu.bme.mit.gamma.statechart.composite.DiscardStrategy;
+import hu.bme.mit.gamma.statechart.composite.EventPassing;
 import hu.bme.mit.gamma.statechart.composite.InstancePortReference;
 import hu.bme.mit.gamma.statechart.composite.MessageQueue;
 import hu.bme.mit.gamma.statechart.composite.PortBinding;
@@ -512,7 +513,10 @@ public class StatechartUtil extends ActionUtil {
 		for (Port port : StatechartModelDerivedFeatures.getAllPortsWithInput(component)) {
 			AnyPortEventReference reference = statechartFactory.createAnyPortEventReference();
 			reference.setPort(port);
-			messageQueue.getEventReferences().add(reference);
+			
+			EventPassing eventPassing = createEventPassing(reference);
+			
+			messageQueue.getEventPassings().add(eventPassing);
 		}
 		
 		adapter.getMessageQueues().add(messageQueue);
@@ -760,6 +764,19 @@ public class StatechartUtil extends ActionUtil {
 		return channel;
 	}
 	
+	public EventPassing createEventPassing(EventReference source) {
+		return createEventPassing(source, null);
+	}
+	
+	public EventPassing createEventPassing(EventReference source, EventReference target) {
+		EventPassing eventPassing = compositeFactory.createEventPassing();
+
+		eventPassing.setSource(source);
+		eventPassing.setTarget(target);
+		
+		return eventPassing;
+	}
+	
 	public PortBinding createPortBinding(Port systemPort, InstancePortReference portReference) {
 		PortBinding portBinding = compositeFactory.createPortBinding();
 		portBinding.setCompositeSystemPort(systemPort);
@@ -805,6 +822,10 @@ public class StatechartUtil extends ActionUtil {
 	
 	public void addWrapperComponentAnnotation(Component component) {
 		addAnnotation(component, interfaceFactory.createWrapperComponentAnnotation());
+	}
+	
+	public void addRunUponExternalEventAnnotation(Component component) {
+		addAnnotation(component, statechartFactory.createRunUponExternalEventAnnotation());
 	}
 	
 	// Statechart element creators
