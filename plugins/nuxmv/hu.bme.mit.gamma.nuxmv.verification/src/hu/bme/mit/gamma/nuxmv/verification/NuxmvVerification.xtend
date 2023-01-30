@@ -1,5 +1,5 @@
 package hu.bme.mit.gamma.nuxmv.verification
 
-class PromelaVerification {
+class NuxmvVerification {
 	
 }
