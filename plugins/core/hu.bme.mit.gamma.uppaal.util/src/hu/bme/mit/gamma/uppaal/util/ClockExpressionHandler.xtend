@@ -40,7 +40,7 @@ class ClockExpressionHandler {
 		val guards = edges.map[it.guard].filterNull
 		
 		val clockGuards = guards
-			.filter[it.containsClockReferenceInOr] // clock
+			.filter[it.containsClockReferencesInOr] // clock
 //			.map[it.eContainer] // clock <= 1000
 		
 		val clockEdges = clockGuards.map[it.getContainerOfType(Edge)]
@@ -52,11 +52,12 @@ class ClockExpressionHandler {
 	
 	//
 	
-	protected def containsClockReferenceInOr(Expression expression) {
+	protected def containsClockReferencesInOr(Expression expression) {
 		return expression !== null &&
 			expression.getSelfAndAllContentsOfType(LogicalExpression)
 				.filter[it.operator == LogicalOperator.OR]
-				.exists[it.containsClockReference]
+				.exists[it.firstExpr.containsClockReference &&
+						it.secondExpr.containsClockReference]
 	}
 	
 	private def containsClockReference(Expression expression) {
@@ -100,7 +101,7 @@ class ClockExpressionHandler {
 		var needRecursion = false // To avoid code duplication
 		switch (operator) {
 			case AND: {
-				if (expression.containsClockReferenceInOr) {
+				if (expression.containsClockReferencesInOr) {
 					val firstClonedEdge = edge.clone
 					template.edge += firstClonedEdge
 					firstClonedEdge.guard = first //
@@ -124,7 +125,7 @@ class ClockExpressionHandler {
 				}
 			}
 			case OR: {
-				if (expression.containsClockReferenceInOr) {
+				if (expression.containsClockReferencesInOr) {
 					val firstClonedEdge = edge.clone
 					template.edge += firstClonedEdge
 					firstClonedEdge.guard = first //
@@ -141,10 +142,10 @@ class ClockExpressionHandler {
 		}
 		
 		if (needRecursion) {
-			if (first.containsClockReferenceInOr) {
+			if (first.containsClockReferencesInOr) {
 				first.transformClockExpression
 			}
-			if (second.containsClockReferenceInOr) {
+			if (second.containsClockReferencesInOr) {
 				second.transformClockExpression
 			}
 			
