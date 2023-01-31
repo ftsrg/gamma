@@ -24,6 +24,7 @@ import hu.bme.mit.gamma.util.JavaUtil;
 import hu.bme.mit.gamma.util.Triple;
 import uppaal.NTA;
 import uppaal.core.NamedElement;
+import uppaal.declarations.ClockVariableDeclaration;
 import uppaal.declarations.Declaration;
 import uppaal.declarations.GlobalDeclarations;
 import uppaal.declarations.Variable;
@@ -37,6 +38,11 @@ import uppaal.expressions.LiteralExpression;
 import uppaal.templates.Edge;
 import uppaal.templates.Location;
 import uppaal.templates.Template;
+import uppaal.types.BuiltInType;
+import uppaal.types.PredefinedType;
+import uppaal.types.Type;
+import uppaal.types.TypeDefinition;
+import uppaal.types.TypeReference;
 
 public class UppaalModelDerivedFeatures {
 
@@ -103,6 +109,25 @@ public class UppaalModelDerivedFeatures {
 			throw new IllegalArgumentException("Not one variable: " + variable);
 		}
 		return variable.get(0);
+	}
+	
+	public static boolean isClock(NamedElement element) {
+		if (element instanceof Variable variable) {
+			VariableContainer container = variable.getContainer();
+			return isClock(container);
+		}
+		return false;
+	}
+	
+	public static boolean isClock(VariableContainer container) {
+		TypeDefinition type = container.getTypeDefinition();
+		if (type instanceof TypeReference typeReference) {
+			Type referredType = typeReference.getReferredType();
+			if (referredType instanceof PredefinedType predefinedType) {
+				return predefinedType.getType() == BuiltInType.CLOCK;
+			}
+		}
+		return container instanceof ClockVariableDeclaration;
 	}
 	
 	//
@@ -290,7 +315,11 @@ public class UppaalModelDerivedFeatures {
 				if (element instanceof Variable variable) {
 					AssignmentOperator operator = assignment.getOperator();
 					Expression secondExpr = assignment.getSecondExpr();
-					if (operator == AssignmentOperator.EQUAL &&
+					if (UppaalModelDerivedFeatures.isClock(variable)) {
+						// Clock variable, we do not mess with it
+						notIntegerLiteralVariables.add(variable);
+					}
+					else if (operator == AssignmentOperator.EQUAL &&
 							secondExpr instanceof LiteralExpression literalExpression &&
 							isIntegerLiteral(literalExpression)) {
 						List<LiteralExpression> integerLiterals =
