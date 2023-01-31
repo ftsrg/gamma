@@ -28,6 +28,7 @@ import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference
 import hu.bme.mit.gamma.statechart.statechart.AsynchronousStatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.ClockTickReference
 import hu.bme.mit.gamma.statechart.statechart.PortEventReference
+import hu.bme.mit.gamma.statechart.statechart.RunUponExternalEventAnnotation
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.StatechartModelFactory
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
@@ -204,7 +205,13 @@ class ModelUnfolder {
 	
 	protected def void removeAnnotations(Component component) {
 		if (component instanceof StatechartDefinition) {
-			component.annotations.clear
+			val keepableAnnotations = #[ RunUponExternalEventAnnotation ]
+			
+			for (annotation : component.annotations) {
+				if (!keepableAnnotations.exists[it.isInstance(annotation)]) {
+					annotation.remove
+				}
+			}
 		}
 	}
 	
