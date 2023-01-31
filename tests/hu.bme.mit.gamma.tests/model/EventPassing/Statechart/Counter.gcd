@@ -5,8 +5,8 @@ import "Interfaces/Interfaces.gcd"
 @RunUponExternalEventAnnotation
 @TransitionPriority = order-based
 statechart Counter [
-	port ToggleAdd : requires Toggle
-	port ToggleSubtract : requires Toggle
+	port ToggleAdd : requires CounterToggle
+	port ToggleSubtract : requires CounterToggle
 ] {
 	var a : integer
 	var reachedB : boolean

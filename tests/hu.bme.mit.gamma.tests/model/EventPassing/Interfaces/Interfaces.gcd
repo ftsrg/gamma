@@ -1,15 +1,15 @@
 package interfaces
 
-interface Execute {
+interface CounterExecute {
 	out event ^execute
 }
 
-interface Toggle {
+interface CounterToggle {
 	out event add
 	out event subtract
 }
 
-interface Internal {
+interface CounterInternal {
 	internal event add
 	internal event subtract
 }

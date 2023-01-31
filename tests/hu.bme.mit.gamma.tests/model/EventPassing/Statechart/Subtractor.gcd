@@ -4,8 +4,8 @@ import "Interfaces/Interfaces.gcd"
 
 @RunUponExternalEventAnnotation
 statechart Subtractor [
-	port Execute : requires Execute
-	port Toggle : provides Internal
+	port Execute : requires CounterExecute
+	port Toggle : provides CounterInternal
 ] {
 	var count : integer
 	region main {

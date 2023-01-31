@@ -7,14 +7,14 @@ import "Statechart/Counter.gcd"
 import "Statechart/Subtractor.gcd"
 
 cascade SystemComponents [
-	port ExecuteAdder : requires Execute
-	port ExecuteSubtractor : requires Execute
+	port ExecuteAdder : requires CounterExecute
+	port ExecuteSubtractor : requires CounterExecute
 	
-	port AddCounter : requires Toggle
-	port SubtractCounter : requires Toggle
+	port AddCounter : requires CounterToggle
+	port SubtractCounter : requires CounterToggle
 	
-	port OutAdder : provides Internal
-	port OutSubtractor : provides Internal
+	port OutAdder : provides CounterInternal
+	port OutSubtractor : provides CounterInternal
 ] {
 	component adder : Adder
 	component subtractor : Subtractor
