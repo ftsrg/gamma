@@ -69,6 +69,7 @@ import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpressio
 import hu.bme.mit.gamma.statechart.composite.CompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.CompositeModelPackage;
 import hu.bme.mit.gamma.statechart.composite.ControlSpecification;
+import hu.bme.mit.gamma.statechart.composite.EventPassing;
 import hu.bme.mit.gamma.statechart.composite.InstancePortReference;
 import hu.bme.mit.gamma.statechart.composite.MessageQueue;
 import hu.bme.mit.gamma.statechart.composite.PortBinding;
@@ -2023,7 +2024,47 @@ public class StatechartModelValidator extends ActionModelValidator {
 					new ReferenceInfo(StatechartModelPackage.Literals.ANY_PORT_EVENT_REFERENCE__PORT)));
 		}
 		return validationResultMessages;
-		
+	}
+	
+	public Collection<ValidationResultMessage> checkEventPassings(EventPassing eventPassing) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		EventReference target = eventPassing.getTarget();
+		if (target != null) {
+			EventReference source = eventPassing.getSource();
+			if (source instanceof AnyPortEventReference sourceReference) {
+				Port sourcePort = sourceReference.getPort();
+				if (target instanceof AnyPortEventReference targetReference) {
+					Port targetPort = targetReference.getPort();
+					if (!StatechartModelDerivedFeatures.isEventPassingCompatible(sourcePort, targetPort)) {
+						validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+							"In the case of any port event references, the interfaces of the ports must match", 
+								new ReferenceInfo(CompositeModelPackage.Literals.EVENT_PASSING__TARGET)));
+					}
+				}
+				else {
+					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+						"In the case of any port event references, the target must also be an any port event reference", 
+							new ReferenceInfo(CompositeModelPackage.Literals.EVENT_PASSING__TARGET)));
+				}
+			}
+			else if (source instanceof PortEventReference sourceReference) {
+				Event sourceEvent = sourceReference.getEvent();
+				if (target instanceof PortEventReference targetReference) {
+					Event targetEvent = targetReference.getEvent();
+					if (StatechartModelDerivedFeatures.isEventPassingCompatible(sourceEvent, targetEvent)) {
+						validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+							"In the case of port event references, the number and types of parameter declarations must be the same", 
+								new ReferenceInfo(CompositeModelPackage.Literals.EVENT_PASSING__TARGET)));
+					}
+				}
+				else {
+					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+						"In the case of port event references, the target must also be a port event reference", 
+							new ReferenceInfo(CompositeModelPackage.Literals.EVENT_PASSING__TARGET)));
+				}
+			}
+		}
+		return validationResultMessages;
 	}
 	
 	public Collection<ValidationResultMessage> checkExecutionLists(CascadeCompositeComponent cascade) {

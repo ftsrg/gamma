@@ -1143,6 +1143,39 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		throw new IllegalArgumentException("Not found event passing: " + portEvent);
 	}
 	
+	public static boolean isEventPassingCompatible(Port source, Port target) {
+		List<Event> sourceInputEvents = StatechartModelDerivedFeatures.getInputEvents(source);
+		List<Event> targetInputEvents = StatechartModelDerivedFeatures.getInputEvents(target);
+		
+		boolean isAcceptable = sourceInputEvents.size() == targetInputEvents.size();
+		for (int i = 0; i < sourceInputEvents.size() && isAcceptable; i++) {
+			Event sourceEvent = sourceInputEvents.get(i);
+			Event targetEvent = targetInputEvents.get(i);
+			
+			isAcceptable = isEventPassingCompatible(sourceEvent, targetEvent);
+		}
+		
+		return isAcceptable; 
+	}
+
+	public static boolean isEventPassingCompatible(Event source, Event target) {
+		List<ParameterDeclaration> sourceParameters = source.getParameterDeclarations();
+		List<ParameterDeclaration> targetParameters = target.getParameterDeclarations();
+		boolean isAcceptable = sourceParameters.size() == targetParameters.size();
+		if (isAcceptable) {
+			for (int j = 0; j < sourceParameters.size() && isAcceptable; j++) {
+				ParameterDeclaration sourceParameter = sourceParameters.get(j);
+				ParameterDeclaration targetParameter = targetParameters.get(j);
+				
+				TypeDefinition sourceType = StatechartModelDerivedFeatures.getTypeDefinition(sourceParameter);
+				TypeDefinition targetType = StatechartModelDerivedFeatures.getTypeDefinition(targetParameter);
+
+				isAcceptable = ecoreUtil.helperEquals(sourceType, targetType);
+			}
+		}
+		return isAcceptable;
+	}
+	
 	public static EventReference getTargetEventReference(MessageQueue queue,
 				Entry<Port, Event> portEvent) {
 		EventPassing eventPassing = getEventPassing(queue, portEvent);
@@ -1162,11 +1195,14 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		Event sourceEvent = sourcePortEvent.getValue();
 		EventReference target = getTargetEventReference(queue, sourcePortEvent);
 		if (target instanceof AnyPortEventReference anyPortEventReference) {
-			Port port = anyPortEventReference.getPort();
-			if (getInterface(sourcePort) != getInterface(port)) {
-				throw new IllegalArgumentException("Not the same interface: " + port);
+			Port targetPort = anyPortEventReference.getPort();
+			if (!isEventPassingCompatible(sourcePort, targetPort)) {
+				throw new IllegalArgumentException("Not the same interface: " + targetPort);
 			}
-			return new SimpleEntry<Port, Event>(port, sourceEvent);
+			List<Event> sourceEvents = getInputEvents(sourcePort);
+			int index = sourceEvents.indexOf(sourceEvent);
+			List<Entry<Port, Event>> targetEventIds = getInputEvents(target);
+			return targetEventIds.get(index);
 		}
 		else if (target instanceof PortEventReference portEventReference) {
 			Port port = portEventReference.getPort();
@@ -1189,8 +1225,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return eventReferences;
 	}
 	
-	public static int getEventId(MessageQueue queue,
-			Entry<Port, Event> portEvent) {
+	public static int getEventId(MessageQueue queue, Entry<Port, Event> portEvent) {
 		List<Entry<Port, Event>> storedEvents = getStoredEvents(queue);
 		return storedEvents.indexOf(portEvent) + 1; // Starts from 1, 0 is the "empty cell"
 	}

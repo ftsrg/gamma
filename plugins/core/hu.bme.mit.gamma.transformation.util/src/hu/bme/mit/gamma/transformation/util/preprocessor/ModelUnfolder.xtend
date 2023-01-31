@@ -355,6 +355,17 @@ class ModelUnfolder {
 	
 	protected def dispatch void renameInstances(StatechartDefinition component) {}
 	
+	//
+	
+	protected def void renameInstancesAccordingToWrapping(Component wrapper, Component wrapped) {
+		val wrapperInstance = wrapper.instances.onlyElement
+		val instances = wrapped.allInstances
+		for (instance : instances) {
+			instance.name = #[wrapperInstance, instance].FQN
+		}
+	}
+	
+	
 	// Instance name validation
 	
 	private def void validateInstanceNames(Component component) {
