@@ -12,20 +12,18 @@ package hu.bme.mit.gamma.uppaal.util
 
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import uppaal.NTA
-import uppaal.expressions.BinaryExpression
 import uppaal.expressions.Expression
 import uppaal.expressions.IdentifierExpression
 import uppaal.expressions.LogicalExpression
+import uppaal.expressions.LogicalOperator
 import uppaal.templates.Edge
 import uppaal.templates.LocationKind
 import uppaal.templates.Template
 import uppaal.templates.TemplatesFactory
 
-import static extension de.uni_paderborn.uppaal.derivedfeatures.UppaalModelDerivedFeatures.*
-
-
-import static com.google.common.base.Preconditions.checkArgument
 import static com.google.common.base.Preconditions.checkState
+
+import static extension de.uni_paderborn.uppaal.derivedfeatures.UppaalModelDerivedFeatures.*
 
 class ClockExpressionHandler {
 	// Singleton
@@ -42,7 +40,7 @@ class ClockExpressionHandler {
 		val guards = edges.map[it.guard].filterNull
 		
 		val clockGuards = guards
-			.filter[it.containsClockReference] // clock
+			.filter[it.containsClockReferenceInOr] // clock
 //			.map[it.eContainer] // clock <= 1000
 		
 		val clockEdges = clockGuards.map[it.getContainerOfType(Edge)]
@@ -54,7 +52,14 @@ class ClockExpressionHandler {
 	
 	//
 	
-	protected def containsClockReference(Expression expression) {
+	protected def containsClockReferenceInOr(Expression expression) {
+		return expression !== null &&
+			expression.getSelfAndAllContentsOfType(LogicalExpression)
+				.filter[it.operator == LogicalOperator.OR]
+				.exists[it.containsClockReference]
+	}
+	
+	private def containsClockReference(Expression expression) {
 		return expression !== null &&
 			!expression.getSelfAndAllContentsOfType(IdentifierExpression)
 				.filter[it.identifier.clock]
@@ -67,11 +72,11 @@ class ClockExpressionHandler {
 		throw new IllegalArgumentException("Not known expression: " + expression)
 	}
 	
-	def dispatch void transformClockExpression(IdentifierExpression expression) {
-		checkArgument(expression.identifier.clock, "Identifier is not a clock")
-	}
-	
-	def dispatch void transformClockExpression(BinaryExpression expression) {
+//	def dispatch void transformClockExpression(IdentifierExpression expression) {
+//		checkArgument(expression.identifier.clock, "Identifier is not a clock")
+//	}
+//	
+//	def dispatch void transformClockExpression(BinaryExpression expression) {
 //		val first = expression.firstExpr
 //		val second = expression.secondExpr
 //		
@@ -82,7 +87,7 @@ class ClockExpressionHandler {
 //			second.transformClockExpression
 //		}
 		// All potential binary expressions have side effects - cannot be used as guards
-	}
+//	}
 	
 	def dispatch void transformClockExpression(LogicalExpression expression) {
 		val edge = expression.getContainerOfType(Edge)
@@ -92,9 +97,10 @@ class ClockExpressionHandler {
 		val operator = expression.operator
 		val second = expression.secondExpr
 		
+		var needRecursion = false // To avoid code duplication
 		switch (operator) {
 			case AND: {
-				if (first.containsClockReference || second.containsClockReference) {
+				if (expression.containsClockReferenceInOr) {
 					val firstClonedEdge = edge.clone
 					template.edge += firstClonedEdge
 					firstClonedEdge.guard = first //
@@ -114,33 +120,37 @@ class ClockExpressionHandler {
 					secondClonedEdge.guard = second //
 					secondClonedEdge.source = location
 					
-					checkState(expression.eContainer instanceof Edge)
-					edge.remove
+					needRecursion = true
 				}
 			}
 			case OR: {
-				val firstClonedEdge = edge.clone
-				template.edge += firstClonedEdge
-				firstClonedEdge.guard = first //
-				
-				val secondClonedEdge = edge.clone
-				template.edge += secondClonedEdge
-				secondClonedEdge.guard = second //
-				
-				checkState(expression.eContainer instanceof Edge)
-				edge.remove
+				if (expression.containsClockReferenceInOr) {
+					val firstClonedEdge = edge.clone
+					template.edge += firstClonedEdge
+					firstClonedEdge.guard = first //
+					
+					val secondClonedEdge = edge.clone
+					template.edge += secondClonedEdge
+					secondClonedEdge.guard = second //
+					
+					needRecursion = true
+				}
 			}
 			default:
 				throw new IllegalArgumentException("Not known operator: " + operator)
 		}
 		
-		if (first.containsClockReference) {
-			first.transformClockExpression
+		if (needRecursion) {
+			if (first.containsClockReferenceInOr) {
+				first.transformClockExpression
+			}
+			if (second.containsClockReferenceInOr) {
+				second.transformClockExpression
+			}
+			
+			checkState(expression.eContainer instanceof Edge)
+			edge.remove
 		}
-		if (second.containsClockReference) {
-			second.transformClockExpression
-		}
-		
 	}
 	
 }
