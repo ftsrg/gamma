@@ -36,6 +36,7 @@ import hu.bme.mit.gamma.expression.model.ConstantDeclaration;
 import hu.bme.mit.gamma.expression.model.DecimalLiteralExpression;
 import hu.bme.mit.gamma.expression.model.DecimalTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Declaration;
+import hu.bme.mit.gamma.expression.model.DeclarationReferenceAnnotation;
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition;
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression;
@@ -64,6 +65,7 @@ import hu.bme.mit.gamma.expression.model.MultiplyExpression;
 import hu.bme.mit.gamma.expression.model.NotExpression;
 import hu.bme.mit.gamma.expression.model.NullaryExpression;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
+import hu.bme.mit.gamma.expression.model.ParameterDeclarationAnnotation;
 import hu.bme.mit.gamma.expression.model.ParametricElement;
 import hu.bme.mit.gamma.expression.model.RationalLiteralExpression;
 import hu.bme.mit.gamma.expression.model.RationalTypeDefinition;
@@ -764,6 +766,19 @@ public class ExpressionUtil {
 		}
 	}
 	
+	// Parameter annotation handling
+	
+	public void addInternalAnnotation(ParameterDeclaration parameter) {
+		addAnnotation(parameter, factory.createInternalParameterDeclarationAnnotation());
+	}
+	
+	public void addAnnotation(ParameterDeclaration parameter, ParameterDeclarationAnnotation annotation) {
+		if (parameter != null) {
+			List<ParameterDeclarationAnnotation> annotations = parameter.getAnnotations();
+			annotations.add(annotation);
+		}
+	}
+	
 	// Variable annotation handling
 	
 	public void addTransientAnnotation(VariableDeclaration variable) {
@@ -784,6 +799,20 @@ public class ExpressionUtil {
 	
 	public void addScheduledClockAnnotation(VariableDeclaration variable) {
 		addAnnotation(variable, factory.createScheduledClockVariableDeclarationAnnotation());
+	}
+	
+	public void addInternalAnnotation(VariableDeclaration variable) {
+		addAnnotation(variable, factory.createInternalVariableDeclarationAnnotation());
+	}
+	
+	public void addDeclarationReferenceAnnotation(VariableDeclaration variable, Declaration declaration) {
+		DeclarationReferenceAnnotation declarationReferenceAnnotation = factory.createDeclarationReferenceAnnotation();
+		declarationReferenceAnnotation.setDeclaration(declaration);
+		addAnnotation(variable, declarationReferenceAnnotation);
+	}
+	
+	public void addUnremovableAnnotation(VariableDeclaration variable) {
+		addAnnotation(variable, factory.createUnremovableVariableDeclarationAnnotation());
 	}
 	
 	public void addAnnotation(VariableDeclaration variable, VariableDeclarationAnnotation annotation) {

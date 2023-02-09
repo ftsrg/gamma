@@ -4,5 +4,4 @@ analysis {
 	component : AntivalenceChecker_System
 	language : XSTS-UPPAAL
 	interaction-coverage
-	property-file : "Cascade/ANTIVAL_CHK_COID_System.gpd"
 }

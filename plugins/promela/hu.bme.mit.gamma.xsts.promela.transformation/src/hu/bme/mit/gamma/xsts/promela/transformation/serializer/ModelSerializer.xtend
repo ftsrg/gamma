@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022 Contributors to the Gamma project
+ * Copyright (c) 2022-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -11,10 +11,13 @@
 package hu.bme.mit.gamma.xsts.promela.transformation.serializer
 
 import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
+import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.ExpressionUtil
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.VariableGroupRetriever
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.Action
+import hu.bme.mit.gamma.xsts.model.AssertAction
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.AssumeAction
 import hu.bme.mit.gamma.xsts.model.EmptyAction
@@ -28,9 +31,12 @@ import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.model.XTransition
 import hu.bme.mit.gamma.xsts.promela.transformation.util.ArrayHandler
+import hu.bme.mit.gamma.xsts.promela.transformation.util.Configuration
 import hu.bme.mit.gamma.xsts.promela.transformation.util.HavocHandler
+import hu.bme.mit.gamma.xsts.promela.transformation.util.MessageQueueHandler
 import hu.bme.mit.gamma.xsts.promela.transformation.util.ParallelActionHandler
 import java.util.List
+import java.util.Map
 
 import static hu.bme.mit.gamma.xsts.promela.transformation.util.Namings.*
 
@@ -42,8 +48,15 @@ class ModelSerializer {
 	public static ModelSerializer INSTANCE = new ModelSerializer
 	protected new() {}
 	//
+	
+	protected final Map<Declaration, String> names = newHashMap
+	
+	//
 	protected final extension DeclarationSerializer declarationSerializer = DeclarationSerializer.INSTANCE
 	protected final extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
+	protected final extension TypeSerializer typeSerializer = TypeSerializer.INSTANCE
+	protected final extension MessageQueueHandler queueHandler = MessageQueueHandler.INSTANCE
+	protected final extension VariableGroupRetriever variableGroupRetriever = VariableGroupRetriever.INSTANCE
 	
 	protected final extension ParallelActionHandler parallelHandler = new ParallelActionHandler
 	protected final extension HavocHandler havocHandler = HavocHandler.INSTANCE
@@ -51,7 +64,11 @@ class ModelSerializer {
 	protected final extension ArrayHandler arrayHandler = ArrayHandler.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	
+	//
+	
 	def String serializePromela(XSTS xSts) {
+		xSts.customizeLocalVariableNames
+		
 		val initializingActions = xSts.initializingAction
 		val environmentalActions = xSts.environmentalAction
 		
@@ -66,7 +83,7 @@ class ModelSerializer {
 		
 		actions.createParallelMapping
 		
-		return '''
+		val model = '''
 			«xSts.serializeDeclaration»
 			
 			«serializeParallelChannels»
@@ -76,6 +93,7 @@ class ModelSerializer {
 			«serializeParallelProcesses»
 			
 			proctype EnvTrans() {
+				«xSts.serializeXrXs»
 				(flag > 0);
 				«isStableVariableName» = 1;
 			ENV:
@@ -84,13 +102,13 @@ class ModelSerializer {
 					«environmentalActions.serialize»
 					flag = 2;
 				};
-				goto TRANS;
-			TRANS:
+«««				goto TRANS; ««« The verification is faster if the ENV and TRANS are in different atomic blocks
+«««			TRANS:
 				atomic {
 					«transitions.serializeTransitions»
 					«isStableVariableName» = 1;
+					flag = 1;
 				};
-				flag = 1; ««« Out of the atomic block to prevent the creating of an entirely empty step
 				goto ENV;
 			}
 			
@@ -102,15 +120,43 @@ class ModelSerializer {
 				}
 			}
 		'''
+		
+		xSts.restoreLocalVariableNames
+		
+		return model
 	}
+	
+	//
+	// Second hash is needed as Promela does not support local variables with the same name in different scopes
+	protected def customizeLocalVariableNames(XSTS xSts) {
+		names.clear
+		for (localVariableAction : xSts.getAllContentsOfType(VariableDeclarationAction)) {
+			val localVariable = localVariableAction.variableDeclaration
+			val name = localVariable.name
+			names += localVariable -> name
+			
+			localVariable.name = localVariable.name + localVariable.hashCode.toString.replaceAll("-","_")
+		}
+	}
+	
+	protected def restoreLocalVariableNames(XSTS xSts) {
+		for (localVariableAction : xSts.getAllContentsOfType(VariableDeclarationAction)) {
+			val localVariable = localVariableAction.variableDeclaration
+			val name = names.get(localVariable)
+			
+			localVariable.name = name
+		}
+	}
+	
+	//
 	
 	protected def serializeTransitions(List<? extends XTransition> transitions) {
 		if (transitions.size > 1) {
 			return '''
 				if
-				«FOR transition : transitions»
-				:: «transition.action.serialize»
-				«ENDFOR»
+					«FOR transition : transitions»
+					:: «transition.action.serialize»
+					«ENDFOR»
 				fi;
 			'''
 		}
@@ -122,37 +168,56 @@ class ModelSerializer {
 	//
 	
 	protected def dispatch String serialize(AssumeAction action) '''
-		if
-		:: («action.assumption.serialize»);
-		fi;
+		if :: («action.assumption.serialize»); fi;
 	'''
 	
 	protected def dispatch String serialize(AssignmentAction action) {
+		// Native message queue handling
+		if (Configuration.HANDLE_NATIVE_MESSAGE_QUEUES) {
+			if (action.queueAction) {
+				return action.serializeQueueAction
+			}
+		}
+		//
 		// Promela does not support multidimensional arrays, so they need to be handled differently
 		// It also does not support the use of array init blocks in processes
 		val lhs = action.lhs
-		if (lhs.declaration.typeDefinition instanceof ArrayTypeDefinition) {
+		val declaration = lhs.declaration
+		if (declaration.typeDefinition instanceof ArrayTypeDefinition) {
 			return lhs.serializeArrayAssignment(action.rhs)
 		}
 		return '''«lhs.serialize» = «action.rhs.serialize»;'''
 	}
 	
-	protected def dispatch String serialize(VariableDeclarationAction action) '''
-		«action.variableDeclaration.serializeLocalVariableDeclaration»
-	'''
+	protected def dispatch String serialize(VariableDeclarationAction action) {
+		val variableDeclaration = action.variableDeclaration
+		// Native message queue handling
+		if (Configuration.HANDLE_NATIVE_MESSAGE_QUEUES) {
+			if (action.queueAction) {
+				val clonedVariableDeclaration = variableDeclaration.clone
+				clonedVariableDeclaration.expression = null
+				return '''
+					«clonedVariableDeclaration.serializeLocalVariableDeclaration»
+					«action.serializeQueueAction»
+				'''
+			}
+		}
+		//
+		return variableDeclaration.serializeLocalVariableDeclaration
+	}
 	
 	protected def dispatch String serialize(EmptyAction action) ''''''
 	
 	protected def dispatch String serialize(IfAction action) '''
 		if
-		:: «action.condition.serialize» -> 
-			«action.then.serialize»
-		«IF action.^else !== null && !(action.^else instanceof EmptyAction)»
-		:: else ->
-			«action.^else.serialize»
-		«ELSE»
-		:: else
-		«ENDIF»
+			:: «action.condition.serialize» ->
+				«action.then.serialize»
+			«IF action.^else !== null && !(action.^else instanceof EmptyAction)»
+				:: else ->
+					«action.^else.serialize»
+			«ELSE»
+				:: else
+			«ENDIF»
 		fi;
 	'''
 	
@@ -162,9 +227,9 @@ class ModelSerializer {
 		
 		return '''
 			if
-			«FOR element : xStsVariable.createSet»
-			:: «xStsVariable.name» = «element.serialize»;
-			«ENDFOR»
+				«FOR element : xStsVariable.createSet»
+					:: «xStsVariable.name» = «element.serialize»;
+				«ENDFOR»
 			fi;'''
 	}
 	
@@ -173,24 +238,30 @@ class ModelSerializer {
 		val left = action.range.getLeft(true)
 		val right = action.range.getRight(true)
 		return '''
-			int «name»;
+			local int «name»;
 			for («name» : «left.serialize»..«right.serialize») {
 				«action.action.serialize»
 			}
+			«name» = 0;
 		'''
 	}
 	
 	protected def dispatch String serialize(NonDeterministicAction action) '''
 		if
-		«FOR subaction : action.actions»
-		:: «subaction.serialize»
-		«ENDFOR»
+			«FOR subaction : action.actions»
+			:: «subaction.serialize»
+			«ENDFOR»
 		fi;
 	'''
 	
 	protected def dispatch String serialize(SequentialAction action) '''
 		«FOR subaction : action.actions»
-			«subaction.serialize»
+			«subaction.serializeD_stepBeginBrackets»
+			«subaction.serialize /* Original action*/»
+			«IF subaction.last»
+				«action.resetLocalVariableDeclarations»
+			«ENDIF»
+			«subaction.serializeD_stepCloseBrackets»
 		«ENDFOR»
 	'''
 	
@@ -199,15 +270,17 @@ class ModelSerializer {
 		val actionSize = actions.size
 		
 		if (actionSize > 1) {
+			val syncBitName = '''msg_parallel_«action.containmentLevel»_«action.indexOrZero»'''
 			return '''
 				«FOR index : 0 ..< actionSize»
 					run Parallel_«parallelMapping.get(actions)»_«index»(«actions.get(index).serializeParallelProcessCallArguments»);
 				«ENDFOR»
 				
+				local bit «syncBitName» = 0;
 				«FOR index : 0 ..< actionSize»
-					chan_parallel_«actions.getChanNumber(index)»?msg_parallel_«actions.getChanNumber(index)»;
-					msg_parallel_«actions.getChanNumber(index)» == 1;
-					msg_parallel_«actions.getChanNumber(index)» = 0;
+					chan_parallel_«actions.getChanNumber(index)» ? «syncBitName»;
+					«syncBitName» == 1;
+					«syncBitName» = 0;
 				«ENDFOR»
 			'''
 		}
@@ -218,7 +291,58 @@ class ModelSerializer {
 		}
 	}
 	
-	//
+	// xr, xs
+	
+	protected def serializeXrXs(XSTS xSts) {
+		// len(q) counts as a write/send, so xr and xs both can be asserted only if there are no pars
+		// Probably causes NO better performance as this info is utilized for ROP
+		if (Configuration.HANDLE_NATIVE_MESSAGE_QUEUES && !xSts.containsType(ParallelAction)) {
+			return '''
+				«FOR queue : xSts.messageQueueGroup.variables.filter[it.array]»
+					xr «queue.name»;
+					xs «queue.name»;
+				«ENDFOR»
+			'''
+		}
+		return ""
+	}
+	
+	// d_step
+	
+	val d_stepIncludedActions = #[AssertAction, AssignmentAction]
+	
+	protected def serializeD_stepBeginBrackets(Action action) {
+		if (!action.isContainedBy(ParallelAction) && d_stepIncludedActions.exists[it.isInstance(action)]) { // Correct type
+			if (action.first ||
+					!action.first && !d_stepIncludedActions.exists[it.isInstance(action.previous)]) {
+				// Could add another check - next one is also a good type to avoid single element d_steps
+				return "d_step {"
+			}
+		}
+		return "" // We serialize nothing
+	}
+	
+	protected def serializeD_stepCloseBrackets(Action action) {
+		if (!action.isContainedBy(ParallelAction) && d_stepIncludedActions.exists[it.isInstance(action)]) { // Correct type
+			// Potentially, action is already in the middle of the d_step block
+			if (action.last ||
+					!action.last && !d_stepIncludedActions.exists[it.isInstance(action.next)]) {
+				return "}"
+			}
+		}
+		return "" // We serialize nothing
+	}
+	
+	protected def resetLocalVariableDeclarations(SequentialAction action) {
+		val localVariableDeclarations = action.actions.filter(VariableDeclarationAction)
+		return '''
+			«FOR localVariableDeclaration : localVariableDeclarations»
+				«localVariableDeclaration.variableDeclaration.name» = «localVariableDeclaration.variableDeclaration.defaultExpression.serialize»;
+			«ENDFOR»
+		'''
+	}
+	
+	// Parallel
 	
 	protected def serializeParallelProcesses() '''
 		«FOR actions : parallelMapping.keySet SEPARATOR System.lineSeparator»
@@ -232,15 +356,14 @@ class ModelSerializer {
 			proctype Parallel_«index»_«i»(«actions.get(i).serializeParallelProcessesArguments») {
 				«actions.get(i).serialize»
 				
-				chan_parallel_«actions.getChanNumber(i)»!1;
+				chan_parallel_«actions.getChanNumber(i)» ! 1;
 			}
 		«ENDFOR»
 	'''
 	
 	protected def serializeParallelChannels() '''
-		«FOR index : 0 .. maxParallelNumber»
+		«FOR index : 0 ..< maxParallelNumber»
 			chan chan_parallel_«index» = [0] of { bit };
-			bit msg_parallel_«index» = 0;
 		«ENDFOR»
 	'''
 	

@@ -1,0 +1,283 @@
+import "../Static/Rigel.xsml";
+
+// TODO Kézzel átírni
+
+function Rigel createGqBegin() {
+	var Rigel gqBegin;
+	gqBegin.Header.Length = 10;
+	gqBegin.Header.Generation = 4;
+	gqBegin.Header.MessageType = RigelMsgType.RigelMsgGqBegin;
+	gqBegin.Header.ObjType = RigelObjType.Invalid;
+	gqBegin.Header.ObjId = 0;
+	gqBegin.Header.SafetyCode = 0;
+	return gqBegin;
+}
+
+function Rigel createGqEnd() {
+	var Rigel gqBegin;
+	gqBegin.Header.Length = 10;
+	gqBegin.Header.Generation = 4;
+	gqBegin.Header.MessageType = RigelMsgType.RigelMsgGqEnd;
+	gqBegin.Header.ObjType = RigelObjType.Invalid;
+	gqBegin.Header.ObjId = 0;
+	gqBegin.Header.SafetyCode = 0;
+	return gqBegin;
+}
+
+function Rigel createSq() {
+	var Rigel sqMsg;
+	sqMsg.Header.Length = 11;
+	sqMsg.Header.Generation = 4;
+	sqMsg.Header.MessageType = RigelMsgType.RigelMsgSq;
+	sqMsg.Header.ObjType = RigelObjType.Invalid;
+	sqMsg.Header.ObjId = 0;
+	sqMsg.Header.SafetyCode = 0;
+	sqMsg.Payload.sq.cause = RigelSQCause.NormalRequest;
+	return sqMsg;
+}
+
+function Rigel createInvalidateObj() {
+	var Rigel invObj;
+	invObj.Header.Length = 10;
+	invObj.Header.Generation = 4;
+	invObj.Header.MessageType = RigelMsgType.RigelMsgInvalidateObj;
+	invObj.Header.ObjType = RigelObjType.Jelzo;
+	invObj.Header.ObjId = 73170;
+	invObj.Header.SafetyCode = 0;
+	invObj.Payload.sq.cause = RigelSQCause.NormalRequest;
+	return invObj;
+}
+
+machine Diszpecser {
+	parameter int TimeDataPeriodic;
+	parameter int TimeDataTimeout;
+	parameter int TimeConnectionCheck;
+	
+	operation OrionDisconnToVk;
+	operation AllObjDataSent;
+	
+	port VezerloKozpontPort;
+	port ObjektumKezeloPort; // TODO: Objektumkezelőnként egy port
+	
+	parallel machine instance DiszpTeljesAdatLekerdezes teljesAdatLekerdezes;
+	parallel machine instance DiszpObjektumNyilvantarto objektumNyilvantarto; // TODO: Objektumkezelőnként egy DiszpObjektumNyilvantarto
+	
+	bool isObjOrionConnected;
+	
+	function void Perform_OrionDisconnToVk(){}
+	
+	function void Perform_OrionDisconnToObj(){}
+	
+	machine DiszpTeljesAdatLekerdezes {
+		initial state WaitForQuery {
+			event Rigel msg [msg.Header.MessageType == RigelMsgType.RigelMsgGq] from VezerloKozpontPort
+			{
+				var Rigel gqBeginMsg = createGqBegin();
+				send gqBeginMsg to VezerloKozpontPort;
+				change ProcessQuery;
+			}
+			
+			event Rigel msg [msg.Header.MessageType != RigelMsgType.RigelMsgGq] from VezerloKozpontPort
+			{
+				Perform_OrionDisconnToVk();
+			}
+		}
+		
+		state ProcessQuery {  
+			call OrionDisconnToVk {
+				change WaitForQuery;
+			}
+			
+			call AllObjDataSent {
+				var Rigel gqEndMsg = createGqEnd();
+				send gqEndMsg to VezerloKozpontPort;
+				change Connected;
+			}
+			
+			event Rigel msg from VezerloKozpontPort {
+				Perform_OrionDisconnToVk();
+				change WaitForQuery;
+			}
+		}
+		
+		state Connected {
+			event Rigel msg [msg.Header.MessageType == RigelMsgType.RigelMsgGqEnd] from VezerloKozpontPort
+			{
+				var Rigel gqBeginMsg = createGqBegin();
+				send gqBeginMsg to VezerloKozpontPort;
+				change ProcessQuery;
+			}
+			
+			event Rigel msg [msg.Header.MessageType == RigelMsgType.RigelMsgVkAlive] from VezerloKozpontPort
+			{
+				send msg to ObjektumKezeloPort;
+			}
+			
+			event Rigel msg [msg.Header.MessageType == RigelMsgType.RigelMsgGqBegin
+					|| msg.Header.MessageType == RigelMsgType.RigelMsgGqEnd
+					|| msg.Header.MessageType == RigelMsgType.RigelMsgSq
+					|| msg.Header.MessageType == RigelMsgType.RigelMsgAnsTs1
+					|| msg.Header.MessageType == RigelMsgType.RigelMsgAnsTs2
+					|| msg.Header.MessageType == RigelMsgType.RigelMsgData
+					|| msg.Header.MessageType == RigelMsgType.RigelMsgCommandResult
+					|| msg.Header.MessageType == RigelMsgType.RigelMsgCommandConfirmResult
+				] from VezerloKozpontPort
+			{
+				Perform_OrionDisconnToVk();
+				change WaitForQuery;
+			}
+		}
+	}
+	
+	machine DiszpObjektumNyilvantarto {
+		initial state WaitForVK {
+			event Rigel msg [msg.Header.MessageType == RigelMsgType.RigelMsgGq] from VezerloKozpontPort
+			{
+				change VkActive;
+			}
+		}
+		
+		state VkActive {
+			event Rigel msg [msg.Header.MessageType == RigelMsgType.RigelMsgGq
+				|| msg.Header.MessageType == RigelMsgType.RigelMsgGqBegin
+				|| msg.Header.MessageType == RigelMsgType.RigelMsgGqEnd
+				|| msg.Header.MessageType == RigelMsgType.RigelMsgReqTs1
+				|| msg.Header.MessageType == RigelMsgType.RigelMsgReqTs2
+				|| msg.Header.MessageType == RigelMsgType.RigelMsgCommand
+				|| msg.Header.MessageType == RigelMsgType.RigelMsgCommandConfirm
+				|| msg.Header.MessageType == RigelMsgType.RigelMsgInvalidateObj
+				|| msg.Header.MessageType == RigelMsgType.RigelMsgSq
+				|| msg.Header.MessageType == RigelMsgType.RigelMsgVkAlive
+			] from ObjektumKezeloPort {
+				Perform_OrionDisconnToObj();
+				var Rigel invalidateObjMsg = createInvalidateObj();
+				send invalidateObjMsg to VezerloKozpontPort;
+				change ObjectConnectionInProgress.CollectDataRepeat;
+			}
+			
+			initial state ObjectConnectionInProgress {
+				initial state CollectData {
+					timeout after (TimeDataTimeout) {
+						var Rigel invObj = createInvalidateObj();
+						send invObj to VezerloKozpontPort;
+						change CollectDataRepeat;
+					}
+					
+					initial state WaitObjConnection {
+						timeout after (1)
+						{
+							if (isObjOrionConnected)
+							{
+								var Rigel sqMsg = createSq();
+								send sqMsg to ObjektumKezeloPort;
+								change WaitData;
+							}
+						}
+					}
+					
+					state WaitData {
+						
+					}
+				}
+				
+				state CollectDataRepeat {
+					timeout after (TimeDataTimeout) {
+						change CollectDataRepeat;
+					}
+					
+					initial state WaitObjConnectionRepeat {
+						timeout after (1)
+						{
+							if (isObjOrionConnected)
+							{
+								var Rigel sqMsg = createSq();
+								send sqMsg to ObjektumKezeloPort;
+								change WaitDatatRepeat;
+							}
+						}
+					}
+					
+					state WaitDatatRepeat {
+						
+					}
+				}
+			}
+			
+			state Connected {
+				parallel machine instance ObjVkTransmissionMachine objVkTransmission;
+				parallel machine instance VkObjTransmissionMachine vkObjTransmission;
+				parallel machine instance PeriodicQueryMachine periodicQuery;
+				machine ObjVkTransmissionMachine {
+					initial state ObjVkTransmission {
+						event Rigel msg [msg.Header.MessageType == RigelMsgType.RigelMsgData] from ObjektumKezeloPort
+						{
+							send msg to VezerloKozpontPort;
+							change ObjVkTransmission;
+						}
+						
+						event Rigel msg [msg.Header.MessageType == RigelMsgType.RigelMsgAnsTs1] from ObjektumKezeloPort
+						{
+							send msg to VezerloKozpontPort;
+							change ObjVkTransmission;
+						}
+						
+						event Rigel msg [msg.Header.MessageType == RigelMsgType.RigelMsgAnsTs2] from ObjektumKezeloPort
+						{
+							send msg to VezerloKozpontPort;
+							change ObjVkTransmission;
+						}
+						
+						event Rigel msg [msg.Header.MessageType == RigelMsgType.RigelMsgCommandResult] from ObjektumKezeloPort
+						{
+							send msg to VezerloKozpontPort;
+							change ObjVkTransmission;
+						}
+						
+						event Rigel msg [msg.Header.MessageType == RigelMsgType.RigelMsgCommandConfirmResult] from ObjektumKezeloPort
+						{
+							send msg to VezerloKozpontPort;
+							change ObjVkTransmission;
+						}
+					}
+				}
+				
+				machine VkObjTransmissionMachine {
+					initial state VkObjTransmission {
+						event Rigel msg [msg.Header.MessageType == RigelMsgType.RigelMsgReqTs1] from VezerloKozpontPort
+						{
+							send msg to ObjektumKezeloPort;
+							change VkObjTransmission;
+						}
+						
+						event Rigel msg [msg.Header.MessageType == RigelMsgType.RigelMsgReqTs2] from VezerloKozpontPort
+						{
+							send msg to ObjektumKezeloPort;
+							change VkObjTransmission;
+						}
+						
+						event Rigel msg [msg.Header.MessageType == RigelMsgType.RigelMsgCommand] from VezerloKozpontPort
+						{
+							send msg to ObjektumKezeloPort;
+							change VkObjTransmission;
+						}
+						
+						event Rigel msg [msg.Header.MessageType == RigelMsgType.RigelMsgCommandConfirm] from VezerloKozpontPort
+						{
+							send msg to ObjektumKezeloPort;
+							change VkObjTransmission;
+						}
+					}
+				}
+				
+				machine PeriodicQueryMachine {
+					initial state PeriodicQuery {
+						timeout after (TimeDataPeriodic) {
+							var Rigel sqMsg = createSq();
+							send sqMsg to ObjektumKezeloPort;
+						}
+					}
+				}
+			}
+		}
+	}
+}

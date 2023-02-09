@@ -32,7 +32,7 @@ analysis {
 	interaction-coverage
 	constraint : {
 		minimum-orchestrating-period : 499 ms
-		maximum-orchestrating-period : 499 ms
+		maximum-orchestrating-period : 501 ms
 	}
 }
 

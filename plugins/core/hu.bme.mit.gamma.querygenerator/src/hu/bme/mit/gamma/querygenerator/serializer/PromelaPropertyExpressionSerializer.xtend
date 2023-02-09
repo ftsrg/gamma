@@ -12,6 +12,7 @@ package hu.bme.mit.gamma.querygenerator.serializer
 
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
 import hu.bme.mit.gamma.expression.model.Expression
+import hu.bme.mit.gamma.expression.model.IfThenElseExpression
 import hu.bme.mit.gamma.xsts.promela.transformation.util.Namings
 
 class PromelaPropertyExpressionSerializer extends ThetaPropertyExpressionSerializer {
@@ -26,4 +27,11 @@ class PromelaPropertyExpressionSerializer extends ThetaPropertyExpressionSeriali
 		}
 		return super.serialize(expression)
 	}
+	
+	//
+	
+	override protected serializeIfThenElseExpression(IfThenElseExpression expression) {
+		return '''(«expression.condition.serialize» -> «expression.then.serialize» : «expression.^else.serialize»)'''
+	}
+	
 }

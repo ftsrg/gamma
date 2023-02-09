@@ -7,39 +7,75 @@
       </controlSpecifications>
       <messageQueues name="MQ">
         <capacity xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1"/>
-        <eventReferences xsi:type="hu.bme.mit.gamma.statechart:AnyPortEventReference" port="/0/@components.1/@ports.0"/>
-        <eventReferences xsi:type="hu.bme.mit.gamma.statechart:AnyPortEventReference" port="/0/@components.1/@ports.1"/>
-        <eventReferences xsi:type="hu.bme.mit.gamma.statechart:AnyPortEventReference" port="/0/@components.1/@ports.2"/>
-        <eventReferences xsi:type="hu.bme.mit.gamma.statechart:AnyPortEventReference" port="/0/@components.1/@ports.3"/>
-        <eventReferences xsi:type="hu.bme.mit.gamma.statechart:AnyPortEventReference" port="/0/@components.1/@ports.4"/>
-        <eventReferences xsi:type="hu.bme.mit.gamma.statechart:AnyPortEventReference" port="/0/@components.1/@ports.5"/>
-        <eventReferences xsi:type="hu.bme.mit.gamma.statechart:AnyPortEventReference" port="/0/@components.1/@ports.6"/>
-        <eventReferences xsi:type="hu.bme.mit.gamma.statechart:AnyPortEventReference" port="/0/@components.1/@ports.7"/>
-        <eventReferences xsi:type="hu.bme.mit.gamma.statechart:AnyPortEventReference" port="/0/@components.1/@ports.8"/>
-        <eventReferences xsi:type="hu.bme.mit.gamma.statechart:AnyPortEventReference" port="/0/@components.1/@ports.9"/>
-        <eventReferences xsi:type="hu.bme.mit.gamma.statechart:AnyPortEventReference" port="/0/@components.1/@ports.10"/>
-        <eventReferences xsi:type="hu.bme.mit.gamma.statechart:AnyPortEventReference" port="/0/@components.1/@ports.11"/>
-        <eventReferences xsi:type="hu.bme.mit.gamma.statechart:AnyPortEventReference" port="/0/@components.1/@ports.12"/>
-        <eventReferences xsi:type="hu.bme.mit.gamma.statechart:AnyPortEventReference" port="/0/@components.1/@ports.13"/>
-        <eventReferences xsi:type="hu.bme.mit.gamma.statechart:AnyPortEventReference" port="/0/@components.1/@ports.14"/>
-        <eventReferences xsi:type="hu.bme.mit.gamma.statechart:AnyPortEventReference" port="/0/@components.1/@ports.15"/>
-        <eventReferences xsi:type="hu.bme.mit.gamma.statechart:AnyPortEventReference" port="/0/@components.1/@ports.16"/>
-        <eventReferences xsi:type="hu.bme.mit.gamma.statechart:AnyPortEventReference" port="/0/@components.1/@ports.17"/>
-        <eventReferences xsi:type="hu.bme.mit.gamma.statechart:AnyPortEventReference" port="/0/@components.1/@ports.18"/>
-        <eventReferences xsi:type="hu.bme.mit.gamma.statechart:AnyPortEventReference" port="/0/@components.1/@ports.19"/>
-        <eventReferences xsi:type="hu.bme.mit.gamma.statechart:AnyPortEventReference" port="/0/@components.1/@ports.20"/>
-        <eventReferences xsi:type="hu.bme.mit.gamma.statechart:AnyPortEventReference" port="/0/@components.1/@ports.21"/>
-        <eventReferences xsi:type="hu.bme.mit.gamma.statechart:AnyPortEventReference" port="/0/@components.1/@ports.22"/>
-        <eventReferences xsi:type="hu.bme.mit.gamma.statechart:AnyPortEventReference" port="/0/@components.1/@ports.23"/>
-        <eventReferences xsi:type="hu.bme.mit.gamma.statechart:AnyPortEventReference" port="/0/@components.1/@ports.24"/>
-        <eventReferences xsi:type="hu.bme.mit.gamma.statechart:AnyPortEventReference" port="/0/@components.1/@ports.25"/>
-        <eventReferences xsi:type="hu.bme.mit.gamma.statechart:AnyPortEventReference" port="/0/@components.1/@ports.26"/>
-        <eventReferences xsi:type="hu.bme.mit.gamma.statechart:AnyPortEventReference" port="/0/@components.1/@ports.27"/>
-        <eventReferences xsi:type="hu.bme.mit.gamma.statechart:AnyPortEventReference" port="/0/@components.1/@ports.28"/>
-        <eventReferences xsi:type="hu.bme.mit.gamma.statechart:AnyPortEventReference" port="/0/@components.1/@ports.29"/>
-        <eventReferences xsi:type="hu.bme.mit.gamma.statechart:AnyPortEventReference" port="/0/@components.1/@ports.30"/>
-        <eventReferences xsi:type="hu.bme.mit.gamma.statechart:AnyPortEventReference" port="/0/@components.1/@ports.31"/>
-        <eventReferences xsi:type="hu.bme.mit.gamma.statechart:AnyPortEventReference" port="/0/@components.1/@ports.32"/>
+        <eventPassings>
+        <source xsi:type="hu.bme.mit.gamma.statechart:AnyPortEventReference" port="/0/@components.1/@ports.0"/>
+        </eventPassings>
+        <eventPassings>
+        <source xsi:type="hu.bme.mit.gamma.statechart:AnyPortEventReference" port="/0/@components.1/@ports.1"/>
+                </eventPassings>
+        <eventPassings>
+        <source xsi:type="hu.bme.mit.gamma.statechart:AnyPortEventReference" port="/0/@components.1/@ports.2"/>
+                </eventPassings>
+        <eventPassings><source xsi:type="hu.bme.mit.gamma.statechart:AnyPortEventReference" port="/0/@components.1/@ports.3"/>
+                </eventPassings>
+        <eventPassings><source xsi:type="hu.bme.mit.gamma.statechart:AnyPortEventReference" port="/0/@components.1/@ports.4"/>
+                </eventPassings>
+        <eventPassings><source xsi:type="hu.bme.mit.gamma.statechart:AnyPortEventReference" port="/0/@components.1/@ports.5"/>
+                </eventPassings>
+        <eventPassings><source xsi:type="hu.bme.mit.gamma.statechart:AnyPortEventReference" port="/0/@components.1/@ports.6"/>
+                </eventPassings>
+        <eventPassings><source xsi:type="hu.bme.mit.gamma.statechart:AnyPortEventReference" port="/0/@components.1/@ports.7"/>
+                </eventPassings>
+        <eventPassings><source xsi:type="hu.bme.mit.gamma.statechart:AnyPortEventReference" port="/0/@components.1/@ports.8"/>
+                </eventPassings>
+        <eventPassings><source xsi:type="hu.bme.mit.gamma.statechart:AnyPortEventReference" port="/0/@components.1/@ports.9"/>
+                </eventPassings>
+        <eventPassings><source xsi:type="hu.bme.mit.gamma.statechart:AnyPortEventReference" port="/0/@components.1/@ports.10"/>
+                </eventPassings>
+        <eventPassings><source xsi:type="hu.bme.mit.gamma.statechart:AnyPortEventReference" port="/0/@components.1/@ports.11"/>
+                </eventPassings>
+        <eventPassings><source xsi:type="hu.bme.mit.gamma.statechart:AnyPortEventReference" port="/0/@components.1/@ports.12"/>
+               </eventPassings>
+        <eventPassings> <source xsi:type="hu.bme.mit.gamma.statechart:AnyPortEventReference" port="/0/@components.1/@ports.13"/>
+                </eventPassings>
+        <eventPassings><source xsi:type="hu.bme.mit.gamma.statechart:AnyPortEventReference" port="/0/@components.1/@ports.14"/>
+                </eventPassings>
+        <eventPassings><source xsi:type="hu.bme.mit.gamma.statechart:AnyPortEventReference" port="/0/@components.1/@ports.15"/>
+                </eventPassings>
+        <eventPassings><source xsi:type="hu.bme.mit.gamma.statechart:AnyPortEventReference" port="/0/@components.1/@ports.16"/>
+                </eventPassings>
+        <eventPassings><source xsi:type="hu.bme.mit.gamma.statechart:AnyPortEventReference" port="/0/@components.1/@ports.17"/>
+                </eventPassings>
+        <eventPassings><source xsi:type="hu.bme.mit.gamma.statechart:AnyPortEventReference" port="/0/@components.1/@ports.18"/>
+                </eventPassings>
+        <eventPassings><source xsi:type="hu.bme.mit.gamma.statechart:AnyPortEventReference" port="/0/@components.1/@ports.19"/>
+                </eventPassings>
+        <eventPassings><source xsi:type="hu.bme.mit.gamma.statechart:AnyPortEventReference" port="/0/@components.1/@ports.20"/>
+               </eventPassings>
+        <eventPassings> <source xsi:type="hu.bme.mit.gamma.statechart:AnyPortEventReference" port="/0/@components.1/@ports.21"/>
+               </eventPassings>
+        <eventPassings> <source xsi:type="hu.bme.mit.gamma.statechart:AnyPortEventReference" port="/0/@components.1/@ports.22"/>
+             </eventPassings>
+        <eventPassings>   <source xsi:type="hu.bme.mit.gamma.statechart:AnyPortEventReference" port="/0/@components.1/@ports.23"/>
+             </eventPassings>
+        <eventPassings>   <source xsi:type="hu.bme.mit.gamma.statechart:AnyPortEventReference" port="/0/@components.1/@ports.24"/>
+              </eventPassings>
+        <eventPassings>  <source xsi:type="hu.bme.mit.gamma.statechart:AnyPortEventReference" port="/0/@components.1/@ports.25"/>
+             </eventPassings>
+        <eventPassings>   <source xsi:type="hu.bme.mit.gamma.statechart:AnyPortEventReference" port="/0/@components.1/@ports.26"/>
+             </eventPassings>
+        <eventPassings>   <source xsi:type="hu.bme.mit.gamma.statechart:AnyPortEventReference" port="/0/@components.1/@ports.27"/>
+             </eventPassings>
+        <eventPassings>   <source xsi:type="hu.bme.mit.gamma.statechart:AnyPortEventReference" port="/0/@components.1/@ports.28"/>
+              </eventPassings>
+        <eventPassings>  <source xsi:type="hu.bme.mit.gamma.statechart:AnyPortEventReference" port="/0/@components.1/@ports.29"/>
+               </eventPassings>
+        <eventPassings> <source xsi:type="hu.bme.mit.gamma.statechart:AnyPortEventReference" port="/0/@components.1/@ports.30"/>
+               </eventPassings>
+        <eventPassings> <source xsi:type="hu.bme.mit.gamma.statechart:AnyPortEventReference" port="/0/@components.1/@ports.31"/>
+              </eventPassings>
+        <eventPassings>  <source xsi:type="hu.bme.mit.gamma.statechart:AnyPortEventReference" port="/0/@components.1/@ports.32"/>
+              </eventPassings>
       </messageQueues>
       <wrappedComponent name="Procedure_Executive_and_Analysis_SoftwareSyncWrap" type="/0/@components.1"/>
     </components>

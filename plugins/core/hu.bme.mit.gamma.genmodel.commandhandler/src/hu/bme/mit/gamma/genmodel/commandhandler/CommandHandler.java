@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -43,6 +43,7 @@ public class CommandHandler extends AbstractHandler {
 										IFile file = (IFile) selection.getFirstElement();
 										GammaApi gammaApi = new GammaApi();
 										gammaApi.run(file.getFullPath().toString());
+										// new TaskExecutionTimeMeasurer(10, false, MedianCalculator.INSTANCE, "time.txt", TimeUnit.SECONDS)
 									}
 								}
 							}

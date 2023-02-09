@@ -1,3 +1,4 @@
+include "EventPassing/EventPassing.ggen"
 include "Crossroads/Crossroad.ggen"
 include "ParallelRegion/ParallelRegion.ggen"
 include "PIL/PIL.ggen"

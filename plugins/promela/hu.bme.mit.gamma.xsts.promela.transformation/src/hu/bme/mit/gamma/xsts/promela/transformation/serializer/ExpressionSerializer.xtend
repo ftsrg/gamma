@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022 Contributors to the Gamma project
+ * Copyright (c) 2022-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -15,10 +15,13 @@ import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.DivExpression
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
+import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.IfThenElseExpression
 import hu.bme.mit.gamma.expression.model.ModExpression
 import hu.bme.mit.gamma.expression.model.NotExpression
 import hu.bme.mit.gamma.expression.util.ExpressionTypeDeterminator2
+import hu.bme.mit.gamma.xsts.promela.transformation.util.Configuration
+import hu.bme.mit.gamma.xsts.promela.transformation.util.MessageQueueHandler
 
 import static extension hu.bme.mit.gamma.xsts.promela.transformation.util.Namings.*
 
@@ -26,8 +29,12 @@ class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSe
 	// Singleton
 	public static final ExpressionSerializer INSTANCE = new ExpressionSerializer
 	protected new() {}
+	//
 	
+	protected final extension MessageQueueHandler messageQueueHandler = MessageQueueHandler.INSTANCE
 	protected final extension ExpressionTypeDeterminator2 expressionTypeDeterminator = ExpressionTypeDeterminator2.INSTANCE
+	
+	//
 	
 	override String _serialize(IfThenElseExpression expression) '''(«expression.condition.serialize» -> («expression.then.serialize») : («expression.^else.serialize»))'''
 	
@@ -44,4 +51,16 @@ class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSe
 	override String _serialize(ArrayLiteralExpression expression) '''{ «FOR operand : expression.operands SEPARATOR ', '»«operand.serialize»«ENDFOR» }'''
 	
 	override String _serialize(DirectReferenceExpression expression)  '''«expression.declaration.name»'''
+	
+	//
+	
+	override String serialize(Expression expression) {
+		if (Configuration.HANDLE_NATIVE_MESSAGE_QUEUES) {
+			if (expression.queueExpression) {
+				return expression.serializeQueueExpression
+			}
+		}
+		return super.serialize(expression)
+	}
+	
 }

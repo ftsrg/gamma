@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022 Contributors to the Gamma project
+ * Copyright (c) 2022-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -29,7 +29,9 @@ class Gamma2XstsPromelaTransformerSerializer {
 	protected final List<Expression> arguments
 	protected final String targetFolderUri
 	protected final String fileName
-	protected final Integer schedulingConstraint
+	
+	protected final Integer minSchedulingConstraint
+	protected final Integer maxSchedulingConstraint
 	// Configuration
 	protected final boolean optimize
 	protected final TransitionMerging transitionMerging
@@ -56,7 +58,7 @@ class Gamma2XstsPromelaTransformerSerializer {
 	new(Component component, List<Expression> arguments,
 			String targetFolderUri, String fileName,
 			Integer schedulingConstraint) {
-		this(component, arguments, targetFolderUri, fileName, schedulingConstraint,
+		this(component, arguments, targetFolderUri, fileName, schedulingConstraint, schedulingConstraint,
 			true, TransitionMerging.HIERARCHICAL,
 			null, new AnnotatablePreprocessableElements(
 				null, null, null, null, null,
@@ -69,7 +71,7 @@ class Gamma2XstsPromelaTransformerSerializer {
 	
 	new(Component component, List<Expression> arguments,
 			String targetFolderUri, String fileName,
-			Integer schedulingConstraint,
+			Integer minSchedulingConstraint, Integer maxSchedulingConstraint,
 			boolean optimize,
 			TransitionMerging transitionMerging,
 			PropertyPackage slicingProperties,
@@ -79,7 +81,8 @@ class Gamma2XstsPromelaTransformerSerializer {
 		this.arguments = arguments
 		this.targetFolderUri = targetFolderUri
 		this.fileName = fileName
-		this.schedulingConstraint = schedulingConstraint
+		this.minSchedulingConstraint = minSchedulingConstraint
+		this.maxSchedulingConstraint = maxSchedulingConstraint
 		//
 		this.optimize = optimize
 		this.transitionMerging = transitionMerging
@@ -95,8 +98,8 @@ class Gamma2XstsPromelaTransformerSerializer {
 	def execute() {
 		val xStsTransformer = new Gamma2XstsTransformerSerializer(component,
 			arguments, targetFolderUri,
-			fileName, schedulingConstraint,
-			optimize, false,
+			fileName, minSchedulingConstraint, maxSchedulingConstraint,
+			optimize, true, // Optimize arrays?
 			transitionMerging,
 			slicingProperties, annotatableElements,
 			initialState, initialStateSetting)

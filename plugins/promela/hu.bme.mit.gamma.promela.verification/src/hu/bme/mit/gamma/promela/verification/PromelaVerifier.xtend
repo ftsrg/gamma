@@ -79,7 +79,7 @@ class PromelaVerifier extends AbstractVerifier {
 			
 			// spin -search -a PromelaFile.pml
 			val splitParameters = parameters.split("\\s+")
-			val searchCommand = #["spin"] + splitParameters + #[modelFile.canonicalPath.escapePath]
+			val searchCommand = #["spin"] + splitParameters + #[modelFile.name /* see exec wokr-dir */]
 			
 			// trail file
 			val trailFile = new File(modelFile.trailFile)
@@ -119,7 +119,7 @@ class PromelaVerifier extends AbstractVerifier {
 			super.result = super.result.adaptResult
 			
 			// spin -t -p -g -l -w PromelaFile.pml
-			val traceCommand = #["spin", "-t", "-p", "-g", "-l", "-w", modelFile.canonicalPath.escapePath]
+			val traceCommand = #["spin", "-t", "-p", "-g", /*"-l",*/ "-w", modelFile.name /* see exec wokr-dir */]
 			
 			// Never claim file
 			val nvrFile = new File(execFolder, "_spin_nvr.tmp")

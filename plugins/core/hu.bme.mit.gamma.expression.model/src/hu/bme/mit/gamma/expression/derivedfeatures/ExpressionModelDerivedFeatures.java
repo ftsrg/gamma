@@ -27,6 +27,7 @@ import hu.bme.mit.gamma.expression.model.ClockVariableDeclarationAnnotation;
 import hu.bme.mit.gamma.expression.model.ConstantDeclaration;
 import hu.bme.mit.gamma.expression.model.DecimalTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Declaration;
+import hu.bme.mit.gamma.expression.model.DeclarationReferenceAnnotation;
 import hu.bme.mit.gamma.expression.model.DefaultExpression;
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.ElseExpression;
@@ -44,8 +45,11 @@ import hu.bme.mit.gamma.expression.model.FunctionDeclaration;
 import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression;
 import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression;
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition;
+import hu.bme.mit.gamma.expression.model.InternalParameterDeclarationAnnotation;
+import hu.bme.mit.gamma.expression.model.InternalVariableDeclarationAnnotation;
 import hu.bme.mit.gamma.expression.model.LambdaDeclaration;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
+import hu.bme.mit.gamma.expression.model.ParameterDeclarationAnnotation;
 import hu.bme.mit.gamma.expression.model.ParametricElement;
 import hu.bme.mit.gamma.expression.model.RationalTypeDefinition;
 import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
@@ -161,6 +165,16 @@ public class ExpressionModelDerivedFeatures {
 		return null;
 	}
 	
+	public static boolean isInternal(ParameterDeclaration parameter) {
+		// Not assignable by the environment, only internal components
+		return hasAnnotation(parameter, InternalParameterDeclarationAnnotation.class);
+	}
+	
+	public static boolean hasAnnotation(ParameterDeclaration parameter,
+			Class<? extends ParameterDeclarationAnnotation> annotation) {
+		return parameter.getAnnotations().stream().anyMatch(it -> annotation.isInstance(it));
+	}
+	
 	public static boolean isTransient(VariableDeclaration variable) {
 		// Can be reset as the last action of the component (before entering a stable state)
 		return hasAnnotation(variable, TransientVariableDeclarationAnnotation.class);
@@ -188,9 +202,29 @@ public class ExpressionModelDerivedFeatures {
 		return hasAnnotation(variable, ScheduledClockVariableDeclarationAnnotation.class);
 	}
 	
+	public static boolean isInternal(VariableDeclaration variable) {
+		// Derived from an internal parameter (not assignable by the environment, only internal components)
+		return hasAnnotation(variable, InternalVariableDeclarationAnnotation.class);
+	}
+	
 	public static boolean hasAnnotation(VariableDeclaration variable,
 			Class<? extends VariableDeclarationAnnotation> annotation) {
 		return variable.getAnnotations().stream().anyMatch(it -> annotation.isInstance(it));
+	}
+	
+	public static List<DeclarationReferenceAnnotation> getDeclarationReferenceAnnotations(VariableDeclaration variable) {
+		List<DeclarationReferenceAnnotation> annotations = new ArrayList<DeclarationReferenceAnnotation>();
+		for (VariableDeclarationAnnotation annotation : variable.getAnnotations()) {
+			if (annotation instanceof DeclarationReferenceAnnotation referenceAnnotation) {
+				annotations.add(referenceAnnotation);
+			}
+		}
+		return annotations;
+	}
+	
+	public static DeclarationReferenceAnnotation getDeclarationReferenceAnnotation(VariableDeclaration variable) {
+		List<DeclarationReferenceAnnotation> declarationReferenceAnnotations = getDeclarationReferenceAnnotations(variable);
+		return javaUtil.getOnlyElement(declarationReferenceAnnotations);
 	}
 	
 	public static List<VariableDeclaration> filterVariablesByAnnotation(

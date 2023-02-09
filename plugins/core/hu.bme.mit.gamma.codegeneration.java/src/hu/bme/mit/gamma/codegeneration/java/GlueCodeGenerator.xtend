@@ -25,7 +25,7 @@ import hu.bme.mit.gamma.codegeneration.java.util.TimerServiceCodeGenerator
 import hu.bme.mit.gamma.codegeneration.java.util.TimingDeterminer
 import hu.bme.mit.gamma.codegeneration.java.util.TypeDeclarationGenerator
 import hu.bme.mit.gamma.codegeneration.java.util.VirtualTimerServiceCodeGenerator
-import hu.bme.mit.gamma.statechart.composite.ScheduledAsynchronousCompositeComponent
+import hu.bme.mit.gamma.statechart.composite.AsynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
@@ -362,7 +362,7 @@ class GlueCodeGenerator {
 				val interfaceCode = it.asynchronousCompositeComponent.generateComponentInterface
 				interfaceCode.saveCode(compositeSystemUri + File.separator + it.asynchronousCompositeComponent.generatePortOwnerInterfaceName + ".java")
 				
-				if (it.asynchronousCompositeComponent instanceof ScheduledAsynchronousCompositeComponent) {
+				if (it.asynchronousCompositeComponent instanceof AsynchronousCompositeComponent) {
 					// Generating the reflective class
 					val reflectiveCode = it.asynchronousCompositeComponent.generateReflectiveClass
 					reflectiveCode.saveCode(compositeSystemUri + File.separator + it.asynchronousCompositeComponent.reflectiveClassName + ".java")

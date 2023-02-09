@@ -28,7 +28,6 @@ class ThetaVerifier extends AbstractVerifier {
 	final String ENVIRONMENT_VARIABLE_FOR_THETA_JAR = "THETA_XSTS_CLI_PATH"
 	
 	final String SAFE = "SafetyResult Safe"
-	final String UNSAFE = "SafetyResult Unsafe"	
 	
 	override Result verifyQuery(Object traceability, String parameters, File modelFile, String query) {
 		var Result result = null
@@ -98,8 +97,8 @@ class ThetaVerifier extends AbstractVerifier {
 				super.result = ThreeStateBoolean.FALSE
 			}
 			else {
-				// Some kind of error
-				throw new IllegalArgumentException(line) // TODO temporary
+				// Some kind of error or interruption by another (winner) process
+				logger.log(Level.WARNING, line)
 			}
 			// Adapting result
 			super.result = super.result.adaptResult
@@ -109,7 +108,6 @@ class ThetaVerifier extends AbstractVerifier {
 			}
 			val gammaPackage = traceability as Package
 			traceFileScanner = new Scanner(traceFile)
-			val trace = gammaPackage.backAnnotate(traceFileScanner)				
 			return new Result(result, trace)
 		} finally {
 			if (resultReader !== null) {

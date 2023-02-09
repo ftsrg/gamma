@@ -1,0 +1,13 @@
+import "RigelSystem.gcd"
+
+analysis {
+	component : RigelSystem(1, /*2*/ -1)
+	language : Promela
+	constraint : {
+		top : {
+			minimum-orchestrating-period : 1 ms // Must match the first argument of the adapter
+			maximum-orchestrating-period : 1 ms
+		}
+	}
+	transition-coverage
+}

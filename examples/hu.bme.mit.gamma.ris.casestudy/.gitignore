@@ -1,0 +1,16 @@
+/bin/*
+*.gsm
+*.uppaal
+*.g2u
+*.y2g
+*.xml
+*.qq
+*.lgsm
+*.gsts
+*.l2s
+*.xsts
+*.cex
+*.gpd
+*.pd
+*.txt
+!/measurement-results/*/*.txt

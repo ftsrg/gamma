@@ -39,6 +39,7 @@
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//Component/parentPackage"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//Component/parameterDeclarations"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//Component/eventDeclarations"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//Component/annotations"/>
     </genClasses>
     <genClasses ecoreClass="model.ecore#//SynchronousComponent"/>
     <genClasses ecoreClass="model.ecore#//AsynchronousComponent"/>
@@ -98,5 +99,8 @@
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//StateReferenceExpression/region"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//StateReferenceExpression/state"/>
     </genClasses>
+    <genClasses image="false" ecoreClass="model.ecore#//ComponentAnnotation"/>
+    <genClasses image="false" ecoreClass="model.ecore#//StatechartAnnotation"/>
+    <genClasses ecoreClass="model.ecore#//RunUponExternalEventAnnotation"/>
   </genPackages>
 </genmodel:GenModel>

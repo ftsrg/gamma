@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -35,7 +35,9 @@ class Gamma2XstsTransformerSerializer {
 	protected final List<Expression> arguments
 	protected final String targetFolderUri
 	protected final String fileName
-	protected final Integer schedulingConstraint
+	
+	protected final Integer minSchedulingConstraint
+	protected final Integer maxSchedulingConstraint
 	// Configuration
 	protected final boolean optimize
 	protected final boolean optimizeArray
@@ -66,7 +68,7 @@ class Gamma2XstsTransformerSerializer {
 	new(Component component, List<Expression> arguments,
 			String targetFolderUri, String fileName,
 			Integer schedulingConstraint) {
-		this(component, arguments, targetFolderUri, fileName, schedulingConstraint,
+		this(component, arguments, targetFolderUri, fileName, schedulingConstraint, schedulingConstraint,
 			true, false, TransitionMerging.HIERARCHICAL,
 			null, new AnnotatablePreprocessableElements(null, null, null, null, null,
 				InteractionCoverageCriterion.EVERY_INTERACTION, InteractionCoverageCriterion.EVERY_INTERACTION,
@@ -77,7 +79,7 @@ class Gamma2XstsTransformerSerializer {
 	
 	new(Component component, List<Expression> arguments,
 			String targetFolderUri, String fileName,
-			Integer schedulingConstraint,
+			Integer minSchedulingConstraint, Integer maxSchedulingConstraint,
 			boolean optimize, boolean optimizeArray,
 			TransitionMerging transitionMerging,
 			PropertyPackage slicingProperties,
@@ -87,7 +89,8 @@ class Gamma2XstsTransformerSerializer {
 		this.arguments = arguments
 		this.targetFolderUri = targetFolderUri
 		this.fileName = fileName
-		this.schedulingConstraint = schedulingConstraint
+		this.minSchedulingConstraint = minSchedulingConstraint
+		this.maxSchedulingConstraint = maxSchedulingConstraint
 		//
 		this.optimize = optimize
 		this.optimizeArray = optimizeArray
@@ -115,7 +118,7 @@ class Gamma2XstsTransformerSerializer {
 				targetFolderUri, fileName)
 		slicerAnnotatorAndPropertyGenerator.execute
 		val gammaToXSTSTransformer = new GammaToXstsTransformer(
-			schedulingConstraint, true, true, optimizeArray,
+			minSchedulingConstraint, maxSchedulingConstraint, true, true, optimizeArray,
 			transitionMerging, initialState, initialStateSetting)
 		// Normal transformation
 		val xSts = gammaToXSTSTransformer.execute(newGammaPackage)

@@ -1,0 +1,8 @@
+verification {
+	language : Promela
+	file : "RigelSystem.pml"
+	property-file : ".RigelSystem.gpd" // Set of properties for *-coveraging test set
+	optimize-model : true // Model reduction (slicing)
+	optimize : true // Optimizing test cases
+	test-language : java // JUnit tests
+}

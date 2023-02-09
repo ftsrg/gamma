@@ -1,6 +1,7 @@
 package hu.bme.mit.gamma.serializer.commandhandler;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -94,6 +95,7 @@ public class ExecutionTraceMetricComputer extends AbstractHandler {
 			System.out.println("Median: " + calculateMedian(values));
 			System.out.println("Average: " + calculateAverage(values));
 			System.out.println("Max: " + calculateMax(values));
+			System.out.println("Sum: " + calculateSum(values));
 		}
 	}
 	
@@ -122,6 +124,16 @@ public class ExecutionTraceMetricComputer extends AbstractHandler {
 		else {
 			return values.get(halfSize);
 		}
+	}
+	
+	public double calculateSum(Collection<Integer> values) {
+		int sum = 0;
+		
+		for (Integer value : values) {
+			sum += value;
+		}
+		
+		return sum;
 	}
 	
 }

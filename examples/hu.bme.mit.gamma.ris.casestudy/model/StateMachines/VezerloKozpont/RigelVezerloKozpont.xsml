@@ -1,0 +1,259 @@
+import "../Interfaces/Rigel.xsml";
+
+/*
+ * Modifications:
+ * - Rigel -> RigelMsgHeader
+ * - Additional in and out ports
+ * - Added parameters in VezerloKozpont
+ * - Additional variable assignments
+ */
+function void ProcessOrionDisconn() {}
+
+function RigelMsgHeader createGqMessage() {
+	var RigelMsgHeader gqMsg;
+	
+	gqMsg.Length = 10;
+	gqMsg.Generation = 4;
+	gqMsg.MessageType = RigelMsgType.RigelMsgGq;
+	gqMsg.ObjType = RigelObjType.Invalid;
+	gqMsg.ObjId = 0;
+	gqMsg.SafetyCode = 0;
+	
+	return gqMsg;
+} 
+
+function RigelMsgHeader createVkAlive() {
+	var RigelMsgHeader vkAliveMsg;
+	
+	vkAliveMsg.Length = 10;
+	vkAliveMsg.Generation = 4;
+	vkAliveMsg.MessageType = RigelMsgType.RigelMsgVkAlive;
+	vkAliveMsg.ObjType = RigelObjType.Invalid;
+	vkAliveMsg.ObjId = 0;
+	vkAliveMsg.SafetyCode = 0;
+	
+	return vkAliveMsg;
+}
+
+machine RigelVezerloKozpont {
+	parameter int _TimeReconn;
+	parameter int _TimeConn;
+	parameter int _TimeSendAlive;
+	
+	operation OrionDisconn;
+	operation OrionConn;
+	
+	port PortIn;
+	port PortOut;
+	
+	port FelugyeloPortIn;
+	port FelugyeloPortOut;
+	
+	parallel machine instance VkTeljesAdatLekerdezes teljesAdatLekerdezes{
+			TimeReconn = _TimeReconn, TimeConn = _TimeConn, TimeSendAlive = _TimeSendAlive};
+	parallel machine instance VkObjektumKezelo objektumKezelo1; // TODO: Objektumonként egy
+	
+	machine VkObjektumKezelo {
+//		parameter RigelObject object; // TODO unused?
+		
+		bool isValid;
+		
+		initial state ObjectInvalid {
+			event RigelMsgHeader msg [msg.MessageType == RigelMsgType.RigelMsgData && msg.DataCause == RigelDataCause.NormalAnswer] from PortIn
+			{
+				isValid = true;
+				change ObjectValid;
+			}
+		}
+		
+		state ObjectValid {
+			call OrionDisconn {
+				change ObjectInvalid;
+			}
+			
+			event RigelMsgHeader msg [msg.MessageType == RigelMsgType.RigelMsgInvalidateObj] from PortIn
+			{
+				isValid = false;
+				change ObjectInvalid;
+			} 
+		}
+		
+		// TODO orthogonal region is missing compared to the docs
+	}
+	
+	machine VkTeljesAdatLekerdezes {
+		// Theoretically, there is no race condition between these values
+		parameter int TimeReconn; // 0.1 .. 5s
+		parameter int TimeConn; // 2 .. 10s
+		parameter int TimeSendAlive; // 30 .. 120s
+		
+		bool allDataReceived = false; // TODO: az értékének módosítása igény szerint
+		
+		initial state NoOrionConnected {
+			call OrionConn {
+				change HasOrionConnected;
+				var RigelMsgHeader gqMsg = createGqMessage();
+				send gqMsg to PortOut;
+			}
+		}
+		
+		state HasOrionConnected {		
+			call OrionDisconn {
+				change NoOrionConnected;
+			}
+			
+			initial state WaitForConnection {
+				timeout after (TimeReconn)
+				{
+					var RigelMsgHeader gqMsg = createGqMessage();
+					send gqMsg to PortOut;
+					change WaitForConnection;
+				}
+				
+				event RigelMsgHeader msg [msg.MessageType == RigelMsgType.RigelMsgGqBegin] from PortIn
+				{
+					//Rigel gqMsg = createGqMessage();
+					//send gqMsg to Port;
+					change ProcessQuery;
+				}
+				
+				event RigelMsgHeader msg [msg.MessageType != RigelMsgType.RigelMsgGqBegin] from PortIn
+				{
+					send msg to PortOut;
+					ProcessOrionDisconn();
+					change NoOrionConnected;
+				}
+			}
+			
+			state ProcessQuery {
+				timeout after (TimeConn)
+				{
+					ProcessOrionDisconn();
+					change NoOrionConnected;
+				}
+				
+				event RigelMsgHeader msg [msg.MessageType == RigelMsgType.RigelMsgGqEnd] from PortIn
+				{
+					allDataReceived = true; // TODO set to true manually
+					if (allDataReceived) { // TODO otherwise constant false 
+						var RigelMsgHeader vkAlive = createVkAlive();
+						send vkAlive to PortOut;
+						change Connected;
+					} else {
+						ProcessOrionDisconn();
+						change NoOrionConnected;
+					}
+				}
+				
+				event RigelMsgHeader msg [msg.MessageType != RigelMsgType.RigelMsgData 
+						&& msg.MessageType != RigelMsgType.RigelMsgInvalidateObj
+						&& msg.MessageType != RigelMsgType.RigelMsgGqEnd
+					] from PortIn
+				{
+					ProcessOrionDisconn();
+					change NoOrionConnected;
+				}
+				
+				initial state Receive {
+					event RigelMsgHeader msg [msg.MessageType == RigelMsgType.RigelMsgData && msg.DataCause == RigelDataCause.NormalAnswer] from PortIn
+					{
+						send msg to FelugyeloPortOut;
+						change Receive;
+					}
+					
+					event RigelMsgHeader msg [msg.MessageType == RigelMsgType.RigelMsgInvalidateObj] from PortIn
+					{
+						send msg to FelugyeloPortOut;
+						change Receive;
+					}
+				}
+			}
+			
+			state Connected {
+				parallel machine instance ReceiveMachine receiveMachine;
+				parallel machine instance SendMachine sendMachine;
+				
+				event RigelMsgHeader msg [msg.MessageType != RigelMsgType.RigelMsgInvalidateObj
+						&& msg.MessageType != RigelMsgType.RigelMsgData
+						&& msg.MessageType != RigelMsgType.RigelMsgAnsTs1
+						&& msg.MessageType != RigelMsgType.RigelMsgAnsTs2
+						&& msg.MessageType != RigelMsgType.RigelMsgCommandResult
+						&& msg.MessageType != RigelMsgType.RigelMsgCommandConfirmResult
+					] from PortIn
+				{
+					ProcessOrionDisconn();
+					change NoOrionConnected;
+				}
+				
+				machine ReceiveMachine {
+					initial state Receive {
+						event RigelMsgHeader msg [msg.MessageType == RigelMsgType.RigelMsgInvalidateObj] from PortIn
+						{
+							send msg to FelugyeloPortOut;
+						}
+						
+						event RigelMsgHeader msg [msg.MessageType == RigelMsgType.RigelMsgData] from PortIn
+						{
+							send msg to FelugyeloPortOut;
+						}
+						
+						event RigelMsgHeader msg [msg.MessageType == RigelMsgType.RigelMsgAnsTs1] from PortIn
+						{
+							send msg to FelugyeloPortOut;
+						}
+						
+						event RigelMsgHeader msg [msg.MessageType == RigelMsgType.RigelMsgAnsTs2] from PortIn
+						{
+							send msg to FelugyeloPortOut;
+						}
+						
+						event RigelMsgHeader msg [msg.MessageType == RigelMsgType.RigelMsgCommandResult] from PortIn
+						{
+							send msg to FelugyeloPortOut;
+						}
+						
+						event RigelMsgHeader msg [msg.MessageType == RigelMsgType.RigelMsgCommandConfirmResult] from PortIn
+						{
+							send msg to FelugyeloPortOut;
+						}
+					}
+				}
+				
+				machine SendMachine {
+					initial state Send {
+						event RigelMsgHeader msg [msg.MessageType == RigelMsgType.RigelMsgReqTs1] from FelugyeloPortIn
+						{
+							send msg to PortOut;
+						}
+						
+						event RigelMsgHeader msg [msg.MessageType == RigelMsgType.RigelMsgReqTs2] from FelugyeloPortIn
+						{
+							send msg to PortOut;
+						}
+						
+						event RigelMsgHeader msg [msg.MessageType == RigelMsgType.RigelMsgCommand] from FelugyeloPortIn
+						{
+							send msg to PortOut;
+						}
+						
+						event RigelMsgHeader msg [msg.MessageType == RigelMsgType.RigelMsgCommandConfirm] from FelugyeloPortIn
+						{
+							send msg to PortOut;
+						}
+						
+						timeout after (TimeSendAlive)
+						{
+							var bool isVKActive = true; // TODO Set to true manually, otherwise, constant false
+							
+							if (isVKActive) {
+								var RigelMsgHeader vkAlive = createVkAlive();
+								send vkAlive to PortOut;
+								change Send;
+							}
+						}
+					}
+				}
+			}
+		}
+	}	
+}

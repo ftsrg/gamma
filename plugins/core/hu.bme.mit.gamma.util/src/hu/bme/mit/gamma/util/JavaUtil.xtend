@@ -141,4 +141,8 @@ class JavaUtil {
 		return string.toFirstLower
 	}
 	
+	def splitLines(String string) {
+		return string.split(System.lineSeparator).reject[it.nullOrEmpty]
+	}
+	
 }

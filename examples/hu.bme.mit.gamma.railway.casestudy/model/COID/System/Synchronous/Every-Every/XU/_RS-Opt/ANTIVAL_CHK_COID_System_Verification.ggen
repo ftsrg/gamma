@@ -3,5 +3,6 @@ verification {
 	file : "ANTIVAL_CHK_COID_System.xml"
 	property-file : ".ANTIVAL_CHK_COID_System.gpd"
 	optimize : true
+	optimize-model : true
 	test-language : java
 }

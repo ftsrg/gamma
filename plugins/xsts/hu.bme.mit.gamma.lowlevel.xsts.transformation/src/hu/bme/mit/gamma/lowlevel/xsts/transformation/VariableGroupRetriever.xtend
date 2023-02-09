@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -14,6 +14,7 @@ import hu.bme.mit.gamma.xsts.model.ComponentParameterGroup
 import hu.bme.mit.gamma.xsts.model.InEventGroup
 import hu.bme.mit.gamma.xsts.model.InEventParameterGroup
 import hu.bme.mit.gamma.xsts.model.MasterMessageQueueGroup
+import hu.bme.mit.gamma.xsts.model.MessageQueueSizeGroup
 import hu.bme.mit.gamma.xsts.model.OutEventGroup
 import hu.bme.mit.gamma.xsts.model.OutEventParameterGroup
 import hu.bme.mit.gamma.xsts.model.PlainVariableGroup
@@ -21,8 +22,10 @@ import hu.bme.mit.gamma.xsts.model.RegionGroup
 import hu.bme.mit.gamma.xsts.model.SlaveMessageQueueGroup
 import hu.bme.mit.gamma.xsts.model.SystemInEventGroup
 import hu.bme.mit.gamma.xsts.model.SystemInEventParameterGroup
+import hu.bme.mit.gamma.xsts.model.SystemMasterMessageQueueGroup
 import hu.bme.mit.gamma.xsts.model.SystemOutEventGroup
 import hu.bme.mit.gamma.xsts.model.SystemOutEventParameterGroup
+import hu.bme.mit.gamma.xsts.model.SystemSlaveMessageQueueGroup
 import hu.bme.mit.gamma.xsts.model.TimeoutGroup
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
@@ -198,6 +201,61 @@ class VariableGroupRetriever {
 		checkState(slaveMessageQueueGroups.size == 1)
 		return slaveMessageQueueGroups.head
 	}
+	
+	def getSystemMasterMessageQueueGroup(XSTS xSts) {
+		var masterMessageQueueGroups = xSts.variableGroups
+									.filter[it.annotation instanceof SystemMasterMessageQueueGroup]
+		if (masterMessageQueueGroups.empty) {
+			val masterMessageQueueGroup = createVariableGroup => [
+				it.annotation = createSystemMasterMessageQueueGroup
+			]
+			xSts.variableGroups += masterMessageQueueGroup
+			return masterMessageQueueGroup
+		}
+		checkState(masterMessageQueueGroups.size == 1)
+		return masterMessageQueueGroups.head
+	}
+	
+	def getSystemSlaveMessageQueueGroup(XSTS xSts) {
+		var slaveMessageQueueGroups = xSts.variableGroups
+									.filter[it.annotation instanceof SystemSlaveMessageQueueGroup]
+		if (slaveMessageQueueGroups.empty) {
+			val slaveMessageQueueGroup = createVariableGroup => [
+				it.annotation = createSystemSlaveMessageQueueGroup
+			]
+			xSts.variableGroups += slaveMessageQueueGroup
+			return slaveMessageQueueGroup
+		}
+		checkState(slaveMessageQueueGroups.size == 1)
+		return slaveMessageQueueGroups.head
+	}
+	
+	def getMessageQueueSizeGroup(XSTS xSts) {
+		var messageQueueSizeGroups = xSts.variableGroups
+									.filter[it.annotation instanceof MessageQueueSizeGroup]
+		if (messageQueueSizeGroups.empty) {
+			val messageQueueSizeGroup = createVariableGroup => [
+				it.annotation = createMessageQueueSizeGroup
+			]
+			xSts.variableGroups += messageQueueSizeGroup
+			return messageQueueSizeGroup
+		}
+		checkState(messageQueueSizeGroups.size == 1)
+		return messageQueueSizeGroups.head
+	}
+	
+	def getMessageQueueGroup(XSTS xSts) { // Only derived feature
+		val messageQueueGroup = createVariableGroup => [
+			it.annotation = null
+		]
+		
+		messageQueueGroup.variables += xSts.masterMessageQueueGroup.variables
+		messageQueueGroup.variables += xSts.slaveMessageQueueGroup.variables
+		messageQueueGroup.variables += xSts.systemMasterMessageQueueGroup.variables
+		messageQueueGroup.variables += xSts.systemSlaveMessageQueueGroup.variables
+		
+		return messageQueueGroup
+	} 
 
 	// During a single low-level statechart transformation, there is a single plain variable group
 	def getPlainVariableGroup(XSTS xSts) {

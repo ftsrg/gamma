@@ -19,9 +19,11 @@ import java.util.Set;
 
 import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
 import hu.bme.mit.gamma.expression.model.ArgumentedElement;
+import hu.bme.mit.gamma.expression.model.BinaryExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.NotExpression;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceElementReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression;
@@ -88,14 +90,16 @@ public class TraceModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 		return assertion;
 	}
 	
-	public static ComponentInstanceReferenceExpression getInstanceReference(Expression instanceState) {
-		if (instanceState instanceof ComponentInstanceStateReferenceExpression instanceStateConfiguration) {
-			return instanceStateConfiguration.getInstance();
+	public static ComponentInstanceReferenceExpression getInstanceReference(Expression expression) {
+		if (expression instanceof ComponentInstanceElementReferenceExpression element) {
+			return element.getInstance();
 		}
-		else if (instanceState instanceof ComponentInstanceVariableReferenceExpression instanceVariableState) {
-			return instanceVariableState.getInstance();
+		else if (expression instanceof BinaryExpression binaryExpression) {
+			ComponentInstanceElementReferenceExpression elementReference =
+					getOperandOfType(binaryExpression, ComponentInstanceElementReferenceExpression.class);
+			return getInstanceReference(elementReference);
 		}
-		throw new IllegalArgumentException("Not known instance state: " + instanceState);
+		throw new IllegalArgumentException("Not known instance state: " + expression);
 	}
 
 	

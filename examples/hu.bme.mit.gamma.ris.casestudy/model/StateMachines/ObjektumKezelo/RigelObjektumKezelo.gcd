@@ -1,0 +1,502 @@
+package RigelObjektumKezelo
+
+import 	"Interfaces/Interfaces.gcd"
+
+@RegionSchedule = bottom-up
+@TransitionPriority = order-based
+statechart RigelObjektumKezelo(_TimeScheduling : integer, _TimeSchedulingMax : integer,
+	_TimeVkInactiveTimeout : integer, _TimeSqTimeout : integer, _TimeCommandTimeout : integer,
+	_TimeConfirmationTimeout : integer) [
+	port DiszpecserPortIn : requires Rigel
+	port DiszpecserPortOut : provides Rigel
+	port OrionDisconn : requires OrionDisconn
+	port SendData_objektumNyilvantarto : requires SendData
+] {
+	var SessionID_objektumNyilvantarto : integer
+	var TimestampObj1_objektumNyilvantarto : integer
+	var TimestampObj2_objektumNyilvantarto : integer
+	var TimestampVk1_objektumNyilvantarto : integer
+	var TimestampVk2_objektumNyilvantarto : integer
+	var LocalTime_objektumNyilvantarto : integer
+	var Command_objektumNyilvantarto : RigelObjControl
+	@Transient var _change_condition_8_4_2_commandProcessMachine_objektumNyilvantarto : boolean :=
+		false
+	@Transient var _change_condition_10_0_3_commandProcessMachine_objektumNyilvantarto : boolean :=
+		false
+	@Transient var _change_condition_12_0_4_commandProcessMachine_objektumNyilvantarto : boolean :=
+		false
+	@Transient var _change_condition_14_0_5_commandProcessMachine_objektumNyilvantarto : boolean :=
+		false
+	@Transient var _change_condition_16_1_6_commandProcessMachine_objektumNyilvantarto : boolean :=
+		false
+	@Transient var _change_condition_8_0_7_commandProcessMachine_objektumNyilvantarto : boolean :=
+		false
+	@Transient var _change_condition_5_1_0_objektumKezeloVezerloKozpontKezeloKepes : boolean := false
+	@Transient var _change_condition_5_1_1_objektumKezeloVezerloKozpontKezeloKepes : boolean := false
+	timeout timeout_SendDataPeriodic_0_sendDataPeriodicMachine_objektumNyilvantarto
+	timeout timeout_WaitCommand_0_commandProcessMachine_objektumNyilvantarto
+	timeout timeout_WaitTS2Req_0_commandProcessMachine_objektumNyilvantarto
+	timeout timeout_WaitCommandConfirm_0_commandProcessMachine_objektumNyilvantarto
+	timeout timeout_VkActive_0_objektumKezeloVezerloKozpontKezeloKepes
+	region ObjektumNyilvantarto__objektumNyilvantarto {
+		initial _initialOfObjektumNyilvantarto___objektumNyilvantarto
+		state NoConnection_objektumNyilvantarto
+		state Connected_objektumNyilvantarto {
+			region SendDataPeriodicMachine__sendDataPeriodicMachine_objektumNyilvantarto {
+				initial _initialOfSendDataPeriodicMachine___sendDataPeriodicMachine_objektumNyilvantarto
+				state SendDataPeriodic_sendDataPeriodicMachine_objektumNyilvantarto {
+					entry / set timeout_SendDataPeriodic_0_sendDataPeriodicMachine_objektumNyilvantarto :=
+						_TimeSqTimeout ms; set
+						timeout_SendDataPeriodic_0_sendDataPeriodicMachine_objektumNyilvantarto := _TimeSqTimeout
+						ms; set timeout_SendDataPeriodic_0_sendDataPeriodicMachine_objektumNyilvantarto :=
+						_TimeSqTimeout ms; set
+						timeout_SendDataPeriodic_0_sendDataPeriodicMachine_objektumNyilvantarto := _TimeSqTimeout
+						ms;
+				}
+			}
+			region SendDataChangeMachine__sendDataChangeMachine_objektumNyilvantarto {
+				initial _initialOfSendDataChangeMachine___sendDataChangeMachine_objektumNyilvantarto
+				state SendDataChange_sendDataChangeMachine_objektumNyilvantarto
+			}
+			region CommandProcessMachine__commandProcessMachine_objektumNyilvantarto {
+				initial _initialOfCommandProcessMachine___commandProcessMachine_objektumNyilvantarto
+				state WaitTS1Req_commandProcessMachine_objektumNyilvantarto
+				state CommandProcess_commandProcessMachine_objektumNyilvantarto {
+					region CommandProcess__commandProcessMachine_objektumNyilvantarto {
+						initial _initialOfCommandProcess___commandProcessMachine_objektumNyilvantarto
+						state WaitCommand_commandProcessMachine_objektumNyilvantarto {
+							entry / set timeout_WaitCommand_0_commandProcessMachine_objektumNyilvantarto :=
+								_TimeCommandTimeout ms; set
+								timeout_WaitCommand_0_commandProcessMachine_objektumNyilvantarto := _TimeCommandTimeout
+								ms;
+						}
+						state WaitTS2Req_commandProcessMachine_objektumNyilvantarto {
+							entry / set timeout_WaitTS2Req_0_commandProcessMachine_objektumNyilvantarto :=
+								_TimeConfirmationTimeout ms; set
+								timeout_WaitTS2Req_0_commandProcessMachine_objektumNyilvantarto :=
+								_TimeConfirmationTimeout ms;
+						}
+						state WaitCommandConfirm_commandProcessMachine_objektumNyilvantarto {
+							entry / set timeout_WaitCommandConfirm_0_commandProcessMachine_objektumNyilvantarto :=
+								_TimeCommandTimeout ms; set
+								timeout_WaitCommandConfirm_0_commandProcessMachine_objektumNyilvantarto :=
+								_TimeCommandTimeout ms;
+						}
+						choice _WaitCommand_1__commandProcessMachine_objektumNyilvantarto
+						choice _WaitTS2Req_1__commandProcessMachine_objektumNyilvantarto
+					}
+				}
+			}
+			region Idozito__idozito_objektumNyilvantarto {
+				state Idozito__State_idozito_objektumNyilvantarto
+				initial _initialOfIdozito___idozito_objektumNyilvantarto
+			}
+		}
+	}
+	region ObjektumKezeloVezerloKozpontKezeloKepes__objektumKezeloVezerloKozpontKezeloKepes {
+		initial
+			_initialOfObjektumKezeloVezerloKozpontKezeloKepes___objektumKezeloVezerloKozpontKezeloKepes
+		state VkActive_objektumKezeloVezerloKozpontKezeloKepes {
+			entry / set timeout_VkActive_0_objektumKezeloVezerloKozpontKezeloKepes :=
+				_TimeVkInactiveTimeout ms;
+		}
+		state VkInactive_objektumKezeloVezerloKozpontKezeloKepes
+		choice _VkInactive_1__objektumKezeloVezerloKozpontKezeloKepes
+		choice _VkInactive_2__objektumKezeloVezerloKozpontKezeloKepes
+	}
+	transition from _initialOfObjektumNyilvantarto___objektumNyilvantarto to
+		NoConnection_objektumNyilvantarto
+	transition from _initialOfSendDataPeriodicMachine___sendDataPeriodicMachine_objektumNyilvantarto
+		to SendDataPeriodic_sendDataPeriodicMachine_objektumNyilvantarto
+	transition from SendDataPeriodic_sendDataPeriodicMachine_objektumNyilvantarto to
+		NoConnection_objektumNyilvantarto when timeout
+		timeout_SendDataPeriodic_0_sendDataPeriodicMachine_objektumNyilvantarto / {
+		OrionDisconnToDiszp();
+	}
+	transition from SendDataPeriodic_sendDataPeriodicMachine_objektumNyilvantarto to
+		SendDataPeriodic_sendDataPeriodicMachine_objektumNyilvantarto when
+		DiszpecserPortIn.message_RigelMsgHeader
+		[DiszpecserPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgSq and
+		DiszpecserPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.SQCause =
+		RigelSQCause::PeriodicRequest] / {
+		var periodicAnswerDataMsg_sendDataPeriodicMachine_objektumNyilvantarto : RigelMsgHeader :=
+			createPeriodicAnswerData();
+		raise
+			DiszpecserPortOut.message_RigelMsgHeader(periodicAnswerDataMsg_sendDataPeriodicMachine_objektumNyilvantarto);
+	}
+	transition from _initialOfSendDataChangeMachine___sendDataChangeMachine_objektumNyilvantarto to
+		SendDataChange_sendDataChangeMachine_objektumNyilvantarto
+	transition from SendDataChange_sendDataChangeMachine_objektumNyilvantarto to
+		SendDataChange_sendDataChangeMachine_objektumNyilvantarto when
+		SendData_objektumNyilvantarto.SendData / {
+		var dataChange_sendDataChangeMachine_objektumNyilvantarto : RigelMsgHeader :=
+			createStatusChangeData();
+		raise
+			DiszpecserPortOut.message_RigelMsgHeader(dataChange_sendDataChangeMachine_objektumNyilvantarto);
+	}
+	transition from _initialOfCommandProcessMachine___commandProcessMachine_objektumNyilvantarto to
+		WaitTS1Req_commandProcessMachine_objektumNyilvantarto
+	transition from _initialOfCommandProcess___commandProcessMachine_objektumNyilvantarto to
+		WaitCommand_commandProcessMachine_objektumNyilvantarto
+	transition from WaitTS1Req_commandProcessMachine_objektumNyilvantarto to
+		CommandProcess_commandProcessMachine_objektumNyilvantarto when
+		DiszpecserPortIn.message_RigelMsgHeader
+		[DiszpecserPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgReqTs1] / {
+		TimestampVk1_objektumNyilvantarto :=
+			DiszpecserPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.Timestamp;
+		TimestampObj1_objektumNyilvantarto := LocalTime_objektumNyilvantarto;
+		SessionID_objektumNyilvantarto :=
+			DiszpecserPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.SessionId;
+		var ansTs1Msg_commandProcessMachine_objektumNyilvantarto : RigelMsgHeader :=
+			ProcessReqTs1(TimestampVk1_objektumNyilvantarto, TimestampObj1_objektumNyilvantarto,
+			SessionID_objektumNyilvantarto);
+		raise
+			DiszpecserPortOut.message_RigelMsgHeader(ansTs1Msg_commandProcessMachine_objektumNyilvantarto);
+	}
+	transition from CommandProcess_commandProcessMachine_objektumNyilvantarto to
+		WaitCommand_commandProcessMachine_objektumNyilvantarto when
+		DiszpecserPortIn.message_RigelMsgHeader
+		[DiszpecserPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgReqTs1] / {
+		TimestampVk1_objektumNyilvantarto :=
+			DiszpecserPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.Timestamp;
+		TimestampObj1_objektumNyilvantarto := LocalTime_objektumNyilvantarto;
+		SessionID_objektumNyilvantarto :=
+			DiszpecserPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.SessionId;
+		var ansTs1Msg_commandProcessMachine_objektumNyilvantarto : RigelMsgHeader :=
+			ProcessReqTs1(TimestampVk1_objektumNyilvantarto, TimestampObj1_objektumNyilvantarto,
+			SessionID_objektumNyilvantarto);
+		raise
+			DiszpecserPortOut.message_RigelMsgHeader(ansTs1Msg_commandProcessMachine_objektumNyilvantarto);
+	}
+	transition from WaitCommand_commandProcessMachine_objektumNyilvantarto to
+		WaitTS1Req_commandProcessMachine_objektumNyilvantarto when timeout
+		timeout_WaitCommand_0_commandProcessMachine_objektumNyilvantarto
+	transition from WaitCommand_commandProcessMachine_objektumNyilvantarto to
+		_WaitCommand_1__commandProcessMachine_objektumNyilvantarto when
+		DiszpecserPortIn.message_RigelMsgHeader
+		[DiszpecserPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgCommand] / {
+		Command_objektumNyilvantarto :=
+			DiszpecserPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.Command;
+		var result_commandProcessMachine_objektumNyilvantarto : RigelMsgHeader;
+		var msgSessionId_commandProcessMachine_objektumNyilvantarto : integer :=
+			DiszpecserPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.SessionId;
+		var msgCommand_commandProcessMachine_objektumNyilvantarto : RigelObjControl :=
+			DiszpecserPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.Command;
+		_change_condition_8_4_2_commandProcessMachine_objektumNyilvantarto :=
+			msgSessionId_commandProcessMachine_objektumNyilvantarto != SessionID_objektumNyilvantarto;
+		if (_change_condition_8_4_2_commandProcessMachine_objektumNyilvantarto) {
+			result_commandProcessMachine_objektumNyilvantarto :=
+				createCommandResultSessionIDError(msgCommand_commandProcessMachine_objektumNyilvantarto,
+				msgSessionId_commandProcessMachine_objektumNyilvantarto);
+			raise
+				DiszpecserPortOut.message_RigelMsgHeader(result_commandProcessMachine_objektumNyilvantarto);
+		}
+		elseif (else) {
+			_change_condition_10_0_3_commandProcessMachine_objektumNyilvantarto :=
+				DiszpecserPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.ConfirmedTimestamp !=
+				TimestampObj1_objektumNyilvantarto;
+			if (_change_condition_10_0_3_commandProcessMachine_objektumNyilvantarto) {
+				result_commandProcessMachine_objektumNyilvantarto :=
+					createCommandResultTimestampError(msgCommand_commandProcessMachine_objektumNyilvantarto,
+					msgSessionId_commandProcessMachine_objektumNyilvantarto);
+				raise
+					DiszpecserPortOut.message_RigelMsgHeader(result_commandProcessMachine_objektumNyilvantarto);
+			}
+			elseif (else) {
+				_change_condition_12_0_4_commandProcessMachine_objektumNyilvantarto := not
+					LocalTime_objektumNyilvantarto < TimestampObj1_objektumNyilvantarto + _TimeCommandTimeout;
+				if (_change_condition_12_0_4_commandProcessMachine_objektumNyilvantarto) {
+					result_commandProcessMachine_objektumNyilvantarto :=
+						createCommandResultTimestampError(msgCommand_commandProcessMachine_objektumNyilvantarto,
+						msgSessionId_commandProcessMachine_objektumNyilvantarto);
+					raise
+						DiszpecserPortOut.message_RigelMsgHeader(result_commandProcessMachine_objektumNyilvantarto);
+				}
+				elseif (else) {
+					_change_condition_14_0_5_commandProcessMachine_objektumNyilvantarto := not
+						DiszpecserPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.Timestamp <
+						TimestampVk1_objektumNyilvantarto + _TimeCommandTimeout;
+					if (_change_condition_14_0_5_commandProcessMachine_objektumNyilvantarto) {
+						result_commandProcessMachine_objektumNyilvantarto :=
+							createCommandResultTimestampError(msgCommand_commandProcessMachine_objektumNyilvantarto,
+							msgSessionId_commandProcessMachine_objektumNyilvantarto);
+						raise
+							DiszpecserPortOut.message_RigelMsgHeader(result_commandProcessMachine_objektumNyilvantarto);
+					}
+					elseif (else) {
+						var isHardHandling_commandProcessMachine_objektumNyilvantarto : boolean := isHardHandling();
+						_change_condition_16_1_6_commandProcessMachine_objektumNyilvantarto :=
+							isHardHandling_commandProcessMachine_objektumNyilvantarto;
+						if (_change_condition_16_1_6_commandProcessMachine_objektumNyilvantarto) {
+							result_commandProcessMachine_objektumNyilvantarto :=
+								createCommandResultConfirmWaiting(msgCommand_commandProcessMachine_objektumNyilvantarto,
+								msgSessionId_commandProcessMachine_objektumNyilvantarto);
+							raise
+								DiszpecserPortOut.message_RigelMsgHeader(result_commandProcessMachine_objektumNyilvantarto);
+						}
+						elseif (else) {
+							ProcessVkActive();
+							result_commandProcessMachine_objektumNyilvantarto :=
+								createAlkCommandVegrehajtas(msgCommand_commandProcessMachine_objektumNyilvantarto);
+							raise
+								DiszpecserPortOut.message_RigelMsgHeader(result_commandProcessMachine_objektumNyilvantarto);
+						}
+					}
+				}
+			}
+		}
+	}
+	transition from _WaitCommand_1__commandProcessMachine_objektumNyilvantarto to
+		WaitTS1Req_commandProcessMachine_objektumNyilvantarto
+		[_change_condition_8_4_2_commandProcessMachine_objektumNyilvantarto]
+	transition from _WaitCommand_1__commandProcessMachine_objektumNyilvantarto to
+		WaitTS1Req_commandProcessMachine_objektumNyilvantarto [not
+		_change_condition_8_4_2_commandProcessMachine_objektumNyilvantarto and
+		_change_condition_10_0_3_commandProcessMachine_objektumNyilvantarto]
+	transition from _WaitCommand_1__commandProcessMachine_objektumNyilvantarto to
+		WaitTS1Req_commandProcessMachine_objektumNyilvantarto [not
+		_change_condition_8_4_2_commandProcessMachine_objektumNyilvantarto and not
+		_change_condition_10_0_3_commandProcessMachine_objektumNyilvantarto and
+		_change_condition_12_0_4_commandProcessMachine_objektumNyilvantarto]
+	transition from _WaitCommand_1__commandProcessMachine_objektumNyilvantarto to
+		WaitTS1Req_commandProcessMachine_objektumNyilvantarto [not
+		_change_condition_8_4_2_commandProcessMachine_objektumNyilvantarto and not
+		_change_condition_10_0_3_commandProcessMachine_objektumNyilvantarto and not
+		_change_condition_12_0_4_commandProcessMachine_objektumNyilvantarto and
+		_change_condition_14_0_5_commandProcessMachine_objektumNyilvantarto]
+	transition from _WaitCommand_1__commandProcessMachine_objektumNyilvantarto to
+		WaitTS2Req_commandProcessMachine_objektumNyilvantarto [not
+		_change_condition_8_4_2_commandProcessMachine_objektumNyilvantarto and not
+		_change_condition_10_0_3_commandProcessMachine_objektumNyilvantarto and not
+		_change_condition_12_0_4_commandProcessMachine_objektumNyilvantarto and not
+		_change_condition_14_0_5_commandProcessMachine_objektumNyilvantarto and
+		_change_condition_16_1_6_commandProcessMachine_objektumNyilvantarto]
+	transition from _WaitCommand_1__commandProcessMachine_objektumNyilvantarto to
+		WaitTS1Req_commandProcessMachine_objektumNyilvantarto [not
+		_change_condition_8_4_2_commandProcessMachine_objektumNyilvantarto and not
+		_change_condition_10_0_3_commandProcessMachine_objektumNyilvantarto and not
+		_change_condition_12_0_4_commandProcessMachine_objektumNyilvantarto and not
+		_change_condition_14_0_5_commandProcessMachine_objektumNyilvantarto and not
+		_change_condition_16_1_6_commandProcessMachine_objektumNyilvantarto]
+	transition from _WaitCommand_1__commandProcessMachine_objektumNyilvantarto to
+		WaitCommand_commandProcessMachine_objektumNyilvantarto [else]
+	transition from WaitTS2Req_commandProcessMachine_objektumNyilvantarto to
+		WaitTS1Req_commandProcessMachine_objektumNyilvantarto when timeout
+		timeout_WaitTS2Req_0_commandProcessMachine_objektumNyilvantarto
+	transition from WaitTS2Req_commandProcessMachine_objektumNyilvantarto to
+		_WaitTS2Req_1__commandProcessMachine_objektumNyilvantarto when
+		DiszpecserPortIn.message_RigelMsgHeader
+		[DiszpecserPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgReqTs2] / {
+		_change_condition_8_0_7_commandProcessMachine_objektumNyilvantarto :=
+			SessionID_objektumNyilvantarto !=
+			DiszpecserPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.SessionId;
+		if (_change_condition_8_0_7_commandProcessMachine_objektumNyilvantarto) no operation; elseif
+			(else) {
+			TimestampVk2_objektumNyilvantarto :=
+				DiszpecserPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.Timestamp;
+			TimestampObj2_objektumNyilvantarto := LocalTime_objektumNyilvantarto;
+			SessionID_objektumNyilvantarto :=
+				DiszpecserPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.SessionId;
+			var ansTs1Msg_commandProcessMachine_objektumNyilvantarto : RigelMsgHeader :=
+				ProcessReqTs2(TimestampVk1_objektumNyilvantarto, TimestampObj1_objektumNyilvantarto,
+				SessionID_objektumNyilvantarto);
+			raise
+				DiszpecserPortOut.message_RigelMsgHeader(ansTs1Msg_commandProcessMachine_objektumNyilvantarto);
+		}
+	}
+	transition from _WaitTS2Req_1__commandProcessMachine_objektumNyilvantarto to
+		WaitCommandConfirm_commandProcessMachine_objektumNyilvantarto
+		[_change_condition_8_0_7_commandProcessMachine_objektumNyilvantarto]
+	transition from _WaitTS2Req_1__commandProcessMachine_objektumNyilvantarto to
+		WaitTS1Req_commandProcessMachine_objektumNyilvantarto [not
+		_change_condition_8_0_7_commandProcessMachine_objektumNyilvantarto]
+	transition from _WaitTS2Req_1__commandProcessMachine_objektumNyilvantarto to
+		WaitTS2Req_commandProcessMachine_objektumNyilvantarto [else]
+	transition from WaitCommandConfirm_commandProcessMachine_objektumNyilvantarto to
+		WaitTS1Req_commandProcessMachine_objektumNyilvantarto when timeout
+		timeout_WaitCommandConfirm_0_commandProcessMachine_objektumNyilvantarto
+	transition from WaitCommandConfirm_commandProcessMachine_objektumNyilvantarto to
+		WaitTS1Req_commandProcessMachine_objektumNyilvantarto when
+		DiszpecserPortIn.message_RigelMsgHeader
+		[DiszpecserPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgCommandConfirm] / {
+		var result_commandProcessMachine_objektumNyilvantarto : RigelMsgHeader;
+		var msgSessionId_commandProcessMachine_objektumNyilvantarto : integer :=
+			DiszpecserPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.SessionId;
+		var msgCommand_commandProcessMachine_objektumNyilvantarto : RigelObjControl :=
+			DiszpecserPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.Command;
+		if (msgSessionId_commandProcessMachine_objektumNyilvantarto != SessionID_objektumNyilvantarto) {
+			result_commandProcessMachine_objektumNyilvantarto :=
+				createCommandResultSessionIDError(msgCommand_commandProcessMachine_objektumNyilvantarto,
+				msgSessionId_commandProcessMachine_objektumNyilvantarto);
+		}
+		elseif (else) {
+			if (msgCommand_commandProcessMachine_objektumNyilvantarto != Command_objektumNyilvantarto) {
+				result_commandProcessMachine_objektumNyilvantarto :=
+					createCommandResultCmdError(msgCommand_commandProcessMachine_objektumNyilvantarto,
+					msgSessionId_commandProcessMachine_objektumNyilvantarto);
+			}
+			elseif (else) {
+				if (DiszpecserPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.ConfirmedTimestamp !=
+					TimestampObj2_objektumNyilvantarto) {
+					result_commandProcessMachine_objektumNyilvantarto :=
+						createCommandResultTimestampError(msgCommand_commandProcessMachine_objektumNyilvantarto,
+						msgSessionId_commandProcessMachine_objektumNyilvantarto);
+				}
+				elseif (else) {
+					if (not LocalTime_objektumNyilvantarto < TimestampObj2_objektumNyilvantarto +
+						_TimeCommandTimeout) {
+						result_commandProcessMachine_objektumNyilvantarto :=
+							createCommandResultTimestampError(msgCommand_commandProcessMachine_objektumNyilvantarto,
+							msgSessionId_commandProcessMachine_objektumNyilvantarto);
+					}
+					elseif (else) {
+						if (not DiszpecserPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.Timestamp <
+							TimestampVk2_objektumNyilvantarto + _TimeCommandTimeout) {
+							result_commandProcessMachine_objektumNyilvantarto :=
+								createCommandResultTimestampError(msgCommand_commandProcessMachine_objektumNyilvantarto,
+								msgSessionId_commandProcessMachine_objektumNyilvantarto);
+						}
+						elseif (else) {
+							ProcessVkActive();
+							result_commandProcessMachine_objektumNyilvantarto :=
+								createAlkCommandVegrehajtas(msgCommand_commandProcessMachine_objektumNyilvantarto);
+						}
+					}
+				}
+			}
+		}
+		raise
+			DiszpecserPortOut.message_RigelMsgHeader(result_commandProcessMachine_objektumNyilvantarto);
+	}
+	transition from _initialOfIdozito___idozito_objektumNyilvantarto to
+		Idozito__State_idozito_objektumNyilvantarto
+	transition from Idozito__State_idozito_objektumNyilvantarto to
+		Idozito__State_idozito_objektumNyilvantarto when DiszpecserPortIn.message_RigelMsgHeader / {
+		LocalTime_objektumNyilvantarto := LocalTime_objektumNyilvantarto + _TimeScheduling;
+		if (_TimeSchedulingMax < LocalTime_objektumNyilvantarto) {
+			LocalTime_objektumNyilvantarto := 0;
+		}
+	}
+	transition from NoConnection_objektumNyilvantarto to Connected_objektumNyilvantarto when
+		DiszpecserPortIn.message_RigelMsgHeader
+		[DiszpecserPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgSq and
+		DiszpecserPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.SQCause =
+		RigelSQCause::NormalRequest] / {
+		var normalAnswerDataMsg_objektumNyilvantarto : RigelMsgHeader := createNormalAnswerData();
+		raise DiszpecserPortOut.message_RigelMsgHeader(normalAnswerDataMsg_objektumNyilvantarto);
+	}
+	transition from Connected_objektumNyilvantarto to NoConnection_objektumNyilvantarto when
+		OrionDisconn.OrionDisconn
+	transition from Connected_objektumNyilvantarto to Connected_objektumNyilvantarto when
+		DiszpecserPortIn.message_RigelMsgHeader
+		[DiszpecserPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgSq and
+		DiszpecserPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.SQCause =
+		RigelSQCause::NormalRequest] / {
+		var normalAnswerDataMsg_objektumNyilvantarto : RigelMsgHeader := createNormalAnswerData();
+		raise DiszpecserPortOut.message_RigelMsgHeader(normalAnswerDataMsg_objektumNyilvantarto);
+	}
+	transition from Connected_objektumNyilvantarto to NoConnection_objektumNyilvantarto when
+		DiszpecserPortIn.message_RigelMsgHeader
+		[(((((((DiszpecserPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgGq or
+		DiszpecserPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgGqBegin) or
+		DiszpecserPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgGqEnd) or
+		DiszpecserPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgAnsTs1) or
+		DiszpecserPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgAnsTs2) or
+		DiszpecserPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgData) or
+		DiszpecserPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgCommandResult) or
+		DiszpecserPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgCommandConfirmResult) or
+		DiszpecserPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgInvalidateObj] / {
+		OrionDisconnToDiszp();
+	}
+	transition from
+		_initialOfObjektumKezeloVezerloKozpontKezeloKepes___objektumKezeloVezerloKozpontKezeloKepes to
+		VkActive_objektumKezeloVezerloKozpontKezeloKepes
+	transition from VkActive_objektumKezeloVezerloKozpontKezeloKepes to
+		VkInactive_objektumKezeloVezerloKozpontKezeloKepes when timeout
+		timeout_VkActive_0_objektumKezeloVezerloKozpontKezeloKepes / {
+		ProcessVkInactive();
+	}
+	transition from VkActive_objektumKezeloVezerloKozpontKezeloKepes to
+		VkActive_objektumKezeloVezerloKozpontKezeloKepes when DiszpecserPortIn.message_RigelMsgHeader
+		[DiszpecserPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgVkAlive]
+	transition from VkActive_objektumKezeloVezerloKozpontKezeloKepes to
+		VkActive_objektumKezeloVezerloKozpontKezeloKepes when DiszpecserPortIn.message_RigelMsgHeader
+		[DiszpecserPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgCommand]
+	transition from VkActive_objektumKezeloVezerloKozpontKezeloKepes to
+		VkActive_objektumKezeloVezerloKozpontKezeloKepes when DiszpecserPortIn.message_RigelMsgHeader
+		[DiszpecserPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgCommandConfirm]
+	transition from VkInactive_objektumKezeloVezerloKozpontKezeloKepes to
+		VkActive_objektumKezeloVezerloKozpontKezeloKepes when DiszpecserPortIn.message_RigelMsgHeader
+		[DiszpecserPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgVkAlive] / {
+		ProcessVkActive();
+	}
+	transition from VkInactive_objektumKezeloVezerloKozpontKezeloKepes to
+		_VkInactive_1__objektumKezeloVezerloKozpontKezeloKepes when
+		DiszpecserPortIn.message_RigelMsgHeader
+		[DiszpecserPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgCommand] / {
+		var isCommandAccepted_objektumKezeloVezerloKozpontKezeloKepes : boolean := true;
+		_change_condition_5_1_0_objektumKezeloVezerloKozpontKezeloKepes :=
+			isCommandAccepted_objektumKezeloVezerloKozpontKezeloKepes;
+		if (_change_condition_5_1_0_objektumKezeloVezerloKozpontKezeloKepes) {
+			ProcessVkActive();
+		}
+	}
+	transition from _VkInactive_1__objektumKezeloVezerloKozpontKezeloKepes to
+		VkActive_objektumKezeloVezerloKozpontKezeloKepes
+		[_change_condition_5_1_0_objektumKezeloVezerloKozpontKezeloKepes]
+	transition from _VkInactive_1__objektumKezeloVezerloKozpontKezeloKepes to
+		VkInactive_objektumKezeloVezerloKozpontKezeloKepes [else]
+	transition from VkInactive_objektumKezeloVezerloKozpontKezeloKepes to
+		_VkInactive_2__objektumKezeloVezerloKozpontKezeloKepes when
+		DiszpecserPortIn.message_RigelMsgHeader
+		[DiszpecserPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgCommandConfirm] / {
+		var isCommandConfirmAccepted_objektumKezeloVezerloKozpontKezeloKepes : boolean := true;
+		_change_condition_5_1_1_objektumKezeloVezerloKozpontKezeloKepes :=
+			isCommandConfirmAccepted_objektumKezeloVezerloKozpontKezeloKepes;
+		if (_change_condition_5_1_1_objektumKezeloVezerloKozpontKezeloKepes) {
+			ProcessVkActive();
+		}
+	}
+	transition from _VkInactive_2__objektumKezeloVezerloKozpontKezeloKepes to
+		VkActive_objektumKezeloVezerloKozpontKezeloKepes
+		[_change_condition_5_1_1_objektumKezeloVezerloKozpontKezeloKepes]
+	transition from _VkInactive_2__objektumKezeloVezerloKozpontKezeloKepes to
+		VkInactive_objektumKezeloVezerloKozpontKezeloKepes [else]
+	procedure OrionDisconnToDiszp : void {
+	}
+	procedure ProcessVkActive : void {
+	}
+	procedure ProcessVkInactive : void {
+	}
+	procedure createAlkCommandVegrehajtas(Command : RigelObjControl) : RigelMsgHeader {
+		var header : RigelMsgHeader;
+		header.Command := Command;
+		return header;
+	}
+	procedure isHardHandling : boolean {
+		return true;
+	}
+}

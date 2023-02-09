@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -39,6 +39,7 @@ import hu.bme.mit.gamma.statechart.lowlevel.model.EventDirection
 import hu.bme.mit.gamma.statechart.lowlevel.model.Package
 import hu.bme.mit.gamma.statechart.lowlevel.model.Persistency
 import hu.bme.mit.gamma.statechart.lowlevel.model.Region
+import hu.bme.mit.gamma.statechart.lowlevel.model.RunUponExternalEventAnnotation
 import hu.bme.mit.gamma.statechart.lowlevel.model.StatechartDefinition
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.SequentialAction
@@ -202,6 +203,7 @@ class LowlevelToXstsTransformer {
 		xSts.optimizeXSts
 		xSts.fillNullTransitions
 		handleTransientAndResettableVariableAnnotations
+		handleRunUponExternalEventAnnotation
 		// The created EMF models are returned
 		return new SimpleEntry<XSTS, L2STrace>(xSts, trace.getTrace)
 	}
@@ -303,6 +305,10 @@ class LowlevelToXstsTransformer {
 						if (lowlevelEvent.persistency == Persistency.TRANSIENT) {
 							// Event is transient, its parameters are marked environment-resettable variables
 							xStsParam.addEnvironmentResettableAnnotation
+						}
+						if (lowlevelEventParameter.isInternal) {
+							// Variable (parameter) must not be set from the environment, only other components
+							xStsParam.addInternalAnnotation
 						}
 						eventParameterVariableGroup.variables += xStsParam
 						trace.put(lowlevelEventParameter, xStsParam) // Tracing
@@ -705,6 +711,21 @@ class LowlevelToXstsTransformer {
 			xSts.entryEventTransition.action.appendToAction(assignment.clone) // Cloning is important
 		}
 		xSts.changeTransitions(newMergedAction.wrap)
+	}
+	
+	protected def handleRunUponExternalEventAnnotation() {
+		val statechart = trace.statechart
+		val xStsInEventVariables = xSts.inEventVariableGroup.variables
+		if (statechart.hasAnnotation(RunUponExternalEventAnnotation) &&
+				!xStsInEventVariables.empty) {
+			val xStsMergedAction = xSts.mergedAction
+			
+			val condition = xStsInEventVariables.map[it.createReferenceExpression]
+				.wrapIntoOrExpression
+			val ifAction = condition.createIfAction(xStsMergedAction)
+			
+			xSts.mergedTransition.action = ifAction
+		}
 	}
 	
 	def dispose() {

@@ -35,6 +35,8 @@
         upperBound="-1" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclaration"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="eventDeclarations" upperBound="-1"
         eType="#//EventDeclaration" containment="true" eOpposite="#//EventDeclaration/component"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="annotations" upperBound="-1"
+        eType="#//ComponentAnnotation" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="SynchronousComponent" abstract="true"
       eSuperTypes="#//Component"/>
@@ -130,4 +132,8 @@
         eType="#//Region"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="state" lowerBound="1" eType="#//State"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ComponentAnnotation" abstract="true"/>
+  <eClassifiers xsi:type="ecore:EClass" name="StatechartAnnotation" abstract="true"
+      eSuperTypes="#//ComponentAnnotation"/>
+  <eClassifiers xsi:type="ecore:EClass" name="RunUponExternalEventAnnotation" eSuperTypes="#//StatechartAnnotation"/>
 </ecore:EPackage>

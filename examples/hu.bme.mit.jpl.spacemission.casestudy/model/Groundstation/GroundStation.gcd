@@ -9,7 +9,7 @@ statechart GroundStation [
 	region Main {
 		initial Entry1
 		state Idle {
-			entry / set autoStart := 30 s;
+			entry / set autoStart := 15 s;
 		}
 		state Operation {
 			entry / raise connection.ping; set pingTimeout := 10 s;

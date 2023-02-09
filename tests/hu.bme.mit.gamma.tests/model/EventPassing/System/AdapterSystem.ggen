@@ -1,0 +1,62 @@
+import "Statechart/Adder.gcd"
+import "Statechart/Counter.gcd"
+import "Statechart/Subtractor.gcd"
+
+import "AdapterSystem.gcd"
+
+code {
+	component : Adder
+	language : java
+}
+
+code {
+	component : Counter
+	language : java
+}
+
+code {
+	component : Subtractor
+	language : java
+}
+
+//
+
+code {
+	component : AdapterSystem
+	language : java
+}
+
+//
+
+analysis {
+	component : AdapterSystem
+	language : XSTS-UPPAAL
+	transition-coverage
+}
+
+verification {
+	file : "AdapterSystem.xml"
+	property-file : ".AdapterSystem.gpd"
+	language : XSTS-UPPAAL
+	test-language : java
+	optimize : true
+	back-annotate-to-original : true
+}
+
+analysis {
+	component : AdapterSystem
+	file : "AdapterSystem-Promela"
+	language : Promela
+	transition-coverage
+}
+
+verification {
+	file : "AdapterSystem-Promela.pml"
+	property-file : ".AdapterSystem-Promela.gpd"
+	verification-argument : "-search -bfs -DVECTORSZ=4092" 
+	language : Promela
+	test-language : java
+	optimize : true
+	optimize-model : true
+//	back-annotate-to-original : true // Not working with new names
+}

@@ -132,8 +132,14 @@ class XstsUppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 													potentialStateString.parseState(step)
 												}
 											}
+											else if (xStsUppaalQueryGenerator.isDelay(id)) {
+												step.addTimeElapse(Integer.valueOf(value))
+											}
 											else if (xStsUppaalQueryGenerator.isSourceVariable(id)) {
 												id.parseVariable(value, step)
+											}
+											else if (id.isSchedulingVariable) {
+												id.addScheduling(value, step)
 											}
 											else if (xStsUppaalQueryGenerator.isSourceOutEvent(id)) {
 												id.parseOutEvent(value, step)
@@ -197,7 +203,7 @@ class XstsUppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 								// Deleting events that are not raised (parameter values are always present)
 								step.checkInEvents
 								// Add schedule
-								step.addComponentScheduling
+								step.addSchedulingIfNeeded
 							}
 						}
 						case BackAnnotatorState.TRANSITIONS: {

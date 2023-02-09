@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022 Contributors to the Gamma project
+ * Copyright (c) 2022-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -17,6 +17,7 @@ import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.statechart.interface_.SchedulingConstraintAnnotation
 import hu.bme.mit.gamma.theta.verification.XstsBackAnnotator
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
+import hu.bme.mit.gamma.trace.model.Schedule
 import hu.bme.mit.gamma.trace.model.Step
 import hu.bme.mit.gamma.trace.model.TraceModelFactory
 import hu.bme.mit.gamma.trace.util.TraceUtil
@@ -175,20 +176,20 @@ class TraceBackAnnotator {
 								modelState = ModelState.TRANS
 							}
 							case line.startsWith(TRACE_END): {
-								step.checkStates
-								// Creating a new step
-								step = createStep
-								// Add static delay every turn
-								if (schedulingConstraint !== null) {
-									step.addTimeElapse(schedulingConstraint)
-								}
-
-								trace.steps += step
-								// Setting the state
-								backAnnotatorState = BackAnnotatorState.ENVIRONMENT_CHECK
-								
+//								step.checkStates
+//								// Creating a new step
+//								step = createStep
+//								// Add static delay every turn
+//								if (schedulingConstraint !== null) {
+//									step.addTimeElapse(schedulingConstraint)
+//								}
+//
+//								trace.steps += step
+//								// Setting the state
+//								backAnnotatorState = BackAnnotatorState.ENVIRONMENT_CHECK
+//								
 								traceEnd = true
-								traceState = TraceState.REQUIRED
+//								traceState = TraceState.REQUIRED
 							}
 						}
 					}
@@ -197,7 +198,7 @@ class TraceBackAnnotator {
 							case line.endsWith(TRANS_START): {
 								step.checkInEvents
 								// Add schedule
-								step.addComponentScheduling
+								step.addSchedulingIfNeeded
 								// Setting the state
 								backAnnotatorState = BackAnnotatorState.STATE_CHECK
 								
@@ -209,14 +210,14 @@ class TraceBackAnnotator {
 								modelState = ModelState.ENV
 							}
 							case line.startsWith(TRACE_END): {
-								step.checkInEvents
-								// Add schedule
-								step.addComponentScheduling
-								// Setting the state
-								backAnnotatorState = BackAnnotatorState.STATE_CHECK
-								
+//								step.checkInEvents
+//								// Add schedule
+//								step.addComponentScheduling
+//								// Setting the state
+//								backAnnotatorState = BackAnnotatorState.STATE_CHECK
+//								
 								traceEnd = true
-								traceState = TraceState.REQUIRED
+//								traceState = TraceState.REQUIRED
 							}
 						}
 					}
@@ -224,7 +225,7 @@ class TraceBackAnnotator {
 						throw new IllegalArgumentException("Not known state: " + modelState)
 				}
 				
-				// We parse in every turn
+				// We parse in every turn (at the end of env and trans)
 				if (traceState == TraceState.REQUIRED && line.checkLine) {
 					
 					var split = line.split(" = ")
@@ -250,6 +251,15 @@ class TraceBackAnnotator {
 			}
 			// Checking the last state (in events must NOT be deleted here though)
 			step.checkStates
+			
+			// Checking if Spin stopped in the middle due to finding an acceptance cycle
+			if (step.actions.filter(Schedule).empty && step.asserts.empty) {
+				val previousStep = step.previous as Step
+				step.remove
+				// Not correct as this is only the last step, but still, an indication for a cycle
+				trace.cycle = createCycle => [it.steps += previousStep]
+			}
+			
 			// Sorting if needed
 			if (sortTrace) {
 				trace.sortInstanceStates
@@ -258,6 +268,10 @@ class TraceBackAnnotator {
 			// If there are not enough lines, that means there are no environment actions
 			step.actions += createReset
 		}
+		
+		trace.removeInternalEventRaiseActs
+		trace.removeTransientVariableReferences // They always have default values
+		
 		return trace
 	}
 	
@@ -268,8 +282,14 @@ class TraceBackAnnotator {
 				if (promelaQueryGenerator.isSourceState(potentialStateString)) {
 					potentialStateString.parseState(step)
 				}
+				else if (promelaQueryGenerator.isDelay(id)) {
+					step.addTimeElapse(Integer.valueOf(value))
+				}
 				else if (promelaQueryGenerator.isSourceVariable(id)) {
 					id.parseVariable(value, step)
+				}
+				else if (id.isSchedulingVariable) {
+					id.addScheduling(value, step)
 				}
 				else if (promelaQueryGenerator.isSourceOutEvent(id)) {
 					id.parseOutEvent(value, step)
@@ -315,6 +335,11 @@ class TraceBackAnnotator {
 				(traceEnd && line.contains("proc  ")) ||
 				line.startsWith("Never claim moves to") ||
 				line.contains(" processes created") ||
-				line.startsWith("msg_parallel_"))
+				line.endsWith(" terminates") ||
+				line.startsWith("msg_parallel_")
+					// Addition
+					|| line.startsWith("queue ")
+				)
+				
 	}
 }

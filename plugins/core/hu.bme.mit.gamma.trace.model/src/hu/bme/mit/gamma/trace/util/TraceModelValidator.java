@@ -23,7 +23,6 @@ import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpressio
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.CompositeModelPackage;
-import hu.bme.mit.gamma.statechart.composite.ScheduledAsynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.Event;
@@ -88,11 +87,16 @@ public class TraceModelValidator extends StatechartModelValidator {
 	
 	public Collection<ValidationResultMessage> checkInstanceState(ComponentInstanceReferenceExpression instanceReference) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		
+		if (ecoreUtil.isContainedBy(instanceReference, InstanceSchedule.class)) {
+			return validationResultMessages;
+		}
+		
 		ComponentInstance instance = StatechartModelDerivedFeatures.getLastInstance(instanceReference);
 		if (!StatechartModelDerivedFeatures.isStatechart(instance)) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 				"This is not a statechart instance",
-					new ReferenceInfo(CompositeModelPackage.Literals.COMPONENT_INSTANCE_ELEMENT_REFERENCE_EXPRESSION__INSTANCE)));
+					new ReferenceInfo(CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE_EXPRESSION__COMPONENT_INSTANCE)));
 		}
 		return validationResultMessages;
 	}
@@ -138,14 +142,10 @@ public class TraceModelValidator extends StatechartModelValidator {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		ComponentInstanceReferenceExpression instanceReference = schedule.getInstanceReference();
 		ComponentInstance instance = StatechartModelDerivedFeatures.getLastInstance(instanceReference);
-		Component type = StatechartModelDerivedFeatures.getDerivedType(instance);
-		if (type instanceof ScheduledAsynchronousCompositeComponent) {
-			// TODO check if parent is pure async
-		}
-		else {
+		if (!StatechartModelDerivedFeatures.needsScheduling(instance)) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-					"Only scheduled-asynchronous and aynchronous adapter components can be scheduled",
-						new ReferenceInfo(TraceModelPackage.Literals.INSTANCE_SCHEDULE__INSTANCE_REFERENCE)));
+				"Only scheduled-asynchronous and aynchronous adapter components can be scheduled",
+					new ReferenceInfo(TraceModelPackage.Literals.INSTANCE_SCHEDULE__INSTANCE_REFERENCE)));
 		}
 		return validationResultMessages;
 	}

@@ -1,0 +1,8 @@
+verification {
+	language : Promela
+	file : "Mission.pml"
+	property-file : "Mission.gpd"
+	test-language : java
+//	optimize : true
+	optimize-model : true // Model reduction (slicing)
+}

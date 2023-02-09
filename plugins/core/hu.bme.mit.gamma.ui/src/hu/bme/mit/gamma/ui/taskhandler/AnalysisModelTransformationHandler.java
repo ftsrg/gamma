@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -14,6 +14,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -285,7 +286,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			return transformCoverageCriterion(notNullCoverage.getInteractionDataflowCoverageCriterion());
 		}
 				
-		protected Integer evaluateConstraint(hu.bme.mit.gamma.genmodel.model.Constraint constraint) {
+		protected Entry<Integer, Integer> evaluateConstraint(hu.bme.mit.gamma.genmodel.model.Constraint constraint) {
 			if (constraint == null) {
 				return null;
 			}
@@ -311,9 +312,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 				TimeSpecification maximumPeriod = orchestratingConstraint.getMaximumPeriod();
 				int min = statechartUtil.evaluateMilliseconds(minimumPeriod);
 				int max = statechartUtil.evaluateMilliseconds(maximumPeriod);
-				if (min == max) {
-					return min;
-				}
+				return new SimpleEntry<Integer, Integer>(min, max);
 			}
 			throw new IllegalArgumentException("Not known constraint: " + constraint);
 		}
@@ -477,7 +476,10 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			logger.log(Level.INFO, "Starting XSTS transformation");
 			ComponentReference reference = (ComponentReference) transformation.getModel();
 			Component component = reference.getComponent();
-			Integer schedulingConstraint = evaluateConstraint(transformation.getConstraint());
+			Entry<Integer, Integer> schedulingConstraint = evaluateConstraint(transformation.getConstraint());
+			Integer minSchedulingConstraint = (schedulingConstraint != null) ? schedulingConstraint.getKey() : null;
+			Integer maxSchedulingConstraint = (schedulingConstraint != null) ? schedulingConstraint.getValue() : null;
+			
 			String fileName = transformation.getFileName().get(0);
 			// Coverages
 			List<Coverage> coverages = transformation.getCoverages();
@@ -508,7 +510,8 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			
 			Gamma2XstsTransformerSerializer transformer = new Gamma2XstsTransformerSerializer(
 					component, reference.getArguments(),
-					targetFolderUri, fileName, schedulingConstraint,
+					targetFolderUri, fileName,
+					minSchedulingConstraint, maxSchedulingConstraint,
 					transformation.isOptimize(), true,
 					TransitionMerging.HIERARCHICAL,
 					transformation.getPropertyPackage(), new AnnotatablePreprocessableElements(
@@ -572,7 +575,9 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			logger.log(Level.INFO, "Starting Gamma -> XSTS-UPPAAL transformation");
 			ComponentReference reference = (ComponentReference) transformation.getModel();
 			Component component = reference.getComponent();
-			Integer schedulingConstraint = evaluateConstraint(transformation.getConstraint());
+			Entry<Integer, Integer> schedulingConstraint = evaluateConstraint(transformation.getConstraint());
+			Integer minSchedulingConstraint = (schedulingConstraint != null) ? schedulingConstraint.getKey() : null;
+			Integer maxSchedulingConstraint = (schedulingConstraint != null) ? schedulingConstraint.getValue() : null;
 			String fileName = transformation.getFileName().get(0);
 			// Coverages
 			List<Coverage> coverages = transformation.getCoverages();
@@ -603,7 +608,8 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			
 			Gamma2XstsUppaalTransformerSerializer transformer = new Gamma2XstsUppaalTransformerSerializer(
 					component, reference.getArguments(),
-					targetFolderUri, fileName, schedulingConstraint,
+					targetFolderUri, fileName,
+					minSchedulingConstraint, maxSchedulingConstraint,
 					transformation.isOptimize(),
 					TransitionMerging.HIERARCHICAL,
 					transformation.getPropertyPackage(),
@@ -639,7 +645,9 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 		public void execute(AnalysisModelTransformation transformation) throws IOException {
 			ComponentReference reference = (ComponentReference) transformation.getModel();
 			Component component = reference.getComponent();
-			Integer schedulingConstraint = evaluateConstraint(transformation.getConstraint());
+			Entry<Integer, Integer> schedulingConstraint = evaluateConstraint(transformation.getConstraint());
+			Integer minSchedulingConstraint = (schedulingConstraint != null) ? schedulingConstraint.getKey() : null;
+			Integer maxSchedulingConstraint = (schedulingConstraint != null) ? schedulingConstraint.getValue() : null;
 			String fileName = transformation.getFileName().get(0);
 			// Coverages
 			List<Coverage> coverages = transformation.getCoverages();
@@ -670,7 +678,8 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			
 			Gamma2XstsPromelaTransformerSerializer transformer = new Gamma2XstsPromelaTransformerSerializer(
 					component, reference.getArguments(),
-					targetFolderUri, fileName, schedulingConstraint,
+					targetFolderUri, fileName,
+					minSchedulingConstraint, maxSchedulingConstraint,
 					transformation.isOptimize(),
 					TransitionMerging.HIERARCHICAL,
 					transformation.getPropertyPackage(),

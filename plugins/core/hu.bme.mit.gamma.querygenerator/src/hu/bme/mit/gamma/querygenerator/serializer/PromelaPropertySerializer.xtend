@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022 Contributors to the Gamma project
+ * Copyright (c) 2022-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.querygenerator.serializer
 
+import hu.bme.mit.gamma.property.model.BinaryOperandLogicalPathFormula
 import hu.bme.mit.gamma.property.model.BinaryOperandPathFormula
 import hu.bme.mit.gamma.property.model.BinaryPathOperator
 import hu.bme.mit.gamma.property.model.PathFormula
@@ -52,6 +53,30 @@ class PromelaPropertySerializer extends ThetaPropertySerializer {
 		return leftOperand.getStableCondition(operator, rightOperand)
 	}
 	
+	dispatch def String serializeFormula(BinaryOperandLogicalPathFormula formula) {
+		val operator = formula.operator
+		val leftOperand = formula.leftOperand.serializeFormula
+		val rightOperand = formula.rightOperand.serializeFormula
+		return switch (operator) {
+			case AND: {
+				'''(«leftOperand» && «rightOperand»)'''
+			}
+			case IMPLY: {
+				'''(!(«leftOperand») || «rightOperand»)'''
+			}
+			case OR: {
+				'''(«leftOperand» || «rightOperand»)'''
+			}
+			case XOR: {
+				'''(!(«leftOperand») && «rightOperand») || («leftOperand») && !(«rightOperand»))'''
+			}
+			default: 
+				throw new IllegalArgumentException("Not supported operator: " + operator)
+		}
+	}
+	
+	//
+	
 	override protected isValidFormula(StateFormula stateFormula) {
 		val list = stateFormula.getSelfAndAllContentsOfType(QuantifiedFormula)
 		if (list.size > 1) {
@@ -68,6 +93,8 @@ class PromelaPropertySerializer extends ThetaPropertySerializer {
 		}
 		return true
 	}
+	
+	//
 	
 	protected def String transform(BinaryPathOperator operator) {
 		switch (operator) {

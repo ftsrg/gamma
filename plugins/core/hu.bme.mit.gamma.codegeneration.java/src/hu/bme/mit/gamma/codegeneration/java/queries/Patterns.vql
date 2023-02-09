@@ -153,19 +153,24 @@ pattern synchronousComponentWrappers(synchronousComponentWrapper : AsynchronousA
 
 pattern queuesOfClocks(wrapper : AsynchronousAdapter, queue : MessageQueue, clock : Clock) {
 	AsynchronousAdapter.messageQueues(wrapper, queue);
-	MessageQueue.eventReferences(queue, eventReference);
+	find sourceOfEventPassings(queue, eventReference);
 	ClockTickReference.clock(eventReference, clock);
 }
 
 pattern queuesOfEvents(queue : MessageQueue, port : Port, event : gif::Event) {
-	MessageQueue.eventReferences(queue, eventReference);
+	find sourceOfEventPassings(queue, eventReference);
 	PortEventReference.port(eventReference, port);
 	find eventsOfPorts(port, event);
 	PortEventReference.event(eventReference, event);
 } or {
-	MessageQueue.eventReferences(queue, eventReference);
+	find sourceOfEventPassings(queue, eventReference);
 	AnyPortEventReference.port(eventReference, port);
 	find eventsOfPorts(port, event);
+}
+
+pattern sourceOfEventPassings(queue : MessageQueue, sourceEventReference : EventReference) {
+	MessageQueue.eventPassings(queue, eventPassing);
+	EventPassing.source(eventPassing, sourceEventReference);
 }
 
 private pattern controlSpecifications(wrapper : AsynchronousAdapter, controlSpecification : ControlSpecification, trigger : SimpleTrigger, controlFunction : ControlFunction) {

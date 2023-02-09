@@ -54,8 +54,8 @@ class HavocHandler {
 	def dispatch List<Expression> createSet(BooleanTypeDefinition type, VariableDeclaration variable) {
 		val list = <Expression>newArrayList
 		
-		list += expressionFactory.createTrueExpression
 		list += expressionFactory.createFalseExpression
+		list += expressionFactory.createTrueExpression
 		
 		return list
 	}

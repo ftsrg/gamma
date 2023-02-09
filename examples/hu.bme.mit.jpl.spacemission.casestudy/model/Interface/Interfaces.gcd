@@ -5,9 +5,19 @@ interface DataSource {
 	in event ping
 }
 
+interface DataSources {
+	out event data
+	in event ping (types : Status)
+}
+
 interface StationControl {
 	out event start
 	out event shutdown
+}
+
+
+type Status : enum {
+	TRANSMIT
 }
 
 const SCHEDULE_CONSTRAINT : integer := 1501

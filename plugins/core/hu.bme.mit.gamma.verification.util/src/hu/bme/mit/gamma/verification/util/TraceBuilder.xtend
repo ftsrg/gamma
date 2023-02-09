@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -80,7 +80,8 @@ class TraceBuilder {
 		for (instanceVariableState : instanceVariableStates) {
 			val variable = instanceVariableState.variableDeclaration
 			if (variable.transient) {
-				instanceVariableState.remove
+				val expressionContainer = instanceVariableState.getSelfOrLastContainerOfType(Expression)
+				expressionContainer.remove
 			}
 		}
 	}
@@ -135,10 +136,14 @@ class TraceBuilder {
 	// Time elapse
 	
 	def addTimeElapse(Step step, Expression elapsedTime) {
-		return step.addTimeElapse(elapsedTime.evaluateInteger)
+		step.addTimeElapse(elapsedTime.evaluateInteger)
 	}
 	
 	def addTimeElapse(Step step, int elapsedTime) {
+		if (elapsedTime <= 0) {
+			return
+		}
+		
 		val timeElapseActions = step.actions.filter(TimeElapse)
 		if (!timeElapseActions.empty) {
 			// A single time elapse action in all steps
@@ -148,32 +153,48 @@ class TraceBuilder {
 		}
 		else {
 			// No time elapses in this step so far
-			step.actions += createTimeElapse => [
-				it.elapsedTime = elapsedTime.toIntegerLiteral
-			]
+			step.actions.add(0, // Always in front
+				createTimeElapse => [
+					it.elapsedTime = elapsedTime.toIntegerLiteral
+				]
+			)
 		}
 	}
 	
 	// Schedule
 	
-	def addScheduling(Step step, AsynchronousComponentInstance instance) {
-		step.actions += createInstanceSchedule => [
-			it.instanceReference = statechartUtil.createInstanceReferenceChain(instance)
-		]
-	}
-	
 	def addReset(Step step) {
 		step.actions += createReset
 	}
 	
-	def addComponentScheduling(Step step) {
-		step.actions += createComponentSchedule
+	def addScheduling(Step step) {
+		addScheduling(step, null)
+	}
+	
+	def addScheduling(Step step, AsynchronousComponentInstance instance) {
+		if (instance !== null) {
+			step.addInstanceScheduling(instance)
+		}
+		else {
+			step.addComponentScheduling
+		}
 	}
 	
 	def scheduleIfSynchronousComponent(Step step, Component component) {
 		if (component instanceof SynchronousComponent) {
 			step.addComponentScheduling
 		}
+	}
+	
+	private def void addComponentScheduling(Step step) {
+		step.actions += createComponentSchedule
+	}
+	
+	private def void addInstanceScheduling(Step step, AsynchronousComponentInstance instance) {
+		step.actions += createInstanceSchedule => [
+			it.instanceReference = statechartUtil.createInstanceReference(instance)
+			// Not reference chain - that is used for back-annotation to original component
+		]
 	}
 	
 	// Out event

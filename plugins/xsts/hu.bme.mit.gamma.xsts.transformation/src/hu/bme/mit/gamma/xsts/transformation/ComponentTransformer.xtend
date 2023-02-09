@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -115,6 +115,7 @@ class ComponentTransformer {
 		
 		val name = component.name
 		val xSts = name.createXsts
+		traceability.XSts = xSts
 		
 		val eventReferenceMapper = new ReferenceToXstsVariableMapper(xSts)
 		val valueDeclarationTransformer = new ValueDeclarationTransformer
@@ -216,7 +217,9 @@ class ComponentTransformer {
 								val slaveSizeVariable = (masterSizeVariable === null) ? null : createIntegerTypeDefinition
 										.createVariableDeclaration(slaveSizeVariableName)
 								
-								val messageQueueStruct = new MessageQueueStruct(slaveQueue, slaveSizeVariable)
+								val isInternal = parameter.isInternal
+								
+								val messageQueueStruct = new MessageQueueStruct(slaveQueue, slaveSizeVariable, isInternal)
 								slaveQueues += messageQueueStruct
 								typeSlaveQueues += messageQueueStruct
 								logger.log(Level.INFO, '''Created a slave queue for «port.name».«event.name»::«parameter.name»''')
@@ -233,7 +236,7 @@ class ComponentTransformer {
 				}
 				
 				val messageQueueMapping = new MessageQueueMapping(storedPortEvents,
-						new MessageQueueStruct(masterQueue, masterSizeVariable), slaveQueuesMap, typeSlaveQueuesMap)
+						new MessageQueueStruct(masterQueue, masterSizeVariable, false), slaveQueuesMap, typeSlaveQueuesMap)
 				queueTraceability.put(queue, messageQueueMapping)
 				val slaveQueueMappings = messageQueueMapping.typeSlaveQueues
 			
@@ -245,9 +248,16 @@ class ComponentTransformer {
 //				xStsMasterQueueVariable.addStrictControlAnnotation
 				xSts.variableDeclarations += xStsMasterQueueVariable
 				xSts.masterMessageQueueGroup.variables += xStsMasterQueueVariable
+				val isQueueEnvironmental = queue.isEnvironmentalAndCheck(systemPorts)
+				if (isQueueEnvironmental) {
+					xSts.systemMasterMessageQueueGroup.variables += xStsMasterQueueVariable
+				}
 				if (masterSizeVariable !== null) { // Can be null due to potential optimization
 					val xStsMasterSizeVariable = valueDeclarationTransformer.transform(masterSizeVariable).onlyElement
+					xStsMasterSizeVariable.addDeclarationReferenceAnnotation(xStsMasterQueueVariable)
+					
 					xSts.variableDeclarations += xStsMasterSizeVariable
+					xSts.messageQueueSizeGroup.variables += xStsMasterSizeVariable
 					xStsMasterSizeVariable.addStrictControlAnnotation // Needed for loops
 				}
 				
@@ -256,13 +266,19 @@ class ComponentTransformer {
 				checkState(slaveQueueStructs.unique)
 				for (slaveQueueStruct : slaveQueueStructs) {
 					val slaveQueue = slaveQueueStruct.arrayVariable
-					xSts.variableDeclarations += valueDeclarationTransformer.transform(slaveQueue)
+					val xStsSlaveQueueVariables = valueDeclarationTransformer.transform(slaveQueue)
+					xSts.variableDeclarations += xStsSlaveQueueVariables
+					xSts.slaveMessageQueueGroup.variables += xStsSlaveQueueVariables
+					if (isQueueEnvironmental) {
+						xSts.systemSlaveMessageQueueGroup.variables += xStsSlaveQueueVariables
+					}
 					val slaveSizeVariable = slaveQueueStruct.sizeVariable
 					if (slaveSizeVariable !== null) {
 						val xStsSlaveSizeVariable = valueDeclarationTransformer.transform(slaveSizeVariable).onlyElement
-						xSts.variableDeclarations += xStsSlaveSizeVariable
-						xSts.slaveMessageQueueGroup.variables += xStsSlaveSizeVariable
+						xStsSlaveSizeVariable.addDeclarationReferenceAnnotation(xStsSlaveQueueVariables.head) // Not sound due to slave queue opt?
 						
+						xSts.variableDeclarations += xStsSlaveSizeVariable
+						xSts.messageQueueSizeGroup.variables += xStsSlaveSizeVariable
 						xStsSlaveSizeVariable.addStrictControlAnnotation // Needed for loops
 						// The type might not be correct here and later has to be reassigned to handle enums
 					}
@@ -320,12 +336,15 @@ class ComponentTransformer {
 				
 				val events = queue.storedEvents
 				for (portEvent : events) {
-					val port = portEvent.key
-					val event = portEvent.value
 					val eventId = queueTraceability.get(portEvent)
 					
+					val targetPortEvent = queue.getTargetPortEvent(portEvent)
+					val targetPort = targetPortEvent.key
+					val targetEvent = targetPortEvent.value
+					// Mapping source event reference to target 
+					
 					// Can be empty due to optimization or adapter event
-					val xStsInEventVariables = eventReferenceMapper.getInputEventVariables(event, port)
+					val xStsInEventVariables = eventReferenceMapper.getInputEventVariables(targetEvent, targetPort)
 					
 					val ifExpression = xStsEventIdVariable.createReferenceExpression
 							.createEqualityExpression(eventId.toIntegerLiteral)
@@ -338,7 +357,7 @@ class ComponentTransformer {
 					// Setting the parameter variables with values stored in slave queues
 					val slaveQueueStructs = slaveQueues.get(portEvent) // Might be empty
 					
-					val inParameters = event.parameterDeclarations
+					val inParameters = targetEvent.parameterDeclarations
 					val slaveQueueSize = slaveQueueStructs.size // Might be 0 if there is no in-event var
 					
 					if (inParameters.size <= slaveQueueSize) {
@@ -352,7 +371,7 @@ class ComponentTransformer {
 							val xStsSlaveSizeVariable = (slaveSizeVariable === null) ? null :
 									variableTrace.getAll(slaveSizeVariable).onlyElement
 							val xStsInParameterVariableLists = eventReferenceMapper
-									.getInputParameterVariablesByPorts(inParameter, port)
+									.getInputParameterVariablesByPorts(inParameter, targetPort)
 							// Separated in the lists according to ports
 							for (xStsInParameterVariables : xStsInParameterVariableLists) {
 								// Parameter optimization problem: parameters are not deleted independently
@@ -470,6 +489,7 @@ class ComponentTransformer {
 				}
 			}
 		}
+		val xStsDeletableSlaveQueues = newHashSet
 		for (queue : environmentalQueues) {
 			val adapter = queue.containingComponent
 			
@@ -503,7 +523,7 @@ class ComponentTransformer {
 			// A value should be inserted into the queue if
 			// (size + (higher1Size + ... + higher(N-1)Size) < theoreticalTotalCapacity))
 			val isThereTheoreticalCapacityExression = queueSizes.wrapIntoAddExpression.createLessExpression(
-					queueTheoreticalCapacities.toIntegerLiteral) // TODO remove itself
+					queueTheoreticalCapacities.toIntegerLiteral) // TODO ?? remove itself ??
 			// And the actual queue is not full
 			val isMasterQueueNotFull = xStsMasterQueue.isMasterQueueNotFull(xStsMasterSizeVariable)
 			// The first part is necessary if there are more queues
@@ -586,7 +606,23 @@ class ComponentTransformer {
 									xStsSlaveQueue.randomValueLocalVariableName)
 							val xStsRandomVariable = xStsRandomVariableAction.variableDeclaration
 							xStsSlaveQueueSetting.actions += xStsRandomVariableAction
-							xStsSlaveQueueSetting.actions += xStsRandomVariable.createHavocAction
+							if (slaveQueueStruct.internal) {
+								// Assigning default values to internal parameter queues. This is needed if 
+								// the queue is not environmental, otherwise parameter values can shift to wrong indexes
+								xStsRandomVariable.expression = xStsRandomVariable.defaultExpression
+								if (queue.isEnvironmentalAndCheck(systemPorts)) {
+									// We delete this slave queue later as we do not want to override internal parameters
+									logger.log(Level.INFO, "Internal parameter slave queue for system port: " + xStsSlaveQueue.name)
+									xStsDeletableSlaveQueues += xStsSlaveQueue
+								}
+								else {
+									// Currently cannot be reached due to isEnvironmentalAndCheck
+								}
+							}
+							else {
+								// Assigning a random value
+								xStsSlaveQueueSetting.actions += xStsRandomVariable.createHavocAction
+							}
 							xStsRandomValues += xStsRandomVariable.createReferenceExpression
 						}
 						xStsSlaveQueueSetting.actions += xStsSlaveQueues
@@ -606,6 +642,12 @@ class ComponentTransformer {
 		//
 		
 		xSts.changeTransitions(mergedAction.wrap)
+		
+		// Deleting environmental slave queues for internal parameters;
+		// after the construction of the entire XSTS to handle in events and merged events, too
+		xStsDeletableSlaveQueues.changeAssignmentsAndReadingAssignmentsToEmptyActions(xSts)
+		xStsDeletableSlaveQueues.forEach[it.deleteDeclaration] // Variable groups
+		//
 		
 		return xSts
 	}
@@ -749,7 +791,7 @@ class ComponentTransformer {
 		
 		for (instance : component.scheduledInstances) { // To support multiple execution
 			val instanceType = instance.type
-			asynchronousCompositeAction.actions +=
+			val action =
 			if (instanceType instanceof AbstractAsynchronousCompositeComponent) {
 				instanceType.mergeAsynchronousCompositeActions(mergedAdapterActions)
 			}
@@ -757,9 +799,50 @@ class ComponentTransformer {
 				val adapterAction = mergedAdapterActions.checkAndGet(instance)
 				adapterAction.clone // Important due to multiple executions
 			}
+			asynchronousCompositeAction.actions += action
+			
+			// Encode asynchronous component instances
+			instance.encodeAsynchronousComponentInstances(action)
+			//
 		}
 		
 		return asynchronousCompositeAction
+	}
+	
+	//
+	
+	protected def void encodeAsynchronousComponentInstances(
+			AsynchronousComponentInstance instance, Action action) {
+		if (!instance.needsScheduling) {
+			return
+		}
+		
+		val XSTS xSts = traceability.XSts
+		
+		val instanceEndcodingVariable = xSts.getOrCreateInstanceEndcodingVariable
+		
+		val index = instance.schedulingIndex
+		
+		val encodingAssignment = instanceEndcodingVariable.createAssignmentAction(
+				index.toIntegerLiteral)
+		action.appendToAction(encodingAssignment)
+	}
+	
+	protected def getOrCreateInstanceEndcodingVariable(XSTS xSts) {
+		val name = instanceEndcodingVariableName
+		
+		var instanceEndcodingVariable = xSts.getVariable(name)
+		if (instanceEndcodingVariable === null) {
+			instanceEndcodingVariable = createIntegerTypeDefinition
+					.createVariableDeclaration(name)
+			
+			instanceEndcodingVariable.addUnremovableAnnotation
+			instanceEndcodingVariable.addResettableAnnotation
+			
+			xSts.variableDeclarations += instanceEndcodingVariable
+		}
+		
+		return instanceEndcodingVariable
 	}
 	
 	//
@@ -851,6 +934,12 @@ class ComponentTransformer {
 			// Original parameter settings
 			// Parameters that come from the same ports are bound to the same values - done by previous call
 			newInEventAction.actions += inEventAction.action
+			
+			// Removing internal parameter settings
+			val xStsInternalInEventPrameters = xSts.inEventParameterVariableGroup.variables
+					.filter[it.internal].toList
+			xStsInternalInEventPrameters.changeAssignmentsToEmptyActions(newInEventAction)
+			//
 			
 			xSts.inEventTransition = newInEventAction.wrap
 		}
@@ -1014,7 +1103,6 @@ class ComponentTransformer {
 		// After in event optimization
 		logger.log(Level.INFO, "Readjusting internal event handlings in " + name)
 		xSts.replaceInternalEventHandlingActions(component, traceability)
-		// TODO internal event optimization?
 		
 		return xSts
 	}

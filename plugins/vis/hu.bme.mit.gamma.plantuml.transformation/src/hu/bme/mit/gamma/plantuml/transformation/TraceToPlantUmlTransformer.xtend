@@ -65,7 +65,7 @@ class TraceToPlantUmlTransformer {
 	
 	protected def serialize(Step step) '''
 		«FOR time : step.actions.filter(TimeElapse)»
-			...wait «time.elapsedTime»ms...
+			...wait «time.elapsedTime.serialize»ms...
 		«ENDFOR»
 		
 		«FOR act : step.actions.filter(RaiseEventAct)»
