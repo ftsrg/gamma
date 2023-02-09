@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -163,24 +163,38 @@ class TraceBuilder {
 	
 	// Schedule
 	
-	def addScheduling(Step step, AsynchronousComponentInstance instance) {
-		step.actions += createInstanceSchedule => [
-			it.instanceReference = statechartUtil.createInstanceReferenceChain(instance)
-		]
-	}
-	
 	def addReset(Step step) {
 		step.actions += createReset
 	}
 	
-	def addComponentScheduling(Step step) {
-		step.actions += createComponentSchedule
+	def addScheduling(Step step) {
+		addScheduling(step, null)
+	}
+	
+	def addScheduling(Step step, AsynchronousComponentInstance instance) {
+		if (instance !== null) {
+			step.addInstanceScheduling(instance)
+		}
+		else {
+			step.addComponentScheduling
+		}
 	}
 	
 	def scheduleIfSynchronousComponent(Step step, Component component) {
 		if (component instanceof SynchronousComponent) {
 			step.addComponentScheduling
 		}
+	}
+	
+	private def void addComponentScheduling(Step step) {
+		step.actions += createComponentSchedule
+	}
+	
+	private def void addInstanceScheduling(Step step, AsynchronousComponentInstance instance) {
+		step.actions += createInstanceSchedule => [
+			it.instanceReference = statechartUtil.createInstanceReference(instance)
+			// Not reference chain - that is used for back-annotation to original component
+		]
 	}
 	
 	// Out event

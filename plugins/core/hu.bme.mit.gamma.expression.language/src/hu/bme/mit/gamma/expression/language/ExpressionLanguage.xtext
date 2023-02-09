@@ -58,6 +58,10 @@ ResettableVariableDeclarationAnnotation returns ResettableVariableDeclarationAnn
 	{ResettableVariableDeclarationAnnotation} '@Resettable'
 ;
 
+UnremovableVariableDeclarationAnnotation returns UnremovableVariableDeclarationAnnotation:
+	{UnremovableVariableDeclarationAnnotation} '@Unremovable'
+;
+
 //Abstraction for extensibility
 FunctionDeclaration:
 	LambdaDeclaration

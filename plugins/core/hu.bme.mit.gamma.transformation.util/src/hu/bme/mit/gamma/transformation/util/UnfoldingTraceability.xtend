@@ -325,12 +325,24 @@ class UnfoldingTraceability {
 			originalInstances.add(0, wrapperInstance)
 		}
 		
+//		if (lastOriginalInstance.asynchronousStatechart) {
+//			val asynchronousStatechart = lastOriginalInstance.derivedType
+//			
+//			val wrappedStatechart = asynchronousStatechart.wrapComponent
+//			val wrapperInstance = wrappedStatechart.instances.head
+//			
+//			originalInstances += wrapperInstance
+//		}
+		
 		// The naming conventions are clear
 		// Without originalInstances.head.name == copyInstances.head.name,
 		// ambiguous naming situations could occur, e.g.,
 		// the FQN of the chain "a -> b" is equal to the name of instance "a_b"
+		val copyName = copy.name
+		val originalFqn = originalInstances.FQN
+		
 		return originalInstances.head.name == copyInstances.head.name &&
-			copy.name.startsWith(originalInstances.FQN)
+			copyName.startsWith(originalFqn)
 	}
 	
 	// Currently not used - maybe in the future?
@@ -386,6 +398,22 @@ class UnfoldingTraceability {
 //					return originalSimpleInstance.getChild // Removing wrapper instance
 //				}
 				return originalSimpleInstance
+			}
+		}
+		throw new IllegalStateException("Not found original instance for " + newInstance)
+	}
+	
+	def getOriginalScheduledInstanceReferences(Component originalType) {
+		return originalType.allScheduledInstanceReferences
+	}
+	
+	def getOriginalScheduledInstanceReference(
+			ComponentInstance newInstance, Component originalType) {
+		val originalScheduledInstances = originalType.originalScheduledInstanceReferences
+
+		for (originalScheduledInstance : originalScheduledInstances) {
+			if (originalScheduledInstance.contains(newInstance)) {
+				return originalScheduledInstance
 			}
 		}
 		throw new IllegalStateException("Not found original instance for " + newInstance)

@@ -16,6 +16,7 @@ import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
+import hu.bme.mit.gamma.expression.model.UnremovableVariableDeclarationAnnotation
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.VariableGroupRetriever
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer.XstsOptimizer
@@ -207,6 +208,8 @@ class SystemReducer {
 			// To check and remove 'a := a - 1' like deletable variables
 			xStsDeleteableVariables -= xSts.externallyReadVariables
 			xStsDeleteableVariables -= xStsKeepableVariables
+			xStsDeleteableVariables.removeIf[it.hasAnnotation(UnremovableVariableDeclarationAnnotation)]
+			
 			
 			xSts.deleteVariablesAndAssignments(xStsDeleteableVariables)
 		}
@@ -246,6 +249,7 @@ class SystemReducer {
 		val xStsDeletableVariables = newHashSet
 		xStsDeletableVariables += oneValueXStsVariables
 		xStsDeletableVariables -= xStsKeepableVariables
+		xStsDeletableVariables.removeIf[it.hasAnnotation(UnremovableVariableDeclarationAnnotation)]
 		
 		xSts.deleteVariablesAndAssignments(xStsDeletableVariables)
 	}

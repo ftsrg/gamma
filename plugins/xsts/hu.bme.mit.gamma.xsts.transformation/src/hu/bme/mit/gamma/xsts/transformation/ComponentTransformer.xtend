@@ -115,6 +115,7 @@ class ComponentTransformer {
 		
 		val name = component.name
 		val xSts = name.createXsts
+		traceability.XSts = xSts
 		
 		val eventReferenceMapper = new ReferenceToXstsVariableMapper(xSts)
 		val valueDeclarationTransformer = new ValueDeclarationTransformer
@@ -790,7 +791,7 @@ class ComponentTransformer {
 		
 		for (instance : component.scheduledInstances) { // To support multiple execution
 			val instanceType = instance.type
-			asynchronousCompositeAction.actions +=
+			val action =
 			if (instanceType instanceof AbstractAsynchronousCompositeComponent) {
 				instanceType.mergeAsynchronousCompositeActions(mergedAdapterActions)
 			}
@@ -798,9 +799,50 @@ class ComponentTransformer {
 				val adapterAction = mergedAdapterActions.checkAndGet(instance)
 				adapterAction.clone // Important due to multiple executions
 			}
+			asynchronousCompositeAction.actions += action
+			
+			// Encode asynchronous component instances
+			instance.encodeAsynchronousComponentInstances(action)
+			//
 		}
 		
 		return asynchronousCompositeAction
+	}
+	
+	//
+	
+	protected def void encodeAsynchronousComponentInstances(
+			AsynchronousComponentInstance instance, Action action) {
+		if (!instance.needsScheduling) {
+			return
+		}
+		
+		val XSTS xSts = traceability.XSts
+		
+		val instanceEndcodingVariable = xSts.getOrCreateInstanceEndcodingVariable
+		
+		val index = instance.schedulingIndex
+		
+		val encodingAssignment = instanceEndcodingVariable.createAssignmentAction(
+				index.toIntegerLiteral)
+		action.appendToAction(encodingAssignment)
+	}
+	
+	protected def getOrCreateInstanceEndcodingVariable(XSTS xSts) {
+		val name = instanceEndcodingVariableName
+		
+		var instanceEndcodingVariable = xSts.getVariable(name)
+		if (instanceEndcodingVariable === null) {
+			instanceEndcodingVariable = createIntegerTypeDefinition
+					.createVariableDeclaration(name)
+			
+			instanceEndcodingVariable.addUnremovableAnnotation
+			instanceEndcodingVariable.addResettableAnnotation
+			
+			xSts.variableDeclarations += instanceEndcodingVariable
+		}
+		
+		return instanceEndcodingVariable
 	}
 	
 	//

@@ -256,4 +256,6 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="declaration" lowerBound="1"
         eType="#//Declaration"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="UnremovableVariableDeclarationAnnotation"
+      eSuperTypes="#//VariableDeclarationAnnotation"/>
 </ecore:EPackage>

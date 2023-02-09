@@ -196,7 +196,7 @@ class ReflectiveComponentCodeGenerator {
 	
 	protected def generateScheduling(Component component) '''
 		public void schedule(String instance) {
-			«IF component instanceof SynchronousComponent»
+			«IF component instanceof SynchronousComponent || component instanceof StatechartDefinition»
 					«Namings.REFLECTIVE_WRAPPED_COMPONENT».runCycle();
 			«ELSEIF component instanceof AsynchronousAdapter ||
 				component instanceof ScheduledAsynchronousCompositeComponent»

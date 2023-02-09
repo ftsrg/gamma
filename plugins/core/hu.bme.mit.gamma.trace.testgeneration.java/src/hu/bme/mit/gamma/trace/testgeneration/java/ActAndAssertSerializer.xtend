@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -92,9 +92,9 @@ class ActAndAssertSerializer {
 		«assignment.lhs.serialize» = («assignment.lhs.type.serialize») «assignment.rhs.serialize»;
 	'''
 
-	def dispatch serialize(InstanceSchedule schedule) {
-		throw new IllegalArgumentException("Not supported act: " + schedule)
-	}
+	def dispatch serialize(InstanceSchedule schedule) '''
+		«schedule.instanceReference.serializeInstanceReference».schedule();
+	'''
 
 	def dispatch String serialize(ComponentSchedule schedule) '''
 «««		Theoretically, only asynchronous adapters and synchronous adapters are used

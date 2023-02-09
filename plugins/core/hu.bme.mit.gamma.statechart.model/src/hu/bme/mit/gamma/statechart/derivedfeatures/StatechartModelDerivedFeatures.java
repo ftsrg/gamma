@@ -50,6 +50,7 @@ import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeCompone
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponent;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance;
+import hu.bme.mit.gamma.statechart.composite.AsynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.BroadcastChannel;
 import hu.bme.mit.gamma.statechart.composite.CascadeCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.Channel;
@@ -715,6 +716,135 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return javaUtil.filterIntoList(adapterInstances, AsynchronousComponentInstance.class);
 	}
 	
+	public static List<AsynchronousComponentInstance> getAllScheduledInstances(Component component) {
+		List<ComponentInstance> adapterInstances =
+				getAllInstances(component).stream()
+					.filter(it -> isAdapter(it) || it instanceof ScheduledAsynchronousCompositeComponent)
+					.collect(Collectors.toList());
+		return javaUtil.filterIntoList(adapterInstances, AsynchronousComponentInstance.class);
+	}
+	
+	public static int getSchedulingIndex(AsynchronousComponentInstance instance) {
+		Package _package = getContainingPackage(instance);
+		Component firstComponent = getFirstComponent(_package);
+		List<AsynchronousComponentInstance> scheduledInstances = getAllScheduledInstances(firstComponent);
+		return scheduledInstances.indexOf(instance) + 1; // + 1 to avoid 0s
+	}
+	
+	public static AsynchronousComponentInstance getScheduledInstance(Component component, int i) {
+		List<AsynchronousComponentInstance> allScheduledInstances = getAllScheduledInstances(component);
+		return allScheduledInstances.get(i - 1); // - 1 needed, see getSchedulingIndex
+	}
+	
+	public static boolean needsScheduling(ComponentInstance instance) {
+		EObject container = instance.eContainer();
+		return container instanceof AsynchronousCompositeComponent &&
+			!(getDerivedType(instance) instanceof AsynchronousCompositeComponent); // Scheduled or Adapter
+	}
+	
+	public static List<ComponentInstance> getInitallyScheduledInstances(
+			SchedulableCompositeComponent component) {
+		List<ComponentInstance> initallyScheduledInstances = new ArrayList<ComponentInstance>();
+		for (ComponentInstanceReferenceExpression instanceReference : component.getInitialExecutionList()) {
+			ComponentInstance componentInstance = instanceReference.getComponentInstance(); // No child
+			initallyScheduledInstances.add(componentInstance);
+		}
+		return initallyScheduledInstances;
+	}
+	
+	public static List<ComponentInstance> getAllInitallyScheduledAsynchronousSimpleInstances(
+			AbstractAsynchronousCompositeComponent component) {
+		List<ComponentInstance> initallyScheduledInstances = new ArrayList<ComponentInstance>();
+		
+		if (component instanceof SchedulableCompositeComponent schedulableComponent) {
+			for (ComponentInstanceReferenceExpression instanceReference :
+						schedulableComponent.getInitialExecutionList()) {
+				ComponentInstance componentInstance = instanceReference.getComponentInstance(); // No child
+				Component subtype = getDerivedType(componentInstance);
+				if (subtype instanceof SchedulableCompositeComponent) {
+					initallyScheduledInstances.addAll(
+						getAllAsynchronousSimpleInstances(subtype));
+				}
+				else { // Asynchronous adapter
+					initallyScheduledInstances.add(componentInstance);
+				}
+			}
+		}
+		// No else - not recursive/transitive property
+		
+		return initallyScheduledInstances;
+	}
+	
+	public static List<? extends ComponentInstance> getScheduledInstances(Component component) {
+		if (component instanceof AbstractSynchronousCompositeComponent synchronousComponent) {
+			return getScheduledInstances(synchronousComponent);
+		}
+		else if (component instanceof AbstractAsynchronousCompositeComponent asynchronousComponent) {
+			return getScheduledInstances(asynchronousComponent);
+		}
+		else if (component instanceof AsynchronousAdapter asynchronusAdapter) {
+			return List.of(asynchronusAdapter.getWrappedComponent());
+		}
+		throw new IllegalArgumentException("Not known component: " + component);
+	}
+	
+	public static List<SynchronousComponentInstance> getScheduledInstances(
+			AbstractSynchronousCompositeComponent component) {
+		if (component instanceof CascadeCompositeComponent) {
+			CascadeCompositeComponent cascade = (CascadeCompositeComponent) component;
+			List<ComponentInstanceReferenceExpression> executionList = cascade.getExecutionList();
+			if (!executionList.isEmpty()) {
+				List<SynchronousComponentInstance> instances =
+						new ArrayList<SynchronousComponentInstance>();
+				for (ComponentInstanceReferenceExpression instanceReference : executionList) {
+					SynchronousComponentInstance componentInstance =
+						(SynchronousComponentInstance) instanceReference.getComponentInstance();
+					instances.add(componentInstance);
+				}
+				return instances;
+			}
+		}
+		return component.getComponents();
+	}
+	
+	public static List<AsynchronousComponentInstance> getScheduledInstances(
+			AbstractAsynchronousCompositeComponent component) {
+		if (component instanceof ScheduledAsynchronousCompositeComponent) {
+			ScheduledAsynchronousCompositeComponent scheduledComponent =
+					(ScheduledAsynchronousCompositeComponent) component;
+			List<ComponentInstanceReferenceExpression> executionList = scheduledComponent.getExecutionList();
+			if (!executionList.isEmpty()) {
+				List<AsynchronousComponentInstance> instances =
+						new ArrayList<AsynchronousComponentInstance>();
+				for (ComponentInstanceReferenceExpression instanceReference : executionList) {
+					AsynchronousComponentInstance componentInstance =
+						(AsynchronousComponentInstance) instanceReference.getComponentInstance();
+					instances.add(componentInstance);
+				}
+				return instances;
+			}
+		}
+		return component.getComponents();
+	}
+	
+//	public static List<AsynchronousComponentInstance> getAllScheduledAsynchronousSimpleInstances(
+//			AbstractAsynchronousCompositeComponent component) {
+//		List<AsynchronousComponentInstance> simpleInstances =
+//				new ArrayList<AsynchronousComponentInstance>();
+//		for (AsynchronousComponentInstance instance : getScheduledInstances(component)) {
+//			if (isAdapter(instance)) {
+//				simpleInstances.add(instance);
+//			}
+//			else {
+//				AbstractAsynchronousCompositeComponent type =
+//						(AbstractAsynchronousCompositeComponent) instance.getType();
+//				simpleInstances.addAll(
+//						getAllScheduledAsynchronousSimpleInstances(type));
+//			}
+//		}
+//		return simpleInstances;
+//	}
+	
 	public static List<ComponentInstanceReferenceExpression> getAllSimpleInstanceReferences(
 			ComponentInstance instance) {
 		Component type = getDerivedType(instance);
@@ -768,6 +898,28 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 				}
 			}
 		}
+		return instanceReferences;
+	}
+	
+	public static List<ComponentInstanceReferenceExpression> getAllScheduledInstanceReferences(Component component) {
+		List<ComponentInstanceReferenceExpression> instanceReferences = new ArrayList<ComponentInstanceReferenceExpression>();
+		
+		if (component instanceof AsynchronousCompositeComponent compositeComponent) {
+			for (AsynchronousComponentInstance instance : compositeComponent.getComponents()) {
+				Component type = getDerivedType(instance);
+				List<ComponentInstanceReferenceExpression> childReferences = getAllScheduledInstanceReferences(type);
+				if (childReferences.isEmpty()) {
+					ComponentInstanceReferenceExpression instanceReference =
+							statechartUtil.createInstanceReference(instance);
+					instanceReferences.add(instanceReference);
+				}
+				else {
+					instanceReferences.addAll(
+							statechartUtil.prepend(childReferences, instance));
+				}
+			}
+		}
+		
 		return instanceReferences;
 	}
 	
@@ -2785,109 +2937,6 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	public static boolean contains(ComponentInstance potentialContainer, ComponentInstance instance) {
 		List<ComponentInstance> instances = getInstances(potentialContainer);
 		return instances.contains(instance);
-	}
-	
-	public static List<ComponentInstance> getInitallyScheduledInstances(
-			SchedulableCompositeComponent component) {
-		List<ComponentInstance> initallyScheduledInstances = new ArrayList<ComponentInstance>();
-		for (ComponentInstanceReferenceExpression instanceReference : component.getInitialExecutionList()) {
-			ComponentInstance componentInstance = instanceReference.getComponentInstance(); // No child
-			initallyScheduledInstances.add(componentInstance);
-		}
-		return initallyScheduledInstances;
-	}
-	
-	public static List<ComponentInstance> getAllInitallyScheduledAsynchronousSimpleInstances(
-			AbstractAsynchronousCompositeComponent component) {
-		List<ComponentInstance> initallyScheduledInstances = new ArrayList<ComponentInstance>();
-		
-		if (component instanceof SchedulableCompositeComponent schedulableComponent) {
-			for (ComponentInstanceReferenceExpression instanceReference :
-						schedulableComponent.getInitialExecutionList()) {
-				ComponentInstance componentInstance = instanceReference.getComponentInstance(); // No child
-				Component subtype = getDerivedType(componentInstance);
-				if (subtype instanceof SchedulableCompositeComponent) {
-					initallyScheduledInstances.addAll(
-						getAllAsynchronousSimpleInstances(subtype));
-				}
-				else { // Asynchronous adapter
-					initallyScheduledInstances.add(componentInstance);
-				}
-			}
-		}
-		// No else - not recursive/transitive property
-		
-		return initallyScheduledInstances;
-	}
-	
-	public static List<? extends ComponentInstance> getScheduledInstances(Component component) {
-		if (component instanceof AbstractSynchronousCompositeComponent synchronousComponent) {
-			return getScheduledInstances(synchronousComponent);
-		}
-		else if (component instanceof AbstractAsynchronousCompositeComponent asynchronousComponent) {
-			return getScheduledInstances(asynchronousComponent);
-		}
-		else if (component instanceof AsynchronousAdapter asynchronusAdapter) {
-			return List.of(asynchronusAdapter.getWrappedComponent());
-		}
-		throw new IllegalArgumentException("Not known component: " + component);
-	}
-	
-	public static List<SynchronousComponentInstance> getScheduledInstances(
-			AbstractSynchronousCompositeComponent component) {
-		if (component instanceof CascadeCompositeComponent) {
-			CascadeCompositeComponent cascade = (CascadeCompositeComponent) component;
-			List<ComponentInstanceReferenceExpression> executionList = cascade.getExecutionList();
-			if (!executionList.isEmpty()) {
-				List<SynchronousComponentInstance> instances =
-						new ArrayList<SynchronousComponentInstance>();
-				for (ComponentInstanceReferenceExpression instanceReference : executionList) {
-					SynchronousComponentInstance componentInstance =
-						(SynchronousComponentInstance) instanceReference.getComponentInstance();
-					instances.add(componentInstance);
-				}
-				return instances;
-			}
-		}
-		return component.getComponents();
-	}
-	
-	public static List<AsynchronousComponentInstance> getScheduledInstances(
-			AbstractAsynchronousCompositeComponent component) {
-		if (component instanceof ScheduledAsynchronousCompositeComponent) {
-			ScheduledAsynchronousCompositeComponent scheduledComponent =
-					(ScheduledAsynchronousCompositeComponent) component;
-			List<ComponentInstanceReferenceExpression> executionList = scheduledComponent.getExecutionList();
-			if (!executionList.isEmpty()) {
-				List<AsynchronousComponentInstance> instances =
-						new ArrayList<AsynchronousComponentInstance>();
-				for (ComponentInstanceReferenceExpression instanceReference : executionList) {
-					AsynchronousComponentInstance componentInstance =
-						(AsynchronousComponentInstance) instanceReference.getComponentInstance();
-					instances.add(componentInstance);
-				}
-				return instances;
-			}
-		}
-		return component.getComponents();
-	}
-	
-	public static List<AsynchronousComponentInstance> getAllScheduledAsynchronousSimpleInstances(
-			AbstractAsynchronousCompositeComponent component) {
-		List<AsynchronousComponentInstance> simpleInstances =
-				new ArrayList<AsynchronousComponentInstance>();
-		for (AsynchronousComponentInstance instance : getScheduledInstances(component)) {
-			if (isAdapter(instance)) {
-				simpleInstances.add(instance);
-			}
-			else {
-				AbstractAsynchronousCompositeComponent type =
-						(AbstractAsynchronousCompositeComponent) instance.getType();
-				simpleInstances.addAll(
-						getAllScheduledAsynchronousSimpleInstances(type));
-			}
-		}
-		return simpleInstances;
 	}
 	
 	public static int getScheduleCount(Component component) {

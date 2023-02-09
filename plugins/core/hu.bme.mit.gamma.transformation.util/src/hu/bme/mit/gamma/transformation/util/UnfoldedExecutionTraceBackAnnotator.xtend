@@ -28,6 +28,7 @@ import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.trace.model.ComponentSchedule
 import hu.bme.mit.gamma.trace.model.Cycle
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
+import hu.bme.mit.gamma.trace.model.InstanceSchedule
 import hu.bme.mit.gamma.trace.model.RaiseEventAct
 import hu.bme.mit.gamma.trace.model.Reset
 import hu.bme.mit.gamma.trace.model.Step
@@ -144,6 +145,17 @@ class UnfoldedExecutionTraceBackAnnotator {
 	
 	protected def dispatch transformAct(ComponentSchedule act) {
 		return createComponentSchedule
+	}
+	
+	protected def dispatch transformAct(InstanceSchedule act) {
+		val instanceReference = act.instanceReference
+		val instance = instanceReference.componentInstance
+		
+		val oldInstanceReference = instance.getOriginalScheduledInstanceReference(originalTopComponent)
+		
+		return createInstanceSchedule => [
+			it.instanceReference = oldInstanceReference
+		]
 	}
 	
 	protected def dispatch transformAct(TimeElapse act) {

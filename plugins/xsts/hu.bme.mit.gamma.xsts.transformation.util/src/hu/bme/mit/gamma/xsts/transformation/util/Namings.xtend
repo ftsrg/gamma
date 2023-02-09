@@ -46,6 +46,7 @@ class Namings {
 	// To XSTS: in XstsNamings
 	
 	static def String getDelayVariableName() '''__Delay__'''
+	static def String getInstanceEndcodingVariableName() '''__InstanceEncoding__'''
 	
 	// Asynchronous message queue - XSTS customization
 	
