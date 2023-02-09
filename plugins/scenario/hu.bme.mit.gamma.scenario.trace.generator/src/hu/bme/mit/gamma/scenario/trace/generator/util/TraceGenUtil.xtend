@@ -11,11 +11,14 @@
 package hu.bme.mit.gamma.scenario.trace.generator.util
 
 import hu.bme.mit.gamma.action.model.AssignmentStatement
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
+import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.scenario.statechart.util.ScenarioStatechartUtil
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression
 import hu.bme.mit.gamma.statechart.interface_.Component
+import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression
 import hu.bme.mit.gamma.statechart.interface_.EventTrigger
 import hu.bme.mit.gamma.statechart.interface_.Port
@@ -25,15 +28,14 @@ import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.statechart.statechart.UnaryTrigger
 import hu.bme.mit.gamma.statechart.statechart.UnaryType
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
+import hu.bme.mit.gamma.trace.model.RaiseEventAct
+import hu.bme.mit.gamma.trace.model.Step
 import hu.bme.mit.gamma.trace.model.TraceModelFactory
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.math.BigInteger
 import java.util.List
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
-import hu.bme.mit.gamma.statechart.interface_.Event
-import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
-import hu.bme.mit.gamma.expression.model.VariableDeclaration
 
 class TraceGenUtil {
 	
@@ -52,10 +54,17 @@ class TraceGenUtil {
 		}
 		val lastSteps = traces.map[it.steps.last]
 		val or = createOrExpression
-		or.operands += lastSteps.flatMap[it.asserts.clone]
+		or.operands += lastSteps.flatMap[it.asserts.clone].filterNull
 		val result = traces.head
-		result.steps.last.asserts.clear
-		result.steps.last.asserts += or
+		if (or.operands.size >= 2) {
+			result.steps.last.asserts.clear
+			result.steps.last.asserts += or
+		} else if(or.operands.size == 1) {
+			result.steps.last.asserts.clear
+			result.steps.last.asserts += or.operands.head
+		} else {
+			//nop
+		}
 		return result
 	}
 	
@@ -69,7 +78,8 @@ class TraceGenUtil {
 			val current = stateChecks.get(i)
 			val next = stateChecks.get(i+1)
 			val transitions = findTransitionChain(current, next, <Transition>newArrayList, <StateNode>newArrayList)
-			val correctTransitions = transitions.filter[it.priority >= BigInteger.valueOf(2)].toList// TODO
+			
+			val correctTransitions = transitions.findForwardTransitions
 			
 			val checks = findCheckBasedGuards(correctTransitions).filterNull
 			val assignments = findAssignmentBasedActions(correctTransitions).filterNull
@@ -90,31 +100,52 @@ class TraceGenUtil {
 				val traceAssign = createAssignmentAct
 				traceAssign.rhs = assignment.rhs.clone
 				traceAssign.lhs = assignment.lhs.clone
-				traceAssign.rhs.fixParamRefs(trace.component)
 				nextStep.actions.add(0,traceAssign)
+				traceAssign.rhs.fixParamRefs(trace.component, currentStep)
 			}
 			
 			for (check : checks) {
 				val clone = check.clone
-				clone.fixParamRefs(trace.component)
 				currentStep.asserts += clone
+				clone.fixParamRefs(trace.component, currentStep)
 			}
 		}
 	}
 	
-	def fixParamRefs(Expression expression, Component component) {
+	def List<Transition> findForwardTransitions(List<Transition> transitions){
+		transitions.filter[it.priority >= BigInteger.valueOf(2)].toList
+	}
+	
+	def fixParamRefs(Expression expression, Component component, Step step) {
 		val refs = expression.getAllContentsOfType(EventParameterReferenceExpression)
 		if (expression instanceof EventParameterReferenceExpression) {
 			refs += expression
 		}
+		val raiseEventActs = step.actions.filter(RaiseEventAct)
 		for (ref : refs) {
-			if (scenarioStatechartUtil.isTurnedOut(ref.port)) {
-				ref.port = component.getPort(scenarioStatechartUtil.getTurnedOutPortName(ref.port))
-			} else {
-				ref.port = component.getPort(ref.port.name)
+			var foundMatch = false
+			for (act : raiseEventActs) {
+				if (act.port.name == ref.port.name && act.event.name == ref.event.name) {
+					val arguments = act.arguments
+					val params = act.event.parameterDeclarations
+					for (var i = 0; i < params.size; i++) {
+						if (ref.parameter.name == params.get(i).name) {
+							val clone = arguments.get(i).clone
+							ecoreUtil.changeAndReplace(clone, ref, ref.eContainer)
+							foundMatch = true
+						}
+					}
+				}
 			}
-			ref.event = ref.port.getEvent(ref.event.name)
-			ref.parameter = ref.event.getEventParam(ref.parameter.name)
+			if (!foundMatch) {
+				if (scenarioStatechartUtil.isTurnedOut(ref.port)) {
+					ref.port = component.getPort(scenarioStatechartUtil.getTurnedOutPortName(ref.port))
+				} else {
+					ref.port = component.getPort(ref.port.name)
+				}
+				ref.event = ref.port.getEvent(ref.event.name)
+				ref.parameter = ref.event.getEventParam(ref.parameter.name)
+			}
 		}
 	}
 	

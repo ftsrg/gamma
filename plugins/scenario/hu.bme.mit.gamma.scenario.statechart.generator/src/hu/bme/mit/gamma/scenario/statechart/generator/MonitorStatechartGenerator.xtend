@@ -10,7 +10,6 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.scenario.statechart.generator
 
-import hu.bme.mit.gamma.expression.model.InfinityExpression
 import hu.bme.mit.gamma.scenario.model.AlternativeCombinedFragment
 import hu.bme.mit.gamma.scenario.model.Delay
 import hu.bme.mit.gamma.scenario.model.DeterministicOccurrenceSet
@@ -32,7 +31,6 @@ import hu.bme.mit.gamma.statechart.statechart.PortEventReference
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.StateNode
 import hu.bme.mit.gamma.statechart.statechart.TransitionPriority
-import hu.bme.mit.gamma.statechart.statechart.UnaryType
 import java.math.BigInteger
 import java.util.List
 
@@ -41,7 +39,6 @@ import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartMo
 
 class MonitorStatechartGenerator extends AbstractContractStatechartGeneration {
 
-	protected boolean skipNextInteraction = false
 	protected State componentViolation = null
 	protected State environmentViolation = null
 	protected final List<Pair<StateNode, StateNode>> copyOutgoingTransitionsForOptional = newLinkedList
@@ -64,11 +61,7 @@ class MonitorStatechartGenerator extends AbstractContractStatechartGeneration {
 		}
 		intializeStatechart()
 		for (modalInteraction : scenario.fragment.interactions) {
-			if (!skipNextInteraction) {
-				process(modalInteraction)
-			} else {
-				skipNextInteraction = false;
-			}
+			process(modalInteraction)
 		}
 		firstRegion.stateNodes.get(firstRegion.stateNodes.size - 1).name = scenarioStatechartUtil.accepting
 		fixReplacedStates
@@ -141,10 +134,10 @@ class MonitorStatechartGenerator extends AbstractContractStatechartGeneration {
 					val transitionCopy = transition.clone
 					transitionCopy.sourceState = compulsory
 					statechart.transitions += transitionCopy
-					if (compulsory.name.contains(accepting)) {
-						optional.name = optional.name.getCombinedStateAcceptingName
-					}
 				}
+			}
+			if (optional.name.contains(accepting)) {
+				compulsory.name = compulsory.name.getCombinedStateAcceptingName
 			}
 		}
 	}
@@ -233,28 +226,12 @@ class MonitorStatechartGenerator extends AbstractContractStatechartGeneration {
 	}
 
 	def dispatch void process(OptionalCombinedFragment optionalCombinedFragment) {
-		val containingFragment = ecoreUtil.getContainerOfType(optionalCombinedFragment, Fragment)
-		val index = containingFragment.interactions.indexOf(optionalCombinedFragment)
 		val prevprev = previousState
 		val firstFragment = optionalCombinedFragment.fragments.get(0)
 		for (interaction : firstFragment.interactions) {
 			process(interaction)
 		}
-		if (containingFragment.interactions.size > index + 1) {
-			val nextInteraction = containingFragment.interactions.get(index + 1)
-			nextInteraction.process
-			val previousAfterFirstProcess = previousState
-			previousState = prevprev
-			nextInteraction.process
-			for (transition : previousState.incomingTransitions) {
-				transition.targetState = previousAfterFirstProcess
-			}
-			firstRegion.stateNodes -= previousState
-			previousState = previousAfterFirstProcess
-			skipNextInteraction = true
-		} else {
-			copyOutgoingTransitionsForOptional.add(prevprev -> previousState)
-		}
+		copyOutgoingTransitionsForOptional.add(prevprev -> previousState)
 	}
 
 	def processDeterministicOccurrenceSet(DeterministicOccurrenceSet set, boolean isNegated) {
@@ -290,16 +267,12 @@ class MonitorStatechartGenerator extends AbstractContractStatechartGeneration {
 		
 		handleDelays(set, forwardTransition, violationTransition)
 		setupForwardTransition(set, isSend, isNegated, forwardTransition)
-		
 
 		forwardTransition.priority = BigInteger.valueOf(3)
 		violationTransition.priority = BigInteger.valueOf(1)
 		handleArguments(set.deterministicOccurrences, forwardTransition)
 		val triggersWithCorrectDir = getAllTriggersForDirection(statechart, isSend)
 		violationTransition.setOrExtendTrigger(getBinaryTriggerFromTriggersIfPossible(triggersWithCorrectDir, BinaryType.OR), BinaryType.OR)
-
-		
-
 		var otherDirViolationState = if (isSend) {
 				useColdViolationForEnvironmentViolation ? coldViolation : environmentViolation
 			} else {

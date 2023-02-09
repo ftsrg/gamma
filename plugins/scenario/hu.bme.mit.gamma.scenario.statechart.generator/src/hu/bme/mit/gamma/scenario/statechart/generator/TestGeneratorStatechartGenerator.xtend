@@ -371,7 +371,7 @@ class TestGeneratorStatechartGenerator extends AbstractContractStatechartGenerat
 			set.deterministicOccurrences -= negatedInteractions // this is fine, as no other transformation will handle it
 			val otherTriggers = createOtherTriggers(set, false,true)
 			for(transition : source.outgoingTransitions) {
-				transition.priority = BigInteger.valueOf(otherTriggers.size) + transition.priority
+				transition.priority = BigInteger.valueOf(otherTriggers.size) + transition.priority + BigInteger.ONE
 			}
 			var i = 0
 			for(trigger : otherTriggers) {
@@ -379,8 +379,15 @@ class TestGeneratorStatechartGenerator extends AbstractContractStatechartGenerat
 				newTransition.priority = BigInteger.valueOf(i++)
 				newTransition.trigger = trigger
 			}
+			val interactions = set.deterministicOccurrences.filter(Interaction)
+			if (interactions.size == 1 && interactions.head.arguments.size == 1) {
+				val negatedForward = statechartUtil.createTransition(source, target)
+				handleArguments(set.deterministicOccurrences.clone, negatedForward)
+				negatedForward.guard = negatedForward.guard.clone.createNotExpression
+				negatedForward.trigger = forwardTransition.trigger.clone
+				negatedForward.priority = BigInteger.valueOf(otherTriggers.size) + BigInteger.ONE
+			}
 		}
-		
 		previousState = state
 		return
 	}

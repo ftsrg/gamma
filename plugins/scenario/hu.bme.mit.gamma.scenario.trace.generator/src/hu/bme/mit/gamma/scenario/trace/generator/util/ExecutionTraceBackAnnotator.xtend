@@ -66,12 +66,7 @@ class ExecutionTraceBackAnnotator {
 	}
 
 	def execute() {
-		for (var i = 0; i < traces.size; i++) {
-			val trace = traces.get(i)
-			if (isNegativeTest || !result.exists[traceUtil.isCoveredByStates(trace, it)].booleanValue) {
-				result += trace
-			}
-		}
+		result += traces
 		for (resultTrace : result) {
 			if (removeNotneededInteractions) {
 				resultTrace.removeNotNeededInteractions

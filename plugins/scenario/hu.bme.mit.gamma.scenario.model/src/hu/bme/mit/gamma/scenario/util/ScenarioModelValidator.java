@@ -162,9 +162,13 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 						new ReferenceInfo(deterministicOccurrenceSet.eContainingFeature(), idx, eContainer)));
 			}
 		} else {
-			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-					"Scenarios with respect to asynchronous components cannot contain modal interaction sets",
-					new ReferenceInfo(deterministicOccurrenceSet.eContainingFeature(), idx, eContainer)));
+			List<Interaction> interactions = ecoreUtil.getAllContentsOfType(deterministicOccurrenceSet,
+					Interaction.class);
+			if (interactions.size() > 1) {
+				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+						"Scenarios with respect to asynchronous components cannot contain modal interaction sets with more than one interaction",
+						new ReferenceInfo(deterministicOccurrenceSet.eContainingFeature(), idx, eContainer)));
+			}
 		}
 		
 		List<Interaction> interactions = javaUtil.filterIntoList(deterministicOccurrenceSet.getDeterministicOccurrences(), Interaction.class);
@@ -178,36 +182,6 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 			}
 		}
 		
-		return validationResultMessages;
-	}
-
-	public Collection<ValidationResultMessage> checkModalInteractionsInSynchronousComponents(
-			DeterministicOccurrence deterministicOccurrence) {
-		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		ScenarioPackage scenario = ecoreUtil.getContainerOfType(deterministicOccurrence, ScenarioPackage.class);
-		Component component = scenario.getComponent();
-		if (component instanceof SynchronousComponent) {
-			if (deterministicOccurrence instanceof DeterministicOccurrenceSet || deterministicOccurrence instanceof Delay) {
-				// Delays may not be contained by modal interaction sets
-				return validationResultMessages;
-			} else {
-				EObject eContainer = deterministicOccurrence.eContainer();
-				if (!(eContainer instanceof DeterministicOccurrenceSet) && !(eContainer instanceof InitialBlock)
-						&& !(eContainer instanceof NegatedDeterministicOccurrence
-								&& eContainer.eContainer() instanceof DeterministicOccurrenceSet)) {
-					int idx = 0;
-					if (eContainer instanceof Fragment) {
-						Fragment set = (Fragment) eContainer;
-						idx = set.getInteractions().indexOf(deterministicOccurrence);
-					}
-
-					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-							"Modal interactions in scenarios with respect to synchronous components " +
-									"must be contained by modal interaction sets",
-							new ReferenceInfo(deterministicOccurrence.eContainingFeature(), idx, eContainer)));
-				}
-			}
-		}
 		return validationResultMessages;
 	}
 
