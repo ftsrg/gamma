@@ -207,7 +207,7 @@ class ModelUnfolder {
 		if (component instanceof StatechartDefinition) {
 			val keepableAnnotations = #[ RunUponExternalEventAnnotation ]
 			
-			for (annotation : component.annotations) {
+			for (annotation : component.annotations.toSet) {
 				if (!keepableAnnotations.exists[it.isInstance(annotation)]) {
 					annotation.remove
 				}
@@ -371,7 +371,6 @@ class ModelUnfolder {
 			instance.name = #[wrapperInstance, instance].FQN
 		}
 	}
-	
 	
 	// Instance name validation
 	
