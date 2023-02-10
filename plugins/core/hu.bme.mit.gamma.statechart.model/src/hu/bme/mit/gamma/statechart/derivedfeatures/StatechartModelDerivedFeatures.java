@@ -1280,6 +1280,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	public static List<EventReference> getSourceEventReferences(MessageQueue queue) {
 		return queue.getEventPassings().stream()
 				.map(it -> it.getSource())
+				.filter(it -> it != null) // Can be null due to reductions?
 				.collect(Collectors.toList());
 	}
 	
@@ -1287,9 +1288,11 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 			Entry<Port, Event> portEvent) {
 		for (EventPassing eventPassing : queue.getEventPassings()) {
 			EventReference source = eventPassing.getSource();
-			List<Entry<Port, Event>> inputEvents = getInputEvents(source);
-			if (inputEvents.contains(portEvent)) {
-				return eventPassing;
+			if (source != null) { // Can be null due to reductions? 
+				List<Entry<Port, Event>> inputEvents = getInputEvents(source);
+				if (inputEvents.contains(portEvent)) {
+					return eventPassing;
+				}
 			}
 		}
 		throw new IllegalArgumentException("Not found event passing: " + portEvent);

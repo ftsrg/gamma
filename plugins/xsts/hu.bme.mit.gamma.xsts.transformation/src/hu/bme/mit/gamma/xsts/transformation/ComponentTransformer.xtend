@@ -192,8 +192,15 @@ class ComponentTransformer {
 					val port = portEvent.key
 					val event = portEvent.value
 					val List<MessageQueueStruct> slaveQueues = newArrayList
+					
+					// Potentially the same as port and event; makes a difference only in the case of EventPassings
+					val targetPortEvent = queue.getTargetPortEvent(portEvent)
+					val targetPort = targetPortEvent.key
+					val targetEvent = targetPortEvent.value
+					//
+					
 					// Important optimization - we create a queue only if the event is used
-					if (eventReferenceMapper.hasInputEventVariable(event, port)) {
+					if (eventReferenceMapper.hasInputEventVariable(targetEvent, targetPort)) {
 						for (parameter : event.parameterDeclarations) {
 							val parameterType = parameter.type
 							val parameterTypeDefinition = parameterType.typeDefinition
@@ -226,6 +233,7 @@ class ComponentTransformer {
 							}
 							else {
 								// Internal queue, we do not care about traceability here
+								// TODO capacity issues?
 								val messageQueueStruct = typeSlaveQueues.get(index)
 								slaveQueues += messageQueueStruct // Optimization - reusing an existing slave queue
 								logger.log(Level.INFO, '''Found a slave queue for «port.name».«event.name»::«parameter.name»''')

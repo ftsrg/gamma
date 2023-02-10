@@ -1861,6 +1861,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 				int count = StatechartModelDerivedFeatures.countAssignedMessageQueues(portEvent, wrapper);
 				if (count != 1) {
 					ValidationResult result = (count < 1) ? ValidationResult.WARNING : ValidationResult.ERROR;
+					// TODO consider targets too
 					validationResultMessages.add(new ValidationResultMessage(result, 
 						"Event '" + event.getName() + "' of port '" + port.getName() +
 							"' is not forwarded to a single message queue but to " + count,
