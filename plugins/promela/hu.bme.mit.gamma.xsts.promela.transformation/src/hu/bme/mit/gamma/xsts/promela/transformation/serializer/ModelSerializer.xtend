@@ -246,10 +246,14 @@ class ModelSerializer {
 		'''
 	}
 	
+	// If-else constructs may mess each other up: "error: proctype 'EnvTrans' state 197, inherits 3 'else' stmnts"
+	// Semantic-preserving: is executable if the 'stmt0' in the atomic block is executable
 	protected def dispatch String serialize(NonDeterministicAction action) '''
 		if
 			«FOR subaction : action.actions»
-			:: «subaction.serialize»
+				:: true -> atomic {
+					«subaction.serialize»
+				}
 			«ENDFOR»
 		fi;
 	'''
