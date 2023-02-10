@@ -1,11 +1,11 @@
-package asynchronous
+package asynchronousreactive
 
 import "Interfaces/Interfaces.gcd"
 
 @Asynchronous
 statechart Subtractor [
-	port Execute : requires Execute
-	port Toggle : provides Toggle
+	port Execute : requires ExecuteAsynchronous
+	port Toggle : provides AddSubtract
 ] {
 	var count : integer
 	region main {

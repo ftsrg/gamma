@@ -1,10 +1,10 @@
-package interfaces
+package asynchronousreactive
 
-interface Execute {
+interface ExecuteAsynchronous {
 	out event ^execute
 }
 
-interface Toggle {
+interface AddSubtract {
 	out event add
 	out event subtract
 }
