@@ -404,6 +404,7 @@ StatechartContractGeneration returns StatechartContractGeneration:
 	 ('folder' ':' targetFolder+=STRING)?
 	 ('name' ':' fileName+=STRING)?
 	 ('restart-on-cold-violation' ':' StartAsColdViolation=BOOLEAN)?
+	 ('restart-on-accept' ':' RestartOnAccept=BOOLEAN)?
 	 ('loop-for-interaction' ':' UseIteratingVariable=BOOLEAN)?
 	 ('automaton-type' ':' AutomatonType=ContractAutomatonType)?
 	 ('test-type' ':' TestType=TestAutomatonType)?

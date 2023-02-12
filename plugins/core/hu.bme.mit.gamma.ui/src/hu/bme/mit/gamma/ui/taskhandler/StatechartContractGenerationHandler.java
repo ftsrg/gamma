@@ -68,7 +68,7 @@ public class StatechartContractGenerationHandler extends TaskHandler {
 			simpleGenerator = new SimpleScenarioGenerator(baseScenario, true, arguments);
 			ScenarioDeclaration simplifiedScenario = simpleGenerator.execute();
 			statechartGenerator = new MonitorStatechartGenerator(simplifiedScenario, component,
-					statechartGeneration.isStartAsColdViolation());
+					statechartGeneration.isStartAsColdViolation(), statechartGeneration.isRestartOnAccept());
 		} else {
 			simpleGenerator = new SimpleScenarioGenerator(baseScenario, false, arguments);
 			ScenarioDeclaration simplifiedScenario = simpleGenerator.execute();

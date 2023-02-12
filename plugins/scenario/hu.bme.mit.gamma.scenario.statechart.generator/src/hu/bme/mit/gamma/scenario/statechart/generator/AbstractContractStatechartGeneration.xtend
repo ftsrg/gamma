@@ -95,6 +95,7 @@ abstract class AbstractContractStatechartGeneration {
 	protected var StateNode previousState = null
 	protected var State hotViolation = null
 	protected var State coldViolation = null
+	protected var State firstState
 	protected val Map<StateNode, StateNode> replacedStateWithValue = <StateNode, StateNode>newHashMap
 	protected val Map<Delay, TimeoutDeclaration> delaysToTimeouts = <Delay, TimeoutDeclaration>newHashMap
 	

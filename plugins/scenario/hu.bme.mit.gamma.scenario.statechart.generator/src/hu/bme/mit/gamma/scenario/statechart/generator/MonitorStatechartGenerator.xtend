@@ -13,7 +13,6 @@ package hu.bme.mit.gamma.scenario.statechart.generator
 import hu.bme.mit.gamma.scenario.model.AlternativeCombinedFragment
 import hu.bme.mit.gamma.scenario.model.Delay
 import hu.bme.mit.gamma.scenario.model.DeterministicOccurrenceSet
-import hu.bme.mit.gamma.scenario.model.Fragment
 import hu.bme.mit.gamma.scenario.model.Interaction
 import hu.bme.mit.gamma.scenario.model.InteractionDirection
 import hu.bme.mit.gamma.scenario.model.LoopCombinedFragment
@@ -44,13 +43,15 @@ class MonitorStatechartGenerator extends AbstractContractStatechartGeneration {
 	protected final List<Pair<StateNode, StateNode>> copyOutgoingTransitionsForOptional = newLinkedList
 
 	protected final boolean restartOnColdViolation
+	protected final boolean restartOnAccept
 
 	protected final boolean useColdViolationForEnvironmentViolation = true
 	protected final boolean useHotViolationForComponentViolation = false
-
-	new(ScenarioDeclaration scenario, Component component, boolean restartOnColdViolation) {
+	
+	new(ScenarioDeclaration scenario, Component component, boolean restartOnColdViolation, boolean restartOnAccept) {
 		super(scenario, component)
 		this.restartOnColdViolation = restartOnColdViolation
+		this.restartOnAccept = restartOnAccept
 	}
 
 	override execute() {
@@ -63,13 +64,21 @@ class MonitorStatechartGenerator extends AbstractContractStatechartGeneration {
 		for (modalInteraction : scenario.fragment.interactions) {
 			process(modalInteraction)
 		}
-		firstRegion.stateNodes.get(firstRegion.stateNodes.size - 1).name = scenarioStatechartUtil.accepting
-		fixReplacedStates
-		copyTransitionsForOptional
+		fixReplacedStates()
 		addScenarioContractAnnotation(NotDefinedEventMode.PERMISSIVE)
 		resetVariablesOnViolation()
 		resolveEqualPriorities()
 		removeZeroDelays()
+		val lastState = firstRegion.stateNodes.get(firstRegion.stateNodes.size - 1)
+		if (!restartOnAccept) {
+			lastState.name = scenarioStatechartUtil.accepting
+		} else {
+			for (transition : lastState.incomingTransitions) {
+				transition.targetState = firstState
+			}
+			firstRegion.stateNodes -= lastState
+		}
+		copyTransitionsForOptional()
 		val oldPorts = component.allPorts.filter[!it.inputEvents.empty]
 		for (port : statechart.allPorts) {
 			val oldPort = oldPorts.findFirst[it.name == port.name || it.turnedOutPortName == port.name]
@@ -154,7 +163,7 @@ class MonitorStatechartGenerator extends AbstractContractStatechartGeneration {
 		initial.name = scenarioStatechartUtil.initial
 		firstRegion.stateNodes += initial
 
-		var State firstState = null
+		firstState = null
 		if (scenario.initialblock === null) {
 			firstState = createNewState
 		} else {

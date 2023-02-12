@@ -159,7 +159,7 @@ class TestGeneratorStatechartGenerator extends AbstractContractStatechartGenerat
 		initial.name = scenarioStatechartUtil.initial
 		firstRegion.stateNodes += initial
 
-		val firstState = createState
+		firstState = createState
 		firstState.name = firstStateName
 		firstRegion.stateNodes += firstState
 		previousState = firstState
