@@ -10,9 +10,10 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.xsts.util;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -33,6 +34,7 @@ public class PredicateHandler extends hu.bme.mit.gamma.expression.util.Predicate
 	//
 	
 	protected SortedSet<Integer> calculateIntegerValues(EObject root, VariableDeclaration variable,
+				Collection<EObject> checkedRoots,
 				Collection<VariableDeclaration> checkedVariables,
 				Collection<AssignmentAction> assignmentStatements) {
 		SortedSet<Integer> integerValues = new TreeSet<Integer>();
@@ -40,15 +42,18 @@ public class PredicateHandler extends hu.bme.mit.gamma.expression.util.Predicate
 		if (!checkedVariables.contains(variable)) {
 			// Root change (due to context changes: local var -> global var)
 			root = ecoreUtil.getRoot(variable);
-			assignmentStatements.addAll(
+			if (!checkedRoots.contains(root)) { // Only if needed
+				assignmentStatements.addAll(
 					ecoreUtil.getSelfAndAllContentsOfType(root, AssignmentAction.class));
+				checkedRoots.add(root);
+			}
 			
 			checkedVariables.add(variable);
 			// Basic function
 			integerValues.addAll(
 					super.calculateIntegerValues(root, variable));
 			//
-			for (AssignmentAction assignmentStatement : new HashSet<AssignmentAction>(assignmentStatements)) {
+			for (AssignmentAction assignmentStatement : new ArrayList<AssignmentAction>(assignmentStatements)) {
 				ReferenceExpression lhs = assignmentStatement.getLhs();
 				VariableDeclaration lhsVariable = (VariableDeclaration) xStsUtil.getDeclaration(lhs);
 				Expression rhs = assignmentStatement.getRhs();
@@ -58,13 +63,13 @@ public class PredicateHandler extends hu.bme.mit.gamma.expression.util.Predicate
 						VariableDeclaration rhsVariable = (VariableDeclaration) rhsDeclaration;
 						if (lhsVariable == variable) {
 							integerValues.addAll(
-									calculateIntegerValues(root, rhsVariable,
-											checkedVariables, assignmentStatements));
+								calculateIntegerValues(root, rhsVariable,
+										checkedRoots, checkedVariables, assignmentStatements));
 						}
 						else if (rhsVariable == variable) {
 							integerValues.addAll(
-									calculateIntegerValues(root, lhsVariable,
-											checkedVariables, assignmentStatements));
+								calculateIntegerValues(root, lhsVariable,
+										checkedRoots, checkedVariables, assignmentStatements));
 						}
 					}
 				}
@@ -75,8 +80,11 @@ public class PredicateHandler extends hu.bme.mit.gamma.expression.util.Predicate
 	}
 	
 	public SortedSet<Integer> calculateIntegerValues(EObject root, VariableDeclaration variable) {
+		Set<EObject> checkedRoots = new HashSet<EObject>();
+		checkedRoots.add(root);
 		return calculateIntegerValues(root, variable,
-				new LinkedHashSet<VariableDeclaration>(),
+				checkedRoots,
+				new HashSet<VariableDeclaration>(),
 				new HashSet<AssignmentAction>(
 						ecoreUtil.getSelfAndAllContentsOfType(root, AssignmentAction.class)));
 	}

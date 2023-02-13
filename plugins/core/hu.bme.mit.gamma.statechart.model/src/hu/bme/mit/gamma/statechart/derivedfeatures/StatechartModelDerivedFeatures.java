@@ -1277,10 +1277,27 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return List.copyOf(events);
 	}
 	
+	public static List<Entry<Port, Event>> getTargetEvents(MessageQueue queue) {
+		Collection<Entry<Port, Event>> events = new LinkedHashSet<Entry<Port, Event>>();
+		// To filter possible duplicates
+		for (EventReference eventReference : getTargetEventReferences(queue)) {
+			events.addAll(
+					getInputEvents(eventReference));
+		}
+		return List.copyOf(events);
+	}
+	
 	public static List<EventReference> getSourceEventReferences(MessageQueue queue) {
 		return queue.getEventPassings().stream()
 				.map(it -> it.getSource())
-				.filter(it -> it != null) // Can be null due to reductions?
+				.filter(it -> it != null) // Can be null due to reductions
+				.collect(Collectors.toList());
+	}
+	
+	public static List<EventReference> getTargetEventReferences(MessageQueue queue) {
+		return queue.getEventPassings().stream()
+				.map(it -> it.getTarget())
+				.filter(it -> it != null) // Can be null due to reductions
 				.collect(Collectors.toList());
 	}
 	
@@ -1288,7 +1305,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 			Entry<Port, Event> portEvent) {
 		for (EventPassing eventPassing : queue.getEventPassings()) {
 			EventReference source = eventPassing.getSource();
-			if (source != null) { // Can be null due to reductions? 
+			if (source != null) { // Can be null due to reductions
 				List<Entry<Port, Event>> inputEvents = getInputEvents(source);
 				if (inputEvents.contains(portEvent)) {
 					return eventPassing;
@@ -1429,8 +1446,14 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	public static boolean isStoredInMessageQueue(
 			Entry<Port, Event> portEvent, MessageQueue queue) {
-		List<Entry<Port,Event>> storedEvents = getStoredEvents(queue);
+		List<Entry<Port, Event>> storedEvents = getStoredEvents(queue);
 		return storedEvents.contains(portEvent);
+	}
+	
+	public static boolean isTargetedInMessageQueue(
+			Entry<Port, Event> portEvent, MessageQueue queue) {
+		List<Entry<Port, Event>> targetEvents = getTargetEvents(queue);
+		return targetEvents.contains(portEvent);
 	}
 	
 	public static int countAssignedMessageQueues(
@@ -1438,6 +1461,17 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		int count = 0;
 		for (MessageQueue queue : adapter.getMessageQueues()) {
 			if (isStoredInMessageQueue(portEvent, queue)) {
+				++count;
+			}
+		}
+		return count;
+	}
+	
+	public static int countTargetingMessageQueues(
+			Entry<Port, Event> portEvent, AsynchronousAdapter adapter) {
+		int count = 0;
+		for (MessageQueue queue : adapter.getMessageQueues()) {
+			if (isTargetedInMessageQueue(portEvent, queue)) {
 				++count;
 			}
 		}

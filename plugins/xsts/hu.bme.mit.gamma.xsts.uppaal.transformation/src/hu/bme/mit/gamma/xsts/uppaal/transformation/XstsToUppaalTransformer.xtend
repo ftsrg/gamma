@@ -17,6 +17,8 @@ import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.HavocAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.XSTS
+import java.util.logging.Level
+import java.util.logging.Logger
 import uppaal.templates.LocationKind
 
 import static hu.bme.mit.gamma.uppaal.util.XstsNamings.*
@@ -37,6 +39,8 @@ class XstsToUppaalTransformer {
 	
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension ClockExpressionHandler clockExpressionHandler = ClockExpressionHandler.INSTANCE
+	
+	protected final Logger logger = Logger.getLogger("GammaLogger")
 	
 	new(XSTS xSts) {
 		this.xSts = xSts
@@ -91,6 +95,8 @@ class XstsToUppaalTransformer {
 			// Model checking is faster if the environment finish location is committed
 			environmentFinishLocation.locationTimeKind = LocationKind.COMMITED
 		}
+		
+		logger.log(Level.INFO, "Basic NTA transformation has finished")
 		
 		//
 		optimizelIntegerCodomains

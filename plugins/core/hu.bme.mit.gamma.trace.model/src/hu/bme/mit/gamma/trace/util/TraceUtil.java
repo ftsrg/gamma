@@ -71,8 +71,8 @@ public class TraceUtil extends StatechartUtil {
 
 		@Override
 		public int compare(Expression lhsAssert, Expression rhsAssert) {
-			Expression lhs = TraceModelDerivedFeatures.getLowermostAssert(lhsAssert);
-			Expression rhs = TraceModelDerivedFeatures.getLowermostAssert(rhsAssert);
+			Expression lhs = TraceModelDerivedFeatures.getPrimaryAssert(lhsAssert);
+			Expression rhs = TraceModelDerivedFeatures.getPrimaryAssert(rhsAssert);
 			if (lhs instanceof RaiseEventAct) {
 				if (rhs instanceof RaiseEventAct) {
 					return 0;

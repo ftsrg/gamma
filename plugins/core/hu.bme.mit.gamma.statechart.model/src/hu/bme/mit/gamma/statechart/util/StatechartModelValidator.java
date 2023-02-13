@@ -1858,13 +1858,26 @@ public class StatechartModelValidator extends ActionModelValidator {
 			List<Event> inputEvents = StatechartModelDerivedFeatures.getInputEvents(port);
 			for (Event event : inputEvents) {
 				Entry<Port, Event> portEvent = new SimpleEntry<Port, Event>(port, event);
-				int count = StatechartModelDerivedFeatures.countAssignedMessageQueues(portEvent, wrapper);
-				if (count != 1) {
-					ValidationResult result = (count < 1) ? ValidationResult.WARNING : ValidationResult.ERROR;
-					// TODO consider targets too
-					validationResultMessages.add(new ValidationResultMessage(result, 
+				int sourceCount = StatechartModelDerivedFeatures.countAssignedMessageQueues(portEvent, wrapper);
+				int targetCount = StatechartModelDerivedFeatures.countTargetingMessageQueues(portEvent, wrapper);
+				if (sourceCount != 1) {
+					ValidationResult result = null;
+					if (sourceCount < 1) {
+						if (targetCount < 1) {
+							result = ValidationResult.WARNING;
+						}
+						else {
+							result = ValidationResult.INFO;
+						}
+					}
+					else {
+						result = ValidationResult.ERROR;
+					}
+					
+					validationResultMessages.add(new ValidationResultMessage(result,
 						"Event '" + event.getName() + "' of port '" + port.getName() +
-							"' is not forwarded to a single message queue but to " + count,
+							"' is not forwarded to a single message queue but to " + sourceCount +
+							", and " + targetCount + " events are forwarded to it",
 						new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME)));
 				}
 			}

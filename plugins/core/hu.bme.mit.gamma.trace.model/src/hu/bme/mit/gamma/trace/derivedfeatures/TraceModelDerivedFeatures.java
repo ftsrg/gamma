@@ -90,6 +90,28 @@ public class TraceModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 		return assertion;
 	}
 	
+	public static Expression getPrimaryAssert(Expression assertion) {
+		List<ComponentInstanceVariableReferenceExpression> variableReferences =
+				ecoreUtil.getSelfAndAllContentsOfType(assertion, ComponentInstanceVariableReferenceExpression.class);
+		if (variableReferences.size() == 1) {
+			return variableReferences.get(0);
+		}
+		
+		List<ComponentInstanceStateReferenceExpression> stateReferences =
+				ecoreUtil.getSelfAndAllContentsOfType(assertion, ComponentInstanceStateReferenceExpression.class);
+		if (stateReferences.size() == 1) {
+			return stateReferences.get(0);
+		}
+		
+		List<RaiseEventAct> raiseReferences =
+				ecoreUtil.getSelfAndAllContentsOfType(assertion, RaiseEventAct.class);
+		if (raiseReferences.size() == 1) {
+			return raiseReferences.get(0);
+		}
+		
+		return assertion;
+	}
+	
 	public static ComponentInstanceReferenceExpression getInstanceReference(Expression expression) {
 		if (expression instanceof ComponentInstanceElementReferenceExpression element) {
 			return element.getInstance();
