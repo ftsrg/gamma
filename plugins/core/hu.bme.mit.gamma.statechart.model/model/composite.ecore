@@ -57,10 +57,16 @@
   <eClassifiers xsi:type="ecore:EClass" name="MessageQueue" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NamedElement #//PrioritizedElement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="capacity" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
         containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="eventReferences" lowerBound="1"
-        upperBound="-1" eType="ecore:EClass interface.ecore#//EventReference" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eventPassings" lowerBound="1"
+        upperBound="-1" eType="#//EventPassing" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="eventDiscardStrategy" eType="#//DiscardStrategy"
         defaultValueLiteral="INCOMING"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="EventPassing">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="source" lowerBound="1"
+        eType="ecore:EClass interface.ecore#//EventReference" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="target" eType="ecore:EClass interface.ecore#//EventReference"
+        containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="SynchronousComponent" abstract="true"
       eSuperTypes="interface.ecore#//Component"/>

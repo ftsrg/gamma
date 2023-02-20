@@ -34,3 +34,19 @@ verification {
 	optimize : true
 	test-language : java
 }
+
+analysis {
+	component : Mission
+	file : "Mission-XSTS"
+	language : XSTS-UPPAAL
+	state-coverage // Transition-coverage is too slow
+	// No scheduling constraint
+}
+
+verification {
+	language : XSTS-UPPAAL
+	file : "Mission-XSTS.xml"
+	property-file : ".Mission-XSTS.gpd"
+	optimize : true
+	test-language : java
+}

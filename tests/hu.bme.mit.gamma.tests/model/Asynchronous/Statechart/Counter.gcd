@@ -1,11 +1,11 @@
-package asynchronous
+package asynchronousreactive
 
 import "Interfaces/Interfaces.gcd"
 
 @Asynchronous
 @TransitionPriority = order-based
 statechart Counter [
-	port Toggle : requires Toggle
+	port Toggle : requires AddSubtract
 ] {
 	var a : integer
 	var reachedB : boolean

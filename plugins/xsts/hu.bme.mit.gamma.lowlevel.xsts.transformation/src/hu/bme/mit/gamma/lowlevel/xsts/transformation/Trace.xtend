@@ -639,7 +639,7 @@ package class Trace {
 	}
 	
 	def getTrace() {
-		return trace;
+		return trace
 	}
 	
 }

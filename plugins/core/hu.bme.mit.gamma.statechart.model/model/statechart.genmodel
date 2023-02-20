@@ -57,8 +57,12 @@
     </genClasses>
     <genClasses ecoreClass="composite.ecore#//MessageQueue">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference composite.ecore#//MessageQueue/capacity"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference composite.ecore#//MessageQueue/eventReferences"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference composite.ecore#//MessageQueue/eventPassings"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute composite.ecore#//MessageQueue/eventDiscardStrategy"/>
+    </genClasses>
+    <genClasses ecoreClass="composite.ecore#//EventPassing">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference composite.ecore#//EventPassing/source"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference composite.ecore#//EventPassing/target"/>
     </genClasses>
     <genClasses image="false" ecoreClass="composite.ecore#//SynchronousComponent"/>
     <genClasses image="false" ecoreClass="composite.ecore#//AsynchronousComponent"/>
@@ -368,6 +372,7 @@
     </genClasses>
     <genClasses ecoreClass="statechart.ecore#//OnCycleTrigger"/>
     <genClasses image="false" ecoreClass="statechart.ecore#//StatechartAnnotation"/>
+    <genClasses ecoreClass="statechart.ecore#//RunUponExternalEventAnnotation"/>
     <genClasses image="false" ecoreClass="statechart.ecore#//StateAnnotation"/>
     <genClasses image="false" ecoreClass="statechart.ecore#//TransitionAnnotation"/>
     <genClasses ecoreClass="statechart.ecore#//TransitionIdAnnotation"/>

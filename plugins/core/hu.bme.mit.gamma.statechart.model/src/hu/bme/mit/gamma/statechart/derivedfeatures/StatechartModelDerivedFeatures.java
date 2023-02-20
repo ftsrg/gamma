@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -50,6 +50,7 @@ import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeCompone
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponent;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance;
+import hu.bme.mit.gamma.statechart.composite.AsynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.BroadcastChannel;
 import hu.bme.mit.gamma.statechart.composite.CascadeCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.Channel;
@@ -58,6 +59,7 @@ import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpressio
 import hu.bme.mit.gamma.statechart.composite.CompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.ControlFunction;
 import hu.bme.mit.gamma.statechart.composite.ControlSpecification;
+import hu.bme.mit.gamma.statechart.composite.EventPassing;
 import hu.bme.mit.gamma.statechart.composite.InstancePortReference;
 import hu.bme.mit.gamma.statechart.composite.MessageQueue;
 import hu.bme.mit.gamma.statechart.composite.PortBinding;
@@ -373,6 +375,11 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	public static boolean hasAnnotation(Package gammaPackage,
 			Class<? extends PackageAnnotation> annotation) {
 		return gammaPackage.getAnnotations().stream().anyMatch(it -> annotation.isInstance(it));
+	}
+	
+	public static boolean hasAnnotation(StatechartDefinition statechart,
+			Class<? extends StatechartAnnotation> annotation) {
+		return statechart.getAnnotations().stream().anyMatch(it -> annotation.isInstance(it));
 	}
 	
 	public static Set<Package> getImportableInterfacePackages(Component component) {
@@ -709,6 +716,135 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return javaUtil.filterIntoList(adapterInstances, AsynchronousComponentInstance.class);
 	}
 	
+	public static List<AsynchronousComponentInstance> getAllScheduledInstances(Component component) {
+		List<ComponentInstance> adapterInstances =
+				getAllInstances(component).stream()
+					.filter(it -> isAdapter(it) || it instanceof ScheduledAsynchronousCompositeComponent)
+					.collect(Collectors.toList());
+		return javaUtil.filterIntoList(adapterInstances, AsynchronousComponentInstance.class);
+	}
+	
+	public static int getSchedulingIndex(AsynchronousComponentInstance instance) {
+		Package _package = getContainingPackage(instance);
+		Component firstComponent = getFirstComponent(_package);
+		List<AsynchronousComponentInstance> scheduledInstances = getAllScheduledInstances(firstComponent);
+		return scheduledInstances.indexOf(instance) + 1; // + 1 to avoid 0s
+	}
+	
+	public static AsynchronousComponentInstance getScheduledInstance(Component component, int i) {
+		List<AsynchronousComponentInstance> allScheduledInstances = getAllScheduledInstances(component);
+		return allScheduledInstances.get(i - 1); // - 1 needed, see getSchedulingIndex
+	}
+	
+	public static boolean needsScheduling(ComponentInstance instance) {
+		EObject container = instance.eContainer();
+		return container instanceof AsynchronousCompositeComponent &&
+			!(getDerivedType(instance) instanceof AsynchronousCompositeComponent); // Scheduled or Adapter
+	}
+	
+	public static List<ComponentInstance> getInitallyScheduledInstances(
+			SchedulableCompositeComponent component) {
+		List<ComponentInstance> initallyScheduledInstances = new ArrayList<ComponentInstance>();
+		for (ComponentInstanceReferenceExpression instanceReference : component.getInitialExecutionList()) {
+			ComponentInstance componentInstance = instanceReference.getComponentInstance(); // No child
+			initallyScheduledInstances.add(componentInstance);
+		}
+		return initallyScheduledInstances;
+	}
+	
+	public static List<ComponentInstance> getAllInitallyScheduledAsynchronousSimpleInstances(
+			AbstractAsynchronousCompositeComponent component) {
+		List<ComponentInstance> initallyScheduledInstances = new ArrayList<ComponentInstance>();
+		
+		if (component instanceof SchedulableCompositeComponent schedulableComponent) {
+			for (ComponentInstanceReferenceExpression instanceReference :
+						schedulableComponent.getInitialExecutionList()) {
+				ComponentInstance componentInstance = instanceReference.getComponentInstance(); // No child
+				Component subtype = getDerivedType(componentInstance);
+				if (subtype instanceof SchedulableCompositeComponent) {
+					initallyScheduledInstances.addAll(
+						getAllAsynchronousSimpleInstances(subtype));
+				}
+				else { // Asynchronous adapter
+					initallyScheduledInstances.add(componentInstance);
+				}
+			}
+		}
+		// No else - not recursive/transitive property
+		
+		return initallyScheduledInstances;
+	}
+	
+	public static List<? extends ComponentInstance> getScheduledInstances(Component component) {
+		if (component instanceof AbstractSynchronousCompositeComponent synchronousComponent) {
+			return getScheduledInstances(synchronousComponent);
+		}
+		else if (component instanceof AbstractAsynchronousCompositeComponent asynchronousComponent) {
+			return getScheduledInstances(asynchronousComponent);
+		}
+		else if (component instanceof AsynchronousAdapter asynchronusAdapter) {
+			return List.of(asynchronusAdapter.getWrappedComponent());
+		}
+		throw new IllegalArgumentException("Not known component: " + component);
+	}
+	
+	public static List<SynchronousComponentInstance> getScheduledInstances(
+			AbstractSynchronousCompositeComponent component) {
+		if (component instanceof CascadeCompositeComponent) {
+			CascadeCompositeComponent cascade = (CascadeCompositeComponent) component;
+			List<ComponentInstanceReferenceExpression> executionList = cascade.getExecutionList();
+			if (!executionList.isEmpty()) {
+				List<SynchronousComponentInstance> instances =
+						new ArrayList<SynchronousComponentInstance>();
+				for (ComponentInstanceReferenceExpression instanceReference : executionList) {
+					SynchronousComponentInstance componentInstance =
+						(SynchronousComponentInstance) instanceReference.getComponentInstance();
+					instances.add(componentInstance);
+				}
+				return instances;
+			}
+		}
+		return component.getComponents();
+	}
+	
+	public static List<AsynchronousComponentInstance> getScheduledInstances(
+			AbstractAsynchronousCompositeComponent component) {
+		if (component instanceof ScheduledAsynchronousCompositeComponent) {
+			ScheduledAsynchronousCompositeComponent scheduledComponent =
+					(ScheduledAsynchronousCompositeComponent) component;
+			List<ComponentInstanceReferenceExpression> executionList = scheduledComponent.getExecutionList();
+			if (!executionList.isEmpty()) {
+				List<AsynchronousComponentInstance> instances =
+						new ArrayList<AsynchronousComponentInstance>();
+				for (ComponentInstanceReferenceExpression instanceReference : executionList) {
+					AsynchronousComponentInstance componentInstance =
+						(AsynchronousComponentInstance) instanceReference.getComponentInstance();
+					instances.add(componentInstance);
+				}
+				return instances;
+			}
+		}
+		return component.getComponents();
+	}
+	
+//	public static List<AsynchronousComponentInstance> getAllScheduledAsynchronousSimpleInstances(
+//			AbstractAsynchronousCompositeComponent component) {
+//		List<AsynchronousComponentInstance> simpleInstances =
+//				new ArrayList<AsynchronousComponentInstance>();
+//		for (AsynchronousComponentInstance instance : getScheduledInstances(component)) {
+//			if (isAdapter(instance)) {
+//				simpleInstances.add(instance);
+//			}
+//			else {
+//				AbstractAsynchronousCompositeComponent type =
+//						(AbstractAsynchronousCompositeComponent) instance.getType();
+//				simpleInstances.addAll(
+//						getAllScheduledAsynchronousSimpleInstances(type));
+//			}
+//		}
+//		return simpleInstances;
+//	}
+	
 	public static List<ComponentInstanceReferenceExpression> getAllSimpleInstanceReferences(
 			ComponentInstance instance) {
 		Component type = getDerivedType(instance);
@@ -762,6 +898,28 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 				}
 			}
 		}
+		return instanceReferences;
+	}
+	
+	public static List<ComponentInstanceReferenceExpression> getAllScheduledInstanceReferences(Component component) {
+		List<ComponentInstanceReferenceExpression> instanceReferences = new ArrayList<ComponentInstanceReferenceExpression>();
+		
+		if (component instanceof AsynchronousCompositeComponent compositeComponent) {
+			for (AsynchronousComponentInstance instance : compositeComponent.getComponents()) {
+				Component type = getDerivedType(instance);
+				List<ComponentInstanceReferenceExpression> childReferences = getAllScheduledInstanceReferences(type);
+				if (childReferences.isEmpty()) {
+					ComponentInstanceReferenceExpression instanceReference =
+							statechartUtil.createInstanceReference(instance);
+					instanceReferences.add(instanceReference);
+				}
+				else {
+					instanceReferences.addAll(
+							statechartUtil.prepend(childReferences, instance));
+				}
+			}
+		}
+		
 		return instanceReferences;
 	}
 	
@@ -1100,7 +1258,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	public static List<Port> getStoredPorts(MessageQueue queue) {
 		Collection<Port> ports = new LinkedHashSet<Port>();
 		// To filter possible duplicates
-		for (EventReference eventReference : queue.getEventReferences()) {
+		for (EventReference eventReference : getSourceEventReferences(queue)) {
 			ports.addAll(
 					getInputEvents(eventReference).stream()
 					.map(it -> it.getKey())
@@ -1112,15 +1270,134 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	public static List<Entry<Port, Event>> getStoredEvents(MessageQueue queue) {
 		Collection<Entry<Port, Event>> events = new LinkedHashSet<Entry<Port, Event>>();
 		// To filter possible duplicates
-		for (EventReference eventReference : queue.getEventReferences()) {
+		for (EventReference eventReference : getSourceEventReferences(queue)) {
 			events.addAll(
 					getInputEvents(eventReference));
 		}
 		return List.copyOf(events);
 	}
 	
-	public static int getEventId(MessageQueue queue,
+	public static List<Entry<Port, Event>> getTargetEvents(MessageQueue queue) {
+		Collection<Entry<Port, Event>> events = new LinkedHashSet<Entry<Port, Event>>();
+		// To filter possible duplicates
+		for (EventReference eventReference : getTargetEventReferences(queue)) {
+			events.addAll(
+					getInputEvents(eventReference));
+		}
+		return List.copyOf(events);
+	}
+	
+	public static List<EventReference> getSourceEventReferences(MessageQueue queue) {
+		return queue.getEventPassings().stream()
+				.map(it -> it.getSource())
+				.filter(it -> it != null) // Can be null due to reductions
+				.collect(Collectors.toList());
+	}
+	
+	public static List<EventReference> getTargetEventReferences(MessageQueue queue) {
+		return queue.getEventPassings().stream()
+				.map(it -> it.getTarget())
+				.filter(it -> it != null) // Can be null due to reductions
+				.collect(Collectors.toList());
+	}
+	
+	public static EventPassing getEventPassing(MessageQueue queue,
 			Entry<Port, Event> portEvent) {
+		for (EventPassing eventPassing : queue.getEventPassings()) {
+			EventReference source = eventPassing.getSource();
+			if (source != null) { // Can be null due to reductions
+				List<Entry<Port, Event>> inputEvents = getInputEvents(source);
+				if (inputEvents.contains(portEvent)) {
+					return eventPassing;
+				}
+			}
+		}
+		throw new IllegalArgumentException("Not found event passing: " + portEvent);
+	}
+	
+	public static boolean isEventPassingCompatible(Port source, Port target) {
+		List<Event> sourceInputEvents = StatechartModelDerivedFeatures.getInputEvents(source);
+		List<Event> targetInputEvents = StatechartModelDerivedFeatures.getInputEvents(target);
+		
+		boolean isAcceptable = sourceInputEvents.size() == targetInputEvents.size();
+		for (int i = 0; i < sourceInputEvents.size() && isAcceptable; i++) {
+			Event sourceEvent = sourceInputEvents.get(i);
+			Event targetEvent = targetInputEvents.get(i);
+			
+			isAcceptable = isEventPassingCompatible(sourceEvent, targetEvent);
+		}
+		
+		return isAcceptable; 
+	}
+
+	public static boolean isEventPassingCompatible(Event source, Event target) {
+		List<ParameterDeclaration> sourceParameters = source.getParameterDeclarations();
+		List<ParameterDeclaration> targetParameters = target.getParameterDeclarations();
+		boolean isAcceptable = sourceParameters.size() == targetParameters.size();
+		if (isAcceptable) {
+			for (int j = 0; j < sourceParameters.size() && isAcceptable; j++) {
+				ParameterDeclaration sourceParameter = sourceParameters.get(j);
+				ParameterDeclaration targetParameter = targetParameters.get(j);
+				
+				TypeDefinition sourceType = StatechartModelDerivedFeatures.getTypeDefinition(sourceParameter);
+				TypeDefinition targetType = StatechartModelDerivedFeatures.getTypeDefinition(targetParameter);
+
+				isAcceptable = ecoreUtil.helperEquals(sourceType, targetType);
+			}
+		}
+		return isAcceptable;
+	}
+	
+	public static EventReference getTargetEventReference(MessageQueue queue,
+				Entry<Port, Event> portEvent) {
+		EventPassing eventPassing = getEventPassing(queue, portEvent);
+		EventReference target = eventPassing.getTarget();
+		if (target != null) {
+			return target;
+		}
+		else {
+			EventReference source = eventPassing.getSource();
+			return source;
+		}
+	}
+	
+	public static Entry<Port, Event> getTargetPortEvent(MessageQueue queue,
+			Entry<Port, Event> sourcePortEvent) {
+		Port sourcePort = sourcePortEvent.getKey();
+		Event sourceEvent = sourcePortEvent.getValue();
+		EventReference target = getTargetEventReference(queue, sourcePortEvent);
+		if (target instanceof AnyPortEventReference anyPortEventReference) {
+			Port targetPort = anyPortEventReference.getPort();
+			if (!isEventPassingCompatible(sourcePort, targetPort)) {
+				throw new IllegalArgumentException("Not the same interface: " + targetPort);
+			}
+			List<Event> sourceEvents = getInputEvents(sourcePort);
+			int index = sourceEvents.indexOf(sourceEvent);
+			List<Entry<Port, Event>> targetEventIds = getInputEvents(target);
+			return targetEventIds.get(index);
+		}
+		else if (target instanceof PortEventReference portEventReference) {
+			Port port = portEventReference.getPort();
+			Event targetEvent = portEventReference.getEvent();
+			return new SimpleEntry<Port, Event>(port, targetEvent);
+		}
+		throw new IllegalArgumentException("Not known target: " + sourcePortEvent);
+	}
+	
+	public static List<EventReference> getSourceAndTargetEventReferences(MessageQueue queue) {
+		List<EventReference> eventReferences = new ArrayList<EventReference>();
+		for (EventPassing eventPassing : queue.getEventPassings()) {
+			EventReference source = eventPassing.getSource();
+			eventReferences.add(source);
+			EventReference target = eventPassing.getTarget();
+			if (target != null) {
+				eventReferences.add(target);
+			}
+		}
+		return eventReferences;
+	}
+	
+	public static int getEventId(MessageQueue queue, Entry<Port, Event> portEvent) {
 		List<Entry<Port, Event>> storedEvents = getStoredEvents(queue);
 		return storedEvents.indexOf(portEvent) + 1; // Starts from 1, 0 is the "empty cell"
 	}
@@ -1169,8 +1446,14 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	public static boolean isStoredInMessageQueue(
 			Entry<Port, Event> portEvent, MessageQueue queue) {
-		List<Entry<Port,Event>> storedEvents = getStoredEvents(queue);
+		List<Entry<Port, Event>> storedEvents = getStoredEvents(queue);
 		return storedEvents.contains(portEvent);
+	}
+	
+	public static boolean isTargetedInMessageQueue(
+			Entry<Port, Event> portEvent, MessageQueue queue) {
+		List<Entry<Port, Event>> targetEvents = getTargetEvents(queue);
+		return targetEvents.contains(portEvent);
 	}
 	
 	public static int countAssignedMessageQueues(
@@ -1184,6 +1467,17 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return count;
 	}
 	
+	public static int countTargetingMessageQueues(
+			Entry<Port, Event> portEvent, AsynchronousAdapter adapter) {
+		int count = 0;
+		for (MessageQueue queue : adapter.getMessageQueues()) {
+			if (isTargetedInMessageQueue(portEvent, queue)) {
+				++count;
+			}
+		}
+		return count;
+	}
+	
 	public static boolean isStoredInMessageQueue(
 			Entry<Port, Event> portEvent, AsynchronousAdapter adapter) {
 		return adapter.getMessageQueues().stream()
@@ -1191,7 +1485,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	}
 	
 	public static boolean isStoredInMessageQueue(Clock clock, MessageQueue queue) {
-		for (EventReference eventReference : queue.getEventReferences()) {
+		for (EventReference eventReference : getSourceEventReferences(queue)) {
 			if (eventReference instanceof ClockTickReference) {
 				ClockTickReference clockTickReference = (ClockTickReference) eventReference;
 				if (clockTickReference.getClock() == clock) {
@@ -2680,109 +2974,6 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	public static boolean contains(ComponentInstance potentialContainer, ComponentInstance instance) {
 		List<ComponentInstance> instances = getInstances(potentialContainer);
 		return instances.contains(instance);
-	}
-	
-	public static List<ComponentInstance> getInitallyScheduledInstances(
-			SchedulableCompositeComponent component) {
-		List<ComponentInstance> initallyScheduledInstances = new ArrayList<ComponentInstance>();
-		for (ComponentInstanceReferenceExpression instanceReference : component.getInitialExecutionList()) {
-			ComponentInstance componentInstance = instanceReference.getComponentInstance(); // No child
-			initallyScheduledInstances.add(componentInstance);
-		}
-		return initallyScheduledInstances;
-	}
-	
-	public static List<ComponentInstance> getAllInitallyScheduledAsynchronousSimpleInstances(
-			AbstractAsynchronousCompositeComponent component) {
-		List<ComponentInstance> initallyScheduledInstances = new ArrayList<ComponentInstance>();
-		
-		if (component instanceof SchedulableCompositeComponent schedulableComponent) {
-			for (ComponentInstanceReferenceExpression instanceReference :
-						schedulableComponent.getInitialExecutionList()) {
-				ComponentInstance componentInstance = instanceReference.getComponentInstance(); // No child
-				Component subtype = getDerivedType(componentInstance);
-				if (subtype instanceof SchedulableCompositeComponent) {
-					initallyScheduledInstances.addAll(
-						getAllAsynchronousSimpleInstances(subtype));
-				}
-				else { // Asynchronous adapter
-					initallyScheduledInstances.add(componentInstance);
-				}
-			}
-		}
-		// No else - not recursive/transitive property
-		
-		return initallyScheduledInstances;
-	}
-	
-	public static List<? extends ComponentInstance> getScheduledInstances(Component component) {
-		if (component instanceof AbstractSynchronousCompositeComponent synchronousComponent) {
-			return getScheduledInstances(synchronousComponent);
-		}
-		else if (component instanceof AbstractAsynchronousCompositeComponent asynchronousComponent) {
-			return getScheduledInstances(asynchronousComponent);
-		}
-		else if (component instanceof AsynchronousAdapter asynchronusAdapter) {
-			return List.of(asynchronusAdapter.getWrappedComponent());
-		}
-		throw new IllegalArgumentException("Not known component: " + component);
-	}
-	
-	public static List<SynchronousComponentInstance> getScheduledInstances(
-			AbstractSynchronousCompositeComponent component) {
-		if (component instanceof CascadeCompositeComponent) {
-			CascadeCompositeComponent cascade = (CascadeCompositeComponent) component;
-			List<ComponentInstanceReferenceExpression> executionList = cascade.getExecutionList();
-			if (!executionList.isEmpty()) {
-				List<SynchronousComponentInstance> instances =
-						new ArrayList<SynchronousComponentInstance>();
-				for (ComponentInstanceReferenceExpression instanceReference : executionList) {
-					SynchronousComponentInstance componentInstance =
-						(SynchronousComponentInstance) instanceReference.getComponentInstance();
-					instances.add(componentInstance);
-				}
-				return instances;
-			}
-		}
-		return component.getComponents();
-	}
-	
-	public static List<AsynchronousComponentInstance> getScheduledInstances(
-			AbstractAsynchronousCompositeComponent component) {
-		if (component instanceof ScheduledAsynchronousCompositeComponent) {
-			ScheduledAsynchronousCompositeComponent scheduledComponent =
-					(ScheduledAsynchronousCompositeComponent) component;
-			List<ComponentInstanceReferenceExpression> executionList = scheduledComponent.getExecutionList();
-			if (!executionList.isEmpty()) {
-				List<AsynchronousComponentInstance> instances =
-						new ArrayList<AsynchronousComponentInstance>();
-				for (ComponentInstanceReferenceExpression instanceReference : executionList) {
-					AsynchronousComponentInstance componentInstance =
-						(AsynchronousComponentInstance) instanceReference.getComponentInstance();
-					instances.add(componentInstance);
-				}
-				return instances;
-			}
-		}
-		return component.getComponents();
-	}
-	
-	public static List<AsynchronousComponentInstance> getAllScheduledAsynchronousSimpleInstances(
-			AbstractAsynchronousCompositeComponent component) {
-		List<AsynchronousComponentInstance> simpleInstances =
-				new ArrayList<AsynchronousComponentInstance>();
-		for (AsynchronousComponentInstance instance : getScheduledInstances(component)) {
-			if (isAdapter(instance)) {
-				simpleInstances.add(instance);
-			}
-			else {
-				AbstractAsynchronousCompositeComponent type =
-						(AbstractAsynchronousCompositeComponent) instance.getType();
-				simpleInstances.addAll(
-						getAllScheduledAsynchronousSimpleInstances(type));
-			}
-		}
-		return simpleInstances;
 	}
 	
 	public static int getScheduleCount(Component component) {

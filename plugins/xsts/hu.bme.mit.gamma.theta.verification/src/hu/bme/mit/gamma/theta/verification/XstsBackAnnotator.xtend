@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021-2022 Contributors to the Gamma project
+ * Copyright (c) 2021-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -19,10 +19,13 @@ import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.State
+import hu.bme.mit.gamma.trace.model.ComponentSchedule
+import hu.bme.mit.gamma.trace.model.InstanceSchedule
 import hu.bme.mit.gamma.trace.model.RaiseEventAct
 import hu.bme.mit.gamma.trace.model.Step
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.verification.util.TraceBuilder
+import hu.bme.mit.gamma.xsts.transformation.util.Namings
 import java.util.List
 import java.util.Set
 
@@ -54,6 +57,36 @@ class XstsBackAnnotator {
 		this.component = thetaQueryGenerator.component
 		this.arrayParser = arrayParser
 	}
+	
+	//
+	
+	def isSchedulingVariable(String id) {
+		return id == Namings.instanceEndcodingVariableName
+	}
+	
+	def addScheduling(String id, String value, Step step) {
+		val scheduledInstanceId = Integer.valueOf(value)
+		if (scheduledInstanceId <= 0) {
+			return // This is not a valid index
+		}
+		
+		val scheduledInstance = component.getScheduledInstance(scheduledInstanceId)
+		
+		step.addScheduling(scheduledInstance)
+		// Remove old one
+		step.actions.removeIf[it instanceof ComponentSchedule]
+	}
+	
+	def void addSchedulingIfNeeded(Step step) {
+		if (step.containsType(InstanceSchedule)) {
+			// Async schedule already added
+			return
+		}
+		// No schedule yet
+		step.addScheduling
+	}
+	
+	//
 	
 	def void parseState(String potentialStateString, Step step) {
 		val instanceState = xStsQueryGenerator.getSourceState(potentialStateString)

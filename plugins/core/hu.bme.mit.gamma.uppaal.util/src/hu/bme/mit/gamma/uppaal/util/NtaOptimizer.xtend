@@ -88,7 +88,7 @@ class NtaOptimizer {
 					}
 				}
 				else if (targetIncomingEdges.empty && firstEdge.hasOnlyUpdate) {
-					// Only guard
+					// Only updates
 					val updates = firstEdge.update
 					if (targetOutgoingEdges.forall[it.hasOnlyUpdate]) {
 						for (outgoingEdge : targetOutgoingEdges) {

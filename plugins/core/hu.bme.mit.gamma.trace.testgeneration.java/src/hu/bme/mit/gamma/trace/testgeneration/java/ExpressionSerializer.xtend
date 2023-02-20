@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -71,15 +71,20 @@ class ExpressionSerializer extends hu.bme.mit.gamma.codegeneration.java.util.Exp
 
 	def dispatch String serialize(ComponentInstanceStateReferenceExpression assert) {
 		val instance = assert.instance
-		val separator = (instance === null) ? '' : '.'
-		'''«testInstanceName»«separator»«instance.fullContainmentHierarchy».isStateActive("«assert.state.parentRegion.name»", "«assert.state.name»")'''
+		'''«instance.serializeInstanceReference».isStateActive("«assert.state.parentRegion.name»", "«assert.state.name»")'''
 	}
 	
 	def dispatch String serialize(ComponentInstanceVariableReferenceExpression assert) {
 		val instance = assert.instance
-		val separator = (instance === null) ? '' : '.'
 		val variable = assert.variableDeclaration
-		'''«testInstanceName»«separator»«instance.fullContainmentHierarchy».getValue("«variable.name»")'''
+		'''«instance.serializeInstanceReference».getValue("«variable.name»")'''
+	}
+	
+	//
+	
+	def String serializeInstanceReference(ComponentInstanceReferenceExpression instance) {
+		val separator = (instance === null) ? '' : '.'
+		return '''«testInstanceName»«separator»«instance.fullContainmentHierarchy»'''
 	}
 	
 	//

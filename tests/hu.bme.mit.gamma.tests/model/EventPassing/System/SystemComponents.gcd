@@ -1,0 +1,32 @@
+package asynchronous
+
+import "Interfaces/Interfaces.gcd"
+
+import "Statechart/Adder.gcd"
+import "Statechart/Counter.gcd"
+import "Statechart/Subtractor.gcd"
+
+cascade SystemComponents [
+	port ExecuteAdder : requires CounterExecute
+	port ExecuteSubtractor : requires CounterExecute
+	
+	port AddCounter : requires CounterToggle
+	port SubtractCounter : requires CounterToggle
+	
+	port OutAdder : provides CounterInternal
+	port OutSubtractor : provides CounterInternal
+] {
+	component adder : Adder
+	component subtractor : Subtractor
+	
+	component counter : Counter
+	
+	bind ExecuteAdder -> adder.Execute
+	bind ExecuteSubtractor -> subtractor.Execute
+	
+	bind AddCounter -> counter.ToggleAdd
+	bind SubtractCounter -> counter.ToggleSubtract
+	
+	bind OutAdder -> adder.Toggle
+	bind OutSubtractor -> subtractor.Toggle
+}

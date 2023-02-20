@@ -202,5 +202,6 @@
     <genClasses ecoreClass="expression.ecore#//DeclarationReferenceAnnotation">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference expression.ecore#//DeclarationReferenceAnnotation/declaration"/>
     </genClasses>
+    <genClasses ecoreClass="expression.ecore#//UnremovableVariableDeclarationAnnotation"/>
   </genPackages>
 </genmodel:GenModel>

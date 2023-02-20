@@ -98,9 +98,11 @@ class HavocHandler {
 	
 	protected def SelectionStruct createSelectionOfIntegerValues(VariableDeclaration variable) {
 		val root = variable.root
-			
+		
+		logger.log(Level.INFO, "Calculating integer values for: " + variable.name)
 		val integerValues = root.calculateIntegerValues(variable) // These are assumed values
 		// Both "valid" and "invalid" integer values are returned for predicates
+		logger.log(Level.INFO, "Finished calculating integer values for: " + variable.name)
 		
 		if (integerValues.empty) {
 			// Sometimes input parameters are not referenced

@@ -115,6 +115,7 @@ class ComponentTransformer {
 		
 		val name = component.name
 		val xSts = name.createXsts
+		traceability.XSts = xSts
 		
 		val eventReferenceMapper = new ReferenceToXstsVariableMapper(xSts)
 		val valueDeclarationTransformer = new ValueDeclarationTransformer
@@ -191,8 +192,15 @@ class ComponentTransformer {
 					val port = portEvent.key
 					val event = portEvent.value
 					val List<MessageQueueStruct> slaveQueues = newArrayList
+					
+					// Potentially the same as port and event; makes a difference only in the case of EventPassings
+					val targetPortEvent = queue.getTargetPortEvent(portEvent)
+					val targetPort = targetPortEvent.key
+					val targetEvent = targetPortEvent.value
+					//
+					
 					// Important optimization - we create a queue only if the event is used
-					if (eventReferenceMapper.hasInputEventVariable(event, port)) {
+					if (eventReferenceMapper.hasInputEventVariable(targetEvent, targetPort)) {
 						for (parameter : event.parameterDeclarations) {
 							val parameterType = parameter.type
 							val parameterTypeDefinition = parameterType.typeDefinition
@@ -225,6 +233,7 @@ class ComponentTransformer {
 							}
 							else {
 								// Internal queue, we do not care about traceability here
+								// TODO capacity issues?
 								val messageQueueStruct = typeSlaveQueues.get(index)
 								slaveQueues += messageQueueStruct // Optimization - reusing an existing slave queue
 								logger.log(Level.INFO, '''Found a slave queue for «port.name».«event.name»::«parameter.name»''')
@@ -335,12 +344,15 @@ class ComponentTransformer {
 				
 				val events = queue.storedEvents
 				for (portEvent : events) {
-					val port = portEvent.key
-					val event = portEvent.value
 					val eventId = queueTraceability.get(portEvent)
 					
+					val targetPortEvent = queue.getTargetPortEvent(portEvent)
+					val targetPort = targetPortEvent.key
+					val targetEvent = targetPortEvent.value
+					// Mapping source event reference to target 
+					
 					// Can be empty due to optimization or adapter event
-					val xStsInEventVariables = eventReferenceMapper.getInputEventVariables(event, port)
+					val xStsInEventVariables = eventReferenceMapper.getInputEventVariables(targetEvent, targetPort)
 					
 					val ifExpression = xStsEventIdVariable.createReferenceExpression
 							.createEqualityExpression(eventId.toIntegerLiteral)
@@ -353,7 +365,7 @@ class ComponentTransformer {
 					// Setting the parameter variables with values stored in slave queues
 					val slaveQueueStructs = slaveQueues.get(portEvent) // Might be empty
 					
-					val inParameters = event.parameterDeclarations
+					val inParameters = targetEvent.parameterDeclarations
 					val slaveQueueSize = slaveQueueStructs.size // Might be 0 if there is no in-event var
 					
 					if (inParameters.size <= slaveQueueSize) {
@@ -367,7 +379,7 @@ class ComponentTransformer {
 							val xStsSlaveSizeVariable = (slaveSizeVariable === null) ? null :
 									variableTrace.getAll(slaveSizeVariable).onlyElement
 							val xStsInParameterVariableLists = eventReferenceMapper
-									.getInputParameterVariablesByPorts(inParameter, port)
+									.getInputParameterVariablesByPorts(inParameter, targetPort)
 							// Separated in the lists according to ports
 							for (xStsInParameterVariables : xStsInParameterVariableLists) {
 								// Parameter optimization problem: parameters are not deleted independently
@@ -787,7 +799,7 @@ class ComponentTransformer {
 		
 		for (instance : component.scheduledInstances) { // To support multiple execution
 			val instanceType = instance.type
-			asynchronousCompositeAction.actions +=
+			val action =
 			if (instanceType instanceof AbstractAsynchronousCompositeComponent) {
 				instanceType.mergeAsynchronousCompositeActions(mergedAdapterActions)
 			}
@@ -795,9 +807,50 @@ class ComponentTransformer {
 				val adapterAction = mergedAdapterActions.checkAndGet(instance)
 				adapterAction.clone // Important due to multiple executions
 			}
+			asynchronousCompositeAction.actions += action
+			
+			// Encode asynchronous component instances
+			instance.encodeAsynchronousComponentInstances(action)
+			//
 		}
 		
 		return asynchronousCompositeAction
+	}
+	
+	//
+	
+	protected def void encodeAsynchronousComponentInstances(
+			AsynchronousComponentInstance instance, Action action) {
+		if (!instance.needsScheduling) {
+			return
+		}
+		
+		val XSTS xSts = traceability.XSts
+		
+		val instanceEndcodingVariable = xSts.getOrCreateInstanceEndcodingVariable
+		
+		val index = instance.schedulingIndex
+		
+		val encodingAssignment = instanceEndcodingVariable.createAssignmentAction(
+				index.toIntegerLiteral)
+		action.appendToAction(encodingAssignment)
+	}
+	
+	protected def getOrCreateInstanceEndcodingVariable(XSTS xSts) {
+		val name = instanceEndcodingVariableName
+		
+		var instanceEndcodingVariable = xSts.getVariable(name)
+		if (instanceEndcodingVariable === null) {
+			instanceEndcodingVariable = createIntegerTypeDefinition
+					.createVariableDeclaration(name)
+			
+			instanceEndcodingVariable.addUnremovableAnnotation
+			instanceEndcodingVariable.addResettableAnnotation
+			
+			xSts.variableDeclarations += instanceEndcodingVariable
+		}
+		
+		return instanceEndcodingVariable
 	}
 	
 	//

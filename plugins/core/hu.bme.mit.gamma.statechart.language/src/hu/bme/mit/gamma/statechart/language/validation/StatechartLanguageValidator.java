@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -22,6 +22,7 @@ import hu.bme.mit.gamma.statechart.composite.Channel;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ControlSpecification;
+import hu.bme.mit.gamma.statechart.composite.EventPassing;
 import hu.bme.mit.gamma.statechart.composite.InstancePortReference;
 import hu.bme.mit.gamma.statechart.composite.MessageQueue;
 import hu.bme.mit.gamma.statechart.composite.PortBinding;
@@ -469,6 +470,11 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	public void checkMessageQueueAnyEventReferences(AnyPortEventReference anyPortEventReference) {
 		handleValidationResultMessage(statechartModelValidator
 				.checkMessageQueueAnyEventReferences(anyPortEventReference));
+	}
+	
+	@Check
+	public void checkEventPassings(EventPassing eventPassing) {
+		handleValidationResultMessage(statechartModelValidator.checkEventPassings(eventPassing));
 	}
 	
 	@Check

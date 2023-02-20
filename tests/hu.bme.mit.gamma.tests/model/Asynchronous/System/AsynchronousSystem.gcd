@@ -1,4 +1,4 @@
-package asynchronous
+package asynchronousreactive
 
 import "Interfaces/Interfaces.gcd"
 
@@ -7,8 +7,8 @@ import "Statechart/Counter.gcd"
 import "Statechart/Subtractor.gcd"
 
 async AsynchronousSystem [
-	port ExecuteAdder : requires Execute
-	port ExecuteSubtractor : requires Execute
+	port ExecuteAdder : requires ExecuteAsynchronous
+	port ExecuteSubtractor : requires ExecuteAsynchronous
 ] {
 	component adder : Adder
 	component subtractor : Subtractor

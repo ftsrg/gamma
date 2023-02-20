@@ -198,7 +198,7 @@ class TraceBackAnnotator {
 							case line.endsWith(TRANS_START): {
 								step.checkInEvents
 								// Add schedule
-								step.addComponentScheduling
+								step.addSchedulingIfNeeded
 								// Setting the state
 								backAnnotatorState = BackAnnotatorState.STATE_CHECK
 								
@@ -287,6 +287,9 @@ class TraceBackAnnotator {
 				}
 				else if (promelaQueryGenerator.isSourceVariable(id)) {
 					id.parseVariable(value, step)
+				}
+				else if (id.isSchedulingVariable) {
+					id.addScheduling(value, step)
 				}
 				else if (promelaQueryGenerator.isSourceOutEvent(id)) {
 					id.parseOutEvent(value, step)

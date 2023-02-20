@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -10,12 +10,15 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.xsts.uppaal.transformation
 
+import hu.bme.mit.gamma.uppaal.util.ClockExpressionHandler
 import hu.bme.mit.gamma.uppaal.util.NtaBuilder
 import hu.bme.mit.gamma.uppaal.util.NtaOptimizer
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.HavocAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.XSTS
+import java.util.logging.Level
+import java.util.logging.Logger
 import uppaal.templates.LocationKind
 
 import static hu.bme.mit.gamma.uppaal.util.XstsNamings.*
@@ -35,6 +38,9 @@ class XstsToUppaalTransformer {
 	protected final extension NtaOptimizer ntaOptimizer
 	
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
+	protected final extension ClockExpressionHandler clockExpressionHandler = ClockExpressionHandler.INSTANCE
+	
+	protected final Logger logger = Logger.getLogger("GammaLogger")
 	
 	new(XSTS xSts) {
 		this.xSts = xSts
@@ -90,13 +96,18 @@ class XstsToUppaalTransformer {
 			environmentFinishLocation.locationTimeKind = LocationKind.COMMITED
 		}
 		
+		logger.log(Level.INFO, "Basic NTA transformation has finished")
+		
 		//
 		optimizelIntegerCodomains
+		//
+		val nta = ntaBuilder.nta
+		nta.transformClockExpressions
 		//
 		
 		ntaBuilder.instantiateTemplates
 		
-		return ntaBuilder.nta
+		return nta
 	}
 	
 }

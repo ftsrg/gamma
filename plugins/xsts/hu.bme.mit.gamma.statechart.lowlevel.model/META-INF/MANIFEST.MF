@@ -11,7 +11,8 @@ Bundle-RequiredExecutionEnvironment: JavaSE-17
 Export-Package: hu.bme.mit.gamma.statechart.lowlevel.derivedfeatures,
  hu.bme.mit.gamma.statechart.lowlevel.model,
  hu.bme.mit.gamma.statechart.lowlevel.model.impl,
- hu.bme.mit.gamma.statechart.lowlevel.model.util
+ hu.bme.mit.gamma.statechart.lowlevel.model.util,
+ hu.bme.mit.gamma.statechart.lowlevel.util
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.emf.ecore;visibility:=reexport,
  hu.bme.mit.gamma.action.model;visibility:=reexport,

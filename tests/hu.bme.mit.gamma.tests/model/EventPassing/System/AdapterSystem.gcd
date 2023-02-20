@@ -1,0 +1,25 @@
+package asynchronous
+
+import "Interfaces/Interfaces.gcd"
+
+import "Statechart/Adder.gcd"
+import "Statechart/Counter.gcd"
+import "Statechart/Subtractor.gcd"
+
+import "SystemComponents.gcd"
+
+adapter AdapterSystem of component systemComponents : SystemComponents [
+] {
+	when any / run
+
+	queue environmentQueue (priority = 1, capacity = 4) {
+		ExecuteAdder.any, ExecuteSubtractor.any
+//		, SubtractCounter.any, AddCounter.any // Works both ways
+	}
+	
+	queue internalQueue (priority = 2, capacity = 4) {
+		OutAdder.any -> AddCounter.any, OutSubtractor.any -> SubtractCounter.any 
+		
+	}
+	
+}
