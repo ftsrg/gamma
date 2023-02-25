@@ -15,7 +15,8 @@ Require-Bundle: org.eclipse.xtext,
  hu.bme.mit.gamma.scenario.model,
  hu.bme.mit.gamma.expression.language,
  hu.bme.mit.gamma.statechart.language,
- org.eclipse.core.resources
+ org.eclipse.core.resources,
+ hu.bme.mit.gamma.action.language
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Export-Package: hu.bme.mit.gamma.scenario.language,
  hu.bme.mit.gamma.scenario.language.formatting,

@@ -8,11 +8,12 @@
  * 
  * SPDX-License-Identifier: EPL-1.0
  ********************************************************************************/
-package hu.bme.mit.gamma.scenario.trace.generator
+package hu.bme.mit.gamma.scenario.trace.generator.util
 
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.scenario.statechart.util.ScenarioStatechartUtil
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction
@@ -43,6 +44,7 @@ class ExecutionTraceBackAnnotator {
 	protected List<ExecutionTrace> traces = null
 	protected List<ExecutionTrace> result = null
 	protected boolean removeNotneededInteractions = true
+	val boolean isNegativeTest
 	
 	protected boolean createOriginalActsAndAssertsBasedOnActs
 
@@ -50,25 +52,21 @@ class ExecutionTraceBackAnnotator {
 		this.result = newArrayList
 		this.traces = _traces
 		this.ports = original.ports
+		this.isNegativeTest = false
 	}
 
 	new(List<ExecutionTrace> _traces, Component original, boolean removeNotneededInteractions,
-			boolean createOriginalActsAndAssertsBasedOnActs) {
+			boolean createOriginalActsAndAssertsBasedOnActs, boolean isNegativeTest) {
 		this.result = newArrayList
 		this.traces = _traces
 		this.ports = original.ports
 		this.removeNotneededInteractions = removeNotneededInteractions
 		this.createOriginalActsAndAssertsBasedOnActs = createOriginalActsAndAssertsBasedOnActs
+		this.isNegativeTest = isNegativeTest
 	}
 
 	def execute() {
-		for (var i = 0; i < traces.size; i++) {
-			val trace = traces.get(i)
-			if (!result.exists[
-					traceUtil.isCoveredByStates(trace, it)].booleanValue) {
-				result += trace
-			}
-		}
+		result += traces
 		for (resultTrace : result) {
 			if (removeNotneededInteractions) {
 				resultTrace.removeNotNeededInteractions
@@ -161,6 +159,8 @@ class ExecutionTraceBackAnnotator {
 			}
 			step.actions.clear
 			step.actions += actions
+			
+			asserts += step.asserts.filter(ComponentInstanceStateReferenceExpression)
 			step.asserts.clear
 			step.asserts += asserts
 		}

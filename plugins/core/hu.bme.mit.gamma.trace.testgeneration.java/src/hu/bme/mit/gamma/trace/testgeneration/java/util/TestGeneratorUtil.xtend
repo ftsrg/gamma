@@ -17,7 +17,6 @@ import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceE
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
-import hu.bme.mit.gamma.trace.model.RaiseEventAct
 import hu.bme.mit.gamma.trace.model.Step
 import hu.bme.mit.gamma.trace.testgeneration.java.ExpressionSerializer
 import hu.bme.mit.gamma.trace.util.TraceUtil
@@ -93,18 +92,4 @@ class TestGeneratorUtil {
 		}
 		return true
 	}
-	
-	def String getPortOfAssert(RaiseEventAct assert) '''
-		"«assert.port.name»"
-	'''
-	
-	
-	def String getEventOfAssert(RaiseEventAct assert) '''
-		"«assert.event.name»"
-	'''
-	
-	def String getParamsOfAssert(RaiseEventAct assert) '''
-		new Object[] {«FOR parameter : assert.arguments BEFORE " " SEPARATOR ", " AFTER " "»«parameter.serialize»«ENDFOR»}
-	'''
-
 }

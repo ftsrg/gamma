@@ -17,7 +17,7 @@ scenario S1MotionThenDelay initial outputs [
 		cold receives MotionDetector.motion
 	}
 	{
-		cold delay (TIMEOUT_TIME * 1000)
+		delay (TIMEOUT_TIME * 1000)
 	}
 	// Internal event transmission
 	{
@@ -40,7 +40,7 @@ scenario S2MotionThenMotionThenVentilation  initial outputs [
 		cold receives MotionDetector.motion
 	}
 	{
-		hot delay (1 .. 4001)
+		delay (1 .. 4001)
 		hot sends Ventilation.switchVentilation
 		hot sends Ventilation.ventilate
 		check Ventilation.switchVentilation::on

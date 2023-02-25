@@ -41,7 +41,7 @@ Task returns Task:
 		EventPriorityTransformation | AdaptiveContractTestGeneration |
 		AdaptiveBehaviorConformanceChecking | PhaseStatechartGeneration |
 		Verification | TraceReplayModelGeneration | Slicing | StatechartContractTestGeneration |
-		StatechartContractGeneration
+		StatechartContractGeneration | TraceGeneration
 ;
 
 YakinduCompilation returns YakinduCompilation:
@@ -310,6 +310,21 @@ Verification returns Verification:
 	'}'
 ;
 
+TraceGeneration returns TraceGeneration:
+	{TraceGeneration} 'trace-generation' '{'
+		(
+			'file' ':' fileName+=STRING |
+			variableLists+='variables' ':'	'{'
+				(
+					variables+=STRING
+				)*
+			'}'	|
+			'fullTraces' ':' fullTraces=BOOLEAN |
+			'noTransitionCoverage' ':' noTransitionCoverage=BOOLEAN
+		)*
+	'}'
+;
+
 TraceReplayModelGeneration returns TraceReplayModelGeneration:
 	{TraceReplayModelGeneration} 'trace-replay' '{'
 		'trace' ':' executionTrace=[trace::ExecutionTrace]
@@ -389,6 +404,7 @@ StatechartContractGeneration returns StatechartContractGeneration:
 	 ('folder' ':' targetFolder+=STRING)?
 	 ('name' ':' fileName+=STRING)?
 	 ('restart-on-cold-violation' ':' StartAsColdViolation=BOOLEAN)?
+	 ('restart-on-accept' ':' RestartOnAccept=BOOLEAN)?
 	 ('loop-for-interaction' ':' UseIteratingVariable=BOOLEAN)?
 	 ('automaton-type' ':' AutomatonType=ContractAutomatonType)?
 	 ('test-type' ':' TestType=TestAutomatonType)?

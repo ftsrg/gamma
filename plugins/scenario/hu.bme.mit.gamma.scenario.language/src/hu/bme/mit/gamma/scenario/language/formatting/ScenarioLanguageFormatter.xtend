@@ -63,7 +63,7 @@ class ScenarioLanguageFormatter extends AbstractDeclarativeFormatter {
 			grammar.unorderedCombinedFragmentDefinitionAccess.andKeyword_4_0.value,
 			grammar.alternativeCombinedFragmentDefinitionAccess.orKeyword_4_0.value
 		).forEach[config.setNoLinewrap.before(it)]
-		grammar.findAssignments(grammar.abstractInteractionDefinitionRule).forEach[config.setLinewrap.around(it)]
+		grammar.findAssignments(grammar.scenarioAssignmentRule).forEach[config.setLinewrap.around(it)]
 		grammar.findAssignments(grammar.interactionRule).forEach[config.setLinewrap.around(it)]
 
 	}

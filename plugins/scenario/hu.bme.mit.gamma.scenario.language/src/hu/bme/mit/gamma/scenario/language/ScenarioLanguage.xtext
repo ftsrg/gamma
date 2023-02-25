@@ -65,15 +65,13 @@ FragmentDefinition returns ScenarioModel::Fragment:
 	(interactions+=AbstractInteraction)+;
 
 AbstractInteraction returns ScenarioModel::Occurrence:
-	CombinedFragment | AbstractInteractionDefinition | ScenarioReference;
+	CombinedFragment | ModalInteractionSet | ScenarioReference;
 
 ScenarioReference returns ScenarioModel::ScenarioDefinitionReference:
 	{ScenarioModel::ScenarioDefinitionReference}
 	'call' scenarioDefinition=[ScenarioModel::ScenarioDeclaration]
 	('('arguments+=Expression(',' arguments+=Expression)*')')?;
 
-AbstractInteractionDefinition returns ScenarioModel::DeterministicOccurrence:
-	Interaction | Delay | NegatedModalInteraction | ModalInteractionSet | ScenarioCheck | ScenarioAssignment;
 	
 ScenarioAssignment returns ScenarioModel::ScenarioAssignmentStatement:
 	{ScenarioModel::ScenarioAssignmentStatement}
@@ -99,7 +97,11 @@ InitialInteraction returns ScenarioModel::DeterministicOccurrence:
 ModalInteractionSet returns ScenarioModel::DeterministicOccurrenceSet:
 	{ScenarioModel::DeterministicOccurrenceSet}
 	'{'
-		(deterministicOccurrences+=AbstractInteractionDefinition)*
+		(deterministicOccurrences+=Delay)?
+		(deterministicOccurrences+=Interaction)*
+		(deterministicOccurrences+=NegatedModalInteraction)*
+		(deterministicOccurrences+=ScenarioCheck)?
+		(deterministicOccurrences+=ScenarioAssignment)*
 	'}';
 
 Interaction returns ScenarioModel::Interaction:

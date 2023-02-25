@@ -199,6 +199,16 @@
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="backAnnotateToOriginal"
         eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="TraceGeneration" eSuperTypes="#//Task">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="fullTraces" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"
+        defaultValueLiteral="false"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="variables" upperBound="-1"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="noTransitionCoverage" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"
+        defaultValueLiteral="false"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="variableLists" upperBound="-1"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="TraceReplayModelGeneration" eSuperTypes="#//Task">
     <eStructuralFeatures xsi:type="ecore:EReference" name="executionTrace" lowerBound="1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.trace.model/model/trace.ecore#//ExecutionTrace"/>
@@ -267,6 +277,7 @@
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="UseIteratingVariable" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="AutomatonType" eType="#//ContractAutomatonType"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="TestType" eType="#//TestAutomatonType"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="RestartOnAccept" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EEnum" name="ContractAutomatonType">
     <eLiterals name="MONITOR"/>

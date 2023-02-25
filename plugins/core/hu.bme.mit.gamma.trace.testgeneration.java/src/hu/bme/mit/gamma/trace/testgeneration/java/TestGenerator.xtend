@@ -175,6 +175,11 @@ class TestGenerator {
 		import org.junit.Before;
 		import org.junit.After;
 		import org.junit.Test;
+		«IF waitingHandle instanceof WaitingAllowedInFunction»
+			import java.util.Arrays;
+			import java.util.List;
+			import java.util.function.BooleanSupplier;
+		«ENDIF»
 	'''
 	
 	protected def CharSequence generateTestCases(List<ExecutionTrace> traces) {

@@ -82,10 +82,10 @@ public class ScenarioContentSorter {
 	}
 
 	private String getSerializedSignal(Interaction signal) {
-		String output = "Signal" + signal.getDirection() + signal.getModality() + signal.getPort().getName()
+		String output = "Interaction" + signal.getDirection() + signal.getModality() + signal.getPort().getName()
 				+ signal.getEvent().getName();
 		for (Expression expression : signal.getArguments()) {
-			output = serializer.serialize(expression);
+			output += serializer.serialize(expression);
 		}
 		return output;
 	}
