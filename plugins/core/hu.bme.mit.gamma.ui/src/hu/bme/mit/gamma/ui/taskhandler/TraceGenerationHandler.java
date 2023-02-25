@@ -10,65 +10,28 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.ui.taskhandler;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Queue;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
-import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.emf.common.util.EList;
-import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
 
-import com.google.common.base.Stopwatch;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
 import hu.bme.mit.gamma.genmodel.model.TraceGeneration;
-import hu.bme.mit.gamma.genmodel.model.Verification;
-import hu.bme.mit.gamma.plantuml.serialization.SvgSerializer;
-import hu.bme.mit.gamma.plantuml.transformation.TraceToPlantUmlTransformer;
-import hu.bme.mit.gamma.property.model.CommentableStateFormula;
-import hu.bme.mit.gamma.property.model.PropertyPackage;
-import hu.bme.mit.gamma.property.model.StateFormula;
 import hu.bme.mit.gamma.property.util.PropertyUtil;
-import hu.bme.mit.gamma.querygenerator.serializer.PropertySerializer;
-import hu.bme.mit.gamma.querygenerator.serializer.ThetaPropertySerializer;
-import hu.bme.mit.gamma.querygenerator.serializer.UppaalPropertySerializer;
-import hu.bme.mit.gamma.querygenerator.serializer.XstsUppaalPropertySerializer;
-import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
-import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.theta.verification.ThetaTraceGenerator;
-import hu.bme.mit.gamma.theta.verification.ThetaVerification;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
-import hu.bme.mit.gamma.trace.testgeneration.java.TestGenerator;
 import hu.bme.mit.gamma.trace.util.TraceUtil;
 import hu.bme.mit.gamma.transformation.util.GammaFileNamer;
 import hu.bme.mit.gamma.transformation.util.StatechartEcoreUtil;
-import hu.bme.mit.gamma.transformation.util.UnfoldedExecutionTraceBackAnnotator;
-import hu.bme.mit.gamma.transformation.util.reducer.CoveredPropertyReducer;
-import hu.bme.mit.gamma.ui.taskhandler.TraceGenerationHandler.ExecutionTraceSerializer.VerificationResult;
-import hu.bme.mit.gamma.uppaal.verification.UppaalVerification;
-import hu.bme.mit.gamma.uppaal.verification.XstsUppaalVerification;
 import hu.bme.mit.gamma.util.FileUtil;
 import hu.bme.mit.gamma.verification.result.ThreeStateBoolean;
-import hu.bme.mit.gamma.verification.util.AbstractVerification;
-import hu.bme.mit.gamma.verification.util.AbstractVerifier.Result;
 
 public class TraceGenerationHandler extends TaskHandler {
 
@@ -112,7 +75,7 @@ public class TraceGenerationHandler extends TaskHandler {
 		// Setting the file paths
 		tracegeneration.getFileName().replaceAll(it -> fileUtil.exploreRelativeFile(file, it).toString());
 
-		EList<String> variableList = tracegeneration.getVariables();
+		List<String> variableList = tracegeneration.getVariables();
 		boolean useAbstraction = tracegeneration.getVariableLists().size()!=0;
 		
 		boolean fullTraces = tracegeneration.isFullTraces();
@@ -122,7 +85,7 @@ public class TraceGenerationHandler extends TaskHandler {
 		List<ExecutionTrace> retrievedTraces = new ArrayList<ExecutionTrace>();
 		ThetaTraceGenerator ttg = new ThetaTraceGenerator();
 		retrievedTraces = ttg.execute(modelFile, fullTraces, variableList, noTransitionCoverage, useAbstraction);
-		System.out.println(retrievedTraces.size());
+		logger.log(Level.INFO, "Number of received traces: "+retrievedTraces.size());
 
 		for (ExecutionTrace trace : retrievedTraces) {
 			serializer.serialize(targetFolder.getAbsolutePath(), traceFileName, svgFileName,

@@ -59,13 +59,13 @@ import hu.bme.mit.gamma.statechart.statechart.UnaryType
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.util.JavaUtil
+import java.util.Arrays
 import java.util.List
 import java.util.Map
 import org.eclipse.emf.ecore.EObject
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
-import java.util.Arrays
 
 abstract class AbstractContractStatechartGeneration {
 

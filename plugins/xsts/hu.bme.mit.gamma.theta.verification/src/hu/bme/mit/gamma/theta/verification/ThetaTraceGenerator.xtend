@@ -1,20 +1,18 @@
 package hu.bme.mit.gamma.theta.verification
 
-import java.util.List
+import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
-import java.util.ArrayList
+import hu.bme.mit.gamma.transformation.util.GammaFileNamer
+import hu.bme.mit.gamma.util.GammaEcoreUtil
+import hu.bme.mit.gamma.verification.result.ThreeStateBoolean
+import java.io.BufferedWriter
 import java.io.File
+import java.io.FileWriter
+import java.util.ArrayList
+import java.util.List
 import java.util.Scanner
 import java.util.logging.Level
-import hu.bme.mit.gamma.statechart.interface_.Package
 import java.util.logging.Logger
-import hu.bme.mit.gamma.verification.result.ThreeStateBoolean
-import hu.bme.mit.gamma.util.GammaEcoreUtil
-import hu.bme.mit.gamma.transformation.util.GammaFileNamer
-import org.eclipse.emf.common.util.EList
-import java.io.BufferedWriter
-import java.io.FileWriter
-import hu.bme.mit.gamma.util.FileUtil
 
 class ThetaTraceGenerator {
 	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE	
@@ -38,7 +36,7 @@ class ThetaTraceGenerator {
 		val traceDir = new File(modelFile.parent + File.separator + "traces")
 		cleanFolder(traceDir)		
 		val jar = System.getenv(ENVIRONMENT_VARIABLE_FOR_THETA_JAR)
-		var command = #["java", "-jar", jar] + #["--stacktrace", "--tracegen", "--search", "DFS", "--model", modelFile.canonicalPath, "--property", modelFile.canonicalPath]
+		var command = #["java", "-jar", jar] + #["--stacktrace", "--tracegen", "--search", "DFS", "--model", modelFile.canonicalPath, "--property", modelFile.canonicalPath] // essential arguments are --tracegen, -- model and --property
 		if(fullTraces) {
 			command = command + #["--get-full-traces"]
 		}
