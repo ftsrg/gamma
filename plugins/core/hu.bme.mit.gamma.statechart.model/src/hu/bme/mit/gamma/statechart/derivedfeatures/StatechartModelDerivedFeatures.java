@@ -1223,6 +1223,15 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return false;
 	}
 	
+	public static boolean isComponentResetSpecification(AsynchronousAdapter adapter, Entry<Port, Event> portEvent) {
+		return false;
+	}
+	
+	public static Collection<? extends MessageQueue> getQueueResetSpecifications(
+			AsynchronousAdapter adapter, Entry<Port, Event> portEvent) {
+		return List.of();
+	}
+	
 	public static List<MessageQueue> getFunctioningMessageQueues(AsynchronousAdapter adapter) {
 		return adapter.getMessageQueues().stream()
 				.filter(it -> isFunctioning(it))

@@ -131,6 +131,7 @@ class ComponentTransformer {
 		// Transforming and saving the adapter instances
 		
 		val mergedSynchronousActions = newHashMap
+		val mergedSynchronousInitActions = newHashMap
 		
 		for (adapterInstance : adapterInstances) {
 			val adapterComponentType = adapterInstance.type as AsynchronousAdapter
@@ -148,6 +149,7 @@ class ComponentTransformer {
 			entryAction.actions += adapterXsts.entryEventTransition.action
 			
 			mergedSynchronousActions += adapterInstance -> adapterXsts.mergedAction
+			mergedSynchronousInitActions += adapterInstance -> adapterXsts.initializingAction
 			
 			// inEventActions later
 			// Filtering events can be used (internal ones and ones led out to the environment)
@@ -233,7 +235,6 @@ class ComponentTransformer {
 							}
 							else {
 								// Internal queue, we do not care about traceability here
-								// TODO capacity issues?
 								val messageQueueStruct = typeSlaveQueues.get(index)
 								slaveQueues += messageQueueStruct // Optimization - reusing an existing slave queue
 								logger.log(Level.INFO, '''Found a slave queue for «port.name».«event.name»::«parameter.name»''')
@@ -408,6 +409,41 @@ class ComponentTransformer {
 					// Execution if necessary
 					if (adapterComponentType.isControlSpecification(portEvent)) {
 						thenAction.actions += originalMergedAction.clone
+					}
+					if (adapterComponentType.isComponentResetSpecification(portEvent)) {
+						val originalInitAction = mergedSynchronousInitActions.get(adapterInstance)
+						thenAction.actions += originalInitAction.clone
+					}
+					val resetQueues = adapterComponentType.getQueueResetSpecifications(portEvent)
+					if (!resetQueues.empty) {
+						for (resetQueue : resetQueues) {
+							val resetQueueMapping = queueTraceability.get(resetQueue)
+							val resetMasterQueue = resetQueueMapping.masterQueue.arrayVariable
+							val resetMasterSizeVariable = resetQueueMapping.masterQueue.sizeVariable
+							val resetSlaveQueues = resetQueueMapping.slaveQueues
+							
+							// Actually, the following values are "low-level values", but we handle them as XSTS values
+							val xStsResetMasterQueue = variableTrace.getAll(resetMasterQueue).onlyElement
+							val xStsResetMasterSizeVariable = (resetMasterSizeVariable === null) ? null :
+									variableTrace.getAll(resetMasterSizeVariable).onlyElement
+							
+							thenAction.actions += xStsResetMasterQueue.createVariableResetAction
+							thenAction.actions += xStsResetMasterSizeVariable.createVariableResetAction
+							
+							for (resetSlaveQueueStruct : resetSlaveQueues.values.flatten.toSet) {
+								val resetSlaveQueue = resetSlaveQueueStruct.arrayVariable
+								val resetSlaveSizeVariable = resetSlaveQueueStruct.sizeVariable
+							
+								val xStsSlaveQueues = variableTrace.getAll(resetSlaveQueue)
+								val xStsSlaveSizeVariable = (resetSlaveSizeVariable === null) ? null :
+										variableTrace.getAll(resetSlaveSizeVariable).onlyElement
+								
+								thenAction.actions += xStsSlaveQueues.createVariableResetActions
+								if (xStsSlaveSizeVariable !== null) {
+									thenAction.actions += xStsSlaveSizeVariable.createVariableResetAction
+								}
+							}
+						}
 					}
 					// ...here other control actions could be implemented
 					
