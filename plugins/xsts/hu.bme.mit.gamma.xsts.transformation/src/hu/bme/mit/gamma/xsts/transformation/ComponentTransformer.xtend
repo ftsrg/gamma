@@ -407,43 +407,17 @@ class ComponentTransformer {
 					}
 					
 					// Execution if necessary
-					if (adapterComponentType.isControlSpecification(portEvent)) {
+					if (adapterComponentType.isRunSpecification(portEvent)) {
 						thenAction.actions += originalMergedAction.clone
 					}
 					if (adapterComponentType.isComponentResetSpecification(portEvent)) {
 						val originalInitAction = mergedSynchronousInitActions.get(adapterInstance)
 						thenAction.actions += originalInitAction.clone
 					}
-					val resetQueues = adapterComponentType.getQueueResetSpecifications(portEvent)
+					val resetQueues = adapterComponentType.getResetQueues(portEvent)
 					if (!resetQueues.empty) {
-						for (resetQueue : resetQueues) {
-							val resetQueueMapping = queueTraceability.get(resetQueue)
-							val resetMasterQueue = resetQueueMapping.masterQueue.arrayVariable
-							val resetMasterSizeVariable = resetQueueMapping.masterQueue.sizeVariable
-							val resetSlaveQueues = resetQueueMapping.slaveQueues
-							
-							// Actually, the following values are "low-level values", but we handle them as XSTS values
-							val xStsResetMasterQueue = variableTrace.getAll(resetMasterQueue).onlyElement
-							val xStsResetMasterSizeVariable = (resetMasterSizeVariable === null) ? null :
-									variableTrace.getAll(resetMasterSizeVariable).onlyElement
-							
-							thenAction.actions += xStsResetMasterQueue.createVariableResetAction
-							thenAction.actions += xStsResetMasterSizeVariable.createVariableResetAction
-							
-							for (resetSlaveQueueStruct : resetSlaveQueues.values.flatten.toSet) {
-								val resetSlaveQueue = resetSlaveQueueStruct.arrayVariable
-								val resetSlaveSizeVariable = resetSlaveQueueStruct.sizeVariable
-							
-								val xStsSlaveQueues = variableTrace.getAll(resetSlaveQueue)
-								val xStsSlaveSizeVariable = (resetSlaveSizeVariable === null) ? null :
-										variableTrace.getAll(resetSlaveSizeVariable).onlyElement
-								
-								thenAction.actions += xStsSlaveQueues.createVariableResetActions
-								if (xStsSlaveSizeVariable !== null) {
-									thenAction.actions += xStsSlaveSizeVariable.createVariableResetAction
-								}
-							}
-						}
+						val xStsQueueResetActions = resetQueues.resetMessageQueues(variableTrace)
+						thenAction.actions += xStsQueueResetActions
 					}
 					// ...here other control actions could be implemented
 					
@@ -887,6 +861,41 @@ class ComponentTransformer {
 		}
 		
 		return instanceEndcodingVariable
+	}
+	
+	protected def resetMessageQueues(Collection<? extends MessageQueue> resetQueues, Trace variableTrace) {
+		val xStsQueueResetActions = createSequentialAction
+		
+		for (resetQueue : resetQueues) {
+			val resetQueueMapping = queueTraceability.get(resetQueue)
+			val resetMasterQueue = resetQueueMapping.masterQueue.arrayVariable
+			val resetMasterSizeVariable = resetQueueMapping.masterQueue.sizeVariable
+			val resetSlaveQueues = resetQueueMapping.slaveQueues
+			
+			// Actually, the following values are "low-level values", but we handle them as XSTS values
+			val xStsResetMasterQueue = variableTrace.getAll(resetMasterQueue).onlyElement
+			val xStsResetMasterSizeVariable = (resetMasterSizeVariable === null) ? null :
+					variableTrace.getAll(resetMasterSizeVariable).onlyElement
+			
+			xStsQueueResetActions.actions += xStsResetMasterQueue.createVariableResetAction
+			xStsQueueResetActions.actions += xStsResetMasterSizeVariable.createVariableResetAction
+			
+			for (resetSlaveQueueStruct : resetSlaveQueues.values.flatten.toSet) {
+				val resetSlaveQueue = resetSlaveQueueStruct.arrayVariable
+				val resetSlaveSizeVariable = resetSlaveQueueStruct.sizeVariable
+			
+				val xStsSlaveQueues = variableTrace.getAll(resetSlaveQueue)
+				val xStsSlaveSizeVariable = (resetSlaveSizeVariable === null) ? null :
+						variableTrace.getAll(resetSlaveSizeVariable).onlyElement
+				
+				xStsQueueResetActions.actions += xStsSlaveQueues.createVariableResetActions
+				if (xStsSlaveSizeVariable !== null) {
+					xStsQueueResetActions.actions += xStsSlaveSizeVariable.createVariableResetAction
+				}
+			}
+		}
+		
+		return xStsQueueResetActions
 	}
 	
 	//

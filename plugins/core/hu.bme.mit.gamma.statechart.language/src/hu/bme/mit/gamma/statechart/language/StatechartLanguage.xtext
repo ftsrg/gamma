@@ -547,7 +547,8 @@ ControlSpecificaiton returns CompositeModel::ControlSpecification:
 ;
 
 enum ControlFunction returns CompositeModel::ControlFunction:
-	RUN_ONCE = 'run' | RUN_TO_COMPLETION = 'full step' | RESET = 'reset'
+	RUN_ONCE = 'run' | RUN_TO_COMPLETION = 'full-step' | RESET = 'reset' | RESET_MESSAGE_QUEUE = 'reset-queue'
+		| RESET_MESSAGE_QUEUES = 'reset-queues' | RESET_OTHER_MESSAGE_QUEUES = 'reset-other-queues' 
 ;
 
 MessageQueue returns CompositeModel::MessageQueue:
