@@ -144,12 +144,13 @@ class ComponentTransformer {
 			val adapterXsts = adapterComponentType.transform(lowlevelPackage)
 			xSts.merge(adapterXsts) // Adding variables, types, etc.
 			
+			mergedSynchronousInitActions += adapterInstance -> adapterXsts.initializingAction
+			// Saving the init action before the change
 			variableInitAction.actions += adapterXsts.variableInitializingTransition.action
 			configInitAction.actions += adapterXsts.configurationInitializingTransition.action
 			entryAction.actions += adapterXsts.entryEventTransition.action
 			
 			mergedSynchronousActions += adapterInstance -> adapterXsts.mergedAction
-			mergedSynchronousInitActions += adapterInstance -> adapterXsts.initializingAction
 			
 			// inEventActions later
 			// Filtering events can be used (internal ones and ones led out to the environment)
@@ -406,20 +407,20 @@ class ComponentTransformer {
 						checkState(slaveQueueSize == 0)
 					}
 					
-					// Execution if necessary
-					if (adapterComponentType.isRunSpecification(portEvent)) {
-						thenAction.actions += originalMergedAction.clone
-					}
-					if (adapterComponentType.isComponentResetSpecification(portEvent)) {
-						val originalInitAction = mergedSynchronousInitActions.get(adapterInstance)
-						thenAction.actions += originalInitAction.clone
-					}
+					// queue reset > component reset > component run
 					val resetQueues = adapterComponentType.getResetQueues(portEvent)
 					if (!resetQueues.empty) {
 						val xStsQueueResetActions = resetQueues.resetMessageQueues(variableTrace)
 						thenAction.actions += xStsQueueResetActions
 					}
-					// ...here other control actions could be implemented
+					else if (adapterComponentType.isComponentResetSpecification(portEvent)) {
+						val originalInitAction = mergedSynchronousInitActions.get(adapterInstance)
+						thenAction.actions += originalInitAction.clone
+					}
+					else if (adapterComponentType.isRunSpecification(portEvent)) { // Execution if necessary
+						thenAction.actions += originalMergedAction.clone
+					}
+					// ...here other control actions could be mapped (implemented)
 					
 					// if (eventId == ..) { "transfer slave queue values" if (isControlSpec) { "run" }
 					branchExpressions += ifExpression
@@ -878,7 +879,9 @@ class ComponentTransformer {
 					variableTrace.getAll(resetMasterSizeVariable).onlyElement
 			
 			xStsQueueResetActions.actions += xStsResetMasterQueue.createVariableResetAction
-			xStsQueueResetActions.actions += xStsResetMasterSizeVariable.createVariableResetAction
+			if (xStsResetMasterSizeVariable !== null) {
+				xStsQueueResetActions.actions += xStsResetMasterSizeVariable.createVariableResetAction
+			}
 			
 			for (resetSlaveQueueStruct : resetSlaveQueues.values.flatten.toSet) {
 				val resetSlaveQueue = resetSlaveQueueStruct.arrayVariable

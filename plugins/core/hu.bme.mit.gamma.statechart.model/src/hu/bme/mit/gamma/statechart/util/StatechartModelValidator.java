@@ -1970,9 +1970,9 @@ public class StatechartModelValidator extends ActionModelValidator {
 			int index =	adapter.getControlSpecifications().indexOf(controlSpecification);
 			if (trigger instanceof AnyTrigger) {
 				if (adapter.getControlSpecifications().size() > 1) {
-					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-						"This control specification with any trigger" +
-							"enshadows all other control specifications",
+					validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING,
+						"This control specification with any trigger is not disjunct from " +
+							"other control specifications; note that resets have a higher precedence",
 							new ReferenceInfo(
 								CompositeModelPackage.Literals.ASYNCHRONOUS_ADAPTER__CONTROL_SPECIFICATIONS,
 									index, adapter)));
@@ -1987,9 +1987,9 @@ public class StatechartModelValidator extends ActionModelValidator {
 					Port port = anyPortEventReference.getPort();
 					Collection<Event> portEvents = StatechartModelDerivedFeatures.getInputEvents(port);
 					if (usedEvents.containsKey(port)) {
-						validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-							"This control specification with any port trigger enshadows" +
-								"all control specifications with reference to the same port",
+						validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING,
+							"This control specification with any port trigger is not disjunct from other " +
+								"control specifications with reference to the same port; note that resets have a higher precedence",
 								new ReferenceInfo(
 									CompositeModelPackage.Literals.ASYNCHRONOUS_ADAPTER__CONTROL_SPECIFICATIONS,
 										index, adapter)));
@@ -2007,8 +2007,8 @@ public class StatechartModelValidator extends ActionModelValidator {
 					if (usedEvents.containsKey(port)) {
 						Collection<Event> containedEvents = usedEvents.get(port);
 						if (containedEvents.contains(event)) {
-							validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-								"This control specification with port event trigger has" +
+							validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING,
+								"This control specification with port event trigger has " +
 									"the same effect as a previous control specification",
 									new ReferenceInfo(
 										CompositeModelPackage.Literals.ASYNCHRONOUS_ADAPTER__CONTROL_SPECIFICATIONS,
