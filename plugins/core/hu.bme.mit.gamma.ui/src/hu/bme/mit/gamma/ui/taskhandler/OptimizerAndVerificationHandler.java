@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -71,6 +71,8 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 		
 		Component newTopComponent = null; // See property unfolding a few lines below
 		
+		boolean optimizeOutEvents = verification.isOptimizeOutEvents();
+		
 		List<CommentableStateFormula> formulas = new ArrayList<CommentableStateFormula>();
 		List<PropertyPackage> propertyPackages = verification.getPropertyPackages();
 		List<PropertyPackage> savedPropertyPackages = new ArrayList<PropertyPackage>(propertyPackages);
@@ -131,7 +133,12 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 					.map(it -> it.getVariableDeclaration())
 					.collect(Collectors.toList());
 			
-			xStsReducer.deleteUnusedAndWrittenOnlyVariablesExceptOutEvents(xSts, keepableGammaVariables);
+			if (optimizeOutEvents) {
+				xStsReducer.deleteUnusedAndWrittenOnlyVariables(xSts, keepableGammaVariables);
+			}
+			else {
+				xStsReducer.deleteUnusedAndWrittenOnlyVariablesExceptOutEvents(xSts, keepableGammaVariables);
+			}
 			xStsReducer.deleteUnusedInputEventVariables(xSts, keepableGammaVariables);
 			xStsReducer.deleteTrivialCodomainVariablesExceptOutEvents(xSts, keepableGammaVariables);
 			xStsReducer.deleteUnnecessaryInputVariablesExceptOutEvents(xSts, keepableGammaVariables);
