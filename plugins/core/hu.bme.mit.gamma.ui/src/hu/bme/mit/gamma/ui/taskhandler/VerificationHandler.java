@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -225,6 +225,12 @@ public class VerificationHandler extends TaskHandler {
 			ThreeStateBoolean verificationResult = result.getResult();
 			
 			stopwatch.stop();
+			
+			// Adding comment to connect the trace with the property
+			if (trace != null) {
+				traceUtil.addComment(trace, serializedFormula);
+			}
+			
 			TimeUnit timeUnit = TimeUnit.MILLISECONDS;
 			long elapsed = stopwatch.elapsed(timeUnit);
 			String elapsedString = elapsed + " " + timeUnit;

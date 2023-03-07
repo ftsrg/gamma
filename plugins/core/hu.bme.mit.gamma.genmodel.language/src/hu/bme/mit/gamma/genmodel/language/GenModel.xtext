@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -41,7 +41,7 @@ Task returns Task:
 		EventPriorityTransformation | AdaptiveContractTestGeneration |
 		AdaptiveBehaviorConformanceChecking | PhaseStatechartGeneration |
 		Verification | TraceReplayModelGeneration | Slicing | StatechartContractTestGeneration |
-		StatechartContractGeneration
+		StatechartContractGeneration | TraceGeneration
 ;
 
 YakinduCompilation returns YakinduCompilation:
@@ -295,7 +295,7 @@ Verification returns Verification:
 		(
 			'trace-folder' ':' targetFolder+=STRING | // Trace folder
 			'file' ':' fileName+=STRING | // Trace model
-			'optimize-model' ':' ('false' | optimizeModel?='true') |
+			'optimize-model' ':' ('false' | (optimizeModel?='true' ('optimize-out-events' ':' ('false' | optimizeOutEvents?='true'))?)) |
 			'svg-file' ':' svgFileName+=STRING |
 			'language' ':' analysisLanguages+=AnalysisLanguage |
 			'query-file' ':' queryFiles+=STRING | // Queries
@@ -306,6 +306,21 @@ Verification returns Verification:
 			'optimize' ':' ('false' | optimize?='true') |
 			'back-annotate-to-original' ':' ('false' | backAnnotateToOriginal?='true') |
 			'test-folder' ':' testFolder+=STRING
+		)*
+	'}'
+;
+
+TraceGeneration returns TraceGeneration:
+	{TraceGeneration} 'trace-generation' '{'
+		(
+			'file' ':' fileName+=STRING |
+			variableLists+='variables' ':'	'{'
+				(
+					variables+=STRING
+				)*
+			'}'	|
+			'fullTraces' ':' fullTraces=BOOLEAN |
+			'noTransitionCoverage' ':' noTransitionCoverage=BOOLEAN
 		)*
 	'}'
 ;
@@ -389,6 +404,7 @@ StatechartContractGeneration returns StatechartContractGeneration:
 	 ('folder' ':' targetFolder+=STRING)?
 	 ('name' ':' fileName+=STRING)?
 	 ('restart-on-cold-violation' ':' StartAsColdViolation=BOOLEAN)?
+	 ('restart-on-accept' ':' RestartOnAccept=BOOLEAN)?
 	 ('loop-for-interaction' ':' UseIteratingVariable=BOOLEAN)?
 	 ('automaton-type' ':' AutomatonType=ContractAutomatonType)?
 	 ('test-type' ':' TestType=TestAutomatonType)?

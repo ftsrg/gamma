@@ -23,11 +23,13 @@ abstract class AbstractAssertionHandler {
 	protected final int min
 	protected final int max
 	protected String schedule
+	protected final ExecutionTrace trace
 	
 	protected final ActAndAssertSerializer serializer
 	protected final ExpressionEvaluator evaluator = ExpressionEvaluator.INSTANCE
 	
 	new(ExecutionTrace trace, ActAndAssertSerializer serializer) {
+		this.trace = trace
 		if (trace.hasAllowedWaitingAnnotation) {
 			val waitingAnnotation = trace.allowedWaitingAnnotation
 			this.min = evaluator.evaluateInteger(waitingAnnotation.lowerLimit)

@@ -16,6 +16,8 @@ import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.CompositeModelPackage
+import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression
+import hu.bme.mit.gamma.statechart.interface_.InterfaceModelPackage
 import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.StatechartModelPackage
@@ -44,15 +46,22 @@ class TraceLanguageScopeProvider extends AbstractTraceLanguageScopeProvider {
 				return Scopes.scopeFor(executionTrace.import.components)
 			}
 		}
-		if (context instanceof RaiseEventAct && reference == StatechartModelPackage.Literals.RAISE_EVENT_ACTION__PORT) {
+		if ((context instanceof RaiseEventAct && reference == StatechartModelPackage.Literals.RAISE_EVENT_ACTION__PORT)
+			|| (context instanceof EventParameterReferenceExpression && reference == InterfaceModelPackage.Literals.EVENT_PARAMETER_REFERENCE_EXPRESSION__PORT)
+		) {
 			val executionTrace = ecoreUtil.getContainerOfType(context, ExecutionTrace)
 			val component = executionTrace.component
 			return Scopes.scopeFor(component.allPorts)
 		}
-		if (context instanceof RaiseEventAct && reference == StatechartModelPackage.Literals.RAISE_EVENT_ACTION__EVENT) {
-			val raiseEventAct = context as RaiseEventAct
-			if (raiseEventAct.port !== null) {
-				val port = raiseEventAct.port
+		if ((context instanceof RaiseEventAct && reference == StatechartModelPackage.Literals.RAISE_EVENT_ACTION__EVENT)
+			|| (context instanceof EventParameterReferenceExpression && reference == InterfaceModelPackage.Literals.EVENT_PARAMETER_REFERENCE_EXPRESSION__EVENT)
+		) {
+			val port = if (context instanceof RaiseEventAct) {
+				context.port
+			} else if (context instanceof EventParameterReferenceExpression) {
+				context.port
+			}
+			if (port !== null) {
 				try {
 					val events = port.allEvents
 					return Scopes.scopeFor(events)
@@ -61,7 +70,11 @@ class TraceLanguageScopeProvider extends AbstractTraceLanguageScopeProvider {
 					return super.getScope(context, reference)
 				}
 			}
-		}	
+		}
+		if (context instanceof EventParameterReferenceExpression && reference == InterfaceModelPackage.Literals.EVENT_PARAMETER_REFERENCE_EXPRESSION__PARAMETER) {
+			val paramReference = context as EventParameterReferenceExpression
+			return Scopes.scopeFor(paramReference.event.parameterDeclarations)
+		}
 		if (reference == CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE_EXPRESSION__COMPONENT_INSTANCE) {
 			val executionTrace = ecoreUtil.getContainerOfType(context, ExecutionTrace)
 			val component = executionTrace.component

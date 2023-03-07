@@ -53,6 +53,9 @@
     <eLiterals name="RUN_ONCE"/>
     <eLiterals name="RUN_TO_COMPLETION" value="1"/>
     <eLiterals name="RESET" value="2"/>
+    <eLiterals name="RESET_MESSAGE_QUEUE" value="3" literal="RESET_MESSAGE_QUEUE"/>
+    <eLiterals name="RESET_MESSAGE_QUEUES" value="4"/>
+    <eLiterals name="RESET_OTHER_MESSAGE_QUEUES" value="5" literal="RESET_OTHER_MESSAGE_QUEUES"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="MessageQueue" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NamedElement #//PrioritizedElement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="capacity" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"

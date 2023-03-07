@@ -17,6 +17,9 @@
       <genEnumLiterals ecoreEnumLiteral="composite.ecore#//ControlFunction/RUN_ONCE"/>
       <genEnumLiterals ecoreEnumLiteral="composite.ecore#//ControlFunction/RUN_TO_COMPLETION"/>
       <genEnumLiterals ecoreEnumLiteral="composite.ecore#//ControlFunction/RESET"/>
+      <genEnumLiterals ecoreEnumLiteral="composite.ecore#//ControlFunction/RESET_MESSAGE_QUEUE"/>
+      <genEnumLiterals ecoreEnumLiteral="composite.ecore#//ControlFunction/RESET_MESSAGE_QUEUES"/>
+      <genEnumLiterals ecoreEnumLiteral="composite.ecore#//ControlFunction/RESET_OTHER_MESSAGE_QUEUES"/>
     </genEnums>
     <genEnums typeSafeEnumCompatible="false" ecoreEnum="composite.ecore#//DiscardStrategy">
       <genEnumLiterals ecoreEnumLiteral="composite.ecore#//DiscardStrategy/INCOMING"/>

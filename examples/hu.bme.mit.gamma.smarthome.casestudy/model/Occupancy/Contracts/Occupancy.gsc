@@ -10,7 +10,7 @@ component Controller
 // Context-independent
 scenario S3DelayThenMotions [
 	{
-		cold delay (TIMEOUT_TIME * 1000)
+		delay (TIMEOUT_TIME * 1000)
 	}
 	{
 		cold receives MotionDetector.motion 
@@ -26,7 +26,7 @@ scenario S4MotionThenMotion [
 		cold receives MotionDetector.motion
 	}
 	{
-		cold delay (1 .. min(TEMPORARILY_IDLE_TIME, TIMEOUT_TIME) * 1000)
+		delay (1 .. min(TEMPORARILY_IDLE_TIME, TIMEOUT_TIME) * 1000)
 		cold receives MotionDetector.motion
 	}
 	{
@@ -46,8 +46,8 @@ scenario S5MotionThenTooEarlyMotion [
 		cold receives MotionDetector.motion
 	}
 	{
-		hot delay (1 .. 4001)
 		hot sends Motion.motion
+		delay (1 .. 4001)
 	}
 ]
 
@@ -89,12 +89,12 @@ scenario S6DelayThenMotionThenPersonPresence
 scenario S7MaximumRelayedMotion [
 	loop (MAXIMUM_RELAYED_MOTION_COUNT) {
 		{
-			cold delay (1 .. EXPECTED_DELAY_TIME * 1000)
+			delay (1 .. EXPECTED_DELAY_TIME * 1000)
 			cold receives MotionDetector.motion
 		}
 	}
 	{
-		cold delay (1 .. TEMPORARILY_IDLE_TIME * 1000) // Loop edge is needed
+		delay (1 .. TEMPORARILY_IDLE_TIME * 1000) // Loop edge is needed
 		cold receives MotionDetector.motion
 	}
 	{

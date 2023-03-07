@@ -53,10 +53,6 @@ class ScenarioLanguageValidator extends AbstractScenarioLanguageValidator {
 		handleValidationResultMessage(validator.checkDeterministicOccurrenceSets(modalInteractionSet))
 	}
 
-	@Check
-	def void checkModalInteractionsInSynchronousComponents(Interaction interaction) {
-		handleValidationResultMessage(validator.checkModalInteractionsInSynchronousComponents(interaction))
-	}
 
 	@Check
 	def void checkFirstInteractionsModalityIsTheSame(CombinedFragment combinedFragment) {

@@ -56,4 +56,7 @@
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="NegativeTestAnnotation" eSuperTypes="#//ExecutionTraceAnnotation"/>
+  <eClassifiers xsi:type="ecore:EClass" name="ExecutionTraceCommentAnnotation" eSuperTypes="#//ExecutionTraceAnnotation">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="comment" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
 </ecore:EPackage>

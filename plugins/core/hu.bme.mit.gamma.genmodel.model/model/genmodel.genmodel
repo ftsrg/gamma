@@ -25,6 +25,7 @@
       <genEnumLiterals ecoreEnumLiteral="genmodel.ecore#//AnalysisLanguage/UPPAAL"/>
       <genEnumLiterals ecoreEnumLiteral="genmodel.ecore#//AnalysisLanguage/THETA"/>
       <genEnumLiterals ecoreEnumLiteral="genmodel.ecore#//AnalysisLanguage/XSTS_UPPAAL"/>
+      <genEnumLiterals ecoreEnumLiteral="genmodel.ecore#//AnalysisLanguage/PROMELA"/>
     </genEnums>
     <genEnums typeSafeEnumCompatible="false" ecoreEnum="genmodel.ecore#//Scheduler">
       <genEnumLiterals ecoreEnumLiteral="genmodel.ecore#//Scheduler/RANDOM"/>
@@ -157,8 +158,15 @@
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//Verification/verificationArguments"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference genmodel.ecore#//Verification/propertyPackages"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//Verification/optimizeModel"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//Verification/optimizeOutEvents"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//Verification/optimize"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//Verification/backAnnotateToOriginal"/>
+    </genClasses>
+    <genClasses ecoreClass="genmodel.ecore#//TraceGeneration">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//TraceGeneration/fullTraces"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//TraceGeneration/variables"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//TraceGeneration/noTransitionCoverage"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//TraceGeneration/variableLists"/>
     </genClasses>
     <genClasses ecoreClass="genmodel.ecore#//TraceReplayModelGeneration">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference genmodel.ecore#//TraceReplayModelGeneration/executionTrace"/>
@@ -199,6 +207,7 @@
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//StatechartContractGeneration/UseIteratingVariable"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//StatechartContractGeneration/AutomatonType"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//StatechartContractGeneration/TestType"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//StatechartContractGeneration/RestartOnAccept"/>
     </genClasses>
   </genPackages>
 </genmodel:GenModel>

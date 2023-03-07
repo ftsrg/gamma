@@ -1205,22 +1205,74 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 			.collect(Collectors.toList());
 	}
 	
-	public static boolean isControlSpecification(AsynchronousAdapter adapter, Entry<Port, Event> portEvent) {
+	public static List<ControlSpecification> getControlSpecifications(
+			AsynchronousAdapter adapter, Entry<Port, Event> portEvent) {
+		List<ControlSpecification> controlSpecifications = new ArrayList<ControlSpecification>();
+		
 		for (ControlSpecification controlSpecification : adapter.getControlSpecifications()) {
 			SimpleTrigger trigger = controlSpecification.getTrigger();
 			if (trigger instanceof AnyTrigger) {
-				return true;
+				controlSpecifications.add(controlSpecification);
 			}
 			if (trigger instanceof EventTrigger) {
 				EventTrigger eventTrigger = (EventTrigger) trigger;
 				EventReference eventReference = eventTrigger.getEventReference();
-				List<Entry<Port,Event>> inputEvents = getInputEvents(eventReference);
+				List<Entry<Port, Event>> inputEvents = getInputEvents(eventReference);
 				if (inputEvents.contains(portEvent)) {
-					return true;
+					controlSpecifications.add(controlSpecification);
 				}
 			}
 		}
-		return false;
+		
+		return controlSpecifications;
+	}
+	
+	public static boolean isRunSpecification(AsynchronousAdapter adapter, Entry<Port, Event> portEvent) {
+		List<ControlSpecification> controlSpecifications = getControlSpecifications(adapter, portEvent);
+		
+		return controlSpecifications.stream()
+				.anyMatch(it -> it.getControlFunction() == ControlFunction.RUN_ONCE);
+	}
+	
+	public static boolean isComponentResetSpecification(AsynchronousAdapter adapter, Entry<Port, Event> portEvent) {
+		List<ControlSpecification> controlSpecifications = getControlSpecifications(adapter, portEvent);
+		
+		return controlSpecifications.stream()
+				.anyMatch(it -> it.getControlFunction() == ControlFunction.RESET);
+	}
+	
+	public static Collection<? extends MessageQueue> getResetQueues(
+			AsynchronousAdapter adapter, Entry<Port, Event> portEvent) {
+		Set<MessageQueue> resetMessageQueues = new LinkedHashSet<MessageQueue>();
+		
+		List<ControlSpecification> controlSpecifications = getControlSpecifications(adapter, portEvent);
+		List<MessageQueue> messageQueues = adapter.getMessageQueues();
+		
+		boolean resetQueue = controlSpecifications.stream()
+					.anyMatch(it -> it.getControlFunction() == ControlFunction.RESET_MESSAGE_QUEUE);
+		boolean resetQueues = controlSpecifications.stream()
+				.anyMatch(it -> it.getControlFunction() == ControlFunction.RESET_MESSAGE_QUEUES);
+		boolean resetOtherQueues = controlSpecifications.stream()
+				.anyMatch(it -> it.getControlFunction() == ControlFunction.RESET_OTHER_MESSAGE_QUEUES);
+		
+		for (MessageQueue messageQueue : messageQueues) {
+			if (isStoredInMessageQueue(portEvent, messageQueue)) {
+				if (resetQueue) {
+					resetMessageQueues.add(messageQueue);
+				}
+				if (resetQueues) {
+					resetMessageQueues.addAll(messageQueues);
+				}
+				if (resetOtherQueues) {
+					List<MessageQueue> otherMessageQueues = new ArrayList<MessageQueue>(messageQueues);
+					otherMessageQueues.remove(messageQueue);
+					
+					resetMessageQueues.addAll(otherMessageQueues);
+				}
+			}
+		}
+		
+		return resetMessageQueues;
 	}
 	
 	public static List<MessageQueue> getFunctioningMessageQueues(AsynchronousAdapter adapter) {

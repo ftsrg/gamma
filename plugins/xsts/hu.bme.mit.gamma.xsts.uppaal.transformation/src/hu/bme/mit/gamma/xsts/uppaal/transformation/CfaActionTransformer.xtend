@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -33,7 +33,6 @@ import uppaal.templates.LocationKind
 import static hu.bme.mit.gamma.uppaal.util.XstsNamings.*
 
 import static extension de.uni_paderborn.uppaal.derivedfeatures.UppaalModelDerivedFeatures.*
-import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
 import static extension java.lang.Math.*
 
 class CfaActionTransformer {
@@ -87,6 +86,7 @@ class CfaActionTransformer {
 			newSource = newSource.createUpdateEdge(nextCommittedLocationName,
 					uppaalLhs, uppaalRhs)
 		}
+		
 		return newSource
 	}
 	
@@ -128,6 +128,7 @@ class CfaActionTransformer {
 		transientVariables += uppaalVariable
 		val xStsInitialValue = xStsVariable.initialValue
 		val uppaalRhs = xStsInitialValue?.transform
+		
 		return source.createUpdateEdge(nextCommittedLocationName, uppaalVariable, uppaalRhs)
 	}
 	
@@ -141,6 +142,7 @@ class CfaActionTransformer {
 		val edge = source.createEdgeCommittedSource(nextCommittedLocationName)
 		val uppaalExpression = action.assumption.transform
 		edge.guard = uppaalExpression
+		
 		return edge.target
 	}
 	
@@ -150,6 +152,7 @@ class CfaActionTransformer {
 		for (xStsAction : xStsActions) {
 			actualSource = xStsAction.transformAction(actualSource)
 		}
+		
 		return actualSource
 	}
 	
@@ -164,18 +167,43 @@ class CfaActionTransformer {
 		for (choiceTarget : targets) {
 			choiceTarget.createEdge(target)
 		}
+		
 		return target
 	}
 	
 	protected def dispatch Location transformAction(IfAction action, Location source) {
-		val clonedAction = action.clone
-		val xStsConditions = clonedAction.conditions
-		val xStsActions = clonedAction.branches
+//		val clonedAction = action.clone
+//		val xStsConditions = clonedAction.conditions
+//		val xStsActions = clonedAction.branches
+//		
+//		// Tracing back to NonDeterministicAction transformation
+//		val proxy = xStsConditions.createChoiceActionWithExclusiveBranches(xStsActions)
+//		
+//		return proxy.transformAction(source)
 		
-		// Tracing back to NonDeterministicAction transformation
-		val proxy = xStsConditions.createChoiceActionWithExclusiveBranches(xStsActions)
+		val condition = action.condition
 		
-		return proxy.transformAction(source)
+		val positiveCondition = condition.transform
+		val negativeCondition = condition.clone
+				.createNotExpression.transform
+		
+		val thenEdge = source.createEdgeCommittedSource(nextCommittedLocationName)
+		thenEdge.guard = positiveCondition
+		val thenEdgeTarget = thenEdge.target
+		
+		val thenAction = action.then
+		val thenActionTarget = thenAction.transformAction(thenEdgeTarget)
+		
+		val elseEdge = source.createEdgeCommittedSource(nextCommittedLocationName)
+		elseEdge.guard = negativeCondition
+		val elseEdgeTarget = elseEdge.target
+		
+		val elseAction = action.^else
+		val elseActionTarget = (elseAction !== null) ? elseAction.transformAction(elseEdgeTarget) : elseEdgeTarget
+		
+		elseActionTarget.createEdge(thenActionTarget)
+		
+		return thenActionTarget
 	}
 	
 	// Resetting

@@ -43,6 +43,7 @@ import hu.bme.mit.gamma.genmodel.model.StatechartContractGeneration;
 import hu.bme.mit.gamma.genmodel.model.StatechartContractTestGeneration;
 import hu.bme.mit.gamma.genmodel.model.Task;
 import hu.bme.mit.gamma.genmodel.model.TestGeneration;
+import hu.bme.mit.gamma.genmodel.model.TraceGeneration;
 import hu.bme.mit.gamma.genmodel.model.TraceReplayModelGeneration;
 import hu.bme.mit.gamma.genmodel.model.Verification;
 import hu.bme.mit.gamma.genmodel.model.YakinduCompilation;
@@ -60,6 +61,7 @@ import hu.bme.mit.gamma.ui.taskhandler.StatechartCompilationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.StatechartContractGenerationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.StatechartContractTestGenerationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.TestGenerationHandler;
+import hu.bme.mit.gamma.ui.taskhandler.TraceGenerationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.TraceReplayModelGenerationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.VerificationHandler;
 import hu.bme.mit.gamma.ui.util.DefaultResourceSetCreator;
@@ -183,6 +185,13 @@ public class GammaApi {
 								}
 								logger.log(Level.INFO, "The verification has been finished");
 							}
+							else if (task instanceof TraceGeneration) {
+								logger.log(Level.INFO, "Theta trace generation has been started");
+								TraceGeneration traceGeneration = (TraceGeneration) task;
+								TraceGenerationHandler handler = new TraceGenerationHandler(file);
+								handler.execute(traceGeneration);
+								logger.log(Level.INFO, "Theta trace generation has been finished");
+							}
 							else if (task instanceof Slicing) {
 								logger.log(Level.INFO, "The slicing has been started");
 								Slicing slicing = (Slicing) task;
@@ -291,6 +300,7 @@ public class GammaApi {
 			case 5: 
 				return allTasks.stream()
 						.filter(it -> it instanceof TestGeneration || it instanceof Verification ||
+								it instanceof TraceGeneration ||
 								it instanceof AdaptiveContractTestGeneration ||
 								it instanceof AdaptiveBehaviorConformanceChecking ||
 								it instanceof TraceReplayModelGeneration ||

@@ -46,5 +46,8 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference trace.ecore#//ExecutionTraceAllowedWaitingAnnotation/upperLimit"/>
     </genClasses>
     <genClasses ecoreClass="trace.ecore#//NegativeTestAnnotation"/>
+    <genClasses ecoreClass="trace.ecore#//ExecutionTraceCommentAnnotation">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute trace.ecore#//ExecutionTraceCommentAnnotation/comment"/>
+    </genClasses>
   </genPackages>
 </genmodel:GenModel>

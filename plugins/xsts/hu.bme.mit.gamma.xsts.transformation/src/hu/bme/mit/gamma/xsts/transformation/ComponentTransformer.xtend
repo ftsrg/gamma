@@ -131,6 +131,7 @@ class ComponentTransformer {
 		// Transforming and saving the adapter instances
 		
 		val mergedSynchronousActions = newHashMap
+		val mergedSynchronousInitActions = newHashMap
 		
 		for (adapterInstance : adapterInstances) {
 			val adapterComponentType = adapterInstance.type as AsynchronousAdapter
@@ -143,6 +144,8 @@ class ComponentTransformer {
 			val adapterXsts = adapterComponentType.transform(lowlevelPackage)
 			xSts.merge(adapterXsts) // Adding variables, types, etc.
 			
+			mergedSynchronousInitActions += adapterInstance -> adapterXsts.initializingAction
+			// Saving the init action before the change
 			variableInitAction.actions += adapterXsts.variableInitializingTransition.action
 			configInitAction.actions += adapterXsts.configurationInitializingTransition.action
 			entryAction.actions += adapterXsts.entryEventTransition.action
@@ -233,7 +236,6 @@ class ComponentTransformer {
 							}
 							else {
 								// Internal queue, we do not care about traceability here
-								// TODO capacity issues?
 								val messageQueueStruct = typeSlaveQueues.get(index)
 								slaveQueues += messageQueueStruct // Optimization - reusing an existing slave queue
 								logger.log(Level.INFO, '''Found a slave queue for «port.name».«event.name»::«parameter.name»''')
@@ -405,11 +407,20 @@ class ComponentTransformer {
 						checkState(slaveQueueSize == 0)
 					}
 					
-					// Execution if necessary
-					if (adapterComponentType.isControlSpecification(portEvent)) {
+					// queue reset > component reset > component run
+					val resetQueues = adapterComponentType.getResetQueues(portEvent)
+					if (!resetQueues.empty) {
+						val xStsQueueResetActions = resetQueues.resetMessageQueues(variableTrace)
+						thenAction.actions += xStsQueueResetActions
+					}
+					else if (adapterComponentType.isComponentResetSpecification(portEvent)) {
+						val originalInitAction = mergedSynchronousInitActions.get(adapterInstance)
+						thenAction.actions += originalInitAction.clone
+					}
+					else if (adapterComponentType.isRunSpecification(portEvent)) { // Execution if necessary
 						thenAction.actions += originalMergedAction.clone
 					}
-					// ...here other control actions could be implemented
+					// ...here other control actions could be mapped (implemented)
 					
 					// if (eventId == ..) { "transfer slave queue values" if (isControlSpec) { "run" }
 					branchExpressions += ifExpression
@@ -851,6 +862,43 @@ class ComponentTransformer {
 		}
 		
 		return instanceEndcodingVariable
+	}
+	
+	protected def resetMessageQueues(Collection<? extends MessageQueue> resetQueues, Trace variableTrace) {
+		val xStsQueueResetActions = createSequentialAction
+		
+		for (resetQueue : resetQueues) {
+			val resetQueueMapping = queueTraceability.get(resetQueue)
+			val resetMasterQueue = resetQueueMapping.masterQueue.arrayVariable
+			val resetMasterSizeVariable = resetQueueMapping.masterQueue.sizeVariable
+			val resetSlaveQueues = resetQueueMapping.slaveQueues
+			
+			// Actually, the following values are "low-level values", but we handle them as XSTS values
+			val xStsResetMasterQueue = variableTrace.getAll(resetMasterQueue).onlyElement
+			val xStsResetMasterSizeVariable = (resetMasterSizeVariable === null) ? null :
+					variableTrace.getAll(resetMasterSizeVariable).onlyElement
+			
+			xStsQueueResetActions.actions += xStsResetMasterQueue.createVariableResetAction
+			if (xStsResetMasterSizeVariable !== null) {
+				xStsQueueResetActions.actions += xStsResetMasterSizeVariable.createVariableResetAction
+			}
+			
+			for (resetSlaveQueueStruct : resetSlaveQueues.values.flatten.toSet) {
+				val resetSlaveQueue = resetSlaveQueueStruct.arrayVariable
+				val resetSlaveSizeVariable = resetSlaveQueueStruct.sizeVariable
+			
+				val xStsSlaveQueues = variableTrace.getAll(resetSlaveQueue)
+				val xStsSlaveSizeVariable = (resetSlaveSizeVariable === null) ? null :
+						variableTrace.getAll(resetSlaveSizeVariable).onlyElement
+				
+				xStsQueueResetActions.actions += xStsSlaveQueues.createVariableResetActions
+				if (xStsSlaveSizeVariable !== null) {
+					xStsQueueResetActions.actions += xStsSlaveSizeVariable.createVariableResetAction
+				}
+			}
+		}
+		
+		return xStsQueueResetActions
 	}
 	
 	//
