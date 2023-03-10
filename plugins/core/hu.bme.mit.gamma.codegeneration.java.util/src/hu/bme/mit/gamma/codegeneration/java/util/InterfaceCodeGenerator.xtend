@@ -52,11 +52,11 @@ class InterfaceCodeGenerator {
 			
 			interface Listener {
 				
-			interface Provided«IF !_interface.parents.empty» extends «FOR parent : _interface.parents»«parent.implementationName».Listener.Provided«ENDFOR»«ENDIF» {
+			interface Provided«IF !_interface.parents.empty» extends «FOR parent : _interface.parents SEPARATOR ", "»«parent.implementationName».Listener.Provided«ENDFOR»«ENDIF» {
 				«_interface.createListenerInterface(EventDirection.OUT)»
 				}
 				
-			interface Required«IF !_interface.parents.empty» extends «FOR parent : _interface.parents»«parent.implementationName».Listener.Required«ENDFOR»«ENDIF» {
+			interface Required«IF !_interface.parents.empty» extends «FOR parent : _interface.parents SEPARATOR ", "»«parent.implementationName».Listener.Required«ENDFOR»«ENDIF» {
 				«_interface.createListenerInterface(EventDirection.IN)»
 				}
 				

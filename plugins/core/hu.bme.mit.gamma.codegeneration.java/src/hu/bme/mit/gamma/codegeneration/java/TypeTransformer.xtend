@@ -16,11 +16,11 @@ import hu.bme.mit.gamma.expression.model.Type
 
 class TypeTransformer {
 	
-	protected final String INT_TYPE = "int" // Long cannot be passed as an Object then recast to int
+	public final String INT_TYPE = "int" // Long cannot be passed as an Object then recast to int
 	
-	protected final extension Trace trace
+	public final extension Trace trace
 	
-	protected final extension TypeSerializer typeSerializer = TypeSerializer.INSTANCE
+	public final extension TypeSerializer typeSerializer = TypeSerializer.INSTANCE
 	
 	new(Trace trace) {
 		this.trace = trace
@@ -29,7 +29,7 @@ class TypeTransformer {
 	/**
 	 * Returns the Java type of the given Yakindu type as a string.
 	 */
-	protected def getEventParameterType(org.yakindu.base.types.Type type) {
+	public def getEventParameterType(org.yakindu.base.types.Type type) {
 		if (type !== null) {
 			return type.name.transformType
 		}
@@ -39,7 +39,7 @@ class TypeTransformer {
 	/**
 	 * Returns the Java type equivalent of the Yakindu type.
 	 */
-	protected def transformType(String type) {
+	public def transformType(String type) {
 		switch (type) {
 			case "integer": 
 				return INT_TYPE
@@ -55,7 +55,7 @@ class TypeTransformer {
 	/**
 	 * Returns the Java type equivalent of the Gamma type.
 	 */
-	protected def String transformType(Type type) {
+	public def String transformType(Type type) {
 		switch (type) {
 			IntegerTypeDefinition: {
 				val types = type.getAllValuesOfFrom.filter(org.yakindu.base.types.Type).toSet

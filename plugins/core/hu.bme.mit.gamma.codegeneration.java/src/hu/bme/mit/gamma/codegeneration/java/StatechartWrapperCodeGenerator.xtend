@@ -78,7 +78,12 @@ class StatechartWrapperCodeGenerator {
 			private Queue<«Namings.GAMMA_EVENT_CLASS»> «EVENT_QUEUE»1 = new LinkedList<«Namings.GAMMA_EVENT_CLASS»>();
 			private Queue<«Namings.GAMMA_EVENT_CLASS»> «EVENT_QUEUE»2 = new LinkedList<«Namings.GAMMA_EVENT_CLASS»>();
 			«component.generateParameterDeclarationFields»
-			
+
+
+			public «component.statemachineClassName» get«component.generateStatemachineInstanceName.toFirstUpper»(){
+				return  «component.generateStatemachineInstanceName»;
+			}
+
 			public «component.generateComponentClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", "»«parameter.type.transformType» «parameter.name»«ENDFOR») {
 				«FOR parameter : component.parameterDeclarations SEPARATOR ", "»
 					this.«parameter.name» = «parameter.name»;
