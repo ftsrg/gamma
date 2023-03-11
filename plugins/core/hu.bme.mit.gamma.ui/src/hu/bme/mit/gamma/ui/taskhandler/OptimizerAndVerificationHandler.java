@@ -57,7 +57,7 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 		super(file);
 	}
 	
-	public void execute(Verification verification) throws IOException {
+	public void execute(Verification verification) throws IOException, InterruptedException {
 		List<AnalysisLanguage> analysisLanguages = verification.getAnalysisLanguages();
 		checkArgument(analysisLanguages.contains(AnalysisLanguage.THETA) ||
 				analysisLanguages.contains(AnalysisLanguage.XSTS_UPPAAL) ||

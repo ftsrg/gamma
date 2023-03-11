@@ -29,7 +29,7 @@ public class AnalysisModelTransformationAndVerificationHandler extends TaskHandl
 		super(file);
 	}
 
-	public void execute(AnalysisModelTransformation transformation) throws IOException {
+	public void execute(AnalysisModelTransformation transformation) throws IOException, InterruptedException {
 		List<AnalysisLanguage> languages = transformation.getLanguages();
 		AnalysisLanguage language = javaUtil.getOnlyElement(languages);
 		

@@ -29,17 +29,19 @@ class ThetaVerification extends AbstractVerification {
 		val gammaPackage = ecoreUtil.normalLoad(modelFile.parent, packageFileName)
 		val queries = fileUtil.loadString(queryFile)
 		
-		val racer = new ThreadRacer<Result>
-		val callables = <InterruptableCallable<Result>>newArrayList
 		var Result result = null
 		
 		for (query : queries.splitLines) {
 			// Racing for every query separately
+			val racer = new ThreadRacer<Result>
+			val callables = <InterruptableCallable<Result>>newArrayList
+			
 			for (argument : arguments) {
 				argument.sanitizeArgument
 				
 				val verifier = new ThetaVerifier
 				callables += new InterruptableCallable<Result> {
+					
 					override Result call() {
 						val currentThread = Thread.currentThread
 						logger.log(Level.INFO, '''Starting Theta on thread «currentThread.name» with "«argument»"''')
@@ -47,14 +49,17 @@ class ThetaVerification extends AbstractVerification {
 						logger.log(Level.INFO, '''Thread «currentThread.name» with "«argument»" has won''')
 						return result
 					}
+					
 					override void cancel() {
 						verifier.cancel
 						logger.log(Level.INFO, '''Theta verification instance with "«argument»" has been cancelled''')
 					}
+					
 				}
 			}
 			
 			val newResult = racer.execute(callables)
+			
 			if (result === null) {
 				result = newResult
 			}

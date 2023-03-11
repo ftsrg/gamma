@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -98,9 +98,14 @@ class ThetaVerifier extends AbstractVerifier {
 				super.result = ThreeStateBoolean.FALSE
 			}
 			else {
-				// Some kind of error or interruption by another (winner) process
+				// Some kind of error or interruption (cancel) by another (winner) process
 				logger.log(Level.WARNING, line)
-				throw new IllegalArgumentException(line)
+				if (isCancelled || Thread.currentThread.interrupted) {
+					return new Result(ThreeStateBoolean.UNDEF, null)
+				}
+				else {
+					throw new IllegalArgumentException(line)
+				}
 			}
 			// Adapting result
 			super.result = super.result.adaptResult
@@ -108,17 +113,16 @@ class ThetaVerifier extends AbstractVerifier {
 				// No proof/counterexample
 				return new Result(result, null)
 			}
+			
 			val gammaPackage = traceability as Package
 			traceFileScanner = new Scanner(traceFile)
 			val trace = gammaPackage.backAnnotate(traceFileScanner)
+			
 			return new Result(result, trace)
 		} finally {
-			if (resultReader !== null) {
-				resultReader.close
-			}
-			if (traceFileScanner !== null) {
-				traceFileScanner.close
-			}
+			resultReader?.close
+			traceFileScanner?.close
+			cancel
 		}
 	}
 	

@@ -49,13 +49,15 @@ abstract class AbstractVerifier {
 	def abstract Result verifyQuery(Object traceability, String parameters, File modelFile,	File queryFile)
 	
 	def cancel() {
-		isCancelled = true
-		if (process !== null) {
-			process.destroyForcibly
-			try {
-				// Waiting for process to end
-				process.waitFor
-			} catch (InterruptedException e) {}
+		if (!isCancelled) {
+			isCancelled = true
+			if (process !== null) {
+				process.destroyForcibly
+				try {
+					// Waiting for process to end
+					process.waitFor
+				} catch (InterruptedException e) {}
+			}
 		}
 	}
 	
