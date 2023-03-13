@@ -18,12 +18,16 @@ class TypeTransformer {
 	
 	public final String INT_TYPE = "int" // Long cannot be passed as an Object then recast to int
 	
-	public final extension Trace trace
+	protected final extension Trace trace
 	
-	public final extension TypeSerializer typeSerializer = TypeSerializer.INSTANCE
+	protected final extension TypeSerializer typeSerializer = TypeSerializer.INSTANCE
 	
 	new(Trace trace) {
 		this.trace = trace
+	}
+	
+	public def Trace getTrace(){
+		return trace;
 	}
 	
 	/**
