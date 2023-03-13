@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Gamma UI
-Bundle-SymbolicName: hu.bme.mit.gamma.ui
+Bundle-SymbolicName: hu.bme.mit.gamma.ui;singleton:=true
 Bundle-Version: 2.8.0.qualifier
 Bundle-Vendor: BME-FTSRG
 Automatic-Module-Name: hu.bme.mit.gamma.ui
@@ -46,7 +46,10 @@ Require-Bundle: com.google.gson,
  hu.bme.mit.gamma.scenario.model,
  hu.bme.mit.gamma.scenario.statechart.util,
  hu.bme.mit.gamma.promela.verification,
- hu.bme.mit.gamma.xsts.promela.transformation
+ hu.bme.mit.gamma.xsts.promela.transformation,
+ org.eclipse.ui,
+ org.eclipse.ui.ide,
+ org.eclipse.core.runtime
 Export-Package: hu.bme.mit.gamma.ui,
  hu.bme.mit.gamma.ui.taskhandler,
  hu.bme.mit.gamma.ui.util
