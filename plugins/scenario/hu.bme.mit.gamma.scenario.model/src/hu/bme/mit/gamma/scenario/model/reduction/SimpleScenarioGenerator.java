@@ -84,7 +84,7 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 		simple = factory.createScenarioDeclaration();
 		simple.setName(base.getName());
 		simple.setFragment(factory.createFragment());
-		simple.setInitialblock(handleInitBlockCopy());
+		simple.setInitialBlock(handleInitBlockCopy());
 		refResolver.resolveReferences(base);
 		for (Annotation annotation : base.getAnnotation()) {
 			simple.getAnnotation().add((Annotation) this.doSwitch(annotation));
@@ -139,11 +139,11 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 	}
 
 	private InitialBlock handleInitBlockCopy() {
-		if (base.getInitialblock() == null) {
+		if (base.getInitialBlock() == null) {
 			return null;
 		}
 		InitialBlock initBloc = factory.createInitialBlock();
-		for (DeterministicOccurrence interaction : base.getInitialblock().getInteractions()) {
+		for (DeterministicOccurrence interaction : base.getInitialBlock().getInteractions()) {
 			initBloc.getInteractions().add((DeterministicOccurrence) doSwitch(interaction));
 		}
 		return initBloc;

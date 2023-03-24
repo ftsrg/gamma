@@ -174,7 +174,7 @@ class TestGeneratorStatechartGenerator extends AbstractContractStatechartGenerat
 			coldViolation = firstState
 		}
 
-		val initBlock = scenario.initialblock
+		val initBlock = scenario.initialBlock
 		if (initBlock === null) {
 			val transition = statechartUtil.createTransition(initial, firstState)
 			if (generationMode != StatechartGenerationMode.GENERATE_ONLY_FORWARD) {
