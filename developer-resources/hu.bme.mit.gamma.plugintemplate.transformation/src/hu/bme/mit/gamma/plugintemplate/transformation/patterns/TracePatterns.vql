@@ -17,7 +17,7 @@ import "http://www.mit.bme.hu/gamma/plugintemplate/transformation/Traceability"
 pattern packageTraces(sourcePackage : Package, targetPackage : Package) {
 	PackageTrace.sourcePackage(trace, sourcePackage);
 	PackageTrace.targetPackage(trace, targetPackage);
-}
+} 
 
 pattern statechartTraces(sourceStatechart : StatechartDefinition, targetStatechart : StatechartDefinition) {
 	StatechartTrace.sourceStatechart(trace, sourceStatechart);
