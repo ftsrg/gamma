@@ -15,6 +15,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.eclipse.core.commands.AbstractHandler;
+import org.eclipse.core.commands.Command;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 
@@ -25,10 +26,22 @@ public class CancelHandler extends AbstractHandler {
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		Thread thread = CommandHandler.getThread();
+		if (thread == null) {
+			System.out.println("No task has been started");
+			logger.log(Level.INFO, "No task has been started");
+			
+			return null;
+		}
+		
+		Command command = event.getCommand();
+		String name = command.getId();
+		boolean isForceCancel = name.equals("hu.bme.mit.gamma.ui.cancel.force");
 		
 		State threadState = thread.getState();
 		boolean isInterruptible = threadState == State.BLOCKED || threadState == State.WAITING;
-		if (!isInterruptible) {
+		
+		boolean toBeCancelled = isForceCancel || isInterruptible;
+		if (!toBeCancelled) {
 			System.out.println("The thread is not in an interruptable state: " + threadState);
 			logger.log(Level.INFO, "The thread is not in an interruptable state: " + threadState);
 			
@@ -37,8 +50,9 @@ public class CancelHandler extends AbstractHandler {
 		
 		thread.interrupt();
 		
-		System.out.println("Cancelling thread " + thread.getName());
-		logger.log(Level.INFO, "Cancelling thread " + thread.getName());
+		String threadName = thread.getName();
+		System.out.println("Cancelling thread " + threadName);
+		logger.log(Level.INFO, "Cancelling thread " + threadName);
 		
 		return null;
 	}
