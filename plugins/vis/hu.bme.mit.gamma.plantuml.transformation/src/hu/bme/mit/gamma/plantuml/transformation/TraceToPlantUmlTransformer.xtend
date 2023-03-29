@@ -11,12 +11,14 @@
 package hu.bme.mit.gamma.plantuml.transformation
 
 import hu.bme.mit.gamma.statechart.util.ExpressionSerializer
+import hu.bme.mit.gamma.trace.model.ComponentSchedule
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
+import hu.bme.mit.gamma.trace.model.InstanceSchedule
 import hu.bme.mit.gamma.trace.model.RaiseEventAct
-import hu.bme.mit.gamma.trace.model.Schedule
 import hu.bme.mit.gamma.trace.model.Step
 import hu.bme.mit.gamma.trace.model.TimeElapse
 
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.trace.derivedfeatures.TraceModelDerivedFeatures.*
 
 class TraceToPlantUmlTransformer {
@@ -72,9 +74,14 @@ class TraceToPlantUmlTransformer {
 			[o-> System : «act.port.name».«act.event.name»(«FOR argument : act.arguments SEPARATOR ', '»«argument.serialize»«ENDFOR»)
 		«ENDFOR»
 		
-		«FOR act : step.actions.filter(Schedule)»
+		«FOR act : step.actions.filter(ComponentSchedule)»
 			== Execute ==
 		«ENDFOR»
+		
+		«FOR act : step.actions.filter(InstanceSchedule)»
+			== Execute «act.instanceReference.componentInstance.name» ==
+		«ENDFOR»
+		
 		
 		«FOR act : step.outEvents»
 			System ->o] : «act.port.name».«act.event.name»(«FOR argument : act.arguments SEPARATOR ', '»«argument.serialize»«ENDFOR»)
