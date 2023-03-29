@@ -29,7 +29,7 @@ class TypeSerializer {
 		throw new IllegalArgumentException("Not known type: " + type)
 	}
 	
-	def dispatch String serializeType(TypeReference type) '''mtype:«type.reference.name»'''
+	def dispatch String serializeType(TypeReference type) '''«type.reference.type.serializeType»'''
 	
 	def dispatch String serializeType(BooleanTypeDefinition type) '''boolean'''
 	
@@ -37,7 +37,7 @@ class TypeSerializer {
 	
 	def dispatch String serializeType(RationalTypeDefinition type) '''real'''
 	
-	def dispatch String serializeType(EnumerationTypeDefinition type) '''{ «FOR literal : type.literals SEPARATOR ', '»«literal»«ENDFOR» }'''
+	def dispatch String serializeType(EnumerationTypeDefinition type) '''{ «FOR literal : type.literals SEPARATOR ', '»«literal.name»«ENDFOR» }'''
 	
 	def dispatch String serializeType(ArrayTypeDefinition type) '''array 0..«type.size» of «type.elementType.serializeType»'''
 	
