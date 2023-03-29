@@ -368,7 +368,10 @@ MissionPhaseStateAnnotation returns PhaseModel::MissionPhaseStateAnnotation:
 ;
 
 VariableBinding returns PhaseModel::VariableBinding:
-	'tie' statechartVariable=[ExpressionModel::VariableDeclaration] '->' instanceVariableReference=InstanceVariableReference
+	('tie' statechartVariable=[ExpressionModel::VariableDeclaration] '->'
+		instanceVariableReference=InstanceVariableReference) |
+	('bind' statechartVariable=[ExpressionModel::VariableDeclaration] '='
+		instanceVariableReference=InstanceVariableReference)
 ;
 
 InstanceVariableReference returns PhaseModel::InstanceVariableReference:

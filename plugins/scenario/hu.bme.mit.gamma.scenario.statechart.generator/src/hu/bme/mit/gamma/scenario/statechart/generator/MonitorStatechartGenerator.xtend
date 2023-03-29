@@ -164,7 +164,7 @@ class MonitorStatechartGenerator extends AbstractContractStatechartGeneration {
 		firstRegion.stateNodes += initial
 
 		firstState = null
-		if (scenario.initialblock === null) {
+		if (scenario.initialBlock === null) {
 			firstState = createNewState
 		} else {
 			firstState = createState
@@ -185,10 +185,10 @@ class MonitorStatechartGenerator extends AbstractContractStatechartGeneration {
 		firstRegion.stateNodes += environmentViolation
 		statechartUtil.createTransition(initial, firstState)
 		statechart.variableDeclarations += scenario.variableDeclarations
-		if (scenario.initialblock !== null) {
+		if (scenario.initialBlock !== null) {
 			statechart.annotations += createHasInitialOutputsBlockAnnotation
 			val syncBlock = createDeterministicOccurrenceSet
-			syncBlock.deterministicOccurrences += scenario.initialblock.interactions
+			syncBlock.deterministicOccurrences += scenario.initialBlock.interactions
 			scenario.fragment.interactions.add(0, syncBlock)
 		}
 	}
@@ -245,7 +245,7 @@ class MonitorStatechartGenerator extends AbstractContractStatechartGeneration {
 
 	def processDeterministicOccurrenceSet(DeterministicOccurrenceSet set, boolean isNegated) {
 		val state = createNewState
-		if (scenario.initialblock !== null && restartOnColdViolation && set.eContainer == scenario.fragment &&
+		if (scenario.initialBlock !== null && restartOnColdViolation && set.eContainer == scenario.fragment &&
 			scenario.fragment.interactions.indexOf(set) == 0) {
 			coldViolation = state
 		}

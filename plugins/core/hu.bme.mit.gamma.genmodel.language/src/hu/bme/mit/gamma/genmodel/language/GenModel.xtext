@@ -303,7 +303,7 @@ Verification returns Verification:
 			'property-file' ':' propertyPackages+=[property::PropertyPackage | STRING] | // Property models
 			'base-package' ':' packageName+=STRING  | // Java base package
 			'test-language' ':' programmingLanguages+=ProgrammingLanguage |
-			'optimize' ':' ('false' | optimize?='true') |
+			('optimize' | ('optimize-traces')) ':' ('false' | optimize?='true') |
 			'back-annotate-to-original' ':' ('false' | backAnnotateToOriginal?='true') |
 			'test-folder' ':' testFolder+=STRING
 		)*
