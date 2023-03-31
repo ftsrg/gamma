@@ -454,6 +454,8 @@ class AsynchronousAdapterCodeGenerator {
 				'''«instanceName».runFullCycle();'''	
 			case ControlFunction.RESET:
 				'''«instanceName».reset();'''
+			default: '''''' // Probably queue-related control functions
+			// TODO Add queue-related control
 		}
 	}
 	
