@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -52,11 +52,13 @@ class InterfaceCodeGenerator {
 			
 			interface Listener {
 				
-			interface Provided«IF !_interface.parents.empty» extends «FOR parent : _interface.parents»«parent.implementationName».Listener.Provided«ENDFOR»«ENDIF» {
+			interface Provided«IF !_interface.parents.empty» extends «FOR parent : _interface.parents
+						SEPARATOR ', '»«parent.implementationName».Listener.Provided«ENDFOR»«ENDIF» {
 				«_interface.createListenerInterface(EventDirection.OUT)»
 				}
 				
-			interface Required«IF !_interface.parents.empty» extends «FOR parent : _interface.parents»«parent.implementationName».Listener.Required«ENDFOR»«ENDIF» {
+			interface Required«IF !_interface.parents.empty» extends «FOR parent : _interface.parents
+						SEPARATOR ', '»«parent.implementationName».Listener.Required«ENDFOR»«ENDIF» {
 				«_interface.createListenerInterface(EventDirection.IN)»
 				}
 				
@@ -81,7 +83,8 @@ class InterfaceCodeGenerator {
 		val notCorrectDirection = eventDirection.opposite
 		'''
 			«FOR eventDeclaration : _interface.allEventDeclarations.filter[it.direction != notCorrectDirection]»
-				void raise«eventDeclaration.event.name.toFirstUpper»(«FOR parameter : eventDeclaration.event.parameterDeclarations SEPARATOR ", "»«parameter.type.serialize» «parameter.name»«ENDFOR»);
+				void raise«eventDeclaration.event.name.toFirstUpper»(«FOR parameter :
+					eventDeclaration.event.parameterDeclarations SEPARATOR ", "»«parameter.type.serialize» «parameter.name»«ENDFOR»);
 			«ENDFOR»
 		'''
 	}
