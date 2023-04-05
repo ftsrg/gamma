@@ -88,22 +88,28 @@ public class XstsActionUtil extends ExpressionUtil {
 	
 	public void fillNullTransitions(XSTS xSts) {
 		if (xSts.getVariableInitializingTransition() == null) {
-			xSts.setVariableInitializingTransition(createEmptyTransition());
+			xSts.setVariableInitializingTransition(
+					createEmptyTransition());
 		}
 		if (xSts.getConfigurationInitializingTransition() == null) {
-			xSts.setConfigurationInitializingTransition(createEmptyTransition());
+			xSts.setConfigurationInitializingTransition(
+					createEmptyTransition());
 		}
 		if (xSts.getEntryEventTransition() == null) {
-			xSts.setEntryEventTransition(createEmptyTransition());
+			xSts.setEntryEventTransition(
+					createEmptyTransition());
 		}
 		if (xSts.getTransitions().isEmpty()) {
-			changeTransitions(xSts, createEmptyTransition());
+			changeTransitions(xSts,
+					createEmptyTransition());
 		}
 		if (xSts.getInEventTransition() == null) {
-			xSts.setInEventTransition(createEmptyTransition());
+			xSts.setInEventTransition(
+					createEmptyTransition());
 		}
 		if (xSts.getOutEventTransition() == null) {
-			xSts.setOutEventTransition(createEmptyTransition());
+			xSts.setOutEventTransition(
+					createEmptyTransition());
 		}
 	}
 	
