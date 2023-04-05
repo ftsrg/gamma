@@ -427,11 +427,15 @@ class ComponentTransformer {
 					branchActions += thenAction
 				}
 				// Note that the last expression is unnecessary as all branches (event ids) are
-				// disjunct and complete -> removing the last one to create an 'else' branch (optimization)
+				// disjunct and complete -> removing the last one to create an 'else' branch (optimization) if queue is not empty
 				// (works for UPPAAL havoc, too: see algorithm there)
-				branchExpressions.removeLast
+				if (!branchExpressions.empty) {
+					branchExpressions.removeLast
+				}
 				if (branchExpressions.empty) {
-					block.actions += branchActions.onlyElement // Only one event can come
+					val onlyAction = (branchActions.empty) ? createEmptyAction // No message can be placed in the queue
+							: branchActions.onlyElement // Only one event can come
+					block.actions += onlyAction
 				}
 				else {
 					// Excluding branches for the different event identifiers
