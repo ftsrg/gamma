@@ -12,6 +12,7 @@ package hu.bme.mit.gamma.transformation.util
 
 import hu.bme.mit.gamma.util.FileUtil
 import java.io.File
+import hu.bme.mit.gamma.transformation.util.preprocessor.AnalysisModelPreprocessor
 
 class GammaFileNamer {
 	// Singleton
@@ -89,5 +90,24 @@ class GammaFileNamer {
 	
 	def String getOriginalGcdComponentUri(String unfoldedComponentUri) '''«unfoldedComponentUri.parent»«File.separator»«unfoldedComponentUri.fileName.toUnhiddenFileName.packageFileName»'''
 	def String getOriginalGsmComponentUri(String unfoldedComponentUri) '''«unfoldedComponentUri.parent»«File.separator»«unfoldedComponentUri.fileName.toUnhiddenFileName»'''
+	
+	//
+	
+	def String getFileExtension(String analysisLanguage) {
+		val name = analysisLanguage.toUpperCase
+		switch (name) {
+			case "UPPAAL", case "XSTS_UPPAAL": {
+				return "xml"
+			}
+			case "THETA", case "XSTS": {
+				return "xsts"
+			}
+			case "SPIN", case "PROMELA": {
+				return "pml"
+			}
+			default:
+				throw new IllegalArgumentException("Not known language: " + analysisLanguage)
+		}
+	}
 	
 }
