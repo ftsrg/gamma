@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Gamma Trace to Environment Model Transformer
 Bundle-SymbolicName: hu.bme.mit.gamma.trace.environment.transformation
-Bundle-Version: 2.8.0.qualifier
+Bundle-Version: 2.9.0.qualifier
 Bundle-Vendor: BME-FTSRG
 Automatic-Module-Name: hu.bme.mit.gamma.trace.environment.transformation
 Bundle-RequiredExecutionEnvironment: JavaSE-17

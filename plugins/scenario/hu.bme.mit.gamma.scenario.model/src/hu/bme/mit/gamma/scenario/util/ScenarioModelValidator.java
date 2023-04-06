@@ -34,7 +34,6 @@ import hu.bme.mit.gamma.scenario.model.Delay;
 import hu.bme.mit.gamma.scenario.model.DeterministicOccurrence;
 import hu.bme.mit.gamma.scenario.model.DeterministicOccurrenceSet;
 import hu.bme.mit.gamma.scenario.model.Fragment;
-import hu.bme.mit.gamma.scenario.model.InitialBlock;
 import hu.bme.mit.gamma.scenario.model.Interaction;
 import hu.bme.mit.gamma.scenario.model.InteractionDirection;
 import hu.bme.mit.gamma.scenario.model.LoopCombinedFragment;

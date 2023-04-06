@@ -200,8 +200,8 @@ class LowlevelToXstsTransformer {
 		
 		xSts.transformUnorderedActions // Transforming here, so optimizeXSts needn't be extended
 		
-		xSts.optimizeXSts
 		xSts.fillNullTransitions
+		xSts.optimizeXSts
 		handleTransientAndResettableVariableAnnotations
 		handleRunUponExternalEventAnnotation
 		// The created EMF models are returned
