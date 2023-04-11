@@ -644,7 +644,7 @@ class GammaEcoreUtil {
 	def getAbsoluteUri(Resource resource) {
 		val uri = resource.URI
 		if (!uri.isPlatform) {
-			return resource
+			return uri
 		}
 		val resourceFile = resource.file
 		return URI.createFileURI(resourceFile.toString)
@@ -659,6 +659,11 @@ class GammaEcoreUtil {
 			return changableAbsoluteUri.platformUri
 		}
 		return URI.createFileURI(changableAbsoluteUri)
+	}
+	
+	def File getProjectFile(Resource resource) {
+		val file = resource.file
+		return file.projectFile
 	}
 	
 	def File getProjectFile(File file) {
