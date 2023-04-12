@@ -103,8 +103,12 @@ ParenthesesPathFormula returns PathFormula:
 @Override
 PrimaryExpression returns expression::Expression:
 	LiteralExpression |
-	ComponentInstanceStateExpression |
+	ElementReference |
 	'(' Expression ')'
+;
+
+ElementReference returns composite::ComponentInstanceElementReferenceExpression:
+	ComponentInstanceStateExpression | ComponentInstanceReflectiveElementReferenceExpression
 ;
 
 // Operators

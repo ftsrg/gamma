@@ -705,4 +705,8 @@ ComponentInstanceEventParameterReferenceExpression returns CompositeModel::Compo
 		event=[InterfaceModel::Event] '::' parameterDeclaration=[ExpressionModel::ParameterDeclaration]
 ;
 
+ComponentInstanceReflectiveElementReferenceExpression returns CompositeModel::ComponentInstanceReflectiveElementReferenceExpression:
+	'element' instance=ComponentInstanceReferenceExpression ('.' identifier+=ID) ('::' identifier+=ID)*
+;
+
 //

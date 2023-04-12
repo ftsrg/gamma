@@ -420,8 +420,21 @@ class GammaEcoreUtil {
 		return lhs.containsTransitively(rhs) || rhs.containsTransitively(lhs)
 	}
 	
-	def <T extends EObject> boolean containsTypes(EObject container,
+	def <T extends EObject> boolean containsTypesTransitively(EObject container,
 			Iterable<? extends Class<T>> types) {
+		for (content : container.eAllContents.toIterable) {
+			if (content.isTypes(types)) {
+				return true
+			}
+		}
+		return false
+	}
+	
+	def <T extends EObject> boolean containsTypeTransitively(EObject container, Class<T> type) {
+		return container.containsTypesTransitively(#[type])
+	}
+	
+	def <T extends EObject> boolean containsTypes(EObject container, Iterable<? extends Class<T>> types) {
 		for (content : container.eContents) {
 			if (content.isOrContainsTypes(types)) {
 				return true
@@ -432,7 +445,11 @@ class GammaEcoreUtil {
 	
 	def <T extends EObject> boolean isOrContainsTypes(EObject container,
 			Iterable<? extends Class<T>> types) {
-		return types.exists[it.isInstance(container)] || container.containsTypes(types)
+		return container.isTypes(types) || container.containsTypes(types)
+	}
+	
+	def <T extends EObject> boolean isTypes(EObject object, Iterable<? extends Class<T>> types) {
+		return types.exists[it.isInstance(object)]
 	}
 	
 	def <T extends EObject> boolean containsType(EObject container, Class<T> type) {

@@ -26,6 +26,7 @@ import org.eclipse.viatra.query.runtime.emf.EMFScope;
 import hu.bme.mit.gamma.expression.model.Comment;
 import hu.bme.mit.gamma.property.model.CommentableStateFormula;
 import hu.bme.mit.gamma.property.model.PropertyPackage;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReflectiveElementReferenceExpression;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
 
 public class PropertyConcretizer {
@@ -42,32 +43,37 @@ public class PropertyConcretizer {
 		
 		for (int i = 0; i < formulas.size(); i++) {
 			CommentableStateFormula commentableStateFormula = formulas.get(i);
-			List<Comment> comments = commentableStateFormula.getComments();
-			Class<?> patternClass = getPatternClass(comments);
-			System.out.println(patternClass.getName());
-			Collection<IPatternMatch> matches = null;
 			
-			try {
-				Method onMethod = patternClass.getMethod("on",
-						new Class[] { ViatraQueryEngine.class });
-				Object matcher = onMethod.invoke(null, engine);
-				Class<? extends Object> matcherClass = matcher.getClass();
-				Method getAllMatchesMethod = matcherClass.getMethod("getAllMatches", new Class[0]);
-				Object collection = getAllMatchesMethod.invoke(matcher, new Object[0]);
-				System.out.println(collection.toString());
-				matches = (Collection<IPatternMatch>) collection; 
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			
-			for (IPatternMatch match : matches) {
-				CommentableStateFormula concretizableFormula = ecoreUtil.clone(commentableStateFormula);
+			if (ecoreUtil.containsTypeTransitively(commentableStateFormula,
+					ComponentInstanceReflectiveElementReferenceExpression.class)) {
+				List<Comment> comments = commentableStateFormula.getComments();
+				Class<?> patternClass = getPatternClass(comments);
 				
-				Object object = match.get("state"); // TODO
-				System.out.println(object);
+				Collection<IPatternMatch> matches = null;
+				try {
+					Method onMethod = patternClass.getMethod("on",
+							new Class[] { ViatraQueryEngine.class });
+					Object matcher = onMethod.invoke(null, engine);
+					Class<? extends Object> matcherClass = matcher.getClass();
+					Method getAllMatchesMethod = matcherClass.getMethod("getAllMatches", new Class[0]);
+					Object collection = getAllMatchesMethod.invoke(matcher, new Object[0]);
+	
+					matches = (Collection<IPatternMatch>) collection; 
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				
+				FormulaConcretizer formulaConcretizer = new FormulaConcretizer();
+				List<CommentableStateFormula> concretizedFormulaSet =
+						formulaConcretizer.concretize(commentableStateFormula, matches);
+				concretizedFormulas.addAll(concretizedFormulaSet);
+			}
+			else {
+				concretizedFormulas.add(
+						ecoreUtil.clone(commentableStateFormula));
 			}
 		}
-		// TODO make concretizedFormulas unique
+		
 		PropertyPackage concretizedPropertyPackage = ecoreUtil.clone(propertyPackage);
 		List<CommentableStateFormula> concretizableFormulas = concretizedPropertyPackage.getFormulas();
 		concretizableFormulas.clear();
