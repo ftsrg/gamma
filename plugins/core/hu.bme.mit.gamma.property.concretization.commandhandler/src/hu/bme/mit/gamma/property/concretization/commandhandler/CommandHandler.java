@@ -62,7 +62,7 @@ public class CommandHandler extends AbstractHandler {
 						
 						PropertyPackage propertyPackage = (PropertyPackage) rootElem;
 						
-						PropertyConcretizer propertyConcretizer = new PropertyConcretizer();
+						PropertyConcretizer propertyConcretizer = PropertyConcretizer.INSTANCE;
 						PropertyPackage concretizedPropertyPackage = propertyConcretizer.execute(propertyPackage);
 						
 						ecoreUtil.normalSave(concretizedPropertyPackage, parentFolder, extensionlessName + "_.gpd");

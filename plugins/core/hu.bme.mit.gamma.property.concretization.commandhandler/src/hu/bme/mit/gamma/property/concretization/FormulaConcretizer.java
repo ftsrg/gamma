@@ -37,10 +37,13 @@ import hu.bme.mit.gamma.statechart.statechart.State;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
 
 public class FormulaConcretizer {
-
+	// Singleton
+	public static final FormulaConcretizer INSTANCE = new FormulaConcretizer();
+	protected FormulaConcretizer() {}
+	//
 	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
 	protected final CompositeModelFactory factory = CompositeModelFactory.eINSTANCE;
-
+	//
 	public List<CommentableStateFormula> concretize(
 			CommentableStateFormula formula, Collection<? extends IPatternMatch> matches) {
 		List<CommentableStateFormula> concretizedFormulas = new ArrayList<CommentableStateFormula>();
@@ -82,7 +85,8 @@ public class FormulaConcretizer {
 			}
 		}
 		
-		// TODO filter duplications, add GammaEcoreUtil method
+		ecoreUtil.removeEqualElements(concretizedFormulas);
+		
 		return concretizedFormulas;
 	}
 

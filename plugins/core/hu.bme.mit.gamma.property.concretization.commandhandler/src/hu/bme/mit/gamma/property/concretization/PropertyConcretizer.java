@@ -30,9 +30,14 @@ import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReflectiveElementR
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
 
 public class PropertyConcretizer {
-
+	// Singleton
+	public static final PropertyConcretizer INSTANCE = new PropertyConcretizer();
+	protected PropertyConcretizer() {}
+	//
 	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
-
+	//
+	
+	@SuppressWarnings("unchecked")
 	public PropertyPackage execute(PropertyPackage propertyPackage) {
 		ResourceSet resourceSet = propertyPackage.eResource().getResourceSet();
 		ViatraQueryEngine engine = ViatraQueryEngine.on(
@@ -63,7 +68,7 @@ public class PropertyConcretizer {
 					e.printStackTrace();
 				}
 				
-				FormulaConcretizer formulaConcretizer = new FormulaConcretizer();
+				FormulaConcretizer formulaConcretizer = FormulaConcretizer.INSTANCE;
 				List<CommentableStateFormula> concretizedFormulaSet =
 						formulaConcretizer.concretize(commentableStateFormula, matches);
 				concretizedFormulas.addAll(concretizedFormulaSet);
@@ -92,33 +97,20 @@ public class PropertyConcretizer {
 		throw new IllegalArgumentException("The pattern class cannot be found");
 	}
 
+	@SuppressWarnings("deprecation")
 	protected Class<?> getPatternClass(Comment comment) {
 		File projectFile = ecoreUtil.getProjectFile(comment.eResource());
 		String binUri = projectFile.getAbsolutePath() + File.separator + "bin";
 		File bin = new File(binUri);
-		// MyClassLoader classLoader = new MyClassLoader(
-		// BaseGeneratedEMFQuerySpecification.class.getClassLoader(),
-		// StatechartModelPackage.class.getClassLoader());
 		URLClassLoader loader;
 		try {
 			loader = URLClassLoader.newInstance(new URL[] { bin.toURL() },
 					PropertyConcretizer.class.getClassLoader());
-			// Class<State> class2 = State.class;
-			// class2.getClassLoader().loadClass("hu.bme.mit.gamma.statechart.statechart.State");
+			
 			String fqnOfPattern = comment.getComment();
-			String fqnClassName = fqnOfPattern + "$Matcher";
+			String fqnClassName = fqnOfPattern + "$Matcher"; // $ is for subclasses
 			Class<?> clazz = loader.loadClass(fqnClassName);
 			return clazz;
-			// hu/bme/mit/gamma/statechart/statechart/State
-//			for (Class<?> class1 : clazz.getNestMembers()) {
-//				String name = class1.getName();
-//				System.out.println(name);
-//			}
-//			Method[] methods = clazz.getMethods();
-//			for (Method method : methods) {
-//				String name = method.getName();
-//				System.out.println(name);
-//			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

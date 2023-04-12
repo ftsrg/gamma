@@ -801,4 +801,18 @@ class GammaEcoreUtil {
 		return array
 	}
 	
+	def <T extends EObject> void removeEqualElements(List<T> list) {
+		for (var i = 0; i < list.size - 1; i++) {
+			for (var j = i + 1; j < list.size; j++) {
+				val lhs = list.get(i)
+				val rhs = list.get(j)
+				
+				if (lhs.helperEquals(rhs)) {
+					list.remove(j) // Remove rhs
+					j--
+				}
+			}
+		}
+	}
+	
 }
