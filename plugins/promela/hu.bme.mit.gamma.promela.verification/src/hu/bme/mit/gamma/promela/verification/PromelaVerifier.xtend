@@ -11,6 +11,7 @@
 package hu.bme.mit.gamma.promela.verification
 
 import hu.bme.mit.gamma.statechart.interface_.Package
+import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.util.FileUtil
 import hu.bme.mit.gamma.verification.result.ThreeStateBoolean
 import hu.bme.mit.gamma.verification.util.AbstractVerifier
@@ -18,8 +19,11 @@ import java.io.BufferedWriter
 import java.io.File
 import java.io.FileOutputStream
 import java.io.OutputStreamWriter
+import java.util.ArrayList
+import java.util.List
 import java.util.Scanner
 import java.util.logging.Level
+import org.eclipse.xtend.lib.annotations.Data
 
 class PromelaVerifier extends AbstractVerifier {
 	
@@ -125,7 +129,62 @@ class PromelaVerifier extends AbstractVerifier {
 			
 			super.result = super.result.adaptResult
 			
-			if (!trailFile.exists) {
+			// Getting multiple error traces, must add some limitation
+			//-e: create trails for all errors encountered (default is first one only)
+			//-cN: stop at Nth error (defaults to first error if N is absent)
+			
+			if (splitParameters.contains("-e")) {
+				var trailFileIndex = 1
+				var multiTrailFile = new File(modelFile.trailFile(trailFileIndex))
+				multiTrailFile.deleteOnExit
+				
+				val traces = new ArrayList
+				
+				while (multiTrailFile.exists) {
+					
+					// spin -t -p -g -l -w PromelaFile.pml
+					val traceCommand = #["spin", '''-t«trailFileIndex»''', "-p", "-g", /*"-l",*/ "-w", modelFile.name /* see exec wokr-dir */]
+					
+					// Executing the trace command
+					logger.log(Level.INFO, "Executing command: " + traceCommand.join(" "))
+					process = Runtime.getRuntime().exec(traceCommand, null, execFolder)
+					
+					val traceOutputStream = process.inputStream
+					// Reading the result of the command
+					resultReader = new Scanner(traceOutputStream)
+					
+					// save trace
+					if (saveTrace) {
+						// Trace file
+						val traceFile = new File(modelFile.traceFile)
+						traceFile.deleteOnExit
+						
+						val fos = new FileOutputStream(traceFile)
+						val bw = new BufferedWriter(new OutputStreamWriter(fos))
+						
+						while (resultReader.hasNext) {
+							bw.write(resultReader.nextLine)
+							bw.write(System.lineSeparator)
+						}
+						bw.close
+						
+						resultReader = new Scanner(traceFile)
+					}
+					
+					val gammaPackage = traceability as Package
+					val backAnnotator = new TraceBackAnnotator(gammaPackage, resultReader)
+					val trace = backAnnotator.execute
+					traces.add(trace)
+					
+					//return new Result(result, trace)
+					
+					trailFileIndex++
+					multiTrailFile = new File(modelFile.trailFile(trailFileIndex))
+					multiTrailFile.deleteOnExit
+				}
+				return new MultipleTracesResult(result, traces)
+			}
+			else if (!trailFile.exists) {
 				// No proof/counterexample
 //				super.result = ThreeStateBoolean.TRUE
 				// Adapting result
@@ -196,6 +255,22 @@ class PromelaVerifier extends AbstractVerifier {
 	
 	def getPanFile(File modelFile) {
 		return modelFile.parent + File.separator + "pan"
+	}
+	
+	def trailFile(File modelFile, int i) {
+		return modelFile.parent + File.separator + modelFile.name + i + ".trail"
+	}
+	
+	@Data
+	static class MultipleTracesResult extends Result {
+	
+		List<ExecutionTrace> traces
+		
+		new(ThreeStateBoolean result, ArrayList<ExecutionTrace> _traces) {
+			super(result, _traces.get(0))
+			traces = _traces
+		}
+	
 	}
 }
 

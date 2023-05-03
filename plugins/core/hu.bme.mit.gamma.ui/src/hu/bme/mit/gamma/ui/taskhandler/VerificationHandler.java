@@ -41,6 +41,7 @@ import hu.bme.mit.gamma.genmodel.model.Verification;
 import hu.bme.mit.gamma.plantuml.serialization.SvgSerializer;
 import hu.bme.mit.gamma.plantuml.transformation.TraceToPlantUmlTransformer;
 import hu.bme.mit.gamma.promela.verification.PromelaVerification;
+import hu.bme.mit.gamma.promela.verification.PromelaVerifier.MultipleTracesResult;
 import hu.bme.mit.gamma.property.model.CommentableStateFormula;
 import hu.bme.mit.gamma.property.model.PropertyPackage;
 import hu.bme.mit.gamma.property.model.StateFormula;
@@ -320,21 +321,43 @@ public class VerificationHandler extends TaskHandler {
 		Result result = (arguments.length == 0) ? verificationTask.execute(modelFile, queryFile) :
 			verificationTask.execute(modelFile, queryFile, arguments);
 		
-		ExecutionTrace trace = result.getTrace();
-		// Maybe there is no trace
-		if (trace != null) {
-			if (isOptimize) {
-				logger.log(Level.INFO, "Checking if trace is already covered by previous traces...");
-				if (traceUtil.isCovered(trace, retrievedTraces)) {
-					logger.log(Level.INFO, "Trace is already covered");
-					return new Result(result.getResult(), null);
-					// We do not return a trace as it is already covered
+		if (result instanceof MultipleTracesResult) {
+			List<ExecutionTrace> traces = ((MultipleTracesResult)result).getTraces();
+			// Maybe there is no trace
+			if (traces != null) {
+				for (ExecutionTrace trace : traces) {
+					if (isOptimize) {
+						logger.log(Level.INFO, "Checking if trace is already covered by previous traces...");
+						if (traceUtil.isCovered(trace, retrievedTraces)) {
+							logger.log(Level.INFO, "Trace is already covered");
+							return new Result(result.getResult(), null);
+							// We do not return a trace as it is already covered
+						}
+						// Checking individual trace
+						traceUtil.removeCoveredSteps(trace);
+					}
+					if (!trace.getSteps().isEmpty()) {
+						retrievedTraces.add(trace);
+					}
 				}
-				// Checking individual trace
-				traceUtil.removeCoveredSteps(trace);
 			}
-			if (!trace.getSteps().isEmpty()) {
-				retrievedTraces.add(trace);
+		} else {
+			ExecutionTrace trace = result.getTrace();
+			// Maybe there is no trace
+			if (trace != null) {
+				if (isOptimize) {
+					logger.log(Level.INFO, "Checking if trace is already covered by previous traces...");
+					if (traceUtil.isCovered(trace, retrievedTraces)) {
+						logger.log(Level.INFO, "Trace is already covered");
+						return new Result(result.getResult(), null);
+						// We do not return a trace as it is already covered
+					}
+					// Checking individual trace
+					traceUtil.removeCoveredSteps(trace);
+				}
+				if (!trace.getSteps().isEmpty()) {
+					retrievedTraces.add(trace);
+				}
 			}
 		}
 		return result;
