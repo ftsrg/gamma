@@ -251,20 +251,25 @@ class ModelSerializer {
 	protected def dispatch String serialize(NonDeterministicAction action) '''
 		if
 			«FOR subaction : action.actions»
-				:: true -> atomic {
-					«subaction.serialize»
-				}
+			«IF subaction instanceof SequentialAction && (subaction as SequentialAction).containsAssumeAction»
+			«(subaction as SequentialAction).serializeWithAssumeAction»
+			«ELSE»
+			:: true -> atomic {
+				«subaction.serialize»
+			}
+			«ENDIF»
 			«ENDFOR»
 		fi;
 	'''
+
 	
 	protected def dispatch String serialize(SequentialAction action) '''
 		«FOR subaction : action.actions»
 			«subaction.serializeD_stepBeginBrackets»
-			«subaction.serialize /* Original action*/»
-			«IF subaction.last»
-				«action.resetLocalVariableDeclarations»
-			«ENDIF»
+				«subaction.serialize /* Original action*/»
+				«IF subaction.last»
+					«action.resetLocalVariableDeclarations»
+				«ENDIF»
 			«subaction.serializeD_stepCloseBrackets»
 		«ENDFOR»
 	'''
@@ -373,4 +378,25 @@ class ModelSerializer {
 	
 	protected def serializeParallelProcessesArguments(Action action) '''«IF parallelVariableMapping.get(action) !== null»«FOR varDecAction : parallelVariableMapping.get(action) SEPARATOR "; "»«varDecAction.type.serializeType» «varDecAction.name»«ENDFOR»«ENDIF»'''
 	protected def serializeParallelProcessCallArguments(Action action) '''«IF parallelVariableMapping.get(action) !== null»«FOR varDecAction : parallelVariableMapping.get(action) SEPARATOR ", "»«varDecAction.name»«ENDFOR»«ENDIF»'''
+
+	protected def containsAssumeAction(SequentialAction action) {
+		val assumeAction = action.actions.findFirst[it instanceof AssumeAction]
+		
+		if (assumeAction !== null) {
+			return true
+		}
+		
+		return false
+	}
+	
+	protected def serializeWithAssumeAction(SequentialAction action) {
+		val assumeAction = action.actions.findFirst[it instanceof AssumeAction]
+		action.actions.remove(assumeAction)
+		
+		return '''
+		:: («(assumeAction as AssumeAction).assumption.serialize») -> atomic {
+			«action.serialize»
+		}
+		'''
+	}
 }
