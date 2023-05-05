@@ -99,21 +99,27 @@ public class PropertyConcretizer {
 
 	@SuppressWarnings("deprecation")
 	protected Class<?> getPatternClass(Comment comment) {
-		File projectFile = ecoreUtil.getProjectFile(comment.eResource());
-		String binUri = projectFile.getAbsolutePath() + File.separator + "bin";
-		File bin = new File(binUri);
-		URLClassLoader loader;
-		try {
-			loader = URLClassLoader.newInstance(new URL[] { bin.toURL() },
-					PropertyConcretizer.class.getClassLoader());
-			
-			String fqnOfPattern = comment.getComment();
-			String fqnClassName = fqnOfPattern + "$Matcher"; // $ is for subclasses
-			Class<?> clazz = loader.loadClass(fqnClassName);
-			return clazz;
-		} catch (Exception e) {
-			e.printStackTrace();
+		final String CLASS_REFERENCE_PREFIX = "$";
+		String stringComment = comment.getComment();
+		
+		if (stringComment.startsWith(CLASS_REFERENCE_PREFIX)) {
+			String fqnOfPattern = stringComment.substring(1);
+			File projectFile = ecoreUtil.getProjectFile(comment.eResource());
+			String binUri = projectFile.getAbsolutePath() + File.separator + "bin";
+			File bin = new File(binUri);
+			URLClassLoader loader;
+			try {
+				loader = URLClassLoader.newInstance(new URL[] { bin.toURL() },
+						PropertyConcretizer.class.getClassLoader());
+				
+				String fqnClassName = fqnOfPattern + "$Matcher"; // $ is for subclasses
+				Class<?> clazz = loader.loadClass(fqnClassName);
+				return clazz;
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
+		
 		return null;
 	}
 

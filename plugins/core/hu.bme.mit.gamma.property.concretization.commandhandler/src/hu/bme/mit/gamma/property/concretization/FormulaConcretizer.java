@@ -13,6 +13,7 @@ package hu.bme.mit.gamma.property.concretization;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.viatra.query.runtime.api.IPatternMatch;
@@ -34,7 +35,10 @@ import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.Event;
 import hu.bme.mit.gamma.statechart.interface_.Port;
 import hu.bme.mit.gamma.statechart.statechart.State;
+import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
+import hu.bme.mit.gamma.statechart.statechart.Transition;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
+import hu.bme.mit.gamma.util.JavaUtil;
 
 public class FormulaConcretizer {
 	// Singleton
@@ -42,6 +46,7 @@ public class FormulaConcretizer {
 	protected FormulaConcretizer() {}
 	//
 	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
+	protected final JavaUtil javaUtil = JavaUtil.INSTANCE;
 	protected final CompositeModelFactory factory = CompositeModelFactory.eINSTANCE;
 	//
 	public List<CommentableStateFormula> concretize(
@@ -135,6 +140,30 @@ public class FormulaConcretizer {
 			eventParameterReference.setParameterDeclaration(parameterDeclaration);
 			
 			return eventParameterReference;
+		}
+		else if (lastElement instanceof Transition transition) {
+			String id = StatechartModelDerivedFeatures.getId(transition);
+			if (id == null) {
+				throw new IllegalArgumentException("No id for " + transition);
+			}
+			
+			StatechartDefinition statechart = StatechartModelDerivedFeatures.getContainingStatechart(transition);
+			List<VariableDeclaration> variableDeclarations = statechart.getVariableDeclarations();
+			
+			// See hu.bme.mit.gamma.transformation.util.annotations.AnnotationNamings.getVariableName(transition)
+			Optional<VariableDeclaration> optionalVariable = variableDeclarations.stream()
+					.filter(it -> it.getName().equals(id)).findFirst();
+			if (optionalVariable.isEmpty()) {
+				throw new IllegalArgumentException("No variable named " + id);
+			}
+			
+			VariableDeclaration transitionVariable = optionalVariable.get();
+			
+			ComponentInstanceVariableReferenceExpression variableReference =
+					factory.createComponentInstanceVariableReferenceExpression();
+			variableReference.setVariableDeclaration(transitionVariable);
+			
+			return variableReference;
 		}
 		else {
 			throw new IllegalArgumentException("Not known element: " + lastElement);
