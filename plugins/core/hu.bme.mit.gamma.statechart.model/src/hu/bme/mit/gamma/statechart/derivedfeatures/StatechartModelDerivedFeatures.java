@@ -571,7 +571,8 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		Set<SynchronousComponent> types = new HashSet<SynchronousComponent>();
 		for (Component component : getAllComponents(parentPackage)) {
 			if (component instanceof SynchronousComponent) {
-				types.add((SynchronousComponent) component);
+				types.add(
+						(SynchronousComponent) component);
 			}
 		}
 		return types;
@@ -591,7 +592,8 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		Set<StatechartDefinition> types = new HashSet<StatechartDefinition>();
 		for (Component component : getAllSynchronousComponents(parentPackage)) {
 			if (component instanceof StatechartDefinition) {
-				types.add((StatechartDefinition) component);
+				types.add(
+						(StatechartDefinition) component);
 			}
 		}
 		return types;
