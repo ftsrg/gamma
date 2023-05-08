@@ -102,5 +102,6 @@
     <genClasses image="false" ecoreClass="model.ecore#//ComponentAnnotation"/>
     <genClasses image="false" ecoreClass="model.ecore#//StatechartAnnotation"/>
     <genClasses ecoreClass="model.ecore#//RunUponExternalEventAnnotation"/>
+    <genClasses ecoreClass="model.ecore#//RunUponExternalEventOrInternalTimeoutAnnotation"/>
   </genPackages>
 </genmodel:GenModel>

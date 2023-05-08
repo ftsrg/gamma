@@ -32,6 +32,7 @@ import hu.bme.mit.gamma.statechart.statechart.OrthogonalRegionSchedulingOrder
 import hu.bme.mit.gamma.statechart.statechart.PseudoState
 import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.RunUponExternalEventAnnotation
+import hu.bme.mit.gamma.statechart.statechart.RunUponExternalEventOrInternalTimeoutAnnotation
 import hu.bme.mit.gamma.statechart.statechart.SchedulingOrder
 import hu.bme.mit.gamma.statechart.statechart.ShallowHistoryState
 import hu.bme.mit.gamma.statechart.statechart.State
@@ -239,6 +240,9 @@ class StatechartToLowlevelTransformer {
 		}
 		if (statechart.hasAnnotation(RunUponExternalEventAnnotation)) {
 			lowlevelStatechart.addRunUponExternalEventAnnotation
+		}
+		if (statechart.hasAnnotation(RunUponExternalEventOrInternalTimeoutAnnotation)) {
+			lowlevelStatechart.addRunUponExternalEventOrInternalTimeoutAnnotation
 		}
 		trace.put(statechart, lowlevelStatechart) // Saving in trace
 		

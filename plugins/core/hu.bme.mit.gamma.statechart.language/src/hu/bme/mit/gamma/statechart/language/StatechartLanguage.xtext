@@ -240,7 +240,7 @@ enum GuardEvaluation returns GuardEvaluation:
 ;
 
 ComponentAnnotation returns InterfaceModel::ComponentAnnotation: 
-	WrapperComponentAnnotation | RunUponExternalEventAnnotation
+	WrapperComponentAnnotation | RunUponExternalEventAnnotation | RunUponExternalEventOrInternalTimeoutAnnotation
 ;
 
 StatechartContractAnnotation returns StatechartAnnotation:
@@ -290,7 +290,15 @@ WrapperComponentAnnotation returns InterfaceModel::WrapperComponentAnnotation:
 ;
 
 RunUponExternalEventAnnotation returns RunUponExternalEventAnnotation:
-	{RunUponExternalEventAnnotation} '@RunUponExternalEventAnnotation'
+	{RunUponExternalEventAnnotation} ('@RunUponExternalEventAnnotation' |
+		'@RunUponExternalEvent'
+	)
+;
+
+RunUponExternalEventOrInternalTimeoutAnnotation returns RunUponExternalEventOrInternalTimeoutAnnotation:
+	{RunUponExternalEventOrInternalTimeoutAnnotation} ('@RunUponExternalEventOrInternalTimeoutAnnotation' |
+		'@RunUponExternalEventOrInternalTimeout'
+	)
 ;
 
 Region returns Region:

@@ -34,4 +34,8 @@ public class LowlevelStatechartUtil extends ActionUtil {
 		addAnnotation(component, statechartFactory.createRunUponExternalEventAnnotation());
 	}
 	
+	public void addRunUponExternalEventOrInternalTimeoutAnnotation(Component component) {
+		addAnnotation(component, statechartFactory.createRunUponExternalEventOrInternalTimeoutAnnotation());
+	}
+	
 }
