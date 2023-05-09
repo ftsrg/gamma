@@ -209,6 +209,14 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 		return action;
 	}
 	
+	public static List<Action> getActions(List<Action> actions, int from, int to) {
+		return actions.subList(from, to);
+	}
+	
+	public static List<Action> getActionsToLast(List<Action> actions, int from) {
+		return actions.subList(from, actions.size());
+	}
+	
 	//
 	
 	public static boolean isTrivialAssignment(SequentialAction action) {
@@ -328,6 +336,13 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 		if (action instanceof MultiaryAction) {
 			MultiaryAction multiaryAction = (MultiaryAction) action;
 			return multiaryAction.getActions().stream().allMatch(it -> isEffectlessAction(it));
+		}
+		return false;
+	}
+	
+	public static boolean isFirstActionAssume(SequentialAction action) {
+		if (!action.getActions().isEmpty()) {
+			return (action.getActions().get(0) instanceof AssumeAction);
 		}
 		return false;
 	}
