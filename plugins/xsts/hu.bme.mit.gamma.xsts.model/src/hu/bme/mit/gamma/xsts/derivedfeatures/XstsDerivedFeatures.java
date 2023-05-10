@@ -209,12 +209,18 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 		return action;
 	}
 	
-	public static List<Action> getActions(List<Action> actions, int from, int to) {
-		return actions.subList(from, to);
+	public static List<Action> getActions(MultiaryAction action, int from, int to) {
+		List<Action> subactions = action.getActions();
+		return subactions.subList(from, to);
 	}
 	
-	public static List<Action> getActionsToLast(List<Action> actions, int from) {
-		return actions.subList(from, actions.size());
+	public static List<Action> getActionsToLast(MultiaryAction action, int from) {
+		List<Action> subactions = action.getActions();
+		return getActions(action, from, subactions.size());
+	}
+	
+	public static List<Action> getActionsSkipFirst(MultiaryAction action) {
+		return getActionsToLast(action, 1);
 	}
 	
 	//
@@ -340,11 +346,18 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 		return false;
 	}
 	
-	public static boolean isFirstActionAssume(SequentialAction action) {
-		if (!action.getActions().isEmpty()) {
-			return (action.getActions().get(0) instanceof AssumeAction);
+	public static boolean isFirstActionAssume(Action action) {
+		try {
+			AtomicAction firstAtomicAction = getFirstAtomicAction(action);
+			return firstAtomicAction instanceof AssumeAction;
+		} catch (IllegalArgumentException e) {
+			return false;
 		}
-		return false;
+	}
+	
+	public static AssumeAction getFirstActionAssume(Action action) {
+		AtomicAction firstAtomicAction = getFirstAtomicAction(action);
+		return (AssumeAction) firstAtomicAction;
 	}
 
 	// Read-write

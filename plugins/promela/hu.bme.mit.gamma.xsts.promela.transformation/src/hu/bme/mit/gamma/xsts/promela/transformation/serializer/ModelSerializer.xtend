@@ -246,26 +246,33 @@ class ModelSerializer {
 		'''
 	}
 	
-	// If-else constructs may mess each other up: "error: proctype 'EnvTrans' state 197, inherits 3 'else' stmnts"
-	// Semantic-preserving: is executable if the 'stmt0' in the atomic block is executable
+	// DEPRACATED: If-else constructs may mess each other up: "error: proctype 'EnvTrans' state 197, inherits 3 'else' stmnts"
 	protected def dispatch String serialize(NonDeterministicAction action) '''
 		if
 			«FOR subaction : action.actions»
-				«IF subaction instanceof SequentialAction && (subaction as SequentialAction).isFirstActionAssume»
-					:: («((subaction as SequentialAction).actions.get(0) as AssumeAction).assumption.serialize») -> atomic {
-						«FOR sequentialSubaction : (subaction as SequentialAction).actions.getActionsToLast(1)»
-							«sequentialSubaction.serialize»
-						«ENDFOR»
-					}
+				«IF subaction instanceof SequentialAction»
+					«IF subaction.isFirstActionAssume»
+						:: («subaction.getFirstActionAssume.assumption.serialize») -> atomic {
+							«FOR sequentialSubaction : subaction.actionsSkipFirst»
+								«sequentialSubaction.serialize»
+							«ENDFOR»
+						}
+					«ELSE»
+						«subaction.serializeAsTrivialBranch»
+					«ENDIF»
 				«ELSE»
-				:: true -> atomic {
-					«subaction.serialize»
-				}
+					«subaction.serializeAsTrivialBranch»
 				«ENDIF»
 			«ENDFOR»
 		fi;
 	'''
-
+	
+	protected def String serializeAsTrivialBranch(Action action) '''
+		:: true -> atomic {
+			«action.serialize»
+		}
+	'''
+	//
 	
 	protected def dispatch String serialize(SequentialAction action) '''
 		«FOR subaction : action.actions»
