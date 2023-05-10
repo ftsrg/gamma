@@ -251,20 +251,29 @@ class ModelSerializer {
 	protected def dispatch String serialize(NonDeterministicAction action) '''
 		if
 			«FOR subaction : action.actions»
+				«IF subaction instanceof SequentialAction && (subaction as SequentialAction).isFirstActionAssume»
+					:: («((subaction as SequentialAction).actions.get(0) as AssumeAction).assumption.serialize») -> atomic {
+						«FOR sequentialSubaction : (subaction as SequentialAction).actions.getActionsToLast(1)»
+							«sequentialSubaction.serialize»
+						«ENDFOR»
+					}
+				«ELSE»
 				:: true -> atomic {
 					«subaction.serialize»
 				}
+				«ENDIF»
 			«ENDFOR»
 		fi;
 	'''
+
 	
 	protected def dispatch String serialize(SequentialAction action) '''
 		«FOR subaction : action.actions»
 			«subaction.serializeD_stepBeginBrackets»
-			«subaction.serialize /* Original action*/»
-			«IF subaction.last»
-				«action.resetLocalVariableDeclarations»
-			«ENDIF»
+				«subaction.serialize /* Original action*/»
+				«IF subaction.last»
+					«action.resetLocalVariableDeclarations»
+				«ENDIF»
 			«subaction.serializeD_stepCloseBrackets»
 		«ENDFOR»
 	'''
@@ -373,4 +382,5 @@ class ModelSerializer {
 	
 	protected def serializeParallelProcessesArguments(Action action) '''«IF parallelVariableMapping.get(action) !== null»«FOR varDecAction : parallelVariableMapping.get(action) SEPARATOR "; "»«varDecAction.type.serializeType» «varDecAction.name»«ENDFOR»«ENDIF»'''
 	protected def serializeParallelProcessCallArguments(Action action) '''«IF parallelVariableMapping.get(action) !== null»«FOR varDecAction : parallelVariableMapping.get(action) SEPARATOR ", "»«varDecAction.name»«ENDFOR»«ENDIF»'''
+	
 }
