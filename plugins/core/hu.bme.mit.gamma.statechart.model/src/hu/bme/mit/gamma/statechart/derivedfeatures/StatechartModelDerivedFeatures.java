@@ -1208,7 +1208,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	}
 	
 	public static List<ControlSpecification> getControlSpecifications(
-			AsynchronousAdapter adapter, Entry<Port, Event> portEvent) {
+			AsynchronousAdapter adapter, Object eventReference) {
 		List<ControlSpecification> controlSpecifications = new ArrayList<ControlSpecification>();
 		
 		for (ControlSpecification controlSpecification : adapter.getControlSpecifications()) {
@@ -1218,10 +1218,21 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 			}
 			if (trigger instanceof EventTrigger) {
 				EventTrigger eventTrigger = (EventTrigger) trigger;
-				EventReference eventReference = eventTrigger.getEventReference();
-				List<Entry<Port, Event>> inputEvents = getInputEvents(eventReference);
-				if (inputEvents.contains(portEvent)) {
-					controlSpecifications.add(controlSpecification);
+				EventReference controlEventReference = eventTrigger.getEventReference();
+				if (eventReference instanceof Entry<?, ?>) { // Port-event
+					List<Entry<Port, Event>> inputEvents = getInputEvents(controlEventReference);
+					@SuppressWarnings("unchecked")
+					Entry<Port, Event> portEvent = (Entry<Port, Event>) eventReference;
+					if (inputEvents.contains(portEvent)) {
+						controlSpecifications.add(controlSpecification);
+					}
+				}
+				else if (eventReference instanceof Clock clock) { // Clock
+					if (controlEventReference instanceof ClockTickReference clockTickReference) {
+						if (clockTickReference.getClock() == clock) {
+							controlSpecifications.add(controlSpecification);
+						}
+					}
 				}
 			}
 		}
@@ -1229,25 +1240,28 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return controlSpecifications;
 	}
 	
-	public static boolean isRunSpecification(AsynchronousAdapter adapter, Entry<Port, Event> portEvent) {
-		List<ControlSpecification> controlSpecifications = getControlSpecifications(adapter, portEvent);
+	public static boolean isRunSpecification(AsynchronousAdapter adapter, Object eventReference) {
+		List<ControlSpecification> controlSpecifications =
+				getControlSpecifications(adapter, eventReference);
 		
 		return controlSpecifications.stream()
 				.anyMatch(it -> it.getControlFunction() == ControlFunction.RUN_ONCE);
 	}
 	
-	public static boolean isComponentResetSpecification(AsynchronousAdapter adapter, Entry<Port, Event> portEvent) {
-		List<ControlSpecification> controlSpecifications = getControlSpecifications(adapter, portEvent);
+	public static boolean isComponentResetSpecification(AsynchronousAdapter adapter, Object eventReference) {
+		List<ControlSpecification> controlSpecifications =
+				getControlSpecifications(adapter, eventReference);
 		
 		return controlSpecifications.stream()
 				.anyMatch(it -> it.getControlFunction() == ControlFunction.RESET);
 	}
 	
 	public static Collection<? extends MessageQueue> getResetQueues(
-			AsynchronousAdapter adapter, Entry<Port, Event> portEvent) {
+			AsynchronousAdapter adapter, Object eventReference) {
 		Set<MessageQueue> resetMessageQueues = new LinkedHashSet<MessageQueue>();
 		
-		List<ControlSpecification> controlSpecifications = getControlSpecifications(adapter, portEvent);
+		List<ControlSpecification> controlSpecifications =
+				getControlSpecifications(adapter, eventReference);
 		List<MessageQueue> messageQueues = adapter.getMessageQueues();
 		
 		boolean resetQueue = controlSpecifications.stream()
@@ -1258,7 +1272,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 				.anyMatch(it -> it.getControlFunction() == ControlFunction.RESET_OTHER_MESSAGE_QUEUES);
 		
 		for (MessageQueue messageQueue : messageQueues) {
-			if (isStoredInMessageQueue(portEvent, messageQueue)) {
+			if (isStoredInMessageQueue(eventReference, messageQueue)) {
 				if (resetQueue) {
 					resetMessageQueues.add(messageQueue);
 				}
@@ -1321,6 +1335,14 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return List.copyOf(ports);
 	}
 	
+	public static List<Clock> getStoredClocks(MessageQueue queue) {
+		Collection<Clock> clocks = new LinkedHashSet<Clock>();
+		// To filter possible duplicates
+		clocks.addAll(
+				getClockTickReferences(queue).stream().map(it -> it.getClock()).toList());
+		return List.copyOf(clocks);
+	}
+	
 	public static List<Entry<Port, Event>> getStoredEvents(MessageQueue queue) {
 		Collection<Entry<Port, Event>> events = new LinkedHashSet<Entry<Port, Event>>();
 		// To filter possible duplicates
@@ -1355,18 +1377,28 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 				.collect(Collectors.toList());
 	}
 	
-	public static EventPassing getEventPassing(MessageQueue queue,
-			Entry<Port, Event> portEvent) {
+	public static EventPassing getEventPassing(MessageQueue queue, Object eventReference) {
 		for (EventPassing eventPassing : queue.getEventPassings()) {
 			EventReference source = eventPassing.getSource();
 			if (source != null) { // Can be null due to reductions
-				List<Entry<Port, Event>> inputEvents = getInputEvents(source);
-				if (inputEvents.contains(portEvent)) {
-					return eventPassing;
+				// Entry<Port, Event>
+				if (eventReference instanceof Entry<?, ?> portEvent) {
+					List<Entry<Port, Event>> inputEvents = getInputEvents(source);
+					if (inputEvents.contains(portEvent)) {
+						return eventPassing;
+					}
+				}
+				// Clock
+				else if (eventReference instanceof Clock clock) {
+					if (source instanceof ClockTickReference clockTickReference) {
+						if (clockTickReference.getClock() == clock) {
+							return eventPassing;
+						}
+					}
 				}
 			}
 		}
-		throw new IllegalArgumentException("Not found event passing: " + portEvent);
+		throw new IllegalArgumentException("Not found event passing: " + eventReference);
 	}
 	
 	public static boolean isEventPassingCompatible(Port source, Port target) {
@@ -1402,9 +1434,8 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return isAcceptable;
 	}
 	
-	public static EventReference getTargetEventReference(MessageQueue queue,
-				Entry<Port, Event> portEvent) {
-		EventPassing eventPassing = getEventPassing(queue, portEvent);
+	public static EventReference getTargetEventReference(MessageQueue queue, Object eventReference) {
+		EventPassing eventPassing = getEventPassing(queue, eventReference);
 		EventReference target = eventPassing.getTarget();
 		if (target != null) {
 			return target;
@@ -1415,16 +1446,19 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		}
 	}
 	
-	public static Entry<Port, Event> getTargetPortEvent(MessageQueue queue,
-			Entry<Port, Event> sourcePortEvent) {
-		Port sourcePort = sourcePortEvent.getKey();
-		Event sourceEvent = sourcePortEvent.getValue();
-		EventReference target = getTargetEventReference(queue, sourcePortEvent);
+	public static Entry<Port, Event> getTargetPortEvent(MessageQueue queue, Object eventReference) {
+		EventReference target = getTargetEventReference(queue, eventReference);
 		if (target instanceof AnyPortEventReference anyPortEventReference) {
+			@SuppressWarnings("unchecked")
+			Entry<Port, Event> sourcePortEvent = (Entry<Port, Event>) eventReference;
+			Port sourcePort = sourcePortEvent.getKey();
+			Event sourceEvent = sourcePortEvent.getValue();
+			
 			Port targetPort = anyPortEventReference.getPort();
 			if (!isEventPassingCompatible(sourcePort, targetPort)) {
 				throw new IllegalArgumentException("Not the same interface: " + targetPort);
 			}
+			
 			List<Event> sourceEvents = getInputEvents(sourcePort);
 			int index = sourceEvents.indexOf(sourceEvent);
 			List<Entry<Port, Event>> targetEventIds = getInputEvents(target);
@@ -1435,7 +1469,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 			Event targetEvent = portEventReference.getEvent();
 			return new SimpleEntry<Port, Event>(port, targetEvent);
 		}
-		throw new IllegalArgumentException("Not known target: " + sourcePortEvent);
+		throw new IllegalArgumentException("Not known target: " + eventReference);
 	}
 	
 	public static List<EventReference> getSourceAndTargetEventReferences(MessageQueue queue) {
@@ -1449,6 +1483,28 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 			}
 		}
 		return eventReferences;
+	}
+	
+	public static List<ClockTickReference> getClockTickReferences(MessageQueue queue) {
+		List<ClockTickReference> eventReferences = new ArrayList<ClockTickReference>();
+		for (EventPassing eventPassing : queue.getEventPassings()) {
+			EventReference source = eventPassing.getSource();
+			if (source instanceof ClockTickReference clockTickReference) {
+				eventReferences.add(clockTickReference);
+			}
+		}
+		return eventReferences;
+	}
+	
+	public static int getEventId(MessageQueue queue, Clock clock) {
+		List<ClockTickReference> clockTickEventPassings = getClockTickReferences(queue);
+		
+		int size = clockTickEventPassings.size();
+		ClockTickReference reference = javaUtil.getOnlyElement(
+				clockTickEventPassings.stream().filter(it -> it.getClock() == clock).toList());
+		int index = clockTickEventPassings.indexOf(reference) + 1; // Starts from event size + 1
+		
+		return size + index;
 	}
 	
 	public static int getEventId(MessageQueue queue, Entry<Port, Event> portEvent) {
@@ -1498,10 +1554,18 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return storedEvents.get(eventId - 1); // Starts from 1, 0 is the "empty cell"
 	}
 	
-	public static boolean isStoredInMessageQueue(
-			Entry<Port, Event> portEvent, MessageQueue queue) {
-		List<Entry<Port, Event>> storedEvents = getStoredEvents(queue);
-		return storedEvents.contains(portEvent);
+	public static boolean isStoredInMessageQueue(Object eventReference, MessageQueue queue) {
+		if (eventReference instanceof Entry<?, ?>) {
+			List<Entry<Port, Event>> storedEvents = getStoredEvents(queue);
+			@SuppressWarnings("unchecked")
+			Entry<Port, Event> portEvent = (Entry<Port, Event>) eventReference;
+			return storedEvents.contains(portEvent);
+		}
+		if (eventReference instanceof Clock clock) {
+			List<Clock> storedClocks = getStoredClocks(queue);
+			return storedClocks.contains(clock);
+		}
+		throw new IllegalArgumentException("Not known event reference: " + eventReference);
 	}
 	
 	public static boolean isTargetedInMessageQueue(
@@ -1600,11 +1664,13 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	}
 	
 	public static List<Event> getInputEvents(Component component) {
-		return getInputEvents(getAllPorts(component));
+		return getInputEvents(
+				getAllPorts(component));
 	}
 	
 	public static List<Event> getOutputEvents(Component component) {
-		return getOutputEvents(getAllPorts(component));
+		return getOutputEvents(
+				getAllPorts(component));
 	}
 	
 	public static Port getBoundCompositePort(Port port) {
