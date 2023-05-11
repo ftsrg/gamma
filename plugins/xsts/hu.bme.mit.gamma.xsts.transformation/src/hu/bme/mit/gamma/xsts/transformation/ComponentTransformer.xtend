@@ -457,7 +457,61 @@ class ComponentTransformer {
 			}
 			
 			// Clock mechanisms
-
+			val clockMechanisms = createSequentialAction
+			for (clock : adapterComponentType.clocks) {
+				val clockRate = clock.timeSpecification.timeInMilliseconds
+				
+				val xStsVariable = createIntegerTypeDefinition
+						.createVariableDeclarationWithDefaultInitialValue(clock.name)
+				xSts.variableDeclarations += xStsVariable // Target model modification
+				
+				xStsVariable.addClockAnnotation // Because of this, time passing is modeled "automatically"
+				xSts.getTimeoutGroup.variables += xStsVariable
+				
+				val hasClockTimeElapsed = clockRate.createLessEqualExpression(
+						xStsVariable.createReferenceExpression)
+				val clockHandlingBlock = createSequentialAction
+				val clockHandling = hasClockTimeElapsed.createIfAction(clockHandlingBlock)
+				clockHandlingBlock.actions += xStsVariable.createVariableResetAction // clock := 0
+				clockMechanisms.actions += clockHandling
+				
+				for (queue : clock.storingMessageQueues) {
+					val queueMapping = queueTraceability.get(queue)
+					val masterQueue = queueMapping.masterQueue.arrayVariable
+					val masterSizeVariable = queueMapping.masterQueue.sizeVariable
+					
+					val xStsMasterQueue = variableTrace.getAll(masterQueue).onlyElement
+					val xStsMasterSizeVariable = (masterSizeVariable === null) ? null :
+							variableTrace.getAll(masterSizeVariable).onlyElement
+					
+					val clockId = queueTraceability.get(clock)
+					
+					val clockIdAddition = xStsMasterQueue.addAndPotentiallyIncrement(
+								xStsMasterSizeVariable, clockId.toIntegerLiteral)
+					
+					val eventDiscardStrategy = queue.eventDiscardStrategy
+					if (eventDiscardStrategy == DiscardStrategy.INCOMING) {
+						// if (size < capacity) { "add elements into master  queue" }
+						val isMasterQueueNotFull = xStsMasterQueue.isMasterQueueNotFull(xStsMasterSizeVariable)
+						clockHandlingBlock.actions += isMasterQueueNotFull.createIfAction(clockIdAddition)
+					}
+					else if (eventDiscardStrategy == DiscardStrategy.OLDEST) {
+						// if (size >= capacity) { "pop"} "add elements into master queue"
+						val isMasterQueueFull = xStsMasterQueue.isMasterQueueFull(xStsMasterSizeVariable)
+						clockHandlingBlock.actions += isMasterQueueFull.createIfAction(
+								xStsMasterQueue.popAndPotentiallyDecrement(xStsMasterSizeVariable))
+						clockHandlingBlock.actions += clockIdAddition
+					}
+					else {
+						throw new IllegalStateException("Not known behavior: " + eventDiscardStrategy)
+					}
+				}
+			}
+			if (!clockMechanisms.actions.empty) {
+				instanceMergedAction.actions.add(0, clockMechanisms)
+			}
+			
+			//
 			
 			// Dispatching events to connected message queues
 			val eventDispatches = createSequentialAction // For caching

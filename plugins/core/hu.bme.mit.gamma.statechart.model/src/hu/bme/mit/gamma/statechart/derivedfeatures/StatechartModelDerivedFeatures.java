@@ -93,6 +93,7 @@ import hu.bme.mit.gamma.statechart.interface_.Port;
 import hu.bme.mit.gamma.statechart.interface_.RealizationMode;
 import hu.bme.mit.gamma.statechart.interface_.SimpleTrigger;
 import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
+import hu.bme.mit.gamma.statechart.interface_.TimeUnit;
 import hu.bme.mit.gamma.statechart.interface_.TopComponentArgumentsAnnotation;
 import hu.bme.mit.gamma.statechart.interface_.Trigger;
 import hu.bme.mit.gamma.statechart.interface_.UnfoldedPackageAnnotation;
@@ -1309,6 +1310,19 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		List<MessageQueue> queues = getFunctioningMessageQueues(adapter);
 		
 		queues.removeIf(it -> it.getPriority().compareTo(queue.getPriority()) <= 0);
+		
+		return queues;
+	}
+	
+	public static List<MessageQueue> getStoringMessageQueues(Clock clock) {
+		List<MessageQueue> queues = new ArrayList<MessageQueue>();
+		
+		AsynchronousAdapter adapter = ecoreUtil.getContainerOfType(clock, AsynchronousAdapter.class);
+		for (MessageQueue queue : adapter.getMessageQueues()) {
+			if (isStoredInMessageQueue(clock, queue)) {
+				queues.add(queue);
+			}
+		}
 		
 		return queues;
 	}
@@ -2946,6 +2960,21 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 			}
 		}
 		return time;
+	}
+	
+	public static Expression getTimeInMilliseconds(TimeSpecification timeout) {
+		Expression time = timeout.getValue();
+		Expression clonedTime = ecoreUtil.clone(time);
+		TimeUnit unit = timeout.getUnit();
+		switch (unit) {
+			case MILLISECOND:
+				return clonedTime;
+			case SECOND: {
+				return statechartUtil.wrapIntoMultiply(clonedTime, 1000);
+			}
+		default:
+			throw new IllegalArgumentException("Unexpected value: " + unit);
+		}
 	}
 	
 	public static Component getMonitoredComponent(StatechartDefinition adaptiveContract) {
