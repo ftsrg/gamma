@@ -246,25 +246,41 @@ class ModelSerializer {
 		'''
 	}
 	
-	// If-else constructs may mess each other up: "error: proctype 'EnvTrans' state 197, inherits 3 'else' stmnts"
-	// Semantic-preserving: is executable if the 'stmt0' in the atomic block is executable
+	// DEPRACATED: If-else constructs may mess each other up: "error: proctype 'EnvTrans' state 197, inherits 3 'else' stmnts"
 	protected def dispatch String serialize(NonDeterministicAction action) '''
 		if
 			«FOR subaction : action.actions»
-				:: true -> atomic {
-					«subaction.serialize»
-				}
+				«IF subaction instanceof SequentialAction»
+					«IF subaction.isFirstActionAssume»
+						:: («subaction.getFirstActionAssume.assumption.serialize») -> atomic {
+							«FOR sequentialSubaction : subaction.actionsSkipFirst»
+								«sequentialSubaction.serialize»
+							«ENDFOR»
+						}
+					«ELSE»
+						«subaction.serializeAsTrivialBranch»
+					«ENDIF»
+				«ELSE»
+					«subaction.serializeAsTrivialBranch»
+				«ENDIF»
 			«ENDFOR»
 		fi;
 	'''
 	
+	protected def String serializeAsTrivialBranch(Action action) '''
+		:: true -> atomic {
+			«action.serialize»
+		}
+	'''
+	//
+	
 	protected def dispatch String serialize(SequentialAction action) '''
 		«FOR subaction : action.actions»
 			«subaction.serializeD_stepBeginBrackets»
-			«subaction.serialize /* Original action*/»
-			«IF subaction.last»
-				«action.resetLocalVariableDeclarations»
-			«ENDIF»
+				«subaction.serialize /* Original action*/»
+				«IF subaction.last»
+					«action.resetLocalVariableDeclarations»
+				«ENDIF»
 			«subaction.serializeD_stepCloseBrackets»
 		«ENDFOR»
 	'''
@@ -373,4 +389,5 @@ class ModelSerializer {
 	
 	protected def serializeParallelProcessesArguments(Action action) '''«IF parallelVariableMapping.get(action) !== null»«FOR varDecAction : parallelVariableMapping.get(action) SEPARATOR "; "»«varDecAction.type.serializeType» «varDecAction.name»«ENDFOR»«ENDIF»'''
 	protected def serializeParallelProcessCallArguments(Action action) '''«IF parallelVariableMapping.get(action) !== null»«FOR varDecAction : parallelVariableMapping.get(action) SEPARATOR ", "»«varDecAction.name»«ENDFOR»«ENDIF»'''
+	
 }

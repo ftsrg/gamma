@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -60,6 +60,7 @@ import org.eclipse.viatra.query.runtime.emf.EMFScope
 
 import static com.google.common.base.Preconditions.checkArgument
 import static com.google.common.base.Preconditions.checkState
+import static com.google.common.base.Preconditions.checkNotNull
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.lowlevel.derivedfeatures.LowlevelStatechartModelDerivedFeatures.*
@@ -82,6 +83,7 @@ package class Trace {
 	protected final Map<Transition, List<Expression>> guards = newHashMap // Guars of transitions leaving states - also negated due to priority
 	protected final Map<Transition, List<Expression>> choiceGuards = newHashMap // Guards of transitions leaving choices - also negated due to priority
 	protected final Map<State, List<Expression>> stateReferenceExpressions = newHashMap
+	protected final List<Expression> timeoutExpressions = newArrayList // 500 <= timeout
 	
 	new(Package _package, XSTS xSts) {
 		this.trace = createL2STrace => [
@@ -118,6 +120,21 @@ package class Trace {
 	
 	def getStateReferenceExpressions() {
 		return stateReferenceExpressions
+	}
+	
+	def getTimeoutExpressions() {
+		return timeoutExpressions
+	}
+	
+	def addTimeoutExpression(Iterable<? extends Expression> timeoutExpressions) {
+		for (timeoutExpression : timeoutExpressions) {
+			timeoutExpression.addTimeoutExpression
+		}
+	}
+	
+	def addTimeoutExpression(Expression timeoutExpression) {
+		checkNotNull(timeoutExpression)
+		timeoutExpressions += timeoutExpression
 	}
 	
 	def <T> void add(Map<T, List<Expression>> map,

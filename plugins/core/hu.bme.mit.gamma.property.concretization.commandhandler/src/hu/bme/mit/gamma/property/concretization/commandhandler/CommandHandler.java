@@ -8,10 +8,9 @@
  *
  * SPDX-License-Identifier: EPL-1.0
  ********************************************************************************/
-package hu.bme.mit.gamma.serializer.commandhandler;
+package hu.bme.mit.gamma.property.concretization.commandhandler;
 
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.eclipse.core.commands.AbstractHandler;
@@ -26,9 +25,8 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.handlers.HandlerUtil;
 
-import hu.bme.mit.gamma.property.language.ui.serializer.PropertyLanguageSerializer;
-import hu.bme.mit.gamma.statechart.language.ui.serializer.StatechartLanguageSerializer;
-import hu.bme.mit.gamma.trace.language.ui.serializer.TraceLanguageSerializer;
+import hu.bme.mit.gamma.property.concretization.PropertyConcretizer;
+import hu.bme.mit.gamma.property.model.PropertyPackage;
 import hu.bme.mit.gamma.transformation.util.GammaFileNamer;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
 
@@ -60,44 +58,14 @@ public class CommandHandler extends AbstractHandler {
 						Resource resource = resourceSet.getResource(fileUri, true);
 						
 						List<EObject> contents = resource.getContents();
-						int size = contents.size();
 						EObject rootElem = contents.get(0);
 						
-						switch (fileExtension) {
-							case GammaFileNamer.PACKAGE_EMF_EXTENSION: {
-								// Multiple Packages in a single file - sorting them according to references
-								// to support referencing already serialized Packages
-								List<EObject> sortedContents = ecoreUtil.sortAccordingToReferences(contents);
-								for (EObject rootElement : sortedContents) {
-									String extensionlessFileName = (size <= 1) ? extensionlessName :
-										extensionlessName + "_" + contents.indexOf(rootElement);
-									
-									String fileName = fileNamer.getPackageFileName(extensionlessFileName);
-									
-									StatechartLanguageSerializer serializer = new StatechartLanguageSerializer();
-									// The contents list changes here (rootElement is removed)
-									serializer.serialize(rootElement, parentFolder, fileName);
-									logger.log(Level.INFO, "Package serialization has been finished");
-								}
-								break;
-							}
-							case GammaFileNamer.EXECUTION_EMF_EXTENSION: {
-								String fileName = fileNamer.getExecutionTraceFileName(name);
-								
-								TraceLanguageSerializer serializer = new TraceLanguageSerializer();
-								serializer.serialize(rootElem, parentFolder, fileName);
-								logger.log(Level.INFO, "Execution trace serialization has been finished");
-								break;
-							}
-							case GammaFileNamer.PROPERTY_EMF_EXTENSION: {
-								String fileName = fileNamer.getPropertyFileName(name);
-								
-								PropertyLanguageSerializer serializer = new PropertyLanguageSerializer();
-								serializer.serialize(rootElem, parentFolder, fileName);
-								logger.log(Level.INFO, "Property serialization has been finished");
-								break;
-							}
-						}
+						PropertyPackage propertyPackage = (PropertyPackage) rootElem;
+						
+						PropertyConcretizer propertyConcretizer = PropertyConcretizer.INSTANCE;
+						PropertyPackage concretizedPropertyPackage = propertyConcretizer.execute(propertyPackage);
+						
+						ecoreUtil.normalSave(concretizedPropertyPackage, parentFolder, extensionlessName + "_.gpd");
 					}
 				}
 			}
