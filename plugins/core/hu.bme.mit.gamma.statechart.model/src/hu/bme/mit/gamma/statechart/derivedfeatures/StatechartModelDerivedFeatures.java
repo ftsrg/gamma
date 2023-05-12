@@ -1462,7 +1462,10 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	public static Entry<Port, Event> getTargetPortEvent(MessageQueue queue, Object eventReference) {
 		EventReference target = getTargetEventReference(queue, eventReference);
-		if (target instanceof AnyPortEventReference anyPortEventReference) {
+		if (target instanceof ClockTickReference) {
+			return null; // We cannot forward anything in this case
+		}
+		else if (target instanceof AnyPortEventReference anyPortEventReference) {
 			@SuppressWarnings("unchecked")
 			Entry<Port, Event> sourcePortEvent = (Entry<Port, Event>) eventReference;
 			Port sourcePort = sourcePortEvent.getKey();
@@ -1511,9 +1514,10 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	}
 	
 	public static int getEventId(MessageQueue queue, Clock clock) {
-		List<ClockTickReference> clockTickEventPassings = getClockTickReferences(queue);
+		List<Entry<Port, Event>> storedEvents = getStoredEvents(queue);
+		int size = storedEvents.size();
 		
-		int size = clockTickEventPassings.size();
+		List<ClockTickReference> clockTickEventPassings = getClockTickReferences(queue);
 		ClockTickReference reference = javaUtil.getOnlyElement(
 				clockTickEventPassings.stream().filter(it -> it.getClock() == clock).toList());
 		int index = clockTickEventPassings.indexOf(reference) + 1; // Starts from event size + 1
@@ -1971,7 +1975,9 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
     	else if (component instanceof AsynchronousAdapter) {
     		// Clocks maybe?
     		AsynchronousAdapter adapter = (AsynchronousAdapter) component;
-    		return isTimed(adapter.getWrappedComponent().getType());
+    		List<Clock> clocks = adapter.getClocks();
+    		SynchronousComponent type = adapter.getWrappedComponent().getType();
+			return isTimed(type) || !clocks.isEmpty();
     	}
     	else if (component instanceof AbstractAsynchronousCompositeComponent) {
     		AbstractAsynchronousCompositeComponent composite = (AbstractAsynchronousCompositeComponent) component;

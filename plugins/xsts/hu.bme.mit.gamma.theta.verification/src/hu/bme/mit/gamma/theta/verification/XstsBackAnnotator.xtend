@@ -187,13 +187,17 @@ class XstsBackAnnotator {
 		if (stringEventId !== null) {
 			val eventId = Integer.parseInt(stringEventId)
 			if (eventId != 0) { // 0 is the "empty" cell
-				val portEvent = messageQueue.getEvent(eventId)
-				val port = portEvent.key
-				val event = portEvent.value
-				val systemPort = port.boundTopComponentPort // Back-tracking to the top port
-				// Sometimes message queue can contain internal events
-				if (component.contains(systemPort)) {
-					return systemPort -> event
+				try {
+					val portEvent = messageQueue.getEvent(eventId) // Works if it is a port-event id
+					val port = portEvent.key
+					val event = portEvent.value
+					val systemPort = port.boundTopComponentPort // Back-tracking to the top port
+					// Sometimes message queue can contain internal events
+					if (component.contains(systemPort)) {
+						return systemPort -> event
+					}
+				} catch (IndexOutOfBoundsException e) { // Not a port-event id
+					return null
 				}
 			}
 		}

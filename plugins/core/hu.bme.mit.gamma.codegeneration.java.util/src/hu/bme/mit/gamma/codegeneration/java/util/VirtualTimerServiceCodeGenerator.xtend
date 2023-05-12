@@ -74,8 +74,9 @@ class VirtualTimerServiceCodeGenerator {
 			
 				public boolean equals(Object obj) {
 					if (obj instanceof TimeEventTask) {
-						return ((TimeEventTask) obj).callback.equals(callback)
-								&& ((TimeEventTask) obj).eventID == eventID;
+						TimeEventTask timeEventTask = (TimeEventTask) obj;
+						return timeEventTask.callback.equals(callback)
+								&& timeEventTask.eventID == eventID;
 					}
 					return super.equals(obj);
 				}

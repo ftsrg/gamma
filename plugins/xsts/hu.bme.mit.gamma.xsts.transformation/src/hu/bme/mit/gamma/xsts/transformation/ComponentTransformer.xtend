@@ -357,13 +357,14 @@ class ComponentTransformer {
 				for (eventReference : eventReferences) {
 					val eventId = queueTraceability.get(eventReference)
 					
+					// Mapping source event reference to target
 					val targetPortEvent = queue.getTargetPortEvent(eventReference)
-					val targetPort = targetPortEvent.key
-					val targetEvent = targetPortEvent.value
-					// Mapping source event reference to target 
-					
-					// Can be empty due to optimization or adapter event
-					val xStsInEventVariables = eventReferenceMapper.getInputEventVariables(targetEvent, targetPort)
+					val targetPort = targetPortEvent?.key
+					val targetEvent = targetPortEvent?.value
+					val xStsInEventVariables = newArrayList // Can be empty due to optimization or adapter event
+					if (targetPortEvent !== null) {
+						xStsInEventVariables += eventReferenceMapper.getInputEventVariables(targetEvent, targetPort)
+					}
 					
 					val ifExpression = xStsEventIdVariable.createReferenceExpression
 							.createEqualityExpression(eventId.toIntegerLiteral)
@@ -379,7 +380,7 @@ class ComponentTransformer {
 						slaveQueues.get(portEvent) // Might be empty
 					} else { #[] } // Empty array for clocks
 					
-					val inParameters = targetEvent.parameterDeclarations
+					val inParameters = (targetEvent !== null) ? targetEvent.parameterDeclarations : #[]
 					val slaveQueueSize = slaveQueueStructs.size // Might be 0 if there is no in-event var
 					
 					if (inParameters.size <= slaveQueueSize) {
@@ -508,9 +509,9 @@ class ComponentTransformer {
 				}
 			}
 			if (!clockMechanisms.actions.empty) {
+				// TODO move it to the start of the final merged action
 				instanceMergedAction.actions.add(0, clockMechanisms)
 			}
-			
 			//
 			
 			// Dispatching events to connected message queues

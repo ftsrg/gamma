@@ -95,7 +95,7 @@ class AsynchronousAdapterCodeGenerator {
 				public «component.generateComponentClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", " AFTER ", "»«parameter.type.transformType» «parameter.name»«ENDFOR»«UNIFIED_TIMER_INTERFACE» timer) {
 					«component.createInstances»
 					setTimer(timer);
-					// Init is done in setTimer
+					init();
 				}
 			«ENDIF»
 			
@@ -109,6 +109,17 @@ class AsynchronousAdapterCodeGenerator {
 			@Override
 			public void reset() {
 				interrupt();
+				«IF !component.clocks.empty»
+					if (timerService != null) {
+						«FOR match : QueuesOfClocks.Matcher.on(engine).getAllMatches(component, null, null)»
+							timerService.unsetTimer(createTimerCallback(), «match.clock.name»);
+							timerService.setTimer(createTimerCallback(), «match.clock.name», «match.clock.timeSpecification.valueInMs», true);
+						«ENDFOR»
+					}
+				«ENDIF»
+				«FOR queue : component.messageQueues»
+					«queue.name».clear();
+				«ENDFOR»
 				«component.generateWrappedComponentName».reset();
 				«IF component.hasInternalPort»handleInternalEvents();«ENDIF»
 			}
@@ -122,10 +133,10 @@ class AsynchronousAdapterCodeGenerator {
 					__asyncQueue.addSubQueue("«queue.name»", -(«queue.priority»), (int) «queue.capacity.serialize»);
 					«queue.name» = __asyncQueue.getSubQueue("«queue.name»");
 				«ENDFOR»
-				«IF !component.clocks.empty»// Creating clock callbacks for the single timer service«ENDIF»
-				«FOR match : QueuesOfClocks.Matcher.on(engine).getAllMatches(component, null, null)»
-					 timerService.setTimer(createTimerCallback(), «match.clock.name», «match.clock.timeSpecification.valueInMs», true);
-				«ENDFOR»
+«««				«IF !component.clocks.empty»// Creating clock callbacks for the single timer service«ENDIF»
+«««				«FOR match : QueuesOfClocks.Matcher.on(engine).getAllMatches(component, null, null)»
+«««					 timerService.setTimer(createTimerCallback(), «match.clock.name», «match.clock.timeSpecification.valueInMs», true);
+«««				«ENDFOR»
 				«component.createInternalPortHandlingSettingCode»
 				// The thread has to be started manually
 			}
@@ -144,6 +155,9 @@ class AsynchronousAdapterCodeGenerator {
 								default:
 									throw new IllegalArgumentException("No such event id: " + eventId);
 							}
+						}
+						public boolean equals(Object object) {
+							return this.getClass() == object.getClass();
 						}
 					};
 				}
