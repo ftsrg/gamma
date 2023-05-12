@@ -651,14 +651,16 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 			for (AsynchronousComponentInstance instance : asynchronousCompositeComponent.getComponents()) {
 				instances.add(instance);
 				AsynchronousComponent type = instance.getType();
-				instances.addAll(getAllInstances(type));
+				instances.addAll(
+						getAllInstances(type));
 			}
 		}
 		else if (component instanceof AsynchronousAdapter) {
 			AsynchronousAdapter asynchronousAdapter = (AsynchronousAdapter) component;
 			SynchronousComponentInstance wrappedComponent = asynchronousAdapter.getWrappedComponent();
 			instances.add(wrappedComponent);
-			instances.addAll(getAllInstances(wrappedComponent.getType()));
+			instances.addAll(
+					getAllInstances(wrappedComponent.getType()));
 		}
 		else if (component instanceof AbstractSynchronousCompositeComponent) {
 			AbstractSynchronousCompositeComponent synchronousCompositeComponent =
@@ -666,7 +668,8 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 			for (SynchronousComponentInstance instance : synchronousCompositeComponent.getComponents()) {
 				instances.add(instance);
 				SynchronousComponent type = instance.getType();
-				instances.addAll(getAllInstances(type));
+				instances.addAll(
+						getAllInstances(type));
 			}
 		}
 		return instances;
