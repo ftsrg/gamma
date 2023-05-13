@@ -1,0 +1,13 @@
+package clocks
+
+import "Statechart/Adder.gcd"
+
+adapter AdderAdapter of component adderAdapter : Adder [
+] {
+	when any / run
+
+	queue Queue(priority = 1, capacity = 4) {
+		Execute.any
+	}
+	
+}

@@ -129,6 +129,8 @@ class ComponentTransformer {
 		
 		val inEventAction = createSequentialAction
 //		val outEventAction = createSequentialAction
+
+		val mergedClockAction = createSequentialAction
 		
 		// Transforming and saving the adapter instances
 		
@@ -458,7 +460,7 @@ class ComponentTransformer {
 			}
 			
 			// Clock mechanisms
-			val clockMechanisms = createSequentialAction
+			val clockActions = createSequentialAction
 			for (clock : adapterComponentType.clocks) {
 				val clockRate = clock.timeSpecification.timeInMilliseconds
 				
@@ -467,14 +469,14 @@ class ComponentTransformer {
 				xSts.variableDeclarations += xStsVariable // Target model modification
 				
 				xStsVariable.addClockAnnotation // Because of this, time passing is modeled "automatically"
-				xSts.getTimeoutGroup.variables += xStsVariable
+				xSts.timeoutGroup.variables += xStsVariable
 				
 				val hasClockTimeElapsed = clockRate.createLessEqualExpression(
 						xStsVariable.createReferenceExpression)
 				val clockHandlingBlock = createSequentialAction
 				val clockHandling = hasClockTimeElapsed.createIfAction(clockHandlingBlock)
 				clockHandlingBlock.actions += xStsVariable.createVariableResetAction // clock := 0
-				clockMechanisms.actions += clockHandling
+				clockActions.actions += clockHandling
 				
 				for (queue : clock.storingMessageQueues) {
 					val queueMapping = queueTraceability.get(queue)
@@ -508,9 +510,9 @@ class ComponentTransformer {
 					}
 				}
 			}
-			if (!clockMechanisms.actions.empty) {
-				// TODO move it to the start of the final merged action
-				instanceMergedAction.actions.add(0, clockMechanisms)
+			if (!clockActions.actions.empty) {
+				// We have to move it to the start of the final merged action
+				mergedClockAction.actions.add(0, clockActions)
 			}
 			//
 			
@@ -732,9 +734,10 @@ class ComponentTransformer {
 		
 		// Merging the adapter actions along a 'choice' and 'seq' tree 
 		val mergedAction = component.mergeAsynchronousCompositeActions(mergedAdapterActions)
-		//
+		// Merging it with clocks
+		mergedClockAction.actions += mergedAction
 		
-		xSts.changeTransitions(mergedAction.wrap)
+		xSts.changeTransitions(mergedClockAction.wrap)
 		
 		// Deleting environmental slave queues for internal parameters;
 		// after the construction of the entire XSTS to handle in events and merged events, too

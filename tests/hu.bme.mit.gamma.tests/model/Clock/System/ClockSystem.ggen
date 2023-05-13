@@ -1,0 +1,79 @@
+import "ClockSystem.gcd"
+
+import "Statechart/Adder.gcd"
+import "Statechart/Counter.gcd"
+import "Statechart/Subtractor.gcd"
+
+code {
+	component : Adder
+	language : java
+}
+
+code {
+	component : Counter
+	language : java
+}
+
+code {
+	component : Subtractor
+	language : java
+}
+
+code {
+	component : ClockSystem
+	language : java
+}
+
+analysis {
+	component : ClockSystem
+	language : XSTS-UPPAAL
+	file : "ClockSystem"
+	constraint : {
+		top : {
+			minimum-orchestrating-period : 1 ms
+			maximum-orchestrating-period : 1 ms
+		}
+	}
+	transition-coverage
+}
+
+verification {
+	file : "ClockSystem.xml"
+	property-file : ".ClockSystem.gpd"
+	language : XSTS-UPPAAL
+	back-annotate-to-original : true
+	test-language : java
+	optimize : true
+}
+
+analysis {
+	component : ClockSystem
+	language : Theta
+	file: "ClockSystem-t"
+	state-coverage
+}
+
+verification {
+	file : "ClockSystem-t.xsts"
+	property-file : ".ClockSystem-t.gpd"
+	language : Theta
+	optimize-model : true
+	back-annotate-to-original : false
+	test-language : java
+}
+
+analysis {
+	component : ClockSystem
+	language : Promela
+	file: "ClockSystem-p"
+	state-coverage
+}
+
+verification {
+	file : "ClockSystem-p.pml"
+	property-file : ".ClockSystem-p.gpd"
+	language : Promela
+	optimize : true
+	back-annotate-to-original : false
+	test-language : java
+}
