@@ -303,6 +303,7 @@ class AsynchronousAdapterCodeGenerator {
 				}
 			}
 			
+			// getter of the wrapped synchronous component
 			public «component.wrappedComponent.type.generateComponentClassName» get«component.generateWrappedComponentName.toFirstUpper»() {
 				return «component.generateWrappedComponentName»;
 			}
