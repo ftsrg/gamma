@@ -1,3 +1,13 @@
+/********************************************************************************
+ * Copyright (c) 2023 Contributors to the Gamma project
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * SPDX-License-Identifier: EPL-1.0
+ ********************************************************************************/
 package hu.bme.mit.gamma.ui.wizards;
 
 import org.eclipse.core.resources.IContainer;
@@ -23,7 +33,6 @@ import org.eclipse.ui.dialogs.ContainerSelectionDialog;
  * as the file name. The page will only accept file name without the extension
  * OR with the extension that matches the expected one (gcd).
  */
-
 public class NewGCLWizardPage extends WizardPage {
 	private Text containerText;
 
@@ -80,20 +89,21 @@ public class NewGCLWizardPage extends WizardPage {
 	/**
 	 * Tests if the current workbench selection is a suitable container to use.
 	 */
-
 	private void initialize() {
 		if (selection != null && selection.isEmpty() == false
 				&& selection instanceof IStructuredSelection) {
 			IStructuredSelection ssel = (IStructuredSelection) selection;
-			if (ssel.size() > 1)
+			if (ssel.size() > 1) {
 				return;
+			}
 			Object obj = ssel.getFirstElement();
 			if (obj instanceof IResource) {
 				IContainer container;
-				if (obj instanceof IContainer)
+				if (obj instanceof IContainer) {
 					container = (IContainer) obj;
-				else
+				}else {
 					container = ((IResource) obj).getParent();
+				}
 				containerText.setText(container.getFullPath().toString());
 			}
 		}
@@ -104,7 +114,6 @@ public class NewGCLWizardPage extends WizardPage {
 	 * Uses the standard container selection dialog to choose the new value for
 	 * the container field.
 	 */
-
 	private void handleBrowse() {
 		ContainerSelectionDialog dialog = new ContainerSelectionDialog(
 				getShell(), ResourcesPlugin.getWorkspace().getRoot(), false,
@@ -120,7 +129,6 @@ public class NewGCLWizardPage extends WizardPage {
 	/**
 	 * Ensures that both text fields are set.
 	 */
-
 	private void dialogChanged() {
 		IResource container = ResourcesPlugin.getWorkspace().getRoot()
 				.findMember(new Path(getContainerName()));

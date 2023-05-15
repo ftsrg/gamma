@@ -1,3 +1,13 @@
+/********************************************************************************
+ * Copyright (c) 2023 Contributors to the Gamma project
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * SPDX-License-Identifier: EPL-1.0
+ ********************************************************************************/
 package hu.bme.mit.gamma.ui.wizards;
 
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -25,7 +35,6 @@ import org.eclipse.ui.ide.IDE;
  * as a template) is registered for the same extension, it will
  * be able to open it.
  */
-
 public class NewGCLInterfacesWizard extends Wizard implements INewWizard {
 	private NewGCLInterfacesWizardPage page;
 	private ISelection selection;
@@ -82,7 +91,6 @@ public class NewGCLInterfacesWizard extends Wizard implements INewWizard {
 	 * file if missing or just replace its contents, and open
 	 * the editor on the newly created file.
 	 */
-
 	private void doFinish(
 		String containerName,
 		String fileName,
@@ -123,7 +131,6 @@ public class NewGCLInterfacesWizard extends Wizard implements INewWizard {
 	/**
 	 * We will initialize file contents with a sample text.
 	 */
-
 	private InputStream openContentStream() {
 		String contents ="""
 				package default_package_name
