@@ -29,16 +29,16 @@
                value="5,335,700,15">
          </property>
          <property
-               name="preferenceCustomization"
-               value="plugin_customization.ini">
-         </property>
-         <property
                name="aboutImage"
                value="icons/about.png">
          </property>
          <property
                name="aboutText"
-               value="Gamma Statechart Composition Framework&#x0D;&#x0A;Developed by: ftsrg, Budapest University of Technology and Economics">
+               value="Gamma Statechart Composition Framework&#x0A;Developed by: ftsrg, Budapest University of Technology and Economics">
+         </property>
+         <property
+               name="preferenceCustomization"
+               value="plugin_customization.ini">
          </property>
       </product>
    </extension>

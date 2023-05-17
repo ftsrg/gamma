@@ -8,7 +8,7 @@
  *
  * SPDX-License-Identifier: EPL-1.0
  ********************************************************************************/
-package hu.bme.mit.gamma.gui;
+package hu.bme.mit.gamma.gui.wizards;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IResource;
@@ -31,9 +31,9 @@ import org.eclipse.ui.dialogs.ContainerSelectionDialog;
 /**
  * The "New" wizard page allows setting the container for the new file as well
  * as the file name. The page will only accept file name without the extension
- * OR with the extension that matches the expected one (gcd).
+ * OR with the extension that matches the expected one (gpd).
  */
-public class NewGCLInterfacesWizardPage extends WizardPage {
+public class NewGammaPropertyWizardPage extends WizardPage {
 	private Text containerText;
 
 	private Text fileText;
@@ -45,10 +45,10 @@ public class NewGCLInterfacesWizardPage extends WizardPage {
 	 * 
 	 * @param pageName
 	 */
-	public NewGCLInterfacesWizardPage(ISelection selection) {
-		super("New Gamma Interface Model Wizard");
-		setTitle("Create New Gamma Interface Model");
-		setDescription("This wizard creates a new New Gamma Interface Model with *.gcd extension.");
+	public NewGammaPropertyWizardPage(ISelection selection) {
+		super("New Gamma Property Model");
+		setTitle("New Gamma Property Model");
+		setDescription("This wizard creates a new file with *.gpd extension.");
 		this.selection = selection;
 	}
 
@@ -107,7 +107,7 @@ public class NewGCLInterfacesWizardPage extends WizardPage {
 				containerText.setText(container.getFullPath().toString());
 			}
 		}
-		fileText.setText("default_gamma_interface.gcd");
+		fileText.setText("default_property.gpd");
 	}
 
 	/**
@@ -158,8 +158,8 @@ public class NewGCLInterfacesWizardPage extends WizardPage {
 		int dotLoc = fileName.lastIndexOf('.');
 		if (dotLoc != -1) {
 			String ext = fileName.substring(dotLoc + 1);
-			if (ext.equalsIgnoreCase("gcd") == false) {
-				updateStatus("File extension must be \"gcd\"");
+			if (ext.equalsIgnoreCase("gpd") == false) {
+				updateStatus("File extension must be \"gpd\"");
 				return;
 			}
 		}

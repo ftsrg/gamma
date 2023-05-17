@@ -9,7 +9,7 @@
       </category>
       <wizard
             category="hu.bme.mit.gamma.ui"
-            class="hu.bme.mit.gamma.gui.NewGCLWizard"
+            class="hu.bme.mit.gamma.gui.wizards.NewGCLWizard"
             descriptionImage="icons/gamma-icon-16.png"
             icon="icons/gamma-icon-16.png"
             id="hu.bme.mit.gamma.ui.wizards.NewGCLWizard"
@@ -18,7 +18,7 @@
       </wizard>
       <wizard
             category="hu.bme.mit.gamma.ui"
-            class="hu.bme.mit.gamma.gui.NewGCLStatechartWizard"
+            class="hu.bme.mit.gamma.gui.wizards.NewGCLStatechartWizard"
             icon="icons/gamma-icon-16.png"
             id="hu.bme.mit.gamma.ui.wizards.NewGCLStatechartWizard"
             name="New Gamma Statechart Model Wizard"
@@ -26,7 +26,7 @@
       </wizard>
       <wizard
             category="hu.bme.mit.gamma.ui"
-            class="hu.bme.mit.gamma.gui.NewGCLInterfacesWizard"
+            class="hu.bme.mit.gamma.gui.wizards.NewGCLInterfacesWizard"
             descriptionImage="icons/gamma-icon-16.png"
             icon="icons/gamma-icon-16.png"
             id="hu.bme.mit.gamma.ui.wizards.NewGCLInterfacesWizard"
@@ -35,7 +35,7 @@
       </wizard>
       <wizard
             category="hu.bme.mit.gamma.ui"
-            class="hu.bme.mit.gamma.gui.NewGammaPropertyWizard"
+            class="hu.bme.mit.gamma.gui.wizards.NewGammaPropertyWizard"
             descriptionImage="icons/gamma-icon-16.png"
             icon="icons/gamma-icon-16.png"
             id="hu.bme.mit.gamma.ui.wizards.NewGammaPropertyWizard"
@@ -144,6 +144,24 @@
           </or>
        </enablement>
     </commonWizard>
+ </extension>
+ 
+ 
+ <extension
+       point="org.eclipse.ui.perspectives">
+    <perspective
+          class="hu.bme.mit.gamma.gui.perspectives.GammaPerspectiveFactory"
+          fixed="false"
+          icon="icons/gamma-icon-16.png"
+          id="hu.bme.mit.gamma.gui.perspective"
+          name="Gamma Perspective">
+    </perspective>
+ </extension>
+ <extension
+       point="org.eclipse.ui.perspectiveExtensions">
+    <perspectiveExtension
+          targetID="hu.bme.mit.gamma.gui.perspective">
+    </perspectiveExtension>
  </extension>
 
 </plugin>

@@ -8,7 +8,7 @@
  *
  * SPDX-License-Identifier: EPL-1.0
  ********************************************************************************/
-package hu.bme.mit.gamma.gui;
+package hu.bme.mit.gamma.gui.wizards;
 
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
@@ -31,18 +31,18 @@ import org.eclipse.ui.ide.IDE;
  * (a folder or a project) is selected in the workspace 
  * when the wizard is opened, it will accept it as the target
  * container. The wizard creates one file with the extension
- * "gcd". If a sample multi-page editor (also available
+ * "q". If a sample multi-page editor (also available
  * as a template) is registered for the same extension, it will
  * be able to open it.
  */
-public class NewGCLStatechartWizard extends Wizard implements INewWizard {
-	private NewGCLStatechartWizardWizardPage page;
+public class NewGammaPropertyWizard extends Wizard implements INewWizard {
+	private NewGammaPropertyWizardPage page;
 	private ISelection selection;
 
 	/**
-	 * Constructor for NewGCLStatechartWizard.
+	 * Constructor for NewGammaPropertyWizard.
 	 */
-	public NewGCLStatechartWizard() {
+	public NewGammaPropertyWizard() {
 		super();
 		setNeedsProgressMonitor(true);
 	}
@@ -52,7 +52,7 @@ public class NewGCLStatechartWizard extends Wizard implements INewWizard {
 	 */
 	@Override
 	public void addPages() {
-		page = new NewGCLStatechartWizardWizardPage(selection);
+		page = new NewGammaPropertyWizardPage(selection);
 		addPage(page);
 	}
 
@@ -132,22 +132,8 @@ public class NewGCLStatechartWizard extends Wizard implements INewWizard {
 	 * We will initialize file contents with a sample text.
 	 */
 	private InputStream openContentStream() {
-		String contents ="""
-				package default_package_name
-				//import interfaces_package
-				statechart DefaultStatechartName (
-					//definition of parameters
-				) [
-					//definition of ports
-				]{
-					//definition of transitions, states and regions
-					transition from init_1 to state_1
-					region main_region_1 {
-						initial init_1
-						state state_1
-					}
-				}
-				""";
+		String contents =
+			"//Automatically generated Gamm property model: use CTL and LTL expressions and press CTRL+SPACE for help";
 		return new ByteArrayInputStream(contents.getBytes());
 	}
 

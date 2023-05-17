@@ -34,7 +34,6 @@ Developed by: ftsrg, Budapest University of Technology and Economics
       </win>
    </launcher>
 
-
    <vm>
       <windows include="false">org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-17</windows>
    </vm>
@@ -118,6 +117,7 @@ Java and all Java-based trademarks are trademarks of Oracle Corporation in the U
       <plugin id="hu.bme.mit.gamma.expression.model"/>
       <plugin id="hu.bme.mit.gamma.genmodel.language"/>
       <plugin id="hu.bme.mit.gamma.genmodel.model"/>
+      <plugin id="hu.bme.mit.gamma.gui"/>
       <plugin id="hu.bme.mit.gamma.language.util"/>
       <plugin id="hu.bme.mit.gamma.lowlevel.xsts.transformation"/>
       <plugin id="hu.bme.mit.gamma.lowlevel.xsts.transformation.traceability"/>
@@ -126,6 +126,8 @@ Java and all Java-based trademarks are trademarks of Oracle Corporation in the U
       <plugin id="hu.bme.mit.gamma.property.language.ui"/>
       <plugin id="hu.bme.mit.gamma.property.model"/>
       <plugin id="hu.bme.mit.gamma.querygenerator"/>
+      <plugin id="hu.bme.mit.gamma.querygenerator.gui"/>
+      <plugin id="hu.bme.mit.gamma.querygenerator.gui.commandhandler"/>
       <plugin id="hu.bme.mit.gamma.scenario.language"/>
       <plugin id="hu.bme.mit.gamma.scenario.language.ide"/>
       <plugin id="hu.bme.mit.gamma.scenario.language.ui"/>
@@ -425,6 +427,9 @@ Java and all Java-based trademarks are trademarks of Oracle Corporation in the U
       <plugin id="org.eclipse.equinox.common" autoStart="true" startLevel="2" />
       <plugin id="org.eclipse.equinox.event" autoStart="true" startLevel="2" />
       <plugin id="org.eclipse.equinox.simpleconfigurator" autoStart="true" startLevel="1" />
+      <property name="org.eclipse.ui/defaultPerspectiveId" value="hu.bme.mit.gamma.gui.perspective" />
+      <property name="osgi.instance.area.default" value="@user.home/workspace-gamma" />
+      <property name="osgi.requiredJavaVersion" value="17" />
    </configurations>
 
    <preferencesInfo>
