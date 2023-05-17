@@ -8,7 +8,7 @@
  *
  * SPDX-License-Identifier: EPL-1.0
  ********************************************************************************/
-package hu.bme.mit.gamma.ui.wizards;
+package hu.bme.mit.gamma.gui;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IResource;
