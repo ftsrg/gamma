@@ -1,0 +1,17 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Gamma Property Concretizer Commandhandler
+Bundle-SymbolicName: hu.bme.mit.gamma.property.concretization.commandhandler;singleton:=true
+Bundle-Version: 2.9.0.qualifier
+Bundle-Vendor: BME-FTSRG
+Automatic-Module-Name: hu.bme.mit.gamma.serializer.commandhandler
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.emf.ecore,
+ org.eclipse.core.runtime,
+ org.eclipse.core.resources,
+ org.eclipse.equinox.registry,
+ org.eclipse.viatra.query.runtime,
+ hu.bme.mit.gamma.util,
+ hu.bme.mit.gamma.transformation.util,
+ hu.bme.mit.gamma.property.model

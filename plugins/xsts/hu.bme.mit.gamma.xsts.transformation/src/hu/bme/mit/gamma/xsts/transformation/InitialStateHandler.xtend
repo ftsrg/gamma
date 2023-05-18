@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -12,6 +12,7 @@ package hu.bme.mit.gamma.xsts.transformation
 
 import hu.bme.mit.gamma.expression.model.ConstantDeclaration
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
+import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
 import hu.bme.mit.gamma.expression.model.EqualityExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.property.model.AtomicFormula
@@ -47,8 +48,8 @@ class InitialStateHandler {
 		this(xSts, component, initialState, InitialStateSetting.EXECUTE_ENTRY_ACTIONS)
 	}
 	
-	new(XSTS xSts, Component component,
-			PropertyPackage initialState, InitialStateSetting initialStateSetting) {
+	new(XSTS xSts, Component component, PropertyPackage initialState,
+			InitialStateSetting initialStateSetting) {
 		this.xSts = xSts
 		this.component = component // Unfolded
 		
@@ -138,6 +139,7 @@ class InitialStateHandler {
 		protected final ReferenceToXstsVariableMapper mapper
 	
 		new(ReferenceToXstsVariableMapper mapper) {
+			// Note: there is NO trace here anymore! Cross-references are NOT supported!
 			this.mapper = mapper
 		}
 	
@@ -148,14 +150,22 @@ class InitialStateHandler {
 			return xStsVariables.map[it.createReferenceExpression]
 		}
 		
-		override dispatch List<Expression> transformExpression(
-				DirectReferenceExpression expression) {
+		override dispatch List<Expression> transformExpression(DirectReferenceExpression expression) {
 			val declaration = expression.declaration
 			if (declaration instanceof ConstantDeclaration) {
 				val value = declaration.expression
 				return value.transformExpression
 			}
-			return super.transformExpression(expression)
+			return super.transformExpression(expression) // Will not work due to lack of traceability
+			// Maybe the mapper should be used here
+		}
+		
+		override dispatch List<Expression> transformExpression(EnumerationLiteralExpression expression) {
+			val gammaEnumLiteral = expression.reference
+			val xStsEnumLiteral = mapper.getEnumLiteral(gammaEnumLiteral)
+			return #[
+				xStsEnumLiteral.createEnumerationLiteralExpression
+			]
 		}
 		
 	}

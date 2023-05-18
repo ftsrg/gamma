@@ -136,4 +136,6 @@
   <eClassifiers xsi:type="ecore:EClass" name="StatechartAnnotation" abstract="true"
       eSuperTypes="#//ComponentAnnotation"/>
   <eClassifiers xsi:type="ecore:EClass" name="RunUponExternalEventAnnotation" eSuperTypes="#//StatechartAnnotation"/>
+  <eClassifiers xsi:type="ecore:EClass" name="RunUponExternalEventOrInternalTimeoutAnnotation"
+      eSuperTypes="#//StatechartAnnotation"/>
 </ecore:EPackage>

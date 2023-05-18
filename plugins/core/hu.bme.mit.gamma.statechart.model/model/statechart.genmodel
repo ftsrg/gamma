@@ -120,6 +120,9 @@
     <genClasses ecoreClass="composite.ecore#//ComponentInstanceTransitionReferenceExpression">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference composite.ecore#//ComponentInstanceTransitionReferenceExpression/transitionId"/>
     </genClasses>
+    <genClasses ecoreClass="composite.ecore#//ComponentInstanceReflectiveElementReferenceExpression">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute composite.ecore#//ComponentInstanceReflectiveElementReferenceExpression/identifier"/>
+    </genClasses>
   </genPackages>
   <genPackages prefix="ContractModel" basePackage="hu.bme.mit.gamma.statechart" disposableProviderFactory="true"
       ecorePackage="contract.ecore#/">
@@ -376,6 +379,7 @@
     <genClasses ecoreClass="statechart.ecore#//OnCycleTrigger"/>
     <genClasses image="false" ecoreClass="statechart.ecore#//StatechartAnnotation"/>
     <genClasses ecoreClass="statechart.ecore#//RunUponExternalEventAnnotation"/>
+    <genClasses ecoreClass="statechart.ecore#//RunUponExternalEventOrInternalTimeoutAnnotation"/>
     <genClasses image="false" ecoreClass="statechart.ecore#//StateAnnotation"/>
     <genClasses image="false" ecoreClass="statechart.ecore#//TransitionAnnotation"/>
     <genClasses ecoreClass="statechart.ecore#//TransitionIdAnnotation"/>

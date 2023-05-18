@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.xsts.transformation.util
 
+import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
@@ -47,6 +48,11 @@ class Namings {
 	
 	static def String getDelayVariableName() '''__Delay__'''
 	static def String getInstanceEndcodingVariableName() '''__InstanceEncoding__'''
+	
+	// Types
+	
+	static def String customizeTypeName(TypeDeclaration type) '''«getName(type)»'''
+	static def String customizeEnumLiteralName(EnumerationLiteralDefinition literal) '''«getName(literal).enumLiteralName»'''
 	
 	// Asynchronous message queue - XSTS customization
 	
