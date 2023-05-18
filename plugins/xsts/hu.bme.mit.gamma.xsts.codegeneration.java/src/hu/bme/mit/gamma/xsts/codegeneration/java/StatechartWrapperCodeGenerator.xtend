@@ -164,6 +164,16 @@ class StatechartWrapperCodeGenerator {
 				runComponent();
 			}
 			
+			//universal scheduling interface
+			public void schedule(){
+				runCycle();
+			}
+			
+		//get the wrapped statemachine
+		public «gammaStatechart.wrappedStatemachineClassName» get«CLASS_NAME.toFirstUpper»(){
+			return «CLASS_NAME.toFirstLower»;
+		}
+			
 			public void runComponent() {
 				Queue<Event> eventQueue = getProcessQueue();
 				while (!eventQueue.isEmpty()) {
