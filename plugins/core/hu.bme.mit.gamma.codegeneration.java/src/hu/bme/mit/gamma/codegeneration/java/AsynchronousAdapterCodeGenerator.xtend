@@ -357,7 +357,7 @@ class AsynchronousAdapterCodeGenerator {
 	/**
 	 * Sets the parameters of the component and instantiates the necessary components with them.
 	 */
-	private def createInstances(AsynchronousAdapter component) '''
+	protected def createInstances(AsynchronousAdapter component) '''
 		«FOR parameter : component.parameterDeclarations»
 			this.«parameter.name» = «parameter.name»;
 		«ENDFOR»
