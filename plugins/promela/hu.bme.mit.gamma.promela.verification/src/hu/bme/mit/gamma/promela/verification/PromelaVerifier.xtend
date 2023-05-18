@@ -31,7 +31,7 @@ class PromelaVerifier extends AbstractVerifier {
 	protected final extension PromelaQueryAdapter promelaQueryAdapter = PromelaQueryAdapter.INSTANCE
 
 	// save trace to file
-	protected val saveTrace = false
+	protected val saveTrace = true
 	
 	override Result verifyQuery(Object traceability, String parameters, File modelFile, File queryFile) {
 		val model = fileUtil.loadString(modelFile)
@@ -117,7 +117,7 @@ class PromelaVerifier extends AbstractVerifier {
 			}
 			fileUtil.saveString(outputFile, outputString.toString)
 			
-			if (firstLine.contains("violated")) {
+			if (firstLine.contains("violated") || firstLine.contains("acceptance cycle")) {
 				super.result = ThreeStateBoolean.FALSE
 			}
 			else if (firstLine.contains("out of memory")) {
@@ -156,7 +156,7 @@ class PromelaVerifier extends AbstractVerifier {
 					// save trace
 					if (saveTrace) {
 						// Trace file
-						val traceFile = new File(modelFile.traceFile)
+						val traceFile = new File(modelFile.traceFile(trailFileIndex))
 						traceFile.deleteOnExit
 						
 						val fos = new FileOutputStream(traceFile)
@@ -259,6 +259,10 @@ class PromelaVerifier extends AbstractVerifier {
 	
 	def trailFile(File modelFile, int i) {
 		return modelFile.parent + File.separator + modelFile.name + i + ".trail"
+	}
+	
+	def traceFile(File modelFile, int i) {
+		return modelFile.parent + File.separator + modelFile.name + i + ".pmltrace"
 	}
 	
 	@Data

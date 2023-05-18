@@ -43,6 +43,7 @@ class TraceBackAnnotator {
 	protected final String TRANS_START = "[flag = 1]"
 	protected final String TRANS_END = "flag = 1"
 	protected final String TRACE_END = "#processes:"
+	protected final String CYCLE_START = "START OF CYCLE"
 	
 	protected boolean traceEnd = false
 	
@@ -111,6 +112,7 @@ class TraceBackAnnotator {
 		var initError = false // error in INIT
 		var lastElementArray = false
 		var line = ""
+		print("backtrace started")
 		try {
 			while (traceScanner.hasNext) {
 				if (lastElementArray) {
@@ -150,7 +152,7 @@ class TraceBackAnnotator {
 								if (initError) {
 									traceState = TraceState.NOT_REQUIRED
 								}
-							}
+							}							
 						}
 					}
 					case ENV: {
@@ -163,8 +165,13 @@ class TraceBackAnnotator {
 								if (schedulingConstraint !== null) {
 									step.addTimeElapse(schedulingConstraint)
 								}
-
-								trace.steps += step
+								if (trace.cycle !== null) {
+									println("cycle step created")
+									trace.cycle.steps += step
+								} else {
+									println("step created")
+									trace.steps += step
+								}
 								// Setting the state
 								backAnnotatorState = BackAnnotatorState.ENVIRONMENT_CHECK
 								
@@ -190,6 +197,12 @@ class TraceBackAnnotator {
 //								
 								traceEnd = true
 //								traceState = TraceState.REQUIRED
+							}
+							case line.contains(CYCLE_START): {
+								val lastStep = step
+								step.remove
+								trace.cycle = createCycle => [it.steps += lastStep]
+								println("cycle found during env")
 							}
 						}
 					}
@@ -218,6 +231,12 @@ class TraceBackAnnotator {
 //								
 								traceEnd = true
 //								traceState = TraceState.REQUIRED
+							}
+							case line.contains(CYCLE_START): {
+								val lastStep = step
+								step.remove
+								trace.cycle = createCycle => [it.steps += lastStep]
+								println("cycle found during trans")
 							}
 						}
 					}
@@ -254,10 +273,14 @@ class TraceBackAnnotator {
 			
 			// Checking if Spin stopped in the middle due to finding an acceptance cycle
 			if (step.actions.filter(Schedule).empty && step.asserts.empty) {
-				val previousStep = step.previous as Step
+//				val previousStep = step.previous as Step
 				step.remove
-				// Not correct as this is only the last step, but still, an indication for a cycle
-				trace.cycle = createCycle => [it.steps += previousStep]
+				
+				if (trace.cycle !== null && trace.cycle.steps.empty) {
+					trace.cycle.remove
+				}
+//				// Not correct as this is only the last step, but still, an indication for a cycle
+//				trace.cycle = createCycle => [it.steps += previousStep]
 			}
 			
 			// Sorting if needed
@@ -268,6 +291,7 @@ class TraceBackAnnotator {
 			// If there are not enough lines, that means there are no environment actions
 			step.actions += createReset
 		}
+		println("backtrace ended")
 		
 		trace.removeInternalEventRaiseActs
 		trace.removeTransientVariableReferences // They always have default values
