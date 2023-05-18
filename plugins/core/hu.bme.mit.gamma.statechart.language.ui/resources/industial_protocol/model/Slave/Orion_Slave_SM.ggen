@@ -1,6 +1,0 @@
-import "Orion_Slave_SM_System"
-analysis {
-	component : Orion_Slave_SM_System
-	language : UPPAAL
-	transition-coverage
-}

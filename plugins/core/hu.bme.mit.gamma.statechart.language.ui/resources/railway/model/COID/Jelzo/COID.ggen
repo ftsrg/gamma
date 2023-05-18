@@ -1,6 +1,0 @@
-import "COID.gcd"
-
-code {
-	component : bJbCOID_allapotgep
-	language : java
-}

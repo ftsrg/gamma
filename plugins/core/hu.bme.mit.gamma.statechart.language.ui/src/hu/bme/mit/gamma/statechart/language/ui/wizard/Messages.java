@@ -14,6 +14,8 @@ public class Messages extends NLS {
 	public static String GenericStochasticGammaProject_Description;
 	public static String IoTStochasticGammaProject_Label;
 	public static String IoTStochasticGammaProject_Description;
+	public static String CrossroadGammaProject_Label;
+	public static String CrossroadGammaProject_Description;
 	
 	static {
 	// initialize resource bundle

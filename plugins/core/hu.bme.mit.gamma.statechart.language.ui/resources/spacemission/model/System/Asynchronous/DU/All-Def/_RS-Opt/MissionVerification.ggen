@@ -1,7 +1,0 @@
-verification {
-	language : UPPAAL
-	file : "Mission.xml"
-	property-file : ".Mission.gpd"
-	test-language : java
-	optimize : true
-}

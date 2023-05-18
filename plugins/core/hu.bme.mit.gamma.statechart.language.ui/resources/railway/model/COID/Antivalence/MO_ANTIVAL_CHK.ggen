@@ -1,6 +1,0 @@
-import "MO_ANTIVAL_CHK.gcd"
-
-code {
-	component : AntivalenceChecker
-	language : java
-}

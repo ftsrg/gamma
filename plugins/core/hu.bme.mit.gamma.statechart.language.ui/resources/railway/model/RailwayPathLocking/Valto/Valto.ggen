@@ -1,6 +1,0 @@
-import "Valto.gcd"
-
-code {
-	component : Valto
-	language : java
-}

@@ -1,9 +1,0 @@
-package master_async
-import "ChannelLoseSubsequentMessages/Channel.gcd"
-adapter Channel_Adapter of component channelInstance : ChannelStatechart [
-] {
-	when Input.any / run
-	queue messageQueue(priority = 1, capacity = 2) {
-		Input.any
-	}
-}

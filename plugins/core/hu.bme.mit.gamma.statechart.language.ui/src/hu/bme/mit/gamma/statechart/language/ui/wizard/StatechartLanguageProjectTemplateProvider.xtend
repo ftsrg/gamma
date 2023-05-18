@@ -9,6 +9,13 @@ import org.eclipse.xtext.ui.util.PluginProjectFactory
 import org.eclipse.xtext.ui.wizard.template.IProjectGenerator
 import org.eclipse.xtext.ui.wizard.template.IProjectTemplateProvider
 import org.eclipse.xtext.ui.wizard.template.ProjectTemplate
+import hu.bme.mit.gamma.util.FileUtil
+import org.eclipse.core.runtime.Platform
+import org.eclipse.core.runtime.FileLocator
+import java.nio.file.Files
+import java.nio.file.Paths
+import java.util.stream.Collectors
+import org.eclipse.core.runtime.Path
 
 /**
  * Create a list with all project templates to be shown in the template new project wizard.
@@ -17,7 +24,7 @@ import org.eclipse.xtext.ui.wizard.template.ProjectTemplate
  */
 class StatechartLanguageProjectTemplateProvider implements IProjectTemplateProvider {
 	override getProjectTemplates() {
-		#[new GenericStochasticGammaProject]
+		#[new GenericStochasticGammaProject, new CrossroadGammaProject]
 	}
 }
 
@@ -67,4 +74,49 @@ final class GenericStochasticGammaProject {
 			''')
 		])
 	}
+}
+
+@ProjectTemplate(label="Crossroad Example", icon="gamma-icon-16.png", description="<p><b>Crossroad Example Project</b></p>
+<p>This is a wizard to create Gamma Statechart Composition Project of the Crossroad control system.</p>")
+final class CrossroadGammaProject {
+	override protected updateVariables() {
+	}
+
+	override protected validate() {
+		null
+	}
+
+	override generateProjects(IProjectGenerator generator) {
+		generator.generate(new PluginProjectFactory => [
+			projectName = projectInfo.projectName
+			location = projectInfo.locationPath
+			projectNatures += #[JavaCore.NATURE_ID, "org.eclipse.pde.PluginNature", XtextProjectHelper.NATURE_ID]
+			builderIds += #[JavaCore.BUILDER_ID, XtextProjectHelper.BUILDER_ID]
+			folders += "src"
+			folders += "src-gen"
+			var futil = FileUtil.INSTANCE;
+			var bundle = Platform.getBundle("hu.bme.mit.gamma.statechart.language.ui")
+			var url_m = FileLocator.find(bundle, new Path("/resources/model"));
+			var urls = Files.list(Paths.get(FileLocator.toFileURL(url_m).toURI)).collect(Collectors.toList())
+			for (url : urls) {
+				var file=url.toFile
+				var filename=file.name
+				if (file.file){
+					var contents = futil.loadString(file);			
+					addFile("model/"+filename, contents)
+				} else {
+					var urls2 = Files.list(Paths.get(FileLocator.toFileURL(file.toURL).toURI)).collect(Collectors.toList())
+					for (url2 : urls2) {
+						var file2=url2.toFile
+						var filename2=file2.name
+						if (file2.file){
+							var contents = futil.loadString(file2);			
+							addFile("model/"+filename+"/"+filename2, contents)
+						}
+					}
+				}
+			}
+		])
+	}
+
 }
