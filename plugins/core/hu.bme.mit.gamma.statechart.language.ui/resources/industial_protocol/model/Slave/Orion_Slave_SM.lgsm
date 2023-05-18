@@ -1,0 +1,774 @@
+<?xml version="1.0" encoding="ASCII"?>
+<hu.bme.mit.gamma.statechart.lowlevel:Package xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:hu.bme.mit.gamma.action="http://www.mit.bme.hu/gamma/action/Model" xmlns:hu.bme.mit.gamma.expression="http://www.mit.bme.hu/gamma/expression/Model" xmlns:hu.bme.mit.gamma.statechart.lowlevel="http://www.mit.bme.hu/gamma/statechart/lowlevel/Model" name="orion_slave_sm">
+  <imports name="interfaces"/>
+  <components xsi:type="hu.bme.mit.gamma.statechart.lowlevel:StatechartDefinition" name="Orion_Slave_SM" timeoutDeclarations="//@components.0/@variableDeclarations.1 //@components.0/@variableDeclarations.2 //@components.0/@variableDeclarations.3">
+    <eventDeclarations name="Block_Port_Operation_Call_SendData">
+      <isRaised name="isRaised">
+        <type xsi:type="hu.bme.mit.gamma.expression:BooleanTypeDefinition"/>
+      </isRaised>
+    </eventDeclarations>
+    <eventDeclarations name="Block_Port_Operation_Call_Connect">
+      <isRaised name="isRaised">
+        <type xsi:type="hu.bme.mit.gamma.expression:BooleanTypeDefinition"/>
+      </isRaised>
+    </eventDeclarations>
+    <eventDeclarations name="Block_Port_Operation_Call_Disconn">
+      <isRaised name="isRaised">
+        <type xsi:type="hu.bme.mit.gamma.expression:BooleanTypeDefinition"/>
+      </isRaised>
+    </eventDeclarations>
+    <eventDeclarations name="Block_Port_Operation_Call_Invalid">
+      <isRaised name="isRaised">
+        <type xsi:type="hu.bme.mit.gamma.expression:BooleanTypeDefinition"/>
+      </isRaised>
+    </eventDeclarations>
+    <eventDeclarations name="StateMachine_Port_OrionDisconn">
+      <isRaised name="isRaised">
+        <type xsi:type="hu.bme.mit.gamma.expression:BooleanTypeDefinition"/>
+      </isRaised>
+    </eventDeclarations>
+    <eventDeclarations name="StateMachine_Port_OrionDisconnCause">
+      <isRaised name="isRaised">
+        <type xsi:type="hu.bme.mit.gamma.expression:BooleanTypeDefinition"/>
+      </isRaised>
+    </eventDeclarations>
+    <eventDeclarations name="StateMachine_Port_OrionConnReq">
+      <isRaised name="isRaised">
+        <type xsi:type="hu.bme.mit.gamma.expression:BooleanTypeDefinition"/>
+      </isRaised>
+    </eventDeclarations>
+    <eventDeclarations name="StateMachine_Port_OrionAppData">
+      <isRaised name="isRaised">
+        <type xsi:type="hu.bme.mit.gamma.expression:BooleanTypeDefinition"/>
+      </isRaised>
+    </eventDeclarations>
+    <eventDeclarations name="StateMachine_Port_OrionKeepAlive">
+      <isRaised name="isRaised">
+        <type xsi:type="hu.bme.mit.gamma.expression:BooleanTypeDefinition"/>
+      </isRaised>
+    </eventDeclarations>
+    <eventDeclarations name="StateMachine_Port_OrionConnConf">
+      <isRaised name="isRaised">
+        <type xsi:type="hu.bme.mit.gamma.expression:BooleanTypeDefinition"/>
+      </isRaised>
+    </eventDeclarations>
+    <eventDeclarations name="StateMachine_Port_OrionConnResp">
+      <isRaised name="isRaised">
+        <type xsi:type="hu.bme.mit.gamma.expression:BooleanTypeDefinition"/>
+      </isRaised>
+    </eventDeclarations>
+    <eventDeclarations name="Send_StateMachine_Port_OrionDisconn" direction="OUT">
+      <isRaised name="isRaised">
+        <type xsi:type="hu.bme.mit.gamma.expression:BooleanTypeDefinition"/>
+      </isRaised>
+    </eventDeclarations>
+    <eventDeclarations name="Send_StateMachine_Port_OrionDisconnCause" direction="OUT">
+      <isRaised name="isRaised">
+        <type xsi:type="hu.bme.mit.gamma.expression:BooleanTypeDefinition"/>
+      </isRaised>
+    </eventDeclarations>
+    <eventDeclarations name="Send_StateMachine_Port_OrionConnReq" direction="OUT">
+      <isRaised name="isRaised">
+        <type xsi:type="hu.bme.mit.gamma.expression:BooleanTypeDefinition"/>
+      </isRaised>
+    </eventDeclarations>
+    <eventDeclarations name="Send_StateMachine_Port_OrionAppData" direction="OUT">
+      <isRaised name="isRaised">
+        <type xsi:type="hu.bme.mit.gamma.expression:BooleanTypeDefinition"/>
+      </isRaised>
+    </eventDeclarations>
+    <eventDeclarations name="Send_StateMachine_Port_OrionKeepAlive" direction="OUT">
+      <isRaised name="isRaised">
+        <type xsi:type="hu.bme.mit.gamma.expression:BooleanTypeDefinition"/>
+      </isRaised>
+    </eventDeclarations>
+    <eventDeclarations name="Send_StateMachine_Port_OrionConnConf" direction="OUT">
+      <isRaised name="isRaised">
+        <type xsi:type="hu.bme.mit.gamma.expression:BooleanTypeDefinition"/>
+      </isRaised>
+    </eventDeclarations>
+    <eventDeclarations name="Send_StateMachine_Port_OrionConnResp" direction="OUT">
+      <isRaised name="isRaised">
+        <type xsi:type="hu.bme.mit.gamma.expression:BooleanTypeDefinition"/>
+      </isRaised>
+    </eventDeclarations>
+    <eventDeclarations name="Process_StateMachine_Port_OrionDisconn" direction="OUT">
+      <isRaised name="isRaised">
+        <type xsi:type="hu.bme.mit.gamma.expression:BooleanTypeDefinition"/>
+      </isRaised>
+    </eventDeclarations>
+    <eventDeclarations name="Process_StateMachine_Port_OrionDisconnCause" direction="OUT">
+      <isRaised name="isRaised">
+        <type xsi:type="hu.bme.mit.gamma.expression:BooleanTypeDefinition"/>
+      </isRaised>
+    </eventDeclarations>
+    <eventDeclarations name="Process_StateMachine_Port_OrionConnReq" direction="OUT">
+      <isRaised name="isRaised">
+        <type xsi:type="hu.bme.mit.gamma.expression:BooleanTypeDefinition"/>
+      </isRaised>
+    </eventDeclarations>
+    <eventDeclarations name="Process_StateMachine_Port_OrionAppData" direction="OUT">
+      <isRaised name="isRaised">
+        <type xsi:type="hu.bme.mit.gamma.expression:BooleanTypeDefinition"/>
+      </isRaised>
+    </eventDeclarations>
+    <eventDeclarations name="Process_StateMachine_Port_OrionKeepAlive" direction="OUT">
+      <isRaised name="isRaised">
+        <type xsi:type="hu.bme.mit.gamma.expression:BooleanTypeDefinition"/>
+      </isRaised>
+    </eventDeclarations>
+    <eventDeclarations name="Process_StateMachine_Port_OrionConnConf" direction="OUT">
+      <isRaised name="isRaised">
+        <type xsi:type="hu.bme.mit.gamma.expression:BooleanTypeDefinition"/>
+      </isRaised>
+    </eventDeclarations>
+    <eventDeclarations name="Process_StateMachine_Port_OrionConnResp" direction="OUT">
+      <isRaised name="isRaised">
+        <type xsi:type="hu.bme.mit.gamma.expression:BooleanTypeDefinition"/>
+      </isRaised>
+    </eventDeclarations>
+    <eventDeclarations name="Handle_StateMachine_Port_OrionDisconn" direction="OUT">
+      <isRaised name="isRaised">
+        <type xsi:type="hu.bme.mit.gamma.expression:BooleanTypeDefinition"/>
+      </isRaised>
+    </eventDeclarations>
+    <eventDeclarations name="Handle_StateMachine_Port_OrionDisconnCause" direction="OUT">
+      <isRaised name="isRaised">
+        <type xsi:type="hu.bme.mit.gamma.expression:BooleanTypeDefinition"/>
+      </isRaised>
+    </eventDeclarations>
+    <eventDeclarations name="Handle_StateMachine_Port_OrionConnReq" direction="OUT">
+      <isRaised name="isRaised">
+        <type xsi:type="hu.bme.mit.gamma.expression:BooleanTypeDefinition"/>
+      </isRaised>
+    </eventDeclarations>
+    <eventDeclarations name="Handle_StateMachine_Port_OrionAppData" direction="OUT">
+      <isRaised name="isRaised">
+        <type xsi:type="hu.bme.mit.gamma.expression:BooleanTypeDefinition"/>
+      </isRaised>
+    </eventDeclarations>
+    <eventDeclarations name="Handle_StateMachine_Port_OrionKeepAlive" direction="OUT">
+      <isRaised name="isRaised">
+        <type xsi:type="hu.bme.mit.gamma.expression:BooleanTypeDefinition"/>
+      </isRaised>
+    </eventDeclarations>
+    <eventDeclarations name="Handle_StateMachine_Port_OrionConnConf" direction="OUT">
+      <isRaised name="isRaised">
+        <type xsi:type="hu.bme.mit.gamma.expression:BooleanTypeDefinition"/>
+      </isRaised>
+    </eventDeclarations>
+    <eventDeclarations name="Handle_StateMachine_Port_OrionConnResp" direction="OUT">
+      <isRaised name="isRaised">
+        <type xsi:type="hu.bme.mit.gamma.expression:BooleanTypeDefinition"/>
+      </isRaised>
+    </eventDeclarations>
+    <regions name="main_region_of_Orion_Slave_SM">
+      <stateNodes xsi:type="hu.bme.mit.gamma.statechart.lowlevel:State" name="Kapcsolodva_1" outgoingTransitions="//@components.0/@transitions.7 //@components.0/@transitions.8 //@components.0/@transitions.14 //@components.0/@transitions.19 //@components.0/@transitions.22 //@components.0/@transitions.23" incomingTransitions="//@components.0/@transitions.1">
+        <regions name="region_1_in_Kapcsolodva_1">
+          <stateNodes xsi:type="hu.bme.mit.gamma.statechart.lowlevel:State" name="KeepAliveSendTimeout_0" outgoingTransitions="//@components.0/@transitions.15 //@components.0/@transitions.24" incomingTransitions="//@components.0/@transitions.11 //@components.0/@transitions.15 //@components.0/@transitions.24">
+            <entryAction xsi:type="hu.bme.mit.gamma.action:AssignmentStatement">
+              <lhs declaration="//@components.0/@variableDeclarations.3"/>
+              <rhs xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="0"/>
+            </entryAction>
+            <exitAction xsi:type="hu.bme.mit.gamma.action:EmptyStatement"/>
+          </stateNodes>
+          <stateNodes xsi:type="hu.bme.mit.gamma.statechart.lowlevel:InitialState" name="init_2_in_region_1_in_Kapcsolodva_1" outgoingTransitions="//@components.0/@transitions.11"/>
+        </regions>
+        <regions name="region_2_in_Kapcsolodva_1">
+          <stateNodes xsi:type="hu.bme.mit.gamma.statechart.lowlevel:State" name="KeepAliveReceiveTimeout_4" outgoingTransitions="//@components.0/@transitions.0 //@components.0/@transitions.13 //@components.0/@transitions.16" incomingTransitions="//@components.0/@transitions.5 //@components.0/@transitions.13 //@components.0/@transitions.16">
+            <entryAction xsi:type="hu.bme.mit.gamma.action:AssignmentStatement">
+              <lhs declaration="//@components.0/@variableDeclarations.1"/>
+              <rhs xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="0"/>
+            </entryAction>
+            <exitAction xsi:type="hu.bme.mit.gamma.action:EmptyStatement"/>
+          </stateNodes>
+          <stateNodes xsi:type="hu.bme.mit.gamma.statechart.lowlevel:InitialState" name="init_2_in_region_2_in_Kapcsolodva_1" outgoingTransitions="//@components.0/@transitions.5"/>
+        </regions>
+        <entryAction xsi:type="hu.bme.mit.gamma.action:AssignmentStatement">
+          <lhs declaration="//@components.0/@variableDeclarations.0"/>
+          <rhs xsi:type="hu.bme.mit.gamma.expression:AddExpression">
+            <operands xsi:type="hu.bme.mit.gamma.expression:ReferenceExpression" declaration="//@components.0/@variableDeclarations.0"/>
+            <operands xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1"/>
+          </rhs>
+        </entryAction>
+        <exitAction xsi:type="hu.bme.mit.gamma.action:EmptyStatement"/>
+      </stateNodes>
+      <stateNodes xsi:type="hu.bme.mit.gamma.statechart.lowlevel:State" name="Zarva_2" outgoingTransitions="//@components.0/@transitions.21" incomingTransitions="//@components.0/@transitions.3 //@components.0/@transitions.10 //@components.0/@transitions.12 //@components.0/@transitions.17 //@components.0/@transitions.22">
+        <entryAction xsi:type="hu.bme.mit.gamma.action:EmptyStatement"/>
+        <exitAction xsi:type="hu.bme.mit.gamma.action:EmptyStatement"/>
+      </stateNodes>
+      <stateNodes xsi:type="hu.bme.mit.gamma.statechart.lowlevel:State" name="Kapcsolodik_3" outgoingTransitions="//@components.0/@transitions.1 //@components.0/@transitions.2 //@components.0/@transitions.3 //@components.0/@transitions.4 //@components.0/@transitions.6 //@components.0/@transitions.9 //@components.0/@transitions.18 //@components.0/@transitions.20" incomingTransitions="//@components.0/@transitions.21">
+        <entryAction xsi:type="hu.bme.mit.gamma.action:AssignmentStatement">
+          <lhs declaration="//@components.0/@variableDeclarations.2"/>
+          <rhs xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="0"/>
+        </entryAction>
+        <exitAction xsi:type="hu.bme.mit.gamma.action:EmptyStatement"/>
+      </stateNodes>
+      <stateNodes xsi:type="hu.bme.mit.gamma.statechart.lowlevel:InitialState" name="init_4_in_main_region_of_Orion_Slave_SM" outgoingTransitions="//@components.0/@transitions.10"/>
+      <stateNodes xsi:type="hu.bme.mit.gamma.statechart.lowlevel:MergeState" name="_5_in_main_region_of_Orion_Slave_SM" outgoingTransitions="//@components.0/@transitions.17" incomingTransitions="//@components.0/@transitions.0 //@components.0/@transitions.7 //@components.0/@transitions.8 //@components.0/@transitions.14 //@components.0/@transitions.19 //@components.0/@transitions.23"/>
+      <stateNodes xsi:type="hu.bme.mit.gamma.statechart.lowlevel:MergeState" name="_6_in_main_region_of_Orion_Slave_SM" outgoingTransitions="//@components.0/@transitions.12" incomingTransitions="//@components.0/@transitions.2 //@components.0/@transitions.4 //@components.0/@transitions.6 //@components.0/@transitions.9 //@components.0/@transitions.18 //@components.0/@transitions.20"/>
+    </regions>
+    <transitions source="//@components.0/@regions.0/@stateNodes.0/@regions.1/@stateNodes.0" target="//@components.0/@regions.0/@stateNodes.4">
+      <guard xsi:type="hu.bme.mit.gamma.expression:LessEqualExpression">
+        <leftOperand xsi:type="hu.bme.mit.gamma.expression:MultiplyExpression">
+          <operands xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1000"/>
+          <operands xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="5"/>
+        </leftOperand>
+        <rightOperand xsi:type="hu.bme.mit.gamma.expression:ReferenceExpression" declaration="//@components.0/@variableDeclarations.1"/>
+      </guard>
+      <action xsi:type="hu.bme.mit.gamma.action:EmptyStatement"/>
+    </transitions>
+    <transitions source="//@components.0/@regions.0/@stateNodes.2" target="//@components.0/@regions.0/@stateNodes.0">
+      <guard xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+        <leftOperand xsi:type="hu.bme.mit.gamma.expression:ReferenceExpression" declaration="//@components.0/@eventDeclarations.9/@isRaised"/>
+        <rightOperand xsi:type="hu.bme.mit.gamma.expression:TrueExpression"/>
+      </guard>
+      <action xsi:type="hu.bme.mit.gamma.action:Block">
+        <actions xsi:type="hu.bme.mit.gamma.action:AssignmentStatement">
+          <lhs declaration="//@components.0/@eventDeclarations.30/@isRaised"/>
+          <rhs xsi:type="hu.bme.mit.gamma.expression:TrueExpression"/>
+        </actions>
+      </action>
+    </transitions>
+    <transitions source="//@components.0/@regions.0/@stateNodes.2" target="//@components.0/@regions.0/@stateNodes.5">
+      <guard xsi:type="hu.bme.mit.gamma.expression:AndExpression">
+        <operands xsi:type="hu.bme.mit.gamma.expression:NotExpression">
+          <operand xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+            <leftOperand xsi:type="hu.bme.mit.gamma.expression:ReferenceExpression" declaration="//@components.0/@eventDeclarations.9/@isRaised"/>
+            <rightOperand xsi:type="hu.bme.mit.gamma.expression:TrueExpression"/>
+          </operand>
+        </operands>
+        <operands xsi:type="hu.bme.mit.gamma.expression:LessEqualExpression">
+          <leftOperand xsi:type="hu.bme.mit.gamma.expression:MultiplyExpression">
+            <operands xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1000"/>
+            <operands xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="5"/>
+          </leftOperand>
+          <rightOperand xsi:type="hu.bme.mit.gamma.expression:ReferenceExpression" declaration="//@components.0/@variableDeclarations.2"/>
+        </operands>
+      </guard>
+      <action xsi:type="hu.bme.mit.gamma.action:EmptyStatement"/>
+    </transitions>
+    <transitions source="//@components.0/@regions.0/@stateNodes.2" target="//@components.0/@regions.0/@stateNodes.1">
+      <guard xsi:type="hu.bme.mit.gamma.expression:AndExpression">
+        <operands xsi:type="hu.bme.mit.gamma.expression:NotExpression">
+          <operand xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+            <leftOperand xsi:type="hu.bme.mit.gamma.expression:ReferenceExpression" declaration="//@components.0/@eventDeclarations.9/@isRaised"/>
+            <rightOperand xsi:type="hu.bme.mit.gamma.expression:TrueExpression"/>
+          </operand>
+        </operands>
+        <operands xsi:type="hu.bme.mit.gamma.expression:NotExpression">
+          <operand xsi:type="hu.bme.mit.gamma.expression:LessEqualExpression">
+            <leftOperand xsi:type="hu.bme.mit.gamma.expression:MultiplyExpression">
+              <operands xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1000"/>
+              <operands xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="5"/>
+            </leftOperand>
+            <rightOperand xsi:type="hu.bme.mit.gamma.expression:ReferenceExpression" declaration="//@components.0/@variableDeclarations.2"/>
+          </operand>
+        </operands>
+        <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+          <leftOperand xsi:type="hu.bme.mit.gamma.expression:ReferenceExpression" declaration="//@components.0/@eventDeclarations.5/@isRaised"/>
+          <rightOperand xsi:type="hu.bme.mit.gamma.expression:TrueExpression"/>
+        </operands>
+      </guard>
+      <action xsi:type="hu.bme.mit.gamma.action:EmptyStatement"/>
+    </transitions>
+    <transitions source="//@components.0/@regions.0/@stateNodes.2" target="//@components.0/@regions.0/@stateNodes.5">
+      <guard xsi:type="hu.bme.mit.gamma.expression:AndExpression">
+        <operands xsi:type="hu.bme.mit.gamma.expression:NotExpression">
+          <operand xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+            <leftOperand xsi:type="hu.bme.mit.gamma.expression:ReferenceExpression" declaration="//@components.0/@eventDeclarations.9/@isRaised"/>
+            <rightOperand xsi:type="hu.bme.mit.gamma.expression:TrueExpression"/>
+          </operand>
+        </operands>
+        <operands xsi:type="hu.bme.mit.gamma.expression:NotExpression">
+          <operand xsi:type="hu.bme.mit.gamma.expression:LessEqualExpression">
+            <leftOperand xsi:type="hu.bme.mit.gamma.expression:MultiplyExpression">
+              <operands xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1000"/>
+              <operands xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="5"/>
+            </leftOperand>
+            <rightOperand xsi:type="hu.bme.mit.gamma.expression:ReferenceExpression" declaration="//@components.0/@variableDeclarations.2"/>
+          </operand>
+        </operands>
+        <operands xsi:type="hu.bme.mit.gamma.expression:NotExpression">
+          <operand xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+            <leftOperand xsi:type="hu.bme.mit.gamma.expression:ReferenceExpression" declaration="//@components.0/@eventDeclarations.5/@isRaised"/>
+            <rightOperand xsi:type="hu.bme.mit.gamma.expression:TrueExpression"/>
+          </operand>
+        </operands>
+        <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+          <leftOperand xsi:type="hu.bme.mit.gamma.expression:ReferenceExpression" declaration="//@components.0/@eventDeclarations.10/@isRaised"/>
+          <rightOperand xsi:type="hu.bme.mit.gamma.expression:TrueExpression"/>
+        </operands>
+      </guard>
+      <action xsi:type="hu.bme.mit.gamma.action:EmptyStatement"/>
+    </transitions>
+    <transitions source="//@components.0/@regions.0/@stateNodes.0/@regions.1/@stateNodes.1" target="//@components.0/@regions.0/@stateNodes.0/@regions.1/@stateNodes.0">
+      <action xsi:type="hu.bme.mit.gamma.action:EmptyStatement"/>
+    </transitions>
+    <transitions source="//@components.0/@regions.0/@stateNodes.2" target="//@components.0/@regions.0/@stateNodes.5">
+      <guard xsi:type="hu.bme.mit.gamma.expression:AndExpression">
+        <operands xsi:type="hu.bme.mit.gamma.expression:NotExpression">
+          <operand xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+            <leftOperand xsi:type="hu.bme.mit.gamma.expression:ReferenceExpression" declaration="//@components.0/@eventDeclarations.9/@isRaised"/>
+            <rightOperand xsi:type="hu.bme.mit.gamma.expression:TrueExpression"/>
+          </operand>
+        </operands>
+        <operands xsi:type="hu.bme.mit.gamma.expression:NotExpression">
+          <operand xsi:type="hu.bme.mit.gamma.expression:LessEqualExpression">
+            <leftOperand xsi:type="hu.bme.mit.gamma.expression:MultiplyExpression">
+              <operands xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1000"/>
+              <operands xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="5"/>
+            </leftOperand>
+            <rightOperand xsi:type="hu.bme.mit.gamma.expression:ReferenceExpression" declaration="//@components.0/@variableDeclarations.2"/>
+          </operand>
+        </operands>
+        <operands xsi:type="hu.bme.mit.gamma.expression:NotExpression">
+          <operand xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+            <leftOperand xsi:type="hu.bme.mit.gamma.expression:ReferenceExpression" declaration="//@components.0/@eventDeclarations.5/@isRaised"/>
+            <rightOperand xsi:type="hu.bme.mit.gamma.expression:TrueExpression"/>
+          </operand>
+        </operands>
+        <operands xsi:type="hu.bme.mit.gamma.expression:NotExpression">
+          <operand xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+            <leftOperand xsi:type="hu.bme.mit.gamma.expression:ReferenceExpression" declaration="//@components.0/@eventDeclarations.10/@isRaised"/>
+            <rightOperand xsi:type="hu.bme.mit.gamma.expression:TrueExpression"/>
+          </operand>
+        </operands>
+        <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+          <leftOperand xsi:type="hu.bme.mit.gamma.expression:ReferenceExpression" declaration="//@components.0/@eventDeclarations.6/@isRaised"/>
+          <rightOperand xsi:type="hu.bme.mit.gamma.expression:TrueExpression"/>
+        </operands>
+      </guard>
+      <action xsi:type="hu.bme.mit.gamma.action:EmptyStatement"/>
+    </transitions>
+    <transitions source="//@components.0/@regions.0/@stateNodes.0" target="//@components.0/@regions.0/@stateNodes.4">
+      <guard xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+        <leftOperand xsi:type="hu.bme.mit.gamma.expression:ReferenceExpression" declaration="//@components.0/@eventDeclarations.3/@isRaised"/>
+        <rightOperand xsi:type="hu.bme.mit.gamma.expression:TrueExpression"/>
+      </guard>
+      <action xsi:type="hu.bme.mit.gamma.action:EmptyStatement"/>
+    </transitions>
+    <transitions source="//@components.0/@regions.0/@stateNodes.0" target="//@components.0/@regions.0/@stateNodes.4">
+      <guard xsi:type="hu.bme.mit.gamma.expression:AndExpression">
+        <operands xsi:type="hu.bme.mit.gamma.expression:NotExpression">
+          <operand xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+            <leftOperand xsi:type="hu.bme.mit.gamma.expression:ReferenceExpression" declaration="//@components.0/@eventDeclarations.3/@isRaised"/>
+            <rightOperand xsi:type="hu.bme.mit.gamma.expression:TrueExpression"/>
+          </operand>
+        </operands>
+        <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+          <leftOperand xsi:type="hu.bme.mit.gamma.expression:ReferenceExpression" declaration="//@components.0/@eventDeclarations.10/@isRaised"/>
+          <rightOperand xsi:type="hu.bme.mit.gamma.expression:TrueExpression"/>
+        </operands>
+      </guard>
+      <action xsi:type="hu.bme.mit.gamma.action:EmptyStatement"/>
+    </transitions>
+    <transitions source="//@components.0/@regions.0/@stateNodes.2" target="//@components.0/@regions.0/@stateNodes.5">
+      <guard xsi:type="hu.bme.mit.gamma.expression:AndExpression">
+        <operands xsi:type="hu.bme.mit.gamma.expression:NotExpression">
+          <operand xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+            <leftOperand xsi:type="hu.bme.mit.gamma.expression:ReferenceExpression" declaration="//@components.0/@eventDeclarations.9/@isRaised"/>
+            <rightOperand xsi:type="hu.bme.mit.gamma.expression:TrueExpression"/>
+          </operand>
+        </operands>
+        <operands xsi:type="hu.bme.mit.gamma.expression:NotExpression">
+          <operand xsi:type="hu.bme.mit.gamma.expression:LessEqualExpression">
+            <leftOperand xsi:type="hu.bme.mit.gamma.expression:MultiplyExpression">
+              <operands xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1000"/>
+              <operands xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="5"/>
+            </leftOperand>
+            <rightOperand xsi:type="hu.bme.mit.gamma.expression:ReferenceExpression" declaration="//@components.0/@variableDeclarations.2"/>
+          </operand>
+        </operands>
+        <operands xsi:type="hu.bme.mit.gamma.expression:NotExpression">
+          <operand xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+            <leftOperand xsi:type="hu.bme.mit.gamma.expression:ReferenceExpression" declaration="//@components.0/@eventDeclarations.5/@isRaised"/>
+            <rightOperand xsi:type="hu.bme.mit.gamma.expression:TrueExpression"/>
+          </operand>
+        </operands>
+        <operands xsi:type="hu.bme.mit.gamma.expression:NotExpression">
+          <operand xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+            <leftOperand xsi:type="hu.bme.mit.gamma.expression:ReferenceExpression" declaration="//@components.0/@eventDeclarations.10/@isRaised"/>
+            <rightOperand xsi:type="hu.bme.mit.gamma.expression:TrueExpression"/>
+          </operand>
+        </operands>
+        <operands xsi:type="hu.bme.mit.gamma.expression:NotExpression">
+          <operand xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+            <leftOperand xsi:type="hu.bme.mit.gamma.expression:ReferenceExpression" declaration="//@components.0/@eventDeclarations.6/@isRaised"/>
+            <rightOperand xsi:type="hu.bme.mit.gamma.expression:TrueExpression"/>
+          </operand>
+        </operands>
+        <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+          <leftOperand xsi:type="hu.bme.mit.gamma.expression:ReferenceExpression" declaration="//@components.0/@eventDeclarations.7/@isRaised"/>
+          <rightOperand xsi:type="hu.bme.mit.gamma.expression:TrueExpression"/>
+        </operands>
+      </guard>
+      <action xsi:type="hu.bme.mit.gamma.action:EmptyStatement"/>
+    </transitions>
+    <transitions source="//@components.0/@regions.0/@stateNodes.3" target="//@components.0/@regions.0/@stateNodes.1">
+      <action xsi:type="hu.bme.mit.gamma.action:EmptyStatement"/>
+    </transitions>
+    <transitions source="//@components.0/@regions.0/@stateNodes.0/@regions.0/@stateNodes.1" target="//@components.0/@regions.0/@stateNodes.0/@regions.0/@stateNodes.0">
+      <action xsi:type="hu.bme.mit.gamma.action:EmptyStatement"/>
+    </transitions>
+    <transitions source="//@components.0/@regions.0/@stateNodes.5" target="//@components.0/@regions.0/@stateNodes.1">
+      <action xsi:type="hu.bme.mit.gamma.action:Block">
+        <actions xsi:type="hu.bme.mit.gamma.action:AssignmentStatement">
+          <lhs declaration="//@components.0/@eventDeclarations.11/@isRaised"/>
+          <rhs xsi:type="hu.bme.mit.gamma.expression:TrueExpression"/>
+        </actions>
+      </action>
+    </transitions>
+    <transitions source="//@components.0/@regions.0/@stateNodes.0/@regions.1/@stateNodes.0" target="//@components.0/@regions.0/@stateNodes.0/@regions.1/@stateNodes.0">
+      <guard xsi:type="hu.bme.mit.gamma.expression:AndExpression">
+        <operands xsi:type="hu.bme.mit.gamma.expression:NotExpression">
+          <operand xsi:type="hu.bme.mit.gamma.expression:LessEqualExpression">
+            <leftOperand xsi:type="hu.bme.mit.gamma.expression:MultiplyExpression">
+              <operands xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1000"/>
+              <operands xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="5"/>
+            </leftOperand>
+            <rightOperand xsi:type="hu.bme.mit.gamma.expression:ReferenceExpression" declaration="//@components.0/@variableDeclarations.1"/>
+          </operand>
+        </operands>
+        <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+          <leftOperand xsi:type="hu.bme.mit.gamma.expression:ReferenceExpression" declaration="//@components.0/@eventDeclarations.7/@isRaised"/>
+          <rightOperand xsi:type="hu.bme.mit.gamma.expression:TrueExpression"/>
+        </operands>
+      </guard>
+      <action xsi:type="hu.bme.mit.gamma.action:Block">
+        <actions xsi:type="hu.bme.mit.gamma.action:AssignmentStatement">
+          <lhs declaration="//@components.0/@eventDeclarations.21/@isRaised"/>
+          <rhs xsi:type="hu.bme.mit.gamma.expression:TrueExpression"/>
+        </actions>
+      </action>
+    </transitions>
+    <transitions source="//@components.0/@regions.0/@stateNodes.0" target="//@components.0/@regions.0/@stateNodes.4">
+      <guard xsi:type="hu.bme.mit.gamma.expression:AndExpression">
+        <operands xsi:type="hu.bme.mit.gamma.expression:NotExpression">
+          <operand xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+            <leftOperand xsi:type="hu.bme.mit.gamma.expression:ReferenceExpression" declaration="//@components.0/@eventDeclarations.3/@isRaised"/>
+            <rightOperand xsi:type="hu.bme.mit.gamma.expression:TrueExpression"/>
+          </operand>
+        </operands>
+        <operands xsi:type="hu.bme.mit.gamma.expression:NotExpression">
+          <operand xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+            <leftOperand xsi:type="hu.bme.mit.gamma.expression:ReferenceExpression" declaration="//@components.0/@eventDeclarations.10/@isRaised"/>
+            <rightOperand xsi:type="hu.bme.mit.gamma.expression:TrueExpression"/>
+          </operand>
+        </operands>
+        <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+          <leftOperand xsi:type="hu.bme.mit.gamma.expression:ReferenceExpression" declaration="//@components.0/@eventDeclarations.6/@isRaised"/>
+          <rightOperand xsi:type="hu.bme.mit.gamma.expression:TrueExpression"/>
+        </operands>
+      </guard>
+      <action xsi:type="hu.bme.mit.gamma.action:EmptyStatement"/>
+    </transitions>
+    <transitions source="//@components.0/@regions.0/@stateNodes.0/@regions.0/@stateNodes.0" target="//@components.0/@regions.0/@stateNodes.0/@regions.0/@stateNodes.0">
+      <guard xsi:type="hu.bme.mit.gamma.expression:LessEqualExpression">
+        <leftOperand xsi:type="hu.bme.mit.gamma.expression:MultiplyExpression">
+          <operands xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1000"/>
+          <operands xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="4"/>
+        </leftOperand>
+        <rightOperand xsi:type="hu.bme.mit.gamma.expression:ReferenceExpression" declaration="//@components.0/@variableDeclarations.3"/>
+      </guard>
+      <action xsi:type="hu.bme.mit.gamma.action:Block">
+        <actions xsi:type="hu.bme.mit.gamma.action:AssignmentStatement">
+          <lhs declaration="//@components.0/@eventDeclarations.15/@isRaised"/>
+          <rhs xsi:type="hu.bme.mit.gamma.expression:TrueExpression"/>
+        </actions>
+      </action>
+    </transitions>
+    <transitions source="//@components.0/@regions.0/@stateNodes.0/@regions.1/@stateNodes.0" target="//@components.0/@regions.0/@stateNodes.0/@regions.1/@stateNodes.0">
+      <guard xsi:type="hu.bme.mit.gamma.expression:AndExpression">
+        <operands xsi:type="hu.bme.mit.gamma.expression:NotExpression">
+          <operand xsi:type="hu.bme.mit.gamma.expression:LessEqualExpression">
+            <leftOperand xsi:type="hu.bme.mit.gamma.expression:MultiplyExpression">
+              <operands xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1000"/>
+              <operands xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="5"/>
+            </leftOperand>
+            <rightOperand xsi:type="hu.bme.mit.gamma.expression:ReferenceExpression" declaration="//@components.0/@variableDeclarations.1"/>
+          </operand>
+        </operands>
+        <operands xsi:type="hu.bme.mit.gamma.expression:NotExpression">
+          <operand xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+            <leftOperand xsi:type="hu.bme.mit.gamma.expression:ReferenceExpression" declaration="//@components.0/@eventDeclarations.7/@isRaised"/>
+            <rightOperand xsi:type="hu.bme.mit.gamma.expression:TrueExpression"/>
+          </operand>
+        </operands>
+        <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+          <leftOperand xsi:type="hu.bme.mit.gamma.expression:ReferenceExpression" declaration="//@components.0/@eventDeclarations.8/@isRaised"/>
+          <rightOperand xsi:type="hu.bme.mit.gamma.expression:TrueExpression"/>
+        </operands>
+      </guard>
+      <action xsi:type="hu.bme.mit.gamma.action:EmptyStatement"/>
+    </transitions>
+    <transitions source="//@components.0/@regions.0/@stateNodes.4" target="//@components.0/@regions.0/@stateNodes.1">
+      <action xsi:type="hu.bme.mit.gamma.action:Block">
+        <actions xsi:type="hu.bme.mit.gamma.action:AssignmentStatement">
+          <lhs declaration="//@components.0/@eventDeclarations.11/@isRaised"/>
+          <rhs xsi:type="hu.bme.mit.gamma.expression:TrueExpression"/>
+        </actions>
+      </action>
+    </transitions>
+    <transitions source="//@components.0/@regions.0/@stateNodes.2" target="//@components.0/@regions.0/@stateNodes.5">
+      <guard xsi:type="hu.bme.mit.gamma.expression:AndExpression">
+        <operands xsi:type="hu.bme.mit.gamma.expression:NotExpression">
+          <operand xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+            <leftOperand xsi:type="hu.bme.mit.gamma.expression:ReferenceExpression" declaration="//@components.0/@eventDeclarations.9/@isRaised"/>
+            <rightOperand xsi:type="hu.bme.mit.gamma.expression:TrueExpression"/>
+          </operand>
+        </operands>
+        <operands xsi:type="hu.bme.mit.gamma.expression:NotExpression">
+          <operand xsi:type="hu.bme.mit.gamma.expression:LessEqualExpression">
+            <leftOperand xsi:type="hu.bme.mit.gamma.expression:MultiplyExpression">
+              <operands xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1000"/>
+              <operands xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="5"/>
+            </leftOperand>
+            <rightOperand xsi:type="hu.bme.mit.gamma.expression:ReferenceExpression" declaration="//@components.0/@variableDeclarations.2"/>
+          </operand>
+        </operands>
+        <operands xsi:type="hu.bme.mit.gamma.expression:NotExpression">
+          <operand xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+            <leftOperand xsi:type="hu.bme.mit.gamma.expression:ReferenceExpression" declaration="//@components.0/@eventDeclarations.5/@isRaised"/>
+            <rightOperand xsi:type="hu.bme.mit.gamma.expression:TrueExpression"/>
+          </operand>
+        </operands>
+        <operands xsi:type="hu.bme.mit.gamma.expression:NotExpression">
+          <operand xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+            <leftOperand xsi:type="hu.bme.mit.gamma.expression:ReferenceExpression" declaration="//@components.0/@eventDeclarations.10/@isRaised"/>
+            <rightOperand xsi:type="hu.bme.mit.gamma.expression:TrueExpression"/>
+          </operand>
+        </operands>
+        <operands xsi:type="hu.bme.mit.gamma.expression:NotExpression">
+          <operand xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+            <leftOperand xsi:type="hu.bme.mit.gamma.expression:ReferenceExpression" declaration="//@components.0/@eventDeclarations.6/@isRaised"/>
+            <rightOperand xsi:type="hu.bme.mit.gamma.expression:TrueExpression"/>
+          </operand>
+        </operands>
+        <operands xsi:type="hu.bme.mit.gamma.expression:NotExpression">
+          <operand xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+            <leftOperand xsi:type="hu.bme.mit.gamma.expression:ReferenceExpression" declaration="//@components.0/@eventDeclarations.7/@isRaised"/>
+            <rightOperand xsi:type="hu.bme.mit.gamma.expression:TrueExpression"/>
+          </operand>
+        </operands>
+        <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+          <leftOperand xsi:type="hu.bme.mit.gamma.expression:ReferenceExpression" declaration="//@components.0/@eventDeclarations.3/@isRaised"/>
+          <rightOperand xsi:type="hu.bme.mit.gamma.expression:TrueExpression"/>
+        </operands>
+      </guard>
+      <action xsi:type="hu.bme.mit.gamma.action:EmptyStatement"/>
+    </transitions>
+    <transitions source="//@components.0/@regions.0/@stateNodes.0" target="//@components.0/@regions.0/@stateNodes.4">
+      <guard xsi:type="hu.bme.mit.gamma.expression:AndExpression">
+        <operands xsi:type="hu.bme.mit.gamma.expression:NotExpression">
+          <operand xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+            <leftOperand xsi:type="hu.bme.mit.gamma.expression:ReferenceExpression" declaration="//@components.0/@eventDeclarations.3/@isRaised"/>
+            <rightOperand xsi:type="hu.bme.mit.gamma.expression:TrueExpression"/>
+          </operand>
+        </operands>
+        <operands xsi:type="hu.bme.mit.gamma.expression:NotExpression">
+          <operand xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+            <leftOperand xsi:type="hu.bme.mit.gamma.expression:ReferenceExpression" declaration="//@components.0/@eventDeclarations.10/@isRaised"/>
+            <rightOperand xsi:type="hu.bme.mit.gamma.expression:TrueExpression"/>
+          </operand>
+        </operands>
+        <operands xsi:type="hu.bme.mit.gamma.expression:NotExpression">
+          <operand xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+            <leftOperand xsi:type="hu.bme.mit.gamma.expression:ReferenceExpression" declaration="//@components.0/@eventDeclarations.6/@isRaised"/>
+            <rightOperand xsi:type="hu.bme.mit.gamma.expression:TrueExpression"/>
+          </operand>
+        </operands>
+        <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+          <leftOperand xsi:type="hu.bme.mit.gamma.expression:ReferenceExpression" declaration="//@components.0/@eventDeclarations.9/@isRaised"/>
+          <rightOperand xsi:type="hu.bme.mit.gamma.expression:TrueExpression"/>
+        </operands>
+      </guard>
+      <action xsi:type="hu.bme.mit.gamma.action:EmptyStatement"/>
+    </transitions>
+    <transitions source="//@components.0/@regions.0/@stateNodes.2" target="//@components.0/@regions.0/@stateNodes.5">
+      <guard xsi:type="hu.bme.mit.gamma.expression:AndExpression">
+        <operands xsi:type="hu.bme.mit.gamma.expression:NotExpression">
+          <operand xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+            <leftOperand xsi:type="hu.bme.mit.gamma.expression:ReferenceExpression" declaration="//@components.0/@eventDeclarations.9/@isRaised"/>
+            <rightOperand xsi:type="hu.bme.mit.gamma.expression:TrueExpression"/>
+          </operand>
+        </operands>
+        <operands xsi:type="hu.bme.mit.gamma.expression:NotExpression">
+          <operand xsi:type="hu.bme.mit.gamma.expression:LessEqualExpression">
+            <leftOperand xsi:type="hu.bme.mit.gamma.expression:MultiplyExpression">
+              <operands xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1000"/>
+              <operands xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="5"/>
+            </leftOperand>
+            <rightOperand xsi:type="hu.bme.mit.gamma.expression:ReferenceExpression" declaration="//@components.0/@variableDeclarations.2"/>
+          </operand>
+        </operands>
+        <operands xsi:type="hu.bme.mit.gamma.expression:NotExpression">
+          <operand xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+            <leftOperand xsi:type="hu.bme.mit.gamma.expression:ReferenceExpression" declaration="//@components.0/@eventDeclarations.5/@isRaised"/>
+            <rightOperand xsi:type="hu.bme.mit.gamma.expression:TrueExpression"/>
+          </operand>
+        </operands>
+        <operands xsi:type="hu.bme.mit.gamma.expression:NotExpression">
+          <operand xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+            <leftOperand xsi:type="hu.bme.mit.gamma.expression:ReferenceExpression" declaration="//@components.0/@eventDeclarations.10/@isRaised"/>
+            <rightOperand xsi:type="hu.bme.mit.gamma.expression:TrueExpression"/>
+          </operand>
+        </operands>
+        <operands xsi:type="hu.bme.mit.gamma.expression:NotExpression">
+          <operand xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+            <leftOperand xsi:type="hu.bme.mit.gamma.expression:ReferenceExpression" declaration="//@components.0/@eventDeclarations.6/@isRaised"/>
+            <rightOperand xsi:type="hu.bme.mit.gamma.expression:TrueExpression"/>
+          </operand>
+        </operands>
+        <operands xsi:type="hu.bme.mit.gamma.expression:NotExpression">
+          <operand xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+            <leftOperand xsi:type="hu.bme.mit.gamma.expression:ReferenceExpression" declaration="//@components.0/@eventDeclarations.7/@isRaised"/>
+            <rightOperand xsi:type="hu.bme.mit.gamma.expression:TrueExpression"/>
+          </operand>
+        </operands>
+        <operands xsi:type="hu.bme.mit.gamma.expression:NotExpression">
+          <operand xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+            <leftOperand xsi:type="hu.bme.mit.gamma.expression:ReferenceExpression" declaration="//@components.0/@eventDeclarations.3/@isRaised"/>
+            <rightOperand xsi:type="hu.bme.mit.gamma.expression:TrueExpression"/>
+          </operand>
+        </operands>
+        <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+          <leftOperand xsi:type="hu.bme.mit.gamma.expression:ReferenceExpression" declaration="//@components.0/@eventDeclarations.8/@isRaised"/>
+          <rightOperand xsi:type="hu.bme.mit.gamma.expression:TrueExpression"/>
+        </operands>
+      </guard>
+      <action xsi:type="hu.bme.mit.gamma.action:EmptyStatement"/>
+    </transitions>
+    <transitions source="//@components.0/@regions.0/@stateNodes.1" target="//@components.0/@regions.0/@stateNodes.2">
+      <guard xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+        <leftOperand xsi:type="hu.bme.mit.gamma.expression:ReferenceExpression" declaration="//@components.0/@eventDeclarations.6/@isRaised"/>
+        <rightOperand xsi:type="hu.bme.mit.gamma.expression:TrueExpression"/>
+      </guard>
+      <action xsi:type="hu.bme.mit.gamma.action:Block">
+        <actions xsi:type="hu.bme.mit.gamma.action:AssignmentStatement">
+          <lhs declaration="//@components.0/@eventDeclarations.17/@isRaised"/>
+          <rhs xsi:type="hu.bme.mit.gamma.expression:TrueExpression"/>
+        </actions>
+      </action>
+    </transitions>
+    <transitions source="//@components.0/@regions.0/@stateNodes.0" target="//@components.0/@regions.0/@stateNodes.1">
+      <guard xsi:type="hu.bme.mit.gamma.expression:AndExpression">
+        <operands xsi:type="hu.bme.mit.gamma.expression:NotExpression">
+          <operand xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+            <leftOperand xsi:type="hu.bme.mit.gamma.expression:ReferenceExpression" declaration="//@components.0/@eventDeclarations.3/@isRaised"/>
+            <rightOperand xsi:type="hu.bme.mit.gamma.expression:TrueExpression"/>
+          </operand>
+        </operands>
+        <operands xsi:type="hu.bme.mit.gamma.expression:NotExpression">
+          <operand xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+            <leftOperand xsi:type="hu.bme.mit.gamma.expression:ReferenceExpression" declaration="//@components.0/@eventDeclarations.10/@isRaised"/>
+            <rightOperand xsi:type="hu.bme.mit.gamma.expression:TrueExpression"/>
+          </operand>
+        </operands>
+        <operands xsi:type="hu.bme.mit.gamma.expression:NotExpression">
+          <operand xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+            <leftOperand xsi:type="hu.bme.mit.gamma.expression:ReferenceExpression" declaration="//@components.0/@eventDeclarations.6/@isRaised"/>
+            <rightOperand xsi:type="hu.bme.mit.gamma.expression:TrueExpression"/>
+          </operand>
+        </operands>
+        <operands xsi:type="hu.bme.mit.gamma.expression:NotExpression">
+          <operand xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+            <leftOperand xsi:type="hu.bme.mit.gamma.expression:ReferenceExpression" declaration="//@components.0/@eventDeclarations.9/@isRaised"/>
+            <rightOperand xsi:type="hu.bme.mit.gamma.expression:TrueExpression"/>
+          </operand>
+        </operands>
+        <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+          <leftOperand xsi:type="hu.bme.mit.gamma.expression:ReferenceExpression" declaration="//@components.0/@eventDeclarations.5/@isRaised"/>
+          <rightOperand xsi:type="hu.bme.mit.gamma.expression:TrueExpression"/>
+        </operands>
+      </guard>
+      <action xsi:type="hu.bme.mit.gamma.action:EmptyStatement"/>
+    </transitions>
+    <transitions source="//@components.0/@regions.0/@stateNodes.0" target="//@components.0/@regions.0/@stateNodes.4">
+      <guard xsi:type="hu.bme.mit.gamma.expression:AndExpression">
+        <operands xsi:type="hu.bme.mit.gamma.expression:NotExpression">
+          <operand xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+            <leftOperand xsi:type="hu.bme.mit.gamma.expression:ReferenceExpression" declaration="//@components.0/@eventDeclarations.3/@isRaised"/>
+            <rightOperand xsi:type="hu.bme.mit.gamma.expression:TrueExpression"/>
+          </operand>
+        </operands>
+        <operands xsi:type="hu.bme.mit.gamma.expression:NotExpression">
+          <operand xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+            <leftOperand xsi:type="hu.bme.mit.gamma.expression:ReferenceExpression" declaration="//@components.0/@eventDeclarations.10/@isRaised"/>
+            <rightOperand xsi:type="hu.bme.mit.gamma.expression:TrueExpression"/>
+          </operand>
+        </operands>
+        <operands xsi:type="hu.bme.mit.gamma.expression:NotExpression">
+          <operand xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+            <leftOperand xsi:type="hu.bme.mit.gamma.expression:ReferenceExpression" declaration="//@components.0/@eventDeclarations.6/@isRaised"/>
+            <rightOperand xsi:type="hu.bme.mit.gamma.expression:TrueExpression"/>
+          </operand>
+        </operands>
+        <operands xsi:type="hu.bme.mit.gamma.expression:NotExpression">
+          <operand xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+            <leftOperand xsi:type="hu.bme.mit.gamma.expression:ReferenceExpression" declaration="//@components.0/@eventDeclarations.9/@isRaised"/>
+            <rightOperand xsi:type="hu.bme.mit.gamma.expression:TrueExpression"/>
+          </operand>
+        </operands>
+        <operands xsi:type="hu.bme.mit.gamma.expression:NotExpression">
+          <operand xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+            <leftOperand xsi:type="hu.bme.mit.gamma.expression:ReferenceExpression" declaration="//@components.0/@eventDeclarations.5/@isRaised"/>
+            <rightOperand xsi:type="hu.bme.mit.gamma.expression:TrueExpression"/>
+          </operand>
+        </operands>
+        <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+          <leftOperand xsi:type="hu.bme.mit.gamma.expression:ReferenceExpression" declaration="//@components.0/@eventDeclarations.2/@isRaised"/>
+          <rightOperand xsi:type="hu.bme.mit.gamma.expression:TrueExpression"/>
+        </operands>
+      </guard>
+      <action xsi:type="hu.bme.mit.gamma.action:EmptyStatement"/>
+    </transitions>
+    <transitions source="//@components.0/@regions.0/@stateNodes.0/@regions.0/@stateNodes.0" target="//@components.0/@regions.0/@stateNodes.0/@regions.0/@stateNodes.0">
+      <guard xsi:type="hu.bme.mit.gamma.expression:AndExpression">
+        <operands xsi:type="hu.bme.mit.gamma.expression:NotExpression">
+          <operand xsi:type="hu.bme.mit.gamma.expression:LessEqualExpression">
+            <leftOperand xsi:type="hu.bme.mit.gamma.expression:MultiplyExpression">
+              <operands xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1000"/>
+              <operands xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="4"/>
+            </leftOperand>
+            <rightOperand xsi:type="hu.bme.mit.gamma.expression:ReferenceExpression" declaration="//@components.0/@variableDeclarations.3"/>
+          </operand>
+        </operands>
+        <operands xsi:type="hu.bme.mit.gamma.expression:EqualityExpression">
+          <leftOperand xsi:type="hu.bme.mit.gamma.expression:ReferenceExpression" declaration="//@components.0/@eventDeclarations.0/@isRaised"/>
+          <rightOperand xsi:type="hu.bme.mit.gamma.expression:TrueExpression"/>
+        </operands>
+      </guard>
+      <action xsi:type="hu.bme.mit.gamma.action:Block">
+        <actions xsi:type="hu.bme.mit.gamma.action:AssignmentStatement">
+          <lhs declaration="//@components.0/@eventDeclarations.14/@isRaised"/>
+          <rhs xsi:type="hu.bme.mit.gamma.expression:TrueExpression"/>
+        </actions>
+      </action>
+    </transitions>
+    <variableDeclarations name="enterKapcsolodvaCount">
+      <type xsi:type="hu.bme.mit.gamma.expression:IntegerTypeDefinition"/>
+    </variableDeclarations>
+    <variableDeclarations name="TimeoutKeepAliveReceiveTimeout_4">
+      <type xsi:type="hu.bme.mit.gamma.expression:IntegerTypeDefinition"/>
+      <expression xsi:type="hu.bme.mit.gamma.expression:MultiplyExpression">
+        <operands xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1000"/>
+        <operands xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="5"/>
+      </expression>
+    </variableDeclarations>
+    <variableDeclarations name="TimeoutKapcsolodik_3">
+      <type xsi:type="hu.bme.mit.gamma.expression:IntegerTypeDefinition"/>
+      <expression xsi:type="hu.bme.mit.gamma.expression:MultiplyExpression">
+        <operands xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1000"/>
+        <operands xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="5"/>
+      </expression>
+    </variableDeclarations>
+    <variableDeclarations name="TimeoutKeepAliveSendTimeout_0">
+      <type xsi:type="hu.bme.mit.gamma.expression:IntegerTypeDefinition"/>
+      <expression xsi:type="hu.bme.mit.gamma.expression:MultiplyExpression">
+        <operands xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1000"/>
+        <operands xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="4"/>
+      </expression>
+    </variableDeclarations>
+  </components>
+</hu.bme.mit.gamma.statechart.lowlevel:Package>

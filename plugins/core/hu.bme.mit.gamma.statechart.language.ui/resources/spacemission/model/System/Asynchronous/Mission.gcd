@@ -1,0 +1,12 @@
+package mission
+import "Interface/Interfaces"
+import "GroundstationAdapter/GroundStationAdapter.gcd"
+import "SpacecraftAdapter/SpacecraftAdapter.gcd"
+async Mission [
+	port control : requires StationControl
+] {
+	component stationInstance : GroundStationAdapter
+	component satelliteInstance : SpacecraftAdapter
+	bind control -> stationInstance.control
+	channel [ satelliteInstance.connection ] -o)- [ stationInstance.connection ]
+}

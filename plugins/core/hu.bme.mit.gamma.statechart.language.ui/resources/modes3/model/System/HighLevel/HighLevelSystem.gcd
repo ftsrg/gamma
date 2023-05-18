@@ -1,0 +1,35 @@
+package eightsections
+import "Interface/Interfaces"
+import "Train/Async/Train"
+import "HighLevel/SafetyLogic/HighLevelSafetyLogic"
+cascade HighLevelSystem [
+	port Train1Control : requires TrainControl
+	port Train2Control : requires TrainControl
+] {
+	// Component
+	component train : Train(1, 5)
+	component highLevelEightSections : HighLevelSafetyLogic
+	// Execution 
+	execute train, highLevelEightSections
+	// Binding
+	bind Train1Control -> train.Train1
+	bind Train2Control -> train.Train2
+	// Train : only high level, low level is not connected
+	channel [ train.TrainControl1 ] -o)- [ highLevelEightSections.Train1 ]
+	channel [ train.TrainControl2 ] -o)- [ highLevelEightSections.Train2 ]
+	channel [ train.TrainControl3 ] -o)- [ highLevelEightSections.Train3 ]
+	channel [ train.TrainControl4 ] -o)- [ highLevelEightSections.Train4 ]
+	channel [ train.TrainControl5 ] -o)- [ highLevelEightSections.Train5 ]
+	channel [ train.TrainControl6 ] -o)- [ highLevelEightSections.Train6 ]
+	channel [ train.TrainControl7 ] -o)- [ highLevelEightSections.Train7 ]
+	channel [ train.TrainControl8 ] -o)- [ highLevelEightSections.Train8 ]
+	// Oracle : high level
+	channel [ highLevelEightSections.SectionControl1 ] -o)- [ train.HighLevelSectionControl1 ]
+	channel [ highLevelEightSections.SectionControl2 ] -o)- [ train.HighLevelSectionControl2 ]
+	channel [ highLevelEightSections.SectionControl3 ] -o)- [ train.HighLevelSectionControl3 ]
+	channel [ highLevelEightSections.SectionControl4 ] -o)- [ train.HighLevelSectionControl4 ]
+	channel [ highLevelEightSections.SectionControl5 ] -o)- [ train.HighLevelSectionControl5 ]
+	channel [ highLevelEightSections.SectionControl6 ] -o)- [ train.HighLevelSectionControl6 ]
+	channel [ highLevelEightSections.SectionControl7 ] -o)- [ train.HighLevelSectionControl7 ]
+	channel [ highLevelEightSections.SectionControl8 ] -o)- [ train.HighLevelSectionControl8 ]
+}

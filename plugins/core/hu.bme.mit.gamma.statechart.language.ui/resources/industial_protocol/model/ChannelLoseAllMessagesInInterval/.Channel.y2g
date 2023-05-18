@@ -1,0 +1,646 @@
+<?xml version="1.0" encoding="ASCII"?>
+<hu.bme.mit.gamma.yakindu.transformation:Y2GTrace xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:hu.bme.mit.gamma.yakindu.transformation="http://www.mit.bme.hu/gamma/yakindu/transformation/Traceability">
+  <yakinduStatechart href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_cpjO8A8NEeqviYeA6lqTwA"/>
+  <gammaStatechart href="Channel.gcd#//@components.0"/>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_cpjO8A8NEeqviYeA6lqTwA"/>
+    <to href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_cpjO8A8NEeqviYeA6lqTwA"/>
+    <to href="Channel.gcd#//@components.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_KSbWECjJEeqJVOWQqWeE5Q"/>
+    <to href="Channel.gcd#//@components.0/@regions.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_KSbWESjJEeqJVOWQqWeE5Q"/>
+    <to href="Channel.gcd#//@components.0/@regions.0/@stateNodes.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_KSbWEyjJEeqJVOWQqWeE5Q"/>
+    <to href="Channel.gcd#//@components.0/@regions.0/@stateNodes.1"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_tnhy3iqHEeq_qcMcCvEE_Q"/>
+    <to href="Channel.gcd#//@components.0/@regions.0/@stateNodes.2"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_DM2I1SjLEeqJVOWQqWeE5Q"/>
+    <to href="Channel.gcd#//@components.0/@regions.0/@stateNodes.3"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_KSbWfCjJEeqJVOWQqWeE5Q"/>
+    <to href="Channel.gcd#//@components.0/@regions.0/@stateNodes.4"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_tnrjwCqHEeq_qcMcCvEE_Q"/>
+    <to href="Channel.gcd#//@components.0/@regions.0/@stateNodes.5"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_KSbWoyjJEeqJVOWQqWeE5Q"/>
+    <to href="Channel.gcd#//@components.0/@regions.0/@stateNodes.6"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_tn1U1SqHEeq_qcMcCvEE_Q"/>
+    <to href="Channel.gcd#//@components.0/@regions.0/@stateNodes.7"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_KSbWYSjJEeqJVOWQqWeE5Q"/>
+    <to href="Channel.gcd#//@components.0/@regions.0/@stateNodes.8"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_KSbWcyjJEeqJVOWQqWeE5Q"/>
+    <to href="Channel.gcd#//@components.0/@regions.0/@stateNodes.9"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_KSbWaijJEeqJVOWQqWeE5Q"/>
+    <to href="Channel.gcd#//@components.0/@regions.0/@stateNodes.10"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_KSbWhSjJEeqJVOWQqWeE5Q"/>
+    <to href="Channel.gcd#//@components.0/@regions.0/@stateNodes.11"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_KSbWtSjJEeqJVOWQqWeE5Q"/>
+    <to href="Channel.gcd#//@components.0/@regions.0/@stateNodes.12"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_tn1U2yqHEeq_qcMcCvEE_Q"/>
+    <to href="Channel.gcd#//@components.0/@regions.0/@stateNodes.13"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_KSbWqSjJEeqJVOWQqWeE5Q"/>
+    <to href="Channel.gcd#//@components.0/@regions.0/@stateNodes.14"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_tn1U5yqHEeq_qcMcCvEE_Q"/>
+    <to href="Channel.gcd#//@components.0/@regions.0/@stateNodes.15"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_tn1UwCqHEeq_qcMcCvEE_Q"/>
+    <to href="Channel.gcd#//@components.0/@regions.0/@stateNodes.16"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_tn1UwyqHEeq_qcMcCvEE_Q"/>
+    <to href="Channel.gcd#//@components.0/@regions.0/@stateNodes.17"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_KSbWTyjJEeqJVOWQqWeE5Q"/>
+    <to href="Channel.gcd#//@components.0/@regions.0/@stateNodes.18"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_tnhzCyqHEeq_qcMcCvEE_Q"/>
+    <to href="Channel.gcd#//@components.0/@regions.0/@stateNodes.19"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_KSbWlyjJEeqJVOWQqWeE5Q"/>
+    <to href="Channel.gcd#//@components.0/@regions.0/@stateNodes.20"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_tnhzDiqHEeq_qcMcCvEE_Q"/>
+    <to href="Channel.gcd#//@components.0/@regions.0/@stateNodes.21"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_tn1U3iqHEeq_qcMcCvEE_Q"/>
+    <to href="Channel.gcd#//@components.0/@regions.0/@stateNodes.22"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_tn1U0iqHEeq_qcMcCvEE_Q"/>
+    <to href="Channel.gcd#//@components.0/@regions.0/@stateNodes.23"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_KSbWkSjJEeqJVOWQqWeE5Q"/>
+    <to href="Channel.gcd#//@components.0/@regions.0/@stateNodes.24"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_tnrjwyqHEeq_qcMcCvEE_Q"/>
+    <to href="Channel.gcd#//@components.0/@regions.0/@stateNodes.25"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_KSbWWCjJEeqJVOWQqWeE5Q"/>
+    <to href="Channel.gcd#//@components.0/@regions.0/@stateNodes.26"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_tn1UzCqHEeq_qcMcCvEE_Q"/>
+    <to href="Channel.gcd#//@components.0/@regions.0/@stateNodes.27"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_KSbWOCjJEeqJVOWQqWeE5Q"/>
+    <to href="Channel.gcd#//@components.0/@regions.0/@stateNodes.28"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_KSbWSSjJEeqJVOWQqWeE5Q"/>
+    <to href="Channel.gcd#//@components.0/@regions.0/@stateNodes.29"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_tn1UySqHEeq_qcMcCvEE_Q"/>
+    <to href="Channel.gcd#//@components.0/@regions.0/@stateNodes.30"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_tn1U5CqHEeq_qcMcCvEE_Q"/>
+    <to href="Channel.gcd#//@components.0/@regions.0/@stateNodes.31"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_KSbWmCjJEeqJVOWQqWeE5Q"/>
+    <to href="Channel.gcd#//@components.0/@transitions.8"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_KSbWVijJEeqJVOWQqWeE5Q"/>
+    <to href="Channel.gcd#//@components.0/@transitions.6"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_Nlng8CjQEeqJVOWQqWeE5Q"/>
+    <to href="Channel.gcd#//@components.0/@transitions.36"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_KSbWpCjJEeqJVOWQqWeE5Q"/>
+    <to href="Channel.gcd#//@components.0/@transitions.21"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_KSbWHyjJEeqJVOWQqWeE5Q"/>
+    <to href="Channel.gcd#//@components.0/@transitions.39"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_KSbWhijJEeqJVOWQqWeE5Q"/>
+    <to href="Channel.gcd#//@components.0/@transitions.26"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_tnhy6yqHEeq_qcMcCvEE_Q"/>
+    <to href="Channel.gcd#//@components.0/@transitions.30"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_KSbWKSjJEeqJVOWQqWeE5Q"/>
+    <to href="Channel.gcd#//@components.0/@transitions.41"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_KSbWSijJEeqJVOWQqWeE5Q"/>
+    <to href="Channel.gcd#//@components.0/@transitions.18"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_tnhzDCqHEeq_qcMcCvEE_Q"/>
+    <to href="Channel.gcd#//@components.0/@transitions.7"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_tn1U6CqHEeq_qcMcCvEE_Q"/>
+    <to href="Channel.gcd#//@components.0/@transitions.3"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_KSbWGijJEeqJVOWQqWeE5Q"/>
+    <to href="Channel.gcd#//@components.0/@transitions.38"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_KSbWaCjJEeqJVOWQqWeE5Q"/>
+    <to href="Channel.gcd#//@components.0/@transitions.23"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_KSbWWSjJEeqJVOWQqWeE5Q"/>
+    <to href="Channel.gcd#//@components.0/@transitions.15"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_tnhy_yqHEeq_qcMcCvEE_Q"/>
+    <to href="Channel.gcd#//@components.0/@transitions.34"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_KSbWJCjJEeqJVOWQqWeE5Q"/>
+    <to href="Channel.gcd#//@components.0/@transitions.40"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_KSbWMyjJEeqJVOWQqWeE5Q"/>
+    <to href="Channel.gcd#//@components.0/@transitions.43"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_KSbWsCjJEeqJVOWQqWeE5Q"/>
+    <to href="Channel.gcd#//@components.0/@transitions.2"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_tnhy9SqHEeq_qcMcCvEE_Q"/>
+    <to href="Channel.gcd#//@components.0/@transitions.32"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_KSbWayjJEeqJVOWQqWeE5Q"/>
+    <to href="Channel.gcd#//@components.0/@transitions.25"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_tn1UzSqHEeq_qcMcCvEE_Q"/>
+    <to href="Channel.gcd#//@components.0/@transitions.16"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_KSbWEijJEeqJVOWQqWeE5Q"/>
+    <to href="Channel.gcd#//@components.0/@transitions.35"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_tn1U0yqHEeq_qcMcCvEE_Q"/>
+    <to href="Channel.gcd#//@components.0/@transitions.12"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_tn1UxCqHEeq_qcMcCvEE_Q"/>
+    <to href="Channel.gcd#//@components.0/@transitions.5"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_tn1U5SqHEeq_qcMcCvEE_Q"/>
+    <to href="Channel.gcd#//@components.0/@transitions.20"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_KSbWfSjJEeqJVOWQqWeE5Q"/>
+    <to href="Channel.gcd#//@components.0/@transitions.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_tn1U1iqHEeq_qcMcCvEE_Q"/>
+    <to href="Channel.gcd#//@components.0/@transitions.22"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_KSbWeijJEeqJVOWQqWeE5Q"/>
+    <to href="Channel.gcd#//@components.0/@transitions.24"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_tn1UwSqHEeq_qcMcCvEE_Q"/>
+    <to href="Channel.gcd#//@components.0/@transitions.4"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_tnhy8CqHEeq_qcMcCvEE_Q"/>
+    <to href="Channel.gcd#//@components.0/@transitions.31"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_KSbWOSjJEeqJVOWQqWeE5Q"/>
+    <to href="Channel.gcd#//@components.0/@transitions.17"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_tn1U3CqHEeq_qcMcCvEE_Q"/>
+    <to href="Channel.gcd#//@components.0/@transitions.1"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_tnhy-iqHEeq_qcMcCvEE_Q"/>
+    <to href="Channel.gcd#//@components.0/@transitions.33"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_KSbWtijJEeqJVOWQqWeE5Q"/>
+    <to href="Channel.gcd#//@components.0/@transitions.27"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_KSbWkijJEeqJVOWQqWeE5Q"/>
+    <to href="Channel.gcd#//@components.0/@transitions.13"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_KSbWLijJEeqJVOWQqWeE5Q"/>
+    <to href="Channel.gcd#//@components.0/@transitions.42"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_tnhzDyqHEeq_qcMcCvEE_Q"/>
+    <to href="Channel.gcd#//@components.0/@transitions.9"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_KSbWFSjJEeqJVOWQqWeE5Q"/>
+    <to href="Channel.gcd#//@components.0/@transitions.37"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_tnhy4SqHEeq_qcMcCvEE_Q"/>
+    <to href="Channel.gcd#//@components.0/@transitions.28"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_tn1UyiqHEeq_qcMcCvEE_Q"/>
+    <to href="Channel.gcd#//@components.0/@transitions.19"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_tn1U3yqHEeq_qcMcCvEE_Q"/>
+    <to href="Channel.gcd#//@components.0/@transitions.10"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_tnhy5iqHEeq_qcMcCvEE_Q"/>
+    <to href="Channel.gcd#//@components.0/@transitions.29"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_tnrjxCqHEeq_qcMcCvEE_Q"/>
+    <to href="Channel.gcd#//@components.0/@transitions.14"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_tnrjwSqHEeq_qcMcCvEE_Q"/>
+    <to href="Channel.gcd#//@components.0/@transitions.11"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#_HtpA8CjQEeqJVOWQqWeE5Q"/>
+    <to href="Channel.gcd#//@components.0/@transitions.44"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_Channel.scopes2.START"/>
+    <to href="Channel.gcd#//@constantDeclarations.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_Channel.scopes2.END"/>
+    <to href="Channel.gcd#//@constantDeclarations.1"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:ExpressionTrace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_/0/@scopes.2/@members.1/@initialValue/@value"/>
+    <to href="Channel.gcd#//@constantDeclarations.1/@expression"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:ExpressionTrace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_/0/@scopes.2/@members.0/@initialValue/@value"/>
+    <to href="Channel.gcd#//@constantDeclarations.0/@expression"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_/0/@scopes.1"/>
+    <to href="Channel.gcd#//@components.0/@ports.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_/0/@scopes.0"/>
+    <to href="Channel.gcd#//@components.0/@ports.1"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_Channel.Input.OrionDisconnCause"/>
+    <to href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.1/@events.1/@event"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_Channel.Input.OrionConnReq"/>
+    <to href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.1/@events.2/@event"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_Channel.Input.OrionDisconn"/>
+    <to href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.1/@events.0/@event"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_Channel.Input.OrionConnResp"/>
+    <to href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.1/@events.6/@event"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_Channel.Output.OrionDisconnCause"/>
+    <to href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.1/@events.1/@event"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_Channel.Output.OrionConnResp"/>
+    <to href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.1/@events.6/@event"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_Channel.Output.OrionConnConf"/>
+    <to href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.1/@events.5/@event"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_Channel.Input.OrionAppData"/>
+    <to href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.1/@events.3/@event"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_Channel.Input.OrionConnConf"/>
+    <to href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.1/@events.5/@event"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_Channel.Output.OrionConnReq"/>
+    <to href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.1/@events.2/@event"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_Channel.Output.OrionDisconn"/>
+    <to href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.1/@events.0/@event"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_Channel.Input.OrionKeepAlive"/>
+    <to href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.1/@events.4/@event"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_Channel.Output.OrionKeepAlive"/>
+    <to href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.1/@events.4/@event"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_Channel.Output.OrionAppData"/>
+    <to href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.1/@events.3/@event"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_/0/@regions.0/@vertices.17/@outgoingTransitions.1/@trigger/@triggers.0"/>
+    <to href="Channel.gcd#//@components.0/@transitions.29/@trigger"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_/0/@regions.0/@vertices.17/@outgoingTransitions.3/@trigger/@triggers.0"/>
+    <to href="Channel.gcd#//@components.0/@transitions.31/@trigger"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_/0/@regions.0/@vertices.1/@outgoingTransitions.4/@trigger/@triggers.0"/>
+    <to href="Channel.gcd#//@components.0/@transitions.41/@trigger"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_/0/@regions.0/@vertices.1/@outgoingTransitions.3/@trigger/@triggers.0"/>
+    <to href="Channel.gcd#//@components.0/@transitions.40/@trigger"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_/0/@regions.0/@vertices.17/@outgoingTransitions.6/@trigger/@triggers.0"/>
+    <to href="Channel.gcd#//@components.0/@transitions.34/@trigger"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_/0/@regions.0/@vertices.1/@outgoingTransitions.1/@trigger/@triggers.0"/>
+    <to href="Channel.gcd#//@components.0/@transitions.38/@trigger"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_/0/@regions.0/@vertices.1/@outgoingTransitions.2/@trigger/@triggers.0"/>
+    <to href="Channel.gcd#//@components.0/@transitions.39/@trigger"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_/0/@regions.0/@vertices.17/@outgoingTransitions.0/@trigger/@triggers.0"/>
+    <to href="Channel.gcd#//@components.0/@transitions.28/@trigger"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_/0/@regions.0/@vertices.1/@outgoingTransitions.0/@trigger/@triggers.0"/>
+    <to href="Channel.gcd#//@components.0/@transitions.37/@trigger"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_/0/@regions.0/@vertices.1/@outgoingTransitions.5/@trigger/@triggers.0"/>
+    <to href="Channel.gcd#//@components.0/@transitions.42/@trigger"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_/0/@regions.0/@vertices.17/@outgoingTransitions.4/@trigger/@triggers.0"/>
+    <to href="Channel.gcd#//@components.0/@transitions.32/@trigger"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_/0/@regions.0/@vertices.17/@outgoingTransitions.5/@trigger/@triggers.0"/>
+    <to href="Channel.gcd#//@components.0/@transitions.33/@trigger"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_/0/@regions.0/@vertices.1/@outgoingTransitions.6/@trigger/@triggers.0"/>
+    <to href="Channel.gcd#//@components.0/@transitions.43/@trigger"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_/0/@regions.0/@vertices.17/@outgoingTransitions.2/@trigger/@triggers.0"/>
+    <to href="Channel.gcd#//@components.0/@transitions.30/@trigger"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_/0/@regions.0/@vertices.14/@outgoingTransitions.0/@trigger"/>
+    <to href="Channel.gcd#//@components.0/@transitions.2/@guard"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_/0/@regions.0/@vertices.8/@outgoingTransitions.0/@trigger"/>
+    <to href="Channel.gcd#//@components.0/@transitions.24/@guard"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_/0/@regions.0/@vertices.22/@outgoingTransitions.0/@trigger"/>
+    <to href="Channel.gcd#//@components.0/@transitions.4/@guard"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_/0/@regions.0/@vertices.18/@outgoingTransitions.0/@trigger"/>
+    <to href="Channel.gcd#//@components.0/@transitions.7/@guard"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_/0/@regions.0/@vertices.10/@outgoingTransitions.0/@trigger"/>
+    <to href="Channel.gcd#//@components.0/@transitions.26/@guard"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_/0/@regions.0/@vertices.28/@outgoingTransitions.0/@trigger"/>
+    <to href="Channel.gcd#//@components.0/@transitions.1/@guard"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_/0/@regions.0/@vertices.12/@outgoingTransitions.0/@trigger"/>
+    <to href="Channel.gcd#//@components.0/@transitions.8/@guard"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_/0/@regions.0/@vertices.2/@outgoingTransitions.0/@trigger"/>
+    <to href="Channel.gcd#//@components.0/@transitions.17/@guard"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_/0/@regions.0/@vertices.26/@outgoingTransitions.0/@trigger"/>
+    <to href="Channel.gcd#//@components.0/@transitions.12/@guard"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_/0/@regions.0/@vertices.20/@outgoingTransitions.0/@trigger"/>
+    <to href="Channel.gcd#//@components.0/@transitions.11/@guard"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_/0/@regions.0/@vertices.24/@outgoingTransitions.0/@trigger"/>
+    <to href="Channel.gcd#//@components.0/@transitions.19/@guard"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_/0/@regions.0/@vertices.4/@outgoingTransitions.0/@trigger"/>
+    <to href="Channel.gcd#//@components.0/@transitions.6/@guard"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_/0/@regions.0/@vertices.30/@outgoingTransitions.0/@trigger"/>
+    <to href="Channel.gcd#//@components.0/@transitions.20/@guard"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_/0/@regions.0/@vertices.6/@outgoingTransitions.0/@trigger"/>
+    <to href="Channel.gcd#//@components.0/@transitions.23/@guard"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:ExpressionTrace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_/0/@regions.0/@vertices.1/@outgoingTransitions.7/@trigger/@triggers.0/@value"/>
+    <to href="Channel.gcd#//@components.0/@regions.0/@stateNodes.1/@entryActions.0/@time/@value"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_/0/@regions.0/@vertices.1/@outgoingTransitions.7/@trigger/@triggers.0"/>
+    <to href="Channel.gcd#//@components.0/@transitions.44/@trigger"/>
+    <to href="Channel.gcd#//@components.0/@timeoutDeclarations.0"/>
+    <to href="Channel.gcd#//@components.0/@regions.0/@stateNodes.1/@entryActions.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:ExpressionTrace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_/0/@regions.0/@vertices.16/@outgoingTransitions.0/@trigger/@triggers.0/@value"/>
+    <to href="Channel.gcd#//@components.0/@regions.0/@stateNodes.3/@entryActions.0/@time/@value"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_/0/@regions.0/@vertices.16/@outgoingTransitions.0/@trigger/@triggers.0"/>
+    <to href="Channel.gcd#//@components.0/@regions.0/@stateNodes.3/@entryActions.0"/>
+    <to href="Channel.gcd#//@components.0/@timeoutDeclarations.1"/>
+    <to href="Channel.gcd#//@components.0/@transitions.36/@trigger"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:ExpressionTrace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_/0/@regions.0/@vertices.3/@outgoingTransitions.0/@effect/@actions.0/@event"/>
+    <to href="Channel.gcd#//@components.0/@transitions.18/@effects.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:ExpressionTrace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_/0/@regions.0/@vertices.3/@outgoingTransitions.0/@effect/@actions.0"/>
+    <to href="Channel.gcd#//@components.0/@transitions.18/@effects.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:ExpressionTrace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_/0/@regions.0/@vertices.5/@outgoingTransitions.0/@effect/@actions.0/@event"/>
+    <to href="Channel.gcd#//@components.0/@transitions.15/@effects.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:ExpressionTrace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_/0/@regions.0/@vertices.5/@outgoingTransitions.0/@effect/@actions.0"/>
+    <to href="Channel.gcd#//@components.0/@transitions.15/@effects.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:ExpressionTrace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_/0/@regions.0/@vertices.7/@outgoingTransitions.0/@effect/@actions.0/@event"/>
+    <to href="Channel.gcd#//@components.0/@transitions.25/@effects.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:ExpressionTrace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_/0/@regions.0/@vertices.7/@outgoingTransitions.0/@effect/@actions.0"/>
+    <to href="Channel.gcd#//@components.0/@transitions.25/@effects.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:ExpressionTrace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_/0/@regions.0/@vertices.19/@outgoingTransitions.0/@effect/@actions.0/@event"/>
+    <to href="Channel.gcd#//@components.0/@transitions.9/@effects.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:ExpressionTrace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_/0/@regions.0/@vertices.19/@outgoingTransitions.0/@effect/@actions.0"/>
+    <to href="Channel.gcd#//@components.0/@transitions.9/@effects.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:ExpressionTrace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_/0/@regions.0/@vertices.27/@outgoingTransitions.0/@effect/@actions.0/@event"/>
+    <to href="Channel.gcd#//@components.0/@transitions.22/@effects.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:ExpressionTrace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_/0/@regions.0/@vertices.27/@outgoingTransitions.0/@effect/@actions.0"/>
+    <to href="Channel.gcd#//@components.0/@transitions.22/@effects.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:ExpressionTrace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_/0/@regions.0/@vertices.25/@outgoingTransitions.0/@effect/@actions.0/@event"/>
+    <to href="Channel.gcd#//@components.0/@transitions.16/@effects.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:ExpressionTrace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_/0/@regions.0/@vertices.25/@outgoingTransitions.0/@effect/@actions.0"/>
+    <to href="Channel.gcd#//@components.0/@transitions.16/@effects.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:ExpressionTrace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_/0/@regions.0/@vertices.11/@outgoingTransitions.0/@effect/@actions.0/@event"/>
+    <to href="Channel.gcd#//@components.0/@transitions.13/@effects.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:ExpressionTrace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_/0/@regions.0/@vertices.11/@outgoingTransitions.0/@effect/@actions.0"/>
+    <to href="Channel.gcd#//@components.0/@transitions.13/@effects.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:ExpressionTrace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_/0/@regions.0/@vertices.9/@outgoingTransitions.0/@effect/@actions.0/@event"/>
+    <to href="Channel.gcd#//@components.0/@transitions.0/@effects.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:ExpressionTrace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_/0/@regions.0/@vertices.9/@outgoingTransitions.0/@effect/@actions.0"/>
+    <to href="Channel.gcd#//@components.0/@transitions.0/@effects.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:ExpressionTrace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_/0/@regions.0/@vertices.13/@outgoingTransitions.0/@effect/@actions.0/@event"/>
+    <to href="Channel.gcd#//@components.0/@transitions.21/@effects.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:ExpressionTrace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_/0/@regions.0/@vertices.13/@outgoingTransitions.0/@effect/@actions.0"/>
+    <to href="Channel.gcd#//@components.0/@transitions.21/@effects.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:ExpressionTrace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_/0/@regions.0/@vertices.23/@outgoingTransitions.0/@effect/@actions.0/@event"/>
+    <to href="Channel.gcd#//@components.0/@transitions.5/@effects.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:ExpressionTrace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_/0/@regions.0/@vertices.23/@outgoingTransitions.0/@effect/@actions.0"/>
+    <to href="Channel.gcd#//@components.0/@transitions.5/@effects.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:ExpressionTrace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_/0/@regions.0/@vertices.29/@outgoingTransitions.0/@effect/@actions.0/@event"/>
+    <to href="Channel.gcd#//@components.0/@transitions.10/@effects.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:ExpressionTrace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_/0/@regions.0/@vertices.29/@outgoingTransitions.0/@effect/@actions.0"/>
+    <to href="Channel.gcd#//@components.0/@transitions.10/@effects.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:ExpressionTrace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_/0/@regions.0/@vertices.31/@outgoingTransitions.0/@effect/@actions.0/@event"/>
+    <to href="Channel.gcd#//@components.0/@transitions.3/@effects.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:ExpressionTrace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_/0/@regions.0/@vertices.31/@outgoingTransitions.0/@effect/@actions.0"/>
+    <to href="Channel.gcd#//@components.0/@transitions.3/@effects.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:ExpressionTrace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_/0/@regions.0/@vertices.15/@outgoingTransitions.0/@effect/@actions.0/@event"/>
+    <to href="Channel.gcd#//@components.0/@transitions.27/@effects.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:ExpressionTrace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_/0/@regions.0/@vertices.15/@outgoingTransitions.0/@effect/@actions.0"/>
+    <to href="Channel.gcd#//@components.0/@transitions.27/@effects.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:ExpressionTrace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_/0/@regions.0/@vertices.21/@outgoingTransitions.0/@effect/@actions.0/@event"/>
+    <to href="Channel.gcd#//@components.0/@transitions.14/@effects.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:ExpressionTrace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/ChannelLoseAllMessagesInInterval/Channel.sct#SCT_/0/@regions.0/@vertices.21/@outgoingTransitions.0/@effect/@actions.0"/>
+    <to href="Channel.gcd#//@components.0/@transitions.14/@effects.0"/>
+  </traces>
+</hu.bme.mit.gamma.yakindu.transformation:Y2GTrace>

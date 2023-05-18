@@ -1,0 +1,22 @@
+package mo_antivalchk
+
+import "Interface/Interfaces.gcd"
+import "COID.gcd"
+
+cascade CoidWrapper [
+	port I : requires I_Toggle
+	port T : requires I_Timeout
+	port I_FT : requires E_T_F_Interface
+	port I_CR : requires E_T_F_Interface
+	port StateMachine_OutPort : provides COIDOutSignalInterface
+	port Execute : requires I_Execute
+] {
+	component coid : bJbCOID_allapotgep
+	
+//	bind I -> coid.I
+//	bind T -> coid.T
+	bind I_FT -> coid.I_FT
+	bind I_CR -> coid.I_CR
+	bind StateMachine_OutPort -> coid.StateMachine_OutPort
+	bind Execute -> coid.Execute
+}

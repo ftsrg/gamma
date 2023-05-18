@@ -1,0 +1,2511 @@
+<nta>
+<declaration>
+
+
+broadcast chan finalize;
+
+bool isStable = false;
+
+bool toRaise_Block_Port_Operation_Call_InvalidOfmaster;
+
+bool isRaised_Block_Port_Operation_Call_InvalidOfmaster;
+
+bool toRaise_StateMachine_Port_OrionConnReqOfmaster;
+
+bool isRaised_StateMachine_Port_OrionConnReqOfmaster;
+
+bool toRaise_Input_OrionConnReqOfslaveMasterChannel;
+
+bool isRaised_Input_OrionConnReqOfslaveMasterChannel;
+
+bool toRaise_Input_OrionAppDataOfslaveMasterChannel;
+
+bool isRaised_Input_OrionAppDataOfslaveMasterChannel;
+
+bool toRaise_Connection_Port_Operation_Call_DisconnOfmaster;
+
+bool isRaised_Connection_Port_Operation_Call_DisconnOfmaster;
+
+bool toRaise_Input_OrionConnRespOfslaveMasterChannel;
+
+bool isRaised_Input_OrionConnRespOfslaveMasterChannel;
+
+bool toRaise_StateMachine_Port_OrionDisconnOfmaster;
+
+bool isRaised_StateMachine_Port_OrionDisconnOfmaster;
+
+bool toRaise_Connection_Port_Operation_Call_ConnectOfslave;
+
+bool isRaised_Connection_Port_Operation_Call_ConnectOfslave;
+
+bool toRaise_Block_Port_Operation_Call_InvalidOfslave;
+
+bool isRaised_Block_Port_Operation_Call_InvalidOfslave;
+
+bool toRaise_Input_OrionDisconnCauseOfmasterSlaveChannel;
+
+bool isRaised_Input_OrionDisconnCauseOfmasterSlaveChannel;
+
+bool toRaise_StateMachine_Port_OrionConnRespOfmaster;
+
+bool isRaised_StateMachine_Port_OrionConnRespOfmaster;
+
+bool toRaise_StateMachine_Port_OrionAppDataOfmaster;
+
+bool isRaised_StateMachine_Port_OrionAppDataOfmaster;
+
+bool toRaise_Input_OrionConnConfOfslaveMasterChannel;
+
+bool isRaised_Input_OrionConnConfOfslaveMasterChannel;
+
+bool toRaise_Input_OrionDisconnOfmasterSlaveChannel;
+
+bool isRaised_Input_OrionDisconnOfmasterSlaveChannel;
+
+bool toRaise_StateMachine_Port_OrionConnReqOfslave;
+
+bool isRaised_StateMachine_Port_OrionConnReqOfslave;
+
+bool toRaise_Input_OrionConnReqOfmasterSlaveChannel;
+
+bool isRaised_Input_OrionConnReqOfmasterSlaveChannel;
+
+bool toRaise_StateMachine_Port_OrionAppDataOfslave;
+
+bool isRaised_StateMachine_Port_OrionAppDataOfslave;
+
+bool toRaise_Connection_Port_Operation_Call_DisconnOfslave;
+
+bool isRaised_Connection_Port_Operation_Call_DisconnOfslave;
+
+bool toRaise_Block_Port_Operation_Call_SendDataOfmaster;
+
+bool isRaised_Block_Port_Operation_Call_SendDataOfmaster;
+
+bool toRaise_StateMachine_Port_OrionConnRespOfslave;
+
+bool isRaised_StateMachine_Port_OrionConnRespOfslave;
+
+bool toRaise_StateMachine_Port_OrionDisconnOfslave;
+
+bool isRaised_StateMachine_Port_OrionDisconnOfslave;
+
+bool toRaise_Block_Port_Operation_Call_SendDataOfslave;
+
+bool isRaised_Block_Port_Operation_Call_SendDataOfslave;
+
+bool toRaise_Input_OrionDisconnCauseOfslaveMasterChannel;
+
+bool isRaised_Input_OrionDisconnCauseOfslaveMasterChannel;
+
+bool toRaise_Input_OrionAppDataOfmasterSlaveChannel;
+
+bool isRaised_Input_OrionAppDataOfmasterSlaveChannel;
+
+bool toRaise_StateMachine_Port_OrionDisconnCauseOfmaster;
+
+bool isRaised_StateMachine_Port_OrionDisconnCauseOfmaster;
+
+bool toRaise_Input_OrionConnRespOfmasterSlaveChannel;
+
+bool isRaised_Input_OrionConnRespOfmasterSlaveChannel;
+
+bool toRaise_Input_OrionConnConfOfmasterSlaveChannel;
+
+bool isRaised_Input_OrionConnConfOfmasterSlaveChannel;
+
+bool toRaise_Input_OrionKeepAliveOfslaveMasterChannel;
+
+bool isRaised_Input_OrionKeepAliveOfslaveMasterChannel;
+
+bool toRaise_StateMachine_Port_OrionKeepAliveOfmaster;
+
+bool isRaised_StateMachine_Port_OrionKeepAliveOfmaster;
+
+bool toRaise_StateMachine_Port_OrionKeepAliveOfslave;
+
+bool isRaised_StateMachine_Port_OrionKeepAliveOfslave;
+
+bool toRaise_Connection_Port_Operation_Call_ConnectOfmaster;
+
+bool isRaised_Connection_Port_Operation_Call_ConnectOfmaster;
+
+bool toRaise_StateMachine_Port_OrionConnConfOfmaster;
+
+bool isRaised_StateMachine_Port_OrionConnConfOfmaster;
+
+bool toRaise_Input_OrionKeepAliveOfmasterSlaveChannel;
+
+bool isRaised_Input_OrionKeepAliveOfmasterSlaveChannel;
+
+bool toRaise_Input_OrionDisconnOfslaveMasterChannel;
+
+bool isRaised_Input_OrionDisconnOfslaveMasterChannel;
+
+bool toRaise_StateMachine_Port_OrionDisconnCauseOfslave;
+
+bool isRaised_StateMachine_Port_OrionDisconnCauseOfslave;
+
+bool toRaise_StateMachine_Port_OrionConnConfOfslave;
+
+bool isRaised_StateMachine_Port_OrionConnConfOfslave;
+
+broadcast chan runCycleRegion_1_in_Kapcsolodva_4OfKapcsolodva_4Ofmaster;
+
+bool isScheduledregion_1_in_Kapcsolodva_4OfKapcsolodva_4Ofmaster;
+
+broadcast chan runCycleOrionDisconnRegionOfStatechartOfmasterSlaveChannel;
+
+bool isScheduledOrionDisconnRegionOfStatechartOfmasterSlaveChannel;
+
+broadcast chan runCycleOrionDisconnRegionOfStatechartOfslaveMasterChannel;
+
+bool isScheduledOrionDisconnRegionOfStatechartOfslaveMasterChannel;
+
+broadcast chan runCycleMain_region_of_Orion_Slave_SMOfStatechartOfslave;
+
+bool isScheduledmain_region_of_Orion_Slave_SMOfStatechartOfslave;
+
+broadcast chan runCycleRegion_2_in_Kapcsolodva_1OfKapcsolodva_1Ofslave;
+
+bool isScheduledregion_2_in_Kapcsolodva_1OfKapcsolodva_1Ofslave;
+
+broadcast chan runCycleMain_region_of_Orion_Master_SMOfStatechartOfmaster;
+
+bool isScheduledmain_region_of_Orion_Master_SMOfStatechartOfmaster;
+
+broadcast chan runCycleRegion_2_in_Kapcsolodva_4OfKapcsolodva_4Ofmaster;
+
+bool isScheduledregion_2_in_Kapcsolodva_4OfKapcsolodva_4Ofmaster;
+
+broadcast chan runCycleRegion_1_in_Kapcsolodva_1OfKapcsolodva_1Ofslave;
+
+bool isScheduledregion_1_in_Kapcsolodva_1OfKapcsolodva_1Ofslave;
+
+broadcast chan AcrReg16;
+
+broadcast chan AcrReg18;
+
+broadcast chan entryChanOfKapcsolodva_12;
+
+broadcast chan entryChanOfKapcsolodva_43;
+
+broadcast chan exitChanOfKapcsolodva_42;
+
+broadcast chan exitChanOfKapcsolodva_13;
+
+void clearOutEvents49() {
+}
+
+bool noInnerEvents() {
+	bool tempVar0;
+	bool tempVar1;
+	bool tempVar2;
+	bool tempVar3;
+	bool tempVar4;
+	bool tempVar5;
+	bool tempVar6;
+	bool tempVar7;
+	bool tempVar8;
+	bool tempVar9;
+	bool tempVar10;
+	bool tempVar11;
+	bool tempVar12;
+	bool tempVar13;
+	bool tempVar14;
+	bool tempVar15;
+	bool tempVar16;
+	bool tempVar17;
+	bool tempVar18;
+	bool tempVar19;
+	bool tempVar20;
+	bool tempVar21;
+	bool tempVar22;
+	bool tempVar23;
+	bool tempVar24;
+	bool tempVar25;
+	bool tempVar26;
+	bool tempVar27;
+	bool tempVar28;
+	bool tempVar29;
+	bool tempVar30;
+	bool tempVar31;
+	bool tempVar32;
+	bool tempVar33;
+	bool tempVar34;
+	bool tempVar35;
+	tempVar0 = toRaise_Input_OrionDisconnOfslaveMasterChannel;
+	tempVar1 = (tempVar0 || toRaise_Input_OrionKeepAliveOfmasterSlaveChannel);
+	tempVar2 = (tempVar1 || toRaise_Connection_Port_Operation_Call_ConnectOfmaster);
+	tempVar3 = (tempVar2 || toRaise_StateMachine_Port_OrionKeepAliveOfslave);
+	tempVar4 = (tempVar3 || toRaise_StateMachine_Port_OrionDisconnCauseOfslave);
+	tempVar5 = (tempVar4 || toRaise_Block_Port_Operation_Call_SendDataOfslave);
+	tempVar6 = (tempVar5 || toRaise_StateMachine_Port_OrionDisconnCauseOfmaster);
+	tempVar7 = (tempVar6 || toRaise_Input_OrionConnReqOfslaveMasterChannel);
+	tempVar8 = (tempVar7 || toRaise_Block_Port_Operation_Call_SendDataOfmaster);
+	tempVar9 = (tempVar8 || toRaise_Input_OrionConnRespOfmasterSlaveChannel);
+	tempVar10 = (tempVar9 || toRaise_Input_OrionAppDataOfslaveMasterChannel);
+	tempVar11 = (tempVar10 || toRaise_Input_OrionConnRespOfslaveMasterChannel);
+	tempVar12 = (tempVar11 || toRaise_Input_OrionAppDataOfmasterSlaveChannel);
+	tempVar13 = (tempVar12 || toRaise_Input_OrionDisconnOfmasterSlaveChannel);
+	tempVar14 = (tempVar13 || toRaise_StateMachine_Port_OrionKeepAliveOfmaster);
+	tempVar15 = (tempVar14 || toRaise_StateMachine_Port_OrionConnReqOfslave);
+	tempVar16 = (tempVar15 || toRaise_Input_OrionKeepAliveOfslaveMasterChannel);
+	tempVar17 = (tempVar16 || toRaise_Input_OrionConnReqOfmasterSlaveChannel);
+	tempVar18 = (tempVar17 || toRaise_StateMachine_Port_OrionConnConfOfmaster);
+	tempVar19 = (tempVar18 || toRaise_StateMachine_Port_OrionConnRespOfslave);
+	tempVar20 = (tempVar19 || toRaise_StateMachine_Port_OrionAppDataOfslave);
+	tempVar21 = (tempVar20 || toRaise_Connection_Port_Operation_Call_DisconnOfslave);
+	tempVar22 = (tempVar21 || toRaise_Input_OrionConnConfOfslaveMasterChannel);
+	tempVar23 = (tempVar22 || toRaise_StateMachine_Port_OrionDisconnOfslave);
+	tempVar24 = (tempVar23 || toRaise_StateMachine_Port_OrionConnConfOfslave);
+	tempVar25 = (tempVar24 || toRaise_Input_OrionDisconnCauseOfslaveMasterChannel);
+	tempVar26 = (tempVar25 || toRaise_Connection_Port_Operation_Call_DisconnOfmaster);
+	tempVar27 = (tempVar26 || toRaise_Block_Port_Operation_Call_InvalidOfmaster);
+	tempVar28 = (tempVar27 || toRaise_Input_OrionDisconnCauseOfmasterSlaveChannel);
+	tempVar29 = (tempVar28 || toRaise_StateMachine_Port_OrionDisconnOfmaster);
+	tempVar30 = (tempVar29 || toRaise_Block_Port_Operation_Call_InvalidOfslave);
+	tempVar31 = (tempVar30 || toRaise_StateMachine_Port_OrionConnReqOfmaster);
+	tempVar32 = (tempVar31 || toRaise_StateMachine_Port_OrionConnRespOfmaster);
+	tempVar33 = (tempVar32 || toRaise_Connection_Port_Operation_Call_ConnectOfslave);
+	tempVar34 = (tempVar33 || toRaise_StateMachine_Port_OrionAppDataOfmaster);
+	tempVar35 = (tempVar34 || toRaise_Input_OrionConnConfOfmasterSlaveChannel);
+	return !(tempVar35);
+}
+
+</declaration>
+<template>
+<name>
+region_1_in_Kapcsolodva_4OfKapcsolodva_4Ofmaster
+</name>
+<declaration>
+bool isActive;
+
+clock timer27;
+</declaration>
+<location id="EntryLocation7">
+<name>
+EntryLocation7
+</name>
+<label kind="comments">
+Entry Location
+</label>
+<committed/>
+</location>
+
+<location id="GenInitLocation8">
+<name>
+GenInitLocation8
+</name>
+<label kind="comments">
+Generated for the synchronization of subregions.
+</label>
+</location>
+
+<location id="KeepAliveSendTimeout_1">
+<name>
+KeepAliveSendTimeout_1
+</name>
+<label kind="invariant">
+timer27 &lt;= 4 * 1000
+</label>
+</location>
+
+<location id="entryOfKeepAliveSendTimeout_1">
+<name>
+entryOfKeepAliveSendTimeout_1
+</name>
+<label kind="comments">
+Pseudo state for subregion synchronization
+</label>
+<committed/>
+</location>
+
+<location id="timer28">
+<name>
+timer28
+</name>
+</location>
+<init ref="GenInitLocation8"/>
+
+<transition>
+<source ref="entryOfKeepAliveSendTimeout_1"/>
+<target ref="KeepAliveSendTimeout_1"/>
+<label kind="assignment">timer27 = 0</label>
+<label kind="comments">Edge for subregion synchronization</label>
+</transition>
+
+<transition>
+<source ref="EntryLocation7"/>
+<target ref="entryOfKeepAliveSendTimeout_1"/>
+<label kind="guard">isActive</label>
+<label kind="assignment">isScheduledregion_1_in_Kapcsolodva_4OfKapcsolodva_4Ofmaster = true</label>
+</transition>
+
+<transition>
+<source ref="KeepAliveSendTimeout_1"/>
+<target ref="entryOfKeepAliveSendTimeout_1"/>
+<label kind="guard">(isActive &amp;&amp; isRaised_Block_Port_Operation_Call_SendDataOfmaster)</label>
+<label kind="synchronisation">runCycleRegion_1_in_Kapcsolodva_4OfKapcsolodva_4Ofmaster?</label>
+<label kind="assignment">isScheduledregion_1_in_Kapcsolodva_4OfKapcsolodva_4Ofmaster = true,
+toRaise_Input_OrionAppDataOfmasterSlaveChannel = true</label>
+</transition>
+
+<transition>
+<source ref="timer28"/>
+<target ref="entryOfKeepAliveSendTimeout_1"/>
+<label kind="guard">isActive</label>
+<label kind="synchronisation">runCycleRegion_1_in_Kapcsolodva_4OfKapcsolodva_4Ofmaster?</label>
+<label kind="assignment">isScheduledregion_1_in_Kapcsolodva_4OfKapcsolodva_4Ofmaster = true,
+toRaise_Input_OrionKeepAliveOfmasterSlaveChannel = true</label>
+</transition>
+
+<transition>
+<source ref="KeepAliveSendTimeout_1"/>
+<target ref="GenInitLocation8"/>
+<label kind="synchronisation">AcrReg16?</label>
+<label kind="assignment">isActive = false</label>
+</transition>
+
+<transition>
+<source ref="GenInitLocation8"/>
+<target ref="GenInitLocation8"/>
+<label kind="synchronisation">AcrReg16?</label>
+<label kind="assignment">isActive = false</label>
+</transition>
+
+<transition>
+<source ref="KeepAliveSendTimeout_1"/>
+<target ref="timer28"/>
+<label kind="guard">(isStable &amp;&amp; timer27 >= 4 * 1000)</label>
+<label kind="assignment"></label>
+</transition>
+
+<transition>
+<source ref="timer28"/>
+<target ref="EntryLocation7"/>
+<label kind="synchronisation">entryChanOfKapcsolodva_43?</label>
+<label kind="assignment">isActive = true</label>
+</transition>
+
+<transition>
+<source ref="KeepAliveSendTimeout_1"/>
+<target ref="EntryLocation7"/>
+<label kind="synchronisation">entryChanOfKapcsolodva_43?</label>
+<label kind="assignment">isActive = true</label>
+</transition>
+
+<transition>
+<source ref="GenInitLocation8"/>
+<target ref="EntryLocation7"/>
+<label kind="synchronisation">entryChanOfKapcsolodva_43?</label>
+<label kind="assignment">isActive = true</label>
+</transition>
+
+<transition>
+<source ref="timer28"/>
+<target ref="GenInitLocation8"/>
+<label kind="synchronisation">exitChanOfKapcsolodva_42?</label>
+<label kind="assignment">isActive = false</label>
+</transition>
+
+<transition>
+<source ref="KeepAliveSendTimeout_1"/>
+<target ref="GenInitLocation8"/>
+<label kind="synchronisation">exitChanOfKapcsolodva_42?</label>
+<label kind="assignment">isActive = false</label>
+</transition>
+
+<transition>
+<source ref="GenInitLocation8"/>
+<target ref="GenInitLocation8"/>
+<label kind="synchronisation">exitChanOfKapcsolodva_42?</label>
+<label kind="assignment">isActive = false</label>
+</transition>
+
+<transition>
+<source ref="timer28"/>
+<target ref="GenInitLocation8"/>
+<label kind="synchronisation">AcrReg16?</label>
+<label kind="assignment">isActive = false</label>
+</transition>
+
+<transition>
+<source ref="timer28"/>
+<target ref="entryOfKeepAliveSendTimeout_1"/>
+<label kind="guard">(isActive &amp;&amp; isRaised_Block_Port_Operation_Call_SendDataOfmaster)</label>
+<label kind="synchronisation">runCycleRegion_1_in_Kapcsolodva_4OfKapcsolodva_4Ofmaster?</label>
+<label kind="assignment">isScheduledregion_1_in_Kapcsolodva_4OfKapcsolodva_4Ofmaster = true,
+toRaise_Input_OrionAppDataOfmasterSlaveChannel = true</label>
+</transition>
+</template>
+
+<template>
+<name>
+OrionDisconnRegionOfStatechartOfmasterSlaveChannel
+</name>
+<location id="EntryLocation3">
+<name>
+EntryLocation3
+</name>
+<label kind="comments">
+Entry Location
+</label>
+<committed/>
+</location>
+
+<location id="IdleOrionDisconn">
+<name>
+IdleOrionDisconn
+</name>
+</location>
+<init ref="EntryLocation3"/>
+
+<transition>
+<source ref="EntryLocation3"/>
+<target ref="IdleOrionDisconn"/>
+<label kind="assignment">isScheduledOrionDisconnRegionOfStatechartOfmasterSlaveChannel = true</label>
+</transition>
+
+<transition>
+<source ref="IdleOrionDisconn"/>
+<target ref="IdleOrionDisconn"/>
+<label kind="guard">(!(isRaised_Input_OrionKeepAliveOfmasterSlaveChannel) &amp;&amp; (!(isRaised_Input_OrionAppDataOfmasterSlaveChannel) &amp;&amp; (!(isRaised_Input_OrionConnReqOfmasterSlaveChannel) &amp;&amp; (!(isRaised_Input_OrionDisconnCauseOfmasterSlaveChannel) &amp;&amp; (!(isRaised_Input_OrionDisconnOfmasterSlaveChannel) &amp;&amp; isRaised_Input_OrionConnConfOfmasterSlaveChannel)))))</label>
+<label kind="synchronisation">runCycleOrionDisconnRegionOfStatechartOfmasterSlaveChannel?</label>
+<label kind="assignment">isScheduledOrionDisconnRegionOfStatechartOfmasterSlaveChannel = true,
+toRaise_StateMachine_Port_OrionConnConfOfslave = true</label>
+</transition>
+
+<transition>
+<source ref="IdleOrionDisconn"/>
+<target ref="IdleOrionDisconn"/>
+<label kind="guard">isRaised_Input_OrionDisconnOfmasterSlaveChannel</label>
+<label kind="synchronisation">runCycleOrionDisconnRegionOfStatechartOfmasterSlaveChannel?</label>
+<label kind="assignment">isScheduledOrionDisconnRegionOfStatechartOfmasterSlaveChannel = true,
+toRaise_StateMachine_Port_OrionDisconnOfslave = true</label>
+</transition>
+
+<transition>
+<source ref="IdleOrionDisconn"/>
+<target ref="IdleOrionDisconn"/>
+<label kind="guard">(!(isRaised_Input_OrionConnReqOfmasterSlaveChannel) &amp;&amp; (!(isRaised_Input_OrionDisconnCauseOfmasterSlaveChannel) &amp;&amp; (!(isRaised_Input_OrionDisconnOfmasterSlaveChannel) &amp;&amp; isRaised_Input_OrionAppDataOfmasterSlaveChannel)))</label>
+<label kind="synchronisation">runCycleOrionDisconnRegionOfStatechartOfmasterSlaveChannel?</label>
+<label kind="assignment">isScheduledOrionDisconnRegionOfStatechartOfmasterSlaveChannel = true,
+toRaise_StateMachine_Port_OrionAppDataOfslave = true</label>
+</transition>
+
+<transition>
+<source ref="IdleOrionDisconn"/>
+<target ref="IdleOrionDisconn"/>
+<label kind="guard">(!(isRaised_Input_OrionDisconnOfmasterSlaveChannel) &amp;&amp; isRaised_Input_OrionDisconnCauseOfmasterSlaveChannel)</label>
+<label kind="synchronisation">runCycleOrionDisconnRegionOfStatechartOfmasterSlaveChannel?</label>
+<label kind="assignment">isScheduledOrionDisconnRegionOfStatechartOfmasterSlaveChannel = true,
+toRaise_StateMachine_Port_OrionDisconnCauseOfslave = true</label>
+</transition>
+
+<transition>
+<source ref="IdleOrionDisconn"/>
+<target ref="IdleOrionDisconn"/>
+<label kind="guard">(!((!(isRaised_Input_OrionConnReqOfmasterSlaveChannel) &amp;&amp; (!(isRaised_Input_OrionDisconnCauseOfmasterSlaveChannel) &amp;&amp; (!(isRaised_Input_OrionDisconnOfmasterSlaveChannel) &amp;&amp; isRaised_Input_OrionAppDataOfmasterSlaveChannel)))) &amp;&amp; (!((!(isRaised_Input_OrionDisconnCauseOfmasterSlaveChannel) &amp;&amp; (!(isRaised_Input_OrionDisconnOfmasterSlaveChannel) &amp;&amp; isRaised_Input_OrionConnReqOfmasterSlaveChannel))) &amp;&amp; (!((!(isRaised_Input_OrionDisconnOfmasterSlaveChannel) &amp;&amp; isRaised_Input_OrionDisconnCauseOfmasterSlaveChannel)) &amp;&amp; (!(isRaised_Input_OrionDisconnOfmasterSlaveChannel) &amp;&amp; isRaised_Input_OrionKeepAliveOfmasterSlaveChannel))))</label>
+<label kind="synchronisation">runCycleOrionDisconnRegionOfStatechartOfmasterSlaveChannel?</label>
+<label kind="assignment">isScheduledOrionDisconnRegionOfStatechartOfmasterSlaveChannel = true,
+toRaise_StateMachine_Port_OrionKeepAliveOfslave = true</label>
+</transition>
+
+<transition>
+<source ref="IdleOrionDisconn"/>
+<target ref="IdleOrionDisconn"/>
+<label kind="guard">(!((!(isRaised_Input_OrionKeepAliveOfmasterSlaveChannel) &amp;&amp; (!(isRaised_Input_OrionAppDataOfmasterSlaveChannel) &amp;&amp; (!(isRaised_Input_OrionConnReqOfmasterSlaveChannel) &amp;&amp; (!(isRaised_Input_OrionDisconnCauseOfmasterSlaveChannel) &amp;&amp; (!(isRaised_Input_OrionDisconnOfmasterSlaveChannel) &amp;&amp; isRaised_Input_OrionConnConfOfmasterSlaveChannel)))))) &amp;&amp; (!((!((!(isRaised_Input_OrionConnReqOfmasterSlaveChannel) &amp;&amp; (!(isRaised_Input_OrionDisconnCauseOfmasterSlaveChannel) &amp;&amp; (!(isRaised_Input_OrionDisconnOfmasterSlaveChannel) &amp;&amp; isRaised_Input_OrionAppDataOfmasterSlaveChannel)))) &amp;&amp; (!((!(isRaised_Input_OrionDisconnCauseOfmasterSlaveChannel) &amp;&amp; (!(isRaised_Input_OrionDisconnOfmasterSlaveChannel) &amp;&amp; isRaised_Input_OrionConnReqOfmasterSlaveChannel))) &amp;&amp; (!((!(isRaised_Input_OrionDisconnOfmasterSlaveChannel) &amp;&amp; isRaised_Input_OrionDisconnCauseOfmasterSlaveChannel)) &amp;&amp; (!(isRaised_Input_OrionDisconnOfmasterSlaveChannel) &amp;&amp; isRaised_Input_OrionKeepAliveOfmasterSlaveChannel))))) &amp;&amp; (!((!(isRaised_Input_OrionConnReqOfmasterSlaveChannel) &amp;&amp; (!(isRaised_Input_OrionDisconnCauseOfmasterSlaveChannel) &amp;&amp; (!(isRaised_Input_OrionDisconnOfmasterSlaveChannel) &amp;&amp; isRaised_Input_OrionAppDataOfmasterSlaveChannel)))) &amp;&amp; (!((!(isRaised_Input_OrionDisconnCauseOfmasterSlaveChannel) &amp;&amp; (!(isRaised_Input_OrionDisconnOfmasterSlaveChannel) &amp;&amp; isRaised_Input_OrionConnReqOfmasterSlaveChannel))) &amp;&amp; (!((!(isRaised_Input_OrionDisconnOfmasterSlaveChannel) &amp;&amp; isRaised_Input_OrionDisconnCauseOfmasterSlaveChannel)) &amp;&amp; (!(isRaised_Input_OrionDisconnOfmasterSlaveChannel) &amp;&amp; isRaised_Input_OrionConnRespOfmasterSlaveChannel))))))</label>
+<label kind="synchronisation">runCycleOrionDisconnRegionOfStatechartOfmasterSlaveChannel?</label>
+<label kind="assignment">isScheduledOrionDisconnRegionOfStatechartOfmasterSlaveChannel = true,
+toRaise_StateMachine_Port_OrionConnRespOfslave = true</label>
+</transition>
+
+<transition>
+<source ref="IdleOrionDisconn"/>
+<target ref="IdleOrionDisconn"/>
+<label kind="guard">(!(isRaised_Input_OrionDisconnCauseOfmasterSlaveChannel) &amp;&amp; (!(isRaised_Input_OrionDisconnOfmasterSlaveChannel) &amp;&amp; isRaised_Input_OrionConnReqOfmasterSlaveChannel))</label>
+<label kind="synchronisation">runCycleOrionDisconnRegionOfStatechartOfmasterSlaveChannel?</label>
+<label kind="assignment">isScheduledOrionDisconnRegionOfStatechartOfmasterSlaveChannel = true,
+toRaise_StateMachine_Port_OrionConnReqOfslave = true</label>
+</transition>
+</template>
+
+<template>
+<name>
+OrionDisconnRegionOfStatechartOfslaveMasterChannel
+</name>
+<location id="EntryLocation9">
+<name>
+EntryLocation9
+</name>
+<label kind="comments">
+Entry Location
+</label>
+<committed/>
+</location>
+
+<location id="IdleOrionDisconn">
+<name>
+IdleOrionDisconn
+</name>
+</location>
+<init ref="EntryLocation9"/>
+
+<transition>
+<source ref="IdleOrionDisconn"/>
+<target ref="IdleOrionDisconn"/>
+<label kind="guard">(!((!((!(isRaised_Input_OrionConnReqOfslaveMasterChannel) &amp;&amp; (!(isRaised_Input_OrionDisconnCauseOfslaveMasterChannel) &amp;&amp; (!(isRaised_Input_OrionDisconnOfslaveMasterChannel) &amp;&amp; isRaised_Input_OrionAppDataOfslaveMasterChannel)))) &amp;&amp; (!((!(isRaised_Input_OrionDisconnCauseOfslaveMasterChannel) &amp;&amp; (!(isRaised_Input_OrionDisconnOfslaveMasterChannel) &amp;&amp; isRaised_Input_OrionConnReqOfslaveMasterChannel))) &amp;&amp; (!(isRaised_Input_OrionDisconnCauseOfslaveMasterChannel) &amp;&amp; (!(isRaised_Input_OrionDisconnOfslaveMasterChannel) &amp;&amp; isRaised_Input_OrionKeepAliveOfslaveMasterChannel))))) &amp;&amp; (!((!(isRaised_Input_OrionConnReqOfslaveMasterChannel) &amp;&amp; (!(isRaised_Input_OrionDisconnCauseOfslaveMasterChannel) &amp;&amp; (!(isRaised_Input_OrionDisconnOfslaveMasterChannel) &amp;&amp; isRaised_Input_OrionAppDataOfslaveMasterChannel)))) &amp;&amp; (!((!(isRaised_Input_OrionDisconnCauseOfslaveMasterChannel) &amp;&amp; (!(isRaised_Input_OrionDisconnOfslaveMasterChannel) &amp;&amp; isRaised_Input_OrionConnReqOfslaveMasterChannel))) &amp;&amp; (!((!(isRaised_Input_OrionDisconnOfslaveMasterChannel) &amp;&amp; isRaised_Input_OrionDisconnCauseOfslaveMasterChannel)) &amp;&amp; (!(isRaised_Input_OrionDisconnOfslaveMasterChannel) &amp;&amp; isRaised_Input_OrionConnConfOfslaveMasterChannel)))))</label>
+<label kind="synchronisation">runCycleOrionDisconnRegionOfStatechartOfslaveMasterChannel?</label>
+<label kind="assignment">isScheduledOrionDisconnRegionOfStatechartOfslaveMasterChannel = true,
+toRaise_StateMachine_Port_OrionConnConfOfmaster = true</label>
+</transition>
+
+<transition>
+<source ref="IdleOrionDisconn"/>
+<target ref="IdleOrionDisconn"/>
+<label kind="guard">isRaised_Input_OrionDisconnOfslaveMasterChannel</label>
+<label kind="synchronisation">runCycleOrionDisconnRegionOfStatechartOfslaveMasterChannel?</label>
+<label kind="assignment">isScheduledOrionDisconnRegionOfStatechartOfslaveMasterChannel = true,
+toRaise_StateMachine_Port_OrionDisconnOfmaster = true</label>
+</transition>
+
+<transition>
+<source ref="IdleOrionDisconn"/>
+<target ref="IdleOrionDisconn"/>
+<label kind="guard">(!(isRaised_Input_OrionDisconnCauseOfslaveMasterChannel) &amp;&amp; (!(isRaised_Input_OrionDisconnOfslaveMasterChannel) &amp;&amp; isRaised_Input_OrionConnReqOfslaveMasterChannel))</label>
+<label kind="synchronisation">runCycleOrionDisconnRegionOfStatechartOfslaveMasterChannel?</label>
+<label kind="assignment">isScheduledOrionDisconnRegionOfStatechartOfslaveMasterChannel = true,
+toRaise_StateMachine_Port_OrionConnReqOfmaster = true</label>
+</transition>
+
+<transition>
+<source ref="IdleOrionDisconn"/>
+<target ref="IdleOrionDisconn"/>
+<label kind="guard">(!(isRaised_Input_OrionDisconnOfslaveMasterChannel) &amp;&amp; isRaised_Input_OrionDisconnCauseOfslaveMasterChannel)</label>
+<label kind="synchronisation">runCycleOrionDisconnRegionOfStatechartOfslaveMasterChannel?</label>
+<label kind="assignment">isScheduledOrionDisconnRegionOfStatechartOfslaveMasterChannel = true,
+toRaise_StateMachine_Port_OrionDisconnCauseOfmaster = true</label>
+</transition>
+
+<transition>
+<source ref="IdleOrionDisconn"/>
+<target ref="IdleOrionDisconn"/>
+<label kind="guard">(!(isRaised_Input_OrionConnConfOfslaveMasterChannel) &amp;&amp; (!((!((!(isRaised_Input_OrionConnReqOfslaveMasterChannel) &amp;&amp; (!(isRaised_Input_OrionDisconnCauseOfslaveMasterChannel) &amp;&amp; (!(isRaised_Input_OrionDisconnOfslaveMasterChannel) &amp;&amp; isRaised_Input_OrionAppDataOfslaveMasterChannel)))) &amp;&amp; (!((!(isRaised_Input_OrionDisconnCauseOfslaveMasterChannel) &amp;&amp; (!(isRaised_Input_OrionDisconnOfslaveMasterChannel) &amp;&amp; isRaised_Input_OrionConnReqOfslaveMasterChannel))) &amp;&amp; (!(isRaised_Input_OrionDisconnCauseOfslaveMasterChannel) &amp;&amp; (!(isRaised_Input_OrionDisconnOfslaveMasterChannel) &amp;&amp; isRaised_Input_OrionKeepAliveOfslaveMasterChannel))))) &amp;&amp; (!((!(isRaised_Input_OrionConnReqOfslaveMasterChannel) &amp;&amp; (!(isRaised_Input_OrionDisconnCauseOfslaveMasterChannel) &amp;&amp; (!(isRaised_Input_OrionDisconnOfslaveMasterChannel) &amp;&amp; isRaised_Input_OrionAppDataOfslaveMasterChannel)))) &amp;&amp; (!((!(isRaised_Input_OrionDisconnCauseOfslaveMasterChannel) &amp;&amp; (!(isRaised_Input_OrionDisconnOfslaveMasterChannel) &amp;&amp; isRaised_Input_OrionConnReqOfslaveMasterChannel))) &amp;&amp; (!(isRaised_Input_OrionDisconnCauseOfslaveMasterChannel) &amp;&amp; (!(isRaised_Input_OrionDisconnOfslaveMasterChannel) &amp;&amp; isRaised_Input_OrionConnRespOfslaveMasterChannel))))))</label>
+<label kind="synchronisation">runCycleOrionDisconnRegionOfStatechartOfslaveMasterChannel?</label>
+<label kind="assignment">isScheduledOrionDisconnRegionOfStatechartOfslaveMasterChannel = true,
+toRaise_StateMachine_Port_OrionConnRespOfmaster = true</label>
+</transition>
+
+<transition>
+<source ref="EntryLocation9"/>
+<target ref="IdleOrionDisconn"/>
+<label kind="assignment">isScheduledOrionDisconnRegionOfStatechartOfslaveMasterChannel = true</label>
+</transition>
+
+<transition>
+<source ref="IdleOrionDisconn"/>
+<target ref="IdleOrionDisconn"/>
+<label kind="guard">(!((!(isRaised_Input_OrionConnReqOfslaveMasterChannel) &amp;&amp; (!(isRaised_Input_OrionDisconnCauseOfslaveMasterChannel) &amp;&amp; (!(isRaised_Input_OrionDisconnOfslaveMasterChannel) &amp;&amp; isRaised_Input_OrionAppDataOfslaveMasterChannel)))) &amp;&amp; (!((!(isRaised_Input_OrionDisconnCauseOfslaveMasterChannel) &amp;&amp; (!(isRaised_Input_OrionDisconnOfslaveMasterChannel) &amp;&amp; isRaised_Input_OrionConnReqOfslaveMasterChannel))) &amp;&amp; (!(isRaised_Input_OrionDisconnCauseOfslaveMasterChannel) &amp;&amp; (!(isRaised_Input_OrionDisconnOfslaveMasterChannel) &amp;&amp; isRaised_Input_OrionKeepAliveOfslaveMasterChannel))))</label>
+<label kind="synchronisation">runCycleOrionDisconnRegionOfStatechartOfslaveMasterChannel?</label>
+<label kind="assignment">isScheduledOrionDisconnRegionOfStatechartOfslaveMasterChannel = true,
+toRaise_StateMachine_Port_OrionKeepAliveOfmaster = true</label>
+</transition>
+
+<transition>
+<source ref="IdleOrionDisconn"/>
+<target ref="IdleOrionDisconn"/>
+<label kind="guard">(!(isRaised_Input_OrionConnReqOfslaveMasterChannel) &amp;&amp; (!(isRaised_Input_OrionDisconnCauseOfslaveMasterChannel) &amp;&amp; (!(isRaised_Input_OrionDisconnOfslaveMasterChannel) &amp;&amp; isRaised_Input_OrionAppDataOfslaveMasterChannel)))</label>
+<label kind="synchronisation">runCycleOrionDisconnRegionOfStatechartOfslaveMasterChannel?</label>
+<label kind="assignment">isScheduledOrionDisconnRegionOfStatechartOfslaveMasterChannel = true,
+toRaise_StateMachine_Port_OrionAppDataOfmaster = true</label>
+</transition>
+</template>
+
+<template>
+<name>
+main_region_of_Orion_Slave_SMOfStatechartOfslave
+</name>
+<declaration>
+clock timer20;
+</declaration>
+<location id="EntryLocation0">
+<name>
+EntryLocation0
+</name>
+<label kind="comments">
+Entry Location
+</label>
+<committed/>
+</location>
+
+<location id="Zarva_2">
+<name>
+Zarva_2
+</name>
+</location>
+
+<location id="Kapcsolodva_1">
+<name>
+Kapcsolodva_1
+</name>
+</location>
+
+<location id="entryOfKapcsolodva_1">
+<name>
+entryOfKapcsolodva_1
+</name>
+<label kind="comments">
+Pseudo state for subregion synchronization
+</label>
+<committed/>
+</location>
+
+<location id="Kapcsolodik_3">
+<name>
+Kapcsolodik_3
+</name>
+<label kind="invariant">
+timer20 &lt;= 5 * 1000
+</label>
+</location>
+
+<location id="entryOfKapcsolodik_3">
+<name>
+entryOfKapcsolodik_3
+</name>
+<label kind="comments">
+Pseudo state for subregion synchronization
+</label>
+<committed/>
+</location>
+
+<location id="Choice13">
+<name>
+Choice13
+</name>
+<label kind="comments">
+Choice
+</label>
+<committed/>
+</location>
+
+<location id="Choice15">
+<name>
+Choice15
+</name>
+<label kind="comments">
+Choice
+</label>
+<committed/>
+</location>
+
+<location id="timer21">
+<name>
+timer21
+</name>
+</location>
+
+<location id="exitOfKapcsolodva_118">
+<name>
+exitOfKapcsolodva_118
+</name>
+<label kind="comments">
+Synchronization location.
+</label>
+<committed/>
+</location>
+
+<location id="exitOfKapcsolodva_119">
+<name>
+exitOfKapcsolodva_119
+</name>
+<label kind="comments">
+Synchronization location.
+</label>
+<committed/>
+</location>
+
+<location id="exitOfKapcsolodva_120">
+<name>
+exitOfKapcsolodva_120
+</name>
+<label kind="comments">
+Synchronization location.
+</label>
+<committed/>
+</location>
+
+<location id="exitOfKapcsolodva_121">
+<name>
+exitOfKapcsolodva_121
+</name>
+<label kind="comments">
+Synchronization location.
+</label>
+<committed/>
+</location>
+
+<location id="exitOfKapcsolodva_122">
+<name>
+exitOfKapcsolodva_122
+</name>
+<label kind="comments">
+Synchronization location.
+</label>
+<committed/>
+</location>
+
+<location id="exitOfKapcsolodva_123">
+<name>
+exitOfKapcsolodva_123
+</name>
+<label kind="comments">
+Synchronization location.
+</label>
+<committed/>
+</location>
+
+<location id="FinalizeBeforeKapcsolodva_134">
+<name>
+FinalizeBeforeKapcsolodva_134
+</name>
+<urgent/>
+</location>
+<init ref="EntryLocation0"/>
+
+<transition>
+<source ref="entryOfKapcsolodva_1"/>
+<target ref="Kapcsolodva_1"/>
+<label kind="synchronisation">entryChanOfKapcsolodva_12!</label>
+<label kind="assignment"></label>
+<label kind="comments">Edge for subregion synchronization</label>
+</transition>
+
+<transition>
+<source ref="entryOfKapcsolodik_3"/>
+<target ref="Kapcsolodik_3"/>
+<label kind="assignment">timer20 = 0</label>
+<label kind="comments">Edge for subregion synchronization</label>
+</transition>
+
+<transition>
+<source ref="Kapcsolodik_3"/>
+<target ref="Choice15"/>
+<label kind="guard">isRaised_Block_Port_Operation_Call_InvalidOfslave</label>
+<label kind="synchronisation">runCycleMain_region_of_Orion_Slave_SMOfStatechartOfslave?</label>
+<label kind="assignment">isScheduledmain_region_of_Orion_Slave_SMOfStatechartOfslave = true</label>
+</transition>
+
+<transition>
+<source ref="Zarva_2"/>
+<target ref="entryOfKapcsolodik_3"/>
+<label kind="guard">isRaised_StateMachine_Port_OrionConnReqOfslave</label>
+<label kind="synchronisation">runCycleMain_region_of_Orion_Slave_SMOfStatechartOfslave?</label>
+<label kind="assignment">isScheduledmain_region_of_Orion_Slave_SMOfStatechartOfslave = true,
+toRaise_Input_OrionConnRespOfslaveMasterChannel = true</label>
+</transition>
+
+<transition>
+<source ref="Kapcsolodva_1"/>
+<target ref="exitOfKapcsolodva_119"/>
+<label kind="guard">isRaised_StateMachine_Port_OrionConnReqOfslave</label>
+<label kind="synchronisation">runCycleMain_region_of_Orion_Slave_SMOfStatechartOfslave?</label>
+<label kind="assignment">isScheduledmain_region_of_Orion_Slave_SMOfStatechartOfslave = true</label>
+</transition>
+
+<transition>
+<source ref="Kapcsolodva_1"/>
+<target ref="exitOfKapcsolodva_121"/>
+<label kind="guard">isRaised_StateMachine_Port_OrionDisconnCauseOfslave</label>
+<label kind="synchronisation">runCycleMain_region_of_Orion_Slave_SMOfStatechartOfslave?</label>
+<label kind="assignment">isScheduledmain_region_of_Orion_Slave_SMOfStatechartOfslave = true</label>
+</transition>
+
+<transition>
+<source ref="Kapcsolodik_3"/>
+<target ref="Choice15"/>
+<label kind="guard">isRaised_StateMachine_Port_OrionConnReqOfslave</label>
+<label kind="synchronisation">runCycleMain_region_of_Orion_Slave_SMOfStatechartOfslave?</label>
+<label kind="assignment">isScheduledmain_region_of_Orion_Slave_SMOfStatechartOfslave = true</label>
+</transition>
+
+<transition>
+<source ref="Kapcsolodva_1"/>
+<target ref="exitOfKapcsolodva_123"/>
+<label kind="guard">isRaised_Connection_Port_Operation_Call_DisconnOfslave</label>
+<label kind="synchronisation">runCycleMain_region_of_Orion_Slave_SMOfStatechartOfslave?</label>
+<label kind="assignment">isScheduledmain_region_of_Orion_Slave_SMOfStatechartOfslave = true</label>
+</transition>
+
+<transition>
+<source ref="Choice15"/>
+<target ref="Zarva_2"/>
+<label kind="assignment">isScheduledmain_region_of_Orion_Slave_SMOfStatechartOfslave = true,
+toRaise_Input_OrionDisconnOfslaveMasterChannel = true</label>
+</transition>
+
+<transition>
+<source ref="Choice13"/>
+<target ref="Zarva_2"/>
+<label kind="assignment">isScheduledmain_region_of_Orion_Slave_SMOfStatechartOfslave = true,
+toRaise_Input_OrionDisconnOfslaveMasterChannel = true</label>
+</transition>
+
+<transition>
+<source ref="timer21"/>
+<target ref="Choice15"/>
+<label kind="synchronisation">runCycleMain_region_of_Orion_Slave_SMOfStatechartOfslave?</label>
+<label kind="assignment">isScheduledmain_region_of_Orion_Slave_SMOfStatechartOfslave = true</label>
+</transition>
+
+<transition>
+<source ref="Kapcsolodva_1"/>
+<target ref="exitOfKapcsolodva_120"/>
+<label kind="guard">isRaised_StateMachine_Port_OrionConnRespOfslave</label>
+<label kind="synchronisation">runCycleMain_region_of_Orion_Slave_SMOfStatechartOfslave?</label>
+<label kind="assignment">isScheduledmain_region_of_Orion_Slave_SMOfStatechartOfslave = true</label>
+</transition>
+
+<transition>
+<source ref="Kapcsolodik_3"/>
+<target ref="Choice15"/>
+<label kind="guard">isRaised_StateMachine_Port_OrionConnRespOfslave</label>
+<label kind="synchronisation">runCycleMain_region_of_Orion_Slave_SMOfStatechartOfslave?</label>
+<label kind="assignment">isScheduledmain_region_of_Orion_Slave_SMOfStatechartOfslave = true</label>
+</transition>
+
+<transition>
+<source ref="Kapcsolodik_3"/>
+<target ref="Zarva_2"/>
+<label kind="guard">isRaised_StateMachine_Port_OrionDisconnCauseOfslave</label>
+<label kind="synchronisation">runCycleMain_region_of_Orion_Slave_SMOfStatechartOfslave?</label>
+<label kind="assignment">isScheduledmain_region_of_Orion_Slave_SMOfStatechartOfslave = true</label>
+</transition>
+
+<transition>
+<source ref="Kapcsolodik_3"/>
+<target ref="FinalizeBeforeKapcsolodva_134"/>
+<label kind="guard">isRaised_StateMachine_Port_OrionConnConfOfslave</label>
+<label kind="synchronisation">runCycleMain_region_of_Orion_Slave_SMOfStatechartOfslave?</label>
+<label kind="assignment">isScheduledmain_region_of_Orion_Slave_SMOfStatechartOfslave = true</label>
+</transition>
+
+<transition>
+<source ref="Kapcsolodik_3"/>
+<target ref="Choice15"/>
+<label kind="guard">isRaised_StateMachine_Port_OrionKeepAliveOfslave</label>
+<label kind="synchronisation">runCycleMain_region_of_Orion_Slave_SMOfStatechartOfslave?</label>
+<label kind="assignment">isScheduledmain_region_of_Orion_Slave_SMOfStatechartOfslave = true</label>
+</transition>
+
+<transition>
+<source ref="Kapcsolodva_1"/>
+<target ref="exitOfKapcsolodva_122"/>
+<label kind="guard">isRaised_StateMachine_Port_OrionConnConfOfslave</label>
+<label kind="synchronisation">runCycleMain_region_of_Orion_Slave_SMOfStatechartOfslave?</label>
+<label kind="assignment">isScheduledmain_region_of_Orion_Slave_SMOfStatechartOfslave = true</label>
+</transition>
+
+<transition>
+<source ref="Kapcsolodik_3"/>
+<target ref="Choice15"/>
+<label kind="guard">isRaised_StateMachine_Port_OrionAppDataOfslave</label>
+<label kind="synchronisation">runCycleMain_region_of_Orion_Slave_SMOfStatechartOfslave?</label>
+<label kind="assignment">isScheduledmain_region_of_Orion_Slave_SMOfStatechartOfslave = true</label>
+</transition>
+
+<transition>
+<source ref="Kapcsolodva_1"/>
+<target ref="exitOfKapcsolodva_118"/>
+<label kind="guard">isRaised_Block_Port_Operation_Call_InvalidOfslave</label>
+<label kind="synchronisation">runCycleMain_region_of_Orion_Slave_SMOfStatechartOfslave?</label>
+<label kind="assignment">isScheduledmain_region_of_Orion_Slave_SMOfStatechartOfslave = true</label>
+</transition>
+
+<transition>
+<source ref="EntryLocation0"/>
+<target ref="Zarva_2"/>
+<label kind="assignment">isScheduledmain_region_of_Orion_Slave_SMOfStatechartOfslave = true</label>
+</transition>
+
+<transition>
+<source ref="Kapcsolodva_1"/>
+<target ref="Choice13"/>
+<label kind="synchronisation">AcrReg18?</label>
+<label kind="assignment"></label>
+</transition>
+
+<transition>
+<source ref="Kapcsolodik_3"/>
+<target ref="timer21"/>
+<label kind="guard">(isStable &amp;&amp; timer20 >= 5 * 1000)</label>
+<label kind="assignment"></label>
+</transition>
+
+<transition>
+<source ref="exitOfKapcsolodva_118"/>
+<target ref="Choice13"/>
+<label kind="synchronisation">exitChanOfKapcsolodva_13!</label>
+<label kind="assignment"></label>
+<label kind="comments">Synchronization edge.</label>
+</transition>
+
+<transition>
+<source ref="exitOfKapcsolodva_119"/>
+<target ref="Choice13"/>
+<label kind="synchronisation">exitChanOfKapcsolodva_13!</label>
+<label kind="assignment"></label>
+<label kind="comments">Synchronization edge.</label>
+</transition>
+
+<transition>
+<source ref="exitOfKapcsolodva_120"/>
+<target ref="Choice13"/>
+<label kind="synchronisation">exitChanOfKapcsolodva_13!</label>
+<label kind="assignment"></label>
+<label kind="comments">Synchronization edge.</label>
+</transition>
+
+<transition>
+<source ref="exitOfKapcsolodva_121"/>
+<target ref="Zarva_2"/>
+<label kind="synchronisation">exitChanOfKapcsolodva_13!</label>
+<label kind="assignment"></label>
+<label kind="comments">Synchronization edge.</label>
+</transition>
+
+<transition>
+<source ref="exitOfKapcsolodva_122"/>
+<target ref="Choice13"/>
+<label kind="synchronisation">exitChanOfKapcsolodva_13!</label>
+<label kind="assignment"></label>
+<label kind="comments">Synchronization edge.</label>
+</transition>
+
+<transition>
+<source ref="exitOfKapcsolodva_123"/>
+<target ref="Choice13"/>
+<label kind="synchronisation">exitChanOfKapcsolodva_13!</label>
+<label kind="assignment"></label>
+<label kind="comments">Synchronization edge.</label>
+</transition>
+
+<transition>
+<source ref="FinalizeBeforeKapcsolodva_134"/>
+<target ref="entryOfKapcsolodva_1"/>
+<label kind="synchronisation">finalize?</label>
+<label kind="assignment"></label>
+</transition>
+
+<transition>
+<source ref="timer21"/>
+<target ref="FinalizeBeforeKapcsolodva_134"/>
+<label kind="guard">isRaised_StateMachine_Port_OrionConnConfOfslave</label>
+<label kind="synchronisation">runCycleMain_region_of_Orion_Slave_SMOfStatechartOfslave?</label>
+<label kind="assignment">isScheduledmain_region_of_Orion_Slave_SMOfStatechartOfslave = true</label>
+</transition>
+
+<transition>
+<source ref="timer21"/>
+<target ref="Choice15"/>
+<label kind="guard">isRaised_Block_Port_Operation_Call_InvalidOfslave</label>
+<label kind="synchronisation">runCycleMain_region_of_Orion_Slave_SMOfStatechartOfslave?</label>
+<label kind="assignment">isScheduledmain_region_of_Orion_Slave_SMOfStatechartOfslave = true</label>
+</transition>
+
+<transition>
+<source ref="timer21"/>
+<target ref="Choice15"/>
+<label kind="guard">isRaised_StateMachine_Port_OrionAppDataOfslave</label>
+<label kind="synchronisation">runCycleMain_region_of_Orion_Slave_SMOfStatechartOfslave?</label>
+<label kind="assignment">isScheduledmain_region_of_Orion_Slave_SMOfStatechartOfslave = true</label>
+</transition>
+
+<transition>
+<source ref="timer21"/>
+<target ref="Choice15"/>
+<label kind="guard">isRaised_StateMachine_Port_OrionConnReqOfslave</label>
+<label kind="synchronisation">runCycleMain_region_of_Orion_Slave_SMOfStatechartOfslave?</label>
+<label kind="assignment">isScheduledmain_region_of_Orion_Slave_SMOfStatechartOfslave = true</label>
+</transition>
+
+<transition>
+<source ref="timer21"/>
+<target ref="Choice15"/>
+<label kind="guard">isRaised_StateMachine_Port_OrionKeepAliveOfslave</label>
+<label kind="synchronisation">runCycleMain_region_of_Orion_Slave_SMOfStatechartOfslave?</label>
+<label kind="assignment">isScheduledmain_region_of_Orion_Slave_SMOfStatechartOfslave = true</label>
+</transition>
+
+<transition>
+<source ref="timer21"/>
+<target ref="Zarva_2"/>
+<label kind="guard">isRaised_StateMachine_Port_OrionDisconnCauseOfslave</label>
+<label kind="synchronisation">runCycleMain_region_of_Orion_Slave_SMOfStatechartOfslave?</label>
+<label kind="assignment">isScheduledmain_region_of_Orion_Slave_SMOfStatechartOfslave = true</label>
+</transition>
+
+<transition>
+<source ref="timer21"/>
+<target ref="Choice15"/>
+<label kind="guard">isRaised_StateMachine_Port_OrionConnRespOfslave</label>
+<label kind="synchronisation">runCycleMain_region_of_Orion_Slave_SMOfStatechartOfslave?</label>
+<label kind="assignment">isScheduledmain_region_of_Orion_Slave_SMOfStatechartOfslave = true</label>
+</transition>
+</template>
+
+<template>
+<name>
+region_2_in_Kapcsolodva_1OfKapcsolodva_1Ofslave
+</name>
+<declaration>
+bool isActive;
+
+clock timer29;
+</declaration>
+<location id="EntryLocation10">
+<name>
+EntryLocation10
+</name>
+<label kind="comments">
+Entry Location
+</label>
+<committed/>
+</location>
+
+<location id="GenInitLocation11">
+<name>
+GenInitLocation11
+</name>
+<label kind="comments">
+Generated for the synchronization of subregions.
+</label>
+</location>
+
+<location id="KeepAliveReceiveTimeout_4">
+<name>
+KeepAliveReceiveTimeout_4
+</name>
+<label kind="invariant">
+timer29 &lt;= 5 * 1000
+</label>
+</location>
+
+<location id="entryOfKeepAliveReceiveTimeout_4">
+<name>
+entryOfKeepAliveReceiveTimeout_4
+</name>
+<label kind="comments">
+Pseudo state for subregion synchronization
+</label>
+<committed/>
+</location>
+
+<location id="AcrossEntry19">
+<name>
+AcrossEntry19
+</name>
+<label kind="comments">
+Synchronization location.
+</label>
+<committed/>
+</location>
+
+<location id="timer30">
+<name>
+timer30
+</name>
+</location>
+<init ref="GenInitLocation11"/>
+
+<transition>
+<source ref="entryOfKeepAliveReceiveTimeout_4"/>
+<target ref="KeepAliveReceiveTimeout_4"/>
+<label kind="assignment">timer29 = 0</label>
+<label kind="comments">Edge for subregion synchronization</label>
+</transition>
+
+<transition>
+<source ref="EntryLocation10"/>
+<target ref="entryOfKeepAliveReceiveTimeout_4"/>
+<label kind="guard">isActive</label>
+<label kind="assignment">isScheduledregion_2_in_Kapcsolodva_1OfKapcsolodva_1Ofslave = true</label>
+</transition>
+
+<transition>
+<source ref="KeepAliveReceiveTimeout_4"/>
+<target ref="entryOfKeepAliveReceiveTimeout_4"/>
+<label kind="guard">(isActive &amp;&amp; isRaised_StateMachine_Port_OrionAppDataOfslave)</label>
+<label kind="synchronisation">runCycleRegion_2_in_Kapcsolodva_1OfKapcsolodva_1Ofslave?</label>
+<label kind="assignment">isScheduledregion_2_in_Kapcsolodva_1OfKapcsolodva_1Ofslave = true</label>
+</transition>
+
+<transition>
+<source ref="KeepAliveReceiveTimeout_4"/>
+<target ref="entryOfKeepAliveReceiveTimeout_4"/>
+<label kind="guard">(isActive &amp;&amp; isRaised_StateMachine_Port_OrionKeepAliveOfslave)</label>
+<label kind="synchronisation">runCycleRegion_2_in_Kapcsolodva_1OfKapcsolodva_1Ofslave?</label>
+<label kind="assignment">isScheduledregion_2_in_Kapcsolodva_1OfKapcsolodva_1Ofslave = true</label>
+</transition>
+
+<transition>
+<source ref="timer30"/>
+<target ref="AcrossEntry19"/>
+<label kind="guard">isActive</label>
+<label kind="synchronisation">runCycleRegion_2_in_Kapcsolodva_1OfKapcsolodva_1Ofslave?</label>
+<label kind="assignment">isScheduledregion_2_in_Kapcsolodva_1OfKapcsolodva_1Ofslave = true</label>
+</transition>
+
+<transition>
+<source ref="AcrossEntry19"/>
+<target ref="GenInitLocation11"/>
+<label kind="synchronisation">AcrReg18!</label>
+<label kind="assignment">isActive = false</label>
+<label kind="comments">Synchronization edge.</label>
+</transition>
+
+<transition>
+<source ref="KeepAliveReceiveTimeout_4"/>
+<target ref="timer30"/>
+<label kind="guard">(isStable &amp;&amp; timer29 >= 5 * 1000)</label>
+<label kind="assignment"></label>
+</transition>
+
+<transition>
+<source ref="timer30"/>
+<target ref="EntryLocation10"/>
+<label kind="synchronisation">entryChanOfKapcsolodva_12?</label>
+<label kind="assignment">isActive = true</label>
+</transition>
+
+<transition>
+<source ref="KeepAliveReceiveTimeout_4"/>
+<target ref="EntryLocation10"/>
+<label kind="synchronisation">entryChanOfKapcsolodva_12?</label>
+<label kind="assignment">isActive = true</label>
+</transition>
+
+<transition>
+<source ref="GenInitLocation11"/>
+<target ref="EntryLocation10"/>
+<label kind="synchronisation">entryChanOfKapcsolodva_12?</label>
+<label kind="assignment">isActive = true</label>
+</transition>
+
+<transition>
+<source ref="timer30"/>
+<target ref="GenInitLocation11"/>
+<label kind="synchronisation">exitChanOfKapcsolodva_13?</label>
+<label kind="assignment">isActive = false</label>
+</transition>
+
+<transition>
+<source ref="KeepAliveReceiveTimeout_4"/>
+<target ref="GenInitLocation11"/>
+<label kind="synchronisation">exitChanOfKapcsolodva_13?</label>
+<label kind="assignment">isActive = false</label>
+</transition>
+
+<transition>
+<source ref="GenInitLocation11"/>
+<target ref="GenInitLocation11"/>
+<label kind="synchronisation">exitChanOfKapcsolodva_13?</label>
+<label kind="assignment">isActive = false</label>
+</transition>
+
+<transition>
+<source ref="timer30"/>
+<target ref="entryOfKeepAliveReceiveTimeout_4"/>
+<label kind="guard">(isActive &amp;&amp; isRaised_StateMachine_Port_OrionKeepAliveOfslave)</label>
+<label kind="synchronisation">runCycleRegion_2_in_Kapcsolodva_1OfKapcsolodva_1Ofslave?</label>
+<label kind="assignment">isScheduledregion_2_in_Kapcsolodva_1OfKapcsolodva_1Ofslave = true</label>
+</transition>
+
+<transition>
+<source ref="timer30"/>
+<target ref="entryOfKeepAliveReceiveTimeout_4"/>
+<label kind="guard">(isActive &amp;&amp; isRaised_StateMachine_Port_OrionAppDataOfslave)</label>
+<label kind="synchronisation">runCycleRegion_2_in_Kapcsolodva_1OfKapcsolodva_1Ofslave?</label>
+<label kind="assignment">isScheduledregion_2_in_Kapcsolodva_1OfKapcsolodva_1Ofslave = true</label>
+</transition>
+</template>
+
+<template>
+<name>
+main_region_of_Orion_Master_SMOfStatechartOfmaster
+</name>
+<declaration>
+clock timer22;
+</declaration>
+<location id="EntryLocation4">
+<name>
+EntryLocation4
+</name>
+<label kind="comments">
+Entry Location
+</label>
+<committed/>
+</location>
+
+<location id="Kapcsolodva_4">
+<name>
+Kapcsolodva_4
+</name>
+</location>
+
+<location id="entryOfKapcsolodva_4">
+<name>
+entryOfKapcsolodva_4
+</name>
+<label kind="comments">
+Pseudo state for subregion synchronization
+</label>
+<committed/>
+</location>
+
+<location id="Zarva_0">
+<name>
+Zarva_0
+</name>
+<label kind="invariant">
+timer22 &lt;= 5 * 1000
+</label>
+</location>
+
+<location id="entryOfZarva_0">
+<name>
+entryOfZarva_0
+</name>
+<label kind="comments">
+Pseudo state for subregion synchronization
+</label>
+<committed/>
+</location>
+
+<location id="Kapcsolodik_2">
+<name>
+Kapcsolodik_2
+</name>
+<label kind="invariant">
+timer22 &lt;= 5 * 1000
+</label>
+</location>
+
+<location id="entryOfKapcsolodik_2">
+<name>
+entryOfKapcsolodik_2
+</name>
+<label kind="comments">
+Pseudo state for subregion synchronization
+</label>
+<committed/>
+</location>
+
+<location id="Choice12">
+<name>
+Choice12
+</name>
+<label kind="comments">
+Choice
+</label>
+<committed/>
+</location>
+
+<location id="Choice14">
+<name>
+Choice14
+</name>
+<label kind="comments">
+Choice
+</label>
+<committed/>
+</location>
+
+<location id="timer23">
+<name>
+timer23
+</name>
+</location>
+
+<location id="timer26">
+<name>
+timer26
+</name>
+</location>
+
+<location id="exitOfKapcsolodva_412">
+<name>
+exitOfKapcsolodva_412
+</name>
+<label kind="comments">
+Synchronization location.
+</label>
+<committed/>
+</location>
+
+<location id="exitOfKapcsolodva_413">
+<name>
+exitOfKapcsolodva_413
+</name>
+<label kind="comments">
+Synchronization location.
+</label>
+<committed/>
+</location>
+
+<location id="exitOfKapcsolodva_414">
+<name>
+exitOfKapcsolodva_414
+</name>
+<label kind="comments">
+Synchronization location.
+</label>
+<committed/>
+</location>
+
+<location id="exitOfKapcsolodva_415">
+<name>
+exitOfKapcsolodva_415
+</name>
+<label kind="comments">
+Synchronization location.
+</label>
+<committed/>
+</location>
+
+<location id="exitOfKapcsolodva_416">
+<name>
+exitOfKapcsolodva_416
+</name>
+<label kind="comments">
+Synchronization location.
+</label>
+<committed/>
+</location>
+
+<location id="exitOfKapcsolodva_417">
+<name>
+exitOfKapcsolodva_417
+</name>
+<label kind="comments">
+Synchronization location.
+</label>
+<committed/>
+</location>
+
+<location id="FinalizeBeforeKapcsolodva_433">
+<name>
+FinalizeBeforeKapcsolodva_433
+</name>
+<urgent/>
+</location>
+<init ref="EntryLocation4"/>
+
+<transition>
+<source ref="entryOfKapcsolodva_4"/>
+<target ref="Kapcsolodva_4"/>
+<label kind="synchronisation">entryChanOfKapcsolodva_43!</label>
+<label kind="assignment"></label>
+<label kind="comments">Edge for subregion synchronization</label>
+</transition>
+
+<transition>
+<source ref="entryOfZarva_0"/>
+<target ref="Zarva_0"/>
+<label kind="assignment">timer22 = 0</label>
+<label kind="comments">Edge for subregion synchronization</label>
+</transition>
+
+<transition>
+<source ref="entryOfKapcsolodik_2"/>
+<target ref="Kapcsolodik_2"/>
+<label kind="assignment">timer22 = 0</label>
+<label kind="comments">Edge for subregion synchronization</label>
+</transition>
+
+<transition>
+<source ref="Kapcsolodva_4"/>
+<target ref="exitOfKapcsolodva_412"/>
+<label kind="guard">isRaised_StateMachine_Port_OrionConnReqOfmaster</label>
+<label kind="synchronisation">runCycleMain_region_of_Orion_Master_SMOfStatechartOfmaster?</label>
+<label kind="assignment">isScheduledmain_region_of_Orion_Master_SMOfStatechartOfmaster = true</label>
+</transition>
+
+<transition>
+<source ref="Kapcsolodik_2"/>
+<target ref="Choice12"/>
+<label kind="guard">isRaised_StateMachine_Port_OrionKeepAliveOfmaster</label>
+<label kind="synchronisation">runCycleMain_region_of_Orion_Master_SMOfStatechartOfmaster?</label>
+<label kind="assignment">isScheduledmain_region_of_Orion_Master_SMOfStatechartOfmaster = true</label>
+</transition>
+
+<transition>
+<source ref="Kapcsolodva_4"/>
+<target ref="exitOfKapcsolodva_414"/>
+<label kind="guard">isRaised_StateMachine_Port_OrionConnConfOfmaster</label>
+<label kind="synchronisation">runCycleMain_region_of_Orion_Master_SMOfStatechartOfmaster?</label>
+<label kind="assignment">isScheduledmain_region_of_Orion_Master_SMOfStatechartOfmaster = true</label>
+</transition>
+
+<transition>
+<source ref="Choice12"/>
+<target ref="entryOfZarva_0"/>
+<label kind="assignment">isScheduledmain_region_of_Orion_Master_SMOfStatechartOfmaster = true,
+toRaise_Input_OrionDisconnOfmasterSlaveChannel = true</label>
+</transition>
+
+<transition>
+<source ref="timer26"/>
+<target ref="Choice12"/>
+<label kind="synchronisation">runCycleMain_region_of_Orion_Master_SMOfStatechartOfmaster?</label>
+<label kind="assignment">isScheduledmain_region_of_Orion_Master_SMOfStatechartOfmaster = true</label>
+</transition>
+
+<transition>
+<source ref="EntryLocation4"/>
+<target ref="entryOfZarva_0"/>
+<label kind="assignment">isScheduledmain_region_of_Orion_Master_SMOfStatechartOfmaster = true</label>
+</transition>
+
+<transition>
+<source ref="Kapcsolodva_4"/>
+<target ref="exitOfKapcsolodva_416"/>
+<label kind="guard">isRaised_Block_Port_Operation_Call_InvalidOfmaster</label>
+<label kind="synchronisation">runCycleMain_region_of_Orion_Master_SMOfStatechartOfmaster?</label>
+<label kind="assignment">isScheduledmain_region_of_Orion_Master_SMOfStatechartOfmaster = true</label>
+</transition>
+
+<transition>
+<source ref="Kapcsolodik_2"/>
+<target ref="Choice12"/>
+<label kind="guard">isRaised_Block_Port_Operation_Call_InvalidOfmaster</label>
+<label kind="synchronisation">runCycleMain_region_of_Orion_Master_SMOfStatechartOfmaster?</label>
+<label kind="assignment">isScheduledmain_region_of_Orion_Master_SMOfStatechartOfmaster = true</label>
+</transition>
+
+<transition>
+<source ref="timer23"/>
+<target ref="entryOfKapcsolodik_2"/>
+<label kind="synchronisation">runCycleMain_region_of_Orion_Master_SMOfStatechartOfmaster?</label>
+<label kind="assignment">isScheduledmain_region_of_Orion_Master_SMOfStatechartOfmaster = true,
+toRaise_Input_OrionConnReqOfmasterSlaveChannel = true</label>
+</transition>
+
+<transition>
+<source ref="Kapcsolodva_4"/>
+<target ref="exitOfKapcsolodva_415"/>
+<label kind="guard">isRaised_Connection_Port_Operation_Call_DisconnOfmaster</label>
+<label kind="synchronisation">runCycleMain_region_of_Orion_Master_SMOfStatechartOfmaster?</label>
+<label kind="assignment">isScheduledmain_region_of_Orion_Master_SMOfStatechartOfmaster = true</label>
+</transition>
+
+<transition>
+<source ref="Zarva_0"/>
+<target ref="entryOfKapcsolodik_2"/>
+<label kind="guard">isRaised_Connection_Port_Operation_Call_ConnectOfmaster</label>
+<label kind="synchronisation">runCycleMain_region_of_Orion_Master_SMOfStatechartOfmaster?</label>
+<label kind="assignment">isScheduledmain_region_of_Orion_Master_SMOfStatechartOfmaster = true,
+toRaise_Input_OrionConnReqOfmasterSlaveChannel = true</label>
+</transition>
+
+<transition>
+<source ref="Kapcsolodik_2"/>
+<target ref="FinalizeBeforeKapcsolodva_433"/>
+<label kind="guard">isRaised_StateMachine_Port_OrionConnRespOfmaster</label>
+<label kind="synchronisation">runCycleMain_region_of_Orion_Master_SMOfStatechartOfmaster?</label>
+<label kind="assignment">isScheduledmain_region_of_Orion_Master_SMOfStatechartOfmaster = true,
+toRaise_Input_OrionConnConfOfmasterSlaveChannel = true</label>
+</transition>
+
+<transition>
+<source ref="Kapcsolodik_2"/>
+<target ref="entryOfZarva_0"/>
+<label kind="guard">isRaised_StateMachine_Port_OrionDisconnCauseOfmaster</label>
+<label kind="synchronisation">runCycleMain_region_of_Orion_Master_SMOfStatechartOfmaster?</label>
+<label kind="assignment">isScheduledmain_region_of_Orion_Master_SMOfStatechartOfmaster = true</label>
+</transition>
+
+<transition>
+<source ref="Kapcsolodik_2"/>
+<target ref="Choice12"/>
+<label kind="guard">isRaised_StateMachine_Port_OrionAppDataOfmaster</label>
+<label kind="synchronisation">runCycleMain_region_of_Orion_Master_SMOfStatechartOfmaster?</label>
+<label kind="assignment">isScheduledmain_region_of_Orion_Master_SMOfStatechartOfmaster = true</label>
+</transition>
+
+<transition>
+<source ref="Kapcsolodva_4"/>
+<target ref="exitOfKapcsolodva_413"/>
+<label kind="guard">isRaised_StateMachine_Port_OrionConnRespOfmaster</label>
+<label kind="synchronisation">runCycleMain_region_of_Orion_Master_SMOfStatechartOfmaster?</label>
+<label kind="assignment">isScheduledmain_region_of_Orion_Master_SMOfStatechartOfmaster = true</label>
+</transition>
+
+<transition>
+<source ref="Kapcsolodik_2"/>
+<target ref="Choice12"/>
+<label kind="guard">isRaised_StateMachine_Port_OrionConnReqOfmaster</label>
+<label kind="synchronisation">runCycleMain_region_of_Orion_Master_SMOfStatechartOfmaster?</label>
+<label kind="assignment">isScheduledmain_region_of_Orion_Master_SMOfStatechartOfmaster = true</label>
+</transition>
+
+<transition>
+<source ref="Kapcsolodik_2"/>
+<target ref="Choice12"/>
+<label kind="guard">isRaised_StateMachine_Port_OrionConnConfOfmaster</label>
+<label kind="synchronisation">runCycleMain_region_of_Orion_Master_SMOfStatechartOfmaster?</label>
+<label kind="assignment">isScheduledmain_region_of_Orion_Master_SMOfStatechartOfmaster = true</label>
+</transition>
+
+<transition>
+<source ref="Choice14"/>
+<target ref="entryOfZarva_0"/>
+<label kind="assignment">isScheduledmain_region_of_Orion_Master_SMOfStatechartOfmaster = true,
+toRaise_Input_OrionDisconnOfmasterSlaveChannel = true</label>
+</transition>
+
+<transition>
+<source ref="Kapcsolodva_4"/>
+<target ref="exitOfKapcsolodva_417"/>
+<label kind="guard">isRaised_StateMachine_Port_OrionDisconnCauseOfmaster</label>
+<label kind="synchronisation">runCycleMain_region_of_Orion_Master_SMOfStatechartOfmaster?</label>
+<label kind="assignment">isScheduledmain_region_of_Orion_Master_SMOfStatechartOfmaster = true</label>
+</transition>
+
+<transition>
+<source ref="Kapcsolodva_4"/>
+<target ref="Choice14"/>
+<label kind="synchronisation">AcrReg16?</label>
+<label kind="assignment"></label>
+</transition>
+
+<transition>
+<source ref="Zarva_0"/>
+<target ref="timer23"/>
+<label kind="guard">(isStable &amp;&amp; timer22 >= 5 * 1000)</label>
+<label kind="assignment"></label>
+</transition>
+
+<transition>
+<source ref="Kapcsolodik_2"/>
+<target ref="timer26"/>
+<label kind="guard">(isStable &amp;&amp; timer22 >= 5 * 1000)</label>
+<label kind="assignment"></label>
+</transition>
+
+<transition>
+<source ref="exitOfKapcsolodva_412"/>
+<target ref="Choice14"/>
+<label kind="synchronisation">exitChanOfKapcsolodva_42!</label>
+<label kind="assignment"></label>
+<label kind="comments">Synchronization edge.</label>
+</transition>
+
+<transition>
+<source ref="exitOfKapcsolodva_413"/>
+<target ref="Choice14"/>
+<label kind="synchronisation">exitChanOfKapcsolodva_42!</label>
+<label kind="assignment"></label>
+<label kind="comments">Synchronization edge.</label>
+</transition>
+
+<transition>
+<source ref="exitOfKapcsolodva_414"/>
+<target ref="Choice14"/>
+<label kind="synchronisation">exitChanOfKapcsolodva_42!</label>
+<label kind="assignment"></label>
+<label kind="comments">Synchronization edge.</label>
+</transition>
+
+<transition>
+<source ref="exitOfKapcsolodva_415"/>
+<target ref="Choice14"/>
+<label kind="synchronisation">exitChanOfKapcsolodva_42!</label>
+<label kind="assignment"></label>
+<label kind="comments">Synchronization edge.</label>
+</transition>
+
+<transition>
+<source ref="exitOfKapcsolodva_416"/>
+<target ref="Choice14"/>
+<label kind="synchronisation">exitChanOfKapcsolodva_42!</label>
+<label kind="assignment"></label>
+<label kind="comments">Synchronization edge.</label>
+</transition>
+
+<transition>
+<source ref="exitOfKapcsolodva_417"/>
+<target ref="entryOfZarva_0"/>
+<label kind="synchronisation">exitChanOfKapcsolodva_42!</label>
+<label kind="assignment"></label>
+<label kind="comments">Synchronization edge.</label>
+</transition>
+
+<transition>
+<source ref="FinalizeBeforeKapcsolodva_433"/>
+<target ref="entryOfKapcsolodva_4"/>
+<label kind="synchronisation">finalize?</label>
+<label kind="assignment"></label>
+</transition>
+
+<transition>
+<source ref="timer23"/>
+<target ref="entryOfKapcsolodik_2"/>
+<label kind="guard">isRaised_Connection_Port_Operation_Call_ConnectOfmaster</label>
+<label kind="synchronisation">runCycleMain_region_of_Orion_Master_SMOfStatechartOfmaster?</label>
+<label kind="assignment">isScheduledmain_region_of_Orion_Master_SMOfStatechartOfmaster = true,
+toRaise_Input_OrionConnReqOfmasterSlaveChannel = true</label>
+</transition>
+
+<transition>
+<source ref="timer26"/>
+<target ref="Choice12"/>
+<label kind="guard">isRaised_StateMachine_Port_OrionConnConfOfmaster</label>
+<label kind="synchronisation">runCycleMain_region_of_Orion_Master_SMOfStatechartOfmaster?</label>
+<label kind="assignment">isScheduledmain_region_of_Orion_Master_SMOfStatechartOfmaster = true</label>
+</transition>
+
+<transition>
+<source ref="timer26"/>
+<target ref="Choice12"/>
+<label kind="guard">isRaised_StateMachine_Port_OrionConnReqOfmaster</label>
+<label kind="synchronisation">runCycleMain_region_of_Orion_Master_SMOfStatechartOfmaster?</label>
+<label kind="assignment">isScheduledmain_region_of_Orion_Master_SMOfStatechartOfmaster = true</label>
+</transition>
+
+<transition>
+<source ref="timer26"/>
+<target ref="Choice12"/>
+<label kind="guard">isRaised_StateMachine_Port_OrionAppDataOfmaster</label>
+<label kind="synchronisation">runCycleMain_region_of_Orion_Master_SMOfStatechartOfmaster?</label>
+<label kind="assignment">isScheduledmain_region_of_Orion_Master_SMOfStatechartOfmaster = true</label>
+</transition>
+
+<transition>
+<source ref="timer26"/>
+<target ref="entryOfZarva_0"/>
+<label kind="guard">isRaised_StateMachine_Port_OrionDisconnCauseOfmaster</label>
+<label kind="synchronisation">runCycleMain_region_of_Orion_Master_SMOfStatechartOfmaster?</label>
+<label kind="assignment">isScheduledmain_region_of_Orion_Master_SMOfStatechartOfmaster = true</label>
+</transition>
+
+<transition>
+<source ref="timer26"/>
+<target ref="Choice12"/>
+<label kind="guard">isRaised_StateMachine_Port_OrionKeepAliveOfmaster</label>
+<label kind="synchronisation">runCycleMain_region_of_Orion_Master_SMOfStatechartOfmaster?</label>
+<label kind="assignment">isScheduledmain_region_of_Orion_Master_SMOfStatechartOfmaster = true</label>
+</transition>
+
+<transition>
+<source ref="timer26"/>
+<target ref="Choice12"/>
+<label kind="guard">isRaised_Block_Port_Operation_Call_InvalidOfmaster</label>
+<label kind="synchronisation">runCycleMain_region_of_Orion_Master_SMOfStatechartOfmaster?</label>
+<label kind="assignment">isScheduledmain_region_of_Orion_Master_SMOfStatechartOfmaster = true</label>
+</transition>
+
+<transition>
+<source ref="timer26"/>
+<target ref="FinalizeBeforeKapcsolodva_433"/>
+<label kind="guard">isRaised_StateMachine_Port_OrionConnRespOfmaster</label>
+<label kind="synchronisation">runCycleMain_region_of_Orion_Master_SMOfStatechartOfmaster?</label>
+<label kind="assignment">isScheduledmain_region_of_Orion_Master_SMOfStatechartOfmaster = true,
+toRaise_Input_OrionConnConfOfmasterSlaveChannel = true</label>
+</transition>
+</template>
+
+<template>
+<name>
+region_2_in_Kapcsolodva_4OfKapcsolodva_4Ofmaster
+</name>
+<declaration>
+bool isActive;
+
+clock timer31;
+</declaration>
+<location id="EntryLocation5">
+<name>
+EntryLocation5
+</name>
+<label kind="comments">
+Entry Location
+</label>
+<committed/>
+</location>
+
+<location id="GenInitLocation6">
+<name>
+GenInitLocation6
+</name>
+<label kind="comments">
+Generated for the synchronization of subregions.
+</label>
+</location>
+
+<location id="KeepAliveReceiveTimeout_3">
+<name>
+KeepAliveReceiveTimeout_3
+</name>
+<label kind="invariant">
+timer31 &lt;= 5 * 1000
+</label>
+</location>
+
+<location id="entryOfKeepAliveReceiveTimeout_3">
+<name>
+entryOfKeepAliveReceiveTimeout_3
+</name>
+<label kind="comments">
+Pseudo state for subregion synchronization
+</label>
+<committed/>
+</location>
+
+<location id="AcrossEntry17">
+<name>
+AcrossEntry17
+</name>
+<label kind="comments">
+Synchronization location.
+</label>
+<committed/>
+</location>
+
+<location id="timer32">
+<name>
+timer32
+</name>
+</location>
+<init ref="GenInitLocation6"/>
+
+<transition>
+<source ref="entryOfKeepAliveReceiveTimeout_3"/>
+<target ref="KeepAliveReceiveTimeout_3"/>
+<label kind="assignment">timer31 = 0</label>
+<label kind="comments">Edge for subregion synchronization</label>
+</transition>
+
+<transition>
+<source ref="EntryLocation5"/>
+<target ref="entryOfKeepAliveReceiveTimeout_3"/>
+<label kind="guard">isActive</label>
+<label kind="assignment">isScheduledregion_2_in_Kapcsolodva_4OfKapcsolodva_4Ofmaster = true</label>
+</transition>
+
+<transition>
+<source ref="KeepAliveReceiveTimeout_3"/>
+<target ref="entryOfKeepAliveReceiveTimeout_3"/>
+<label kind="guard">(isActive &amp;&amp; isRaised_StateMachine_Port_OrionKeepAliveOfmaster)</label>
+<label kind="synchronisation">runCycleRegion_2_in_Kapcsolodva_4OfKapcsolodva_4Ofmaster?</label>
+<label kind="assignment">isScheduledregion_2_in_Kapcsolodva_4OfKapcsolodva_4Ofmaster = true</label>
+</transition>
+
+<transition>
+<source ref="KeepAliveReceiveTimeout_3"/>
+<target ref="entryOfKeepAliveReceiveTimeout_3"/>
+<label kind="guard">(isActive &amp;&amp; isRaised_StateMachine_Port_OrionAppDataOfmaster)</label>
+<label kind="synchronisation">runCycleRegion_2_in_Kapcsolodva_4OfKapcsolodva_4Ofmaster?</label>
+<label kind="assignment">isScheduledregion_2_in_Kapcsolodva_4OfKapcsolodva_4Ofmaster = true</label>
+</transition>
+
+<transition>
+<source ref="timer32"/>
+<target ref="AcrossEntry17"/>
+<label kind="guard">isActive</label>
+<label kind="synchronisation">runCycleRegion_2_in_Kapcsolodva_4OfKapcsolodva_4Ofmaster?</label>
+<label kind="assignment">isScheduledregion_2_in_Kapcsolodva_4OfKapcsolodva_4Ofmaster = true</label>
+</transition>
+
+<transition>
+<source ref="AcrossEntry17"/>
+<target ref="GenInitLocation6"/>
+<label kind="synchronisation">AcrReg16!</label>
+<label kind="assignment">isActive = false</label>
+<label kind="comments">Synchronization edge.</label>
+</transition>
+
+<transition>
+<source ref="KeepAliveReceiveTimeout_3"/>
+<target ref="timer32"/>
+<label kind="guard">(isStable &amp;&amp; timer31 >= 5 * 1000)</label>
+<label kind="assignment"></label>
+</transition>
+
+<transition>
+<source ref="KeepAliveReceiveTimeout_3"/>
+<target ref="EntryLocation5"/>
+<label kind="synchronisation">entryChanOfKapcsolodva_43?</label>
+<label kind="assignment">isActive = true</label>
+</transition>
+
+<transition>
+<source ref="GenInitLocation6"/>
+<target ref="EntryLocation5"/>
+<label kind="synchronisation">entryChanOfKapcsolodva_43?</label>
+<label kind="assignment">isActive = true</label>
+</transition>
+
+<transition>
+<source ref="timer32"/>
+<target ref="EntryLocation5"/>
+<label kind="synchronisation">entryChanOfKapcsolodva_43?</label>
+<label kind="assignment">isActive = true</label>
+</transition>
+
+<transition>
+<source ref="KeepAliveReceiveTimeout_3"/>
+<target ref="GenInitLocation6"/>
+<label kind="synchronisation">exitChanOfKapcsolodva_42?</label>
+<label kind="assignment">isActive = false</label>
+</transition>
+
+<transition>
+<source ref="GenInitLocation6"/>
+<target ref="GenInitLocation6"/>
+<label kind="synchronisation">exitChanOfKapcsolodva_42?</label>
+<label kind="assignment">isActive = false</label>
+</transition>
+
+<transition>
+<source ref="timer32"/>
+<target ref="GenInitLocation6"/>
+<label kind="synchronisation">exitChanOfKapcsolodva_42?</label>
+<label kind="assignment">isActive = false</label>
+</transition>
+
+<transition>
+<source ref="timer32"/>
+<target ref="entryOfKeepAliveReceiveTimeout_3"/>
+<label kind="guard">(isActive &amp;&amp; isRaised_StateMachine_Port_OrionKeepAliveOfmaster)</label>
+<label kind="synchronisation">runCycleRegion_2_in_Kapcsolodva_4OfKapcsolodva_4Ofmaster?</label>
+<label kind="assignment">isScheduledregion_2_in_Kapcsolodva_4OfKapcsolodva_4Ofmaster = true</label>
+</transition>
+
+<transition>
+<source ref="timer32"/>
+<target ref="entryOfKeepAliveReceiveTimeout_3"/>
+<label kind="guard">(isActive &amp;&amp; isRaised_StateMachine_Port_OrionAppDataOfmaster)</label>
+<label kind="synchronisation">runCycleRegion_2_in_Kapcsolodva_4OfKapcsolodva_4Ofmaster?</label>
+<label kind="assignment">isScheduledregion_2_in_Kapcsolodva_4OfKapcsolodva_4Ofmaster = true</label>
+</transition>
+</template>
+
+<template>
+<name>
+region_1_in_Kapcsolodva_1OfKapcsolodva_1Ofslave
+</name>
+<declaration>
+bool isActive;
+
+clock timer24;
+</declaration>
+<location id="EntryLocation1">
+<name>
+EntryLocation1
+</name>
+<label kind="comments">
+Entry Location
+</label>
+<committed/>
+</location>
+
+<location id="GenInitLocation2">
+<name>
+GenInitLocation2
+</name>
+<label kind="comments">
+Generated for the synchronization of subregions.
+</label>
+</location>
+
+<location id="KeepAliveSendTimeout_0">
+<name>
+KeepAliveSendTimeout_0
+</name>
+<label kind="invariant">
+timer24 &lt;= 4 * 1000
+</label>
+</location>
+
+<location id="entryOfKeepAliveSendTimeout_0">
+<name>
+entryOfKeepAliveSendTimeout_0
+</name>
+<label kind="comments">
+Pseudo state for subregion synchronization
+</label>
+<committed/>
+</location>
+
+<location id="timer25">
+<name>
+timer25
+</name>
+</location>
+<init ref="GenInitLocation2"/>
+
+<transition>
+<source ref="entryOfKeepAliveSendTimeout_0"/>
+<target ref="KeepAliveSendTimeout_0"/>
+<label kind="assignment">timer24 = 0</label>
+<label kind="comments">Edge for subregion synchronization</label>
+</transition>
+
+<transition>
+<source ref="EntryLocation1"/>
+<target ref="entryOfKeepAliveSendTimeout_0"/>
+<label kind="guard">isActive</label>
+<label kind="assignment">isScheduledregion_1_in_Kapcsolodva_1OfKapcsolodva_1Ofslave = true</label>
+</transition>
+
+<transition>
+<source ref="timer25"/>
+<target ref="entryOfKeepAliveSendTimeout_0"/>
+<label kind="guard">isActive</label>
+<label kind="synchronisation">runCycleRegion_1_in_Kapcsolodva_1OfKapcsolodva_1Ofslave?</label>
+<label kind="assignment">isScheduledregion_1_in_Kapcsolodva_1OfKapcsolodva_1Ofslave = true,
+toRaise_Input_OrionKeepAliveOfslaveMasterChannel = true</label>
+</transition>
+
+<transition>
+<source ref="KeepAliveSendTimeout_0"/>
+<target ref="entryOfKeepAliveSendTimeout_0"/>
+<label kind="guard">(isActive &amp;&amp; isRaised_Block_Port_Operation_Call_SendDataOfslave)</label>
+<label kind="synchronisation">runCycleRegion_1_in_Kapcsolodva_1OfKapcsolodva_1Ofslave?</label>
+<label kind="assignment">isScheduledregion_1_in_Kapcsolodva_1OfKapcsolodva_1Ofslave = true,
+toRaise_Input_OrionAppDataOfslaveMasterChannel = true</label>
+</transition>
+
+<transition>
+<source ref="GenInitLocation2"/>
+<target ref="GenInitLocation2"/>
+<label kind="synchronisation">AcrReg18?</label>
+<label kind="assignment">isActive = false</label>
+</transition>
+
+<transition>
+<source ref="KeepAliveSendTimeout_0"/>
+<target ref="GenInitLocation2"/>
+<label kind="synchronisation">AcrReg18?</label>
+<label kind="assignment">isActive = false</label>
+</transition>
+
+<transition>
+<source ref="KeepAliveSendTimeout_0"/>
+<target ref="timer25"/>
+<label kind="guard">(isStable &amp;&amp; timer24 >= 4 * 1000)</label>
+<label kind="assignment"></label>
+</transition>
+
+<transition>
+<source ref="timer25"/>
+<target ref="EntryLocation1"/>
+<label kind="synchronisation">entryChanOfKapcsolodva_12?</label>
+<label kind="assignment">isActive = true</label>
+</transition>
+
+<transition>
+<source ref="GenInitLocation2"/>
+<target ref="EntryLocation1"/>
+<label kind="synchronisation">entryChanOfKapcsolodva_12?</label>
+<label kind="assignment">isActive = true</label>
+</transition>
+
+<transition>
+<source ref="KeepAliveSendTimeout_0"/>
+<target ref="EntryLocation1"/>
+<label kind="synchronisation">entryChanOfKapcsolodva_12?</label>
+<label kind="assignment">isActive = true</label>
+</transition>
+
+<transition>
+<source ref="timer25"/>
+<target ref="GenInitLocation2"/>
+<label kind="synchronisation">exitChanOfKapcsolodva_13?</label>
+<label kind="assignment">isActive = false</label>
+</transition>
+
+<transition>
+<source ref="GenInitLocation2"/>
+<target ref="GenInitLocation2"/>
+<label kind="synchronisation">exitChanOfKapcsolodva_13?</label>
+<label kind="assignment">isActive = false</label>
+</transition>
+
+<transition>
+<source ref="KeepAliveSendTimeout_0"/>
+<target ref="GenInitLocation2"/>
+<label kind="synchronisation">exitChanOfKapcsolodva_13?</label>
+<label kind="assignment">isActive = false</label>
+</transition>
+
+<transition>
+<source ref="timer25"/>
+<target ref="entryOfKeepAliveSendTimeout_0"/>
+<label kind="guard">(isActive &amp;&amp; isRaised_Block_Port_Operation_Call_SendDataOfslave)</label>
+<label kind="synchronisation">runCycleRegion_1_in_Kapcsolodva_1OfKapcsolodva_1Ofslave?</label>
+<label kind="assignment">isScheduledregion_1_in_Kapcsolodva_1OfKapcsolodva_1Ofslave = true,
+toRaise_Input_OrionAppDataOfslaveMasterChannel = true</label>
+</transition>
+
+<transition>
+<source ref="timer25"/>
+<target ref="GenInitLocation2"/>
+<label kind="synchronisation">AcrReg18?</label>
+<label kind="assignment">isActive = false</label>
+</transition>
+</template>
+
+<template>
+<name>
+OrionSystemOrchestrator35
+</name>
+<declaration>
+clock timerOrchestrator50;
+</declaration>
+<location id="InitLoc">
+<name>
+InitLoc
+</name>
+<label kind="invariant">
+timerOrchestrator50 &lt;= 349
+</label>
+</location>
+
+<location id="swapLocation36">
+<name>
+swapLocation36
+</name>
+<urgent/>
+</location>
+
+<location id="RunMain_region_of_Orion_Master_SMOfStatechartOfmaster37">
+<name>
+RunMain_region_of_Orion_Master_SMOfStatechartOfmaster37
+</name>
+<label kind="comments">
+Synchronization location.
+</label>
+<urgent/>
+</location>
+
+<location id="RunRegion_1_in_Kapcsolodva_4OfKapcsolodva_4Ofmaster38">
+<name>
+RunRegion_1_in_Kapcsolodva_4OfKapcsolodva_4Ofmaster38
+</name>
+<label kind="comments">
+Synchronization location.
+</label>
+<urgent/>
+</location>
+
+<location id="RunRegion_2_in_Kapcsolodva_4OfKapcsolodva_4Ofmaster39">
+<name>
+RunRegion_2_in_Kapcsolodva_4OfKapcsolodva_4Ofmaster39
+</name>
+<label kind="comments">
+Synchronization location.
+</label>
+<urgent/>
+</location>
+
+<location id="finalizemaster40">
+<name>
+finalizemaster40
+</name>
+<label kind="comments">
+Synchronization location.
+</label>
+<urgent/>
+</location>
+
+<location id="RunOrionDisconnRegionOfStatechartOfmasterSlaveChannel41">
+<name>
+RunOrionDisconnRegionOfStatechartOfmasterSlaveChannel41
+</name>
+<label kind="comments">
+Synchronization location.
+</label>
+<urgent/>
+</location>
+
+<location id="finalizemasterSlaveChannel42">
+<name>
+finalizemasterSlaveChannel42
+</name>
+<label kind="comments">
+Synchronization location.
+</label>
+<urgent/>
+</location>
+
+<location id="RunMain_region_of_Orion_Slave_SMOfStatechartOfslave43">
+<name>
+RunMain_region_of_Orion_Slave_SMOfStatechartOfslave43
+</name>
+<label kind="comments">
+Synchronization location.
+</label>
+<urgent/>
+</location>
+
+<location id="RunRegion_1_in_Kapcsolodva_1OfKapcsolodva_1Ofslave44">
+<name>
+RunRegion_1_in_Kapcsolodva_1OfKapcsolodva_1Ofslave44
+</name>
+<label kind="comments">
+Synchronization location.
+</label>
+<urgent/>
+</location>
+
+<location id="RunRegion_2_in_Kapcsolodva_1OfKapcsolodva_1Ofslave45">
+<name>
+RunRegion_2_in_Kapcsolodva_1OfKapcsolodva_1Ofslave45
+</name>
+<label kind="comments">
+Synchronization location.
+</label>
+<urgent/>
+</location>
+
+<location id="finalizeslave46">
+<name>
+finalizeslave46
+</name>
+<label kind="comments">
+Synchronization location.
+</label>
+<urgent/>
+</location>
+
+<location id="RunOrionDisconnRegionOfStatechartOfslaveMasterChannel47">
+<name>
+RunOrionDisconnRegionOfStatechartOfslaveMasterChannel47
+</name>
+<label kind="comments">
+Synchronization location.
+</label>
+<urgent/>
+</location>
+
+<location id="finalizeslaveMasterChannel48">
+<name>
+finalizeslaveMasterChannel48
+</name>
+<label kind="comments">
+Synchronization location.
+</label>
+<urgent/>
+</location>
+
+<location id="final">
+<name>
+final
+</name>
+<label kind="comments">
+To ensure all synchronizations to take place before an isStable state.
+</label>
+<urgent/>
+</location>
+
+<location id="notIsStable">
+<name>
+notIsStable
+</name>
+<urgent/>
+</location>
+<init ref="notIsStable"/>
+
+<transition>
+<source ref="InitLoc"/>
+<target ref="swapLocation36"/>
+<label kind="guard">timerOrchestrator50 >= 349</label>
+<label kind="assignment">clearOutEvents49(),
+isStable = false,
+isScheduledregion_1_in_Kapcsolodva_1OfKapcsolodva_1Ofslave = false,
+isScheduledmain_region_of_Orion_Slave_SMOfStatechartOfslave = false,
+isScheduledregion_2_in_Kapcsolodva_1OfKapcsolodva_1Ofslave = false,
+isScheduledregion_1_in_Kapcsolodva_4OfKapcsolodva_4Ofmaster = false,
+isScheduledOrionDisconnRegionOfStatechartOfmasterSlaveChannel = false,
+isScheduledregion_2_in_Kapcsolodva_4OfKapcsolodva_4Ofmaster = false,
+isScheduledmain_region_of_Orion_Master_SMOfStatechartOfmaster = false,
+isScheduledOrionDisconnRegionOfStatechartOfslaveMasterChannel = false</label>
+</transition>
+
+<transition>
+<source ref="swapLocation36"/>
+<target ref="RunMain_region_of_Orion_Master_SMOfStatechartOfmaster37"/>
+<label kind="assignment">isRaised_Input_OrionDisconnCauseOfslaveMasterChannel = toRaise_Input_OrionDisconnCauseOfslaveMasterChannel,
+toRaise_Input_OrionDisconnCauseOfslaveMasterChannel = false,
+isRaised_Input_OrionConnReqOfslaveMasterChannel = toRaise_Input_OrionConnReqOfslaveMasterChannel,
+toRaise_Input_OrionConnReqOfslaveMasterChannel = false,
+isRaised_Input_OrionDisconnOfslaveMasterChannel = toRaise_Input_OrionDisconnOfslaveMasterChannel,
+toRaise_Input_OrionDisconnOfslaveMasterChannel = false,
+isRaised_Input_OrionKeepAliveOfslaveMasterChannel = toRaise_Input_OrionKeepAliveOfslaveMasterChannel,
+toRaise_Input_OrionKeepAliveOfslaveMasterChannel = false,
+isRaised_Input_OrionConnRespOfslaveMasterChannel = toRaise_Input_OrionConnRespOfslaveMasterChannel,
+toRaise_Input_OrionConnRespOfslaveMasterChannel = false,
+isRaised_Input_OrionAppDataOfslaveMasterChannel = toRaise_Input_OrionAppDataOfslaveMasterChannel,
+toRaise_Input_OrionAppDataOfslaveMasterChannel = false,
+isRaised_Input_OrionConnConfOfslaveMasterChannel = toRaise_Input_OrionConnConfOfslaveMasterChannel,
+toRaise_Input_OrionConnConfOfslaveMasterChannel = false,
+isRaised_Input_OrionConnRespOfmasterSlaveChannel = toRaise_Input_OrionConnRespOfmasterSlaveChannel,
+toRaise_Input_OrionConnRespOfmasterSlaveChannel = false,
+isRaised_Input_OrionConnReqOfmasterSlaveChannel = toRaise_Input_OrionConnReqOfmasterSlaveChannel,
+toRaise_Input_OrionConnReqOfmasterSlaveChannel = false,
+isRaised_Input_OrionKeepAliveOfmasterSlaveChannel = toRaise_Input_OrionKeepAliveOfmasterSlaveChannel,
+toRaise_Input_OrionKeepAliveOfmasterSlaveChannel = false,
+isRaised_Input_OrionDisconnCauseOfmasterSlaveChannel = toRaise_Input_OrionDisconnCauseOfmasterSlaveChannel,
+toRaise_Input_OrionDisconnCauseOfmasterSlaveChannel = false,
+isRaised_Input_OrionAppDataOfmasterSlaveChannel = toRaise_Input_OrionAppDataOfmasterSlaveChannel,
+toRaise_Input_OrionAppDataOfmasterSlaveChannel = false,
+isRaised_Input_OrionDisconnOfmasterSlaveChannel = toRaise_Input_OrionDisconnOfmasterSlaveChannel,
+toRaise_Input_OrionDisconnOfmasterSlaveChannel = false,
+isRaised_Input_OrionConnConfOfmasterSlaveChannel = toRaise_Input_OrionConnConfOfmasterSlaveChannel,
+toRaise_Input_OrionConnConfOfmasterSlaveChannel = false,
+isRaised_StateMachine_Port_OrionDisconnCauseOfmaster = toRaise_StateMachine_Port_OrionDisconnCauseOfmaster,
+toRaise_StateMachine_Port_OrionDisconnCauseOfmaster = false,
+isRaised_Block_Port_Operation_Call_SendDataOfmaster = toRaise_Block_Port_Operation_Call_SendDataOfmaster,
+toRaise_Block_Port_Operation_Call_SendDataOfmaster = false,
+isRaised_Block_Port_Operation_Call_InvalidOfmaster = toRaise_Block_Port_Operation_Call_InvalidOfmaster,
+toRaise_Block_Port_Operation_Call_InvalidOfmaster = false,
+isRaised_Connection_Port_Operation_Call_ConnectOfmaster = toRaise_Connection_Port_Operation_Call_ConnectOfmaster,
+toRaise_Connection_Port_Operation_Call_ConnectOfmaster = false,
+isRaised_StateMachine_Port_OrionConnConfOfmaster = toRaise_StateMachine_Port_OrionConnConfOfmaster,
+toRaise_StateMachine_Port_OrionConnConfOfmaster = false,
+isRaised_Connection_Port_Operation_Call_DisconnOfmaster = toRaise_Connection_Port_Operation_Call_DisconnOfmaster,
+toRaise_Connection_Port_Operation_Call_DisconnOfmaster = false,
+isRaised_StateMachine_Port_OrionDisconnOfmaster = toRaise_StateMachine_Port_OrionDisconnOfmaster,
+toRaise_StateMachine_Port_OrionDisconnOfmaster = false,
+isRaised_StateMachine_Port_OrionConnRespOfmaster = toRaise_StateMachine_Port_OrionConnRespOfmaster,
+toRaise_StateMachine_Port_OrionConnRespOfmaster = false,
+isRaised_StateMachine_Port_OrionConnReqOfmaster = toRaise_StateMachine_Port_OrionConnReqOfmaster,
+toRaise_StateMachine_Port_OrionConnReqOfmaster = false,
+isRaised_StateMachine_Port_OrionKeepAliveOfmaster = toRaise_StateMachine_Port_OrionKeepAliveOfmaster,
+toRaise_StateMachine_Port_OrionKeepAliveOfmaster = false,
+isRaised_StateMachine_Port_OrionAppDataOfmaster = toRaise_StateMachine_Port_OrionAppDataOfmaster,
+toRaise_StateMachine_Port_OrionAppDataOfmaster = false,
+isRaised_Block_Port_Operation_Call_SendDataOfslave = toRaise_Block_Port_Operation_Call_SendDataOfslave,
+toRaise_Block_Port_Operation_Call_SendDataOfslave = false,
+isRaised_StateMachine_Port_OrionConnReqOfslave = toRaise_StateMachine_Port_OrionConnReqOfslave,
+toRaise_StateMachine_Port_OrionConnReqOfslave = false,
+isRaised_StateMachine_Port_OrionConnConfOfslave = toRaise_StateMachine_Port_OrionConnConfOfslave,
+toRaise_StateMachine_Port_OrionConnConfOfslave = false,
+isRaised_StateMachine_Port_OrionConnRespOfslave = toRaise_StateMachine_Port_OrionConnRespOfslave,
+toRaise_StateMachine_Port_OrionConnRespOfslave = false,
+isRaised_StateMachine_Port_OrionAppDataOfslave = toRaise_StateMachine_Port_OrionAppDataOfslave,
+toRaise_StateMachine_Port_OrionAppDataOfslave = false,
+isRaised_StateMachine_Port_OrionKeepAliveOfslave = toRaise_StateMachine_Port_OrionKeepAliveOfslave,
+toRaise_StateMachine_Port_OrionKeepAliveOfslave = false,
+isRaised_Block_Port_Operation_Call_InvalidOfslave = toRaise_Block_Port_Operation_Call_InvalidOfslave,
+toRaise_Block_Port_Operation_Call_InvalidOfslave = false,
+isRaised_Connection_Port_Operation_Call_DisconnOfslave = toRaise_Connection_Port_Operation_Call_DisconnOfslave,
+toRaise_Connection_Port_Operation_Call_DisconnOfslave = false,
+isRaised_Connection_Port_Operation_Call_ConnectOfslave = toRaise_Connection_Port_Operation_Call_ConnectOfslave,
+toRaise_Connection_Port_Operation_Call_ConnectOfslave = false,
+isRaised_StateMachine_Port_OrionDisconnCauseOfslave = toRaise_StateMachine_Port_OrionDisconnCauseOfslave,
+toRaise_StateMachine_Port_OrionDisconnCauseOfslave = false,
+isRaised_StateMachine_Port_OrionDisconnOfslave = toRaise_StateMachine_Port_OrionDisconnOfslave,
+toRaise_StateMachine_Port_OrionDisconnOfslave = false</label>
+</transition>
+
+<transition>
+<source ref="RunMain_region_of_Orion_Master_SMOfStatechartOfmaster37"/>
+<target ref="RunRegion_1_in_Kapcsolodva_4OfKapcsolodva_4Ofmaster38"/>
+<label kind="synchronisation">runCycleMain_region_of_Orion_Master_SMOfStatechartOfmaster!</label>
+<label kind="assignment"></label>
+<label kind="comments">Synchronization edge.</label>
+</transition>
+
+<transition>
+<source ref="RunRegion_1_in_Kapcsolodva_4OfKapcsolodva_4Ofmaster38"/>
+<target ref="RunRegion_2_in_Kapcsolodva_4OfKapcsolodva_4Ofmaster39"/>
+<label kind="guard">!(isScheduledmain_region_of_Orion_Master_SMOfStatechartOfmaster)</label>
+<label kind="synchronisation">runCycleRegion_1_in_Kapcsolodva_4OfKapcsolodva_4Ofmaster!</label>
+<label kind="assignment"></label>
+<label kind="comments">Synchronization edge.</label>
+</transition>
+
+<transition>
+<source ref="RunRegion_1_in_Kapcsolodva_4OfKapcsolodva_4Ofmaster38"/>
+<target ref="RunRegion_2_in_Kapcsolodva_4OfKapcsolodva_4Ofmaster39"/>
+<label kind="guard">isScheduledmain_region_of_Orion_Master_SMOfStatechartOfmaster</label>
+<label kind="assignment"></label>
+</transition>
+
+<transition>
+<source ref="RunRegion_2_in_Kapcsolodva_4OfKapcsolodva_4Ofmaster39"/>
+<target ref="finalizemaster40"/>
+<label kind="guard">!(isScheduledmain_region_of_Orion_Master_SMOfStatechartOfmaster)</label>
+<label kind="synchronisation">runCycleRegion_2_in_Kapcsolodva_4OfKapcsolodva_4Ofmaster!</label>
+<label kind="assignment"></label>
+<label kind="comments">Synchronization edge.</label>
+</transition>
+
+<transition>
+<source ref="RunRegion_2_in_Kapcsolodva_4OfKapcsolodva_4Ofmaster39"/>
+<target ref="finalizemaster40"/>
+<label kind="guard">isScheduledmain_region_of_Orion_Master_SMOfStatechartOfmaster</label>
+<label kind="assignment"></label>
+</transition>
+
+<transition>
+<source ref="finalizemaster40"/>
+<target ref="RunOrionDisconnRegionOfStatechartOfmasterSlaveChannel41"/>
+<label kind="synchronisation">finalize!</label>
+<label kind="assignment"></label>
+<label kind="comments">Synchronization edge.</label>
+</transition>
+
+<transition>
+<source ref="RunOrionDisconnRegionOfStatechartOfmasterSlaveChannel41"/>
+<target ref="finalizemasterSlaveChannel42"/>
+<label kind="synchronisation">runCycleOrionDisconnRegionOfStatechartOfmasterSlaveChannel!</label>
+<label kind="assignment"></label>
+<label kind="comments">Synchronization edge.</label>
+</transition>
+
+<transition>
+<source ref="finalizemasterSlaveChannel42"/>
+<target ref="RunMain_region_of_Orion_Slave_SMOfStatechartOfslave43"/>
+<label kind="synchronisation">finalize!</label>
+<label kind="assignment"></label>
+<label kind="comments">Synchronization edge.</label>
+</transition>
+
+<transition>
+<source ref="RunMain_region_of_Orion_Slave_SMOfStatechartOfslave43"/>
+<target ref="RunRegion_1_in_Kapcsolodva_1OfKapcsolodva_1Ofslave44"/>
+<label kind="synchronisation">runCycleMain_region_of_Orion_Slave_SMOfStatechartOfslave!</label>
+<label kind="assignment"></label>
+<label kind="comments">Synchronization edge.</label>
+</transition>
+
+<transition>
+<source ref="RunRegion_1_in_Kapcsolodva_1OfKapcsolodva_1Ofslave44"/>
+<target ref="RunRegion_2_in_Kapcsolodva_1OfKapcsolodva_1Ofslave45"/>
+<label kind="guard">!(isScheduledmain_region_of_Orion_Slave_SMOfStatechartOfslave)</label>
+<label kind="synchronisation">runCycleRegion_1_in_Kapcsolodva_1OfKapcsolodva_1Ofslave!</label>
+<label kind="assignment"></label>
+<label kind="comments">Synchronization edge.</label>
+</transition>
+
+<transition>
+<source ref="RunRegion_1_in_Kapcsolodva_1OfKapcsolodva_1Ofslave44"/>
+<target ref="RunRegion_2_in_Kapcsolodva_1OfKapcsolodva_1Ofslave45"/>
+<label kind="guard">isScheduledmain_region_of_Orion_Slave_SMOfStatechartOfslave</label>
+<label kind="assignment"></label>
+</transition>
+
+<transition>
+<source ref="RunRegion_2_in_Kapcsolodva_1OfKapcsolodva_1Ofslave45"/>
+<target ref="finalizeslave46"/>
+<label kind="guard">!(isScheduledmain_region_of_Orion_Slave_SMOfStatechartOfslave)</label>
+<label kind="synchronisation">runCycleRegion_2_in_Kapcsolodva_1OfKapcsolodva_1Ofslave!</label>
+<label kind="assignment"></label>
+<label kind="comments">Synchronization edge.</label>
+</transition>
+
+<transition>
+<source ref="RunRegion_2_in_Kapcsolodva_1OfKapcsolodva_1Ofslave45"/>
+<target ref="finalizeslave46"/>
+<label kind="guard">isScheduledmain_region_of_Orion_Slave_SMOfStatechartOfslave</label>
+<label kind="assignment"></label>
+</transition>
+
+<transition>
+<source ref="finalizeslave46"/>
+<target ref="RunOrionDisconnRegionOfStatechartOfslaveMasterChannel47"/>
+<label kind="synchronisation">finalize!</label>
+<label kind="assignment"></label>
+<label kind="comments">Synchronization edge.</label>
+</transition>
+
+<transition>
+<source ref="RunOrionDisconnRegionOfStatechartOfslaveMasterChannel47"/>
+<target ref="finalizeslaveMasterChannel48"/>
+<label kind="synchronisation">runCycleOrionDisconnRegionOfStatechartOfslaveMasterChannel!</label>
+<label kind="assignment"></label>
+<label kind="comments">Synchronization edge.</label>
+</transition>
+
+<transition>
+<source ref="finalizeslaveMasterChannel48"/>
+<target ref="final"/>
+<label kind="synchronisation">finalize!</label>
+<label kind="assignment"></label>
+<label kind="comments">Synchronization edge.</label>
+</transition>
+
+<transition>
+<source ref="final"/>
+<target ref="InitLoc"/>
+<label kind="assignment">isStable = true,
+timerOrchestrator50 = 0</label>
+</transition>
+
+<transition>
+<source ref="notIsStable"/>
+<target ref="InitLoc"/>
+<label kind="assignment">isStable = true</label>
+</transition>
+</template>
+
+<template>
+<name>
+Environment
+</name>
+<location id="InitLoc">
+<name>
+InitLoc
+</name>
+</location>
+<init ref="InitLoc"/>
+
+<transition>
+<source ref="InitLoc"/>
+<target ref="InitLoc"/>
+<label kind="guard">(isStable &amp;&amp; !(toRaise_Connection_Port_Operation_Call_DisconnOfslave))</label>
+<label kind="assignment">toRaise_Connection_Port_Operation_Call_DisconnOfslave = true</label>
+</transition>
+
+<transition>
+<source ref="InitLoc"/>
+<target ref="InitLoc"/>
+<label kind="guard">(isStable &amp;&amp; !(toRaise_Connection_Port_Operation_Call_ConnectOfmaster))</label>
+<label kind="assignment">toRaise_Connection_Port_Operation_Call_ConnectOfmaster = true</label>
+</transition>
+
+<transition>
+<source ref="InitLoc"/>
+<target ref="InitLoc"/>
+<label kind="guard">(isStable &amp;&amp; !(toRaise_Connection_Port_Operation_Call_DisconnOfmaster))</label>
+<label kind="assignment">toRaise_Connection_Port_Operation_Call_DisconnOfmaster = true</label>
+</transition>
+</template>
+<system>
+	P_region_1_in_Kapcsolodva_4OfKapcsolodva_4Ofmaster = region_1_in_Kapcsolodva_4OfKapcsolodva_4Ofmaster();
+	
+	P_OrionDisconnRegionOfStatechartOfmasterSlaveChannel = OrionDisconnRegionOfStatechartOfmasterSlaveChannel();
+	
+	P_OrionDisconnRegionOfStatechartOfslaveMasterChannel = OrionDisconnRegionOfStatechartOfslaveMasterChannel();
+	
+	P_main_region_of_Orion_Slave_SMOfStatechartOfslave = main_region_of_Orion_Slave_SMOfStatechartOfslave();
+	
+	P_region_2_in_Kapcsolodva_1OfKapcsolodva_1Ofslave = region_2_in_Kapcsolodva_1OfKapcsolodva_1Ofslave();
+	
+	P_main_region_of_Orion_Master_SMOfStatechartOfmaster = main_region_of_Orion_Master_SMOfStatechartOfmaster();
+	
+	P_region_2_in_Kapcsolodva_4OfKapcsolodva_4Ofmaster = region_2_in_Kapcsolodva_4OfKapcsolodva_4Ofmaster();
+	
+	P_region_1_in_Kapcsolodva_1OfKapcsolodva_1Ofslave = region_1_in_Kapcsolodva_1OfKapcsolodva_1Ofslave();
+	
+	P_OrionSystemOrchestrator35 = OrionSystemOrchestrator35();
+	
+	P_Environment = Environment();
+	system P_region_1_in_Kapcsolodva_4OfKapcsolodva_4Ofmaster, P_OrionDisconnRegionOfStatechartOfmasterSlaveChannel, P_OrionDisconnRegionOfStatechartOfslaveMasterChannel, P_main_region_of_Orion_Slave_SMOfStatechartOfslave, P_region_2_in_Kapcsolodva_1OfKapcsolodva_1Ofslave, P_main_region_of_Orion_Master_SMOfStatechartOfmaster, P_region_2_in_Kapcsolodva_4OfKapcsolodva_4Ofmaster, P_region_1_in_Kapcsolodva_1OfKapcsolodva_1Ofslave, P_OrionSystemOrchestrator35, P_Environment;
+</system>
+	</nta>

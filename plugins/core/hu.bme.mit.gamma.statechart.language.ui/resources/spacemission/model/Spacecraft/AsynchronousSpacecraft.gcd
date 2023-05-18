@@ -1,0 +1,57 @@
+package spacecraft
+import "Interface/Interfaces.gcd"
+@RegionSchedule = bottom-up
+@OrthogonalRegionSchedule = parallel
+statechart Spacecraft [
+	port connection : provides DataSource
+] {
+	var batteryVariable : integer := 100
+	var recharging : boolean := false
+	var data : integer := 100
+	timeout rechargeTimeout
+	timeout consumeTimeout
+	timeout transmitTimeout
+	region Communication {
+		initial Entry1
+		state WaitingPing
+		state Transmitting {
+			region SendData {
+				initial Entry3
+				state Sending {
+					entry / set transmitTimeout := 1500 ms;
+				}
+			}
+			region ConsumePower {
+				initial Entry4
+				state Consuming {
+					entry / set consumeTimeout := 1 s;
+				}
+			}
+		}
+	}
+	region Battery {
+		initial Entry2
+		state NotRecharging {
+			entry / recharging := false;
+		}
+		state Recharging {
+			entry / recharging := true; set rechargeTimeout := 10 s; // this is an approximation of the original behavior
+
+		}
+	}
+	transition from Entry1 to WaitingPing
+	transition from WaitingPing to Transmitting when connection.ping [recharging = false]
+	transition from Entry3 to Sending
+	transition from Sending to Sending when timeout transmitTimeout [data > 1 and batteryVariable >= 40] / data :=
+		data - 1; raise connection.data;
+	transition from Entry4 to Consuming
+	transition from Consuming to Consuming when timeout consumeTimeout [batteryVariable >= 40] / batteryVariable :=
+		batteryVariable - 1;
+	transition from Transmitting to WaitingPing when timeout consumeTimeout [batteryVariable < 40]
+	transition from Transmitting to WaitingPing when timeout transmitTimeout [data <= 1 or batteryVariable < 40]
+	transition from Entry2 to NotRecharging
+	transition from NotRecharging to Recharging when timeout consumeTimeout [batteryVariable < 80]
+	transition from Recharging to Recharging when timeout rechargeTimeout [batteryVariable < 100] / batteryVariable :=
+		batteryVariable + 1;
+	transition from Recharging to NotRecharging when timeout rechargeTimeout [batteryVariable = 100]
+}

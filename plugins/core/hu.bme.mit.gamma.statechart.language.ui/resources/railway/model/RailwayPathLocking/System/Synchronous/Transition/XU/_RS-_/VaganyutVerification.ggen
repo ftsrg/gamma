@@ -1,0 +1,7 @@
+verification {
+	language : XSTS-UPPAAL
+	file : "Vaganyut.xml"
+	property-file : ".Vaganyut.gpd"
+	test-language : java
+	optimize : false
+}

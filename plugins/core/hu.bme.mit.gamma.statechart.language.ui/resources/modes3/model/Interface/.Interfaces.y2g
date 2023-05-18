@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="ASCII"?>
+<hu.bme.mit.gamma.yakindu.transformation:Y2GTrace xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:hu.bme.mit.gamma.yakindu.transformation="http://www.mit.bme.hu/gamma/yakindu/transformation/Traceability">
+  <yakinduStatechart href="platform:/resource/hu.bme.mit.gamma.modes3.casestudy.abstraction/model/Interface/Interfaces.sct#_Qmz6gCUnEeeTxv1FvWbzPQ"/>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.modes3.casestudy.abstraction/model/Interface/Interfaces.sct#SCT_/0/@scopes.6"/>
+    <to href="Interfaces.gcd#//@interfaces.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.modes3.casestudy.abstraction/model/Interface/Interfaces.sct#SCT_/0/@scopes.5"/>
+    <to href="Interfaces.gcd#//@interfaces.1"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.modes3.casestudy.abstraction/model/Interface/Interfaces.sct#SCT_/0/@scopes.7"/>
+    <to href="Interfaces.gcd#//@interfaces.2"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.modes3.casestudy.abstraction/model/Interface/Interfaces.sct#SCT_/0/@scopes.0"/>
+    <to href="Interfaces.gcd#//@interfaces.3"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.modes3.casestudy.abstraction/model/Interface/Interfaces.sct#SCT_/0/@scopes.3"/>
+    <to href="Interfaces.gcd#//@interfaces.4"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.modes3.casestudy.abstraction/model/Interface/Interfaces.sct#SCT_/0/@scopes.4"/>
+    <to href="Interfaces.gcd#//@interfaces.5"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.modes3.casestudy.abstraction/model/Interface/Interfaces.sct#SCT_/0/@scopes.2"/>
+    <to href="Interfaces.gcd#//@interfaces.6"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.modes3.casestudy.abstraction/model/Interface/Interfaces.sct#SCT_/0/@scopes.1"/>
+    <to href="Interfaces.gcd#//@interfaces.7"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.modes3.casestudy.abstraction/model/Interface/Interfaces.sct#SCT_Interfaces.Protocol.release"/>
+    <to href="Interfaces.gcd#//@interfaces.3/@events.0/@event"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.modes3.casestudy.abstraction/model/Interface/Interfaces.sct#SCT_Interfaces.SectionControl.disableSection"/>
+    <to href="Interfaces.gcd#//@interfaces.6/@events.0/@event"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.modes3.casestudy.abstraction/model/Interface/Interfaces.sct#SCT_Interfaces.Protocol.canGo"/>
+    <to href="Interfaces.gcd#//@interfaces.3/@events.1/@event"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.modes3.casestudy.abstraction/model/Interface/Interfaces.sct#SCT_Interfaces.Restart.restart"/>
+    <to href="Interfaces.gcd#//@interfaces.7/@events.0/@event"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.modes3.casestudy.abstraction/model/Interface/Interfaces.sct#SCT_Interfaces.SectionControl.enableSection"/>
+    <to href="Interfaces.gcd#//@interfaces.6/@events.1/@event"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.modes3.casestudy.abstraction/model/Interface/Interfaces.sct#SCT_Interfaces.Protocol.reserve"/>
+    <to href="Interfaces.gcd#//@interfaces.3/@events.2/@event"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.modes3.casestudy.abstraction/model/Interface/Interfaces.sct#SCT_Interfaces.TrainControl.moveForward"/>
+    <to href="Interfaces.gcd#//@interfaces.1/@events.0/@event"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.modes3.casestudy.abstraction/model/Interface/Interfaces.sct#SCT_Interfaces.Train.unoccupy"/>
+    <to href="Interfaces.gcd#//@interfaces.5/@events.0/@event"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.modes3.casestudy.abstraction/model/Interface/Interfaces.sct#SCT_Interfaces.NewProtocol.go"/>
+    <to href="Interfaces.gcd#//@interfaces.0/@events.0/@event"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.modes3.casestudy.abstraction/model/Interface/Interfaces.sct#SCT_Interfaces.NewProtocol.occupied"/>
+    <to href="Interfaces.gcd#//@interfaces.0/@events.1/@event"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.modes3.casestudy.abstraction/model/Interface/Interfaces.sct#SCT_Interfaces.NewProtocol.unoccupied"/>
+    <to href="Interfaces.gcd#//@interfaces.0/@events.2/@event"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.modes3.casestudy.abstraction/model/Interface/Interfaces.sct#SCT_Interfaces.TrainControl.moveBackward"/>
+    <to href="Interfaces.gcd#//@interfaces.1/@events.1/@event"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.modes3.casestudy.abstraction/model/Interface/Interfaces.sct#SCT_Interfaces.Error.error"/>
+    <to href="Interfaces.gcd#//@interfaces.2/@events.0/@event"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.modes3.casestudy.abstraction/model/Interface/Interfaces.sct#SCT_Interfaces.TurnoutControl.turnoutDivergent"/>
+    <to href="Interfaces.gcd#//@interfaces.4/@events.0/@event"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.modes3.casestudy.abstraction/model/Interface/Interfaces.sct#SCT_Interfaces.TurnoutControl.turnoutStraight"/>
+    <to href="Interfaces.gcd#//@interfaces.4/@events.1/@event"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.modes3.casestudy.abstraction/model/Interface/Interfaces.sct#SCT_Interfaces.Protocol.cannotGo"/>
+    <to href="Interfaces.gcd#//@interfaces.3/@events.3/@event"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.modes3.casestudy.abstraction/model/Interface/Interfaces.sct#SCT_Interfaces.Train.occupy"/>
+    <to href="Interfaces.gcd#//@interfaces.5/@events.1/@event"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.modes3.casestudy.abstraction/model/Interface/Interfaces.sct#SCT_Interfaces.NewProtocol.stop"/>
+    <to href="Interfaces.gcd#//@interfaces.0/@events.3/@event"/>
+  </traces>
+</hu.bme.mit.gamma.yakindu.transformation:Y2GTrace>

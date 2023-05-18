@@ -1,0 +1,32 @@
+package train_async
+import "Train"
+adapter AsyncTrain(initialPosition1 : integer, initialPosition2 : integer) of component trainAsync :
+	Train(initialPosition1, initialPosition2) [
+] {
+	when HighLevelSectionControl1.any / run
+	when LowLevelSectionControl1.any / run
+	when HighLevelSectionControl2.any / run
+	when LowLevelSectionControl2.any / run
+	when HighLevelSectionControl3.any / run
+	when LowLevelSectionControl3.any / run
+	when HighLevelSectionControl4.any / run
+	when LowLevelSectionControl4.any / run
+	when HighLevelSectionControl5.any / run
+	when LowLevelSectionControl5.any / run
+	when HighLevelSectionControl6.any / run
+	when LowLevelSectionControl6.any / run
+	when HighLevelSectionControl7.any / run
+	when LowLevelSectionControl7.any / run
+	when HighLevelSectionControl8.any / run
+	when LowLevelSectionControl8.any / run
+	when Train1.any / run
+	when Train2.any / run
+	queue messages(priority = 1, capacity = 1 /* Capacity of 1 to ease model checking */) {
+		HighLevelSectionControl1.any, LowLevelSectionControl1.any, HighLevelSectionControl2.any,
+			LowLevelSectionControl2.any, HighLevelSectionControl3.any, LowLevelSectionControl3.any,
+			HighLevelSectionControl4.any, LowLevelSectionControl4.any, HighLevelSectionControl5.any,
+			LowLevelSectionControl5.any, HighLevelSectionControl6.any, LowLevelSectionControl6.any,
+			HighLevelSectionControl7.any, LowLevelSectionControl7.any, HighLevelSectionControl8.any,
+			LowLevelSectionControl8.any, Train1.any, Train2.any
+	}
+}

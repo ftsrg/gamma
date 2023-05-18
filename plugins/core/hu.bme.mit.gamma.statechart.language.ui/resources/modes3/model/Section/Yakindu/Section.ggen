@@ -1,0 +1,14 @@
+import "Interface/Interfaces"
+import external "Section.sct"
+statechart {
+	statechart : Section
+	mappings {
+		map Restart = Restart as required
+		map SectionControl = SectionControl as provided
+		map ProtocolInCW = Protocol as required
+		map ProtocolInCCW = Protocol as required
+		map ProtocolOutCW = Protocol as provided
+		map ProtocolOutCCW = Protocol as provided
+		map Train = Train as required
+	}
+}

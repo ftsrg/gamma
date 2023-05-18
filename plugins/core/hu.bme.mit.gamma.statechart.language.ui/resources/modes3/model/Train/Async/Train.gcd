@@ -1,0 +1,459 @@
+package train
+import "Interface/Interfaces"
+statechart Train(initialPosition1 : integer, initialPosition2 : integer) [
+	port HighLevelSectionControl1 : requires SectionControl
+	port LowLevelSectionControl1 : requires SectionControl
+	port HighLevelSectionControl2 : requires SectionControl
+	port LowLevelSectionControl2 : requires SectionControl
+	port HighLevelSectionControl3 : requires SectionControl
+	port LowLevelSectionControl3 : requires SectionControl
+	port HighLevelSectionControl4 : requires SectionControl
+	port LowLevelSectionControl4 : requires SectionControl
+	port HighLevelSectionControl5 : requires SectionControl
+	port LowLevelSectionControl5 : requires SectionControl
+	port HighLevelSectionControl6 : requires SectionControl
+	port LowLevelSectionControl6 : requires SectionControl
+	port HighLevelSectionControl7 : requires SectionControl
+	port LowLevelSectionControl7 : requires SectionControl
+	port HighLevelSectionControl8 : requires SectionControl
+	port LowLevelSectionControl8 : requires SectionControl
+	port Train1 : requires TrainControl
+	port Train2 : requires TrainControl
+	port TrainControl1 : provides Train
+	port TrainControl2 : provides Train
+	port TrainControl3 : provides Train
+	port TrainControl4 : provides Train
+	port TrainControl5 : provides Train
+	port TrainControl6 : provides Train
+	port TrainControl7 : provides Train
+	port TrainControl8 : provides Train
+] {
+	var isDisabled1 : boolean
+	var position1 : integer := initialPosition1
+	var isDisabled2 : boolean
+	var position2 : integer := initialPosition2
+	region mainRegion {
+		initial Init
+		choice InitializationState1
+		state InitializationState2
+		state GlobalState
+		choice ForwardChoice1
+		choice BackwardChoice1
+		choice ForwardChoice2
+		choice BackwardChoice2
+	}
+	transition from Init to InitializationState1
+	// Putting the trains on the track one by one
+	transition from InitializationState1 to InitializationState2 [initialPosition1 = 1] / raise
+		TrainControl1.occupy;
+	transition from InitializationState1 to InitializationState2 [initialPosition1 = 2] / raise
+		TrainControl2.occupy;
+	transition from InitializationState1 to InitializationState2 [initialPosition1 = 3] / raise
+		TrainControl3.occupy;
+	transition from InitializationState1 to InitializationState2 [initialPosition1 = 4] / raise
+		TrainControl4.occupy;
+	transition from InitializationState1 to InitializationState2 [initialPosition1 = 5] / raise
+		TrainControl5.occupy;
+	transition from InitializationState1 to InitializationState2 [initialPosition1 = 6] / raise
+		TrainControl6.occupy;
+	transition from InitializationState1 to InitializationState2 [initialPosition1 = 7] / raise
+		TrainControl7.occupy;
+	transition from InitializationState1 to InitializationState2 [initialPosition1 = 8] / raise
+		TrainControl8.occupy;
+	transition from InitializationState2 to GlobalState when HighLevelSectionControl1.enableSection ||
+		LowLevelSectionControl1.enableSection || HighLevelSectionControl2.enableSection ||
+		LowLevelSectionControl2.enableSection || HighLevelSectionControl3.enableSection ||
+		LowLevelSectionControl3.enableSection || HighLevelSectionControl4.enableSection ||
+		LowLevelSectionControl4.enableSection || HighLevelSectionControl5.enableSection ||
+		LowLevelSectionControl5.enableSection || HighLevelSectionControl6.enableSection ||
+		LowLevelSectionControl6.enableSection || HighLevelSectionControl7.enableSection ||
+		LowLevelSectionControl7.enableSection || HighLevelSectionControl8.enableSection ||
+		LowLevelSectionControl8.enableSection [initialPosition2 = 1] / raise TrainControl1.occupy;
+	transition from InitializationState2 to GlobalState when HighLevelSectionControl1.enableSection ||
+		LowLevelSectionControl1.enableSection || HighLevelSectionControl2.enableSection ||
+		LowLevelSectionControl2.enableSection || HighLevelSectionControl3.enableSection ||
+		LowLevelSectionControl3.enableSection || HighLevelSectionControl4.enableSection ||
+		LowLevelSectionControl4.enableSection || HighLevelSectionControl5.enableSection ||
+		LowLevelSectionControl5.enableSection || HighLevelSectionControl6.enableSection ||
+		LowLevelSectionControl6.enableSection || HighLevelSectionControl7.enableSection ||
+		LowLevelSectionControl7.enableSection || HighLevelSectionControl8.enableSection ||
+		LowLevelSectionControl8.enableSection [initialPosition2 = 2] / raise TrainControl2.occupy;
+	transition from InitializationState2 to GlobalState when HighLevelSectionControl1.enableSection ||
+		LowLevelSectionControl1.enableSection || HighLevelSectionControl2.enableSection ||
+		LowLevelSectionControl2.enableSection || HighLevelSectionControl3.enableSection ||
+		LowLevelSectionControl3.enableSection || HighLevelSectionControl4.enableSection ||
+		LowLevelSectionControl4.enableSection || HighLevelSectionControl5.enableSection ||
+		LowLevelSectionControl5.enableSection || HighLevelSectionControl6.enableSection ||
+		LowLevelSectionControl6.enableSection || HighLevelSectionControl7.enableSection ||
+		LowLevelSectionControl7.enableSection || HighLevelSectionControl8.enableSection ||
+		LowLevelSectionControl8.enableSection [initialPosition2 = 3] / raise TrainControl3.occupy;
+	transition from InitializationState2 to GlobalState when HighLevelSectionControl1.enableSection ||
+		LowLevelSectionControl1.enableSection || HighLevelSectionControl2.enableSection ||
+		LowLevelSectionControl2.enableSection || HighLevelSectionControl3.enableSection ||
+		LowLevelSectionControl3.enableSection || HighLevelSectionControl4.enableSection ||
+		LowLevelSectionControl4.enableSection || HighLevelSectionControl5.enableSection ||
+		LowLevelSectionControl5.enableSection || HighLevelSectionControl6.enableSection ||
+		LowLevelSectionControl6.enableSection || HighLevelSectionControl7.enableSection ||
+		LowLevelSectionControl7.enableSection || HighLevelSectionControl8.enableSection ||
+		LowLevelSectionControl8.enableSection [initialPosition2 = 4] / raise TrainControl4.occupy;
+	transition from InitializationState2 to GlobalState when HighLevelSectionControl1.enableSection ||
+		LowLevelSectionControl1.enableSection || HighLevelSectionControl2.enableSection ||
+		LowLevelSectionControl2.enableSection || HighLevelSectionControl3.enableSection ||
+		LowLevelSectionControl3.enableSection || HighLevelSectionControl4.enableSection ||
+		LowLevelSectionControl4.enableSection || HighLevelSectionControl5.enableSection ||
+		LowLevelSectionControl5.enableSection || HighLevelSectionControl6.enableSection ||
+		LowLevelSectionControl6.enableSection || HighLevelSectionControl7.enableSection ||
+		LowLevelSectionControl7.enableSection || HighLevelSectionControl8.enableSection ||
+		LowLevelSectionControl8.enableSection [initialPosition2 = 5] / raise TrainControl5.occupy;
+	transition from InitializationState2 to GlobalState when HighLevelSectionControl1.enableSection ||
+		LowLevelSectionControl1.enableSection || HighLevelSectionControl2.enableSection ||
+		LowLevelSectionControl2.enableSection || HighLevelSectionControl3.enableSection ||
+		LowLevelSectionControl3.enableSection || HighLevelSectionControl4.enableSection ||
+		LowLevelSectionControl4.enableSection || HighLevelSectionControl5.enableSection ||
+		LowLevelSectionControl5.enableSection || HighLevelSectionControl6.enableSection ||
+		LowLevelSectionControl6.enableSection || HighLevelSectionControl7.enableSection ||
+		LowLevelSectionControl7.enableSection || HighLevelSectionControl8.enableSection ||
+		LowLevelSectionControl8.enableSection [initialPosition2 = 6] / raise TrainControl6.occupy;
+	transition from InitializationState2 to GlobalState when HighLevelSectionControl1.enableSection ||
+		LowLevelSectionControl1.enableSection || HighLevelSectionControl2.enableSection ||
+		LowLevelSectionControl2.enableSection || HighLevelSectionControl3.enableSection ||
+		LowLevelSectionControl3.enableSection || HighLevelSectionControl4.enableSection ||
+		LowLevelSectionControl4.enableSection || HighLevelSectionControl5.enableSection ||
+		LowLevelSectionControl5.enableSection || HighLevelSectionControl6.enableSection ||
+		LowLevelSectionControl6.enableSection || HighLevelSectionControl7.enableSection ||
+		LowLevelSectionControl7.enableSection || HighLevelSectionControl8.enableSection ||
+		LowLevelSectionControl8.enableSection [initialPosition2 = 7] / raise TrainControl7.occupy;
+	transition from InitializationState2 to GlobalState when HighLevelSectionControl1.enableSection ||
+		LowLevelSectionControl1.enableSection || HighLevelSectionControl2.enableSection ||
+		LowLevelSectionControl2.enableSection || HighLevelSectionControl3.enableSection ||
+		LowLevelSectionControl3.enableSection || HighLevelSectionControl4.enableSection ||
+		LowLevelSectionControl4.enableSection || HighLevelSectionControl5.enableSection ||
+		LowLevelSectionControl5.enableSection || HighLevelSectionControl6.enableSection ||
+		LowLevelSectionControl6.enableSection || HighLevelSectionControl7.enableSection ||
+		LowLevelSectionControl7.enableSection || HighLevelSectionControl8.enableSection ||
+		LowLevelSectionControl8.enableSection [initialPosition2 = 8] / raise TrainControl8.occupy;
+	transition from GlobalState to ForwardChoice1 when Train1.moveForward &&
+		!(HighLevelSectionControl1.disableSection || LowLevelSectionControl1.disableSection ||
+		HighLevelSectionControl2.disableSection || LowLevelSectionControl2.disableSection ||
+		HighLevelSectionControl3.disableSection || LowLevelSectionControl3.disableSection ||
+		HighLevelSectionControl4.disableSection || LowLevelSectionControl4.disableSection ||
+		HighLevelSectionControl5.disableSection || LowLevelSectionControl5.disableSection ||
+		HighLevelSectionControl6.disableSection || LowLevelSectionControl6.disableSection ||
+		HighLevelSectionControl7.disableSection || LowLevelSectionControl7.disableSection ||
+		HighLevelSectionControl8.disableSection || LowLevelSectionControl8.disableSection) [not isDisabled1]
+	transition from GlobalState to BackwardChoice1 when Train1.moveBackward &&
+		!(HighLevelSectionControl1.disableSection || LowLevelSectionControl1.disableSection ||
+		HighLevelSectionControl2.disableSection || LowLevelSectionControl2.disableSection ||
+		HighLevelSectionControl3.disableSection || LowLevelSectionControl3.disableSection ||
+		HighLevelSectionControl4.disableSection || LowLevelSectionControl4.disableSection ||
+		HighLevelSectionControl5.disableSection || LowLevelSectionControl5.disableSection ||
+		HighLevelSectionControl6.disableSection || LowLevelSectionControl6.disableSection ||
+		HighLevelSectionControl7.disableSection || LowLevelSectionControl7.disableSection ||
+		HighLevelSectionControl8.disableSection || LowLevelSectionControl8.disableSection) [not isDisabled1]
+	transition from GlobalState to GlobalState when HighLevelSectionControl1.disableSection ||
+		LowLevelSectionControl1.disableSection [position1 = 12] /
+	/* The train moves entirely onto the disabled section as the "old" section still has electricity in it */
+	isDisabled1 := true; position1 := 1; raise TrainControl2.unoccupy;
+	transition from GlobalState to GlobalState when HighLevelSectionControl1.disableSection ||
+		LowLevelSectionControl1.disableSection [position1 = 81] /
+	/* The train moves entirely onto the disabled section as the "old" section still has electricity in it */
+	isDisabled1 := true; position1 := 1; raise TrainControl8.unoccupy;
+	transition from GlobalState to GlobalState when HighLevelSectionControl1.enableSection &&
+		!(HighLevelSectionControl1.disableSection) [isDisabled1 and position1 = 1] / isDisabled1 := false;
+	transition from ForwardChoice1 to GlobalState [position1 = 81] / position1 := 1; raise
+		TrainControl8.unoccupy;
+	transition from ForwardChoice1 to GlobalState [position1 = 1] / position1 := 12; raise
+		TrainControl2.occupy;
+	transition from BackwardChoice1 to GlobalState [position1 = 1] / position1 := 81; raise
+		TrainControl8.occupy;
+	transition from BackwardChoice1 to GlobalState [position1 = 12] / position1 := 1; raise
+		TrainControl2.unoccupy;
+	transition from GlobalState to GlobalState when HighLevelSectionControl2.disableSection ||
+		LowLevelSectionControl2.disableSection [position1 = 23] /
+	/* The train moves entirely onto the disabled section as the "old" section still has electricity in it */
+	isDisabled1 := true; position1 := 2; raise TrainControl3.unoccupy;
+	transition from GlobalState to GlobalState when HighLevelSectionControl2.disableSection ||
+		LowLevelSectionControl2.disableSection [position1 = 12] /
+	/* The train moves entirely onto the disabled section as the "old" section still has electricity in it */
+	isDisabled1 := true; position1 := 2; raise TrainControl1.unoccupy;
+	transition from GlobalState to GlobalState when HighLevelSectionControl2.enableSection &&
+		!(HighLevelSectionControl2.disableSection) [isDisabled1 and position1 = 2] / isDisabled1 := false;
+	transition from ForwardChoice1 to GlobalState [position1 = 12] / position1 := 2; raise
+		TrainControl1.unoccupy;
+	transition from ForwardChoice1 to GlobalState [position1 = 2] / position1 := 23; raise
+		TrainControl3.occupy;
+	transition from BackwardChoice1 to GlobalState [position1 = 2] / position1 := 12; raise
+		TrainControl1.occupy;
+	transition from BackwardChoice1 to GlobalState [position1 = 23] / position1 := 2; raise
+		TrainControl3.unoccupy;
+	transition from GlobalState to GlobalState when HighLevelSectionControl3.disableSection ||
+		LowLevelSectionControl3.disableSection [position1 = 34] /
+	/* The train moves entirely onto the disabled section as the "old" section still has electricity in it */
+	isDisabled1 := true; position1 := 3; raise TrainControl4.unoccupy;
+	transition from GlobalState to GlobalState when HighLevelSectionControl3.disableSection ||
+		LowLevelSectionControl3.disableSection [position1 = 23] /
+	/* The train moves entirely onto the disabled section as the "old" section still has electricity in it */
+	isDisabled1 := true; position1 := 3; raise TrainControl2.unoccupy;
+	transition from GlobalState to GlobalState when HighLevelSectionControl3.enableSection &&
+		!(HighLevelSectionControl3.disableSection) [isDisabled1 and position1 = 3] / isDisabled1 := false;
+	transition from ForwardChoice1 to GlobalState [position1 = 23] / position1 := 3; raise
+		TrainControl2.unoccupy;
+	transition from ForwardChoice1 to GlobalState [position1 = 3] / position1 := 34; raise
+		TrainControl4.occupy;
+	transition from BackwardChoice1 to GlobalState [position1 = 3] / position1 := 23; raise
+		TrainControl2.occupy;
+	transition from BackwardChoice1 to GlobalState [position1 = 34] / position1 := 3; raise
+		TrainControl4.unoccupy;
+	transition from GlobalState to GlobalState when HighLevelSectionControl4.disableSection ||
+		LowLevelSectionControl4.disableSection [position1 = 45] /
+	/* The train moves entirely onto the disabled section as the "old" section still has electricity in it */
+	isDisabled1 := true; position1 := 4; raise TrainControl5.unoccupy;
+	transition from GlobalState to GlobalState when HighLevelSectionControl4.disableSection ||
+		LowLevelSectionControl4.disableSection [position1 = 34] /
+	/* The train moves entirely onto the disabled section as the "old" section still has electricity in it */
+	isDisabled1 := true; position1 := 4; raise TrainControl3.unoccupy;
+	transition from GlobalState to GlobalState when HighLevelSectionControl4.enableSection &&
+		!(HighLevelSectionControl4.disableSection) [isDisabled1 and position1 = 4] / isDisabled1 := false;
+	transition from ForwardChoice1 to GlobalState [position1 = 34] / position1 := 4; raise
+		TrainControl3.unoccupy;
+	transition from ForwardChoice1 to GlobalState [position1 = 4] / position1 := 45; raise
+		TrainControl5.occupy;
+	transition from BackwardChoice1 to GlobalState [position1 = 4] / position1 := 34; raise
+		TrainControl3.occupy;
+	transition from BackwardChoice1 to GlobalState [position1 = 45] / position1 := 4; raise
+		TrainControl5.unoccupy;
+	transition from GlobalState to GlobalState when HighLevelSectionControl5.disableSection ||
+		LowLevelSectionControl5.disableSection [position1 = 56] /
+	/* The train moves entirely onto the disabled section as the "old" section still has electricity in it */
+	isDisabled1 := true; position1 := 5; raise TrainControl6.unoccupy;
+	transition from GlobalState to GlobalState when HighLevelSectionControl5.disableSection ||
+		LowLevelSectionControl5.disableSection [position1 = 45] /
+	/* The train moves entirely onto the disabled section as the "old" section still has electricity in it */
+	isDisabled1 := true; position1 := 5; raise TrainControl4.unoccupy;
+	transition from GlobalState to GlobalState when HighLevelSectionControl5.enableSection &&
+		!(HighLevelSectionControl5.disableSection) [isDisabled1 and position1 = 5] / isDisabled1 := false;
+	transition from ForwardChoice1 to GlobalState [position1 = 45] / position1 := 5; raise
+		TrainControl4.unoccupy;
+	transition from ForwardChoice1 to GlobalState [position1 = 5] / position1 := 56; raise
+		TrainControl6.occupy;
+	transition from BackwardChoice1 to GlobalState [position1 = 5] / position1 := 45; raise
+		TrainControl4.occupy;
+	transition from BackwardChoice1 to GlobalState [position1 = 56] / position1 := 5; raise
+		TrainControl6.unoccupy;
+	transition from GlobalState to GlobalState when HighLevelSectionControl6.disableSection ||
+		LowLevelSectionControl6.disableSection [position1 = 67] /
+	/* The train moves entirely onto the disabled section as the "old" section still has electricity in it */
+	isDisabled1 := true; position1 := 6; raise TrainControl7.unoccupy;
+	transition from GlobalState to GlobalState when HighLevelSectionControl6.disableSection ||
+		LowLevelSectionControl6.disableSection [position1 = 56] /
+	/* The train moves entirely onto the disabled section as the "old" section still has electricity in it */
+	isDisabled1 := true; position1 := 6; raise TrainControl5.unoccupy;
+	transition from GlobalState to GlobalState when HighLevelSectionControl6.enableSection &&
+		!(HighLevelSectionControl6.disableSection) [isDisabled1 and position1 = 6] / isDisabled1 := false;
+	transition from ForwardChoice1 to GlobalState [position1 = 56] / position1 := 6; raise
+		TrainControl5.unoccupy;
+	transition from ForwardChoice1 to GlobalState [position1 = 6] / position1 := 67; raise
+		TrainControl7.occupy;
+	transition from BackwardChoice1 to GlobalState [position1 = 6] / position1 := 56; raise
+		TrainControl5.occupy;
+	transition from BackwardChoice1 to GlobalState [position1 = 67] / position1 := 6; raise
+		TrainControl7.unoccupy;
+	transition from GlobalState to GlobalState when HighLevelSectionControl7.disableSection ||
+		LowLevelSectionControl7.disableSection [position1 = 78] /
+	/* The train moves entirely onto the disabled section as the "old" section still has electricity in it */
+	isDisabled1 := true; position1 := 7; raise TrainControl8.unoccupy;
+	transition from GlobalState to GlobalState when HighLevelSectionControl7.disableSection ||
+		LowLevelSectionControl7.disableSection [position1 = 67] /
+	/* The train moves entirely onto the disabled section as the "old" section still has electricity in it */
+	isDisabled1 := true; position1 := 7; raise TrainControl6.unoccupy;
+	transition from GlobalState to GlobalState when HighLevelSectionControl7.enableSection &&
+		!(HighLevelSectionControl7.disableSection) [isDisabled1 and position1 = 7] / isDisabled1 := false;
+	transition from ForwardChoice1 to GlobalState [position1 = 67] / position1 := 7; raise
+		TrainControl6.unoccupy;
+	transition from ForwardChoice1 to GlobalState [position1 = 7] / position1 := 78; raise
+		TrainControl8.occupy;
+	transition from BackwardChoice1 to GlobalState [position1 = 7] / position1 := 67; raise
+		TrainControl6.occupy;
+	transition from BackwardChoice1 to GlobalState [position1 = 78] / position1 := 7; raise
+		TrainControl8.unoccupy;
+	transition from GlobalState to GlobalState when HighLevelSectionControl8.disableSection ||
+		LowLevelSectionControl8.disableSection [position1 = 81] /
+	/* The train moves entirely onto the disabled section as the "old" section still has electricity in it */
+	isDisabled1 := true; position1 := 8; raise TrainControl1.unoccupy;
+	transition from GlobalState to GlobalState when HighLevelSectionControl8.disableSection ||
+		LowLevelSectionControl8.disableSection [position1 = 78] /
+	/* The train moves entirely onto the disabled section as the "old" section still has electricity in it */
+	isDisabled1 := true; position1 := 8; raise TrainControl7.unoccupy;
+	transition from GlobalState to GlobalState when HighLevelSectionControl8.enableSection &&
+		!(HighLevelSectionControl8.disableSection) [isDisabled1 and position1 = 8] / isDisabled1 := false;
+	transition from ForwardChoice1 to GlobalState [position1 = 78] / position1 := 8; raise
+		TrainControl7.unoccupy;
+	transition from ForwardChoice1 to GlobalState [position1 = 8] / position1 := 81; raise
+		TrainControl1.occupy;
+	transition from BackwardChoice1 to GlobalState [position1 = 8] / position1 := 78; raise
+		TrainControl7.occupy;
+	transition from BackwardChoice1 to GlobalState [position1 = 81] / position1 := 8; raise
+		TrainControl1.unoccupy;
+	transition from GlobalState to ForwardChoice2 when Train2.moveForward &&
+		!(HighLevelSectionControl1.disableSection || LowLevelSectionControl1.disableSection ||
+		HighLevelSectionControl2.disableSection || LowLevelSectionControl2.disableSection ||
+		HighLevelSectionControl3.disableSection || LowLevelSectionControl3.disableSection ||
+		HighLevelSectionControl4.disableSection || LowLevelSectionControl4.disableSection ||
+		HighLevelSectionControl5.disableSection || LowLevelSectionControl5.disableSection ||
+		HighLevelSectionControl6.disableSection || LowLevelSectionControl6.disableSection ||
+		HighLevelSectionControl7.disableSection || LowLevelSectionControl7.disableSection ||
+		HighLevelSectionControl8.disableSection || LowLevelSectionControl8.disableSection) [not isDisabled2]
+	transition from GlobalState to BackwardChoice2 when Train2.moveBackward &&
+		!(HighLevelSectionControl1.disableSection || LowLevelSectionControl1.disableSection ||
+		HighLevelSectionControl2.disableSection || LowLevelSectionControl2.disableSection ||
+		HighLevelSectionControl3.disableSection || LowLevelSectionControl3.disableSection ||
+		HighLevelSectionControl4.disableSection || LowLevelSectionControl4.disableSection ||
+		HighLevelSectionControl5.disableSection || LowLevelSectionControl5.disableSection ||
+		HighLevelSectionControl6.disableSection || LowLevelSectionControl6.disableSection ||
+		HighLevelSectionControl7.disableSection || LowLevelSectionControl7.disableSection ||
+		HighLevelSectionControl8.disableSection || LowLevelSectionControl8.disableSection) [not isDisabled2]
+	transition from GlobalState to GlobalState when HighLevelSectionControl1.disableSection ||
+		LowLevelSectionControl1.disableSection [position2 = 12] /
+	/* The train moves entirely onto the disabled section as the "old" section still has electricity in it */
+	isDisabled2 := true; position2 := 1; raise TrainControl2.unoccupy;
+	transition from GlobalState to GlobalState when HighLevelSectionControl1.disableSection ||
+		LowLevelSectionControl1.disableSection [position2 = 81] /
+	/* The train moves entirely onto the disabled section as the "old" section still has electricity in it */
+	isDisabled2 := true; position2 := 1; raise TrainControl8.unoccupy;
+	transition from GlobalState to GlobalState when HighLevelSectionControl1.enableSection &&
+		!(HighLevelSectionControl1.disableSection) [isDisabled2 and position2 = 1] / isDisabled2 := false;
+	transition from ForwardChoice2 to GlobalState [position2 = 81] / position2 := 1; raise
+		TrainControl8.unoccupy;
+	transition from ForwardChoice2 to GlobalState [position2 = 1] / position2 := 12; raise
+		TrainControl2.occupy;
+	transition from BackwardChoice2 to GlobalState [position2 = 1] / position2 := 81; raise
+		TrainControl8.occupy;
+	transition from BackwardChoice2 to GlobalState [position2 = 12] / position2 := 1; raise
+		TrainControl2.unoccupy;
+	transition from GlobalState to GlobalState when HighLevelSectionControl2.disableSection ||
+		LowLevelSectionControl2.disableSection [position2 = 23] /
+	/* The train moves entirely onto the disabled section as the "old" section still has electricity in it */
+	isDisabled2 := true; position2 := 2; raise TrainControl3.unoccupy;
+	transition from GlobalState to GlobalState when HighLevelSectionControl2.disableSection ||
+		LowLevelSectionControl2.disableSection [position2 = 12] /
+	/* The train moves entirely onto the disabled section as the "old" section still has electricity in it */
+	isDisabled2 := true; position2 := 2; raise TrainControl1.unoccupy;
+	transition from GlobalState to GlobalState when HighLevelSectionControl2.enableSection &&
+		!(HighLevelSectionControl2.disableSection) [isDisabled2 and position2 = 2] / isDisabled2 := false;
+	transition from ForwardChoice2 to GlobalState [position2 = 12] / position2 := 2; raise
+		TrainControl1.unoccupy;
+	transition from ForwardChoice2 to GlobalState [position2 = 2] / position2 := 23; raise
+		TrainControl3.occupy;
+	transition from BackwardChoice2 to GlobalState [position2 = 2] / position2 := 12; raise
+		TrainControl1.occupy;
+	transition from BackwardChoice2 to GlobalState [position2 = 23] / position2 := 2; raise
+		TrainControl3.unoccupy;
+	transition from GlobalState to GlobalState when HighLevelSectionControl3.disableSection ||
+		LowLevelSectionControl3.disableSection [position2 = 34] /
+	/* The train moves entirely onto the disabled section as the "old" section still has electricity in it */
+	isDisabled2 := true; position2 := 3; raise TrainControl4.unoccupy;
+	transition from GlobalState to GlobalState when HighLevelSectionControl3.disableSection ||
+		LowLevelSectionControl3.disableSection [position2 = 23] /
+	/* The train moves entirely onto the disabled section as the "old" section still has electricity in it */
+	isDisabled2 := true; position2 := 3; raise TrainControl2.unoccupy;
+	transition from GlobalState to GlobalState when HighLevelSectionControl3.enableSection &&
+		!(HighLevelSectionControl3.disableSection) [isDisabled2 and position2 = 3] / isDisabled2 := false;
+	transition from ForwardChoice2 to GlobalState [position2 = 23] / position2 := 3; raise
+		TrainControl2.unoccupy;
+	transition from ForwardChoice2 to GlobalState [position2 = 3] / position2 := 34; raise
+		TrainControl4.occupy;
+	transition from BackwardChoice2 to GlobalState [position2 = 3] / position2 := 23; raise
+		TrainControl2.occupy;
+	transition from BackwardChoice2 to GlobalState [position2 = 34] / position2 := 3; raise
+		TrainControl4.unoccupy;
+	transition from GlobalState to GlobalState when HighLevelSectionControl4.disableSection ||
+		LowLevelSectionControl4.disableSection [position2 = 45] /
+	/* The train moves entirely onto the disabled section as the "old" section still has electricity in it */
+	isDisabled2 := true; position2 := 4; raise TrainControl5.unoccupy;
+	transition from GlobalState to GlobalState when HighLevelSectionControl4.disableSection ||
+		LowLevelSectionControl4.disableSection [position2 = 34] /
+	/* The train moves entirely onto the disabled section as the "old" section still has electricity in it */
+	isDisabled2 := true; position2 := 4; raise TrainControl3.unoccupy;
+	transition from GlobalState to GlobalState when HighLevelSectionControl4.enableSection &&
+		!(HighLevelSectionControl4.disableSection) [isDisabled2 and position2 = 4] / isDisabled2 := false;
+	transition from ForwardChoice2 to GlobalState [position2 = 34] / position2 := 4; raise
+		TrainControl3.unoccupy;
+	transition from ForwardChoice2 to GlobalState [position2 = 4] / position2 := 45; raise
+		TrainControl5.occupy;
+	transition from BackwardChoice2 to GlobalState [position2 = 4] / position2 := 34; raise
+		TrainControl3.occupy;
+	transition from BackwardChoice2 to GlobalState [position2 = 45] / position2 := 4; raise
+		TrainControl5.unoccupy;
+	transition from GlobalState to GlobalState when HighLevelSectionControl5.disableSection ||
+		LowLevelSectionControl5.disableSection [position2 = 56] /
+	/* The train moves entirely onto the disabled section as the "old" section still has electricity in it */
+	isDisabled2 := true; position2 := 5; raise TrainControl6.unoccupy;
+	transition from GlobalState to GlobalState when HighLevelSectionControl5.disableSection ||
+		LowLevelSectionControl5.disableSection [position2 = 45] /
+	/* The train moves entirely onto the disabled section as the "old" section still has electricity in it */
+	isDisabled2 := true; position2 := 5; raise TrainControl4.unoccupy;
+	transition from GlobalState to GlobalState when HighLevelSectionControl5.enableSection &&
+		!(HighLevelSectionControl5.disableSection) [isDisabled2 and position2 = 5] / isDisabled2 := false;
+	transition from ForwardChoice2 to GlobalState [position2 = 45] / position2 := 5; raise
+		TrainControl4.unoccupy;
+	transition from ForwardChoice2 to GlobalState [position2 = 5] / position2 := 56; raise
+		TrainControl6.occupy;
+	transition from BackwardChoice2 to GlobalState [position2 = 5] / position2 := 45; raise
+		TrainControl4.occupy;
+	transition from BackwardChoice2 to GlobalState [position2 = 56] / position2 := 5; raise
+		TrainControl6.unoccupy;
+	transition from GlobalState to GlobalState when HighLevelSectionControl6.disableSection ||
+		LowLevelSectionControl6.disableSection [position2 = 67] /
+	/* The train moves entirely onto the disabled section as the "old" section still has electricity in it */
+	isDisabled2 := true; position2 := 6; raise TrainControl7.unoccupy;
+	transition from GlobalState to GlobalState when HighLevelSectionControl6.disableSection ||
+		LowLevelSectionControl6.disableSection [position2 = 56] /
+	/* The train moves entirely onto the disabled section as the "old" section still has electricity in it */
+	isDisabled2 := true; position2 := 6; raise TrainControl5.unoccupy;
+	transition from GlobalState to GlobalState when HighLevelSectionControl6.enableSection &&
+		!(HighLevelSectionControl6.disableSection) [isDisabled2 and position2 = 6] / isDisabled2 := false;
+	transition from ForwardChoice2 to GlobalState [position2 = 56] / position2 := 6; raise
+		TrainControl5.unoccupy;
+	transition from ForwardChoice2 to GlobalState [position2 = 6] / position2 := 67; raise
+		TrainControl7.occupy;
+	transition from BackwardChoice2 to GlobalState [position2 = 6] / position2 := 56; raise
+		TrainControl5.occupy;
+	transition from BackwardChoice2 to GlobalState [position2 = 67] / position2 := 6; raise
+		TrainControl7.unoccupy;
+	transition from GlobalState to GlobalState when HighLevelSectionControl7.disableSection ||
+		LowLevelSectionControl7.disableSection [position2 = 78] /
+	/* The train moves entirely onto the disabled section as the "old" section still has electricity in it */
+	isDisabled2 := true; position2 := 7; raise TrainControl8.unoccupy;
+	transition from GlobalState to GlobalState when HighLevelSectionControl7.disableSection ||
+		LowLevelSectionControl7.disableSection [position2 = 67] /
+	/* The train moves entirely onto the disabled section as the "old" section still has electricity in it */
+	isDisabled2 := true; position2 := 7; raise TrainControl6.unoccupy;
+	transition from GlobalState to GlobalState when HighLevelSectionControl7.enableSection &&
+		!(HighLevelSectionControl7.disableSection) [isDisabled2 and position2 = 7] / isDisabled2 := false;
+	transition from ForwardChoice2 to GlobalState [position2 = 67] / position2 := 7; raise
+		TrainControl6.unoccupy;
+	transition from ForwardChoice2 to GlobalState [position2 = 7] / position2 := 78; raise
+		TrainControl8.occupy;
+	transition from BackwardChoice2 to GlobalState [position2 = 7] / position2 := 67; raise
+		TrainControl6.occupy;
+	transition from BackwardChoice2 to GlobalState [position2 = 78] / position2 := 7; raise
+		TrainControl8.unoccupy;
+	transition from GlobalState to GlobalState when HighLevelSectionControl8.disableSection ||
+		LowLevelSectionControl8.disableSection [position2 = 81] /
+	/* The train moves entirely onto the disabled section as the "old" section still has electricity in it */
+	isDisabled2 := true; position2 := 8; raise TrainControl1.unoccupy;
+	transition from GlobalState to GlobalState when HighLevelSectionControl8.disableSection ||
+		LowLevelSectionControl8.disableSection [position2 = 78] /
+	/* The train moves entirely onto the disabled section as the "old" section still has electricity in it */
+	isDisabled2 := true; position2 := 8; raise TrainControl7.unoccupy;
+	transition from GlobalState to GlobalState when HighLevelSectionControl8.enableSection &&
+		!(HighLevelSectionControl8.disableSection) [isDisabled2 and position2 = 8] / isDisabled2 := false;
+	transition from ForwardChoice2 to GlobalState [position2 = 78] / position2 := 8; raise
+		TrainControl7.unoccupy;
+	transition from ForwardChoice2 to GlobalState [position2 = 8] / position2 := 81; raise
+		TrainControl1.occupy;
+	transition from BackwardChoice2 to GlobalState [position2 = 8] / position2 := 78; raise
+		TrainControl7.occupy;
+	transition from BackwardChoice2 to GlobalState [position2 = 81] / position2 := 8; raise
+		TrainControl1.unoccupy;
+}

@@ -1,0 +1,7 @@
+verification {
+	language : Theta
+	file : "Mission.xsts"
+	property-file : ".Mission.gpd"
+	test-language : java
+	optimize : false
+}

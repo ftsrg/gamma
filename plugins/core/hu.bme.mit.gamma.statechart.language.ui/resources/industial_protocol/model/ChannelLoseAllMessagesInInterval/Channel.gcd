@@ -1,0 +1,95 @@
+package Channel
+import "interfaces"
+const START : integer := 4
+const END : integer := 9
+@PrioritizedTransitions = order-based
+statechart ChannelStatechart [
+	port Output : provides StateMachine_Interface_For_Orion
+	port Input : requires StateMachine_Interface_For_Orion
+] {
+	timeout OperatingTimeout29
+	timeout MessageLosingTimeout30
+	transition from Choice1 to Operating / raise Output.OrionConnConf;
+	transition from Choice10 to Choice19 [else]
+	transition from Choice11 to Choice9 [else]
+	transition from Choice12 to Copy_1_Operating / raise Output.OrionDisconnCause;
+	transition from Choice13 to Choice14 [else]
+	transition from Choice14 to Copy_1_Operating / raise Output.OrionConnResp;
+	transition from Choice15 to Choice23 [else]
+	transition from Choice16 to Choice18 [else]
+	transition from Choice17 to Choice3 [else]
+	transition from Choice18 to Copy_1_Operating / raise Output.OrionDisconn;
+	transition from Choice19 to Copy_1_Operating / raise Output.OrionAppData;
+	transition from Choice2 to Choice22 [else]
+	transition from Choice20 to Choice4 [else]
+	transition from Choice21 to Operating / raise Output.OrionKeepAlive;
+	transition from Choice22 to Copy_1_Operating / raise Output.OrionConnReq;
+	transition from Choice23 to Operating / raise Output.OrionConnReq;
+	transition from Choice24 to Copy_1_Operating / raise Output.OrionConnConf;
+	transition from Choice25 to Choice26 [else]
+	transition from Choice26 to Operating / raise Output.OrionDisconn;
+	transition from Choice27 to Choice24 [else]
+	transition from Choice28 to Choice12 [else]
+	transition from Choice3 to Operating / raise Output.OrionAppData;
+	transition from Choice4 to Copy_1_Operating / raise Output.OrionKeepAlive;
+	transition from Choice5 to Choice7 [else]
+	transition from Choice6 to Choice1 [else]
+	transition from Choice7 to Operating / raise Output.OrionConnResp;
+	transition from Choice8 to Choice21 [else]
+	transition from Choice9 to Operating / raise Output.OrionDisconnCause;
+	transition from Copy_1_Operating to Choice16 when Input.OrionDisconn
+	transition from Copy_1_Operating to Choice2 when Input.OrionConnReq
+	transition from Copy_1_Operating to Choice13 when Input.OrionConnResp
+	transition from Copy_1_Operating to Choice27 when Input.OrionConnConf
+	transition from Copy_1_Operating to Choice20 when Input.OrionKeepAlive
+	transition from Copy_1_Operating to Choice10 when Input.OrionAppData
+	transition from Copy_1_Operating to Choice28 when Input.OrionDisconnCause
+	transition from Entry0 to Operating
+	transition from MessageLosing to Copy_1_Operating when timeout MessageLosingTimeout30
+	transition from Operating to Choice25 when Input.OrionDisconn
+	transition from Operating to Choice15 when Input.OrionConnReq
+	transition from Operating to Choice5 when Input.OrionConnResp
+	transition from Operating to Choice6 when Input.OrionConnConf
+	transition from Operating to Choice8 when Input.OrionKeepAlive
+	transition from Operating to Choice17 when Input.OrionAppData
+	transition from Operating to Choice11 when Input.OrionDisconnCause
+	transition from Operating to MessageLosing when timeout OperatingTimeout29
+	region MainRegion {
+		initial Entry0
+		state Operating {
+			entry / set OperatingTimeout29 := START s;
+		}
+		state Copy_1_Operating
+		state MessageLosing {
+			entry / set MessageLosingTimeout30 := END s;
+		}
+		choice Choice1
+		choice Choice2
+		choice Choice3
+		choice Choice4
+		choice Choice5
+		choice Choice6
+		choice Choice7
+		choice Choice8
+		choice Choice9
+		choice Choice10
+		choice Choice11
+		choice Choice12
+		choice Choice13
+		choice Choice14
+		choice Choice15
+		choice Choice16
+		choice Choice17
+		choice Choice18
+		choice Choice19
+		choice Choice20
+		choice Choice21
+		choice Choice22
+		choice Choice23
+		choice Choice24
+		choice Choice25
+		choice Choice26
+		choice Choice27
+		choice Choice28
+	}
+}

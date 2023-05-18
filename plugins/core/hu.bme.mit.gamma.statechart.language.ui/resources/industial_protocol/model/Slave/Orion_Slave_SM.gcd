@@ -1,0 +1,81 @@
+package orion_slave_sm
+import "Interface/Interfaces"
+statechart Orion_Slave_SM [
+	port Block_Port : requires Block_Interface_ForOrion
+	port Connection_Port : requires Connection_Interface_For_Orion
+	port StateMachine_Port : requires StateMachine_Interface_For_Orion
+	port Send_StateMachine_Port : provides StateMachine_Interface_For_Orion
+	port Process_StateMachine_Port : provides StateMachine_Interface_For_Orion
+	port Handle_StateMachine_Port : provides StateMachine_Interface_For_Orion
+] {
+	timeout TimeoutKeepAliveReceiveTimeout_4
+	timeout TimeoutKapcsolodik_3
+	timeout TimeoutKeepAliveSendTimeout_0
+	transition from KeepAliveReceiveTimeout_4 to _5_in_main_region_of_Orion_Slave_SM when timeout
+		TimeoutKeepAliveReceiveTimeout_4
+	transition from Kapcsolodik_3 to Kapcsolodva_1 when StateMachine_Port.OrionConnConf / raise
+		Handle_StateMachine_Port.OrionConnConf;
+	transition from Kapcsolodik_3 to _6_in_main_region_of_Orion_Slave_SM when timeout TimeoutKapcsolodik_3
+	transition from Kapcsolodik_3 to Zarva_2 when StateMachine_Port.OrionDisconnCause
+	transition from Kapcsolodik_3 to _6_in_main_region_of_Orion_Slave_SM when
+		StateMachine_Port.OrionConnResp
+	transition from init_2_in_region_2_in_Kapcsolodva_1 to KeepAliveReceiveTimeout_4
+	transition from Kapcsolodik_3 to _6_in_main_region_of_Orion_Slave_SM when
+		StateMachine_Port.OrionConnReq
+	transition from Kapcsolodva_1 to _5_in_main_region_of_Orion_Slave_SM when
+		Block_Port.Operation_Call_Invalid
+	transition from Kapcsolodva_1 to _5_in_main_region_of_Orion_Slave_SM when
+		StateMachine_Port.OrionConnResp
+	transition from Kapcsolodik_3 to _6_in_main_region_of_Orion_Slave_SM when
+		StateMachine_Port.OrionAppData
+	transition from init_4_in_main_region_of_Orion_Slave_SM to Zarva_2
+	transition from init_2_in_region_1_in_Kapcsolodva_1 to KeepAliveSendTimeout_0
+	transition from _6_in_main_region_of_Orion_Slave_SM to Zarva_2 / raise
+		Send_StateMachine_Port.OrionDisconn;
+	transition from KeepAliveReceiveTimeout_4 to KeepAliveReceiveTimeout_4 when
+		StateMachine_Port.OrionAppData / raise Process_StateMachine_Port.OrionAppData;
+	transition from Kapcsolodva_1 to _5_in_main_region_of_Orion_Slave_SM when
+		StateMachine_Port.OrionConnReq
+	transition from KeepAliveSendTimeout_0 to KeepAliveSendTimeout_0 when timeout
+		TimeoutKeepAliveSendTimeout_0 / raise Send_StateMachine_Port.OrionKeepAlive;
+	transition from KeepAliveReceiveTimeout_4 to KeepAliveReceiveTimeout_4 when
+		StateMachine_Port.OrionKeepAlive
+	transition from _5_in_main_region_of_Orion_Slave_SM to Zarva_2 / raise
+		Send_StateMachine_Port.OrionDisconn;
+	transition from Kapcsolodik_3 to _6_in_main_region_of_Orion_Slave_SM when
+		Block_Port.Operation_Call_Invalid
+	transition from Kapcsolodva_1 to _5_in_main_region_of_Orion_Slave_SM when
+		StateMachine_Port.OrionConnConf
+	transition from Kapcsolodik_3 to _6_in_main_region_of_Orion_Slave_SM when
+		StateMachine_Port.OrionKeepAlive
+	transition from Zarva_2 to Kapcsolodik_3 when StateMachine_Port.OrionConnReq / raise
+		Send_StateMachine_Port.OrionConnResp;
+	transition from Kapcsolodva_1 to Zarva_2 when StateMachine_Port.OrionDisconnCause
+	transition from Kapcsolodva_1 to _5_in_main_region_of_Orion_Slave_SM when
+		Connection_Port.Operation_Call_Disconn
+	transition from KeepAliveSendTimeout_0 to KeepAliveSendTimeout_0 when
+		Block_Port.Operation_Call_SendData / raise Send_StateMachine_Port.OrionAppData;
+	region main_region_of_Orion_Slave_SM {
+		state Kapcsolodva_1 {
+			region region_1_in_Kapcsolodva_1 {
+				state KeepAliveSendTimeout_0 {
+					entry / set TimeoutKeepAliveSendTimeout_0 := 4 s;
+				}
+				initial init_2_in_region_1_in_Kapcsolodva_1
+			}
+			region region_2_in_Kapcsolodva_1 {
+				state KeepAliveReceiveTimeout_4 {
+					entry / set TimeoutKeepAliveReceiveTimeout_4 := 5 s;
+				}
+				initial init_2_in_region_2_in_Kapcsolodva_1
+			}
+		}
+		state Zarva_2
+		state Kapcsolodik_3 {
+			entry / set TimeoutKapcsolodik_3 := 5 s;
+		}
+		initial init_4_in_main_region_of_Orion_Slave_SM
+		merge _5_in_main_region_of_Orion_Slave_SM
+		merge _6_in_main_region_of_Orion_Slave_SM
+	}
+}

@@ -1,0 +1,33 @@
+// Best settings
+
+// Transformation
+
+include "System/Synchronous/State/DU/_RS-Opt/ANTIVAL_CHK_COID_System_Transformation.ggen"
+include "System/Synchronous/Transition/DU/_RS-Opt/ANTIVAL_CHK_COID_System_Transformation.ggen"
+include "System/Synchronous/Transition-pair/DU/_RS-Opt/ANTIVAL_CHK_COID_System_Transformation.ggen"
+include "System/Synchronous/Out-event/DU/_RS-Opt/ANTIVAL_CHK_COID_System_Transformation.ggen"
+include "System/Synchronous/Event-Event/DU/_RS-Opt/ANTIVAL_CHK_COID_System_Transformation.ggen"
+include "System/Synchronous/State-State/DU/_RS-Opt/ANTIVAL_CHK_COID_System_Transformation.ggen"
+
+include "System/Cascade/State/DU/_RS-Opt/ANTIVAL_CHK_COID_System_Transformation.ggen"
+include "System/Cascade/Transition/DU/_RS-Opt/ANTIVAL_CHK_COID_System_Transformation.ggen"
+include "System/Cascade/Transition-pair/DU/_RS-Opt/ANTIVAL_CHK_COID_System_Transformation.ggen"
+include "System/Cascade/Out-event/DU/_RS-Opt/ANTIVAL_CHK_COID_System_Transformation.ggen"
+include "System/Cascade/Event-Event/DU/_RS-Opt/ANTIVAL_CHK_COID_System_Transformation.ggen"
+include "System/Cascade/State-State/DU/_RS-Opt/ANTIVAL_CHK_COID_System_Transformation.ggen"
+
+// Verification
+
+include "System/Synchronous/State/DU/_RS-Opt/ANTIVAL_CHK_COID_System_Verification.ggen"
+include "System/Synchronous/Transition/DU/_RS-Opt/ANTIVAL_CHK_COID_System_Verification.ggen"
+include "System/Synchronous/Transition-pair/DU/_RS-Opt/ANTIVAL_CHK_COID_System_Verification.ggen"
+include "System/Synchronous/Out-event/DU/_RS-Opt/ANTIVAL_CHK_COID_System_Verification.ggen"
+include "System/Synchronous/Event-Event/DU/_RS-Opt/ANTIVAL_CHK_COID_System_Verification.ggen"
+include "System/Synchronous/State-State/DU/_RS-Opt/ANTIVAL_CHK_COID_System_Verification.ggen"
+
+include "System/Cascade/State/DU/_RS-Opt/ANTIVAL_CHK_COID_System_Verification.ggen"
+include "System/Cascade/Transition/DU/_RS-Opt/ANTIVAL_CHK_COID_System_Verification.ggen"
+include "System/Cascade/Transition-pair/DU/_RS-Opt/ANTIVAL_CHK_COID_System_Verification.ggen"
+include "System/Cascade/Out-event/DU/_RS-Opt/ANTIVAL_CHK_COID_System_Verification.ggen"
+include "System/Cascade/Event-Event/DU/_RS-Opt/ANTIVAL_CHK_COID_System_Verification.ggen"
+include "System/Cascade/State-State/DU/_RS-Opt/ANTIVAL_CHK_COID_System_Verification.ggen"

@@ -1,0 +1,2217 @@
+<?xml version="1.0" encoding="ASCII"?>
+<hu.bme.mit.gamma.uppaal.transformation:G2UTrace xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:declarations="http://www.uni-paderborn.de/uppaal/declarations/0.4.0" xmlns:hu.bme.mit.gamma.statechart.composite="http://www.mit.bme.hu/gamma/statechart/Model/Composite" xmlns:hu.bme.mit.gamma.uppaal.transformation="http://www.mit.bme.hu/gamma/uppaal/transformation/Traceability">
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.0/@components.3"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.0/@components.0"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.0/@components.2"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.0/@components.1"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@constantDeclarations.1"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.2"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@constantDeclarations.0"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.3"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@variableDeclarations.0"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.4"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:InstanceTrace">
+    <owner xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".OrionSystem.gsm#//@components.0/@components.1"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.4"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.18"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.19"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.24"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.25"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.36"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.37"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.40"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.41"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.48"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.49"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.54"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.55"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.74"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.75"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.88"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.89"/>
+    <element href=".OrionSystem.uppaal#//@template.5"/>
+    <element href=".OrionSystem.uppaal#//@template.5/@location.0"/>
+    <element href=".OrionSystem.uppaal#//@template.5/@location.1"/>
+    <element href=".OrionSystem.uppaal#//@template.5/@location.2"/>
+    <element href=".OrionSystem.uppaal#//@template.5/@location.3"/>
+    <element href=".OrionSystem.uppaal#//@template.5/@location.4"/>
+    <element href=".OrionSystem.uppaal#//@template.5/@location.5"/>
+    <element href=".OrionSystem.uppaal#//@template.5/@location.6"/>
+    <element href=".OrionSystem.uppaal#//@template.5/@location.7"/>
+    <element href=".OrionSystem.uppaal#//@template.5/@location.8"/>
+    <element href=".OrionSystem.uppaal#//@template.5/@location.9"/>
+    <element href=".OrionSystem.uppaal#//@template.5/@location.10"/>
+    <element href=".OrionSystem.uppaal#//@template.5/@location.11"/>
+    <element href=".OrionSystem.uppaal#//@template.5/@location.12"/>
+    <element href=".OrionSystem.uppaal#//@template.5/@location.13"/>
+    <element href=".OrionSystem.uppaal#//@template.5/@location.14"/>
+    <element href=".OrionSystem.uppaal#//@template.5/@location.15"/>
+    <element href=".OrionSystem.uppaal#//@template.5/@location.16"/>
+    <element href=".OrionSystem.uppaal#//@template.5/@location.17"/>
+    <element href=".OrionSystem.uppaal#//@template.5/@location.18"/>
+    <element href=".OrionSystem.uppaal#//@template.5/@location.19"/>
+    <element href=".OrionSystem.uppaal#//@template.5/@location.20"/>
+    <element href=".OrionSystem.uppaal#//@template.5/@location.21"/>
+    <element href=".OrionSystem.uppaal#//@template.5/@location.22"/>
+    <element href=".OrionSystem.uppaal#//@template.5/@location.23"/>
+    <element href=".OrionSystem.uppaal#//@template.5/@edge.0"/>
+    <element href=".OrionSystem.uppaal#//@template.5/@edge.1"/>
+    <element href=".OrionSystem.uppaal#//@template.5/@edge.2"/>
+    <element href=".OrionSystem.uppaal#//@template.5/@edge.3"/>
+    <element href=".OrionSystem.uppaal#//@template.5/@edge.4"/>
+    <element href=".OrionSystem.uppaal#//@template.5/@edge.5"/>
+    <element href=".OrionSystem.uppaal#//@template.5/@edge.6"/>
+    <element href=".OrionSystem.uppaal#//@template.5/@edge.7"/>
+    <element href=".OrionSystem.uppaal#//@template.5/@edge.8"/>
+    <element href=".OrionSystem.uppaal#//@template.5/@edge.9"/>
+    <element href=".OrionSystem.uppaal#//@template.5/@edge.10"/>
+    <element href=".OrionSystem.uppaal#//@template.5/@edge.11"/>
+    <element href=".OrionSystem.uppaal#//@template.5/@edge.12"/>
+    <element href=".OrionSystem.uppaal#//@template.5/@edge.13"/>
+    <element href=".OrionSystem.uppaal#//@template.5/@edge.14"/>
+    <element href=".OrionSystem.uppaal#//@template.5/@edge.15"/>
+    <element href=".OrionSystem.uppaal#//@template.5/@edge.16"/>
+    <element href=".OrionSystem.uppaal#//@template.5/@edge.17"/>
+    <element href=".OrionSystem.uppaal#//@template.5/@edge.18"/>
+    <element href=".OrionSystem.uppaal#//@template.5/@edge.19"/>
+    <element href=".OrionSystem.uppaal#//@template.5/@edge.20"/>
+    <element href=".OrionSystem.uppaal#//@template.5/@edge.21"/>
+    <element href=".OrionSystem.uppaal#//@template.5/@edge.22"/>
+    <element href=".OrionSystem.uppaal#//@template.5/@edge.23"/>
+    <element href=".OrionSystem.uppaal#//@template.5/@edge.24"/>
+    <element href=".OrionSystem.uppaal#//@template.5/@edge.25"/>
+    <element href=".OrionSystem.uppaal#//@template.5/@edge.26"/>
+    <element href=".OrionSystem.uppaal#//@template.5/@edge.27"/>
+    <element href=".OrionSystem.uppaal#//@template.5/@edge.28"/>
+    <element href=".OrionSystem.uppaal#//@template.5/@edge.29"/>
+    <element href=".OrionSystem.uppaal#//@template.5/@edge.30"/>
+    <element href=".OrionSystem.uppaal#//@template.5/@edge.31"/>
+    <element href=".OrionSystem.uppaal#//@template.5/@edge.32"/>
+    <element href=".OrionSystem.uppaal#//@template.5/@edge.33"/>
+    <element href=".OrionSystem.uppaal#//@template.5/@edge.34"/>
+    <element href=".OrionSystem.uppaal#//@template.5/@edge.35"/>
+    <element href=".OrionSystem.uppaal#//@template.5/@edge.36"/>
+    <element href=".OrionSystem.uppaal#//@template.5/@edge.37"/>
+    <element href=".OrionSystem.uppaal#//@template.5/@edge.38"/>
+    <element href=".OrionSystem.uppaal#//@template.5/@edge.39"/>
+    <element href=".OrionSystem.uppaal#//@template.5/@edge.40"/>
+    <element href=".OrionSystem.uppaal#//@template.5/@edge.41"/>
+    <element href=".OrionSystem.uppaal#//@template.5/@edge.42"/>
+    <element href=".OrionSystem.uppaal#//@template.5/@edge.43"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@variableDeclarations.0"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.5"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:InstanceTrace">
+    <owner xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".OrionSystem.gsm#//@components.0/@components.3"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.5"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.12"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.13"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.14"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.15"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.16"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.17"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.32"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.33"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.46"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.47"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.60"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.61"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.72"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.73"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.82"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.83"/>
+    <element href=".OrionSystem.uppaal#//@template.2"/>
+    <element href=".OrionSystem.uppaal#//@template.2/@location.0"/>
+    <element href=".OrionSystem.uppaal#//@template.2/@location.1"/>
+    <element href=".OrionSystem.uppaal#//@template.2/@location.2"/>
+    <element href=".OrionSystem.uppaal#//@template.2/@location.3"/>
+    <element href=".OrionSystem.uppaal#//@template.2/@location.4"/>
+    <element href=".OrionSystem.uppaal#//@template.2/@location.5"/>
+    <element href=".OrionSystem.uppaal#//@template.2/@location.6"/>
+    <element href=".OrionSystem.uppaal#//@template.2/@location.7"/>
+    <element href=".OrionSystem.uppaal#//@template.2/@location.8"/>
+    <element href=".OrionSystem.uppaal#//@template.2/@location.9"/>
+    <element href=".OrionSystem.uppaal#//@template.2/@location.10"/>
+    <element href=".OrionSystem.uppaal#//@template.2/@location.11"/>
+    <element href=".OrionSystem.uppaal#//@template.2/@location.12"/>
+    <element href=".OrionSystem.uppaal#//@template.2/@location.13"/>
+    <element href=".OrionSystem.uppaal#//@template.2/@location.14"/>
+    <element href=".OrionSystem.uppaal#//@template.2/@location.15"/>
+    <element href=".OrionSystem.uppaal#//@template.2/@location.16"/>
+    <element href=".OrionSystem.uppaal#//@template.2/@location.17"/>
+    <element href=".OrionSystem.uppaal#//@template.2/@location.18"/>
+    <element href=".OrionSystem.uppaal#//@template.2/@location.19"/>
+    <element href=".OrionSystem.uppaal#//@template.2/@location.20"/>
+    <element href=".OrionSystem.uppaal#//@template.2/@location.21"/>
+    <element href=".OrionSystem.uppaal#//@template.2/@location.22"/>
+    <element href=".OrionSystem.uppaal#//@template.2/@location.23"/>
+    <element href=".OrionSystem.uppaal#//@template.2/@edge.0"/>
+    <element href=".OrionSystem.uppaal#//@template.2/@edge.1"/>
+    <element href=".OrionSystem.uppaal#//@template.2/@edge.2"/>
+    <element href=".OrionSystem.uppaal#//@template.2/@edge.3"/>
+    <element href=".OrionSystem.uppaal#//@template.2/@edge.4"/>
+    <element href=".OrionSystem.uppaal#//@template.2/@edge.5"/>
+    <element href=".OrionSystem.uppaal#//@template.2/@edge.6"/>
+    <element href=".OrionSystem.uppaal#//@template.2/@edge.7"/>
+    <element href=".OrionSystem.uppaal#//@template.2/@edge.8"/>
+    <element href=".OrionSystem.uppaal#//@template.2/@edge.9"/>
+    <element href=".OrionSystem.uppaal#//@template.2/@edge.10"/>
+    <element href=".OrionSystem.uppaal#//@template.2/@edge.11"/>
+    <element href=".OrionSystem.uppaal#//@template.2/@edge.12"/>
+    <element href=".OrionSystem.uppaal#//@template.2/@edge.13"/>
+    <element href=".OrionSystem.uppaal#//@template.2/@edge.14"/>
+    <element href=".OrionSystem.uppaal#//@template.2/@edge.15"/>
+    <element href=".OrionSystem.uppaal#//@template.2/@edge.16"/>
+    <element href=".OrionSystem.uppaal#//@template.2/@edge.17"/>
+    <element href=".OrionSystem.uppaal#//@template.2/@edge.18"/>
+    <element href=".OrionSystem.uppaal#//@template.2/@edge.19"/>
+    <element href=".OrionSystem.uppaal#//@template.2/@edge.20"/>
+    <element href=".OrionSystem.uppaal#//@template.2/@edge.21"/>
+    <element href=".OrionSystem.uppaal#//@template.2/@edge.22"/>
+    <element href=".OrionSystem.uppaal#//@template.2/@edge.23"/>
+    <element href=".OrionSystem.uppaal#//@template.2/@edge.24"/>
+    <element href=".OrionSystem.uppaal#//@template.2/@edge.25"/>
+    <element href=".OrionSystem.uppaal#//@template.2/@edge.26"/>
+    <element href=".OrionSystem.uppaal#//@template.2/@edge.27"/>
+    <element href=".OrionSystem.uppaal#//@template.2/@edge.28"/>
+    <element href=".OrionSystem.uppaal#//@template.2/@edge.29"/>
+    <element href=".OrionSystem.uppaal#//@template.2/@edge.30"/>
+    <element href=".OrionSystem.uppaal#//@template.2/@edge.31"/>
+    <element href=".OrionSystem.uppaal#//@template.2/@edge.32"/>
+    <element href=".OrionSystem.uppaal#//@template.2/@edge.33"/>
+    <element href=".OrionSystem.uppaal#//@template.2/@edge.34"/>
+    <element href=".OrionSystem.uppaal#//@template.2/@edge.35"/>
+    <element href=".OrionSystem.uppaal#//@template.2/@edge.36"/>
+    <element href=".OrionSystem.uppaal#//@template.2/@edge.37"/>
+    <element href=".OrionSystem.uppaal#//@template.2/@edge.38"/>
+    <element href=".OrionSystem.uppaal#//@template.2/@edge.39"/>
+    <element href=".OrionSystem.uppaal#//@template.2/@edge.40"/>
+    <element href=".OrionSystem.uppaal#//@template.2/@edge.41"/>
+    <element href=".OrionSystem.uppaal#//@template.2/@edge.42"/>
+    <element href=".OrionSystem.uppaal#//@template.2/@edge.43"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@constantDeclarations.1/@expression"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.2/@variable.0/@initializer/@expression"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.2/@variableDeclarations.0/@expression"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.4/@variable.0/@initializer/@expression"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.4/@variableDeclarations.0/@expression"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.5/@variable.0/@initializer/@expression"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@constantDeclarations.0/@expression"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.3/@variable.0/@initializer/@expression"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.2/@events.1/@event"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.6"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.7"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.44"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.45"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:InstanceTrace">
+    <owner xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".OrionSystem.gsm#//@components.0/@components.2"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.6"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.7"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.10"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.11"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.28"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.29"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.34"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.35"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.42"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.43"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.50"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.51"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.52"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.53"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.56"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.57"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.62"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.63"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.64"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.65"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.66"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.67"/>
+    <element href=".OrionSystem.uppaal#//@template.0/@declarations/@declaration.0"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.78"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.79"/>
+    <element href=".OrionSystem.uppaal#//@template.0"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.80"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.81"/>
+    <element href=".OrionSystem.uppaal#//@template.1"/>
+    <element href=".OrionSystem.uppaal#//@template.6/@declarations/@declaration.0"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.90"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.91"/>
+    <element href=".OrionSystem.uppaal#//@template.6"/>
+    <element href=".OrionSystem.uppaal#//@template.6/@location.1"/>
+    <element href=".OrionSystem.uppaal#//@template.6/@location.0"/>
+    <element href=".OrionSystem.uppaal#//@template.0/@location.1"/>
+    <element href=".OrionSystem.uppaal#//@template.0/@location.0"/>
+    <element href=".OrionSystem.uppaal#//@template.1/@location.0"/>
+    <element href=".OrionSystem.uppaal#//@template.1/@location.1"/>
+    <element href=".OrionSystem.uppaal#//@template.1/@edge.0"/>
+    <element href=".OrionSystem.uppaal#//@template.1/@location.2"/>
+    <element href=".OrionSystem.uppaal#//@template.6/@location.3"/>
+    <element href=".OrionSystem.uppaal#//@template.6/@edge.0"/>
+    <element href=".OrionSystem.uppaal#//@template.6/@location.2"/>
+    <element href=".OrionSystem.uppaal#//@template.0/@edge.0"/>
+    <element href=".OrionSystem.uppaal#//@template.0/@location.2"/>
+    <element href=".OrionSystem.uppaal#//@template.0/@location.3"/>
+    <element href=".OrionSystem.uppaal#//@template.1/@edge.1"/>
+    <element href=".OrionSystem.uppaal#//@template.1/@location.4"/>
+    <element href=".OrionSystem.uppaal#//@template.1/@location.3"/>
+    <element href=".OrionSystem.uppaal#//@template.1/@location.5"/>
+    <element href=".OrionSystem.uppaal#//@template.1/@location.6"/>
+    <element href=".OrionSystem.uppaal#//@template.1/@location.7"/>
+    <element href=".OrionSystem.uppaal#//@template.6/@edge.1"/>
+    <element href=".OrionSystem.uppaal#//@template.1/@edge.2"/>
+    <element href=".OrionSystem.uppaal#//@template.1/@edge.3"/>
+    <element href=".OrionSystem.uppaal#//@template.1/@edge.4"/>
+    <element href=".OrionSystem.uppaal#//@template.1/@edge.5"/>
+    <element href=".OrionSystem.uppaal#//@template.1/@edge.6"/>
+    <element href=".OrionSystem.uppaal#//@template.1/@edge.7"/>
+    <element href=".OrionSystem.uppaal#//@template.0/@edge.1"/>
+    <element href=".OrionSystem.uppaal#//@template.1/@edge.8"/>
+    <element href=".OrionSystem.uppaal#//@template.1/@edge.9"/>
+    <element href=".OrionSystem.uppaal#//@template.1/@edge.10"/>
+    <element href=".OrionSystem.uppaal#//@template.1/@edge.11"/>
+    <element href=".OrionSystem.uppaal#//@template.1/@edge.12"/>
+    <element href=".OrionSystem.uppaal#//@template.1/@edge.13"/>
+    <element href=".OrionSystem.uppaal#//@template.1/@edge.14"/>
+    <element href=".OrionSystem.uppaal#//@template.1/@edge.15"/>
+    <element href=".OrionSystem.uppaal#//@template.6/@edge.2"/>
+    <element href=".OrionSystem.uppaal#//@template.1/@edge.16"/>
+    <element href=".OrionSystem.uppaal#//@template.0/@edge.2"/>
+    <element href=".OrionSystem.uppaal#//@template.6/@edge.3"/>
+    <element href=".OrionSystem.uppaal#//@template.0/@edge.3"/>
+    <element href=".OrionSystem.uppaal#//@template.1/@edge.17"/>
+    <element href=".OrionSystem.uppaal#//@template.1/@edge.18"/>
+    <element href=".OrionSystem.uppaal#//@template.1/@edge.19"/>
+    <element href=".OrionSystem.uppaal#//@template.0/@edge.4"/>
+    <element href=".OrionSystem.uppaal#//@template.6/@declarations/@declaration.1"/>
+    <element href=".OrionSystem.uppaal#//@template.6/@location.4"/>
+    <element href=".OrionSystem.uppaal#//@template.6/@edge.6"/>
+    <element href=".OrionSystem.uppaal#//@template.0/@declarations/@declaration.1"/>
+    <element href=".OrionSystem.uppaal#//@template.0/@location.5"/>
+    <element href=".OrionSystem.uppaal#//@template.0/@edge.6"/>
+    <element href=".OrionSystem.uppaal#//@template.1/@declarations/@declaration.0"/>
+    <element href=".OrionSystem.uppaal#//@template.1/@location.8"/>
+    <element href=".OrionSystem.uppaal#//@template.1/@edge.21"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.97"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.99"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:PortTrace">
+    <port href=".OrionSystem.gsm#//@components.3/@ports.1"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.6"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.7"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.42"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.43"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.1/@events.4/@event"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.8"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.9"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.16"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.17"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.24"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.25"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.62"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.63"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:InstanceTrace">
+    <owner xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".OrionSystem.gsm#//@components.0/@components.0"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.8"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.9"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.20"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.21"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.22"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.23"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.26"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.27"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.30"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.31"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.38"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.39"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.44"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.45"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.58"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.59"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.68"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.69"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.70"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.71"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.76"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.77"/>
+    <element href=".OrionSystem.uppaal#//@template.3/@declarations/@declaration.0"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.84"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.85"/>
+    <element href=".OrionSystem.uppaal#//@template.3"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.86"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.87"/>
+    <element href=".OrionSystem.uppaal#//@template.4"/>
+    <element href=".OrionSystem.uppaal#//@template.7/@declarations/@declaration.0"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.92"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.93"/>
+    <element href=".OrionSystem.uppaal#//@template.7"/>
+    <element href=".OrionSystem.uppaal#//@template.4/@location.0"/>
+    <element href=".OrionSystem.uppaal#//@template.7/@location.1"/>
+    <element href=".OrionSystem.uppaal#//@template.7/@location.0"/>
+    <element href=".OrionSystem.uppaal#//@template.3/@location.1"/>
+    <element href=".OrionSystem.uppaal#//@template.3/@location.0"/>
+    <element href=".OrionSystem.uppaal#//@template.4/@location.2"/>
+    <element href=".OrionSystem.uppaal#//@template.4/@edge.0"/>
+    <element href=".OrionSystem.uppaal#//@template.4/@location.1"/>
+    <element href=".OrionSystem.uppaal#//@template.4/@location.4"/>
+    <element href=".OrionSystem.uppaal#//@template.4/@edge.1"/>
+    <element href=".OrionSystem.uppaal#//@template.4/@location.3"/>
+    <element href=".OrionSystem.uppaal#//@template.4/@edge.2"/>
+    <element href=".OrionSystem.uppaal#//@template.4/@location.5"/>
+    <element href=".OrionSystem.uppaal#//@template.4/@location.6"/>
+    <element href=".OrionSystem.uppaal#//@template.7/@edge.0"/>
+    <element href=".OrionSystem.uppaal#//@template.7/@location.3"/>
+    <element href=".OrionSystem.uppaal#//@template.7/@location.2"/>
+    <element href=".OrionSystem.uppaal#//@template.3/@location.3"/>
+    <element href=".OrionSystem.uppaal#//@template.3/@edge.0"/>
+    <element href=".OrionSystem.uppaal#//@template.3/@location.2"/>
+    <element href=".OrionSystem.uppaal#//@template.4/@location.7"/>
+    <element href=".OrionSystem.uppaal#//@template.4/@location.8"/>
+    <element href=".OrionSystem.uppaal#//@template.4/@edge.3"/>
+    <element href=".OrionSystem.uppaal#//@template.4/@edge.4"/>
+    <element href=".OrionSystem.uppaal#//@template.4/@edge.5"/>
+    <element href=".OrionSystem.uppaal#//@template.4/@edge.6"/>
+    <element href=".OrionSystem.uppaal#//@template.4/@edge.7"/>
+    <element href=".OrionSystem.uppaal#//@template.4/@edge.8"/>
+    <element href=".OrionSystem.uppaal#//@template.4/@edge.9"/>
+    <element href=".OrionSystem.uppaal#//@template.4/@edge.10"/>
+    <element href=".OrionSystem.uppaal#//@template.4/@edge.11"/>
+    <element href=".OrionSystem.uppaal#//@template.4/@edge.12"/>
+    <element href=".OrionSystem.uppaal#//@template.3/@edge.1"/>
+    <element href=".OrionSystem.uppaal#//@template.3/@edge.2"/>
+    <element href=".OrionSystem.uppaal#//@template.7/@edge.1"/>
+    <element href=".OrionSystem.uppaal#//@template.4/@edge.13"/>
+    <element href=".OrionSystem.uppaal#//@template.7/@edge.2"/>
+    <element href=".OrionSystem.uppaal#//@template.4/@edge.14"/>
+    <element href=".OrionSystem.uppaal#//@template.4/@edge.15"/>
+    <element href=".OrionSystem.uppaal#//@template.4/@edge.16"/>
+    <element href=".OrionSystem.uppaal#//@template.4/@edge.17"/>
+    <element href=".OrionSystem.uppaal#//@template.3/@edge.3"/>
+    <element href=".OrionSystem.uppaal#//@template.4/@edge.18"/>
+    <element href=".OrionSystem.uppaal#//@template.4/@edge.19"/>
+    <element href=".OrionSystem.uppaal#//@template.7/@edge.3"/>
+    <element href=".OrionSystem.uppaal#//@template.4/@edge.20"/>
+    <element href=".OrionSystem.uppaal#//@template.4/@edge.21"/>
+    <element href=".OrionSystem.uppaal#//@template.7/@edge.4"/>
+    <element href=".OrionSystem.uppaal#//@template.3/@declarations/@declaration.1"/>
+    <element href=".OrionSystem.uppaal#//@template.3/@location.4"/>
+    <element href=".OrionSystem.uppaal#//@template.3/@edge.6"/>
+    <element href=".OrionSystem.uppaal#//@template.4/@declarations/@declaration.0"/>
+    <element href=".OrionSystem.uppaal#//@template.4/@location.9"/>
+    <element href=".OrionSystem.uppaal#//@template.4/@edge.23"/>
+    <element href=".OrionSystem.uppaal#//@template.4/@location.10"/>
+    <element href=".OrionSystem.uppaal#//@template.4/@edge.24"/>
+    <element href=".OrionSystem.uppaal#//@template.7/@declarations/@declaration.1"/>
+    <element href=".OrionSystem.uppaal#//@template.7/@location.5"/>
+    <element href=".OrionSystem.uppaal#//@template.7/@edge.6"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.96"/>
+    <element href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.98"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:PortTrace">
+    <port href=".OrionSystem.gsm#//@components.1/@ports.2"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.8"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.9"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.20"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.21"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.22"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.23"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.26"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.27"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.38"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.39"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.70"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.71"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.76"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.77"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.0/@events.1/@event"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.10"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.11"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.30"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.31"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:PortTrace">
+    <port href=".OrionSystem.gsm#//@components.3/@ports.0"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.10"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.11"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.28"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.29"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.1/@events.6/@event"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.12"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.13"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.18"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.19"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.22"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.23"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.52"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.53"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:PortTrace">
+    <port href=".OrionSystem.gsm#//@components.4/@ports.1"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.12"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.13"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.14"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.15"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.16"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.17"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.32"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.33"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.46"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.47"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.60"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.61"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.72"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.73"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.1/@events.5/@event"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.14"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.15"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.26"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.27"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.36"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.37"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.50"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.51"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:PortTrace">
+    <port href=".OrionSystem.gsm#//@components.2/@ports.1"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.18"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.19"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.24"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.25"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.36"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.37"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.40"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.41"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.48"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.49"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.54"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.55"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.74"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.75"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.1/@events.2/@event"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.20"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.21"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.32"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.33"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.40"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.41"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.56"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.57"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.0/@events.0/@event"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.28"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.29"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.58"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.59"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:PortTrace">
+    <port href=".OrionSystem.gsm#//@components.1/@ports.0"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.30"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.31"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.58"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.59"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.1/@events.0/@event"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.34"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.35"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.38"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.39"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.72"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.73"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.74"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.75"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:PortTrace">
+    <port href=".OrionSystem.gsm#//@components.3/@ports.2"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.34"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.35"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.50"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.51"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.52"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.53"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.56"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.57"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.62"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.63"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.64"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.65"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.66"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.67"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.2/@events.0/@event"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.42"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.43"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.68"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.69"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:PortTrace">
+    <port href=".OrionSystem.gsm#//@components.1/@ports.1"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.44"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.45"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.68"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.69"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.1/@events.3/@event"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.46"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.47"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.48"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.49"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.66"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.67"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.70"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.71"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.1/@events.1/@event"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.54"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.55"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.60"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.61"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.64"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.65"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.76"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.77"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.3/@regions.0/@stateNodes.0/@regions.1"/>
+    <to href=".OrionSystem.uppaal#//@template.0/@declarations/@declaration.0"/>
+    <to href=".OrionSystem.uppaal#//@template.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.uppaal#//@template.0"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.78"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.79"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.uppaal#//@template.1"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.80"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.81"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.3/@regions.0"/>
+    <to href=".OrionSystem.uppaal#//@template.1"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.uppaal#//@template.2"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.82"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.83"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@regions.0"/>
+    <to href=".OrionSystem.uppaal#//@template.2"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.1/@regions.0/@stateNodes.2/@regions.0"/>
+    <to href=".OrionSystem.uppaal#//@template.3/@declarations/@declaration.0"/>
+    <to href=".OrionSystem.uppaal#//@template.3"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.uppaal#//@template.3"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.84"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.85"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.uppaal#//@template.4"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.86"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.87"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.1/@regions.0"/>
+    <to href=".OrionSystem.uppaal#//@template.4"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.uppaal#//@template.5"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.88"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.89"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@regions.0"/>
+    <to href=".OrionSystem.uppaal#//@template.5"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.3/@regions.0/@stateNodes.0/@regions.0"/>
+    <to href=".OrionSystem.uppaal#//@template.6/@declarations/@declaration.0"/>
+    <to href=".OrionSystem.uppaal#//@template.6"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.uppaal#//@template.6"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.90"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.91"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.1/@regions.0/@stateNodes.2/@regions.1"/>
+    <to href=".OrionSystem.uppaal#//@template.7/@declarations/@declaration.0"/>
+    <to href=".OrionSystem.uppaal#//@template.7"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.uppaal#//@template.7"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.92"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.93"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@regions.0/@stateNodes.0"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@location.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@regions.0/@stateNodes.0"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@location.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.3/@regions.0/@stateNodes.0/@regions.0/@stateNodes.1"/>
+    <to href=".OrionSystem.uppaal#//@template.6/@location.1"/>
+    <to href=".OrionSystem.uppaal#//@template.6/@location.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.3/@regions.0/@stateNodes.0/@regions.1/@stateNodes.1"/>
+    <to href=".OrionSystem.uppaal#//@template.0/@location.1"/>
+    <to href=".OrionSystem.uppaal#//@template.0/@location.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.3/@regions.0/@stateNodes.3"/>
+    <to href=".OrionSystem.uppaal#//@template.1/@location.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.1/@regions.0/@stateNodes.4"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@location.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.1/@regions.0/@stateNodes.2/@regions.1/@stateNodes.1"/>
+    <to href=".OrionSystem.uppaal#//@template.7/@location.1"/>
+    <to href=".OrionSystem.uppaal#//@template.7/@location.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.1/@regions.0/@stateNodes.2/@regions.0/@stateNodes.1"/>
+    <to href=".OrionSystem.uppaal#//@template.3/@location.1"/>
+    <to href=".OrionSystem.uppaal#//@template.3/@location.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.1/@regions.0/@stateNodes.1"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@location.2"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@edge.0"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@location.1"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@location.10"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@regions.0/@stateNodes.1"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@location.1"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.3/@regions.0/@stateNodes.2"/>
+    <to href=".OrionSystem.uppaal#//@template.1/@location.1"/>
+    <to href=".OrionSystem.uppaal#//@template.1/@edge.0"/>
+    <to href=".OrionSystem.uppaal#//@template.1/@location.2"/>
+    <to href=".OrionSystem.uppaal#//@template.1/@location.8"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@regions.0/@stateNodes.1"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@location.1"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.3/@regions.0/@stateNodes.0/@regions.0/@stateNodes.0"/>
+    <to href=".OrionSystem.uppaal#//@template.6/@location.3"/>
+    <to href=".OrionSystem.uppaal#//@template.6/@edge.0"/>
+    <to href=".OrionSystem.uppaal#//@template.6/@location.2"/>
+    <to href=".OrionSystem.uppaal#//@template.6/@location.4"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.1/@regions.0/@stateNodes.2"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@location.4"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@edge.1"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@location.3"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.96"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.98"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.1/@regions.0/@stateNodes.0"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@edge.2"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@location.5"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@location.6"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@location.9"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.1/@regions.0/@stateNodes.2/@regions.1/@stateNodes.0"/>
+    <to href=".OrionSystem.uppaal#//@template.7/@edge.0"/>
+    <to href=".OrionSystem.uppaal#//@template.7/@location.3"/>
+    <to href=".OrionSystem.uppaal#//@template.7/@location.2"/>
+    <to href=".OrionSystem.uppaal#//@template.7/@location.5"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.1/@regions.0/@stateNodes.2/@regions.0/@stateNodes.0"/>
+    <to href=".OrionSystem.uppaal#//@template.3/@location.3"/>
+    <to href=".OrionSystem.uppaal#//@template.3/@edge.0"/>
+    <to href=".OrionSystem.uppaal#//@template.3/@location.2"/>
+    <to href=".OrionSystem.uppaal#//@template.3/@location.4"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.3/@regions.0/@stateNodes.0/@regions.1/@stateNodes.0"/>
+    <to href=".OrionSystem.uppaal#//@template.0/@edge.0"/>
+    <to href=".OrionSystem.uppaal#//@template.0/@location.2"/>
+    <to href=".OrionSystem.uppaal#//@template.0/@location.3"/>
+    <to href=".OrionSystem.uppaal#//@template.0/@location.5"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.3/@regions.0/@stateNodes.0"/>
+    <to href=".OrionSystem.uppaal#//@template.1/@edge.1"/>
+    <to href=".OrionSystem.uppaal#//@template.1/@location.4"/>
+    <to href=".OrionSystem.uppaal#//@template.1/@location.3"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.97"/>
+    <to href=".OrionSystem.uppaal#//@globalDeclarations/@declaration.99"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.3/@regions.0/@stateNodes.1"/>
+    <to href=".OrionSystem.uppaal#//@template.1/@location.5"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@regions.0/@stateNodes.8"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@location.2"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@regions.0/@stateNodes.12"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@location.2"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@regions.0/@stateNodes.4"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@location.3"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@regions.0/@stateNodes.14"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@location.4"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@regions.0/@stateNodes.18"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@location.5"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.3/@regions.0/@stateNodes.4"/>
+    <to href=".OrionSystem.uppaal#//@template.1/@location.6"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@regions.0/@stateNodes.3"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@location.6"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.3/@regions.0/@stateNodes.5"/>
+    <to href=".OrionSystem.uppaal#//@template.1/@location.7"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@regions.0/@stateNodes.6"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@location.7"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@regions.0/@stateNodes.3"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@location.3"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@regions.0/@stateNodes.10"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@location.4"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@regions.0/@stateNodes.11"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@location.5"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@regions.0/@stateNodes.12"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@location.8"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@regions.0/@stateNodes.15"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@location.9"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@regions.0/@stateNodes.19"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@location.6"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@regions.0/@stateNodes.7"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@location.10"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@regions.0/@stateNodes.23"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@location.7"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@regions.0/@stateNodes.7"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@location.8"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@regions.0/@stateNodes.4"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@location.9"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@regions.0/@stateNodes.16"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@location.10"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@regions.0/@stateNodes.22"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@location.11"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@regions.0/@stateNodes.13"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@location.11"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@regions.0/@stateNodes.5"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@location.12"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@regions.0/@stateNodes.21"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@location.12"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@regions.0/@stateNodes.20"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@location.13"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@regions.0/@stateNodes.20"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@location.13"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@regions.0/@stateNodes.17"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@location.14"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@regions.0/@stateNodes.18"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@location.14"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@regions.0/@stateNodes.15"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@location.15"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@regions.0/@stateNodes.2"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@location.15"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@regions.0/@stateNodes.14"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@location.16"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@regions.0/@stateNodes.13"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@location.17"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@regions.0/@stateNodes.11"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@location.16"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@regions.0/@stateNodes.9"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@location.18"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@regions.0/@stateNodes.8"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@location.19"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.1/@regions.0/@stateNodes.3"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@location.7"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@regions.0/@stateNodes.16"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@location.17"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@regions.0/@stateNodes.19"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@location.18"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.1/@regions.0/@stateNodes.5"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@location.8"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@regions.0/@stateNodes.9"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@location.19"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@regions.0/@stateNodes.2"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@location.20"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@regions.0/@stateNodes.6"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@location.21"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@regions.0/@stateNodes.21"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@location.22"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@regions.0/@stateNodes.5"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@location.20"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@regions.0/@stateNodes.17"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@location.23"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@regions.0/@stateNodes.10"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@location.21"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@regions.0/@stateNodes.23"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@location.22"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@regions.0/@stateNodes.22"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@location.23"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.27"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.1/@transitions.5"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@edge.3"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.28"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.1"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.1"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.27"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.1"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.3/@transitions.15"/>
+    <to href=".OrionSystem.uppaal#//@template.6/@edge.1"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.16"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.2"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.41"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.3"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.3/@transitions.9"/>
+    <to href=".OrionSystem.uppaal#//@template.1/@edge.2"/>
+    <to href=".OrionSystem.uppaal#//@template.1/@edge.32"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.30"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.2"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.1"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.4"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.3/@transitions.22"/>
+    <to href=".OrionSystem.uppaal#//@template.1/@edge.3"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.17"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.3"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.2"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.4"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.3/@transitions.6"/>
+    <to href=".OrionSystem.uppaal#//@template.1/@edge.4"/>
+    <to href=".OrionSystem.uppaal#//@template.1/@edge.34"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.29"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.5"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.1/@transitions.18"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@edge.4"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@edge.33"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.19"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.6"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.15"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.5"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.43"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.6"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.17"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.7"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.28"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.7"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.12"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.8"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.9"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.8"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.12"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.9"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.34"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.9"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.22"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.10"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.3/@transitions.8"/>
+    <to href=".OrionSystem.uppaal#//@template.1/@edge.5"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.21"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.10"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.36"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.11"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.11"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.11"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.1/@transitions.3"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@edge.5"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.3/@transitions.14"/>
+    <to href=".OrionSystem.uppaal#//@template.1/@edge.6"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.4"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.12"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.10"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.13"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.9"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.14"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.3/@transitions.3"/>
+    <to href=".OrionSystem.uppaal#//@template.1/@edge.7"/>
+    <to href=".OrionSystem.uppaal#//@template.1/@edge.30"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.35"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.15"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.31"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.12"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.3/@transitions.5"/>
+    <to href=".OrionSystem.uppaal#//@template.0/@edge.1"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.33"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.13"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.25"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.14"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.3"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.15"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.3/@transitions.4"/>
+    <to href=".OrionSystem.uppaal#//@template.1/@edge.8"/>
+    <to href=".OrionSystem.uppaal#//@template.1/@edge.35"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.20"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.16"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.40"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.16"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.0"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.17"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.8"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.18"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.38"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.19"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.24"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.17"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.29"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.18"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.26"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.19"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.23"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.20"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.3/@transitions.12"/>
+    <to href=".OrionSystem.uppaal#//@template.1/@edge.9"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.8"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.21"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.34"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.22"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.3/@transitions.2"/>
+    <to href=".OrionSystem.uppaal#//@template.1/@edge.10"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.1/@transitions.9"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@edge.6"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@edge.37"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.18"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.20"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.18"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.23"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.33"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.21"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.10"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.24"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.30"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.25"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.1/@transitions.8"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@edge.7"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.32"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.26"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.23"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.22"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.31"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.23"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.39"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.27"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.3/@transitions.20"/>
+    <to href=".OrionSystem.uppaal#//@template.1/@edge.11"/>
+    <to href=".OrionSystem.uppaal#//@template.1/@edge.31"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.13"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.28"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.1/@transitions.1"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@edge.8"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@edge.36"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.3/@transitions.23"/>
+    <to href=".OrionSystem.uppaal#//@template.1/@edge.12"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.0"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.29"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.13"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.24"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.3/@transitions.1"/>
+    <to href=".OrionSystem.uppaal#//@template.1/@edge.13"/>
+    <to href=".OrionSystem.uppaal#//@template.1/@edge.33"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.26"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.25"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.37"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.26"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.7"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.27"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.24"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.28"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.5"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.29"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.1/@transitions.14"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@edge.9"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.1/@transitions.10"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@edge.10"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@edge.38"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.2"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.30"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.1/@transitions.25"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@edge.11"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.1/@transitions.6"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@edge.12"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.6"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.30"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.3/@transitions.10"/>
+    <to href=".OrionSystem.uppaal#//@template.1/@edge.14"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.39"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.31"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.1/@transitions.11"/>
+    <to href=".OrionSystem.uppaal#//@template.3/@edge.1"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.1/@transitions.19"/>
+    <to href=".OrionSystem.uppaal#//@template.3/@edge.2"/>
+    <to href=".OrionSystem.uppaal#//@template.3/@edge.14"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.37"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.31"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.15"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.32"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.3/@transitions.17"/>
+    <to href=".OrionSystem.uppaal#//@template.1/@edge.15"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.6"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.32"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.1/@transitions.7"/>
+    <to href=".OrionSystem.uppaal#//@template.7/@edge.1"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.1/@transitions.21"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@edge.13"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.1/@transitions.17"/>
+    <to href=".OrionSystem.uppaal#//@template.7/@edge.2"/>
+    <to href=".OrionSystem.uppaal#//@template.7/@edge.13"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.1/@transitions.13"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@edge.14"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@edge.35"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.40"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.33"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.42"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.34"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.4"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.35"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.1/@transitions.16"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@edge.15"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@edge.32"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.1/@transitions.23"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@edge.16"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.14"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.36"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.1/@transitions.12"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@edge.17"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.3/@transitions.24"/>
+    <to href=".OrionSystem.uppaal#//@template.6/@edge.2"/>
+    <to href=".OrionSystem.uppaal#//@template.6/@edge.14"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.38"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.37"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.1/@transitions.4"/>
+    <to href=".OrionSystem.uppaal#//@template.3/@edge.3"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.32"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.33"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.22"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.34"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.3/@transitions.21"/>
+    <to href=".OrionSystem.uppaal#//@template.1/@edge.16"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.1/@transitions.2"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@edge.18"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.3/@transitions.13"/>
+    <to href=".OrionSystem.uppaal#//@template.0/@edge.2"/>
+    <to href=".OrionSystem.uppaal#//@template.0/@edge.14"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.21"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.38"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.16"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.35"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.7"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.39"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.3"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.36"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.5"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.40"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.20"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.37"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.36"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.38"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.1/@transitions.20"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@edge.19"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@edge.34"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.11"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.41"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.1/@transitions.22"/>
+    <to href=".OrionSystem.uppaal#//@template.7/@edge.3"/>
+    <to href=".OrionSystem.uppaal#//@template.7/@edge.14"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.35"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.42"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.3/@transitions.11"/>
+    <to href=".OrionSystem.uppaal#//@template.6/@edge.3"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.1/@transitions.15"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@edge.20"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@edge.39"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.19"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.43"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.41"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.39"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.42"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.40"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.3/@transitions.16"/>
+    <to href=".OrionSystem.uppaal#//@template.0/@edge.3"/>
+    <to href=".OrionSystem.uppaal#//@template.0/@edge.13"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.1/@transitions.24"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@edge.21"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.25"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.41"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.3/@transitions.7"/>
+    <to href=".OrionSystem.uppaal#//@template.1/@edge.17"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.3/@transitions.18"/>
+    <to href=".OrionSystem.uppaal#//@template.1/@edge.18"/>
+    <to href=".OrionSystem.uppaal#//@template.1/@edge.29"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.14"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.42"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.43"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.43"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.3/@transitions.19"/>
+    <to href=".OrionSystem.uppaal#//@template.1/@edge.19"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.3/@transitions.0"/>
+    <to href=".OrionSystem.uppaal#//@template.0/@edge.4"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.1/@transitions.0"/>
+    <to href=".OrionSystem.uppaal#//@template.7/@edge.4"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.1/@transitions.10/@trigger"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@edge.10/@guard"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.32/@trigger"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.26/@guard/@secondExpr/@secondExpr/@secondExpr/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.3/@transitions.22/@trigger"/>
+    <to href=".OrionSystem.uppaal#//@template.1/@edge.3/@guard"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.31/@trigger"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.12/@guard/@secondExpr/@secondExpr/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.1/@transitions.1/@trigger"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@edge.8/@guard"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.3/@transitions.14/@trigger"/>
+    <to href=".OrionSystem.uppaal#//@template.1/@edge.6/@guard"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.3/@transitions.21/@trigger"/>
+    <to href=".OrionSystem.uppaal#//@template.1/@edge.16/@guard"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.1/@transitions.19/@trigger"/>
+    <to href=".OrionSystem.uppaal#//@template.3/@edge.2/@guard/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.1/@transitions.12/@trigger"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@edge.17/@guard"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.1/@transitions.20/@trigger"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@edge.19/@guard"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.31/@trigger"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.23/@guard/@secondExpr/@secondExpr/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.3/@transitions.9/@trigger"/>
+    <to href=".OrionSystem.uppaal#//@template.1/@edge.2/@guard"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.3/@transitions.24/@trigger"/>
+    <to href=".OrionSystem.uppaal#//@template.6/@edge.2/@guard/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.33/@trigger"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.13/@guard/@secondExpr/@secondExpr/@secondExpr/@secondExpr/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.30/@trigger"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.2/@guard/@secondExpr/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.1/@transitions.14/@trigger"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@edge.9/@guard"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.1/@transitions.8/@trigger"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@edge.7/@guard"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.1/@transitions.22/@trigger"/>
+    <to href=".OrionSystem.uppaal#//@template.7/@edge.3/@guard/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.1/@transitions.3/@trigger"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@edge.5/@guard"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.34/@trigger"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.9/@guard/@secondExpr/@secondExpr/@secondExpr/@secondExpr/@secondExpr/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.28/@trigger"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.7/@guard"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.3/@transitions.20/@trigger"/>
+    <to href=".OrionSystem.uppaal#//@template.1/@edge.11/@guard"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.1/@transitions.21/@trigger"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@edge.13/@guard"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.3/@transitions.1/@trigger"/>
+    <to href=".OrionSystem.uppaal#//@template.1/@edge.13/@guard"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.1/@transitions.15/@trigger"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@edge.20/@guard"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.3/@transitions.8/@trigger"/>
+    <to href=".OrionSystem.uppaal#//@template.1/@edge.5/@guard"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.1/@transitions.18/@trigger"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@edge.4/@guard"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.3/@transitions.18/@trigger"/>
+    <to href=".OrionSystem.uppaal#//@template.1/@edge.18/@guard"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.1/@transitions.16/@trigger"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@edge.15/@guard"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.3/@transitions.7/@trigger"/>
+    <to href=".OrionSystem.uppaal#//@template.1/@edge.17/@guard"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.34/@trigger"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.22/@guard/@secondExpr/@secondExpr/@secondExpr/@secondExpr/@secondExpr/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.1/@transitions.25/@trigger"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@edge.11/@guard"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.28/@trigger"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.0/@guard"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.30/@trigger"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.25/@guard/@secondExpr/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.3/@transitions.19/@trigger"/>
+    <to href=".OrionSystem.uppaal#//@template.1/@edge.19/@guard"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.29/@trigger"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.5/@guard/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.3/@transitions.16/@trigger"/>
+    <to href=".OrionSystem.uppaal#//@template.0/@edge.3/@guard/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.3/@transitions.4/@trigger"/>
+    <to href=".OrionSystem.uppaal#//@template.1/@edge.8/@guard"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.1/@transitions.9/@trigger"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@edge.6/@guard"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.1/@transitions.13/@trigger"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@edge.14/@guard"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.3/@transitions.3/@trigger"/>
+    <to href=".OrionSystem.uppaal#//@template.1/@edge.7/@guard"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.29/@trigger"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.18/@guard/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.3/@transitions.6/@trigger"/>
+    <to href=".OrionSystem.uppaal#//@template.1/@edge.4/@guard"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.3/@transitions.13/@trigger"/>
+    <to href=".OrionSystem.uppaal#//@template.0/@edge.2/@guard/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.3/@transitions.23/@trigger"/>
+    <to href=".OrionSystem.uppaal#//@template.1/@edge.12/@guard"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.32/@trigger"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.33/@guard/@secondExpr/@secondExpr/@secondExpr/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.1/@transitions.17/@trigger"/>
+    <to href=".OrionSystem.uppaal#//@template.7/@edge.2/@guard/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.33/@trigger"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.21/@guard/@secondExpr/@secondExpr/@secondExpr/@secondExpr/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.1/@timeoutDeclarations.3"/>
+    <to href=".OrionSystem.uppaal#//@template.3/@declarations/@declaration.1"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.1/@regions.0/@stateNodes.2/@regions.0/@stateNodes.0/@entryActions.0/@time/@value/@operands.0"/>
+    <to href=".OrionSystem.uppaal#//@template.3/@location.2/@invariant/@secondExpr/@firstExpr"/>
+    <to href=".OrionSystem.uppaal#//@template.3/@edge.6/@guard/@secondExpr/@secondExpr/@firstExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.1/@regions.0/@stateNodes.2/@regions.0/@stateNodes.0/@entryActions.0/@time/@value/@operands.1"/>
+    <to href=".OrionSystem.uppaal#//@template.3/@location.2/@invariant/@secondExpr/@secondExpr"/>
+    <to href=".OrionSystem.uppaal#//@template.3/@edge.6/@guard/@secondExpr/@secondExpr/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.1/@regions.0/@stateNodes.2/@regions.0/@stateNodes.0/@entryActions.0/@time/@value"/>
+    <to href=".OrionSystem.uppaal#//@template.3/@location.2/@invariant/@secondExpr"/>
+    <to href=".OrionSystem.uppaal#//@template.3/@edge.6/@guard/@secondExpr/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.1/@transitions.4/@trigger/@eventReference"/>
+    <to href=".OrionSystem.uppaal#//@template.3/@location.2/@invariant"/>
+    <to href=".OrionSystem.uppaal#//@template.3/@edge.6/@guard/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.3/@timeoutDeclarations.2"/>
+    <to href=".OrionSystem.uppaal#//@template.6/@declarations/@declaration.1"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.3/@regions.0/@stateNodes.0/@regions.0/@stateNodes.0/@entryActions.0/@time/@value/@operands.0"/>
+    <to href=".OrionSystem.uppaal#//@template.6/@location.2/@invariant/@secondExpr/@firstExpr"/>
+    <to href=".OrionSystem.uppaal#//@template.6/@edge.6/@guard/@secondExpr/@secondExpr/@firstExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.3/@regions.0/@stateNodes.0/@regions.0/@stateNodes.0/@entryActions.0/@time/@value/@operands.1"/>
+    <to href=".OrionSystem.uppaal#//@template.6/@location.2/@invariant/@secondExpr/@secondExpr"/>
+    <to href=".OrionSystem.uppaal#//@template.6/@edge.6/@guard/@secondExpr/@secondExpr/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.3/@regions.0/@stateNodes.0/@regions.0/@stateNodes.0/@entryActions.0/@time/@value"/>
+    <to href=".OrionSystem.uppaal#//@template.6/@location.2/@invariant/@secondExpr"/>
+    <to href=".OrionSystem.uppaal#//@template.6/@edge.6/@guard/@secondExpr/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.3/@transitions.15/@trigger/@eventReference"/>
+    <to href=".OrionSystem.uppaal#//@template.6/@location.2/@invariant"/>
+    <to href=".OrionSystem.uppaal#//@template.6/@edge.6/@guard/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.1/@timeoutDeclarations.2"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@declarations/@declaration.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.1/@regions.0/@stateNodes.0/@entryActions.0/@time/@value/@operands.0"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@location.5/@invariant/@secondExpr/@firstExpr"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@edge.23/@guard/@secondExpr/@secondExpr/@firstExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.1/@regions.0/@stateNodes.0/@entryActions.0/@time/@value/@operands.1"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@location.5/@invariant/@secondExpr/@secondExpr"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@edge.23/@guard/@secondExpr/@secondExpr/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.1/@regions.0/@stateNodes.0/@entryActions.0/@time/@value"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@location.5/@invariant/@secondExpr"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@edge.23/@guard/@secondExpr/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.1/@transitions.6/@trigger/@eventReference"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@location.5/@invariant"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@edge.23/@guard/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.3/@timeoutDeclarations.0"/>
+    <to href=".OrionSystem.uppaal#//@template.0/@declarations/@declaration.1"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.3/@regions.0/@stateNodes.0/@regions.1/@stateNodes.0/@entryActions.0/@time/@value/@operands.0"/>
+    <to href=".OrionSystem.uppaal#//@template.0/@location.2/@invariant/@secondExpr/@firstExpr"/>
+    <to href=".OrionSystem.uppaal#//@template.0/@edge.6/@guard/@secondExpr/@secondExpr/@firstExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.3/@regions.0/@stateNodes.0/@regions.1/@stateNodes.0/@entryActions.0/@time/@value/@operands.1"/>
+    <to href=".OrionSystem.uppaal#//@template.0/@location.2/@invariant/@secondExpr/@secondExpr"/>
+    <to href=".OrionSystem.uppaal#//@template.0/@edge.6/@guard/@secondExpr/@secondExpr/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.3/@regions.0/@stateNodes.0/@regions.1/@stateNodes.0/@entryActions.0/@time/@value"/>
+    <to href=".OrionSystem.uppaal#//@template.0/@location.2/@invariant/@secondExpr"/>
+    <to href=".OrionSystem.uppaal#//@template.0/@edge.6/@guard/@secondExpr/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.3/@transitions.0/@trigger/@eventReference"/>
+    <to href=".OrionSystem.uppaal#//@template.0/@location.2/@invariant"/>
+    <to href=".OrionSystem.uppaal#//@template.0/@edge.6/@guard/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.1/@timeoutDeclarations.1"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@declarations/@declaration.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.1/@regions.0/@stateNodes.1/@entryActions.0/@time/@value/@operands.0"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@location.1/@invariant/@secondExpr/@firstExpr"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@edge.24/@guard/@secondExpr/@secondExpr/@firstExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.1/@regions.0/@stateNodes.1/@entryActions.0/@time/@value/@operands.1"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@location.1/@invariant/@secondExpr/@secondExpr"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@edge.24/@guard/@secondExpr/@secondExpr/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.1/@regions.0/@stateNodes.1/@entryActions.0/@time/@value"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@location.1/@invariant/@secondExpr"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@edge.24/@guard/@secondExpr/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.1/@transitions.2/@trigger/@eventReference"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@location.1/@invariant"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@edge.24/@guard/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.3/@timeoutDeclarations.1"/>
+    <to href=".OrionSystem.uppaal#//@template.1/@declarations/@declaration.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.3/@regions.0/@stateNodes.2/@entryActions.0/@time/@value/@operands.0"/>
+    <to href=".OrionSystem.uppaal#//@template.1/@location.1/@invariant/@secondExpr/@firstExpr"/>
+    <to href=".OrionSystem.uppaal#//@template.1/@edge.21/@guard/@secondExpr/@secondExpr/@firstExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.3/@regions.0/@stateNodes.2/@entryActions.0/@time/@value/@operands.1"/>
+    <to href=".OrionSystem.uppaal#//@template.1/@location.1/@invariant/@secondExpr/@secondExpr"/>
+    <to href=".OrionSystem.uppaal#//@template.1/@edge.21/@guard/@secondExpr/@secondExpr/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.3/@regions.0/@stateNodes.2/@entryActions.0/@time/@value"/>
+    <to href=".OrionSystem.uppaal#//@template.1/@location.1/@invariant/@secondExpr"/>
+    <to href=".OrionSystem.uppaal#//@template.1/@edge.21/@guard/@secondExpr/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.3/@transitions.2/@trigger/@eventReference"/>
+    <to href=".OrionSystem.uppaal#//@template.1/@location.1/@invariant"/>
+    <to href=".OrionSystem.uppaal#//@template.1/@edge.21/@guard/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.1/@timeoutDeclarations.0"/>
+    <to href=".OrionSystem.uppaal#//@template.7/@declarations/@declaration.1"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.1/@regions.0/@stateNodes.2/@regions.1/@stateNodes.0/@entryActions.0/@time/@value/@operands.0"/>
+    <to href=".OrionSystem.uppaal#//@template.7/@location.2/@invariant/@secondExpr/@firstExpr"/>
+    <to href=".OrionSystem.uppaal#//@template.7/@edge.6/@guard/@secondExpr/@secondExpr/@firstExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.1/@regions.0/@stateNodes.2/@regions.1/@stateNodes.0/@entryActions.0/@time/@value/@operands.1"/>
+    <to href=".OrionSystem.uppaal#//@template.7/@location.2/@invariant/@secondExpr/@secondExpr"/>
+    <to href=".OrionSystem.uppaal#//@template.7/@edge.6/@guard/@secondExpr/@secondExpr/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.1/@regions.0/@stateNodes.2/@regions.1/@stateNodes.0/@entryActions.0/@time/@value"/>
+    <to href=".OrionSystem.uppaal#//@template.7/@location.2/@invariant/@secondExpr"/>
+    <to href=".OrionSystem.uppaal#//@template.7/@edge.6/@guard/@secondExpr/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".OrionSystem.gsm#//@components.1/@transitions.0/@trigger/@eventReference"/>
+    <to href=".OrionSystem.uppaal#//@template.7/@location.2/@invariant"/>
+    <to href=".OrionSystem.uppaal#//@template.7/@edge.6/@guard/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.10/@guard/@leftOperand"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.24/@guard/@firstExpr"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.41/@guard/@secondExpr/@negatedExpression/@firstExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.10/@guard/@rightOperand"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.24/@guard/@secondExpr"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.41/@guard/@secondExpr/@negatedExpression/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.10/@guard"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.24/@guard"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.41/@guard/@secondExpr/@negatedExpression"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.6/@guard/@leftOperand"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.30/@guard/@firstExpr"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.27/@guard/@secondExpr/@negatedExpression/@firstExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.6/@guard/@rightOperand"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.30/@guard/@secondExpr"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.27/@guard/@secondExpr/@negatedExpression/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.6/@guard"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.30/@guard"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.27/@guard/@secondExpr/@negatedExpression"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.20/@guard/@leftOperand"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.16/@guard/@firstExpr"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.38/@guard/@secondExpr/@negatedExpression/@firstExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.20/@guard/@rightOperand"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.16/@guard/@secondExpr"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.38/@guard/@secondExpr/@negatedExpression/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.20/@guard"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.16/@guard"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.38/@guard/@secondExpr/@negatedExpression"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.15/@guard/@leftOperand"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.32/@guard/@secondExpr/@firstExpr"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.42/@guard/@negatedExpression/@firstExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.15/@guard/@rightOperand"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.32/@guard/@secondExpr/@secondExpr"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.42/@guard/@negatedExpression/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.15/@guard"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.32/@guard/@secondExpr"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.42/@guard/@negatedExpression"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.6/@guard/@leftOperand"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.32/@guard/@firstExpr"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.39/@guard/@secondExpr/@negatedExpression/@firstExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.6/@guard/@rightOperand"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.32/@guard/@secondExpr"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.39/@guard/@secondExpr/@negatedExpression/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.6/@guard"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.32/@guard"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.39/@guard/@secondExpr/@negatedExpression"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.16/@guard/@leftOperand"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.2/@guard/@firstExpr"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.7/@guard/@secondExpr/@negatedExpression/@firstExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.16/@guard/@rightOperand"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.2/@guard/@secondExpr"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.7/@guard/@secondExpr/@negatedExpression/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.16/@guard"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.2/@guard"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.7/@guard/@secondExpr/@negatedExpression"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.3/@guard/@leftOperand"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.15/@guard/@secondExpr/@firstExpr"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.30/@guard/@negatedExpression/@firstExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.3/@guard/@rightOperand"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.15/@guard/@secondExpr/@secondExpr"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.30/@guard/@negatedExpression/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.3/@guard"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.15/@guard/@secondExpr"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.30/@guard/@negatedExpression"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.25/@guard/@leftOperand"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.14/@guard/@secondExpr/@firstExpr"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.17/@guard/@negatedExpression/@firstExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.25/@guard/@rightOperand"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.14/@guard/@secondExpr/@secondExpr"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.17/@guard/@negatedExpression/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.25/@guard"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.14/@guard/@secondExpr"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.17/@guard/@negatedExpression"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.16/@guard/@leftOperand"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.35/@guard/@firstExpr"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.3/@guard/@secondExpr/@negatedExpression/@firstExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.16/@guard/@rightOperand"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.35/@guard/@secondExpr"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.3/@guard/@secondExpr/@negatedExpression/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.16/@guard"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.35/@guard"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.3/@guard/@secondExpr/@negatedExpression"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.15/@guard/@leftOperand"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.5/@guard/@secondExpr/@firstExpr"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.36/@guard/@negatedExpression/@firstExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.15/@guard/@rightOperand"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.5/@guard/@secondExpr/@secondExpr"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.36/@guard/@negatedExpression/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.15/@guard"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.5/@guard/@secondExpr"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.36/@guard/@negatedExpression"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.3/@guard/@leftOperand"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.36/@guard/@secondExpr/@firstExpr"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.4/@guard/@negatedExpression/@firstExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.3/@guard/@rightOperand"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.36/@guard/@secondExpr/@secondExpr"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.4/@guard/@negatedExpression/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.3/@guard"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.36/@guard/@secondExpr"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.4/@guard/@negatedExpression"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.20/@guard/@leftOperand"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.37/@guard/@firstExpr"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.10/@guard/@secondExpr/@negatedExpression/@firstExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.20/@guard/@rightOperand"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.37/@guard/@secondExpr"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.10/@guard/@secondExpr/@negatedExpression/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.20/@guard"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.37/@guard"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.10/@guard/@secondExpr/@negatedExpression"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.10/@guard/@leftOperand"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.13/@guard/@firstExpr"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.11/@guard/@secondExpr/@negatedExpression/@firstExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.10/@guard/@rightOperand"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.13/@guard/@secondExpr"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.11/@guard/@secondExpr/@negatedExpression/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.10/@guard"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.13/@guard"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.11/@guard/@secondExpr/@negatedExpression"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.25/@guard/@leftOperand"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.41/@guard/@secondExpr/@firstExpr"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.28/@guard/@negatedExpression/@firstExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.25/@guard/@rightOperand"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.41/@guard/@secondExpr/@secondExpr"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.28/@guard/@negatedExpression/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.25/@guard"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.41/@guard/@secondExpr"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.28/@guard/@negatedExpression"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.41/@effects.0/@lhs"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.39/@update.1/@firstExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.41/@effects.0/@rhs/@operands.0"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.39/@update.1/@secondExpr/@firstExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.41/@effects.0/@rhs/@operands.1"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.39/@update.1/@secondExpr/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.41/@effects.0/@rhs"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.39/@update.1/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.4/@transitions.41/@effects.0"/>
+    <to href=".OrionSystem.uppaal#//@template.2/@edge.39/@update.1"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.41/@effects.0/@lhs"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.3/@update.1/@firstExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.41/@effects.0/@rhs/@operands.0"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.3/@update.1/@secondExpr/@firstExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.41/@effects.0/@rhs/@operands.1"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.3/@update.1/@secondExpr/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.41/@effects.0/@rhs"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.3/@update.1/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.2/@transitions.41/@effects.0"/>
+    <to href=".OrionSystem.uppaal#//@template.5/@edge.3/@update.1"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.1/@regions.0/@stateNodes.2/@regions.1/@stateNodes.0/@entryActions.0"/>
+    <to href=".OrionSystem.uppaal#//@template.7/@edge.0/@update.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.1/@regions.0/@stateNodes.2/@regions.0/@stateNodes.0/@entryActions.0"/>
+    <to href=".OrionSystem.uppaal#//@template.3/@edge.0/@update.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.1/@regions.0/@stateNodes.1/@entryActions.0"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@edge.0/@update.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.3/@regions.0/@stateNodes.0/@regions.0/@stateNodes.0/@entryActions.0"/>
+    <to href=".OrionSystem.uppaal#//@template.6/@edge.0/@update.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.3/@regions.0/@stateNodes.2/@entryActions.0"/>
+    <to href=".OrionSystem.uppaal#//@template.1/@edge.0/@update.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.1/@regions.0/@stateNodes.0/@entryActions.0"/>
+    <to href=".OrionSystem.uppaal#//@template.4/@edge.2/@update.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".OrionSystem.gsm#//@components.3/@regions.0/@stateNodes.0/@regions.1/@stateNodes.0/@entryActions.0"/>
+    <to href=".OrionSystem.uppaal#//@template.0/@edge.0/@update.0"/>
+  </traces>
+  <gammaPackage href=".OrionSystem.gsm#/"/>
+  <nta href=".OrionSystem.uppaal#/"/>
+</hu.bme.mit.gamma.uppaal.transformation:G2UTrace>

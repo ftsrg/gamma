@@ -1,0 +1,107 @@
+package Channel
+import "interfaces"
+const T : integer := 2451
+@PrioritizedTransitions = off
+statechart ChannelStatechart [
+	port Input : requires StateMachine_Interface_For_Orion
+	port Output : provides StateMachine_Interface_For_Orion
+] {
+	timeout ReceivedOrionConnConfTimeout7
+	timeout ReceivedOrionConnRespTimeout8
+	timeout ReceivedOrionDisconnCauseTimeout9
+	timeout ReceivedOrionConnReqTimeout10
+	timeout ReceivedOrionAppDataTimeout11
+	timeout ReceivedOrionDisconnTimeout12
+	timeout ReceivedOrionKeepAliveTimeout13
+	transition from Entry0 to OrionConnConfIdle
+	transition from Entry1 to OrionKeepAliveIdle
+	transition from Entry2 to OrionAppDataIdle
+	transition from Entry3 to OrionConnReqIdle
+	transition from Entry4 to OrionDisconnCauseIdle
+	transition from Entry5 to OrionConnRespIdle
+	transition from Entry6 to OrionDisconnIdle
+	transition from OrionAppDataIdle to ReceivedOrionAppData when Input.OrionAppData
+	transition from OrionConnConfIdle to ReceivedOrionConnConf when Input.OrionConnConf
+	transition from OrionConnReqIdle to ReceivedOrionConnReq when Input.OrionConnReq
+	transition from OrionConnRespIdle to ReceivedOrionConnResp when Input.OrionConnResp
+	transition from OrionDisconnCauseIdle to ReceivedOrionDisconnCause when Input.OrionDisconnCause
+	transition from OrionDisconnIdle to ReceivedOrionDisconn when Input.OrionDisconn
+	transition from OrionKeepAliveIdle to ReceivedOrionKeepAlive when Input.OrionKeepAlive
+	transition from ReceivedOrionAppData to ReceivedOrionAppData when Input.OrionAppData / raise
+		Output.OrionAppData;
+	transition from ReceivedOrionAppData to OrionAppDataIdle when timeout ReceivedOrionAppDataTimeout11 /
+		raise Output.OrionAppData;
+	transition from ReceivedOrionConnConf to ReceivedOrionConnConf when Input.OrionConnConf / raise
+		Output.OrionConnConf;
+	transition from ReceivedOrionConnConf to OrionConnConfIdle when timeout ReceivedOrionConnConfTimeout7
+		/ raise Output.OrionConnConf;
+	transition from ReceivedOrionConnReq to ReceivedOrionConnReq when Input.OrionConnReq / raise
+		Output.OrionConnReq;
+	transition from ReceivedOrionConnReq to OrionConnReqIdle when timeout ReceivedOrionConnReqTimeout10 /
+		raise Output.OrionConnReq;
+	transition from ReceivedOrionConnResp to ReceivedOrionConnResp when Input.OrionConnResp / raise
+		Output.OrionConnResp;
+	transition from ReceivedOrionConnResp to OrionConnRespIdle when timeout ReceivedOrionConnRespTimeout8
+		/ raise Output.OrionConnResp;
+	transition from ReceivedOrionDisconn to ReceivedOrionDisconn when Input.OrionDisconn / raise
+		Output.OrionDisconn;
+	transition from ReceivedOrionDisconn to OrionDisconnIdle when timeout ReceivedOrionDisconnTimeout12 /
+		raise Output.OrionDisconn;
+	transition from ReceivedOrionDisconnCause to ReceivedOrionDisconnCause when Input.OrionDisconnCause /
+		raise Output.OrionDisconnCause;
+	transition from ReceivedOrionDisconnCause to OrionDisconnCauseIdle when timeout
+		ReceivedOrionDisconnCauseTimeout9 / raise Output.OrionDisconnCause;
+	transition from ReceivedOrionKeepAlive to ReceivedOrionKeepAlive when Input.OrionKeepAlive / raise
+		Output.OrionKeepAlive;
+	transition from ReceivedOrionKeepAlive to OrionKeepAliveIdle when timeout
+		ReceivedOrionKeepAliveTimeout13 / raise Output.OrionKeepAlive;
+	region OrionDisconnRegion {
+		initial Entry6
+		state OrionDisconnIdle
+		state ReceivedOrionDisconn {
+			entry / set ReceivedOrionDisconnTimeout12 := T ms;
+		}
+	}
+	region OrionConnConfRegion {
+		initial Entry0
+		state ReceivedOrionConnConf {
+			entry / set ReceivedOrionConnConfTimeout7 := T ms;
+		}
+		state OrionConnConfIdle
+	}
+	region OrionConnRespRegion {
+		initial Entry5
+		state OrionConnRespIdle
+		state ReceivedOrionConnResp {
+			entry / set ReceivedOrionConnRespTimeout8 := T ms;
+		}
+	}
+	region OrionAppDataRegion {
+		initial Entry2
+		state OrionAppDataIdle
+		state ReceivedOrionAppData {
+			entry / set ReceivedOrionAppDataTimeout11 := T ms;
+		}
+	}
+	region OrionConnReqRegion {
+		initial Entry3
+		state OrionConnReqIdle
+		state ReceivedOrionConnReq {
+			entry / set ReceivedOrionConnReqTimeout10 := T ms;
+		}
+	}
+	region OrionKeepAliveRegion {
+		initial Entry1
+		state OrionKeepAliveIdle
+		state ReceivedOrionKeepAlive {
+			entry / set ReceivedOrionKeepAliveTimeout13 := T ms;
+		}
+	}
+	region OrionDisconnCauseRegion {
+		initial Entry4
+		state OrionDisconnCauseIdle
+		state ReceivedOrionDisconnCause {
+			entry / set ReceivedOrionDisconnCauseTimeout9 := T ms;
+		}
+	}
+}

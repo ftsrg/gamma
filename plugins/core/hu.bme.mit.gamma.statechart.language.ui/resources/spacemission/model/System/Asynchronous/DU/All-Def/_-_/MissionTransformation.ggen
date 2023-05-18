@@ -1,0 +1,21 @@
+import "Interface/Interfaces.gcd"
+import "System/Asynchronous/Mission.gcd"
+
+analysis {
+	component : Mission
+	language : UPPAAL
+	dataflow-coverage {
+		coverage-criterion : all-def
+	}
+	constraint : {
+		stationInstance : {
+			minimum-orchestrating-period : SCHEDULE_CONSTRAINT ms
+			maximum-orchestrating-period : SCHEDULE_CONSTRAINT ms
+		}
+		satelliteInstance : {
+			minimum-orchestrating-period : SCHEDULE_CONSTRAINT + 1 ms
+			maximum-orchestrating-period : SCHEDULE_CONSTRAINT + 1 ms
+		}
+	}
+	optimize : false
+}

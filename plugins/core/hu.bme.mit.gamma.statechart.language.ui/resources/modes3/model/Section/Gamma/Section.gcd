@@ -1,0 +1,79 @@
+package NewSection
+import "Interface/Interfaces"
+statechart SectionStatechart [
+	port ProtocolInCCW : requires NewProtocol
+	port Restart : requires Restart
+	port ProtocolOutCCW : provides NewProtocol
+	port SectionControl : provides SectionControl
+	port Train : requires Train
+	port Error : provides Error
+	port ProtocolOutCW : provides NewProtocol
+	port ProtocolInCW : requires NewProtocol
+] {
+	var isDisabled : boolean
+	var isOccupiedCW : boolean
+	var isOccupied : boolean
+	var isOccupiedCCW : boolean
+	transition from Choice6 to GlobalState [isOccupiedCW or isDisabled] / raise ProtocolOutCCW.stop;
+	transition from Choice4 to GlobalState [isOccupiedCCW and not isOccupied] / raise ProtocolOutCCW.go;
+	transition from Choice7 to GlobalState [else] / isDisabled := false; raise
+		SectionControl.enableSection;
+	transition from Choice5 to GlobalState [(not isOccupiedCCW and not isOccupied) and not isOccupiedCW] /
+		raise SectionControl.enableSection; raise ProtocolOutCW.occupied; isOccupied := true; isDisabled :=
+		false; raise ProtocolOutCCW.occupied;
+	transition from GlobalState to Choice2 when ProtocolInCCW.unoccupied / isOccupiedCCW := false;
+	transition from Choice4 to GlobalState [else]
+	transition from GlobalState to GlobalState when Train.unoccupy / raise ProtocolOutCW.unoccupied;
+		isOccupied := false; raise ProtocolOutCCW.unoccupied;
+	transition from WaitForCCW to GlobalState when ProtocolInCCW.stop
+	transition from Choice3 to WaitForCCW [isDisabled] / raise ProtocolOutCCW.occupied;
+	transition from Entry0 to GlobalState
+	transition from Choice5 to GlobalState [(isOccupiedCCW and not isOccupied) and isOccupiedCW] / raise
+		ProtocolOutCCW.occupied; isDisabled := true; raise SectionControl.disableSection; isOccupied := true;
+		raise ProtocolOutCW.occupied;
+	transition from Choice2 to GlobalState [else]
+	transition from GlobalState to Choice1 when ProtocolInCW.occupied / isOccupiedCW := true;
+	transition from Choice5 to GlobalState [(not isOccupiedCCW and not isOccupied) and isOccupiedCW] /
+		raise ProtocolOutCW.occupied; raise ProtocolOutCCW.occupied; isOccupied := true;
+	transition from Choice6 to GlobalState [else] / raise ProtocolOutCCW.go;
+	transition from WaitForCW to GlobalState when ProtocolInCW.stop
+	transition from GlobalState to Choice7 when ProtocolInCCW.go && !(ProtocolInCCW.stop ||
+		ProtocolInCW.stop)
+	transition from WaitForCCW to GlobalState when ProtocolInCCW.go / isDisabled := false; raise
+		SectionControl.enableSection;
+	transition from GlobalState to Choice5 when Train.occupy
+	transition from WaitForCW to GlobalState when ProtocolInCW.go / raise SectionControl.enableSection;
+		isDisabled := false;
+	transition from Choice2 to GlobalState [not isOccupied and isOccupiedCW] / raise ProtocolOutCW.go;
+	transition from Choice5 to GlobalState [isOccupied] / raise Error.error;
+	transition from Choice2 to GlobalState [isDisabled] / raise SectionControl.disableSection;
+	transition from Choice1 to GlobalState [else] / raise ProtocolOutCW.go;
+	transition from GlobalState to GlobalState when ProtocolInCW.stop / isDisabled := true; raise
+		SectionControl.disableSection;
+	transition from Choice1 to GlobalState [isOccupiedCCW or isDisabled] / raise ProtocolOutCW.stop;
+	transition from Choice3 to GlobalState [else] / raise SectionControl.enableSection; isDisabled :=
+		false;
+	transition from Choice7 to WaitForCW [isDisabled] / raise ProtocolOutCW.occupied;
+	transition from Choice5 to GlobalState [(isOccupiedCCW and not isOccupied) and not isOccupiedCW] /
+		raise ProtocolOutCCW.occupied; raise ProtocolOutCW.occupied; isOccupied := true;
+	transition from GlobalState to Choice4 when ProtocolInCW.unoccupied / isOccupiedCW := false;
+	transition from Choice4 to GlobalState [isDisabled] / raise SectionControl.disableSection;
+	transition from GlobalState to Choice6 when ProtocolInCCW.occupied / isOccupiedCCW := true;
+	transition from GlobalState to GlobalState when ProtocolInCCW.stop / raise
+		SectionControl.disableSection; isDisabled := true;
+	transition from GlobalState to Choice3 when ProtocolInCW.go && !(ProtocolInCCW.stop ||
+		ProtocolInCW.stop)
+	region main_region {
+		initial Entry0
+		state GlobalState
+		state WaitForCW
+		state WaitForCCW
+		choice Choice1
+		choice Choice2
+		choice Choice3
+		choice Choice4
+		choice Choice5
+		choice Choice6
+		choice Choice7
+	}
+}

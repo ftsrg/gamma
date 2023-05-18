@@ -1,0 +1,11 @@
+import "Synchronous/ANTIVAL_CHK_COID_System.gcd"
+
+analysis {
+	component : AntivalenceChecker_System
+	language : XSTS-UPPAAL
+	interaction-coverage {
+		sender-coverage-criterion : every-interaction
+		receiver-coverage-criterion : events
+	}
+	optimize : false
+}
