@@ -60,23 +60,16 @@ class PortInterfaceGenerator {
 			
 			interface Listener {
 				
-<<<<<<< HEAD
-				interface Provided «IF !anInterface.parents.empty»extends «FOR parent : anInterface.parents SEPARATOR ', '»«parent.implementationName».Listener.Provided«ENDFOR»«ENDIF» {
-=======
+
 				interface Provided «IF !anInterface.parents.empty»extends «FOR parent : anInterface.parents
 						SEPARATOR ', '»«parent.implementationName».Listener.Provided«ENDFOR»«ENDIF» {
->>>>>>> refs/remotes/origin/dev
 					«FOR event : anInterface.getAllEvents(EventDirection.IN)»
 						void raise«event.name.toFirstUpper»(«event.generateParameters»);
 					«ENDFOR»							
 				}
 				
-<<<<<<< HEAD
-				interface Required «IF !anInterface.parents.empty»extends «FOR parent : anInterface.parents SEPARATOR ', '»«parent.implementationName».Listener.Required«ENDFOR»«ENDIF» {
-=======
 				interface Required «IF !anInterface.parents.empty»extends «FOR parent : anInterface.parents
 						SEPARATOR ', '»«parent.implementationName».Listener.Required«ENDFOR»«ENDIF» {
->>>>>>> refs/remotes/origin/dev
 					«FOR event : anInterface.getAllEvents(EventDirection.OUT)»
 						void raise«event.name.toFirstUpper»(«event.generateParameters»);
 					«ENDFOR»  					
