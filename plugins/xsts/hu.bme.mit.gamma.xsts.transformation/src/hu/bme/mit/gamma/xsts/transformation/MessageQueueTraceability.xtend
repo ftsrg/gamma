@@ -11,6 +11,7 @@
 package hu.bme.mit.gamma.xsts.transformation
 
 import hu.bme.mit.gamma.statechart.composite.MessageQueue
+import hu.bme.mit.gamma.statechart.interface_.Clock
 import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.Port
 import java.util.Map
@@ -19,6 +20,7 @@ import java.util.SortedMap
 
 class MessageQueueTraceability {
 	
+	protected final Map<Clock, Integer> clockIds = newHashMap
 	protected final Map<Entry<Port, Event>, Integer> eventIds = newHashMap
 	protected final SortedMap<MessageQueue, MessageQueueMapping> messageQueues = newTreeMap(
 		lhs, rhs | {
@@ -29,6 +31,34 @@ class MessageQueueTraceability {
 			return result
 		}
 	)
+	
+	// All event reference types
+	
+	def get(Object eventReference) {
+		if (eventReference instanceof Clock) {
+			return eventReference.get
+		}
+		else if (eventReference instanceof Entry) {
+			return eventReference.get
+		}
+		else {
+			throw new IllegalArgumentException("Not known type: " + eventReference)
+		}
+	}
+	
+	//
+	
+	def put(Clock clock, Integer id) { // Starts from 1, 0 is the "empty cell"
+		clockIds += clock -> id
+	}
+	
+	def get(Clock clock) {
+		return clockIds.get(clock)
+	}
+	
+	def contains(Clock clock) {
+		return clockIds.containsKey(clock)
+	}
 	
 	//
 	

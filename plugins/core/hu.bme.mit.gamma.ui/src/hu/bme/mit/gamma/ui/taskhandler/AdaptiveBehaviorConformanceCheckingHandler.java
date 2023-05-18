@@ -96,7 +96,7 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 		super(file);
 	}
 	
-	public void execute(AdaptiveBehaviorConformanceChecking conformanceChecker) throws IOException {
+	public void execute(AdaptiveBehaviorConformanceChecking conformanceChecker) throws IOException, InterruptedException {
 		// Setting target folder
 		setTargetFolder(conformanceChecker);
 		//

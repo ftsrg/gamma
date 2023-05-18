@@ -34,7 +34,6 @@ import hu.bme.mit.gamma.scenario.model.Delay;
 import hu.bme.mit.gamma.scenario.model.DeterministicOccurrence;
 import hu.bme.mit.gamma.scenario.model.DeterministicOccurrenceSet;
 import hu.bme.mit.gamma.scenario.model.Fragment;
-import hu.bme.mit.gamma.scenario.model.InitialBlock;
 import hu.bme.mit.gamma.scenario.model.Interaction;
 import hu.bme.mit.gamma.scenario.model.InteractionDirection;
 import hu.bme.mit.gamma.scenario.model.LoopCombinedFragment;
@@ -501,7 +500,7 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 	public Collection<ValidationResultMessage> checkScenraioReferenceInitialBlock(
 			ScenarioDefinitionReference reference) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		if (reference.getScenarioDefinition().getInitialblock() != null) {
+		if (reference.getScenarioDefinition().getInitialBlock() != null) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING,
 					"The initial block of scenario " + reference.getScenarioDefinition().getName()
 							+ " will not be included in this scenario",

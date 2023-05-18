@@ -25,7 +25,7 @@ import hu.bme.mit.gamma.ui.GammaApi;
 
 public class CommandHandler extends AbstractHandler {
 	
-	protected Thread thread = null;
+	protected static Thread thread = null;
 	protected final Logger logger = Logger.getLogger("GammaLogger");
 
 	@Override
@@ -62,6 +62,10 @@ public class CommandHandler extends AbstractHandler {
 			logger.log(Level.INFO, thread.getName() + " is still running");
 		}
 		return null;
+	}
+	
+	public static Thread getThread() {
+		return thread;
 	}
 	
 }

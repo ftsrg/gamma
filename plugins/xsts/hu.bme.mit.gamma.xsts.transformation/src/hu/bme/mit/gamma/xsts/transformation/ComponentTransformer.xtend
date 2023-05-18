@@ -29,6 +29,7 @@ import hu.bme.mit.gamma.statechart.composite.DiscardStrategy
 import hu.bme.mit.gamma.statechart.composite.MessageQueue
 import hu.bme.mit.gamma.statechart.composite.ScheduledAsynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.interface_.Component
+import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.lowlevel.model.Package
 import hu.bme.mit.gamma.statechart.lowlevel.transformation.GammaToLowlevelTransformer
@@ -49,6 +50,7 @@ import java.util.AbstractMap.SimpleEntry
 import java.util.Collection
 import java.util.List
 import java.util.Map
+import java.util.Map.Entry
 import java.util.logging.Level
 import java.util.logging.Logger
 
@@ -127,6 +129,8 @@ class ComponentTransformer {
 		
 		val inEventAction = createSequentialAction
 //		val outEventAction = createSequentialAction
+
+		val mergedClockAction = createSequentialAction
 		
 		// Transforming and saving the adapter instances
 		
@@ -167,6 +171,13 @@ class ComponentTransformer {
 					environmentalQueues += queue // Tracing
 				}
 				
+				val storedClocks = newLinkedHashSet
+				for (clock : queue.storedClocks) {
+					val id = queue.getEventId(clock) // Id is needed during back-annotation
+					queueTraceability.put(clock, id)
+					storedClocks += clock
+					logger.log(Level.INFO, '''Assigning «id» to «clock.name»''')
+				}
 				val storedPortEvents = newLinkedHashSet
 				val events = queue.storedEvents
 				for (event : events) {
@@ -245,7 +256,7 @@ class ComponentTransformer {
 					slaveQueuesMap += portEvent -> slaveQueues
 				}
 				
-				val messageQueueMapping = new MessageQueueMapping(storedPortEvents,
+				val messageQueueMapping = new MessageQueueMapping(storedClocks, storedPortEvents,
 						new MessageQueueStruct(masterQueue, masterSizeVariable, false), slaveQueuesMap, typeSlaveQueuesMap)
 				queueTraceability.put(queue, messageQueueMapping)
 				val slaveQueueMappings = messageQueueMapping.typeSlaveQueues
@@ -344,17 +355,18 @@ class ComponentTransformer {
 //				branchActions += createEmptyAction
 				// if (0 < sizeOfQueue) {..} - If this holds above, then the emptyValue cannot be present in the queue
 				
-				val events = queue.storedEvents
-				for (portEvent : events) {
-					val eventId = queueTraceability.get(portEvent)
+				val eventReferences = queue.storedEvents + queue.storedClocks
+				for (eventReference : eventReferences) {
+					val eventId = queueTraceability.get(eventReference)
 					
-					val targetPortEvent = queue.getTargetPortEvent(portEvent)
-					val targetPort = targetPortEvent.key
-					val targetEvent = targetPortEvent.value
-					// Mapping source event reference to target 
-					
-					// Can be empty due to optimization or adapter event
-					val xStsInEventVariables = eventReferenceMapper.getInputEventVariables(targetEvent, targetPort)
+					// Mapping source event reference to target
+					val targetPortEvent = queue.getTargetPortEvent(eventReference)
+					val targetPort = targetPortEvent?.key
+					val targetEvent = targetPortEvent?.value
+					val xStsInEventVariables = newArrayList // Can be empty due to optimization or adapter event
+					if (targetPortEvent !== null) {
+						xStsInEventVariables += eventReferenceMapper.getInputEventVariables(targetEvent, targetPort)
+					}
 					
 					val ifExpression = xStsEventIdVariable.createReferenceExpression
 							.createEqualityExpression(eventId.toIntegerLiteral)
@@ -365,9 +377,12 @@ class ComponentTransformer {
 								createTrueExpression)
 					}
 					// Setting the parameter variables with values stored in slave queues
-					val slaveQueueStructs = slaveQueues.get(portEvent) // Might be empty
+					val slaveQueueStructs = if (eventReference instanceof Entry<?, ?>) {
+						val portEvent = eventReference as Entry<Port, Event>
+						slaveQueues.get(portEvent) // Might be empty
+					} else { #[] } // Empty array for clocks
 					
-					val inParameters = targetEvent.parameterDeclarations
+					val inParameters = (targetEvent !== null) ? targetEvent.parameterDeclarations : #[]
 					val slaveQueueSize = slaveQueueStructs.size // Might be 0 if there is no in-event var
 					
 					if (inParameters.size <= slaveQueueSize) {
@@ -408,16 +423,16 @@ class ComponentTransformer {
 					}
 					
 					// queue reset > component reset > component run
-					val resetQueues = adapterComponentType.getResetQueues(portEvent)
+					val resetQueues = adapterComponentType.getResetQueues(eventReference)
 					if (!resetQueues.empty) {
 						val xStsQueueResetActions = resetQueues.resetMessageQueues(variableTrace)
 						thenAction.actions += xStsQueueResetActions
 					}
-					else if (adapterComponentType.isComponentResetSpecification(portEvent)) {
+					else if (adapterComponentType.isComponentResetSpecification(eventReference)) {
 						val originalInitAction = mergedSynchronousInitActions.get(adapterInstance)
 						thenAction.actions += originalInitAction.clone
 					}
-					else if (adapterComponentType.isRunSpecification(portEvent)) { // Execution if necessary
+					else if (adapterComponentType.isRunSpecification(eventReference)) { // Execution if necessary
 						thenAction.actions += originalMergedAction.clone
 					}
 					// ...here other control actions could be mapped (implemented)
@@ -427,11 +442,15 @@ class ComponentTransformer {
 					branchActions += thenAction
 				}
 				// Note that the last expression is unnecessary as all branches (event ids) are
-				// disjunct and complete -> removing the last one to create an 'else' branch (optimization)
+				// disjunct and complete -> removing the last one to create an 'else' branch (optimization) if queue is not empty
 				// (works for UPPAAL havoc, too: see algorithm there)
-				branchExpressions.removeLast
+				if (!branchExpressions.empty) {
+					branchExpressions.removeLast
+				}
 				if (branchExpressions.empty) {
-					block.actions += branchActions.onlyElement // Only one event can come
+					val onlyAction = (branchActions.empty) ? createEmptyAction // No message can be placed in the queue
+							: branchActions.onlyElement // Only one event can come
+					block.actions += onlyAction
 				}
 				else {
 					// Excluding branches for the different event identifiers
@@ -439,6 +458,63 @@ class ComponentTransformer {
 					block.actions += branchExpressions.createIfAction(branchActions)
 				}
 			}
+			
+			// Clock mechanisms
+			val clockActions = createSequentialAction
+			for (clock : adapterComponentType.clocks) {
+				val clockRate = clock.timeSpecification.timeInMilliseconds
+				
+				val xStsVariable = createIntegerTypeDefinition
+						.createVariableDeclarationWithDefaultInitialValue(clock.name)
+				xSts.variableDeclarations += xStsVariable // Target model modification
+				
+				xStsVariable.addClockAnnotation // Because of this, time passing is modeled "automatically"
+				xSts.timeoutGroup.variables += xStsVariable
+				
+				val hasClockTimeElapsed = clockRate.createLessEqualExpression(
+						xStsVariable.createReferenceExpression)
+				val clockHandlingBlock = createSequentialAction
+				val clockHandling = hasClockTimeElapsed.createIfAction(clockHandlingBlock)
+				clockHandlingBlock.actions += xStsVariable.createVariableResetAction // clock := 0
+				clockActions.actions += clockHandling
+				
+				for (queue : clock.storingMessageQueues) {
+					val queueMapping = queueTraceability.get(queue)
+					val masterQueue = queueMapping.masterQueue.arrayVariable
+					val masterSizeVariable = queueMapping.masterQueue.sizeVariable
+					
+					val xStsMasterQueue = variableTrace.getAll(masterQueue).onlyElement
+					val xStsMasterSizeVariable = (masterSizeVariable === null) ? null :
+							variableTrace.getAll(masterSizeVariable).onlyElement
+					
+					val clockId = queueTraceability.get(clock)
+					
+					val clockIdAddition = xStsMasterQueue.addAndPotentiallyIncrement(
+								xStsMasterSizeVariable, clockId.toIntegerLiteral)
+					
+					val eventDiscardStrategy = queue.eventDiscardStrategy
+					if (eventDiscardStrategy == DiscardStrategy.INCOMING) {
+						// if (size < capacity) { "add elements into master  queue" }
+						val isMasterQueueNotFull = xStsMasterQueue.isMasterQueueNotFull(xStsMasterSizeVariable)
+						clockHandlingBlock.actions += isMasterQueueNotFull.createIfAction(clockIdAddition)
+					}
+					else if (eventDiscardStrategy == DiscardStrategy.OLDEST) {
+						// if (size >= capacity) { "pop"} "add elements into master queue"
+						val isMasterQueueFull = xStsMasterQueue.isMasterQueueFull(xStsMasterSizeVariable)
+						clockHandlingBlock.actions += isMasterQueueFull.createIfAction(
+								xStsMasterQueue.popAndPotentiallyDecrement(xStsMasterSizeVariable))
+						clockHandlingBlock.actions += clockIdAddition
+					}
+					else {
+						throw new IllegalStateException("Not known behavior: " + eventDiscardStrategy)
+					}
+				}
+			}
+			if (!clockActions.actions.empty) {
+				// We have to move it to the start of the final merged action
+				mergedClockAction.actions.add(0, clockActions)
+			}
+			//
 			
 			// Dispatching events to connected message queues
 			val eventDispatches = createSequentialAction // For caching
@@ -658,9 +734,10 @@ class ComponentTransformer {
 		
 		// Merging the adapter actions along a 'choice' and 'seq' tree 
 		val mergedAction = component.mergeAsynchronousCompositeActions(mergedAdapterActions)
-		//
+		// Merging it with clocks
+		mergedClockAction.actions += mergedAction
 		
-		xSts.changeTransitions(mergedAction.wrap)
+		xSts.changeTransitions(mergedClockAction.wrap)
 		
 		// Deleting environmental slave queues for internal parameters;
 		// after the construction of the entire XSTS to handle in events and merged events, too

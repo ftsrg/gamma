@@ -6,15 +6,15 @@ You will need Java 17 to setup Gamma.
 
 Gamma has been implemented as a set of Eclipse plugins. To use the
 framework, you will need an Eclipse with the following plugins installed:
-* Eclipse Modeling Framework SDK 2.31.0.
-* Xtext Complete SDK 2.28.0. (It contains Xtend, there is no need for the additional download of Xtend.)
+* Eclipse Modeling Framework SDK 2.33.0.
+* Xtext Complete SDK 2.30.0. (It contains Xtend, there is no need for the additional download of Xtend.)
 * VIATRA SDK 2.7.1.
 * Yakindu Statechart Tools 3.5.13.
-* PlantUML 1.1.26.
+* PlantUML 1.1.27.
 
-We recommend to start-up from an Eclipse IDE for Java and DSL Developers as it contains EMF and Xtext so only VIATRA and Yakindu need to be downloaded.
+We recommend to start-up from an Eclipse IDE for Java and DSL Developers as it contains EMF and Xtext so only VIATRA, Yakindu and PlantUML need to be downloaded.
 
-- Download a new Eclipse IDE for [Java and DSL Developers package](https://www.eclipse.org/downloads/packages/release/2022-09/r/eclipse-ide-java-and-dsl-developers).
+- Download a new Eclipse IDE for [Java and DSL Developers package](https://www.eclipse.org/downloads/packages/release/2023-03/r/eclipse-ide-java-and-dsl-developers).
 - Run Eclipse. If an error message is thrown about the unavailability of Java (this happens if Java is not added to your path), you have to specifiy the path to your Java installation (`javaw.exe` in the `bin` folder) for Eclipse. Open the `eclipse.ini` file in the root folder of your Eclipse with a text editor and add the following two lines right above the `-vmargs` line:
 ```
 -vm

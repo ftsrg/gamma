@@ -420,8 +420,21 @@ class GammaEcoreUtil {
 		return lhs.containsTransitively(rhs) || rhs.containsTransitively(lhs)
 	}
 	
-	def <T extends EObject> boolean containsTypes(EObject container,
+	def <T extends EObject> boolean containsTypesTransitively(EObject container,
 			Iterable<? extends Class<T>> types) {
+		for (content : container.eAllContents.toIterable) {
+			if (content.isTypes(types)) {
+				return true
+			}
+		}
+		return false
+	}
+	
+	def <T extends EObject> boolean containsTypeTransitively(EObject container, Class<T> type) {
+		return container.containsTypesTransitively(#[type])
+	}
+	
+	def <T extends EObject> boolean containsTypes(EObject container, Iterable<? extends Class<T>> types) {
 		for (content : container.eContents) {
 			if (content.isOrContainsTypes(types)) {
 				return true
@@ -432,7 +445,11 @@ class GammaEcoreUtil {
 	
 	def <T extends EObject> boolean isOrContainsTypes(EObject container,
 			Iterable<? extends Class<T>> types) {
-		return types.exists[it.isInstance(container)] || container.containsTypes(types)
+		return container.isTypes(types) || container.containsTypes(types)
+	}
+	
+	def <T extends EObject> boolean isTypes(EObject object, Iterable<? extends Class<T>> types) {
+		return types.exists[it.isInstance(object)]
 	}
 	
 	def <T extends EObject> boolean containsType(EObject container, Class<T> type) {
@@ -644,7 +661,7 @@ class GammaEcoreUtil {
 	def getAbsoluteUri(Resource resource) {
 		val uri = resource.URI
 		if (!uri.isPlatform) {
-			return resource
+			return uri
 		}
 		val resourceFile = resource.file
 		return URI.createFileURI(resourceFile.toString)
@@ -659,6 +676,11 @@ class GammaEcoreUtil {
 			return changableAbsoluteUri.platformUri
 		}
 		return URI.createFileURI(changableAbsoluteUri)
+	}
+	
+	def File getProjectFile(Resource resource) {
+		val file = resource.file
+		return file.projectFile
 	}
 	
 	def File getProjectFile(File file) {
@@ -777,6 +799,20 @@ class GammaEcoreUtil {
 			}
 		)
 		return array
+	}
+	
+	def <T extends EObject> void removeEqualElements(List<T> list) {
+		for (var i = 0; i < list.size - 1; i++) {
+			for (var j = i + 1; j < list.size; j++) {
+				val lhs = list.get(i)
+				val rhs = list.get(j)
+				
+				if (lhs.helperEquals(rhs)) {
+					list.remove(j) // Remove rhs
+					j--
+				}
+			}
+		}
 	}
 	
 }

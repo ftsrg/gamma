@@ -70,7 +70,7 @@ public class AdaptiveContractTestGenerationHandler extends TaskHandler {
 		super(file);
 	}
 
-	public void execute(AdaptiveContractTestGeneration testGeneration) throws IOException {
+	public void execute(AdaptiveContractTestGeneration testGeneration) throws IOException, InterruptedException {
 		// Setting target folder
 		setTargetFolder(testGeneration);
 		//

@@ -1,0 +1,18 @@
+package clocks
+
+import "Interfaces/Interfaces.gcd"
+
+statechart Adder [
+	port Execute : requires ExecuteClock
+	port Toggle : provides AddSubtractClock
+] {
+	var count : integer
+	region main {
+		initial Initial
+		state A
+	}
+	
+	transition from Initial to A
+	transition from A to A when Execute.^execute / raise Toggle.add; count := count + 1;
+	
+}

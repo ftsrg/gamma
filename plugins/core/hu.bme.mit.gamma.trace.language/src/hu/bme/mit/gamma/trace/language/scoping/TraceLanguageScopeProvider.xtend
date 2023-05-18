@@ -13,6 +13,7 @@ package hu.bme.mit.gamma.trace.language.scoping
 import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.CompositeModelPackage
@@ -78,6 +79,10 @@ class TraceLanguageScopeProvider extends AbstractTraceLanguageScopeProvider {
 		if (reference == CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE_EXPRESSION__COMPONENT_INSTANCE) {
 			val executionTrace = ecoreUtil.getContainerOfType(context, ExecutionTrace)
 			val component = executionTrace.component
+			if (!(context instanceof ComponentInstanceReferenceExpression)) {
+				val instances = component.instances // Only first level
+				return Scopes.scopeFor(instances)
+			}
 			val instances = component.allInstances // Both atomic and chain references are supported
 			return Scopes.scopeFor(instances)
 		}

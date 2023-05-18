@@ -11,7 +11,7 @@
              icon="icons/gamma-icon-16.png">
 	  <!-- Generate Source Code> -->
      <menu id="projectCodeGenMenu"
-     	   label="Generate Source Code">
+     	   label="Generate Composition Code">
      	<!-- Generate C++ code -->	
        <command commandId="hu.bme.mit.gamma.codegenerator.java"
               label="Generate Java Code"
@@ -37,7 +37,7 @@
             label="Gamma Commands">      	
 	    <!-- Generate Source Code> -->
 	   	<menu id="packageCodeGenMenu"
-	   	      label="Generate Source Code">
+	   	      label="Generate Composition Code">
 	   		<!-- Generate C++ code -->	
 		    <command commandId="hu.bme.mit.gamma.codegenerator.java" label="Generate Java Code" style="push">
 		    	<visibleWhen checkEnabled="false">

@@ -154,4 +154,9 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="transitionId" lowerBound="1"
         eType="ecore:EClass statechart.ecore#//TransitionIdAnnotation"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ComponentInstanceReflectiveElementReferenceExpression"
+      eSuperTypes="#//ComponentInstanceElementReferenceExpression">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="identifier" lowerBound="1"
+        upperBound="-1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
 </ecore:EPackage>

@@ -209,6 +209,20 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 		return action;
 	}
 	
+	public static List<Action> getActions(MultiaryAction action, int from, int to) {
+		List<Action> subactions = action.getActions();
+		return subactions.subList(from, to);
+	}
+	
+	public static List<Action> getActionsToLast(MultiaryAction action, int from) {
+		List<Action> subactions = action.getActions();
+		return getActions(action, from, subactions.size());
+	}
+	
+	public static List<Action> getActionsSkipFirst(MultiaryAction action) {
+		return getActionsToLast(action, 1);
+	}
+	
 	//
 	
 	public static boolean isTrivialAssignment(SequentialAction action) {
@@ -330,6 +344,20 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 			return multiaryAction.getActions().stream().allMatch(it -> isEffectlessAction(it));
 		}
 		return false;
+	}
+	
+	public static boolean isFirstActionAssume(Action action) {
+		try {
+			AtomicAction firstAtomicAction = getFirstAtomicAction(action);
+			return firstAtomicAction instanceof AssumeAction;
+		} catch (IllegalArgumentException e) {
+			return false;
+		}
+	}
+	
+	public static AssumeAction getFirstActionAssume(Action action) {
+		AtomicAction firstAtomicAction = getFirstAtomicAction(action);
+		return (AssumeAction) firstAtomicAction;
 	}
 
 	// Read-write

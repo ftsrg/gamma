@@ -12,7 +12,7 @@
   <eClassifiers xsi:type="ecore:EClass" name="ScenarioDeclaration" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NamedElement ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ParametricElement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="annotation" upperBound="-1"
         eType="#//Annotation" containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="initialblock" eType="#//InitialBlock"
+    <eStructuralFeatures xsi:type="ecore:EReference" name="initialBlock" eType="#//InitialBlock"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="variableDeclarations" upperBound="-1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclaration"

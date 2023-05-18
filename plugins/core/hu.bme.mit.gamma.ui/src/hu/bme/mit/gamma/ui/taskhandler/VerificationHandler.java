@@ -107,7 +107,7 @@ public class VerificationHandler extends TaskHandler {
 	
 	//
 	
-	public void execute(Verification verification) throws IOException {
+	public void execute(Verification verification) throws IOException, InterruptedException {
 		// Setting target folder
 		setTargetFolder(verification);
 		//
@@ -309,13 +309,13 @@ public class VerificationHandler extends TaskHandler {
 	//
 	
 	protected Result execute(AbstractVerification verificationTask, File modelFile,
-			File queryFile, List<ExecutionTrace> retrievedTraces, boolean isOptimize) {
+			File queryFile, List<ExecutionTrace> retrievedTraces, boolean isOptimize) throws InterruptedException {
 		return this.execute(verificationTask, modelFile, queryFile,
 				new String[0], retrievedTraces, isOptimize);
 	}
 	
 	protected Result execute(AbstractVerification verificationTask, File modelFile, File queryFile,
-			String[] arguments, List<ExecutionTrace> retrievedTraces, boolean isOptimize) {
+			String[] arguments, List<ExecutionTrace> retrievedTraces, boolean isOptimize) throws InterruptedException {
 		// If arguments are empty, we execute a task with default arguments
 		Result result = (arguments.length == 0) ? verificationTask.execute(modelFile, queryFile) :
 			verificationTask.execute(modelFile, queryFile, arguments);

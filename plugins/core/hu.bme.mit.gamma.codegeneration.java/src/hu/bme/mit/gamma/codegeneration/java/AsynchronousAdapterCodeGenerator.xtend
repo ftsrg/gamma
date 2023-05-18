@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -95,7 +95,7 @@ class AsynchronousAdapterCodeGenerator {
 				public «component.generateComponentClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", " AFTER ", "»«parameter.type.transformType» «parameter.name»«ENDFOR»«UNIFIED_TIMER_INTERFACE» timer) {
 					«component.createInstances»
 					setTimer(timer);
-					// Init is done in setTimer
+					init();
 				}
 			«ENDIF»
 			
@@ -109,6 +109,18 @@ class AsynchronousAdapterCodeGenerator {
 			@Override
 			public void reset() {
 				interrupt();
+				«IF !component.clocks.empty»
+					if (timerService != null) {
+						«FOR match : QueuesOfClocks.Matcher.on(engine).getAllMatches(component, null, null)»
+							timerService.unsetTimer(createTimerCallback(), «match.clock.name»);
+							timerService.setTimer(createTimerCallback(), «match.clock.name», «match.clock.timeSpecification.valueInMs», true);
+						«ENDFOR»
+					}
+				«ENDIF»
+«««				Queues cannot be reset due to message sending upon reset (in other components)
+«««				«FOR queue : component.messageQueues»
+«««					«queue.name».clear();
+«««				«ENDFOR»
 				«component.generateWrappedComponentName».reset();
 				«IF component.hasInternalPort»handleInternalEvents();«ENDIF»
 			}
@@ -122,10 +134,10 @@ class AsynchronousAdapterCodeGenerator {
 					__asyncQueue.addSubQueue("«queue.name»", -(«queue.priority»), (int) «queue.capacity.serialize»);
 					«queue.name» = __asyncQueue.getSubQueue("«queue.name»");
 				«ENDFOR»
-				«IF !component.clocks.empty»// Creating clock callbacks for the single timer service«ENDIF»
-				«FOR match : QueuesOfClocks.Matcher.on(engine).getAllMatches(component, null, null)»
-					 timerService.setTimer(createTimerCallback(), «match.clock.name», «match.clock.timeSpecification.valueInMs», true);
-				«ENDFOR»
+«««				«IF !component.clocks.empty»// Creating clock callbacks for the single timer service«ENDIF»
+«««				«FOR match : QueuesOfClocks.Matcher.on(engine).getAllMatches(component, null, null)»
+«««					 timerService.setTimer(createTimerCallback(), «match.clock.name», «match.clock.timeSpecification.valueInMs», true);
+«««				«ENDFOR»
 				«component.createInternalPortHandlingSettingCode»
 				// The thread has to be started manually
 			}
@@ -144,6 +156,9 @@ class AsynchronousAdapterCodeGenerator {
 								default:
 									throw new IllegalArgumentException("No such event id: " + eventId);
 							}
+						}
+						public boolean equals(Object object) {
+							return this.getClass() == object.getClass();
 						}
 					};
 				}
@@ -303,7 +318,6 @@ class AsynchronousAdapterCodeGenerator {
 				}
 			}
 			
-			// getter of the wrapped synchronous component
 			public «component.wrappedComponent.type.generateComponentClassName» get«component.generateWrappedComponentName.toFirstUpper»() {
 				return «component.generateWrappedComponentName»;
 			}
@@ -343,7 +357,7 @@ class AsynchronousAdapterCodeGenerator {
 	/**
 	 * Sets the parameters of the component and instantiates the necessary components with them.
 	 */
-	protected def createInstances(AsynchronousAdapter component) '''
+	private def createInstances(AsynchronousAdapter component) '''
 		«FOR parameter : component.parameterDeclarations»
 			this.«parameter.name» = «parameter.name»;
 		«ENDFOR»
@@ -455,6 +469,8 @@ class AsynchronousAdapterCodeGenerator {
 				'''«instanceName».runFullCycle();'''	
 			case ControlFunction.RESET:
 				'''«instanceName».reset();'''
+			default: '''''' // Probably queue-related control functions
+			// TODO Add queue-related control
 		}
 	}
 	

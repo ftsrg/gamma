@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.lowlevel.xsts.transformation
 
+import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer.XstsOptimizer
@@ -40,6 +41,7 @@ import hu.bme.mit.gamma.statechart.lowlevel.model.Package
 import hu.bme.mit.gamma.statechart.lowlevel.model.Persistency
 import hu.bme.mit.gamma.statechart.lowlevel.model.Region
 import hu.bme.mit.gamma.statechart.lowlevel.model.RunUponExternalEventAnnotation
+import hu.bme.mit.gamma.statechart.lowlevel.model.RunUponExternalEventOrInternalTimeoutAnnotation
 import hu.bme.mit.gamma.statechart.lowlevel.model.StatechartDefinition
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.SequentialAction
@@ -200,8 +202,8 @@ class LowlevelToXstsTransformer {
 		
 		xSts.transformUnorderedActions // Transforming here, so optimizeXSts needn't be extended
 		
-		xSts.optimizeXSts
 		xSts.fillNullTransitions
+		xSts.optimizeXSts
 		handleTransientAndResettableVariableAnnotations
 		handleRunUponExternalEventAnnotation
 		// The created EMF models are returned
@@ -716,12 +718,22 @@ class LowlevelToXstsTransformer {
 	protected def handleRunUponExternalEventAnnotation() {
 		val statechart = trace.statechart
 		val xStsInEventVariables = xSts.inEventVariableGroup.variables
-		if (statechart.hasAnnotation(RunUponExternalEventAnnotation) &&
-				!xStsInEventVariables.empty) {
+		val xStsTimeoutVariables = xSts.timeoutGroup.variables
+		val runUponExternalEventAnnotation =
+			statechart.hasAnnotation(RunUponExternalEventAnnotation) && !xStsInEventVariables.empty
+		val runUponExternalEventAnnotationOrInternalTimeout =
+			statechart.hasAnnotation(RunUponExternalEventOrInternalTimeoutAnnotation) && !xStsTimeoutVariables.empty
+		if (runUponExternalEventAnnotation || runUponExternalEventAnnotationOrInternalTimeout) {
 			val xStsMergedAction = xSts.mergedAction
 			
-			val condition = xStsInEventVariables.map[it.createReferenceExpression]
-				.wrapIntoOrExpression
+			val conditions = <Expression>newArrayList
+			conditions += xStsInEventVariables.map[it.createReferenceExpression]
+			
+			if (runUponExternalEventAnnotationOrInternalTimeout) {
+				conditions += trace.getTimeoutExpressions.map[it.clone]
+			}
+			
+			val condition = conditions.wrapIntoOrExpression
 			val ifAction = condition.createIfAction(xStsMergedAction)
 			
 			xSts.mergedTransition.action = ifAction

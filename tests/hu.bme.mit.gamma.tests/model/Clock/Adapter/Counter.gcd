@@ -1,0 +1,14 @@
+package clocks
+
+import "Statechart/Counter.gcd"
+
+adapter CounterAdapter of component counterAdapter : Counter [
+	] {
+	clock executeClock (rate = 3 ms)
+	when executeClock / run
+
+	queue Queue (priority = 1, capacity = 4) {
+		executeClock, Toggle.any
+	}
+
+}

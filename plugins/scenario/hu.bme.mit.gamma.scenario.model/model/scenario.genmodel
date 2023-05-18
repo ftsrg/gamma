@@ -3,7 +3,7 @@
     xmlns:genmodel="http://www.eclipse.org/emf/2002/GenModel" modelDirectory="/hu.bme.mit.gamma.scenario.model/src-gen" modelPluginID="hu.bme.mit.gamma.scenario.model"
     modelName="Scenario" rootExtendsClass="org.eclipse.emf.ecore.impl.MinimalEObjectImpl$Container"
     importerID="org.eclipse.emf.importer.ecore" complianceLevel="8.0" copyrightFields="false"
-    language="" usedGenPackages="../../hu.bme.mit.gamma.expression.model/model/expression.genmodel#//model ../../hu.bme.mit.gamma.statechart.model/model/statechart.genmodel#//interface ../../hu.bme.mit.gamma.action.model/model/action.genmodel#//model"
+    language="" usedGenPackages="../../hu.bme.mit.gamma.action.model/model/action.genmodel#//model ../../hu.bme.mit.gamma.expression.model/model/expression.genmodel#//model ../../hu.bme.mit.gamma.statechart.model/model/statechart.genmodel#//interface"
     operationReflection="true" importOrganizing="true">
   <foreignModel>scenario.ecore</foreignModel>
   <genPackages prefix="ScenarioModel" basePackage="hu.bme.mit.gamma.scenario" disposableProviderFactory="true"
@@ -23,7 +23,7 @@
     </genClasses>
     <genClasses ecoreClass="scenario.ecore#//ScenarioDeclaration">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference scenario.ecore#//ScenarioDeclaration/annotation"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference scenario.ecore#//ScenarioDeclaration/initialblock"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference scenario.ecore#//ScenarioDeclaration/initialBlock"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference scenario.ecore#//ScenarioDeclaration/variableDeclarations"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference scenario.ecore#//ScenarioDeclaration/fragment"/>
     </genClasses>
