@@ -67,19 +67,19 @@ public class TextProvider extends AbstractDiagramIntentProvider {
 		}
 		return false;
 	}
-	
+
 	@Override
 	public Boolean supportsPath(IPath arg) {
 		return supportedExtensions.contains(arg.getFileExtension()); // Not called
 	}
-	
+
 	@Override
 	protected Collection<? extends DiagramIntent> getDiagramInfos(
 			final WorkbenchPartDiagramIntentProviderContext context) {
 		ISelection selection = context.getSelection();
 		return getDiagramInfo(selection);
 	}
-	
+
 	private Collection<? extends DiagramIntent> getDiagramInfo(ISelection selection) {
 		if (selection instanceof IStructuredSelection) {
 			IStructuredSelection structuredSelection = (IStructuredSelection) selection;
@@ -104,14 +104,14 @@ public class TextProvider extends AbstractDiagramIntentProvider {
 		}
 		return null;
 	}
-	
+
 	private Resource getResource(IPath path) {
 		ResourceSet resourceSet = new ResourceSetImpl();
 		URI traceModelUri = URI.createPlatformResourceURI(path.toString(), true);
 		Resource resource = resourceSet.getResource(traceModelUri, true);
 		return resource;
 	}
-	
+
 	private String getComponentPlantUmlCode(Resource resource) {
 		if (!resource.getContents().isEmpty()) {
 			Package _package = (Package) resource.getContents().get(0);
@@ -120,36 +120,36 @@ public class TextProvider extends AbstractDiagramIntentProvider {
 				Component component = components.get(0);
 				if (component instanceof StatechartDefinition) {
 					StatechartDefinition statechartDefinition = (StatechartDefinition) component;
-					StatechartToPlantUmlTransformer transformer = new StatechartToPlantUmlTransformer(statechartDefinition);
+					StatechartToPlantUmlTransformer transformer = new StatechartToPlantUmlTransformer(
+							statechartDefinition);
 					return transformer.execute();
-				}
-				else if (component instanceof CompositeComponent) {
+				} else if (component instanceof CompositeComponent) {
 					CompositeComponent composite = (CompositeComponent) component;
 					CompositeToPlantUmlTransformer transformer = new CompositeToPlantUmlTransformer(composite);
 					return transformer.execute();
-				} 
-				else if (component instanceof AsynchronousAdapter) {
+				} else if (component instanceof AsynchronousAdapter) {
 					AsynchronousAdapter adapter = (AsynchronousAdapter) component;
 					AdapterToPlantUmlTransformer transformer = new AdapterToPlantUmlTransformer(adapter);
 					return transformer.execute();
-				} 
+				}
 			} else if (!_package.getInterfaces().isEmpty()) {
 				List<EnumerationTypeDefinition> enums = _package.getTypeDeclarations().stream()
-						.filter( typeDecalration -> typeDecalration.getType() instanceof EnumerationTypeDefinition )
+						.filter(typeDecalration -> typeDecalration.getType() instanceof EnumerationTypeDefinition)
 						.map(typeDecalration -> (EnumerationTypeDefinition) typeDecalration.getType())
 						.collect(Collectors.toList());
 				List<RecordTypeDefinition> structs = _package.getTypeDeclarations().stream()
-						.filter( typeDecalration -> typeDecalration.getType() instanceof RecordTypeDefinition )
+						.filter(typeDecalration -> typeDecalration.getType() instanceof RecordTypeDefinition)
 						.map(typeDecalration -> (RecordTypeDefinition) typeDecalration.getType())
 						.collect(Collectors.toList());
 				List<FunctionDeclaration> funcs = _package.getFunctionDeclarations();
-				InterfaceToPlantUmlTransformer transformer = new InterfaceToPlantUmlTransformer(_package.getInterfaces(),enums,structs,funcs);
+				InterfaceToPlantUmlTransformer transformer = new InterfaceToPlantUmlTransformer(
+						_package.getInterfaces(), enums, structs, funcs);
 				return transformer.execute();
 			}
 		}
 		return ""; // To counter nullptr exceptions
 	}
-	
+
 	private String getTracePlantUmlCode(Resource resource) {
 		if (!resource.getContents().isEmpty()) {
 			ExecutionTrace trace = (ExecutionTrace) resource.getContents().get(0);
@@ -158,5 +158,5 @@ public class TextProvider extends AbstractDiagramIntentProvider {
 		}
 		return null;
 	}
-	
+
 }
