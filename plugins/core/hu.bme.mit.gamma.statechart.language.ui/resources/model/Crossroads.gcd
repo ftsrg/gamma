@@ -4,7 +4,7 @@ import "Interfaces/Interfaces.gcd"
 import "Controller/Controller.gcd"
 import "TrafficLight/TrafficLightCtrl.gcd"
 
-sync Crossroad [
+sync Crossroads [
 	// Component ports
 	port police : requires PoliceInterrupt,
 	port priorityOutput : provides LightCommands,
