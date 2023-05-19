@@ -199,10 +199,15 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	public void checkElseTransitionPriority(Transition transition) {
 		handleValidationResultMessage(statechartModelValidator.checkElseTransitionPriority(transition));
 	}
-	
+
 	@Check
 	public void checkTransitionTriggers(Transition transition) {
 		handleValidationResultMessage(statechartModelValidator.checkTransitionTriggers(transition));
+	}
+
+	@Check
+	public void checkInitialTransition(Transition transition) {
+		handleValidationResultMessage(statechartModelValidator.checkInitialTransition(transition));
 	}
 	
 	@Check

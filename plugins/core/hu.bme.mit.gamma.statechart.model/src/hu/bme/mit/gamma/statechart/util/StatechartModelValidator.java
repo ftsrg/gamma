@@ -109,6 +109,7 @@ import hu.bme.mit.gamma.statechart.statechart.ClockTickReference;
 import hu.bme.mit.gamma.statechart.statechart.ComplexTrigger;
 import hu.bme.mit.gamma.statechart.statechart.EntryState;
 import hu.bme.mit.gamma.statechart.statechart.ForkState;
+import hu.bme.mit.gamma.statechart.statechart.InitialState;
 import hu.bme.mit.gamma.statechart.statechart.JoinState;
 import hu.bme.mit.gamma.statechart.statechart.MergeState;
 import hu.bme.mit.gamma.statechart.statechart.OpaqueTrigger;
@@ -769,6 +770,16 @@ public class StatechartModelValidator extends ActionModelValidator {
 					}
 				}
 			}
+		}
+		return validationResultMessages;
+	}
+	
+	public  Collection<ValidationResultMessage> checkInitialTransition(Transition transition){
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		if (transition.getSourceState() instanceof InitialState && transition.getTargetState() instanceof PseudoState) {
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING, 
+					"If a transition from an initial state goes into pseudostate, then it might cause an error during XSTS transformation.",
+						new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__TARGET_STATE)));
 		}
 		return validationResultMessages;
 	}

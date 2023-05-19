@@ -131,7 +131,7 @@ class ExampleTransformer {
 		if (statechartsRule === null) {
 			statechartsRule = createRule(Statecharts.instance).action [
 				val sourceStatechart = it.statechart
-				val targetStatechart = createStatechartDefinition => [
+				val targetStatechart = createSynchronousStatechartDefinition => [
 					it.name = sourceStatechart.name
 				]
 				val sourceParentPackage = sourceStatechart.eContainer as Package
