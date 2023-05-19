@@ -33,14 +33,14 @@ import org.eclipse.ui.ide.IDE;
  * sample multi-page editor (also available as a template) is registered for the
  * same extension, it will be able to open it.
  */
-public class NewGCLInterfacesWizard extends Wizard implements INewWizard {
-	private NewGCLInterfacesWizardPage page;
+public class NewGclInterfaceWizard extends Wizard implements INewWizard {
+	private NewGclInterfaceWizardPage page;
 	private ISelection selection;
 
 	/**
 	 * Constructor for NewGCLInterfacesWizard.
 	 */
-	public NewGCLInterfacesWizard() {
+	public NewGclInterfaceWizard() {
 		super();
 		setNeedsProgressMonitor(true);
 	}
@@ -50,7 +50,7 @@ public class NewGCLInterfacesWizard extends Wizard implements INewWizard {
 	 */
 	@Override
 	public void addPages() {
-		page = new NewGCLInterfacesWizardPage(selection);
+		page = new NewGclInterfaceWizardPage(selection);
 		addPage(page);
 	}
 

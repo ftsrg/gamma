@@ -26,14 +26,14 @@ class TypeTransformer {
 		this.trace = trace
 	}
 	
-	public def Trace getTrace(){
+	def Trace getTrace(){
 		return trace;
 	}
 	
 	/**
 	 * Returns the Java type of the given Yakindu type as a string.
 	 */
-	public def getEventParameterType(org.yakindu.base.types.Type type) {
+	def getEventParameterType(org.yakindu.base.types.Type type) {
 		if (type !== null) {
 			return type.name.transformType
 		}
@@ -43,7 +43,7 @@ class TypeTransformer {
 	/**
 	 * Returns the Java type equivalent of the Yakindu type.
 	 */
-	public def transformType(String type) {
+	def transformType(String type) {
 		switch (type) {
 			case "integer": 
 				return INT_TYPE
@@ -59,7 +59,7 @@ class TypeTransformer {
 	/**
 	 * Returns the Java type equivalent of the Gamma type.
 	 */
-	public def String transformType(Type type) {
+	def String transformType(Type type) {
 		switch (type) {
 			IntegerTypeDefinition: {
 				val types = type.getAllValuesOfFrom.filter(org.yakindu.base.types.Type).toSet

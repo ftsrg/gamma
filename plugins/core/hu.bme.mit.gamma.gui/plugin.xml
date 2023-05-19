@@ -9,27 +9,27 @@
       </category>
       <wizard
             category="hu.bme.mit.gamma.ui"
-            class="hu.bme.mit.gamma.gui.wizards.NewGCLWizard"
+            class="hu.bme.mit.gamma.gui.wizards.NewGclWizard"
             descriptionImage="icons/gamma-icon-16.png"
             icon="icons/gamma-icon-16.png"
-            id="hu.bme.mit.gamma.ui.wizards.NewGCLWizard"
+            id="hu.bme.mit.gamma.ui.wizards.NewGclWizard"
             name="New Gamma Composition Model Wizard"
             project="false">
       </wizard>
       <wizard
             category="hu.bme.mit.gamma.ui"
-            class="hu.bme.mit.gamma.gui.wizards.NewGCLStatechartWizard"
+            class="hu.bme.mit.gamma.gui.wizards.NewGclStatechartWizard"
             icon="icons/gamma-icon-16.png"
-            id="hu.bme.mit.gamma.ui.wizards.NewGCLStatechartWizard"
+            id="hu.bme.mit.gamma.ui.wizards.NewGclStatechartWizard"
             name="New Gamma Statechart Model Wizard"
             project="false">
       </wizard>
       <wizard
             category="hu.bme.mit.gamma.ui"
-            class="hu.bme.mit.gamma.gui.wizards.NewGCLInterfacesWizard"
+            class="hu.bme.mit.gamma.gui.wizards.NewGclInterfaceWizard"
             descriptionImage="icons/gamma-icon-16.png"
             icon="icons/gamma-icon-16.png"
-            id="hu.bme.mit.gamma.ui.wizards.NewGCLInterfacesWizard"
+            id="hu.bme.mit.gamma.ui.wizards.NewGclInterfaceWizard"
             name="New Gamma Intercace Model Wizard"
             project="false">
       </wizard>
@@ -48,13 +48,13 @@
     <perspectiveExtension
           targetID="*">
        <newWizardShortcut
-             id="hu.bme.mit.gamma.ui.wizards.NewGCLWizard">
+             id="hu.bme.mit.gamma.ui.wizards.NewGclWizard">
        </newWizardShortcut>
        <newWizardShortcut
-             id="hu.bme.mit.gamma.ui.wizards.NewGCLStatechartWizard">
+             id="hu.bme.mit.gamma.ui.wizards.NewGclStatechartWizard">
        </newWizardShortcut>
        <newWizardShortcut
-             id="hu.bme.mit.gamma.ui.wizards.NewGCLInterfaceWizard">
+             id="hu.bme.mit.gamma.ui.wizards.NewGclInterfaceWizard">
        </newWizardShortcut>
        <newWizardShortcut
              id="hu.bme.mit.gamma.ui.wizards.NewGammaPropertyWizard">
@@ -66,7 +66,7 @@
     <commonWizard
           menuGroupId="hu.bme.mit.gamma"
           type="new"
-          wizardId="hu.bme.mit.gamma.ui.wizards.NewGCLWizard">
+          wizardId="hu.bme.mit.gamma.ui.wizards.NewGclWizard">
        <enablement>
           <or>
              <adapt
@@ -87,7 +87,7 @@
     <commonWizard
           menuGroupId="hu.bme.mit.gamma"
           type="new"
-          wizardId="hu.bme.mit.gamma.ui.wizards.NewGCLStatechartWizard">
+          wizardId="hu.bme.mit.gamma.ui.wizards.NewGclStatechartWizard">
        <enablement>
           <or>
              <adapt
@@ -108,7 +108,7 @@
     <commonWizard
           menuGroupId="hu.bme.mit.gamma"
           type="new"
-          wizardId="hu.bme.mit.gamma.ui.wizards.NewGCLInterfacesWizard">
+          wizardId="hu.bme.mit.gamma.ui.wizards.NewGclInterfacesWizard">
        <enablement>
           <or>
              <adapt

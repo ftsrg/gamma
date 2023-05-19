@@ -23,13 +23,13 @@ class CompositeToPlantUmlTransformer {
 
 	protected final CompositeComponent composite
 
-	public enum LayoutType {
+	enum LayoutType {
 		UMLComponentDiagramStyle,
 		UMLCompositeStructureDiagramStyle,
 		SysMLInternalBlockDiagramStyle
 	}
 
-	public enum LineStyle {
+	enum LineStyle {
 		Orthogonal,
 		Polyline,
 		Curved

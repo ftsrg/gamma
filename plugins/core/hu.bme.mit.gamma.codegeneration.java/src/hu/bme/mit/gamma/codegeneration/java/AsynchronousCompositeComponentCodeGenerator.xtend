@@ -110,15 +110,15 @@ class AsynchronousCompositeComponentCodeGenerator {
 				// Registration of broadcast channels
 				«FOR channel : BroadcastChannels.Matcher.on(engine).getAllValuesOfbroadcastChannel(component, null, null)»
 					channel«channel.providedPort.port.name.toFirstUpper»Of«channel.providedPort.instance.name.toFirstUpper» = new «channel.providedPort.port.interfaceRealization.interface.generateChannelName»(«channel.providedPort.instance.name».get«channel.providedPort.port.name.toFirstUpper»());
-		«««					Broadcast channels can have incoming messages in case of asynchronous components
+«««					Broadcast channels can have incoming messages in case of asynchronous components
 					«FOR channelMatch : BroadcastChannels.Matcher.on(engine).getAllMatches(component, channel, null, null)»
-				channel«channelMatch.providedPort.port.name.toFirstUpper»Of«channelMatch.providedPort.instance.name.toFirstUpper».registerPort(«channelMatch.requiredPort.instance.name».get«channelMatch.requiredPort.port.name.toFirstUpper»());
-			«ENDFOR»
+						channel«channelMatch.providedPort.port.name.toFirstUpper»Of«channelMatch.providedPort.instance.name.toFirstUpper».registerPort(«channelMatch.requiredPort.instance.name».get«channelMatch.requiredPort.port.name.toFirstUpper»());
+					«ENDFOR»
 				«ENDFOR»
 			}
 			
 			// Inner classes representing Ports
-			«FOR systemPort : component.ports SEPARATOR "\n"»
+			«FOR systemPort : component.ports SEPARATOR System.lineSeparator»
 				public class «systemPort.name.toFirstUpper» implements «systemPort.interfaceRealization.interface.implementationName».«systemPort.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper» {
 				
 					«systemPort.delegateRaisingMethods» 
@@ -211,7 +211,7 @@ class AsynchronousCompositeComponentCodeGenerator {
 			«ENDIF»
 			
 			/**  Getter for component instances, e.g., enabling to check their states. */
-			«FOR instance : component.components SEPARATOR "\n"»
+			«FOR instance : component.components SEPARATOR System.lineSeparator»
 				public «instance.type.generateComponentClassName» get«instance.name.toFirstUpper»() {
 					return «instance.name»;
 				}

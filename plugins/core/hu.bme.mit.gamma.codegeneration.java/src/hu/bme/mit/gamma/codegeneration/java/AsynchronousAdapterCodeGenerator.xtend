@@ -63,7 +63,7 @@ class AsynchronousAdapterCodeGenerator {
 		
 		«component.generateWrapperImports»
 		
-		public class «component.generateComponentClassName» implements Runnable, «component.generatePortOwnerInterfaceName» {			
+		public class «component.generateComponentClassName» implements Runnable, «component.generatePortOwnerInterfaceName» { 
 			// Thread running this wrapper instance
 			private Thread thread;
 			// Wrapped synchronous instance
@@ -165,7 +165,7 @@ class AsynchronousAdapterCodeGenerator {
 			«ENDIF»
 			
 			// Inner classes representing control ports
-			«FOR port : component.ports SEPARATOR "\n"»
+			«FOR port : component.ports SEPARATOR System.lineSeparator»
 				public class «port.name.toFirstUpper» implements «port.interfaceRealization.interface.implementationName».«port.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper» {
 					
 					«port.delegateWrapperRaisingMethods» 
@@ -192,7 +192,7 @@ class AsynchronousAdapterCodeGenerator {
 			«ENDFOR»
 			
 			// Inner classes representing wrapped ports
-			«FOR port : component.wrappedComponent.type.ports SEPARATOR "\n"»
+			«FOR port : component.wrappedComponent.type.ports SEPARATOR System.lineSeparator»
 				public class «port.name.toFirstUpper» implements «port.interfaceRealization.interface.implementationName».«port.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper» {
 					
 					«port.delegateWrapperRaisingMethods»
@@ -378,7 +378,7 @@ class AsynchronousAdapterCodeGenerator {
 		«FOR event : port.inputEvents»
 			@Override
 			public void raise«event.name.toFirstUpper»(«event.generateParameters») {
-				«FOR queue : QueuesOfEvents.Matcher.on(engine).getAllValuesOfqueue(port, event) SEPARATOR "\n"»
+				«FOR queue : QueuesOfEvents.Matcher.on(engine).getAllValuesOfqueue(port, event) SEPARATOR System.lineSeparator»
 					«queue.name».«queue.additionMethodName»(new Event("«port.name».«event.name»"«IF event.generateArguments.length != 0», «ENDIF»«event.generateArguments»));
 				«ENDFOR»
 			}
@@ -402,7 +402,7 @@ class AsynchronousAdapterCodeGenerator {
 	 */
 	protected def CharSequence delegateWrapperControlOutMethods(Port port) '''
 «««		Simple flag checks
-		«FOR event : port.outputEvents SEPARATOR "\n"»
+		«FOR event : port.outputEvents SEPARATOR System.lineSeparator»
 			@Override
 			public boolean isRaised«event.name.toFirstUpper»() {
 				// No real operation as out event are not interpreted in the case of control ports
@@ -424,7 +424,7 @@ class AsynchronousAdapterCodeGenerator {
 	 */
 	protected def CharSequence delegateWrapperOutMethods(Port port, String instanceName) '''
 «««		Simple flag checks
-		«FOR event : port.outputEvents SEPARATOR "\n"»
+		«FOR event : port.outputEvents SEPARATOR System.lineSeparator»
 			@Override
 			public boolean isRaised«event.name.toFirstUpper»() {
 				return «instanceName».get«port.name.toFirstUpper»().isRaised«event.name.toFirstUpper»();

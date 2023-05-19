@@ -126,7 +126,7 @@ class SynchronousCompositeComponentCodeGenerator {
 			}
 			
 			// Inner classes representing Ports
-			«FOR systemPort : component.ports SEPARATOR "\n"»
+			«FOR systemPort : component.ports SEPARATOR System.lineSeparator»
 				public class «systemPort.name.toFirstUpper» implements «systemPort.interfaceRealization.interface.implementationName».«systemPort.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper» {
 					private List<«systemPort.interfaceRealization.interface.implementationName».Listener.«systemPort.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper»> listeners = new LinkedList<«systemPort.interfaceRealization.interface.implementationName».Listener.«systemPort.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper»>();
 «««					Cascade components need their raised events saved (multiple schedule of a component in a single turn)
@@ -150,7 +150,7 @@ class SynchronousCompositeComponentCodeGenerator {
 					
 					// Class for the setting of the boolean fields (events)
 					private class «systemPort.name.toFirstUpper»Util implements «systemPort.interfaceRealization.interface.implementationName».Listener.«systemPort.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper» {
-						«FOR event : systemPort.outputEvents SEPARATOR "\n"»
+						«FOR event : systemPort.outputEvents SEPARATOR System.lineSeparator»
 							@Override
 							public void raise«event.name.toFirstUpper»(«event.generateParameters») {
 								isRaised«event.name.toFirstUpper» = true;
@@ -286,7 +286,7 @@ class SynchronousCompositeComponentCodeGenerator {
 			«ENDIF»
 			
 			/**  Getter for component instances, e.g., enabling to check their states. */
-			«FOR instance : component.components SEPARATOR "\n"»
+			«FOR instance : component.components SEPARATOR System.lineSeparator»
 				public «instance.type.generateComponentClassName» get«instance.name.toFirstUpper»() {
 					return «instance.name»;
 				}

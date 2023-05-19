@@ -33,7 +33,7 @@ import org.eclipse.ui.dialogs.ContainerSelectionDialog;
  * as the file name. The page will only accept file name without the extension
  * OR with the extension that matches the expected one (gcd).
  */
-public class NewGCLInterfacesWizardPage extends WizardPage {
+public class NewGclStatechartWizardWizardPage extends WizardPage {
 	private Text containerText;
 
 	private Text fileText;
@@ -45,10 +45,10 @@ public class NewGCLInterfacesWizardPage extends WizardPage {
 	 * 
 	 * @param pageName
 	 */
-	public NewGCLInterfacesWizardPage(ISelection selection) {
-		super("New Gamma Interface Model Wizard");
-		setTitle("Create New Gamma Interface Model");
-		setDescription("This wizard creates a new New Gamma Interface Model with *.gcd extension.");
+	public NewGclStatechartWizardWizardPage(ISelection selection) {
+		super("wizardPage");
+		setTitle("Multi-page Editor File");
+		setDescription("This wizard creates a new Gamma Statechart Model with *.gcd extension.");
 		this.selection = selection;
 	}
 
@@ -106,7 +106,7 @@ public class NewGCLInterfacesWizardPage extends WizardPage {
 				containerText.setText(container.getFullPath().toString());
 			}
 		}
-		fileText.setText("default_gamma_interface.gcd");
+		fileText.setText("default_statechart_name.gcd");
 	}
 
 	/**

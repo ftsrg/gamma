@@ -33,7 +33,7 @@ import org.eclipse.ui.dialogs.ContainerSelectionDialog;
  * as the file name. The page will only accept file name without the extension
  * OR with the extension that matches the expected one (gcd).
  */
-public class NewGCLWizardPage extends WizardPage {
+public class NewGclInterfaceWizardPage extends WizardPage {
 	private Text containerText;
 
 	private Text fileText;
@@ -45,10 +45,10 @@ public class NewGCLWizardPage extends WizardPage {
 	 * 
 	 * @param pageName
 	 */
-	public NewGCLWizardPage(ISelection selection) {
-		super("Gamma Wizard");
-		setTitle("Create new Gamma Composition Model");
-		setDescription("This wizard creates a new Gamma Composition Model with *.gcd extension.");
+	public NewGclInterfaceWizardPage(ISelection selection) {
+		super("New Gamma Interface Model Wizard");
+		setTitle("Create New Gamma Interface Model");
+		setDescription("This wizard creates a new New Gamma Interface Model with *.gcd extension.");
 		this.selection = selection;
 	}
 
@@ -106,7 +106,7 @@ public class NewGCLWizardPage extends WizardPage {
 				containerText.setText(container.getFullPath().toString());
 			}
 		}
-		fileText.setText("new_composition_model.gcd");
+		fileText.setText("default_gamma_interface.gcd");
 	}
 
 	/**

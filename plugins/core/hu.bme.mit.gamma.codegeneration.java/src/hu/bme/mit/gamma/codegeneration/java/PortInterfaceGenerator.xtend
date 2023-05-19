@@ -60,19 +60,18 @@ class PortInterfaceGenerator {
 			
 			interface Listener {
 				
-		
 				interface Provided «IF !anInterface.parents.empty»extends «FOR parent : anInterface.parents
 						SEPARATOR ', '»«parent.implementationName».Listener.Provided«ENDFOR»«ENDIF» {
-			«FOR event : anInterface.getAllEvents(EventDirection.IN)»
-				void raise«event.name.toFirstUpper»(«event.generateParameters»);
-			«ENDFOR»							
+					«FOR event : anInterface.getAllEvents(EventDirection.IN)»
+						void raise«event.name.toFirstUpper»(«event.generateParameters»);
+					«ENDFOR»
 				}
 				
 				interface Required «IF !anInterface.parents.empty»extends «FOR parent : anInterface.parents
 						SEPARATOR ', '»«parent.implementationName».Listener.Required«ENDFOR»«ENDIF» {
-			«FOR event : anInterface.getAllEvents(EventDirection.OUT)»
-				void raise«event.name.toFirstUpper»(«event.generateParameters»);
-			«ENDFOR»  					
+					«FOR event : anInterface.getAllEvents(EventDirection.OUT)»
+						void raise«event.name.toFirstUpper»(«event.generateParameters»);
+					«ENDFOR»
 				}
 				
 			}
@@ -80,10 +79,10 @@ class PortInterfaceGenerator {
 	'''
 
 	private def generateIsRaisedInterfaceMethods(Interface anInterface, EventDirection oppositeDirection) '''
-		«««		Simple flag checks
+«««		Simple flag checks
 		«FOR event : anInterface.getAllEvents(oppositeDirection)»
 			public boolean isRaised«event.name.toFirstUpper»();
-		«««			ValueOf checks	
+«««			ValueOf checks	
 			«FOR parameter : event.parameterDeclarations»
 				public «parameter.type.transformType» get«parameter.name.toFirstUpper»();
 			«ENDFOR»

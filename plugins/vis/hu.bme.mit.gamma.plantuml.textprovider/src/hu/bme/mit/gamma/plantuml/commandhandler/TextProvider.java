@@ -24,10 +24,8 @@ import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 
-import hu.bme.mit.gamma.expression.model.EnumerableTypeDefinition;
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition;
 import hu.bme.mit.gamma.expression.model.FunctionDeclaration;
-import hu.bme.mit.gamma.expression.model.FunctionTypeDefinition;
 import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
 import hu.bme.mit.gamma.plantuml.transformation.AdapterToPlantUmlTransformer;
 import hu.bme.mit.gamma.plantuml.transformation.CompositeToPlantUmlTransformer;

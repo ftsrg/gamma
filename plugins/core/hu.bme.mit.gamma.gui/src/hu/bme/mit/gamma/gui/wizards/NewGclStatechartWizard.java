@@ -33,14 +33,14 @@ import org.eclipse.ui.ide.IDE;
  * sample multi-page editor (also available as a template) is registered for the
  * same extension, it will be able to open it.
  */
-public class NewGCLStatechartWizard extends Wizard implements INewWizard {
-	private NewGCLStatechartWizardWizardPage page;
+public class NewGclStatechartWizard extends Wizard implements INewWizard {
+	private NewGclStatechartWizardWizardPage page;
 	private ISelection selection;
 
 	/**
 	 * Constructor for NewGCLStatechartWizard.
 	 */
-	public NewGCLStatechartWizard() {
+	public NewGclStatechartWizard() {
 		super();
 		setNeedsProgressMonitor(true);
 	}
@@ -50,7 +50,7 @@ public class NewGCLStatechartWizard extends Wizard implements INewWizard {
 	 */
 	@Override
 	public void addPages() {
-		page = new NewGCLStatechartWizardWizardPage(selection);
+		page = new NewGclStatechartWizardWizardPage(selection);
 		addPage(page);
 	}
 

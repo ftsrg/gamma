@@ -34,8 +34,8 @@ class StatechartWrapperCodeGenerator {
 	protected final String YAKINDU_PACKAGE_NAME
 	//
 	protected final extension TimingDeterminer timingDeterminer = TimingDeterminer.INSTANCE
-	protected final extension YakinduDefaultExpressionRetriever yakinduDefaultExpressionRetriever = YakinduDefaultExpressionRetriever.
-		INSTANCE
+	protected final extension YakinduDefaultExpressionRetriever yakinduDefaultExpressionRetriever =
+		YakinduDefaultExpressionRetriever.INSTANCE
 	protected final extension Trace trace
 	protected final extension NameGenerator nameGenerator
 	protected final extension TypeTransformer typeTransformer
@@ -169,45 +169,45 @@ class StatechartWrapperCodeGenerator {
 						}
 				}
 				«component.generateStatemachineInstanceName».runCycle();
-				notifyListeners();
-		«««				The parameters of transient in events do not eave to be reset, as Yakindu does not allow to use a parameter, if the event is not raised
+				
+				notifyListeners(); ««« The parameters of transient in events do not eave to be reset, as Yakindu does not allow to use a parameter, if the event is not raised
 			}
 			
 			// Inner classes representing Ports
-			«FOR port : component.ports SEPARATOR "\n"»
-			public class «port.name.toFirstUpper» implements «port.implementedInterfaceName» {
-				private List<«port.interfaceRealization.interface.implementationName».Listener.«port.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper»> registeredListeners = new LinkedList<«port.interfaceRealization.interface.implementationName».Listener.«port.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper»>();
-		
-			«port.generateRaisingMethods» 
-		
-			«component.generateOutMethods(port)»
-			@Override
-			public void registerListener(final «port.interfaceRealization.interface.implementationName».Listener.«port.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper» listener) {
-				registeredListeners.add(listener);
-			}
-			
-			@Override
-			public List<«port.interfaceRealization.interface.implementationName».Listener.«port.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper»> getRegisteredListeners() {
-				return registeredListeners;
-			}
-			
-			/** Notifying the registered listeners. */
-			public void notifyListeners() {
-				«FOR event : port.outputEvents»
-					if (isRaised«event.name.toFirstUpper»()) {
-						for («port.interfaceRealization.interface.implementationName».Listener.«port.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper» listener : registeredListeners) {
-							listener.raise«event.name.toFirstUpper»(«IF !event.parameterDeclarations.empty»get«event.name.toFirstUpper»Value()«ENDIF»);
-						}
+			«FOR port : component.ports SEPARATOR System.lineSeparator»
+				public class «port.name.toFirstUpper» implements «port.implementedInterfaceName» {
+					private List<«port.interfaceRealization.interface.implementationName».Listener.«port.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper»> registeredListeners = new LinkedList<«port.interfaceRealization.interface.implementationName».Listener.«port.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper»>();
+					
+					«port.generateRaisingMethods» 
+				
+					«component.generateOutMethods(port)»
+					@Override
+					public void registerListener(final «port.interfaceRealization.interface.implementationName».Listener.«port.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper» listener) {
+						registeredListeners.add(listener);
 					}
-				«ENDFOR»
-			}
-		
-			}
-			
-			@Override
-			public «port.name.toFirstUpper» get«port.name.toFirstUpper»() {
-				return «port.name.toFirstLower»;
-			}
+					
+					@Override
+					public List<«port.interfaceRealization.interface.implementationName».Listener.«port.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper»> getRegisteredListeners() {
+						return registeredListeners;
+					}
+					
+					/** Notifying the registered listeners. */
+					public void notifyListeners() {
+						«FOR event : port.outputEvents»
+							if (isRaised«event.name.toFirstUpper»()) {
+								for («port.interfaceRealization.interface.implementationName».Listener.«port.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper» listener : registeredListeners) {
+									listener.raise«event.name.toFirstUpper»(«IF !event.parameterDeclarations.empty»get«event.name.toFirstUpper»Value()«ENDIF»);
+								}
+							}
+						«ENDFOR»
+					}
+					
+				}
+				
+				@Override
+				public «port.name.toFirstUpper» get«port.name.toFirstUpper»() {
+					return «port.name.toFirstLower»;
+				}
 			«ENDFOR»
 			
 			/** Interface method, needed for composite component initialization chain. */
@@ -248,34 +248,34 @@ class StatechartWrapperCodeGenerator {
 				return false;
 			}
 		
-		«««			Getters for variables on named interfaces
+«««			Getters for variables on named interfaces
 			«FOR port : component.allPorts»
-			«FOR yakinduInterface : port.allValuesOfFrom.filter(InterfaceScope)»
-				«FOR yakinduVariable : yakinduInterface.declarations.filter(VariableDefinition)»
-					«FOR gammaVariable : yakinduVariable.allValuesOfTo.filter(VariableDeclaration)»
-						public «gammaVariable.type.transformType» get«gammaVariable.name.toFirstUpper»() {
-							return «yakinduVariable.castDeclaration» «component.generateStatemachineInstanceName».get«port.yakinduInterfaceName»().get«yakinduVariable.name.toFirstUpper»();
-						}
+				«FOR yakinduInterface : port.allValuesOfFrom.filter(InterfaceScope)»
+					«FOR yakinduVariable : yakinduInterface.declarations.filter(VariableDefinition)»
+						«FOR gammaVariable : yakinduVariable.allValuesOfTo.filter(VariableDeclaration)»
+							public «gammaVariable.type.transformType» get«gammaVariable.name.toFirstUpper»() {
+								return «yakinduVariable.castDeclaration» «component.generateStatemachineInstanceName».get«port.yakinduInterfaceName»().get«yakinduVariable.name.toFirstUpper»();
+							}
+						«ENDFOR»
 					«ENDFOR»
 				«ENDFOR»
 			«ENDFOR»
-			«ENDFOR»
 			
-		«««			Getters for variables on non-named interfaces
+«««			Getters for variables on non-named interfaces
 			«FOR yakinduVariable : component.variableDeclarations
-					.map[it.allValuesOfFrom.filter(VariableDefinition).head].filterNull SEPARATOR "\n"»
-			«IF (yakinduVariable.eContainer instanceof InterfaceScope && (yakinduVariable.eContainer as InterfaceScope).name.nullOrEmpty)
-					 	|| yakinduVariable.eContainer instanceof InternalScope»
-				public «yakinduVariable.allValuesOfTo.filter(VariableDeclaration).head.type.transformType» get«yakinduVariable.name.toFirstUpper»() {
-					return «yakinduVariable.castDeclaration» «component.generateStatemachineInstanceName».get«yakinduVariable.name.toFirstUpper»();
-				}
-			«ENDIF»
+					.map[it.allValuesOfFrom.filter(VariableDefinition).head].filterNull SEPARATOR System.lineSeparator»
+				«IF (yakinduVariable.eContainer instanceof InterfaceScope && (yakinduVariable.eContainer as InterfaceScope).name.nullOrEmpty)
+						 	|| yakinduVariable.eContainer instanceof InternalScope»
+					public «yakinduVariable.allValuesOfTo.filter(VariableDeclaration).head.type.transformType» get«yakinduVariable.name.toFirstUpper»() {
+						return «yakinduVariable.castDeclaration» «component.generateStatemachineInstanceName».get«yakinduVariable.name.toFirstUpper»();
+					}
+				«ENDIF»
 			«ENDFOR»
 			
 			«IF component.needTimer»
-			public void setTimer(«Namings.YAKINDU_TIMER_INTERFACE» timer) {
-				«component.generateStatemachineInstanceName».setTimer(timer);
-			}
+				public void setTimer(«Namings.YAKINDU_TIMER_INTERFACE» timer) {
+					«component.generateStatemachineInstanceName».setTimer(timer);
+				}
 			«ENDIF»
 			
 			public void setHandleInternalEvents(boolean handleInternalEvents) {}
@@ -307,7 +307,7 @@ class StatechartWrapperCodeGenerator {
 	 * Generates event handlers for all in ports of the given component that is responsible for raising the correct Yakindu statemachine event based on the received message.
 	 */
 	protected def generateEventHandlers(Component component) '''
-		««« It is done this way, so all Yakindu interfaces mapped to the same Gamma interface can process the same event
+«««		It is done this way, so all Yakindu interfaces mapped to the same Gamma interface can process the same event
 		«FOR port : component.ports»
 			«FOR event : port.inputEvents»
 				case "«port.name.toFirstUpper».«event.name.toFirstUpper»": 
@@ -335,7 +335,7 @@ class StatechartWrapperCodeGenerator {
 	 * Generates methods that for in-event raisings in case of simple components.
 	 */
 	protected def CharSequence generateRaisingMethods(Port port) '''
-		«FOR event : port.inputEvents SEPARATOR "\n"»
+		«FOR event : port.inputEvents SEPARATOR System.lineSeparator»
 			@Override
 			public void raise«event.name.toFirstUpper»(«event.generateParameters») {
 				getInsertQueue().add(new «Namings.GAMMA_EVENT_CLASS»("«port.name.toFirstUpper».«event.name.toFirstUpper»"«IF event.generateArguments.length != 0», «ENDIF»«event.generateArguments»));
@@ -347,7 +347,7 @@ class StatechartWrapperCodeGenerator {
 	 * Generates methods for out-event checks in case of simple components.
 	 */
 	protected def CharSequence generateOutMethods(Component component, Port port) '''
-		«««		Simple flag checks
+«««		Simple flag checks
 		«FOR event : port.outputEvents»
 			@Override
 			public boolean isRaised«event.name.toFirstUpper»() {
@@ -357,7 +357,7 @@ class StatechartWrapperCodeGenerator {
 					return «component.generateStatemachineInstanceName».get«port.yakinduInterfaceName»().isRaised«event.toYakinduEvent(port).name.toFirstUpper»();
 				«ENDIF»
 			}
-		«««			ValueOf checks
+«««			ValueOf checks
 			«IF event.toYakinduEvent(port).type !== null»
 				@Override
 				public «event.toYakinduEvent(port).type.eventParameterType» get«event.name.toFirstUpper»Value() {
