@@ -170,13 +170,13 @@ class StatechartWrapperCodeGenerator {
 				}
 				«component.generateStatemachineInstanceName».runCycle();
 				notifyListeners();
-		«««				The paeameters of transient in events do not eave to be reset, as Yakindu does not allow to use a parameter, if the event is not raised
+		«««				The parameters of transient in events do not eave to be reset, as Yakindu does not allow to use a parameter, if the event is not raised
 			}
 			
 			// Inner classes representing Ports
 			«FOR port : component.ports SEPARATOR "\n"»
-		e	public class «port.name.toFirstUpper» implements «port.implementedInterfaceName» {
-		e		private List<«port.interfaceRealization.interface.implementationName».Listener.«port.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper»> registeredListeners = new LinkedList<«port.interfaceRealization.interface.implementationName».Listener.«port.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper»>();
+			public class «port.name.toFirstUpper» implements «port.implementedInterfaceName» {
+				private List<«port.interfaceRealization.interface.implementationName».Listener.«port.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper»> registeredListeners = new LinkedList<«port.interfaceRealization.interface.implementationName».Listener.«port.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper»>();
 		
 			«port.generateRaisingMethods» 
 		
