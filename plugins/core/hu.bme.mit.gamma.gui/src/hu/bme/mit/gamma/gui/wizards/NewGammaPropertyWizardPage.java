@@ -106,7 +106,7 @@ public class NewGammaPropertyWizardPage extends WizardPage {
 				containerText.setText(container.getFullPath().toString());
 			}
 		}
-		fileText.setText("default_property.gpd");
+		fileText.setText("Property.gpd");
 	}
 
 	/**

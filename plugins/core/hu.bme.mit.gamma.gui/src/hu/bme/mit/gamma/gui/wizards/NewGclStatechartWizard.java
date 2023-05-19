@@ -10,19 +10,31 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.gui.wizards;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
+
+import org.eclipse.core.resources.IContainer;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IWorkspaceRoot;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
-import org.eclipse.core.runtime.*;
-import org.eclipse.jface.operation.*;
-import java.lang.reflect.InvocationTargetException;
-import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.core.resources.*;
-import org.eclipse.core.runtime.CoreException;
-import java.io.*;
-import org.eclipse.ui.*;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWizard;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
 
 /**
@@ -34,7 +46,7 @@ import org.eclipse.ui.ide.IDE;
  * same extension, it will be able to open it.
  */
 public class NewGclStatechartWizard extends Wizard implements INewWizard {
-	private NewGclStatechartWizardWizardPage page;
+	private NewGclStatechartWizardPage page;
 	private ISelection selection;
 
 	/**
@@ -50,7 +62,7 @@ public class NewGclStatechartWizard extends Wizard implements INewWizard {
 	 */
 	@Override
 	public void addPages() {
-		page = new NewGclStatechartWizardWizardPage(selection);
+		page = new NewGclStatechartWizardPage(selection);
 		addPage(page);
 	}
 
@@ -125,18 +137,18 @@ public class NewGclStatechartWizard extends Wizard implements INewWizard {
 	private InputStream openContentStream() {
 		String contents = """
 				package default_package_name
-				//import interfaces_package
+				// import interfaces_package
 				statechart DefaultStatechartName (
-					//definition of parameters
+					// Declaration of parameters
 				) [
-					//definition of ports
-				]{
-					//definition of transitions, states and regions
-					transition from init_1 to state_1
+					// Declaration of ports
+				] {
+					// Definition of states, regions and transitions
 					region main_region_1 {
 						initial init_1
 						state state_1
 					}
+					transition from init_1 to state_1
 				}
 				""";
 		return new ByteArrayInputStream(contents.getBytes());

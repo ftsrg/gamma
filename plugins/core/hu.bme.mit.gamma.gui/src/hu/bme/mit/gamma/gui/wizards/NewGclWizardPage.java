@@ -106,7 +106,7 @@ public class NewGclWizardPage extends WizardPage {
 				containerText.setText(container.getFullPath().toString());
 			}
 		}
-		fileText.setText("new_composition_model.gcd");
+		fileText.setText("CompositeComponent.gcd");
 	}
 
 	/**

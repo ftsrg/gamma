@@ -106,7 +106,7 @@ public class NewGclInterfaceWizardPage extends WizardPage {
 				containerText.setText(container.getFullPath().toString());
 			}
 		}
-		fileText.setText("default_gamma_interface.gcd");
+		fileText.setText("Interface.gcd");
 	}
 
 	/**

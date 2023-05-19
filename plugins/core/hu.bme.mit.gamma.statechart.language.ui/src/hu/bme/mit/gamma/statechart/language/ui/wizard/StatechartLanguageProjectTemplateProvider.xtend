@@ -86,6 +86,8 @@ final class CrossroadGammaProject {
 		null
 	}
 
+
+
 	override generateProjects(IProjectGenerator generator) {
 		generator.generate(new PluginProjectFactory => [
 			projectName = projectInfo.projectName

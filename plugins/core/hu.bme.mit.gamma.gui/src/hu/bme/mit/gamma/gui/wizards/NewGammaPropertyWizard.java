@@ -123,7 +123,7 @@ public class NewGammaPropertyWizard extends Wizard implements INewWizard {
 	 * We will initialize file contents with a sample text.
 	 */
 	private InputStream openContentStream() {
-		String contents = "//Automatically generated Gamm property model: use CTL and LTL expressions and press CTRL+SPACE for help";
+		String contents = "// Automatically generated Gamma property model to capture CTL* expressions: press Ctrl + Space for help";
 		return new ByteArrayInputStream(contents.getBytes());
 	}
 

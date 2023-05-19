@@ -113,8 +113,7 @@ public class NewGclWizard extends Wizard implements INewWizard {
 			IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
 			try {
 				IDE.openEditor(page, file, true);
-			} catch (PartInitException e) {
-			}
+			} catch (PartInitException e) {}
 		});
 		monitor.worked(1);
 	}
@@ -125,13 +124,13 @@ public class NewGclWizard extends Wizard implements INewWizard {
 	private InputStream openContentStream() {
 		String contents = """
 				package default_package_name
-				//import interfaces_package
+				// import interfaces_package
 				sync DefaultComponentName (
-					//definition of parameters
+					// Declaration of parameters
 				) [
-					//definition of ports
-				]{
-					//definition of components bindings and channels
+					// Declaration of ports
+				] {
+					// Definition of components, port bindings and channels
 				}
 				""";
 		return new ByteArrayInputStream(contents.getBytes());

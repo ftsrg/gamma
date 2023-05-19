@@ -125,6 +125,7 @@ public class NewGclInterfaceWizard extends Wizard implements INewWizard {
 	private InputStream openContentStream() {
 		String contents = """
 				package default_package_name
+				
 				interface EventStream {
 					out event newEvent
 				}

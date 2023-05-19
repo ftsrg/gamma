@@ -13,7 +13,7 @@
             descriptionImage="icons/gamma-icon-16.png"
             icon="icons/gamma-icon-16.png"
             id="hu.bme.mit.gamma.ui.wizards.NewGclWizard"
-            name="New Gamma Composition Model Wizard"
+            name="Gamma Composite Component"
             project="false">
       </wizard>
       <wizard
@@ -21,7 +21,7 @@
             class="hu.bme.mit.gamma.gui.wizards.NewGclStatechartWizard"
             icon="icons/gamma-icon-16.png"
             id="hu.bme.mit.gamma.ui.wizards.NewGclStatechartWizard"
-            name="New Gamma Statechart Model Wizard"
+            name="Gamma Statechart"
             project="false">
       </wizard>
       <wizard
@@ -30,7 +30,7 @@
             descriptionImage="icons/gamma-icon-16.png"
             icon="icons/gamma-icon-16.png"
             id="hu.bme.mit.gamma.ui.wizards.NewGclInterfaceWizard"
-            name="New Gamma Intercace Model Wizard"
+            name="Gamma Interface"
             project="false">
       </wizard>
       <wizard
@@ -39,7 +39,7 @@
             descriptionImage="icons/gamma-icon-16.png"
             icon="icons/gamma-icon-16.png"
             id="hu.bme.mit.gamma.ui.wizards.NewGammaPropertyWizard"
-            name="New Gamma Property Wizard"
+            name="Gamma Property"
             project="false">
       </wizard>
    </extension>
