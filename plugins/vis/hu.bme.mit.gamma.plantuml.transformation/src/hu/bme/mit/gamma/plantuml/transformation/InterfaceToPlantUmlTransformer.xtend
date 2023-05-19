@@ -23,29 +23,30 @@ import java.util.List
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class InterfaceToPlantUmlTransformer {
-	
-	protected final List<Interface>  interfaces
+
+	protected final List<Interface> interfaces
 	protected final List<EnumerationTypeDefinition> enums
 	protected extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
 	protected extension TypeSerializer typeSerializer = TypeSerializer.INSTANCE
 	protected final List<RecordTypeDefinition> structs
 	protected final List<FunctionDeclaration> funcs
-	
-	protected  List<Interface>  externalParents=new ArrayList()
-	
-	new(List<Interface> interfaces,List<EnumerationTypeDefinition> enums,List<RecordTypeDefinition> structs,List<FunctionDeclaration> funcs) {
+
+	protected List<Interface> externalParents = new ArrayList()
+
+	new(List<Interface> interfaces, List<EnumerationTypeDefinition> enums, List<RecordTypeDefinition> structs,
+		List<FunctionDeclaration> funcs) {
 		this.interfaces = interfaces
-		this.enums=enums
-		this.structs=structs
-		this.funcs=funcs
+		this.enums = enums
+		this.structs = structs
+		this.funcs = funcs
 	}
+
 	//
-	
 	def String execute() '''
 		@startuml
 		skinparam shadowing false
 		
-		«FOR _enum : enums »
+		«FOR _enum : enums»
 			enum «_enum.serialize» {
 				«FOR item : _enum.literals»
 					«item.name»
@@ -60,7 +61,7 @@ class InterfaceToPlantUmlTransformer {
 				«ENDFOR»
 			}
 		«ENDFOR»
-
+		
 		«FOR func : funcs»
 			protocol «func.name» {
 				«FOR param : func.parameterDeclarations»
@@ -92,14 +93,13 @@ class InterfaceToPlantUmlTransformer {
 		
 		@enduml
 	'''
-	
-	def ifGenerate(Interface _interface)
+
+	def ifGenerate(Interface _interface) '''
+		interface «_interface.name» {
+		«FOR event : _interface.events»
+			«event.direction.name().toLowerCase» event «event.event.name» («FOR param : event.event.parameterDeclarations SEPARATOR ", "»«param.name» : «param.type.serialize»«ENDFOR»)
+		«ENDFOR»
+		}
 	'''
-	interface «_interface.name» {
-	«FOR event : _interface.events»
-		«event.direction.name().toLowerCase» event «event.event.name» («FOR param : event.event.parameterDeclarations SEPARATOR ", "»«param.name» : «param.type.serialize»«ENDFOR»)
-	«ENDFOR»
-	}
-	'''
-	
+
 }

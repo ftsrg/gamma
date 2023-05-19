@@ -54,7 +54,7 @@ final class GenericStochasticGammaProject {
 			builderIds += #[JavaCore.BUILDER_ID, XtextProjectHelper.BUILDER_ID]
 			folders += "src"
 			folders += "src-gen"
-			
+
 			addFile('''model/system/«name.toString».gcd''', '''
 				package «name»
 				import "interfaces"
@@ -99,19 +99,20 @@ final class CrossroadGammaProject {
 			var url_m = FileLocator.find(bundle, new Path("/resources/model"));
 			var urls = Files.list(Paths.get(FileLocator.toFileURL(url_m).toURI)).collect(Collectors.toList())
 			for (url : urls) {
-				var file=url.toFile
-				var filename=file.name
-				if (file.file){
-					var contents = futil.loadString(file);			
-					addFile("model/"+filename, contents)
+				var file = url.toFile
+				var filename = file.name
+				if (file.file) {
+					var contents = futil.loadString(file);
+					addFile("model/" + filename, contents)
 				} else {
-					var urls2 = Files.list(Paths.get(FileLocator.toFileURL(file.toURL).toURI)).collect(Collectors.toList())
+					var urls2 = Files.list(Paths.get(FileLocator.toFileURL(file.toURL).toURI)).collect(
+						Collectors.toList())
 					for (url2 : urls2) {
-						var file2=url2.toFile
-						var filename2=file2.name
-						if (file2.file){
-							var contents = futil.loadString(file2);			
-							addFile("model/"+filename+"/"+filename2, contents)
+						var file2 = url2.toFile
+						var filename2 = file2.name
+						if (file2.file) {
+							var contents = futil.loadString(file2);
+							addFile("model/" + filename + "/" + filename2, contents)
 						}
 					}
 				}
