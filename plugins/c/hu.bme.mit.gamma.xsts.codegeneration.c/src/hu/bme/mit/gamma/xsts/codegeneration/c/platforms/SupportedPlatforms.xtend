@@ -28,7 +28,7 @@ class Platforms {
 	/**
      * Map to store the platform instances.
      */
-	static final Map<SupportedPlatforms, IPlatform> platforms = addPlatforms();
+	static val Map<SupportedPlatforms, IPlatform> platforms = addPlatforms();
 	
 	/**
      * Adds the platform instances to the map.
@@ -39,7 +39,7 @@ class Platforms {
 		val temp = new HashMap<SupportedPlatforms, IPlatform>();
 		
 		/* add all available platforms here */
-		temp.put(SupportedPlatforms.UNIX, new UnixPlatform());
+		temp += SupportedPlatforms.UNIX -> new UnixPlatform()
 		
 		return temp;
 	}

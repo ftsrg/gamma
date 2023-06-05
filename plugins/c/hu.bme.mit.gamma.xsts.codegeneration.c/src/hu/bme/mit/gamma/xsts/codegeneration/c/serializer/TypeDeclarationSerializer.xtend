@@ -44,7 +44,7 @@ class TypeDeclarationSerializer {
 		return '''
 			/* Enum representing region «name» */
 			enum «transformString(name)» {
-				«FOR literal : type.literals SEPARATOR ',\n'»«literal.name»_«name.toLowerCase»«ENDFOR»
+				«FOR literal : type.literals SEPARATOR ',' + System.lineSeparator»«literal.name»_«name.toLowerCase»«ENDFOR»
 			} «name.toLowerCase»;
 		''';
 	}

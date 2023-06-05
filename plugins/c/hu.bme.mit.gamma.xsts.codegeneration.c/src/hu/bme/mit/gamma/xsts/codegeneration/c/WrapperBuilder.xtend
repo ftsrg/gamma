@@ -23,7 +23,6 @@ import hu.bme.mit.gamma.xsts.model.XSTS
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
-import java.util.HashSet
 import java.util.Set
 import org.eclipse.emf.common.util.URI
 
@@ -60,17 +59,17 @@ class WrapperBuilder implements IStatechartCode {
 	SupportedPlatforms platform = SupportedPlatforms.UNIX;
 	
 	/* Serializers used for code generation */
-	final VariableGroupRetriever variableGroupRetriever = VariableGroupRetriever.INSTANCE;
-	final VariableDeclarationSerializer variableDeclarationSerializer = new VariableDeclarationSerializer;
+	val VariableGroupRetriever variableGroupRetriever = VariableGroupRetriever.INSTANCE;
+	val VariableDeclarationSerializer variableDeclarationSerializer = new VariableDeclarationSerializer;
 	
 	/**
 	 * The set of input variable declarations.
 	 */
-	Set<VariableDeclaration> inputs = new HashSet();
+	val Set<VariableDeclaration> inputs = newHashSet;
 	/**
 	 * The set of output variable declarations.
  	 */
-	Set<VariableDeclaration> outputs = new HashSet();
+	val Set<VariableDeclaration> outputs = newHashSet;
 	
 	/**
      * Constructs a WrapperBuilder object.
@@ -88,10 +87,10 @@ class WrapperBuilder implements IStatechartCode {
 		
 		/* in & out events and parameters in a unique set, these sets are being used to generate setters/getters representing ports */
 		/* important! in the wrapper we need every parameter regardless of persistency */
-		inputs.addAll(variableGroupRetriever.getSystemInEventVariableGroup(xsts).variables);
-		inputs.addAll(variableGroupRetriever.getSystemInEventParameterVariableGroup(xsts).variables);
-		outputs.addAll(variableGroupRetriever.getSystemOutEventVariableGroup(xsts).variables);
-		outputs.addAll(variableGroupRetriever.getSystemOutEventParameterVariableGroup(xsts).variables);
+		inputs += variableGroupRetriever.getSystemInEventVariableGroup(xsts).variables
+		inputs += variableGroupRetriever.getSystemInEventParameterVariableGroup(xsts).variables
+		outputs += variableGroupRetriever.getSystemOutEventVariableGroup(xsts).variables
+		outputs += variableGroupRetriever.getSystemOutEventParameterVariableGroup(xsts).variables
 	}
 	
 	/**

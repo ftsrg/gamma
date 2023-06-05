@@ -71,7 +71,7 @@ public class CommandHandler extends AbstractHandler {
 		LOGGER.info("XSTS model " + xsts.getName() + " successfully read.");
 		
 		/* define the platform */
-		SupportedPlatforms platform = SupportedPlatforms.UNIX;
+		final SupportedPlatforms platform = SupportedPlatforms.UNIX;
 		
 		/* define what to generate */
 		List<IStatechartCode> generate = List.of(

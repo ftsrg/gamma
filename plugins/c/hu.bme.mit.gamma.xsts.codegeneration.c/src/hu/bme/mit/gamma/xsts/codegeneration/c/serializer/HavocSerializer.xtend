@@ -27,7 +27,7 @@ import java.util.Random
  */
 class HavocSerializer {
 	
-	Random random = new Random;
+	val Random random = new Random;
 	
 	/**
      * Throws an exception for unsupported types.

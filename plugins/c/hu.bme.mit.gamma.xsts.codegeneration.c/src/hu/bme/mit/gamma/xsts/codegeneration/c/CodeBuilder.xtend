@@ -25,7 +25,6 @@ import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.util.ArrayList
-import java.util.HashSet
 import java.util.List
 import java.util.Set
 import org.eclipse.emf.common.util.URI
@@ -65,24 +64,24 @@ class CodeBuilder implements IStatechartCode {
 	SupportedPlatforms platform = SupportedPlatforms.UNIX;
 
 	/* Serializers used for code generation */
-	final ActionSerializer actionSerializer = new ActionSerializer;
-	final ExpressionSerializer expressionSerializer = new ExpressionSerializer;
-	final VariableGroupRetriever variableGroupRetriever = VariableGroupRetriever.INSTANCE;
-	final TypeDeclarationSerializer typeDeclarationSerializer = new TypeDeclarationSerializer;
-	final VariableDeclarationSerializer variableDeclarationSerializer = new VariableDeclarationSerializer;
+	val ActionSerializer actionSerializer = new ActionSerializer;
+	val ExpressionSerializer expressionSerializer = new ExpressionSerializer;
+	val VariableGroupRetriever variableGroupRetriever = VariableGroupRetriever.INSTANCE;
+	val TypeDeclarationSerializer typeDeclarationSerializer = new TypeDeclarationSerializer;
+	val VariableDeclarationSerializer variableDeclarationSerializer = new VariableDeclarationSerializer;
 
 	/**
 	 * The set of input variable declarations.
 	 */
-	Set<VariableDeclaration> inputs = new HashSet();
+	val Set<VariableDeclaration> inputs = newHashSet;
 	/**
 	 * The set of output variable declarations.
  	 */
-	Set<VariableDeclaration> outputs = new HashSet();
+	val Set<VariableDeclaration> outputs = newHashSet;
 	/**
 	 * The list of components within the system. It is used to determine wether 'statechart->' is neccesarry.
 	 */
-	public static List<String> componentVariables = new ArrayList();
+	public static val List<String> componentVariables = new ArrayList();
 
 	/**
      * Constructs a {@code CodeBuilder} object with the given {@code XSTS}.
@@ -105,10 +104,10 @@ class CodeBuilder implements IStatechartCode {
 		
 		/* in & out events and parameters in a unique set, these sets are being used to reset in/outputs between cycles */
 		/* important! only non-persistent parameters are being reset, therefore other parameters will not be included */
-		inputs.addAll(variableGroupRetriever.getSystemInEventVariableGroup(xsts).variables);
-		inputs.addAll(variableGroupRetriever.getSystemInEventParameterVariableGroup(xsts).variables.filter[it.environmentResettable]);
-		outputs.addAll(variableGroupRetriever.getSystemOutEventVariableGroup(xsts).variables);
-		outputs.addAll(variableGroupRetriever.getSystemOutEventParameterVariableGroup(xsts).variables.filter[it.environmentResettable]);
+		inputs += variableGroupRetriever.getSystemInEventVariableGroup(xsts).variables
+		inputs += variableGroupRetriever.getSystemInEventParameterVariableGroup(xsts).variables.filter[it.environmentResettable]
+		outputs += variableGroupRetriever.getSystemOutEventVariableGroup(xsts).variables
+		outputs += variableGroupRetriever.getSystemOutEventParameterVariableGroup(xsts).variables.filter[it.environmentResettable]
 	}
 
 	/**
