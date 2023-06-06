@@ -141,7 +141,7 @@ class WrapperBuilder implements IStatechartCode {
 				/* Setter for «variable.name.toFirstUpper» */
 				void set«variable.name.toFirstUpper»(«name»* statechart, «variableDeclarationSerializer.serialize(
 					variable.type, 
-					variable.annotations.exists[type | type instanceof ClockVariableDeclarationAnnotation], 
+					variable.annotations.exists[it instanceof ClockVariableDeclarationAnnotation], 
 					variable.name
 				)» value);
 			«ENDFOR»
@@ -153,7 +153,7 @@ class WrapperBuilder implements IStatechartCode {
 			/* Getter for «variable.name.toFirstUpper» */
 			«variableDeclarationSerializer.serialize(
 				variable.type, 
-				variable.annotations.exists[type | type instanceof ClockVariableDeclarationAnnotation], 
+				variable.annotations.exists[it instanceof ClockVariableDeclarationAnnotation], 
 				variable.name
 			)» get«variable.name.toFirstUpper»(«name»* statechart);
 		«ENDFOR»
@@ -201,7 +201,7 @@ class WrapperBuilder implements IStatechartCode {
 				/* Setter for «variable.name.toFirstUpper» */
 				void set«variable.name.toFirstUpper»(«name»* statechart, «variableDeclarationSerializer.serialize(
 					variable.type, 
-					variable.annotations.exists[type | type instanceof ClockVariableDeclarationAnnotation], 
+					variable.annotations.exists[it instanceof ClockVariableDeclarationAnnotation], 
 					variable.name
 				)» value) {
 					statechart->«stName.toLowerCase».«variable.name» = value;
@@ -215,7 +215,7 @@ class WrapperBuilder implements IStatechartCode {
 			/* Getter for «variable.name.toFirstUpper» */
 			«variableDeclarationSerializer.serialize(
 				variable.type, 
-				variable.annotations.exists[type | type instanceof ClockVariableDeclarationAnnotation], 
+				variable.annotations.exists[it instanceof ClockVariableDeclarationAnnotation], 
 				variable.name
 			)» get«variable.name.toFirstUpper»(«name»* statechart) {
 				return statechart->«stName.toLowerCase».«variable.name»;

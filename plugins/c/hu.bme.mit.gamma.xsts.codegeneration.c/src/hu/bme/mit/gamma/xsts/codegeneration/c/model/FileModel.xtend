@@ -14,6 +14,7 @@ import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
 import org.eclipse.emf.common.util.URI
+import hu.bme.mit.gamma.util.FileUtil
 
 /**
  * Represents a file in the generated C code.
@@ -23,6 +24,8 @@ abstract class FileModel {
 	protected String name;
 	/** The content of the file. */
 	protected String content;
+	
+	val FileUtil fileUtil = FileUtil.INSTANCE
 	
 	/** New line */
 	public static final String NEW_LINE =
@@ -46,11 +49,12 @@ abstract class FileModel {
      */
 	def void save(URI uri) {
 		val URI local = uri.appendSegment(name);
-		if (new File(local.toFileString()).exists())
-			Files.delete(Paths.get(local.toFileString()));
+		val File file = fileUtil.getFile(local.toFileString())
+		
+		if (file.exists())
+			fileUtil.forceDelete(file)
 			
-		Files.createFile(Paths.get(local.toFileString()));
-		Files.write(Paths.get(local.toFileString()), content.getBytes);
+		fileUtil.saveString(file, content)
 	}
 	
 	/**

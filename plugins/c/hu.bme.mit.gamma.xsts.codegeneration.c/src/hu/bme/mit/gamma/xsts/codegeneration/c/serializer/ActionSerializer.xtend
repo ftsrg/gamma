@@ -128,7 +128,7 @@ class ActionSerializer {
 	def dispatch CharSequence serialize(VariableDeclarationAction action) {
 		return '''«variableDeclarationSerializer.serialize(
 			action.variableDeclaration.type, 
-			action.variableDeclaration.annotations.exists[type | type instanceof ClockVariableDeclarationAnnotation],
+			action.variableDeclaration.annotations.exists[it instanceof ClockVariableDeclarationAnnotation],
 			action.variableDeclaration.name
 		)» «action.variableDeclaration.name»;''';
 	}
