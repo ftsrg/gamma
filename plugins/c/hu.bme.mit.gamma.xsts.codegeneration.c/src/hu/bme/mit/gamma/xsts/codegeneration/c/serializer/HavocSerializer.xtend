@@ -18,6 +18,7 @@ import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition
 import hu.bme.mit.gamma.expression.model.RationalTypeDefinition
 import hu.bme.mit.gamma.expression.model.Type
+import hu.bme.mit.gamma.expression.model.TypeReference
 import java.util.Random
 
 /**
@@ -95,6 +96,10 @@ class HavocSerializer {
 	def dispatch String serialize(EnumerationTypeDefinition type, String name) {
 		val literal = type.literals.get(random.nextInt(type.literals.size));
 		return '''«literal.name»_«name.toLowerCase»''';
+	}
+	
+	def dispatch String serialize(TypeReference type, String name) {
+		return type.toString();
 	}
 	
 	/**

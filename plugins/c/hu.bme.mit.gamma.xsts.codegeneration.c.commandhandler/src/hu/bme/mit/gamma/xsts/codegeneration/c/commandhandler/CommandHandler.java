@@ -25,6 +25,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 import hu.bme.mit.gamma.xsts.codegeneration.c.CodeBuilder;
+import hu.bme.mit.gamma.xsts.codegeneration.c.HavocBuilder;
 import hu.bme.mit.gamma.xsts.codegeneration.c.IStatechartCode;
 import hu.bme.mit.gamma.xsts.codegeneration.c.WrapperBuilder;
 import hu.bme.mit.gamma.xsts.codegeneration.c.platforms.SupportedPlatforms;
@@ -76,7 +77,8 @@ public class CommandHandler extends AbstractHandler {
 		/* define what to generate */
 		List<IStatechartCode> generate = List.of(
 			new CodeBuilder(xsts),
-			new WrapperBuilder(xsts)
+			new WrapperBuilder(xsts),
+			new HavocBuilder(xsts)
 		);
 		
 		/* build c code */
