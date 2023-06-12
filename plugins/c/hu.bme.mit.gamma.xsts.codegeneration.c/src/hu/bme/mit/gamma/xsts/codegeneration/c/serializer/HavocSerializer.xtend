@@ -13,7 +13,6 @@ package hu.bme.mit.gamma.xsts.codegeneration.c.serializer
 import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition
 import hu.bme.mit.gamma.expression.model.DecimalTypeDefinition
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
-import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition
 import hu.bme.mit.gamma.expression.model.RationalTypeDefinition
@@ -50,7 +49,7 @@ class HavocSerializer {
      * @return the string representation of the serialized boolean type
      */
 	def dispatch String serialize(BooleanTypeDefinition type, String name) {
-		return random.nextBoolean().toString();
+		return '''havoc_bool()'''
 	}
 	
 	/**
@@ -61,7 +60,7 @@ class HavocSerializer {
      * @return the string representation of the serialized integer type
      */
 	def dispatch String serialize(IntegerTypeDefinition type, String name) {
-		return random.nextInt().toString();
+		return '''havoc_int()'''
 	}
 	
 	/**
@@ -72,7 +71,7 @@ class HavocSerializer {
      * @return the string representation of the serialized decimal type
      */
 	def dispatch String serialize(DecimalTypeDefinition type, String name) {
-		return random.nextFloat().toString();
+		return '''havoc_float()'''
 	}
 	
 	/**
@@ -83,7 +82,7 @@ class HavocSerializer {
      * @return the string representation of the serialized rational type
      */
 	def dispatch String serialize(RationalTypeDefinition type, String name) {
-		return random.nextFloat().toString();
+		return '''havoc_float()'''
 	}
 	
 	/**
@@ -93,13 +92,8 @@ class HavocSerializer {
      * @param name the name of the enumeration type to be serialized
      * @return the string representation of the serialized enumeration type
      */
-	def dispatch String serialize(EnumerationTypeDefinition type, String name) {
-		val literal = type.literals.get(random.nextInt(type.literals.size));
-		return '''«literal.name»_«name.toLowerCase»''';
-	}
-	
 	def dispatch String serialize(TypeReference type, String name) {
-		return type.toString();
+		return '''havoc_«type.reference.name»()'''
 	}
 	
 	/**

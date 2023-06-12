@@ -10,15 +10,15 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.xsts.codegeneration.c
 
+import hu.bme.mit.gamma.xsts.codegeneration.c.model.CodeModel
+import hu.bme.mit.gamma.xsts.codegeneration.c.model.HeaderModel
 import hu.bme.mit.gamma.xsts.codegeneration.c.platforms.SupportedPlatforms
+import hu.bme.mit.gamma.xsts.codegeneration.c.serializer.TypeDeclarationSerializer
+import hu.bme.mit.gamma.xsts.model.XSTS
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
 import org.eclipse.emf.common.util.URI
-import hu.bme.mit.gamma.xsts.model.XSTS
-import hu.bme.mit.gamma.xsts.codegeneration.c.model.CodeModel
-import hu.bme.mit.gamma.xsts.codegeneration.c.model.HeaderModel
-import hu.bme.mit.gamma.xsts.codegeneration.c.serializer.TypeDeclarationSerializer
 
 class HavocBuilder implements IStatechartCode {
 	/**
@@ -83,6 +83,8 @@ class HavocBuilder implements IStatechartCode {
 	override constructHeader() {
 		/* Declaration of boundaries */
 		header.addContent('''
+			#import <time.h>
+			
 			#import "«xsts.name.toLowerCase».h"
 			
 			/* boundaries for int */
@@ -127,22 +129,26 @@ class HavocBuilder implements IStatechartCode {
 		code.addContent('''
 			/* runtime generated random boolean */
 			bool havoc_bool() {
+				srand(time(NULL));
 				return  rand() % 2 == 0;
 			}
 
 			/* runtime generated random int */
 			int havoc_int() {
+				srand(time(NULL));
 				return (rand() % (INT_MAX - INT_MIN + 1)) + INT_MIN;
 			}
 			
 			/* runtime generated random float */
 			float havoc_float() {
+				srand(time(NULL));
 				return ((float)rand() / RAND_MAX) * (FLOAT_MAX - FLOAT_MIN) + FLOAT_MIN;
 			}
 			
 			«FOR type : xsts.typeDeclarations SEPARATOR System.lineSeparator»
 				/* runtime generated random «type.name» */
 				enum «TypeDeclarationSerializer.transformString(type.name)» havoc_«type.name»() {
+					srand(time(NULL));
 					return (enum «TypeDeclarationSerializer.transformString(type.name)»)(rand() % «type.name.toUpperCase»_LENGTH);
 				}
 			«ENDFOR»
