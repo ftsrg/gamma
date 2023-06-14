@@ -18,6 +18,8 @@ import hu.bme.mit.gamma.xsts.codegeneration.c.serializer.TypeDeclarationSerializ
 import hu.bme.mit.gamma.xsts.model.HavocAction
 import hu.bme.mit.gamma.xsts.model.XSTS
 import java.io.File
+import java.math.BigDecimal
+import java.math.BigInteger
 import java.nio.file.Files
 import java.nio.file.Paths
 import org.eclipse.emf.common.util.URI
@@ -50,11 +52,11 @@ class HavocBuilder implements IStatechartCode {
 	val TypeDeclarationSerializer typeDeclarationSerializer = new TypeDeclarationSerializer;
 	
 	/* Boudary definitions */
-	val INT_MIN = 0
-	val INT_MAX = 100
-	
-	val FLOAT_MIN = 0
-	val FLOAT_MAX = 100
+	val INT_MIN = "-2000000000000000"  // -2 * 10^15 
+	val INT_MAX = "1999999999999999"   //  2 * 10^15 - 1
+
+	val FLOAT_MIN = "-2000000000000000"  // -2 * 10^15 
+	val FLOAT_MAX = "1999999999999999"   //  2 * 10^15 - 1
 
 	/**
 	 * The supported platform for code generation.
