@@ -23,7 +23,7 @@ class DeclarationSerializer {
 «««			«typeDeclaration.serializeTypeDeclaration»
 «««		«ENDFOR»
 «««		
-		«FOR variableDeclaration : xSts.variableDeclarations»
+		«FOR variableDeclaration : xSts.getAllContentsOfType(VariableDeclaration)»
 			«variableDeclaration.serializeVariableDeclaration»
 		«ENDFOR»
 	'''

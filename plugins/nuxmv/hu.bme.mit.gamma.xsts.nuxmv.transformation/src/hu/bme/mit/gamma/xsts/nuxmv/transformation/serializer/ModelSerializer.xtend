@@ -15,6 +15,12 @@ import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.AssumeAction
 import hu.bme.mit.gamma.xsts.model.XTransition
 import java.util.List
+import hu.bme.mit.gamma.expression.util.ExpressionUtil
+import hu.bme.mit.gamma.expression.model.VariableDeclaration
+import hu.bme.mit.gamma.xsts.nuxmv.transformation.util.HavocHandler
+import java.util.Map
+import hu.bme.mit.gamma.expression.model.Declaration
+import hu.bme.mit.gamma.util.GammaEcoreUtil
 
 class ModelSerializer {
 	// Singleton
@@ -22,12 +28,19 @@ class ModelSerializer {
 	protected new() {}
 	//
 	
+	protected final Map<Declaration, String> names = newHashMap
+	
 	//
 	protected final extension DeclarationSerializer declarationSerializer = DeclarationSerializer.INSTANCE
 	protected final extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
 	protected final extension TypeSerializer typeSerializer = TypeSerializer.INSTANCE
+	protected final extension ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE
+	protected final extension HavocHandler havocHandler = HavocHandler.INSTANCE
+	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	
 	def String serializeNuxmv(XSTS xSts) {
+		xSts.customizeLocalVariableNames
+		
 		val initializingActions = xSts.initializingAction
 		val environmentalActions = xSts.environmentalAction
 		
@@ -44,24 +57,54 @@ class ModelSerializer {
 		MODULE main
 		VAR
 			«xSts.serializeDeclaration»
-		IVAR
-			«environmentalActions.serialize»
-			
-		ASSIGN
-			«initializingActions.serializeInitializingActions»
-			
+«««		IVAR
+«««			«environmentalActions.serialize»
+		
+		«initializingActions.serializeInitializingActions»
+		
+		TRANS	
 			«transitions.serializeTransitions»
 		'''
+		
+		xSts.restoreLocalVariableNames
 		
 		return model
 	}
 	
+	//
+	// Second hash is needed as nuXmv does not support local variables with the same name in different scopes
+	protected def customizeLocalVariableNames(XSTS xSts) {
+		names.clear
+		for (localVariableAction : xSts.getAllContentsOfType(VariableDeclarationAction)) {
+			val localVariable = localVariableAction.variableDeclaration
+			val name = localVariable.name
+			names += localVariable -> name
+			
+			localVariable.name = localVariable.name + localVariable.hashCode.toString.replaceAll("-","_")
+		}
+	}
+	
+	protected def restoreLocalVariableNames(XSTS xSts) {
+		for (localVariableAction : xSts.getAllContentsOfType(VariableDeclarationAction)) {
+			val localVariable = localVariableAction.variableDeclaration
+			val name = names.get(localVariable)
+			
+			localVariable.name = name
+		}
+	}
+	
+	//
+	
 	protected def dispatch String serialize(AssignmentAction action) {
-		return '''«action.lhs.serialize» = «action.rhs.serialize»;'''
+		return '''«action.lhs.serialize» = «action.rhs.serialize»'''
+	}
+	
+	protected def dispatch String serializeTransition(AssignmentAction action) {
+		return '''next(«action.lhs.serialize») = «action.rhs.serialize»'''
 	}
 	
 	protected def dispatch String serializeInitializingActions(AssignmentAction action) {
-		return '''init(«action.lhs.serialize») := «action.rhs.serialize»;'''
+		return '''INIT «action.lhs.serialize» = «action.rhs.serialize»'''
 	}
 	
 	protected def dispatch String serialize(VariableDeclarationAction action) {
@@ -69,43 +112,56 @@ class ModelSerializer {
 		return variableDeclaration.serializeVariableDeclaration
 	}
 	
-//	protected def dispatch String serialize(SequentialAction action) '''
-//		«FOR subaction : action.actions»
-//			«subaction.serializeD_stepBeginBrackets»
-//			«subaction.serialize /* Original action*/»
-//			«IF subaction.last»
-//				«action.resetLocalVariableDeclarations»
-//			«ENDIF»
-//			«subaction.serializeD_stepCloseBrackets»
-//		«ENDFOR»
-//	'''
+	protected def dispatch String serializeTransition(VariableDeclarationAction action) {
+		val variableDeclaration = action.variableDeclaration
+		val expression = variableDeclaration.expression
+		if (expression === null) {
+			return '''
+				ERROR
+			'''
+		} else {
+			return '''
+				«variableDeclaration.serializeName» = «expression.serialize»
+			'''
+		}
+
+	}
 
 	protected def dispatch String serialize(AssumeAction action) '''
 		ASSUME TODO «action.assumption.serialize»
 	'''
 
 	protected def dispatch String serialize(EmptyAction action) ''''''
+
+	protected def dispatch String serializeTransition(EmptyAction action) ''''''
 	
 	protected def dispatch String serialize(IfAction action) '''
-		case
-			«action.condition.serialize» : «action.then.serialize»;
-			«IF action.^else !== null && !(action.^else instanceof EmptyAction)»
-			TRUE : «action.^else.serialize»;
-			«ENDIF»
-		esac
+«««		case
+			«action.condition.serialize» -> «action.then.serialize»;
+«««			«IF action.^else !== null && !(action.^else instanceof EmptyAction)»
+«««			TRUE : «action.^else.serialize»;
+«««			«ENDIF»
+«««		esac
+	'''
+	
+	protected def dispatch String serializeTransition(IfAction action) '''
+«««		case
+			«action.condition.serialize» -> «action.then.serializeTransition»
+«««			«IF action.^else !== null && !(action.^else instanceof EmptyAction)»
+«««			!(«action.condition.serialize») -> «action.^else.serialize»;
+«««			«ENDIF»
+«««		esac
 	'''
 	
 	protected def dispatch String serialize(HavocAction action) {
-		return "HAVOC TODO"
-//		val xStsDeclaration = action.lhs.declaration
-//		val xStsVariable = xStsDeclaration as VariableDeclaration
-//		
-//		return '''
-//			if
-//				«FOR element : xStsVariable.createSet»
-//					:: «xStsVariable.name» = «element.serialize»;
-//				«ENDFOR»
-//			fi;'''
+//		return "HAVOC TODO"
+		val xStsDeclaration = action.lhs.declaration
+		val xStsVariable = xStsDeclaration as VariableDeclaration
+
+		return '''
+		-- HAVOC TODO
+		«xStsVariable.name» = {«FOR element : xStsVariable.createSet SEPARATOR ', '»«element.serialize»«ENDFOR»};
+		'''
 	}
 	
 	protected def dispatch String serialize(LoopAction action) {
@@ -136,11 +192,13 @@ class ModelSerializer {
 	'''
 	
 	protected def dispatch String serialize(SequentialAction action) '''
-		«FOR subaction : action.actions»
-			«subaction.serialize /* Original action*/»
-		«ENDFOR»
+		(«FOR subaction : action.actions SEPARATOR ' & '»«subaction.serialize»«ENDFOR»)
 	'''
-	
+
+	protected def dispatch String serializeTransition(SequentialAction action) '''
+		(«FOR subaction : action.actions SEPARATOR ' & '»«subaction.serializeTransition»«ENDFOR»)
+	'''
+		
 		//
 	
 	protected def serializeTransitions(List<? extends XTransition> transitions) {
@@ -152,7 +210,11 @@ class ModelSerializer {
 			'''
 		}
 		else {
-			return '''«transitions.head.action.serialize»'''
+			return '''«transitions.head.action.serializeTransition»;'''
 		}
+	}
+	
+	protected def SequentialAction getLastInitializations(SequentialAction action) {
+		return action
 	}
 }
