@@ -50,11 +50,11 @@ class HavocBuilder implements IStatechartCode {
 	val TypeDeclarationSerializer typeDeclarationSerializer = new TypeDeclarationSerializer;
 	
 	/* Boudary definitions */
-	val INT_MIN = "-2000000000000000"  // -2 * 10^15 
-	val INT_MAX = "1999999999999999"   //  2 * 10^15 - 1
+	val INT_MIN = -32768  // -2^15 
+	val INT_MAX = 32767   //  2^15 - 1
 
-	val FLOAT_MIN = "-2000000000000000"  // -2 * 10^15 
-	val FLOAT_MAX = "1999999999999999"   //  2 * 10^15 - 1
+	val FLOAT_MIN = -32768  // -2^15 
+	val FLOAT_MAX = 32767   //  2^15 - 1
 
 	/**
 	 * The supported platform for code generation.
