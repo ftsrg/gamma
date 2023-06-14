@@ -18,8 +18,6 @@ import hu.bme.mit.gamma.xsts.codegeneration.c.serializer.TypeDeclarationSerializ
 import hu.bme.mit.gamma.xsts.model.HavocAction
 import hu.bme.mit.gamma.xsts.model.XSTS
 import java.io.File
-import java.math.BigDecimal
-import java.math.BigInteger
 import java.nio.file.Files
 import java.nio.file.Paths
 import org.eclipse.emf.common.util.URI
