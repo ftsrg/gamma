@@ -10,11 +10,9 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.xsts.codegeneration.c.model
 
-import java.io.File
-import java.nio.file.Files
-import java.nio.file.Paths
-import org.eclipse.emf.common.util.URI
 import hu.bme.mit.gamma.util.FileUtil
+import java.io.File
+import org.eclipse.emf.common.util.URI
 
 /**
  * Represents a file in the generated C code.

@@ -10,10 +10,12 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.xsts.codegeneration.c
 
+import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.codegeneration.c.model.CodeModel
 import hu.bme.mit.gamma.xsts.codegeneration.c.model.HeaderModel
 import hu.bme.mit.gamma.xsts.codegeneration.c.platforms.SupportedPlatforms
 import hu.bme.mit.gamma.xsts.codegeneration.c.serializer.TypeDeclarationSerializer
+import hu.bme.mit.gamma.xsts.model.HavocAction
 import hu.bme.mit.gamma.xsts.model.XSTS
 import java.io.File
 import java.nio.file.Files
@@ -38,8 +40,13 @@ class HavocBuilder implements IStatechartCode {
 	 * The header model for generating code.
  	 */
 	HeaderModel header;
+	/**
+	 * Whether our XSTS model contains HavocAction-s or not. Enough to compute once.
+	 */
+	static boolean containsHavocAction = false;
 	
 	/* Serializers used for havoc code generation */
+	val GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
 	val TypeDeclarationSerializer typeDeclarationSerializer = new TypeDeclarationSerializer;
 	
 	/* Boudary definitions */
@@ -66,6 +73,16 @@ class HavocBuilder implements IStatechartCode {
 		/* code files */
 		this.code = new CodeModel(name);
 		this.header = new HeaderModel(name);
+		
+		/* parts of the XSTS model that our code generator use */
+		val usedParts = newArrayList
+		usedParts += xsts.variableInitializingTransition
+		usedParts += xsts.configurationInitializingTransition
+		usedParts += xsts.entryEventTransition
+		usedParts.addAll(xsts.transitions)
+		
+		/* do those parts contain any havoc actions */
+		this.containsHavocAction = usedParts.exists[type | gammaEcoreUtil.containsType(type, HavocAction)]
 	}
 	
 	/**
@@ -78,14 +95,21 @@ class HavocBuilder implements IStatechartCode {
 	}
 	
 	/**
+     * Returns whether the xsts model contains havoc actions or not.
+     */
+	static def boolean isHavocRequired() {
+		return containsHavocAction
+	}
+	
+	/**
      * Constructs the havoc header code.
      */
 	override constructHeader() {
 		/* Declaration of boundaries */
 		header.addContent('''
-			#import <time.h>
+			#include <time.h>
 			
-			#import "«xsts.name.toLowerCase».h"
+			#include "«xsts.name.toLowerCase».h"
 			
 			/* boundaries for int */
 			#define INT_MIN «INT_MIN»
@@ -125,7 +149,7 @@ class HavocBuilder implements IStatechartCode {
      * Constructs the havoc code.
      */
 	override constructCode() {
-		/* Function for generating random int & float */
+		/* Function for generating random values for each type */
 		code.addContent('''
 			/* runtime generated random boolean */
 			bool havoc_bool() {
@@ -157,10 +181,15 @@ class HavocBuilder implements IStatechartCode {
 	
 	/**
      * Saves the generated havoc code and header to the specified URI.
+     * Prevents saving if there is no need for havoc functions.
      * 
      * @param uri the URI to save the models to
      */
 	override save(URI uri) {
+		/* prevent saving in case there is no havoc action */
+		if (!HavocBuilder.isHavocRequired())
+			return
+			
 		/* create src-gen if not present */
 		var URI local = uri.appendSegment("src-gen");
 		if (!new File(local.toFileString()).exists())

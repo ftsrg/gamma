@@ -18,7 +18,6 @@ import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition
 import hu.bme.mit.gamma.expression.model.RationalTypeDefinition
 import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.expression.model.TypeReference
-import java.util.Random
 
 /**
  * Serializes different types of definitions and expressions into their string representation.
@@ -26,9 +25,7 @@ import java.util.Random
  * Also supports direct reference expressions.
  */
 class HavocSerializer {
-	
-	val Random random = new Random;
-	
+
 	/**
      * Throws an exception for unsupported types.
      *

@@ -172,6 +172,13 @@ class CodeBuilder implements IStatechartCode {
      * Constructs the statechart's C code.
      */
 	override void constructCode() {
+		/* Add havoc import in case it is required */
+		code.addContent('''
+			«IF HavocBuilder.isHavocRequired»
+				#include "«name.toLowerCase»havoc.h"
+			«ENDIF»
+		''')
+		
 		/* Reset struct */
 		code.addContent('''
 			/* Reset component «name» */
