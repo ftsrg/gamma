@@ -113,7 +113,7 @@ class PromelaVerifier extends AbstractVerifier {
 			}
 			fileUtil.saveString(outputFile, outputString.toString)
 			
-			if (firstLine.contains("violated")) {
+			if (firstLine.contains("violated") || firstLine.contains("acceptance cycle")) {
 				super.result = ThreeStateBoolean.FALSE
 			}
 			else if (firstLine.contains("out of memory")) {
