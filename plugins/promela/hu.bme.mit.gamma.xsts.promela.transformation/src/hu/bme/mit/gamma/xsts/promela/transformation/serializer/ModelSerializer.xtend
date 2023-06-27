@@ -268,8 +268,8 @@ class ModelSerializer {
 	'''
 	
 	protected def String serializeAsTrivialBranch(Action action) '''
-		:: true -> atomic {
-			«action.serialize»
+		:: «action.serialize» -> atomic {
+			skip
 		}
 	'''
 	//
