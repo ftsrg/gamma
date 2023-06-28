@@ -268,9 +268,15 @@ class ModelSerializer {
 	'''
 	
 	protected def String serializeAsTrivialBranch(Action action) '''
-		:: «action.serialize» -> atomic {
-			skip
-		}
+		«IF action instanceof AssumeAction»
+			:: «action.serialize» -> atomic {
+				skip
+			}
+		«ELSE»
+			:: true -> atomic {
+				«action.serialize»
+			}
+		«ENDIF»
 	'''
 	//
 	
