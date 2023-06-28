@@ -24,6 +24,7 @@ import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.xsts.model.ParallelAction
+import java.util.ArrayList
 
 class ModelSerializer {
 	// Singleton
@@ -32,6 +33,7 @@ class ModelSerializer {
 	//
 	
 	protected final Map<Declaration, String> names = newHashMap
+	protected final List<String> serialized = new ArrayList
 	
 	//
 	protected final extension DeclarationSerializer declarationSerializer = DeclarationSerializer.INSTANCE
@@ -121,7 +123,6 @@ class ModelSerializer {
 		val variableDeclaration = action.variableDeclaration
 		val expression = variableDeclaration.expression
 		if (expression === null) {
-//			throw new IllegalArgumentException("In VariableDeclarationAction " + action + "expression cannot be null!")
 			return ''''''
 		} else {
 			return '''
@@ -129,12 +130,6 @@ class ModelSerializer {
 			'''
 		}
 	}
-
-	protected def dispatch String serialize(AssumeAction action) '''
-		ASSUME TODO «action.assumption.serialize»
-	'''
-
-
 
 	protected def dispatch String serialize(EmptyAction action) ''''''
 
@@ -153,12 +148,10 @@ class ModelSerializer {
 	'''
 	
 	protected def dispatch String serialize(HavocAction action) {
-//		return "HAVOC TODO"
 		val xStsDeclaration = action.lhs.declaration
 		val xStsVariable = xStsDeclaration as VariableDeclaration
 
 		return '''
-		-- HAVOC TODO
 		«xStsVariable.name» = {«FOR element : xStsVariable.createSet SEPARATOR ', '»«element.serialize»«ENDFOR»};
 		'''
 	}
@@ -225,22 +218,31 @@ class ModelSerializer {
 		(«FOR subaction : action.actions SEPARATOR ' & '»«subaction.serialize»«ENDFOR»)
 	'''
 
-	protected def dispatch String serializeInitializingAction(SequentialAction action) '''
-		«FOR subaction : action.actions»
-			«subaction.serializeInitializingAction /* Original action*/»
-		«ENDFOR»
-	'''
+	protected def dispatch String serializeInitializingAction(SequentialAction action) {
+		var ret = ''''''
+		for (subaction : action.actions.reverseView) {
+			if (subaction instanceof AssignmentAction) {
+				if (!serialized.contains(subaction.lhs.serialize)) {
+					serialized.add(subaction.lhs.serialize)
+					ret += subaction.serializeInitializingAction+'\n'
+				}
+			} else {
+				ret += subaction.serializeInitializingAction+'\n'
+			}
+		}
+		return ret
+	}
 
 	// AssumeActions should be the first in the sequence, everywhere else is disregarded
 	protected def dispatch String serializeTransition(SequentialAction action) '''
 		«IF action.isFirstActionAssume»
-			(«action.getFirstActionAssume.assumption.serialize») -> (
-			«FOR sequentialSubaction : action.actionsSkipFirst SEPARATOR ' & '»
+			((«action.getFirstActionAssume.assumption.serialize») -> (
+			«FOR sequentialSubaction : action.actionsSkipFirst.filter[!(it instanceof AssumeAction) && !it.effectlessAction && !(it instanceof VariableDeclarationAction)] SEPARATOR ' & '»
 			«sequentialSubaction.serialize»
 			«ENDFOR»
-			)
+			))
 		«ELSE»
-			(«FOR subaction : action.actions.filter[!(it instanceof AssumeAction)] SEPARATOR ' & '»«subaction.serializeTransition»«ENDFOR»)
+			(«FOR subaction : action.actions.filter[!(it instanceof AssumeAction) && !it.effectlessAction && !(it instanceof VariableDeclarationAction)] SEPARATOR ' & '»«subaction.serializeTransition»«ENDFOR»)
 		«ENDIF»
 	'''
 	
@@ -262,8 +264,5 @@ class ModelSerializer {
 			return '''«transitions.head.action.serializeTransition»;'''
 		}
 	}
-	
-	protected def SequentialAction getLastInitializations(SequentialAction action) {
-		return action
-	}
+
 }
