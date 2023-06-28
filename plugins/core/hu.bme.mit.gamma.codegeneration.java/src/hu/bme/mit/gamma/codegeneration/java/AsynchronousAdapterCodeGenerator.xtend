@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -63,7 +63,7 @@ class AsynchronousAdapterCodeGenerator {
 		
 		«component.generateWrapperImports»
 		
-		public class «component.generateComponentClassName» implements Runnable, «component.generatePortOwnerInterfaceName» {			
+		public class «component.generateComponentClassName» implements Runnable, «component.generatePortOwnerInterfaceName» { 
 			// Thread running this wrapper instance
 			private Thread thread;
 			// Wrapped synchronous instance
@@ -95,7 +95,7 @@ class AsynchronousAdapterCodeGenerator {
 				public «component.generateComponentClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", " AFTER ", "»«parameter.type.transformType» «parameter.name»«ENDFOR»«UNIFIED_TIMER_INTERFACE» timer) {
 					«component.createInstances»
 					setTimer(timer);
-					// Init is done in setTimer
+					init();
 				}
 			«ENDIF»
 			
@@ -109,6 +109,18 @@ class AsynchronousAdapterCodeGenerator {
 			@Override
 			public void reset() {
 				interrupt();
+				«IF !component.clocks.empty»
+					if (timerService != null) {
+						«FOR match : QueuesOfClocks.Matcher.on(engine).getAllMatches(component, null, null)»
+							timerService.unsetTimer(createTimerCallback(), «match.clock.name»);
+							timerService.setTimer(createTimerCallback(), «match.clock.name», «match.clock.timeSpecification.valueInMs», true);
+						«ENDFOR»
+					}
+				«ENDIF»
+«««				Queues cannot be reset due to message sending upon reset (in other components)
+«««				«FOR queue : component.messageQueues»
+«««					«queue.name».clear();
+«««				«ENDFOR»
 				«component.generateWrappedComponentName».reset();
 				«IF component.hasInternalPort»handleInternalEvents();«ENDIF»
 			}
@@ -122,10 +134,10 @@ class AsynchronousAdapterCodeGenerator {
 					__asyncQueue.addSubQueue("«queue.name»", -(«queue.priority»), (int) «queue.capacity.serialize»);
 					«queue.name» = __asyncQueue.getSubQueue("«queue.name»");
 				«ENDFOR»
-				«IF !component.clocks.empty»// Creating clock callbacks for the single timer service«ENDIF»
-				«FOR match : QueuesOfClocks.Matcher.on(engine).getAllMatches(component, null, null)»
-					 timerService.setTimer(createTimerCallback(), «match.clock.name», «match.clock.timeSpecification.valueInMs», true);
-				«ENDFOR»
+«««				«IF !component.clocks.empty»// Creating clock callbacks for the single timer service«ENDIF»
+«««				«FOR match : QueuesOfClocks.Matcher.on(engine).getAllMatches(component, null, null)»
+«««					 timerService.setTimer(createTimerCallback(), «match.clock.name», «match.clock.timeSpecification.valueInMs», true);
+«««				«ENDFOR»
 				«component.createInternalPortHandlingSettingCode»
 				// The thread has to be started manually
 			}
@@ -145,12 +157,15 @@ class AsynchronousAdapterCodeGenerator {
 									throw new IllegalArgumentException("No such event id: " + eventId);
 							}
 						}
+						public boolean equals(Object object) {
+							return this.getClass() == object.getClass();
+						}
 					};
 				}
 			«ENDIF»
 			
 			// Inner classes representing control ports
-			«FOR port : component.ports SEPARATOR "\n"»
+			«FOR port : component.ports SEPARATOR System.lineSeparator»
 				public class «port.name.toFirstUpper» implements «port.interfaceRealization.interface.implementationName».«port.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper» {
 					
 					«port.delegateWrapperRaisingMethods» 
@@ -177,7 +192,7 @@ class AsynchronousAdapterCodeGenerator {
 			«ENDFOR»
 			
 			// Inner classes representing wrapped ports
-			«FOR port : component.wrappedComponent.type.ports SEPARATOR "\n"»
+			«FOR port : component.wrappedComponent.type.ports SEPARATOR System.lineSeparator»
 				public class «port.name.toFirstUpper» implements «port.interfaceRealization.interface.implementationName».«port.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper» {
 					
 					«port.delegateWrapperRaisingMethods»
@@ -342,7 +357,7 @@ class AsynchronousAdapterCodeGenerator {
 	/**
 	 * Sets the parameters of the component and instantiates the necessary components with them.
 	 */
-	private def createInstances(AsynchronousAdapter component) '''
+	protected def createInstances(AsynchronousAdapter component) '''
 		«FOR parameter : component.parameterDeclarations»
 			this.«parameter.name» = «parameter.name»;
 		«ENDFOR»
@@ -363,7 +378,7 @@ class AsynchronousAdapterCodeGenerator {
 		«FOR event : port.inputEvents»
 			@Override
 			public void raise«event.name.toFirstUpper»(«event.generateParameters») {
-				«FOR queue : QueuesOfEvents.Matcher.on(engine).getAllValuesOfqueue(port, event) SEPARATOR "\n"»
+				«FOR queue : QueuesOfEvents.Matcher.on(engine).getAllValuesOfqueue(port, event) SEPARATOR System.lineSeparator»
 					«queue.name».«queue.additionMethodName»(new Event("«port.name».«event.name»"«IF event.generateArguments.length != 0», «ENDIF»«event.generateArguments»));
 				«ENDFOR»
 			}
@@ -387,7 +402,7 @@ class AsynchronousAdapterCodeGenerator {
 	 */
 	protected def CharSequence delegateWrapperControlOutMethods(Port port) '''
 «««		Simple flag checks
-		«FOR event : port.outputEvents SEPARATOR "\n"»
+		«FOR event : port.outputEvents SEPARATOR System.lineSeparator»
 			@Override
 			public boolean isRaised«event.name.toFirstUpper»() {
 				// No real operation as out event are not interpreted in the case of control ports
@@ -409,7 +424,7 @@ class AsynchronousAdapterCodeGenerator {
 	 */
 	protected def CharSequence delegateWrapperOutMethods(Port port, String instanceName) '''
 «««		Simple flag checks
-		«FOR event : port.outputEvents SEPARATOR "\n"»
+		«FOR event : port.outputEvents SEPARATOR System.lineSeparator»
 			@Override
 			public boolean isRaised«event.name.toFirstUpper»() {
 				return «instanceName».get«port.name.toFirstUpper»().isRaised«event.name.toFirstUpper»();

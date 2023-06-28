@@ -65,7 +65,7 @@ class CompositeComponentCodeGenerator {
 	 * Generates methods that for in-event raisings in the case of composite components.
 	 */
 	def CharSequence delegateRaisingMethods(Port systemPort) '''
-		«FOR event : systemPort.inputEvents SEPARATOR "\n"»
+		«FOR event : systemPort.inputEvents SEPARATOR System.lineSeparator»
 			@Override
 			public void raise«event.name.toFirstUpper»(«event.generateParameters») {
 				«FOR connector : systemPort.portBindings»
@@ -116,7 +116,7 @@ class CompositeComponentCodeGenerator {
 	 */
 	def CharSequence implementOutMethods(Port systemPort) '''
 «««		Simple flag checks
-		«FOR event : systemPort.outputEvents SEPARATOR "\n"»
+		«FOR event : systemPort.outputEvents SEPARATOR System.lineSeparator»
 			@Override
 			public boolean isRaised«event.name.toFirstUpper»() {
 				return isRaised«event.name.toFirstUpper»;

@@ -25,6 +25,7 @@ import hu.bme.mit.gamma.expression.model.AndExpression;
 import hu.bme.mit.gamma.expression.model.ArgumentedElement;
 import hu.bme.mit.gamma.expression.model.BinaryExpression;
 import hu.bme.mit.gamma.expression.model.ConstantDeclaration;
+import hu.bme.mit.gamma.expression.model.DecimalLiteralExpression;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.DivideExpression;
@@ -49,6 +50,7 @@ import hu.bme.mit.gamma.expression.model.MultiplyExpression;
 import hu.bme.mit.gamma.expression.model.NotExpression;
 import hu.bme.mit.gamma.expression.model.OrExpression;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
+import hu.bme.mit.gamma.expression.model.RationalLiteralExpression;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.SubtractExpression;
 import hu.bme.mit.gamma.expression.model.TrueExpression;
@@ -171,6 +173,64 @@ public class ExpressionEvaluator {
 		
 		return range;
 	}
+	
+	// Decimal and rational
+	public double evaluateDecimal(Expression expression) {
+		if (expression instanceof DirectReferenceExpression) {
+			final DirectReferenceExpression referenceExpression = (DirectReferenceExpression) expression;
+			Declaration declaration = referenceExpression.getDeclaration();
+			if (declaration instanceof ConstantDeclaration) {
+				final ConstantDeclaration constantDeclaration = (ConstantDeclaration) declaration;
+				return evaluateDecimal(constantDeclaration.getExpression());
+			}
+			if (declaration instanceof ParameterDeclaration) {
+				final ParameterDeclaration parameterDeclaration = (ParameterDeclaration) declaration;
+				final Expression argument = evaluateParameter(parameterDeclaration);
+				return evaluateDecimal(argument);
+			}
+			else {
+				throw new IllegalArgumentException("Not transformable expression: " + expression.toString());
+			}
+		}
+		if (expression instanceof IntegerLiteralExpression) {
+			final IntegerLiteralExpression integerLiteralExpression = (IntegerLiteralExpression) expression;
+			return (double) integerLiteralExpression.getValue().intValue();
+		}
+		if (expression instanceof DecimalLiteralExpression) {
+			final DecimalLiteralExpression decimalLiteralExpression = (DecimalLiteralExpression) expression;
+			return decimalLiteralExpression.getValue().doubleValue();
+		}
+		if (expression instanceof RationalLiteralExpression) {
+			final RationalLiteralExpression rationalLiteralExpression = (RationalLiteralExpression) expression;
+			return  rationalLiteralExpression.getNumerator().doubleValue()/
+					rationalLiteralExpression.getDenominator().doubleValue();
+		}
+		if (expression instanceof EnumerationLiteralExpression) {
+			EnumerationLiteralDefinition enumLiteral = ((EnumerationLiteralExpression) expression).getReference();
+			EnumerationTypeDefinition type = (EnumerationTypeDefinition) enumLiteral.eContainer();
+			return (double) type.getLiterals().indexOf(enumLiteral);
+		}
+		if (expression instanceof MultiplyExpression) {
+			final MultiplyExpression multiplyExpression = (MultiplyExpression) expression;
+			return multiplyExpression.getOperands().stream().map(it -> evaluateDecimal(it)).reduce(1.0,
+					(p1, p2) -> p1 * p2);
+		}
+		if (expression instanceof DivideExpression) {
+			final DivideExpression divideExpression = (DivideExpression) expression;
+			return evaluateDecimal(divideExpression.getLeftOperand())
+					/ evaluateDecimal(divideExpression.getRightOperand());
+		}
+		if (expression instanceof AddExpression) {
+			final AddExpression addExpression = (AddExpression) expression;
+			return addExpression.getOperands().stream().map(it -> evaluateDecimal(it)).reduce(0.0, (p1, p2) -> p1 + p2);
+		}
+		if (expression instanceof SubtractExpression) {
+			final SubtractExpression subtractExpression = (SubtractExpression) expression;
+			return evaluateDecimal(subtractExpression.getLeftOperand())
+					- evaluateDecimal(subtractExpression.getRightOperand());
+		}
+		throw new IllegalArgumentException("Not transformable expression: " + expression);
+	} 
 	
 	// Booleans
 	public boolean evaluateBoolean(Expression expression) {

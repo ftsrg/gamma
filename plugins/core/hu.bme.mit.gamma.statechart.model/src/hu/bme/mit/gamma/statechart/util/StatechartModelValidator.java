@@ -109,6 +109,7 @@ import hu.bme.mit.gamma.statechart.statechart.ClockTickReference;
 import hu.bme.mit.gamma.statechart.statechart.ComplexTrigger;
 import hu.bme.mit.gamma.statechart.statechart.EntryState;
 import hu.bme.mit.gamma.statechart.statechart.ForkState;
+import hu.bme.mit.gamma.statechart.statechart.InitialState;
 import hu.bme.mit.gamma.statechart.statechart.JoinState;
 import hu.bme.mit.gamma.statechart.statechart.MergeState;
 import hu.bme.mit.gamma.statechart.statechart.OpaqueTrigger;
@@ -769,6 +770,16 @@ public class StatechartModelValidator extends ActionModelValidator {
 					}
 				}
 			}
+		}
+		return validationResultMessages;
+	}
+	
+	public  Collection<ValidationResultMessage> checkInitialTransition(Transition transition){
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		if (transition.getSourceState() instanceof InitialState && transition.getTargetState() instanceof PseudoState) {
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING, 
+					"If a transition from an initial state goes into pseudostate, then it might cause an error during XSTS transformation.",
+						new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__TARGET_STATE)));
 		}
 		return validationResultMessages;
 	}
@@ -1551,7 +1562,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 		Collection<Port> ports = StatechartModelDerivedFeatures.getAllPorts(type);
 		if (!ports.contains(port)) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-					"The specified port is not on instance " + instance.getName(),
+				"The specified port is not on instance " + instance.getName(),
 					new ReferenceInfo(CompositeModelPackage.Literals.INSTANCE_PORT_REFERENCE__PORT)));
 		}
 		return validationResultMessages;
@@ -1586,8 +1597,8 @@ public class StatechartModelValidator extends ActionModelValidator {
 		for (PortBinding portDefinition : portDefinitions) {
 			for (InstancePortReference output : channel.getRequiredPorts()) {
 				if (StatechartModelDerivedFeatures.equals(output, portDefinition.getInstancePortReference())) {
-					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-							"A port of an instance can be included either in a channel or a port binding",
+					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+						"A port of an instance can be included either in a channel or a port binding",
 							new ReferenceInfo(CompositeModelPackage.Literals.BROADCAST_CHANNEL__REQUIRED_PORTS)));
 				}
 			}
@@ -1611,8 +1622,8 @@ public class StatechartModelValidator extends ActionModelValidator {
 						.collect(Collectors.toList())) {
 			// Broadcast ports are also restricted to be used only in a single channel (restriction on syntax only)
 			if (StatechartModelDerivedFeatures.equals(instancePortReference, channel.getProvidedPort())) {
-				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-						"A port of an instance can be included only in a single channel",
+				validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING,
+					"A port of an instance should be included only in a single channel; else signals may overwrite each other",
 						new ReferenceInfo(CompositeModelPackage.Literals.CHANNEL__PROVIDED_PORT)));
 			}
 		}
@@ -1634,8 +1645,8 @@ public class StatechartModelValidator extends ActionModelValidator {
 				.filter(it -> it != channel.getRequiredPort() && it.eContainer() instanceof Channel)
 				.collect(Collectors.toList())) {
 			if (StatechartModelDerivedFeatures.equals(instancePortReference, channel.getRequiredPort())) {
-				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-						"A port of an instance can be included only in a single channel",
+				validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING,
+					"A port of an instance should be included only in a single channel; else signals may overwrite each other",
 						new ReferenceInfo(CompositeModelPackage.Literals.SIMPLE_CHANNEL__REQUIRED_PORT)));
 			}
 		}
@@ -1659,8 +1670,8 @@ public class StatechartModelValidator extends ActionModelValidator {
 			for (InstancePortReference requiredPort : channel.getRequiredPorts()) {
 				if (StatechartModelDerivedFeatures.equals(instancePortReference, requiredPort)) {
 					int index = channel.getRequiredPorts().indexOf(requiredPort);
-					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-						"A port of an instance can be included only in a single channel",
+					validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING,
+						"A port of an instance should be included only in a single channel; else signals may overwrite each other",
 							new ReferenceInfo(CompositeModelPackage.Literals.BROADCAST_CHANNEL__REQUIRED_PORTS, index)));
 				}
 			}
@@ -1671,8 +1682,8 @@ public class StatechartModelValidator extends ActionModelValidator {
 					.filter(it -> it != requiredPort && it.eContainer() instanceof Channel).collect(Collectors.toList())) {
 				if (StatechartModelDerivedFeatures.equals(requiredPort2, requiredPort)) {
 					int index = channel.getRequiredPorts().indexOf(requiredPort2);
-					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-							"A port of an instance can be included only in a single channel",
+					validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING,
+						"A port of an instance should be included only in a single channel; else signals may overwrite each other",
 							new ReferenceInfo(CompositeModelPackage.Literals.BROADCAST_CHANNEL__REQUIRED_PORTS, index)));
 				}
 			}

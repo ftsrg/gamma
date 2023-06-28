@@ -1,11 +1,11 @@
 /********************************************************************************
  * Copyright (c) 2018-2023 Contributors to the Gamma project
- *
+ * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
+ * 
  * SPDX-License-Identifier: EPL-1.0
  ********************************************************************************/
 package hu.bme.mit.gamma.xsts.codegeneration.java
@@ -26,24 +26,23 @@ class StatechartWrapperCodeGenerator {
 	final String BASE_PACKAGE_NAME
 	final String STATECHART_PACKAGE_NAME
 	final String CLASS_NAME
-	
+
 	final StatechartDefinition gammaStatechart
 	final XSTS xSts
-	
+
 	final extension TypeSerializer typeSerializer = TypeSerializer.INSTANCE
 	final extension PortDiagnoser portDiagnoser = PortDiagnoser.INSTANCE
 	final extension ValueDeclarationAccessor valueDeclarationAccessor = ValueDeclarationAccessor.INSTANCE
 	final extension InternalEventHandlerCodeGenerator internalEventHandler = InternalEventHandlerCodeGenerator.INSTANCE
-	
-	new(String basePackageName, String statechartPackageName,
-			StatechartDefinition gammaStatechart, XSTS xSts) {
+
+	new(String basePackageName, String statechartPackageName, StatechartDefinition gammaStatechart, XSTS xSts) {
 		this.BASE_PACKAGE_NAME = basePackageName
 		this.STATECHART_PACKAGE_NAME = statechartPackageName
 		this.CLASS_NAME = gammaStatechart.componentClassName
 		this.gammaStatechart = gammaStatechart
 		this.xSts = xSts
 	}
-	
+
 	protected def createStatechartWrapperClass() '''
 		package «STATECHART_PACKAGE_NAME»;
 		
@@ -90,11 +89,11 @@ class StatechartWrapperCodeGenerator {
 				notifyListeners();
 				«IF gammaStatechart.hasInternalPort»handleInternalEvents();«ENDIF»
 			}
-
+		
 			/** Changes the event queues of the component instance. Should be used only be the container (composite system) class. */
 			public void changeEventQueues() {
-				insertQueue = !insertQueue;
-				processQueue = !processQueue;
+			insertQueue = !insertQueue;
+			processQueue = !processQueue;
 			}
 			
 			/** Changes the event queues to which the events are put. Should be used only be a cascade container (composite system) class. */
@@ -129,7 +128,7 @@ class StatechartWrapperCodeGenerator {
 					«FOR event : port.getEvents(EventDirection.IN)»
 						@Override
 						public void raise«event.name.toFirstUpper»(«FOR parameter : event.parameterDeclarations SEPARATOR ', '»«parameter.type.serialize» «parameter.name»«ENDFOR») {
-							getInsertQueue().add(new Event("«port.name».«event.name»"«IF !event.parameterDeclarations.empty», «FOR parameter : event.parameterDeclarations SEPARATOR ', '»«parameter.name»«ENDFOR»«ENDIF»));
+						getInsertQueue().add(new Event("«port.name».«event.name»"«IF !event.parameterDeclarations.empty», «FOR parameter : event.parameterDeclarations SEPARATOR ', '»«parameter.name»«ENDFOR»«ENDIF»));
 						}
 					«ENDFOR»
 					«FOR event : port.getEvents(EventDirection.OUT)»
@@ -163,6 +162,16 @@ class StatechartWrapperCodeGenerator {
 				changeEventQueues();
 				runComponent();
 			}
+			
+			//universal scheduling interface
+			public void schedule() {
+				runCycle();
+			}
+			
+		//get the wrapped statemachine
+		public «gammaStatechart.wrappedStatemachineClassName» get«CLASS_NAME.toFirstUpper»(){
+			return «CLASS_NAME.toFirstLower»;
+		}
 			
 			public void runComponent() {
 				Queue<Event> eventQueue = getProcessQueue();
@@ -255,9 +264,9 @@ class StatechartWrapperCodeGenerator {
 			}
 		}
 	'''
-	
+
 	def getClassName() {
 		return CLASS_NAME
 	}
-	
+
 }

@@ -13,6 +13,7 @@ package hu.bme.mit.gamma.plantuml.commandhandler;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IPath;
@@ -23,9 +24,15 @@ import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 
+import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition;
+import hu.bme.mit.gamma.expression.model.FunctionDeclaration;
+import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
+import hu.bme.mit.gamma.plantuml.transformation.AdapterToPlantUmlTransformer;
 import hu.bme.mit.gamma.plantuml.transformation.CompositeToPlantUmlTransformer;
+import hu.bme.mit.gamma.plantuml.transformation.InterfaceToPlantUmlTransformer;
 import hu.bme.mit.gamma.plantuml.transformation.StatechartToPlantUmlTransformer;
 import hu.bme.mit.gamma.plantuml.transformation.TraceToPlantUmlTransformer;
+import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter;
 import hu.bme.mit.gamma.statechart.composite.CompositeComponent;
 import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.Package;
@@ -58,19 +65,19 @@ public class TextProvider extends AbstractDiagramIntentProvider {
 		}
 		return false;
 	}
-	
+
 	@Override
 	public Boolean supportsPath(IPath arg) {
 		return supportedExtensions.contains(arg.getFileExtension()); // Not called
 	}
-	
+
 	@Override
 	protected Collection<? extends DiagramIntent> getDiagramInfos(
 			final WorkbenchPartDiagramIntentProviderContext context) {
 		ISelection selection = context.getSelection();
 		return getDiagramInfo(selection);
 	}
-	
+
 	private Collection<? extends DiagramIntent> getDiagramInfo(ISelection selection) {
 		if (selection instanceof IStructuredSelection) {
 			IStructuredSelection structuredSelection = (IStructuredSelection) selection;
@@ -95,14 +102,14 @@ public class TextProvider extends AbstractDiagramIntentProvider {
 		}
 		return null;
 	}
-	
+
 	private Resource getResource(IPath path) {
 		ResourceSet resourceSet = new ResourceSetImpl();
 		URI traceModelUri = URI.createPlatformResourceURI(path.toString(), true);
 		Resource resource = resourceSet.getResource(traceModelUri, true);
 		return resource;
 	}
-	
+
 	private String getComponentPlantUmlCode(Resource resource) {
 		if (!resource.getContents().isEmpty()) {
 			Package _package = (Package) resource.getContents().get(0);
@@ -111,19 +118,36 @@ public class TextProvider extends AbstractDiagramIntentProvider {
 				Component component = components.get(0);
 				if (component instanceof StatechartDefinition) {
 					StatechartDefinition statechartDefinition = (StatechartDefinition) component;
-					StatechartToPlantUmlTransformer transformer = new StatechartToPlantUmlTransformer(statechartDefinition);
+					StatechartToPlantUmlTransformer transformer = new StatechartToPlantUmlTransformer(
+							statechartDefinition);
 					return transformer.execute();
-				}
-				else if (component instanceof CompositeComponent) {
+				} else if (component instanceof CompositeComponent) {
 					CompositeComponent composite = (CompositeComponent) component;
 					CompositeToPlantUmlTransformer transformer = new CompositeToPlantUmlTransformer(composite);
 					return transformer.execute();
+				} else if (component instanceof AsynchronousAdapter) {
+					AsynchronousAdapter adapter = (AsynchronousAdapter) component;
+					AdapterToPlantUmlTransformer transformer = new AdapterToPlantUmlTransformer(adapter);
+					return transformer.execute();
 				}
+			} else if (!_package.getInterfaces().isEmpty()) {
+				List<EnumerationTypeDefinition> enums = _package.getTypeDeclarations().stream()
+						.filter(typeDecalration -> typeDecalration.getType() instanceof EnumerationTypeDefinition)
+						.map(typeDecalration -> (EnumerationTypeDefinition) typeDecalration.getType())
+						.collect(Collectors.toList());
+				List<RecordTypeDefinition> structs = _package.getTypeDeclarations().stream()
+						.filter(typeDecalration -> typeDecalration.getType() instanceof RecordTypeDefinition)
+						.map(typeDecalration -> (RecordTypeDefinition) typeDecalration.getType())
+						.collect(Collectors.toList());
+				List<FunctionDeclaration> funcs = _package.getFunctionDeclarations();
+				InterfaceToPlantUmlTransformer transformer = new InterfaceToPlantUmlTransformer(
+						_package.getInterfaces(), enums, structs, funcs);
+				return transformer.execute();
 			}
 		}
 		return ""; // To counter nullptr exceptions
 	}
-	
+
 	private String getTracePlantUmlCode(Resource resource) {
 		if (!resource.getContents().isEmpty()) {
 			ExecutionTrace trace = (ExecutionTrace) resource.getContents().get(0);
@@ -132,5 +156,5 @@ public class TextProvider extends AbstractDiagramIntentProvider {
 		}
 		return null;
 	}
-	
+
 }

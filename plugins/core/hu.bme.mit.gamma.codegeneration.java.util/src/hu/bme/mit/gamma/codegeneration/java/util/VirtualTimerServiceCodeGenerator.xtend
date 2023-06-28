@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -74,8 +74,9 @@ class VirtualTimerServiceCodeGenerator {
 			
 				public boolean equals(Object obj) {
 					if (obj instanceof TimeEventTask) {
-						return ((TimeEventTask) obj).callback.equals(callback)
-								&& ((TimeEventTask) obj).eventID == eventID;
+						TimeEventTask timeEventTask = (TimeEventTask) obj;
+						return timeEventTask.callback.equals(callback)
+								&& timeEventTask.eventID == eventID;
 					}
 					return super.equals(obj);
 				}

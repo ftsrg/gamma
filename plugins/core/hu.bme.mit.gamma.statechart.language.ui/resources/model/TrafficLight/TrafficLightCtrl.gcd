@@ -1,0 +1,48 @@
+package TrafficLightCtrl
+import "Interfaces"
+statechart TrafficLightCtrl [
+	port Control : requires Control
+	port PoliceInterrupt : requires PoliceInterrupt
+	port LightCommands : provides LightCommands
+] {
+	timeout BlinkingYellowTimeout3
+	timeout BlackTimeout4
+	region main_region {
+		state Normal {
+			region normal {
+				shallow history Entry2
+				state Green {
+					entry / raise LightCommands.displayGreen;
+				}
+				state Red {
+					entry / raise LightCommands.displayRed;
+				}
+				state Yellow {
+					entry / raise LightCommands.displayYellow;
+				}
+			}
+		}
+		state Interrupted {
+			region interrupted {
+				initial Entry1
+				state Black {
+					entry / set BlackTimeout4 := 500 ms; raise LightCommands.displayNone;
+				}
+				state BlinkingYellow {
+					entry / set BlinkingYellowTimeout3 := 500 ms; raise LightCommands.displayYellow;
+				}
+			}
+		}
+		initial Entry0
+	}
+	transition from Yellow to Red when Control.toggle
+	transition from Normal to Interrupted when PoliceInterrupt.police
+	transition from Entry2 to Red
+	transition from Entry1 to BlinkingYellow
+	transition from Entry0 to Normal
+	transition from Interrupted to Normal when PoliceInterrupt.police
+	transition from BlinkingYellow to Black when timeout BlinkingYellowTimeout3
+	transition from Black to BlinkingYellow when timeout BlackTimeout4
+	transition from Green to Yellow when Control.toggle
+	transition from Red to Green when Control.toggle
+}
