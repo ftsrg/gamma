@@ -39,7 +39,7 @@ class TypeSerializer {
 	
 	def dispatch String serializeType(EnumerationTypeDefinition type) '''{ «FOR literal : type.literals SEPARATOR ', '»«literal.name»«ENDFOR» }'''
 	
-	def dispatch String serializeType(ArrayTypeDefinition type) '''array 0..«type.size» of «type.elementType.serializeType»'''
+	def dispatch String serializeType(ArrayTypeDefinition type) '''array 0..«type.size.serialize» of «type.elementType.serializeType»'''
 	
 	// 
 

@@ -42,6 +42,7 @@ import hu.bme.mit.gamma.expression.model.IfThenElseExpression;
 import hu.bme.mit.gamma.expression.model.ImplyExpression;
 import hu.bme.mit.gamma.expression.model.InequalityExpression;
 import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression;
+import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression;
 import hu.bme.mit.gamma.expression.model.LessEqualExpression;
 import hu.bme.mit.gamma.expression.model.LessExpression;
 import hu.bme.mit.gamma.expression.model.MultiplyExpression;
@@ -153,6 +154,22 @@ public class ExpressionEvaluator {
 			}
 		}
 		throw new IllegalArgumentException("Not found expression for parameter: " + parameter);
+	}
+	
+	public List<Integer> evaluateRange(IntegerRangeLiteralExpression expression) {
+		// Generating a list of integer to iterate over
+		ArrayList<Integer> range = new ArrayList<Integer>();
+		
+		Expression lhs = expression.getLeftOperand();
+		Expression rhs = expression.getRightOperand();
+		
+		// if the expression is left inclusive we leave the lhs as is, if exclusive we have to increase the lhs by 1
+		// similarly if the expression is right inclusive we have to increase the rhs by 1, if exlusive we can leave as is
+		for (int i = (evaluate(lhs)+(expression.isLeftInclusive() ? 0 : 1)) ; i < (evaluate(rhs)+(expression.isRightInclusive() ? 1 : 0)); i++ ) {
+			range.add(i);
+		}
+		
+		return range;
 	}
 	
 	// Booleans

@@ -4,6 +4,7 @@ import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.model.Action
 
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
@@ -21,6 +22,8 @@ import hu.bme.mit.gamma.xsts.nuxmv.transformation.util.HavocHandler
 import java.util.Map
 import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.util.GammaEcoreUtil
+import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
+import hu.bme.mit.gamma.xsts.model.ParallelAction
 
 class ModelSerializer {
 	// Singleton
@@ -33,6 +36,7 @@ class ModelSerializer {
 	//
 	protected final extension DeclarationSerializer declarationSerializer = DeclarationSerializer.INSTANCE
 	protected final extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
+	protected final extension ExpressionEvaluator evaluator = ExpressionEvaluator.INSTANCE
 	protected final extension TypeSerializer typeSerializer = TypeSerializer.INSTANCE
 	protected final extension ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE
 	protected final extension HavocHandler havocHandler = HavocHandler.INSTANCE
@@ -60,9 +64,10 @@ class ModelSerializer {
 «««		IVAR
 «««			«environmentalActions.serialize»
 		
-		«initializingActions.serializeInitializingActions»
+		«initializingActions.serializeInitializingAction»
 		
 		TRANS	
+			«environmentalActions.serializeTransition»
 			«transitions.serializeTransitions»
 		'''
 		
@@ -99,12 +104,12 @@ class ModelSerializer {
 		return '''«action.lhs.serialize» = «action.rhs.serialize»'''
 	}
 	
-	protected def dispatch String serializeTransition(AssignmentAction action) {
-		return '''next(«action.lhs.serialize») = «action.rhs.serialize»'''
+	protected def dispatch String serializeInitializingAction(AssignmentAction action) {
+		return '''INIT «action.lhs.serialize» = «action.rhs.serialize»'''
 	}
 	
-	protected def dispatch String serializeInitializingActions(AssignmentAction action) {
-		return '''INIT «action.lhs.serialize» = «action.rhs.serialize»'''
+	protected def dispatch String serializeTransition(AssignmentAction action) {
+		return '''next(«action.lhs.serialize») = «action.rhs.serialize»'''
 	}
 	
 	protected def dispatch String serialize(VariableDeclarationAction action) {
@@ -116,41 +121,35 @@ class ModelSerializer {
 		val variableDeclaration = action.variableDeclaration
 		val expression = variableDeclaration.expression
 		if (expression === null) {
-			return '''
-				ERROR
-			'''
+//			throw new IllegalArgumentException("In VariableDeclarationAction " + action + "expression cannot be null!")
+			return ''''''
 		} else {
 			return '''
 				«variableDeclaration.serializeName» = «expression.serialize»
 			'''
 		}
-
 	}
 
 	protected def dispatch String serialize(AssumeAction action) '''
 		ASSUME TODO «action.assumption.serialize»
 	'''
 
+
+
 	protected def dispatch String serialize(EmptyAction action) ''''''
+
+	protected def dispatch String serializeInitializingAction(EmptyAction action) ''''''
 
 	protected def dispatch String serializeTransition(EmptyAction action) ''''''
 	
+	
+	
 	protected def dispatch String serialize(IfAction action) '''
-«««		case
-			«action.condition.serialize» -> «action.then.serialize»;
-«««			«IF action.^else !== null && !(action.^else instanceof EmptyAction)»
-«««			TRUE : «action.^else.serialize»;
-«««			«ENDIF»
-«««		esac
+		«action.condition.serialize» -> «action.then.serialize»;
 	'''
 	
 	protected def dispatch String serializeTransition(IfAction action) '''
-«««		case
-			«action.condition.serialize» -> «action.then.serializeTransition»
-«««			«IF action.^else !== null && !(action.^else instanceof EmptyAction)»
-«««			!(«action.condition.serialize») -> «action.^else.serialize»;
-«««			«ENDIF»
-«««		esac
+		«action.condition.serialize» -> «action.then.serializeTransition»
 	'''
 	
 	protected def dispatch String serialize(HavocAction action) {
@@ -164,40 +163,90 @@ class ModelSerializer {
 		'''
 	}
 	
-	protected def dispatch String serialize(LoopAction action) {
-		return "Loop TODO"
-//		val name = action.iterationParameterDeclaration.name
-//		val left = action.range.getLeft(true)
-//		val right = action.range.getRight(true)
-//		return '''
-//			local int «name»;
-//			for («name» : «left.serialize»..«right.serialize») {
-//				«action.action.serialize»
-//			}
-//			«name» = 0;
-//		'''
+	protected def dispatch String serializeTransition(HavocAction action) {
+		val xStsDeclaration = action.lhs.declaration
+		val xStsVariable = xStsDeclaration as VariableDeclaration
+
+		return '''
+		next(«xStsVariable.name») = {«FOR element : xStsVariable.createSet SEPARATOR ', '»«element.serialize»«ENDFOR»}
+		'''
 	}
+	
+	protected def dispatch String serialize(LoopAction action) {
+		if (isEvaluable(action.range)) {
+			val paramDeclaration = action.iterationParameterDeclaration
+			val range = action.range.evaluateRange
+			val sequentializedLoop = '''(«FOR i : range SEPARATOR ' & '»«action.action.serialize.replace(paramDeclaration.name, i.toString)»«ENDFOR»)'''
+			
+			return sequentializedLoop
+		} else {
+			throw new IllegalArgumentException("Only evaluable loops can be serialized! " + action)
+		}
+	}
+	
+	protected def dispatch String serializeInitializingAction(LoopAction action) {
+		if (isEvaluable(action.range)) {
+			val paramDeclaration = action.iterationParameterDeclaration
+			val range = action.range.evaluateRange
+			val sequentializedLoop = '''
+			«FOR i : range»
+			«action.action.serializeInitializingAction.replace(paramDeclaration.name, i.toString)»
+			«ENDFOR»
+			'''
+			
+			return sequentializedLoop
+		} else {
+			throw new IllegalArgumentException("Only evaluable loops can be serialized! " + action)
+		}
+	}
+	
+		protected def dispatch String serializeTransition(LoopAction action) {
+		if (isEvaluable(action.range)) {
+			val paramDeclaration = action.iterationParameterDeclaration
+			val range = action.range.evaluateRange
+			val sequentializedLoop = '''(«FOR i : range SEPARATOR ' & '»«action.action.serializeTransition.replace(paramDeclaration.name, i.toString)»«ENDFOR»)'''
+			
+			return sequentializedLoop
+		} else {
+			throw new IllegalArgumentException("Only evaluable loops can be serialized! " + action)
+		}
+	}
+	
+	
+	
 	
 	protected def dispatch String serialize(NonDeterministicAction action) {
 		return '''
 		{«FOR subaction : action.actions SEPARATOR ', '»«subaction.serialize»«ENDFOR»}
 		'''
-	
 	}
-	
-	protected def dispatch String serializeInitializingActions(SequentialAction action) '''
-		«FOR subaction : action.actions»
-			«subaction.serializeInitializingActions /* Original action*/»
-		«ENDFOR»
-	'''
 	
 	protected def dispatch String serialize(SequentialAction action) '''
 		(«FOR subaction : action.actions SEPARATOR ' & '»«subaction.serialize»«ENDFOR»)
 	'''
 
-	protected def dispatch String serializeTransition(SequentialAction action) '''
-		(«FOR subaction : action.actions SEPARATOR ' & '»«subaction.serializeTransition»«ENDFOR»)
+	protected def dispatch String serializeInitializingAction(SequentialAction action) '''
+		«FOR subaction : action.actions»
+			«subaction.serializeInitializingAction /* Original action*/»
+		«ENDFOR»
 	'''
+
+	// AssumeActions should be the first in the sequence, everywhere else is disregarded
+	protected def dispatch String serializeTransition(SequentialAction action) '''
+		«IF action.isFirstActionAssume»
+			(«action.getFirstActionAssume.assumption.serialize») -> (
+			«FOR sequentialSubaction : action.actionsSkipFirst SEPARATOR ' & '»
+			«sequentialSubaction.serialize»
+			«ENDFOR»
+			)
+		«ELSE»
+			(«FOR subaction : action.actions.filter[!(it instanceof AssumeAction)] SEPARATOR ' & '»«subaction.serializeTransition»«ENDFOR»)
+		«ENDIF»
+	'''
+	
+	protected def dispatch String serialize(ParallelAction action) {throw new IllegalArgumentException("ParallelAction cannot be serialized! " + action)}
+	protected def dispatch String serializeInitializingAction(ParallelAction action) {throw new IllegalArgumentException("ParallelAction cannot be serialized! " + action)}
+	protected def dispatch String serializeTransition(ParallelAction action) {throw new IllegalArgumentException("ParallelAction cannot be serialized! " + action)}
 		
 		//
 	
@@ -205,7 +254,7 @@ class ModelSerializer {
 		if (transitions.size > 1) {
 			return '''
 					«FOR transition : transitions»
-					:: «transition.action.serialize»;
+					«transition.action.serializeTransition»;
 					«ENDFOR»
 			'''
 		}
