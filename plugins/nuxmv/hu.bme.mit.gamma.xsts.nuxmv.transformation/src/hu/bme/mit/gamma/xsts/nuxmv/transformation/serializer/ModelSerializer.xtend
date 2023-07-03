@@ -63,8 +63,6 @@ class ModelSerializer {
 		MODULE main
 		VAR
 			«xSts.serializeDeclaration»
-«««		IVAR
-«««			«environmentalActions.serialize»
 		
 		«initializingActions.serializeInitializingAction»
 		
@@ -242,7 +240,7 @@ class ModelSerializer {
 			«ENDFOR»
 			))
 		«ELSE»
-			(«FOR subaction : action.actions.filter[!(it instanceof AssumeAction) && !it.effectlessAction && !(it instanceof VariableDeclarationAction)] SEPARATOR ' & '»«subaction.serializeTransition»«ENDFOR»)
+			(«FOR subaction : action.actions.filter[!(it instanceof AssumeAction) && !it.effectlessAction && !(it instanceof VariableDeclarationAction)] SEPARATOR ' & '»(«subaction.serializeTransition»)«ENDFOR»)
 		«ENDIF»
 	'''
 	
