@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.logging.Level;
 
-import org.apache.commons.io.FileUtils;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -40,6 +39,7 @@ import hu.bme.mit.gamma.statechart.language.StatechartLanguageStandaloneSetupGen
 import hu.bme.mit.gamma.trace.language.TraceLanguageStandaloneSetup;
 import hu.bme.mit.gamma.ui.GammaApi;
 import hu.bme.mit.gamma.ui.util.ResourceSetCreator;
+import hu.bme.mit.gamma.util.FileUtil;
 
 // This is the entry point for the Headless Gamma
 public class GammaEntryPoint extends HeadlessApplicationCommandHandler {
@@ -184,16 +184,21 @@ public class GammaEntryPoint extends HeadlessApplicationCommandHandler {
 	// Sets the status of the workspace + project pair to "not under operation"
 	private void updateUnderOperationStatus(String projectDescriptorPath) throws IOException {
 		File jsonFile = new File(projectDescriptorPath);
-		String jsonString = FileUtils.readFileToString(jsonFile);
-		JsonElement jElement = new JsonParser().parse(jsonString);
-		JsonObject jObject = jElement.getAsJsonObject();
-		jObject.remove(UNDER_OPERATION_PROPERTY);
-		jObject.addProperty(UNDER_OPERATION_PROPERTY, false);
+		String jsonString;
+		try {
+			jsonString = FileUtil.INSTANCE.loadString(jsonFile);
+			JsonElement jElement = new JsonParser().parse(jsonString);
+			JsonObject jObject = jElement.getAsJsonObject();
+			jObject.remove(UNDER_OPERATION_PROPERTY);
+			jObject.addProperty(UNDER_OPERATION_PROPERTY, false);
+			Gson gson = new Gson();
+			String resultingJson = gson.toJson(jElement);
+			FileUtil.INSTANCE.saveString(jsonFile, resultingJson);
 
-		Gson gson = new Gson();
-		String resultingJson = gson.toJson(jElement);
-		FileUtils.writeStringToFile(jsonFile, resultingJson);
-
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 }

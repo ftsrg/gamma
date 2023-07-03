@@ -10,11 +10,17 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.codegeneration.java.util
 
+import java.util.Set
+import java.util.Collections
+import java.util.HashSet
+
 import hu.bme.mit.gamma.statechart.interface_.EventDirection
 import hu.bme.mit.gamma.statechart.interface_.Interface
+import hu.bme.mit.gamma.statechart.interface_.Event
 
 import static extension hu.bme.mit.gamma.codegeneration.java.util.Namings.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
+
 
 class InterfaceCodeGenerator {
 	
@@ -25,6 +31,8 @@ class InterfaceCodeGenerator {
 	new(String basePackageName) {
 		this.BASE_PACKAGE_NAME = basePackageName
 	}
+	
+
 	
 	def createInterface(Interface _interface) '''
 		package «_interface.getPackageString(BASE_PACKAGE_NAME)»;
@@ -67,12 +75,28 @@ class InterfaceCodeGenerator {
 		}
 	'''
 	
+	protected def Set<Event> collectAllEvents(Interface anInterface, EventDirection oppositeDirection) {
+		if (anInterface === null) {
+			return Collections.EMPTY_SET
+		}
+		val eventSet = new HashSet<Event>
+		for (parentInterface : anInterface.parents) {
+			eventSet.addAll(parentInterface.collectAllEvents(oppositeDirection))
+		}
+		for (event : anInterface.events
+				.filter[it.direction != oppositeDirection]
+				.map[it.event]) {
+			eventSet.add(event)
+		}
+		return eventSet
+	}
+	
 	private def createInterface(Interface _interface, EventDirection eventDirection)  {
 		val notCorrectDirection = eventDirection.opposite
 		'''
-			«FOR eventDeclaration : _interface.events.filter[it.direction != notCorrectDirection]»
-				boolean isRaised«eventDeclaration.event.name.toFirstUpper»();
-				«FOR parameter : eventDeclaration.event.parameterDeclarations»
+			«FOR event : collectAllEvents(_interface,notCorrectDirection)»
+				boolean isRaised«event.name.toFirstUpper»();
+				«FOR parameter : event.parameterDeclarations»
 					«parameter.type.serialize» get«parameter.name.toFirstUpper»();
 				«ENDFOR»
 			«ENDFOR»
@@ -82,9 +106,8 @@ class InterfaceCodeGenerator {
 	private def createListenerInterface(Interface _interface, EventDirection eventDirection) {
 		val notCorrectDirection = eventDirection.opposite
 		'''
-			«FOR eventDeclaration : _interface.allEventDeclarations.filter[it.direction != notCorrectDirection]»
-				void raise«eventDeclaration.event.name.toFirstUpper»(«FOR parameter :
-					eventDeclaration.event.parameterDeclarations SEPARATOR ", "»«parameter.type.serialize» «parameter.name»«ENDFOR»);
+			«FOR event : collectAllEvents(_interface,notCorrectDirection)»
+				void raise«event.name.toFirstUpper»(«FOR parameter : event.parameterDeclarations SEPARATOR ", "»«parameter.type.serialize» «parameter.name»«ENDFOR»);
 			«ENDFOR»
 		'''
 	}

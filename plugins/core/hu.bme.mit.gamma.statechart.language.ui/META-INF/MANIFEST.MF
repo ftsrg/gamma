@@ -18,12 +18,19 @@ Require-Bundle: hu.bme.mit.gamma.statechart.language,
  org.eclipse.xtext.builder,
  hu.bme.mit.gamma.action.language.ui,
  hu.bme.mit.gamma.expression.language.ui,
- hu.bme.mit.gamma.language.util
+ hu.bme.mit.gamma.language.util,
+ org.eclipse.jdt.core,
+ org.eclipse.xtend.lib,
+ org.eclipse.core.runtime,
+ org.eclipse.core.resources,
+ org.eclipse.pde.core,
+ org.eclipse.ui.forms
 Import-Package: org.apache.log4j
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Export-Package: hu.bme.mit.gamma.statechart.language.ui.contentassist,
  hu.bme.mit.gamma.statechart.language.ui.internal,
  hu.bme.mit.gamma.statechart.language.ui.quickfix,
- hu.bme.mit.gamma.statechart.language.ui.serializer
+ hu.bme.mit.gamma.statechart.language.ui.serializer,
+ hu.bme.mit.gamma.statechart.language.ui.wizard
 Bundle-Activator: hu.bme.mit.gamma.statechart.language.ui.internal.LanguageActivator
 Automatic-Module-Name: hu.bme.mit.gamma.statechart.language.ui

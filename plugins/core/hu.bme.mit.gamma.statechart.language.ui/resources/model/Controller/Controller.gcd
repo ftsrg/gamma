@@ -1,0 +1,50 @@
+package Controller
+import "Interfaces"
+statechart Controller [
+	port PoliceInterrupt : requires PoliceInterrupt
+	port PriorityPolice : provides PoliceInterrupt
+	port PriorityControl : provides Control
+	port SecondaryControl : provides Control
+	port SecondaryPolice : provides PoliceInterrupt
+] {
+	timeout SecondaryTimeout2
+	timeout SecondaryPreparesTimeout3
+	timeout PriorityTimeout4
+	timeout InitTimeout5
+	timeout PriorityPreparesTimeout6
+	region main_region {
+		state Operating {
+			region operating {
+				shallow history Entry1
+				state Priority {
+					entry / set PriorityTimeout4 := 2 s; raise PriorityControl.toggle; raise SecondaryControl.toggle;
+				}
+				state Init {
+					entry / set InitTimeout5 := 2 s; raise PriorityControl.toggle;
+				}
+				state PriorityPrepares {
+					entry / set PriorityPreparesTimeout6 := 1 s; raise PriorityControl.toggle;
+				}
+				state Secondary {
+					entry / set SecondaryTimeout2 := 2 s; raise SecondaryControl.toggle; raise PriorityControl.toggle;
+				}
+				state SecondaryPrepares {
+					entry / set SecondaryPreparesTimeout3 := 1 s; raise SecondaryControl.toggle;
+				}
+			}
+		}
+		initial Entry0
+		state Interrupted
+	}
+	transition from PriorityPrepares to Secondary when timeout PriorityPreparesTimeout6
+	transition from Priority to PriorityPrepares when timeout PriorityTimeout4
+	transition from Operating to Interrupted when PoliceInterrupt.police / raise PriorityPolice.police; raise
+		SecondaryPolice.police;
+	transition from Entry0 to Operating
+	transition from Secondary to SecondaryPrepares when timeout SecondaryTimeout2
+	transition from Init to PriorityPrepares when timeout InitTimeout5
+	transition from SecondaryPrepares to Priority when timeout SecondaryPreparesTimeout3
+	transition from Interrupted to Operating when PoliceInterrupt.police / raise PriorityPolice.police; raise
+		SecondaryPolice.police;
+	transition from Entry1 to Init
+}

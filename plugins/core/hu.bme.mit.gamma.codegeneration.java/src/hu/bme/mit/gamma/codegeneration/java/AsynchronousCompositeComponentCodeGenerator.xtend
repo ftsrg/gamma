@@ -1,11 +1,11 @@
 /********************************************************************************
  * Copyright (c) 2018-2020 Contributors to the Gamma project
- *
+ * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
+ * 
  * SPDX-License-Identifier: EPL-1.0
  ********************************************************************************/
 package hu.bme.mit.gamma.codegeneration.java
@@ -22,9 +22,9 @@ import static extension hu.bme.mit.gamma.codegeneration.java.util.Namings.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class AsynchronousCompositeComponentCodeGenerator {
-	
+
 	protected final String PACKAGE_NAME
-	// 
+	//
 	protected final extension TimingDeterminer timingDeterminer = TimingDeterminer.INSTANCE
 	protected final extension Trace trace
 	protected final extension NameGenerator nameGenerator
@@ -40,17 +40,16 @@ class AsynchronousCompositeComponentCodeGenerator {
 		this.componentCodeGenerator = new ComponentCodeGenerator(this.trace)
 		this.compositeComponentCodeGenerator = new CompositeComponentCodeGenerator(this.PACKAGE_NAME, this.trace)
 	}
-	
-	def createAsynchronousCompositeComponentClass(
-			AbstractAsynchronousCompositeComponent component) {
+
+	def createAsynchronousCompositeComponentClass(AbstractAsynchronousCompositeComponent component) {
 		return component.createAsynchronousCompositeComponentClass(0, 0)
 	}
-	
+
 	/**
-	* Creates the Java code of the asynchronous composite class, containing asynchronous components.
-	*/
-	protected def createAsynchronousCompositeComponentClass(
-			AbstractAsynchronousCompositeComponent component, int channelId1, int channelId2) '''
+	 * Creates the Java code of the asynchronous composite class, containing asynchronous components.
+	 */
+	protected def createAsynchronousCompositeComponentClass(AbstractAsynchronousCompositeComponent component,
+		int channelId1, int channelId2) '''
 		package «component.generateComponentPackageName»;
 		
 		«component.generateCompositeSystemImports»
@@ -119,7 +118,7 @@ class AsynchronousCompositeComponentCodeGenerator {
 			}
 			
 			// Inner classes representing Ports
-			«FOR systemPort : component.ports SEPARATOR "\n"»
+			«FOR systemPort : component.ports SEPARATOR System.lineSeparator»
 				public class «systemPort.name.toFirstUpper» implements «systemPort.interfaceRealization.interface.implementationName».«systemPort.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper» {
 				
 					«systemPort.delegateRaisingMethods» 
@@ -212,7 +211,7 @@ class AsynchronousCompositeComponentCodeGenerator {
 			«ENDIF»
 			
 			/**  Getter for component instances, e.g., enabling to check their states. */
-			«FOR instance : component.components SEPARATOR "\n"»
+			«FOR instance : component.components SEPARATOR System.lineSeparator»
 				public «instance.type.generateComponentClassName» get«instance.name.toFirstUpper»() {
 					return «instance.name»;
 				}
@@ -220,5 +219,5 @@ class AsynchronousCompositeComponentCodeGenerator {
 			
 		}
 	'''
-	
+
 }

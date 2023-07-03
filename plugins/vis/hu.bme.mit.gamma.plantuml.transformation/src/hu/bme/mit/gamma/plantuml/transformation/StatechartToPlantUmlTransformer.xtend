@@ -59,6 +59,9 @@ class StatechartToPlantUmlTransformer {
 
 	def String execute() '''
 		@startuml
+		skinparam nodesep 30
+		skinparam ranksep 30
+		skinparam padding 5
 			«statechart.listVariablesInNote»
 			«statechart.mainRegionSearch»
 		@enduml

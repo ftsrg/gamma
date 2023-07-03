@@ -1,0 +1,25 @@
+package clocks
+
+import "Interfaces/Interfaces.gcd"
+
+@TransitionPriority = order-based
+statechart Counter [
+	port Toggle : requires AddSubtractClock
+] {
+	var a : integer
+	var reachedB : boolean
+	var rereachedA : boolean
+	region main {
+		initial Initial
+		state A
+		state B
+	}
+	
+	transition from Initial to A
+	transition from A to B when Toggle.add / reachedB := true; a := a + 1;
+	transition from B to B when Toggle.add / a := a + 1;
+	
+	
+	transition from B to A when Toggle.subtract / rereachedA := true; a := a - 1;
+	
+}

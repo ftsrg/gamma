@@ -15,15 +15,16 @@ import net.sourceforge.plantuml.util.AbstractDiagramIntent;
 public class GammaPlantUmlDiagramIntent extends AbstractDiagramIntent<String> {
 
 	protected String plantUmlDiagramText;
-	
+
 	public GammaPlantUmlDiagramIntent(String source) {
 		super(source);
 		plantUmlDiagramText = source;
 	}
-	
+
 	@Override
 	public String getDiagramText() {
 		return plantUmlDiagramText;
 	}
-	
+
 }
+	
