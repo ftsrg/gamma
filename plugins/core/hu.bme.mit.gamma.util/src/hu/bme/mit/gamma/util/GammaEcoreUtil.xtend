@@ -683,6 +683,13 @@ class GammaEcoreUtil {
 		return file.projectFile
 	}
 	
+	def File getProjectFile(URI uri) {
+		val fileString = uri.toFileString
+		val file = new File (fileString)
+		
+		return file.projectFile
+	}
+	
 	def File getProjectFile(File file) {
 		if (file === null) {
 			return null

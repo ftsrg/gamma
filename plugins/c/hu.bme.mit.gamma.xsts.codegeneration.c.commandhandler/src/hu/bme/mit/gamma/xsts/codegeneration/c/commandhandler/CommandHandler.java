@@ -24,6 +24,7 @@ import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.handlers.HandlerUtil;
 
+import hu.bme.mit.gamma.util.GammaEcoreUtil;
 import hu.bme.mit.gamma.xsts.codegeneration.c.CodeBuilder;
 import hu.bme.mit.gamma.xsts.codegeneration.c.HavocBuilder;
 import hu.bme.mit.gamma.xsts.codegeneration.c.IStatechartCode;
@@ -34,18 +35,19 @@ import hu.bme.mit.gamma.xsts.model.XSTS;
 public class CommandHandler extends AbstractHandler {
 	
 	private static final Logger LOGGER = Logger.getLogger("hu.bme.mit.gamma.xsts.codegeneration.c.commandhandler");
+	private static final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
+
 	
 	public Resource loadResource(URI uri) {
-	    return new ResourceSetImpl().getResource(uri, true);
+		return new ResourceSetImpl().getResource(uri, true);
 	}
 	
 	public URI getPackageRoot(URI uri) {
-	    /* keep stepping back until the until the folder "src" exists */
-		while (!new File(uri.toFileString() + "/src").exists()) {
-	        uri = uri.trimSegments(1);
-	    }
-	    /* now uri should point to the root of the package */
-	    return uri;
+		File projectFile = ecoreUtil.getProjectFile(uri);
+		
+		/* now uri should point to the root of the package */
+		URI fileUri = URI.createFileURI(projectFile.toString());
+		return fileUri;
 	}
 
 	@Override
@@ -63,22 +65,25 @@ public class CommandHandler extends AbstractHandler {
 		
 		/* retrieve xsts model */
 		IFile file = (IFile) element;
-		Resource res = loadResource(URI.createURI(file.getLocationURI().toString()));
-		XSTS xsts = (XSTS) res.getContents().get(0);
+		String locationUriString = file.getLocationURI().toString();
+		URI locationUri = URI.createURI(locationUriString);
+		
+		Resource res = loadResource(locationUri);
+		XSTS xSts = (XSTS) res.getContents().get(0);
 		
 		/* determine the path of the project's root */
-		URI root = getPackageRoot(URI.createURI(file.getLocationURI().toString()));
+		URI root = getPackageRoot(locationUri);
 		
-		LOGGER.info("XSTS model " + xsts.getName() + " successfully read.");
+		LOGGER.info("XSTS model " + xSts.getName() + " successfully read");
 		
 		/* define the platform */
 		final SupportedPlatforms platform = SupportedPlatforms.UNIX;
 		
 		/* define what to generate */
 		List<IStatechartCode> generate = List.of(
-			new CodeBuilder(xsts),
-			new WrapperBuilder(xsts),
-			new HavocBuilder(xsts)
+			new CodeBuilder(xSts),
+			new WrapperBuilder(xSts),
+			new HavocBuilder(xSts)
 		);
 		
 		/* build c code */
@@ -89,7 +94,7 @@ public class CommandHandler extends AbstractHandler {
 			builder.save(root);
 		}
 		
-		LOGGER.info("C code from model " + xsts.getName() + " successfully created.");
+		LOGGER.info("C code from model " + xSts.getName() + " successfully generated");
 		
 		return null;
 	}
