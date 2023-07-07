@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -103,13 +103,38 @@ public class ExpressionEvaluator {
 		}
 		if (expression instanceof MultiplyExpression) {
 			MultiplyExpression multiplyExpression = (MultiplyExpression) expression;
-			return multiplyExpression.getOperands().stream().map(it -> evaluateInteger(it))
-					.reduce(1, (p1, p2) -> p1 * p2);
+			List<Expression> operands = multiplyExpression.getOperands();
+			List<Integer> evaluatedOperands = new ArrayList<Integer>();
+			IllegalArgumentException potentialException = null;
+			//
+			for (Expression multiplicationOperand : operands) {
+				try {
+					int evaluatedOperand = evaluateInteger(multiplicationOperand);
+					if (evaluatedOperand == 0) {
+						return 0;
+					}
+					else {
+						evaluatedOperands.add(evaluatedOperand);
+					}
+				} catch (IllegalArgumentException e) {
+					potentialException = e;
+				}
+			}
+			//
+			if (potentialException != null) {
+				throw potentialException;
+			}
+			return evaluatedOperands.stream().reduce(1, (p1, p2) -> p1 * p2);
 		}
 		if (expression instanceof DivideExpression) {
 			DivideExpression divideExpression = (DivideExpression) expression;
-			return evaluateInteger(divideExpression.getLeftOperand())
-					/ evaluateInteger(divideExpression.getRightOperand());
+			//
+			int evaluatedNumerator = evaluateInteger(divideExpression.getLeftOperand());
+			if (evaluatedNumerator == 0) {
+				return 0;
+			}
+			//
+			return evaluatedNumerator / evaluateInteger(divideExpression.getRightOperand());
 		}
 		if (expression instanceof AddExpression) {
 			AddExpression addExpression = (AddExpression) expression;
@@ -118,8 +143,15 @@ public class ExpressionEvaluator {
 		}
 		if (expression instanceof SubtractExpression) {
 			SubtractExpression subtractExpression = (SubtractExpression) expression;
-			return evaluateInteger(subtractExpression.getLeftOperand())
-					- evaluateInteger(subtractExpression.getRightOperand());
+			//
+			Expression leftOperand = subtractExpression.getLeftOperand();
+			Expression rightOperand = subtractExpression.getRightOperand();
+			
+			if (ecoreUtil.helperEquals(leftOperand, rightOperand)) {
+				return 0;
+			}
+			//
+			return evaluateInteger(leftOperand) - evaluateInteger(rightOperand);
 		}
 		if (expression instanceof FunctionAccessExpression) {
 			FunctionAccessExpression functionAccessExpression = (FunctionAccessExpression) expression;
@@ -186,7 +218,7 @@ public class ExpressionEvaluator {
 		}
 		if (expression instanceof RationalLiteralExpression) {
 			final RationalLiteralExpression rationalLiteralExpression = (RationalLiteralExpression) expression;
-			return  rationalLiteralExpression.getNumerator().doubleValue()/
+			return rationalLiteralExpression.getNumerator().doubleValue() /
 					rationalLiteralExpression.getDenominator().doubleValue();
 		}
 		if (expression instanceof EnumerationLiteralExpression) {
@@ -196,22 +228,57 @@ public class ExpressionEvaluator {
 		}
 		if (expression instanceof MultiplyExpression) {
 			final MultiplyExpression multiplyExpression = (MultiplyExpression) expression;
-			return multiplyExpression.getOperands().stream().map(it -> evaluateDecimal(it)).reduce(1.0,
-					(p1, p2) -> p1 * p2);
+			List<Expression> operands = multiplyExpression.getOperands();
+			List<Double> evaluatedOperands = new ArrayList<Double>();
+			IllegalArgumentException potentialException = null;
+			//
+			for (Expression multiplicationOperand : operands) {
+				try {
+					double evaluatedOperand = evaluateDecimal(multiplicationOperand);
+					if (evaluatedOperand == 0.0) {
+						return 0.0;
+					}
+					else {
+						evaluatedOperands.add(evaluatedOperand);
+					}
+				} catch (IllegalArgumentException e) {
+					potentialException = e;
+				}
+			}
+			//
+			if (potentialException != null) {
+				throw potentialException;
+			}
+			return evaluatedOperands.stream().reduce(1.0, (p1, p2) -> p1 * p2);
 		}
 		if (expression instanceof DivideExpression) {
 			final DivideExpression divideExpression = (DivideExpression) expression;
-			return evaluateDecimal(divideExpression.getLeftOperand())
-					/ evaluateDecimal(divideExpression.getRightOperand());
+			//
+			double evaluatedNumerator = evaluateDecimal(divideExpression.getLeftOperand());
+			if (evaluatedNumerator == 0.0) {
+				return 0.0;
+			}
+			//
+			return evaluatedNumerator / evaluateDecimal(divideExpression.getRightOperand());
 		}
 		if (expression instanceof AddExpression) {
 			final AddExpression addExpression = (AddExpression) expression;
-			return addExpression.getOperands().stream().map(it -> evaluateDecimal(it)).reduce(0.0, (p1, p2) -> p1 + p2);
+			return addExpression.getOperands().stream().map(it -> evaluateDecimal(it))
+					.reduce(0.0, (p1, p2) -> p1 + p2);
 		}
 		if (expression instanceof SubtractExpression) {
 			final SubtractExpression subtractExpression = (SubtractExpression) expression;
-			return evaluateDecimal(subtractExpression.getLeftOperand())
-					- evaluateDecimal(subtractExpression.getRightOperand());
+			
+			// Potential optimization trick
+			Expression leftOperand = subtractExpression.getLeftOperand();
+			Expression rightOperand = subtractExpression.getRightOperand();
+			
+			if (ecoreUtil.helperEquals(leftOperand, rightOperand)) {
+				return 0.0;
+			}
+			//
+			
+			return evaluateDecimal(leftOperand) - evaluateDecimal(rightOperand);
 		}
 		throw new IllegalArgumentException("Not transformable expression: " + expression);
 	} 
@@ -285,6 +352,9 @@ public class ExpressionEvaluator {
 			BinaryExpression binaryExpression = (BinaryExpression) expression;
 			Expression left = binaryExpression.getLeftOperand();
 			Expression right = binaryExpression.getRightOperand();
+			//
+			boolean leftEqualsRight = ecoreUtil.helperEquals(left, right); // For optimization
+			//
 			if (expression instanceof ImplyExpression) {
 				return !evaluateBoolean(left) || evaluateBoolean(right);
 			}
@@ -293,28 +363,48 @@ public class ExpressionEvaluator {
 					// Handle enumeration literals as different ones can get the same integer value
 					if (left instanceof EnumerationLiteralExpression &&
 							right instanceof EnumerationLiteralExpression) {
-						return ecoreUtil.helperEquals(left, right);
+						return leftEqualsRight;
 					}
 					return evaluate(left) == evaluate(right);
 				}
 				if (expression instanceof InequalityExpression) {
 					if (left instanceof EnumerationLiteralExpression &&
 							right instanceof EnumerationLiteralExpression) {
-						return !ecoreUtil.helperEquals(left, right);
+						return !leftEqualsRight;
 					}
 					return evaluate(left) != evaluate(right);
 				}
 			}
 			if (expression instanceof LessExpression) {
+				// Potential optimization trick
+				if (leftEqualsRight) {
+					return false;
+				}
+				//
 				return evaluate(left) < evaluate(right);
 			}
 			if (expression instanceof LessEqualExpression) {
+				// Potential optimization trick
+				if (leftEqualsRight) {
+					return true;
+				}
+				//
 				return evaluate(left) <= evaluate(right);
 			}
 			if (expression instanceof GreaterExpression) {
+				// Potential optimization trick
+				if (leftEqualsRight) {
+					return true;
+				}
+				//
 				return evaluate(left) > evaluate(right);
 			}
 			if (expression instanceof GreaterEqualExpression) {
+				// Potential optimization trick
+				if (leftEqualsRight) {
+					return false;
+				}
+				//
 				return evaluate(left) >= evaluate(right);
 			}
 		}
@@ -352,7 +442,6 @@ public class ExpressionEvaluator {
 		throw new IllegalArgumentException("Not transformable expression: " + expression);
 	}
 	
-
 	public boolean isDefinitelyTrueExpression(Expression expression) {
 		try {
 			return evaluateBoolean(expression);
