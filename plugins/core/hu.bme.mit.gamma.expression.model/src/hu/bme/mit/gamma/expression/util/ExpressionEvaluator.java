@@ -53,6 +53,7 @@ import hu.bme.mit.gamma.expression.model.RationalLiteralExpression;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.SubtractExpression;
 import hu.bme.mit.gamma.expression.model.TrueExpression;
+import hu.bme.mit.gamma.expression.model.UnaryMinusExpression;
 import hu.bme.mit.gamma.expression.model.XorExpression;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
 
@@ -138,7 +139,14 @@ public class ExpressionEvaluator {
 		}
 		if (expression instanceof AddExpression) {
 			AddExpression addExpression = (AddExpression) expression;
-			return addExpression.getOperands().stream().map(it -> evaluateInteger(it))
+			List<Expression> operands = addExpression.getOperands();
+			// Potential optimization
+			List<Expression> negativeOperandPairs = getNegativeExpressionPairs(operands);
+			//
+			List<Expression> evaluableOperands = new ArrayList<Expression>(operands);
+			evaluableOperands.removeAll(negativeOperandPairs);
+			//
+			return evaluableOperands.stream().map(it -> evaluateInteger(it))
 					.reduce(0, (p1, p2) -> p1 + p2);
 		}
 		if (expression instanceof SubtractExpression) {
@@ -188,7 +196,6 @@ public class ExpressionEvaluator {
 		}
 		throw new IllegalArgumentException("Not found expression for parameter: " + parameter);
 	}
-	
 	
 	// Decimal and rational
 	public double evaluateDecimal(Expression expression) {
@@ -263,7 +270,14 @@ public class ExpressionEvaluator {
 		}
 		if (expression instanceof AddExpression) {
 			final AddExpression addExpression = (AddExpression) expression;
-			return addExpression.getOperands().stream().map(it -> evaluateDecimal(it))
+			List<Expression> operands = addExpression.getOperands();
+			// Potential optimization
+			List<Expression> negativeOperandPairs = getNegativeExpressionPairs(operands);
+			//
+			List<Expression> evaluableOperands = new ArrayList<Expression>(operands);
+			evaluableOperands.removeAll(negativeOperandPairs);
+			//
+			return evaluableOperands.stream().map(it -> evaluateDecimal(it))
 					.reduce(0.0, (p1, p2) -> p1 + p2);
 		}
 		if (expression instanceof SubtractExpression) {
@@ -394,7 +408,7 @@ public class ExpressionEvaluator {
 			if (expression instanceof GreaterExpression) {
 				// Potential optimization trick
 				if (leftEqualsRight) {
-					return true;
+					return false;
 				}
 				//
 				return evaluate(left) > evaluate(right);
@@ -402,7 +416,7 @@ public class ExpressionEvaluator {
 			if (expression instanceof GreaterEqualExpression) {
 				// Potential optimization trick
 				if (leftEqualsRight) {
-					return false;
+					return true;
 				}
 				//
 				return evaluate(left) >= evaluate(right);
@@ -459,6 +473,42 @@ public class ExpressionEvaluator {
 	}
 	
 	// Auxiliary
+	
+	protected List<Expression> getNegativeExpressionPairs(List<Expression> expressions) {
+		List<Expression> negativeExpressionPairs = new ArrayList<Expression>(); // a, -a, (b + 1), -(b + 1), ...
+		
+		for (int i = 0; i < expressions.size() - 1; i++) {
+			Expression left = expressions.get(i);
+			if (!negativeExpressionPairs.contains(left)) { // Left cannot be already "removed"
+				boolean found = false;
+				for (int j = i + 1; j < expressions.size() && !found; j++) {
+					Expression right = expressions.get(j);
+					if (!negativeExpressionPairs.contains(right)) { // Right cannot be already "removed"
+						if (areNegativesOfEachOther(left, right)) {
+							found = true;
+							negativeExpressionPairs.add(left);
+							negativeExpressionPairs.add(right);
+						}
+					}
+				}
+			}
+		}
+		
+		return negativeExpressionPairs;
+	}
+	
+	protected boolean areNegativesOfEachOther(Expression lhs, Expression rhs) {
+		if (lhs instanceof UnaryMinusExpression negative) {
+			Expression lhsNegativeOperand = negative.getOperand();
+			return ecoreUtil.helperEquals(lhsNegativeOperand, rhs);
+		}
+		else if (rhs instanceof UnaryMinusExpression negative) {
+			Expression rhsNegativeOperand = negative.getOperand();
+			return ecoreUtil.helperEquals(lhs, rhsNegativeOperand);
+		}
+		
+		return false;
+	}
 	
 	protected boolean hasEqualityToDifferentLiterals(List<EqualityExpression> expressions) {
 		for (int i = 0; i < expressions.size() - 1; ++i) {
