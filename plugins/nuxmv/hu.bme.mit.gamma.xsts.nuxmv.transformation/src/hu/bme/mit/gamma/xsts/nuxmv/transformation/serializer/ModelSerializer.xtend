@@ -1,30 +1,32 @@
 package hu.bme.mit.gamma.xsts.nuxmv.transformation.serializer
 
-import hu.bme.mit.gamma.xsts.model.XSTS
+import com.google.common.collect.ArrayListMultimap
+import com.google.common.collect.Multimap
+import hu.bme.mit.gamma.expression.model.Declaration
+import hu.bme.mit.gamma.expression.model.Expression
+import hu.bme.mit.gamma.expression.model.VariableDeclaration
+import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
+import hu.bme.mit.gamma.expression.util.ExpressionUtil
+import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.Action
-
-import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
-import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
-import hu.bme.mit.gamma.xsts.model.SequentialAction
-import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
+import hu.bme.mit.gamma.xsts.model.AssumeAction
 import hu.bme.mit.gamma.xsts.model.EmptyAction
-import hu.bme.mit.gamma.xsts.model.IfAction
 import hu.bme.mit.gamma.xsts.model.HavocAction
+import hu.bme.mit.gamma.xsts.model.IfAction
 import hu.bme.mit.gamma.xsts.model.LoopAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
-import hu.bme.mit.gamma.xsts.model.AssumeAction
-import hu.bme.mit.gamma.xsts.model.XTransition
-import java.util.List
-import hu.bme.mit.gamma.expression.util.ExpressionUtil
-import hu.bme.mit.gamma.expression.model.VariableDeclaration
-import hu.bme.mit.gamma.xsts.nuxmv.transformation.util.HavocHandler
-import java.util.Map
-import hu.bme.mit.gamma.expression.model.Declaration
-import hu.bme.mit.gamma.util.GammaEcoreUtil
-import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.xsts.model.ParallelAction
-import java.util.ArrayList
+import hu.bme.mit.gamma.xsts.model.SequentialAction
+import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
+import hu.bme.mit.gamma.xsts.model.XSTS
+import hu.bme.mit.gamma.xsts.model.XTransition
+import hu.bme.mit.gamma.xsts.nuxmv.transformation.util.HavocHandler
+import java.util.List
+import java.util.Map
+
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
 
 class ModelSerializer {
 	// Singleton
@@ -33,7 +35,9 @@ class ModelSerializer {
 	//
 	
 	protected final Map<Declaration, String> names = newHashMap
-	protected final List<String> serialized = new ArrayList
+	protected final Multimap<String, Pair<Expression, Action>> transitionMap = ArrayListMultimap.create
+	protected final Multimap<String, Pair<Expression, Action>> environmentMap = ArrayListMultimap.create
+	protected final List<String> serialized = newArrayList
 	
 	//
 	protected final extension DeclarationSerializer declarationSerializer = DeclarationSerializer.INSTANCE
@@ -59,16 +63,26 @@ class ModelSerializer {
 			actions += transition.action
 		}
 		
+		transitions.mapTransition(transitionMap, null)
+		environmentalActions.mapTransition(environmentMap, null)
+			
 		val model = '''
 		MODULE main
 		VAR
+			envStep : boolean
 			«xSts.serializeDeclaration»
-		
-		«initializingActions.serializeInitializingAction»
-		
-		TRANS	
-			«environmentalActions.serializeTransition»
-			«transitions.serializeTransitions»
+			
+		ASSIGN
+			init(envStep) := TRUE
+			«initializingActions.serializeInitializingAction»
+			
+			next(envStep) := !envStep
+			
+			«environmentMap.serializeTransitions(true)»
+			
+			«transitionMap.serializeTransitions(false)»
+«««		TRANS
+«««			«environmentalActions.serializeTransition»
 		'''
 		
 		xSts.restoreLocalVariableNames
@@ -101,20 +115,25 @@ class ModelSerializer {
 	//
 	
 	protected def dispatch String serialize(AssignmentAction action) {
-		return '''«action.lhs.serialize» = «action.rhs.serialize»'''
+		return '''«action.rhs.serialize»'''
 	}
 	
 	protected def dispatch String serializeInitializingAction(AssignmentAction action) {
-		return '''INIT «action.lhs.serialize» = «action.rhs.serialize»'''
+		return '''init(«action.lhs.serialize») := «action.rhs.serialize»'''
 	}
 	
 	protected def dispatch String serializeTransition(AssignmentAction action) {
 		return '''next(«action.lhs.serialize») = «action.rhs.serialize»'''
 	}
 	
+	protected def dispatch mapTransition(AssignmentAction action, Multimap<String, Pair<Expression, Action>> map, Expression assumption) {
+		map.put(action.lhs.serialize, new Pair(assumption, action))
+	}
+	
+	
 	protected def dispatch String serialize(VariableDeclarationAction action) {
 		val variableDeclaration = action.variableDeclaration
-		return variableDeclaration.serializeVariableDeclaration
+		return variableDeclaration.expression.serialize
 	}
 	
 	protected def dispatch String serializeTransition(VariableDeclarationAction action) {
@@ -127,6 +146,14 @@ class ModelSerializer {
 				«variableDeclaration.serializeName» = «expression.serialize»
 			'''
 		}
+	}
+	
+	protected def dispatch mapTransition(VariableDeclarationAction action, Multimap<String, Pair<Expression, Action>> map, Expression assumption) {
+		val variableDeclaration = action.variableDeclaration
+		val expression = variableDeclaration.expression
+		if (expression !== null) {
+			map.put(expression.serialize, new Pair(assumption, action))
+		} 
 	}
 
 	protected def dispatch String serialize(EmptyAction action) ''''''
@@ -145,12 +172,22 @@ class ModelSerializer {
 		«action.condition.serialize» -> «action.then.serializeTransition»
 	'''
 	
+	protected def dispatch mapTransition(IfAction action, Multimap<String, Pair<Expression, Action>> map, Expression assumption) {
+		var condition = action.condition
+		
+		if (assumption !== null) {
+			condition = assumption.wrapIntoAndExpression(action.condition)				
+		}
+		
+		action.then.mapTransition(map, condition)
+	}
+	
 	protected def dispatch String serialize(HavocAction action) {
 		val xStsDeclaration = action.lhs.declaration
 		val xStsVariable = xStsDeclaration as VariableDeclaration
 
 		return '''
-		«xStsVariable.name» = {«FOR element : xStsVariable.createSet SEPARATOR ', '»«element.serialize»«ENDFOR»};
+		{«FOR element : xStsVariable.createSet SEPARATOR ', '»«element.serialize»«ENDFOR»}
 		'''
 	}
 	
@@ -161,6 +198,10 @@ class ModelSerializer {
 		return '''
 		next(«xStsVariable.name») = {«FOR element : xStsVariable.createSet SEPARATOR ', '»«element.serialize»«ENDFOR»}
 		'''
+	}
+	
+	protected def dispatch mapTransition(HavocAction action, Multimap<String, Pair<Expression, Action>> map, Expression assumption) {
+		map.put(action.lhs.serialize, new Pair(assumption, action))
 	}
 	
 	protected def dispatch String serialize(LoopAction action) {
@@ -191,7 +232,7 @@ class ModelSerializer {
 		}
 	}
 	
-		protected def dispatch String serializeTransition(LoopAction action) {
+	protected def dispatch String serializeTransition(LoopAction action) {
 		if (isEvaluable(action.range)) {
 			val paramDeclaration = action.iterationParameterDeclaration
 			val range = action.range.evaluateRange
@@ -203,14 +244,27 @@ class ModelSerializer {
 		}
 	}
 	
-	
-	
-	
-	protected def dispatch String serialize(NonDeterministicAction action) {
-		return '''
-		{«FOR subaction : action.actions SEPARATOR ', '»«subaction.serialize»«ENDFOR»}
-		'''
+	protected def dispatch mapTransition(LoopAction action, Multimap<String, Pair<Expression, Action>> map, Expression assumption) {
+		if (isEvaluable(action.range)) {
+			val paramDeclaration = action.iterationParameterDeclaration
+			val range = action.range.evaluateRange
+			
+			for (i : range) {
+				//TODO
+			}
+			val sequentializedLoop = '''(«FOR i : range SEPARATOR ' & '»«action.action.serializeTransition.replace(paramDeclaration.name, i.toString)»«ENDFOR»)'''
+
+		} else {
+			throw new IllegalArgumentException("Only evaluable loops can be serialized! " + action)
+		}
 	}
+	
+	
+	
+	protected def dispatch String serialize(NonDeterministicAction action) '''
+		{«FOR subaction : action.actions SEPARATOR ', '»«subaction.serialize»«ENDFOR»}
+	'''
+
 	
 	protected def dispatch String serialize(SequentialAction action) '''
 		(«FOR subaction : action.actions SEPARATOR ' & '»«subaction.serialize»«ENDFOR»)
@@ -244,9 +298,29 @@ class ModelSerializer {
 		«ENDIF»
 	'''
 	
+	protected def dispatch mapTransition(SequentialAction action, Multimap<String, Pair<Expression, Action>> map, Expression assumption) {
+		if (action.isFirstActionAssume) {
+			var innerAssumption = action.getFirstActionAssume.assumption
+			
+			if (assumption !== null) {
+				innerAssumption = assumption.wrapIntoAndExpression(action.getFirstActionAssume.assumption)				
+			} 
+			
+			for (sequentialSubaction : action.actionsSkipFirst.filter[!(it instanceof AssumeAction) && !it.effectlessAction && !(it instanceof VariableDeclarationAction)]) {
+				sequentialSubaction.mapTransition(map, innerAssumption)
+			}
+		} else {
+			for (subaction : action.actions.filter[!(it instanceof AssumeAction) && !it.effectlessAction && !(it instanceof VariableDeclarationAction)]) {
+				subaction.mapTransition(map, assumption)
+			}
+		}	
+	}
+	
 	protected def dispatch String serialize(ParallelAction action) {throw new IllegalArgumentException("ParallelAction cannot be serialized! " + action)}
 	protected def dispatch String serializeInitializingAction(ParallelAction action) {throw new IllegalArgumentException("ParallelAction cannot be serialized! " + action)}
 	protected def dispatch String serializeTransition(ParallelAction action) {throw new IllegalArgumentException("ParallelAction cannot be serialized! " + action)}
+	
+	protected def dispatch mapTransition(ParallelAction action, Multimap<String, Pair<Expression, Action>> map, Expression assumption) {throw new IllegalArgumentException("ParallelAction cannot be mapped! " + action)}
 		
 		//
 	
@@ -260,6 +334,29 @@ class ModelSerializer {
 		}
 		else {
 			return '''«transitions.head.action.serializeTransition»;'''
+		}
+	}
+	
+	protected def serializeTransitions(Multimap<String, Pair<Expression, Action>> transitionMap, boolean envStep) '''
+		«FOR key : transitionMap.keySet»
+		next(«key») := case
+				«FOR element : transitionMap.get(key)»
+				«IF element.key !== null»(«IF !envStep»!«ENDIF»envStep & «element.key.serialize»)«ELSE»«IF !envStep»!«ENDIF»envStep«ENDIF» : «element.value.serialize»;
+				«ENDFOR»
+				TRUE : «key»;
+			esac;
+		«ENDFOR»
+	'''
+
+	
+	protected def mapTransition(List<? extends XTransition> transitions, Multimap<String, Pair<Expression, Action>> map, Expression assumption) {
+		if (transitions.size > 1) {
+			for (transition : transitions) {
+				transition.action.mapTransition(map, assumption)
+			}
+		}
+		else {
+			transitions.head.action.mapTransition(map, assumption)
 		}
 	}
 
