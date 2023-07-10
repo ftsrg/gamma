@@ -26,6 +26,7 @@
       <genEnumLiterals ecoreEnumLiteral="genmodel.ecore#//AnalysisLanguage/THETA"/>
       <genEnumLiterals ecoreEnumLiteral="genmodel.ecore#//AnalysisLanguage/XSTS_UPPAAL"/>
       <genEnumLiterals ecoreEnumLiteral="genmodel.ecore#//AnalysisLanguage/PROMELA"/>
+      <genEnumLiterals ecoreEnumLiteral="genmodel.ecore#//AnalysisLanguage/NUXMV"/>
     </genEnums>
     <genEnums typeSafeEnumCompatible="false" ecoreEnum="genmodel.ecore#//Scheduler">
       <genEnumLiterals ecoreEnumLiteral="genmodel.ecore#//Scheduler/RANDOM"/>
