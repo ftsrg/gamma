@@ -44,6 +44,7 @@ class GammaFileNamer {
 	public static final String UPPAAL_MODEL_EXTENSION = "xml";
 	
 	public static final String PROMELA_MODEL_EXTENSION = "pml";
+	public static final String NUXMV_MODEL_EXTENSION = "smv";
 	
 	public static final String UPPAAL_QUERY_EXTENSION = "q";
 	public static final String THETA_QUERY_EXTENSION = "prop";
@@ -79,6 +80,8 @@ class GammaFileNamer {
 	def String getPmlPromelaFileName(String fileName) '''«fileName.extensionlessName».«PROMELA_MODEL_EXTENSION»'''
 	
 	def String getPromelaQueryFileName(String fileName) '''«fileName.extensionlessName».«PROMELA_QUERY_EXTENSION»'''
+	
+	def String getSmvNuxmvFileName(String fileName) '''«fileName.extensionlessName».«NUXMV_MODEL_EXTENSION»'''
 	
 	//
 	

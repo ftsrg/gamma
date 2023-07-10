@@ -46,7 +46,9 @@ Require-Bundle: com.google.gson,
  hu.bme.mit.gamma.scenario.model,
  hu.bme.mit.gamma.scenario.statechart.util,
  hu.bme.mit.gamma.promela.verification,
- hu.bme.mit.gamma.xsts.promela.transformation
+ hu.bme.mit.gamma.xsts.promela.transformation,
+ hu.bme.mit.gamma.nuxmv.verification,
+ hu.bme.mit.gamma.xsts.nuxmv.transformation
 Export-Package: hu.bme.mit.gamma.ui,
  hu.bme.mit.gamma.ui.taskhandler,
  hu.bme.mit.gamma.ui.util
