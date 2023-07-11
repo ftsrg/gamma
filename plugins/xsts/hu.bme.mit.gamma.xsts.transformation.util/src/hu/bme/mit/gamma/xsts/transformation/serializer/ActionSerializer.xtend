@@ -34,8 +34,12 @@ class ActionSerializer {
 	protected final extension DeclarationSerializer declarationSerializer = DeclarationSerializer.INSTANCE
 	protected final extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
 	
-	def String serializeXsts(XSTS xSts) '''
-		«xSts.serializeDeclarations(false)»
+	def String serializeXsts(XSTS xSts) {
+		return xSts.serializeXsts(false)
+	}
+	
+	def String serializeXsts(XSTS xSts, boolean serializePrimedVariables) '''
+		«xSts.serializeDeclarations(serializePrimedVariables)»
 		
 		trans «FOR transition : xSts.transitions SEPARATOR " or "»{
 			«transition.action.serialize»

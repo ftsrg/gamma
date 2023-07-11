@@ -53,9 +53,9 @@ class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSe
 	
 	override String _serialize(DirectReferenceExpression expression) {
 		val declaration = expression.declaration
-		if (declaration instanceof PrimedVariable) {
-			return '''next(«declaration.originalVariable.name»)'''
-		}
+//		if (declaration instanceof PrimedVariable) {
+//			return '''next(«declaration.originalVariable.name»)'''
+//		}
 		return '''«declaration.name»'''
 	}
 	

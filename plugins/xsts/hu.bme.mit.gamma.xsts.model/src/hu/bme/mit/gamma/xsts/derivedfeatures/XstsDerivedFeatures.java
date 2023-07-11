@@ -145,8 +145,8 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 	}
 	
 	public static Declaration getOriginalVariable(Declaration variable) {
-		if (variable instanceof PrimedVariable) {
-			VariableDeclaration primedVariable = ((PrimedVariable) variable).getPrimedVariable();
+		if (variable instanceof PrimedVariable newPrimedVariable) {
+			VariableDeclaration primedVariable = newPrimedVariable.getPrimedVariable();
 			return getOriginalVariable(primedVariable);
 		} else {
 			return variable;

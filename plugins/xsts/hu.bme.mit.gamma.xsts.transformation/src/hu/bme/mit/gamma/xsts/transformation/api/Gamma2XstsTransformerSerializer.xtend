@@ -23,6 +23,7 @@ import hu.bme.mit.gamma.transformation.util.annotations.InteractionCoverageCrite
 import hu.bme.mit.gamma.transformation.util.preprocessor.AnalysisModelPreprocessor
 import hu.bme.mit.gamma.util.FileUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
+import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.transformation.GammaToXstsTransformer
 import hu.bme.mit.gamma.xsts.transformation.InitialStateSetting
 import hu.bme.mit.gamma.xsts.transformation.serializer.ActionSerializer
@@ -125,8 +126,16 @@ class Gamma2XstsTransformerSerializer {
 		// EMF
 		xSts.normalSave(targetFolderUri, fileName.emfXStsFileName)
 		// String
+		xSts.serializeAndSaveXSts
+	}
+	
+	def serializeAndSaveXSts(XSTS xSts) {
+		xSts.serializeAndSaveXSts(false)
+	}
+	
+	def serializeAndSaveXSts(XSTS xSts, boolean serializePrimedVariables) {
 		val xStsFile = new File(targetFolderUri + File.separator + fileName.xtextXStsFileName)
-		val xStsString = xSts.serializeXsts
+		val xStsString = xSts.serializeXsts(serializePrimedVariables)
 		xStsFile.saveString(xStsString)
 	}
 	

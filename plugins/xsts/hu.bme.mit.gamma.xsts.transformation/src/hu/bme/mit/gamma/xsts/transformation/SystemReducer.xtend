@@ -210,7 +210,6 @@ class SystemReducer {
 			xStsDeleteableVariables -= xStsKeepableVariables
 			xStsDeleteableVariables.removeIf[it.hasAnnotation(UnremovableVariableDeclarationAnnotation)]
 			
-			
 			xSts.deleteVariablesAndAssignments(xStsDeleteableVariables)
 		}
 	}
