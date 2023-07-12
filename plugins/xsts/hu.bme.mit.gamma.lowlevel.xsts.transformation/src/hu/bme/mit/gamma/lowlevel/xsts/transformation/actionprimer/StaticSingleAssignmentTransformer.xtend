@@ -44,6 +44,8 @@ import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeature
 class StaticSingleAssignmentTransformer {
 	
 	protected final XSTS xSts
+	protected final SsaType ssaType
+	
 	protected Map<VariableDeclaration, PrimedVariable> primedVariables = newLinkedHashMap
 	protected String context = ""
 	
@@ -57,7 +59,12 @@ class StaticSingleAssignmentTransformer {
 	//
 	
 	new(XSTS xSts) {
+		this(xSts, SsaType.BASIC)
+	}
+	
+	new(XSTS xSts, SsaType ssaType) {
 		this.xSts = xSts
+		this.ssaType = ssaType
 	}
 	
 	def execute() {
@@ -71,30 +78,42 @@ class StaticSingleAssignmentTransformer {
 		context = "_init"
 		
 		xSts.variableInitializingTransition.action.primeAction
-		xSts.variableInitializingTransition.action.commonizePrimedVariablesAlongBranches
+		xSts.variableInitializingTransition.action.commonizePrimedVariablesAlongBranches // Unnecessary though, no branches
 		xSts.configurationInitializingTransition.action.primeAction
 		xSts.configurationInitializingTransition.action.commonizePrimedVariablesAlongBranches
 		xSts.entryEventTransition.action.primeAction
 		xSts.entryEventTransition.action.commonizePrimedVariablesAlongBranches
 		primedVariables.clear
+		//
+		
+		context = "_inout"
+		
+		if (ssaType !== SsaType.OUT_TRANS) {
+			xSts.inEventTransition.action.primeAction
+			xSts.inEventTransition.action.commonizePrimedVariablesAlongBranches
+		}
+		else {
+			xSts.inEventTransition.action = createEmptyAction // Not needed, in variables are nondeterministic in e.g., SMV
+		}
+		xSts.outEventTransition.action.primeAction
+		xSts.outEventTransition.action.commonizePrimedVariablesAlongBranches // Unnecessary though, no branches
+		if (ssaType !== SsaType.OUT_TRANS) {
+			primedVariables.clear // Because we want to connect this to trans
+		}
+		//
+		val primeVariableSave = newLinkedHashMap
+		primeVariableSave += primedVariables
 		
 		val xStsTransitions = xSts.transitions
 		for (xStsTransition : xStsTransitions) {
 			context = "_tran_" + xStsTransitions.indexOf(xStsTransition) + "_num"
+			primedVariables += primeVariableSave
 			
 			val xStsAction = xStsTransition.action
 			xStsAction.primeAction
 			xStsAction.commonizePrimedVariablesAlongBranches
 			primedVariables.clear
 		}
-		
-		context = "_inout"
-		
-		xSts.inEventTransition.action.primeAction
-		xSts.inEventTransition.action.commonizePrimedVariablesAlongBranches
-		xSts.outEventTransition.action.primeAction
-		xSts.outEventTransition.action.commonizePrimedVariablesAlongBranches
-		primedVariables.clear
 		
 		// Not all primed variables are used
 		removeUnusedPrimedVariables
@@ -353,5 +372,9 @@ class StaticSingleAssignmentTransformer {
 		
 		unusedPrimedVariables.removeAll
 	}
+	
+	//
+	
+	enum SsaType { BASIC, OUT_TRANS}
 	
 }

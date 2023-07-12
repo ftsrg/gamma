@@ -13,6 +13,7 @@ package hu.bme.mit.gamma.xsts.nuxmv.transformation
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.TransitionMerging
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.actionprimer.StaticSingleAssignmentTransformer
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.actionprimer.StaticSingleAssignmentTransformer.SsaType
 import hu.bme.mit.gamma.property.model.PropertyPackage
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.transformation.util.GammaFileNamer
@@ -107,7 +108,7 @@ class Gamma2XstsNuxmvTransformerSerializer {
 		xStsTransformer.execute
 		val xSts = targetFolderUri.normalLoad(fileName.emfXStsFileName) as XSTS
 		// SSE
-		val sseTransformer = new StaticSingleAssignmentTransformer(xSts)
+		val sseTransformer = new StaticSingleAssignmentTransformer(xSts, SsaType.OUT_TRANS)
 		sseTransformer.execute
 		xStsTransformer.serializeAndSaveXSts(xSts, true)
 		//

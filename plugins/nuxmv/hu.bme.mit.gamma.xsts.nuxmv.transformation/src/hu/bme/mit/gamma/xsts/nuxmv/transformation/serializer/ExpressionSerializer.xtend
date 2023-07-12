@@ -12,12 +12,13 @@ package hu.bme.mit.gamma.xsts.nuxmv.transformation.serializer
 
 import hu.bme.mit.gamma.expression.model.AndExpression
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
+import hu.bme.mit.gamma.expression.model.EqualityExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.FalseExpression
+import hu.bme.mit.gamma.expression.model.ImplyExpression
 import hu.bme.mit.gamma.expression.model.OrExpression
 import hu.bme.mit.gamma.expression.model.TrueExpression
 import hu.bme.mit.gamma.expression.model.XorExpression
-import hu.bme.mit.gamma.expression.model.EqualityExpression
 
 class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSerializer {
 	// Singleton
@@ -31,19 +32,17 @@ class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSe
 		return super.serialize(expression)
 	}
 	
-	override String _serialize(TrueExpression expression) {
-		return "TRUE";
-	}
+	override String _serialize(TrueExpression expression) '''TRUE'''
 
-	override String _serialize(FalseExpression expression) {
-		return "FALSE";
-	}
+	override String _serialize(FalseExpression expression) '''FALSE'''
 	
 	override String _serialize(OrExpression expression) '''(«FOR operand : expression.operands SEPARATOR ' | '»«operand.serialize»«ENDFOR»)'''
 
 	override String _serialize(XorExpression expression) '''(«FOR operand : expression.operands SEPARATOR ' xor '»«operand.serialize»«ENDFOR»)'''
 
 	override String _serialize(AndExpression expression) '''(«FOR operand : expression.operands SEPARATOR ' & '»«operand.serialize»«ENDFOR»)'''
+
+	override String _serialize(ImplyExpression expression) '''(«expression.leftOperand.serialize» -> «expression.rightOperand.serialize»)'''
 
 	override String _serialize(EqualityExpression expression) '''(«expression.leftOperand.serialize» = «expression.rightOperand.serialize»)'''
 

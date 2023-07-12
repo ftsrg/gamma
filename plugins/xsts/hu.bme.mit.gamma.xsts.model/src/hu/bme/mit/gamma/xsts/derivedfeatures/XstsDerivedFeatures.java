@@ -159,6 +159,24 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 				.noneMatch(it -> it instanceof PrimedVariable &&
 						((PrimedVariable) it).getPrimedVariable() == variable);
 	}
+	
+	public static List<PrimedVariable> getFinalPrimedVariables(XSTS xSts) {
+		List<PrimedVariable> primedVariables = new ArrayList<PrimedVariable>();
+		for (VariableDeclaration variableDeclaration : xSts.getVariableDeclarations()) {
+			if (variableDeclaration instanceof PrimedVariable primedVariable) {
+				primedVariables.add(primedVariable);
+			}
+		}
+		
+		List<PrimedVariable> finalPrimedVariables = new ArrayList<PrimedVariable>(primedVariables);
+		
+		for (PrimedVariable primedVariable : primedVariables) {
+			VariableDeclaration previousPrimedVariable = primedVariable.getPrimedVariable();
+			finalPrimedVariables.remove(previousPrimedVariable);
+		}
+		
+		return finalPrimedVariables;
+	}
 
 	public static int getPrimeCount(VariableDeclaration variable) {
 		if (!(variable instanceof PrimedVariable)) {

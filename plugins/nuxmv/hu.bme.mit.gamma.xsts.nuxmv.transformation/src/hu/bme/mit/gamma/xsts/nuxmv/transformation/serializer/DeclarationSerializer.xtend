@@ -38,14 +38,14 @@ class DeclarationSerializer {
 		«ENDFOR»
 	'''
 	
-	protected def String serializeVariableDeclaration(VariableDeclaration variable) {
+	def String serializeVariableDeclaration(VariableDeclaration variable) {
 		val type = variable.type
 		return '''
 			«variable.serializeName» : «type.serializeType»;
 		'''
 	}
 	
-	protected def String serializeName(Declaration variable) {
+	def String serializeName(Declaration variable) {
 		val name = variable.name
 		return name
 	}
