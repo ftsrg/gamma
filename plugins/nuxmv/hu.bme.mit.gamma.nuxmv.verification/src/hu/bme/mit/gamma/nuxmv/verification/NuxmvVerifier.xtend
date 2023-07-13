@@ -31,16 +31,10 @@ class NuxmvVerifier extends AbstractVerifier {
 		
 		//adding all the queries to the end of the model file
 		for (singleQuery : query.split(System.lineSeparator).reject[it.nullOrEmpty]) {
-			//TODO: check if the query is LTL or CTL
+			// TODO: check if the query is LTL or CTL
 			val isLTL = true
-			var _query = ''
-			if (isLTL) {
-				_query = '''«System.lineSeparator»LTLSPEC«System.lineSeparator»  «singleQuery»'''
-			} else {
-				_query = '''«System.lineSeparator»CTLSPEC«System.lineSeparator»  «singleQuery»'''
-			}
-			
-			modelWithQueries += _query
+			val SPEC_STRING = (isLTL) ? "LTLSPEC" : "CTLSPEC"
+			modelWithQueries += '''«System.lineSeparator»«SPEC_STRING»«System.lineSeparator» «singleQuery»'''
 		}
 		
 		val rootGenFolder = new File(modelFile.parent, "." + fileUtil.getExtensionlessName(modelFile))
@@ -59,7 +53,8 @@ class NuxmvVerifier extends AbstractVerifier {
 		val newTrace = newResult?.trace
 		if (oldTrace === null) {
 			result = newResult
-		} else if (newTrace !== null) {
+		}
+		else if (newTrace !== null) {
 			oldTrace.extend(newTrace)
 			result = new Result(ThreeStateBoolean.UNDEF, oldTrace)
 		}
@@ -80,7 +75,6 @@ class NuxmvVerifier extends AbstractVerifier {
 //			// spin -search -a PromelaFile.pml
 //			val splitParameters = parameters.split("\\s+")
 //			val searchCommand = #["nuXmv"] + splitParameters + #[modelFile.name /* see exec work-dir */]
-//
 //			
 //			// Executing the command
 //			logger.log(Level.INFO, "Executing command: " + searchCommand.join(" "))

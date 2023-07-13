@@ -38,6 +38,7 @@ import com.google.gson.GsonBuilder;
 
 import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
 import hu.bme.mit.gamma.genmodel.model.Verification;
+import hu.bme.mit.gamma.nuxmv.verification.NuxmvVerification;
 import hu.bme.mit.gamma.plantuml.serialization.SvgSerializer;
 import hu.bme.mit.gamma.plantuml.transformation.TraceToPlantUmlTransformer;
 import hu.bme.mit.gamma.promela.verification.PromelaVerification;
@@ -45,6 +46,7 @@ import hu.bme.mit.gamma.property.model.CommentableStateFormula;
 import hu.bme.mit.gamma.property.model.PropertyPackage;
 import hu.bme.mit.gamma.property.model.StateFormula;
 import hu.bme.mit.gamma.property.util.PropertyUtil;
+import hu.bme.mit.gamma.querygenerator.serializer.NuxmvPropertySerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.PromelaPropertySerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.PropertySerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.ThetaPropertySerializer;
@@ -140,8 +142,12 @@ public class VerificationHandler extends TaskHandler {
 					verificationTask = PromelaVerification.INSTANCE;
 					propertySerializer = PromelaPropertySerializer.INSTANCE;
 					break;
+				case NUXMV:
+					verificationTask = NuxmvVerification.INSTANCE;
+					propertySerializer = NuxmvPropertySerializer.INSTANCE;
+					break;
 				default:
-					throw new IllegalArgumentException("Currently only UPPAAL and Theta are supported");
+					throw new IllegalArgumentException("Currently only UPPAAL, Theta, Spin and nuXmv are supported");
 			}
 		}
 		

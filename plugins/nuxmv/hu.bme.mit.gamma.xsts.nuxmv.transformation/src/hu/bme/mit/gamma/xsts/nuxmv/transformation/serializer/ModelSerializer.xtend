@@ -15,6 +15,7 @@ import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.expression.util.ExpressionUtil
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.VariableGroupRetriever
 import hu.bme.mit.gamma.util.GammaEcoreUtil
+import hu.bme.mit.gamma.xsts.model.AbstractAssignmentAction
 import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.AssumeAction
@@ -25,7 +26,9 @@ import hu.bme.mit.gamma.xsts.model.PrimedVariable
 import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
 import hu.bme.mit.gamma.xsts.model.XSTS
+import java.util.Collection
 import java.util.Map
+import org.eclipse.emf.ecore.EObject
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
@@ -107,14 +110,17 @@ class ModelSerializer {
 				
 			INIT
 				«xSts.initializingAction.serialize»
-				«xSts.finalizeVariableInitialization»
+				
+				«xSts.finalizeVariableInitialization /*Next() assignment at the very end of the highest primes*/»
 				
 «««			// In event transition is not necessary (IVAR semantics)
 			«FOR transition : xSts.transitions AFTER ';'»
 				TRANS
-					«xSts.outEventTransition.action.serialize ««« Out event transition is needed
-					«transition.action.serialize»««« Everything in constraint apart from if-else (case-esac)
-					«xSts.finalizeVariablesInTrans»««« Next() assignment at the very end of the highest primes
+					«xSts.outEventTransition.action.serialize /*Out event transition is needed*/»
+
+					«transition.action.serialize /*Everything in constraint apart from if-else (case-esac)*/»
+
+					«xSts.finalizeVariablesInTrans /*Next() assignment at the very end of the highest primes*/»
 			«ENDFOR»
 		'''
 		
@@ -168,19 +174,26 @@ class ModelSerializer {
 	//
 	
 	protected def String finalizeVariablesInTrans(XSTS xSts) {
-		return xSts.finalizeVariables("next(", ")")
+		return xSts.finalizeVariables(xSts.transitions, "next(", ")")
 	}
 	
 	protected def String finalizeVariableInitialization(XSTS xSts) {
-		return xSts.finalizeVariables
+		return xSts.finalizeVariables(
+			#[xSts.variableInitializingTransition, xSts.configurationInitializingTransition, xSts.entryEventTransition])
 	}
 	
-	protected def String finalizeVariables(XSTS xSts) {
-		xSts.finalizeVariables("", "")
+	protected def String finalizeVariables(XSTS xSts, Collection<? extends EObject> context) {
+		xSts.finalizeVariables(context, "", "")
 	}
 	
-	protected def String finalizeVariables(XSTS xSts, String variableIdBefore, String variableIdAfter) {
-		val finalPrimedVariables = xSts.finalPrimedVariables
+	protected def String finalizeVariables(XSTS xSts, Collection<? extends EObject> context,
+			String variableIdBefore, String variableIdAfter) {
+		val variablesAssignedInContext = context
+				.getSelfAndAllContentsOfType(AbstractAssignmentAction)
+				.map[it.lhs.declaration].toSet
+		val finalPrimedVariables = newArrayList
+		finalPrimedVariables += xSts.finalPrimedVariables
+		finalPrimedVariables.retainAll(variablesAssignedInContext)
 		
 		return '''
 			«FOR finalPrimedVariable : finalPrimedVariables SEPARATOR ' & ' AFTER ';'»
