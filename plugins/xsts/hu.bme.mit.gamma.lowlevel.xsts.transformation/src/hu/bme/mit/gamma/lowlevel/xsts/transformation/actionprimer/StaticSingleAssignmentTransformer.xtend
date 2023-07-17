@@ -13,7 +13,6 @@ package hu.bme.mit.gamma.lowlevel.xsts.transformation.actionprimer
 import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.Expression
-import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.ReferenceExpression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.util.GammaEcoreUtil
@@ -54,7 +53,6 @@ class StaticSingleAssignmentTransformer {
 	
 	// Model factories
 	protected final extension XSTSModelFactory xStsFactory = XSTSModelFactory.eINSTANCE
-	protected final extension ExpressionModelFactory constraintModelFactory = ExpressionModelFactory.eINSTANCE
 	//
 	
 	new(XSTS xSts) {
@@ -77,11 +75,8 @@ class StaticSingleAssignmentTransformer {
 		context = "_init"
 		
 		xSts.variableInitializingTransition.action.primeAction
-//		xSts.variableInitializingTransition.action.commonizePrimedVariablesAlongBranches // Unnecessary though, no branches
 		xSts.configurationInitializingTransition.action.primeAction
-//		xSts.configurationInitializingTransition.action.commonizePrimedVariablesAlongBranches
 		xSts.entryEventTransition.action.primeAction
-//		xSts.entryEventTransition.action.commonizePrimedVariablesAlongBranches
 		primedVariables.clear
 		//
 		
@@ -89,13 +84,11 @@ class StaticSingleAssignmentTransformer {
 		
 		if (ssaType !== SsaType.OUT_TRANS) {
 			xSts.inEventTransition.action.primeAction
-//			xSts.inEventTransition.action.commonizePrimedVariablesAlongBranches
 		}
 		else {
 			xSts.inEventTransition.action = createEmptyAction // Not needed, in variables are nondeterministic in e.g., SMV
 		}
 		xSts.outEventTransition.action.primeAction
-//		xSts.outEventTransition.action.commonizePrimedVariablesAlongBranches // Unnecessary though, no branches
 		if (ssaType !== SsaType.OUT_TRANS) {
 			primedVariables.clear // Because we want to connect this to trans
 		}
@@ -110,7 +103,6 @@ class StaticSingleAssignmentTransformer {
 			
 			val xStsAction = xStsTransition.action
 			xStsAction.primeAction
-//			xStsAction.commonizePrimedVariablesAlongBranches
 			primedVariables.clear
 		}
 		
@@ -147,6 +139,7 @@ class StaticSingleAssignmentTransformer {
 		// Commonizing
 		val commonizedPrimedVariables = subactions.commonizeBranches // Highest prime variables
 		primedVariables += commonizedPrimedVariables // Addition as some variables may not be present in commonizedPrimedVariables
+		//
 	}
 	
 	protected def dispatch void primeAction(IfAction action) {
@@ -181,6 +174,7 @@ class StaticSingleAssignmentTransformer {
 		
 		val commonizedPrimedVariables = branches.commonizeBranches // Highest prime variables
 		primedVariables += commonizedPrimedVariables // Addition as some variables may not be present in commonizedPrimedVariables
+		//
 	}
 	
 	//
@@ -262,39 +256,6 @@ class StaticSingleAssignmentTransformer {
 	
 	// SSE second pass (optimization)
 	
-//	protected def dispatch void commonizePrimedVariablesAlongBranches(SequentialAction action) {
-//		val subactions = action.actions
-//		
-//		for (subaction : subactions) {
-//			subaction.commonizePrimedVariablesAlongBranches
-//		}
-//	}
-//	
-//	protected def dispatch void commonizePrimedVariablesAlongBranches(NonDeterministicAction action) {
-//		val subactions = action.actions
-//		
-//		subactions.commonizeBranches
-//	}
-//	
-//	protected def dispatch void commonizePrimedVariablesAlongBranches(IfAction action) {
-//		if (action.^else === null) {
-//			action.^else = createEmptyAction
-//		}
-//		
-//		val branches = newArrayList
-//		
-//		branches += action.then
-//		branches += action.^else
-//		
-//		branches.commonizeBranches
-//	}
-//	
-//	protected def dispatch void commonizePrimedVariablesAlongBranches(AtomicAction action) {
-//		// No op
-//	}
-	
-	//
-	
 	protected def commonizeBranches(List<Action> branches) {
 		val branchAssignments = newLinkedHashMap
 		//
@@ -303,8 +264,6 @@ class StaticSingleAssignmentTransformer {
 		// Thus, this map should be ADDED to the original primed variables map
 		
 		for (subaction : branches) {
-//			subaction.commonizePrimedVariablesAlongBranches // Recursion
-			
 			branchAssignments += subaction -> subaction.getSelfAndAllContentsOfType(AbstractAssignmentAction)
 		}
 		// Commonizing
