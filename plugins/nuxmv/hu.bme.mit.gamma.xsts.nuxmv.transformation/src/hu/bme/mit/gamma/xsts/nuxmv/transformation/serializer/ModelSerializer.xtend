@@ -86,7 +86,8 @@ class ModelSerializer {
 		
 		val primedVariables = xSts.variableDeclarations.filter(PrimedVariable)
 		
-		val iVariables = (inputVariable + inputParameterVariable + inputMasterQueues + inputSlaveQueues +
+		val iVariables = newLinkedHashSet
+		iVariables += (inputVariable + inputParameterVariable + inputMasterQueues + inputSlaveQueues +
 				transientVariables + resettableVariables + localVariables + primedVariables).toList
 				
 		val statefulVariables = newArrayList
@@ -229,7 +230,7 @@ class ModelSerializer {
 	}
 	
 	// Second hash is needed as nuXmv does not support local variables with the same name in different scopes
-	protected def customizeLocalVariableNames(XSTS xSts) { // TODO into IVAR
+	protected def customizeLocalVariableNames(XSTS xSts) {
 		localVariableNames.clear
 		for (localVariableAction : xSts.getAllContentsOfType(VariableDeclarationAction)) {
 			val localVariable = localVariableAction.variableDeclaration
