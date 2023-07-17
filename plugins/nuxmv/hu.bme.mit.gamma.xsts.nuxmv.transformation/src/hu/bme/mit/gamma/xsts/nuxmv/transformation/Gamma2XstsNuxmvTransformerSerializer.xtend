@@ -108,7 +108,7 @@ class Gamma2XstsNuxmvTransformerSerializer {
 		xStsTransformer.execute
 		val xSts = targetFolderUri.normalLoad(fileName.emfXStsFileName) as XSTS
 		// SSE
-		val sseTransformer = new StaticSingleAssignmentTransformer(xSts, SsaType.OUT_TRANS, true)
+		val sseTransformer = new StaticSingleAssignmentTransformer(xSts, SsaType.OUT_TRANS)
 		sseTransformer.execute
 		xStsTransformer.serializeAndSaveXSts(xSts, true)
 		//

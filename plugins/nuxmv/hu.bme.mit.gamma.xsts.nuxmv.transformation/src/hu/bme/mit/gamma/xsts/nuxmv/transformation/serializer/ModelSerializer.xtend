@@ -13,7 +13,6 @@ package hu.bme.mit.gamma.xsts.nuxmv.transformation.serializer
 import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
-import hu.bme.mit.gamma.expression.util.ExpressionUtil
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.VariableGroupRetriever
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.AbstractAssignmentAction
@@ -27,6 +26,7 @@ import hu.bme.mit.gamma.xsts.model.PrimedVariable
 import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
 import hu.bme.mit.gamma.xsts.model.XSTS
+import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import java.util.Collection
 import java.util.Map
 import java.util.Set
@@ -50,8 +50,7 @@ class ModelSerializer {
 	protected final extension DeclarationSerializer declarationSerializer = DeclarationSerializer.INSTANCE
 	protected final extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
 	protected final extension ExpressionEvaluator evaluator = ExpressionEvaluator.INSTANCE
-	protected final extension TypeSerializer typeSerializer = TypeSerializer.INSTANCE
-	protected final extension ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE
+	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
 	protected final extension VariableGroupRetriever variableGroupRetriever = VariableGroupRetriever.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	
@@ -187,16 +186,37 @@ class ModelSerializer {
 				.getSelfAndAllContentsOfType(AbstractAssignmentAction)
 				.map[it.lhs.declaration].toSet
 		
-		val finalPrimedVariables = newArrayList
+		val finalPrimedVariables = newLinkedHashSet
 		finalPrimedVariables += xSts.finalPrimedVariables // Final primed...
 		finalPrimedVariables.retainAll(variablesAssignedInContext) // ...that are assigned in the context...
 		finalPrimedVariables.removeIf[iVariables.contains(it.originalVariable)] // ...iVars cannot be assigned
 		
-		return '''
-			«FOR finalPrimedVariable : finalPrimedVariables SEPARATOR ' & ' AFTER ';'»
+		var string = '''
+			«FOR finalPrimedVariable : finalPrimedVariables SEPARATOR ' & '»
 				«variableIdBefore»«finalPrimedVariable.originalVariable.name»«variableIdAfter» = «finalPrimedVariable.name»
 			«ENDFOR»
 		'''
+		
+		// Relevant only in the case of trans - we have to retain the values of unassigned variables
+		val unassignedVariables = newLinkedHashSet
+		unassignedVariables += xSts.variableDeclarations
+		unassignedVariables.removeIf[it instanceof PrimedVariable] // Remove init primed variables that are not IVARs
+		unassignedVariables -= iVariables
+		unassignedVariables -= finalPrimedVariables.map[it.originalVariable].filter(VariableDeclaration).toList
+		
+		if (!unassignedVariables.empty) {
+			string += '''
+				&
+				«FOR unassignedVariable : unassignedVariables SEPARATOR ' & '»
+					«variableIdBefore»«unassignedVariable.name»«variableIdAfter» = «unassignedVariable.name»
+				«ENDFOR»
+			'''
+		}
+		//
+		
+		string += ''';'''
+		
+		return string
 	}
 	
 	//
