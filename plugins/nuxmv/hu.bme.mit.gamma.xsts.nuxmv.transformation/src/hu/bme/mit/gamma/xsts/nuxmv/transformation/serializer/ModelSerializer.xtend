@@ -110,16 +110,17 @@ class ModelSerializer {
 				
 			INIT
 				«xSts.initializingAction.serialize»
-				
+				«/* Putting '&' if needed */ #[xSts.variableInitializingTransition.action,
+					xSts.configurationInitializingTransition.action, xSts.entryEventTransition.action].connectSubsequentActionsIfNeeded»
 				«xSts.finalizeVariableInitialization /*Next() assignment at the very end of the highest primes*/»
 				
 «««			// In event transition is not necessary (IVAR semantics)
-			«FOR transition : xSts.transitions AFTER ';'»
+			«FOR transition : xSts.transitions»
 				TRANS
 					«xSts.outEventTransition.action.serialize /*Out event transition is needed*/»
-
+					« /* Putting '&' if needed */ xSts.outEventTransition.action.connectSubsequentActionIfNeeded»
 					«transition.action.serialize /*Everything in constraint apart from if-else (case-esac)*/»
-
+					« /* Putting '&' if needed */ transition.action.connectSubsequentActionIfNeeded»
 					«xSts.finalizeVariablesInTrans /*Next() assignment at the very end of the highest primes*/»
 			«ENDFOR»
 		'''
@@ -200,6 +201,21 @@ class ModelSerializer {
 				«variableIdBefore»«finalPrimedVariable.originalVariable.name»«variableIdAfter» = «finalPrimedVariable.name»
 			«ENDFOR»
 		'''
+	}
+	
+	//
+	
+	protected def connectSubsequentActionIfNeeded(EObject object) {
+		return #[object].connectSubsequentActionsIfNeeded
+	}
+	
+	protected def connectSubsequentActionsIfNeeded(Collection<? extends EObject> objects) {
+		for (object : objects) {
+			if (object !== null) {
+				return '&'
+			}
+		}
+		return ''
 	}
 	
 	//
