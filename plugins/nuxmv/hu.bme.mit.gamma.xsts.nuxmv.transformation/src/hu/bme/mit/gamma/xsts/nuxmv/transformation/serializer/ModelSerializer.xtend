@@ -11,6 +11,7 @@
 package hu.bme.mit.gamma.xsts.nuxmv.transformation.serializer
 
 import hu.bme.mit.gamma.expression.model.Declaration
+import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.expression.util.ExpressionUtil
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.VariableGroupRetriever
@@ -28,6 +29,7 @@ import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
 import hu.bme.mit.gamma.xsts.model.XSTS
 import java.util.Collection
 import java.util.Map
+import java.util.Set
 import org.eclipse.emf.ecore.EObject
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
@@ -41,6 +43,8 @@ class ModelSerializer {
 	
 	protected final Map<Declaration, String> localVariableNames = newHashMap
 	protected final Map<NonDeterministicAction, String> nonDeterministicActionVariables = newHashMap
+	
+	protected final Set<VariableDeclaration> iVariables = newLinkedHashSet
 	
 	//
 	protected final extension DeclarationSerializer declarationSerializer = DeclarationSerializer.INSTANCE
@@ -57,6 +61,8 @@ class ModelSerializer {
 		nonDeterministicActionVariables.clear
 		xSts.createNonDeterministicActionVariables
 		
+		iVariables.clear
+		
 		val inputVariable = xSts.systemInEventVariableGroup.variables
 		val inputParameterVariable = xSts.systemInEventParameterVariableGroup.variables
 		val inputMasterQueues = xSts.systemMasterMessageQueueGroup.variables
@@ -69,9 +75,11 @@ class ModelSerializer {
 		
 		val primedVariables = xSts.variableDeclarations.filter(PrimedVariable)
 		
-		val iVariables = newLinkedHashSet
 		iVariables += (inputVariable + inputParameterVariable + inputMasterQueues + inputSlaveQueues +
 				transientVariables /*+ resettableVariables*/ + localVariables + primedVariables).toList
+				
+		val primedVariablesInInitializingAction = xSts.initializingAction.writtenVariables
+		iVariables -= primedVariablesInInitializingAction // INIT expression cannot contain input variables!
 				
 		val statefulVariables = newArrayList
 		statefulVariables += xSts.variableDeclarations
@@ -178,9 +186,11 @@ class ModelSerializer {
 		val variablesAssignedInContext = context
 				.getSelfAndAllContentsOfType(AbstractAssignmentAction)
 				.map[it.lhs.declaration].toSet
+		
 		val finalPrimedVariables = newArrayList
-		finalPrimedVariables += xSts.finalPrimedVariables
-		finalPrimedVariables.retainAll(variablesAssignedInContext)
+		finalPrimedVariables += xSts.finalPrimedVariables // Final primed...
+		finalPrimedVariables.retainAll(variablesAssignedInContext) // ...that are assigned in the context...
+		finalPrimedVariables.removeIf[iVariables.contains(it.originalVariable)] // ...iVars cannot be assigned
 		
 		return '''
 			«FOR finalPrimedVariable : finalPrimedVariables SEPARATOR ' & ' AFTER ';'»
