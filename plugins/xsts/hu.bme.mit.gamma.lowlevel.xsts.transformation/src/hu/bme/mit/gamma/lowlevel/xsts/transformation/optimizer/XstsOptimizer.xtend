@@ -81,6 +81,10 @@ class XstsOptimizer {
 		]
 	}
 	
+	def optimizeAction(Action action) {
+		return action.optimizeAction(null)
+	}
+	
 	def optimizeAction(Action action, Action context) {
 		var Action oldAction = null
 		var newAction = action
