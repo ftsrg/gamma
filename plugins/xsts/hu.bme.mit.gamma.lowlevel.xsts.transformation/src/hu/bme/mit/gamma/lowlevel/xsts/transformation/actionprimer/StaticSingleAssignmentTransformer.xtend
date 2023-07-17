@@ -43,6 +43,7 @@ class StaticSingleAssignmentTransformer {
 	
 	protected final XSTS xSts
 	protected final SsaType ssaType
+	protected final boolean primeAllVariablesAndPrependInTransition
 	
 	protected Map<VariableDeclaration, PrimedVariable> primedVariables = newLinkedHashMap
 	protected String context = ""
@@ -56,12 +57,13 @@ class StaticSingleAssignmentTransformer {
 	//
 	
 	new(XSTS xSts) {
-		this(xSts, SsaType.BASIC)
+		this(xSts, SsaType.BASIC, false)
 	}
 	
-	new(XSTS xSts, SsaType ssaType) {
+	new(XSTS xSts, SsaType ssaType, boolean primeAllVariablesAndPrependInTransition) {
 		this.xSts = xSts
 		this.ssaType = ssaType
+		this.primeAllVariablesAndPrependInTransition = primeAllVariablesAndPrependInTransition
 	}
 	
 	def execute() {
@@ -102,12 +104,32 @@ class StaticSingleAssignmentTransformer {
 			primedVariables += primeVariableSave
 			
 			val xStsAction = xStsTransition.action
+			// E.g., SMV needs to have assignments for all stateful variables in every transition
+			if (primeAllVariablesAndPrependInTransition) {
+				xStsAction.primeAllVariablesAndPrepend
+			}
+			//
 			xStsAction.primeAction
+			//
 			primedVariables.clear
+			//
 		}
 		
 		// Not all primed variables are used
 		removeUnusedPrimedVariables
+	}
+	
+	//
+	
+	protected def void primeAllVariablesAndPrepend(Action action) {
+		val assignments = newArrayList
+		
+		val statefulVariables = xSts.variableDeclarations.reject[it instanceof PrimedVariable]
+		for (statefulVariable : statefulVariables) {
+			assignments += statefulVariable.createAssignmentAction(statefulVariable)
+		}
+		
+		assignments.prependToAction(action)
 	}
 	
 	//
