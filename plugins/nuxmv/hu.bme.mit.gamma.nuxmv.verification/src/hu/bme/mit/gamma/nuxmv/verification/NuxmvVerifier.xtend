@@ -10,10 +10,13 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.nuxmv.verification
 
+import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.util.FileUtil
 import hu.bme.mit.gamma.verification.result.ThreeStateBoolean
 import hu.bme.mit.gamma.verification.util.AbstractVerifier
 import java.io.File
+import java.util.Scanner
+import java.util.logging.Level
 
 class NuxmvVerifier extends AbstractVerifier {
 	
@@ -23,121 +26,105 @@ class NuxmvVerifier extends AbstractVerifier {
 	protected val saveTrace = true
 	
 	override verifyQuery(Object traceability, String parameters, File modelFile, File queryFile) {
-		val model = fileUtil.loadString(modelFile)
 		val query = fileUtil.loadString(queryFile)
-
 		var Result result = null
-		var modelWithQueries = model
 		
-		//adding all the queries to the end of the model file
+		// Adding all the queries to the end of the model file
 		for (singleQuery : query.split(System.lineSeparator).reject[it.nullOrEmpty]) {
-			// TODO: check if the query is LTL or CTL
-			val isLTL = true
-			val SPEC_STRING = (isLTL) ? "LTLSPEC" : "CTLSPEC"
-			modelWithQueries += '''«System.lineSeparator»«SPEC_STRING»«System.lineSeparator» «singleQuery»'''
-		}
-		
-		val rootGenFolder = new File(modelFile.parent, "." + fileUtil.getExtensionlessName(modelFile))
-		rootGenFolder.mkdirs
-		// Save model with all the queries
-		val tmpGenFolder = new File(rootGenFolder + File.separator + fileUtil.getExtensionlessName(modelFile) + "-" + System.currentTimeMillis.toString)
-		tmpGenFolder.mkdirs
+			val newResult = traceability.verifyQuery(parameters, modelFile, singleQuery)
 			
-		// save model with LTL
-		val fileWithQueries = new File(tmpGenFolder, fileUtil.getExtensionlessName(modelFile) + ".smv")
-		fileWithQueries.deleteOnExit
-		fileUtil.saveString(fileWithQueries, modelWithQueries)
-			
-		val newResult = verify(traceability, parameters, fileWithQueries)
-		val oldTrace = result?.trace
-		val newTrace = newResult?.trace
-		if (oldTrace === null) {
-			result = newResult
+			val oldTrace = result?.trace
+			val newTrace = newResult?.trace
+			if (oldTrace === null) {
+				result = newResult
+			}
+			else if (newTrace !== null) {
+				oldTrace.extend(newTrace)
+				result = new Result(ThreeStateBoolean.UNDEF, oldTrace)
+			}
 		}
-		else if (newTrace !== null) {
-			oldTrace.extend(newTrace)
-			result = new Result(ThreeStateBoolean.UNDEF, oldTrace)
-		}
-			
-		// Setting for deletion after the exe has been generated
-		tmpGenFolder.forceDeleteOnExit
-		rootGenFolder.forceDeleteOnExit
 		
 		return result
 	}
 	
-	private def Result verify(Object traceability, String parameters, File modelFile) {
-//		var Scanner resultReader = null
-//		try {
-//			// Directory where executing the command
-//			val execFolder = modelFile.parentFile
-//			
-//			// spin -search -a PromelaFile.pml
-//			val splitParameters = parameters.split("\\s+")
-//			val searchCommand = #["nuXmv"] + splitParameters + #[modelFile.name /* see exec work-dir */]
-//			
-//			// Executing the command
-//			logger.log(Level.INFO, "Executing command: " + searchCommand.join(" "))
-//			process = Runtime.getRuntime().exec(searchCommand, null, execFolder)
-//			val outputStream = process.inputStream
-//			// Reading the result of the command
-//			resultReader = new Scanner(outputStream)
-//			
-//			// save result of command
-//			val outputFile = new File(execFolder, ".output.txt")
-//			outputFile.deleteOnExit
-//			var outputString = ""
-//			while (resultReader.hasNext) {
-//				outputString += resultReader.nextLine + System.lineSeparator
-//			}
-//			fileUtil.saveString(outputFile, outputString)
-//			
-//			if (!trailFile.exists) {
-//				// No proof/counterexample
-//				super.result = ThreeStateBoolean.TRUE
-//				// Adapting result
-//				super.result = super.result.adaptResult
-//				return new Result(result, null)
-//			}
-//			
-//			super.result = ThreeStateBoolean.FALSE
-//			// Adapting result
-//			super.result = super.result.adaptResult
-//			
-//			// Executing the trace command
-//			logger.log(Level.INFO, "Executing command: " + traceCommand.join(" "))
-//			process = Runtime.getRuntime().exec(traceCommand, null, execFolder)
-//			
-//			val traceOutputStream = process.inputStream
-//			// Reading the result of the command
-//			resultReader = new Scanner(traceOutputStream)
-//			
-//			// save trace
-//			if (saveTrace) {
-//				// Trace file
-//				val traceFile = new File(modelFile.traceFile)
-//				traceFile.delete
-//				traceFile.deleteOnExit
-//				
-//				val fos = new FileOutputStream(traceFile)
-//				val bw = new BufferedWriter(new OutputStreamWriter(fos))
-//				
-//				while (resultReader.hasNext) {
-//					bw.write(resultReader.nextLine)
-//					bw.write(System.lineSeparator)
-//				}
-//				bw.close
-//				
-//				resultReader = new Scanner(traceFile)
-//			}
-//			
-//			val gammaPackage = traceability as Package
-//			val backAnnotator = new TraceBackAnnotator(gammaPackage, resultReader)
-//			val trace = backAnnotator.execute
-//			
-//			return new Result(result, trace)
-//		} finally {
-//			resultReader?.close
-//		}
+	// set on_failure_script_quits
+	// set input_file "C:\Users\grben\eclipse_ws\fbk_ws\runtime-New_configuration\MyAsyncProject\NuSMV3-XSAP\Files\AOCS.smv"
+	// go_msat
+	// check_invar_ic3 -i -p "(signal < 12.0) IN AOCS"
+	// show_traces -p 4 -o "C:\Users\grben\eclipse_ws\fbk_ws\runtime-New_configuration\Temp\nuXmv_538c61488341a235\result_26ee62675985ecf2.xml"
+	// quit
+	override verifyQuery(Object traceability, String parameters, File modelFile, String query) {
+		val adaptedQuery = query.adaptQuery
+		val modelCheckingCommand = '''«parameters» -p "«adaptedQuery»"'''
+		// Creating the configuration file
+		val parentFile = modelFile.parent
+		val commandFile = new File(parentFile + File.separator + '''.nuXmv-commands-«Thread.currentThread.name».cmd''')
+		commandFile.deleteOnExit
+		
+		val serializedCommand = '''
+			set input_file "«modelFile.absolutePath»"
+			go_msat
+			«modelCheckingCommand»
+			quit
+		'''
+		fileUtil.saveString(commandFile, serializedCommand)
+		
+		// nuXmv -source commands.cmd
+		val nuXmvCommand = #["nuXmv", "-source", commandFile.absolutePath]
+		logger.log(Level.INFO, "Running nuXmv: " + nuXmvCommand.join(" "))
+		
+		var Scanner resultReader = null
+		
+		var Result result = null
+		
+		try {
+			process = Runtime.getRuntime().exec(nuXmvCommand)
+			
+			// Reading the result of the command
+			resultReader = new Scanner(process.inputReader)
+			
+			val resultPattern = '''.*specification.*is.*'''
+			var resultFound = false
+			var resultBoolean  = ThreeStateBoolean.UNDEF
+			while (!resultFound) {
+				val line = resultReader.nextLine
+				logger.log(Level.INFO, "nuXmv: " + line)
+				if (line.matches(resultPattern)) {
+					resultFound = true
+					if (line.endsWith("true")) {
+						resultBoolean  = ThreeStateBoolean.TRUE
+					}
+					else if (line.endsWith("false")) {
+						resultBoolean  = ThreeStateBoolean.FALSE
+					} // In case of any other outcome, the result will remain undef
+				}
+			}
+			//
+			
+			val gammaPackage = traceability as Package
+			val backAnnotator = new TraceBackAnnotator(gammaPackage, resultReader)
+			val trace = backAnnotator.execute
+			
+			result = new Result(resultBoolean, trace)
+			
+			logger.log(Level.INFO, "Quitting nuXmv shell")
+		} finally {
+			resultReader?.close
+			cancel
+		}
+		
+		return result
+	}
+	
+	override getTemporaryQueryFilename(File modelFile) {
+		return "." + modelFile.extensionlessName + ".s"
+	}
+	
+	protected def adaptQuery(String query) {
+		if (query.startsWith("A")) {
+			return query.substring(1)
+		}
+		return query
+		// TODO extend
 	}
 }

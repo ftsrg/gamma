@@ -1,18 +1,37 @@
+/********************************************************************************
+ * Copyright (c) 2023 Contributors to the Gamma project
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * SPDX-License-Identifier: EPL-1.0
+ ********************************************************************************/
 package hu.bme.mit.gamma.querygenerator.serializer
 
 import hu.bme.mit.gamma.property.model.BinaryOperandLogicalPathFormula
-import hu.bme.mit.gamma.property.model.UnaryPathOperator
-import hu.bme.mit.gamma.property.model.PathQuantifier
+import hu.bme.mit.gamma.property.model.BinaryOperandPathFormula
 import hu.bme.mit.gamma.property.model.BinaryPathOperator
+import hu.bme.mit.gamma.property.model.PathQuantifier
+import hu.bme.mit.gamma.property.model.StateFormula
+import hu.bme.mit.gamma.property.model.UnaryPathOperator
 
 class NuxmvPropertySerializer extends ThetaPropertySerializer {
-	//TODO
+	//
 	public static final NuxmvPropertySerializer INSTANCE = new NuxmvPropertySerializer
 	protected new() {
 		super.serializer = new NuxmvPropertyExpressionSerializer(NuxmvReferenceSerializer.INSTANCE)
 	}
+	//
 	
-	dispatch def String serializeFormula(BinaryOperandLogicalPathFormula formula) {
+	protected override isValidFormula(StateFormula formula) {
+		return true // TODO add validation
+	}
+	
+	//
+	
+	protected override dispatch String serializeFormula(BinaryOperandLogicalPathFormula formula) {
 		val operator = formula.operator
 		val leftOperand = formula.leftOperand.serializeFormula
 		val rightOperand = formula.rightOperand.serializeFormula
@@ -33,6 +52,16 @@ class NuxmvPropertySerializer extends ThetaPropertySerializer {
 				throw new IllegalArgumentException("Not supported operator: " + operator)
 		}
 	}
+	
+	protected override dispatch String serializeFormula(BinaryOperandPathFormula formula) {
+		val operator = formula.operator.transform
+		val leftOperand = formula.leftOperand.serializeFormula
+		val rightOperand = formula.rightOperand.serializeFormula
+		
+		return '''(«leftOperand» «operator» «rightOperand»)'''
+	}
+	
+	//
 	
 	protected override String transform(UnaryPathOperator operator) {
 		switch (operator) {
@@ -56,7 +85,7 @@ class NuxmvPropertySerializer extends ThetaPropertySerializer {
 		}
 	}
 	
-	protected def String transform(BinaryPathOperator operator) {
+	protected override transform(BinaryPathOperator operator) {
 		switch (operator) {
 			case UNTIL: {
 				return '''U'''
@@ -86,4 +115,5 @@ class NuxmvPropertySerializer extends ThetaPropertySerializer {
 				throw new IllegalArgumentException("Not supported quantifier: " + quantifier)
 		}
 	}
+	
 }

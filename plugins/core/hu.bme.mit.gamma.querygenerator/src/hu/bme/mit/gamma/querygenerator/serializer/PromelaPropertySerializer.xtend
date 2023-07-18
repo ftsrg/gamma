@@ -40,20 +40,20 @@ class PromelaPropertySerializer extends ThetaPropertySerializer {
 		return serializedFormula
 	}
 	
-	override dispatch String serializeFormula(UnaryOperandPathFormula formula) {
+	protected override dispatch String serializeFormula(UnaryOperandPathFormula formula) {
 		val operator = formula.operator
 		val operand = formula.operand
 		return '''«operator.transform» («operator.stableCondition»«operand.serializeFormula»)'''
 	}
 	
-	dispatch def String serializeFormula(BinaryOperandPathFormula formula) {
+	protected override dispatch serializeFormula(BinaryOperandPathFormula formula) {
 		val operator = formula.operator
 		val leftOperand = formula.leftOperand
 		val rightOperand = formula.rightOperand
 		return leftOperand.getStableCondition(operator, rightOperand)
 	}
 	
-	dispatch def String serializeFormula(BinaryOperandLogicalPathFormula formula) {
+	protected override dispatch serializeFormula(BinaryOperandLogicalPathFormula formula) {
 		val operator = formula.operator
 		val leftOperand = formula.leftOperand.serializeFormula
 		val rightOperand = formula.rightOperand.serializeFormula
@@ -77,7 +77,7 @@ class PromelaPropertySerializer extends ThetaPropertySerializer {
 	
 	//
 	
-	override protected isValidFormula(StateFormula stateFormula) {
+	protected override isValidFormula(StateFormula stateFormula) {
 		val list = stateFormula.getSelfAndAllContentsOfType(QuantifiedFormula)
 		if (list.size > 1) {
 			return false
@@ -96,7 +96,7 @@ class PromelaPropertySerializer extends ThetaPropertySerializer {
 	
 	//
 	
-	protected def String transform(BinaryPathOperator operator) {
+	protected override String transform(BinaryPathOperator operator) {
 		switch (operator) {
 			case UNTIL: {
 				return '''U'''

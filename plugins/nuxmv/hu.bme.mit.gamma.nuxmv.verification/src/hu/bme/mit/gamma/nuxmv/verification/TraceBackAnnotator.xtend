@@ -10,12 +10,13 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.nuxmv.verification
 
-import java.util.Scanner
+import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
+import java.util.Scanner
 
 class TraceBackAnnotator {
 	
-	new(Package package1, Scanner scanner) {
+	new(Package _package, Scanner scanner) {
 		throw new UnsupportedOperationException("TODO: auto-generated method stub")
 	}
 	

@@ -32,11 +32,11 @@ class NuxmvVerification extends AbstractVerification {
 	}
 	
 	override getDefaultArguments() {
-		return #['']
+		return #['check_ltlspec_ic3']
 	}
 	
 	override protected getArgumentPattern() {
-		return "(-([A-Za-z_])*([0-9])*(=)?([0-9])*( )*)*"
+		return ".*" // TODO
 	}
 	
 }
