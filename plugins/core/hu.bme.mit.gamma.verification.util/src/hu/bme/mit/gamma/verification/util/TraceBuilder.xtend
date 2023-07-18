@@ -343,9 +343,9 @@ class TraceBuilder {
 	
 	private def convertStringToInt(Type type, String value) {
 		switch (value) {
-			case "false":
+			case "false", case "FALSE":
 				return 0
-			case "true":
+			case "true", case "TRUE":
 				return 1
 			default:
 				try {

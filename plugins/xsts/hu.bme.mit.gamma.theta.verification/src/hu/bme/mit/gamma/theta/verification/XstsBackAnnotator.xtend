@@ -114,7 +114,7 @@ class XstsBackAnnotator {
 	
 	def void parseOutEvent(String id, String value, Step step) {
 		val systemOutEvent = xStsQueryGenerator.getSourceOutEvent(id)
-		if (value == "true" || value == "1") { // For Theta and UPPAAL
+		if (value == "true" || value == "TRUE" || value == "1") { // For Theta and UPPAAL
 			val event = systemOutEvent.get(0) as Event
 			val port = systemOutEvent.get(1) as Port
 			val systemPort = port.boundTopComponentPort // Back-tracking to the system port
@@ -145,7 +145,7 @@ class XstsBackAnnotator {
 	
 	def void parseSynchronousInEvent(String id, String value, Step step) {
 		val systemInEvent = xStsQueryGenerator.getSynchronousSourceInEvent(id)
-		if (value == "true" || value == "1") { // For Theta and UPPAAL
+		if (value == "true" || value == "TRUE" || value == "1") { // For Theta and UPPAAL
 			val event = systemInEvent.get(0) as Event
 			val port = systemInEvent.get(1) as Port
 			val systemPort = port.boundTopComponentPort // Back-tracking to the system port
