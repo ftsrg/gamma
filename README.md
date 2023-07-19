@@ -2,7 +2,12 @@
 
 *Version 2.9.0* - For the latest version, check out the [dev](https://github.com/ftsrg/gamma/tree/dev) branch.
 
-The Gamma Statechart Composition Framework is a toolset to model, verify and generate code for component-based reactive systems. The framework builds on Yakindu, an open source statechart modeling tool and provides an additional modeling layer to instatiate a communicating network of statecharts. Compositionality is hierarchical, which facilitates the creation of reusable component libraries. Individual statecharts, as well as composite statechart networks can be validated and verified by an automated translation to UPPAAL, a model checker for timed automata, or [Theta](https://github.com/ftsrg/theta), a generic, modular and configurable model checking framework. Once a complete model is built, designers can use the code generation functionality of the framework, which can generate Java code for the whole system.
+The Gamma Statechart Composition Framework is a toolset to model, verify and generate code for component-based reactive systems. The framework builds on Yakindu, an open source statechart modeling tool and provides an additional modeling layer to instatiate a communicating network of statecharts. Compositionality is hierarchical, which facilitates the creation of reusable component libraries. Individual statecharts, as well as composite statechart networks can be validated and verified by an automated translation to
+- [UPPAAL](http://www.uppaal.org/), a model checker for timed automata,
+- [Theta](https://github.com/ftsrg/theta), a generic, modular and configurable model checking framework,
+- [Spin](https://spinroot.com/), a tool for the formal verification of multi-threaded software applications, or
+- [nuXmv](https://nuxmv.fbk.eu/), a symbolic model checker for the analysis of synchronous finite-state and infinite-state systems.
+Once a complete model is built, designers can use the code generation functionality of the framework, which can generate Java code for the whole system.
 
 Check out http://gamma.inf.mit.bme.hu for more resources about Gamma. A good starting point is our [tool paper](https://inf.mit.bme.hu/sites/default/files/publications/icse18.pdf), [slides](https://www.slideshare.net/VinMol/icse2018-the-gamma-statechart-composition-framework-design-verification-and-code-generation-for-componentbased-reactive-systems) and [demo video](https://youtu.be/ng7lKd1wlDo) presented at [ICSE 2018](https://www.icse2018.org/event/icse-2018-demonstrations-the-gamma-statechart-composition-framework-design-verification-and-code-generation-for-component-based-reactive-systems) as well as our [journal paper](https://link.springer.com/article/10.1007/s10270-020-00806-5).
 
@@ -39,6 +44,8 @@ To cite Gamma, please cite the following paper. You can find additional publicat
 
 ##### 3rd-party tools used by Gamma (should be installed separately):
 * UPPAAL (Uppsala and Aalborg Universities, http://www.uppaal.org/).
+* Spin (Available under the standard BSD 3-Clause open source license, https://spinroot.com/).
+* nuXmv (Fondazione Bruno Kessler, https://nuxmv.fbk.eu/).
 
 ### Installation
 
@@ -50,6 +57,7 @@ To cite Gamma, please cite the following paper. You can find additional publicat
 * For formal verification, download and extract UPPAAL. In order to let Gamma find the UPPAAL executables, add the `bin-Win32` or `bin-Linux` folder to the path environment variable (depending on the operating system being used).
 * If you want to use Theta, check out the installation steps [here](plugins/xsts/README.md).
 * If you want to use Spin, check out the installation steps [here](plugins/promela/README.md).
+* If you want to use nuXmv, check out the installation steps [here](plugins/nuxmv/README.md).
 
 ### Tutorials
 
