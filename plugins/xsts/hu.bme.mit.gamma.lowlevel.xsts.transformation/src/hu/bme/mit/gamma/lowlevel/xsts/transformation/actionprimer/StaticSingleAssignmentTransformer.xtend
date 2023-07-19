@@ -220,7 +220,7 @@ class StaticSingleAssignmentTransformer {
 		val declaration = lhs.declaration as VariableDeclaration
 		checkState (declaration.native || declaration.array)
 		declaration.primeVariable // The loop below will cover the lhs priming
-		
+		// TODO arrays
 		lhs.primeExpression
 	}
 	

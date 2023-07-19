@@ -78,10 +78,4 @@ class XstsUppaalQueryGenerator extends ThetaQueryGenerator {
 		return super.getAsynchronousSourceInEventParameterFieldHierarchy(bracketLessId)
 	}
 	
-	///
-	
-	protected def getBracketLessId(String id) {
-		return (id.contains("[")) ? id.substring(0, id.indexOf("[")) : id
-	}
-	
 }

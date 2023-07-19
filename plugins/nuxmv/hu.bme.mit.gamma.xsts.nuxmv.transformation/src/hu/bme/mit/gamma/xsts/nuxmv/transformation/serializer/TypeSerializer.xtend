@@ -18,6 +18,7 @@ import hu.bme.mit.gamma.expression.model.RationalTypeDefinition
 import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.expression.model.TypeReference
+import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 
 class TypeSerializer {
@@ -25,6 +26,7 @@ class TypeSerializer {
 	public static final TypeSerializer INSTANCE = new TypeSerializer
 	//
 	protected final extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
+	protected final extension ExpressionEvaluator expressionEvaluator = ExpressionEvaluator.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 		
 	// Type declaration
@@ -49,7 +51,8 @@ class TypeSerializer {
 	
 	def dispatch String serializeType(EnumerationTypeDefinition type) '''{ «FOR literal : type.literals SEPARATOR ', '»«literal.name»«ENDFOR» }'''
 	
-	def dispatch String serializeType(ArrayTypeDefinition type) '''array 0..«type.size.serialize» of «type.elementType.serializeType»'''
+	// Arrays: both sides are inclusive
+	def dispatch String serializeType(ArrayTypeDefinition type) '''array 0..«type.size.evaluate - 1» of «type.elementType.serializeType»'''
 	
 	// 
 

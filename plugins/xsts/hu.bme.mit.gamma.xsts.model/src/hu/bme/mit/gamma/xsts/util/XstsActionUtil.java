@@ -253,7 +253,7 @@ public class XstsActionUtil extends ExpressionUtil {
 				
 				AssignmentAction newAssignmentAction = createAssignmentAction(newLhs, newRhs);
 				arrayLiteralAssignments.addAll(
-						extractArrayLiteralAssignments(newAssignmentAction));
+						extractArrayLiteralAssignments(newAssignmentAction)); // Recursion for multiD arrays
 			}
 		}
 		else {
