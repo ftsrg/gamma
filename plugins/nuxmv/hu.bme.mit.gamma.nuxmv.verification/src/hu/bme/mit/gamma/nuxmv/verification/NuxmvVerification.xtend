@@ -13,6 +13,8 @@ package hu.bme.mit.gamma.nuxmv.verification
 import hu.bme.mit.gamma.verification.util.AbstractVerification
 import hu.bme.mit.gamma.verification.util.AbstractVerifier.Result
 import java.io.File
+import java.util.Scanner
+import java.util.logging.Level
 
 class NuxmvVerification extends AbstractVerification {
 	// Singleton
@@ -25,6 +27,7 @@ class NuxmvVerification extends AbstractVerification {
 		val packageFileName = fileName.unfoldedPackageFileName
 		val gammaPackage = ecoreUtil.normalLoad(modelFile.parent, packageFileName)
 		val verifier = new NuxmvVerifier
+		
 		val argument = arguments.head
 		
 		argument.sanitizeArgument
@@ -33,7 +36,10 @@ class NuxmvVerification extends AbstractVerification {
 	}
 	
 	override getDefaultArguments() {
-		return #['check_ltlspec_ic3']
+		return #[
+			'check_ltlspec_ic3 -p' // LTL
+//			 'check_property_as_invar_ic3 -L' // Invariant properties
+		]
 	}
 	
 	override protected getArgumentPattern() {
