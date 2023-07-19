@@ -19,8 +19,6 @@ class PromelaVerification extends AbstractVerification {
 	public static final PromelaVerification INSTANCE = new PromelaVerification
 	protected new() {}
 	
-	protected final extension PromelaQueryAdapter promelaQueryAdapter = PromelaQueryAdapter.INSTANCE
-	
 	override Result execute(File modelFile, File queryFile, String[] arguments) {
 		val fileName = modelFile.name
 		val packageFileName = fileName.unfoldedPackageFileName

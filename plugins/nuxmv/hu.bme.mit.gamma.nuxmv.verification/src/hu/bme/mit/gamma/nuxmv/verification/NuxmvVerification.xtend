@@ -18,6 +18,7 @@ class NuxmvVerification extends AbstractVerification {
 	// Singleton
 	public static final NuxmvVerification INSTANCE = new NuxmvVerification
 	protected new() {}
+	//
 	
 	override Result execute(File modelFile, File queryFile, String[] arguments) {
 		val fileName = modelFile.name

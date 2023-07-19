@@ -16,6 +16,8 @@ import hu.bme.mit.gamma.property.model.BinaryPathOperator
 import hu.bme.mit.gamma.property.model.PathQuantifier
 import hu.bme.mit.gamma.property.model.StateFormula
 import hu.bme.mit.gamma.property.model.UnaryPathOperator
+import hu.bme.mit.gamma.property.model.QuantifiedFormula
+import hu.bme.mit.gamma.property.model.UnaryOperandPathFormula
 
 class NuxmvPropertySerializer extends ThetaPropertySerializer {
 	//
@@ -26,7 +28,28 @@ class NuxmvPropertySerializer extends ThetaPropertySerializer {
 	//
 	
 	protected override isValidFormula(StateFormula formula) {
-		return true // TODO add validation
+		val quantifiedFormulas = newArrayList
+		quantifiedFormulas += formula.getAllContentsOfType(QuantifiedFormula)
+		
+		if (quantifiedFormulas.empty) {
+			return true // It is an LTL formula
+		}
+		
+		if (formula instanceof QuantifiedFormula) {
+			quantifiedFormulas += formula
+		}
+		for (quantifiedFormula : quantifiedFormulas) {
+			val nestedFormula = quantifiedFormula.formula
+			if (nestedFormula instanceof UnaryOperandPathFormula || 
+					nestedFormula instanceof BinaryOperandPathFormula) {
+				// Correct CTL operator
+			}
+			else {
+				return false
+			}
+		}
+		
+		return true // All operators are valid (glued) CTL operators
 	}
 	
 	//

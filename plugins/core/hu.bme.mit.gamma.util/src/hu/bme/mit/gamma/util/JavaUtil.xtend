@@ -133,6 +133,8 @@ class JavaUtil {
 		return entries
 	}
 	
+	//
+	
 	def String toFirstCharUpper(String string) {
 		return string.toFirstUpper
 	}
@@ -143,6 +145,18 @@ class JavaUtil {
 	
 	def splitLines(String string) {
 		return string.split(System.lineSeparator).reject[it.nullOrEmpty]
+	}
+	
+	def String deparenthesize(String string) {
+		val stringBuilder = new StringBuilder
+		stringBuilder.append(string)
+		
+		while (stringBuilder.charAt(0) == '(') {
+			stringBuilder.deleteCharAt(0)
+			stringBuilder.deleteCharAt(stringBuilder.length - 1)
+		}
+		
+		return stringBuilder.toString
 	}
 	
 }

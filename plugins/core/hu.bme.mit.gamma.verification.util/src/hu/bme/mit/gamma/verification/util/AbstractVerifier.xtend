@@ -14,6 +14,7 @@ import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.trace.util.TraceUtil
 import hu.bme.mit.gamma.transformation.util.GammaFileNamer
 import hu.bme.mit.gamma.util.FileUtil
+import hu.bme.mit.gamma.util.JavaUtil
 import hu.bme.mit.gamma.util.PathEscaper
 import hu.bme.mit.gamma.verification.result.ThreeStateBoolean
 import java.io.File
@@ -72,6 +73,55 @@ abstract class AbstractVerifier {
 	protected def getTemporaryQueryFilename(File modelFile) {
 		return fileNamer.getHiddenSerializedPropertyFileName(modelFile.name)
 	}
+	
+	//
+	
+	static class LtlQueryAdapter {
+		final String A = "A"
+		final String E = "E"
+		
+		boolean invert;
+		
+		//
+		protected final extension FileUtil fileUtil = FileUtil.INSTANCE
+		protected final extension JavaUtil javaUtil = JavaUtil.INSTANCE
+		
+		//
+		
+		def adaptQuery(File queryFile) {
+			return queryFile.loadString.adaptQuery
+		}
+		
+		def adaptQuery(String query) {
+			val trimmedQuery = query.trim.deparenthesize
+			
+			if (trimmedQuery.startsWith(E)) {
+				invert = true
+				return "!(" + trimmedQuery.substring(E.length) + ")"
+			}
+			if (trimmedQuery.startsWith(A)) {
+				invert = false
+				return trimmedQuery.substring(A.length)
+			}
+			
+			invert = false
+			return trimmedQuery
+		}
+		
+		def adaptResult(ThreeStateBoolean promelaResult) {
+			if (promelaResult === null) {
+				// If the process is cancelled, the result will be null
+				return ThreeStateBoolean.UNDEF
+			}
+			if (invert) {
+				return promelaResult.opposite
+			}
+			return promelaResult
+		}
+		
+	}
+	
+	//
 	
 	@Data
 	static class Result {

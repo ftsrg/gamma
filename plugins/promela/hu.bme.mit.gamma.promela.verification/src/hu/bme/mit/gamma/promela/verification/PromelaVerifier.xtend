@@ -24,7 +24,7 @@ import java.util.logging.Level
 class PromelaVerifier extends AbstractVerifier {
 	
 	protected final extension FileUtil fileUtil = FileUtil.INSTANCE
-	protected final extension PromelaQueryAdapter promelaQueryAdapter = PromelaQueryAdapter.INSTANCE
+	protected extension LtlQueryAdapter queryAdapter = null // One needs to be created for every verification task
 
 	// save trace to file
 	protected val saveTrace = false
@@ -37,6 +37,8 @@ class PromelaVerifier extends AbstractVerifier {
 		var Result result = null
 		
 		for (singleQuery : query.split(System.lineSeparator).reject[it.nullOrEmpty]) {
+			//
+			queryAdapter = new LtlQueryAdapter
 			// Supporting multiple queries in separate files
 			val ltl = '''«System.lineSeparator»ltl ltl_«i» { «singleQuery.adaptQuery» }'''
 			val modelWithLtl = model + ltl
@@ -68,6 +70,7 @@ class PromelaVerifier extends AbstractVerifier {
 			tmpGenFolder.forceDeleteOnExit
 			rootGenFolder.forceDeleteOnExit
 		}
+		
 		return result
 	}
 	
@@ -127,8 +130,6 @@ class PromelaVerifier extends AbstractVerifier {
 			
 			if (!trailFile.exists) {
 				// No proof/counterexample
-//				super.result = ThreeStateBoolean.TRUE
-				// Adapting result
 				return new Result(result, null)
 			}
 			
@@ -196,44 +197,5 @@ class PromelaVerifier extends AbstractVerifier {
 	
 	def getPanFile(File modelFile) {
 		return modelFile.parent + File.separator + "pan"
-	}
-}
-
-class PromelaQueryAdapter {
-	public static PromelaQueryAdapter INSTANCE = new PromelaQueryAdapter
-	private new() {}
-	// Singleton
-	final String A = "A"
-	final String E = "E"
-	
-	extension FileUtil fileUtil = FileUtil.INSTANCE
-	boolean invert;
-	
-	def adaptQuery(File queryFile) {
-		return queryFile.loadString.adaptQuery
-	}
-	
-	def adaptQuery(String query) {
-		if (query.startsWith(E)) {
-			invert = true
-			return "!(" + query.substring(E.length) + ")"
-		}
-		if (query.startsWith(A)) {
-			invert = false
-			return query.substring(A.length)
-		}
-		invert = false
-		return query
-	}
-	
-	def adaptResult(ThreeStateBoolean promelaResult) {
-		if (promelaResult === null) {
-			// If the process is cancelled, the result will be null
-			return ThreeStateBoolean.UNDEF
-		}
-		if (invert) {
-			return promelaResult.opposite
-		}
-		return promelaResult
 	}
 }

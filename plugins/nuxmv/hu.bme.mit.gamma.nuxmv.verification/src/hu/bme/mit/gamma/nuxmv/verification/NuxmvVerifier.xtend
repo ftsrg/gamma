@@ -54,6 +54,8 @@ class NuxmvVerifier extends AbstractVerifier {
 	// show_traces -p 4 -o "C:\Users\grben\eclipse_ws\fbk_ws\runtime-New_configuration\Temp\nuXmv_538c61488341a235\result_26ee62675985ecf2.xml"
 	// quit
 	override verifyQuery(Object traceability, String parameters, File modelFile, String query) {
+		//
+		val extension queryAdapter = new LtlQueryAdapter
 		val adaptedQuery = query.adaptQuery
 		val modelCheckingCommand = '''«parameters» -p "«adaptedQuery»"'''
 		// Creating the configuration file
@@ -75,7 +77,7 @@ class NuxmvVerifier extends AbstractVerifier {
 		
 		var Scanner resultReader = null
 		
-		var Result result = null
+		var Result traceResult = null
 		
 		try {
 			process = Runtime.getRuntime().exec(nuXmvCommand)
@@ -85,27 +87,28 @@ class NuxmvVerifier extends AbstractVerifier {
 			
 			val resultPattern = '''.*specification.*is.*'''
 			var resultFound = false
-			var resultBoolean  = ThreeStateBoolean.UNDEF
+			result  = ThreeStateBoolean.UNDEF
 			while (!resultFound) {
 				val line = resultReader.nextLine
 				logger.log(Level.INFO, "nuXmv: " + line)
 				if (line.matches(resultPattern)) {
 					resultFound = true
 					if (line.endsWith("true")) {
-						resultBoolean  = ThreeStateBoolean.TRUE
+						result  = ThreeStateBoolean.TRUE
 					}
 					else if (line.endsWith("false")) {
-						resultBoolean  = ThreeStateBoolean.FALSE
+						result  = ThreeStateBoolean.FALSE
 					} // In case of any other outcome, the result will remain undef
 				}
 			}
+			result = result.adaptResult
 			//
 			
 			val gammaPackage = traceability as Package
 			val backAnnotator = new TraceBackAnnotator(gammaPackage, resultReader)
 			val trace = backAnnotator.execute
 			
-			result = new Result(resultBoolean, trace)
+			traceResult = new Result(result, trace)
 			
 			logger.log(Level.INFO, "Quitting nuXmv shell")
 		} finally {
@@ -113,18 +116,11 @@ class NuxmvVerifier extends AbstractVerifier {
 			cancel
 		}
 		
-		return result
+		return traceResult
 	}
 	
 	override getTemporaryQueryFilename(File modelFile) {
 		return "." + modelFile.extensionlessName + ".s"
 	}
 	
-	protected def adaptQuery(String query) {
-		if (query.startsWith("A")) {
-			return query.substring(1)
-		}
-		return query
-		// TODO extend
-	}
 }
