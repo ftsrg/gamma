@@ -195,6 +195,9 @@ class TraceBackAnnotator {
 			}
 			// Checking the last state
 			step.checkInEvents // In events can be deleted here?
+			if (!step.containsType(Reset)) {
+				step.addSchedulingIfNeeded
+			}
 			step.checkStates
 			// Sorting if needed
 			if (sortTrace) {
@@ -211,15 +214,16 @@ class TraceBackAnnotator {
 		return trace
 	}
 	
+	//
+	
 	protected def addStep(EObject container) {
+		val step = createStep
 		switch (container) {
 			ExecutionTrace: {
-				val step = createStep
 				container.steps += step
 				return step
 			}
 			Cycle: {
-				val step = createStep
 				container.steps += step
 				return step
 			}
@@ -227,6 +231,8 @@ class TraceBackAnnotator {
 				throw new IllegalArgumentException("Not known object: " + container)
 		}
 	}
+	
+	//
 	
 	enum BackAnnotatorState {INIT, STATE_CHECK, ENVIRONMENT_CHECK}
 	
