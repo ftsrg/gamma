@@ -11,6 +11,8 @@
 package hu.bme.mit.gamma.xsts.nuxmv.transformation.serializer
 
 import hu.bme.mit.gamma.expression.model.AndExpression
+import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression
+import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
 import hu.bme.mit.gamma.expression.model.EqualityExpression
 import hu.bme.mit.gamma.expression.model.Expression
@@ -20,12 +22,17 @@ import hu.bme.mit.gamma.expression.model.ImplyExpression
 import hu.bme.mit.gamma.expression.model.OrExpression
 import hu.bme.mit.gamma.expression.model.TrueExpression
 import hu.bme.mit.gamma.expression.model.XorExpression
+import hu.bme.mit.gamma.statechart.util.ExpressionTypeDeterminator
+
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 
 class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSerializer {
 	// Singleton
 	public static final ExpressionSerializer INSTANCE = new ExpressionSerializer
 	protected new() {}
 	//
+	protected final extension ExpressionTypeDeterminator typeDeterminator = ExpressionTypeDeterminator.INSTANCE
+	protected final extension TypeSerializer typeSerializer = TypeSerializer.INSTANCE
 	
 	override String _serialize(EnumerationLiteralExpression expression) '''«expression.reference.name»'''
 	
@@ -48,5 +55,25 @@ class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSe
 	override String _serialize(EqualityExpression expression) '''(«expression.leftOperand.serialize» = «expression.rightOperand.serialize»)'''
 
 	override String _serialize(IfThenElseExpression expression) '''((«expression.condition.serialize») ? («expression.then.serialize») : («expression.^else.serialize»))'''
+
+	override String _serialize(ArrayLiteralExpression expression) {
+		val operands = expression.operands
+		val typeDefinition = expression.typeDefinition as ArrayTypeDefinition
+		val smvType = typeDefinition.serializeType
+		
+		val defaultExpression = typeDefinition.elementType.defaultExpression
+		val smvDefaultValue = defaultExpression.serialize
+		
+		val smvArrayLiteral = new StringBuilder
+		smvArrayLiteral.append('''CONSTARRAY(«smvType», «smvDefaultValue»)''')
+		
+		for (var i = 0; i < operands.size; i++) {
+			val operand = operands.get(i)
+			smvArrayLiteral.insert(0, '''WRITE(''') // Prepend
+			smvArrayLiteral.append(''', «i», «operand.serialize»)''')
+		} 
+		
+		return smvArrayLiteral.toString
+	}
 
 }

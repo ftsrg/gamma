@@ -29,7 +29,7 @@ class PromelaArrayParser implements XstsArrayParser {
 	protected new() {}
 
 	override List<Pair<IndexHierarchy, String>> parseArray(String id, String value) {
-		if (value.isArray) { // If value is an array, it contains at least 1 " = "
+		if (id.isArray(value)) { // If value is an array, it contains at least 1 " = "
 			var values = newArrayList
 			val arrayElements = value.split(Pattern.quote("|"))
 			for (element : arrayElements) {
@@ -63,7 +63,7 @@ class PromelaArrayParser implements XstsArrayParser {
 		}
 	}
 
-	protected def boolean isArray(String value) {
+	override boolean isArray(String id, String value) {
 		return value.contains(" = ")
 	}
 

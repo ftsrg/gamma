@@ -25,7 +25,6 @@ class TypeSerializer {
 		// Singleton
 	public static final TypeSerializer INSTANCE = new TypeSerializer
 	//
-	protected final extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
 	protected final extension ExpressionEvaluator expressionEvaluator = ExpressionEvaluator.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 		
@@ -52,7 +51,8 @@ class TypeSerializer {
 	def dispatch String serializeType(EnumerationTypeDefinition type) '''{ «FOR literal : type.literals SEPARATOR ', '»«literal.name»«ENDFOR» }'''
 	
 	// Arrays: both sides are inclusive
-	def dispatch String serializeType(ArrayTypeDefinition type) '''array 0..«type.size.evaluate - 1» of «type.elementType.serializeType»'''
+	def dispatch String serializeType(ArrayTypeDefinition type) '''array 0..«
+		type.size.evaluate /*- 1 // To make it semantic-preserving - OOB indexing in SMV will return the highest index's value */» of «type.elementType.serializeType»'''
 	
 	// 
 

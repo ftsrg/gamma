@@ -17,4 +17,6 @@ interface XstsArrayParser {
 	
 	def List<Pair<IndexHierarchy, String>> parseArray(String id, String value)
 	
+	def boolean isArray(String id, String value)
+	
 }

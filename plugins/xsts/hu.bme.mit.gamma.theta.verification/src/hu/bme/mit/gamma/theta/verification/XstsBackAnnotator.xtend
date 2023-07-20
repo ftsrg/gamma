@@ -281,6 +281,12 @@ class XstsBackAnnotator {
 	
 	///
 	
+	def isArray(String id, String value) {
+		return arrayParser.isArray(id, value)
+	}
+	
+	///
+	
 	def void checkStates(Step step) {
 		val raiseEventActs = step.outEvents
 		for (raiseEventAct : raiseEventActs) {

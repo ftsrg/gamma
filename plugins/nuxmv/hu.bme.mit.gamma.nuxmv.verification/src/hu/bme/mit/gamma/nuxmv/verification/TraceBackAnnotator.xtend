@@ -142,52 +142,59 @@ class TraceBackAnnotator {
 							val split = line.split(" = ", 2) // Only the first " = " is checked
 							val id = split.get(0)
 							val value = split.get(1)
-							switch (state) {
-								case STATE_CHECK: {
-									val potentialStateString = '''«id» == «value»'''
-									if (nuxmvQueryGenerator.isSourceState(potentialStateString)) {
-										potentialStateString.parseState(step)
+							try {
+								switch (state) {
+									case STATE_CHECK: {
+										val potentialStateString = '''«id» == «value»'''
+										if (nuxmvQueryGenerator.isSourceState(potentialStateString)) {
+											potentialStateString.parseState(step)
+										}
+										else if (nuxmvQueryGenerator.isDelay(id)) {
+											step.addTimeElapse(Integer.valueOf(value))
+										}
+										else if (nuxmvQueryGenerator.isSourceVariable(id)) {
+											id.parseVariable(value, step)
+										}
+										else if (id.isSchedulingVariable) {
+											id.addScheduling(value, step)
+										}
+										else if (nuxmvQueryGenerator.isSourceOutEvent(id)) {
+											id.parseOutEvent(value, step)
+										}
+										else if (nuxmvQueryGenerator.isSourceOutEventParameter(id)) {
+											id.parseOutEventParameter(value, step)
+										}
+										// Checking if an asynchronous in-event is already stored in the queue
+										else if (nuxmvQueryGenerator.isAsynchronousSourceMessageQueue(id)) {
+											id.handleStoredAsynchronousInEvents(value)
+										}
 									}
-									else if (nuxmvQueryGenerator.isDelay(id)) {
-										step.addTimeElapse(Integer.valueOf(value))
+									case ENVIRONMENT_CHECK: {
+										// Synchronous in-event
+										if (nuxmvQueryGenerator.isSynchronousSourceInEvent(id)) {
+											id.parseSynchronousInEvent(value, step)
+										}
+										// Synchronous in-event parameter
+										else if (nuxmvQueryGenerator.isSynchronousSourceInEventParameter(id)) {
+											id.parseSynchronousInEventParameter(value, step)
+										}
+										// Asynchronous in-event
+										else if (nuxmvQueryGenerator.isAsynchronousSourceMessageQueue(id)) {
+											id.parseAsynchronousInEvent(value, step)
+										}
+										// Asynchronous in-event parameter
+										else if (nuxmvQueryGenerator.isAsynchronousSourceInEventParameter(id)) {
+											id.parseAsynchronousInEventParameter(value, step)
+										}
 									}
-									else if (nuxmvQueryGenerator.isSourceVariable(id)) {
-										id.parseVariable(value, step)
-									}
-									else if (id.isSchedulingVariable) {
-										id.addScheduling(value, step)
-									}
-									else if (nuxmvQueryGenerator.isSourceOutEvent(id)) {
-										id.parseOutEvent(value, step)
-									}
-									else if (nuxmvQueryGenerator.isSourceOutEventParameter(id)) {
-										id.parseOutEventParameter(value, step)
-									}
-									// Checking if an asynchronous in-event is already stored in the queue
-									else if (nuxmvQueryGenerator.isAsynchronousSourceMessageQueue(id)) {
-										id.handleStoredAsynchronousInEvents(value)
-									}
+									default:
+										throw new IllegalArgumentException("Not known state: " + state)
 								}
-								case ENVIRONMENT_CHECK: {
-									// Synchronous in-event
-									if (nuxmvQueryGenerator.isSynchronousSourceInEvent(id)) {
-										id.parseSynchronousInEvent(value, step)
-									}
-									// Synchronous in-event parameter
-									else if (nuxmvQueryGenerator.isSynchronousSourceInEventParameter(id)) {
-										id.parseSynchronousInEventParameter(value, step)
-									}
-									// Asynchronous in-event
-									else if (nuxmvQueryGenerator.isAsynchronousSourceMessageQueue(id)) {
-										id.parseAsynchronousInEvent(value, step)
-									}
-									// Asynchronous in-event parameter
-									else if (nuxmvQueryGenerator.isAsynchronousSourceInEventParameter(id)) {
-										id.parseAsynchronousInEventParameter(value, step)
-									}
-								}
-								default:
-									throw new IllegalArgumentException("Not known state: " + state)
+							}
+							catch (IndexOutOfBoundsException e) {
+								// In the SMV mapping, the arrays are set to have a larger capacity by one
+								// So out of indexing will result in the default value
+								checkState(id.isArray(value))
 							}
 						}
 					}

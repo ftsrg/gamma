@@ -33,7 +33,6 @@ class NuxmvVerifier extends AbstractVerifier {
 		for (singleQuery : query.split(System.lineSeparator).reject[it.nullOrEmpty]) {
 			//
 			val isPropertyConvertible = modelFile.isConvertibleIntoInvariant(singleQuery)
-			println(isPropertyConvertible)
 			//
 			val possiblyCovertedParameters = (isPropertyConvertible && parameters == "check_ltlspec_ic3 -p") ?
 					"check_property_as_invar_ic3 -L" : parameters
@@ -166,13 +165,15 @@ class NuxmvVerifier extends AbstractVerifier {
 			var line = ""
 			while (!line.startsWith(PROPERTY_START) && !line.startsWith(PARSING_ERROR)) {
 				line = resultReader.nextLine
-				logger.log(Level.INFO, "nuXmv: " + line)
+				logger.log(Level.OFF, "nuXmv: " + line)
 			}
 			if (line.startsWith(PROPERTY_START)) {
 //				return line.substring(PROPERTY_START.length)
+				logger.log(Level.INFO, "Property is convertible to safety property: " + line.substring(PROPERTY_START.length))
 				return true
 			}
 			else {
+				logger.log(Level.INFO, "Property is not convertible to safety property")
 				return false
 			}
 		} catch (Exception e) {

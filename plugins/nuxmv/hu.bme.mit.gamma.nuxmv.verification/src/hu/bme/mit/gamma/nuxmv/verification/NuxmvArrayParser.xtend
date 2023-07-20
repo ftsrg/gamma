@@ -20,7 +20,7 @@ class NuxmvArrayParser implements XstsArrayParser {
 	//
 	
 	override parseArray(String id, String value) {
-		if (id.array) { // If value is an array, it contains at least 1 " [ "
+		if (id.isArray(value)) { // If value is an array, it contains at least 1 " [ "
 			val splittedId = id.split("[a-zA-Z_]+\\[")
 			val tail = splittedId.get(1) // "1][2][3]"
 			val valuesWithDelimiter = tail.substring(0, tail.length - 1) // "1][2][3"
@@ -37,7 +37,7 @@ class NuxmvArrayParser implements XstsArrayParser {
 		}
 	}
 	
-	protected def boolean isArray(String id) {
+	override isArray(String id, String value) {
 		val pattern = ".*\\[[0-9]+\\]+"
 		return id.matches(pattern)
 	}

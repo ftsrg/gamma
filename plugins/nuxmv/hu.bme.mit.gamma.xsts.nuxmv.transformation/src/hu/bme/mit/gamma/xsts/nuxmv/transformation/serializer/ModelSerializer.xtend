@@ -153,13 +153,17 @@ class ModelSerializer {
 		'''
 	}
 	
+	// SMV supports 'CONSTARRAY(typeof(a), 0)'
+	protected def dispatch String serialize(AssignmentAction action) '''
+		«action.lhs.serialize» = «action.rhs.serialize»
+	'''
 	// SMV does not support 'a = {1, 2, 5}' like assignments
 	// It does support a 'CONSTARRAY(typeof(a), 0)' function, but this way seems to be easier 
-	protected def dispatch String serialize(AssignmentAction action) '''
-		«FOR assignment : action.extractArrayLiteralAssignments SEPARATOR ' & ' /* If rhs is not array literal, the original assignment is returned */»
-			«assignment.lhs.serialize» = «assignment.rhs.serialize»
-		«ENDFOR»
-	'''
+//		TODO introduce array literals
+//		«FOR assignment : action.extractArrayLiteralAssignments SEPARATOR ' & ' /* If rhs is not array literal, the original assignment is returned */»
+//			«assignment.lhs.serialize» = «assignment.rhs.serialize»
+//		«ENDFOR»
+//		TODO introduce array indexing
 	
 	protected def dispatch String serialize(EmptyAction action) '''
 		 TRUE

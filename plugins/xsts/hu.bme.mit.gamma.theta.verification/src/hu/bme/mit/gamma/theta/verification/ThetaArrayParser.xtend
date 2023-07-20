@@ -28,7 +28,7 @@ class ThetaArrayParser implements XstsArrayParser {
 	protected def List<Pair<IndexHierarchy, String>> parseArray(String value) {
 		// (array (0 10) (1 11) (default 0))
 		val values = newArrayList
-		if (value.isArray) {
+		if ("".isArray(value)) {
 			val unwrapped = value.unwrap.substring("array ".length) // (0 10) (default 0)
 			val splits = unwrapped.parseAlongParentheses // 0 10, default array
 			for (split : splits) {
@@ -75,7 +75,7 @@ class ThetaArrayParser implements XstsArrayParser {
 		return result
 	}
 	
-	protected def boolean isArray(String value) {
+	override isArray(String id, String value) {
 		return value.startsWith("(array ")
 	}
 	
