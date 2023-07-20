@@ -21,6 +21,7 @@ import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.AssumeAction
 import hu.bme.mit.gamma.xsts.model.EmptyAction
+import hu.bme.mit.gamma.xsts.model.HavocAction
 import hu.bme.mit.gamma.xsts.model.IfAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.PrimedVariable
@@ -197,9 +198,9 @@ class ModelSerializer {
 		}
 	}
 	
-	protected def dispatch String serialize(EmptyAction action) '''
-		 TRUE
-	'''
+	protected def dispatch String serialize(EmptyAction action) '''TRUE'''
+	
+	protected def dispatch String serialize(HavocAction action) '''TRUE''' // The lhs must be in IVAR!
 	
 	protected def dispatch String serialize(AssumeAction action) '''
 		 «action.assumption.serialize»
