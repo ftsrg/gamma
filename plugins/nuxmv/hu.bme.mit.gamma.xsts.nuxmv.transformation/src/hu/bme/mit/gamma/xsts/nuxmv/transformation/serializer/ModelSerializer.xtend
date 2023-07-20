@@ -43,7 +43,6 @@ class ModelSerializer {
 	protected new() {}
 	//
 	
-	protected final Map<Declaration, String> localVariableNames = newHashMap
 	protected final Map<NonDeterministicAction, String> nonDeterministicActionVariables = newHashMap
 	
 	protected final Set<VariableDeclaration> iVariables = newLinkedHashSet
@@ -57,11 +56,9 @@ class ModelSerializer {
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	
 	def String serializeNuxmv(XSTS xSts) {
-		localVariableNames.clear
-		xSts.customizeLocalVariableNames
 		nonDeterministicActionVariables.clear
 		xSts.createNonDeterministicActionVariables
-		
+		//
 		iVariables.clear
 		
 		val inputVariable = xSts.systemInEventVariableGroup.variables
@@ -76,7 +73,7 @@ class ModelSerializer {
 		
 		val primedVariables = xSts.variableDeclarations.filter(PrimedVariable)
 		
-		iVariables += (inputVariable + inputParameterVariable + inputMasterQueues + inputSlaveQueues +
+		iVariables += (inputVariable + inputParameterVariable + inputMasterQueues + inputSlaveQueues + // TODO queues
 				transientVariables /*+ resettableVariables*/ + localVariables + primedVariables).toList
 				
 		val primedVariablesInInitializingAction = xSts.initializingAction.writtenVariables
@@ -119,8 +116,6 @@ class ModelSerializer {
 					«xSts.finalizeVariablesInTrans /*Next() assignment at the very end of the highest primes*/»
 			«ENDFOR»
 		'''
-		
-		xSts.restoreLocalVariableNames
 		
 		return model
 	}
@@ -198,13 +193,18 @@ class ModelSerializer {
 		}
 	}
 	
+	protected def dispatch String serialize(VariableDeclarationAction action) {
+		val variable = action.variableDeclaration
+		return '''«variable.name» = «variable.expression.serialize»'''
+	}
+	
 	protected def dispatch String serialize(EmptyAction action) '''TRUE'''
 	
 	protected def dispatch String serialize(HavocAction action) '''TRUE''' // The lhs must be in IVAR!
 	
 	protected def dispatch String serialize(AssumeAction action) '''
 		 «action.assumption.serialize»
-	'''
+	''' // TODO May be needed to serialize in the case of in event actions
 	
 	//
 	
@@ -282,27 +282,6 @@ class ModelSerializer {
 		for (nonDeterministicAction : nonDeterministicActions) {
 			nonDeterministicActionVariables += nonDeterministicAction -> 
 					"nonDeterministicAction" + nonDeterministicAction.hashCode.toString.replaceAll("-","_")
-		}
-	}
-	
-	// Second hash is needed as nuXmv does not support local variables with the same name in different scopes
-	protected def customizeLocalVariableNames(XSTS xSts) {
-		localVariableNames.clear
-		for (localVariableAction : xSts.getAllContentsOfType(VariableDeclarationAction)) {
-			val localVariable = localVariableAction.variableDeclaration
-			val name = localVariable.name
-			localVariableNames += localVariable -> name
-			
-			localVariable.name = localVariable.name + localVariable.hashCode.toString.replaceAll("-","_")
-		}
-	}
-	
-	protected def restoreLocalVariableNames(XSTS xSts) {
-		for (localVariableAction : xSts.getAllContentsOfType(VariableDeclarationAction)) {
-			val localVariable = localVariableAction.variableDeclaration
-			val name = localVariableNames.get(localVariable)
-			
-			localVariable.name = name
 		}
 	}
 	

@@ -44,6 +44,7 @@ class StaticSingleAssignmentTransformer {
 	protected final XSTS xSts
 	protected final SsaType ssaType
 	
+	protected final Map<Declaration, String> localVariableNames = newHashMap
 	protected Map<VariableDeclaration, PrimedVariable> primedVariables = newLinkedHashMap
 	protected String context = ""
 	
@@ -71,7 +72,9 @@ class StaticSingleAssignmentTransformer {
 	// SSE first pass
 	
 	protected def createStaticSingleAssignmentForm() {
-		
+		localVariableNames.clear
+		xSts.customizeLocalVariableNames
+		//
 		context = "_init"
 		
 		xSts.variableInitializingTransition.action.primeAction
@@ -86,7 +89,8 @@ class StaticSingleAssignmentTransformer {
 			xSts.inEventTransition.action.primeAction
 		}
 		else {
-			xSts.inEventTransition.action = createEmptyAction // Not needed, in variables are nondeterministic in e.g., SMV
+			// TODO In-event: needed only if there is an assignment here that is not havoc
+			xSts.inEventTransition.action = createEmptyAction
 		}
 		xSts.outEventTransition.action.primeAction
 		if (ssaType !== SsaType.OUT_TRANS) {
@@ -110,6 +114,8 @@ class StaticSingleAssignmentTransformer {
 		
 		// Not all primed variables are used
 		removeUnusedPrimedVariables
+		//
+//		xSts.restoreLocalVariableNames // Cannot be restored as they have to be globally unique
 	}
 	
 	//
@@ -354,6 +360,26 @@ class StaticSingleAssignmentTransformer {
 		unusedPrimedVariables -= referencedVariables
 		
 		unusedPrimedVariables.removeAll
+	}
+	
+	//
+	
+	protected def customizeLocalVariableNames(XSTS xSts) {
+		localVariableNames.clear
+		for (localVariableAction : xSts.getAllContentsOfType(VariableDeclarationAction)) {
+			val localVariable = localVariableAction.variableDeclaration
+			val name = localVariable.name
+			localVariableNames += localVariable -> name
+			
+			localVariable.name = localVariable.name + "_" + localVariable.hashCode.toString.replaceAll("-","_")
+		}
+	}
+	
+	protected def restoreLocalVariableNames(XSTS xSts) {
+		for (localVariable : localVariableNames.keySet) {
+			val name = localVariableNames.get(localVariable)
+			localVariable.name = name
+		}
 	}
 	
 	//
