@@ -164,7 +164,10 @@ class TraceBackAnnotator {
 										else if (nuxmvQueryGenerator.isSourceOutEventParameter(id)) {
 											id.parseOutEventParameter(value, step)
 										}
-										// Checking if an asynchronous in-event is already stored in the queue
+										// We check the async queue in every state_check: if the message remains in the queue,
+										// then it was not processed in the cycle, so we remove it from the trace.
+										// Next time it is processed, in env_check, we will see that it is still in the queue,
+										// but is removed by the end of the valid state; thus, we leave it in the trace (i.e., not remove it again here)
 										else if (nuxmvQueryGenerator.isAsynchronousSourceMessageQueue(id)) {
 											id.handleStoredAsynchronousInEvents(value)
 										}
@@ -179,12 +182,15 @@ class TraceBackAnnotator {
 											id.parseSynchronousInEventParameter(value, step)
 										}
 										// Asynchronous in-event
-										else if (nuxmvQueryGenerator.isAsynchronousSourceMessageQueue(id)) {
-											id.parseAsynchronousInEvent(value, step)
-										}
-										// Asynchronous in-event parameter
-										else if (nuxmvQueryGenerator.isAsynchronousSourceInEventParameter(id)) {
-											id.parseAsynchronousInEventParameter(value, step)
+										else {
+											val asyncQueueId = id.backAnnotateFirstPrimedAsyncQueueId
+											if (nuxmvQueryGenerator.isAsynchronousSourceMessageQueue(asyncQueueId)) {
+												asyncQueueId.parseAsynchronousInEvent(value, step)
+											}
+											// Asynchronous in-event parameter
+											else if (nuxmvQueryGenerator.isAsynchronousSourceInEventParameter(asyncQueueId)) {
+												asyncQueueId.parseAsynchronousInEventParameter(value, step)
+											}
 										}
 									}
 									default:
@@ -219,6 +225,21 @@ class TraceBackAnnotator {
 		trace.removeTransientVariableReferences // They always have default values
 		
 		return trace
+	}
+	
+	//
+	
+	protected def backAnnotateFirstPrimedAsyncQueueId(String id) {
+		val primeExtension = "_inout_1" // TODO
+		
+		var bracketIndex = id.indexOf("[")
+		if (bracketIndex < 0) {
+			bracketIndex = id.length
+		}
+		val idBuilder = new StringBuilder(id)
+		idBuilder.delete(bracketIndex - primeExtension.length, bracketIndex)
+		
+		return idBuilder.toString
 	}
 	
 	//
