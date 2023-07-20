@@ -11,7 +11,6 @@
 package hu.bme.mit.gamma.xsts.nuxmv.transformation.serializer
 
 import hu.bme.mit.gamma.expression.model.ArrayAccessExpression
-import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.VariableGroupRetriever
@@ -43,6 +42,8 @@ class ModelSerializer {
 	protected new() {}
 	//
 	
+	protected boolean insideInEventTransition = false
+	
 	protected final Map<NonDeterministicAction, String> nonDeterministicActionVariables = newHashMap
 	
 	protected final Set<VariableDeclaration> iVariables = newLinkedHashSet
@@ -73,7 +74,7 @@ class ModelSerializer {
 		
 		val primedVariables = xSts.variableDeclarations.filter(PrimedVariable)
 		
-		iVariables += (inputVariable + inputParameterVariable + inputMasterQueues + inputSlaveQueues + // TODO queues
+		iVariables += (inputVariable + inputParameterVariable + /*inputMasterQueues + inputSlaveQueues +*/
 				transientVariables /*+ resettableVariables*/ + localVariables + primedVariables).toList
 				
 		val primedVariablesInInitializingAction = xSts.initializingAction.writtenVariables
@@ -109,6 +110,8 @@ class ModelSerializer {
 «««			// In event transition is not necessary (IVAR semantics)
 			«FOR transition : xSts.transitions»
 				TRANS
+					«xSts.serializeInEventTrans /*In event transition is needed*/»
+					« /* Putting '&' if needed */ xSts.inEventTransition.action.connectSubsequentActionIfNeeded»
 					«xSts.outEventTransition.action.serialize /*Out event transition is needed*/»
 					« /* Putting '&' if needed */ xSts.outEventTransition.action.connectSubsequentActionIfNeeded»
 					«transition.action.serialize /*Everything in constraint apart from if-else (case-esac)*/»
@@ -134,8 +137,10 @@ class ModelSerializer {
 	
 	protected def dispatch String serialize(IfAction action) '''
 		 case
-		 	«action.condition.serialize»: «action.then.serialize»;
-		 	TRUE: «IF action.^else !== null»«action.^else.serialize»«ELSE»TRUE«ENDIF»;
+		 	«action.condition.serialize»:
+		 		«action.then.serialize»;
+		 	TRUE:
+		 		«IF action.^else !== null»«action.^else.serialize»«ELSE»TRUE«ENDIF»;
 		 esac
 	'''
 	
@@ -195,17 +200,36 @@ class ModelSerializer {
 	
 	protected def dispatch String serialize(VariableDeclarationAction action) {
 		val variable = action.variableDeclaration
-		return '''«variable.name» = «variable.expression.serialize»'''
+		val expression = variable.expression
+		return (expression === null) ? 'TRUE' : '''«variable.name» = «expression.serialize»'''
 	}
 	
 	protected def dispatch String serialize(EmptyAction action) '''TRUE'''
 	
-	protected def dispatch String serialize(HavocAction action) '''TRUE''' // The lhs must be in IVAR!
+	protected def dispatch String serialize(HavocAction action) {
+		if (insideInEventTransition) {
+			val declaration = action.lhs.declaration as PrimedVariable
+			val previousVariable = declaration.primedVariable
+			val originalVariable = declaration.originalVariable
+			if (previousVariable === originalVariable) {
+				// In XSTS in-event trans, the havoced variable represents the nondeterministic input
+				return '''«declaration.name» = «originalVariable.name»'''
+			}
+		}
+		return '''TRUE'''
+	}
 	
-	protected def dispatch String serialize(AssumeAction action) '''
-		 «action.assumption.serialize»
-	''' // TODO May be needed to serialize in the case of in event actions
+	protected def dispatch String serialize(AssumeAction action) '''«action.assumption.serialize»'''
 	
+	//
+	
+	protected def String serializeInEventTrans(XSTS xSts) {
+		insideInEventTransition = true
+		val serializedInAction = xSts.inEventTransition.action.serialize
+		insideInEventTransition = false
+		
+		return serializedInAction
+	}
 	//
 	
 	protected def String finalizeVariablesInTrans(XSTS xSts) {

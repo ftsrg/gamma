@@ -85,13 +85,7 @@ class StaticSingleAssignmentTransformer {
 		
 		context = "_inout"
 		
-		if (ssaType !== SsaType.OUT_TRANS) {
-			xSts.inEventTransition.action.primeAction
-		}
-		else {
-			// TODO In-event: needed only if there is an assignment here that is not havoc
-			xSts.inEventTransition.action = createEmptyAction
-		}
+		xSts.inEventTransition.action.primeAction
 		xSts.outEventTransition.action.primeAction
 		if (ssaType !== SsaType.OUT_TRANS) {
 			primedVariables.clear // Because we want to connect this to trans
