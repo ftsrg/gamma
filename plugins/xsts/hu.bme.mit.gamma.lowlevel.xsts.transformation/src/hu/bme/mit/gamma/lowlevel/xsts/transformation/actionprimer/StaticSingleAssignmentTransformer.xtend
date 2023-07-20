@@ -220,7 +220,11 @@ class StaticSingleAssignmentTransformer {
 		val declaration = lhs.declaration as VariableDeclaration
 		checkState (declaration.native || declaration.array)
 		declaration.primeVariable // The loop below will cover the lhs priming
-		// TODO arrays
+		// Note that here there is a semantic deficiency in the conversion:
+		// E.g., 'a[1][2] := 10' maps to 'a2[1][2] := 10' but here we cannot express that
+		// we want to keep the remaining values from 'a' (i.e., a[0][0] = a2[0][0] & a[0][1] = a2[0][1]...)
+		// This deficiency has to be handled by the subsequent transformations
+		// with the corresponding array WRITE function
 		lhs.primeExpression
 	}
 	

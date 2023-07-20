@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.xsts.nuxmv.transformation.serializer
 
+import hu.bme.mit.gamma.expression.model.ArrayAccessExpression
 import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
@@ -153,17 +154,48 @@ class ModelSerializer {
 		'''
 	}
 	
-	// SMV supports 'CONSTARRAY(typeof(a), 0)'
-	protected def dispatch String serialize(AssignmentAction action) '''
-		«action.lhs.serialize» = «action.rhs.serialize»
-	'''
-	// SMV does not support 'a = {1, 2, 5}' like assignments
-	// It does support a 'CONSTARRAY(typeof(a), 0)' function, but this way seems to be easier 
-//		TODO introduce array literals
-//		«FOR assignment : action.extractArrayLiteralAssignments SEPARATOR ' & ' /* If rhs is not array literal, the original assignment is returned */»
-//			«assignment.lhs.serialize» = «assignment.rhs.serialize»
-//		«ENDFOR»
-//		TODO introduce array indexing
+	protected def dispatch String serialize(AssignmentAction action) {
+		val lhs = action.lhs
+		val rhs = action.rhs
+		if (lhs instanceof ArrayAccessExpression) {
+			// See the comment for array priming in StaticSingleAssignmentTransformer
+			val array = lhs.declaration as PrimedVariable
+			val oldArray = array.primedVariable
+			val indexes = lhs.indexes
+			val lastIndex = indexes.last
+			
+			val arrayWriteExpression = new StringBuilder
+			arrayWriteExpression.append(oldArray.name)
+			
+			//a[i][j][k] := 69 -> a2 = W(a, i, W(a, j, W(R(R(a, i), j), k, 69)))
+			
+			// READ part
+			for (index : indexes) {
+				if (index !== lastIndex) {
+					arrayWriteExpression.insert(0, '''READ(''')
+					arrayWriteExpression.append(''', «index.serialize»)''')
+				}
+				// Else end - moving onto the WRITE part
+			}
+			
+			// WRITE part
+			for (index : indexes.reverseView) {
+				if (index === lastIndex) { // Writing the new value
+					arrayWriteExpression.insert(0, '''WRITE(''')
+					arrayWriteExpression.append(''', «index.serialize», «rhs.serialize»)''')
+				}
+				else { // Keeping all the others
+					arrayWriteExpression.insert(0, '''WRITE(«oldArray.name», «index.serialize», ''')
+					arrayWriteExpression.append(''')''')
+				}
+			}
+			
+			return '''«array.name» = «arrayWriteExpression»''' // SMV supports 'CONSTARRAY(typeof(a), 0)'
+		}
+		else {
+			return '''«lhs.serialize» = «rhs.serialize»'''
+		}
+	}
 	
 	protected def dispatch String serialize(EmptyAction action) '''
 		 TRUE

@@ -19,6 +19,8 @@ import java.util.stream.Collectors;
 
 import org.eclipse.emf.ecore.EObject;
 
+import hu.bme.mit.gamma.expression.model.AccessExpression;
+import hu.bme.mit.gamma.expression.model.ArrayAccessExpression;
 import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition;
 import hu.bme.mit.gamma.expression.model.BinaryExpression;
 import hu.bme.mit.gamma.expression.model.BooleanLiteralExpression;
@@ -352,6 +354,21 @@ public class ExpressionModelDerivedFeatures {
 			throw new IllegalArgumentException("No type declaration: " + literal);
 		}
 		return declaration;
+	}
+	
+	public static List<Expression> getIndexes(Expression expression) {
+		List<Expression> indexes = new ArrayList<Expression>();
+		
+		if (expression instanceof AccessExpression accessExpression) {
+			Expression operand = accessExpression.getOperand();
+			indexes.addAll(
+					getIndexes(operand)); // Recursion, including records
+		}
+		if (expression instanceof ArrayAccessExpression arrayAccessExpression) {
+			indexes.add(arrayAccessExpression.getIndex()); // Index adding
+		}
+		
+		return indexes;
 	}
 	
 	public static Type getArrayElementType(Declaration declaration) {
