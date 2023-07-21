@@ -150,7 +150,9 @@ class SystemReducer {
 		// TODO Handle init action: There can be event transmission e.g., in state entry actions
 		
 		val xStsInputEventVariables = clonedXSts.inputVariables
+		logger.log(Level.INFO, "Transforming cloned XSTS to check the cone of influence of input events")
 		clonedXSts.deleteUnusedAndWrittenOnlyVariables
+		logger.log(Level.INFO, "Finished transforming the cloned XSTS")
 		
 		val xStsDeletedInputEventVariables = xStsInputEventVariables
 				.filter[it.containingXsts === null]

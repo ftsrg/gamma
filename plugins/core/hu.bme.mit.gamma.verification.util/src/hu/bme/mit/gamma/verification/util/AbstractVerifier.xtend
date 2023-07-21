@@ -80,6 +80,8 @@ abstract class AbstractVerifier {
 		final String A = "A"
 		final String E = "E"
 		
+		final String F = "F"
+		
 		boolean invert;
 		
 		//
@@ -97,6 +99,14 @@ abstract class AbstractVerifier {
 			
 			if (trimmedQuery.startsWith(E)) {
 				invert = true
+				// For some reason, nuXmv cannot make !(F...) an invariant property, so we adapt even more
+				if (trimmedQuery.startsWith(E + F)) {
+					return "G( !(" + trimmedQuery.substring((E + F).length) + "))"
+				}
+				if (trimmedQuery.startsWith(E + " " + F)) {
+					return "G( !(" + trimmedQuery.substring((E + " " + F).length) + "))"
+				}
+				// Default
 				return "!(" + trimmedQuery.substring(E.length) + ")"
 			}
 			if (trimmedQuery.startsWith(A)) {

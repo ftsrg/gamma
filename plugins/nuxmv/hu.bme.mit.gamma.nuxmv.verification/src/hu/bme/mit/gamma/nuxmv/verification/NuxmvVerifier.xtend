@@ -159,11 +159,13 @@ class NuxmvVerifier extends AbstractVerifier {
 		try {
 			val PROPERTY_START = "000 :"
 			val PARSING_ERROR = "Parsing error:"
+			val ERROR = "Error:"
 			
 			val process = Runtime.getRuntime().exec(nuXmvCommand)
 			resultReader = new Scanner(process.inputReader)
 			var line = ""
-			while (!line.startsWith(PROPERTY_START) && !line.startsWith(PARSING_ERROR)) {
+			while (!line.startsWith(PROPERTY_START) &&
+					!line.startsWith(PARSING_ERROR) && !line.startsWith(ERROR)) {
 				line = resultReader.nextLine
 				logger.log(Level.OFF, "nuXmv: " + line)
 			}
