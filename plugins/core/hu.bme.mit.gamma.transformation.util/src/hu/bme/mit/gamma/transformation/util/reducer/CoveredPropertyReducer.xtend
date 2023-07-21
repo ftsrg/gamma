@@ -171,7 +171,7 @@ class CoveredPropertyReducer {
 		}
 		val isTransient = variable.transient
 		val isResettable = variable.resettable // Not correct in every sense, but we do not distinguish between different values here
-		if (isTransient || isResettable) {
+		if (isTransient || isResettable || variable.name.startsWith("__id_first_") || variable.name.startsWith("__id_second_")) { // TODO
 			// This can happen if we run model checking as optimize&verify
 			logger.log(Level.WARNING, ('''Not found variable for transient («isTransient») or ''' +
 					'''resettable («isResettable») variable: «variable.name»'''))
