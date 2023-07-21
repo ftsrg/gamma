@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -53,6 +53,9 @@ class TestGenerator {
 	protected final AbstractAssertionHandler waitingHandle 
 	protected final ActAndAssertSerializer actAndAssertSerializer	
 	protected final extension ExpressionSerializer expressionSerializer
+	
+	protected final int cycleIterationCount
+	
 	// Auxiliary objects
 	protected final extension TypeSerializer typeSerializer = TypeSerializer.INSTANCE
 	protected final extension TraceUtil traceUtil = TraceUtil.INSTANCE
@@ -61,7 +64,7 @@ class TestGenerator {
 	 * Note that the lists of traces represents a set of behaviors the component must conform to.
 	 * Each trace must reference the same component with the same parameter values (arguments).
 	 */
-	new(List<ExecutionTrace> traces, String basePackage, String className) {
+	new(List<ExecutionTrace> traces, String basePackage, String className, int cycleIterationCount) {
 		this.firstTrace = traces.head
 		this.component = firstTrace.component
 		this.resourceSet = component.eResource.resourceSet
@@ -76,6 +79,8 @@ class TestGenerator {
     	this.TEST_CLASS_NAME = component.reflectiveClassName
     	this.TEST_INSTANCE_NAME = TEST_CLASS_NAME.toFirstLower
     	
+    	this.cycleIterationCount = cycleIterationCount
+    	
     	this.testGeneratorUtil = new TestGeneratorUtil(component)
 		this.actAndAssertSerializer = new ActAndAssertSerializer(component,
 			TEST_INSTANCE_NAME, TIMER_OBJECT_NAME)
@@ -88,8 +93,16 @@ class TestGenerator {
 		}
 	}
 	
-	new(ExecutionTrace trace, String yakinduPackageName, String className) {
-		this(Collections.singletonList(trace), yakinduPackageName, className)
+	new(List<ExecutionTrace> traces, String basePackage, String className) {
+		this(traces, basePackage, className, 2)
+	}
+	
+	new(ExecutionTrace trace, String basePackage, String className, int cycleIterationCount) {
+		this(Collections.singletonList(trace), basePackage, className, cycleIterationCount)
+	}
+	
+	new(ExecutionTrace trace, String basePackage, String className) {
+		this(Collections.singletonList(trace), basePackage, className, 2)
 	}
 	
 	/**
@@ -203,10 +216,13 @@ class TestGenerator {
 		for (trace : traces) {
 			val steps = newArrayList
 			steps += trace.steps
+			val nonCycleStepCount = steps.size
+			
 			if (trace.cycle !== null) {
 				// Cycle steps are not handled differently
 				steps += trace.cycle.steps
 			}
+			
 			for (step : steps) {
 				val testMethod = '''
 					public void «IF steps.indexOf(step) == steps.size - 1»«FINAL_TEST_PREFIX»«TEST_NAME.toFirstUpper»«traceId++»()«ELSE»«TEST_NAME + stepId++»()«ENDIF» {
@@ -223,7 +239,17 @@ class TestGenerator {
 					}
 					
 				'''
-				builder.append(testMethod)
+				
+				val stepIndex = steps.indexOf(step)
+				if (stepIndex == nonCycleStepCount) { // Cycle start if needed
+					builder.append('''for (int i = 0; i < «cycleIterationCount»; i++) {''')
+				}
+				
+				builder.append(testMethod) // Test method is always appended
+				
+				if (stepIndex >= nonCycleStepCount && stepIndex == steps.size - 1) { // Cycle end if needed
+					builder.append('''}''')
+				}
 			}
 		}
 		return builder.toString
