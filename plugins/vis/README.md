@@ -2,8 +2,8 @@
 
 To use the visualization function, you need to install the following tools:
 
-* Graphviz 2.26.3 - 2.38,
-* PlantUML Eclipse plugin - Version 1.1.27
+* Graphviz 2.44.1,
+* PlantUML Eclipse plugin - Version 1.1.29
 
 ## Graphviz
 
@@ -11,7 +11,7 @@ For the newest PlantUML version, the installation of Graphviz is no longer neces
 
 You can download Graphviz from the following site: https://graphviz.gitlab.io/download/.
 
-For Windows, the stable packages for version 2.38 can be found here: https://graphviz.gitlab.io/_pages/Download/Download_windows.html.
+For Windows, the stable packages for version 2.44 can be found here: https://github.com/plantuml/graphviz-distributions.
 
 Note, that you may have to set your PATH variable to include the installation folder of Graphviz.
 
