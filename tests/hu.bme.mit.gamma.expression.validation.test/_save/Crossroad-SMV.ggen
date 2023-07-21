@@ -1,0 +1,98 @@
+import "Crossroad.gcd"
+
+//code {
+//	component : Crossroad
+//	language : java
+//}
+//
+//analysis {
+//	component : Crossroad // Gamma component to be transformed
+//	language : UPPAAL
+//	interaction-coverage
+//	constraint : {
+//		minimum-orchestrating-period : 499 ms
+//		maximum-orchestrating-period : 499 ms
+//	}
+//}
+//
+//analysis {
+//	component : Crossroad
+//	language : Theta
+//	file : "Crossroad-Theta"
+//	constraint : {
+//		minimum-orchestrating-period : 500 ms
+//		maximum-orchestrating-period : 500 ms
+//	}
+//}
+//
+//analysis {
+//	component : Crossroad
+//	language : XSTS-UPPAAL
+//	file : "Crossroad-XSTS"
+//	interaction-coverage
+//	constraint : {
+//		minimum-orchestrating-period : 499 ms
+//		maximum-orchestrating-period : 501 ms
+//	}
+//}
+//
+//analysis {
+//	component : Crossroad
+//	language : Promela
+//	file : "Crossroad-Promela"
+//	transition-coverage
+//	constraint : {
+//		minimum-orchestrating-period : 500 ms
+//		maximum-orchestrating-period : 500 ms
+//	}
+//}
+//
+//analysis {
+//	component : Crossroad
+//	language : SMV
+//	file : "Crossroad-SMV"
+//	constraint : {
+//		minimum-orchestrating-period : 500 ms
+//		maximum-orchestrating-period : 500 ms
+//	}
+//}
+
+verification {
+	language : nuXmv
+	file : "Crossroad-SMV.smv"
+	property-file : ".Crossroad-SMV.gpd"
+	optimize : true
+	test-language : java
+}
+
+//verification {
+//	language : UPPAAL
+//	file : "Crossroad.xml"
+//	query-file : "Crossroad.q"
+//	query-file : "CustomQueries.q"
+//	optimize : true
+//	test-language : java
+//}
+//
+//verification {
+//	language : Theta
+//	file : "Crossroad-Theta.xsts"
+//	query-file : "ThetaCustomQueries.prop"
+//	test-language : java
+//}
+//
+//verification {
+//	language : XSTS-UPPAAL
+//	file : "Crossroad-XSTS.xml"
+//	property-file : ".Crossroad-XSTS.gpd" // Checking test optimization
+//	optimize : true
+//	test-language : java
+//}
+//
+//verification {
+//	language : Promela
+//	file : "Crossroad-Promela.pml"
+//	property-file : ".Crossroad-Promela.gpd"
+//	test-language : java
+//	optimize-model : true // Checking model optimization
+//}

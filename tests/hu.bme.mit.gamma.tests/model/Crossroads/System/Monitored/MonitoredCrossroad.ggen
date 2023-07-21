@@ -42,3 +42,23 @@ verification {
 	optimize-model : true
 	test-language : java
 }
+
+analysis {
+	component : MonitoredCrossroad // Gamma component to be transformed
+	file : "MonitoredCrossroad-SMV"
+	language : SMV
+	transition-pair-coverage
+	constraint : {
+		minimum-orchestrating-period : 999 ms
+		maximum-orchestrating-period : 999 ms
+	}
+}
+
+verification {
+	language : nuXmv
+	file : "MonitoredCrossroad-SMV.smv"
+	property-file : ".MonitoredCrossroad-SMV.gpd"
+	optimize-model : true
+	optimize-traces : true
+	test-language : java
+}
