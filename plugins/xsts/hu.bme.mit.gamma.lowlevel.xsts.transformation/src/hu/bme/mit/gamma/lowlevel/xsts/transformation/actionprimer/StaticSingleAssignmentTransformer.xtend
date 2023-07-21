@@ -267,13 +267,16 @@ class StaticSingleAssignmentTransformer {
 	// SSE second pass (optimization)
 	
 	protected def commonizeBranches(List<Action> branches) {
+		val originalBranches = newArrayList // Some branches are modified
+		originalBranches += branches // (i.e., a single AssumeAction is extended into a SequentialAction),
+		// and we use these branches as keys in maps; hence the list copy
 		val branchAssignments = newLinkedHashMap
 		//
 		val commonizedPrimedVariables = <VariableDeclaration, PrimedVariable>newLinkedHashMap // Note that these are the commonized variables
 		// If a variable is NOT assigned a new value in the branches, then it is NOT present in the map
 		// Thus, this map should be ADDED to the original primed variables map
 		
-		for (subaction : branches) {
+		for (subaction : originalBranches) {
 			branchAssignments += subaction -> subaction.getSelfAndAllContentsOfType(AbstractAssignmentAction)
 		}
 		// Commonizing
@@ -285,7 +288,7 @@ class StaticSingleAssignmentTransformer {
 			var maxBranchAssignmentToOriginalVariableCount = -1
 			var branchPrimedVariables = newLinkedHashMap
 			
-			for (subaction : branches) {
+			for (subaction : originalBranches) {
 				val branchAssignmentList = branchAssignments.get(subaction)
 				
 				val branchAssignmentToOriginalVariable = branchAssignmentList
@@ -307,7 +310,7 @@ class StaticSingleAssignmentTransformer {
 			// maxVariableAssignmentBranch has the most assignments to writtenOriginalVariable
 			if (maxVariableAssignmentBranch !== null) {
 				val commonizableBranches = newArrayList
-				commonizableBranches += branches
+				commonizableBranches += originalBranches
 				commonizableBranches -= maxVariableAssignmentBranch
 				
 				val longestPrimedVariableSequence = branchPrimedVariables.get(maxVariableAssignmentBranch)
