@@ -207,6 +207,11 @@ class TraceBackAnnotator {
 					}
 				}
 			}
+			if (state == BackAnnotatorState.INIT) {
+				// No counterexample, the scanner is empty
+				return null
+			}
+			
 			// Checking the last state
 			step.checkInEvents // In events can be deleted here?
 			if (!step.containsType(Reset)) {
