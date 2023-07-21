@@ -57,31 +57,33 @@ final class GenericStochasticGammaProject {
 	}
 
 	override generateProjects(IProjectGenerator generator) {
-		generator.generate(new PluginProjectFactory => [
-			projectName = projectInfo.projectName
-			location = projectInfo.locationPath
-			projectNatures += #[JavaCore.NATURE_ID, "org.eclipse.pde.PluginNature", XtextProjectHelper.NATURE_ID]
-			builderIds += #[JavaCore.BUILDER_ID, XtextProjectHelper.BUILDER_ID]
-			folders += "src"
-			folders += "src-gen"
-
-			addFile('''model/system/«name.toString».gcd''', '''
-				package «name»
-				import "interfaces/Interfaces"
-				async «name.toString.toFirstUpper» [
-					port port1 : requires EventStream
-					port port2 : provides EventStream
-				] {
-					
-				}
-			''')
-			addFile('''model/interfaces/Interfaces.gcd''', '''
-				package interfaces
-				interface EventStream {
-					out event newEvent
-				}
-			''')
-		])
+		generator.generate(
+			new PluginProjectFactory => [
+				projectName = projectInfo.projectName
+				location = projectInfo.locationPath
+				projectNatures += #[JavaCore.NATURE_ID, "org.eclipse.pde.PluginNature", XtextProjectHelper.NATURE_ID]
+				builderIds += #[JavaCore.BUILDER_ID, XtextProjectHelper.BUILDER_ID]
+				folders += "src"
+				folders += "src-gen"
+	
+				addFile('''model/system/«name.toString».gcd''', '''
+					package «name»
+					import "interfaces/Interfaces"
+					async «name.toString.toFirstUpper» [
+						port port1 : requires EventStream
+						port port2 : provides EventStream
+					] {
+						
+					}
+				''')
+				addFile('''model/interfaces/Interfaces.gcd''', '''
+					package interfaces
+					interface EventStream {
+						out event newEvent
+					}
+				''')
+			]
+		)
 	}
 }
 
@@ -98,40 +100,42 @@ final class CrossroadGammaProject {
 	}
 	
 	override generateProjects(IProjectGenerator generator) {
-		generator.generate(new PluginProjectFactory => [
-			projectName = projectInfo.projectName
-			location = projectInfo.locationPath
-			projectNatures += #[JavaCore.NATURE_ID, "org.eclipse.pde.PluginNature", XtextProjectHelper.NATURE_ID]
-			builderIds += #[JavaCore.BUILDER_ID, XtextProjectHelper.BUILDER_ID]
-			folders += "src"
-			folders += "src-gen"
-			val futil = FileUtil.INSTANCE;
-			val bundle = Platform.getBundle("hu.bme.mit.gamma.statechart.language.ui")
-			val url_m = FileLocator.find(bundle, new Path("/resources/model"));
-			val toUri = FileLocator.toFileURL(url_m).toURI
-			val urls = Files.list(Paths.get(toUri)).toList
-			for (url : urls) {
-				val file = url.toFile
-				val filename = file.name
-				if (file.file) {
-					val contents = futil.loadString(file);
-					addFile("model" + File.separator + filename, contents)
-				} else {
-					val toUrl = file.toURL
-					val uri = FileLocator.toFileURL(toUrl).toURI
-					val paths = Paths.get(uri)
-					val urls2 = Files.list(paths).toList
-					for (url2 : urls2) {
-						val file2 = url2.toFile
-						val filename2 = file2.name
-						if (file2.file) {
-							val contents = futil.loadString(file2);
-							addFile("model" + File.separator + filename + File.separator + filename2, contents)
+		generator.generate(
+			new PluginProjectFactory => [
+				projectName = projectInfo.projectName
+				location = projectInfo.locationPath
+				projectNatures += #[JavaCore.NATURE_ID, "org.eclipse.pde.PluginNature", XtextProjectHelper.NATURE_ID]
+				builderIds += #[JavaCore.BUILDER_ID, XtextProjectHelper.BUILDER_ID]
+				folders += "src"
+				folders += "src-gen"
+				val futil = FileUtil.INSTANCE;
+				val bundle = Platform.getBundle("hu.bme.mit.gamma.statechart.language.ui")
+				val url_m = FileLocator.find(bundle, new Path("/resources/model"));
+				val toUri = FileLocator.toFileURL(url_m).toURI
+				val urls = Files.list(Paths.get(toUri)).toList
+				for (url : urls) {
+					val file = url.toFile
+					val filename = file.name
+					if (file.file) {
+						val contents = futil.loadString(file);
+						addFile("model" + File.separator + filename, contents)
+					} else {
+						val toUrl = file.toURL
+						val uri = FileLocator.toFileURL(toUrl).toURI
+						val paths = Paths.get(uri)
+						val urls2 = Files.list(paths).toList
+						for (url2 : urls2) {
+							val file2 = url2.toFile
+							val filename2 = file2.name
+							if (file2.file) {
+								val contents = futil.loadString(file2);
+								addFile("model" + File.separator + filename + File.separator + filename2, contents)
+							}
 						}
 					}
 				}
-			}
-		])
+			]
+		)
 	}
 
 }
