@@ -13,8 +13,6 @@ package hu.bme.mit.gamma.nuxmv.verification
 import hu.bme.mit.gamma.verification.util.AbstractVerification
 import hu.bme.mit.gamma.verification.util.AbstractVerifier.Result
 import java.io.File
-import java.util.Scanner
-import java.util.logging.Level
 
 class NuxmvVerification extends AbstractVerification {
 	// Singleton

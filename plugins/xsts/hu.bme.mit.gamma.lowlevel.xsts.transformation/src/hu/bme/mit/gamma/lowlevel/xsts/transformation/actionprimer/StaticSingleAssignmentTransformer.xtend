@@ -30,6 +30,7 @@ import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
+import hu.bme.mit.gamma.xsts.transformation.util.XstsNamings
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import java.util.List
 import java.util.Map
@@ -46,7 +47,9 @@ class StaticSingleAssignmentTransformer {
 	
 	protected final Map<Declaration, String> localVariableNames = newHashMap
 	protected Map<VariableDeclaration, PrimedVariable> primedVariables = newLinkedHashMap
+	
 	protected String context = ""
+	protected int transitionIndex = -1
 	
 	// Auxiliary objects
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
@@ -96,7 +99,8 @@ class StaticSingleAssignmentTransformer {
 		
 		val xStsTransitions = xSts.transitions
 		for (xStsTransition : xStsTransitions) {
-			context = "_tran_" + xStsTransitions.indexOf(xStsTransition) + "_num"
+			transitionIndex = xStsTransitions.indexOf(xStsTransition)
+			context = "_tran_" + transitionIndex + "_num"
 			primedVariables += primeVariableSave
 			//
 			val xStsAction = xStsTransition.action
@@ -235,7 +239,7 @@ class StaticSingleAssignmentTransformer {
 		
 		val primedVariable = createPrimedVariable => [
 			it.type = originalVariable.type.clone
-			it.name = originalVariable.name + context + "_" + index // Extract?
+			it.name = originalVariable.name.customizeName(index) // Needed in nuXmv back-annotation
 			it.primedVariable = previousVariable
 		]
 		primedVariable.addTransientAnnotation // To also indicate that it is not needed in stable states
@@ -341,6 +345,24 @@ class StaticSingleAssignmentTransformer {
 		}
 		
 		return commonizedPrimedVariables // See instructions at the declaration point
+	}
+	
+	//
+	
+	protected def customizeName(String name, int index) {
+		switch (context) {
+			case context.startsWith("_init"): {
+				return XstsNamings.getPrimedVariableNameInInitTransition(name, index)
+			}
+			case context.startsWith("_inout"): {
+				return XstsNamings.getPrimedVariableNameInInoutTransition(name, index)
+			}
+			case context.startsWith("_tran_"): {
+				return XstsNamings.getPrimedVariableNameInTransition(name, transitionIndex, index)
+			}
+			default :
+				throw new IllegalArgumentException("Not know context: " + context)
+		}
 	}
 	
 	//

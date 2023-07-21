@@ -24,6 +24,7 @@ import hu.bme.mit.gamma.trace.model.TraceModelFactory
 import hu.bme.mit.gamma.trace.util.TraceUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.verification.util.TraceBuilder
+import hu.bme.mit.gamma.xsts.transformation.util.XstsNamings
 import java.util.NoSuchElementException
 import java.util.Scanner
 import java.util.logging.Level
@@ -230,16 +231,16 @@ class TraceBackAnnotator {
 	//
 	
 	protected def backAnnotateFirstPrimedAsyncQueueId(String id) {
-		val primeExtension = "_inout_1" // TODO
-		
 		var bracketIndex = id.indexOf("[")
 		if (bracketIndex < 0) {
 			bracketIndex = id.length
 		}
-		val idBuilder = new StringBuilder(id)
-		idBuilder.delete(bracketIndex - primeExtension.length, bracketIndex)
 		
-		return idBuilder.toString
+		val bracketlessId = id.substring(0, bracketIndex)
+		// Deleting "_inout_1" - index 1, because this is the first modification of the queue in the in-out transition
+		val originalId = XstsNamings.getOriginalNameOfPrimedVariableNameInInoutTransition(bracketlessId, 1)
+		
+		return originalId
 	}
 	
 	//

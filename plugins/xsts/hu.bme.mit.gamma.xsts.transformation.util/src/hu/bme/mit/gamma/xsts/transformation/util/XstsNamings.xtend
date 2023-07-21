@@ -22,4 +22,18 @@ class XstsNamings {
 	static def String getRegionTypeName(String lowlevelName) '''«lowlevelName.toFirstUpper»'''
 	static def String getRegionVariableName(String lowlevelName) '''«lowlevelName.toFirstLower»'''
 	
+	// SSA
+	static def String getPrimedVariableNameInInitTransition(String xStsName, int index) '''«xStsName»_init_«index»'''
+	static def String getPrimedVariableNameInInoutTransition(String xStsName, int index) '''«xStsName»_inout_«index»'''
+	static def String getPrimedVariableNameInTransition(String xStsName, int transitionIndex, int index)
+		'''«xStsName»_tran_«transitionIndex»_«index»'''
+		
+	static def String getOriginalNameOfPrimedVariableNameInInoutTransition(String xStsName, int index) {
+		val length = xStsName.length
+		val differenceInLength = xStsName.getPrimedVariableNameInInoutTransition(index).length - length
+		val originalName = xStsName.substring(0, length - differenceInLength)
+		return originalName
+	}
+	//
+	
 }

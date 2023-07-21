@@ -16,8 +16,6 @@ Require-Bundle: com.google.guava,
  hu.bme.mit.gamma.xsts.transformation,
  hu.bme.mit.gamma.statechart.model,
  hu.bme.mit.gamma.property.model,
- hu.bme.mit.gamma.statechart.lowlevel.model,
- hu.bme.mit.gamma.lowlevel.xsts.transformation.traceability,
  hu.bme.mit.gamma.statechart.lowlevel.transformation,
  hu.bme.mit.gamma.lowlevel.xsts.transformation
 Export-Package: hu.bme.mit.gamma.xsts.nuxmv.transformation,
