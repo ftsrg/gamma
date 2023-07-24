@@ -295,7 +295,8 @@ class StaticSingleAssignmentTransformer {
 						.filter[it.lhs.declaration.originalVariable === writtenOriginalVariable]
 				val branchPrimedVariablesToOriginalVariable = newLinkedHashSet // Can be duplications after recursion
 				branchPrimedVariablesToOriginalVariable += branchAssignmentToOriginalVariable
-						.map[it.lhs.declaration]
+						.map[it.lhs.declaration].filter(VariableDeclaration).sortBy[it.primeCount] // Crucial to have it sorted
+						// Otherwise, the last variable will not be the one with the highest prime
 				val branchAssignmentToOriginalVariableCount = branchPrimedVariablesToOriginalVariable.size
 				
 				branchPrimedVariables += subaction -> branchPrimedVariablesToOriginalVariable.toList
