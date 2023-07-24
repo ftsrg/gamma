@@ -81,6 +81,10 @@ public class XstsActionUtil extends ExpressionUtil {
 		return xSts;
 	}
 	
+	public void unrollLoops(XSTS xSts) {
+		
+	}
+	
 	public void removeVariableDeclarationAnnotations(XSTS xSts,
 			Class<? extends VariableDeclarationAnnotation> annotationClass) {
 		removeVariableDeclarationAnnotations(xSts.getVariableDeclarations(), annotationClass);
