@@ -168,14 +168,21 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 			}
 		}
 		
-		List<PrimedVariable> finalPrimedVariables = new ArrayList<PrimedVariable>(primedVariables);
+		List<PrimedVariable> finalPrimedVariables = getGreatestPrimedVariables(primedVariables);
+		
+		return finalPrimedVariables;
+	}
+	
+	public static List<PrimedVariable> getGreatestPrimedVariables(
+			Collection<? extends PrimedVariable> primedVariables) {
+		List<PrimedVariable> greatestPrimedVariables = new ArrayList<PrimedVariable>(primedVariables);
 		
 		for (PrimedVariable primedVariable : primedVariables) {
 			VariableDeclaration previousPrimedVariable = primedVariable.getPrimedVariable();
-			finalPrimedVariables.remove(previousPrimedVariable);
+			greatestPrimedVariables.remove(previousPrimedVariable);
 		}
 		
-		return finalPrimedVariables;
+		return greatestPrimedVariables;
 	}
 
 	public static int getPrimeCount(VariableDeclaration variable) {

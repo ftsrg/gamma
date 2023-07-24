@@ -42,8 +42,6 @@ class ModelSerializer {
 	protected new() {}
 	//
 	
-	protected boolean insideInEventTransition = false
-	
 	protected final Map<NonDeterministicAction, String> nonDeterministicActionVariables = newHashMap
 	
 	protected final Set<VariableDeclaration> iVariables = newLinkedHashSet
@@ -76,6 +74,7 @@ class ModelSerializer {
 		
 		if (xSts.messageQueueGroup.variables.empty) { // If XSTS is synchronous
 			iVariables += (inputVariable + inputParameterVariable)
+			// Persistent parameters may not change if the input event does not change - this is encoded in InEventTrans 
 		} // Otherwise, these variables would get random variables that could overwrite the messages in the queues
 		
 		iVariables += (/*inputVariable + inputParameterVariable +*/ /*inputMasterQueues + inputSlaveQueues +*/
@@ -210,27 +209,38 @@ class ModelSerializer {
 	
 	protected def dispatch String serialize(EmptyAction action) '''TRUE'''
 	
-	protected def dispatch String serialize(HavocAction action) {
-		if (insideInEventTransition) {
-			val declaration = action.lhs.declaration as PrimedVariable
-			val previousVariable = declaration.primedVariable
-			val originalVariable = declaration.originalVariable
-			if (previousVariable === originalVariable) {
-				// In XSTS in-event trans, the havoced variable represents the nondeterministic input
-				return '''«declaration.name» = «originalVariable.name»'''
-			}
-		}
-		return '''TRUE'''
-	}
+	protected def dispatch String serialize(HavocAction action) '''TRUE'''
 	
 	protected def dispatch String serialize(AssumeAction action) '''«action.assumption.serialize»'''
 	
 	//
 	
 	protected def String serializeInEventTrans(XSTS xSts) {
-		insideInEventTransition = true
-		val serializedInAction = xSts.inEventTransition.action.serialize
-		insideInEventTransition = false
+		val inEventAction = xSts.inEventTransition.action
+		
+		var serializedInAction = inEventAction.serialize
+		
+		/// The sync in event variables have to be connected to the last inout prime variable to be shown in the trace
+		
+		val writtenInVariables = inEventAction.writtenVariables
+		
+		val linkableInVariables = newArrayList
+		linkableInVariables += xSts.systemInEventVariableGroup.variables
+		linkableInVariables += xSts.systemInEventParameterVariableGroup.variables
+		
+		linkableInVariables.retainAll(iVariables)
+		linkableInVariables -= writtenInVariables // Not if the variable was written
+		
+		val finalPrimedVariables = writtenInVariables.filter(PrimedVariable).toList
+				.greatestPrimedVariables // Greatest primes among the ones written in InEventTrans
+		for (finalPrimedVariable : finalPrimedVariables) {
+			val originalVariable = finalPrimedVariable.originalVariable
+			if (linkableInVariables.contains(originalVariable)) { // We have to link it to the original for it to appear in the trace
+				serializedInAction += '''& «originalVariable.name» = «finalPrimedVariable.name» '''
+			}
+		}
+		
+		///
 		
 		return serializedInAction
 	}
