@@ -165,6 +165,12 @@ class TraceBackAnnotator {
 										else if (nuxmvQueryGenerator.isSourceOutEventParameter(id)) {
 											id.parseOutEventParameter(value, step)
 										}
+										//
+										// Synchronous in-event parameter: only if it is PERSISTENT (cannot be IVAR)
+										else if (nuxmvQueryGenerator.isSynchronousSourceInEventParameter(id)) {
+											id.parseSynchronousInEventParameter(value, step)
+										}
+										//
 										// We check the async queue in every state_check: if the message remains in the queue,
 										// then it was not processed in the cycle, so we remove it from the trace.
 										// Next time it is processed, in env_check, we will see that it is still in the queue,
@@ -172,6 +178,7 @@ class TraceBackAnnotator {
 										else if (nuxmvQueryGenerator.isAsynchronousSourceMessageQueue(id)) {
 											id.handleStoredAsynchronousInEvents(value)
 										}
+										//
 									}
 									case ENVIRONMENT_CHECK: {
 										// Synchronous in-event
@@ -184,7 +191,7 @@ class TraceBackAnnotator {
 										}
 										// Asynchronous in-event
 										else {
-											val asyncQueueId = id.backAnnotateFirstPrimedAsyncQueueId
+											val asyncQueueId = id.backAnnotateFirstPrimedAsyncQueueId // Note: we expect a SINGLE assignment to the queue
 											if (nuxmvQueryGenerator.isAsynchronousSourceMessageQueue(asyncQueueId)) {
 												asyncQueueId.parseAsynchronousInEvent(value, step)
 											}

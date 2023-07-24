@@ -73,8 +73,9 @@ class ModelSerializer {
 		val primedVariables = xSts.variableDeclarations.filter(PrimedVariable)
 		
 		if (xSts.messageQueueGroup.variables.empty) { // If XSTS is synchronous
-			iVariables += (inputVariable + inputParameterVariable)
-			// Persistent parameters may not change if the input event does not change - this is encoded in InEventTrans 
+			iVariables += inputVariable
+			iVariables += inputParameterVariable.filter[it.isEnvironmentResettable] // Only the transient parameters
+			// Persistent parameters may not change if the input event does not change - this is handled in finalizeTrans 
 		} // Otherwise, these variables would get random variables that could overwrite the messages in the queues
 		
 		iVariables += (/*inputVariable + inputParameterVariable +*/ /*inputMasterQueues + inputSlaveQueues +*/
@@ -228,7 +229,7 @@ class ModelSerializer {
 		linkableInVariables += xSts.systemInEventVariableGroup.variables
 		linkableInVariables += xSts.systemInEventParameterVariableGroup.variables
 		
-		linkableInVariables.retainAll(iVariables)
+		linkableInVariables.retainAll(iVariables) // Not persistent parameters
 		linkableInVariables -= writtenInVariables // Not if the variable was written
 		
 		val finalPrimedVariables = writtenInVariables.filter(PrimedVariable).toList
@@ -247,7 +248,8 @@ class ModelSerializer {
 	//
 	
 	protected def String finalizeVariablesInTrans(XSTS xSts) {
-		return xSts.finalizeVariables(xSts.transitions, "next(", ")")
+		return xSts.finalizeVariables(
+			(#[xSts.inEventTransition /* Persistent parameters */, xSts.outEventTransition] + xSts.transitions).toList, "next(", ")")
 	}
 	
 	protected def String finalizeVariableInitialization(XSTS xSts) {
@@ -280,8 +282,8 @@ class ModelSerializer {
 		val unassignedVariables = newLinkedHashSet
 		unassignedVariables += xSts.variableDeclarations
 		unassignedVariables.removeIf[it instanceof PrimedVariable] // Remove init primed variables that are not IVARs
-		unassignedVariables -= iVariables
-		unassignedVariables -= finalPrimedVariables.map[it.originalVariable].filter(VariableDeclaration).toList
+		unassignedVariables -= iVariables // Remove IVARs
+		unassignedVariables -= finalPrimedVariables.map[it.originalVariable].filter(VariableDeclaration).toList // Remove already assigned vars
 		
 		if (!unassignedVariables.empty) {
 			string += '''
