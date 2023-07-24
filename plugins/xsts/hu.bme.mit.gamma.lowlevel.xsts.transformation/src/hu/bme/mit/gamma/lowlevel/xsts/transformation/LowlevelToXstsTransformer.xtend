@@ -546,8 +546,9 @@ class LowlevelToXstsTransformer {
 		xStsVariables -= xSts.componentParameterGroup.variables
 		// The region variables must be set to __Inactive__
 		xStsVariables += xSts.regionGroups.map[it.variables].flatten
-		// Initial value to the events, their order is not interesting
-		xStsVariables += xSts.inEventVariableGroup.variables + xSts.outEventVariableGroup.variables
+		// Initial value to the events and parameters, their order is not interesting
+		xStsVariables += xSts.inEventVariableGroup.variables + xSts.outEventVariableGroup.variables +
+			xSts.inEventParameterVariableGroup.variables + xSts.outEventParameterVariableGroup.variables
 		// Note that optimization is NOT needed here, as these are already XSTS variables
 		for (xStsVariable : xStsVariables) {
 			// variableInitializingAction as it must be set before setting the configuration
