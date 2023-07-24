@@ -74,7 +74,11 @@ class ModelSerializer {
 		
 		val primedVariables = xSts.variableDeclarations.filter(PrimedVariable)
 		
-		iVariables += (inputVariable + inputParameterVariable + /*inputMasterQueues + inputSlaveQueues +*/
+		if (xSts.messageQueueGroup.variables.empty) { // If XSTS is synchronous
+			iVariables += (inputVariable + inputParameterVariable)
+		} // Otherwise, these variables would get random variables that could overwrite the messages in the queues
+		
+		iVariables += (/*inputVariable + inputParameterVariable +*/ /*inputMasterQueues + inputSlaveQueues +*/
 				transientVariables /*+ resettableVariables*/ + localVariables + primedVariables).toList
 				
 		val primedVariablesInInitializingAction = xSts.initializingAction.writtenVariables
