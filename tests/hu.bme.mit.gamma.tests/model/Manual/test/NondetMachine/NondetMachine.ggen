@@ -1,0 +1,24 @@
+import "model/NondetMachine/NondetMachine"
+import "model/NondetMachine/NondetMachineWrapper"
+
+code {
+	component: NondetMachine
+	language: java
+}
+
+code {
+	component: NondetMachineWrapper
+	language: java
+}
+
+analysis {
+	component : NondetMachineWrapper
+	language : SMV
+}
+
+verification {
+	language : nuXmv
+	file : "NondetMachineWrapper.smv"
+	property-file : "model/NondetMachine/NondetMachine.gpd"
+	test-language : java
+}

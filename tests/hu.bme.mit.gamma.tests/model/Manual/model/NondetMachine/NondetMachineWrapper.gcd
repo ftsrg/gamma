@@ -1,0 +1,13 @@
+package NondetMachine
+
+import "NondetMachine.gcd"
+
+adapter NondetMachineWrapper of component nondetMachine : NondetMachine [
+	// Declaration of ports
+] {
+	when any / run
+	
+	queue messageQueue(priority = 1, capacity = 4) {
+		Command.any
+	}
+}
