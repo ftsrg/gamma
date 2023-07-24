@@ -58,7 +58,6 @@ verification {
 	language : nuXmv
 	file : "Crossroad-SMV.smv"
 	property-file : ".Crossroad-SMV.gpd" // Checking test optimization
-	optimize : true
 	optimize-model : true
 	test-language : java
 }

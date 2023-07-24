@@ -96,5 +96,4 @@ verification {
 	property-file : ".Crossroad-SMV.gpd"
 	test-language : java
 	optimize-model : true // Checking model optimization
-	optimize-traces : true // Checking test optimization
 }

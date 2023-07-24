@@ -55,6 +55,7 @@ verification {
 	file : "Crossroad-XSTS.xml"
 	property-file : ".Crossroad-XSTS.gpd"
 	test-language : java
+	optimize-traces : true
 }
 
 verification {

@@ -59,6 +59,5 @@ verification {
 	file : "MonitoredCrossroad-SMV.smv"
 	property-file : ".MonitoredCrossroad-SMV.gpd"
 	optimize-model : true
-	optimize-traces : true
 	test-language : java
 }
