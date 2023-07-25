@@ -8,6 +8,8 @@
 *.gsts
 *.l2s
 *.xsts
+*.smv
+*.cmd
 *.cex
 *.gpd
 *.pd
