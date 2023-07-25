@@ -24,6 +24,7 @@ import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.transformation.InitialStateSetting
 import hu.bme.mit.gamma.xsts.transformation.api.Gamma2XstsTransformerSerializer
+import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import java.util.List
 
 class Gamma2XstsNuxmvTransformerSerializer {
@@ -45,6 +46,7 @@ class Gamma2XstsNuxmvTransformerSerializer {
 	protected final PropertyPackage initialState
 	protected final InitialStateSetting initialStateSetting
 	
+	protected final extension XstsActionUtil actionUtil = XstsActionUtil.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension GammaFileNamer fileNamer = GammaFileNamer.INSTANCE
 	
@@ -107,6 +109,8 @@ class Gamma2XstsNuxmvTransformerSerializer {
 			initialState, initialStateSetting)
 		xStsTransformer.execute
 		val xSts = targetFolderUri.normalLoad(fileName.emfXStsFileName) as XSTS
+		// Loop unrolling if needed (and possible)
+		xSts.unrollLoopActions
 		// SSE
 		val sseTransformer = new StaticSingleAssignmentTransformer(xSts, SsaType.OUT_TRANS)
 		sseTransformer.execute
