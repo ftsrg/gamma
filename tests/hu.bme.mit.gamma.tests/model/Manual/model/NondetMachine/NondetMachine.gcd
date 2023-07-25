@@ -48,26 +48,26 @@ statechart NondetMachine() [
 		{
 			if (a >= 10) {
 				if (b <= Command.command::param) {
-					a := a + 5;
+					a := a / 5; // 2 - if the divisor is greater than 5, this is a deadlock expression
 					if (a + b < 15) {
-						a := a + b;
+						a := a * b;
 					}
 					else {
-						b := b - a;
+						b := b + a; // 22
 					}
-					b := b + 1;
+					b := b - 1; // 21
 				}
 				else {
-					b := b + 5;
-					if (a - b < 15) {
-						b := a / b;
+					b := b + 5; // 25
+					if (a - b < 17) {
+						b := a - b; // -15
 					}
 					else {
 						b := b * a;
 					}
-					b := b - 1;
+					b := b - 1; // -16
 				}
-				a := a + 1;
+				a := a - b;
 			}
 			else {
 				b := b / 2;
