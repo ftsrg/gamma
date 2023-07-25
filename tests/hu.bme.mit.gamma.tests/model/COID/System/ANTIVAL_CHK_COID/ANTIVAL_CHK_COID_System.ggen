@@ -18,6 +18,19 @@ analysis {
 	}
 }
 
+analysis {
+	component : AntivalenceChecker_System
+	file : "ANTIVAL_CHK_COID_System-SMV"
+	language : SMV
+	transition-coverage {
+		include : [ coid ]
+	}
+	constraint : {
+		minimum-orchestrating-period : 495 ms
+		maximum-orchestrating-period : 495 ms
+	}
+}
+
 verification {
 	language : UPPAAL
 	file : "ANTIVAL_CHK_COID_System.xml"
@@ -31,5 +44,13 @@ verification {
 	file : "ANTIVAL_CHK_COID_System.xsts"
 	query-file : "CustomQuery_ANTIVAL_CHK_COID_System.prop"
 	optimize : true
+	test-language : java
+}
+
+verification {
+	language : nuXmv
+	file : "ANTIVAL_CHK_COID_System-SMV.smv"
+	property-file : ".ANTIVAL_CHK_COID_System-SMV.gpd"
+	optimize-model : true
 	test-language : java
 }
