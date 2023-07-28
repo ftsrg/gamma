@@ -73,6 +73,7 @@ class NuxmvVerifier extends AbstractVerifier {
 		commandFile.deleteOnExit
 		
 		val serializedCommand = '''
+			set on_failure_script_quits
 			set input_file "«modelFile.absolutePath»"
 			go_msat
 			set default_trace_plugin 1
@@ -98,7 +99,7 @@ class NuxmvVerifier extends AbstractVerifier {
 			val resultPattern = '''.*specification.*is.*'''
 			var resultFound = false
 			result  = ThreeStateBoolean.UNDEF
-			while (!resultFound) {
+			while (!resultFound && resultReader.hasNextLine) {
 				val line = resultReader.nextLine
 				logger.log(Level.INFO, "nuXmv: " + line)
 				if (line.matches(resultPattern)) {
@@ -110,6 +111,9 @@ class NuxmvVerifier extends AbstractVerifier {
 						result  = ThreeStateBoolean.FALSE
 					} // In case of any other outcome, the result will remain undef
 				}
+			}
+			if (!resultFound) {
+				logger.log(Level.SEVERE, "nuXmv could not verify the model with the property: " + query)
 			}
 			result = result.adaptResult
 			//
@@ -143,6 +147,7 @@ class NuxmvVerifier extends AbstractVerifier {
 		commandFile.deleteOnExit
 		
 		val serializedCommand = '''
+			set on_failure_script_quits
 			set input_file "«modelFile.absolutePath»"
 			go_msat
 			convert_property_to_invar -l -p "«query.adaptQuery»"
