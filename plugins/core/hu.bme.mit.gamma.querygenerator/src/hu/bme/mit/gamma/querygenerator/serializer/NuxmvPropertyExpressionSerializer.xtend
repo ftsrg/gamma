@@ -11,6 +11,7 @@
 package hu.bme.mit.gamma.querygenerator.serializer
 
 import hu.bme.mit.gamma.expression.model.AndExpression
+import hu.bme.mit.gamma.expression.model.ArrayAccessExpression
 import hu.bme.mit.gamma.expression.model.EqualityExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.FalseExpression
@@ -46,4 +47,5 @@ class NuxmvPropertyExpressionSerializer extends ThetaPropertyExpressionSerialize
 
 	override String _serialize(IfThenElseExpression expression) '''((«expression.condition.serialize») ? («expression.then.serialize») : («expression.^else.serialize»))'''
 	
+	override String _serialize(ArrayAccessExpression arrayAccessExpression) '''READ(«arrayAccessExpression.getOperand().serialize», «arrayAccessExpression.getIndex().serialize»)'''
 }
