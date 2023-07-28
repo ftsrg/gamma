@@ -34,9 +34,11 @@ import hu.bme.mit.gamma.genmodel.model.AdaptiveContractTestGeneration;
 import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation;
 import hu.bme.mit.gamma.genmodel.model.CodeGeneration;
 import hu.bme.mit.gamma.genmodel.model.EventPriorityTransformation;
+import hu.bme.mit.gamma.genmodel.model.FaultTreeGeneration;
 import hu.bme.mit.gamma.genmodel.model.GenModel;
 import hu.bme.mit.gamma.genmodel.model.InterfaceCompilation;
 import hu.bme.mit.gamma.genmodel.model.PhaseStatechartGeneration;
+import hu.bme.mit.gamma.genmodel.model.SafetyAssessment;
 import hu.bme.mit.gamma.genmodel.model.Slicing;
 import hu.bme.mit.gamma.genmodel.model.StatechartCompilation;
 import hu.bme.mit.gamma.genmodel.model.StatechartContractGeneration;
@@ -53,6 +55,7 @@ import hu.bme.mit.gamma.ui.taskhandler.AnalysisModelTransformationAndVerificatio
 import hu.bme.mit.gamma.ui.taskhandler.AnalysisModelTransformationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.CodeGenerationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.EventPriorityTransformationHandler;
+import hu.bme.mit.gamma.ui.taskhandler.FaultTreeGenerationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.InterfaceCompilationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.OptimizerAndVerificationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.PhaseGenerationHandler;
@@ -248,6 +251,13 @@ public class GammaApi {
 									handler.execute(phaseStatechartGeneration);
 									logger.log(Level.INFO, "The phase statechart transformation has been finished");
 								}
+								else if (task instanceof FaultTreeGeneration) {
+									logger.log(Level.INFO, "The fault tree generation has been started");
+									FaultTreeGeneration faultTreeGeneration = (FaultTreeGeneration) task;
+									FaultTreeGenerationHandler handler = new FaultTreeGenerationHandler(file);
+									handler.execute(faultTreeGeneration);
+									logger.log(Level.INFO, "The fault tree generation has been finished");
+								}
 							}
 							// Iteration end
 							hook.endIteration();
@@ -310,8 +320,9 @@ public class GammaApi {
 								it instanceof AdaptiveContractTestGeneration ||
 								it instanceof AdaptiveBehaviorConformanceChecking ||
 								it instanceof TraceReplayModelGeneration ||
-								it instanceof StatechartContractTestGeneration || it instanceof StatechartContractGeneration)
-						.collect(Collectors.toList());
+								it instanceof StatechartContractTestGeneration || it instanceof StatechartContractGeneration ||
+								it instanceof SafetyAssessment
+						).collect(Collectors.toList());
 			default: 
 				throw new IllegalArgumentException("Not known iteration variable: " + iteration);
 		}

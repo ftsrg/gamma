@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -57,35 +57,35 @@ public class TraceGenerationHandler extends TaskHandler {
 		super(file);
 	}
 		
-	public void execute(TraceGeneration tracegeneration) throws IOException {
-		setTargetFolder(tracegeneration);
+	public void execute(TraceGeneration traceGeneration) throws IOException {
+		setTargetFolder(traceGeneration);
 		
 		File targetFolder = new File(targetFolderUri + File.separator + file.getName().split("\\.")[0] + File.separator);
-		if(targetFolder.exists()) {
+		if (targetFolder.exists()) {
 			cleanFolder(targetFolder);			
 		} else {
 			targetFolder.mkdirs();
 		}
 		
 		// Based on the method setVerification in VerificationHandler
-		Resource resource = tracegeneration.eResource();
+		Resource resource = traceGeneration.eResource();
 		File file = (resource != null) ?
 				ecoreUtil.getFile(resource).getParentFile() : // If Verification is contained in a resource
 					fileUtil.toFile(super.file).getParentFile(); // If Verification is created in Java
 		// Setting the file paths
-		tracegeneration.getFileName().replaceAll(it -> fileUtil.exploreRelativeFile(file, it).toString());
+		traceGeneration.getFileName().replaceAll(it -> fileUtil.exploreRelativeFile(file, it).toString());
 
-		List<String> variableList = tracegeneration.getVariables();
-		boolean useAbstraction = tracegeneration.getVariableLists().size()!=0;
+		List<String> variableList = traceGeneration.getVariables();
+		boolean useAbstraction = traceGeneration.getVariableLists().size()!=0;
 		
-		boolean fullTraces = tracegeneration.isFullTraces();
-		boolean noTransitionCoverage = tracegeneration.isNoTransitionCoverage();
-		String filePath = tracegeneration.getFileName().get(0);
+		boolean fullTraces = traceGeneration.isFullTraces();
+		boolean noTransitionCoverage = traceGeneration.isNoTransitionCoverage();
+		String filePath = traceGeneration.getFileName().get(0);
 		File modelFile = new File(filePath);		
 		List<ExecutionTrace> retrievedTraces = new ArrayList<ExecutionTrace>();
 		ThetaTraceGenerator ttg = new ThetaTraceGenerator();
 		retrievedTraces = ttg.execute(modelFile, fullTraces, variableList, noTransitionCoverage, useAbstraction);
-		logger.log(Level.INFO, "Number of received traces: "+retrievedTraces.size());
+		logger.log(Level.INFO, "Number of received traces: " + retrievedTraces.size());
 
 		for (ExecutionTrace trace : retrievedTraces) {
 			serializer.serialize(targetFolder.getAbsolutePath(), traceFileName, svgFileName,
@@ -97,12 +97,12 @@ public class TraceGenerationHandler extends TaskHandler {
 
 	public static void cleanFolder(File folder) {
 		File[] files = folder.listFiles();
-	    if(files!=null) {
-	        for(File f: files) {
-	            if(f.isDirectory()) {
-	                deleteFolder(f);
+	    if (files != null) {
+	        for (File file : files) {
+	            if (file.isDirectory()) {
+	                deleteFolder(file);
 	            } else {
-	                f.delete();
+	                file.delete();
 	            }
 	        }
 	    }
@@ -110,12 +110,12 @@ public class TraceGenerationHandler extends TaskHandler {
 	
 	public static void deleteFolder(File folder) {
 	    File[] files = folder.listFiles();
-	    if(files!=null) {
-	        for(File f: files) {
-	            if(f.isDirectory()) {
-	                deleteFolder(f);
+	    if (files!=null) {
+	        for (File file : files) {
+	            if (file.isDirectory()) {
+	                deleteFolder(file);
 	            } else {
-	                f.delete();
+	                file.delete();
 	            }
 	        }
 	    }

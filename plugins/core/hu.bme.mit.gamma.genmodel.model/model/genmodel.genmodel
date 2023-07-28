@@ -210,5 +210,11 @@
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//StatechartContractGeneration/TestType"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//StatechartContractGeneration/RestartOnAccept"/>
     </genClasses>
+    <genClasses image="false" ecoreClass="genmodel.ecore#//SafetyAssessment">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference genmodel.ecore#//SafetyAssessment/analysisModelTransformation"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//SafetyAssessment/faultExtensionInstructionsFile"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//SafetyAssessment/faultModesFile"/>
+    </genClasses>
+    <genClasses ecoreClass="genmodel.ecore#//FaultTreeGeneration"/>
   </genPackages>
 </genmodel:GenModel>

@@ -289,4 +289,13 @@
     <eLiterals name="POSITIVE"/>
     <eLiterals name="NEGATIVE" value="1"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="SafetyAssessment" abstract="true" eSuperTypes="#//Task">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="analysisModelTransformation"
+        lowerBound="1" eType="#//AnalysisModelTransformation" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="faultExtensionInstructionsFile"
+        upperBound="-1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="faultModesFile" upperBound="-1"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="FaultTreeGeneration" eSuperTypes="#//SafetyAssessment"/>
 </ecore:EPackage>

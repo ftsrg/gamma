@@ -21,6 +21,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.eclipse.emf.common.util.EList;
+import org.eclipse.emf.ecore.EStructuralFeature;
 import org.yakindu.base.types.Direction;
 import org.yakindu.base.types.Event;
 import org.yakindu.sct.model.sgraph.Scope;
@@ -54,6 +55,7 @@ import hu.bme.mit.gamma.genmodel.model.ContractAutomatonType;
 import hu.bme.mit.gamma.genmodel.model.Coverage;
 import hu.bme.mit.gamma.genmodel.model.EventMapping;
 import hu.bme.mit.gamma.genmodel.model.EventPriorityTransformation;
+import hu.bme.mit.gamma.genmodel.model.FaultTreeGeneration;
 import hu.bme.mit.gamma.genmodel.model.GenModel;
 import hu.bme.mit.gamma.genmodel.model.GenmodelModelPackage;
 import hu.bme.mit.gamma.genmodel.model.InterfaceCompilation;
@@ -61,6 +63,7 @@ import hu.bme.mit.gamma.genmodel.model.InterfaceMapping;
 import hu.bme.mit.gamma.genmodel.model.ModelReference;
 import hu.bme.mit.gamma.genmodel.model.OrchestratingConstraint;
 import hu.bme.mit.gamma.genmodel.model.PhaseStatechartGeneration;
+import hu.bme.mit.gamma.genmodel.model.SafetyAssessment;
 import hu.bme.mit.gamma.genmodel.model.SchedulingConstraint;
 import hu.bme.mit.gamma.genmodel.model.StateCoverage;
 import hu.bme.mit.gamma.genmodel.model.StatechartCompilation;
@@ -404,6 +407,47 @@ public class GenmodelValidator extends ExpressionModelValidator {
 		return validationResultMessages;
 	}
 	
+	public Collection<ValidationResultMessage> checkTasks(FaultTreeGeneration faultTreeGeneration) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+
+		AnalysisModelTransformation analysisModelTransformation = faultTreeGeneration.getAnalysisModelTransformation();
+		validationResultMessages.addAll(
+				checkTasks(analysisModelTransformation));
+		
+		List<AnalysisLanguage> languages = analysisModelTransformation.getLanguages();
+		if (languages.size() != 1 || languages.stream().anyMatch(it -> it != AnalysisLanguage.NUXMV)) {
+			validationResultMessages.add(
+				new ValidationResultMessage(ValidationResult.ERROR, "Only SMV/nuXmv is supported", 
+					new ReferenceInfo(GenmodelModelPackage.Literals.SAFETY_ASSESSMENT__ANALYSIS_MODEL_TRANSFORMATION)));
+		}
+		
+		List<String> faultExtensionInstructionsFile = faultTreeGeneration.getFaultExtensionInstructionsFile();
+		int feiSize = faultExtensionInstructionsFile.size();
+		List<String> faultModesFile = faultTreeGeneration.getFaultModesFile();
+		int fmSize = faultModesFile.size();
+		
+		if (!(feiSize * fmSize == 0 && feiSize + fmSize == 1)) {
+			validationResultMessages.add(
+					new ValidationResultMessage(ValidationResult.ERROR, "A single fei or fm file must be specified", 
+						new ReferenceInfo(faultTreeGeneration)));
+			return validationResultMessages;
+		}
+		
+		List<String> files = new ArrayList<String>();
+		files.addAll(faultExtensionInstructionsFile);
+		files.addAll(faultModesFile);
+		
+		File resourceFile = ecoreUtil.getFile(faultTreeGeneration.eResource());
+
+		validationResultMessages.addAll(
+				checkRelativeFilePaths(resourceFile, files,
+						List.of(GenmodelModelPackage.Literals.SAFETY_ASSESSMENT__FAULT_EXTENSION_INSTRUCTIONS_FILE,
+								GenmodelModelPackage.Literals.SAFETY_ASSESSMENT__FAULT_MODES_FILE))
+				);
+		
+		return validationResultMessages;
+	}
+	
 	// Additional validation rules
 	
 	public Collection<ValidationResultMessage> checkGammaImports(GenModel genmodel) {
@@ -416,6 +460,9 @@ public class GenmodelValidator extends ExpressionModelValidator {
 		for (AnalysisModelTransformation analysisModelTransformationTask :
 				javaUtil.filterIntoList(genmodel.getTasks(), AnalysisModelTransformation.class)) {
 			packageImports.removeAll(getUsedPackages(analysisModelTransformationTask));
+		}
+		for (SafetyAssessment safetyAssessment : javaUtil.filterIntoList(genmodel.getTasks(), SafetyAssessment.class)) {
+			packageImports.removeAll(getUsedPackages(safetyAssessment.getAnalysisModelTransformation()));
 		}
 		for (StatechartCompilation statechartCompilationTask :
 				javaUtil.filterIntoList(genmodel.getTasks(), StatechartCompilation.class)) {
@@ -937,6 +984,24 @@ public class GenmodelValidator extends ExpressionModelValidator {
 					new ReferenceInfo(GenmodelModelPackage.Literals.STATECHART_CONTRACT_GENERATION__SCENARIO,
 							statechartGeneration)));
 		}
+		return validationResultMessages;
+	}
+	
+	//
+	
+	protected Collection<ValidationResultMessage> checkRelativeFilePaths(File anchor,
+			List<String> relativeFilePaths, List<EStructuralFeature> references) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		
+		for (var i = 0; i < relativeFilePaths.size(); i++) {
+			String relativeFilePath = relativeFilePaths.get(i);
+			if (!fileUtil.isValidRelativeFile(anchor, relativeFilePath)) {
+				EStructuralFeature reference = references.get(i);
+				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+					"This is not a valid relative path: " + relativeFilePath, new ReferenceInfo(reference)));
+			}
+		}
+		
 		return validationResultMessages;
 	}
 

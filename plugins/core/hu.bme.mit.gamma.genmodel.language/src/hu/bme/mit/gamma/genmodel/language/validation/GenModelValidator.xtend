@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -17,6 +17,7 @@ import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation
 import hu.bme.mit.gamma.genmodel.model.AsynchronousInstanceConstraint
 import hu.bme.mit.gamma.genmodel.model.CodeGeneration
 import hu.bme.mit.gamma.genmodel.model.EventMapping
+import hu.bme.mit.gamma.genmodel.model.FaultTreeGeneration
 import hu.bme.mit.gamma.genmodel.model.GenModel
 import hu.bme.mit.gamma.genmodel.model.InterfaceMapping
 import hu.bme.mit.gamma.genmodel.model.OrchestratingConstraint
@@ -103,6 +104,11 @@ class GenModelValidator extends AbstractGenModelValidator {
 	@Check
 	def checkReferredComponentTasks(AdaptiveContractTestGeneration testGeneration) {
 		handleValidationResultMessage(genmodelValidator.checkReferredComponentTasks(testGeneration))
+	}
+	
+	@Check
+	def checkTasks(FaultTreeGeneration faultTreeGeneration) {
+		handleValidationResultMessage(genmodelValidator.checkTasks(faultTreeGeneration))
 	}
 	
 	// Additional validation rules

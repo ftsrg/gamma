@@ -97,7 +97,7 @@ public abstract class TaskHandler {
 				}
 				else {
 					String relativeFolder = file.getParent().getLocation().toString();
-					targetFolder = relativeFolder.substring(projectLocation.length() + 1); // Counting the sperator
+					targetFolder = relativeFolder.substring(projectLocation.length() + 1); // Counting the separator
 				}
 			}
 			task.getTargetFolder().add(targetFolder);

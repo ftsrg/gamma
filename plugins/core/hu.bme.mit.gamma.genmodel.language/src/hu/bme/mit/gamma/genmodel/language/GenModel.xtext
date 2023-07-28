@@ -41,7 +41,7 @@ Task returns Task:
 		EventPriorityTransformation | AdaptiveContractTestGeneration |
 		AdaptiveBehaviorConformanceChecking | PhaseStatechartGeneration |
 		Verification | TraceReplayModelGeneration | Slicing | StatechartContractTestGeneration |
-		StatechartContractGeneration | TraceGeneration
+		StatechartContractGeneration | TraceGeneration  | FaultTreeGeneration
 ;
 
 YakinduCompilation returns YakinduCompilation:
@@ -424,6 +424,20 @@ PhaseStatechartGeneration returns PhaseStatechartGeneration:
 		(
 		'folder' ':' targetFolder+=STRING |
 		'file' ':' fileName+=STRING // The name of the generated file
+		)*
+	'}'
+;
+
+// Safety assessment
+
+FaultTreeGeneration returns FaultTreeGeneration:
+	'fault-tree-generation' '{'
+		analysisModelTransformation=AnalysisModelTransformation
+		(
+			'folder' ':' targetFolder+=STRING |
+			'file-name' ':' fileName+=STRING |
+			'fault-extension-instructions-file' ':' faultExtensionInstructionsFile+=STRING |
+			'fault-modes-file' ':' faultModesFile+=STRING 
 		)*
 	'}'
 ;
