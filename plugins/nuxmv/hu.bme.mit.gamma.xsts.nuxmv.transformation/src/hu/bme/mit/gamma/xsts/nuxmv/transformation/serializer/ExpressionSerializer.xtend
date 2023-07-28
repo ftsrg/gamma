@@ -11,6 +11,7 @@
 package hu.bme.mit.gamma.xsts.nuxmv.transformation.serializer
 
 import hu.bme.mit.gamma.expression.model.AndExpression
+import hu.bme.mit.gamma.expression.model.ArrayAccessExpression
 import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression
 import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
@@ -75,5 +76,8 @@ class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSe
 		
 		return smvArrayLiteral.toString
 	}
+	
+	override String _serialize(ArrayAccessExpression arrayAccessExpression) '''READ(«arrayAccessExpression.getOperand().serialize», «arrayAccessExpression.getIndex().serialize»)'''
+
 
 }
