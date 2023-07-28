@@ -258,4 +258,6 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="UnremovableVariableDeclarationAnnotation"
       eSuperTypes="#//VariableDeclarationAnnotation"/>
+  <eClassifiers xsi:type="ecore:EClass" name="InjectedVariableDeclarationAnnotation"
+      eSuperTypes="#//VariableDeclarationAnnotation"/>
 </ecore:EPackage>

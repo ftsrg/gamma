@@ -44,6 +44,7 @@ import hu.bme.mit.gamma.expression.model.ExpressionPackage;
 import hu.bme.mit.gamma.expression.model.FieldDeclaration;
 import hu.bme.mit.gamma.expression.model.FinalVariableDeclarationAnnotation;
 import hu.bme.mit.gamma.expression.model.FunctionDeclaration;
+import hu.bme.mit.gamma.expression.model.InjectedVariableDeclarationAnnotation;
 import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression;
 import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression;
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition;
@@ -207,6 +208,11 @@ public class ExpressionModelDerivedFeatures {
 	public static boolean isInternal(VariableDeclaration variable) {
 		// Derived from an internal parameter (not assignable by the environment, only internal components)
 		return hasAnnotation(variable, InternalVariableDeclarationAnnotation.class);
+	}
+	
+	public static boolean isInjected(VariableDeclaration variable) {
+		// Injected via internal model transformations
+		return hasAnnotation(variable, InjectedVariableDeclarationAnnotation.class);
 	}
 	
 	public static boolean hasAnnotation(VariableDeclaration variable,

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -169,12 +169,10 @@ class CoveredPropertyReducer {
 				return value.clone
 			}
 		}
-		val isTransient = variable.transient
-		val isResettable = variable.resettable // Not correct in every sense, but we do not distinguish between different values here
-		if (isTransient || isResettable || variable.name.startsWith("__id_first_") || variable.name.startsWith("__id_second_")) { // TODO introduce "injected" annotation
+		val isInjected = variable.injected
+		if (isInjected) { // Not correct in every sense (e.g., resettable variables), but we do not distinguish between different values here
 			// This can happen if we run model checking as optimize&verify
-			logger.log(Level.WARNING, ('''Not found variable for transient («isTransient») or ''' +
-					'''resettable («isResettable») variable: «variable.name»'''))
+			logger.log(Level.WARNING, '''Not found variable for injected variable: «variable.name»''')
 			return variable.defaultExpression
 		}
 		throw new IllegalStateException('''Not found variable: «variable.name»''')

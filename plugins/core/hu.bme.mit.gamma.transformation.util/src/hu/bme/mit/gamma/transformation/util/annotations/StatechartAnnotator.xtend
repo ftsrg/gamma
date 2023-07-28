@@ -189,15 +189,19 @@ class StatechartAnnotator {
 	}
 	
 	protected def createTransitionVariable(Transition transition,
-			Map<Transition, VariableDeclaration> variables, boolean isResetable) {
+			Map<Transition, VariableDeclaration> variables, boolean isResettable) {
 		val statechart = transition.containingStatechart
 		val variable = createBooleanTypeDefinition.createVariableDeclaration(
 			namings.getVariableName(transition))
 		statechart.variableDeclarations += variable
 		variables.put(transition, variable)
-		if (isResetable) {
+		
+		if (isResettable) {
 			variable.addResettableAnnotation
 		}
+		
+		variable.addInjectedAnnotation
+		
 		return variable
 	}
 
@@ -549,7 +553,10 @@ class StatechartAnnotator {
 		if (!useMap.containsKey(reference)) {
 			val statechart = reference.containingStatechart
 			val useVariable = createIntegerTypeDefinition.createVariableDeclaration(name)
+			
 			useVariable.addResettableAnnotation
+			useVariable.addInjectedAnnotation
+			
 			statechart.variableDeclarations += useVariable
 			useMap += reference -> useVariable
 		}
@@ -570,7 +577,10 @@ class StatechartAnnotator {
 			Map<ValueDeclaration, VariableDeclaration> defMap, String name) {
 		if (!defMap.containsKey(originalDeclaration)) {
 			val statechart = originalDeclaration.containingStatechart
+			
 			val defVariable = createIntegerTypeDefinition.createVariableDeclaration(name)
+			defVariable.addInjectedAnnotation
+			
 			statechart.variableDeclarations += defVariable
 			defMap += originalDeclaration -> defVariable
 		}
@@ -894,10 +904,15 @@ class StatechartAnnotator {
 		if (globalPool !== null) {
 			globalPool += variablePair
 		}
+		
 		if (resettable) {
 			senderVariable.addResettableAnnotation
 			receiverVariable.addResettableAnnotation
 		}
+		
+		senderVariable.addInjectedAnnotation
+		receiverVariable.addInjectedAnnotation
+		
 		return variablePair
 	}
 	

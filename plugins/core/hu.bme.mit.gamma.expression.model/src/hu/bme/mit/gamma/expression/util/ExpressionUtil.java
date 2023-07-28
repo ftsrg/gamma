@@ -815,6 +815,10 @@ public class ExpressionUtil {
 		addAnnotation(variable, factory.createUnremovableVariableDeclarationAnnotation());
 	}
 	
+	public void addInjectedAnnotation(VariableDeclaration variable) {
+		addAnnotation(variable, factory.createInjectedVariableDeclarationAnnotation());
+	}
+	
 	public void addAnnotation(VariableDeclaration variable, VariableDeclarationAnnotation annotation) {
 		if (variable != null) {
 			List<VariableDeclarationAnnotation> annotations = variable.getAnnotations();

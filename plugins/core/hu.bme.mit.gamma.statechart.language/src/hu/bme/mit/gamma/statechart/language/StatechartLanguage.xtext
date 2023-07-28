@@ -266,7 +266,7 @@ enum SpecialStateKind returns ContractModel::SpecialStateKind:
 
 ScenarioAllowedWaitingAnnotation returns ContractModel::ScenarioAllowedWaitAnnotation:
 	{ContractModel::ScenarioAllowedWaitAnnotation}
-	'@ScenarioAllowedWaitAnnotation' '=' lowerLimit=Expression '..' upperLimit=Expression 
+	('@ScenarioAllowedWaitAnnotation' | '@ScenarioAllowedWait') '=' lowerLimit=Expression '..' upperLimit=Expression 
 ;
 
 ScenarioContractAnnotation returns ContractModel::ScenarioContractAnnotation:
@@ -291,14 +291,12 @@ WrapperComponentAnnotation returns InterfaceModel::WrapperComponentAnnotation:
 
 RunUponExternalEventAnnotation returns RunUponExternalEventAnnotation:
 	{RunUponExternalEventAnnotation} ('@RunUponExternalEventAnnotation' |
-		'@RunUponExternalEvent'
-	)
+		'@RunUponExternalEvent')
 ;
 
 RunUponExternalEventOrInternalTimeoutAnnotation returns RunUponExternalEventOrInternalTimeoutAnnotation:
 	{RunUponExternalEventOrInternalTimeoutAnnotation} ('@RunUponExternalEventOrInternalTimeoutAnnotation' |
-		'@RunUponExternalEventOrInternalTimeout'
-	)
+		'@RunUponExternalEventOrInternalTimeout' )
 ;
 
 Region returns Region:
@@ -354,7 +352,7 @@ StateAnnotation returns StateAnnotation:
 
 SpecialStateAnnotation returns ContractModel::SpecialStateAnnotation :
 	{ContractModel::SpecialStateAnnotation}
-	'@SpecialStateAnnotation' kind=SpecialStateKind
+	('@SpecialStateAnnotation' | '@SpecialState') kind=SpecialStateKind
 ;
 
 StateContractAnnotation returns ContractModel::StateContractAnnotation:
