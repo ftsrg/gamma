@@ -81,12 +81,18 @@ class ModelSerializer {
 		iVariables += (/*inputVariable + inputParameterVariable +*/ /*inputMasterQueues + inputSlaveQueues +*/
 				transientVariables /*+ resettableVariables*/ + localVariables + primedVariables).toList
 				
-		val primedVariablesInInitializingAction = xSts.initializingAction.writtenVariables
+		val initializingAction = xSts.initializingAction
+		val primedVariablesInInitializingAction = initializingAction.writtenVariables
 		iVariables -= primedVariablesInInitializingAction // INIT expression cannot contain input variables!
 				
 		val statefulVariables = newArrayList
 		statefulVariables += xSts.variableDeclarations
 		statefulVariables -= iVariables
+		
+		val isInitActionSerializableAsDefines = initializingAction.serializableAsDefines
+		if (isInitActionSerializableAsDefines) {
+			statefulVariables -= primedVariablesInInitializingAction // These will be DEFINEs
+		} // variableDeclarations == iVariables + statefulVariables (+ primedVariablesInInitializingAction - potentially as DEFINEs)
 		
 //		val optimizedInitializingAction = xSts.initializingAction.optimizeAction
 		
@@ -105,11 +111,17 @@ class ModelSerializer {
 					«nonDeterministicActionVariables.get(nonDeterministicAction)» : 0..«nonDeterministicAction.actions.size - 1»;
 				«ENDFOR»
 				
+			«IF isInitActionSerializableAsDefines»
+				«initializingAction.serializeActionAsDefine»
+			«ENDIF»
+				
 			INIT
-				«xSts.initializingAction.serialize»
-				«/* Putting '&' if needed */ #[xSts.variableInitializingTransition.action,
-					xSts.configurationInitializingTransition.action, xSts.entryEventTransition.action].connectSubsequentActionsIfNeeded»
-				«xSts.finalizeVariableInitialization /*Next() assignment at the very end of the highest primes*/»
+				«IF !isInitActionSerializableAsDefines»
+					«initializingAction.serialize»
+					«/* Putting '&' if needed */ #[xSts.variableInitializingTransition.action,
+						xSts.configurationInitializingTransition.action, xSts.entryEventTransition.action].connectSubsequentActionsIfNeeded»
+				«ENDIF»
+				«xSts.finalizeVariableInitialization /*Next() assignment at the very end of the highest primes (can be DEFINEs)*/»
 				
 «««			// In event transition is not necessary (IVAR semantics)
 			«FOR transition : xSts.transitions»
@@ -213,6 +225,44 @@ class ModelSerializer {
 	protected def dispatch String serialize(HavocAction action) '''TRUE'''
 	
 	protected def dispatch String serialize(AssumeAction action) '''«action.assumption.serialize»'''
+	
+	//
+	
+	protected def isSerializableAsDefines(Action action) {
+		val containedActions = action.getSelfAndAllContentsOfType(Action)
+		return containedActions.forall[
+				it instanceof SequentialAction || it instanceof AssignmentAction ||
+				it instanceof EmptyAction || it instanceof VariableDeclarationAction]
+	}
+	
+//	protected def String serializeInitActionsAsDefines(Action action) {
+//		try {
+//			return action.serializeActionAsDefine
+//		} catch (IllegalArgumentException e) {
+//			// Contains unsupported actions
+//			return ""
+//		}
+//	}
+	
+	protected def dispatch String serializeActionAsDefine(Action action) {
+		throw new IllegalArgumentException("Not supported action: " + action)
+	}
+	
+	protected def dispatch String serializeActionAsDefine(SequentialAction action) '''
+		«FOR subaction : action.actions»
+			«subaction.serializeActionAsDefine»
+		«ENDFOR»
+	'''
+	
+	protected def dispatch String serializeActionAsDefine(AssignmentAction action) '''
+		DEFINE «action.lhs.declaration.name» := «action.rhs.serialize»;
+	'''
+	
+	protected def dispatch String serializeActionAsDefine(VariableDeclarationAction action) '''
+		DEFINE «action.variableDeclaration.name» := «action.variableDeclaration.expression.serialize»;
+	'''
+	
+	protected def dispatch String serializeActionAsDefine(EmptyAction action) ''''''
 	
 	//
 	
