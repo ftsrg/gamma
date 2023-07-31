@@ -214,6 +214,7 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference genmodel.ecore#//SafetyAssessment/analysisModelTransformation"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//SafetyAssessment/faultExtensionInstructionsFile"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//SafetyAssessment/faultModesFile"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference genmodel.ecore#//SafetyAssessment/propertyPackages"/>
     </genClasses>
     <genClasses ecoreClass="genmodel.ecore#//FaultTreeGeneration"/>
   </genPackages>

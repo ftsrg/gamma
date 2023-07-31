@@ -437,7 +437,8 @@ FaultTreeGeneration returns FaultTreeGeneration:
 			'folder' ':' targetFolder+=STRING |
 			'file-name' ':' fileName+=STRING |
 			'fault-extension-instructions-file' ':' faultExtensionInstructionsFile+=STRING |
-			'fault-modes-file' ':' faultModesFile+=STRING 
+			'fault-modes-file' ':' faultModesFile+=STRING |
+			'property-file' ':' propertyPackages+=[property::PropertyPackage | STRING] // Property models
 		)*
 	'}'
 ;
