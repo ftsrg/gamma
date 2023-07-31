@@ -149,14 +149,14 @@ class JavaUtil {
 	
 	def String deparenthesize(String string) {
 		val stringBuilder = new StringBuilder
-		stringBuilder.append(string)
+		stringBuilder.append(string.trim)
 		
 		while (stringBuilder.charAt(0) == '(') {
 			stringBuilder.deleteCharAt(0)
 			stringBuilder.deleteCharAt(stringBuilder.length - 1)
 		}
 		
-		return stringBuilder.toString
+		return stringBuilder.toString.trim
 	}
 	
 }

@@ -81,6 +81,7 @@ abstract class AbstractVerifier {
 		final String E = "E"
 		
 		final String F = "F"
+		final String G = "G"
 		
 		boolean invert;
 		
@@ -101,10 +102,10 @@ abstract class AbstractVerifier {
 				invert = true
 				// For some reason, nuXmv cannot make !(F...) an invariant property, so we adapt even more
 				if (trimmedQuery.startsWith(E + F)) {
-					return "G( !(" + trimmedQuery.substring((E + F).length) + "))"
+					return "G(!(" + trimmedQuery.substring((E + F).length) + "))"
 				}
 				if (trimmedQuery.startsWith(E + " " + F)) {
-					return "G( !(" + trimmedQuery.substring((E + " " + F).length) + "))"
+					return "G(!(" + trimmedQuery.substring((E + " " + F).length) + "))"
 				}
 				// Default
 				return "!(" + trimmedQuery.substring(E.length) + ")"
@@ -116,6 +117,32 @@ abstract class AbstractVerifier {
 			
 			invert = false
 			return trimmedQuery
+		}
+		
+		def adaptInvariantQuery(String query) {
+			val trimmedQuery = query.trim.deparenthesize
+			
+			if (!trimmedQuery.startsWith(A) && !trimmedQuery.startsWith(E)) {
+				// It is an invariant query
+				return "G(" + trimmedQuery + ")";
+			}
+			
+			return trimmedQuery
+		}
+		
+		def adaptLtlOrInvariantQuery(String query) {
+			// p & q -> G(p & q)
+			// E F (p & q) -> G(p & q)
+			return query.adaptInvariantQuery.adaptQuery
+		}
+		
+		def adaptLtlOrInvariantQueryToReachability(String query) {
+			// G(p & q) -> (p & q)
+			val gQuery = query.adaptLtlOrInvariantQuery
+			if (!gQuery.startsWith(G)) {
+				throw new IllegalArgumentException("Not expected query form: " + query)
+			}
+			return "!(" + gQuery.substring(G.length) + ")"
 		}
 		
 		def adaptResult(ThreeStateBoolean promelaResult) {

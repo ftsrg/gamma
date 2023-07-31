@@ -27,9 +27,17 @@ import hu.bme.mit.gamma.genmodel.derivedfeatures.GenmodelDerivedFeatures;
 import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
 import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation;
 import hu.bme.mit.gamma.genmodel.model.FaultTreeGeneration;
+import hu.bme.mit.gamma.property.model.CommentableStateFormula;
+import hu.bme.mit.gamma.property.model.PropertyPackage;
+import hu.bme.mit.gamma.querygenerator.serializer.NuxmvPropertySerializer;
+import hu.bme.mit.gamma.verification.util.AbstractVerifier.LtlQueryAdapter;
 
 public class FaultTreeGenerationHandler extends TaskHandler {
-
+	
+	protected final NuxmvPropertySerializer nuXmvPropertySerializer = NuxmvPropertySerializer.INSTANCE;
+	
+	//
+	
 	public FaultTreeGenerationHandler(IFile file) {
 		super(file);
 	}
@@ -43,31 +51,42 @@ public class FaultTreeGenerationHandler extends TaskHandler {
 		String extendedSmvPath = xSapFiles.getValue();
 		
 		String extensionlessFileName = faultTreeGeneration.getFileName().get(0);
-		final String outputPath = targetFolderUri + extensionlessFileName + ".txt";
+		final String outputPath = targetFolderUri + File.separator + extensionlessFileName + ".txt";
 		
-		final String failureEvent = ""; // TODO - CTL * vs. LTL vs. invariant
+		List<PropertyPackage> propertyPackages = faultTreeGeneration.getPropertyPackages();
 		
-		String extendSmvCommand = 
-				"set input_file \"" + extendedSmvPath + "\"" + System.lineSeparator()
-				+ "set sa_compass" + System.lineSeparator()
-				+ "set sa_compass_task_file \"" + fmsXmlPath + "\"" + System.lineSeparator()
-				+ "go_msat" + System.lineSeparator()
-				+ "compute_fault_tree_msat_bmc -o \"" + outputPath + "\" -t \"" + failureEvent + "\"" + System.lineSeparator()
-				+ "quit";
-		
-//		File extendSmvCommandFile = new File(targetFolderUri + File.separator + "extend_" + feiFileNameExtensionless + ".cmd");
-//		fileUtil.saveString(extendSmvCommandFile, extendSmvCommand);
-//		
-//		String[] extendSmvCmdCommand = new String[] { "xSAP-win64", "-source", extendSmvCommandFile.getAbsolutePath() };
-//		logger.log(Level.INFO, "Issuing command: " + List.of(extendSmvCmdCommand).stream().reduce("", ( (a, b) -> a + " " + b)));
-//		Process extendFmProcess = Runtime.getRuntime().exec(extendSmvCmdCommand);
-//		
-//		Scanner extendSmvScanner = new Scanner(extendFmProcess.errorReader()); // Nothing is published to  stdout
-//		while (extendSmvScanner.hasNext()) {
-//			logger.log(Level.INFO, extendSmvScanner.nextLine());
-//		}
-//		extendSmvScanner.close();
-		
+		for (PropertyPackage propertyPackage : propertyPackages) {
+			List<CommentableStateFormula> formulas = propertyPackage.getFormulas();
+			for (CommentableStateFormula formula : formulas) {
+				LtlQueryAdapter adapter = new LtlQueryAdapter();
+				
+				String serializedFormula = nuXmvPropertySerializer.serialize(formula);
+				String tle = adapter.adaptLtlOrInvariantQueryToReachability(serializedFormula); // LTL invariant property (G ..)
+				
+				String generateFaultTreeCommand = 
+						"set on_failure_script_quits" + System.lineSeparator()
+						+ "set input_file \"" + extendedSmvPath + "\"" + System.lineSeparator()
+						+ "set sa_compass" + System.lineSeparator()
+						+ "set sa_compass_task_file \"" + fmsXmlPath + "\"" + System.lineSeparator()
+						+ "go_msat" + System.lineSeparator()
+						+ "compute_fault_tree_msat_bmc -o \"" + outputPath + "\" -t \"" + tle + "\"" + System.lineSeparator()
+						+ "quit";
+				
+						File generateFaultTreeCommandFile = new File(targetFolderUri + File.separator + "generate_ft_" + extensionlessFileName + ".cmd");
+						fileUtil.saveString(generateFaultTreeCommandFile, generateFaultTreeCommand);
+						generateFaultTreeCommandFile.deleteOnExit();
+						
+						String[] generateFaultTreeCmdCommand = new String[] { "xSAP-win64", "-source", generateFaultTreeCommandFile.getAbsolutePath() };
+						logger.log(Level.INFO, "Issuing command: " + List.of(generateFaultTreeCmdCommand).stream().reduce("", ( (a, b) -> a + " " + b)));
+						Process generateFaultTreeProcess = Runtime.getRuntime().exec(generateFaultTreeCmdCommand);
+						
+						Scanner generateFaultTreeScanner = new Scanner(generateFaultTreeProcess.errorReader()); // Nothing is published to  stdout
+						while (generateFaultTreeScanner.hasNext()) {
+							logger.log(Level.INFO, generateFaultTreeScanner.nextLine());
+						}
+						generateFaultTreeScanner.close();
+			}
+		}
 	}
 
 	protected Entry<String, String> generateXsapFiles(FaultTreeGeneration faultTreeGeneration) throws IOException {
@@ -129,6 +148,7 @@ public class FaultTreeGenerationHandler extends TaskHandler {
 			
 			File extendSmvCommandFile = new File(targetFolderUri + File.separator + "extend_" + feiFileNameExtensionless + ".cmd");
 			fileUtil.saveString(extendSmvCommandFile, extendSmvCommand);
+			extendSmvCommandFile.deleteOnExit();
 			
 			String[] extendSmvCmdCommand = new String[] { "xSAP-win64", "-source", extendSmvCommandFile.getAbsolutePath() };
 			logger.log(Level.INFO, "Issuing command: " + List.of(extendSmvCmdCommand).stream().reduce("", ( (a, b) -> a + " " + b)));
@@ -158,6 +178,5 @@ public class FaultTreeGenerationHandler extends TaskHandler {
 			fileNames.add(fileName);
 		}
 	}
-	
 	
 }
