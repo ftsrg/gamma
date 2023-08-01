@@ -56,6 +56,7 @@ import hu.bme.mit.gamma.genmodel.model.Coverage;
 import hu.bme.mit.gamma.genmodel.model.EventMapping;
 import hu.bme.mit.gamma.genmodel.model.EventPriorityTransformation;
 import hu.bme.mit.gamma.genmodel.model.FaultTreeGeneration;
+import hu.bme.mit.gamma.genmodel.model.FmeaTableGeneration;
 import hu.bme.mit.gamma.genmodel.model.GenModel;
 import hu.bme.mit.gamma.genmodel.model.GenmodelModelPackage;
 import hu.bme.mit.gamma.genmodel.model.InterfaceCompilation;
@@ -984,6 +985,33 @@ public class GenmodelValidator extends ExpressionModelValidator {
 					new ReferenceInfo(GenmodelModelPackage.Literals.STATECHART_CONTRACT_GENERATION__SCENARIO,
 							statechartGeneration)));
 		}
+		return validationResultMessages;
+	}
+	
+	//
+	
+	public Collection<ValidationResultMessage> checkFmeaTableGeneration(
+			FmeaTableGeneration fmeaTableGeneration) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		
+		Expression cardinality = fmeaTableGeneration.getCardinality();
+		if (cardinality == null) {
+			return validationResultMessages;
+		}
+		
+		try {
+			int value = expressionEvaluator.evaluateInteger(cardinality);
+			if (value < 1) {
+				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+					"The cardinality must be a positive integer value",
+						new ReferenceInfo(GenmodelModelPackage.Literals.FMEA_TABLE_GENERATION__CARDINALITY)));
+			}
+		} catch (IllegalArgumentException e) {
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+				"The cardinality must be a positive integer value",
+					new ReferenceInfo(GenmodelModelPackage.Literals.FMEA_TABLE_GENERATION__CARDINALITY)));
+		}
+		
 		return validationResultMessages;
 	}
 	

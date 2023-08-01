@@ -26,10 +26,13 @@ import org.eclipse.emf.ecore.EObject;
 import hu.bme.mit.gamma.genmodel.derivedfeatures.GenmodelDerivedFeatures;
 import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
 import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation;
-import hu.bme.mit.gamma.genmodel.model.FaultTreeGeneration;
+import hu.bme.mit.gamma.genmodel.model.SafetyAssessment;
+import hu.bme.mit.gamma.property.model.CommentableStateFormula;
+import hu.bme.mit.gamma.property.model.PropertyPackage;
 import hu.bme.mit.gamma.querygenerator.serializer.NuxmvPropertySerializer;
+import hu.bme.mit.gamma.verification.util.AbstractVerifier.LtlQueryAdapter;
 
-public class SafetyAssessmentHandler extends TaskHandler {
+public abstract class SafetyAssessmentHandler extends TaskHandler {
 	
 	protected final NuxmvPropertySerializer nuXmvPropertySerializer = NuxmvPropertySerializer.INSTANCE;
 	
@@ -39,14 +42,69 @@ public class SafetyAssessmentHandler extends TaskHandler {
 		super(file);
 	}
 	
-	protected Entry<String, String> generateXsapFiles(FaultTreeGeneration faultTreeGeneration) throws IOException {
-		AnalysisModelTransformation analysisModelTransformation = faultTreeGeneration.getAnalysisModelTransformation();
+	//
+	
+	public void execute(SafetyAssessment safetyAssessment) throws IOException {
+		setTargetFolder(safetyAssessment);
+		setSafetyAssessment(safetyAssessment);
+		
+		Entry<String, String> xSapFiles = generateXsapFiles(safetyAssessment);
+		String fmsXmlPath = xSapFiles.getKey();
+		String extendedSmvPath = xSapFiles.getValue();
+		
+		String extensionlessFileName = safetyAssessment.getFileName().get(0);
+		final String outputPath = targetFolderUri + File.separator + extensionlessFileName + ".txt";
+		
+		List<PropertyPackage> propertyPackages = safetyAssessment.getPropertyPackages();
+		for (PropertyPackage propertyPackage : propertyPackages) {
+			List<CommentableStateFormula> formulas = propertyPackage.getFormulas();
+			for (CommentableStateFormula formula : formulas) {
+				LtlQueryAdapter adapter = new LtlQueryAdapter();
+				
+				String serializedFormula = nuXmvPropertySerializer.serialize(formula);
+				String tle = adapter.adaptLtlOrInvariantQueryToReachability(serializedFormula); // TLE - reachability property without operators
+				
+				String generateFaultTreeCommand = 
+						"set on_failure_script_quits" + System.lineSeparator()
+						+ "set input_file \"" + extendedSmvPath + "\"" + System.lineSeparator()
+						+ "set sa_compass" + System.lineSeparator()
+						+ "set sa_compass_task_file \"" + fmsXmlPath + "\"" + System.lineSeparator()
+						+ "go_msat" + System.lineSeparator()
+						+  getCommand() + " -o \"" + outputPath + "\" -t \"" + tle + "\"" + System.lineSeparator()
+						+ "quit";
+				
+						File generateFaultTreeCommandFile = new File(targetFolderUri + File.separator +
+								getCommandFileNamePrefix() + "_" + extensionlessFileName + ".cmd");
+						fileUtil.saveString(generateFaultTreeCommandFile, generateFaultTreeCommand);
+						generateFaultTreeCommandFile.deleteOnExit();
+						
+						String[] generateFaultTreeCmdCommand = new String[] { "xSAP-win64", "-source", generateFaultTreeCommandFile.getAbsolutePath() };
+						logger.log(Level.INFO, "Issuing command: " + List.of(generateFaultTreeCmdCommand).stream().reduce("", ( (a, b) -> a + " " + b)));
+						Process generateFaultTreeProcess = Runtime.getRuntime().exec(generateFaultTreeCmdCommand);
+						
+						Scanner generateFaultTreeScanner = new Scanner(generateFaultTreeProcess.errorReader()); // Nothing is published to  stdout
+						while (generateFaultTreeScanner.hasNext()) {
+							logger.log(Level.INFO, generateFaultTreeScanner.nextLine());
+						}
+						generateFaultTreeScanner.close();
+			}
+		}
+	}
+	
+	abstract String getCommand();
+	
+	abstract String getCommandFileNamePrefix();
+	
+	//
+	
+	protected Entry<String, String> generateXsapFiles(SafetyAssessment safetyAssessment) throws IOException {
+		AnalysisModelTransformation analysisModelTransformation = safetyAssessment.getAnalysisModelTransformation();
 		
 		checkArgument(analysisModelTransformation.getLanguages().stream().allMatch(it -> it == AnalysisLanguage.NUXMV));
 		
-		List<String> faultExtensionInstructionsFile = faultTreeGeneration.getFaultExtensionInstructionsFile();
+		List<String> faultExtensionInstructionsFile = safetyAssessment.getFaultExtensionInstructionsFile();
 		int feiSize = faultExtensionInstructionsFile.size();
-		List<String> faultModesFile = faultTreeGeneration.getFaultModesFile();
+		List<String> faultModesFile = safetyAssessment.getFaultModesFile();
 		int fmSize = faultModesFile.size();
 		
 		checkArgument(feiSize * fmSize == 0 && feiSize + fmSize == 1);
@@ -61,7 +119,7 @@ public class SafetyAssessmentHandler extends TaskHandler {
 		// Handling the fei and fm models
 		if (feiSize == 1) {
 			String feiFile = faultExtensionInstructionsFile.get(0);
-			File feiPath = super.exporeRelativeFile(faultTreeGeneration, feiFile);
+			File feiPath = super.exporeRelativeFile(safetyAssessment, feiFile);
 			String feiFileNameExtensionless = fileUtil.getExtensionlessName(feiPath);
 			// We have to transform the fei into an fm file with the 'extend_model' exe
 			// extend_model [-h] [--xml-fei] [--verbose] [-p PATH] [-d PATH] FEI-FILE
@@ -118,12 +176,12 @@ public class SafetyAssessmentHandler extends TaskHandler {
 
 	//
 	
-	protected void setSafetyAssessment(FaultTreeGeneration faultTreeGeneration) {
-		List<String> fileNames = faultTreeGeneration.getFileName();
+	protected void setSafetyAssessment(SafetyAssessment safetyAssessment) {
+		List<String> fileNames = safetyAssessment.getFileName();
 		checkArgument(fileNames.size() <= 1);
 		if (fileNames.isEmpty()) {
 			EObject sourceModel = GenmodelDerivedFeatures.getModel(
-					faultTreeGeneration.getAnalysisModelTransformation());
+					safetyAssessment.getAnalysisModelTransformation());
 			String fileName = getNameWithoutExtension(
 					getContainingFileName(sourceModel));
 			fileNames.add(fileName);

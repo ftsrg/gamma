@@ -35,6 +35,7 @@ import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation;
 import hu.bme.mit.gamma.genmodel.model.CodeGeneration;
 import hu.bme.mit.gamma.genmodel.model.EventPriorityTransformation;
 import hu.bme.mit.gamma.genmodel.model.FaultTreeGeneration;
+import hu.bme.mit.gamma.genmodel.model.FmeaTableGeneration;
 import hu.bme.mit.gamma.genmodel.model.GenModel;
 import hu.bme.mit.gamma.genmodel.model.InterfaceCompilation;
 import hu.bme.mit.gamma.genmodel.model.PhaseStatechartGeneration;
@@ -56,6 +57,7 @@ import hu.bme.mit.gamma.ui.taskhandler.AnalysisModelTransformationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.CodeGenerationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.EventPriorityTransformationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.FaultTreeGenerationHandler;
+import hu.bme.mit.gamma.ui.taskhandler.FmeaTableGenerationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.InterfaceCompilationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.OptimizerAndVerificationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.PhaseGenerationHandler;
@@ -257,6 +259,13 @@ public class GammaApi {
 									FaultTreeGenerationHandler handler = new FaultTreeGenerationHandler(file);
 									handler.execute(faultTreeGeneration);
 									logger.log(Level.INFO, "The fault tree generation has been finished");
+								}
+								else if (task instanceof FmeaTableGeneration) {
+									logger.log(Level.INFO, "The FMEA table generation has been started");
+									FmeaTableGeneration fmeaTableGeneration = (FmeaTableGeneration) task;
+									FmeaTableGenerationHandler handler = new FmeaTableGenerationHandler(file);
+									handler.execute(fmeaTableGeneration);
+									logger.log(Level.INFO, "The FMEA table generation has been finished");
 								}
 							}
 							// Iteration end

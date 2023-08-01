@@ -41,7 +41,7 @@ Task returns Task:
 		EventPriorityTransformation | AdaptiveContractTestGeneration |
 		AdaptiveBehaviorConformanceChecking | PhaseStatechartGeneration |
 		Verification | TraceReplayModelGeneration | Slicing | StatechartContractTestGeneration |
-		StatechartContractGeneration | TraceGeneration  | FaultTreeGeneration
+		StatechartContractGeneration | TraceGeneration  | FaultTreeGeneration | FmeaTableGeneration
 ;
 
 YakinduCompilation returns YakinduCompilation:
@@ -434,6 +434,20 @@ FaultTreeGeneration returns FaultTreeGeneration:
 	'fault-tree-generation' '{'
 		analysisModelTransformation=AnalysisModelTransformation
 		(
+			'folder' ':' targetFolder+=STRING |
+			'file-name' ':' fileName+=STRING |
+			'fault-extension-instructions-file' ':' faultExtensionInstructionsFile+=STRING |
+			'fault-modes-file' ':' faultModesFile+=STRING |
+			'property-file' ':' propertyPackages+=[property::PropertyPackage | STRING] // Property models
+		)*
+	'}'
+;
+
+FmeaTableGeneration returns FmeaTableGeneration:
+	'fmea-table-generation' '{'
+		analysisModelTransformation=AnalysisModelTransformation
+		(
+			'cardinality' ':' cardinality=Expression |
 			'folder' ':' targetFolder+=STRING |
 			'file-name' ':' fileName+=STRING |
 			'fault-extension-instructions-file' ':' faultExtensionInstructionsFile+=STRING |

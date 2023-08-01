@@ -300,4 +300,8 @@
         eType="ecore:EClass ../../hu.bme.mit.gamma.property.model/model/property.ecore#//PropertyPackage"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="FaultTreeGeneration" eSuperTypes="#//SafetyAssessment"/>
+  <eClassifiers xsi:type="ecore:EClass" name="FmeaTableGeneration" eSuperTypes="#//SafetyAssessment">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="cardinality" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
+        containment="true"/>
+  </eClassifiers>
 </ecore:EPackage>
