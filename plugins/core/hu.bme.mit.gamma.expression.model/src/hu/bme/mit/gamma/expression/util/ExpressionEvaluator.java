@@ -99,6 +99,13 @@ public class ExpressionEvaluator {
 			IntegerLiteralExpression integerLiteralExpression = (IntegerLiteralExpression) expression;
 			return integerLiteralExpression.getValue().intValue();
 		}
+		if (expression instanceof EnumerationLiteralExpression) {
+			EnumerationLiteralExpression enumerationLiteralExpression = (EnumerationLiteralExpression) expression;
+			EnumerationLiteralDefinition enumLiteral = enumerationLiteralExpression.getReference();
+			EnumerationTypeDefinition type = (EnumerationTypeDefinition) enumLiteral.eContainer();
+			List<EnumerationLiteralDefinition> literals = type.getLiterals();
+			return literals.indexOf(enumLiteral);
+		}
 		if (expression instanceof ArrayAccessExpression) {
 			ArrayAccessExpression arrayAccessExpression = (ArrayAccessExpression) expression;
 			Expression index = arrayAccessExpression.getIndex();
@@ -106,14 +113,10 @@ public class ExpressionEvaluator {
 			if (operand instanceof ArrayLiteralExpression) {
 				ArrayLiteralExpression arrayLiteralExpression = (ArrayLiteralExpression) operand;
 				List<Expression> operands = arrayLiteralExpression.getOperands();
-				return evaluateInteger(operands.get(evaluateInteger(index)));
+				return evaluateInteger(
+						operands.get(
+								evaluateInteger(index)));
 			}
-		}
-		if (expression instanceof EnumerationLiteralExpression) {
-			EnumerationLiteralExpression enumerationLiteralExpression = (EnumerationLiteralExpression) expression;
-			EnumerationLiteralDefinition enumLiteral = enumerationLiteralExpression.getReference();
-			EnumerationTypeDefinition type = (EnumerationTypeDefinition) enumLiteral.eContainer();
-			return type.getLiterals().indexOf(enumLiteral);
 		}
 		if (expression instanceof MultiplyExpression) {
 			MultiplyExpression multiplyExpression = (MultiplyExpression) expression;
@@ -219,7 +222,7 @@ public class ExpressionEvaluator {
 		
 		// if the expression is left inclusive we leave the lhs as is, if exclusive we have to increase the lhs by 1
 		// similarly if the expression is right inclusive we have to increase the rhs by 1, if exlusive we can leave as is
-		for (int i = (evaluate(lhs)+(expression.isLeftInclusive() ? 0 : 1)) ; i < (evaluate(rhs)+(expression.isRightInclusive() ? 1 : 0)); i++ ) {
+		for (int i = (evaluate(lhs) + (expression.isLeftInclusive() ? 0 : 1)); i < (evaluate(rhs) + (expression.isRightInclusive() ? 1 : 0)); i++) {
 			range.add(i);
 		}
 		
@@ -260,7 +263,20 @@ public class ExpressionEvaluator {
 		if (expression instanceof EnumerationLiteralExpression) {
 			EnumerationLiteralDefinition enumLiteral = ((EnumerationLiteralExpression) expression).getReference();
 			EnumerationTypeDefinition type = (EnumerationTypeDefinition) enumLiteral.eContainer();
-			return (double) type.getLiterals().indexOf(enumLiteral);
+			List<EnumerationLiteralDefinition> literals = type.getLiterals();
+			return (double) literals.indexOf(enumLiteral);
+		}
+		if (expression instanceof ArrayAccessExpression) {
+			ArrayAccessExpression arrayAccessExpression = (ArrayAccessExpression) expression;
+			Expression index = arrayAccessExpression.getIndex();
+			Expression operand = arrayAccessExpression.getOperand();
+			if (operand instanceof ArrayLiteralExpression) {
+				ArrayLiteralExpression arrayLiteralExpression = (ArrayLiteralExpression) operand;
+				List<Expression> operands = arrayLiteralExpression.getOperands();
+				return evaluateDecimal(
+						operands.get(
+								evaluateInteger(index)));
+			}
 		}
 		if (expression instanceof MultiplyExpression) {
 			final MultiplyExpression multiplyExpression = (MultiplyExpression) expression;
@@ -333,6 +349,18 @@ public class ExpressionEvaluator {
 		}
 		if (expression instanceof FalseExpression) {
 			return false;
+		}
+		if (expression instanceof ArrayAccessExpression) {
+			ArrayAccessExpression arrayAccessExpression = (ArrayAccessExpression) expression;
+			Expression index = arrayAccessExpression.getIndex();
+			Expression operand = arrayAccessExpression.getOperand();
+			if (operand instanceof ArrayLiteralExpression) {
+				ArrayLiteralExpression arrayLiteralExpression = (ArrayLiteralExpression) operand;
+				List<Expression> operands = arrayLiteralExpression.getOperands();
+				return evaluateBoolean(
+						operands.get(
+								evaluateInteger(index)));
+			}
 		}
 		if (expression instanceof AndExpression) {
 			AndExpression andExpression = (AndExpression) expression;
@@ -597,9 +625,9 @@ public class ExpressionEvaluator {
 
 	protected List<EqualityExpression> filterReferenceEqualityExpressions(
 			Collection<EqualityExpression> expressions) {
-		return expressions.stream().filter(
-				it -> it.getLeftOperand() instanceof ReferenceExpression
-				&& !(it.getRightOperand() instanceof ReferenceExpression))
+		return expressions.stream().filter(it -> 
+				it.getLeftOperand() instanceof ReferenceExpression &&
+					!(it.getRightOperand() instanceof ReferenceExpression))
 			.collect(Collectors.toList());
 	}
 	
