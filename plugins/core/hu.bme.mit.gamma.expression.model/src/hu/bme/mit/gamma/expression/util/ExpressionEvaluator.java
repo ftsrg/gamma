@@ -23,6 +23,8 @@ import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeature
 import hu.bme.mit.gamma.expression.model.AddExpression;
 import hu.bme.mit.gamma.expression.model.AndExpression;
 import hu.bme.mit.gamma.expression.model.ArgumentedElement;
+import hu.bme.mit.gamma.expression.model.ArrayAccessExpression;
+import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression;
 import hu.bme.mit.gamma.expression.model.BinaryExpression;
 import hu.bme.mit.gamma.expression.model.ConstantDeclaration;
 import hu.bme.mit.gamma.expression.model.DecimalLiteralExpression;
@@ -96,6 +98,16 @@ public class ExpressionEvaluator {
 		if (expression instanceof IntegerLiteralExpression) {
 			IntegerLiteralExpression integerLiteralExpression = (IntegerLiteralExpression) expression;
 			return integerLiteralExpression.getValue().intValue();
+		}
+		if (expression instanceof ArrayAccessExpression) {
+			ArrayAccessExpression arrayAccessExpression = (ArrayAccessExpression) expression;
+			Expression index = arrayAccessExpression.getIndex();
+			Expression operand = arrayAccessExpression.getOperand();
+			if (operand instanceof ArrayLiteralExpression) {
+				ArrayLiteralExpression arrayLiteralExpression = (ArrayLiteralExpression) operand;
+				List<Expression> operands = arrayLiteralExpression.getOperands();
+				return evaluateInteger(operands.get(evaluateInteger(index)));
+			}
 		}
 		if (expression instanceof EnumerationLiteralExpression) {
 			EnumerationLiteralExpression enumerationLiteralExpression = (EnumerationLiteralExpression) expression;
