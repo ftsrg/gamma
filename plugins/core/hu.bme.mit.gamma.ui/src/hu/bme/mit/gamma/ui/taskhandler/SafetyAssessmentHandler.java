@@ -30,16 +30,24 @@ import hu.bme.mit.gamma.genmodel.model.SafetyAssessment;
 import hu.bme.mit.gamma.property.model.CommentableStateFormula;
 import hu.bme.mit.gamma.property.model.PropertyPackage;
 import hu.bme.mit.gamma.querygenerator.serializer.NuxmvPropertySerializer;
+import hu.bme.mit.gamma.util.SystemChecker;
 import hu.bme.mit.gamma.verification.util.AbstractVerifier.LtlQueryAdapter;
 
 public abstract class SafetyAssessmentHandler extends TaskHandler {
 	
+	protected final String xSapCommand;
+	//
+	
 	protected final NuxmvPropertySerializer nuXmvPropertySerializer = NuxmvPropertySerializer.INSTANCE;
+	protected final SystemChecker systemChecker = SystemChecker.INSTANCE;
 	
 	//
 	
 	public SafetyAssessmentHandler(IFile file) {
 		super(file);
+		checkArgument(systemChecker.isWindows() || systemChecker.isUnix());
+		String commandDetail = systemChecker.isWindows() ? "win" : "linux";
+		this.xSapCommand = "xSAP-" + commandDetail + "64";
 	}
 	
 	//
