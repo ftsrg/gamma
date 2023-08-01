@@ -12,14 +12,18 @@ package hu.bme.mit.gamma.xsts.nuxmv.transformation.serializer
 
 import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
 import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition
+import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition
 import hu.bme.mit.gamma.expression.model.RationalTypeDefinition
 import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.expression.model.TypeReference
+import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.util.GammaEcoreUtil
+
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 
 class TypeSerializer {
 		// Singleton
@@ -44,7 +48,17 @@ class TypeSerializer {
 	
 	def dispatch String serializeType(BooleanTypeDefinition type) '''boolean'''
 	
-	def dispatch String serializeType(IntegerTypeDefinition type) '''integer'''
+	def dispatch String serializeType(IntegerTypeDefinition type) {
+		// XSTS does not support native clocks, only annotations 
+		val declaration = type.getContainerOfType(Declaration)
+		if (declaration instanceof VariableDeclaration) {
+			if (declaration.clock) {
+				return 'clock'
+			}
+		}
+		// "Normal" usage
+		return 'integer'
+	}
 	
 	def dispatch String serializeType(RationalTypeDefinition type) '''real'''
 	

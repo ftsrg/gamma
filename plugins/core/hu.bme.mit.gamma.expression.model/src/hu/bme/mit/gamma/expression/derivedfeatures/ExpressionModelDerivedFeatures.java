@@ -205,6 +205,10 @@ public class ExpressionModelDerivedFeatures {
 		return hasAnnotation(variable, ScheduledClockVariableDeclarationAnnotation.class);
 	}
 	
+	public static boolean isRealClock(VariableDeclaration variable) {
+		return isClock(variable) && !isScheduledClock(variable);
+	}
+	
 	public static boolean isInternal(VariableDeclaration variable) {
 		// Derived from an internal parameter (not assignable by the environment, only internal components)
 		return hasAnnotation(variable, InternalVariableDeclarationAnnotation.class);

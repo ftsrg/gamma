@@ -97,6 +97,7 @@ class ModelSerializer {
 //		val optimizedInitializingAction = xSts.initializingAction.optimizeAction
 		
 		val model = '''
+			«xSts.addTimeDomainAnnotation»
 			MODULE main
 			VAR
 				«FOR statefulVariable : statefulVariables»
@@ -137,6 +138,17 @@ class ModelSerializer {
 		'''
 		
 		return model
+	}
+	
+	//
+	
+	protected def addTimeDomainAnnotation(XSTS xSts) {
+		val timeoutGroup = xSts.timeoutGroup
+		val timeoutVariables = timeoutGroup.variables
+		if (timeoutVariables.exists[it.realClock]) {
+			return '@TIME_DOMAIN continuous'
+		}
+		return '' // Same as '@TIME_DOMAIN none'
 	}
 	
 	//
