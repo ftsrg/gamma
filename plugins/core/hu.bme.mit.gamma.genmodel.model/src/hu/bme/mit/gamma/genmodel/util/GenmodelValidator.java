@@ -21,6 +21,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.eclipse.emf.common.util.EList;
+import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.yakindu.base.types.Direction;
 import org.yakindu.base.types.Event;
@@ -111,16 +112,28 @@ public class GenmodelValidator extends ExpressionModelValidator {
 	
 	public Collection<ValidationResultMessage> checkTasks(Task task) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		if (task.getFileName().size() > 1) {
+		
+		List<String> fileNames = task.getFileName();
+		if (fileNames.size() > 1) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-					"At most one file name can be specified",
+				"At most one file name can be specified",
 					new ReferenceInfo(GenmodelModelPackage.Literals.TASK__FILE_NAME)));
 		}
+		for (String fileName : fileNames) {
+			File file = new File(fileName);
+			if (file.getName() != fileName) {
+				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+					"A file name cannot contain file seprators",
+						new ReferenceInfo(GenmodelModelPackage.Literals.TASK__FILE_NAME)));
+			}
+		}
+		
 		if (task.getTargetFolder().size() > 1) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-					"At most one target folder can be specified",
+				"At most one target folder can be specified",
 					new ReferenceInfo(GenmodelModelPackage.Literals.TASK__TARGET_FOLDER)));
 		}
+		
 		return validationResultMessages;
 	}
 	
@@ -990,6 +1003,28 @@ public class GenmodelValidator extends ExpressionModelValidator {
 	
 	//
 	
+	public Collection<ValidationResultMessage> checkSafetyAssessment(SafetyAssessment safetyAssessment) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		
+		AnalysisModelTransformation analysisModelTransformation = safetyAssessment.getAnalysisModelTransformation();
+		List<String> fileName = safetyAssessment.getFileName();
+		boolean noFileGiven = fileName.isEmpty();
+		
+		if (analysisModelTransformation == null && noFileGiven) {
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+				"The safety assessment task must have either an analysis model transformation specification " +
+						"or a file name that refers to the extendable smv model",
+					new ReferenceInfo(safetyAssessment)));
+		}
+		else if (analysisModelTransformation == null && !noFileGiven) {
+			validationResultMessages.addAll(
+					checkRelativeFilePath(safetyAssessment, fileName.get(0),
+							GenmodelModelPackage.Literals.TASK__FILE_NAME));
+		}
+		
+		return validationResultMessages;
+	}
+	
 	public Collection<ValidationResultMessage> checkFmeaTableGeneration(
 			FmeaTableGeneration fmeaTableGeneration) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
@@ -1016,6 +1051,23 @@ public class GenmodelValidator extends ExpressionModelValidator {
 	}
 	
 	//
+	
+	protected Collection<ValidationResultMessage> checkRelativeFilePath(EObject anchor,
+			String relativeFilePath, EStructuralFeature reference) {
+		File file = ecoreUtil.getFile(anchor.eResource());
+		return checkRelativeFilePath(file, relativeFilePath, reference);
+	}
+	
+	protected Collection<ValidationResultMessage> checkRelativeFilePath(File anchor,
+			String relativeFilePath, EStructuralFeature reference) {
+		return checkRelativeFilePaths(anchor, List.of(relativeFilePath), List.of(reference));
+	}
+	
+	protected Collection<ValidationResultMessage> checkRelativeFilePaths(EObject anchor,
+			List<String> relativeFilePaths, List<EStructuralFeature> references) {
+		File file = ecoreUtil.getFile(anchor.eResource());
+		return checkRelativeFilePaths(file, relativeFilePaths, references);
+	}
 	
 	protected Collection<ValidationResultMessage> checkRelativeFilePaths(File anchor,
 			List<String> relativeFilePaths, List<EStructuralFeature> references) {

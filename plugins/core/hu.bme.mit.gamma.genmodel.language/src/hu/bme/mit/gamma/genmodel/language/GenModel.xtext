@@ -431,8 +431,8 @@ PhaseStatechartGeneration returns PhaseStatechartGeneration:
 // Safety assessment
 
 FaultTreeGeneration returns FaultTreeGeneration:
-	'fault-tree-generation' '{'
-		analysisModelTransformation=AnalysisModelTransformation
+	{FaultTreeGeneration} 'fault-tree-generation' '{'
+		(analysisModelTransformation=AnalysisModelTransformation)?
 		(
 			'folder' ':' targetFolder+=STRING |
 			'file-name' ':' fileName+=STRING |
@@ -444,8 +444,8 @@ FaultTreeGeneration returns FaultTreeGeneration:
 ;
 
 FmeaTableGeneration returns FmeaTableGeneration:
-	'fmea-table-generation' '{'
-		analysisModelTransformation=AnalysisModelTransformation
+	{FmeaTableGeneration} 'fmea-table-generation' '{'
+		(analysisModelTransformation=AnalysisModelTransformation)?
 		(
 			'cardinality' ':' cardinality=Expression |
 			'folder' ':' targetFolder+=STRING |

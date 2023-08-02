@@ -22,6 +22,7 @@ import hu.bme.mit.gamma.genmodel.model.FmeaTableGeneration
 import hu.bme.mit.gamma.genmodel.model.GenModel
 import hu.bme.mit.gamma.genmodel.model.InterfaceMapping
 import hu.bme.mit.gamma.genmodel.model.OrchestratingConstraint
+import hu.bme.mit.gamma.genmodel.model.SafetyAssessment
 import hu.bme.mit.gamma.genmodel.model.StatechartCompilation
 import hu.bme.mit.gamma.genmodel.model.StatechartContractGeneration
 import hu.bme.mit.gamma.genmodel.model.Task
@@ -187,6 +188,11 @@ class GenModelValidator extends AbstractGenModelValidator {
 	@Check
 	def checkNegatedInteractionInTestAutomatonGeneration(StatechartContractGeneration statechartContractGeneration) {
 		handleValidationResultMessage(genmodelValidator.checkNegatedInteractionInTestAutomatonGeneration(statechartContractGeneration))
+	}
+	
+	@Check
+	def checkSafetyAssessment(SafetyAssessment safetyAssessment) {
+		handleValidationResultMessage(genmodelValidator.checkSafetyAssessment(safetyAssessment))
 	}
 	
 	@Check

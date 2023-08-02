@@ -60,7 +60,8 @@ public abstract class SafetyAssessmentHandler extends TaskHandler {
 		String fmsXmlPath = xSapFiles.getKey();
 		String extendedSmvPath = xSapFiles.getValue();
 		
-		String extensionlessFileName = safetyAssessment.getFileName().get(0);
+		String fileName = safetyAssessment.getFileName().get(0);
+		String extensionlessFileName = fileUtil.getExtensionlessName(fileName);
 		final String outputPath = targetFolderUri + File.separator + extensionlessFileName + ".txt";
 		
 		List<PropertyPackage> propertyPackages = safetyAssessment.getPropertyPackages();
@@ -86,7 +87,7 @@ public abstract class SafetyAssessmentHandler extends TaskHandler {
 						fileUtil.saveString(generateFaultTreeCommandFile, generateFaultTreeCommand);
 						generateFaultTreeCommandFile.deleteOnExit();
 						
-						String[] generateFaultTreeCmdCommand = new String[] { "xSAP-win64", "-source", generateFaultTreeCommandFile.getAbsolutePath() };
+						String[] generateFaultTreeCmdCommand = new String[] { xSapCommand, "-source", generateFaultTreeCommandFile.getAbsolutePath() };
 						logger.log(Level.INFO, "Issuing command: " + List.of(generateFaultTreeCmdCommand).stream().reduce("", ( (a, b) -> a + " " + b)));
 						Process generateFaultTreeProcess = Runtime.getRuntime().exec(generateFaultTreeCmdCommand);
 						
@@ -106,10 +107,6 @@ public abstract class SafetyAssessmentHandler extends TaskHandler {
 	//
 	
 	protected Entry<String, String> generateXsapFiles(SafetyAssessment safetyAssessment) throws IOException {
-		AnalysisModelTransformation analysisModelTransformation = safetyAssessment.getAnalysisModelTransformation();
-		
-		checkArgument(analysisModelTransformation.getLanguages().stream().allMatch(it -> it == AnalysisLanguage.NUXMV));
-		
 		List<String> faultExtensionInstructionsFile = safetyAssessment.getFaultExtensionInstructionsFile();
 		int feiSize = faultExtensionInstructionsFile.size();
 		List<String> faultModesFile = safetyAssessment.getFaultModesFile();
@@ -117,12 +114,28 @@ public abstract class SafetyAssessmentHandler extends TaskHandler {
 		
 		checkArgument(feiSize * fmSize == 0 && feiSize + fmSize == 1);
 		
-		// Transforming the Gamma model into SMV
+		String smvTargetFolderUri = null;
+		String extensionlessFileName = null;
 		
-		AnalysisModelTransformationHandler analysisModelTransformationHandler = new AnalysisModelTransformationHandler(file);
-		analysisModelTransformationHandler.execute(analysisModelTransformation);
-		
-		String extensionlessFileName = analysisModelTransformation.getFileName().get(0);
+		// Transforming the Gamma model into SMV if analysis model transformation task is added
+		AnalysisModelTransformation analysisModelTransformation = safetyAssessment.getAnalysisModelTransformation();
+		if (analysisModelTransformation != null) {
+			checkArgument(analysisModelTransformation.getLanguages().stream()
+					.allMatch(it -> it == AnalysisLanguage.NUXMV));
+			
+			AnalysisModelTransformationHandler analysisModelTransformationHandler = new AnalysisModelTransformationHandler(file);
+			analysisModelTransformationHandler.execute(analysisModelTransformation);
+			
+			smvTargetFolderUri = analysisModelTransformationHandler.getTargetFolderUri();
+			extensionlessFileName = analysisModelTransformation.getFileName().get(0);
+		}
+		else {
+			// We will try to read it from: targetFolderUri / extensionlessFileName + ".smv";
+			smvTargetFolderUri = targetFolderUri;
+			extensionlessFileName = safetyAssessment.getFileName().get(0);
+		}
+		File relativeFile = new File(extensionlessFileName); // To make sure there do not remain any file separators
+		extensionlessFileName = fileUtil.getExtensionlessName(relativeFile);
 		
 		// Handling the fei and fm models
 		if (feiSize == 1) {
@@ -148,7 +161,7 @@ public abstract class SafetyAssessmentHandler extends TaskHandler {
 			
 			final String prefix = "expanded_";
 			String expandedFmXmlPath = targetFolderUri + File.separator + prefix + feiFileNameExtensionless + ".xml";
-			final String smvFilePath = targetFolderUri + File.separator + extensionlessFileName + ".smv";
+			final String smvFilePath = smvTargetFolderUri + File.separator + extensionlessFileName + ".smv";
 			
 			final String dataSchema = "data" + File.separator + "schema";
 			final String extendedSmvPath = targetFolderUri + File.separator + "extended_" + fileUtil.getFileName(smvFilePath);
@@ -166,7 +179,7 @@ public abstract class SafetyAssessmentHandler extends TaskHandler {
 			fileUtil.saveString(extendSmvCommandFile, extendSmvCommand);
 			extendSmvCommandFile.deleteOnExit();
 			
-			String[] extendSmvCmdCommand = new String[] { "xSAP-win64", "-source", extendSmvCommandFile.getAbsolutePath() };
+			String[] extendSmvCmdCommand = new String[] { xSapCommand, "-source", extendSmvCommandFile.getAbsolutePath() };
 			logger.log(Level.INFO, "Issuing command: " + List.of(extendSmvCmdCommand).stream().reduce("", ( (a, b) -> a + " " + b)));
 			Process extendFmProcess = Runtime.getRuntime().exec(extendSmvCmdCommand);
 			

@@ -38,7 +38,7 @@ public class FmeaTableGenerationHandler extends SafetyAssessmentHandler {
 	
 	@Override
 	String getCommand() {
-		return "compute_fmea_table_msat_bmc -t -N " + cardinality;
+		return "compute_fmea_table_msat_bmc -N " + cardinality;
 	}
 	
 	@Override
