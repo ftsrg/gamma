@@ -33,15 +33,32 @@ class NuxmvVerification extends AbstractVerification {
 		return verifier.verifyQuery(gammaPackage, argument, modelFile, queryFile)
 	}
 	
+	override getDefaultArguments(File modelFile) {
+		if (modelFile.timedModel) {
+			return #[
+				NuxmvVerifier.CHECK_TIMED_LTL // LTL
+//				'timed_check_invar -p' // Invariant properties 
+			]
+		}
+		return getDefaultArguments
+	}
+	
 	override getDefaultArguments() {
 		return #[
-			'check_ltlspec_ic3 -p' // LTL
+			NuxmvVerifier.CHECK_UNTIMED_LTL // LTL
 //			 'check_property_as_invar_ic3 -L' // Invariant properties
 		]
 	}
 	
 	override protected getArgumentPattern() {
 		return ".*" // TODO
+	}
+	
+	//
+	
+	protected def isTimedModel(File modelFile) {
+		val firstLine = fileUtil.loadFirstLine(modelFile).trim
+		return firstLine.startsWith("@TIME_DOMAIN") && firstLine.endsWith("continuous")
 	}
 	
 }

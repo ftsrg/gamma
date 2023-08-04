@@ -150,13 +150,13 @@ public class VerificationHandler extends TaskHandler {
 					throw new IllegalArgumentException("Currently only UPPAAL, Theta, Spin and nuXmv are supported");
 			}
 		}
-		
-		String[] arguments = verificationArguments.isEmpty() ?
-				verificationTask.getDefaultArguments() :
-					verificationArguments.toArray(new String[verificationArguments.size()]);
-		
 		String filePath = verification.getFileName().get(0);
 		File modelFile = new File(filePath);
+		
+		String[] arguments = verificationArguments.isEmpty() ?
+				verificationTask.getDefaultArguments(modelFile) :
+					verificationArguments.toArray(new String[verificationArguments.size()]);
+		
 		boolean isOptimize = verification.isOptimize();
 		
 		// Retrieved traces

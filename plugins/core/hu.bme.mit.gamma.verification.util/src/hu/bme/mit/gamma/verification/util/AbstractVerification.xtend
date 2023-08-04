@@ -34,6 +34,10 @@ abstract class AbstractVerification {
 	abstract def Result execute(File modelFile, File queryFile, String[] arguments) throws InterruptedException
 	abstract def String[] getDefaultArguments()
 	
+	def String[] getDefaultArguments(File modelFile) {
+		return defaultArguments
+	}
+	
 	protected def sanitizeArgument(String argument) {
 		val match = Pattern.matches(getArgumentPattern, argument.trim)
 		if (!match) {

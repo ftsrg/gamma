@@ -19,7 +19,17 @@ import java.util.Scanner
 import java.util.logging.Level
 
 class NuxmvVerifier extends AbstractVerifier {
+	//
+	public static final String CHECK_UNTIMED_LTL = "check_ltlspec_ic3 -p"
+	public static final String CHECK_UNTIMED_LTL_AS_INVAR = "check_property_as_invar_ic3 -L"
 	
+	public static final String CHECK_TIMED_LTL = "timed_check_ltlspec -p"
+	public static final String CHECK_TIMED_INVAR = "timed_check_invar -p"
+	
+	public static final String NUXMV_SETUP_UNTIMED = "go_msat"
+	public static final String NUXMV_SETUP_TIMED = /*"time_setup" + System.lineSeparator +*/ "go_time"
+	
+	//
 	protected final extension FileUtil fileUtil = FileUtil.INSTANCE
 	
 	// save trace to file
@@ -32,10 +42,10 @@ class NuxmvVerifier extends AbstractVerifier {
 		// Adding all the queries to the end of the model file
 		for (singleQuery : query.split(System.lineSeparator).reject[it.nullOrEmpty]) {
 			//
-			val isPropertyConvertible = modelFile.isConvertibleIntoInvariant(singleQuery)
+			val isPropertyConvertible = modelFile.isConvertibleIntoInvariant(singleQuery, parameters)
 			//
-			val possiblyCovertedParameters = (isPropertyConvertible && parameters == "check_ltlspec_ic3 -p") ?
-					"check_property_as_invar_ic3 -L" : parameters
+			val possiblyCovertedParameters = (isPropertyConvertible && parameters == CHECK_UNTIMED_LTL) ?
+					CHECK_UNTIMED_LTL_AS_INVAR : parameters // TODO timed
 			
 			//
 			val newResult = traceability.verifyQuery(possiblyCovertedParameters, modelFile, singleQuery)
@@ -75,15 +85,17 @@ class NuxmvVerifier extends AbstractVerifier {
 		val serializedCommand = '''
 			set on_failure_script_quits
 			set input_file "«modelFile.absolutePath»"
-			go_msat
+			«parameters.setupCommand»
 			set default_trace_plugin 1
 			«modelCheckingCommand»
 			quit
 		'''
 		fileUtil.saveString(commandFile, serializedCommand)
 		
-		// nuXmv -source commands.cmd
-		val nuXmvCommand = #["nuXmv", "-source", commandFile.absolutePath]
+		// nuXmv [-time] -source commands.cmd
+		val commandExtension = parameters.commandLineArgumentExtension
+		val nuXmvCommandExtension = commandExtension.nullOrEmpty ? #[] : #[commandExtension]
+		val nuXmvCommand = #["nuXmv"] + nuXmvCommandExtension + #["-source", commandFile.absolutePath]
 		logger.log(Level.INFO, "Running nuXmv: " + nuXmvCommand.join(" "))
 		
 		var Scanner resultReader = null
@@ -139,7 +151,7 @@ class NuxmvVerifier extends AbstractVerifier {
 	
 	//
 	
-	protected def isConvertibleIntoInvariant(File modelFile, String query) {
+	protected def isConvertibleIntoInvariant(File modelFile, String query, String argument) {
 		val extension queryAdapter = new LtlQueryAdapter // We expect a CTL property
 		//
 		val parentFile = modelFile.parent
@@ -149,14 +161,16 @@ class NuxmvVerifier extends AbstractVerifier {
 		val serializedCommand = '''
 			set on_failure_script_quits
 			set input_file "«modelFile.absolutePath»"
-			go_msat
+			«argument.setupCommand»
 			convert_property_to_invar -l -p "«query.adaptQuery»"
 			show_property -n 0 -F tabular
 			quit
 		'''
 		fileUtil.saveString(commandFile, serializedCommand)
 		
-		val nuXmvCommand = #["nuXmv", "-source", commandFile.absolutePath]
+		val commandExtension = argument.commandLineArgumentExtension
+		val nuXmvCommandExtension = commandExtension.nullOrEmpty ? #[] : #[commandExtension]
+		val nuXmvCommand = #["nuXmv"] + nuXmvCommandExtension + #["-source", commandFile.absolutePath]
 		logger.log(Level.INFO, "Running nuXmv to convert property to invariance: " + nuXmvCommand.join(" "))
 		
 		var Scanner resultReader = null
@@ -191,5 +205,25 @@ class NuxmvVerifier extends AbstractVerifier {
 	}
 	
 	//
+	
+	protected def getSetupCommand(String argument) {
+		switch (argument) {
+			case CHECK_UNTIMED_LTL, case CHECK_UNTIMED_LTL_AS_INVAR:
+				return NUXMV_SETUP_UNTIMED
+			case CHECK_TIMED_LTL, case CHECK_TIMED_INVAR:
+				return NUXMV_SETUP_TIMED
+			default:
+				return NUXMV_SETUP_UNTIMED
+		}
+	}
+	
+	protected def getCommandLineArgumentExtension(String argument) {
+		switch (argument) {
+			case CHECK_TIMED_LTL, case CHECK_TIMED_INVAR:
+				return "-time"
+			default:
+				return ""
+		}
+	}
 	
 }
