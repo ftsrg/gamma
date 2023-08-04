@@ -58,6 +58,8 @@ class ThetaPropertySerializer extends PropertySerializer {
 		}
 		return false
 	}
+	
+	//
 
 	protected def dispatch String serializeFormula(AtomicFormula formula) {
 		return formula.expression.serialize
@@ -72,7 +74,7 @@ class ThetaPropertySerializer extends PropertySerializer {
 	protected def dispatch String serializeFormula(UnaryOperandPathFormula formula) {
 		val operator = formula.operator
 		val operand = formula.operand
-		return '''«operator.transform» «operand.serializeFormula»'''
+		return '''«operator.transform» («operand.serializeFormula»)'''
 	}
 	
 	protected def dispatch String serializeFormula(UnaryOperandLogicalPathFormula formula) {
@@ -83,7 +85,7 @@ class ThetaPropertySerializer extends PropertySerializer {
 		val operator = formula.operator
 		val leftOperand = formula.leftOperand
 		val rightOperand = formula.rightOperand
-		return '''(«leftOperand.serializeFormula» «operator.transform» «rightOperand.serializeFormula»)'''
+		return '''((«leftOperand.serializeFormula») «operator.transform» («rightOperand.serializeFormula»))'''
 	}
 	
 	protected def dispatch String serializeFormula(BinaryOperandLogicalPathFormula formula) {

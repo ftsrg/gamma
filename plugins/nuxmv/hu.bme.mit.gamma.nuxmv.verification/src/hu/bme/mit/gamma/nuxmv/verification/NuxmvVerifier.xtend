@@ -21,7 +21,8 @@ import java.util.logging.Level
 class NuxmvVerifier extends AbstractVerifier {
 	//
 	public static final String CHECK_UNTIMED_LTL = "check_ltlspec_ic3 -p"
-	public static final String CHECK_UNTIMED_LTL_AS_INVAR = "check_property_as_invar_ic3 -L"
+	public static final String CHECK_UNTIMED_INVAR = "check_invar_ic3 -p"
+	public static final String CHECK_UNTIMED_LTL_AS_INVAR = "check_property_as_invar_ic3 -L" // Currently unused
 	
 	public static final String CHECK_TIMED_LTL = "timed_check_ltlspec -p"
 	public static final String CHECK_TIMED_INVAR = "timed_check_invar -p"
@@ -42,13 +43,24 @@ class NuxmvVerifier extends AbstractVerifier {
 		// Adding all the queries to the end of the model file
 		for (singleQuery : query.split(System.lineSeparator).reject[it.nullOrEmpty]) {
 			//
-			val isPropertyConvertible = modelFile.isConvertibleIntoInvariant(singleQuery, parameters)
+			val convertedProperty = modelFile.convertToInvariant(singleQuery, parameters)
+			val isPropertyUnconvertible = convertedProperty.nullOrEmpty
 			//
-			val possiblyCovertedParameters = (isPropertyConvertible && parameters == CHECK_UNTIMED_LTL) ?
-					CHECK_UNTIMED_LTL_AS_INVAR : parameters // TODO timed
+			
+			val possiblyCovertedParameters = if (isPropertyUnconvertible) {
+				parameters
+			} else if (parameters == CHECK_UNTIMED_LTL) {
+				CHECK_UNTIMED_INVAR
+			} else if (parameters == CHECK_TIMED_LTL) {
+				CHECK_TIMED_INVAR
+			} else {
+				parameters
+			}
+			
+			val possiblyConvertedProperty = (isPropertyUnconvertible) ? singleQuery : convertedProperty
 			
 			//
-			val newResult = traceability.verifyQuery(possiblyCovertedParameters, modelFile, singleQuery)
+			val newResult = traceability.verifyQuery(possiblyCovertedParameters, modelFile, possiblyConvertedProperty)
 			//
 			
 			val oldTrace = result?.trace
@@ -108,12 +120,14 @@ class NuxmvVerifier extends AbstractVerifier {
 			// Reading the result of the command
 			resultReader = new Scanner(process.inputReader)
 			
-			val resultPattern = '''.*specification.*is.*'''
+			val resultPattern = '''(.*invariant.*is.*)|(.*specification.*is.*)'''
 			var resultFound = false
 			result  = ThreeStateBoolean.UNDEF
 			while (!resultFound && resultReader.hasNextLine) {
 				val line = resultReader.nextLine
-				logger.log(Level.INFO, "nuXmv: " + line)
+				if (!line.startsWith("***") && !line.nullOrEmpty) { // No header printing
+					logger.log(Level.INFO, "nuXmv: " + line)
+				}
 				if (line.matches(resultPattern)) {
 					resultFound = true
 					if (line.endsWith("true")) {
@@ -126,6 +140,10 @@ class NuxmvVerifier extends AbstractVerifier {
 			}
 			if (!resultFound) {
 				logger.log(Level.SEVERE, "nuXmv could not verify the model with the property: " + query)
+				val errorScanner = new Scanner(process.errorReader)
+				while (errorScanner.hasNext) {
+					logger.log(Level.SEVERE, "nuXmv: " + errorScanner.nextLine)
+				}
 			}
 			result = result.adaptResult
 			//
@@ -151,7 +169,7 @@ class NuxmvVerifier extends AbstractVerifier {
 	
 	//
 	
-	protected def isConvertibleIntoInvariant(File modelFile, String query, String argument) {
+	protected def convertToInvariant(File modelFile, String query, String argument) {
 		val extension queryAdapter = new LtlQueryAdapter // We expect a CTL property
 		//
 		val parentFile = modelFile.parent
@@ -186,19 +204,21 @@ class NuxmvVerifier extends AbstractVerifier {
 			while (!line.startsWith(PROPERTY_START) &&
 					!line.startsWith(PARSING_ERROR) && !line.startsWith(ERROR)) {
 				line = resultReader.nextLine
-				logger.log(Level.OFF, "nuXmv: " + line)
+				if (!line.startsWith("***") && !line.nullOrEmpty) { // No header printing
+					logger.log(Level.INFO, "nuXmv: " + line)
+				}
 			}
 			if (line.startsWith(PROPERTY_START)) {
-//				return line.substring(PROPERTY_START.length)
-				logger.log(Level.INFO, "Property is convertible to safety property: " + line.substring(PROPERTY_START.length))
-				return true
+				val convertedProperty = line.substring(PROPERTY_START.length)
+				logger.log(Level.INFO, "Property is convertible to safety property: " + convertedProperty)
+				return convertedProperty
 			}
 			else {
 				logger.log(Level.INFO, "Property is not convertible to safety property")
-				return false
+				return null
 			}
 		} catch (Exception e) {
-			return false
+			return null
 		} finally {
 			resultReader?.close
 		}

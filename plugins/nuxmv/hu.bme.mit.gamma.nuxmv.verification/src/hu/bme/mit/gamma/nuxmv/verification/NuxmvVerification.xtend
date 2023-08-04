@@ -37,7 +37,7 @@ class NuxmvVerification extends AbstractVerification {
 		if (modelFile.timedModel) {
 			return #[
 				NuxmvVerifier.CHECK_TIMED_LTL // LTL
-//				'timed_check_invar -p' // Invariant properties 
+				// 'timed_check_invar -p' // Invariant properties
 			]
 		}
 		return getDefaultArguments
@@ -46,7 +46,7 @@ class NuxmvVerification extends AbstractVerification {
 	override getDefaultArguments() {
 		return #[
 			NuxmvVerifier.CHECK_UNTIMED_LTL // LTL
-//			 'check_property_as_invar_ic3 -L' // Invariant properties
+			// 'check_property_as_invar_ic3 -L' // Invariant properties
 		]
 	}
 	

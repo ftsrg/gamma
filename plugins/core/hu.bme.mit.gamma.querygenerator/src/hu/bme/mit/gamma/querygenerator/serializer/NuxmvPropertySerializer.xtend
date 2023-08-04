@@ -14,10 +14,10 @@ import hu.bme.mit.gamma.property.model.BinaryOperandLogicalPathFormula
 import hu.bme.mit.gamma.property.model.BinaryOperandPathFormula
 import hu.bme.mit.gamma.property.model.BinaryPathOperator
 import hu.bme.mit.gamma.property.model.PathQuantifier
-import hu.bme.mit.gamma.property.model.StateFormula
-import hu.bme.mit.gamma.property.model.UnaryPathOperator
 import hu.bme.mit.gamma.property.model.QuantifiedFormula
+import hu.bme.mit.gamma.property.model.StateFormula
 import hu.bme.mit.gamma.property.model.UnaryOperandPathFormula
+import hu.bme.mit.gamma.property.model.UnaryPathOperator
 
 class NuxmvPropertySerializer extends ThetaPropertySerializer {
 	//
@@ -60,13 +60,13 @@ class NuxmvPropertySerializer extends ThetaPropertySerializer {
 		val rightOperand = formula.rightOperand.serializeFormula
 		return switch (operator) {
 			case AND: {
-				'''(«leftOperand» & «rightOperand»)'''
+				'''((«leftOperand») & («rightOperand»))'''
 			}
 			case IMPLY: {
 				'''((«leftOperand») -> («rightOperand»))'''
 			}
 			case OR: {
-				'''(«leftOperand» | «rightOperand»)'''
+				'''((«leftOperand») | («rightOperand»))'''
 			}
 			case XOR: {
 				'''((«leftOperand») xor («rightOperand»))'''
@@ -81,7 +81,7 @@ class NuxmvPropertySerializer extends ThetaPropertySerializer {
 		val leftOperand = formula.leftOperand.serializeFormula
 		val rightOperand = formula.rightOperand.serializeFormula
 		
-		return '''(«leftOperand» «operator» «rightOperand»)'''
+		return '''((«leftOperand») «operator» («rightOperand»))'''
 	}
 	
 	//
