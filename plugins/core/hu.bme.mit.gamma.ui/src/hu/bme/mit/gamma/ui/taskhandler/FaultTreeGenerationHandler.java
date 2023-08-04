@@ -20,7 +20,10 @@ public class FaultTreeGenerationHandler extends SafetyAssessmentHandler {
 	
 	@Override
 	String getCommand() {
-		return "compute_fault_tree_msat_bmc";
+//		return "go_msat" + System.lineSeparator() +
+//				"compute_fault_tree_msat_bmc"; // And this line is extended by super
+		return "go_msat" + System.lineSeparator() +
+				"compute_fault_tree_param";
 	}
 
 	@Override

@@ -63,6 +63,7 @@ public abstract class SafetyAssessmentHandler extends TaskHandler {
 		String fileName = safetyAssessment.getFileName().get(0);
 		String extensionlessFileName = fileUtil.getExtensionlessName(fileName);
 		final String outputPath = targetFolderUri + File.separator + extensionlessFileName + ".txt";
+		final File targetFolder = new File(targetFolderUri);
 		
 		List<PropertyPackage> propertyPackages = safetyAssessment.getPropertyPackages();
 		for (PropertyPackage propertyPackage : propertyPackages) {
@@ -78,7 +79,6 @@ public abstract class SafetyAssessmentHandler extends TaskHandler {
 						+ "set input_file \"" + extendedSmvPath + "\"" + System.lineSeparator()
 						+ "set sa_compass" + System.lineSeparator()
 						+ "set sa_compass_task_file \"" + fmsXmlPath + "\"" + System.lineSeparator()
-						+ "go_msat" + System.lineSeparator()
 						+  getCommand() + " -o \"" + outputPath + "\" -t \"" + tle + "\"" + System.lineSeparator()
 						+ "quit";
 				
@@ -89,7 +89,7 @@ public abstract class SafetyAssessmentHandler extends TaskHandler {
 						
 						String[] generateFaultTreeCmdCommand = new String[] { xSapCommand, "-source", generateFaultTreeCommandFile.getAbsolutePath() };
 						logger.log(Level.INFO, "Issuing command: " + List.of(generateFaultTreeCmdCommand).stream().reduce("", ( (a, b) -> a + " " + b)));
-						Process generateFaultTreeProcess = Runtime.getRuntime().exec(generateFaultTreeCmdCommand);
+						Process generateFaultTreeProcess = Runtime.getRuntime().exec(generateFaultTreeCmdCommand, new String[0], targetFolder);
 						
 						Scanner generateFaultTreeScanner = new Scanner(generateFaultTreeProcess.errorReader()); // Nothing is published to  stdout
 						while (generateFaultTreeScanner.hasNext()) {
