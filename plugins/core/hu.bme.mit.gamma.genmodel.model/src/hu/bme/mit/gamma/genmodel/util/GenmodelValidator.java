@@ -1022,6 +1022,21 @@ public class GenmodelValidator extends ExpressionModelValidator {
 							GenmodelModelPackage.Literals.TASK__FILE_NAME));
 		}
 		
+		//
+		
+		List<String> feiFile = safetyAssessment.getFaultExtensionInstructionsFile();
+		boolean notOneFeiFileGiven = feiFile.size() != 1;
+		
+		if (notOneFeiFileGiven) {
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+				"A singel fei file must be specified", new ReferenceInfo(safetyAssessment)));
+		}
+		else {
+			validationResultMessages.addAll(
+					checkRelativeFilePath(safetyAssessment, feiFile.get(0),
+							GenmodelModelPackage.Literals.SAFETY_ASSESSMENT__FAULT_EXTENSION_INSTRUCTIONS_FILE));
+		}
+		
 		return validationResultMessages;
 	}
 	
