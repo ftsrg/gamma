@@ -16,6 +16,7 @@ import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.trace.testgeneration.java.util.TestGeneratorUtil
 import hu.bme.mit.gamma.trace.util.TraceUtil
+import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.util.Collections
 import java.util.List
 import org.eclipse.emf.ecore.resource.ResourceSet
@@ -59,6 +60,7 @@ class TestGenerator {
 	// Auxiliary objects
 	protected final extension TypeSerializer typeSerializer = TypeSerializer.INSTANCE
 	protected final extension TraceUtil traceUtil = TraceUtil.INSTANCE
+	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	
 	/**
 	 * Note that the lists of traces represents a set of behaviors the component must conform to.
@@ -216,11 +218,13 @@ class TestGenerator {
 		for (trace : traces) {
 			val steps = newArrayList
 			steps += trace.steps
-			val nonCycleStepCount = steps.size
 			
-			if (trace.cycle !== null) {
-				// Cycle steps are not handled differently
-				steps += trace.cycle.steps
+			val cycle = trace.cycle
+			if (cycle !== null) {
+				// Cycle steps are not handled differently: we unfold the steps
+				for (var i = 0; i < cycleIterationCount; i++) {
+					steps += cycle.steps.map[it.clone]
+				}
 			}
 			
 			for (step : steps) {
@@ -240,16 +244,7 @@ class TestGenerator {
 					
 				'''
 				
-				val stepIndex = steps.indexOf(step)
-				if (stepIndex == nonCycleStepCount) { // Cycle start if needed
-					builder.append('''for (int i = 0; i < «cycleIterationCount»; i++) {''')
-				}
-				
 				builder.append(testMethod) // Test method is always appended
-				
-				if (stepIndex >= nonCycleStepCount && stepIndex == steps.size - 1) { // Cycle end if needed
-					builder.append('''}''')
-				}
 			}
 		}
 		return builder.toString
