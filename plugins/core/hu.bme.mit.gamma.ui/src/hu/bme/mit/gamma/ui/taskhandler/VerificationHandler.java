@@ -89,7 +89,7 @@ public class VerificationHandler extends TaskHandler {
 		super(file);
 	}
 	
-	public void execute(Verification verification) throws IOException {
+	public List<VerificationResult> execute(Verification verification) throws IOException {
 		// Setting target folder
 		setTargetFolder(verification);
 		//
@@ -199,13 +199,11 @@ public class VerificationHandler extends TaskHandler {
 			ThreeStateBoolean verificationResult = result.getResult();
 			
 			stopwatch.stop();
-			TimeUnit timeUnit = TimeUnit.MILLISECONDS;
-			long elapsed = stopwatch.elapsed(timeUnit);
-			String elapsedString = elapsed + " " + timeUnit;
+			long elapsed = stopwatch.elapsed(TimeUnit.MILLISECONDS);
 			
 			retrievedVerificationResults.add(
 				new VerificationResult(
-					serializedFormula, verificationResult, arguments, elapsedString));
+					serializedFormula, verificationResult, arguments, elapsed));
 			
 			// Checking if some of the unchecked properties are already covered
 			if (trace != null && isOptimize) {
@@ -258,6 +256,8 @@ public class VerificationHandler extends TaskHandler {
 		for (VerificationResult verificationResult : retrievedVerificationResults) {
 			serializer.serialize(targetFolderUri, traceFileName, verificationResult);
 		}
+		
+		return retrievedVerificationResults;
 	}
 	
 	protected Result execute(AbstractVerification verificationTask, File modelFile,
@@ -389,24 +389,23 @@ public class VerificationHandler extends TaskHandler {
 			fileUtil.saveString(resultFolderUri + File.separator + fileName, jsonResult);
 		}
 		
-		@SuppressWarnings("unused")
 		public static class VerificationResult {
 			
-			private String query;
-			private ThreeStateBoolean result;
-			private String[] parameters;
-			private String executionTime;
-			
-			public VerificationResult(String query, ThreeStateBoolean result) {
-				this(query, result, null, null);
-			}
+			public String query;
+			public ThreeStateBoolean result;
+			public String[] parameters;
+			public long executionTimeMS;
+			public String constraint;
+			public String description;
+			public String name;
+			public String subject;
 			
 			public VerificationResult(String query, ThreeStateBoolean result,
-					String[] parameters, String executionTime) {
+					String[] parameters, long executionTimeMS) {
 				this.query = query;
 				this.result = result;
 				this.parameters = parameters;
-				this.executionTime = executionTime;
+				this.executionTimeMS = executionTimeMS;
 			}
 			
 		}
