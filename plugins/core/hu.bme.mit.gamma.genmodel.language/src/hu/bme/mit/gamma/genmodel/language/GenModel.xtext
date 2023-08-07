@@ -437,8 +437,8 @@ FaultTreeGeneration returns FaultTreeGeneration:
 			'folder' ':' targetFolder+=STRING |
 			'file-name' ':' fileName+=STRING |
 			'fault-extension-instructions-file' ':' faultExtensionInstructionsFile+=STRING |
-			'fault-modes-file' ':' faultModesFile+=STRING |
-			'property-file' ':' propertyPackages+=[property::PropertyPackage | STRING] // Property models
+			'fault-modes-file' ':' faultModesFile+=STRING | // Manually created XML (e.g., for debugging)
+			'top-level-event' ':' propertyPackages+=[property::PropertyPackage | STRING] // Property models
 		)*
 	'}'
 ;
@@ -451,8 +451,8 @@ FmeaTableGeneration returns FmeaTableGeneration:
 			'folder' ':' targetFolder+=STRING |
 			'file-name' ':' fileName+=STRING |
 			'fault-extension-instructions-file' ':' faultExtensionInstructionsFile+=STRING |
-			'fault-modes-file' ':' faultModesFile+=STRING |
-			'property-file' ':' propertyPackages+=[property::PropertyPackage | STRING] // Property models
+			'fault-modes-file' ':' faultModesFile+=STRING | // Manually created XML (e.g., for debugging)
+			'top-level-event' ':' propertyPackages+=[property::PropertyPackage | STRING] // Property models
 		)*
 	'}'
 ;
