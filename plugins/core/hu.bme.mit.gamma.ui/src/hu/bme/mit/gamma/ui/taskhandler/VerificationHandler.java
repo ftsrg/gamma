@@ -199,11 +199,16 @@ public class VerificationHandler extends TaskHandler {
 			ThreeStateBoolean verificationResult = result.getResult();
 			
 			stopwatch.stop();
-			long elapsed = stopwatch.elapsed(TimeUnit.MILLISECONDS);
+			long elapsedMS = stopwatch.elapsed(TimeUnit.MILLISECONDS);
 			
-			retrievedVerificationResults.add(
-				new VerificationResult(
-					serializedFormula, verificationResult, arguments, elapsed));
+			VerificationResult resultTemp = new VerificationResult();
+			resultTemp.query = serializedFormula;
+			resultTemp.result = verificationResult;
+			resultTemp.parameters = arguments;
+			resultTemp.executionTimeMS = elapsedMS;
+			resultTemp.traceSvgPath = targetFolderUri + "/" + svgFileName + retrievedVerificationResults.size() + ".svg";			
+			
+			retrievedVerificationResults.add(resultTemp);
 			
 			// Checking if some of the unchecked properties are already covered
 			if (trace != null && isOptimize) {
@@ -390,24 +395,16 @@ public class VerificationHandler extends TaskHandler {
 		}
 		
 		public static class VerificationResult {
+			public String name = "";
+			public String subject = "";
+			public String description = "";
+			public String constraint = "";
 			
-			public String query;
-			public ThreeStateBoolean result;
-			public String[] parameters;
-			public long executionTimeMS;
-			public String constraint;
-			public String description;
-			public String name;
-			public String subject;
-			
-			public VerificationResult(String query, ThreeStateBoolean result,
-					String[] parameters, long executionTimeMS) {
-				this.query = query;
-				this.result = result;
-				this.parameters = parameters;
-				this.executionTimeMS = executionTimeMS;
-			}
-			
+			public String traceSvgPath = "";
+			public long executionTimeMS = -1;			
+			public String query = "";
+			public ThreeStateBoolean result = ThreeStateBoolean.UNDEF;
+			public String[] parameters = { };
 		}
 		
 	}

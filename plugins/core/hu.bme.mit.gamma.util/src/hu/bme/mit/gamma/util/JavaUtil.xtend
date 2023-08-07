@@ -59,6 +59,10 @@ class JavaUtil {
 		return last
 	}
 	
+	def <T> Iterable<T> exceptLast(Collection<T> collection) {
+		return collection.take(collection.size - 1)
+	}
+	
 	def boolean isUnique(Iterable<?> collection) {
 		val set = newHashSet
 		for (element : collection) {
