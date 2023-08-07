@@ -410,7 +410,7 @@
 	</extension>
 		<extension
 		point="org.eclipse.ui.newWizards">
-		<category id="hu.bme.mit.gamma.statechart.language.ui.category" name="Gamma">
+		<category id="hu.bme.mit.gamma.statechart.language.ui.category" name="Gamma Modeling Project">
 		</category>
 		<wizard
 			category="hu.bme.mit.gamma.statechart.language.ui.category"
