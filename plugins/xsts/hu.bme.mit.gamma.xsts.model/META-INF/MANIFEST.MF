@@ -10,7 +10,7 @@ Require-Bundle: org.eclipse.core.runtime,
 Bundle-ActivationPolicy: lazy
 Bundle-Vendor: BME-FTSRG
 Bundle-Localization: plugin
-Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Export-Package: hu.bme.mit.gamma.xsts.derivedfeatures,
  hu.bme.mit.gamma.xsts.model,
  hu.bme.mit.gamma.xsts.model.impl,

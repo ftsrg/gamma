@@ -6,7 +6,7 @@ Bundle-Version: 0.4.0.qualifier
 Bundle-ClassPath: .
 Bundle-Vendor: Paderborn University
 Bundle-Localization: plugin
-Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Export-Package: de.uni_paderborn.uppaal.derivedfeatures,
  uppaal,
  uppaal.core,

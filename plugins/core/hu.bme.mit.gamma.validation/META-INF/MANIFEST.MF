@@ -12,6 +12,6 @@ Require-Bundle: org.eclipse.viatra.addon.querybasedfeatures.runtime,
  hu.bme.mit.gamma.expression.model,
  hu.bme.mit.gamma.action.model,
  hu.bme.mit.gamma.statechart.model
-Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Automatic-Module-Name: hu.bme.mit.gamma.validation
 Import-Package: org.apache.log4j

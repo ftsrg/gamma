@@ -5,7 +5,7 @@ Bundle-SymbolicName: hu.bme.mit.gamma.serializer.commandhandler;singleton:=true
 Bundle-Version: 2.7.0.qualifier
 Bundle-Vendor: BME-FTSRG
 Automatic-Module-Name: hu.bme.mit.gamma.serializer.commandhandler
-Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Require-Bundle: org.eclipse.ui,
  org.eclipse.emf.ecore,
  org.eclipse.core.resources,
