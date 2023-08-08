@@ -8,15 +8,20 @@
  * 
  * SPDX-License-Identifier: EPL-1.0
  ********************************************************************************/
-package hu.bme.mit.gamma.fei.language
+package hu.bme.mit.gamma.fei.language.serializing
 
-import hu.bme.mit.gamma.fei.language.linking.FaultExtensionLanguageLinker
+import hu.bme.mit.gamma.fei.model.FaultExtensionInstructions
+import hu.bme.mit.gamma.language.util.serialization.GammaLanguageCrossReferenceSerializer
+import hu.bme.mit.gamma.statechart.interface_.Package
 
-class FaultExtensionLanguageRuntimeModule extends AbstractFaultExtensionLanguageRuntimeModule {
-	
-	// Needed for importing
-	override bindILinkingService() {
-		return FaultExtensionLanguageLinker
+class FaultExtensionLanguageCrossReferenceSerializer extends GammaLanguageCrossReferenceSerializer {
+
+	override getContext() {
+		return FaultExtensionInstructions;
 	}
-	
+
+	override getTarget() {
+		return Package;
+	}
+
 }

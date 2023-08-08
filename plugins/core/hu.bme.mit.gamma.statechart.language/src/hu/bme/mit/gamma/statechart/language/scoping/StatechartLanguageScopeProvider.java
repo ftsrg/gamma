@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -23,7 +23,11 @@ import org.eclipse.emf.ecore.EReference;
 import org.eclipse.xtext.scoping.IScope;
 import org.eclipse.xtext.scoping.Scopes;
 import org.eclipse.xtext.scoping.impl.SimpleScope;
+import org.eclipse.xtext.xbase.lib.Functions.Function1;
+import org.eclipse.xtext.xbase.lib.IterableExtensions;
 
+import com.google.common.base.Objects;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
 import hu.bme.mit.gamma.action.model.Action;
@@ -32,11 +36,17 @@ import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
 import hu.bme.mit.gamma.expression.model.FieldDeclaration;
 import hu.bme.mit.gamma.expression.model.ParametricElement;
+import hu.bme.mit.gamma.expression.model.TypeDeclaration;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponent;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance;
 import hu.bme.mit.gamma.statechart.composite.CascadeCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceElementReferenceExpression;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventParameterReferenceExpression;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventReferenceExpression;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.CompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.CompositeModelPackage;
 import hu.bme.mit.gamma.statechart.composite.ControlSpecification;
@@ -62,6 +72,7 @@ import hu.bme.mit.gamma.statechart.phase.InstanceVariableReference;
 import hu.bme.mit.gamma.statechart.phase.MissionPhaseStateAnnotation;
 import hu.bme.mit.gamma.statechart.phase.PhaseModelPackage;
 import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference;
+import hu.bme.mit.gamma.statechart.statechart.CompositeElement;
 import hu.bme.mit.gamma.statechart.statechart.PortEventReference;
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction;
 import hu.bme.mit.gamma.statechart.statechart.Region;
@@ -335,4 +346,106 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 		return super.getFieldDeclarations(operand);
 	}
 
+	//
+	
+	protected IScope handleTypeDeclarationAndComponentInstanceElementReferences(EObject context,
+			EReference reference, Collection<? extends Package> packages, Component component) {
+		IScope typeScope = handleTypeDeclarationReferences(context, reference, packages);
+		if (typeScope != null) {
+			return typeScope;
+		}
+		IScope componentInstanceElementScope = handleComponentInstanceElementReferences(context, reference, component);
+		if (componentInstanceElementScope != null) {
+			return componentInstanceElementScope;
+		}
+		
+		return null;
+	}
+
+	protected IScope handleTypeDeclarationReferences(EObject context, EReference reference,
+			Collection<? extends Package> packages) {
+		boolean _equals = Objects.equal(reference, ExpressionModelPackage.Literals.TYPE_REFERENCE__REFERENCE);
+		if (_equals) {
+			Function1<Package, List<TypeDeclaration>> _function = (Package it) -> {	return it.getTypeDeclarations(); };
+			Iterable<TypeDeclaration> typeDeclarations = Iterables.<TypeDeclaration>concat(IterableExtensions.map(packages, _function));
+			return Scopes.scopeFor(typeDeclarations);
+		}
+		
+		return null;
+	}
+
+	protected IScope handleComponentInstanceElementReferences(EObject context, EReference reference, Component component) {
+		boolean _equals = Objects.equal(reference, CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE_EXPRESSION__COMPONENT_INSTANCE);
+		if (_equals) {
+			ComponentInstanceReferenceExpression instanceContainer = this.ecoreUtil
+					.getSelfOrContainerOfType(context, ComponentInstanceReferenceExpression.class);
+			ComponentInstanceReferenceExpression _parent = null;
+			if (instanceContainer != null) {
+				_parent = StatechartModelDerivedFeatures.getParent(instanceContainer);
+			}
+			ComponentInstanceReferenceExpression parent = _parent;
+			List<ComponentInstance> instances = null;
+			if (parent == null) {
+				instances = StatechartModelDerivedFeatures.getAllInstances(component);
+			}
+			else {
+				instances = StatechartModelDerivedFeatures.getInstances(parent.getComponentInstance());
+			}
+			
+			return Scopes.scopeFor(instances);
+		}
+		if (context instanceof ComponentInstanceElementReferenceExpression) {
+			ComponentInstance instance = StatechartModelDerivedFeatures.getLastInstance(((ComponentInstanceElementReferenceExpression) context).getInstance());
+			Component statechart = StatechartModelDerivedFeatures.getDerivedType(instance);
+			if (statechart != null) {
+				if (statechart instanceof StatechartDefinition) {
+					boolean _equals_1 = Objects.equal(reference, CompositeModelPackage.Literals.COMPONENT_INSTANCE_STATE_REFERENCE_EXPRESSION__REGION);
+					if (_equals_1) {
+						return Scopes.scopeFor(StatechartModelDerivedFeatures.getAllRegions((CompositeElement) statechart));
+					}
+					boolean _equals_2 = Objects.equal(reference, CompositeModelPackage.Literals.COMPONENT_INSTANCE_STATE_REFERENCE_EXPRESSION__STATE);
+					if (_equals_2) {
+						ComponentInstanceStateReferenceExpression stateConfigurationReference = (ComponentInstanceStateReferenceExpression) context;
+						Region region = stateConfigurationReference.getRegion();
+						return Scopes.scopeFor(StatechartModelDerivedFeatures.getStates(region));
+					}
+					boolean _equals_3 = Objects.equal(reference, CompositeModelPackage.Literals.COMPONENT_INSTANCE_VARIABLE_REFERENCE_EXPRESSION__VARIABLE_DECLARATION);
+					if (_equals_3) {
+						return Scopes.scopeFor(((StatechartDefinition) statechart).getVariableDeclarations());
+					}
+					if (Objects.equal(reference, CompositeModelPackage.Literals.COMPONENT_INSTANCE_EVENT_REFERENCE_EXPRESSION__PORT) || 
+						Objects.equal(reference, CompositeModelPackage.Literals.COMPONENT_INSTANCE_EVENT_PARAMETER_REFERENCE_EXPRESSION__PORT)) {
+						return Scopes.scopeFor(((StatechartDefinition) statechart).getPorts());
+					}
+					if (Objects.equal(reference, CompositeModelPackage.Literals.COMPONENT_INSTANCE_EVENT_REFERENCE_EXPRESSION__EVENT) || 
+						Objects.equal(reference, CompositeModelPackage.Literals.COMPONENT_INSTANCE_EVENT_PARAMETER_REFERENCE_EXPRESSION__EVENT)) {
+						if (context instanceof ComponentInstanceEventReferenceExpression) {
+							Port port = ((ComponentInstanceEventReferenceExpression) context).getPort();
+							boolean _eIsProxy = port.eIsProxy();
+							boolean _not = (!_eIsProxy);
+							if (_not) {
+								return Scopes.scopeFor(StatechartModelDerivedFeatures.getOutputEvents(port));
+							}
+						}
+						if (context instanceof ComponentInstanceEventParameterReferenceExpression) {
+							Port port_1 = ((ComponentInstanceEventParameterReferenceExpression) context).getPort();
+							boolean _eIsProxy_1 = port_1.eIsProxy();
+							boolean _not_1 = !_eIsProxy_1;
+							if (_not_1) {
+								return Scopes.scopeFor(StatechartModelDerivedFeatures.getOutputEvents(port_1));
+							}
+						}
+					}
+					boolean _equals_4 = Objects.equal(reference, CompositeModelPackage.Literals.COMPONENT_INSTANCE_EVENT_PARAMETER_REFERENCE_EXPRESSION__PARAMETER_DECLARATION);
+					if (_equals_4) {
+						ComponentInstanceEventParameterReferenceExpression eventParameterReference = (ComponentInstanceEventParameterReferenceExpression) context;
+						return Scopes.scopeFor(eventParameterReference.getEvent().getParameterDeclarations());
+					}
+				}
+			}
+		}
+		
+		return null;
+	}
+	
 }

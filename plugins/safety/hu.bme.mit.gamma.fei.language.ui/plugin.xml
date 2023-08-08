@@ -7,6 +7,7 @@
 			class="hu.bme.mit.gamma.fei.language.ui.FaultExtensionLanguageExecutableExtensionFactory:org.eclipse.xtext.ui.editor.XtextEditor"
 			contributorClass="org.eclipse.ui.editors.text.TextEditorActionContributor"
 			default="true"
+			icon="icons/gamma-icon-16.png"
 			extensions="gfei"
 			id="hu.bme.mit.gamma.fei.language.FaultExtensionLanguage"
 			name="FaultExtensionLanguage Editor">

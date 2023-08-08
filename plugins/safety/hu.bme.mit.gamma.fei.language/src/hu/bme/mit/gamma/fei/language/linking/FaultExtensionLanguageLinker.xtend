@@ -8,15 +8,22 @@
  * 
  * SPDX-License-Identifier: EPL-1.0
  ********************************************************************************/
-package hu.bme.mit.gamma.fei.language
+package hu.bme.mit.gamma.fei.language.linking
 
-import hu.bme.mit.gamma.fei.language.linking.FaultExtensionLanguageLinker
+import hu.bme.mit.gamma.fei.model.FaultExtensionInstructions
+import hu.bme.mit.gamma.fei.model.FeiModelPackage
+import hu.bme.mit.gamma.language.util.linking.GammaLanguageLinker
 
-class FaultExtensionLanguageRuntimeModule extends AbstractFaultExtensionLanguageRuntimeModule {
-	
-	// Needed for importing
-	override bindILinkingService() {
-		return FaultExtensionLanguageLinker
+class FaultExtensionLanguageLinker extends GammaLanguageLinker {
+		
+    public static FeiModelPackage pack = FeiModelPackage.eINSTANCE
+				
+	override getContext() {
+		return newLinkedHashMap(
+			FaultExtensionInstructions -> #[
+				pack.faultExtensionInstructions_Imports
+			]
+		)
 	}
 	
 }

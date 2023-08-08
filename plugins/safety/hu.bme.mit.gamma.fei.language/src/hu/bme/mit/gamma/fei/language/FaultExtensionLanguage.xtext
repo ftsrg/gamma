@@ -18,17 +18,18 @@ import "http://www.mit.bme.hu/gamma/expression/Model" as model
 
 FaultExtensionInstructions returns FaultExtensionInstructions:
 	'import' imports+=[interface::Package | STRING]
-	'component' component=[interface::Component]
+	'fault-extension' name=ID 'for' component=[interface::Component]
 	(faultSlices+=FaultSlice)*
 	(commonCauses=CommonCauses)?
 ;
 
 FaultSlice returns FaultSlice:
-	'slice' name=ID 'affects' (affectedElements+=ComponentInstanceStateExpression)* 'with' (faultModes+=FaultMode)*
+	'slice' name=ID 'affects' affectedElements+=ComponentInstanceStateExpression (',' affectedElements+=ComponentInstanceStateExpression)*
+		'with' (faultModes+=FaultMode)+
 ;
 
 FaultMode returns FaultMode:
-	'mode' name=ID ('('probability=Expression')')? localDynamics=LocalDynamics effect=Effect
+	'mode' name=ID ('('probability=Expression')')? (localDynamics=LocalDynamics)? effect=Effect
 ;
 
 CommonCauses returns CommonCauses:
@@ -49,17 +50,21 @@ StuckAtEffect returns StuckAtEffect:
 		('reference-mode' ':' termReferenceMode=TermReferenceMode)?
 		('occurrence' ':'  occurrence=Occurrence)?
 		('term' term=Expression)
-		('input' ':' input=ComponentInstanceStateExpression)
-		('varout' ':' varout=ComponentInstanceStateExpression)
+		(
+			('input' ':' input=ComponentInstanceStateExpression)
+			('varout' ':' varout=ComponentInstanceStateExpression)
+		)?
 		('failure-event' ':' failureEvent=ComponentInstanceEventReferenceExpression)?
 		(template+=Template)?
 	'}'
 ;
 
 FrozenEffect returns FrozenEffect:
-	'frozen' '{'
-		('input' ':' input=ComponentInstanceStateExpression)
-		('varout' ':' varout=ComponentInstanceStateExpression)
+	{FrozenEffect} 'frozen' '{'
+		(
+			('input' ':' input=ComponentInstanceStateExpression)
+			('varout' ':' varout=ComponentInstanceStateExpression)
+		)?
 		('failure-event' ':' failureEvent=ComponentInstanceEventReferenceExpression)?
 		(template+=Template)?
 	'}'
@@ -71,18 +76,22 @@ NonDeterminismEffect returns NonDeterminismEffect:
 		('occurrence' ':'  occurrence=Occurrence)?
 		('minimum' ':' minimum=Expression)
 		('maximum' ':' maximum=Expression)
-		('input' ':' input=ComponentInstanceStateExpression)
-		('varout' ':' varout=ComponentInstanceStateExpression)
+		(
+			('input' ':' input=ComponentInstanceStateExpression)
+			('varout' ':' varout=ComponentInstanceStateExpression)
+		)?
 		('failure-event' ':' failureEvent=ComponentInstanceEventReferenceExpression)?
 		(template+=Template)?
 	'}'
 ;
 
 NonDeterminismBooleanEffect returns NonDeterminismBooleanEffect:
-	'nondeterminism-boolean' '{'
+	{NonDeterminismBooleanEffect} 'nondeterminism-boolean' '{'
 		('reference-mode' ':' termReferenceMode=TermReferenceMode)?
-		('input' ':' input=ComponentInstanceStateExpression)
-		('varout' ':' varout=ComponentInstanceStateExpression)
+		(
+			('input' ':' input=ComponentInstanceStateExpression)
+			('varout' ':' varout=ComponentInstanceStateExpression)
+		)?
 		('failure-event' ':' failureEvent=ComponentInstanceEventReferenceExpression)?
 		(template+=Template)?
 	'}'
@@ -91,11 +100,13 @@ NonDeterminismBooleanEffect returns NonDeterminismBooleanEffect:
 ConditionalEffect returns ConditionalEffect:
 	'conditional' '{'
 		('occurrence' ':'  occurrence=Occurrence)?
-		('input' ':' input=ComponentInstanceStateExpression)
 		('condition' ':' condition=Expression)
 		('then' ':' then=Expression)
 		('else' ':' else=Expression)
-		('varout' ':' varout=ComponentInstanceStateExpression)
+		(
+			('input' ':' input=ComponentInstanceStateExpression)
+			('varout' ':' varout=ComponentInstanceStateExpression)
+		)?
 		('failure-event' ':' failureEvent=ComponentInstanceEventReferenceExpression)?
 		(template+=Template)?
 	'}'
@@ -105,8 +116,10 @@ RampDownEffect returns RampDownEffect:
 	'ramp-down' '{'
 		('delta' ':' delta=Expression)
 		('bound' ':' bound=Expression)
-		('input' ':' input=ComponentInstanceStateExpression)
-		('varout' ':' varout=ComponentInstanceStateExpression)
+		(
+			('input' ':' input=ComponentInstanceStateExpression)
+			('varout' ':' varout=ComponentInstanceStateExpression)
+		)?
 		('failure-event' ':' failureEvent=ComponentInstanceEventReferenceExpression)?
 		(template+=Template)?
 	'}'
@@ -122,29 +135,35 @@ InvertedEffect returns InvertedEffect:
 ;
 
 StuckAtFixedEffect returns StuckAtFixedEffect:
-	'stuck-at-fixed' '{'
-		('input' ':' input=ComponentInstanceStateExpression)
-		('varout' ':' varout=ComponentInstanceStateExpression)
+	{StuckAtFixedEffect} 'stuck-at-fixed' '{'
+		(
+			('input' ':' input=ComponentInstanceStateExpression)
+			('varout' ':' varout=ComponentInstanceStateExpression)
+		)?
 		('failure-event' ':' failureEvent=ComponentInstanceEventReferenceExpression)?
 		(template+=Template)?
 	'}'
 ;
 
 RandomEffect returns RandomEffect:
-	'random' '{'
+	{RandomEffect} 'random' '{'
 		('reference-mode' ':' termReferenceMode=TermReferenceMode)?
-		('input' ':' input=ComponentInstanceStateExpression)
-		('varout' ':' varout=ComponentInstanceStateExpression)
+		(
+			('input' ':' input=ComponentInstanceStateExpression)
+			('varout' ':' varout=ComponentInstanceStateExpression)
+		)?
 		('failure-event' ':' failureEvent=ComponentInstanceEventReferenceExpression)?
 		(template+=Template)?
 	'}'
 ;
 
 ErroneousEffect returns ErroneousEffect:
-	'erroneous' '{'
+	{ErroneousEffect} 'erroneous' '{'
 		('reference-mode' ':' termReferenceMode=TermReferenceMode)?
-		('input' ':' input=ComponentInstanceStateExpression)
-		('varout' ':' varout=ComponentInstanceStateExpression)
+		(
+			('input' ':' input=ComponentInstanceStateExpression)
+			('varout' ':' varout=ComponentInstanceStateExpression)
+		)?
 		('failure-event' ':' failureEvent=ComponentInstanceEventReferenceExpression)?
 		(template+=Template)?
 	'}'
@@ -154,8 +173,10 @@ DeltaOutEffect returns DeltaOutEffect:
 	'delta-out' '{'
 		('reference-mode' ':' termReferenceMode=TermReferenceMode)?
 		('delta' ':' delta=Expression)
-		('input' ':' input=ComponentInstanceStateExpression)
-		('varout' ':' varout=ComponentInstanceStateExpression)
+		(
+			('input' ':' input=ComponentInstanceStateExpression)
+			('varout' ':' varout=ComponentInstanceStateExpression)
+		)?
 		('failure-event' ':' failureEvent=ComponentInstanceEventReferenceExpression)?
 		(template+=Template)?
 	'}'
@@ -165,8 +186,10 @@ DeltaInRandomEffect returns DeltaInRandomEffect:
 	'delta-in-random' '{'
 		('reference-mode' ':' termReferenceMode=TermReferenceMode)?
 		('delta' ':' delta=Expression)
-		('input' ':' input=ComponentInstanceStateExpression)
-		('varout' ':' varout=ComponentInstanceStateExpression)
+		(
+			('input' ':' input=ComponentInstanceStateExpression)
+			('varout' ':' varout=ComponentInstanceStateExpression)
+		)?
 		('failure-event' ':' failureEvent=ComponentInstanceEventReferenceExpression)?
 		(template+=Template)?
 	'}'
@@ -176,8 +199,10 @@ DeltaInErroneousEffect returns DeltaInErroneousEffect:
 	'delta-in-erroneous' '{'
 		('reference-mode' ':' termReferenceMode=TermReferenceMode)?
 		('delta' ':' delta=Expression)
-		('input' ':' input=ComponentInstanceStateExpression)
-		('varout' ':' varout=ComponentInstanceStateExpression)
+		(
+			('input' ':' input=ComponentInstanceStateExpression)
+			('varout' ':' varout=ComponentInstanceStateExpression)
+		)?
 		('failure-event' ':' failureEvent=ComponentInstanceEventReferenceExpression)?
 		(template+=Template)?
 	'}'
