@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<genmodel:GenModel xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore"
+    xmlns:genmodel="http://www.eclipse.org/emf/2002/GenModel" modelDirectory="/hu.bme.mit.gamma.fei.model/src-gen" modelPluginID="hu.bme.mit.gamma.fei.model"
+    modelName="Fei" rootExtendsClass="org.eclipse.emf.ecore.impl.MinimalEObjectImpl$Container"
+    importerID="org.eclipse.emf.importer.ecore" complianceLevel="17.0" copyrightFields="false"
+    usedGenPackages="../../hu.bme.mit.gamma.action.model/model/action.genmodel#//model ../../hu.bme.mit.gamma.expression.model/model/expression.genmodel#//model ../../hu.bme.mit.gamma.statechart.model/model/statechart.genmodel#//composite ../../hu.bme.mit.gamma.statechart.model/model/statechart.genmodel#//interface ../../hu.bme.mit.gamma.statechart.model/model/statechart.genmodel#//statechart"
+    operationReflection="true" importOrganizing="true">
+  <foreignModel>fei.ecore</foreignModel>
+  <genPackages prefix="FeiModel" basePackage="hu.bme.mit.gamma.fei" disposableProviderFactory="true"
+      fileExtensions="gfe" ecorePackage="fei.ecore#/">
+    <genEnums typeSafeEnumCompatible="false" ecoreEnum="fei.ecore#//Occurrence">
+      <genEnumLiterals ecoreEnumLiteral="fei.ecore#//Occurrence/INSTANTANEOUS"/>
+      <genEnumLiterals ecoreEnumLiteral="fei.ecore#//Occurrence/DELAYED"/>
+    </genEnums>
+    <genEnums typeSafeEnumCompatible="false" ecoreEnum="fei.ecore#//TermReferenceMode">
+      <genEnumLiterals ecoreEnumLiteral="fei.ecore#//TermReferenceMode/REFERENCE"/>
+      <genEnumLiterals ecoreEnumLiteral="fei.ecore#//TermReferenceMode/VALUE"/>
+    </genEnums>
+    <genEnums typeSafeEnumCompatible="false" ecoreEnum="fei.ecore#//LocalDynamics">
+      <genEnumLiterals ecoreEnumLiteral="fei.ecore#//LocalDynamics/PERMANENT"/>
+      <genEnumLiterals ecoreEnumLiteral="fei.ecore#//LocalDynamics/TRANSIENT"/>
+    </genEnums>
+    <genClasses ecoreClass="fei.ecore#//FaultExtensionInstructions">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference fei.ecore#//FaultExtensionInstructions/imports"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference fei.ecore#//FaultExtensionInstructions/component"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference fei.ecore#//FaultExtensionInstructions/faultSlices"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference fei.ecore#//FaultExtensionInstructions/commonCauses"/>
+    </genClasses>
+    <genClasses ecoreClass="fei.ecore#//FaultSlice">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference fei.ecore#//FaultSlice/affectedElements"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference fei.ecore#//FaultSlice/faultModes"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference fei.ecore#//FaultSlice/globalDynamics"/>
+    </genClasses>
+    <genClasses ecoreClass="fei.ecore#//FaultMode">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute fei.ecore#//FaultMode/localDynamics"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference fei.ecore#//FaultMode/effect"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference fei.ecore#//FaultMode/probability"/>
+    </genClasses>
+    <genClasses image="false" ecoreClass="fei.ecore#//Effect">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference fei.ecore#//Effect/input"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference fei.ecore#//Effect/varout"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference fei.ecore#//Effect/failureEvent"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference fei.ecore#//Effect/template"/>
+    </genClasses>
+    <genClasses image="false" ecoreClass="fei.ecore#//NonParametricEffect"/>
+    <genClasses image="false" ecoreClass="fei.ecore#//TermEffect">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference fei.ecore#//TermEffect/term"/>
+    </genClasses>
+    <genClasses image="false" ecoreClass="fei.ecore#//BoundedEffect">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference fei.ecore#//BoundedEffect/minimum"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference fei.ecore#//BoundedEffect/maximum"/>
+    </genClasses>
+    <genClasses image="false" ecoreClass="fei.ecore#//AbstractConditionalEffect">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference fei.ecore#//AbstractConditionalEffect/condition"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference fei.ecore#//AbstractConditionalEffect/then"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference fei.ecore#//AbstractConditionalEffect/else"/>
+    </genClasses>
+    <genClasses image="false" ecoreClass="fei.ecore#//DeltaEffect">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference fei.ecore#//DeltaEffect/delta"/>
+    </genClasses>
+    <genClasses image="false" ecoreClass="fei.ecore#//DeltaUntilBoundEffect">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference fei.ecore#//DeltaUntilBoundEffect/delta"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference fei.ecore#//DeltaUntilBoundEffect/bound"/>
+    </genClasses>
+    <genClasses image="false" ecoreClass="fei.ecore#//OccurrenceSpecificEffect">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute fei.ecore#//OccurrenceSpecificEffect/occurrence"/>
+    </genClasses>
+    <genClasses image="false" ecoreClass="fei.ecore#//TermReferenceSpecificEffect">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute fei.ecore#//TermReferenceSpecificEffect/termReferenceMode"/>
+    </genClasses>
+    <genClasses ecoreClass="fei.ecore#//StuckAtEffect"/>
+    <genClasses ecoreClass="fei.ecore#//FrozenEffect"/>
+    <genClasses ecoreClass="fei.ecore#//NonDeterminismEffect"/>
+    <genClasses ecoreClass="fei.ecore#//NonDeterminismBooleanEffect"/>
+    <genClasses ecoreClass="fei.ecore#//ConditionalEffect"/>
+    <genClasses ecoreClass="fei.ecore#//RampDownEffect"/>
+    <genClasses ecoreClass="fei.ecore#//InvertedEffect"/>
+    <genClasses ecoreClass="fei.ecore#//StuckAtFixedEffect"/>
+    <genClasses ecoreClass="fei.ecore#//RandomEffect"/>
+    <genClasses ecoreClass="fei.ecore#//ErroneousEffect"/>
+    <genClasses ecoreClass="fei.ecore#//DeltaOutEffect"/>
+    <genClasses ecoreClass="fei.ecore#//DeltaInRandomEffect"/>
+    <genClasses ecoreClass="fei.ecore#//DeltaInErroneousEffect"/>
+    <genClasses image="false" ecoreClass="fei.ecore#//Template"/>
+    <genClasses ecoreClass="fei.ecore#//SelfFixTemplate">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference fei.ecore#//SelfFixTemplate/selfFixEvent"/>
+    </genClasses>
+    <genClasses ecoreClass="fei.ecore#//GlobalDynamics"/>
+    <genClasses ecoreClass="fei.ecore#//CommonCauses"/>
+  </genPackages>
+</genmodel:GenModel>

@@ -1,0 +1,31 @@
+Manifest-Version: 1.0
+Automatic-Module-Name: hu.bme.mit.gamma.fei.language
+Bundle-ManifestVersion: 2
+Bundle-Name: Fault Extension Instructions Language
+Bundle-Vendor: BME-FTSRG
+Bundle-Version: 2.9.0.qualifier
+Bundle-SymbolicName: hu.bme.mit.gamma.fei.language; singleton:=true
+Bundle-ActivationPolicy: lazy
+Require-Bundle: org.eclipse.xtext,
+ org.eclipse.xtext.xbase,
+ org.eclipse.equinox.common;bundle-version="3.16.0",
+ hu.bme.mit.gamma.fei.model,
+ hu.bme.mit.gamma.language.util,
+ hu.bme.mit.gamma.expression.language,
+ hu.bme.mit.gamma.action.language,
+ hu.bme.mit.gamma.statechart.language,
+ org.eclipse.xtext.xbase.lib;bundle-version="2.14.0",
+ org.eclipse.xtext.util,
+ org.eclipse.xtend.lib;bundle-version="2.14.0",
+ org.antlr.runtime;bundle-version="[3.2.0,3.2.1)"
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Export-Package: hu.bme.mit.gamma.fei.language.generator,
+ hu.bme.mit.gamma.fei.language.formatting2,
+ hu.bme.mit.gamma.fei.language.parser.antlr,
+ hu.bme.mit.gamma.fei.language.serializer,
+ hu.bme.mit.gamma.fei.language.validation,
+ hu.bme.mit.gamma.fei.language.parser.antlr.internal,
+ hu.bme.mit.gamma.fei.language.services,
+ hu.bme.mit.gamma.fei.language,
+ hu.bme.mit.gamma.fei.language.scoping
+Import-Package: org.apache.log4j

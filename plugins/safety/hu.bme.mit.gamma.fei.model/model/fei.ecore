@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="model" nsURI="http://www.mit.bme.hu/gamma/fei/Model" nsPrefix="hu.bme.mit.gamma.fei.model">
+  <eClassifiers xsi:type="ecore:EClass" name="FaultExtensionInstructions" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NamedElement">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="imports" upperBound="-1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/interface.ecore#//Package"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="component" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/interface.ecore#//Component"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="faultSlices" upperBound="-1"
+        eType="#//FaultSlice" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="commonCauses" eType="#//CommonCauses"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="FaultSlice" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NamedElement">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="affectedElements" lowerBound="1"
+        upperBound="-1" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/composite.ecore#//ComponentInstanceElementReferenceExpression"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="faultModes" lowerBound="1"
+        upperBound="-1" eType="#//FaultMode" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="globalDynamics" eType="#//GlobalDynamics"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="FaultMode" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NamedElement">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="localDynamics" lowerBound="1"
+        eType="#//LocalDynamics" defaultValueLiteral="PERMANENT"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="effect" lowerBound="1"
+        eType="#//Effect" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="probability" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Effect" abstract="true">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="input" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/composite.ecore#//ComponentInstanceElementReferenceExpression"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="varout" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/composite.ecore#//ComponentInstanceElementReferenceExpression"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="failureEvent" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/composite.ecore#//ComponentInstanceEventReferenceExpression"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="template" upperBound="-1"
+        eType="#//Template" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="NonParametricEffect" abstract="true"
+      eSuperTypes="#//Effect"/>
+  <eClassifiers xsi:type="ecore:EClass" name="TermEffect" abstract="true" eSuperTypes="#//Effect">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="term" lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="BoundedEffect" abstract="true" eSuperTypes="#//Effect">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="minimum" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="maximum" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="AbstractConditionalEffect" abstract="true"
+      eSuperTypes="#//Effect">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="condition" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="then" lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="else" lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="DeltaEffect" abstract="true" eSuperTypes="#//Effect">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="delta" lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="DeltaUntilBoundEffect" abstract="true"
+      eSuperTypes="#//Effect">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="delta" lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="bound" lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="OccurrenceSpecificEffect" abstract="true"
+      eSuperTypes="#//Effect">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="occurrence" lowerBound="1"
+        eType="#//Occurrence" defaultValueLiteral="INSTANTANEOUS"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EEnum" name="Occurrence">
+    <eLiterals name="INSTANTANEOUS" literal="INSTANTANEOUS"/>
+    <eLiterals name="DELAYED" value="1"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="TermReferenceSpecificEffect" abstract="true"
+      eSuperTypes="#//Effect">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="termReferenceMode" lowerBound="1"
+        eType="#//TermReferenceMode" defaultValueLiteral="REFERENCE"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EEnum" name="TermReferenceMode">
+    <eLiterals name="REFERENCE"/>
+    <eLiterals name="VALUE" value="1"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="StuckAtEffect" eSuperTypes="#//TermEffect #//TermReferenceSpecificEffect #//OccurrenceSpecificEffect"/>
+  <eClassifiers xsi:type="ecore:EClass" name="FrozenEffect" eSuperTypes="#//NonParametricEffect"/>
+  <eClassifiers xsi:type="ecore:EClass" name="NonDeterminismEffect" eSuperTypes="#//BoundedEffect #//TermReferenceSpecificEffect #//OccurrenceSpecificEffect"/>
+  <eClassifiers xsi:type="ecore:EClass" name="NonDeterminismBooleanEffect" eSuperTypes="#//TermReferenceSpecificEffect"/>
+  <eClassifiers xsi:type="ecore:EClass" name="ConditionalEffect" eSuperTypes="#//AbstractConditionalEffect #//OccurrenceSpecificEffect"/>
+  <eClassifiers xsi:type="ecore:EClass" name="RampDownEffect" eSuperTypes="#//DeltaUntilBoundEffect"/>
+  <eClassifiers xsi:type="ecore:EClass" name="InvertedEffect" eSuperTypes="#//NonParametricEffect"/>
+  <eClassifiers xsi:type="ecore:EClass" name="StuckAtFixedEffect" eSuperTypes="#//NonParametricEffect"/>
+  <eClassifiers xsi:type="ecore:EClass" name="RandomEffect" eSuperTypes="#//TermReferenceSpecificEffect"/>
+  <eClassifiers xsi:type="ecore:EClass" name="ErroneousEffect" eSuperTypes="#//TermReferenceSpecificEffect"/>
+  <eClassifiers xsi:type="ecore:EClass" name="DeltaOutEffect" eSuperTypes="#//DeltaEffect #//TermReferenceSpecificEffect"/>
+  <eClassifiers xsi:type="ecore:EClass" name="DeltaInRandomEffect" eSuperTypes="#//DeltaEffect #//TermReferenceSpecificEffect"/>
+  <eClassifiers xsi:type="ecore:EClass" name="DeltaInErroneousEffect" eSuperTypes="#//DeltaEffect #//TermReferenceSpecificEffect"/>
+  <eClassifiers xsi:type="ecore:EClass" name="Template" abstract="true"/>
+  <eClassifiers xsi:type="ecore:EClass" name="SelfFixTemplate" eSuperTypes="#//Template">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="selfFixEvent" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/composite.ecore#//ComponentInstanceEventReferenceExpression"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EEnum" name="LocalDynamics">
+    <eLiterals name="PERMANENT"/>
+    <eLiterals name="TRANSIENT" value="1"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="GlobalDynamics"/>
+  <eClassifiers xsi:type="ecore:EClass" name="CommonCauses"/>
+</ecore:EPackage>
