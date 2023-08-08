@@ -119,14 +119,14 @@ public class GenmodelValidator extends ExpressionModelValidator {
 				"At most one file name can be specified",
 					new ReferenceInfo(GenmodelModelPackage.Literals.TASK__FILE_NAME)));
 		}
-		for (String fileName : fileNames) {
-			File file = new File(fileName);
-			if (file.getName() != fileName) {
-				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-					"A file name cannot contain file seprators",
-						new ReferenceInfo(GenmodelModelPackage.Literals.TASK__FILE_NAME)));
-			}
-		}
+//		for (String fileName : fileNames) {
+//			File file = new File(fileName);
+//			if (file.getName() != fileName) {
+//				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+//					"A file name cannot contain file seprators",
+//						new ReferenceInfo(GenmodelModelPackage.Literals.TASK__FILE_NAME)));
+//			}
+//		}
 		
 		if (task.getTargetFolder().size() > 1) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
