@@ -101,10 +101,18 @@ class FileUtil {
 	
 	def getFileName(String fileUri) {
 		return fileUri.file.name
+	}
+	
+	def getUnhiddenFileName(String fileUri) {
+		return fileUri.file.name.toUnhiddenFileName
 	} 
 	
 	def getExtensionlessName(File file) {
 		return file.name.extensionlessName
+	}
+	
+	def getUnhiddenExtensionlessName(File file) {
+		return file.name.unhiddenExtensionlessName
 	}
 	
 	def getExtensionlessName(String fileName) {
@@ -113,6 +121,10 @@ class FileUtil {
 			return fileName
 		}
 		return fileName.substring(0, lastIndex)
+	}
+	
+	def getUnhiddenExtensionlessName(String fileName) {
+		return fileName.toUnhiddenFileName.extensionlessName
 	}
 	
 	def getExtension(File file) {

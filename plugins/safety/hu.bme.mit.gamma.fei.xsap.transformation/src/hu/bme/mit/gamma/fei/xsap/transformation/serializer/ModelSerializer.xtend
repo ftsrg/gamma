@@ -10,9 +10,9 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.fei.xsap.transformation.serializer
 
+import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.fei.model.FaultExtensionInstructions
 import hu.bme.mit.gamma.fei.model.FaultMode
-import hu.bme.mit.gamma.querygenerator.serializer.NuxmvPropertyExpressionSerializer
 import hu.bme.mit.gamma.querygenerator.serializer.NuxmvReferenceSerializer
 
 class ModelSerializer {
@@ -21,11 +21,9 @@ class ModelSerializer {
 	protected new() {}
 	//
 	
+	protected final extension ExpressionEvaluator expressionEvaluator = ExpressionEvaluator.INSTANCE
 	protected final extension FaultEffectSerializer faultEffectSerializer = FaultEffectSerializer.INSTANCE
-	
 	protected final extension NuxmvReferenceSerializer referenceSerializer = NuxmvReferenceSerializer.INSTANCE
-	protected final extension NuxmvPropertyExpressionSerializer expressionSerializer =
-			new NuxmvPropertyExpressionSerializer(referenceSerializer) // For probabilities
 	
 	//
 	
@@ -35,7 +33,7 @@ class ModelSerializer {
 			«FOR slice : fei.faultSlices»
 				SLICE «slice.name» AFFECTS «FOR element : slice.affectedElements SEPARATOR ', '»«element.serializeId»«ENDFOR» WITH
 					«FOR mode : slice.faultModes»
-						MODE «mode.name»«IF mode.probability !== null»(«mode.probability.serialize»)«ENDIF» : «mode.serializeLocalDynamics» «mode.effect.serializeEffect»;
+						MODE «mode.name»«IF mode.probability !== null»(«mode.probability.evaluateDecimal»)«ENDIF» : «mode.serializeLocalDynamics» «mode.effect.serializeEffect»;
 					«ENDFOR»
 				««« TODO global dynamics
 			«ENDFOR»

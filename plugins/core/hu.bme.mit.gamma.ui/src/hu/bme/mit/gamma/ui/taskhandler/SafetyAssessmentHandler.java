@@ -61,11 +61,11 @@ public abstract class SafetyAssessmentHandler extends TaskHandler {
 		setSafetyAssessment(safetyAssessment);
 		
 		Entry<String, String> xSapFiles = generateXsapFiles(safetyAssessment);
-		String fmsXmlPath = xSapFiles.getKey();
-		String extendedSmvPath = xSapFiles.getValue();
+		final String fmsXmlPath = xSapFiles.getKey();
+		final String extendedSmvPath = xSapFiles.getValue();
 		
-		String fileName = safetyAssessment.getFileName().get(0);
-		String extensionlessFileName = fileUtil.getExtensionlessName(fileName);
+		final String fileName = safetyAssessment.getFileName().get(0);
+		final String extensionlessFileName = fileUtil.getUnhiddenExtensionlessName(fileName);
 		final String outputPath = targetFolderUri + File.separator + extensionlessFileName + ".txt";
 		final File targetFolder = new File(targetFolderUri);
 		
@@ -86,20 +86,20 @@ public abstract class SafetyAssessmentHandler extends TaskHandler {
 						+  getCommand() + " -o \"" + outputPath + "\" -t \"" + tle + "\"" + System.lineSeparator()
 						+ "quit";
 				
-						File generateFaultTreeCommandFile = new File(targetFolderUri + File.separator +
-								getCommandFileNamePrefix() + "_" + extensionlessFileName + ".cmd");
-						fileUtil.saveString(generateFaultTreeCommandFile, generateFaultTreeCommand);
-						generateFaultTreeCommandFile.deleteOnExit();
-						
-						String[] generateFaultTreeCmdCommand = new String[] { xSapCommand, "-source", generateFaultTreeCommandFile.getAbsolutePath() };
-						logger.log(Level.INFO, "Issuing command: " + List.of(generateFaultTreeCmdCommand).stream().reduce("", ( (a, b) -> a + " " + b)));
-						Process generateFaultTreeProcess = Runtime.getRuntime().exec(generateFaultTreeCmdCommand, new String[0], targetFolder);
-						
-						Scanner generateFaultTreeScanner = new Scanner(generateFaultTreeProcess.errorReader()); // Nothing is published to  stdout
-						while (generateFaultTreeScanner.hasNext()) {
-							logger.log(Level.INFO, generateFaultTreeScanner.nextLine());
-						}
-						generateFaultTreeScanner.close();
+					File generateFaultTreeCommandFile = new File(targetFolderUri + File.separator +
+							fileUtil.toHiddenFileName(getCommandFileNamePrefix() + "_" + extensionlessFileName + ".cmd"));
+					fileUtil.saveString(generateFaultTreeCommandFile, generateFaultTreeCommand);
+					generateFaultTreeCommandFile.deleteOnExit();
+					
+					String[] generateFaultTreeCmdCommand = new String[] { xSapCommand, "-source", generateFaultTreeCommandFile.getAbsolutePath() };
+					logger.log(Level.INFO, "Issuing command: " + List.of(generateFaultTreeCmdCommand).stream().reduce("", ( (a, b) -> a + " " + b)));
+					Process generateFaultTreeProcess = Runtime.getRuntime().exec(generateFaultTreeCmdCommand, new String[0], targetFolder);
+					
+					Scanner generateFaultTreeScanner = new Scanner(generateFaultTreeProcess.errorReader()); // Nothing is published to  stdout
+					while (generateFaultTreeScanner.hasNext()) {
+						logger.log(Level.INFO, generateFaultTreeScanner.nextLine());
+					}
+					generateFaultTreeScanner.close();
 			}
 		}
 	}
@@ -144,7 +144,7 @@ public abstract class SafetyAssessmentHandler extends TaskHandler {
 			
 			Resource safetyAssessmentResource = safetyAssessment.eResource();
 			String parentUri = ecoreUtil.getFile(safetyAssessmentResource).getParent();
-			String gFeiFileName = fileUtil.toHiddenFileName(extensionlessFileName + ".fei");
+			String gFeiFileName = extensionlessFileName + ".fei";
 			String fileUri = parentUri + File.separator + gFeiFileName;
 			File gFeiFile = new File(fileUri);
 			
@@ -160,7 +160,7 @@ public abstract class SafetyAssessmentHandler extends TaskHandler {
 		if (feiSize == 1) {
 			String feiFile = faultExtensionInstructionsFile.get(0);
 			File feiPath = super.exporeRelativeFile(safetyAssessment, feiFile);
-			String feiFileNameExtensionless = fileUtil.getExtensionlessName(feiPath);
+			String feiFileNameExtensionless = fileUtil.getUnhiddenExtensionlessName(feiPath);
 			// We have to transform the fei into an fm file with the 'extend_model' exe
 			// extend_model [-h] [--xml-fei] [--verbose] [-p PATH] [-d PATH] FEI-FILE
 			String xSapHome = System.getenv("XSAP_HOME");
@@ -179,12 +179,13 @@ public abstract class SafetyAssessmentHandler extends TaskHandler {
 			feiProcessScanner.close();
 			
 			final String prefix = "expanded_";
-			String expandedFmXmlPath = targetFolderUri + File.separator + prefix + feiFileNameExtensionless + ".xml";
+			final String expandedFmXmlPath = targetFolderUri + File.separator + prefix + feiFileNameExtensionless + ".xml";
 			final String smvFilePath = smvTargetFolderUri + File.separator + extensionlessFileName + ".smv";
 			
 			final String dataSchema = "data" + File.separator + "schema";
-			final String extendedSmvPath = targetFolderUri + File.separator + "extended_" + fileUtil.getFileName(smvFilePath);
-			final String fmsXmlPath = targetFolderUri + File.separator + "fms_" + fileUtil.getFileName(expandedFmXmlPath).substring(prefix.length());
+			final String extendedSmvPath = targetFolderUri + File.separator + "extended_" + fileUtil.getUnhiddenFileName(smvFilePath);
+			final String fmsXmlPath = targetFolderUri + File.separator + fileUtil.toHiddenFileName(
+					"fms_" + fileUtil.getUnhiddenFileName(expandedFmXmlPath).substring(prefix.length()));
 			
 			String extendSmvCommand = 
 					"set on_failure_script_quits" + System.lineSeparator()
@@ -194,7 +195,7 @@ public abstract class SafetyAssessmentHandler extends TaskHandler {
 					+ "fe_extend_module -m \"" + fmsXmlPath + "\" -o \"" + extendedSmvPath + "\"" + System.lineSeparator()
 					+ "quit";
 			
-			File extendSmvCommandFile = new File(targetFolderUri + File.separator + "extend_" + feiFileNameExtensionless + ".cmd");
+			File extendSmvCommandFile = new File(targetFolderUri + File.separator + fileUtil.toHiddenFileName("extend_" + feiFileNameExtensionless + ".cmd"));
 			fileUtil.saveString(extendSmvCommandFile, extendSmvCommand);
 			extendSmvCommandFile.deleteOnExit();
 			

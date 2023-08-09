@@ -49,7 +49,7 @@ StuckAtEffect returns StuckAtEffect:
 	'stuck-at' '{'
 		('reference-mode' ':' termReferenceMode=TermReferenceMode)?
 		('occurrence' ':'  occurrence=Occurrence)?
-		('term' term=Expression)
+		('term' ':' term=Expression)
 		(
 			('input' ':' input=ComponentInstanceStateExpression)
 			('varout' ':' varout=ComponentInstanceStateExpression)
