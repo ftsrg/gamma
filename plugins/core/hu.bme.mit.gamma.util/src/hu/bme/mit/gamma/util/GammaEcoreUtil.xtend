@@ -626,6 +626,11 @@ class GammaEcoreUtil {
 		return new File(URI.decode(location))
 	}
 	
+	def getFile(EObject object) {
+		val resource = object.eResource
+		return resource.file
+	}
+	
 	def hasPlatformUri(Resource resource) {
 		return resource.URI.isPlatform
 	}

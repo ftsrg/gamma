@@ -27,6 +27,7 @@ import java.util.List
 abstract interface AbstractReferenceSerializer {
 	
 	def String getId(State state, Region parentRegion, ComponentInstanceReferenceExpression instance)
+	def String getId(Region region, ComponentInstanceReferenceExpression instance)
 	def String getId(Event event, Port port, ComponentInstanceReferenceExpression instance)
 	def List<String> getId(VariableDeclaration variable, ComponentInstanceReferenceExpression instance)
 	def List<String> getId(Event event, Port port, ParameterDeclaration parameter,
@@ -36,8 +37,15 @@ abstract interface AbstractReferenceSerializer {
 	
 	def getId(ComponentInstanceElementReferenceExpression reference) {
 		return switch(reference) {
-			ComponentInstanceStateReferenceExpression:
-				getId(reference.state, reference.region, reference.instance)
+			ComponentInstanceStateReferenceExpression: {
+				val state = reference.state
+				if (state === null) {
+					getId(reference.region, reference.instance)
+				}
+				else {
+					getId(state, reference.region, reference.instance)
+				}
+			}
 			ComponentInstanceEventReferenceExpression:
 				getId(reference.event, reference.port, reference.instance)
 			ComponentInstanceVariableReferenceExpression:
@@ -57,6 +65,18 @@ abstract interface AbstractReferenceSerializer {
 			val string = stringOrListId.head
 			return string as String
 		}
+	}
+	
+	def getSingleIdWithoutState(ComponentInstanceElementReferenceExpression reference) {
+		if (reference instanceof ComponentInstanceStateReferenceExpression) {
+			val state = reference.state
+			reference.state = null
+			val id = reference.singleId
+			reference.state = state
+			
+			return id
+		}
+		return reference.singleId
 	}
 	
 }

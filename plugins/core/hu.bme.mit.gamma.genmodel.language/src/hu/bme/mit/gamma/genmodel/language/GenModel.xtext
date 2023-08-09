@@ -10,7 +10,6 @@
  ********************************************************************************/
 grammar hu.bme.mit.gamma.genmodel.language.GenModel with hu.bme.mit.gamma.expression.language.ExpressionLanguage
 
-//import "http://www.eclipse.org/emf/2002/Ecore" as ecore
 import "http://www.mit.bme.hu/gamma/statechart/Model/Statechart" as statechart
 import "http://www.mit.bme.hu/gamma/statechart/Model/Interface" as interface
 import "http://www.mit.bme.hu/gamma/statechart/Model/Composite" as composite
@@ -20,6 +19,7 @@ import "http://www.mit.bme.hu/gamma/property/Model" as property
 import "http://www.mit.bme.hu/gamma/expression/Model" as expression
 import "http://www.mit.bme.hu/gamma/xSTS/Model" as xsts
 import "http://www.mit.bme.hu/gamma/scenario/Model" as scenario
+import "http://www.mit.bme.hu/gamma/fei/Model" as fei
 
 import "http://www.yakindu.org/sct/sgraph/2.0.0" as sgraph
 import "http://www.yakindu.org/sct/statechart/SText" as stext
@@ -437,6 +437,7 @@ FaultTreeGeneration returns FaultTreeGeneration:
 			'folder' ':' targetFolder+=STRING |
 			'file-name' ':' fileName+=STRING |
 			'fault-extension-instructions-file' ':' faultExtensionInstructionsFile+=STRING |
+			'fault-extension-instructions' ':' faultExtensionInstructions=[fei::FaultExtensionInstructions | STRING] |
 			'fault-modes-file' ':' faultModesFile+=STRING | // Manually created XML (e.g., for debugging)
 			'top-level-event' ':' propertyPackages+=[property::PropertyPackage | STRING] // Property models
 		)*
@@ -451,6 +452,7 @@ FmeaTableGeneration returns FmeaTableGeneration:
 			'folder' ':' targetFolder+=STRING |
 			'file-name' ':' fileName+=STRING |
 			'fault-extension-instructions-file' ':' faultExtensionInstructionsFile+=STRING |
+			'fault-extension-instructions' ':' faultExtensionInstructions=[fei::FaultExtensionInstructions | STRING] |
 			'fault-modes-file' ':' faultModesFile+=STRING | // Manually created XML (e.g., for debugging)
 			'top-level-event' ':' propertyPackages+=[property::PropertyPackage | STRING] // Property models
 		)*

@@ -5,7 +5,7 @@
     modelName="Genmodel" rootExtendsClass="org.eclipse.emf.ecore.impl.MinimalEObjectImpl$Container"
     importerID="org.eclipse.emf.importer.ecore" complianceLevel="17.0" copyrightFields="false"
     editPluginID="hu.bme.mit.gamma.genmodel.model.edit" editorPluginID="hu.bme.mit.gamma.genmodel.model.editor"
-    usedGenPackages="../../hu.bme.mit.gamma.action.model/model/action.genmodel#//model ../../org.yakindu.base.types/model/base.genmodel#//base ../../hu.bme.mit.gamma.expression.model/model/expression.genmodel#//model ../../hu.bme.mit.gamma.property.model/model/property.genmodel#//model ../../hu.bme.mit.gamma.scenario.model/model/scenario.genmodel#//model ../../org.yakindu.sct.model.sgraph/model/emf/sgraph.genmodel#//sgraph ../../hu.bme.mit.gamma.statechart.model/model/statechart.genmodel#//composite ../../hu.bme.mit.gamma.statechart.model/model/statechart.genmodel#//interface ../../hu.bme.mit.gamma.statechart.model/model/statechart.genmodel#//statechart ../../org.yakindu.sct.model.stext/model/SText.genmodel#//stext ../../hu.bme.mit.gamma.trace.model/model/trace.genmodel#//model ../../org.yakindu.base.types/model/types.genmodel#//types ../../hu.bme.mit.gamma.xsts.model/model/model.genmodel#//model"
+    usedGenPackages="../../hu.bme.mit.gamma.action.model/model/action.genmodel#//model ../../org.yakindu.base.types/model/base.genmodel#//base ../../hu.bme.mit.gamma.expression.model/model/expression.genmodel#//model ../../hu.bme.mit.gamma.fei.model/model/fei.genmodel#//model ../../hu.bme.mit.gamma.property.model/model/property.genmodel#//model ../../hu.bme.mit.gamma.scenario.model/model/scenario.genmodel#//model ../../org.yakindu.sct.model.sgraph/model/emf/sgraph.genmodel#//sgraph ../../hu.bme.mit.gamma.statechart.model/model/statechart.genmodel#//composite ../../hu.bme.mit.gamma.statechart.model/model/statechart.genmodel#//interface ../../hu.bme.mit.gamma.statechart.model/model/statechart.genmodel#//statechart ../../org.yakindu.sct.model.stext/model/SText.genmodel#//stext ../../hu.bme.mit.gamma.trace.model/model/trace.genmodel#//model ../../org.yakindu.base.types/model/types.genmodel#//types ../../hu.bme.mit.gamma.xsts.model/model/model.genmodel#//model"
     operationReflection="true" importOrganizing="true">
   <foreignModel>genmodel.ecore</foreignModel>
   <genPackages prefix="GenmodelModel" basePackage="hu.bme.mit.gamma.genmodel" disposableProviderFactory="true"
@@ -215,6 +215,7 @@
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//SafetyAssessment/faultExtensionInstructionsFile"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//SafetyAssessment/faultModesFile"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference genmodel.ecore#//SafetyAssessment/propertyPackages"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference genmodel.ecore#//SafetyAssessment/faultExtensionInstructions"/>
     </genClasses>
     <genClasses ecoreClass="genmodel.ecore#//FaultTreeGeneration"/>
     <genClasses ecoreClass="genmodel.ecore#//FmeaTableGeneration">

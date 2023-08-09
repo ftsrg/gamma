@@ -39,7 +39,10 @@ class GenModelLinker extends GammaLanguageLinker {
 				pack.analysisModelTransformation_InitialState
 			],
 			Slicing -> #[pack.slicing_PropertyPackage],
-			SafetyAssessment -> #[pack.safetyAssessment_PropertyPackages]
+			SafetyAssessment -> #[
+				pack.safetyAssessment_PropertyPackages,
+				pack.safetyAssessment_FaultExtensionInstructions
+			]
 		)
 	}
 	

@@ -298,6 +298,8 @@
         eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="propertyPackages" upperBound="-1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.property.model/model/property.ecore#//PropertyPackage"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="faultExtensionInstructions"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.fei.model/model/fei.ecore#//FaultExtensionInstructions"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="FaultTreeGeneration" eSuperTypes="#//SafetyAssessment"/>
   <eClassifiers xsi:type="ecore:EClass" name="FmeaTableGeneration" eSuperTypes="#//SafetyAssessment">

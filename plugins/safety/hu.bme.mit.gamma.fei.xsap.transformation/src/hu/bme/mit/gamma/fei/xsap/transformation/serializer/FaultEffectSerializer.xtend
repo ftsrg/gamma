@@ -30,6 +30,7 @@ import hu.bme.mit.gamma.fei.model.StuckAtFixedEffect
 import hu.bme.mit.gamma.fei.model.Template
 import hu.bme.mit.gamma.fei.model.TermReferenceSpecificEffect
 import hu.bme.mit.gamma.querygenerator.serializer.NuxmvReferenceSerializer
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceElementReferenceExpression
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 
 class FaultEffectSerializer {
@@ -45,8 +46,7 @@ class FaultEffectSerializer {
 	def serializeEffect(Effect effect) '''
 		«effect.serializeNamePrefix»«effect.serializeTermReferenceMode»«effect.serializeOccurrenceMode»«effect.serializeNameSuffix»(
 			«effect.serializeParameters»
-		)
-	'''
+		)'''
 	
 	//
 	
@@ -114,9 +114,9 @@ class FaultEffectSerializer {
 		val failure = effect.failureEvent
 		
 		return '''
-			data input << «IF input !== null»«input.singleId»«ELSE»«affectedElement.singleId»«ENDIF»,
-			data varout >> «IF varout !== null»«varout.singleId»«ELSE»«affectedElement.singleId»«ENDIF»,
-			event failure >> «IF failure !== null»«failure.singleId»«ENDIF /*TODO add some kind of default value*/»
+			data input << «IF input !== null»«input.serializeId»«ELSE»«affectedElement.serializeId»«ENDIF»,
+			data varout >> «IF varout !== null»«varout.serializeId»«ELSE»«affectedElement.serializeId»«ENDIF»,
+			event failure >> «IF failure !== null»«failure.serializeId»«ENDIF /*TODO add some kind of default value*/»
 			«FOR template : effect.template»
 				, «template.serializeTemplate»
 			«ENDFOR»
@@ -132,8 +132,12 @@ class FaultEffectSerializer {
 		
 		return '''
 			template self_fix = self_fixed,
-			event self_fixed >> «IF selfFixEvent !== null»«selfFixEvent.singleId»«ENDIF /*TODO add some kind of default value*/»
+			event self_fixed >> «IF selfFixEvent !== null»«selfFixEvent.serializeId»«ENDIF /*TODO add some kind of default value*/»
 		'''
+	}
+	
+	protected def serializeId(ComponentInstanceElementReferenceExpression reference) {
+		return reference.singleIdWithoutState
 	}
 	
 }

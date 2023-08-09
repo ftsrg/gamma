@@ -109,8 +109,8 @@ class GenModelValidator extends AbstractGenModelValidator {
 	}
 	
 	@Check
-	def checkTasks(FaultTreeGeneration faultTreeGeneration) {
-		handleValidationResultMessage(genmodelValidator.checkTasks(faultTreeGeneration))
+	def checkTasks(SafetyAssessment safetyAssessment) {
+		handleValidationResultMessage(genmodelValidator.checkTasks(safetyAssessment))
 	}
 	
 	// Additional validation rules

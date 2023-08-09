@@ -42,6 +42,7 @@ import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeReference;
 import hu.bme.mit.gamma.expression.util.ExpressionModelValidator;
+import hu.bme.mit.gamma.fei.model.FaultExtensionInstructions;
 import hu.bme.mit.gamma.genmodel.derivedfeatures.GenmodelDerivedFeatures;
 import hu.bme.mit.gamma.genmodel.model.AbstractComplementaryTestGeneration;
 import hu.bme.mit.gamma.genmodel.model.AdaptiveBehaviorConformanceChecking;
@@ -56,7 +57,6 @@ import hu.bme.mit.gamma.genmodel.model.ContractAutomatonType;
 import hu.bme.mit.gamma.genmodel.model.Coverage;
 import hu.bme.mit.gamma.genmodel.model.EventMapping;
 import hu.bme.mit.gamma.genmodel.model.EventPriorityTransformation;
-import hu.bme.mit.gamma.genmodel.model.FaultTreeGeneration;
 import hu.bme.mit.gamma.genmodel.model.FmeaTableGeneration;
 import hu.bme.mit.gamma.genmodel.model.GenModel;
 import hu.bme.mit.gamma.genmodel.model.GenmodelModelPackage;
@@ -123,7 +123,7 @@ public class GenmodelValidator extends ExpressionModelValidator {
 //			File file = new File(fileName);
 //			if (file.getName() != fileName) {
 //				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-//					"A file name cannot contain file seprators",
+//					"A file name cannot contain file separators",
 //						new ReferenceInfo(GenmodelModelPackage.Literals.TASK__FILE_NAME)));
 //			}
 //		}
@@ -418,47 +418,6 @@ public class GenmodelValidator extends ExpressionModelValidator {
 		}
 		// Something is wrong, returning with an error message
 		validationResultMessages.add(validationResultMessage);
-		return validationResultMessages;
-	}
-	
-	public Collection<ValidationResultMessage> checkTasks(FaultTreeGeneration faultTreeGeneration) {
-		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-
-		AnalysisModelTransformation analysisModelTransformation = faultTreeGeneration.getAnalysisModelTransformation();
-		validationResultMessages.addAll(
-				checkTasks(analysisModelTransformation));
-		
-		List<AnalysisLanguage> languages = analysisModelTransformation.getLanguages();
-		if (languages.size() != 1 || languages.stream().anyMatch(it -> it != AnalysisLanguage.NUXMV)) {
-			validationResultMessages.add(
-				new ValidationResultMessage(ValidationResult.ERROR, "Only SMV/nuXmv is supported", 
-					new ReferenceInfo(GenmodelModelPackage.Literals.SAFETY_ASSESSMENT__ANALYSIS_MODEL_TRANSFORMATION)));
-		}
-		
-		List<String> faultExtensionInstructionsFile = faultTreeGeneration.getFaultExtensionInstructionsFile();
-		int feiSize = faultExtensionInstructionsFile.size();
-		List<String> faultModesFile = faultTreeGeneration.getFaultModesFile();
-		int fmSize = faultModesFile.size();
-		
-		if (!(feiSize * fmSize == 0 && feiSize + fmSize == 1)) {
-			validationResultMessages.add(
-					new ValidationResultMessage(ValidationResult.ERROR, "A single fei or fm file must be specified", 
-						new ReferenceInfo(faultTreeGeneration)));
-			return validationResultMessages;
-		}
-		
-		List<String> files = new ArrayList<String>();
-		files.addAll(faultExtensionInstructionsFile);
-		files.addAll(faultModesFile);
-		
-		File resourceFile = ecoreUtil.getFile(faultTreeGeneration.eResource());
-
-		validationResultMessages.addAll(
-				checkRelativeFilePaths(resourceFile, files,
-						List.of(GenmodelModelPackage.Literals.SAFETY_ASSESSMENT__FAULT_EXTENSION_INSTRUCTIONS_FILE,
-								GenmodelModelPackage.Literals.SAFETY_ASSESSMENT__FAULT_MODES_FILE))
-				);
-		
 		return validationResultMessages;
 	}
 	
@@ -1003,6 +962,51 @@ public class GenmodelValidator extends ExpressionModelValidator {
 	
 	//
 	
+	
+	public Collection<ValidationResultMessage> checkTasks(SafetyAssessment safetyAssessment) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+
+		AnalysisModelTransformation analysisModelTransformation = safetyAssessment.getAnalysisModelTransformation();
+		validationResultMessages.addAll(
+				checkTasks(analysisModelTransformation));
+		
+		List<AnalysisLanguage> languages = analysisModelTransformation.getLanguages();
+		if (languages.size() != 1 || languages.stream().anyMatch(it -> it != AnalysisLanguage.NUXMV)) {
+			validationResultMessages.add(
+				new ValidationResultMessage(ValidationResult.ERROR, "Only SMV/nuXmv is supported", 
+					new ReferenceInfo(GenmodelModelPackage.Literals.SAFETY_ASSESSMENT__ANALYSIS_MODEL_TRANSFORMATION)));
+		}
+		
+		List<String> faultExtensionInstructionsFile = safetyAssessment.getFaultExtensionInstructionsFile();
+		int feiSize = faultExtensionInstructionsFile.size();
+		List<String> faultModesFile = safetyAssessment.getFaultModesFile();
+		int fmSize = faultModesFile.size();
+		FaultExtensionInstructions gFei = safetyAssessment.getFaultExtensionInstructions();
+		int gFeiSize = gFei == null ? 0 : 1;
+		
+		if (!(feiSize * fmSize * gFeiSize == 0 && feiSize + fmSize + gFeiSize == 1)) {
+			validationResultMessages.add(
+					new ValidationResultMessage(ValidationResult.ERROR, "A single fei or fm file must be specified", 
+						new ReferenceInfo(safetyAssessment)));
+			return validationResultMessages;
+		}
+		
+		List<String> files = new ArrayList<String>();
+		files.addAll(faultExtensionInstructionsFile);
+		files.addAll(faultModesFile);
+		
+		File resourceFile = ecoreUtil.getFile(safetyAssessment.eResource());
+
+		validationResultMessages.addAll(
+				checkRelativeFilePaths(resourceFile, files,
+						List.of(GenmodelModelPackage.Literals.SAFETY_ASSESSMENT__FAULT_EXTENSION_INSTRUCTIONS_FILE,
+								GenmodelModelPackage.Literals.SAFETY_ASSESSMENT__FAULT_MODES_FILE))
+				);
+		
+		return validationResultMessages;
+	}
+	
+	
 	public Collection<ValidationResultMessage> checkSafetyAssessment(SafetyAssessment safetyAssessment) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		
@@ -1025,13 +1029,16 @@ public class GenmodelValidator extends ExpressionModelValidator {
 		//
 		
 		List<String> feiFile = safetyAssessment.getFaultExtensionInstructionsFile();
-		boolean notOneFeiFileGiven = feiFile.size() != 1;
+		FaultExtensionInstructions feiModel = safetyAssessment.getFaultExtensionInstructions();
+		int feiFileSize = feiFile.size();
+		int feiFilesSize = feiFileSize + (feiModel != null ? 1 : 0);
+		boolean notOneFeiFileGiven = feiFilesSize != 1;
 		
 		if (notOneFeiFileGiven) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-				"A singel fei file must be specified", new ReferenceInfo(safetyAssessment)));
+				"A single fei file must be specified", new ReferenceInfo(safetyAssessment)));
 		}
-		else {
+		else if (feiFileSize > 0) {
 			validationResultMessages.addAll(
 					checkRelativeFilePath(safetyAssessment, feiFile.get(0),
 							GenmodelModelPackage.Literals.SAFETY_ASSESSMENT__FAULT_EXTENSION_INSTRUCTIONS_FILE));
@@ -1092,8 +1099,9 @@ public class GenmodelValidator extends ExpressionModelValidator {
 			String relativeFilePath = relativeFilePaths.get(i);
 			if (!fileUtil.isValidRelativeFile(anchor, relativeFilePath)) {
 				EStructuralFeature reference = references.get(i);
-				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-					"This is not a valid relative path: " + relativeFilePath, new ReferenceInfo(reference)));
+				validationResultMessages.add(
+					new ValidationResultMessage(ValidationResult.ERROR, 
+							"This is not a valid relative path: " + relativeFilePath, new ReferenceInfo(reference)));
 			}
 		}
 		

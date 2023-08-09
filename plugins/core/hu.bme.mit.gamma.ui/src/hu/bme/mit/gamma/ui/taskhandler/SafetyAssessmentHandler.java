@@ -22,7 +22,9 @@ import java.util.logging.Level;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.resource.Resource;
 
+import hu.bme.mit.gamma.fei.model.FaultExtensionInstructions;
 import hu.bme.mit.gamma.genmodel.derivedfeatures.GenmodelDerivedFeatures;
 import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
 import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation;
@@ -38,6 +40,8 @@ public abstract class SafetyAssessmentHandler extends TaskHandler {
 	protected final String xSapCommand;
 	//
 	
+	protected final hu.bme.mit.gamma.fei.xsap.transformation.serializer.ModelSerializer feiSerializer =
+			hu.bme.mit.gamma.fei.xsap.transformation.serializer.ModelSerializer.INSTANCE;
 	protected final NuxmvPropertySerializer nuXmvPropertySerializer = NuxmvPropertySerializer.INSTANCE;
 	protected final SystemChecker systemChecker = SystemChecker.INSTANCE;
 	
@@ -107,13 +111,6 @@ public abstract class SafetyAssessmentHandler extends TaskHandler {
 	//
 	
 	protected Entry<String, String> generateXsapFiles(SafetyAssessment safetyAssessment) throws IOException {
-		List<String> faultExtensionInstructionsFile = safetyAssessment.getFaultExtensionInstructionsFile();
-		int feiSize = faultExtensionInstructionsFile.size();
-		List<String> faultModesFile = safetyAssessment.getFaultModesFile();
-		int fmSize = faultModesFile.size();
-		
-		checkArgument(feiSize * fmSize == 0 && feiSize + fmSize == 1);
-		
 		String smvTargetFolderUri = null;
 		String extensionlessFileName = null;
 		
@@ -138,6 +135,28 @@ public abstract class SafetyAssessmentHandler extends TaskHandler {
 		extensionlessFileName = fileUtil.getExtensionlessName(relativeFile);
 		
 		// Handling the fei and fm models
+		
+		List<String> faultExtensionInstructionsFile = safetyAssessment.getFaultExtensionInstructionsFile();
+		List<String> faultModesFile = safetyAssessment.getFaultModesFile();
+		FaultExtensionInstructions gFeiModel = safetyAssessment.getFaultExtensionInstructions();
+		if (gFeiModel != null) {
+			String serializedGfeiModel = feiSerializer.execute(gFeiModel);
+			
+			Resource safetyAssessmentResource = safetyAssessment.eResource();
+			String parentUri = ecoreUtil.getFile(safetyAssessmentResource).getParent();
+			String gFeiFileName = fileUtil.toHiddenFileName(extensionlessFileName + ".fei");
+			String fileUri = parentUri + File.separator + gFeiFileName;
+			File gFeiFile = new File(fileUri);
+			
+			fileUtil.saveString(gFeiFile, serializedGfeiModel);
+			faultExtensionInstructionsFile.add(gFeiFileName);
+		}
+		
+		int feiSize = faultExtensionInstructionsFile.size();
+		int fmSize = faultModesFile.size();
+		
+		checkArgument(feiSize * fmSize == 0 && feiSize + fmSize == 1);
+		
 		if (feiSize == 1) {
 			String feiFile = faultExtensionInstructionsFile.get(0);
 			File feiPath = super.exporeRelativeFile(safetyAssessment, feiFile);

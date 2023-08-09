@@ -29,16 +29,16 @@ class ModelSerializer {
 	
 	//
 	
-	def execute(FaultExtensionInstructions fei) '''
+	def String execute(FaultExtensionInstructions fei) '''
 		FAULT EXTENSION «fei.name»
-			EXTENSION OF MODULE main ««« Currently, we always target the unfolded (flat) main module
-				«FOR slice : fei.faultSlices»
-					SLICE «slice.name» AFFECTS «FOR element : slice.affectedElements SEPARATOR ', '»«element.singleId»«ENDFOR» WITH
-						«FOR mode : slice.faultModes»
-							MODE «mode.name» «IF mode.probability !== null»(«mode.probability.serialize»)«ENDIF» : «mode.serializeLocalDynamics» «mode.effect.serializeEffect»;
-						«ENDFOR»
-					««« TODO global dynamics
-				«ENDFOR»
+			EXTENSION OF MODULE main ««« Currently, we always target the unfolded (flat) main module 
+			«FOR slice : fei.faultSlices»
+				SLICE «slice.name» AFFECTS «FOR element : slice.affectedElements SEPARATOR ', '»«element.serializeId»«ENDFOR» WITH
+					«FOR mode : slice.faultModes»
+						MODE «mode.name»«IF mode.probability !== null»(«mode.probability.serialize»)«ENDIF» : «mode.serializeLocalDynamics» «mode.effect.serializeEffect»;
+					«ENDFOR»
+				««« TODO global dynamics
+			«ENDFOR»
 			««« TODO Common causes
 	'''
 	

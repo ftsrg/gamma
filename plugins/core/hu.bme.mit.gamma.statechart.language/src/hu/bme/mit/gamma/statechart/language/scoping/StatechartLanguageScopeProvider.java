@@ -424,7 +424,7 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 							boolean _eIsProxy = port.eIsProxy();
 							boolean _not = (!_eIsProxy);
 							if (_not) {
-								return Scopes.scopeFor(StatechartModelDerivedFeatures.getOutputEvents(port));
+								return Scopes.scopeFor(StatechartModelDerivedFeatures.getAllEvents(port));
 							}
 						}
 						if (context instanceof ComponentInstanceEventParameterReferenceExpression) {
