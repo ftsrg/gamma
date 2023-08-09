@@ -26,8 +26,10 @@ public abstract class GammaLanguageCrossReferenceSerializer extends CrossReferen
 	
 	public String getCrossReferenceNameFromScope(EObject semanticObject, CrossReference crossref,
 			EObject target, final IScope scope, Acceptor errors) {
-		if (getContext().isInstance(semanticObject)) {
-			if (getTarget().isInstance(target)) {
+		Class<? extends EObject> contextType = getContext();
+		if (contextType.isInstance(semanticObject)) {
+			Class<? extends EObject> targetType = getTarget();
+			if (targetType.isInstance(target)) {
 				Resource resource = target.eResource();
 				URI uri = resource.getURI();
 				String string = null;

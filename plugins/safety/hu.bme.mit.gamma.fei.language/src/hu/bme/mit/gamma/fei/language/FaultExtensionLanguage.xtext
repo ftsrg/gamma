@@ -14,7 +14,7 @@ import "http://www.mit.bme.hu/gamma/fei/Model"
 import "http://www.eclipse.org/emf/2002/Ecore" as ecore
 import "http://www.mit.bme.hu/gamma/statechart/Model/Interface" as interface
 import "http://www.mit.bme.hu/gamma/statechart/Model/Composite" as composite
-import "http://www.mit.bme.hu/gamma/expression/Model" as model
+import "http://www.mit.bme.hu/gamma/expression/Model" as expression
 
 FaultExtensionInstructions returns FaultExtensionInstructions:
 	'import' imports+=[interface::Package | STRING]
@@ -223,3 +223,15 @@ enum Occurrence returns Occurrence:
 
 enum TermReferenceMode returns TermReferenceMode:
 				REFERENCE = 'reference' | VALUE = 'value';
+				
+
+// Literals
+
+@Override
+PrimaryExpression returns expression::Expression:
+	LiteralExpression |
+	ComponentInstanceStateExpression |
+	'(' Expression ')'
+;
+
+//
