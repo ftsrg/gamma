@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -12,7 +12,12 @@ package hu.bme.mit.gamma.querygenerator.serializer
 
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceElementReferenceExpression
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventParameterReferenceExpression
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression
 import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.Region
@@ -26,5 +31,32 @@ abstract interface AbstractReferenceSerializer {
 	def List<String> getId(VariableDeclaration variable, ComponentInstanceReferenceExpression instance)
 	def List<String> getId(Event event, Port port, ParameterDeclaration parameter,
 			ComponentInstanceReferenceExpression instance)
+	
+	//
+	
+	def getId(ComponentInstanceElementReferenceExpression reference) {
+		return switch(reference) {
+			ComponentInstanceStateReferenceExpression:
+				getId(reference.state, reference.region, reference.instance)
+			ComponentInstanceEventReferenceExpression:
+				getId(reference.event, reference.port, reference.instance)
+			ComponentInstanceVariableReferenceExpression:
+				getId(reference.variableDeclaration, reference.instance)
+			ComponentInstanceEventParameterReferenceExpression:
+				getId(reference.event, reference.port, reference.parameterDeclaration, reference.instance)
+		}
+	}
+	
+	def getSingleId(ComponentInstanceElementReferenceExpression reference) {
+		val stringOrListId = reference.id
+		
+		if (stringOrListId instanceof String) {
+			return stringOrListId
+		}
+		if (stringOrListId instanceof List) {
+			val string = stringOrListId.head
+			return string as String
+		}
+	}
 	
 }

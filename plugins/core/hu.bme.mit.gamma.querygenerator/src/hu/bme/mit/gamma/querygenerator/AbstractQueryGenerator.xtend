@@ -274,6 +274,8 @@ abstract class AbstractQueryGenerator {
 		throw new IllegalArgumentException("Not known system parameter event: " + portEventParameterName)
 	}
 	
+	//
+	
 	protected abstract def String getTargetStateName(State state, Region parentRegion,
 		SynchronousComponentInstance instance)
 	
