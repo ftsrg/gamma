@@ -92,7 +92,7 @@ class ModelSerializer {
 		val isInitActionSerializableAsDefines = initializingAction.serializableAsDefines
 		if (isInitActionSerializableAsDefines) {
 			statefulVariables -= primedVariablesInInitializingAction // These will be DEFINEs
-		} // variableDeclarations == iVariables + statefulVariables (+ primedVariablesInInitializingAction - potentially as DEFINEs)
+		} // variableDeclarations == iVariables + statefulVariables (+ primedVariablesInInitializingAction :: potentially as DEFINEs)
 		
 //		val optimizedInitializingAction = xSts.initializingAction.optimizeAction
 		
@@ -267,7 +267,7 @@ class ModelSerializer {
 	'''
 	
 	protected def dispatch String serializeActionAsDefine(AssignmentAction action) '''
-		DEFINE «action.lhs.declaration.name» := «action.rhs.serialize»;
+		DEFINE «action.serialize.replace("=", ":=")»;
 	'''
 	
 	protected def dispatch String serializeActionAsDefine(VariableDeclarationAction action) '''

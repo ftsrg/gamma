@@ -47,5 +47,6 @@ class NuxmvPropertyExpressionSerializer extends ThetaPropertyExpressionSerialize
 
 	override String _serialize(IfThenElseExpression expression) '''((«expression.condition.serialize») ? («expression.then.serialize») : («expression.^else.serialize»))'''
 	
-	override String _serialize(ArrayAccessExpression arrayAccessExpression) '''READ(«arrayAccessExpression.getOperand().serialize», «arrayAccessExpression.getIndex().serialize»)'''
+	override String _serialize(ArrayAccessExpression arrayAccessExpression) '''READ(«arrayAccessExpression.operand.serialize», «arrayAccessExpression.index.serialize»)'''
+	
 }

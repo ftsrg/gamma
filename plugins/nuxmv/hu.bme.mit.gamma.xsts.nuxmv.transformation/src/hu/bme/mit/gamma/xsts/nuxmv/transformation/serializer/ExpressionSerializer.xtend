@@ -23,7 +23,9 @@ import hu.bme.mit.gamma.expression.model.ImplyExpression
 import hu.bme.mit.gamma.expression.model.OrExpression
 import hu.bme.mit.gamma.expression.model.TrueExpression
 import hu.bme.mit.gamma.expression.model.XorExpression
+import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.statechart.util.ExpressionTypeDeterminator
+import hu.bme.mit.gamma.util.GammaEcoreUtil
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 
@@ -34,6 +36,9 @@ class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSe
 	//
 	protected final extension ExpressionTypeDeterminator typeDeterminator = ExpressionTypeDeterminator.INSTANCE
 	protected final extension TypeSerializer typeSerializer = TypeSerializer.INSTANCE
+	protected final extension ExpressionEvaluator expressionEvaluator = ExpressionEvaluator.INSTANCE
+	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
+	//
 	
 	override String _serialize(EnumerationLiteralExpression expression) '''«expression.reference.name»'''
 	
@@ -57,6 +62,8 @@ class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSe
 
 	override String _serialize(IfThenElseExpression expression) '''((«expression.condition.serialize») ? («expression.then.serialize») : («expression.^else.serialize»))'''
 
+	override String _serialize(ArrayAccessExpression arrayAccessExpression) '''READ(«arrayAccessExpression.operand.serialize», «arrayAccessExpression.index.serialize»)'''
+	
 	override String _serialize(ArrayLiteralExpression expression) {
 		val operands = expression.operands
 		val typeDefinition = expression.typeDefinition as ArrayTypeDefinition
@@ -68,6 +75,11 @@ class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSe
 		val smvArrayLiteral = new StringBuilder
 		smvArrayLiteral.append('''CONSTARRAY(«smvType», «smvDefaultValue»)''')
 		
+		val evaluatedDefaultExpression = defaultExpression.evaluateDecimal
+		if (operands.forall[it.helperEquals(defaultExpression) || it.isEvaluable && it.evaluateDecimal == evaluatedDefaultExpression]) {
+			return smvArrayLiteral.toString // No need for WRITE commands
+		}
+		
 		for (var i = 0; i < operands.size; i++) {
 			val operand = operands.get(i)
 			smvArrayLiteral.insert(0, '''WRITE(''') // Prepend
@@ -77,7 +89,4 @@ class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSe
 		return smvArrayLiteral.toString
 	}
 	
-	override String _serialize(ArrayAccessExpression arrayAccessExpression) '''READ(«arrayAccessExpression.getOperand().serialize», «arrayAccessExpression.getIndex().serialize»)'''
-
-
 }
