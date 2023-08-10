@@ -122,7 +122,7 @@ class FaultEffectSerializer {
 		val failure = effect.failureEvent
 		
 		return '''
-			«effect.serializeSpecialParameters»,
+			«effect.serializeSpecialParameters»
 			data input << «IF input !== null»«input.serializeId»«ELSE»«affectedElement.serializeId»«ENDIF»,
 			data varout >> «IF varout !== null»«varout.serializeId»«ELSE»«affectedElement.serializeId»«ENDIF»,
 			event failure >> «IF failure !== null»«failure.serializeId»«ENDIF /*TODO add some kind of default value*/»
@@ -155,12 +155,12 @@ class FaultEffectSerializer {
 	
 	protected def dispatch String serializeSpecialParameters(TermEffect effect) {
 		val term = effect.term
-		return '''data term << «term.serializeExpression»'''
+		return '''data term << «term.serializeExpression»,'''
 	}
 	
 	protected def dispatch String serializeSpecialParameters(DeltaEffect effect) {
 		val delta = effect.delta
-		return '''data delta << «delta.serializeExpression»'''
+		return '''data delta << «delta.serializeExpression»,'''
 	}
 	
 	protected def dispatch String serializeSpecialParameters(AbstractConditionalEffect effect) {
@@ -170,7 +170,7 @@ class FaultEffectSerializer {
 		return '''
 			data condition << «condition.serializeExpression»,
 			data then_term << «then.serializeExpression»,
-			data else_term << «_else.serializeExpression»
+			data else_term << «_else.serializeExpression»,
 		'''
 	}
 	
@@ -179,7 +179,7 @@ class FaultEffectSerializer {
 		val maximum = effect.maximum
 		return '''
 			data min_bound << «minimum.serializeExpression»,
-			data max_bound << «maximum.serializeExpression»
+			data max_bound << «maximum.serializeExpression»,
 		'''
 	}
 	
@@ -188,7 +188,7 @@ class FaultEffectSerializer {
 		val bound = effect.bound
 		return '''
 			data decr << «delta.serializeExpression»,
-			data end_value << «bound.serializeExpression»
+			data end_value << «bound.serializeExpression»,
 		'''
 	}
 	
