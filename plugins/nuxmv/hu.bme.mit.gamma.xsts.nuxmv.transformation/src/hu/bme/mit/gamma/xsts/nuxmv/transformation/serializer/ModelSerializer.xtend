@@ -30,6 +30,7 @@ import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import java.util.Collection
 import java.util.Map
+import java.util.Scanner
 import java.util.Set
 import org.eclipse.emf.ecore.EObject
 
@@ -136,6 +137,11 @@ class ModelSerializer {
 					«xSts.finalizeVariablesInTrans /*Next() assignment at the very end of the highest primes*/»
 			«ENDFOR»
 		'''
+		
+		if (isInitActionSerializableAsDefines && xSts.variableDeclarations.exists[it.array]) { // Needed due to nuXmv bug
+			val postProcessedModel = model.inlineArrayWriteDefines
+			return postProcessedModel
+		}
 		
 		return model
 	}
@@ -307,6 +313,7 @@ class ModelSerializer {
 		
 		return serializedInAction
 	}
+	
 	//
 	
 	protected def String finalizeVariablesInTrans(XSTS xSts) {
@@ -385,6 +392,55 @@ class ModelSerializer {
 			nonDeterministicActionVariables += nonDeterministicAction -> 
 					"nonDeterministicAction" + nonDeterministicAction.hashCode.toString.replaceAll("-","_")
 		}
+	}
+	
+	//
+	
+	private def inlineArrayWriteDefines(String model) {
+		val scanner = new Scanner(model)
+		val processedModel = new StringBuilder(model.length)
+		
+		val defines = <String, String>newHashMap
+		
+		var finished = false
+		while (scanner.hasNextLine) {
+			val line = scanner.nextLine
+			
+			if (line.startsWith("TRANS")) { // We need to handle only the INIT
+				finished = true
+			}
+			
+			if (finished) {
+				processedModel.append(line + System.lineSeparator)
+			}
+			else {
+				var needsAppend = true
+				val trimmedLine = line.trim // DEFINE array := WRITE(CONSTARRAY(array 0..4 of integer, 0), 0, 1);
+				if (trimmedLine.startsWith("DEFINE")) {
+					val split = trimmedLine.split(" := ")
+					val id = split.head.substring("DEFINE ".length)
+					val valueAndSemicolon = split.last
+					val value = valueAndSemicolon.substring(0, valueAndSemicolon.length - 1)
+					if (value.contains("WRITE")) {
+						// Save
+						defines += id -> value 
+						needsAppend = false
+					}
+				}
+				if (needsAppend) { // Does not handle if a DEFINE is referenced in a DEFINE
+					// Replace if needed
+					var replacedLine = line
+					for (id : defines.keySet) {
+						val value = defines.get(id)
+						replacedLine = replacedLine.replaceAll(id, value)
+					}
+					
+					processedModel.append(replacedLine + System.lineSeparator)
+				}
+			}
+		}
+		
+		return processedModel.toString
 	}
 	
 }

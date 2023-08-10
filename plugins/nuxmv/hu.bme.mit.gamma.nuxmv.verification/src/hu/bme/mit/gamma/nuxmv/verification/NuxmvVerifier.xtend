@@ -32,9 +32,7 @@ class NuxmvVerifier extends AbstractVerifier {
 	
 	//
 	protected final extension FileUtil fileUtil = FileUtil.INSTANCE
-	
-	// save trace to file
-	protected val saveTrace = true
+	//
 	
 	override verifyQuery(Object traceability, String parameters, File modelFile, File queryFile) {
 		val query = fileUtil.loadString(queryFile)
@@ -43,7 +41,9 @@ class NuxmvVerifier extends AbstractVerifier {
 		// Adding all the queries to the end of the model file
 		for (singleQuery : query.split(System.lineSeparator).reject[it.nullOrEmpty]) {
 			//
-			val convertedProperty = modelFile.convertToInvariant(singleQuery, parameters)
+			val conversionResult = modelFile.convertToInvariant(singleQuery, parameters)
+			val convertedProperty = conversionResult?.key
+			val isPropertyInverted = conversionResult?.value?.booleanValue
 			val isPropertyUnconvertible = convertedProperty.nullOrEmpty
 			//
 			
@@ -60,7 +60,10 @@ class NuxmvVerifier extends AbstractVerifier {
 			val possiblyConvertedProperty = (isPropertyUnconvertible) ? singleQuery : convertedProperty
 			
 			//
-			val newResult = traceability.verifyQuery(possiblyCovertedParameters, modelFile, possiblyConvertedProperty)
+			var newResult = traceability.verifyQuery(possiblyCovertedParameters, modelFile, possiblyConvertedProperty)
+			if (isPropertyInverted) { // Needed due to potential invar adaptation
+				newResult = newResult.invert // Adaptation
+			}
 			//
 			
 			val oldTrace = result?.trace
@@ -211,7 +214,7 @@ class NuxmvVerifier extends AbstractVerifier {
 			if (line.startsWith(PROPERTY_START)) {
 				val convertedProperty = line.substring(PROPERTY_START.length)
 				logger.log(Level.INFO, "Property is convertible to safety property: " + convertedProperty)
-				return convertedProperty
+				return convertedProperty -> queryAdapter.queryInverted
 			}
 			else {
 				logger.log(Level.INFO, "Property is not convertible to safety property")

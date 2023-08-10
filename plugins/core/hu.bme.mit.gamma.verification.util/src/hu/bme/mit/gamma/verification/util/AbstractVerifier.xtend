@@ -156,6 +156,12 @@ abstract class AbstractVerifier {
 			return promelaResult
 		}
 		
+		//
+		
+		def isQueryInverted() {
+			return invert
+		}
+		
 	}
 	
 	//
@@ -174,6 +180,10 @@ abstract class AbstractVerifier {
 				trace
 			}
 			return new Result(ThreeStateBoolean.UNDEF, extendedTrace)
+		}
+		
+		def invert() {
+			return new Result(result.opposite, trace)
 		}
 		
 	}
