@@ -10,5 +10,23 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.fei.language.validation
 
+import hu.bme.mit.gamma.fei.model.FaultMode
+import hu.bme.mit.gamma.fei.util.FaultExtensionModelValidator
+import org.eclipse.xtext.validation.Check
+
 class FaultExtensionLanguageValidator extends AbstractFaultExtensionLanguageValidator {
+	//
+	protected FaultExtensionModelValidator feiModelValidator = FaultExtensionModelValidator.INSTANCE;
+	//
+	
+	new() {
+		super.expressionModelValidator = feiModelValidator
+		super.actionModelValidator = feiModelValidator
+	}
+	
+	@Check
+	def checkFaultModes(FaultMode faultMode) {
+		handleValidationResultMessage(feiModelValidator.checkFaultModes(faultMode));
+	}
+	
 }

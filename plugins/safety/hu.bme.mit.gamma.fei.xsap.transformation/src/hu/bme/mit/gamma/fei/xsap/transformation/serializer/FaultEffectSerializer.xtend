@@ -52,7 +52,7 @@ class FaultEffectSerializer {
 	//
 	
 	def serializeEffect(Effect effect) '''
-		«effect.serializeNamePrefix»«effect.serializeTermReferenceMode»«effect.serializeOccurrenceMode»«effect.serializeNameSuffix»(
+		«effect.serializeNamePrefix»«effect.serializeTermReferenceMode»«effect.serializeNameSuffix»«effect.serializeOccurrenceMode»(
 			«effect.serializeParameters»
 		)'''
 	
@@ -62,7 +62,7 @@ class FaultEffectSerializer {
 		return switch (effect) {
 			StuckAtEffect : "StuckAt"
 			FrozenEffect : "Frozen"
-			NonDeterminismEffect : "NonDeterminism"
+			NonDeterminismEffect : "NonDeterminism" // Has to be adjusted at the end
 			NonDeterminismBooleanEffect : "NonDeterminism" // Has to be adjusted at the end
 			ConditionalEffect : "Conditional" 
 			RampDownEffect : "RampDown"
@@ -79,7 +79,8 @@ class FaultEffectSerializer {
 	
 	protected def serializeNameSuffix(Effect effect) {
 		return switch (effect) {
-			NonDeterminismBooleanEffect : "Bool"
+			NonDeterminismEffect : "_Num"
+			NonDeterminismBooleanEffect : "_Bool"
 			default : ""
 		}
 	}
@@ -148,6 +149,10 @@ class FaultEffectSerializer {
 	}
 	
 	//
+	
+	protected def dispatch String serializeSpecialParameters(TermReferenceSpecificEffect effect) {
+		return '''''' // This is basically the "else" branch for unhandled effects
+	}
 	
 	protected def dispatch String serializeSpecialParameters(NonParametricEffect effect) {
 		return ''''''

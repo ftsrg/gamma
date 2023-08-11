@@ -126,9 +126,11 @@ RampDownEffect returns RampDownEffect:
 ;
 
 InvertedEffect returns InvertedEffect:
-	'inverted' '{'
-		('input' ':' input=ComponentInstanceStateExpression)
-		('varout' ':' varout=ComponentInstanceStateExpression)
+	{InvertedEffect} 'inverted' '{'
+		(
+			('input' ':' input=ComponentInstanceStateExpression)
+			('varout' ':' varout=ComponentInstanceStateExpression)
+		)?
 		('failure-event' ':' failureEvent=ComponentInstanceEventReferenceExpression)?
 		(template+=Template)?
 	'}'

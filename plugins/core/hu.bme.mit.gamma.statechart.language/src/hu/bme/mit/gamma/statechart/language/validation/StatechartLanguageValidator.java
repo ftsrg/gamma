@@ -61,9 +61,9 @@ import hu.bme.mit.gamma.statechart.statechart.Transition;
 import hu.bme.mit.gamma.statechart.util.StatechartModelValidator;
 
 public class StatechartLanguageValidator extends AbstractStatechartLanguageValidator {
-
+	//
 	protected StatechartModelValidator statechartModelValidator = StatechartModelValidator.INSTANCE;
-	
+	//
 	public StatechartLanguageValidator() {
 		super.expressionModelValidator = statechartModelValidator;
 		super.actionModelValidator = statechartModelValidator;
