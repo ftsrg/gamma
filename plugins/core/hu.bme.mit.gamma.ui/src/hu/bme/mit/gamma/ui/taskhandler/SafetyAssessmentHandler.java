@@ -50,8 +50,8 @@ public abstract class SafetyAssessmentHandler extends TaskHandler {
 	public SafetyAssessmentHandler(IFile file) {
 		super(file);
 		checkArgument(systemChecker.isWindows() || systemChecker.isUnix());
-		String commandDetail = systemChecker.isWindows() ? "win" : "linux";
-		this.xSapCommand = "xSAP-" + commandDetail + "64";
+		String osSpecificParameter = systemChecker.isWindows() ? "win" : "linux";
+		this.xSapCommand = "xSAP-" + osSpecificParameter + "64";
 	}
 	
 	//
@@ -69,6 +69,7 @@ public abstract class SafetyAssessmentHandler extends TaskHandler {
 		final String outputPath = targetFolderUri + File.separator + extensionlessFileName + ".txt";
 		final File targetFolder = new File(targetFolderUri);
 		
+		int propertyCount = 0;
 		List<PropertyPackage> propertyPackages = safetyAssessment.getPropertyPackages();
 		for (PropertyPackage propertyPackage : propertyPackages) {
 			List<CommentableStateFormula> formulas = propertyPackage.getFormulas();
@@ -78,12 +79,13 @@ public abstract class SafetyAssessmentHandler extends TaskHandler {
 				String serializedFormula = nuXmvPropertySerializer.serialize(formula);
 				String tle = adapter.adaptLtlOrInvariantQueryToReachability(serializedFormula); // TLE - reachability property without operators
 				
+				String fileNamePrefix = extensionlessFileName + "_" + propertyCount++ + "_";
 				String generateFaultTreeCommand = 
 						"set on_failure_script_quits" + System.lineSeparator()
 						+ "set input_file \"" + extendedSmvPath + "\"" + System.lineSeparator()
 						+ "set sa_compass" + System.lineSeparator()
 						+ "set sa_compass_task_file \"" + fmsXmlPath + "\"" + System.lineSeparator()
-						+  getCommand() + " -o \"" + outputPath + "\" -t \"" + tle + "\"" + System.lineSeparator()
+						+  getCommand() + "-x \"" + fileNamePrefix + "\" -o \"" + outputPath + "\" -t \"" + tle + "\"" + System.lineSeparator()
 						+ "quit";
 				
 					File generateFaultTreeCommandFile = new File(targetFolderUri + File.separator +
