@@ -626,7 +626,9 @@ public class ExpressionUtil {
 	}
 	
 	protected Expression _getInitialValueOfType(TypeReference type) {
-		return getInitialValueOfType(type.getReference().getType());
+		TypeDeclaration reference = type.getReference();
+		return getInitialValueOfType(
+				reference.getType());
 	}
 
 	protected Expression _getInitialValueOfType(BooleanTypeDefinition type) {
@@ -677,7 +679,8 @@ public class ExpressionUtil {
 			FieldReferenceExpression fieldReference = factory.createFieldReferenceExpression();
 			fieldReference.setFieldDeclaration(field);
 			assignment.setReference(fieldReference);
-			assignment.setValue(getInitialValueOfType(field.getType()));
+			assignment.setValue(
+					getInitialValueOfType(field.getType()));
 			recordLiteralExpression.getFieldAssignments().add(assignment);
 		}
 		return recordLiteralExpression;

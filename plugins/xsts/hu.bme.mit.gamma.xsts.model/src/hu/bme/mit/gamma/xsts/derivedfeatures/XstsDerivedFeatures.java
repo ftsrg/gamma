@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -657,19 +657,18 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 	
 	public static Set<VariableDeclaration> getWrittenOnlyVariables(Action action) {
 		Set<VariableDeclaration> writtenOnlyVariables =
-				new HashSet<VariableDeclaration>(getWrittenVariables(action));
-		writtenOnlyVariables.removeAll(getReadVariables(action));
+				new HashSet<VariableDeclaration>(
+						getWrittenVariables(action));
+		writtenOnlyVariables.removeAll(
+				getReadVariables(action));
 		return writtenOnlyVariables;
 	}
 
 	public static Set<VariableDeclaration> getWrittenOnlyVariables(
 			Collection<? extends Action> actions) {
-		Set<VariableDeclaration> writtenOnlyVariables = new LinkedHashSet<VariableDeclaration>();
+		Set<VariableDeclaration> writtenOnlyVariables = new LinkedHashSet<VariableDeclaration>(
+				getWrittenVariables(actions));
 		
-		for (Action action : actions) {
-			writtenOnlyVariables.addAll(
-					getWrittenVariables(action));
-		}
 		for (Action action : actions) {
 			writtenOnlyVariables.removeAll(
 					getReadVariables(action));
@@ -677,10 +676,17 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 		
 		return writtenOnlyVariables;
 	}
-
-	public static Set<VariableDeclaration> getWrittenOnlyVariables(XSTS xSts) {
-		return getWrittenOnlyVariables(
-				getAllActions(xSts));
+	
+	public static Set<VariableDeclaration> getWrittenVariables(
+			Collection<? extends Action> actions) {
+		Set<VariableDeclaration> writtenVariables = new LinkedHashSet<VariableDeclaration>();
+		
+		for (Action action : actions) {
+			writtenVariables.addAll(
+					getWrittenVariables(action));
+		}
+		
+		return writtenVariables;
 	}
 	
 	public static Set<VariableDeclaration> getReadVariables(
@@ -693,6 +699,19 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 		}
 		
 		return readVariables;
+	}
+	
+	public static Set<VariableDeclaration> getReadOnlyVariables(
+			Collection<? extends Action> actions) {
+		Set<VariableDeclaration> readOnlyVariables = new LinkedHashSet<VariableDeclaration>(
+				getReadVariables(actions));
+		
+		for (Action action : actions) {
+			readOnlyVariables.removeAll(
+					getWrittenVariables(action));
+		}
+		
+		return readOnlyVariables;
 	}
 	
 	public static Set<VariableDeclaration> getExternallyReadVariables(
@@ -712,8 +731,27 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 				getAllActions(xSts));
 	}
 	
+	public static Set<VariableDeclaration> getReadOnlyVariables(XSTS xSts) {
+		Action action = xSts.getVariableInitializingTransition().getAction();
+		// Removing variable initialization action, as every variable is written here
+		List<Action> allActionsExceptVariableInit = getAllActions(xSts);
+		allActionsExceptVariableInit.remove(action);
+		
+		return getReadOnlyVariables(allActionsExceptVariableInit);
+	}
+	
 	public static Set<VariableDeclaration> getExternallyReadVariables(XSTS xSts) {
 		return getExternallyReadVariables(
+				getAllActions(xSts));
+	}
+	
+	public static Set<VariableDeclaration> getWrittenVariables(XSTS xSts) {
+		return getWrittenVariables(
+				getAllActions(xSts));
+	}
+	
+	public static Set<VariableDeclaration> getWrittenOnlyVariables(XSTS xSts) {
+		return getWrittenOnlyVariables(
 				getAllActions(xSts));
 	}
 	

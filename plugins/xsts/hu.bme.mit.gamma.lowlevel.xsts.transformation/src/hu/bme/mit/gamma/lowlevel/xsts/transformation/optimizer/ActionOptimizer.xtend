@@ -666,6 +666,11 @@ class ActionOptimizer {
 	 * In other transformations this "unnecessary" definition might not hold.
 	 */
 	protected def isUnnecessary(AssumeAction action) {
+		val assumption = action.assumption
+		if (assumption.definitelyTrueExpression) {
+			return true
+		}
+		
 		val container = action.eContainer
 		if (container instanceof SequentialAction) {
 			val actions = container.actions
@@ -682,7 +687,7 @@ class ActionOptimizer {
 				}
 			} catch (IndexOutOfBoundsException e) {}
 		}
-		return false
+		return false // TODO every outcome is false apart from the first branch; shouldn't this be true?
 	}
 	
 	// Non deterministic actions
