@@ -41,8 +41,8 @@ class XstsOptimizer {
 		xSts.inEventTransition = xSts.inEventTransition.optimize
 		xSts.outEventTransition = xSts.outEventTransition.optimize
 		
-		// Inlining and removing variables that are only read
-		xSts.removeReadOnlyVariables
+//		// Inlining and removing variables that are only read - not good here, as the generated code may miss some parameters and input variables
+//		xSts.removeReadOnlyVariables
 		
 		// Multiple inline-optimize iterations until fixpoint is reached
 		xSts.configurationInitializingTransition = xSts.configurationInitializingTransition.optimizeTransition(

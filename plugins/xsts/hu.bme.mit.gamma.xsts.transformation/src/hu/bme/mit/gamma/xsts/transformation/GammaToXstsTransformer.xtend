@@ -20,8 +20,8 @@ import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.TransitionMerging
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.VariableGroupRetriever
-import hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer.ActionOptimizer
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer.ArrayOptimizer
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer.RemovableVariableRemover
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer.ResettableVariableResetter
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer.XstsOptimizer
 import hu.bme.mit.gamma.property.model.PropertyPackage
@@ -62,15 +62,13 @@ class GammaToXstsTransformer {
 	
 	protected final PropertyPackage initialState
 	protected final InitialStateSetting initialStateSetting
+	protected final boolean optimize
 	protected final boolean optimizeArrays
 	// Auxiliary objects
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension ActionSerializer actionSerializer = ActionSerializer.INSTANCE
 	protected final extension EnvironmentalActionFilter environmentalActionFilter =
 			EnvironmentalActionFilter.INSTANCE
-	protected final extension ActionOptimizer actionOptimizer = ActionOptimizer.INSTANCE
-	protected final extension ResettableVariableResetter resetter = ResettableVariableResetter.INSTANCE
-	protected final extension ArrayOptimizer arrayOptimizer = ArrayOptimizer.INSTANCE
 	protected final extension AnalysisModelPreprocessor modelPreprocessor = AnalysisModelPreprocessor.INSTANCE
 	protected final extension ExpressionModelFactory expressionModelFactory = ExpressionModelFactory.eINSTANCE
 	protected final extension InterfaceModelFactory interfaceModelFactory = InterfaceModelFactory.eINSTANCE
@@ -111,6 +109,7 @@ class GammaToXstsTransformer {
 		this.maxSchedulingConstraint = maxSchedulingConstraint
 		this.initialState = initialState
 		this.initialStateSetting = initialStateSetting
+		this.optimize = optimize
 		this.optimizeArrays = optimizeArrays
 	}
 	
@@ -374,12 +373,24 @@ class GammaToXstsTransformer {
 	protected def optimize(XSTS xSts) {
 		logger.log(Level.INFO, "Optimizing reset, environment and merged actions in " + xSts.name)
 		val XstsOptimizer xStsOptimizer = XstsOptimizer.INSTANCE
-		xStsOptimizer.optimizeXSts(xSts)
-		logger.log(Level.INFO, "Resetting resettable variables in the environment in " + xSts.name)
-		xSts.resetResettableVariables
+		xStsOptimizer.optimizeXSts(xSts) // Affects all actions
+		
+		if (optimize) {
+			logger.log(Level.INFO, "Optimizing read-only variables in " + xSts.name)
+			val variableRemover = RemovableVariableRemover.INSTANCE
+			variableRemover.removeReadOnlyVariables(xSts) // Affects parameter and input variables, too
+			
+			logger.log(Level.INFO, "Resetting resettable variables in the environment in " + xSts.name)
+			val resetter  = ResettableVariableResetter.INSTANCE
+			resetter.resetResettableVariables(xSts)
+			
+			xStsOptimizer.optimizeXSts(xSts) // Once again after the potential variable removals above
+		}
+		
 		if (optimizeArrays) {
 			logger.log(Level.INFO, "Optimizing one capacity arrays in " + xSts.name)
-			xSts.optimizeOneCapacityArrays
+			val arrayOptimizer = ArrayOptimizer.INSTANCE
+			arrayOptimizer.optimizeOneCapacityArrays(xSts)
 		}
 	}
 	

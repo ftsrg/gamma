@@ -666,17 +666,13 @@ class ActionOptimizer {
 	 * In other transformations this "unnecessary" definition might not hold.
 	 */
 	protected def isUnnecessary(AssumeAction action) {
-		val assumption = action.assumption
-		if (assumption.definitelyTrueExpression) {
-			return true
-		}
-		
 		val container = action.eContainer
 		if (container instanceof SequentialAction) {
 			val actions = container.actions
 			val index = actions.indexOf(action)
+			val conainerContainer = container.eContainer
 			// For choices, these are needed
-			if (index == 0) {
+			if (index == 0 && conainerContainer instanceof NonDeterministicAction) {
 				return false
 			}
 			// Right after havocs, they are needed
@@ -687,6 +683,15 @@ class ActionOptimizer {
 				}
 			} catch (IndexOutOfBoundsException e) {}
 		}
+		if (container instanceof NonDeterministicAction) {
+			return false // We must not delete assumptions from choices, because that may lead to a deadlock
+		}
+		
+		val assumption = action.assumption
+		if (assumption.definitelyTrueExpression) {
+			return true
+		}
+		
 		return false // TODO every outcome is false apart from the first branch; shouldn't this be true?
 	}
 	

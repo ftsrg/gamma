@@ -13,6 +13,7 @@ package hu.bme.mit.gamma.lowlevel.xsts.transformation
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer.RemovableVariableRemover
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer.XstsOptimizer
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.Events
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.FirstChoiceStates
@@ -89,6 +90,7 @@ class LowlevelToXstsTransformer {
 	protected final extension XstsActionUtil actionFactory = XstsActionUtil.INSTANCE
 	protected final extension UnorderedActionTransformer unorderedActionTransformer = UnorderedActionTransformer.INSTANCE
 	protected final extension XstsOptimizer optimizer = XstsOptimizer.INSTANCE
+	protected final extension RemovableVariableRemover variableRemover = RemovableVariableRemover.INSTANCE
 	protected final extension VariableGroupRetriever variableGroupRetriever = VariableGroupRetriever.INSTANCE
 	// Model factories
 	protected final extension XSTSModelFactory factory = XSTSModelFactory.eINSTANCE
@@ -203,7 +205,11 @@ class LowlevelToXstsTransformer {
 		xSts.transformUnorderedActions // Transforming here, so optimizeXSts needn't be extended
 		
 		xSts.fillNullTransitions
-		xSts.optimizeXSts
+		xSts.optimizeXSts // Needed to simplify the actions
+		if (optimize) {
+			xSts.removeReadOnlyVariables // Affects parameter and input variables, too
+		}
+		
 		handleTransientAndResettableVariableAnnotations
 		handleRunUponExternalEventAnnotation
 		// The created EMF models are returned
