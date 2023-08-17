@@ -138,6 +138,13 @@ class VariableInliner {
 			Map<VariableDeclaration, InlineEntry> symbolicValues) {
 		val subactions = newArrayList
 		subactions += action.actions
+		
+		// "Ad hoc" inline for symbolic values to tackle the following pattern
+		// local var a : integer = b + 1;
+		// c := a; // Unnecessary 'a' local variable if it is not referenced later
+		subactions.inlineLocalVariablesIntoSubsequentAssignments
+		//
+		
 		for (subaction : subactions) {
 			subaction.inline(concreteValues, symbolicValues)
 		}
@@ -237,6 +244,32 @@ class VariableInliner {
 			
 			symbolicValues += declaration -> new InlineEntry(rhs, action)
 			concreteValues -= declaration
+		}
+	}
+	
+	//
+	
+	protected def inlineLocalVariablesIntoSubsequentAssignments(List<? extends Action> actions) {
+		// The remaining local VariableDeclarationActions are not removed;
+		// it is done separately by RemovableVariableRemover.removeTransientVariables
+		for (var i = 0; i < actions.size - 1; i++) {
+			val first = actions.get(i)
+			val second = actions.get(i + 1) // Subsequent actions
+			if (first instanceof VariableDeclarationAction) {
+				val localVariable = first.variableDeclaration
+				val localVariableValue = localVariable.expression
+				
+				if (second instanceof AssignmentAction) {
+					val assignedValue = second.rhs
+					if (assignedValue instanceof DirectReferenceExpression) {
+						val rhsDeclaration = assignedValue.declaration
+						
+						if (rhsDeclaration === localVariable) {
+							second.rhs = localVariableValue.clone
+						}
+					}
+				}
+			}
 		}
 	}
 	

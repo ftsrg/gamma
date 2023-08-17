@@ -385,6 +385,7 @@ class GammaToXstsTransformer {
 			resetter.resetResettableVariables(xSts)
 			
 			xStsOptimizer.optimizeXSts(xSts) // Once again after the potential variable removals above
+			// Due to, e.g., read-only -> optimize (inline) chain that results in unused local variables
 		}
 		
 		if (optimizeArrays) {

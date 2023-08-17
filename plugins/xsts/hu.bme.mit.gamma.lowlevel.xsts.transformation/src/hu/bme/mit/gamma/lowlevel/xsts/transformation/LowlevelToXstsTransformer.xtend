@@ -87,7 +87,7 @@ class LowlevelToXstsTransformer {
 	protected final extension AbstractTransitionMerger transitionMerger
 	
 	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
-	protected final extension XstsActionUtil actionFactory = XstsActionUtil.INSTANCE
+	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
 	protected final extension UnorderedActionTransformer unorderedActionTransformer = UnorderedActionTransformer.INSTANCE
 	protected final extension XstsOptimizer optimizer = XstsOptimizer.INSTANCE
 	protected final extension RemovableVariableRemover variableRemover = RemovableVariableRemover.INSTANCE
@@ -424,8 +424,8 @@ class LowlevelToXstsTransformer {
 		checkArgument(xStsRegionVariable !== null)
 		val lowlevelRegion = trace.getLowlevelRegion(xStsRegionVariable)
 		checkState(lowlevelRegion !== null)
-		val regionVariableGroups = RegionVariableGroups.Matcher.on(targetEngine).
-			getAllValuesOfregionVariableGroup(xStsRegionVariable)
+		val regionVariableGroups = RegionVariableGroups.Matcher.on(targetEngine)
+				.getAllValuesOfregionVariableGroup(xStsRegionVariable)
 		checkState(regionVariableGroups.size <= 1)
 		if (regionVariableGroups.size == 1) {
 			return regionVariableGroups.head
@@ -435,8 +435,8 @@ class LowlevelToXstsTransformer {
 			for (lowlevelOrthogonalRegion : lowlevelRegion.orthogonalRegions) {
 				if (trace.isTraced(lowlevelOrthogonalRegion)) {
 					val siblingXStsRegionVariable = trace.getXStsVariable(lowlevelOrthogonalRegion)
-					val siblingVariableGroup = RegionVariableGroups.Matcher.on(targetEngine).
-						getAllValuesOfregionVariableGroup(siblingXStsRegionVariable)
+					val siblingVariableGroup = RegionVariableGroups.Matcher.on(targetEngine)
+							.getAllValuesOfregionVariableGroup(siblingXStsRegionVariable)
 					checkState(siblingVariableGroup.size <= 1)
 					if (!siblingVariableGroup.empty) {
 						// There is a variable group on this region level
@@ -539,7 +539,7 @@ class LowlevelToXstsTransformer {
 	}
 	
 	protected def initializeVariableInitializingAction() {
-		val xStsVariables = newLinkedList
+		val xStsVariables = newArrayList
 		// Cycle on the original declarations, as their order is important due to 'var a = b'-like assignments
 		for (lowlevelStatechart : _package.components.filter(StatechartDefinition)) {
 			for (lowlevelVariable : lowlevelStatechart.variableDeclarations) {
@@ -554,7 +554,7 @@ class LowlevelToXstsTransformer {
 		xStsVariables += xSts.regionGroups.map[it.variables].flatten
 		// Initial value to the events and parameters, their order is not interesting
 		xStsVariables += xSts.inEventVariableGroup.variables + xSts.outEventVariableGroup.variables +
-			xSts.inEventParameterVariableGroup.variables + xSts.outEventParameterVariableGroup.variables
+				xSts.inEventParameterVariableGroup.variables + xSts.outEventParameterVariableGroup.variables
 		// Note that optimization is NOT needed here, as these are already XSTS variables
 		for (xStsVariable : xStsVariables) {
 			// variableInitializingAction as it must be set before setting the configuration
@@ -719,6 +719,7 @@ class LowlevelToXstsTransformer {
 			// To reduce state space in the entry action too in the case of transient variables
 			xSts.entryEventTransition.action.appendToAction(assignment.clone) // Cloning is important
 		}
+		
 		xSts.changeTransitions(newMergedAction.wrap)
 	}
 	
@@ -727,9 +728,9 @@ class LowlevelToXstsTransformer {
 		val xStsInEventVariables = xSts.inEventVariableGroup.variables
 		val xStsTimeoutVariables = xSts.timeoutGroup.variables
 		val runUponExternalEventAnnotation =
-			statechart.hasAnnotation(RunUponExternalEventAnnotation) && !xStsInEventVariables.empty
+				statechart.hasAnnotation(RunUponExternalEventAnnotation) && !xStsInEventVariables.empty
 		val runUponExternalEventAnnotationOrInternalTimeout =
-			statechart.hasAnnotation(RunUponExternalEventOrInternalTimeoutAnnotation) && !xStsTimeoutVariables.empty
+				statechart.hasAnnotation(RunUponExternalEventOrInternalTimeoutAnnotation) && !xStsTimeoutVariables.empty
 		if (runUponExternalEventAnnotation || runUponExternalEventAnnotationOrInternalTimeout) {
 			val xStsMergedAction = xSts.mergedAction
 			
