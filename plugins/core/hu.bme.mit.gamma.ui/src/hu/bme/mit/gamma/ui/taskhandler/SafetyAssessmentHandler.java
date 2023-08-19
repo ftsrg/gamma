@@ -85,7 +85,7 @@ public abstract class SafetyAssessmentHandler extends TaskHandler {
 						+ "set input_file \"" + extendedSmvPath + "\"" + System.lineSeparator()
 						+ "set sa_compass" + System.lineSeparator()
 						+ "set sa_compass_task_file \"" + fmsXmlPath + "\"" + System.lineSeparator()
-						+  getCommand() + "-x \"" + fileNamePrefix + "\" -o \"" + outputPath + "\" -t \"" + tle + "\"" + System.lineSeparator()
+						+  getCommand() + " -x \"" + fileNamePrefix + "\" -o \"" + outputPath + "\" -t \"" + tle + "\"" + System.lineSeparator()
 						+ "quit";
 				
 					File generateFaultTreeCommandFile = new File(targetFolderUri + File.separator +
