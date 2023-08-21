@@ -8,6 +8,6 @@ This folder contains plugins for the mapping of high-level Gamma (composite) mod
 2. Set up [nuXmv](https://nuxmv.fbk.eu/):
    - Download the corresponding nuXmv zip file from [here](https://nuxmv.fbk.eu/download.html) in accordance with your operating system (Windows, Linux or Mac OS X, 32- or 64-bit version).
    - Extract the downloaded zip file.
-   - Add `bin/nuXmv` to the `PATH` environment or default search path (depending on your OS).
+   - Add the `nuXmv/bin` folder to the `PATH` environment or default search path (depending on your OS).
 3. Set up the plugins in this folder.
    - Import all Eclipse projects from the the `nuxmv` folder.
