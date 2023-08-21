@@ -1,0 +1,33 @@
+package interfaces
+interface Control {
+	out event toggle
+}
+interface PoliceInterrupt {
+	out event police
+}
+interface Executable {
+	in event ^execute(executeValue : integer)
+}
+interface Error {
+	out event priorityToggleFault
+	out event secondaryToggleFault
+	out event priorityToggleFix
+	out event secondaryToggleFix
+	out event priorityRedFault
+	out event priorityGreenFault
+	out event priorityYellowFault
+	out event priorityStuckAtFixedFault
+	out event secondaryRedFault
+	out event secondaryGreenFault
+	out event secondaryYellowFault
+}
+interface LightCommands {
+	out event displayGreen
+	out event displayNone
+	out event displayRed
+	out event displayYellow
+}
+
+type MyEnum : enum {
+	Off, On
+}

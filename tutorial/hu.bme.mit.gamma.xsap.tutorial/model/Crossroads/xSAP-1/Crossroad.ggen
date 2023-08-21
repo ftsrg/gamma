@@ -1,0 +1,14 @@
+import "Crossroad.gcd"
+
+fault-tree-generation {
+	analysis {
+		component : Crossroad
+		language : SMV
+		constraint : {
+			minimum-orchestrating-period : 500 ms
+			maximum-orchestrating-period : 500 ms
+		}
+	}
+	fault-extension-instructions : "Crossroad.gfei"
+	top-level-event : "Crossroad.gpd"
+}

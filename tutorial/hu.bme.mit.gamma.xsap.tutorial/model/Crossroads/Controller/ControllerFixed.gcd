@@ -1,0 +1,53 @@
+package controller
+import "Interfaces/Interfaces.gcd"
+@TransitionPriority = order-based
+statechart Controller [
+	port PriorityPolice : provides PoliceInterrupt
+	port SecondaryControl : provides Control
+	port PoliceInterrupt : requires PoliceInterrupt
+	port SecondaryPolice : provides PoliceInterrupt
+	port PriorityControl : provides Control
+] {
+	timeout SecondaryPreparesTimeout3
+	timeout PriorityTimeout4
+	timeout SecondaryTimeout5
+	timeout PriorityPreparesTimeout6
+	timeout InitTimeout7
+	region main_region {
+		initial Entry0
+		state Operating {
+			region operating {
+				shallow history Entry2
+				state Init {
+					entry / set InitTimeout7 := 2 s; raise PriorityControl.toggle;
+				}
+				state PriorityPrepares {
+					entry / set PriorityPreparesTimeout6 := 1 s; raise PriorityControl.toggle;
+				}
+				state Secondary {
+					entry / set SecondaryTimeout5 := 2 s; raise PriorityControl.toggle; raise
+						SecondaryControl.toggle;
+				}
+				state Priority {
+					entry / set PriorityTimeout4 := 2 s; raise PriorityControl.toggle; raise
+						SecondaryControl.toggle;
+				}
+				state SecondaryPrepares {
+					entry / set SecondaryPreparesTimeout3 := 1 s; raise SecondaryControl.toggle;
+				}
+			}
+		}
+		state Interrupted
+	}
+	transition from Entry0 to Operating
+	transition from Entry2 to Init
+	transition from Init to PriorityPrepares when timeout InitTimeout7
+	transition from Operating to Interrupted when PoliceInterrupt.police / raise PriorityPolice.police;
+		raise SecondaryPolice.police;
+	transition from Interrupted to Operating when PoliceInterrupt.police / raise PriorityPolice.police;
+		raise SecondaryPolice.police;
+	transition from Priority to PriorityPrepares when timeout PriorityTimeout4
+	transition from PriorityPrepares to Secondary when timeout PriorityPreparesTimeout6
+	transition from Secondary to SecondaryPrepares when timeout SecondaryTimeout5
+	transition from SecondaryPrepares to Priority when timeout SecondaryPreparesTimeout3
+}
