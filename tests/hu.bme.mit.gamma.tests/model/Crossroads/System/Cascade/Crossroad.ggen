@@ -58,6 +58,13 @@ analysis {
 	}
 }
 
+analysis {
+	component : Crossroad
+	language : SMV
+	file : "Crossroad-SMV-timed"
+	state-coverage
+}
+
 verification {
 	language : UPPAAL
 	file : "Crossroad.xml"
@@ -96,4 +103,13 @@ verification {
 	property-file : ".Crossroad-SMV.gpd"
 	test-language : java
 	optimize-model : true // Checking model optimization
+}
+
+verification {
+	language : nuXmv
+	file : "Crossroad-SMV-timed.smv"
+	property-file : ".Crossroad-SMV-timed.gpd"
+	test-language : java
+	optimize-model : true // Checking model optimization
+	optimize-traces : true // Checking trace optimization
 }
