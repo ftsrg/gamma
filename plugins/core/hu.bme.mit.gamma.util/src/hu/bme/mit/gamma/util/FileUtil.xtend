@@ -103,6 +103,20 @@ class FileUtil {
 		return fileUri.file.name
 	}
 	
+	def extendFileName(File file, String extensionString) {
+		val parent = file.parent
+		val extendedFile =  new File(parent + File.separator + file.extensionlessName + extensionString + "." + file.extension)
+		
+		return extendedFile
+	}
+	
+	def extendAndHideFileName(File file, String extensionString) {
+		val parent = file.parent
+		val extendedFile =  new File(parent + File.separator + file.extensionlessName.toHiddenFileName + extensionString + "." + file.extension)
+		
+		return extendedFile
+	}
+	
 	def getUnhiddenFileName(String fileUri) {
 		return fileUri.file.name.toUnhiddenFileName
 	} 

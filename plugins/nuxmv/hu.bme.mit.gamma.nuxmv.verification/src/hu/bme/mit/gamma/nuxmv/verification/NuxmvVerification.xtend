@@ -34,10 +34,10 @@ class NuxmvVerification extends AbstractVerification {
 	}
 	
 	override getDefaultArguments(File modelFile) {
-		if (modelFile.timedModel) {
+		if (NuxmvVerifier.isTimedModel(modelFile)) {
 			return #[
 				NuxmvVerifier.CHECK_TIMED_LTL // LTL
-				// 'timed_check_invar -p' // Invariant properties
+				// 'timed_check_invar -a 1 -p' // Invariant properties
 			]
 		}
 		return getDefaultArguments
@@ -52,13 +52,6 @@ class NuxmvVerification extends AbstractVerification {
 	
 	override protected getArgumentPattern() {
 		return ".*" // TODO
-	}
-	
-	//
-	
-	protected def isTimedModel(File modelFile) {
-		val firstLine = fileUtil.loadFirstLine(modelFile).trim
-		return firstLine.startsWith("@TIME_DOMAIN") && firstLine.endsWith("continuous")
 	}
 	
 }

@@ -25,13 +25,13 @@ class NuxmvVerifier extends AbstractVerifier {
 	public static final String CHECK_UNTIMED_LTL_AS_INVAR = "check_property_as_invar_ic3 -L" // Currently unused
 	
 	public static final String CHECK_TIMED_LTL = "timed_check_ltlspec -p"
-	public static final String CHECK_TIMED_INVAR = "timed_check_invar -p"
+	public static final String CHECK_TIMED_INVAR = "timed_check_invar -a 1 -p" // -a 1 enables abstraction/refinement; needed for integers
 	
 	public static final String NUXMV_SETUP_UNTIMED = "go_msat"
 	public static final String NUXMV_SETUP_TIMED = /*"time_setup" + System.lineSeparator +*/ "go_time"
 	
 	//
-	protected final extension FileUtil fileUtil = FileUtil.INSTANCE
+	protected final static extension FileUtil fileUtil = FileUtil.INSTANCE
 	//
 	
 	override verifyQuery(Object traceability, String parameters, File modelFile, File queryFile) {
@@ -80,13 +80,6 @@ class NuxmvVerifier extends AbstractVerifier {
 		return result
 	}
 	
-	// set on_failure_script_quits
-	// set input_file "C:\Users\grben\eclipse_ws\fbk_ws\runtime-New_configuration\MyAsyncProject\NuSMV3-XSAP\Files\AOCS.smv"
-	// go_msat
-	// set default_trace_plugin 1 // This will make the trace contain all variables, not just the delta
-	// check_invar_ic3 -i -p "(signal < 12.0) IN AOCS"
-	// show_traces -p 4 -o "C:\Users\grben\eclipse_ws\fbk_ws\runtime-New_configuration\Temp\nuXmv_538c61488341a235\result_26ee62675985ecf2.xml"
-	// quit
 	override verifyQuery(Object traceability, String parameters, File modelFile, String query) {
 		val extension queryAdapter = new LtlQueryAdapter
 		//
@@ -173,25 +166,52 @@ class NuxmvVerifier extends AbstractVerifier {
 	//
 	
 	protected def convertToInvariant(File modelFile, String query, String argument) {
-		val extension queryAdapter = new LtlQueryAdapter // We expect a CTL property
-		//
 		val parentFile = modelFile.parent
+		val isTimedModel = modelFile.timedModel
+		
+		val commandExtension = argument.commandLineArgumentExtension
+		val nuXmvCommandExtension = commandExtension.nullOrEmpty ? #[] : #[commandExtension]
+		
+		val extension queryAdapter = new LtlQueryAdapter // We expect a CTL property
+		
+		val discretizedModelPath = modelFile.extendAndHideFileName("-untimed")
+		if (isTimedModel) {
+			// For timed models, we cannot use the convert_property_to_invar command, so we have to convert them first
+			val discretizationCommand = '''
+				set on_failure_script_quits
+				set input_file "«modelFile.absolutePath»"
+				«NUXMV_SETUP_TIMED»
+				write_untimed_model -o "«discretizedModelPath.absolutePath»"
+				quit
+			'''
+			
+			val commandFile = new File(parentFile + File.separator + '''.nuXmv-discretization-«Thread.currentThread.name».cmd''')
+			fileUtil.saveString(commandFile, discretizationCommand)
+			commandFile.deleteOnExit
+			
+			val nuXmvCommand = #["nuXmv"] + nuXmvCommandExtension + #["-source", commandFile.absolutePath]
+			logger.log(Level.INFO, "Running nuXmv to discretize timed model: " + nuXmvCommand.join(" "))
+			
+			val process = Runtime.getRuntime().exec(nuXmvCommand)
+			process.waitFor
+		}
+
+		val checkableModel = isTimedModel ? discretizedModelPath : modelFile
+		//
 		val commandFile = new File(parentFile + File.separator + '''.nuXmv-invar-«Thread.currentThread.name».cmd''')
 		commandFile.deleteOnExit
 		
 		val serializedCommand = '''
 			set on_failure_script_quits
-			set input_file "«modelFile.absolutePath»"
-			«argument.setupCommand»
+			set input_file "«checkableModel.absolutePath»"
+			«NUXMV_SETUP_UNTIMED /* Always, as we cannot use the below convert command for timed models */»
 			convert_property_to_invar -l -p "«query.adaptQuery»"
 			show_property -n 0 -F tabular
 			quit
 		'''
 		fileUtil.saveString(commandFile, serializedCommand)
 		
-		val commandExtension = argument.commandLineArgumentExtension
-		val nuXmvCommandExtension = commandExtension.nullOrEmpty ? #[] : #[commandExtension]
-		val nuXmvCommand = #["nuXmv"] + nuXmvCommandExtension + #["-source", commandFile.absolutePath]
+		val nuXmvCommand = #["nuXmv", "-source", commandFile.absolutePath] // No 'nuXmvCommandExtension' - always untimed SMV model
 		logger.log(Level.INFO, "Running nuXmv to convert property to invariance: " + nuXmvCommand.join(" "))
 		
 		var Scanner resultReader = null
@@ -247,6 +267,13 @@ class NuxmvVerifier extends AbstractVerifier {
 			default:
 				return ""
 		}
+	}
+	
+	//
+	
+	protected static def isTimedModel(File modelFile) {
+		val firstLine = fileUtil.loadFirstLine(modelFile).trim
+		return firstLine.startsWith("@TIME_DOMAIN") && firstLine.endsWith("continuous")
 	}
 	
 }
