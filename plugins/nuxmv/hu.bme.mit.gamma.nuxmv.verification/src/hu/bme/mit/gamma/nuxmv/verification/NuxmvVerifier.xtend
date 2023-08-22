@@ -251,9 +251,11 @@ class NuxmvVerifier extends AbstractVerifier {
 	
 	protected def getSetupCommand(String argument) {
 		switch (argument) {
-			case CHECK_UNTIMED_LTL, case CHECK_UNTIMED_LTL_AS_INVAR:
+			case CHECK_UNTIMED_LTL,
+			case CHECK_UNTIMED_LTL_AS_INVAR:
 				return NUXMV_SETUP_UNTIMED
-			case CHECK_TIMED_LTL, case CHECK_TIMED_INVAR:
+			case CHECK_TIMED_LTL,
+			case CHECK_TIMED_INVAR:
 				return NUXMV_SETUP_TIMED
 			default:
 				return NUXMV_SETUP_UNTIMED
@@ -262,7 +264,8 @@ class NuxmvVerifier extends AbstractVerifier {
 	
 	protected def getCommandLineArgumentExtension(String argument) {
 		switch (argument) {
-			case CHECK_TIMED_LTL, case CHECK_TIMED_INVAR:
+			case CHECK_TIMED_LTL,
+			case CHECK_TIMED_INVAR:
 				return "-time"
 			default:
 				return ""

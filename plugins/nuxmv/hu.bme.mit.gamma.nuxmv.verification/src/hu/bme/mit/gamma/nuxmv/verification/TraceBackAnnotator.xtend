@@ -17,6 +17,7 @@ import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.statechart.interface_.SchedulingConstraintAnnotation
 import hu.bme.mit.gamma.theta.verification.XstsBackAnnotator
+import hu.bme.mit.gamma.trace.model.ComponentSchedule
 import hu.bme.mit.gamma.trace.model.Cycle
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.trace.model.Reset
@@ -40,6 +41,8 @@ class TraceBackAnnotator {
 	protected final String STATE = "-> State:"
 	protected final String INPUT = "-> Input:"
 	protected final String LOOP = "-- Loop starts here"
+	protected final String DISCRETE_TRANSITION = "-- [ discrete transition"
+	protected final String TIME_ELAPSE = "-- [ time elapse: "
 	
 	protected final Scanner traceScanner
 	protected final ThetaQueryGenerator nuxmvQueryGenerator
@@ -97,6 +100,8 @@ class TraceBackAnnotator {
 		var EObject stepContainer = trace
 		var step = stepContainer.addStep
 		
+		var needsScheduling = true // Relevant in the case of timed models
+		
 		// Parsing
 		var state = BackAnnotatorState.INIT
 		try {
@@ -104,12 +109,18 @@ class TraceBackAnnotator {
 				val isFirstState = (state == BackAnnotatorState.INIT)
 				var line = traceScanner.nextLine.trim // Trimming leading white spaces
 				switch (line) {
-					case line.startsWith(INPUT): {
+					case line.startsWith(INPUT),
+					case line.startsWith(TIME_ELAPSE): {
 						/// New step to be parsed: checking the previous step
 						step.checkInEvents
 						// Add schedule
 						if (!step.containsType(Reset)) {
-							step.addSchedulingIfNeeded
+							if (needsScheduling) { // Check TIME_ELAPSE branch below
+								step.addSchedulingIfNeeded
+							}
+							else {
+								needsScheduling = true
+							}
 						}
 						step.checkStates
 						///
@@ -120,6 +131,18 @@ class TraceBackAnnotator {
 						/// Add static delay every turn (apart from first state)
 						if (schedulingConstraint !== null) {
 							step.addTimeElapse(schedulingConstraint)
+						} // Or actual time delay
+						else if (line.startsWith(TIME_ELAPSE)) {
+							// -- [ time elapse: time = 0.0; delta = 2000.0 ] --
+							val splitLine = line.split("delta = ")
+							val deltaSplittable = splitLine.last
+							val doubleDelayStringSplit = deltaSplittable.split(" ")
+							val doubleDelayString = doubleDelayStringSplit.head
+							val doubleDelay = Double.parseDouble(doubleDelayString)
+							val delay = doubleDelay as int
+							step.addTimeElapse(delay)
+							// Schedule must not be added as the previous and next states are the same
+							needsScheduling = false
 						}
 						///
 						// Setting the state
@@ -136,6 +159,9 @@ class TraceBackAnnotator {
 						val cycle = createCycle
 						trace.cycle = cycle
 						stepContainer = cycle
+					}
+					case line.startsWith(DISCRETE_TRANSITION): {
+						// "-- [ discrete transition] --" nothing to do
 					}
 					default: {
 						if (!isFirstState) {
