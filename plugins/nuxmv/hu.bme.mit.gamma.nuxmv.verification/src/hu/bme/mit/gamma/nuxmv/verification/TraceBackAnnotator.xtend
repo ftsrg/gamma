@@ -17,7 +17,6 @@ import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.statechart.interface_.SchedulingConstraintAnnotation
 import hu.bme.mit.gamma.theta.verification.XstsBackAnnotator
-import hu.bme.mit.gamma.trace.model.ComponentSchedule
 import hu.bme.mit.gamma.trace.model.Cycle
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.trace.model.Reset
@@ -135,11 +134,10 @@ class TraceBackAnnotator {
 						else if (line.startsWith(TIME_ELAPSE)) {
 							// -- [ time elapse: time = 0.0; delta = 2000.0 ] --
 							val splitLine = line.split("delta = ")
-							val deltaSplittable = splitLine.last
-							val doubleDelayStringSplit = deltaSplittable.split(" ")
-							val doubleDelayString = doubleDelayStringSplit.head
-							val doubleDelay = Double.parseDouble(doubleDelayString)
-							val delay = doubleDelay as int
+							val last = splitLine.last
+							val delaySplit = last.split("\\.")
+							val delayString = delaySplit.head
+							val delay = Integer.parseInt(delayString)
 							step.addTimeElapse(delay)
 							// Schedule must not be added as the previous and next states are the same
 							needsScheduling = false
