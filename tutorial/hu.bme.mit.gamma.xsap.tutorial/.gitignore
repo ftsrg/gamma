@@ -20,5 +20,10 @@
 *.txt
 *.fei
 
+
+!/model/Crossroads/nuXmv/Crossroad.gpd
+!/model/Crossroads/xSAP-1/Crossroad.gpd
+!/model/Crossroads/xSAP-2/Crossroad.gpd
+
 !/model/Crossroads/xSAP-1/.generate_ft_Crossroad_manual.cmd
 !/model/Crossroads/xSAP-2/.generate_fmea_Crossroad_manual.cmd

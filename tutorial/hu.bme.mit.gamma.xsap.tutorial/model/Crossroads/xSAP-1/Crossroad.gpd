@@ -1,0 +1,6 @@
+import "Crossroad.gcd"
+
+component Crossroad
+
+@ ("The two traffic light controllers shall never be in state Green at the same time")
+A G [ { !(state prior.normal.Green and state second.normal.Green) } ]

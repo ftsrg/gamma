@@ -1,0 +1,7 @@
+import "Crossroad.gcd"
+
+component Crossroad
+
+@ ("One of the traffic light controllers can have all three lights on at the same time")
+E F [ { (event prior.LightCommands.displayRed and event prior.LightCommands.displayGreen and event prior.LightCommands.displayYellow) or
+	(event second.LightCommands.displayRed and event second.LightCommands.displayGreen and event second.LightCommands.displayYellow) } ]
