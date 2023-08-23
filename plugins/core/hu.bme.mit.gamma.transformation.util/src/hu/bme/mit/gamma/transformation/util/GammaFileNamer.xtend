@@ -107,6 +107,9 @@ class GammaFileNamer {
 			case "SPIN", case "PROMELA": {
 				return "pml"
 			}
+			case "SMV", case "NUXMV": {
+				return "smv"
+			}
 			default:
 				throw new IllegalArgumentException("Not known language: " + analysisLanguage)
 		}
