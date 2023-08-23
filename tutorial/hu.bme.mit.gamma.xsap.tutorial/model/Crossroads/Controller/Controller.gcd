@@ -37,14 +37,11 @@ statechart Controller [
 				}
 			}
 		}
-		state Interrupted
 	}
 	transition from Entry0 to Operating
 	transition from Entry2 to Init
 	transition from Init to PriorityPrepares when timeout InitTimeout7
-	transition from Operating to Interrupted when PoliceInterrupt.police / raise PriorityPolice.police;
-		raise SecondaryPolice.police;
-	transition from Interrupted to Operating when PoliceInterrupt.police / raise PriorityPolice.police;
+	transition from Operating to Operating when PoliceInterrupt.police / raise PriorityPolice.police;
 		raise SecondaryPolice.police;
 	transition from Priority to PriorityPrepares when timeout PriorityTimeout4
 	transition from PriorityPrepares to Secondary when timeout PriorityPreparesTimeout6
