@@ -14,6 +14,7 @@ import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.fei.model.FaultExtensionInstructions
 import hu.bme.mit.gamma.fei.model.FaultMode
 import hu.bme.mit.gamma.querygenerator.serializer.NuxmvReferenceSerializer
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceElementReferenceExpression
 
 class ModelSerializer {
 	// Singleton
@@ -39,6 +40,12 @@ class ModelSerializer {
 			«ENDFOR»
 			««« TODO Common causes
 	'''
+	
+	//
+	
+	def serializeId(ComponentInstanceElementReferenceExpression reference) {
+		return faultEffectSerializer.serializeId(reference)
+	}
 	
 	//
 	

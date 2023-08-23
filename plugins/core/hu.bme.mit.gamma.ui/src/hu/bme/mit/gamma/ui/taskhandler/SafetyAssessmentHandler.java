@@ -13,6 +13,7 @@ package hu.bme.mit.gamma.ui.taskhandler;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.List;
@@ -25,6 +26,7 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 
 import hu.bme.mit.gamma.fei.model.FaultExtensionInstructions;
+import hu.bme.mit.gamma.fei.model.FaultSlice;
 import hu.bme.mit.gamma.genmodel.derivedfeatures.GenmodelDerivedFeatures;
 import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
 import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation;
@@ -32,6 +34,7 @@ import hu.bme.mit.gamma.genmodel.model.SafetyAssessment;
 import hu.bme.mit.gamma.property.model.CommentableStateFormula;
 import hu.bme.mit.gamma.property.model.PropertyPackage;
 import hu.bme.mit.gamma.querygenerator.serializer.NuxmvPropertySerializer;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceElementReferenceExpression;
 import hu.bme.mit.gamma.util.SystemChecker;
 import hu.bme.mit.gamma.verification.util.AbstractVerifier.LtlQueryAdapter;
 
@@ -211,12 +214,52 @@ public abstract class SafetyAssessmentHandler extends TaskHandler {
 			}
 			extendSmvScanner.close();
 			
+			// Ad hoc bugfix
+			fixXsapBug(extendedSmvPath, gFeiModel);
+			//
+			
 			return new SimpleEntry<String, String>(fmsXmlPath, extendedSmvPath); 
 		}
 		
 		throw new UnsupportedOperationException("Plain fm xml files are not yet supported");
 	}
+	
+	//
 
+	private void fixXsapBug(String extendedSmvPath, FaultExtensionInstructions faultExtensionInstructions) throws FileNotFoundException {
+		File extendedSmvFile = new File(extendedSmvPath);
+		StringBuilder fixedExtendedSmvModel = new StringBuilder(8195);
+		
+		try (Scanner scanner = new Scanner(extendedSmvFile)) {
+			while (scanner.hasNext()) {
+				String line = scanner.nextLine();
+				if (line.startsWith("MODULE main_#Extended")) { // Issue #n/a
+					fixedExtendedSmvModel.append("MODULE main");
+				}
+				else if (line.contains("next(")) { // Issue #954
+					String fixedLine = line;
+					
+					for (FaultSlice slice : faultExtensionInstructions.getFaultSlices()) {
+						for (ComponentInstanceElementReferenceExpression element : slice.getAffectedElements()) {
+							String serializeId = feiSerializer.serializeId(element);
+							fixedLine = fixedLine.replace(
+									"next(" + serializeId + ")", "next(" + serializeId + "_#nominal)");
+						}
+					}
+					
+					fixedExtendedSmvModel.append(fixedLine);
+				}
+				else {
+					fixedExtendedSmvModel.append(line);
+				}
+				//
+				fixedExtendedSmvModel.append(System.lineSeparator());
+			}
+		}
+		
+		fileUtil.saveString(extendedSmvFile, fixedExtendedSmvModel.toString());
+	}
+	
 	//
 	
 	protected void setSafetyAssessment(SafetyAssessment safetyAssessment) {
