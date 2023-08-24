@@ -50,6 +50,12 @@ import uppaal.NTA;
 
 public class OptimizerAndVerificationHandler extends TaskHandler {
 	
+	//
+	
+	protected VerificationHandler verificationHandler = null;
+	
+	//
+	
 	protected final SystemReducer xStsReducer = SystemReducer.INSTANCE;
 	protected final ActionSerializer xStsSerializer = ActionSerializer.INSTANCE;
 	protected final hu.bme.mit.gamma.xsts.promela.transformation.serializer.ModelSerializer promelaSerializer =
@@ -57,7 +63,9 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 	protected final hu.bme.mit.gamma.xsts.nuxmv.transformation.serializer.ModelSerializer smvSerializer =
 			hu.bme.mit.gamma.xsts.nuxmv.transformation.serializer.ModelSerializer.INSTANCE;
 	protected final VariableGroupRetriever variableGroupRetriever = VariableGroupRetriever.INSTANCE;
-
+	
+	//
+	
 	public OptimizerAndVerificationHandler(IFile file) {
 		super(file);
 	}
@@ -121,7 +129,7 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 //		verification.setOptimize(false); // Now one by one optimization is also supported
 		
 		// A single one to store the traces and support later optimization - false: no trace serialization
-		VerificationHandler verificationHandler = new VerificationHandler(file, false);
+		verificationHandler = new VerificationHandler(file, false);
 		//
 		for (CommentableStateFormula formula : formulas) {
 			checkableFormulas.clear();
@@ -213,6 +221,12 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 		// Reinstate original state
 		propertyPackages.clear();
 		propertyPackages.addAll(savedPropertyPackages);
+	}
+	
+	//
+	
+	public VerificationHandler getVerificationHandler() {
+		return verificationHandler;
 	}
 
 }
