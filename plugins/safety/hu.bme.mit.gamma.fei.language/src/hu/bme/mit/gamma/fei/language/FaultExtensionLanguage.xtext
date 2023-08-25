@@ -33,10 +33,6 @@ FaultMode returns FaultMode:
 	'mode' name=ID ('('probability=Expression')')? (localDynamics=LocalDynamics)? effect=Effect
 ;
 
-CommonCauses returns CommonCauses:
-	{CommonCauses} 'common-causes' 
-;
-
 enum LocalDynamics returns LocalDynamics:
 				PERMANENT = 'permanent' | TRANSIENT = 'transient';
 
@@ -44,6 +40,7 @@ Effect returns Effect:
 	StuckAtEffect | FrozenEffect | NonDeterminismEffect | NonDeterminismBooleanEffect |
 		ConditionalEffect | RampDownEffect | InvertedEffect | StuckAtFixedEffect | RandomEffect |
 			ErroneousEffect | DeltaOutEffect | DeltaInErroneousEffect | DeltaInRandomEffect
+	// TODO two other complex faults
 ;
 
 StuckAtEffect returns StuckAtEffect:
@@ -227,6 +224,7 @@ enum Occurrence returns Occurrence:
 enum TermReferenceMode returns TermReferenceMode:
 				REFERENCE = 'reference' | VALUE = 'value';
 
+// Global dynamics
 
 GlobalDynamics returns GlobalDynamics:
 	{GlobalDynamics} 'global-dynamics'
@@ -235,10 +233,11 @@ GlobalDynamics returns GlobalDynamics:
 ;
 
 FaultTransition returns FaultTransition:
-	'transition' 'from' source=FaultModeReference 'to' target=FaultModeReference 'when' trigger=FaultTransitionTrigger '[' guard=Expression ']'
+	'transition' 'from' source=FaultModeStateReference 'to' target=FaultModeStateReference
+			('when' trigger=FaultTransitionTrigger)? ('[' guard=Expression ']')?
 ;
 
-FaultModeReference returns FaultModeReference:
+FaultModeStateReference returns FaultModeStateReference:
 	faultMode=[FaultMode] '.' state=FaultModeState
 ;
 
@@ -251,6 +250,32 @@ enum FaultModeState returns FaultModeState:
 				
 enum FaultEvent returns FaultEvent:
 				FAILURE = 'failure' | SELF_FIX = 'self-fix';
+
+// Common causes
+
+CommonCauses returns CommonCauses:
+	'common-causes' commonCauses+=CommonCause+
+;
+
+CommonCause returns CommonCause:
+	'cause' name=ID probability=CommonCauseProbability? modes+=CommonCauseMode+
+;
+
+CommonCauseProbability returns CommonCauseProbability:
+	'(' value=Expression ')' // TODO latent faults
+;
+
+CommonCauseMode returns CommonCauseMode:
+	'mode' faultSlice=[FaultSlice] '.' faultMode=[FaultMode] range=CommonCauseRange
+;
+
+CommonCauseRange returns CommonCauseRange:
+	{CommonCauseRange}
+	'simultaneously' |
+	('after' lowerBound=Expression) |
+	('within' higherBound=Expression) |
+	('between' lowerBound=Expression '..' higherBound=Expression)
+;
 
 // Literals
 

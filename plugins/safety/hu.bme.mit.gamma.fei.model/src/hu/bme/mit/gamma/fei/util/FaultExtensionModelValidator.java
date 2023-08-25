@@ -14,12 +14,16 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
 import hu.bme.mit.gamma.expression.model.Expression;
+import hu.bme.mit.gamma.fei.model.CommonCauseMode;
+import hu.bme.mit.gamma.fei.model.CommonCauseProbability;
+import hu.bme.mit.gamma.fei.model.CommonCauseRange;
 import hu.bme.mit.gamma.fei.model.Effect;
 import hu.bme.mit.gamma.fei.model.FaultEvent;
 import hu.bme.mit.gamma.fei.model.FaultMode;
-import hu.bme.mit.gamma.fei.model.FaultModeReference;
 import hu.bme.mit.gamma.fei.model.FaultModeState;
+import hu.bme.mit.gamma.fei.model.FaultModeStateReference;
 import hu.bme.mit.gamma.fei.model.FaultSlice;
 import hu.bme.mit.gamma.fei.model.FaultTransition;
 import hu.bme.mit.gamma.fei.model.FaultTransitionTrigger;
@@ -81,7 +85,7 @@ public class FaultExtensionModelValidator extends StatechartModelValidator {
 		return validationResultMessages;
 	}
 			
-	public Collection<ValidationResultMessage> checkFaultTransition(FaultTransition faultTransition) {
+	public Collection<ValidationResultMessage> checkFaultTransitions(FaultTransition faultTransition) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		
 		FaultTransitionTrigger trigger = faultTransition.getTrigger();
@@ -89,11 +93,11 @@ public class FaultExtensionModelValidator extends StatechartModelValidator {
 			FaultMode triggerFaultMode = trigger.getFaultMode();
 			FaultEvent triggerEvent = trigger.getEvent();
 			
-			FaultModeReference source = faultTransition.getSource();
+			FaultModeStateReference source = faultTransition.getSource();
 			FaultMode sourceFaultMode = source.getFaultMode();
 			FaultModeState sourceState = source.getState();
 			
-			FaultModeReference target = faultTransition.getTarget();
+			FaultModeStateReference target = faultTransition.getTarget();
 			FaultMode targetFaultMode = target.getFaultMode();
 			FaultModeState targetState = target.getState();
 			
@@ -137,5 +141,91 @@ public class FaultExtensionModelValidator extends StatechartModelValidator {
 	
 		return validationResultMessages;
 	}
+	
+	public Collection<ValidationResultMessage> checkCommonCauseModes(CommonCauseMode commonCauseMode) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		
+		FaultSlice faultSlice = commonCauseMode.getFaultSlice();
+		FaultMode faultMode = commonCauseMode.getFaultMode();
+		
+		FaultSlice containingFaultSlice = ecoreUtil.getContainerOfType(faultMode, FaultSlice.class);
+		if (faultSlice != containingFaultSlice) {
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+				"This fault mode is not defined in the referenced fault slice",
+					new ReferenceInfo(FeiModelPackage.Literals.COMMON_CAUSE_MODE__FAULT_MODE)));
+		}
+		
+		CommonCauseRange range = commonCauseMode.getRange();
+		if (range != null) {
+			Expression lowerBound = range.getLowerBound();
+			Expression higherBound = range.getHigherBound();
+			if (lowerBound != null) {
+				if (!ExpressionModelDerivedFeatures.isEvaluable(lowerBound)) {
+					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+						"This value is not an evaluable integer value",
+							new ReferenceInfo(FeiModelPackage.Literals.COMMON_CAUSE_RANGE__LOWER_BOUND, range)));
+				}
+			}
+			if (higherBound != null) {
+				if (!ExpressionModelDerivedFeatures.isEvaluable(higherBound)) {
+					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+						"This value is not an evaluable integer value",
+							new ReferenceInfo(FeiModelPackage.Literals.COMMON_CAUSE_RANGE__HIGHER_BOUND, range)));
+				}
+			}
+			if (lowerBound != null && higherBound != null) {
+				int lower = expressionEvaluator.evaluate(lowerBound);
+				int higher = expressionEvaluator.evaluate(higherBound);
+				
+				if (0 > lower) {
+					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+						"This value is not a positive integer value",
+							new ReferenceInfo(FeiModelPackage.Literals.COMMON_CAUSE_RANGE__LOWER_BOUND, range)));
+				}
+				if (0 > higher) {
+					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+						"This value is not a positive integer value",
+							new ReferenceInfo(FeiModelPackage.Literals.COMMON_CAUSE_RANGE__HIGHER_BOUND, range)));
+				}
+				if (lower > higher) {
+					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+						"The higher bound must be greater than or equal to the lower bound",
+							new ReferenceInfo(FeiModelPackage.Literals.COMMON_CAUSE_RANGE__HIGHER_BOUND, range)));
+				}
+			}
+		}
+		
+		if (faultSlice != containingFaultSlice) {
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+				"This fault mode is not defined in the referenced fault slice",
+					new ReferenceInfo(FeiModelPackage.Literals.COMMON_CAUSE_MODE__FAULT_MODE)));
+		}
+		
+		return validationResultMessages;
+	}
+	
+	public Collection<ValidationResultMessage> checkCommonCauseProbabilities(CommonCauseProbability commonCauseProbability) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		
+		Expression value = commonCauseProbability.getValue();
+		if (value != null) {
+			if (!ExpressionModelDerivedFeatures.isEvaluable(value)) {
+				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+					"This value is not evaluable",
+						new ReferenceInfo(FeiModelPackage.Literals.COMMON_CAUSE_PROBABILITY__VALUE)));
+			}
+			else {
+				double evaluatedValue = expressionEvaluator.evaluateDecimal(value);
+				if (evaluatedValue < 0 || 1 < evaluatedValue) {
+					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+						"A decimal value between 0 and 1 is expected",
+							new ReferenceInfo(FeiModelPackage.Literals.COMMON_CAUSE_PROBABILITY__VALUE)));
+				}
+			}
+		}
+
+		return validationResultMessages;
+	}
+	
 	
 }

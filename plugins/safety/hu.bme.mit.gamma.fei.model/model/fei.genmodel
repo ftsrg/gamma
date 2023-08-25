@@ -106,10 +106,28 @@
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference fei.ecore#//FaultTransitionTrigger/faultMode"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute fei.ecore#//FaultTransitionTrigger/event"/>
     </genClasses>
-    <genClasses ecoreClass="fei.ecore#//FaultModeReference">
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference fei.ecore#//FaultModeReference/faultMode"/>
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute fei.ecore#//FaultModeReference/state"/>
+    <genClasses ecoreClass="fei.ecore#//FaultModeStateReference">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference fei.ecore#//FaultModeStateReference/faultMode"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute fei.ecore#//FaultModeStateReference/state"/>
     </genClasses>
-    <genClasses ecoreClass="fei.ecore#//CommonCauses"/>
+    <genClasses ecoreClass="fei.ecore#//CommonCauses">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference fei.ecore#//CommonCauses/commonCauses"/>
+    </genClasses>
+    <genClasses ecoreClass="fei.ecore#//CommonCause">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference fei.ecore#//CommonCause/probability"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference fei.ecore#//CommonCause/modes"/>
+    </genClasses>
+    <genClasses ecoreClass="fei.ecore#//CommonCauseProbability">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference fei.ecore#//CommonCauseProbability/value"/>
+    </genClasses>
+    <genClasses ecoreClass="fei.ecore#//CommonCauseMode">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference fei.ecore#//CommonCauseMode/faultSlice"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference fei.ecore#//CommonCauseMode/faultMode"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference fei.ecore#//CommonCauseMode/range"/>
+    </genClasses>
+    <genClasses ecoreClass="fei.ecore#//CommonCauseRange">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference fei.ecore#//CommonCauseRange/lowerBound"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference fei.ecore#//CommonCauseRange/higherBound"/>
+    </genClasses>
   </genPackages>
 </genmodel:GenModel>

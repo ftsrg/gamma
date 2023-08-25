@@ -10,6 +10,8 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.fei.language.validation
 
+import hu.bme.mit.gamma.fei.model.CommonCauseMode
+import hu.bme.mit.gamma.fei.model.CommonCauseProbability
 import hu.bme.mit.gamma.fei.model.FaultMode
 import hu.bme.mit.gamma.fei.model.FaultSlice
 import hu.bme.mit.gamma.fei.model.FaultTransition
@@ -18,7 +20,7 @@ import org.eclipse.xtext.validation.Check
 
 class FaultExtensionLanguageValidator extends AbstractFaultExtensionLanguageValidator {
 	//
-	protected FaultExtensionModelValidator feiModelValidator = FaultExtensionModelValidator.INSTANCE;
+	protected FaultExtensionModelValidator feiModelValidator = FaultExtensionModelValidator.INSTANCE
 	//
 	
 	new() {
@@ -28,17 +30,27 @@ class FaultExtensionLanguageValidator extends AbstractFaultExtensionLanguageVali
 	
 	@Check
 	def checkFaultModes(FaultMode faultMode) {
-		handleValidationResultMessage(feiModelValidator.checkFaultModes(faultMode));
+		handleValidationResultMessage(feiModelValidator.checkFaultModes(faultMode))
 	}
 	
 	@Check
 	def checkGlobalDynamics(FaultSlice faultSlice) {
-		handleValidationResultMessage(feiModelValidator.checkGlobalDynamics(faultSlice));
+		handleValidationResultMessage(feiModelValidator.checkGlobalDynamics(faultSlice))
 	}
 	
 	@Check
 	def checkFaultTransitions(FaultTransition faultTransition) {
-		handleValidationResultMessage(feiModelValidator.checkFaultTransition(faultTransition));
+		handleValidationResultMessage(feiModelValidator.checkFaultTransitions(faultTransition))
+	}
+	
+	@Check
+	def checkCommonCauseModes(CommonCauseMode commonCauseMode) {
+		handleValidationResultMessage(feiModelValidator.checkCommonCauseModes(commonCauseMode))
+	}
+	
+	@Check
+	def checkCommonCauseProbablities(CommonCauseProbability commonCauseProbability) {
+		handleValidationResultMessage(feiModelValidator.checkCommonCauseProbabilities(commonCauseProbability))
 	}
 	
 }

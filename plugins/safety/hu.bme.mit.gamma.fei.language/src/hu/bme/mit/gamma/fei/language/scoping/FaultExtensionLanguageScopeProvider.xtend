@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.fei.language.scoping
 
+import hu.bme.mit.gamma.fei.model.CommonCauseMode
 import hu.bme.mit.gamma.fei.model.FaultExtensionInstructions
 import hu.bme.mit.gamma.fei.model.FaultSlice
 import hu.bme.mit.gamma.fei.model.FeiModelPackage
@@ -32,8 +33,18 @@ class FaultExtensionLanguageScopeProvider extends AbstractFaultExtensionLanguage
 		val root = ecoreUtil.getSelfOrContainerOfType(context, FaultExtensionInstructions)
 		val packages = root.imports
 		val component = root.component
-	
-		if (reference == FeiModelPackage.Literals.FAULT_MODE_REFERENCE__FAULT_MODE) {
+		
+		if (reference == FeiModelPackage.Literals.COMMON_CAUSE_MODE__FAULT_SLICE) {
+			return Scopes.scopeFor(root.faultSlices)
+		}
+		if (reference == FeiModelPackage.Literals.COMMON_CAUSE_MODE__FAULT_MODE) {
+			if (context instanceof CommonCauseMode) {
+				return Scopes.scopeFor(context.faultSlice.faultModes)
+			}
+			return Scopes.scopeFor(root.faultSlices.map[it.faultModes].flatten)
+		}
+		
+		if (reference == FeiModelPackage.Literals.FAULT_MODE_STATE_REFERENCE__FAULT_MODE) {
 			val faultSlice = ecoreUtil.getSelfOrContainerOfType(context, FaultSlice)
 			val faultModes = faultSlice.faultModes
 			return Scopes.scopeFor(faultModes)

@@ -25,6 +25,7 @@ class ModelSerializer {
 	protected final extension ExpressionEvaluator expressionEvaluator = ExpressionEvaluator.INSTANCE
 	protected final extension FaultEffectSerializer faultEffectSerializer = FaultEffectSerializer.INSTANCE
 	protected final extension GlobalDynamicsSerializer dynamicsSerializer = GlobalDynamicsSerializer.INSTANCE
+	protected final extension CommonCausesSerializer commonCausesSerializer = CommonCausesSerializer.INSTANCE
 	protected final extension NuxmvReferenceSerializer referenceSerializer = NuxmvReferenceSerializer.INSTANCE
 	
 	//
@@ -39,7 +40,7 @@ class ModelSerializer {
 					«ENDFOR»
 					«slice.globalDynamics.serializeGlobalDynamics»
 			«ENDFOR»
-			««« TODO Common causes
+			«fei.commonCauses.serializeCommonCauses»
 	'''
 	
 	//

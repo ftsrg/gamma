@@ -12,8 +12,8 @@ package hu.bme.mit.gamma.fei.xsap.transformation.serializer
 
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.fei.model.FaultEvent
-import hu.bme.mit.gamma.fei.model.FaultModeReference
 import hu.bme.mit.gamma.fei.model.FaultModeState
+import hu.bme.mit.gamma.fei.model.FaultModeStateReference
 import hu.bme.mit.gamma.fei.model.FaultTransition
 import hu.bme.mit.gamma.fei.model.FaultTransitionTrigger
 import hu.bme.mit.gamma.fei.model.GlobalDynamics
@@ -41,19 +41,19 @@ class GlobalDynamicsSerializer {
 	//
 	
 	protected def serializeFaultTransition(FaultTransition transition) '''
-		TRANS «transition.source.serializeFaultModeReference» -[«transition.trigger
-			.serializeFaultTransitionTrigger»«transition.guard.serializeFaultTransitionGuard»]-> «
-				transition.target.serializeFaultModeReference»;
+		TRANS «transition.source.serializeFaultModeStateReference» -[
+			«transition.trigger.serializeFaultTransitionTrigger»«transition.guard.serializeFaultTransitionGuard»]->
+				«transition.target.serializeFaultModeStateReference»;
 	'''
 	
-	protected def serializeFaultModeReference(FaultModeReference reference) '''«
-		reference.faultMode.name».«reference.state.serializeFaultModeState»'''
+	protected def serializeFaultModeStateReference(FaultModeStateReference reference) '''
+		«reference.faultMode.name».«reference.state.serializeFaultModeState»'''
 	
-	protected def serializeFaultTransitionTrigger(FaultTransitionTrigger trigger) '''«
-		trigger.faultMode.name».«trigger.event.serializeFaultEvent»'''
+	protected def serializeFaultTransitionTrigger(FaultTransitionTrigger trigger) '''
+		«IF trigger !== null»«trigger.faultMode.name».«trigger.event.serializeFaultEvent»«ENDIF»'''
 	
-	protected def serializeFaultTransitionGuard(Expression expression) '''«
-		IF expression !== null» when «expression.serialize»«ENDIF»'''
+	protected def serializeFaultTransitionGuard(Expression expression) '''
+		«IF expression !== null» when «expression.serialize»«ENDIF»'''
 	
 	//
 	
