@@ -1,5 +1,16 @@
+/********************************************************************************
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * SPDX-License-Identifier: EPL-1.0
+ ********************************************************************************/
 package hu.bme.mit.gamma.trace.environment.transformation
 
+import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.statechart.interface_.InterfaceModelFactory
 import hu.bme.mit.gamma.statechart.interface_.TimeUnit
 import hu.bme.mit.gamma.statechart.statechart.BinaryType
@@ -22,7 +33,8 @@ class TriggerTransformer {
 	
 	protected final extension Namings namings
 	
-	protected extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
+	protected extension ExpressionEvaluator expressionEvaluator = ExpressionEvaluator.INSTANCE
+	protected extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
 	
 	protected extension StatechartModelFactory statechartModelFactory = StatechartModelFactory.eINSTANCE
@@ -34,7 +46,7 @@ class TriggerTransformer {
 	}
 	
 	def dispatch transformTrigger(TimeElapse act, Transition transition) {
-		val elapsedTime = act.elapsedTime
+		val elapsedTime = act.elapsedTime.clone
 		
 		val timeoutDeclaration = statechartModelFactory.createTimeoutDeclaration => [
 			it.name = timeoutDeclarationName
@@ -48,13 +60,14 @@ class TriggerTransformer {
 		if (!setTimeoutActions.empty) {
 			val setTimeoutAction = setTimeoutActions.head
 			val value = setTimeoutAction.time.value
-			setTimeoutAction.time.value = value.add(elapsedTime.intValue)
+			setTimeoutAction.time.value = value.wrapIntoAddExpression(elapsedTime)
+					.evaluateInteger.toIntegerLiteral
 		}
 		else {
 			source.entryActions += createSetTimeoutAction => [
 				it.timeoutDeclaration = timeoutDeclaration
 				it.time = createTimeSpecification => [
-					it.value = elapsedTime.toIntegerLiteral
+					it.value = elapsedTime
 					it.unit = TimeUnit.MILLISECOND
 				]
 			]

@@ -32,7 +32,11 @@ class ThetaReferenceSerializer implements AbstractReferenceSerializer {
 	}
 	
 	def protected getSingleTargetStateName(State state, Region parentRegion, ComponentInstanceReferenceExpression instance) {
-		return '''«parentRegion.customizeName(instance)» == «state.customizeName»'''
+		return '''«parentRegion.getId(instance)» == «state.customizeName»'''
+	}
+	
+	override getId(Region region, ComponentInstanceReferenceExpression instance) {
+		return region.customizeName(instance)
 	}
 	
 	override getId(VariableDeclaration variable, ComponentInstanceReferenceExpression instance) {
@@ -41,14 +45,14 @@ class ThetaReferenceSerializer implements AbstractReferenceSerializer {
 	
 	override getId(Event event, Port port, ComponentInstanceReferenceExpression instance) {
 		if (port.isInputEvent(event)) {
-			event.customizeInputName(port, instance)
+			return event.customizeInputName(port, instance)
 		}
 		return event.customizeOutputName(port, instance)
 	}
 	
 	override getId(Event event, Port port, ParameterDeclaration parameter, ComponentInstanceReferenceExpression instance) {
 		if (port.isInputEvent(event)) {
-			parameter.customizeInNames(port, instance)
+			return parameter.customizeInNames(port, instance)
 		}
 		return parameter.customizeOutNames(port, instance)
 	}

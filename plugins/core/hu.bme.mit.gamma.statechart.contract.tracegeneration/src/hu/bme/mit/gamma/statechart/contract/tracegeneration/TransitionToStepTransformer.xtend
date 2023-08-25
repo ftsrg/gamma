@@ -32,7 +32,6 @@ import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.trace.model.Act
 import hu.bme.mit.gamma.trace.model.TraceModelFactory
 import hu.bme.mit.gamma.util.GammaEcoreUtil
-import java.math.BigInteger
 import java.util.Collection
 import java.util.List
 
@@ -103,7 +102,7 @@ class TransitionToStepTransformer {
 		val value = timeout.timeoutValue
 		val elapsedTime = value.evaluateMilliseconds
 		return createTimeElapse => [
-			it.elapsedTime = BigInteger.valueOf(elapsedTime)
+			it.elapsedTime = elapsedTime.toIntegerLiteral
 		]
 	}
 	

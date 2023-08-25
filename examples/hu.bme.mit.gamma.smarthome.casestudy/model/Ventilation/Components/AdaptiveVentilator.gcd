@@ -3,6 +3,7 @@ package light
 import "Interfaces/Constants.gcd"
 import "Interfaces/Interfaces.gcd"
 
+@TransitionPriority = order-based
 statechart AdaptiveVentilator [
 	port Motion : provides Motion
 	port Ventilation : provides Ventilation
@@ -46,10 +47,14 @@ statechart AdaptiveVentilator [
 	transition from VentilationOn to VentilationOff when Motion.motion [!Motion.motion::on]
 		
 	transition from OnEntry to BaseVentilation
-	transition from BaseVentilation to FixVentilation when Motion.personPresence
+	transition from BaseVentilation to FixVentilation when Motion.personPresence [Motion.personPresence::count >= 0
+		/**/ and Motion.personPresence::count < 5] // To check input values
+	transition from FixVentilation to FixVentilation when Motion.personPresence [Motion.personPresence::count >= 0
+		/**/ and Motion.personPresence::count < 5] // To check input values // Needed for the contracts
 	
 	transition from FixVentilation to DecreasingVentilation when timeout firstVentilationChangeTime
-	transition from DecreasingVentilation to FixVentilation when Motion.personPresence
+	transition from DecreasingVentilation to FixVentilation when Motion.personPresence [Motion.personPresence::count >= 0
+		/**/ and Motion.personPresence::count < 5] // To check input values
 	transition from DecreasingVentilation to VentilationChoice when timeout ventilationChangeTime
 	transition from VentilationChoice to BaseVentilation [
 		ventilationLevel - VENTILATION_DELTA <= BASE_VENTILATION]

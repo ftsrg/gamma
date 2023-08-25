@@ -1,0 +1,13 @@
+import scenario "Contracts/Control.gsc"
+
+statechart-contract {
+	scenario : S1MotionThenDelay
+	restart-on-cold-violation : true
+	automaton-type : monitor
+}
+
+statechart-contract {
+	scenario : S2MotionThenMotionThenVentilation
+	restart-on-cold-violation : true
+	automaton-type : monitor
+}

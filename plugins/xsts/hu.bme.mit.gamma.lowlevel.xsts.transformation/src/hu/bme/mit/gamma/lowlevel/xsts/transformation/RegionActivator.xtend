@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -20,7 +20,7 @@ import hu.bme.mit.gamma.statechart.lowlevel.model.ShallowHistoryState
 import hu.bme.mit.gamma.statechart.lowlevel.model.State
 import hu.bme.mit.gamma.statechart.lowlevel.model.StateNode
 import hu.bme.mit.gamma.xsts.model.Action
-import hu.bme.mit.gamma.xsts.model.ParallelAction
+import hu.bme.mit.gamma.xsts.model.MultiaryAction
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
@@ -35,11 +35,15 @@ class RegionActivator {
 	protected final extension ExpressionModelFactory constraintFactory = ExpressionModelFactory.eINSTANCE
 	// Auxiliary objects
 	protected final extension XstsActionUtil actionFactory = XstsActionUtil.INSTANCE
-	protected final extension StateAssumptionCreator stateAssumptionCreator 
+	protected final extension StateAssumptionCreator stateAssumptionCreator
 	protected final RegionInitialStateLocator regionInitialStateLocator
 	// Trace needed for variable references
 	protected final ViatraQueryEngine engine
 	protected final Trace trace
+	
+	//
+	boolean traversedDeepHistory = false // This works only for single-threaded calls
+	//
 		
 	new(ViatraQueryEngine engine, Trace trace) {
 		this.engine = engine
@@ -91,7 +95,7 @@ class RegionActivator {
 			// This level
 			if (lowlevelGrandparentRegion.hasOrthogonalRegion && !lowlevelGrandparentRegion.stateNodes.contains(lowlevelTopState)) {
 				// Orthogonal
-				it.actions += lowlevelGrandparentRegion.createRecursiveXStsOrthogonalRegionActivatingAction as ParallelAction => [
+				it.actions += lowlevelGrandparentRegion.createRecursiveXStsOrthogonalRegionActivatingAction as MultiaryAction => [
 					it.actions += singleXStsParentStateActivatingAction
 				]
 			}
@@ -124,7 +128,7 @@ class RegionActivator {
 		val xStsStateAndSubstateActivationAction = lowlevelStateNode.createRecursiveXStsStateAndSubstateActivatingAction
 		// Has orthogonal regions
 		if (lowlevelParentRegion.hasOrthogonalRegion) {
-			return lowlevelParentRegion.createRecursiveXStsOrthogonalRegionActivatingAction as ParallelAction => [
+			return lowlevelParentRegion.createRecursiveXStsOrthogonalRegionActivatingAction as MultiaryAction => [
 				it.actions += xStsStateAndSubstateActivationAction
 			]
 		}
@@ -136,7 +140,7 @@ class RegionActivator {
 		if (!lowlevelRegion.hasOrthogonalRegion) {
 			return createEmptyAction
 		}
-		return createParallelAction => [
+		return createRegionAction => [
 			for (lowlevelOrthogonalRegion : lowlevelRegion.orthogonalRegions) {
 				it.actions += lowlevelOrthogonalRegion.createRecursiveXStsRegionAndSubregionActivatingAction
 			}
@@ -150,25 +154,26 @@ class RegionActivator {
 	}
 	
 	protected def dispatch Action createRecursiveXStsStateAndSubstateActivatingAction(DeepHistoryState lowlevelHistory) {
-		// No parent state setting because of the parent state setter method
-		val lowlevelRegion = lowlevelHistory.parentRegion
-		val xStsInitialStateSettingAction = lowlevelHistory.createSingleXStsInitialStateSettingAction
-		// Note: this action is executed only once for the deep history node (later there will be history)
-		return createIfAction(lowlevelRegion.createSingleXStsDeactivatedStateAssumption,
-			createSequentialAction => [
-				it.actions += xStsInitialStateSettingAction
-				it.actions += lowlevelRegion.createRecursiveXStsHistoryBasedSubstateActivatingAction
-			]
-		)	
+		traversedDeepHistory = true
+		val xStsAction = lowlevelHistory.createRecursiveXStsStateAndSubstateHistoryActivatingAction
+		traversedDeepHistory = false
+		return xStsAction
 	}
 	
 	protected def dispatch Action createRecursiveXStsStateAndSubstateActivatingAction(ShallowHistoryState lowlevelHistory) {
+		return lowlevelHistory.createRecursiveXStsStateAndSubstateHistoryActivatingAction
+	}
+	
+	protected def Action createRecursiveXStsStateAndSubstateHistoryActivatingAction(EntryState lowlevelEntry) {
 		// No parent state setting because of the parent state setter method
-		val lowlevelRegion = lowlevelHistory.parentRegion
-		val xStsInitialStateSettingAction = lowlevelHistory.createSingleXStsInitialStateSettingAction
+		val lowlevelRegion = lowlevelEntry.parentRegion
+		val xStsInitialStateSettingAction = lowlevelEntry.createSingleXStsInitialStateSettingAction
 		// Note: this action is executed only once for the shallow history node (later there will be history)
 		val xStsIfDeactivatedAction = createIfAction(
-			lowlevelRegion.createSingleXStsDeactivatedStateAssumption, xStsInitialStateSettingAction)	
+			lowlevelRegion.createSingleXStsDeactivatedStateAssumption, // Has it been activated?
+			xStsInitialStateSettingAction, // First activation
+			lowlevelRegion.createSingleXStsInactiveActiveStateAction) // Reinstating history
+		
 		return createSequentialAction => [
 			it.actions += xStsIfDeactivatedAction
 			// The following action is executed every time the region is entered
@@ -215,7 +220,7 @@ class RegionActivator {
 	 */
 	protected def Action createRecursiveXStsSubstateActivatingAction(State lowlevelState) {
 		if (lowlevelState.isComposite) {
-			return createParallelAction => [
+			return createRegionAction => [
 				// Setting the contained regions
 				for (lowlevelSubregion : lowlevelState.regions) {
 					it.actions += lowlevelSubregion.createRecursiveXStsRegionAndSubregionActivatingAction
@@ -236,8 +241,13 @@ class RegionActivator {
 	 */
 	protected def createRecursiveXStsRegionAndSubregionActivatingAction(Region lowlevelRegion) {
 		val xStsRegionSettingAction = createSequentialAction
-		// Shallow history < deep history < initial state
-		if (lowlevelRegion.hasInitialState) {
+		// Shallow history < deep history < initial state < traversed deep history above
+		if (traversedDeepHistory) {
+			// Deep history above: we traverse through the "history line"
+			val lowlevelEntryState = lowlevelRegion.stateNodes.filter(EntryState).head
+			xStsRegionSettingAction.actions += lowlevelEntryState.createRecursiveXStsStateAndSubstateHistoryActivatingAction
+		}
+		else if (lowlevelRegion.hasInitialState) {
 			// Even if it has a history, an initial state has higher priority when entering a region
 			val lowlevelInitialState = lowlevelRegion.stateNodes.filter(InitialState).head
 			xStsRegionSettingAction.actions += lowlevelInitialState.createRecursiveXStsStateAndSubstateActivatingAction
@@ -252,7 +262,7 @@ class RegionActivator {
 			xStsRegionSettingAction.actions += lowlevelShallowHistory.createRecursiveXStsStateAndSubstateActivatingAction
 		}
 		else {
-			throw new IllegalStateException("Not known entry state combination.")
+			throw new IllegalStateException("Not known entry state combination")
 		}
 		return xStsRegionSettingAction
 	}

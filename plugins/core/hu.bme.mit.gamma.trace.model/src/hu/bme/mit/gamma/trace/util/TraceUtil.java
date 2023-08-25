@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -13,41 +13,40 @@ package hu.bme.mit.gamma.trace.util;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 
 import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
-import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
-import hu.bme.mit.gamma.expression.model.Type;
+import hu.bme.mit.gamma.expression.model.BinaryExpression;
+import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
-import hu.bme.mit.gamma.expression.model.TypeReference;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
-import hu.bme.mit.gamma.expression.util.ExpressionUtil;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression;
 import hu.bme.mit.gamma.statechart.contract.ScenarioAllowedWaitAnnotation;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Component;
-import hu.bme.mit.gamma.statechart.interface_.Interface;
-import hu.bme.mit.gamma.statechart.interface_.InterfaceRealization;
 import hu.bme.mit.gamma.statechart.interface_.Package;
+import hu.bme.mit.gamma.statechart.statechart.Region;
+import hu.bme.mit.gamma.statechart.statechart.State;
+import hu.bme.mit.gamma.statechart.util.StatechartUtil;
 import hu.bme.mit.gamma.trace.derivedfeatures.TraceModelDerivedFeatures;
 import hu.bme.mit.gamma.trace.model.Act;
-import hu.bme.mit.gamma.trace.model.Assert;
+import hu.bme.mit.gamma.trace.model.Cycle;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
 import hu.bme.mit.gamma.trace.model.ExecutionTraceAllowedWaitingAnnotation;
-import hu.bme.mit.gamma.trace.model.InstanceStateConfiguration;
-import hu.bme.mit.gamma.trace.model.InstanceVariableState;
+import hu.bme.mit.gamma.trace.model.ExecutionTraceCommentAnnotation;
 import hu.bme.mit.gamma.trace.model.RaiseEventAct;
 import hu.bme.mit.gamma.trace.model.Reset;
 import hu.bme.mit.gamma.trace.model.Schedule;
 import hu.bme.mit.gamma.trace.model.Step;
 import hu.bme.mit.gamma.trace.model.TraceModelFactory;
 
-public class TraceUtil extends ExpressionUtil {
+public class TraceUtil extends StatechartUtil {
 	// Singleton
 	public static final TraceUtil INSTANCE = new TraceUtil();
 	protected TraceUtil() {}
@@ -60,45 +59,21 @@ public class TraceUtil extends ExpressionUtil {
 	
 	@Override
 	public Collection<TypeDeclaration> getTypeDeclarations(EObject context) {
-		Collection<TypeDeclaration> types = new HashSet<TypeDeclaration>();
 		ExecutionTrace trace = ecoreUtil.getSelfOrContainerOfType(context, ExecutionTrace.class);
 		Package _package = trace.getImport();
-		// Explicit imports
-		for (Package importedPackage : StatechartModelDerivedFeatures.getComponentImports(_package)) {
-			types.addAll(importedPackage.getTypeDeclarations());
-		}
-		// Native references in the case the unfolded packages
-		Collection<TypeReference> references = new ArrayList<TypeReference>();
-		references.addAll(ecoreUtil.getAllContentsOfType(_package, TypeReference.class));
-		// Events and parameters
-		for (InterfaceRealization realization :
-				ecoreUtil.getAllContentsOfType(_package, InterfaceRealization.class)) {
-			Interface _interface = realization.getInterface();
-			references.addAll(ecoreUtil.getAllContentsOfType(_interface, TypeReference.class));
-		}
-		// Collecting the type declarations
-		for (TypeReference reference : references) {
-			TypeDeclaration typeDeclaration = reference.getReference();
-			types.add(typeDeclaration);
-			Type type = ExpressionModelDerivedFeatures.getTypeDefinition(typeDeclaration.getType());
-			if (type instanceof RecordTypeDefinition) {
-				RecordTypeDefinition recordType = (RecordTypeDefinition) type;
-				Collection<TypeDeclaration> containedTypeDeclarations =
-						TraceModelDerivedFeatures.getAllTypeDeclarations(recordType);
-				types.addAll(containedTypeDeclarations);
-			}
-		}
-		return types;
+		Set<TypeDeclaration> typedDeclarations = StatechartModelDerivedFeatures
+				.getReferencedTypedDeclarations(_package);
+		return typedDeclarations;
 	}
-	
+
 	// Step sorter
 	
-	public static class AssertSorter implements Comparator<Assert> {
+	public static class AssertSorter implements Comparator<Expression> {
 
 		@Override
-		public int compare(Assert lhsAssert, Assert rhsAssert) {
-			Assert lhs = TraceModelDerivedFeatures.getLowermostAssert(lhsAssert);
-			Assert rhs = TraceModelDerivedFeatures.getLowermostAssert(rhsAssert);
+		public int compare(Expression lhsAssert, Expression rhsAssert) {
+			Expression lhs = TraceModelDerivedFeatures.getPrimaryAssert(lhsAssert);
+			Expression rhs = TraceModelDerivedFeatures.getPrimaryAssert(rhsAssert);
 			if (lhs instanceof RaiseEventAct) {
 				if (rhs instanceof RaiseEventAct) {
 					return 0;
@@ -108,10 +83,10 @@ public class TraceUtil extends ExpressionUtil {
 			if (rhs instanceof RaiseEventAct) {
 				return 1;
 			}
-			if (lhs instanceof InstanceStateConfiguration && rhs instanceof InstanceStateConfiguration) {
+			if (lhs instanceof ComponentInstanceStateReferenceExpression && rhs instanceof ComponentInstanceStateReferenceExpression) {
 				// Two instance states: first - instance name, second - state level
-				InstanceStateConfiguration lhsInstanceStateConfiguration = (InstanceStateConfiguration) lhs;
-				InstanceStateConfiguration rhsInstanceStateConfiguration = (InstanceStateConfiguration) rhs;
+				ComponentInstanceStateReferenceExpression lhsInstanceStateConfiguration = (ComponentInstanceStateReferenceExpression) lhs;
+				ComponentInstanceStateReferenceExpression rhsInstanceStateConfiguration = (ComponentInstanceStateReferenceExpression) rhs;
 				ComponentInstance lhsInstance = StatechartModelDerivedFeatures.getLastInstance(
 						lhsInstanceStateConfiguration.getInstance());
 				ComponentInstance rhsInstance = StatechartModelDerivedFeatures.getLastInstance(
@@ -120,20 +95,23 @@ public class TraceUtil extends ExpressionUtil {
 				if (nameCompare != 0) {
 					return nameCompare;
 				}
-				Integer lhsLevel = StatechartModelDerivedFeatures
-						.getLevel(lhsInstanceStateConfiguration.getState());
-				Integer rhsLevel = StatechartModelDerivedFeatures
-						.getLevel(rhsInstanceStateConfiguration.getState());
-				return lhsLevel.compareTo(rhsLevel);
+				State lhsState = lhsInstanceStateConfiguration.getState();
+				Integer lhsLevel = StatechartModelDerivedFeatures.getLevel(lhsState);
+				State rhsState = rhsInstanceStateConfiguration.getState();
+				Integer rhsLevel = StatechartModelDerivedFeatures.getLevel(rhsState);
+				int regionCompare = lhsLevel.compareTo(rhsLevel);
+				if (regionCompare != 0) {
+					return regionCompare;
+				}
+				Region lhsRegion = StatechartModelDerivedFeatures.getParentRegion(lhsState);
+				Region rhsRegion = StatechartModelDerivedFeatures.getParentRegion(rhsState);
+				return lhsRegion.getName().compareTo(
+						rhsRegion.getName());
 			}
-			else if (lhs instanceof InstanceVariableState && rhs instanceof InstanceVariableState) {
+			else if (lhs instanceof ComponentInstanceVariableReferenceExpression && rhs instanceof ComponentInstanceVariableReferenceExpression) {
 				// Two instance variable: name
-				InstanceVariableState lhsInstanceVariableState = (InstanceVariableState) lhs;
-				InstanceVariableState rhsInstanceVariableState = (InstanceVariableState) rhs;
-				ComponentInstanceVariableReferenceExpression lhsVariableReference =
-						lhsInstanceVariableState.getVariableReference();
-				ComponentInstanceVariableReferenceExpression rhsVariableReference =
-						rhsInstanceVariableState.getVariableReference();
+				ComponentInstanceVariableReferenceExpression lhsVariableReference = (ComponentInstanceVariableReferenceExpression) lhs;
+				ComponentInstanceVariableReferenceExpression rhsVariableReference = (ComponentInstanceVariableReferenceExpression) rhs;
 				ComponentInstance lhsInstance = StatechartModelDerivedFeatures.getLastInstance(
 						lhsVariableReference.getInstance());
 				ComponentInstance rhsInstance = StatechartModelDerivedFeatures.getLastInstance(
@@ -144,21 +122,24 @@ public class TraceUtil extends ExpressionUtil {
 				String rhsName = rhsInstance.getName() + rhsVariable.getName();
 				return lhsName.compareTo(rhsName);
 			}
-			else if (lhs instanceof InstanceStateConfiguration && rhs instanceof InstanceVariableState) {
+			else if (lhs instanceof ComponentInstanceStateReferenceExpression && rhs instanceof ComponentInstanceVariableReferenceExpression) {
 				// First - instance state, second - instance variable
 				return -1;
 			}
-			else if (lhs instanceof InstanceVariableState && rhs instanceof InstanceStateConfiguration) {
-				// First - instance state, second - instance variable
+			else if (lhs instanceof ComponentInstanceVariableReferenceExpression && rhs instanceof ComponentInstanceStateReferenceExpression) {
+				// First - instance variable, second - instance state
 				return 1;
 			}
 			return 0;
 		}
-		
 	}
 	
 	public void sortInstanceStates(ExecutionTrace executionTrace) {
 		sortInstanceStates(executionTrace.getSteps());
+		Cycle cycle = executionTrace.getCycle();
+		if (cycle != null) {
+			sortInstanceStates(cycle.getSteps());
+		}
 	}
 	
 	public void sortInstanceStates(List<Step> steps) {
@@ -166,11 +147,26 @@ public class TraceUtil extends ExpressionUtil {
 	}
 	
 	public void sortInstanceStates(Step step) {
-		List<Assert> instanceStates = step.getAsserts();
-		List<Assert> list = new ArrayList<Assert>(instanceStates); // Needed to avoid the 'no duplicates' constraint
+		List<Expression> instanceStates = step.getAsserts();
+		List<Expression> list = new ArrayList<Expression>(instanceStates); // Needed to avoid the 'no duplicates' constraint
 		list.sort(assertSorter);
 		instanceStates.clear();
 		instanceStates.addAll(list);
+	}
+	
+	// Comments
+	
+	public void addComment(ExecutionTrace trace, String comment) {
+		ExecutionTraceCommentAnnotation annotation = null;
+		if (TraceModelDerivedFeatures.hasComment(trace)) {
+			annotation = TraceModelDerivedFeatures.getCommentAnnotation(trace);
+			annotation.setComment(annotation.getComment() + comment);
+		}
+		else {
+			annotation = factory.createExecutionTraceCommentAnnotation();
+			trace.getAnnotations().add(annotation);
+			annotation.setComment(comment);
+		}
 	}
 	
 	// Extend
@@ -322,8 +318,10 @@ public class TraceUtil extends ExpressionUtil {
 		if (annotation!= null) {
 			ExecutionTraceAllowedWaitingAnnotation newAnnotation =
 					factory.createExecutionTraceAllowedWaitingAnnotation();
-			newAnnotation.setLowerLimit(ecoreUtil.clone(annotation.getLowerLimit()));
-			newAnnotation.setUpperLimit(ecoreUtil.clone(annotation.getUpperLimit()));
+			newAnnotation.setLowerLimit(
+					ecoreUtil.clone(annotation.getLowerLimit()));
+			newAnnotation.setUpperLimit(
+					ecoreUtil.clone(annotation.getUpperLimit()));
 			trace.getAnnotations().add(newAnnotation);
 		}
 	}
@@ -347,20 +345,19 @@ public class TraceUtil extends ExpressionUtil {
 	}
 
 	public boolean isCoveredByState(Step covered, Step covering) {
-		List<Assert> coveredAsserts = covered.getAsserts();
-		List<Assert> coveringAsserts = covering.getAsserts();
-		InstanceStateConfiguration stateCovered = null;
-		InstanceStateConfiguration stateCovering = null;
-		// TODO stateCovering and stateCovered will contain a reference to the last
-		// InstanceStateConfiguration in the lists - is this expected?
-		for (Assert asser : coveringAsserts) {
-			if (asser instanceof InstanceStateConfiguration) {
-				stateCovering = (InstanceStateConfiguration) asser;
+		List<Expression> coveredAsserts = covered.getAsserts();
+		List<Expression> coveringAsserts = covering.getAsserts();
+		ComponentInstanceStateReferenceExpression stateCovered = null;
+		ComponentInstanceStateReferenceExpression stateCovering = null;
+		
+		for (Expression asser : coveringAsserts) {
+			if (asser instanceof ComponentInstanceStateReferenceExpression) {
+				stateCovering = (ComponentInstanceStateReferenceExpression) asser;
 			}
 		}
-		for (Assert asser : coveredAsserts) {
-			if (asser instanceof InstanceStateConfiguration) {
-				stateCovered = (InstanceStateConfiguration) asser;
+		for (Expression asser : coveredAsserts) {
+			if (asser instanceof ComponentInstanceStateReferenceExpression) {
+				stateCovered = (ComponentInstanceStateReferenceExpression) asser;
 			}
 		}
 		if (stateCovered == null || stateCovering == null) {
@@ -371,13 +368,23 @@ public class TraceUtil extends ExpressionUtil {
 	
 	public void clearAsserts(ExecutionTrace trace, Class<?> clazz) {
 		for (Step step : trace.getSteps()) {
-			step.getAsserts().removeIf(it -> clazz.isInstance(it));
+			List<Expression> asserts = step.getAsserts();
+			asserts.removeIf(it -> clazz.isInstance(it));
+			for (Expression expression :
+						new ArrayList<Expression>(asserts)) {
+				if (expression instanceof BinaryExpression binary) {
+					if (ExpressionModelDerivedFeatures.hasOperandOfType(binary, clazz)) {
+						ecoreUtil.remove(expression);
+					}
+				}
+			}
 		}
 	}
 
 	public void removeScheduleAndReset(Step step) {
-		step.getActions().removeIf(it -> it instanceof Schedule);
-		step.getActions().removeIf(it -> it instanceof Reset);
+		List<Act> actions = step.getActions();
+		actions.removeIf(it -> it instanceof Schedule);
+		actions.removeIf(it -> it instanceof Reset);
 	}
 	
 }

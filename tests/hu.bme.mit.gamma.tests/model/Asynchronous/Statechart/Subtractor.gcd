@@ -1,0 +1,19 @@
+package asynchronousreactive
+
+import "Interfaces/Interfaces.gcd"
+
+@Asynchronous
+statechart Subtractor [
+	port Execute : requires ExecuteAsynchronous
+	port Toggle : provides AddSubtract
+] {
+	var count : integer
+	region main {
+		initial Initial
+		state A
+	}
+	
+	transition from Initial to A
+	transition from A to A when Execute.^execute / raise Toggle.subtract; count := count + 1;
+	
+}

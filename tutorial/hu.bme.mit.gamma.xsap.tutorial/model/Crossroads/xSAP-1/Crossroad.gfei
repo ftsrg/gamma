@@ -1,0 +1,15 @@
+import "Crossroad.gcd"
+
+fault-extension CrossroadFaultExtension for Crossroad
+	slice PriorityTimeoutSlice affects variable prior.ToggleTimeoutValue with
+		mode Nondeterminism permanent nondeterminism {
+			minimum : 350
+			maximum : 4000
+			failure-event : event monitor.error.priorityToggleFault
+		}
+	slice SecondaryTimeoutSlice affects variable second.ToggleTimeoutValue with
+		mode Nondeterminism permanent nondeterminism {
+			minimum : 350
+			maximum : 4000
+			failure-event : event monitor.error.secondaryToggleFault
+		}

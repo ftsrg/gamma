@@ -14,6 +14,7 @@
       <query-specification fqn="hu.bme.mit.gamma.codegeneration.java.queries.synchronousComponentWrappers"/>
       <query-specification fqn="hu.bme.mit.gamma.codegeneration.java.queries.queuesOfClocks"/>
       <query-specification fqn="hu.bme.mit.gamma.codegeneration.java.queries.queuesOfEvents"/>
+      <query-specification fqn="hu.bme.mit.gamma.codegeneration.java.queries.sourceOfEventPassings"/>
       <query-specification fqn="hu.bme.mit.gamma.codegeneration.java.queries.anyTriggersOfWrappers"/>
       <query-specification fqn="hu.bme.mit.gamma.codegeneration.java.queries.anyPortTriggersOfWrappers"/>
       <query-specification fqn="hu.bme.mit.gamma.codegeneration.java.queries.portEventTriggersOfWrappers"/>

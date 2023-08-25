@@ -1,0 +1,17 @@
+import "Crossroad.gcd"
+
+analysis {
+	component : Crossroad
+	language : SMV
+	constraint : {
+		minimum-orchestrating-period : 500 ms
+		maximum-orchestrating-period : 500 ms
+	}
+}
+
+verification {
+	language : nuXmv
+	file : "Crossroad.smv"
+	property-file : "Crossroad.gpd"
+}
+

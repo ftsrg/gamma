@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020-2021 Contributors to the Gamma project
+ * Copyright (c) 2020-2022 Contributors to the Gamma project
  * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -12,10 +12,10 @@ package hu.bme.mit.gamma.scenario.language.scoping
 
 import com.google.common.collect.Lists
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage
+import hu.bme.mit.gamma.scenario.model.Interaction
 import hu.bme.mit.gamma.scenario.model.ScenarioDeclaration
 import hu.bme.mit.gamma.scenario.model.ScenarioModelPackage
 import hu.bme.mit.gamma.scenario.model.ScenarioPackage
-import hu.bme.mit.gamma.scenario.model.Signal
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression
 import hu.bme.mit.gamma.statechart.interface_.InterfaceModelPackage
@@ -70,12 +70,12 @@ class ScenarioLanguageScopeProvider extends AbstractScenarioLanguageScopeProvide
 				checkState(expression.port !== null)
 				val event = expression.event
 				return Scopes.scopeFor(event.parameterDeclarations)
-			} else if (context instanceof Signal && reference == ScenarioModelPackage.Literals.SIGNAL__PORT) {
+			} else if (context instanceof Interaction && reference == ScenarioModelPackage.Literals.INTERACTION__PORT) { 
 				val ports = ecoreUtil.getContainerOfType(context, ScenarioPackage).component.ports
 				return createScopeFor(ports)
-			} else if (context instanceof Signal && reference == ScenarioModelPackage.Literals.SIGNAL__EVENT) {
-				val signal = context as Signal
-				val interface = signal.port.interfaceRealization.interface
+			} else if (context instanceof Interaction && reference == ScenarioModelPackage.Literals.INTERACTION__EVENT) {
+				val signal = context as Interaction
+				val interface = signal.getPort.interfaceRealization.interface
 				val events = StatechartModelDerivedFeatures.getAllEventDeclarations(interface).map[it.event]
 				return createScopeFor(events)
 			}

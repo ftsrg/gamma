@@ -63,6 +63,16 @@ class JavaUtil {
 		return collection.take(collection.size - 1)
 	}
 	
+	def <T> T removeLast(List<T> list) {
+		return list.remove(list.size - 1)
+	}
+	
+	def <T> void removeAllButFirst(List<T> list) {
+		for (var i = 1; i < list.size; /* No op */) {
+			list.remove(i)
+		}
+	}
+	
 	def boolean isUnique(Iterable<?> collection) {
 		val set = newHashSet
 		for (element : collection) {
@@ -74,7 +84,7 @@ class JavaUtil {
 		return true
 	}
 	
-	def boolean containsOne(Collection<?> lhs, Iterable<?> rhs) {
+	def boolean containsAny(Collection<?> lhs, Iterable<?> rhs) {
 		for (element : rhs) {
 			if (lhs.contains(element)) {
 				return true
@@ -84,7 +94,7 @@ class JavaUtil {
 	}
 	
 	def boolean containsNone(Collection<?> lhs, Iterable<?> rhs) {
-		return !lhs.containsOne(rhs)
+		return !lhs.containsAny(rhs)
 	}
 	
 	def <T> T getOnlyElement(Iterable<T> collection) {
@@ -127,12 +137,30 @@ class JavaUtil {
 		return entries
 	}
 	
+	//
+	
 	def String toFirstCharUpper(String string) {
 		return string.toFirstUpper
 	}
 	
 	def String toFirstCharLower(String string) {
 		return string.toFirstLower
+	}
+	
+	def splitLines(String string) {
+		return string.split(System.lineSeparator).reject[it.nullOrEmpty]
+	}
+	
+	def String deparenthesize(String string) {
+		val stringBuilder = new StringBuilder
+		stringBuilder.append(string.trim)
+		
+		while (stringBuilder.charAt(0) == '(') {
+			stringBuilder.deleteCharAt(0)
+			stringBuilder.deleteCharAt(stringBuilder.length - 1)
+		}
+		
+		return stringBuilder.toString.trim
 	}
 	
 }

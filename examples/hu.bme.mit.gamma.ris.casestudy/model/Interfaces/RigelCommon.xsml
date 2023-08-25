@@ -1,0 +1,17 @@
+typedef int U1 littleendian unsigned in 1 bits;
+typedef int U2 littleendian unsigned in 2 bits;
+typedef int U3 littleendian unsigned in 3 bits;
+typedef int U4 littleendian unsigned in 4 bits;
+typedef int U5 littleendian unsigned in 5 bits;
+typedef int U6 littleendian unsigned in 6 bits;
+typedef int U7 littleendian unsigned in 7 bits;
+typedef int U8 littleendian unsigned in 1 bytes;
+typedef int U16 littleendian unsigned in 2 bytes;
+typedef int U32 littleendian unsigned in 4 bytes;
+
+enum UV {
+	Uzembeveve,
+	NincsUzembeveve,
+	NERV,
+	Uzembeveheto
+}

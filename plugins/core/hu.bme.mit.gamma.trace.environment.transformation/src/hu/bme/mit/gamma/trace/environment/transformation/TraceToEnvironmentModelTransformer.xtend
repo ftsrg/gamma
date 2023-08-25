@@ -14,6 +14,7 @@ import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.StatechartModelFactory
+import hu.bme.mit.gamma.statechart.statechart.TransitionPriority
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.trace.model.Reset
@@ -66,6 +67,7 @@ class TraceToEnvironmentModelTransformer {
 		val statechart = (isComponentSynchronous) ?
 				createSynchronousStatechartDefinition : createAsynchronousStatechartDefinition
 		statechart.name = environmentModelName
+		statechart.transitionPriority = TransitionPriority.ORDER_BASED
 		
 		statechart.transformPorts(trace)
 		

@@ -1,0 +1,96 @@
+/********************************************************************************
+ * Copyright (c) 2023 Contributors to the Gamma project
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * SPDX-License-Identifier: EPL-1.0
+ ********************************************************************************/
+module hu.bme.mit.gamma.setup.generators.languages.GenerateFaultExtensionLanguage
+
+import org.eclipse.xtext.xtext.generator.*
+import org.eclipse.xtext.xtext.generator.model.project.*
+import org.eclipse.emf.mwe.utils.*
+import org.eclipse.emf.ecore.resource.impl.*
+
+var repositoryRootPath = "../.."
+var coreRootPath = "${repositoryRootPath}/core" // To be able to load StatechartLanguage.xtext
+var rootPath = "${repositoryRootPath}/safety"
+
+Workflow {
+		bean = ResourceSetImpl : resourceSet {}
+    	bean = StandaloneSetup { resourceSet = resourceSet
+    	platformUri = "${coreRootPath}" // To be able to load StatechartLanguage.xtext
+    	scanClassPath = true
+    	
+    	registerGenModelFile = "platform:/resource/hu.bme.mit.gamma.expression.model/model/expression.genmodel"
+    	registerGeneratedEPackage = "hu.bme.mit.gamma.expression.model.ExpressionModelPackage"
+    	registerGenModelFile = "platform:/resource/hu.bme.mit.gamma.action.model/model/action.genmodel"
+    	registerGeneratedEPackage = "hu.bme.mit.gamma.action.model.ActionModelPackage"
+    	registerGenModelFile = "platform:/resource/hu.bme.mit.gamma.statechart.model/model/statechart.genmodel"
+    	registerGeneratedEPackage = "hu.bme.mit.gamma.statechart.statechart.StatechartModelPackage"
+    	registerGeneratedEPackage = "hu.bme.mit.gamma.statechart.interface_.InterfaceModelPackage"
+    	registerGeneratedEPackage = "hu.bme.mit.gamma.statechart.composite.CompositeModelPackage"
+    	registerGeneratedEPackage = "hu.bme.mit.gamma.statechart.phase.PhaseModelPackage"
+    	registerGeneratedEPackage = "hu.bme.mit.gamma.statechart.contract.ContractModelPackage"
+    	registerGenModelFile = "platform:/resource/hu.bme.mit.gamma.fei.model/model/fei.genmodel"
+    	registerGeneratedEPackage = "hu.bme.mit.gamma.fei.model.FeiModelPackage"
+    }
+	
+	component = org.eclipse.emf.mwe.utils.DirectoryCleaner {
+        directory = "${rootPath}/hu.bme.mit.gamma.fei.language/src-gen"
+    }
+    
+	component = XtextGenerator {
+		configuration = {
+			project = StandardProjectConfig {
+				baseName = "hu.bme.mit.gamma.fei.language"
+				rootPath = rootPath
+				eclipsePlugin = {
+					enabled = true
+				}
+				createEclipseMetaData = true
+			}
+			code = {
+				encoding = "UTF-8"
+				lineDelimiter = "\r\n"
+				fileHeader =
+"/********************************************************************************
+ * Copyright (c) 2023 Contributors to the Gamma project
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * SPDX-License-Identifier: EPL-1.0
+ ********************************************************************************/"
+				preferXtendStubs = true
+			}
+		}
+		language = StandardLanguage {
+			referencedResource = "platform:/resource/hu.bme.mit.gamma.statechart.language/src/hu/bme/mit/gamma/statechart/language/StatechartLanguage.xtext"
+			name = "hu.bme.mit.gamma.fei.language.FaultExtensionLanguage"
+			fileExtensions = "gfei"
+//			referencedResource = "platform:/resource/hu.bme.mit.gamma.fei.model/model/fei.genmodel"
+			
+			fragment = ecore2xtext.Ecore2XtextValueConverterServiceFragment2 auto-inject {}
+
+			formatter = {
+				generateStub = false // true
+				generateXtendStub = false // true
+			}
+			serializer = {
+				generateStub = false
+			}
+			validator = {
+				generateDeprecationValidation = true
+			}
+			generator = {
+				generateXtendStub = true
+			}
+		}
+	}
+}

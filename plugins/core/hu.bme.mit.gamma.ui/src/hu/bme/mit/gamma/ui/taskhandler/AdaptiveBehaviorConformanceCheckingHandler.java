@@ -13,6 +13,7 @@ package hu.bme.mit.gamma.ui.taskhandler;
 import static com.google.common.base.Preconditions.checkArgument;
 import static hu.bme.mit.gamma.ui.taskhandler.Namings.getActivityPortName;
 import static hu.bme.mit.gamma.ui.taskhandler.Namings.getCompositeComponentName;
+import static hu.bme.mit.gamma.ui.taskhandler.Namings.getEnvironmentName;
 import static hu.bme.mit.gamma.ui.taskhandler.Namings.getExtendedContractName;
 import static hu.bme.mit.gamma.ui.taskhandler.Namings.getMappedInterfaceName;
 import static hu.bme.mit.gamma.ui.taskhandler.Namings.getMappedInterfacePackagename;
@@ -76,6 +77,7 @@ import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
 import hu.bme.mit.gamma.statechart.util.ExpressionSerializer;
 import hu.bme.mit.gamma.statechart.util.StatechartUtil;
 import hu.bme.mit.gamma.transformation.util.ComponentDeactivator;
+import hu.bme.mit.gamma.util.ElementMatcher;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
 import hu.bme.mit.gamma.util.JavaUtil;
 import hu.bme.mit.gamma.util.Triple;
@@ -94,12 +96,13 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 		super(file);
 	}
 	
-	public void execute(AdaptiveBehaviorConformanceChecking conformanceChecker) throws IOException {
+	public void execute(AdaptiveBehaviorConformanceChecking conformanceChecker) throws IOException, InterruptedException {
 		// Setting target folder
 		setTargetFolder(conformanceChecker);
 		//
 		setAdaptiveBehaviorConformanceChecker(conformanceChecker);
 		
+		ComponentReference environmentModel = conformanceChecker.getEnvironmentModel();
 		AnalysisModelTransformation modelTransformation = conformanceChecker.getModelTransformation();
 		
 		ComponentReference modelReference = (ComponentReference) modelTransformation.getModel();
@@ -378,6 +381,11 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 				// Inserting the monitor into the composition
 				Triple<String, PropertyPackage, ComponentInstance> artifacts =
 						insertMonitor(composite, contract, contractArguments, name);
+				if (environmentModel != null) {
+					insertEnvironmentModel(composite, environmentModel.getComponent(),
+							environmentModel.getArguments());
+				}
+				
 				Entry<String, PropertyPackage> modelFileUri =
 						new SimpleEntry<String, PropertyPackage>(
 								artifacts.getFirst(), artifacts.getSecond());
@@ -508,6 +516,11 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 				// Inserting the monitor
 				Triple<String, PropertyPackage, ComponentInstance> artifacts =
 						insertMonitor(composite, statechartContract, arguments, name);
+				if (environmentModel != null) {
+					insertEnvironmentModel(composite, environmentModel.getComponent(),
+							environmentModel.getArguments());
+				}
+				
 				Entry<String, PropertyPackage> modelFileUri =
 						new SimpleEntry<String, PropertyPackage>(
 								artifacts.getFirst(), artifacts.getSecond());
@@ -587,6 +600,61 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 		}
 	}
 	
+	private void insertEnvironmentModel(SchedulableCompositeComponent composite,
+			Component environmentModel, List<? extends Expression> arguments) {
+		if (environmentModel == null) {
+			return;
+		}
+		// Setting imports
+		Package compositePackage = StatechartModelDerivedFeatures.getContainingPackage(composite);
+		compositePackage.getImports().add(
+				StatechartModelDerivedFeatures.getContainingPackage(environmentModel));
+		
+		// Instantiation
+		ComponentInstance environmentInstance = statechartUtil.instantiateComponent(environmentModel);
+		String environmentName = getEnvironmentName();
+		environmentInstance.setName(environmentName);
+		environmentInstance.getArguments().addAll(
+				ecoreUtil.clone(arguments));
+		statechartUtil.addComponentInstance(composite, environmentInstance);
+		composite.getExecutionList().add(0, 
+				statechartUtil.createInstanceReference(environmentInstance));
+		
+		// Collecting connectable ports (one channel is needed and there can be multiple connections)
+		ElementMatcher<Port, Port, Component> portMatcher = PortMatcherForName.INSTANCE;
+		Map<Port, List<InstancePortReference>> matchedPorts =
+				new HashMap<Port, List<InstancePortReference>>();
+		List<PortBinding> portBindings = new ArrayList<PortBinding>(
+				composite.getPortBindings());
+		for (PortBinding portBinding : portBindings) {
+			Port compositePort = portBinding.getCompositeSystemPort();
+			if (portMatcher.hasMatch(compositePort, environmentModel)) {
+				Port environmentPort = portMatcher.match(compositePort, environmentModel);
+				checkArgument(StatechartModelDerivedFeatures.isProvided(environmentPort));
+				InstancePortReference instancePort = portBinding.getInstancePortReference();
+				
+				List<InstancePortReference> portList = javaUtil.getOrCreateList(matchedPorts, environmentPort);
+				portList.add(instancePort);
+				
+				ecoreUtil.remove(compositePort);
+				ecoreUtil.remove(portBinding);
+			}
+		}
+		// Creating channels
+		for (Port environmentPort : matchedPorts.keySet()) {
+			List<InstancePortReference> portList = matchedPorts.get(environmentPort);
+			
+			InstancePortReference environmentPortReference = statechartUtil
+					.createInstancePortReference(environmentInstance, environmentPort);
+			Channel channel = statechartUtil.createChannel(
+					environmentPortReference, portList);
+			composite.getChannels().add(channel);
+		}
+		
+		// Saving
+		ecoreUtil.save(compositePackage);
+	}
+	
 	private Triple<String, PropertyPackage, ComponentInstance> insertMonitor(
 			SchedulableCompositeComponent composite, StatechartDefinition contract,
 			List<? extends Expression> arguments, String name) throws IOException {
@@ -633,8 +701,6 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 			}
 		}
 		
-		// TODO Setting environment model if necessary
-		
 		// Setting imports
 		Package compositePackage = StatechartModelDerivedFeatures.getContainingPackage(composite);
 		compositePackage.getImports().addAll(
@@ -664,7 +730,7 @@ public class AdaptiveBehaviorConformanceCheckingHandler extends TaskHandler {
 		return new Triple<String, PropertyPackage, ComponentInstance>(
 				modelFileUri, violationPropertyPackage, contractInstance);
 	}
-
+	
 	private void connectPorts(Port systemPort, ComponentInstance contractInstance) {
 		SchedulableCompositeComponent composite = (SchedulableCompositeComponent)
 				StatechartModelDerivedFeatures.getContainingComponent(systemPort);
@@ -742,6 +808,10 @@ class Namings {
 	
 	public static String getMonitorName() {
 		return "monitor";
+	}
+	
+	public static String getEnvironmentName() {
+		return "environment";
 	}
 	
 	public static String getExtendedContractName(StateContractAnnotation annotation) {
@@ -842,6 +912,35 @@ class ElementTracer {
 			}
 		}
 		throw new IllegalArgumentException("Not found state: " + statechart);
+	}
+
+}
+
+class PortMatcherForName implements ElementMatcher<Port, Port, Component> {
+	// Singleton
+	public static final PortMatcherForName INSTANCE = new PortMatcherForName();
+	protected PortMatcherForName() {}
+	//
+
+	@Override
+	public boolean hasMatch(Port matchablePort, Component component) {
+		try {
+			return match(matchablePort, component) != null;
+		} catch (Exception e) {
+			return false;
+		}
+	}
+
+	@Override
+	public Port match(Port matchablePort, Component component) {
+		List<Port> ports = component.getPorts();
+		String name = matchablePort.getName();
+		for (Port port : ports) {
+			if (port.getName().equals(name)) {
+				return port;
+			}
+		}
+		throw new IllegalArgumentException("Not matchable port: " + matchablePort);
 	}
 	
 }

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -10,11 +10,13 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.trace.testgeneration.java
 
+import hu.bme.mit.gamma.codegeneration.java.util.TypeSerializer
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.trace.testgeneration.java.util.TestGeneratorUtil
 import hu.bme.mit.gamma.trace.util.TraceUtil
+import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.util.Collections
 import java.util.List
 import org.eclipse.emf.ecore.resource.ResourceSet
@@ -51,15 +53,20 @@ class TestGenerator {
 	protected final TestGeneratorUtil testGeneratorUtil
 	protected final AbstractAssertionHandler waitingHandle 
 	protected final ActAndAssertSerializer actAndAssertSerializer	
+	protected final extension ExpressionSerializer expressionSerializer
+	
+	protected final int cycleIterationCount
+	
 	// Auxiliary objects
-	protected final extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
+	protected final extension TypeSerializer typeSerializer = TypeSerializer.INSTANCE
 	protected final extension TraceUtil traceUtil = TraceUtil.INSTANCE
+	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	
 	/**
 	 * Note that the lists of traces represents a set of behaviors the component must conform to.
 	 * Each trace must reference the same component with the same parameter values (arguments).
 	 */
-	new(List<ExecutionTrace> traces, String basePackage, String className) {
+	new(List<ExecutionTrace> traces, String basePackage, String className, int cycleIterationCount) {
 		this.firstTrace = traces.head
 		this.component = firstTrace.component
 		this.resourceSet = component.eResource.resourceSet
@@ -74,9 +81,12 @@ class TestGenerator {
     	this.TEST_CLASS_NAME = component.reflectiveClassName
     	this.TEST_INSTANCE_NAME = TEST_CLASS_NAME.toFirstLower
     	
+    	this.cycleIterationCount = cycleIterationCount
+    	
     	this.testGeneratorUtil = new TestGeneratorUtil(component)
 		this.actAndAssertSerializer = new ActAndAssertSerializer(component,
 			TEST_INSTANCE_NAME, TIMER_OBJECT_NAME)
+		this.expressionSerializer = new ExpressionSerializer(component, TEST_INSTANCE_NAME)
 		if (firstTrace.hasAllowedWaitingAnnotation) {
 			this.waitingHandle = new WaitingAllowedInFunction(firstTrace, actAndAssertSerializer)
 		} 
@@ -85,8 +95,16 @@ class TestGenerator {
 		}
 	}
 	
-	new(ExecutionTrace trace, String yakinduPackageName, String className) {
-		this(Collections.singletonList(trace), yakinduPackageName, className)
+	new(List<ExecutionTrace> traces, String basePackage, String className) {
+		this(traces, basePackage, className, 2)
+	}
+	
+	new(ExecutionTrace trace, String basePackage, String className, int cycleIterationCount) {
+		this(Collections.singletonList(trace), basePackage, className, cycleIterationCount)
+	}
+	
+	new(ExecutionTrace trace, String basePackage, String className) {
+		this(Collections.singletonList(trace), basePackage, className, 2)
 	}
 	
 	/**
@@ -121,6 +139,10 @@ class TestGenerator {
 			private static «TEST_CLASS_NAME» «TEST_INSTANCE_NAME»;
 «««			Only if there are timing specis in the model
 			«IF component.timed»private static «TIMER_CLASS_NAME» «TIMER_OBJECT_NAME»;«ENDIF»
+			
+			«FOR variable : traces.head.variableDeclarations»
+				protected «variable.type.serialize» «variable.name»«IF variable.expression !== null» = «variable.expression.serialize»«ENDIF»;
+			«ENDFOR»
 			
 			@Before
 			public void init() {
@@ -161,11 +183,18 @@ class TestGenerator {
 			import «_package.getPackageString(BASE_PACKAGE)».*;
 		«ENDFOR»
 		
+		import java.util.Objects;
+		
 		import static org.junit.Assert.assertTrue;
 		
 		import org.junit.Before;
 		import org.junit.After;
 		import org.junit.Test;
+		«IF waitingHandle instanceof WaitingAllowedInFunction»
+			import java.util.Arrays;
+			import java.util.List;
+			import java.util.function.BooleanSupplier;
+		«ENDIF»
 	'''
 	
 	protected def CharSequence generateTestCases(List<ExecutionTrace> traces) {
@@ -189,10 +218,15 @@ class TestGenerator {
 		for (trace : traces) {
 			val steps = newArrayList
 			steps += trace.steps
-			if (trace.cycle !== null) {
-				// Cycle steps are not handled differently
-				steps += trace.cycle.steps
+			
+			val cycle = trace.cycle
+			if (cycle !== null) {
+				// Cycle steps are not handled differently: we unfold the steps
+				for (var i = 0; i < cycleIterationCount; i++) {
+					steps += cycle.steps.map[it.clone]
+				}
 			}
+			
 			for (step : steps) {
 				val testMethod = '''
 					public void «IF steps.indexOf(step) == steps.size - 1»«FINAL_TEST_PREFIX»«TEST_NAME.toFirstUpper»«traceId++»()«ELSE»«TEST_NAME + stepId++»()«ENDIF» {
@@ -209,7 +243,8 @@ class TestGenerator {
 					}
 					
 				'''
-				builder.append(testMethod)
+				
+				builder.append(testMethod) // Test method is always appended
 			}
 		}
 		return builder.toString

@@ -1,11 +1,12 @@
 import scenario "/contract/scenario/Contracts.gsc" 
  
 statechart-contract {
-	scenario : Blinking(0)
-	folder  : "contract/scenario/automaton2" 
-	name : "Blinking2"
+	scenario : Blinking
+	folder  : "contract/scenario/automaton" 
+	name : "Blinking"
 	restart-on-cold-violation : true
-	automaton-type : test
+	automaton-type : monitor
+	test-type : negative
 }
  
 statechart-contract {

@@ -1,0 +1,24 @@
+package asynchronousreactive
+
+import "Interfaces/Interfaces.gcd"
+
+import "Statechart/Adder.gcd"
+import "Statechart/Counter.gcd"
+import "Statechart/Subtractor.gcd"
+
+async AsynchronousSystem [
+	port ExecuteAdder : requires ExecuteAsynchronous
+	port ExecuteSubtractor : requires ExecuteAsynchronous
+] {
+	component adder : Adder
+	component subtractor : Subtractor
+	
+	component counter : Counter
+	
+	bind ExecuteAdder -> adder.Execute
+	bind ExecuteSubtractor -> subtractor.Execute
+	
+	channel [ adder.Toggle ] -o)- [ counter.Toggle ]
+	channel [ subtractor.Toggle ] -o)- [ counter.Toggle ]
+	
+}

@@ -305,17 +305,47 @@ class UnfoldingTraceability {
 	def contains(ComponentInstanceReferenceExpression original, ComponentInstance copy) {
 		val originalInstances = original.componentInstanceChain
 		 // If the (AA) component is wrapped, the original will not contain the wrapper instance
+		val lastOriginalInstance = originalInstances.last
+		if (lastOriginalInstance.unfolded && copy.unfolded) {
+			// We handle if both are already unfolded - incorrect call, though: original is not actually original
+			return copy.name.startsWith(lastOriginalInstance.name)
+		}
+		
+		// Correct call, original is not unfolded
+		
 		val copyInstances = copy.componentInstanceChain
+		// copy might have a wrapper instance at front
+		if (copy.wrapped) {
+			val originalFirstInstance = originalInstances.head
+			val originalComponent = originalFirstInstance.containingComponent
+			val wrappedComponent = originalComponent.wrapComponent
+			val wrapperInstance = wrappedComponent.instances.head
+			
+			// "Adding" the wrapper instance to match the copy
+			originalInstances.add(0, wrapperInstance)
+		}
+		
+//		if (lastOriginalInstance.asynchronousStatechart) {
+//			val asynchronousStatechart = lastOriginalInstance.derivedType
+//			
+//			val wrappedStatechart = asynchronousStatechart.wrapComponent
+//			val wrapperInstance = wrappedStatechart.instances.head
+//			
+//			originalInstances += wrapperInstance
+//		}
 		
 		// The naming conventions are clear
 		// Without originalInstances.head.name == copyInstances.head.name,
 		// ambiguous naming situations could occur, e.g.,
 		// the FQN of the chain "a -> b" is equal to the name of instance "a_b"
+		val copyName = copy.name
+		val originalFqn = originalInstances.FQN
+		
 		return originalInstances.head.name == copyInstances.head.name &&
-			copy.name.startsWith(originalInstances.FQN)
+			copyName.startsWith(originalFqn)
 	}
 	
-	// Currently not used- maybe in the future?
+	// Currently not used - maybe in the future?
 	
 	protected def <T extends NamedElement> getNewObject(ComponentInstanceReferenceExpression originalInstance,
 			T originalObject, Component newTopComponent) {
@@ -349,25 +379,41 @@ class UnfoldingTraceability {
 		
 		val originalSimpleInstances = originalType.originalSimpleInstanceReferences
 		
-		val needsWrapping = originalType.needsWrapping
-		if (needsWrapping) {
-			for (originalSimpleInstance : originalSimpleInstances.toSet) {
-				originalSimpleInstances -= originalSimpleInstance
-				val wrapperInstance = originalType.instantiateComponent
-				val wrappedOriginalSimpleInstance = originalSimpleInstance.prepend(wrapperInstance)
-				originalSimpleInstances += wrappedOriginalSimpleInstance
-			}
-		}
+//		val needsWrapping = originalType.needsWrapping
+//		if (needsWrapping) {
+//			for (originalSimpleInstance : originalSimpleInstances.toSet) {
+//				originalSimpleInstances -= originalSimpleInstance
+//				val wrapperInstance = originalType.instantiateComponent
+//				val wrappedOriginalSimpleInstance = originalSimpleInstance.prepend(wrapperInstance)
+//				originalSimpleInstances += wrappedOriginalSimpleInstance
+//			}
+//		}
 		
 		for (originalSimpleInstance : originalSimpleInstances) {
 			// There are some AA and CCC wrappings of statecharts in the unfolding process, which
 			// should be handled by the below method call ("contains" instead of "equals")
 			if (originalSimpleInstance.contains(newInstance)) {
 				 // Only one is expected
-				if (needsWrapping) {
-					return originalSimpleInstance.getChild // Removing wrapper instance
-				}
+//				if (needsWrapping) {
+//					return originalSimpleInstance.getChild // Removing wrapper instance
+//				}
 				return originalSimpleInstance
+			}
+		}
+		throw new IllegalStateException("Not found original instance for " + newInstance)
+	}
+	
+	def getOriginalScheduledInstanceReferences(Component originalType) {
+		return originalType.allScheduledInstanceReferences
+	}
+	
+	def getOriginalScheduledInstanceReference(
+			ComponentInstance newInstance, Component originalType) {
+		val originalScheduledInstances = originalType.originalScheduledInstanceReferences
+
+		for (originalScheduledInstance : originalScheduledInstances) {
+			if (originalScheduledInstance.contains(newInstance)) {
+				return originalScheduledInstance
 			}
 		}
 		throw new IllegalStateException("Not found original instance for " + newInstance)

@@ -27,7 +27,7 @@ class TypeTransformer {
 	protected final NTA nta
 	// UPPAAL factories
 	protected final extension ExpressionsFactory expFact = ExpressionsFactory.eINSTANCE
-	protected final extension TypesFactory typFact= TypesFactory.eINSTANCE
+	protected final extension TypesFactory typFact = TypesFactory.eINSTANCE
 	
 	new(NTA nta) {
 		this.nta = nta

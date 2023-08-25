@@ -11,12 +11,14 @@
 package hu.bme.mit.gamma.plantuml.transformation
 
 import hu.bme.mit.gamma.statechart.util.ExpressionSerializer
+import hu.bme.mit.gamma.trace.model.ComponentSchedule
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
+import hu.bme.mit.gamma.trace.model.InstanceSchedule
 import hu.bme.mit.gamma.trace.model.RaiseEventAct
-import hu.bme.mit.gamma.trace.model.Schedule
 import hu.bme.mit.gamma.trace.model.Step
 import hu.bme.mit.gamma.trace.model.TimeElapse
 
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.trace.derivedfeatures.TraceModelDerivedFeatures.*
 
 class TraceToPlantUmlTransformer {
@@ -65,26 +67,31 @@ class TraceToPlantUmlTransformer {
 	
 	protected def serialize(Step step) '''
 		«FOR time : step.actions.filter(TimeElapse)»
-			...wait «time.elapsedTime»ms...
+			...wait «time.elapsedTime.serialize»ms...
 		«ENDFOR»
 		
 		«FOR act : step.actions.filter(RaiseEventAct)»
 			[o-> System : «act.port.name».«act.event.name»(«FOR argument : act.arguments SEPARATOR ', '»«argument.serialize»«ENDFOR»)
 		«ENDFOR»
 		
-		«FOR act : step.actions.filter(Schedule)»
+		«FOR act : step.actions.filter(ComponentSchedule)»
 			== Execute ==
 		«ENDFOR»
+		
+		«FOR act : step.actions.filter(InstanceSchedule)»
+			== Execute «act.instanceReference.componentInstance.name» ==
+		«ENDFOR»
+		
 		
 		«FOR act : step.outEvents»
 			System ->o] : «act.port.name».«act.event.name»(«FOR argument : act.arguments SEPARATOR ', '»«argument.serialize»«ENDFOR»)
 		«ENDFOR»
 		
 		hnote over System
-		«FOR config : step.instanceStateConfigurations.groupBy[it.instance.serialize].entrySet.sortBy[it.key]»
-			«config.key» in {«config.value.map[it.state.name].join(", ")»} «IF step.instanceVariableStates.exists[it.instanceReference.serialize == config.key]»with«ENDIF»
-			«FOR variableConstraint : step.instanceVariableStates.filter[it.instanceReference.serialize == config.key].sortBy[it.variableReference.variableDeclaration.name]»
-				«'''  '''»«variableConstraint.variableReference.variableDeclaration.name» = «variableConstraint.value.serialize»
+		«FOR config : step.instanceStateConfigurations.groupBy[it.instance?.serialize].entrySet.sortBy[it.key]»
+			«config.key» in {«config.value.map[it.state.name].join(", ")»} «IF step.instanceVariableStates.exists[it.instanceReference?.serialize == config.key]»with«ENDIF»
+			«FOR variableConstraint : step.instanceVariableStates.filter[it.instanceReference?.serialize == config.key].sortBy[it.variableDeclaration.name]»
+				«'''  '''»«variableConstraint.variableDeclaration.name» = «variableConstraint.otherOperandIfContainedByEquality.serialize»
 			«ENDFOR»
 		«ENDFOR»
 		endhnote

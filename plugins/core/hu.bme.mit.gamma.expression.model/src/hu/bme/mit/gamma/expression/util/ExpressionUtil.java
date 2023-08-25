@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.eclipse.emf.ecore.EObject;
 
@@ -35,6 +36,7 @@ import hu.bme.mit.gamma.expression.model.ConstantDeclaration;
 import hu.bme.mit.gamma.expression.model.DecimalLiteralExpression;
 import hu.bme.mit.gamma.expression.model.DecimalTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Declaration;
+import hu.bme.mit.gamma.expression.model.DeclarationReferenceAnnotation;
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition;
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression;
@@ -43,9 +45,12 @@ import hu.bme.mit.gamma.expression.model.EqualityExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory;
 import hu.bme.mit.gamma.expression.model.ExpressionPackage;
+import hu.bme.mit.gamma.expression.model.FalseExpression;
 import hu.bme.mit.gamma.expression.model.FieldAssignment;
 import hu.bme.mit.gamma.expression.model.FieldDeclaration;
 import hu.bme.mit.gamma.expression.model.FieldReferenceExpression;
+import hu.bme.mit.gamma.expression.model.GreaterEqualExpression;
+import hu.bme.mit.gamma.expression.model.GreaterExpression;
 import hu.bme.mit.gamma.expression.model.IfThenElseExpression;
 import hu.bme.mit.gamma.expression.model.InequalityExpression;
 import hu.bme.mit.gamma.expression.model.InitializableElement;
@@ -54,11 +59,14 @@ import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression;
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition;
 import hu.bme.mit.gamma.expression.model.LessEqualExpression;
 import hu.bme.mit.gamma.expression.model.LessExpression;
+import hu.bme.mit.gamma.expression.model.LiteralExpression;
 import hu.bme.mit.gamma.expression.model.MultiaryExpression;
 import hu.bme.mit.gamma.expression.model.MultiplyExpression;
 import hu.bme.mit.gamma.expression.model.NotExpression;
 import hu.bme.mit.gamma.expression.model.NullaryExpression;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
+import hu.bme.mit.gamma.expression.model.ParameterDeclarationAnnotation;
+import hu.bme.mit.gamma.expression.model.ParametricElement;
 import hu.bme.mit.gamma.expression.model.RationalLiteralExpression;
 import hu.bme.mit.gamma.expression.model.RationalTypeDefinition;
 import hu.bme.mit.gamma.expression.model.RecordAccessExpression;
@@ -66,6 +74,7 @@ import hu.bme.mit.gamma.expression.model.RecordLiteralExpression;
 import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.SubtractExpression;
+import hu.bme.mit.gamma.expression.model.TrueExpression;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
 import hu.bme.mit.gamma.expression.model.TypeDefinition;
@@ -83,10 +92,15 @@ public class ExpressionUtil {
 	protected ExpressionUtil() {}
 	//
 	
+	protected final long EMPTY_MASTER_QUEUE_VALUE = 0;
+	
+	//
 	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
 	protected final JavaUtil javaUtil = JavaUtil.INSTANCE;
 	protected final ExpressionEvaluator evaluator = ExpressionEvaluator.INSTANCE;
+	protected final ExpressionNegator negator = ExpressionNegator.INSTANCE;
 	protected final ExpressionTypeDeterminator2 typeDeterminator = ExpressionTypeDeterminator2.INSTANCE;
+	
 	protected final ExpressionModelFactory factory = ExpressionModelFactory.eINSTANCE;
 	
 	// The following methods are worth extending in subclasses
@@ -106,7 +120,7 @@ public class ExpressionUtil {
 			return reference.getFieldDeclaration();
 		}
 		if (expression instanceof ArrayAccessExpression) {
-			// ?
+			// Below branch
 		}
 		if (expression instanceof AccessExpression) {
 			// Default access
@@ -123,7 +137,8 @@ public class ExpressionUtil {
 		}
 		if (expression instanceof AccessExpression) {
 			AccessExpression access = (AccessExpression) expression;
-			return getAccessReference(access.getOperand());
+			return getAccessReference(
+					access.getOperand());
 		}
 		// Could be extended to literals too
 		throw new IllegalArgumentException("Not supported reference: " + expression);
@@ -226,19 +241,23 @@ public class ExpressionUtil {
 	// Arithmetic: for now, integers only
 
 	public Expression add(Expression expression, int value) {
-		return toIntegerLiteral(evaluator.evaluate(expression) + value);
+		return toIntegerLiteral(
+				evaluator.evaluate(expression) + value);
 	}
 
 	public Expression subtract(Expression expression, int value) {
-		return toIntegerLiteral(evaluator.evaluate(expression) - value);
+		return toIntegerLiteral(
+				evaluator.evaluate(expression) - value);
 	}
 	
 	public Expression createIncrementExpression(VariableDeclaration variable) {
-		return wrapIntoAdd(createReferenceExpression(variable), 1);
+		return wrapIntoAdd(
+				createReferenceExpression(variable), 1);
 	}
 
 	public Expression createDecrementExpression(VariableDeclaration variable) {
-		return wrapIntoSubtract(createReferenceExpression(variable), 1);
+		return wrapIntoSubtract(
+				createReferenceExpression(variable), 1);
 	}
 	
 	public Expression wrapIntoAdd(Expression expression, int value) {
@@ -538,16 +557,24 @@ public class ExpressionUtil {
 	
 	// Extract parameters
 	
-	public List<ConstantDeclaration> extractParamaters(
+	public List<ConstantDeclaration> extractParameters(ParametricElement parametricElement,
+			List<String> names, List<? extends Expression> arguments) {
+		return extractParameters(parametricElement.getParameterDeclarations(), names, arguments);
+	}
+	
+	public List<ConstantDeclaration> extractParameters(
 			List<? extends ParameterDeclaration> parameters, List<String> names,
 			List<? extends Expression> arguments) {
 		List<ConstantDeclaration> constants = new ArrayList<ConstantDeclaration>();
 		int size = parameters.size();
 		for (int i = 0; i < size; i++) {
 			ParameterDeclaration parameter = parameters.get(i);
+			Expression argument = arguments.get(i);
+			
 			Type type = ecoreUtil.clone(parameter.getType());
 			String name = names.get(i);
-			Expression value = ecoreUtil.clone(arguments.get(i));
+			Expression value = ecoreUtil.clone(argument);
+			
 			ConstantDeclaration constant = factory.createConstantDeclaration();
 			constant.setName(name);
 			constant.setType(type);
@@ -557,6 +584,34 @@ public class ExpressionUtil {
 			ecoreUtil.change(constant, parameter, parameter.eContainer());
 		}
 		return constants;
+	}
+	
+	public void inlineParameters(ParametricElement parametricElement,
+			List<? extends Expression> arguments) {
+		inlineParameters(parametricElement.getParameterDeclarations(), arguments);
+	}
+	
+	public void inlineParameters(List<? extends ParameterDeclaration> parameters,
+				List<? extends Expression> arguments) {
+		int size = parameters.size();
+		for (int i = 0; i < size; i++) {
+			ParameterDeclaration parameter = parameters.get(i);
+			Expression argument = arguments.get(i);
+			
+			ParametricElement parametricElement = ecoreUtil.getContainerOfType(parameter, ParametricElement.class);
+			List<DirectReferenceExpression> references = ecoreUtil
+					.getAllContentsOfType(parametricElement, DirectReferenceExpression.class).stream()
+					.filter(it -> it.getDeclaration() == parameter).collect(Collectors.toList());
+			for (DirectReferenceExpression reference : references) {
+				Expression value = ecoreUtil.clone(argument);
+				ecoreUtil.replace(value, reference);
+			}
+		}
+		// Removing later to avoid messing up the indexes
+		for (ParameterDeclaration parameter :
+					new ArrayList<ParameterDeclaration>(parameters)) {
+			ecoreUtil.remove(parameter);
+		}
 	}
 	
 	// Initial values of types
@@ -571,7 +626,9 @@ public class ExpressionUtil {
 	}
 	
 	protected Expression _getInitialValueOfType(TypeReference type) {
-		return getInitialValueOfType(type.getReference().getType());
+		TypeDeclaration reference = type.getReference();
+		return getInitialValueOfType(
+				reference.getType());
 	}
 
 	protected Expression _getInitialValueOfType(BooleanTypeDefinition type) {
@@ -622,7 +679,8 @@ public class ExpressionUtil {
 			FieldReferenceExpression fieldReference = factory.createFieldReferenceExpression();
 			fieldReference.setFieldDeclaration(field);
 			assignment.setReference(fieldReference);
-			assignment.setValue(getInitialValueOfType(field.getType()));
+			assignment.setValue(
+					getInitialValueOfType(field.getType()));
 			recordLiteralExpression.getFieldAssignments().add(assignment);
 		}
 		return recordLiteralExpression;
@@ -711,6 +769,19 @@ public class ExpressionUtil {
 		}
 	}
 	
+	// Parameter annotation handling
+	
+	public void addInternalAnnotation(ParameterDeclaration parameter) {
+		addAnnotation(parameter, factory.createInternalParameterDeclarationAnnotation());
+	}
+	
+	public void addAnnotation(ParameterDeclaration parameter, ParameterDeclarationAnnotation annotation) {
+		if (parameter != null) {
+			List<ParameterDeclarationAnnotation> annotations = parameter.getAnnotations();
+			annotations.add(annotation);
+		}
+	}
+	
 	// Variable annotation handling
 	
 	public void addTransientAnnotation(VariableDeclaration variable) {
@@ -733,10 +804,36 @@ public class ExpressionUtil {
 		addAnnotation(variable, factory.createScheduledClockVariableDeclarationAnnotation());
 	}
 	
+	public void addInternalAnnotation(VariableDeclaration variable) {
+		addAnnotation(variable, factory.createInternalVariableDeclarationAnnotation());
+	}
+	
+	public void addDeclarationReferenceAnnotation(VariableDeclaration variable, Declaration declaration) {
+		DeclarationReferenceAnnotation declarationReferenceAnnotation = factory.createDeclarationReferenceAnnotation();
+		declarationReferenceAnnotation.setDeclaration(declaration);
+		addAnnotation(variable, declarationReferenceAnnotation);
+	}
+	
+	public void addUnremovableAnnotation(VariableDeclaration variable) {
+		addAnnotation(variable, factory.createUnremovableVariableDeclarationAnnotation());
+	}
+	
+	public void addInjectedAnnotation(VariableDeclaration variable) {
+		addAnnotation(variable, factory.createInjectedVariableDeclarationAnnotation());
+	}
+	
 	public void addAnnotation(VariableDeclaration variable, VariableDeclarationAnnotation annotation) {
 		if (variable != null) {
-			variable.getAnnotations().add(annotation);
+			List<VariableDeclarationAnnotation> annotations = variable.getAnnotations();
+			annotations.add(annotation);
 		}
+	}
+	
+	public boolean hasAnnotation(VariableDeclaration variable,
+			Class<? extends VariableDeclarationAnnotation> annotationClass) {
+		List<VariableDeclarationAnnotation> annotations = variable.getAnnotations();
+		return annotations.stream()
+				.anyMatch(it -> annotationClass.isInstance(it));
 	}
 	
 	public void removeVariableDeclarationAnnotations(
@@ -769,18 +866,46 @@ public class ExpressionUtil {
 		return integerLiteral;
 	}
 	
+	public IntegerLiteralExpression createLiteralZero() {
+		return toIntegerLiteral(0);
+	}
+	
+	public IntegerLiteralExpression createLiteralOne() {
+		return toIntegerLiteral(1);
+	}
+	
 	public BigDecimal toBigDec(double value) {
 		return BigDecimal.valueOf(value);
 	}
 	
 	public DecimalLiteralExpression toDecimalLiteral(double value) {
-		return toDecimalLiteral(toBigDec(value));
+		return toDecimalLiteral(
+				toBigDec(value));
 	}
 	
 	public DecimalLiteralExpression toDecimalLiteral(BigDecimal value) {
 		DecimalLiteralExpression decimalLiteral = factory.createDecimalLiteralExpression();
 		decimalLiteral.setValue(value);
 		return decimalLiteral;
+	}
+	
+	public Integer toInteger(LiteralExpression literalExpression) {
+		if (literalExpression instanceof IntegerLiteralExpression integer) {
+			return integer.getValue().intValue();
+		}
+		else if (literalExpression instanceof TrueExpression bool) {
+			return 1;
+		}
+		else if (literalExpression instanceof FalseExpression bool) {
+			return 0;
+		}
+		else if (literalExpression instanceof EnumerationLiteralExpression enumeration) {
+			EnumerationLiteralDefinition enumLiteral = enumeration.getReference();
+			return ecoreUtil.getIndex(enumLiteral);
+		}
+		else {
+			throw new IllegalArgumentException("Not known literal: " + literalExpression);
+		}
 	}
 	
 	public VariableDeclaration createVariableDeclaration(Type type, String name) {
@@ -833,7 +958,52 @@ public class ExpressionUtil {
 		return ifThenElseExpression;
 	}
 	
+	public IfThenElseExpression weave(Collection<? extends IfThenElseExpression> expressions) {
+		// Maybe there is a single if-then-else expression
+		if (expressions.size() == 1) {
+			IfThenElseExpression ifThenElse = javaUtil.getOnlyElement(expressions);
+			// Making sure else is not null
+			if (ifThenElse.getElse() == null) {
+				Expression then = ifThenElse.getThen();
+				if (then == null) {
+					throw new IllegalArgumentException("Then is null");
+				}
+				Expression clonedThen = ecoreUtil.clone(then);
+				ifThenElse.setElse(clonedThen);
+			}
+			
+			return ifThenElse;
+		}
+		//
+		
+		IfThenElseExpression first = null;
+		IfThenElseExpression last = null;
+		for (IfThenElseExpression expression : expressions) {
+			if (first == null) {
+				first = expression;
+			}
+			if (last != null) {
+				if (last.getElse() != null) {
+					throw new IllegalArgumentException("Not null else: " + expression);
+				}
+				last.setElse(expression);
+			}
+			last = expression;
+		}
+		// Replacing last if-then-else if else is null, otherwise there would be "null" branch
+		if (last.getElse() == null) {
+			Expression then = last.getThen();
+			ecoreUtil.replace(then, last);
+		}
+		//
+		
+		return first;
+	}
+	
 	public DirectReferenceExpression createReferenceExpression(Declaration declaration) {
+		if (declaration == null) {
+			throw new IllegalArgumentException("Declaration is null");
+		}
 		DirectReferenceExpression reference = factory.createDirectReferenceExpression();
 		reference.setDeclaration(declaration);
 		return reference;
@@ -841,7 +1011,8 @@ public class ExpressionUtil {
 	
 	public EqualityExpression createEqualityExpression(VariableDeclaration variable, Expression expression) {
 		EqualityExpression equalityExpression = factory.createEqualityExpression();
-		equalityExpression.setLeftOperand(createReferenceExpression(variable));
+		equalityExpression.setLeftOperand(
+				createReferenceExpression(variable));
 		equalityExpression.setRightOperand(expression);
 		return equalityExpression;
 	}
@@ -855,7 +1026,8 @@ public class ExpressionUtil {
 	
 	public InequalityExpression createInequalityExpression(VariableDeclaration variable, Expression expression) {
 		InequalityExpression inequalityExpression = factory.createInequalityExpression();
-		inequalityExpression.setLeftOperand(createReferenceExpression(variable));
+		inequalityExpression.setLeftOperand(
+				createReferenceExpression(variable));
 		inequalityExpression.setRightOperand(expression);
 		return inequalityExpression;
 	}
@@ -879,6 +1051,20 @@ public class ExpressionUtil {
 		lessEqualExpression.setLeftOperand(lhs);
 		lessEqualExpression.setRightOperand(rhs);
 		return lessEqualExpression;
+	}
+	
+	public GreaterExpression createGreaterExpression(Expression lhs, Expression rhs) {
+		GreaterExpression greaterExpression = factory.createGreaterExpression();
+		greaterExpression.setLeftOperand(lhs);
+		greaterExpression.setRightOperand(rhs);
+		return greaterExpression;
+	}
+	
+	public GreaterEqualExpression createGreaterEqualExpression(Expression lhs, Expression rhs) {
+		GreaterEqualExpression greaterEqualExpression = factory.createGreaterEqualExpression();
+		greaterEqualExpression.setLeftOperand(lhs);
+		greaterEqualExpression.setRightOperand(rhs);
+		return greaterEqualExpression;
 	}
 	
 	public IfThenElseExpression createMinExpression(Expression lhs, Expression rhs) {
@@ -966,6 +1152,14 @@ public class ExpressionUtil {
 		return wrapIntoMultiaryExpression(expressions, factory.createOrExpression());
 	}
 	
+	public Expression wrapIntoAddExpression(Expression original, Expression addition) {
+		return wrapIntoMultiaryExpression(original, addition, factory.createAddExpression());
+	}
+	
+	public Expression wrapIntoAddExpression(Collection<? extends Expression> expressions) {
+		return wrapIntoMultiaryExpression(expressions, factory.createAddExpression());
+	}
+	
 	public ReferenceExpression index(ValueDeclaration declaration, List<Expression> indexes) {
 		if (indexes.isEmpty()) {
 			return createReferenceExpression(declaration);
@@ -1009,6 +1203,13 @@ public class ExpressionUtil {
 	
 	// Message queue - array handling
 	 
+	private int getArrayCapacity(VariableDeclaration arrayVariable) {
+		ArrayTypeDefinition type = (ArrayTypeDefinition) arrayVariable.getType();
+		Expression size = type.getSize();
+		int capacity = evaluator.evaluateInteger(size);
+		return capacity;
+	}
+	
 	public Expression peek(VariableDeclaration queue) {
 		TypeDefinition typeDefinition = ExpressionModelDerivedFeatures.getTypeDefinition(queue);
 		if (typeDefinition instanceof ArrayTypeDefinition) {
@@ -1020,6 +1221,62 @@ public class ExpressionUtil {
 			return accessExpression;
 		}
 		throw new IllegalArgumentException("Not an array: " + queue);
+	}
+	
+	public Expression isEmpty(VariableDeclaration sizeVariable) {
+		return createLessEqualExpression(
+				createReferenceExpression(sizeVariable), toIntegerLiteral(0));
+	}
+	
+	public Expression isMasterQueueEmpty(VariableDeclaration queue, VariableDeclaration sizeVariable) {
+		int capacity = getArrayCapacity(queue);
+		if (capacity == 1) {
+			Expression peek = peek(queue);
+			return createEqualityExpression(peek,
+					toIntegerLiteral(EMPTY_MASTER_QUEUE_VALUE));
+		}
+		else {
+			return isEmpty(sizeVariable);
+		}
+	}
+	
+	public Expression isMasterQueueNotEmpty(VariableDeclaration queue,
+			VariableDeclaration sizeVariable) {
+		return negator.negate( // To optimize
+				isMasterQueueEmpty(queue, sizeVariable));
+	}
+	
+	private LessEqualExpression isFull(VariableDeclaration sizeVariable, int capacity) {
+		return createLessEqualExpression(
+				toIntegerLiteral(capacity), createReferenceExpression(sizeVariable));
+	}
+	
+	public Expression isMasterQueueFull(VariableDeclaration queue, VariableDeclaration sizeVariable) {
+		int capacity = getArrayCapacity(queue);
+		if (capacity == 1) {
+			Expression peek = peek(queue);
+			return createInequalityExpression(peek,
+					toIntegerLiteral(EMPTY_MASTER_QUEUE_VALUE));
+		}
+		else {
+			return isFull(sizeVariable, capacity);
+		}
+	}
+	
+	public Expression isMasterQueueNotFull(VariableDeclaration queue,
+			VariableDeclaration sizeVariable) {
+		return negator.negate( // To optimize
+				isMasterQueueFull(queue, sizeVariable));
+	}
+	
+	public Expression getMasterQueueSize(VariableDeclaration queue, VariableDeclaration sizeVariable) {
+		int capacity = getArrayCapacity(queue);
+		if (capacity == 1) {
+			return createIfThenElseExpression(
+					isMasterQueueEmpty(queue, sizeVariable),
+					createLiteralZero(), createLiteralOne());
+		}
+		return createReferenceExpression(sizeVariable);
 	}
 	
 }

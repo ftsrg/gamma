@@ -2,14 +2,16 @@
 
 To use the visualization function, you need to install the following tools:
 
-* Graphviz 2.26.3 - 2.38,
-* PlantUML Eclipse plugin - Version 1.1.26
+* Graphviz 2.44.1,
+* PlantUML Eclipse plugin - Version 1.1.29
 
 ## Graphviz
 
+For the newest PlantUML version, the installation of Graphviz is no longer necessary as PlantUML is released with packed Graphviz binaries. Nevertheless, you can still install Graphviz separately if you want to as follows.
+
 You can download Graphviz from the following site: https://graphviz.gitlab.io/download/.
 
-For Windows, the stable packages for version 2.38 can be found here: https://graphviz.gitlab.io/_pages/Download/Download_windows.html.
+For Windows, the stable packages for version 2.44 can be found here: https://github.com/plantuml/graphviz-distributions.
 
 Note, that you may have to set your PATH variable to include the installation folder of Graphviz.
 
@@ -22,7 +24,7 @@ Details about the Eclipse plugin can be found here: https://plantuml.com/eclipse
 The PlantUML plugin can be set up as follows:
 1. Select `Help > Install New Software…` in your Eclipse IDE.
 1. Select `Add`, and type http://hallvard.github.io/plantuml/ in the `Location` bar. 
-1. Install all available features.
+1. Install all available features apart from _Source_.
 
 To open the _PlantUML View_ window, select `Window > Show View > Other > PlantUML` and select the `PlantUML View`.
 

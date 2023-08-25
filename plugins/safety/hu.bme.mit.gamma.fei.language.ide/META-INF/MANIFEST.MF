@@ -1,0 +1,19 @@
+Manifest-Version: 1.0
+Automatic-Module-Name: hu.bme.mit.gamma.fei.language.ide
+Bundle-ManifestVersion: 2
+Bundle-Name: Fault Extension Instructions Language IDE
+Bundle-Vendor: BME-FTSRG
+Bundle-Version: 2.9.0.qualifier
+Bundle-SymbolicName: hu.bme.mit.gamma.fei.language.ide; singleton:=true
+Bundle-ActivationPolicy: lazy
+Require-Bundle: hu.bme.mit.gamma.fei.language,
+ hu.bme.mit.gamma.fei.model,
+ org.eclipse.xtext.ide,
+ org.eclipse.xtext.xbase.ide,
+ org.antlr.runtime;bundle-version="[3.2.0,3.2.1)",
+ hu.bme.mit.gamma.expression.language,
+ hu.bme.mit.gamma.action.language,
+ hu.bme.mit.gamma.statechart.language
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Export-Package: hu.bme.mit.gamma.fei.language.ide.contentassist.antlr,
+ hu.bme.mit.gamma.fei.language.ide.contentassist.antlr.internal

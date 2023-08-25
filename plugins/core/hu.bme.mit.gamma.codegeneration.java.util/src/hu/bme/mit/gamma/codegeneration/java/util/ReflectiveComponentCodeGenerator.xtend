@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -10,15 +10,18 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.codegeneration.java.util
 
+import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.composite.CompositeComponent
 import hu.bme.mit.gamma.statechart.composite.ScheduledAsynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponent
 import hu.bme.mit.gamma.statechart.interface_.Component
+import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 
 import static extension hu.bme.mit.gamma.codegeneration.java.util.Namings.*
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class ReflectiveComponentCodeGenerator {
@@ -114,10 +117,19 @@ class ReflectiveComponentCodeGenerator {
 						«FOR outEvent : port.outputEvents»
 							case "«port.name».«outEvent.name»":
 								if («Namings.REFLECTIVE_WRAPPED_COMPONENT».get«port.name.toFirstUpper»().isRaised«outEvent.name.toFirstUpper»()) {
-									«FOR i : 0..< outEvent.parameterDeclarations.size BEFORE "return " SEPARATOR " && " AFTER ";"»
-										 Objects.deepEquals(parameters[«i»], «Namings.REFLECTIVE_WRAPPED_COMPONENT».get«port.name.toFirstUpper»().get«outEvent.parameterDeclarations.get(i).name.toFirstUpper»())
-									«ENDFOR»
-									«IF outEvent.parameterDeclarations.empty»return true;«ENDIF»
+									«IF outEvent.parameterDeclarations.empty»
+										return true;
+									«ELSE»
+										if (parameters != null) {
+											return
+												«FOR i : 0..< outEvent.parameterDeclarations.size SEPARATOR " && "»
+													Objects.deepEquals(parameters[«i»], «port.generateEventParameterValuesGetter(outEvent.parameterDeclarations.get(i))»)
+												«ENDFOR»;
+										}
+										else {
+											return true;
+										}
+									«ENDIF»
 								}
 								break;
 						«ENDFOR»
@@ -126,6 +138,32 @@ class ReflectiveComponentCodeGenerator {
 						throw new IllegalArgumentException("Not known port-out event combination: " + portEvent);
 				}
 				«IF !component.allPorts.map[it.outputEvents].flatten.empty»return false;«ENDIF»
+			}
+			
+			public Object[] getEventParameterValues(String port, String event) {
+				String portEvent = port + "." + event;
+				switch (portEvent) {
+					«FOR port : component.allPorts»
+						«FOR outEvent : port.outputEvents»
+							case "«port.name».«outEvent.name»":
+«««								if («Namings.REFLECTIVE_WRAPPED_COMPONENT».get«port.name.toFirstUpper»().isRaised«outEvent.name.toFirstUpper»()) {
+								«IF outEvent.parameterDeclarations.empty»
+									return new Object[0];
+								«ELSE»
+									return new Object[] {
+										«FOR parameter : outEvent.parameterDeclarations SEPARATOR ", "»
+											«port.generateEventParameterValuesGetter(parameter)»
+										«ENDFOR»
+									};
+								«ENDIF»
+«««								}
+«««								break;
+						«ENDFOR»
+					«ENDFOR»
+					default:
+						throw new IllegalArgumentException("Not known port-out event combination: " + portEvent);
+				}
+«««				«IF !component.allPorts.map[it.outputEvents].flatten.empty»return new Object[0];«ENDIF»
 			}
 			
 			«component.generateIsActiveState»
@@ -158,7 +196,7 @@ class ReflectiveComponentCodeGenerator {
 	
 	protected def generateScheduling(Component component) '''
 		public void schedule(String instance) {
-			«IF component instanceof SynchronousComponent»
+			«IF component instanceof SynchronousComponent || component instanceof StatechartDefinition»
 					«Namings.REFLECTIVE_WRAPPED_COMPONENT».runCycle();
 			«ELSEIF component instanceof AsynchronousAdapter ||
 				component instanceof ScheduledAsynchronousCompositeComponent»
@@ -205,11 +243,13 @@ class ReflectiveComponentCodeGenerator {
 		}
 	'''
 	
+	protected def generateEventParameterValuesGetter(Port port, ParameterDeclaration parameter) '''«Namings.REFLECTIVE_WRAPPED_COMPONENT».get«port.name.toFirstUpper»().get«parameter.name.toFirstUpper»()'''
+	
 	protected def generateVariableValueGetters(Component component) '''
 		public Object getValue(String variable) {
 			switch (variable) {
 				«IF component instanceof StatechartDefinition»
-					«FOR variable : component.variableDeclarations»
+					«FOR variable : component.variableDeclarations.filter[!it.transient]»
 						case "«variable.name»":
 							return «Namings.REFLECTIVE_WRAPPED_COMPONENT».get«variable.name.toFirstUpper»();
 					«ENDFOR»

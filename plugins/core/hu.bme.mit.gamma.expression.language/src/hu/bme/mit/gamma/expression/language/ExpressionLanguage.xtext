@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -42,7 +42,29 @@ ConstantDeclaration returns ConstantDeclaration:
 
 // Referred in the statechart language
 VariableDeclaration returns VariableDeclaration:
+	(annotations+=VariableDeclarationAnnotation)*
 	'var' name=ID ':' type=Type (':=' expression=Expression)?
+;
+
+VariableDeclarationAnnotation returns VariableDeclarationAnnotation:
+	TransientVariableDeclarationAnnotation | ResettableVariableDeclarationAnnotation |
+		 UnremovableVariableDeclarationAnnotation | InjectedVariableDeclarationAnnotation
+;
+
+TransientVariableDeclarationAnnotation returns TransientVariableDeclarationAnnotation:
+	{TransientVariableDeclarationAnnotation} '@Transient'
+;
+
+ResettableVariableDeclarationAnnotation returns ResettableVariableDeclarationAnnotation:
+	{ResettableVariableDeclarationAnnotation} '@Resettable'
+;
+
+UnremovableVariableDeclarationAnnotation returns UnremovableVariableDeclarationAnnotation:
+	{UnremovableVariableDeclarationAnnotation} '@Unremovable'
+;
+
+InjectedVariableDeclarationAnnotation returns InjectedVariableDeclarationAnnotation:
+	{InjectedVariableDeclarationAnnotation} '@Injected'
 ;
 
 //Abstraction for extensibility
@@ -253,13 +275,17 @@ FieldReferenceExpression returns FieldReferenceExpression:
 ;
 
 PrimaryExpression returns Expression: 
-	  DirectReferenceExpression | 
-	  LiteralExpression | 
+	ReferenceExpression | 
+	LiteralExpression | 
 	 '(' Expression ')'
 ;
 
+ReferenceExpression returns Expression: // So it can be overriden
+	DirectReferenceExpression
+;
+
 DirectReferenceExpression returns DirectReferenceExpression:
-		{DirectReferenceExpression} declaration=[ValueDeclaration] 
+	declaration=[ValueDeclaration]
 ;
 
 LiteralExpression returns Expression:

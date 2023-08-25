@@ -5,6 +5,7 @@ include "test/EmbeddedStructMachineVarMachine/EmbeddedStructMachineVarMachine.gg
 include "test/GuardMachine/GuardMachine.ggen"
 include "test/InnerStateMachine/InnerStateMachine.ggen"
 include "test/MachineVarMachine/MachineVarMachine.ggen"
+include "test/NondetMachine/NondetMachine.ggen"
 include "test/RegionMachine/RegionMachine.ggen"
 include "test/ReturnFunctionMachine/ReturnFunctionMachine.ggen"
 include "test/SameMachineInstancesMachine/SameMachineInstancesMachine.ggen"

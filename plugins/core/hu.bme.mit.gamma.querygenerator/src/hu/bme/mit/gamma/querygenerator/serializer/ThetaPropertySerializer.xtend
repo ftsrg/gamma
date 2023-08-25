@@ -12,9 +12,13 @@ package hu.bme.mit.gamma.querygenerator.serializer
 
 import hu.bme.mit.gamma.expression.model.Comment
 import hu.bme.mit.gamma.property.model.AtomicFormula
+import hu.bme.mit.gamma.property.model.BinaryOperandLogicalPathFormula
+import hu.bme.mit.gamma.property.model.BinaryOperandPathFormula
+import hu.bme.mit.gamma.property.model.BinaryPathOperator
 import hu.bme.mit.gamma.property.model.PathQuantifier
 import hu.bme.mit.gamma.property.model.QuantifiedFormula
 import hu.bme.mit.gamma.property.model.StateFormula
+import hu.bme.mit.gamma.property.model.UnaryOperandLogicalPathFormula
 import hu.bme.mit.gamma.property.model.UnaryOperandPathFormula
 import hu.bme.mit.gamma.property.model.UnaryPathOperator
 
@@ -54,6 +58,8 @@ class ThetaPropertySerializer extends PropertySerializer {
 		}
 		return false
 	}
+	
+	//
 
 	protected def dispatch String serializeFormula(AtomicFormula formula) {
 		return formula.expression.serialize
@@ -62,13 +68,28 @@ class ThetaPropertySerializer extends PropertySerializer {
 	protected def dispatch String serializeFormula(QuantifiedFormula formula) {
 		val quantifier = formula.quantifier
 		val pathFormula = formula.formula
-		return '''«quantifier.transform»«pathFormula.serializeFormula»'''
+		return '''«quantifier.transform»«handleQuantifierOperatorSpace»«pathFormula.serializeFormula»'''
 	}
 	
 	protected def dispatch String serializeFormula(UnaryOperandPathFormula formula) {
 		val operator = formula.operator
 		val operand = formula.operand
-		return '''«operator.transform» «operand.serializeFormula»'''
+		return '''«operator.transform» («operand.serializeFormula»)'''
+	}
+	
+	protected def dispatch String serializeFormula(UnaryOperandLogicalPathFormula formula) {
+		throw new IllegalArgumentException("Not supported element: " + formula)
+	}
+	
+	protected def dispatch String serializeFormula(BinaryOperandPathFormula formula) {
+		val operator = formula.operator
+		val leftOperand = formula.leftOperand
+		val rightOperand = formula.rightOperand
+		return '''((«leftOperand.serializeFormula») «operator.transform» («rightOperand.serializeFormula»))'''
+	}
+	
+	protected def dispatch String serializeFormula(BinaryOperandLogicalPathFormula formula) {
+		throw new IllegalArgumentException("Not supported element: " + formula)
 	}
 	
 	// Other CTL* formula expressions are not supported by UPPAAL
@@ -86,6 +107,10 @@ class ThetaPropertySerializer extends PropertySerializer {
 		}
 	}
 	
+	protected def String transform(BinaryPathOperator operator) {
+		throw new IllegalArgumentException("Not supported operator: " + operator)
+	}
+	
 	protected def String transform(PathQuantifier quantifier) {
 		switch (quantifier) {
 			case FORALL: {
@@ -97,6 +122,11 @@ class ThetaPropertySerializer extends PropertySerializer {
 			default: 
 				throw new IllegalArgumentException("Not supported quantifier: " + quantifier)
 		}
+	}
+	
+	// Set to CTL; subclasses can override it to support CTL *
+	protected def handleQuantifierOperatorSpace() {
+		return ""
 	}
 	
 	override serialize(Comment comment) ''''''

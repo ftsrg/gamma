@@ -1,3 +1,13 @@
+/********************************************************************************
+ * Copyright (c) 2020-2022 Contributors to the Gamma project
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * SPDX-License-Identifier: EPL-1.0
+ ********************************************************************************/
 package hu.bme.mit.gamma.lowlevel.xsts.transformation
 
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
@@ -90,7 +100,7 @@ class HierarchicalTransitionMerger extends AbstractTransitionMerger {
 			val xStsExecutedVariable = xStsExecutedVariableAction.variableDeclaration
 			xStsSequentialAction.actions += xStsExecutedVariableAction
 			
-			val xStsParallelAction = createParallelAction
+			val xStsParallelAction = createRegionAction
 			xStsSequentialAction.actions += xStsParallelAction
 			
 			for (lowlevelRegion : lowlevelRegions) {
@@ -219,16 +229,29 @@ class HierarchicalTransitionMerger extends AbstractTransitionMerger {
 		}
 	}
 	
-	private def injectExecutedVariableAnnotation(Action action, VariableDeclaration execVariable) {
+	private def void injectExecutedVariableAnnotation(Action action, VariableDeclaration execVariable) {
 		val execSetting = execVariable.createAssignmentAction(createTrueExpression)
 		if (action instanceof IfAction) {
-			val ifActions = action.getSelfAndAllContentsOfType(IfAction)
-			for (ifAction : ifActions) {
-				val then = ifAction.then
+//			val ifActions = action.getSelfAndAllContentsOfType(IfAction)
+//			for (ifAction : ifActions) {
+				val then = action.then
 				then.appendToAction(execSetting)
-			}
+				// Recursion for prioritized transitions
+				val _else = action.^else
+				if (!_else.nullOrEmptyAction) {
+					_else.injectExecutedVariableAnnotation(execVariable)
+				}
+				// Note that we do not add this exec into the last "else"
+//			}
 		}
 		else if (action instanceof NonDeterministicAction) {
+			// No default branches yet because this method is called before 'extendElse'
+//			val branches = newArrayList
+//			branches += action.actions
+//			if (choicesWithDefaultBranch.contains(action)) {
+//				branches.remove(branches.size - 1)
+//			}
+			checkState(!choicesWithDefaultBranch.contains(action))
 			for (branch : action.actions) {
 				branch.appendToAction(execSetting)
 			}
@@ -247,11 +270,20 @@ class HierarchicalTransitionMerger extends AbstractTransitionMerger {
 		// Extendable is either an If, NonDet or a Sequential with an If at the end
 		// See mergeAllTransitionsOfRegion(CompositeElement element...
 		if (extendable instanceof IfAction) {
-			extendable.append(action) // See the referenced method
+			// We must do this manually, and not using extendable.append(action)
+			// as in the last else, there may be a Sequential with an If at the end
+			val _else = extendable.^else
+			if (_else.nullOrEmptyAction) {
+				extendable.append(action) // See the referenced method
+			}
+			else {
+				_else.extendElse(action) // Recursion to potentially get to the Seq part
+			}
 		}
 		else if (extendable instanceof NonDeterministicAction) {
 			extendable.extendChoiceWithDefaultBranch(action)
 			// Can the same NonDeterministicAction be extended multiple times?
+			checkState(!choicesWithDefaultBranch.contains(extendable))
 			choicesWithDefaultBranch += extendable
 		}
 		else if (extendable instanceof SequentialAction) {

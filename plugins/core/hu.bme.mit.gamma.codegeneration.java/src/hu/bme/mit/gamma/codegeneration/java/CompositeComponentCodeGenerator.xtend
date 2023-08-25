@@ -17,6 +17,7 @@ import hu.bme.mit.gamma.statechart.composite.CompositeComponent
 import hu.bme.mit.gamma.statechart.interface_.Port
 
 import static extension hu.bme.mit.gamma.codegeneration.java.util.Namings.*
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class CompositeComponentCodeGenerator {
@@ -64,7 +65,7 @@ class CompositeComponentCodeGenerator {
 	 * Generates methods that for in-event raisings in the case of composite components.
 	 */
 	def CharSequence delegateRaisingMethods(Port systemPort) '''
-		«FOR event : systemPort.inputEvents SEPARATOR "\n"»
+		«FOR event : systemPort.inputEvents SEPARATOR System.lineSeparator»
 			@Override
 			public void raise«event.name.toFirstUpper»(«event.generateParameters») {
 				«FOR connector : systemPort.portBindings»
@@ -82,17 +83,29 @@ class CompositeComponentCodeGenerator {
 		«FOR event : systemPort.outputEvents»
 			@Override
 			public boolean isRaised«event.name.toFirstUpper»() {
-				«FOR connector : systemPort.portBindings»
-					return «connector.instancePortReference.instance.name».get«connector.instancePortReference.port.name.toFirstUpper»().isRaised«event.name.toFirstUpper»();
-				«ENDFOR»
+				«IF systemPort.portBindings.empty»
+					return false;
+				«ELSE»
+					«FOR connector : systemPort.portBindings»
+						return «connector.instancePortReference.instance.name».get«connector.instancePortReference.port.name.toFirstUpper»().isRaised«event.name.toFirstUpper»();
+					«ENDFOR»
+				«ENDIF»
 			}
 «««			ValueOf checks
 			«FOR parameter : event.parameterDeclarations»
 				@Override
 				public «parameter.type.transformType» get«parameter.name.toFirstUpper»() {
-					«FOR connector : systemPort.portBindings»
-						return «connector.instancePortReference.instance.name».get«connector.instancePortReference.port.name.toFirstUpper»().get«parameter.name.toFirstUpper»();
-					«ENDFOR»
+					«IF systemPort.portBindings.empty»
+						«IF parameter.type.primitive»
+							return «parameter.type.defaultExpression.serialize»;
+						«ELSE»
+							return null;
+						«ENDIF»
+					«ELSE»
+						«FOR connector : systemPort.portBindings»
+							return «connector.instancePortReference.instance.name».get«connector.instancePortReference.port.name.toFirstUpper»().get«parameter.name.toFirstUpper»();
+						«ENDFOR»
+					«ENDIF»
 				}
 			«ENDFOR»
 		«ENDFOR»
@@ -103,7 +116,7 @@ class CompositeComponentCodeGenerator {
 	 */
 	def CharSequence implementOutMethods(Port systemPort) '''
 «««		Simple flag checks
-		«FOR event : systemPort.outputEvents SEPARATOR "\n"»
+		«FOR event : systemPort.outputEvents SEPARATOR System.lineSeparator»
 			@Override
 			public boolean isRaised«event.name.toFirstUpper»() {
 				return isRaised«event.name.toFirstUpper»;

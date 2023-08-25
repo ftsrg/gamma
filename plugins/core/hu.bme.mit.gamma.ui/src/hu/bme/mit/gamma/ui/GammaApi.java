@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -34,15 +34,19 @@ import hu.bme.mit.gamma.genmodel.model.AdaptiveContractTestGeneration;
 import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation;
 import hu.bme.mit.gamma.genmodel.model.CodeGeneration;
 import hu.bme.mit.gamma.genmodel.model.EventPriorityTransformation;
+import hu.bme.mit.gamma.genmodel.model.FaultTreeGeneration;
+import hu.bme.mit.gamma.genmodel.model.FmeaTableGeneration;
 import hu.bme.mit.gamma.genmodel.model.GenModel;
 import hu.bme.mit.gamma.genmodel.model.InterfaceCompilation;
 import hu.bme.mit.gamma.genmodel.model.PhaseStatechartGeneration;
+import hu.bme.mit.gamma.genmodel.model.SafetyAssessment;
 import hu.bme.mit.gamma.genmodel.model.Slicing;
 import hu.bme.mit.gamma.genmodel.model.StatechartCompilation;
 import hu.bme.mit.gamma.genmodel.model.StatechartContractGeneration;
 import hu.bme.mit.gamma.genmodel.model.StatechartContractTestGeneration;
 import hu.bme.mit.gamma.genmodel.model.Task;
 import hu.bme.mit.gamma.genmodel.model.TestGeneration;
+import hu.bme.mit.gamma.genmodel.model.TraceGeneration;
 import hu.bme.mit.gamma.genmodel.model.TraceReplayModelGeneration;
 import hu.bme.mit.gamma.genmodel.model.Verification;
 import hu.bme.mit.gamma.genmodel.model.YakinduCompilation;
@@ -52,6 +56,8 @@ import hu.bme.mit.gamma.ui.taskhandler.AnalysisModelTransformationAndVerificatio
 import hu.bme.mit.gamma.ui.taskhandler.AnalysisModelTransformationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.CodeGenerationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.EventPriorityTransformationHandler;
+import hu.bme.mit.gamma.ui.taskhandler.FaultTreeGenerationHandler;
+import hu.bme.mit.gamma.ui.taskhandler.FmeaTableGenerationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.InterfaceCompilationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.OptimizerAndVerificationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.PhaseGenerationHandler;
@@ -60,6 +66,7 @@ import hu.bme.mit.gamma.ui.taskhandler.StatechartCompilationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.StatechartContractGenerationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.StatechartContractTestGenerationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.TestGenerationHandler;
+import hu.bme.mit.gamma.ui.taskhandler.TraceGenerationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.TraceReplayModelGenerationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.VerificationHandler;
 import hu.bme.mit.gamma.ui.util.DefaultResourceSetCreator;
@@ -92,169 +99,196 @@ public class GammaApi {
 	
 	public void run(String fileWorkspaceRelativePath,
 			ResourceSetCreator resourceSetCreator, TaskHook hook) throws Exception {
-		URI fileURI = URI.createPlatformResourceURI(fileWorkspaceRelativePath, true);
-		// Eclipse magic: URI -> IFile
-		IWorkspaceRoot workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
-		IFile file = workspaceRoot.getFile(new Path(fileURI.toPlatformString(true)));
-		IProject project = file.getProject();
-		// Multiple compilations due to the dependencies between models
-		final int MAX_ITERATION_COUNT = 6;
-		for (int i = 0; i < MAX_ITERATION_COUNT; ++i) {
-			// To support different implementations
-			ResourceSet resourceSet = resourceSetCreator.createResourceSet();
-			//
-			Resource resource = resourceSet.getResource(fileURI, true);
-			// Assume that the resource has a single object as content
-			EObject content = resource.getContents().get(0);
-			// Resolve all is needed if there are proxys referring to different resources:
-			// if we remove containers from the element tree that contain references to other resources
-			// they will be broken - theoretically, this call should not require too much resource
-			EcoreUtil.resolveAll(resourceSet);
-			if (content instanceof GenModel) {
-				GenModel genmodel = (GenModel) content;
-				// WARNING: workspace location and imported project locations are not to be confused
-				// Sorting: InterfaceCompilation < StatechartCompilation < else does not work as the generated models are not reloaded
-				List<Task> tasks = orderTasks(genmodel, i);
-				for (Task task : tasks) {
-					// Initializing the hook for potential measurements
-					hook.startTaskProcess(task);
-					//
-					for (int j = 0; j < hook.getIterationCount(); j++) {
-						// Iteration start
-						hook.startIteration();
+		try {
+			URI fileURI = URI.createPlatformResourceURI(fileWorkspaceRelativePath, true);
+			// Eclipse magic: URI -> IFile
+			IWorkspaceRoot workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
+			IFile file = workspaceRoot.getFile(new Path(fileURI.toPlatformString(true)));
+			IProject project = file.getProject();
+			// Multiple compilations due to the dependencies between models
+			final int MAX_ITERATION_COUNT = 6;
+			for (int i = 0; i < MAX_ITERATION_COUNT; ++i) {
+				// To support different implementations
+				ResourceSet resourceSet = resourceSetCreator.createResourceSet();
+				//
+				Resource resource = resourceSet.getResource(fileURI, true);
+				// Assume that the resource has a single object as content
+				EObject content = resource.getContents().get(0);
+				// Resolve all is needed if there are proxys referring to different resources:
+				// if we remove containers from the element tree that contain references to other resources
+				// they will be broken - theoretically, this call should not require too much resource
+				EcoreUtil.resolveAll(resourceSet);
+				if (content instanceof GenModel) {
+					GenModel genmodel = (GenModel) content;
+					// WARNING: workspace location and imported project locations are not to be confused
+					// Sorting: InterfaceCompilation < StatechartCompilation < else does not work as the generated models are not reloaded
+					List<Task> tasks = orderTasks(genmodel, i);
+					for (Task task : tasks) {
+						// Initializing the hook for potential measurements
+						hook.startTaskProcess(task);
 						//
-						if (task instanceof YakinduCompilation) {
-							if (task instanceof InterfaceCompilation) {
-								logger.log(Level.INFO, "The Yakindu-Gamma interface transformation has been started");
-								InterfaceCompilation interfaceCompilation = (InterfaceCompilation) task;
-								InterfaceCompilationHandler handler = new InterfaceCompilationHandler(file);
-								handler.execute(interfaceCompilation);
-								logger.log(Level.INFO, "The Yakindu-Gamma interface transformation has been finished");
-							}
-							else if (task instanceof StatechartCompilation) {
-								logger.log(Level.INFO, "The Yakindu-Gamma transformation has been started");
-								StatechartCompilation statechartCompilation = (StatechartCompilation) task;
-								StatechartCompilationHandler handler = new StatechartCompilationHandler(file);
-								handler.execute(statechartCompilation);
-								logger.log(Level.INFO, "The Yakindu-Gamma transformation has been finished");
-							}
-						} else {
-							final String projectName = project.getName().toLowerCase();
-							if (task instanceof CodeGeneration) {
-								CodeGeneration codeGeneration = (CodeGeneration) task;
-								logger.log(Level.INFO, "The code generation has been started");
-								CodeGenerationHandler handler = new CodeGenerationHandler(file);
-								handler.execute(codeGeneration, projectName);
-								logger.log(Level.INFO, "The code generation has been finished");
-							}
-							else if (task instanceof AnalysisModelTransformation) {
-								logger.log(Level.INFO, "The analyis transformation has been started");
-								AnalysisModelTransformation analysisModelTransformation = (AnalysisModelTransformation) task;
-								// Maybe different classes should be created for distinction?
-								if (GenmodelDerivedFeatures.isVerifyAnalysisTask(analysisModelTransformation)) {
-									AnalysisModelTransformationAndVerificationHandler handler =
-												new AnalysisModelTransformationAndVerificationHandler(file);
-									handler.execute(analysisModelTransformation);
+						for (int j = 0; j < hook.getIterationCount(); j++) {
+							// Iteration start
+							hook.startIteration();
+							//
+							if (task instanceof YakinduCompilation) {
+								if (task instanceof InterfaceCompilation) {
+									logger.log(Level.INFO, "The Yakindu-Gamma interface transformation has been started");
+									InterfaceCompilation interfaceCompilation = (InterfaceCompilation) task;
+									InterfaceCompilationHandler handler = new InterfaceCompilationHandler(file);
+									handler.execute(interfaceCompilation);
+									logger.log(Level.INFO, "The Yakindu-Gamma interface transformation has been finished");
 								}
-								else {
-									AnalysisModelTransformationHandler handler = new AnalysisModelTransformationHandler(file);
-									handler.execute(analysisModelTransformation);
+								else if (task instanceof StatechartCompilation) {
+									logger.log(Level.INFO, "The Yakindu-Gamma transformation has been started");
+									StatechartCompilation statechartCompilation = (StatechartCompilation) task;
+									StatechartCompilationHandler handler = new StatechartCompilationHandler(file);
+									handler.execute(statechartCompilation);
+									logger.log(Level.INFO, "The Yakindu-Gamma transformation has been finished");
 								}
-								logger.log(Level.INFO, "The analysis transformation has been finished");
-							}
-							else if (task instanceof TestGeneration) {
-								logger.log(Level.INFO, "The test generation has been started");
-								TestGeneration testGeneration = (TestGeneration) task;
-								TestGenerationHandler handler = new TestGenerationHandler(file);
-								handler.execute(testGeneration, projectName);
-								logger.log(Level.INFO, "The test generation has been finished");
-							}
-							else if (task instanceof Verification) {
-								logger.log(Level.INFO, "The verification has been started");
-								Verification verification = (Verification) task;
-								// Maybe different classes should be created for distinction?
-								if (GenmodelDerivedFeatures.isOptimizableVerificationTask(verification)) {
-									OptimizerAndVerificationHandler handler = new OptimizerAndVerificationHandler(file);
-									handler.execute(verification);
+							} else {
+								final String projectName = project.getName().toLowerCase();
+								if (task instanceof CodeGeneration) {
+									CodeGeneration codeGeneration = (CodeGeneration) task;
+									logger.log(Level.INFO, "The code generation has been started");
+									CodeGenerationHandler handler = new CodeGenerationHandler(file);
+									handler.execute(codeGeneration, projectName);
+									logger.log(Level.INFO, "The code generation has been finished");
 								}
-								else {
-									VerificationHandler handler = new VerificationHandler(file);
-									handler.execute(verification);
+								else if (task instanceof AnalysisModelTransformation) {
+									logger.log(Level.INFO, "The analyis transformation has been started");
+									AnalysisModelTransformation analysisModelTransformation = (AnalysisModelTransformation) task;
+									// Maybe different classes should be created for distinction?
+									if (GenmodelDerivedFeatures.isVerifyAnalysisTask(analysisModelTransformation)) {
+										AnalysisModelTransformationAndVerificationHandler handler =
+													new AnalysisModelTransformationAndVerificationHandler(file);
+										handler.execute(analysisModelTransformation);
+									}
+									else {
+										AnalysisModelTransformationHandler handler = new AnalysisModelTransformationHandler(file);
+										handler.execute(analysisModelTransformation);
+									}
+									logger.log(Level.INFO, "The analysis transformation has been finished");
 								}
-								logger.log(Level.INFO, "The verification has been finished");
+								else if (task instanceof TestGeneration) {
+									logger.log(Level.INFO, "The test generation has been started");
+									TestGeneration testGeneration = (TestGeneration) task;
+									TestGenerationHandler handler = new TestGenerationHandler(file);
+									handler.execute(testGeneration, projectName);
+									logger.log(Level.INFO, "The test generation has been finished");
+								}
+								else if (task instanceof Verification) {
+									logger.log(Level.INFO, "The verification has been started");
+									Verification verification = (Verification) task;
+									// Maybe different classes should be created for distinction?
+									if (GenmodelDerivedFeatures.isOptimizableVerificationTask(verification)) {
+										OptimizerAndVerificationHandler handler = new OptimizerAndVerificationHandler(file);
+										handler.execute(verification);
+									}
+									else {
+										VerificationHandler handler = new VerificationHandler(file);
+										handler.execute(verification);
+									}
+									logger.log(Level.INFO, "The verification has been finished");
+								}
+								else if (task instanceof TraceGeneration) {
+									logger.log(Level.INFO, "Theta trace generation has been started");
+									TraceGeneration traceGeneration = (TraceGeneration) task;
+									TraceGenerationHandler handler = new TraceGenerationHandler(file);
+									handler.execute(traceGeneration);
+									logger.log(Level.INFO, "Theta trace generation has been finished");
+								}
+								else if (task instanceof Slicing) {
+									logger.log(Level.INFO, "The slicing has been started");
+									Slicing slicing = (Slicing) task;
+									SlicingHandler handler = new SlicingHandler(file);
+									handler.execute(slicing);
+									logger.log(Level.INFO, "The slicing has been finished");
+								}
+								else if (task instanceof TraceReplayModelGeneration) {
+									logger.log(Level.INFO, "The test replay model generation has been started");
+									TraceReplayModelGeneration traceReplayModelGeneration = (TraceReplayModelGeneration) task;
+									TraceReplayModelGenerationHandler handler = new TraceReplayModelGenerationHandler(file);
+									handler.execute(traceReplayModelGeneration);
+									logger.log(Level.INFO, "The test replay model generation has been finished");
+								}
+								else if (task instanceof AdaptiveContractTestGeneration) {
+									logger.log(Level.INFO, "The adaptive contract test generation has been started");
+									AdaptiveContractTestGeneration testGeneration = (AdaptiveContractTestGeneration) task;
+									AdaptiveContractTestGenerationHandler handler = new AdaptiveContractTestGenerationHandler(file);
+									handler.execute(testGeneration);
+									logger.log(Level.INFO, "The adaptive contract test generation has been finished");
+								}
+								else if (task instanceof AdaptiveBehaviorConformanceChecking) {
+									logger.log(Level.INFO, "The adaptive behavior conformance checking has been started");
+									AdaptiveBehaviorConformanceChecking conformanceChecking = (AdaptiveBehaviorConformanceChecking) task;
+									AdaptiveBehaviorConformanceCheckingHandler handler =
+											new AdaptiveBehaviorConformanceCheckingHandler(file);
+									handler.execute(conformanceChecking);
+									logger.log(Level.INFO, "The adaptive behavior conformance checking has been finished");
+								}
+								else if (task instanceof StatechartContractTestGeneration) {
+									StatechartContractTestGeneration testGeneration = (StatechartContractTestGeneration) task; 
+									StatechartContractTestGenerationHandler handler = new StatechartContractTestGenerationHandler(file);
+									handler.execute(testGeneration);
+									logger.log(Level.INFO, "The contract-based test generation has been finished");
+								}
+								else if (task instanceof StatechartContractGeneration) {
+									StatechartContractGeneration statechartGeneration = (StatechartContractGeneration) task; 
+									StatechartContractGenerationHandler handler = new StatechartContractGenerationHandler(file);
+									handler.execute(statechartGeneration);
+									logger.log(Level.INFO, "The contract statechart generation has been finished");
+								}
+								else if (task instanceof EventPriorityTransformation) {
+									logger.log(Level.INFO, "The event priority transformation has been started");
+									EventPriorityTransformation eventPriorityTransformation = (EventPriorityTransformation) task;
+									EventPriorityTransformationHandler handler = new EventPriorityTransformationHandler(file);
+									handler.execute(eventPriorityTransformation);
+									logger.log(Level.INFO, "The event priority transformation has been finished");
+								}
+								else if (task instanceof PhaseStatechartGeneration) {
+									logger.log(Level.INFO, "The phase statechart transformation has been started");
+									PhaseStatechartGeneration phaseStatechartGeneration = (PhaseStatechartGeneration) task;
+									PhaseGenerationHandler handler = new PhaseGenerationHandler(file);
+									handler.execute(phaseStatechartGeneration);
+									logger.log(Level.INFO, "The phase statechart transformation has been finished");
+								}
+								else if (task instanceof FaultTreeGeneration) {
+									logger.log(Level.INFO, "The fault tree generation has been started");
+									FaultTreeGeneration faultTreeGeneration = (FaultTreeGeneration) task;
+									FaultTreeGenerationHandler handler = new FaultTreeGenerationHandler(file);
+									handler.execute(faultTreeGeneration);
+									logger.log(Level.INFO, "The fault tree generation has been finished");
+								}
+								else if (task instanceof FmeaTableGeneration) {
+									logger.log(Level.INFO, "The FMEA table generation has been started");
+									FmeaTableGeneration fmeaTableGeneration = (FmeaTableGeneration) task;
+									FmeaTableGenerationHandler handler = new FmeaTableGenerationHandler(file);
+									handler.execute(fmeaTableGeneration);
+									logger.log(Level.INFO, "The FMEA table generation has been finished");
+								}
 							}
-							else if (task instanceof Slicing) {
-								logger.log(Level.INFO, "The slicing has been started");
-								Slicing slicing = (Slicing) task;
-								SlicingHandler handler = new SlicingHandler(file);
-								handler.execute(slicing);
-								logger.log(Level.INFO, "The slicing has been finished");
-							}
-							else if (task instanceof TraceReplayModelGeneration) {
-								logger.log(Level.INFO, "The test replay model generation has been started");
-								TraceReplayModelGeneration traceReplayModelGeneration = (TraceReplayModelGeneration) task;
-								TraceReplayModelGenerationHandler handler = new TraceReplayModelGenerationHandler(file);
-								handler.execute(traceReplayModelGeneration);
-								logger.log(Level.INFO, "The test replay model generation has been finished");
-							}
-							else if (task instanceof AdaptiveContractTestGeneration) {
-								logger.log(Level.INFO, "The adaptive contract test generation has been started");
-								AdaptiveContractTestGeneration testGeneration = (AdaptiveContractTestGeneration) task;
-								AdaptiveContractTestGenerationHandler handler = new AdaptiveContractTestGenerationHandler(file);
-								handler.execute(testGeneration);
-								logger.log(Level.INFO, "The adaptive contract test generation has been finished");
-							}
-							else if (task instanceof AdaptiveBehaviorConformanceChecking) {
-								logger.log(Level.INFO, "The adaptive behavior conformance checking has been started");
-								AdaptiveBehaviorConformanceChecking conformanceChecking = (AdaptiveBehaviorConformanceChecking) task;
-								AdaptiveBehaviorConformanceCheckingHandler handler =
-										new AdaptiveBehaviorConformanceCheckingHandler(file);
-								handler.execute(conformanceChecking);
-								logger.log(Level.INFO, "The adaptive behavior conformance checking has been finished");
-							}
-							else if (task instanceof StatechartContractTestGeneration) {
-								StatechartContractTestGeneration testGeneration = (StatechartContractTestGeneration) task; 
-								StatechartContractTestGenerationHandler handler = new StatechartContractTestGenerationHandler(file);
-								handler.execute(testGeneration);
-								logger.log(Level.INFO, "The contract-based test generation has been finished");
-							}
-							else if (task instanceof StatechartContractGeneration) {
-								StatechartContractGeneration statechartGeneration = (StatechartContractGeneration) task; 
-								StatechartContractGenerationHandler handler = new StatechartContractGenerationHandler(file);
-								handler.execute(statechartGeneration);
-								logger.log(Level.INFO, "The contract statechart generation has been finished");
-							}
-							else if (task instanceof EventPriorityTransformation) {
-								logger.log(Level.INFO, "The event priority transformation has been started");
-								EventPriorityTransformation eventPriorityTransformation = (EventPriorityTransformation) task;
-								EventPriorityTransformationHandler handler = new EventPriorityTransformationHandler(file);
-								handler.execute(eventPriorityTransformation);
-								logger.log(Level.INFO, "The event priority transformation has been finished");
-							}
-							else if (task instanceof PhaseStatechartGeneration) {
-								logger.log(Level.INFO, "The phase statechart transformation has been started");
-								PhaseStatechartGeneration phaseStatechartGeneration = (PhaseStatechartGeneration) task;
-								PhaseGenerationHandler handler = new PhaseGenerationHandler(file);
-								handler.execute(phaseStatechartGeneration);
-								logger.log(Level.INFO, "The phase statechart transformation has been finished");
-							}
+							// Iteration end
+							hook.endIteration();
+							//
 						}
-						// Iteration end
-						hook.endIteration();
+						// All iteration ended
+						hook.endTaskProcess();
 						//
+						// Refreshing the project
+						logger.log(Level.INFO, "Refreshing project");
+						project.refreshLocal(IResource.DEPTH_INFINITE, new NullProgressMonitor());
+						logger.log(Level.INFO, "Refreshing project has been finished");
 					}
-					// All iteration ended
-					hook.endTaskProcess();
-					//
-					// Refreshing the project
-					logger.log(Level.INFO, "Refreshing project");
-					project.refreshLocal(IResource.DEPTH_INFINITE, new NullProgressMonitor());
-					logger.log(Level.INFO, "Refreshing project has been finished");
+				}
+				else {
+					logger.log(Level.WARNING, "The given resource does not contain a GenModel: " + resource);
 				}
 			}
-			else {
-				logger.log(Level.WARNING, "The given resource does not contain a GenModel: " + resource);
-			}
+		} catch (InterruptedException e) {
+			String threadName = Thread.currentThread().getName();
+			logger.log(Level.INFO, "The task run by this thread has been cancelled: " + threadName);
+			System.out.println("The task run by this thread has been cancelled: " + threadName);
 		}
 	}
 
@@ -291,11 +325,13 @@ public class GammaApi {
 			case 5: 
 				return allTasks.stream()
 						.filter(it -> it instanceof TestGeneration || it instanceof Verification ||
+								it instanceof TraceGeneration ||
 								it instanceof AdaptiveContractTestGeneration ||
 								it instanceof AdaptiveBehaviorConformanceChecking ||
 								it instanceof TraceReplayModelGeneration ||
-								it instanceof StatechartContractTestGeneration || it instanceof StatechartContractGeneration)
-						.collect(Collectors.toList());
+								it instanceof StatechartContractTestGeneration || it instanceof StatechartContractGeneration ||
+								it instanceof SafetyAssessment
+						).collect(Collectors.toList());
 			default: 
 				throw new IllegalArgumentException("Not known iteration variable: " + iteration);
 		}

@@ -32,6 +32,7 @@
   <eClassifiers xsi:type="ecore:EEnum" name="BinaryPathOperator">
     <eLiterals name="UNTIL"/>
     <eLiterals name="RELEASE" value="1"/>
+    <eLiterals name="WEAK_UNTIL" value="2" literal="WEAK_UNTIL"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EEnum" name="UnaryPathOperator">
     <eLiterals name="GLOBAL"/>

@@ -1,0 +1,9 @@
+import "NondetMachineWrapper.gcd"
+
+component NondetMachineWrapper
+
+// E F [ { state nondetMachine.main_region_1.state_2 } ]
+E F [ { state nondetMachine.main_region_1.state_2 and variable nondetMachine.a = 16 and variable nondetMachine.b = 6} ]
+E F [ { state nondetMachine.main_region_1.state_2 and variable nondetMachine.a = 11 and variable nondetMachine.b = 34} ]
+//E F [ { state nondetMachine.main_region_1.state_3 and variable nondetMachine.a = -19 and variable nondetMachine.b = 21 } ]
+//E F [ { state nondetMachine.main_region_1.state_3 and variable nondetMachine.a = 26 and variable nondetMachine.b = -16 } ]

@@ -408,4 +408,33 @@
 			type="text">
 		</fileTypes>
 	</extension>
+		<extension
+		point="org.eclipse.ui.newWizards">
+		<category id="hu.bme.mit.gamma.statechart.language.ui.category" name="Gamma Modeling Project">
+		</category>
+		<wizard
+			category="hu.bme.mit.gamma.statechart.language.ui.category"
+			class="hu.bme.mit.gamma.statechart.language.ui.StatechartLanguageExecutableExtensionFactory:org.eclipse.xtext.ui.wizard.template.TemplateNewProjectWizard"
+			id="hu.bme.mit.gamma.statechart.language.ui.wizard.StatechartLanguageNewProjectWizard"
+			name="Gamma Modeling Project"
+			icon="icons/gamma-icon-16.png"
+			project="true">
+		</wizard>
+	</extension>
+	<extension
+		point="org.eclipse.xtext.ui.projectTemplate">
+		<projectTemplateProvider
+			class="hu.bme.mit.gamma.statechart.language.ui.StatechartLanguageExecutableExtensionFactory:hu.bme.mit.gamma.statechart.language.ui.wizard.StatechartLanguageProjectTemplateProvider"
+			grammarName="hu.bme.mit.gamma.statechart.language.StatechartLanguage">
+		</projectTemplateProvider>
+	</extension>
+	<extension
+		point="org.eclipse.ui.perspectiveExtensions">
+		<perspectiveExtension targetID="org.eclipse.ui.resourcePerspective">
+			<newWizardShortcut id="hu.bme.mit.gamma.statechart.language.ui.wizard.StatechartLanguageNewProjectWizard"/>
+		</perspectiveExtension>
+		<perspectiveExtension targetID="org.eclipse.jdt.ui.JavaPerspective">
+			<newWizardShortcut id="hu.bme.mit.gamma.statechart.language.ui.wizard.StatechartLanguageNewProjectWizard"/>
+		</perspectiveExtension>
+	</extension>
 </plugin>

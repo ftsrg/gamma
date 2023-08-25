@@ -1,0 +1,7 @@
+import "Cascade/ANTIVAL_CHK_COID_System.gcd"
+
+analysis {
+	component : AntivalenceChecker_System
+	language : Promela
+	interaction-coverage
+}

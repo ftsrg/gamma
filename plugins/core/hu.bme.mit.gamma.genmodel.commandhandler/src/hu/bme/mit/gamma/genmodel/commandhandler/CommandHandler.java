@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -25,7 +25,7 @@ import hu.bme.mit.gamma.ui.GammaApi;
 
 public class CommandHandler extends AbstractHandler {
 	
-	protected Thread thread = null;
+	protected static Thread thread = null;
 	protected final Logger logger = Logger.getLogger("GammaLogger");
 
 	@Override
@@ -43,6 +43,7 @@ public class CommandHandler extends AbstractHandler {
 										IFile file = (IFile) selection.getFirstElement();
 										GammaApi gammaApi = new GammaApi();
 										gammaApi.run(file.getFullPath().toString());
+										// new TaskExecutionTimeMeasurer(10, false, MedianCalculator.INSTANCE, "time.txt", TimeUnit.SECONDS)
 									}
 								}
 							}
@@ -61,6 +62,10 @@ public class CommandHandler extends AbstractHandler {
 			logger.log(Level.INFO, thread.getName() + " is still running");
 		}
 		return null;
+	}
+	
+	public static Thread getThread() {
+		return thread;
 	}
 	
 }

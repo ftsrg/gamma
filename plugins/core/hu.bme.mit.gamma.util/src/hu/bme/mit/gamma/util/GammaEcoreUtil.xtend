@@ -38,6 +38,7 @@ class GammaEcoreUtil {
 	public static final GammaEcoreUtil INSTANCE = new GammaEcoreUtil
 	protected new() {}
 	//
+	protected final FileUtil fileUtil = FileUtil.INSTANCE
 	protected final Logger logger = Logger.getLogger("GammaLogger")
 	//
 	
@@ -113,6 +114,17 @@ class GammaEcoreUtil {
 		EcoreUtil.remove(object)
 	}
 	
+	def void removeAll(Collection<? extends EObject> list) {
+		EcoreUtil.removeAll(list)
+	}
+	
+	def void removeAllButFirst(List<? extends EObject> list) {
+		for (var i = 1; i < list.size; /* No op */) {
+			val object = list.get(i)
+			object.remove
+		}
+	}
+	
 	def <T extends EObject> removeContainmentChains(
 			Collection<? extends T> removableElements, Class<? extends T> clazz) {
 		val queue = newLinkedList
@@ -122,9 +134,10 @@ class GammaEcoreUtil {
 			val container = removableElement.eContainer
 			removableElement.remove
 			if (clazz.isInstance(container)) {
-				if (container.eContents.empty) {
-					queue += container as T
+				if (!container.eContents.empty) {
+					logger.log(Level.WARNING, "The content is not empty")
 				}
+				queue += container as T
 			}
 		}
 	}
@@ -197,6 +210,11 @@ class GammaEcoreUtil {
 	def void changeAllAndDelete(EObject newObject, EObject oldObject, EObject container) {
 		changeAll(newObject, oldObject, container)
 		oldObject.delete
+	}
+	
+	def void changeAllAndRemove(EObject newObject, EObject oldObject, EObject container) {
+		changeAll(newObject, oldObject, container)
+		oldObject.remove
 	}
 	
 	//
@@ -287,6 +305,17 @@ class GammaEcoreUtil {
 		return elements
 	}
 	
+	def <T extends EObject> boolean isContainedBy(EObject object, Class<T> type) {
+		val container = object.eContainer
+		if (container === null) {
+			return false
+		}
+		if (type.isInstance(container)) {
+			return true
+		}
+		return container.isContainedBy(type)
+	}
+	
 	def <T extends EObject> T getSelfOrContainerOfType(EObject object, Class<T> type) {
 		if (type.isInstance(object)) {
 			return object as T
@@ -307,6 +336,10 @@ class GammaEcoreUtil {
 			return container as T
 		}
 		return container.getContainerOfType(type)
+	}
+	
+	def <T extends EObject> boolean hasContainerOfType(EObject object, Class<T> type) {
+		return object.getContainerOfType(type) !== null
 	}
 	
 	def <T extends EObject> T getSelfOrLastContainerOfType(T object, Class<T> type) {
@@ -339,6 +372,17 @@ class GammaEcoreUtil {
 		if (type.isInstance(object)) {
 			contents += object as T
 		}
+		return contents
+	}
+	
+	def <T extends EObject> List<T> getSelfAndAllContentsOfType(
+			Collection<? extends EObject> objects, Class<T> type) {
+		val contents = newArrayList
+		
+		for (object : objects) {
+			contents += object.getSelfAndAllContentsOfType(type)
+		}
+		
 		return contents
 	}
 	
@@ -376,8 +420,21 @@ class GammaEcoreUtil {
 		return lhs.containsTransitively(rhs) || rhs.containsTransitively(lhs)
 	}
 	
-	def <T extends EObject> boolean containsTypes(EObject container,
+	def <T extends EObject> boolean containsTypesTransitively(EObject container,
 			Iterable<? extends Class<T>> types) {
+		for (content : container.eAllContents.toIterable) {
+			if (content.isTypes(types)) {
+				return true
+			}
+		}
+		return false
+	}
+	
+	def <T extends EObject> boolean containsTypeTransitively(EObject container, Class<T> type) {
+		return container.containsTypesTransitively(#[type])
+	}
+	
+	def <T extends EObject> boolean containsTypes(EObject container, Iterable<? extends Class<T>> types) {
 		for (content : container.eContents) {
 			if (content.isOrContainsTypes(types)) {
 				return true
@@ -388,7 +445,11 @@ class GammaEcoreUtil {
 	
 	def <T extends EObject> boolean isOrContainsTypes(EObject container,
 			Iterable<? extends Class<T>> types) {
-		return types.exists[it.isInstance(container)] || container.containsTypes(types)
+		return container.isTypes(types) || container.containsTypes(types)
+	}
+	
+	def <T extends EObject> boolean isTypes(EObject object, Iterable<? extends Class<T>> types) {
+		return types.exists[it.isInstance(object)]
 	}
 	
 	def <T extends EObject> boolean containsType(EObject container, Class<T> type) {
@@ -565,6 +626,11 @@ class GammaEcoreUtil {
 		return new File(URI.decode(location))
 	}
 	
+	def getFile(EObject object) {
+		val resource = object.eResource
+		return resource.file
+	}
+	
 	def hasPlatformUri(Resource resource) {
 		return resource.URI.isPlatform
 	}
@@ -576,7 +642,15 @@ class GammaEcoreUtil {
 	
 	def getPlatformUri(File file) {
 		val projectFile = file.parentFile.projectFile
-		val location = file.toString.substring(projectFile.parent.length)
+		if (projectFile === null) {
+			throw new IllegalStateException("Containing project not found for " + file.absolutePath +
+				". Add the artifacts into a valid Eclipse project containing a .project file.")
+		}
+		
+		val projectName = file.projectName
+		val location = projectName +
+			file.toString.substring(projectFile.toString.length)
+		
 		return URI.createPlatformResourceURI(location, true)
 	}
 	
@@ -592,7 +666,7 @@ class GammaEcoreUtil {
 	def getAbsoluteUri(Resource resource) {
 		val uri = resource.URI
 		if (!uri.isPlatform) {
-			return resource
+			return uri
 		}
 		val resourceFile = resource.file
 		return URI.createFileURI(resourceFile.toString)
@@ -609,7 +683,23 @@ class GammaEcoreUtil {
 		return URI.createFileURI(changableAbsoluteUri)
 	}
 	
+	def File getProjectFile(Resource resource) {
+		val file = resource.file
+		return file.projectFile
+	}
+	
+	def File getProjectFile(URI uri) {
+		val fileString = uri.toFileString
+		val file = new File (fileString)
+		
+		return file.projectFile
+	}
+	
 	def File getProjectFile(File file) {
+		if (file === null) {
+			return null
+		}
+		
 		val containedFileNames = newHashSet
 		val listedFiles = file.listFiles
 		if (!listedFiles.nullOrEmpty) {
@@ -621,11 +711,54 @@ class GammaEcoreUtil {
 		return file.parentFile.projectFile
 	}
 	
+	def String getProjectName(File file) {
+		val projectFile = file.projectFile
+		if (projectFile === null) {
+			return null
+		}
+		
+		val _projectFile = projectFile.listFiles
+				.filter[it.name == ".project"].head
+		
+		val xml = fileUtil.loadXml(_projectFile)
+		
+		val nameNode = xml.getElementsByTagName("name").item(0)
+		val name = nameNode.textContent
+		
+		return name
+	}
+	
+	def int getContainmentLevel(EObject object) {
+		val container = object.eContainer
+		if (container === null) {
+			return 0
+		}
+		return container.containmentLevel + 1
+	}
+	
 	def getIndex(EObject object) {
 		val containingFeature = object.eContainingFeature
 		val container = object.eContainer
 		val list = container.eGet(containingFeature) as List<EObject>
 		return list.indexOf(object)
+	}
+	
+	def getIndexOrZero(EObject object) {
+		try {
+			return object.index
+		} catch (Exception e) {
+			return 0
+		}
+	}
+	
+	def isFirst(EObject object) {
+		val containingFeature = object.eContainingFeature
+		val container = object.eContainer
+		val get = container.eGet(containingFeature)
+		if (get instanceof List) {
+			return get.get(0) == object
+		}
+		return true
 	}
 	
 	def isLast(EObject object) {
@@ -636,6 +769,26 @@ class GammaEcoreUtil {
 			return get.last == object
 		}
 		return true
+	}
+	
+	def getPrevious(EObject object) {
+		val containingFeature = object.eContainingFeature
+		val container = object.eContainer
+		val get = container.eGet(containingFeature)
+		if (get instanceof List) {
+			return get.get(object.index - 1)
+		}
+		throw new IllegalArgumentException("Not a list: " + get)
+	}
+	
+	def getNext(EObject object) {
+		val containingFeature = object.eContainingFeature
+		val container = object.eContainer
+		val get = container.eGet(containingFeature)
+		if (get instanceof List) {
+			return get.get(object.index + 1)
+		}
+		throw new IllegalArgumentException("Not a list: " + get)
 	}
 	
 	def <T extends EObject> List<T> sortAccordingToReferences(List<T> list) {
@@ -658,6 +811,20 @@ class GammaEcoreUtil {
 			}
 		)
 		return array
+	}
+	
+	def <T extends EObject> void removeEqualElements(List<T> list) {
+		for (var i = 0; i < list.size - 1; i++) {
+			for (var j = i + 1; j < list.size; j++) {
+				val lhs = list.get(i)
+				val rhs = list.get(j)
+				
+				if (lhs.helperEquals(rhs)) {
+					list.remove(j) // Remove rhs
+					j--
+				}
+			}
+		}
 	}
 	
 }

@@ -25,7 +25,7 @@ class ComponentCodeGenerator {
 	/**
 	 * Generates fields for parameter declarations
 	 */
-	def CharSequence generateParameterDeclarationFields(Component component) '''
+	def generateParameterDeclarationFields(Component component) '''
 		«IF !component.parameterDeclarations.empty»// Fields representing parameters«ENDIF»
 		«FOR parameter : component.parameterDeclarations»
 			private final «parameter.type.transformType» «parameter.name»;

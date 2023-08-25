@@ -103,8 +103,12 @@ ParenthesesPathFormula returns PathFormula:
 @Override
 PrimaryExpression returns expression::Expression:
 	LiteralExpression |
-	ComponentInstanceStateExpression |
+	ElementReference |
 	'(' Expression ')'
+;
+
+ElementReference returns composite::ComponentInstanceElementReferenceExpression:
+	ComponentInstanceStateExpression | ComponentInstanceReflectiveElementReferenceExpression
 ;
 
 // Operators
@@ -118,7 +122,7 @@ enum UnaryPathOperator returns UnaryPathOperator:
 ;
 
 enum BinaryPathOperator returns BinaryPathOperator:
-	UNTIL = 'U' | RELEASE = 'R'
+	UNTIL = 'U' | RELEASE = 'R' | WEAK_UNTIL = "WU"
 ;
 
 enum NotOperator returns UnaryLogicalOperator:

@@ -15,7 +15,6 @@ import "http://www.mit.bme.hu/gamma/scenario/Model" as ScenarioModel
 import "http://www.mit.bme.hu/gamma/statechart/Model/Interface" as InterfaceModel
 import "http://www.mit.bme.hu/gamma/expression/Model" as ConstraintModel 
 
-
 ScenarioPackage returns ScenarioModel::ScenarioPackage:
 	'package' name=ID
 	('import' imports+=[InterfaceModel::Package|STRING])*
@@ -30,12 +29,14 @@ ScenarioDeclaration returns ScenarioModel::ScenarioDeclaration:
 	annotation+=Annotations*
 	'scenario' name=ID ('('(parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*')')?
 	(variableDeclarations+=VariableDeclaration)*
-	(initialblock=InitialBlock)?
-	chart=Chart;
+	(initialBlock=InitialBlock)?
+	'['
+		^fragment=FragmentDefinition
+	']';
 	
 InitialBlock returns ScenarioModel::InitialBlock: 
 	{ScenarioModel::InitialBlock} 'initial' 'outputs' '['
-	interactions+=InitialInteraction*
+		interactions+=InitialInteraction*
 	']';
 
 Annotations returns ScenarioModel::Annotation:
@@ -60,28 +61,21 @@ PermissiveAnnotation returns ScenarioModel::PermissiveAnnotation:
 AllowedWaitAnnotation returns ScenarioModel::WaitAnnotation:
 	"@AllowedWaiting" (minimum=Expression)? ".." maximum=Expression;
 
-Chart returns ScenarioModel::Chart:
-	'['
-		^fragment=FragmentDefinition
-	']';
-
-FragmentDefinition returns ScenarioModel::InteractionFragment:
+FragmentDefinition returns ScenarioModel::Fragment:
 	(interactions+=AbstractInteraction)+;
 
-AbstractInteraction returns ScenarioModel::Interaction:
-	CombinedFragment | AbstractInteractionDefinition | ScenarioReference;
+AbstractInteraction returns ScenarioModel::Occurrence:
+	CombinedFragment | ModalInteractionSet | ScenarioReference;
 
 ScenarioReference returns ScenarioModel::ScenarioDefinitionReference:
 	{ScenarioModel::ScenarioDefinitionReference}
 	'call' scenarioDefinition=[ScenarioModel::ScenarioDeclaration]
 	('('arguments+=Expression(',' arguments+=Expression)*')')?;
 
-AbstractInteractionDefinition returns ScenarioModel::InteractionDefinition:
-	ModalInteraction | NegatedModalInteraction | ModalInteractionSet | ScenarioCheck | ScenarioAssignment;
 	
 ScenarioAssignment returns ScenarioModel::ScenarioAssignmentStatement:
 	{ScenarioModel::ScenarioAssignmentStatement}
-	'assign' lhs= DirectReferenceExpression ':=' rhs=Expression;
+	'assign' lhs=DirectReferenceExpression ':=' rhs=Expression; // TODO change to what you see in the action grammar
 
 ScenarioCheck returns ScenarioModel::ScenarioCheckExpression:
 	{ScenarioModel::ScenarioCheckExpression}
@@ -91,30 +85,31 @@ CombinedFragment returns ScenarioModel::CombinedFragment:
 	AlternativeCombinedFragmentDefinition | OptionalCombinedFragmentDefinition | UnorderedCombinedFragmentDefinition |
 	ParallelCombinedFragmentDefinition | LoopCombinedFragmentDefinition;
 
-NegatedModalInteraction returns ScenarioModel::NegatedModalInteraction:
-	'negate' modalinteraction=Negateable;
+NegatedModalInteraction returns ScenarioModel::NegatedDeterministicOccurrence:
+	'negate' deterministicOccurrence=Negateable;
 
-Negateable returns ScenarioModel::InteractionDefinition:
-	ModalInteractionSet | SignalDefinition;
+Negateable returns ScenarioModel::DeterministicOccurrence:
+	ModalInteractionSet | Interaction;
 	
-InitialInteraction returns ScenarioModel::InteractionDefinition:
-	 ScenarioCheck |SignalDefinition | ScenarioAssignment;
+InitialInteraction returns ScenarioModel::DeterministicOccurrence:
+	 ScenarioCheck | Interaction | ScenarioAssignment;
 
-ModalInteraction returns ScenarioModel::ModalInteraction:
-	SignalDefinition | Delay;
-
-ModalInteractionSet returns ScenarioModel::ModalInteractionSet:
-	{ScenarioModel::ModalInteractionSet}
+ModalInteractionSet returns ScenarioModel::DeterministicOccurrenceSet:
+	{ScenarioModel::DeterministicOccurrenceSet}
 	'{'
-	(modalInteractions+=AbstractInteractionDefinition)*
-	'}'; 
+		(deterministicOccurrences+=Delay)?
+		(deterministicOccurrences+=Interaction)*
+		(deterministicOccurrences+=NegatedModalInteraction)*
+		(deterministicOccurrences+=ScenarioCheck)?
+		(deterministicOccurrences+=ScenarioAssignment)*
+	'}';
 
-SignalDefinition returns ScenarioModel::Signal:
-	modality=ModalityDefinition direction=InteractionDirectionDefinition port=[InterfaceModel::Port] '.'
+Interaction returns ScenarioModel::Interaction:
+	(modality=ModalityDefinition)? direction=InteractionDirectionDefinition port=[InterfaceModel::Port] '.'
 	event=[InterfaceModel::Event] ('(' arguments+=Expression (',' arguments+=Expression)* ')')?;
 
 Delay returns ScenarioModel::Delay:
-	modality=ModalityDefinition 'delay' '(' minimum=Expression ('..' maximum=Expression)? ')';
+	'delay' '(' minimum=Expression ('..' maximum=Expression)? ')';
 	
 @Override 
 PrimaryExpression returns ConstraintModel::Expression: 

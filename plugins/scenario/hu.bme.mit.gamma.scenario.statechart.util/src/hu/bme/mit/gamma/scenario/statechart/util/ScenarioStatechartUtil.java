@@ -12,8 +12,10 @@ package hu.bme.mit.gamma.scenario.statechart.util;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
+import hu.bme.mit.gamma.scenario.model.InteractionDirection;
 import hu.bme.mit.gamma.scenario.model.LoopCombinedFragment;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Component;
@@ -25,6 +27,7 @@ import hu.bme.mit.gamma.statechart.interface_.Port;
 import hu.bme.mit.gamma.statechart.interface_.Trigger;
 import hu.bme.mit.gamma.statechart.statechart.PortEventReference;
 import hu.bme.mit.gamma.statechart.statechart.StatechartModelFactory;
+import hu.bme.mit.gamma.statechart.statechart.Transition;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
 
 public class ScenarioStatechartUtil {
@@ -132,8 +135,7 @@ public class ScenarioStatechartUtil {
 	}
 
 	public int getLoopDepth(LoopCombinedFragment loop) {
-		return ecoreUtil.getAllContainersOfType(loop, LoopCombinedFragment.class)
-				.size();
+		return ecoreUtil.getAllContainersOfType(loop, LoopCombinedFragment.class).size();
 	}
 
 	public String getLoopvariableNameForDepth(int depth) {
@@ -160,6 +162,7 @@ public class ScenarioStatechartUtil {
 		List<EventReference> eventRefs = new LinkedList<EventReference>();
 		List<Port> correctPorts = automaton.getPorts().stream()
 				.filter((it) -> (!((StatechartModelDerivedFeatures.getInputEvents(it)).isEmpty())))
+				.filter((it) -> !StatechartModelDerivedFeatures.isInternal(it)) 
 				.collect(Collectors.toList());
 		for (Port port : correctPorts) {
 			if ((isTurnedOut(port) && isSentByComponent) || (!isTurnedOut(port) && !isSentByComponent)) {
@@ -183,5 +186,20 @@ public class ScenarioStatechartUtil {
 			triggers.add(eventTrigger);
 		}
 		return triggers;
+	}
+
+	public InteractionDirection getDirection(Transition transition) {
+		Optional<EventTrigger> optionalTrigger = ecoreUtil
+				.getAllContentsOfType(transition.getTrigger(), EventTrigger.class).stream()
+				.filter((it) -> it.getEventReference() instanceof PortEventReference).findAny();
+		if (!optionalTrigger.isPresent()) {
+			return InteractionDirection.RECEIVE;
+		}
+		PortEventReference portEventReference = (PortEventReference) optionalTrigger.get().getEventReference();
+		if (isTurnedOut(portEventReference.getPort())) {
+			return InteractionDirection.SEND;
+		} else {
+			return InteractionDirection.RECEIVE;
+		}
 	}
 }

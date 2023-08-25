@@ -22,11 +22,13 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 
 import hu.bme.mit.gamma.dialog.DialogUtil;
+import hu.bme.mit.gamma.expression.util.ExpressionEvaluator;
 import hu.bme.mit.gamma.genmodel.model.AdaptiveContractTestGeneration;
 import hu.bme.mit.gamma.genmodel.model.CodeGeneration;
 import hu.bme.mit.gamma.genmodel.model.GenmodelModelFactory;
 import hu.bme.mit.gamma.genmodel.model.Task;
 import hu.bme.mit.gamma.genmodel.model.TestGeneration;
+import hu.bme.mit.gamma.genmodel.model.TraceGeneration;
 import hu.bme.mit.gamma.genmodel.model.Verification;
 import hu.bme.mit.gamma.property.language.ui.serializer.PropertyLanguageSerializer;
 import hu.bme.mit.gamma.property.model.PropertyPackage;
@@ -46,6 +48,7 @@ public abstract class TaskHandler {
 	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
 	protected final JavaUtil javaUtil = JavaUtil.INSTANCE;
 	protected final FileUtil fileUtil = FileUtil.INSTANCE;
+	protected final ExpressionEvaluator expressionEvaluator = ExpressionEvaluator.INSTANCE;
 	
 	protected final GammaFileNamer fileNamer = GammaFileNamer.INSTANCE;
 	
@@ -68,7 +71,11 @@ public abstract class TaskHandler {
 		checkArgument(task.getTargetFolder().size() <= 1);
 		if (task.getTargetFolder().isEmpty()) {
 			String targetFolder = null;
-			if (task instanceof Verification || task instanceof AdaptiveContractTestGeneration) {
+			if (task instanceof TraceGeneration) {
+				String path = file.getParent().getFullPath().toString();
+				String path2 = path.substring(path.indexOf("/") + 1);
+				targetFolder = path2.substring(path2.indexOf("/") + 1);
+			} else if (task instanceof Verification || task instanceof AdaptiveContractTestGeneration) {
 				targetFolder = "trace";
 			}
 			else if (task instanceof CodeGeneration) {
@@ -83,18 +90,23 @@ public abstract class TaskHandler {
 					URI relativeUri = resource.getURI();
 					URI parentUri = relativeUri.trimSegments(1);
 					String platformUri = parentUri.toPlatformString(true);
+					if (platformUri == null) {
+						// If there is a '/' at the beginning of the URI in the ggen-include...
+						platformUri = parentUri.toString();
+					}
 					targetFolder = platformUri.substring(
 						(File.separator + file.getProject().getName() + File.separator).length());
 				}
 				else {
 					String relativeFolder = file.getParent().getLocation().toString();
-					targetFolder = relativeFolder.substring(projectLocation.length() + 1); // Counting the sperator
+					targetFolder = relativeFolder.substring(projectLocation.length() + 1); // Counting the separator
 				}
 			}
 			task.getTargetFolder().add(targetFolder);
 		}
 		// Setting the attribute, the target folder is a RELATIVE path now from the project
-		targetFolderUri = URI.decode(projectLocation + File.separator + task.getTargetFolder().get(0));
+		targetFolderUri = URI.decode(
+				projectLocation + File.separator + task.getTargetFolder().get(0));
 	}
 	
 	protected String getNameWithoutExtension(String fileName) {

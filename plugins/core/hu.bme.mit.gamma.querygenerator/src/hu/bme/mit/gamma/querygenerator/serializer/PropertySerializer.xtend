@@ -13,12 +13,15 @@ package hu.bme.mit.gamma.querygenerator.serializer
 import hu.bme.mit.gamma.expression.model.Comment
 import hu.bme.mit.gamma.property.model.CommentableStateFormula
 import hu.bme.mit.gamma.property.model.StateFormula
+import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.util.Collection
 
 abstract class PropertySerializer {
-	
+	//
 	protected extension PropertyExpressionSerializer serializer
-	 
+	//
+	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
+	//
 	new(PropertyExpressionSerializer serializer) {
 		this.serializer = serializer
 	}

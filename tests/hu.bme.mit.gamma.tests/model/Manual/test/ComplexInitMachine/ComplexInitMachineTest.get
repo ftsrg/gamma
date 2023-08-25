@@ -7,10 +7,10 @@ step {
 		reset
 	}
 	assert {
-		variable complexInitMachine.ini = true
-		variable complexInitMachine.subini_sub1 = true
-		variable complexInitMachine.b = 2
-		variable complexInitMachine.c = 1
-		variable complexInitMachine.d = 0
+		variable complexInitMachine.ini = true;
+		variable complexInitMachine.subini_sub1 = true;
+		variable complexInitMachine.b = 2;
+		variable complexInitMachine.c = 1;
+		variable complexInitMachine.d = 0;
 	}
 }

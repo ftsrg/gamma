@@ -1,0 +1,11 @@
+package RigelDiszpecser
+import "/hu.bme.mit.gamma.rigel.casestudy/model/StateMachines/Diszpecser/RigelDiszpecser.gcd"
+adapter RigelDiszpecserAdapter(TimeDataPeriodic : integer, TimeDataTimeout : integer,
+	TimeConnectionCheck : integer) of component RigelDiszpecser : RigelDiszpecser(TimeDataPeriodic,
+	TimeDataTimeout, TimeConnectionCheck)
+{
+	when any / run
+	queue RigelDiszpecserQueue (priority = 2, capacity = 1) {
+		VezerloKozpontPortIn.any, ObjektumKezeloPortIn.any, OrionDisconnToVk.any, AllObjDataSent.any
+	}
+}

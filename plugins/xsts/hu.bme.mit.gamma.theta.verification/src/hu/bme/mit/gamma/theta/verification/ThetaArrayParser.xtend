@@ -1,3 +1,13 @@
+/********************************************************************************
+ * Copyright (c) 2021-2022 Contributors to the Gamma project
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * SPDX-License-Identifier: EPL-1.0
+ ********************************************************************************/
 package hu.bme.mit.gamma.theta.verification
 
 import hu.bme.mit.gamma.expression.util.IndexHierarchy
@@ -18,7 +28,7 @@ class ThetaArrayParser implements XstsArrayParser {
 	protected def List<Pair<IndexHierarchy, String>> parseArray(String value) {
 		// (array (0 10) (1 11) (default 0))
 		val values = newArrayList
-		if (value.isArray) {
+		if ("".isArray(value)) {
 			val unwrapped = value.unwrap.substring("array ".length) // (0 10) (default 0)
 			val splits = unwrapped.parseAlongParentheses // 0 10, default array
 			for (split : splits) {
@@ -65,7 +75,7 @@ class ThetaArrayParser implements XstsArrayParser {
 		return result
 	}
 	
-	protected def boolean isArray(String value) {
+	override isArray(String id, String value) {
 		return value.startsWith("(array ")
 	}
 	

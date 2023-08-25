@@ -1,0 +1,73 @@
+import "AsynchronousSystem.gcd"
+
+import "Statechart/Adder.gcd"
+import "Statechart/Counter.gcd"
+import "Statechart/Subtractor.gcd"
+
+code {
+	component : Adder
+	language : java
+}
+
+code {
+	component : Counter
+	language : java
+}
+
+code {
+	component : Subtractor
+	language : java
+}
+
+code {
+	component : AsynchronousSystem
+	language : java
+}
+
+analysis {
+	component : AsynchronousSystem
+	language : XSTS-UPPAAL
+	file: "AsynchronousSystem"
+	transition-coverage
+}
+
+verification {
+	file : "AsynchronousSystem.xml"
+	property-file : ".AsynchronousSystem.gpd"
+	language : XSTS-UPPAAL
+	back-annotate-to-original : true
+	test-language : java
+	optimize : true
+}
+
+analysis {
+	component : AsynchronousSystem
+	language : Theta
+	file: "AsynchronousSystem-t"
+	state-coverage
+}
+
+verification {
+	file : "AsynchronousSystem-t.xsts"
+	property-file : ".AsynchronousSystem-t.gpd"
+	language : Theta
+	optimize-model : true
+	back-annotate-to-original : false
+	test-language : java
+}
+
+analysis {
+	component : AsynchronousSystem
+	language : Promela
+	file: "AsynchronousSystem-p"
+	state-coverage
+}
+
+verification {
+	file : "AsynchronousSystem-p.pml"
+	property-file : ".AsynchronousSystem-p.gpd"
+	language : Promela
+	optimize : true
+	back-annotate-to-original : false
+	test-language : java
+}

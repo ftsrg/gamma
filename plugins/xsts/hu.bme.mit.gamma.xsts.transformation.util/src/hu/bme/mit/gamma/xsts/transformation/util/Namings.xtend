@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.xsts.transformation.util
 
+import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
@@ -44,6 +45,14 @@ class Namings {
 	// To Low-level: in LowlevelNamings
 	
 	// To XSTS: in XstsNamings
+	
+	static def String getDelayVariableName() '''__Delay__'''
+	static def String getInstanceEndcodingVariableName() '''__InstanceEncoding__'''
+	
+	// Types
+	
+	static def String customizeTypeName(TypeDeclaration type) '''«getName(type)»'''
+	static def String customizeEnumLiteralName(EnumerationLiteralDefinition literal) '''«getName(literal).enumLiteralName»'''
 	
 	// Asynchronous message queue - XSTS customization
 	

@@ -360,7 +360,7 @@ class UppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 			return
 		}
 		if (component instanceof AsynchronousAdapter) {
-			step.addComponentScheduling
+			step.addScheduling
 		}
 		else {
 			// Parsing scheduling synchronizations of asynchronous composite components

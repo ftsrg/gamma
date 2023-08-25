@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -12,6 +12,7 @@ package hu.bme.mit.gamma.verification.util
 
 import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
+import hu.bme.mit.gamma.expression.model.EqualityExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition
@@ -23,6 +24,8 @@ import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.expression.util.FieldHierarchy
 import hu.bme.mit.gamma.expression.util.IndexHierarchy
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression
+import hu.bme.mit.gamma.statechart.composite.CompositeModelFactory
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponent
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.interface_.Component
@@ -32,14 +35,12 @@ import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.util.ExpressionTypeDeterminator
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
-import hu.bme.mit.gamma.trace.model.InstanceVariableState
 import hu.bme.mit.gamma.trace.model.RaiseEventAct
 import hu.bme.mit.gamma.trace.model.Step
 import hu.bme.mit.gamma.trace.model.TimeElapse
 import hu.bme.mit.gamma.trace.model.TraceModelFactory
 import hu.bme.mit.gamma.trace.util.TraceUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
-import java.math.BigInteger
 
 import static com.google.common.base.Preconditions.checkState
 
@@ -51,6 +52,7 @@ class TraceBuilder {
 	public static final TraceBuilder INSTANCE = new TraceBuilder
 	protected new() {}
 	//
+	protected final extension CompositeModelFactory compositeModelFactory = CompositeModelFactory.eINSTANCE
 	protected final extension ExpressionModelFactory expressionModelFactory = ExpressionModelFactory.eINSTANCE
 	protected final extension TraceModelFactory traceFactory = TraceModelFactory.eINSTANCE
 	
@@ -61,7 +63,7 @@ class TraceBuilder {
 	protected final extension TraceUtil traceUtil = TraceUtil.INSTANCE
 	protected final StatechartUtil statechartUtil = StatechartUtil.INSTANCE // For component instance reference
 	
-	// Remove internal events
+	// Remove elements
 	
 	def removeInternalEventRaiseActs(ExecutionTrace trace) {
 		val raiseEventActs = trace.getAllContentsOfType(RaiseEventAct)
@@ -69,6 +71,17 @@ class TraceBuilder {
 			val event = raiseEventAct.event
 			if (event.internal) {
 				raiseEventAct.remove
+			}
+		}
+	}
+	
+	def removeTransientVariableReferences(ExecutionTrace trace) {
+		val instanceVariableStates = trace.getAllContentsOfType(ComponentInstanceVariableReferenceExpression)
+		for (instanceVariableState : instanceVariableStates) {
+			val variable = instanceVariableState.variableDeclaration
+			if (variable.transient) {
+				val expressionContainer = instanceVariableState.getSelfOrLastContainerOfType(Expression)
+				expressionContainer.remove
 			}
 		}
 	}
@@ -123,45 +136,65 @@ class TraceBuilder {
 	// Time elapse
 	
 	def addTimeElapse(Step step, Expression elapsedTime) {
-		return step.addTimeElapse(elapsedTime.evaluateInteger)
+		step.addTimeElapse(elapsedTime.evaluateInteger)
 	}
 	
 	def addTimeElapse(Step step, int elapsedTime) {
+		if (elapsedTime <= 0) {
+			return
+		}
+		
 		val timeElapseActions = step.actions.filter(TimeElapse)
 		if (!timeElapseActions.empty) {
 			// A single time elapse action in all steps
 			val action = timeElapseActions.head
-			val newTime = action.elapsedTime + BigInteger.valueOf(elapsedTime)
+			val newTime = action.elapsedTime.add(elapsedTime)
 			action.elapsedTime = newTime
 		}
 		else {
 			// No time elapses in this step so far
-			step.actions += createTimeElapse => [
-				it.elapsedTime = BigInteger.valueOf(elapsedTime)
-			]
+			step.actions.add(0, // Always in front
+				createTimeElapse => [
+					it.elapsedTime = elapsedTime.toIntegerLiteral
+				]
+			)
 		}
 	}
 	
 	// Schedule
 	
-	def addScheduling(Step step, AsynchronousComponentInstance instance) {
-		step.actions += createInstanceSchedule => [
-			it.scheduledInstance = instance
-		]
-	}
-	
 	def addReset(Step step) {
 		step.actions += createReset
 	}
 	
-	def addComponentScheduling(Step step) {
-		step.actions += createComponentSchedule
+	def addScheduling(Step step) {
+		addScheduling(step, null)
+	}
+	
+	def addScheduling(Step step, AsynchronousComponentInstance instance) {
+		if (instance !== null) {
+			step.addInstanceScheduling(instance)
+		}
+		else {
+			step.addComponentScheduling
+		}
 	}
 	
 	def scheduleIfSynchronousComponent(Step step, Component component) {
 		if (component instanceof SynchronousComponent) {
 			step.addComponentScheduling
 		}
+	}
+	
+	private def void addComponentScheduling(Step step) {
+		step.actions += createComponentSchedule
+	}
+	
+	private def void addInstanceScheduling(Step step, AsynchronousComponentInstance instance) {
+		step.actions += createInstanceSchedule => [
+			it.instanceReference = statechartUtil.createInstanceReference(instance)
+			// Not reference chain - that is used for back-annotation to original component
+		]
 	}
 	
 	// Out event
@@ -218,11 +251,9 @@ class TraceBuilder {
 	
 	def addInstanceVariableState(Step step, SynchronousComponentInstance instance,
 			VariableDeclaration variable, Expression value) {
-		step.asserts += createInstanceVariableState => [
-			it.variableReference = statechartUtil.createVariableReference(
+		step.asserts += statechartUtil.createVariableReference(
 				statechartUtil.createInstanceReference(instance), variable)
-			it.value = value
-		]
+					.createEqualityExpression(value)
 	}
 	
 	def void addInstanceVariableState(Step step, SynchronousComponentInstance instance,
@@ -240,33 +271,40 @@ class TraceBuilder {
 	
 	private def getOrCreateLiteral(Step step, SynchronousComponentInstance instance,
 			VariableDeclaration variable) {
-		val variableStates = step.asserts.filter(InstanceVariableState)
+		val equalityExpressions = step.asserts.filter(EqualityExpression)
 		// Finding the instance, if it has been already been created
-		val variableState = variableStates.filter[
-			it.variableReference.instance.lastInstance === instance &&
-			it.variableReference.variableDeclaration === variable].head
-		var Expression value
+		var ComponentInstanceVariableReferenceExpression variableState = null
+		var Expression value = null
+		for (equalityExpression : equalityExpressions) {
+			val leftOperand = equalityExpression.leftOperand
+			if (leftOperand instanceof ComponentInstanceVariableReferenceExpression) {
+				if (leftOperand.instance.lastInstance === instance &&
+						leftOperand.variableDeclaration === variable) {
+					variableState = leftOperand
+					value = leftOperand.otherOperandIfContainedByEquality
+				}
+			}
+			// We do not put ComponentInstanceVariableReferenceExpression as a right operand
+		}
 		if (variableState === null) {
 			// Creating the literal, similar to "getInstance" in singletons
 			val type = variable.typeDefinition
 			val initialValue = type.initialValueOfType
-			step.asserts += createInstanceVariableState => [
-				it.variableReference = statechartUtil.createVariableReference(
+			step.asserts += statechartUtil.createVariableReference(
 					statechartUtil.createInstanceReference(instance), variable)
-				it.value = initialValue
-			]
-			value = initialValue
+						.createEqualityExpression(initialValue)
+			
+			return initialValue
 		}
 		else {
-			value = variableState.value
+			return value
 		}
-		return value 
 	}
 	
 	// Instance states
 	
 	def addInstanceState(Step step, SynchronousComponentInstance instance, State state) {
-		step.asserts += createInstanceStateConfiguration => [
+		step.asserts += createComponentInstanceStateReferenceExpression => [
 			it.instance = statechartUtil.createInstanceReference(instance)
 			it.region = state.parentRegion
 			it.state = state
@@ -305,9 +343,9 @@ class TraceBuilder {
 	
 	private def convertStringToInt(Type type, String value) {
 		switch (value) {
-			case "false":
+			case "false", case "FALSE":
 				return 0
-			case "true":
+			case "true", case "TRUE":
 				return 1
 			default:
 				try {

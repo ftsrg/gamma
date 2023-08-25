@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -228,7 +228,7 @@ enum SchedulingOrder returns SchedulingOrder:
 ;
 
 enum OrthogonalRegionSchedulingOrder returns OrthogonalRegionSchedulingOrder:
-	SEQUENTIAL = 'sequential' | RANDOM = 'random'
+	SEQUENTIAL = 'sequential' | UNORDERED = 'unordered' | PARALLEL = 'parallel'
 ;
 
 enum TransitionPriority returns TransitionPriority:
@@ -240,12 +240,13 @@ enum GuardEvaluation returns GuardEvaluation:
 ;
 
 ComponentAnnotation returns InterfaceModel::ComponentAnnotation: 
-	WrapperComponentAnnotation
+	WrapperComponentAnnotation | RunUponExternalEventAnnotation | RunUponExternalEventOrInternalTimeoutAnnotation
 ;
 
 StatechartContractAnnotation returns StatechartAnnotation:
 	ScenarioAllowedWaitingAnnotation | ScenarioContractAnnotation |
-	AdaptiveContractAnnotation | MissionPhaseAnnotation | HasInitialoutputsBlockAnnotation | NegativeContractStatechartAnnotation
+	AdaptiveContractAnnotation | MissionPhaseAnnotation | HasInitialoutputsBlockAnnotation | 
+	NegativeContractStatechartAnnotation
 ;
 
 NegativeContractStatechartAnnotation returns ContractModel::NegativeContractStatechartAnnotation:
@@ -265,7 +266,7 @@ enum SpecialStateKind returns ContractModel::SpecialStateKind:
 
 ScenarioAllowedWaitingAnnotation returns ContractModel::ScenarioAllowedWaitAnnotation:
 	{ContractModel::ScenarioAllowedWaitAnnotation}
-	'@ScenarioAllowedWaitAnnotation' '=' lowerLimit=Expression '..' upperLimit=Expression 
+	('@ScenarioAllowedWaitAnnotation' | '@ScenarioAllowedWait') '=' lowerLimit=Expression '..' upperLimit=Expression 
 ;
 
 ScenarioContractAnnotation returns ContractModel::ScenarioContractAnnotation:
@@ -286,6 +287,16 @@ MissionPhaseAnnotation returns PhaseModel::MissionPhaseAnnotation:
 
 WrapperComponentAnnotation returns InterfaceModel::WrapperComponentAnnotation:
 	{InterfaceModel::WrapperComponentAnnotation} '@WrapperComponent'
+;
+
+RunUponExternalEventAnnotation returns RunUponExternalEventAnnotation:
+	{RunUponExternalEventAnnotation} ('@RunUponExternalEventAnnotation' |
+		'@RunUponExternalEvent')
+;
+
+RunUponExternalEventOrInternalTimeoutAnnotation returns RunUponExternalEventOrInternalTimeoutAnnotation:
+	{RunUponExternalEventOrInternalTimeoutAnnotation} ('@RunUponExternalEventOrInternalTimeoutAnnotation' |
+		'@RunUponExternalEventOrInternalTimeout' )
 ;
 
 Region returns Region:
@@ -341,7 +352,7 @@ StateAnnotation returns StateAnnotation:
 
 SpecialStateAnnotation returns ContractModel::SpecialStateAnnotation :
 	{ContractModel::SpecialStateAnnotation}
-	'@SpecialStateAnnotation' kind=SpecialStateKind
+	('@SpecialStateAnnotation' | '@SpecialState') kind=SpecialStateKind
 ;
 
 StateContractAnnotation returns ContractModel::StateContractAnnotation:
@@ -363,7 +374,10 @@ MissionPhaseStateAnnotation returns PhaseModel::MissionPhaseStateAnnotation:
 ;
 
 VariableBinding returns PhaseModel::VariableBinding:
-	'tie' statechartVariable=[ExpressionModel::VariableDeclaration] '->' instanceVariableReference=InstanceVariableReference
+	('tie' statechartVariable=[ExpressionModel::VariableDeclaration] '->'
+		instanceVariableReference=InstanceVariableReference) |
+	('bind' statechartVariable=[ExpressionModel::VariableDeclaration] '='
+		instanceVariableReference=InstanceVariableReference)
 ;
 
 InstanceVariableReference returns PhaseModel::InstanceVariableReference:
@@ -542,15 +556,20 @@ ControlSpecificaiton returns CompositeModel::ControlSpecification:
 ;
 
 enum ControlFunction returns CompositeModel::ControlFunction:
-	RUN_ONCE = 'run' | RUN_TO_COMPLETION = 'full step' | RESET = 'reset'
+	RUN_ONCE = 'run' | RUN_TO_COMPLETION = 'full-step' | RESET = 'reset' | RESET_MESSAGE_QUEUE = 'reset-queue'
+		| RESET_MESSAGE_QUEUES = 'reset-queues' | RESET_OTHER_MESSAGE_QUEUES = 'reset-other-queues' 
 ;
 
 MessageQueue returns CompositeModel::MessageQueue:
 	'queue' name=ID '(' ('priority' '=' priority=INTEGER) (',' 'capacity' '=' capacity=Expression)
 				(',' 'discard' '=' eventDiscardStrategy=DiscardStrategy)?
 			')' '{'
-	 	(eventReferences+=EventReference) (',' eventReferences+=EventReference)*
+	 	(eventPassings+=EventPassing) (',' eventPassings+=EventPassing)*
 	'}'
+;
+
+EventPassing returns CompositeModel::EventPassing:
+	source=EventReference ('->' target=EventReference)?
 ;
 
 enum DiscardStrategy returns CompositeModel::DiscardStrategy:
@@ -690,6 +709,10 @@ ComponentInstanceEventReferenceExpression returns CompositeModel::ComponentInsta
 ComponentInstanceEventParameterReferenceExpression returns CompositeModel::ComponentInstanceEventParameterReferenceExpression:
 	'parameter' instance=ComponentInstanceReferenceExpression '.' port=[InterfaceModel::Port] '.'
 		event=[InterfaceModel::Event] '::' parameterDeclaration=[ExpressionModel::ParameterDeclaration]
+;
+
+ComponentInstanceReflectiveElementReferenceExpression returns CompositeModel::ComponentInstanceReflectiveElementReferenceExpression:
+	'element' instance=ComponentInstanceReferenceExpression ('.' identifier+=ID) ('::' identifier+=ID)*
 ;
 
 //

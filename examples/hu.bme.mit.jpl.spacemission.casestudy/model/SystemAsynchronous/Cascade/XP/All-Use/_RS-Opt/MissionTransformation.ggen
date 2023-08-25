@@ -1,0 +1,15 @@
+import "Interface/Interfaces.gcd"
+import "SystemAsynchronous/Cascade/Mission.gcd"
+
+analysis {
+	component : Mission
+	language : Promela
+//	dataflow-coverage {
+//		coverage-criterion : all-use
+//	}
+	constraint : {
+		minimum-orchestrating-period : SCHEDULE_CONSTRAINT ms
+		maximum-orchestrating-period : SCHEDULE_CONSTRAINT ms
+	}
+	optimize : true
+}

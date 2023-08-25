@@ -1,0 +1,14 @@
+@startuml
+
+state _1 : entry / delay :=\n TIMEOUT_TIME ms
+state _2
+state Accept : /* Removed in the\ncase of monitoring */
+state ColdViolation : /* Removed in the\ncase of monitoring */
+state HotViolation 
+[*] -> _1
+_1 -> _2 : timeout delay &&\nCamera.motion
+_1 --> ColdViolation : else\n/* Transition only in\nthe case of monitoring */
+_2 -> Accept : MotionReversed.motion &&\n!(/* Other output events in <b>strict</b> mode */)
+_2 --> HotViolation : /* Disjunction of other <b>output</b> events */
+_2 --> ColdViolation : /* Disjunction of <b>input</b> events */
+@enduml

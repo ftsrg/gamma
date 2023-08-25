@@ -11,12 +11,12 @@
 package hu.bme.mit.gamma.statechart.contract.testgeneration.java
 
 import hu.bme.mit.gamma.expression.model.Expression
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression
 import hu.bme.mit.gamma.statechart.contract.AdaptiveContractAnnotation
 import hu.bme.mit.gamma.statechart.contract.StateContractAnnotation
 import hu.bme.mit.gamma.statechart.contract.tracegeneration.StatechartContractToTraceTransformer
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
-import hu.bme.mit.gamma.trace.model.InstanceState
 import hu.bme.mit.gamma.trace.testgeneration.java.TestGenerator
 import hu.bme.mit.gamma.uppaal.composition.transformation.api.util.DefaultCompositionToUppaalTransformer
 import hu.bme.mit.gamma.uppaal.composition.transformation.api.util.ElementCoverage
@@ -76,7 +76,7 @@ class StatechartToTestTransformer {
 			for (step : simpleStateExecutionTrace.steps) {
 				for (assertion : step.asserts) {
 					val lowermostAssertion = assertion.lowermostAssert
-					if (lowermostAssertion instanceof InstanceState) {
+					if (lowermostAssertion instanceof ComponentInstanceStateReferenceExpression) {
 						assertion.remove
 					}
 				}

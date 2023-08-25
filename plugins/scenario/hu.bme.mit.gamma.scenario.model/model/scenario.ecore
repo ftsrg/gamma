@@ -10,42 +10,35 @@
         eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/interface.ecore#//Package"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ScenarioDeclaration" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NamedElement ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ParametricElement">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="chart" lowerBound="1" eType="#//Chart"
-        containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="annotation" upperBound="-1"
         eType="#//Annotation" containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="initialblock" eType="#//InitialBlock"
+    <eStructuralFeatures xsi:type="ecore:EReference" name="initialBlock" eType="#//InitialBlock"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="variableDeclarations" upperBound="-1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclaration"
         containment="true"/>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="Chart">
     <eStructuralFeatures xsi:type="ecore:EReference" name="fragment" lowerBound="1"
-        eType="#//InteractionFragment" containment="true"/>
+        eType="#//Fragment" containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="Interaction" abstract="true"/>
-  <eClassifiers xsi:type="ecore:EClass" name="InteractionFragment">
+  <eClassifiers xsi:type="ecore:EClass" name="Occurrence" abstract="true"/>
+  <eClassifiers xsi:type="ecore:EClass" name="Fragment">
     <eStructuralFeatures xsi:type="ecore:EReference" name="interactions" lowerBound="1"
-        upperBound="-1" eType="#//Interaction" containment="true"/>
+        upperBound="-1" eType="#//Occurrence" containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="CombinedFragment" abstract="true" eSuperTypes="#//Interaction">
+  <eClassifiers xsi:type="ecore:EClass" name="CombinedFragment" abstract="true" eSuperTypes="#//Occurrence">
     <eStructuralFeatures xsi:type="ecore:EReference" name="fragments" lowerBound="1"
-        upperBound="-1" eType="#//InteractionFragment" containment="true"/>
+        upperBound="-1" eType="#//Fragment" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="AlternativeCombinedFragment" eSuperTypes="#//CombinedFragment"/>
   <eClassifiers xsi:type="ecore:EClass" name="UnorderedCombinedFragment" eSuperTypes="#//CombinedFragment"/>
   <eClassifiers xsi:type="ecore:EClass" name="ParallelCombinedFragment" eSuperTypes="#//CombinedFragment"/>
-  <eClassifiers xsi:type="ecore:EClass" name="ModalInteraction" abstract="true" eSuperTypes="#//InteractionDefinition">
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="modality" lowerBound="1"
-        eType="#//ModalityType"/>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="Reset" eSuperTypes="#//ModalInteraction"/>
-  <eClassifiers xsi:type="ecore:EClass" name="Signal" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ArgumentedElement #//ModalInteraction">
+  <eClassifiers xsi:type="ecore:EClass" name="Interaction" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ArgumentedElement #//DeterministicOccurrence">
     <eStructuralFeatures xsi:type="ecore:EReference" name="port" lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/interface.ecore#//Port"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="event" lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/interface.ecore#//Event"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="direction" eType="#//InteractionDirection"
         defaultValueLiteral="RECEIVE"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="modality" lowerBound="1"
+        eType="#//ModalityType"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EEnum" name="ModalityType">
     <eLiterals name="COLD"/>
@@ -55,9 +48,9 @@
     <eLiterals name="RECEIVE" value="1"/>
     <eLiterals name="SEND"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="ModalInteractionSet" eSuperTypes="#//InteractionDefinition">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="modalInteractions" upperBound="-1"
-        eType="#//InteractionDefinition" containment="true"/>
+  <eClassifiers xsi:type="ecore:EClass" name="DeterministicOccurrenceSet" eSuperTypes="#//DeterministicOccurrence">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="deterministicOccurrences"
+        upperBound="-1" eType="#//DeterministicOccurrence" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="LoopCombinedFragment" eSuperTypes="#//CombinedFragment">
     <eStructuralFeatures xsi:type="ecore:EReference" name="minimum" lowerBound="1"
@@ -67,16 +60,16 @@
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="OptionalCombinedFragment" eSuperTypes="#//CombinedFragment"/>
-  <eClassifiers xsi:type="ecore:EClass" name="Delay" eSuperTypes="#//ModalInteraction">
+  <eClassifiers xsi:type="ecore:EClass" name="Delay" eSuperTypes="#//DeterministicOccurrence">
     <eStructuralFeatures xsi:type="ecore:EReference" name="minimum" lowerBound="1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="maximum" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
         containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="NegatedModalInteraction" eSuperTypes="#//InteractionDefinition">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="modalinteraction" lowerBound="1"
-        eType="#//InteractionDefinition" containment="true"/>
+  <eClassifiers xsi:type="ecore:EClass" name="NegatedDeterministicOccurrence" eSuperTypes="#//DeterministicOccurrence">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="deterministicOccurrence"
+        lowerBound="1" eType="#//DeterministicOccurrence" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Annotation" abstract="true"/>
   <eClassifiers xsi:type="ecore:EClass" name="WaitAnnotation" eSuperTypes="#//Annotation">
@@ -86,8 +79,8 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="maximum" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
         containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="InteractionDefinition" abstract="true"
-      eSuperTypes="#//Interaction"/>
+  <eClassifiers xsi:type="ecore:EClass" name="DeterministicOccurrence" abstract="true"
+      eSuperTypes="#//Occurrence"/>
   <eClassifiers xsi:type="ecore:EClass" name="StrictAnnotation" eSuperTypes="#//Annotation"/>
   <eClassifiers xsi:type="ecore:EClass" name="PermissiveAnnotation" eSuperTypes="#//Annotation"/>
   <eClassifiers xsi:type="ecore:EClass" name="NegatedWaitAnnotation" eSuperTypes="#//Annotation">
@@ -101,16 +94,16 @@
   <eClassifiers xsi:type="ecore:EClass" name="NegPermissiveAnnotation" eSuperTypes="#//Annotation"/>
   <eClassifiers xsi:type="ecore:EClass" name="InitialBlock">
     <eStructuralFeatures xsi:type="ecore:EReference" name="interactions" lowerBound="1"
-        upperBound="-1" eType="#//InteractionDefinition" containment="true"/>
+        upperBound="-1" eType="#//DeterministicOccurrence" containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="ScenarioDefinitionReference" eSuperTypes="#//Interaction ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ArgumentedElement">
+  <eClassifiers xsi:type="ecore:EClass" name="ScenarioDefinitionReference" eSuperTypes="#//Occurrence ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ArgumentedElement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="scenarioDefinition" lowerBound="1"
         eType="#//ScenarioDeclaration"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="ScenarioCheckExpression" eSuperTypes="#//InteractionDefinition">
+  <eClassifiers xsi:type="ecore:EClass" name="ScenarioCheckExpression" eSuperTypes="#//DeterministicOccurrence">
     <eStructuralFeatures xsi:type="ecore:EReference" name="expression" lowerBound="1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
         containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="ScenarioAssignmentStatement" eSuperTypes="#//InteractionDefinition ../../hu.bme.mit.gamma.action.model/model/action.ecore#//AssignmentStatement"/>
+  <eClassifiers xsi:type="ecore:EClass" name="ScenarioAssignmentStatement" eSuperTypes="#//DeterministicOccurrence ../../hu.bme.mit.gamma.action.model/model/action.ecore#//AssignmentStatement"/>
 </ecore:EPackage>

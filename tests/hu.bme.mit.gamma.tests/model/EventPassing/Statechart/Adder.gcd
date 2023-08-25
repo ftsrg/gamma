@@ -1,0 +1,19 @@
+package asynchronous
+
+import "Interfaces/Interfaces.gcd"
+
+@RunUponExternalEventAnnotation
+statechart Adder [
+	port Execute : requires CounterExecute
+	port Toggle : provides CounterInternal
+] {
+	var count : integer
+	region main {
+		initial Initial
+		state A
+	}
+	
+	transition from Initial to A
+	transition from A to A when Execute.^execute [ count <= 100 ] / raise Toggle.add; count := count + 1;
+	
+}

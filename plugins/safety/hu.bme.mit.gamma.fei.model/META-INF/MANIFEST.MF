@@ -1,0 +1,20 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Automatic-Module-Name: hu.bme.mit.gamma.fei.model
+Bundle-Name: Fault Extension Instructions Metamodel
+Bundle-SymbolicName: hu.bme.mit.gamma.fei.model;singleton:=true
+Bundle-Vendor: BME-FTSRG
+Bundle-Localization: plugin
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Export-Package: hu.bme.mit.gamma.fei.model,
+ hu.bme.mit.gamma.fei.model.impl,
+ hu.bme.mit.gamma.fei.model.util,
+ hu.bme.mit.gamma.fei.util
+Bundle-Version: 2.9.0.qualifier
+Bundle-ClassPath: .
+Require-Bundle: org.eclipse.core.runtime,
+ org.eclipse.emf.ecore;visibility:=reexport,
+ hu.bme.mit.gamma.action.model;visibility:=reexport,
+ hu.bme.mit.gamma.expression.model;visibility:=reexport,
+ hu.bme.mit.gamma.statechart.model;visibility:=reexport
+Bundle-ActivationPolicy: lazy

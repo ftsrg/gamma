@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -15,6 +15,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -37,12 +38,16 @@ import com.google.gson.GsonBuilder;
 
 import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
 import hu.bme.mit.gamma.genmodel.model.Verification;
+import hu.bme.mit.gamma.nuxmv.verification.NuxmvVerification;
 import hu.bme.mit.gamma.plantuml.serialization.SvgSerializer;
 import hu.bme.mit.gamma.plantuml.transformation.TraceToPlantUmlTransformer;
+import hu.bme.mit.gamma.promela.verification.PromelaVerification;
 import hu.bme.mit.gamma.property.model.CommentableStateFormula;
 import hu.bme.mit.gamma.property.model.PropertyPackage;
 import hu.bme.mit.gamma.property.model.StateFormula;
 import hu.bme.mit.gamma.property.util.PropertyUtil;
+import hu.bme.mit.gamma.querygenerator.serializer.NuxmvPropertySerializer;
+import hu.bme.mit.gamma.querygenerator.serializer.PromelaPropertySerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.PropertySerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.ThetaPropertySerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.UppaalPropertySerializer;
@@ -67,12 +72,18 @@ import hu.bme.mit.gamma.verification.util.AbstractVerifier.Result;
 
 public class VerificationHandler extends TaskHandler {
 
+	protected boolean serializeTraces; // Denotes whether traces are serialized
 	protected boolean serializeTest; // Denotes whether test code is generated
 	protected String testFolderUri;
 	// targetFolderUri is traceFolderUri 
+	protected String packageName; // Set in setVerification
 	protected String svgFileName; // Set in setVerification
 	protected final String traceFileName = "ExecutionTrace";
 	protected final String testFileName = traceFileName + "Simulation";
+	
+	//
+	
+	protected PropertySerializer propertySerializer = null;
 	
 	//
 	
@@ -85,11 +96,20 @@ public class VerificationHandler extends TaskHandler {
 	protected final StatechartEcoreUtil statechartEcoreUtil = StatechartEcoreUtil.INSTANCE;
 	protected final ExecutionTraceSerializer serializer = ExecutionTraceSerializer.INSTANCE;
 	
+	//
+	
 	public VerificationHandler(IFile file) {
-		super(file);
+		this(file, true);
 	}
 	
-	public List<VerificationResult> execute(Verification verification) throws IOException {
+	public VerificationHandler(IFile file, boolean serializeTraces) {
+		super(file);
+		this.serializeTraces = serializeTraces;
+	}
+	
+	//
+	
+	public List<VerificationResult> execute(Verification verification) throws IOException, InterruptedException {
 		// Setting target folder
 		setTargetFolder(verification);
 		//
@@ -102,7 +122,7 @@ public class VerificationHandler extends TaskHandler {
 		boolean distinguishStringFormulas = false;
 		
 		AbstractVerification verificationTask = null;
-		PropertySerializer propertySerializer = null;
+		propertySerializer = null;
 		for (AnalysisLanguage analysisLanguage : languagesSet) {
 			switch (analysisLanguage) {
 				case UPPAAL:
@@ -118,19 +138,26 @@ public class VerificationHandler extends TaskHandler {
 					verificationTask = XstsUppaalVerification.INSTANCE;
 					propertySerializer = XstsUppaalPropertySerializer.INSTANCE;
 					break;
+				case PROMELA:
+					verificationTask = PromelaVerification.INSTANCE;
+					propertySerializer = PromelaPropertySerializer.INSTANCE;
+					break;
+				case NUXMV:
+					verificationTask = NuxmvVerification.INSTANCE;
+					propertySerializer = NuxmvPropertySerializer.INSTANCE;
+					break;
 				default:
-					throw new IllegalArgumentException("Currently only UPPAAL and Theta are supported");
+					throw new IllegalArgumentException("Currently only UPPAAL, Theta, Spin and nuXmv are supported");
 			}
 		}
-		
-		String[] arguments = verificationArguments.isEmpty() ?
-				verificationTask.getDefaultArguments() :
-					verificationArguments.toArray(new String[verificationArguments.size()]);
-		
 		String filePath = verification.getFileName().get(0);
 		File modelFile = new File(filePath);
+		
+		String[] arguments = verificationArguments.isEmpty() ?
+				verificationTask.getDefaultArguments(modelFile) :
+					verificationArguments.toArray(new String[verificationArguments.size()]);
+		
 		boolean isOptimize = verification.isOptimize();
-		String packageName = verification.getPackageName().get(0);
 		
 		// Retrieved traces
 		List<VerificationResult> retrievedVerificationResults = new ArrayList<VerificationResult>();
@@ -179,6 +206,11 @@ public class VerificationHandler extends TaskHandler {
 		Queue<Entry<String, StateFormula>> formulaQueue = new LinkedList<Entry<String, StateFormula>>();
 		formulaQueue.addAll(formulas.entrySet());
 		
+		// Checking if some of the unchecked properties are already covered by stored traces
+		if (isOptimize) {
+			removeCoveredProperties(formulaQueue);
+		}
+		
 		// Execution
 		while (!formulaQueue.isEmpty()) {
 			Entry<String, StateFormula> formula = formulaQueue.poll();
@@ -199,6 +231,15 @@ public class VerificationHandler extends TaskHandler {
 			ThreeStateBoolean verificationResult = result.getResult();
 			
 			stopwatch.stop();
+			
+			// Adding comment to connect the trace with the property
+			if (trace != null) {
+				traceUtil.addComment(trace, serializedFormula);
+			}
+			
+			TimeUnit timeUnit = TimeUnit.MILLISECONDS;
+			long elapsed = stopwatch.elapsed(timeUnit);
+			String elapsedString = elapsed + " " + timeUnit;
 			long elapsedMS = stopwatch.elapsed(TimeUnit.MILLISECONDS);
 			
 			VerificationResult resultTemp = new VerificationResult();
@@ -211,30 +252,14 @@ public class VerificationHandler extends TaskHandler {
 			retrievedVerificationResults.add(resultTemp);
 			
 			// Checking if some of the unchecked properties are already covered
-			if (trace != null && isOptimize) {
-				List<StateFormula> stateFormulas = formulaQueue.stream()
-						.map(it -> it.getValue())
-						.filter(it -> it != null)
-						.collect(Collectors.toList()); // Not null state formulas
-				CoveredPropertyReducer reducer = new CoveredPropertyReducer(stateFormulas, trace);
-				List<StateFormula> coveredProperties = reducer.execute();
-				
-				for (StateFormula coveredProperty : coveredProperties) {
-					String serializedProperty = propertySerializer.serialize(coveredProperty);
-					logger.log(Level.INFO, "Property already covered: " + serializedProperty);
-					formulaQueue.removeIf(it -> it.getValue() == coveredProperty);
-				}
-				
+			if (isOptimize) {
+				removeCoveredProperties(trace, formulaQueue);
 			}
 		}
 		if (isOptimize) {
 			// Optimization again on the retrieved tests (front to back and vice versa)
 			traceUtil.removeCoveredExecutionTraces(retrievedTraces);
 		}
-		
-		// Serializing
-		String testFolderUri = serializeTest ? this.testFolderUri : null;
-		String testFileName = serializeTest ? this.testFileName : null;
 		
 		// Back-annotating
 		if (verification.isBackAnnotateToOriginal()) {
@@ -251,11 +276,10 @@ public class VerificationHandler extends TaskHandler {
 			retrievedTraces.addAll(backAnnotatedTraces);
 		}
 		
-		for (ExecutionTrace trace : retrievedTraces) {
-			serializer.serialize(targetFolderUri, traceFileName, svgFileName,
-					testFolderUri, testFileName, packageName, trace);
-		}
 		traces.addAll(retrievedTraces);
+		if (serializeTraces) { // After 'traces.add...'
+			serializeTraces();
+		}
 		
 		// Note that .get and .json postfix ids will not match if optimization is applied
 		for (VerificationResult verificationResult : retrievedVerificationResults) {
@@ -265,14 +289,47 @@ public class VerificationHandler extends TaskHandler {
 		return retrievedVerificationResults;
 	}
 	
+	//
+	
+	private void removeCoveredProperties(Queue<Entry<String, StateFormula>> formulaQueue) {
+		removeCoveredProperties(traces, formulaQueue);
+	}
+	
+	private void removeCoveredProperties(Collection<? extends ExecutionTrace> traces,
+			Queue<Entry<String, StateFormula>> formulaQueue) {
+		for (ExecutionTrace trace : traces) {
+			removeCoveredProperties(trace, formulaQueue);
+		}
+	}
+
+	private void removeCoveredProperties(ExecutionTrace trace,
+			Queue<Entry<String, StateFormula>> formulaQueue) {
+		if (trace != null) {
+			List<StateFormula> stateFormulas = formulaQueue.stream()
+					.map(it -> it.getValue())
+					.filter(it -> it != null)
+					.collect(Collectors.toList()); // Not null state formulas
+			CoveredPropertyReducer reducer = new CoveredPropertyReducer(stateFormulas, trace);
+			List<StateFormula> coveredProperties = reducer.execute();
+			
+			for (StateFormula coveredProperty : coveredProperties) {
+				String serializedProperty = propertySerializer.serialize(coveredProperty);
+				logger.log(Level.INFO, "Property already covered: " + serializedProperty);
+				formulaQueue.removeIf(it -> it.getValue() == coveredProperty);
+			}
+		}
+	}
+	
+	//
+	
 	protected Result execute(AbstractVerification verificationTask, File modelFile,
-			File queryFile, List<ExecutionTrace> retrievedTraces, boolean isOptimize) {
+			File queryFile, List<ExecutionTrace> retrievedTraces, boolean isOptimize) throws InterruptedException {
 		return this.execute(verificationTask, modelFile, queryFile,
 				new String[0], retrievedTraces, isOptimize);
 	}
 	
 	protected Result execute(AbstractVerification verificationTask, File modelFile, File queryFile,
-			String[] arguments, List<ExecutionTrace> retrievedTraces, boolean isOptimize) {
+			String[] arguments, List<ExecutionTrace> retrievedTraces, boolean isOptimize) throws InterruptedException {
 		// If arguments are empty, we execute a task with default arguments
 		Result result = (arguments.length == 0) ? verificationTask.execute(modelFile, queryFile) :
 			verificationTask.execute(modelFile, queryFile, arguments);
@@ -299,7 +356,8 @@ public class VerificationHandler extends TaskHandler {
 	
 	private void setVerification(Verification verification) {
 		if (verification.getPackageName().isEmpty()) {
-			verification.getPackageName().add(file.getProject().getName().toLowerCase());
+			this.packageName = file.getProject().getName().toLowerCase();
+			verification.getPackageName().add(packageName);
 		}
 		if (verification.getTestFolder().isEmpty()) {
 			verification.getTestFolder().add("test-gen");
@@ -329,6 +387,22 @@ public class VerificationHandler extends TaskHandler {
 	
 	public List<ExecutionTrace> getTraces() {
 		return traces;
+	}
+	
+	public void optimizeTraces() {
+		// Optimization again on the retrieved tests (front to back and vice versa)
+		traceUtil.removeCoveredExecutionTraces(traces);
+	}
+	
+	public void serializeTraces() throws IOException {
+		// Serializing
+		String testFolderUri = serializeTest ? this.testFolderUri : null;
+		String testFileName = serializeTest ? this.testFileName : null;
+		String packageName = serializeTest ? this.packageName : null;
+		for (ExecutionTrace trace : traces) {
+			serializer.serialize(targetFolderUri, traceFileName, svgFileName,
+					testFolderUri, testFileName, packageName, trace);
+		}
 	}
 	
 	//

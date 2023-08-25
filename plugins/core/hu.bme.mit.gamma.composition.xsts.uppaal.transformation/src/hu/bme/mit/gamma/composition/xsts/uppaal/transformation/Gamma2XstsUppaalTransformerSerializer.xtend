@@ -1,3 +1,13 @@
+/********************************************************************************
+ * Copyright (c) 2020-2023 Contributors to the Gamma project
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * SPDX-License-Identifier: EPL-1.0
+ ********************************************************************************/
 package hu.bme.mit.gamma.composition.xsts.uppaal.transformation
 
 import hu.bme.mit.gamma.expression.model.Expression
@@ -21,7 +31,9 @@ class Gamma2XstsUppaalTransformerSerializer {
 	protected final List<Expression> arguments
 	protected final String targetFolderUri
 	protected final String fileName
-	protected final Integer schedulingConstraint
+	
+	protected final Integer minSchedulingConstraint
+	protected final Integer maxSchedulingConstraint
 	// Configuration
 	protected final boolean optimize
 	protected final TransitionMerging transitionMerging
@@ -48,7 +60,7 @@ class Gamma2XstsUppaalTransformerSerializer {
 	new(Component component, List<Expression> arguments,
 			String targetFolderUri, String fileName,
 			Integer schedulingConstraint) {
-		this(component, arguments, targetFolderUri, fileName, schedulingConstraint,
+		this(component, arguments, targetFolderUri, fileName, schedulingConstraint, schedulingConstraint,
 			true, TransitionMerging.HIERARCHICAL,
 			null, new AnnotatablePreprocessableElements(
 				null, null, null, null, null,
@@ -61,7 +73,7 @@ class Gamma2XstsUppaalTransformerSerializer {
 	
 	new(Component component, List<Expression> arguments,
 			String targetFolderUri, String fileName,
-			Integer schedulingConstraint,
+			Integer minSchedulingConstraint, Integer maxSchedulingConstraint,
 			boolean optimize,
 			TransitionMerging transitionMerging,
 			PropertyPackage slicingProperties,
@@ -71,7 +83,8 @@ class Gamma2XstsUppaalTransformerSerializer {
 		this.arguments = arguments
 		this.targetFolderUri = targetFolderUri
 		this.fileName = fileName
-		this.schedulingConstraint = schedulingConstraint
+		this.minSchedulingConstraint = minSchedulingConstraint
+		this.maxSchedulingConstraint = maxSchedulingConstraint
 		//
 		this.optimize = optimize
 		this.transitionMerging = transitionMerging
@@ -87,8 +100,8 @@ class Gamma2XstsUppaalTransformerSerializer {
 	def execute() {
 		val xStsTransformer = new Gamma2XstsTransformerSerializer(component,
 			arguments, targetFolderUri,
-			fileName, schedulingConstraint,
-			optimize, 
+			fileName, minSchedulingConstraint, maxSchedulingConstraint,
+			optimize, false,
 			transitionMerging,
 			slicingProperties, annotatableElements,
 			initialState, initialStateSetting)

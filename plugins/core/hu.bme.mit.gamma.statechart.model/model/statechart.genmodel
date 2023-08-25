@@ -3,7 +3,7 @@
     xmlns:genmodel="http://www.eclipse.org/emf/2002/GenModel" modelDirectory="/hu.bme.mit.gamma.statechart.model/src-gen" editDirectory="/hu.bme.mit.gamma.statechart.model.edit/src-gen"
     editorDirectory="/hu.bme.mit.gamma.statechart.model.editor/src-gen" modelPluginID="hu.bme.mit.gamma.statechart.model"
     modelName="Statechart" rootExtendsClass="org.eclipse.emf.ecore.impl.MinimalEObjectImpl$Container"
-    importerID="org.eclipse.emf.importer.ecore" complianceLevel="8.0" copyrightFields="false"
+    importerID="org.eclipse.emf.importer.ecore" complianceLevel="17.0" copyrightFields="false"
     editPluginID="hu.bme.mit.gamma.statechart.model.edit" editorPluginID="hu.bme.mit.gamma.statechart.model.editor"
     usedGenPackages="../../hu.bme.mit.gamma.action.model/model/action.genmodel#//model ../../hu.bme.mit.gamma.expression.model/model/expression.genmodel#//model"
     operationReflection="true" importOrganizing="true">
@@ -17,6 +17,9 @@
       <genEnumLiterals ecoreEnumLiteral="composite.ecore#//ControlFunction/RUN_ONCE"/>
       <genEnumLiterals ecoreEnumLiteral="composite.ecore#//ControlFunction/RUN_TO_COMPLETION"/>
       <genEnumLiterals ecoreEnumLiteral="composite.ecore#//ControlFunction/RESET"/>
+      <genEnumLiterals ecoreEnumLiteral="composite.ecore#//ControlFunction/RESET_MESSAGE_QUEUE"/>
+      <genEnumLiterals ecoreEnumLiteral="composite.ecore#//ControlFunction/RESET_MESSAGE_QUEUES"/>
+      <genEnumLiterals ecoreEnumLiteral="composite.ecore#//ControlFunction/RESET_OTHER_MESSAGE_QUEUES"/>
     </genEnums>
     <genEnums typeSafeEnumCompatible="false" ecoreEnum="composite.ecore#//DiscardStrategy">
       <genEnumLiterals ecoreEnumLiteral="composite.ecore#//DiscardStrategy/INCOMING"/>
@@ -57,8 +60,12 @@
     </genClasses>
     <genClasses ecoreClass="composite.ecore#//MessageQueue">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference composite.ecore#//MessageQueue/capacity"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference composite.ecore#//MessageQueue/eventReferences"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference composite.ecore#//MessageQueue/eventPassings"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute composite.ecore#//MessageQueue/eventDiscardStrategy"/>
+    </genClasses>
+    <genClasses ecoreClass="composite.ecore#//EventPassing">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference composite.ecore#//EventPassing/source"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference composite.ecore#//EventPassing/target"/>
     </genClasses>
     <genClasses image="false" ecoreClass="composite.ecore#//SynchronousComponent"/>
     <genClasses image="false" ecoreClass="composite.ecore#//AsynchronousComponent"/>
@@ -112,6 +119,9 @@
     </genClasses>
     <genClasses ecoreClass="composite.ecore#//ComponentInstanceTransitionReferenceExpression">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference composite.ecore#//ComponentInstanceTransitionReferenceExpression/transitionId"/>
+    </genClasses>
+    <genClasses ecoreClass="composite.ecore#//ComponentInstanceReflectiveElementReferenceExpression">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute composite.ecore#//ComponentInstanceReflectiveElementReferenceExpression/identifier"/>
     </genClasses>
   </genPackages>
   <genPackages prefix="ContractModel" basePackage="hu.bme.mit.gamma.statechart" disposableProviderFactory="true"
@@ -259,7 +269,8 @@
     </genEnums>
     <genEnums typeSafeEnumCompatible="false" ecoreEnum="statechart.ecore#//OrthogonalRegionSchedulingOrder">
       <genEnumLiterals ecoreEnumLiteral="statechart.ecore#//OrthogonalRegionSchedulingOrder/SEQUENTIAL"/>
-      <genEnumLiterals ecoreEnumLiteral="statechart.ecore#//OrthogonalRegionSchedulingOrder/RANDOM"/>
+      <genEnumLiterals ecoreEnumLiteral="statechart.ecore#//OrthogonalRegionSchedulingOrder/UNORDERED"/>
+      <genEnumLiterals ecoreEnumLiteral="statechart.ecore#//OrthogonalRegionSchedulingOrder/PARALLEL"/>
     </genEnums>
     <genEnums typeSafeEnumCompatible="false" ecoreEnum="statechart.ecore#//TransitionPriority">
       <genEnumLiterals ecoreEnumLiteral="statechart.ecore#//TransitionPriority/OFF"/>
@@ -367,6 +378,8 @@
     </genClasses>
     <genClasses ecoreClass="statechart.ecore#//OnCycleTrigger"/>
     <genClasses image="false" ecoreClass="statechart.ecore#//StatechartAnnotation"/>
+    <genClasses ecoreClass="statechart.ecore#//RunUponExternalEventAnnotation"/>
+    <genClasses ecoreClass="statechart.ecore#//RunUponExternalEventOrInternalTimeoutAnnotation"/>
     <genClasses image="false" ecoreClass="statechart.ecore#//StateAnnotation"/>
     <genClasses image="false" ecoreClass="statechart.ecore#//TransitionAnnotation"/>
     <genClasses ecoreClass="statechart.ecore#//TransitionIdAnnotation"/>

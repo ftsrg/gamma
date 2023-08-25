@@ -40,6 +40,7 @@ import static extension hu.bme.mit.gamma.action.derivedfeatures.ActionModelDeriv
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class SystemReducer implements Reducer {
+	
 	protected final ViatraQueryEngine engine
 	// Storing the reduced states, so in-state expressions can be removed
 	protected final Collection<StateNode> removedUnreachableStates = newHashSet
@@ -97,9 +98,9 @@ class SystemReducer implements Reducer {
 				val source = transition.sourceState
 				val target = transition.targetState
 				try {
-					source.containingStatechart
-					target.containingStatechart
-				} catch (NullPointerException exception) {
+					source.containingStatechart.name // To invoke a nullptr
+					target.containingStatechart.name
+				} catch (NullPointerException e) {
 					log(Level.INFO, "Removing transition as source or target is deleted: " + source.name + " -> " + target.name)
 					transition.delete
 				}
@@ -156,17 +157,20 @@ class SystemReducer implements Reducer {
 	}
 	
 	private def void removeUnnecessaryRegion(Region region) {
+		val initialTransition = region.initialTransition
 		val states = region.states
+		val stateNodes = region.stateNodes
 		val pseudoStates = region.pseudoStates // E.g., choice might have an incoming transition from another transition
 		try {
-			if (pseudoStates.forall[it.precedingStates.empty] &&
+			if (initialTransition.effects.forall[it.effectlessAction] &&
+					pseudoStates.forall[it.precedingStates.empty] &&
 					states.forall[!it.composite && it.outgoingTransitions.empty &&
-					it.entryActions.forall[it.effectlessAction] && it.exitActions.forall[it.effectlessAction] ||
-					it.incomingTransitions.empty]) {
+						it.entryActions.forall[it.effectlessAction] && it.exitActions.forall[it.effectlessAction] ||
+						it.incomingTransitions.empty]) {
 				// First, removing all related transitions (as otherwise nullptr exceptions are generated in incomingTransitions)
 				val statechart = region.containingStatechart
-				statechart.transitions -= (states.map[it.incomingTransitions].flatten + 
-					states.map[it.outgoingTransitions].flatten).toList
+				statechart.transitions -= (stateNodes.map[it.incomingTransitions].flatten +
+					stateNodes.map[it.outgoingTransitions].flatten).toList
 				// Removing region
 				region.remove
 				log(Level.INFO, "Removing region " + region.name + " of " + statechart.name)

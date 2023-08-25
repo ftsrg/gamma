@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -11,7 +11,6 @@
 package hu.bme.mit.gamma.statechart.lowlevel.transformation
 
 import hu.bme.mit.gamma.action.model.ActionModelFactory
-import hu.bme.mit.gamma.action.util.ActionUtil
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.TrueExpression
@@ -25,11 +24,17 @@ import hu.bme.mit.gamma.statechart.lowlevel.model.Component
 import hu.bme.mit.gamma.statechart.lowlevel.model.EventDeclaration
 import hu.bme.mit.gamma.statechart.lowlevel.model.StateNode
 import hu.bme.mit.gamma.statechart.lowlevel.model.StatechartModelFactory
+import hu.bme.mit.gamma.statechart.lowlevel.util.LowlevelStatechartUtil
+import hu.bme.mit.gamma.statechart.statechart.DeepHistoryState
 import hu.bme.mit.gamma.statechart.statechart.GuardEvaluation
 import hu.bme.mit.gamma.statechart.statechart.InitialState
+import hu.bme.mit.gamma.statechart.statechart.OrthogonalRegionSchedulingOrder
 import hu.bme.mit.gamma.statechart.statechart.PseudoState
 import hu.bme.mit.gamma.statechart.statechart.Region
+import hu.bme.mit.gamma.statechart.statechart.RunUponExternalEventAnnotation
+import hu.bme.mit.gamma.statechart.statechart.RunUponExternalEventOrInternalTimeoutAnnotation
 import hu.bme.mit.gamma.statechart.statechart.SchedulingOrder
+import hu.bme.mit.gamma.statechart.statechart.ShallowHistoryState
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.TimeoutAction
@@ -44,8 +49,6 @@ import static com.google.common.base.Preconditions.checkState
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.LowlevelNamings.*
-import hu.bme.mit.gamma.statechart.statechart.ShallowHistoryState
-import hu.bme.mit.gamma.statechart.statechart.DeepHistoryState
 
 class StatechartToLowlevelTransformer {
 	// Auxiliary objects
@@ -56,7 +59,7 @@ class StatechartToLowlevelTransformer {
 	protected final extension TriggerTransformer triggerTransformer
 	protected final extension PseudoStateTransformer pseudoStateTransformer
 	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
-	protected final extension ActionUtil actionUtil = ActionUtil.INSTANCE
+	protected final extension LowlevelStatechartUtil lowlevelUtil = LowlevelStatechartUtil.INSTANCE
 	protected final extension EventAttributeTransformer eventAttributeTransformer = EventAttributeTransformer.INSTANCE
 	// Low-level statechart model factory
 	protected final extension StatechartModelFactory factory = StatechartModelFactory.eINSTANCE
@@ -227,7 +230,20 @@ class StatechartToLowlevelTransformer {
 			it.name = getName(statechart)
 			it.schedulingOrder = statechart.schedulingOrder.transform
 			it.guardEvaluation = statechart.guardEvaluation.transform
+			it.orthogonalRegionSchedulingOrder = statechart.orthogonalRegionSchedulingOrder.transform
 		]
+		if (!statechart.hasOrthogonalRegions) {
+			// If there are no orthogonal regions, then the guard evaluation policy is irrelevant;
+			// on the fly is the faster option, though
+			lowlevelStatechart.guardEvaluation =
+				hu.bme.mit.gamma.statechart.lowlevel.model.GuardEvaluation.ON_THE_FLY
+		}
+		if (statechart.hasAnnotation(RunUponExternalEventAnnotation)) {
+			lowlevelStatechart.addRunUponExternalEventAnnotation
+		}
+		if (statechart.hasAnnotation(RunUponExternalEventOrInternalTimeoutAnnotation)) {
+			lowlevelStatechart.addRunUponExternalEventOrInternalTimeoutAnnotation
+		}
 		trace.put(statechart, lowlevelStatechart) // Saving in trace
 		
 		// Constants
@@ -297,6 +313,23 @@ class StatechartToLowlevelTransformer {
 			}
 			default: {
 				throw new IllegalArgumentException("Not known guard evaluation: " + guardEvaluation)
+			}
+		}
+	}
+	
+	protected def transform(OrthogonalRegionSchedulingOrder schedulingOrder) {
+		switch (schedulingOrder) {
+			case OrthogonalRegionSchedulingOrder.SEQUENTIAL: {
+				return hu.bme.mit.gamma.statechart.lowlevel.model.OrthogonalRegionSchedulingOrder.SEQUENTIAL
+			}
+			case OrthogonalRegionSchedulingOrder.UNORDERED: {
+				return hu.bme.mit.gamma.statechart.lowlevel.model.OrthogonalRegionSchedulingOrder.UNORDERED
+			}
+			case OrthogonalRegionSchedulingOrder.PARALLEL: {
+				return hu.bme.mit.gamma.statechart.lowlevel.model.OrthogonalRegionSchedulingOrder.PARALLEL
+			}
+			default: {
+				throw new IllegalArgumentException("Not known scheduling order: " + schedulingOrder)
 			}
 		}
 	}

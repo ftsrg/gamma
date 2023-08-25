@@ -10,8 +10,8 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.trace.testgeneration.java
 
+import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
-import hu.bme.mit.gamma.trace.model.Assert
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.trace.model.Schedule
 import java.util.List
@@ -23,11 +23,13 @@ abstract class AbstractAssertionHandler {
 	protected final int min
 	protected final int max
 	protected String schedule
+	protected final ExecutionTrace trace
 	
 	protected final ActAndAssertSerializer serializer
 	protected final ExpressionEvaluator evaluator = ExpressionEvaluator.INSTANCE
 	
 	new(ExecutionTrace trace, ActAndAssertSerializer serializer) {
+		this.trace = trace
 		if (trace.hasAllowedWaitingAnnotation) {
 			val waitingAnnotation = trace.allowedWaitingAnnotation
 			this.min = evaluator.evaluateInteger(waitingAnnotation.lowerLimit)
@@ -38,12 +40,13 @@ abstract class AbstractAssertionHandler {
 			this.max = -1
 		}
 		this.serializer = serializer
-		val firstInstance = trace.steps.flatMap[it.actions].findFirst[it instanceof Schedule]
+		val firstInstance = trace.steps.flatMap[it.actions]
+				.findFirst[it instanceof Schedule]
 		if (firstInstance !== null) {
 			this.schedule = serializer.serialize(firstInstance).toString
 		} 
 	}
 
-	def abstract String generateAssertBlock(List<Assert> asserts)
+	def abstract String generateAssertBlock(List<Expression> asserts)
 
 }

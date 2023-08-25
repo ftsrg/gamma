@@ -1,0 +1,33 @@
+package casccrossroads
+
+import "Interfaces/Interfaces.gcd"
+import "Controller/Controller.gcd"
+import "TrafficLight/TrafficLightCtrl.gcd"
+import "Monitor/Monitor.gcd"
+
+cascade Crossroad() [
+// Component ports
+	port police : requires PoliceInterrupt
+	port priorityOutput : provides LightCommands
+	port secondaryOutput : provides LightCommands
+	port error : requires Error
+] {
+// Components of the composite model
+	component controller : Controller
+	component prior : TrafficLightCtrl
+	component second : TrafficLightCtrl
+	component monitor : Monitor
+
+	// Binding system ports to the ports of the components
+	bind police -> controller.PoliceInterrupt
+	bind priorityOutput -> prior.LightCommands
+	bind secondaryOutput -> second.LightCommands
+	
+	bind error -> monitor.error
+
+	// Connecting ports of components using channels
+	channel [ controller.PriorityPolice ] -o)- [ prior.PoliceInterrupt ]
+	channel [ controller.SecondaryPolice ] -o)- [ second.PoliceInterrupt ]
+	channel [ controller.PriorityControl ] -o)- [ prior.Control ]
+	channel [ controller.SecondaryControl ] -o)- [ second.Control ]
+}

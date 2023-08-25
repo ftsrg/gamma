@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -13,10 +13,19 @@ package hu.bme.mit.gamma.lowlevel.xsts.transformation
 import hu.bme.mit.gamma.xsts.model.ComponentParameterGroup
 import hu.bme.mit.gamma.xsts.model.InEventGroup
 import hu.bme.mit.gamma.xsts.model.InEventParameterGroup
+import hu.bme.mit.gamma.xsts.model.MasterMessageQueueGroup
+import hu.bme.mit.gamma.xsts.model.MessageQueueSizeGroup
 import hu.bme.mit.gamma.xsts.model.OutEventGroup
 import hu.bme.mit.gamma.xsts.model.OutEventParameterGroup
 import hu.bme.mit.gamma.xsts.model.PlainVariableGroup
 import hu.bme.mit.gamma.xsts.model.RegionGroup
+import hu.bme.mit.gamma.xsts.model.SlaveMessageQueueGroup
+import hu.bme.mit.gamma.xsts.model.SystemInEventGroup
+import hu.bme.mit.gamma.xsts.model.SystemInEventParameterGroup
+import hu.bme.mit.gamma.xsts.model.SystemMasterMessageQueueGroup
+import hu.bme.mit.gamma.xsts.model.SystemOutEventGroup
+import hu.bme.mit.gamma.xsts.model.SystemOutEventParameterGroup
+import hu.bme.mit.gamma.xsts.model.SystemSlaveMessageQueueGroup
 import hu.bme.mit.gamma.xsts.model.TimeoutGroup
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
@@ -60,6 +69,21 @@ class VariableGroupRetriever {
 		return eventVariableGroups.head
 	}
 	
+	// During a single low-level statechart transformation, there is a single system In event variable group
+	def getSystemInEventVariableGroup(XSTS xSts) {
+		var eventVariableGroups = xSts.variableGroups
+									.filter[it.annotation instanceof SystemInEventGroup]
+		if (eventVariableGroups.empty) {
+			val eventVariableGroup = createVariableGroup => [
+				it.annotation = createSystemInEventGroup
+			]
+			xSts.variableGroups += eventVariableGroup
+			return eventVariableGroup
+		}
+		checkState(eventVariableGroups.size == 1)
+		return eventVariableGroups.head
+	}
+	
 	// During a single low-level statechart transformation, there is a single out event variable group
 	def getOutEventVariableGroup(XSTS xSts) {
 		var eventVariableGroups = xSts.variableGroups
@@ -67,6 +91,21 @@ class VariableGroupRetriever {
 		if (eventVariableGroups.empty) {
 			val eventVariableGroup = createVariableGroup => [
 				it.annotation = createOutEventGroup
+			]
+			xSts.variableGroups += eventVariableGroup
+			return eventVariableGroup
+		}
+		checkState(eventVariableGroups.size == 1)
+		return eventVariableGroups.head
+	}
+	
+	// During a single low-level statechart transformation, there is a single system out event variable group
+	def getSystemOutEventVariableGroup(XSTS xSts) {
+		var eventVariableGroups = xSts.variableGroups
+									.filter[it.annotation instanceof SystemOutEventGroup]
+		if (eventVariableGroups.empty) {
+			val eventVariableGroup = createVariableGroup => [
+				it.annotation = createSystemOutEventGroup
 			]
 			xSts.variableGroups += eventVariableGroup
 			return eventVariableGroup
@@ -90,6 +129,21 @@ class VariableGroupRetriever {
 		return eventParameterVariableGroups.head
 	}
 	
+	// During a single low-level statechart transformation, there is a single system in event parameter variable group
+	def getSystemInEventParameterVariableGroup(XSTS xSts) {
+		var eventParameterVariableGroups = xSts.variableGroups
+									.filter[it.annotation instanceof SystemInEventParameterGroup]
+		if (eventParameterVariableGroups.empty) {
+			val eventParameterVariableGroup = createVariableGroup => [
+				it.annotation = createSystemInEventParameterGroup
+			]
+			xSts.variableGroups += eventParameterVariableGroup
+			return eventParameterVariableGroup
+		}
+		checkState(eventParameterVariableGroups.size == 1)
+		return eventParameterVariableGroups.head
+	}
+	
 	// During a single low-level statechart transformation, there is a single out event parameter variable group
 	def getOutEventParameterVariableGroup(XSTS xSts) {
 		var eventParameterVariableGroups = xSts.variableGroups
@@ -104,6 +158,104 @@ class VariableGroupRetriever {
 		checkState(eventParameterVariableGroups.size == 1)
 		return eventParameterVariableGroups.head
 	}
+	
+	// During a single low-level statechart transformation, there is a single system out event parameter variable group
+	def getSystemOutEventParameterVariableGroup(XSTS xSts) {
+		var eventParameterVariableGroups = xSts.variableGroups
+									.filter[it.annotation instanceof SystemOutEventParameterGroup]
+		if (eventParameterVariableGroups.empty) {
+			val eventParameterVariableGroup = createVariableGroup => [
+				it.annotation = createSystemOutEventParameterGroup
+			]
+			xSts.variableGroups += eventParameterVariableGroup
+			return eventParameterVariableGroup
+		}
+		checkState(eventParameterVariableGroups.size == 1)
+		return eventParameterVariableGroups.head
+	}
+	
+	def getMasterMessageQueueGroup(XSTS xSts) {
+		var masterMessageQueueGroups = xSts.variableGroups
+									.filter[it.annotation instanceof MasterMessageQueueGroup]
+		if (masterMessageQueueGroups.empty) {
+			val masterMessageQueueGroup = createVariableGroup => [
+				it.annotation = createMasterMessageQueueGroup
+			]
+			xSts.variableGroups += masterMessageQueueGroup
+			return masterMessageQueueGroup
+		}
+		checkState(masterMessageQueueGroups.size == 1)
+		return masterMessageQueueGroups.head
+	}
+	
+	def getSlaveMessageQueueGroup(XSTS xSts) {
+		var slaveMessageQueueGroups = xSts.variableGroups
+									.filter[it.annotation instanceof SlaveMessageQueueGroup]
+		if (slaveMessageQueueGroups.empty) {
+			val slaveMessageQueueGroup = createVariableGroup => [
+				it.annotation = createSlaveMessageQueueGroup
+			]
+			xSts.variableGroups += slaveMessageQueueGroup
+			return slaveMessageQueueGroup
+		}
+		checkState(slaveMessageQueueGroups.size == 1)
+		return slaveMessageQueueGroups.head
+	}
+	
+	def getSystemMasterMessageQueueGroup(XSTS xSts) {
+		var masterMessageQueueGroups = xSts.variableGroups
+									.filter[it.annotation instanceof SystemMasterMessageQueueGroup]
+		if (masterMessageQueueGroups.empty) {
+			val masterMessageQueueGroup = createVariableGroup => [
+				it.annotation = createSystemMasterMessageQueueGroup
+			]
+			xSts.variableGroups += masterMessageQueueGroup
+			return masterMessageQueueGroup
+		}
+		checkState(masterMessageQueueGroups.size == 1)
+		return masterMessageQueueGroups.head
+	}
+	
+	def getSystemSlaveMessageQueueGroup(XSTS xSts) {
+		var slaveMessageQueueGroups = xSts.variableGroups
+									.filter[it.annotation instanceof SystemSlaveMessageQueueGroup]
+		if (slaveMessageQueueGroups.empty) {
+			val slaveMessageQueueGroup = createVariableGroup => [
+				it.annotation = createSystemSlaveMessageQueueGroup
+			]
+			xSts.variableGroups += slaveMessageQueueGroup
+			return slaveMessageQueueGroup
+		}
+		checkState(slaveMessageQueueGroups.size == 1)
+		return slaveMessageQueueGroups.head
+	}
+	
+	def getMessageQueueSizeGroup(XSTS xSts) {
+		var messageQueueSizeGroups = xSts.variableGroups
+									.filter[it.annotation instanceof MessageQueueSizeGroup]
+		if (messageQueueSizeGroups.empty) {
+			val messageQueueSizeGroup = createVariableGroup => [
+				it.annotation = createMessageQueueSizeGroup
+			]
+			xSts.variableGroups += messageQueueSizeGroup
+			return messageQueueSizeGroup
+		}
+		checkState(messageQueueSizeGroups.size == 1)
+		return messageQueueSizeGroups.head
+	}
+	
+	def getMessageQueueGroup(XSTS xSts) { // Only derived feature
+		val messageQueueGroup = createVariableGroup => [
+			it.annotation = null
+		]
+		
+		messageQueueGroup.variables += xSts.masterMessageQueueGroup.variables
+		messageQueueGroup.variables += xSts.slaveMessageQueueGroup.variables
+		messageQueueGroup.variables += xSts.systemMasterMessageQueueGroup.variables
+		messageQueueGroup.variables += xSts.systemSlaveMessageQueueGroup.variables
+		
+		return messageQueueGroup
+	} 
 
 	// During a single low-level statechart transformation, there is a single plain variable group
 	def getPlainVariableGroup(XSTS xSts) {

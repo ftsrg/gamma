@@ -1,0 +1,263 @@
+package RigelVezerloKozpont
+
+import "Interfaces/Interfaces.gcd"
+
+@RegionSchedule = bottom-up
+@TransitionPriority = order-based
+statechart RigelVezerloKozpont(_TimeReconn : integer, _TimeConn : integer, _TimeSendAlive :
+	integer) [
+	port PortIn : requires Rigel
+	port PortOut : provides Rigel
+	port FelugyeloPortIn : requires Rigel
+	port FelugyeloPortOut : provides Rigel
+	port OrionDisconn : requires OrionDisconn
+	port OrionConn : requires OrionConn
+] {
+	var allDataReceived_teljesAdatLekerdezes : boolean := false
+	@Transient var _change_condition_6_1_0_teljesAdatLekerdezes : boolean := false
+	@Transient var _change_condition_8_1_1_sendMachine_teljesAdatLekerdezes : boolean := false
+	var isValid_objektumKezelo1 : boolean
+	timeout timeout_Send_4_sendMachine_teljesAdatLekerdezes
+	timeout timeout_WaitForConnection_0_teljesAdatLekerdezes
+	timeout timeout_ProcessQuery_0_teljesAdatLekerdezes
+	region VkTeljesAdatLekerdezes__teljesAdatLekerdezes {
+		initial _initialOfVkTeljesAdatLekerdezes___teljesAdatLekerdezes
+		state NoOrionConnected_teljesAdatLekerdezes
+		state HasOrionConnected_teljesAdatLekerdezes {
+			region HasOrionConnected__teljesAdatLekerdezes {
+				initial _initialOfHasOrionConnected___teljesAdatLekerdezes
+				state WaitForConnection_teljesAdatLekerdezes {
+					entry / set timeout_WaitForConnection_0_teljesAdatLekerdezes := _TimeReconn ms; set
+						timeout_WaitForConnection_0_teljesAdatLekerdezes := _TimeReconn ms;
+				}
+				state ProcessQuery_teljesAdatLekerdezes {
+					entry / set timeout_ProcessQuery_0_teljesAdatLekerdezes := _TimeConn ms; set
+						timeout_ProcessQuery_0_teljesAdatLekerdezes := _TimeConn ms;
+					region ProcessQuery__teljesAdatLekerdezes {
+						initial _initialOfProcessQuery___teljesAdatLekerdezes
+						state Receive_teljesAdatLekerdezes
+					}
+				}
+				state Connected_teljesAdatLekerdezes {
+					region ReceiveMachine__receiveMachine_teljesAdatLekerdezes {
+						initial _initialOfReceiveMachine___receiveMachine_teljesAdatLekerdezes
+						state Receive_receiveMachine_teljesAdatLekerdezes
+					}
+					region SendMachine__sendMachine_teljesAdatLekerdezes {
+						initial _initialOfSendMachine___sendMachine_teljesAdatLekerdezes
+						state Send_sendMachine_teljesAdatLekerdezes {
+							entry / set timeout_Send_4_sendMachine_teljesAdatLekerdezes := _TimeSendAlive ms;
+						}
+						choice _Send_4__sendMachine_teljesAdatLekerdezes
+					}
+				}
+				choice _ProcessQuery_1__teljesAdatLekerdezes
+			}
+		}
+	}
+	region VkObjektumKezelo__objektumKezelo1 {
+		initial _initialOfVkObjektumKezelo___objektumKezelo1
+		state ObjectInvalid_objektumKezelo1
+		state ObjectValid_objektumKezelo1
+	}
+	transition from _initialOfVkTeljesAdatLekerdezes___teljesAdatLekerdezes to
+		NoOrionConnected_teljesAdatLekerdezes
+	transition from _initialOfHasOrionConnected___teljesAdatLekerdezes to
+		WaitForConnection_teljesAdatLekerdezes
+	transition from _initialOfProcessQuery___teljesAdatLekerdezes to Receive_teljesAdatLekerdezes
+	transition from _initialOfReceiveMachine___receiveMachine_teljesAdatLekerdezes to
+		Receive_receiveMachine_teljesAdatLekerdezes
+	transition from Receive_receiveMachine_teljesAdatLekerdezes to
+		Receive_receiveMachine_teljesAdatLekerdezes when PortIn.message_RigelMsgHeader
+		[PortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgInvalidateObj] / {
+		raise
+			FelugyeloPortOut.message_RigelMsgHeader(PortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue);
+	}
+	transition from Receive_receiveMachine_teljesAdatLekerdezes to
+		Receive_receiveMachine_teljesAdatLekerdezes when PortIn.message_RigelMsgHeader
+		[PortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgData] / {
+		raise
+			FelugyeloPortOut.message_RigelMsgHeader(PortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue);
+	}
+	transition from Receive_receiveMachine_teljesAdatLekerdezes to
+		Receive_receiveMachine_teljesAdatLekerdezes when PortIn.message_RigelMsgHeader
+		[PortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgAnsTs1] / {
+		raise
+			FelugyeloPortOut.message_RigelMsgHeader(PortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue);
+	}
+	transition from Receive_receiveMachine_teljesAdatLekerdezes to
+		Receive_receiveMachine_teljesAdatLekerdezes when PortIn.message_RigelMsgHeader
+		[PortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgAnsTs2] / {
+		raise
+			FelugyeloPortOut.message_RigelMsgHeader(PortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue);
+	}
+	transition from Receive_receiveMachine_teljesAdatLekerdezes to
+		Receive_receiveMachine_teljesAdatLekerdezes when PortIn.message_RigelMsgHeader
+		[PortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgCommandResult] / {
+		raise
+			FelugyeloPortOut.message_RigelMsgHeader(PortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue);
+	}
+	transition from Receive_receiveMachine_teljesAdatLekerdezes to
+		Receive_receiveMachine_teljesAdatLekerdezes when PortIn.message_RigelMsgHeader
+		[PortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgCommandConfirmResult] / {
+		raise
+			FelugyeloPortOut.message_RigelMsgHeader(PortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue);
+	}
+	transition from _initialOfSendMachine___sendMachine_teljesAdatLekerdezes to
+		Send_sendMachine_teljesAdatLekerdezes
+	transition from Send_sendMachine_teljesAdatLekerdezes to Send_sendMachine_teljesAdatLekerdezes
+		when FelugyeloPortIn.message_RigelMsgHeader
+		[FelugyeloPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgReqTs1] / {
+		raise
+			PortOut.message_RigelMsgHeader(FelugyeloPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue);
+	}
+	transition from Send_sendMachine_teljesAdatLekerdezes to Send_sendMachine_teljesAdatLekerdezes
+		when FelugyeloPortIn.message_RigelMsgHeader
+		[FelugyeloPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgReqTs2] / {
+		raise
+			PortOut.message_RigelMsgHeader(FelugyeloPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue);
+	}
+	transition from Send_sendMachine_teljesAdatLekerdezes to Send_sendMachine_teljesAdatLekerdezes
+		when FelugyeloPortIn.message_RigelMsgHeader
+		[FelugyeloPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgCommand] / {
+		raise
+			PortOut.message_RigelMsgHeader(FelugyeloPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue);
+	}
+	transition from Send_sendMachine_teljesAdatLekerdezes to Send_sendMachine_teljesAdatLekerdezes
+		when FelugyeloPortIn.message_RigelMsgHeader
+		[FelugyeloPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgCommandConfirm] / {
+		raise
+			PortOut.message_RigelMsgHeader(FelugyeloPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue);
+	}
+	transition from Send_sendMachine_teljesAdatLekerdezes to
+		_Send_4__sendMachine_teljesAdatLekerdezes when timeout
+		timeout_Send_4_sendMachine_teljesAdatLekerdezes / {
+		var isVKActive_sendMachine_teljesAdatLekerdezes : boolean := true;
+		_change_condition_8_1_1_sendMachine_teljesAdatLekerdezes :=
+			isVKActive_sendMachine_teljesAdatLekerdezes;
+		if (_change_condition_8_1_1_sendMachine_teljesAdatLekerdezes) {
+			var vkAlive_sendMachine_teljesAdatLekerdezes : RigelMsgHeader := createVkAlive();
+			raise PortOut.message_RigelMsgHeader(vkAlive_sendMachine_teljesAdatLekerdezes);
+		}
+	}
+	transition from _Send_4__sendMachine_teljesAdatLekerdezes to
+		Send_sendMachine_teljesAdatLekerdezes [_change_condition_8_1_1_sendMachine_teljesAdatLekerdezes]
+	transition from _Send_4__sendMachine_teljesAdatLekerdezes to
+		Send_sendMachine_teljesAdatLekerdezes [else]
+	transition from NoOrionConnected_teljesAdatLekerdezes to HasOrionConnected_teljesAdatLekerdezes
+		when OrionConn.OrionConn / {
+		var gqMsg_teljesAdatLekerdezes : RigelMsgHeader := createGqMessage();
+		raise PortOut.message_RigelMsgHeader(gqMsg_teljesAdatLekerdezes);
+	}
+	transition from HasOrionConnected_teljesAdatLekerdezes to NoOrionConnected_teljesAdatLekerdezes
+		when OrionDisconn.OrionDisconn
+	transition from WaitForConnection_teljesAdatLekerdezes to WaitForConnection_teljesAdatLekerdezes
+		when timeout timeout_WaitForConnection_0_teljesAdatLekerdezes / {
+		var gqMsg_teljesAdatLekerdezes : RigelMsgHeader := createGqMessage();
+		raise PortOut.message_RigelMsgHeader(gqMsg_teljesAdatLekerdezes);
+	}
+	transition from WaitForConnection_teljesAdatLekerdezes to ProcessQuery_teljesAdatLekerdezes when
+		PortIn.message_RigelMsgHeader
+		[PortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgGqBegin]
+	transition from WaitForConnection_teljesAdatLekerdezes to NoOrionConnected_teljesAdatLekerdezes
+		when PortIn.message_RigelMsgHeader
+		[PortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType !=
+		RigelMsgType::RigelMsgGqBegin] / {
+		raise
+			PortOut.message_RigelMsgHeader(PortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue);
+		ProcessOrionDisconn();
+	}
+	transition from ProcessQuery_teljesAdatLekerdezes to NoOrionConnected_teljesAdatLekerdezes when
+		timeout timeout_ProcessQuery_0_teljesAdatLekerdezes / {
+		ProcessOrionDisconn();
+	}
+	transition from ProcessQuery_teljesAdatLekerdezes to _ProcessQuery_1__teljesAdatLekerdezes when
+		PortIn.message_RigelMsgHeader
+		[PortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgGqEnd] / {
+		allDataReceived_teljesAdatLekerdezes := true;
+		_change_condition_6_1_0_teljesAdatLekerdezes := allDataReceived_teljesAdatLekerdezes;
+		if (_change_condition_6_1_0_teljesAdatLekerdezes) {
+			var vkAlive_teljesAdatLekerdezes : RigelMsgHeader := createVkAlive();
+			raise PortOut.message_RigelMsgHeader(vkAlive_teljesAdatLekerdezes);
+		}
+		elseif (else) {
+			ProcessOrionDisconn();
+		}
+	}
+	transition from _ProcessQuery_1__teljesAdatLekerdezes to Connected_teljesAdatLekerdezes
+		[_change_condition_6_1_0_teljesAdatLekerdezes]
+	transition from _ProcessQuery_1__teljesAdatLekerdezes to NoOrionConnected_teljesAdatLekerdezes
+		[!_change_condition_6_1_0_teljesAdatLekerdezes]
+	transition from _ProcessQuery_1__teljesAdatLekerdezes to ProcessQuery_teljesAdatLekerdezes [else]
+	transition from ProcessQuery_teljesAdatLekerdezes to NoOrionConnected_teljesAdatLekerdezes when
+		PortIn.message_RigelMsgHeader
+		[(PortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType !=
+		RigelMsgType::RigelMsgData and
+		PortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType !=
+		RigelMsgType::RigelMsgInvalidateObj) and
+		PortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType !=
+		RigelMsgType::RigelMsgGqEnd] / {
+		ProcessOrionDisconn();
+	}
+	transition from Receive_teljesAdatLekerdezes to Receive_teljesAdatLekerdezes when
+		PortIn.message_RigelMsgHeader
+		[PortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgData and
+		PortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.DataCause =
+		RigelDataCause::NormalAnswer] / {
+		raise
+			FelugyeloPortOut.message_RigelMsgHeader(PortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue);
+	}
+	transition from Receive_teljesAdatLekerdezes to Receive_teljesAdatLekerdezes when
+		PortIn.message_RigelMsgHeader
+		[PortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgInvalidateObj] / {
+		raise
+			FelugyeloPortOut.message_RigelMsgHeader(PortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue);
+	}
+	transition from Connected_teljesAdatLekerdezes to NoOrionConnected_teljesAdatLekerdezes when
+		PortIn.message_RigelMsgHeader
+		[((((PortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType !=
+		RigelMsgType::RigelMsgInvalidateObj and
+		PortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType !=
+		RigelMsgType::RigelMsgData) and
+		PortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType !=
+		RigelMsgType::RigelMsgAnsTs1) and
+		PortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType !=
+		RigelMsgType::RigelMsgAnsTs2) and
+		PortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType !=
+		RigelMsgType::RigelMsgCommandResult) and
+		PortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType !=
+		RigelMsgType::RigelMsgCommandConfirmResult] / {
+		ProcessOrionDisconn();
+	}
+	transition from _initialOfVkObjektumKezelo___objektumKezelo1 to ObjectInvalid_objektumKezelo1
+	transition from ObjectInvalid_objektumKezelo1 to ObjectValid_objektumKezelo1 when
+		PortIn.message_RigelMsgHeader
+		[PortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgData and
+		PortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.DataCause =
+		RigelDataCause::NormalAnswer] / {
+		isValid_objektumKezelo1 := true;
+	}
+	transition from ObjectValid_objektumKezelo1 to ObjectInvalid_objektumKezelo1 when
+		OrionDisconn.OrionDisconn
+	transition from ObjectValid_objektumKezelo1 to ObjectInvalid_objektumKezelo1 when
+		PortIn.message_RigelMsgHeader
+		[PortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgInvalidateObj] / {
+		isValid_objektumKezelo1 := false;
+	}
+}

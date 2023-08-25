@@ -50,6 +50,7 @@ class TraceBackAnnotator {
 	protected final extension TraceUtil traceUtil = TraceUtil.INSTANCE
 	protected final extension TraceBuilder traceBuilder = TraceBuilder.INSTANCE
 	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
+	
 	protected final Logger logger = Logger.getLogger("GammaLogger")
 	
 	new(Package gammaPackage, Scanner traceScanner) {
@@ -140,7 +141,7 @@ class TraceBackAnnotator {
 							case ENVIRONMENT_CHECK: {
 								step.checkInEvents
 								// Add schedule
-								step.addComponentScheduling
+								step.addSchedulingIfNeeded
 								// Setting the state
 								state = BackAnnotatorState.STATE_CHECK
 							}
@@ -163,8 +164,14 @@ class TraceBackAnnotator {
 						if (thetaQueryGenerator.isSourceState(potentialStateString)) {
 							potentialStateString.parseState(step)
 						}
+						else if (thetaQueryGenerator.isDelay(id)) {
+							step.addTimeElapse(Integer.valueOf(value))
+						}
 						else if (thetaQueryGenerator.isSourceVariable(id)) {
 							id.parseVariable(value, step)
+						}
+						else if (id.isSchedulingVariable) {
+							id.addScheduling(value, step)
 						}
 						else if (thetaQueryGenerator.isSourceOutEvent(id)) {
 							id.parseOutEvent(value, step)
@@ -211,6 +218,7 @@ class TraceBackAnnotator {
 		}
 		
 		trace.removeInternalEventRaiseActs
+		trace.removeTransientVariableReferences // They always have default values
 		
 		return trace
 	}

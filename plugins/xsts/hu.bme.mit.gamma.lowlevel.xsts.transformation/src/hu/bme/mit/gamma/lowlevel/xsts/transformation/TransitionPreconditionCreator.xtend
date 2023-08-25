@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -10,6 +10,8 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.lowlevel.xsts.transformation
 
+import hu.bme.mit.gamma.expression.model.ComparisonExpression
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.TrueExpression
@@ -18,6 +20,7 @@ import hu.bme.mit.gamma.statechart.lowlevel.model.MergeState
 import hu.bme.mit.gamma.statechart.lowlevel.model.SchedulingOrder
 import hu.bme.mit.gamma.statechart.lowlevel.model.State
 import hu.bme.mit.gamma.statechart.lowlevel.model.Transition
+import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import java.util.Collection
 import java.util.List
@@ -28,8 +31,11 @@ import static com.google.common.base.Preconditions.checkArgument
 import static extension hu.bme.mit.gamma.statechart.lowlevel.derivedfeatures.LowlevelStatechartModelDerivedFeatures.*
 
 class TransitionPreconditionCreator {
-	// Model factories
+
+	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
+	protected final extension VariableGroupRetriever variableGroupRetriever = VariableGroupRetriever.INSTANCE
+	// Model factories
 	protected final extension ExpressionModelFactory constraintFactory = ExpressionModelFactory.eINSTANCE
 	// Auxiliary object
 	protected final extension StateAssumptionCreator stateAssumptionCreator
@@ -121,12 +127,13 @@ class TransitionPreconditionCreator {
 		if (lowlevelSourceNode instanceof State) { // Theoretically constant true
 			// e.g., local var a := region == Region.A
 			// e.g., local var b := region == Region.A (extractable) && region2 == Region.B
-			val recursiveXStsStateAssumption = lowlevelSourceNode.createRecursiveXStsStateAssumption
+			// Now only a single state assumption is here due to the introduction of history literals
+			val singleXStsStateAssumption = lowlevelSourceNode.createSingleXStsStateAssumption
 			// Caching
 			trace.add(trace.getIsActiveExpressions,
-				lowlevelTransition, recursiveXStsStateAssumption)
+				lowlevelTransition, singleXStsStateAssumption)
 			//
-			xStsOperands += recursiveXStsStateAssumption
+			xStsOperands += singleXStsStateAssumption
 		}
 		// Guard
 		val xStsGuardExpression = lowlevelTransition.getGuardExpression(trace.getGuards)
@@ -140,12 +147,22 @@ class TransitionPreconditionCreator {
 	
 	protected def getGuardExpression(Transition lowlevelTransition,
 			Map<Transition, List<Expression>> cache /* So state and choice guards can be distinguished */) {
+		val xSts = trace.XSts
 		val guard = lowlevelTransition.guard
 		if (guard !== null) {
 			val xStsGuard = guard.transformExpression
 			// Caching
 			trace.add(cache, lowlevelTransition, xStsGuard)
+			// Tracing timeout references
+			val xStsTimeoutVariables = xSts.timeoutGroup.variables
+			val timeoutReferences = xStsGuard.getSelfAndAllContentsOfType(DirectReferenceExpression)
+					.filter[xStsTimeoutVariables.contains(it.declaration)].toList
+			if (!timeoutReferences.empty) {
+				val timeoutExpressions = timeoutReferences.map[it.getContainerOfType(ComparisonExpression)]
+				trace.addTimeoutExpression(timeoutExpressions)
+			}
 			//
+			
 			return xStsGuard
 		}
 		return null

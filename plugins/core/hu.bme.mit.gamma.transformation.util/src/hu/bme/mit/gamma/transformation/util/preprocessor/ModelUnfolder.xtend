@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -28,6 +28,8 @@ import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference
 import hu.bme.mit.gamma.statechart.statechart.AsynchronousStatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.ClockTickReference
 import hu.bme.mit.gamma.statechart.statechart.PortEventReference
+import hu.bme.mit.gamma.statechart.statechart.RunUponExternalEventAnnotation
+import hu.bme.mit.gamma.statechart.statechart.RunUponExternalEventOrInternalTimeoutAnnotation
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.StatechartModelFactory
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
@@ -204,7 +206,13 @@ class ModelUnfolder {
 	
 	protected def void removeAnnotations(Component component) {
 		if (component instanceof StatechartDefinition) {
-			component.annotations.clear
+			val keepableAnnotations = #[ RunUponExternalEventAnnotation, RunUponExternalEventOrInternalTimeoutAnnotation ]
+			
+			for (annotation : component.annotations.toSet) {
+				if (!keepableAnnotations.exists[it.isInstance(annotation)]) {
+					annotation.remove
+				}
+			}
 		}
 	}
 	
@@ -304,7 +312,7 @@ class ModelUnfolder {
 	protected def void fixMessageQueueEvents(AsynchronousAdapter wrapper) {
 		val wrappedComponent = wrapper.wrappedComponent
 		// Any port events
-		for (portEventReference : wrapper.messageQueues.map[it.eventReferences]
+		for (portEventReference : wrapper.messageQueues.map[it.sourceAndTargetEventReferences]
 				.flatten.filter(AnyPortEventReference)
 				.filter[it.port.eContainer instanceof SynchronousComponent] /* Wrapper ports are not rearranged */ ) {
 			val newPorts = wrappedComponent.type.ports.filter[it.helperEquals(portEventReference.port)]
@@ -314,7 +322,7 @@ class ModelUnfolder {
 			portEventReference.port = newPorts.head	
 		}
 		// Port events
-		for (portEventReference : wrapper.messageQueues.map[it.eventReferences]
+		for (portEventReference : wrapper.messageQueues.map[it.sourceAndTargetEventReferences]
 				.flatten.filter(PortEventReference)
 				.filter[it.port.eContainer instanceof SynchronousComponent] /* Wrapper ports are not rearranged */ ) {
 			val newPorts = wrappedComponent.type.ports.filter[it.helperEquals(portEventReference.port)]
@@ -324,7 +332,7 @@ class ModelUnfolder {
 			portEventReference.port = newPorts.head	
 		}
 		// Clock events
-		for (clockTickReference : wrapper.messageQueues.map[it.eventReferences]
+		for (clockTickReference : wrapper.messageQueues.map[it.sourceAndTargetEventReferences]
 				.flatten.filter(ClockTickReference)) {
 			val newClocks = wrapper.clocks.filter[it.helperEquals(clockTickReference.clock)]
 			if (newClocks.size != 1) {
@@ -354,6 +362,16 @@ class ModelUnfolder {
 	}
 	
 	protected def dispatch void renameInstances(StatechartDefinition component) {}
+	
+	//
+	
+	protected def void renameInstancesAccordingToWrapping(Component wrapper, Component wrapped) {
+		val wrapperInstance = wrapper.instances.onlyElement
+		val instances = wrapped.allInstances
+		for (instance : instances) {
+			instance.name = #[wrapperInstance, instance].FQN
+		}
+	}
 	
 	// Instance name validation
 	

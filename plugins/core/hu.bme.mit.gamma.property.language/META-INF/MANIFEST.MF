@@ -3,7 +3,7 @@ Automatic-Module-Name: hu.bme.mit.gamma.property.language
 Bundle-ManifestVersion: 2
 Bundle-Name: Gamma Property Language
 Bundle-Vendor: BME-FTSRG
-Bundle-Version: 2.7.0.qualifier
+Bundle-Version: 2.9.0.qualifier
 Bundle-SymbolicName: hu.bme.mit.gamma.property.language; singleton:=true
 Bundle-ActivationPolicy: lazy
 Require-Bundle: hu.bme.mit.gamma.property.model,

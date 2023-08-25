@@ -19,13 +19,13 @@ import org.eclipse.emf.common.util.EList;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator;
 import hu.bme.mit.gamma.scenario.model.Delay;
-import hu.bme.mit.gamma.scenario.model.InteractionDefinition;
-import hu.bme.mit.gamma.scenario.model.ModalInteractionSet;
-import hu.bme.mit.gamma.scenario.model.NegatedModalInteraction;
+import hu.bme.mit.gamma.scenario.model.DeterministicOccurrence;
+import hu.bme.mit.gamma.scenario.model.DeterministicOccurrenceSet;
+import hu.bme.mit.gamma.scenario.model.Interaction;
+import hu.bme.mit.gamma.scenario.model.NegatedDeterministicOccurrence;
 import hu.bme.mit.gamma.scenario.model.ScenarioAssignmentStatement;
 import hu.bme.mit.gamma.scenario.model.ScenarioCheckExpression;
 import hu.bme.mit.gamma.scenario.model.ScenarioDeclaration;
-import hu.bme.mit.gamma.scenario.model.Signal;
 import hu.bme.mit.gamma.scenario.util.ExpressionSerializer;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
 
@@ -34,30 +34,30 @@ public class ScenarioContentSorter {
 	private static GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
 	private static ExpressionEvaluator evaluator = ExpressionEvaluator.INSTANCE;
 	private static ExpressionSerializer serializer = ExpressionSerializer.INSTANCE;
-		
 
 	public void sort(ScenarioDeclaration scenario) {
-		List<ModalInteractionSet> sets = ecoreUtil.getAllContentsOfType(scenario, ModalInteractionSet.class);
-		for (ModalInteractionSet set : sets) {
+		List<DeterministicOccurrenceSet> sets = ecoreUtil.getAllContentsOfType(scenario,
+				DeterministicOccurrenceSet.class);
+		for (DeterministicOccurrenceSet set : sets) {
 			sortInteractionSet(set);
 		}
 	}
 
-	private void sortInteractionSet(ModalInteractionSet set) {
-		EList<InteractionDefinition> interactions = set.getModalInteractions();
+	private void sortInteractionSet(DeterministicOccurrenceSet set) {
+		EList<DeterministicOccurrence> interactions = set.getDeterministicOccurrences();
 		ECollections.sort(interactions, Comparator
-				.comparing((InteractionDefinition interaction) -> getSerializedInteractionDefinition(interaction)));
+				.comparing((DeterministicOccurrence interaction) -> getSerializedInteractionDefinition(interaction)));
 	}
 
-	private String getSerializedInteractionDefinition(InteractionDefinition interaction) {
+	private String getSerializedInteractionDefinition(DeterministicOccurrence interaction) {
 		if (interaction instanceof Delay) {
 			return getSerializedDelay((Delay) interaction);
 		}
-		if (interaction instanceof NegatedModalInteraction) {
-			return getSerializedNegation((NegatedModalInteraction) interaction);
+		if (interaction instanceof NegatedDeterministicOccurrence) {
+			return getSerializedNegation((NegatedDeterministicOccurrence) interaction);
 		}
-		if (interaction instanceof Signal) {
-			return getSerializedSignal((Signal) interaction);
+		if (interaction instanceof Interaction) {
+			return getSerializedSignal((Interaction) interaction);
 		}
 		if (interaction instanceof ScenarioCheckExpression) {
 			return getSerializedCheck((ScenarioCheckExpression) interaction);
@@ -74,28 +74,26 @@ public class ScenarioContentSorter {
 		if (maximum == null) {
 			maximum = minimum;
 		}
-		return "Delay" + delay.getModality() + evaluator.evaluate(maximum)
-				+ evaluator.evaluate(minimum);
+		return "Delay" + evaluator.evaluate(maximum) + evaluator.evaluate(minimum);
 	}
-	
-	private String getSerializedNegation(NegatedModalInteraction negation) {
-		return "Negate" + getSerializedInteractionDefinition(
-				negation.getModalinteraction());
+
+	private String getSerializedNegation(NegatedDeterministicOccurrence negation) {
+		return "Negate" + getSerializedInteractionDefinition(negation.getDeterministicOccurrence());
 	}
-	
-	private String getSerializedSignal(Signal signal) {
-		String output = "Signal" + signal.getDirection() + signal.getModality() + signal.getPort().getName()
+
+	private String getSerializedSignal(Interaction signal) {
+		String output = "Interaction" + signal.getDirection() + signal.getModality() + signal.getPort().getName()
 				+ signal.getEvent().getName();
 		for (Expression expression : signal.getArguments()) {
-			output = serializer.serialize(expression);
+			output += serializer.serialize(expression);
 		}
 		return output;
 	}
-	
+
 	private String getSerializedAssignment(ScenarioAssignmentStatement assignment) {
 		return "Assign" + serializer.serialize(assignment.getLhs()) + serializer.serialize(assignment.getRhs());
 	}
-	
+
 	private String getSerializedCheck(ScenarioCheckExpression check) {
 		return "Check" + serializer.serialize(check.getExpression());
 	}

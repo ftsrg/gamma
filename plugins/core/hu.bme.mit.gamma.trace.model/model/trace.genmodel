@@ -11,11 +11,12 @@
   <genPackages prefix="TraceModel" basePackage="hu.bme.mit.gamma.trace" disposableProviderFactory="true"
       fileExtensions="gtr" ecorePackage="trace.ecore#/">
     <genClasses ecoreClass="trace.ecore#//ExecutionTrace">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference trace.ecore#//ExecutionTrace/annotations"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference trace.ecore#//ExecutionTrace/variableDeclarations"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference trace.ecore#//ExecutionTrace/steps"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference trace.ecore#//ExecutionTrace/component"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference trace.ecore#//ExecutionTrace/import"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference trace.ecore#//ExecutionTrace/cycle"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference trace.ecore#//ExecutionTrace/annotations"/>
     </genClasses>
     <genClasses ecoreClass="trace.ecore#//Step">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference trace.ecore#//Step/actions"/>
@@ -24,38 +25,29 @@
     <genClasses ecoreClass="trace.ecore#//Act"/>
     <genClasses ecoreClass="trace.ecore#//RaiseEventAct"/>
     <genClasses ecoreClass="trace.ecore#//TimeElapse">
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute trace.ecore#//TimeElapse/elapsedTime"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EReference trace.ecore#//TimeElapse/elapsedTime"/>
     </genClasses>
     <genClasses ecoreClass="trace.ecore#//Schedule"/>
     <genClasses ecoreClass="trace.ecore#//InstanceSchedule">
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference trace.ecore#//InstanceSchedule/scheduledInstance"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference trace.ecore#//InstanceSchedule/instanceReference"/>
     </genClasses>
     <genClasses ecoreClass="trace.ecore#//ComponentSchedule"/>
-    <genClasses ecoreClass="trace.ecore#//InstanceVariableState">
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference trace.ecore#//InstanceVariableState/variableReference"/>
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference trace.ecore#//InstanceVariableState/value"/>
+    <genClasses ecoreClass="trace.ecore#//AssignmentAct">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference trace.ecore#//AssignmentAct/lhs"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference trace.ecore#//AssignmentAct/rhs"/>
     </genClasses>
-    <genClasses ecoreClass="trace.ecore#//InstanceState"/>
-    <genClasses ecoreClass="trace.ecore#//InstanceStateConfiguration"/>
     <genClasses ecoreClass="trace.ecore#//Cycle">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference trace.ecore#//Cycle/steps"/>
     </genClasses>
     <genClasses ecoreClass="trace.ecore#//Reset"/>
-    <genClasses ecoreClass="trace.ecore#//Assert"/>
-    <genClasses ecoreClass="trace.ecore#//NegatedAssert">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference trace.ecore#//NegatedAssert/negatedAssert"/>
-    </genClasses>
-    <genClasses ecoreClass="trace.ecore#//MultiaryAssert">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference trace.ecore#//MultiaryAssert/asserts"/>
-    </genClasses>
-    <genClasses ecoreClass="trace.ecore#//AndAssert"/>
-    <genClasses ecoreClass="trace.ecore#//XorAssert"/>
-    <genClasses ecoreClass="trace.ecore#//OrAssert"/>
     <genClasses image="false" ecoreClass="trace.ecore#//ExecutionTraceAnnotation"/>
     <genClasses ecoreClass="trace.ecore#//ExecutionTraceAllowedWaitingAnnotation">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference trace.ecore#//ExecutionTraceAllowedWaitingAnnotation/lowerLimit"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference trace.ecore#//ExecutionTraceAllowedWaitingAnnotation/upperLimit"/>
     </genClasses>
     <genClasses ecoreClass="trace.ecore#//NegativeTestAnnotation"/>
+    <genClasses ecoreClass="trace.ecore#//ExecutionTraceCommentAnnotation">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute trace.ecore#//ExecutionTraceCommentAnnotation/comment"/>
+    </genClasses>
   </genPackages>
 </genmodel:GenModel>

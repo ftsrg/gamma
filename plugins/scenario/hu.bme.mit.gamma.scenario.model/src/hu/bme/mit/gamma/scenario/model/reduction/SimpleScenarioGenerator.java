@@ -27,30 +27,30 @@ import hu.bme.mit.gamma.expression.util.ExpressionEvaluator;
 import hu.bme.mit.gamma.scenario.model.AlternativeCombinedFragment;
 import hu.bme.mit.gamma.scenario.model.Annotation;
 import hu.bme.mit.gamma.scenario.model.Delay;
+import hu.bme.mit.gamma.scenario.model.DeterministicOccurrence;
+import hu.bme.mit.gamma.scenario.model.DeterministicOccurrenceSet;
+import hu.bme.mit.gamma.scenario.model.Fragment;
 import hu.bme.mit.gamma.scenario.model.InitialBlock;
 import hu.bme.mit.gamma.scenario.model.Interaction;
-import hu.bme.mit.gamma.scenario.model.InteractionDefinition;
-import hu.bme.mit.gamma.scenario.model.InteractionFragment;
 import hu.bme.mit.gamma.scenario.model.LoopCombinedFragment;
-import hu.bme.mit.gamma.scenario.model.ModalInteractionSet;
 import hu.bme.mit.gamma.scenario.model.NegPermissiveAnnotation;
 import hu.bme.mit.gamma.scenario.model.NegStrictAnnotation;
-import hu.bme.mit.gamma.scenario.model.NegatedModalInteraction;
+import hu.bme.mit.gamma.scenario.model.NegatedDeterministicOccurrence;
 import hu.bme.mit.gamma.scenario.model.NegatedWaitAnnotation;
+import hu.bme.mit.gamma.scenario.model.Occurrence;
 import hu.bme.mit.gamma.scenario.model.OptionalCombinedFragment;
 import hu.bme.mit.gamma.scenario.model.ParallelCombinedFragment;
 import hu.bme.mit.gamma.scenario.model.PermissiveAnnotation;
-import hu.bme.mit.gamma.scenario.model.Reset;
 import hu.bme.mit.gamma.scenario.model.ScenarioAssignmentStatement;
 import hu.bme.mit.gamma.scenario.model.ScenarioCheckExpression;
 import hu.bme.mit.gamma.scenario.model.ScenarioDeclaration;
 import hu.bme.mit.gamma.scenario.model.ScenarioModelFactory;
-import hu.bme.mit.gamma.scenario.model.Signal;
 import hu.bme.mit.gamma.scenario.model.StrictAnnotation;
 import hu.bme.mit.gamma.scenario.model.UnorderedCombinedFragment;
 import hu.bme.mit.gamma.scenario.model.WaitAnnotation;
 import hu.bme.mit.gamma.scenario.model.util.ScenarioModelSwitch;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
+import hu.bme.mit.gamma.util.JavaUtil;
 
 public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 
@@ -75,15 +75,16 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 
 	// Needs to be saved and reset after handling a new InteractionFragment, needs
 	// to be kept for transformation of loop fragment
-	private InteractionFragment previousFragment = null;
-	GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
+	private Fragment previousFragment = null;
+	private GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
+	private JavaUtil javaUtil = JavaUtil.INSTANCE;
+	private ExpressionEvaluator evaluator = ExpressionEvaluator.INSTANCE;
 
 	public ScenarioDeclaration execute() {
 		simple = factory.createScenarioDeclaration();
 		simple.setName(base.getName());
-		simple.setChart(factory.createChart());
-		simple.getChart().setFragment(factory.createInteractionFragment());
-		simple.setInitialblock(handleInitBlockCopy());
+		simple.setFragment(factory.createFragment());
+		simple.setInitialBlock(handleInitBlockCopy());
 		refResolver.resolveReferences(base);
 		for (Annotation annotation : base.getAnnotation()) {
 			simple.getAnnotation().add((Annotation) this.doSwitch(annotation));
@@ -91,9 +92,9 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 		for (VariableDeclaration variable : base.getVariableDeclarations()) {
 			simple.getVariableDeclarations().add(ecoreUtil.clone(variable));
 		}
-		previousFragment = simple.getChart().getFragment();
-		for (Interaction interaction : base.getChart().getFragment().getInteractions()) {
-			simple.getChart().getFragment().getInteractions().add((Interaction) this.doSwitch(interaction));
+		previousFragment = simple.getFragment();
+		for (Occurrence interaction : base.getFragment().getInteractions()) {
+			simple.getFragment().getInteractions().add((Occurrence) this.doSwitch(interaction));
 		}
 		inlineExpressions(simple, base);
 		return simple;
@@ -138,12 +139,12 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 	}
 
 	private InitialBlock handleInitBlockCopy() {
-		if (base.getInitialblock() == null) {
+		if (base.getInitialBlock() == null) {
 			return null;
 		}
 		InitialBlock initBloc = factory.createInitialBlock();
-		for (InteractionDefinition interaction : base.getInitialblock().getInteractions()) {
-			initBloc.getInteractions().add((InteractionDefinition) doSwitch(interaction));
+		for (DeterministicOccurrence interaction : base.getInitialBlock().getInteractions()) {
+			initBloc.getInteractions().add((DeterministicOccurrence) doSwitch(interaction));
 		}
 		return initBloc;
 	}
@@ -187,19 +188,36 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 	@Override
 	public EObject caseAlternativeCombinedFragment(AlternativeCombinedFragment object) {
 		AlternativeCombinedFragment acf = factory.createAlternativeCombinedFragment();
-		for (InteractionFragment fragment : object.getFragments()) {
-			acf.getFragments().add((InteractionFragment) this.doSwitch(fragment));
+		for (Fragment fragment : object.getFragments()) {
+			boolean shouldBeAdded = true;
+			Occurrence firstInteraction = fragment.getInteractions().get(0);
+			if (firstInteraction instanceof DeterministicOccurrenceSet) {
+				DeterministicOccurrenceSet set = (DeterministicOccurrenceSet) firstInteraction;
+				List<ScenarioCheckExpression> checks = javaUtil.filterIntoList(set.getDeterministicOccurrences(),
+						ScenarioCheckExpression.class);
+				for (int i = 0; i < checks.size(); i++) {
+					ScenarioCheckExpression check = checks.get(i);
+					try {
+						shouldBeAdded = shouldBeAdded && evaluator.evaluateBoolean(check.getExpression());
+					} catch (Exception e) {
+						// Empty on purpose
+					}
+				}
+			}
+			if (shouldBeAdded) {
+				acf.getFragments().add((Fragment) this.doSwitch(fragment));
+			}
 		}
 		return acf;
 	}
 
 	@Override
-	public EObject caseInteractionFragment(InteractionFragment object) {
-		InteractionFragment prev = previousFragment;
-		InteractionFragment fragment = factory.createInteractionFragment();
+	public EObject caseFragment(Fragment object) {
+		Fragment prev = previousFragment;
+		Fragment fragment = factory.createFragment();
 		previousFragment = fragment;
-		for (Interaction a : object.getInteractions()) {
-			fragment.getInteractions().add((Interaction) this.doSwitch(a));
+		for (Occurrence a : object.getInteractions()) {
+			fragment.getInteractions().add((Occurrence) this.doSwitch(a));
 		}
 		previousFragment = prev;
 		return fragment;
@@ -215,16 +233,16 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 				loop.setMaximum(ecoreUtil.clone(object.getMaximum()));
 			}
 			loop.setMinimum(ecoreUtil.clone(object.getMinimum()));
-			InteractionFragment fragment = factory.createInteractionFragment();
+			Fragment fragment = factory.createFragment();
 			loop.getFragments().add(fragment);
 
-			for (Interaction interaction : object.getFragments().get(0).getInteractions()) {
-				fragment.getInteractions().add((Interaction) this.doSwitch(interaction));
+			for (Occurrence interaction : object.getFragments().get(0).getInteractions()) {
+				fragment.getInteractions().add((Occurrence) this.doSwitch(interaction));
 			}
 
 			return loop;
 		} else {
-			InteractionFragment prev = previousFragment;
+			Fragment prev = previousFragment;
 			AlternativeCombinedFragment alt = factory.createAlternativeCombinedFragment();
 			ExpressionEvaluator evaluator = ExpressionEvaluator.INSTANCE;
 			Expression minExpression = ecoreUtil.clone(object.getMinimum());
@@ -237,16 +255,16 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 				max = evaluator.evaluate(maxExpression);
 			}
 			for (int i = 0; i < min - 1; i++) {
-				for (Interaction j : object.getFragments().get(0).getInteractions()) {
-					previousFragment.getInteractions().add((Interaction) this.doSwitch(j));
+				for (Occurrence j : object.getFragments().get(0).getInteractions()) {
+					previousFragment.getInteractions().add((Occurrence) this.doSwitch(j));
 				}
 			}
 			for (int i = 0; i <= max - min; i++) {
-				InteractionFragment frag = factory.createInteractionFragment();
+				Fragment frag = factory.createFragment();
 				previousFragment = frag;
 				for (int k = 0; k < i + 1; k++)
-					for (Interaction j : object.getFragments().get(0).getInteractions()) {
-						frag.getInteractions().add((Interaction) this.doSwitch(j));
+					for (Occurrence j : object.getFragments().get(0).getInteractions()) {
+						frag.getInteractions().add((Occurrence) this.doSwitch(j));
 					}
 				alt.getFragments().add(frag);
 			}
@@ -257,11 +275,11 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 
 	@Override
 	public EObject caseOptionalCombinedFragment(OptionalCombinedFragment object) {
-		InteractionFragment prev = previousFragment;
+		Fragment prev = previousFragment;
 		OptionalCombinedFragment opt = factory.createOptionalCombinedFragment();
-		InteractionFragment fragment = factory.createInteractionFragment();
+		Fragment fragment = factory.createFragment();
 		previousFragment = fragment;
-		fragment = (InteractionFragment) this.doSwitch(object.getFragments().get(0));
+		fragment = (Fragment) this.doSwitch(object.getFragments().get(0));
 		opt.getFragments().clear();
 		opt.getFragments().add(fragment);
 		previousFragment = prev;
@@ -270,7 +288,7 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 
 	@Override
 	public EObject caseUnorderedCombinedFragment(UnorderedCombinedFragment object) {
-		InteractionFragment prev = previousFragment;
+		Fragment prev = previousFragment;
 		AlternativeCombinedFragment alt = factory.createAlternativeCombinedFragment();
 		java.util.List<List<Integer>> permutations = new ArrayList<List<Integer>>();
 		List<Integer> list = new ArrayList<>();
@@ -279,11 +297,11 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 		}
 		ScenarioReductionUtil.generatePermutation(list.size(), list, permutations);
 		for (int i = 0; i < permutations.size(); i++) {
-			InteractionFragment iff = factory.createInteractionFragment();
+			Fragment iff = factory.createFragment();
 			previousFragment = iff;
 			for (int j = 0; j < permutations.get(i).size(); j++) {
-				iff.getInteractions().addAll(
-						((InteractionFragment) this.doSwitch(object.getFragments().get(permutations.get(i).get(j) - 1)))
+				iff.getInteractions()
+						.addAll(((Fragment) this.doSwitch(object.getFragments().get(permutations.get(i).get(j) - 1)))
 								.getInteractions());
 			}
 			alt.getFragments().add(iff);
@@ -294,7 +312,7 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 
 	@Override
 	public EObject caseParallelCombinedFragment(ParallelCombinedFragment object) {
-		InteractionFragment prev = previousFragment;
+		Fragment prev = previousFragment;
 		AlternativeCombinedFragment alt = factory.createAlternativeCombinedFragment();
 		List<List<FragmentInteractionPair>> listlist = new ArrayList<List<FragmentInteractionPair>>();
 		List<Integer> tmp = new ArrayList<Integer>();
@@ -308,13 +326,13 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 		used.add(tmp);
 		ScenarioReductionUtil.createSequences(listlist, used, maximum);
 		for (List<FragmentInteractionPair> l : listlist) {
-			InteractionFragment iff = factory.createInteractionFragment();
+			Fragment iff = factory.createFragment();
 			previousFragment = iff;
 			for (FragmentInteractionPair f : l) {
 				EObject i = this
 						.doSwitch(object.getFragments().get(f.getFragment()).getInteractions().get(f.getInteraction()));
-				if (i instanceof Interaction)
-					iff.getInteractions().add((Interaction) i);
+				if (i instanceof Occurrence)
+					iff.getInteractions().add((Occurrence) i);
 				else
 					System.out.println(i + ": not interaction");
 			}
@@ -325,23 +343,16 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 	}
 
 	@Override
-	public EObject caseNegatedModalInteraction(NegatedModalInteraction object) {
-		NegatedModalInteraction negatedModalInteraction = factory.createNegatedModalInteraction();
-		negatedModalInteraction
-				.setModalinteraction((InteractionDefinition) this.doSwitch(object.getModalinteraction()));
+	public EObject caseNegatedDeterministicOccurrence(NegatedDeterministicOccurrence object) {
+		NegatedDeterministicOccurrence negatedModalInteraction = factory.createNegatedDeterministicOccurrence();
+		negatedModalInteraction.setDeterministicOccurrence(
+				(DeterministicOccurrence) this.doSwitch(object.getDeterministicOccurrence()));
 		return negatedModalInteraction;
 	}
 
 	@Override
-	public EObject caseReset(Reset object) {
-		Reset reset = factory.createReset();
-		reset.setModality(object.getModality());
-		return reset;
-	}
-
-	@Override
-	public EObject caseSignal(Signal object) {
-		Signal signal = factory.createSignal();
+	public EObject caseInteraction(Interaction object) {
+		Interaction signal = factory.createInteraction();
 		signal.setDirection(object.getDirection());
 		signal.setModality(object.getModality());
 		signal.setEvent(object.getEvent());
@@ -353,10 +364,10 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 	}
 
 	@Override
-	public EObject caseModalInteractionSet(ModalInteractionSet object) {
-		ModalInteractionSet modalInteractionSet = factory.createModalInteractionSet();
-		for (InteractionDefinition id : object.getModalInteractions()) {
-			modalInteractionSet.getModalInteractions().add((InteractionDefinition) this.doSwitch(id));
+	public EObject caseDeterministicOccurrenceSet(DeterministicOccurrenceSet object) {
+		DeterministicOccurrenceSet modalInteractionSet = factory.createDeterministicOccurrenceSet();
+		for (DeterministicOccurrence id : object.getDeterministicOccurrences()) {
+			modalInteractionSet.getDeterministicOccurrences().add((DeterministicOccurrence) this.doSwitch(id));
 		}
 		return modalInteractionSet;
 	}
@@ -372,14 +383,19 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 	@Override
 	public EObject caseDelay(Delay object) {
 		Delay delay = factory.createDelay();
-		delay.setModality(object.getModality());
 		if (object.getMaximum() == null) {
 			delay.setMaximum(expressionFactory.createInfinityExpression());
 		} else {
 			delay.setMaximum(ecoreUtil.clone(object.getMaximum()));
 		}
 		delay.setMinimum(ecoreUtil.clone(object.getMinimum()));
-		return delay;
+		if (object.eContainer() instanceof DeterministicOccurrenceSet) {
+			return delay;
+		} else {
+			DeterministicOccurrenceSet set = factory.createDeterministicOccurrenceSet();
+			set.getDeterministicOccurrences().add(delay);
+			return set;
+		}
 	}
 
 	@Override

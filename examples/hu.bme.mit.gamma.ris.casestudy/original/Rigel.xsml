@@ -1,0 +1,244 @@
+import "RigelCommon.xsml";
+import "RigelValtoStatus.xsml";
+import "RigelSaruStatus.xsml";
+import "RigelJelzoStatus.xsml";
+import "RigelJelzoCelStatus.xsml";
+import "RigelHivasfeloldoStatus.xsml";
+import "RigelVaganyszakaszStatus.xsml";
+import "RigelElojelzoStatus.xsml";
+import "RigelIsmetlojelzoStatus.xsml";
+import "RigelAllomasisorompoStatus.xsml";
+import "RigelSorompovaganyStatus.xsml";
+import "RigelAramellatasStatus.xsml";
+import "RigelTolatasjelzoStatus.xsml";
+import "RigelEllenmenetStatus.xsml";
+import "RigelVonalisorompoStatus.xsml";
+import "RigelVonalisorompovaganyStatus.xsml";
+import "RigelKulcsoselemStatus.xsml";
+import "RigelOvKulcsoselemStatus.xsml";
+import "RigelDiagnosztikaStatus.xsml";
+import "RigelAkjStatus.xsml";
+
+enum RigelMsgType "A Rigel protokoll érvényes üzenettípusai" {
+	RigelMsgGq = 0x54 "Általános lekérdezés",
+	RigelMsgSq = 0x07 "Specifikus lekérdezés",
+	RigelMsgGqBegin = 0x90 "Általános lekérdezés kezdete",
+	RigelMsgGqEnd = 0x6F "Általános lekérdezés vége",
+	RigelMsgReqTs1 = 0x33 "Időbélyeg kérés 1. típus",
+	RigelMsgAnsTs1 = 0x41 "Időbélyeg válasz 1. típus",
+	RigelMsgReqTs2 = 0x19 "Időbélyeg kérés 2. típus",
+	RigelMsgAnsTs2 = 0x2C "Időbélyeg válasz 2. típus",
+	RigelMsgData = 0xA9 "Adat",
+	RigelMsgCommand = 0x0A "Parancs",
+	RigelMsgCommandConfirm = 0xE6 "Parancs megerősítése",
+	RigelMsgCommandResult = 0xCB "Parancs eredménye",
+	RigelMsgCommandConfirmResult = 0xFD "Parancs megerősítés eredménye",
+	RigelMsgInvalidateObj = 0xBA "Objektum érvénytelenítés",
+	RigelMsgVkAlive = 0x9F "Vezérlőközpont életjel"
+}
+
+enum RigelObjType {
+	Invalid,
+	Valto,
+	Saru,
+	Jelzo,
+	JelzoCel,
+	Hivasfeloldo,
+	Vaganyszakasz,
+	Elojelzo,
+	Ismetlojelzo,
+	Allomasisorompo,
+	Sorompovagany,
+	Aramellatas,
+	Tolatasjelzo,
+	Ellenmenet,
+	Terkozcsatlakozas,
+	Vonalisorompo,
+	Vonalisorompovagany,
+	Keresztezes,
+	Kulcsoselem,
+	OvKulcsoselem,
+	Diagnosztika,
+	AKJ
+}
+
+enum RigelObjControl {
+	UV,
+	VA_AB,
+	VA_AJ,
+	VA_SZIKB,
+	VA_SZIKJ,
+	VA_OAKBE,
+	VA_OAKKI,
+	VA_ELBE,
+	VA_ELKI,
+	VA_TSZA,
+	SA_AB,
+	SA_AJ,
+	SA_SZIKB,
+	SA_SZIKJ,
+	J_L,
+	J_JTBE,
+	J_JTKI,
+	J_JM,
+	J_HI,
+	JC_TO,
+	JC_KO,
+	HIF_HIFBE,
+	HIF_HIFKI,
+	VSZ_TSZA,
+	SR_FLE,
+	SR_FBE,
+	SR_KLBE,
+	SR_KLKI,
+	SV_SL,
+	SV_SVKO,
+	SV_TSZA,
+	AE_AAKPBE,
+	AE_AAKPLE,
+	AE_AAVPBE,
+	AE_AAXXBE,
+	AE_AAXXLE,
+	AE_AAYYBE,
+	AE_AAYYLE,
+	AE_VLE,
+	TJ_TJBE,
+	TJ_JM,
+	VSV_ZFM,
+	EM_KIK,
+	EM_HJBE,
+	EM_HJKI,
+	OK_KUE,
+	OK_KUT,
+	OK_ELBE,
+	OK_ELKI,
+	KU_A2,
+	KU_A1,
+	KU_ELBE,
+	KU_ELKI
+}
+
+enum RigelSQCause {
+	NormalRequest,
+	PeriodicRequest
+}
+
+enum RigelCommandStatus {
+	OK,
+	CmdError,
+	Refused,
+	HwError,
+	SessionidError,
+	TimestampError,
+	ConfirmWaiting,
+	OperationDisabled
+}
+
+enum RigelDataCause {
+	NormalAnswer,
+	StatusChange,
+	PeriodicAnswer
+}
+
+struct RigelObject {
+	RigelObjType objType;
+	U32 ObjId;
+}
+
+struct RigelMsgHeader "A Rigel üzenet fejléce" {
+	U8 Length "Rekordok száma";
+	U8 Generation "Protokoll generáció";
+	RigelMsgType MessageType "Üzenet típusa";
+	RigelObjType ObjType "";
+	U32 ObjId "";
+	U16 SafetyCode "";
+}
+
+struct Rigel {
+	RigelMsgHeader Header;
+	RigelPayload(Header.MessageType, Header.ObjType) Payload;
+}
+
+struct RigelPayload(RigelMsgType msgType, RigelObjType objType) {
+	union (msgType) {
+		RigelMsgGq: EmptyMessage gq;
+		RigelMsgGqBegin: EmptyMessage gqBegin;
+		RigelMsgGqEnd: EmptyMessage gqEnd;
+		RigelMsgSq: RigelSq sq;
+		RigelMsgInvalidateObj: EmptyMessage invalidateObj;
+		RigelMsgVkAlive: EmptyMessage vkAlive;
+		RigelMsgReqTs1: RigelReq reqTs1;
+		RigelMsgAnsTs1: RigelAns ansTs1;
+		RigelMsgReqTs2: RigelReq reqTs2;
+		RigelMsgAnsTs2: RigelAns ansTs2;
+		RigelMsgData: RigelData(objType) data;
+		RigelMsgCommand: RigelCommandRecord command;
+		RigelMsgCommandConfirm: RigelCommandRecord commandConfirm;
+		RigelMsgCommandResult: RigelCommandResultRecord commandResult;
+		RigelMsgCommandConfirmResult: RigelCommandResultRecord commandConfirmResult;
+	}
+}
+
+struct EmptyMessage {}
+
+struct RigelSq {
+	RigelSQCause cause;
+}
+
+struct RigelReq {
+	U32 Timestamp;
+	U8 SessionId;
+}
+
+struct RigelAns {
+	U32 Timestamp;
+	U32 ConfirmedTimestamp;
+	U8 SessionId;
+}
+
+struct RigelCommandRecord {
+	U32 Timestamp;
+	U32 ConfirmedTimestamp;
+	RigelObjControl Command;
+	U8 SessionId;
+}
+
+struct RigelCommandResultRecord {
+	RigelObjControl Command;
+	U8 SessionId;
+	RigelCommandStatus CommandResult;
+}
+
+struct RigelData(RigelObjType objType) {
+	RigelObjStatus(objType) status;
+	RigelDataCause cause;
+}
+
+struct RigelObjStatus(RigelObjType objType) {
+	union(objType) {
+		Invalid: InvalidStatus invalid;
+		Valto: ValtoStatus valto;
+		Saru: SaruStatus saru;
+		Jelzo: JelzoStatus jelzo;
+		JelzoCel: JelzoCelStatus jelzocel;
+		Hivasfeloldo: HivasfeloldoStatus hivasfeloldo;
+		Vaganyszakasz: VaganyszakaszStatus vaganyszakasz;
+		Elojelzo: ElojelzoStatus elojelzo;
+		Ismetlojelzo: IsmetlojelzoStatus ismetlojelzo;
+		Allomasisorompo: AllomasisorompoStatus allomasisorompo;
+		Sorompovagany: SorompovaganyStatus sorompovagany;
+		Aramellatas: AramellatasStatus aramellatas;
+		Tolatasjelzo: TolatasjelzoStatus tolatasjelzo;
+		Ellenmenet: EllenmenetStatus ellenmenet;
+		Terkozcsatlakozas: InvalidStatus terkoz; // Még nincs lekezelve
+		Vonalisorompo: VonalisorompoStatus vonalisorompo;
+		Vonalisorompovagany: VonalisorompovaganyStatus vonalisorompovagany;
+		Keresztezes: InvalidStatus keresztezes; // Még nincs lekezelve
+		Kulcsoselem: KulcsoselemStatus kulcsoselem;
+		OvKulcsoselem: OvKulcsoselemStatus ovKulcsoselem;
+		Diagnosztika: DiagnosztikaStatus diagnosztika;
+		AKJ: AkjStatus akj;
+	}
+}
+
+struct InvalidStatus {}

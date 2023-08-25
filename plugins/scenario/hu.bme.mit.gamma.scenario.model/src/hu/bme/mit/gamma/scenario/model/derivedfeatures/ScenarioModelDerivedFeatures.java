@@ -15,24 +15,24 @@ import java.util.stream.Collectors;
 
 import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
 import hu.bme.mit.gamma.scenario.model.Delay;
-import hu.bme.mit.gamma.scenario.model.InteractionDefinition;
+import hu.bme.mit.gamma.scenario.model.DeterministicOccurrence;
 import hu.bme.mit.gamma.scenario.model.InteractionDirection;
-import hu.bme.mit.gamma.scenario.model.ModalInteractionSet;
+import hu.bme.mit.gamma.scenario.model.DeterministicOccurrenceSet;
 import hu.bme.mit.gamma.scenario.model.ModalityType;
-import hu.bme.mit.gamma.scenario.model.NegatedModalInteraction;
-import hu.bme.mit.gamma.scenario.model.Signal;
+import hu.bme.mit.gamma.scenario.model.NegatedDeterministicOccurrence;
+import hu.bme.mit.gamma.scenario.model.Interaction;
 
 public class ScenarioModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 
-	public static InteractionDirection getDirection(ModalInteractionSet set) {
+	public static InteractionDirection getDirection(DeterministicOccurrenceSet set) {
 		boolean isSend = false;
-		List<InteractionDirection> directions = javaUtil.filterIntoList(set.getModalInteractions(), Signal.class)
+		List<InteractionDirection> directions = javaUtil.filterIntoList(set.getDeterministicOccurrences(), Interaction.class)
 				.stream().map(it -> it.getDirection()).collect(Collectors.toList());
-		List<NegatedModalInteraction> negatedInteractions = javaUtil.filterIntoList(set.getModalInteractions(),
-				NegatedModalInteraction.class);
+		List<NegatedDeterministicOccurrence> negatedInteractions = javaUtil.filterIntoList(set.getDeterministicOccurrences(),
+				NegatedDeterministicOccurrence.class);
 		directions.addAll(negatedInteractions.stream()
-				.filter(it -> it.getModalinteraction() instanceof Signal)
-				.map(it -> ((Signal) it.getModalinteraction())
+				.filter(it -> it.getDeterministicOccurrence() instanceof Interaction)
+				.map(it -> ((Interaction) it.getDeterministicOccurrence())
 				.getDirection()).collect(Collectors.toList()));
 		if (!directions.isEmpty()) {
 			isSend = directions.stream().allMatch(it -> it.equals(InteractionDirection.SEND));
@@ -44,66 +44,66 @@ public class ScenarioModelDerivedFeatures extends ExpressionModelDerivedFeatures
 		}
 	}
 
-	public static ModalityType getModality(ModalInteractionSet set) {
-		List<Signal> signals = javaUtil.filterIntoList(set.getModalInteractions(), Signal.class);
+	public static ModalityType getModality(DeterministicOccurrenceSet set) {
+		List<Interaction> signals = javaUtil.filterIntoList(set.getDeterministicOccurrences(), Interaction.class);
 
 		if (!signals.isEmpty()) {
 			return signals.get(0).getModality();
 		}
-		List<InteractionDefinition> negatedSignal = javaUtil
-				.filterIntoList(set.getModalInteractions(), NegatedModalInteraction.class).stream()
-				.map(it -> it.getModalinteraction()).collect(Collectors.toList());
+		List<DeterministicOccurrence> negatedSignal = javaUtil
+				.filterIntoList(set.getDeterministicOccurrences(), NegatedDeterministicOccurrence.class).stream()
+				.map(it -> it.getDeterministicOccurrence()).collect(Collectors.toList());
 		if (!negatedSignal.isEmpty()) {
-			InteractionDefinition interactionDefinition = negatedSignal.get(0);
-			if (interactionDefinition instanceof Signal) {
-				Signal signal = (Signal) interactionDefinition;
+			DeterministicOccurrence interactionDefinition = negatedSignal.get(0);
+			if (interactionDefinition instanceof Interaction) {
+				Interaction signal = (Interaction) interactionDefinition;
 				return signal.getModality();
 			}
 		}
 
-		List<Delay> delays = javaUtil.filterIntoList(set.getModalInteractions(), Delay.class);
+		List<Delay> delays = javaUtil.filterIntoList(set.getDeterministicOccurrences(), Delay.class);
 		if (!delays.isEmpty()) {
-			return delays.get(0).getModality();
+			return ModalityType.COLD;
 		}
 		return ModalityType.COLD;
 	}
 
-	public static boolean isAllInteractionsOrBlockNegated(ModalInteractionSet set) {
-		for (InteractionDefinition modalInteraction : set.getModalInteractions()) {
-			if (!(modalInteraction instanceof NegatedModalInteraction)) {
+	public static boolean isAllInteractionsOrBlockNegated(DeterministicOccurrenceSet set) {
+		for (DeterministicOccurrence modalInteraction : set.getDeterministicOccurrences()) {
+			if (!(modalInteraction instanceof NegatedDeterministicOccurrence)) {
 				return false;
 			}
 		}
 		return true;
 	}
 
-	public static ModalityType getModality(InteractionDefinition interaction) {
-		if (interaction instanceof Signal) {
-			return ((Signal) interaction).getModality();
+	public static ModalityType getModality(DeterministicOccurrence interaction) {
+		if (interaction instanceof Interaction) {
+			return ((Interaction) interaction).getModality();
 		}
 		if (interaction instanceof Delay) {
-			return ((Delay) interaction).getModality();
+			return ModalityType.COLD; //((Delay) interaction).getModality();
 		}
-		if (interaction instanceof NegatedModalInteraction) {
-			NegatedModalInteraction negated = (NegatedModalInteraction) interaction;
-			if (negated.getModalinteraction() instanceof Signal) {
-				return getModality(negated.getModalinteraction());
+		if (interaction instanceof NegatedDeterministicOccurrence) {
+			NegatedDeterministicOccurrence negated = (NegatedDeterministicOccurrence) interaction;
+			if (negated.getDeterministicOccurrence() instanceof Interaction) {
+				return getModality(negated.getDeterministicOccurrence());
 			}
 		}
 		return null;
 	}
 
-	public static InteractionDirection getDirection(InteractionDefinition interaction) {
-		if (interaction instanceof Signal) {
-			return ((Signal) interaction).getDirection();
+	public static InteractionDirection getDirection(DeterministicOccurrence interaction) {
+		if (interaction instanceof Interaction) {
+			return ((Interaction) interaction).getDirection();
 		}
 		if (interaction instanceof Delay) {
 			return InteractionDirection.RECEIVE;
 		}
-		if (interaction instanceof NegatedModalInteraction) {
-			NegatedModalInteraction negated = (NegatedModalInteraction) interaction;
-			if (negated.getModalinteraction() instanceof Signal) {
-				return getDirection(negated.getModalinteraction());
+		if (interaction instanceof NegatedDeterministicOccurrence) {
+			NegatedDeterministicOccurrence negated = (NegatedDeterministicOccurrence) interaction;
+			if (negated.getDeterministicOccurrence() instanceof Interaction) {
+				return getDirection(negated.getDeterministicOccurrence());
 			}
 		}
 		return null;

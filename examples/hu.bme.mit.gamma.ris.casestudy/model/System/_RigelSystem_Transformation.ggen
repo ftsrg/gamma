@@ -1,0 +1,8 @@
+//include "Interaction/XP/RigelSystem_Transformation.ggen"
+//include "Interaction/XU/RigelSystem_Transformation.ggen"
+
+//include "State/XP/RigelSystem_Transformation.ggen"
+include "State/XU/RigelSystem_Transformation.ggen"
+
+//include "Transition/XP/RigelSystem_Transformation.ggen"
+include "Transition/XU/RigelSystem_Transformation.ggen"

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2021 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -18,9 +18,11 @@ import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.AssumeAction
 import hu.bme.mit.gamma.xsts.model.EmptyAction
+import hu.bme.mit.gamma.xsts.model.HavocAction
 import hu.bme.mit.gamma.xsts.model.IfAction
 import hu.bme.mit.gamma.xsts.model.LoopAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
+import hu.bme.mit.gamma.xsts.model.ParallelAction
 import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
 import hu.bme.mit.gamma.xsts.model.XTransition
@@ -52,9 +54,21 @@ class VariableInliner {
 	def inline(XTransition transition) {
 		transition.action.inline
 	}
-
+	
 	def inline(Action action) {
-		action.inline(newHashMap, newHashMap)
+		action.inline(null)
+	}
+
+	def inline(Action action, Action context) {
+		val concreteValues = newHashMap
+		val symbolicValues = newHashMap
+		
+		if (!context.nullOrEmptyAction) {
+			// Filling the maps with the context
+			context.inline(concreteValues, symbolicValues)
+		}
+		
+		action.inline(concreteValues, symbolicValues)
 	}
 	
 	// The concreteValues and symbolicValues sets are disjunct!
@@ -69,6 +83,15 @@ class VariableInliner {
 			Map<VariableDeclaration, InlineEntry> concreteValues,
 			Map<VariableDeclaration, InlineEntry> symbolicValues) {
 		// Nop
+	}
+	
+	protected def dispatch void inline(HavocAction action,
+			Map<VariableDeclaration, InlineEntry> concreteValues,
+			Map<VariableDeclaration, InlineEntry> symbolicValues) {
+		val writtenVariables = action.writtenVariables
+				
+		concreteValues.keySet -= writtenVariables
+		symbolicValues.keySet -= writtenVariables
 	}
 	
 	protected def dispatch void inline(LoopAction action,
@@ -115,9 +138,34 @@ class VariableInliner {
 			Map<VariableDeclaration, InlineEntry> symbolicValues) {
 		val subactions = newArrayList
 		subactions += action.actions
+		
+		// "Ad hoc" inline for symbolic values to tackle the following pattern
+		// local var a : integer = b + 1;
+		// c := a; // Unnecessary 'a' local variable if it is not referenced later
+		subactions.inlineLocalVariablesIntoSubsequentAssignments
+		//
+		
 		for (subaction : subactions) {
 			subaction.inline(concreteValues, symbolicValues)
 		}
+	}
+	
+	protected def dispatch void inline(ParallelAction action,
+			Map<VariableDeclaration, InlineEntry> concreteValues,
+			Map<VariableDeclaration, InlineEntry> symbolicValues) {
+		val writtenVariables = action.writtenVariables
+		
+		concreteValues.keySet -= writtenVariables
+		symbolicValues.keySet -= writtenVariables
+		
+		val subactions = newArrayList
+		subactions += action.actions
+		for (subaction : subactions) {
+			subaction.inline(concreteValues, symbolicValues)
+		}
+		
+		concreteValues.keySet -= writtenVariables
+		symbolicValues.keySet -= writtenVariables
 	}
 	
 	protected def dispatch void inline(NonDeterministicAction action,
@@ -199,17 +247,44 @@ class VariableInliner {
 		}
 	}
 	
+	//
+	
+	protected def inlineLocalVariablesIntoSubsequentAssignments(List<? extends Action> actions) {
+		// The remaining local VariableDeclarationActions are not removed;
+		// it is done separately by RemovableVariableRemover.removeTransientVariables
+		for (var i = 0; i < actions.size - 1; i++) {
+			val first = actions.get(i)
+			val second = actions.get(i + 1) // Subsequent actions
+			if (first instanceof VariableDeclarationAction) {
+				val localVariable = first.variableDeclaration
+				val localVariableValue = localVariable.expression
+				
+				if (second instanceof AssignmentAction) {
+					val assignedValue = second.rhs
+					if (assignedValue instanceof DirectReferenceExpression) {
+						val rhsDeclaration = assignedValue.declaration
+						
+						if (rhsDeclaration === localVariable) {
+							second.rhs = localVariableValue.clone
+						}
+					}
+				}
+			}
+		}
+	}
+	
 	// Auxiliary
 	
 	protected def commonizeMaps(List<? extends Map<VariableDeclaration, InlineEntry>> branchValueList) {
 		// Calculating variables present in all branches
 		val commonVariables = newHashSet
-		for (branchValues : branchValueList) {
+		for (var i = 0; i < branchValueList.size; i++) {
+			val branchValues = branchValueList.get(i)
 			val branchVariables = branchValues.keySet
-			if (commonVariables.empty) {
+			if (i <= 0) { // First addition
 				commonVariables += branchVariables
 			}
-			else {
+			else { // Then only retains
 				commonVariables.retainAll(branchVariables)
 			}
 		}

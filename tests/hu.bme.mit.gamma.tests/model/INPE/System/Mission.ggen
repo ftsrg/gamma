@@ -26,3 +26,18 @@ verification {
 	query-file : "CustomQueries.prop"
 	test-language : java
 }
+
+analysis {
+	component : Mission
+	file : "Mission-SMV"
+	language : SMV
+	transition-coverage
+}
+
+verification {
+	language : nuXmv
+	file : "Mission-SMV.smv"
+	property-file : ".Mission-SMV.gpd"
+	test-language : java
+	optimize-traces : true
+}

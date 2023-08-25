@@ -28,6 +28,8 @@ public class TaskExecutionTimeMeasurer implements TaskHook {
 	private final int iterationCount;
 	private long startTime;
 	
+	private final boolean considerJit;
+	
 	private boolean isFirst = true;
 	private final List<Double> elapsedTimes = new ArrayList<Double>();
 	
@@ -42,12 +44,14 @@ public class TaskExecutionTimeMeasurer implements TaskHook {
 	protected final Logger logger = Logger.getLogger("GammaLogger");
 	
 	public TaskExecutionTimeMeasurer(Calculator<Double> calculator, String fileName) {
-		this(1, calculator, fileName, TimeUnit.SECONDS);
+		this(1, false, calculator, fileName, TimeUnit.SECONDS);
 	}
 	
-	public TaskExecutionTimeMeasurer(int iterationCount,
+	public TaskExecutionTimeMeasurer(int iterationCount, boolean considerJit,
 			Calculator<Double> calculator, String fileName, TimeUnit unit) {
-		this.iterationCount = iterationCount + 1; // Due to Java JIT, we do not count the first one
+		this.iterationCount = iterationCount +
+				((considerJit) ? 1 : 0); // Due to Java JIT, we do not count the first one
+		this.considerJit = considerJit;
 		this.calculator = calculator;
 		this.fileName = fileName;
 		this.unit = unit;
@@ -80,7 +84,7 @@ public class TaskExecutionTimeMeasurer implements TaskHook {
 	public void endIteration() {
 		long endTime = System.nanoTime();
 		double time = (endTime - startTime) / getDivisor();
-		if (isFirst) {
+		if (isFirst && considerJit) {
 			isFirst = false;
 			logger.log(Level.INFO, "First (not counted) iteration has been finished");
 		}

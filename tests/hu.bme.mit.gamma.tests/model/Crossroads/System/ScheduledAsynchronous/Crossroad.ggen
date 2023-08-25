@@ -21,6 +21,20 @@ analysis {
 	component : Crossroad
 	language : XSTS-UPPAAL
 	file : "Crossroad-XSTS"
+	state-coverage
+	constraint : {
+		top : {
+			minimum-orchestrating-period : 500 ms
+			maximum-orchestrating-period : 500 ms
+		}
+	}
+}
+
+analysis {
+	component : Crossroad
+	language : SMV
+	file : "Crossroad-SMV"
+	state-coverage
 	constraint : {
 		top : {
 			minimum-orchestrating-period : 500 ms
@@ -39,6 +53,15 @@ analysis {
 verification {
 	language : XSTS-UPPAAL
 	file : "Crossroad-XSTS.xml"
-	property-file : "Crossroad.gpd"
+	property-file : ".Crossroad-XSTS.gpd"
 	test-language : java
+	optimize-traces : true
+}
+
+verification {
+	language : nuXmv
+	file : "Crossroad-SMV.smv"
+	property-file : ".Crossroad-SMV.gpd"
+	test-language : java
+	optimize-traces : true
 }

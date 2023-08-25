@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2021 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -10,12 +10,15 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.trace.environment.transformation
 
+import hu.bme.mit.gamma.expression.model.ReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance
 import hu.bme.mit.gamma.statechart.composite.SchedulableCompositeComponent
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.statechart.State
+import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
+import hu.bme.mit.gamma.util.GammaEcoreUtil
 import org.eclipse.xtend.lib.annotations.Data
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
@@ -31,6 +34,7 @@ class TraceReplayModelGenerator {
 	protected final boolean considerOutEvents
 	
 	protected final extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
+	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	
 	new(ExecutionTrace executionTrace, String systemName,
 			String envrionmentModelName, EnvironmentModel environmentModel, boolean considerOutEvents) {
@@ -50,7 +54,7 @@ class TraceReplayModelGenerator {
 		val transformer = new TraceToEnvironmentModelTransformer(envrionmentModelName,
 				considerOutEvents, executionTrace, environmentModel)
 		val result = transformer.execute
-		// Now only synchronous statecharts are supported - could be extended to asynchronous ones, too
+		
 		val environmentModel = result.statechart
 		val lastState = result.lastState
 		val trace = transformer.getTrace
@@ -64,28 +68,64 @@ class TraceReplayModelGenerator {
 		]
 		
 		val environmentInstance = environmentModel.instantiateComponent
+		environmentInstance.name = environmentInstance.name.toFirstLower
 		systemModel.prependComponentInstance(environmentInstance)
-		systemModel.initialExecutionList += environmentInstance.createInstanceReference // Initial out-raises
+		
+		val isEveryOutPortBroadcast = systemModel.ports
+				.forall[it.broadcastOrBroadcastMatcher]
 		if (considerOutEvents) {
-			systemModel.executionList += environmentInstance.createInstanceReference // In
-			systemModel.executionList += componentInstance.createInstanceReference 
-			systemModel.executionList += environmentInstance.createInstanceReference  // Out
+			if (!isEveryOutPortBroadcast) {
+				// Special scheduling for not broadcast port handling
+				systemModel.initialExecutionList += environmentInstance.createInstanceReference // Initial out-raises
+				
+				systemModel.executionList += environmentInstance.createInstanceReference // In
+				systemModel.executionList += componentInstance.createInstanceReference
+				systemModel.executionList += environmentInstance.createInstanceReference  // Out
+			}
+			else {
+				// Optimization: if every out port is broadcast the "proxy" environment ports are unnecessary
+				environmentModel.regions.removeAllButFirst
+				environmentModel.transitions.filter[!it.sourceState.hasContainerOfType(StatechartDefinition)]
+						.toList.removeAll
+				environmentModel.transitions.map[it.guard].filter(ReferenceExpression)
+						.toList.removeAll
+			}
 		}
 		
 		// Tending to the system and proxy ports
+		val portBindings = newArrayList
+		portBindings += systemModel.portBindings
 		if (this.environmentModel === EnvironmentModel.OFF) {
-			systemModel.ports.clear
-			systemModel.portBindings.clear
+			if (!considerOutEvents) {
+				systemModel.ports.removeAll
+				systemModel.portBindings.removeAll
+			}
+			else {
+				for (portBinding : portBindings) {
+					val systemPort = portBinding.compositeSystemPort
+					if (!systemPort.broadcast) {
+						portBinding.remove
+						systemPort.remove
+					}
+				}
+			}
 		}
 		else {
-			for (portBinding : systemModel.portBindings) {
+			for (portBinding : portBindings) {
 				val instancePortReference = portBinding.instancePortReference
 				
 				val componentPort = instancePortReference.port
-				val proxyPort = trace.getComponentProxyPort(componentPort)
-				
-				instancePortReference.instance = environmentInstance
-				instancePortReference.port = proxyPort
+				if (!componentPort.broadcast) {
+					val proxyPort = trace.getComponentProxyPort(componentPort)
+					
+					instancePortReference.instance = environmentInstance
+					instancePortReference.port = proxyPort
+				}
+				else if (!considerOutEvents) {
+					val systemPort = portBinding.compositeSystemPort
+					portBinding.remove
+					systemPort.remove
+				}
 			}
 		}
 		

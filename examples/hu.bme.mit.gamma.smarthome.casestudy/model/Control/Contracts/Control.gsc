@@ -1,3 +1,5 @@
+package control
+
 import "Interfaces/Constants.gcd"
 import "Interfaces/Interfaces.gcd"
 
@@ -5,62 +7,42 @@ import "Control/Controller.gcd"
 
 component Controller
 
-//scenario SwitchLights [
-//	variable isOn : integer;
-//	{
-//		cold receives InIllumination.lightSwitch
-//		assign isOn = InIllumination.lightSwitch::on
-//	}
-//	{
-//		hot sends OutIllumination.lightSwitch
-//		check(OutIllumination.lightSwitch::on == isOn)
-//	}
-//]
-
-scenario MotionIncreasesIllumination [
-//	variable personCount : integer;
-//	variable brightness : integer;
+// Context-dependent - no result
+scenario S1MotionThenDelay initial outputs [
+	hot sends Ventilation.switchVentilation
+	hot sends Ventilation.ventilate
+	check Ventilation.switchVentilation::on and Ventilation.ventilate::level == BASE_VENTILATION
+] [
 	{
-		cold receives Camera.motion
-//		check Illumination.dim::brightness == brightness
+		cold receives MotionDetector.motion
 	}
 	{
-		cold receives Camera.personPresence
-//		assign personCount := Camera.personPresence::count
-		
+		delay (TIMEOUT_TIME * 1000)
 	}
-	alternative {
-		check personCount > 10
-	} or {
-		check personCount <= 10
-	}
+	// Internal event transmission
 	{
-		hot sends Illumination.dim
-		hot sends Illumination.dim // TODO match assign and check order in mapping
-//		check Illumination.dim::brightness == brightness
-//		assign brightness := calculateBrightness(personCount)
-	}
-	{
-		hot sends Illumination.dim
-//		check Illumination.dim::brightness == brightness
-//		assign brightness := brightness - BRIGHTNESS_DELTA
+		hot sends Ventilation.switchVentilation
+		check Ventilation.switchVentilation::on == false
 	}
 ]
 
-scenario BrightnessValue [
-	alternative { 
-		{
-			cold receives Camera.motion
-//			check Camera.motion::on == false
-		}
-	} or {
-		{
-			cold receives MotionDetector.motion
-//			check MotionDetector.motion::on == false
-		}
+// Context-dependent - deliberately unsatisfied or no result
+scenario S2MotionThenMotionThenVentilation  initial outputs [
+	hot sends Ventilation.switchVentilation
+	hot sends Ventilation.ventilate
+	check Ventilation.switchVentilation::on and Ventilation.ventilate::level == BASE_VENTILATION
+] [
+	{
+		cold receives MotionDetector.motion
+	}
+	// Internal event transmission
+	{
+		cold receives MotionDetector.motion
 	}
 	{
-		hot sends Illumination.switchLight
-//		check Illumination.switchLight::on == false
+		delay (1 .. 4001)
+		hot sends Ventilation.switchVentilation
+		hot sends Ventilation.ventilate
+		check Ventilation.switchVentilation::on
 	}
 ]

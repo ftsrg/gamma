@@ -1,0 +1,5 @@
+package default_package_name
+
+interface EventStream {
+	out persistent event command(param : integer)
+}

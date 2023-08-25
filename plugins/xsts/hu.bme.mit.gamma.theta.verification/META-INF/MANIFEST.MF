@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Theta Verifier
 Bundle-SymbolicName: hu.bme.mit.gamma.theta.verification
-Bundle-Version: 2.7.0.qualifier
+Bundle-Version: 2.9.0.qualifier
 Bundle-Vendor: BME-FTSRG
 Automatic-Module-Name: hu.bme.mit.gamma.theta.verification
 Bundle-RequiredExecutionEnvironment: JavaSE-17
@@ -13,5 +13,6 @@ Require-Bundle: com.google.guava,
  hu.bme.mit.gamma.trace.model,
  hu.bme.mit.gamma.transformation.util,
  hu.bme.mit.gamma.verification.util,
- hu.bme.mit.gamma.querygenerator
+ hu.bme.mit.gamma.querygenerator,
+ hu.bme.mit.gamma.xsts.transformation.util
 Export-Package: hu.bme.mit.gamma.theta.verification

@@ -1,0 +1,10 @@
+package asynchronousreactive
+
+interface ExecuteAsynchronous {
+	out event ^execute
+}
+
+interface AddSubtract {
+	out event add
+	out event subtract
+}

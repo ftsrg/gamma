@@ -17,6 +17,7 @@ import java.util.List;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
 
+import hu.bme.mit.gamma.action.derivedfeatures.ActionModelDerivedFeatures;
 import hu.bme.mit.gamma.action.model.Action;
 import hu.bme.mit.gamma.action.model.ActionModelFactory;
 import hu.bme.mit.gamma.action.model.AssignmentStatement;
@@ -39,7 +40,6 @@ import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.ValueDeclaration;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.expression.util.ExpressionUtil;
-
 
 public class ActionUtil extends ExpressionUtil {
 	// Singleton
@@ -70,6 +70,46 @@ public class ActionUtil extends ExpressionUtil {
 				.getSelfAndAllContentsOfType(action, EmptyStatement.class);
 		for (EmptyStatement emptyStatement : emptyStatements) {
 			ecoreUtil.remove(emptyStatement);
+		}
+	}
+	
+	public void removeEffectlessActions(Collection<? extends Action> actions) {
+		List<Action> actionList = new ArrayList<Action>(actions);
+		for (Action action : actionList) {
+			removeEffectlessActions(action);
+		}
+	}
+	
+	public void removeEffectlessActions(Action action) {
+		if (action == null) {
+			return;
+		}
+		if (ActionModelDerivedFeatures.isEffectlessAction(action)) {
+			ecoreUtil.remove(action);
+			return;
+		}
+		
+		boolean needMoreIteration = true;
+		while (needMoreIteration) {
+			needMoreIteration = false;
+			List<Action> actions = ecoreUtil
+					.getSelfAndAllContentsOfType(action, Action.class);
+			
+			for (Action subaction : actions) {
+				if (ActionModelDerivedFeatures.isEffectlessAction(subaction)) {
+					ecoreUtil.remove(subaction);
+					needMoreIteration = true;
+				}
+			}
+		}
+		// Branch actions must not be null though
+		List<Branch> branches = ecoreUtil
+				.getSelfAndAllContentsOfType(action, Branch.class);
+		for (Branch branch : branches) {
+			if (branch.getAction() == null) {
+				branch.setAction(
+						actionFactory.createEmptyStatement());
+			}
 		}
 	}
 	
@@ -272,6 +312,11 @@ public class ActionUtil extends ExpressionUtil {
 			assignments.add(createAssignment(lhs, rhs));
 		}
 		return assignments;
+	}
+	
+	public AssignmentStatement createVariableResetAction(VariableDeclaration variable) {
+		Expression defaultExpression = ExpressionModelDerivedFeatures.getDefaultExpression(variable);
+		return createAssignment(variable, defaultExpression);
 	}
 	
 	public AssignmentStatement createIncrementation(VariableDeclaration variable) {

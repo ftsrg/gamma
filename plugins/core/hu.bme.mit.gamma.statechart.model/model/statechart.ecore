@@ -31,7 +31,8 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EEnum" name="OrthogonalRegionSchedulingOrder">
     <eLiterals name="SEQUENTIAL"/>
-    <eLiterals name="RANDOM" value="1"/>
+    <eLiterals name="UNORDERED" value="1" literal="UNORDERED"/>
+    <eLiterals name="PARALLEL" value="2" literal="PARALLEL"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EEnum" name="TransitionPriority">
     <eLiterals name="OFF"/>
@@ -149,6 +150,9 @@
   <eClassifiers xsi:type="ecore:EClass" name="OnCycleTrigger" eSuperTypes="interface.ecore#//SimpleTrigger"/>
   <eClassifiers xsi:type="ecore:EClass" name="StatechartAnnotation" abstract="true"
       eSuperTypes="interface.ecore#//ComponentAnnotation"/>
+  <eClassifiers xsi:type="ecore:EClass" name="RunUponExternalEventAnnotation" eSuperTypes="#//StatechartAnnotation"/>
+  <eClassifiers xsi:type="ecore:EClass" name="RunUponExternalEventOrInternalTimeoutAnnotation"
+      eSuperTypes="#//StatechartAnnotation"/>
   <eClassifiers xsi:type="ecore:EClass" name="StateAnnotation" abstract="true"/>
   <eClassifiers xsi:type="ecore:EClass" name="TransitionAnnotation" abstract="true"/>
   <eClassifiers xsi:type="ecore:EClass" name="TransitionIdAnnotation" eSuperTypes="#//TransitionAnnotation ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NamedElement"/>

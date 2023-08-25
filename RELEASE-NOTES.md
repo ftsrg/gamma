@@ -227,3 +227,38 @@
 * Optimizations (slicing based on the properties) have been introduced in the verification task.
 * Bugs related to clock and timing variables in the XSTS-UPPAAL transformation have been fixed.
 * Bugs related to transition handlings in the XSTS transformation have been fixed.
+
+## 2022.10.06. - Version 2.8.0
+
+### What is New
+
+* Gamma now depends on Java 17.
+* The trace language (GTL) now supports atomic statecharts, too.
+* The scenario language (GSCL) now supports new constructs, such as variables, variable assignments and check expressions.
+* Spin has been integrated as a verification back-end via a PROMELA transformation.
+
+### Improvements
+
+* Optimizations slicing based on the properties have been introduced in the verification task, which can be set with the `optimize-model` setting in a ggen model.
+* Optimizations with regard to trace replays have been introduced.
+* Optimizations with regard to one-capacity arrays have been introduced in the XSTS transformation.
+* Bugs related to orthogonal actions in the XSTS-UPPAAL transformation have been fixed.
+* Bugs related to region scheduling in the XSTS-UPPAAL transformation have been fixed.
+* Bugs related to command line arguments during verification have been fixed.
+
+## 2023.03.31. - Version 2.9.0
+
+### What is New
+
+* Gamma tasks now can be cancelled on the GUI.
+* The trace language (GTL) now supports variable declarations, too.
+* The composition language (GCL) now supports event redirection with regard to the target input port-event combination in message queues of asynchronous adapters, too.
+* The composition language (GCL) now supports message queue clearing control specifications of asynchronous adapters, too.
+* The statechart language (GSL) now supports the sequential, unordered and parallel execution of orthogonal regions.
+
+### Improvements
+
+* Model slicing algorithms for verification based on XSTS models has been improved.
+* Clock handling in XSTS-UPPAAL models has been improved.
+* The Promela mapping has been improved.
+* The model checking of asynchronous-reactive models has been improved.

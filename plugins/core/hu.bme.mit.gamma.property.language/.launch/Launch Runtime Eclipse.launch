@@ -13,7 +13,7 @@
     <stringAttribute key="configLocation" value="${workspace_loc}/.metadata/.plugins/org.eclipse.pde.core/Launch Runtime Eclipse"/>
     <booleanAttribute key="default" value="true"/>
     <booleanAttribute key="includeOptional" value="true"/>
-    <stringAttribute key="location" value="C:\Users\Armin\programs\sysml-gamma-eclipse\runtime-ws"/>
+    <stringAttribute key="location" value="${workspace_loc}/../runtime-EclipseXtext"/>
     <booleanAttribute key="org.eclipse.debug.core.ATTR_FORCE_SYSTEM_CONSOLE_ENCODING" value="false"/>
     <listAttribute key="org.eclipse.debug.ui.favoriteGroups">
         <listEntry value="org.eclipse.debug.ui.launchGroup.debug"/>
@@ -22,9 +22,9 @@
     <booleanAttribute key="org.eclipse.jdt.launching.ATTR_ATTR_USE_ARGFILE" value="false"/>
     <booleanAttribute key="org.eclipse.jdt.launching.ATTR_SHOW_CODEDETAILS_IN_EXCEPTION_MESSAGES" value="true"/>
     <stringAttribute key="org.eclipse.jdt.launching.JRE_CONTAINER" value="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-17"/>
-    <stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-os ${target.os} -ws ${target.ws} -arch ${target.arch} -nl ${target.nl}&#13;&#10;&quot;hu.bme.mit.gamma.sysml.crossroads/model/Verification.sysml&quot; &quot;C:\Users\Armin\work\output.json&quot;"/>
+    <stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-os ${target.os} -ws ${target.ws} -arch ${target.arch} -nl ${target.nl}"/>
     <stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.eclipse.pde.ui.workbenchClasspathProvider"/>
-    <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Xms2G -Xmx2G -Declipse.log.level=INFO"/>
+    <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Xms2G -Xmx2G"/>
     <stringAttribute key="pde.version" value="3.3"/>
     <stringAttribute key="product" value="hu.bme.mit.gamma.sysml.headless.sysmlProduct"/>
     <booleanAttribute key="show_selected_only" value="false"/>

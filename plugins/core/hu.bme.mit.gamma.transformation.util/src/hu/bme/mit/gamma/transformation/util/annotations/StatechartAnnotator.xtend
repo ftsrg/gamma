@@ -189,15 +189,19 @@ class StatechartAnnotator {
 	}
 	
 	protected def createTransitionVariable(Transition transition,
-			Map<Transition, VariableDeclaration> variables, boolean isResetable) {
+			Map<Transition, VariableDeclaration> variables, boolean isResettable) {
 		val statechart = transition.containingStatechart
 		val variable = createBooleanTypeDefinition.createVariableDeclaration(
 			namings.getVariableName(transition))
 		statechart.variableDeclarations += variable
 		variables.put(transition, variable)
-		if (isResetable) {
+		
+		if (isResettable) {
 			variable.addResettableAnnotation
 		}
+		
+		variable.addInjectedAnnotation
+		
 		return variable
 	}
 
@@ -464,7 +468,9 @@ class StatechartAnnotator {
 		val raisedEvents = relevantMatches.map[it.raisedEvent].toSet // Set, so one event is set only once
 		// Creating event parameters
 		for (event : raisedEvents) {
-			event.extendEventWithParameter(createIntegerTypeDefinition, namings.getParameterName(event))
+			val idParameter = event.extendEventWithParameter(
+					createIntegerTypeDefinition, namings.getParameterName(event))
+			idParameter.addInternalAnnotation
 			// Parameter is always the last
 		}
 		
@@ -516,15 +522,17 @@ class StatechartAnnotator {
 		
 		// Due to well-formedness constraints, unattended raise event actions
 		// have to have the correct number of arguments - they get the 0 (reset) id
-		val attendedRaiseEventActions = matches.map[it.raiseEventAction].toSet
+		val attendedRaiseEventActions = relevantMatches.map[it.raiseEventAction].toSet
 		attendedRaiseEventActions.extendUnattendedRaiseEventActions
 	}
 	
-	protected def extendUnattendedRaiseEventActions(Collection<RaiseEventAction> attendedRaiseEventActions) {
+	protected def extendUnattendedRaiseEventActions(
+			Collection<? extends RaiseEventAction> attendedRaiseEventActions) {
 		val rootContainers = attendedRaiseEventActions.map[it.root].toSet
 		val raisedEvents = attendedRaiseEventActions.map[it.event].toSet
-		val raiseEventActions = rootContainers.map[it.getAllContentsOfType(RaiseEventAction)].flatten
-			.filter[raisedEvents.contains(it.event)].toSet
+		val raiseEventActions = rootContainers
+				.map[it.getSelfAndAllContentsOfType(RaiseEventAction)].flatten
+				.filter[raisedEvents.contains(it.event)].toSet
 		raiseEventActions -= attendedRaiseEventActions
 		for (raiseEventAction : raiseEventActions) {
 			raiseEventAction.arguments += 0.toIntegerLiteral // Default value
@@ -545,7 +553,10 @@ class StatechartAnnotator {
 		if (!useMap.containsKey(reference)) {
 			val statechart = reference.containingStatechart
 			val useVariable = createIntegerTypeDefinition.createVariableDeclaration(name)
+			
 			useVariable.addResettableAnnotation
+			useVariable.addInjectedAnnotation
+			
 			statechart.variableDeclarations += useVariable
 			useMap += reference -> useVariable
 		}
@@ -566,7 +577,10 @@ class StatechartAnnotator {
 			Map<ValueDeclaration, VariableDeclaration> defMap, String name) {
 		if (!defMap.containsKey(originalDeclaration)) {
 			val statechart = originalDeclaration.containingStatechart
+			
 			val defVariable = createIntegerTypeDefinition.createVariableDeclaration(name)
+			defVariable.addInjectedAnnotation
+			
 			statechart.variableDeclarations += defVariable
 			defMap += originalDeclaration -> defVariable
 		}
@@ -890,10 +904,15 @@ class StatechartAnnotator {
 		if (globalPool !== null) {
 			globalPool += variablePair
 		}
+		
 		if (resettable) {
 			senderVariable.addResettableAnnotation
 			receiverVariable.addResettableAnnotation
 		}
+		
+		senderVariable.addInjectedAnnotation
+		receiverVariable.addInjectedAnnotation
+		
 		return variablePair
 	}
 	

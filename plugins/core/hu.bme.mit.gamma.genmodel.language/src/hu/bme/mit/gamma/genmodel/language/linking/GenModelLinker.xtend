@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -13,6 +13,7 @@ package hu.bme.mit.gamma.genmodel.language.linking
 import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation
 import hu.bme.mit.gamma.genmodel.model.GenModel
 import hu.bme.mit.gamma.genmodel.model.GenmodelModelPackage
+import hu.bme.mit.gamma.genmodel.model.SafetyAssessment
 import hu.bme.mit.gamma.genmodel.model.Slicing
 import hu.bme.mit.gamma.genmodel.model.Verification
 import hu.bme.mit.gamma.genmodel.model.XstsReference
@@ -37,7 +38,12 @@ class GenModelLinker extends GammaLanguageLinker {
 				pack.analysisModelTransformation_PropertyPackage,
 				pack.analysisModelTransformation_InitialState
 			],
-			Slicing -> #[pack.slicing_PropertyPackage])
+			Slicing -> #[pack.slicing_PropertyPackage],
+			SafetyAssessment -> #[
+				pack.safetyAssessment_PropertyPackages,
+				pack.safetyAssessment_FaultExtensionInstructions
+			]
+		)
 	}
 	
 }

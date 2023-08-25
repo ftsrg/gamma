@@ -41,4 +41,109 @@
   <extension point="org.eclipse.ui.handlers"> 
     <handler class="hu.bme.mit.gamma.serializer.commandhandler.CommandHandler" commandId="hu.bme.mit.gamma.serializer"/>
   </extension>
+  
+  <extension point="org.eclipse.ui.commands">
+    <command id="hu.bme.mit.gamma.metrics.trace" name="Calculate Trace Metrics"/>
+  </extension>
+  <extension point="org.eclipse.ui.menus">
+    <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.navigator.ProjectExplorer#PopupMenu">
+       <menu id="gammaProjectMenu"
+             label="Gamma Commands"
+             icon="icons/gamma-icon-16.png">
+        <!-- Generating Gamma artefacts -->	    
+	    <command commandId="hu.bme.mit.gamma.metrics.trace" label="Calculate Trace Metrics" style="push">
+	    	<visibleWhen checkEnabled="false">
+            	<iterate ifEmpty="false" operator="or">
+					<test property="org.eclipse.core.resources.name" value="trace*">
+				    </test>
+    			</iterate>
+            </visibleWhen>  
+	    </command>
+      </menu>
+    </menuContribution>
+    <menuContribution allPopups="false" locationURI="popup:org.eclipse.jdt.ui.PackageExplorer">
+      <menu id="gammaPackageMenu"
+            label="Gamma Commands"
+             icon="icons/gamma-icon-16.png">
+        <!-- Generating Gamma artefacts -->	    
+	    <command commandId="hu.bme.mit.gamma.metrics.trace" label="Calculate Trace Metrics" style="push">
+	    	<visibleWhen checkEnabled="false">
+            	<iterate ifEmpty="false" operator="or">
+					<test property="org.eclipse.core.resources.name" value="trace*">
+				    </test>
+    			</iterate>
+            </visibleWhen>  
+	    </command>
+      </menu>
+    </menuContribution>
+  </extension>
+  <extension point="org.eclipse.ui.handlers"> 
+    <handler class="hu.bme.mit.gamma.serializer.commandhandler.ExecutionTraceMetricComputer" commandId="hu.bme.mit.gamma.metrics.trace"/>
+  </extension>
+  
+   <extension point="org.eclipse.ui.commands">
+    <command id="hu.bme.mit.gamma.statechart.transition.id.add" name="Add Transition Identifiers"/>
+  </extension>
+ <extension point="org.eclipse.ui.commands">
+    <command id="hu.bme.mit.gamma.statechart.transition.id.remove" name="Remove Transition Identifiers"/>
+  </extension>
+  <extension point="org.eclipse.ui.menus">
+    <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.navigator.ProjectExplorer#PopupMenu">
+       <menu id="gammaProjectMenu"
+             label="Gamma Commands"
+             icon="icons/gamma-icon-16.png">
+       <menu id="gammaProjectTransitionIdMenu"
+             label="Handle Transition Identifiers">
+		    <command commandId="hu.bme.mit.gamma.statechart.transition.id.add" label="Add Transition Identifiers" style="push">
+		    	<visibleWhen checkEnabled="false">
+	            	<iterate ifEmpty="false" operator="or">
+						<test property="org.eclipse.core.resources.name" value="*.gcd">
+					    </test>
+	    			</iterate>
+	            </visibleWhen>  
+		    </command>
+		    <command commandId="hu.bme.mit.gamma.statechart.transition.id.remove" label="Remove Transition Identifiers" style="push">
+		    	<visibleWhen checkEnabled="false">
+	            	<iterate ifEmpty="false" operator="or">
+						<test property="org.eclipse.core.resources.name" value="*.gcd">
+					    </test>
+	    			</iterate>
+	            </visibleWhen>  
+		    </command>
+      </menu>
+      </menu>
+    </menuContribution>
+    <menuContribution allPopups="false" locationURI="popup:org.eclipse.jdt.ui.PackageExplorer">
+      <menu id="gammaPackageMenu"
+            label="Gamma Commands"
+             icon="icons/gamma-icon-16.png">
+       <menu id="gammaPackageTransitionIdMenu"
+             label="Handle Transition Identifiers">
+		    <command commandId="hu.bme.mit.gamma.statechart.transition.id.add" label="Add Transition Identifiers" style="push">
+		    	<visibleWhen checkEnabled="false">
+	            	<iterate ifEmpty="false" operator="or">
+						<test property="org.eclipse.core.resources.name" value="*.gcd">
+					    </test>
+	    			</iterate>
+	            </visibleWhen>  
+		    </command>
+		    <command commandId="hu.bme.mit.gamma.statechart.transition.id.remove" label="Remove Transition Identifiers" style="push">
+		    	<visibleWhen checkEnabled="false">
+	            	<iterate ifEmpty="false" operator="or">
+						<test property="org.eclipse.core.resources.name" value="*.gcd">
+					    </test>
+	    			</iterate>
+	            </visibleWhen>  
+		    </command>
+      	</menu>
+      </menu>
+    </menuContribution>
+  </extension>
+  <extension point="org.eclipse.ui.handlers"> 
+    <handler class="hu.bme.mit.gamma.serializer.commandhandler.TransitionIdAdder" commandId="hu.bme.mit.gamma.statechart.transition.id.add"/>
+  </extension>
+  <extension point="org.eclipse.ui.handlers"> 
+    <handler class="hu.bme.mit.gamma.serializer.commandhandler.TransitionIdAdder" commandId="hu.bme.mit.gamma.statechart.transition.id.remove"/>
+  </extension>
+  
 </plugin>

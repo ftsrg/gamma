@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -27,31 +27,39 @@ class ThreadRacer<T> {
 	
 	protected final Logger logger = Logger.getLogger("GammaLogger")
 
-	def T execute(Collection<InterruptableCallable<T>> callables) {
+	def T execute(Collection<? extends InterruptableCallable<T>> callables) {
 		val size = callables.size
 		numberOfCallablesShouldBeRunning = size
 		
-		val executor = Executors.newFixedThreadPool(size)
-		val futures = newArrayList
 		val wrappedCallables = newArrayList
-		for (callable :  callables) {
-			val wrappedCallable = callable.wrap
-			wrappedCallables += wrappedCallable
-			futures += executor.submit(wrappedCallable)
+		val futures = newArrayList
+		
+		val executor = Executors.newFixedThreadPool(size)
+		try {
+			for (callable :  callables) {
+				val wrappedCallable = callable.wrap
+				wrappedCallables += wrappedCallable
+				futures += executor.submit(wrappedCallable)
+			}
+			
+			// Racing
+			logger.log(Level.INFO, '''Waiting for the threads to return a result''')
+			latch.await
+			logger.log(Level.INFO, '''A result has been returned''')
+			// One of the threads won
+			
+			return object
+		} finally {
+			// In case of interruption - finally block
+			for (future : futures) {
+				future.cancel(true)
+			}
+			for (callable : wrappedCallables) {
+				callable.cancel
+			}
+			
+			executor.shutdownNow
 		}
-		// Racing
-		logger.log(Level.INFO, '''Waiting for the threads to return a result''')
-		latch.await
-		logger.log(Level.INFO, '''A result has been returned''')
-		// One of the threads won
-		for (future : futures) {
-			future.cancel(true)
-		}
-		for (callable : wrappedCallables) {
-			callable.cancel
-		}
-		executor.shutdownNow
-		return object
 	}
 	
 	protected def synchronized fillObject(T object) {
@@ -71,9 +79,11 @@ class ThreadRacer<T> {
 	
 	protected def wrap(InterruptableCallable<T> callable) {
 		return new InterruptableCallable<T> {
+			
 			override cancel() {
 				callable.cancel
 			}
+			
 			override call() throws Exception {
 				try {
 					val result = callable.call
@@ -81,7 +91,9 @@ class ThreadRacer<T> {
 						// The thread has been interrupted, the result is not valid
 						return null
 					}
+					
 					result.fillObject
+					
 					return result
 				} catch (Exception e) {
 					// Exception, increment counter
@@ -94,6 +106,7 @@ class ThreadRacer<T> {
 					throw e // Valid exception
 				}
 			}
+			
 		}
 	}
 	

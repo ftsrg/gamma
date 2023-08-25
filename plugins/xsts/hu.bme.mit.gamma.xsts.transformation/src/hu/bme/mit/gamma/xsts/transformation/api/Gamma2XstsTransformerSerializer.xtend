@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2021 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -23,6 +23,7 @@ import hu.bme.mit.gamma.transformation.util.annotations.InteractionCoverageCrite
 import hu.bme.mit.gamma.transformation.util.preprocessor.AnalysisModelPreprocessor
 import hu.bme.mit.gamma.util.FileUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
+import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.transformation.GammaToXstsTransformer
 import hu.bme.mit.gamma.xsts.transformation.InitialStateSetting
 import hu.bme.mit.gamma.xsts.transformation.serializer.ActionSerializer
@@ -35,9 +36,12 @@ class Gamma2XstsTransformerSerializer {
 	protected final List<Expression> arguments
 	protected final String targetFolderUri
 	protected final String fileName
-	protected final Integer schedulingConstraint
+	
+	protected final Integer minSchedulingConstraint
+	protected final Integer maxSchedulingConstraint
 	// Configuration
 	protected final boolean optimize
+	protected final boolean optimizeArray
 	protected final TransitionMerging transitionMerging
 	// Slicing
 	protected final PropertyPackage slicingProperties
@@ -65,8 +69,8 @@ class Gamma2XstsTransformerSerializer {
 	new(Component component, List<Expression> arguments,
 			String targetFolderUri, String fileName,
 			Integer schedulingConstraint) {
-		this(component, arguments, targetFolderUri, fileName, schedulingConstraint,
-			true, TransitionMerging.HIERARCHICAL,
+		this(component, arguments, targetFolderUri, fileName, schedulingConstraint, schedulingConstraint,
+			true, false, TransitionMerging.HIERARCHICAL,
 			null, new AnnotatablePreprocessableElements(null, null, null, null, null,
 				InteractionCoverageCriterion.EVERY_INTERACTION, InteractionCoverageCriterion.EVERY_INTERACTION,
 				null, DataflowCoverageCriterion.ALL_USE,
@@ -76,8 +80,8 @@ class Gamma2XstsTransformerSerializer {
 	
 	new(Component component, List<Expression> arguments,
 			String targetFolderUri, String fileName,
-			Integer schedulingConstraint,
-			boolean optimize,
+			Integer minSchedulingConstraint, Integer maxSchedulingConstraint,
+			boolean optimize, boolean optimizeArray,
 			TransitionMerging transitionMerging,
 			PropertyPackage slicingProperties,
 			AnnotatablePreprocessableElements annotatableElements,
@@ -86,9 +90,11 @@ class Gamma2XstsTransformerSerializer {
 		this.arguments = arguments
 		this.targetFolderUri = targetFolderUri
 		this.fileName = fileName
-		this.schedulingConstraint = schedulingConstraint
+		this.minSchedulingConstraint = minSchedulingConstraint
+		this.maxSchedulingConstraint = maxSchedulingConstraint
 		//
 		this.optimize = optimize
+		this.optimizeArray = optimizeArray
 		this.transitionMerging = transitionMerging
 		//
 		this.slicingProperties = slicingProperties
@@ -102,7 +108,8 @@ class Gamma2XstsTransformerSerializer {
 	def void execute() {
 		val gammaPackage = StatechartModelDerivedFeatures.getContainingPackage(component)
 		// Preprocessing
-		val newTopComponent = preprocessor.preprocess(gammaPackage, arguments, targetFolderUri, fileName, optimize)
+		val newTopComponent = preprocessor.preprocess(gammaPackage,
+				arguments, targetFolderUri, fileName, optimize)
 		val newGammaPackage = StatechartModelDerivedFeatures.getContainingPackage(newTopComponent)
 		// Slicing and Property generation
 		val slicerAnnotatorAndPropertyGenerator = new ModelSlicerModelAnnotatorPropertyGenerator(
@@ -112,15 +119,23 @@ class Gamma2XstsTransformerSerializer {
 				targetFolderUri, fileName)
 		slicerAnnotatorAndPropertyGenerator.execute
 		val gammaToXSTSTransformer = new GammaToXstsTransformer(
-			schedulingConstraint, true, true,
+			minSchedulingConstraint, maxSchedulingConstraint, true, true, optimizeArray,
 			transitionMerging, initialState, initialStateSetting)
 		// Normal transformation
 		val xSts = gammaToXSTSTransformer.execute(newGammaPackage)
 		// EMF
 		xSts.normalSave(targetFolderUri, fileName.emfXStsFileName)
 		// String
+		xSts.serializeAndSaveXSts
+	}
+	
+	def serializeAndSaveXSts(XSTS xSts) {
+		xSts.serializeAndSaveXSts(false)
+	}
+	
+	def serializeAndSaveXSts(XSTS xSts, boolean serializePrimedVariables) {
 		val xStsFile = new File(targetFolderUri + File.separator + fileName.xtextXStsFileName)
-		val xStsString = xSts.serializeXsts
+		val xStsString = xSts.serializeXsts(serializePrimedVariables)
 		xStsFile.saveString(xStsString)
 	}
 	

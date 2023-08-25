@@ -38,4 +38,8 @@ class UppaalArrayParser implements XstsArrayParser {
 		return #[indexHierarchy -> value]
 	}
 	
+	override isArray(String id, String value) {
+		return id.contains("\\[")
+	}
+	
 }

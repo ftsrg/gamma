@@ -4,7 +4,7 @@
     modelDirectory="/hu.bme.mit.gamma.property.model/src-gen" creationIcons="false"
     editDirectory="/hu.bme.mit.gamma.property.model.edit/src-gen" editorDirectory="/hu.bme.mit.gamma.property.model.editor/src-gen"
     modelPluginID="hu.bme.mit.gamma.property.model" modelName="Property" rootExtendsClass="org.eclipse.emf.ecore.impl.MinimalEObjectImpl$Container"
-    codeFormatting="true" importerID="org.eclipse.emf.importer.ecore" complianceLevel="8.0"
+    codeFormatting="true" importerID="org.eclipse.emf.importer.ecore" complianceLevel="17.0"
     copyrightFields="false" usedGenPackages="../../hu.bme.mit.gamma.expression.model/model/expression.genmodel#//model ../../hu.bme.mit.gamma.statechart.model/model/statechart.genmodel#//interface"
     operationReflection="true" importOrganizing="true">
   <foreignModel>property.ecore</foreignModel>
@@ -14,6 +14,7 @@
     <genEnums typeSafeEnumCompatible="false" ecoreEnum="property.ecore#//BinaryPathOperator">
       <genEnumLiterals ecoreEnumLiteral="property.ecore#//BinaryPathOperator/UNTIL"/>
       <genEnumLiterals ecoreEnumLiteral="property.ecore#//BinaryPathOperator/RELEASE"/>
+      <genEnumLiterals ecoreEnumLiteral="property.ecore#//BinaryPathOperator/WEAK_UNTIL"/>
     </genEnums>
     <genEnums typeSafeEnumCompatible="false" ecoreEnum="property.ecore#//UnaryPathOperator">
       <genEnumLiterals ecoreEnumLiteral="property.ecore#//UnaryPathOperator/GLOBAL"/>

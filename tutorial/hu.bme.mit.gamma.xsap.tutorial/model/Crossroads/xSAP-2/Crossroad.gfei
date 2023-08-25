@@ -1,0 +1,27 @@
+import "Crossroad.gcd"
+
+fault-extension CrossroadFaultExtension for Crossroad
+	slice PriorityRedSlice affects event prior.LightCommands.displayRed with
+		mode Frozen permanent frozen {
+			failure-event : event monitor.error.priorityRedFault
+		}
+	slice PriorityGreenSlice affects event prior.LightCommands.displayGreen with
+		mode Frozen permanent frozen {
+			failure-event : event monitor.error.priorityGreenFault
+		}
+	slice PriorityYellowSlice affects event prior.LightCommands.displayYellow with
+		mode Frozen permanent frozen {
+			failure-event : event monitor.error.priorityYellowFault
+		}
+	slice SecondaryRedSlice affects event second.LightCommands.displayRed with
+		mode Frozen permanent frozen {
+			failure-event : event monitor.error.secondaryRedFault
+		}
+	slice SecondaryGreenSlice affects event second.LightCommands.displayGreen with
+		mode Frozen permanent frozen {
+			failure-event : event monitor.error.secondaryGreenFault
+		}
+	slice SecondaryYellowSlice affects event second.LightCommands.displayYellow with
+		mode Frozen permanent frozen {
+			failure-event : event monitor.error.secondaryYellowFault
+		}

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -63,12 +63,25 @@ class ThetaVerifier extends AbstractVerifier {
 			val jar = System.getenv(ENVIRONMENT_VARIABLE_FOR_THETA_JAR)
 			// java -jar %THETA_XSTS_CLI_PATH% --model trafficlight.xsts --property red_green.prop
 			val traceFile = new File(modelFile.traceFile)
+			modelFile.parent + File.separator + modelFile.extensionlessName.toHiddenFileName +
+			"-" + Thread.currentThread.name + ".cex";
 			traceFile.delete // So no invalid/old cex is parsed if this actual process does not generate one
 			traceFile.deleteOnExit // So the cex with this random name does not remain on disk
-			val command = #["java", "-jar", jar] + parameters.split(" ") + #["--model", modelFile.canonicalPath, "--property", queryFile.canonicalPath, "--cex", traceFile.canonicalPath, "--stacktrace"]
+			
+			val splitParameters = parameters.split("\\s+")
+			val command = newArrayList
+			command += #["java", "-jar", jar]
+			if (!parameters.nullOrEmpty && !splitParameters.empty) {
+				command += splitParameters // Some environments do not accept a space
+				// due to the join(" ") after the non-existing parameter
+			}
+			command +=
+				#["--model", modelFile.canonicalPath, "--property", queryFile.canonicalPath,
+					"--cex", traceFile.canonicalPath, "--stacktrace"]
 			// Executing the command
 			logger.log(Level.INFO, "Executing command: " + command.join(" "))
 			process = Runtime.getRuntime().exec(command)
+			
 			val outputStream = process.inputStream
 			resultReader = new Scanner(outputStream)
 			var line = ""
@@ -85,8 +98,14 @@ class ThetaVerifier extends AbstractVerifier {
 				super.result = ThreeStateBoolean.FALSE
 			}
 			else {
-				// Some kind of error
-				throw new IllegalArgumentException(line)
+				// Some kind of error or interruption (cancel) by another (winner) process
+				logger.log(Level.WARNING, line)
+				if (isCancelled || Thread.currentThread.interrupted) {
+					return new Result(ThreeStateBoolean.UNDEF, null)
+				}
+				else {
+					throw new IllegalArgumentException(line)
+				}
 			}
 			// Adapting result
 			super.result = super.result.adaptResult
@@ -94,17 +113,16 @@ class ThetaVerifier extends AbstractVerifier {
 				// No proof/counterexample
 				return new Result(result, null)
 			}
+			
 			val gammaPackage = traceability as Package
 			traceFileScanner = new Scanner(traceFile)
 			val trace = gammaPackage.backAnnotate(traceFileScanner)
+			
 			return new Result(result, trace)
 		} finally {
-			if (resultReader !== null) {
-				resultReader.close
-			}
-			if (traceFileScanner !== null) {
-				traceFileScanner.close
-			}
+			resultReader?.close
+			traceFileScanner?.close
+			cancel
 		}
 	}
 	
@@ -123,7 +141,7 @@ class ThetaVerifier extends AbstractVerifier {
 	def getTraceFile(File modelFile) {
 		// Thread.currentThread.name is needed to prevent race conditions
 		return modelFile.parent + File.separator + modelFile.extensionlessName.toHiddenFileName +
-			"-" + Thread.currentThread.name + ".cex";
+			"-" + Thread.currentThread.name + ".cex"
 	}
 	
 }
@@ -136,7 +154,7 @@ class ThetaQueryAdapter {
 	final String AG = "A[]"
 	
 	extension FileUtil fileUtil = FileUtil.INSTANCE
-	boolean invert;
+	boolean invert
 	
 	def adaptQuery(File queryFile) {
 		return queryFile.loadString.adaptQuery
@@ -144,11 +162,11 @@ class ThetaQueryAdapter {
 	
 	def adaptQuery(String query) {
 		if (query.startsWith("E<>")) {
-			invert = true;
+			invert = true
 			return "!(" + query.substring(EF.length) + ")"
 		}
 		if (query.startsWith("A[]")) {
-			invert = false;
+			invert = false
 			return query.substring(AG.length)
 		}
 		throw new IllegalArgumentException("Not supported operator: " + query)

@@ -32,8 +32,37 @@ analysis {
 	interaction-coverage
 	constraint : {
 		minimum-orchestrating-period : 499 ms
-		maximum-orchestrating-period : 499 ms
+		maximum-orchestrating-period : 501 ms
 	}
+}
+
+analysis {
+	component : Crossroad
+	language : Promela
+	file : "Crossroad-Promela"
+	transition-coverage
+	constraint : {
+		minimum-orchestrating-period : 500 ms
+		maximum-orchestrating-period : 500 ms
+	}
+}
+
+analysis {
+	component : Crossroad
+	language : SMV
+	file : "Crossroad-SMV"
+	transition-coverage
+	constraint : {
+		minimum-orchestrating-period : 500 ms
+		maximum-orchestrating-period : 500 ms
+	}
+}
+
+analysis {
+	component : Crossroad
+	language : SMV
+	file : "Crossroad-SMV-timed"
+	state-coverage
 }
 
 verification {
@@ -58,4 +87,29 @@ verification {
 	property-file : ".Crossroad-XSTS.gpd" // Checking test optimization
 	optimize : true
 	test-language : java
+}
+
+verification {
+	language : Promela
+	file : "Crossroad-Promela.pml"
+	property-file : ".Crossroad-Promela.gpd"
+	test-language : java
+	optimize-model : true // Checking model optimization
+}
+
+verification {
+	language : nuXmv
+	file : "Crossroad-SMV.smv"
+	property-file : ".Crossroad-SMV.gpd"
+	test-language : java
+	optimize-model : true // Checking model optimization
+}
+
+verification {
+	language : nuXmv
+	file : "Crossroad-SMV-timed.smv"
+	property-file : ".Crossroad-SMV-timed.gpd"
+	test-language : java
+	optimize-model : true // Checking model optimization
+	optimize-traces : true // Checking trace optimization
 }

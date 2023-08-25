@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2021 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -55,6 +55,7 @@ import hu.bme.mit.gamma.expression.model.ModExpression;
 import hu.bme.mit.gamma.expression.model.MultiaryExpression;
 import hu.bme.mit.gamma.expression.model.NamedElement;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
+import hu.bme.mit.gamma.expression.model.ParametricElement;
 import hu.bme.mit.gamma.expression.model.PredicateExpression;
 import hu.bme.mit.gamma.expression.model.RationalLiteralExpression;
 import hu.bme.mit.gamma.expression.model.RecordAccessExpression;
@@ -150,12 +151,22 @@ public class ExpressionModelValidator {
 		return validationResultMessages;
 	}
 	
-	public Collection<ValidationResultMessage> checkArgumentTypes(ArgumentedElement element, List<ParameterDeclaration> parameterDeclarations) {
-		List<Expression> arguments = element.getArguments();
+	public Collection<ValidationResultMessage> checkArgumentTypes(
+			ArgumentedElement argumentedElement, ParametricElement parametricElement) {
+		return checkArgumentTypes(argumentedElement, parametricElement.getParameterDeclarations());
+	}
+	
+	public Collection<ValidationResultMessage> checkArgumentTypes(ArgumentedElement element,
+			List<ParameterDeclaration> parameterDeclarations) {
+		return checkArgumentTypes(element.getArguments(), parameterDeclarations);
+	}
+	
+	protected Collection<ValidationResultMessage> checkArgumentTypes(List<Expression> arguments,
+			List<ParameterDeclaration> parameterDeclarations) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		if (arguments.size() != parameterDeclarations.size()) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-					"The number of arguments must match the number of parameters", 
+				"The number of arguments must match the number of parameters", 
 					new ReferenceInfo(ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS)));
 			return validationResultMessages;
 		}
@@ -163,8 +174,8 @@ public class ExpressionModelValidator {
 			for (int i = 0; i < arguments.size() && i < parameterDeclarations.size(); ++i) {
 				ParameterDeclaration parameter = parameterDeclarations.get(i);
 				Expression argument = arguments.get(i);
-				validationResultMessages.addAll(checkTypeAndExpressionConformance(parameter.getType(), argument, 
-					new ReferenceInfo(ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS, i)));
+				validationResultMessages.addAll(checkTypeAndExpressionConformance(parameter.getType(),
+					argument, new ReferenceInfo(ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS, i)));
 			}
 		}
 		return validationResultMessages;
@@ -723,13 +734,13 @@ public class ExpressionModelValidator {
 			// This field has no value
 			if (counter == 0) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-						"All fields in the definition must have a value",
+					"All fields in the definition must have a value",
 						new ReferenceInfo(ExpressionModelPackage.Literals.RECORD_LITERAL_EXPRESSION__FIELD_ASSIGNMENTS)));
 			}
 			// This field has more than once value
 			if (counter >= 2) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-						"You cannot add value to a field more than once",
+					"You cannot add value to a field more than once",
 						new ReferenceInfo(ExpressionModelPackage.Literals.RECORD_LITERAL_EXPRESSION__FIELD_ASSIGNMENTS)));
 			}
 		}

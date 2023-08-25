@@ -1,0 +1,15 @@
+package parallel_region
+
+import "Interfaces/Interfaces.gcd"
+
+import "ParallelMachine.gcd"
+
+adapter ParallelMachineAdapter of component parallelMachine : ParallelMachine [
+	port ExternalControl : requires ExternalControl
+] {
+	when any / run
+	
+	queue messages(priority = 1, capacity = 4) {
+		ExternalControl.any
+	}
+}

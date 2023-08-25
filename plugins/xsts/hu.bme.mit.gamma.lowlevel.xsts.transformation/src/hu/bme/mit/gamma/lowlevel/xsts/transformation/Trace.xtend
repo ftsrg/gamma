@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -26,6 +26,7 @@ import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.JoinTransitionTrac
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.MergeTransitionTrace
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.RegionTrace
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.SimpleTransitionTrace
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.StateHistoryTrace
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.StateTrace
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.TypeDeclarationTrace
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.VariableTrace
@@ -40,8 +41,10 @@ import hu.bme.mit.gamma.statechart.lowlevel.model.MergeState
 import hu.bme.mit.gamma.statechart.lowlevel.model.Package
 import hu.bme.mit.gamma.statechart.lowlevel.model.Region
 import hu.bme.mit.gamma.statechart.lowlevel.model.State
+import hu.bme.mit.gamma.statechart.lowlevel.model.StatechartDefinition
 import hu.bme.mit.gamma.statechart.lowlevel.model.Transition
 import hu.bme.mit.gamma.util.GammaEcoreUtil
+import hu.bme.mit.gamma.util.JavaUtil
 import hu.bme.mit.gamma.xsts.model.CompositeAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.ParallelAction
@@ -57,7 +60,10 @@ import org.eclipse.viatra.query.runtime.emf.EMFScope
 
 import static com.google.common.base.Preconditions.checkArgument
 import static com.google.common.base.Preconditions.checkState
+import static com.google.common.base.Preconditions.checkNotNull
 
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.statechart.lowlevel.derivedfeatures.LowlevelStatechartModelDerivedFeatures.*
 import static extension java.lang.Math.abs
 
 package class Trace {
@@ -70,19 +76,28 @@ package class Trace {
 	protected final extension TraceabilityFactory traceabilityFactory = TraceabilityFactory.eINSTANCE
 	// Auxiliary
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
+	protected final extension JavaUtil javaUtil = JavaUtil.INSTANCE
 	// Maps for caching transitions
 	protected final List<Expression> primaryIsActiveExpressions = newArrayList // Source state and its parent states - only ponated
 	protected final Map<Transition, List<Expression>> isActiveExpressions = newHashMap  // Source state and its parent states - also negated due to priority
 	protected final Map<Transition, List<Expression>> guards = newHashMap // Guars of transitions leaving states - also negated due to priority
 	protected final Map<Transition, List<Expression>> choiceGuards = newHashMap // Guards of transitions leaving choices - also negated due to priority
 	protected final Map<State, List<Expression>> stateReferenceExpressions = newHashMap
+	protected final List<Expression> timeoutExpressions = newArrayList // 500 <= timeout
 	
 	new(Package _package, XSTS xSts) {
 		this.trace = createL2STrace => [
 			it.lowlevelPackage = _package
 			it.XSts = xSts
 		]
-		this.tracingEngine = ViatraQueryEngine.on(new EMFScope(trace))
+		this.tracingEngine = ViatraQueryEngine.on(
+				new EMFScope(trace))
+	}
+	
+	def getStatechart() {
+		val statechart = trace.lowlevelPackage.components
+				.filter(StatechartDefinition).onlyElement
+		return statechart
 	}
 	
 	// Transition caching
@@ -105,6 +120,21 @@ package class Trace {
 	
 	def getStateReferenceExpressions() {
 		return stateReferenceExpressions
+	}
+	
+	def getTimeoutExpressions() {
+		return timeoutExpressions
+	}
+	
+	def addTimeoutExpression(Iterable<? extends Expression> timeoutExpressions) {
+		for (timeoutExpression : timeoutExpressions) {
+			timeoutExpression.addTimeoutExpression
+		}
+	}
+	
+	def addTimeoutExpression(Expression timeoutExpression) {
+		checkNotNull(timeoutExpression)
+		timeoutExpressions += timeoutExpression
 	}
 	
 	def <T> void add(Map<T, List<Expression>> map,
@@ -320,6 +350,12 @@ package class Trace {
 		return matches.head
 	}
 	
+	def getXStsEnumType(Region lowlevelRegion) {
+		val xStsVariable = lowlevelRegion.XStsVariable
+		val xStsEnumType = xStsVariable.typeDefinition as EnumerationTypeDefinition
+		return xStsEnumType
+	}
+	
 	def getLowlevelRegion(VariableDeclaration xStsVariable) {
 		checkArgument(xStsVariable !== null)
 		val matches = RegionTrace.Matcher.on(tracingEngine).getAllValuesOflowlevelRegion(xStsVariable)
@@ -343,7 +379,8 @@ package class Trace {
 	}
 	
 	def getXStsInactiveEnumLiteral(EnumerationTypeDefinition enumType) {
-		val enumLiterals = enumType.literals.filter[it.name.equals(Namings.INACTIVE_ENUM_LITERAL)]
+		val enumLiterals = enumType.literals.filter[
+				it.name.equals(Namings.INACTIVE_ENUM_LITERAL)]
 		checkState(enumLiterals.size == 1, enumLiterals)
 		return enumLiterals.head
 	}
@@ -358,6 +395,24 @@ package class Trace {
 		]
 	}
 	
+	def putInactiveHistoryEnumLiteral(State lowlevelState,
+			EnumerationLiteralDefinition xStsInactiveHistoryEnumLiteral) {
+		checkArgument(lowlevelState !== null)
+		checkArgument(xStsInactiveHistoryEnumLiteral !== null)
+		val matches = StateHistoryTrace.Matcher.on(tracingEngine).getAllValuesOfstateTrace(lowlevelState, null)
+		if (matches.empty) {
+			trace.traces += createStateTrace => [
+				it.lowlevelState= lowlevelState
+				it.XStsInactiveHistoryEnumLiteral = xStsInactiveHistoryEnumLiteral
+			]
+		}
+		else {
+			checkState(matches.size == 1, matches.size)
+			val trace = matches.head
+			trace.XStsInactiveHistoryEnumLiteral = xStsInactiveHistoryEnumLiteral
+		}
+	}
+	
 	def getXStsEnumLiteral(State lowlevelState) {
 		checkArgument(lowlevelState !== null)
 		val matches = StateTrace.Matcher.on(tracingEngine).getAllValuesOfxStsEnumLiteral(lowlevelState)
@@ -365,12 +420,28 @@ package class Trace {
 		return matches.head
 	}
 	
-	def getLowlevelState(EnumerationLiteralDefinition xStsEnumLiteral) {
-		checkArgument(xStsEnumLiteral !== null)
-		val matches = StateTrace.Matcher.on(tracingEngine).getAllValuesOflowlevelState(xStsEnumLiteral)
+	def getXStsInactiveHistoryEnumLiteral(State lowlevelState) {
+		checkArgument(lowlevelState !== null)
+		val matches = StateHistoryTrace.Matcher.on(tracingEngine)
+				.getAllValuesOfxStsInactiveHistoryEnumLiteral(null, lowlevelState)
 		checkState(matches.size == 1, matches.size)
 		return matches.head
 	}
+	
+	def getXStsInactiveHistoryEnumLiterals(Region lowlevelRegion) {
+		val xStsEnumLiterals = newArrayList
+		if (lowlevelRegion.hasHistory) {
+			for (lowlevelState : lowlevelRegion.states) {
+				xStsEnumLiterals += lowlevelState.getXStsInactiveHistoryEnumLiteral
+			}
+		}
+		else {
+			xStsEnumLiterals += lowlevelRegion.getXStsInactiveEnumLiteral
+		}
+		return xStsEnumLiterals
+	}
+	
+	//
 	
 	def getXStsPrecondition(XTransition xStsTransition) {
 		checkArgument(xStsTransition !== null)
@@ -585,7 +656,7 @@ package class Trace {
 	}
 	
 	def getTrace() {
-		return trace;
+		return trace
 	}
 	
 }

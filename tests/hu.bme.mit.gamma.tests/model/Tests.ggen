@@ -1,4 +1,8 @@
+include "Asynchronous/System/AsynchronousSystem.ggen"
+include "Clock/System/ClockSystem.ggen"
+include "EventPassing/EventPassing.ggen"
 include "Crossroads/Crossroad.ggen"
+include "ParallelRegion/ParallelRegion.ggen"
 include "PIL/PIL.ggen"
 include "COID/COID.ggen"
 include "INPE/INPE.ggen"

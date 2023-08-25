@@ -115,7 +115,8 @@ public class ComplexTypeUtil {
 			Type arrayType = array.getElementType();
 			for (Type nativeType : getNativeTypes(arrayType)) {
 				ArrayTypeDefinition newArrayType = ecoreUtil.clone(array);
-				newArrayType.setElementType(ecoreUtil.clone(nativeType));
+				newArrayType.setElementType(
+						ecoreUtil.clone(nativeType));
 				nativeTypes.add(newArrayType);
 			}
 		}
@@ -169,7 +170,8 @@ public class ComplexTypeUtil {
 		dimensions.add(size);
 		if (elementType instanceof ArrayTypeDefinition) {
 			ArrayTypeDefinition innerArrayType = (ArrayTypeDefinition) elementType;
-			dimensions.addAll(getDSizes(innerArrayType));
+			dimensions.addAll(
+					getDSizes(innerArrayType));
 		}
 		return dimensions;
 	}
@@ -232,7 +234,8 @@ public class ComplexTypeUtil {
 			ArrayAccessExpression arrayAccessExpression = (ArrayAccessExpression) expression;
 			Expression operand = arrayAccessExpression.getOperand();
 			if (operand instanceof AccessExpression) {
-				accesses.addAll(getAccesses(operand));
+				accesses.addAll(
+						getAccesses(operand));
 			}
 			accesses.add(arrayAccessExpression.getIndex());
 		}
@@ -240,7 +243,8 @@ public class ComplexTypeUtil {
 			RecordAccessExpression recordAccess = (RecordAccessExpression) expression;
 			Expression operand = recordAccess.getOperand();
 			if (operand instanceof AccessExpression) {
-				accesses.addAll(getAccesses(operand));
+				accesses.addAll(
+						getAccesses(operand));
 			}
 			accesses.add(recordAccess.getFieldReference());
 		}
@@ -248,7 +252,8 @@ public class ComplexTypeUtil {
 			SelectExpression select = (SelectExpression) expression;
 			Expression operand = select.getOperand();
 			if (operand instanceof AccessExpression) {
-				accesses.addAll(getAccesses(operand));
+				accesses.addAll(
+						getAccesses(operand));
 			}
 		}
 		return accesses;

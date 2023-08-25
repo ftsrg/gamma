@@ -1,0 +1,68 @@
+import "RigelVezerloKozpont.gcd"
+import "RigelVezerloKozpontAdapter.gcd"
+
+//code {
+//	component : RigelDiszpecser
+//	language : java
+//}
+//
+//code {
+//	component : RigelDiszpecserAdapter
+//	language : java
+//}
+
+//analysis {
+//	component : RigelDiszpecser (3, 3, 3)
+//	language : XSTS-UPPAAL
+//	constraint : {
+//		minimum-orchestrating-period : 1 ms
+//		maximum-orchestrating-period : 1 ms
+//	}
+//	transition-coverage
+//}
+//
+//verification {
+//	language : XSTS-UPPAAL
+//	file : "RigelDiszpecser.xml"
+//	property-file : ".RigelDiszpecser.gpd"
+//	optimize-model : true
+//}
+
+//analysis {
+//	component : RigelDiszpecser(3, 3, 3)
+//	language : Theta
+//	constraint : {
+//		minimum-orchestrating-period : 1 ms
+//		maximum-orchestrating-period : 1 ms
+//	}
+//	transition-coverage
+//}
+
+//verification {
+//	language : Theta
+//	file : "RigelDiszpecser.xsts"
+//	property-file : ".RigelDiszpecser.gpd"
+//	optimize-model : true
+//	test-language : java
+//}
+
+analysis {
+	component : RigelVezerloKozpontAdapter(3, 3, 3)
+	language : Theta
+	constraint : {
+		top : {
+			minimum-orchestrating-period : 1 ms
+			maximum-orchestrating-period : 1 ms
+		}
+	}
+	transition-coverage
+}
+
+verification {
+	language : Theta
+	file : "RigelVezerloKozpontAdapter.xsts"
+	property-file : ".RigelVezerloKozpontAdapter.gpd"
+//	optimize : true
+	optimize-model : true
+	test-language : java
+}

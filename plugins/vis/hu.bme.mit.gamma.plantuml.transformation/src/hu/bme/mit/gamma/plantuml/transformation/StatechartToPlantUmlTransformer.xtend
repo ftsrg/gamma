@@ -59,6 +59,9 @@ class StatechartToPlantUmlTransformer {
 
 	def String execute() '''
 		@startuml
+		skinparam nodesep 30
+		skinparam ranksep 30
+		skinparam padding 5
 			«statechart.listVariablesInNote»
 			«statechart.mainRegionSearch»
 		@enduml
@@ -370,7 +373,8 @@ class StatechartToPlantUmlTransformer {
 			arrow = "-->"
 		}
 		return '''
-			«transition.sourceText» «arrow» «target.name»«IF !transition.empty» : «ENDIF»«IF trigger !== null»«trigger.transformTrigger»«ENDIF» «IF guard !== null»\n[«guard.serialize»]«ENDIF»«FOR effect : effects BEFORE ' /\\n' SEPARATOR '\\n'»«effect.transformAction»«ENDFOR»
+			«transition.sourceText» «arrow» «target.name»«IF !transition.empty» : «ENDIF»«IF trigger !== null»«trigger.transformTrigger»«ENDIF» «IF guard !== null»\n[«guard.serialize
+				.replaceAll("\\|\\|", "||\\\\n").replaceAll("\\&\\&", "&&\\\\n")»]«ENDIF»«FOR effect : effects BEFORE ' /\\n' SEPARATOR '\\n'»«effect.transformAction»«ENDFOR»
 		'''
 	}
 
@@ -413,7 +417,6 @@ class StatechartToPlantUmlTransformer {
 				«ENDFOR»
 			endlegend
 		'''
-	
 	}
 
 }

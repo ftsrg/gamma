@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -16,11 +16,12 @@ import hu.bme.mit.gamma.statechart.lowlevel.model.State
 import hu.bme.mit.gamma.statechart.lowlevel.model.StateNode
 import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.IfAction
-import hu.bme.mit.gamma.xsts.model.ParallelAction
+import hu.bme.mit.gamma.xsts.model.MultiaryAction
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 
 import static extension hu.bme.mit.gamma.statechart.lowlevel.derivedfeatures.LowlevelStatechartModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
 
 class ExitActionRetriever {
 	// Model factories
@@ -83,7 +84,7 @@ class ExitActionRetriever {
 			// Action taken only if the state is "active" (assume action)
 			if (lowlevelGrandparentRegion.hasOrthogonalRegion && !lowlevelGrandparentRegion.stateNodes.contains(lowlevelTopState)) {
 				// Orthogonal region exit actions
-				it.actions += lowlevelGrandparentRegion.createRecursiveXStsOrthogonalRegionExitActions as ParallelAction => [
+				it.actions += lowlevelGrandparentRegion.createRecursiveXStsOrthogonalRegionExitActions as MultiaryAction => [
 					it.actions += xStsStateExitAction
 				]
 			}
@@ -103,7 +104,7 @@ class ExitActionRetriever {
 		if (!lowlevelRegion.hasOrthogonalRegion) {
 			return createEmptyAction
 		}
-		return createParallelAction => [
+		return createRegionAction => [
 			for (lowlevelOrthogonalRegion : lowlevelRegion.orthogonalRegions) {
 				for (lowlevelSubstate : lowlevelOrthogonalRegion.states) {
 					it.actions += lowlevelSubstate.createRecursiveXStsStateAndSubstateExitActions
@@ -123,7 +124,7 @@ class ExitActionRetriever {
 			return xStsStateAndSubstateExitActions
 		}
 		// Has orthogonal regions
-		return createParallelAction => [
+		return createRegionAction => [
 			it.actions += xStsStateAndSubstateExitActions
 			// Orthogonal region actions
 			for (lowlevelOrthogonalRegion : lowlevelParentRegion.orthogonalRegions) {
@@ -136,14 +137,19 @@ class ExitActionRetriever {
 	
 	protected def IfAction createRecursiveXStsStateAndSubstateExitActions(State lowlevelState) {
 		val xStsStateExitActions = lowlevelState.exitAction.transformAction
-		val xStsSubstateExitActions = createParallelAction
+		val xStsSubstateExitActions = createRegionAction
 		// Recursion for the exit action of contained states
 		for (lowlevelSubregion : lowlevelState.regions) {
 			val xStsExitActions = newArrayList
 			for (lowlevelSubstate : lowlevelSubregion.states) {
 				xStsExitActions += lowlevelSubstate.createRecursiveXStsStateAndSubstateExitActions
 			}
-			xStsSubstateExitActions.actions += xStsExitActions.weave
+			//
+			xStsExitActions.removeIf[it.effectlessAction] // Optimization
+			//
+			if (!xStsExitActions.empty) {
+				xStsSubstateExitActions.actions += xStsExitActions.weave
+			}
 		}	
 		val xStsStateAssumption = lowlevelState.createSingleXStsStateAssumption
 		// Action taken only if the state is "active" (assume action)

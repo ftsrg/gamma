@@ -1,0 +1,15 @@
+package interfaces
+
+interface CounterExecute {
+	out event ^execute
+}
+
+interface CounterToggle {
+	out event add
+	out event subtract
+}
+
+interface CounterInternal {
+	internal event add
+	internal event subtract
+}

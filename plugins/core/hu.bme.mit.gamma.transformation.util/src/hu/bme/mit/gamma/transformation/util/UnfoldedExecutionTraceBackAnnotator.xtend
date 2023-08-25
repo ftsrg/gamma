@@ -10,20 +10,25 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.transformation.util
 
+import hu.bme.mit.gamma.expression.model.BinaryExpression
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
 import hu.bme.mit.gamma.expression.model.Expression
+import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
+import hu.bme.mit.gamma.expression.model.MultiaryExpression
 import hu.bme.mit.gamma.expression.model.TypeReference
+import hu.bme.mit.gamma.expression.model.UnaryExpression
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression
+import hu.bme.mit.gamma.statechart.composite.CompositeModelFactory
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.interface_.Component
+import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression
+import hu.bme.mit.gamma.statechart.interface_.InterfaceModelFactory
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
-import hu.bme.mit.gamma.trace.model.Assert
 import hu.bme.mit.gamma.trace.model.ComponentSchedule
 import hu.bme.mit.gamma.trace.model.Cycle
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
-import hu.bme.mit.gamma.trace.model.InstanceStateConfiguration
-import hu.bme.mit.gamma.trace.model.InstanceVariableState
-import hu.bme.mit.gamma.trace.model.MultiaryAssert
-import hu.bme.mit.gamma.trace.model.NegatedAssert
+import hu.bme.mit.gamma.trace.model.InstanceSchedule
 import hu.bme.mit.gamma.trace.model.RaiseEventAct
 import hu.bme.mit.gamma.trace.model.Reset
 import hu.bme.mit.gamma.trace.model.Step
@@ -47,8 +52,11 @@ class UnfoldedExecutionTraceBackAnnotator {
 	
 	//
 	
-	protected final List<Assert> dummyAsserts = newArrayList
+	protected final List<Expression> dummyAsserts = newArrayList
 	
+	protected final InterfaceModelFactory interfaceModelFactory = InterfaceModelFactory.eINSTANCE
+	protected final CompositeModelFactory compositeModelFactory = CompositeModelFactory.eINSTANCE
+	protected final ExpressionModelFactory expressionModelFactory = ExpressionModelFactory.eINSTANCE
 	protected final extension TraceModelFactory traceModelFactory = TraceModelFactory.eINSTANCE
 	protected final extension UnfoldingTraceability traceability = UnfoldingTraceability.INSTANCE
 	protected final extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
@@ -127,7 +135,7 @@ class UnfoldedExecutionTraceBackAnnotator {
 			// even when resource set and URI type (absolute/platform) must match
 			it.event = originalTopComponent.getOriginalEvent(act.event)
 			it.arguments += act.arguments
-					.map[it.transformExpression]
+					.map[it.transformAssert]
 		]
 	}
 	
@@ -139,29 +147,39 @@ class UnfoldedExecutionTraceBackAnnotator {
 		return createComponentSchedule
 	}
 	
+	protected def dispatch transformAct(InstanceSchedule act) {
+		val instanceReference = act.instanceReference
+		val instance = instanceReference.componentInstance
+		
+		val oldInstanceReference = instance.getOriginalScheduledInstanceReference(originalTopComponent)
+		
+		return createInstanceSchedule => [
+			it.instanceReference = oldInstanceReference
+		]
+	}
+	
 	protected def dispatch transformAct(TimeElapse act) {
 		return createTimeElapse => [
-			it.elapsedTime = act.elapsedTime
+			it.elapsedTime = act.elapsedTime.clone
 		]
 	}
 	
 	// Asserts
 	
-	protected def dispatch Assert transformAssert(InstanceStateConfiguration assert) {
+	protected def dispatch Expression transformAssert(ComponentInstanceStateReferenceExpression assert) {
 		val instance = assert.instance.lastInstance as SynchronousComponentInstance
 		val originalInstance = instance.getOriginalSimpleInstanceReference(originalTopComponent)
 		val originalState = originalInstance.getOriginalState(assert.state)
-		return createInstanceStateConfiguration => [
+		return compositeModelFactory.createComponentInstanceStateReferenceExpression => [
 			it.instance = originalInstance
 			it.state = originalState
 			it.region = it.state.parentRegion
 		]
 	}
 	
-	protected def dispatch Assert transformAssert(InstanceVariableState assert) {
-		val variableReference = assert.variableReference
-		val instance = variableReference.instance.lastInstance as SynchronousComponentInstance
-		val variable = variableReference.variableDeclaration
+	protected def dispatch Expression transformAssert(ComponentInstanceVariableReferenceExpression assert) {
+		val instance = assert.instance.lastInstance as SynchronousComponentInstance
+		val variable = assert.variableDeclaration
 		val originalInstance = instance.getOriginalSimpleInstanceReference(originalTopComponent)
 		val originalVariable = try {
 			originalInstance.getOriginalVariable(variable)
@@ -169,33 +187,57 @@ class UnfoldedExecutionTraceBackAnnotator {
 			logger.log(Level.INFO, "Not found original variable for " + variable)
 			null
 		}
-		val variableState = createInstanceVariableState => [
-			it.variableReference = statechartUtil.createVariableReference(
+		val variableState = statechartUtil.createVariableReference(
 				originalInstance, originalVariable)
-			it.value = assert.value.transformExpression
-		]
 		if (originalVariable === null) {
 			dummyAsserts += variableState
 		}
 		return variableState
 	}
 	
-	protected def dispatch Assert transformAssert(RaiseEventAct assert) {
+	protected def dispatch Expression transformAssert(RaiseEventAct assert) {
 		return assert.transformAct as RaiseEventAct // Same as act
 	}
 	
-	protected def dispatch Assert transformAssert(MultiaryAssert assert) {
-		val multiaryAssert = assert.eClass.create as MultiaryAssert
-		for (operand : assert.asserts) {
-			multiaryAssert.asserts += operand.transformAssert
+	protected def dispatch Expression transformAssert(EventParameterReferenceExpression assert) {
+		return interfaceModelFactory.createEventParameterReferenceExpression => [
+			it.port = originalTopComponent.getOriginalPort(assert.port)
+			// Works if the interfaces/types are loaded into different resources
+			// even when resource set and URI type (absolute/platform) must match
+			it.event = originalTopComponent.getOriginalEvent(assert.event)
+			it.parameter = it.event.parameterDeclarations.get(assert.parameter.index)
+		]
+	}
+	
+	protected def dispatch Expression transformAssert(MultiaryExpression assert) {
+		val multiaryAssert = expressionModelFactory.create(assert.eClass) as MultiaryExpression
+		
+		for (operand : assert.operands) {
+			multiaryAssert.operands += operand.transformAssert
 		}
+		
 		return multiaryAssert
 	}
 	
-	protected def dispatch Assert transformAssert(NegatedAssert act) {
-		return createNegatedAssert => [
-			it.negatedAssert = act.negatedAssert.transformAssert
-		]
+	protected def dispatch Expression transformAssert(BinaryExpression assert) {
+		val binaryAssert = expressionModelFactory.create(assert.eClass) as BinaryExpression
+		
+		binaryAssert.leftOperand = assert.leftOperand.transformAssert
+		binaryAssert.rightOperand = assert.rightOperand.transformAssert
+		
+		return binaryAssert
+	}
+	
+	protected def dispatch Expression transformAssert(UnaryExpression assert) {
+		val unaryAssert = expressionModelFactory.create(assert.eClass) as UnaryExpression
+		
+		unaryAssert.operand = assert.operand.transformAssert
+		
+		return unaryAssert
+	}
+	
+	protected def dispatch Expression transformAssert(Expression assert) {
+		return assert.transformExpression
 	}
 	
 	//
@@ -224,7 +266,7 @@ class UnfoldedExecutionTraceBackAnnotator {
 	//
 	
 	protected def removeDummyAsserts() {
-		dummyAsserts.removeContainmentChains(Assert)
+		dummyAsserts.removeContainmentChains(Expression)
 		dummyAsserts.clear
 	}
 	

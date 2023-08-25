@@ -399,9 +399,14 @@ pattern raiseTopSystemEventStateExitActions(component : SynchronousComponent, st
 // Transition event raisings
 
 private pattern raiseEventTransitionEffects(transition : Transition, eventRaiseAction : RaiseEventAction, raisedEvent : Event, port : Port) {
-	Transition.effects(transition, eventRaiseAction);
+	Transition.effects(transition, effect);
+	find actionToAction*(effect, eventRaiseAction); // To get through blocks
 	RaiseEventAction.event(eventRaiseAction, raisedEvent);
 	RaiseEventAction.port(eventRaiseAction, port);
+}
+
+private pattern actionToAction(parent : Action, child : Action) {
+	Block.actions(parent, child);
 }
 
 // For the raising of events connected to another instance on transitions
@@ -612,21 +617,26 @@ private pattern eventsOfPorts(port : Port, event : Event) {
 
 pattern queuesOfClocks(wrapper : AsynchronousAdapter, queue : MessageQueue, clock : Clock) {
 	AsynchronousAdapter.messageQueues(wrapper, queue);
-	MessageQueue.eventReferences(queue, eventReference);
+	find sourceOfEventPassings(queue, eventReference);
 	ClockTickReference.clock(eventReference, clock);
 }
 
 pattern queuesOfEvents(wrapper : AsynchronousAdapter, queue : MessageQueue, port : Port, event : Event) {
 	AsynchronousAdapter.messageQueues(wrapper, queue);
-	MessageQueue.eventReferences(queue, eventReference);
+	find sourceOfEventPassings(queue, eventReference);
 	PortEventReference.port(eventReference, port);
 	find eventsOfPorts(port, event);
 	PortEventReference.event(eventReference, event);
 } or {
 	AsynchronousAdapter.messageQueues(wrapper, queue);
-	MessageQueue.eventReferences(queue, eventReference);
+	find sourceOfEventPassings(queue, eventReference);
 	AnyPortEventReference.port(eventReference, port);
 	find eventsOfPorts(port, event);
+}
+
+pattern sourceOfEventPassings(queue : MessageQueue, sourceEventReference : EventReference) {
+	MessageQueue.eventPassings(queue, eventPassing);
+	EventPassing.source(eventPassing, sourceEventReference);
 }
 
 pattern queuesOfEventsOfWrappedComponents(wrapper : AsynchronousAdapter, queue  : MessageQueue) {

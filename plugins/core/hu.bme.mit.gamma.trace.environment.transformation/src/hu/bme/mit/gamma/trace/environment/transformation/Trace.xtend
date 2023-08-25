@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2021 Contributors to the Gamma project
+ * Copyright (c) 2018-2022 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -22,15 +22,14 @@ class Trace {
 	// Environment port (environment model port towards the component)
 	// Component port (original component port towards the environment model)
 	
-	final Map<Port, Port> componentEnvironmentPorts = newHashMap
-	final Map<Port, Port> componentProxyPorts = newHashMap
-	final Map<Port, Port> proxyEnvironmentPorts = newHashMap // Proxy port -> environment port -> component port
+	final Map<Port, Port> componentEnvironmentPorts = newLinkedHashMap
+	final Map<Port, Port> componentProxyPorts = newLinkedHashMap
+	final Map<Port, Port> proxyEnvironmentPorts = newLinkedHashMap // Proxy port -> environment port -> component port
 	
 	// Last states
 	
-	final Collection<Transition> firstStepTransitions = newHashSet
+	final Collection<Transition> firstStepTransitions = newLinkedHashSet
 	
-	State lastInState
 	State lastOutState
 	
 	// Component-environment ports
@@ -83,14 +82,6 @@ class Trace {
 	
 	def isFirstStepTransition(Transition transition) {
 		return firstStepTransitions.contains(transition)
-	}
-	
-	def setLastInState(State lastInState) {
-		this.lastInState = lastInState
-	}
-	
-	def getLastInState() {
-		return lastInState
 	}
 	
 	def setLastOutState(State lastOutState) {

@@ -8,11 +8,17 @@
 *.gsts
 *.l2s
 *.xsts
+*.smv
+*.cmd
 *.cex
 *.gpd
 *.pd
+*.pml
+*.pmlp
 *.txt
 !/model/TMT/System/TMT.gsm
 !/model/TMT/System/TMTComponent.gsm
 !/model/Spacecraft/System/Spacecraft.gsm
 !/model/Spacecraft/System/SpacecraftComponent.gsm
+!/model/ParallelRegion/ParallelRegion.gpd
+!/model/Manual/model/NondetMachine/NondetMachine.gpd

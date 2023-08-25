@@ -1,0 +1,23 @@
+package monitor
+import "Interfaces/Interfaces.gcd"
+@TransitionPriority = order-based
+statechart Monitor [
+	port error : requires Error
+] {
+	transition from Entry0 to Other
+	transition from Other to Other when error.priorityStuckAtFixedFault
+	transition from Other to Other when error.priorityToggleFault
+	transition from Other to Other when error.secondaryToggleFault
+	transition from Other to Other when error.priorityToggleFix
+	transition from Other to Other when error.secondaryToggleFix
+	transition from Other to Other when error.priorityRedFault
+	transition from Other to Other when error.priorityGreenFault
+	transition from Other to Other when error.priorityYellowFault
+	transition from Other to Other when error.secondaryRedFault
+	transition from Other to Other when error.secondaryGreenFault
+	transition from Other to Other when error.secondaryYellowFault
+	region main_region {
+		initial Entry0
+		state Other
+	}
+}

@@ -1,0 +1,10 @@
+package clocks
+
+interface ExecuteClock {
+	out event ^execute
+}
+
+interface AddSubtractClock {
+	out event add
+	out event subtract
+}

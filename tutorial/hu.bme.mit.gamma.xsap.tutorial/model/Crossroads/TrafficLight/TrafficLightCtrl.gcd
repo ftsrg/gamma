@@ -1,0 +1,51 @@
+package trafficlightctrl
+
+import "/Interfaces/Interfaces.gcd"
+
+@TransitionPriority = order-based
+statechart TrafficLightCtrl [
+	port LightCommands : provides LightCommands
+	port PoliceInterrupt : requires PoliceInterrupt
+	port Control : requires Control
+] {
+	timeout BlinkingYellowTimeout
+	timeout BlackTimeout
+	region Main_region {
+		initial Entry1
+		state Interrupted {
+			region interrupted {
+				initial Entry2
+				state Black {
+					entry / set BlackTimeout := 500 ms; raise LightCommands.displayNone;
+				}
+				state BlinkingYellow {
+					entry / set BlinkingYellowTimeout := 500 ms; raise LightCommands.displayYellow;
+				}
+			}
+		}
+		state Normal {
+			region normal {
+				shallow history Entry0
+				state Yellow {
+					entry / raise LightCommands.displayYellow;
+				}
+				state Red {
+					entry / raise LightCommands.displayRed;
+				}
+				state Green {
+					entry / raise LightCommands.displayGreen;
+				}
+			}
+		}
+	}
+	transition from Entry0 to Red
+	transition from Entry1 to Normal
+	transition from Entry2 to BlinkingYellow
+	transition from Interrupted to Normal when PoliceInterrupt.police
+	transition from Normal to Interrupted when PoliceInterrupt.police
+	transition from Black to BlinkingYellow when timeout BlackTimeout
+	transition from BlinkingYellow to Black when timeout BlinkingYellowTimeout
+	transition from Green to Yellow when Control.toggle
+	transition from Red to Green when Control.toggle
+	transition from Yellow to Red when Control.toggle
+}

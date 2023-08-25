@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -25,7 +25,6 @@ import hu.bme.mit.gamma.codegeneration.java.util.TimerServiceCodeGenerator
 import hu.bme.mit.gamma.codegeneration.java.util.TimingDeterminer
 import hu.bme.mit.gamma.codegeneration.java.util.TypeDeclarationGenerator
 import hu.bme.mit.gamma.codegeneration.java.util.VirtualTimerServiceCodeGenerator
-import hu.bme.mit.gamma.statechart.composite.ScheduledAsynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
@@ -362,11 +361,9 @@ class GlueCodeGenerator {
 				val interfaceCode = it.asynchronousCompositeComponent.generateComponentInterface
 				interfaceCode.saveCode(compositeSystemUri + File.separator + it.asynchronousCompositeComponent.generatePortOwnerInterfaceName + ".java")
 				
-				if (it.asynchronousCompositeComponent instanceof ScheduledAsynchronousCompositeComponent) {
-					// Generating the reflective class
-					val reflectiveCode = it.asynchronousCompositeComponent.generateReflectiveClass
-					reflectiveCode.saveCode(compositeSystemUri + File.separator + it.asynchronousCompositeComponent.reflectiveClassName + ".java")
-				}
+				// Generating the reflective class
+				val reflectiveCode = it.asynchronousCompositeComponent.generateReflectiveClass
+				reflectiveCode.saveCode(compositeSystemUri + File.separator + it.asynchronousCompositeComponent.reflectiveClassName + ".java")
 			].build		
 		}
 		return asynchronousCompositeComponentsRule

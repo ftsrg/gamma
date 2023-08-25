@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021-2022 Contributors to the Gamma project
+ * Copyright (c) 2021-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -12,6 +12,7 @@ package hu.bme.mit.gamma.ui.taskhandler;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map.Entry;
 
 import org.eclipse.core.resources.IFile;
 
@@ -30,13 +31,17 @@ public class StatechartContractTestGenerationHandler extends TaskHandler {
 
 	public void execute(StatechartContractTestGeneration testGeneration) {
 		setTargetFolder(testGeneration);
-		int constraintValue = 0;
+		Integer constraintValue = null;
 		if (testGeneration.getConstraint() != null) {
 			AnalysisModelTransformationHandler analysisModelTransformationHandler =
 					new AnalysisModelTransformationHandler(file);
 			Gamma2XstsTransformer transformer = analysisModelTransformationHandler
 					.new Gamma2XstsTransformer();
-			constraintValue = transformer.evaluateConstraint(testGeneration.getConstraint());
+			Entry<Integer,Integer> constraint = transformer.evaluateConstraint(testGeneration.getConstraint());
+			if (constraint != null) {
+				// TODO now only lower bound
+				constraintValue = constraint.getKey();
+			}
 		}
 
 		ComponentReference componentReference = testGeneration.getComponentReference();

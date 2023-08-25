@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -21,13 +21,14 @@ ExecutionTrace returns ExecutionTrace:
 	'import' ^import=[InterfaceModel::Package | STRING]
 	 annotations+=ExecutionTraceAnnotations*
 	'trace' name=ID 'of' (component=[InterfaceModel::Component] ('(' arguments+=Expression (',' arguments+=Expression)* ')')?)
+	(variableDeclarations+=VariableDeclaration)*
 	steps+=Step
 	(steps+=Step)*
 	(cycle=Cycle)?
 ;
 
 ExecutionTraceAnnotations returns ExecutionTraceAnnotation:
-	AllowedWaitingAnnotation | NegativeTestAnnotation
+	AllowedWaitingAnnotation | NegativeTestAnnotation | ExecutionTraceCommentAnnotation
 ;
 
 NegativeTestAnnotation returns NegativeTestAnnotation:
@@ -36,8 +37,11 @@ NegativeTestAnnotation returns NegativeTestAnnotation:
 ;
 
 AllowedWaitingAnnotation returns ExecutionTraceAllowedWaitingAnnotation:
-	{ExecutionTraceAllowedWaitingAnnotation} 
 	'@AllowedWaiting' lowerLimit=Expression '..' upperLimit=Expression
+;
+
+ExecutionTraceCommentAnnotation returns ExecutionTraceCommentAnnotation:
+	'@' '(' comment=STRING ')'
 ;
 
 Cycle returns Cycle:
@@ -53,28 +57,53 @@ Step returns Step:
 			(actions+=Act)+
 		'}')?
 		'assert' '{'
-			(asserts+=Assert)*
+			(asserts+=Expression ';')*
 		'}'
 	'}'
 ;
 
 Act returns Act:
-	Reset | RaiseEventAct | TimeElapse | InstanceSchedule | ComponentSchedule;
+	Reset | RaiseEventAct | TimeElapse | AssignmentAct | InstanceSchedule | ComponentSchedule;
 	
 Reset returns Reset:
 	{Reset} 'reset'
 ;
 
 RaiseEventAct returns RaiseEventAct:
-	'raise' port=[InterfaceModel::Port] '.' event=[InterfaceModel::Event] ('(' arguments+=Expression (',' arguments+=Expression)* ')')?
+	'raise' port=[InterfaceModel::Port] '.' event=[InterfaceModel::Event] '('
+		(arguments+=LiteralExpression)? (',' arguments+=LiteralExpression)* ')'
 ;
 
 TimeElapse returns TimeElapse:
-	'elapse' elapsedTime=INTEGER
+	'elapse' elapsedTime=Expression
 ;
 
+AssignmentAct returns AssignmentAct:
+	'assign' lhs=AssignableAccessExpression ':=' rhs=Expression
+;
+
+// Same as in the action language
+
+AssignableAccessExpression returns ConstraintModel::ReferenceExpression:
+	AssignablePrimaryExpression(
+		{ConstraintModel::ArrayAccessExpression.operand=current} '[' index=Expression ']' |
+		{ConstraintModel::RecordAccessExpression.operand=current} '.' fieldReference=FieldReferenceExpression
+	)* 
+;
+
+AssignablePrimaryExpression returns ConstraintModel::ReferenceExpression: 
+	AssignableDirectReferenceExpression | 
+	'(' AssignableAccessExpression ')'
+;
+
+AssignableDirectReferenceExpression returns ConstraintModel::ReferenceExpression:
+	{ConstraintModel::DirectReferenceExpression} declaration=[ConstraintModel::ValueDeclaration]
+;
+
+//
+
 InstanceSchedule returns InstanceSchedule:
-	'schedule' scheduledInstance=[CompositeModel::AsynchronousComponentInstance]
+	'schedule' instanceReference=ComponentInstanceReferenceExpression
 ;
 
 ComponentSchedule returns ComponentSchedule:
@@ -82,44 +111,23 @@ ComponentSchedule returns ComponentSchedule:
 	'schedule' 'component'
 ;
 
-Assert returns Assert:
-	OrAssert
+@Override
+ReferenceExpression returns ConstraintModel::Expression:
+	RaiseEventAct | EventParameterReferenceExpression |
+	ComponentInstanceStateReferenceExpression | ComponentInstanceVariableReferenceExpression |
+	DirectReferenceExpression
 ;
 
-OrAssert returns Assert:
-	XorAssert ({OrAssert.asserts+=current} ( ('||' | '|') asserts+=XorAssert)+)?
-;
-
-XorAssert returns Assert:
-	AndAssert ({XorAssert.asserts+=current} ('^' asserts+=AndAssert)+)?
-;
-
-AndAssert returns Assert:
-	PrimaryAssert ({AndAssert.asserts+=current} ( ('&&' | '&') asserts+=PrimaryAssert)+)?
-;
-
-PrimaryAssert returns Assert:
-	RaiseEventAct  | InstanceState | NegatedAssert | '{' Assert '}'
-;
-
-NegatedAssert returns NegatedAssert:
-	('!' | 'not') negatedAssert=PrimaryAssert
-;
-
-InstanceState returns InstanceState:
-	InstanceStateConfiguration | InstanceVariableState
-;
-
-InstanceStateConfiguration returns InstanceStateConfiguration:
-	'state' instance=ComponentInstanceReferenceExpression '.' region=[StatechartModel::Region] '.' state=[StatechartModel::State]
-;
-
-InstanceVariableState returns InstanceVariableState:
-	variableReference=ComponentInstanceVariableReferenceExpression '=' value=Expression
+EventParameterReferenceExpression returns InterfaceModel::EventParameterReferenceExpression:
+	'parameter' port=[InterfaceModel::Port] '.' event=[InterfaceModel::Event] '::' parameter=[ConstraintModel::ParameterDeclaration]
 ;
 
 ComponentInstanceVariableReferenceExpression returns CompositeModel::ComponentInstanceVariableReferenceExpression:
-	'variable' instance=ComponentInstanceReferenceExpression '.' variableDeclaration=[ConstraintModel::VariableDeclaration]
+	'variable' (instance=ComponentInstanceReferenceExpression | 'self') '.' variableDeclaration=[ConstraintModel::VariableDeclaration]
+;
+
+ComponentInstanceStateReferenceExpression returns CompositeModel::ComponentInstanceStateReferenceExpression:
+	'state' (instance=ComponentInstanceReferenceExpression | 'self') '.' region=[StatechartModel::Region] '.' state=[StatechartModel::State]
 ;
 
 ComponentInstanceReferenceExpression returns CompositeModel::ComponentInstanceReferenceExpression:
