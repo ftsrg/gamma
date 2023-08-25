@@ -11,6 +11,8 @@
 package hu.bme.mit.gamma.fei.language.validation
 
 import hu.bme.mit.gamma.fei.model.FaultMode
+import hu.bme.mit.gamma.fei.model.FaultSlice
+import hu.bme.mit.gamma.fei.model.FaultTransition
 import hu.bme.mit.gamma.fei.util.FaultExtensionModelValidator
 import org.eclipse.xtext.validation.Check
 
@@ -27,6 +29,16 @@ class FaultExtensionLanguageValidator extends AbstractFaultExtensionLanguageVali
 	@Check
 	def checkFaultModes(FaultMode faultMode) {
 		handleValidationResultMessage(feiModelValidator.checkFaultModes(faultMode));
+	}
+	
+	@Check
+	def checkGlobalDynamics(FaultSlice faultSlice) {
+		handleValidationResultMessage(feiModelValidator.checkGlobalDynamics(faultSlice));
+	}
+	
+	@Check
+	def checkFaultTransitions(FaultTransition faultTransition) {
+		handleValidationResultMessage(feiModelValidator.checkFaultTransition(faultTransition));
 	}
 	
 }

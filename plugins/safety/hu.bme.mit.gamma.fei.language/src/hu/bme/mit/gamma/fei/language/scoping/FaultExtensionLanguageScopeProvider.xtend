@@ -11,6 +11,7 @@
 package hu.bme.mit.gamma.fei.language.scoping
 
 import hu.bme.mit.gamma.fei.model.FaultExtensionInstructions
+import hu.bme.mit.gamma.fei.model.FaultSlice
 import hu.bme.mit.gamma.fei.model.FeiModelPackage
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
@@ -31,6 +32,12 @@ class FaultExtensionLanguageScopeProvider extends AbstractFaultExtensionLanguage
 		val root = ecoreUtil.getSelfOrContainerOfType(context, FaultExtensionInstructions)
 		val packages = root.imports
 		val component = root.component
+	
+		if (reference == FeiModelPackage.Literals.FAULT_MODE_REFERENCE__FAULT_MODE) {
+			val faultSlice = ecoreUtil.getSelfOrContainerOfType(context, FaultSlice)
+			val faultModes = faultSlice.faultModes
+			return Scopes.scopeFor(faultModes)
+		}
 		
 		val scope = context.handleTypeDeclarationAndComponentInstanceElementReferences(reference, packages, component)
 		if (scope !== null) {

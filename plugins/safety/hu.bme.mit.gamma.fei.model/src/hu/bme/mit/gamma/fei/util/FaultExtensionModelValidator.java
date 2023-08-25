@@ -12,10 +12,19 @@ package hu.bme.mit.gamma.fei.util;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
+import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.fei.model.Effect;
+import hu.bme.mit.gamma.fei.model.FaultEvent;
 import hu.bme.mit.gamma.fei.model.FaultMode;
+import hu.bme.mit.gamma.fei.model.FaultModeReference;
+import hu.bme.mit.gamma.fei.model.FaultModeState;
+import hu.bme.mit.gamma.fei.model.FaultSlice;
+import hu.bme.mit.gamma.fei.model.FaultTransition;
+import hu.bme.mit.gamma.fei.model.FaultTransitionTrigger;
 import hu.bme.mit.gamma.fei.model.FeiModelPackage;
+import hu.bme.mit.gamma.fei.model.GlobalDynamics;
 import hu.bme.mit.gamma.fei.model.LocalDynamics;
 import hu.bme.mit.gamma.fei.model.SelfFixTemplate;
 import hu.bme.mit.gamma.statechart.util.StatechartModelValidator;
@@ -42,13 +51,91 @@ public class FaultExtensionModelValidator extends StatechartModelValidator {
 		}
 		else if (localDynamics == LocalDynamics.PERMANENT && containsSelfFix) {
 			validationResultMessages.add(new ValidationResultMessage(
-					ValidationResult.ERROR,
-						"If the local dynamics is set to 'permanent', then the self-fix template must not be instantiated",
-							new ReferenceInfo(FeiModelPackage.Literals.FAULT_MODE__LOCAL_DYNAMICS)));
-			}
+				ValidationResult.ERROR,
+					"If the local dynamics is set to 'permanent', then the self-fix template must not be instantiated",
+						new ReferenceInfo(FeiModelPackage.Literals.FAULT_MODE__LOCAL_DYNAMICS)));
+	}
+	
+		return validationResultMessages;
+	}
+	
+	public Collection<ValidationResultMessage> checkGlobalDynamics(FaultSlice faultSlice) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		
+		List<FaultMode> faultModes = faultSlice.getFaultModes();
+		GlobalDynamics globalDynamics = faultSlice.getGlobalDynamics();
+		if (faultModes.size() > 1 && globalDynamics == null) {
+			validationResultMessages.add(new ValidationResultMessage(
+				ValidationResult.ERROR,
+					"If  multiple fault effects are specified, then global dynamics must also be defined",
+						new ReferenceInfo(FeiModelPackage.Literals.FAULT_SLICE__FAULT_MODES)));
+		}
+		
+		if (globalDynamics != null && faultModes.size() < 2) {
+			validationResultMessages.add(new ValidationResultMessage(
+				ValidationResult.ERROR,
+					"Global dynamics must also be defined in the case of multiple fault effects",
+						new ReferenceInfo(FeiModelPackage.Literals.FAULT_SLICE__GLOBAL_DYNAMICS)));
+		}
 	
 		return validationResultMessages;
 	}
 			
+	public Collection<ValidationResultMessage> checkFaultTransition(FaultTransition faultTransition) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		
+		FaultTransitionTrigger trigger = faultTransition.getTrigger();
+		if (trigger != null) {
+			FaultMode triggerFaultMode = trigger.getFaultMode();
+			FaultEvent triggerEvent = trigger.getEvent();
+			
+			FaultModeReference source = faultTransition.getSource();
+			FaultMode sourceFaultMode = source.getFaultMode();
+			FaultModeState sourceState = source.getState();
+			
+			FaultModeReference target = faultTransition.getTarget();
+			FaultMode targetFaultMode = target.getFaultMode();
+			FaultModeState targetState = target.getState();
+			
+			if (triggerEvent == FaultEvent.FAILURE) {
+				if (!(targetFaultMode == triggerFaultMode && targetState == FaultModeState.FAULTY)) {
+					validationResultMessages.add(new ValidationResultMessage(
+						ValidationResult.WARNING,
+							"In case of a failure trigger, the target fault mode should be the trigger fault mode in a faulty state",
+								new ReferenceInfo(FeiModelPackage.Literals.FAULT_TRANSITION__TRIGGER)));
+				}
+			}
+			else if (triggerEvent == FaultEvent.SELF_FIX) {
+				if (!(sourceFaultMode == triggerFaultMode && sourceState == FaultModeState.FAULTY)) {
+					validationResultMessages.add(new ValidationResultMessage(
+						ValidationResult.WARNING,
+							"In case of a self-fix trigger, the source fault mode should be the trigger fault mode",
+								new ReferenceInfo(FeiModelPackage.Literals.FAULT_TRANSITION__TRIGGER)));
+				}
+				if (triggerFaultMode.getLocalDynamics() != LocalDynamics.TRANSIENT) {
+					validationResultMessages.add(new ValidationResultMessage(
+						ValidationResult.ERROR,
+							"The trigger fault mode does not have transient local dynamics so a self-fix event cannot occur",
+								new ReferenceInfo(FeiModelPackage.Literals.FAULT_TRANSITION__TRIGGER)));
+				}
+			}
+			
+			if (triggerFaultMode != targetFaultMode && triggerFaultMode != sourceFaultMode) {
+				validationResultMessages.add(new ValidationResultMessage(
+					ValidationResult.WARNING,
+						"The trigger fault mode should either be the source or target trigger fault mode",
+							new ReferenceInfo(FeiModelPackage.Literals.FAULT_TRANSITION__TRIGGER)));
+			}
+			
+			Expression guard = faultTransition.getGuard();
+			if (guard != null && !typeDeterminator.isBoolean(guard)) {
+				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+					"This guard is not a boolean expression",
+						new ReferenceInfo(FeiModelPackage.Literals.FAULT_TRANSITION__GUARD)));
+			}
+		}
+	
+		return validationResultMessages;
+	}
 	
 }

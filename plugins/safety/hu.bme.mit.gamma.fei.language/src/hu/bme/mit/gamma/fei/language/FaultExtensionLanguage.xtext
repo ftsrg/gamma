@@ -26,6 +26,7 @@ FaultExtensionInstructions returns FaultExtensionInstructions:
 FaultSlice returns FaultSlice:
 	'slice' name=ID 'affects' affectedElements+=ComponentInstanceStateExpression (',' affectedElements+=ComponentInstanceStateExpression)*
 		'with' (faultModes+=FaultMode)+
+		globalDynamics=GlobalDynamics?
 ;
 
 FaultMode returns FaultMode:
@@ -225,7 +226,31 @@ enum Occurrence returns Occurrence:
 
 enum TermReferenceMode returns TermReferenceMode:
 				REFERENCE = 'reference' | VALUE = 'value';
+
+
+GlobalDynamics returns GlobalDynamics:
+	{GlobalDynamics} 'global-dynamics'
+	// Potential addition events?
+	transitions+=FaultTransition+
+;
+
+FaultTransition returns FaultTransition:
+	'transition' 'from' source=FaultModeReference 'to' target=FaultModeReference 'when' trigger=FaultTransitionTrigger '[' guard=Expression ']'
+;
+
+FaultModeReference returns FaultModeReference:
+	faultMode=[FaultMode] '.' state=FaultModeState
+;
+
+FaultTransitionTrigger returns FaultTransitionTrigger:
+	faultMode=[FaultMode] '.' event=FaultEvent
+;
+
+enum FaultModeState returns FaultModeState:
+				FAULTY = 'fault' | NOMINAL = 'nominal';
 				
+enum FaultEvent returns FaultEvent:
+				FAILURE = 'failure' | SELF_FIX = 'self-fix';
 
 // Literals
 

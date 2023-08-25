@@ -81,7 +81,7 @@ class CodeBuilder implements IStatechartCode {
 	/**
 	 * The list of components within the system. It is used to determine wether 'statechart->' is neccesarry.
 	 */
-	public static val List<String> componentVariables = new ArrayList();
+	public static val List<String> componentVariables = newArrayList;
 
 	/**
      * Constructs a {@code CodeBuilder} object with the given {@code XSTS}.
@@ -125,9 +125,9 @@ class CodeBuilder implements IStatechartCode {
 	override void constructHeader() {
 		/* Enum Type Declarations */
 		header.addContent('''
-		«FOR typeDeclaration : xsts.typeDeclarations SEPARATOR System.lineSeparator»
-			«typeDeclarationSerializer.serialize(typeDeclaration)»
-		«ENDFOR»
+			«FOR typeDeclaration : xsts.typeDeclarations SEPARATOR System.lineSeparator»
+				«typeDeclarationSerializer.serialize(typeDeclaration)»
+			«ENDFOR»
 		''');
 
 		/* Struct Declaration */

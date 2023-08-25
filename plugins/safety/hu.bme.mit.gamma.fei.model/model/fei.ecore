@@ -113,6 +113,36 @@
     <eLiterals name="PERMANENT"/>
     <eLiterals name="TRANSIENT" value="1"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="GlobalDynamics"/>
+  <eClassifiers xsi:type="ecore:EClass" name="GlobalDynamics">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="transitions" upperBound="-1"
+        eType="#//FaultTransition" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="FaultTransition">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="source" lowerBound="1"
+        eType="#//FaultModeReference" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="target" lowerBound="1"
+        eType="#//FaultModeReference" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="trigger" eType="#//FaultTransitionTrigger"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="guard" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="FaultTransitionTrigger">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="faultMode" lowerBound="1"
+        eType="#//FaultMode"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="event" lowerBound="1" eType="#//FaultEvent"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="FaultModeReference">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="faultMode" eType="#//FaultMode"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="state" lowerBound="1" eType="#//FaultModeState"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EEnum" name="FaultModeState">
+    <eLiterals name="NOMINAL"/>
+    <eLiterals name="FAULTY" value="1"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EEnum" name="FaultEvent">
+    <eLiterals name="FAILURE"/>
+    <eLiterals name="SELF_FIX" value="1"/>
+  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="CommonCauses"/>
 </ecore:EPackage>

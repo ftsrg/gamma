@@ -63,7 +63,7 @@ class ActionSerializer {
 		return '''
 			if («expressionSerializer.serialize(action.condition)») {
 				«action.then.serialize»
-			}else {
+			} else {
 				«action.^else.serialize»
 			}
 		''';

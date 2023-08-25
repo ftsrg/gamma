@@ -49,7 +49,7 @@ class HavocBuilder implements IStatechartCode {
 	val GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
 	val TypeDeclarationSerializer typeDeclarationSerializer = new TypeDeclarationSerializer;
 	
-	/* Boudary definitions */
+	/* Boundary definitions */
 	val INT_MIN = -32768  // -2^15 
 	val INT_MAX = 32767   //  2^15 - 1
 
@@ -82,7 +82,7 @@ class HavocBuilder implements IStatechartCode {
 		usedParts.addAll(xsts.transitions)
 		
 		/* do those parts contain any havoc actions */
-		this.containsHavocAction = usedParts.exists[type | gammaEcoreUtil.containsType(type, HavocAction)]
+		containsHavocAction = usedParts.exists[type | gammaEcoreUtil.containsType(type, HavocAction)]
 	}
 	
 	/**
@@ -154,7 +154,7 @@ class HavocBuilder implements IStatechartCode {
 			/* runtime generated random boolean */
 			bool havoc_bool() {
 				srand(time(NULL));
-				return  rand() % 2 == 0;
+				return rand() % 2 == 0;
 			}
 
 			/* runtime generated random int */
@@ -187,18 +187,21 @@ class HavocBuilder implements IStatechartCode {
      */
 	override save(URI uri) {
 		/* prevent saving in case there is no havoc action */
-		if (!HavocBuilder.isHavocRequired())
+		if (!HavocBuilder.isHavocRequired()) {
 			return
+		}
 			
 		/* create src-gen if not present */
 		var URI local = uri.appendSegment("src-gen");
-		if (!new File(local.toFileString()).exists())
+		if (!new File(local.toFileString()).exists()) {
 			Files.createDirectories(Paths.get(local.toFileString()));
+		}
 
 		/* create c codegen folder if not present */
 		local = local.appendSegment(xsts.name.toLowerCase)
-		if (!new File(local.toFileString()).exists())
+		if (!new File(local.toFileString()).exists()) {
 			Files.createDirectories(Paths.get(local.toFileString()));
+		}
 
 		/* save models */
 		code.save(local);

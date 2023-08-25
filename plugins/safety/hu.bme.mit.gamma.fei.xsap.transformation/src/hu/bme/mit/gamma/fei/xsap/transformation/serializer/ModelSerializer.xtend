@@ -24,6 +24,7 @@ class ModelSerializer {
 	
 	protected final extension ExpressionEvaluator expressionEvaluator = ExpressionEvaluator.INSTANCE
 	protected final extension FaultEffectSerializer faultEffectSerializer = FaultEffectSerializer.INSTANCE
+	protected final extension GlobalDynamicsSerializer dynamicsSerializer = GlobalDynamicsSerializer.INSTANCE
 	protected final extension NuxmvReferenceSerializer referenceSerializer = NuxmvReferenceSerializer.INSTANCE
 	
 	//
@@ -36,7 +37,7 @@ class ModelSerializer {
 					«FOR mode : slice.faultModes»
 						MODE «mode.name»«IF mode.probability !== null»(«mode.probability.evaluateDecimal»)«ENDIF» : «mode.serializeLocalDynamics» «mode.effect.serializeEffect»;
 					«ENDFOR»
-				««« TODO global dynamics
+					«slice.globalDynamics.serializeGlobalDynamics»
 			«ENDFOR»
 			««« TODO Common causes
 	'''

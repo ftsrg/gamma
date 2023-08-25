@@ -20,6 +20,14 @@
       <genEnumLiterals ecoreEnumLiteral="fei.ecore#//LocalDynamics/PERMANENT"/>
       <genEnumLiterals ecoreEnumLiteral="fei.ecore#//LocalDynamics/TRANSIENT"/>
     </genEnums>
+    <genEnums typeSafeEnumCompatible="false" ecoreEnum="fei.ecore#//FaultModeState">
+      <genEnumLiterals ecoreEnumLiteral="fei.ecore#//FaultModeState/NOMINAL"/>
+      <genEnumLiterals ecoreEnumLiteral="fei.ecore#//FaultModeState/FAULTY"/>
+    </genEnums>
+    <genEnums typeSafeEnumCompatible="false" ecoreEnum="fei.ecore#//FaultEvent">
+      <genEnumLiterals ecoreEnumLiteral="fei.ecore#//FaultEvent/FAILURE"/>
+      <genEnumLiterals ecoreEnumLiteral="fei.ecore#//FaultEvent/SELF_FIX"/>
+    </genEnums>
     <genClasses ecoreClass="fei.ecore#//FaultExtensionInstructions">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference fei.ecore#//FaultExtensionInstructions/imports"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference fei.ecore#//FaultExtensionInstructions/component"/>
@@ -85,7 +93,23 @@
     <genClasses ecoreClass="fei.ecore#//SelfFixTemplate">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference fei.ecore#//SelfFixTemplate/selfFixEvent"/>
     </genClasses>
-    <genClasses ecoreClass="fei.ecore#//GlobalDynamics"/>
+    <genClasses ecoreClass="fei.ecore#//GlobalDynamics">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference fei.ecore#//GlobalDynamics/transitions"/>
+    </genClasses>
+    <genClasses ecoreClass="fei.ecore#//FaultTransition">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference fei.ecore#//FaultTransition/source"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference fei.ecore#//FaultTransition/target"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference fei.ecore#//FaultTransition/trigger"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference fei.ecore#//FaultTransition/guard"/>
+    </genClasses>
+    <genClasses ecoreClass="fei.ecore#//FaultTransitionTrigger">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference fei.ecore#//FaultTransitionTrigger/faultMode"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute fei.ecore#//FaultTransitionTrigger/event"/>
+    </genClasses>
+    <genClasses ecoreClass="fei.ecore#//FaultModeReference">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference fei.ecore#//FaultModeReference/faultMode"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute fei.ecore#//FaultModeReference/state"/>
+    </genClasses>
     <genClasses ecoreClass="fei.ecore#//CommonCauses"/>
   </genPackages>
 </genmodel:GenModel>
