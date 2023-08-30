@@ -72,6 +72,8 @@ import hu.bme.mit.gamma.verification.util.AbstractVerifier.Result;
 
 public class VerificationHandler extends TaskHandler {
 
+	public final List<VerificationResult> retrievedVerificationResults = new ArrayList<>();
+	
 	protected boolean serializeTraces; // Denotes whether traces are serialized
 	protected boolean serializeTest; // Denotes whether test code is generated
 	protected String testFolderUri;
@@ -109,7 +111,7 @@ public class VerificationHandler extends TaskHandler {
 	
 	//
 	
-	public List<VerificationResult> execute(Verification verification) throws IOException, InterruptedException {
+	public void execute(Verification verification) throws IOException, InterruptedException {
 		// Setting target folder
 		setTargetFolder(verification);
 		//
@@ -160,7 +162,6 @@ public class VerificationHandler extends TaskHandler {
 		boolean isOptimize = verification.isOptimize();
 		
 		// Retrieved traces
-		List<VerificationResult> retrievedVerificationResults = new ArrayList<VerificationResult>();
 		List<ExecutionTrace> retrievedTraces = new ArrayList<ExecutionTrace>();
 		
 		// Map for collecting both supported property representations
@@ -237,9 +238,6 @@ public class VerificationHandler extends TaskHandler {
 				traceUtil.addComment(trace, serializedFormula);
 			}
 			
-			TimeUnit timeUnit = TimeUnit.MILLISECONDS;
-			long elapsed = stopwatch.elapsed(timeUnit);
-			String elapsedString = elapsed + " " + timeUnit;
 			long elapsedMS = stopwatch.elapsed(TimeUnit.MILLISECONDS);
 			
 			VerificationResult resultTemp = new VerificationResult();
@@ -285,8 +283,6 @@ public class VerificationHandler extends TaskHandler {
 		for (VerificationResult verificationResult : retrievedVerificationResults) {
 			serializer.serialize(targetFolderUri, traceFileName, verificationResult);
 		}
-		
-		return retrievedVerificationResults;
 	}
 	
 	//
@@ -468,12 +464,7 @@ public class VerificationHandler extends TaskHandler {
 			fileUtil.saveString(resultFolderUri + File.separator + fileName, jsonResult);
 		}
 		
-		public static class VerificationResult {
-			public String name = "";
-			public String subject = "";
-			public String description = "";
-			public String constraint = "";
-			
+		public static class VerificationResult {			
 			public String traceSvgPath = "";
 			public long executionTimeMS = -1;			
 			public String query = "";
