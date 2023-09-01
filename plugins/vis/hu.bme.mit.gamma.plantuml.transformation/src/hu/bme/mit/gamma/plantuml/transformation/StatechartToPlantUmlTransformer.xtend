@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -59,6 +59,14 @@ class StatechartToPlantUmlTransformer {
 
 	def String execute() '''
 		@startuml
+		
+		skin rose ««« !theme plain
+
+		skinparam backgroundcolor transparent
+		skinparam legend {
+			BackgroundColor lightgrey
+		}
+
 		skinparam nodesep 30
 		skinparam ranksep 30
 		skinparam padding 5
