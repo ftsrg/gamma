@@ -147,14 +147,24 @@ class JavaUtil {
 		return string.split(System.lineSeparator).reject[it.nullOrEmpty]
 	}
 	
+	def void trim(StringBuilder builder) {
+		val trimmedString = builder.toString.trim
+		builder.length = 0
+		builder.append(trimmedString)
+	}
+	
 	def String deparenthesize(String string) {
 		val stringBuilder = new StringBuilder
 		stringBuilder.append(string.trim)
 		
-		while (stringBuilder.charAt(0) == '(' &&
-				stringBuilder.charAt(stringBuilder.length - 1) == ')') {
+		val char leftParenthesis = '('
+		val char rightParenthesis = ')'
+		
+		while (stringBuilder.charAt(0) == leftParenthesis &&
+				stringBuilder.charAt(stringBuilder.length - 1) == rightParenthesis) {
 			stringBuilder.deleteCharAt(0)
 			stringBuilder.deleteCharAt(stringBuilder.length - 1)
+			stringBuilder.trim
 		}
 		
 		return stringBuilder.toString.trim
@@ -166,11 +176,11 @@ class JavaUtil {
 			return deparenthesizedString
 		}
 		
-		val exclamationRemoved = deparenthesizedString.substring(1)
-		val deparenthesizedExclamationRemoved = exclamationRemoved.deparenthesize
-		if (deparenthesizedExclamationRemoved.charAt(0) == character) {
-			val exclamationDoubleRemoved = deparenthesizedExclamationRemoved.substring(1)
-			return exclamationDoubleRemoved.simplifyCharacterPairs(character) // Recursion to remove next char pair
+		val charRemoved = deparenthesizedString.substring(1)
+		val deparenthesizedCharRemoved = charRemoved.deparenthesize
+		if (deparenthesizedCharRemoved.charAt(0) == character) {
+			val charDoubleRemoved = deparenthesizedCharRemoved.substring(1)
+			return charDoubleRemoved.simplifyCharacterPairs(character) // Recursion to remove next char pair
 		}
 		
 		// No success, we return the original one

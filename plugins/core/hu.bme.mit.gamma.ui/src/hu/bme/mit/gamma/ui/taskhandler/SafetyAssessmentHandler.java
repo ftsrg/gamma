@@ -80,8 +80,8 @@ public abstract class SafetyAssessmentHandler extends TaskHandler {
 				LtlQueryAdapter adapter = new LtlQueryAdapter();
 				
 				String serializedFormula = nuXmvPropertySerializer.serialize(formula);
-				String tle = adapter.adaptLtlOrInvariantQueryToReachability(serializedFormula); // TLE - reachability property without operators
-//				tle = javaUtil.simplifyExclamationMarkPairs(tle);
+				String plainTle = adapter.adaptLtlOrInvariantQueryToReachability(serializedFormula); // TLE - reachability property without operators
+				String tle = javaUtil.simplifyExclamationMarkPairs(plainTle);
 				
 				String fileNamePrefix = extensionlessFileName + "_" + propertyCount++ + "_";
 				String generateFaultTreeCommand = 
