@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.xsts.codegeneration.c.serializer
 
+import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
 import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition
 import hu.bme.mit.gamma.expression.model.DecimalTypeDefinition
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
@@ -17,35 +18,13 @@ import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition
 import hu.bme.mit.gamma.expression.model.RationalTypeDefinition
 import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.expression.model.TypeReference
-import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
+
+import static extension hu.bme.mit.gamma.xsts.codegeneration.c.util.GeneratorUtil.*
 
 /**
  * Serializer for variable declarations.
  */
 class VariableDeclarationSerializer {
-	
-	/**
-	 * Transforms a string with underscores to camel case by converting each word's first letter
-	 * after an underscore to uppercase.
-	 *
-	 * @param input the string to transform
-	 * @return the transformed string in camel case
-	 */
-	def String transformString(String input) {
-  		val parts = input.split("_")
-  		val transformedParts = parts.map [ it.toFirstUpper ]
-  		return transformedParts.join("_")
-	}
-
-	/**
-	 * Converts a string to title case by capitalizing the first letter.
-	 *
-	 * @param input the string to convert
-	 * @return the converted string in title case
-	 */
-	def static String toFirstUpper(String input) {
-  		return input.substring(0,1).toUpperCase + input.substring(1)
-	}
 	
 	/**
    	 * Throws an IllegalArgumentException since the Type class is not supported.
@@ -141,7 +120,7 @@ class VariableDeclarationSerializer {
      * @return the serialized enum name as a string
      */
 	def dispatch String serialize(EnumerationTypeDefinition type, boolean clock, String name) {
-		return '''enum «transformString(name)»''';
+		return '''enum «name.transformString»''';
 	}
 	
 }

@@ -22,6 +22,8 @@ import java.nio.file.Files
 import java.nio.file.Paths
 import org.eclipse.emf.common.util.URI
 
+import static extension hu.bme.mit.gamma.xsts.codegeneration.c.util.GeneratorUtil.*
+
 class HavocBuilder implements IStatechartCode {
 	/**
 	 * The XSTS (Extended Symbolic Transition Systems) used for code generation.
@@ -125,7 +127,7 @@ class HavocBuilder implements IStatechartCode {
 			
 			/* boundaries for enums */
 			«FOR type : xsts.typeDeclarations»
-				#define «type.name.toUpperCase»_LENGTH «typeDeclarationSerializer.getLength(type.type)»
+				#define «type.name.toUpperCase»_LENGTH «type.type.getLength»
 			«ENDFOR»
 		''');
 		
@@ -139,7 +141,7 @@ class HavocBuilder implements IStatechartCode {
 			float havoc_float();
 			«FOR type : xsts.typeDeclarations»
 				/* runtime generated random «type.name» */
-				enum «TypeDeclarationSerializer.transformString(type.name)» havoc_«type.name»();
+				enum «type.name.transformString» havoc_«type.name»();
 			«ENDFOR»
 		''');
 		
@@ -184,9 +186,9 @@ class HavocBuilder implements IStatechartCode {
 			
 			«FOR type : xsts.typeDeclarations SEPARATOR System.lineSeparator»
 				/* runtime generated random «type.name» */
-				enum «TypeDeclarationSerializer.transformString(type.name)» havoc_«type.name»() {
+				enum «type.name.transformString» havoc_«type.name»() {
 					srand(time(NULL));
-					return (enum «TypeDeclarationSerializer.transformString(type.name)»)(rand() % «type.name.toUpperCase»_LENGTH);
+					return (enum «type.name.transformString»)(rand() % «type.name.toUpperCase»_LENGTH);
 				}
 			«ENDFOR»
 		''')
