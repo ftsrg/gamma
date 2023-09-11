@@ -123,6 +123,11 @@ class CodeBuilder implements IStatechartCode {
      * Constructs the statechart's header code.
      */
 	override void constructHeader() {
+		/* Add imports to the file */
+		header.addInclude('''
+			#include <stdbool.h>
+		''');
+		
 		/* Enum Type Declarations */
 		header.addContent('''
 			«FOR typeDeclaration : xsts.typeDeclarations SEPARATOR System.lineSeparator»
@@ -161,23 +166,21 @@ class CodeBuilder implements IStatechartCode {
 			/* Run cycle in component «name» */
 			void runCycle«stName»(«stName»* statechart);
 		''');
-
-		/* End if in header guard */
-		header.addContent('''
-			#endif /* «name.toUpperCase»_HEADER */
-		''');
 	}
 
 	/**
      * Constructs the statechart's C code.
      */
 	override void constructCode() {
-		/* Add havoc import in case it is required */
-		code.addContent('''
-			«IF HavocBuilder.isHavocRequired»
-				#include "«name.toLowerCase»havoc.h"
-			«ENDIF»
-		''')
+		/* Add imports to the file */
+		code.addInclude('''
+			#include <stdio.h>
+			#include <stdlib.h>
+			#include <stdbool.h>
+			
+			#include "«name.toLowerCase».h"
+			«IF HavocBuilder.isHavocRequired»#include "«name.toLowerCase»havoc.h"«ENDIF»
+		''');
 		
 		/* Reset struct */
 		code.addContent('''

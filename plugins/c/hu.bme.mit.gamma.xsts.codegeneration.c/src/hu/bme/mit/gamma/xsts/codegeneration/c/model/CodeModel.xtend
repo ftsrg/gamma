@@ -22,14 +22,19 @@ class CodeModel extends FileModel {
 	 * @param name the name of the C file to be generated
 	 */
 	new(String name) {
-		super('''«name.toLowerCase».c''');
-		this.content = '''
-			#include <stdio.h>
-			#include <stdlib.h>
-			#include <stdbool.h>
-			
-			#include "«name.toLowerCase».h"
-		''';
+		super(name, '''«name.toLowerCase».c''');
+	}
+	
+	/**
+     * Returns the content of the file.
+     * 
+     * @return the content of the file
+     */
+	override String toString() {
+		'''
+			«include»
+			«content»
+		'''
 	}
 	
 }

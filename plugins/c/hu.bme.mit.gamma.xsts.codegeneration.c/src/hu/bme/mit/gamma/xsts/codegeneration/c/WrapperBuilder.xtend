@@ -106,13 +106,11 @@ class WrapperBuilder implements IStatechartCode {
      * Constructs the statechart wrapper's header code.
      */
 	override constructHeader() {
-		/* Add extra headers */
-		header.addContent('''
+		/* Add imports to the file */
+		header.addInclude('''
+			#include <stdbool.h>
 			«Platforms.get(platform).getHeaders()»
-		''');
-		
-		/* Inculde statechart header */
-		header.addContent('''
+			
 			#include "«xsts.name.toLowerCase».h"
 		''');
 		
@@ -169,6 +167,15 @@ class WrapperBuilder implements IStatechartCode {
      * Constructs the statechart wrapper's C code.
      */
 	override constructCode() {
+		/* Add imports to the file */
+		code.addInclude('''
+			#include <stdio.h>
+			#include <stdlib.h>
+			#include <stdbool.h>
+			
+			#include "«name.toLowerCase».h"
+		''');
+		
 		/* Initialize wrapper & Run cycle*/
 		code.addContent('''
 			/* Initialize component «name» */

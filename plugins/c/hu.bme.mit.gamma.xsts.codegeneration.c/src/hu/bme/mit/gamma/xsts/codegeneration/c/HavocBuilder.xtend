@@ -105,12 +105,16 @@ class HavocBuilder implements IStatechartCode {
      * Constructs the havoc header code.
      */
 	override constructHeader() {
-		/* Declaration of boundaries */
-		header.addContent('''
+		/* Add imports to the file */
+		header.addInclude('''
 			#include <time.h>
+			#include <stdbool.h>
 			
 			#include "«xsts.name.toLowerCase».h"
-			
+		''');
+		
+		/* Declaration of boundaries */
+		header.addContent('''
 			/* boundaries for int */
 			#define INT_MIN «INT_MIN»
 			#define INT_MAX «INT_MAX»
@@ -149,6 +153,15 @@ class HavocBuilder implements IStatechartCode {
      * Constructs the havoc code.
      */
 	override constructCode() {
+		/* Add imports to the file */
+		code.addInclude('''
+			#include <stdio.h>
+			#include <stdlib.h>
+			#include <stdbool.h>
+			
+			#include "«name.toLowerCase».h"
+		''');
+		
 		/* Function for generating random values for each type */
 		code.addContent('''
 			/* runtime generated random boolean */
