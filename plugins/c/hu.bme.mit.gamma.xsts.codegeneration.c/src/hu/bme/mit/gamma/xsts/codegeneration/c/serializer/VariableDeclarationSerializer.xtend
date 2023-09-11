@@ -17,6 +17,7 @@ import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition
 import hu.bme.mit.gamma.expression.model.RationalTypeDefinition
 import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.expression.model.TypeReference
+import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
 
 /**
  * Serializer for variable declarations.
@@ -117,6 +118,18 @@ class VariableDeclarationSerializer {
      */
 	def dispatch String serialize(RationalTypeDefinition type, boolean clock, String name) {
 		return '''float''';
+	}
+	
+	/**
+	 * Serializes an array of the specified type.
+	 *
+	 * @param type the type definition of the array
+	 * @param clock true if the variable is being used in timeout events
+	 * @param name the name of the array
+	 * @return a serialized representation of the array
+	 */
+	def dispatch String serialize(ArrayTypeDefinition type, boolean clock, String name) {
+		return '''«type.elementType.serialize(clock, name)» name[«type.size»]''';
 	}
 	
 	/**

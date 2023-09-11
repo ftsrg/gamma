@@ -41,6 +41,8 @@ import hu.bme.mit.gamma.expression.model.UnaryMinusExpression
 import hu.bme.mit.gamma.expression.model.UnaryPlusExpression
 import hu.bme.mit.gamma.expression.model.XorExpression
 import hu.bme.mit.gamma.xsts.codegeneration.c.CodeBuilder
+import hu.bme.mit.gamma.expression.model.ArrayAccessExpression
+import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression
 
 /**
  * Serializer for expressions in the C code generation.
@@ -334,6 +336,26 @@ class ExpressionSerializer {
 	 */
 	def dispatch String serialize(UnaryMinusExpression expression) {
 		return '''-«expression.operand.serialize»''';
+	}
+	
+	/**
+	 * Serializes an array access expression into a string representation.
+	 *
+	 * @param expression the array access expression to be serialized
+	 * @return a serialized representation of the array access expression
+	 */
+	def dispatch String serialize(ArrayAccessExpression expression) {
+		return '''«expression.operand.serialize»[«expression.index»]''';
+	}
+	
+	/**
+	 * Serializes an array literal expression into a string representation.
+	 *
+	 * @param expression the array literal expression to be serialized.
+	 * @return a serialized representation of the array literal expression.
+	 */
+	def dispatch String serialize(ArrayLiteralExpression expression) {
+		return '''{«expression.operands.join(', ')»}''';
 	}
 	
 }
