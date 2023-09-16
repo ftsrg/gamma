@@ -49,7 +49,6 @@ class HavocBuilder implements IStatechartCode {
 	
 	/* Serializers used for havoc code generation */
 	val GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
-	val TypeDeclarationSerializer typeDeclarationSerializer = new TypeDeclarationSerializer;
 	
 	/* Boundary definitions */
 	val INT_MIN = -32768  // -2^15 

@@ -24,7 +24,6 @@ import hu.bme.mit.gamma.xsts.model.XSTS
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
-import java.util.ArrayList
 import java.util.List
 import java.util.Set
 import org.eclipse.emf.common.util.URI
@@ -68,7 +67,7 @@ class CodeBuilder implements IStatechartCode {
 	val ExpressionSerializer expressionSerializer = new ExpressionSerializer;
 	val VariableGroupRetriever variableGroupRetriever = VariableGroupRetriever.INSTANCE;
 	val TypeDeclarationSerializer typeDeclarationSerializer = new TypeDeclarationSerializer;
-	val VariableDeclarationSerializer variableDeclarationSerializer = new VariableDeclarationSerializer;
+	val VariableDeclarationSerializer variableDeclarationSerializer = VariableDeclarationSerializer.INSTANCE;
 
 	/**
 	 * The set of input variable declarations.
@@ -140,11 +139,7 @@ class CodeBuilder implements IStatechartCode {
 			/* Structure representing «name» component */
 			typedef struct {
 				«FOR variableDeclaration : xsts.variableDeclarations»
-					«variableDeclarationSerializer.serialize(
-						variableDeclaration.type,
-						variableDeclaration.annotations.exists[it instanceof ClockVariableDeclarationAnnotation],
-						variableDeclaration.name
-					)» «variableDeclaration.name»;
+					«variableDeclarationSerializer.serialize(variableDeclaration)»
 				«ENDFOR»
 			} «stName»;
 		''');

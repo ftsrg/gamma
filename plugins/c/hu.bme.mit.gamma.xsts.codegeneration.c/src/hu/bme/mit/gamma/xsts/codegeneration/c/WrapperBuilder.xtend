@@ -60,7 +60,7 @@ class WrapperBuilder implements IStatechartCode {
 	
 	/* Serializers used for code generation */
 	val VariableGroupRetriever variableGroupRetriever = VariableGroupRetriever.INSTANCE;
-	val VariableDeclarationSerializer variableDeclarationSerializer = new VariableDeclarationSerializer;
+	val VariableDeclarationSerializer variableDeclarationSerializer = VariableDeclarationSerializer.INSTANCE;
 	
 	/**
 	 * The set of input variable declarations.

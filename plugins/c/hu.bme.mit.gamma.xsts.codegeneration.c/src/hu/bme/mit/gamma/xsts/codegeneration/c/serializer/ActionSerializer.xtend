@@ -10,12 +10,16 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.xsts.codegeneration.c.serializer
 
-import hu.bme.mit.gamma.expression.model.ClockVariableDeclarationAnnotation
+import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression
+import hu.bme.mit.gamma.expression.model.impl.ArrayAccessExpressionImpl
+import hu.bme.mit.gamma.expression.model.impl.ArrayLiteralExpressionImpl
+import hu.bme.mit.gamma.expression.model.impl.DirectReferenceExpressionImpl
 import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.EmptyAction
 import hu.bme.mit.gamma.xsts.model.HavocAction
 import hu.bme.mit.gamma.xsts.model.IfAction
+import hu.bme.mit.gamma.xsts.model.LoopAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.ParallelAction
 import hu.bme.mit.gamma.xsts.model.SequentialAction
@@ -116,6 +120,11 @@ class ActionSerializer {
 	 * @return a CharSequence that represents the serialized AssignmentAction
 	 */
 	def dispatch CharSequence serialize(AssignmentAction action) {
+		val lhs = action.lhs instanceof ArrayAccessExpressionImpl || action.lhs instanceof DirectReferenceExpressionImpl;
+		val rhs = action.rhs instanceof ArrayLiteralExpressionImpl;
+		/* in case of arrays we handle things differently */
+		if (lhs && rhs)
+			return expressionSerializer.serialize(action.lhs, action.rhs as ArrayLiteralExpression)
 		return '''«expressionSerializer.serialize(action.lhs)» = «expressionSerializer.serialize(action.rhs)»;''';
 	}
 	
@@ -126,11 +135,7 @@ class ActionSerializer {
 	 * @return a CharSequence that represents the serialized VariableDeclarationAction
 	 */
 	def dispatch CharSequence serialize(VariableDeclarationAction action) {
-		return '''«variableDeclarationSerializer.serialize(
-			action.variableDeclaration.type, 
-			action.variableDeclaration.annotations.exists[it instanceof ClockVariableDeclarationAnnotation],
-			action.variableDeclaration.name
-		)» «action.variableDeclaration.name»;''';
+		return variableDeclarationSerializer.serialize(action.variableDeclaration)
 	}
 	
 	/**
@@ -141,6 +146,21 @@ class ActionSerializer {
 	 */
 	def dispatch CharSequence serialize(EmptyAction action) {
 		return '''/* Empty Action */''';
+	}
+	
+	/**
+	 * Serializes a LoopAction to its corresponding code representation.
+	 *
+	 * @param action the LoopAction to be serialized
+	 * @return a serialized representation of the LoopAction
+	 */
+	def dispatch CharSequence serialize(LoopAction action) {
+		val parameter = action.iterationParameterDeclaration;
+		return '''
+			for («variableDeclarationSerializer.serialize(parameter.type, false, parameter.name)» = 0; «parameter.name» < «action.range.leftOperand»; «parameter.name»++) {
+				«action.action.serialize»
+			}
+		'''
 	}
 	
 }

@@ -1,11 +1,18 @@
 package hu.bme.mit.gamma.xsts.codegeneration.c.util
 
+import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression
+import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.Type
-import hu.bme.mit.gamma.xsts.model.MultiaryAction
+import hu.bme.mit.gamma.expression.model.impl.ArrayLiteralExpressionImpl
+import hu.bme.mit.gamma.expression.model.impl.ArrayTypeDefinitionImpl
+import hu.bme.mit.gamma.xsts.codegeneration.c.serializer.VariableDeclarationSerializer
 import hu.bme.mit.gamma.xsts.model.EmptyAction
+import hu.bme.mit.gamma.xsts.model.MultiaryAction
 
 class GeneratorUtil {
+	
+	static val extension VariableDeclarationSerializer variableDeclarationSerializer = VariableDeclarationSerializer.INSTANCE;
 	
 	/**
 	 * Transforms a string with underscores to camel case by converting each word's first letter
@@ -29,6 +36,32 @@ class GeneratorUtil {
 	static def String getLength(Type type) {
 		val type_enum = type as EnumerationTypeDefinition
 		return '''«type_enum.literals.size»'''
+	}
+	
+	/**
+ 	 * Calculates array type based on the given ArrayTypeDefinition.
+	 *
+	 * @param type the ArrayTypeDefinition to generate the array type for.
+	 * @param clock a boolean indicating whether it's a clock.
+	 * @param name the name of the array type.
+	 * @return the generated array type as a String.
+	 */
+	static def String getArrayType(ArrayTypeDefinition type, boolean clock, String name) {
+		if (!(type.elementType instanceof ArrayTypeDefinitionImpl))
+			return type.elementType.serialize(clock, name)
+		return (type.elementType as ArrayTypeDefinition).getArrayType(clock, name)
+	}
+	
+	/**
+	 * Calculate the array size of an ArrayLiteralExpression recursively.
+	 *
+	 * @param literal the ArrayLiteralExpression to calculate the size for
+	 * @return the size of the ArrayLiteralExpression as an array String
+	 */
+	static def String getLiteralSize(ArrayLiteralExpression literal) {
+		if (literal.operands.head instanceof ArrayLiteralExpressionImpl)
+			return '''[«literal.operands.size»]«getLiteralSize(literal.operands.head as ArrayLiteralExpression)»'''
+		return '''[«literal.operands.size»]'''
 	}
 	
 	/**

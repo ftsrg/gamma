@@ -12,6 +12,10 @@ package hu.bme.mit.gamma.xsts.codegeneration.c.serializer
 
 import hu.bme.mit.gamma.expression.model.AddExpression
 import hu.bme.mit.gamma.expression.model.AndExpression
+import hu.bme.mit.gamma.expression.model.ArrayAccessExpression
+import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression
+import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
+import hu.bme.mit.gamma.expression.model.ClockVariableDeclarationAnnotation
 import hu.bme.mit.gamma.expression.model.DecimalLiteralExpression
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.DivideExpression
@@ -39,15 +43,18 @@ import hu.bme.mit.gamma.expression.model.TrueExpression
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.expression.model.UnaryMinusExpression
 import hu.bme.mit.gamma.expression.model.UnaryPlusExpression
+import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.model.XorExpression
+import hu.bme.mit.gamma.expression.model.impl.DirectReferenceExpressionImpl
 import hu.bme.mit.gamma.xsts.codegeneration.c.CodeBuilder
-import hu.bme.mit.gamma.expression.model.ArrayAccessExpression
-import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression
+import hu.bme.mit.gamma.xsts.codegeneration.c.util.GeneratorUtil
 
 /**
  * Serializer for expressions in the C code generation.
  */
 class ExpressionSerializer {
+	
+	val VariableDeclarationSerializer variableDeclarationSerializer = VariableDeclarationSerializer.INSTANCE;
 	
 	/**
      * Serializes the given expression.
@@ -345,17 +352,48 @@ class ExpressionSerializer {
 	 * @return a serialized representation of the array access expression
 	 */
 	def dispatch String serialize(ArrayAccessExpression expression) {
-		return '''«expression.operand.serialize»[«expression.index»]''';
+		return '''«expression.operand.serialize»[«expression.index.serialize»]''';
 	}
 	
 	/**
 	 * Serializes an array literal expression into a string representation.
 	 *
-	 * @param expression the array literal expression to be serialized.
-	 * @return a serialized representation of the array literal expression.
+	 * @param expression the array literal expression to be serialized
+	 * @return a serialized representation of the array literal expression
 	 */
 	def dispatch String serialize(ArrayLiteralExpression expression) {
-		return '''{«expression.operands.join(', ')»}''';
+		return '''{«expression.operands.map[it.serialize].join(', ')»}''';
+	}
+	
+	/**
+	 * Serialize an ArrayAccessExpression and an ArrayLiteralExpression into String.
+	 *
+	 * @param access the ArrayAccessExpression to be serialized
+	 * @param literal the ArrayLiteralExpression to be serialized
+	 * @return a String representing an array access
+	 */
+	def dispatch String serialize(ArrayAccessExpression access, ArrayLiteralExpression literal) {
+		val bgd = (access.operand as DirectReferenceExpressionImpl).basicGetDeclaration as VariableDeclaration
+		val type = GeneratorUtil.getArrayType(bgd.type as ArrayTypeDefinition, bgd.annotations.exists[it instanceof ClockVariableDeclarationAnnotation], bgd.name)
+		return '''
+			«type» temp«access.hashCode»«GeneratorUtil.getLiteralSize(literal)» = «literal.serialize»;
+			memcpy(«access.serialize», temp«access.hashCode», sizeof(«access.serialize»));'''
+	}
+	
+	/**
+	 * Serialize a DirectReferenceExpression and an ArrayLiteralExpression into String.
+	 *
+	 * @param reference the DirectReferenceExpression to be serialized
+	 * @param literal the ArrayLiteralExpression to be serialized
+	 * @return a String representing an array access
+	 */
+	def dispatch String serialize(DirectReferenceExpressionImpl reference, ArrayLiteralExpression literal) {
+		val bgd = reference.basicGetDeclaration as VariableDeclaration
+		val type = GeneratorUtil.getArrayType(bgd.type as ArrayTypeDefinition, false, bgd.name)
+		val postfix = variableDeclarationSerializer.serialize(bgd.type, bgd.annotations.exists[it instanceof ClockVariableDeclarationAnnotation], bgd.name);
+		return '''
+			«type» temp«reference.hashCode»«postfix» = «literal.serialize»;
+			memcpy(«reference.serialize», temp«reference.hashCode», sizeof(«reference.serialize»));'''
 	}
 	
 }
