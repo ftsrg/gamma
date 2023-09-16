@@ -142,11 +142,6 @@ class HavocBuilder implements IStatechartCode {
 				enum «type.name.transformString» havoc_«type.name»();
 			«ENDFOR»
 		''');
-		
-		/* End if in header guard */
-		header.addContent('''
-			#endif /* «name.toUpperCase»_HEADER */
-		''');
 	}
 	
 	/**

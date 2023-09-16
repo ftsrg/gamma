@@ -11,6 +11,7 @@
 package hu.bme.mit.gamma.xsts.codegeneration.c.serializer
 
 import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression
+import hu.bme.mit.gamma.expression.model.ClockVariableDeclarationAnnotation
 import hu.bme.mit.gamma.expression.model.impl.ArrayAccessExpressionImpl
 import hu.bme.mit.gamma.expression.model.impl.ArrayLiteralExpressionImpl
 import hu.bme.mit.gamma.expression.model.impl.DirectReferenceExpressionImpl
@@ -26,6 +27,7 @@ import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
 import hu.bme.mit.gamma.xsts.model.XSTS
 
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.codegeneration.c.util.GeneratorUtil.*
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
 
@@ -84,8 +86,7 @@ class ActionSerializer {
 				«action.then.serialize»
 			}«IF !action.^else.isEmpty» else {
 				«action.^else.serialize»
-			}«ENDIF»
-		''';
+			}«ENDIF»''';
 	}
 	
 	/**
@@ -170,12 +171,14 @@ class ActionSerializer {
 	 * @return a serialized representation of the LoopAction
 	 */
 	def dispatch CharSequence serialize(LoopAction action) {
-		val parameter = action.iterationParameterDeclaration;
+		val ipd = action.iterationParameterDeclaration
+		val left = action.range.getLeft(true)
+		val right = action.range.getRight(false)
+		val clock = ipd.annotations.exists[it instanceof ClockVariableDeclarationAnnotation]
 		return '''
-			for («variableDeclarationSerializer.serialize(parameter.type, false, parameter.name)» = 0; «parameter.name» < «action.range.leftOperand»; «parameter.name»++) {
+			for («variableDeclarationSerializer.serialize(ipd.type, clock, ipd.name)» «ipd.name» = «expressionSerializer.serialize(left)»; «ipd.name» < «expressionSerializer.serialize(right)»; «ipd.name»++) {
 				«action.action.serialize»
-			}
-		'''
+			}'''
 	}
 	
 }

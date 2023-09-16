@@ -156,11 +156,6 @@ class WrapperBuilder implements IStatechartCode {
 			)» get«variable.name.toFirstUpper»(«name»* statechart);
 		«ENDFOR»
 		''');
-		
-		/* End if in header guard */
-		header.addContent('''
-			#endif /* «name.toUpperCase»_HEADER */
-		''');
 	}
 	
 	/**

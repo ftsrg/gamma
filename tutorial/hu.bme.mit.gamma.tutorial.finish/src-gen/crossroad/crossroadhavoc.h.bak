@@ -1,0 +1,44 @@
+#include <time.h>
+#include <stdbool.h>
+
+#include "crossroad.h"
+
+/* header guard */
+#ifndef CROSSROADHAVOC_HEADER
+#define CROSSROADHAVOC_HEADER
+
+/* boundaries for int */
+#define INT_MIN -32768
+#define INT_MAX 32767
+
+/* boundaries for float */
+#define FLOAT_MIN -32768
+#define FLOAT_MAX 32767
+
+/* boundaries for enums */
+#define MAIN_REGION_CONTROLLER_LENGTH 3
+#define OPERATING_CONTROLLER_LENGTH 11
+#define MAIN_REGION_TRAFFICLIGHTCTRL_LENGTH 3
+#define NORMAL_TRAFFICLIGHTCTRL_LENGTH 7
+#define INTERRUPTED_TRAFFICLIGHTCTRL_LENGTH 3
+
+/* runtime generated random boolean */
+bool havoc_bool();
+/* runtime generated random int */
+int havoc_int();
+/* runtime generated random float */
+float havoc_float();
+/* runtime generated random Main_region_Controller */
+enum Main_Region_Controller havoc_Main_region_Controller();
+/* runtime generated random Operating_Controller */
+enum Operating_Controller havoc_Operating_Controller();
+/* runtime generated random Main_region_TrafficLightCtrl */
+enum Main_Region_TrafficLightCtrl havoc_Main_region_TrafficLightCtrl();
+/* runtime generated random Normal_TrafficLightCtrl */
+enum Normal_TrafficLightCtrl havoc_Normal_TrafficLightCtrl();
+/* runtime generated random Interrupted_TrafficLightCtrl */
+enum Interrupted_TrafficLightCtrl havoc_Interrupted_TrafficLightCtrl();
+
+#endif /* CROSSROADHAVOC_HEADER */
+
+#endif /* CROSSROADHAVOC_HEADER */
