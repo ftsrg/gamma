@@ -26,6 +26,7 @@ import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
 import hu.bme.mit.gamma.xsts.model.XSTS
 
+import static extension hu.bme.mit.gamma.xsts.codegeneration.c.util.GeneratorUtil.*
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
 
 /**
@@ -71,7 +72,8 @@ class ActionSerializer {
 	}
 	
 	/**
- 	 * Serializes an IfAction.
+ 	 * Serializes an IfAction. Serializes else action only in case
+ 	 * it is not null or empty.
  	 * 
   	 * @param action an IfAction
 	 * @return a CharSequence that represents the serialized IfAction
@@ -80,9 +82,9 @@ class ActionSerializer {
 		return '''
 			if («expressionSerializer.serialize(action.condition)») {
 				«action.then.serialize»
-			} else {
+			}«IF !action.^else.isEmpty» else {
 				«action.^else.serialize»
-			}
+			}«ENDIF»
 		''';
 	}
 	

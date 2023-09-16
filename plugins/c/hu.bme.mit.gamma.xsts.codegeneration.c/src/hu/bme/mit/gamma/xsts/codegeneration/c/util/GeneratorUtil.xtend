@@ -17,6 +17,7 @@ import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.expression.model.impl.ArrayLiteralExpressionImpl
 import hu.bme.mit.gamma.expression.model.impl.ArrayTypeDefinitionImpl
 import hu.bme.mit.gamma.xsts.codegeneration.c.serializer.VariableDeclarationSerializer
+import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.EmptyAction
 import hu.bme.mit.gamma.xsts.model.MultiaryAction
 
@@ -81,7 +82,11 @@ class GeneratorUtil {
 	 * @return `true` if the MultiaryAction is empty, `false` otherwise
 	 */
 	static def boolean isEmpty(MultiaryAction action) {
-		return action.empty || action.actions.filter[!(it instanceof EmptyAction)].size == 0
+		return action === null || action.actions.filter[!(it instanceof EmptyAction)].size == 0
+	}
+	
+	static def boolean isEmpty(Action action) {
+		return action === null || action instanceof EmptyAction
 	}
 	
 }
