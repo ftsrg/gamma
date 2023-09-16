@@ -10,7 +10,6 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.xsts.codegeneration.c
 
-import hu.bme.mit.gamma.expression.model.ClockVariableDeclarationAnnotation
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.VariableGroupRetriever
 import hu.bme.mit.gamma.xsts.codegeneration.c.model.CodeModel
@@ -63,10 +62,10 @@ class CodeBuilder implements IStatechartCode {
 	SupportedPlatforms platform = SupportedPlatforms.UNIX;
 
 	/* Serializers used for code generation */
-	val ActionSerializer actionSerializer = new ActionSerializer;
-	val ExpressionSerializer expressionSerializer = new ExpressionSerializer;
+	val ActionSerializer actionSerializer = ActionSerializer.INSTANCE;
+	val ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE;
 	val VariableGroupRetriever variableGroupRetriever = VariableGroupRetriever.INSTANCE;
-	val TypeDeclarationSerializer typeDeclarationSerializer = new TypeDeclarationSerializer;
+	val TypeDeclarationSerializer typeDeclarationSerializer = TypeDeclarationSerializer.INSTANCE;
 	val VariableDeclarationSerializer variableDeclarationSerializer = VariableDeclarationSerializer.INSTANCE;
 
 	/**

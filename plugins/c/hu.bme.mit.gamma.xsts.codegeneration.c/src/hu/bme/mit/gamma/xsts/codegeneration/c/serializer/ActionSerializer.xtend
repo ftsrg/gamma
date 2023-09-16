@@ -33,9 +33,22 @@ import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeature
  */
 class ActionSerializer {
 	
-	val HavocSerializer havocSerializer = new HavocSerializer;
-	val ExpressionSerializer expressionSerializer = new ExpressionSerializer;
-	val VariableDeclarationSerializer variableDeclarationSerializer = new VariableDeclarationSerializer;
+	/**
+	 * The ActionSerializer class provides methods for serializing action-related components.
+	 * This class is intended for serialization purposes.
+	 */
+	public static val ActionSerializer INSTANCE = new ActionSerializer;
+	
+	/**
+	 * Constructs a new instance of the ActionSerializer class.
+	 * This constructor is marked as protected to prevent direct instantiation.
+	 */
+	protected new() {
+	}
+	
+	val HavocSerializer havocSerializer = HavocSerializer.INSTANCE;
+	val ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE;
+	val VariableDeclarationSerializer variableDeclarationSerializer = VariableDeclarationSerializer.INSTANCE;
 	
 	/**
 	 * Serializes an initializing action.

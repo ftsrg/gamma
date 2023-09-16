@@ -14,7 +14,6 @@ import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.codegeneration.c.model.CodeModel
 import hu.bme.mit.gamma.xsts.codegeneration.c.model.HeaderModel
 import hu.bme.mit.gamma.xsts.codegeneration.c.platforms.SupportedPlatforms
-import hu.bme.mit.gamma.xsts.codegeneration.c.serializer.TypeDeclarationSerializer
 import hu.bme.mit.gamma.xsts.model.HavocAction
 import hu.bme.mit.gamma.xsts.model.XSTS
 import java.io.File

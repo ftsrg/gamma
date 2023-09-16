@@ -22,6 +22,19 @@ import static extension hu.bme.mit.gamma.xsts.codegeneration.c.util.GeneratorUti
 class TypeDeclarationSerializer {
 	
 	/**
+	 * The TypeDeclarationSerializer class provides methods for serializing type declarations.
+	 * This class is intended for serialization purposes.
+	 */
+	public static val TypeDeclarationSerializer INSTANCE = new TypeDeclarationSerializer
+	
+	/**
+	 * Constructs a new instance of the TypeDeclarationSerializer class.
+	 * This constructor is marked as protected to prevent direct instantiation.
+	 */
+	protected new() {	
+	}
+	
+	/**
 	 * Serializes an enumeration type definition.
 	 * 
 	 * @param type The enumeration type definition.

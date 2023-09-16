@@ -31,8 +31,6 @@ import static extension hu.bme.mit.gamma.xsts.codegeneration.c.util.GeneratorUti
  */
 class VariableDeclarationSerializer {
 	
-	val ExpressionSerializer expressionSerializer = new ExpressionSerializer;
-	
 	/**
 	 * The VariableDeclarationSerializer class provides methods for serializing variable declarations.
 	 * This class is intended for serialization purposes.
@@ -45,6 +43,8 @@ class VariableDeclarationSerializer {
 	 */
 	protected new() {
 	}
+	
+	val ExpressionSerializer expressionSerializer = new ExpressionSerializer;
 	
 	/**
 	 * Serialize a Declaration into a String.

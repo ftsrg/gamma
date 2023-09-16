@@ -25,6 +25,19 @@ import hu.bme.mit.gamma.expression.model.TypeReference
  * Also supports direct reference expressions.
  */
 class HavocSerializer {
+	
+	/**
+	 * The HavocSerializer class provides methods for serializing Havoc-related components.
+	 * This class is intended for serialization purposes.
+	 */
+	public static val HavocSerializer INSTANCE = new HavocSerializer
+	
+	/**
+	 * Constructs a new instance of the HavocSerializer class.
+	 * This constructor is marked as protected to prevent direct instantiation.
+	 */
+	protected new() {
+	}
 
 	/**
      * Throws an exception for unsupported types.

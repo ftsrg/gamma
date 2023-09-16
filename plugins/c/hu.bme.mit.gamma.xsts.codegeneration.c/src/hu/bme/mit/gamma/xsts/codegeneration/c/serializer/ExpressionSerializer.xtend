@@ -54,6 +54,19 @@ import hu.bme.mit.gamma.xsts.codegeneration.c.util.GeneratorUtil
  */
 class ExpressionSerializer {
 	
+	/**
+	 * The ExpressionSerializer class provides methods for serializing expressions.
+	 * This class is intended for serialization purposes.
+	 */
+	public static val ExpressionSerializer INSTANCE = new ExpressionSerializer
+	
+	/**
+	 * Constructs a new instance of the ExpressionSerializer class.
+	 * This constructor is marked as protected to prevent direct instantiation.
+	 */
+	protected new() {
+	}
+	
 	val VariableDeclarationSerializer variableDeclarationSerializer = VariableDeclarationSerializer.INSTANCE;
 	
 	/**
