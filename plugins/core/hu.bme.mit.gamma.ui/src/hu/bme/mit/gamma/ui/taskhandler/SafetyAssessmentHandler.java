@@ -37,7 +37,6 @@ import hu.bme.mit.gamma.querygenerator.serializer.NuxmvPropertySerializer;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceElementReferenceExpression;
 import hu.bme.mit.gamma.util.SystemChecker;
 import hu.bme.mit.gamma.verification.util.AbstractVerifier.LtlQueryAdapter;
-import hu.bme.mit.gamma.xsap.visualizer.FaultTreeVisualizer;
 
 public abstract class SafetyAssessmentHandler extends TaskHandler {
 	
@@ -111,9 +110,9 @@ public abstract class SafetyAssessmentHandler extends TaskHandler {
 				// Visualize fault tree (a dependency to a certain version of Sirius is needed)
 				boolean visualizeFaultTree = safetyAssessment.isVisualize();
 				if (visualizeFaultTree) {
-					final String xmlPath = targetFolderUri + File.separator + fileNamePrefix + "ft.xml";
-					FaultTreeVisualizer faultTreeVisualizer = FaultTreeVisualizer.INSTANCE;
-					faultTreeVisualizer.visualizeFaultTree(xmlPath);
+//					final String xmlPath = targetFolderUri + File.separator + fileNamePrefix + "ft.xml";
+//					FaultTreeVisualizer faultTreeVisualizer = FaultTreeVisualizer.INSTANCE;
+//					faultTreeVisualizer.visualizeFaultTree(xmlPath);
 				}
 			}
 		}
