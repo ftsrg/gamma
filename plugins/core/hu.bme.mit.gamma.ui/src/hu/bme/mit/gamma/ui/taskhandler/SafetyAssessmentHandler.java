@@ -109,7 +109,7 @@ public abstract class SafetyAssessmentHandler extends TaskHandler {
 				generateFaultTreeScanner.close();
 				
 				// Visualize fault tree (a dependency to a certain version of Sirius is needed)
-				boolean visualizeFaultTree = false;
+				boolean visualizeFaultTree = safetyAssessment.isVisualize();
 				if (visualizeFaultTree) {
 					final String xmlPath = targetFolderUri + File.separator + fileNamePrefix + "ft.xml";
 					FaultTreeVisualizer faultTreeVisualizer = FaultTreeVisualizer.INSTANCE;

@@ -448,13 +448,16 @@ FmeaTableGeneration returns FmeaTableGeneration:
 	{FmeaTableGeneration} 'fmea-table-generation' '{'
 		(analysisModelTransformation=AnalysisModelTransformation)?
 		(
-			'cardinality' ':' cardinality=Expression |
 			'folder' ':' targetFolder+=STRING |
 			'file-name' ':' fileName+=STRING |
 			'fault-extension-instructions-file' ':' faultExtensionInstructionsFile+=STRING |
 			'fault-extension-instructions' ':' faultExtensionInstructions=[fei::FaultExtensionInstructions | STRING] |
 			'fault-modes-file' ':' faultModesFile+=STRING | // Manually created XML (e.g., for debugging)
-			'top-level-event' ':' propertyPackages+=[property::PropertyPackage | STRING] // Property models
+			'top-level-event' ':' propertyPackages+=[property::PropertyPackage | STRING] | // Property models
+			// FMEA-related
+			'cardinality' ':' cardinality=Expression |
+			'bmc-bound' ':' bmcBound=Expression |
+			'visualize' ':' visualize=BOOLEAN
 		)*
 	'}'
 ;

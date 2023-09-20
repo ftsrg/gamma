@@ -216,10 +216,12 @@
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//SafetyAssessment/faultModesFile"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference genmodel.ecore#//SafetyAssessment/propertyPackages"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference genmodel.ecore#//SafetyAssessment/faultExtensionInstructions"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//SafetyAssessment/visualize"/>
     </genClasses>
     <genClasses ecoreClass="genmodel.ecore#//FaultTreeGeneration"/>
     <genClasses ecoreClass="genmodel.ecore#//FmeaTableGeneration">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference genmodel.ecore#//FmeaTableGeneration/cardinality"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference genmodel.ecore#//FmeaTableGeneration/bmcBound"/>
     </genClasses>
   </genPackages>
 </genmodel:GenModel>

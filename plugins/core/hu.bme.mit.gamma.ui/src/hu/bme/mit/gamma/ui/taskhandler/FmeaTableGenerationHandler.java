@@ -21,6 +21,7 @@ import hu.bme.mit.gamma.genmodel.model.SafetyAssessment;
 public class FmeaTableGenerationHandler extends SafetyAssessmentHandler {
 	//
 	protected int cardinality = -1;
+	protected int bmcBound = -1;
 	//
 	public FmeaTableGenerationHandler(IFile file) {
 		super(file);
@@ -32,14 +33,17 @@ public class FmeaTableGenerationHandler extends SafetyAssessmentHandler {
 		FmeaTableGeneration fmeaTableGeneration = (FmeaTableGeneration) safetyAssessment;
 		Expression cardinality = fmeaTableGeneration.getCardinality();
 		this.cardinality = (cardinality != null) ? expressionEvaluator.evaluateInteger(cardinality) : 1;
+		Expression bmcBound = fmeaTableGeneration.getBmcBound();
+		this.bmcBound = (bmcBound != null) ? expressionEvaluator.evaluateInteger(bmcBound) : this.bmcBound;
 		//
 		super.execute(safetyAssessment);
 	}
 	
 	@Override
 	String getCommand() {
+		String bmcBoundArgument = (bmcBound > 0) ? " -k " + bmcBound : "";
 		return "go_msat" + System.lineSeparator() +
-				"compute_fmea_table_msat_bmc -N " + cardinality; // And this line is extended by super
+				"compute_fmea_table_msat_bmc -N " + cardinality + bmcBoundArgument; // And this line is extended by super
 	}
 	
 	@Override
