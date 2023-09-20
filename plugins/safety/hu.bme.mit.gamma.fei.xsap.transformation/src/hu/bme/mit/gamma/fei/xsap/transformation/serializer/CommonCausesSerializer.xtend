@@ -49,7 +49,7 @@ class CommonCausesSerializer {
 	'''
 	
 	protected def serializeCommonCauseMode(CommonCauseMode mode) '''
-		MODE «mode.faultSlice.name».«mode.faultMode.name» «mode.range.serializeCommonCauseRange»
+		MODE «mode.faultSlice.name».«mode.faultMode.name» «mode.range.serializeCommonCauseRange»;
 	'''
 	
 	protected def serializeCommonCauseRange(CommonCauseRange range) '''
