@@ -157,17 +157,43 @@ class JavaUtil {
 		val stringBuilder = new StringBuilder
 		stringBuilder.append(string.trim)
 		
-		val char leftParenthesis = '('
-		val char rightParenthesis = ')'
-		
-		while (stringBuilder.charAt(0) == leftParenthesis &&
-				stringBuilder.charAt(stringBuilder.length - 1) == rightParenthesis) {
+		while (stringBuilder.deparenthesizable) {
 			stringBuilder.deleteCharAt(0)
 			stringBuilder.deleteCharAt(stringBuilder.length - 1)
 			stringBuilder.trim
 		}
 		
 		return stringBuilder.toString.trim
+	}
+	
+	def boolean isDeparenthesizable(StringBuilder stringBuilder) {
+		return stringBuilder.toString.deparenthesizable
+	}
+	
+	def boolean isDeparenthesizable(String string) {
+		val char leftParenthesis = '('
+		val char rightParenthesis = ')'
+		
+		if (string.charAt(0) == leftParenthesis &&
+				string.charAt(string.length - 1) == rightParenthesis) {
+			var parenthesisCount = 0
+			for (var i = 1; i < string.length - 1; i++) {
+				val charAt = string.charAt(i)
+				if (charAt == leftParenthesis) {
+					parenthesisCount++
+				}
+				else if (charAt == rightParenthesis) {
+					parenthesisCount--
+				}
+				if (parenthesisCount < 0) {
+					return false
+				}
+			}
+			
+			return true
+		}
+		
+		return false
 	}
 	
 	def String simplifyCharacterPairs(String string, char character) {
