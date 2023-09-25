@@ -12,7 +12,6 @@ package hu.bme.mit.gamma.xsts.codegeneration.c
 
 import hu.bme.mit.gamma.expression.model.ClockVariableDeclarationAnnotation
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
-import hu.bme.mit.gamma.lowlevel.xsts.transformation.VariableGroupRetriever
 import hu.bme.mit.gamma.xsts.codegeneration.c.model.CodeModel
 import hu.bme.mit.gamma.xsts.codegeneration.c.model.HeaderModel
 import hu.bme.mit.gamma.xsts.codegeneration.c.platforms.IPlatform
@@ -20,6 +19,7 @@ import hu.bme.mit.gamma.xsts.codegeneration.c.platforms.Platforms
 import hu.bme.mit.gamma.xsts.codegeneration.c.platforms.SupportedPlatforms
 import hu.bme.mit.gamma.xsts.codegeneration.c.serializer.VariableDeclarationSerializer
 import hu.bme.mit.gamma.xsts.model.XSTS
+import hu.bme.mit.gamma.xsts.transformation.util.VariableGroupRetriever
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths

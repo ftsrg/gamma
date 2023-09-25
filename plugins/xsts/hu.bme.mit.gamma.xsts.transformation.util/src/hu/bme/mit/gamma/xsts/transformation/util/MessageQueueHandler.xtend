@@ -8,8 +8,7 @@
  *
  * SPDX-License-Identifier: EPL-1.0
  ********************************************************************************/
-package hu.bme.mit.gamma.xsts.promela.transformation.util
-
+package hu.bme.mit.gamma.xsts.transformation.util
 import hu.bme.mit.gamma.expression.model.ArrayAccessExpression
 import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
 import hu.bme.mit.gamma.expression.model.BinaryExpression
@@ -25,8 +24,6 @@ import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
-import hu.bme.mit.gamma.xsts.promela.transformation.serializer.ExpressionSerializer
-import hu.bme.mit.gamma.xsts.promela.transformation.serializer.TypeSerializer
 import hu.bme.mit.gamma.xsts.transformation.util.MessageQueueUtil
 import hu.bme.mit.gamma.xsts.transformation.util.VariableGroupRetriever
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
@@ -34,6 +31,8 @@ import java.math.BigInteger
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
+import hu.bme.mit.gamma.expression.util.TypeSerializer
+import hu.bme.mit.gamma.xsts.transformation.serializer.ExpressionSerializer
 
 class MessageQueueHandler {
 	//
@@ -45,21 +44,21 @@ class MessageQueueHandler {
 	protected final extension VariableGroupRetriever variableGroupRetriever = VariableGroupRetriever.INSTANCE
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
 	
-	// Declaration -> message queues new type - chan q = [8] of { byte };
+	// Declaration -> message queues new type - TODO
 	
 	def serializeQueueVariable(VariableDeclaration queue) {
 		val extension expressionSerializer = ExpressionSerializer.INSTANCE // Cannot be an attribute due to cyclic references
 		val arrayType = queue.typeDefinition as ArrayTypeDefinition
 		val elementType = arrayType.elementType
-		var serializedType = elementType.serializeType
+		var serializedType = elementType.serialize
 		if (queue.global) {
 			val xSts = queue.containingXsts
 			val masterQueues = xSts.masterMessageQueueGroup.variables
 			if (masterQueues.contains(queue)) {
-				serializedType = "byte" // Optimization
+				serializedType = "integer" // Optimization
 			}
 		}
-		return '''chan «queue.name» = [«arrayType.size.serialize»] of { «serializedType» };''' 
+		return ''' ''' // TODO 
 	}
 	
 	// Entry point for queue expression handling
@@ -95,7 +94,7 @@ class MessageQueueHandler {
 					if (sizeVariables.contains(sizeVariable)) {
 						val declarationReferenceAnnotation = sizeVariable.declarationReferenceAnnotation
 						val messageQueue = declarationReferenceAnnotation.declaration
-						return '''len(«messageQueue.name»)'''
+						return ''' ''' // TODO
 					}
 				}
 			}
@@ -103,25 +102,25 @@ class MessageQueueHandler {
 		throw new IllegalArgumentException("Not known expression: " + expression)
 	}
 	
-	// isFull -> size variables or master queue - XSTS 8 <= sizeVar or master[0] != 0  || Promela full(q) 
+	// isFull -> TODO
 
 	protected def serializeQueueFullExpression(Expression expression) {
 		return expression.serializeQueueRightReferenceExpression(LessEqualExpression, InequalityExpression, "full")
 	}
 	
-	// isNotFull -> size variables or master queue - XSTS 8 > sizeVar or master[0] == 0 || Promela - full(q) 
+	// isNotFull -> TODO
 	
 	protected def serializeQueueNotFullExpression(Expression expression) {
 		return expression.serializeQueueRightReferenceExpression(GreaterExpression, EqualityExpression, "nfull")
 	}
 	
-	// isEmpty -> size variables or master queue - XSTS sizeVar <= 0 or master[0] == 0   || Promela - empty(q) 
+	// isEmpty -> TODO
 	
 	protected def serializeQueueEmptyExpression(Expression expression) {
 		return expression.serializeQueueLeftReferenceExpression(LessEqualExpression, EqualityExpression, "empty")
 	}
 	
-	// isNotEmpty -> size variables or master queue - XSTS sizeVar > 0  or master[0] != 0  || Promela - nempty(q) 
+	// isNotEmpty -> TODO
 	
 	protected def serializeQueueNotEmptyExpression(Expression expression) {
 		return expression.serializeQueueLeftReferenceExpression(GreaterExpression, InequalityExpression, "nempty")
@@ -145,8 +144,7 @@ class MessageQueueHandler {
 				false, normalQueueExpression, masterQueueExpression, functionName)
 	}
 	
-	private def serializeQueueExpression(Expression expression,
-			boolean isLeftReference,
+	private def serializeQueueExpression(Expression expression, boolean isLeftReference,
 			Class<? extends BinaryExpression> normalQueueExpression,
 			Class<? extends BinaryExpression> masterQueueExpression,
 			String functionName) {
@@ -192,10 +190,10 @@ class MessageQueueHandler {
 		val capacity = type.size
 		
 		return switch (functionName) {
-			case "empty" : '''(len(«messageQueue.name») <= 0)'''
-			case "nempty" : '''(len(«messageQueue.name») > 0)'''
-			case "full" : '''(len(«messageQueue.name») >= «capacity.serialize»)'''
-			case "nfull" : '''(len(«messageQueue.name») < «capacity.serialize»)'''
+			case "empty" : ''' ''' // TODO
+			case "nempty" : ''' '''
+			case "full" : ''' '''
+			case "nfull" : ''' '''
 			default : throw new IllegalArgumentException("Not known function: " + functionName)
 		}
 	}
@@ -223,7 +221,7 @@ class MessageQueueHandler {
 		throw new IllegalArgumentException("Not known action: " + action)
 	}
 
-	// add -> q ! 7 || queue[size] := 
+	// add -> TODO
 	
 	protected def serializeQueueAddAction(Action action) {
 		val extension expressionSerializer = ExpressionSerializer.INSTANCE
@@ -232,12 +230,12 @@ class MessageQueueHandler {
 			val rhs = action.rhs
 			if (lhs instanceof ArrayAccessExpression) {
 				val array = lhs.declaration
-				return '''«array.name» ! «rhs.serialize»;'''
+				return ''' ''' // TODO
 			}
 		}
 		throw new IllegalArgumentException("Not known action: " + action)
 	}
-	// pop -> q ? x || queue := [0 -> queue[1], ...]
+	// pop -> TODO
 	
 	protected def serializeQueuePopAction(Action action) {
 		val extension expressionSerializer = ExpressionSerializer.INSTANCE
@@ -253,18 +251,14 @@ class MessageQueueHandler {
 					val name = "pop_placeholder_" + action.hashCode.toString.replaceAll("-", "_")
 					
 					return '''
-						d_step {
-							local «elementType.serializeType» «name» = «defaultExpression»;
-							«array.name» ? «name»;
-							«name» = «defaultExpression»;
-						}
-					'''
+						 
+					''' // TODO
 				}
 			}
 		}
 	}
 	
-	// peek -> q ? <x> || := queue[0]?
+	// peek -> TODO
 	
 	protected def serializeQueuePeekAction(Action action) {
 		val extension expressionSerializer = ExpressionSerializer.INSTANCE
@@ -291,7 +285,7 @@ class MessageQueueHandler {
 					val xSts = array.containingXsts
 					val messageQueues = xSts.messageQueueGroup.variables
 					if (messageQueues.contains(array) && index.value == BigInteger.ZERO) {
-						return '''«array.name» ? <«lhs.serialize»>;'''
+						return ''' ''' // TODO
 					}
 				}
 			}
@@ -302,14 +296,13 @@ class MessageQueueHandler {
 	//
 	
 	protected def serializeQueueInitializingAction(Action action) {
-		return ''''''
+		return '''''' // TODO
 	}
 	
 	// size := size + 1 / - 1
 	
 	protected def serializeQueueSizeAction(Action action) {
-		// In Promela, native channels store their own size
-		return ''''''
+		return '''''' // TODO
 	}
 	
 	// TODO clear -> || queue := [0 -> 0, ...]

@@ -19,7 +19,6 @@ import hu.bme.mit.gamma.expression.model.PredicateExpression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.TransitionMerging
-import hu.bme.mit.gamma.lowlevel.xsts.transformation.VariableGroupRetriever
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer.ArrayOptimizer
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer.RemovableVariableRemover
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer.ResettableVariableResetter
@@ -39,6 +38,7 @@ import hu.bme.mit.gamma.xsts.model.SystemOutEventParameterGroup
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
 import hu.bme.mit.gamma.xsts.transformation.serializer.ActionSerializer
+import hu.bme.mit.gamma.xsts.transformation.util.VariableGroupRetriever
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import java.util.Collections
 import java.util.List

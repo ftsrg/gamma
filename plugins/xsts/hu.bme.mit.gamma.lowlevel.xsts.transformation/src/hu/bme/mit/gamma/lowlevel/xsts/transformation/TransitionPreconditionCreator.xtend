@@ -21,6 +21,7 @@ import hu.bme.mit.gamma.statechart.lowlevel.model.SchedulingOrder
 import hu.bme.mit.gamma.statechart.lowlevel.model.State
 import hu.bme.mit.gamma.statechart.lowlevel.model.Transition
 import hu.bme.mit.gamma.util.GammaEcoreUtil
+import hu.bme.mit.gamma.xsts.transformation.util.VariableGroupRetriever
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import java.util.Collection
 import java.util.List

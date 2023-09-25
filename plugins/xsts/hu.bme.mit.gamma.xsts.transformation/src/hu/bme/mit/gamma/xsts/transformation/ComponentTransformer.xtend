@@ -17,7 +17,6 @@ import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.LowlevelToXstsTransformer
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.TransitionMerging
-import hu.bme.mit.gamma.lowlevel.xsts.transformation.VariableGroupRetriever
 import hu.bme.mit.gamma.statechart.composite.AbstractAsynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
@@ -45,6 +44,7 @@ import hu.bme.mit.gamma.xsts.model.RegionGroup
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
 import hu.bme.mit.gamma.xsts.transformation.util.OrthogonalActionTransformer
+import hu.bme.mit.gamma.xsts.transformation.util.VariableGroupRetriever
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import java.util.AbstractMap.SimpleEntry
 import java.util.Collection

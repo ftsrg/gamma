@@ -13,7 +13,6 @@ package hu.bme.mit.gamma.xsts.nuxmv.transformation.serializer
 import hu.bme.mit.gamma.expression.model.ArrayAccessExpression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
-import hu.bme.mit.gamma.lowlevel.xsts.transformation.VariableGroupRetriever
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.AbstractAssignmentAction
 import hu.bme.mit.gamma.xsts.model.Action
@@ -27,6 +26,7 @@ import hu.bme.mit.gamma.xsts.model.PrimedVariable
 import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
 import hu.bme.mit.gamma.xsts.model.XSTS
+import hu.bme.mit.gamma.xsts.transformation.util.VariableGroupRetriever
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import java.util.Collection
 import java.util.Map
