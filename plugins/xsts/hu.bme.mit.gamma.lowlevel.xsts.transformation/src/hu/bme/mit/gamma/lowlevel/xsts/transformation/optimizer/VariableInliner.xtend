@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer
 
+import hu.bme.mit.gamma.expression.model.ArrayAccessExpression
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
@@ -197,6 +198,10 @@ class VariableInliner {
 			if (declaration instanceof VariableDeclaration) {
 				declaration.handleMaps(action, rhs, concreteValues, symbolicValues)
 			}
+		}
+		else if (lhs instanceof ArrayAccessExpression) {
+			val index = lhs.index
+			index.inlineExpression(concreteValues, symbolicValues)
 		}
 	}
 	

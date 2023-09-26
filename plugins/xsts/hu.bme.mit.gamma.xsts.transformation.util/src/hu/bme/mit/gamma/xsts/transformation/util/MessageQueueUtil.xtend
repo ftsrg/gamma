@@ -14,6 +14,7 @@ import hu.bme.mit.gamma.expression.model.ArrayAccessExpression
 import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression
 import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
 import hu.bme.mit.gamma.expression.model.BinaryExpression
+import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.EqualityExpression
 import hu.bme.mit.gamma.expression.model.Expression
@@ -44,7 +45,7 @@ class MessageQueueUtil {
 	
 	// Declaration -> message queues new type - chan q = [8] of { byte };
 	
-	def isMasterQueueVariable(VariableDeclaration variable) {
+	def isMasterQueueVariable(Declaration variable) {
 		val type = variable.typeDefinition
 		if (type instanceof ArrayTypeDefinition) {
 			val xSts = variable.containingXsts
@@ -55,7 +56,7 @@ class MessageQueueUtil {
 		return false
 	}
 	
-	def isQueueVariable(VariableDeclaration variable) {
+	def isQueueVariable(Declaration variable) {
 		val type = variable.typeDefinition
 		if (type instanceof ArrayTypeDefinition) {
 			val xSts = variable.containingXsts

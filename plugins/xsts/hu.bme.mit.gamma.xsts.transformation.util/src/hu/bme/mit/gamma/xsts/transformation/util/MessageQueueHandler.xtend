@@ -9,6 +9,7 @@
  * SPDX-License-Identifier: EPL-1.0
  ********************************************************************************/
 package hu.bme.mit.gamma.xsts.transformation.util
+
 import hu.bme.mit.gamma.expression.model.ArrayAccessExpression
 import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
 import hu.bme.mit.gamma.expression.model.BinaryExpression
@@ -21,19 +22,18 @@ import hu.bme.mit.gamma.expression.model.InequalityExpression
 import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression
 import hu.bme.mit.gamma.expression.model.LessEqualExpression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
+import hu.bme.mit.gamma.expression.util.TypeSerializer
 import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
-import hu.bme.mit.gamma.xsts.transformation.util.MessageQueueUtil
-import hu.bme.mit.gamma.xsts.transformation.util.VariableGroupRetriever
+import hu.bme.mit.gamma.xsts.transformation.serializer.ExpressionSerializer
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import java.math.BigInteger
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
-import hu.bme.mit.gamma.expression.util.TypeSerializer
-import hu.bme.mit.gamma.xsts.transformation.serializer.ExpressionSerializer
 
+@Deprecated
 class MessageQueueHandler {
 	//
 	public static final MessageQueueHandler INSTANCE = new MessageQueueHandler
