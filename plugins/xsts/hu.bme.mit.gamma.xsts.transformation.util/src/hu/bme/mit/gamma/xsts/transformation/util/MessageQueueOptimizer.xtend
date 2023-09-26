@@ -211,7 +211,6 @@ class MessageQueueOptimizer {
 					val addAction = flattenedQueueVariable.createAssignmentAction(clonedRhs)
 					
 					addAction.replace(action)
-					return
 				}
 				else { // q[size] := x;
 					val sizeVariable = index.declaration
@@ -230,8 +229,8 @@ class MessageQueueOptimizer {
 					
 					val newAddAction = ifActions.weave
 					newAddAction.replace(action)
-					return
 				}
+				return
 			}
 		}
 		throw new IllegalArgumentException("Not known action: " + action)
@@ -304,8 +303,8 @@ class MessageQueueOptimizer {
 				val notEmptyAssumption = notEmptyExpression.createAssumeAction
 				
 				action.appendToAction(notEmptyAssumption)
-				return
 			}
+			return
 		}
 		throw new IllegalArgumentException("Not known action: " + action)
 	}

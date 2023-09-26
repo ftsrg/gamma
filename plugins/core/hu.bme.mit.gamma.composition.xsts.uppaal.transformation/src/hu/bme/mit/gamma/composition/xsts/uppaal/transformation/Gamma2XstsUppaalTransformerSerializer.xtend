@@ -101,7 +101,7 @@ class Gamma2XstsUppaalTransformerSerializer {
 		val xStsTransformer = new Gamma2XstsTransformerSerializer(component,
 			arguments, targetFolderUri,
 			fileName, minSchedulingConstraint, maxSchedulingConstraint,
-			optimize, false,
+			optimize, false, false,
 			transitionMerging,
 			slicingProperties, annotatableElements,
 			initialState, initialStateSetting)

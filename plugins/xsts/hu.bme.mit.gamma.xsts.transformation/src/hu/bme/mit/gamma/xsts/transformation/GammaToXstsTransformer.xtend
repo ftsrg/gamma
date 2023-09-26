@@ -65,7 +65,7 @@ class GammaToXstsTransformer {
 	protected final InitialStateSetting initialStateSetting
 	protected final boolean optimize
 	protected final boolean optimizeArrays
-	protected final boolean optimizeMessageQueues = false
+	protected final boolean optimizeMessageQueues
 	// Auxiliary objects
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension ActionSerializer actionSerializer = ActionSerializer.INSTANCE
@@ -82,26 +82,28 @@ class GammaToXstsTransformer {
 	protected final Logger logger = Logger.getLogger("GammaLogger")
 	
 	new() {
-		this(null, true, true, false, TransitionMerging.HIERARCHICAL)
+		this(null, true, true, false, false, TransitionMerging.HIERARCHICAL)
 	}
 	
 	new(Integer schedulingConstraint, boolean transformOrthogonalActions,
-			boolean optimize, boolean optimizeArrays, TransitionMerging transitionMerging) {
+			boolean optimize, boolean optimizeArrays, boolean optimizeMessageQueues,
+			TransitionMerging transitionMerging) {
 		this(schedulingConstraint, transformOrthogonalActions,
-				optimize, optimizeArrays, transitionMerging,
-				null, null)
+				optimize, optimizeArrays, optimizeMessageQueues,
+				transitionMerging, null, null)
 	}
 	
 	new(Integer schedulingConstraint, boolean transformOrthogonalActions,
-			boolean optimize, boolean optimizeArrays, TransitionMerging transitionMerging,
+			boolean optimize, boolean optimizeArrays, boolean optimizeMessageQueues,
+			TransitionMerging transitionMerging,
 			PropertyPackage initialState, InitialStateSetting initialStateSetting) {
 		this(schedulingConstraint, schedulingConstraint,
-			transformOrthogonalActions, optimize, optimizeArrays, transitionMerging,
-			initialState, initialStateSetting)
+			transformOrthogonalActions, optimize, optimizeArrays, optimizeMessageQueues,
+			transitionMerging, initialState, initialStateSetting)
 	}
 	
 	new(Integer minSchedulingConstraint, Integer maxSchedulingConstraint,
-			boolean transformOrthogonalActions,	boolean optimize, boolean optimizeArrays,
+			boolean transformOrthogonalActions,	boolean optimize, boolean optimizeArrays, boolean optimizeMessageQueues,
 			TransitionMerging transitionMerging,
 			PropertyPackage initialState, InitialStateSetting initialStateSetting) {
 		this.gammaToLowlevelTransformer = new GammaToLowlevelTransformer
@@ -113,6 +115,7 @@ class GammaToXstsTransformer {
 		this.initialStateSetting = initialStateSetting
 		this.optimize = optimize
 		this.optimizeArrays = optimizeArrays
+		this.optimizeMessageQueues = optimizeMessageQueues
 	}
 	
 	def preprocessAndExecuteAndSerialize(Package _package,
