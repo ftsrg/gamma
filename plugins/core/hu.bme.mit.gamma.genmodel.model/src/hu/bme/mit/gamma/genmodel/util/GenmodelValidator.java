@@ -242,6 +242,13 @@ public class GenmodelValidator extends ExpressionModelValidator {
 						new ReferenceInfo(GenmodelModelPackage.Literals.VERIFICATION__QUERY_FILES, index)));
 			}
 		}
+		if (verification.isBackAnnotateToOriginal()) {
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.INFO,
+				"This setting can be used only if the default name is not changed during the " +
+					"derivation of the analysis model ('file' setting is not used in the analysis task)",
+						new ReferenceInfo(GenmodelModelPackage.Literals.VERIFICATION__BACK_ANNOTATE_TO_ORIGINAL)));
+		}
+		
 		return validationResultMessages;
 	}
 	
