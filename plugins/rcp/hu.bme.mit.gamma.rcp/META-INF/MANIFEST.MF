@@ -96,7 +96,17 @@ Require-Bundle: javax.inject;bundle-version="0.0.0",
  hu.bme.mit.gamma.yakindu.transformation;bundle-version="2.8.0",
  hu.bme.mit.gamma.yakindu.transformation.traceability;bundle-version="2.8.0",
  org.eclipse.ui.intro,
- hu.bme.mit.gamma.gui;bundle-version="2.8.0"
+ hu.bme.mit.gamma.gui;bundle-version="2.8.0",
+ hu.bme.mit.gamma.fei.language;bundle-version="2.9.0",
+ hu.bme.mit.gamma.fei.language.ide;bundle-version="2.9.0",
+ hu.bme.mit.gamma.fei.language.ui;bundle-version="2.9.0",
+ hu.bme.mit.gamma.fei.xsap.transformation;bundle-version="2.9.0",
+ hu.bme.mit.gamma.nuxmv.verification;bundle-version="2.9.0",
+ hu.bme.mit.gamma.property.concretization.commandhandler;bundle-version="2.9.0",
+ hu.bme.mit.gamma.xsap.visualizer;bundle-version="2.9.0",
+ hu.bme.mit.gamma.xsts.codegeneration.c;bundle-version="2.9.0",
+ hu.bme.mit.gamma.xsts.codegeneration.c.commandhandler;bundle-version="2.9.0",
+ hu.bme.mit.gamma.xsts.nuxmv.transformation;bundle-version="2.9.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Import-Package: javax.annotation;version="0.0.0"
 Automatic-Module-Name: hu.bme.mit.gamma.rcp
