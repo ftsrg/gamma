@@ -548,7 +548,7 @@ TimeSpecification returns InterfaceModel::TimeSpecification:
 ;
 
 enum TimeUnit returns InterfaceModel::TimeUnit:
-	MILLISECOND = 'ms' | SECOND = 's'
+	MILLISECOND = 'ms' | SECOND = 's' | HOUR = 'h'
 ;
 
 ControlSpecificaiton returns CompositeModel::ControlSpecification:

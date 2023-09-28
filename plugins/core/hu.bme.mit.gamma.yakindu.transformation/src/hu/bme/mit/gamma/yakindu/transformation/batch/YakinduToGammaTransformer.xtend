@@ -840,9 +840,9 @@ class YakinduToGammaTransformer {
 			it.createChild(setTimeoutAction_Time, timeSpecification) as TimeSpecification => [
 				it.transform(timeSpecification_Value, yExpression)
 				it.unit = switch(timeUnit) {
-					case SECOND: 
+					case SECOND:
 						hu.bme.mit.gamma.statechart.interface_.TimeUnit.SECOND
-					case MILLISECOND: 
+					case MILLISECOND:
 						hu.bme.mit.gamma.statechart.interface_.TimeUnit.MILLISECOND
 					default: 
 						throw new IllegalArgumentException("Only second and millisecond are supported!")
