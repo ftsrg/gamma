@@ -17,12 +17,18 @@ import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.expression.model.impl.ArrayLiteralExpressionImpl
 import hu.bme.mit.gamma.expression.model.impl.ArrayTypeDefinitionImpl
 import hu.bme.mit.gamma.xsts.codegeneration.c.serializer.VariableDeclarationSerializer
-import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.EmptyAction
 import hu.bme.mit.gamma.xsts.model.MultiaryAction
+import hu.bme.mit.gamma.expression.model.VariableDeclaration
+import hu.bme.mit.gamma.xsts.model.XSTS
+import hu.bme.mit.gamma.xsts.model.AssignmentAction
+import hu.bme.mit.gamma.xsts.codegeneration.c.serializer.ActionSerializer
+import org.eclipse.emf.ecore.EObject
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 
 class GeneratorUtil {
 	
+	static val extension ActionSerializer actionSerializer = ActionSerializer.INSTANCE;
 	static val extension VariableDeclarationSerializer variableDeclarationSerializer = VariableDeclarationSerializer.INSTANCE;
 	
 	/**
@@ -83,6 +89,27 @@ class GeneratorUtil {
 	 */
 	static def boolean isEmpty(MultiaryAction action) {
 		return action === null || action.actions.filter[!(it instanceof EmptyAction)].size == 0
+	}
+	
+	/**
+	 * Retrieves the initial value of a given variable in a specific context.
+	 *
+	 * @param variable the variable for which the initial value is sought.
+	 * @param object the context object in which the variable's initial value is to be determined.
+	 * @return a CharSequence representing the initial value of the variable, or null if not found.
+	 */
+	static def CharSequence getInitialValue(VariableDeclaration variable, EObject object) {
+		if (object instanceof XSTS)
+			return variable.getInitialValue(object.variableInitializingTransition)
+		if (object instanceof AssignmentAction && (object as AssignmentAction).lhs instanceof DirectReferenceExpression && ((object as AssignmentAction).lhs as DirectReferenceExpression).declaration == variable)
+			return actionSerializer.serialize(object as AssignmentAction)
+		
+		var CharSequence result = null
+		for (child : object.eContents) {
+			result = variable.getInitialValue(child)
+			if (result !== null) return result
+		}
+		return result
 	}
 	
 }

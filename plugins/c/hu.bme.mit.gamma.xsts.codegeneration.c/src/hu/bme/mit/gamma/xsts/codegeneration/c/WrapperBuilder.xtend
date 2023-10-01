@@ -25,6 +25,8 @@ import java.nio.file.Files
 import java.nio.file.Paths
 import java.util.Set
 import org.eclipse.emf.common.util.URI
+import hu.bme.mit.gamma.xsts.codegeneration.c.serializer.ExpressionSerializer
+import static extension hu.bme.mit.gamma.xsts.codegeneration.c.util.GeneratorUtil.*
 
 /**
  * The WrapperBuilder class implements the IStatechartCode interface and is responsible for generating the wrapper code.
@@ -59,6 +61,7 @@ class WrapperBuilder implements IStatechartCode {
 	SupportedPlatforms platform = SupportedPlatforms.UNIX;
 	
 	/* Serializers used for code generation */
+	val ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE;
 	val VariableGroupRetriever variableGroupRetriever = VariableGroupRetriever.INSTANCE;
 	val VariableDeclarationSerializer variableDeclarationSerializer = VariableDeclarationSerializer.INSTANCE;
 	
@@ -113,6 +116,11 @@ class WrapperBuilder implements IStatechartCode {
 			
 			#include "«xsts.name.toLowerCase».h"
 		''');
+		
+		/* Max value before overflow */
+		header.addContent('''
+			#define INT_MAX_VALUE 32767  // 16 bit signed
+		''')
 		
 		/* Wrapper Struct */
 		header.addContent('''
@@ -185,6 +193,10 @@ class WrapperBuilder implements IStatechartCode {
 			void time«name»(«name»* statechart) {
 				«Platforms.get(platform).getTimer()»
 				«FOR variable : variableGroupRetriever.getTimeoutGroup(xsts).variables»
+					/* Overflow detection in «variable.name» */
+					if ((INT_MAX_VALUE - «IPlatform.CLOCK_VARIABLE_NAME») < statechart->«stName.toLowerCase».«variable.name») {
+						«variable.getInitialValue(xsts)»
+					}
 					/* Add elapsed time to timeout variable «variable.name» */
 					statechart->«stName.toLowerCase».«variable.name» += «IPlatform.CLOCK_VARIABLE_NAME»;
 				«ENDFOR»
