@@ -170,6 +170,7 @@ class CodeBuilder implements IStatechartCode {
 		code.addInclude('''
 			#include <stdio.h>
 			#include <stdlib.h>
+			#include <string.h>
 			#include <stdbool.h>
 			
 			#include "«name.toLowerCase».h"

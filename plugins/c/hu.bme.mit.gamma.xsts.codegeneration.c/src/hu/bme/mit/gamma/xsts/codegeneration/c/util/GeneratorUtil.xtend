@@ -85,8 +85,4 @@ class GeneratorUtil {
 		return action === null || action.actions.filter[!(it instanceof EmptyAction)].size == 0
 	}
 	
-	static def boolean isEmpty(Action action) {
-		return action === null || action instanceof EmptyAction
-	}
-	
 }

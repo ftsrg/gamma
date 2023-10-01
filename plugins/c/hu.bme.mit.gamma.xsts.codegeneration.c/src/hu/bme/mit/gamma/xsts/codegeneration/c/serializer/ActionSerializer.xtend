@@ -84,7 +84,7 @@ class ActionSerializer {
 		return '''
 			if («expressionSerializer.serialize(action.condition)») {
 				«action.then.serialize»
-			}«IF !action.^else.isEmpty» else {
+			}«IF !action.^else.isNullOrEmptyAction» else {
 				«action.^else.serialize»
 			}«ENDIF»''';
 	}
@@ -171,6 +171,8 @@ class ActionSerializer {
 	 * @return a serialized representation of the LoopAction
 	 */
 	def dispatch CharSequence serialize(LoopAction action) {
+		if (action.action.isNullOrEmptyAction)
+			return ''
 		val ipd = action.iterationParameterDeclaration
 		val left = action.range.getLeft(true)
 		val right = action.range.getRight(false)
