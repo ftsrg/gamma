@@ -56,7 +56,7 @@ class CommonizedVariableActionSerializer extends ActionSerializer {
 		val left = action.range.getLeft(true)
 		val right = action.range.getRight(false)
 		return '''
-			for (int «name» = «left.serialize»; «name» < «right.serialize»; ++i) {
+			for (int «name» = «left.serialize»; «name» < «right.serialize»; ++«name») {
 				«action.action.serialize»
 			}
 		'''
