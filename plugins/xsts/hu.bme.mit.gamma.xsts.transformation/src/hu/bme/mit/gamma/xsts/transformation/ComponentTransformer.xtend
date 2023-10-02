@@ -464,8 +464,9 @@ class ComponentTransformer {
 			for (clock : adapterComponentType.clocks) {
 				val clockRate = clock.timeSpecification.timeInMilliseconds
 				
+				val xStsClockName = clock.customizeName(adapterInstance)
 				val xStsVariable = createIntegerTypeDefinition
-						.createVariableDeclarationWithDefaultInitialValue(clock.name)
+						.createVariableDeclarationWithDefaultInitialValue(xStsClockName)
 				xSts.variableDeclarations += xStsVariable // Target model modification
 				
 				xStsVariable.addClockAnnotation // Because of this, time passing is modeled "automatically"
