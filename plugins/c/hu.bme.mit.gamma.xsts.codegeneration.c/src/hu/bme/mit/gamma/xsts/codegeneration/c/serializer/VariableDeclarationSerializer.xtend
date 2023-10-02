@@ -116,7 +116,7 @@ class VariableDeclarationSerializer {
      * @return the serialized integer type as a string
      */
 	def dispatch String serialize(IntegerTypeDefinition type, boolean clock, String name) {
-		return clock ? '''unsigned int''' : '''int''';
+		return clock ? '''uint32_t''' : '''int32_t''';
 	}
 	
 	/**

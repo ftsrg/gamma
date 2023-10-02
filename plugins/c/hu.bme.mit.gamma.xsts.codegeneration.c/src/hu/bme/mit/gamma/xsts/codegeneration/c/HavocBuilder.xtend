@@ -108,6 +108,7 @@ class HavocBuilder implements IStatechartCode {
 		/* Add imports to the file */
 		header.addInclude('''
 			#include <time.h>
+			#include <stdint.h>
 			#include <stdbool.h>
 			
 			#include "«xsts.name.toLowerCase».h"
@@ -150,7 +151,6 @@ class HavocBuilder implements IStatechartCode {
 	override constructCode() {
 		/* Add imports to the file */
 		code.addInclude('''
-			#include <stdio.h>
 			#include <stdlib.h>
 			#include <stdbool.h>
 			
@@ -166,7 +166,7 @@ class HavocBuilder implements IStatechartCode {
 			}
 
 			/* runtime generated random int */
-			int havoc_int() {
+			int32_t havoc_int() {
 				srand(time(NULL));
 				return (rand() % (INT_MAX - INT_MIN + 1)) + INT_MIN;
 			}

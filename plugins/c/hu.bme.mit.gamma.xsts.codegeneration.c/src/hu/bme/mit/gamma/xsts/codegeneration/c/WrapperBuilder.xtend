@@ -111,6 +111,7 @@ class WrapperBuilder implements IStatechartCode {
 	override constructHeader() {
 		/* Add imports to the file */
 		header.addInclude('''
+			#include <stdint.h>
 			#include <stdbool.h>
 			«Platforms.get(platform).getHeaders()»
 			
@@ -119,7 +120,7 @@ class WrapperBuilder implements IStatechartCode {
 		
 		/* Max value before overflow */
 		header.addContent('''
-			#define INT_MAX_VALUE 32767  // 16 bit signed
+			#define INT_MAX_VALUE 4294967295  // 32 bit unsigned
 		''')
 		
 		/* Wrapper Struct */
@@ -172,7 +173,6 @@ class WrapperBuilder implements IStatechartCode {
 	override constructCode() {
 		/* Add imports to the file */
 		code.addInclude('''
-			#include <stdio.h>
 			#include <stdlib.h>
 			#include <stdbool.h>
 			

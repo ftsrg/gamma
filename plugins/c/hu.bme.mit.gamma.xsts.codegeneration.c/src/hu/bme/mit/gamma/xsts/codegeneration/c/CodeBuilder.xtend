@@ -123,6 +123,7 @@ class CodeBuilder implements IStatechartCode {
 	override void constructHeader() {
 		/* Add imports to the file */
 		header.addInclude('''
+			#include <stdint.h>
 			#include <stdbool.h>
 		''');
 		
@@ -168,7 +169,6 @@ class CodeBuilder implements IStatechartCode {
 	override void constructCode() {
 		/* Add imports to the file */
 		code.addInclude('''
-			#include <stdio.h>
 			#include <stdlib.h>
 			#include <string.h>
 			#include <stdbool.h>

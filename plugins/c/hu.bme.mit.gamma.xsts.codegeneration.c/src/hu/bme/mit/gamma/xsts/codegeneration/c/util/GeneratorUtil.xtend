@@ -92,7 +92,7 @@ class GeneratorUtil {
 	}
 	
 	/**
-	 * Retrieves the initial value of a given variable in a specific context.
+	 * Retrieves the initial value of a given variable from the model's initial transition.
 	 *
 	 * @param variable the variable for which the initial value is sought.
 	 * @param object the context object in which the variable's initial value is to be determined.
