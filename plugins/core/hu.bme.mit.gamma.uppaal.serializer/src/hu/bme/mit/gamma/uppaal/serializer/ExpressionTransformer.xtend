@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -44,6 +44,7 @@ import uppaal.statements.EmptyStatement
 import uppaal.statements.ExpressionStatement
 import uppaal.statements.ForLoop
 import uppaal.statements.IfStatement
+import uppaal.statements.Iteration
 import uppaal.statements.ReturnStatement
 import uppaal.statements.Statement
 import uppaal.templates.Selection
@@ -177,8 +178,14 @@ class ExpressionTransformer {
 	}
 	
 	def static dispatch String transformStatement(ForLoop forLoop) '''
-		for(«forLoop.initialization.transform»; «forLoop.condition.transform»; «forLoop.iteration.transform») {
+		for («forLoop.initialization.transform»; «forLoop.condition.transform»; «forLoop.iteration.transform») {
 			«forLoop.statement.transformStatement»
+		}
+	'''
+	
+	def static dispatch String transformStatement(Iteration iteration) '''
+		for («iteration.variable.head.name» : «iteration.typeDefinition.serializeTypeDefinition») {
+			«iteration.statement.transformStatement»
 		}
 	'''
 	

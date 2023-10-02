@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -44,6 +44,20 @@ class GammaEcoreUtil {
 	
 	def void replace(EObject newObject, EObject oldObject) {
 		EcoreUtil.replace(oldObject, newObject)
+	}
+	
+	def isReferenced(EObject target, EObject container) {
+		val settings = UsageCrossReferencer.find(target, container)
+		return !settings.empty
+	}
+	
+	def inlineReferences(EObject target, EObject newObject, EObject container) {
+		val settings = UsageCrossReferencer.find(target, container).toSet
+		for (setting : settings) {
+			val referenceHolder = setting.EObject // The EObject from which the reference is made
+			val clonedNewObject = newObject.clone
+			clonedNewObject.replace(referenceHolder)
+		}
 	}
 	
 	def void replaceEachOther(EObject left, EObject right) {

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -269,13 +269,24 @@ class NtaBuilder {
 	}
 	
 	def createEqualityExpression(VariableContainer variable, Expression rhs) {
-		return variable.createIdentifierExpression.createEqualityExpression(rhs)
+		return variable.createIdentifierExpression
+				.createCompareExpression(rhs, CompareOperator.EQUAL)
 	}
 	
-	def createEqualityExpression(Expression lhs, Expression rhs) {
+	def createLessEqualityExpression(VariableContainer variable, Expression rhs) {
+		return variable.createIdentifierExpression
+				.createCompareExpression(rhs, CompareOperator.LESS_OR_EQUAL)
+	}
+	
+	def createGreaterExpression(VariableContainer variable, Expression rhs) {
+		return variable.createIdentifierExpression
+				.createCompareExpression(rhs, CompareOperator.GREATER)
+	}
+	
+	def createCompareExpression(Expression lhs, Expression rhs, CompareOperator operator) {
 		return createCompareExpression => [
 			it.firstExpr = lhs
-			it.operator = CompareOperator.EQUAL
+			it.operator = operator
 			it.secondExpr = rhs
 		]
 	}
@@ -544,6 +555,14 @@ class NtaBuilder {
 			it.ifExpression = condition
 			it.thenStatement = then
 			it.elseStatement = ^else
+		]
+	}
+	
+	def createForStatement(VariableContainer parameter, Statement body) {
+		return createIteration => [
+			it.variable += parameter.variable
+			it.typeDefinition = parameter.typeDefinition
+			it.statement = body
 		]
 	}
 	

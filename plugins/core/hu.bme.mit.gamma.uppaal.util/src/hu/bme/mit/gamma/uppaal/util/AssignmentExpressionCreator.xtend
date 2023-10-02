@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -17,6 +17,7 @@ import uppaal.core.NamedElement
 import uppaal.declarations.DataVariableDeclaration
 import uppaal.declarations.VariableContainer
 import uppaal.declarations.VariableDeclaration
+import uppaal.expressions.ArithmeticOperator
 import uppaal.expressions.AssignmentExpression
 import uppaal.expressions.AssignmentOperator
 import uppaal.expressions.Expression
@@ -80,6 +81,17 @@ class AssignmentExpressionCreator {
 			it.operator = AssignmentOperator.EQUAL
 			it.secondExpr = rhs
 		]
+	}
+	
+	def createIncrementExpression(VariableContainer variable) {
+		return variable.createIdentifierExpression
+			.createAssignmentExpression(
+				createArithmeticExpression => [
+					it.firstExpr = variable.createIdentifierExpression
+					it.operator = ArithmeticOperator.ADD
+					it.secondExpr = "1".createLiteralExpression
+				]
+			)
 	}
 	
 	def createResetingAssignmentExpression(VariableContainer variable) {
