@@ -50,6 +50,12 @@ analysis {
 	component : ClockSystem
 	language : Theta
 	file: "ClockSystem-t"
+	constraint : {
+		top : {
+			minimum-orchestrating-period : 1 ms
+			maximum-orchestrating-period : 2 ms
+		}
+	}
 	state-coverage
 }
 
@@ -73,6 +79,7 @@ verification {
 	file : "ClockSystem-p.pml"
 	property-file : ".ClockSystem-p.gpd"
 	language : Promela
+	optimize-model : true
 	optimize : true
 	back-annotate-to-original : false
 	test-language : java
