@@ -38,6 +38,7 @@ import hu.bme.mit.gamma.xsts.model.SystemOutEventParameterGroup
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
 import hu.bme.mit.gamma.xsts.transformation.serializer.ActionSerializer
+import hu.bme.mit.gamma.xsts.transformation.util.LoopActionUnroller
 import hu.bme.mit.gamma.xsts.transformation.util.MessageQueueOptimizer
 import hu.bme.mit.gamma.xsts.transformation.util.VariableGroupRetriever
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
@@ -66,6 +67,7 @@ class GammaToXstsTransformer {
 	protected final boolean optimize
 	protected final boolean optimizeArrays
 	protected final boolean optimizeMessageQueues
+	protected final boolean optimizeLoopActions = true
 	// Auxiliary objects
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension ActionSerializer actionSerializer = ActionSerializer.INSTANCE
@@ -402,6 +404,11 @@ class GammaToXstsTransformer {
 			logger.log(Level.INFO, "Optimizing message queues in " + xSts.name)
 			val messageQueueOptimizer = MessageQueueOptimizer.INSTANCE
 			messageQueueOptimizer.optimizeMessageQueues(xSts)
+		}
+		if (optimizeLoopActions) {
+			logger.log(Level.INFO, "Optimizing loop actions in " + xSts.name)
+			val loopActionUnroller = LoopActionUnroller.INSTANCE
+			loopActionUnroller.unrollLoopActions(xSts)
 		}
 	}
 	
