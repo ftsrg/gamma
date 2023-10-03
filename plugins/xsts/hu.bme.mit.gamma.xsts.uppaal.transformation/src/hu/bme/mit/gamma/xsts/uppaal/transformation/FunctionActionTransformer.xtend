@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -12,11 +12,13 @@ package hu.bme.mit.gamma.xsts.uppaal.transformation
 
 import hu.bme.mit.gamma.uppaal.util.AssignmentExpressionCreator
 import hu.bme.mit.gamma.uppaal.util.NtaBuilder
+import hu.bme.mit.gamma.uppaal.util.TypeTransformer
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.EmptyAction
 import hu.bme.mit.gamma.xsts.model.IfAction
+import hu.bme.mit.gamma.xsts.model.LoopAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
@@ -28,11 +30,13 @@ import uppaal.declarations.VariableDeclaration
 import uppaal.statements.Statement
 import uppaal.templates.Location
 
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension java.lang.Math.abs
 
 class FunctionActionTransformer {
 	
 	protected final NTA nta
+	protected final Traceability traceability
 	protected final extension NtaBuilder ntaBuilder
 	
 	protected final Collection<VariableDeclaration> localVariables = newHashSet
@@ -40,16 +44,19 @@ class FunctionActionTransformer {
 	protected final extension ExpressionTransformer expressionTransformer
 	protected final extension VariableTransformer variableTransformer
 	protected final extension AssignmentExpressionCreator assignmentExpressionCreator
+	protected final extension TypeTransformer typeTransformer
 	
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	
 	new(NtaBuilder ntaBuilder, Traceability traceability) {
 		this.ntaBuilder = ntaBuilder
+		this.traceability = traceability
 		this.nta = ntaBuilder.nta
 		this.variableTransformer = new VariableTransformer(ntaBuilder, traceability)
 		this.expressionTransformer = new ExpressionTransformer(traceability)
 		this.assignmentExpressionCreator = new AssignmentExpressionCreator(ntaBuilder)
+		this.typeTransformer = new TypeTransformer(nta)
 	}
 	
 	// Wrap into a function
@@ -139,6 +146,32 @@ class FunctionActionTransformer {
 		val uppaalElse = xStsElse.transformAction // Might be null
 		
 		return uppaalCondition.createIfStatement(uppaalThen, uppaalElse)
+	}
+	
+	protected def dispatch Statement transformAction(LoopAction action) {
+		val xStsParameter = action.iterationParameterDeclaration
+		val xStsRange = action.range
+		val xStsActionInLoop = action.action
+		
+		val left = xStsRange.left
+		val right = xStsRange.right
+		
+		val uppaalVariable = xStsParameter.transformAndTraceParameter
+//		uppaalVariable.extendNameWithHash // Needed for local declarations
+		uppaalVariable.remove // We will use it as a local variable
+//		localVariables += uppaalVariable
+		
+		val uppaalLeft = left.transform
+		val uppaalRight = right.transform
+		uppaalVariable.typeDefinition = uppaalLeft.createRange(uppaalRight)
+		
+		
+		val uppaalLoop = uppaalVariable.createForStatement(null /* Cannot be transformed here */)
+		traceability.put(xStsParameter, uppaalLoop) // Messed up loop metamodel parts...
+		val uppaalAction = xStsActionInLoop.transformAction
+		uppaalLoop.statement = uppaalAction
+		
+		return uppaalLoop
 	}
 	
 }

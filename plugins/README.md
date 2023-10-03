@@ -41,6 +41,8 @@ If you want to use *Spin* for formal verification, download and extract *Spin 6.
 
 If you want to use *nuXmv* for formal verification, download and extract *nuXmv 2.0.0* or higher version. In order to let Gamma find the nuXmv executable, add the `nuXmv.exe` or `nuXmv` to the path environment variable (depending on the operating system being used). The instructions are described in the [`README`](nuxmv/README.md) file of the folder.
 
+If you want to use *xSAP* for safety assessment, download and extract *xSAP 1.4.0* or higher version. In order to let Gamma find the xSAP executable, create an environment variable named `XSAP_HOME` that points to the extracted xSAP root folder (absolute path) and add the `xSAP/bin` folder to the PATH environment or default search path (depending on your OS). The instructions are described in the [`README`](safety/README.md) file of the folder.
+
 Make sure to set the text file encoding of your Eclipse workspace to **UTF-8**: _Window > Preferences..._ Start typing `workspace` in the left upper textfield (in the place of `type filter text`). Select _General > Workspace_ from the filtered item list and check the `Text file encoding` setting at the bottom of the window.
 
 Make sure to set the Java compiler compliance level to **17**: _Window > Preferences..._ Start typing `compiler` in the left upper textfield (in the place of `type filter text`). Select _Java > Compiler_ from the filtered item list and set the `Compiler compliance level` to **17** at the top of the window.

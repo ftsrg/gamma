@@ -481,6 +481,9 @@ class AsynchronousAdapterCodeGenerator {
 		if (specification.unit == TimeUnit.SECOND) {
 			return "(" + specification.value.serialize + ") * 1000";
 		}
+		if (specification.unit == TimeUnit.HOUR) {
+			return "(" + specification.value.serialize + ") * 60 * 60 * 1000";
+		}
 		return specification.value.serialize
 	}
 	

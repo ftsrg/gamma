@@ -32,6 +32,7 @@ import hu.bme.mit.gamma.expression.model.ModExpression
 import hu.bme.mit.gamma.expression.model.MultiplyExpression
 import hu.bme.mit.gamma.expression.model.NotExpression
 import hu.bme.mit.gamma.expression.model.OrExpression
+import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.ReferenceExpression
 import hu.bme.mit.gamma.expression.model.SubtractExpression
 import hu.bme.mit.gamma.expression.model.TrueExpression
@@ -115,6 +116,12 @@ class ExpressionTransformer {
 		val xStsDeclaration = expression.declaration
 		if (xStsDeclaration instanceof ConstantDeclaration) {
 			return xStsDeclaration.expression.transform
+		}
+		else if (xStsDeclaration instanceof ParameterDeclaration) {
+			val uppaalVariable = traceability.get(xStsDeclaration)
+			return createIdentifierExpression => [
+				it.identifier = uppaalVariable.variable.head
+			]
 		}
 		val xStsVariable = xStsDeclaration as VariableDeclaration
 		if (xStsVariable instanceof VariableDeclaration) {

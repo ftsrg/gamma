@@ -18,6 +18,7 @@ import hu.bme.mit.gamma.expression.model.ValueDeclaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.ComplexTypeUtil
 import hu.bme.mit.gamma.expression.util.FieldHierarchy
+import hu.bme.mit.gamma.statechart.interface_.Clock
 import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.Region
@@ -43,6 +44,7 @@ class LowlevelNamings {
 	static def String getComponentParameterName(ParameterDeclaration parameter) '''«parameter.name»'''
 	static def String getName(VariableDeclaration variable) '''«variable.name»'''
 	static def String getName(TimeoutDeclaration timeout) '''«timeout.name»'''
+	static def String getName(Clock clock) '''«clock.name»'''
 	static def String getName(TypeDeclaration type) '''«type.name»'''
 	static def String getName(EnumerationLiteralDefinition literal) '''«literal.name»'''
 	

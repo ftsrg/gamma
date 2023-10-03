@@ -46,7 +46,7 @@
   <eClassifiers xsi:type="ecore:EClass" name="FunctionDeclaration" eSuperTypes="#//Declaration #//ParametricElement"/>
   <eClassifiers xsi:type="ecore:EClass" name="TypeDeclaration" eSuperTypes="#//Declaration"/>
   <eClassifiers xsi:type="ecore:EClass" name="ConstantDeclaration" eSuperTypes="#//ValueDeclaration #//InitializableElement"/>
-  <eClassifiers xsi:type="ecore:EClass" name="ParameterDeclaration" eSuperTypes="#//ValueDeclaration">
+  <eClassifiers xsi:type="ecore:EClass" name="ParameterDeclaration" eSuperTypes="#//ValueDeclaration #//InitializableElement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="annotations" upperBound="-1"
         eType="#//ParameterDeclarationAnnotation" containment="true"/>
   </eClassifiers>

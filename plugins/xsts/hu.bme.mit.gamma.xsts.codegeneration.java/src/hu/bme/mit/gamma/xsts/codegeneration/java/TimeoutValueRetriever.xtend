@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -65,6 +65,15 @@ class TimeoutValueRetriever {
 				return createMultiplyExpression => [
 					it.operands += createIntegerLiteralExpression => [
 						it.value = BigInteger.valueOf(1000)
+					]
+					it.operands += timeValue
+				]
+			}
+			case TimeUnit.HOUR: {
+				// S = 60 * 60 * 1000 MS
+				return createMultiplyExpression => [
+					it.operands += createIntegerLiteralExpression => [
+						it.value = BigInteger.valueOf(60 * 60 * 1000)
 					]
 					it.operands += timeValue
 				]

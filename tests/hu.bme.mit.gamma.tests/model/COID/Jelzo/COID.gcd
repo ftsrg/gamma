@@ -16,19 +16,19 @@ statechart bJbCOID_allapotgep(P_COID : boolean, P_COIDT : integer, PCOID_H : int
 	var Oldas_Exit : boolean
 	timeout P_COIDH_Timeout
 	timeout P_COIDT_Timeout
-	transition from Celoldas_idozites_fut_8 to Oldas_4 when timeout P_COIDH_Timeout [I_CR.h ::hValue =
-		MyBool::_1 and I_FT.h ::hValue = MyBool::_1]
+	transition from Celoldas_idozites_fut_8 to Oldas_4 when timeout P_COIDH_Timeout [I_CR.^h ::hValue =
+		MyBool::_1 and I_FT.^h ::hValue = MyBool::_1]
 	transition from Tranziens_2 to choice_6_in_region_1_in_Celoldas_idozites_nem_fut_5 when timeout
 		P_COIDT_Timeout
-	transition from Idozites_nem_fut_1 to Ervenytelen_0 when cycle [I_FT.h ::hValue /= MyBool::_0]
+	transition from Idozites_nem_fut_1 to Ervenytelen_0 when cycle [I_FT.^h ::hValue /= MyBool::_0]
 	transition from Ervenytelen_0 to Idozites_nem_fut_1 when cycle [I_FT.e ::eValue = MyBool::_0]
 	transition from init_7_in_region_1_in_Celoldas_idozites_nem_fut_5 to Tranziens_2
-	transition from Oldas_4 to Celoldas_idozites_nem_fut_5 when cycle [I_CR.h ::hValue /= MyBool::_1 or I_FT.h
+	transition from Oldas_4 to Celoldas_idozites_nem_fut_5 when cycle [I_CR.^h ::hValue /= MyBool::_1 or I_FT.^h
 		::hValue /= MyBool::_1] / Oldas_Exit := true;
 	transition from init_5_in_main_region_of_bJbCOID_allapotgep to
 		choice_6_in_main_region_of_bJbCOID_allapotgep
-	transition from Celoldas_idozites_nem_fut_5 to Celoldas_idozites_fut_8 when cycle [I_CR.h ::hValue =
-		MyBool::_1 and I_FT.h ::hValue = MyBool::_1]
+	transition from Celoldas_idozites_nem_fut_5 to Celoldas_idozites_fut_8 when cycle [I_CR.^h ::hValue =
+		MyBool::_1 and I_FT.^h ::hValue = MyBool::_1]
 	transition from choice_6_in_region_1_in_Celoldas_idozites_nem_fut_5 to Idozites_nem_fut_1 [I_FT.e
 		::eValue = MyBool::_0]
 	transition from choice_6_in_main_region_of_bJbCOID_allapotgep to Celoldas_idozites_nem_fut_5 [P_COID =
@@ -38,8 +38,8 @@ statechart bJbCOID_allapotgep(P_COID : boolean, P_COIDT : integer, PCOID_H : int
 	transition from choice_6_in_main_region_of_bJbCOID_allapotgep to Funkcio_kikapcsolva_6 [P_COID =
 		false]
 	@(Fut_NemFut)
-	transition from Celoldas_idozites_fut_8 to Celoldas_idozites_nem_fut_5 when cycle [I_CR.h ::hValue /=
-		MyBool::_1 or I_FT.h ::hValue /= MyBool::_1]
+	transition from Celoldas_idozites_fut_8 to Celoldas_idozites_nem_fut_5 when cycle [I_CR.^h ::hValue /=
+		MyBool::_1 or I_FT.^h ::hValue /= MyBool::_1]
 		// Normal region
 	region main_region_of_bJbCOID_allapotgep {
 		initial init_5_in_main_region_of_bJbCOID_allapotgep

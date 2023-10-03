@@ -8,6 +8,8 @@
 * [Márton Búr](https://github.com/imbur) ([homepage](https://inf.mit.bme.hu/members/burm)) [1, 2]: bugfixes
 * [Balázs Várady](https://github.com/Varadbal) [1]: action language
 * [Csanád Csuvarszki](https://github.com/csuvi98) [1]: PlantUML statechart visualization, headless Eclipse, webserver API
+* [Simon József Nagy](https://github.com/simon5521) ([homepage](https://www.mit.bme.hu/general/phd/simonjozsefnagy)) [1]: RCP Gamma application, stochastic extension
+* [Levente Márk Nagy](https://github.com/nagyl1999) [1]: C code generator
 
 1. [Critical Systems Research Group (ftsrg)](https://inf.mit.bme.hu/en) [Department of Measurement and Information Systems](http://www.mit.bme.hu/eng/) [Budapest University of Technology and Economics](http://www.bme.hu/?language=en)
 2. [MTA-BME Lendület Cyber-Physical Systems Research Group](http://lendulet.inf.mit.bme.hu/) [Office for Research Groups Attached to Universities and Other Institutions of the Hungarian Academy of Sciences](http://mta.hu/english)

@@ -11,6 +11,7 @@
 package hu.bme.mit.gamma.xsts.uppaal.transformation
 
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
+import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.uppaal.util.AssignmentExpressionCreator
 import hu.bme.mit.gamma.uppaal.util.NtaBuilder
 import hu.bme.mit.gamma.util.GammaEcoreUtil
@@ -20,6 +21,7 @@ import hu.bme.mit.gamma.xsts.model.AssumeAction
 import hu.bme.mit.gamma.xsts.model.EmptyAction
 import hu.bme.mit.gamma.xsts.model.HavocAction
 import hu.bme.mit.gamma.xsts.model.IfAction
+import hu.bme.mit.gamma.xsts.model.LoopAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
@@ -33,6 +35,7 @@ import uppaal.templates.LocationKind
 import static hu.bme.mit.gamma.uppaal.util.XstsNamings.*
 
 import static extension de.uni_paderborn.uppaal.derivedfeatures.UppaalModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension java.lang.Math.*
 
 class CfaActionTransformer {
@@ -47,6 +50,7 @@ class CfaActionTransformer {
 	
 	protected final extension HavocHandler havocHandler = HavocHandler.INSTANCE
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
+	protected final extension ExpressionEvaluator evaluator = ExpressionEvaluator.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	
 	new(NtaBuilder ntaBuilder, Traceability traceability) {
@@ -204,6 +208,59 @@ class CfaActionTransformer {
 		elseActionTarget.createEdge(thenActionTarget)
 		
 		return thenActionTarget
+	}
+	
+	protected def dispatch Location transformAction(LoopAction action, Location source) {
+		val parameter = action.iterationParameterDeclaration
+		val range = action.range
+		val actionInLoop = action.action
+		
+		val left = range.left
+		val right = range.right
+		
+		// Inlineable?
+		if (range.evaluable) {
+			val leftInt = left.evaluateInteger
+			val rightInt = right.evaluateInteger
+			
+			val body = newArrayList
+			for (var i = leftInt; i <= rightInt /* Right is inclusive */; i++) {
+				val index = i.toIntegerLiteral
+				val clonedBody = actionInLoop.clone
+				
+				parameter.inlineReferences(index, clonedBody)
+				
+				body += clonedBody
+			}
+			val sequentialAction = body.createSequentialAction
+			
+			return sequentialAction.transformAction(source)
+		}
+		// Non-inlineable
+		val uppaalVariable = parameter.transformAndTraceParameter
+		uppaalVariable.extendNameWithHash // Needed for local declarations
+		transientVariables += uppaalVariable
+
+		val initEdge = source.createEdgeCommittedSource(nextCommittedLocationName)
+		initEdge.update += uppaalVariable.createAssignmentExpression(
+				left.transform)
+		val loopSource = initEdge.target
+		
+		// In-loop part
+		val inLoopEdge = loopSource.createEdgeCommittedSource(nextCommittedLocationName)
+		inLoopEdge.guard = uppaalVariable.createLessEqualityExpression(right.transform)
+		val inLoopLocation = inLoopEdge.target
+		
+		val inLoopEnd = actionInLoop.transformAction(inLoopLocation)
+		val iterationCountIncrementEdge = inLoopEnd.createEdge(loopSource)
+		iterationCountIncrementEdge.update += uppaalVariable.createIncrementExpression
+		
+		// Out-loop part
+		val outLoopEdge = loopSource.createEdgeCommittedSource(nextCommittedLocationName)
+		outLoopEdge.guard = uppaalVariable.createGreaterExpression(right.transform)
+		val outLoopLocation = outLoopEdge.target
+		
+		return outLoopLocation
 	}
 	
 	// Resetting

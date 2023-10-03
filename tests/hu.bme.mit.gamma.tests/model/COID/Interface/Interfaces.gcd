@@ -16,5 +16,5 @@ interface P_N_Interface {
 interface E_I_H_Interface {
 	out persistent event e(eValue : MyBool)
 	out persistent event i(iValue : MyBool)
-	out persistent event h(hValue : MyBool)
+	out persistent event ^h(hValue : MyBool)
 }

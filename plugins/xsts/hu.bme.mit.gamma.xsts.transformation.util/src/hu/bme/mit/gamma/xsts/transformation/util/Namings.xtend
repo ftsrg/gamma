@@ -19,6 +19,7 @@ import hu.bme.mit.gamma.expression.util.ExpressionUtil
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.MessageQueue
+import hu.bme.mit.gamma.statechart.interface_.Clock
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.Port
@@ -77,6 +78,10 @@ class Namings {
 	static def String customizeName(TimeoutDeclaration timeout, ComponentInstance instance) '''«customizeName(timeout, instance.name)»'''
 	static def String customizeName(TimeoutDeclaration timeout, ComponentInstanceReferenceExpression instance) '''«customizeName(timeout, instance.FQN)»'''
 	static def String customizeName(TimeoutDeclaration timeout, String instance) '''«getName(timeout).variableName»_«instance»'''
+	
+	static def String customizeName(Clock clock, ComponentInstance instance) '''«customizeName(clock, instance.name)»'''
+	static def String customizeName(Clock clock, ComponentInstanceReferenceExpression instance) '''«customizeName(clock, instance.FQN)»'''
+	static def String customizeName(Clock clock, String instance) '''«getName(clock).variableName»_«instance»'''
 	
 	static def String customizeInputName(Event event, Port port, ComponentInstance instance) '''«customizeInputName(event, port, instance.name)»'''
 	static def String customizeInputName(Event event, Port port, ComponentInstanceReferenceExpression instance) '''«customizeInputName(event, port, instance.FQN)»'''
