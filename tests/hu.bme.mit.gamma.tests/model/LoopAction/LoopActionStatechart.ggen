@@ -1,0 +1,20 @@
+import "LoopActionStatechart.gcd"
+
+code {
+	component : LoopActionStatechart
+	language : java
+}
+
+analysis {
+	component : LoopActionStatechart
+	language : Theta
+	state-coverage
+}
+
+verification {
+	file : "LoopActionStatechart.xsts"
+	property-file : ".LoopActionStatechart.gpd"
+	language : Theta
+	optimize : true
+	test-language : java
+}

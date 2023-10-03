@@ -1,0 +1,17 @@
+package loop_action_statechart
+// import interfaces_package
+statechart LoopActionStatechart [
+	// Declaration of ports
+] {
+	var array : [8]integer
+	var value : integer := 3
+	region main_region_1 {
+		initial init_1
+		state state_1
+		state state_2
+		state state_3
+	}
+	transition from init_1 to state_1
+	transition from state_1 to state_2 when cycle / for (i : integer in <+ 0 .. 8 ->) { array[i] := i; } //value := value + 1;
+	transition from state_2 to state_3 when cycle / for (i : integer in <+ 0 .. 3 ->) { array[value] := array[value] + i; }
+}
