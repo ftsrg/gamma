@@ -60,17 +60,18 @@ class RemovableVariableRemover {
 				val declaration = reference.declaration
 				if (readOnlyVariables.contains(declaration)) {
 					val isContainedByAssignment = reference.isContainedBy(AbstractAssignmentAction)
-					var isReferenceLhs = false
+					var needReplace = true
 					if (isContainedByAssignment) {
 						val assignment = reference.getContainerOfType(AbstractAssignmentAction)
 						val lhs = assignment.lhs
-						isReferenceLhs = lhs.selfOrContainsTransitively(reference)
-						if (isReferenceLhs) {
+						val lhsDeclaration = lhs.declaration
+						if (lhsDeclaration == declaration) {
 							assignment.remove // Deleting assignment; supposed to be in "init" trans
+							needReplace = false
 						}
 					}
 					
-					if (!isReferenceLhs) {
+					if (needReplace) {
 						val initialValue = (declaration instanceof VariableDeclaration) ?
 								declaration.initialValue : declaration.defaultExpression
 						initialValue.replace(reference)
