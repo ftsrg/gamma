@@ -119,7 +119,7 @@ The manual plugin setup procedure should be done as follows:
 | `hu.bme.mit.gamma.trace.language` | `/src/hu/bme/mit/gamma/trace/language/GenerateTraceLanguage.mwe2` |
 | `hu.bme.mit.gamma.genmodel.language` | `/src/hu/bme/mit/gamma/genmodel/language/GenerateGenModel.mwe2` |
 | `hu.bme.mit.gamma.scenario.language` | `/src/hu/bme/mit/gamma/scenario/language/GenerateScenarioLanguage.mwe2` |
-| `hu.bme.mit.gamma.fei.language` | `/src/hu/bme/mit/gamma/scenario/language/GenerateFaultExtensionLanguage.mwe2` |
+| `hu.bme.mit.gamma.fei.language` | `/src/hu/bme/mit/gamma/fei/language/GenerateFaultExtensionLanguage.mwe2` |
 
 ## Using Gamma functionalities
 
