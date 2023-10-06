@@ -195,7 +195,7 @@ class WrapperBuilder implements IStatechartCode {
 				«FOR variable : variableGroupRetriever.getTimeoutGroup(xsts).variables»
 					/* Overflow detection in «variable.name» */
 					if ((INT_MAX_VALUE - «IPlatform.CLOCK_VARIABLE_NAME») < statechart->«stName.toLowerCase».«variable.name») {
-						«variable.getInitialValue(xsts)»
+						statechart->«stName.toLowerCase».«variable.name» = «variable.getInitialValue(xsts)»;
 					}
 					/* Add elapsed time to timeout variable «variable.name» */
 					statechart->«stName.toLowerCase».«variable.name» += «IPlatform.CLOCK_VARIABLE_NAME»;

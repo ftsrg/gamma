@@ -23,6 +23,7 @@ import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.model.impl.ArrayTypeDefinitionImpl
 import hu.bme.mit.gamma.xsts.codegeneration.c.util.GeneratorUtil
+import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
 
 import static extension hu.bme.mit.gamma.xsts.codegeneration.c.util.GeneratorUtil.*
 
@@ -64,10 +65,11 @@ class VariableDeclarationSerializer {
 	 * @return the serialized variable declaration as a String.
 	 */
 	def dispatch String serialize(VariableDeclaration declaration) {
+		val rhs = declaration.eContainer instanceof VariableDeclarationAction
 		val clock = declaration.annotations.exists[it instanceof ClockVariableDeclarationAnnotation]
 		val vtype = (declaration.type instanceof ArrayTypeDefinitionImpl) ? GeneratorUtil.getArrayType(declaration.type as ArrayTypeDefinition, clock, declaration.name) : serialize(declaration.type, clock, declaration.name)
 		val postfix = (declaration.type instanceof ArrayTypeDefinitionImpl) ? serialize(declaration.type, clock, declaration.name) : ""
-		return '''«vtype» «declaration.name»«postfix»;''';
+		return '''«vtype» «declaration.name»«postfix»«IF rhs» = «expressionSerializer.serialize(declaration.expression)»«ENDIF»;''';
 	}
 	
 	/**

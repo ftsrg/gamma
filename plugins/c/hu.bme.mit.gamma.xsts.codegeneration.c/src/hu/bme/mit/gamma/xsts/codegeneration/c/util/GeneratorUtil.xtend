@@ -12,23 +12,23 @@
 
 import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression
 import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.Type
+import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.model.impl.ArrayLiteralExpressionImpl
 import hu.bme.mit.gamma.expression.model.impl.ArrayTypeDefinitionImpl
+import hu.bme.mit.gamma.expression.util.ExpressionSerializer
 import hu.bme.mit.gamma.xsts.codegeneration.c.serializer.VariableDeclarationSerializer
+import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.EmptyAction
 import hu.bme.mit.gamma.xsts.model.MultiaryAction
-import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.xsts.model.XSTS
-import hu.bme.mit.gamma.xsts.model.AssignmentAction
-import hu.bme.mit.gamma.xsts.codegeneration.c.serializer.ActionSerializer
 import org.eclipse.emf.ecore.EObject
-import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 
 class GeneratorUtil {
 	
-	static val extension ActionSerializer actionSerializer = ActionSerializer.INSTANCE;
+	static val extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE;
 	static val extension VariableDeclarationSerializer variableDeclarationSerializer = VariableDeclarationSerializer.INSTANCE;
 	
 	/**
@@ -99,10 +99,12 @@ class GeneratorUtil {
 	 * @return a CharSequence representing the initial value of the variable, or null if not found.
 	 */
 	static def CharSequence getInitialValue(VariableDeclaration variable, EObject object) {
-		if (object instanceof XSTS)
-			return variable.getInitialValue(object.variableInitializingTransition)
+		if (object instanceof XSTS) {
+			val result = variable.getInitialValue(object.variableInitializingTransition)
+			return (result === null) ? '0' : result
+		}
 		if (object instanceof AssignmentAction && (object as AssignmentAction).lhs instanceof DirectReferenceExpression && ((object as AssignmentAction).lhs as DirectReferenceExpression).declaration == variable)
-			return actionSerializer.serialize(object as AssignmentAction)
+			return expressionSerializer.serialize((object as AssignmentAction).rhs)
 		
 		var CharSequence result = null
 		for (child : object.eContents) {
