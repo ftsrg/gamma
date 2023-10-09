@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2019-2022 Contributors to the Gamma project
+ * Copyright (c) 2019-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -38,6 +38,7 @@ public class CodeGenerationHandler extends TaskHandler {
 	
 	public void execute(CodeGeneration codeGeneration, String packageName) {
 		// Setting target folder
+		setProjectLocation(codeGeneration); // Before the target folder
 		setTargetFolder(codeGeneration);
 		//
 		checkArgument(codeGeneration.getProgrammingLanguages().size() == 1, 

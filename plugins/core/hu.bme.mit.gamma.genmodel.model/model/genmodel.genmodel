@@ -82,6 +82,7 @@
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//AnalysisModelTransformation/scheduler"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference genmodel.ecore#//AnalysisModelTransformation/coverages"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//AnalysisModelTransformation/optimize"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//AnalysisModelTransformation/optimizeEnvironmentalMessageQueues"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference genmodel.ecore#//AnalysisModelTransformation/constraint"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference genmodel.ecore#//AnalysisModelTransformation/model"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference genmodel.ecore#//AnalysisModelTransformation/propertyPackage"/>
@@ -137,6 +138,7 @@
     </genClasses>
     <genClasses ecoreClass="genmodel.ecore#//AbstractCodeGeneration">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//AbstractCodeGeneration/packageName"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//AbstractCodeGeneration/projectName"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//AbstractCodeGeneration/programmingLanguages"/>
     </genClasses>
     <genClasses ecoreClass="genmodel.ecore#//AbstractComplementaryTestGeneration">

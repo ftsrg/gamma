@@ -43,6 +43,7 @@ class Gamma2XstsTransformerSerializer {
 	protected final boolean optimize
 	protected final boolean optimizeArray
 	protected final boolean optimizeMessageQueues
+	protected final boolean optimizeEnvironmentalMessageQueues
 	protected final TransitionMerging transitionMerging
 	// Slicing
 	protected final PropertyPackage slicingProperties
@@ -71,7 +72,7 @@ class Gamma2XstsTransformerSerializer {
 			String targetFolderUri, String fileName,
 			Integer schedulingConstraint) {
 		this(component, arguments, targetFolderUri, fileName, schedulingConstraint, schedulingConstraint,
-			true, false, false, TransitionMerging.HIERARCHICAL,
+			true, false, false, true, TransitionMerging.HIERARCHICAL,
 			null, new AnnotatablePreprocessableElements(null, null, null, null, null,
 				InteractionCoverageCriterion.EVERY_INTERACTION, InteractionCoverageCriterion.EVERY_INTERACTION,
 				null, DataflowCoverageCriterion.ALL_USE,
@@ -82,7 +83,8 @@ class Gamma2XstsTransformerSerializer {
 	new(Component component, List<Expression> arguments,
 			String targetFolderUri, String fileName,
 			Integer minSchedulingConstraint, Integer maxSchedulingConstraint,
-			boolean optimize, boolean optimizeArray, boolean optimizeMessageQueues,
+			boolean optimize, boolean optimizeArray,
+			boolean optimizeMessageQueues, boolean optimizeEnvironmentalMessageQueues,
 			TransitionMerging transitionMerging,
 			PropertyPackage slicingProperties,
 			AnnotatablePreprocessableElements annotatableElements,
@@ -97,6 +99,7 @@ class Gamma2XstsTransformerSerializer {
 		this.optimize = optimize
 		this.optimizeArray = optimizeArray
 		this.optimizeMessageQueues = optimizeMessageQueues
+		this.optimizeEnvironmentalMessageQueues = optimizeEnvironmentalMessageQueues
 		this.transitionMerging = transitionMerging
 		//
 		this.slicingProperties = slicingProperties
@@ -122,7 +125,8 @@ class Gamma2XstsTransformerSerializer {
 		slicerAnnotatorAndPropertyGenerator.execute
 		val gammaToXSTSTransformer = new GammaToXstsTransformer(
 			minSchedulingConstraint, maxSchedulingConstraint,
-			true, true, optimizeArray, optimizeMessageQueues,
+			true, true, optimizeArray,
+			optimizeMessageQueues, optimizeEnvironmentalMessageQueues,
 			transitionMerging, initialState, initialStateSetting)
 		// Normal transformation
 		val xSts = gammaToXSTSTransformer.execute(newGammaPackage)

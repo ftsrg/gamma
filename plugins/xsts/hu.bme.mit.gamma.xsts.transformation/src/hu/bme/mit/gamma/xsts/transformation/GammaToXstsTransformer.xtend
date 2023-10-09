@@ -84,33 +84,36 @@ class GammaToXstsTransformer {
 	protected final Logger logger = Logger.getLogger("GammaLogger")
 	
 	new() {
-		this(null, true, true, false, false, TransitionMerging.HIERARCHICAL)
+		this(null, true, true, false, false, true, TransitionMerging.HIERARCHICAL)
 	}
 	
 	new(Integer schedulingConstraint, boolean transformOrthogonalActions,
-			boolean optimize, boolean optimizeArrays, boolean optimizeMessageQueues,
+			boolean optimize, boolean optimizeArrays,
+			boolean optimizeMessageQueues, boolean optimizeEnvironmentalMessageQueues,
 			TransitionMerging transitionMerging) {
 		this(schedulingConstraint, transformOrthogonalActions,
-				optimize, optimizeArrays, optimizeMessageQueues,
+				optimize, optimizeArrays, optimizeMessageQueues, optimizeEnvironmentalMessageQueues,
 				transitionMerging, null, null)
 	}
 	
 	new(Integer schedulingConstraint, boolean transformOrthogonalActions,
-			boolean optimize, boolean optimizeArrays, boolean optimizeMessageQueues,
+			boolean optimize, boolean optimizeArrays,
+			boolean optimizeMessageQueues, boolean optimizeEnvironmentalMessageQueues,
 			TransitionMerging transitionMerging,
 			PropertyPackage initialState, InitialStateSetting initialStateSetting) {
 		this(schedulingConstraint, schedulingConstraint,
 			transformOrthogonalActions, optimize, optimizeArrays, optimizeMessageQueues,
-			transitionMerging, initialState, initialStateSetting)
+			optimizeEnvironmentalMessageQueues, transitionMerging, initialState, initialStateSetting)
 	}
 	
 	new(Integer minSchedulingConstraint, Integer maxSchedulingConstraint,
-			boolean transformOrthogonalActions,	boolean optimize, boolean optimizeArrays, boolean optimizeMessageQueues,
+			boolean transformOrthogonalActions,	boolean optimize, boolean optimizeArrays,
+			boolean optimizeMessageQueues, boolean optimizeEnvironmentalMessageQueues,
 			TransitionMerging transitionMerging,
 			PropertyPackage initialState, InitialStateSetting initialStateSetting) {
 		this.gammaToLowlevelTransformer = new GammaToLowlevelTransformer
 		this.componentTransformer = new ComponentTransformer(this.gammaToLowlevelTransformer,
-			transformOrthogonalActions, optimize, transitionMerging)
+			transformOrthogonalActions, optimize, optimizeEnvironmentalMessageQueues, transitionMerging)
 		this.minSchedulingConstraint = minSchedulingConstraint
 		this.maxSchedulingConstraint = maxSchedulingConstraint
 		this.initialState = initialState

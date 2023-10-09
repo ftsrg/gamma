@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2019-2020 Contributors to the Gamma project
+ * Copyright (c) 2019-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -32,6 +32,7 @@ public class TestGenerationHandler extends TaskHandler {
 	
 	public void execute(TestGeneration testGeneration, String packageName) throws IOException {
 		// Setting target folder
+		setProjectLocation(testGeneration); // Before the target folder
 		setTargetFolder(testGeneration);
 		//
 		checkArgument(testGeneration.getProgrammingLanguages().size() == 1, 

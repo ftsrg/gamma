@@ -72,6 +72,7 @@ class ComponentTransformer {
 	// Transformation settings
 	protected final boolean transformOrthogonalActions
 	protected final boolean optimize
+	protected final boolean optimizeEnvironmentalMessageQueues
 	protected final TransitionMerging transitionMerging
 	// Auxiliary objects
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
@@ -94,10 +95,11 @@ class ComponentTransformer {
 	//
 	
 	new(GammaToLowlevelTransformer gammaToLowlevelTransformer, boolean transformOrthogonalActions,
-			boolean optimize, TransitionMerging transitionMerging) {
+			boolean optimize, boolean optimizeEnvironmentalMessageQueues, TransitionMerging transitionMerging) {
 		this.gammaToLowlevelTransformer = gammaToLowlevelTransformer
 		this.transformOrthogonalActions = transformOrthogonalActions
 		this.optimize = optimize
+		this.optimizeEnvironmentalMessageQueues = optimizeEnvironmentalMessageQueues
 		this.transitionMerging = transitionMerging
 		this.queueTraceability = new MessageQueueTraceability
 		this.traceability = new Traceability
@@ -618,13 +620,13 @@ class ComponentTransformer {
 			}
 			// A value should be inserted into the queue if
 			// (size + (higher1Size + ... + higher(N-1)Size) < theoreticalTotalCapacity))
-			val isThereTheoreticalCapacityExression = queueSizes.wrapIntoAddExpression.createLessExpression(
+			val isThereTheoreticalCapacityExpression = queueSizes.wrapIntoAddExpression.createLessExpression(
 					queueTheoreticalCapacities.toIntegerLiteral) // TODO ?? remove itself ??
 			// And the actual queue is not full
 			val isMasterQueueNotFull = xStsMasterQueue.isMasterQueueNotFull(xStsMasterSizeVariable)
 			// The first part is necessary if there are more queues
 			val isQueueInsertableExpression = (queueSizes.size == 1) ? isMasterQueueNotFull : 
-					isMasterQueueNotFull.wrapIntoAndExpression(isThereTheoreticalCapacityExression)
+					isMasterQueueNotFull.wrapIntoAndExpression(isThereTheoreticalCapacityExpression)
 			val xStsQueueInsertionAction = isQueueInsertableExpression.createIfAction(xStsQueueHandlingAction)
 			// If queue is insertable
 			inEventAction.actions += xStsQueueInsertionAction
@@ -1254,7 +1256,7 @@ class ComponentTransformer {
 		val xSts = xStsEntry.key
 		
 		// 0-ing all variable declaration initial expression, the normal ones are in the init action
-		for (variable : xSts.variableDeclarations) {
+		for (variable : xSts.variableDeclarations.reject[it.clock]) { // Except for timeout declarations
 			variable.expression = variable.defaultExpression
 		}
 		
@@ -1294,7 +1296,7 @@ class ComponentTransformer {
 	private def getCapacity(MessageQueue queue, Collection<? extends Port> systemPorts) {
 		val capacity = queue.capacity
 		val originalCapacity = capacity.evaluateInteger
-		if (queue.isEnvironmentalAndCheck(systemPorts)) {
+		if (queue.isEnvironmentalAndCheck(systemPorts) && optimizeEnvironmentalMessageQueues) {
 			val maxCapacity = queue.getTheoreticalMaximumCapacity(systemPorts)
 			return Integer.min(originalCapacity, maxCapacity) // No more than the user-defined capacity
 		}

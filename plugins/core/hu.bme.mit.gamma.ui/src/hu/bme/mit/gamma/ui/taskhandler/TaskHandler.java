@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2019-2020 Contributors to the Gamma project
+ * Copyright (c) 2019-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -14,6 +14,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.logging.Logger;
 
 import org.eclipse.core.resources.IFile;
@@ -23,6 +24,7 @@ import org.eclipse.emf.ecore.resource.Resource;
 
 import hu.bme.mit.gamma.dialog.DialogUtil;
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator;
+import hu.bme.mit.gamma.genmodel.model.AbstractCodeGeneration;
 import hu.bme.mit.gamma.genmodel.model.AdaptiveContractTestGeneration;
 import hu.bme.mit.gamma.genmodel.model.CodeGeneration;
 import hu.bme.mit.gamma.genmodel.model.GenmodelModelFactory;
@@ -56,7 +58,7 @@ public abstract class TaskHandler {
 	
 	protected final Logger logger = Logger.getLogger("GammaLogger");
 	
-	protected final String projectLocation;
+	protected String projectLocation;
 	protected String targetFolderUri;
 	
 	protected final GenmodelModelFactory factory = GenmodelModelFactory.eINSTANCE;
@@ -69,6 +71,7 @@ public abstract class TaskHandler {
 
 	public void setTargetFolder(Task task) {
 		checkArgument(task.getTargetFolder().size() <= 1);
+		
 		if (task.getTargetFolder().isEmpty()) {
 			String targetFolder = null;
 			if (task instanceof TraceGeneration) {
@@ -119,6 +122,34 @@ public abstract class TaskHandler {
 	
 	public String getTargetFolderUri() {
 		return targetFolderUri;
+	}
+	
+	public void setProjectLocation(AbstractCodeGeneration codeGeneration) {
+		List<String> projectNames = codeGeneration.getProjectName();
+		
+		if (projectNames.isEmpty()) {
+			return;
+		}
+		
+		checkArgument(projectNames.size() <= 1);
+		
+		String projectName = javaUtil.getOnlyElement(projectNames);
+		String root = ecoreUtil.getProjectFile(codeGeneration).getParent();
+		
+		String newProjectLocation = root + File.separator + projectName;
+		File newProjectFile = new File(newProjectLocation);
+		if (newProjectFile.exists()) { // First, we try with the root location of the project
+			setProjectLocation(newProjectLocation);
+		}
+		else { // Not in root location of the project; we try the workspace location
+			String workspaceRoot = ecoreUtil.getWorkspace().toString();
+			newProjectLocation = workspaceRoot + File.separator + projectName;
+			setProjectLocation(newProjectLocation);
+		}
+	}
+	
+	public void setProjectLocation(String projectLocation) {
+		this.projectLocation = projectLocation;
 	}
 	
 	public File exporeRelativeFile(Task task, String relativePath) {

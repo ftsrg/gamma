@@ -111,6 +111,7 @@ public class VerificationHandler extends TaskHandler {
 	
 	public void execute(Verification verification) throws IOException, InterruptedException {
 		// Setting target folder
+		setProjectLocation(verification); // Before the target folder
 		setTargetFolder(verification);
 		//
 		setVerification(verification);

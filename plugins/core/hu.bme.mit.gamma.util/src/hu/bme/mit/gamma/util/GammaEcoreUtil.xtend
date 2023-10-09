@@ -619,7 +619,7 @@ class GammaEcoreUtil {
 		val uri = resource.URI
 		val location =
 		if (uri.isPlatform) {
-			ResourcesPlugin.getWorkspace().getRoot().getFile(
+			ResourcesPlugin.workspace.root.getFile(
 				new Path(uri.toPlatformString(true))
 			).location.toString
 		}
@@ -633,11 +633,15 @@ class GammaEcoreUtil {
 			}
 			else {
 				// It is not platform URI, and still does not start with file: - how?
-				ResourcesPlugin.getWorkspace().getRoot().getFile(
+				ResourcesPlugin.workspace.root.getFile(
 					new Path(uriString)).location.toString
 			}
 		}
 		return new File(URI.decode(location))
+	}
+	
+	def getWorkspace() {
+		ResourcesPlugin.workspace.root.location
 	}
 	
 	def getFile(EObject object) {
@@ -700,6 +704,11 @@ class GammaEcoreUtil {
 	def File getProjectFile(Resource resource) {
 		val file = resource.file
 		return file.projectFile
+	}
+	
+	def File getProjectFile(EObject object) {
+		val resource = object.eResource
+		return resource.projectFile
 	}
 	
 	def File getProjectFile(URI uri) {
