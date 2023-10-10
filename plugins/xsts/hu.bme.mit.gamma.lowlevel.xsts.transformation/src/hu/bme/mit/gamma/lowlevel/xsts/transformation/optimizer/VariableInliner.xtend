@@ -142,7 +142,7 @@ class VariableInliner {
 		
 		// "Ad hoc" inline for symbolic values to tackle the following pattern
 		// local var a : integer = b + 1;
-		// c := a; // Unnecessary 'a' local variable if it is not referenced later
+		// c := a; "or" local var c := a; // Unnecessary 'a' local variable if it is not referenced later
 		subactions.inlineLocalVariablesIntoSubsequentAssignments
 		//
 		
@@ -264,13 +264,15 @@ class VariableInliner {
 				val localVariable = first.variableDeclaration
 				val localVariableValue = localVariable.expression
 				
-				if (second instanceof AssignmentAction) {
-					val assignedValue = second.rhs
-					if (assignedValue instanceof DirectReferenceExpression) {
-						val rhsDeclaration = assignedValue.declaration
+				if (second instanceof AssignmentAction || second instanceof VariableDeclarationAction) {
+					val rhs = (second instanceof AssignmentAction) ? second.rhs : 
+						(second instanceof VariableDeclarationAction) ? second.variableDeclaration.expression : null
+					for (reference : rhs.getSelfAndAllContentsOfType(DirectReferenceExpression)) {
+						val rhsDeclaration = reference.declaration
 						
 						if (rhsDeclaration === localVariable) {
-							second.rhs = localVariableValue.clone
+							val clonedValue = localVariableValue.clone
+							clonedValue.replace(reference)
 						}
 					}
 				}
