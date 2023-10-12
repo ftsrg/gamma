@@ -174,11 +174,16 @@ abstract class AbstractVerifier {
 		protected extension TraceUtil traceUtil = TraceUtil.INSTANCE
 		//
 		def extend(Result result) {
+			if (result === null) {
+				return this // We cannot do anything with null parameters
+			}
+			
 			val newTrace = result.trace
 			val extendedTrace = (trace === null) ? newTrace : {
 				trace.extend(newTrace)
 				trace
 			}
+			
 			return new Result(ThreeStateBoolean.UNDEF, extendedTrace)
 		}
 		

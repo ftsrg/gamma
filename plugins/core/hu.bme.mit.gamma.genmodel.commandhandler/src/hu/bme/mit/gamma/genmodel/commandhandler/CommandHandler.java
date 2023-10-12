@@ -42,7 +42,8 @@ public class CommandHandler extends AbstractHandler {
 									if (selection.getFirstElement() instanceof IFile) {
 										IFile file = (IFile) selection.getFirstElement();
 										GammaApi gammaApi = new GammaApi();
-										gammaApi.run(file.getFullPath().toString());
+										gammaApi.run(
+												file.getFullPath().toString());
 										// new TaskExecutionTimeMeasurer(10, false, MedianCalculator.INSTANCE, "time.txt", TimeUnit.SECONDS)
 									}
 								}
@@ -55,6 +56,7 @@ public class CommandHandler extends AbstractHandler {
 					}
 				}
 			);
+			
 			thread.start();
 		}
 		else {
