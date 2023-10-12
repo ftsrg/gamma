@@ -143,7 +143,7 @@ class VariableInliner {
 		// "Ad hoc" inline for symbolic values to tackle the following pattern
 		// local var a : integer = b + 1;
 		// c := a; "or" local var c := a; // Unnecessary 'a' local variable if it is not referenced later
-		subactions.inlineLocalVariablesIntoSubsequentAssignments
+		subactions.inlineLocalVariablesAndAssignmentsIntoSubsequentAssignments
 		//
 		
 		for (subaction : subactions) {
@@ -254,12 +254,13 @@ class VariableInliner {
 	
 	//
 	
-	protected def inlineLocalVariablesIntoSubsequentAssignments(List<? extends Action> actions) {
+	protected def inlineLocalVariablesAndAssignmentsIntoSubsequentAssignments(List<? extends Action> actions) {
 		// The remaining local VariableDeclarationActions are not removed;
 		// it is done separately by RemovableVariableRemover.removeTransientVariables
 		for (var i = 0; i < actions.size - 1; i++) {
 			val first = actions.get(i)
 			val second = actions.get(i + 1) // Subsequent actions
+			
 			if (first instanceof VariableDeclarationAction) {
 				val localVariable = first.variableDeclaration
 				val localVariableValue = localVariable.expression
@@ -274,6 +275,26 @@ class VariableInliner {
 							val clonedValue = localVariableValue.clone
 							clonedValue.replace(reference)
 						}
+					}
+				}
+			}
+			
+			else if (first instanceof AssignmentAction) {
+				val firstLhs = first.lhs
+				if (second instanceof AssignmentAction) {
+					val secondLhs = second.lhs
+					if (firstLhs.helperEquals(secondLhs)) {
+						val secondRhs = second.rhs
+						for (rhsContent : secondRhs.getSelfAndAllContentsOfType(firstLhs.class)) {
+							if (rhsContent.helperEquals(firstLhs)) {
+								val firstRhs = first.rhs
+								val firstRhsClone = firstRhs.clone
+								firstRhsClone.replace(rhsContent)
+							}
+						}
+						// Remove first
+						first.remove
+						i--
 					}
 				}
 			}

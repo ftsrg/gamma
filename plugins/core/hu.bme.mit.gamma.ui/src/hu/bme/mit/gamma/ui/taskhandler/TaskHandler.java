@@ -146,6 +146,7 @@ public abstract class TaskHandler {
 			newProjectLocation = workspaceRoot + File.separator + projectName;
 			setProjectLocation(newProjectLocation);
 		}
+		// TODO experiment with the Workspace object - maybe it can find the contained projects
 	}
 	
 	public void setProjectLocation(String projectLocation) {

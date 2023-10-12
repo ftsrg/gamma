@@ -46,6 +46,7 @@ import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.trace.derivedfeatures.TraceModelDerivedFeatures.*
 
 class TraceBuilder {
 	// Singleton
@@ -62,6 +63,31 @@ class TraceBuilder {
 	protected final extension ExpressionTypeDeterminator typeDeterminator = ExpressionTypeDeterminator.INSTANCE
 	protected final extension TraceUtil traceUtil = TraceUtil.INSTANCE
 	protected final StatechartUtil statechartUtil = StatechartUtil.INSTANCE // For component instance reference
+	
+	// Add unraised event negations
+	
+	def addUnraisedEventNegations(ExecutionTrace trace) {
+		val steps = trace.allSteps
+		
+		val component = trace.component
+		val outputPorts = component.allPortsWithOutput
+		
+		for (step : steps) {
+			val asserts = step.asserts
+			val outputAsserts = step.outEvents
+			
+			for (outputPort : outputPorts) {
+				for (outputEvent : outputPort.outputEvents) {
+					val isRaised = outputAsserts.exists[it.port == outputPort && it.event == outputEvent]
+					if (!isRaised) {
+						val unraisedExpression = outputPort.createRaiseEventAct(outputEvent)
+								.createNotExpression
+						asserts += unraisedExpression
+					}
+				}
+			}
+		}
+	}
 	
 	// Remove elements
 	
