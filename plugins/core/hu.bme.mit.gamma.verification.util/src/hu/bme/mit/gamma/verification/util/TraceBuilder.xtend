@@ -82,7 +82,7 @@ class TraceBuilder {
 					if (!isRaised) {
 						val unraisedExpression = outputPort.createRaiseEventAct(outputEvent)
 								.createNotExpression
-						asserts += unraisedExpression
+						asserts.add(0, unraisedExpression)
 					}
 				}
 			}

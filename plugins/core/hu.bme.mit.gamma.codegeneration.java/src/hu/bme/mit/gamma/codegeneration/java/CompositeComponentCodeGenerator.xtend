@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -139,8 +139,8 @@ class CompositeComponentCodeGenerator {
 		«FOR instance : component.derivedComponents»
 			«instance.name» = new «instance.derivedType.generateComponentClassName»(«FOR argument : instance.arguments SEPARATOR ", "»«argument.serialize»«ENDFOR»);
 		«ENDFOR»
-		«FOR port : component.portBindings.map[it.compositeSystemPort]»
-			«port.name.toFirstLower» = new «port.name.toFirstUpper»();
+		«FOR port : component.allPorts»
+			«port.name.toFirstLower» = new «port.name.toFirstUpper»(); «IF !component.portBindings.exists[it.compositeSystemPort === port]»// Unbound«ENDIF»
 		«ENDFOR»
 	'''
 	
