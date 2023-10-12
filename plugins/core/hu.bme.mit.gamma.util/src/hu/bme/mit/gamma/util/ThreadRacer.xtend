@@ -32,7 +32,7 @@ class ThreadRacer<T> {
 		return this.execute(callables, -1, null)
 	}
 
-	def T execute(Collection<? extends InterruptableCallable<T>> callables, Integer timeout, TimeUnit unit) {
+	def T execute(Collection<? extends InterruptableCallable<T>> callables, long timeout, TimeUnit unit) {
 		val size = callables.size
 		numberOfCallablesShouldBeRunning = size
 		
