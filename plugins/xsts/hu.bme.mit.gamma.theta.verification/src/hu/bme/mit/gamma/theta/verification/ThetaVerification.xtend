@@ -12,9 +12,11 @@ package hu.bme.mit.gamma.theta.verification
 
 import hu.bme.mit.gamma.util.InterruptableCallable
 import hu.bme.mit.gamma.util.ThreadRacer
+import hu.bme.mit.gamma.verification.result.ThreeStateBoolean
 import hu.bme.mit.gamma.verification.util.AbstractVerification
 import hu.bme.mit.gamma.verification.util.AbstractVerifier.Result
 import java.io.File
+import java.util.concurrent.TimeUnit
 import java.util.logging.Level
 
 class ThetaVerification extends AbstractVerification {
@@ -23,7 +25,8 @@ class ThetaVerification extends AbstractVerification {
 	protected new() {}
 	//
 	
-	override Result execute(File modelFile, File queryFile, String[] arguments) {
+	override Result execute(File modelFile, File queryFile, String[] arguments,
+			long timeout, TimeUnit unit) {
 		val fileName = modelFile.name
 		val packageFileName = fileName.unfoldedPackageFileName
 		val gammaPackage = ecoreUtil.normalLoad(modelFile.parent, packageFileName)
@@ -58,7 +61,7 @@ class ThetaVerification extends AbstractVerification {
 				}
 			}
 			
-			val newResult = racer.execute(callables)
+			val newResult = racer.execute(callables, timeout, unit) // TODO non-null
 			
 			if (result === null) {
 				result = newResult
@@ -66,6 +69,11 @@ class ThetaVerification extends AbstractVerification {
 			else {
 				result = result.extend(newResult)
 			}
+		}
+		
+		// In case of timeout
+		if (result === null) {
+			result = new Result(ThreeStateBoolean.UNDEF, null)
 		}
 		
 		return result

@@ -54,6 +54,7 @@ import hu.bme.mit.gamma.querygenerator.serializer.UppaalPropertySerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.XstsUppaalPropertySerializer;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Component;
+import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
 import hu.bme.mit.gamma.theta.verification.ThetaVerification;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
 import hu.bme.mit.gamma.trace.testgeneration.java.TestGenerator;
@@ -80,6 +81,8 @@ public class VerificationHandler extends TaskHandler {
 	protected String svgFileName; // Set in setVerification
 	protected final String traceFileName = "ExecutionTrace";
 	protected final String testFileName = traceFileName + "Simulation";
+	
+	protected TimeSpecification timeout = null;
 	
 	//
 	
@@ -323,9 +326,12 @@ public class VerificationHandler extends TaskHandler {
 	
 	protected Result execute(AbstractVerification verificationTask, File modelFile, File queryFile,
 			String[] arguments, List<ExecutionTrace> retrievedTraces, boolean isOptimize) throws InterruptedException {
+		long timeoutInMilliseconds = (timeout == null) ? -1 : expressionEvaluator.evaluateInteger(
+				StatechartModelDerivedFeatures.getTimeInMilliseconds(timeout));
 		// If arguments are empty, we execute a task with default arguments
-		Result result = (arguments.length == 0) ? verificationTask.execute(modelFile, queryFile) :
-			verificationTask.execute(modelFile, queryFile, arguments);
+		Result result = (arguments.length == 0) ?
+				verificationTask.execute(modelFile, queryFile, timeoutInMilliseconds, TimeUnit.MILLISECONDS) :
+					verificationTask.execute(modelFile, queryFile, arguments, timeoutInMilliseconds, TimeUnit.MILLISECONDS);
 		
 		ExecutionTrace trace = result.getTrace();
 		// Maybe there is no trace
@@ -374,6 +380,8 @@ public class VerificationHandler extends TaskHandler {
 		verification.getFileName().replaceAll(it -> fileUtil.exploreRelativeFile(file, it).toString());
 		// Setting the query paths
 		verification.getQueryFiles().replaceAll(it -> fileUtil.exploreRelativeFile(file, it).toString());
+		// Setting the timeout
+		this.timeout = verification.getTimeout();
 	}
 	
 	//

@@ -13,13 +13,15 @@ package hu.bme.mit.gamma.promela.verification
 import hu.bme.mit.gamma.verification.util.AbstractVerification
 import hu.bme.mit.gamma.verification.util.AbstractVerifier.Result
 import java.io.File
+import java.util.concurrent.TimeUnit
 
 class PromelaVerification extends AbstractVerification {
 	// Singleton
 	public static final PromelaVerification INSTANCE = new PromelaVerification
 	protected new() {}
 	
-	override Result execute(File modelFile, File queryFile, String[] arguments) {
+	override Result execute(File modelFile, File queryFile, String[] arguments,
+			long timeout, TimeUnit unit) {
 		val fileName = modelFile.name
 		val packageFileName = fileName.unfoldedPackageFileName
 		val gammaPackage = ecoreUtil.normalLoad(modelFile.parent, packageFileName)

@@ -76,7 +76,7 @@ public class ExpressionEvaluator {
 			return evaluateBoolean(expression) ? 1 : 0;
 		}
 	}
-
+	
 	// Integers (and enums)
 	public int evaluateInteger(Expression expression) {
 		if (expression instanceof DirectReferenceExpression) {

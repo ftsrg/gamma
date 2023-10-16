@@ -136,6 +136,7 @@ public class GenModelFormatter extends AbstractDeclarativeFormatter {
         c.setLinewrap(1).after(f.getVerificationAccess().getProgrammingLanguagesAssignment_3_10_2());
         c.setLinewrap(1).after(f.getVerificationAccess().getGroup_3_10());
         c.setLinewrap(1).after(f.getVerificationAccess().getTestFolderAssignment_3_13_2());
+        c.setLinewrap(1).after(f.getVerificationAccess().getTimeoutAssignment_3_14_2());
         // Interface mapping
         c.setLinewrap(1).after(f.getInterfaceMappingRule());
 		for (Keyword comma: f.findKeywords(",")) {

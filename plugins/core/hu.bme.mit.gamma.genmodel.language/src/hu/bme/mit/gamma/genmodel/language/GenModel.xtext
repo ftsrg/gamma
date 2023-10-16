@@ -310,7 +310,8 @@ Verification returns Verification:
 			'test-language' ':' programmingLanguages+=ProgrammingLanguage |
 			('optimize' | ('optimize-traces')) ':' ('false' | optimize?='true') |
 			'back-annotate-to-original' ':' ('false' | backAnnotateToOriginal?='true') |
-			'test-folder' ':' testFolder+=STRING
+			'test-folder' ':' testFolder+=STRING |
+			'timeout' ':' timeout=TimeSpecification
 		)*
 	'}'
 ;

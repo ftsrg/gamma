@@ -16,6 +16,7 @@ import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.util.JavaUtil
 import hu.bme.mit.gamma.verification.util.AbstractVerifier.Result
 import java.io.File
+import java.util.concurrent.TimeUnit
 import java.util.logging.Logger
 import java.util.regex.Pattern
 
@@ -29,9 +30,20 @@ abstract class AbstractVerification {
 	protected final Logger logger = Logger.getLogger("GammaLogger")
 	
 	def Result execute(File modelFile, File queryFile) {
-		return this.execute(modelFile, queryFile, defaultArguments)
+		return this.execute(modelFile, queryFile, -1, null)
 	}
-	abstract def Result execute(File modelFile, File queryFile, String[] arguments) throws InterruptedException
+	
+	def Result execute(File modelFile, File queryFile, long timeout, TimeUnit unit) {
+		return this.execute(modelFile, queryFile, defaultArguments, timeout, unit)
+	}
+	
+	def Result execute(File modelFile, File queryFile, String[] arguments) {
+		this.execute(modelFile, queryFile, arguments, -1, null)
+	}
+	
+	abstract def Result execute(File modelFile, File queryFile, String[] arguments,
+			long timeout, TimeUnit unit) throws InterruptedException
+	
 	abstract def String[] getDefaultArguments()
 	
 	def String[] getDefaultArguments(File modelFile) {
