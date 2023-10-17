@@ -36,7 +36,7 @@ class PromelaVerifier extends AbstractVerifier {
 		var i = 0
 		var Result result = null
 		
-		for (singleQuery : query.split(System.lineSeparator).reject[it.nullOrEmpty]) {
+		for (singleQuery : query.splitLines) {
 			//
 			queryAdapter = new LtlQueryAdapter
 			// Supporting multiple queries in separate files

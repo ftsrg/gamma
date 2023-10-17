@@ -30,9 +30,9 @@ class ThetaVerifier extends AbstractVerifier {
 	final String SAFE = "SafetyResult Safe"
 	final String UNSAFE = "SafetyResult Unsafe"
 	
-	override Result verifyQuery(Object traceability, String parameters, File modelFile, String query) {
+	override Result verifyQuery(Object traceability, String parameters, File modelFile, String queries) {
 		var Result result = null
-		for (singleQuery : query.split(System.lineSeparator).reject[it.nullOrEmpty]) {
+		for (singleQuery : queries.splitLines) {
 			// Supporting multiple queries in separate files
 			val parsedQuery = singleQuery.adaptQuery
 			val wrappedQuery = '''

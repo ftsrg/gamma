@@ -57,6 +57,12 @@ abstract class AbstractVerification {
 		}
 	}
 	
+	protected def sanitizeArguments(Iterable<String> arguments) {
+		for (argument : arguments) {
+			argument.sanitizeArgument
+		}
+	}
+	
 	protected abstract def String getArgumentPattern()
 	
 }

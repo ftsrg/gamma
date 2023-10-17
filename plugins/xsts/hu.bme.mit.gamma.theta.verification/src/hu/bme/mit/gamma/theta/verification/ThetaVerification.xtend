@@ -33,7 +33,7 @@ class ThetaVerification extends AbstractVerification {
 		
 		var Result result = null
 		
-		for (query : queries.splitLines) {
+		for (query /* TODO not referenced */ : queries.splitLines) {
 			// Racing for every query separately
 			val racer = new ThreadRacer<Result>
 			val callables = <InterruptableCallable<Result>>newArrayList

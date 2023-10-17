@@ -39,7 +39,7 @@ class NuxmvVerifier extends AbstractVerifier {
 		var Result result = null
 		
 		// Adding all the queries to the end of the model file
-		for (singleQuery : query.split(System.lineSeparator).reject[it.nullOrEmpty]) {
+		for (singleQuery : query.splitLines) {
 			//
 			val conversionResult = modelFile.convertToInvariant(singleQuery, parameters)
 			val convertedProperty = conversionResult?.key

@@ -28,29 +28,14 @@ class PromelaVerification extends AbstractVerification {
 		val fileName = modelFile.name
 		val packageFileName = fileName.unfoldedPackageFileName
 		val gammaPackage = ecoreUtil.normalLoad(modelFile.parent, packageFileName)
-		val argument = arguments.head
 		
-		argument.sanitizeArgument
+		arguments.sanitizeArguments
 		
 		// Racer, but for only one thread
 		val racer = new ThreadRacer<Result>
 		val callables = <InterruptableCallable<Result>>newArrayList
 		
-		val verifier = new PromelaVerifier
-		callables += new InterruptableCallable<Result> {
-			
-			override Result call() {
-				logger.info('''Starting Promela with "«argument»"''')
-				val result = verifier.verifyQuery(gammaPackage, argument, modelFile, queryFile)
-				return result
-			}
-			
-			override void cancel() {
-				verifier.cancel
-				logger.info('''Promela verification instance with "«argument»" has been cancelled''')
-			}
-			
-		}
+		callables += gammaPackage.createVerificationCallables(arguments, modelFile, queryFile)
 		
 		var result = racer.execute(callables, timeout, unit)
 		
@@ -60,6 +45,29 @@ class PromelaVerification extends AbstractVerification {
 		}
 		
 		return result
+	}
+	
+	def createVerificationCallables(Object gammaPackage, Iterable<String> arguments,
+			File modelFile, File queryFile) {
+		val callables = <InterruptableCallable<Result>>newArrayList
+		
+		for (argument : arguments) {
+			val verifier = new PromelaVerifier
+			
+			callables += new InterruptableCallable<Result> {
+				override Result call() {
+					logger.info('''Starting Promela with "«argument»"''')
+					val result = verifier.verifyQuery(gammaPackage, argument, modelFile, queryFile)
+					return result
+				}
+				override void cancel() {
+					verifier.cancel
+					logger.info('''Promela verification instance with "«argument»" has been cancelled''')
+				}
+			}
+		}
+		
+		return callables
 	}
 	
 	override getDefaultArguments() {
