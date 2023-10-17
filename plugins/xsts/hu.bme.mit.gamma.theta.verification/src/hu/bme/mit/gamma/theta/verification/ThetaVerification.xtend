@@ -17,7 +17,6 @@ import hu.bme.mit.gamma.verification.util.AbstractVerification
 import hu.bme.mit.gamma.verification.util.AbstractVerifier.Result
 import java.io.File
 import java.util.concurrent.TimeUnit
-import java.util.logging.Level
 
 class ThetaVerification extends AbstractVerification {
 	// Singleton
@@ -47,21 +46,21 @@ class ThetaVerification extends AbstractVerification {
 					
 					override Result call() {
 						val currentThread = Thread.currentThread
-						logger.log(Level.INFO, '''Starting Theta on thread «currentThread.name» with "«argument»"''')
+						logger.info('''Starting Theta on thread «currentThread.name» with "«argument»"''')
 						val result = verifier.verifyQuery(gammaPackage, argument, modelFile, queries)
-						logger.log(Level.INFO, '''Thread «currentThread.name» with "«argument»" has won''')
+						logger.info('''Thread «currentThread.name» with "«argument»" has won''')
 						return result
 					}
 					
 					override void cancel() {
 						verifier.cancel
-						logger.log(Level.INFO, '''Theta verification instance with "«argument»" has been cancelled''')
+						logger.info('''Theta verification instance with "«argument»" has been cancelled''')
 					}
 					
 				}
 			}
 			
-			val newResult = racer.execute(callables, timeout, unit) // TODO non-null
+			val newResult = racer.execute(callables, timeout, unit)
 			
 			if (result === null) {
 				result = newResult
