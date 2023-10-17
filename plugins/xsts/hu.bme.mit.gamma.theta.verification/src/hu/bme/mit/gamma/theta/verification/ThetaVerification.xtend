@@ -78,6 +78,10 @@ class ThetaVerification extends AbstractVerification {
 		return result
 	}
 	
+	protected override createVerifier() {
+		return new ThetaVerifier
+	}
+	
 	override getDefaultArguments() {
 		return #[
 				"",

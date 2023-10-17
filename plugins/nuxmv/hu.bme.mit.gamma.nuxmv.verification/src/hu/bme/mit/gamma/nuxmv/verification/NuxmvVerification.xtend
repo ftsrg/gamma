@@ -64,6 +64,10 @@ class NuxmvVerification extends AbstractVerification {
 		return result
 	}
 	
+	protected override createVerifier() {
+		return new NuxmvVerifier
+	}
+	
 	override getDefaultArguments(File modelFile) {
 		if (NuxmvVerifier.isTimedModel(modelFile)) {
 			return #[

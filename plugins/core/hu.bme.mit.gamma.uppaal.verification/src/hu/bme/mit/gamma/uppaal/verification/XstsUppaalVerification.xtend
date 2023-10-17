@@ -62,6 +62,10 @@ class XstsUppaalVerification extends AbstractUppaalVerification {
 		return result
 	}
 	
+	protected override createVerifier() {
+		return new UppaalVerifier
+	}
+	
 	override getDefaultArguments() {
 		return #[ "-C -T -t0" ]
 	}

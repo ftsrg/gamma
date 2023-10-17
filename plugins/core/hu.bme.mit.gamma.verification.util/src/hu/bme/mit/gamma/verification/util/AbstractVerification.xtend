@@ -13,6 +13,7 @@ package hu.bme.mit.gamma.verification.util
 import hu.bme.mit.gamma.transformation.util.GammaFileNamer
 import hu.bme.mit.gamma.util.FileUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
+import hu.bme.mit.gamma.util.InterruptableCallable
 import hu.bme.mit.gamma.util.JavaUtil
 import hu.bme.mit.gamma.verification.util.AbstractVerifier.Result
 import java.io.File
@@ -40,6 +41,32 @@ abstract class AbstractVerification {
 	def Result execute(File modelFile, File queryFile, String[] arguments) {
 		this.execute(modelFile, queryFile, arguments, -1, null)
 	}
+	
+	def createVerificationCallables(Object traceabilityObject, Iterable<String> arguments,
+			File modelFile, File queryFile) {
+		val callables = <InterruptableCallable<Result>>newArrayList
+		
+		for (argument : arguments) {
+			val verifier = createVerifier
+			val instanceName = verifier.class.name
+			
+			callables += new InterruptableCallable<Result> {
+				override Result call() {
+					logger.info('''Starting «instanceName» instance with "«argument»"''')
+					val result = verifier.verifyQuery(traceabilityObject, argument, modelFile, queryFile)
+					return result
+				}
+				override void cancel() {
+					verifier.cancel
+					logger.info('''«instanceName» instance with "«argument»" has been cancelled''')
+				}
+			}
+		}
+		
+		return callables
+	}
+	
+	abstract protected def AbstractVerifier createVerifier()
 	
 	abstract def Result execute(File modelFile, File queryFile, String[] arguments,
 			long timeout, TimeUnit unit) throws InterruptedException
