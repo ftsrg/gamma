@@ -10,13 +10,8 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.nuxmv.verification
 
-import hu.bme.mit.gamma.util.InterruptableCallable
-import hu.bme.mit.gamma.util.ThreadRacer
-import hu.bme.mit.gamma.verification.result.ThreeStateBoolean
 import hu.bme.mit.gamma.verification.util.AbstractVerification
-import hu.bme.mit.gamma.verification.util.AbstractVerifier.Result
 import java.io.File
-import java.util.concurrent.TimeUnit
 
 class NuxmvVerification extends AbstractVerification {
 	// Singleton
@@ -24,44 +19,8 @@ class NuxmvVerification extends AbstractVerification {
 	protected new() {}
 	//
 	
-	override Result execute(File modelFile, File queryFile, String[] arguments,
-			long timeout, TimeUnit unit) {
-		val fileName = modelFile.name
-		val packageFileName = fileName.unfoldedPackageFileName
-		val gammaPackage = ecoreUtil.normalLoad(modelFile.parent, packageFileName)
-		
-		val argument = arguments.head
-		
-		argument.sanitizeArgument
-		
-		// Racer, but for only one thread
-		val racer = new ThreadRacer<Result>
-		val callables = <InterruptableCallable<Result>>newArrayList
-		
-		val verifier = new NuxmvVerifier
-		callables += new InterruptableCallable<Result> {
-			
-			override Result call() {
-				logger.info('''Starting nuXmv with "«argument»"''')
-				val result = verifier.verifyQuery(gammaPackage, argument, modelFile, queryFile)
-				return result
-			}
-			
-			override void cancel() {
-				verifier.cancel
-				logger.info('''nuXmv verification instance with "«argument»" has been cancelled''')
-			}
-			
-		}
-		
-		var result = racer.execute(callables, timeout, unit)
-		
-		// In case of timeout
-		if (result === null) {
-			result = new Result(ThreeStateBoolean.UNDEF, null)
-		}
-		
-		return result
+	override protected getTraceabilityFileName(String fileName) {
+		return fileName.unfoldedPackageFileName
 	}
 	
 	protected override createVerifier() {

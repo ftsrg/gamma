@@ -11,7 +11,6 @@
 package hu.bme.mit.gamma.promela.verification
 
 import hu.bme.mit.gamma.statechart.interface_.Package
-import hu.bme.mit.gamma.util.FileUtil
 import hu.bme.mit.gamma.verification.result.ThreeStateBoolean
 import hu.bme.mit.gamma.verification.util.AbstractVerifier
 import java.io.BufferedWriter
@@ -22,12 +21,11 @@ import java.util.Scanner
 import java.util.logging.Level
 
 class PromelaVerifier extends AbstractVerifier {
-	
-	protected final extension FileUtil fileUtil = FileUtil.INSTANCE
+	//
 	protected extension LtlQueryAdapter queryAdapter = null // One needs to be created for every verification task
-
-	// save trace to file
-	protected val saveTrace = false
+	// Save trace to file
+	protected val SAVE_TRACE = false
+	//
 	
 	override Result verifyQuery(Object traceability, String parameters, File modelFile, File queryFile) {
 		val model = fileUtil.loadString(modelFile)
@@ -154,7 +152,7 @@ class PromelaVerifier extends AbstractVerifier {
 			resultReader = new Scanner(traceOutputStream)
 			
 			// save trace
-			if (saveTrace) {
+			if (SAVE_TRACE) {
 				// Trace file
 				val traceFile = new File(modelFile.traceFile)
 				traceFile.delete
@@ -198,4 +196,5 @@ class PromelaVerifier extends AbstractVerifier {
 	def getPanFile(File modelFile) {
 		return modelFile.parent + File.separator + "pan"
 	}
+	
 }

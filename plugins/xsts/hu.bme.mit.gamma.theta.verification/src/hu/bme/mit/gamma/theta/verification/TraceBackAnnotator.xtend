@@ -38,7 +38,7 @@ class TraceBackAnnotator {
 	protected final Scanner traceScanner
 	protected final ThetaQueryGenerator thetaQueryGenerator
 	protected final extension XstsBackAnnotator xStsBackAnnotator
-	protected static final Object engineSynchronizationObject = new Object
+	protected static final Object engineSynchronizationObject = new Object // For the VIATRA engine in the query generator
 	
 	protected final Package gammaPackage
 	protected final Component component
