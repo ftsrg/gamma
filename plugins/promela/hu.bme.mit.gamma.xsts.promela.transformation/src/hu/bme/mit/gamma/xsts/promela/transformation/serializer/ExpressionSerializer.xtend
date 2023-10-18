@@ -22,6 +22,7 @@ import hu.bme.mit.gamma.expression.model.NotExpression
 import hu.bme.mit.gamma.expression.util.ExpressionTypeDeterminator2
 import hu.bme.mit.gamma.xsts.promela.transformation.util.Configuration
 import hu.bme.mit.gamma.xsts.promela.transformation.util.MessageQueueHandler
+import hu.bme.mit.gamma.xsts.transformation.util.MessageQueueUtil
 
 import static extension hu.bme.mit.gamma.xsts.promela.transformation.util.Namings.*
 
@@ -31,6 +32,7 @@ class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSe
 	protected new() {}
 	//
 	
+	protected final extension MessageQueueUtil messageQueueUtil = MessageQueueUtil.INSTANCE
 	protected final extension MessageQueueHandler messageQueueHandler = MessageQueueHandler.INSTANCE
 	protected final extension ExpressionTypeDeterminator2 expressionTypeDeterminator = ExpressionTypeDeterminator2.INSTANCE
 	

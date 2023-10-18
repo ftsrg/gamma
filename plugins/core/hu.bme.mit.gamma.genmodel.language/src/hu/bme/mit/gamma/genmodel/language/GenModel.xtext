@@ -79,6 +79,7 @@ CodeGeneration returns CodeGeneration:
 		'component' ':' component=[interface::Component]
 		(
 			'folder' ':' targetFolder+=STRING |
+			'project' ':' projectName+=STRING |
 			'base-package' ':' packageName+=STRING | // Java base package
 			'language' ':' programmingLanguages+=ProgrammingLanguage
 		)*
@@ -90,6 +91,7 @@ TestGeneration returns TestGeneration:
 		'trace' ':' executionTrace=[trace::ExecutionTrace]
 		(
 			'folder' ':' targetFolder+=STRING |
+			'project' ':' projectName+=STRING |
 			'file' ':' fileName+=STRING | // The name of the generated file
 			'base-package' ':' packageName+=STRING | // Java base package
 			'language' ':' programmingLanguages+=ProgrammingLanguage
@@ -112,7 +114,7 @@ enum ProgrammingLanguage returns ProgrammingLanguage:
 ;
 
 AnalysisModelTransformation returns AnalysisModelTransformation:
-	'analysis' '{'
+	('analysis' | 'analysis-model' ) '{'
 		model=ModelReference
 		(
 			'task' ':' task=AnalysisTask |
@@ -123,6 +125,7 @@ AnalysisModelTransformation returns AnalysisModelTransformation:
 			'initial-state' ':' initialState=[property::PropertyPackage | STRING] |
 			'initial-state-setting' ':' initialStateSetting=InitialStateSetting |
 			'optimize' ':' optimize=BOOLEAN |
+			'optimize-environmental-message-queues' ':' optimizeEnvironmentalMessageQueues=BOOLEAN |
 			'scheduler' ':' scheduler+=Scheduler |
 			'constraint' ':' constraint=Constraint |
 			coverages+=Coverage
@@ -296,6 +299,7 @@ Verification returns Verification:
 		(
 			'trace-folder' ':' targetFolder+=STRING | // Trace folder
 			'file' ':' fileName+=STRING | // Trace model
+			'project' ':' projectName+=STRING |
 			'optimize-model' ':' ('false' | (optimizeModel?='true' ('optimize-out-events' ':' ('false' | optimizeOutEvents?='true'))?)) |
 			'svg-file' ':' svgFileName+=STRING |
 			'language' ':' analysisLanguages+=AnalysisLanguage |
@@ -306,7 +310,8 @@ Verification returns Verification:
 			'test-language' ':' programmingLanguages+=ProgrammingLanguage |
 			('optimize' | ('optimize-traces')) ':' ('false' | optimize?='true') |
 			'back-annotate-to-original' ':' ('false' | backAnnotateToOriginal?='true') |
-			'test-folder' ':' testFolder+=STRING
+			'test-folder' ':' testFolder+=STRING |
+			'timeout' ':' timeout=TimeSpecification
 		)*
 	'}'
 ;
@@ -372,6 +377,7 @@ AdaptiveContractTestGeneration returns AdaptiveContractTestGeneration:
 		modelTransformation=AnalysisModelTransformation
 		(
 		'folder' ':' targetFolder+=STRING |
+		'project' ':' projectName+=STRING |
 		'file' ':' fileName+=STRING | // The name of the generated file
 		'base-package' ':' packageName+=STRING | // Java base package
 		'language' ':' programmingLanguages+=ProgrammingLanguage |
@@ -448,13 +454,16 @@ FmeaTableGeneration returns FmeaTableGeneration:
 	{FmeaTableGeneration} 'fmea-table-generation' '{'
 		(analysisModelTransformation=AnalysisModelTransformation)?
 		(
-			'cardinality' ':' cardinality=Expression |
 			'folder' ':' targetFolder+=STRING |
 			'file-name' ':' fileName+=STRING |
 			'fault-extension-instructions-file' ':' faultExtensionInstructionsFile+=STRING |
 			'fault-extension-instructions' ':' faultExtensionInstructions=[fei::FaultExtensionInstructions | STRING] |
 			'fault-modes-file' ':' faultModesFile+=STRING | // Manually created XML (e.g., for debugging)
-			'top-level-event' ':' propertyPackages+=[property::PropertyPackage | STRING] // Property models
+			'top-level-event' ':' propertyPackages+=[property::PropertyPackage | STRING] | // Property models
+			// FMEA-related
+			'cardinality' ':' cardinality=Expression |
+			'bmc-bound' ':' bmcBound=Expression |
+			'visualize' ':' visualize=BOOLEAN
 		)*
 	'}'
 ;

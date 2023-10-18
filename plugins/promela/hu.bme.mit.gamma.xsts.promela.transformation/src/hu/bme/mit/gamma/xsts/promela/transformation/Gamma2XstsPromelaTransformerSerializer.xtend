@@ -99,7 +99,8 @@ class Gamma2XstsPromelaTransformerSerializer {
 		val xStsTransformer = new Gamma2XstsTransformerSerializer(component,
 			arguments, targetFolderUri,
 			fileName, minSchedulingConstraint, maxSchedulingConstraint,
-			optimize, true, // Optimize arrays?
+			optimize, true, /* Optimize arrays? */
+			false, /* Optimize message queues? */ true, /* Optimize environmental message queues? */
 			transitionMerging,
 			slicingProperties, annotatableElements,
 			initialState, initialStateSetting)

@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer
 
+import hu.bme.mit.gamma.expression.model.ArrayAccessExpression
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
@@ -141,8 +142,8 @@ class VariableInliner {
 		
 		// "Ad hoc" inline for symbolic values to tackle the following pattern
 		// local var a : integer = b + 1;
-		// c := a; // Unnecessary 'a' local variable if it is not referenced later
-		subactions.inlineLocalVariablesIntoSubsequentAssignments
+		// c := a; "or" local var c := a; // Unnecessary 'a' local variable if it is not referenced later
+		subactions.inlineLocalVariablesAndAssignmentsIntoSubsequentAssignments
 		//
 		
 		for (subaction : subactions) {
@@ -198,6 +199,10 @@ class VariableInliner {
 				declaration.handleMaps(action, rhs, concreteValues, symbolicValues)
 			}
 		}
+		else if (lhs instanceof ArrayAccessExpression) {
+			val index = lhs.index
+			index.inlineExpression(concreteValues, symbolicValues)
+		}
 	}
 	
 	protected def dispatch void inline(VariableDeclarationAction action,
@@ -249,24 +254,47 @@ class VariableInliner {
 	
 	//
 	
-	protected def inlineLocalVariablesIntoSubsequentAssignments(List<? extends Action> actions) {
+	protected def inlineLocalVariablesAndAssignmentsIntoSubsequentAssignments(List<? extends Action> actions) {
 		// The remaining local VariableDeclarationActions are not removed;
 		// it is done separately by RemovableVariableRemover.removeTransientVariables
 		for (var i = 0; i < actions.size - 1; i++) {
 			val first = actions.get(i)
 			val second = actions.get(i + 1) // Subsequent actions
+			
 			if (first instanceof VariableDeclarationAction) {
 				val localVariable = first.variableDeclaration
 				val localVariableValue = localVariable.expression
 				
-				if (second instanceof AssignmentAction) {
-					val assignedValue = second.rhs
-					if (assignedValue instanceof DirectReferenceExpression) {
-						val rhsDeclaration = assignedValue.declaration
+				if (second instanceof AssignmentAction || second instanceof VariableDeclarationAction) {
+					val rhs = (second instanceof AssignmentAction) ? second.rhs : 
+						(second instanceof VariableDeclarationAction) ? second.variableDeclaration.expression : null
+					for (reference : rhs.getSelfAndAllContentsOfType(DirectReferenceExpression)) {
+						val rhsDeclaration = reference.declaration
 						
 						if (rhsDeclaration === localVariable) {
-							second.rhs = localVariableValue.clone
+							val clonedValue = localVariableValue.clone
+							clonedValue.replace(reference)
 						}
+					}
+				}
+			}
+			
+			else if (first instanceof AssignmentAction) {
+				val firstLhs = first.lhs
+				if (second instanceof AssignmentAction) {
+					val secondLhs = second.lhs
+					if (firstLhs.helperEquals(secondLhs)) {
+						val secondRhs = second.rhs
+						for (rhsContent : secondRhs.getSelfAndAllContentsOfType(firstLhs.class)) {
+							if (rhsContent.helperEquals(firstLhs)) {
+								val firstRhs = first.rhs
+								val firstRhsClone = firstRhs.clone
+								firstRhsClone.replace(rhsContent)
+							}
+						}
+						// Remove first
+						first.remove
+						i--
 					}
 				}
 			}

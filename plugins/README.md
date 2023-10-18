@@ -41,6 +41,8 @@ If you want to use *Spin* for formal verification, download and extract *Spin 6.
 
 If you want to use *nuXmv* for formal verification, download and extract *nuXmv 2.0.0* or higher version. In order to let Gamma find the nuXmv executable, add the `nuXmv.exe` or `nuXmv` to the path environment variable (depending on the operating system being used). The instructions are described in the [`README`](nuxmv/README.md) file of the folder.
 
+If you want to use *xSAP* for safety assessment, download and extract *xSAP 1.4.0* or higher version. In order to let Gamma find the xSAP executable, create an environment variable named `XSAP_HOME` that points to the extracted xSAP root folder (absolute path) and add the `xSAP/bin` folder to the PATH environment or default search path (depending on your OS). The instructions are described in the [`README`](safety/README.md) file of the folder.
+
 Make sure to set the text file encoding of your Eclipse workspace to **UTF-8**: _Window > Preferences..._ Start typing `workspace` in the left upper textfield (in the place of `type filter text`). Select _General > Workspace_ from the filtered item list and check the `Text file encoding` setting at the bottom of the window.
 
 Make sure to set the Java compiler compliance level to **17**: _Window > Preferences..._ Start typing `compiler` in the left upper textfield (in the place of `type filter text`). Select _Java > Compiler_ from the filtered item list and set the `Compiler compliance level` to **17** at the top of the window.
@@ -69,13 +71,15 @@ When running the workflows for the first time, a pop-up window may appear statin
 ### Manual setup
 
 The manual plugin setup procedure should be done as follows:
-1. Import all Eclipse projects from the `plugins/core` folder.
+1. Import all Eclipse projects from the `plugins` folder.
 2. Generate the Model plugin of the Gamma Expression Language: `hu.bme.mit.gamma.expression.model`. The Model plugin can be generated from the ecore file using a genmodel.
 3. Generate the Model plugin of the Gamma Action Language: `hu.bme.mit.gamma.action.model`. It can be generated the same way as in the previous step.
 3. Generate the Model plugin of the Gamma Statechart Language: `hu.bme.mit.gamma.statechart.model`. It can be generated the same way as in the previous step.
 3. Generate the Model plugin of the Gamma Property Language: `hu.bme.mit.gamma.property.model`. It can be generated the same way as in the previous step.
 6. Generate the Model plugin of the Gamma Genmodel Language: `hu.bme.mit.gamma.genmodel.model`. Again use the ecore file and the genmodel.
 6. Generate the Model plugin of the Gamma Test Language: `hu.bme.mit.gamma.trace.model`. Again use the ecore file and the genmodel.
+6. Generate the Model plugin of the Gamma Scenario Language: `hu.bme.mit.gamma.scenario.model`. Again use the ecore file and the genmodel.
+6. Generate the Model plugin of the Gamma Fault Extension Language: `hu.bme.mit.gamma.fei.model`. Again use the ecore file and the genmodel.
 6. Generate the Model plugin of the UPPAAL metamodel: `de.uni_paderborn.uppaal`. Again use the ecore file and the genmodel.
 6. Generate the Model plugin of the traceability projects: `hu.bme.mit.gamma.uppaal.transformation.traceability` and `hu.bme.mit.gamma.yakindu.transformation.traceability`. Again use the ecore file and the genmodel.
 7. Run `hu.bme.mit.gamma.expression.language/src/hu/bme/mit/gamma/expression/language/GenerateExpressionLanguage.mwe2` as a MWE2 Workflow.
@@ -83,9 +87,8 @@ The manual plugin setup procedure should be done as follows:
 8. Run `hu.bme.mit.gamma.statechart.language/src/hu/bme/mit/gamma/statechart/language/GenerateStatechartLanguage.mwe2` as a MWE2 Workflow.
 9. Run `hu.bme.mit.gamma.genmodel.language/src/hu/bme/mit/gamma/genmodel/language/GenerateGenModel.mwe2` as a MWE2 Workflow.
 10. Run `hu.bme.mit.gamma.trace.language/src/hu/bme/mit/gamma/trace/language/GenerateTraceLanguage.mwe2` as a MWE2 Workflow.
-10. Import all Eclipse projects from the `plugins/scenario` folder.
-10. Generate the Model plugin of the Gamma Scenario Language: `hu.bme.mit.gamma.scenario.model`. The Model plugin can be generated from the ecore file using a genmodel.
 10. Run `hu.bme.mit.gamma.scenario.language/src/hu/bme/mit/gamma/scenario/language/GenerateScenarioLanguage.mwe2` as a MWE2 Workflow.
+10. Run `hu.bme.mit.gamma.fei.language/src/hu/bme/mit/gamma/fei/language/GenerateFaultExtensionLanguage.mwe2` as a MWE2 Workflow.
 11. If necessary, create the missing `bin`, `src-gen` and `xtend-gen` folders in the projects indicated in the error log.
 12. Clean projects if necessary.
 
@@ -104,6 +107,7 @@ The manual plugin setup procedure should be done as follows:
 |`hu.bme.mit.gamma.genmodel.model`| x | | |
 |`hu.bme.mit.gamma.yakindu.transformation.traceability`| x | | |
 |`hu.bme.mit.gamma.scenario.model`| x | | |
+|`hu.bme.mit.gamma.fei.model`| x | | |
 
 ##### Code generation with MWE2 workflows:
 | Project | Path |
@@ -115,6 +119,7 @@ The manual plugin setup procedure should be done as follows:
 | `hu.bme.mit.gamma.trace.language` | `/src/hu/bme/mit/gamma/trace/language/GenerateTraceLanguage.mwe2` |
 | `hu.bme.mit.gamma.genmodel.language` | `/src/hu/bme/mit/gamma/genmodel/language/GenerateGenModel.mwe2` |
 | `hu.bme.mit.gamma.scenario.language` | `/src/hu/bme/mit/gamma/scenario/language/GenerateScenarioLanguage.mwe2` |
+| `hu.bme.mit.gamma.fei.language` | `/src/hu/bme/mit/gamma/fei/language/GenerateFaultExtensionLanguage.mwe2` |
 
 ## Using Gamma functionalities
 

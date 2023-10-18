@@ -19,7 +19,6 @@ import hu.bme.mit.gamma.expression.model.PredicateExpression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.TransitionMerging
-import hu.bme.mit.gamma.lowlevel.xsts.transformation.VariableGroupRetriever
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer.ArrayOptimizer
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer.RemovableVariableRemover
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer.ResettableVariableResetter
@@ -39,6 +38,9 @@ import hu.bme.mit.gamma.xsts.model.SystemOutEventParameterGroup
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
 import hu.bme.mit.gamma.xsts.transformation.serializer.ActionSerializer
+import hu.bme.mit.gamma.xsts.transformation.util.LoopActionUnroller
+import hu.bme.mit.gamma.xsts.transformation.util.MessageQueueOptimizer
+import hu.bme.mit.gamma.xsts.transformation.util.VariableGroupRetriever
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import java.util.Collections
 import java.util.List
@@ -64,6 +66,8 @@ class GammaToXstsTransformer {
 	protected final InitialStateSetting initialStateSetting
 	protected final boolean optimize
 	protected final boolean optimizeArrays
+	protected final boolean optimizeMessageQueues
+	protected final boolean optimizeLoopActions = true
 	// Auxiliary objects
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension ActionSerializer actionSerializer = ActionSerializer.INSTANCE
@@ -80,37 +84,43 @@ class GammaToXstsTransformer {
 	protected final Logger logger = Logger.getLogger("GammaLogger")
 	
 	new() {
-		this(null, true, true, false, TransitionMerging.HIERARCHICAL)
+		this(null, true, true, false, false, true, TransitionMerging.HIERARCHICAL)
 	}
 	
 	new(Integer schedulingConstraint, boolean transformOrthogonalActions,
-			boolean optimize, boolean optimizeArrays, TransitionMerging transitionMerging) {
+			boolean optimize, boolean optimizeArrays,
+			boolean optimizeMessageQueues, boolean optimizeEnvironmentalMessageQueues,
+			TransitionMerging transitionMerging) {
 		this(schedulingConstraint, transformOrthogonalActions,
-				optimize, optimizeArrays, transitionMerging,
-				null, null)
+				optimize, optimizeArrays, optimizeMessageQueues, optimizeEnvironmentalMessageQueues,
+				transitionMerging, null, null)
 	}
 	
 	new(Integer schedulingConstraint, boolean transformOrthogonalActions,
-			boolean optimize, boolean optimizeArrays, TransitionMerging transitionMerging,
+			boolean optimize, boolean optimizeArrays,
+			boolean optimizeMessageQueues, boolean optimizeEnvironmentalMessageQueues,
+			TransitionMerging transitionMerging,
 			PropertyPackage initialState, InitialStateSetting initialStateSetting) {
 		this(schedulingConstraint, schedulingConstraint,
-			transformOrthogonalActions, optimize, optimizeArrays, transitionMerging,
-			initialState, initialStateSetting)
+			transformOrthogonalActions, optimize, optimizeArrays, optimizeMessageQueues,
+			optimizeEnvironmentalMessageQueues, transitionMerging, initialState, initialStateSetting)
 	}
 	
 	new(Integer minSchedulingConstraint, Integer maxSchedulingConstraint,
 			boolean transformOrthogonalActions,	boolean optimize, boolean optimizeArrays,
+			boolean optimizeMessageQueues, boolean optimizeEnvironmentalMessageQueues,
 			TransitionMerging transitionMerging,
 			PropertyPackage initialState, InitialStateSetting initialStateSetting) {
 		this.gammaToLowlevelTransformer = new GammaToLowlevelTransformer
 		this.componentTransformer = new ComponentTransformer(this.gammaToLowlevelTransformer,
-			transformOrthogonalActions, optimize, transitionMerging)
+			transformOrthogonalActions, optimize, optimizeEnvironmentalMessageQueues, transitionMerging)
 		this.minSchedulingConstraint = minSchedulingConstraint
 		this.maxSchedulingConstraint = maxSchedulingConstraint
 		this.initialState = initialState
 		this.initialStateSetting = initialStateSetting
 		this.optimize = optimize
 		this.optimizeArrays = optimizeArrays
+		this.optimizeMessageQueues = optimizeMessageQueues
 	}
 	
 	def preprocessAndExecuteAndSerialize(Package _package,
@@ -392,6 +402,16 @@ class GammaToXstsTransformer {
 			logger.log(Level.INFO, "Optimizing one capacity arrays in " + xSts.name)
 			val arrayOptimizer = ArrayOptimizer.INSTANCE
 			arrayOptimizer.optimizeOneCapacityArrays(xSts)
+		}
+		if (optimizeMessageQueues) {
+			logger.log(Level.INFO, "Optimizing message queues in " + xSts.name)
+			val messageQueueOptimizer = MessageQueueOptimizer.INSTANCE
+			messageQueueOptimizer.optimizeMessageQueues(xSts)
+		}
+		if (optimizeLoopActions) {
+			logger.log(Level.INFO, "Optimizing loop actions in " + xSts.name)
+			val loopActionUnroller = LoopActionUnroller.INSTANCE
+			loopActionUnroller.unrollLoopActions(xSts)
 		}
 	}
 	

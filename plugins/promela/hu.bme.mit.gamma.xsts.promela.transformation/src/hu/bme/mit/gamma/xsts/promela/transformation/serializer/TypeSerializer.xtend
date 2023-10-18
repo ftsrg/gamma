@@ -20,7 +20,7 @@ import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.util.GammaEcoreUtil
-import hu.bme.mit.gamma.xsts.promela.transformation.util.MessageQueueHandler
+import hu.bme.mit.gamma.xsts.transformation.util.MessageQueueUtil
 
 import static extension hu.bme.mit.gamma.xsts.promela.transformation.util.Namings.*
 
@@ -28,7 +28,8 @@ class TypeSerializer {
 	// Singleton
 	public static final TypeSerializer INSTANCE = new TypeSerializer
 	//
-//	protected final extension MessageQueueHandler queueHandler = MessageQueueHandler.INSTANCE // Cyclic dependency
+	
+	protected final extension MessageQueueUtil messageQueueUtil = MessageQueueUtil.INSTANCE
 	protected final extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 		
@@ -58,7 +59,6 @@ class TypeSerializer {
 	// 
 	
 	protected def isMasterArrayType(Type type) {
-		val extension queueHandler = MessageQueueHandler.INSTANCE
 		val declaration = type.getContainerOfType(VariableDeclaration)
 		if (declaration?.masterQueueVariable) {
 			return true

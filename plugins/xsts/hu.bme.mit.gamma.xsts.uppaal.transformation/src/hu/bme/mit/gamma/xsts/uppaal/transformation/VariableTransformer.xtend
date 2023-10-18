@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -11,6 +11,7 @@
 package hu.bme.mit.gamma.xsts.uppaal.transformation
 
 import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
+import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.uppaal.util.NtaBuilder
@@ -85,6 +86,25 @@ class VariableTransformer {
 			indexes += elementType.transformArrayIndexes
 		}
 		return indexes
+	}
+	
+	//
+	
+	protected def transformAndTraceParameter(ParameterDeclaration parameter) {
+		val uppaalVariable = parameter.transformParameter
+		nta.globalDeclarations.declaration += uppaalVariable
+		traceability.put(parameter, uppaalVariable)
+		return uppaalVariable
+	}
+	
+	protected def transformParameter(ParameterDeclaration parameter) {
+		val type = parameter.type
+		val uppaalType = type.transformType
+		val uppaalVariable = uppaalType.createVariable(parameter.uppaalId)
+		// In UPPAAL, array sizes are stuck to variables
+		uppaalVariable.onlyVariable.index += type.transformArrayIndexes
+		
+		return uppaalVariable
 	}
 	
 }

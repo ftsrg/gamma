@@ -13,8 +13,8 @@ package hu.bme.mit.gamma.util
 import java.util.Collection
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
-import java.util.logging.Level
 import java.util.logging.Logger
 
 class ThreadRacer<T> {
@@ -26,8 +26,12 @@ class ThreadRacer<T> {
 	final AtomicInteger numberOfAbortedCallables = new AtomicInteger
 	
 	protected final Logger logger = Logger.getLogger("GammaLogger")
-
+	
 	def T execute(Collection<? extends InterruptableCallable<T>> callables) {
+		return this.execute(callables, -1, null)
+	}
+
+	def T execute(Collection<? extends InterruptableCallable<T>> callables, long timeout, TimeUnit unit) {
 		val size = callables.size
 		numberOfCallablesShouldBeRunning = size
 		
@@ -43,10 +47,17 @@ class ThreadRacer<T> {
 			}
 			
 			// Racing
-			logger.log(Level.INFO, '''Waiting for the threads to return a result''')
-			latch.await
-			logger.log(Level.INFO, '''A result has been returned''')
-			// One of the threads won
+			logger.info('''Waiting for the threads to return a result with «IF timeout <= 0»no timeout«ELSE»a timeout of «timeout»«ENDIF»''')
+			if (timeout <= 0) {
+				latch.await
+				logger.info('''A result has been returned''')
+				// One of the threads won
+			}
+			else {
+				latch.await(timeout, unit)
+				logger.info('''«timeout» «unit» timeout has been reached''')
+			}
+			//
 			
 			return object
 		} finally {

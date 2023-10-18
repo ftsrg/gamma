@@ -92,20 +92,28 @@ public abstract class SafetyAssessmentHandler extends TaskHandler {
 						+  getCommand() + " -x \"" + fileNamePrefix + "\" -o \"" + outputPath + "\" -t \"" + tle + "\"" + System.lineSeparator()
 						+ "quit";
 				
-					File generateFaultTreeCommandFile = new File(targetFolderUri + File.separator +
-							fileUtil.toHiddenFileName(getCommandFileNamePrefix() + "_" + extensionlessFileName + ".cmd"));
-					fileUtil.saveString(generateFaultTreeCommandFile, generateFaultTreeCommand);
-					generateFaultTreeCommandFile.deleteOnExit();
-					
-					String[] generateFaultTreeCmdCommand = new String[] { xSapCommand, "-source", generateFaultTreeCommandFile.getAbsolutePath() };
-					logger.log(Level.INFO, "Issuing command: " + List.of(generateFaultTreeCmdCommand).stream().reduce("", ( (a, b) -> a + " " + b)));
-					Process generateFaultTreeProcess = Runtime.getRuntime().exec(generateFaultTreeCmdCommand, new String[0], targetFolder);
-					
-					Scanner generateFaultTreeScanner = new Scanner(generateFaultTreeProcess.errorReader()); // Nothing is published to  stdout
-					while (generateFaultTreeScanner.hasNext()) {
-						logger.log(Level.INFO, generateFaultTreeScanner.nextLine());
-					}
-					generateFaultTreeScanner.close();
+				File generateFaultTreeCommandFile = new File(targetFolderUri + File.separator +
+						fileUtil.toHiddenFileName(getCommandFileNamePrefix() + "_" + extensionlessFileName + ".cmd"));
+				fileUtil.saveString(generateFaultTreeCommandFile, generateFaultTreeCommand);
+				generateFaultTreeCommandFile.deleteOnExit();
+				
+				String[] generateFaultTreeCmdCommand = new String[] { xSapCommand, "-source", generateFaultTreeCommandFile.getAbsolutePath() };
+				logger.log(Level.INFO, "Issuing command: " + List.of(generateFaultTreeCmdCommand).stream().reduce("", ( (a, b) -> a + " " + b)));
+				Process generateFaultTreeProcess = Runtime.getRuntime().exec(generateFaultTreeCmdCommand, new String[0], targetFolder);
+				
+				Scanner generateFaultTreeScanner = new Scanner(generateFaultTreeProcess.errorReader()); // Nothing is published to  stdout
+				while (generateFaultTreeScanner.hasNext()) {
+					logger.log(Level.INFO, generateFaultTreeScanner.nextLine());
+				}
+				generateFaultTreeScanner.close();
+				
+				// Visualize fault tree (a dependency to a certain version of Sirius is needed)
+				boolean visualizeFaultTree = safetyAssessment.isVisualize();
+				if (visualizeFaultTree) {
+//					final String xmlPath = targetFolderUri + File.separator + fileNamePrefix + "ft.xml";
+//					FaultTreeVisualizer faultTreeVisualizer = FaultTreeVisualizer.INSTANCE;
+//					faultTreeVisualizer.visualizeFaultTree(xmlPath);
+				}
 			}
 		}
 	}

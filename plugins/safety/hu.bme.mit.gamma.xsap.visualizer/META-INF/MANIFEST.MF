@@ -1,0 +1,16 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Gamma-xSAP Result Visualizer
+Bundle-SymbolicName: hu.bme.mit.gamma.xsap.visualizer
+Bundle-Version: 2.9.0.qualifier
+Export-Package: hu.bme.mit.gamma.xsap.visualizer
+Bundle-Vendor: BME-FTSRG
+Automatic-Module-Name: hu.bme.mit.gamma.xsap.visualizer
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Require-Bundle: com.google.guava,
+ org.eclipse.xtext.xbase.lib,
+ org.eclipse.xtend.lib,
+ org.eclipse.xtend.lib.macro,
+ org.eclipse.core.resources,
+ org.eclipse.core.runtime,
+ eu.fbk.eclipse.standardtools.faultTreeViewer

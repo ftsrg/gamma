@@ -20,6 +20,8 @@
         upperBound="-1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="targetFolder" unique="false"
         upperBound="-1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="timeout" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/interface.ecore#//TimeSpecification"
+        containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="InterfaceCompilation" eSuperTypes="#//YakinduCompilation"/>
   <eClassifiers xsi:type="ecore:EClass" name="StatechartCompilation" eSuperTypes="#//YakinduCompilation">
@@ -43,6 +45,8 @@
         eType="#//Coverage" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="optimize" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"
         defaultValueLiteral="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="optimizeEnvironmentalMessageQueues"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean" defaultValueLiteral="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="constraint" eType="#//Constraint"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="model" lowerBound="1" eType="#//ModelReference"
@@ -160,6 +164,8 @@
   <eClassifiers xsi:type="ecore:EClass" name="AbstractCodeGeneration" abstract="true"
       eSuperTypes="#//Task">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="packageName" upperBound="-1"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="projectName" upperBound="-1"
         eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="programmingLanguages" upperBound="-1"
         eType="#//ProgrammingLanguage"/>
@@ -300,10 +306,14 @@
         eType="ecore:EClass ../../hu.bme.mit.gamma.property.model/model/property.ecore#//PropertyPackage"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="faultExtensionInstructions"
         eType="ecore:EClass ../../hu.bme.mit.gamma.fei.model/model/fei.ecore#//FaultExtensionInstructions"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="visualize" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"
+        defaultValueLiteral="false"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="FaultTreeGeneration" eSuperTypes="#//SafetyAssessment"/>
   <eClassifiers xsi:type="ecore:EClass" name="FmeaTableGeneration" eSuperTypes="#//SafetyAssessment">
     <eStructuralFeatures xsi:type="ecore:EReference" name="cardinality" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="bmcBound" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
         containment="true"/>
   </eClassifiers>
 </ecore:EPackage>

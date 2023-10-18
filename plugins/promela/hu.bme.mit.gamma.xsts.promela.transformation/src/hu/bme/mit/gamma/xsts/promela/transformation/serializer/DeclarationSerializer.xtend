@@ -16,12 +16,13 @@ import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.expression.util.ExpressionTypeDeterminator2
 import hu.bme.mit.gamma.expression.util.ExpressionUtil
-import hu.bme.mit.gamma.lowlevel.xsts.transformation.VariableGroupRetriever
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.promela.transformation.util.ArrayHandler
 import hu.bme.mit.gamma.xsts.promela.transformation.util.Configuration
 import hu.bme.mit.gamma.xsts.promela.transformation.util.MessageQueueHandler
+import hu.bme.mit.gamma.xsts.transformation.util.MessageQueueUtil
+import hu.bme.mit.gamma.xsts.transformation.util.VariableGroupRetriever
 
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
 
@@ -33,6 +34,7 @@ class DeclarationSerializer {
 	protected final extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
 	protected final extension TypeSerializer typeSerializer = TypeSerializer.INSTANCE
 	protected final extension ArrayHandler arrayHandler = ArrayHandler.INSTANCE
+	protected final extension MessageQueueUtil messageQueueUtil = MessageQueueUtil.INSTANCE
 	protected final extension MessageQueueHandler messageQueueHandler = MessageQueueHandler.INSTANCE
 	protected final extension VariableGroupRetriever groupRetriever = VariableGroupRetriever.INSTANCE
 	

@@ -515,11 +515,16 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			InitialStateSetting initialStateSetting = transformInitialStateSetting(
 					transformation.getInitialStateSetting());
 			
+			boolean optimize = transformation.isOptimize();
+			boolean optimizeEnvironmentalMessageQueues = transformation.isOptimizeEnvironmentalMessageQueues();
+			boolean optimizeArrays = optimizeEnvironmentalMessageQueues; // Same as optimizeEnvMQ to support code generation
+			boolean optimizeMessageQueues = optimizeEnvironmentalMessageQueues; // ...
+			
 			Gamma2XstsTransformerSerializer transformer = new Gamma2XstsTransformerSerializer(
 					component, reference.getArguments(),
 					targetFolderUri, fileName,
 					minSchedulingConstraint, maxSchedulingConstraint,
-					transformation.isOptimize(), true,
+					optimize, optimizeArrays, optimizeMessageQueues, optimizeEnvironmentalMessageQueues,
 					TransitionMerging.HIERARCHICAL,
 					transformation.getPropertyPackage(), new AnnotatablePreprocessableElements(
 						testedComponentsForStates, testedComponentsForTransitions,

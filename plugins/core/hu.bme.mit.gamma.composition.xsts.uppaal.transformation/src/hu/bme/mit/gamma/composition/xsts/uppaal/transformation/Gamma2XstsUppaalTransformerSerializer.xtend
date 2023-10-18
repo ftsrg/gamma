@@ -102,6 +102,7 @@ class Gamma2XstsUppaalTransformerSerializer {
 			arguments, targetFolderUri,
 			fileName, minSchedulingConstraint, maxSchedulingConstraint,
 			optimize, false,
+			false, true,
 			transitionMerging,
 			slicingProperties, annotatableElements,
 			initialState, initialStateSetting)

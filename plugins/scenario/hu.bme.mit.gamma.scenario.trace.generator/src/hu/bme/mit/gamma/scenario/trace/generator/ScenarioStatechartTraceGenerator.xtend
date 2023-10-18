@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020-2022 Contributors to the Gamma project
+ * Copyright (c) 2020-2023 Contributors to the Gamma project
  * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -87,7 +87,7 @@ class ScenarioStatechartTraceGenerator {
 		val name = statechart.name
 		val compInstanceRef = new ComponentInstanceReferences(newArrayList,newArrayList)
 		val transformator = new Gamma2XstsTransformerSerializer(statechart, arguments, absoluteParentFolder, name, schedulingConstraint, schedulingConstraint,
-			true, false, TransitionMerging.HIERARCHICAL, null, 
+			true, false, false, true, TransitionMerging.HIERARCHICAL, null, 
 			new AnnotatablePreprocessableElements(null, compInstanceRef, null, null, null,
 				InteractionCoverageCriterion.EVERY_INTERACTION, InteractionCoverageCriterion.EVERY_INTERACTION, null,
 				DataflowCoverageCriterion.ALL_USE, null, DataflowCoverageCriterion.ALL_USE), null, null)

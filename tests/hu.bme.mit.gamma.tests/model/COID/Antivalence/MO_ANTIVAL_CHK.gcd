@@ -99,38 +99,38 @@ statechart AntivalenceChecker(P_AVE : integer, P_TAROLAS : boolean) [
 		// Original	
 	region main_region_of_mo_antivalchk {
 		state _1_0 {
-			entry / raise OutSignals.e(MyBool::_1); raise OutSignals.i(MyBool::_1); raise OutSignals.h(MyBool::_1);
+			entry / raise OutSignals.e(MyBool::_1); raise OutSignals.i(MyBool::_1); raise OutSignals.^h(MyBool::_1);
 		}
 		state Hibatarolassal_0_1 {
 			entry / raise OutSignals.e(MyBool::ERVENYTELEN); raise OutSignals.i(MyBool::ERVENYTELEN); raise
-				OutSignals.h(MyBool::ERVENYTELEN);
+				OutSignals.^h(MyBool::ERVENYTELEN);
 		}
 		state Hibatarolassal_1_2 {
 			entry / raise OutSignals.e(MyBool::ERVENYTELEN); raise OutSignals.i(MyBool::ERVENYTELEN); raise
-				OutSignals.h(MyBool::ERVENYTELEN);
+				OutSignals.^h(MyBool::ERVENYTELEN);
 		}
 		state Hibatarolassal_0_rol_1_re_3 {
 			entry / set Hibatarolassal_0_rol_1_re_3Timeout := P_AVE ms; raise OutSignals.e(MyBool::ERVENYTELEN);
-				raise OutSignals.i(MyBool::ERVENYTELEN); raise OutSignals.h(MyBool::ERVENYTELEN);
+				raise OutSignals.i(MyBool::ERVENYTELEN); raise OutSignals.^h(MyBool::ERVENYTELEN);
 		}
 		state _1_rol_0_ra_4 {
 			entry / set _1_rol_0_ra_4Timoeut := P_AVE ms; raise OutSignals.e(MyBool::_1); raise
-				OutSignals.i(MyBool::_1); raise OutSignals.h(MyBool::_0);
+				OutSignals.i(MyBool::_1); raise OutSignals.^h(MyBool::_0);
 		}
 		state _0_5 {
-			entry / raise OutSignals.e(MyBool::_0); raise OutSignals.i(MyBool::_0); raise OutSignals.h(MyBool::_0);
+			entry / raise OutSignals.e(MyBool::_0); raise OutSignals.i(MyBool::_0); raise OutSignals.^h(MyBool::_0);
 		}
 		state _0_rol_1_re_6 {
 			entry / set _0_rol_1_re_6Timeout := P_AVE ms; raise OutSignals.e(MyBool::_0); raise
-				OutSignals.i(MyBool::_1); raise OutSignals.h(MyBool::_0);
+				OutSignals.i(MyBool::_1); raise OutSignals.^h(MyBool::_0);
 		}
 		state Hibatarolassal_1_rol_0_ra_7 {
 			entry / set Hibatarolassal_1_rol_0_ra_7Timeout := P_AVE ms; raise OutSignals.e(MyBool::ERVENYTELEN);
-				raise OutSignals.i(MyBool::ERVENYTELEN); raise OutSignals.h(MyBool::ERVENYTELEN);
+				raise OutSignals.i(MyBool::ERVENYTELEN); raise OutSignals.^h(MyBool::ERVENYTELEN);
 		}
 		state Hibaallapot_8 {
 			entry / raise OutSignals.e(MyBool::ERVENYTELEN); raise OutSignals.i(MyBool::ERVENYTELEN); raise
-				OutSignals.h(MyBool::ERVENYTELEN);
+				OutSignals.^h(MyBool::ERVENYTELEN);
 		}
 		choice choice_10_in_main_region_of_mo_antivalchk
 		choice choice_11_in_main_region_of_mo_antivalchk

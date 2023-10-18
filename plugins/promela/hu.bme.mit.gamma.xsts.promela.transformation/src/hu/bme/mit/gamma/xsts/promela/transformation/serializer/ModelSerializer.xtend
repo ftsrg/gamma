@@ -14,7 +14,6 @@ import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
 import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.ExpressionUtil
-import hu.bme.mit.gamma.lowlevel.xsts.transformation.VariableGroupRetriever
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.AssertAction
@@ -35,6 +34,8 @@ import hu.bme.mit.gamma.xsts.promela.transformation.util.Configuration
 import hu.bme.mit.gamma.xsts.promela.transformation.util.HavocHandler
 import hu.bme.mit.gamma.xsts.promela.transformation.util.MessageQueueHandler
 import hu.bme.mit.gamma.xsts.promela.transformation.util.ParallelActionHandler
+import hu.bme.mit.gamma.xsts.transformation.util.MessageQueueUtil
+import hu.bme.mit.gamma.xsts.transformation.util.VariableGroupRetriever
 import java.util.List
 import java.util.Map
 
@@ -55,6 +56,7 @@ class ModelSerializer {
 	protected final extension DeclarationSerializer declarationSerializer = DeclarationSerializer.INSTANCE
 	protected final extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
 	protected final extension TypeSerializer typeSerializer = TypeSerializer.INSTANCE
+	protected final extension MessageQueueUtil messageQueueUtil = MessageQueueUtil.INSTANCE
 	protected final extension MessageQueueHandler queueHandler = MessageQueueHandler.INSTANCE
 	protected final extension VariableGroupRetriever variableGroupRetriever = VariableGroupRetriever.INSTANCE
 	

@@ -10,25 +10,45 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.promela.verification
 
+import hu.bme.mit.gamma.util.InterruptableCallable
+import hu.bme.mit.gamma.util.ThreadRacer
+import hu.bme.mit.gamma.verification.result.ThreeStateBoolean
 import hu.bme.mit.gamma.verification.util.AbstractVerification
 import hu.bme.mit.gamma.verification.util.AbstractVerifier.Result
 import java.io.File
+import java.util.concurrent.TimeUnit
 
 class PromelaVerification extends AbstractVerification {
 	// Singleton
 	public static final PromelaVerification INSTANCE = new PromelaVerification
 	protected new() {}
 	
-	override Result execute(File modelFile, File queryFile, String[] arguments) {
+	override Result execute(File modelFile, File queryFile, String[] arguments,
+			long timeout, TimeUnit unit) {
 		val fileName = modelFile.name
 		val packageFileName = fileName.unfoldedPackageFileName
 		val gammaPackage = ecoreUtil.normalLoad(modelFile.parent, packageFileName)
-		val verifier = new PromelaVerifier
-		val argument = arguments.head
 		
-		argument.sanitizeArgument
+		arguments.sanitizeArguments
 		
-		return verifier.verifyQuery(gammaPackage, argument, modelFile, queryFile)
+		// Racer, but for only one thread
+		val racer = new ThreadRacer<Result>
+		val callables = <InterruptableCallable<Result>>newArrayList
+		
+		callables += gammaPackage.createVerificationCallables(arguments, modelFile, queryFile)
+		
+		var result = racer.execute(callables, timeout, unit)
+		
+		// In case of timeout
+		if (result === null) {
+			result = new Result(ThreeStateBoolean.UNDEF, null)
+		}
+		
+		return result
+	}
+	
+	protected override createVerifier() {
+		return new PromelaVerifier
 	}
 	
 	override getDefaultArguments() {

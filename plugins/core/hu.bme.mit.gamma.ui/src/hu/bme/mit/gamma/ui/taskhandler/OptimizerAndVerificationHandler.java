@@ -27,7 +27,6 @@ import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
 import hu.bme.mit.gamma.genmodel.model.Verification;
-import hu.bme.mit.gamma.lowlevel.xsts.transformation.VariableGroupRetriever;
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.actionprimer.StaticSingleAssignmentTransformer;
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.actionprimer.StaticSingleAssignmentTransformer.SsaType;
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer.XstsOptimizer;
@@ -45,6 +44,7 @@ import hu.bme.mit.gamma.xsts.model.XSTS;
 import hu.bme.mit.gamma.xsts.nuxmv.transformation.XstsToNuxmvTransformer;
 import hu.bme.mit.gamma.xsts.transformation.SystemReducer;
 import hu.bme.mit.gamma.xsts.transformation.serializer.ActionSerializer;
+import hu.bme.mit.gamma.xsts.transformation.util.VariableGroupRetriever;
 import hu.bme.mit.gamma.xsts.uppaal.transformation.XstsToUppaalTransformer;
 import uppaal.NTA;
 

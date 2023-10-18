@@ -86,6 +86,7 @@
   <eClassifiers xsi:type="ecore:EEnum" name="TimeUnit">
     <eLiterals name="MILLISECOND"/>
     <eLiterals name="SECOND" value="1"/>
+    <eLiterals name="HOUR" value="2"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ComponentAnnotation" abstract="true"/>
   <eClassifiers xsi:type="ecore:EClass" name="WrapperComponentAnnotation" eSuperTypes="#//ComponentAnnotation"/>

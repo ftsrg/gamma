@@ -36,8 +36,9 @@ class ModelSerializer {
 			«FOR slice : fei.faultSlices»
 				SLICE «slice.name» AFFECTS «FOR element : slice.affectedElements SEPARATOR ', '»«element.serializeId»«ENDFOR» WITH
 					«FOR mode : slice.faultModes»
-						MODE «mode.name»«IF mode.probability !== null»(«mode.probability.evaluateDecimal»)«ENDIF» : «mode.serializeLocalDynamics» «mode.effect.serializeEffect»;
+						MODE «mode.name»«IF mode.probability !== null» {«mode.probability.evaluateDecimal»}«ENDIF» : «mode.serializeLocalDynamics» «mode.effect.serializeEffect»;
 					«ENDFOR»
+					
 					«slice.globalDynamics.serializeGlobalDynamics»
 			«ENDFOR»
 			«fei.commonCauses.serializeCommonCauses»

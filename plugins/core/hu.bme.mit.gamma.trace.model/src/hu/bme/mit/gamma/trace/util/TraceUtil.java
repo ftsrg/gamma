@@ -172,7 +172,9 @@ public class TraceUtil extends StatechartUtil {
 	// Extend
 	
 	public void extend(ExecutionTrace original, ExecutionTrace extension) {
-		original.getSteps().addAll(extension.getSteps());
+		List<Step> steps = original.getSteps();
+		steps.addAll(
+				extension.getSteps());
 	}
 	
 	// Overwriting
