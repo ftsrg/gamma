@@ -98,11 +98,9 @@ class ThetaTraceGenerator {
 	}
 
 	protected def backAnnotate(Package gammaPackage, Scanner traceFileScanner) {
+		val backAnnotator = new TraceBackAnnotator(gammaPackage, traceFileScanner)
 		// Must be synchronized due to the non-thread-safe VIATRA engine
-		synchronized (TraceBackAnnotator.getEngineSynchronizationObject) {
-			val backAnnotator = new TraceBackAnnotator(gammaPackage, traceFileScanner)
-			return backAnnotator.execute
-		}
+		return backAnnotator.synchronizeAndExecute
 	}
 
 	private def cleanFolder(File folder) {

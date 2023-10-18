@@ -172,7 +172,7 @@ class PromelaVerifier extends AbstractVerifier {
 			
 			val gammaPackage = traceability as Package
 			val backAnnotator = new TraceBackAnnotator(gammaPackage, resultReader)
-			val trace = backAnnotator.execute
+			val trace = backAnnotator.synchronizeAndExecute
 			
 			return new Result(result, trace)
 		} finally {
