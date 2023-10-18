@@ -45,7 +45,8 @@ class PromelaVerifier extends AbstractVerifier {
 			val rootGenFolder = new File(modelFile.parent, "." + fileUtil.getExtensionlessName(modelFile))
 			rootGenFolder.mkdirs
 			// Save model with all LTL
-			val tmpGenFolder = new File(rootGenFolder + File.separator + fileUtil.getExtensionlessName(modelFile) + "-LTL" + System.currentTimeMillis.toString)
+			val tmpGenFolder = new File(rootGenFolder + File.separator +
+					fileUtil.getExtensionlessName(modelFile) + "-" + Thread.currentThread.name)
 			tmpGenFolder.mkdirs
 			
 			// save model with LTL

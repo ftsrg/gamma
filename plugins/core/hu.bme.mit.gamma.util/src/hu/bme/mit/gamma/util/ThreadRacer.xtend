@@ -50,8 +50,7 @@ class ThreadRacer<T> {
 			logger.info('''Waiting for the threads to return a result with «IF timeout <= 0»no timeout«ELSE»a timeout of «timeout»«ENDIF»''')
 			if (timeout <= 0) {
 				latch.await
-				logger.info('''A result has been returned''')
-				// One of the threads won
+				logger.info('''A result has been returned''') // One of the threads won
 			}
 			else {
 				latch.await(timeout, unit)
@@ -77,6 +76,7 @@ class ThreadRacer<T> {
 		if (this.object === null) {
 			this.object = object
 			latch.countDown
+			logger.info('''Result returned by «Thread.currentThread.name»''')
 		}
 	}
 	
@@ -115,6 +115,7 @@ class ThreadRacer<T> {
 					}
 					e.printStackTrace
 					throw e // Valid exception
+					// TODO model checking OOM exception should be swallowed here
 				}
 			}
 			
