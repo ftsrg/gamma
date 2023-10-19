@@ -2675,8 +2675,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 			if (trigger instanceof AnyTrigger) {
 				return true;
 			}
-			if (trigger instanceof EventTrigger) {
-				EventTrigger eventTrigger = (EventTrigger) trigger;
+			if (trigger instanceof EventTrigger eventTrigger) {
 				EventSource eventSource = getEventSource(eventTrigger);
 				if (eventSource == port) {
 					return true;
@@ -2731,18 +2730,15 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 			return simpleTriggers;
 		}
 		
-		if (trigger instanceof SimpleTrigger) {
-			SimpleTrigger simpleTrigger = (SimpleTrigger) trigger;
+		if (trigger instanceof SimpleTrigger simpleTrigger) {
 			simpleTriggers.add(simpleTrigger);
 		}
-		else if (trigger instanceof UnaryTrigger) {
-			UnaryTrigger unaryTrigger = (UnaryTrigger) trigger;
+		else if (trigger instanceof UnaryTrigger unaryTrigger) {
 			Trigger operand = unaryTrigger.getOperand();
 			simpleTriggers.addAll(
 					getAllSimpleTriggers(operand));
 		}
-		else if (trigger instanceof BinaryTrigger) {
-			BinaryTrigger binaryTrigger = (BinaryTrigger) trigger;
+		else if (trigger instanceof BinaryTrigger binaryTrigger) {
 			Trigger leftOperand = binaryTrigger.getLeftOperand();
 			Trigger rightOperand = binaryTrigger.getRightOperand();
 			simpleTriggers.addAll(
@@ -2822,8 +2818,8 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	}
 	
 	public static boolean isComposite(StateNode node) {
-		if (node instanceof State) {
-			return isComposite((State) node);
+		if (node instanceof State state) {
+			return isComposite(state);
 		}
 		return false;
 	}
@@ -2926,11 +2922,12 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		Set<State> precedingStates = new HashSet<State>();
 		for (Transition incomingTransition : getIncomingTransitions(node)) {
 			StateNode source = incomingTransition.getSourceState();
-			if (source instanceof State) {
-				precedingStates.add((State) source);
+			if (source instanceof State state) {
+				precedingStates.add(state);
 			}
 			else {
-				precedingStates.addAll(getReachableStates(source));
+				precedingStates.addAll(
+						getReachableStates(source));
 			}
 		}
 		return precedingStates;
@@ -2940,11 +2937,12 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		Set<State> reachableStates = new HashSet<State>();
 		for (Transition outgoingTransition : getOutgoingTransitions(node)) {
 			StateNode target = outgoingTransition.getTargetState();
-			if (target instanceof State) {
-				reachableStates.add((State) target);
+			if (target instanceof State state) {
+				reachableStates.add(state);
 			}
 			else {
-				reachableStates.addAll(getReachableStates(target));
+				reachableStates.addAll(
+						getReachableStates(target));
 			}
 		}
 		return reachableStates;
