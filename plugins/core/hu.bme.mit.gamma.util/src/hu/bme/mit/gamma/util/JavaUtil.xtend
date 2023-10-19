@@ -133,6 +133,24 @@ class JavaUtil {
 		return entries
 	}
 	
+	def <T> collectMinimumValues(Map<T, Integer> value, Iterable<? extends Map<T, Integer>> collectableValues) {
+		for (Map<T, Integer> collectableValue : collectableValues) {
+			for (T key : collectableValue.keySet()) {
+				val newValue = collectableValue.get(key)
+				
+				if (value.containsKey(key)) {
+					val oldValueValue = value.get(key)
+					if (newValue < oldValueValue) {
+						value.replace(key, newValue)
+					}
+					else {
+						value += key -> newValue
+					}
+				}
+			}
+		}
+	}
+	
 	//
 	
 	def String toFirstCharUpper(String string) {
