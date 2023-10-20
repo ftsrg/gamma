@@ -809,8 +809,20 @@ public class ExpressionUtil {
 	}
 	
 	public void addDeclarationReferenceAnnotation(VariableDeclaration variable, Declaration declaration) {
+		addDeclarationReferenceAnnotations(variable, List.of(declaration));
+	}
+	
+	public void addDeclarationReferenceAnnotations(VariableDeclaration variable,
+			Collection<? extends Declaration> declarations) {
+		if (declarations.isEmpty()) {
+			return; // No use in adding an empty annotation
+		}
+		
 		DeclarationReferenceAnnotation declarationReferenceAnnotation = factory.createDeclarationReferenceAnnotation();
-		declarationReferenceAnnotation.setDeclaration(declaration);
+		
+		List<Declaration> referencedDeclarations = declarationReferenceAnnotation.getDeclarations();
+		referencedDeclarations.addAll(declarations);
+		
 		addAnnotation(variable, declarationReferenceAnnotation);
 	}
 	

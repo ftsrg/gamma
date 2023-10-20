@@ -83,6 +83,7 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EEnum" name="ProgrammingLanguage">
     <eLiterals name="JAVA"/>
+    <eLiterals name="C" value="1"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EEnum" name="AnalysisLanguage">
     <eLiterals name="UPPAAL"/>

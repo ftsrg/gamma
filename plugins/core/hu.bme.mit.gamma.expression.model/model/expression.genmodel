@@ -200,7 +200,7 @@
     <genClasses ecoreClass="expression.ecore#//ClockVariableDeclarationAnnotation"/>
     <genClasses ecoreClass="expression.ecore#//ScheduledClockVariableDeclarationAnnotation"/>
     <genClasses ecoreClass="expression.ecore#//DeclarationReferenceAnnotation">
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference expression.ecore#//DeclarationReferenceAnnotation/declaration"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference expression.ecore#//DeclarationReferenceAnnotation/declarations"/>
     </genClasses>
     <genClasses ecoreClass="expression.ecore#//UnremovableVariableDeclarationAnnotation"/>
     <genClasses ecoreClass="expression.ecore#//InjectedVariableDeclarationAnnotation"/>

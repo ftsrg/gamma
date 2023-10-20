@@ -23,6 +23,7 @@ import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression
 import hu.bme.mit.gamma.expression.model.LessEqualExpression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.TypeSerializer
+import hu.bme.mit.gamma.util.JavaUtil
 import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
@@ -43,6 +44,7 @@ class MessageQueueHandler {
 	
 	protected final extension VariableGroupRetriever variableGroupRetriever = VariableGroupRetriever.INSTANCE
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
+	protected final extension JavaUtil javaUtil = JavaUtil.INSTANCE
 	
 	// Declaration -> message queues new type - TODO
 	
@@ -93,7 +95,7 @@ class MessageQueueHandler {
 					val sizeVariables = xSts.messageQueueSizeGroup.variables
 					if (sizeVariables.contains(sizeVariable)) {
 						val declarationReferenceAnnotation = sizeVariable.declarationReferenceAnnotation
-						val messageQueue = declarationReferenceAnnotation.declaration
+						val messageQueue = declarationReferenceAnnotation.declarations.onlyElement
 						return ''' ''' // TODO
 					}
 				}
@@ -159,7 +161,7 @@ class MessageQueueHandler {
 					val sizeVariable = reference.declaration
 					if (sizeVariable instanceof VariableDeclaration) {
 						val declarationReferenceAnnotation = sizeVariable.declarationReferenceAnnotation
-						val messageQueue = declarationReferenceAnnotation.declaration
+						val messageQueue = declarationReferenceAnnotation.declarations.onlyElement
 //						if (expression.isContainedBy(IfThenElseExpression)) {
 							return messageQueue.serializeQueueExpression(functionName)
 //						}
