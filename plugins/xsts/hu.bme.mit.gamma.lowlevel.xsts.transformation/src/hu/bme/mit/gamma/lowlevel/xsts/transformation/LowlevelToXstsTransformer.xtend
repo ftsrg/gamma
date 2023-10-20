@@ -300,28 +300,32 @@ class LowlevelToXstsTransformer {
 					trace.put(lowlevelEvent, xStsEventVariable) // Tracing event
 					trace.put(lowlevelEvent.isRaised, xStsEventVariable) // Tracing the contained isRaisedVariable
 					// Parameters 
+					val xStsEventParameterVariables = newArrayList
 					for (lowlevelEventParameter : lowlevelEvent.parameters) {
-						val xStsParam = createVariableDeclaration => [
+						val xStsEventParameterVariable = createVariableDeclaration => [
 							it.name = lowlevelEventParameter.name.variableName
 							it.type = lowlevelEventParameter.type.transformType
 						]
+						xStsEventParameterVariables += xStsEventParameterVariable
 						val eventParameterVariableGroup = if (lowlevelEvent.direction == EventDirection.IN) {
 							xSts.inEventParameterVariableGroup
 						} else {
 							xSts.outEventParameterVariableGroup
 						}
-						xSts.variableDeclarations += xStsParam // Target model modification
+						xSts.variableDeclarations += xStsEventParameterVariable // Target model modification
 						if (lowlevelEvent.persistency == Persistency.TRANSIENT) {
 							// Event is transient, its parameters are marked environment-resettable variables
-							xStsParam.addEnvironmentResettableAnnotation
+							xStsEventParameterVariable.addEnvironmentResettableAnnotation
 						}
 						if (lowlevelEventParameter.isInternal) {
 							// Variable (parameter) must not be set from the environment, only other components
-							xStsParam.addInternalAnnotation
+							xStsEventParameterVariable.addInternalAnnotation
 						}
-						eventParameterVariableGroup.variables += xStsParam
-						trace.put(lowlevelEventParameter, xStsParam) // Tracing
+						eventParameterVariableGroup.variables += xStsEventParameterVariable
+						trace.put(lowlevelEventParameter, xStsEventParameterVariable) // Tracing
 					}
+					// In-XSTS-model tracing
+					xStsEventVariable.addDeclarationReferenceAnnotations(xStsEventParameterVariables)
 				}
 			].build
 		}

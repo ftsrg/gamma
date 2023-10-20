@@ -49,7 +49,7 @@ class TraceBackAnnotator {
 	protected final Scanner traceScanner
 	protected final PromelaQueryGenerator promelaQueryGenerator
 	protected final extension XstsBackAnnotator xStsBackAnnotator
-	protected static final Object engineSynchronizationObject = new Object
+	protected static final Object engineSynchronizationObject = new Object // For the VIATRA engine in the query generator
 	
 	protected final Package gammaPackage
 	protected final Component component
@@ -75,8 +75,6 @@ class TraceBackAnnotator {
 		
 		PromelaArrayParser.createMapping(gammaPackage.referencedTypedDeclarations)
 		
-		this.promelaQueryGenerator = new PromelaQueryGenerator(component)
-		this.xStsBackAnnotator = new XstsBackAnnotator(promelaQueryGenerator, PromelaArrayParser.INSTANCE)
 		val schedulingConstraintAnnotation = gammaPackage.annotations
 				.filter(SchedulingConstraintAnnotation).head
 		if (schedulingConstraintAnnotation !== null) {
@@ -84,6 +82,16 @@ class TraceBackAnnotator {
 		}
 		else {
 			this.schedulingConstraint = null
+		}
+		synchronized (engineSynchronizationObject) { // Due to the VIATRA engine
+			this.promelaQueryGenerator = new PromelaQueryGenerator(component)
+		}
+		this.xStsBackAnnotator = new XstsBackAnnotator(promelaQueryGenerator, PromelaArrayParser.INSTANCE)
+	}
+	
+	def ExecutionTrace synchronizeAndExecute() {
+		synchronized (engineSynchronizationObject) {
+			return execute
 		}
 	}
 	

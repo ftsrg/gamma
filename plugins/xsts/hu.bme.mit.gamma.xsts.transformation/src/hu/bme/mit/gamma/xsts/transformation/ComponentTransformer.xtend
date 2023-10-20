@@ -278,6 +278,7 @@ class ComponentTransformer {
 				if (masterSizeVariable !== null) { // Can be null due to potential optimization
 					val xStsMasterSizeVariable = valueDeclarationTransformer.transform(masterSizeVariable).onlyElement
 					xStsMasterSizeVariable.addDeclarationReferenceAnnotation(xStsMasterQueueVariable)
+					xStsMasterQueueVariable.addDeclarationReferenceAnnotation(xStsMasterSizeVariable)
 					
 					xSts.variableDeclarations += xStsMasterSizeVariable
 					xSts.messageQueueSizeGroup.variables += xStsMasterSizeVariable
@@ -299,6 +300,9 @@ class ComponentTransformer {
 					if (slaveSizeVariable !== null) {
 						val xStsSlaveSizeVariable = valueDeclarationTransformer.transform(slaveSizeVariable).onlyElement
 						xStsSlaveSizeVariable.addDeclarationReferenceAnnotation(xStsSlaveQueueVariables.head) // Not sound due to slave queue opt?
+						for (xStsSlaveQueueVariable : xStsSlaveQueueVariables) {
+							xStsSlaveQueueVariable.addDeclarationReferenceAnnotation(xStsSlaveSizeVariable)
+						}
 						
 						xSts.variableDeclarations += xStsSlaveSizeVariable
 						xSts.messageQueueSizeGroup.variables += xStsSlaveSizeVariable

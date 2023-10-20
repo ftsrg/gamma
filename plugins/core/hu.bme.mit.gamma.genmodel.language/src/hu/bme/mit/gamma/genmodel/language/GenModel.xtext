@@ -110,7 +110,7 @@ EventPriorityTransformation returns EventPriorityTransformation:
 ;
 
 enum ProgrammingLanguage returns ProgrammingLanguage:
-	JAVA = 'java'
+	JAVA = 'java' | C = 'C'
 ;
 
 AnalysisModelTransformation returns AnalysisModelTransformation:

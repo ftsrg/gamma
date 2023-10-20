@@ -38,7 +38,7 @@ class TraceBackAnnotator {
 	protected final Scanner traceScanner
 	protected final ThetaQueryGenerator thetaQueryGenerator
 	protected final extension XstsBackAnnotator xStsBackAnnotator
-	protected static final Object engineSynchronizationObject = new Object
+	protected static final Object engineSynchronizationObject = new Object // For the VIATRA engine in the query generator
 	
 	protected final Package gammaPackage
 	protected final Component component
@@ -62,8 +62,6 @@ class TraceBackAnnotator {
 		this.traceScanner = traceScanner
 		this.sortTrace = sortTrace
 		this.component = gammaPackage.firstComponent
-		this.thetaQueryGenerator = new ThetaQueryGenerator(component)
-		this.xStsBackAnnotator = new XstsBackAnnotator(thetaQueryGenerator, ThetaArrayParser.INSTANCE)
 		val schedulingConstraintAnnotation = gammaPackage.annotations
 				.filter(SchedulingConstraintAnnotation).head
 		if (schedulingConstraintAnnotation !== null) {
@@ -71,6 +69,16 @@ class TraceBackAnnotator {
 		}
 		else {
 			this.schedulingConstraint = null
+		}
+		synchronized (engineSynchronizationObject) { // Due to the VIATRA engine
+			this.thetaQueryGenerator = new ThetaQueryGenerator(component)
+		}
+		this.xStsBackAnnotator = new XstsBackAnnotator(thetaQueryGenerator, ThetaArrayParser.INSTANCE)
+	}
+	
+	def ExecutionTrace synchronizeAndExecute() {
+		synchronized (engineSynchronizationObject) {
+			return execute
 		}
 	}
 	
@@ -222,10 +230,6 @@ class TraceBackAnnotator {
 		trace.addUnraisedEventNegations
 		
 		return trace
-	}
-	
-	def static getEngineSynchronizationObject() {
-		return engineSynchronizationObject
 	}
 	
 	enum BackAnnotatorState {INIT, STATE_CHECK, ENVIRONMENT_CHECK}

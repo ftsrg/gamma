@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -70,12 +70,12 @@ class UppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 		super(trace.gammaPackage, traceScanner, sortTrace)
 		this.resourceSet = trace.eResource.resourceSet
 		checkState(resourceSet !== null)
-		this.engine = ViatraQueryEngine.on(new EMFScope(resourceSet))
+		synchronized (engineSynchronizationObject) {
+			this.engine = ViatraQueryEngine.on(
+					new EMFScope(resourceSet))
+		}
 	}
-
-	/**
-	 * Creates the Trace model.
-	 */
+	
 	override execute() throws EmptyTraceException {
 		// Creating the trace component
 		val trace = super.createTrace

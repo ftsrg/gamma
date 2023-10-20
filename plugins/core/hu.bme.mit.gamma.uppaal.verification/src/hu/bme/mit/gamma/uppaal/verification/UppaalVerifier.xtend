@@ -67,7 +67,7 @@ class UppaalVerifier extends AbstractVerifier {
 			else {
 				throw new IllegalStateException("Not known traceability element: " + traceability)
 			}
-			val traceModel = backAnnotator.execute
+			val traceModel = backAnnotator.synchronizeAndExecute
 			
 			val lines = resultLogger.concatenateLines
 			result =

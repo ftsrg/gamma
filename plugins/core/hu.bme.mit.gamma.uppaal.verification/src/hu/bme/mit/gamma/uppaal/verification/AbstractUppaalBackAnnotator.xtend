@@ -39,6 +39,7 @@ abstract class AbstractUppaalBackAnnotator {
 	
 	protected final Package gammaPackage
 	protected final Component component
+	protected static final Object engineSynchronizationObject = new Object // For the VIATRA engine in the query generator
 	
 	protected final boolean sortTrace
 	
@@ -72,6 +73,12 @@ abstract class AbstractUppaalBackAnnotator {
 		logger.log(Level.INFO, "The number of top component arguments is " + topComponentArguments.size)
 		trace.arguments += topComponentArguments.map[it.clone]
 		return trace
+	}
+	
+	def ExecutionTrace synchronizeAndExecute() {
+		synchronized (engineSynchronizationObject) {
+			return execute
+		}
 	}
 	
 	def ExecutionTrace execute() throws EmptyTraceException

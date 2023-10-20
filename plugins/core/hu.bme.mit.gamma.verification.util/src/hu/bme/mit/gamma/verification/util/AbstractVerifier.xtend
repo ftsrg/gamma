@@ -22,7 +22,7 @@ import java.util.logging.Logger
 import org.eclipse.xtend.lib.annotations.Data
 
 abstract class AbstractVerifier {
-	
+	//
 	protected volatile boolean isCancelled
 	protected Process process
 	protected ThreeStateBoolean result
@@ -31,10 +31,12 @@ abstract class AbstractVerifier {
 	
 	protected final GammaFileNamer fileNamer = GammaFileNamer.INSTANCE
 	
-	protected extension FileUtil codeGeneratorUtil = FileUtil.INSTANCE
+	protected extension FileUtil fileUtil = FileUtil.INSTANCE
 	protected extension PathEscaper pathEscaper = PathEscaper.INSTANCE
 	protected extension TraceUtil traceUtil = TraceUtil.INSTANCE
 	protected final extension JavaUtil javaUtil = JavaUtil.INSTANCE
+	
+	//
 	
 	def Result verifyQuery(Object traceability, String parameters, File modelFile, String query) {
 		// Writing the query to a temporary file

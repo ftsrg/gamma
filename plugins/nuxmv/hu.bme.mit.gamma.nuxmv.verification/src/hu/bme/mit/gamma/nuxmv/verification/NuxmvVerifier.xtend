@@ -146,7 +146,7 @@ class NuxmvVerifier extends AbstractVerifier {
 			
 			val gammaPackage = traceability as Package
 			val backAnnotator = new TraceBackAnnotator(gammaPackage, resultReader)
-			val trace = backAnnotator.execute
+			val trace = backAnnotator.synchronizeAndExecute
 			
 			traceResult = new Result(result, trace)
 			

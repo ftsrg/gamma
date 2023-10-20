@@ -17,9 +17,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Queue;
@@ -2212,11 +2214,18 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		TreeIterator<Object> allContents = EcoreUtil.getAllContents(region, true);
 		while (allContents.hasNext()) {
 			Object next = allContents.next();
-			if (next instanceof StateNode) {
-				states.add((StateNode) next);
+			if (next instanceof StateNode stateNode) {
+				states.add(stateNode);
 			}
 		}
 		return states;
+	}
+	
+	public static Collection<Region> getAllRegions(EObject node) {
+		if (node instanceof CompositeElement state) {
+			return getAllRegions(state);
+		}
+		return List.of();
 	}
 	
 	public static Collection<Region> getAllRegions(CompositeElement compositeElement) {
@@ -2234,8 +2243,8 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		TreeIterator<Object> allContents = EcoreUtil.getAllContents(region, true);
 		while (allContents.hasNext()) {
 			Object next = allContents.next();
-			if (next instanceof Region) {
-				regions.add((Region) next);
+			if (next instanceof Region subregion) {
+				regions.add(subregion);
 			}
 		}
 		return regions;
@@ -2310,6 +2319,11 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return (State) getContainingCompositeElement(region);
 	}
 	
+	public static boolean hasParentState(StateNode node) {
+		Region parentRegion = getParentRegion(node);
+		return parentRegion.eContainer() instanceof State;
+	}
+	
 	public static State getParentState(StateNode node) {
 		Region parentRegion = getParentRegion(node);
 		return getParentState(parentRegion);
@@ -2345,37 +2359,37 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return subregions;
 	}
 	
-	public static List<hu.bme.mit.gamma.statechart.statechart.State> getCommonAncestors(
+	public static List<State> getCommonAncestors(
 			StateNode lhs, StateNode rhs) {
-		List<hu.bme.mit.gamma.statechart.statechart.State> ancestors = getAncestors(lhs);
+		List<State> ancestors = getAncestors(lhs);
 		ancestors.retainAll(getAncestors(rhs));
 		return ancestors;
 	}
 	
-	public static List<hu.bme.mit.gamma.statechart.statechart.State> getAncestors(StateNode node) {
-		if (node.eContainer().eContainer() instanceof hu.bme.mit.gamma.statechart.statechart.State) {
-			hu.bme.mit.gamma.statechart.statechart.State parentState = getParentState(node);
-			List<hu.bme.mit.gamma.statechart.statechart.State> ancestors = getAncestors(parentState);
+	public static List<State> getAncestors(StateNode node) {
+		if (node.eContainer().eContainer() instanceof State) {
+			State parentState = getParentState(node);
+			List<State> ancestors = getAncestors(parentState);
 			ancestors.add(parentState);
 			return ancestors;
 		}
-		return new ArrayList<hu.bme.mit.gamma.statechart.statechart.State>();
+		return new ArrayList<State>();
 	}
 	
-	public static List<hu.bme.mit.gamma.statechart.statechart.State> getAncestorsAndSelf(State node) {
-		List<hu.bme.mit.gamma.statechart.statechart.State> ancestors = getAncestors(node);
+	public static List<State> getAncestorsAndSelf(State node) {
+		List<State> ancestors = getAncestors(node);
 		ancestors.add(node);
 		return ancestors;
 	}
 	
 	public static List<Region> getRegionAncestors(StateNode node) {
-		if (node.eContainer().eContainer() instanceof hu.bme.mit.gamma.statechart.statechart.State) {
-			hu.bme.mit.gamma.statechart.statechart.State parentState = getParentState(node);
+		Region parentRegion = (Region) node.eContainer();
+		if (parentRegion.eContainer() instanceof State) {
+			State parentState = getParentState(node);
 			List<Region> ancestors = getRegionAncestors(parentState);
 			ancestors.add(getParentRegion(node));
 			return ancestors;
 		}
-		Region parentRegion = (Region) node.eContainer();
 		List<Region> regionList = new ArrayList<Region>();
 		regionList.add(parentRegion);
 		return regionList;
@@ -2675,8 +2689,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 			if (trigger instanceof AnyTrigger) {
 				return true;
 			}
-			if (trigger instanceof EventTrigger) {
-				EventTrigger eventTrigger = (EventTrigger) trigger;
+			if (trigger instanceof EventTrigger eventTrigger) {
 				EventSource eventSource = getEventSource(eventTrigger);
 				if (eventSource == port) {
 					return true;
@@ -2731,18 +2744,15 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 			return simpleTriggers;
 		}
 		
-		if (trigger instanceof SimpleTrigger) {
-			SimpleTrigger simpleTrigger = (SimpleTrigger) trigger;
+		if (trigger instanceof SimpleTrigger simpleTrigger) {
 			simpleTriggers.add(simpleTrigger);
 		}
-		else if (trigger instanceof UnaryTrigger) {
-			UnaryTrigger unaryTrigger = (UnaryTrigger) trigger;
+		else if (trigger instanceof UnaryTrigger unaryTrigger) {
 			Trigger operand = unaryTrigger.getOperand();
 			simpleTriggers.addAll(
 					getAllSimpleTriggers(operand));
 		}
-		else if (trigger instanceof BinaryTrigger) {
-			BinaryTrigger binaryTrigger = (BinaryTrigger) trigger;
+		else if (trigger instanceof BinaryTrigger binaryTrigger) {
 			Trigger leftOperand = binaryTrigger.getLeftOperand();
 			Trigger rightOperand = binaryTrigger.getRightOperand();
 			simpleTriggers.addAll(
@@ -2822,8 +2832,8 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	}
 	
 	public static boolean isComposite(StateNode node) {
-		if (node instanceof State) {
-			return isComposite((State) node);
+		if (node instanceof State state) {
+			return isComposite(state);
 		}
 		return false;
 	}
@@ -2913,24 +2923,30 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return outgoingTransitions.get(0);
 	}
 	
-	public static State getInitialState(Region region) {
+	public static Collection<State> getInitialStates(Region region) {
 		EntryState entryState = getEntryState(region);
 		Set<State> reachableStates = getReachableStates(entryState);
-		if (reachableStates.size() != 1) {
-			throw new IllegalArgumentException("Not one state: " + reachableStates);
+		return reachableStates;
+	}
+	
+	public static State getInitialState(Region region) {
+		Collection<State> initialStates = getInitialStates(region);
+		if (initialStates.size() != 1) {
+			throw new IllegalArgumentException("Not one state: " + initialStates);
 		}
-		return reachableStates.iterator().next();
+		return initialStates.iterator().next();
 	}
 	
 	public static Set<State> getPrecedingStates(StateNode node) {
 		Set<State> precedingStates = new HashSet<State>();
 		for (Transition incomingTransition : getIncomingTransitions(node)) {
 			StateNode source = incomingTransition.getSourceState();
-			if (source instanceof State) {
-				precedingStates.add((State) source);
+			if (source instanceof State state) {
+				precedingStates.add(state);
 			}
 			else {
-				precedingStates.addAll(getReachableStates(source));
+				precedingStates.addAll(
+						getReachableStates(source));
 			}
 		}
 		return precedingStates;
@@ -2940,14 +2956,89 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		Set<State> reachableStates = new HashSet<State>();
 		for (Transition outgoingTransition : getOutgoingTransitions(node)) {
 			StateNode target = outgoingTransition.getTargetState();
-			if (target instanceof State) {
-				reachableStates.add((State) target);
+			if (target instanceof State state) {
+				reachableStates.add(state);
 			}
 			else {
-				reachableStates.addAll(getReachableStates(target));
+				reachableStates.addAll(
+						getReachableStates(target));
 			}
 		}
 		return reachableStates;
+	}
+	
+	public static Map<Transition, Integer> getTransitionDistances(CompositeElement composite) {
+		return getTransitionDistances(composite, new HashSet<StateNode>());
+	}
+	
+	public static Map<Transition, Integer> getTransitionDistances(
+			CompositeElement composite, Set<StateNode> visitedNodes) {
+		Map<Transition, Integer> distance = new LinkedHashMap<Transition, Integer>();
+		
+		List<Map<Transition, Integer>> distances = new ArrayList<Map<Transition, Integer>>();
+		
+		List<Region> regions = composite.getRegions();
+		for (Region region : regions) {
+			List<EntryState> entryStates = ecoreUtil.getContentsOfType(region, EntryState.class);
+			for (EntryState entryState : entryStates) {
+				Map<Transition, Integer> subregionDistance = getTransitionDistances(entryState);
+				distances.add(subregionDistance);
+			}
+		}
+		
+		// Summing the minimal distances
+		javaUtil.collectMinimumValues(distance, distances);
+		
+		return distance;
+	}
+	
+	public static Map<Transition, Integer> getTransitionDistances(StateNode node) {
+		return getTransitionDistances(node, new HashSet<StateNode>());
+	}
+	
+	public static Map<Transition, Integer> getTransitionDistances(
+			StateNode node, Set<StateNode> visitedNodes) {
+		Map<Transition, Integer> distance = new LinkedHashMap<Transition, Integer>();
+		//
+		if (visitedNodes.contains(node)) {
+			return distance;
+		}
+		//
+		visitedNodes.add(node);
+		
+		List<Map<Transition, Integer>> distances = new ArrayList<Map<Transition, Integer>>();
+		// Same level
+		List<Transition> outgoingTransitions = getOutgoingTransitions(node);
+		for (Transition outgoingTransition : outgoingTransitions) {
+			distance.put(outgoingTransition, 0);
+			
+			StateNode target = outgoingTransition.getTargetState();
+			Map<Transition, Integer> targetDistance = getTransitionDistances(target);
+			for (Transition transition : targetDistance.keySet()) {
+				targetDistance.replace(transition,
+						targetDistance.get(transition) + 1); // As this is the distance from a target node
+			}
+			distances.add(targetDistance);
+		}
+		// Parent
+		if (hasParentState(node)) {
+			State ancestor = getParentState(node);
+			Map<Transition, Integer> ancestorDistance = getTransitionDistances(
+					(StateNode) ancestor, visitedNodes);
+			distances.add(ancestorDistance);
+		}
+		
+		// Children
+		if (node instanceof State) {
+			Map<Transition, Integer> subregionDistance = getTransitionDistances(
+					(CompositeElement) node, visitedNodes);
+			distances.add(subregionDistance);
+		}
+		
+		// Summing the minimal distances
+		javaUtil.collectMinimumValues(distance, distances);
+		
+		return distance;
 	}
 	
 	public static TimeSpecification getTimeoutValue(TimeoutDeclaration timeout) {

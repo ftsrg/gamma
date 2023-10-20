@@ -12,8 +12,8 @@ package hu.bme.mit.gamma.xsap.visualizer
 
 import java.util.logging.Level
 import java.util.logging.Logger
-import org.eclipse.core.runtime.NullProgressMonitor
-import eu.fbk.eclipse.standardtools.faultTreeViewer.utils.FaultTreeViewerUtil
+//import org.eclipse.core.runtime.NullProgressMonitor
+//import eu.fbk.eclipse.standardtools.faultTreeViewer.utils.FaultTreeViewerUtil
 
 class FaultTreeVisualizer {
 	// Singleton
@@ -24,9 +24,9 @@ class FaultTreeVisualizer {
 	protected final Logger logger = Logger.getLogger("GammaLogger");
 	
 	def void visualizeFaultTree(String xmlFilePath) {
-		val faultTreeViewer = FaultTreeViewerUtil.instance
+//		val faultTreeViewer = FaultTreeViewerUtil.instance
 		try {
-			faultTreeViewer.openXmlIFileInFTAViewer(xmlFilePath, new NullProgressMonitor)
+//			faultTreeViewer.openXmlIFileInFTAViewer(xmlFilePath, new NullProgressMonitor)
 			logger.log(Level.INFO, "Visualized fault tree at " + xmlFilePath)
 		} catch (Exception e) {
 			e.printStackTrace()

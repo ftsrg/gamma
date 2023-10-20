@@ -21,14 +21,16 @@ import java.util.logging.Level
 import static com.google.common.base.Preconditions.checkState
 
 class ThetaVerifier extends AbstractVerifier {
-	
+	//
 	protected final extension ThetaQueryAdapter thetaQueryAdapter = ThetaQueryAdapter.INSTANCE
 	protected final extension ThetaValidator thetaValidator = ThetaValidator.INSTANCE
 	
 	final String ENVIRONMENT_VARIABLE_FOR_THETA_JAR = "THETA_XSTS_CLI_PATH"
+	final String PROP_KEYWORD = "prop"
 	
 	final String SAFE = "SafetyResult Safe"
 	final String UNSAFE = "SafetyResult Unsafe"
+	//
 	
 	override Result verifyQuery(Object traceability, String parameters, File modelFile, String queries) {
 		var Result result = null
@@ -36,7 +38,7 @@ class ThetaVerifier extends AbstractVerifier {
 			// Supporting multiple queries in separate files
 			val parsedQuery = singleQuery.adaptQuery
 			val wrappedQuery = '''
-				prop {
+				«PROP_KEYWORD» {
 					«parsedQuery»
 				}
 			'''
@@ -51,10 +53,19 @@ class ThetaVerifier extends AbstractVerifier {
 				result = new Result(ThreeStateBoolean.UNDEF, oldTrace)
 			}
 		}
+		
 		return result
 	}
 	
 	override Result verifyQuery(Object traceability, String parameters, File modelFile, File queryFile) {
+		// Checking if the query file contains more queries
+		val queries = fileUtil.loadString(queryFile).trim
+		if (!queries.startsWith(PROP_KEYWORD)) {
+			// Processing of queries and indirect recursion
+			return traceability.verifyQuery(parameters, modelFile, queries)
+		}
+		//
+		
 		var Scanner resultReader = null
 		var Scanner traceFileScanner = null
 		try {
@@ -63,8 +74,6 @@ class ThetaVerifier extends AbstractVerifier {
 			val jar = System.getenv(ENVIRONMENT_VARIABLE_FOR_THETA_JAR)
 			// java -jar %THETA_XSTS_CLI_PATH% --model trafficlight.xsts --property red_green.prop
 			val traceFile = new File(modelFile.traceFile)
-			modelFile.parent + File.separator + modelFile.extensionlessName.toHiddenFileName +
-			"-" + Thread.currentThread.name + ".cex";
 			traceFile.delete // So no invalid/old cex is parsed if this actual process does not generate one
 			traceFile.deleteOnExit // So the cex with this random name does not remain on disk
 			
@@ -127,11 +136,9 @@ class ThetaVerifier extends AbstractVerifier {
 	}
 	
 	protected def backAnnotate(Package gammaPackage, Scanner traceFileScanner) {
+		val backAnnotator = new TraceBackAnnotator(gammaPackage, traceFileScanner)
 		// Must be synchronized due to the non-thread-safe VIATRA engine
-		synchronized (TraceBackAnnotator.getEngineSynchronizationObject) {
-			val backAnnotator = new TraceBackAnnotator(gammaPackage, traceFileScanner)
-			return backAnnotator.execute
-		}
+		return backAnnotator.synchronizeAndExecute
 	}
 	
 	override getTemporaryQueryFilename(File modelFile) {

@@ -20,6 +20,7 @@
     </genEnums>
     <genEnums typeSafeEnumCompatible="false" ecoreEnum="genmodel.ecore#//ProgrammingLanguage">
       <genEnumLiterals ecoreEnumLiteral="genmodel.ecore#//ProgrammingLanguage/JAVA"/>
+      <genEnumLiterals ecoreEnumLiteral="genmodel.ecore#//ProgrammingLanguage/C"/>
     </genEnums>
     <genEnums typeSafeEnumCompatible="false" ecoreEnum="genmodel.ecore#//AnalysisLanguage">
       <genEnumLiterals ecoreEnumLiteral="genmodel.ecore#//AnalysisLanguage/UPPAAL"/>

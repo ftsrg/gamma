@@ -51,6 +51,7 @@ To cite Gamma, please cite the following paper. You can find additional publicat
 
 * Install an Eclipse instance (e.g., Eclipse IDE for Java and DSL Developers) with EMF, Xtext and Java 17.
 * Install the required 3rd-party Eclipse components. Detailed instructions can be found in the [`plugins/README.md`](plugins/README.md) file.
+    * Alternatively you can use the provided Eclipse Oomph Installer to install the 3rd-party Eclipse components found [here](eclipse-environment/README.md). 
 * Exit Eclipse and extract the [Gamma zip file](https://inf.mit.bme.hu/sites/default/files/gamma/2_9_0/gamma-tool-2.9.0.zip) containing the `dropins/plugins` folder (with the Gamma JAR files) into the root folder of Eclipse. This will create the plugins directory in the `dropins` folder of your root Eclipse folder, which should contain all JAR files of Gamma. (If not, make sure you copy all the JAR files contained in the Gamma zip file in the plugins directory of the `dropins` folder of the root folder of Eclipse.)
 * When starting Eclipse for the first time, you might need to start it with the `-clean` flag.
 * Check if the plugin installed successfully in *Help > About Eclipse* and by clicking Installation Details. On the `Plug-ins tab`, sort the entries by `Plugin-in Id` and look for entries starting with `hu.bme.mit.gamma`.

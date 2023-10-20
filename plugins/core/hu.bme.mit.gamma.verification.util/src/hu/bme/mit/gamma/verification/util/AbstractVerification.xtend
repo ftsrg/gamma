@@ -15,6 +15,8 @@ import hu.bme.mit.gamma.util.FileUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.util.InterruptableCallable
 import hu.bme.mit.gamma.util.JavaUtil
+import hu.bme.mit.gamma.util.ThreadRacer
+import hu.bme.mit.gamma.verification.result.ThreeStateBoolean
 import hu.bme.mit.gamma.verification.util.AbstractVerifier.Result
 import java.io.File
 import java.util.concurrent.TimeUnit
@@ -22,13 +24,15 @@ import java.util.logging.Logger
 import java.util.regex.Pattern
 
 abstract class AbstractVerification {
-
+	//
 	protected final FileUtil fileUtil = FileUtil.INSTANCE
 	protected final extension JavaUtil javaUtil = JavaUtil.INSTANCE
 	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension GammaFileNamer fileNamer = GammaFileNamer.INSTANCE
 
 	protected final Logger logger = Logger.getLogger("GammaLogger")
+	
+	//
 	
 	def Result execute(File modelFile, File queryFile) {
 		return this.execute(modelFile, queryFile, -1, null)
@@ -39,26 +43,60 @@ abstract class AbstractVerification {
 	}
 	
 	def Result execute(File modelFile, File queryFile, String[] arguments) {
-		this.execute(modelFile, queryFile, arguments, -1, null)
+		return this.execute(modelFile, queryFile, arguments, -1, null)
 	}
 	
-	def createVerificationCallables(Object traceabilityObject, Iterable<String> arguments,
+	def Result execute(File modelFile, File queryFile, String[] arguments,
+			long timeout, TimeUnit unit) throws InterruptedException {
+		// Racer callable(s)
+		val callables = modelFile.loadModelAndCreateVerificationCallables(queryFile, arguments)
+		// Racer, but for only one thread
+		val racer = new ThreadRacer<Result>
+		//
+		var result = racer.execute(callables, timeout, unit)
+		// Handle in case of timeout
+		return result.handleNull
+	}
+	
+	def handleNull(Result result) {
+		if (result === null) {
+			return new Result(ThreeStateBoolean.UNDEF, null)
+		}
+		return result
+	}
+	
+	abstract protected def String getTraceabilityFileName(String fileName)
+	
+	def loadModelAndCreateVerificationCallables(File modelFile,
+			File queryFile, String[] arguments) {
+		val fileName = modelFile.name
+		val traceabilityFileName = fileName.traceabilityFileName
+		val traceabilityObject = ecoreUtil.normalLoad(modelFile.parent, traceabilityFileName)
+		
+		arguments.sanitizeArguments
+		// Creating the racer callable(s)
+		val callables = traceabilityObject.createVerificationCallables(arguments, modelFile, queryFile)
+		
+		return callables
+	}
+	
+	protected def createVerificationCallables(Object traceabilityObject, Iterable<String> arguments,
 			File modelFile, File queryFile) {
 		val callables = <InterruptableCallable<Result>>newArrayList
 		
 		for (argument : arguments) {
 			val verifier = createVerifier
-			val instanceName = verifier.class.name
+			val className = verifier.class.name
 			
 			callables += new InterruptableCallable<Result> {
 				override Result call() {
-					logger.info('''Starting «instanceName» instance with "«argument»"''')
+					logger.info('''Starting «className» instance with "«argument»"''')
 					val result = verifier.verifyQuery(traceabilityObject, argument, modelFile, queryFile)
 					return result
 				}
 				override void cancel() {
 					verifier.cancel
-					logger.info('''«instanceName» instance with "«argument»" has been cancelled''')
+					logger.info('''«className» instance with "«argument»" has been cancelled''')
 				}
 			}
 		}
@@ -67,9 +105,6 @@ abstract class AbstractVerification {
 	}
 	
 	abstract protected def AbstractVerifier createVerifier()
-	
-	abstract def Result execute(File modelFile, File queryFile, String[] arguments,
-			long timeout, TimeUnit unit) throws InterruptedException
 	
 	abstract def String[] getDefaultArguments()
 	
