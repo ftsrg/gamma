@@ -3,14 +3,17 @@ The goal of this tutorial is to try out the Gamma framework for modeling composi
 ## Installation
 Install Gamma using the following instructions.
 
-- Download a new Eclipse IDE for [Java and DSL Developers package](https://www.eclipse.org/downloads/packages/release/2021-12/r/eclipse-ide-java-and-dsl-developers).
+- Download a new Eclipse IDE for [Java and DSL Developers package](https://www.eclipse.org/downloads/packages/release/2023-06/r/eclipse-ide-java-and-dsl-developers).
 
-- Install the following two packages. The _Install_ window can be opened via the _Help > Install New Software..._ menu item. In the _Install_ window click _Add..._, and paste the necessary URL in the _Location_ text field. 
-  - Install VIATRA 2.6.0 from update site http://download.eclipse.org/viatra/updates/release/2.6.0.
+- Install the following packages. The _Install_ window can be opened via the _Help > Install New Software..._ menu item. In the _Install_ window click _Add..._, and paste the necessary URL in the _Location_ text field. 
+  - Install VIATRA 2.7.1 from update site http://download.eclipse.org/viatra/updates/release/2.7.1.
     - Choose the whole _VIATRA Query and Transformation SDK_ package.
- - Install the Yakindu Statechart Tools 3.5.13. from update site http://updates.yakindu.com/statecharts/releases/.
-   - From the Yakindu Standard Edition choose _Yakindu Statechart Tools_, _Yakindu Statechart Tools Base_, _Yakindu License Integration For Standard Edition_ and _Yakindu Statechart Tools Java Code Generator_ subpackages in package _Yakindu Statechart Tools Standard Edition_.
-- Exit Eclipse and extract the [Gamma zip file](https://inf.mit.bme.hu/sites/default/files/gamma/2_6_0/gamma-tool-2.6.0.zip) into the root folder of Eclipse. (This will create the _plugins_ directory in the _dropins_ folder, containing the JAR file of the Gamma. If not, make sure you copy all the JAR files contained in the Gamma zip file in the _plugins_ directory of the _dropins_ folder of the root folder of Eclipse.)
+  - Install the Yakindu Statechart Tools 3.5.13. from update site http://updates.yakindu.com/statecharts/releases/.
+    - From the Yakindu Standard Edition choose _Yakindu Statechart Tools_, _Yakindu Statechart Tools Base_, _Yakindu License Integration For Standard Edition_ and _Yakindu Statechart Tools Java Code Generator_ subpackages in package _Yakindu Statechart Tools Standard Edition_.
+  - Install the PlantUML Eclipse Plugin 1.1.29 from update site http://hallvard.github.io/plantuml/.
+    - Install all available features apart from _Source_.
+    - Some version of the PlantUMl might require Graphviz, you can find more informations [here](../plugins/vis/README.md).
+- Exit Eclipse and extract the [Gamma zip file](https://inf.mit.bme.hu/sites/default/files/gamma/2_9_0/gamma-tool-2.9.0.zip) into the root folder of Eclipse. (This will create the _plugins_ directory in the _dropins_ folder, containing the JAR file of the Gamma. If not, make sure you copy all the JAR files contained in the Gamma zip file in the _plugins_ directory of the _dropins_ folder of the root folder of Eclipse.)
 - When starting Eclipse for the first time, you might need to start it with the `-clean_` flag.
 - Check if the plugin installed successfully in _Help > About Eclipse_ and by clicking _Installation Details_. On the _Plug-ins_ tab, sort the entries by _Plugin-in Id_ and look for entries starting with _hu.bme.mit.gamma_.
 
@@ -26,9 +29,9 @@ For formal verification, download and extract [UPPAAL](http://www.uppaal.org/) 4
 
 ## Presenting the Models
 
-Download the [Gamma tutorial](https://inf.mit.bme.hu/sites/default/files/gamma/2_6_0/gamma-tutorial-pack-2.6.0.zip), and extract its contents.
+Download the [Gamma tutorial](https://inf.mit.bme.hu/sites/default/files/gamma/2_9_0/gamma-tutorial-pack-2.9.0.zip), and extract its contents.
 
-In this tutorial, we are going to design the controller of traffic lights in a crossroad. In each direction, the traffic lights are the standard 3-phase lights looping through the red-green-yellow-red sequence. As an extra, there is an interrupted mode that may be triggered by the police – in this state, the traffic lights blink in yellow.
+In this tutorial, we are going to design the controller of traffic lights in a crossroad. In each direction, the traffic lights are the standard 3-phase lights looping through the red-green-yellow-red sequence. As an extra, there is an interrupted mode that may be triggered by the police ï¿½ in this state, the traffic lights blink in yellow.
 
 ![Crossroad states](images/crossroad-states.png "Crossroad states")
 
@@ -41,7 +44,7 @@ At this point, the project should contain errors that have to be fixed in the tu
 
 To reduce the complexity of the models, we divide the controller into submodules. For each road, the lights will be controlled by an instance of the _traffic light controller_ statechart (`/model/TrafficLight/TrafficLightCtrl.sct`), while a separate _crossroad controller_ (`/model/Controller/Controller.sct`) will be responsible for the coordination of the flow of traffic.
 
-The models of the controllers should be easy to read. The _traffic light controllers_ start from the _Red_ state and will advance to the next state upon receiving a _toggle_ signal. In this example, we assume that timing comes from the _crossroad controller_ – in the form of such _toggle_ signals. The _crossroad controller_ will react to the passing of time, so that it can decide which traffic light(s) to toggle in the given step. This strategy separates the responsibility of handling the lights (through the _LightCommands_ interface) and coordinating the flow of traffic.
+The models of the controllers should be easy to read. The _traffic light controllers_ start from the _Red_ state and will advance to the next state upon receiving a _toggle_ signal. In this example, we assume that timing comes from the _crossroad controller_ ï¿½ in the form of such _toggle_ signals. The _crossroad controller_ will react to the passing of time, so that it can decide which traffic light(s) to toggle in the given step. This strategy separates the responsibility of handling the lights (through the _LightCommands_ interface) and coordinating the flow of traffic.
 
 As mentioned before, the police may interrupt the behavior of the crossroad at any time, switching all the lights to a blinking yellow state. This signal is sent through the _crossroad controller_, which will forward it to the _traffic light controllers_ (as the blinking yellow behavior is implemented there).
 
@@ -73,7 +76,7 @@ To interpret the syntax, observe the following figure, which illustrates the sch
 
 _Note_: By default, channels are 1-to-1 connections and no port can connect through more than one channel. The only exception is ports that implement a broadcast interface, an interface which has only outgoing events, in provided mode. Such ports may be connected to multiple listeners, ports that implement the broadcast interface in required mode.
 
-_Note_: In this tutorial the synchronous-reactive semantics is utilized, which means that components are executed in cycles (just like the default behavior of Yakindu statecharts), all at the same time. In practice, the order of execution in each cycle is undefined, but this is not a problem, because communication over channels – the only legal way of communication in Gamma – is delayed by one cycle. This way, the causal relationship between the components is well-defined. It is also important to note that Gamma considers the pieces of information passed through channels as signals (or events). In contrast to messages, these signals are synchronous, not queued, not buffered, they have to be processed in the cycle they arrive. One of the consequences is the restriction on multiple source ports for a channel – there is no way in synchronous-reactive semantics to distinguish the source and the signals will overwrite themselves in an undefined order.
+_Note_: In this tutorial the synchronous-reactive semantics is utilized, which means that components are executed in cycles (just like the default behavior of Yakindu statecharts), all at the same time. In practice, the order of execution in each cycle is undefined, but this is not a problem, because communication over channels ï¿½ the only legal way of communication in Gamma ï¿½ is delayed by one cycle. This way, the causal relationship between the components is well-defined. It is also important to note that Gamma considers the pieces of information passed through channels as signals (or events). In contrast to messages, these signals are synchronous, not queued, not buffered, they have to be processed in the cycle they arrive. One of the consequences is the restriction on multiple source ports for a channel ï¿½ there is no way in synchronous-reactive semantics to distinguish the source and the signals will overwrite themselves in an undefined order.
 Additionally, Gamma supports cascade (also in the synchronous domain) and asynchronous-reactive (messages and message queues) composition as well.
 
 ## Compiling the Yakindu Statecharts
@@ -102,6 +105,10 @@ By this time, none of the files in the `/model` folder should have any error mar
 Gamma can generate source code for the composite system specified so far. It will reuse the code generated by Yakindu, so let us first generate the implementation of the Yakindu statecharts.
 
 The project already contains the Yakindu generator models (_.sgen_) necessary to generate code from Yakindu statecharts. Editing and saving the statecharts will automatically regenerate the code, but we can also invoke code generation by right-clicking the _.sgen_ files and selecting _Generate Code Artifacts_.
+
+You can also generate the implementation of the statechart by right-clicking on the _.gcd_ files of the compiled statecharts and selecting _Gamma Commands > Generate Statechart Java Code_. 
+
+![Menu: generate Statechart Java Code](images/java-statechart-code-generation.png)
 
 When Yakindu has finished code generation, let us generate the implementation of the composite system. Right-click on `/model/Crossroad.gcd` and select _Gamma Commands > Generate Source Code > Generate Java Code_.
 
@@ -150,7 +157,7 @@ Right-click `/model/Crossroad.gcd` and select _Gamma Commands > Open Query Gener
 
 ![Query generator GUI](images/query-generator-gui.png "Query generator GUI")
 
-The bottom part contains the _Verify_ button – click it after filling the conditions and UPPAAL will check if the model satisfies your requirement or not. Be aware that model checking is performance-intensive, so this operation might take long.
+The bottom part contains the _Verify_ button ï¿½ click it after filling the conditions and UPPAAL will check if the model satisfies your requirement or not. Be aware that model checking is performance-intensive, so this operation might take long.
 Let us specify the requirement of not having green light in both directions. Using the presented controls, select the _Must always template_ and specify the condition as "not (green for priority and green for secondary at the same time)".
 After clicking the verify button, UPPAAL returns with the result that our model fails to satisfy the requirement, meaning that there is actually a way to reach the undesired state of letting vehicles come in from every direction. Fortunately, UPPAAL also computes a counterexample (or example in desirable behaviors), demonstrating how exactly we can reach the bad state.
 
