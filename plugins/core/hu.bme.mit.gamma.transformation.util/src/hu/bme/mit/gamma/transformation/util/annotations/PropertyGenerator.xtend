@@ -100,14 +100,14 @@ class PropertyGenerator {
 		// Order optimization - "further" nodes are put earlier in the list
 		val optimizeOrder = true
 		if (optimizeOrder) {
-			val nodeDistances = newHashMap
+			val nodeDistances = newLinkedHashMap
 			for (statechart : instances.map[it.derivedType].filter(StatechartDefinition)) {
 				nodeDistances += statechart.containedStateNodeDistances
 			}
-			formulas = formulas.sortBy[nodeDistances.get(it
+			formulas = formulas.sortBy[nodeDistances.getOrDefault(it
 					.getAllContentsOfType(ComponentInstanceStateReferenceExpression)
 					.onlyElement
-					.state)]
+					.state, 0 /* Default 0 for unreachable nodes? */)]
 					.reverse
 		}
 		//
