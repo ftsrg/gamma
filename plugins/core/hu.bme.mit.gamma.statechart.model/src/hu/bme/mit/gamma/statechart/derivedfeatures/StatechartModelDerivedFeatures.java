@@ -2967,11 +2967,29 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return reachableStates;
 	}
 	
-	public static Map<Transition, Integer> getTransitionDistances(CompositeElement composite) {
-		return getTransitionDistances(composite, new HashSet<StateNode>());
+	public static Map<StateNode, Integer> getContainedStateNodeDistances(CompositeElement composite) {
+		Map<Transition, Integer> transitionDistances = getContainedTransitionDistances(composite);
+		
+		Map<StateNode, Integer> stateDistances = new LinkedHashMap<StateNode, Integer>();
+		Map<StateNode, Integer> sourceDistances = new LinkedHashMap<StateNode, Integer>();
+		Map<StateNode, Integer> targetDistances = new LinkedHashMap<StateNode, Integer>();
+		for (Transition transition : transitionDistances.keySet()) {
+			Integer distance = transitionDistances.get(transition);
+			sourceDistances.put(transition.getSourceState(), distance);
+			targetDistances.put(transition.getTargetState(), distance + 1);
+		}
+		
+		javaUtil.collectMinimumValues(stateDistances, List.of(sourceDistances, targetDistances));
+		
+		return stateDistances;
 	}
 	
-	public static Map<Transition, Integer> getTransitionDistances(
+	
+	public static Map<Transition, Integer> getContainedTransitionDistances(CompositeElement composite) {
+		return getContainedTransitionDistances(composite, new HashSet<StateNode>());
+	}
+	
+	public static Map<Transition, Integer> getContainedTransitionDistances(
 			CompositeElement composite, Set<StateNode> visitedNodes) {
 		Map<Transition, Integer> distance = new LinkedHashMap<Transition, Integer>();
 		
@@ -2979,9 +2997,9 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		
 		List<Region> regions = composite.getRegions();
 		for (Region region : regions) {
-			List<EntryState> entryStates = ecoreUtil.getContentsOfType(region, EntryState.class);
+			List<EntryState> entryStates = ecoreUtil.getContentsOfType(region, EntryState.class); // Single level
 			for (EntryState entryState : entryStates) {
-				Map<Transition, Integer> subregionDistance = getTransitionDistances(entryState);
+				Map<Transition, Integer> subregionDistance = getTransitionDistances(entryState, visitedNodes);
 				distances.add(subregionDistance);
 			}
 		}
@@ -3013,7 +3031,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 			distance.put(outgoingTransition, 0);
 			
 			StateNode target = outgoingTransition.getTargetState();
-			Map<Transition, Integer> targetDistance = getTransitionDistances(target);
+			Map<Transition, Integer> targetDistance = getTransitionDistances(target, visitedNodes);
 			for (Transition transition : targetDistance.keySet()) {
 				targetDistance.replace(transition,
 						targetDistance.get(transition) + 1); // As this is the distance from a target node
@@ -3023,15 +3041,13 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		// Parent
 		if (hasParentState(node)) {
 			State ancestor = getParentState(node);
-			Map<Transition, Integer> ancestorDistance = getTransitionDistances(
-					(StateNode) ancestor, visitedNodes);
+			Map<Transition, Integer> ancestorDistance = getTransitionDistances(ancestor, visitedNodes);
 			distances.add(ancestorDistance);
 		}
 		
 		// Children
-		if (node instanceof State) {
-			Map<Transition, Integer> subregionDistance = getTransitionDistances(
-					(CompositeElement) node, visitedNodes);
+		if (node instanceof State state) {
+			Map<Transition, Integer> subregionDistance = getContainedTransitionDistances(state, visitedNodes);
 			distances.add(subregionDistance);
 		}
 		
