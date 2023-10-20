@@ -26,11 +26,15 @@ import hu.bme.mit.gamma.xsts.codegeneration.c.util.GeneratorUtil
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
 
 import static extension hu.bme.mit.gamma.xsts.codegeneration.c.util.GeneratorUtil.*
+import hu.bme.mit.gamma.xsts.model.XSTS
+import java.math.BigInteger
 
 /**
  * Serializer for variable declarations.
  */
 class VariableDeclarationSerializer {
+	
+	public static val UINT32_MAX = new BigInteger("4294967295")
 	
 	/**
 	 * The VariableDeclarationSerializer class provides methods for serializing variable declarations.
@@ -118,7 +122,9 @@ class VariableDeclarationSerializer {
      * @return the serialized integer type as a string
      */
 	def dispatch String serialize(IntegerTypeDefinition type, boolean clock, String name) {
-		return clock ? '''uint32_t''' : '''int32_t''';
+		val size = (type.eContainer instanceof VariableDeclaration) ? new BigInteger((type.eContainer as VariableDeclaration).getInitialValueEvaluated(type.eContainer.eContainer as XSTS).toString) : UINT32_MAX
+		val unsigned = (size > UINT32_MAX) ? 'uint64_t' : 'uint32_t'
+		return clock ? unsigned : '''int32_t''';
 	}
 	
 	/**

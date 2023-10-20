@@ -25,11 +25,25 @@ import hu.bme.mit.gamma.xsts.model.EmptyAction
 import hu.bme.mit.gamma.xsts.model.MultiaryAction
 import hu.bme.mit.gamma.xsts.model.XSTS
 import org.eclipse.emf.ecore.EObject
+import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
+import hu.bme.mit.gamma.expression.model.Expression
+import hu.bme.mit.gamma.xsts.model.SystemMasterMessageQueueGroup
 
 class GeneratorUtil {
 	
+	static val extension ExpressionEvaluator expressionEvaluator = ExpressionEvaluator.INSTANCE
 	static val extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE;
 	static val extension VariableDeclarationSerializer variableDeclarationSerializer = VariableDeclarationSerializer.INSTANCE;
+	
+	/**
+	 * Returns whether the given XSTS model is async or not.
+	 *
+	 * @param xsts the given XSTS model
+	 * @return whether the given XSTS model is async or not
+	 */
+	static def boolean isAsync(XSTS xsts) {
+		return xsts.variableGroups.filter[it.annotation instanceof SystemMasterMessageQueueGroup].size > 0
+	}
 	
 	/**
 	 * Transforms a string with underscores to camel case by converting each word's first letter
@@ -96,17 +110,43 @@ class GeneratorUtil {
 	 *
 	 * @param variable the variable for which the initial value is sought.
 	 * @param object the context object in which the variable's initial value is to be determined.
-	 * @return a CharSequence representing the initial value of the variable, or null if not found.
+	 * @return a number representing the initial value of the variable, or 0 if not found.
 	 */
-	static def CharSequence getInitialValue(VariableDeclaration variable, EObject object) {
+	static def int getInitialValueEvaluated(VariableDeclaration variable, EObject object) {
+		val expression = variable.getInitialValue(object)
+		if (expression === null) return 0
+		return expressionEvaluator.evaluate(expression)
+	}
+	
+	/**
+	 * Retrieves the initial value of a given variable from the model's initial transition.
+	 *
+	 * @param variable the variable for which the initial value is sought.
+	 * @param object the context object in which the variable's initial value is to be determined.
+	 * @return a CharSequence representing the initial value of the variable, or 0 if not found.
+	 */
+	static def CharSequence getInitialValueSerialized(VariableDeclaration variable, EObject object) {
+		val expression = variable.getInitialValue(object)
+		if (expression === null) return '0'
+		return expressionSerializer.serialize(expression)
+	}
+	
+	/**
+	 * Retrieves the initial value of a given variable from the model's initial transition.
+	 *
+	 * @param variable the variable for which the initial value is sought.
+	 * @param object the context object in which the variable's initial value is to be determined.
+	 * @return an Expression representing the initial value of the variable, or null if not found.
+	 */
+	static def Expression getInitialValue(VariableDeclaration variable, EObject object) {
 		if (object instanceof XSTS) {
 			val result = variable.getInitialValue(object.variableInitializingTransition)
-			return (result === null) ? '0' : result
+			return result
 		}
 		if (object instanceof AssignmentAction && (object as AssignmentAction).lhs instanceof DirectReferenceExpression && ((object as AssignmentAction).lhs as DirectReferenceExpression).declaration == variable)
-			return expressionSerializer.serialize((object as AssignmentAction).rhs)
+			return (object as AssignmentAction).rhs
 		
-		var CharSequence result = null
+		var Expression result = null
 		for (child : object.eContents) {
 			result = variable.getInitialValue(child)
 			if (result !== null) return result

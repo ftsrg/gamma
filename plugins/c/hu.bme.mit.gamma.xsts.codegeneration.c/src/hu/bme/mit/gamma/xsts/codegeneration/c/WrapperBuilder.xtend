@@ -27,6 +27,8 @@ import java.util.Set
 import org.eclipse.emf.common.util.URI
 import hu.bme.mit.gamma.xsts.codegeneration.c.serializer.ExpressionSerializer
 import static extension hu.bme.mit.gamma.xsts.codegeneration.c.util.GeneratorUtil.*
+import hu.bme.mit.gamma.xsts.model.SystemMasterMessageQueueGroup
+import java.math.BigInteger
 
 /**
  * The WrapperBuilder class implements the IStatechartCode interface and is responsible for generating the wrapper code.
@@ -120,7 +122,8 @@ class WrapperBuilder implements IStatechartCode {
 		
 		/* Max value before overflow */
 		header.addContent('''
-			#define INT_MAX_VALUE 4294967295  // 32 bit unsigned
+			#define UINT32_MAX_VALUE 4294967295           // 32 bit unsigned
+			#define UINT64_MAX_VALUE 18446744073709551615 // 64 bit unsigned
 		''')
 		
 		/* Wrapper Struct */
@@ -129,6 +132,7 @@ class WrapperBuilder implements IStatechartCode {
 			typedef struct {
 				«stName» «stName.toLowerCase»;
 				«Platforms.get(platform).getStruct()»
+				«FOR variable : outputs SEPARATOR System.lineSeparator»void (*event«variable.name.toFirstUpper»)(/* TODO : parameters */);«ENDFOR»
 			} «name»;
 		''');
 		
@@ -194,8 +198,8 @@ class WrapperBuilder implements IStatechartCode {
 				«Platforms.get(platform).getTimer()»
 				«FOR variable : variableGroupRetriever.getTimeoutGroup(xsts).variables»
 					/* Overflow detection in «variable.name» */
-					if ((INT_MAX_VALUE - «IPlatform.CLOCK_VARIABLE_NAME») < statechart->«stName.toLowerCase».«variable.name») {
-						statechart->«stName.toLowerCase».«variable.name» = «variable.getInitialValue(xsts)»;
+					if ((«IF new BigInteger(variable.getInitialValueEvaluated(xsts).toString) > VariableDeclarationSerializer.UINT32_MAX»UINT64_MAX_VALUE«ELSE»UINT32_MAX_VALUE«ENDIF» - «IPlatform.CLOCK_VARIABLE_NAME») < statechart->«stName.toLowerCase».«variable.name») {
+						statechart->«stName.toLowerCase».«variable.name» = «variable.getInitialValueSerialized(xsts)»;
 					}
 					/* Add elapsed time to timeout variable «variable.name» */
 					statechart->«stName.toLowerCase».«variable.name» += «IPlatform.CLOCK_VARIABLE_NAME»;
@@ -218,7 +222,13 @@ class WrapperBuilder implements IStatechartCode {
 					variable.annotations.exists[it instanceof ClockVariableDeclarationAnnotation], 
 					variable.name
 				)» value) {
-					statechart->«stName.toLowerCase».«variable.name» = value;
+					«IF xsts.isAsync»
+						«FOR queue : xsts.variableGroups.filter[it.annotation instanceof SystemMasterMessageQueueGroup].head.variables»
+							statechart->«stName.toLowerCase».«queue.name»[0] = 0; /* TODO : event id */
+						«ENDFOR»
+					«ELSE»
+						statechart->«stName.toLowerCase».«variable.name» = value;
+					«ENDIF»
 				}
 			«ENDFOR»
 		''');
@@ -232,6 +242,9 @@ class WrapperBuilder implements IStatechartCode {
 				variable.annotations.exists[it instanceof ClockVariableDeclarationAnnotation], 
 				variable.name
 			)» get«variable.name.toFirstUpper»(«name»* statechart) {
+				if (statechart->event«variable.name.toFirstUpper» != NULL) {
+					statechart->event«variable.name.toFirstUpper»(/* TODO : parameters */);
+				}
 				return statechart->«stName.toLowerCase».«variable.name»;
 			}
 		«ENDFOR»
