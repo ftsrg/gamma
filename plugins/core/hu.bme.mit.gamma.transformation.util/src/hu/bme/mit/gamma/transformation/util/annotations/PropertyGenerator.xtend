@@ -53,6 +53,7 @@ class PropertyGenerator {
 	// Single component reference or the whole chain is needed
 	// That is, we reference the model AFTER or BEFORE the unfolding 
 	protected boolean isSimpleComponentReference
+	protected final boolean optimizePropertyOrder = true
 	//
 	protected final PropertyUtil propertyUtil = PropertyUtil.INSTANCE
 	protected final extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
@@ -98,8 +99,7 @@ class PropertyGenerator {
 			}
 		}
 		// Order optimization - "further" nodes are put earlier in the list
-		val optimizeOrder = true
-		if (optimizeOrder) {
+		if (optimizePropertyOrder) {
 			val nodeDistances = newLinkedHashMap
 			for (statechart : instances.map[it.derivedType].filter(StatechartDefinition)) {
 				nodeDistances += statechart.containedStateNodeDistances
@@ -191,7 +191,20 @@ class PropertyGenerator {
 		if (transitionAnnotations.empty) {
 			return formulas
 		}
-		for (transition : transitionAnnotations.transitions) {
+		// Order optimization - "further" transitions are put earlier in the list - makes sense if there is no slicing
+		var List<Transition> transitions = newArrayList
+		transitions += transitionAnnotations.transitions
+		if (optimizePropertyOrder) {
+			val transitionDistances = newLinkedHashMap
+			for (statechart : transitions.map[it.containingStatechart].toSet) {
+				transitionDistances += statechart.containedTransitionDistances
+			}
+			transitions = transitions.sortBy[transitionDistances.getOrDefault(it,
+					0 /* Default 0 for unreachable transitions? */)]
+					.reverse
+		}
+		//
+		for (transition : transitions) {
 			val variable = transitionAnnotations.getVariable(transition)
 			val reference = createVariableReference(variable)
 			val stateFormula = propertyUtil.createEF(propertyUtil.createAtomicFormula(reference))
