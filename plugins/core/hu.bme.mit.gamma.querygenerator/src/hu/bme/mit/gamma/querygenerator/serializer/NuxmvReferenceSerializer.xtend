@@ -14,7 +14,6 @@ import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpressio
 import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.State
 
-import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 
 class NuxmvReferenceSerializer extends ThetaReferenceSerializer {
@@ -24,7 +23,8 @@ class NuxmvReferenceSerializer extends ThetaReferenceSerializer {
 	//
 	
 	override getId(State state, Region parentRegion, ComponentInstanceReferenceExpression instance) {
-		return '''«state.getSingleTargetStateName(parentRegion, instance)»«FOR parent : state.ancestors BEFORE " & " SEPARATOR " & "»«parent.getSingleTargetStateName(parent.parentRegion, instance)»«ENDFOR»'''
+//		return '''«state.getSingleTargetStateName(parentRegion, instance)»«FOR parent : state.ancestors BEFORE " & " SEPARATOR " & "»«parent.getSingleTargetStateName(parent.parentRegion, instance)»«ENDFOR»'''
+		return '''«state.getSingleTargetStateName(parentRegion, instance)»''' // Enough due to __Inactive__ and __history__ literals
 	}
 	
 	override getSingleTargetStateName(State state, Region parentRegion, ComponentInstanceReferenceExpression instance) {

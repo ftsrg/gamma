@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022 Contributors to the Gamma project
+ * Copyright (c) 2022-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -25,4 +25,5 @@ class PromelaReferenceSerializer extends ThetaReferenceSerializer {
 	override protected getSingleTargetStateName(State state, Region parentRegion, ComponentInstanceReferenceExpression instance) {
 		return '''«parentRegion.customizeName(instance)» == «state.customizeEnumLiteralName(parentRegion)»'''
 	}
+	
 }
