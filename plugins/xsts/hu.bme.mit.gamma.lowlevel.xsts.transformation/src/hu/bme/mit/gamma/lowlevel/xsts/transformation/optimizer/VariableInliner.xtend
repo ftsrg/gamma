@@ -268,12 +268,14 @@ class VariableInliner {
 				if (second instanceof AssignmentAction || second instanceof VariableDeclarationAction) {
 					val rhs = (second instanceof AssignmentAction) ? second.rhs : 
 						(second instanceof VariableDeclarationAction) ? second.variableDeclaration.expression : null
-					for (reference : rhs.getSelfAndAllContentsOfType(DirectReferenceExpression)) {
-						val rhsDeclaration = reference.declaration
-						
-						if (rhsDeclaration === localVariable) {
-							val clonedValue = localVariableValue.clone
-							clonedValue.replace(reference)
+					if (rhs !== null) { // Can be null e.g., in function call return objects
+						for (reference : rhs.getSelfAndAllContentsOfType(DirectReferenceExpression)) {
+							val rhsDeclaration = reference.declaration
+							
+							if (rhsDeclaration === localVariable) {
+								val clonedValue = localVariableValue.clone
+								clonedValue.replace(reference)
+							}
 						}
 					}
 				}
