@@ -51,6 +51,7 @@ verification {
 	language : nuXmv
 	file : "ANTIVAL_CHK_COID_System-SMV.smv"
 	property-file : ".ANTIVAL_CHK_COID_System-SMV.gpd"
+	property-file : "ANTIVAL_CHK_COID_System-LTL.gpd"
 	optimize-model : true
 	test-language : java
 }
