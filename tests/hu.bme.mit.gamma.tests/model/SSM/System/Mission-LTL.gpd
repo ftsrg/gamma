@@ -4,7 +4,7 @@ component Mission
 A G ([ { state satellite.Communication.Transmitting } ] -> [ { state
 	satellite.Communication.Transmitting } ] U (
 		[ {
-			variable satellite.batteryVariable <= 95
+			variable satellite.batteryVariable <= 40
 			or
 			variable satellite.data <= 0
 			} ] ))
