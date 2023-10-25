@@ -69,3 +69,20 @@ verification {
 	optimize-traces : true
 	test-language : java
 }
+
+analysis {
+	component : Mission
+	file : "Mission-Promela"
+	language : Promela
+	constraint : {
+		minimum-orchestrating-period : 999 ms
+		maximum-orchestrating-period : 999 ms
+	}
+}
+
+verification {
+	language : Spin
+	file : "Mission-Promela.pml"
+	property-file : "Mission-LTL.gpd"
+	test-language : java
+}
