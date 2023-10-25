@@ -11,29 +11,37 @@
 package hu.bme.mit.gamma.xsts.codegeneration.c
 
 import hu.bme.mit.gamma.expression.model.ClockVariableDeclarationAnnotation
+import hu.bme.mit.gamma.expression.model.DeclarationReferenceAnnotation
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
+import hu.bme.mit.gamma.expression.model.impl.DeclarationReferenceAnnotationImpl
 import hu.bme.mit.gamma.xsts.codegeneration.c.model.CodeModel
 import hu.bme.mit.gamma.xsts.codegeneration.c.model.HeaderModel
 import hu.bme.mit.gamma.xsts.codegeneration.c.platforms.IPlatform
 import hu.bme.mit.gamma.xsts.codegeneration.c.platforms.Platforms
 import hu.bme.mit.gamma.xsts.codegeneration.c.platforms.SupportedPlatforms
+import hu.bme.mit.gamma.xsts.codegeneration.c.serializer.ExpressionSerializer
 import hu.bme.mit.gamma.xsts.codegeneration.c.serializer.VariableDeclarationSerializer
+import hu.bme.mit.gamma.xsts.model.SystemMasterMessageQueueGroup
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.transformation.util.VariableGroupRetriever
 import java.io.File
+import java.math.BigInteger
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.util.Set
 import org.eclipse.emf.common.util.URI
-import hu.bme.mit.gamma.xsts.codegeneration.c.serializer.ExpressionSerializer
+
 import static extension hu.bme.mit.gamma.xsts.codegeneration.c.util.GeneratorUtil.*
-import hu.bme.mit.gamma.xsts.model.SystemMasterMessageQueueGroup
-import java.math.BigInteger
 
 /**
  * The WrapperBuilder class implements the IStatechartCode interface and is responsible for generating the wrapper code.
  */
 class WrapperBuilder implements IStatechartCode {
+	
+	/**
+	 * Function pointer generator flag.
+	 */
+	boolean pointers;
 	
 	/**
 	 * The XSTS (Extended Symbolic Transition Systems) used for code generation.
@@ -81,10 +89,11 @@ class WrapperBuilder implements IStatechartCode {
      * 
      * @param xsts The XSTS (Extended Symbolic Transition Systems) used for wrapper code generation.
      */
-	new(XSTS xsts) {
+	new(XSTS xsts, boolean pointers) {
 		this.xsts = xsts
-		this.name = xsts.name.toFirstUpper + "Wrapper";
-		this.stName = xsts.name + "Statechart";
+		this.name = xsts.name.toFirstUpper + "Wrapper"
+		this.stName = xsts.name + "Statechart"
+		this.pointers = pointers
 		
 		/* code files */
 		this.code = new CodeModel(name);
@@ -132,7 +141,9 @@ class WrapperBuilder implements IStatechartCode {
 			typedef struct {
 				«stName» «stName.toLowerCase»;
 				«Platforms.get(platform).getStruct()»
-				«FOR variable : outputs SEPARATOR System.lineSeparator»void (*event«variable.name.toFirstUpper»)(/* TODO : parameters */);«ENDFOR»
+				«IF pointers»
+					«FOR variable : outputs SEPARATOR System.lineSeparator»void (*event«variable.name.toFirstUpper»)(«variable.declarationReference.map[variableDeclarationSerializer.serialize(it.type, false, it.name) + " " + it.name].join(', ')»);«ENDFOR»
+				«ENDIF»
 			} «name»;
 		''');
 		
@@ -210,6 +221,7 @@ class WrapperBuilder implements IStatechartCode {
 			void runCycle«name»(«name»* statechart) {
 				time«name»(statechart);
 				runCycle«stName»(&statechart->«stName.toLowerCase»);
+				«IF pointers»checkEventFiring(statechart);«ENDIF»
 			}
 		''');
 		
@@ -233,6 +245,20 @@ class WrapperBuilder implements IStatechartCode {
 			«ENDFOR»
 		''');
 		
+		if (pointers) {
+			code.addContent('''
+				void checkEventFiring(«name»* statechart) {
+					«FOR variable : outputs»
+						/* Function pointer for «variable.name» */
+						if (statechart->«stName.toLowerCase».«variable.name» && statechart->event«variable.name.toFirstUpper» != NULL) {
+							statechart->event«variable.name.toFirstUpper»(«variable.declarationReference.map["statechart->" + stName.toLowerCase + "." + it.name].join(', ')»);
+						}
+					«ENDFOR»
+				}
+			''');
+		}
+		
+		
 		/* Out Events & Parameters */
 		code.addContent('''
 		«FOR variable : outputs SEPARATOR System.lineSeparator»
@@ -242,9 +268,6 @@ class WrapperBuilder implements IStatechartCode {
 				variable.annotations.exists[it instanceof ClockVariableDeclarationAnnotation], 
 				variable.name
 			)» get«variable.name.toFirstUpper»(«name»* statechart) {
-				if (statechart->event«variable.name.toFirstUpper» != NULL) {
-					statechart->event«variable.name.toFirstUpper»(/* TODO : parameters */);
-				}
 				return statechart->«stName.toLowerCase».«variable.name»;
 			}
 		«ENDFOR»

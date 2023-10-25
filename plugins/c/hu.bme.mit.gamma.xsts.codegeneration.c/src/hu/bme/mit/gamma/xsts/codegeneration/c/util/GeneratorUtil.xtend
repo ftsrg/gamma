@@ -12,22 +12,28 @@
 
 import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression
 import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
+import hu.bme.mit.gamma.expression.model.Declaration
+import hu.bme.mit.gamma.expression.model.DeclarationReferenceAnnotation
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
+import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.model.impl.ArrayLiteralExpressionImpl
 import hu.bme.mit.gamma.expression.model.impl.ArrayTypeDefinitionImpl
+import hu.bme.mit.gamma.expression.model.impl.DeclarationReferenceAnnotationImpl
+import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.expression.util.ExpressionSerializer
 import hu.bme.mit.gamma.xsts.codegeneration.c.serializer.VariableDeclarationSerializer
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.EmptyAction
 import hu.bme.mit.gamma.xsts.model.MultiaryAction
-import hu.bme.mit.gamma.xsts.model.XSTS
-import org.eclipse.emf.ecore.EObject
-import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
-import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.xsts.model.SystemMasterMessageQueueGroup
+import hu.bme.mit.gamma.xsts.model.XSTS
+import org.eclipse.emf.common.util.EList
+import org.eclipse.emf.ecore.EObject
+import org.eclipse.emf.ecore.EcoreFactory
+import org.eclipse.emf.common.util.BasicEList
 
 class GeneratorUtil {
 	
@@ -93,6 +99,18 @@ class GeneratorUtil {
 		if (literal.operands.head instanceof ArrayLiteralExpressionImpl)
 			return '''[«literal.operands.size»]«getLiteralSize(literal.operands.head as ArrayLiteralExpression)»'''
 		return '''[«literal.operands.size»]'''
+	}
+	
+	/**
+	 * Get a list of declarations referenced by a VariableDeclaration.
+	 *
+	 * @param variable the VariableDeclaration to get declaration references for
+	 * @return a list of declarations referenced by the VariableDeclaration
+	 */
+	static def EList<Declaration> getDeclarationReference(VariableDeclaration variable) {
+		val reference = (variable.annotations.filter[it instanceof DeclarationReferenceAnnotationImpl].head as DeclarationReferenceAnnotation)
+		if (reference === null) return new BasicEList()
+		return reference.declarations
 	}
 	
 	/**

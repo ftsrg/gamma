@@ -122,7 +122,7 @@ class VariableDeclarationSerializer {
      * @return the serialized integer type as a string
      */
 	def dispatch String serialize(IntegerTypeDefinition type, boolean clock, String name) {
-		val size = (type.eContainer instanceof VariableDeclaration) ? new BigInteger((type.eContainer as VariableDeclaration).getInitialValueEvaluated(type.eContainer.eContainer as XSTS).toString) : UINT32_MAX
+		val size = (type.eContainer instanceof VariableDeclaration && type.eContainer.eContainer instanceof XSTS) ? new BigInteger((type.eContainer as VariableDeclaration).getInitialValueEvaluated(type.eContainer.eContainer as XSTS).toString) : UINT32_MAX
 		val unsigned = (size > UINT32_MAX) ? 'uint64_t' : 'uint32_t'
 		return clock ? unsigned : '''int32_t''';
 	}
