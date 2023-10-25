@@ -1,0 +1,9 @@
+import "/hu.bme.mit.gamma.tests/model/Crossroads/System/Cascade/.Crossroad-SMV.gsm"
+component Crossroad
+
+E (X (X (G [ { event prior.LightCommands.displayYellow or
+	event prior.LightCommands.displayNone} ])))
+	
+E (F (G [ { variable prior.a and variable second.a and
+	variable prior.b = 4 and variable second.b = 4 } ]))
+	

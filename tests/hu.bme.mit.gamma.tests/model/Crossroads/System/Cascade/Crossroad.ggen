@@ -101,6 +101,7 @@ verification {
 	language : nuXmv
 	file : "Crossroad-SMV.smv"
 	property-file : ".Crossroad-SMV.gpd"
+	property-file : "Crossroad-LTL.gpd"
 	test-language : java
 	optimize-model : true // Checking model optimization
 }
