@@ -1,0 +1,74 @@
+package RigelDiszpecser
+
+import "Interfaces/Interfaces.gcd"
+
+@RegionSchedule = bottom-up
+@TransitionPriority = order-based
+statechart RigelDiszpecser(TimeDataPeriodic : integer, TimeDataTimeout : integer,
+	TimeConnectionCheck : integer) [
+	port VezerloKozpontPortIn : requires Rigel
+	port VezerloKozpontPortOut : provides Rigel
+	port ObjektumKezeloPortIn : requires Rigel
+	port ObjektumKezeloPortOut : provides Rigel
+	port OrionDisconnToVk : requires OrionDisconnToVk
+	port AllObjDataSent : requires AllObjDataSent
+] {
+	var isObjOrionConnected : boolean
+	region DiszpTeljesAdatLekerdezes__teljesAdatLekerdezes {
+		initial _initialOfDiszpTeljesAdatLekerdezes___teljesAdatLekerdezes
+		state WaitForQuery_teljesAdatLekerdezes
+		state ProcessQuery_teljesAdatLekerdezes
+		state Connected_teljesAdatLekerdezes
+	}
+	@(_initialOfDiszpTeljesAdatLekerdezes___teljesAdatLekerdezes_WaitForQuery_teljesAdatLekerdezes_0)
+	transition from _initialOfDiszpTeljesAdatLekerdezes___teljesAdatLekerdezes to
+		WaitForQuery_teljesAdatLekerdezes
+	@(WaitForQuery_teljesAdatLekerdezes_ProcessQuery_teljesAdatLekerdezes_1)
+	transition from WaitForQuery_teljesAdatLekerdezes to ProcessQuery_teljesAdatLekerdezes when
+		VezerloKozpontPortIn.message_RigelMsgHeader
+		[VezerloKozpontPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgGq] / {
+		var gqBeginMsg_teljesAdatLekerdezes : RigelMsgHeader := createGqBegin();
+		raise VezerloKozpontPortOut.message_RigelMsgHeader(gqBeginMsg_teljesAdatLekerdezes);
+		isObjOrionConnected := true;
+	}
+	@(WaitForQuery_teljesAdatLekerdezes_WaitForQuery_teljesAdatLekerdezes_2)
+	transition from WaitForQuery_teljesAdatLekerdezes to WaitForQuery_teljesAdatLekerdezes when
+		VezerloKozpontPortIn.message_RigelMsgHeader
+		[VezerloKozpontPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType !=
+		RigelMsgType::RigelMsgGq]
+	@(ProcessQuery_teljesAdatLekerdezes_WaitForQuery_teljesAdatLekerdezes_3)
+	transition from ProcessQuery_teljesAdatLekerdezes to WaitForQuery_teljesAdatLekerdezes when
+		OrionDisconnToVk.OrionDisconnToVk
+	@(ProcessQuery_teljesAdatLekerdezes_Connected_teljesAdatLekerdezes_4)
+	transition from ProcessQuery_teljesAdatLekerdezes to Connected_teljesAdatLekerdezes when
+		AllObjDataSent.AllObjDataSent / {
+		var gqEndMsg_teljesAdatLekerdezes : RigelMsgHeader := createGqEnd();
+		raise VezerloKozpontPortOut.message_RigelMsgHeader(gqEndMsg_teljesAdatLekerdezes);
+	}
+	@(ProcessQuery_teljesAdatLekerdezes_WaitForQuery_teljesAdatLekerdezes_5)
+	transition from ProcessQuery_teljesAdatLekerdezes to WaitForQuery_teljesAdatLekerdezes when
+		VezerloKozpontPortIn.message_RigelMsgHeader
+	@(Connected_teljesAdatLekerdezes_ProcessQuery_teljesAdatLekerdezes_6)
+	transition from Connected_teljesAdatLekerdezes to ProcessQuery_teljesAdatLekerdezes when
+		VezerloKozpontPortIn.message_RigelMsgHeader
+		[VezerloKozpontPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgGqEnd] / {
+		var gqBeginMsg_teljesAdatLekerdezes : RigelMsgHeader := createGqBegin();
+		raise VezerloKozpontPortOut.message_RigelMsgHeader(gqBeginMsg_teljesAdatLekerdezes);
+		isObjOrionConnected := false;
+	}
+	@(Connected_teljesAdatLekerdezes_Connected_teljesAdatLekerdezes_7)
+	transition from Connected_teljesAdatLekerdezes to Connected_teljesAdatLekerdezes when
+		VezerloKozpontPortIn.message_RigelMsgHeader
+		[VezerloKozpontPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgVkAlive] / 
+		raise
+			ObjektumKezeloPortOut.message_RigelMsgHeader(VezerloKozpontPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue);
+	
+	@(Connected_teljesAdatLekerdezes_WaitForQuery_teljesAdatLekerdezes_8)
+	transition from Connected_teljesAdatLekerdezes to WaitForQuery_teljesAdatLekerdezes when
+		VezerloKozpontPortIn.message_RigelMsgHeader /
+		isObjOrionConnected := false;
+
+}

@@ -1,0 +1,17 @@
+package RigelVezerloKozpont
+import
+	"/StateMachines/VezerloKozpont/RigelVezerloKozpont.gcd"
+adapter CustomRigelVezerloKozpontAdapter(_TimeReconn : integer, _TimeConn : integer, _TimeSendAlive :
+	integer) of component RigelVezerloKozpont : RigelVezerloKozpont(_TimeReconn, _TimeConn,
+	_TimeSendAlive)
+{
+	when any / run
+	
+	queue RigelVezerloKozpontQueue (priority = 2, capacity = 1) {
+		PortIn.any
+	}
+	
+	queue RigelVezerloKozpontEnvironmentQueue (priority = 1, capacity = 1) {
+		FelugyeloPortIn.any, OrionDisconn.any, OrionConn.any
+	}
+}

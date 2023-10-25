@@ -1,0 +1,25 @@
+package global_rigel
+
+import "Interfaces/Interfaces.gcd"
+
+import "RigelSystemComponentSet.gcd"
+
+adapter RigelSystem(SchedulingTime : integer, SchedulingTimeMax : integer) of
+	component components : RigelSystemComponentSet(SchedulingTime, SchedulingTimeMax) [
+] {
+	
+	when any / run
+		
+	queue internalQueue (priority = 2, capacity = 4) {
+		vezerloKozpontPortOut.any -> diszpecserVezerloKozpontPortIn.any,
+		diszpecserVezerloKozpontPortOut.any -> vezerloKozpontPortIn.any,
+		diszpecserObjektumKezeloPortOut.any -> objektumKezeloDiszpecserPortIn.any,
+		objektumKezeloDiszpecserPortOut.any -> diszpecserObjektumKezeloPortIn.any
+	}
+	
+	queue environmentQueue (priority = 1, capacity = 1) {
+		FelugyeloPortIn.any, OrionDisconn.any, OrionConn.any,
+		AllObjDataSent.any, SendData_objektumNyilvantarto.any
+	}
+
+}
