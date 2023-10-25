@@ -12,9 +12,9 @@ package hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer
 
 import hu.bme.mit.gamma.expression.model.AndExpression
 import hu.bme.mit.gamma.expression.model.ArithmeticExpression
-import hu.bme.mit.gamma.expression.model.BooleanExpression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.FalseExpression
+import hu.bme.mit.gamma.expression.model.LogicExpression
 import hu.bme.mit.gamma.expression.model.MultiaryExpression
 import hu.bme.mit.gamma.expression.model.OrExpression
 import hu.bme.mit.gamma.expression.model.TrueExpression
@@ -812,7 +812,7 @@ class ActionOptimizer {
 	protected def void optimizeExpressions(Action action) {
 		val eObjects = action.getAllContentsOfType(EObject)
 		
-		val booleanExpressions = eObjects.filter(BooleanExpression)
+		val booleanExpressions = eObjects.filter(LogicExpression)
 		for (booleanExpression : booleanExpressions) {
 			if (booleanExpression.definitelyFalseExpression) {
 				expressionFactory.createFalseExpression.replace(booleanExpression)
