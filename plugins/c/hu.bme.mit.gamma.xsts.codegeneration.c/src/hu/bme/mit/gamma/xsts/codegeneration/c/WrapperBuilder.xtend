@@ -142,8 +142,9 @@ class WrapperBuilder implements IStatechartCode {
 				«stName» «stName.toLowerCase»;
 				«Platforms.get(platform).getStruct()»
 				«IF pointers»
-					«FOR variable : outputs SEPARATOR System.lineSeparator»void (*event«variable.name.toFirstUpper»)(«variable.declarationReference.map[variableDeclarationSerializer.serialize(it.type, false, it.name) + " " + it.name].join(', ')»);«ENDFOR»
+					«FOR variable : variableGroupRetriever.getSystemOutEventVariableGroup(xsts).variables SEPARATOR System.lineSeparator»void (*event«variable.name.toFirstUpper»)(«variable.declarationReference.map[variableDeclarationSerializer.serialize(it.type, false, it.name) + " " + it.name].join(', ')»);«ENDFOR»
 				«ENDIF»
+				uint32_t (*getElapsed)(«name»* statechart);
 			} «name»;
 		''');
 		
@@ -198,15 +199,22 @@ class WrapperBuilder implements IStatechartCode {
 		code.addContent('''
 			/* Initialize component «name» */
 			void initialize«name»(«name»* statechart) {
+				statechart->getElapsed = &getElapsed;
 				«Platforms.get(platform).getInitialization()»
 				reset«stName»(&statechart->«stName.toLowerCase»);
 				initialize«stName»(&statechart->«stName.toLowerCase»);
 				entryEvents«stName»(&statechart->«stName.toLowerCase»);
 			}
 			
+			/* Platform dependent time measurement */
+			uint32_t getElapsed(«name»* statechart) {
+				«Platforms.get(platform).getTimer()»
+				return «IPlatform.CLOCK_VARIABLE_NAME»;
+			}
+			
 			/* Calculate Timeout events */
 			void time«name»(«name»* statechart) {
-				«Platforms.get(platform).getTimer()»
+				uint32_t «IPlatform.CLOCK_VARIABLE_NAME» = statechart->getElapsed(statechart);
 				«FOR variable : variableGroupRetriever.getTimeoutGroup(xsts).variables»
 					/* Overflow detection in «variable.name» */
 					if ((«IF new BigInteger(variable.getInitialValueEvaluated(xsts).toString) > VariableDeclarationSerializer.UINT32_MAX»UINT64_MAX_VALUE«ELSE»UINT32_MAX_VALUE«ENDIF» - «IPlatform.CLOCK_VARIABLE_NAME») < statechart->«stName.toLowerCase».«variable.name») {
@@ -224,6 +232,19 @@ class WrapperBuilder implements IStatechartCode {
 				«IF pointers»checkEventFiring(statechart);«ENDIF»
 			}
 		''');
+		
+		if (pointers) {
+			code.addContent('''
+				void checkEventFiring(«name»* statechart) {
+					«FOR variable : variableGroupRetriever.getSystemOutEventVariableGroup(xsts).variables»
+						/* Function pointer for «variable.name» */
+						if (statechart->«stName.toLowerCase».«variable.name» && statechart->event«variable.name.toFirstUpper» != NULL) {
+							statechart->event«variable.name.toFirstUpper»(«variable.declarationReference.map["statechart->" + stName.toLowerCase + "." + it.name].join(', ')»);
+						}
+					«ENDFOR»
+				}
+			''');
+		}
 		
 		/* In Events & Parameters */
 		code.addContent('''
@@ -244,21 +265,7 @@ class WrapperBuilder implements IStatechartCode {
 				}
 			«ENDFOR»
 		''');
-		
-		if (pointers) {
-			code.addContent('''
-				void checkEventFiring(«name»* statechart) {
-					«FOR variable : outputs»
-						/* Function pointer for «variable.name» */
-						if (statechart->«stName.toLowerCase».«variable.name» && statechart->event«variable.name.toFirstUpper» != NULL) {
-							statechart->event«variable.name.toFirstUpper»(«variable.declarationReference.map["statechart->" + stName.toLowerCase + "." + it.name].join(', ')»);
-						}
-					«ENDFOR»
-				}
-			''');
-		}
-		
-		
+
 		/* Out Events & Parameters */
 		code.addContent('''
 		«FOR variable : outputs SEPARATOR System.lineSeparator»
