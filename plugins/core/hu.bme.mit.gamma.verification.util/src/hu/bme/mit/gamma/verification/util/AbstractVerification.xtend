@@ -51,9 +51,9 @@ abstract class AbstractVerification {
 		// Racer callable(s)
 		val callables = modelFile.loadModelAndCreateVerificationCallables(queryFile, arguments)
 		// Racer, but for only one thread
-		val racer = new ThreadRacer<Result>
+		val racer = new ThreadRacer<Result>(callables, timeout, unit)
 		//
-		var result = racer.execute(callables, timeout, unit)
+		var result = racer.execute
 		// Handle in case of timeout
 		return result.handleNull
 	}
