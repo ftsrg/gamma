@@ -13,7 +13,6 @@ package hu.bme.mit.gamma.ui.taskhandler;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.List;
-import java.util.logging.Level;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.emf.common.util.URI;
@@ -68,14 +67,14 @@ public class CodeGenerationHandler extends TaskHandler {
 		Component component = codeGeneration.getComponent();
 		String componentName = component.getName();
 		if (component instanceof StatechartDefinition statechart) {
-			logger.log(Level.INFO, "Starting single statechart code generation: " + componentName);
+			logger.info("Starting single statechart code generation: " + componentName);
 			CommandHandler singleStatechartCommandHandler = new CommandHandler();
 			singleStatechartCommandHandler.run(statechart, ecoreUtil.getFile(
 					codeGenerationResource).getParent(),
 					targetFolderUri, codeGeneration.getPackageName().get(0));
 		}
 		else {
-			logger.log(Level.INFO, "Starting composite component code generation: " + componentName);
+			logger.info("Starting composite component code generation: " + componentName);
 			ResourceSet codeGenerationResourceSet = new ResourceSetImpl();
 			codeGenerationResourceSet.getResource(component.eResource().getURI(), true);
 			loadStatechartTraces(codeGenerationResourceSet, component);
@@ -120,7 +119,7 @@ public class CodeGenerationHandler extends TaskHandler {
 				try {
 					resourceSet.getResource(URI.createPlatformResourceURI(traceUri, true), true);
 				} catch (Exception e) {
-					logger.log(Level.INFO, statechartFileName + " trace is not found. " +
+					logger.info(statechartFileName + " trace is not found. " +
 						"Wrapper is not generated for Gamma statecharts without trace.");
 				}
 			}
