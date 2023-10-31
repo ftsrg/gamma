@@ -12,6 +12,7 @@ package hu.bme.mit.gamma.ui.taskhandler;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.util.List;
 import java.util.logging.Level;
 
 import org.eclipse.core.resources.IFile;
@@ -40,23 +41,41 @@ public class CodeGenerationHandler extends TaskHandler {
 		// Setting target folder
 		setProjectLocation(codeGeneration); // Before the target folder
 		setTargetFolder(codeGeneration);
-		//
-		checkArgument(codeGeneration.getProgrammingLanguages().size() == 1, 
-				"A single programming language must be specified: " + codeGeneration.getProgrammingLanguages());
-		checkArgument(codeGeneration.getProgrammingLanguages().get(0) == ProgrammingLanguage.JAVA, 
-				"Currently only Java is supported.");
 		setCodeGeneration(codeGeneration, packageName);
-		Component component = codeGeneration.getComponent();
+		//
+		List<ProgrammingLanguage> programmingLanguages = codeGeneration.getProgrammingLanguages();
+		checkArgument(programmingLanguages.size() == 1,
+				"A single programming language must be specified: " + programmingLanguages);
+		ProgrammingLanguage programmingLanguage = programmingLanguages.get(0);
 		
-		if (component instanceof StatechartDefinition) {
-			StatechartDefinition statechart = (StatechartDefinition) component;
-			logger.log(Level.INFO, "Starting single statechart code generation: " + component.getName());
+		switch (programmingLanguage) {
+			case JAVA:
+				generateJavaCode(codeGeneration);
+				break;
+			case C:
+				generateCCode(codeGeneration);
+				break;
+			default:
+				throw new IllegalArgumentException("Not known programming language: " + programmingLanguage);
+		}
+	}
+	
+	//
+
+	protected void generateJavaCode(CodeGeneration codeGeneration) {
+		Resource codeGenerationResource = codeGeneration.eResource();
+		
+		Component component = codeGeneration.getComponent();
+		String componentName = component.getName();
+		if (component instanceof StatechartDefinition statechart) {
+			logger.log(Level.INFO, "Starting single statechart code generation: " + componentName);
 			CommandHandler singleStatechartCommandHandler = new CommandHandler();
-			singleStatechartCommandHandler.run(statechart, ecoreUtil.getFile(codeGeneration.eResource()).getParent(),
+			singleStatechartCommandHandler.run(statechart, ecoreUtil.getFile(
+					codeGenerationResource).getParent(),
 					targetFolderUri, codeGeneration.getPackageName().get(0));
 		}
 		else {
-			logger.log(Level.INFO, "Starting composite component code generation: " + component.getName());
+			logger.log(Level.INFO, "Starting composite component code generation: " + componentName);
 			ResourceSet codeGenerationResourceSet = new ResourceSetImpl();
 			codeGenerationResourceSet.getResource(component.eResource().getURI(), true);
 			loadStatechartTraces(codeGenerationResourceSet, component);
@@ -68,6 +87,12 @@ public class CodeGenerationHandler extends TaskHandler {
 			generator.dispose();
 		}
 	}
+	
+	protected void generateCCode(CodeGeneration codeGeneration) {
+		
+	}
+	
+	//
 	
 	private void setCodeGeneration(CodeGeneration codeGeneration, String packageName) {
 		checkArgument(codeGeneration.getPackageName().size() <= 1);
