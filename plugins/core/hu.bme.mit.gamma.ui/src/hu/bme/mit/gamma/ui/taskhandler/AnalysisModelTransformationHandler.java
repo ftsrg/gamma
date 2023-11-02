@@ -126,7 +126,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					transformer = new Gamma2XstsNuxmvTransformer();
 					break;
 				case OCRA: // Keep in mind that OCRA is not a model checker though
-					transformer = new Gamma2XstsNuxmvTransformer();
+					transformer = new Gamma2OcraTransformer();
 					break;
 				default:
 					throw new IllegalArgumentException(analysisLanguage + " is not supported");
