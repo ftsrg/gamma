@@ -75,7 +75,8 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 		checkArgument(analysisLanguages.contains(AnalysisLanguage.THETA) ||
 				analysisLanguages.contains(AnalysisLanguage.XSTS_UPPAAL) ||
 				analysisLanguages.contains(AnalysisLanguage.PROMELA) ||
-				analysisLanguages.contains(AnalysisLanguage.NUXMV));
+				analysisLanguages.contains(AnalysisLanguage.NUXMV),
+				analysisLanguages.get(0) + " is not supported");
 		
 		String analysisFilePath = verification.getFileName().get(0);
 		File analysisFile = super.exporeRelativeFile(verification, analysisFilePath);

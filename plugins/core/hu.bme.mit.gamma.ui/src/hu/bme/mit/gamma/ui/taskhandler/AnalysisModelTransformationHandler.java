@@ -124,7 +124,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					transformer = new Gamma2XstsNuxmvTransformer();
 					break;
 				default:
-					throw new IllegalArgumentException("Only UPPAAL and Theta are supported");
+					throw new IllegalArgumentException(analysisLanguage + " is not supported");
 			}
 			transformer.execute(transformation);
 		}

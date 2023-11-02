@@ -151,7 +151,7 @@ public class VerificationHandler extends TaskHandler {
 					propertySerializer = NuxmvPropertySerializer.INSTANCE;
 					break;
 				default:
-					throw new IllegalArgumentException("Currently only UPPAAL, Theta, Spin and nuXmv are supported");
+					throw new IllegalArgumentException(analysisLanguage + " is not supported");
 			}
 		}
 		String filePath = verification.getFileName().get(0);
