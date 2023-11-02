@@ -76,7 +76,7 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 				analysisLanguages.contains(AnalysisLanguage.XSTS_UPPAAL) ||
 				analysisLanguages.contains(AnalysisLanguage.PROMELA) ||
 				analysisLanguages.contains(AnalysisLanguage.NUXMV),
-				analysisLanguages.get(0) + " is not supported");
+				analysisLanguages.get(0) + " is not supported for slicing");
 		
 		String analysisFilePath = verification.getFileName().get(0);
 		File analysisFile = super.exporeRelativeFile(verification, analysisFilePath);

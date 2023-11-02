@@ -28,6 +28,7 @@ import org.eclipse.emf.ecore.EObject;
 import com.google.common.collect.Maps;
 
 import hu.bme.mit.gamma.composition.xsts.uppaal.transformation.Gamma2XstsUppaalTransformerSerializer;
+import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.genmodel.derivedfeatures.GenmodelDerivedFeatures;
 import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
 import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation;
@@ -44,6 +45,7 @@ import hu.bme.mit.gamma.genmodel.model.TransitionCoverage;
 import hu.bme.mit.gamma.genmodel.model.TransitionPairCoverage;
 import hu.bme.mit.gamma.genmodel.model.XstsReference;
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.TransitionMerging;
+import hu.bme.mit.gamma.ocra.transformation.api.Gamma2OcraTransformerSerializer;
 import hu.bme.mit.gamma.property.model.PropertyPackage;
 import hu.bme.mit.gamma.querygenerator.serializer.NuxmvPropertySerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.PromelaPropertySerializer;
@@ -121,6 +123,9 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					transformer = new Gamma2XstsPromelaTransformer();
 					break;
 				case NUXMV:
+					transformer = new Gamma2XstsNuxmvTransformer();
+					break;
+				case OCRA: // Keep in mind that OCRA is not a model checker though
 					transformer = new Gamma2XstsNuxmvTransformer();
 					break;
 				default:
@@ -787,6 +792,32 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 		protected String getQueryFileExtension() {
 			return GammaFileNamer.PROMELA_QUERY_EXTENSION;
 		}
+	}
+	
+	class Gamma2OcraTransformer extends AnalysisModelTransformer {
+		
+		public void execute(AnalysisModelTransformation transformation) throws IOException {
+			ComponentReference componentReference = (ComponentReference) transformation.getModel();
+			List<Expression> arguments = componentReference.getArguments();
+			Component component = componentReference.getComponent();
+			
+			String fileName = transformation.getFileName().get(0);
+			
+			Gamma2OcraTransformerSerializer gamma2OcraTransformer =
+					new Gamma2OcraTransformerSerializer(component, arguments, targetFolderUri, fileName);
+			gamma2OcraTransformer.execute();
+		}
+
+		@Override
+		protected PropertySerializer getPropertySerializer() {
+			return null; // Invalid in this case
+		}
+
+		@Override
+		protected String getQueryFileExtension() {
+			return null; // Invalid in this case
+		}
+	
 	}
 	
 }
