@@ -421,4 +421,8 @@ class StatechartToLowlevelTransformer {
 		return lowlevelGuardList.wrapIntoMultiaryExpression(createAndExpression)
 	}
 	
+	def getTrace(){
+		return trace;
+	}
+	
 }
