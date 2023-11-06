@@ -11,6 +11,7 @@
 package hu.bme.mit.gamma.theta.verification
 
 import hu.bme.mit.gamma.verification.util.AbstractVerification
+import hu.bme.mit.gamma.querygenerator.serializer.ThetaPropertySerializer
 
 class ThetaVerification extends AbstractVerification {
 	// Singleton
@@ -39,6 +40,10 @@ class ThetaVerification extends AbstractVerification {
 	
 	protected override String getArgumentPattern() {
 		return "(--[a-z]+( )[_0-9A-Z]+( )*)*"
+	}
+	
+	override protected createPropertySerializer() {
+		return ThetaPropertySerializer.INSTANCE
 	}
 	
 }

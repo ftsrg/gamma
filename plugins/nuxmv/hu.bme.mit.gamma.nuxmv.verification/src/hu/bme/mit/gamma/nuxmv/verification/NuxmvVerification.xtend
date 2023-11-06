@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.nuxmv.verification
 
+import hu.bme.mit.gamma.querygenerator.serializer.NuxmvPropertySerializer
 import hu.bme.mit.gamma.verification.util.AbstractVerification
 import java.io.File
 
@@ -46,6 +47,10 @@ class NuxmvVerification extends AbstractVerification {
 	
 	override protected getArgumentPattern() {
 		return ".*" // TODO
+	}
+	
+	override protected createPropertySerializer() {
+		return NuxmvPropertySerializer.INSTANCE
 	}
 	
 }
