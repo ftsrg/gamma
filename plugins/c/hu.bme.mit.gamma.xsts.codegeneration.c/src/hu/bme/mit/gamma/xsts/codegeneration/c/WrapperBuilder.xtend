@@ -152,7 +152,7 @@ class WrapperBuilder implements IStatechartCode {
 				«IF pointers»
 					«FOR variable : variableGroupRetriever.getSystemOutEventVariableGroup(xsts).variables SEPARATOR System.lineSeparator»void (*event«variable.name.toFirstUpper»)(«variable.declarationReference.map[variableDeclarationSerializer.serialize(it.type, false, it.name) + " " + it.name].join(', ')»);«ENDFOR»
 				«ENDIF»
-				uint32_t (*getElapsed)(«name»* statechart);
+				uint32_t (*getElapsed)(struct «name»*);
 			} «name»;
 		''');
 		
@@ -196,6 +196,12 @@ class WrapperBuilder implements IStatechartCode {
 		
 		/* Initialize wrapper & Run cycle*/
 		code.addContent('''
+			/* Platform dependent time measurement */
+			uint32_t getElapsed(«name»* statechart) {
+				«Platforms.get(platform).getTimer()»
+				return «IPlatform.CLOCK_VARIABLE_NAME»;
+			}
+						
 			/* Initialize component «name» */
 			void initialize«name»(«name»* statechart) {
 				statechart->getElapsed = &getElapsed;
@@ -203,12 +209,6 @@ class WrapperBuilder implements IStatechartCode {
 				reset«stName»(&statechart->«stName.toLowerCase»);
 				initialize«stName»(&statechart->«stName.toLowerCase»);
 				entryEvents«stName»(&statechart->«stName.toLowerCase»);
-			}
-			
-			/* Platform dependent time measurement */
-			uint32_t getElapsed(«name»* statechart) {
-				«Platforms.get(platform).getTimer()»
-				return «IPlatform.CLOCK_VARIABLE_NAME»;
 			}
 			
 			/* Calculate Timeout events */
@@ -222,13 +222,6 @@ class WrapperBuilder implements IStatechartCode {
 					/* Add elapsed time to timeout variable «variable.name» */
 					statechart->«stName.toLowerCase».«variable.name» += «IPlatform.CLOCK_VARIABLE_NAME»;
 				«ENDFOR»
-			}
-			
-			/* Run cycle of component «name» */
-			void runCycle«name»(«name»* statechart) {
-				time«name»(statechart);
-				runCycle«stName»(&statechart->«stName.toLowerCase»);
-				«IF pointers»checkEventFiring(statechart);«ENDIF»
 			}
 		''');
 		
@@ -244,6 +237,15 @@ class WrapperBuilder implements IStatechartCode {
 				}
 			''');
 		}
+		
+		code.addContent('''
+		/* Run cycle of component «name» */
+		void runCycle«name»(«name»* statechart) {
+			time«name»(statechart);
+			runCycle«stName»(&statechart->«stName.toLowerCase»);
+			«IF pointers»checkEventFiring(statechart);«ENDIF»
+		}
+		''')
 		
 		code.addContent('''
 			«FOR port : component.ports SEPARATOR System.lineSeparator»
