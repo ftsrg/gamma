@@ -11,9 +11,8 @@
 package hu.bme.mit.gamma.xsts.codegeneration.c
 
 import hu.bme.mit.gamma.expression.model.ClockVariableDeclarationAnnotation
-import hu.bme.mit.gamma.expression.model.DeclarationReferenceAnnotation
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
-import hu.bme.mit.gamma.expression.model.impl.DeclarationReferenceAnnotationImpl
+import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.xsts.codegeneration.c.model.CodeModel
 import hu.bme.mit.gamma.xsts.codegeneration.c.model.HeaderModel
 import hu.bme.mit.gamma.xsts.codegeneration.c.platforms.IPlatform
@@ -31,7 +30,11 @@ import java.nio.file.Paths
 import java.util.Set
 import org.eclipse.emf.common.util.URI
 
+import static extension hu.bme.mit.gamma.xsts.transformation.util.LowlevelNamings.*
+import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.codegeneration.c.util.GeneratorUtil.*
+import hu.bme.mit.gamma.statechart.composite.CompositeComponent
+import hu.bme.mit.gamma.statechart.interface_.RealizationMode
 
 /**
  * The WrapperBuilder class implements the IStatechartCode interface and is responsible for generating the wrapper code.
@@ -64,6 +67,10 @@ class WrapperBuilder implements IStatechartCode {
 	 * The header model for generating wrapper code.
  	 */
 	HeaderModel header;
+	/**
+	 * The Gamma component
+	 */
+	Component component;
 	
 	/**
 	 * The supported platform for code generation.
@@ -89,11 +96,12 @@ class WrapperBuilder implements IStatechartCode {
      * 
      * @param xsts The XSTS (Extended Symbolic Transition Systems) used for wrapper code generation.
      */
-	new(XSTS xsts, boolean pointers) {
+	new(Component component, XSTS xsts, boolean pointers) {
 		this.xsts = xsts
 		this.name = xsts.name.toFirstUpper + "Wrapper"
 		this.stName = xsts.name + "Statechart"
 		this.pointers = pointers
+		this.component = component
 		
 		/* code files */
 		this.code = new CodeModel(name);
@@ -158,29 +166,20 @@ class WrapperBuilder implements IStatechartCode {
 			void runCycle«name»(«name»* statechart);
 		''');
 		
-		/* Setter declarations */
 		header.addContent('''
-			«FOR variable : inputs»
-				/* Setter for «variable.name.toFirstUpper» */
-				void set«variable.name.toFirstUpper»(«name»* statechart, «variableDeclarationSerializer.serialize(
-					variable.type, 
-					variable.annotations.exists[it instanceof ClockVariableDeclarationAnnotation], 
-					variable.name
-				)» value);
+			«FOR port : component.ports»
+				«FOR event : port.interfaceRealization.interface.events»
+					«IF port.interfaceRealization.realizationMode == RealizationMode.PROVIDED»
+						/* Out event «event.event.name» at port «port.name» */
+						bool «event.event.getOutputName(port)»(«name»* statechart);
+					«ELSE»
+						/* In event «event.event.name» at port «port.name» */
+						void «event.event.getInputName(port)»(«name»* statechart, bool value);
+					«ENDIF»
+				«ENDFOR»
 			«ENDFOR»
-		''');
-		
-		/* Getter declarations */
-		header.addContent('''
-		«FOR variable : outputs»
-			/* Getter for «variable.name.toFirstUpper» */
-			«variableDeclarationSerializer.serialize(
-				variable.type, 
-				variable.annotations.exists[it instanceof ClockVariableDeclarationAnnotation], 
-				variable.name
-			)» get«variable.name.toFirstUpper»(«name»* statechart);
-		«ENDFOR»
-		''');
+		''')
+
 	}
 	
 	/**
@@ -246,39 +245,23 @@ class WrapperBuilder implements IStatechartCode {
 			''');
 		}
 		
-		/* In Events & Parameters */
 		code.addContent('''
-			«FOR variable : inputs SEPARATOR System.lineSeparator»
-				/* Setter for «variable.name.toFirstUpper» */
-				void set«variable.name.toFirstUpper»(«name»* statechart, «variableDeclarationSerializer.serialize(
-					variable.type, 
-					variable.annotations.exists[it instanceof ClockVariableDeclarationAnnotation], 
-					variable.name
-				)» value) {
-					«IF xsts.isAsync»
-						«FOR queue : xsts.variableGroups.filter[it.annotation instanceof SystemMasterMessageQueueGroup].head.variables»
-							statechart->«stName.toLowerCase».«queue.name»[0] = 0; /* TODO : event id */
-						«ENDFOR»
+			«FOR port : component.ports SEPARATOR System.lineSeparator»
+				«FOR event : port.interfaceRealization.interface.events SEPARATOR System.lineSeparator»
+					«IF port.interfaceRealization.realizationMode == RealizationMode.PROVIDED»
+						/* Out event «event.event.name» at port «port.name» */
+						bool «event.event.getOutputName(port)»(«name»* statechart) {
+							return statechart->«stName.toLowerCase».«component.getBindingByCompositeSystemPort(port.name).instancePortReference.port.name»_«event.event.name»_Out_«component.getBindingByCompositeSystemPort(port.name).instancePortReference.instance.name»;
+						}
 					«ELSE»
-						statechart->«stName.toLowerCase».«variable.name» = value;
+						/* In event «event.event.name» at port «port.name» */
+						void «event.event.getInputName(port)»(«name»* statechart, bool value) {
+							statechart->«stName.toLowerCase».«component.getBindingByCompositeSystemPort(port.name).instancePortReference.port.name»_«event.event.name»_In_«component.getBindingByCompositeSystemPort(port.name).instancePortReference.instance.name» = value;
+						}
 					«ENDIF»
-				}
+				«ENDFOR»
 			«ENDFOR»
-		''');
-
-		/* Out Events & Parameters */
-		code.addContent('''
-		«FOR variable : outputs SEPARATOR System.lineSeparator»
-			/* Getter for «variable.name.toFirstUpper» */
-			«variableDeclarationSerializer.serialize(
-				variable.type, 
-				variable.annotations.exists[it instanceof ClockVariableDeclarationAnnotation], 
-				variable.name
-			)» get«variable.name.toFirstUpper»(«name»* statechart) {
-				return statechart->«stName.toLowerCase».«variable.name»;
-			}
-		«ENDFOR»
-		''');
+		''')
 	}
 	
 	/**

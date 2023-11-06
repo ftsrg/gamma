@@ -22,6 +22,7 @@ import java.nio.file.Paths
 import org.eclipse.emf.common.util.URI
 
 import static extension hu.bme.mit.gamma.xsts.codegeneration.c.util.GeneratorUtil.*
+import hu.bme.mit.gamma.statechart.interface_.Component
 
 class HavocBuilder implements IStatechartCode {
 	/**
@@ -66,7 +67,7 @@ class HavocBuilder implements IStatechartCode {
      * 
      * @param xsts the XSTS (Extended Symbolic Transition Systems) used for code generation
      */
-	new(XSTS xsts) {
+	new(Component component, XSTS xsts) {
 		this.xsts = xsts
 		this.name = xsts.name.toFirstUpper + "Havoc"
 		

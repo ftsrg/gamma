@@ -34,6 +34,9 @@ import org.eclipse.emf.common.util.EList
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EcoreFactory
 import org.eclipse.emf.common.util.BasicEList
+import hu.bme.mit.gamma.statechart.composite.PortBinding
+import hu.bme.mit.gamma.statechart.interface_.Component
+import hu.bme.mit.gamma.statechart.composite.CompositeComponent
 
 class GeneratorUtil {
 	
@@ -170,6 +173,12 @@ class GeneratorUtil {
 			if (result !== null) return result
 		}
 		return result
+	}
+	
+	static def PortBinding getBindingByCompositeSystemPort(Component component, String name) {
+		if (!(component instanceof CompositeComponent))
+			return null
+		return (component as CompositeComponent).portBindings.filter[it.compositeSystemPort.name == name].head
 	}
 	
 }

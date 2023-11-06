@@ -28,6 +28,7 @@ import java.util.Set
 import org.eclipse.emf.common.util.URI
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
+import hu.bme.mit.gamma.statechart.interface_.Component
 
 /**
  * The {@code CodeBuilder} class implements the {@code IStatechartCode} interface and is responsible for generating C code from an XSTS model.
@@ -86,7 +87,7 @@ class CodeBuilder implements IStatechartCode {
      * 
      * @param xsts the XSTS (Extended Symbolic Transition Systems) used for code generation
      */
-	new(XSTS xsts) {
+	new(Component component, XSTS xsts) {
 		this.xsts = xsts;
 		this.name = xsts.name.toFirstUpper;
 		this.stName = name + "Statechart";

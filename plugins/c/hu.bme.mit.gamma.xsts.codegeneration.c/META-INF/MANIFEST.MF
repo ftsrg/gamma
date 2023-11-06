@@ -16,4 +16,5 @@ Require-Bundle: com.google.guava,
  hu.bme.mit.gamma.statechart.model,
  hu.bme.mit.gamma.xsts.transformation.util
 Export-Package: hu.bme.mit.gamma.xsts.codegeneration.c,
- hu.bme.mit.gamma.xsts.codegeneration.c.platforms
+ hu.bme.mit.gamma.xsts.codegeneration.c.platforms,
+ hu.bme.mit.gamma.xsts.codegeneration.c.serializer
