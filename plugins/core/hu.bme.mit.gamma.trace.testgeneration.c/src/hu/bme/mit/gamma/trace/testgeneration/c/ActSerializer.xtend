@@ -18,7 +18,7 @@ class ActSerializer {
 	}
 	
 	def dispatch String serialize(RaiseEventAct act, String name) {
-		return '''«act.port.name»_«act.event.name»_In(&statechart, true);'''
+		return '''«act.port.name»_«act.event.name»_In(&statechart, true«FOR param : act.arguments», «expressionSerializer.serialize(param)»«ENDFOR»);'''
 	}
 	
 	def dispatch String serialize(TimeElapse act, String name) {

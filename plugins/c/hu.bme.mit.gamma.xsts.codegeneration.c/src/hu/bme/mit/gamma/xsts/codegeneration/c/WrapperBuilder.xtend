@@ -146,7 +146,7 @@ class WrapperBuilder implements IStatechartCode {
 				«stName» «stName.toLowerCase»;
 				«Platforms.get(platform).getStruct()»
 				«IF pointers»
-					«FOR variable : variableGroupRetriever.getSystemOutEventVariableGroup(xsts).variables SEPARATOR System.lineSeparator»void (*event«variable.name.toFirstUpper»)(«variable.declarationReference.map[variableDeclarationSerializer.serialize(it.type, false, it.name) + " " + it.name].join(', ')»);«ENDFOR»
+					«FOR variable : variableGroupRetriever.getSystemOutEventVariableGroup(xsts).variables SEPARATOR System.lineSeparator»void (*event«variable.name.toFirstUpper»)(«variable.declarationReference.map[variableDeclarationSerializer.serialize(it.type, false, it.name)].join(', ')»);«ENDFOR»
 				«ENDIF»
 				uint32_t (*getElapsed)(struct «name»*);
 			} «name»;
@@ -254,7 +254,13 @@ class WrapperBuilder implements IStatechartCode {
 					«ELSE»
 						/* In event «event.event.name» at port «port.name» */
 						void «event.event.getInputName(port)»(«name»* statechart, bool value«FOR param : event.event.parameterDeclarations», «variableDeclarationSerializer.serialize(param.type, false, param.name)» «param.name»«ENDFOR») {
+							«IF xsts.async»
+								/* MESSAGE QUEUE EVENT */
+							«ENDIF»
 							statechart->«stName.toLowerCase».«component.getBindingByCompositeSystemPort(port.name).instancePortReference.port.name»_«event.event.name»_In_«component.getBindingByCompositeSystemPort(port.name).instancePortReference.instance.name» = value;
+							«FOR param : event.event.parameterDeclarations»
+								statechart->«stName.toLowerCase».«component.getBindingByCompositeSystemPort(port.name).instancePortReference.port.name»_«event.event.name»_In_«param.name»_«component.getBindingByCompositeSystemPort(port.name).instancePortReference.instance.name» = «param.name»
+							«ENDFOR»
 						}
 					«ENDIF»
 				«ENDFOR»
