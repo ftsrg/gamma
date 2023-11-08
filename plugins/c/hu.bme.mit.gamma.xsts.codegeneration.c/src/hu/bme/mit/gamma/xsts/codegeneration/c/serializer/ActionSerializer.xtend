@@ -29,6 +29,7 @@ import hu.bme.mit.gamma.xsts.model.XSTS
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
+import hu.bme.mit.gamma.xsts.model.AssumeAction
 
 /**
  * This class provides a serializer for actions in XSTS models.
@@ -181,5 +182,16 @@ class ActionSerializer {
 				«action.action.serialize»
 			}'''
 	}
+	
+	/**
+	 * Serializes a AssumeAction to its corresponding code representation.
+	 *
+	 * @param action the AssumeAction to be serialized
+	 * @return a serialized representation of the AssumeAction
+	 */
+	def dispatch CharSequence serialize(AssumeAction action) {
+		return '''// assume(«expressionSerializer.serialize(action.assumption)»)'''
+	}
+	
 	
 }
