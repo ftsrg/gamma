@@ -10,9 +10,9 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.xsts.codegeneration.c
 
-import hu.bme.mit.gamma.expression.model.ClockVariableDeclarationAnnotation
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.interface_.Component
+import hu.bme.mit.gamma.statechart.interface_.RealizationMode
 import hu.bme.mit.gamma.xsts.codegeneration.c.model.CodeModel
 import hu.bme.mit.gamma.xsts.codegeneration.c.model.HeaderModel
 import hu.bme.mit.gamma.xsts.codegeneration.c.platforms.IPlatform
@@ -20,7 +20,6 @@ import hu.bme.mit.gamma.xsts.codegeneration.c.platforms.Platforms
 import hu.bme.mit.gamma.xsts.codegeneration.c.platforms.SupportedPlatforms
 import hu.bme.mit.gamma.xsts.codegeneration.c.serializer.ExpressionSerializer
 import hu.bme.mit.gamma.xsts.codegeneration.c.serializer.VariableDeclarationSerializer
-import hu.bme.mit.gamma.xsts.model.SystemMasterMessageQueueGroup
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.transformation.util.VariableGroupRetriever
 import java.io.File
@@ -30,11 +29,8 @@ import java.nio.file.Paths
 import java.util.Set
 import org.eclipse.emf.common.util.URI
 
-import static extension hu.bme.mit.gamma.xsts.transformation.util.LowlevelNamings.*
-import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.codegeneration.c.util.GeneratorUtil.*
-import hu.bme.mit.gamma.statechart.composite.CompositeComponent
-import hu.bme.mit.gamma.statechart.interface_.RealizationMode
+import static extension hu.bme.mit.gamma.xsts.transformation.util.LowlevelNamings.*
 
 /**
  * The WrapperBuilder class implements the IStatechartCode interface and is responsible for generating the wrapper code.
@@ -174,7 +170,7 @@ class WrapperBuilder implements IStatechartCode {
 						bool «event.event.getOutputName(port)»(«name»* statechart);
 					«ELSE»
 						/* In event «event.event.name» at port «port.name» */
-						void «event.event.getInputName(port)»(«name»* statechart, bool value);
+						void «event.event.getInputName(port)»(«name»* statechart, bool value«FOR param : event.event.parameterDeclarations», «variableDeclarationSerializer.serialize(param.type, false, param.name)» «param.name»«ENDFOR»);
 					«ENDIF»
 				«ENDFOR»
 			«ENDFOR»
@@ -201,7 +197,7 @@ class WrapperBuilder implements IStatechartCode {
 				«Platforms.get(platform).getTimer()»
 				return «IPlatform.CLOCK_VARIABLE_NAME»;
 			}
-						
+			
 			/* Initialize component «name» */
 			void initialize«name»(«name»* statechart) {
 				statechart->getElapsed = &getElapsed;
@@ -257,7 +253,7 @@ class WrapperBuilder implements IStatechartCode {
 						}
 					«ELSE»
 						/* In event «event.event.name» at port «port.name» */
-						void «event.event.getInputName(port)»(«name»* statechart, bool value) {
+						void «event.event.getInputName(port)»(«name»* statechart, bool value«FOR param : event.event.parameterDeclarations», «variableDeclarationSerializer.serialize(param.type, false, param.name)» «param.name»«ENDFOR») {
 							statechart->«stName.toLowerCase».«component.getBindingByCompositeSystemPort(port.name).instancePortReference.port.name»_«event.event.name»_In_«component.getBindingByCompositeSystemPort(port.name).instancePortReference.instance.name» = value;
 						}
 					«ENDIF»
