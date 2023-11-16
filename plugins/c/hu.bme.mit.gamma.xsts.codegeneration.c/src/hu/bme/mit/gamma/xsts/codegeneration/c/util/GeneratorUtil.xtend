@@ -42,6 +42,7 @@ import org.eclipse.emf.common.util.BasicEList
 import org.eclipse.emf.common.util.EList
 import org.eclipse.emf.ecore.EObject
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
+import hu.bme.mit.gamma.statechart.interface_.Port
 
 class GeneratorUtil {
 	
@@ -185,6 +186,17 @@ class GeneratorUtil {
 		if (!(component instanceof CompositeComponent))
 			return null
 		return (component as CompositeComponent).portBindings.filter[it.compositeSystemPort.name == name].head
+	}
+	
+	static def String getRealization(Port port) {
+		switch(port.interfaceRealization.realizationMode) {
+		case PROVIDED:
+			return 'Out'
+		case REQUIRED:
+			return 'In'
+		default:
+			return 'In'
+		}
 	}
 	
 	// Getting conditions from a non deterministic action point of view

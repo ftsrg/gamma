@@ -21,7 +21,7 @@ class ExpressionSerializer {
 	}
 	
 	def dispatch String serialize(RaiseEventAct expression, String name) {
-		return '''«expression.port.name»_«expression.event.name»_Out(&statechart)'''
+		return '''«expression.port.name»_«expression.event.name»_«expression.port.realization»(&statechart)'''
 	}
 	
 	def dispatch String serialize(NotExpression expression, String name) {
@@ -33,9 +33,9 @@ class ExpressionSerializer {
 	}
 	
 	def dispatch String serialize(ComponentInstanceStateReferenceExpression expression, String name) {
-		val state_name = expression.region.name.toLowerCase + "_"+ expression.instance.componentInstance.name.toLowerCase
+		val state_name = expression.region.name + "_"+ expression.instance.componentInstance.name
 		val state_type = expression.region.name.toLowerCase + "_"+ expression.instance.componentInstance.derivedType.name.toLowerCase
-		return '''(statechart.«name.toLowerCase»statechart.«state_name» == «expression.state.name»_«state_type»)'''
+		return '''(statechart.«name.toLowerCase»statechart.«state_name.toFirstLower» == «expression.state.name»_«state_type»)'''
 	}
 	
 	def dispatch String serialize(ComponentInstanceVariableReferenceExpression expression, String name) {

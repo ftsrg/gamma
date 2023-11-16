@@ -34,7 +34,7 @@ class ActSerializer {
 	}
 	
 	def dispatch String serialize(AssignmentAct act, String name) {
-		return '''/* UNHANDLED TYPE : «act.lhs» «act.rhs» */'''
+		return '''«expressionSerializer.serialize(act.lhs)» = «expressionSerializer.serialize(act.rhs)»;'''
 	}
 	
 	def dispatch String serialize(Reset act, String name) {

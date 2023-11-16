@@ -28,6 +28,7 @@ import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
 import static extension hu.bme.mit.gamma.xsts.codegeneration.c.util.GeneratorUtil.*
 import hu.bme.mit.gamma.xsts.model.XSTS
 import java.math.BigInteger
+import hu.bme.mit.gamma.expression.model.VoidTypeDefinition
 
 /**
  * Serializer for variable declarations.
@@ -137,6 +138,18 @@ class VariableDeclarationSerializer {
      */
 	def dispatch String serialize(DecimalTypeDefinition type, boolean clock, String name) {
 		return '''float''';
+	}
+	
+	/**
+     * Serializes the VoidTypeDefinition object as 'void'.
+     * 
+     * @param type the VoidTypeDefinition object to serialize
+     * @param clock true if the variable is being used in timeout events
+     * @param name the name of the variable declaration
+     * @return the serialized void type as a string
+     */
+	def dispatch String serialize(VoidTypeDefinition type, boolean clock, String name) {
+		return '''void''';
 	}
 	
 	/**

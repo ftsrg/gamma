@@ -1,14 +1,14 @@
 package hu.bme.mit.gamma.trace.testgeneration.c
 
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
+import hu.bme.mit.gamma.trace.model.impl.TimeElapseImpl
+import hu.bme.mit.gamma.util.FileUtil
+import hu.bme.mit.gamma.xsts.codegeneration.c.serializer.VariableDeclarationSerializer
 import java.io.File
-import org.eclipse.emf.common.util.URI
 import java.nio.file.Files
 import java.nio.file.Paths
-import hu.bme.mit.gamma.util.FileUtil
-import hu.bme.mit.gamma.trace.model.RaiseEventAct
-import hu.bme.mit.gamma.trace.model.impl.TimeElapseImpl
 import java.util.List
+import org.eclipse.emf.common.util.URI
 
 class TestGenerator {
 	
@@ -19,6 +19,7 @@ class TestGenerator {
 	
 	val ActSerializer actSerializer = new ActSerializer
 	val ExpressionSerializer expressionSerializer = new ExpressionSerializer
+	val VariableDeclarationSerializer variableDeclarationSerializer = VariableDeclarationSerializer.INSTANCE
 	
 	new(ExecutionTrace trace, URI out) {
 		this.trace = trace
@@ -40,6 +41,9 @@ class TestGenerator {
 			/* The component under test */
 			«trace.component.name.toFirstUpper»Wrapper statechart;
 			
+			«IF trace.variableDeclarations.size > 0»/* Global declarations */«ENDIF»
+			«FOR declaration : trace.variableDeclarations SEPARATOR System.lineSeparator»«variableDeclarationSerializer.serialize(declaration)»«ENDFOR»
+			
 			«FOR timer : timers.toSet SEPARATOR System.lineSeparator»
 				uint32_t getElapsed«timer»(«trace.component.name.toFirstUpper»Wrapper* statechart) {
 					return «timer»U;
@@ -47,7 +51,10 @@ class TestGenerator {
 			«ENDFOR»
 			
 			void setUp(void) {
-				/* Empty  */
+				«IF trace.variableDeclarations.filter[it.expression !== null].size == 0»/* Empty */«ENDIF»
+				«FOR declaration : trace.variableDeclarations.filter[it.expression !== null]»
+					«declaration.name» = «expressionSerializer.serialize(declaration.expression, declaration.name)»;
+				«ENDFOR»
 			}
 			
 			«FOR index : 0 ..< trace.steps.size SEPARATOR System.lineSeparator»
