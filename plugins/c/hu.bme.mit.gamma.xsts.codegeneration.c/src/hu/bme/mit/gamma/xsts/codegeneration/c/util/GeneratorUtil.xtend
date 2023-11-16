@@ -10,6 +10,7 @@
  ********************************************************************************/
  package hu.bme.mit.gamma.xsts.codegeneration.c.util
 
+import hu.bme.mit.gamma.action.model.Action
 import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression
 import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
 import hu.bme.mit.gamma.expression.model.Declaration
@@ -24,22 +25,27 @@ import hu.bme.mit.gamma.expression.model.impl.ArrayTypeDefinitionImpl
 import hu.bme.mit.gamma.expression.model.impl.DeclarationReferenceAnnotationImpl
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.expression.util.ExpressionSerializer
-import hu.bme.mit.gamma.xsts.codegeneration.c.serializer.VariableDeclarationSerializer
-import hu.bme.mit.gamma.xsts.model.AssignmentAction
-import hu.bme.mit.gamma.xsts.model.EmptyAction
-import hu.bme.mit.gamma.xsts.model.MultiaryAction
-import hu.bme.mit.gamma.xsts.model.SystemMasterMessageQueueGroup
-import hu.bme.mit.gamma.xsts.model.XSTS
-import org.eclipse.emf.common.util.EList
-import org.eclipse.emf.ecore.EObject
-import org.eclipse.emf.ecore.EcoreFactory
-import org.eclipse.emf.common.util.BasicEList
+import hu.bme.mit.gamma.statechart.composite.CompositeComponent
 import hu.bme.mit.gamma.statechart.composite.PortBinding
 import hu.bme.mit.gamma.statechart.interface_.Component
-import hu.bme.mit.gamma.statechart.composite.CompositeComponent
+import hu.bme.mit.gamma.xsts.codegeneration.c.serializer.VariableDeclarationSerializer
+import hu.bme.mit.gamma.xsts.model.AssignmentAction
+import hu.bme.mit.gamma.xsts.model.AssumeAction
+import hu.bme.mit.gamma.xsts.model.CompositeAction
+import hu.bme.mit.gamma.xsts.model.EmptyAction
+import hu.bme.mit.gamma.xsts.model.MultiaryAction
+import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
+import hu.bme.mit.gamma.xsts.model.SequentialAction
+import hu.bme.mit.gamma.xsts.model.SystemMasterMessageQueueGroup
+import hu.bme.mit.gamma.xsts.model.XSTS
+import org.eclipse.emf.common.util.BasicEList
+import org.eclipse.emf.common.util.EList
+import org.eclipse.emf.ecore.EObject
+import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 
 class GeneratorUtil {
 	
+	static val extension ExpressionModelFactory factory = ExpressionModelFactory.eINSTANCE;
 	static val extension ExpressionEvaluator expressionEvaluator = ExpressionEvaluator.INSTANCE
 	static val extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE;
 	static val extension VariableDeclarationSerializer variableDeclarationSerializer = VariableDeclarationSerializer.INSTANCE;
@@ -179,6 +185,42 @@ class GeneratorUtil {
 		if (!(component instanceof CompositeComponent))
 			return null
 		return (component as CompositeComponent).portBindings.filter[it.compositeSystemPort.name == name].head
+	}
+	
+	// Getting conditions from a non deterministic action point of view
+	
+	static def dispatch Expression getCondition(Action action) {
+		return createTrueExpression
+	}
+	
+	static def dispatch Expression getCondition(SequentialAction action) {
+		val xStsSubactions = action.actions
+		val firstXStsSubaction = xStsSubactions.head
+		if (firstXStsSubaction instanceof AssumeAction) {
+			return firstXStsSubaction.condition
+		}
+		val xStsCompositeSubactions = xStsSubactions.filter(CompositeAction)
+		if (xStsCompositeSubactions.empty) {
+			return createTrueExpression
+		}
+		return createAndExpression => [
+			for (xStsSubaction : action.actions) {
+				it.operands += xStsSubaction.condition
+			}
+		]
+	}
+	
+	// Should not be present, but there are NonDeterministicActions inside NonDeterministicAction
+	static def dispatch Expression getCondition(NonDeterministicAction action) {
+		return createOrExpression => [
+			for (xStsSubaction : action.actions) {
+				it.operands += xStsSubaction.condition
+			}
+		]
+	}
+	
+	static def dispatch Expression getCondition(AssumeAction action) {
+		return action.assumption
 	}
 	
 }

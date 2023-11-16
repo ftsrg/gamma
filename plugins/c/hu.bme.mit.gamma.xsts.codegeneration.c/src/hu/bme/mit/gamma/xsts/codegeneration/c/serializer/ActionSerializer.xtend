@@ -29,6 +29,7 @@ import hu.bme.mit.gamma.xsts.model.XSTS
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
+import static extension hu.bme.mit.gamma.xsts.codegeneration.c.util.GeneratorUtil.*
 import hu.bme.mit.gamma.xsts.model.AssumeAction
 
 /**
@@ -116,7 +117,11 @@ class ActionSerializer {
 	 * @return a CharSequence that represents the serialized NonDeterministicAction
 	 */
 	def dispatch CharSequence serialize(NonDeterministicAction action) {
-		return '''«FOR xstsSubaction : action.actions SEPARATOR System.lineSeparator»«xstsSubaction.serialize»«ENDFOR»''';
+		return '''«FOR xStsSubaction : action.actions.filter[!it.isNullOrEmptyAction] SEPARATOR ' else ' »
+			if («expressionSerializer.serialize(xStsSubaction.condition)») {
+				«xStsSubaction.serialize»
+			}
+		«ENDFOR»'''
 	}
 	
 	/**
@@ -184,13 +189,13 @@ class ActionSerializer {
 	}
 	
 	/**
-	 * Serializes a AssumeAction to its corresponding code representation.
+	 * Serializes a AssumeAction to its corresponding empty code representation.
 	 *
 	 * @param action the AssumeAction to be serialized
-	 * @return a serialized representation of the AssumeAction
+	 * @return a serialized representation of the AssumeAction which is not serialized to C
 	 */
 	def dispatch CharSequence serialize(AssumeAction action) {
-		return '''// assume(«expressionSerializer.serialize(action.assumption)»)'''
+		return ''''''
 	}
 	
 	
