@@ -11,6 +11,7 @@
 package hu.bme.mit.gamma.xsts.codegeneration.c
 
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
+import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.RealizationMode
 import hu.bme.mit.gamma.xsts.codegeneration.c.model.CodeModel
@@ -29,11 +30,14 @@ import java.nio.file.Paths
 import java.util.Set
 import org.eclipse.emf.common.util.URI
 
+import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.codegeneration.c.util.GeneratorUtil.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.LowlevelNamings.*
-import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
-import hu.bme.mit.gamma.statechart.composite.AsynchronousComponent
-import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance
+import hu.bme.mit.gamma.statechart.interface_.Port
+import hu.bme.mit.gamma.statechart.interface_.Event
+import com.google.common.collect.Maps
+import java.util.Map
+import java.util.LinkedHashMap
 
 /**
  * The WrapperBuilder class implements the IStatechartCode interface and is responsible for generating the wrapper code.
@@ -144,6 +148,9 @@ class WrapperBuilder implements IStatechartCode {
 		
 		/* Wrapper Struct */
 		header.addContent('''
+			/* Forward declaration of «stName» */
+			typedef struct «stName»;
+		
 			/* Wrapper for statechart «stName» */
 			typedef struct {
 				«stName» «stName.toLowerCase»;
@@ -151,22 +158,9 @@ class WrapperBuilder implements IStatechartCode {
 				«IF pointers» «FOR port : component.ports.filter[it.interfaceRealization.realizationMode == RealizationMode.PROVIDED]»
 					«FOR event : port.interfaceRealization.interface.events SEPARATOR System.lineSeparator»void (*event«event.event.getOutputName(port).toFirstUpper»)(«FOR param : event.event.parameterDeclarations SEPARATOR ', '»«variableDeclarationSerializer.serialize(param.type, false, param.name)»«ENDFOR»);«ENDFOR»
 				«ENDFOR»«ENDIF»
-				uint32_t (*getElapsed)(struct «name»*);
+				uint32_t (*getElapsed)(«name»*);
 			} «name»;
 		''');
-		
-		/* Event Structs */
-		header.addContent('''
-			«FOR port : component.ports.filter[it.interfaceRealization.realizationMode == RealizationMode.PROVIDED] SEPARATOR System.lineSeparator»
-				«FOR event : port.interfaceRealization.interface.events SEPARATOR System.lineSeparator»
-					/* Struct of event «event.event.name» */
-					typedef struct {
-						bool active;
-						«FOR param : event.event.parameterDeclarations SEPARATOR System.lineSeparator»«variableDeclarationSerializer.serialize(param.type, false, param.name)» «param.name»;«ENDFOR»
-					} struct«event.event.getOutputName(port).toFirstUpper»;
-				«ENDFOR»
-			«ENDFOR»
-		''')
 		
 		/* Initialization & Cycle declaration */
 		header.addContent('''
@@ -178,18 +172,25 @@ class WrapperBuilder implements IStatechartCode {
 			void runCycle«name»(«name»* statechart);
 		''');
 		
+		/* Out events */
 		header.addContent('''
-			«FOR port : component.ports»
-				«FOR event : port.interfaceRealization.interface.events»
-					«IF port.interfaceRealization.realizationMode == RealizationMode.PROVIDED»
-						/* Out event «event.event.name» at port «port.name» */
-						bool «event.event.getOutputName(port)»(«name»* statechart);
-					«ELSE»
-						/* In event «event.event.name» at port «port.name» */
-						void «event.event.getInputName(port)»(«name»* statechart, bool value«FOR param : event.event.parameterDeclarations», «variableDeclarationSerializer.serialize(param.type, false, param.name)» «param.name»«ENDFOR»);
-					«ENDIF»
+			«FOR port : component.ports.filter[it.interfaceRealization.realizationMode == RealizationMode.REQUIRED] SEPARATOR System.lineSeparator»«FOR event : port.interfaceRealization.interface.events SEPARATOR System.lineSeparator»
+				/* Out event block of «event.event.name» at port «port.name» */
+				bool «event.event.getOutputName(port)»(«name»* statechart);
+				«FOR param : event.event.parameterDeclarations»
+					«variableDeclarationSerializer.serialize(param.type, false, param.name)» «event.event.getOutputName(port)»_«param.name»(«name»* statechart);
 				«ENDFOR»
-			«ENDFOR»
+				/* End of block «event.event.name» at port «port.name» */
+			«ENDFOR»«ENDFOR»
+		''')
+		
+		/* In events */
+		header.addContent('''
+			«FOR port : component.ports.filter[it.interfaceRealization.realizationMode == RealizationMode.PROVIDED] SEPARATOR System.lineSeparator»«FOR event : port.interfaceRealization.interface.events SEPARATOR System.lineSeparator»
+				/* In event block of «event.event.name» at port «port.name» */
+				void «event.event.getInputName(port)»(«name»* statechart, bool value«FOR param : event.event.parameterDeclarations», «variableDeclarationSerializer.serialize(param.type, false, param.name)» «param.name»«ENDFOR»);
+				/* End of block «event.event.name» at port «port.name» */
+			«ENDFOR»«ENDFOR»
 		''')
 
 	}
@@ -260,29 +261,42 @@ class WrapperBuilder implements IStatechartCode {
 		}
 		''')
 		
+		/* Out events */
 		code.addContent('''
-			«FOR port : component.ports SEPARATOR System.lineSeparator»
-				«FOR event : port.interfaceRealization.interface.events SEPARATOR System.lineSeparator»
-					«IF port.interfaceRealization.realizationMode == RealizationMode.PROVIDED»
-						/* Out event «event.event.name» at port «port.name» */
-						bool «event.event.getOutputName(port)»(«name»* statechart) {
-							return statechart->«stName.toLowerCase».«component.getBindingByCompositeSystemPort(port.name).instancePortReference.port.name»_«event.event.name»_Out_«component.getBindingByCompositeSystemPort(port.name).instancePortReference.instance.name»;
-						}
-					«ELSE»
-						/* In event «event.event.name» at port «port.name» */
-						void «event.event.getInputName(port)»(«name»* statechart, bool value«FOR param : event.event.parameterDeclarations», «variableDeclarationSerializer.serialize(param.type, false, param.name)» «param.name»«ENDFOR») {
-							«IF xsts.async»
-								/* TODO message queue handling (reference needed to MessageQueue) */
-							«ENDIF»
-							statechart->«stName.toLowerCase».«component.getBindingByCompositeSystemPort(port.name).instancePortReference.port.name»_«event.event.name»_In_«component.getBindingByCompositeSystemPort(port.name).instancePortReference.instance.name» = value;
-							«FOR param : event.event.parameterDeclarations»
-								statechart->«stName.toLowerCase».«component.getBindingByCompositeSystemPort(port.name).instancePortReference.port.name»_«event.event.name»_In_«param.name»_«component.getBindingByCompositeSystemPort(port.name).instancePortReference.instance.name» = «param.name»
-							«ENDFOR»
-						}
-					«ENDIF»
+			«FOR port : component.ports.filter[it.interfaceRealization.realizationMode == RealizationMode.REQUIRED] SEPARATOR System.lineSeparator»«FOR event : port.interfaceRealization.interface.events SEPARATOR System.lineSeparator»
+				/* Out event block of «event.event.name» at port «port.name» */
+				bool «event.event.getOutputName(port)»(«name»* statechart) {
+					return statechart->«stName.toLowerCase».«component.getBindingByCompositeSystemPort(port.name).instancePortReference.port.name»_«event.event.name»_Out_«component.getBindingByCompositeSystemPort(port.name).instancePortReference.instance.name»;
+				}
+				«FOR param : event.event.parameterDeclarations»
+					«variableDeclarationSerializer.serialize(param.type, false, param.name)» «event.event.getOutputName(port)»_«param.name»(«name»* statechart) {
+						return statechart->«stName.toLowerCase».«component.getBindingByCompositeSystemPort(port.name).instancePortReference.port.name»_«event.event.name»_Out_«param.name»_«component.getBindingByCompositeSystemPort(port.name).instancePortReference.instance.name»;
+					}
 				«ENDFOR»
-			«ENDFOR»
+				/* End of block «event.event.name» at port «port.name» */
+			«ENDFOR»«ENDFOR»
 		''')
+		
+		/* In events */
+		code.addContent('''
+			«FOR port : component.ports.filter[it.interfaceRealization.realizationMode == RealizationMode.PROVIDED] SEPARATOR System.lineSeparator»«FOR event : port.interfaceRealization.interface.events SEPARATOR System.lineSeparator»
+				/* In event block of «event.event.name» at port «port.name» */
+				void «event.event.getInputName(port)»(«name»* statechart, bool value«FOR param : event.event.parameterDeclarations», «variableDeclarationSerializer.serialize(param.type, false, param.name)» «param.name»«ENDFOR») {
+					«IF xsts.async && component.getBindingByCompositeSystemPort(port.name).instancePortReference.instance.derivedType instanceof AsynchronousAdapter»
+						«FOR queue : (component.getBindingByCompositeSystemPort(port.name).instancePortReference.instance.derivedType as AsynchronousAdapter).messageQueues»
+							«component.getBindingByCompositeSystemPort(port.name).instancePortReference.instance» «queue.getEventId(Map.entry(port, event.event))»
+						«ENDFOR»
+						/* TODO message queue handling (reference needed to MessageQueue) */
+					«ENDIF»
+					statechart->«stName.toLowerCase».«component.getBindingByCompositeSystemPort(port.name).instancePortReference.port.name»_«event.event.name»_In_«component.getBindingByCompositeSystemPort(port.name).instancePortReference.instance.name» = value;
+					«FOR param : event.event.parameterDeclarations»
+						statechart->«stName.toLowerCase».«component.getBindingByCompositeSystemPort(port.name).instancePortReference.port.name»_«event.event.name»_In_«param.name»_«component.getBindingByCompositeSystemPort(port.name).instancePortReference.instance.name» = «param.name»
+					«ENDFOR»
+				}
+				/* End of block «event.event.name» at port «port.name» */
+			«ENDFOR»«ENDFOR»
+		''')
+		
 	}
 	
 	/**
