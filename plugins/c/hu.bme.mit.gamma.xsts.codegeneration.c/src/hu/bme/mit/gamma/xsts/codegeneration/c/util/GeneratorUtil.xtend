@@ -199,6 +199,14 @@ class GeneratorUtil {
 		}
 	}
 	
+	static def Port getMatchingPort(Component component, Port port) {
+		if (component instanceof CompositeComponent) {
+			return component.channels.filter[it.providedPort.port.interfaceRealization.interface == port.interfaceRealization.interface].head.providedPort.port
+		}
+		
+		return port
+	}
+	
 	// Getting conditions from a non deterministic action point of view
 	
 	static def dispatch Expression getCondition(Action action) {

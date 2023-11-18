@@ -11,6 +11,7 @@
 package hu.bme.mit.gamma.xsts.codegeneration.c
 
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
+import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.RealizationMode
@@ -33,11 +34,6 @@ import org.eclipse.emf.common.util.URI
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.codegeneration.c.util.GeneratorUtil.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.LowlevelNamings.*
-import hu.bme.mit.gamma.statechart.interface_.Port
-import hu.bme.mit.gamma.statechart.interface_.Event
-import com.google.common.collect.Maps
-import java.util.Map
-import java.util.LinkedHashMap
 
 /**
  * The WrapperBuilder class implements the IStatechartCode interface and is responsible for generating the wrapper code.
@@ -81,6 +77,7 @@ class WrapperBuilder implements IStatechartCode {
 	SupportedPlatforms platform = SupportedPlatforms.UNIX;
 	
 	/* Serializers used for code generation */
+	val ExpressionEvaluator expressionEvaluator = ExpressionEvaluator.INSTANCE
 	val ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE;
 	val VariableGroupRetriever variableGroupRetriever = VariableGroupRetriever.INSTANCE;
 	val VariableDeclarationSerializer variableDeclarationSerializer = VariableDeclarationSerializer.INSTANCE;
@@ -284,9 +281,11 @@ class WrapperBuilder implements IStatechartCode {
 				void «event.event.getInputName(port)»(«name»* statechart, bool value«FOR param : event.event.parameterDeclarations», «variableDeclarationSerializer.serialize(param.type, false, param.name)» «param.name»«ENDFOR») {
 					«IF xsts.async && component.getBindingByCompositeSystemPort(port.name).instancePortReference.instance.derivedType instanceof AsynchronousAdapter»
 						«FOR queue : (component.getBindingByCompositeSystemPort(port.name).instancePortReference.instance.derivedType as AsynchronousAdapter).messageQueues»
-							«component.getBindingByCompositeSystemPort(port.name).instancePortReference.instance» «queue.getEventId(Map.entry(port, event.event))»
+							if (statechart->«stName.toLowerCase».sizeMaster«queue.name.toFirstUpper»Of«component.getBindingByCompositeSystemPort(port.name).instancePortReference.instance.name» < «expressionEvaluator.evaluate(queue.capacity)») {
+								int32_t temp[«expressionEvaluator.evaluate(queue.capacity)»] = {«queue.getEventId(queue.storedEvents.filter[it.value == event.event].head)»«FOR index : 0 .. expressionEvaluator.evaluate(queue.capacity) - 1», statechart->«stName.toLowerCase».master_«queue.name»Of«component.getBindingByCompositeSystemPort(port.name).instancePortReference.instance.name»[«index»]«ENDFOR»};
+								memcpy(statechart->«stName.toLowerCase».master_«queue.name»Of«component.getBindingByCompositeSystemPort(port.name).instancePortReference.instance.name», temp, sizeof(statechart->«stName.toLowerCase».master_«queue.name»Of«component.getBindingByCompositeSystemPort(port.name).instancePortReference.instance.name»));
+							}
 						«ENDFOR»
-						/* TODO message queue handling (reference needed to MessageQueue) */
 					«ENDIF»
 					statechart->«stName.toLowerCase».«component.getBindingByCompositeSystemPort(port.name).instancePortReference.port.name»_«event.event.name»_«port.realization»_«component.getBindingByCompositeSystemPort(port.name).instancePortReference.instance.name» = value;
 					«FOR param : event.event.parameterDeclarations»
