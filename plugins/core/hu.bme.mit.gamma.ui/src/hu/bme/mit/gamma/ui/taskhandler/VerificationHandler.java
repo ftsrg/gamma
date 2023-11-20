@@ -37,6 +37,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
+import hu.bme.mit.gamma.genmodel.model.ProgrammingLanguage;
 import hu.bme.mit.gamma.genmodel.model.Verification;
 import hu.bme.mit.gamma.nuxmv.verification.NuxmvVerification;
 import hu.bme.mit.gamma.plantuml.serialization.SvgSerializer;
@@ -79,6 +80,7 @@ public class VerificationHandler extends TaskHandler {
 	// targetFolderUri is traceFolderUri 
 	protected String packageName; // Set in setVerification
 	protected String svgFileName; // Set in setVerification
+	protected ProgrammingLanguage programmingLanguage; // Set in setVerification
 	protected final String traceFileName = "ExecutionTrace";
 	protected final String testFileName = traceFileName + "Simulation";
 	
@@ -364,10 +366,12 @@ public class VerificationHandler extends TaskHandler {
 		if (!verification.getSvgFileName().isEmpty()) {
 			this.svgFileName = verification.getSvgFileName().get(0);
 		}
-		if (verification.getProgrammingLanguages().isEmpty()) {
+		List<ProgrammingLanguage> programmingLanguages = verification.getProgrammingLanguages();
+		if (programmingLanguages.isEmpty()) {
 			this.serializeTest = false;
 		}
 		else {
+			this.programmingLanguage = programmingLanguages.get(0);
 			this.serializeTest = true;
 			// Setting the attribute, the test folder is a RELATIVE path now from the project
 			this.testFolderUri = URI.decode(projectLocation + File.separator + verification.getTestFolder().get(0));
@@ -402,7 +406,7 @@ public class VerificationHandler extends TaskHandler {
 		String packageName = serializeTest ? this.packageName : null;
 		for (ExecutionTrace trace : traces) {
 			serializer.serialize(targetFolderUri, traceFileName, svgFileName,
-					testFolderUri, testFileName, packageName, trace);
+					testFolderUri, testFileName, packageName, programmingLanguage, trace);
 		}
 	}
 	
@@ -423,11 +427,13 @@ public class VerificationHandler extends TaskHandler {
 		
 		public void serialize(String traceFolderUri, String traceFileName,
 				String testFolderUri, String testFileName, String basePackage, ExecutionTrace trace) throws IOException {
-			this.serialize(traceFolderUri, traceFileName, null, testFolderUri, testFileName, basePackage, trace);
+			this.serialize(traceFolderUri, traceFileName, null, testFolderUri, testFileName, basePackage,
+					ProgrammingLanguage.JAVA, trace);
 		}
 		
 		public void serialize(String traceFolderUri, String traceFileName, String svgFileName,
-				String testFolderUri, String testFileName, String basePackage, ExecutionTrace trace) throws IOException {
+				String testFolderUri, String testFileName, String basePackage,
+				ProgrammingLanguage programmingLanguage, ExecutionTrace trace) throws IOException {
 			
 			// Model
 			Entry<String, Integer> fileNamePair = fileUtil.getFileName(new File(traceFolderUri),
@@ -447,17 +453,29 @@ public class VerificationHandler extends TaskHandler {
 			}
 			
 			// Test
-			boolean serializeTest = testFolderUri != null && testFileName != null && basePackage != null;
+			boolean serializeTest = programmingLanguage != null;
 			if (serializeTest) {
-				String className = testFileName + id;
-				
-				TestGenerator testGenerator = new TestGenerator(trace, basePackage, className);
-				String testCode = testGenerator.execute();
-				String packageUri = testGenerator.getPackageName().replaceAll("\\.", "/");
-				fileUtil.saveString(testFolderUri + File.separator + packageUri +
-					File.separator + className + ".java", testCode);
+				switch (programmingLanguage) {
+					case JAVA:
+						String className = testFileName + id;
+						serializeJavaTestCase(testFolderUri, basePackage, className, trace);
+						break;
+					default:
+						throw new IllegalArgumentException("Not supported programming language: " + programmingLanguage);
+				}
 			}
 		}
+
+		protected void serializeJavaTestCase(String testFolderUri, String basePackage,
+				String className, ExecutionTrace trace) {
+			TestGenerator testGenerator = new TestGenerator(trace, basePackage, className);
+			String testCode = testGenerator.execute();
+			String packageUri = testGenerator.getPackageName().replaceAll("\\.", "/");
+			fileUtil.saveString(testFolderUri + File.separator + packageUri +
+				File.separator + className + ".java", testCode);
+		}
+		
+		// Serialization of test cases for additional programming languages here...
 		
 		public void serialize(String resultFolderUri, String resultFileName,
 				VerificationResult result) throws IOException {
