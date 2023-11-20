@@ -60,29 +60,31 @@ public class CodeGenerationHandler extends TaskHandler {
 				codeGeneration.getProgrammingLanguages().get(0) == ProgrammingLanguage.C,
 				"Currently only Java and C supported.");
 		setCodeGeneration(codeGeneration, packageName);
-		Component component = codeGeneration.getComponent();
 		
 		switch(codeGeneration.getProgrammingLanguages().get(0)) {
 		case JAVA:
-			generateJavaCode(codeGeneration, component);
+			generateJavaCode(codeGeneration);
 			break;
 		case C:
-			generateCCode(codeGeneration, component);
+			generateCCode(codeGeneration);
 			break;
 		default:
-			generateJavaCode(codeGeneration, component);
+			generateJavaCode(codeGeneration);
 		}
 	}
 	
-	private void generateCCode(CodeGeneration codeGeneration, Component component) {
+	private void generateCCode(CodeGeneration codeGeneration) {
+		final Component component = codeGeneration.getComponent();
 		/* GAMMA to XSTS transformation */
 		AnalysisModelTransformation transformation = GenmodelModelFactory.eINSTANCE.createAnalysisModelTransformation();
 		transformation.getLanguages().clear();
 		transformation.getLanguages().add(AnalysisLanguage.THETA);
+		transformation.setOptimize(false);  // TODO : FOR TESTING ONLY
 		
 		ComponentReference reference = GenmodelModelFactory.eINSTANCE.createComponentReference();
 		reference.setComponent(component);
 		transformation.setModel(reference);
+		transformation.setOptimizeEnvironmentalMessageQueues(false);
 		
 		AnalysisModelTransformationHandler amth = new AnalysisModelTransformationHandler(file);
 		try {
@@ -109,23 +111,32 @@ public class CodeGenerationHandler extends TaskHandler {
 		final boolean pointers = true;
 		final SupportedPlatforms platform = SupportedPlatforms.UNIX;
 		
-		/* define what to generate */
-		List<IStatechartCode> generate = List.of(
-			new CodeBuilder(component, xSts),
-			new WrapperBuilder(component, xSts, pointers),
-			new HavocBuilder(component, xSts)
-		);
+		try {
 		
-		/* build c code */
-		for (IStatechartCode builder : generate) {
-			builder.setPlatform(platform);
-			builder.constructHeader();
-			builder.constructCode();
-			builder.save(root);
+			/* define what to generate */
+			List<IStatechartCode> generate = List.of(
+				new CodeBuilder(component, xSts),
+				new WrapperBuilder(component, xSts, pointers),
+				new HavocBuilder(component, xSts)
+			);
+			
+			/* build c code */
+			for (IStatechartCode builder : generate) {
+				builder.setPlatform(platform);
+				builder.constructHeader();
+				builder.constructCode();
+				builder.save(root);
+			}
+			
+		}catch (Exception e) {
+			logger.severe("XSTS to C transformation failed: " + e.getMessage());
 		}
+		
+		logger.info("XSTS to C transformation completed.");
 	}
 	
-	private void generateJavaCode(CodeGeneration codeGeneration, Component component) {
+	private void generateJavaCode(CodeGeneration codeGeneration) {
+		final Component component = codeGeneration.getComponent();
 		if (component instanceof StatechartDefinition) {
 			StatechartDefinition statechart = (StatechartDefinition) component;
 			logger.log(Level.INFO, "Starting single statechart code generation: " + component.getName());
