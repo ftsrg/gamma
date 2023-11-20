@@ -83,16 +83,16 @@ class TestGenerator {
 	def save(String content) {
 		/* create test-gen if not present */
 		val URI testgen = out.appendSegment("test-gen")
-		if (!new File(testgen.toFileString).exists())
-			Files.createDirectories(Paths.get(testgen.toFileString()))
+		if (!new File(testgen.toString).exists())
+			Files.createDirectories(Paths.get(testgen.toString()))
 			
 		/* create project folder if not present */
 		val URI local = testgen.appendSegment(trace.component.name.toLowerCase)
-		if (!new File(local.toFileString()).exists())
-			Files.createDirectories(Paths.get(local.toFileString()))
+		if (!new File(local.toString()).exists())
+			Files.createDirectories(Paths.get(local.toString()))
 			
-		val URI fileUri = local.appendSegment(trace.name + ".c")
-		val File file = fileUtil.getFile(fileUri.toFileString())
+		val URI fileUri = local.appendSegment(trace.name.toLowerCase + ".c")
+		val File file = fileUtil.getFile(fileUri.toString())
 		
 		/* save generated test file */
 		if (file.exists())

@@ -18,10 +18,12 @@ import java.io.IOException;
 import java.util.logging.Level;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.emf.common.util.URI;
 
 import hu.bme.mit.gamma.genmodel.model.ProgrammingLanguage;
 import hu.bme.mit.gamma.genmodel.model.TestGeneration;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
+import hu.bme.mit.gamma.trace.testgeneration.c.MakefileGenerator;
 import hu.bme.mit.gamma.trace.testgeneration.java.TestGenerator;
 
 public class TestGenerationHandler extends TaskHandler {
@@ -37,8 +39,39 @@ public class TestGenerationHandler extends TaskHandler {
 		//
 		checkArgument(testGeneration.getProgrammingLanguages().size() == 1, 
 				"A single programming language must be specified: " + testGeneration.getProgrammingLanguages());
-		checkArgument(testGeneration.getProgrammingLanguages().get(0) == ProgrammingLanguage.JAVA, 
-				"Currently only Java is supported.");
+		checkArgument(testGeneration.getProgrammingLanguages().get(0) == ProgrammingLanguage.JAVA ||
+				testGeneration.getProgrammingLanguages().get(0) == ProgrammingLanguage.C,
+				"Currently only Java and C supported.");
+		
+		switch(testGeneration.getProgrammingLanguages().get(0)) {
+		case JAVA:
+			generateJavaTest(testGeneration, packageName);
+			break;
+		case C:
+			generateCTest(testGeneration);
+			break;
+		default:
+			generateJavaTest(testGeneration, packageName);
+		}
+		
+	}
+	
+	private void generateCTest(TestGeneration testGeneration) {
+		logger.info("Generating C unit tests");
+		ExecutionTrace executionTrace = testGeneration.getExecutionTrace();
+		
+		/* test code */
+		URI path = URI.createURI(projectLocation);
+		System.out.println(path);
+		hu.bme.mit.gamma.trace.testgeneration.c.TestGenerator testGenerator = new hu.bme.mit.gamma.trace.testgeneration.c.TestGenerator(executionTrace, path);
+		testGenerator.execute();
+		
+		/* makefile code */
+		MakefileGenerator makefileGenerator = new MakefileGenerator(executionTrace, path);
+		makefileGenerator.execute();
+	}
+	
+	private void generateJavaTest(TestGeneration testGeneration, String packageName) throws IOException {
 		setTestGeneration(testGeneration, packageName);
 		ExecutionTrace executionTrace = testGeneration.getExecutionTrace();
 		logger.log(Level.INFO, "Test generation for: " + executionTrace.getName());
