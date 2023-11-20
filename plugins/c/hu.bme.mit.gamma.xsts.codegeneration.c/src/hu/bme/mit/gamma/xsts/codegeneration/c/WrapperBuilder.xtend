@@ -131,6 +131,7 @@ class WrapperBuilder implements IStatechartCode {
 		/* Add imports to the file */
 		header.addInclude('''
 			#include <stdint.h>
+			«IF xsts.async»#include <string.h>«ENDIF»
 			#include <stdbool.h>
 			«Platforms.get(platform).getHeaders()»
 			
@@ -240,7 +241,7 @@ class WrapperBuilder implements IStatechartCode {
 				void checkEventFiring(«name»* statechart) {
 					«FOR port : component.ports.filter[it.interfaceRealization.realizationMode == RealizationMode.PROVIDED]»
 						«FOR event : port.interfaceRealization.interface.events»
-							if (statechart->«stName.toLowerCase».«component.getBindingByCompositeSystemPort(port.name).instancePortReference.port.name»_«event.event.name»_«port.realization»_«component.getBindingByCompositeSystemPort(port.name).instancePortReference.instance.name» && statechart->event«event.event.getOutputName(port).toFirstUpper» != NULL) {
+							if («getXstsVariableName(xsts, component, port, event)» && statechart->event«event.event.getOutputName(port).toFirstUpper» != NULL) {
 								statechart->event«event.event.getOutputName(port).toFirstUpper»(«FOR param : event.event.parameterDeclarations SEPARATOR ', '»statechart->«stName.toLowerCase».«component.getBindingByCompositeSystemPort(port.name).instancePortReference.port.name»_«event.event.name»_«port.realization»_«param.name»_«component.getBindingByCompositeSystemPort(port.name).instancePortReference.instance.name»«ENDFOR»);
 							}
 						«ENDFOR»
@@ -263,11 +264,13 @@ class WrapperBuilder implements IStatechartCode {
 			«FOR port : component.ports.filter[it.interfaceRealization.realizationMode == RealizationMode.PROVIDED] SEPARATOR System.lineSeparator»«FOR event : port.interfaceRealization.interface.events SEPARATOR System.lineSeparator»
 				/* Out event block of «event.event.name» at port «port.name» */
 				bool «event.event.getOutputName(port)»(«name»* statechart) {
-					return statechart->«stName.toLowerCase».«component.getBindingByCompositeSystemPort(port.name).instancePortReference.port.name»_«event.event.name»_«port.realization»_«component.getBindingByCompositeSystemPort(port.name).instancePortReference.instance.name»;
+					return «getXstsVariableName(xsts, component, port, event)»;
+					//return statechart->«stName.toLowerCase».«component.getBindingByCompositeSystemPort(port.name).instancePortReference.port.name»_«event.event.name»_«port.realization»_«component.getBindingByCompositeSystemPort(port.name).instancePortReference.instance.name»;
 				}
 				«FOR param : event.event.parameterDeclarations»
 					«variableDeclarationSerializer.serialize(param.type, false, param.name)» «event.event.getOutputName(port)»_«param.name»(«name»* statechart) {
-						return statechart->«stName.toLowerCase».«component.getBindingByCompositeSystemPort(port.name).instancePortReference.port.name»_«event.event.name»_«port.realization»_«param.name»_«component.getBindingByCompositeSystemPort(port.name).instancePortReference.instance.name»;
+						return «getXstsParameterName(xsts, component, port, event, param)»;
+						//return statechart->«stName.toLowerCase».«component.getBindingByCompositeSystemPort(port.name).instancePortReference.port.name»_«event.event.name»_«port.realization»_«param.name»_«component.getBindingByCompositeSystemPort(port.name).instancePortReference.instance.name»;
 					}
 				«ENDFOR»
 				/* End of block «event.event.name» at port «port.name» */
@@ -287,9 +290,11 @@ class WrapperBuilder implements IStatechartCode {
 							}
 						«ENDFOR»
 					«ENDIF»
-					statechart->«stName.toLowerCase».«component.getBindingByCompositeSystemPort(port.name).instancePortReference.port.name»_«event.event.name»_«port.realization»_«component.getBindingByCompositeSystemPort(port.name).instancePortReference.instance.name» = value;
+					«getXstsVariableName(xsts, component, port, event)» = value;
+					//statechart->«stName.toLowerCase».«component.getBindingByCompositeSystemPort(port.name).instancePortReference.port.name»_«event.event.name»_«port.realization»_«component.getBindingByCompositeSystemPort(port.name).instancePortReference.instance.name» = value;
 					«FOR param : event.event.parameterDeclarations»
-						statechart->«stName.toLowerCase».«component.getBindingByCompositeSystemPort(port.name).instancePortReference.port.name»_«event.event.name»_«port.realization»_«param.name»_«component.getBindingByCompositeSystemPort(port.name).instancePortReference.instance.name» = «param.name»;
+						«getXstsParameterName(xsts, component, port, event, param)» = «param.name»;
+						//statechart->«stName.toLowerCase».«component.getBindingByCompositeSystemPort(port.name).instancePortReference.port.name»_«event.event.name»_«port.realization»_«param.name»_«component.getBindingByCompositeSystemPort(port.name).instancePortReference.instance.name» = «param.name»;
 					«ENDFOR»
 				}
 				/* End of block «event.event.name» at port «port.name» */

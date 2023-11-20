@@ -18,6 +18,7 @@ import hu.bme.mit.gamma.expression.model.DeclarationReferenceAnnotation
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.Expression
+import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.model.impl.ArrayLiteralExpressionImpl
@@ -28,6 +29,8 @@ import hu.bme.mit.gamma.expression.util.ExpressionSerializer
 import hu.bme.mit.gamma.statechart.composite.CompositeComponent
 import hu.bme.mit.gamma.statechart.composite.PortBinding
 import hu.bme.mit.gamma.statechart.interface_.Component
+import hu.bme.mit.gamma.statechart.interface_.EventDeclaration
+import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.xsts.codegeneration.c.serializer.VariableDeclarationSerializer
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.AssumeAction
@@ -41,8 +44,10 @@ import hu.bme.mit.gamma.xsts.model.XSTS
 import org.eclipse.emf.common.util.BasicEList
 import org.eclipse.emf.common.util.EList
 import org.eclipse.emf.ecore.EObject
-import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
-import hu.bme.mit.gamma.statechart.interface_.Port
+
+import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
+import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
+import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 
 class GeneratorUtil {
 	
@@ -205,6 +210,24 @@ class GeneratorUtil {
 		}
 		
 		return port
+	}
+	
+	static def String getXstsVariableName(XSTS xsts, Component component, Port port, EventDeclaration event) {
+		if (xsts.async) {
+			var adapter = component.getBindingByCompositeSystemPort(port.name).instancePortReference.instance.derivedType
+			if (adapter instanceof AsynchronousAdapter)
+				return '''statechart->«xsts.name.toLowerCase»statechart.«component.getBindingByCompositeSystemPort(port.name).instancePortReference.port.name»_«event.event.name»_«port.realization»_«component.getBindingByCompositeSystemPort(port.name).instancePortReference.instance.name»_«adapter.wrappedComponent.name»''' 
+		}
+		return '''statechart->«xsts.name.toLowerCase»statechart.«component.getBindingByCompositeSystemPort(port.name).instancePortReference.port.name»_«event.event.name»_«port.realization»_«component.getBindingByCompositeSystemPort(port.name).instancePortReference.instance.name»'''
+	}
+	
+	static def String getXstsParameterName(XSTS xsts, Component component, Port port, EventDeclaration event, ParameterDeclaration param) {
+		if (xsts.async) {
+			var adapter = component.getBindingByCompositeSystemPort(port.name).instancePortReference.instance.derivedType
+			if (adapter instanceof AsynchronousAdapter)
+				return '''statechart->«xsts.name.toLowerCase»statechart.«component.getBindingByCompositeSystemPort(port.name).instancePortReference.port.name»_«event.event.name»_«port.realization»_«param.name»_«component.getBindingByCompositeSystemPort(port.name).instancePortReference.instance.name»_«adapter.wrappedComponent.name»''' 
+		}
+		return '''statechart->«xsts.name.toLowerCase»statechart.«component.getBindingByCompositeSystemPort(port.name).instancePortReference.port.name»_«event.event.name»_«port.realization»_«param.name»_«component.getBindingByCompositeSystemPort(port.name).instancePortReference.instance.name»'''
 	}
 	
 	// Getting conditions from a non deterministic action point of view
