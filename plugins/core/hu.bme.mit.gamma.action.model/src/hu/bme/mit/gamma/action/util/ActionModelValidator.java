@@ -50,7 +50,7 @@ public class ActionModelValidator extends ExpressionModelValidator {
 	public static final ActionModelValidator INSTANCE = new ActionModelValidator();
 	protected ActionModelValidator() {}
 	
-	public 	Collection<ValidationResultMessage> checkAssignmentActions(AssignmentStatement assignment) {
+	public Collection<ValidationResultMessage> checkAssignmentActions(AssignmentStatement assignment) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		
 		ReferenceExpression lhs = assignment.getLhs();
