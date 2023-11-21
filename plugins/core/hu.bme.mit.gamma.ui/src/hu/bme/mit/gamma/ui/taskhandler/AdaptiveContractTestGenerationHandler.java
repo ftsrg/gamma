@@ -187,7 +187,8 @@ public class AdaptiveContractTestGenerationHandler extends TaskHandler {
 		// Serializing traces
 		for (ExecutionTrace testTrace : testsTraces) {
 			serializer.serialize(targetFolderUri, traceFileName,
-					testFolderUri, testFileName, packageName, testTrace);
+					testFolderUri, testFileName, packageName, testTrace,
+					file, testGeneration.getProgrammingLanguages().get(0));
 		}
 	}
 

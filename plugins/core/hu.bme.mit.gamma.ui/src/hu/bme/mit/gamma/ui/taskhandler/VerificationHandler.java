@@ -37,6 +37,8 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
+import hu.bme.mit.gamma.genmodel.model.GenmodelModelFactory;
+import hu.bme.mit.gamma.genmodel.model.ProgrammingLanguage;
 import hu.bme.mit.gamma.genmodel.model.Verification;
 import hu.bme.mit.gamma.nuxmv.verification.NuxmvVerification;
 import hu.bme.mit.gamma.plantuml.serialization.SvgSerializer;
@@ -70,6 +72,7 @@ import hu.bme.mit.gamma.util.FileUtil;
 import hu.bme.mit.gamma.verification.result.ThreeStateBoolean;
 import hu.bme.mit.gamma.verification.util.AbstractVerification;
 import hu.bme.mit.gamma.verification.util.AbstractVerifier.Result;
+import hu.bme.mit.gamma.genmodel.model.TestGeneration;
 
 public class VerificationHandler extends TaskHandler {
 
@@ -82,6 +85,7 @@ public class VerificationHandler extends TaskHandler {
 	protected final String traceFileName = "ExecutionTrace";
 	protected final String testFileName = traceFileName + "Simulation";
 	
+	protected Verification verification;
 	protected TimeSpecification timeout = null;
 	
 	//
@@ -113,6 +117,7 @@ public class VerificationHandler extends TaskHandler {
 	//
 	
 	public void execute(Verification verification) throws IOException, InterruptedException {
+		this.verification = verification;
 		// Setting target folder
 		setProjectLocation(verification); // Before the target folder
 		setTargetFolder(verification);
@@ -402,7 +407,8 @@ public class VerificationHandler extends TaskHandler {
 		String packageName = serializeTest ? this.packageName : null;
 		for (ExecutionTrace trace : traces) {
 			serializer.serialize(targetFolderUri, traceFileName, svgFileName,
-					testFolderUri, testFileName, packageName, trace);
+					testFolderUri, testFileName, packageName, trace,
+					file, verification.getProgrammingLanguages().get(0));
 		}
 	}
 	
@@ -417,17 +423,19 @@ public class VerificationHandler extends TaskHandler {
 		protected final FileUtil fileUtil = FileUtil.INSTANCE;
 		protected final ModelSerializer serializer = ModelSerializer.INSTANCE;
 		
-		public void serialize(String traceFolderUri, String traceFileName, ExecutionTrace trace) throws IOException {
-			this.serialize(traceFolderUri, traceFileName, null, null, null, trace);
+		public void serialize(String traceFolderUri, String traceFileName, ExecutionTrace trace, IFile file, ProgrammingLanguage programmingLanguage) throws IOException {
+			this.serialize(traceFolderUri, traceFileName, null, null, null, trace, file, programmingLanguage);
 		}
 		
 		public void serialize(String traceFolderUri, String traceFileName,
-				String testFolderUri, String testFileName, String basePackage, ExecutionTrace trace) throws IOException {
-			this.serialize(traceFolderUri, traceFileName, null, testFolderUri, testFileName, basePackage, trace);
+				String testFolderUri, String testFileName, String basePackage, ExecutionTrace trace,
+				IFile file, ProgrammingLanguage programmingLanguage) throws IOException {
+			this.serialize(traceFolderUri, traceFileName, null, testFolderUri, testFileName, basePackage, trace, file, programmingLanguage);
 		}
 		
 		public void serialize(String traceFolderUri, String traceFileName, String svgFileName,
-				String testFolderUri, String testFileName, String basePackage, ExecutionTrace trace) throws IOException {
+				String testFolderUri, String testFileName, String basePackage, ExecutionTrace trace,
+				IFile file, ProgrammingLanguage programmingLanguage) throws IOException {
 			
 			// Model
 			Entry<String, Integer> fileNamePair = fileUtil.getFileName(new File(traceFolderUri),
@@ -448,15 +456,36 @@ public class VerificationHandler extends TaskHandler {
 			
 			// Test
 			boolean serializeTest = testFolderUri != null && testFileName != null && basePackage != null;
-			if (serializeTest) {
-				String className = testFileName + id;
-				
-				TestGenerator testGenerator = new TestGenerator(trace, basePackage, className);
-				String testCode = testGenerator.execute();
-				String packageUri = testGenerator.getPackageName().replaceAll("\\.", "/");
-				fileUtil.saveString(testFolderUri + File.separator + packageUri +
-					File.separator + className + ".java", testCode);
+			TestGeneration testGeneration = GenmodelModelFactory.eINSTANCE.createTestGeneration();
+			testGeneration.setExecutionTrace(trace);
+			/* set filename */
+			testGeneration.getFileName().clear();
+			testGeneration.getFileName().add(testFileName + id);
+			/* set programming language */
+			testGeneration.getProgrammingLanguages().clear();
+			testGeneration.getProgrammingLanguages().add(programmingLanguage);
+			
+			if (!serializeTest)
+				return;
+			
+			TestGenerationHandler tgh = new TestGenerationHandler(file);
+			try {
+				tgh.execute(testGeneration, basePackage);
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
+			
+			// Test
+//			boolean serializeTest = testFolderUri != null && testFileName != null && basePackage != null;
+//			if (serializeTest) {
+//				String className = testFileName + id;
+//				
+//				TestGenerator testGenerator = new TestGenerator(trace, basePackage, className);
+//				String testCode = testGenerator.execute();
+//				String packageUri = testGenerator.getPackageName().replaceAll("\\.", "/");
+//				fileUtil.saveString(testFolderUri + File.separator + packageUri +
+//					File.separator + className + ".java", testCode);
+//			}
 		}
 		
 		public void serialize(String resultFolderUri, String resultFileName,

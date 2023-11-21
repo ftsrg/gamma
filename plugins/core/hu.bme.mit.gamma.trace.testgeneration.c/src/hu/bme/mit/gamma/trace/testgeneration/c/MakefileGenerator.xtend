@@ -12,10 +12,12 @@ class MakefileGenerator {
 	val FileUtil fileUtil = FileUtil.INSTANCE
 	
 	val URI out
+	val String name
 	val ExecutionTrace trace
 	
-	new(ExecutionTrace trace, URI out) {
+	new(ExecutionTrace trace, URI out, String name) {
 		this.trace = trace
+		this.name = name
 		this.out = out
 	}
 	
@@ -23,7 +25,7 @@ class MakefileGenerator {
 		return '''
 			CC = gcc
 			CFLAGS = -Wall -lunity -fcommon
-			SOURCES = «trace.name.toLowerCase».c «trace.component.name.toLowerCase».c «trace.component.name.toLowerCase».h «trace.component.name.toLowerCase»wrapper.c «trace.component.name.toLowerCase»wrapper.h
+			SOURCES = «name.toLowerCase».c «trace.component.name.toLowerCase».c «trace.component.name.toLowerCase».h «trace.component.name.toLowerCase»wrapper.c «trace.component.name.toLowerCase»wrapper.h
 			OUTPUT = .exe
 			
 			all: $(OUTPUT) run_tests clean

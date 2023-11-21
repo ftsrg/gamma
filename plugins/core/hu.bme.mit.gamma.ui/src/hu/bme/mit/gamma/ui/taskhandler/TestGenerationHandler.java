@@ -59,15 +59,15 @@ public class TestGenerationHandler extends TaskHandler {
 	private void generateCTest(TestGeneration testGeneration) {
 		logger.info("Generating C unit tests");
 		ExecutionTrace executionTrace = testGeneration.getExecutionTrace();
+		String name = (testGeneration.getFileName().size() > 0) ? testGeneration.getFileName().get(0) : file.getName().replace(file.getFileExtension(), "");
 		
 		/* test code */
 		URI path = URI.createURI(projectLocation);
-		System.out.println(path);
-		hu.bme.mit.gamma.trace.testgeneration.c.TestGenerator testGenerator = new hu.bme.mit.gamma.trace.testgeneration.c.TestGenerator(executionTrace, path);
+		hu.bme.mit.gamma.trace.testgeneration.c.TestGenerator testGenerator = new hu.bme.mit.gamma.trace.testgeneration.c.TestGenerator(executionTrace, path, name);
 		testGenerator.execute();
 		
 		/* makefile code */
-		MakefileGenerator makefileGenerator = new MakefileGenerator(executionTrace, path);
+		MakefileGenerator makefileGenerator = new MakefileGenerator(executionTrace, path, name);
 		makefileGenerator.execute();
 	}
 	

@@ -15,14 +15,16 @@ class TestGenerator {
 	val FileUtil fileUtil = FileUtil.INSTANCE
 	
 	val URI out
+	val String name
 	val ExecutionTrace trace
 	
 	val ActSerializer actSerializer = new ActSerializer
 	val ExpressionSerializer expressionSerializer = new ExpressionSerializer
 	val VariableDeclarationSerializer variableDeclarationSerializer = VariableDeclarationSerializer.INSTANCE
 	
-	new(ExecutionTrace trace, URI out) {
+	new(ExecutionTrace trace, URI out, String name) {
 		this.trace = trace
+		this.name = name
 		this.out = out
 	}
 	
@@ -83,7 +85,7 @@ class TestGenerator {
 	def save(String content) {
 		/* create test-gen if not present */
 		val URI testgen = out.appendSegment("test-gen")
-		if (!new File(testgen.toString).exists())
+		if (!new File(testgen.toString()).exists())
 			Files.createDirectories(Paths.get(testgen.toString()))
 			
 		/* create project folder if not present */
@@ -91,7 +93,8 @@ class TestGenerator {
 		if (!new File(local.toString()).exists())
 			Files.createDirectories(Paths.get(local.toString()))
 			
-		val URI fileUri = local.appendSegment(trace.name.toLowerCase + ".c")
+		println(name)
+		val URI fileUri = local.appendSegment(name.toLowerCase + ".c")
 		val File file = fileUtil.getFile(fileUri.toString())
 		
 		/* save generated test file */
