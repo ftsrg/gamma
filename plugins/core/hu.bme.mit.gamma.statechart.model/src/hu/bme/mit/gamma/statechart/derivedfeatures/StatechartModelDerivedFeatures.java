@@ -1338,8 +1338,13 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	}
 	
 	public static boolean storesOnlyNotInternalEvents(MessageQueue queue) {
-		List<Entry<Port,Event>> storedEvents = getStoredEvents(queue);
+		List<Entry<Port, Event>> storedEvents = getStoredEvents(queue);
 		return storedEvents.stream().allMatch(it -> !isInternal(it.getKey()));
+	}
+	
+	public static boolean storesClockTickEvents(MessageQueue queue) {
+		List<Clock> storedClocks = getStoredClocks(queue);
+		return !storedClocks.isEmpty();
 	}
 	
 	public static List<Port> getStoredPorts(MessageQueue queue) {
@@ -1645,6 +1650,9 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	public static boolean isEnvironmental(MessageQueue queue,
 			Collection<? extends Port> systemPorts) {
 		if (!storesOnlyNotInternalEvents(queue)) {
+			return false;
+		}
+		if (storesClockTickEvents(queue)) {
 			return false;
 		}
 		List<Port> topBoundPorts = getStoredEvents(queue).stream()
