@@ -95,7 +95,6 @@ class TestGenerator {
 		if (!new File(local.toString()).exists())
 			Files.createDirectories(Paths.get(local.toString()))
 			
-		println(name)
 		val URI fileUri = local.appendSegment(name.toLowerCase + ".c")
 		val File file = fileUtil.getFile(fileUri.toString())
 		
