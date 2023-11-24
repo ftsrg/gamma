@@ -26,7 +26,7 @@ class MakefileGenerator {
 			CC = gcc
 			CFLAGS = -Wall -lunity -fcommon
 			SOURCES = «name.toLowerCase».c «trace.component.name.toLowerCase».c «trace.component.name.toLowerCase».h «trace.component.name.toLowerCase»wrapper.c «trace.component.name.toLowerCase»wrapper.h
-			OUTPUT = .exe
+			OUTPUT = «name.toLowerCase».exe
 			
 			all: $(OUTPUT) run_tests clean
 			

@@ -10,6 +10,8 @@ import java.nio.file.Paths
 import java.util.List
 import org.eclipse.emf.common.util.URI
 
+import static extension hu.bme.mit.gamma.trace.testgeneration.c.util.TestGeneratorUtil.*
+
 class TestGenerator {
 	
 	val FileUtil fileUtil = FileUtil.INSTANCE
@@ -62,7 +64,7 @@ class TestGenerator {
 			«FOR index : 0 ..< trace.steps.size SEPARATOR System.lineSeparator»
 				void test_step«index»() {
 					«FOR action : trace.steps.get(index).actions SEPARATOR System.lineSeparator»«actSerializer.serialize(action, trace.component.name)»«ENDFOR»
-					«FOR expression : trace.steps.get(index).asserts SEPARATOR System.lineSeparator»TEST_ASSERT_TRUE(«expressionSerializer.serialize(expression, trace.component.name)»);«ENDFOR»
+					«FOR expression : trace.steps.get(index).asserts SEPARATOR System.lineSeparator»«expression.testMethod»(«expressionSerializer.serialize(expression, trace.component.name)»«expression.testParameter.toString»);«ENDFOR»
 				}
 			«ENDFOR»
 			

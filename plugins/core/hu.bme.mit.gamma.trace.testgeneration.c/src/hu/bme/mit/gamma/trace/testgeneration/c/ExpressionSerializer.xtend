@@ -29,6 +29,8 @@ class ExpressionSerializer {
 	}
 	
 	def dispatch String serialize(EqualityExpression expression, String name) {
+		if (expression.containsArray)
+			return '''«expression.leftOperand.serialize(name)», «expression.rightOperand.serialize(name)»'''
 		return '''(«expression.leftOperand.serialize(name)» == «expression.rightOperand.serialize(name)»)'''
 	}
 	
@@ -43,7 +45,8 @@ class ExpressionSerializer {
 	}
 	
 	def dispatch String serialize(ArrayLiteralExpression expression, String name) {
-		return '''(«expression.arrayType»«expression.arraySize»){«expression.operands.map[it.serialize(name)].join(', ')»}'''
+		val prefix = expression.arrayType + expression.arraySize
+		return '''«IF !prefix.isEmpty && !(expression.isComplexArray)»((«prefix») «ENDIF»{«expression.operands.map[it.serialize(name)].join(', ')»}«IF !prefix.isEmpty && !(expression.isComplexArray)»)«ENDIF»'''
 	}
 	
 }

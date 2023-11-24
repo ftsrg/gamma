@@ -2,9 +2,12 @@ package hu.bme.mit.gamma.trace.testgeneration.c.util
 
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.impl.ArrayLiteralExpressionImpl
+import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.trace.testgeneration.c.TypeSerializer
 import org.eclipse.emf.ecore.EObject
-import hu.bme.mit.gamma.statechart.interface_.Port
+import org.eclipse.xtext.EcoreUtil2
+import org.eclipse.emf.ecore.util.EcoreUtil
+import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression
 
 class TestGeneratorUtil {
 	
@@ -19,7 +22,14 @@ class TestGeneratorUtil {
 	static def String getArraySize(EObject array) {
 		if (array instanceof ArrayLiteralExpressionImpl)
 			return '''[«array.operands.size»]«array.operands.head.arraySize»'''
-		return ''''''
+		return ""
+	}
+	
+	static def int getArraySizeSum(EObject object) {
+		if (!(object instanceof ArrayLiteralExpressionImpl))
+			return 1;
+		val array = object as ArrayLiteralExpressionImpl
+		return array.operands.size * array.operands.head.arraySizeSum
 	}
 	
 	static def String getRealization(Port port) {
@@ -31,6 +41,26 @@ class TestGeneratorUtil {
 		default:
 			return 'In'
 		}
+	}
+	
+	static def boolean containsArray(Expression expression) {
+		return EcoreUtil2.getAllContentsOfType(expression, ArrayLiteralExpressionImpl).size > 0
+	}
+	
+	static def String getTestMethod(Expression expression) {
+		if (expression.containsArray)
+			return "TEST_ASSERT_EQUAL_INT_ARRAY"
+		return "TEST_ASSERT_TRUE"
+	}
+	
+	static def String getTestParameter(Expression expression) {
+		if (expression.containsArray)
+			return ''', «expression.arraySizeSum»'''
+		return ''''''
+	}
+	
+	static def boolean isComplexArray(Expression expression) {
+		return expression.eContainer instanceof ArrayLiteralExpression
 	}
 		
 }
