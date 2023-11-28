@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -83,12 +83,27 @@ class SynchronousCompositeComponentCodeGenerator {
 				init();
 			}
 			
+			//
 			/** Resets the contained statemachines recursively. Must be called to initialize the component. */
 			@Override
 			public void reset() {
-				«FOR instance : component.components»
-					«instance.name».reset();
-				«ENDFOR»
+				this.handleBeforeReset();
+				this.resetVariables();
+				this.resetStateConfigurations();
+				this.raiseEntryEvents();
+				this.handleAfterReset();
+			}
+			
+			public void handleBeforeReset() {
+				//
+				«component.executeHandleBeforeReset»
+			}
+			
+			«component.generateResetMethods»
+			
+			public void handleAfterReset() {
+				«component.executeHandleAfterReset»
+				//
 				«IF component instanceof CascadeCompositeComponent»
 					// Setting only a single queue for cascade statecharts
 					«FOR instance : component.components.filter[it.isStatechart]»
@@ -110,6 +125,7 @@ class SynchronousCompositeComponentCodeGenerator {
 				notifyListeners();
 				«IF component.hasInternalPort»handleInternalEvents();«ENDIF»
 			}
+			//
 			
 			/** Creates the channel mappings and enters the wrapped statemachines. */
 			private void init() {

@@ -40,6 +40,7 @@ class AsynchronousAdapterCodeGenerator {
 	protected final extension TypeTransformer typeTransformer
 	protected final extension EventDeclarationHandler gammaEventDeclarationHandler
 	protected final extension ComponentCodeGenerator componentCodeGenerator
+	protected final extension CompositeComponentCodeGenerator compositeComponentCodeGenerator // Due to reset methods
 	protected final extension InternalEventHandlerCodeGenerator internalEventHandler = InternalEventHandlerCodeGenerator.INSTANCE
 	//
 	protected final String EVENT_INSTANCE_NAME = "event"
@@ -51,6 +52,7 @@ class AsynchronousAdapterCodeGenerator {
 		this.typeTransformer = new TypeTransformer(trace)
 		this.gammaEventDeclarationHandler = new EventDeclarationHandler(this.trace)
 		this.componentCodeGenerator = new ComponentCodeGenerator(this.trace)
+		this.compositeComponentCodeGenerator = new CompositeComponentCodeGenerator(this.PACKAGE_NAME, this.trace)
 	}
 	
 	/**
@@ -108,6 +110,14 @@ class AsynchronousAdapterCodeGenerator {
 			/** Resets the wrapped component. Must be called to initialize the component. */
 			@Override
 			public void reset() {
+				this.handleBeforeReset();
+				this.resetVariables();
+				this.resetStateConfigurations();
+				this.raiseEntryEvents();
+				this.handleAfterReset();
+			}
+			
+			public void handleBeforeReset() {
 				interrupt();
 				«IF !component.clocks.empty»
 					if (timerService != null) {
@@ -121,9 +131,18 @@ class AsynchronousAdapterCodeGenerator {
 «««				«FOR queue : component.messageQueues»
 «««					«queue.name».clear();
 «««				«ENDFOR»
-				«component.generateWrappedComponentName».reset();
+				//
+				«component.executeHandleBeforeReset»
+			}
+			
+			«component.generateResetMethods»
+			
+			public void handleAfterReset() {
+				«component.executeHandleAfterReset»
+				//
 				«IF component.hasInternalPort»handleInternalEvents();«ENDIF»
 			}
+			//
 			
 			/** Creates the subqueues, clocks and enters the wrapped synchronous component. */
 			private void init() {

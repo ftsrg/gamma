@@ -1962,6 +1962,17 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		throw new IllegalArgumentException("Not known type: " + instance);
 	}
 	
+	public static List<? extends ComponentInstance> getContainedComponents(Component component) {
+		if (component instanceof CompositeComponent composite) {
+			return getDerivedComponents(composite);
+		}
+		if (component instanceof AsynchronousAdapter adapter) {
+			return List.of(
+					adapter.getWrappedComponent());
+		}
+		throw new IllegalArgumentException("Not known type: " + component);
+	}
+	
 	public static List<? extends ComponentInstance> getDerivedComponents(CompositeComponent composite) {
 		if (composite instanceof AbstractSynchronousCompositeComponent) {
 			AbstractSynchronousCompositeComponent synchronousCompositeComponent =

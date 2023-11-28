@@ -86,19 +86,35 @@ class AsynchronousCompositeComponentCodeGenerator {
 				init();
 			}
 			
+			//
 			/** Resets the contained statemachines recursively. Must be called to initialize the component. */
 			@Override
 			public void reset() {
+				this.handleBeforeReset();
+				this.resetVariables();
+				this.resetStateConfigurations();
+				this.raiseEntryEvents();
+				this.handleAfterReset();
+			}
+			
+			public void handleBeforeReset() {
 				«IF component instanceof ScheduledAsynchronousCompositeComponent»interrupt();«ENDIF»
-				«FOR instance : component.components»
-					«instance.name».reset();
-				«ENDFOR»
+				//
+				«component.executeHandleBeforeReset»
+			}
+			
+			«component.generateResetMethods»
+			
+			public void handleAfterReset() {
+				«component.executeHandleAfterReset»
+				//
 				«IF component instanceof ScheduledAsynchronousCompositeComponent»
 					«FOR instance : component.initallyScheduledInstances»
 						«instance.name».schedule();
 					«ENDFOR»
 				«ENDIF»
 			}
+			//
 			
 			/** Creates the channel mappings and enters the wrapped statemachines. */
 			private void init() {				

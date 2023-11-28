@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -24,7 +24,13 @@ abstract class ActionSerializer {
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension ExpressionModelFactory expressionModelFactory = ExpressionModelFactory.eINSTANCE
 	
+	//
+	abstract def CharSequence serializeVariableReset(XSTS xSts)
+	abstract def CharSequence serializeStateConfigurationReset(XSTS xSts)
+	abstract def CharSequence serializeEntryEventRaise(XSTS xSts)
+	//
 	abstract def CharSequence serializeInitializingAction(XSTS xSts)
 	abstract def CharSequence serializeChangeState(XSTS xSts)
+	//
 	
 }
