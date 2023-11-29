@@ -8,6 +8,10 @@ import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtext.EcoreUtil2
 import org.eclipse.emf.ecore.util.EcoreUtil
 import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression
+import java.util.List
+import hu.bme.mit.gamma.trace.model.Act
+import hu.bme.mit.gamma.trace.model.TimeElapse
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression
 
 class TestGeneratorUtil {
 	
@@ -32,6 +36,10 @@ class TestGeneratorUtil {
 		return array.operands.size * array.operands.head.arraySizeSum
 	}
 	
+	static def boolean containsElapse(List<Act> actions) {
+		return actions.stream.anyMatch[it instanceof TimeElapse]
+	}
+	
 	static def String getRealization(Port port) {
 		switch(port.interfaceRealization.realizationMode) {
 		case PROVIDED:
@@ -41,6 +49,12 @@ class TestGeneratorUtil {
 		default:
 			return 'In'
 		}
+	}
+	
+	static def boolean isNecessary(Expression expression) {
+		if (EcoreUtil2.getAllContentsOfType(expression, ComponentInstanceVariableReferenceExpression).size > 0)
+			return false
+		return true
 	}
 	
 	static def boolean containsArray(Expression expression) {

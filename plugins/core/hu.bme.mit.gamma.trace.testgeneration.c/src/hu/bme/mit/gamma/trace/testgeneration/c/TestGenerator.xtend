@@ -33,6 +33,7 @@ class TestGenerator {
 	def String generate() {
 		val List<String> timers = newArrayList
 		trace.steps.forEach[step | step.actions.forEach[action | if (action instanceof TimeElapseImpl) timers.add(expressionSerializer.serialize(action.elapsedTime, ''))]]
+		timers += '0' // No time elapsed
 		
 		return '''
 			#include <stdio.h>
@@ -63,8 +64,9 @@ class TestGenerator {
 			
 			«FOR index : 0 ..< trace.steps.size SEPARATOR System.lineSeparator»
 				void test_step«index»() {
+					«IF !trace.steps.get(index).actions.containsElapse»statechart.getElapsed = &getElapsed0;«ENDIF»
 					«FOR action : trace.steps.get(index).actions SEPARATOR System.lineSeparator»«actSerializer.serialize(action, trace.component.name)»«ENDFOR»
-					«FOR expression : trace.steps.get(index).asserts SEPARATOR System.lineSeparator»«expression.testMethod»(«expressionSerializer.serialize(expression, trace.component.name)»«expression.testParameter.toString»);«ENDFOR»
+					«FOR expression : trace.steps.get(index).asserts.filter[it.necessary] SEPARATOR System.lineSeparator»«expression.testMethod»(«expressionSerializer.serialize(expression, trace.component.name)»«expression.testParameter.toString»);«ENDFOR»
 				}
 			«ENDFOR»
 			
