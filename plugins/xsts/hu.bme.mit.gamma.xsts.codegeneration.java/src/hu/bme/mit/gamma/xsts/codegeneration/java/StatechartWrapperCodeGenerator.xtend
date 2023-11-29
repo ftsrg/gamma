@@ -116,13 +116,17 @@ class StatechartWrapperCodeGenerator {
 		
 			/** Changes the event queues of the component instance. Should be used only be the container (composite system) class. */
 			public void changeEventQueues() {
-			insertQueue = !insertQueue;
-			processQueue = !processQueue;
+				«IF gammaStatechart.synchronousStatechart»
+					insertQueue = !insertQueue;
+					processQueue = !processQueue;
+				«ENDIF»
 			}
 			
 			/** Changes the event queues to which the events are put. Should be used only be a cascade container (composite system) class. */
 			public void changeInsertQueue() {
-				insertQueue = !insertQueue;
+				«IF gammaStatechart.synchronousStatechart»
+					insertQueue = !insertQueue;
+				«ENDIF»
 			}
 			
 			/** Returns whether the eventQueue containing incoming messages is empty. Should be used only be the container (composite system) class. */
@@ -140,10 +144,14 @@ class StatechartWrapperCodeGenerator {
 			
 			/** Returns the event queue from which events should be inspected in the particular cycle. */
 			private Queue<Event> getProcessQueue() {
-				if (processQueue) {
-					return eventQueue1;
-				}
-				return eventQueue2;
+				«IF gammaStatechart.synchronousStatechart»
+					if (processQueue) {
+						return eventQueue1;
+					}
+					return eventQueue2;
+				«ELSE»
+					return getInsertQueue();
+				«ENDIF»
 			}
 			
 			«FOR port : gammaStatechart.ports SEPARATOR System.lineSeparator»
@@ -197,7 +205,7 @@ class StatechartWrapperCodeGenerator {
 			
 			public void runComponent() {
 				Queue<Event> eventQueue = getProcessQueue();
-				while (!eventQueue.isEmpty()) {
+				«IF gammaStatechart.synchronousStatechart»while«ELSE»if«ENDIF» (!eventQueue.isEmpty()) {
 					«GAMMA_EVENT_CLASS» event = eventQueue.remove();
 					switch (event.getEvent()) {
 						«FOR port : gammaStatechart.ports»
@@ -286,7 +294,7 @@ class StatechartWrapperCodeGenerator {
 			}
 		}
 	'''
-
+	
 	def getClassName() {
 		return CLASS_NAME
 	}

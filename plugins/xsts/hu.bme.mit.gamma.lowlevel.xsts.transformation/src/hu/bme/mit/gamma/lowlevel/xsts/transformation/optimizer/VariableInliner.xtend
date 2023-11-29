@@ -255,6 +255,7 @@ class VariableInliner {
 	//
 	
 	protected def inlineLocalVariablesAndAssignmentsIntoSubsequentAssignments(List<? extends Action> actions) {
+		val removableActions = newArrayList
 		// The remaining local VariableDeclarationActions are not removed;
 		// it is done separately by RemovableVariableRemover.removeTransientVariables
 		for (var i = 0; i < actions.size - 1; i++) {
@@ -295,12 +296,13 @@ class VariableInliner {
 							}
 						}
 						// Remove first
-						first.remove
-						i--
+						removableActions += first
 					}
 				}
 			}
 		}
+		//
+		removableActions.forEach[it.remove]
 	}
 	
 	// Auxiliary
