@@ -600,7 +600,8 @@ class ActionOptimizer {
 								val xStsInBetweenAction = xStsActions.get(k)
 								val variable = lhs.accessedDeclaration
 								// Not perfect for arrays: a[0] := 1; b := a[2]; a[0] := 2;
-								if (xStsInBetweenAction.readVariables.contains(variable)) {
+								val readVariables = xStsInBetweenAction.readVariables
+								if (readVariables.contains(variable)) {
 									isVariableRead = true
 								}
 							}

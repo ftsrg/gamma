@@ -405,8 +405,15 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 		readVariables.addAll(
 				expressionUtil.getReferredVariables(
 						action.getRhs()));
-		readVariables.removeAll(
-				getWrittenVariables(action)); // Removing the array vars
+		
+		Set<VariableDeclaration> writtenVariables = getWrittenVariables(action); 
+		// Removing the array vars - is this correct? Why do we remove arrays?
+		for (VariableDeclaration writtenVariable : writtenVariables) {
+			if (isArray(writtenVariable)) {
+				readVariables.remove(writtenVariable);
+			}
+		}
+		//
 		
 		return readVariables;
 	}
