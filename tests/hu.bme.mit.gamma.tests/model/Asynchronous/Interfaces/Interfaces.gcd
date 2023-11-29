@@ -5,6 +5,7 @@ interface ExecuteAsynchronous {
 }
 
 interface AddSubtract {
+	out persistent event init(initValue : integer)
 	out event add
 	out event subtract
 }

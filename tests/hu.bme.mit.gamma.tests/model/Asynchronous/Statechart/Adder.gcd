@@ -13,7 +13,7 @@ statechart Adder [
 		state A
 	}
 	
-	transition from Initial to A
+	transition from Initial to A / raise Toggle.init(10);
 	transition from A to A when Execute.^execute / raise Toggle.add; count := count + 1;
 	
 }
