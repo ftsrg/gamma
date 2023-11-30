@@ -12,6 +12,7 @@ import java.util.List
 import hu.bme.mit.gamma.trace.model.Act
 import hu.bme.mit.gamma.trace.model.TimeElapse
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression
+import hu.bme.mit.gamma.expression.model.InjectedVariableDeclarationAnnotation
 
 class TestGeneratorUtil {
 	
@@ -52,6 +53,7 @@ class TestGeneratorUtil {
 	}
 	
 	static def boolean isNecessary(Expression expression) {
+		val variables = EcoreUtil2.getAllContentsOfType(expression, ComponentInstanceVariableReferenceExpression).filter[it.variableDeclaration.annotations.stream.anyMatch[it instanceof InjectedVariableDeclarationAnnotation]]
 		if (EcoreUtil2.getAllContentsOfType(expression, ComponentInstanceVariableReferenceExpression).size > 0)
 			return false
 		return true
