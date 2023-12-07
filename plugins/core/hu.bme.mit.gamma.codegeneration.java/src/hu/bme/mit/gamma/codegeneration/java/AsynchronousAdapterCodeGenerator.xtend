@@ -169,7 +169,7 @@ class AsynchronousAdapterCodeGenerator {
 							switch (eventId) {
 								«FOR match : QueuesOfClocks.Matcher.on(engine).getAllMatches(component, null, null)»
 									case «match.clock.name»:
-										«match.queue.name».offer(new Event("«match.clock.name»"));
+										«match.queue.name».«match.queue.additionMethodName»(new Event("«match.clock.name»"));
 									break;
 								«ENDFOR»
 								default:
