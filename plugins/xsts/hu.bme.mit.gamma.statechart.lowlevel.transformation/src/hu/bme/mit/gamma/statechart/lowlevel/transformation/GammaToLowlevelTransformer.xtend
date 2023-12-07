@@ -51,4 +51,8 @@ class GammaToLowlevelTransformer {
 		return lowlevelPackage
 	}
 	
+	def getTrace() {
+		return transformer.trace
+	}
+	
 }
