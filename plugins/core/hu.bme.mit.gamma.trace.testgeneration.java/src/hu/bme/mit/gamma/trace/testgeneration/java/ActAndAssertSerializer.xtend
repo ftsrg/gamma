@@ -81,7 +81,8 @@ class ActAndAssertSerializer {
 	'''
 
 	def dispatch String serialize(RaiseEventAct raiseEvent) '''
-		«TEST_INSTANCE_NAME».raiseEvent("«raiseEvent.port.name»", "«raiseEvent.event.name»", new Object[] {«FOR param : raiseEvent.arguments BEFORE " " SEPARATOR ", " AFTER " "»«param.serialize»«ENDFOR»});
+		«TEST_INSTANCE_NAME».raiseEvent("«raiseEvent.port.name»", "«raiseEvent.event.name»"«IF
+				!raiseEvent.arguments.empty», new Object[] {«FOR param : raiseEvent.arguments BEFORE " " SEPARATOR ", " AFTER " "»«param.serialize»«ENDFOR»}«ENDIF»);
 	'''
 
 	def dispatch String serialize(TimeElapse elapse) '''
