@@ -74,6 +74,8 @@ import hu.bme.mit.gamma.verification.util.AbstractVerifier.Result;
 
 public class VerificationHandler extends TaskHandler {
 
+	public final List<VerificationResult> retrievedVerificationResults = new ArrayList<>();
+	
 	protected boolean serializeTraces; // Denotes whether traces are serialized
 	protected boolean serializeTest; // Denotes whether test code is generated
 	protected String testFolderUri;
@@ -166,7 +168,6 @@ public class VerificationHandler extends TaskHandler {
 		boolean isOptimize = verification.isOptimize();
 		
 		// Retrieved traces
-		List<VerificationResult> retrievedVerificationResults = new ArrayList<VerificationResult>();
 		List<ExecutionTrace> retrievedTraces = new ArrayList<ExecutionTrace>();
 		
 		// Map for collecting both supported property representations
@@ -243,13 +244,16 @@ public class VerificationHandler extends TaskHandler {
 				traceUtil.addComment(trace, serializedFormula);
 			}
 			
-			TimeUnit timeUnit = TimeUnit.MILLISECONDS;
-			long elapsed = stopwatch.elapsed(timeUnit);
-			String elapsedString = elapsed + " " + timeUnit;
+			long elapsedMS = stopwatch.elapsed(TimeUnit.MILLISECONDS);
 			
-			retrievedVerificationResults.add(
-				new VerificationResult(
-					serializedFormula, verificationResult, arguments, elapsedString));
+			VerificationResult resultTemp = new VerificationResult();
+			resultTemp.setQuery(serializedFormula);
+			resultTemp.setResult(verificationResult);
+			resultTemp.setParameters(arguments);
+			resultTemp.setExecutionTimeMS(elapsedMS);
+			resultTemp.setTraceSvgPath(targetFolderUri + "/" + svgFileName + retrievedVerificationResults.size() + ".svg");			
+			
+			retrievedVerificationResults.add(resultTemp);
 			
 			// Checking if some of the unchecked properties are already covered
 			if (isOptimize) {
@@ -487,26 +491,52 @@ public class VerificationHandler extends TaskHandler {
 			fileUtil.saveString(resultFolderUri + File.separator + fileName, jsonResult);
 		}
 		
-		@SuppressWarnings("unused")
-		public static class VerificationResult {
+		public static class VerificationResult {			
+			private String traceSvgPath = "";
+			private long executionTimeMS = -1;			
+			private String query = "";
+			private ThreeStateBoolean result = ThreeStateBoolean.UNDEF;
+			private String[] parameters = { };
 			
-			private String query;
-			private ThreeStateBoolean result;
-			private String[] parameters;
-			private String executionTime;
-			
-			public VerificationResult(String query, ThreeStateBoolean result) {
-				this(query, result, null, null);
+			public String getTraceSvgPath() {
+				return traceSvgPath;
 			}
 			
-			public VerificationResult(String query, ThreeStateBoolean result,
-					String[] parameters, String executionTime) {
-				this.query = query;
-				this.result = result;
-				this.parameters = parameters;
-				this.executionTime = executionTime;
+			public void setTraceSvgPath(String value) {
+				traceSvgPath = value;
 			}
 			
+			public long getExecutionTimeMS() {
+				return executionTimeMS;
+			}
+			
+			public void setExecutionTimeMS(long value) {
+				executionTimeMS = value;
+			}
+			
+			public String getQuery() {
+				return query;
+			}
+			
+			public void setQuery(String value) {
+				query = value;
+			}
+			
+			public ThreeStateBoolean getResult() {
+				return result;
+			}
+			
+			public void setResult(ThreeStateBoolean value) {
+				result = value;
+			}
+			
+			public String[] getParameters() {
+				return parameters;
+			}
+			
+			public void setParameters(String[] value) {
+				parameters = value;
+			}
 		}
 		
 	}
