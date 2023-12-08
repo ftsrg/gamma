@@ -241,11 +241,11 @@ public class VerificationHandler extends TaskHandler {
 			long elapsedMS = stopwatch.elapsed(TimeUnit.MILLISECONDS);
 			
 			VerificationResult resultTemp = new VerificationResult();
-			resultTemp.query = serializedFormula;
-			resultTemp.result = verificationResult;
-			resultTemp.parameters = arguments;
-			resultTemp.executionTimeMS = elapsedMS;
-			resultTemp.traceSvgPath = targetFolderUri + "/" + svgFileName + retrievedVerificationResults.size() + ".svg";			
+			resultTemp.setQuery(serializedFormula);
+			resultTemp.setResult(verificationResult);
+			resultTemp.setParameters(arguments);
+			resultTemp.setExecutionTimeMS(elapsedMS);
+			resultTemp.setTraceSvgPath(targetFolderUri + "/" + svgFileName + retrievedVerificationResults.size() + ".svg");			
 			
 			retrievedVerificationResults.add(resultTemp);
 			
@@ -465,11 +465,51 @@ public class VerificationHandler extends TaskHandler {
 		}
 		
 		public static class VerificationResult {			
-			public String traceSvgPath = "";
-			public long executionTimeMS = -1;			
-			public String query = "";
-			public ThreeStateBoolean result = ThreeStateBoolean.UNDEF;
-			public String[] parameters = { };
+			private String traceSvgPath = "";
+			private long executionTimeMS = -1;			
+			private String query = "";
+			private ThreeStateBoolean result = ThreeStateBoolean.UNDEF;
+			private String[] parameters = { };
+			
+			public String getTraceSvgPath() {
+				return traceSvgPath;
+			}
+			
+			public void setTraceSvgPath(String value) {
+				traceSvgPath = value;
+			}
+			
+			public long getExecutionTimeMS() {
+				return executionTimeMS;
+			}
+			
+			public void setExecutionTimeMS(long value) {
+				executionTimeMS = value;
+			}
+			
+			public String getQuery() {
+				return query;
+			}
+			
+			public void setQuery(String value) {
+				query = value;
+			}
+			
+			public ThreeStateBoolean getResult() {
+				return result;
+			}
+			
+			public void setResult(ThreeStateBoolean value) {
+				result = value;
+			}
+			
+			public String[] getParameters() {
+				return parameters;
+			}
+			
+			public void setParameters(String[] value) {
+				parameters = value;
+			}
 		}
 		
 	}
