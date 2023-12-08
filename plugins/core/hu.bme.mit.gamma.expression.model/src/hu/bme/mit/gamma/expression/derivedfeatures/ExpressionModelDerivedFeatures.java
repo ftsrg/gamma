@@ -342,6 +342,16 @@ public class ExpressionModelDerivedFeatures {
 		return expression instanceof ElseExpression || expression instanceof DefaultExpression;
 	}
 	
+	public static TypeDefinition getElementTypeDefinition(Declaration declaration) {
+		Type type = declaration.getType();
+		TypeDefinition typeDefinition = getTypeDefinition(type);
+		if (typeDefinition instanceof ArrayTypeDefinition arrayTypeDefinition) {
+			return getTypeDefinition(
+					arrayTypeDefinition.getElementType());
+		}
+		return typeDefinition;
+	}
+	
 	public static TypeDefinition getTypeDefinition(Declaration declaration) {
 		Type type = declaration.getType();
 		return getTypeDefinition(type);

@@ -185,7 +185,20 @@ class XstsBackAnnotator {
 		
 		// If null - it is a default 0 value, nothing is raised
 		if (stringEventId !== null) {
-			val eventId = Integer.parseInt(stringEventId)
+			// Event ID parsing
+			val eventId = try {
+				Integer.parseInt(stringEventId) // Enum literal indexes: UPPAAL
+			} catch (NumberFormatException e) { // Enum literal names: Theta, Spin, nuXmv
+				val integerEventId = stringEventId.substring(
+						stringEventId.lastIndexOf("_") + 1) // _1 -> 1, _2 -> 2, ...
+				try {
+					Integer.parseInt(integerEventId)
+				} catch (NumberFormatException e2) {
+					checkState(stringEventId == "EMPTY") // Empty enum literal
+					0
+				}
+			}
+			//
 			if (eventId != 0) { // 0 is the "empty" cell
 				try {
 					val portEvent = messageQueue.getEvent(eventId) // Works if it is a port-event id

@@ -290,7 +290,9 @@ class GammaToXstsTransformer {
 		val typeDeclarationNames = types.map[it.name]
 		val duplications = typeDeclarationNames
 				.filter[Collections.frequency(typeDeclarationNames, it) > 1].toList
-		logger.log(Level.INFO, "The XSTS contains multiple type declarations with the same name: " + duplications)
+		if (!duplications.empty) {
+			logger.log(Level.INFO, "The XSTS contains multiple type declarations with the same name: " + duplications)
+		}
 		// It is possible that in some instances of the same region, some states are removed due to optimization
 		var id = 0
 		for (type : types) {

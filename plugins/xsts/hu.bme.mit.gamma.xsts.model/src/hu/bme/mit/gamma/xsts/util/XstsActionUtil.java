@@ -39,7 +39,9 @@ import hu.bme.mit.gamma.expression.model.OrExpression;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Type;
+import hu.bme.mit.gamma.expression.model.TypeDeclaration;
 import hu.bme.mit.gamma.expression.model.TypeDefinition;
+import hu.bme.mit.gamma.expression.model.TypeReference;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.expression.model.VariableDeclarationAnnotation;
 import hu.bme.mit.gamma.expression.util.ExpressionUtil;
@@ -431,6 +433,12 @@ public class XstsActionUtil extends ExpressionUtil {
 	
 	public VariableDeclarationAction createVariableDeclarationAction(Type type, String name) {
 		return createVariableDeclarationAction(type, name, null);
+	}
+	
+	public VariableDeclarationAction createVariableDeclarationAction(
+			TypeDeclaration type, String name, Expression expression) {
+		TypeReference typeReference = createTypeReference(type);
+		return createVariableDeclarationAction(typeReference, name, expression);
 	}
 	
 	public VariableDeclarationAction createVariableDeclarationAction(
@@ -1003,7 +1011,8 @@ public class XstsActionUtil extends ExpressionUtil {
 		if (typeDefinition instanceof ArrayTypeDefinition) {
 			ArrayTypeDefinition arrayTypeDefinition = (ArrayTypeDefinition) typeDefinition;
 			Type elementType = arrayTypeDefinition.getElementType();
-			return createVariableDeclarationAction(ecoreUtil.clone(elementType), name);
+			return createVariableDeclarationAction(
+					ecoreUtil.clone(elementType), name);
 		}
 		throw new IllegalArgumentException("Not an array: " + queue);
 	}
