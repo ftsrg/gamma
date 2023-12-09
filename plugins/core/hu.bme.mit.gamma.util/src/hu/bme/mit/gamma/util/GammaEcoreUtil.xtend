@@ -549,6 +549,19 @@ class GammaEcoreUtil {
 	
 	//
 	
+	def boolean helperDisjoint(List<? extends EObject> lhs, List<? extends EObject> rhs) {
+		for (var i = 0; i < lhs.size; i++) {
+			for (var j = 0; j < rhs.size; j++) {
+				val lhsElement = lhs.get(i)
+				val rhsElement = rhs.get(j)
+				if (lhsElement.helperEquals(rhsElement)) {
+					return false
+				}
+			}
+		}
+		return true
+	}
+	
 	def boolean helperEquals(List<? extends EObject> lhs, List<? extends EObject> rhs) {
 		if (lhs === null && rhs === null) {
 			return true

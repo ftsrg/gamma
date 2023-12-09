@@ -18,7 +18,6 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.OutputStreamWriter
 import java.util.Scanner
-import java.util.logging.Level
 
 class PromelaVerifier extends AbstractVerifier {
 	//
@@ -93,7 +92,7 @@ class PromelaVerifier extends AbstractVerifier {
 			panFile.deleteOnExit
 			
 			// Executing the command
-			logger.log(Level.INFO, "Executing command: " + searchCommand.join(" "))
+			logger.info("Executing command: " + searchCommand.join(" "))
 			process = Runtime.getRuntime().exec(searchCommand, null, execFolder)
 			val outputStream = process.inputStream
 			// Reading the result of the command
@@ -145,7 +144,7 @@ class PromelaVerifier extends AbstractVerifier {
 			nvrFile.deleteOnExit
 			
 			// Executing the trace command
-			logger.log(Level.INFO, "Executing command: " + traceCommand.join(" "))
+			logger.info("Executing command: " + traceCommand.join(" "))
 			process = Runtime.getRuntime().exec(traceCommand, null, execFolder)
 			
 			val traceOutputStream = process.inputStream

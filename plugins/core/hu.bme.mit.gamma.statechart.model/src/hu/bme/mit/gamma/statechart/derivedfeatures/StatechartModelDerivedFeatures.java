@@ -115,6 +115,7 @@ import hu.bme.mit.gamma.statechart.statechart.ForkState;
 import hu.bme.mit.gamma.statechart.statechart.InitialState;
 import hu.bme.mit.gamma.statechart.statechart.JoinState;
 import hu.bme.mit.gamma.statechart.statechart.MergeState;
+import hu.bme.mit.gamma.statechart.statechart.OnCycleTrigger;
 import hu.bme.mit.gamma.statechart.statechart.PortEventReference;
 import hu.bme.mit.gamma.statechart.statechart.PseudoState;
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction;
@@ -1246,6 +1247,19 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return controlSpecifications;
 	}
 	
+	public static boolean isWhenAnyRunOnce(AsynchronousAdapter adapter) {
+		List<ControlSpecification> controlSpecifications = adapter.getControlSpecifications();
+		for (ControlSpecification controlSpecification : controlSpecifications) {
+			SimpleTrigger trigger = controlSpecification.getTrigger();
+			ControlFunction controlFunction = controlSpecification.getControlFunction();
+			if (trigger instanceof AnyTrigger && controlFunction == ControlFunction.RUN_ONCE) {
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
 	public static boolean isRunSpecification(AsynchronousAdapter adapter, Object eventReference) {
 		List<ControlSpecification> controlSpecifications =
 				getControlSpecifications(adapter, eventReference);
@@ -2340,7 +2354,8 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	public static boolean hasParentState(StateNode node) {
 		Region parentRegion = getParentRegion(node);
-		return parentRegion.eContainer() instanceof State;
+		EObject container = parentRegion.eContainer();
+		return container instanceof State;
 	}
 	
 	public static State getParentState(StateNode node) {
@@ -2352,7 +2367,8 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		if (isTopRegion(region)) {
 			return null;
 		}
-		return getParentRegion((State) getContainingCompositeElement(region));
+		return getParentRegion(
+				(State) getContainingCompositeElement(region));
 	}
 	
 	public static List<Region> getParentRegions(Region region) {
@@ -2386,7 +2402,9 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	}
 	
 	public static List<State> getAncestors(StateNode node) {
-		if (node.eContainer().eContainer() instanceof State) {
+		EObject container = node.eContainer();
+		EObject containerContainer = container.eContainer();
+		if (containerContainer instanceof State) {
 			State parentState = getParentState(node);
 			List<State> ancestors = getAncestors(parentState);
 			ancestors.add(parentState);
@@ -2416,7 +2434,8 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	public static List<Region> getCommonRegionAncestors(StateNode lhs, StateNode rhs) {
 		List<Region> ancestors = getRegionAncestors(lhs);
-		ancestors.retainAll(getRegionAncestors(rhs));
+		ancestors.retainAll(
+				getRegionAncestors(rhs));
 		return ancestors;
 	}
 	
@@ -2558,7 +2577,8 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 			Collection<Transition> transitions) {
 		Set<PortEventReference> portEventReferenes = new HashSet<PortEventReference>();
 		for (Transition transition : transitions) {
-			portEventReferenes.addAll(getPortEventReferences(transition));
+			portEventReferenes.addAll(
+					getPortEventReferences(transition));
 		}
 		return portEventReferenes;
 	}
@@ -2569,7 +2589,8 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		transitions.add(transition);
 		if (!(source instanceof State)) {
 			for (Transition incomingTransition : getIncomingTransitions(source)) {
-				transitions.addAll(getSelfAndPrecedingTransitions(incomingTransition));
+				transitions.addAll(
+						getSelfAndPrecedingTransitions(incomingTransition));
 			}
 		}
 		return transitions;
@@ -2784,6 +2805,104 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		}
 		
 		return simpleTriggers;
+	}
+	
+	public static List<EventTrigger> unfoldIntoEventTriggers(Trigger trigger) {
+		if (trigger instanceof EventTrigger eventTrigger) {
+			EventReference eventReference = eventTrigger.getEventReference();
+			if (eventReference instanceof PortEventReference  || 
+					eventReference instanceof ClockTickReference ||
+					eventReference instanceof TimeoutEventReference) {
+				return List.of(eventTrigger);
+			}
+			if (eventReference instanceof AnyPortEventReference anyPortEventReference) {
+				List<EventTrigger> newEventTriggers = new ArrayList<EventTrigger>();
+				
+				Port port = anyPortEventReference.getPort();
+				List<Event> inputEvents = getInputEvents(port);
+				for (Event inputEvent : inputEvents) {
+					EventTrigger newEventTrigger = statechartUtil.createEventTrigger(port, inputEvent);
+					newEventTriggers.add(newEventTrigger);
+				}
+				
+				return newEventTriggers;
+			}
+			else {
+				throw new IllegalArgumentException("Not supported trigger: " + trigger);
+			}
+		}
+		else if (trigger instanceof AnyTrigger) {
+			List<EventTrigger> newEventTriggers = new ArrayList<EventTrigger>();
+			
+			StatechartDefinition statechart = getContainingStatechart(trigger);
+
+			List<Port> ports = getAllPorts(statechart);
+			for (Port port : ports) {
+				List<Event> inputEvents = getInputEvents(port);
+				for (Event inputEvent : inputEvents) {
+					EventTrigger newEventTrigger = statechartUtil.createEventTrigger(port, inputEvent);
+					newEventTriggers.add(newEventTrigger);
+				}
+			}
+			
+			return newEventTriggers;
+		}
+		else if (trigger instanceof UnaryTrigger unaryTrigger) {
+			Trigger operand = unaryTrigger.getOperand();
+			return unfoldIntoEventTriggers(operand);
+		}
+		else if (trigger instanceof BinaryTrigger binaryTrigger) {
+			List<EventTrigger> newEventTriggers = new ArrayList<EventTrigger>();
+			
+			Trigger leftOperand = binaryTrigger.getLeftOperand();
+			Trigger rightOperand = binaryTrigger.getRightOperand();
+			
+			newEventTriggers.addAll(
+					unfoldIntoEventTriggers(leftOperand));
+			newEventTriggers.addAll(
+					unfoldIntoEventTriggers(rightOperand));
+			
+			return newEventTriggers;
+		}
+		// On cycle trigger
+		throw new IllegalArgumentException("Not supported trigger: " + trigger);
+	}
+	
+	public static boolean areTriggersDisjoint(Transition lhs, Transition rhs) {
+		List<Transition> transitions = new ArrayList<Transition>();
+		
+		transitions.add(lhs);
+		transitions.add(rhs);
+		
+		return areTriggersDisjoint(transitions);
+	}
+	
+	public static boolean areTriggersDisjoint(List<? extends Transition> transitions) {
+		if (transitions.size() < 2) {
+			return true;
+		}
+		
+		Map<Transition, List<EventTrigger>> triggers = new LinkedHashMap<Transition, List<EventTrigger>>();
+		
+		for (Transition transition : transitions) {
+			Trigger trigger = transition.getTrigger();
+			if (trigger instanceof OnCycleTrigger) {
+				return false;
+			}
+			
+			List<EventTrigger> eventTriggers = unfoldIntoEventTriggers(trigger);
+			
+			Collection<List<EventTrigger>> previousEventTriggers = triggers.values();
+			for (List<EventTrigger> previousEventTrigger : previousEventTriggers) {
+				if (!ecoreUtil.helperDisjoint(eventTriggers, previousEventTrigger)) {
+					return false;
+				}
+			}
+			
+			triggers.put(transition, eventTriggers);
+		}
+		
+		return true;
 	}
 	
 	public static boolean hasTrigger(Transition transition) {

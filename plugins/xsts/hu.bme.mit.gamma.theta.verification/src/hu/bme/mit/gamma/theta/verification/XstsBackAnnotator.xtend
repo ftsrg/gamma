@@ -194,7 +194,7 @@ class XstsBackAnnotator {
 				try {
 					Integer.parseInt(integerEventId)
 				} catch (NumberFormatException e2) {
-					checkState(stringEventId == "EMPTY") // Empty enum literal
+					checkState(stringEventId.endsWith("EMPTY"), stringEventId) // Empty enum literal
 					0
 				}
 			}

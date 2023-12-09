@@ -16,7 +16,6 @@ import hu.bme.mit.gamma.verification.result.ThreeStateBoolean
 import hu.bme.mit.gamma.verification.util.AbstractVerifier
 import java.io.File
 import java.util.Scanner
-import java.util.logging.Level
 
 class NuxmvVerifier extends AbstractVerifier {
 	//
@@ -104,7 +103,7 @@ class NuxmvVerifier extends AbstractVerifier {
 		val commandExtension = parameters.commandLineArgumentExtension
 		val nuXmvCommandExtension = commandExtension.nullOrEmpty ? #[] : #[commandExtension]
 		val nuXmvCommand = #["nuXmv"] + nuXmvCommandExtension + #["-source", commandFile.absolutePath]
-		logger.log(Level.INFO, "Running nuXmv: " + nuXmvCommand.join(" "))
+		logger.info("Running nuXmv: " + nuXmvCommand.join(" "))
 		
 		var Scanner resultReader = null
 		
@@ -122,7 +121,7 @@ class NuxmvVerifier extends AbstractVerifier {
 			while (!resultFound && resultReader.hasNextLine) {
 				val line = resultReader.nextLine
 				if (!line.startsWith("***") && !line.nullOrEmpty) { // No header printing
-					logger.log(Level.INFO, "nuXmv: " + line)
+					logger.info("nuXmv: " + line)
 				}
 				if (line.matches(resultPattern)) {
 					resultFound = true
@@ -135,10 +134,10 @@ class NuxmvVerifier extends AbstractVerifier {
 				}
 			}
 			if (!resultFound) {
-				logger.log(Level.SEVERE, "nuXmv could not verify the model with the property: " + query)
+				logger.severe("nuXmv could not verify the model with the property: " + query)
 				val errorScanner = new Scanner(process.errorReader)
 				while (errorScanner.hasNext) {
-					logger.log(Level.SEVERE, "nuXmv: " + errorScanner.nextLine)
+					logger.severe("nuXmv: " + errorScanner.nextLine)
 				}
 			}
 			result = result.adaptResult
@@ -150,7 +149,7 @@ class NuxmvVerifier extends AbstractVerifier {
 			
 			traceResult = new Result(result, trace)
 			
-			logger.log(Level.INFO, "Quitting nuXmv shell")
+			logger.info("Quitting nuXmv shell")
 		} finally {
 			resultReader?.close
 			cancel
@@ -190,7 +189,7 @@ class NuxmvVerifier extends AbstractVerifier {
 			commandFile.deleteOnExit
 			
 			val nuXmvCommand = #["nuXmv"] + nuXmvCommandExtension + #["-source", commandFile.absolutePath]
-			logger.log(Level.INFO, "Running nuXmv to discretize timed model: " + nuXmvCommand.join(" "))
+			logger.info("Running nuXmv to discretize timed model: " + nuXmvCommand.join(" "))
 			
 			val process = Runtime.getRuntime().exec(nuXmvCommand)
 			process.waitFor
@@ -212,7 +211,7 @@ class NuxmvVerifier extends AbstractVerifier {
 		fileUtil.saveString(commandFile, serializedCommand)
 		
 		val nuXmvCommand = #["nuXmv", "-source", commandFile.absolutePath] // No 'nuXmvCommandExtension' - always untimed SMV model
-		logger.log(Level.INFO, "Running nuXmv to convert property to invariance: " + nuXmvCommand.join(" "))
+		logger.info("Running nuXmv to convert property to invariance: " + nuXmvCommand.join(" "))
 		
 		var Scanner resultReader = null
 		
@@ -228,16 +227,16 @@ class NuxmvVerifier extends AbstractVerifier {
 					!line.startsWith(PARSING_ERROR) && !line.startsWith(ERROR)) {
 				line = resultReader.nextLine
 				if (!line.startsWith("***") && !line.nullOrEmpty) { // No header printing
-					logger.log(Level.INFO, "nuXmv: " + line)
+					logger.info("nuXmv: " + line)
 				}
 			}
 			if (line.startsWith(PROPERTY_START)) {
 				val convertedProperty = line.substring(PROPERTY_START.length)
-				logger.log(Level.INFO, "Property is convertible to safety property: " + convertedProperty)
+				logger.info("Property is convertible to safety property: " + convertedProperty)
 				return convertedProperty -> queryAdapter.queryInverted
 			}
 			else {
-				logger.log(Level.INFO, "Property is not convertible to safety property")
+				logger.info("Property is not convertible to safety property")
 				return null
 			}
 		} catch (Exception e) {
