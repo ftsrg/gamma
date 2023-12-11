@@ -4,7 +4,7 @@
     editDirectory="/hu.bme.mit.gamma.statechart.lowlevel.model.edit/src-gen" editorDirectory="/hu.bme.mit.gamma.statechart.lowlevel.model.editor/src-gen"
     modelPluginID="hu.bme.mit.gamma.statechart.lowlevel.model" modelName="Statechart"
     rootExtendsClass="org.eclipse.emf.ecore.impl.MinimalEObjectImpl$Container" importerID="org.eclipse.emf.importer.ecore"
-    complianceLevel="8.0" copyrightFields="false" usedGenPackages="../../hu.bme.mit.gamma.action.model/model/action.genmodel#//model ../../hu.bme.mit.gamma.expression.model/model/expression.genmodel#//model"
+    complianceLevel="17.0" copyrightFields="false" usedGenPackages="../../hu.bme.mit.gamma.action.model/model/action.genmodel#//model ../../hu.bme.mit.gamma.expression.model/model/expression.genmodel#//model"
     operationReflection="true" importOrganizing="true">
   <foreignModel>model.ecore</foreignModel>
   <genPackages prefix="StatechartModel" basePackage="hu.bme.mit.gamma.statechart.lowlevel"
@@ -73,6 +73,7 @@
     <genClasses ecoreClass="model.ecore#//State">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//State/entryAction"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//State/exitAction"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//State/invariants"/>
     </genClasses>
     <genClasses ecoreClass="model.ecore#//EventDeclaration">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute model.ecore#//EventDeclaration/direction"/>
