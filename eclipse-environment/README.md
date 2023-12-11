@@ -1,15 +1,15 @@
 # Installation of 3rd-party Eclipse components using Eclipse Oomph Installer
-The hu.bme.mit.gamma.oomph project provides a configuration file for the [Eclipse Installer](https://wiki.eclipse.org/Eclipse_Installer) which eases the creation of reproducible development environments. 
+
+The `hu.bme.mit.gamma.oomph` project provides a configuration file for the [Eclipse Installer](https://wiki.eclipse.org/Eclipse_Installer) which eases the creation of reproducible development environments. 
 
 1. Download the Eclipse Installer from `https://www.eclipse.org/downloads/packages/installer`.
 
-1. Clone our GitHub repository from the URL below.
-`https://github.com/ftsrg/gamma`
+1. Clone our GitHub repository from using the following URL: `https://github.com/ftsrg/gamma`.
    
 1. Open Eclipse Installer and switch to Advanced mode:
 ![Start Eclipse Installer in Advanced Mode](images/eclipse-installer.png)
 
-1. Select `Eclipse IDE for Java and DSL Developers` with `Product Version`: `2023-06` and `Java VM`: `JRE 17.0.0+` options.
+1. Select `Eclipse IDE for Java and DSL Developers` with `Product Version`: `2023-09` and `Java VM`: `JRE 17.0.0+` options.
 ![Eclipse IDE for Java and DSL Developers](images/eclipse-dsl.png)
 
 1. Add the [`gamma.setup`](hu.bme.mit.gamma.oomph/gamma.setup) file as a `GitHub User Project`. 

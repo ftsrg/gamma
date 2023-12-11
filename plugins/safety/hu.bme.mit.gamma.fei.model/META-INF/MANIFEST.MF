@@ -10,7 +10,7 @@ Export-Package: hu.bme.mit.gamma.fei.model,
  hu.bme.mit.gamma.fei.model.impl,
  hu.bme.mit.gamma.fei.model.util,
  hu.bme.mit.gamma.fei.util
-Bundle-Version: 2.9.0.qualifier
+Bundle-Version: 2.10.0.qualifier
 Bundle-ClassPath: .
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.emf.ecore;visibility:=reexport,

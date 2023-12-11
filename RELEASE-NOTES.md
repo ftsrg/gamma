@@ -262,3 +262,18 @@
 * Clock handling in XSTS-UPPAAL models has been improved.
 * The Promela mapping has been improved.
 * The model checking of asynchronous-reactive models has been improved.
+
+## 2023.12.11. - Version 2.10.0
+
+### What is New
+
+* Gamma now supports nuXmv as a model checker back-end.
+* Gamma now supports safety assessment via the integration with xSAP.
+* Gamma now has its own Eclipse perspective.
+* Gamma now supports message demultiplexing in the message queues of asynchronous adapters.
+
+### Improvements
+
+* Bugs related to system reset and time-dependent behavior have been fixed in the Java code generator.
+* Optimization regarding variable assignments and boolean expressions has been introduced in the XSTS mapping.
+* Optimization regarding semantic variation points in statecharts has been introduced in the statechart optimizer.

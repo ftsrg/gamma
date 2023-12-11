@@ -3,7 +3,7 @@
 To use the visualization function, you need to install the following tools:
 
 * Graphviz 2.44.1,
-* PlantUML Eclipse plugin - Version 1.1.29
+* PlantUML Eclipse plugin - Version 1.1.30
 
 ## Graphviz
 
