@@ -668,6 +668,22 @@ public class StatechartModelValidator extends ActionModelValidator {
 		return validationResultMessages;
 	}
 	
+	public Collection<ValidationResultMessage> checkStateInvariants(State state) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		
+		List<Expression> invariants = state.getInvariants();
+		for (Expression invariant : invariants) {
+			if (!typeDeterminator.isBoolean(invariant)) {
+				int index = invariants.indexOf(invariant);
+				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+					"A state invariant must be a boolean expression",  
+						new ReferenceInfo(StatechartModelPackage.Literals.STATE__INVARIANTS, index)));
+			}
+		}
+		
+		return validationResultMessages;
+	}
+	
 	public Collection<ValidationResultMessage> checkElseTransitionPriority(Transition transition) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		if (StatechartModelDerivedFeatures.isElse(transition)) {

@@ -370,6 +370,12 @@ class StatechartToLowlevelTransformer {
 		// Entry and exit actions
 		lowlevelState.entryAction = state.entryActions.transformActions
 		lowlevelState.exitAction = state.exitActions.transformActions
+		
+		val invariants = state.invariants
+		if (!invariants.empty) {
+			lowlevelState.invariants += invariants.map[it.transformSimpleExpression]
+		}
+		
 		return lowlevelState
 	}
 
