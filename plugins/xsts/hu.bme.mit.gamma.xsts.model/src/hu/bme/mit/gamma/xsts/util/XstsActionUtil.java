@@ -49,6 +49,7 @@ import hu.bme.mit.gamma.util.GammaEcoreUtil;
 import hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures;
 import hu.bme.mit.gamma.xsts.model.AbstractAssignmentAction;
 import hu.bme.mit.gamma.xsts.model.Action;
+import hu.bme.mit.gamma.xsts.model.ActionAnnotation;
 import hu.bme.mit.gamma.xsts.model.AssignmentAction;
 import hu.bme.mit.gamma.xsts.model.AssumeAction;
 import hu.bme.mit.gamma.xsts.model.CompositeAction;
@@ -76,6 +77,8 @@ public class XstsActionUtil extends ExpressionUtil {
 	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
 	protected final ExpressionModelFactory expressionFactory = ExpressionModelFactory.eINSTANCE;
 	protected final XSTSModelFactory xStsFactory = XSTSModelFactory.eINSTANCE;
+	
+	//
 	
 	public XSTS createXsts(String name) {
 		XSTS xSts = xStsFactory.createXSTS();
@@ -152,7 +155,6 @@ public class XstsActionUtil extends ExpressionUtil {
 		pivot.getTypeDeclarations().addAll(mergable.getTypeDeclarations());
 		pivot.getPublicTypeDeclarations().addAll(mergable.getPublicTypeDeclarations());
 		pivot.getVariableDeclarations().addAll(mergable.getVariableDeclarations());
-		pivot.getConstraints().addAll(mergable.getConstraints());
 		mergeVariableGroups(pivot, mergable);
 	}
 	
@@ -992,6 +994,17 @@ public class XstsActionUtil extends ExpressionUtil {
 	
 	public void addStrictControlAnnotation(VariableDeclaration variable) {
 		addAnnotation(variable, xStsFactory.createStrictControlVariableDeclarationAnnotation());
+	}
+	
+	public void addInvariantAnnotation(AssumeAction action) {
+		addAnnotation(action, xStsFactory.createInvariantAnnotation());
+	}
+	
+	public void addAnnotation(Action action, ActionAnnotation annotation) {
+		if (action != null) {
+			List<ActionAnnotation> annotations = action.getAnnotations();
+			annotations.add(annotation);
+		}
 	}
 	
 	public void deleteDeclaration(Declaration declaration) {

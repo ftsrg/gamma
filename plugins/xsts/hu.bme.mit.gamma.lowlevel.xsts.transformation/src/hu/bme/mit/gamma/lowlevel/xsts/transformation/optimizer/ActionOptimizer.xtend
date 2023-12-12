@@ -654,8 +654,8 @@ class ActionOptimizer {
 	
 	protected def void deleteUnnecessaryAssumeActions(Action action) {
 		for (assumeAction : action.getAllContentsOfType(AssumeAction)) {
-			if (assumeAction.isUnnecessary) {
-				assumeAction.delete
+			if (assumeAction.unnecessary) {
+				assumeAction.remove
 			}
 		}
 	}
@@ -688,12 +688,16 @@ class ActionOptimizer {
 			return false // We must not delete assumptions from choices, because that may lead to a deadlock
 		}
 		
+		if (action.isInvariant) {
+			return false
+		}
+		
 		val assumption = action.assumption
 		if (assumption.definitelyTrueExpression) {
 			return true
 		}
 		
-		return false // TODO every outcome is false apart from the first branch; shouldn't this be true?
+		return false // TODO every outcome is false apart from the last branch; shouldn't this be true?
 	}
 	
 	// Non deterministic actions

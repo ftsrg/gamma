@@ -77,7 +77,7 @@ class XstsToUppaalTransformer {
 		environmentalAction.transformIntoCfa(stableLocation, environmentFinishLocation)
 		
 		if (mergedAction.isOrContainsTypes(#[NonDeterministicAction, HavocAction]) ||
-				xSts.hasClockVariable) {
+				xSts.hasClockVariable || xSts.hasInvariants) {
 			// For nondeterministic cases, UPPAAL functions cannot be used
 			mergedAction.transformIntoCfa(environmentFinishLocation, stableLocation)
 		}

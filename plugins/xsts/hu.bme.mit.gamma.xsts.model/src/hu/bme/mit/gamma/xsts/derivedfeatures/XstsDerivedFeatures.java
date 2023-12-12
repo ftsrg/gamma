@@ -38,12 +38,14 @@ import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.util.Triple;
 import hu.bme.mit.gamma.xsts.model.AbstractAssignmentAction;
 import hu.bme.mit.gamma.xsts.model.Action;
+import hu.bme.mit.gamma.xsts.model.ActionAnnotation;
 import hu.bme.mit.gamma.xsts.model.AssignmentAction;
 import hu.bme.mit.gamma.xsts.model.AssumeAction;
 import hu.bme.mit.gamma.xsts.model.AtomicAction;
 import hu.bme.mit.gamma.xsts.model.EmptyAction;
 import hu.bme.mit.gamma.xsts.model.HavocAction;
 import hu.bme.mit.gamma.xsts.model.IfAction;
+import hu.bme.mit.gamma.xsts.model.InvariantAnnotation;
 import hu.bme.mit.gamma.xsts.model.LoopAction;
 import hu.bme.mit.gamma.xsts.model.MultiaryAction;
 import hu.bme.mit.gamma.xsts.model.PrimedVariable;
@@ -62,16 +64,36 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 	
 	//
 	
+	public static boolean isContainedByXsts(EObject object) {
+		return getContainingXsts(object) != null;
+	}
+	
 	public static XSTS getContainingXsts(EObject object) {
 		return ecoreUtil.getSelfOrContainerOfType(object, XSTS.class);
 	}
 	
 	public static boolean hasAnnotation(XSTS xSts, Class<? extends XstsAnnotation> annotation) {
-		return xSts.getAnnotations().stream().anyMatch(it -> annotation.isInstance(it));
+		List<XstsAnnotation> annotations = xSts.getAnnotations();
+		return annotations.stream().anyMatch(it -> annotation.isInstance(it));
+	}
+	
+	public static boolean hasAnnotation(Action action, Class<? extends ActionAnnotation> annotation) {
+		List<ActionAnnotation> annotations = action.getAnnotations();
+		return annotations.stream().anyMatch(it -> annotation.isInstance(it));
 	}
 	
 	public static boolean hasClockVariable(XSTS xSts) {
-		return xSts.getVariableDeclarations().stream().anyMatch(it -> isClock(it));
+		List<VariableDeclaration> variableDeclarations = xSts.getVariableDeclarations();
+		return variableDeclarations.stream().anyMatch(it -> isClock(it));
+	}
+	
+	public static boolean hasInvariants(XSTS xSts) {
+		List<AssumeAction> actions = ecoreUtil.getAllContentsOfType(xSts, AssumeAction.class);
+		return actions.stream().anyMatch(it -> isInvariant(it));
+	}
+	
+	public static boolean isInvariant(Action action) {
+		return hasAnnotation(action, InvariantAnnotation.class);
 	}
 	
 	public static List<VariableDeclaration> getClockVariables(XSTS xSts) {

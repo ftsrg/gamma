@@ -3,7 +3,7 @@
     xmlns:genmodel="http://www.eclipse.org/emf/2002/GenModel" modelDirectory="/hu.bme.mit.gamma.xsts.model/src-gen" editDirectory="/hu.bme.mit.gamma.xsts.model.edit/src-gen"
     editorDirectory="/hu.bme.mit.gamma.xsts.model.editor/src-gen" modelPluginID="hu.bme.mit.gamma.xsts.model"
     modelName="XSTS" rootExtendsClass="org.eclipse.emf.ecore.impl.MinimalEObjectImpl$Container"
-    importerID="org.eclipse.emf.importer.ecore" complianceLevel="8.0" copyrightFields="false"
+    importerID="org.eclipse.emf.importer.ecore" complianceLevel="17.0" copyrightFields="false"
     language="" usedGenPackages="../../hu.bme.mit.gamma.expression.model/model/expression.genmodel#//model"
     operationReflection="true" importOrganizing="true">
   <foreignModel>model.ecore</foreignModel>
@@ -14,7 +14,6 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//XSTS/typeDeclarations"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//XSTS/publicTypeDeclarations"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//XSTS/variableDeclarations"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//XSTS/constraints"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//XSTS/variableGroups"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//XSTS/variableInitializingTransition"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//XSTS/configurationInitializingTransition"/>
@@ -42,7 +41,9 @@
     <genClasses ecoreClass="model.ecore#//EventGroup"/>
     <genClasses ecoreClass="model.ecore#//ComponentGroup"/>
     <genClasses ecoreClass="model.ecore#//PlainVariableGroup"/>
-    <genClasses ecoreClass="model.ecore#//Action"/>
+    <genClasses ecoreClass="model.ecore#//Action">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//Action/annotations"/>
+    </genClasses>
     <genClasses ecoreClass="model.ecore#//AtomicAction"/>
     <genClasses ecoreClass="model.ecore#//NonDeterministicAction"/>
     <genClasses ecoreClass="model.ecore#//SequentialAction"/>
@@ -98,6 +99,8 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//AbstractAssignmentAction/lhs"/>
     </genClasses>
     <genClasses image="false" ecoreClass="model.ecore#//XstsAnnotation"/>
+    <genClasses image="false" ecoreClass="model.ecore#//ActionAnnotation"/>
+    <genClasses ecoreClass="model.ecore#//InvariantAnnotation"/>
     <genClasses ecoreClass="model.ecore#//OnDemandControlVariableDeclarationAnnotation"/>
     <genClasses ecoreClass="model.ecore#//StrictControlVariableDeclarationAnnotation"/>
   </genPackages>

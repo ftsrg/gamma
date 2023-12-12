@@ -211,6 +211,8 @@ class LowlevelToXstsTransformer {
 			xSts.removeReadOnlyVariables // Affects parameter and input variables, too
 		}
 		
+		handleStateInvariants
+		
 		handleTransientAndResettableVariableAnnotations
 		handleRunUponExternalEventAnnotation
 		// The created EMF models are returned
@@ -706,6 +708,33 @@ class LowlevelToXstsTransformer {
 			].build
 		}
 		return outEventEnvironmentalActionRule
+	}
+	
+	protected def handleStateInvariants() {
+		val lowlevelStatechart = trace.statechart
+		val lowlevelStates = lowlevelStatechart.allStates
+		
+		val xStsMergedAction = xSts.mergedAction
+		for (lowlevelState : lowlevelStates) {
+			val lowlevelInvariants = lowlevelState.invariants
+			val lowlevelRegion = lowlevelState.parentRegion
+			if (!lowlevelInvariants.empty && trace.isTraced(lowlevelRegion)) {
+				val xStsInvariants = lowlevelState.invariants.map[it.transformExpression]
+				val xStsInvariantRhs = xStsInvariants.wrapIntoAndExpression
+				
+				val xStsVariable = trace.getXStsVariable(lowlevelRegion)
+				val xStsLiteral = trace.getXStsEnumLiteral(lowlevelState)
+				
+				val xStsInvariantLhs = xStsVariable.createEqualityExpression(
+						xStsLiteral.createEnumerationLiteralExpression)
+				
+				val xStsStateInvariant =  xStsInvariantLhs.createImplyExpression(xStsInvariantRhs)
+				val xStsAssumeStateInvariant = xStsStateInvariant.createAssumeAction
+				xStsAssumeStateInvariant.addInvariantAnnotation
+				
+				xStsMergedAction.appendToAction(xStsAssumeStateInvariant)
+			}
+		}
 	}
 	
 	protected def handleTransientAndResettableVariableAnnotations() {
