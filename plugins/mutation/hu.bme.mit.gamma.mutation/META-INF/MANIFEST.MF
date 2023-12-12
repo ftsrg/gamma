@@ -1,0 +1,14 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Gamma Model Mutator
+Bundle-SymbolicName: hu.bme.mit.gamma.mutation
+Bundle-Version: 2.10.0.qualifier
+Export-Package: hu.bme.mit.gamma.mutation
+Require-Bundle: com.google.guava,
+ org.eclipse.xtext.xbase.lib,
+ org.eclipse.xtend.lib,
+ org.eclipse.xtend.lib.macro,
+ hu.bme.mit.gamma.statechart.model
+Bundle-Vendor: BME-FTSRG
+Automatic-Module-Name: hu.bme.mit.gamma.mutation
+Bundle-RequiredExecutionEnvironment: JavaSE-17
