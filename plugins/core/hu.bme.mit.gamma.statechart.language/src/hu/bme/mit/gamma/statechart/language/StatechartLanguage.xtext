@@ -650,6 +650,7 @@ enum Persistency returns InterfaceModel::Persistency:
 PrimaryExpression returns ExpressionModel::Expression: 
 	super |
 	EventParameterReferenceExpression |
+	( EventReference '::' ) | // Now this are not usable only in triggers
 	StateReferenceExpression
 ;
 

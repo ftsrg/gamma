@@ -714,7 +714,6 @@ class LowlevelToXstsTransformer {
 		val lowlevelStatechart = trace.statechart
 		val lowlevelStates = lowlevelStatechart.allStates
 		
-		val xStsMergedAction = xSts.mergedAction
 		for (lowlevelState : lowlevelStates) {
 			val lowlevelInvariants = lowlevelState.invariants
 			val lowlevelRegion = lowlevelState.parentRegion
@@ -732,6 +731,7 @@ class LowlevelToXstsTransformer {
 				val xStsAssumeStateInvariant = xStsStateInvariant.createAssumeAction
 				xStsAssumeStateInvariant.addInvariantAnnotation
 				
+				val xStsMergedAction = xSts.mergedAction
 				xStsMergedAction.appendToAction(xStsAssumeStateInvariant)
 			}
 		}
