@@ -13,6 +13,7 @@ package hu.bme.mit.gamma.ui.taskhandler;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
@@ -32,6 +33,8 @@ import hu.bme.mit.gamma.transformation.util.preprocessor.AnalysisModelPreprocess
 public class ModelMutationHandler extends TaskHandler {
 	
 	//
+	protected final List<Package> mutatedModels = new ArrayList<Package>();
+	
 	protected final AnalysisModelPreprocessor preprocessor = AnalysisModelPreprocessor.INSTANCE;
 	//
 	
@@ -64,12 +67,20 @@ public class ModelMutationHandler extends TaskHandler {
 			Component clonedNewTopComponent = StatechartModelDerivedFeatures
 					.getFirstComponent(clonedNewPackage);
 			
-			
 			mutator.executeOnStatechart(clonedNewTopComponent);
 			serializer.saveModel(clonedNewPackage, targetFolderUri,
 					fileNamer.getUnfoldedPackageFileName(fileName + "_#" + i));
+			mutatedModels.add(newPackage);
 		}
 	}
+	
+	//
+	
+	public List<Package >getMutatedModels() {
+		return this.mutatedModels;
+	}
+	
+	//
 	
 	private void setModelMutation(ModelMutation mutation) {
 		List<String> fileNames = mutation.getFileName();

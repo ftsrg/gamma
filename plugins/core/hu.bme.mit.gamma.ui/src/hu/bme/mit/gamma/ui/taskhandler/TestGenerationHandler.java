@@ -40,13 +40,15 @@ public class TestGenerationHandler extends TaskHandler {
 		checkArgument(testGeneration.getProgrammingLanguages().get(0) == ProgrammingLanguage.JAVA, 
 				"Currently only Java is supported");
 		setTestGeneration(testGeneration, packageName);
+		
 		ExecutionTrace executionTrace = testGeneration.getExecutionTrace();
 		logger.log(Level.INFO, "Test generation for: " + executionTrace.getName());
+		String fileName = testGeneration.getFileName().get(0);
 		TestGenerator testGenerator = new TestGenerator(executionTrace,
-				testGeneration.getPackageName().get(0), testGeneration.getFileName().get(0));
+				testGeneration.getPackageName().get(0), fileName);
 		String testClass = testGenerator.execute();
 		saveCode(targetFolderUri + File.separator + testGenerator.getPackageName().replaceAll("\\.", "/"),
-				testGeneration.getFileName().get(0) + ".java", testClass);
+				fileName + ".java", testClass);
 	}
 	
 	private void setTestGeneration(TestGeneration testGeneration, String packageName) {

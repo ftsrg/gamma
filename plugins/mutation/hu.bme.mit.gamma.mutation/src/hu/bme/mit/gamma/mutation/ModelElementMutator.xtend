@@ -83,16 +83,6 @@ class ModelElementMutator {
 		info('''Changed transition's target from «target.name» to «newTarget.name»''')
 	}
 	
-	// Should be overridable
-	protected def getNewState(Transition transition) {
-		val source = transition.sourceState
-		val region = source.parentRegion
-		
-		val states = region.states
-		
-		return states.selectDifferentElement(source)
-	}
-	
 	def removeTransition(Transition transition) {
 		transition.remove
 		
