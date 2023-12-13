@@ -42,7 +42,7 @@ Task returns Task:
 		AdaptiveBehaviorConformanceChecking | PhaseStatechartGeneration |
 		Verification | TraceReplayModelGeneration | Slicing | StatechartContractTestGeneration |
 		StatechartContractGeneration | TraceGeneration  | FaultTreeGeneration | FmeaTableGeneration |
-		ModelMutation
+		ModelMutation | MutationBasedTestGeneration
 ;
 
 YakinduCompilation returns YakinduCompilation:
@@ -470,8 +470,18 @@ FmeaTableGeneration returns FmeaTableGeneration:
 ;
 
 ModelMutation returns ModelMutation:
-	('model-mutation' ) '{'
+	'model-mutation' '{'
 		model=ModelReference
+		(
+			'folder' ':' targetFolder+=STRING |
+			'file' ':' fileName+=STRING
+		)*
+	'}'
+;
+
+MutationBasedTestGeneration returns MutationBasedTestGeneration:
+	'mutation-based-test-generation' '{'
+		analysisModelTransformation=AnalysisModelTransformation
 		(
 			'folder' ':' targetFolder+=STRING |
 			'file' ':' fileName+=STRING

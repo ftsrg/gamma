@@ -39,6 +39,7 @@ import hu.bme.mit.gamma.genmodel.model.FmeaTableGeneration;
 import hu.bme.mit.gamma.genmodel.model.GenModel;
 import hu.bme.mit.gamma.genmodel.model.InterfaceCompilation;
 import hu.bme.mit.gamma.genmodel.model.ModelMutation;
+import hu.bme.mit.gamma.genmodel.model.MutationBasedTestGeneration;
 import hu.bme.mit.gamma.genmodel.model.PhaseStatechartGeneration;
 import hu.bme.mit.gamma.genmodel.model.SafetyAssessment;
 import hu.bme.mit.gamma.genmodel.model.Slicing;
@@ -61,6 +62,7 @@ import hu.bme.mit.gamma.ui.taskhandler.FaultTreeGenerationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.FmeaTableGenerationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.InterfaceCompilationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.ModelMutationHandler;
+import hu.bme.mit.gamma.ui.taskhandler.MutationBasedTestGenerationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.OptimizerAndVerificationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.PhaseGenerationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.SlicingHandler;
@@ -275,6 +277,12 @@ public class GammaApi {
 									handler.execute(modelMutation);
 									logger.log(Level.INFO, "Model mutation has been finished");
 								}
+								else if (task instanceof MutationBasedTestGeneration mutationBasedTestGeneration) {
+									logger.log(Level.INFO, "Model mutation has been started");
+									MutationBasedTestGenerationHandler handler = new MutationBasedTestGenerationHandler(file);
+									handler.execute(mutationBasedTestGeneration);
+									logger.log(Level.INFO, "Model mutation has been finished");
+								}
 							}
 							// Iteration end
 							hook.endIteration();
@@ -334,12 +342,11 @@ public class GammaApi {
 			case 5: 
 				return allTasks.stream()
 						.filter(it -> it instanceof TestGeneration || it instanceof Verification ||
-								it instanceof TraceGeneration ||
-								it instanceof AdaptiveContractTestGeneration ||
+								it instanceof TraceGeneration || it instanceof AdaptiveContractTestGeneration ||
 								it instanceof AdaptiveBehaviorConformanceChecking ||
 								it instanceof TraceReplayModelGeneration ||
 								it instanceof StatechartContractTestGeneration || it instanceof StatechartContractGeneration ||
-								it instanceof SafetyAssessment
+								it instanceof SafetyAssessment || it instanceof MutationBasedTestGeneration
 						).collect(Collectors.toList());
 			default: 
 				throw new IllegalArgumentException("Not known iteration variable: " + iteration);

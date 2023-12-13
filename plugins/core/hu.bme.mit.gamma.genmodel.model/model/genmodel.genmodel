@@ -231,5 +231,8 @@
     <genClasses ecoreClass="genmodel.ecore#//ModelMutation">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference genmodel.ecore#//ModelMutation/model"/>
     </genClasses>
+    <genClasses ecoreClass="genmodel.ecore#//MutationBasedTestGeneration">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference genmodel.ecore#//MutationBasedTestGeneration/analysisModelTransformation"/>
+    </genClasses>
   </genPackages>
 </genmodel:GenModel>
