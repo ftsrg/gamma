@@ -190,7 +190,7 @@ public abstract class TaskHandler {
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
-				DialogUtil.showErrorWithStackTrace("Model cannot be serialized.", e);
+				DialogUtil.showErrorWithStackTrace("Model cannot be serialized", e);
 			}
 			new File(parentFolder + File.separator + fileName).delete();
 			// Saving like an EMF model

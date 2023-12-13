@@ -63,6 +63,10 @@ public class GenmodelDerivedFeatures extends ExpressionModelDerivedFeatures {
 
 	public static EObject getModel(AnalysisModelTransformation analysisModelTransformation) {
 		ModelReference modelReference = analysisModelTransformation.getModel();
+		return getModel(modelReference);
+	}
+
+	public static EObject getModel(ModelReference modelReference) {
 		if (modelReference instanceof ComponentReference) {
 			ComponentReference componentReference = (ComponentReference) modelReference;
 			return componentReference.getComponent();

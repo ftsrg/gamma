@@ -40,6 +40,7 @@ import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.math.BigInteger
 import java.util.List
 import java.util.Random
+import java.util.logging.Logger
 import org.eclipse.emf.ecore.EObject
 
 import static com.google.common.base.Preconditions.checkState
@@ -54,18 +55,32 @@ class ModelElementMutator {
 	
 	protected final extension ExpressionModelFactory expressionFactory = ExpressionModelFactory.eINSTANCE
 	protected final extension StatechartModelFactory statechartFactory = StatechartModelFactory.eINSTANCE
+	
+	protected final extension Logger logger = Logger.getLogger("GammaLogger")
 	//
 
 	// Statechart structural elements
 	
 	def changeTransitionSource(Transition transition) {
-		val newSource = transition.newState
+		val source = transition.sourceState
+		val region = source.parentRegion
+		val states = region.states
+		
+		val newSource = states.selectDifferentElement(source)
 		transition.sourceState = newSource
+		
+		info('''Changed transition's source from «source.name» to «newSource.name»''')
 	}
 	
 	def changeTransitionTarget(Transition transition) {
-		val newTarget = transition.newState
+		val target = transition.targetState
+		val region = target.parentRegion
+		val states = region.states
+		
+		val newTarget = states.selectDifferentElement(target)
 		transition.targetState = newTarget
+		
+		info('''Changed transition's target from «target.name» to «newTarget.name»''')
 	}
 	
 	// Should be overridable
@@ -80,11 +95,15 @@ class ModelElementMutator {
 	
 	def removeTransition(Transition transition) {
 		transition.remove
+		
+		info('''Removed transition from «transition.sourceState.name» to «transition.targetState.name»''')
 	}
 	
 	def removeTransitionGuard(Transition transition) {
 		val guard = transition.guard
 		guard.remove
+
+		info('''Removed guard of transition from «transition.sourceState.name» to «transition.targetState.name»''')
 	}
 	
 	def removeTransitionTrigger(Transition transition) {
@@ -92,7 +111,11 @@ class ModelElementMutator {
 		val onCycleTrigger = createOnCycleTrigger
 		
 		onCycleTrigger.replace(trigger)
+
+		info('''Removed trigger of transition from «transition.sourceState.name» to «transition.targetState.name»''')
 	}
+	
+	//
 	
 	def changePortReference(AnyPortEventReference reference) {
 		val oldPort = reference.port
@@ -366,7 +389,7 @@ class ModelElementMutator {
 		var int i = -1
 		do {
 			i = random.nextInt(objects.size)
-		} while (i !== index)
+		} while (i == index)
 		
 		val newObject = objects.get(i)
 		

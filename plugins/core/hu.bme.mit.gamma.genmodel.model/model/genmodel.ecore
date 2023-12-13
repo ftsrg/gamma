@@ -318,4 +318,8 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="bmcBound" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
         containment="true"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ModelMutation" eSuperTypes="#//Task">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="model" lowerBound="1" eType="#//ModelReference"
+        containment="true"/>
+  </eClassifiers>
 </ecore:EPackage>

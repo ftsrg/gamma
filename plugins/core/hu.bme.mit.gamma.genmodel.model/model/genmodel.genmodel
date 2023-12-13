@@ -228,5 +228,8 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference genmodel.ecore#//FmeaTableGeneration/cardinality"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference genmodel.ecore#//FmeaTableGeneration/bmcBound"/>
     </genClasses>
+    <genClasses ecoreClass="genmodel.ecore#//ModelMutation">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference genmodel.ecore#//ModelMutation/model"/>
+    </genClasses>
   </genPackages>
 </genmodel:GenModel>

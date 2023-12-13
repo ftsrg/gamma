@@ -41,7 +41,8 @@ Task returns Task:
 		EventPriorityTransformation | AdaptiveContractTestGeneration |
 		AdaptiveBehaviorConformanceChecking | PhaseStatechartGeneration |
 		Verification | TraceReplayModelGeneration | Slicing | StatechartContractTestGeneration |
-		StatechartContractGeneration | TraceGeneration  | FaultTreeGeneration | FmeaTableGeneration
+		StatechartContractGeneration | TraceGeneration  | FaultTreeGeneration | FmeaTableGeneration |
+		ModelMutation
 ;
 
 YakinduCompilation returns YakinduCompilation:
@@ -464,6 +465,16 @@ FmeaTableGeneration returns FmeaTableGeneration:
 			'cardinality' ':' cardinality=Expression |
 			'bmc-bound' ':' bmcBound=Expression |
 			'visualize' ':' visualize=BOOLEAN
+		)*
+	'}'
+;
+
+ModelMutation returns ModelMutation:
+	('model-mutation' ) '{'
+		model=ModelReference
+		(
+			'folder' ':' targetFolder+=STRING |
+			'file' ':' fileName+=STRING
 		)*
 	'}'
 ;

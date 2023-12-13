@@ -20,8 +20,9 @@ import org.eclipse.emf.ecore.EObject;
 
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.genmodel.derivedfeatures.GenmodelDerivedFeatures;
-import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation;
 import hu.bme.mit.gamma.genmodel.model.ComponentReference;
+import hu.bme.mit.gamma.genmodel.model.ModelMutation;
+import hu.bme.mit.gamma.genmodel.model.ModelReference;
 import hu.bme.mit.gamma.mutation.ModelMutator;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Component;
@@ -38,40 +39,46 @@ public class ModelMutationHandler extends TaskHandler {
 		super(file);
 	}
 	
-	public void execute(AnalysisModelTransformation transformation, String packageName) throws IOException {
+	public void execute(ModelMutation modelMutation) throws IOException {
 		// Setting target folder
-//		setProjectLocation(transformation); // Before the target folder
-		setTargetFolder(transformation);
+		setTargetFolder(modelMutation);
 		//
-		setModelMutation(transformation);
+		setModelMutation(modelMutation);
 		
 		String fileName = javaUtil.getOnlyElement(
-				transformation.getFileName());
+				modelMutation.getFileName());
 		
-		ComponentReference reference = (ComponentReference) transformation.getModel();
+		ComponentReference reference = (ComponentReference) modelMutation.getModel();
 		Component component = reference.getComponent();
 		List<Expression> arguments = reference.getArguments();
 		Package gammaPackage = StatechartModelDerivedFeatures.getContainingPackage(component);
 				
 		Component newTopComponent = preprocessor.preprocess(gammaPackage, arguments,
 				targetFolderUri, fileName, true);
+		Package newPackage = StatechartModelDerivedFeatures.getContainingPackage(newTopComponent);
 		
 		ModelMutator mutator = new ModelMutator(); // TODO add heuristics parameters
-		int MAX_MUTATION_ITERATION = 10;
+		int MAX_MUTATION_ITERATION = 5;
 		for (int i = 0; i < MAX_MUTATION_ITERATION; i++) {
-			mutator.executeOnStatechart(newTopComponent);
-			serializer.saveModel(newTopComponent, targetFolderUri, fileName + "_" + i);
+			Package clonedNewPackage =  ecoreUtil.clone(newPackage);
+			Component clonedNewTopComponent = StatechartModelDerivedFeatures
+					.getFirstComponent(clonedNewPackage);
+			
+			
+			mutator.executeOnStatechart(clonedNewTopComponent);
+			serializer.saveModel(clonedNewPackage, targetFolderUri,
+					fileNamer.getUnfoldedPackageFileName(fileName + "_#" + i));
 		}
 	}
 	
-	private void setModelMutation(AnalysisModelTransformation transformation) {
-		List<String> fileNames = transformation.getFileName();
+	private void setModelMutation(ModelMutation mutation) {
+		List<String> fileNames = mutation.getFileName();
 		checkArgument(fileNames.size() <= 1);
 		if (fileNames.isEmpty()) {
-			EObject sourceModel = GenmodelDerivedFeatures.getModel(
-					transformation);
-			String fileName = getNameWithoutExtension(
-					getContainingFileName(sourceModel));
+			ModelReference model = mutation.getModel();
+			EObject sourceModel = GenmodelDerivedFeatures.getModel(model);
+			String containingFileName = getContainingFileName(sourceModel);
+			String fileName = getNameWithoutExtension(containingFileName);
 			fileNames.add(fileName);
 		}
 	}

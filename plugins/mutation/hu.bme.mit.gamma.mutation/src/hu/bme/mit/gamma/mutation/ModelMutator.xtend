@@ -199,12 +199,13 @@ class ModelMutator {
 	//
 	
 	protected def getMutationType() {
-		val mutationTypes = StatechartMutationType.values
-		val mutationTypesCount = mutationTypes.length
-		val i = random.nextInt(mutationTypesCount)
-		
-		val mutationType = mutationTypes.get(i)
-		return mutationType
+//		val mutationTypes = StatechartMutationType.values
+//		val mutationTypesCount = mutationTypes.length
+//		val i = random.nextInt(mutationTypesCount)
+//		
+//		val mutationType = mutationTypes.get(i)
+//		return mutationType
+		return StatechartMutationType.TRANSITION_STRUCTURE
 	}
 	
 	protected def getMutation() {

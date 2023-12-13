@@ -38,6 +38,7 @@ import hu.bme.mit.gamma.genmodel.model.FaultTreeGeneration;
 import hu.bme.mit.gamma.genmodel.model.FmeaTableGeneration;
 import hu.bme.mit.gamma.genmodel.model.GenModel;
 import hu.bme.mit.gamma.genmodel.model.InterfaceCompilation;
+import hu.bme.mit.gamma.genmodel.model.ModelMutation;
 import hu.bme.mit.gamma.genmodel.model.PhaseStatechartGeneration;
 import hu.bme.mit.gamma.genmodel.model.SafetyAssessment;
 import hu.bme.mit.gamma.genmodel.model.Slicing;
@@ -59,6 +60,7 @@ import hu.bme.mit.gamma.ui.taskhandler.EventPriorityTransformationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.FaultTreeGenerationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.FmeaTableGenerationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.InterfaceCompilationHandler;
+import hu.bme.mit.gamma.ui.taskhandler.ModelMutationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.OptimizerAndVerificationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.PhaseGenerationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.SlicingHandler;
@@ -267,6 +269,12 @@ public class GammaApi {
 									handler.execute(fmeaTableGeneration);
 									logger.log(Level.INFO, "The FMEA table generation has been finished");
 								}
+								else if (task instanceof ModelMutation modelMutation) {
+									logger.log(Level.INFO, "Model mutation has been started");
+									ModelMutationHandler handler = new ModelMutationHandler(file);
+									handler.execute(modelMutation);
+									logger.log(Level.INFO, "Model mutation has been finished");
+								}
 							}
 							// Iteration end
 							hook.endIteration();
@@ -316,6 +324,7 @@ public class GammaApi {
 			case 3: 
 				return allTasks.stream()
 						.filter(it -> it instanceof AnalysisModelTransformation ||
+								it instanceof ModelMutation ||
 								it instanceof CodeGeneration)
 						.collect(Collectors.toList());
 			case 4: 
