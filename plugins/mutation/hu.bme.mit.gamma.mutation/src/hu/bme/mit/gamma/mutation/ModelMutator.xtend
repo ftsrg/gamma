@@ -41,6 +41,8 @@ class ModelMutator {
 		this.modelElementMutator = new ModelElementMutator // May be parameterized later
 	}
 	
+	//
+	
 	def execute(Component component) {
 		if (component instanceof StatechartDefinition) {
 			component.execute
@@ -50,10 +52,25 @@ class ModelMutator {
 		}
 	}
 	
+	def executeOnStatechart(Component component) {
+		if (component instanceof StatechartDefinition) {
+			component.execute
+		}
+		else if (component instanceof CompositeComponent) {
+			val statecharts = component.selfOrAllContainedStatecharts
+			val statechart = statecharts.selectElementForMutation(newArrayList)
+			
+			statechart.execute
+		}
+	}
+	
+	//
+	
 	def execute(StatechartDefinition statechart) {
 		var success = true
 		do {
  			try {
+ 				success = true
 				val mutationType = mutationType
 				val mutationOperatorIndex = mutation
 				
@@ -158,20 +175,25 @@ class ModelMutator {
 	
 	protected def selectTransitionForMutation(Collection<? extends Transition> transitions,
 			Collection<Transition> unselectableTransitions) {
-		val selectableTransitions = newArrayList
-		selectableTransitions += transitions
-		selectableTransitions -= unselectableTransitions
+		return transitions.selectElementForMutation(unselectableTransitions)
+	}
+	
+	protected def <T> selectElementForMutation(Collection<? extends T> objects,
+			Collection<T> unselectableObjects) {
+		val selectableObjects = newArrayList
+		selectableObjects += objects
+		selectableObjects -= unselectableObjects
 		
-		checkState(!selectableTransitions.empty)
+		checkState(!selectableObjects.empty)
 		
 		// TODO Change due to heuristics
-		val i = random.nextInt(selectableTransitions.size)
-		val transition = selectableTransitions.get(i)
+		val i = random.nextInt(selectableObjects.size)
+		val object = selectableObjects.get(i)
 		//
 		
-		unselectableTransitions += transition
+		unselectableObjects += object
 		
-		return transition
+		return object
 	}
 	
 	//
@@ -186,8 +208,8 @@ class ModelMutator {
 	}
 	
 	protected def getMutation() {
-		val max = 20
-		return random.nextInt(max)
+		val MAX = 20
+		return random.nextInt(MAX)
 	}
 	
 	//
