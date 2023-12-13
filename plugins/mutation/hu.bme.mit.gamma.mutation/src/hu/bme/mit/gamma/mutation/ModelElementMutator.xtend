@@ -11,19 +11,33 @@
 package hu.bme.mit.gamma.mutation
 
 import hu.bme.mit.gamma.expression.model.AddExpression
+import hu.bme.mit.gamma.expression.model.AndExpression
 import hu.bme.mit.gamma.expression.model.BinaryExpression
+import hu.bme.mit.gamma.expression.model.EqualityExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
+import hu.bme.mit.gamma.expression.model.FalseExpression
+import hu.bme.mit.gamma.expression.model.GreaterEqualExpression
+import hu.bme.mit.gamma.expression.model.GreaterExpression
+import hu.bme.mit.gamma.expression.model.InequalityExpression
+import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression
+import hu.bme.mit.gamma.expression.model.LessEqualExpression
+import hu.bme.mit.gamma.expression.model.LessExpression
 import hu.bme.mit.gamma.expression.model.MultiaryExpression
+import hu.bme.mit.gamma.expression.model.NotExpression
+import hu.bme.mit.gamma.expression.model.OrExpression
 import hu.bme.mit.gamma.expression.model.SubtractExpression
+import hu.bme.mit.gamma.expression.model.TrueExpression
 import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference
 import hu.bme.mit.gamma.statechart.statechart.PortEventReference
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction
 import hu.bme.mit.gamma.statechart.statechart.State
+import hu.bme.mit.gamma.statechart.statechart.StatechartModelFactory
 import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.util.GammaEcoreUtil
+import java.math.BigInteger
 import java.util.List
 import java.util.Random
 import org.eclipse.emf.ecore.EObject
@@ -39,6 +53,7 @@ class ModelElementMutator {
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	
 	protected final extension ExpressionModelFactory expressionFactory = ExpressionModelFactory.eINSTANCE
+	protected final extension StatechartModelFactory statechartFactory = StatechartModelFactory.eINSTANCE
 	//
 
 	// Statechart structural elements
@@ -65,6 +80,18 @@ class ModelElementMutator {
 	
 	def removeTransition(Transition transition) {
 		transition.remove
+	}
+	
+	def removeTransitionGuard(Transition transition) {
+		val guard = transition.guard
+		guard.remove
+	}
+	
+	def removeTransitionTrigger(Transition transition) {
+		val trigger = transition.trigger
+		val onCycleTrigger = createOnCycleTrigger
+		
+		onCycleTrigger.replace(trigger)
 	}
 	
 	def changePortReference(AnyPortEventReference reference) {
@@ -170,6 +197,23 @@ class ModelElementMutator {
 	
 	// Expression and action elements
 	
+	def invertExpression(TrueExpression expression) {
+		val _false = createFalseExpression
+		
+		_false.replace(expression)
+	}
+	
+	def invertExpression(FalseExpression expression) {
+		val _true = createTrueExpression
+		
+		_true.replace(expression)
+	}
+	
+	def invertExpression(IntegerLiteralExpression expression) {
+		val value = expression.value
+		expression.value = value.negate
+	}
+	
 	def invertExpression(AddExpression expression) {
 		val subtract = createSubtractExpression.addInto(expression.operands)
 		
@@ -181,6 +225,104 @@ class ModelElementMutator {
 			expression.leftOperand, expression.rightOperand)
 		
 		add.replace(expression)
+	}
+	
+	def invertExpression(NotExpression expression) {
+		val operand = expression.operand
+		
+		operand.replace(expression)
+	}
+	
+	def invertExpression(LessExpression expression) {
+		val greaterEqual = createGreaterEqualExpression.addInto(
+			expression.leftOperand, expression.rightOperand)
+		
+		greaterEqual.replace(expression)
+	}
+	
+	def invertExpression(LessEqualExpression expression) {
+		val greater = createGreaterExpression.addInto(
+			expression.leftOperand, expression.rightOperand)
+		
+		greater.replace(expression)
+	}
+	
+	def invertExpression(GreaterExpression expression) {
+		val lessEqual = createLessEqualExpression.addInto(
+			expression.leftOperand, expression.rightOperand)
+		
+		lessEqual.replace(expression)
+	}
+	
+	def invertExpression(GreaterEqualExpression expression) {
+		val less = createLessExpression.addInto(
+			expression.leftOperand, expression.rightOperand)
+		
+		less.replace(expression)
+	}
+	
+	def invertExpression(EqualityExpression expression) {
+		val inequal = createInequalityExpression.addInto(
+			expression.leftOperand, expression.rightOperand)
+		
+		inequal.replace(expression)
+	}
+	
+	def invertExpression(InequalityExpression expression) {
+		val equal = createEqualityExpression.addInto(
+			expression.leftOperand, expression.rightOperand)
+		
+		equal.replace(expression)
+	}
+	
+	def changeExpression(IntegerLiteralExpression expression) {
+		val value = expression.value
+		if (random.nextBoolean) {
+			expression.value = value.add(BigInteger.ONE)
+		}
+		else {
+			expression.value = value.subtract(BigInteger.ONE)
+		}
+	}
+	
+	def changeExpression(AndExpression expression) {
+		val or = createOrExpression.addInto(expression.operands)
+		
+		or.replace(expression)
+	}
+	
+	def changeExpression(OrExpression expression) {
+		val and = createAndExpression.addInto(expression.operands)
+		
+		and.replace(expression)
+	}
+	
+	def changeExpression(LessExpression expression) {
+		val lessEqual = createLessEqualExpression.addInto(
+			expression.leftOperand, expression.rightOperand)
+		
+		lessEqual.replace(expression)
+	}
+	
+	def changeExpression(LessEqualExpression expression) {
+		val less = createLessExpression.addInto(
+			expression.leftOperand, expression.rightOperand)
+		
+		less.replace(expression)
+	}
+	
+	def changeExpression(GreaterExpression expression) {
+		val greaterEqual = createGreaterEqualExpression.addInto(
+			expression.leftOperand, expression.rightOperand)
+		
+		greaterEqual.replace(expression)
+	}
+	
+	def changeExpression(GreaterEqualExpression expression) {
+		val greater = createGreaterExpression.addInto(
+			expression.leftOperand, expression.rightOperand)
+		
+		greater.replace(expression)
 	}
 	
 	//
@@ -202,6 +344,11 @@ class ModelElementMutator {
 		pivot.rightOperand = expressions.get(1)
 		
 		return pivot
+	}
+	
+	protected def addInto(BinaryExpression pivot, Expression lhs, Expression rhs) {
+		return pivot.addInto(
+			#[lhs, rhs])
 	}
 	
 	//
