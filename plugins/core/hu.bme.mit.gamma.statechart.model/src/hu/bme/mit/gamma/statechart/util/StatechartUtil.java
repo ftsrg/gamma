@@ -1012,6 +1012,21 @@ public class StatechartUtil extends ActionUtil {
 		return reference;
 	}
 	
+	public ComponentInstanceEventParameterReferenceExpression createSystemParameterReference(
+			Port port, Event event, ParameterDeclaration parameter) {
+		Entry<List<ComponentInstance>, Port> boundSimplePort = StatechartModelDerivedFeatures.getBoundSimplePort(port);
+		if (boundSimplePort == null) {
+			return null;
+		}
+		
+		List<ComponentInstance> instances = boundSimplePort.getKey();
+		Port simplePort = boundSimplePort.getValue();
+		
+		ComponentInstanceReferenceExpression instanceReference = createInstanceReference(instances);
+		
+		return createParameterReference(instanceReference, simplePort, event, parameter);
+	}
+	
 	// Synchronous-asynchronous statecharts
 	
 	public SynchronousStatechartDefinition mapIntoSynchronousStatechart(

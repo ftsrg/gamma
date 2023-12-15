@@ -22,6 +22,7 @@ import org.eclipse.emf.ecore.EObject;
 
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.InequalityExpression;
+import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.genmodel.derivedfeatures.GenmodelDerivedFeatures;
 import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation;
 import hu.bme.mit.gamma.genmodel.model.ComponentReference;
@@ -32,6 +33,7 @@ import hu.bme.mit.gamma.property.model.PropertyPackage;
 import hu.bme.mit.gamma.property.model.StateFormula;
 import hu.bme.mit.gamma.property.util.PropertyUtil;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventParameterReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.SchedulableCompositeComponent;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
@@ -160,12 +162,22 @@ public class MutationBasedTestGenerationHandler extends TaskHandler {
 							propertyUtil.createSystemEventReference(originalOutputPort, outputEvent);
 					ComponentInstanceEventReferenceExpression mutantReference =
 							propertyUtil.createSystemEventReference(mutantOutputPort, outputEvent);
-					
 					if (originalReference != null && mutantReference != null) {
 						InequalityExpression inequality = propertyUtil
 								.createInequalityExpression(originalReference, mutantReference);
-						
 						orOperends.add(inequality);
+					}
+					
+					for (ParameterDeclaration eventParameter : outputEvent.getParameterDeclarations()) {
+						ComponentInstanceEventParameterReferenceExpression originalParameterReference =
+								propertyUtil.createSystemParameterReference(originalOutputPort, outputEvent, eventParameter);
+						ComponentInstanceEventParameterReferenceExpression mutantParameterReference =
+								propertyUtil.createSystemParameterReference(mutantOutputPort, outputEvent, eventParameter);
+						if (originalParameterReference != null && mutantParameterReference != null) {
+							InequalityExpression parameterInequality = propertyUtil
+									.createInequalityExpression(originalParameterReference, mutantParameterReference);
+							orOperends.add(parameterInequality);
+						}
 					}
 				}
 			}
@@ -187,7 +199,7 @@ public class MutationBasedTestGenerationHandler extends TaskHandler {
 			
 			analysisModelTransformation.setPropertyPackage(null);
 			
-			// TODO Post-processing traces
+			// TODO Post-processing traces: projection
 			List<ExecutionTrace> traces = transformationHandler.getTraces();
 			for (ExecutionTrace trace : traces) { // Traces are already serialized
 //				ecoreUtil.deleteResource(trace);
