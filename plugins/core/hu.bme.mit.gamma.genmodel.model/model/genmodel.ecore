@@ -22,6 +22,8 @@
         upperBound="-1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="timeout" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/interface.ecore#//TimeSpecification"
         containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="iterationCount" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
+        containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="InterfaceCompilation" eSuperTypes="#//YakinduCompilation"/>
   <eClassifiers xsi:type="ecore:EClass" name="StatechartCompilation" eSuperTypes="#//YakinduCompilation">

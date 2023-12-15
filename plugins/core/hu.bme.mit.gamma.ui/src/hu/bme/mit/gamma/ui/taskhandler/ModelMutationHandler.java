@@ -60,8 +60,10 @@ public class ModelMutationHandler extends TaskHandler {
 				targetFolderUri, fileName, true);
 		Package newPackage = StatechartModelDerivedFeatures.getContainingPackage(newTopComponent);
 		
+		Expression mutationCount = modelMutation.getIterationCount();
+		int MAX_MUTATION_ITERATION = (mutationCount == null) ? 1 :
+				expressionEvaluator.evaluateInteger(mutationCount);
 		ModelMutator mutator = new ModelMutator(); // TODO add heuristics parameters
-		int MAX_MUTATION_ITERATION = 5; // TODO make it customizable
 		for (int i = 0; i < MAX_MUTATION_ITERATION; i++) {
 			Package clonedNewPackage =  ecoreUtil.clone(newPackage);
 			Component clonedNewTopComponent = StatechartModelDerivedFeatures

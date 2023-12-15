@@ -69,13 +69,16 @@ public class MutationBasedTestGenerationHandler extends TaskHandler {
 		ComponentReference model = (ComponentReference) analysisModelTransformation.getModel();
 		Component component = (Component) GenmodelDerivedFeatures.getModel(model);
 		
+		Expression mutationCount = mutationBasedTestGeneration.getIterationCount();
 		ModelMutation modelMutation = factory.createModelMutation();
 		modelMutation.setModel(
 				ecoreUtil.clone(model));
+		modelMutation.setIterationCount(
+				ecoreUtil.clone(mutationCount));
 		
 		ModelMutationHandler modelMutationHandler =  new ModelMutationHandler(file);
 		modelMutationHandler.execute(modelMutation);
-		// TODO set number
+		
 		List<Package> mutatedModels = modelMutationHandler.getMutatedModels();
 		
 		int i = 0;
@@ -187,9 +190,9 @@ public class MutationBasedTestGenerationHandler extends TaskHandler {
 			// TODO Post-processing traces
 			List<ExecutionTrace> traces = transformationHandler.getTraces();
 			for (ExecutionTrace trace : traces) { // Traces are already serialized
-				ecoreUtil.deleteResource(trace);
-				
-				ecoreUtil.save(trace);
+//				ecoreUtil.deleteResource(trace);
+//				
+//				ecoreUtil.save(trace);
 			}
 		}
 		

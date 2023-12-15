@@ -474,7 +474,8 @@ ModelMutation returns ModelMutation:
 		model=ModelReference
 		(
 			'folder' ':' targetFolder+=STRING |
-			'file' ':' fileName+=STRING
+			'file' ':' fileName+=STRING |
+			'mutation-count' ':' iterationCount=Expression
 		)*
 	'}'
 ;
@@ -484,7 +485,8 @@ MutationBasedTestGeneration returns MutationBasedTestGeneration:
 		analysisModelTransformation=AnalysisModelTransformation
 		(
 			'folder' ':' targetFolder+=STRING |
-			'file' ':' fileName+=STRING
+			'file' ':' fileName+=STRING |
+			'mutation-count' ':' iterationCount=Expression
 		)*
 	'}'
 ;
