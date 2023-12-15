@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?pde version="3.8"?>
+<target name="Gamma">
+	<locations>
+		<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
+			<repository location="https://download.eclipse.org/releases/2022-06"/>
+			<unit id="org.eclipse.emf.sdk.feature.group" version="2.30.0.v20220516-1117"/>
+			<unit id="org.eclipse.sdk.feature.group" version="4.24.0.v20220607-0700"/>
+			<unit id="org.eclipse.uml2.sdk.feature.group" version="5.5.2.v20210228-1829"/>
+			<unit id="org.eclipse.viatra.query.sdk.feature.source.feature.group" version="2.7.0.202203091511"/>
+			<unit id="org.eclipse.xtext.sdk.feature.group" version="2.27.0.v20220530-0508"/>
+			<unit id="org.eclipse.emf.query.sdk.feature.group" version="1.12.0.201805030653"/>
+			<unit id="org.eclipse.emf.transaction.sdk.feature.group" version="1.12.0.201805140824"/>
+			<unit id="org.eclipse.emf.validation.sdk.feature.group" version="1.12.2.202008210805"/>
+			<unit id="org.eclipse.equinox.sdk.feature.group" version="3.23.400.v20220516-2155"/>
+		</location>
+		<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
+			<repository location="http://updates.yakindu.com/statecharts/releases/"/>
+			<unit id="com.yakindu.licmgmt.feature.feature.group" version="3.0.0.202004270548"/>
+			<unit id="com.yakindu.sct.license.feature.feature.group" version="3.5.13.202009111226"/>
+			<unit id="com.yakindu.sct.license.standard.feature.feature.group" version="3.5.13.202009111226"/>
+			<unit id="com.yakindu.sctunit.feature.feature.group" version="3.5.13.202009111226"/>
+			<unit id="com.yakindu.sctunit.generator.java.feature.feature.group" version="3.5.13.202009111226"/>
+			<unit id="org.yakindu.base.feature.group" version="3.5.13.202009041227"/>
+			<unit id="org.yakindu.sct.feature.group" version="3.5.13.202009041227"/>
+			<unit id="org.yakindu.sct.generator.java.feature.group" version="3.5.13.202009041227"/>
+		</location>
+		<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
+			<repository location="https://hallvard.github.io/plantuml/"/>
+			<unit id="net.sourceforge.plantuml.ecore.feature.feature.group" version="1.1.30"/>
+			<unit id="net.sourceforge.plantuml.ecore.feature.source.feature.group" version="1.1.30"/>
+			<unit id="net.sourceforge.plantuml.feature.feature.group" version="1.1.30"/>
+			<unit id="net.sourceforge.plantuml.feature.source.feature.group" version="1.1.30"/>
+			<unit id="net.sourceforge.plantuml.lib.elk.feature.feature.group" version="0.7.1"/>
+			<unit id="net.sourceforge.plantuml.lib.feature.feature.group" version="1.2023.11"/>
+			<unit id="net.sourceforge.plantuml.lib.jlatexmath.feature.feature.group" version="1.0.7"/>
+		</location>
+		<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
+			<repository location="https://download.eclipse.org/eclipse/updates/4.24/"/>
+			<unit id="org.eclipse.equinox.sdk.feature.group" version="3.23.400.v20220516-2155"/>
+			<unit id="org.eclipse.platform.ide" version="4.24.0.I20220607-0700"/>
+			<unit id="org.eclipse.platform.sdk" version="4.24.0.I20220607-0700"/>
+			<unit id="org.eclipse.rcp.feature.group" version="4.24.0.v20220607-0700"/>
+			<unit id="org.eclipse.rcp.source.feature.group" version="4.24.0.v20220607-0700"/>
+			<unit id="org.eclipse.sdk.ide" version="4.24.0.I20220607-0700"/>
+		</location>
+	</locations>
+	<targetJRE path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-17"/>
+</target>
