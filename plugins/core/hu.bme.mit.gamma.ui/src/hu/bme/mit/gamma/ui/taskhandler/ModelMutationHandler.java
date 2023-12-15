@@ -61,7 +61,7 @@ public class ModelMutationHandler extends TaskHandler {
 		Package newPackage = StatechartModelDerivedFeatures.getContainingPackage(newTopComponent);
 		
 		ModelMutator mutator = new ModelMutator(); // TODO add heuristics parameters
-		int MAX_MUTATION_ITERATION = 5;
+		int MAX_MUTATION_ITERATION = 5; // TODO make it customizable
 		for (int i = 0; i < MAX_MUTATION_ITERATION; i++) {
 			Package clonedNewPackage =  ecoreUtil.clone(newPackage);
 			Component clonedNewTopComponent = StatechartModelDerivedFeatures
@@ -78,7 +78,7 @@ public class ModelMutationHandler extends TaskHandler {
 	
 	//
 	
-	public List<Package >getMutatedModels() {
+	public List<Package> getMutatedModels() {
 		return this.mutatedModels;
 	}
 	

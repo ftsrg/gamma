@@ -153,6 +153,19 @@ class JavaUtil {
 	
 	//
 	
+	def matchFirstCharacterCapitalization(String string, String example) {
+		if (example.nullOrEmpty) {
+			return string
+		}
+		
+		val exampleChar = example.charAt(0)
+		val isUpperCase = Character.isUpperCase(exampleChar)
+		if (isUpperCase) {
+			return string.toFirstUpper
+		}
+		return string.toFirstLower
+	}
+	
 	def String toFirstCharUpper(String string) {
 		return string.toFirstUpper
 	}

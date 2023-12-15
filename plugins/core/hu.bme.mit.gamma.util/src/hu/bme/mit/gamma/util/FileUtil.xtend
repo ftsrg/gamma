@@ -130,8 +130,8 @@ class FileUtil {
 	}
 	
 	def getExtensionlessName(String fileName) {
-		val lastIndex = fileName.lastIndexOf(".")
-		if (lastIndex <= 0) { // <= 0 so hidden files are handled
+		val lastIndex = fileName.extensionDotIndex // So hidden files are handled
+		if (lastIndex < 0) {
 			return fileName
 		}
 		return fileName.substring(0, lastIndex)
@@ -146,11 +146,32 @@ class FileUtil {
 	}
 	
 	def getExtension(String fileName) {
-		val lastIndex = fileName.lastIndexOf(".")
-		if (lastIndex <= 0) { // <= 0 so hidden files are handled
+		val lastIndex = fileName.extensionDotIndex // So hidden files are handled
+		if (lastIndex < 0) {
 			return ""
 		}
 		return fileName.substring(lastIndex + 1)
+	}
+	
+	private def int getExtensionDotIndex(String fileName) {
+		val index = fileName.lastIndexOf(".")
+		if (index <= 0) {
+			return -1 // Hidden file or no extension
+		}
+		val charBeforeDot = fileName.charAt(index - 1).toString
+		if (charBeforeDot == ".") {
+			return -1 // Hidden(hidden) file
+		}
+		
+		return index // Valid extension
+	}
+	
+	def hasExtension(String fileName) {
+		return fileName != fileName.extensionlessName
+	}
+	
+	def hasExtension(File file) {
+		return file.name.hasExtension
 	}
 	
 	def isHiddenFile(File file) {

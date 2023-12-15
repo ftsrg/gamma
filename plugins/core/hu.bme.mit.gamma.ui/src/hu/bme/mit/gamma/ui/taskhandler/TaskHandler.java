@@ -68,7 +68,7 @@ public abstract class TaskHandler {
 		// E.g., C:/Users/...
 		this.projectLocation = file.getProject().getLocation().toString(); 
 	}
-
+	
 	public void setTargetFolder(Task task) {
 		checkArgument(task.getTargetFolder().size() <= 1);
 		

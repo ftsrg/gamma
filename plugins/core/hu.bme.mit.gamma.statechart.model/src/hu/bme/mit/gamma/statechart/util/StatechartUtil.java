@@ -16,6 +16,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
 
@@ -177,7 +178,7 @@ public class StatechartUtil extends ActionUtil {
 		return createInstanceReference(List.of(instance));
 	}
 	
-	public ComponentInstanceReferenceExpression createInstanceReference(List<ComponentInstance> instances) {
+	public ComponentInstanceReferenceExpression createInstanceReference(List<? extends ComponentInstance> instances) {
 		if (instances.isEmpty()) {
 			throw new IllegalArgumentException("Empty instance list: " + instances);
 		}
@@ -984,6 +985,20 @@ public class StatechartUtil extends ActionUtil {
 		reference.setPort(port);
 		reference.setEvent(event);
 		return reference;
+	}
+	
+	public ComponentInstanceEventReferenceExpression createSystemEventReference(Port port, Event event) {
+		Entry<List<ComponentInstance>, Port> boundSimplePort = StatechartModelDerivedFeatures.getBoundSimplePort(port);
+		if (boundSimplePort == null) {
+			return null;
+		}
+		
+		List<ComponentInstance> instances = boundSimplePort.getKey();
+		Port simplePort = boundSimplePort.getValue();
+		
+		ComponentInstanceReferenceExpression instanceReference = createInstanceReference(instances);
+		
+		return createEventReference(instanceReference, simplePort, event);
 	}
 	
 	public ComponentInstanceEventParameterReferenceExpression createParameterReference(

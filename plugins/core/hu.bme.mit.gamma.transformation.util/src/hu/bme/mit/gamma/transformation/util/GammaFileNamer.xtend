@@ -100,6 +100,10 @@ class GammaFileNamer {
 	
 	//
 	
+	def String getFileExtension(Object analysisLanguage) {
+		return analysisLanguage.toString.fileExtension
+	}
+	
 	def String getFileExtension(String analysisLanguage) {
 		val name = analysisLanguage.toUpperCase
 		switch (name) {

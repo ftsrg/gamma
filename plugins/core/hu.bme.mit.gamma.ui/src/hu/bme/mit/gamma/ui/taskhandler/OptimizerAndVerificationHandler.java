@@ -37,6 +37,7 @@ import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceE
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.Package;
+import hu.bme.mit.gamma.trace.model.ExecutionTrace;
 import hu.bme.mit.gamma.transformation.util.GammaFileNamer;
 import hu.bme.mit.gamma.transformation.util.PropertyUnfolder;
 import hu.bme.mit.gamma.uppaal.serializer.UppaalModelSerializer;
@@ -72,14 +73,29 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 	
 	public void execute(Verification verification) throws IOException, InterruptedException {
 		List<AnalysisLanguage> analysisLanguages = verification.getAnalysisLanguages();
+		AnalysisLanguage analysisLanguage = analysisLanguages.get(0);
 		checkArgument(analysisLanguages.contains(AnalysisLanguage.THETA) ||
 				analysisLanguages.contains(AnalysisLanguage.XSTS_UPPAAL) ||
 				analysisLanguages.contains(AnalysisLanguage.PROMELA) ||
 				analysisLanguages.contains(AnalysisLanguage.NUXMV),
-				analysisLanguages.get(0) + " is not supported for slicing");
+				analysisLanguage + " is not supported for slicing");
 		
-		String analysisFilePath = verification.getFileName().get(0);
-		File analysisFile = super.exporeRelativeFile(verification, analysisFilePath);
+		List<String> fileNames = verification.getFileName();
+		String analysisFilePath = fileNames.get(0);
+		File analysisFile = null;
+		
+		// Checking the file name
+		try {
+			analysisFile = super.exporeRelativeFile(verification, analysisFilePath);
+		} catch (NullPointerException e) {
+			if (!fileUtil.hasExtension(analysisFilePath) ) {
+				String fileExtension = fileNamer.getFileExtension(analysisLanguage);
+				analysisFilePath = fileUtil.changeExtension(analysisFilePath, fileExtension);
+				fileNames.set(0, analysisFilePath);
+			
+				analysisFile = super.exporeRelativeFile(verification, analysisFilePath);
+			}
+		}
 		
 		String gStsFilePath = fileNamer.getEmfXStsUri(analysisFilePath);
 		File gStsFile = super.exporeRelativeFile(verification, gStsFilePath);
@@ -228,6 +244,10 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 	
 	public VerificationHandler getVerificationHandler() {
 		return verificationHandler;
+	}
+	
+	public List<ExecutionTrace> getTraces() {
+		return verificationHandler.getTraces();
 	}
 
 }

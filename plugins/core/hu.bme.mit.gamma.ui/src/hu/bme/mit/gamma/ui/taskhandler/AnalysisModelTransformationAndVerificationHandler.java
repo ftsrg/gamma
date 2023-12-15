@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -19,15 +19,33 @@ import org.eclipse.core.resources.IFile;
 
 import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
 import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation;
+import hu.bme.mit.gamma.genmodel.model.ProgrammingLanguage;
 import hu.bme.mit.gamma.genmodel.model.Verification;
 import hu.bme.mit.gamma.property.model.CommentableStateFormula;
 import hu.bme.mit.gamma.property.model.PropertyPackage;
+import hu.bme.mit.gamma.trace.model.ExecutionTrace;
 
 public class AnalysisModelTransformationAndVerificationHandler extends TaskHandler {
 	
+	//
+	protected final boolean optimizeModel;
+	protected final ProgrammingLanguage testLanguage;
+	
+	protected final List<ExecutionTrace> traces = new ArrayList<ExecutionTrace>();
+	//
+	
 	public AnalysisModelTransformationAndVerificationHandler(IFile file) {
-		super(file);
+		this(file, false, null);
 	}
+	
+	public AnalysisModelTransformationAndVerificationHandler(IFile file,
+			boolean optimizeModel, ProgrammingLanguage testLanguage) {
+		super(file);
+		this.optimizeModel = optimizeModel;
+		this.testLanguage = testLanguage;
+	}
+	
+	//
 
 	public void execute(AnalysisModelTransformation transformation) throws IOException, InterruptedException {
 		List<AnalysisLanguage> languages = transformation.getLanguages();
@@ -44,6 +62,7 @@ public class AnalysisModelTransformationAndVerificationHandler extends TaskHandl
 			formulas.add(commentableStateFormula); // One by one
 			
 			AnalysisModelTransformationHandler transformationHandler = new AnalysisModelTransformationHandler(file);
+			transformation.setPropertyPackage(null); // No slicing - deprecated
 			transformationHandler.execute(transformation);
 			logger.log(Level.INFO, "Analysis transformation " + index + "/" + size + " finished");
 			
@@ -52,14 +71,38 @@ public class AnalysisModelTransformationAndVerificationHandler extends TaskHandl
 			verification.getFileName().addAll(
 					transformation.getFileName());
 			verification.getTargetFolder().addAll(
-					transformation.getTargetFolder());
+					List.of("trace"));
 			verification.getPropertyPackages().add(propertyPackage);
 			verification.setOptimize(true);
+			verification.setOptimizeModel(true);
+			if (testLanguage != null) {
+				verification.getProgrammingLanguages().add(testLanguage);
+			}
 			
-			VerificationHandler verificationHandler = new VerificationHandler(file);
-			verificationHandler.execute(verification);
+			if (optimizeModel) {
+				OptimizerAndVerificationHandler verificationHandler = new OptimizerAndVerificationHandler(file);
+				verificationHandler.execute(verification);
+				
+				traces.addAll(
+						verificationHandler.getTraces());
+			}
+			else {
+				VerificationHandler verificationHandler = new VerificationHandler(file);
+				verificationHandler.execute(verification);
+				
+				traces.addAll(
+						verificationHandler.getTraces());
+			}
+			
 			logger.log(Level.INFO, "Verification " + index + "/" + size + " finished");
 		}
 	}
+	
+	//
+	
+	public List<ExecutionTrace> getTraces() {
+		return traces;
+	}
+	
 	
 }

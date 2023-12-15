@@ -105,6 +105,8 @@ class ModelElementMutator {
 		info('''Removed trigger of transition from «transition.sourceState.name» to «transition.targetState.name»''')
 	}
 	
+	// TODO add history-related operators
+	
 	//
 	
 	def changePortReference(AnyPortEventReference reference) {

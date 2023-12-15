@@ -20,44 +20,58 @@ import java.util.List;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.emf.ecore.EObject;
 
+import hu.bme.mit.gamma.expression.model.Expression;
+import hu.bme.mit.gamma.expression.model.InequalityExpression;
 import hu.bme.mit.gamma.genmodel.derivedfeatures.GenmodelDerivedFeatures;
 import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation;
+import hu.bme.mit.gamma.genmodel.model.ComponentReference;
 import hu.bme.mit.gamma.genmodel.model.ModelMutation;
 import hu.bme.mit.gamma.genmodel.model.ModelReference;
 import hu.bme.mit.gamma.genmodel.model.MutationBasedTestGeneration;
+import hu.bme.mit.gamma.property.model.PropertyPackage;
+import hu.bme.mit.gamma.property.model.StateFormula;
+import hu.bme.mit.gamma.property.util.PropertyUtil;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.SchedulableCompositeComponent;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Component;
+import hu.bme.mit.gamma.statechart.interface_.Event;
+import hu.bme.mit.gamma.statechart.interface_.Interface;
+import hu.bme.mit.gamma.statechart.interface_.InterfaceRealization;
 import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.statechart.interface_.Port;
-import hu.bme.mit.gamma.statechart.util.StatechartUtil;
+import hu.bme.mit.gamma.statechart.interface_.UnfoldedPackageAnnotation;
+import hu.bme.mit.gamma.trace.model.ExecutionTrace;
 
 public class MutationBasedTestGenerationHandler extends TaskHandler {
 	
 	//
-	protected final StatechartUtil statechartUtil = StatechartUtil.INSTANCE;
+	protected final PropertyUtil propertyUtil = PropertyUtil.INSTANCE;
 	//
 	
 	public MutationBasedTestGenerationHandler(IFile file) {
 		super(file);
 	}
 	
-	public void execute(MutationBasedTestGeneration mutationBasedTestGeneration) throws IOException {
+	public void execute(MutationBasedTestGeneration mutationBasedTestGeneration)
+			throws IOException, InterruptedException {
 		// Setting target folder
 		setTargetFolder(mutationBasedTestGeneration);
 		//
 		setModelBasedMutationTestGeneration(mutationBasedTestGeneration);
+		//
 		
 		String fileName = javaUtil.getOnlyElement(
 				mutationBasedTestGeneration.getFileName());
 		
 		AnalysisModelTransformation analysisModelTransformation = mutationBasedTestGeneration.getAnalysisModelTransformation();
-		ModelReference model = analysisModelTransformation.getModel();
+		ComponentReference model = (ComponentReference) analysisModelTransformation.getModel();
 		Component component = (Component) GenmodelDerivedFeatures.getModel(model);
 		
 		ModelMutation modelMutation = factory.createModelMutation();
-		modelMutation.setModel(model);
+		modelMutation.setModel(
+				ecoreUtil.clone(model));
 		
 		ModelMutationHandler modelMutationHandler =  new ModelMutationHandler(file);
 		modelMutationHandler.execute(modelMutation);
@@ -66,20 +80,25 @@ public class MutationBasedTestGenerationHandler extends TaskHandler {
 		
 		int i = 0;
 		for (Package mutatedModel : mutatedModels) {
+			// Handling these packages as if they were not unfolded (as the original one is not) 
+			mutatedModel.getAnnotations().removeIf(it -> it instanceof UnfoldedPackageAnnotation);
+			//
+			
 			Component mutatedTopComponent = StatechartModelDerivedFeatures.getFirstComponent(mutatedModel);
 			
 			//
-			SchedulableCompositeComponent compositeOriginal = statechartUtil.wrapComponent(component);
+			SchedulableCompositeComponent compositeOriginal = propertyUtil.wrapComponent(component);
 			List<ComponentInstance> originalComponents = (List<ComponentInstance>)
 					StatechartModelDerivedFeatures.getDerivedComponents(compositeOriginal);
 			for (ComponentInstance originalComponent : originalComponents) {
 				originalComponent.setName("original");
 			}
 			List<Port> originalInputPorts = StatechartModelDerivedFeatures.getAllPortsWithInput(compositeOriginal);
+			List<Port> originalOutputPorts = StatechartModelDerivedFeatures.getAllPortsWithOutput(compositeOriginal);
 			//
 			
 			//
-			SchedulableCompositeComponent compositeMutant = statechartUtil.wrapComponent(mutatedTopComponent);
+			SchedulableCompositeComponent compositeMutant = propertyUtil.wrapComponent(mutatedTopComponent);
 			List<Port> mutantInputPorts = StatechartModelDerivedFeatures.getAllPortsWithInput(compositeMutant);
 			List<Port> mutantInternalPorts = StatechartModelDerivedFeatures.getAllInternalPorts(compositeMutant);
 			List<Port> mutantOutputPorts = StatechartModelDerivedFeatures.getAllPortsWithOutput(compositeMutant);
@@ -89,7 +108,9 @@ public class MutationBasedTestGenerationHandler extends TaskHandler {
 			mergableMutantPorts.addAll(mutantOutputPorts);
 			for (Port port : mergableMutantPorts) {
 				String name = port.getName();
-				port.setName(name + "Mutant");
+				port.setName(
+						javaUtil.matchFirstCharacterCapitalization(
+								"mutant" + javaUtil.toFirstCharUpper(name),  name));
 			}
 			
 			List<? extends ComponentInstance> mutantComponents = StatechartModelDerivedFeatures.getDerivedComponents(compositeMutant);
@@ -110,16 +131,66 @@ public class MutationBasedTestGenerationHandler extends TaskHandler {
 			
 			ecoreUtil.change(originalInputPorts, mutantInputPorts, compositeOriginal);
 			
-			Package newMergedPackage = statechartUtil.wrapIntoPackageAndAddImports(compositeOriginal);
-			String newFileName = fileUtil.toHiddenFileName(
-					fileNamer.getPackageFileName(fileName + "_Mutant_" + (i++)));
+			Package newMergedPackage = propertyUtil.wrapIntoPackageAndAddImports(compositeOriginal);
+			String newFileName = fileName + "_Mutant_" + (i++);
+			String newPackageFileName = fileUtil.toHiddenFileName(
+					fileNamer.getPackageFileName(newFileName));
 			
-			serializer.saveModel(newMergedPackage, targetFolderUri, newFileName);
+			serializer.saveModel(newMergedPackage, targetFolderUri, newPackageFileName);
 			
-			// Analysis model transformation
+			// Create EF property
+			List<Expression> orOperends = new ArrayList<Expression>();
+			for (int j = 0; j < originalOutputPorts.size(); j++) {
+				Port originalOutputPort = originalOutputPorts.get(j);
+				Port mutantOutputPort = mutantOutputPorts.get(j);
+				
+				Interface _interface = StatechartModelDerivedFeatures.getInterface(originalOutputPort);
+				checkState(ecoreUtil.helperEquals(_interface,
+						StatechartModelDerivedFeatures.getInterface(mutantOutputPort)),
+						"Interfaces are not the same");
+				InterfaceRealization mutantInterfaceRealization = mutantOutputPort.getInterfaceRealization();
+				mutantInterfaceRealization.setInterface(_interface);;
+				
+				List<Event> outputEvents = StatechartModelDerivedFeatures.getOutputEvents(originalOutputPort);
+				for (Event outputEvent : outputEvents) {
+					ComponentInstanceEventReferenceExpression originalReference =
+							propertyUtil.createSystemEventReference(originalOutputPort, outputEvent);
+					ComponentInstanceEventReferenceExpression mutantReference =
+							propertyUtil.createSystemEventReference(mutantOutputPort, outputEvent);
+					
+					if (originalReference != null && mutantReference != null) {
+						InequalityExpression inequality = propertyUtil
+								.createInequalityExpression(originalReference, mutantReference);
+						
+						orOperends.add(inequality);
+					}
+				}
+			}
+			Expression or = propertyUtil.wrapIntoOrExpression(orOperends);
+			StateFormula mutantKillingProperty = propertyUtil.createEF(
+					propertyUtil.createAtomicFormula(or));
 			
-			// Verification
+			PropertyPackage propertyPackage = propertyUtil.wrapFormula(compositeOriginal, mutantKillingProperty);
+			ecoreUtil.normalSave(propertyPackage, targetFolderUri, "." + newFileName + ".gpd");
 			
+			analysisModelTransformation.setPropertyPackage(propertyPackage);
+			
+			// Analysis model transformation & verification
+			model.setComponent(compositeOriginal);
+			
+			AnalysisModelTransformationAndVerificationHandler transformationHandler =
+					new AnalysisModelTransformationAndVerificationHandler(file, true, null);
+			transformationHandler.execute(analysisModelTransformation);
+			
+			analysisModelTransformation.setPropertyPackage(null);
+			
+			// TODO Post-processing traces
+			List<ExecutionTrace> traces = transformationHandler.getTraces();
+			for (ExecutionTrace trace : traces) { // Traces are already serialized
+				ecoreUtil.deleteResource(trace);
+				
+				ecoreUtil.save(trace);
+			}
 		}
 		
 	}

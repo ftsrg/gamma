@@ -1736,8 +1736,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	public static Collection<PortBinding> getPortBindings(Port port) {
 		EObject component = port.eContainer();
 		List<PortBinding> portBindings = new ArrayList<PortBinding>();
-		if (component instanceof CompositeComponent) {
-			CompositeComponent compositeComponent = (CompositeComponent) component;
+		if (component instanceof CompositeComponent compositeComponent) {
 			for (PortBinding portBinding : compositeComponent.getPortBindings()) {
 				if (portBinding.getCompositeSystemPort() == port) {
 					portBindings.add(portBinding);
@@ -1763,8 +1762,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		if (component instanceof StatechartDefinition) {
 			simplePorts.add(port);
 		}
-		else if (component instanceof CompositeComponent) {
-			CompositeComponent composite = (CompositeComponent) component;
+		else if (component instanceof CompositeComponent composite) {
 			for (PortBinding portBinding : composite.getPortBindings()) {
 				if (portBinding.getCompositeSystemPort() == port) {
 					// Makes sense only if the containment hierarchy is a tree structure
@@ -1777,6 +1775,47 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		}
 		// Note that one port can be in the list multiple times iff the component is NOT unfolded
 		return simplePorts;
+	}
+	
+	public static Entry<List<ComponentInstance>, Port> getBoundSimplePort(Port port) {
+		Component component = getContainingComponent(port);
+		if (component instanceof StatechartDefinition) {
+			List<ComponentInstance> instances = new ArrayList<ComponentInstance>();
+			return new SimpleEntry<
+					List<ComponentInstance>, Port>(instances, port);
+		}
+		else if (component instanceof AsynchronousAdapter adapter) {
+			return null; // Not bound to statechart port
+		}
+		else if (component instanceof CompositeComponent composite) {
+			for (PortBinding portBinding : composite.getPortBindings()) {
+				if (portBinding.getCompositeSystemPort() == port) { // Returning only the first one
+					// Makes sense only if the containment hierarchy is a tree structure
+					InstancePortReference instancePortReference = portBinding.getInstancePortReference();
+					ComponentInstance instance = instancePortReference.getInstance();
+					Port subport = instancePortReference.getPort();
+					
+					Entry<List<ComponentInstance>, Port> sub = getBoundSimplePort(subport);
+					if (sub == null) {
+						return null;
+					}
+					
+					List<ComponentInstance> instances = sub.getKey();
+					//
+					if (isAdapter(instance)) {
+						AsynchronousAdapter adapter = (AsynchronousAdapter) getDerivedType(instance);
+						SynchronousComponentInstance adaptedInstance = adapter.getWrappedComponent();
+						
+						instances.add(0, adaptedInstance);
+					}
+					//
+					instances.add(0, instance);
+					
+					return sub;
+				}
+			}
+		}
+		return null; // Not bound to statechart port
 	}
 	
 	public static List<Port> getAllBoundAsynchronousSimplePorts(AsynchronousComponent component) {
