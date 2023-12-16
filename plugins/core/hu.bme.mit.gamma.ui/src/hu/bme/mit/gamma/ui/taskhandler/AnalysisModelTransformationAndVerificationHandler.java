@@ -29,19 +29,24 @@ public class AnalysisModelTransformationAndVerificationHandler extends TaskHandl
 	
 	//
 	protected final boolean optimizeModel;
+	protected final boolean backAnnotateToOriginal;
+	protected boolean serializeTraces; // Denotes whether traces are serialized
 	protected final ProgrammingLanguage testLanguage;
 	
 	protected final List<ExecutionTrace> traces = new ArrayList<ExecutionTrace>();
 	//
 	
 	public AnalysisModelTransformationAndVerificationHandler(IFile file) {
-		this(file, false, null);
+		this(file, false, false, true, null);
 	}
 	
 	public AnalysisModelTransformationAndVerificationHandler(IFile file,
-			boolean optimizeModel, ProgrammingLanguage testLanguage) {
+			boolean optimizeModel, boolean backAnnotateToOriginal,
+			boolean serializeTraces, ProgrammingLanguage testLanguage) {
 		super(file);
 		this.optimizeModel = optimizeModel;
+		this.backAnnotateToOriginal = backAnnotateToOriginal;
+		this.serializeTraces = serializeTraces; // Denotes whether traces are serialized
 		this.testLanguage = testLanguage;
 	}
 	
@@ -74,20 +79,23 @@ public class AnalysisModelTransformationAndVerificationHandler extends TaskHandl
 					List.of("trace"));
 			verification.getPropertyPackages().add(propertyPackage);
 			verification.setOptimize(true);
-			verification.setOptimizeModel(true);
+			verification.setOptimizeModel(optimizeModel);
+			verification.setBackAnnotateToOriginal(backAnnotateToOriginal);
 			if (testLanguage != null) {
 				verification.getProgrammingLanguages().add(testLanguage);
 			}
 			
 			if (optimizeModel) {
-				OptimizerAndVerificationHandler verificationHandler = new OptimizerAndVerificationHandler(file);
+				OptimizerAndVerificationHandler verificationHandler =
+						new OptimizerAndVerificationHandler(file, serializeTraces);
 				verificationHandler.execute(verification);
 				
 				traces.addAll(
 						verificationHandler.getTraces());
 			}
 			else {
-				VerificationHandler verificationHandler = new VerificationHandler(file);
+				VerificationHandler verificationHandler =
+						new VerificationHandler(file, serializeTraces);
 				verificationHandler.execute(verification);
 				
 				traces.addAll(
@@ -103,6 +111,5 @@ public class AnalysisModelTransformationAndVerificationHandler extends TaskHandl
 	public List<ExecutionTrace> getTraces() {
 		return traces;
 	}
-	
 	
 }

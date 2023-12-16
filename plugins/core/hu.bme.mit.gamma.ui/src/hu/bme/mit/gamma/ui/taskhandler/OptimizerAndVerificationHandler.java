@@ -52,6 +52,8 @@ import uppaal.NTA;
 public class OptimizerAndVerificationHandler extends TaskHandler {
 	
 	//
+
+	protected boolean serializeTraces; // Denotes whether traces are serialized
 	
 	protected VerificationHandler verificationHandler = null;
 	
@@ -68,8 +70,15 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 	//
 	
 	public OptimizerAndVerificationHandler(IFile file) {
-		super(file);
+		this(file, true);
 	}
+	
+	public OptimizerAndVerificationHandler(IFile file, boolean serializeTraces) {
+		super(file);
+		this.serializeTraces = serializeTraces;
+	}
+	
+	//
 	
 	public void execute(Verification verification) throws IOException, InterruptedException {
 		List<AnalysisLanguage> analysisLanguages = verification.getAnalysisLanguages();
@@ -234,7 +243,9 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 			// Traces have not been serialized yet, doing it now
 			verificationHandler.optimizeTraces();
 		}
-		verificationHandler.serializeTraces(); // Serialization in one pass
+		if (serializeTraces) {
+			verificationHandler.serializeTraces(); // Serialization in one pass
+		}
 		// Reinstate original state
 		propertyPackages.clear();
 		propertyPackages.addAll(savedPropertyPackages);

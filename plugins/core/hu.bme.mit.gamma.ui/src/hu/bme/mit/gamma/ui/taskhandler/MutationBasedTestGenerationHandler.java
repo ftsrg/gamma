@@ -13,6 +13,7 @@ package hu.bme.mit.gamma.ui.taskhandler;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +36,8 @@ import hu.bme.mit.gamma.property.util.PropertyUtil;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventParameterReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventReferenceExpression;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression;
+import hu.bme.mit.gamma.statechart.composite.PortBinding;
 import hu.bme.mit.gamma.statechart.composite.SchedulableCompositeComponent;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Component;
@@ -45,6 +48,8 @@ import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.statechart.interface_.Port;
 import hu.bme.mit.gamma.statechart.interface_.UnfoldedPackageAnnotation;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
+import hu.bme.mit.gamma.trace.model.RaiseEventAct;
+import hu.bme.mit.gamma.trace.model.Step;
 
 public class MutationBasedTestGenerationHandler extends TaskHandler {
 	
@@ -85,8 +90,9 @@ public class MutationBasedTestGenerationHandler extends TaskHandler {
 		
 		int i = 0;
 		for (Package mutatedModel : mutatedModels) {
-			// Handling these packages as if they were not unfolded (as the original one is not) 
+			// Handling these packages as if they were not unfolded (as the original component is not) 
 			mutatedModel.getAnnotations().removeIf(it -> it instanceof UnfoldedPackageAnnotation);
+			ecoreUtil.save(mutatedModel);
 			//
 			
 			Component mutatedTopComponent = StatechartModelDerivedFeatures.getFirstComponent(mutatedModel);
@@ -95,9 +101,11 @@ public class MutationBasedTestGenerationHandler extends TaskHandler {
 			SchedulableCompositeComponent compositeOriginal = propertyUtil.wrapComponent(component);
 			List<ComponentInstance> originalComponents = (List<ComponentInstance>)
 					StatechartModelDerivedFeatures.getDerivedComponents(compositeOriginal);
+			String originalComponentInstanceName = "original";
 			for (ComponentInstance originalComponent : originalComponents) {
-				originalComponent.setName("original");
+				originalComponent.setName(originalComponentInstanceName);
 			}
+			List<Port> originalPorts = StatechartModelDerivedFeatures.getAllPorts(compositeOriginal);
 			List<Port> originalInputPorts = StatechartModelDerivedFeatures.getAllPortsWithInput(compositeOriginal);
 			List<Port> originalOutputPorts = StatechartModelDerivedFeatures.getAllPortsWithOutput(compositeOriginal);
 			//
@@ -194,17 +202,58 @@ public class MutationBasedTestGenerationHandler extends TaskHandler {
 			model.setComponent(compositeOriginal);
 			
 			AnalysisModelTransformationAndVerificationHandler transformationHandler =
-					new AnalysisModelTransformationAndVerificationHandler(file, true, null);
+					new AnalysisModelTransformationAndVerificationHandler(file,
+							true, true, false, null);
 			transformationHandler.execute(analysisModelTransformation);
 			
 			analysisModelTransformation.setPropertyPackage(null);
 			
-			// TODO Post-processing traces: projection
+			// Post-processing traces: projection to original component
 			List<ExecutionTrace> traces = transformationHandler.getTraces();
-			for (ExecutionTrace trace : traces) { // Traces are already serialized
-//				ecoreUtil.deleteResource(trace);
-//				
-//				ecoreUtil.save(trace);
+			for (ExecutionTrace trace : traces) {
+				List<RaiseEventAct> eventRaises = ecoreUtil.getAllContentsOfType(trace,
+						RaiseEventAct.class);
+				for (RaiseEventAct act : eventRaises) {
+					Port systemPort = act.getPort();
+					if (originalPorts.contains(systemPort)) {
+						// Original port
+						PortBinding portBinding = javaUtil.getOnlyElement(
+								StatechartModelDerivedFeatures.getPortBindings(systemPort));
+						Port originalPort = portBinding.getCompositeSystemPort();
+						act.setPort(originalPort);
+					}
+					else {
+						// Mutant port
+						ecoreUtil.removeContainmentChainUntilType(act, Step.class);
+					}
+				}
+				
+				List<ComponentInstanceReferenceExpression> instanceReferences = ecoreUtil
+						.getAllContentsOfType(trace, ComponentInstanceReferenceExpression.class)
+						.stream()
+						.filter(it -> !(it.eContainer() instanceof ComponentInstanceReferenceExpression))
+						.toList();
+				for (ComponentInstanceReferenceExpression instanceReference : instanceReferences) {
+					ComponentInstance componentInstance = instanceReference.getComponentInstance();
+					String instanceName = componentInstance.getName();
+					if (instanceName.equals(originalComponentInstanceName)) {
+						// Original instance
+						ComponentInstanceReferenceExpression child = instanceReference.getChild();
+						ecoreUtil.replace(child, instanceReference);
+					}
+					else {
+						// Mutant instance
+						ecoreUtil.removeContainmentChainUntilType(instanceReference, Step.class);
+					}
+				}
+
+				trace.setComponent(component);
+				trace.setImport(
+						StatechartModelDerivedFeatures.getContainingPackage(trace.getComponent()));
+				
+				// Traces are not serialized
+				serializer.saveModel(trace,
+						projectLocation + File.separator + "trace", newFileName + ".get");
 			}
 		}
 		

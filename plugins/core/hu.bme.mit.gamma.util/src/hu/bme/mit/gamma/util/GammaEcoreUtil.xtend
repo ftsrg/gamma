@@ -156,6 +156,24 @@ class GammaEcoreUtil {
 		}
 	}
 	
+	def <T extends EObject> void moveUpContainmentChainUntilType(EObject object, Class<? extends T> clazz) {
+		val container = object.eContainer
+		if (clazz.isInstance(container)) {
+			return
+		}
+		object.replace(container)
+		object.removeContainmentChainUntilType(clazz)
+	}
+	
+	def <T extends EObject> void removeContainmentChainUntilType(EObject object, Class<? extends T> clazz) {
+		val container = object.eContainer
+		if (clazz.isInstance(container)) {
+			object.remove
+			return
+		}
+		container.removeContainmentChainUntilType(clazz)
+	}
+	
 	def void changeAndReplace(EObject newObject, EObject oldObject, EObject container) {
 		change(newObject, oldObject, container)
 		newObject.replace(oldObject)
@@ -633,8 +651,8 @@ class GammaEcoreUtil {
 		val location =
 		if (uri.isPlatform) {
 			ResourcesPlugin.workspace.root.getFile(
-				new Path(uri.toPlatformString(true))
-			).location.toString
+				new Path(uri.toPlatformString(true)))
+			.location.toString
 		}
 		else {
 			val FILE_STRING = "file:"
