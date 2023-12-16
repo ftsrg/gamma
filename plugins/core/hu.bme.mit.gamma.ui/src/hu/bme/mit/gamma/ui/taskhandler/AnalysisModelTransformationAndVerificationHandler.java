@@ -30,7 +30,7 @@ public class AnalysisModelTransformationAndVerificationHandler extends TaskHandl
 	//
 	protected final boolean optimizeModel;
 	protected final boolean backAnnotateToOriginal;
-	protected boolean serializeTraces; // Denotes whether traces are serialized
+	protected boolean serializeTraces;
 	protected final ProgrammingLanguage testLanguage;
 	
 	protected final List<ExecutionTrace> traces = new ArrayList<ExecutionTrace>();
@@ -46,7 +46,7 @@ public class AnalysisModelTransformationAndVerificationHandler extends TaskHandl
 		super(file);
 		this.optimizeModel = optimizeModel;
 		this.backAnnotateToOriginal = backAnnotateToOriginal;
-		this.serializeTraces = serializeTraces; // Denotes whether traces are serialized
+		this.serializeTraces = serializeTraces;
 		this.testLanguage = testLanguage;
 	}
 	

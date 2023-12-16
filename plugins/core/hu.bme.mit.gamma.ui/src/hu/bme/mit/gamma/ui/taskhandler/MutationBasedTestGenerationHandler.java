@@ -16,6 +16,7 @@ import static com.google.common.base.Preconditions.checkState;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
@@ -30,6 +31,7 @@ import hu.bme.mit.gamma.genmodel.model.ComponentReference;
 import hu.bme.mit.gamma.genmodel.model.ModelMutation;
 import hu.bme.mit.gamma.genmodel.model.ModelReference;
 import hu.bme.mit.gamma.genmodel.model.MutationBasedTestGeneration;
+import hu.bme.mit.gamma.genmodel.model.ProgrammingLanguage;
 import hu.bme.mit.gamma.property.model.PropertyPackage;
 import hu.bme.mit.gamma.property.model.StateFormula;
 import hu.bme.mit.gamma.property.util.PropertyUtil;
@@ -37,6 +39,7 @@ import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventParameterReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression;
+import hu.bme.mit.gamma.statechart.composite.InstancePortReference;
 import hu.bme.mit.gamma.statechart.composite.PortBinding;
 import hu.bme.mit.gamma.statechart.composite.SchedulableCompositeComponent;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
@@ -50,11 +53,13 @@ import hu.bme.mit.gamma.statechart.interface_.UnfoldedPackageAnnotation;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
 import hu.bme.mit.gamma.trace.model.RaiseEventAct;
 import hu.bme.mit.gamma.trace.model.Step;
+import hu.bme.mit.gamma.ui.taskhandler.VerificationHandler.ExecutionTraceSerializer;
 
 public class MutationBasedTestGenerationHandler extends TaskHandler {
 	
 	//
 	protected final PropertyUtil propertyUtil = PropertyUtil.INSTANCE;
+	protected final ExecutionTraceSerializer traceSerializer = ExecutionTraceSerializer.INSTANCE;
 	//
 	
 	public MutationBasedTestGenerationHandler(IFile file) {
@@ -105,7 +110,6 @@ public class MutationBasedTestGenerationHandler extends TaskHandler {
 			for (ComponentInstance originalComponent : originalComponents) {
 				originalComponent.setName(originalComponentInstanceName);
 			}
-			List<Port> originalPorts = StatechartModelDerivedFeatures.getAllPorts(compositeOriginal);
 			List<Port> originalInputPorts = StatechartModelDerivedFeatures.getAllPortsWithInput(compositeOriginal);
 			List<Port> originalOutputPorts = StatechartModelDerivedFeatures.getAllPortsWithOutput(compositeOriginal);
 			//
@@ -211,18 +215,23 @@ public class MutationBasedTestGenerationHandler extends TaskHandler {
 			// Post-processing traces: projection to original component
 			List<ExecutionTrace> traces = transformationHandler.getTraces();
 			for (ExecutionTrace trace : traces) {
-				List<RaiseEventAct> eventRaises = ecoreUtil.getAllContentsOfType(trace,
-						RaiseEventAct.class);
+				List<RaiseEventAct> eventRaises = ecoreUtil.getAllContentsOfType(trace, RaiseEventAct.class);
 				for (RaiseEventAct act : eventRaises) {
 					Port systemPort = act.getPort();
-					if (originalPorts.contains(systemPort)) {
-						// Original port
-						PortBinding portBinding = javaUtil.getOnlyElement(
-								StatechartModelDerivedFeatures.getPortBindings(systemPort));
-						Port originalPort = portBinding.getCompositeSystemPort();
-						act.setPort(originalPort);
+					Collection<PortBinding> portBindings = StatechartModelDerivedFeatures.getPortBindings(systemPort);
+					boolean foundOriginal = false;
+					for (PortBinding portBinding : portBindings) {
+						InstancePortReference instancePortReference = portBinding.getInstancePortReference();
+						ComponentInstance instance = instancePortReference.getInstance();
+						String instanceName = instance.getName();
+						Port port = instancePortReference.getPort();
+						if (instanceName.equals(originalComponentInstanceName)) {
+							// Original port
+							act.setPort(port);
+							foundOriginal = true;
+						}
 					}
-					else {
+					if (!foundOriginal) {
 						// Mutant port
 						ecoreUtil.removeContainmentChainUntilType(act, Step.class);
 					}
@@ -251,9 +260,14 @@ public class MutationBasedTestGenerationHandler extends TaskHandler {
 				trace.setImport(
 						StatechartModelDerivedFeatures.getContainingPackage(trace.getComponent()));
 				
-				// Traces are not serialized
-				serializer.saveModel(trace,
-						projectLocation + File.separator + "trace", newFileName + ".get");
+				// Traces and tests are not serialized
+				String traceFolder = projectLocation + File.separator + "trace";
+				String testFolder = projectLocation + File.separator + "test-gen";
+				String basePackageName = file.getProject().getName();
+				ProgrammingLanguage programmingLanguage = ProgrammingLanguage.JAVA; // TODO make it cutomizable
+				
+				traceSerializer.serialize(traceFolder, "ExecutionTrace", null, testFolder,
+						"ExecutionTraceSimulation", basePackageName, programmingLanguage, trace);
 			}
 		}
 		
