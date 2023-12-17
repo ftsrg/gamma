@@ -259,7 +259,8 @@ public class AdaptiveContractTestGenerationHandler extends TaskHandler {
 		checkArgument(testGeneration.getFileName().size() <= 1);
 		checkArgument(testGeneration.getTestFolder().size() <= 1);
 		if (testGeneration.getPackageName().isEmpty()) {
-			testGeneration.getPackageName().add(file.getProject().getName().toLowerCase());
+			testGeneration.getPackageName().add(
+					file.getProject().getName().toLowerCase());
 		}
 		if (testGeneration.getFileName().isEmpty()) {
 			testGeneration.getFileName().add(GammaFileNamer.EXECUTION_TRACE_FILE_NAME);

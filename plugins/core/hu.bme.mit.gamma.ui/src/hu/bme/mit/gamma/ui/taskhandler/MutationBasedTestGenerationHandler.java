@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 
 import hu.bme.mit.gamma.expression.model.Expression;
@@ -53,10 +54,17 @@ import hu.bme.mit.gamma.statechart.interface_.UnfoldedPackageAnnotation;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
 import hu.bme.mit.gamma.trace.model.RaiseEventAct;
 import hu.bme.mit.gamma.trace.model.Step;
+import hu.bme.mit.gamma.transformation.util.GammaFileNamer;
 import hu.bme.mit.gamma.ui.taskhandler.VerificationHandler.ExecutionTraceSerializer;
 
 public class MutationBasedTestGenerationHandler extends TaskHandler {
-	
+	//
+	protected String packageName;
+	protected String traceFolderUri;
+	protected String testFolderUri;
+	protected String traceFileName;
+	protected String testFileName;
+	protected ProgrammingLanguage programmingLanguage;
 	//
 	protected final PropertyUtil propertyUtil = PropertyUtil.INSTANCE;
 	protected final ExecutionTraceSerializer traceSerializer = ExecutionTraceSerializer.INSTANCE;
@@ -69,6 +77,7 @@ public class MutationBasedTestGenerationHandler extends TaskHandler {
 	public void execute(MutationBasedTestGeneration mutationBasedTestGeneration)
 			throws IOException, InterruptedException {
 		// Setting target folder
+		setProjectLocation(mutationBasedTestGeneration); // Before the target folder
 		setTargetFolder(mutationBasedTestGeneration);
 		//
 		setModelBasedMutationTestGeneration(mutationBasedTestGeneration);
@@ -104,6 +113,7 @@ public class MutationBasedTestGenerationHandler extends TaskHandler {
 			
 			//
 			SchedulableCompositeComponent compositeOriginal = propertyUtil.wrapComponent(component);
+			@SuppressWarnings("unchecked")
 			List<ComponentInstance> originalComponents = (List<ComponentInstance>)
 					StatechartModelDerivedFeatures.getDerivedComponents(compositeOriginal);
 			String originalComponentInstanceName = "original";
@@ -261,13 +271,8 @@ public class MutationBasedTestGenerationHandler extends TaskHandler {
 						StatechartModelDerivedFeatures.getContainingPackage(trace.getComponent()));
 				
 				// Traces and tests are not serialized
-				String traceFolder = projectLocation + File.separator + "trace";
-				String testFolder = projectLocation + File.separator + "test-gen";
-				String basePackageName = file.getProject().getName();
-				ProgrammingLanguage programmingLanguage = ProgrammingLanguage.JAVA; // TODO make it cutomizable
-				
-				traceSerializer.serialize(traceFolder, "ExecutionTrace", null, testFolder,
-						"ExecutionTraceSimulation", basePackageName, programmingLanguage, trace);
+				traceSerializer.serialize(traceFolderUri, traceFileName, null, testFolderUri,
+						testFileName, packageName, programmingLanguage, trace);
 			}
 		}
 		
@@ -285,6 +290,28 @@ public class MutationBasedTestGenerationHandler extends TaskHandler {
 			String fileName = getNameWithoutExtension(containingFileName);
 			fileNames.add(fileName);
 		}
+		List<String> packageNames = mutationBasedTestGeneration.getPackageName();
+		List<String> testFolders = mutationBasedTestGeneration.getTestFolder();
+		checkArgument(packageNames.size() <= 1);
+		checkArgument(testFolders.size() <= 1);
+		if (packageNames.isEmpty()) {
+			packageNames.add(
+					file.getProject().getName().toLowerCase());
+		}
+		if (testFolders.isEmpty()) {
+			testFolders.add("test-gen");
+		}
+		
+		List<ProgrammingLanguage> programmingLanguages = mutationBasedTestGeneration.getProgrammingLanguages();
+		this.programmingLanguage = programmingLanguages.isEmpty() ? null : programmingLanguages.get(0);
+		
+		this.packageName = packageNames.get(0);
+		this.traceFileName = GammaFileNamer.EXECUTION_TRACE_FILE_NAME;
+		this.traceFolderUri = URI.decode(projectLocation + File.separator + "trace");
+		// Setting the attribute, the test folder is a RELATIVE path now from the project
+		String testFolder = testFolders.get(0);
+		this.testFolderUri = URI.decode(projectLocation + File.separator + testFolder);
+		this.testFileName = traceFileName + "Simulation";
 	}
 
 }

@@ -484,9 +484,13 @@ MutationBasedTestGeneration returns MutationBasedTestGeneration:
 	'mutation-based-test-generation' '{'
 		analysisModelTransformation=AnalysisModelTransformation
 		(
+			'project' ':' projectName+=STRING |
 			'folder' ':' targetFolder+=STRING |
 			'file' ':' fileName+=STRING |
-			'mutation-count' ':' iterationCount=Expression
+			'mutation-count' ':' iterationCount=Expression |
+			'base-package' ':' packageName+=STRING | // Java base package
+			'language' ':' programmingLanguages+=ProgrammingLanguage |
+			'test-folder' ':' testFolder+=STRING
 		)*
 	'}'
 ;
