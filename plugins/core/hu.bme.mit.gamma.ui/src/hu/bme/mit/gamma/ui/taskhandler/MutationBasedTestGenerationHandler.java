@@ -278,7 +278,8 @@ public class MutationBasedTestGenerationHandler extends TaskHandler {
 		
 	}
 	
-	private void setModelBasedMutationTestGeneration(MutationBasedTestGeneration mutationBasedTestGeneration) {
+	private void setModelBasedMutationTestGeneration(
+			MutationBasedTestGeneration mutationBasedTestGeneration) {
 		List<String> fileNames = mutationBasedTestGeneration.getFileName();
 		checkArgument(fileNames.size() <= 1);
 		if (fileNames.isEmpty()) {

@@ -136,15 +136,18 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 	}
 	
 	private void setAnalysisModelTransformation(AnalysisModelTransformation analysisModelTransformation) {
-		checkArgument(analysisModelTransformation.getFileName().size() <= 1);
-		if (analysisModelTransformation.getFileName().isEmpty()) {
+		List<String> fileNames = analysisModelTransformation.getFileName();
+		checkArgument(fileNames.size() <= 1);
+		if (fileNames.isEmpty()) {
 			EObject sourceModel = GenmodelDerivedFeatures.getModel(analysisModelTransformation);
-			String fileName = getNameWithoutExtension(getContainingFileName(sourceModel));
-			analysisModelTransformation.getFileName().add(fileName);
+			String fileName = getNameWithoutExtension(
+					getContainingFileName(sourceModel));
+			fileNames.add(fileName);
 		}
-		checkArgument(analysisModelTransformation.getScheduler().size() <= 1);
-		if (analysisModelTransformation.getScheduler().isEmpty()) {
-			analysisModelTransformation.getScheduler().add(hu.bme.mit.gamma.genmodel.model.Scheduler.RANDOM);
+		List<hu.bme.mit.gamma.genmodel.model.Scheduler> schedulers = analysisModelTransformation.getScheduler();
+		checkArgument(schedulers.size() <= 1);
+		if (schedulers.isEmpty()) {
+			schedulers.add(hu.bme.mit.gamma.genmodel.model.Scheduler.RANDOM);
 		}
 	}
 	

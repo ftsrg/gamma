@@ -70,9 +70,10 @@ public abstract class TaskHandler {
 	}
 	
 	public void setTargetFolder(Task task) {
-		checkArgument(task.getTargetFolder().size() <= 1);
+		List<String> targetFolders = task.getTargetFolder();
+		checkArgument(targetFolders.size() <= 1);
 		
-		if (task.getTargetFolder().isEmpty()) {
+		if (targetFolders.isEmpty()) {
 			String targetFolder = null;
 			if (task instanceof TraceGeneration) {
 				String path = file.getParent().getFullPath().toString();
@@ -105,11 +106,11 @@ public abstract class TaskHandler {
 					targetFolder = relativeFolder.substring(projectLocation.length() + 1); // Counting the separator
 				}
 			}
-			task.getTargetFolder().add(targetFolder);
+			targetFolders.add(targetFolder);
 		}
 		// Setting the attribute, the target folder is a RELATIVE path now from the project
 		targetFolderUri = URI.decode(
-				projectLocation + File.separator + task.getTargetFolder().get(0));
+				projectLocation + File.separator + targetFolders.get(0));
 	}
 	
 	protected String getNameWithoutExtension(String fileName) {

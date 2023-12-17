@@ -14,6 +14,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.emf.common.util.URI;
@@ -66,17 +67,18 @@ public class SlicingHandler extends TaskHandler  {
 	 * Original target folder for the component under slicing.
 	 */
 	private void setTargetFolder(Slicing slicing) {
-		checkArgument(slicing.getTargetFolder().size() <= 1);
-		if (slicing.getTargetFolder().isEmpty()) {
+		List<String> targetFolders = slicing.getTargetFolder();
+		checkArgument(targetFolders.size() <= 1);
+		if (targetFolders.isEmpty()) {
 			Component component = slicing.getPropertyPackage().getComponent();
 			URI relativeUri = component.eResource().getURI();
 			URI parentUri = relativeUri.trimSegments(1);
 			String platformUri = parentUri.toPlatformString(true);
 			String targetFolder = platformUri.substring(
 				(File.separator + file.getProject().getName() + File.separator).length());
-			slicing.getTargetFolder().add(targetFolder);
+			targetFolders.add(targetFolder);
 			// Setting the attribute, the target folder is a RELATIVE path now from the project
-			targetFolderUri = URI.decode(projectLocation + File.separator + slicing.getTargetFolder().get(0));
+			targetFolderUri = URI.decode(projectLocation + File.separator + targetFolders.get(0));
 		}
 	}
 	

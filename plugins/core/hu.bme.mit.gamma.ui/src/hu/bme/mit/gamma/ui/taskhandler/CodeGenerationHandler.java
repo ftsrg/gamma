@@ -94,18 +94,20 @@ public class CodeGenerationHandler extends TaskHandler {
 	//
 	
 	private void setCodeGeneration(CodeGeneration codeGeneration, String packageName) {
-		checkArgument(codeGeneration.getPackageName().size() <= 1);
-		if (codeGeneration.getPackageName().isEmpty()) {
-			codeGeneration.getPackageName().add(packageName);
+		List<String> packageNames = codeGeneration.getPackageName();
+		checkArgument(packageNames.size() <= 1);
+		if (packageNames.isEmpty()) {
+			packageNames.add(packageName);
 		}
 		// TargetFolder set in setTargetFolder
 	}
 	
 	private void loadStatechartTraces(ResourceSet resourceSet, Component component) {
-		if (component instanceof CompositeComponent) {
-			CompositeComponent compositeComponent = (CompositeComponent) component;
-			for (ComponentInstance containedComponent : StatechartModelDerivedFeatures.getDerivedComponents(compositeComponent)) {
-				loadStatechartTraces(resourceSet, StatechartModelDerivedFeatures.getDerivedType(containedComponent));
+		if (component instanceof CompositeComponent compositeComponent) {
+			for (ComponentInstance containedComponent :
+					StatechartModelDerivedFeatures.getDerivedComponents(compositeComponent)) {
+				loadStatechartTraces(resourceSet,
+						StatechartModelDerivedFeatures.getDerivedType(containedComponent));
 			}
 		}
 		else {

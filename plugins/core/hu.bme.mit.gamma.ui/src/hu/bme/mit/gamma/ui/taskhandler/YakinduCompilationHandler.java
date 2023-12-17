@@ -12,6 +12,8 @@ package hu.bme.mit.gamma.ui.taskhandler;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.util.List;
+
 import org.eclipse.core.resources.IFile;
 
 import hu.bme.mit.gamma.genmodel.model.YakinduCompilation;
@@ -26,13 +28,15 @@ public abstract class YakinduCompilationHandler extends TaskHandler {
 		String fileName = getNameWithoutExtension(
 				getContainingFileName(
 						yakinduCompilation.getStatechart()));
-		checkArgument(yakinduCompilation.getFileName().size() <= 1);
-		checkArgument(yakinduCompilation.getPackageName().size() <= 1);
-		if (yakinduCompilation.getFileName().isEmpty()) {
-			yakinduCompilation.getFileName().add(fileName);
+		List<String> fileNames = yakinduCompilation.getFileName();
+		List<String> packageNames = yakinduCompilation.getPackageName();
+		checkArgument(fileNames.size() <= 1);
+		checkArgument(packageNames.size() <= 1);
+		if (fileNames.isEmpty()) {
+			fileNames.add(fileName);
 		}
-		if (yakinduCompilation.getPackageName().isEmpty()) {
-			yakinduCompilation.getPackageName().add(
+		if (packageNames.isEmpty()) {
+			packageNames.add(
 					yakinduCompilation.getStatechart().getName().toLowerCase());
 		}
 	}

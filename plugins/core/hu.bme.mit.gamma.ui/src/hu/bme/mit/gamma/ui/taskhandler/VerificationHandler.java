@@ -356,15 +356,18 @@ public class VerificationHandler extends TaskHandler {
 	}
 	
 	private void setVerification(Verification verification) {
-		if (verification.getPackageName().isEmpty()) {
+		List<String> packageNames = verification.getPackageName();
+		if (packageNames.isEmpty()) {
 			this.packageName = file.getProject().getName().toLowerCase();
-			verification.getPackageName().add(packageName);
+			packageNames.add(packageName);
 		}
-		if (verification.getTestFolder().isEmpty()) {
-			verification.getTestFolder().add("test-gen");
+		List<String> testFolders = verification.getTestFolder();
+		if (testFolders.isEmpty()) {
+			testFolders.add("test-gen");
 		}
-		if (!verification.getSvgFileName().isEmpty()) {
-			this.svgFileName = verification.getSvgFileName().get(0);
+		List<String> svgFileNames = verification.getSvgFileName();
+		if (!svgFileNames.isEmpty()) {
+			this.svgFileName = svgFileNames.get(0);
 		}
 		List<ProgrammingLanguage> programmingLanguages = verification.getProgrammingLanguages();
 		if (programmingLanguages.isEmpty()) {
@@ -374,7 +377,7 @@ public class VerificationHandler extends TaskHandler {
 			this.programmingLanguage = programmingLanguages.get(0);
 			this.serializeTest = true;
 			// Setting the attribute, the test folder is a RELATIVE path now from the project
-			this.testFolderUri = URI.decode(projectLocation + File.separator + verification.getTestFolder().get(0));
+			this.testFolderUri = URI.decode(projectLocation + File.separator + testFolders.get(0));
 		}
 		Resource resource = verification.eResource();
 		File file = (resource != null) ?

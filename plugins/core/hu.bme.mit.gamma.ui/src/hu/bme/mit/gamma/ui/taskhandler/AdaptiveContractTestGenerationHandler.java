@@ -255,24 +255,27 @@ public class AdaptiveContractTestGenerationHandler extends TaskHandler {
 	// Settings
 
 	private void setAdaptiveContractTestGeneration(AdaptiveContractTestGeneration testGeneration) {
-		checkArgument(testGeneration.getPackageName().size() <= 1);
-		checkArgument(testGeneration.getFileName().size() <= 1);
-		checkArgument(testGeneration.getTestFolder().size() <= 1);
-		if (testGeneration.getPackageName().isEmpty()) {
-			testGeneration.getPackageName().add(
+		List<String> packageNames = testGeneration.getPackageName();
+		List<String> fileNames = testGeneration.getFileName();
+		List<String> testFolders = testGeneration.getTestFolder();
+		checkArgument(packageNames.size() <= 1);
+		checkArgument(fileNames.size() <= 1);
+		checkArgument(testFolders.size() <= 1);
+		if (packageNames.isEmpty()) {
+			packageNames.add(
 					file.getProject().getName().toLowerCase());
 		}
-		if (testGeneration.getFileName().isEmpty()) {
-			testGeneration.getFileName().add(GammaFileNamer.EXECUTION_TRACE_FILE_NAME);
+		if (fileNames.isEmpty()) {
+			fileNames.add(GammaFileNamer.EXECUTION_TRACE_FILE_NAME);
 		}
-		if (testGeneration.getTestFolder().isEmpty()) {
-			testGeneration.getTestFolder().add("test-gen");
+		if (testFolders.isEmpty()) {
+			testFolders.add("test-gen");
 		}
-		this.packageName = testGeneration.getPackageName().get(0);
-		this.traceFileName = testGeneration.getFileName().get(0);
+		this.packageName = packageNames.get(0);
+		this.traceFileName = fileNames.get(0);
 		// Setting the attribute, the test folder is a RELATIVE path now from the
 		// project
-		String testFolder = testGeneration.getTestFolder().get(0);
+		String testFolder = testFolders.get(0);
 		this.testFolderUri = URI.decode(projectLocation + File.separator + testFolder);
 		this.testFileName = traceFileName + "Simulation";
 		// TargetFolder set in setTargetFolder
