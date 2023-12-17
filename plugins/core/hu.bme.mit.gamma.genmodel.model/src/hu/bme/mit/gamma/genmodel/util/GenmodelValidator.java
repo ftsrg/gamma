@@ -62,7 +62,9 @@ import hu.bme.mit.gamma.genmodel.model.GenModel;
 import hu.bme.mit.gamma.genmodel.model.GenmodelModelPackage;
 import hu.bme.mit.gamma.genmodel.model.InterfaceCompilation;
 import hu.bme.mit.gamma.genmodel.model.InterfaceMapping;
+import hu.bme.mit.gamma.genmodel.model.ModelMutation;
 import hu.bme.mit.gamma.genmodel.model.ModelReference;
+import hu.bme.mit.gamma.genmodel.model.MutationBasedTestGeneration;
 import hu.bme.mit.gamma.genmodel.model.OrchestratingConstraint;
 import hu.bme.mit.gamma.genmodel.model.PhaseStatechartGeneration;
 import hu.bme.mit.gamma.genmodel.model.SafetyAssessment;
@@ -432,55 +434,73 @@ public class GenmodelValidator extends ExpressionModelValidator {
 	
 	public Collection<ValidationResultMessage> checkGammaImports(GenModel genmodel) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		
 		Set<Package> packageImports = genmodel.getPackageImports().stream().collect(Collectors.toSet());
-		for (CodeGeneration codeGenerationTask : javaUtil.filterIntoList(genmodel.getTasks(),CodeGeneration.class)) {
-			Package parentPackage = StatechartModelDerivedFeatures.getContainingPackage(codeGenerationTask.getComponent());
+		List<Task> tasks = genmodel.getTasks();
+		for (CodeGeneration task : javaUtil.filterIntoList(tasks,CodeGeneration.class)) {
+			Package parentPackage = StatechartModelDerivedFeatures.getContainingPackage(task.getComponent());
 			packageImports.remove(parentPackage);
 		}
-		for (AnalysisModelTransformation analysisModelTransformationTask :
-				javaUtil.filterIntoList(genmodel.getTasks(), AnalysisModelTransformation.class)) {
-			packageImports.removeAll(getUsedPackages(analysisModelTransformationTask));
+		for (AnalysisModelTransformation task :
+				javaUtil.filterIntoList(tasks, AnalysisModelTransformation.class)) {
+			packageImports.removeAll(
+					getUsedPackages(task));
 		}
-		for (SafetyAssessment safetyAssessment : javaUtil.filterIntoList(genmodel.getTasks(), SafetyAssessment.class)) {
-			packageImports.removeAll(getUsedPackages(safetyAssessment.getAnalysisModelTransformation()));
+		for (SafetyAssessment task : javaUtil.filterIntoList(tasks, SafetyAssessment.class)) {
+			packageImports.removeAll(
+					getUsedPackages(task.getAnalysisModelTransformation()));
 		}
-		for (StatechartCompilation statechartCompilationTask :
-				javaUtil.filterIntoList(genmodel.getTasks(), StatechartCompilation.class)) {
-			for (InterfaceMapping interfaceMapping : statechartCompilationTask.getInterfaceMappings()) {
+		for (StatechartCompilation task :
+				javaUtil.filterIntoList(tasks, StatechartCompilation.class)) {
+			for (InterfaceMapping interfaceMapping : task.getInterfaceMappings()) {
 				Package parentPackage = StatechartModelDerivedFeatures.getContainingPackage(
 						interfaceMapping.getGammaInterface());
 				packageImports.remove(parentPackage);
 			}
 		}
-		for (EventPriorityTransformation eventPriorityTransformationTask :
-					javaUtil.filterIntoList(genmodel.getTasks(), EventPriorityTransformation.class)) {
+		for (EventPriorityTransformation task :
+					javaUtil.filterIntoList(tasks, EventPriorityTransformation.class)) {
 			Package parentPackage = StatechartModelDerivedFeatures.getContainingPackage(
-					eventPriorityTransformationTask.getStatechart());
+					task.getStatechart());
 			packageImports.remove(parentPackage);
 		}
-		for (AdaptiveContractTestGeneration adaptiveContractTestGenerationTask :
-					javaUtil.filterIntoList(genmodel.getTasks(), AdaptiveContractTestGeneration.class)) {
-			packageImports.removeAll(getUsedPackages(adaptiveContractTestGenerationTask.getModelTransformation()));
+		for (AdaptiveContractTestGeneration task :
+					javaUtil.filterIntoList(tasks, AdaptiveContractTestGeneration.class)) {
+			packageImports.removeAll(
+					getUsedPackages(task.getModelTransformation()));
 		}
-		for (AdaptiveBehaviorConformanceChecking adaptiveBehaviorConformanceChecking :
-					javaUtil.filterIntoList(genmodel.getTasks(), AdaptiveBehaviorConformanceChecking.class)) {
-			packageImports.removeAll(getUsedPackages(adaptiveBehaviorConformanceChecking.getModelTransformation()));
+		for (AdaptiveBehaviorConformanceChecking task :
+					javaUtil.filterIntoList(tasks, AdaptiveBehaviorConformanceChecking.class)) {
+			packageImports.removeAll(
+					getUsedPackages(task.getModelTransformation()));
 		}
-		for (StatechartContractTestGeneration statechartContractTestGenerationTask :
-			javaUtil.filterIntoList(genmodel.getTasks(), StatechartContractTestGeneration.class)) {
+		for (StatechartContractTestGeneration task :
+				javaUtil.filterIntoList(tasks, StatechartContractTestGeneration.class)) {
+			ComponentReference componentReference = task.getComponentReference();
 			packageImports.remove(StatechartModelDerivedFeatures.getContainingPackage(
-					statechartContractTestGenerationTask.getComponentReference()));
+					componentReference.getComponent()));
 		}
-		for (StatechartContractGeneration statechartContractGenerationTask :
-			javaUtil.filterIntoList(genmodel.getTasks(), StatechartContractGeneration.class)) {
+		for (StatechartContractGeneration task :
+				javaUtil.filterIntoList(tasks, StatechartContractGeneration.class)) {
 			packageImports.remove(StatechartModelDerivedFeatures.getContainingPackage(
-					statechartContractGenerationTask.getScenario()));
+					task.getScenario()));
 		}
-		for (PhaseStatechartGeneration phaseStatechartGenerationTask :
-					javaUtil.filterIntoList(genmodel.getTasks(), PhaseStatechartGeneration.class)) {
+		for (PhaseStatechartGeneration task : 
+				javaUtil.filterIntoList(tasks, PhaseStatechartGeneration.class)) {
 			Package parentPackage = StatechartModelDerivedFeatures.getContainingPackage(
-					phaseStatechartGenerationTask.getStatechart());
+					task.getStatechart());
 			packageImports.remove(parentPackage);
+		}
+		for (ModelMutation task : javaUtil.filterIntoList(tasks, ModelMutation.class)) {
+			ModelReference modelReference = task.getModel();
+			EObject model = GenmodelDerivedFeatures.getModel(modelReference);
+			packageImports.remove(
+					StatechartModelDerivedFeatures.getContainingPackage(model));
+		}
+		for (MutationBasedTestGeneration task :
+				javaUtil.filterIntoList(tasks, MutationBasedTestGeneration.class)) {
+			packageImports.removeAll(
+					getUsedPackages(task.getAnalysisModelTransformation()));
 		}
 		for (ReferenceExpression reference : ecoreUtil.getAllContentsOfType(genmodel, ReferenceExpression.class)) {
 			if (reference instanceof ComponentInstanceReferenceExpression) {
@@ -574,8 +594,7 @@ public class GenmodelValidator extends ExpressionModelValidator {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		try {
 			ModelReference modelReference = analysisModelTransformation.getModel();
-			if (modelReference instanceof ComponentReference) {
-				ComponentReference componentReference = (ComponentReference)modelReference;
+			if (modelReference instanceof ComponentReference componentReference) {
 				Component type = componentReference.getComponent();
 				List<ParameterDeclaration> parameters = type.getParameterDeclarations();
 				for (var i = 0; i < parameters.size(); i++) {
