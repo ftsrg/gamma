@@ -213,6 +213,7 @@ public class MutationBasedTestGenerationHandler extends TaskHandler {
 			analysisModelTransformation.setPropertyPackage(propertyPackage);
 			
 			// Analysis model transformation & verification
+			analysisModelTransformation.getFileName().clear();
 			model.setComponent(compositeOriginal);
 			
 			AnalysisModelTransformationAndVerificationHandler transformationHandler =

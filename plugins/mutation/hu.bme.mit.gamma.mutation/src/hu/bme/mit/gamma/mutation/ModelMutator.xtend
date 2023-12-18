@@ -10,12 +10,19 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.mutation
 
+import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.statechart.composite.CompositeComponent
 import hu.bme.mit.gamma.statechart.interface_.Component
+import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference
 import hu.bme.mit.gamma.statechart.statechart.ChoiceState
+import hu.bme.mit.gamma.statechart.statechart.EntryState
+import hu.bme.mit.gamma.statechart.statechart.PortEventReference
+import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction
+import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.Transition
+import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.util.Collection
 import java.util.Random
 import java.util.Set
@@ -25,16 +32,41 @@ import static com.google.common.base.Preconditions.checkState
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class ModelMutator {
-	//
+	// Caching
+	protected final Set<AnyPortEventReference> anyPortEventReferences = newLinkedHashSet
+	protected final Set<PortEventReference> portEventReferences = newLinkedHashSet
+	protected final Set<RaiseEventAction> raiseEventActions = newLinkedHashSet
+	protected final Set<State> states = newLinkedHashSet
+	protected final Set<Region> regions = newLinkedHashSet
+	
+	protected final Set<Expression> expressions = newLinkedHashSet
+	// Mutations
 	protected final Set<Transition> transitionSourceMutations = newLinkedHashSet
 	protected final Set<Transition> transitionTargetMutations = newLinkedHashSet
 	protected final Set<Transition> transitionRemoveMutations = newLinkedHashSet
 	protected final Set<Transition> transitionGuardRemoveMutations = newLinkedHashSet
 	protected final Set<Transition> transitionTriggerRemoveMutations = newLinkedHashSet
 	
+	protected final Set<AnyPortEventReference> anyPortEventReferenceMutations = newLinkedHashSet
+	protected final Set<PortEventReference> portEventReferencePortChangeMutations = newLinkedHashSet
+	protected final Set<PortEventReference> portEventReferenceEventChangeMutations = newLinkedHashSet
+	protected final Set<RaiseEventAction> raiseEventActionPortChangeMutations = newLinkedHashSet
+	protected final Set<RaiseEventAction> raiseEventActionEventChangeMutations = newLinkedHashSet
+	protected final Set<Transition> transitionEffectRemoveMutations = newLinkedHashSet
+	protected final Set<State> stateEntryActionRemoveMutations = newLinkedHashSet
+	protected final Set<State> stateExitActionRemoveMutations = newLinkedHashSet
+	protected final Set<EntryState> entryStateChangeMutations = newLinkedHashSet
+	
+	protected final Set<Expression> expressionChangeMutations = newLinkedHashSet
+	protected final Set<Expression> expressionInversionMutations = newLinkedHashSet
+	
+	//
+	
 	protected final extension ModelElementMutator modelElementMutator
 	
 	protected final Random random = new Random();
+	
+	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
 	//
 	
 	new() {
@@ -80,23 +112,23 @@ class ModelMutator {
 						val i = mutationOperatorIndex % OPERATOR_COUNT
 						switch (i) {
 							case 0: {
-								val transition = statechart.selectTransitionForSourceMutation
+								val transition = statechart.selectTransitionForSourceChange
 								transition.changeTransitionSource
 							}
 							case 1: {
-								val transition = statechart.selectTransitionForTargetMutation
+								val transition = statechart.selectTransitionForTargetChange
 								transition.changeTransitionTarget
 							}
 							case 2: {
-								val transition = statechart.selectTransitionForRemovalMutation
+								val transition = statechart.selectTransitionForRemoval
 								transition.removeTransition
 							}
 							case 3: {
-								val transition = statechart.selectTransitionForGuardRemovalMutation
+								val transition = statechart.selectTransitionForGuardRemoval
 								transition.removeTransitionGuard
 							}
 							case 4: {
-								val transition = statechart.selectTransitionForTriggerRemovalMutation
+								val transition = statechart.selectTransitionForTriggerRemoval
 								transition.removeTransitionTrigger
 							}
 							default:
@@ -104,13 +136,76 @@ class ModelMutator {
 						}
 					}
 					case TRANSITION_DYNAMICS: {
-						
+						val OPERATOR_COUNT = 6
+						val i = mutationOperatorIndex % OPERATOR_COUNT
+						switch (i) {
+							case 0: {
+								val reference = statechart.selectAnyPortEventReferenceForPortChange
+								reference.changePortReference
+							}
+							case 1: {
+								val reference = statechart.selectPortEventReferenceForPortChange
+								reference.changePortReference
+							}
+							case 2: {
+								val reference = statechart.selectPortEventReferenceForEventChange
+								reference.changeEventReference
+							}
+							case 3: {
+								val reference = statechart.selectRaiseEventActionForPortChange
+								reference.changePortReference
+							}
+							case 4: {
+								val reference = statechart.selectRaiseEventActionForEventChange
+								reference.changeEventReference
+							}
+							case 5: {
+								val transition = statechart.selectTransitionForEffectRemoval
+								transition.removeEffect
+							}
+							default:
+								throw new IllegalArgumentException("Not known operator index: " + i)
+						}
 					}
 					case STATE_DYNAMICS: {
-						
+						val OPERATOR_COUNT = 4
+						val i = mutationOperatorIndex % OPERATOR_COUNT
+						switch (i) {
+							case 0: {
+								val state = statechart.selectStateForEntryActionRemoval
+								state.removeEntryAction
+							}
+							case 1: {
+								val state = statechart.selectStateForExitActionRemoval
+								state.removeExitAction
+							}
+							case 2: {
+								val reference = statechart.selectPortEventReferenceForEventChange
+								reference.changeEventReference
+							}
+							case 3: {
+								val entryState = statechart.selectEntryStateForChange
+								entryState.changeEntryState
+							}
+							default:
+								throw new IllegalArgumentException("Not known operator index: " + i)
+						}
 					}
 					case EXPRESSION_DYNAMICS: {
-						
+						val OPERATOR_COUNT = 2
+						val i = mutationOperatorIndex % OPERATOR_COUNT
+						switch (i) {
+							case 0: {
+								val expression = statechart.selectExpressionForChange
+								expression.changeExpression
+							}
+							case 1: {
+								val expression = statechart.selectExpressionForInversion
+								expression.invertExpression
+							}
+							default:
+								throw new IllegalArgumentException("Not known operator index: " + i)
+						}
 					}
 					default:
 						throw new IllegalArgumentException("Not known mutation type: " + mutationType)
@@ -124,59 +219,138 @@ class ModelMutator {
 	
 	//
 	
-	protected def selectTransitionForSourceMutation(StatechartDefinition statechart) {
+	protected def selectTransitionForSourceChange(StatechartDefinition statechart) {
 		val transitions = statechart.transitions.filter[
 				it.leavingState].toList
-		
-		val transition = transitions.selectTransitionForMutation(transitionSourceMutations)
-		
+		val transition = transitions.selectElementForMutation(transitionSourceMutations)
 		return transition
 	}
 	
-	protected def selectTransitionForTargetMutation(StatechartDefinition statechart) {
+	protected def selectTransitionForTargetChange(StatechartDefinition statechart) {
 		val transitions = statechart.transitions.filter[
 				it.targetState instanceof State].toList
-		
-		val transition = transitions.selectTransitionForMutation(transitionTargetMutations)
-		
+		val transition = transitions.selectElementForMutation(transitionTargetMutations)
 		return transition
 	}
 	
-	protected def selectTransitionForRemovalMutation(StatechartDefinition statechart) {
+	protected def selectTransitionForRemoval(StatechartDefinition statechart) {
 		val transitions = statechart.transitions.filter[
 				it.leavingState ||
 				it.sourceState instanceof ChoiceState &&
 						it.sourceState.outgoingTransitions.size > 1].toList
-		
-		val transition = transitions.selectTransitionForMutation(transitionRemoveMutations)
-		
+		val transition = transitions.selectElementForMutation(transitionRemoveMutations)
 		return transition
 	}
 	
-	protected def selectTransitionForGuardRemovalMutation(StatechartDefinition statechart) {
+	protected def selectTransitionForGuardRemoval(StatechartDefinition statechart) {
 		val transitions = statechart.transitions.filter[
 				it.hasGuard].toList
-		
-		val transition = transitions.selectTransitionForMutation(transitionGuardRemoveMutations)
-		
+		val transition = transitions.selectElementForMutation(transitionGuardRemoveMutations)
 		return transition
 	}
 	
-	protected def selectTransitionForTriggerRemovalMutation(StatechartDefinition statechart) {
+	protected def selectTransitionForTriggerRemoval(StatechartDefinition statechart) {
 		val transitions = statechart.transitions.filter[
 				it.hasTrigger].toList
-		
-		val transition = transitions.selectTransitionForMutation(transitionTriggerRemoveMutations)
-		
+		val transition = transitions.selectElementForMutation(transitionTriggerRemoveMutations)
 		return transition
 	}
 	
 	//
 	
-	protected def selectTransitionForMutation(Collection<? extends Transition> transitions,
-			Collection<Transition> unselectableTransitions) {
-		return transitions.selectElementForMutation(unselectableTransitions)
+	protected def selectAnyPortEventReferenceForPortChange(StatechartDefinition statechart) {
+		if (anyPortEventReferences.empty) {
+			anyPortEventReferences += statechart.getAllContentsOfType(AnyPortEventReference)
+		}
+		val anyPortEventReference = anyPortEventReferences.selectElementForMutation(anyPortEventReferenceMutations)
+		return anyPortEventReference
 	}
+	
+	protected def selectPortEventReferenceForPortChange(StatechartDefinition statechart) {
+		if (portEventReferences.empty) {
+			portEventReferences += statechart.getAllContentsOfType(PortEventReference)
+		}
+		val portEventReference = portEventReferences.selectElementForMutation(portEventReferencePortChangeMutations)
+		return portEventReference
+	}
+	
+	protected def selectPortEventReferenceForEventChange(StatechartDefinition statechart) {
+		if (portEventReferences.empty) {
+			portEventReferences += statechart.getAllContentsOfType(PortEventReference)
+		}
+		val portEventReference = portEventReferences.selectElementForMutation(portEventReferenceEventChangeMutations)
+		return portEventReference
+	}
+	
+	protected def selectRaiseEventActionForPortChange(StatechartDefinition statechart) {
+		if (raiseEventActions.empty) {
+			raiseEventActions += statechart.getAllContentsOfType(RaiseEventAction)
+		}
+		val raiseEventAction = raiseEventActions.selectElementForMutation(raiseEventActionPortChangeMutations)
+		return raiseEventAction
+	}
+	
+	protected def selectRaiseEventActionForEventChange(StatechartDefinition statechart) {
+		if (raiseEventActions.empty) {
+			raiseEventActions += statechart.getAllContentsOfType(RaiseEventAction)
+		}
+		val raiseEventAction = raiseEventActions.selectElementForMutation(raiseEventActionEventChangeMutations)
+		return raiseEventAction
+	}
+	
+	protected def selectTransitionForEffectRemoval(StatechartDefinition statechart) {
+		val transitions = statechart.transitions
+				.filter[!it.effects.empty].toList
+		val transition = transitions.selectElementForMutation(transitionEffectRemoveMutations)
+		return transition
+	}
+	
+	protected def selectStateForEntryActionRemoval(StatechartDefinition statechart) {
+		if (states.empty) {
+			states += statechart.getAllStates
+		}
+		val states = states.filter[!it.entryActions.empty].toList
+		val state = states.selectElementForMutation(stateEntryActionRemoveMutations)
+		return state
+	}
+	
+	protected def selectStateForExitActionRemoval(StatechartDefinition statechart) {
+		if (states.empty) {
+			states += statechart.getAllStates
+		}
+		val states = states.filter[!it.exitActions.empty].toList
+		val state = states.selectElementForMutation(stateExitActionRemoveMutations)
+		return state
+	}
+	
+	protected def selectEntryStateForChange(StatechartDefinition statechart) {
+		if (regions.empty) {
+			regions += statechart.allRegions
+		}
+		val entryStates = regions.map[it.stateNodes].flatten.filter(EntryState).toList
+		val entryState = entryStates.selectElementForMutation(entryStates)
+		return entryState
+	}
+	
+	//
+	
+	protected def selectExpressionForChange(StatechartDefinition statechart) {
+		if (expressions.empty) {
+			expressions += statechart.getAllContentsOfType(Expression)
+		}
+		val expression = expressions.selectElementForMutation(expressionChangeMutations)
+		return expression
+	}
+	
+	protected def selectExpressionForInversion(StatechartDefinition statechart) {
+		if (expressions.empty) {
+			expressions += statechart.getAllContentsOfType(Expression)
+		}
+		val expression = expressions.selectElementForMutation(expressionInversionMutations)
+		return expression
+	}
+	
+	//
 	
 	protected def <T> selectElementForMutation(Collection<? extends T> objects,
 			Collection<T> unselectableObjects) {
@@ -186,7 +360,7 @@ class ModelMutator {
 		
 		checkState(!selectableObjects.empty)
 		
-		// TODO Change due to heuristics
+		// TODO Change according to heuristics
 		val i = random.nextInt(selectableObjects.size)
 		val object = selectableObjects.get(i)
 		//
@@ -199,17 +373,16 @@ class ModelMutator {
 	//
 	
 	protected def getMutationType() {
-//		val mutationTypes = StatechartMutationType.values
-//		val mutationTypesCount = mutationTypes.length
-//		val i = random.nextInt(mutationTypesCount)
-//		
-//		val mutationType = mutationTypes.get(i)
-//		return mutationType
-		return StatechartMutationType.TRANSITION_STRUCTURE
+		val mutationTypes = StatechartMutationType.values
+		val mutationTypesCount = mutationTypes.length
+		val i = random.nextInt(mutationTypesCount)
+		
+		val mutationType = mutationTypes.get(i)
+		return mutationType
 	}
 	
 	protected def getMutation() {
-		val MAX = 20
+		val MAX = 100
 		return random.nextInt(MAX)
 	}
 	

@@ -31,6 +31,7 @@ import hu.bme.mit.gamma.expression.model.TrueExpression
 import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference
+import hu.bme.mit.gamma.statechart.statechart.EntryState
 import hu.bme.mit.gamma.statechart.statechart.PortEventReference
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction
 import hu.bme.mit.gamma.statechart.statechart.State
@@ -105,8 +106,6 @@ class ModelElementMutator {
 		info('''Removed trigger of transition from «transition.sourceState.name» to «transition.targetState.name»''')
 	}
 	
-	// TODO add history-related operators
-	
 	//
 	
 	def changePortReference(AnyPortEventReference reference) {
@@ -114,6 +113,8 @@ class ModelElementMutator {
 		val newPort = oldPort.newInPort
 		
 		reference.port = newPort
+
+		info('''Changed port reference of any port event reference from «oldPort.name» to «newPort.name»''')
 	}
 	
 	def changePortReference(PortEventReference reference) {
@@ -121,6 +122,8 @@ class ModelElementMutator {
 		val newPort = oldPort.newInPort
 		
 		reference.port = newPort
+
+		info('''Changed port reference of port event reference from «oldPort.name» to «newPort.name»''')
 	}
 	
 	def changeEventReference(PortEventReference reference) {
@@ -129,6 +132,8 @@ class ModelElementMutator {
 		val newEvent = port.getNewInEvent(oldEvent)
 		
 		reference.event = newEvent
+
+		info('''Changed event reference of port event reference from «oldEvent.name» to «newEvent.name»''')
 	}
 	
 	// Should be overridable
@@ -166,6 +171,8 @@ class ModelElementMutator {
 		val newPort = oldPort.newOutPort
 		
 		action.port = newPort
+
+		info('''Changed port reference of raise event action from «oldPort.name» to «newPort.name»''')
 	}
 	
 	def changeEventReference(RaiseEventAction action) {
@@ -175,28 +182,8 @@ class ModelElementMutator {
 		val newEvent = port.getNewOutEvent(oldEvent)
 		
 		action.event = newEvent
-	}
-	
-	def removeEntryAction(State state) {
-		val entryActions = state.entryActions
-		
-		if (entryActions.empty) {
-			return
-		}
-		
-		val entryAction = entryActions.selectElement
-		entryAction.remove
-	}
-	
-	def removeExitAction(State state) {
-		val exitActions = state.exitActions
-		
-		if (exitActions.empty) {
-			return
-		}
-		
-		val exitAction = exitActions.selectElement
-		exitAction.remove
+
+		info('''Changed event reference of raise event action from «oldEvent.name» to «newEvent.name»''')
 	}
 	
 	def removeEffect(Transition transition) {
@@ -208,136 +195,215 @@ class ModelElementMutator {
 		
 		val effect = effects.selectElement
 		effect.remove
+		
+		info('''Removed effect of transition from «transition.sourceState.name» to «transition.targetState.name»''')
+	}
+	
+	// TODO Change variable reference
+	
+	def removeEntryAction(State state) {
+		val entryActions = state.entryActions
+		
+		if (entryActions.empty) {
+			return
+		}
+		
+		val entryAction = entryActions.selectElement
+		entryAction.remove
+		
+		info('''Removed entry action of state «state.name»''')
+	}
+	
+	def removeExitAction(State state) {
+		val exitActions = state.exitActions
+		
+		if (exitActions.empty) {
+			return
+		}
+		
+		val exitAction = exitActions.selectElement
+		exitAction.remove
+		
+		info('''Removed exit action of state «state.name»''')
+	}
+	
+	def changeEntryState(EntryState entryState) {
+		val entryStates = #[ createInitialState, createShallowHistoryState, createDeepHistoryState ]
+		val newEntryState = entryStates.selectDifferentElementType(entryState) => [
+			it.name = entryState.name
+		]
+		
+		newEntryState.replace(entryState)
+		
+		info('''Changed entry state from «entryState.eClass.name» to «newEntryState.eClass.name»''')
 	}
 	
 	// Expression and action elements
 	
-	def invertExpression(TrueExpression expression) {
+	def dispatch invertExpression(TrueExpression expression) {
 		val _false = createFalseExpression
 		
 		_false.replace(expression)
+		
+		info('''Inverted «expression.eClass.name» expression''')
 	}
 	
-	def invertExpression(FalseExpression expression) {
+	def dispatch invertExpression(FalseExpression expression) {
 		val _true = createTrueExpression
 		
 		_true.replace(expression)
+		
+		info('''Inverted «expression.eClass.name» expression''')
 	}
 	
-	def invertExpression(IntegerLiteralExpression expression) {
+	def dispatch invertExpression(IntegerLiteralExpression expression) {
 		val value = expression.value
 		expression.value = value.negate
+		
+		info('''Inverted «expression.eClass.name» expression''')
 	}
 	
-	def invertExpression(AddExpression expression) {
+	def dispatch invertExpression(AddExpression expression) {
 		val subtract = createSubtractExpression.addInto(expression.operands)
 		
 		subtract.replace(expression)
+		
+		info('''Inverted «expression.eClass.name» expression''')
 	}
 	
-	def invertExpression(SubtractExpression expression) {
+	def dispatch invertExpression(SubtractExpression expression) {
 		val add = createAddExpression.addInto(
 			expression.leftOperand, expression.rightOperand)
 		
 		add.replace(expression)
+		
+		info('''Inverted «expression.eClass.name» expression''')
 	}
 	
-	def invertExpression(NotExpression expression) {
+	def dispatch invertExpression(NotExpression expression) {
 		val operand = expression.operand
 		
 		operand.replace(expression)
+		
+		info('''Inverted «expression.eClass.name» expression''')
 	}
 	
-	def invertExpression(LessExpression expression) {
+	def dispatch invertExpression(LessExpression expression) {
 		val greaterEqual = createGreaterEqualExpression.addInto(
 			expression.leftOperand, expression.rightOperand)
 		
 		greaterEqual.replace(expression)
+		
+		info('''Inverted «expression.eClass.name» expression''')
 	}
 	
-	def invertExpression(LessEqualExpression expression) {
+	def dispatch invertExpression(LessEqualExpression expression) {
 		val greater = createGreaterExpression.addInto(
 			expression.leftOperand, expression.rightOperand)
 		
 		greater.replace(expression)
+		
+		info('''Inverted «expression.eClass.name» expression''')
 	}
 	
-	def invertExpression(GreaterExpression expression) {
+	def dispatch invertExpression(GreaterExpression expression) {
 		val lessEqual = createLessEqualExpression.addInto(
 			expression.leftOperand, expression.rightOperand)
 		
 		lessEqual.replace(expression)
+		
+		info('''Inverted «expression.eClass.name» expression''')
 	}
 	
-	def invertExpression(GreaterEqualExpression expression) {
+	def dispatch invertExpression(GreaterEqualExpression expression) {
 		val less = createLessExpression.addInto(
 			expression.leftOperand, expression.rightOperand)
 		
 		less.replace(expression)
+		
+		info('''Inverted «expression.eClass.name» expression''')
 	}
 	
-	def invertExpression(EqualityExpression expression) {
+	def dispatch invertExpression(EqualityExpression expression) {
 		val inequal = createInequalityExpression.addInto(
 			expression.leftOperand, expression.rightOperand)
 		
 		inequal.replace(expression)
+		
+		info('''Inverted «expression.eClass.name» expression''')
 	}
 	
-	def invertExpression(InequalityExpression expression) {
+	def dispatch invertExpression(InequalityExpression expression) {
 		val equal = createEqualityExpression.addInto(
 			expression.leftOperand, expression.rightOperand)
 		
 		equal.replace(expression)
+		
+		info('''Inverted «expression.eClass.name» expression''')
 	}
 	
-	def changeExpression(IntegerLiteralExpression expression) {
+	def dispatch changeExpression(IntegerLiteralExpression expression) {
 		val value = expression.value
 		if (random.nextBoolean) {
 			expression.value = value.add(BigInteger.ONE)
+			info('''Added 1 to integer literal expression «value.toString»''')
 		}
 		else {
 			expression.value = value.subtract(BigInteger.ONE)
+			info('''Subtracted 1 from integer literal expression «value.toString»''')
 		}
 	}
 	
-	def changeExpression(AndExpression expression) {
+	def dispatch changeExpression(AndExpression expression) {
 		val or = createOrExpression.addInto(expression.operands)
 		
 		or.replace(expression)
+		
+		info('''Changed «expression.eClass.name» expression''')
 	}
 	
-	def changeExpression(OrExpression expression) {
+	def dispatch changeExpression(OrExpression expression) {
 		val and = createAndExpression.addInto(expression.operands)
 		
 		and.replace(expression)
+		
+		info('''Changed «expression.eClass.name» expression''')
 	}
 	
-	def changeExpression(LessExpression expression) {
+	def dispatch changeExpression(LessExpression expression) {
 		val lessEqual = createLessEqualExpression.addInto(
 			expression.leftOperand, expression.rightOperand)
 		
 		lessEqual.replace(expression)
+		
+		info('''Changed «expression.eClass.name» expression''')
 	}
 	
-	def changeExpression(LessEqualExpression expression) {
+	def dispatch changeExpression(LessEqualExpression expression) {
 		val less = createLessExpression.addInto(
 			expression.leftOperand, expression.rightOperand)
 		
 		less.replace(expression)
+		
+		info('''Changed «expression.eClass.name» expression''')
 	}
 	
-	def changeExpression(GreaterExpression expression) {
+	def dispatch changeExpression(GreaterExpression expression) {
 		val greaterEqual = createGreaterEqualExpression.addInto(
 			expression.leftOperand, expression.rightOperand)
 		
 		greaterEqual.replace(expression)
+		
+		info('''Changed «expression.eClass.name» expression''')
 	}
 	
-	def changeExpression(GreaterEqualExpression expression) {
+	def dispatch changeExpression(GreaterEqualExpression expression) {
 		val greater = createGreaterExpression.addInto(
 			expression.leftOperand, expression.rightOperand)
 		
 		greater.replace(expression)
+		
+		info('''Changed «expression.eClass.name» expression''')
 	}
 	
 	//
@@ -399,6 +465,14 @@ class ModelElementMutator {
 		return newObject
 	}
 	
-	//
+	protected def <T extends EObject> selectDifferentElementType(List<? extends T> objects, T object) {
+		var T newObject = null
+		do {
+			val i = random.nextInt(objects.size)
+			newObject = objects.get(i)
+		} while (newObject.eClass == object.eClass)
+		
+		return newObject
+	}
 	
 }
