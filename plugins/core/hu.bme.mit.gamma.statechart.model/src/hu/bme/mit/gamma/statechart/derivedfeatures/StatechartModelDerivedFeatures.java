@@ -1071,7 +1071,8 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		List<Event> events = new ArrayList<Event>();
 		InterfaceRealization interfaceRealization = port.getInterfaceRealization();
 		Collection<EventDeclaration> allEventDeclarations = getAllEventDeclarations(port);
-		if (interfaceRealization.getRealizationMode() == RealizationMode.PROVIDED) {
+		RealizationMode realizationMode = interfaceRealization.getRealizationMode();
+		if (realizationMode == RealizationMode.PROVIDED) {
 			events.addAll(allEventDeclarations.stream()
 					.filter(it -> it.getDirection() == EventDirection.IN ||
 							 it.getDirection() == EventDirection.INOUT ||
@@ -1079,7 +1080,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 					.map(it -> it.getEvent())
 					.collect(Collectors.toList()));
 		}
-		if (interfaceRealization.getRealizationMode() == RealizationMode.REQUIRED) {
+		else if (realizationMode == RealizationMode.REQUIRED) {
 			events.addAll(allEventDeclarations.stream()
 					.filter(it -> it.getDirection() == EventDirection.OUT ||
 							 it.getDirection() == EventDirection.INOUT ||
@@ -1106,7 +1107,8 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		List<Event> events = new ArrayList<Event>();
 		InterfaceRealization interfaceRealization = port.getInterfaceRealization();
 		Collection<EventDeclaration> allEventDeclarations = getAllEventDeclarations(port);
-		if (interfaceRealization.getRealizationMode() == RealizationMode.PROVIDED) {
+		RealizationMode realizationMode = interfaceRealization.getRealizationMode();
+		if (realizationMode == RealizationMode.PROVIDED) {
 			events.addAll(allEventDeclarations.stream()
 					.filter(it -> it.getDirection() == EventDirection.OUT ||
 							 it.getDirection() == EventDirection.INOUT ||
@@ -1114,7 +1116,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 					.map(it -> it.getEvent())
 					.collect(Collectors.toList()));
 		}
-		if (interfaceRealization.getRealizationMode() == RealizationMode.REQUIRED) {
+		if (realizationMode == RealizationMode.REQUIRED) {
 			events.addAll(allEventDeclarations.stream()
 					.filter(it -> it.getDirection() == EventDirection.IN ||
 							 it.getDirection() == EventDirection.INOUT ||

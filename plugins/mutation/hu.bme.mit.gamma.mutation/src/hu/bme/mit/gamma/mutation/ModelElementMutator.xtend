@@ -140,6 +140,7 @@ class ModelElementMutator {
 	protected def getNewInPort(Port port) {
 		val component = port.containingComponent
 		val ports = component.allPortsWithInput
+				.filter[it.interface === port.interface].toList
 		
 		return ports.selectDifferentElement(port)
 	}
@@ -148,6 +149,7 @@ class ModelElementMutator {
 	protected def getNewOutPort(Port port) {
 		val component = port.containingComponent
 		val ports = component.allPortsWithOutput
+				.filter[it.interface === port.interface].toList
 		
 		return ports.selectDifferentElement(port)
 	}

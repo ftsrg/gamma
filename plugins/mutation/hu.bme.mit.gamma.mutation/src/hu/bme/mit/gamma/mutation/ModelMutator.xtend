@@ -33,32 +33,32 @@ import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartMo
 
 class ModelMutator {
 	// Caching
-	protected final Set<AnyPortEventReference> anyPortEventReferences = newLinkedHashSet
-	protected final Set<PortEventReference> portEventReferences = newLinkedHashSet
-	protected final Set<RaiseEventAction> raiseEventActions = newLinkedHashSet
-	protected final Set<State> states = newLinkedHashSet
-	protected final Set<Region> regions = newLinkedHashSet
+	protected final Set<AnyPortEventReference> anyPortEventReferences = newHashSet
+	protected final Set<PortEventReference> portEventReferences = newHashSet
+	protected final Set<RaiseEventAction> raiseEventActions = newHashSet
+	protected final Set<State> states = newHashSet
+	protected final Set<Region> regions = newHashSet
 	
-	protected final Set<Expression> expressions = newLinkedHashSet
+	protected final Set<Expression> expressions = newHashSet
 	// Mutations
-	protected final Set<Transition> transitionSourceMutations = newLinkedHashSet
-	protected final Set<Transition> transitionTargetMutations = newLinkedHashSet
-	protected final Set<Transition> transitionRemoveMutations = newLinkedHashSet
-	protected final Set<Transition> transitionGuardRemoveMutations = newLinkedHashSet
-	protected final Set<Transition> transitionTriggerRemoveMutations = newLinkedHashSet
+	protected final Set<Transition> transitionSourceMutations = newHashSet
+	protected final Set<Transition> transitionTargetMutations = newHashSet
+	protected final Set<Transition> transitionRemoveMutations = newHashSet
+	protected final Set<Transition> transitionGuardRemoveMutations = newHashSet
+	protected final Set<Transition> transitionTriggerRemoveMutations = newHashSet
 	
-	protected final Set<AnyPortEventReference> anyPortEventReferenceMutations = newLinkedHashSet
-	protected final Set<PortEventReference> portEventReferencePortChangeMutations = newLinkedHashSet
-	protected final Set<PortEventReference> portEventReferenceEventChangeMutations = newLinkedHashSet
-	protected final Set<RaiseEventAction> raiseEventActionPortChangeMutations = newLinkedHashSet
-	protected final Set<RaiseEventAction> raiseEventActionEventChangeMutations = newLinkedHashSet
-	protected final Set<Transition> transitionEffectRemoveMutations = newLinkedHashSet
-	protected final Set<State> stateEntryActionRemoveMutations = newLinkedHashSet
-	protected final Set<State> stateExitActionRemoveMutations = newLinkedHashSet
-	protected final Set<EntryState> entryStateChangeMutations = newLinkedHashSet
+	protected final Set<AnyPortEventReference> anyPortEventReferenceMutations = newHashSet
+	protected final Set<PortEventReference> portEventReferencePortChangeMutations = newHashSet
+	protected final Set<PortEventReference> portEventReferenceEventChangeMutations = newHashSet
+	protected final Set<RaiseEventAction> raiseEventActionPortChangeMutations = newHashSet
+	protected final Set<RaiseEventAction> raiseEventActionEventChangeMutations = newHashSet
+	protected final Set<Transition> transitionEffectRemoveMutations = newHashSet
+	protected final Set<State> stateEntryActionRemoveMutations = newHashSet
+	protected final Set<State> stateExitActionRemoveMutations = newHashSet
+	protected final Set<EntryState> entryStateChangeMutations = newHashSet
 	
-	protected final Set<Expression> expressionChangeMutations = newLinkedHashSet
-	protected final Set<Expression> expressionInversionMutations = newLinkedHashSet
+	protected final Set<Expression> expressionChangeMutations = newHashSet
+	protected final Set<Expression> expressionInversionMutations = newHashSet
 	
 	//
 	
