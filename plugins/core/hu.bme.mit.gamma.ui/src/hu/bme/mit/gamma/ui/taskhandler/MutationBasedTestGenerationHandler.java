@@ -83,10 +83,16 @@ public class MutationBasedTestGenerationHandler extends TaskHandler {
 		setModelBasedMutationTestGeneration(mutationBasedTestGeneration);
 		//
 		
+		String targetFolder = javaUtil.getOnlyElement(
+				mutationBasedTestGeneration.getTargetFolder());
 		String fileName = javaUtil.getOnlyElement(
 				mutationBasedTestGeneration.getFileName());
 		
 		AnalysisModelTransformation analysisModelTransformation = mutationBasedTestGeneration.getAnalysisModelTransformation();
+		List<String> analysisTargetFolders = analysisModelTransformation.getTargetFolder();
+		analysisTargetFolders.clear();
+		analysisTargetFolders.add(targetFolder);
+		
 		ComponentReference model = (ComponentReference) analysisModelTransformation.getModel();
 		Component component = (Component) GenmodelDerivedFeatures.getModel(model);
 		
@@ -96,6 +102,9 @@ public class MutationBasedTestGenerationHandler extends TaskHandler {
 				ecoreUtil.clone(model));
 		modelMutation.setIterationCount(
 				ecoreUtil.clone(mutationCount));
+		List<String> mutationTargetFolders = modelMutation.getTargetFolder();
+		mutationTargetFolders.clear();
+		mutationTargetFolders.add(targetFolder);
 		
 		ModelMutationHandler modelMutationHandler =  new ModelMutationHandler(file);
 		modelMutationHandler.execute(modelMutation);
@@ -214,7 +223,6 @@ public class MutationBasedTestGenerationHandler extends TaskHandler {
 			
 			// Analysis model transformation & verification
 			analysisModelTransformation.getFileName().clear();
-//			analysisModelTransformation.getTargetFolder().add("mutants"); // Mapping chain cannot handle this
 			model.setComponent(compositeOriginal);
 			
 			AnalysisModelTransformationAndVerificationHandler transformationHandler =

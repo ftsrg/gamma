@@ -101,10 +101,15 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 				String fileExtension = fileNamer.getFileExtension(analysisLanguage);
 				analysisFilePath = fileUtil.changeExtension(analysisFilePath, fileExtension);
 				fileNames.set(0, analysisFilePath);
-			
+			}
+			try {
 				analysisFile = super.exporeRelativeFile(verification, analysisFilePath);
+			} catch (NullPointerException ex) {
+				// Verification is not serialized?
+				analysisFile = new File(projectLocation + File.separator + analysisFilePath);
 			}
 		}
+		//
 		
 		String gStsFilePath = fileNamer.getEmfXStsUri(analysisFilePath);
 		File gStsFile = super.exporeRelativeFile(verification, gStsFilePath);

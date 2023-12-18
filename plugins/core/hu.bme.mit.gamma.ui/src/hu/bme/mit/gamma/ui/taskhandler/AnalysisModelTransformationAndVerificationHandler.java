@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.ui.taskhandler;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -71,10 +72,15 @@ public class AnalysisModelTransformationAndVerificationHandler extends TaskHandl
 			transformationHandler.execute(transformation);
 			logger.log(Level.INFO, "Analysis transformation " + index + "/" + size + " finished");
 			
+			String folder = transformation.getTargetFolder().get(0);
+			String plainFileName = fileUtil.getExtensionlessName(
+					transformation.getFileName().get(0));
+			String extension = fileNamer.getFileExtension(language);
+			String fileName = folder + File.separator + plainFileName + "." + extension;
+			
 			Verification verification = factory.createVerification();
 			verification.getAnalysisLanguages().add(language);
-			verification.getFileName().addAll(
-					transformation.getFileName());
+			verification.getFileName().add(fileName);
 			verification.getTargetFolder().addAll(
 					List.of("trace"));
 			verification.getPropertyPackages().add(propertyPackage);

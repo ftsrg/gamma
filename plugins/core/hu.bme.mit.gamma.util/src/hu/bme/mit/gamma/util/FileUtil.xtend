@@ -154,11 +154,16 @@ class FileUtil {
 	}
 	
 	private def int getExtensionDotIndex(String fileName) {
-		val index = fileName.lastIndexOf(".")
+		val lastSeparatorIndex = Math.max(
+			fileName.lastIndexOf("/"), fileName.lastIndexOf("\\"))
+		val parsedFileName = (lastSeparatorIndex < 0) ?
+				fileName : fileName.substring(lastSeparatorIndex + 1)
+		
+		val index = parsedFileName.lastIndexOf(".")
 		if (index <= 0) {
 			return -1 // Hidden file or no extension
 		}
-		val charBeforeDot = fileName.charAt(index - 1).toString
+		val charBeforeDot = parsedFileName.charAt(index - 1).toString
 		if (charBeforeDot == ".") {
 			return -1 // Hidden(hidden) file
 		}
