@@ -214,6 +214,7 @@ public class MutationBasedTestGenerationHandler extends TaskHandler {
 			
 			// Analysis model transformation & verification
 			analysisModelTransformation.getFileName().clear();
+//			analysisModelTransformation.getTargetFolder().add("mutants"); // Mapping chain cannot handle this
 			model.setComponent(compositeOriginal);
 			
 			AnalysisModelTransformationAndVerificationHandler transformationHandler =
