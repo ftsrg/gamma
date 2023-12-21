@@ -23,6 +23,7 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 
 import hu.bme.mit.gamma.dialog.DialogUtil;
+import hu.bme.mit.gamma.expression.model.ExpressionModelFactory;
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator;
 import hu.bme.mit.gamma.genmodel.model.AbstractCodeGeneration;
 import hu.bme.mit.gamma.genmodel.model.AdaptiveContractTestGeneration;
@@ -60,8 +61,11 @@ public abstract class TaskHandler {
 	
 	protected String projectLocation;
 	protected String targetFolderUri;
-	
+
+	protected final ExpressionModelFactory expressionFactory = ExpressionModelFactory.eINSTANCE;
 	protected final GenmodelModelFactory factory = GenmodelModelFactory.eINSTANCE;
+	
+	//
 	
 	public TaskHandler(IFile file) {
 		this.file = file;

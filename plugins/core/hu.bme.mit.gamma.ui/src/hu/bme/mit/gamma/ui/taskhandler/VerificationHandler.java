@@ -25,7 +25,6 @@ import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IFile;
@@ -53,9 +52,14 @@ import hu.bme.mit.gamma.querygenerator.serializer.PropertySerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.ThetaPropertySerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.UppaalPropertySerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.XstsUppaalPropertySerializer;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventReferenceExpression;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Component;
+import hu.bme.mit.gamma.statechart.interface_.Event;
+import hu.bme.mit.gamma.statechart.interface_.Port;
 import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
+import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction;
+import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
 import hu.bme.mit.gamma.theta.verification.ThetaVerification;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
 import hu.bme.mit.gamma.trace.testgeneration.java.TestGenerator;
@@ -183,6 +187,9 @@ public class VerificationHandler extends TaskHandler {
 			//
 			for (CommentableStateFormula formula : propertyPackage.getFormulas()) {
 				StateFormula stateFormula = formula.getFormula();
+				
+				adjustProperty(stateFormula);
+				
 				String serializedFormula = propertySerializer.serialize(stateFormula);
 				formulas.put(serializedFormula, stateFormula);
 			}
@@ -289,6 +296,29 @@ public class VerificationHandler extends TaskHandler {
 	
 	//
 	
+	private void adjustProperty(StateFormula formula) {
+		List<ComponentInstanceEventReferenceExpression> eventReferences =
+				ecoreUtil.getAllContentsOfType(formula, ComponentInstanceEventReferenceExpression.class);
+		for (ComponentInstanceEventReferenceExpression eventReference : eventReferences) {
+			Port port = eventReference.getPort();
+			Event event = eventReference.getEvent();
+			
+			StatechartDefinition statechart = StatechartModelDerivedFeatures.getContainingStatechart(port);
+			if (statechart != null) {
+				List<RaiseEventAction> raiseEvents = ecoreUtil.getAllContentsOfType(statechart, RaiseEventAction.class);
+				boolean hasEventRaise = raiseEvents.stream()
+							.anyMatch(it -> it.getPort() == port && // To support different interface resource loadings
+								it.getEvent().getName().equals(event.getName()));
+				
+				if (!hasEventRaise) {
+					ecoreUtil.replace(
+							expressionFactory.createFalseExpression(), eventReference);
+					logger.info("Removing reference to event " + port.getName() + "." + event.getName() + " in property");
+				}
+			}
+		}
+	}
+	
 	private void removeCoveredProperties(Queue<Entry<String, StateFormula>> formulaQueue) {
 		removeCoveredProperties(traces, formulaQueue);
 	}
@@ -312,7 +342,7 @@ public class VerificationHandler extends TaskHandler {
 			
 			for (StateFormula coveredProperty : coveredProperties) {
 				String serializedProperty = propertySerializer.serialize(coveredProperty);
-				logger.log(Level.INFO, "Property already covered: " + serializedProperty);
+				logger.info("Property already covered: " + serializedProperty);
 				formulaQueue.removeIf(it -> it.getValue() == coveredProperty);
 			}
 		}
@@ -339,9 +369,9 @@ public class VerificationHandler extends TaskHandler {
 		// Maybe there is no trace
 		if (trace != null) {
 			if (isOptimize) {
-				logger.log(Level.INFO, "Checking if trace is already covered by previous traces...");
+				logger.info("Checking if trace is already covered by previous traces...");
 				if (traceUtil.isCovered(trace, retrievedTraces)) {
-					logger.log(Level.INFO, "Trace is already covered");
+					logger.info("Trace is already covered");
 					return new Result(result.getResult(), null);
 					// We do not return a trace as it is already covered
 				}
