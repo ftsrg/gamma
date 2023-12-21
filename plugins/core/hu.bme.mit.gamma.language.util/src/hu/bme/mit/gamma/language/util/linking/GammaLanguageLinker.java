@@ -10,16 +10,12 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.language.util.linking;
 
-import java.io.FileNotFoundException;
-import java.net.MalformedURLException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.eclipse.core.internal.resources.ResourceException;
 import org.eclipse.emf.common.util.URI;
-import org.eclipse.emf.common.util.WrappedException;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.resource.Resource;
@@ -93,15 +89,16 @@ public abstract class GammaLanguageLinker extends DefaultLinkingService {
 			resources.clear();
 			resourceSet = null;
 			return true;
-		} catch (WrappedException e) {
-			Throwable cause = e.getCause();
-			if (cause instanceof FileNotFoundException || 
-					cause instanceof MalformedURLException ||
-					cause instanceof ResourceException) {
+		} catch (Exception e) {
+//			Throwable cause = e.getCause();
+//			if (cause instanceof FileNotFoundException || 
+//					cause instanceof MalformedURLException ||
+//					cause instanceof ResourceException ||
+//					cause instanceof IllegalArgumentException) { // Yakindu
 				// Resource cannot be loaded due to invalid path
 				return false;
-			}
-			throw e;
+//			}
+//			throw e;
 		}
 	}
 	
