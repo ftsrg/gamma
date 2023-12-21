@@ -10,9 +10,11 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.mutation
 
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.statechart.composite.CompositeComponent
 import hu.bme.mit.gamma.statechart.interface_.Component
+import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression
 import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference
 import hu.bme.mit.gamma.statechart.statechart.ChoiceState
 import hu.bme.mit.gamma.statechart.statechart.EntryState
@@ -36,10 +38,13 @@ class ModelMutator {
 	protected final Set<AnyPortEventReference> anyPortEventReferences = newHashSet
 	protected final Set<PortEventReference> portEventReferences = newHashSet
 	protected final Set<RaiseEventAction> raiseEventActions = newHashSet
+	protected final Set<EventParameterReferenceExpression> eventParameterReferenceExpressions = newHashSet
+	protected final Set<DirectReferenceExpression> directReferenceExpressions = newHashSet
 	protected final Set<State> states = newHashSet
 	protected final Set<Region> regions = newHashSet
 	
 	protected final Set<Expression> expressions = newHashSet
+	
 	// Mutations
 	protected final Set<Transition> transitionSourceMutations = newHashSet
 	protected final Set<Transition> transitionTargetMutations = newHashSet
@@ -48,16 +53,16 @@ class ModelMutator {
 	protected final Set<Transition> transitionTriggerRemoveMutations = newHashSet
 	
 	protected final Set<AnyPortEventReference> anyPortEventReferenceMutations = newHashSet
-	protected final Set<PortEventReference> portEventReferencePortChangeMutations = newHashSet
-	protected final Set<PortEventReference> portEventReferenceEventChangeMutations = newHashSet
-	protected final Set<RaiseEventAction> raiseEventActionPortChangeMutations = newHashSet
-	protected final Set<RaiseEventAction> raiseEventActionEventChangeMutations = newHashSet
+	protected final Set<PortEventReference> portEventReferenceChangeMutations = newHashSet
+	protected final Set<RaiseEventAction> raiseEventActionChangeMutations = newHashSet
+	protected final Set<EventParameterReferenceExpression> eventParameterReferenceExpressionChangeMutations = newHashSet
+	protected final Set<DirectReferenceExpression> directReferenceExpressionChangeMutations = newHashSet
 	protected final Set<Transition> transitionEffectRemoveMutations = newHashSet
 	protected final Set<State> stateEntryActionRemoveMutations = newHashSet
 	protected final Set<State> stateExitActionRemoveMutations = newHashSet
-	protected final Set<EntryState> entryStateChangeMutations = newHashSet
+	protected final Set<EntryState> entryStateChangeMutations = newHashSet // Hard to trace due to replacement
 	
-	protected final Set<Expression> expressionChangeMutations = newHashSet
+	protected final Set<Expression> expressionChangeMutations = newHashSet // Hard to trace due to replacement
 	protected final Set<Expression> expressionInversionMutations = newHashSet
 	
 	//
@@ -136,7 +141,7 @@ class ModelMutator {
 						}
 					}
 					case TRANSITION_DYNAMICS: {
-						val OPERATOR_COUNT = 6
+						val OPERATOR_COUNT = 10
 						val i = mutationOperatorIndex % OPERATOR_COUNT
 						switch (i) {
 							case 0: {
@@ -144,22 +149,38 @@ class ModelMutator {
 								reference.changePortReference
 							}
 							case 1: {
-								val reference = statechart.selectPortEventReferenceForPortChange
+								val reference = statechart.selectPortEventReferenceForChange
 								reference.changePortReference
 							}
 							case 2: {
-								val reference = statechart.selectPortEventReferenceForEventChange
+								val reference = statechart.selectPortEventReferenceForChange
 								reference.changeEventReference
 							}
 							case 3: {
-								val reference = statechart.selectRaiseEventActionForPortChange
-								reference.changePortReference
+								val action = statechart.selectRaiseEventActionForChange
+								action.changePortReference
 							}
 							case 4: {
-								val reference = statechart.selectRaiseEventActionForEventChange
-								reference.changeEventReference
+								val action = statechart.selectRaiseEventActionForChange
+								action.changeEventReference
 							}
 							case 5: {
+								val reference = statechart.selectEventParameterReferenceExpressionForChange
+								reference.changePortReference
+							}
+							case 6: {
+								val reference = statechart.selectEventParameterReferenceExpressionForChange
+								reference.changeEventReference
+							}
+							case 7: {
+								val reference = statechart.selectEventParameterReferenceExpressionForChange
+								reference.changeParameterReference
+							}
+							case 8: {
+								val reference = statechart.selectDirectReferenceExpressionForDeclarationChange
+								reference.changeDeclarationReference
+							}
+							case 9: {
 								val transition = statechart.selectTransitionForEffectRemoval
 								transition.removeEffect
 							}
@@ -168,7 +189,7 @@ class ModelMutator {
 						}
 					}
 					case STATE_DYNAMICS: {
-						val OPERATOR_COUNT = 4
+						val OPERATOR_COUNT = 3
 						val i = mutationOperatorIndex % OPERATOR_COUNT
 						switch (i) {
 							case 0: {
@@ -180,8 +201,8 @@ class ModelMutator {
 								state.removeExitAction
 							}
 							case 2: {
-								val reference = statechart.selectPortEventReferenceForEventChange
-								reference.changeEventReference
+								val entryState = statechart.selectEntryStateForChange
+								entryState.changeEntryStateTarget
 							}
 							case 3: {
 								val entryState = statechart.selectEntryStateForChange
@@ -266,36 +287,36 @@ class ModelMutator {
 		return anyPortEventReference
 	}
 	
-	protected def selectPortEventReferenceForPortChange(StatechartDefinition statechart) {
+	protected def selectPortEventReferenceForChange(StatechartDefinition statechart) {
 		if (portEventReferences.empty) {
 			portEventReferences += statechart.getAllContentsOfType(PortEventReference)
 		}
-		val portEventReference = portEventReferences.selectElementForMutation(portEventReferencePortChangeMutations)
+		val portEventReference = portEventReferences.selectElementForMutation(portEventReferenceChangeMutations)
 		return portEventReference
 	}
 	
-	protected def selectPortEventReferenceForEventChange(StatechartDefinition statechart) {
-		if (portEventReferences.empty) {
-			portEventReferences += statechart.getAllContentsOfType(PortEventReference)
-		}
-		val portEventReference = portEventReferences.selectElementForMutation(portEventReferenceEventChangeMutations)
-		return portEventReference
-	}
-	
-	protected def selectRaiseEventActionForPortChange(StatechartDefinition statechart) {
+	protected def selectRaiseEventActionForChange(StatechartDefinition statechart) {
 		if (raiseEventActions.empty) {
 			raiseEventActions += statechart.getAllContentsOfType(RaiseEventAction)
 		}
-		val raiseEventAction = raiseEventActions.selectElementForMutation(raiseEventActionPortChangeMutations)
+		val raiseEventAction = raiseEventActions.selectElementForMutation(raiseEventActionChangeMutations)
 		return raiseEventAction
 	}
 	
-	protected def selectRaiseEventActionForEventChange(StatechartDefinition statechart) {
-		if (raiseEventActions.empty) {
-			raiseEventActions += statechart.getAllContentsOfType(RaiseEventAction)
+	protected def selectEventParameterReferenceExpressionForChange(StatechartDefinition statechart) {
+		if (eventParameterReferenceExpressions.empty) {
+			eventParameterReferenceExpressions += statechart.getAllContentsOfType(EventParameterReferenceExpression)
 		}
-		val raiseEventAction = raiseEventActions.selectElementForMutation(raiseEventActionEventChangeMutations)
-		return raiseEventAction
+		val reference = eventParameterReferenceExpressions.selectElementForMutation(eventParameterReferenceExpressionChangeMutations)
+		return reference
+	}
+	
+	protected def selectDirectReferenceExpressionForDeclarationChange(StatechartDefinition statechart) {
+		if (directReferenceExpressions.empty) {
+			directReferenceExpressions += statechart.getAllContentsOfType(DirectReferenceExpression)
+		}
+		val reference = directReferenceExpressions.selectElementForMutation(directReferenceExpressionChangeMutations)
+		return reference
 	}
 	
 	protected def selectTransitionForEffectRemoval(StatechartDefinition statechart) {

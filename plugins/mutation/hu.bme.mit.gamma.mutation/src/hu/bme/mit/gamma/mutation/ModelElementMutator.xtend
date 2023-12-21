@@ -13,6 +13,7 @@ package hu.bme.mit.gamma.mutation
 import hu.bme.mit.gamma.expression.model.AddExpression
 import hu.bme.mit.gamma.expression.model.AndExpression
 import hu.bme.mit.gamma.expression.model.BinaryExpression
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.EqualityExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
@@ -26,9 +27,14 @@ import hu.bme.mit.gamma.expression.model.LessExpression
 import hu.bme.mit.gamma.expression.model.MultiaryExpression
 import hu.bme.mit.gamma.expression.model.NotExpression
 import hu.bme.mit.gamma.expression.model.OrExpression
+import hu.bme.mit.gamma.expression.model.ParameterDeclaration
+import hu.bme.mit.gamma.expression.model.ParametricElement
+import hu.bme.mit.gamma.expression.model.ReferenceExpression
 import hu.bme.mit.gamma.expression.model.SubtractExpression
 import hu.bme.mit.gamma.expression.model.TrueExpression
+import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.interface_.Event
+import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference
 import hu.bme.mit.gamma.statechart.statechart.EntryState
@@ -37,6 +43,7 @@ import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.StatechartModelFactory
 import hu.bme.mit.gamma.statechart.statechart.Transition
+import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.math.BigInteger
 import java.util.List
@@ -46,12 +53,15 @@ import org.eclipse.emf.ecore.EObject
 
 import static com.google.common.base.Preconditions.checkState
 
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class ModelElementMutator {
 	
 	//
 	protected final Random random = new Random()
+	
+	protected final extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	
 	protected final extension ExpressionModelFactory expressionFactory = ExpressionModelFactory.eINSTANCE
@@ -168,8 +178,65 @@ class ModelElementMutator {
 		return events.selectDifferentElement(event)
 	}
 	
+	// Should be overridable
+	protected def getNewVariable(VariableDeclaration variable) {
+		val statechart = variable.containingStatechart
+		val variables = statechart.variableDeclarations
+		
+		val type = variable.typeDefinition
+		val correctTypeVariables = variables.filter[it.typeDefinition.helperEquals(type)].toList
+		// Array choosing could be made a bit more flexible
+		return correctTypeVariables.selectDifferentElement(variable)
+	}
+	
+	// Should be overridable
+	protected def getNewParameter(ParameterDeclaration parameter) {
+		val type = parameter.typeDefinition
+		val container = parameter.eContainer
+		val parameters = 
+		if (container instanceof Event) {
+			container.parameterDeclarations
+		}
+		else {
+			val parametricElement = parameter.getContainerOfType(ParametricElement)
+			parametricElement.parameterDeclarations
+		}
+		val correctTypeParameters = parameters.filter[it.typeDefinition.helperEquals(type)].toList
+		// Array choosing could be made a bit more flexible
+		return correctTypeParameters.selectDifferentElement(parameter)
+	}
+	
+	def changePortReference(EventParameterReferenceExpression expression) {
+		val oldPort = expression.port
+		val newPort = oldPort.newInPort
+		
+		expression.port = newPort
+
+		info('''Changed port reference of event parameter reference from «oldPort.name» to «newPort.name»''')
+	}
+	
+	def changeEventReference(EventParameterReferenceExpression expression) {
+		val port = expression.port
+		val oldEvent = expression.event
+		val newEvent = port.getNewInEvent(oldEvent)
+		
+		expression.event = newEvent
+
+		info('''Changed event reference of event parameter reference from «oldEvent.name» to «newEvent.name»''')
+	}
+	
+	def changeParameterReference(EventParameterReferenceExpression expression) {
+		val oldParameter = expression.parameter
+		val newParameter = oldParameter.newParameter
+		
+		expression.parameter = newParameter
+
+		info('''Changed parameter reference of event parameter reference from «oldParameter.name» to «newParameter.name»''')
+	}
+	
 	def changePortReference(RaiseEventAction action) {
 		val oldPort = action.port
+		
 		val newPort = oldPort.newOutPort
 		
 		action.port = newPort
@@ -188,6 +255,28 @@ class ModelElementMutator {
 		info('''Changed event reference of raise event action from «oldEvent.name» to «newEvent.name»''')
 	}
 	
+	def changeDeclarationReference(ReferenceExpression reference) {
+		val oldDeclaration = reference.declaration
+		val newDeclaration = 
+		if (oldDeclaration instanceof VariableDeclaration) {
+			oldDeclaration.newVariable
+		}
+		else {
+			val parameter = oldDeclaration as ParameterDeclaration
+			parameter.newParameter
+		}
+		
+		if (reference instanceof DirectReferenceExpression) {
+			reference.declaration = newDeclaration // For easier tracing
+		}
+		else {
+			val newReference = newDeclaration.createReferenceExpression
+			newReference.replace(reference)
+		}
+
+		info('''Changed declaration reference from «oldDeclaration.name» to «newDeclaration.name»''')
+	}
+	
 	def removeEffect(Transition transition) {
 		val effects = transition.effects
 		
@@ -200,8 +289,6 @@ class ModelElementMutator {
 		
 		info('''Removed effect of transition from «transition.sourceState.name» to «transition.targetState.name»''')
 	}
-	
-	// TODO Change variable reference
 	
 	def removeEntryAction(State state) {
 		val entryActions = state.entryActions
@@ -227,6 +314,11 @@ class ModelElementMutator {
 		exitAction.remove
 		
 		info('''Removed exit action of state «state.name»''')
+	}
+	
+	def changeEntryStateTarget(EntryState entryState) {
+		val transition = entryState.outgoingTransition
+		transition.changeTransitionTarget
 	}
 	
 	def changeEntryState(EntryState entryState) {
