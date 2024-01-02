@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -24,6 +24,8 @@ import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.State
 import java.util.List
 
+import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
+
 abstract interface AbstractReferenceSerializer {
 	
 	def String getId(State state, Region parentRegion, ComponentInstanceReferenceExpression instance)
@@ -32,7 +34,8 @@ abstract interface AbstractReferenceSerializer {
 	def List<String> getId(VariableDeclaration variable, ComponentInstanceReferenceExpression instance)
 	def List<String> getId(Event event, Port port, ParameterDeclaration parameter,
 			ComponentInstanceReferenceExpression instance)
-	
+	//
+	def String getXStsId(State state) '''«state.customizeName»'''
 	//
 	
 	def getId(ComponentInstanceElementReferenceExpression reference) {

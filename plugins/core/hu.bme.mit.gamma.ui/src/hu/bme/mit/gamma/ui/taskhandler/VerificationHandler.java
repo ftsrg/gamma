@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -35,6 +35,9 @@ import com.google.common.base.Stopwatch;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition;
+import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition;
+import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
 import hu.bme.mit.gamma.genmodel.model.ProgrammingLanguage;
 import hu.bme.mit.gamma.genmodel.model.Verification;
@@ -46,6 +49,7 @@ import hu.bme.mit.gamma.property.model.CommentableStateFormula;
 import hu.bme.mit.gamma.property.model.PropertyPackage;
 import hu.bme.mit.gamma.property.model.StateFormula;
 import hu.bme.mit.gamma.property.util.PropertyUtil;
+import hu.bme.mit.gamma.querygenerator.serializer.AbstractReferenceSerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.NuxmvPropertySerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.PromelaPropertySerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.PropertySerializer;
@@ -53,12 +57,16 @@ import hu.bme.mit.gamma.querygenerator.serializer.ThetaPropertySerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.UppaalPropertySerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.XstsUppaalPropertySerializer;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventReferenceExpression;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.Event;
 import hu.bme.mit.gamma.statechart.interface_.Port;
 import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction;
+import hu.bme.mit.gamma.statechart.statechart.Region;
+import hu.bme.mit.gamma.statechart.statechart.State;
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
 import hu.bme.mit.gamma.theta.verification.ThetaVerification;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
@@ -75,6 +83,9 @@ import hu.bme.mit.gamma.util.FileUtil;
 import hu.bme.mit.gamma.verification.result.ThreeStateBoolean;
 import hu.bme.mit.gamma.verification.util.AbstractVerification;
 import hu.bme.mit.gamma.verification.util.AbstractVerifier.Result;
+import hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures;
+import hu.bme.mit.gamma.xsts.model.XSTS;
+import hu.bme.mit.gamma.xsts.util.XstsActionUtil;
 
 public class VerificationHandler extends TaskHandler {
 
@@ -102,6 +113,7 @@ public class VerificationHandler extends TaskHandler {
 	
 	protected final TraceUtil traceUtil = TraceUtil.INSTANCE;
 	protected final PropertyUtil propertyUtil = PropertyUtil.INSTANCE;
+	protected final XstsActionUtil xStsUtil = XstsActionUtil.INSTANCE;
 	protected final StatechartEcoreUtil statechartEcoreUtil = StatechartEcoreUtil.INSTANCE;
 	protected final ExecutionTraceSerializer serializer = ExecutionTraceSerializer.INSTANCE;
 	
@@ -163,6 +175,17 @@ public class VerificationHandler extends TaskHandler {
 		String filePath = verification.getFileName().get(0);
 		File modelFile = new File(filePath);
 		
+		//
+		String emfModelFilePath = fileNamer.getEmfXStsUri(filePath);
+		File emfModelFile = new File(emfModelFilePath);
+		XSTS xSts = null;
+		try {
+			xSts = (XSTS) ecoreUtil.normalLoad(emfModelFile);
+		} catch (RuntimeException e) {
+			// The EMF xSts model is not found
+		}
+		//
+		
 		String[] arguments = verificationArguments.isEmpty() ?
 				verificationTask.getDefaultArguments(modelFile) :
 					verificationArguments.toArray(new String[verificationArguments.size()]);
@@ -187,9 +210,9 @@ public class VerificationHandler extends TaskHandler {
 			//
 			for (CommentableStateFormula formula : propertyPackage.getFormulas()) {
 				StateFormula stateFormula = formula.getFormula();
-				
-				adjustProperty(stateFormula);
-				
+				//
+				adjustProperty(stateFormula, xSts);
+				//
 				String serializedFormula = propertySerializer.serialize(stateFormula);
 				formulas.put(serializedFormula, stateFormula);
 			}
@@ -296,7 +319,8 @@ public class VerificationHandler extends TaskHandler {
 	
 	//
 	
-	private void adjustProperty(StateFormula formula) {
+	private void adjustProperty(StateFormula formula, XSTS xSts) {
+		// Event references
 		List<ComponentInstanceEventReferenceExpression> eventReferences =
 				ecoreUtil.getAllContentsOfType(formula, ComponentInstanceEventReferenceExpression.class);
 		for (ComponentInstanceEventReferenceExpression eventReference : eventReferences) {
@@ -314,6 +338,43 @@ public class VerificationHandler extends TaskHandler {
 					ecoreUtil.replace(
 							expressionFactory.createFalseExpression(), eventReference);
 					logger.info("Removing reference to event " + port.getName() + "." + event.getName() + " in property");
+				}
+			}
+		}
+		
+		// State references
+		if (xSts != null) {
+			AbstractReferenceSerializer referenceSerializer = propertySerializer
+					.getPropertyExpressionSerializer().getReferenceSerializer();
+			
+			List<ComponentInstanceStateReferenceExpression> stateReferences =
+					ecoreUtil.getAllContentsOfType(formula, ComponentInstanceStateReferenceExpression.class);
+			for (ComponentInstanceStateReferenceExpression stateReference : stateReferences) {
+				boolean removedState = false;
+				
+				ComponentInstanceReferenceExpression instance = stateReference.getInstance();
+				Region region = stateReference.getRegion();
+				State state = stateReference.getState();
+				
+				String variableName = referenceSerializer.getId(region, instance);
+				String enumLiteralName = referenceSerializer.getXStsId(state);
+				try {
+					VariableDeclaration regionVariable = xStsUtil.checkVariable(xSts, variableName);
+					EnumerationTypeDefinition type = (EnumerationTypeDefinition)
+							XstsDerivedFeatures.getTypeDefinition(regionVariable);
+					List<EnumerationLiteralDefinition> literals = type.getLiterals();
+					
+					removedState = literals.stream().noneMatch(
+							it -> it.getName().equals(enumLiteralName));
+				} catch (IllegalArgumentException e) {
+					// No such variable
+					removedState = true;
+				}
+				
+				if (removedState) {
+					ecoreUtil.replace(
+							expressionFactory.createFalseExpression(), stateReference);
+					logger.info("Removing reference to state " + region.getName() + "." + state.getName() + " in property");
 				}
 			}
 		}

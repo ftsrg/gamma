@@ -92,6 +92,7 @@ class GammaFileNamer {
 	
 	def String getUnfoldedPackageUri(String uri) '''«uri.parent»«File.separator»«uri.fileName.unfoldedPackageFileName»'''
 	def String getEmfXStsUri(String uri) '''«uri.parent»«File.separator»«uri.fileName.emfXStsFileName»'''
+	def String getHiddenEmfXStsUri(String uri) '''«uri.parent»«File.separator»«uri.fileName.emfXStsFileName.toHiddenFileName»'''
 	
 	//
 	
