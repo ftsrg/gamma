@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -119,6 +119,14 @@ class JavaUtil {
 			throw new IllegalArgumentException("Not contained element: " + key)
 		}
 		return map.get(key)
+	}
+	
+	def <K> Integer increment(Map<K, Integer> map, K key) {
+		if (!map.containsKey(key)) {
+			map.put(key, 0)
+		}
+		val value = map.get(key)
+		return map.put(key, value + 1)
 	}
 	
 	def <K, V> Set<Entry<V, K>> invert(Map<K, V> map) {

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023 Contributors to the Gamma project
+ * Copyright (c) 2023-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -25,22 +25,31 @@ import hu.bme.mit.gamma.genmodel.model.ComponentReference;
 import hu.bme.mit.gamma.genmodel.model.ModelMutation;
 import hu.bme.mit.gamma.genmodel.model.ModelReference;
 import hu.bme.mit.gamma.mutation.ModelMutator;
+import hu.bme.mit.gamma.mutation.ModelMutator.MutationHeuristics;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.transformation.util.preprocessor.AnalysisModelPreprocessor;
 
 public class ModelMutationHandler extends TaskHandler {
-	
 	//
+	protected final MutationHeuristics mutationHeuristics;
+	
 	protected final List<Package> mutatedModels = new ArrayList<Package>();
 	
 	protected final AnalysisModelPreprocessor preprocessor = AnalysisModelPreprocessor.INSTANCE;
 	//
 	
 	public ModelMutationHandler(IFile file) {
-		super(file);
+		this(file, new MutationHeuristics());
 	}
+	
+	public ModelMutationHandler(IFile file, MutationHeuristics mutationHeuristics) {
+		super(file);
+		this.mutationHeuristics = mutationHeuristics;
+	}
+	
+	//
 	
 	public void execute(ModelMutation modelMutation) throws IOException {
 		// Setting target folder
@@ -63,7 +72,7 @@ public class ModelMutationHandler extends TaskHandler {
 		Expression mutationCount = modelMutation.getIterationCount();
 		int MAX_MUTATION_ITERATION = (mutationCount == null) ? 1 :
 				expressionEvaluator.evaluateInteger(mutationCount);
-		ModelMutator mutator = new ModelMutator(); // TODO add heuristics parameters
+		ModelMutator mutator = new ModelMutator(mutationHeuristics);
 		for (int i = 0; i < MAX_MUTATION_ITERATION; i++) {
 			Package clonedNewPackage =  ecoreUtil.clone(newPackage);
 			Component clonedNewTopComponent = StatechartModelDerivedFeatures

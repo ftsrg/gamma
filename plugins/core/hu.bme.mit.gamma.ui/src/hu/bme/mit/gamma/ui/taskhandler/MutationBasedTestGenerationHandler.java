@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023 Contributors to the Gamma project
+ * Copyright (c) 2023-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.emf.common.util.URI;
@@ -33,6 +34,7 @@ import hu.bme.mit.gamma.genmodel.model.ModelMutation;
 import hu.bme.mit.gamma.genmodel.model.ModelReference;
 import hu.bme.mit.gamma.genmodel.model.MutationBasedTestGeneration;
 import hu.bme.mit.gamma.genmodel.model.ProgrammingLanguage;
+import hu.bme.mit.gamma.mutation.ModelMutator.MutationHeuristics;
 import hu.bme.mit.gamma.property.model.PropertyPackage;
 import hu.bme.mit.gamma.property.model.StateFormula;
 import hu.bme.mit.gamma.property.util.PropertyUtil;
@@ -40,6 +42,7 @@ import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventParameterReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.InstancePortReference;
 import hu.bme.mit.gamma.statechart.composite.PortBinding;
 import hu.bme.mit.gamma.statechart.composite.SchedulableCompositeComponent;
@@ -51,6 +54,8 @@ import hu.bme.mit.gamma.statechart.interface_.InterfaceRealization;
 import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.statechart.interface_.Port;
 import hu.bme.mit.gamma.statechart.interface_.UnfoldedPackageAnnotation;
+import hu.bme.mit.gamma.statechart.statechart.State;
+import hu.bme.mit.gamma.trace.derivedfeatures.TraceModelDerivedFeatures;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
 import hu.bme.mit.gamma.trace.model.RaiseEventAct;
 import hu.bme.mit.gamma.trace.model.Step;
@@ -106,7 +111,15 @@ public class MutationBasedTestGenerationHandler extends TaskHandler {
 		mutationTargetFolders.clear();
 		mutationTargetFolders.add(targetFolder);
 		
-		ModelMutationHandler modelMutationHandler =  new ModelMutationHandler(file);
+		// Heuristics
+		MutationHeuristics mutationHeuristics = new MutationHeuristics();
+		String traceFolderName = "trace";
+		String traceFolderPath = projectLocation + File.separator + traceFolderName;
+		File traceFolder = new File(traceFolderPath);
+		calculateTraceMetrics(traceFolder, mutationHeuristics.getStateFrequency());
+		
+		// Could be put into a cycle to support mutation based on generated tests
+		ModelMutationHandler modelMutationHandler =  new ModelMutationHandler(file, mutationHeuristics);
 		modelMutationHandler.execute(modelMutation);
 		
 		List<Package> mutatedModels = modelMutationHandler.getMutatedModels();
@@ -287,6 +300,39 @@ public class MutationBasedTestGenerationHandler extends TaskHandler {
 		}
 		
 	}
+	
+	//
+	
+	private Map<State, Integer> calculateTraceMetrics(File file, Map<State, Integer> metrics) {
+		if (file != null) {
+			File[] traceFiles = file.listFiles(it -> it.getName().endsWith(
+					"." + GammaFileNamer.EXECUTION_XTEXT_EXTENSION));
+			if (traceFiles != null) {
+				for (File traceFile : traceFiles) {
+					ExecutionTrace trace = (ExecutionTrace) ecoreUtil.normalLoad(traceFile);
+					extendTraceMetrics(metrics, trace);
+				}
+			}
+		}
+		
+		return metrics;
+	}
+
+	private void extendTraceMetrics(Map<State, Integer> metrics, ExecutionTrace trace) {
+		List<Step> steps = TraceModelDerivedFeatures.getAllSteps(trace);
+		
+		for (Step step : steps) {
+			List<ComponentInstanceStateReferenceExpression> instanceStates =
+					TraceModelDerivedFeatures.getInstanceStateConfigurations(step);
+			
+			for (var instanceState : instanceStates) {
+				State state = instanceState.getState();
+				javaUtil.increment(metrics, state);
+			}
+		}
+	}
+	
+	//
 	
 	private void setModelBasedMutationTestGeneration(
 			MutationBasedTestGeneration mutationBasedTestGeneration) {

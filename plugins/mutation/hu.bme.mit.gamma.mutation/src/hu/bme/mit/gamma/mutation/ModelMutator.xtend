@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023 Contributors to the Gamma project
+ * Copyright (c) 2023-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -25,7 +25,10 @@ import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.util.GammaEcoreUtil
+import hu.bme.mit.gamma.util.GammaRandom
 import java.util.Collection
+import java.util.List
+import java.util.Map
 import java.util.Random
 import java.util.Set
 
@@ -68,14 +71,20 @@ class ModelMutator {
 	//
 	
 	protected final extension ModelElementMutator modelElementMutator
+	protected final MutationHeuristics mutationHeuristics
 	
-	protected final Random random = new Random();
+	protected final Random random = new Random()
 	
-	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
+	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	//
 	
 	new() {
+		this(new MutationHeuristics)
+	}
+	
+	new(MutationHeuristics mutationHeuristics) {
 		this.modelElementMutator = new ModelElementMutator // May be parameterized later
+		this.mutationHeuristics = mutationHeuristics
 	}
 	
 	//
@@ -189,7 +198,7 @@ class ModelMutator {
 						}
 					}
 					case STATE_DYNAMICS: {
-						val OPERATOR_COUNT = 3
+						val OPERATOR_COUNT = 4
 						val i = mutationOperatorIndex % OPERATOR_COUNT
 						switch (i) {
 							case 0: {
@@ -381,9 +390,8 @@ class ModelMutator {
 		
 		checkState(!selectableObjects.empty)
 		
-		// TODO Change according to heuristics
-		val i = random.nextInt(selectableObjects.size)
-		val object = selectableObjects.get(i)
+		// Can be changed according to heuristics
+		val object = mutationHeuristics.selectRandom(selectableObjects)
 		//
 		
 		unselectableObjects += object
@@ -411,5 +419,50 @@ class ModelMutator {
 	
 	enum StatechartMutationType {
 			TRANSITION_STRUCTURE, TRANSITION_DYNAMICS, STATE_DYNAMICS, EXPRESSION_DYNAMICS }
+			
+	//
+	
+	static class MutationHeuristics {
+		//
+		protected final Map<State, Integer> stateFrequency = newHashMap
+	
+		protected final Random random = new Random()
+		protected final GammaRandom gammaRandom = GammaRandom.INSTANCE
+		//
+		
+		new() {
+			this(null)
+		}
+		
+		new(Map<? extends State, Integer> stateFrequency) {
+			if (stateFrequency !== null) {
+				this.stateFrequency += stateFrequency
+			}
+		}
+		
+		//
+		
+		def <T> selectRandom(List<? extends T> objects) {
+			val i = random.nextInt(objects.size)
+			val object = objects.get(i)
+			
+			return object
+		}
+		
+		def <T> selectLessFrequentRandomly(List<? extends T> objects) {
+			if (stateFrequency.empty) {
+				return objects.selectRandom
+			}
+			
+			// TODO
+		}
+		
+		//
+		
+		def getStateFrequency() {
+			return this.stateFrequency
+		}
+		
+	}
 	
 }
