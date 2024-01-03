@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -3040,10 +3040,24 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return ecoreUtil.getContainerOfType(object, State.class);
 	}
 	
+	public static EObject getSelfOrContainingTransitionOrState(EObject object) {
+		if (object instanceof Transition || object instanceof State) {
+			return object;
+		}
+		return getContainingTransitionOrState(object);
+	}
+	
 	public static StateNode getContainingOrSourceStateNode(EObject object) {
 		EObject container = getContainingTransitionOrState(object);
-		if (container instanceof Transition) {
-			Transition transition = (Transition) container;
+		if (container instanceof Transition transition) {
+			return transition.getSourceState();
+		}
+		return (StateNode) container;
+	}
+	
+	public static StateNode getSelfOrContainingOrSourceStateNode(EObject object) {
+		EObject container = getSelfOrContainingTransitionOrState(object);
+		if (container instanceof Transition transition) {
 			return transition.getSourceState();
 		}
 		return (StateNode) container;

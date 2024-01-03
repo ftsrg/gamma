@@ -133,6 +133,19 @@ class JavaUtil {
 		return map.entrySet.invert.toSet
 	}
 	
+	def <K, V, T> Map<K, T> castValues(Map<K, V> map, Class<T> clazz) {
+		val castedMap = newHashMap
+		
+		for (key : map.keySet) {
+			val value = map.get(key)
+			val castedValue = value as T
+			
+			castedMap += key -> castedValue
+		}
+		
+		return castedMap
+	}
+	
 	def <K, V> Collection<Entry<V, K>> invert(Collection<? extends Entry<K, V>> entrySet) {
 		val entries = <Entry<V, K>>newArrayList
 		for (entry : entrySet) {

@@ -31,6 +31,8 @@ import java.util.List
 import java.util.Map
 import java.util.Random
 import java.util.Set
+import java.util.logging.Logger
+import org.eclipse.emf.ecore.EObject
 
 import static com.google.common.base.Preconditions.checkState
 
@@ -73,9 +75,10 @@ class ModelMutator {
 	protected final extension ModelElementMutator modelElementMutator
 	protected final MutationHeuristics mutationHeuristics
 	
-	protected final Random random = new Random()
+	protected final Random random = new Random
 	
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
+	
 	//
 	
 	new() {
@@ -382,7 +385,7 @@ class ModelMutator {
 	
 	//
 	
-	protected def <T> selectElementForMutation(Collection<? extends T> objects,
+	protected def <T extends EObject> selectElementForMutation(Collection<? extends T> objects,
 			Collection<T> unselectableObjects) {
 		val selectableObjects = newArrayList
 		selectableObjects += objects
@@ -391,7 +394,7 @@ class ModelMutator {
 		checkState(!selectableObjects.empty)
 		
 		// Can be changed according to heuristics
-		val object = mutationHeuristics.selectRandom(selectableObjects)
+		val object = mutationHeuristics.select(selectableObjects)
 		//
 		
 		unselectableObjects += object
@@ -426,8 +429,10 @@ class ModelMutator {
 		//
 		protected final Map<State, Integer> stateFrequency = newHashMap
 	
-		protected final Random random = new Random()
+		protected final Random random = new Random
 		protected final GammaRandom gammaRandom = GammaRandom.INSTANCE
+	
+		protected final extension Logger logger = Logger.getLogger("GammaLogger")
 		//
 		
 		new() {
@@ -442,19 +447,48 @@ class ModelMutator {
 		
 		//
 		
-		def <T> selectRandom(List<? extends T> objects) {
+		def <T extends EObject> select(List<? extends T> objects) {
+			if (objects.forall[it.selfOrContainingOrSourceStateNode !== null]) {
+				return objects.selectLessFrequentRandomly
+			}
+			return objects.selectRandom
+		}
+		
+		//
+		
+		def <T extends EObject> selectRandom(List<? extends T> objects) {
 			val i = random.nextInt(objects.size)
 			val object = objects.get(i)
 			
 			return object
 		}
 		
-		def <T> selectLessFrequentRandomly(List<? extends T> objects) {
+		def <T extends EObject> selectLessFrequentRandomly(List<? extends T> objects) {
 			if (stateFrequency.empty) {
 				return objects.selectRandom
 			}
 			
-			// TODO
+			val stateNodes = objects.map[it.selfOrContainingOrSourceStateNode].toList
+			val states = stateNodes.filter(State) // Considering only states: elements can be discarded
+			
+			val frequencies = newHashMap
+			for (state : states) {
+				val fqn = state.fullContainmentHierarchy
+				// Summing: no differentiating between different instances of the same component
+				val frequency = stateFrequency.entrySet
+						.filter[it.key.fullContainmentHierarchy == fqn]
+						.fold(0, [sum, a | sum + a.value])
+				
+				frequencies += state -> frequency
+			}
+			
+			val selectedStateObject = gammaRandom.selectBasedOnInvertedFrequency(frequencies)
+			val i = stateNodes.indexOf(selectedStateObject)
+			
+			val object = objects.get(i)
+			logger.info("Selected " + object + " based on frequency calculation")
+			
+			return object
 		}
 		
 		//
