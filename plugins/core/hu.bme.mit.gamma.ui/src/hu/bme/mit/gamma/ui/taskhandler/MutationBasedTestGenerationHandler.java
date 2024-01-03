@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.emf.common.util.URI;
@@ -29,6 +30,7 @@ import hu.bme.mit.gamma.expression.model.InequalityExpression;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.genmodel.derivedfeatures.GenmodelDerivedFeatures;
 import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation;
+import hu.bme.mit.gamma.genmodel.model.CodeGeneration;
 import hu.bme.mit.gamma.genmodel.model.ComponentReference;
 import hu.bme.mit.gamma.genmodel.model.ModelMutation;
 import hu.bme.mit.gamma.genmodel.model.ModelReference;
@@ -113,16 +115,54 @@ public class MutationBasedTestGenerationHandler extends TaskHandler {
 		
 		// Heuristics
 		MutationHeuristics mutationHeuristics = new MutationHeuristics();
-		String traceFolderName = "trace";
-		String traceFolderPath = projectLocation + File.separator + traceFolderName;
-		File traceFolder = new File(traceFolderPath);
-		calculateTraceMetrics(traceFolder, mutationHeuristics.getStateFrequency());
+		String traceFolderName = "trace"; // TODO make it customizable
+		if (traceFolderName != null) {
+			String traceFolderPath = projectLocation + File.separator + traceFolderName;
+			File traceFolder = new File(traceFolderPath);
+			calculateTraceMetrics(traceFolder, mutationHeuristics.getStateFrequency());
+		}
 		
 		// Could be put into a cycle to support mutation based on generated tests
 		ModelMutationHandler modelMutationHandler =  new ModelMutationHandler(file, mutationHeuristics);
 		modelMutationHandler.execute(modelMutation);
 		
 		List<Package> mutatedModels = modelMutationHandler.getMutatedModels();
+		
+		// Checking if present tests kill any of the mutants
+		String testFolderName =  null; //"test-gen";
+		if (testFolderName != null) {
+			String testFolderPath = projectLocation + File.separator + traceFolderName;
+			File testFolder = new File(testFolderPath);
+			
+			Set<Component> allOriginalComponents = StatechartModelDerivedFeatures.getSelfAndAllComponents(component);
+			// TODO Compile tests once if not using the bin folder
+			
+			CodeGeneration codeGeneration = factory.createCodeGeneration();
+			codeGeneration.getProgrammingLanguages().add(ProgrammingLanguage.JAVA);
+			for (Package mutatedModel : mutatedModels) {
+				List<Component> components = mutatedModel.getComponents();
+				Component mutatedComponent = null; // TODO
+				
+				// Generate code for component
+				codeGeneration.setComponent(mutatedComponent);
+				CodeGenerationHandler handler = new CodeGenerationHandler(file);
+				String packageName = file.getProject().getName();
+				handler.execute(codeGeneration, packageName);
+				// TODO refresh project to trigger the build
+				
+				// TODO Running tests to see if mutant can be killed
+				// java -jar C:\Users\grben\git\gamma\plugins\mutation\mutation-bin\junit-platform-console-standalone-1.9.3.jar -cp bin -c hu.bme.mit.gamma.tutorial.finish.tutorial.ExecutionTraceSimulation5 -c hu.bme.mit.gamma.tutorial.finish.tutorial.ExecutionTraceSimulation7
+				
+				// Restoring original code
+				for (Component originalComponent : allOriginalComponents) {
+					boolean sameComponent = mutatedComponent.getName().equals(originalComponent.getName());
+					if (sameComponent) {
+						codeGeneration.setComponent(originalComponent);
+						handler.execute(codeGeneration, packageName);
+					}
+				}
+			}
+		}
 		
 		int i = 0;
 		for (Package mutatedModel : mutatedModels) {

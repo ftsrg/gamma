@@ -646,6 +646,22 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return instances;
 	}
 	
+	public static Set<Component> getAllComponents(Component component) {
+		return new LinkedHashSet<Component>(
+			getAllInstances(component).stream().map(it -> getDerivedType(it))
+				.toList());
+	}
+	
+	public static Set<Component> getSelfAndAllComponents(Component component) {
+		Set<Component> selfAndAllComponents = new LinkedHashSet<Component>();
+		
+		selfAndAllComponents.add(component);
+		selfAndAllComponents.addAll(
+				getAllComponents(component));
+		
+		return selfAndAllComponents;
+	}
+	
 	public static List<ComponentInstance> getAllInstances(Component component) {
 		List<ComponentInstance> instances = new ArrayList<ComponentInstance>();
 		if (component instanceof AbstractAsynchronousCompositeComponent) {
@@ -689,7 +705,8 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 			AbstractAsynchronousCompositeComponent asynchronousCompositeComponent =
 					(AbstractAsynchronousCompositeComponent) component;
 			for (AsynchronousComponentInstance instance : asynchronousCompositeComponent.getComponents()) {
-				simpleInstances.addAll(getAllSimpleInstances(instance));
+				simpleInstances.addAll(
+						getAllSimpleInstances(instance));
 			}
 		}
 		else if (component instanceof AsynchronousAdapter) {
@@ -699,7 +716,8 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 				simpleInstances.add(wrappedInstance);
 			}
 			else {
-				simpleInstances.addAll(getAllSimpleInstances(wrappedInstance));
+				simpleInstances.addAll(
+						getAllSimpleInstances(wrappedInstance));
 			}
 		}
 		else if (component instanceof AbstractSynchronousCompositeComponent) {
@@ -710,7 +728,8 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 					simpleInstances.add(instance);
 				}
 				else {
-					simpleInstances.addAll(getAllSimpleInstances(instance));
+					simpleInstances.addAll(
+							getAllSimpleInstances(instance));
 				}
 			}
 		}
