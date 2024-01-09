@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -23,6 +23,7 @@ import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.xtext.conversion.IValueConverterService;
 import org.eclipse.xtext.linking.impl.DefaultLinkingService;
+import org.eclipse.xtext.linking.lazy.LazyLinkingResource.CyclicLinkingException;
 import org.eclipse.xtext.nodemodel.INode;
 
 import com.google.inject.Inject;
@@ -74,7 +75,11 @@ public abstract class GammaLanguageLinker extends DefaultLinkingService {
 				}
 			}
 		}
-		return super.getLinkedObjects(context, ref, node);
+		try {
+			return super.getLinkedObjects(context, ref, node);
+		} catch (CyclicLinkingException e) {
+			return List.of(); // The import URI is incorrect, there is nothing we can do
+		}
 	}
 	
 	public abstract Map<Class<? extends EObject>, Collection<EReference>> getContext();

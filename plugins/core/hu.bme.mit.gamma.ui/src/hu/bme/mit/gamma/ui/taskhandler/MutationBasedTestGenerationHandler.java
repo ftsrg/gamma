@@ -130,7 +130,9 @@ public class MutationBasedTestGenerationHandler extends TaskHandler {
 		List<String> traceFolderPaths = mutationBasedTestGeneration.getTraceFolders();
 		for (String traceFolderPath : traceFolderPaths) { // May be empty
 			File traceFolder = new File(traceFolderPath);
-			calculateTraceMetrics(traceFolder, mutationHeuristics.getStateFrequency());
+			if (traceFolder.exists()) {
+				calculateTraceMetrics(traceFolder, mutationHeuristics.getStateFrequency());
+			}
 		}
 		
 		// Could be put into a cycle to support mutation based on generated tests
@@ -492,7 +494,8 @@ public class MutationBasedTestGenerationHandler extends TaskHandler {
 		}
 		// Setting the file path
 		List<String> traceFolders = mutationBasedTestGeneration.getTraceFolders();
-		traceFolders.replaceAll(it -> fileUtil.exploreRelativeFile(javaFile, it).toString());
+		traceFolders.replaceAll(it -> fileUtil.isValidRelativeFile(javaFile, it) ?
+			fileUtil.exploreRelativeFile(javaFile, it).toString() : it);
 		
 		List<String> packageNames = mutationBasedTestGeneration.getPackageName();
 		List<String> testFolders = mutationBasedTestGeneration.getTestFolder();
