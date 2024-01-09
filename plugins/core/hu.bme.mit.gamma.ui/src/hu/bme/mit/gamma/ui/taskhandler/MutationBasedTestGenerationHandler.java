@@ -127,15 +127,16 @@ public class MutationBasedTestGenerationHandler extends TaskHandler {
 		
 		// Heuristics
 		MutationHeuristics mutationHeuristics = new MutationHeuristics();
+		Map<State, Integer> stateFrequency = mutationHeuristics.getStateFrequency();
 		List<String> traceFolderPaths = mutationBasedTestGeneration.getTraceFolders();
 		for (String traceFolderPath : traceFolderPaths) { // May be empty
 			File traceFolder = new File(traceFolderPath);
 			if (traceFolder.exists()) {
-				calculateTraceMetrics(traceFolder, mutationHeuristics.getStateFrequency());
+				calculateTraceMetrics(traceFolder, stateFrequency);
 			}
 		}
 		
-		// Could be put into a cycle to support mutation based on generated tests
+		// TODO Could be put into a cycle to support mutation based on generated tests
 		ModelMutationHandler modelMutationHandler =  new ModelMutationHandler(file, mutationHeuristics);
 		List<Package> mutatedModels = modelMutationHandler.getMutatedModels();
 		
@@ -337,6 +338,9 @@ public class MutationBasedTestGenerationHandler extends TaskHandler {
 				// Traces and tests are not serialized
 				traceSerializer.serialize(traceFolderUri, traceFileName, null, testFolderUri,
 						testFileName, packageName, programmingLanguage, trace);
+				
+				// Extend trace metrics - used when another mutation is conducted
+				extendTraceMetrics(stateFrequency, trace);
 			}
 		}
 		
