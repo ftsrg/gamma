@@ -34,11 +34,14 @@ import hu.bme.mit.gamma.transformation.util.preprocessor.AnalysisModelPreprocess
 public class ModelMutationHandler extends TaskHandler {
 	//
 	protected final MutationHeuristics mutationHeuristics;
+	protected ModelMutator mutator;
+	protected Integer mutationIteration;
 	
 	protected final List<Package> mutatedModels = new ArrayList<Package>();
 	
 	protected final AnalysisModelPreprocessor preprocessor = AnalysisModelPreprocessor.INSTANCE;
 	//
+
 	
 	public ModelMutationHandler(IFile file) {
 		this(file, new MutationHeuristics());
@@ -69,11 +72,7 @@ public class ModelMutationHandler extends TaskHandler {
 				targetFolderUri, fileName, true);
 		Package newPackage = StatechartModelDerivedFeatures.getContainingPackage(newTopComponent);
 		
-		Expression mutationCount = modelMutation.getIterationCount();
-		int MAX_MUTATION_ITERATION = (mutationCount == null) ? 1 :
-				expressionEvaluator.evaluateInteger(mutationCount);
-		ModelMutator mutator = new ModelMutator(mutationHeuristics);
-		for (int i = 0; i < MAX_MUTATION_ITERATION; i++) {
+		for (int i = 0; i < mutationIteration; i++) {
 			Package clonedNewPackage =  ecoreUtil.clone(newPackage);
 			Component clonedNewTopComponent = StatechartModelDerivedFeatures
 					.getFirstComponent(clonedNewPackage);
@@ -88,6 +87,14 @@ public class ModelMutationHandler extends TaskHandler {
 	}
 	
 	//
+	
+	public Integer getMutationIteration() {
+		return mutationIteration;
+	}
+	
+	public void setMutationIteration(Integer mutationIteration) {
+		this.mutationIteration = mutationIteration;
+	}
 	
 	public List<Package> getMutatedModels() {
 		return this.mutatedModels;
@@ -104,6 +111,14 @@ public class ModelMutationHandler extends TaskHandler {
 			String containingFileName = getContainingFileName(sourceModel);
 			String fileName = getNameWithoutExtension(containingFileName);
 			fileNames.add(fileName);
+		}
+		if (mutator == null) {
+			mutator = new ModelMutator(mutationHeuristics);
+		}
+		if (mutationIteration == null) {
+			Expression mutationCount = mutation.getIterationCount();
+			mutationIteration = (mutationCount == null) ? 1 :
+					expressionEvaluator.evaluateInteger(mutationCount);
 		}
 	}
 

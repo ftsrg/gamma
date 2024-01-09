@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2019-2023 Contributors to the Gamma project
+ * Copyright (c) 2019-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -12,6 +12,7 @@ package hu.bme.mit.gamma.ui.taskhandler;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.io.File;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
@@ -69,8 +70,13 @@ public class CodeGenerationHandler extends TaskHandler {
 		if (component instanceof StatechartDefinition statechart) {
 			logger.info("Starting single statechart code generation: " + componentName);
 			CommandHandler singleStatechartCommandHandler = new CommandHandler();
-			singleStatechartCommandHandler.run(statechart, ecoreUtil.getFile(
-					codeGenerationResource).getParent(),
+			File resourceFile = (codeGenerationResource == null) ? null :
+					ecoreUtil.getFile(codeGenerationResource);
+			if (resourceFile == null) {
+				resourceFile = fileUtil.getFile(file);
+			}
+			String parent = resourceFile.getParent();
+			singleStatechartCommandHandler.run(statechart, parent,
 					targetFolderUri, codeGeneration.getPackageName().get(0));
 		}
 		else {

@@ -17,11 +17,17 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IncrementalProjectBuilder;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 
@@ -63,6 +69,7 @@ import hu.bme.mit.gamma.trace.model.RaiseEventAct;
 import hu.bme.mit.gamma.trace.model.Step;
 import hu.bme.mit.gamma.transformation.util.GammaFileNamer;
 import hu.bme.mit.gamma.ui.taskhandler.VerificationHandler.ExecutionTraceSerializer;
+import hu.bme.mit.gamma.util.ScannerLogger;
 
 public class MutationBasedTestGenerationHandler extends TaskHandler {
 	//
@@ -72,6 +79,9 @@ public class MutationBasedTestGenerationHandler extends TaskHandler {
 	protected String traceFileName;
 	protected String testFileName;
 	protected ProgrammingLanguage programmingLanguage;
+	
+	//
+	final String ENVIRONMENT_VARIABLE_FOR_JUNIT_JAR = "JUNIT";
 	//
 	protected final PropertyUtil propertyUtil = PropertyUtil.INSTANCE;
 	protected final ExecutionTraceSerializer traceSerializer = ExecutionTraceSerializer.INSTANCE;
@@ -82,7 +92,7 @@ public class MutationBasedTestGenerationHandler extends TaskHandler {
 	}
 	
 	public void execute(MutationBasedTestGeneration mutationBasedTestGeneration)
-			throws IOException, InterruptedException {
+			throws IOException, InterruptedException, CoreException {
 		// Setting target folder
 		setProjectLocation(mutationBasedTestGeneration); // Before the target folder
 		setTargetFolder(mutationBasedTestGeneration);
@@ -124,45 +134,30 @@ public class MutationBasedTestGenerationHandler extends TaskHandler {
 		
 		// Could be put into a cycle to support mutation based on generated tests
 		ModelMutationHandler modelMutationHandler =  new ModelMutationHandler(file, mutationHeuristics);
-		modelMutationHandler.execute(modelMutation);
-		
 		List<Package> mutatedModels = modelMutationHandler.getMutatedModels();
 		
+		final String testFileNamePattern = ".*TraceSimulation[0-9]*.*"; // TODO
+		Collection<Package> unnecessaryMutants = new ArrayList<Package>();
+		Collection<Package> checkedMutants = new LinkedHashSet<Package>();
+		
 		// Checking if present tests kill any of the mutants
-		String testFolderName =  null; //"test-gen";
-		if (testFolderName != null) {
-			String testFolderPath = projectLocation + File.separator + traceFolderName;
-			File testFolder = new File(testFolderPath);
+		do {
+			unnecessaryMutants.clear();
+			modelMutationHandler.execute(modelMutation);
 			
-			Set<Component> allOriginalComponents = StatechartModelDerivedFeatures.getSelfAndAllComponents(component);
-			// TODO Compile tests once if not using the bin folder
+			Collection<Package> checkableMutants = new LinkedHashSet<Package>(mutatedModels);
+			checkableMutants.removeAll(checkedMutants); // To prevent unnecessary testing
+			unnecessaryMutants.addAll(
+					killMutantsWithExistingTests(
+							component, checkableMutants, testFileNamePattern));
+			checkedMutants.addAll(checkableMutants);
+			int unnecessaryMutantCount = unnecessaryMutants.size();
 			
-			CodeGeneration codeGeneration = factory.createCodeGeneration();
-			codeGeneration.getProgrammingLanguages().add(ProgrammingLanguage.JAVA);
-			for (Package mutatedModel : mutatedModels) {
-				List<Component> components = mutatedModel.getComponents();
-				Component mutatedComponent = null; // TODO
-				
-				// Generate code for component
-				codeGeneration.setComponent(mutatedComponent);
-				CodeGenerationHandler handler = new CodeGenerationHandler(file);
-				String packageName = file.getProject().getName();
-				handler.execute(codeGeneration, packageName);
-				// TODO refresh project to trigger the build
-				
-				// TODO Running tests to see if mutant can be killed
-				// java -jar C:\Users\grben\git\gamma\plugins\mutation\mutation-bin\junit-platform-console-standalone-1.9.3.jar -cp bin -c hu.bme.mit.gamma.tutorial.finish.tutorial.ExecutionTraceSimulation5 -c hu.bme.mit.gamma.tutorial.finish.tutorial.ExecutionTraceSimulation7
-				
-				// Restoring original code
-				for (Component originalComponent : allOriginalComponents) {
-					boolean sameComponent = mutatedComponent.getName().equals(originalComponent.getName());
-					if (sameComponent) {
-						codeGeneration.setComponent(originalComponent);
-						handler.execute(codeGeneration, packageName);
-					}
-				}
-			}
+			mutatedModels.removeAll(unnecessaryMutants); // Tests already kill these mutants
+			modelMutationHandler.setMutationIteration(unnecessaryMutantCount); // Generate new ones for these
 		}
+		while (!unnecessaryMutants.isEmpty());
+		//
 		
 		int i = 0;
 		for (Package mutatedModel : mutatedModels) {
@@ -339,6 +334,102 @@ public class MutationBasedTestGenerationHandler extends TaskHandler {
 			}
 		}
 		
+	}
+	
+	//
+
+	private Collection<Package> killMutantsWithExistingTests(Component component, Collection<? extends Package> mutatedModels,
+				String testFilePattern) throws CoreException, IOException {
+		List<Package> unnecessaryMutations = new ArrayList<Package>();
+		
+		if (testFilePattern != null) {
+			Set<Component> allOriginalComponents = StatechartModelDerivedFeatures.getSelfAndAllComponents(component);
+			// Compile tests once if not using the bin folder
+			IProject project = file.getProject();
+			
+			CodeGeneration codeGeneration = factory.createCodeGeneration();
+			codeGeneration.getProgrammingLanguages().add(ProgrammingLanguage.JAVA);
+			for (Package mutatedModel : mutatedModels) {
+				String mutatedPackageName = mutatedModel.getName();
+				List<Package> mutantImports = new ArrayList<Package>(mutatedModel.getImports());
+				
+				List<Component> components = mutatedModel.getComponents();
+				Component mutatedComponent = components.stream().filter(it ->
+						StatechartModelDerivedFeatures.isMutant(it)).findFirst().get();
+				Component originalComponent = null;
+				for (Component aComponent : allOriginalComponents) {
+					boolean sameComponent = mutatedComponent.getName().equals(aComponent.getName());
+					if (sameComponent) {
+						if (originalComponent != null) {
+							throw new IllegalStateException("Already found original component: " + originalComponent);
+						}
+						originalComponent = aComponent;
+					}
+				}
+				Package originalComponentPackage = StatechartModelDerivedFeatures.getContainingPackage(originalComponent);
+				String originalComponentPackageName = originalComponentPackage.getName();
+				List<Package> originalImports = new ArrayList<Package>(originalComponentPackage.getImports());
+				
+				// Adjusting mutation model
+				mutatedModel.setName(originalComponentPackageName);
+				mutatedModel.getImports().clear();
+				mutatedModel.getImports().addAll(originalImports);
+				
+				// Generate code for component
+				codeGeneration.setComponent(mutatedComponent);
+				CodeGenerationHandler handler = new CodeGenerationHandler(file);
+				String packageName = project.getName();
+				handler.execute(codeGeneration, packageName);
+				project.build(IncrementalProjectBuilder.INCREMENTAL_BUILD, new NullProgressMonitor());
+				
+				// Reinstating original mutation model
+				mutatedModel.setName(mutatedPackageName);
+				mutatedModel.getImports().clear();
+				mutatedModel.getImports().addAll(mutantImports);
+				
+				// Running tests to see if mutant can be killed
+				// java -jar C:\Users\grben\git\gamma\plugins\mutation\mutation-bin\junit-platform-console-standalone-1.9.3.jar -cp bin -c hu.bme.mit.gamma.tutorial.finish.tutorial.ExecutionTraceSimulation5 -c hu.bme.mit.gamma.tutorial.finish.tutorial.ExecutionTraceSimulation7
+				String jUnit = System.getenv(ENVIRONMENT_VARIABLE_FOR_JUNIT_JAR);
+				String binFolderName = "bin";
+				String binFolderPath = projectLocation + File.separator + binFolderName;
+				File binFolder = new File(binFolderPath);
+				List<File> binFiles = fileUtil.getAllContainedFiles(binFolder);
+				
+				List<String> commandElements = new ArrayList<String>(
+						List.of("java", "-jar", jUnit, "-cp", binFolderPath));
+				final String CLASS_ENDING = ".class";
+				for (String binFilePath : binFiles.stream()
+							.map(it -> it.getAbsolutePath())
+							.filter(it -> it.matches(testFilePattern) && it.endsWith(CLASS_ENDING) && !it.contains("$")).toList()) {
+					String javaClassName = binFilePath.substring(1 + binFolderPath.length())
+								.replaceAll("\\\\", ".").replaceAll("/", ".");
+					javaClassName = javaClassName.substring(0,
+							javaClassName.length() - CLASS_ENDING.length());
+					
+					commandElements.addAll(
+							List.of("-c", javaClassName));
+				}
+				String[] command = commandElements.stream().toArray(String[] ::new);
+				Runtime runtime = Runtime.getRuntime();
+				Process jUnitProcess = runtime.exec(command);
+				
+				Scanner jUnitOutput = new Scanner(jUnitProcess.getInputStream());
+				
+				ScannerLogger logger = new ScannerLogger(jUnitOutput, "Failures (", false);
+				logger.start();
+				logger.join();
+				
+				if (logger.isError()) {
+					unnecessaryMutations.add(mutatedModel);
+				}
+				
+				// Restoring original code
+				codeGeneration.setComponent(originalComponent);
+				handler.execute(codeGeneration, packageName);
+			}
+		}
+		
+		return unnecessaryMutations;
 	}
 	
 	//

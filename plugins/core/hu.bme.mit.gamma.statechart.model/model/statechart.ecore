@@ -148,6 +148,7 @@
         eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="OnCycleTrigger" eSuperTypes="interface.ecore#//SimpleTrigger"/>
+  <eClassifiers xsi:type="ecore:EClass" name="MutantAnnotation" eSuperTypes="interface.ecore#//ComponentAnnotation"/>
   <eClassifiers xsi:type="ecore:EClass" name="StatechartAnnotation" abstract="true"
       eSuperTypes="interface.ecore#//ComponentAnnotation"/>
   <eClassifiers xsi:type="ecore:EClass" name="RunUponExternalEventAnnotation" eSuperTypes="#//StatechartAnnotation"/>

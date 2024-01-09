@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -518,9 +518,18 @@ class LowlevelToXstsTransformer {
 				if (lowlevelTimeoutVariable.notOptimizable) {
 					val xStsVariable = createVariableDeclaration => [
 						it.name = lowlevelTimeoutVariable.name.variableName
-						it.type = lowlevelTimeoutVariable.type.transformType
-						it.expression = lowlevelTimeoutVariable.expression.transformExpression // Timeouts are initially true
 					]
+					val expression = lowlevelTimeoutVariable.expression
+					if (expression !== null) {
+						xStsVariable.type = lowlevelTimeoutVariable.type.transformType
+						xStsVariable.expression = expression.transformExpression // Timeouts are initially true
+					}
+					else { // Expression is null, i.e., timeout declaration is not started, always true 
+						// Theoretically, this variable is not referenced anywhere
+						xStsVariable.type = createBooleanTypeDefinition
+						xStsVariable.expression = createTrueExpression
+					}
+					
 					xSts.variableDeclarations += xStsVariable // Target model modification
 					trace.put(lowlevelTimeoutVariable, xStsVariable) // Tracing
 					xStsVariable.addClockAnnotation 

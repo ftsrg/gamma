@@ -115,6 +115,7 @@ import hu.bme.mit.gamma.statechart.statechart.ForkState;
 import hu.bme.mit.gamma.statechart.statechart.InitialState;
 import hu.bme.mit.gamma.statechart.statechart.JoinState;
 import hu.bme.mit.gamma.statechart.statechart.MergeState;
+import hu.bme.mit.gamma.statechart.statechart.MutantAnnotation;
 import hu.bme.mit.gamma.statechart.statechart.OnCycleTrigger;
 import hu.bme.mit.gamma.statechart.statechart.PortEventReference;
 import hu.bme.mit.gamma.statechart.statechart.PseudoState;
@@ -3502,6 +3503,10 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	public static ScenarioAllowedWaitAnnotation getScenarioAllowedWaitAnnotation(
 			StatechartDefinition statechart) {
 		return getStatechartAnnotation(statechart, ScenarioAllowedWaitAnnotation.class);
+	}
+	
+	public static boolean isMutant(Component component) {
+		return getComponentAnnotation(component, MutantAnnotation.class) != null;
 	}
 	
 	public static boolean isWrapperComponent(Component component) {

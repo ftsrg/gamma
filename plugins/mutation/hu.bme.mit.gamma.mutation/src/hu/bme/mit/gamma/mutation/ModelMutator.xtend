@@ -24,6 +24,7 @@ import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.Transition
+import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.util.GammaRandom
 import java.util.Collection
@@ -77,6 +78,7 @@ class ModelMutator {
 	
 	protected final Random random = new Random
 	
+	protected final extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	
 	//
@@ -94,7 +96,7 @@ class ModelMutator {
 	
 	def execute(Component component) {
 		if (component instanceof StatechartDefinition) {
-			component.execute
+			component.executeOnStatechart
 		}
 		else if (component instanceof CompositeComponent) {
 			
@@ -104,12 +106,14 @@ class ModelMutator {
 	def executeOnStatechart(Component component) {
 		if (component instanceof StatechartDefinition) {
 			component.execute
+			component.addMutantAnnotation
 		}
 		else if (component instanceof CompositeComponent) {
 			val statecharts = component.selfOrAllContainedStatecharts
 			val statechart = statecharts.selectElementForMutation(newArrayList)
 			
 			statechart.execute
+			statechart.addMutantAnnotation
 		}
 	}
 	

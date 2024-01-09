@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -15,6 +15,7 @@ import java.io.FileWriter
 import java.util.AbstractMap
 import java.util.ArrayList
 import java.util.Collections
+import java.util.List
 import java.util.Map
 import java.util.Scanner
 import javax.xml.XMLConstants
@@ -80,6 +81,26 @@ class FileUtil {
 	
 	def toPath(String packageName) {
 		return packageName.replaceAll("\\.", "\\"+ File.separator)
+	}
+	
+	def List<File> getAllContainedFiles(File file) {
+		val files = newArrayList
+		
+		if (files !== null) {
+			val containedFiles = file.listFiles
+			if (containedFiles !== null) {
+				for (containedFile : containedFiles) {
+					if (containedFile.file) {
+						files += containedFile
+					}
+					else if (containedFile.directory) {
+						files += containedFile.allContainedFiles
+					}
+				}
+			}
+		}
+		
+		return files
 	}
 	
 	def getFile(IFile file) {

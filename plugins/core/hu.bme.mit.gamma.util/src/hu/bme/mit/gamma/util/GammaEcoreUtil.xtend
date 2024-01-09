@@ -668,7 +668,8 @@ class GammaEcoreUtil {
 					new Path(uriString)).location.toString
 			}
 		}
-		return new File(URI.decode(location))
+		return new File(
+			URI.decode(location))
 	}
 	
 	def getWorkspace() {

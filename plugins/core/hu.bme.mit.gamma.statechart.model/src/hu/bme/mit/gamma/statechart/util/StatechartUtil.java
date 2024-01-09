@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -827,6 +827,10 @@ public class StatechartUtil extends ActionUtil {
 	
 	public void addRunUponExternalEventAnnotation(Component component) {
 		addAnnotation(component, statechartFactory.createRunUponExternalEventAnnotation());
+	}
+	
+	public void addMutantAnnotation(Component component) {
+		addAnnotation(component, statechartFactory.createMutantAnnotation());
 	}
 	
 	// Statechart element creators

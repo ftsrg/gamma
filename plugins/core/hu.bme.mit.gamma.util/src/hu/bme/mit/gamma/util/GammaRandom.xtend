@@ -26,9 +26,10 @@ class GammaRandom {
 	def <T extends EObject> selectBasedOnInvertedFrequency(Map<T, Integer> frequencies) {
 		val probabilities = newHashMap
 		
+		val EPSILON = 0.0001 // To counter 0 values
 		for (element : frequencies.keySet) {
-			val frequency = frequencies.get(element) as double
-			val invertedFrequency = 1 / frequency
+			val frequency = frequencies.get(element)
+			val invertedFrequency = 1 / (frequency + EPSILON)
 			
 			probabilities += element -> invertedFrequency
 		}
