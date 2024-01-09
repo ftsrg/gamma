@@ -490,7 +490,9 @@ MutationBasedTestGeneration returns MutationBasedTestGeneration:
 			'mutation-count' ':' iterationCount=Expression |
 			'base-package' ':' packageName+=STRING | // Java base package
 			'language' ':' programmingLanguages+=ProgrammingLanguage |
-			'test-folder' ':' testFolder+=STRING
+			'test-folder' ':' testFolder+=STRING |
+			'trace-folder' ':' traceFolders+=STRING |
+			'test-class-name-pattern' ':' testClassNamePattern=STRING
 		)*
 	'}'
 ;

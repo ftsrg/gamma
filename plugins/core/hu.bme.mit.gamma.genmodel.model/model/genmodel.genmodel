@@ -234,6 +234,8 @@
     </genClasses>
     <genClasses ecoreClass="genmodel.ecore#//MutationBasedTestGeneration">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference genmodel.ecore#//MutationBasedTestGeneration/analysisModelTransformation"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//MutationBasedTestGeneration/traceFolders"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//MutationBasedTestGeneration/testClassNamePattern"/>
     </genClasses>
   </genPackages>
 </genmodel:GenModel>

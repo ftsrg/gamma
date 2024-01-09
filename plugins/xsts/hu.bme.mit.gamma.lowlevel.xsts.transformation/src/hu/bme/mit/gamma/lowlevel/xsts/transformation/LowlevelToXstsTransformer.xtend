@@ -517,18 +517,14 @@ class LowlevelToXstsTransformer {
 				val lowlevelTimeoutVariable = it.timeout
 				if (lowlevelTimeoutVariable.notOptimizable) {
 					val xStsVariable = createVariableDeclaration => [
+						it.type = lowlevelTimeoutVariable.type.transformType
 						it.name = lowlevelTimeoutVariable.name.variableName
 					]
 					val expression = lowlevelTimeoutVariable.expression
-					if (expression !== null) {
-						xStsVariable.type = lowlevelTimeoutVariable.type.transformType
-						xStsVariable.expression = expression.transformExpression // Timeouts are initially true
-					}
-					else { // Expression is null, i.e., timeout declaration is not started, always true 
-						// Theoretically, this variable is not referenced anywhere
-						xStsVariable.type = createBooleanTypeDefinition
-						xStsVariable.expression = createTrueExpression
-					}
+					xStsVariable.expression =  (expression !== null) ?
+						expression.transformExpression : // Timeouts are initially true
+						0.toIntegerLiteral // Expression is null, i.e., timeout declaration is not started, always true 
+						// Theoretically, this variable is not referenced anywhere in this case
 					
 					xSts.variableDeclarations += xStsVariable // Target model modification
 					trace.put(lowlevelTimeoutVariable, xStsVariable) // Tracing

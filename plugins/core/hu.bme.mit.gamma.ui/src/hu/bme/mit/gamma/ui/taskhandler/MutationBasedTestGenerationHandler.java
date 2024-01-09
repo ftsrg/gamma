@@ -30,6 +30,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.resource.Resource;
 
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.InequalityExpression;
@@ -81,7 +82,8 @@ public class MutationBasedTestGenerationHandler extends TaskHandler {
 	protected ProgrammingLanguage programmingLanguage;
 	
 	//
-	final String ENVIRONMENT_VARIABLE_FOR_JUNIT_JAR = "JUNIT";
+	protected final String ENVIRONMENT_VARIABLE_FOR_JUNIT_JAR = "JUNIT";
+	protected final int MAX_TEST_RUN = 10;
 	//
 	protected final PropertyUtil propertyUtil = PropertyUtil.INSTANCE;
 	protected final ExecutionTraceSerializer traceSerializer = ExecutionTraceSerializer.INSTANCE;
@@ -125,9 +127,8 @@ public class MutationBasedTestGenerationHandler extends TaskHandler {
 		
 		// Heuristics
 		MutationHeuristics mutationHeuristics = new MutationHeuristics();
-		String traceFolderName = "trace"; // TODO make it customizable
-		if (traceFolderName != null) {
-			String traceFolderPath = projectLocation + File.separator + traceFolderName;
+		List<String> traceFolderPaths = mutationBasedTestGeneration.getTraceFolders();
+		for (String traceFolderPath : traceFolderPaths) { // May be empty
 			File traceFolder = new File(traceFolderPath);
 			calculateTraceMetrics(traceFolder, mutationHeuristics.getStateFrequency());
 		}
@@ -136,11 +137,12 @@ public class MutationBasedTestGenerationHandler extends TaskHandler {
 		ModelMutationHandler modelMutationHandler =  new ModelMutationHandler(file, mutationHeuristics);
 		List<Package> mutatedModels = modelMutationHandler.getMutatedModels();
 		
-		final String testFileNamePattern = ".*TraceSimulation[0-9]*.*"; // TODO
+		final String testFileNamePattern = mutationBasedTestGeneration.getTestClassNamePattern(); // E.g., ".*TraceSimulation[0-9]*.*"
 		Collection<Package> unnecessaryMutants = new ArrayList<Package>();
 		Collection<Package> checkedMutants = new LinkedHashSet<Package>();
 		
 		// Checking if present tests kill any of the mutants
+		int k = 0;
 		do {
 			unnecessaryMutants.clear();
 			modelMutationHandler.execute(modelMutation);
@@ -152,11 +154,13 @@ public class MutationBasedTestGenerationHandler extends TaskHandler {
 							component, checkableMutants, testFileNamePattern));
 			checkedMutants.addAll(checkableMutants);
 			int unnecessaryMutantCount = unnecessaryMutants.size();
+			logger.info("Found " + unnecessaryMutantCount + " mutants killed by existing tests in iteration " + k);
 			
 			mutatedModels.removeAll(unnecessaryMutants); // Tests already kill these mutants
 			modelMutationHandler.setMutationIteration(unnecessaryMutantCount); // Generate new ones for these
+			k++;
 		}
-		while (!unnecessaryMutants.isEmpty());
+		while (!unnecessaryMutants.isEmpty() && k < MAX_TEST_RUN);
 		//
 		
 		int i = 0;
@@ -380,7 +384,8 @@ public class MutationBasedTestGenerationHandler extends TaskHandler {
 				CodeGenerationHandler handler = new CodeGenerationHandler(file);
 				String packageName = project.getName();
 				handler.execute(codeGeneration, packageName);
-				project.build(IncrementalProjectBuilder.INCREMENTAL_BUILD, new NullProgressMonitor());
+				project.build(IncrementalProjectBuilder.FULL_BUILD,
+						"org.eclipse.jdt.core.javabuilder", null, new NullProgressMonitor());
 				
 				// Reinstating original mutation model
 				mutatedModel.setName(mutatedPackageName);
@@ -426,6 +431,8 @@ public class MutationBasedTestGenerationHandler extends TaskHandler {
 				// Restoring original code
 				codeGeneration.setComponent(originalComponent);
 				handler.execute(codeGeneration, packageName);
+				project.build(IncrementalProjectBuilder.INCREMENTAL_BUILD,
+						"org.eclipse.jdt.core.javabuilder", null, new NullProgressMonitor());
 			}
 		}
 		
@@ -467,6 +474,11 @@ public class MutationBasedTestGenerationHandler extends TaskHandler {
 	
 	private void setModelBasedMutationTestGeneration(
 			MutationBasedTestGeneration mutationBasedTestGeneration) {
+		Resource resource = mutationBasedTestGeneration.eResource();
+		File javaFile = (resource != null) ?
+				ecoreUtil.getFile(resource).getParentFile() : // If Verification is contained in a resource
+					fileUtil.toFile(super.file).getParentFile(); // If Verification is created in Java
+		
 		List<String> fileNames = mutationBasedTestGeneration.getFileName();
 		checkArgument(fileNames.size() <= 1);
 		if (fileNames.isEmpty()) {
@@ -478,6 +490,10 @@ public class MutationBasedTestGenerationHandler extends TaskHandler {
 			String fileName = getNameWithoutExtension(containingFileName);
 			fileNames.add(fileName);
 		}
+		// Setting the file path
+		List<String> traceFolders = mutationBasedTestGeneration.getTraceFolders();
+		traceFolders.replaceAll(it -> fileUtil.exploreRelativeFile(javaFile, it).toString());
+		
 		List<String> packageNames = mutationBasedTestGeneration.getPackageName();
 		List<String> testFolders = mutationBasedTestGeneration.getTestFolder();
 		checkArgument(packageNames.size() <= 1);

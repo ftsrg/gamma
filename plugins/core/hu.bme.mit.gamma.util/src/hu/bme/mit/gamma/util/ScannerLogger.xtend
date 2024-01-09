@@ -79,6 +79,7 @@ class ScannerLogger implements Runnable {
 			}
 			if (printLines) {
 				logger.info(line)
+//				println(line)
 			}
 		}
 	}
