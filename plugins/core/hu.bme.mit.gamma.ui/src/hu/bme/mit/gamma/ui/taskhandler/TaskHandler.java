@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2019-2023 Contributors to the Gamma project
+ * Copyright (c) 2019-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -35,6 +35,7 @@ import hu.bme.mit.gamma.genmodel.model.TraceGeneration;
 import hu.bme.mit.gamma.genmodel.model.Verification;
 import hu.bme.mit.gamma.property.language.ui.serializer.PropertyLanguageSerializer;
 import hu.bme.mit.gamma.property.model.PropertyPackage;
+import hu.bme.mit.gamma.property.util.PropertyUtil;
 import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.statechart.language.ui.serializer.StatechartLanguageSerializer;
 import hu.bme.mit.gamma.trace.language.ui.serializer.TraceLanguageSerializer;
@@ -51,6 +52,7 @@ public abstract class TaskHandler {
 	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
 	protected final JavaUtil javaUtil = JavaUtil.INSTANCE;
 	protected final FileUtil fileUtil = FileUtil.INSTANCE;
+	protected final PropertyUtil propertyUtil = PropertyUtil.INSTANCE;
 	protected final ExpressionEvaluator expressionEvaluator = ExpressionEvaluator.INSTANCE;
 	
 	protected final GammaFileNamer fileNamer = GammaFileNamer.INSTANCE;

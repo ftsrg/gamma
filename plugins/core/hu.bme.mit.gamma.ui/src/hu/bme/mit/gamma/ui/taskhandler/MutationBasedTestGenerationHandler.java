@@ -94,7 +94,7 @@ public class MutationBasedTestGenerationHandler extends TaskHandler {
 	}
 	
 	public void execute(MutationBasedTestGeneration mutationBasedTestGeneration)
-			throws IOException, InterruptedException, CoreException {
+				throws IOException, InterruptedException, CoreException {
 		// Setting target folder
 		setProjectLocation(mutationBasedTestGeneration); // Before the target folder
 		setTargetFolder(mutationBasedTestGeneration);
@@ -116,16 +116,17 @@ public class MutationBasedTestGenerationHandler extends TaskHandler {
 		Component component = (Component) GenmodelDerivedFeatures.getModel(model);
 		
 		Expression mutationCount = mutationBasedTestGeneration.getIterationCount();
+		int iterationCount = expressionEvaluator.evaluateInteger(mutationCount);
 		ModelMutation modelMutation = factory.createModelMutation();
 		modelMutation.setModel(
 				ecoreUtil.clone(model));
 		modelMutation.setIterationCount(
-				ecoreUtil.clone(mutationCount));
+				propertyUtil.toIntegerLiteral(1)); // Generating mutants one by one
 		List<String> mutationTargetFolders = modelMutation.getTargetFolder();
 		mutationTargetFolders.clear();
 		mutationTargetFolders.add(targetFolder);
 		
-		// Heuristics
+		// Heuristics computation if specified
 		MutationHeuristics mutationHeuristics = new MutationHeuristics();
 		Map<State, Integer> stateFrequency = mutationHeuristics.getStateFrequency();
 		List<String> traceFolderPaths = mutationBasedTestGeneration.getTraceFolders();
@@ -136,38 +137,40 @@ public class MutationBasedTestGenerationHandler extends TaskHandler {
 			}
 		}
 		
-		// TODO Could be put into a cycle to support mutation based on generated tests
+		// In a cycle to support mutation based on generated tests
 		ModelMutationHandler modelMutationHandler =  new ModelMutationHandler(file, mutationHeuristics);
-		List<Package> mutatedModels = modelMutationHandler.getMutatedModels();
-		
-		final String testFileNamePattern = mutationBasedTestGeneration.getTestClassNamePattern(); // E.g., ".*TraceSimulation[0-9]*.*"
-		Collection<Package> unnecessaryMutants = new ArrayList<Package>();
-		Collection<Package> checkedMutants = new LinkedHashSet<Package>();
-		
-		// Checking if present tests kill any of the mutants
-		int k = 0;
-		do {
-			unnecessaryMutants.clear();
-			modelMutationHandler.execute(modelMutation);
+		for (int i = 0; i < iterationCount; i++) {
+			List<Package> mutatedModels = modelMutationHandler.getMutatedModels();
 			
-			Collection<Package> checkableMutants = new LinkedHashSet<Package>(mutatedModels);
-			checkableMutants.removeAll(checkedMutants); // To prevent unnecessary testing
-			unnecessaryMutants.addAll(
-					killMutantsWithExistingTests(
-							component, checkableMutants, testFileNamePattern));
-			checkedMutants.addAll(checkableMutants);
-			int unnecessaryMutantCount = unnecessaryMutants.size();
-			logger.info("Found " + unnecessaryMutantCount + " mutants killed by existing tests in iteration " + k);
+			final String testFileNamePattern = mutationBasedTestGeneration.getTestClassNamePattern(); // E.g., ".*TraceSimulation[0-9]*.*"
+			Collection<Package> unnecessaryMutants = new ArrayList<Package>();
+			Collection<Package> checkedMutants = new LinkedHashSet<Package>();
 			
-			mutatedModels.removeAll(unnecessaryMutants); // Tests already kill these mutants
-			modelMutationHandler.setMutationIteration(unnecessaryMutantCount); // Generate new ones for these
-			k++;
-		}
-		while (!unnecessaryMutants.isEmpty() && k < MAX_TEST_RUN);
-		//
+			// Checking if present tests kill any of the mutants
+			int testRunCount = 0;
+			do {
+				unnecessaryMutants.clear();
+				modelMutationHandler.execute(modelMutation);
+				
+				Collection<Package> checkableMutants = new LinkedHashSet<Package>(mutatedModels);
+				checkableMutants.removeAll(checkedMutants); // To prevent unnecessary testing
+				unnecessaryMutants.addAll(
+						killMutantsWithExistingTests(
+								component, checkableMutants, testFileNamePattern));
+				checkedMutants.addAll(checkableMutants);
+				int unnecessaryMutantCount = unnecessaryMutants.size();
+				logger.info("Found " + unnecessaryMutantCount + " mutants killed by existing tests in iteration " + testRunCount);
+				
+				mutatedModels.removeAll(unnecessaryMutants); // Tests already kill these mutants
+				modelMutationHandler.setMutationIteration(unnecessaryMutantCount); // Generate new ones for these
+				testRunCount++;
+			}
+			while (!unnecessaryMutants.isEmpty() && testRunCount < MAX_TEST_RUN);
+			// End of mutant check based on already generated tests
+			//
 		
-		int i = 0;
-		for (Package mutatedModel : mutatedModels) {
+			// Generating test based on the newly generated mutant
+			Package mutatedModel = javaUtil.getOnlyElement(mutatedModels);
 			// Handling these packages as if they were not unfolded (as the original component is not) 
 			mutatedModel.getAnnotations().removeIf(it -> it instanceof UnfoldedPackageAnnotation);
 			ecoreUtil.save(mutatedModel);
@@ -223,7 +226,7 @@ public class MutationBasedTestGenerationHandler extends TaskHandler {
 			ecoreUtil.change(originalInputPorts, mutantInputPorts, compositeOriginal);
 			
 			Package newMergedPackage = propertyUtil.wrapIntoPackageAndAddImports(compositeOriginal);
-			String newFileName = fileName + "_Mutant_" + (i++);
+			String newFileName = fileName + "_Mutant_" + i;
 			String newPackageFileName = fileUtil.toHiddenFileName(
 					fileNamer.getPackageFileName(newFileName));
 			
