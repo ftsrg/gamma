@@ -79,9 +79,13 @@ public class ModelMutationHandler extends TaskHandler {
 			String componentName = clonedNewTopComponent.getName();
 			clonedNewTopComponent.setName(componentName + "Mutant");
 			
-			mutator.executeOnStatechart(clonedNewTopComponent);
 			serializer.saveModel(clonedNewPackage, targetFolderUri,
 					fileNamer.getUnfoldedPackageFileName(fileName + "_Mutant_" + i));
+			
+			mutator.executeOnStatechart(clonedNewTopComponent);
+			
+			ecoreUtil.save(clonedNewPackage);
+			
 			mutatedModels.add(clonedNewPackage);
 		}
 	}

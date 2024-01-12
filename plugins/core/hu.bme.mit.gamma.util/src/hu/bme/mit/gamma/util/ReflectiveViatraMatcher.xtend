@@ -13,16 +13,49 @@ package hu.bme.mit.gamma.util
 import java.io.File
 import java.net.URLClassLoader
 import java.util.Collection
+import org.eclipse.emf.ecore.EObject
+import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.viatra.query.runtime.api.IPatternMatch
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
+import org.eclipse.viatra.query.runtime.emf.EMFScope
 
 class ReflectiveViatraMatcher {
 	// Singleton
 	public static final ReflectiveViatraMatcher INSTANCE = new ReflectiveViatraMatcher
 	protected new() {}
 	//
-	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
+	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	//
+	
+	def queryAndMapMatches(EObject object,
+			ClassLoader classLoader, String fqnOfPattern, String binUri) {
+		val elements = newLinkedHashSet
+		
+		val matches = object.queryMatches(classLoader, fqnOfPattern, binUri)
+		for (match : matches) {
+			val parameters = match.parameterNames
+			for (parameter : parameters) {
+				val element = match.get(parameter)
+				elements += element
+			}
+		}
+		
+		return elements
+	}
+	
+	def queryMatches(EObject object,
+			ClassLoader classLoader, String fqnOfPattern, String binUri) {
+		val root = object.root
+		val resource = root.eResource
+		return resource.queryMatches(classLoader, fqnOfPattern, binUri)
+	}
+	
+	def queryMatches(Resource resource,
+			ClassLoader classLoader, String fqnOfPattern, String binUri) {
+		val engine = ViatraQueryEngine.on(
+			new EMFScope(resource))
+		return engine.queryMatches(classLoader, fqnOfPattern, binUri)
+	}
 	
 	def queryMatches(ViatraQueryEngine engine,
 			ClassLoader classLoader, String fqnOfPattern, String binUri) {
@@ -31,6 +64,8 @@ class ReflectiveViatraMatcher {
 		
 		return queryMatches
 	}
+	
+	//
 
 	def Class<?> loadPatternMatcherClass(ClassLoader classLoader,
 			String fqnOfPattern, String binUri) {

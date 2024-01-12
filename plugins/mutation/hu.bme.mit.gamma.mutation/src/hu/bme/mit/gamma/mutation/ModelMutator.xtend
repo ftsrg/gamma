@@ -27,6 +27,7 @@ import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.util.GammaRandom
+import hu.bme.mit.gamma.util.ReflectiveViatraMatcher
 import java.util.Collection
 import java.util.List
 import java.util.Map
@@ -432,9 +433,13 @@ class ModelMutator {
 	static class MutationHeuristics {
 		//
 		protected final Map<State, Integer> stateFrequency = newHashMap
+		protected final Collection<String> patternClassNames = newArrayList
+		protected final Collection<EObject> matchedObjects = newLinkedHashSet
+		protected final String binUri
 	
 		protected final Random random = new Random
 		protected final GammaRandom gammaRandom = GammaRandom.INSTANCE
+		protected final ReflectiveViatraMatcher matcher = ReflectiveViatraMatcher.INSTANCE
 	
 		protected final extension Logger logger = Logger.getLogger("GammaLogger")
 		//
@@ -444,9 +449,22 @@ class ModelMutator {
 		}
 		
 		new(Map<? extends State, Integer> stateFrequency) {
+			this (stateFrequency, #[], "")
+		}
+		
+		new(Collection<String> patternClassNames, String binUri) {
+			this(null, patternClassNames, binUri)
+		}
+		
+		new(Map<? extends State, Integer> stateFrequency,
+				Collection<String> patternClassNames, String binUri) {
 			if (stateFrequency !== null) {
 				this.stateFrequency += stateFrequency
 			}
+			if (!patternClassNames.nullOrEmpty) {
+				this.patternClassNames += patternClassNames
+			}
+			this.binUri = binUri
 		}
 		
 		//
@@ -467,12 +485,21 @@ class ModelMutator {
 			return object
 		}
 		
+		def <T extends EObject> selectMatchedElementRandomly(List<? extends T> objects) {
+			val matchedObjects = objects.filterMatchedObjects
+			val object = matchedObjects.selectRandom
+			
+			return object
+		}
+		
 		def <T extends EObject> selectLessFrequentRandomly(List<? extends T> objects) {
 			if (stateFrequency.empty) {
 				return objects.selectRandom
 			}
 			
-			val stateNodes = objects.map[it.selfOrContainingOrSourceStateNode].toList
+			val stateNodes = objects
+					.filterMatchedObjects // Pattern-based filter
+					.map[it.selfOrContainingOrSourceStateNode].toList
 			val states = stateNodes.filter(State) // Considering only states: elements can be discarded
 			
 			val frequencies = newHashMap
@@ -493,6 +520,34 @@ class ModelMutator {
 			logger.info("Selected " + object + " based on frequency calculation")
 			
 			return object
+		}
+		
+		//
+		
+		protected def <T extends EObject> filterMatchedObjects(List<? extends T> objects) {
+			if (objects.nullOrEmpty || patternClassNames.nullOrEmpty) {
+				return objects
+			}
+			
+			if (matchedObjects.empty) {
+				// Querying the matches
+				val head = objects.head
+				head.computeMatches
+			}
+			
+			val filteredObjects = newArrayList
+			filteredObjects += objects
+			filteredObjects.retainAll(matchedObjects)
+			
+			return filteredObjects
+		}
+		
+		protected def computeMatches(EObject resourceObject) {
+			for (patternClassName : patternClassNames) {
+				val objects = matcher.queryAndMapMatches(resourceObject, this.class.classLoader,
+						patternClassName, binUri)
+				matchedObjects += objects.filter(EObject)
+			}
 		}
 		
 		//
