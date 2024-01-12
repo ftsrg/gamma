@@ -323,6 +323,8 @@
   <eClassifiers xsi:type="ecore:EClass" name="ModelMutation" eSuperTypes="#//Task">
     <eStructuralFeatures xsi:type="ecore:EReference" name="model" lowerBound="1" eType="#//ModelReference"
         containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="patternClassNames" upperBound="-1"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="MutationBasedTestGeneration" eSuperTypes="#//AbstractComplementaryTestGeneration">
     <eStructuralFeatures xsi:type="ecore:EReference" name="analysisModelTransformation"
@@ -330,5 +332,7 @@
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="traceFolders" upperBound="-1"
         eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="testClassNamePattern" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="patternClassNames" upperBound="-1"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
 </ecore:EPackage>

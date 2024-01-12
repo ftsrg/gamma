@@ -131,6 +131,10 @@ public abstract class TaskHandler {
 		return targetFolderUri;
 	}
 	
+	public String getBinUri() {
+		return projectLocation + File.separator + "bin";
+	}
+	
 	public void setProjectLocation(AbstractCodeGeneration codeGeneration) {
 		List<String> projectNames = codeGeneration.getProjectName();
 		

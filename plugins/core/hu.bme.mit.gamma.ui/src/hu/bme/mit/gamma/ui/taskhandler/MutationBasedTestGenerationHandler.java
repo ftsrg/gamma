@@ -106,7 +106,6 @@ public class MutationBasedTestGenerationHandler extends TaskHandler {
 				mutationBasedTestGeneration.getTargetFolder());
 		String fileName = javaUtil.getOnlyElement(
 				mutationBasedTestGeneration.getFileName());
-		final String binUri = projectLocation + File.separator + "bin";
 		
 		AnalysisModelTransformation analysisModelTransformation = mutationBasedTestGeneration.getAnalysisModelTransformation();
 		List<String> analysisTargetFolders = analysisModelTransformation.getTargetFolder();
@@ -128,10 +127,10 @@ public class MutationBasedTestGenerationHandler extends TaskHandler {
 		mutationTargetFolders.add(targetFolder);
 		
 		// Heuristics computation if specified
-		List<String> patternClassNames = List.of(); // TODO
+		List<String> patternClassNames = mutationBasedTestGeneration.getPatternClassNames();
 		MutationHeuristics mutationHeuristics = patternClassNames.isEmpty() ?
 				new MutationHeuristics() :
-				new MutationHeuristics(patternClassNames, binUri);
+				new MutationHeuristics(patternClassNames, getBinUri());
 		
 		Map<State, Integer> stateFrequency = mutationHeuristics.getStateFrequency();
 		List<String> traceFolderPaths = mutationBasedTestGeneration.getTraceFolders();

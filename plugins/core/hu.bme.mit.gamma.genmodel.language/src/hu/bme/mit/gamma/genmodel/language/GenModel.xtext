@@ -475,7 +475,8 @@ ModelMutation returns ModelMutation:
 		(
 			'folder' ':' targetFolder+=STRING |
 			'file' ':' fileName+=STRING |
-			'mutation-count' ':' iterationCount=Expression
+			'mutation-count' ':' iterationCount=Expression |
+			'pattern-class-name' ':' patternClassNames+=STRING
 		)*
 	'}'
 ;
@@ -492,7 +493,8 @@ MutationBasedTestGeneration returns MutationBasedTestGeneration:
 			'language' ':' programmingLanguages+=ProgrammingLanguage |
 			'test-folder' ':' testFolder+=STRING |
 			'trace-folder' ':' traceFolders+=STRING |
-			'test-class-name-pattern' ':' testClassNamePattern=STRING
+			'test-class-name-pattern' ':' testClassNamePattern=STRING |
+			'pattern-class-name' ':' patternClassNames+=STRING
 		)*
 	'}'
 ;

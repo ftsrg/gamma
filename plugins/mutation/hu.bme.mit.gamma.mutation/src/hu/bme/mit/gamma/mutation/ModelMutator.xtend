@@ -435,7 +435,7 @@ class ModelMutator {
 		protected final Map<State, Integer> stateFrequency = newHashMap
 		protected final Collection<String> patternClassNames = newArrayList
 		protected final Collection<EObject> matchedObjects = newLinkedHashSet
-		protected final String binUri
+		protected String binUri
 	
 		protected final Random random = new Random
 		protected final GammaRandom gammaRandom = GammaRandom.INSTANCE
@@ -538,6 +538,7 @@ class ModelMutator {
 			val filteredObjects = newArrayList
 			filteredObjects += objects
 			filteredObjects.retainAll(matchedObjects)
+			logger.info("Filtered unmatched elements")
 			
 			return filteredObjects
 		}
@@ -554,6 +555,18 @@ class ModelMutator {
 		
 		def getStateFrequency() {
 			return this.stateFrequency
+		}
+		
+		def getPatternClassNames() {
+			return this.patternClassNames
+		}
+		
+		def getBinUri() {
+			return binUri
+		}
+		
+		def setBinUri(String binUri) {
+			this.binUri = binUri
 		}
 		
 	}

@@ -231,11 +231,13 @@
     </genClasses>
     <genClasses ecoreClass="genmodel.ecore#//ModelMutation">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference genmodel.ecore#//ModelMutation/model"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//ModelMutation/patternClassNames"/>
     </genClasses>
     <genClasses ecoreClass="genmodel.ecore#//MutationBasedTestGeneration">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference genmodel.ecore#//MutationBasedTestGeneration/analysisModelTransformation"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//MutationBasedTestGeneration/traceFolders"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//MutationBasedTestGeneration/testClassNamePattern"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//MutationBasedTestGeneration/patternClassNames"/>
     </genClasses>
   </genPackages>
 </genmodel:GenModel>

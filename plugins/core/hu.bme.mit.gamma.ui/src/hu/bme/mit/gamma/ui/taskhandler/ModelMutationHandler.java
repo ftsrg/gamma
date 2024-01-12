@@ -14,6 +14,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
@@ -118,6 +119,13 @@ public class ModelMutationHandler extends TaskHandler {
 		}
 		if (mutator == null) {
 			mutator = new ModelMutator(mutationHeuristics);
+			//
+			Collection<String> patternClassNames = mutationHeuristics.getPatternClassNames();
+			patternClassNames.addAll(
+					mutation.getPatternClassNames());
+			if (mutationHeuristics.getBinUri() == null) {
+				mutationHeuristics.setBinUri(getBinUri());
+			}
 		}
 		if (mutationIteration == null) {
 			Expression mutationCount = mutation.getIterationCount();
