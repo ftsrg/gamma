@@ -12,7 +12,10 @@ package hu.bme.mit.gamma.mutation
 
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.Expression
+import hu.bme.mit.gamma.statechart.composite.Channel
 import hu.bme.mit.gamma.statechart.composite.CompositeComponent
+import hu.bme.mit.gamma.statechart.composite.PortBinding
+import hu.bme.mit.gamma.statechart.composite.SchedulableCompositeComponent
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression
 import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference
@@ -52,6 +55,8 @@ class ModelMutator {
 	
 	protected final Set<Expression> expressions = newHashSet
 	
+	protected final Set<Component> components = newHashSet
+	
 	// Mutations
 	protected final Set<Transition> transitionSourceMutations = newHashSet
 	protected final Set<Transition> transitionTargetMutations = newHashSet
@@ -72,6 +77,10 @@ class ModelMutator {
 	protected final Set<Expression> expressionChangeMutations = newHashSet // Hard to trace due to replacement
 	protected final Set<Expression> expressionInversionMutations = newHashSet
 	
+	protected final Set<Channel> channelRemoveMutations = newHashSet
+	protected final Set<Channel> channelChangeMutations = newHashSet
+	protected final Set<PortBinding> portBindingRemoveMutations = newHashSet
+	protected final Set<PortBinding> portBindingChangeMutations = newHashSet
 	//
 	
 	protected final extension ModelElementMutator modelElementMutator
@@ -100,7 +109,8 @@ class ModelMutator {
 			component.executeOnStatechart
 		}
 		else if (component instanceof CompositeComponent) {
-			
+			component.execute
+			component.addMutantAnnotation
 		}
 	}
 	
@@ -125,8 +135,8 @@ class ModelMutator {
 		do {
  			try {
  				success = true
-				val mutationType = mutationType
-				val mutationOperatorIndex = mutation
+				val mutationType = StatechartMutationType.mutationType
+				val mutationOperatorIndex = mutationOperator
 				
 				switch (mutationType) {
 					case TRANSITION_STRUCTURE: {
@@ -239,6 +249,96 @@ class ModelMutator {
 							}
 							case 1: {
 								val expression = statechart.selectExpressionForInversion
+								expression.invertExpression
+							}
+							default:
+								throw new IllegalArgumentException("Not known operator index: " + i)
+						}
+					}
+					default:
+						throw new IllegalArgumentException("Not known mutation type: " + mutationType)
+				}
+			} catch (IllegalArgumentException | IllegalStateException e) {
+				// Not mutatable model element
+				success = false
+			}
+		} while (!success)
+	}
+	
+	def execute(CompositeComponent topComposite) {
+		if (components.empty) {
+			components += topComposite.allComponents
+		}
+		
+		var success = true
+		do {
+ 			try {
+ 				success = true
+				val mutationType = CompositeComponentMutationType.mutationType
+				val mutationOperatorIndex = mutationOperator
+				
+				val composite = components
+						.filter(CompositeComponent).toList
+						.selectElement
+				
+				switch (mutationType) {
+					case COMPOSITION_STRUCTURE: {
+						val OPERATOR_COUNT = 4
+						val i = mutationOperatorIndex % OPERATOR_COUNT
+						switch (i) {
+							case 0: {
+								val channel = composite.selectChannelForRemoval
+								channel.removeChannel
+							}
+							case 1: {
+								val channel = composite.selectChannelForEndpointChange
+								channel.changeChannelEndpoint
+							}
+							case 2: {
+								val portBinding = composite.selectPortBindingForRemoval
+								portBinding.removePortBinding
+							}
+							case 3: {
+								val portBinding = composite.selectPortBindingForEndpointChange
+								portBinding.changePortBindingEndpoint
+							}
+							default:
+								throw new IllegalArgumentException("Not known operator index: " + i)
+						}
+					}
+					case COMPOSITION_DYNAMICS: {
+						val OPERATOR_COUNT = 2
+						val i = mutationOperatorIndex % OPERATOR_COUNT
+						//
+						val componentScheduleList = switch (composite) {
+							SchedulableCompositeComponent: composite.executionList.empty ?
+								composite.containedComponents : composite.executionList
+							default: composite.containedComponents
+						}
+						//
+						switch (i) {
+							case 0: {
+								componentScheduleList.moveOneElement
+							}
+							case 1: {
+								val schedulableComposite = composite as SchedulableCompositeComponent
+								checkState(componentScheduleList === schedulableComposite.executionList)
+								componentScheduleList.removeOneElement
+							}
+							default:
+								throw new IllegalArgumentException("Not known operator index: " + i)
+						}
+					}
+					case EXPRESSION_DYNAMICS: {
+						val OPERATOR_COUNT = 2
+						val i = mutationOperatorIndex % OPERATOR_COUNT
+						switch (i) {
+							case 0: {
+								val expression = composite.selectDirectlyContainedExpressionForChange
+								expression.changeExpression
+							}
+							case 1: {
+								val expression = composite.selectDirectlyContainedExpressionForInversion
 								expression.invertExpression
 							}
 							default:
@@ -372,20 +472,58 @@ class ModelMutator {
 	
 	//
 	
-	protected def selectExpressionForChange(StatechartDefinition statechart) {
+	protected def selectExpressionForChange(Component component) {
 		if (expressions.empty) {
-			expressions += statechart.getAllContentsOfType(Expression)
+			expressions += component.getAllContentsOfType(Expression)
 		}
 		val expression = expressions.selectElementForMutation(expressionChangeMutations)
 		return expression
 	}
 	
-	protected def selectExpressionForInversion(StatechartDefinition statechart) {
+	protected def selectExpressionForInversion(Component component) {
 		if (expressions.empty) {
-			expressions += statechart.getAllContentsOfType(Expression)
+			expressions += component.getAllContentsOfType(Expression)
 		}
 		val expression = expressions.selectElementForMutation(expressionInversionMutations)
 		return expression
+	}
+	
+	protected def selectDirectlyContainedExpressionForChange(Component component) {
+		val expressions = component.getContentsOfType(Expression)
+		val expression = expressions.selectElementForMutation(expressionChangeMutations)
+		return expression
+	}
+	
+	protected def selectDirectlyContainedExpressionForInversion(Component component) {
+		val expressions = component.getContentsOfType(Expression)
+		val expression = expressions.selectElementForMutation(expressionInversionMutations)
+		return expression
+	}
+	
+	//
+	
+	protected def selectChannelForRemoval(CompositeComponent composite) {
+		val channels = composite.channels
+		val channel = channels.selectElementForMutation(channelRemoveMutations)
+		return channel
+	}
+	
+	protected def selectChannelForEndpointChange(CompositeComponent composite) {
+		val channels = composite.channels
+		val channel = channels.selectElementForMutation(channelChangeMutations)
+		return channel
+	}
+	
+	protected def selectPortBindingForRemoval(CompositeComponent composite) {
+		val portBindings = composite.portBindings
+		val portBinding = portBindings.selectElementForMutation(portBindingRemoveMutations)
+		return portBinding
+	}
+	
+	protected def selectPortBindingForEndpointChange(CompositeComponent composite) {
+		val portBindings = composite.portBindings
+		val portBinding = portBindings.selectElementForMutation(portBindingChangeMutations)
+		return portBinding
 	}
 	
 	//
@@ -409,8 +547,8 @@ class ModelMutator {
 	
 	//
 	
-	protected def getMutationType() {
-		val mutationTypes = StatechartMutationType.values
+	protected def <T> getMutationType(Class<T> clazz) {
+		val mutationTypes = clazz.enumConstants
 		val mutationTypesCount = mutationTypes.length
 		val i = random.nextInt(mutationTypesCount)
 		
@@ -418,7 +556,7 @@ class ModelMutator {
 		return mutationType
 	}
 	
-	protected def getMutation() {
+	protected def getMutationOperator() {
 		val MAX = 100
 		return random.nextInt(MAX)
 	}
@@ -427,6 +565,9 @@ class ModelMutator {
 	
 	enum StatechartMutationType {
 			TRANSITION_STRUCTURE, TRANSITION_DYNAMICS, STATE_DYNAMICS, EXPRESSION_DYNAMICS }
+			
+	enum CompositeComponentMutationType {
+			COMPOSITION_STRUCTURE, COMPOSITION_DYNAMICS, EXPRESSION_DYNAMICS }
 			
 	//
 	

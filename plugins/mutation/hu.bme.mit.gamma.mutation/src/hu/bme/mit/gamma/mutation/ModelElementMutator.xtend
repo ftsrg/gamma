@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023-2023 Contributors to the Gamma project
+ * Copyright (c) 2023-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -33,6 +33,9 @@ import hu.bme.mit.gamma.expression.model.ReferenceExpression
 import hu.bme.mit.gamma.expression.model.SubtractExpression
 import hu.bme.mit.gamma.expression.model.TrueExpression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
+import hu.bme.mit.gamma.statechart.composite.Channel
+import hu.bme.mit.gamma.statechart.composite.ComponentInstance
+import hu.bme.mit.gamma.statechart.composite.PortBinding
 import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression
 import hu.bme.mit.gamma.statechart.interface_.Port
@@ -147,6 +150,15 @@ class ModelElementMutator {
 	}
 	
 	// Should be overridable
+	protected def getNewPort(Port port) {
+		val component = port.containingComponent
+		val ports = component.allPorts
+				.filter[it.interface === port.interface].toList
+		
+		return ports.selectDifferentElement(port)
+	}
+	
+	// Should be overridable
 	protected def getNewInPort(Port port) {
 		val component = port.containingComponent
 		val ports = component.allPortsWithInput
@@ -204,6 +216,15 @@ class ModelElementMutator {
 		val correctTypeParameters = parameters.filter[it.typeDefinition.helperEquals(type)].toList
 		// Array choosing could be made a bit more flexible
 		return correctTypeParameters.selectDifferentElement(parameter)
+	}
+	
+	// Should be overridable
+	protected def getNewComponentInstance(ComponentInstance instance) {
+		val component = instance.containingComponent
+		val components = component.containedComponents
+				.filter[it.derivedType.name == instance.derivedType.name].toList
+		
+		return components.selectDifferentElement(instance)
 	}
 	
 	def changePortReference(EventParameterReferenceExpression expression) {
@@ -498,6 +519,102 @@ class ModelElementMutator {
 		greater.replace(expression)
 		
 		info('''Changed «expression.eClass.name» expression''')
+	}
+		
+	//
+	
+	def <T> moveOneElement(List<T> objects) {
+		if (objects.size <= 1) {
+			return
+		}
+		
+		val oldIndex = random.nextInt(objects.size)
+		val element = objects.get(oldIndex)
+		
+		var newIndex = -1
+		do {
+			newIndex = random.nextInt(objects.size)
+		} while (oldIndex == newIndex)
+		
+		objects.set(newIndex, element)
+		
+		info('''Changed the position of «element» in its containing list''')
+	}
+	
+	def <T> removeOneElement(List<T> objects) {
+		if (objects.empty) {
+			return
+		}
+		
+		val index = random.nextInt(objects.size)
+		val object = objects.get(index)
+		objects.remove(index)
+		
+		info('''Removed element «object» from its containing list''')
+		
+	}
+	
+	def removeChannel(Channel channel) {
+		channel.remove
+		
+		info('''Removed channel from «channel.containingComponent.name»''')
+	}
+	
+	def changeChannelEndpoint(Channel channel) {
+		val providedPort = channel.providedPort
+		val requiredPorts = channel.requiredPorts
+		val providedAndRequiredPorts = (#[ providedPort ] + requiredPorts).toList
+		
+		if (random.nextBoolean) { // Changing the port
+			val selectedPort = providedAndRequiredPorts.selectElement
+			val port = selectedPort.port
+			val newPort = port.newPort // Note: this port may already be present in a channel or port binding
+			
+			selectedPort.port = newPort
+		}
+		else { // Changing the instance
+			val selectedPort = providedAndRequiredPorts.selectElement
+			val instance = selectedPort.instance
+			val newComponentInstance = instance.newComponentInstance
+			
+			selectedPort.instance = newComponentInstance // Note: this instance may already be present in a channel or port binding
+		}
+		
+		info('''Changed channel ending in «channel.containingComponent.name»''')
+	}
+	
+	def removePortBinding(PortBinding portBinding) {
+		portBinding.remove
+		
+		info('''Removed port binding from «portBinding.containingComponent.name»''')
+	}
+	
+	def changePortBindingEndpoint(PortBinding portBinding) {
+		val compositePort = portBinding.compositeSystemPort
+		val instancePort = portBinding.instancePortReference
+		val random = random.nextInt(3)
+		
+		switch (random) {
+			case 0: { // Composite port
+				val newPort = compositePort.newPort // Note: this port may already be present in a channel or port binding
+				
+				portBinding.compositeSystemPort = newPort
+			}
+			case 1: { // Instance port
+				val port = instancePort.port
+				val newPort = port.newPort // Note: this port may already be present in a channel or port binding
+				
+				instancePort.port = newPort
+			}
+			default: { // Instance
+				val instance = instancePort.instance
+				val newComponentInstance = instance.newComponentInstance
+			
+				instancePort.instance = newComponentInstance // Note: this instance may already be present in a channel or port binding
+			}
+		}
+		
+		info('''Changed port binding ending in «portBinding.containingComponent.name»''')
 	}
 	
 	//
