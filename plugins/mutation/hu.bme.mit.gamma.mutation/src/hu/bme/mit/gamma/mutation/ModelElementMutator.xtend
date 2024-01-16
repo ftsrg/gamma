@@ -555,9 +555,10 @@ class ModelElementMutator {
 	}
 	
 	def removeChannel(Channel channel) {
+		val component = channel.containingComponent
 		channel.remove
 		
-		info('''Removed channel from «channel.containingComponent.name»''')
+		info('''Removed channel from «component.name»''')
 	}
 	
 	def changeChannelEndpoint(Channel channel) {
@@ -575,18 +576,21 @@ class ModelElementMutator {
 		else { // Changing the instance
 			val selectedPort = providedAndRequiredPorts.selectElement
 			val instance = selectedPort.instance
+			val oldPort = selectedPort.port
 			val newComponentInstance = instance.newComponentInstance
 			
 			selectedPort.instance = newComponentInstance // Note: this instance may already be present in a channel or port binding
+			selectedPort.port = newComponentInstance.derivedType.allPorts.findFirst[it.name == oldPort.name]
 		}
 		
 		info('''Changed channel ending in «channel.containingComponent.name»''')
 	}
 	
 	def removePortBinding(PortBinding portBinding) {
+		val component = portBinding.containingComponent
 		portBinding.remove
 		
-		info('''Removed port binding from «portBinding.containingComponent.name»''')
+		info('''Removed port binding from «component.name»''')
 	}
 	
 	def changePortBindingEndpoint(PortBinding portBinding) {
@@ -608,9 +612,11 @@ class ModelElementMutator {
 			}
 			default: { // Instance
 				val instance = instancePort.instance
+				val oldPort = instancePort.port
 				val newComponentInstance = instance.newComponentInstance
 			
 				instancePort.instance = newComponentInstance // Note: this instance may already be present in a channel or port binding
+				instancePort.port = newComponentInstance.derivedType.allPorts.findFirst[it.name == oldPort.name]
 			}
 		}
 		

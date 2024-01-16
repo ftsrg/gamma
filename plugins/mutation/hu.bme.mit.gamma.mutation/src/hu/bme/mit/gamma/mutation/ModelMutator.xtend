@@ -82,6 +82,10 @@ class ModelMutator {
 	protected final Set<PortBinding> portBindingRemoveMutations = newHashSet
 	protected final Set<PortBinding> portBindingChangeMutations = newHashSet
 	//
+	protected boolean isElementSelectedForMutation
+	protected Collection<? extends EObject> lastModifiedMutatedElementSet
+	protected EObject lastMutatedElement
+	//
 	
 	protected final extension ModelElementMutator modelElementMutator
 	protected final MutationHeuristics mutationHeuristics
@@ -261,14 +265,17 @@ class ModelMutator {
 			} catch (IllegalArgumentException | IllegalStateException e) {
 				// Not mutatable model element
 				success = false
+				if (isElementSelectedForMutation) { // Delete cached element
+					lastModifiedMutatedElementSet.remove(lastMutatedElement)
+					isElementSelectedForMutation = false
+				}
 			}
 		} while (!success)
 	}
 	
 	def execute(CompositeComponent topComposite) {
-		if (components.empty) {
-			components += topComposite.allComponents
-		}
+		components.clear
+		components += topComposite.selfAndAllComponents
 		
 		var success = true
 		do {
@@ -321,6 +328,7 @@ class ModelMutator {
 								componentScheduleList.moveOneElement
 							}
 							case 1: {
+								checkState(composite instanceof SchedulableCompositeComponent)
 								val schedulableComposite = composite as SchedulableCompositeComponent
 								checkState(componentScheduleList === schedulableComposite.executionList)
 								componentScheduleList.removeOneElement
@@ -351,6 +359,10 @@ class ModelMutator {
 			} catch (IllegalArgumentException | IllegalStateException e) {
 				// Not mutatable model element
 				success = false
+				if (isElementSelectedForMutation) { // Delete cached element
+					lastModifiedMutatedElementSet.remove(lastMutatedElement)
+					isElementSelectedForMutation = false
+				}
 			}
 		} while (!success)
 	}
@@ -541,6 +553,12 @@ class ModelMutator {
 		//
 		
 		unselectableObjects += object
+		
+		//
+		isElementSelectedForMutation = true
+		lastModifiedMutatedElementSet = unselectableObjects
+		lastMutatedElement = object
+		//
 		
 		return object
 	}

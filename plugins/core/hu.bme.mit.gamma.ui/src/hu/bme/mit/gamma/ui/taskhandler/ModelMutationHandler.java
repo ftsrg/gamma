@@ -38,6 +38,8 @@ public class ModelMutationHandler extends TaskHandler {
 	protected ModelMutator mutator;
 	protected Integer mutationIteration;
 	
+	protected int actualIteration = 0;
+	
 	protected final List<Package> mutatedModels = new ArrayList<Package>();
 	
 	protected final AnalysisModelPreprocessor preprocessor = AnalysisModelPreprocessor.INSTANCE;
@@ -81,10 +83,10 @@ public class ModelMutationHandler extends TaskHandler {
 			clonedNewTopComponent.setName(componentName + "Mutant");
 			
 			serializer.saveModel(clonedNewPackage, targetFolderUri,
-					fileNamer.getUnfoldedPackageFileName(fileName + "_Mutant_" + i));
-			
-			mutator.executeOnStatechart(clonedNewTopComponent);
-			
+					fileNamer.getUnfoldedPackageFileName(fileName + "_Mutant_" + actualIteration++));
+			// Note that caching from the previous cycle does not work due to the cloning above
+			mutator.execute(clonedNewTopComponent);
+			//
 			ecoreUtil.save(clonedNewPackage);
 			
 			mutatedModels.add(clonedNewPackage);

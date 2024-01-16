@@ -151,6 +151,7 @@ public class MutationBasedTestGenerationHandler extends TaskHandler {
 			Collection<Package> checkedMutants = new LinkedHashSet<Package>();
 			
 			// Checking if present tests kill any of the mutants
+			modelMutationHandler.setMutationIteration(1); // Generate new ones for these
 			int testRunCount = 0;
 			do {
 				unnecessaryMutants.clear();
@@ -163,7 +164,7 @@ public class MutationBasedTestGenerationHandler extends TaskHandler {
 								component, checkableMutants, testFileNamePattern));
 				checkedMutants.addAll(checkableMutants);
 				int unnecessaryMutantCount = unnecessaryMutants.size();
-				logger.info("Found " + unnecessaryMutantCount + " mutants killed by existing tests in iteration " + testRunCount);
+				logger.info("Found " + unnecessaryMutantCount + " mutants killed by existing tests in iteration " + i + "/" + testRunCount);
 				
 				mutatedModels.removeAll(unnecessaryMutants); // Tests already kill these mutants
 				modelMutationHandler.setMutationIteration(unnecessaryMutantCount); // Generate new ones for these
@@ -174,7 +175,7 @@ public class MutationBasedTestGenerationHandler extends TaskHandler {
 			//
 		
 			// Generating test based on the newly generated mutant
-			Package mutatedModel = javaUtil.getOnlyElement(mutatedModels);
+			Package mutatedModel = javaUtil.getLast(mutatedModels);
 			// Handling these packages as if they were not unfolded (as the original component is not) 
 			mutatedModel.getAnnotations().removeIf(it -> it instanceof UnfoldedPackageAnnotation);
 			ecoreUtil.save(mutatedModel);
@@ -247,7 +248,7 @@ public class MutationBasedTestGenerationHandler extends TaskHandler {
 						StatechartModelDerivedFeatures.getInterface(mutantOutputPort)),
 						"Interfaces are not the same");
 				InterfaceRealization mutantInterfaceRealization = mutantOutputPort.getInterfaceRealization();
-				mutantInterfaceRealization.setInterface(_interface);;
+				mutantInterfaceRealization.setInterface(_interface); // Not correct: consider the contained component port interfaces, too?
 				
 				List<Event> outputEvents = StatechartModelDerivedFeatures.getOutputEvents(originalOutputPort);
 				for (Event outputEvent : outputEvents) {
@@ -275,6 +276,9 @@ public class MutationBasedTestGenerationHandler extends TaskHandler {
 				}
 			}
 			Expression or = propertyUtil.wrapIntoOrExpression(orOperends);
+			if (or == null) {
+				throw new IllegalStateException("Null expression");
+			}
 			StateFormula mutantKillingProperty = propertyUtil.createEF(
 					propertyUtil.createAtomicFormula(or));
 			
@@ -355,12 +359,12 @@ public class MutationBasedTestGenerationHandler extends TaskHandler {
 	
 	//
 
-	private Collection<Package> killMutantsWithExistingTests(Component component, Collection<? extends Package> mutatedModels,
+	private Collection<Package> killMutantsWithExistingTests(Component originalTopComponent, Collection<? extends Package> mutatedModels,
 				String testFilePattern) throws CoreException, IOException {
 		List<Package> unnecessaryMutations = new ArrayList<Package>();
 		
 		if (testFilePattern != null) {
-			Set<Component> allOriginalComponents = StatechartModelDerivedFeatures.getSelfAndAllComponents(component);
+			Set<Component> allOriginalComponents = StatechartModelDerivedFeatures.getSelfAndAllComponents(originalTopComponent);
 			// Compile tests once if not using the bin folder
 			IProject project = file.getProject();
 			
@@ -373,16 +377,23 @@ public class MutationBasedTestGenerationHandler extends TaskHandler {
 				List<Component> components = mutatedModel.getComponents();
 				Component mutatedComponent = components.stream().filter(it ->
 						StatechartModelDerivedFeatures.isMutant(it)).findFirst().get();
+				//
 				Component originalComponent = null;
-				for (Component aComponent : allOriginalComponents) {
-					boolean sameComponent = mutatedComponent.getName().equals(aComponent.getName());
-					if (sameComponent) {
-						if (originalComponent != null) {
-							throw new IllegalStateException("Already found original component: " + originalComponent);
+				if (mutatedComponent == StatechartModelDerivedFeatures.getFirstComponent(mutatedModel)) {
+					originalComponent = originalTopComponent;
+				}
+				else {
+					for (Component aComponent : allOriginalComponents) {
+						boolean sameComponent = mutatedComponent.getName().equals(aComponent.getName());
+						if (sameComponent) {
+							if (originalComponent != null) {
+								throw new IllegalStateException("Already found original component: " + originalComponent);
+							}
+							originalComponent = aComponent;
 						}
-						originalComponent = aComponent;
 					}
 				}
+				//
 				Package originalComponentPackage = StatechartModelDerivedFeatures.getContainingPackage(originalComponent);
 				String originalComponentPackageName = originalComponentPackage.getName();
 				List<Package> originalImports = new ArrayList<Package>(originalComponentPackage.getImports());
