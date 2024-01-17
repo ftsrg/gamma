@@ -12,6 +12,7 @@ package hu.bme.mit.gamma.mutation
 
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.Expression
+import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.composite.Channel
 import hu.bme.mit.gamma.statechart.composite.CompositeComponent
 import hu.bme.mit.gamma.statechart.composite.PortBinding
@@ -55,8 +56,6 @@ class ModelMutator {
 	
 	protected final Set<Expression> expressions = newHashSet
 	
-	protected final Set<Component> components = newHashSet
-	
 	// Mutations
 	protected final Set<Transition> transitionSourceMutations = newHashSet
 	protected final Set<Transition> transitionTargetMutations = newHashSet
@@ -82,10 +81,6 @@ class ModelMutator {
 	protected final Set<PortBinding> portBindingRemoveMutations = newHashSet
 	protected final Set<PortBinding> portBindingChangeMutations = newHashSet
 	//
-	protected boolean isElementSelectedForMutation
-	protected Collection<? extends EObject> lastModifiedMutatedElementSet
-	protected EObject lastMutatedElement
-	//
 	
 	protected final extension ModelElementMutator modelElementMutator
 	protected final MutationHeuristics mutationHeuristics
@@ -108,277 +103,290 @@ class ModelMutator {
 	
 	//
 	
-	def execute(Component component) {
+	def void execute(Component component) {
 		if (component instanceof StatechartDefinition) {
 			component.executeOnStatechart
 		}
 		else if (component instanceof CompositeComponent) {
-			component.execute
-			component.addMutantAnnotation
+			val MUTATE_STATECHART_PROBABILITY = 0.7
+			val random = random.nextDouble
+			if (random < MUTATE_STATECHART_PROBABILITY) {
+				component.executeOnStatechart
+			}
+			else {
+				val components = component.selfAndAllComponents
+				val composite = components
+						.filter(CompositeComponent).toList
+						.selectElement // Random selection
+				
+				composite.mutate
+				composite.addMutantAnnotation
+			}
+		}
+		else if (component instanceof AsynchronousAdapter) {
+			val adaptedType = component.wrappedComponent.type
+			adaptedType.execute
+		}
+		else {
+			throw new IllegalArgumentException("Not known type: " + component)
 		}
 	}
 	
-	def executeOnStatechart(Component component) {
+	def void executeOnStatechart(Component component) {
 		if (component instanceof StatechartDefinition) {
-			component.execute
+			component.mutate
 			component.addMutantAnnotation
 		}
 		else if (component instanceof CompositeComponent) {
-			val statecharts = component.selfOrAllContainedStatecharts
-			val statechart = statecharts.selectElementForMutation(newArrayList)
+			val statecharts = component.selfOrAllContainedStatecharts.toList
+			val statechart = statecharts.selectElement // Random selection
 			
-			statechart.execute
+			statechart.mutate
 			statechart.addMutantAnnotation
+		}
+		else if (component instanceof AsynchronousAdapter) {
+			val adaptedType = component.wrappedComponent.type
+			adaptedType.executeOnStatechart
 		}
 	}
 	
 	//
 	
-	def execute(StatechartDefinition statechart) {
+	def mutate(Component component) {
 		var success = true
 		do {
  			try {
  				success = true
-				val mutationType = StatechartMutationType.mutationType
-				val mutationOperatorIndex = mutationOperator
-				
-				switch (mutationType) {
-					case TRANSITION_STRUCTURE: {
-						val OPERATOR_COUNT = 5
-						val i = mutationOperatorIndex % OPERATOR_COUNT
-						switch (i) {
-							case 0: {
-								val transition = statechart.selectTransitionForSourceChange
-								transition.changeTransitionSource
-							}
-							case 1: {
-								val transition = statechart.selectTransitionForTargetChange
-								transition.changeTransitionTarget
-							}
-							case 2: {
-								val transition = statechart.selectTransitionForRemoval
-								transition.removeTransition
-							}
-							case 3: {
-								val transition = statechart.selectTransitionForGuardRemoval
-								transition.removeTransitionGuard
-							}
-							case 4: {
-								val transition = statechart.selectTransitionForTriggerRemoval
-								transition.removeTransitionTrigger
-							}
-							default:
-								throw new IllegalArgumentException("Not known operator index: " + i)
-						}
+				switch (component) {
+					StatechartDefinition: {
+						component.mutateOnce
 					}
-					case TRANSITION_DYNAMICS: {
-						val OPERATOR_COUNT = 10
-						val i = mutationOperatorIndex % OPERATOR_COUNT
-						switch (i) {
-							case 0: {
-								val reference = statechart.selectAnyPortEventReferenceForPortChange
-								reference.changePortReference
-							}
-							case 1: {
-								val reference = statechart.selectPortEventReferenceForChange
-								reference.changePortReference
-							}
-							case 2: {
-								val reference = statechart.selectPortEventReferenceForChange
-								reference.changeEventReference
-							}
-							case 3: {
-								val action = statechart.selectRaiseEventActionForChange
-								action.changePortReference
-							}
-							case 4: {
-								val action = statechart.selectRaiseEventActionForChange
-								action.changeEventReference
-							}
-							case 5: {
-								val reference = statechart.selectEventParameterReferenceExpressionForChange
-								reference.changePortReference
-							}
-							case 6: {
-								val reference = statechart.selectEventParameterReferenceExpressionForChange
-								reference.changeEventReference
-							}
-							case 7: {
-								val reference = statechart.selectEventParameterReferenceExpressionForChange
-								reference.changeParameterReference
-							}
-							case 8: {
-								val reference = statechart.selectDirectReferenceExpressionForDeclarationChange
-								reference.changeDeclarationReference
-							}
-							case 9: {
-								val transition = statechart.selectTransitionForEffectRemoval
-								transition.removeEffect
-							}
-							default:
-								throw new IllegalArgumentException("Not known operator index: " + i)
-						}
-					}
-					case STATE_DYNAMICS: {
-						val OPERATOR_COUNT = 4
-						val i = mutationOperatorIndex % OPERATOR_COUNT
-						switch (i) {
-							case 0: {
-								val state = statechart.selectStateForEntryActionRemoval
-								state.removeEntryAction
-							}
-							case 1: {
-								val state = statechart.selectStateForExitActionRemoval
-								state.removeExitAction
-							}
-							case 2: {
-								val entryState = statechart.selectEntryStateForChange
-								entryState.changeEntryStateTarget
-							}
-							case 3: {
-								val entryState = statechart.selectEntryStateForChange
-								entryState.changeEntryState
-							}
-							default:
-								throw new IllegalArgumentException("Not known operator index: " + i)
-						}
-					}
-					case EXPRESSION_DYNAMICS: {
-						val OPERATOR_COUNT = 2
-						val i = mutationOperatorIndex % OPERATOR_COUNT
-						switch (i) {
-							case 0: {
-								val expression = statechart.selectExpressionForChange
-								expression.changeExpression
-							}
-							case 1: {
-								val expression = statechart.selectExpressionForInversion
-								expression.invertExpression
-							}
-							default:
-								throw new IllegalArgumentException("Not known operator index: " + i)
-						}
+					CompositeComponent: {
+						component.mutateOnce
 					}
 					default:
-						throw new IllegalArgumentException("Not known mutation type: " + mutationType)
+						throw new IllegalArgumentException("Not known type: " + component)
 				}
 			} catch (IllegalArgumentException | IllegalStateException e) {
 				// Not mutatable model element
 				success = false
-				if (isElementSelectedForMutation) { // Delete cached element
-					lastModifiedMutatedElementSet.remove(lastMutatedElement)
-					isElementSelectedForMutation = false
-				}
+				// Note that any selected element stays in the corresponding cache
 			}
 		} while (!success)
 	}
 	
-	def execute(CompositeComponent topComposite) {
-		components.clear
-		components += topComposite.selfAndAllComponents
+	//
+	
+	protected def mutateOnce(StatechartDefinition statechart) {
+		val mutationType = StatechartMutationType.mutationType
+		val mutationOperatorIndex = mutationOperator
 		
-		var success = true
-		do {
- 			try {
- 				success = true
-				val mutationType = CompositeComponentMutationType.mutationType
-				val mutationOperatorIndex = mutationOperator
-				
-				val composite = components
-						.filter(CompositeComponent).toList
-						.selectElement
-				
-				switch (mutationType) {
-					case COMPOSITION_STRUCTURE: {
-						val OPERATOR_COUNT = 4
-						val i = mutationOperatorIndex % OPERATOR_COUNT
-						switch (i) {
-							case 0: {
-								val channel = composite.selectChannelForRemoval
-								channel.removeChannel
-							}
-							case 1: {
-								val channel = composite.selectChannelForEndpointChange
-								channel.changeChannelEndpoint
-							}
-							case 2: {
-								val portBinding = composite.selectPortBindingForRemoval
-								portBinding.removePortBinding
-							}
-							case 3: {
-								val portBinding = composite.selectPortBindingForEndpointChange
-								portBinding.changePortBindingEndpoint
-							}
-							default:
-								throw new IllegalArgumentException("Not known operator index: " + i)
-						}
+		switch (mutationType) {
+			case TRANSITION_STRUCTURE: {
+				val OPERATOR_COUNT = 5
+				val i = mutationOperatorIndex % OPERATOR_COUNT
+				switch (i) {
+					case 0: {
+						val transition = statechart.selectTransitionForSourceChange
+						transition.changeTransitionSource
 					}
-					case COMPOSITION_DYNAMICS: {
-						val OPERATOR_COUNT = 2
-						val i = mutationOperatorIndex % OPERATOR_COUNT
-						//
-						val componentScheduleList = switch (composite) {
-							SchedulableCompositeComponent: composite.executionList.empty ?
-								composite.containedComponents : composite.executionList
-							default: composite.containedComponents
-						}
-						//
-						switch (i) {
-							case 0: {
-								componentScheduleList.moveOneElement
-							}
-							case 1: {
-								checkState(composite instanceof SchedulableCompositeComponent)
-								val schedulableComposite = composite as SchedulableCompositeComponent
-								checkState(componentScheduleList === schedulableComposite.executionList)
-								componentScheduleList.removeOneElement
-							}
-							default:
-								throw new IllegalArgumentException("Not known operator index: " + i)
-						}
+					case 1: {
+						val transition = statechart.selectTransitionForTargetChange
+						transition.changeTransitionTarget
 					}
-					case EXPRESSION_DYNAMICS: {
-						val OPERATOR_COUNT = 2
-						val i = mutationOperatorIndex % OPERATOR_COUNT
-						switch (i) {
-							case 0: {
-								val expression = composite.selectDirectlyContainedExpressionForChange
-								expression.changeExpression
-							}
-							case 1: {
-								val expression = composite.selectDirectlyContainedExpressionForInversion
-								expression.invertExpression
-							}
-							default:
-								throw new IllegalArgumentException("Not known operator index: " + i)
-						}
+					case 2: {
+						val transition = statechart.selectTransitionForRemoval
+						transition.removeTransition
+					}
+					case 3: {
+						val transition = statechart.selectTransitionForGuardRemoval
+						transition.removeTransitionGuard
+					}
+					case 4: {
+						val transition = statechart.selectTransitionForTriggerRemoval
+						transition.removeTransitionTrigger
 					}
 					default:
-						throw new IllegalArgumentException("Not known mutation type: " + mutationType)
-				}
-			} catch (IllegalArgumentException | IllegalStateException e) {
-				// Not mutatable model element
-				success = false
-				if (isElementSelectedForMutation) { // Delete cached element
-					lastModifiedMutatedElementSet.remove(lastMutatedElement)
-					isElementSelectedForMutation = false
+						throw new IllegalArgumentException("Not known operator index: " + i)
 				}
 			}
-		} while (!success)
+			case TRANSITION_DYNAMICS: {
+				val OPERATOR_COUNT = 10
+				val i = mutationOperatorIndex % OPERATOR_COUNT
+				switch (i) {
+					case 0: {
+						val reference = statechart.selectAnyPortEventReferenceForPortChange
+						reference.changePortReference
+					}
+					case 1: {
+						val reference = statechart.selectPortEventReferenceForChange
+						reference.changePortReference
+					}
+					case 2: {
+						val reference = statechart.selectPortEventReferenceForChange
+						reference.changeEventReference
+					}
+					case 3: {
+						val action = statechart.selectRaiseEventActionForChange
+						action.changePortReference
+					}
+					case 4: {
+						val action = statechart.selectRaiseEventActionForChange
+						action.changeEventReference
+					}
+					case 5: {
+						val reference = statechart.selectEventParameterReferenceExpressionForChange
+						reference.changePortReference
+					}
+					case 6: {
+						val reference = statechart.selectEventParameterReferenceExpressionForChange
+						reference.changeEventReference
+					}
+					case 7: {
+						val reference = statechart.selectEventParameterReferenceExpressionForChange
+						reference.changeParameterReference
+					}
+					case 8: {
+						val reference = statechart.selectDirectReferenceExpressionForDeclarationChange
+						reference.changeDeclarationReference
+					}
+					case 9: {
+						val transition = statechart.selectTransitionForEffectRemoval
+						transition.removeEffect
+					}
+					default:
+						throw new IllegalArgumentException("Not known operator index: " + i)
+				}
+			}
+			case STATE_DYNAMICS: {
+				val OPERATOR_COUNT = 4
+				val i = mutationOperatorIndex % OPERATOR_COUNT
+				switch (i) {
+					case 0: {
+						val state = statechart.selectStateForEntryActionRemoval
+						state.removeEntryAction
+					}
+					case 1: {
+						val state = statechart.selectStateForExitActionRemoval
+						state.removeExitAction
+					}
+					case 2: {
+						val entryState = statechart.selectEntryStateForChange
+						entryState.changeEntryStateTarget
+					}
+					case 3: {
+						val entryState = statechart.selectEntryStateForChange
+						entryState.changeEntryState
+					}
+					default:
+						throw new IllegalArgumentException("Not known operator index: " + i)
+				}
+			}
+			case EXPRESSION_DYNAMICS: {
+				val OPERATOR_COUNT = 2
+				val i = mutationOperatorIndex % OPERATOR_COUNT
+				switch (i) {
+					case 0: {
+						val expression = statechart.selectExpressionForChange
+						expression.changeExpression
+					}
+					case 1: {
+						val expression = statechart.selectExpressionForInversion
+						expression.invertExpression
+					}
+					default:
+						throw new IllegalArgumentException("Not known operator index: " + i)
+				}
+			}
+			default:
+				throw new IllegalArgumentException("Not known mutation type: " + mutationType)
+		}
+	}
+	
+	protected def mutateOnce(CompositeComponent composite) {
+		val mutationType = CompositeComponentMutationType.mutationType
+		val mutationOperatorIndex = mutationOperator
+		
+		switch (mutationType) {
+			case COMPOSITION_STRUCTURE: {
+				val OPERATOR_COUNT = 4
+				val i = mutationOperatorIndex % OPERATOR_COUNT
+				switch (i) {
+					case 0: {
+						val channel = composite.selectChannelForRemoval
+						channel.removeChannel
+					}
+					case 1: {
+						val channel = composite.selectChannelForEndpointChange
+						channel.changeChannelEndpoint
+					}
+					case 2: {
+						val portBinding = composite.selectPortBindingForRemoval
+						portBinding.removePortBinding
+					}
+					case 3: {
+						val portBinding = composite.selectPortBindingForEndpointChange
+						portBinding.changePortBindingEndpoint
+					}
+					default:
+						throw new IllegalArgumentException("Not known operator index: " + i)
+				}
+			}
+			case COMPOSITION_DYNAMICS: {
+				val OPERATOR_COUNT = 2
+				val i = mutationOperatorIndex % OPERATOR_COUNT
+				//
+				val componentScheduleList = switch (composite) {
+					SchedulableCompositeComponent: composite.executionList.empty ?
+						composite.containedComponents : composite.executionList
+					default: composite.containedComponents
+				}
+				//
+				switch (i) {
+					case 0: {
+						componentScheduleList.moveOneElement
+					}
+					case 1: {
+						checkState(composite instanceof SchedulableCompositeComponent)
+						val schedulableComposite = composite as SchedulableCompositeComponent
+						checkState(componentScheduleList === schedulableComposite.executionList)
+						componentScheduleList.removeOneElement
+					}
+					default:
+						throw new IllegalArgumentException("Not known operator index: " + i)
+				}
+			}
+			case EXPRESSION_DYNAMICS: {
+				val OPERATOR_COUNT = 2
+				val i = mutationOperatorIndex % OPERATOR_COUNT
+				switch (i) {
+					case 0: {
+						val expression = composite.selectDirectlyContainedExpressionForChange
+						expression.changeExpression
+					}
+					case 1: {
+						val expression = composite.selectDirectlyContainedExpressionForInversion
+						expression.invertExpression
+					}
+					default:
+						throw new IllegalArgumentException("Not known operator index: " + i)
+				}
+			}
+			default:
+				throw new IllegalArgumentException("Not known mutation type: " + mutationType)
+		}
 	}
 	
 	//
 	
 	protected def selectTransitionForSourceChange(StatechartDefinition statechart) {
-		val transitions = statechart.transitions.filter[
-				it.leavingState].toList
+		val transitions = statechart.transitions.filter[it.leavingState].toList
 		val transition = transitions.selectElementForMutation(transitionSourceMutations)
 		return transition
 	}
 	
 	protected def selectTransitionForTargetChange(StatechartDefinition statechart) {
-		val transitions = statechart.transitions.filter[
-				it.targetState instanceof State].toList
+		val transitions = statechart.transitions.filter[it.targetState instanceof State].toList
 		val transition = transitions.selectElementForMutation(transitionTargetMutations)
 		return transition
 	}
@@ -393,15 +401,13 @@ class ModelMutator {
 	}
 	
 	protected def selectTransitionForGuardRemoval(StatechartDefinition statechart) {
-		val transitions = statechart.transitions.filter[
-				it.hasGuard].toList
+		val transitions = statechart.transitions.filter[it.hasGuard].toList
 		val transition = transitions.selectElementForMutation(transitionGuardRemoveMutations)
 		return transition
 	}
 	
 	protected def selectTransitionForTriggerRemoval(StatechartDefinition statechart) {
-		val transitions = statechart.transitions.filter[
-				it.hasTrigger].toList
+		val transitions = statechart.transitions.filter[it.hasTrigger].toList
 		val transition = transitions.selectElementForMutation(transitionTriggerRemoveMutations)
 		return transition
 	}
@@ -449,8 +455,7 @@ class ModelMutator {
 	}
 	
 	protected def selectTransitionForEffectRemoval(StatechartDefinition statechart) {
-		val transitions = statechart.transitions
-				.filter[!it.effects.empty].toList
+		val transitions = statechart.transitions.filter[!it.effects.empty].toList
 		val transition = transitions.selectElementForMutation(transitionEffectRemoveMutations)
 		return transition
 	}
@@ -553,12 +558,6 @@ class ModelMutator {
 		//
 		
 		unselectableObjects += object
-		
-		//
-		isElementSelectedForMutation = true
-		lastModifiedMutatedElementSet = unselectableObjects
-		lastMutatedElement = object
-		//
 		
 		return object
 	}
