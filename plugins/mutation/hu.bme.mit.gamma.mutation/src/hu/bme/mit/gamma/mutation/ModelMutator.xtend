@@ -296,141 +296,90 @@ class ModelMutator {
 		val stateAnnotation = stateAnnotations.selectElementForMutation
 		
 		val mutationType = AdaptationMutationType.mutationType
-		val mutationOperatorIndex = mutationOperator
-		
 		switch (mutationType) {
-			case ANNOTATION_STRUCTURE: {
-				val OPERATOR_COUNT = 5
-				val i = mutationOperatorIndex % OPERATOR_COUNT
-				switch (i) {
-					case 0: {
-						stateAnnotation.removeAnnotation
-					}
-					case 1: {
-						val portBinding = stateAnnotation.selectPortBindingForRemoval
-						portBinding.removePortBinding
-					}
-					case 2: {
-						val portBinding = stateAnnotation.selectPortBindingForEndpointChange
-						portBinding.changePortBindingEndpoint
-					}
-					case 3: {
-						val variableBinding = stateAnnotation.selectVariableBindingForRemoval
-						variableBinding.removeVariableBinding
-					}
-					case 4: {
-						val variableBinding = stateAnnotation.selectVariableBindingForEndpointChange
-						variableBinding.changeVariableBindingEndpoint
-					}
-					default:
-						throw new IllegalArgumentException("Not known operator index: " + i)
-				}
+			case ANNOTATION_STRUCTURE_REMOVE: {
+				stateAnnotation.removeAnnotation
 			}
-			case ANNOTATION_DYNAMICS: {
-				val OPERATOR_COUNT = 1
-				val i = mutationOperatorIndex % OPERATOR_COUNT
-				switch (i) {
-					case 0: {
-						adaptationChangeHistoryMutations += stateAnnotation
-						stateAnnotation.changeHistory
-					}
-					default:
-						throw new IllegalArgumentException("Not known operator index: " + i)
-				}
+			case ANNOTATION_STRUCTURE_PORT_BINDING_REMOVE: {
+				val portBinding = stateAnnotation.selectPortBindingForRemoval
+				portBinding.removePortBinding
 			}
-			case EXPRESSION_DYNAMICS: {
-				val OPERATOR_COUNT = 2
-				val i = mutationOperatorIndex % OPERATOR_COUNT
-				switch (i) {
-					case 0: {
-						val expression = statechart.selectExpressionForChange
-						expression.changeExpression
-					}
-					case 1: {
-						val expression = statechart.selectExpressionForInversion
-						expression.invertExpression
-					}
-					default:
-						throw new IllegalArgumentException("Not known operator index: " + i)
-				}
+			case ANNOTATION_STRUCTURE_PORT_BINDING_ENDPOINT_CHANGE: {
+				val portBinding = stateAnnotation.selectPortBindingForEndpointChange
+				portBinding.changePortBindingEndpoint
+			}
+			case ANNOTATION_STRUCTURE_VARIABLE_BINDING_REMOVE: {
+				val variableBinding = stateAnnotation.selectVariableBindingForRemoval
+				variableBinding.removeVariableBinding
+			}
+			case ANNOTATION_STRUCTURE_VARIABLE_BINDING_ENDPOINT_CHANGE: {
+				val variableBinding = stateAnnotation.selectVariableBindingForEndpointChange
+				variableBinding.changeVariableBindingEndpoint
+			}
+			case ANNOTATION_DYNAMICS_HISTORY_CHANGE: {
+				adaptationChangeHistoryMutations += stateAnnotation
+				stateAnnotation.changeHistory
+			}
+			case EXPRESSION_DYNAMICS_EXPRESSION_CHANGE: {
+				val component = (random.nextBoolean) ? stateAnnotation.component.derivedType : statechart
+				val expression = component.selectExpressionForChange
+				expression.changeExpression
+			}
+			case EXPRESSION_DYNAMICS_EXPRESSION_INVERT: {
+				val component = (random.nextBoolean) ? stateAnnotation.component.derivedType : statechart
+				val expression = component.selectExpressionForInversion
+				expression.invertExpression
 			}
 			default:
-				throw new IllegalArgumentException("Not known mutation type: " + mutationType)
-						
+				throw new IllegalArgumentException("Not known mutation operator: " + mutationType)
 		}
 	}
 	
 	protected def mutateOnce(CompositeComponent composite) {
 		val mutationType = CompositeComponentMutationType.mutationType
-		val mutationOperatorIndex = mutationOperator
-		
+		//
+		val componentScheduleList = switch (composite) {
+			SchedulableCompositeComponent: composite.executionList.empty ?
+				composite.containedComponents : composite.executionList
+			default: composite.containedComponents
+		}
+		//
 		switch (mutationType) {
-			case COMPOSITION_STRUCTURE: {
-				val OPERATOR_COUNT = 4
-				val i = mutationOperatorIndex % OPERATOR_COUNT
-				switch (i) {
-					case 0: {
-						val channel = composite.selectChannelForRemoval
-						channel.removeChannel
-					}
-					case 1: {
-						val channel = composite.selectChannelForEndpointChange
-						channel.changeChannelEndpoint
-					}
-					case 2: {
-						val portBinding = composite.selectPortBindingForRemoval
-						portBinding.removePortBinding
-					}
-					case 3: {
-						val portBinding = composite.selectPortBindingForEndpointChange
-						portBinding.changePortBindingEndpoint
-					}
-					default:
-						throw new IllegalArgumentException("Not known operator index: " + i)
-				}
+			case COMPOSITION_STRUCTURE_CHANNEL_REMOVE: {
+				val channel = composite.selectChannelForRemoval
+				channel.removeChannel
 			}
-			case COMPOSITION_DYNAMICS: {
-				val OPERATOR_COUNT = 2
-				val i = mutationOperatorIndex % OPERATOR_COUNT
-				//
-				val componentScheduleList = switch (composite) {
-					SchedulableCompositeComponent: composite.executionList.empty ?
-						composite.containedComponents : composite.executionList
-					default: composite.containedComponents
-				}
-				//
-				switch (i) {
-					case 0: {
-						componentScheduleList.moveOneElement
-					}
-					case 1: {
-						checkState(composite instanceof SchedulableCompositeComponent)
-						val schedulableComposite = composite as SchedulableCompositeComponent
-						checkState(componentScheduleList === schedulableComposite.executionList)
-						componentScheduleList.removeOneElement
-					}
-					default:
-						throw new IllegalArgumentException("Not known operator index: " + i)
-				}
+			case COMPOSITION_STRUCTURE_CHANNEL_ENDPOINT_CHANGE: {
+				val channel = composite.selectChannelForEndpointChange
+				channel.changeChannelEndpoint
 			}
-			case EXPRESSION_DYNAMICS: {
-				val OPERATOR_COUNT = 2
-				val i = mutationOperatorIndex % OPERATOR_COUNT
-				switch (i) {
-					case 0: {
-						val expression = composite.selectDirectlyContainedExpressionForChange
-						expression.changeExpression
-					}
-					case 1: {
-						val expression = composite.selectDirectlyContainedExpressionForInversion
-						expression.invertExpression
-					}
-					default:
-						throw new IllegalArgumentException("Not known operator index: " + i)
-				}
+			case COMPOSITION_STRUCTURE_PORT_BINDING_REMOVE: {
+				val portBinding = composite.selectPortBindingForRemoval
+				portBinding.removePortBinding
+			}
+			case COMPOSITION_STRUCTURE_PORT_BINDING_ENDPOINT_CHANGE: {
+				val portBinding = composite.selectPortBindingForEndpointChange
+				portBinding.changePortBindingEndpoint
+			}
+			case COMPOSITION_DYNAMICS_SCHEDULE_LIST_ELEMENT_CHANGE: {
+				componentScheduleList.moveOneElement
+			}
+			case COMPOSITION_DYNAMICS_SCHEDULE_LIST_ELEMENT_REMOVE: {
+				checkState(composite instanceof SchedulableCompositeComponent)
+				val schedulableComposite = composite as SchedulableCompositeComponent
+				checkState(componentScheduleList === schedulableComposite.executionList)
+				componentScheduleList.removeOneElement
+			}
+			case EXPRESSION_DYNAMICS_EXPRESSION_CHANGE: {
+				val expression = composite.selectDirectlyContainedExpressionForChange
+				expression.changeExpression
+			}
+			case EXPRESSION_DYNAMICS_EXPRESSION_INVERT: {
+				val expression = composite.selectDirectlyContainedExpressionForInversion
+				expression.invertExpression
 			}
 			default:
-				throw new IllegalArgumentException("Not known mutation type: " + mutationType)
+				throw new IllegalArgumentException("Not known mutation operator: " + mutationType)
 		}
 	}
 	
@@ -678,32 +627,46 @@ class ModelMutator {
 	// Note that these literals affect the probabilities of applying a certain mutation operator
 	
 	enum StatechartMutationType {
-			TRANSITION_STRUCTURE_SOURCE_CHANGE, TRANSITION_STRUCTURE_TARGET_CHANGE,
-			TRANSITION_STRUCTURE_REMOVE, TRANSITION_STRUCTURE_GUARD_REMOVE,
-			TRANSITION_STRUCTURE_TRIGGER_REMOVE,
-			//
-			TRANSITION_DYNAMICS_ANY_PORT_EVENT_REFERENCE_PORT_CHANGE,
-			TRANSITION_DYNAMICS_PORT_EVENT_REFERENCE_PORT_CHANGE,
-			TRANSITION_DYNAMICS_PORT_EVENT_REFERENCE_EVENT_CHANGE,
-			TRANSITION_DYNAMICS_RAISE_EVENT_ACTION_PORT_CHANGE,
-			TRANSITION_DYNAMICS_RAISE_EVENT_ACTION_EVENT_CHANGE,
-			TRANSITION_DYNAMICS_EVENT_PARAMETER_REFERENCE_PORT_CHANGE,
-			TRANSITION_DYNAMICS_EVENT_PARAMETER_REFERENCE_EVENT_CHANGE,
-			TRANSITION_DYNAMICS_EVENT_PARAMETER_REFERENCE_PARAMETER_CHANGE,
-			TRANSITION_DYNAMICS_DECLARATION_REFERENCE_DECLARATION_CHANGE,
-			TRANSITION_DYNAMICS_EFFECT_REMOVE,
-			//
-			STATE_DYNAMICS_STATE_ENTRY_ACTION_REMOVE, STATE_DYNAMICS_STATE_EXIT_ACTION_REMOVE,
-			STATE_DYNAMICS_ENTRY_STATE_TARGET_CHANGE, STATE_DYNAMICS_ENTRY_STATE_CHANGE,
-			//
-			EXPRESSION_DYNAMICS_EXPRESSION_CHANGE, EXPRESSION_DYNAMICS_EXPRESSION_INVERT
-		}
+		TRANSITION_STRUCTURE_SOURCE_CHANGE, TRANSITION_STRUCTURE_TARGET_CHANGE,
+		TRANSITION_STRUCTURE_REMOVE, TRANSITION_STRUCTURE_GUARD_REMOVE,
+		TRANSITION_STRUCTURE_TRIGGER_REMOVE,
+		//
+		TRANSITION_DYNAMICS_ANY_PORT_EVENT_REFERENCE_PORT_CHANGE,
+		TRANSITION_DYNAMICS_PORT_EVENT_REFERENCE_PORT_CHANGE,
+		TRANSITION_DYNAMICS_PORT_EVENT_REFERENCE_EVENT_CHANGE,
+		TRANSITION_DYNAMICS_RAISE_EVENT_ACTION_PORT_CHANGE,
+		TRANSITION_DYNAMICS_RAISE_EVENT_ACTION_EVENT_CHANGE,
+		TRANSITION_DYNAMICS_EVENT_PARAMETER_REFERENCE_PORT_CHANGE,
+		TRANSITION_DYNAMICS_EVENT_PARAMETER_REFERENCE_EVENT_CHANGE,
+		TRANSITION_DYNAMICS_EVENT_PARAMETER_REFERENCE_PARAMETER_CHANGE,
+		TRANSITION_DYNAMICS_DECLARATION_REFERENCE_DECLARATION_CHANGE,
+		TRANSITION_DYNAMICS_EFFECT_REMOVE,
+		//
+		STATE_DYNAMICS_STATE_ENTRY_ACTION_REMOVE, STATE_DYNAMICS_STATE_EXIT_ACTION_REMOVE,
+		STATE_DYNAMICS_ENTRY_STATE_TARGET_CHANGE, STATE_DYNAMICS_ENTRY_STATE_CHANGE,
+		//
+		EXPRESSION_DYNAMICS_EXPRESSION_CHANGE, EXPRESSION_DYNAMICS_EXPRESSION_INVERT
+	}
 	
 	enum AdaptationMutationType {
-			ANNOTATION_STRUCTURE, ANNOTATION_DYNAMICS, EXPRESSION_DYNAMICS }
+		ANNOTATION_STRUCTURE_REMOVE,
+		ANNOTATION_STRUCTURE_PORT_BINDING_REMOVE, ANNOTATION_STRUCTURE_PORT_BINDING_ENDPOINT_CHANGE,
+		ANNOTATION_STRUCTURE_VARIABLE_BINDING_REMOVE, ANNOTATION_STRUCTURE_VARIABLE_BINDING_ENDPOINT_CHANGE,
+		//
+		ANNOTATION_DYNAMICS_HISTORY_CHANGE,
+		//
+		EXPRESSION_DYNAMICS_EXPRESSION_CHANGE, EXPRESSION_DYNAMICS_EXPRESSION_INVERT
+		}
 	
 	enum CompositeComponentMutationType {
-			COMPOSITION_STRUCTURE, COMPOSITION_DYNAMICS, EXPRESSION_DYNAMICS }
+		COMPOSITION_STRUCTURE_CHANNEL_REMOVE, COMPOSITION_STRUCTURE_CHANNEL_ENDPOINT_CHANGE,
+		COMPOSITION_STRUCTURE_PORT_BINDING_REMOVE, COMPOSITION_STRUCTURE_PORT_BINDING_ENDPOINT_CHANGE,
+		//
+		COMPOSITION_DYNAMICS_SCHEDULE_LIST_ELEMENT_CHANGE,
+		COMPOSITION_DYNAMICS_SCHEDULE_LIST_ELEMENT_REMOVE,
+		//
+		EXPRESSION_DYNAMICS_EXPRESSION_CHANGE, EXPRESSION_DYNAMICS_EXPRESSION_INVERT
+	}
 			
 	//
 	
