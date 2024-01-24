@@ -207,15 +207,10 @@ class ModelElementMutator {
 	// Should be overridable
 	protected def getNewParameter(ParameterDeclaration parameter) {
 		val type = parameter.typeDefinition
-		val container = parameter.eContainer
-		val parameters = 
-		if (container instanceof Event) {
-			container.parameterDeclarations
-		}
-		else {
-			val parametricElement = parameter.getContainerOfType(ParametricElement)
-			parametricElement.parameterDeclarations
-		}
+		
+		val parametricElement = parameter.getContainerOfType(ParametricElement)
+		val parameters = parametricElement.parameterDeclarations
+		
 		val correctTypeParameters = parameters.filter[it.typeDefinition.helperEquals(type)].toList
 		// Array choosing could be made a bit more flexible
 		return correctTypeParameters.selectDifferentElement(parameter)
@@ -242,9 +237,15 @@ class ModelElementMutator {
 	def changeEventReference(EventParameterReferenceExpression expression) {
 		val port = expression.port
 		val oldEvent = expression.event
+		val oldParameter = expression.parameter
+		
 		val newEvent = port.getNewInEvent(oldEvent)
+		val newParameters = newEvent.getParametersOfTypeDefinition(oldParameter.typeDefinition) 
+		
+		val newParameter = newParameters.get(random.nextInt(newParameters.size))
 		
 		expression.event = newEvent
+		expression.parameter = newParameter
 
 		info('''Changed event reference of event parameter reference from «oldEvent.name» to «newEvent.name»''')
 	}
@@ -273,6 +274,9 @@ class ModelElementMutator {
 		val oldEvent = action.event
 		
 		val newEvent = port.getNewOutEvent(oldEvent)
+		
+		checkState(oldEvent.parameterDeclarations.map[it.typeDefinition].helperEquals(
+				newEvent.parameterDeclarations.map[it.typeDefinition]))
 		
 		action.event = newEvent
 

@@ -200,127 +200,93 @@ class ModelMutator {
 	
 	protected def mutateOnce(StatechartDefinition statechart) {
 		val mutationType = StatechartMutationType.mutationType
-		val mutationOperatorIndex = mutationOperator
-		
 		switch (mutationType) {
-			case TRANSITION_STRUCTURE: {
-				val OPERATOR_COUNT = 5
-				val i = mutationOperatorIndex % OPERATOR_COUNT
-				switch (i) {
-					case 0: {
-						val transition = statechart.selectTransitionForSourceChange
-						transition.changeTransitionSource
-					}
-					case 1: {
-						val transition = statechart.selectTransitionForTargetChange
-						transition.changeTransitionTarget
-					}
-					case 2: {
-						val transition = statechart.selectTransitionForRemoval
-						transition.removeTransition
-					}
-					case 3: {
-						val transition = statechart.selectTransitionForGuardRemoval
-						transition.removeTransitionGuard
-					}
-					case 4: {
-						val transition = statechart.selectTransitionForTriggerRemoval
-						transition.removeTransitionTrigger
-					}
-					default:
-						throw new IllegalArgumentException("Not known operator index: " + i)
-				}
+			case TRANSITION_STRUCTURE_SOURCE_CHANGE: {
+				val transition = statechart.selectTransitionForSourceChange
+				transition.changeTransitionSource
 			}
-			case TRANSITION_DYNAMICS: {
-				val OPERATOR_COUNT = 10
-				val i = mutationOperatorIndex % OPERATOR_COUNT
-				switch (i) {
-					case 0: {
-						val reference = statechart.selectAnyPortEventReferenceForPortChange
-						reference.changePortReference
-					}
-					case 1: {
-						val reference = statechart.selectPortEventReferenceForChange
-						reference.changePortReference
-					}
-					case 2: {
-						val reference = statechart.selectPortEventReferenceForChange
-						reference.changeEventReference
-					}
-					case 3: {
-						val action = statechart.selectRaiseEventActionForChange
-						action.changePortReference
-					}
-					case 4: {
-						val action = statechart.selectRaiseEventActionForChange
-						action.changeEventReference
-					}
-					case 5: {
-						val reference = statechart.selectEventParameterReferenceExpressionForChange
-						reference.changePortReference
-					}
-					case 6: {
-						val reference = statechart.selectEventParameterReferenceExpressionForChange
-						reference.changeEventReference
-					}
-					case 7: {
-						val reference = statechart.selectEventParameterReferenceExpressionForChange
-						reference.changeParameterReference
-					}
-					case 8: {
-						val reference = statechart.selectDirectReferenceExpressionForDeclarationChange
-						reference.changeDeclarationReference
-					}
-					case 9: {
-						val transition = statechart.selectTransitionForEffectRemoval
-						transition.removeEffect
-					}
-					default:
-						throw new IllegalArgumentException("Not known operator index: " + i)
-				}
+			case TRANSITION_STRUCTURE_TARGET_CHANGE: {
+				val transition = statechart.selectTransitionForTargetChange
+				transition.changeTransitionTarget
 			}
-			case STATE_DYNAMICS: {
-				val OPERATOR_COUNT = 4
-				val i = mutationOperatorIndex % OPERATOR_COUNT
-				switch (i) {
-					case 0: {
-						val state = statechart.selectStateForEntryActionRemoval
-						state.removeEntryAction
-					}
-					case 1: {
-						val state = statechart.selectStateForExitActionRemoval
-						state.removeExitAction
-					}
-					case 2: {
-						val entryState = statechart.selectEntryStateForChange
-						entryState.changeEntryStateTarget
-					}
-					case 3: {
-						val entryState = statechart.selectEntryStateForChange
-						entryState.changeEntryState
-					}
-					default:
-						throw new IllegalArgumentException("Not known operator index: " + i)
-				}
+			case TRANSITION_STRUCTURE_REMOVE: {
+				val transition = statechart.selectTransitionForRemoval
+				transition.removeTransition
 			}
-			case EXPRESSION_DYNAMICS: {
-				val OPERATOR_COUNT = 2
-				val i = mutationOperatorIndex % OPERATOR_COUNT
-				switch (i) {
-					case 0: {
-						val expression = statechart.selectExpressionForChange
-						expression.changeExpression
-					}
-					case 1: {
-						val expression = statechart.selectExpressionForInversion
-						expression.invertExpression
-					}
-					default:
-						throw new IllegalArgumentException("Not known operator index: " + i)
-				}
+			case TRANSITION_STRUCTURE_GUARD_REMOVE: {
+				val transition = statechart.selectTransitionForGuardRemoval
+				transition.removeTransitionGuard
+			}
+			case TRANSITION_STRUCTURE_TRIGGER_REMOVE: {
+				val transition = statechart.selectTransitionForTriggerRemoval
+				transition.removeTransitionTrigger
+			}
+			case TRANSITION_DYNAMICS_ANY_PORT_EVENT_REFERENCE_PORT_CHANGE: {
+				val reference = statechart.selectAnyPortEventReferenceForPortChange
+				reference.changePortReference
+			}
+			case TRANSITION_DYNAMICS_PORT_EVENT_REFERENCE_PORT_CHANGE: {
+				val reference = statechart.selectPortEventReferenceForChange
+				reference.changePortReference
+			}
+			case TRANSITION_DYNAMICS_PORT_EVENT_REFERENCE_EVENT_CHANGE: {
+				val reference = statechart.selectPortEventReferenceForChange
+				reference.changeEventReference
+			}
+			case TRANSITION_DYNAMICS_RAISE_EVENT_ACTION_PORT_CHANGE: {
+				val action = statechart.selectRaiseEventActionForChange
+				action.changePortReference
+			}
+			case TRANSITION_DYNAMICS_RAISE_EVENT_ACTION_EVENT_CHANGE: {
+				val action = statechart.selectRaiseEventActionForChange
+				action.changeEventReference
+			}
+			case TRANSITION_DYNAMICS_EVENT_PARAMETER_REFERENCE_PORT_CHANGE: {
+				val reference = statechart.selectEventParameterReferenceExpressionForChange
+				reference.changePortReference
+			}
+			case TRANSITION_DYNAMICS_EVENT_PARAMETER_REFERENCE_EVENT_CHANGE: {
+				val reference = statechart.selectEventParameterReferenceExpressionForChange
+				reference.changeEventReference
+			}
+			case TRANSITION_DYNAMICS_EVENT_PARAMETER_REFERENCE_PARAMETER_CHANGE: {
+				val reference = statechart.selectEventParameterReferenceExpressionForChange
+				reference.changeParameterReference
+			}
+			case TRANSITION_DYNAMICS_DECLARATION_REFERENCE_DECLARATION_CHANGE: {
+				val reference = statechart.selectDirectReferenceExpressionForDeclarationChange
+				reference.changeDeclarationReference
+			}
+			case TRANSITION_DYNAMICS_EFFECT_REMOVE: {
+				val transition = statechart.selectTransitionForEffectRemoval
+				transition.removeEffect
+			}
+			case STATE_DYNAMICS_STATE_ENTRY_ACTION_REMOVE: {
+				val state = statechart.selectStateForEntryActionRemoval
+				state.removeEntryAction
+			}
+			case STATE_DYNAMICS_STATE_EXIT_ACTION_REMOVE: {
+				val state = statechart.selectStateForExitActionRemoval
+				state.removeExitAction
+			}
+			case STATE_DYNAMICS_ENTRY_STATE_TARGET_CHANGE: {
+				val entryState = statechart.selectEntryStateForChange
+				entryState.changeEntryStateTarget
+			}
+			case STATE_DYNAMICS_ENTRY_STATE_CHANGE: {
+				val entryState = statechart.selectEntryStateForChange
+				entryState.changeEntryState
+			}
+			case EXPRESSION_DYNAMICS_EXPRESSION_CHANGE: {
+				val expression = statechart.selectExpressionForChange
+				expression.changeExpression
+			}
+			case EXPRESSION_DYNAMICS_EXPRESSION_INVERT: {
+				val expression = statechart.selectExpressionForInversion
+				expression.invertExpression
 			}
 			default:
-				throw new IllegalArgumentException("Not known mutation type: " + mutationType)
+				throw new IllegalArgumentException("Not known mutation operator: " + mutationType)
 		}
 	}
 	
@@ -686,7 +652,17 @@ class ModelMutator {
 	//
 	
 	protected def <T> getMutationType(Class<T> clazz) {
-		val mutationTypes = clazz.enumConstants
+		return clazz.getMutationType(null)
+	}
+	
+	protected def <T> getMutationType(Class<T> clazz, Collection<? extends T> consideredMutations) {
+		val mutationTypes = <T>newArrayList
+		
+		mutationTypes += clazz.enumConstants
+		if (consideredMutations !== null) { // Removing unwanted mutation types
+			mutationTypes.retainAll(consideredMutations)
+		}
+		
 		val mutationTypesCount = mutationTypes.length
 		val i = random.nextInt(mutationTypesCount)
 		
@@ -702,7 +678,26 @@ class ModelMutator {
 	// Note that these literals affect the probabilities of applying a certain mutation operator
 	
 	enum StatechartMutationType {
-			TRANSITION_STRUCTURE, TRANSITION_DYNAMICS, STATE_DYNAMICS, EXPRESSION_DYNAMICS }
+			TRANSITION_STRUCTURE_SOURCE_CHANGE, TRANSITION_STRUCTURE_TARGET_CHANGE,
+			TRANSITION_STRUCTURE_REMOVE, TRANSITION_STRUCTURE_GUARD_REMOVE,
+			TRANSITION_STRUCTURE_TRIGGER_REMOVE,
+			//
+			TRANSITION_DYNAMICS_ANY_PORT_EVENT_REFERENCE_PORT_CHANGE,
+			TRANSITION_DYNAMICS_PORT_EVENT_REFERENCE_PORT_CHANGE,
+			TRANSITION_DYNAMICS_PORT_EVENT_REFERENCE_EVENT_CHANGE,
+			TRANSITION_DYNAMICS_RAISE_EVENT_ACTION_PORT_CHANGE,
+			TRANSITION_DYNAMICS_RAISE_EVENT_ACTION_EVENT_CHANGE,
+			TRANSITION_DYNAMICS_EVENT_PARAMETER_REFERENCE_PORT_CHANGE,
+			TRANSITION_DYNAMICS_EVENT_PARAMETER_REFERENCE_EVENT_CHANGE,
+			TRANSITION_DYNAMICS_EVENT_PARAMETER_REFERENCE_PARAMETER_CHANGE,
+			TRANSITION_DYNAMICS_DECLARATION_REFERENCE_DECLARATION_CHANGE,
+			TRANSITION_DYNAMICS_EFFECT_REMOVE,
+			//
+			STATE_DYNAMICS_STATE_ENTRY_ACTION_REMOVE, STATE_DYNAMICS_STATE_EXIT_ACTION_REMOVE,
+			STATE_DYNAMICS_ENTRY_STATE_TARGET_CHANGE, STATE_DYNAMICS_ENTRY_STATE_CHANGE,
+			//
+			EXPRESSION_DYNAMICS_EXPRESSION_CHANGE, EXPRESSION_DYNAMICS_EXPRESSION_INVERT
+		}
 	
 	enum AdaptationMutationType {
 			ANNOTATION_STRUCTURE, ANNOTATION_DYNAMICS, EXPRESSION_DYNAMICS }
