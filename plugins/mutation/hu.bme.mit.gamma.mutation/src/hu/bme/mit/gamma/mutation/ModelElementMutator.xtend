@@ -39,6 +39,9 @@ import hu.bme.mit.gamma.statechart.composite.PortBinding
 import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression
 import hu.bme.mit.gamma.statechart.interface_.Port
+import hu.bme.mit.gamma.statechart.phase.History
+import hu.bme.mit.gamma.statechart.phase.MissionPhaseStateAnnotation
+import hu.bme.mit.gamma.statechart.phase.VariableBinding
 import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference
 import hu.bme.mit.gamma.statechart.statechart.EntryState
 import hu.bme.mit.gamma.statechart.statechart.PortEventReference
@@ -625,6 +628,61 @@ class ModelElementMutator {
 	
 	//
 	
+	def removeAnnotation(MissionPhaseStateAnnotation annotation) {
+		val state = annotation.getContainerOfType(State)
+		annotation.remove
+		
+		info('''Removed annotation from «state.name»''')
+	}
+	
+	def removeVariableBinding(VariableBinding variableBinding) {
+		val state = variableBinding.getContainerOfType(State)
+		variableBinding.remove
+		
+		info('''Removed variable binding from «state.name»''')
+	}
+	
+	def changeVariableBindingEndpoint(VariableBinding variableBinding) {
+		val state = variableBinding.getContainerOfType(State)
+		
+		val statechartVariable = variableBinding.statechartVariable
+		val instanceVariable = variableBinding.instanceVariableReference
+		
+		val random = random.nextInt(2)
+		
+		switch (random) {
+			case 0: { // Statechart variable
+				val newVariable = statechartVariable.newVariable // Note: this variable may already be present in another variable binding
+				
+				variableBinding.statechartVariable = newVariable
+			}
+			case 1: { // Instance variable
+				val variable = instanceVariable.variable
+				val newVariable = variable.newVariable // Note: this variable may already be present in another variable binding
+				
+				instanceVariable.variable = newVariable
+			}
+			default:
+				throw new IllegalArgumentException("Not known value: " + random)
+		}
+		
+		info('''Changed variable binding ending in «state.name»''')
+	}
+	
+	def changeHistory(MissionPhaseStateAnnotation annotation) {
+		val state = annotation.getContainerOfType(State)
+		
+		val history = annotation.history
+		val elements = History.values
+		
+		val newHistory = elements.selectDifferentElement(history)
+		annotation.history = newHistory
+		
+		info('''Set adaptation history to «newHistory» in «state.name»''')
+	}
+	
+	//
+	
 	protected def addInto(MultiaryExpression pivot, Expression lhs, Expression rhs) {
 		return pivot.addInto(
 			#[lhs, rhs])
@@ -651,8 +709,7 @@ class ModelElementMutator {
 	
 	//
 	
-	protected def <T extends EObject> selectDifferentElement(
-				List<? extends T> objects, T object) {
+	protected def <T> selectDifferentElement(List<? extends T> objects, T object) {
 		checkState(objects.contains(object), objects + " " + object)
 		
 		if (objects.size <= 1) {
@@ -671,7 +728,7 @@ class ModelElementMutator {
 		return newObject
 	}
 	
-	protected def <T extends EObject> selectElement(List<? extends T> objects) {
+	protected def <T> selectElement(List<? extends T> objects) {
 		if (objects.empty) {
 			return null
 		}

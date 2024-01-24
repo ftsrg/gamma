@@ -19,6 +19,9 @@ import hu.bme.mit.gamma.statechart.composite.PortBinding
 import hu.bme.mit.gamma.statechart.composite.SchedulableCompositeComponent
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression
+import hu.bme.mit.gamma.statechart.phase.MissionPhaseAnnotation
+import hu.bme.mit.gamma.statechart.phase.MissionPhaseStateAnnotation
+import hu.bme.mit.gamma.statechart.phase.VariableBinding
 import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference
 import hu.bme.mit.gamma.statechart.statechart.ChoiceState
 import hu.bme.mit.gamma.statechart.statechart.EntryState
@@ -80,6 +83,12 @@ class ModelMutator {
 	protected final Set<Channel> channelChangeMutations = newHashSet
 	protected final Set<PortBinding> portBindingRemoveMutations = newHashSet
 	protected final Set<PortBinding> portBindingChangeMutations = newHashSet
+	
+	protected final Set<VariableBinding> variableBindingRemoveMutations = newHashSet
+	protected final Set<VariableBinding> variableBindingChangeMutations = newHashSet
+	
+	
+	protected final Set<MissionPhaseStateAnnotation> adaptationChangeHistoryMutations = newHashSet	
 	//
 	
 	protected final extension ModelElementMutator modelElementMutator
@@ -159,6 +168,18 @@ class ModelMutator {
  				success = true
 				switch (component) {
 					StatechartDefinition: {
+						// Adaptive
+						val isAdaptiveStatechart = component.missionPhase
+						if (isAdaptiveStatechart) {
+							val MUTATE_ADAPTATION_PROBABILITY = 0.3
+							val random = random.nextDouble
+							if (random < MUTATE_ADAPTATION_PROBABILITY) {
+								val annotation = component.annotations.filter(MissionPhaseAnnotation).head
+								annotation.mutateOnce
+								return
+							}
+						}
+						// Normal statechart
 						component.mutateOnce
 					}
 					CompositeComponent: {
@@ -300,6 +321,76 @@ class ModelMutator {
 			}
 			default:
 				throw new IllegalArgumentException("Not known mutation type: " + mutationType)
+		}
+	}
+	
+	protected def mutateOnce(MissionPhaseAnnotation annotation) {
+		val statechart = annotation.containingStatechart
+		val stateAnnotations = statechart.getAllContentsOfType(MissionPhaseStateAnnotation)
+		val stateAnnotation = stateAnnotations.selectElementForMutation
+		
+		val mutationType = AdaptationMutationType.mutationType
+		val mutationOperatorIndex = mutationOperator
+		
+		switch (mutationType) {
+			case ANNOTATION_STRUCTURE: {
+				val OPERATOR_COUNT = 5
+				val i = mutationOperatorIndex % OPERATOR_COUNT
+				switch (i) {
+					case 0: {
+						stateAnnotation.removeAnnotation
+					}
+					case 1: {
+						val portBinding = stateAnnotation.selectPortBindingForRemoval
+						portBinding.removePortBinding
+					}
+					case 2: {
+						val portBinding = stateAnnotation.selectPortBindingForEndpointChange
+						portBinding.changePortBindingEndpoint
+					}
+					case 3: {
+						val variableBinding = stateAnnotation.selectVariableBindingForRemoval
+						variableBinding.removeVariableBinding
+					}
+					case 4: {
+						val variableBinding = stateAnnotation.selectVariableBindingForEndpointChange
+						variableBinding.changeVariableBindingEndpoint
+					}
+					default:
+						throw new IllegalArgumentException("Not known operator index: " + i)
+				}
+			}
+			case ANNOTATION_DYNAMICS: {
+				val OPERATOR_COUNT = 1
+				val i = mutationOperatorIndex % OPERATOR_COUNT
+				switch (i) {
+					case 0: {
+						adaptationChangeHistoryMutations += stateAnnotation
+						stateAnnotation.changeHistory
+					}
+					default:
+						throw new IllegalArgumentException("Not known operator index: " + i)
+				}
+			}
+			case EXPRESSION_DYNAMICS: {
+				val OPERATOR_COUNT = 2
+				val i = mutationOperatorIndex % OPERATOR_COUNT
+				switch (i) {
+					case 0: {
+						val expression = statechart.selectExpressionForChange
+						expression.changeExpression
+					}
+					case 1: {
+						val expression = statechart.selectExpressionForInversion
+						expression.invertExpression
+					}
+					default:
+						throw new IllegalArgumentException("Not known operator index: " + i)
+				}
+			}
+			default:
+				throw new IllegalArgumentException("Not known mutation type: " + mutationType)
+						
 		}
 	}
 	
@@ -545,6 +636,36 @@ class ModelMutator {
 	
 	//
 	
+	protected def selectPortBindingForRemoval(MissionPhaseStateAnnotation annotation) {
+		val portBindings = annotation.portBindings
+		val portBinding = portBindings.selectElementForMutation(portBindingRemoveMutations)
+		return portBinding
+	}
+	
+	protected def selectPortBindingForEndpointChange(MissionPhaseStateAnnotation annotation) {
+		val portBindings = annotation.portBindings
+		val portBinding = portBindings.selectElementForMutation(portBindingChangeMutations)
+		return portBinding
+	}
+	
+	protected def selectVariableBindingForRemoval(MissionPhaseStateAnnotation annotation) {
+		val variableBindings = annotation.variableBindings
+		val variableBinding = variableBindings.selectElementForMutation(variableBindingRemoveMutations)
+		return variableBinding
+	}
+	
+	protected def selectVariableBindingForEndpointChange(MissionPhaseStateAnnotation annotation) {
+		val variableBindings = annotation.variableBindings
+		val variableBinding = variableBindings.selectElementForMutation(variableBindingChangeMutations)
+		return variableBinding
+	}
+	
+	//
+	
+	protected def <T extends EObject> selectElementForMutation(Collection<? extends T> objects) {
+		return objects.selectElementForMutation(#[])
+	}
+	
 	protected def <T extends EObject> selectElementForMutation(Collection<? extends T> objects,
 			Collection<T> unselectableObjects) {
 		val selectableObjects = newArrayList
@@ -578,11 +699,14 @@ class ModelMutator {
 		return random.nextInt(MAX)
 	}
 	
-	//
+	// Note that these literals affect the probabilities of applying a certain mutation operator
 	
 	enum StatechartMutationType {
 			TRANSITION_STRUCTURE, TRANSITION_DYNAMICS, STATE_DYNAMICS, EXPRESSION_DYNAMICS }
-			
+	
+	enum AdaptationMutationType {
+			ANNOTATION_STRUCTURE, ANNOTATION_DYNAMICS, EXPRESSION_DYNAMICS }
+	
 	enum CompositeComponentMutationType {
 			COMPOSITION_STRUCTURE, COMPOSITION_DYNAMICS, EXPRESSION_DYNAMICS }
 			
