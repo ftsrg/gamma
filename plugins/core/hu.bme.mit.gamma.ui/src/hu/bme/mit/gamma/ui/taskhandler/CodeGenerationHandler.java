@@ -79,12 +79,16 @@ public class CodeGenerationHandler extends TaskHandler {
 		AnalysisModelTransformation transformation = GenmodelModelFactory.eINSTANCE.createAnalysisModelTransformation();
 		transformation.getLanguages().clear();
 		transformation.getLanguages().add(AnalysisLanguage.THETA);
-		transformation.setOptimize(false);  // TODO : FOR TESTING ONLY
 		
 		ComponentReference reference = GenmodelModelFactory.eINSTANCE.createComponentReference();
 		reference.setComponent(component);
 		transformation.setModel(reference);
 		transformation.setOptimizeEnvironmentalMessageQueues(false);
+		
+		/* rename file to be hidden */
+		String fileName = file.getName();
+		transformation.getFileName().clear();
+		transformation.getFileName().add("." + fileName);
 		
 		AnalysisModelTransformationHandler amth = new AnalysisModelTransformationHandler(file);
 		try {
@@ -94,8 +98,7 @@ public class CodeGenerationHandler extends TaskHandler {
 		}
 		
 		/* retrieve XSTS model */
-		String locationUriString = file.getLocationURI().toString().replace(file.getFileExtension(), "gsts");
-		logger.info(locationUriString);
+		String locationUriString = file.getLocationURI().toString().replace(fileName, "." + fileName).replace(file.getFileExtension(), "gsts");
 		URI locationUri = URI.createURI(locationUriString);
 		
 		Resource res = new ResourceSetImpl().getResource(locationUri, true);
