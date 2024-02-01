@@ -94,6 +94,7 @@
     <eLiterals name="PROMELA" value="3" literal="PROMELA"/>
     <eLiterals name="NUXMV" value="4" literal="NUXMV"/>
     <eLiterals name="OCRA" value="5" literal="OCRA"/>
+    <eLiterals name="TIMED_THETA" value="6" literal="TIMED_THETA"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="YakinduCompilation" abstract="true"
       eSuperTypes="#//Task">
