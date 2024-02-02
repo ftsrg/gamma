@@ -1,105 +1,191 @@
-@inproceedings{molnar2018gamma,
-    author = {Vince Moln{\'{a}}r and Bence Graics and Andr{\'{a}}s V{\"{o}}r{\"{o}}s and Istv{\'{a}}n Majzik and D{\'{a}}niel Varr{\'{o}}},
-    title = {The {G}amma statechart composition framework: design, verification and code generation for component-based reactive systems},
-    booktitle = {Proceedings of the 40th International Conference on Software Engineering: Companion Proceeedings},
-    pages = {113--116},
-    year = {2018},
-    publisher = {ACM},
-    doi = {10.1145/3183440.3183489},
-    type = {Conference},
-    url_link = {https://dl.acm.org/doi/10.1145/3183440.3183489},
-    url_pdf = {https://inf.mit.bme.hu/sites/default/files/publications/icse18.pdf},
-    abstract = {The Gamma Statechart Composition Framework is an integrated tool to support the design, verification and validation as well as code generation for component-based reactive systems. The behavior of each component is captured by a statechart, while assembling the system from components is driven by a domain-specific composition language. Gamma automatically synthesizes executable Java code extending the output of existing statechart-based code generators with composition related parts, and it supports formal verification by mapping composite statecharts to a back-end model checker. Execution traces obtained as witnesses during verification are back-annotated as test cases to replay an error trace or to validate external code generators.},
-}
-
-@article{graics_sosym20,
-    author = {Bence Graics and Vince Moln{\'a}r and Andr{\'a}s V{\"o}r{\"o}s and Istv{\'a}n Majzik and D{\'a}niel Varr{\'o}},
-    title = {Mixed-semantics composition of statecharts for the component-based design of reactive systems},
-    journal = {Software and Systems Modeling},
-    year = {2020},
-    publisher = {Springer},
-    doi = {10.1007/s10270-020-00806-5},
-    type = {Journal},
-    url_link = {https://link.springer.com/article/10.1007/s10270-020-00806-5},
-    keywords = {component-based design, composition language, formal semantics, formal verification, statecharts},
-    abstract = {The increasing complexity of reactive systems can be mitigated with the use of components and composition languages in model-driven engineering. Designing composition languages is a challenge itself as both practical applicability (support for different composition approaches in various application domains), and precise formal semantics (support for verification and code generation) have to be taken into account. In our Gamma Statechart Composition Framework, we designed and implemented a composition language for the synchronous, cascade synchronous, and asynchronous composition of statechart-based reactive components. We formalized the semantics of this composition language that provides the basis for generating composition-related Java source code as well as mapping the composite system to a back-end model checker for formal verification and model-based test case generation. In this paper, we present the composition language with its formal semantics, putting special emphasis on design decisions related to the language and their effects on verifiability and applicability. Furthermore, we demonstrate the design and verification functionality of the composition framework by presenting case studies from the cyber-physical system domain.},
-}
-
-@inproceedings{nagy_graics_mars20,
-    title = {Simulation-based Safety Assessment of High-level Reliability Models},
-    booktitle = {4th Workshop on Models for Formal Analysis of Real Systems},
-    year = {2020},
-    doi = {10.4204/EPTCS.316.9},
-    author = {Simon J{\'o}zsef Nagy and Bence Graics and Marussy Krist{\'o}f and Andr{\'a}s V{\"o}r{\"o}s},
-    type = {Workshop},
-    url_pdf = {https://arxiv.org/pdf/2004.13290},
-    url_link = {https://arxiv.org/abs/2004.13290},
-    abstract = {Systems engineering approaches use high-level models to capture the architecture and behavior of the system. However, when safety engineers conduct safety and reliability analysis, they have to create formal models, such as fault-trees, according to the behavior described by the high-level engineering models and environmental/fault assumptions. Instead of creating low-level analysis models, our approach builds on engineering models in safety analysis by exploiting the simulation capabilities of recent probabilistic programming and simulation advancements. Thus, it could be applied in accordance with standards and best practices for the analysis of a critical automotive system as part of an industrial collaboration, while leveraging high-level block diagrams and statechart models created by engineers. We demonstrate the applicability of our approach in a case study adapted from the automotive system from the collaboration.},
-}
-
-@misc{graics-bence-msc,
-    author = {Graics, Bence},
-    title = {Mixed-Semantics Composition of Statecharts for the Model-Driven Design of Reactive Systems},
-    note = {Master's Thesis, Budapest University of Technology and Economics},
-    year = {2018},
-    type = {Thesis},
-    url_pdf = {https://inf.mit.bme.hu/sites/default/files/gamma/documents/MSc2018_Graics.pdf},
-}
-
-@inproceedings{graics_majzik_minisy20,
-    title = {Modeling and Analysis of an Industrial Communication Protocol in the {Gamma} Framework},
-    booktitle = {27th Minisymposium of the Department of Measurement and Information Systems},
-    year = {2020},
-    address = {Budapest, Hungary},
-    author = {Bence Graics and Istv{\'a}n Majzik},
-    editor = {Bal{\'a}zs Renczes},
-    type = {Local event},    
-    url_pdf = {https://inf.mit.bme.hu/sites/default/files/gamma/documents/Minisy2020_Graics.pdf},
-    abstract = {Communication protocols are often designed on the basis of state-based models. During protocol design, the use of formal verification is indispensable, as concurrent behavior is notorious for hidden and sophisticated bugs. This paper presents a formal verification approach to verify an industrial communication protocol using the Gamma StatechartComposition Framework. Gamma is a modeling toolset for the design and analysis of reactive systems. It supports a family of modeling languages with formal semantics for the component-based definition of state-based behavior. It also supports formal verification by automatically mapping the defined models to the input formalisms of verification backends and back-annotating the results. The verification approach is presented in the context of the Orion industrial communication protocol. The verification approach supports the introduction of channel models with different message transmission characteristics and failure modes. Different execution modes of the components are also analyzed.},
-}
-
-@inproceedings{graics_molnar_minisy18,
-    title = {Mix-and-Match Composition in the {Gamma} Framework},
-    booktitle = {25th Minisymposium of the Department of Measurement and Information Systems},
-    year = {2018},
-    address = {Budapest, Hungary},
-    isbn = {978-963-313-285-2},
-    author = {Bence Graics and Vince Moln{\'a}r},
-    editor = {Pataki, B{\'e}la},
-    type = {Local event},
-    url_pdf = {https://inf.mit.bme.hu/sites/default/files/publications/minisy2018.pdf},
-    abstract = {The Gamma Statechart Composition Framework is a modeling tool that supports the hierarchical composition of statechart components with well-defined compositonal semantics, as well as source code generation and formal verification. The purpose of the framework is to provide common ground for modeling and verification tools, as well as to support component-based system design building on existing statechart modeling tools. Currently, the framework has a single composition semantics, which executes the components in a lockstep fashion. This paper presents a new composition language for the Gamma Framework, adding support for two more semantics. Asynchronousreactive semantics supports the proper abstraction of distributed communication, synchronous-reactive supports the modeling of highly synchronous communication, and cascade composition is a sequential decomposition of a single function.},
-}
-
 @inproceedings {graics_molnar_minisy17,
-    title = {Formal Compositional Semantics for {Yakindu} Statecharts},
-    booktitle = {24th Minisymposium of the Department of Measurement and Information Systems},
-    year = {2017},
-    pages = {22--25},
-    address = {Budapest, Hungary},
-    isbn = {978-963-313-243-2},
-    author = {Bence Graics and Vince Moln{\'a}r},
-    editor = {Pataki, B{\'e}la},
-    type = {Local event},
-    url_pdf = {https://inf.mit.bme.hu/sites/default/files/gamma/documents/Minisy2017_Graics.pdf},
-    abstract = {Many of today’s safety-critical systems are reactive, embedded systems. Their internal behavior is usually represented by state-based models. Furthermore, as the tasks carried out by such systems are getting more and more complex, there is a strong need for compositional modeling languages. Such modeling formalisms start from the component-level and use composition to build the system-level model as a collection of simple modules. There are a number of solutions supporting the model-based development of safety-critical embedded systems. One of the popular open-source tools is Yakindu, a statechart editor with a rich language and code generation capabilities. However, Yakindu so far lacks support for compositional modeling. This paper proposes a formal compositional language tailored to the semantics of Yakindu statecharts. We propose precise semantics for the composition to facilitate formal analysis and precise code generation. Based on the formal basis laid out here, we plan to build a complete tool-chain for the design and verification of component-based reactive systems.},
+	title = {Formal Compositional Semantics for {Yakindu} Statecharts},
+	booktitle = {24th Minisymposium of the Department of Measurement and Information Systems},
+	year = {2017},
+ 	pages = {22{\textendash}25},
+	address = {Budapest, Hungary},
+	isbn = {978-963-313-243-2},
+	author = {\textbf{Bence Graics} and Vince Moln{\'a}r},
+	editor = {Pataki, B{\'e}la}
 }
 
-@inproceedings{10.1145/3417990.3421407,
-author = {Horv\'{a}th, Benedek and Graics, Bence and Hajdu, \'{A}kos and Micskei, Zolt\'{a}n and Moln\'{a}r, Vince and R\'{a}th, Istv\'{a}n and Andolfato, Luigi and Gomes, Ivan and Karban, Robert},
-title = {Model Checking as a Service: Towards Pragmatic Hidden Formal Methods},
-year = {2020},
-isbn = {9781450381352},
-publisher = {Association for Computing Machinery},
-address = {New York, NY, USA},
-url = {https://doi.org/10.1145/3417990.3421407},
-doi = {10.1145/3417990.3421407},
-abstract = {Executable models can be used to support all engineering activities in Model-Based Systems Engineering. Testing and simulation of such models can provide early feedback about design choices. However, in today's complex systems, failures could arise due to subtle errors that are hard to find without checking all possible execution paths. Formal methods, and especially model checking can uncover such subtle errors, yet their usage in practice is limited due to the specialized expertise and high computing power required. Therefore we created an automated, cloud-based environment that can verify complex reachability properties on SysML State Machines using hidden model checkers. The approach and the prototype is illustrated using an example from the aerospace domain.},
-booktitle = {Proceedings of the 23rd ACM/IEEE International Conference on Model Driven Engineering Languages and Systems: Companion Proceedings},
-articleno = {37},
-numpages = {5},
-keywords = {model checking, SysML, verification, MBSE},
-location = {Virtual Event, Canada},
-series = {MODELS '20}
+@inproceedings {graics_molnar_minisy18,
+	title = {Mix-and-Match Composition in the {Gamma} Framework},
+	booktitle = {25th Minisymposium of the Department of Measurement and Information Systems},
+	year = {2018},
+ 	pages = {24{\textendash}27},
+	address = {Budapest, Hungary},
+	isbn = {978-963-313-285-2},
+	author = {\textbf{Bence Graics} and Vince Moln{\'a}r},
+	editor = {Pataki, B{\'e}la}
 }
 
+@inproceedings {molnar_et_al_icse18,
+	title = {The {Gamma Statechart Composition Framework}},
+	booktitle = {40th International Conference on Software Engineering ({ICSE})},
+	year = {2018},
+	pages = {113{\textendash}116},
+	publisher = {ACM},
+	address = {Gothenburg, Sweden},
+	author = {Vince Moln{\'a}r  and \textbf{Bence Graics} and Andr{\'a}s V{\"o}r{\"o}s and Istv{\'a}n Majzik and D{\'a}niel Varr{\'o}},
+	doi = {10.1145/3183440.3183489}
+}
+
+@inproceedings {nagy_mars_20,
+	title = {Simulation-based Safety Assessment of High-level Reliability Models},
+	booktitle = {4th Workshop on Models for Formal Analysis of Real Systems},
+	pages = {240{\textendash}260},
+	year = {2020},
+	doi = {10.4204/EPTCS.316.9},
+	author = {Simon J{\'o}zsef Nagy and \textbf{Bence Graics} and Marussy Krist{\'o}f and Andr{\'a}s V{\"o}r{\"o}s}
+}
+
+@InProceedings{graics_facs23,
+author="Graics, Bence
+and Mondok, Mil{\'a}n
+and Moln{\'a}r, Vince
+and Majzik, Istv{\'a}n",
+editor="C{\'a}mara, Javier
+and Jongmans, Sung-Shik",
+title="Model-Based Testing of Asynchronously Communicating Distributed Controllers",
+booktitle="Formal Aspects of Component Software",
+year="2024",
+publisher="Springer Nature Switzerland",
+address="Cham",
+pages="23--44",
+abstract="Programmable controllers are gaining prevalence even in distributed safety-critical infrastructures, e.g., in the railway and aerospace industries. Such systems are generally integrated using multiple loosely-coupled reactive components and must satisfy various critical requirements. Thus, their systematic testing is an essential task, which can be encumbered by their distributed characteristics. This paper presents a model-based integration test generation approach leveraging hidden formal methods based on the collaborating statechart models of the components. Statecharts can be integrated using various composition modes (e.g., synchronous and asynchronous) and then transformed (via a symbolic transition systems formalism -- XSTS) into the input formalisms of model checker back-ends, namely UPPAAL, Theta and Spin in an automated way. The model checkers are utilized for test generation based on multiple coverage criteria. The approach is implemented in our open source Gamma Statechart Composition Framework and evaluated on industrial-scale distributed controller subsystems from the railway industry.",
+isbn="978-3-031-52183-6"
+doi="10.1007/978-3-031-52183-6_2"
+}
+
+@inproceedings{graics_fmics23,
+author={\textbf{Bence Graics} and Vince Moln{\'a}r and Istv{\'a}n Majzik},
+editor="Cimatti, Alessandro and Titolo, Laura",
+title="Configurable Model-Based Test Generation for Distributed Controllers Using Declarative Model Queries and Model Checkers",
+booktitle="Formal Methods for Industrial Critical Systems",
+year="2023",
+publisher="Springer Nature Switzerland",
+address="Cham",
+pages="76--95",
+abstract="Distributed programmable controllers are getting prevalence in critical infrastructure, among others, in railway interlocking systems (RIS). Generally, such systems are integrated using various reactive components and must carry out critical tasks. Accordingly, their systematic testing is vital, which can be hindered by their complexity and distributed nature. This paper presents a model-based test generation approach using hidden formal methods. It is based on the collaborating statechart models of the system components and parametric test coverage criteria configurable by declarative model queries. Statecharts can be integrated using various composition modes (e.g., synchronous and asynchronous) and then automatically mapped into the inputs of model checker back-ends, namely UPPAAL, Theta and Spin. The model checkers generate tests by traversing the emergent analysis models to cover the elements of the test model as specified by pattern-based model queries. The returned diagnostic traces are then concretized to different execution environments. The approach is implemented in our open source Gamma Statechart Composition Framework and evaluated on a distributed RIS subsystem under development.",
+isbn="978-3-031-43681-9",
+doi="10.1007/978-3-031-43681-9_5"
+}
+
+@inproceedings {horvath_openmbee20,
+	title = {Model Checking as a Service: Towards Pragmatic Hidden Formal Methods},
+	booktitle = {Proceedings of the 23rd ACM/IEEE International Conference on Model Driven Engineering Languages and Systems: Companion Proceedings},
+	pages = {1{\textendash}5},
+	year = {2020},
+	doi = {10.1145/3417990.3421407},
+	author = {Benedek Horv{\'a}th and \textbf{Bence Graics} and {\'A}kos Hajdu and Zolt{\'a}n Micskei and Vince Moln{\'a}r and Istv{\'a}n R{\'a}th and Luigi Andolfato and Ivan Gomes and Robert Karban}
+}
+
+@article {horvath_incose_22,
+author = {Horváth, Benedek and Molnár, Vince and \textbf{Graics, Bence} and Hajdu, Ákos and Ráth, István and Horváth, Ákos and Karban, Robert and Trancho, Gelys and Micskei, Zoltán},
+title = {Pragmatic verification and validation of industrial executable {SysML} models},
+journal = {Systems Engineering},
+volume = {26},
+number = {6},
+pages = {693-714},
+doi = {10.1002/sys.21679},
+abstract = {Abstract In recent years, Model-Based Systems Engineering (MBSE) practices have been applied in various industries to design, simulate and verify complex systems. The verification and validation (V\&V) of such systems engineering models are crucial to develop high-quality systems. However, this is a challenging problem due to the complexity of the models and semantic differences in how different tools interpret the models, which can undermine the validity of the obtained results if they go undiscovered. To address these issues, we propose (i) a subset of the SysML language for which the practical semantic integrity of tools can be achieved and (ii) a cloud-based V\&V framework for this subset, lifting verification to an industrial scale. We demonstrate the feasibility of our approach on an industrial-scale model from the aerospace domain and summarize the lessons learned during transitioning formal verification tools to an industrial context.},
+year = {2023}
+}
+
+@inproceedings {graics_majzik_minisy20,
+	title = {Modeling and Analysis of an Industrial Communication Protocol in the {Gamma} Framework},
+	booktitle = {27th Minisymposium of the Department of Measurement and Information Systems},
+	year = {2020},
+ 	pages = {25{\textendash}28},
+% 	publisher = {Budapest University of Technology and Economics, Department of Measurement and Information Systems},
+% 	organization = {Budapest University of Technology and Economics, Department of Measurement and Information Systems},
+	address = {Budapest, Hungary},
+	author = {\textbf{Bence Graics} and Istv{\'a}n Majzik},
+	editor = {Bal{\'a}zs Renczes}
+}
+
+@inproceedings{graics_majzik_minisy23,
+	title = {Integration Test Generation and Formal Verification for Distributed Controllers},
+	booktitle = {30th Minisymposium of the Department of Measurement and Information Systems},
+	year = {2023},
+ 	pages = {1{\textendash}4},
+% 	publisher = {Budapest University of Technology and Economics, Department of Measurement and Information Systems},
+% 	organization = {Budapest University of Technology and Economics, Department of Measurement and Information Systems},
+	address = {Budapest, Hungary},
+	author = {\textbf{Bence Graics} and Istv{\'a}n Majzik},
+	editor = {Bal{\'a}zs Renczes},
+    doi = {10.3311/minisy2023-001}
+}
+
+@inproceedings {csuvarszki_graics_minisy21,
+	title = {Model-Driven Development of Heterogeneous Cyber-Physical Systems},
+	booktitle = {28th Minisymposium of the Department of Measurement and Information Systems},
+	year = {2021},
+% 	pages = {25{\textendash}28},
+% 	publisher = {Budapest University of Technology and Economics, Department of Measurement and Information Systems},
+% 	organization = {Budapest University of Technology and Economics, Department of Measurement and Information Systems},
+	address = {Budapest, Hungary},
+	author = {Csan{\'a}d Csuvarszki and \textbf{Bence Graics} and Andr{\'a}s V{\"o}r{\"o}s},
+	editor = {Bal{\'a}zs Renczes}
+}
+
+@article {graics_sosym_20,
+	title = {Mixed-Semantics Composition of Statecharts for the Component-Based Design of Reactive Systems},
+	journal = {Software and Systems Modeling},
+	volume = {19},
+	year = {2020},
+ 	pages = {1483{\textendash}1517},
+	publisher = {Springer},
+	chapter = {1483},
+%	keywords = {component-based design, composition language, formal semantics, formal verification, statecharts, mine},
+	doi = {10.1007/s10270-020-00806-5},
+	author = {\textbf{Bence Graics} and Vince Moln{\'a}r and Andr{\'a}s V{\"o}r{\"o}s and Istv{\'a}n Majzik and D{\'a}niel Varr{\'o}}
+}
+
+@article {graics_isse_22,
+	title = {Integration test generation for state-based components in the {Gamma} framework},
+	publisher = {Springer},
+	year = {2022},
+	author = {\textbf{Bence Graics} and Vince Moln{\'a}r and Istv{\'a}n Majzik}
+}
+
+@article {graics_incose_22,
+	title = {Component-based specification, design and verification of adaptive systems},
+	publisher = {Wiley Periodicals LLC},
+	year = {2023},
+	author = {\textbf{Bence Graics} and Vince Moln{\'a}r and Istv{\'a}n Majzik},
+    journal = {Systems Engineering},
+    volume = {26},
+    number = {5},
+    pages = {567-589},
+    % keywords = {adaptation model, adaptive systems, adaptive contracts, component-based systems engineering, test generation, tool, verification},
+    doi = {10.1002/sys.21675},
+    abstract = {Abstract Control systems are typically tightly embedded into their environment to enable adaptation to environmental effects. As the complexity of such adaptive systems is rapidly increasing, there is a strong need for coherent tool-centric approaches to aid their systematic development. This paper proposes an end-to-end component-based specification, design and verification approach for adaptive systems based on the integration of a high-level scenario language (sequence chart variant) and an adaptation definition language (statechart extension) in the open source Gamma tool. The scenario language supports high-level constructs for specifying contracts and the adaptation definition language supports the flexible activation and deactivation of static contracts and managed elements (state-based components) based on internal changes (e.g., faults), environmental changes (e.g., varying context) or interactions. The approach supports linking managed elements to static contracts to formally verify their adherence to the specified behavior at design time using integrated model checkers. Implementation can be derived from the adaptation model automatically, which can be tested using automated test generation and verified at runtime by contract-based monitors.} 
+}
+
+@inproceedings {graics_depcos_21,
+	title = {Contract-Based Specification and Test Generation for Adaptive Systems},
+	booktitle = {16th International Conference on Dependability of Computer Systems (DepCoS-RELCOMEX)},
+	series = {Advances in Intelligent Systems and Computing},
+	volume = {1389},
+	year = {2021},
+	pages = {136-145},
+	publisher = {Springer},
+	organization = {Springer},
+	address = {Wroc{\l}aw, Poland},
+	doi = {10.1007/978-3-030-76773-0},
+	author = {\textbf{Bence Graics} and Vince Moln{\'a}r and Istv{\'a}n Majzik}
+}
+
+@inproceedings {almeida_graics_ladc_21,
+	title = {Towards Simulation of {CubeSat} Operational Scenarios under a Cyber-Physical Systems View},
+	booktitle = {10th Latin-American Symposium on Dependable Computing (LADC 2021)},
+	year = {2021},
+	publisher = {IEEE},
+	organization = {IEEE},
+	address = {Florian{\'o}polis, Brazil},
+	doi = {10.1109/LADC53747.2021.9672594},
+%	url = {https://ieeexplore.ieee.org/document/9672594},
+	author = {Danilo Pallamin de Almeida and \textbf{Bence Graics} and Ronan Arraes Jardim Chagas and Fabiano Luis de Sousa and Fatima Mattiello-Francisco}
+}
