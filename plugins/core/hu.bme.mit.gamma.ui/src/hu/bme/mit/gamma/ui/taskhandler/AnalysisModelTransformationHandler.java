@@ -70,6 +70,7 @@ import hu.bme.mit.gamma.transformation.util.annotations.ComponentVariableReferen
 import hu.bme.mit.gamma.transformation.util.annotations.DataflowCoverageCriterion;
 import hu.bme.mit.gamma.transformation.util.annotations.InteractionCoverageCriterion;
 import hu.bme.mit.gamma.transformation.util.preprocessor.AnalysisModelPreprocessor;
+import hu.bme.mit.gamma.txsts.transformation.Gamma2TxstsTransformerSerializer;
 import hu.bme.mit.gamma.uppaal.composition.transformation.AsynchronousInstanceConstraint;
 import hu.bme.mit.gamma.uppaal.composition.transformation.AsynchronousSchedulerTemplateCreator.Scheduler;
 import hu.bme.mit.gamma.uppaal.composition.transformation.Constraint;
@@ -127,6 +128,9 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					break;
 				case OCRA: // Keep in mind that OCRA is not a model checker though
 					transformer = new Gamma2OcraTransformer();
+					break;
+				case TIMED_THETA:
+					transformer = new Gamma2TxstsTransformer();
 					break;
 				default:
 					throw new IllegalArgumentException(analysisLanguage + " is not supported");
@@ -823,4 +827,81 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 	
 	}
 	
+	class Gamma2TxstsTransformer extends AnalysisModelTransformer {
+		
+		protected final AnalysisModelPreprocessor modelPreprocessor = AnalysisModelPreprocessor.INSTANCE;
+		protected final ActionSerializer actionSerializer = ActionSerializer.INSTANCE;
+		
+		public void execute(AnalysisModelTransformation transformation) throws IOException {
+			logger.info("Starting TXSTS transformation");
+			ComponentReference reference = (ComponentReference) transformation.getModel();
+			Component component = reference.getComponent();
+			Entry<Integer, Integer> schedulingConstraint = evaluateConstraint(transformation.getConstraint());
+			Integer minSchedulingConstraint = (schedulingConstraint != null) ? schedulingConstraint.getKey() : null;
+			Integer maxSchedulingConstraint = (schedulingConstraint != null) ? schedulingConstraint.getValue() : null;
+			
+			String fileName = transformation.getFileName().get(0);
+			// Coverages
+			List<Coverage> coverages = transformation.getCoverages();
+			
+			ComponentInstanceReferences testedComponentsForStates = getCoverageInstances(
+					coverages, StateCoverage.class);
+			ComponentInstanceReferences testedComponentsForTransitions = getCoverageInstances(
+					coverages, TransitionCoverage.class);
+			ComponentInstanceReferences testedComponentsForTransitionPairs = getCoverageInstances(
+					coverages, TransitionPairCoverage.class);
+			ComponentInstancePortReferences testedComponentsForOutEvents = getCoveragePorts(
+					coverages, OutEventCoverage.class);
+			ComponentInstancePortStateTransitionReferences testedInteractions = getCoverageInteractions(
+					coverages, InteractionCoverage.class);
+			Entry<InteractionCoverageCriterion, InteractionCoverageCriterion> criterion = getInteractionCoverageCriteria(coverages);
+			InteractionCoverageCriterion senderCoverageCriterion = criterion.getKey();
+			InteractionCoverageCriterion receiverCoverageCriterion = criterion.getValue();
+			ComponentInstanceVariableReferences dataflowTestedVariables = getDataflowCoverageVariables(
+					coverages, DataflowCoverage.class);
+			DataflowCoverageCriterion dataflowCoverageCriterion = getDataflowCoverageCriterion(coverages);
+			ComponentInstancePortReferences testedComponentsForInteractionDataflow = getCoveragePorts(
+					coverages, InteractionDataflowCoverage.class);
+			DataflowCoverageCriterion interactionDataflowCoverageCriterion =
+				getInteractionDataflowCoverageCriterion(coverages);
+			
+			InitialStateSetting initialStateSetting = transformInitialStateSetting(
+					transformation.getInitialStateSetting());
+			
+			boolean optimize = transformation.isOptimize();
+			boolean optimizeEnvironmentalMessageQueues = transformation.isOptimizeEnvironmentalMessageQueues();
+			boolean optimizeArrays = optimizeEnvironmentalMessageQueues; // Same as optimizeEnvMQ to support code generation
+			boolean optimizeMessageQueues = optimizeEnvironmentalMessageQueues; // ...
+			
+			Gamma2TxstsTransformerSerializer transformer = new Gamma2TxstsTransformerSerializer(
+					component, reference.getArguments(),
+					targetFolderUri, fileName,
+					minSchedulingConstraint, maxSchedulingConstraint,
+					optimize, optimizeArrays, optimizeMessageQueues, optimizeEnvironmentalMessageQueues,
+					TransitionMerging.HIERARCHICAL,
+					transformation.getPropertyPackage(), new AnnotatablePreprocessableElements(
+						testedComponentsForStates, testedComponentsForTransitions,
+						testedComponentsForTransitionPairs, testedComponentsForOutEvents,
+						testedInteractions, senderCoverageCriterion, receiverCoverageCriterion,
+						dataflowTestedVariables, dataflowCoverageCriterion,
+						testedComponentsForInteractionDataflow, interactionDataflowCoverageCriterion
+					),
+					transformation.getInitialState(), initialStateSetting
+			);
+			transformer.execute();
+			// Property serialization
+			serializeProperties(fileName);
+			logger.info("The TXSTS transformation has been finished");
+		}
+		
+		@Override
+		protected PropertySerializer getPropertySerializer() {
+			return ThetaPropertySerializer.INSTANCE;
+		}
+
+		@Override
+		protected String getQueryFileExtension() {
+			return GammaFileNamer.THETA_QUERY_EXTENSION;
+		}
+	}
 }
