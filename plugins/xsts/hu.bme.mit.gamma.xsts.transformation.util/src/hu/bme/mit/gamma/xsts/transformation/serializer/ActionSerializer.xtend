@@ -42,6 +42,7 @@ class ActionSerializer {
 		«xSts.serializeDeclarations(serializePrimedVariables)»
 		
 		trans «FOR transition : xSts.transitions SEPARATOR " or "»{
+			«IF xSts.timed»__delay;«ENDIF»
 			«transition.action.serialize»
 		}«ENDFOR»
 		init {

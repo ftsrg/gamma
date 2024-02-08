@@ -182,8 +182,12 @@ class GammaToXstsTransformer {
 	
 	protected def void setClockVariables(XSTS xSts) {
 		if (minSchedulingConstraint === null) {
+			// We are expected to execute this branch if we aim at generating Timed XSTS models (TXSTS)
 			return
 		}
+		//
+		// Note that we get here if some kind of scheduling constraint is specified
+		//
 		val xStsClockSettingAction = createSequentialAction
 		// Increasing the clock variables
 		var VariableDeclaration xStsDelayVariable = null

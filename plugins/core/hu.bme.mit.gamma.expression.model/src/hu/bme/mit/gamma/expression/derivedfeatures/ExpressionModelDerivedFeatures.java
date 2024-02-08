@@ -494,6 +494,14 @@ public class ExpressionModelDerivedFeatures {
 		return expressionUtil.getInitialValueOfType(type);
 	}
 	
+	public static Declaration getContainingDeclaration(Type type) {
+		return ecoreUtil.getContainerOfType(type, Declaration.class);
+	}
+	
+	public static VariableDeclaration getContainingVariable(Type type) {
+		return ecoreUtil.getContainerOfType(type, VariableDeclaration.class);
+	}
+	
 	public static int getIndex(ParameterDeclaration parameter) {
 		ParametricElement container = (ParametricElement) parameter.eContainer();
 		return container.getParameterDeclarations().indexOf(parameter);

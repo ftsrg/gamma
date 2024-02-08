@@ -101,6 +101,11 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 				ClockVariableDeclarationAnnotation.class);
 	}
 	
+	public static boolean isTimed(XSTS xSts) {
+		List<VariableDeclaration> clockVariables = getClockVariables(xSts);
+		return !clockVariables.isEmpty();
+	}
+	
 	public static boolean isLocal(Declaration variable) {
 		EObject container = variable.eContainer();
 		return container instanceof VariableDeclarationAction;
