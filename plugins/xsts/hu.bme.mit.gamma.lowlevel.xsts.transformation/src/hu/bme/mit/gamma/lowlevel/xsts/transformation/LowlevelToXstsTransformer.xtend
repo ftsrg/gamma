@@ -738,6 +738,8 @@ class LowlevelToXstsTransformer {
 				
 				val xStsMergedAction = xSts.mergedAction
 				xStsMergedAction.appendToAction(xStsAssumeStateInvariant)
+				val xStsCongifurationInitAction = xSts.configurationInitializingTransition.action
+				xStsCongifurationInitAction.appendToAction(xStsAssumeStateInvariant.clone)
 			}
 		}
 	}
