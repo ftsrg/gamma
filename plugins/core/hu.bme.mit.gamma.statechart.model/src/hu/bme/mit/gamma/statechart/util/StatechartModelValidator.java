@@ -2203,7 +2203,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 				int index = invariants.indexOf(invariant);
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 						"A statechart invariant must be a boolean expression",
-						new ReferenceInfo(StatechartModelPackage.Literals.STATE__INVARIANTS, index)));
+						new ReferenceInfo(StatechartModelPackage.Literals.STATECHART_DEFINITION__INVARIANTS, index)));
 			}
 		}
 
