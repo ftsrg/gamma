@@ -1,0 +1,30 @@
+package statechartinvariants
+
+import "Interfaces"
+
+statechart StatechartWithStateinvariants [
+	port trigger : requires Trigger
+] {
+	var test_variable_1 : integer
+	var test_variable_2 : integer
+	
+	// We want to keep the value of a variable between bounds during the execution of the component
+	invariant (test_variable_1 > 0) and (test_variable_1 < 10)
+
+	region main {
+		initial Initial
+		state A {
+			// the value of the second variable is dependent on the value of first variable
+			entry / test_variable_2 := test_variable_1 + 1;
+		}
+		
+		state B
+	}
+	
+	transition from Initial to A / test_variable_1 := 1;
+	
+	// the value of the first variable is dependent on some external value
+	transition from A to A when trigger.trigger / test_variable_1 := test_variable_1 + trigger.trigger::value;
+	transition from A to B when any [test_variable_2 > 11]
+	
+}

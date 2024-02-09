@@ -1,0 +1,5 @@
+package Interfaces
+
+interface Trigger {
+	out event trigger(value: integer)
+}

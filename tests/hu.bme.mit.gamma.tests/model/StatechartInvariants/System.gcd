@@ -1,0 +1,11 @@
+package system
+
+import "Interfaces"
+import "statechartinvariants"
+
+sync System [
+	port trigger : requires Trigger
+] {
+	component statechartWithStatechartInvariants : StatechartWithStateinvariants
+	bind trigger -> statechartWithStatechartInvariants.trigger
+}
