@@ -187,7 +187,8 @@ SynchronousStatechartDefinition returns SynchronousStatechartDefinition:
 		('[' ((ports+=Port)((',')? ports+=Port)*)? ']')? '{'
 			(
 				variableDeclarations+=VariableDeclaration |
-				timeoutDeclarations+=TimeoutDeclaration
+				timeoutDeclarations+=TimeoutDeclaration |
+				('invariant' invariants+=Expression)
 			)*
 			(
 				regions+=Region |
@@ -213,7 +214,8 @@ AsynchronousStatechartDefinition returns AsynchronousStatechartDefinition:
 		('[' ((ports+=Port)((',')? ports+=Port)*)? ']')? '{'
 			(
 				variableDeclarations+=VariableDeclaration |
-				timeoutDeclarations+=TimeoutDeclaration
+				timeoutDeclarations+=TimeoutDeclaration |
+				('invariant' invariants+=Expression)
 			)*
 			(
 				regions+=Region |

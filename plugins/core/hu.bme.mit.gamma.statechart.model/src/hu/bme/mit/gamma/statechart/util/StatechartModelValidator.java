@@ -2193,5 +2193,21 @@ public class StatechartModelValidator extends ActionModelValidator {
 		
 		return validationResultMessages;
 	}
+
+	public Collection<ValidationResultMessage> checkStatechartInvariants(StatechartDefinition statechart) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+
+		List<Expression> invariants = statechart.getInvariants();
+		for (Expression invariant : invariants) {
+			if (!typeDeterminator.isBoolean(invariant)) {
+				int index = invariants.indexOf(invariant);
+				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+						"A statechart invariant must be a boolean expression",
+						new ReferenceInfo(StatechartModelPackage.Literals.STATE__INVARIANTS, index)));
+			}
+		}
+
+		return validationResultMessages;
+	}
 	
 }

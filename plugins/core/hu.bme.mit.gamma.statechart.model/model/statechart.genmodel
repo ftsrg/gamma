@@ -300,6 +300,7 @@
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute statechart.ecore#//StatechartDefinition/orthogonalRegionSchedulingOrder"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute statechart.ecore#//StatechartDefinition/transitionPriority"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute statechart.ecore#//StatechartDefinition/guardEvaluation"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//StatechartDefinition/invariants"/>
     </genClasses>
     <genClasses ecoreClass="statechart.ecore#//SynchronousStatechartDefinition"/>
     <genClasses ecoreClass="statechart.ecore#//AsynchronousStatechartDefinition">
