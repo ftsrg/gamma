@@ -59,6 +59,7 @@ import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
 import hu.bme.mit.gamma.theta.verification.ThetaVerification;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
+import hu.bme.mit.gamma.trace.testgeneration.c.MakefileGenerator;
 import hu.bme.mit.gamma.trace.testgeneration.java.TestGenerator;
 import hu.bme.mit.gamma.trace.util.TraceUtil;
 import hu.bme.mit.gamma.transformation.util.GammaFileNamer;
@@ -282,6 +283,7 @@ public class VerificationHandler extends TaskHandler {
 		traces.addAll(retrievedTraces);
 		if (serializeTraces) { // After 'traces.add...'
 			serializeTraces();
+			MakefileGenerator.tests.clear(); // Manual reset
 		}
 		
 		// Note that .get and .json postfix ids will not match if optimization is applied

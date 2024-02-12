@@ -37,6 +37,7 @@ import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceE
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.Package;
+import hu.bme.mit.gamma.trace.testgeneration.c.MakefileGenerator;
 import hu.bme.mit.gamma.transformation.util.GammaFileNamer;
 import hu.bme.mit.gamma.transformation.util.PropertyUnfolder;
 import hu.bme.mit.gamma.uppaal.serializer.UppaalModelSerializer;
@@ -218,6 +219,7 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 			verificationHandler.optimizeTraces();
 		}
 		verificationHandler.serializeTraces(); // Serialization in one pass
+		MakefileGenerator.tests.clear(); // Manual reset
 		// Reinstate original state
 		propertyPackages.clear();
 		propertyPackages.addAll(savedPropertyPackages);

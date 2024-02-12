@@ -18,6 +18,9 @@ import java.nio.file.Files
 import hu.bme.mit.gamma.util.FileUtil
 
 class MakefileGenerator {
+	static val String ENV_NAME = "unity"
+	/* requires manual reset after the test generation has finished */
+	public static val tests = newArrayList
 	
 	val FileUtil fileUtil = FileUtil.INSTANCE
 	
@@ -29,25 +32,26 @@ class MakefileGenerator {
 		this.trace = trace
 		this.name = name
 		this.out = out
+		tests.add(name.toLowerCase)
 	}
 	
 	def String generate() {
 		return '''
 			CC = gcc
-			CFLAGS = -Wall -lunity -fcommon
-			SOURCES = «name.toLowerCase».c «trace.component.name.toLowerCase».c «trace.component.name.toLowerCase».h «trace.component.name.toLowerCase»wrapper.c «trace.component.name.toLowerCase»wrapper.h
-			OUTPUT = «name.toLowerCase».exe
+			CFLAGS = -Wall -lunity -fcommon «IF System.getenv(ENV_NAME) !== null»-L«System.getenv(ENV_NAME)»«ENDIF»
+			SOURCES = «trace.component.name.toLowerCase».c «trace.component.name.toLowerCase».h «trace.component.name.toLowerCase»wrapper.c «trace.component.name.toLowerCase»wrapper.h
+			TESTS = «tests.join('.c ')»
+			OUTPUT = «trace.component.name.toLowerCase».exe
 			
-			all: $(OUTPUT) run_tests clean
+			all: «tests.join(' ')»
 			
-			$(OUTPUT): $(SOURCES)
-				$(CC) -o $(OUTPUT) $(SOURCES) $(CFLAGS)
-				
-			run_tests: $(OUTPUT)
-				./$(OUTPUT)
+			«FOR test : tests SEPARATOR System.lineSeparator»
+				«test»: $(SOURCES)
+					$(CC) -o $(OUTPUT) «test».c $(SOURCES) $(CFLAGS)
+					./$(OUTPUT)
+					rm -f $(OUTPUT)
+			«ENDFOR»
 			
-			clean:
-				rm -f $(OUTPUT)
 		'''
 	}
 	
