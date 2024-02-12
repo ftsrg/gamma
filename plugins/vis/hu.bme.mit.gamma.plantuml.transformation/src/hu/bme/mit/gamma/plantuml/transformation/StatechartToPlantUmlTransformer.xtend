@@ -260,7 +260,7 @@ class StatechartToPlantUmlTransformer {
 	 */
 	protected def stateActionsSearch(StateNode statenode) {
 		val state = statenode as State
-		if (!(state.entryActions.empty) || !(state.exitActions.empty)) {
+		if (!(state.entryActions.empty) || !(state.exitActions.empty) || !(state.invariants.empty)) {
 			val result = '''
 				«IF !(state.invariants.empty)»
 					«FOR invariant: state.invariants»
