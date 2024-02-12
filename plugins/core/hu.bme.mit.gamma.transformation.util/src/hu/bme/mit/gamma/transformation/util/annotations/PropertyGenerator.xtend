@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2021 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -23,13 +23,13 @@ import hu.bme.mit.gamma.property.model.PropertyPackage
 import hu.bme.mit.gamma.property.util.PropertyUtil
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.CompositeModelFactory
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression
-import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction
 import hu.bme.mit.gamma.statechart.statechart.State
@@ -53,6 +53,7 @@ class PropertyGenerator {
 	// Single component reference or the whole chain is needed
 	// That is, we reference the model AFTER or BEFORE the unfolding 
 	protected boolean isSimpleComponentReference
+	protected final boolean optimizePropertyOrder = true
 	//
 	protected final PropertyUtil propertyUtil = PropertyUtil.INSTANCE
 	protected final extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
@@ -69,19 +70,21 @@ class PropertyGenerator {
 	}
 
 	def PropertyPackage initializePackage(Component component) {
-		val PropertyPackage propertyPackage = factory.createPropertyPackage
-		val Package _package = component.containingPackage
+		val propertyPackage = factory.createPropertyPackage
+		val _package = component.containingPackage
+		
 		propertyPackage.imports += _package
 		propertyPackage.component = component
+		
 		return propertyPackage
 	}
 
 	def List<CommentableStateFormula> createStateReachability(Collection<SynchronousComponentInstance> instances) {
-		val List<CommentableStateFormula> formulas = newArrayList
+		var List<CommentableStateFormula> formulas = newArrayList
 		for (SynchronousComponentInstance instance : instances) {
-			val Component type = instance.type
+			val type = instance.type
 			if (type instanceof StatechartDefinition) {
-				for (state : StatechartModelDerivedFeatures.getAllStates(type)) {
+				for (state : type.allStates) {
 					val stateReference = compositeFactory.createComponentInstanceStateReferenceExpression
 					val parentRegion = StatechartModelDerivedFeatures.getParentRegion(state)
 					stateReference.setInstance(createInstanceReference(instance))
@@ -95,6 +98,19 @@ class PropertyGenerator {
 				}
 			}
 		}
+		// Order optimization - "further" nodes are put earlier in the list
+		if (optimizePropertyOrder) {
+			val nodeDistances = newLinkedHashMap
+			for (statechart : instances.map[it.derivedType].filter(StatechartDefinition)) {
+				nodeDistances += statechart.containedStateNodeDistances
+			}
+			formulas = formulas.sortBy[nodeDistances.getOrDefault(it
+					.getAllContentsOfType(ComponentInstanceStateReferenceExpression)
+					.onlyElement
+					.state, 0 /* Default 0 for unreachable nodes? */)]
+					.reverse
+		}
+		//
 		return formulas
 	}
 
@@ -175,7 +191,20 @@ class PropertyGenerator {
 		if (transitionAnnotations.empty) {
 			return formulas
 		}
-		for (transition : transitionAnnotations.transitions) {
+		// Order optimization - "further" transitions are put earlier in the list - makes sense if there is no slicing
+		var List<Transition> transitions = newArrayList
+		transitions += transitionAnnotations.transitions
+		if (optimizePropertyOrder) {
+			val transitionDistances = newLinkedHashMap
+			for (statechart : transitions.map[it.containingStatechart].toSet) {
+				transitionDistances += statechart.containedTransitionDistances
+			}
+			transitions = transitions.sortBy[transitionDistances.getOrDefault(it,
+					0 /* Default 0 for unreachable transitions? */)]
+					.reverse
+		}
+		//
+		for (transition : transitions) {
 			val variable = transitionAnnotations.getVariable(transition)
 			val reference = createVariableReference(variable)
 			val stateFormula = propertyUtil.createEF(propertyUtil.createAtomicFormula(reference))

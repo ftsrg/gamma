@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -12,7 +12,6 @@ package hu.bme.mit.gamma.util
 
 import java.util.LinkedList
 import java.util.Scanner
-import java.util.logging.Level
 import java.util.logging.Logger
 
 class ScannerLogger implements Runnable {
@@ -27,6 +26,7 @@ class ScannerLogger implements Runnable {
 	//
 	
 	final int storedLineCapacity
+	final boolean printLines
 	final LinkedList<String> lines = newLinkedList
 	
 	//
@@ -43,14 +43,31 @@ class ScannerLogger implements Runnable {
 		this(scanner, null)
 	}
 	
+	new(Scanner scanner, boolean printLines) {
+		this(scanner, null, printLines)
+	}
+	
 	new(Scanner scanner, String errorLine) {
-		this(scanner, errorLine, 0)
+		this(scanner, errorLine, 0, true)
+	}
+	
+	new(Scanner scanner, String errorLine, boolean printLines) {
+		this(scanner, errorLine, 0, printLines)
+	}
+	
+	new(Scanner scanner, int storedLineCapacity) {
+		this(scanner, null, storedLineCapacity, true)
 	}
 	
 	new(Scanner scanner, String errorLine, int storedLineCapacity) {
+		this(scanner, errorLine, storedLineCapacity, true)
+	}
+	
+	new(Scanner scanner, String errorLine, int storedLineCapacity, boolean printLines) {
 		this.scanner = scanner
 		this.errorLine = errorLine
 		this.storedLineCapacity = storedLineCapacity
+		this.printLines = printLines
 	}
 	
 	override void run() {
@@ -60,7 +77,10 @@ class ScannerLogger implements Runnable {
 				line.checkError
 				line.storeLine
 			}
-			logger.log(Level.INFO, line)
+			if (printLines) {
+				logger.info(line)
+//				println(line)
+			}
 		}
 	}
 	
@@ -111,6 +131,10 @@ class ScannerLogger implements Runnable {
 	def start() {
 		thread = new Thread(this)
 		thread.start
+	}
+	
+	def join() {
+		thread.join
 	}
 	
 }

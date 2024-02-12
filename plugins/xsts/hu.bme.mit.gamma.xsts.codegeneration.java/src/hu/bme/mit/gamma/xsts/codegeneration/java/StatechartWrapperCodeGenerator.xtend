@@ -17,6 +17,7 @@ import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.xsts.model.XSTS
 
 import static extension hu.bme.mit.gamma.codegeneration.java.util.Namings.*
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.LowlevelNamings.*
@@ -77,28 +78,55 @@ class StatechartWrapperCodeGenerator {
 				«CLASS_NAME.toFirstLower» = new «gammaStatechart.wrappedStatemachineClassName»(«FOR parameter : gammaStatechart.parameterDeclarations SEPARATOR ', '»«parameter.name»«ENDFOR»);
 			}
 			
+			//
 			public void reset() {
+				this.handleBeforeReset();
+				this.resetVariables();
+				this.resetStateConfigurations();
+				this.raiseEntryEvents();
+				this.handleAfterReset();
+			}
+			
+			public void handleBeforeReset() {
 				// Clearing the in events
 				insertQueue = true;
 				processQueue = false;
 				eventQueue1.clear();
 				eventQueue2.clear();
-				//
-				«CLASS_NAME.toFirstLower».reset();
+			}
+			
+			public void resetVariables() {
+				«CLASS_NAME.toFirstLower».resetVariables();
+			}
+			
+			public void resetStateConfigurations() {
+				«CLASS_NAME.toFirstLower».resetStateConfigurations();
+			}
+			
+			public void raiseEntryEvents() {
+				«CLASS_NAME.toFirstLower».raiseEntryEvents();
+			}
+			
+			public void handleAfterReset() {
 				timer.saveTime(this);
 				notifyListeners();
 				«IF gammaStatechart.hasInternalPort»handleInternalEvents();«ENDIF»
 			}
+			//
 		
 			/** Changes the event queues of the component instance. Should be used only be the container (composite system) class. */
 			public void changeEventQueues() {
-			insertQueue = !insertQueue;
-			processQueue = !processQueue;
+				«IF gammaStatechart.synchronousStatechart»
+					insertQueue = !insertQueue;
+					processQueue = !processQueue;
+				«ENDIF»
 			}
 			
 			/** Changes the event queues to which the events are put. Should be used only be a cascade container (composite system) class. */
 			public void changeInsertQueue() {
-				insertQueue = !insertQueue;
+				«IF gammaStatechart.synchronousStatechart»
+					insertQueue = !insertQueue;
+				«ENDIF»
 			}
 			
 			/** Returns whether the eventQueue containing incoming messages is empty. Should be used only be the container (composite system) class. */
@@ -116,10 +144,14 @@ class StatechartWrapperCodeGenerator {
 			
 			/** Returns the event queue from which events should be inspected in the particular cycle. */
 			private Queue<Event> getProcessQueue() {
-				if (processQueue) {
-					return eventQueue1;
-				}
-				return eventQueue2;
+				«IF gammaStatechart.synchronousStatechart»
+					if (processQueue) {
+						return eventQueue1;
+					}
+					return eventQueue2;
+				«ELSE»
+					return getInsertQueue();
+				«ENDIF»
 			}
 			
 			«FOR port : gammaStatechart.ports SEPARATOR System.lineSeparator»
@@ -163,19 +195,17 @@ class StatechartWrapperCodeGenerator {
 				runComponent();
 			}
 			
-			//universal scheduling interface
 			public void schedule() {
 				runCycle();
 			}
 			
-		//get the wrapped statemachine
 		public «gammaStatechart.wrappedStatemachineClassName» get«CLASS_NAME.toFirstUpper»(){
 			return «CLASS_NAME.toFirstLower»;
 		}
 			
 			public void runComponent() {
 				Queue<Event> eventQueue = getProcessQueue();
-				while (!eventQueue.isEmpty()) {
+				«IF gammaStatechart.synchronousStatechart»while«ELSE»if«ENDIF» (!eventQueue.isEmpty()) {
 					«GAMMA_EVENT_CLASS» event = eventQueue.remove();
 					switch (event.getEvent()) {
 						«FOR port : gammaStatechart.ports»
@@ -264,7 +294,7 @@ class StatechartWrapperCodeGenerator {
 			}
 		}
 	'''
-
+	
 	def getClassName() {
 		return CLASS_NAME
 	}

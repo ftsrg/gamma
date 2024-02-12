@@ -1,0 +1,75 @@
+package global_rigel
+
+import "Interfaces/Interfaces.gcd"
+
+import "StateMachines/VezerloKozpont/RigelVezerloKozpontInternal.gcd"
+import "StateMachines/Diszpecser/RigelDiszpecserInternal.gcd"
+import "StateMachines/ObjektumKezelo/RigelObjektumKezeloInternal.gcd"
+
+cascade RigelSystemComponentSet(SchedulingTime : integer, SchedulingTimeMax : integer) [
+	port FelugyeloPortIn : requires Rigel
+	port FelugyeloPortOut : provides Rigel
+	
+	port OrionConn : requires OrionConn
+	port OrionDisconn : requires OrionDisconn
+	
+	port OrionDisconnToVk : requires OrionDisconnToVk
+	port AllObjDataSent : requires AllObjDataSent
+	
+	port SendData_objektumNyilvantarto : requires SendData
+	
+	port ObjektumKezeloPortIn : requires Rigel
+	port ObjektumKezeloPortOut : provides Rigel
+	
+	// Internal port in
+	
+	port vezerloKozpontPortIn : requires Rigel
+	port diszpecserVezerloKozpontPortIn : requires Rigel
+	port diszpecserObjektumKezeloPortIn : requires Rigel
+	port objektumKezeloDiszpecserPortIn : requires Rigel
+	
+	// Internal port outs
+	
+	port vezerloKozpontPortOut : provides RigelInternal
+	port diszpecserVezerloKozpontPortOut : provides RigelInternal
+	port diszpecserObjektumKezeloPortOut : provides RigelInternal
+	port objektumKezeloDiszpecserPortOut : provides RigelInternal 
+	
+] {
+	component vezerloKozpont : RigelVezerloKozpont(3, 3, 3)
+	component diszpecser : RigelDiszpecser(4, 3, 2)
+	component objektumKezelo : RigelObjektumKezelo(SchedulingTime, SchedulingTimeMax, 5, 4, 2, 3)
+	
+	// External control and answers
+	bind FelugyeloPortIn -> vezerloKozpont.FelugyeloPortIn
+	bind FelugyeloPortOut -> vezerloKozpont.FelugyeloPortOut
+	
+//	bind ObjektumKezeloPortIn -> diszpecser.ObjektumKezeloPortIn
+//	bind ObjektumKezeloPortOut -> diszpecser.ObjektumKezeloPortOut
+	
+	// Operation calls
+	bind OrionConn -> vezerloKozpont.OrionConn
+	
+//	bind OrionDisconn -> vezerloKozpont.OrionDisconn
+//	bind OrionDisconnToVk -> diszpecser.OrionDisconnToVk
+//	bind OrionDisconn -> objektumKezelo.OrionDisconn
+
+	bind AllObjDataSent -> diszpecser.AllObjDataSent
+	
+	bind SendData_objektumNyilvantarto -> objektumKezelo.SendData_objektumNyilvantarto
+	
+	// Internal port in
+	
+	bind vezerloKozpontPortIn -> vezerloKozpont.PortIn
+	bind diszpecserVezerloKozpontPortIn -> diszpecser.VezerloKozpontPortIn
+	bind diszpecserObjektumKezeloPortIn -> diszpecser.ObjektumKezeloPortIn
+	bind objektumKezeloDiszpecserPortIn -> objektumKezelo.DiszpecserPortIn
+	
+	// Internal port outs
+	
+	bind vezerloKozpontPortOut -> vezerloKozpont.PortOut
+	bind diszpecserVezerloKozpontPortOut -> diszpecser.VezerloKozpontPortOut
+	bind diszpecserObjektumKezeloPortOut -> diszpecser.ObjektumKezeloPortOut
+	bind objektumKezeloDiszpecserPortOut -> objektumKezelo.DiszpecserPortOut
+
+}

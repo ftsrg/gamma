@@ -13,6 +13,7 @@ package hu.bme.mit.gamma.ui.taskhandler;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.eclipse.core.resources.IFile;
 
@@ -31,8 +32,9 @@ public class EventPriorityTransformationHandler extends TaskHandler {
 	public void execute(EventPriorityTransformation eventPriorityTransformation) throws IOException {
 		// Setting target folder
 		setTargetFolder(eventPriorityTransformation);
-		///
+		//
 		setFileName(eventPriorityTransformation);
+		
 		StatechartDefinition statechart = eventPriorityTransformation.getStatechart();
 		EventPriorityTransformer eventPriorityTransformer = new EventPriorityTransformer(statechart);
 		StatechartDefinition prioritizedTransitionsStatechart = eventPriorityTransformer.execute();
@@ -43,10 +45,12 @@ public class EventPriorityTransformationHandler extends TaskHandler {
 	}
 	
 	private void setFileName(EventPriorityTransformation eventPriorityTransformation) {
-		String fileName = getNameWithoutExtension(getContainingFileName(eventPriorityTransformation.getStatechart()));
-		checkArgument(eventPriorityTransformation.getFileName().size() <= 1);
-		if (eventPriorityTransformation.getFileName().isEmpty()) {
-			eventPriorityTransformation.getFileName().add(fileName);
+		String fileName = getNameWithoutExtension(
+				getContainingFileName(eventPriorityTransformation.getStatechart()));
+		List<String> fileNames = eventPriorityTransformation.getFileName();
+		checkArgument(fileNames.size() <= 1);
+		if (fileNames.isEmpty()) {
+			fileNames.add(fileName);
 		}
 	}
 	

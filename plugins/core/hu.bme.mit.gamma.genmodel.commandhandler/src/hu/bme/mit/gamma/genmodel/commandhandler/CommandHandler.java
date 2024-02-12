@@ -10,7 +10,6 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.genmodel.commandhandler;
 
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.eclipse.core.commands.AbstractHandler;
@@ -22,52 +21,80 @@ import org.eclipse.ui.handlers.HandlerUtil;
 
 import hu.bme.mit.gamma.dialog.DialogUtil;
 import hu.bme.mit.gamma.ui.GammaApi;
+import hu.bme.mit.gamma.util.InterruptableCallable;
+import hu.bme.mit.gamma.util.ThreadRacer;
 
 public class CommandHandler extends AbstractHandler {
-	
+	//
 	protected static Thread thread = null;
+	protected static ThreadRacer<Void> threadRacer = null;
+	//
 	protected final Logger logger = Logger.getLogger("GammaLogger");
-
+	//
 	@Override
 	public Object execute(ExecutionEvent event) {
-		if (thread == null || !thread.isAlive()) {
-			thread = new Thread(
-				new Runnable() {
-					public void run() {
-						try {
-							ISelection sel = HandlerUtil.getActiveMenuSelection(event);
-							if (sel instanceof IStructuredSelection) {
-								IStructuredSelection selection = (IStructuredSelection) sel;
-								if (selection.getFirstElement() != null) {
-									if (selection.getFirstElement() instanceof IFile) {
-										IFile file = (IFile) selection.getFirstElement();
-										GammaApi gammaApi = new GammaApi();
-										gammaApi.run(
-												file.getFullPath().toString());
-										// new TaskExecutionTimeMeasurer(10, false, MedianCalculator.INSTANCE, "time.txt", TimeUnit.SECONDS)
-									}
-								}
-							}
-						} catch (Exception exception) {
-							exception.printStackTrace();
-							logger.log(Level.SEVERE, exception.getMessage());
-							DialogUtil.showErrorWithStackTrace(exception.getMessage(), exception);
-						}
+		if (threadRacer == null || threadRacer.isTerminated()) {
+			threadRacer = new ThreadRacer<Void>(
+				new InterruptableCallable<Void>() {
+					public Void call() throws Exception {
+						start(event);
+						return null;
+					}
+					public void cancel() {
+						// No operation
 					}
 				}
 			);
-			
+			thread = new Thread(
+				new Runnable() {
+					public void run() {
+						threadRacer.execute();
+					}
+				}
+			);
 			thread.start();
 		}
 		else {
-			System.out.println(thread.getName() + " is still running");
-			logger.log(Level.INFO, thread.getName() + " is still running");
+			String name = thread.getName();
+			String info = name + " is still running";
+			System.out.println(info);
+			logger.info(info);
 		}
+		
 		return null;
 	}
 	
+	protected void start(ExecutionEvent event) {
+		try {
+			ISelection sel = HandlerUtil.getActiveMenuSelection(event);
+			if (sel instanceof IStructuredSelection) {
+				IStructuredSelection selection = (IStructuredSelection) sel;
+				if (selection.getFirstElement() != null) {
+					if (selection.getFirstElement() instanceof IFile) {
+						IFile file = (IFile) selection.getFirstElement();
+						GammaApi gammaApi = new GammaApi();
+						gammaApi.run(
+								file.getFullPath().toString());
+						// new TaskExecutionTimeMeasurer(10, false, MedianCalculator.INSTANCE, "time.txt", TimeUnit.SECONDS)
+					}
+				}
+			}
+		} catch (Exception exception) {
+			exception.printStackTrace();
+			String message = exception.getMessage();
+			logger.severe(message);
+			DialogUtil.showErrorWithStackTrace(message, exception);
+		}
+	}
+	
+	//
+	
 	public static Thread getThread() {
 		return thread;
+	}
+	
+	public static ThreadRacer<Void> getThreadRacer() {
+		return threadRacer;
 	}
 	
 }

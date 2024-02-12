@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2019-2023 Contributors to the Gamma project
+ * Copyright (c) 2019-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -23,6 +23,7 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 
 import hu.bme.mit.gamma.dialog.DialogUtil;
+import hu.bme.mit.gamma.expression.model.ExpressionModelFactory;
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator;
 import hu.bme.mit.gamma.genmodel.model.AbstractCodeGeneration;
 import hu.bme.mit.gamma.genmodel.model.AdaptiveContractTestGeneration;
@@ -34,6 +35,7 @@ import hu.bme.mit.gamma.genmodel.model.TraceGeneration;
 import hu.bme.mit.gamma.genmodel.model.Verification;
 import hu.bme.mit.gamma.property.language.ui.serializer.PropertyLanguageSerializer;
 import hu.bme.mit.gamma.property.model.PropertyPackage;
+import hu.bme.mit.gamma.property.util.PropertyUtil;
 import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.statechart.language.ui.serializer.StatechartLanguageSerializer;
 import hu.bme.mit.gamma.trace.language.ui.serializer.TraceLanguageSerializer;
@@ -50,6 +52,7 @@ public abstract class TaskHandler {
 	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
 	protected final JavaUtil javaUtil = JavaUtil.INSTANCE;
 	protected final FileUtil fileUtil = FileUtil.INSTANCE;
+	protected final PropertyUtil propertyUtil = PropertyUtil.INSTANCE;
 	protected final ExpressionEvaluator expressionEvaluator = ExpressionEvaluator.INSTANCE;
 	
 	protected final GammaFileNamer fileNamer = GammaFileNamer.INSTANCE;
@@ -60,19 +63,23 @@ public abstract class TaskHandler {
 	
 	protected String projectLocation;
 	protected String targetFolderUri;
-	
+
+	protected final ExpressionModelFactory expressionFactory = ExpressionModelFactory.eINSTANCE;
 	protected final GenmodelModelFactory factory = GenmodelModelFactory.eINSTANCE;
+	
+	//
 	
 	public TaskHandler(IFile file) {
 		this.file = file;
 		// E.g., C:/Users/...
 		this.projectLocation = file.getProject().getLocation().toString(); 
 	}
-
+	
 	public void setTargetFolder(Task task) {
-		checkArgument(task.getTargetFolder().size() <= 1);
+		List<String> targetFolders = task.getTargetFolder();
+		checkArgument(targetFolders.size() <= 1);
 		
-		if (task.getTargetFolder().isEmpty()) {
+		if (targetFolders.isEmpty()) {
 			String targetFolder = null;
 			if (task instanceof TraceGeneration) {
 				String path = file.getParent().getFullPath().toString();
@@ -105,11 +112,11 @@ public abstract class TaskHandler {
 					targetFolder = relativeFolder.substring(projectLocation.length() + 1); // Counting the separator
 				}
 			}
-			task.getTargetFolder().add(targetFolder);
+			targetFolders.add(targetFolder);
 		}
 		// Setting the attribute, the target folder is a RELATIVE path now from the project
 		targetFolderUri = URI.decode(
-				projectLocation + File.separator + task.getTargetFolder().get(0));
+				projectLocation + File.separator + targetFolders.get(0));
 	}
 	
 	protected String getNameWithoutExtension(String fileName) {
@@ -122,6 +129,10 @@ public abstract class TaskHandler {
 	
 	public String getTargetFolderUri() {
 		return targetFolderUri;
+	}
+	
+	public String getBinUri() {
+		return projectLocation + File.separator + "bin";
 	}
 	
 	public void setProjectLocation(AbstractCodeGeneration codeGeneration) {
@@ -190,7 +201,7 @@ public abstract class TaskHandler {
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
-				DialogUtil.showErrorWithStackTrace("Model cannot be serialized.", e);
+				DialogUtil.showErrorWithStackTrace("Model cannot be serialized", e);
 			}
 			new File(parentFolder + File.separator + fileName).delete();
 			// Saving like an EMF model

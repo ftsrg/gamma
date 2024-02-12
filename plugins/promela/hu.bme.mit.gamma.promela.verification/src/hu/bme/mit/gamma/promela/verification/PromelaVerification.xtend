@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.promela.verification
 
+import hu.bme.mit.gamma.querygenerator.serializer.PromelaPropertySerializer
 import hu.bme.mit.gamma.verification.util.AbstractVerification
 
 class PromelaVerification extends AbstractVerification {
@@ -45,6 +46,10 @@ class PromelaVerification extends AbstractVerification {
 	
 	protected override String getArgumentPattern() {
 		return "(-([A-Za-z])*([0-9])*(=)?([0-9])*( )*)*"
+	}
+	
+	override protected createPropertySerializer() {
+		return PromelaPropertySerializer.INSTANCE
 	}
 	
 }

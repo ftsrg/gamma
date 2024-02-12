@@ -18,6 +18,12 @@ analysis {
 	transition-coverage
 }
 
+analysis {
+	component : TrafficLightWrapper (1, true)
+	file : "TrafficLightWrapper-SMV"
+	language : SMV
+}
+
 verification {
 	language : UPPAAL
 	file : "TrafficLightWrapper.xml"
@@ -31,5 +37,12 @@ verification {
 	file : "TrafficLightWrapper.xsts"
 	query-file : "CustomQueries.prop"
 	query-file : "TrafficLightWrapper.prop"
+	test-language : java
+}
+
+verification {
+	language : nuXmv
+	file : "TrafficLightWrapper-SMV.smv"
+	property-file : "TrafficLightWrapper-LTL.gpd"
 	test-language : java
 }

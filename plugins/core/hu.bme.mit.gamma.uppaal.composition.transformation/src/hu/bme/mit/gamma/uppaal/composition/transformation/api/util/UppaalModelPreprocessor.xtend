@@ -25,7 +25,7 @@ class UppaalModelPreprocessor extends AnalysisModelPreprocessor {
 	protected new() {}
 	//
 	
-	override preprocess(Package gammaPackage, List<Expression> topComponentArguments,
+	override preprocess(Package gammaPackage, List<? extends Expression> topComponentArguments,
 			String targetFolderUri, String fileName, boolean optimize) {
 		val topComponent = super.preprocess(gammaPackage, topComponentArguments,
 			targetFolderUri, fileName, optimize)

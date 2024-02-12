@@ -30,6 +30,8 @@ import hu.bme.mit.gamma.xsts.model.PrimedVariable
 import hu.bme.mit.gamma.xsts.model.StrictControlVariableDeclarationAnnotation
 import hu.bme.mit.gamma.xsts.model.XSTS
 
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
+
 class DeclarationSerializer {
 	// Singleton
 	public static final DeclarationSerializer INSTANCE = new DeclarationSerializer
@@ -70,7 +72,7 @@ class DeclarationSerializer {
 	
 	def dispatch String serializeType(DecimalTypeDefinition type) '''decimal'''
 	
-	def dispatch String serializeType(IntegerTypeDefinition type) '''integer'''
+	def dispatch String serializeType(IntegerTypeDefinition type) '''«IF type.containingVariable.clock»clock«ELSE»integer«ENDIF»'''
 	
 	def dispatch String serializeType(RationalTypeDefinition type) '''rational'''
 	

@@ -22,18 +22,20 @@ import hu.bme.mit.gamma.statechart.statechart.PortEventReference
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class AdapterToPlantUmlTransformer {
-
+	//
 	protected final AsynchronousAdapter adapter
-
+	//
 	protected extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
-
+	//
+	
 	new(AsynchronousAdapter adapter) {
 		this.adapter = adapter
 	}
 
-	dispatch def simpleConn(AnyPortEventReference source, EventReference target, String queueName) {
+	//
+	dispatch def getSimpleConnection(AnyPortEventReference source, EventReference target, String queueName) {
 		return '''
-			«IF target===null»
+			«IF target === null»
 				c_«source.getPort.name» ...> «queueName» : "any"
 				«queueName» ...> comp_«source.getPort.name» : "any"
 			«ELSEIF target instanceof AnyPortEventReference»
@@ -46,9 +48,9 @@ class AdapterToPlantUmlTransformer {
 		'''
 	}
 
-	dispatch def simpleConn(PortEventReference source, EventReference target, String queueName) {
+	dispatch def getSimpleConnection(PortEventReference source, EventReference target, String queueName) {
 		return '''
-			«IF target===null»
+			«IF target === null»
 				c_«source.getPort.name» ..> «queueName» : "any"
 				«queueName» ..> comp_«source.getPort.name» : "«source.event.name»"
 			«ELSEIF target instanceof AnyPortEventReference»
@@ -60,26 +62,24 @@ class AdapterToPlantUmlTransformer {
 			«ENDIF»
 		'''
 	}
+	
+	dispatch def getSimpleConnection(ClockTickReference source, EventReference target, String queueName) '''
+		c_«source.clock.name» ..> «queueName»
+	'''
+	//
 
-	dispatch def getRef(PortEventReference ref) {
-		return '''«ref.port.name».«ref.event.name»'''
-	}
-
-	dispatch def getRef(AnyPortEventReference ref) {
-		return '''«ref.port.name».any'''
-	}
-
-	dispatch def getRef(ClockTickReference ref) {
-		return '''«ref.clock.name»'''
-	}
-
-	dispatch def trigger(AnyTrigger trigger) {
-		return '''any'''
-	}
-
-	dispatch def trigger(EventTrigger trigger) {
-		return '''«trigger.eventSource.name».«getRef(trigger.eventReference)»'''
-	}
+	//
+	dispatch def getRefeference(PortEventReference reference) '''«reference.port.name».«reference.event.name»'''
+	dispatch def getRefeference(AnyPortEventReference reference) '''«reference.port.name».any'''
+	dispatch def getRefeference(ClockTickReference reference) '''«reference.clock.name»'''
+	//
+	
+	//
+	dispatch def trigger(AnyTrigger trigger) '''any'''
+	dispatch def trigger(EventTrigger trigger)
+		'''«trigger.eventSource.name».«trigger.eventReference.refeference»'''
+	
+	//
 
 	def String execute() '''
 		@startuml
@@ -140,7 +140,7 @@ class AdapterToPlantUmlTransformer {
 			priority=«queue.priority»
 			]
 			«FOR passing : queue.eventPassings»
-				«simpleConn(passing.source,passing.target,queue.name)»
+				«getSimpleConnection(passing.source, passing.target, queue.name)»
 			«ENDFOR»
 		«ENDFOR»
 		

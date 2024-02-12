@@ -28,6 +28,7 @@
       <genEnumLiterals ecoreEnumLiteral="genmodel.ecore#//AnalysisLanguage/XSTS_UPPAAL"/>
       <genEnumLiterals ecoreEnumLiteral="genmodel.ecore#//AnalysisLanguage/PROMELA"/>
       <genEnumLiterals ecoreEnumLiteral="genmodel.ecore#//AnalysisLanguage/NUXMV"/>
+      <genEnumLiterals ecoreEnumLiteral="genmodel.ecore#//AnalysisLanguage/OCRA"/>
     </genEnums>
     <genEnums typeSafeEnumCompatible="false" ecoreEnum="genmodel.ecore#//Scheduler">
       <genEnumLiterals ecoreEnumLiteral="genmodel.ecore#//Scheduler/RANDOM"/>
@@ -69,6 +70,7 @@
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//Task/fileName"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//Task/targetFolder"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference genmodel.ecore#//Task/timeout"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference genmodel.ecore#//Task/iterationCount"/>
     </genClasses>
     <genClasses ecoreClass="genmodel.ecore#//InterfaceCompilation"/>
     <genClasses ecoreClass="genmodel.ecore#//StatechartCompilation">
@@ -226,6 +228,16 @@
     <genClasses ecoreClass="genmodel.ecore#//FmeaTableGeneration">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference genmodel.ecore#//FmeaTableGeneration/cardinality"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference genmodel.ecore#//FmeaTableGeneration/bmcBound"/>
+    </genClasses>
+    <genClasses ecoreClass="genmodel.ecore#//ModelMutation">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference genmodel.ecore#//ModelMutation/model"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//ModelMutation/patternClassNames"/>
+    </genClasses>
+    <genClasses ecoreClass="genmodel.ecore#//MutationBasedTestGeneration">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference genmodel.ecore#//MutationBasedTestGeneration/analysisModelTransformation"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//MutationBasedTestGeneration/traceFolders"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//MutationBasedTestGeneration/testClassNamePattern"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//MutationBasedTestGeneration/patternClassNames"/>
     </genClasses>
   </genPackages>
 </genmodel:GenModel>

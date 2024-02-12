@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2021 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -175,7 +175,8 @@ public class ExpressionTypeDeterminator2 {
 			Type type = getTypeDefinition(operand);
 			if (type instanceof ArrayTypeDefinition) {
 				ArrayTypeDefinition arrayTypeDefinition = (ArrayTypeDefinition) type;
-				return ecoreUtil.clone(arrayTypeDefinition.getElementType());
+				Type elementType = arrayTypeDefinition.getElementType();
+				return ecoreUtil.clone(elementType);
 			}
 			else {
 				throw new IllegalArgumentException("Not known type: " + type);
@@ -194,7 +195,8 @@ public class ExpressionTypeDeterminator2 {
 		}
 		if (expression instanceof RecordAccessExpression) {
 			RecordAccessExpression recordAccessExpression = (RecordAccessExpression) expression;
-			return getType(recordAccessExpression.getFieldReference());
+			FieldReferenceExpression fieldReference = recordAccessExpression.getFieldReference();
+			return getType(fieldReference);
 		}
 		if (expression instanceof SelectExpression) {
 			SelectExpression selectExpression = (SelectExpression) expression;
@@ -203,7 +205,8 @@ public class ExpressionTypeDeterminator2 {
 			TypeDefinition typeDefinition = ExpressionModelDerivedFeatures.getTypeDefinition(operandType);
 			if (typeDefinition instanceof ArrayTypeDefinition) {
 				ArrayTypeDefinition arrayTypeDefinition = (ArrayTypeDefinition) typeDefinition;
-				return ecoreUtil.clone(arrayTypeDefinition.getElementType());
+				Type elementType = arrayTypeDefinition.getElementType();
+				return ecoreUtil.clone(elementType);
 			}
 			else if (typeDefinition instanceof IntegerRangeTypeDefinition) {
 				return factory.createIntegerTypeDefinition();
@@ -225,7 +228,8 @@ public class ExpressionTypeDeterminator2 {
 	}
 	
 	public TypeDefinition getTypeDefinition(Expression expression) {
-		return ExpressionModelDerivedFeatures.getTypeDefinition(getType(expression));
+		return ExpressionModelDerivedFeatures.getTypeDefinition(
+				getType(expression));
 	}
 	
 	// TypeReference handling auxiliary methods

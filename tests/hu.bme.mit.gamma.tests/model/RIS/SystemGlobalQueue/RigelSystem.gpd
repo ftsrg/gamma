@@ -1,0 +1,8 @@
+import "/SystemGlobalQueue/.RigelSystem.gsm"
+component RigelSystem
+
+@("Vezérlőközpont.kapcsolatban")
+E F [ { state RigelSystem_components_vezerloKozpont // Object
+			.HasOrionConnected__teljesAdatLekerdezes // Region
+			.Connected_teljesAdatLekerdezes // State
+} ]

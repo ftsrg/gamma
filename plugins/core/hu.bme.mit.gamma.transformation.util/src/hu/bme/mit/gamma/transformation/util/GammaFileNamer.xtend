@@ -46,9 +46,12 @@ class GammaFileNamer {
 	public static final String PROMELA_MODEL_EXTENSION = "pml";
 	public static final String NUXMV_MODEL_EXTENSION = "smv";
 	
+	public static final String OCRA_MODEL_EXTENSION = "oss";
+	
 	public static final String UPPAAL_QUERY_EXTENSION = "q";
 	public static final String THETA_QUERY_EXTENSION = "prop";
 	public static final String PROMELA_QUERY_EXTENSION = "pmlp";
+	
 	//
 	
 	def String getPackageFileName(String fileName) '''«fileName.extensionlessName».«PACKAGE_XTEXT_EXTENSION»'''
@@ -83,10 +86,13 @@ class GammaFileNamer {
 	
 	def String getSmvNuxmvFileName(String fileName) '''«fileName.extensionlessName».«NUXMV_MODEL_EXTENSION»'''
 	
+	def String getOcraFileName(String fileName) '''«fileName.extensionlessName».«OCRA_MODEL_EXTENSION»'''
+	
 	//
 	
 	def String getUnfoldedPackageUri(String uri) '''«uri.parent»«File.separator»«uri.fileName.unfoldedPackageFileName»'''
 	def String getEmfXStsUri(String uri) '''«uri.parent»«File.separator»«uri.fileName.emfXStsFileName»'''
+	def String getHiddenEmfXStsUri(String uri) '''«uri.parent»«File.separator»«uri.fileName.emfXStsFileName.toHiddenFileName»'''
 	
 	//
 	
@@ -95,20 +101,27 @@ class GammaFileNamer {
 	
 	//
 	
+	def String getFileExtension(Object analysisLanguage) {
+		return analysisLanguage.toString.fileExtension
+	}
+	
 	def String getFileExtension(String analysisLanguage) {
 		val name = analysisLanguage.toUpperCase
 		switch (name) {
 			case "UPPAAL", case "XSTS_UPPAAL": {
-				return "xml"
+				return UPPAAL_MODEL_EXTENSION
 			}
 			case "THETA", case "XSTS": {
-				return "xsts"
+				return XSTS_XTEXT_EXTENSION
 			}
 			case "SPIN", case "PROMELA": {
-				return "pml"
+				return PROMELA_MODEL_EXTENSION
 			}
 			case "SMV", case "NUXMV": {
-				return "smv"
+				return NUXMV_MODEL_EXTENSION
+			}
+			case "OCRA": {
+				return OCRA_MODEL_EXTENSION
 			}
 			default:
 				throw new IllegalArgumentException("Not known language: " + analysisLanguage)

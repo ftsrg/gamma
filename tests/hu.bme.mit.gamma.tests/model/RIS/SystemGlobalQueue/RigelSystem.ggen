@@ -1,0 +1,46 @@
+import "RigelSystem.gcd"
+
+import "StateMachines/VezerloKozpont/RigelVezerloKozpontInternal.gcd"
+import "StateMachines/ObjektumKezelo/RigelObjektumKezeloInternal.gcd"
+import "StateMachines/Diszpecser/RigelDiszpecserInternal.gcd"
+
+code {
+	component : RigelVezerloKozpont
+	language : java
+}
+
+code {
+	component : RigelDiszpecser
+	language : java
+}
+
+code {
+	component : RigelObjektumKezelo
+	language : java
+}
+
+//
+
+code {
+	component : RigelSystem
+	language : java
+}
+
+analysis {
+	component : RigelSystem(1, /*2*/ -1)
+	language : XSTS-UPPAAL
+	constraint : {
+		top : {
+			minimum-orchestrating-period : 1 ms // Must match the first argument of the adapter
+			maximum-orchestrating-period : 1 ms
+		}
+	}
+}
+
+verification {
+	language : XSTS-UPPAAL
+	file : "RigelSystem.xml"
+	property-file : "RigelSystem.gpd" // "Basic" property
+	optimize-model : true // Model reduction (slicing)
+	test-language : java // JUnit tests
+}

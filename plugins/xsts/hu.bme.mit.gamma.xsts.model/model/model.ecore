@@ -12,9 +12,6 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="variableDeclarations" upperBound="-1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclaration"
         containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="constraints" upperBound="-1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
-        containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="variableGroups" upperBound="-1"
         eType="#//VariableGroup" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="variableInitializingTransition"
@@ -57,7 +54,10 @@
   <eClassifiers xsi:type="ecore:EClass" name="EventGroup" abstract="true" eSuperTypes="#//GroupAnnotation"/>
   <eClassifiers xsi:type="ecore:EClass" name="ComponentGroup" eSuperTypes="#//GroupAnnotation"/>
   <eClassifiers xsi:type="ecore:EClass" name="PlainVariableGroup" eSuperTypes="#//GroupAnnotation"/>
-  <eClassifiers xsi:type="ecore:EClass" name="Action" abstract="true"/>
+  <eClassifiers xsi:type="ecore:EClass" name="Action" abstract="true">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="annotations" upperBound="-1"
+        eType="#//ActionAnnotation" containment="true"/>
+  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="AtomicAction" abstract="true" eSuperTypes="#//Action"/>
   <eClassifiers xsi:type="ecore:EClass" name="NonDeterministicAction" eSuperTypes="#//MultiaryAction">
     <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
@@ -136,6 +136,8 @@
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="XstsAnnotation" abstract="true"/>
+  <eClassifiers xsi:type="ecore:EClass" name="ActionAnnotation" abstract="true"/>
+  <eClassifiers xsi:type="ecore:EClass" name="InvariantAnnotation" eSuperTypes="#//ActionAnnotation"/>
   <eClassifiers xsi:type="ecore:EClass" name="OnDemandControlVariableDeclarationAnnotation"
       eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclarationAnnotation"/>
   <eClassifiers xsi:type="ecore:EClass" name="StrictControlVariableDeclarationAnnotation"

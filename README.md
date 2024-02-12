@@ -1,6 +1,6 @@
 # The Gamma Statechart Composition Framework
 
-*Version 2.9.0* - For the latest version, check out the [dev](https://github.com/ftsrg/gamma/tree/dev) branch.
+*Version 2.10.0* - For the latest version, check out the [dev](https://github.com/ftsrg/gamma/tree/dev) branch.
 
 The Gamma Statechart Composition Framework is a toolset to model, verify and generate code for component-based reactive systems. The framework builds on Yakindu, an open source statechart modeling tool and provides an additional modeling layer to instatiate a communicating network of statecharts. Compositionality is hierarchical, which facilitates the creation of reusable component libraries. Individual statecharts, as well as composite statechart networks can be validated and verified by an automated translation to
 - [UPPAAL](http://www.uppaal.org/), a model checker for timed automata,
@@ -34,13 +34,13 @@ To cite Gamma, please cite the following paper. You can find additional publicat
 ### Dependencies
 
 ##### Recommended Eclipse version and bundle:
-* Eclipse IDE 2023-06, Eclipse IDE for Java and DSL Developers bundle.
+* Eclipse IDE 2023-09, Eclipse IDE for Java and DSL Developers bundle. Note that Yakindu (see below) will not work with the _2023-12_ or newer Eclipse releases due to compatibility reasons.
 
 ##### 3rd-party Eclipse components (should be installed separately):
-* Xtext 2.31.0 (https://www.eclipse.org/Xtext/, included in Eclipse bundle),
-* VIATRA 2.7.1 (https://www.eclipse.org/viatra/),
+* Xtext 2.32.0 (https://www.eclipse.org/Xtext/, included in Eclipse bundle),
+* VIATRA 2.8.0 (https://www.eclipse.org/viatra/),
 * Yakindu Statechart Tools 3.5.13 (https://www.itemis.com/en/yakindu/state-machine/),
-* PlantUML 1.1.29 (https://plantuml.com/).
+* PlantUML 1.1.30 (https://plantuml.com/).
 
 ##### 3rd-party tools used by Gamma (should be installed separately):
 * UPPAAL (Uppsala and Aalborg Universities, http://www.uppaal.org/),
@@ -52,7 +52,7 @@ To cite Gamma, please cite the following paper. You can find additional publicat
 * Install an Eclipse instance (e.g., Eclipse IDE for Java and DSL Developers) with EMF, Xtext and Java 17.
 * Install the required 3rd-party Eclipse components. Detailed instructions can be found in the [`plugins/README.md`](plugins/README.md) file.
     * Alternatively you can use the provided Eclipse Oomph Installer to install the 3rd-party Eclipse components found [here](eclipse-environment/README.md). 
-* Exit Eclipse and extract the [Gamma zip file](https://inf.mit.bme.hu/sites/default/files/gamma/2_9_0/gamma-tool-2.9.0.zip) containing the `dropins/plugins` folder (with the Gamma JAR files) into the root folder of Eclipse. This will create the plugins directory in the `dropins` folder of your root Eclipse folder, which should contain all JAR files of Gamma. (If not, make sure you copy all the JAR files contained in the Gamma zip file in the plugins directory of the `dropins` folder of the root folder of Eclipse.)
+* Exit Eclipse and extract the [Gamma zip file](https://inf.mit.bme.hu/sites/default/files/gamma/2_10_0/gamma-tool-2.10.0.zip) containing the `dropins/plugins` folder (with the Gamma JAR files) into the root folder of Eclipse. This will create the plugins directory in the `dropins` folder of your root Eclipse folder, which should contain all JAR files of Gamma. (If not, make sure you copy all the JAR files contained in the Gamma zip file in the plugins directory of the `dropins` folder of the root folder of Eclipse.)
 * When starting Eclipse for the first time, you might need to start it with the `-clean` flag.
 * Check if the plugin installed successfully in *Help > About Eclipse* and by clicking Installation Details. On the `Plug-ins tab`, sort the entries by `Plugin-in Id` and look for entries starting with `hu.bme.mit.gamma`.
 * For formal verification, download and extract UPPAAL. In order to let Gamma find the UPPAAL executables, add the `bin-Win32` or `bin-Linux` folder to the path environment variable (depending on the operating system being used).

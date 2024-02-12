@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -15,7 +15,9 @@ import java.util.Collection;
 import java.util.List;
 
 import hu.bme.mit.gamma.expression.model.ArgumentedElement;
+import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
+import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
@@ -34,6 +36,7 @@ import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
 import hu.bme.mit.gamma.statechart.statechart.StatechartModelPackage;
 import hu.bme.mit.gamma.statechart.util.StatechartModelValidator;
 import hu.bme.mit.gamma.trace.derivedfeatures.TraceModelDerivedFeatures;
+import hu.bme.mit.gamma.trace.model.AssignmentAct;
 import hu.bme.mit.gamma.trace.model.ComponentSchedule;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
 import hu.bme.mit.gamma.trace.model.InstanceSchedule;
@@ -162,6 +165,19 @@ public class TraceModelValidator extends StatechartModelValidator {
 						new ReferenceInfo(TraceModelPackage.Literals.STEP__ACTIONS, ecoreUtil.getIndex(schedule), step)));
 			}
 		}
+		return validationResultMessages;
+	}
+	
+	public Collection<ValidationResultMessage> checkAssignmentAct(AssignmentAct act) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		
+		ReferenceExpression lhs = act.getLhs();
+		Expression rhs = act.getRhs();
+		
+		validationResultMessages.addAll(
+				checkExpressionConformance(lhs, rhs,
+						new ReferenceInfo(TraceModelPackage.Literals.ASSIGNMENT_ACT__RHS)));
+		
 		return validationResultMessages;
 	}
 	

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -21,7 +21,7 @@ import hu.bme.mit.gamma.statechart.statechart.UnaryTrigger
 
 class TriggerTransformer {
 	// Auxiliary objects
-	protected final extension EventReferenceTransformer eventReferenceTransformer
+	protected final extension ExpressionTransformer eventReferenceTransformer
 	// Factory objects
 	protected final extension ExpressionModelFactory constraintFactory = ExpressionModelFactory.eINSTANCE
 	// Trace
@@ -29,7 +29,7 @@ class TriggerTransformer {
 	
 	new(Trace trace, boolean functionInlining, int maxRecursionDepth) {
 		this.trace = trace
-		this.eventReferenceTransformer = new EventReferenceTransformer(
+		this.eventReferenceTransformer = new ExpressionTransformer(
 				this.trace, functionInlining, maxRecursionDepth)
 	}
 	

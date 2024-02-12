@@ -136,7 +136,10 @@ public class CommandHandler extends AbstractHandler {
 		// Serializing the xSTS
 		ActionSerializer actionSerializer = ActionSerializer.INSTANCE;
 		CharSequence xStsString = actionSerializer.serializeXsts(xSts);
-		System.out.println(xStsString);
+		boolean printXStsString = false;
+		if (printXStsString) {
+			System.out.println(xStsString);
+		}
 		logger.log(Level.INFO, "Starting xSTS Java code generation");
 		StatechartToJavaCodeGenerator codeGenerator = new StatechartToJavaCodeGenerator(
 			targetFolderUri, basePackageName, gammaStatechart, xSts, javaActionSerializer);

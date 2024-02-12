@@ -300,6 +300,7 @@
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute statechart.ecore#//StatechartDefinition/orthogonalRegionSchedulingOrder"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute statechart.ecore#//StatechartDefinition/transitionPriority"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute statechart.ecore#//StatechartDefinition/guardEvaluation"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//StatechartDefinition/invariants"/>
     </genClasses>
     <genClasses ecoreClass="statechart.ecore#//SynchronousStatechartDefinition"/>
     <genClasses ecoreClass="statechart.ecore#//AsynchronousStatechartDefinition">
@@ -378,6 +379,7 @@
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute statechart.ecore#//OpaqueTrigger/trigger"/>
     </genClasses>
     <genClasses ecoreClass="statechart.ecore#//OnCycleTrigger"/>
+    <genClasses ecoreClass="statechart.ecore#//MutantAnnotation"/>
     <genClasses image="false" ecoreClass="statechart.ecore#//StatechartAnnotation"/>
     <genClasses ecoreClass="statechart.ecore#//RunUponExternalEventAnnotation"/>
     <genClasses ecoreClass="statechart.ecore#//RunUponExternalEventOrInternalTimeoutAnnotation"/>

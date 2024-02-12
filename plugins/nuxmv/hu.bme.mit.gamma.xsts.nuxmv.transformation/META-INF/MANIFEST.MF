@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: XSTS to NuXMv Transformation
 Bundle-SymbolicName: hu.bme.mit.gamma.xsts.nuxmv.transformation
-Bundle-Version: 2.9.0.qualifier
+Bundle-Version: 2.10.0.qualifier
 Automatic-Module-Name: hu.bme.mit.gamma.xsts.nuxmv.transformation
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-Vendor: BME-FTSRG

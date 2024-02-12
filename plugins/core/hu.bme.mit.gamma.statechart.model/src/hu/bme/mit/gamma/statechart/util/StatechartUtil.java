@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -16,6 +16,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
 
@@ -177,7 +178,7 @@ public class StatechartUtil extends ActionUtil {
 		return createInstanceReference(List.of(instance));
 	}
 	
-	public ComponentInstanceReferenceExpression createInstanceReference(List<ComponentInstance> instances) {
+	public ComponentInstanceReferenceExpression createInstanceReference(List<? extends ComponentInstance> instances) {
 		if (instances.isEmpty()) {
 			throw new IllegalArgumentException("Empty instance list: " + instances);
 		}
@@ -828,6 +829,10 @@ public class StatechartUtil extends ActionUtil {
 		addAnnotation(component, statechartFactory.createRunUponExternalEventAnnotation());
 	}
 	
+	public void addMutantAnnotation(Component component) {
+		addAnnotation(component, statechartFactory.createMutantAnnotation());
+	}
+	
 	// Statechart element creators
 	
 	public Transition createTransition(StateNode source, StateNode target) {
@@ -986,6 +991,20 @@ public class StatechartUtil extends ActionUtil {
 		return reference;
 	}
 	
+	public ComponentInstanceEventReferenceExpression createSystemEventReference(Port port, Event event) {
+		Entry<List<ComponentInstance>, Port> boundSimplePort = StatechartModelDerivedFeatures.getBoundSimplePort(port);
+		if (boundSimplePort == null) {
+			return null;
+		}
+		
+		List<ComponentInstance> instances = boundSimplePort.getKey();
+		Port simplePort = boundSimplePort.getValue();
+		
+		ComponentInstanceReferenceExpression instanceReference = createInstanceReference(instances);
+		
+		return createEventReference(instanceReference, simplePort, event);
+	}
+	
 	public ComponentInstanceEventParameterReferenceExpression createParameterReference(
 			ComponentInstanceReferenceExpression instance, Port port, Event event, ParameterDeclaration parameter) {
 		ComponentInstanceEventParameterReferenceExpression reference =
@@ -995,6 +1014,21 @@ public class StatechartUtil extends ActionUtil {
 		reference.setEvent(event);
 		reference.setParameterDeclaration(parameter);
 		return reference;
+	}
+	
+	public ComponentInstanceEventParameterReferenceExpression createSystemParameterReference(
+			Port port, Event event, ParameterDeclaration parameter) {
+		Entry<List<ComponentInstance>, Port> boundSimplePort = StatechartModelDerivedFeatures.getBoundSimplePort(port);
+		if (boundSimplePort == null) {
+			return null;
+		}
+		
+		List<ComponentInstance> instances = boundSimplePort.getKey();
+		Port simplePort = boundSimplePort.getValue();
+		
+		ComponentInstanceReferenceExpression instanceReference = createInstanceReference(instances);
+		
+		return createParameterReference(instanceReference, simplePort, event, parameter);
 	}
 	
 	// Synchronous-asynchronous statecharts

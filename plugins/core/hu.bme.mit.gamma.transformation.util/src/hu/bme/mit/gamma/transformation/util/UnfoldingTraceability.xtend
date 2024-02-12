@@ -280,11 +280,12 @@ class UnfoldingTraceability {
 				}
 			}
 		}
+		val size = acceptedNewInstances.size
 		if (lastInstanceType instanceof StatechartDefinition) {
-			checkState(acceptedNewInstances.size == 1)
+			checkState(size == 1, size)
 		}
 		else {
-			checkState(acceptedNewInstances.size >= 1)
+			checkState(size >= 1, size)
 		}
 		return acceptedNewInstances
 	}

@@ -42,6 +42,7 @@ public class StatechartLanguageFormatter extends AbstractDeclarativeFormatter {
 
         // Line breaks after/before these rules
         c.setLinewrap(1).after(f.getStatechartContractAnnotationRule());
+        c.setLinewrap(1).after(f.getGuardEvaluationRule());
         c.setLinewrap(1).after(f.getComponentAnnotationRule());
         c.setLinewrap(1).after(f.getStateAnnotationRule());
         c.setLinewrap(1, 1, 2).after(f.getVariableDeclarationRule());

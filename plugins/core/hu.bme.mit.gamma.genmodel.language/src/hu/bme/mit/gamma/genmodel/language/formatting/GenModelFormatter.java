@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -137,6 +137,24 @@ public class GenModelFormatter extends AbstractDeclarativeFormatter {
         c.setLinewrap(1).after(f.getVerificationAccess().getGroup_3_10());
         c.setLinewrap(1).after(f.getVerificationAccess().getTestFolderAssignment_3_13_2());
         c.setLinewrap(1).after(f.getVerificationAccess().getTimeoutAssignment_3_14_2());
+        // Model mutation
+        c.setLinewrap(1).after(f.getModelMutationAccess().getTargetFolderAssignment_3_0_2());
+        c.setLinewrap(1).after(f.getModelMutationAccess().getModelAssignment_2());
+        c.setLinewrap(1).after(f.getModelMutationAccess().getFileNameAssignment_3_1_2());
+        c.setLinewrap(1).after(f.getModelMutationAccess().getIterationCountAssignment_3_2_2());
+        c.setLinewrap(1).after(f.getModelMutationAccess().getPatternClassNamesAssignment_3_3_2());
+        // Model-based mutation testing
+        c.setLinewrap(1).after(f.getMutationBasedTestGenerationAccess().getProjectNameAssignment_3_0_2());
+        c.setLinewrap(1).after(f.getMutationBasedTestGenerationAccess().getTargetFolderAssignment_3_1_2());
+        c.setLinewrap(1).after(f.getMutationBasedTestGenerationAccess().getAnalysisModelTransformationAssignment_2());
+        c.setLinewrap(1).after(f.getMutationBasedTestGenerationAccess().getFileNameAssignment_3_2_2());
+        c.setLinewrap(1).after(f.getMutationBasedTestGenerationAccess().getIterationCountAssignment_3_3_2());
+        c.setLinewrap(1).after(f.getMutationBasedTestGenerationAccess().getPackageNameAssignment_3_4_2());
+        c.setLinewrap(1).after(f.getMutationBasedTestGenerationAccess().getProgrammingLanguagesAssignment_3_5_2());
+        c.setLinewrap(1).after(f.getMutationBasedTestGenerationAccess().getTestFolderAssignment_3_6_2());
+        c.setLinewrap(1).after(f.getMutationBasedTestGenerationAccess().getTraceFoldersAssignment_3_7_2());
+        c.setLinewrap(1).after(f.getMutationBasedTestGenerationAccess().getTestClassNamePatternAssignment_3_8_2());
+        c.setLinewrap(1).after(f.getMutationBasedTestGenerationAccess().getPatternClassNamesAssignment_3_9_2());
         // Interface mapping
         c.setLinewrap(1).after(f.getInterfaceMappingRule());
 		for (Keyword comma: f.findKeywords(",")) {

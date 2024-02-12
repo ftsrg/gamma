@@ -2,8 +2,9 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Gamma-Ocra Transformation
 Bundle-SymbolicName: hu.bme.mit.gamma.ocra.transformation
-Bundle-Version: 2.9.0.qualifier
-Export-Package: hu.bme.mit.gamma.ocra.transformation
+Bundle-Version: 2.10.0.qualifier
+Export-Package: hu.bme.mit.gamma.ocra.transformation,
+ hu.bme.mit.gamma.ocra.transformation.api
 Bundle-Vendor: BME-FTSRG
 Automatic-Module-Name: hu.bme.mit.gamma.fei.xsap.transformation
 Bundle-RequiredExecutionEnvironment: JavaSE-17
@@ -11,4 +12,5 @@ Require-Bundle: com.google.guava,
  org.eclipse.xtext.xbase.lib,
  org.eclipse.xtend.lib,
  org.eclipse.xtend.lib.macro,
- hu.bme.mit.gamma.statechart.model
+ hu.bme.mit.gamma.statechart.model,
+ hu.bme.mit.gamma.transformation.util

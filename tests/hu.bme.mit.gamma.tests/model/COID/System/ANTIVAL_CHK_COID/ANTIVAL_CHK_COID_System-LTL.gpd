@@ -1,0 +1,12 @@
+import "/hu.bme.mit.gamma.tests/model/COID/System/ANTIVAL_CHK_COID/.ANTIVAL_CHK_COID_System-SMV.gsm"
+import "/hu.bme.mit.gamma.tests/model/COID/Types/Types.gcd"
+
+component AntivalenceChecker_System
+A (
+	G ([ { state coid.main_region_of_bJbCOID_allapotgep.Celoldas_idozites_fut_8 } ] ->
+	 	F [ { state coid.main_region_of_bJbCOID_allapotgep.Oldas_4 } ]))
+	 	
+A (
+	G ([ { variable coid.RS_COID == CeloldasIdozites::CELOLDAS_IDOZITES } ] ->
+	 ([ { variable coid.RS_COID == CeloldasIdozites::CELOLDAS_IDOZITES } ] U
+	 [ { variable coid.RS_COID == CeloldasIdozites::NINCS_CELOLDAS_IDOZITES } ])))

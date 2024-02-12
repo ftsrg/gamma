@@ -15,6 +15,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.List;
 import java.util.logging.Level;
 
 import org.eclipse.core.resources.IFile;
@@ -51,7 +52,7 @@ public class TestGenerationHandler extends TaskHandler {
 			generateCTest(testGeneration);
 			break;
 		default:
-			generateJavaTest(testGeneration, packageName);
+			throw new IllegalArgumentException("Not known programming language: " + programmingLanguage);
 		}
 		
 	}
@@ -73,23 +74,27 @@ public class TestGenerationHandler extends TaskHandler {
 	
 	private void generateJavaTest(TestGeneration testGeneration, String packageName) throws IOException {
 		setTestGeneration(testGeneration, packageName);
+		
 		ExecutionTrace executionTrace = testGeneration.getExecutionTrace();
 		logger.log(Level.INFO, "Test generation for: " + executionTrace.getName());
+		String fileName = testGeneration.getFileName().get(0);
 		TestGenerator testGenerator = new TestGenerator(executionTrace,
-				testGeneration.getPackageName().get(0), testGeneration.getFileName().get(0));
+				testGeneration.getPackageName().get(0), fileName);
 		String testClass = testGenerator.execute();
 		saveCode(targetFolderUri + File.separator + testGenerator.getPackageName().replaceAll("\\.", "/"),
-				testGeneration.getFileName().get(0) + ".java", testClass);
+				fileName + ".java", testClass);
 	}
 	
 	private void setTestGeneration(TestGeneration testGeneration, String packageName) {
-		checkArgument(testGeneration.getFileName().size() <= 1);
-		checkArgument(testGeneration.getPackageName().size() <= 1);
-		if (testGeneration.getPackageName().isEmpty()) {
-			testGeneration.getPackageName().add(packageName);
+		List<String> fileNames = testGeneration.getFileName();
+		List<String> packageNames = testGeneration.getPackageName();
+		checkArgument(fileNames.size() <= 1);
+		checkArgument(packageNames.size() <= 1);
+		if (packageNames.isEmpty()) {
+			packageNames.add(packageName);
 		}
-		if (testGeneration.getFileName().isEmpty()) {
-			testGeneration.getFileName().add("ExecutionTraceSimulation");
+		if (fileNames.isEmpty()) {
+			fileNames.add("ExecutionTraceSimulation");
 		}
 		// TargetFolder set in setTargetFolder
 	}

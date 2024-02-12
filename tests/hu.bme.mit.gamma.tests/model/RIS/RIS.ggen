@@ -1,0 +1,2 @@
+include "SystemGlobalQueue/RigelSystem.ggen"
+include "SystemLocalQueue/RigelSystem.ggen"

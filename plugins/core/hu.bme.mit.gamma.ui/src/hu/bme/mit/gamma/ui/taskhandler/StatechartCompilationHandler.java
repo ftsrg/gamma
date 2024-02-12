@@ -14,11 +14,12 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.io.IOException;
 import java.util.AbstractMap.SimpleEntry;
+import java.util.List;
 
 import org.eclipse.core.resources.IFile;
 
-import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.genmodel.model.StatechartCompilation;
+import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.yakindu.transformation.batch.ModelValidator;
 import hu.bme.mit.gamma.yakindu.transformation.batch.YakinduToGammaTransformer;
 import hu.bme.mit.gamma.yakindu.transformation.traceability.Y2GTrace;
@@ -46,9 +47,10 @@ public class StatechartCompilationHandler extends YakinduCompilationHandler {
 	}
 
 	private void setStatechartCompilation(StatechartCompilation statechartCompilation, String statechartName) {
-		checkArgument(statechartCompilation.getStatechartName().size() <= 1);
-		if (statechartCompilation.getStatechartName().isEmpty()) {
-			statechartCompilation.getStatechartName().add(statechartName);
+		List<String> statechartNames = statechartCompilation.getStatechartName();
+		checkArgument(statechartNames.size() <= 1);
+		if (statechartNames.isEmpty()) {
+			statechartNames.add(statechartName);
 		}
 	}
 

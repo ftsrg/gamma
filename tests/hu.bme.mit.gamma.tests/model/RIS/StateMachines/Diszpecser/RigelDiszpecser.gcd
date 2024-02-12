@@ -1,0 +1,514 @@
+package RigelDiszpecser
+
+import "Interfaces/Interfaces.gcd"
+
+@RegionSchedule = bottom-up
+@TransitionPriority = order-based
+statechart RigelDiszpecser(TimeDataPeriodic : integer, TimeDataTimeout : integer,
+	TimeConnectionCheck : integer) [
+	port VezerloKozpontPortIn : requires Rigel
+	port VezerloKozpontPortOut : provides Rigel
+	port ObjektumKezeloPortIn : requires Rigel
+	port ObjektumKezeloPortOut : provides Rigel
+	port OrionDisconnToVk : requires OrionDisconnToVk
+	port AllObjDataSent : requires AllObjDataSent
+] {
+	var isObjOrionConnected : boolean
+	@Transient var _change_condition_8_0_0_objektumNyilvantarto : boolean := false
+	@Transient var _change_condition_8_0_1_objektumNyilvantarto : boolean := false
+	timeout timeout_PeriodicQuery_0_periodicQuery_objektumNyilvantarto
+	timeout timeout_CollectData_0_objektumNyilvantarto
+	timeout timeout_WaitObjConnection_0_objektumNyilvantarto
+	timeout timeout_CollectDataRepeat_0_objektumNyilvantarto
+	timeout timeout_WaitObjConnectionRepeat_0_objektumNyilvantarto
+	@Resettable var
+		_initialOfDiszpTeljesAdatLekerdezes___teljesAdatLekerdezes_WaitForQuery_teljesAdatLekerdezes_0 :
+		boolean := false
+	@Resettable var WaitForQuery_teljesAdatLekerdezes_ProcessQuery_teljesAdatLekerdezes_1 : boolean
+		:= false
+	@Resettable var WaitForQuery_teljesAdatLekerdezes_WaitForQuery_teljesAdatLekerdezes_2 : boolean
+		:= false
+	@Resettable var ProcessQuery_teljesAdatLekerdezes_WaitForQuery_teljesAdatLekerdezes_3 : boolean
+		:= false
+	@Resettable var ProcessQuery_teljesAdatLekerdezes_Connected_teljesAdatLekerdezes_4 : boolean :=
+		false
+	@Resettable var ProcessQuery_teljesAdatLekerdezes_WaitForQuery_teljesAdatLekerdezes_5 : boolean
+		:= false
+	@Resettable var Connected_teljesAdatLekerdezes_ProcessQuery_teljesAdatLekerdezes_6 : boolean :=
+		false
+	@Resettable var Connected_teljesAdatLekerdezes_Connected_teljesAdatLekerdezes_7 : boolean :=
+		false
+	@Resettable var Connected_teljesAdatLekerdezes_WaitForQuery_teljesAdatLekerdezes_8 : boolean :=
+		false
+	@Resettable var
+		_initialOfDiszpObjektumNyilvantarto___objektumNyilvantarto_WaitForVK_objektumNyilvantarto_9 :
+		boolean := false
+	@Resettable var
+		_initialOfVkActive___objektumNyilvantarto_ObjectConnectionInProgress_objektumNyilvantarto_10 :
+		boolean := false
+	@Resettable var
+		_initialOfObjectConnectionInProgress___objektumNyilvantarto_CollectData_objektumNyilvantarto_11
+		: boolean := false
+	@Resettable var
+		_initialOfCollectData___objektumNyilvantarto_WaitObjConnection_objektumNyilvantarto_12 : boolean
+		:= false
+	@Resettable var
+		_initialOfCollectDataRepeat___objektumNyilvantarto_WaitObjConnectionRepeat_objektumNyilvantarto_13
+		: boolean := false
+	@Resettable var
+		_initialOfObjVkTransmissionMachine___objVkTransmission_objektumNyilvantarto_ObjVkTransmission_objVkTransmission_objektumNyilvantarto_14
+		: boolean := false
+	@Resettable var
+		ObjVkTransmission_objVkTransmission_objektumNyilvantarto_ObjVkTransmission_objVkTransmission_objektumNyilvantarto_15
+		: boolean := false
+	@Resettable var
+		ObjVkTransmission_objVkTransmission_objektumNyilvantarto_ObjVkTransmission_objVkTransmission_objektumNyilvantarto_16
+		: boolean := false
+	@Resettable var
+		ObjVkTransmission_objVkTransmission_objektumNyilvantarto_ObjVkTransmission_objVkTransmission_objektumNyilvantarto_17
+		: boolean := false
+	@Resettable var
+		ObjVkTransmission_objVkTransmission_objektumNyilvantarto_ObjVkTransmission_objVkTransmission_objektumNyilvantarto_18
+		: boolean := false
+	@Resettable var
+		ObjVkTransmission_objVkTransmission_objektumNyilvantarto_ObjVkTransmission_objVkTransmission_objektumNyilvantarto_19
+		: boolean := false
+	@Resettable var
+		_initialOfVkObjTransmissionMachine___vkObjTransmission_objektumNyilvantarto_VkObjTransmission_vkObjTransmission_objektumNyilvantarto_20
+		: boolean := false
+	@Resettable var
+		VkObjTransmission_vkObjTransmission_objektumNyilvantarto_VkObjTransmission_vkObjTransmission_objektumNyilvantarto_21
+		: boolean := false
+	@Resettable var
+		VkObjTransmission_vkObjTransmission_objektumNyilvantarto_VkObjTransmission_vkObjTransmission_objektumNyilvantarto_22
+		: boolean := false
+	@Resettable var
+		VkObjTransmission_vkObjTransmission_objektumNyilvantarto_VkObjTransmission_vkObjTransmission_objektumNyilvantarto_23
+		: boolean := false
+	@Resettable var
+		VkObjTransmission_vkObjTransmission_objektumNyilvantarto_VkObjTransmission_vkObjTransmission_objektumNyilvantarto_24
+		: boolean := false
+	@Resettable var
+		_initialOfPeriodicQueryMachine___periodicQuery_objektumNyilvantarto_PeriodicQuery_periodicQuery_objektumNyilvantarto_25
+		: boolean := false
+	@Resettable var
+		PeriodicQuery_periodicQuery_objektumNyilvantarto_PeriodicQuery_periodicQuery_objektumNyilvantarto_26
+		: boolean := false
+	@Resettable var WaitForVK_objektumNyilvantarto_VkActive_objektumNyilvantarto_27 : boolean :=
+		false
+	@Resettable var VkActive_objektumNyilvantarto_CollectDataRepeat_objektumNyilvantarto_28 : boolean
+		:= false
+	@Resettable var ObjectConnectionInProgress_objektumNyilvantarto_Connected_objektumNyilvantarto_29
+		: boolean := false
+	@Resettable var CollectData_objektumNyilvantarto_CollectDataRepeat_objektumNyilvantarto_30 :
+		boolean := false
+	@Resettable var
+		WaitObjConnection_objektumNyilvantarto__WaitObjConnection_0__objektumNyilvantarto_31 : boolean
+		:= false
+	@Resettable var _WaitObjConnection_0__objektumNyilvantarto_WaitData_objektumNyilvantarto_32 :
+		boolean := false
+	@Resettable var
+		_WaitObjConnection_0__objektumNyilvantarto_WaitObjConnection_objektumNyilvantarto_33 : boolean
+		:= false
+	@Resettable var CollectDataRepeat_objektumNyilvantarto_CollectDataRepeat_objektumNyilvantarto_34
+		: boolean := false
+	@Resettable var
+		WaitObjConnectionRepeat_objektumNyilvantarto__WaitObjConnectionRepeat_0__objektumNyilvantarto_35
+		: boolean := false
+	@Resettable var
+		_WaitObjConnectionRepeat_0__objektumNyilvantarto_WaitDatatRepeat_objektumNyilvantarto_36 :
+		boolean := false
+	@Resettable var
+		_WaitObjConnectionRepeat_0__objektumNyilvantarto_WaitObjConnectionRepeat_objektumNyilvantarto_37
+		: boolean := false
+	region DiszpTeljesAdatLekerdezes__teljesAdatLekerdezes {
+		initial _initialOfDiszpTeljesAdatLekerdezes___teljesAdatLekerdezes
+		state WaitForQuery_teljesAdatLekerdezes
+		state ProcessQuery_teljesAdatLekerdezes
+		state Connected_teljesAdatLekerdezes
+	}
+	region DiszpObjektumNyilvantarto__objektumNyilvantarto {
+		initial _initialOfDiszpObjektumNyilvantarto___objektumNyilvantarto
+		state WaitForVK_objektumNyilvantarto
+		state VkActive_objektumNyilvantarto {
+			region VkActive__objektumNyilvantarto {
+				initial _initialOfVkActive___objektumNyilvantarto
+				state ObjectConnectionInProgress_objektumNyilvantarto {
+					region ObjectConnectionInProgress__objektumNyilvantarto {
+						initial _initialOfObjectConnectionInProgress___objektumNyilvantarto
+						state CollectData_objektumNyilvantarto {
+							entry / set timeout_CollectData_0_objektumNyilvantarto := TimeDataTimeout ms;
+							region CollectData__objektumNyilvantarto {
+								initial _initialOfCollectData___objektumNyilvantarto
+								state WaitObjConnection_objektumNyilvantarto {
+									entry / set timeout_WaitObjConnection_0_objektumNyilvantarto := TimeConnectionCheck ms;
+								}
+								state WaitData_objektumNyilvantarto
+								choice _WaitObjConnection_0__objektumNyilvantarto
+							}
+						}
+						state CollectDataRepeat_objektumNyilvantarto {
+							entry / set timeout_CollectDataRepeat_0_objektumNyilvantarto := TimeDataTimeout ms;
+							region CollectDataRepeat__objektumNyilvantarto {
+								initial _initialOfCollectDataRepeat___objektumNyilvantarto
+								state WaitObjConnectionRepeat_objektumNyilvantarto {
+									entry / set timeout_WaitObjConnectionRepeat_0_objektumNyilvantarto := TimeConnectionCheck
+										ms;
+								}
+								state WaitDatatRepeat_objektumNyilvantarto
+								choice _WaitObjConnectionRepeat_0__objektumNyilvantarto
+							}
+						}
+					}
+				}
+				state Connected_objektumNyilvantarto {
+					region ObjVkTransmissionMachine__objVkTransmission_objektumNyilvantarto {
+						initial _initialOfObjVkTransmissionMachine___objVkTransmission_objektumNyilvantarto
+						state ObjVkTransmission_objVkTransmission_objektumNyilvantarto
+					}
+					region VkObjTransmissionMachine__vkObjTransmission_objektumNyilvantarto {
+						initial _initialOfVkObjTransmissionMachine___vkObjTransmission_objektumNyilvantarto
+						state VkObjTransmission_vkObjTransmission_objektumNyilvantarto
+					}
+					region PeriodicQueryMachine__periodicQuery_objektumNyilvantarto {
+						initial _initialOfPeriodicQueryMachine___periodicQuery_objektumNyilvantarto
+						state PeriodicQuery_periodicQuery_objektumNyilvantarto {
+							entry / set timeout_PeriodicQuery_0_periodicQuery_objektumNyilvantarto := TimeDataPeriodic
+								ms;
+						}
+					}
+				}
+			}
+		}
+	}
+	@(_initialOfDiszpTeljesAdatLekerdezes___teljesAdatLekerdezes_WaitForQuery_teljesAdatLekerdezes_0)
+	transition from _initialOfDiszpTeljesAdatLekerdezes___teljesAdatLekerdezes to
+		WaitForQuery_teljesAdatLekerdezes /
+		_initialOfDiszpTeljesAdatLekerdezes___teljesAdatLekerdezes_WaitForQuery_teljesAdatLekerdezes_0
+		:= true;
+	@(WaitForQuery_teljesAdatLekerdezes_ProcessQuery_teljesAdatLekerdezes_1)
+	transition from WaitForQuery_teljesAdatLekerdezes to ProcessQuery_teljesAdatLekerdezes when
+		VezerloKozpontPortIn.message_RigelMsgHeader
+		[VezerloKozpontPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgGq] / {
+		var gqBeginMsg_teljesAdatLekerdezes : RigelMsgHeader := createGqBegin();
+		raise VezerloKozpontPortOut.message_RigelMsgHeader(gqBeginMsg_teljesAdatLekerdezes);
+		isObjOrionConnected := true;
+	}
+	WaitForQuery_teljesAdatLekerdezes_ProcessQuery_teljesAdatLekerdezes_1 := true;
+	@(WaitForQuery_teljesAdatLekerdezes_WaitForQuery_teljesAdatLekerdezes_2)
+	transition from WaitForQuery_teljesAdatLekerdezes to WaitForQuery_teljesAdatLekerdezes when
+		VezerloKozpontPortIn.message_RigelMsgHeader
+		[VezerloKozpontPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType !=
+		RigelMsgType::RigelMsgGq] / {
+		Perform_OrionDisconnToVk();
+	}
+	WaitForQuery_teljesAdatLekerdezes_WaitForQuery_teljesAdatLekerdezes_2 := true;
+	@(ProcessQuery_teljesAdatLekerdezes_WaitForQuery_teljesAdatLekerdezes_3)
+	transition from ProcessQuery_teljesAdatLekerdezes to WaitForQuery_teljesAdatLekerdezes when
+		OrionDisconnToVk.OrionDisconnToVk /
+		ProcessQuery_teljesAdatLekerdezes_WaitForQuery_teljesAdatLekerdezes_3 := true;
+	@(ProcessQuery_teljesAdatLekerdezes_Connected_teljesAdatLekerdezes_4)
+	transition from ProcessQuery_teljesAdatLekerdezes to Connected_teljesAdatLekerdezes when
+		AllObjDataSent.AllObjDataSent / {
+		var gqEndMsg_teljesAdatLekerdezes : RigelMsgHeader := createGqEnd();
+		raise VezerloKozpontPortOut.message_RigelMsgHeader(gqEndMsg_teljesAdatLekerdezes);
+	}
+	ProcessQuery_teljesAdatLekerdezes_Connected_teljesAdatLekerdezes_4 := true;
+	@(ProcessQuery_teljesAdatLekerdezes_WaitForQuery_teljesAdatLekerdezes_5)
+	transition from ProcessQuery_teljesAdatLekerdezes to WaitForQuery_teljesAdatLekerdezes when
+		VezerloKozpontPortIn.message_RigelMsgHeader / {
+		Perform_OrionDisconnToVk();
+	}
+	ProcessQuery_teljesAdatLekerdezes_WaitForQuery_teljesAdatLekerdezes_5 := true;
+	@(Connected_teljesAdatLekerdezes_ProcessQuery_teljesAdatLekerdezes_6)
+	transition from Connected_teljesAdatLekerdezes to ProcessQuery_teljesAdatLekerdezes when
+		VezerloKozpontPortIn.message_RigelMsgHeader
+		[VezerloKozpontPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgGqEnd] / {
+		var gqBeginMsg_teljesAdatLekerdezes : RigelMsgHeader := createGqBegin();
+		raise VezerloKozpontPortOut.message_RigelMsgHeader(gqBeginMsg_teljesAdatLekerdezes);
+		isObjOrionConnected := false;
+	}
+	Connected_teljesAdatLekerdezes_ProcessQuery_teljesAdatLekerdezes_6 := true;
+	@(Connected_teljesAdatLekerdezes_Connected_teljesAdatLekerdezes_7)
+	transition from Connected_teljesAdatLekerdezes to Connected_teljesAdatLekerdezes when
+		VezerloKozpontPortIn.message_RigelMsgHeader
+		[VezerloKozpontPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgVkAlive] / {
+		raise
+			ObjektumKezeloPortOut.message_RigelMsgHeader(VezerloKozpontPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue);
+	}
+	Connected_teljesAdatLekerdezes_Connected_teljesAdatLekerdezes_7 := true;
+	@(Connected_teljesAdatLekerdezes_WaitForQuery_teljesAdatLekerdezes_8)
+	transition from Connected_teljesAdatLekerdezes to WaitForQuery_teljesAdatLekerdezes when
+		VezerloKozpontPortIn.message_RigelMsgHeader
+		[((((((VezerloKozpontPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgGqBegin or
+		VezerloKozpontPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgGqEnd) or
+		VezerloKozpontPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgSq) or
+		VezerloKozpontPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgAnsTs1) or
+		VezerloKozpontPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgAnsTs2) or
+		VezerloKozpontPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgData) or
+		VezerloKozpontPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgCommandResult) or
+		VezerloKozpontPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgCommandConfirmResult] / {
+		Perform_OrionDisconnToVk();
+		isObjOrionConnected := false;
+	}
+	Connected_teljesAdatLekerdezes_WaitForQuery_teljesAdatLekerdezes_8 := true;
+	@(_initialOfDiszpObjektumNyilvantarto___objektumNyilvantarto_WaitForVK_objektumNyilvantarto_9)
+	transition from _initialOfDiszpObjektumNyilvantarto___objektumNyilvantarto to
+		WaitForVK_objektumNyilvantarto /
+		_initialOfDiszpObjektumNyilvantarto___objektumNyilvantarto_WaitForVK_objektumNyilvantarto_9 :=
+		true;
+	@(_initialOfVkActive___objektumNyilvantarto_ObjectConnectionInProgress_objektumNyilvantarto_10)
+	transition from _initialOfVkActive___objektumNyilvantarto to
+		ObjectConnectionInProgress_objektumNyilvantarto /
+		_initialOfVkActive___objektumNyilvantarto_ObjectConnectionInProgress_objektumNyilvantarto_10 :=
+		true;
+	@(_initialOfObjectConnectionInProgress___objektumNyilvantarto_CollectData_objektumNyilvantarto_11)
+	transition from _initialOfObjectConnectionInProgress___objektumNyilvantarto to
+		CollectData_objektumNyilvantarto /
+		_initialOfObjectConnectionInProgress___objektumNyilvantarto_CollectData_objektumNyilvantarto_11
+		:= true;
+	@(_initialOfCollectData___objektumNyilvantarto_WaitObjConnection_objektumNyilvantarto_12)
+	transition from _initialOfCollectData___objektumNyilvantarto to
+		WaitObjConnection_objektumNyilvantarto /
+		_initialOfCollectData___objektumNyilvantarto_WaitObjConnection_objektumNyilvantarto_12 := true;
+	@(_initialOfCollectDataRepeat___objektumNyilvantarto_WaitObjConnectionRepeat_objektumNyilvantarto_13)
+	transition from _initialOfCollectDataRepeat___objektumNyilvantarto to
+		WaitObjConnectionRepeat_objektumNyilvantarto /
+		_initialOfCollectDataRepeat___objektumNyilvantarto_WaitObjConnectionRepeat_objektumNyilvantarto_13
+		:= true;
+	@(_initialOfObjVkTransmissionMachine___objVkTransmission_objektumNyilvantarto_ObjVkTransmission_objVkTransmission_objektumNyilvantarto_14)
+	transition from _initialOfObjVkTransmissionMachine___objVkTransmission_objektumNyilvantarto to
+		ObjVkTransmission_objVkTransmission_objektumNyilvantarto /
+		_initialOfObjVkTransmissionMachine___objVkTransmission_objektumNyilvantarto_ObjVkTransmission_objVkTransmission_objektumNyilvantarto_14
+		:= true;
+	@(ObjVkTransmission_objVkTransmission_objektumNyilvantarto_ObjVkTransmission_objVkTransmission_objektumNyilvantarto_15)
+	transition from ObjVkTransmission_objVkTransmission_objektumNyilvantarto to
+		ObjVkTransmission_objVkTransmission_objektumNyilvantarto when
+		ObjektumKezeloPortIn.message_RigelMsgHeader
+		[ObjektumKezeloPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgData] / {
+		raise
+			VezerloKozpontPortOut.message_RigelMsgHeader(ObjektumKezeloPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue);
+	}
+	ObjVkTransmission_objVkTransmission_objektumNyilvantarto_ObjVkTransmission_objVkTransmission_objektumNyilvantarto_15
+		:= true;
+	@(ObjVkTransmission_objVkTransmission_objektumNyilvantarto_ObjVkTransmission_objVkTransmission_objektumNyilvantarto_16)
+	transition from ObjVkTransmission_objVkTransmission_objektumNyilvantarto to
+		ObjVkTransmission_objVkTransmission_objektumNyilvantarto when
+		ObjektumKezeloPortIn.message_RigelMsgHeader
+		[ObjektumKezeloPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgAnsTs1] / {
+		raise
+			VezerloKozpontPortOut.message_RigelMsgHeader(ObjektumKezeloPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue);
+	}
+	ObjVkTransmission_objVkTransmission_objektumNyilvantarto_ObjVkTransmission_objVkTransmission_objektumNyilvantarto_16
+		:= true;
+	@(ObjVkTransmission_objVkTransmission_objektumNyilvantarto_ObjVkTransmission_objVkTransmission_objektumNyilvantarto_17)
+	transition from ObjVkTransmission_objVkTransmission_objektumNyilvantarto to
+		ObjVkTransmission_objVkTransmission_objektumNyilvantarto when
+		ObjektumKezeloPortIn.message_RigelMsgHeader
+		[ObjektumKezeloPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgAnsTs2] / {
+		raise
+			VezerloKozpontPortOut.message_RigelMsgHeader(ObjektumKezeloPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue);
+	}
+	ObjVkTransmission_objVkTransmission_objektumNyilvantarto_ObjVkTransmission_objVkTransmission_objektumNyilvantarto_17
+		:= true;
+	@(ObjVkTransmission_objVkTransmission_objektumNyilvantarto_ObjVkTransmission_objVkTransmission_objektumNyilvantarto_18)
+	transition from ObjVkTransmission_objVkTransmission_objektumNyilvantarto to
+		ObjVkTransmission_objVkTransmission_objektumNyilvantarto when
+		ObjektumKezeloPortIn.message_RigelMsgHeader
+		[ObjektumKezeloPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgCommandResult] / {
+		raise
+			VezerloKozpontPortOut.message_RigelMsgHeader(ObjektumKezeloPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue);
+	}
+	ObjVkTransmission_objVkTransmission_objektumNyilvantarto_ObjVkTransmission_objVkTransmission_objektumNyilvantarto_18
+		:= true;
+	@(ObjVkTransmission_objVkTransmission_objektumNyilvantarto_ObjVkTransmission_objVkTransmission_objektumNyilvantarto_19)
+	transition from ObjVkTransmission_objVkTransmission_objektumNyilvantarto to
+		ObjVkTransmission_objVkTransmission_objektumNyilvantarto when
+		ObjektumKezeloPortIn.message_RigelMsgHeader
+		[ObjektumKezeloPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgCommandConfirmResult] / {
+		raise
+			VezerloKozpontPortOut.message_RigelMsgHeader(ObjektumKezeloPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue);
+	}
+	ObjVkTransmission_objVkTransmission_objektumNyilvantarto_ObjVkTransmission_objVkTransmission_objektumNyilvantarto_19
+		:= true;
+	@(_initialOfVkObjTransmissionMachine___vkObjTransmission_objektumNyilvantarto_VkObjTransmission_vkObjTransmission_objektumNyilvantarto_20)
+	transition from _initialOfVkObjTransmissionMachine___vkObjTransmission_objektumNyilvantarto to
+		VkObjTransmission_vkObjTransmission_objektumNyilvantarto /
+		_initialOfVkObjTransmissionMachine___vkObjTransmission_objektumNyilvantarto_VkObjTransmission_vkObjTransmission_objektumNyilvantarto_20
+		:= true;
+	@(VkObjTransmission_vkObjTransmission_objektumNyilvantarto_VkObjTransmission_vkObjTransmission_objektumNyilvantarto_21)
+	transition from VkObjTransmission_vkObjTransmission_objektumNyilvantarto to
+		VkObjTransmission_vkObjTransmission_objektumNyilvantarto when
+		VezerloKozpontPortIn.message_RigelMsgHeader
+		[VezerloKozpontPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgReqTs1] / {
+		raise
+			ObjektumKezeloPortOut.message_RigelMsgHeader(VezerloKozpontPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue);
+	}
+	VkObjTransmission_vkObjTransmission_objektumNyilvantarto_VkObjTransmission_vkObjTransmission_objektumNyilvantarto_21
+		:= true;
+	@(VkObjTransmission_vkObjTransmission_objektumNyilvantarto_VkObjTransmission_vkObjTransmission_objektumNyilvantarto_22)
+	transition from VkObjTransmission_vkObjTransmission_objektumNyilvantarto to
+		VkObjTransmission_vkObjTransmission_objektumNyilvantarto when
+		VezerloKozpontPortIn.message_RigelMsgHeader
+		[VezerloKozpontPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgReqTs2] / {
+		raise
+			ObjektumKezeloPortOut.message_RigelMsgHeader(VezerloKozpontPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue);
+	}
+	VkObjTransmission_vkObjTransmission_objektumNyilvantarto_VkObjTransmission_vkObjTransmission_objektumNyilvantarto_22
+		:= true;
+	@(VkObjTransmission_vkObjTransmission_objektumNyilvantarto_VkObjTransmission_vkObjTransmission_objektumNyilvantarto_23)
+	transition from VkObjTransmission_vkObjTransmission_objektumNyilvantarto to
+		VkObjTransmission_vkObjTransmission_objektumNyilvantarto when
+		VezerloKozpontPortIn.message_RigelMsgHeader
+		[VezerloKozpontPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgCommand] / {
+		raise
+			ObjektumKezeloPortOut.message_RigelMsgHeader(VezerloKozpontPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue);
+	}
+	VkObjTransmission_vkObjTransmission_objektumNyilvantarto_VkObjTransmission_vkObjTransmission_objektumNyilvantarto_23
+		:= true;
+	@(VkObjTransmission_vkObjTransmission_objektumNyilvantarto_VkObjTransmission_vkObjTransmission_objektumNyilvantarto_24)
+	transition from VkObjTransmission_vkObjTransmission_objektumNyilvantarto to
+		VkObjTransmission_vkObjTransmission_objektumNyilvantarto when
+		VezerloKozpontPortIn.message_RigelMsgHeader
+		[VezerloKozpontPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgCommandConfirm] / {
+		raise
+			ObjektumKezeloPortOut.message_RigelMsgHeader(VezerloKozpontPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue);
+	}
+	VkObjTransmission_vkObjTransmission_objektumNyilvantarto_VkObjTransmission_vkObjTransmission_objektumNyilvantarto_24
+		:= true;
+	@(_initialOfPeriodicQueryMachine___periodicQuery_objektumNyilvantarto_PeriodicQuery_periodicQuery_objektumNyilvantarto_25)
+	transition from _initialOfPeriodicQueryMachine___periodicQuery_objektumNyilvantarto to
+		PeriodicQuery_periodicQuery_objektumNyilvantarto /
+		_initialOfPeriodicQueryMachine___periodicQuery_objektumNyilvantarto_PeriodicQuery_periodicQuery_objektumNyilvantarto_25
+		:= true;
+	@(PeriodicQuery_periodicQuery_objektumNyilvantarto_PeriodicQuery_periodicQuery_objektumNyilvantarto_26)
+	transition from PeriodicQuery_periodicQuery_objektumNyilvantarto to
+		PeriodicQuery_periodicQuery_objektumNyilvantarto when timeout
+		timeout_PeriodicQuery_0_periodicQuery_objektumNyilvantarto / {
+		var sqMsg_periodicQuery_objektumNyilvantarto : RigelMsgHeader := createSq();
+		raise ObjektumKezeloPortOut.message_RigelMsgHeader(sqMsg_periodicQuery_objektumNyilvantarto);
+	}
+	PeriodicQuery_periodicQuery_objektumNyilvantarto_PeriodicQuery_periodicQuery_objektumNyilvantarto_26
+		:= true;
+	@(WaitForVK_objektumNyilvantarto_VkActive_objektumNyilvantarto_27)
+	transition from WaitForVK_objektumNyilvantarto to VkActive_objektumNyilvantarto when
+		VezerloKozpontPortIn.message_RigelMsgHeader
+		[VezerloKozpontPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgGq] / WaitForVK_objektumNyilvantarto_VkActive_objektumNyilvantarto_27 :=
+		true;
+	@(VkActive_objektumNyilvantarto_CollectDataRepeat_objektumNyilvantarto_28)
+	transition from VkActive_objektumNyilvantarto to CollectDataRepeat_objektumNyilvantarto when
+		ObjektumKezeloPortIn.message_RigelMsgHeader
+		[((((((((ObjektumKezeloPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgGq or
+		ObjektumKezeloPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgGqBegin) or
+		ObjektumKezeloPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgGqEnd) or
+		ObjektumKezeloPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgReqTs1) or
+		ObjektumKezeloPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgReqTs2) or
+		ObjektumKezeloPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgCommand) or
+		ObjektumKezeloPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgCommandConfirm) or
+		ObjektumKezeloPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgInvalidateObj) or
+		ObjektumKezeloPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgSq) or
+		ObjektumKezeloPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgVkAlive] / {
+		Perform_OrionDisconnToObj();
+		var invalidateObjMsg_objektumNyilvantarto : RigelMsgHeader := createInvalidateObj();
+		raise VezerloKozpontPortOut.message_RigelMsgHeader(invalidateObjMsg_objektumNyilvantarto);
+	}
+	VkActive_objektumNyilvantarto_CollectDataRepeat_objektumNyilvantarto_28 := true;
+	@(ObjectConnectionInProgress_objektumNyilvantarto_Connected_objektumNyilvantarto_29)
+	transition from ObjectConnectionInProgress_objektumNyilvantarto to Connected_objektumNyilvantarto
+		when ObjektumKezeloPortIn.message_RigelMsgHeader
+		[ObjektumKezeloPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgData and
+		ObjektumKezeloPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.DataCause =
+		RigelDataCause::NormalAnswer] / {
+		raise
+			VezerloKozpontPortOut.message_RigelMsgHeader(ObjektumKezeloPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue);
+	}
+	ObjectConnectionInProgress_objektumNyilvantarto_Connected_objektumNyilvantarto_29 := true;
+	@(CollectData_objektumNyilvantarto_CollectDataRepeat_objektumNyilvantarto_30)
+	transition from CollectData_objektumNyilvantarto to CollectDataRepeat_objektumNyilvantarto when
+		timeout timeout_CollectData_0_objektumNyilvantarto / {
+		var invObj_objektumNyilvantarto : RigelMsgHeader := createInvalidateObj();
+		raise VezerloKozpontPortOut.message_RigelMsgHeader(invObj_objektumNyilvantarto);
+	}
+	CollectData_objektumNyilvantarto_CollectDataRepeat_objektumNyilvantarto_30 := true;
+	@(WaitObjConnection_objektumNyilvantarto__WaitObjConnection_0__objektumNyilvantarto_31)
+	transition from WaitObjConnection_objektumNyilvantarto to
+		_WaitObjConnection_0__objektumNyilvantarto when timeout
+		timeout_WaitObjConnection_0_objektumNyilvantarto / {
+		_change_condition_8_0_0_objektumNyilvantarto := isObjOrionConnected;
+		if (_change_condition_8_0_0_objektumNyilvantarto) {
+			var sqMsg_objektumNyilvantarto : RigelMsgHeader := createSq();
+			raise ObjektumKezeloPortOut.message_RigelMsgHeader(sqMsg_objektumNyilvantarto);
+		}
+	}
+	WaitObjConnection_objektumNyilvantarto__WaitObjConnection_0__objektumNyilvantarto_31 := true;
+	@(_WaitObjConnection_0__objektumNyilvantarto_WaitData_objektumNyilvantarto_32)
+	transition from _WaitObjConnection_0__objektumNyilvantarto to WaitData_objektumNyilvantarto
+		[_change_condition_8_0_0_objektumNyilvantarto] /
+		_WaitObjConnection_0__objektumNyilvantarto_WaitData_objektumNyilvantarto_32 := true;
+	@(_WaitObjConnection_0__objektumNyilvantarto_WaitObjConnection_objektumNyilvantarto_33)
+	transition from _WaitObjConnection_0__objektumNyilvantarto to
+		WaitObjConnection_objektumNyilvantarto [else] /
+		_WaitObjConnection_0__objektumNyilvantarto_WaitObjConnection_objektumNyilvantarto_33 := true;
+	@(CollectDataRepeat_objektumNyilvantarto_CollectDataRepeat_objektumNyilvantarto_34)
+	transition from CollectDataRepeat_objektumNyilvantarto to CollectDataRepeat_objektumNyilvantarto
+		when timeout timeout_CollectDataRepeat_0_objektumNyilvantarto /
+		CollectDataRepeat_objektumNyilvantarto_CollectDataRepeat_objektumNyilvantarto_34 := true;
+	@(WaitObjConnectionRepeat_objektumNyilvantarto__WaitObjConnectionRepeat_0__objektumNyilvantarto_35)
+	transition from WaitObjConnectionRepeat_objektumNyilvantarto to
+		_WaitObjConnectionRepeat_0__objektumNyilvantarto when timeout
+		timeout_WaitObjConnectionRepeat_0_objektumNyilvantarto / {
+		_change_condition_8_0_1_objektumNyilvantarto := isObjOrionConnected;
+		if (_change_condition_8_0_1_objektumNyilvantarto) {
+			var sqMsg_objektumNyilvantarto : RigelMsgHeader := createSq();
+			raise ObjektumKezeloPortOut.message_RigelMsgHeader(sqMsg_objektumNyilvantarto);
+		}
+	}
+	WaitObjConnectionRepeat_objektumNyilvantarto__WaitObjConnectionRepeat_0__objektumNyilvantarto_35
+		:= true;
+	@(_WaitObjConnectionRepeat_0__objektumNyilvantarto_WaitDatatRepeat_objektumNyilvantarto_36)
+	transition from _WaitObjConnectionRepeat_0__objektumNyilvantarto to
+		WaitDatatRepeat_objektumNyilvantarto [_change_condition_8_0_1_objektumNyilvantarto] /
+		_WaitObjConnectionRepeat_0__objektumNyilvantarto_WaitDatatRepeat_objektumNyilvantarto_36 :=
+		true;
+	@(_WaitObjConnectionRepeat_0__objektumNyilvantarto_WaitObjConnectionRepeat_objektumNyilvantarto_37)
+	transition from _WaitObjConnectionRepeat_0__objektumNyilvantarto to
+		WaitObjConnectionRepeat_objektumNyilvantarto [else] /
+		_WaitObjConnectionRepeat_0__objektumNyilvantarto_WaitObjConnectionRepeat_objektumNyilvantarto_37
+		:= true;
+	procedure Perform_OrionDisconnToVk : void {
+	}
+	procedure Perform_OrionDisconnToObj : void {
+	}
+}

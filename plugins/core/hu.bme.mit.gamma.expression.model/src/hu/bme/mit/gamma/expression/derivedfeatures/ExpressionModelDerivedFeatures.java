@@ -342,6 +342,16 @@ public class ExpressionModelDerivedFeatures {
 		return expression instanceof ElseExpression || expression instanceof DefaultExpression;
 	}
 	
+	public static TypeDefinition getElementTypeDefinition(Declaration declaration) {
+		Type type = declaration.getType();
+		TypeDefinition typeDefinition = getTypeDefinition(type);
+		if (typeDefinition instanceof ArrayTypeDefinition arrayTypeDefinition) {
+			return getTypeDefinition(
+					arrayTypeDefinition.getElementType());
+		}
+		return typeDefinition;
+	}
+	
 	public static TypeDefinition getTypeDefinition(Declaration declaration) {
 		Type type = declaration.getType();
 		return getTypeDefinition(type);
@@ -482,6 +492,14 @@ public class ExpressionModelDerivedFeatures {
 	
 	public static Expression getDefaultExpression(Type type) {
 		return expressionUtil.getInitialValueOfType(type);
+	}
+	
+	public static Declaration getContainingDeclaration(Type type) {
+		return ecoreUtil.getContainerOfType(type, Declaration.class);
+	}
+	
+	public static VariableDeclaration getContainingVariable(Type type) {
+		return ecoreUtil.getContainerOfType(type, VariableDeclaration.class);
 	}
 	
 	public static int getIndex(ParameterDeclaration parameter) {

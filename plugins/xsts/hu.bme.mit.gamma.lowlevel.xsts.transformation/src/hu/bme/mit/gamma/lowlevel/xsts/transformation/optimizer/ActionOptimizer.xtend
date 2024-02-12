@@ -12,9 +12,9 @@ package hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer
 
 import hu.bme.mit.gamma.expression.model.AndExpression
 import hu.bme.mit.gamma.expression.model.ArithmeticExpression
-import hu.bme.mit.gamma.expression.model.BooleanExpression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.FalseExpression
+import hu.bme.mit.gamma.expression.model.LogicExpression
 import hu.bme.mit.gamma.expression.model.MultiaryExpression
 import hu.bme.mit.gamma.expression.model.OrExpression
 import hu.bme.mit.gamma.expression.model.TrueExpression
@@ -600,7 +600,8 @@ class ActionOptimizer {
 								val xStsInBetweenAction = xStsActions.get(k)
 								val variable = lhs.accessedDeclaration
 								// Not perfect for arrays: a[0] := 1; b := a[2]; a[0] := 2;
-								if (xStsInBetweenAction.readVariables.contains(variable)) {
+								val readVariables = xStsInBetweenAction.readVariables
+								if (readVariables.contains(variable)) {
 									isVariableRead = true
 								}
 							}
@@ -653,8 +654,8 @@ class ActionOptimizer {
 	
 	protected def void deleteUnnecessaryAssumeActions(Action action) {
 		for (assumeAction : action.getAllContentsOfType(AssumeAction)) {
-			if (assumeAction.isUnnecessary) {
-				assumeAction.delete
+			if (assumeAction.unnecessary) {
+				assumeAction.remove
 			}
 		}
 	}
@@ -687,12 +688,16 @@ class ActionOptimizer {
 			return false // We must not delete assumptions from choices, because that may lead to a deadlock
 		}
 		
+		if (action.isInvariant) {
+			return false
+		}
+		
 		val assumption = action.assumption
 		if (assumption.definitelyTrueExpression) {
 			return true
 		}
 		
-		return false // TODO every outcome is false apart from the first branch; shouldn't this be true?
+		return false // TODO every outcome is false apart from the last branch; shouldn't this be true?
 	}
 	
 	// Non deterministic actions
@@ -812,7 +817,7 @@ class ActionOptimizer {
 	protected def void optimizeExpressions(Action action) {
 		val eObjects = action.getAllContentsOfType(EObject)
 		
-		val booleanExpressions = eObjects.filter(BooleanExpression)
+		val booleanExpressions = eObjects.filter(LogicExpression)
 		for (booleanExpression : booleanExpressions) {
 			if (booleanExpression.definitelyFalseExpression) {
 				expressionFactory.createFalseExpression.replace(booleanExpression)

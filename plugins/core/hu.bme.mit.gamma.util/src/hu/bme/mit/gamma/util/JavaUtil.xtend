@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -121,8 +121,29 @@ class JavaUtil {
 		return map.get(key)
 	}
 	
+	def <K> Integer increment(Map<K, Integer> map, K key) {
+		if (!map.containsKey(key)) {
+			map.put(key, 0)
+		}
+		val value = map.get(key)
+		return map.put(key, value + 1)
+	}
+	
 	def <K, V> Set<Entry<V, K>> invert(Map<K, V> map) {
 		return map.entrySet.invert.toSet
+	}
+	
+	def <K, V, T> Map<K, T> castValues(Map<K, V> map, Class<T> clazz) {
+		val castedMap = newHashMap
+		
+		for (key : map.keySet) {
+			val value = map.get(key)
+			val castedValue = value as T
+			
+			castedMap += key -> castedValue
+		}
+		
+		return castedMap
 	}
 	
 	def <K, V> Collection<Entry<V, K>> invert(Collection<? extends Entry<K, V>> entrySet) {
@@ -133,25 +154,38 @@ class JavaUtil {
 		return entries
 	}
 	
-	def <T> collectMinimumValues(Map<T, Integer> value, Iterable<? extends Map<T, Integer>> collectableValues) {
+	def <T> collectMinimumValues(Map<T, Integer> values, Iterable<? extends Map<T, Integer>> collectableValues) {
 		for (Map<T, Integer> collectableValue : collectableValues) {
 			for (T key : collectableValue.keySet()) {
 				val newValue = collectableValue.get(key)
 				
-				if (value.containsKey(key)) {
-					val oldValueValue = value.get(key)
-					if (newValue < oldValueValue) {
-						value.replace(key, newValue)
+				if (values.containsKey(key)) {
+					val oldValue = values.get(key)
+					if (newValue < oldValue) {
+						values.replace(key, newValue)
 					}
-					else {
-						value += key -> newValue
-					}
+				}
+				else {
+					values += key -> newValue
 				}
 			}
 		}
 	}
 	
 	//
+	
+	def matchFirstCharacterCapitalization(String string, String example) {
+		if (example.nullOrEmpty) {
+			return string
+		}
+		
+		val exampleChar = example.charAt(0)
+		val isUpperCase = Character.isUpperCase(exampleChar)
+		if (isUpperCase) {
+			return string.toFirstUpper
+		}
+		return string.toFirstLower
+	}
 	
 	def String toFirstCharUpper(String string) {
 		return string.toFirstUpper

@@ -60,6 +60,9 @@
         eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclaration"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="internalEventDeclarations"
         upperBound="-1" eType="#//EventDeclaration"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="invariants" upperBound="-1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
+        containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="CompositeElement" abstract="true">
     <eStructuralFeatures xsi:type="ecore:EReference" name="regions" upperBound="-1"
@@ -88,6 +91,9 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="entryAction" eType="ecore:EClass ../../hu.bme.mit.gamma.action.model/model/action.ecore#//Action"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="exitAction" eType="ecore:EClass ../../hu.bme.mit.gamma.action.model/model/action.ecore#//Action"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="invariants" upperBound="-1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="EventDeclaration" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NamedElement">

@@ -3,7 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Gamma Low-level Statechart Language Metamodel
 Bundle-SymbolicName: hu.bme.mit.gamma.statechart.lowlevel.model;singleton:=true
 Automatic-Module-Name: hu.bme.mit.gamma.statechart.lowlevel.model
-Bundle-Version: 2.9.0.qualifier
+Bundle-Version: 2.10.0.qualifier
 Bundle-ClassPath: .
 Bundle-Vendor: BME-FTSRG
 Bundle-Localization: plugin

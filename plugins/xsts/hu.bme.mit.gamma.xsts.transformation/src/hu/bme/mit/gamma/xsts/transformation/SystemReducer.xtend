@@ -106,7 +106,8 @@ class SystemReducer {
 		// can be placed inside assignment actions, and the other way around,
 		// cast exceptions are thrown!
 		for (xStsDeletableAssignmentAction : xStsDeletableAssignmentActions) {
-			xStsDeletableAssignmentAction.remove // To speed up the process
+			createEmptyAction.replace(
+				xStsDeletableAssignmentAction) // To avoid nullptrs
 		}
 		// Deleting references to the input event variables in guards
 		// before variable removal as references must be present here

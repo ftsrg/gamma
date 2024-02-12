@@ -156,6 +156,24 @@ class GammaEcoreUtil {
 		}
 	}
 	
+	def <T extends EObject> void moveUpContainmentChainUntilType(EObject object, Class<? extends T> clazz) {
+		val container = object.eContainer
+		if (clazz.isInstance(container)) {
+			return
+		}
+		object.replace(container)
+		object.removeContainmentChainUntilType(clazz)
+	}
+	
+	def <T extends EObject> void removeContainmentChainUntilType(EObject object, Class<? extends T> clazz) {
+		val container = object.eContainer
+		if (clazz.isInstance(container)) {
+			object.remove
+			return
+		}
+		container.removeContainmentChainUntilType(clazz)
+	}
+	
 	def void changeAndReplace(EObject newObject, EObject oldObject, EObject container) {
 		change(newObject, oldObject, container)
 		newObject.replace(oldObject)
@@ -549,6 +567,19 @@ class GammaEcoreUtil {
 	
 	//
 	
+	def boolean helperDisjoint(List<? extends EObject> lhs, List<? extends EObject> rhs) {
+		for (var i = 0; i < lhs.size; i++) {
+			for (var j = 0; j < rhs.size; j++) {
+				val lhsElement = lhs.get(i)
+				val rhsElement = rhs.get(j)
+				if (lhsElement.helperEquals(rhsElement)) {
+					return false
+				}
+			}
+		}
+		return true
+	}
+	
 	def boolean helperEquals(List<? extends EObject> lhs, List<? extends EObject> rhs) {
 		if (lhs === null && rhs === null) {
 			return true
@@ -620,8 +651,8 @@ class GammaEcoreUtil {
 		val location =
 		if (uri.isPlatform) {
 			ResourcesPlugin.workspace.root.getFile(
-				new Path(uri.toPlatformString(true))
-			).location.toString
+				new Path(uri.toPlatformString(true)))
+			.location.toString
 		}
 		else {
 			val FILE_STRING = "file:"
@@ -637,7 +668,8 @@ class GammaEcoreUtil {
 					new Path(uriString)).location.toString
 			}
 		}
-		return new File(URI.decode(location))
+		return new File(
+			URI.decode(location))
 	}
 	
 	def getWorkspace() {

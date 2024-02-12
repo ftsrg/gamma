@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -15,6 +15,7 @@ import java.io.FileWriter
 import java.util.AbstractMap
 import java.util.ArrayList
 import java.util.Collections
+import java.util.List
 import java.util.Map
 import java.util.Scanner
 import javax.xml.XMLConstants
@@ -82,6 +83,26 @@ class FileUtil {
 		return packageName.replaceAll("\\.", "\\"+ File.separator)
 	}
 	
+	def List<File> getAllContainedFiles(File file) {
+		val files = newArrayList
+		
+		if (files !== null) {
+			val containedFiles = file.listFiles
+			if (containedFiles !== null) {
+				for (containedFile : containedFiles) {
+					if (containedFile.file) {
+						files += containedFile
+					}
+					else if (containedFile.directory) {
+						files += containedFile.allContainedFiles
+					}
+				}
+			}
+		}
+		
+		return files
+	}
+	
 	def getFile(IFile file) {
 		val fullPath = file.fullPath
 		return fullPath.toFile
@@ -130,8 +151,8 @@ class FileUtil {
 	}
 	
 	def getExtensionlessName(String fileName) {
-		val lastIndex = fileName.lastIndexOf(".")
-		if (lastIndex <= 0) { // <= 0 so hidden files are handled
+		val lastIndex = fileName.extensionDotIndex // So hidden files are handled
+		if (lastIndex < 0) {
 			return fileName
 		}
 		return fileName.substring(0, lastIndex)
@@ -146,11 +167,35 @@ class FileUtil {
 	}
 	
 	def getExtension(String fileName) {
-		val lastIndex = fileName.lastIndexOf(".")
-		if (lastIndex <= 0) { // <= 0 so hidden files are handled
+		val lastIndex = fileName.extensionDotIndex // So hidden files are handled
+		if (lastIndex < 0) {
 			return ""
 		}
 		return fileName.substring(lastIndex + 1)
+	}
+	
+	private def int getExtensionDotIndex(String fileName) {
+		val lastSeparatorIndex = Math.max(
+			fileName.lastIndexOf("/"), fileName.lastIndexOf("\\"))
+		
+		val index = fileName.lastIndexOf(".")
+		if (index <= 0 || index < lastSeparatorIndex) {
+			return -1 // Hidden file or no extension
+		}
+		val charBeforeDot = fileName.charAt(index - 1).toString
+		if (charBeforeDot == ".") {
+			return -1 // Hidden(hidden) file
+		}
+		
+		return index // Valid extension
+	}
+	
+	def hasExtension(String fileName) {
+		return fileName != fileName.extensionlessName
+	}
+	
+	def hasExtension(File file) {
+		return file.name.hasExtension
 	}
 	
 	def isHiddenFile(File file) {

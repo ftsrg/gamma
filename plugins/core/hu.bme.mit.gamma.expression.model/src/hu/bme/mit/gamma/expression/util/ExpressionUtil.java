@@ -52,6 +52,7 @@ import hu.bme.mit.gamma.expression.model.FieldReferenceExpression;
 import hu.bme.mit.gamma.expression.model.GreaterEqualExpression;
 import hu.bme.mit.gamma.expression.model.GreaterExpression;
 import hu.bme.mit.gamma.expression.model.IfThenElseExpression;
+import hu.bme.mit.gamma.expression.model.ImplyExpression;
 import hu.bme.mit.gamma.expression.model.InequalityExpression;
 import hu.bme.mit.gamma.expression.model.InitializableElement;
 import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression;
@@ -92,9 +93,6 @@ public class ExpressionUtil {
 	protected ExpressionUtil() {}
 	//
 	
-	protected final long EMPTY_MASTER_QUEUE_VALUE = 0;
-	
-	//
 	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
 	protected final JavaUtil javaUtil = JavaUtil.INSTANCE;
 	protected final ExpressionEvaluator evaluator = ExpressionEvaluator.INSTANCE;
@@ -886,6 +884,12 @@ public class ExpressionUtil {
 		return toIntegerLiteral(1);
 	}
 	
+	public EnumerationLiteralDefinition createEnumerationLiteralDefinition(String name) {
+		EnumerationLiteralDefinition literal = factory.createEnumerationLiteralDefinition();
+		literal.setName(name);
+		return literal;
+	}
+	
 	public BigDecimal toBigDec(double value) {
 		return BigDecimal.valueOf(value);
 	}
@@ -953,6 +957,13 @@ public class ExpressionUtil {
 		parameterDeclaration.setType(type);
 		parameterDeclaration.setName(name);
 		return parameterDeclaration;
+	}
+	
+	public TypeDeclaration createTypeDeclaration(Type type, String name) {
+		TypeDeclaration typeDeclaration = factory.createTypeDeclaration();
+		typeDeclaration.setType(type);
+		typeDeclaration.setName(name);
+		return typeDeclaration;
 	}
 	
 	public NotExpression createNotExpression(Expression expression) {
@@ -1077,6 +1088,13 @@ public class ExpressionUtil {
 		greaterEqualExpression.setLeftOperand(lhs);
 		greaterEqualExpression.setRightOperand(rhs);
 		return greaterEqualExpression;
+	}
+	
+	public ImplyExpression createImplyExpression(Expression lhs, Expression rhs) {
+		ImplyExpression implyExpression = factory.createImplyExpression();
+		implyExpression.setLeftOperand(lhs);
+		implyExpression.setRightOperand(rhs);
+		return implyExpression;
 	}
 	
 	public IfThenElseExpression createMinExpression(Expression lhs, Expression rhs) {
@@ -1244,8 +1262,9 @@ public class ExpressionUtil {
 		int capacity = getArrayCapacity(queue);
 		if (capacity == 1) {
 			Expression peek = peek(queue);
-			return createEqualityExpression(peek,
-					toIntegerLiteral(EMPTY_MASTER_QUEUE_VALUE));
+			TypeDefinition elementType = ExpressionModelDerivedFeatures.getElementTypeDefinition(queue);
+			Expression emptyExpression = ExpressionModelDerivedFeatures.getDefaultExpression(elementType);
+			return createEqualityExpression(peek, emptyExpression);
 		}
 		else {
 			return isEmpty(sizeVariable);
@@ -1267,8 +1286,9 @@ public class ExpressionUtil {
 		int capacity = getArrayCapacity(queue);
 		if (capacity == 1) {
 			Expression peek = peek(queue);
-			return createInequalityExpression(peek,
-					toIntegerLiteral(EMPTY_MASTER_QUEUE_VALUE));
+			TypeDefinition elementType = ExpressionModelDerivedFeatures.getElementTypeDefinition(queue);
+			Expression emptyExpression = ExpressionModelDerivedFeatures.getDefaultExpression(elementType);
+			return createInequalityExpression(peek, emptyExpression);
 		}
 		else {
 			return isFull(sizeVariable, capacity);

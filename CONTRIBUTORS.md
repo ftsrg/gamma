@@ -6,9 +6,10 @@
 * [Bence Beöthy](https://github.com/beothy) [1]: metamodel changes
 * [Tamás Tóth](https://github.com/tothtamas28) ([homepage](https://inf.mit.bme.hu/members/totht)) [1]: initial metamodels
 * [Márton Búr](https://github.com/imbur) ([homepage](https://inf.mit.bme.hu/members/burm)) [1, 2]: bugfixes
+* [Simon József Nagy](https://github.com/simon5521) ([homepage](https://www.mit.bme.hu/general/phd/simonjozsefnagy)) [1]: RCP Gamma application, stochastic extension
+* [Richárd Szabó](https://github.com/Rorck) ([homepage](https://www.mit.bme.hu/general/phd/szabo))  [1]: bugfixes
 * [Balázs Várady](https://github.com/Varadbal) [1]: action language
 * [Csanád Csuvarszki](https://github.com/csuvi98) [1]: PlantUML statechart visualization, headless Eclipse, webserver API
-* [Simon József Nagy](https://github.com/simon5521) ([homepage](https://www.mit.bme.hu/general/phd/simonjozsefnagy)) [1]: RCP Gamma application, stochastic extension
 * [Levente Márk Nagy](https://github.com/nagyl1999) [1]: C code generator
 
 1. [Critical Systems Research Group (ftsrg)](https://inf.mit.bme.hu/en) [Department of Measurement and Information Systems](http://www.mit.bme.hu/eng/) [Budapest University of Technology and Economics](http://www.bme.hu/?language=en)

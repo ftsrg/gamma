@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -14,6 +14,7 @@ import hu.bme.mit.gamma.expression.model.ArgumentedElement
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression
+import hu.bme.mit.gamma.trace.model.AssignmentAct
 import hu.bme.mit.gamma.trace.model.ComponentSchedule
 import hu.bme.mit.gamma.trace.model.InstanceSchedule
 import hu.bme.mit.gamma.trace.model.RaiseEventAct
@@ -71,6 +72,11 @@ class TraceLanguageValidator extends AbstractTraceLanguageValidator {
 	@Check
 	def checkComponentInstanceReferences(ComponentInstanceReferenceExpression reference) {
 		handleValidationResultMessage(traceModelValidator.checkComponentInstanceReferences(reference))
+	}
+	
+	@Check
+	def checkComponentInstanceReferences(AssignmentAct act) {
+		handleValidationResultMessage(traceModelValidator.checkAssignmentAct(act))
 	}
 	
 }

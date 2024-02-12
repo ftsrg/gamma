@@ -76,7 +76,7 @@ public class TraceGenerationHandler extends TaskHandler {
 		traceGeneration.getFileName().replaceAll(it -> fileUtil.exploreRelativeFile(file, it).toString());
 
 		List<String> variableList = traceGeneration.getVariables();
-		boolean useAbstraction = traceGeneration.getVariableLists().size()!=0;
+		boolean useAbstraction = traceGeneration.getVariableLists().size() != 0;
 		
 		boolean fullTraces = traceGeneration.isFullTraces();
 		boolean noTransitionCoverage = traceGeneration.isNoTransitionCoverage();

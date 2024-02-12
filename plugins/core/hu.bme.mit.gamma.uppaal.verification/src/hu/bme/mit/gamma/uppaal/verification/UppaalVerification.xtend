@@ -10,6 +10,8 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.uppaal.verification
 
+import hu.bme.mit.gamma.querygenerator.serializer.UppaalPropertySerializer
+
 class UppaalVerification extends AbstractUppaalVerification {
 	// Singleton
 	public static final UppaalVerification INSTANCE = new UppaalVerification
@@ -26,6 +28,10 @@ class UppaalVerification extends AbstractUppaalVerification {
 	
 	override getDefaultArguments() {
 		return #[ "-C -T -t0" ]
+	}
+	
+	override protected createPropertySerializer() {
+		return UppaalPropertySerializer.INSTANCE
 	}
 
 }

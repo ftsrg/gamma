@@ -17,7 +17,7 @@ statechart Counter [
 	}
 	
 	transition from Initial to A
-	transition from A to B when Toggle.add / reachedB := true; a := a + 1;
+	transition from A to B when Toggle.add / a := Toggle.init::initValue; reachedB := true; a := a + 1;
 	transition from B to B when Toggle.add / a := a + 1;
 	
 	

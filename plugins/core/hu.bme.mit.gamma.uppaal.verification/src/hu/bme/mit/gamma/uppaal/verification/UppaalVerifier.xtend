@@ -17,7 +17,6 @@ import hu.bme.mit.gamma.verification.result.ThreeStateBoolean
 import hu.bme.mit.gamma.verification.util.AbstractVerifier
 import java.io.File
 import java.util.Scanner
-import java.util.logging.Level
 
 class UppaalVerifier extends AbstractVerifier {
 	
@@ -34,7 +33,7 @@ class UppaalVerifier extends AbstractVerifier {
 					#[uppaalFile.canonicalPath, uppaalQueryFile.canonicalPath]
 			
 			// Executing the command
-			logger.log(Level.INFO, "Executing command: " + command.join(" "))
+			logger.info("Executing command: " + command.join(" "))
 			process =  Runtime.getRuntime().exec(command)
 			val outputStream = process.inputStream
 			val errorStream = process.errorStream

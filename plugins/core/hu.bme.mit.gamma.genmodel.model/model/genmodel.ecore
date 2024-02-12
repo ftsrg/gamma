@@ -22,6 +22,8 @@
         upperBound="-1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="timeout" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/interface.ecore#//TimeSpecification"
         containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="iterationCount" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
+        containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="InterfaceCompilation" eSuperTypes="#//YakinduCompilation"/>
   <eClassifiers xsi:type="ecore:EClass" name="StatechartCompilation" eSuperTypes="#//YakinduCompilation">
@@ -91,6 +93,7 @@
     <eLiterals name="XSTS_UPPAAL" value="2" literal="XSTS_UPPAAL"/>
     <eLiterals name="PROMELA" value="3" literal="PROMELA"/>
     <eLiterals name="NUXMV" value="4" literal="NUXMV"/>
+    <eLiterals name="OCRA" value="5" literal="OCRA"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="YakinduCompilation" abstract="true"
       eSuperTypes="#//Task">
@@ -316,5 +319,20 @@
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="bmcBound" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
         containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ModelMutation" eSuperTypes="#//Task">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="model" lowerBound="1" eType="#//ModelReference"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="patternClassNames" upperBound="-1"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="MutationBasedTestGeneration" eSuperTypes="#//AbstractComplementaryTestGeneration">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="analysisModelTransformation"
+        lowerBound="1" eType="#//AnalysisModelTransformation" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="traceFolders" upperBound="-1"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="testClassNamePattern" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="patternClassNames" upperBound="-1"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
 </ecore:EPackage>

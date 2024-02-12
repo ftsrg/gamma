@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Utility Functions for the Gamma Languages
 Bundle-SymbolicName: hu.bme.mit.gamma.language.util
-Bundle-Version: 2.9.0.qualifier
+Bundle-Version: 2.10.0.qualifier
 Bundle-Vendor: BME-FTSRG
 Automatic-Module-Name: hu.bme.mit.gamma.language.util
 Bundle-RequiredExecutionEnvironment: JavaSE-17

@@ -71,7 +71,7 @@
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Trigger" abstract="true"/>
-  <eClassifiers xsi:type="ecore:EClass" name="EventReference" abstract="true"/>
+  <eClassifiers xsi:type="ecore:EClass" name="EventReference" abstract="true" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ReferenceExpression"/>
   <eClassifiers xsi:type="ecore:EClass" name="AnyTrigger" eSuperTypes="#//SimpleTrigger"/>
   <eClassifiers xsi:type="ecore:EClass" name="EventTrigger" eSuperTypes="#//SimpleTrigger">
     <eStructuralFeatures xsi:type="ecore:EReference" name="eventReference" lowerBound="1"

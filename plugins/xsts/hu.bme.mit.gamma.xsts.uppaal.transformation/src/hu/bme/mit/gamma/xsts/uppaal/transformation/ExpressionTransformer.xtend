@@ -24,6 +24,7 @@ import hu.bme.mit.gamma.expression.model.FalseExpression
 import hu.bme.mit.gamma.expression.model.GreaterEqualExpression
 import hu.bme.mit.gamma.expression.model.GreaterExpression
 import hu.bme.mit.gamma.expression.model.IfThenElseExpression
+import hu.bme.mit.gamma.expression.model.ImplyExpression
 import hu.bme.mit.gamma.expression.model.InequalityExpression
 import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression
 import hu.bme.mit.gamma.expression.model.LessEqualExpression
@@ -169,6 +170,13 @@ class ExpressionTransformer {
 			uppaalOperands += xStsOperand.transform
 		}
 		return LogicalOperator.AND.createLogicalExpression(uppaalOperands)
+	}
+	
+	def dispatch Expression transform(ImplyExpression expression) {
+		val uppaalOperands = newArrayList
+		uppaalOperands += expression.leftOperand.clone.negate.transform
+		uppaalOperands += expression.rightOperand.transform
+		return LogicalOperator.OR.createLogicalExpression(uppaalOperands)
 	}
 	
 	def dispatch Expression transform(EqualityExpression expression) {

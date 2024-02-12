@@ -22,3 +22,6 @@
 !/model/Spacecraft/System/SpacecraftComponent.gsm
 !/model/ParallelRegion/ParallelRegion.gpd
 !/model/Manual/model/NondetMachine/NondetMachine.gpd
+!/model/RIS/SystemGlobalQueue/RigelSystem.gpd
+!/model/RIS/SystemLocalQueue/RigelSystem.gpd
+!/model/TrafficLight/System/TrafficLightWrapper-LTL.gpd

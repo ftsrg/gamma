@@ -77,7 +77,6 @@ public class LowlevelStatechartModelDerivedFeatures extends ActionModelDerivedFe
 		}
 	}
 	
-	
 	public static boolean hasOrthogonalRegion(Region lowlevelRegion) {
 		return !getOrthogonalRegions(lowlevelRegion).isEmpty();
 	}
@@ -175,7 +174,8 @@ public class LowlevelStatechartModelDerivedFeatures extends ActionModelDerivedFe
 			return lowlevelParentRegions;
 		}
 		State lowlevelParentState = getParentState(lowlevelState);
-		lowlevelParentRegions.addAll(getParentRegionsRecursively(lowlevelParentState, topLowlevelState));
+		lowlevelParentRegions.addAll(
+				getParentRegionsRecursively(lowlevelParentState, topLowlevelState));
 		return lowlevelParentRegions;
 	}
 	
@@ -183,11 +183,13 @@ public class LowlevelStatechartModelDerivedFeatures extends ActionModelDerivedFe
 		List<Region> lowlevelSubregions = new ArrayList<Region>();
 		if (lowlevelStateNode instanceof State) {
 			State lowlevelState = (State) lowlevelStateNode;
-			lowlevelSubregions.addAll(lowlevelState.getRegions());
-			for (Region lowlevelSubregion : lowlevelState.getRegions()) {
+			List<Region> regions = lowlevelState.getRegions();
+			lowlevelSubregions.addAll(regions);
+			for (Region lowlevelSubregion : regions) {
 				for (StateNode lowlevelSubstateNode : lowlevelSubregion.getStateNodes()) {
 					if (lowlevelSubstateNode instanceof State) {
-						lowlevelSubregions.addAll(getSubregionsRecursively(lowlevelSubstateNode));
+						lowlevelSubregions.addAll(
+								getSubregionsRecursively(lowlevelSubstateNode));
 					}
 				}
 			}
@@ -207,7 +209,8 @@ public class LowlevelStatechartModelDerivedFeatures extends ActionModelDerivedFe
 		for (Region lowlevelSubregion : lowlevelSubregions) {
 			for (State state : getStates(lowlevelSubregion)) {
 				if (isComposite(state)) {
-					lowlevelSamePriorityRegionGroups.addAll(getTopDownRegionGroups(state));
+					lowlevelSamePriorityRegionGroups.addAll(
+							getTopDownRegionGroups(state));
 				}
 			}
 		}
@@ -233,10 +236,43 @@ public class LowlevelStatechartModelDerivedFeatures extends ActionModelDerivedFe
 		List<Region> lowlevelSubregions = new ArrayList<Region>();
 		for (State state : getStates(region)) {
 			if (isComposite(state)) {
-				lowlevelSubregions.addAll(getAllRegions(state));
+				lowlevelSubregions.addAll(
+						getAllRegions(state));
 			}
 		}
 		return lowlevelSubregions;
+	}
+	
+	public static List<State> getStates(CompositeElement composite) {
+		List<State> lowlevelStates = new ArrayList<State>();
+		
+		for (Region region : composite.getRegions()) {
+			List<StateNode> stateNodes = region.getStateNodes();
+			for (StateNode stateNode : stateNodes) {
+				if (stateNode instanceof State state) {
+					lowlevelStates.add(state);
+				}
+			}
+		}
+		
+		return lowlevelStates;
+	}
+	
+	public static List<State> getAllStates(CompositeElement composite) {
+		List<State> lowlevelStates = new ArrayList<State>();
+		
+		for (Region region : composite.getRegions()) {
+			List<StateNode> stateNodes = region.getStateNodes();
+			for (StateNode stateNode : stateNodes) {
+				if (stateNode instanceof State state) {
+					lowlevelStates.add(state);
+					lowlevelStates.addAll(
+							getAllStates(state));
+				}
+			}
+		}
+		
+		return lowlevelStates;
 	}
 	
 	public static List<Region> getSelfAndAllRegions(Region region) {

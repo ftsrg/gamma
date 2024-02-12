@@ -21,12 +21,36 @@ import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpr
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression;
+import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference;
+import hu.bme.mit.gamma.statechart.statechart.ClockTickReference;
+import hu.bme.mit.gamma.statechart.statechart.PortEventReference;
 import hu.bme.mit.gamma.statechart.statechart.StateReferenceExpression;
+import hu.bme.mit.gamma.statechart.statechart.TimeoutEventReference;
 
 public class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSerializer {
 	// Singleton
 	public static final ExpressionSerializer INSTANCE = new ExpressionSerializer();
 	protected ExpressionSerializer() {}
+	//
+	
+	//
+	
+	protected String _serialize(AnyPortEventReference expression) {
+		return expression.getPort().getName() + ".any";
+	}
+	
+	protected String _serialize(PortEventReference expression) {
+		return expression.getPort().getName() + "." + expression.getEvent().getName();
+	}
+	
+	protected String _serialize(ClockTickReference expression) {
+		return expression.getClock().getName() + ".tick";
+	}
+	
+	protected String _serialize(TimeoutEventReference expression) {
+		return "timeout " + expression.getTimeout().getName();
+	}
+	
 	//
 	
 	protected String _serialize(EventParameterReferenceExpression expression) {
@@ -88,8 +112,20 @@ public class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.Expre
 	
 	///
 	public String serialize(Expression expression) {
-		if (expression instanceof EventParameterReferenceExpression) {
-			return _serialize((EventParameterReferenceExpression) expression);
+		if (expression instanceof AnyPortEventReference anyPortEventReference) {
+			return _serialize(anyPortEventReference);
+		}
+		if (expression instanceof PortEventReference portEventReference) {
+			return _serialize(portEventReference);
+		}
+		if (expression instanceof ClockTickReference clockTickReference) {
+			return _serialize(clockTickReference);
+		}
+		if (expression instanceof TimeoutEventReference timeoutEventReference) {
+			return _serialize(timeoutEventReference);
+		}
+		if (expression instanceof EventParameterReferenceExpression eventParameterReferenceExpression) {
+			return _serialize(eventParameterReferenceExpression);
 		}
 		if (expression instanceof StateReferenceExpression) {
 			return _serialize((StateReferenceExpression) expression);

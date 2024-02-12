@@ -187,7 +187,8 @@ SynchronousStatechartDefinition returns SynchronousStatechartDefinition:
 		('[' ((ports+=Port)((',')? ports+=Port)*)? ']')? '{'
 			(
 				variableDeclarations+=VariableDeclaration |
-				timeoutDeclarations+=TimeoutDeclaration
+				timeoutDeclarations+=TimeoutDeclaration |
+				('invariant' invariants+=Expression)
 			)*
 			(
 				regions+=Region |
@@ -213,7 +214,8 @@ AsynchronousStatechartDefinition returns AsynchronousStatechartDefinition:
 		('[' ((ports+=Port)((',')? ports+=Port)*)? ']')? '{'
 			(
 				variableDeclarations+=VariableDeclaration |
-				timeoutDeclarations+=TimeoutDeclaration
+				timeoutDeclarations+=TimeoutDeclaration |
+				('invariant' invariants+=Expression)
 			)*
 			(
 				regions+=Region |
@@ -650,6 +652,7 @@ enum Persistency returns InterfaceModel::Persistency:
 PrimaryExpression returns ExpressionModel::Expression: 
 	super |
 	EventParameterReferenceExpression |
+	( EventReference '::' ) | // Now this are not usable only in triggers
 	StateReferenceExpression
 ;
 

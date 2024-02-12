@@ -89,7 +89,7 @@ class VirtualTimerServiceCodeGenerator {
 					if (timeLeft <= 0) {
 						run();
 						if (periodic) {
-							timeLeft = time + timeLeft;
+							timeLeft = time; // And not timeLeft = time + timeLeft;
 						}
 					}
 				}

@@ -10,6 +10,8 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.verification.util
 
+import hu.bme.mit.gamma.property.model.PropertyPackage
+import hu.bme.mit.gamma.querygenerator.serializer.PropertySerializer
 import hu.bme.mit.gamma.transformation.util.GammaFileNamer
 import hu.bme.mit.gamma.util.FileUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
@@ -46,14 +48,30 @@ abstract class AbstractVerification {
 		return this.execute(modelFile, queryFile, arguments, -1, null)
 	}
 	
+	def Result execute(File modelFile, PropertyPackage propertyPackage, String[] arguments,
+			long timeout, TimeUnit unit) throws InterruptedException {
+		val propertySerializer = createPropertySerializer
+		val serializedProperties = propertySerializer.serializeCommentableStateFormulas(
+				propertyPackage.formulas)
+		
+		val propertyFolder = modelFile.parent
+		val propertyFileName = "." + fileUtil.getExtensionlessName(modelFile) + ".p"
+		val propertyFileUri = propertyFolder + File.separator + propertyFileName
+		val propertyFile = new File(propertyFileUri)
+		fileUtil.saveString(propertyFile, serializedProperties)
+		propertyFile.deleteOnExit
+		
+		return this.execute(modelFile, propertyFile, arguments, timeout, unit)
+	}
+	
 	def Result execute(File modelFile, File queryFile, String[] arguments,
 			long timeout, TimeUnit unit) throws InterruptedException {
 		// Racer callable(s)
 		val callables = modelFile.loadModelAndCreateVerificationCallables(queryFile, arguments)
 		// Racer, but for only one thread
-		val racer = new ThreadRacer<Result>
+		val racer = new ThreadRacer<Result>(callables, timeout, unit)
 		//
-		var result = racer.execute(callables, timeout, unit)
+		var result = racer.execute
 		// Handle in case of timeout
 		return result.handleNull
 	}
@@ -105,6 +123,8 @@ abstract class AbstractVerification {
 	}
 	
 	abstract protected def AbstractVerifier createVerifier()
+	
+	abstract protected def PropertySerializer createPropertySerializer()
 	
 	abstract def String[] getDefaultArguments()
 	

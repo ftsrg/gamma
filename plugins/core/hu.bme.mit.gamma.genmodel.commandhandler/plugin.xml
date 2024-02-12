@@ -8,9 +8,6 @@
   <extension point="org.eclipse.ui.commands">
     <command id="hu.bme.mit.gamma.ui.cancel" name="Cancel Task"/>
   </extension>
-  <extension point="org.eclipse.ui.commands">
-    <command id="hu.bme.mit.gamma.ui.cancel.force" name="Force Cancel Task"/>
-  </extension>
   
   <extension point="org.eclipse.ui.menus">
     <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.navigator.ProjectExplorer#PopupMenu">
@@ -29,31 +26,17 @@
     			</iterate>
             </visibleWhen>
 	    </command>
-	    <menu id="gammaProjectTaskCancellationMenu"
-             label="Task Cancellation">
-	        <!-- Cancelling Gamma generation processes -->
-		    <command commandId="hu.bme.mit.gamma.ui.cancel" label="Cancel Task" style="push">
-		    	<visibleWhen checkEnabled="false">
-	            	<iterate ifEmpty="false" operator="or">
-						<test
-					    	property="org.eclipse.core.resources.name"
-					        value="*.ggen">
-					    </test>
-	    			</iterate>
-	            </visibleWhen>
-		    </command>
-		     <!-- Force cancelling Gamma generation processes -->
-		    <command commandId="hu.bme.mit.gamma.ui.cancel.force" label="Force Cancel Task" style="push">
-		    	<visibleWhen checkEnabled="false">
-	            	<iterate ifEmpty="false" operator="or">
-						<test
-					    	property="org.eclipse.core.resources.name"
-					        value="*.ggen">
-					    </test>
-	    			</iterate>
-	            </visibleWhen>
-		    </command>
-	    </menu>
+        <!-- Cancelling Gamma generation processes -->
+	    <command commandId="hu.bme.mit.gamma.ui.cancel" label="Cancel Task" style="push">
+	    	<visibleWhen checkEnabled="false">
+            	<iterate ifEmpty="false" operator="or">
+					<test
+				    	property="org.eclipse.core.resources.name"
+				        value="*.ggen">
+				    </test>
+    			</iterate>
+            </visibleWhen>
+	    </command>
 	    
       </menu>
     </menuContribution>
@@ -73,33 +56,17 @@
     			</iterate>
             </visibleWhen>
 	    </command>
-	    
-	    <menu id="gammaPackageTaskCancellationMenu"
-             label="Task Cancellation">
-	        <!-- Cancelling Gamma artefacts -->
-		    <command commandId="hu.bme.mit.gamma.ui.cancel" label="Cancel Task" style="push">
-		    	<visibleWhen checkEnabled="false">
-	            	<iterate ifEmpty="false" operator="or">
-						<test
-					    	property="org.eclipse.core.resources.name"
-					        value="*.ggen">
-					    </test>
-	    			</iterate>
-	            </visibleWhen>
-		    </command>
-		    <!-- Force cancelling Gamma generation processes -->
-		    <command commandId="hu.bme.mit.gamma.ui.cancel.force" label="Force Cancel Task" style="push">
-		    	<visibleWhen checkEnabled="false">
-	            	<iterate ifEmpty="false" operator="or">
-						<test
-					    	property="org.eclipse.core.resources.name"
-					        value="*.ggen">
-					    </test>
-	    			</iterate>
-	            </visibleWhen>
-		    </command>
-	    </menu>
-	   
+        <!-- Cancelling Gamma artefacts -->
+	    <command commandId="hu.bme.mit.gamma.ui.cancel" label="Cancel Task" style="push">
+	    	<visibleWhen checkEnabled="false">
+            	<iterate ifEmpty="false" operator="or">
+					<test
+				    	property="org.eclipse.core.resources.name"
+				        value="*.ggen">
+				    </test>
+    			</iterate>
+            </visibleWhen>
+	    </command>
       </menu>
     </menuContribution>
   </extension>
@@ -108,7 +75,6 @@
   
     <handler class="hu.bme.mit.gamma.genmodel.commandhandler.CommandHandler" commandId="hu.bme.mit.gamma.ui"/>
     <handler class="hu.bme.mit.gamma.genmodel.commandhandler.CancelHandler" commandId="hu.bme.mit.gamma.ui.cancel"/>
-    <handler class="hu.bme.mit.gamma.genmodel.commandhandler.CancelHandler" commandId="hu.bme.mit.gamma.ui.cancel.force"/>
     
   </extension>
   

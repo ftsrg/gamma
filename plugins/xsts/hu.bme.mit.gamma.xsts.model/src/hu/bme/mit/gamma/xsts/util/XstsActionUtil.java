@@ -39,7 +39,9 @@ import hu.bme.mit.gamma.expression.model.OrExpression;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Type;
+import hu.bme.mit.gamma.expression.model.TypeDeclaration;
 import hu.bme.mit.gamma.expression.model.TypeDefinition;
+import hu.bme.mit.gamma.expression.model.TypeReference;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.expression.model.VariableDeclarationAnnotation;
 import hu.bme.mit.gamma.expression.util.ExpressionUtil;
@@ -47,6 +49,7 @@ import hu.bme.mit.gamma.util.GammaEcoreUtil;
 import hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures;
 import hu.bme.mit.gamma.xsts.model.AbstractAssignmentAction;
 import hu.bme.mit.gamma.xsts.model.Action;
+import hu.bme.mit.gamma.xsts.model.ActionAnnotation;
 import hu.bme.mit.gamma.xsts.model.AssignmentAction;
 import hu.bme.mit.gamma.xsts.model.AssumeAction;
 import hu.bme.mit.gamma.xsts.model.CompositeAction;
@@ -74,6 +77,8 @@ public class XstsActionUtil extends ExpressionUtil {
 	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
 	protected final ExpressionModelFactory expressionFactory = ExpressionModelFactory.eINSTANCE;
 	protected final XSTSModelFactory xStsFactory = XSTSModelFactory.eINSTANCE;
+	
+	//
 	
 	public XSTS createXsts(String name) {
 		XSTS xSts = xStsFactory.createXSTS();
@@ -150,7 +155,6 @@ public class XstsActionUtil extends ExpressionUtil {
 		pivot.getTypeDeclarations().addAll(mergable.getTypeDeclarations());
 		pivot.getPublicTypeDeclarations().addAll(mergable.getPublicTypeDeclarations());
 		pivot.getVariableDeclarations().addAll(mergable.getVariableDeclarations());
-		pivot.getConstraints().addAll(mergable.getConstraints());
 		mergeVariableGroups(pivot, mergable);
 	}
 	
@@ -431,6 +435,12 @@ public class XstsActionUtil extends ExpressionUtil {
 	
 	public VariableDeclarationAction createVariableDeclarationAction(Type type, String name) {
 		return createVariableDeclarationAction(type, name, null);
+	}
+	
+	public VariableDeclarationAction createVariableDeclarationAction(
+			TypeDeclaration type, String name, Expression expression) {
+		TypeReference typeReference = createTypeReference(type);
+		return createVariableDeclarationAction(typeReference, name, expression);
 	}
 	
 	public VariableDeclarationAction createVariableDeclarationAction(
@@ -986,6 +996,17 @@ public class XstsActionUtil extends ExpressionUtil {
 		addAnnotation(variable, xStsFactory.createStrictControlVariableDeclarationAnnotation());
 	}
 	
+	public void addInvariantAnnotation(AssumeAction action) {
+		addAnnotation(action, xStsFactory.createInvariantAnnotation());
+	}
+	
+	public void addAnnotation(Action action, ActionAnnotation annotation) {
+		if (action != null) {
+			List<ActionAnnotation> annotations = action.getAnnotations();
+			annotations.add(annotation);
+		}
+	}
+	
 	public void deleteDeclaration(Declaration declaration) {
 		EObject container = declaration.eContainer();
 		if (container instanceof VariableDeclarationAction) {
@@ -1003,7 +1024,8 @@ public class XstsActionUtil extends ExpressionUtil {
 		if (typeDefinition instanceof ArrayTypeDefinition) {
 			ArrayTypeDefinition arrayTypeDefinition = (ArrayTypeDefinition) typeDefinition;
 			Type elementType = arrayTypeDefinition.getElementType();
-			return createVariableDeclarationAction(ecoreUtil.clone(elementType), name);
+			return createVariableDeclarationAction(
+					ecoreUtil.clone(elementType), name);
 		}
 		throw new IllegalArgumentException("Not an array: " + queue);
 	}

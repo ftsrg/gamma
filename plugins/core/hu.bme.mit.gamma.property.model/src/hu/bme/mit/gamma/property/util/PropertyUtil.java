@@ -132,7 +132,7 @@ public class PropertyUtil extends StatechartUtil {
 		return atomicFormula;
 	}
 	
-	public StateFormula createSimpleCTLFormula(PathQuantifier pathQuantifier,
+	public StateFormula createSimpleCtlFormula(PathQuantifier pathQuantifier,
 			UnaryPathOperator unaryPathOperator, PathFormula formula) {
 		QuantifiedFormula quantifiedFormula = propertyFactory.createQuantifiedFormula();
 		quantifiedFormula.setQuantifier(pathQuantifier);
@@ -144,19 +144,19 @@ public class PropertyUtil extends StatechartUtil {
 	}
 	
 	public StateFormula createEF(PathFormula formula) {
-		return createSimpleCTLFormula(PathQuantifier.EXISTS, UnaryPathOperator.FUTURE, formula);
+		return createSimpleCtlFormula(PathQuantifier.EXISTS, UnaryPathOperator.FUTURE, formula);
 	}
 	
 	public StateFormula createEG(PathFormula formula) {
-		return createSimpleCTLFormula(PathQuantifier.EXISTS, UnaryPathOperator.GLOBAL, formula);
+		return createSimpleCtlFormula(PathQuantifier.EXISTS, UnaryPathOperator.GLOBAL, formula);
 	}
 	
 	public StateFormula createAF(PathFormula formula) {
-		return createSimpleCTLFormula(PathQuantifier.FORALL, UnaryPathOperator.FUTURE, formula);
+		return createSimpleCtlFormula(PathQuantifier.FORALL, UnaryPathOperator.FUTURE, formula);
 	}
 	
 	public StateFormula createAG(PathFormula formula) {
-		return createSimpleCTLFormula(PathQuantifier.FORALL, UnaryPathOperator.GLOBAL, formula);
+		return createSimpleCtlFormula(PathQuantifier.FORALL, UnaryPathOperator.GLOBAL, formula);
 	}
 	
 	public StateFormula createLeadsTo(PathFormula lhs, PathFormula rhs) {

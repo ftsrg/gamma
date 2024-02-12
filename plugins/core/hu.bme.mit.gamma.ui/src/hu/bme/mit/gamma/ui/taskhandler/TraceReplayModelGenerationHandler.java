@@ -73,7 +73,8 @@ public class TraceReplayModelGenerationHandler extends TaskHandler {
 		List<String> environmentModelFileName = modelGeneration.getEnvironmentModelFileName();
 		if (environmentModelFileName.isEmpty()) {
 			ExecutionTrace executionTrace = modelGeneration.getExecutionTrace();
-			environmentModelFileName.add(executionTrace.getName());
+			environmentModelFileName.add(
+					executionTrace.getName());
 		}
 	}
 	

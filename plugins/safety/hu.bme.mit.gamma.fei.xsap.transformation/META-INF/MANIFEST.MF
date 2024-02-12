@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Gamma FEI-xSAP Transformation
 Bundle-SymbolicName: hu.bme.mit.gamma.fei.xsap.transformation
-Bundle-Version: 2.9.0.qualifier
+Bundle-Version: 2.10.0.qualifier
 Export-Package: hu.bme.mit.gamma.fei.xsap.transformation.serializer
 Bundle-Vendor: BME-FTSRG
 Automatic-Module-Name: hu.bme.mit.gamma.fei.xsap.transformation

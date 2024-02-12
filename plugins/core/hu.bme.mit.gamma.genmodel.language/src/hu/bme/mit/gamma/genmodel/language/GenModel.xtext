@@ -41,7 +41,8 @@ Task returns Task:
 		EventPriorityTransformation | AdaptiveContractTestGeneration |
 		AdaptiveBehaviorConformanceChecking | PhaseStatechartGeneration |
 		Verification | TraceReplayModelGeneration | Slicing | StatechartContractTestGeneration |
-		StatechartContractGeneration | TraceGeneration  | FaultTreeGeneration | FmeaTableGeneration
+		StatechartContractGeneration | TraceGeneration  | FaultTreeGeneration | FmeaTableGeneration |
+		ModelMutation | MutationBasedTestGeneration
 ;
 
 YakinduCompilation returns YakinduCompilation:
@@ -213,7 +214,7 @@ enum Scheduler returns Scheduler:
 
 enum AnalysisLanguage returns AnalysisLanguage:
 	UPPAAL = "UPPAAL" | THETA = "Theta" | THETA = "XSTS" | XSTS_UPPAAL = "XSTS-UPPAAL" |
-		PROMELA = "Promela" | PROMELA = "Spin" | NUXMV = "SMV" | NUXMV = "nuXmv"
+		PROMELA = "Promela" | PROMELA = "Spin" | NUXMV = "SMV" | NUXMV = "nuXmv" | OCRA = "OCRA"
 ;
 
 Coverage returns Coverage:
@@ -464,6 +465,36 @@ FmeaTableGeneration returns FmeaTableGeneration:
 			'cardinality' ':' cardinality=Expression |
 			'bmc-bound' ':' bmcBound=Expression |
 			'visualize' ':' visualize=BOOLEAN
+		)*
+	'}'
+;
+
+ModelMutation returns ModelMutation:
+	'model-mutation' '{'
+		model=ModelReference
+		(
+			'folder' ':' targetFolder+=STRING |
+			'file' ':' fileName+=STRING |
+			'mutation-count' ':' iterationCount=Expression |
+			'pattern-class-name' ':' patternClassNames+=STRING
+		)*
+	'}'
+;
+
+MutationBasedTestGeneration returns MutationBasedTestGeneration:
+	'mutation-based-test-generation' '{'
+		analysisModelTransformation=AnalysisModelTransformation
+		(
+			'project' ':' projectName+=STRING |
+			'folder' ':' targetFolder+=STRING |
+			'file' ':' fileName+=STRING |
+			'mutation-count' ':' iterationCount=Expression |
+			'base-package' ':' packageName+=STRING | // Java base package
+			'language' ':' programmingLanguages+=ProgrammingLanguage |
+			'test-folder' ':' testFolder+=STRING |
+			'trace-folder' ':' traceFolders+=STRING |
+			'test-class-name-pattern' ':' testClassNamePattern=STRING |
+			'pattern-class-name' ':' patternClassNames+=STRING
 		)*
 	'}'
 ;

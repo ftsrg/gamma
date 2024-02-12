@@ -3,17 +3,17 @@ The goal of this tutorial is to try out the Gamma framework for modeling composi
 ## Installation
 Install Gamma using the following instructions.
 
-- Download a new Eclipse IDE for [Java and DSL Developers package](https://www.eclipse.org/downloads/packages/release/2023-06/r/eclipse-ide-java-and-dsl-developers).
+- Download a new Eclipse IDE for [Java and DSL Developers package](https://www.eclipse.org/downloads/packages/release/2023-09/r/eclipse-ide-java-and-dsl-developers).
 
 - Install the following packages. The _Install_ window can be opened via the _Help > Install New Software..._ menu item. In the _Install_ window click _Add..._, and paste the necessary URL in the _Location_ text field. 
-  - Install VIATRA 2.7.1 from update site http://download.eclipse.org/viatra/updates/release/2.7.1.
+  - Install VIATRA 2.8.0 from update site http://download.eclipse.org/viatra/updates/release/2.8.0.
     - Choose the whole _VIATRA Query and Transformation SDK_ package.
   - Install the Yakindu Statechart Tools 3.5.13. from update site http://updates.yakindu.com/statecharts/releases/.
     - From the Yakindu Standard Edition choose _Yakindu Statechart Tools_, _Yakindu Statechart Tools Base_, _Yakindu License Integration For Standard Edition_ and _Yakindu Statechart Tools Java Code Generator_ subpackages in package _Yakindu Statechart Tools Standard Edition_.
-  - Install the PlantUML Eclipse Plugin 1.1.29 from update site http://hallvard.github.io/plantuml/.
+  - Install the PlantUML Eclipse Plugin 1.1.30 from update site http://hallvard.github.io/plantuml/.
     - Install all available features apart from _Source_.
     - Some version of the PlantUMl might require Graphviz, you can find more informations [here](../plugins/vis/README.md).
-- Exit Eclipse and extract the [Gamma zip file](https://inf.mit.bme.hu/sites/default/files/gamma/2_9_0/gamma-tool-2.9.0.zip) into the root folder of Eclipse. (This will create the _plugins_ directory in the _dropins_ folder, containing the JAR file of the Gamma. If not, make sure you copy all the JAR files contained in the Gamma zip file in the _plugins_ directory of the _dropins_ folder of the root folder of Eclipse.)
+- Exit Eclipse and extract the [Gamma zip file](https://inf.mit.bme.hu/sites/default/files/gamma/2_10_0/gamma-tool-2.10.0.zip) into the root folder of Eclipse. (This will create the _plugins_ directory in the _dropins_ folder, containing the JAR file of the Gamma. If not, make sure you copy all the JAR files contained in the Gamma zip file in the _plugins_ directory of the _dropins_ folder of the root folder of Eclipse.)
 - When starting Eclipse for the first time, you might need to start it with the `-clean_` flag.
 - Check if the plugin installed successfully in _Help > About Eclipse_ and by clicking _Installation Details_. On the _Plug-ins_ tab, sort the entries by _Plugin-in Id_ and look for entries starting with _hu.bme.mit.gamma_.
 
@@ -29,7 +29,7 @@ For formal verification, download and extract [UPPAAL](http://www.uppaal.org/) 4
 
 ## Presenting the Models
 
-Download the [Gamma tutorial](https://inf.mit.bme.hu/sites/default/files/gamma/2_9_0/gamma-tutorial-pack-2.9.0.zip), and extract its contents.
+Download the [Gamma tutorial](https://inf.mit.bme.hu/sites/default/files/gamma/2_10_0/gamma-tutorial-pack-2.10.0.zip), and extract its contents.
 
 In this tutorial, we are going to design the controller of traffic lights in a crossroad. In each direction, the traffic lights are the standard 3-phase lights looping through the red-green-yellow-red sequence. As an extra, there is an interrupted mode that may be triggered by the police - in this state, the traffic lights blink in yellow.
 

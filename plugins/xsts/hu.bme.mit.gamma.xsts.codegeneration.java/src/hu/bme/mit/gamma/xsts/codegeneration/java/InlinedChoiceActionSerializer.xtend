@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -45,6 +45,7 @@ class InlinedChoiceActionSerializer extends ActionSerializer {
 	protected Map<Integer, CharSequence> actionMethodMap = newHashMap
 	protected final String ACTION_METHOD_NAME = "a"
 	
+	//
 	override serializeInitializingAction(XSTS xSts) {
 		return '''
 			«xSts.variableInitializingTransition.action.serialize»
@@ -55,6 +56,21 @@ class InlinedChoiceActionSerializer extends ActionSerializer {
 			«xSts.entryEventTransition.action.originalWrittenVariables.serializeFinalizationAssignments»
 		'''
 	}
+	
+	override serializeVariableReset(XSTS xSts) '''
+		«xSts.variableInitializingTransition.action.serialize»
+		«xSts.variableInitializingTransition.action.originalWrittenVariables.serializeFinalizationAssignments»
+	'''
+	
+	override serializeStateConfigurationReset(XSTS xSts) '''
+		«xSts.configurationInitializingTransition.action.serialize»
+		«xSts.configurationInitializingTransition.action.originalWrittenVariables.serializeFinalizationAssignments»
+	'''
+	
+	override serializeEntryEventRaise(XSTS xSts) '''
+		«xSts.entryEventTransition.action.serialize»
+		«xSts.entryEventTransition.action.originalWrittenVariables.serializeFinalizationAssignments»
+	'''
 	
 	// Note that only the first transition is serialized
 	override CharSequence serializeChangeState(XSTS xSts) {

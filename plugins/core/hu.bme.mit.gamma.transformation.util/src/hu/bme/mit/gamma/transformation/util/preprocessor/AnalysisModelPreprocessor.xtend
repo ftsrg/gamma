@@ -50,7 +50,7 @@ class AnalysisModelPreprocessor {
 		return gammaPackage.preprocess(#[], targetFolderUri, fileName, optimize)
 	}
 	
-	def preprocess(Package gammaPackage, List<Expression> topComponentArguments,
+	def preprocess(Package gammaPackage, List<? extends Expression> topComponentArguments,
 			String targetFolderUri, String fileName, boolean optimize) {
 		val fileNameExtensionless = fileName.extensionlessName
 		
@@ -109,7 +109,7 @@ class AnalysisModelPreprocessor {
 		return _package.components.head
 	}
 	
-	protected def transformTopComponentParameters(Component component, List<Expression> arguments) {
+	protected def transformTopComponentParameters(Component component, List<? extends Expression> arguments) {
 		if (arguments.nullOrEmpty) {
 			return
 		}

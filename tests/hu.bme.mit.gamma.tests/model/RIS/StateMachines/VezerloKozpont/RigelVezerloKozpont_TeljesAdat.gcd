@@ -1,0 +1,424 @@
+package RigelVezerloKozpont
+
+import "Interfaces/Interfaces.gcd"
+
+@RegionSchedule = bottom-up
+@TransitionPriority = order-based
+statechart RigelVezerloKozpont(_TimeReconn : integer, _TimeConn : integer, _TimeSendAlive :
+	integer) [
+	port PortIn : requires Rigel
+	port PortOut : provides Rigel
+	port FelugyeloPortIn : requires Rigel
+	port FelugyeloPortOut : provides Rigel
+	port OrionDisconn : requires OrionDisconn
+	port OrionConn : requires OrionConn
+] {
+	var allDataReceived_teljesAdatLekerdezes : boolean := false
+	@Transient var _change_condition_6_1_0_teljesAdatLekerdezes : boolean := false
+	@Transient var _change_condition_8_1_1_sendMachine_teljesAdatLekerdezes : boolean := false
+	var isValid_objektumKezelo1 : boolean
+	timeout timeout_Send_4_sendMachine_teljesAdatLekerdezes
+	timeout timeout_WaitForConnection_0_teljesAdatLekerdezes
+	timeout timeout_ProcessQuery_0_teljesAdatLekerdezes
+	@Resettable var
+		_initialOfVkTeljesAdatLekerdezes___teljesAdatLekerdezes_NoOrionConnected_teljesAdatLekerdezes_0
+		: boolean := false
+	@Resettable var
+		_initialOfHasOrionConnected___teljesAdatLekerdezes_WaitForConnection_teljesAdatLekerdezes_1 :
+		boolean := false
+	@Resettable var _initialOfProcessQuery___teljesAdatLekerdezes_Receive_teljesAdatLekerdezes_2 :
+		boolean := false
+	@Resettable var
+		_initialOfReceiveMachine___receiveMachine_teljesAdatLekerdezes_Receive_receiveMachine_teljesAdatLekerdezes_3
+		: boolean := false
+	@Resettable var
+		Receive_receiveMachine_teljesAdatLekerdezes_Receive_receiveMachine_teljesAdatLekerdezes_4 :
+		boolean := false
+	@Resettable var
+		Receive_receiveMachine_teljesAdatLekerdezes_Receive_receiveMachine_teljesAdatLekerdezes_5 :
+		boolean := false
+	@Resettable var
+		Receive_receiveMachine_teljesAdatLekerdezes_Receive_receiveMachine_teljesAdatLekerdezes_6 :
+		boolean := false
+	@Resettable var
+		Receive_receiveMachine_teljesAdatLekerdezes_Receive_receiveMachine_teljesAdatLekerdezes_7 :
+		boolean := false
+	@Resettable var
+		Receive_receiveMachine_teljesAdatLekerdezes_Receive_receiveMachine_teljesAdatLekerdezes_8 :
+		boolean := false
+	@Resettable var
+		Receive_receiveMachine_teljesAdatLekerdezes_Receive_receiveMachine_teljesAdatLekerdezes_9 :
+		boolean := false
+	@Resettable var
+		_initialOfSendMachine___sendMachine_teljesAdatLekerdezes_Send_sendMachine_teljesAdatLekerdezes_10
+		: boolean := false
+	@Resettable var Send_sendMachine_teljesAdatLekerdezes_Send_sendMachine_teljesAdatLekerdezes_11 :
+		boolean := false
+	@Resettable var Send_sendMachine_teljesAdatLekerdezes_Send_sendMachine_teljesAdatLekerdezes_12 :
+		boolean := false
+	@Resettable var Send_sendMachine_teljesAdatLekerdezes_Send_sendMachine_teljesAdatLekerdezes_13 :
+		boolean := false
+	@Resettable var Send_sendMachine_teljesAdatLekerdezes_Send_sendMachine_teljesAdatLekerdezes_14 :
+		boolean := false
+	@Resettable var
+		Send_sendMachine_teljesAdatLekerdezes__Send_4__sendMachine_teljesAdatLekerdezes_15 : boolean :=
+		false
+	@Resettable var
+		_Send_4__sendMachine_teljesAdatLekerdezes_Send_sendMachine_teljesAdatLekerdezes_16 : boolean :=
+		false
+	@Resettable var
+		_Send_4__sendMachine_teljesAdatLekerdezes_Send_sendMachine_teljesAdatLekerdezes_17 : boolean :=
+		false
+	@Resettable var NoOrionConnected_teljesAdatLekerdezes_HasOrionConnected_teljesAdatLekerdezes_18 :
+		boolean := false
+	@Resettable var HasOrionConnected_teljesAdatLekerdezes_NoOrionConnected_teljesAdatLekerdezes_19 :
+		boolean := false
+	@Resettable var WaitForConnection_teljesAdatLekerdezes_WaitForConnection_teljesAdatLekerdezes_20
+		: boolean := false
+	@Resettable var WaitForConnection_teljesAdatLekerdezes_ProcessQuery_teljesAdatLekerdezes_21 :
+		boolean := false
+	@Resettable var WaitForConnection_teljesAdatLekerdezes_NoOrionConnected_teljesAdatLekerdezes_22 :
+		boolean := false
+	@Resettable var ProcessQuery_teljesAdatLekerdezes_NoOrionConnected_teljesAdatLekerdezes_23 :
+		boolean := false
+	@Resettable var ProcessQuery_teljesAdatLekerdezes__ProcessQuery_1__teljesAdatLekerdezes_24 :
+		boolean := false
+	@Resettable var _ProcessQuery_1__teljesAdatLekerdezes_Connected_teljesAdatLekerdezes_25 : boolean
+		:= false
+	@Resettable var _ProcessQuery_1__teljesAdatLekerdezes_NoOrionConnected_teljesAdatLekerdezes_26 :
+		boolean := false
+	@Resettable var _ProcessQuery_1__teljesAdatLekerdezes_ProcessQuery_teljesAdatLekerdezes_27 :
+		boolean := false
+	@Resettable var ProcessQuery_teljesAdatLekerdezes_NoOrionConnected_teljesAdatLekerdezes_28 :
+		boolean := false
+	@Resettable var Receive_teljesAdatLekerdezes_Receive_teljesAdatLekerdezes_29 : boolean := false
+	@Resettable var Receive_teljesAdatLekerdezes_Receive_teljesAdatLekerdezes_30 : boolean := false
+	@Resettable var Connected_teljesAdatLekerdezes_NoOrionConnected_teljesAdatLekerdezes_31 : boolean
+		:= false
+	@Resettable var _initialOfVkObjektumKezelo___objektumKezelo1_ObjectInvalid_objektumKezelo1_32 :
+		boolean := false
+	@Resettable var ObjectInvalid_objektumKezelo1_ObjectValid_objektumKezelo1_33 : boolean := false
+	@Resettable var ObjectValid_objektumKezelo1_ObjectInvalid_objektumKezelo1_34 : boolean := false
+	@Resettable var ObjectValid_objektumKezelo1_ObjectInvalid_objektumKezelo1_35 : boolean := false
+	region VkTeljesAdatLekerdezes__teljesAdatLekerdezes {
+		initial _initialOfVkTeljesAdatLekerdezes___teljesAdatLekerdezes
+		state NoOrionConnected_teljesAdatLekerdezes
+		state HasOrionConnected_teljesAdatLekerdezes {
+			region HasOrionConnected__teljesAdatLekerdezes {
+				initial _initialOfHasOrionConnected___teljesAdatLekerdezes
+				state WaitForConnection_teljesAdatLekerdezes {
+					entry / set timeout_WaitForConnection_0_teljesAdatLekerdezes := _TimeReconn ms; set
+						timeout_WaitForConnection_0_teljesAdatLekerdezes := _TimeReconn ms;
+				}
+				state ProcessQuery_teljesAdatLekerdezes {
+					entry / set timeout_ProcessQuery_0_teljesAdatLekerdezes := _TimeConn ms; set
+						timeout_ProcessQuery_0_teljesAdatLekerdezes := _TimeConn ms;
+					region ProcessQuery__teljesAdatLekerdezes {
+						initial _initialOfProcessQuery___teljesAdatLekerdezes
+						state Receive_teljesAdatLekerdezes
+					}
+				}
+				state Connected_teljesAdatLekerdezes {
+					region ReceiveMachine__receiveMachine_teljesAdatLekerdezes {
+						initial _initialOfReceiveMachine___receiveMachine_teljesAdatLekerdezes
+						state Receive_receiveMachine_teljesAdatLekerdezes
+					}
+					region SendMachine__sendMachine_teljesAdatLekerdezes {
+						initial _initialOfSendMachine___sendMachine_teljesAdatLekerdezes
+						state Send_sendMachine_teljesAdatLekerdezes {
+							entry / set timeout_Send_4_sendMachine_teljesAdatLekerdezes := _TimeSendAlive ms;
+						}
+						choice _Send_4__sendMachine_teljesAdatLekerdezes
+					}
+				}
+				choice _ProcessQuery_1__teljesAdatLekerdezes
+			}
+		}
+	}
+	region VkObjektumKezelo__objektumKezelo1 {
+		initial _initialOfVkObjektumKezelo___objektumKezelo1
+		state ObjectInvalid_objektumKezelo1
+		state ObjectValid_objektumKezelo1
+	}
+	@(_initialOfVkTeljesAdatLekerdezes___teljesAdatLekerdezes_NoOrionConnected_teljesAdatLekerdezes_0)
+	transition from _initialOfVkTeljesAdatLekerdezes___teljesAdatLekerdezes to
+		NoOrionConnected_teljesAdatLekerdezes /
+		_initialOfVkTeljesAdatLekerdezes___teljesAdatLekerdezes_NoOrionConnected_teljesAdatLekerdezes_0
+		:= true;
+	@(_initialOfHasOrionConnected___teljesAdatLekerdezes_WaitForConnection_teljesAdatLekerdezes_1)
+	transition from _initialOfHasOrionConnected___teljesAdatLekerdezes to
+		WaitForConnection_teljesAdatLekerdezes /
+		_initialOfHasOrionConnected___teljesAdatLekerdezes_WaitForConnection_teljesAdatLekerdezes_1 :=
+		true;
+	@(_initialOfProcessQuery___teljesAdatLekerdezes_Receive_teljesAdatLekerdezes_2)
+	transition from _initialOfProcessQuery___teljesAdatLekerdezes to Receive_teljesAdatLekerdezes /
+		_initialOfProcessQuery___teljesAdatLekerdezes_Receive_teljesAdatLekerdezes_2 := true;
+	@(_initialOfReceiveMachine___receiveMachine_teljesAdatLekerdezes_Receive_receiveMachine_teljesAdatLekerdezes_3)
+	transition from _initialOfReceiveMachine___receiveMachine_teljesAdatLekerdezes to
+		Receive_receiveMachine_teljesAdatLekerdezes /
+		_initialOfReceiveMachine___receiveMachine_teljesAdatLekerdezes_Receive_receiveMachine_teljesAdatLekerdezes_3
+		:= true;
+	@(Receive_receiveMachine_teljesAdatLekerdezes_Receive_receiveMachine_teljesAdatLekerdezes_4)
+	transition from Receive_receiveMachine_teljesAdatLekerdezes to
+		Receive_receiveMachine_teljesAdatLekerdezes when PortIn.message_RigelMsgHeader
+		[PortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgInvalidateObj] / {
+		raise
+			FelugyeloPortOut.message_RigelMsgHeader(PortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue);
+	}
+	Receive_receiveMachine_teljesAdatLekerdezes_Receive_receiveMachine_teljesAdatLekerdezes_4 :=
+		true;
+	@(Receive_receiveMachine_teljesAdatLekerdezes_Receive_receiveMachine_teljesAdatLekerdezes_5)
+	transition from Receive_receiveMachine_teljesAdatLekerdezes to
+		Receive_receiveMachine_teljesAdatLekerdezes when PortIn.message_RigelMsgHeader
+		[PortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgData] / {
+		raise
+			FelugyeloPortOut.message_RigelMsgHeader(PortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue);
+	}
+	Receive_receiveMachine_teljesAdatLekerdezes_Receive_receiveMachine_teljesAdatLekerdezes_5 :=
+		true;
+	@(Receive_receiveMachine_teljesAdatLekerdezes_Receive_receiveMachine_teljesAdatLekerdezes_6)
+	transition from Receive_receiveMachine_teljesAdatLekerdezes to
+		Receive_receiveMachine_teljesAdatLekerdezes when PortIn.message_RigelMsgHeader
+		[PortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgAnsTs1] / {
+		raise
+			FelugyeloPortOut.message_RigelMsgHeader(PortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue);
+	}
+	Receive_receiveMachine_teljesAdatLekerdezes_Receive_receiveMachine_teljesAdatLekerdezes_6 :=
+		true;
+	@(Receive_receiveMachine_teljesAdatLekerdezes_Receive_receiveMachine_teljesAdatLekerdezes_7)
+	transition from Receive_receiveMachine_teljesAdatLekerdezes to
+		Receive_receiveMachine_teljesAdatLekerdezes when PortIn.message_RigelMsgHeader
+		[PortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgAnsTs2] / {
+		raise
+			FelugyeloPortOut.message_RigelMsgHeader(PortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue);
+	}
+	Receive_receiveMachine_teljesAdatLekerdezes_Receive_receiveMachine_teljesAdatLekerdezes_7 :=
+		true;
+	@(Receive_receiveMachine_teljesAdatLekerdezes_Receive_receiveMachine_teljesAdatLekerdezes_8)
+	transition from Receive_receiveMachine_teljesAdatLekerdezes to
+		Receive_receiveMachine_teljesAdatLekerdezes when PortIn.message_RigelMsgHeader
+		[PortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgCommandResult] / {
+		raise
+			FelugyeloPortOut.message_RigelMsgHeader(PortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue);
+	}
+	Receive_receiveMachine_teljesAdatLekerdezes_Receive_receiveMachine_teljesAdatLekerdezes_8 :=
+		true;
+	@(Receive_receiveMachine_teljesAdatLekerdezes_Receive_receiveMachine_teljesAdatLekerdezes_9)
+	transition from Receive_receiveMachine_teljesAdatLekerdezes to
+		Receive_receiveMachine_teljesAdatLekerdezes when PortIn.message_RigelMsgHeader
+		[PortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgCommandConfirmResult] / {
+		raise
+			FelugyeloPortOut.message_RigelMsgHeader(PortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue);
+	}
+	Receive_receiveMachine_teljesAdatLekerdezes_Receive_receiveMachine_teljesAdatLekerdezes_9 :=
+		true;
+	@(_initialOfSendMachine___sendMachine_teljesAdatLekerdezes_Send_sendMachine_teljesAdatLekerdezes_10)
+	transition from _initialOfSendMachine___sendMachine_teljesAdatLekerdezes to
+		Send_sendMachine_teljesAdatLekerdezes /
+		_initialOfSendMachine___sendMachine_teljesAdatLekerdezes_Send_sendMachine_teljesAdatLekerdezes_10
+		:= true;
+	@(Send_sendMachine_teljesAdatLekerdezes_Send_sendMachine_teljesAdatLekerdezes_11)
+	transition from Send_sendMachine_teljesAdatLekerdezes to Send_sendMachine_teljesAdatLekerdezes
+		when FelugyeloPortIn.message_RigelMsgHeader
+		[FelugyeloPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgReqTs1] / {
+		raise
+			PortOut.message_RigelMsgHeader(FelugyeloPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue);
+	}
+	Send_sendMachine_teljesAdatLekerdezes_Send_sendMachine_teljesAdatLekerdezes_11 := true;
+	@(Send_sendMachine_teljesAdatLekerdezes_Send_sendMachine_teljesAdatLekerdezes_12)
+	transition from Send_sendMachine_teljesAdatLekerdezes to Send_sendMachine_teljesAdatLekerdezes
+		when FelugyeloPortIn.message_RigelMsgHeader
+		[FelugyeloPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgReqTs2] / {
+		raise
+			PortOut.message_RigelMsgHeader(FelugyeloPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue);
+	}
+	Send_sendMachine_teljesAdatLekerdezes_Send_sendMachine_teljesAdatLekerdezes_12 := true;
+	@(Send_sendMachine_teljesAdatLekerdezes_Send_sendMachine_teljesAdatLekerdezes_13)
+	transition from Send_sendMachine_teljesAdatLekerdezes to Send_sendMachine_teljesAdatLekerdezes
+		when FelugyeloPortIn.message_RigelMsgHeader
+		[FelugyeloPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgCommand] / {
+		raise
+			PortOut.message_RigelMsgHeader(FelugyeloPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue);
+	}
+	Send_sendMachine_teljesAdatLekerdezes_Send_sendMachine_teljesAdatLekerdezes_13 := true;
+	@(Send_sendMachine_teljesAdatLekerdezes_Send_sendMachine_teljesAdatLekerdezes_14)
+	transition from Send_sendMachine_teljesAdatLekerdezes to Send_sendMachine_teljesAdatLekerdezes
+		when FelugyeloPortIn.message_RigelMsgHeader
+		[FelugyeloPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgCommandConfirm] / {
+		raise
+			PortOut.message_RigelMsgHeader(FelugyeloPortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue);
+	}
+	Send_sendMachine_teljesAdatLekerdezes_Send_sendMachine_teljesAdatLekerdezes_14 := true;
+	@(Send_sendMachine_teljesAdatLekerdezes__Send_4__sendMachine_teljesAdatLekerdezes_15)
+	transition from Send_sendMachine_teljesAdatLekerdezes to
+		_Send_4__sendMachine_teljesAdatLekerdezes when timeout
+		timeout_Send_4_sendMachine_teljesAdatLekerdezes / {
+		var isVKActive_sendMachine_teljesAdatLekerdezes : boolean := true;
+		_change_condition_8_1_1_sendMachine_teljesAdatLekerdezes :=
+			isVKActive_sendMachine_teljesAdatLekerdezes;
+		if (_change_condition_8_1_1_sendMachine_teljesAdatLekerdezes) {
+			var vkAlive_sendMachine_teljesAdatLekerdezes : RigelMsgHeader := createVkAlive();
+			raise PortOut.message_RigelMsgHeader(vkAlive_sendMachine_teljesAdatLekerdezes);
+		}
+	}
+	Send_sendMachine_teljesAdatLekerdezes__Send_4__sendMachine_teljesAdatLekerdezes_15 := true;
+	@(_Send_4__sendMachine_teljesAdatLekerdezes_Send_sendMachine_teljesAdatLekerdezes_16)
+	transition from _Send_4__sendMachine_teljesAdatLekerdezes to
+		Send_sendMachine_teljesAdatLekerdezes [_change_condition_8_1_1_sendMachine_teljesAdatLekerdezes] /
+		_Send_4__sendMachine_teljesAdatLekerdezes_Send_sendMachine_teljesAdatLekerdezes_16 := true;
+	@(_Send_4__sendMachine_teljesAdatLekerdezes_Send_sendMachine_teljesAdatLekerdezes_17)
+	transition from _Send_4__sendMachine_teljesAdatLekerdezes to
+		Send_sendMachine_teljesAdatLekerdezes [else] /
+		_Send_4__sendMachine_teljesAdatLekerdezes_Send_sendMachine_teljesAdatLekerdezes_17 := true;
+	@(NoOrionConnected_teljesAdatLekerdezes_HasOrionConnected_teljesAdatLekerdezes_18)
+	transition from NoOrionConnected_teljesAdatLekerdezes to HasOrionConnected_teljesAdatLekerdezes
+		when OrionConn.OrionConn / {
+		var gqMsg_teljesAdatLekerdezes : RigelMsgHeader := createGqMessage();
+		raise PortOut.message_RigelMsgHeader(gqMsg_teljesAdatLekerdezes);
+	}
+	NoOrionConnected_teljesAdatLekerdezes_HasOrionConnected_teljesAdatLekerdezes_18 := true;
+	@(HasOrionConnected_teljesAdatLekerdezes_NoOrionConnected_teljesAdatLekerdezes_19)
+	transition from HasOrionConnected_teljesAdatLekerdezes to NoOrionConnected_teljesAdatLekerdezes
+		when OrionDisconn.OrionDisconn /
+		HasOrionConnected_teljesAdatLekerdezes_NoOrionConnected_teljesAdatLekerdezes_19 := true;
+	@(WaitForConnection_teljesAdatLekerdezes_WaitForConnection_teljesAdatLekerdezes_20)
+	transition from WaitForConnection_teljesAdatLekerdezes to WaitForConnection_teljesAdatLekerdezes
+		when timeout timeout_WaitForConnection_0_teljesAdatLekerdezes / {
+		var gqMsg_teljesAdatLekerdezes : RigelMsgHeader := createGqMessage();
+		raise PortOut.message_RigelMsgHeader(gqMsg_teljesAdatLekerdezes);
+	}
+	WaitForConnection_teljesAdatLekerdezes_WaitForConnection_teljesAdatLekerdezes_20 := true;
+	@(WaitForConnection_teljesAdatLekerdezes_ProcessQuery_teljesAdatLekerdezes_21)
+	transition from WaitForConnection_teljesAdatLekerdezes to ProcessQuery_teljesAdatLekerdezes when
+		PortIn.message_RigelMsgHeader
+		[PortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgGqBegin] /
+		WaitForConnection_teljesAdatLekerdezes_ProcessQuery_teljesAdatLekerdezes_21 := true;
+	@(WaitForConnection_teljesAdatLekerdezes_NoOrionConnected_teljesAdatLekerdezes_22)
+	transition from WaitForConnection_teljesAdatLekerdezes to NoOrionConnected_teljesAdatLekerdezes
+		when PortIn.message_RigelMsgHeader
+		[PortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType !=
+		RigelMsgType::RigelMsgGqBegin] / {
+		raise
+			PortOut.message_RigelMsgHeader(PortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue);
+		ProcessOrionDisconn();
+	}
+	WaitForConnection_teljesAdatLekerdezes_NoOrionConnected_teljesAdatLekerdezes_22 := true;
+	@(ProcessQuery_teljesAdatLekerdezes_NoOrionConnected_teljesAdatLekerdezes_23)
+	transition from ProcessQuery_teljesAdatLekerdezes to NoOrionConnected_teljesAdatLekerdezes when
+		timeout timeout_ProcessQuery_0_teljesAdatLekerdezes / {
+		ProcessOrionDisconn();
+	}
+	ProcessQuery_teljesAdatLekerdezes_NoOrionConnected_teljesAdatLekerdezes_23 := true;
+	@(ProcessQuery_teljesAdatLekerdezes__ProcessQuery_1__teljesAdatLekerdezes_24)
+	transition from ProcessQuery_teljesAdatLekerdezes to _ProcessQuery_1__teljesAdatLekerdezes when
+		PortIn.message_RigelMsgHeader
+		[PortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgGqEnd] / {
+		allDataReceived_teljesAdatLekerdezes := true;
+		_change_condition_6_1_0_teljesAdatLekerdezes := allDataReceived_teljesAdatLekerdezes;
+		if (_change_condition_6_1_0_teljesAdatLekerdezes) {
+			var vkAlive_teljesAdatLekerdezes : RigelMsgHeader := createVkAlive();
+			raise PortOut.message_RigelMsgHeader(vkAlive_teljesAdatLekerdezes);
+		}
+		elseif (else) {
+			ProcessOrionDisconn();
+		}
+	}
+	ProcessQuery_teljesAdatLekerdezes__ProcessQuery_1__teljesAdatLekerdezes_24 := true;
+	@(_ProcessQuery_1__teljesAdatLekerdezes_Connected_teljesAdatLekerdezes_25)
+	transition from _ProcessQuery_1__teljesAdatLekerdezes to Connected_teljesAdatLekerdezes
+		[_change_condition_6_1_0_teljesAdatLekerdezes] /
+		_ProcessQuery_1__teljesAdatLekerdezes_Connected_teljesAdatLekerdezes_25 := true;
+	@(_ProcessQuery_1__teljesAdatLekerdezes_NoOrionConnected_teljesAdatLekerdezes_26)
+	transition from _ProcessQuery_1__teljesAdatLekerdezes to NoOrionConnected_teljesAdatLekerdezes
+		[!_change_condition_6_1_0_teljesAdatLekerdezes] /
+		_ProcessQuery_1__teljesAdatLekerdezes_NoOrionConnected_teljesAdatLekerdezes_26 := true;
+	@(_ProcessQuery_1__teljesAdatLekerdezes_ProcessQuery_teljesAdatLekerdezes_27)
+	transition from _ProcessQuery_1__teljesAdatLekerdezes to ProcessQuery_teljesAdatLekerdezes [else]
+		/ _ProcessQuery_1__teljesAdatLekerdezes_ProcessQuery_teljesAdatLekerdezes_27 := true;
+	@(ProcessQuery_teljesAdatLekerdezes_NoOrionConnected_teljesAdatLekerdezes_28)
+	transition from ProcessQuery_teljesAdatLekerdezes to NoOrionConnected_teljesAdatLekerdezes when
+		PortIn.message_RigelMsgHeader
+		[(PortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType !=
+		RigelMsgType::RigelMsgData and
+		PortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType !=
+		RigelMsgType::RigelMsgInvalidateObj) and
+		PortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType !=
+		RigelMsgType::RigelMsgGqEnd] / {
+		ProcessOrionDisconn();
+	}
+	ProcessQuery_teljesAdatLekerdezes_NoOrionConnected_teljesAdatLekerdezes_28 := true;
+	@(Receive_teljesAdatLekerdezes_Receive_teljesAdatLekerdezes_29)
+	transition from Receive_teljesAdatLekerdezes to Receive_teljesAdatLekerdezes when
+		PortIn.message_RigelMsgHeader
+		[PortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgData and
+		PortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.DataCause =
+		RigelDataCause::NormalAnswer] / {
+		raise
+			FelugyeloPortOut.message_RigelMsgHeader(PortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue);
+	}
+	Receive_teljesAdatLekerdezes_Receive_teljesAdatLekerdezes_29 := true;
+	@(Receive_teljesAdatLekerdezes_Receive_teljesAdatLekerdezes_30)
+	transition from Receive_teljesAdatLekerdezes to Receive_teljesAdatLekerdezes when
+		PortIn.message_RigelMsgHeader
+		[PortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgInvalidateObj] / {
+		raise
+			FelugyeloPortOut.message_RigelMsgHeader(PortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue);
+	}
+	Receive_teljesAdatLekerdezes_Receive_teljesAdatLekerdezes_30 := true;
+	@(Connected_teljesAdatLekerdezes_NoOrionConnected_teljesAdatLekerdezes_31)
+	transition from Connected_teljesAdatLekerdezes to NoOrionConnected_teljesAdatLekerdezes when
+		PortIn.message_RigelMsgHeader
+		[((((PortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType !=
+		RigelMsgType::RigelMsgInvalidateObj and
+		PortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType !=
+		RigelMsgType::RigelMsgData) and
+		PortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType !=
+		RigelMsgType::RigelMsgAnsTs1) and
+		PortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType !=
+		RigelMsgType::RigelMsgAnsTs2) and
+		PortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType !=
+		RigelMsgType::RigelMsgCommandResult) and
+		PortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType !=
+		RigelMsgType::RigelMsgCommandConfirmResult] / {
+		ProcessOrionDisconn();
+	}
+	Connected_teljesAdatLekerdezes_NoOrionConnected_teljesAdatLekerdezes_31 := true;
+	@(_initialOfVkObjektumKezelo___objektumKezelo1_ObjectInvalid_objektumKezelo1_32)
+	transition from _initialOfVkObjektumKezelo___objektumKezelo1 to ObjectInvalid_objektumKezelo1 /
+		_initialOfVkObjektumKezelo___objektumKezelo1_ObjectInvalid_objektumKezelo1_32 := true;
+	@(ObjectInvalid_objektumKezelo1_ObjectValid_objektumKezelo1_33)
+	transition from ObjectInvalid_objektumKezelo1 to ObjectValid_objektumKezelo1 when
+		PortIn.message_RigelMsgHeader
+		[PortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgData and
+		PortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.DataCause =
+		RigelDataCause::NormalAnswer] / {
+		isValid_objektumKezelo1 := true;
+	}
+	ObjectInvalid_objektumKezelo1_ObjectValid_objektumKezelo1_33 := true;
+	@(ObjectValid_objektumKezelo1_ObjectInvalid_objektumKezelo1_34)
+	transition from ObjectValid_objektumKezelo1 to ObjectInvalid_objektumKezelo1 when
+		OrionDisconn.OrionDisconn / ObjectValid_objektumKezelo1_ObjectInvalid_objektumKezelo1_34 := true;
+	@(ObjectValid_objektumKezelo1_ObjectInvalid_objektumKezelo1_35)
+	transition from ObjectValid_objektumKezelo1 to ObjectInvalid_objektumKezelo1 when
+		PortIn.message_RigelMsgHeader
+		[PortIn.message_RigelMsgHeader::message_RigelMsgHeaderValue.MessageType =
+		RigelMsgType::RigelMsgInvalidateObj] / {
+		isValid_objektumKezelo1 := false;
+	}
+ObjectValid_objektumKezelo1_ObjectInvalid_objektumKezelo1_35 := true;
+}

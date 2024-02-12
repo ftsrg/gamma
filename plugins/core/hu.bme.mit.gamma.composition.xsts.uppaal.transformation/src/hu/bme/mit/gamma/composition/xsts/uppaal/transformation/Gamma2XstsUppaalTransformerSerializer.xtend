@@ -28,7 +28,7 @@ import java.util.List
 class Gamma2XstsUppaalTransformerSerializer {
 
 	protected final Component component
-	protected final List<Expression> arguments
+	protected final List<? extends Expression> arguments
 	protected final String targetFolderUri
 	protected final String fileName
 	
@@ -71,7 +71,7 @@ class Gamma2XstsUppaalTransformerSerializer {
 			null, null)
 	}
 	
-	new(Component component, List<Expression> arguments,
+	new(Component component, List<? extends Expression> arguments,
 			String targetFolderUri, String fileName,
 			Integer minSchedulingConstraint, Integer maxSchedulingConstraint,
 			boolean optimize,

@@ -66,7 +66,7 @@ class MessageQueueOptimizer {
 		
 		for (messageQueueVariable : messageQueueVariables) {
 			val arrayType = messageQueueVariable.typeDefinition as ArrayTypeDefinition
-			val elementType = arrayType.elementType.typeDefinition
+			val elementType = arrayType.elementType // Not typeDefinition as type can be enum, too
 			val capacity = arrayType.size.evaluateInteger
 			
 			for (var i = 0; i < capacity; i++) {

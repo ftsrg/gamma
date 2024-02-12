@@ -13,14 +13,15 @@ package hu.bme.mit.gamma.ui.taskhandler;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.eclipse.core.resources.IFile;
 
 import hu.bme.mit.gamma.genmodel.model.PhaseStatechartGeneration;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Package;
-import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
 import hu.bme.mit.gamma.statechart.phase.transformation.PhaseStatechartTransformer;
+import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
 
 public class PhaseGenerationHandler extends TaskHandler {
 
@@ -45,9 +46,10 @@ public class PhaseGenerationHandler extends TaskHandler {
 		String fileName = "Phase" + getNameWithoutExtension(
 				getContainingFileName(
 						phaseStatechartGeneration.getStatechart()));
-		checkArgument(phaseStatechartGeneration.getFileName().size() <= 1);
-		if (phaseStatechartGeneration.getFileName().isEmpty()) {
-			phaseStatechartGeneration.getFileName().add(fileName);
+		List<String> fileNames = phaseStatechartGeneration.getFileName();
+		checkArgument(fileNames.size() <= 1);
+		if (fileNames.isEmpty()) {
+			fileNames.add(fileName);
 		}
 	}
 	

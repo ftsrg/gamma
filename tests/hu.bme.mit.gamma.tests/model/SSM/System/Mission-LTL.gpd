@@ -1,0 +1,13 @@
+import "/hu.bme.mit.gamma.tests/model/SSM/System/.Mission-Promela.gsm"
+component Mission
+
+A G ([ { state satellite.Communication.Transmitting } ] -> [ { state
+	satellite.Communication.Transmitting } ] U (
+		[ {
+			variable satellite.batteryVariable <= 40
+			or
+			variable satellite.data <= 0
+			} ] ))
+			
+A G ( F ([ { state satellite.Communication.Transmitting } ]) ->
+	F ([ { variable satellite.data < 95 } ]))

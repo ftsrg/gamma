@@ -1,0 +1,19 @@
+package RigelDiszpecser
+import "/StateMachines/Diszpecser/RigelDiszpecser.gcd"
+adapter CustomRigelDiszpecserAdapter(TimeDataPeriodic : integer, TimeDataTimeout : integer,
+	TimeConnectionCheck : integer) of component RigelDiszpecser : RigelDiszpecser(TimeDataPeriodic,
+	TimeDataTimeout, TimeConnectionCheck)
+{
+	when any / run
+	// Can receive messages from both directions
+	queue RigelDiszpecserQueue (priority = 3, capacity = 2) {
+		VezerloKozpontPortIn.any
+	}
+	queue RigelDiszpecserOjektumKezeloQueue (priority = 2, capacity = 2) {
+		ObjektumKezeloPortIn.any
+	}
+	//
+	queue RigelDiszpecserEnvironmentQueue (priority = 1, capacity = 1) {
+		OrionDisconnToVk.any, AllObjDataSent.any
+	}
+}

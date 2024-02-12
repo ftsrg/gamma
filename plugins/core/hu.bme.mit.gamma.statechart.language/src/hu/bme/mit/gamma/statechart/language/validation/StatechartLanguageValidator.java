@@ -196,6 +196,11 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	}
 	
 	@Check
+	public void checkStateInvariants(hu.bme.mit.gamma.statechart.statechart.State state) {
+		handleValidationResultMessage(statechartModelValidator.checkStateInvariants(state));
+	}
+	
+	@Check
 	public void checkElseTransitionPriority(Transition transition) {
 		handleValidationResultMessage(statechartModelValidator.checkElseTransitionPriority(transition));
 	}
@@ -317,6 +322,11 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	@Check
 	public void checkTimeSpecification(TimeSpecification timeSpecification) {
 		handleValidationResultMessage(statechartModelValidator.checkTimeSpecification(timeSpecification));
+	}
+	
+	@Check
+	public void checkStatechartInvariants(StatechartDefinition statechart) {
+		handleValidationResultMessage(statechartModelValidator.checkStatechartInvariants(statechart));
 	}
 	
 	// Composite system

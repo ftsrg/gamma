@@ -61,8 +61,9 @@ class ExpressionSerializer extends hu.bme.mit.gamma.codegeneration.java.util.Exp
 	
 	//
 	
-	def dispatch String serialize(RaiseEventAct assert)
-		'''«testInstanceName».isRaisedEvent("«assert.port.name»", "«assert.event.name»", «IF assert.arguments.empty»null«ELSE»new Object[] {«FOR parameter : assert.arguments BEFORE " " SEPARATOR ", " AFTER " "»«parameter.serialize»«ENDFOR»}«ENDIF»)'''
+	def dispatch String serialize(RaiseEventAct assert) '''
+		«testInstanceName».isRaisedEvent("«assert.port.name»", "«assert.event.name»"«IF
+				!assert.arguments.empty», new Object[] {«FOR argument : assert.arguments BEFORE " " SEPARATOR ", " AFTER " "»«argument.serialize»«ENDFOR»}«ENDIF»)'''
 
 	def dispatch String serialize(EventParameterReferenceExpression assert) {
 		val parameter = assert.parameter

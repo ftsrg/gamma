@@ -16,7 +16,6 @@ import hu.bme.mit.gamma.verification.result.ThreeStateBoolean
 import hu.bme.mit.gamma.verification.util.AbstractVerifier
 import java.io.File
 import java.util.Scanner
-import java.util.logging.Level
 
 import static com.google.common.base.Preconditions.checkState
 
@@ -88,7 +87,7 @@ class ThetaVerifier extends AbstractVerifier {
 				#["--model", modelFile.canonicalPath, "--property", queryFile.canonicalPath,
 					"--cex", traceFile.canonicalPath, "--stacktrace"]
 			// Executing the command
-			logger.log(Level.INFO, "Executing command: " + command.join(" "))
+			logger.info("Executing command: " + command.join(" "))
 			process = Runtime.getRuntime().exec(command)
 			
 			val outputStream = process.inputStream
@@ -97,7 +96,7 @@ class ThetaVerifier extends AbstractVerifier {
 			while (resultReader.hasNext) {
 				// (SafetyResult Safe) or (SafetyResult Unsafe)
 				line = resultReader.nextLine
-				logger.log(Level.INFO, line)
+				logger.info(line)
 			}
 			// Variable 'line' contains the last line of the output - the result
 			if (line.contains(SAFE)) {
@@ -108,7 +107,7 @@ class ThetaVerifier extends AbstractVerifier {
 			}
 			else {
 				// Some kind of error or interruption (cancel) by another (winner) process
-				logger.log(Level.WARNING, line)
+				logger.warning(line)
 				if (isCancelled || Thread.currentThread.interrupted) {
 					return new Result(ThreeStateBoolean.UNDEF, null)
 				}

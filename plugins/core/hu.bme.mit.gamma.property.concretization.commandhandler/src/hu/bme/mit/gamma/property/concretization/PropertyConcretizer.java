@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023 Contributors to the Gamma project
+ * Copyright (c) 2023-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -11,9 +11,6 @@
 package hu.bme.mit.gamma.property.concretization;
 
 import java.io.File;
-import java.lang.reflect.Method;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -28,16 +25,17 @@ import hu.bme.mit.gamma.property.model.CommentableStateFormula;
 import hu.bme.mit.gamma.property.model.PropertyPackage;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReflectiveElementReferenceExpression;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
+import hu.bme.mit.gamma.util.ReflectiveViatraMatcher;
 
 public class PropertyConcretizer {
 	// Singleton
 	public static final PropertyConcretizer INSTANCE = new PropertyConcretizer();
 	protected PropertyConcretizer() {}
 	//
+	protected final ReflectiveViatraMatcher matcher = ReflectiveViatraMatcher.INSTANCE;
 	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
 	//
 	
-	@SuppressWarnings("unchecked")
 	public PropertyPackage execute(PropertyPackage propertyPackage) {
 		ResourceSet resourceSet = propertyPackage.eResource().getResourceSet();
 		ViatraQueryEngine engine = ViatraQueryEngine.on(
@@ -52,21 +50,9 @@ public class PropertyConcretizer {
 			if (ecoreUtil.containsTypeTransitively(commentableStateFormula,
 					ComponentInstanceReflectiveElementReferenceExpression.class)) {
 				List<Comment> comments = commentableStateFormula.getComments();
-				Class<?> patternClass = getPatternClass(comments);
 				
-				Collection<IPatternMatch> matches = null;
-				try {
-					Method onMethod = patternClass.getMethod("on",
-							new Class[] { ViatraQueryEngine.class });
-					Object matcher = onMethod.invoke(null, engine);
-					Class<? extends Object> matcherClass = matcher.getClass();
-					Method getAllMatchesMethod = matcherClass.getMethod("getAllMatches", new Class[0]);
-					Object collection = getAllMatchesMethod.invoke(matcher, new Object[0]);
-	
-					matches = (Collection<IPatternMatch>) collection; 
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
+				Class<?> patternMatcherClass = getPatternMatcherClass(comments);
+				Collection<IPatternMatch> matches = matcher.queryMatches(engine, patternMatcherClass);
 				
 				FormulaConcretizer formulaConcretizer = FormulaConcretizer.INSTANCE;
 				List<CommentableStateFormula> concretizedFormulaSet =
@@ -87,9 +73,9 @@ public class PropertyConcretizer {
 		return concretizedPropertyPackage;
 	}
 
-	protected Class<?> getPatternClass(Collection<? extends Comment> comments) {
+	protected Class<?> getPatternMatcherClass(Collection<? extends Comment> comments) {
 		for (Comment comment : comments) {
-			Class<?> patternClass = getPatternClass(comment);
+			Class<?> patternClass = getPatternMatcherClass(comment);
 			if (patternClass != null) {
 				return patternClass;
 			}
@@ -97,8 +83,8 @@ public class PropertyConcretizer {
 		throw new IllegalArgumentException("The pattern class cannot be found");
 	}
 
-	@SuppressWarnings("deprecation")
-	protected Class<?> getPatternClass(Comment comment) {
+
+	protected Class<?> getPatternMatcherClass(Comment comment) {
 		final String CLASS_REFERENCE_PREFIX = "$";
 		String stringComment = comment.getComment();
 		
@@ -106,21 +92,11 @@ public class PropertyConcretizer {
 			String fqnOfPattern = stringComment.substring(1);
 			File projectFile = ecoreUtil.getProjectFile(comment.eResource());
 			String binUri = projectFile.getAbsolutePath() + File.separator + "bin";
-			File bin = new File(binUri);
-			URLClassLoader loader;
-			try {
-				loader = URLClassLoader.newInstance(new URL[] { bin.toURL() },
-						PropertyConcretizer.class.getClassLoader());
-				
-				String fqnClassName = fqnOfPattern + "$Matcher"; // $ is for subclasses
-				Class<?> clazz = loader.loadClass(fqnClassName);
-				return clazz;
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+			return matcher.loadPatternMatcherClass(this.getClass().getClassLoader(),
+					fqnOfPattern, binUri);
 		}
 		
 		return null;
 	}
-
+	
 }

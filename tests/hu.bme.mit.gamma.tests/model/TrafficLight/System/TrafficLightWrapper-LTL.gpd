@@ -1,0 +1,11 @@
+import "/hu.bme.mit.gamma.tests/model/TrafficLight/System/.TrafficLightWrapper.gsm"
+component TrafficLightWrapper
+
+A G ( F [ { state TrafficLight.Counting.Threshold } ] )
+A G ( F [ { state TrafficLight.Main.Interrupted } ] )
+A G ( [ { state TrafficLight.Counting.Threshold } ] -> X [ { state TrafficLight.Main.Interrupted } ] )
+E F ( G [ { state TrafficLight.Main.Interrupted } ] )
+A G ( [ { state TrafficLight.Main.Normal } ] -> (
+	( [ { state TrafficLight.Main.Normal } ] U
+		[ { state TrafficLight.Main.Interrupted } ] ) ||
+		G [ { state TrafficLight.Main.Normal } ] ) )

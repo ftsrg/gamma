@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -25,7 +25,6 @@ import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IFile;
@@ -36,6 +35,9 @@ import com.google.common.base.Stopwatch;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition;
+import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition;
+import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
 import hu.bme.mit.gamma.genmodel.model.GenmodelModelFactory;
 import hu.bme.mit.gamma.genmodel.model.ProgrammingLanguage;
@@ -48,15 +50,25 @@ import hu.bme.mit.gamma.property.model.CommentableStateFormula;
 import hu.bme.mit.gamma.property.model.PropertyPackage;
 import hu.bme.mit.gamma.property.model.StateFormula;
 import hu.bme.mit.gamma.property.util.PropertyUtil;
+import hu.bme.mit.gamma.querygenerator.serializer.AbstractReferenceSerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.NuxmvPropertySerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.PromelaPropertySerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.PropertySerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.ThetaPropertySerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.UppaalPropertySerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.XstsUppaalPropertySerializer;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventReferenceExpression;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Component;
+import hu.bme.mit.gamma.statechart.interface_.Event;
+import hu.bme.mit.gamma.statechart.interface_.Port;
 import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
+import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction;
+import hu.bme.mit.gamma.statechart.statechart.Region;
+import hu.bme.mit.gamma.statechart.statechart.State;
+import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
 import hu.bme.mit.gamma.theta.verification.ThetaVerification;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
 import hu.bme.mit.gamma.trace.testgeneration.c.MakefileGenerator;
@@ -74,6 +86,9 @@ import hu.bme.mit.gamma.verification.result.ThreeStateBoolean;
 import hu.bme.mit.gamma.verification.util.AbstractVerification;
 import hu.bme.mit.gamma.verification.util.AbstractVerifier.Result;
 import hu.bme.mit.gamma.genmodel.model.TestGeneration;
+import hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures;
+import hu.bme.mit.gamma.xsts.model.XSTS;
+import hu.bme.mit.gamma.xsts.util.XstsActionUtil;
 
 public class VerificationHandler extends TaskHandler {
 
@@ -83,6 +98,7 @@ public class VerificationHandler extends TaskHandler {
 	// targetFolderUri is traceFolderUri 
 	protected String packageName; // Set in setVerification
 	protected String svgFileName; // Set in setVerification
+	protected ProgrammingLanguage programmingLanguage; // Set in setVerification
 	protected final String traceFileName = "ExecutionTrace";
 	protected final String testFileName = traceFileName + "Simulation";
 	
@@ -101,6 +117,7 @@ public class VerificationHandler extends TaskHandler {
 	
 	protected final TraceUtil traceUtil = TraceUtil.INSTANCE;
 	protected final PropertyUtil propertyUtil = PropertyUtil.INSTANCE;
+	protected final XstsActionUtil xStsUtil = XstsActionUtil.INSTANCE;
 	protected final StatechartEcoreUtil statechartEcoreUtil = StatechartEcoreUtil.INSTANCE;
 	protected final ExecutionTraceSerializer serializer = ExecutionTraceSerializer.INSTANCE;
 	
@@ -157,11 +174,22 @@ public class VerificationHandler extends TaskHandler {
 					propertySerializer = NuxmvPropertySerializer.INSTANCE;
 					break;
 				default:
-					throw new IllegalArgumentException("Currently only UPPAAL, Theta, Spin and nuXmv are supported");
+					throw new IllegalArgumentException(analysisLanguage + " is not supported");
 			}
 		}
 		String filePath = verification.getFileName().get(0);
 		File modelFile = new File(filePath);
+		
+		//
+		String emfModelFilePath = fileNamer.getEmfXStsUri(filePath);
+		File emfModelFile = new File(emfModelFilePath);
+		XSTS xSts = null;
+		try {
+			xSts = (XSTS) ecoreUtil.normalLoad(emfModelFile);
+		} catch (RuntimeException e) {
+			// The EMF xSts model is not found
+		}
+		//
 		
 		String[] arguments = verificationArguments.isEmpty() ?
 				verificationTask.getDefaultArguments(modelFile) :
@@ -187,6 +215,9 @@ public class VerificationHandler extends TaskHandler {
 			//
 			for (CommentableStateFormula formula : propertyPackage.getFormulas()) {
 				StateFormula stateFormula = formula.getFormula();
+				//
+				adjustProperty(stateFormula, xSts);
+				//
 				String serializedFormula = propertySerializer.serialize(stateFormula);
 				formulas.put(serializedFormula, stateFormula);
 			}
@@ -294,6 +325,67 @@ public class VerificationHandler extends TaskHandler {
 	
 	//
 	
+	private void adjustProperty(StateFormula formula, XSTS xSts) {
+		// Event references
+		List<ComponentInstanceEventReferenceExpression> eventReferences =
+				ecoreUtil.getAllContentsOfType(formula, ComponentInstanceEventReferenceExpression.class);
+		for (ComponentInstanceEventReferenceExpression eventReference : eventReferences) {
+			Port port = eventReference.getPort();
+			Event event = eventReference.getEvent();
+			
+			StatechartDefinition statechart = StatechartModelDerivedFeatures.getContainingStatechart(port);
+			if (statechart != null) {
+				List<RaiseEventAction> raiseEvents = ecoreUtil.getAllContentsOfType(statechart, RaiseEventAction.class);
+				boolean hasEventRaise = raiseEvents.stream()
+							.anyMatch(it -> it.getPort() == port && // To support different interface resource loadings
+								it.getEvent().getName().equals(event.getName()));
+				
+				if (!hasEventRaise) {
+					ecoreUtil.replace(
+							expressionFactory.createFalseExpression(), eventReference);
+					logger.info("Removing reference to event " + port.getName() + "." + event.getName() + " in property");
+				}
+			}
+		}
+		
+		// State references
+		if (xSts != null) {
+			AbstractReferenceSerializer referenceSerializer = propertySerializer
+					.getPropertyExpressionSerializer().getReferenceSerializer();
+			
+			List<ComponentInstanceStateReferenceExpression> stateReferences =
+					ecoreUtil.getAllContentsOfType(formula, ComponentInstanceStateReferenceExpression.class);
+			for (ComponentInstanceStateReferenceExpression stateReference : stateReferences) {
+				boolean removedState = false;
+				
+				ComponentInstanceReferenceExpression instance = stateReference.getInstance();
+				Region region = stateReference.getRegion();
+				State state = stateReference.getState();
+				
+				String variableName = referenceSerializer.getId(region, instance);
+				String enumLiteralName = referenceSerializer.getXStsId(state);
+				try {
+					VariableDeclaration regionVariable = xStsUtil.checkVariable(xSts, variableName);
+					EnumerationTypeDefinition type = (EnumerationTypeDefinition)
+							XstsDerivedFeatures.getTypeDefinition(regionVariable);
+					List<EnumerationLiteralDefinition> literals = type.getLiterals();
+					
+					removedState = literals.stream().noneMatch(
+							it -> it.getName().equals(enumLiteralName));
+				} catch (IllegalArgumentException e) {
+					// No such variable
+					removedState = true;
+				}
+				
+				if (removedState) {
+					ecoreUtil.replace(
+							expressionFactory.createFalseExpression(), stateReference);
+					logger.info("Removing reference to state " + region.getName() + "." + state.getName() + " in property");
+				}
+			}
+		}
+	}
+	
 	private void removeCoveredProperties(Queue<Entry<String, StateFormula>> formulaQueue) {
 		removeCoveredProperties(traces, formulaQueue);
 	}
@@ -317,7 +409,7 @@ public class VerificationHandler extends TaskHandler {
 			
 			for (StateFormula coveredProperty : coveredProperties) {
 				String serializedProperty = propertySerializer.serialize(coveredProperty);
-				logger.log(Level.INFO, "Property already covered: " + serializedProperty);
+				logger.info("Property already covered: " + serializedProperty);
 				formulaQueue.removeIf(it -> it.getValue() == coveredProperty);
 			}
 		}
@@ -344,9 +436,9 @@ public class VerificationHandler extends TaskHandler {
 		// Maybe there is no trace
 		if (trace != null) {
 			if (isOptimize) {
-				logger.log(Level.INFO, "Checking if trace is already covered by previous traces...");
+				logger.info("Checking if trace is already covered by previous traces...");
 				if (traceUtil.isCovered(trace, retrievedTraces)) {
-					logger.log(Level.INFO, "Trace is already covered");
+					logger.info("Trace is already covered");
 					return new Result(result.getResult(), null);
 					// We do not return a trace as it is already covered
 				}
@@ -361,23 +453,28 @@ public class VerificationHandler extends TaskHandler {
 	}
 	
 	private void setVerification(Verification verification) {
-		if (verification.getPackageName().isEmpty()) {
+		List<String> packageNames = verification.getPackageName();
+		if (packageNames.isEmpty()) {
 			this.packageName = file.getProject().getName().toLowerCase();
-			verification.getPackageName().add(packageName);
+			packageNames.add(packageName);
 		}
-		if (verification.getTestFolder().isEmpty()) {
-			verification.getTestFolder().add("test-gen");
+		List<String> testFolders = verification.getTestFolder();
+		if (testFolders.isEmpty()) {
+			testFolders.add("test-gen");
 		}
-		if (!verification.getSvgFileName().isEmpty()) {
-			this.svgFileName = verification.getSvgFileName().get(0);
+		List<String> svgFileNames = verification.getSvgFileName();
+		if (!svgFileNames.isEmpty()) {
+			this.svgFileName = svgFileNames.get(0);
 		}
-		if (verification.getProgrammingLanguages().isEmpty()) {
+		List<ProgrammingLanguage> programmingLanguages = verification.getProgrammingLanguages();
+		if (programmingLanguages.isEmpty()) {
 			this.serializeTest = false;
 		}
 		else {
+			this.programmingLanguage = programmingLanguages.get(0);
 			this.serializeTest = true;
 			// Setting the attribute, the test folder is a RELATIVE path now from the project
-			this.testFolderUri = URI.decode(projectLocation + File.separator + verification.getTestFolder().get(0));
+			this.testFolderUri = URI.decode(projectLocation + File.separator + testFolders.get(0));
 		}
 		Resource resource = verification.eResource();
 		File file = (resource != null) ?
@@ -458,6 +555,10 @@ public class VerificationHandler extends TaskHandler {
 			
 			// Test
 			boolean serializeTest = testFolderUri != null && testFileName != null && basePackage != null;
+      
+      if (!serializeTest)
+				return;
+      
 			TestGeneration testGeneration = GenmodelModelFactory.eINSTANCE.createTestGeneration();
 			testGeneration.setExecutionTrace(trace);
 			/* set filename */
@@ -466,9 +567,6 @@ public class VerificationHandler extends TaskHandler {
 			/* set programming language */
 			testGeneration.getProgrammingLanguages().clear();
 			testGeneration.getProgrammingLanguages().add(programmingLanguage);
-			
-			if (!serializeTest)
-				return;
 			
 			TestGenerationHandler tgh = new TestGenerationHandler(file);
 			try {
@@ -489,6 +587,17 @@ public class VerificationHandler extends TaskHandler {
 //					File.separator + className + ".java", testCode);
 //			}
 		}
+
+		protected void serializeJavaTestCase(String testFolderUri, String basePackage,
+				String className, ExecutionTrace trace) {
+			TestGenerator testGenerator = new TestGenerator(trace, basePackage, className);
+			String testCode = testGenerator.execute();
+			String packageUri = testGenerator.getPackageName().replaceAll("\\.", "/");
+			fileUtil.saveString(testFolderUri + File.separator + packageUri +
+				File.separator + className + ".java", testCode);
+		}
+		
+		// Serialization of test cases for additional programming languages here...
 		
 		public void serialize(String resultFolderUri, String resultFileName,
 				VerificationResult result) throws IOException {

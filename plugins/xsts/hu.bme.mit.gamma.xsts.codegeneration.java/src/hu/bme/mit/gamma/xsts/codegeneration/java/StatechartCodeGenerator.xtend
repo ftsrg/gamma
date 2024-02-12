@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2023 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -17,6 +17,7 @@ import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.xsts.model.XSTS
 
 import static extension hu.bme.mit.gamma.codegeneration.java.util.Namings.*
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class StatechartCodeGenerator {
@@ -73,7 +74,16 @@ class StatechartCodeGenerator {
 				«ENDFOR»
 			}
 			
+			//
 			public void reset() {
+				this.handleBeforeReset();
+				this.resetVariables();
+				this.resetStateConfigurations();
+				this.raiseEntryEvents();
+				this.handleAfterReset();
+			}
+			
+			public void handleBeforeReset() {
 «««				Reference variables, e.g., enums, have to be set, as null is not a valid value, including regions: they have to be set to __Inactive__ explicitly on every reset
 				«FOR enumVariable : (xSts.retrieveEnumVariables
 						.reject[xSts.retrieveComponentParameters.toList.contains(it)])»
@@ -81,8 +91,24 @@ class StatechartCodeGenerator {
 				«ENDFOR»
 				clearOutEvents();
 				clearInEvents();
-				«xSts.serializeInitializingAction»
 			}
+			
+			public void resetVariables() {
+				«xSts.serializeVariableReset»
+			}
+			
+			public void resetStateConfigurations() {
+				«xSts.serializeStateConfigurationReset»
+			}
+			
+			public void raiseEntryEvents() {
+				«xSts.serializeEntryEventRaise»
+			}
+			
+			public void handleAfterReset() {
+				// Empty
+			}
+			//
 			
 «««			No separation of variables on this level
 			«FOR variable : xSts.variableGroups

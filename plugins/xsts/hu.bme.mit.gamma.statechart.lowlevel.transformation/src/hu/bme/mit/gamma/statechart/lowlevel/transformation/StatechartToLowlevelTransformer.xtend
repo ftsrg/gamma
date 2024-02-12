@@ -286,6 +286,11 @@ class StatechartToLowlevelTransformer {
 			val lowlevelTransition = transition.transform
 			lowlevelStatechart.transitions += lowlevelTransition
 		}
+		// Mapping statechart invariants
+		val statechartInvariants = statechart.invariants
+		if (!statechartInvariants.empty) {
+			lowlevelStatechart.invariants += statechartInvariants.map[it.transformSimpleExpression]
+		}
 		return lowlevelStatechart
 	}
 
@@ -370,6 +375,12 @@ class StatechartToLowlevelTransformer {
 		// Entry and exit actions
 		lowlevelState.entryAction = state.entryActions.transformActions
 		lowlevelState.exitAction = state.exitActions.transformActions
+		
+		val invariants = state.invariants
+		if (!invariants.empty) {
+			lowlevelState.invariants += invariants.map[it.transformSimpleExpression]
+		}
+		
 		return lowlevelState
 	}
 
@@ -419,6 +430,12 @@ class StatechartToLowlevelTransformer {
 		// The expressions are in an AND relation
 		lowlevelGuardList.removeIf[it instanceof TrueExpression]
 		return lowlevelGuardList.wrapIntoMultiaryExpression(createAndExpression)
+	}
+	
+	//
+	
+	def getTrace() {
+		return trace
 	}
 	
 }

@@ -10,49 +10,37 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.genmodel.commandhandler;
 
-import java.lang.Thread.State;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.eclipse.core.commands.AbstractHandler;
-import org.eclipse.core.commands.Command;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 
-public class CancelHandler extends AbstractHandler {
-	
-	protected final Logger logger = Logger.getLogger("GammaLogger");
+import hu.bme.mit.gamma.util.ThreadRacer;
 
+public class CancelHandler extends AbstractHandler {
+	//
+	protected final Logger logger = Logger.getLogger("GammaLogger");
+	//
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
+		ThreadRacer<Void> threadRacer = CommandHandler.getThreadRacer();
 		Thread thread = CommandHandler.getThread();
-		if (thread == null) {
-			System.out.println("No task has been started");
-			logger.log(Level.INFO, "No task has been started");
+		
+		if (threadRacer == null || threadRacer.isTerminated()) {
+			String infoMessage = "No task has been started";
+			System.out.println(infoMessage);
+			logger.info(infoMessage);
 			
 			return null;
 		}
 		
-		Command command = event.getCommand();
-		String name = command.getId();
-		boolean isForceCancel = name.equals("hu.bme.mit.gamma.ui.cancel.force");
+		String cancelMessage = "Cancelling thread";
+		System.out.println(cancelMessage);
+		logger.info(cancelMessage);
 		
-		State threadState = thread.getState();
-		boolean isInterruptible = threadState == State.BLOCKED || threadState == State.WAITING;
-		
-		boolean toBeCancelled = isForceCancel || isInterruptible;
-		if (!toBeCancelled) {
-			System.out.println("The thread is not in an interruptable state: " + threadState);
-			logger.log(Level.INFO, "The thread is not in an interruptable state: " + threadState);
-			
-			return null;
-		}
-		
-		thread.interrupt();
-		
-		String threadName = thread.getName();
-		System.out.println("Cancelling thread " + threadName);
-		logger.log(Level.INFO, "Cancelling thread " + threadName);
+		threadRacer.shutdown();
+		thread.setDaemon(true);
 		
 		return null;
 	}
