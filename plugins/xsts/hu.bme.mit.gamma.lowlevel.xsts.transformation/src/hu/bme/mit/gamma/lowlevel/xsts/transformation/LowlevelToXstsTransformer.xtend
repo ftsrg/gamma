@@ -212,6 +212,7 @@ class LowlevelToXstsTransformer {
 		}
 		
 		handleStateInvariants
+		handleStatechartInvariants
 		
 		handleTransientAndResettableVariableAnnotations
 		handleRunUponExternalEventAnnotation
@@ -741,6 +742,24 @@ class LowlevelToXstsTransformer {
 				val xStsCongifurationInitAction = xSts.configurationInitializingTransition.action
 				xStsCongifurationInitAction.appendToAction(xStsAssumeStateInvariant.clone)
 			}
+		}
+	}
+	
+	protected def handleStatechartInvariants() {
+		val lowlevelStatechart = trace.statechart
+		val lowlevelStatechartInvariants = lowlevelStatechart.invariants
+		
+		if (!lowlevelStatechartInvariants.empty) {
+				val xStsInvariants = lowlevelStatechart.invariants.map[it.transformExpression]
+				val xStsStatechartInvariant = xStsInvariants.wrapIntoAndExpression
+
+				val xStsAssumeStatechartInvariant = xStsStatechartInvariant.createAssumeAction
+				xStsAssumeStatechartInvariant.addInvariantAnnotation
+				
+				val xStsMergedAction = xSts.mergedAction
+				xStsMergedAction.appendToAction(xStsAssumeStatechartInvariant)
+				val xStsCongifurationInitAction = xSts.configurationInitializingTransition.action
+				xStsCongifurationInitAction.appendToAction(xStsAssumeStatechartInvariant.clone)
 		}
 	}
 	

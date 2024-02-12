@@ -286,6 +286,11 @@ class StatechartToLowlevelTransformer {
 			val lowlevelTransition = transition.transform
 			lowlevelStatechart.transitions += lowlevelTransition
 		}
+		// Mapping statechart invariants
+		val statechartInvariants = statechart.invariants
+		if (!statechartInvariants.empty) {
+			lowlevelStatechart.invariants += statechartInvariants.map[it.transformSimpleExpression]
+		}
 		return lowlevelStatechart
 	}
 

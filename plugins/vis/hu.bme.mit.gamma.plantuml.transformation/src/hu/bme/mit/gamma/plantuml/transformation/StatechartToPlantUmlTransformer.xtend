@@ -260,8 +260,13 @@ class StatechartToPlantUmlTransformer {
 	 */
 	protected def stateActionsSearch(StateNode statenode) {
 		val state = statenode as State
-		if (!(state.entryActions.empty) || !(state.exitActions.empty)) {
+		if (!(state.entryActions.empty) || !(state.exitActions.empty) || !(state.invariants.empty)) {
 			val result = '''
+				«IF !(state.invariants.empty)»
+					«FOR invariant: state.invariants»
+						«statenode.name» : invariant «invariant.serialize»
+					«ENDFOR»
+				«ENDIF»
 				«IF !(state.entryActions.empty)»
 					«FOR entry: state.entryActions»
 						«statenode.name» : entry / «entry.transformAction»
@@ -408,8 +413,9 @@ class StatechartToPlantUmlTransformer {
 		val parameterDeclarations = statechart.parameterDeclarations
 		val variableDeclarations = statechart.variableDeclarations
 		val timeoutDeclarations = statechart.timeoutDeclarations
+		val invariants = statechart.invariants
 		
-		if (variableDeclarations.empty && timeoutDeclarations.empty && parameterDeclarations.empty) {
+		if (variableDeclarations.empty && timeoutDeclarations.empty && parameterDeclarations.empty && invariants.empty) {
 			return ''''''
 		}
 		return '''
@@ -422,6 +428,9 @@ class StatechartToPlantUmlTransformer {
 				«ENDFOR»
 				«FOR timeout : timeoutDeclarations»
 					timeout «timeout.name»
+				«ENDFOR»
+				«FOR invariant : invariants»
+				    invariant «invariant.serialize»
 				«ENDFOR»
 			endlegend
 		'''

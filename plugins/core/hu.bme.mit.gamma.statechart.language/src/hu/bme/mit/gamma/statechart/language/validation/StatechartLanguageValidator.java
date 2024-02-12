@@ -324,6 +324,11 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		handleValidationResultMessage(statechartModelValidator.checkTimeSpecification(timeSpecification));
 	}
 	
+	@Check
+	public void checkStatechartInvariants(StatechartDefinition statechart) {
+		handleValidationResultMessage(statechartModelValidator.checkStatechartInvariants(statechart));
+	}
+	
 	// Composite system
 	
 	@Check

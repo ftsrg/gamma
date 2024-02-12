@@ -1,0 +1,6 @@
+import "system"
+
+analysis {
+	component : System
+	language : XSTS
+}
