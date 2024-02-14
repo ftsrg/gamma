@@ -783,27 +783,27 @@ public class ExpressionUtil {
 	// Variable annotation handling
 	
 	public void addTransientAnnotation(VariableDeclaration variable) {
-		addAnnotation(variable, factory.createTransientVariableDeclarationAnnotation());
+		addAnnotationIfNotPresent(variable, factory.createTransientVariableDeclarationAnnotation());
 	}
 	
 	public void addResettableAnnotation(VariableDeclaration variable) {
-		addAnnotation(variable, factory.createResettableVariableDeclarationAnnotation());
+		addAnnotationIfNotPresent(variable, factory.createResettableVariableDeclarationAnnotation());
 	}
 	
 	public void addEnvironmentResettableAnnotation(VariableDeclaration variable) {
-		addAnnotation(variable, factory.createEnvironmentResettableVariableDeclarationAnnotation());
+		addAnnotationIfNotPresent(variable, factory.createEnvironmentResettableVariableDeclarationAnnotation());
 	}
 	
 	public void addClockAnnotation(VariableDeclaration variable) {
-		addAnnotation(variable, factory.createClockVariableDeclarationAnnotation());
+		addAnnotationIfNotPresent(variable, factory.createClockVariableDeclarationAnnotation());
 	}
 	
 	public void addScheduledClockAnnotation(VariableDeclaration variable) {
-		addAnnotation(variable, factory.createScheduledClockVariableDeclarationAnnotation());
+		addAnnotationIfNotPresent(variable, factory.createScheduledClockVariableDeclarationAnnotation());
 	}
 	
 	public void addInternalAnnotation(VariableDeclaration variable) {
-		addAnnotation(variable, factory.createInternalVariableDeclarationAnnotation());
+		addAnnotationIfNotPresent(variable, factory.createInternalVariableDeclarationAnnotation());
 	}
 	
 	public void addDeclarationReferenceAnnotation(VariableDeclaration variable, Declaration declaration) {
@@ -825,17 +825,23 @@ public class ExpressionUtil {
 	}
 	
 	public void addUnremovableAnnotation(VariableDeclaration variable) {
-		addAnnotation(variable, factory.createUnremovableVariableDeclarationAnnotation());
+		addAnnotationIfNotPresent(variable, factory.createUnremovableVariableDeclarationAnnotation());
 	}
 	
 	public void addInjectedAnnotation(VariableDeclaration variable) {
-		addAnnotation(variable, factory.createInjectedVariableDeclarationAnnotation());
+		addAnnotationIfNotPresent(variable, factory.createInjectedVariableDeclarationAnnotation());
 	}
 	
 	public void addAnnotation(VariableDeclaration variable, VariableDeclarationAnnotation annotation) {
 		if (variable != null) {
 			List<VariableDeclarationAnnotation> annotations = variable.getAnnotations();
 			annotations.add(annotation);
+		}
+	}
+	
+	public void addAnnotationIfNotPresent(VariableDeclaration variable, VariableDeclarationAnnotation annotation) {
+		if (variable != null && !hasAnnotation(variable, annotation.getClass())) {
+			addAnnotation(variable, annotation);
 		}
 	}
 	

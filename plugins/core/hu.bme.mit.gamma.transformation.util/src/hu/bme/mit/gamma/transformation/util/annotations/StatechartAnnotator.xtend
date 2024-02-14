@@ -16,6 +16,7 @@ import hu.bme.mit.gamma.action.model.Branch
 import hu.bme.mit.gamma.action.model.ChoiceStatement
 import hu.bme.mit.gamma.action.model.IfStatement
 import hu.bme.mit.gamma.action.model.SwitchStatement
+import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
@@ -57,6 +58,7 @@ import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 import org.eclipse.viatra.query.runtime.emf.EMFScope
 
 import static extension hu.bme.mit.gamma.action.derivedfeatures.ActionModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class StatechartAnnotator {
@@ -189,16 +191,22 @@ class StatechartAnnotator {
 	}
 	
 	protected def createTransitionVariable(Transition transition,
-			Map<Transition, VariableDeclaration> variables, boolean isResettable) {
+			Map<Transition, VariableDeclaration> variables) {
 		val statechart = transition.containingStatechart
-		val variable = createBooleanTypeDefinition.createVariableDeclaration(
-			namings.getVariableName(transition))
-		statechart.variableDeclarations += variable
+		val variableDeclarations = statechart.variableDeclarations
+		
+		val name = namings.getVariableName(transition)
+		
+		// Same variable as we want to inject, e.g., pre-injected boolean variables for transitions
+		val foundVariable = variableDeclarations.findFirst[it.name == name && it.resettable &&
+				it.typeDefinition instanceof BooleanTypeDefinition]
+		//
+		val variable = (foundVariable !== null) ? foundVariable :
+				createBooleanTypeDefinition.createVariableDeclaration(name)
+		statechart.variableDeclarations += variable // Variable may be added "again" to the list (nothing happens)
 		variables.put(transition, variable)
 		
-		if (isResettable) {
-			variable.addResettableAnnotation
-		}
+		variable.addResettableAnnotation // Annotation will not be duplicated if already present
 		
 		variable.addInjectedAnnotation
 		
@@ -212,7 +220,7 @@ class StatechartAnnotator {
 			return
 		}
 		for (transition : coverableTransitions.filter[it.needsAnnotation]) {
-			val variable = transition.createTransitionVariable(transitionVariables, true)
+			val variable = transition.createTransitionVariable(transitionVariables)
 			transition.effects += variable.createAssignment(createTrueExpression)
 		}
 	}

@@ -54,7 +54,7 @@ class MessageQueueOptimizer {
 	protected final extension ExpressionModelFactory expressionFactory = ExpressionModelFactory.eINSTANCE
 	//
 	
-	def void optimizeMessageQueues(XSTS xSts) {
+	def void unfoldMessageQueues(XSTS xSts) {
 		queueVariables.clear
 		
 		val messageQueueVariables = xSts.messageQueueGroup.variables
