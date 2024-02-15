@@ -65,7 +65,7 @@ class GammaToXstsTransformer {
 	protected final PropertyPackage initialState
 	protected final InitialStateSetting initialStateSetting
 	protected final boolean optimize
-	protected final boolean optimizeArrays
+	protected final boolean optimizeOneCapacityArrays
 	protected final boolean unfoldMessageQueues
 	protected final boolean unrollLoopActions = true
 	// Auxiliary objects
@@ -88,26 +88,26 @@ class GammaToXstsTransformer {
 	}
 	
 	new(Integer schedulingConstraint, boolean transformOrthogonalActions,
-			boolean optimize, boolean optimizeArrays,
-			boolean optimizeMessageQueues, boolean optimizeEnvironmentalMessageQueues,
+			boolean optimize, boolean optimizeOneCapacityArrays,
+			boolean unfoldMessageQueues, boolean optimizeEnvironmentalMessageQueues,
 			TransitionMerging transitionMerging) {
-		this(schedulingConstraint, transformOrthogonalActions,
-				optimize, optimizeArrays, optimizeMessageQueues, optimizeEnvironmentalMessageQueues,
+		this(schedulingConstraint, transformOrthogonalActions, optimize,
+				optimizeOneCapacityArrays, unfoldMessageQueues, optimizeEnvironmentalMessageQueues,
 				transitionMerging, null, null)
 	}
 	
 	new(Integer schedulingConstraint, boolean transformOrthogonalActions,
-			boolean optimize, boolean optimizeArrays,
-			boolean optimizeMessageQueues, boolean optimizeEnvironmentalMessageQueues,
+			boolean optimize, boolean optimizeOneCapacityArrays,
+			boolean unfoldMessageQueues, boolean optimizeEnvironmentalMessageQueues,
 			TransitionMerging transitionMerging,
 			PropertyPackage initialState, InitialStateSetting initialStateSetting) {
 		this(schedulingConstraint, schedulingConstraint,
-			transformOrthogonalActions, optimize, optimizeArrays, optimizeMessageQueues,
+			transformOrthogonalActions, optimize, optimizeOneCapacityArrays, unfoldMessageQueues,
 			optimizeEnvironmentalMessageQueues, transitionMerging, initialState, initialStateSetting)
 	}
 	
 	new(Integer minSchedulingConstraint, Integer maxSchedulingConstraint,
-			boolean transformOrthogonalActions,	boolean optimize, boolean optimizeArrays,
+			boolean transformOrthogonalActions,	boolean optimize, boolean optimizeOneCapacityArrays,
 			boolean unfoldMessageQueues, boolean optimizeEnvironmentalMessageQueues,
 			TransitionMerging transitionMerging,
 			PropertyPackage initialState, InitialStateSetting initialStateSetting) {
@@ -119,7 +119,7 @@ class GammaToXstsTransformer {
 		this.initialState = initialState
 		this.initialStateSetting = initialStateSetting
 		this.optimize = optimize
-		this.optimizeArrays = optimizeArrays
+		this.optimizeOneCapacityArrays = optimizeOneCapacityArrays
 		this.unfoldMessageQueues = unfoldMessageQueues
 	}
 	
@@ -404,7 +404,7 @@ class GammaToXstsTransformer {
 			// Due to, e.g., read-only -> optimize (inline) chain that results in unused local variables
 		}
 		
-		if (optimizeArrays) {
+		if (optimizeOneCapacityArrays) {
 			logger.log(Level.INFO, "Optimizing one capacity arrays in " + xSts.name)
 			val arrayOptimizer = ArrayOptimizer.INSTANCE
 			arrayOptimizer.optimizeOneCapacityArrays(xSts)

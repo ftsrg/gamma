@@ -65,6 +65,8 @@ class TypeSerializer {
 	def dispatch String serializeType(EnumerationTypeDefinition type) '''{ «FOR literal : type.literals SEPARATOR ', '»«literal.name»«ENDFOR» }'''
 	
 	// Arrays: both sides are inclusive
+	// Note that WRITE, READ and CONSTARRAY are officially not supported with these kinds of (normal) arrays
+	// In turn, integer arrays cannot contain enums/ranges :(
 	def dispatch String serializeType(ArrayTypeDefinition type) '''array 0..«
 		type.size.evaluate /*- 1 // To make it semantic-preserving - OOB indexing in SMV will return the highest index's value */» of «type.elementType.serializeType»'''
 	
