@@ -404,15 +404,16 @@ class GammaToXstsTransformer {
 			// Due to, e.g., read-only -> optimize (inline) chain that results in unused local variables
 		}
 		
-		if (optimizeOneCapacityArrays) {
-			logger.log(Level.INFO, "Optimizing one capacity arrays in " + xSts.name)
-			val arrayOptimizer = ArrayOptimizer.INSTANCE
-			arrayOptimizer.optimizeOneCapacityArrays(xSts)
-		}
 		if (unfoldMessageQueues) {
 			logger.log(Level.INFO, "Unfolding message queues in " + xSts.name)
 			val messageQueueOptimizer = MessageQueueOptimizer.INSTANCE
 			messageQueueOptimizer.unfoldMessageQueues(xSts)
+		}
+		// Unfold before one-capacity array to ensure "sound" queue unfolding (one-capacity arrays can be non-queues)
+		if (optimizeOneCapacityArrays) {
+			logger.log(Level.INFO, "Optimizing one capacity arrays in " + xSts.name)
+			val arrayOptimizer = ArrayOptimizer.INSTANCE
+			arrayOptimizer.optimizeOneCapacityArrays(xSts)
 		}
 		if (unrollLoopActions) {
 			logger.log(Level.INFO, "Unrolling loop actions in " + xSts.name)
