@@ -806,6 +806,13 @@ class GammaEcoreUtil {
 		}
 	}
 	
+	def isContainedByList(EObject object) {
+		val containingFeature = object.eContainingFeature
+		val container = object.eContainer
+		val get = container.eGet(containingFeature)
+		return get instanceof List
+	}
+	
 	def isFirst(EObject object) {
 		val containingFeature = object.eContainingFeature
 		val container = object.eContainer

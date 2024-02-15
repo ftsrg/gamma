@@ -21,6 +21,7 @@ import uppaal.expressions.IdentifierExpression
 import uppaal.expressions.LiteralExpression
 import uppaal.expressions.LogicalOperator
 import uppaal.statements.ExpressionStatement
+import uppaal.statements.StatementsFactory
 import uppaal.templates.Edge
 import uppaal.templates.Location
 import uppaal.templates.LocationKind
@@ -35,6 +36,7 @@ class NtaOptimizer {
 	protected extension final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	//
 	protected final extension TypesFactory typFact = TypesFactory.eINSTANCE
+	protected final extension StatementsFactory stmFact = StatementsFactory.eINSTANCE
 	// Logger
 	protected final Logger logger = Logger.getLogger("GammaLogger")
 	//
@@ -186,9 +188,13 @@ class NtaOptimizer {
 					(it.eContainer as Edge).update.contains(it)]
 		
 		for (removableLiteralStatement : removableLiteralStatements) {
-			removableLiteralStatement.remove
+			if (removableLiteralStatement.isContainedByList) {
+				removableLiteralStatement.remove
+			}
+			else {
+				createEmptyStatement.replace(removableLiteralStatement) // To avoid nullptr
+			}
 		}
-		
 	}
 	
 }

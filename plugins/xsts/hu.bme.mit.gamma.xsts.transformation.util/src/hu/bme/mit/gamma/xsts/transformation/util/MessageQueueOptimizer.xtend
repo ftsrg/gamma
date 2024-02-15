@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023 Contributors to the Gamma project
+ * Copyright (c) 2023-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -24,6 +24,7 @@ import hu.bme.mit.gamma.util.JavaUtil
 import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.AtomicAction
+import hu.bme.mit.gamma.xsts.model.IfAction
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.transformation.serializer.ExpressionSerializer
@@ -79,11 +80,18 @@ class MessageQueueOptimizer {
 				xSts.variableDeclarations += queueVariable
 			}
 		}
-		// Changing queue expressions - not necessary in the current version
-//		val expressions = xSts.getAllContentsOfType(Expression)
-//		for (expression : expressions) {
-//			expression.handleQueueExpression
-//		}
+		
+		// Changing queue expressions where necessary
+		val expressions = newArrayList
+		
+		val conditions = xSts.getAllContentsOfType(IfAction).map[it.condition]
+		expressions += conditions.map[it.getSelfAndAllContentsOfType(Expression)].flatten
+				.filter[it.queueExpression]
+		
+		for (expression : expressions) {
+			expression.handleQueueExpression
+		}
+		//
 		
 		// Changing queue actions
 		val atomicActions = xSts.getAllContentsOfType(AtomicAction)
@@ -127,49 +135,17 @@ class MessageQueueOptimizer {
 	// Entry point for queue expression handling
 	
 	protected def handleQueueExpression(Expression expression) {
-		if (expression.queueEmptyExpression) {
-			expression.handleQueueEmptyExpression
-			return
+		if (expression.queueExpression) {
+			for (arrayAccess : expression.getSelfAndAllContentsOfType(ArrayAccessExpression)) {
+				val queueVariable = arrayAccess.declaration
+				val index = arrayAccess.index.evaluateInteger
+				val variableSequence = queueVariables.get(queueVariable)
+				val newVariable = variableSequence.get(index)
+				
+				newVariable.createReferenceExpression
+						.replace(arrayAccess)
+			}
 		}
-		else if (expression.queueNotEmptyExpression) {
-			expression.handleQueueNotEmptyExpression
-			return
-		}
-		else if (expression.queueFullExpression) {
-			expression.handleQueueFullExpression
-			return
-		}
-		else if (expression.queueNotFullExpression) {
-			expression.handleQueueNotFullExpression
-			return
-		}
-		else if (expression.queueSizeExpression) { // Last to handle basic variables
-			expression.handleQueueSizeExpression
-			return
-		}
-		throw new IllegalArgumentException("Not known expression: " + expression)
-	}
-	
-	//
-	
-	protected def handleQueueSizeExpression(Expression expression) {
-		return // No operation
-	}
-	
-	protected def handleQueueFullExpression(Expression expression) {
-		return // No operation
-	}
-	
-	protected def handleQueueNotFullExpression(Expression expression) {
-		return // No operation
-	}
-	
-	protected def handleQueueEmptyExpression(Expression expression) {
-		return // No operation
-	}
-	
-	protected def handleQueueNotEmptyExpression(Expression expression) {
-		return // No operation
 	}
 	
 	// Entry point for queue action handling

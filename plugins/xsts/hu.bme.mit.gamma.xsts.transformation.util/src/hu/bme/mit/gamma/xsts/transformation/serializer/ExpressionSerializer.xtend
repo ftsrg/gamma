@@ -54,6 +54,7 @@ class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSe
 //		if (declaration instanceof PrimedVariable) {
 //			return '''next(«declaration.originalVariable.name»)'''
 //		}
+		
 		return '''«declaration.name»'''
 	}
 	

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023 Contributors to the Gamma project
+ * Copyright (c) 2023-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -16,6 +16,7 @@ import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
 import hu.bme.mit.gamma.expression.model.BinaryExpression
 import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
+import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
 import hu.bme.mit.gamma.expression.model.EqualityExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.GreaterExpression
@@ -161,8 +162,10 @@ class MessageQueueUtil {
 						messageQueues += xSts.systemMasterMessageQueueGroup.variables
 						
 						val right = expression.rightOperand
-						if (right instanceof IntegerLiteralExpression) {
-							return messageQueues.contains(arrayDeclaration) && right.value == BigInteger.ZERO
+						if (right instanceof EnumerationLiteralExpression) {
+							val literal = right.reference
+							val index = literal.index
+							return messageQueues.contains(arrayDeclaration) && index == 0
 						}
 					}
 				}
