@@ -213,9 +213,7 @@ class ExpressionTransformer {
 	
 	def static dispatch String transformStatement(ReturnStatement statement) '''return «IF statement.returnExpression !== null»«statement.returnExpression.transform»«ENDIF»;'''
 	
-	def static dispatch String transformStatement(EmptyStatement statement) {
-		return ""
-	}
+	def static dispatch String transformStatement(EmptyStatement statement) '''{ /* Empty */ }'''
 	
 	// Serializing types
 		
