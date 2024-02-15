@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020-2022 Contributors to the Gamma project
+ * Copyright (c) 2020-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -21,7 +21,6 @@ import uppaal.expressions.IdentifierExpression
 import uppaal.expressions.LiteralExpression
 import uppaal.expressions.LogicalOperator
 import uppaal.statements.ExpressionStatement
-import uppaal.statements.StatementsFactory
 import uppaal.templates.Edge
 import uppaal.templates.Location
 import uppaal.templates.LocationKind
@@ -36,7 +35,6 @@ class NtaOptimizer {
 	protected extension final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	//
 	protected final extension TypesFactory typFact = TypesFactory.eINSTANCE
-	protected final extension StatementsFactory stmFact = StatementsFactory.eINSTANCE
 	// Logger
 	protected final Logger logger = Logger.getLogger("GammaLogger")
 	//

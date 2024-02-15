@@ -14,6 +14,7 @@ Require-Bundle: com.google.guava,
  de.uni_paderborn.uppaal,
  hu.bme.mit.gamma.uppaal.util,
  hu.bme.mit.gamma.uppaal.serializer,
- hu.bme.mit.gamma.transformation.util
+ hu.bme.mit.gamma.transformation.util,
+ hu.bme.mit.gamma.xsts.transformation.util
 Export-Package: hu.bme.mit.gamma.xsts.uppaal.transformation,
  hu.bme.mit.gamma.xsts.uppaal.transformation.api

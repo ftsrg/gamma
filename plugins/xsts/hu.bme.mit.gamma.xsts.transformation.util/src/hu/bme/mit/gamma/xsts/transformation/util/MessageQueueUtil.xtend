@@ -92,25 +92,25 @@ class MessageQueueUtil {
 		return false
 	}
 	
-	// isFull -> size variables or master queue - XSTS 8 <= sizeVar or master[0] != 0  || Promela full(q) 
+	// isFull -> size variables or master queue - XSTS 8 <= sizeVar or master[0] != EMPTY || Promela full(q) 
 
 	def isQueueFullExpression(Expression expression) {
 		return expression.isQueueRightReferenceExpression(LessEqualExpression, InequalityExpression)
 	}
 	
-	// isNotFull -> size variables or master queue - XSTS 8 > sizeVar or master[0] == 0 || Promela - full(q) 
+	// isNotFull -> size variables or master queue - XSTS 8 > sizeVar or master[0] == EMPTY || Promela - full(q) 
 	
 	def isQueueNotFullExpression(Expression expression) {
 		return expression.isQueueRightReferenceExpression(GreaterExpression, EqualityExpression)
 	}
 	
-	// isEmpty -> size variables or master queue - XSTS sizeVar <= 0 or master[0] == 0   || Promela - empty(q) 
+	// isEmpty -> size variables or master queue - XSTS sizeVar <= 0 or master[0] == EMPTY || Promela - empty(q) 
 	
 	def isQueueEmptyExpression(Expression expression) {
 		return expression.isQueueLeftReferenceExpression(LessEqualExpression, EqualityExpression)
 	}
 	
-	// isNotEmpty -> size variables or master queue - XSTS sizeVar > 0  or master[0] != 0  || Promela - nempty(q) 
+	// isNotEmpty -> size variables or master queue - XSTS sizeVar > 0  or master[0] != EMPTY || Promela - nempty(q) 
 	
 	def isQueueNotEmptyExpression(Expression expression) {
 		return expression.isQueueLeftReferenceExpression(GreaterExpression, InequalityExpression)
@@ -153,7 +153,8 @@ class MessageQueueUtil {
 			}
 			else if (masterQueueExpression.isInstance(expression)) { // 1-capacity master queue
 				val left = expression.leftOperand
-				if (left instanceof ArrayAccessExpression) {
+				if (left instanceof ArrayAccessExpression || // Original array
+						left instanceof DirectReferenceExpression) { // Unfolded array
 					val arrayDeclaration = left.declaration
 					if (arrayDeclaration.global) {
 						val xSts = arrayDeclaration.containingXsts

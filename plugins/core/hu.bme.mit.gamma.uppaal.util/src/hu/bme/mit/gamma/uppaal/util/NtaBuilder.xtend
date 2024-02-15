@@ -597,6 +597,10 @@ class NtaBuilder {
 		]
 	}
 	
+	def createEmptyStatement() {
+		return stmtsFactory.createEmptyStatement
+	}
+	
 	def getNta() {
 		return nta
 	}

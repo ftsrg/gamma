@@ -78,6 +78,19 @@ class MessageQueueOptimizer {
 				val flattenedQueueVariables = queueVariables.getOrCreateList(messageQueueVariable)
 				flattenedQueueVariables += queueVariable
 				xSts.variableDeclarations += queueVariable
+				
+				// Adding the new variables to the corresponding variable group
+				val messageQueueGroups = #[ xSts.masterMessageQueueGroup,
+					 xSts.slaveMessageQueueGroup, xSts.systemMasterMessageQueueGroup,
+					 xSts.systemSlaveMessageQueueGroup]
+				
+				for (messageQueueGroup : messageQueueGroups) {
+					val queueVariables = messageQueueGroup.variables
+					if (queueVariables.contains(messageQueueVariable)) {
+						queueVariables += queueVariable
+					}
+				}
+				//
 			}
 		}
 		
@@ -277,8 +290,8 @@ class MessageQueueOptimizer {
 				val emptyValue = elementType.defaultExpression
 				val notEmptyExpression = head.createInequalityExpression(emptyValue)
 				val notEmptyAssumption = notEmptyExpression.createAssumeAction
-				
-				action.appendToAction(notEmptyAssumption)
+				//
+				action.appendToAction(notEmptyAssumption) // Note that the XU mapping has to deal with this
 			}
 			return
 		}

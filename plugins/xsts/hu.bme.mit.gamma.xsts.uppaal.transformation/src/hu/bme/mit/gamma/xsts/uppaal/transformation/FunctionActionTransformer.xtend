@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -16,12 +16,14 @@ import hu.bme.mit.gamma.uppaal.util.TypeTransformer
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
+import hu.bme.mit.gamma.xsts.model.AssumeAction
 import hu.bme.mit.gamma.xsts.model.EmptyAction
 import hu.bme.mit.gamma.xsts.model.IfAction
 import hu.bme.mit.gamma.xsts.model.LoopAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
+import hu.bme.mit.gamma.xsts.transformation.util.MessageQueueUtil
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import java.util.Collection
 import uppaal.NTA
@@ -46,6 +48,7 @@ class FunctionActionTransformer {
 	protected final extension AssignmentExpressionCreator assignmentExpressionCreator
 	protected final extension TypeTransformer typeTransformer
 	
+	protected final extension MessageQueueUtil messageQueueUtil = MessageQueueUtil.INSTANCE
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	
@@ -82,6 +85,15 @@ class FunctionActionTransformer {
 	
 	protected def dispatch Statement transformAction(EmptyAction action) {
 		return null
+	}
+	
+	protected def dispatch Statement transformAction(AssumeAction action) {
+		val assumption = action.assumption
+		if (assumption.queueExpression) {
+			return createEmptyStatement
+		}
+		
+		throw new IllegalArgumentException("Not known assume action")
 	}
 	
 	protected def dispatch Statement transformAction(AssignmentAction action) {
