@@ -106,10 +106,13 @@ class PromelaVerifier extends AbstractVerifier {
 			var String firstLine = null // Result checking
 				
 			while (resultReader.hasNext) {
-				outputString.append(resultReader.nextLine + System.lineSeparator)
+				val line = resultReader.nextLine
+				outputString.append(line + System.lineSeparator)
 				
 				if (firstLine === null) {
-					firstLine = outputString.toString
+					if (!line.contains("error: max search depth too small")) {
+						firstLine = line
+					}
 				}
 			}
 			fileUtil.saveString(outputFile, outputString.toString)
