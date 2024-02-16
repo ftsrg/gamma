@@ -1,0 +1,7 @@
+import "port_invariant_system"
+
+analysis {
+	component : System
+	language : XSTS
+	optimize : true
+}
