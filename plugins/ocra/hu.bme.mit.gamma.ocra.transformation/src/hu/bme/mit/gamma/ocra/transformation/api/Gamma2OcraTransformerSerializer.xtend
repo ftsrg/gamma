@@ -12,11 +12,15 @@ package hu.bme.mit.gamma.ocra.transformation.api
 
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.ocra.transformation.ModelSerializer
+import hu.bme.mit.gamma.ocra.transformation.OcraVerifier
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.transformation.util.GammaFileNamer
 import hu.bme.mit.gamma.util.FileUtil
 import java.io.File
 import java.util.List
+
+import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
+
 
 class Gamma2OcraTransformerSerializer {
 	//
@@ -44,10 +48,13 @@ class Gamma2OcraTransformerSerializer {
 	def execute() {
 		// Normal transformation
 		val gammaToOcraTransformer = ModelSerializer.INSTANCE
-		val ocraString = gammaToOcraTransformer.execute(component) // TODO arguments?
+		val ocraVerifier = new OcraVerifier
+		val ocraString = gammaToOcraTransformer.execute(component.containingPackage) // TODO arguments?
 		
 		val ocraFile = new File(targetFolderUri + File.separator + fileName.ocraFileName)
 		ocraFile.saveString(ocraString)
+		ocraVerifier.verifyQuery(ocraFile)
+		
 	}
 	
 }
