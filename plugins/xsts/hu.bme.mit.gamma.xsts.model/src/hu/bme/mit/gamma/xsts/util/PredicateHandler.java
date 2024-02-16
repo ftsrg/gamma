@@ -51,7 +51,8 @@ public class PredicateHandler extends hu.bme.mit.gamma.expression.util.Predicate
 				assignmentStatements.addAll(
 					ecoreUtil.getSelfAndAllContentsOfType(root, AssignmentAction.class));
 				
-				List<VariableDeclarationAction> localVariableActions = ecoreUtil.getSelfAndAllContentsOfType(root, VariableDeclarationAction.class);
+				List<VariableDeclarationAction> localVariableActions = ecoreUtil
+						.getSelfAndAllContentsOfType(root, VariableDeclarationAction.class);
 				localVariableActions.removeIf(it -> it.getVariableDeclaration().getExpression() == null);
 				localVariables.addAll(localVariableActions);
 				

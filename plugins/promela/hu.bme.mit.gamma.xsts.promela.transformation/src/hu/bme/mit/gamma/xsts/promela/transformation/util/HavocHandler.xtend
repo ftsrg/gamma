@@ -19,8 +19,8 @@ import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition
 import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
-import hu.bme.mit.gamma.expression.util.PredicateHandler
 import hu.bme.mit.gamma.util.GammaEcoreUtil
+import hu.bme.mit.gamma.xsts.util.PredicateHandler
 import java.math.BigInteger
 import java.util.List
 

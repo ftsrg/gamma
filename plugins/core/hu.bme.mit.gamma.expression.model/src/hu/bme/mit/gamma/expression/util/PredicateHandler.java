@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022 Contributors to the Gamma project
+ * Copyright (c) 2022-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -17,8 +17,10 @@ import java.util.TreeSet;
 
 import org.eclipse.emf.ecore.EObject;
 
+import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
 import hu.bme.mit.gamma.expression.model.BinaryExpression;
 import hu.bme.mit.gamma.expression.model.Declaration;
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.EqualityExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.GreaterEqualExpression;
@@ -50,16 +52,30 @@ public class PredicateHandler {
 		Expression left = predicate.getLeftOperand();
 		Expression right = predicate.getRightOperand();
 		
+		Declaration declaration = null;
+		Expression otherSide = null;
 		if (left instanceof ReferenceExpression) {
-			Declaration declaration = expressionUtil.getDeclaration(left);
+			declaration = expressionUtil.getDeclaration(left);
 			if (declaration == variable) {
-				return expressionEvaluator.evaluateInteger(right);
+				otherSide = right;
 			}
 		}
 		else if (right instanceof ReferenceExpression) {
-			Declaration declaration = expressionUtil.getDeclaration(right);
+			declaration = expressionUtil.getDeclaration(right);
 			if (declaration == variable) {
-				return expressionEvaluator.evaluateInteger(left);
+				otherSide = left;
+			}
+		}
+		
+		if (otherSide != null) {
+			try {
+				return expressionEvaluator.evaluateInteger(otherSide);
+			} catch (IllegalArgumentException e) { // Other side has a declaration, let's try to use it
+				if (otherSide instanceof DirectReferenceExpression reference) {
+					Declaration otherSideDeclaration = reference.getDeclaration();
+					Expression defaultValue = ExpressionModelDerivedFeatures.getDefaultExpression(otherSideDeclaration);
+					return expressionEvaluator.evaluateInteger(defaultValue);
+				}
 			}
 		}
 		
@@ -100,23 +116,23 @@ public class PredicateHandler {
 	
 	protected int calculateValidIntegerValue(Expression predicate, VariableDeclaration variable) {
 		// No enclosing negation is expected anymore here (NNF - see calculateIntegerValues)
-		if (predicate instanceof EqualityExpression) {
-			return _calculateValidIntegerValue((EqualityExpression) predicate, variable);
+		if (predicate instanceof EqualityExpression expression) {
+			return _calculateValidIntegerValue(expression, variable);
 		}
-		else if (predicate instanceof GreaterEqualExpression) {
-			return _calculateValidIntegerValue((GreaterEqualExpression) predicate, variable);
+		else if (predicate instanceof GreaterEqualExpression expression) {
+			return _calculateValidIntegerValue(expression, variable);
 		}
-		else if (predicate instanceof GreaterExpression) {
-			return _calculateValidIntegerValue((GreaterExpression) predicate, variable);
+		else if (predicate instanceof GreaterExpression expression) {
+			return _calculateValidIntegerValue(expression, variable);
 		}
-		else if (predicate instanceof InequalityExpression) {
-			return _calculateValidIntegerValue((InequalityExpression) predicate, variable);
+		else if (predicate instanceof InequalityExpression expression) {
+			return _calculateValidIntegerValue(expression, variable);
 		}
-		else if (predicate instanceof LessEqualExpression) {
-			return _calculateValidIntegerValue((LessEqualExpression) predicate, variable);
+		else if (predicate instanceof LessEqualExpression expression) {
+			return _calculateValidIntegerValue(expression, variable);
 		}
-		else if (predicate instanceof LessExpression) {
-			return _calculateValidIntegerValue((LessExpression) predicate, variable);
+		else if (predicate instanceof LessExpression expression) {
+			return _calculateValidIntegerValue(expression, variable);
 		}
 		else {
 			throw new IllegalArgumentException("Unhandled parameter types: " + predicate);
@@ -157,23 +173,23 @@ public class PredicateHandler {
 	
 	protected int calculateInvalidIntegerValue(Expression predicate, VariableDeclaration variable) {
 		// No enclosing negation is expected anymore here (NNF - see calculateIntegerValues)
-		if (predicate instanceof EqualityExpression) {
-			return _calculateInvalidIntegerValue((EqualityExpression) predicate, variable);
+		if (predicate instanceof EqualityExpression expression) {
+			return _calculateInvalidIntegerValue(expression, variable);
 		}
-		else if (predicate instanceof GreaterEqualExpression) {
-			return _calculateInvalidIntegerValue((GreaterEqualExpression) predicate, variable);
+		else if (predicate instanceof GreaterEqualExpression expression) {
+			return _calculateInvalidIntegerValue(expression, variable);
 		}
-		else if (predicate instanceof GreaterExpression) {
-			return _calculateInvalidIntegerValue((GreaterExpression) predicate, variable);
+		else if (predicate instanceof GreaterExpression expression) {
+			return _calculateInvalidIntegerValue(expression, variable);
 		}
-		else if (predicate instanceof InequalityExpression) {
-			return _calculateInvalidIntegerValue((InequalityExpression) predicate, variable);
+		else if (predicate instanceof InequalityExpression expression) {
+			return _calculateInvalidIntegerValue(expression, variable);
 		}
-		else if (predicate instanceof LessEqualExpression) {
-			return _calculateInvalidIntegerValue((LessEqualExpression) predicate, variable);
+		else if (predicate instanceof LessEqualExpression expression) {
+			return _calculateInvalidIntegerValue(expression, variable);
 		}
-		else if (predicate instanceof LessExpression) {
-			return _calculateInvalidIntegerValue((LessExpression) predicate, variable);
+		else if (predicate instanceof LessExpression expression) {
+			return _calculateInvalidIntegerValue(expression, variable);
 		}
 		else {
 			throw new IllegalArgumentException("Unhandled parameter types: " + predicate);
