@@ -277,6 +277,16 @@ class StatechartToLowlevelTransformer {
 					lowlevelStatechart.internalEventDeclarations += lowlevelEventDeclarations
 				}
 			}
+			// Mapping port and interface invariants
+			// First the interface invariants muist be mapped to the ports realizing the interface
+			val mappedInvariants = port.mapInterfaceInvariantsToPort
+			if (!mappedInvariants.empty) {
+				lowlevelStatechart.environmentalInvariants += mappedInvariants.map[it.transformSimpleExpression]
+			}
+			val invariants = port.invariants
+			if (!invariants.empty) {
+				lowlevelStatechart.environmentalInvariants += invariants.map[it.transformSimpleExpression]
+			}
 		}
 		for (region : statechart.regions) {
 			lowlevelStatechart.regions += region.transform
@@ -290,7 +300,7 @@ class StatechartToLowlevelTransformer {
 		val statechartInvariants = statechart.invariants
 		if (!statechartInvariants.empty) {
 			lowlevelStatechart.invariants += statechartInvariants.map[it.transformSimpleExpression]
-		}
+		}	
 		return lowlevelStatechart
 	}
 

@@ -13,6 +13,7 @@ package hu.bme.mit.gamma.statechart.derivedfeatures;
 import java.math.BigInteger;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -35,18 +36,25 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
 
 import hu.bme.mit.gamma.action.derivedfeatures.ActionModelDerivedFeatures;
 import hu.bme.mit.gamma.action.model.Action;
+import hu.bme.mit.gamma.expression.model.AccessExpression;
 import hu.bme.mit.gamma.expression.model.ArgumentedElement;
+import hu.bme.mit.gamma.expression.model.BinaryExpression;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.ElseExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression;
 import hu.bme.mit.gamma.expression.model.FunctionDeclaration;
+import hu.bme.mit.gamma.expression.model.IfThenElseExpression;
+import hu.bme.mit.gamma.expression.model.MultiaryExpression;
+import hu.bme.mit.gamma.expression.model.NullaryExpression;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
+import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
 import hu.bme.mit.gamma.expression.model.TypeDefinition;
 import hu.bme.mit.gamma.expression.model.TypeReference;
+import hu.bme.mit.gamma.expression.model.UnaryExpression;
 import hu.bme.mit.gamma.statechart.composite.AbstractAsynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter;
@@ -87,6 +95,7 @@ import hu.bme.mit.gamma.statechart.interface_.EventReference;
 import hu.bme.mit.gamma.statechart.interface_.EventSource;
 import hu.bme.mit.gamma.statechart.interface_.EventTrigger;
 import hu.bme.mit.gamma.statechart.interface_.Interface;
+import hu.bme.mit.gamma.statechart.interface_.InterfaceParameterReferenceExpression;
 import hu.bme.mit.gamma.statechart.interface_.InterfaceRealization;
 import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.statechart.interface_.PackageAnnotation;
@@ -1069,6 +1078,10 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	public static Interface getContainingInterface(Event event) {
 		return ecoreUtil.getContainerOfType(event, Interface.class);
+	}
+	
+	public static Interface getContainingInterface(InterfaceParameterReferenceExpression expression) {
+		return ecoreUtil.getContainerOfType(expression, Interface.class);
 	}
 	
 	public static List<EventDeclaration> getAllEventDeclarations(Port port) {
@@ -3542,6 +3555,69 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	public static boolean hasNegatedContractStatechartAnnotation(Component component) {
 		return getComponentAnnotation(component, NegativeContractStatechartAnnotation.class) != null;
+	}
+	
+	protected static void _mapInterfaceInvariantToPort(Port port, BinaryExpression expression) {
+		_mapInterfaceInvariantToPort(port, expression.getLeftOperand());
+		_mapInterfaceInvariantToPort(port, expression.getRightOperand());
+	}
+	
+	protected static void _mapInterfaceInvariantToPort(Port port, IfThenElseExpression expression) {
+		_mapInterfaceInvariantToPort(port, expression.getCondition());
+		_mapInterfaceInvariantToPort(port, expression.getThen());
+		_mapInterfaceInvariantToPort(port, expression.getElse());
+	}
+	
+	protected static void _mapInterfaceInvariantToPort(Port port, MultiaryExpression expression) {
+		List<Expression> _operands = expression.getOperands();
+		for (Expression operand : _operands) {
+			_mapInterfaceInvariantToPort(port, operand);
+		}
+	}
+	
+	protected static void _mapInterfaceInvariantToPort(Port port, UnaryExpression expression) {
+		_mapInterfaceInvariantToPort(port, expression.getOperand());
+	}
+	
+	protected static void _mapInterfaceInvariantToPort(Port port, ReferenceExpression expression) {
+		if (expression instanceof InterfaceParameterReferenceExpression) {
+			// The InterfaceParameterReferenceExpressions are replaced with EventParameterReferenceExpressions using the port realizing the interface
+			InterfaceParameterReferenceExpression interfaceParameterReferenceExpression = (InterfaceParameterReferenceExpression) expression;
+			Expression portInvariant = statechartUtil.createEventParameterReference(port,
+					interfaceParameterReferenceExpression.getParameter());
+			ecoreUtil.changeAndReplace(portInvariant, interfaceParameterReferenceExpression, interfaceParameterReferenceExpression.eContainer());
+		} else if (expression instanceof AccessExpression) {
+			AccessExpression accessExpression = (AccessExpression) expression;
+			_mapInterfaceInvariantToPort(port, accessExpression.getOperand());
+		}
+	}
+	
+	protected static void _mapInterfaceInvariantToPort(Port port, Expression expression) {
+		if (expression instanceof ReferenceExpression) {
+			_mapInterfaceInvariantToPort(port, (ReferenceExpression) expression);
+		} else if (expression instanceof BinaryExpression) {
+			_mapInterfaceInvariantToPort(port, (BinaryExpression) expression);
+		} else if (expression instanceof IfThenElseExpression) {
+			_mapInterfaceInvariantToPort(port, (IfThenElseExpression) expression);
+		} else if (expression instanceof MultiaryExpression) {
+			_mapInterfaceInvariantToPort(port, (MultiaryExpression) expression);
+		} else if (expression instanceof NullaryExpression) {
+			// Nothing to map here
+		} else if (expression instanceof UnaryExpression) {
+			_mapInterfaceInvariantToPort(port, (UnaryExpression) expression);
+		} else {
+			throw new IllegalArgumentException("Unhandled parameter types: " + Arrays.<Object>asList(expression).toString());
+		}
+	}
+	
+	public static List<Expression> mapInterfaceInvariantsToPort(Port port) {
+		List<Expression> interfaceInvariants = ecoreUtil.clone(port.getInterfaceRealization().getInterface().getInvariants());
+		
+		for (Expression interfaceInvariant : interfaceInvariants) {
+			_mapInterfaceInvariantToPort(port, interfaceInvariant);
+		}
+		
+		return interfaceInvariants;
 	}
 	
 }
